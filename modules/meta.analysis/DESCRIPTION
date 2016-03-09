@@ -2,7 +2,7 @@ Package: PEcAn.MA
 Type: Package
 Title: PEcAn functions used for meta-analysis
 Version: 1.4.5
-Date: 2015-12-06
+Date: 2016-03-03
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
     Davidson, Rob Kooper, Shawn Serbin
 Maintainer: David LeBauer <dlebauer@illinois.edu>

@@ -6,7 +6,6 @@
 ##' @param in.path location on disk where inputs are stored
 ##' @param in.prefix prefix of input files
 ##' @param outfolder location on disk where outputs will be stored
-##' @param out.prefix prefix of output files
 ##' @param start_date the start date of the data to be permuted (will only use the year part of the date)
 ##' @param end_date the end date of the data to be permuted (will only use the year part of the date)
 ##' @param slat the latitude of the site
@@ -15,9 +14,10 @@
 ##' @param verbose should ouput of function be extra verbose
 ##' @export
 ##' @author Betsy Cowdery
-extract.nc <- function(in.path, in.prefix, outfolder, out.prefix, start_date, end_date, slat, slon, overwrite=FALSE, verbose=FALSE,...) {
+extract.nc <- function(in.path, in.prefix, outfolder, start_date, end_date, slat, slon, overwrite=FALSE, verbose=FALSE,...) {
   require("PEcAn.utils")
   require("lubridate")
+  require("ncdf4")
 
   in.path <- as.character(in.path)
   in.prefix <- as.character(in.prefix)
@@ -45,7 +45,7 @@ extract.nc <- function(in.path, in.prefix, outfolder, out.prefix, start_date, en
 
   for(year in start_year:end_year){
     infile = file.path(in.path, paste(in.prefix, year, "nc", sep="."))
-    outfile = file.path(outfolder, paste(out.prefix, year, "nc", sep="."))
+    outfile = file.path(outfolder, paste(in.prefix, year, "nc", sep="."))
 
     # create array with results
     row <- year - start_year + 1

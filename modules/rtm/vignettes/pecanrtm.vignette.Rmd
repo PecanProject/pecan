@@ -142,7 +142,7 @@ model <- function(params){
 ```{r}
 mu <- c("N" = -0.427, "Cab"=3.332, "Car"=1.851, "Cw"=-4.499, "Cm"=-5.082)
 sigma <- c("N" = 0.375, "Cab"=0.564, "Car"=0.761, "Cw"=0.546, "Cm"=0.656)
-prior <- function(params){
+prior.function <- function(params){
     params["N"] <- params["N"] - 1
     return(sum(dlnorm(params, mu, sigma, log=TRUE)))
 }
@@ -163,7 +163,7 @@ inits["N"] <- inits["N"] + 1
    will be 0.
 
 ```{r}
-p5min <- c("N"=1, "Cab"=0, "Car"=0, "Cw"=0, "Cm"=0)
+param.mins <- c("N"=1, "Cab"=0, "Car"=0, "Cw"=0, "Cm"=0)
 ```
 
 6. Perform inversion. The `do.lsq` parameter determines whether or not to 
@@ -176,13 +176,12 @@ p5min <- c("N"=1, "Cab"=0, "Car"=0, "Cw"=0, "Cm"=0)
 samples <- invert.custom(observed = observed,
                          inits = inits,
                          ngibbs = 10000,
-                         prior = prior,
-                         pm = p5min,
+                         prior.function = prior.function,
+                         param.mins = param.mins,
                          model = model,
                          do.lsq = FALSE,
                          quiet=TRUE)
 ```
-
 
 
 ```{r}
@@ -204,24 +203,3 @@ print(colMeans(p5inv[-500:0,]))
 print(apply(p5inv[-500:0,], 2, sd))
 ```
 
-### Random effects
-
-A more complicated analysis involves individual random effects.
-
-```{r}
-p5rand <- matrix(0, 5, 3)
-rownames(p5rand) <- names(p5.means)
-p5re <- invert.fast.re(modname = "prospect_5b",
-                       observed = testspec_ACRU[,1:3],
-                       inits = p5.means,
-                       cons = c("Cbrown"=0),
-                       rand = p5rand,
-                       pmu = p5mu,
-                       psd = p5sigma,
-                       plog = p5log,
-                       minp = p5min,
-                       ngibbs = 1000)
-
-print(colMeans(p5re[-50:0,]))
-print(apply(p5re[-50:0,], 2, sd))
-```

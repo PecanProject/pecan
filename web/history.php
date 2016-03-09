@@ -130,7 +130,7 @@ close_database();
       <input type="text" readonly style="background: #FFFFFF; color: black;" value="Runs in unknown state"/>
       <p></p>
       <label>Show runs in unknown state?</label>
-      <input id="unknown" type="checkbox" onclick="filter();" checked="on"/>
+      <input id="unknown" type="checkbox" onclick="filter();"/>
       <label>Show only my runs?</label>
       <input id="onlyme" type="checkbox" onclick="filter();"/>
       <label>Filter history by text</label>

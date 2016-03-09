@@ -1,7 +1,7 @@
 
 ## What is PEcAn?
 
-[![Join the chat at https://gitter.im/PecanProject/pecan](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/PecanProject/pecan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/PecanProject/pecan.svg?branch=master)](https://travis-ci.org/PecanProject/pecan)[![Join the chat at https://gitter.im/PecanProject/pecan](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/PecanProject/pecan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 The Predictive Ecosystem Analyzer (PEcAn) (see [pecanproject.org](http://pecanproject.org)) is an integrated ecological bioinformatics toolbox (LeBauer et al, 2013) that consists of: 1) a scientific workflow system to manage the immense amounts of publicly-available environmental data and 2) a Bayesian data assimilation system to synthesize this information within state-of-the-art ecosystems models. This project is motivated by the fact that many of the most pressing questions about global change are not necessarily limited by the need to collect new data as much as by our ability to synthesize existing data. This project seeks to improve this ability by developing a framework for integrating multiple data sources in a sensible manner.
 

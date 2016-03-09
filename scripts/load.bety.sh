@@ -204,7 +204,7 @@ fi
 ID_RANGE=1000000000
 
 # before anything is done, check to make sure database exists
-if ! psql -lqt | cut -d \| -f 1 | grep -w "${DATABASE}" > /dev/null ; then
+if ! psql ${PG_OPT} -lqt | cut -d \| -f 1 | grep -w "${DATABASE}" > /dev/null ; then
   echo "Database ${DATABASE} does not exist, please create it:"
   echo "(see https://github.com/PecanProject/pecan/wiki/Installing-PEcAn#installing-bety)"
   echo "  sudo -u postgres createuser -d -l -P -R -S bety"
@@ -226,12 +226,12 @@ if [ "${CREATE}" == "YES" ]; then
      printf "Loading %-25s : " "schema"
   fi
   # create empty public schema
-  psql -q -d "${DATABASE}" -c "DROP SCHEMA public CASCADE"
-  psql -U ${OWNER} -q -d "${DATABASE}" -c "CREATE SCHEMA public"
+  psql ${PG_OPT} -q -d "${DATABASE}" -c "DROP SCHEMA public CASCADE"
+  psql ${PG_OPT} -U ${OWNER} -q -d "${DATABASE}" -c "CREATE SCHEMA public"
 
   # following commands require superuser abilities
-  psql -d "${DATABASE}" -c 'CREATE EXTENSION Postgis;'
-  psql -d "${DATABASE}" -c "GRANT ALL ON ALL TABLES IN SCHEMA public TO ${OWNER};"
+  psql ${PG_OPT} -d "${DATABASE}" -c 'CREATE EXTENSION Postgis;'
+  psql ${PG_OPT} -d "${DATABASE}" -c "GRANT ALL ON ALL TABLES IN SCHEMA public TO ${OWNER};"
 
   # create rest of database
   psql ${PG_OPT} -U ${OWNER} -q -d "${DATABASE}" < "${DUMPDIR}"/*.schema

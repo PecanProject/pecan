@@ -124,7 +124,11 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       VPDsoil = ud.convert(get.es(soilT),"millibar","Pa")*(1-qair2rh(Qair,soilT))
       
       nc_close(nc)
+    } else {
+      print("Skipping to next year")
+      next
     }
+    
     ##build time variables (year, month, day of year)
     nyr <- floor(length(sec)/86400/365*dt)
     yr <- NULL
@@ -175,7 +179,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     ##0 YEAR DAY HOUR TIMESTEP AirT SoilT PAR PRECIP VPD VPD_Soil AirVP(e_a) WIND SoilM   
     ## build data matrix
     n = length(Tair)
-    tmp <- cbind(rep(0,n),yr,doy,hr,rep(dt/86400,n),
+    tmp <- cbind(rep(0,n),yr[1:n],doy[1:n],hr[1:n],rep(dt/86400,n),
                  Tair-273.15,
                  soilT, 
                  PAR*dt, #mol/m2/hr
@@ -187,6 +191,10 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
                  rep(0.6,n) ## put soil water at a constant. Don't use, set SIPNET to MODEL_WATER = 1
     )
     
+    ## quick error check, sometimes get a NA in the last hr
+    hr.na = which(is.na(tmp[,4]))
+    if(length(hr.na)>0) tmp[hr.na,4] = tmp[hr.na-1,4] + dt/86400*24
+    
     if(is.null(out)){
       out = tmp
     } else {
@@ -195,12 +203,17 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     
   } ## end loop over years
   
-  ## write output
-  write.table(out,out.file.full,quote = FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
+  if(!is.null(out)){
   
+    ## write output
+    write.table(out,out.file.full,quote = FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
   
+    invisible(results)
   
-  invisible(results)
+  } else {
+    print("NO MET TO OUTPUT")
+    invisible(NULL)
+  }  
   
   
 } ### end met2model.SIPNET

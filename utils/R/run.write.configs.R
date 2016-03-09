@@ -25,13 +25,13 @@
 ##' @export
 ##'
 ##' @author David LeBauer, Shawn Serbin, Ryan Kelly
-run.write.configs <- function(settings, write = TRUE, ens.sample.method="halton",
+run.write.configs <- function(settings, write = TRUE, ens.sample.method="uniform",
                        posterior.files=rep(NA, length(settings$pfts))) {
 
   model = settings$model$type
   scipen = getOption("scipen")
   options(scipen=12)
-  get.parameter.samples(pfts = settings$pfts, posterior.files)
+  get.parameter.samples(pfts = settings$pfts, posterior.files, ens.sample.method)
   load(file.path(settings$outdir, "samples.Rdata"))
 
   require(coda)

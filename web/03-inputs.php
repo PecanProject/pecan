@@ -64,10 +64,16 @@ if (isset($_REQUEST['end'])) {
   $enddate=$_REQUEST['end'];
 }
 
-$email="";
+$email = "";
 if (isset($_REQUEST['email'])) {
   $email=$_REQUEST['email'];
 }
+
+$notes = "";
+if (isset($_REQUEST['notes'])) {
+  $notes=$_REQUEST['notes'];
+}
+
 
 // get site information
 $stmt = $pdo->prepare("SELECT sitename, city, state, country, ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat FROM sites WHERE sites.id=?");
@@ -150,7 +156,11 @@ foreach($modeltypes as $type) {
       if (preg_match("/ \(US-.*\)$/", $siteinfo["sitename"])) {
         $x['files'][] = array("id"=>"Ameriflux." . $type, "name"=>"Use Ameriflux");
       }
-      $x['files'][] = array("id"=>"NARR." . $type, "name"=>"Use NARR");
+      // check for NARR,this is not exact since it is a conical projection
+      if ($siteinfo['lat'] > 1 && $siteinfo['lat'] < 46 && $siteinfo['lon'] < -68 && $siteinfo['lon'] > -145) {
+        $x['files'][] = array("id"=>"NARR." . $type, "name"=>"Use NARR");
+      }
+      // CRUNCEP is global
       $x['files'][] = array("id"=>"CRUNCEP." . $type, "name"=>"Use CRUNCEP");
     }
   }
@@ -315,22 +325,39 @@ $stmt->closeCursor();
 <?php if ($offline) { ?>
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
-      <input type="hidden" name="siteid" value="<?php echo $siteid; ?>" />
-      <input type="hidden" name="modelid" value="<?php echo $modelid; ?>" />
-      <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
+<?php if (isset($_REQUEST['conversion'])) { ?>
+      <input name="conversion" type="hidden" value="on">
+<?php } ?>
+<?php foreach($_REQUEST as $key => $value){
+	if(is_array($value)) {
+	  foreach($value as $v) {
+	    echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+	  }
+	} else {
+	  echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+	}
+      }
+?>
     </form>
 
     <form id="formnext" method="POST" action="<?php echo ($hostname != $fqdn ? '04-remote.php' : '04-runpecan.php'); ?>">
 <?php if ($offline) { ?>
-      <input name="offline" type="hidden" value="on">
+        <input name="offline" type="hidden" value="on">
 <?php } ?>
 <?php if ($userok) { ?>
-      <input name="userok" type="hidden" value="on">
+        <input name="userok" type="hidden" value="on">
 <?php } ?>
-      <input type="hidden" name="siteid" value="<?php echo $siteid; ?>" />
-      <input type="hidden" name="modelid" value="<?php echo $modelid; ?>" />
-      <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
-
+<?php foreach($_REQUEST as $key => $value){
+		file_put_contents('php://stderr', print_r('key top ' + $key, TRUE));
+        if(is_array($value)) {
+          foreach($value as $v) {
+            echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+          }
+        } else {
+	  echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+        }
+      }
+?>
       <label id="pftlabel">PFT<sup>*</sup></label>
       <select id="pft" name="pft[]" multiple size=5 onChange="validate();">
 <?php
@@ -376,6 +403,10 @@ foreach($inputs as $input) {
       <input id="email" name="email" type="text" value="<?php echo $email; ?>"/>
       <div class="spacer"></div>
 
+      <label>Notes</label>
+      <textarea name="notes" id="notes" rows="4"><?php echo $notes; ?></textarea>
+      <div class="spacer"></div>
+
 <?php if (isset($browndog_url) && $browndog_url != "") { ?>
       <label title="Use BrownDog for conversions.">Use <a href="http://browndog.ncsa.illinois.edu/">BrownDog</a></label>
       <input id="browndog" name="browndog" type="checkbox" <?php echo $browndog; ?>/>
@@ -391,6 +422,8 @@ foreach($inputs as $input) {
       <span class="small"><sup>*</sup> are required fields.</span>
       <p></p>
       <span id="error" class="small">&nbsp;</span>
+
+      <div class="spacer"></div>
       <input id="prev" type="button" value="Prev" onclick="prevStep();" />
       <input id="next" type="button" value="Next" onclick="nextStep();" <?php if (!$userok) echo "disabled" ?>/>
       <div class="spacer"></div>
