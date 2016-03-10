@@ -9,16 +9,23 @@ The output of the data assimilation system will be a regional-scale high-resolut
 
 PEcAn is not itself an ecosystem model, and it can be used to with a variety of different ecosystem models; integrating a model involves writing a wrapper to convert inputs and outputs to and from the standards used by PEcAn. Currently, PEcAn supports the Ecosystem Demography model (Medvigy et al 2009), SIPNET (Sacks et al 2005), and BioCro (Miguez et al 2009).
 
+## Documentation
+
+Consult our [Gitbook](https://pecan.gitbooks.io/pecan-documentation/content/)for full documentation of the PEcAn Project.
+
 ## Getting Started
 
-See ["Getting Started"](https://github.com/PecanProject/pecan/wiki/Getting-started#additional-pecan-modules-and-tools) on the PEcAn wiki 
+See ["Getting Started"](https://pecan.gitbooks.io/pecan-documentation/content/users_guide/basic_users_guide/Getting-started.html) on the PEcAn.
 
 ### Installation
 
-Complete instructions on how to install PEcAn can be found in the [WIKI Installation Page](https://github.com/PecanProject/pecan/wiki/Installing-PEcAn). To get PEcAn up and running you will need to have [R](http://www.r-project.org) as well as [PostgreSQL](http://www.postgresql.org) installed. You can also [download a Virtual Machine](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN) which has all the components as well as PEcAn installed. To run this Virtual Machine you will need to have [VirtualBox](http://virtualbox.org) installed
+Complete instructions on how to install PEcAn can be found in the [Gitbook Installation Page](https://pecan.gitbooks.io/pecan-documentation/content/developers_guide/Installing-PEcAn.html). To get PEcAn up and running you will need to have [R](http://www.r-project.org) as well as [PostgreSQL](http://www.postgresql.org) installed. You can also [download a Virtual Machine](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN) which has all the components as well as PEcAn installed. To run this Virtual Machine you will need to have [VirtualBox](http://virtualbox.org) installed
 
-### Web Interface Demo
+### Website
 
+Visit our [webage](https://pecanproject.github.io) to keep up with latest news, version, and information about the PEcAn Project
+
+#### Web Interface demo
 The fastest way to begin modeling ecosystems is through the PEcAn web interface.  
 We have a [demo website](http://pecan.ncsa.illinois.edu/pecan) that runs the current version of PEcAn. Using this instance you can perform a run using either ED or SIPNET at any of the predefined sites.
 
