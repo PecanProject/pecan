@@ -9,9 +9,13 @@ The output of the data assimilation system will be a regional-scale high-resolut
 
 PEcAn is not itself an ecosystem model, and it can be used to with a variety of different ecosystem models; integrating a model involves writing a wrapper to convert inputs and outputs to and from the standards used by PEcAn. Currently, PEcAn supports the Ecosystem Demography model (Medvigy et al 2009), SIPNET (Sacks et al 2005), and BioCro (Miguez et al 2009).
 
+## Documentation
+
+Consult our [Gitbook](https://pecan.gitbooks.io/pecan-documentation/content/)for full documentation of the PEcAn Project.
+
 ## Getting Started
 
-See ["Getting Started"](https://pecan.gitbooks.io/pecan-documentation/content/users_guide/basic_users_guide/Getting-started.html) on the PEcAn 
+See ["Getting Started"](https://pecan.gitbooks.io/pecan-documentation/content/users_guide/basic_users_guide/Getting-started.html) on the PEcAn.
 
 ### Installation
 
