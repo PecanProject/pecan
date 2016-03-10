@@ -325,7 +325,9 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
 #' @param trait.values 
 #' @return R XML object containing full ED2 XML file
 #' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
-write.config.xml.ED2 <- function(defaults, settings, trait.values){
+write.config.xml.ED2 <- function(settings, trait.values, defaults=NULL){
+    ## Inputs
+
   ## Find history file
   ## TODO this should come from the database
   histfile <- paste("data/history.r", settings$model$revision, ".csv", sep='')
@@ -336,6 +338,18 @@ write.config.xml.ED2 <- function(defaults, settings, trait.values){
     #print("--- Using Generic ED2 History File: data/history.csv")
     edhistory <- read.csv2(system.file("data/history.csv",  package="PEcAn.ED2"), sep=";")
   }
+
+  #Inputs: settings, trait.values
+  #defaults.from.history <- Get default values from correct history.csv / database
+  #for(pft in trait.values):
+      #if(!pft.number %in% settings$constants) pft.number <- pftmapping(pft)
+          #If can’t find PFT, kill workflow with intelligent error message -- “here’s how you update the pft mapping”
+          #Also modify web app to not default to 1 
+              #vals <- defaults.from.history[[pft.number]]
+              #converted.trait.values <- convert(trait.values[[pft]])
+                  #vals[matched names in trait.values[[pft]]] <- converted.trait.values
+                  #vals[in constants] <- defaults.from.settings[[pft]]
+                      #append.xml(xml, vals, name =pft, num = pft.number)
 
   edtraits <- names(edhistory)
   data(pftmapping)

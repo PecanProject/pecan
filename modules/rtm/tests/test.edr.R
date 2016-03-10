@@ -4,6 +4,8 @@
 library(PEcAnRTM)
 #print(write.config.xml.ED2)
 
+analysis.path <- '~/dietzelab/ED2/EDR/run/'
+setwd(analysis.path)
 ed2in.path <- '/projectnb/dietzelab/pecan.data/output/ashiklom/1000001295/run/1000336885/ED2IN'
 history.path <- '/projectnb/dietzelab/pecan.data/output/ashiklom/1000001295/out/1000336885/'
 paths <- list(ed2in.path = ed2in.path, history.path = history.path)
@@ -25,7 +27,7 @@ for(i in 1:length(trait.seq)){
     val <- trait.seq[i]
     print(val)
     for(p in seq_along(pft.names)){
-        trait.values[[p]]$diffuse_backscatter_vis <- val
+        trait.values[[p]]$clumping_factor <- val
     }
     trait.name <- names(trait.values[[p]])[2]
     #xml <- write.config.xml.ED2(defaults = list(),
@@ -44,8 +46,8 @@ for(i in 1:length(trait.seq)){
     albedo.mat[,i] <- albedo
 }
 
-pdf(sprintf("%s.pdf", trait.name))
+#pdf(sprintf("%s.pdf", trait.name))
 plot.title <- sprintf("%s: %.3f to %.3f", trait.name, min(trait.seq), max(trait.seq))
-wl <- 400:500
+wl <- 400:2500
 matplot(wl, albedo.mat[wl-399,], type='l', main=plot.title)
-dev.off()
+#dev.off()
