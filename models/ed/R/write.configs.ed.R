@@ -325,40 +325,29 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
 #' @param trait.values 
 #' @return R XML object containing full ED2 XML file
 #' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
-write.config.xml.ED2 <- function(settings, trait.values, defaults=NULL){
-    ## Inputs
+write.config.xml.ED2 <- function(settings, trait.values, defaults=settings$constants){
 
   ## Find history file
   ## TODO this should come from the database
   histfile <- paste("data/history.r", settings$model$revision, ".csv", sep='')
   if (file.exists(system.file(histfile, package="PEcAn.ED2"))) {
     #print(paste("--- Using ED2 History File: ","data/history.r", settings$model$revision, ".csv", sep=''))
-    edhistory <- read.csv2(system.file(histfile, package="PEcAn.ED2"), sep=";")
+    edhistory <- read.csv2(system.file(histfile, package="PEcAn.ED2"), sep=";", 
+                           stringsAsFactors=FALSE, dec='.')
   } else {
     #print("--- Using Generic ED2 History File: data/history.csv")
-    edhistory <- read.csv2(system.file("data/history.csv",  package="PEcAn.ED2"), sep=";")
+    edhistory <- read.csv2(system.file("data/history.csv",  package="PEcAn.ED2"), sep=";",
+                           stringsAsFactors=FALSE, dec='.')
   }
-
-  #Inputs: settings, trait.values
-  #defaults.from.history <- Get default values from correct history.csv / database
-  #for(pft in trait.values):
-      #if(!pft.number %in% settings$constants) pft.number <- pftmapping(pft)
-          #If can’t find PFT, kill workflow with intelligent error message -- “here’s how you update the pft mapping”
-          #Also modify web app to not default to 1 
-              #vals <- defaults.from.history[[pft.number]]
-              #converted.trait.values <- convert(trait.values[[pft]])
-                  #vals[matched names in trait.values[[pft]]] <- converted.trait.values
-                  #vals[in constants] <- defaults.from.settings[[pft]]
-                      #append.xml(xml, vals, name =pft, num = pft.number)
 
   edtraits <- names(edhistory)
   data(pftmapping)
 
   ## Get ED2 specific model settings and put into output config xml file
   xml <- listToXml(settings$model$config.header, 'config')
-  names(defaults) <- sapply(defaults, function(x) x$name)
   
-  for(group in names(trait.values)){
+  for(i in seq_along(trait.values)){
+    group <- names(trait.values)[i]
     if(group == "env"){
       
       ## set defaults from config.header
@@ -366,49 +355,36 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults=NULL){
       ##
       
     } else {
-      ## copy values
-      if(!is.null(trait.values[[group]])){
-        vals <- trait.values[[group]]
-        
-        # Add defaults (overriding for traits that were already assigned)
-        const = defaults[[group]]$constants
-        for(i in seq_along(const)) {
-          vals[[names(const)[i]]] = const[[i]]
-        }
-   
-        # Convert
-        vals <- convert.samples.ED(vals)
-        
-        # Fix names and remove traits that ED doesn't know about
-        #names(vals) <- droplevels(trait.lookup(names(vals))$model.id)
-        #traits <- names(vals)
-        #for(trait in traits) {
-          #if (! trait %in% edtraits ) {
-              #print("not found")
-            #logger.error(trait, "not found in ED history")
-            #vals[[trait]] = NULL
-            #next
-          #}
-        #}
+      # Make this agnostic to the way PFT names are defined in `trait.values` -- either directly as list names or as object "name" within each sublist is fine
+      if(group == "pft"){
+        pft <- trait.values[[i]]$name
+      } else {
+        pft <- group
       }
+      # TODO: Not sure if this is how this is supposed to work, but idea is to check for pft.number in settings first
+      pft.number <- settings$constants[[pft]]$num
+      if(is.null(pft.number)){
+          pft.number <- pftmapping$ED[which(pftmapping == pft)]
+      }
+      if(length(pft.number) == 0){
+          logger.error(pft, 'was not matched with a number in settings$constants or pftmapping data. Consult the PEcAn instructions on defining new PFTs.')
+          stop('Unable to set PFT number')
+      }
+        # TODO: Also modify web app to not default to 1 
+
+      ## Get default trait values from ED history
+      vals <- as.list(edhistory[edhistory$num == pft.number,])
+
+      ## Convert trait values to ED units
+      converted.trait.values <- convert.samples.ED(trait.values[[i]])
+
+      ## Selectively replace defaults with trait values
+      vals <- modifyList(vals, converted.trait.values)
+
+      ## Selectively replace defaults and trait values with constants from settings
+      if(!is.null(defaults)) vals <- modifyList(vals, defaults)
 
       pft.xml <- listToXml(vals, 'pft')
-      
-      ## Insert PFT names into output xml file. Doesn't seem safe to RK to assume that defaults will contain a name, but leaving as is for now. 
-      if(is.null(trait.values[[group]]$name)){
-        pft.xml <- append.xmlNode(pft.xml, xmlNode("name", group))
-      }
-        
-      ##TODO this should come from the database
-      if (is.null(pft.xml[["num"]])) {
-        edpft <- pftmapping$ED[which(pftmapping==group)]
-        if (is.null(edpft)) {
-          logger.warn("No mapping found for", group, "using 1")
-          edpft <- 1
-        }
-        pft.xml <- append.xmlNode(pft.xml, xmlNode("num", edpft))
-      }
-      
       xml <- append.xmlNode(xml, pft.xml)
     }
   }
