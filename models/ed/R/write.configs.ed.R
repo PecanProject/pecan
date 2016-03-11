@@ -87,15 +87,15 @@ convert.samples.ED <- function(trait.samples){
 ##' and the name of the file to create
 ##' @name write.config.ED2
 ##' @title Write ED configuration files
-##' @param defaults list of defaults to process
 ##' @param trait.values Named list of trait values, with names corresponding to PFT
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
+##' @param defaults list of defaults to process. Default=settings$constants
 ##' @return configuration file and ED2IN namelist for given run
 ##' @export
-##' @author David LeBauer, Shawn Serbin, Carl Davidson
+##' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
 ##-------------------------------------------------------------------------------------------------#
-write.config.ED2 <- function(defaults, trait.values, settings, run.id){
+write.config.ED2 <- function(trait.values, settings, run.id, defaults=settings$constants){
   
   
   jobsh <- write.config.jobsh.ED2(settings = settings,
@@ -320,9 +320,9 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
 #' @title Write ED2 config.xml file
 #' @details Refactored by Alexey Shiklomanov to allow use in PEcAn RTM module.
 #' @export
-#' @param defaults List of defaults to process
-#' @param settings PEcAn settings file. Settings required for this script are: model$revision, model$config.header
-#' @param trait.values 
+#' @param settings PEcAn settings file. Settings required for this script are: model$revision, model$config.header, constants
+#' @param trait.values List of trait values with which to replace defaults
+#' @param defaults List of defaults to process. Default = settings$constants
 #' @return R XML object containing full ED2 XML file
 #' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
 write.config.xml.ED2 <- function(settings, trait.values, defaults=settings$constants){
