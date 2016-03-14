@@ -1,5 +1,5 @@
-install.packages("~/pecan/models/ed", repos=NULL)
-detach('package:PEcAn.ED2', unload=TRUE)
+#install.packages("~/pecan/models/ed", repos=NULL)
+#detach('package:PEcAn.ED2', unload=TRUE)
 library(PEcAn.ED2)
 
 # Define settings list
