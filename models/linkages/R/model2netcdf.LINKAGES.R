@@ -26,8 +26,6 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
 
   require(PEcAn.utils)
   require(ncdf4)
-  
-  ##QUESTIONS:How should I name the PFTs? What should I do about more than one plot?
 
   ### Read in model output in linkages format
   load(file.path(outdir,"linkages.out.Rdata"))
@@ -60,8 +58,8 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
     output[[2]] <- ag.biomass[y,]  # Total Live Biomass in kgC/m2 (no distinction from AGB in linkages)
     output[[3]] <- total.soil.carbon[y,] # TotSoilCarb in kgC/m2
     output[[4]] <- c(ag.biomass[y,],total.soil.carbon[y,],
-                     leaf.litter[y,]) #Carb Pools in kgC/m2
-    output[[5]] <- c("AGB","Soil Organic Matter","Leaf Litter") #poolname
+                     leaf.litter[y,],area[y,]) #Carb Pools in kgC/m2
+    output[[5]] <- c("AGB","Soil Organic Matter","Leaf Litter", "LAI") #poolname
     output[[6]] <- ag.npp[y,] # GWBI = NPP in linkages
     output[[7]] <- hetero.resp[y,] # HeteroResp in kgC/m^2/s
     output[[8]] <- ag.npp[y,] # NPP = GWBI in linkages
@@ -70,7 +68,9 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
 
     output[[11]] <- agb.pft[,y,]
 
-    output[[12]] <- f.comp[,y,]
+    output[[12]] <- f.comp[,y]
+    output[[13]] <- area[y,] #LAI
+    output[[14]] <- water[y,] #soil moisture
 
     #******************** Declare netCDF variables ********************#
     dim.t <- ncdim_def(name = "time",
@@ -85,10 +85,10 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
                      longname = "station_longitude")
     dim.string <- ncdim_def("names", "", 1:24, create_dimvar=FALSE)
     dim.cpools <- ncdim_def("cpools", "",
-                        vals = 1:3,
+                        vals = 1:4,
                         longname = "Carbon Pools")
     dim.cpools1 <- ncdim_def("cpools", "",
-                         vals = 1:3,
+                         vals = 1:4,
                          longname = "Carbon Pools", create_dimvar=FALSE)
     dim.pfts <- ncdim_def("pfts", "",
                              vals = 1:nrow(agb.pft),
@@ -112,13 +112,14 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
 
     var[[11]]  <- ncvar_def("AGB.pft", "kgC/m2",list(dim.pfts, dim.lat, dim.lon, dim.t),-999)
     var[[12]]  <- ncvar_def("Fcomp", "kgC/kgC",list(dim.pfts, dim.lat, dim.lon, dim.t),-999)
-
+    var[[13]]  <- ncvar_def("LAI", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
+    var[[14]]  <- ncvar_def("SoilMoist", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
     #******************** Declar netCDF variables ********************#
 
 
     ### Output netCDF data
-    nc <- nc_create(file.path(outdir, paste(sprintf("%04d",years[y]),"nc", sep=".")), var)
-    varfile <- file(file.path(outdir, paste(sprintf("%04d",years[y]), "nc", "var", sep=".")), "w")
+    nc <- nc_create(file.path(outdir, paste(years[y],"nc", sep=".")), var)
+    varfile <- file(file.path(outdir, paste(years[y], "nc", "var", sep=".")), "w")
     for(i in 1:length(var)){
       print(i)
       ncvar_put(nc,var[[i]],output[[i]])

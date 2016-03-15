@@ -23,7 +23,11 @@
 ##' @export
 ##' @author Ann Raiho, Betsy Cowdery
 ##-------------------------------------------------------------------------------------------------#
-write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, run.id){
+write.config.LINKAGES <- function(defaults=NULL, trait.values, settings, run.id,
+                                  restart=NULL, spinup=NULL){
+  #850-869 repeated to fill 1000 years
+  if(is.null(restart)) restart = FALSE
+  if(is.null(spinup)) spinup = FALSE
   
   require(linkages) 
   
@@ -41,7 +45,6 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   
   iplot <- 1
   nyear <- length(year)
-  #nspec <- 5
   bgs <- 120
   egs <- 273
   max.ind <- 15000
@@ -75,29 +78,89 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   clat <- read.csv(system.file("clat.csv", package = "linkages"),header = FALSE)
   load(system.file("switch.mat.Rdata", package = "linkages"))
   
-  load(settings$run$inputs$met$path)
-  #temp.mat <- matrix(c(-8.6,-7.6,-1.9,6.9,13.7,19,21.6,20.5,15.9,9.6,.8,-6.1),nyear,12,byrow = TRUE)
-  #precip.mat <- matrix(c(2.9,2.7,4.2,7,9.2,11.2,8,8.9,8.9,5.7,5.5,2.9),nyear,12,byrow=TRUE)
+  climate_file <- settings$run$inputs$met$path
+  load(climate_file)
+  temp.mat <- temp.mat[start.year:end.year-start.year+1,]
+  precip.mat <- precip.mat[start.year:end.year-start.year+1,]
 
   basesc = 74
   basesn = 1.64
   
-  ### Create species parameter matrix with correct PFTs
   spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages")) #default spp.params
   nspec <- length(settings$pfts)
   spp.params.save <- numeric(nspec)
   for(i in 1:nspec){
     spp.params.save[i] <- which(spp.params.default[,1]%in%settings$pfts[i]$pft$name)
-  }
-  
+  }     
   spp.params <- spp.params.default[spp.params.save,]
   
-  input<-file.path(settings$rundir,"linkages.input.Rdata")  
+  ### Create species parameter matrix with correct PFTs
+  # trait.values$`Hemlock(Tsuga Canadensis)`$
+  #group will be each spp. 
+  for(group in names(trait.values)){
+    if(group == "env"){
+      
+      ## leave defaults
+      ##
+      
+    } else {
+      ## copy values
+      if(!is.null(trait.values[[group]])){
+        vals <- trait.values[[group]]
+        
+        #replace defaults with traits
+        new.params.locs <- which(names(spp.params) %in% names(vals))
+        new.vals.locs <- which(names(vals) %in% names(spp.params))
+        spp.params[spp.params$Spp_Name==group,new.params.locs] <- vals[new.vals.locs]
+        
+        #conversion of some traits to match what LINKAGES needs
+        #Going to have to look up this paper Botkin 1972 Some Ecological Consequences of a computer model of forest growth
+        if('HTMAX' %in% names(vals) & 'DBHMAX' %in% names(vals)){
+          spp.params[spp.params$Spp_Name==group,]$B2 <- 2*(((vals$HTMAX*100) - 137) / (vals$DBHMAX*100))
+          spp.params[spp.params$Spp_Name==group,]$B3 <- (vals$HTMAX*100 - 137) / (vals$DBHMAX*100 ^ 2)
+        }
+        
+        if('root2shoot' %in% names(vals)){
+          spp.params[spp.params$Spp_Name==group,]$RTST <- vals$root2shoot
+        }
+        
+        if('leaf_longevity' %in% names(vals)){
+          spp.params[spp.params$Spp_Name==group,]$FRT <- vals$leaf_longevity
+        }
+        
+        if('TL' %in% names(vals)){
+          spp.params[spp.params$Spp_Name==group,]$TL <- ceiling(vals$TL)
+        }
+        
+        
+      }
+    }
+  }
+
+  switch.mat <- switch.mat[spp.params.save,]
+  
+  if(spinup==TRUE){
+    spinup.out <- spinup.LINKAGES(start.year,end.year,temp.mat,precip.mat)
+    start.year <- spinup.out$start.year
+    end.year <- spinup.out$end.year
+    nyear <- spinup.out$nyear
+    temp.mat <- spinup.out$temp.mat
+    precip.mat <- spinup.out$precip.mat
+    settings$run$start.date <- paste0(spinup.out$start.year,strftime(settings$run$start.date,"/%m/%d"))
+    precip.mat <- spinup.out$precip.mat
+  }
+
+  input <- file.path(settings$rundir,run.id,"linkages.input.Rdata")  
   
   save(iplot, nyear, nspec, fc, dry, bgs, egs, max.ind,
        plat, temp.mat, precip.mat, spp.params, switch.mat,
-       fdat, clat, basesc, basesn, file = input)
+       fdat, clat, basesc, basesn, start.year, end.year, file = input)
   
+  if(restart==TRUE){
+  restartfile <- file.path(settings$rundir,run.id,"linkages.restart.Rdata")
+  }else{
+    restartfile <- NULL
+  }
   #-----------------------------------------------------------------------
   # create launch script (which will create symlink)
   if (!is.null(settings$run$jobtemplate) && file.exists(settings$run$jobtemplate)) {
@@ -129,6 +192,10 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values=NULL, settings, ru
   jobsh <- gsub('@RUNDIR@', rundir, jobsh)
   
   jobsh <- gsub('@INPUT@', input, jobsh)
+  jobsh <- gsub('@RESTART@', restart, jobsh)
+  if(restart==TRUE){
+  jobsh <- gsub('@RESTARTFILE@', restartfile, jobsh)
+  }
   
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
