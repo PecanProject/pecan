@@ -1,4 +1,4 @@
-write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analysis){
+write.restart.LINKAGES <- function(outdir,run.id,time,settings,analysis,RENAME,PLOT){
   
   biomass_function<-function(dbh){ #kg/tree
       .1193 * dbh^2.393 + ((slta+sltb*dbh)/2)^2 * 3.14 * fwt * frt * .001
@@ -24,23 +24,22 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
   
   spp.params <- spp.params.default[spp.params.save,]
   ##HACK
-  
-  analysis <- analysis[,c(1,2,4,3)] #doing this to match the linkages order #need to figure out how to generalize
-  
-  for(i in 1:nens){
+
     # skip ensemble member if no file availible  
-    outfile = file.path(outdir,run.id[[i]],"linkages.out.Rdata")
+    outfile = file.path(outdir,run.id,"linkages.out.Rdata")
     if(!file.exists(outfile)){
-      print(paste0("missing outfile ens #",run.id[[i]]))
+      print(paste0("missing outfile ens #",run.id))
       next
     } 
-    print(paste0("run.id = ",run.id[[i]]))
+    print(paste0("run.id = ",run.id))
         
     #load output
     load(outfile)
     #save original output
-    file.rename(file.path(outdir,run.id[[i]],"linkages.out.Rdata"),
-                file.path(outdir,run.id[[i]],paste0(time,"linkages.out.Rdata"))) 
+    if(RENAME==TRUE){
+      file.rename(file.path(outdir,run.id,"linkages.out.Rdata"),
+                  file.path(outdir,run.id,paste0(time,"linkages.out.Rdata")))
+    }
     
     nspec <- length(settings$pfts)
     ncohrt <- ncohrt
@@ -101,15 +100,15 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
     #calculate number of individuals needed to match analysis
     for(s in 1:4){      
       if(ntrees[s]>0){
-        fix <- analysis[i,s]/mean.biomass.spp[mean.biomass.spp[,1]==s,2] #number of individuals needed to agree with analysis      
+        fix <- analysis[s]/mean.biomass.spp[mean.biomass.spp[,1]==s,2] #number of individuals needed to agree with analysis      
       }else{
         for(r in 1:3){
           s.select <- which(distance.matrix[s,] == r) #select a new spp. to clone from
           if(ntrees[s.select]>0) break
         }
-        fix <- analysis[i,s] / mean.biomass.spp[mean.biomass.spp[,1]==s.select,2]
+        fix <- analysis[s] / mean.biomass.spp[mean.biomass.spp[,1]==s.select,2]
       }
-      new.ntrees[s] <- ceiling(fix) #new number of ind. of each species
+      new.ntrees[s] <- as.numeric(ceiling(fix)) #new number of ind. of each species
     }
     print(paste0("new.ntrees =",new.ntrees))
     
@@ -162,9 +161,9 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
       for(j in nl:nu){
         b_calc[s] <- biomass_function(dbh.temp[j]) / 883 / .48 + b_calc[s]
       }
-      bcorr[s] <- analysis[i,s] / b_calc[s]
+      bcorr[s] <- analysis[s] / b_calc[s]
       for(j in nl:nu){
-        b_obs <- biomass_function(dbh.temp[j])*bcorr[s]
+        b_obs <- biomass_function(dbh.temp[j])*as.numeric(bcorr[s])
         dbh.temp[j] <- optimize(merit, c(1,200))$minimum 
         b_calc1[s] <- biomass_function(dbh.temp[j]) / 883 / .48 + b_calc1[s]       
       }
@@ -213,9 +212,12 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
 #     nu <- nl + ntrees[n] - 1
 #     nl <- nu + 1 
 #   }
-
-    file.rename(file.path(settings$rundir,run.id[[i]],"linkages.restart.Rdata"),file.path(settings$rundir,run.id[[i]],paste0(time,"linkages.restart.Rdata"))) #save original output
-    restart.file <- file.path(settings$rundir,run.id[[i]],"linkages.restart.Rdata")
+    if(RENAME==TRUE){ 
+      file.rename(file.path(settings$rundir,run.id,"linkages.restart.Rdata"),
+                  file.path(settings$rundir,run.id,
+                            paste0(time,"linkages.restart.Rdata"))) #save original output
+    }
+    restart.file <- file.path(settings$rundir,run.id,"linkages.restart.Rdata")
     sprintf("%s",restart.file)
     
     save(dbh, tyl, ntrees, nogro, ksprt, iage, C.mat, ncohrt,
@@ -224,11 +226,11 @@ write.restart.LINKAGES <- function(nens,outdir,run.id,time,settings,prior,analys
     #make a new settings with the right years
     #min start date and end date - fail in informative way
 
-    settings$run$start.date <- paste0(time+1,"/01/01")
-    settings$run$end.date <- paste0(time+1,"/12/31")
+    settings$run$start.date <- paste0(time + 1,"/01/01")
+    settings$run$end.date <- paste0(time + 1,"/12/31")
 #    settings$run$start.date <- paste0(time,strftime(settings$run$end.date,"/%m/%d"))
 #    settings$run$end.date <- paste0(time,strftime(settings$run$end.date,"/%m/%d"))
    
-    do.call(my.write.config,args=list(settings=settings,run.id = run.id[[i]],restart = TRUE))   
-  }
+    do.call(my.write.config,args=list(settings=settings,run.id = run.id,restart = TRUE))   
+
 }
