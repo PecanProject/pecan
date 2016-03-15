@@ -12,6 +12,9 @@ DATABASE=${DATABASE:-"bety"}
 # also used to connect to the database for most operations
 OWNER=${OWNER:-"bety"}
 
+# postgres user to use for root level access
+PG_USER=${PG_USER:-""}
+
 # psql options
 # this allows you to add any other options
 PG_OPT=${PG_OPT:-""}
@@ -77,8 +80,11 @@ LOG=${LOG:-"$PWD/dump/sync.log"}
 # ----------------------------------------------------------------------
 
 # parse command line options
-while getopts cd:efghl:m:o:p:qr:tu opt; do
+while getopts a:cd:efghl:m:o:p:qr:tu opt; do
   case $opt in
+  a)
+    PG_USER=$OPTARG
+    ;;
   c)
     CREATE="YES"
     ;;
@@ -95,7 +101,8 @@ while getopts cd:efghl:m:o:p:qr:tu opt; do
     GUESTUSER="YES"
     ;;
   h)
-    echo "$0 [-c] [-d database] [-e] [-f] [-g] [-h] [-m my siteid] [-o owner] [-p psql options] [-r remote siteid] [-t] [-u]"
+    echo "$0 [-a postgres] [-c] [-d database] [-e] [-f] [-g] [-h] [-l logfile] [-m my siteid] [-o owner] [-p psql options] [-r remote siteid] [-t] [-u]"
+    echo " -a access database as this user, this is NOT the owner of the database, often this is postgres"
     echo " -c create database, THIS WILL ERASE THE CURRENT DATABASE, default is NO"
     echo " -d database, default is bety"
     echo " -e empty database, default is NO"
@@ -152,6 +159,11 @@ if [ "${CREATE}" == "YES" ]; then
   FIXSEQUENCE="YES"
 fi
 
+# add right flag to PG_USER
+if [ "$PG_USER" != "" ]; then
+  PG_USER="-U ${PG_USER}"
+fi
+
 # list of all tables, schema_migrations is ignored since that
 # will be imported during creaton
 
@@ -189,7 +201,7 @@ if [ -z "${DUMPURL}" ]; then
   elif [ "${REMOTESITE}" == "1" ]; then
     DUMPURL="http://psql-pecan.bu.edu/sync/dump/bety.tar.gz"
   elif [ "${REMOTESITE}" == "2" ]; then
-    DUMPURL="https://www.dropbox.com/s/wr8sldv080wa9y8/bety.tar.gz?dl=0"
+    DUMPURL="https://modex.bnl.gov/sync/dump/bety.tar.gz"
   elif [ "${REMOTESITE}" == "5" ]; then  
     DUMPURL="http://tree.aos.wisc.edu:6480/sync/dump/bety.tar.gz"
   elif [ "${REMOTESITE}" == "6" ]; then
@@ -204,11 +216,11 @@ fi
 ID_RANGE=1000000000
 
 # before anything is done, check to make sure database exists
-if ! psql -lqt | cut -d \| -f 1 | grep -w "${DATABASE}" > /dev/null ; then
+if ! psql ${PG_OPT} ${PG_USER} -lqt | cut -d \| -f 1 | grep -w "${DATABASE}" > /dev/null ; then
   echo "Database ${DATABASE} does not exist, please create it:"
   echo "(see https://github.com/PecanProject/pecan/wiki/Installing-PEcAn#installing-bety)"
-  echo "  sudo -u postgres createuser -d -l -P -R -S bety"
-  echo "  sudo -u postgres createdb -O bety ${DATABASE}"
+  echo "  psql ${PG_OPT} ${PG_USER} -c \"CREATE ROLE ${OWNER} WITH LOGIN CREATEDB NOSUPERUSER NOCREATEROLE PASSWORD 'password'\""
+  echo "  psql ${PG_OPT} ${PG_USER} -c \"CREATE DATABASE ${DATABASE} WITH OWNER ${OWNER}\""
   exit 1
 fi
 
@@ -226,12 +238,12 @@ if [ "${CREATE}" == "YES" ]; then
      printf "Loading %-25s : " "schema"
   fi
   # create empty public schema
-  psql -q -d "${DATABASE}" -c "DROP SCHEMA public CASCADE"
-  psql -U ${OWNER} -q -d "${DATABASE}" -c "CREATE SCHEMA public"
+  psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "DROP SCHEMA public CASCADE"
+  psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "CREATE SCHEMA public"
 
   # following commands require superuser abilities
-  psql -d "${DATABASE}" -c 'CREATE EXTENSION Postgis;'
-  psql -d "${DATABASE}" -c "GRANT ALL ON ALL TABLES IN SCHEMA public TO ${OWNER};"
+  psql ${PG_OPT} ${PG_USER} -d "${DATABASE}" -c 'CREATE EXTENSION Postgis;'
+  psql ${PG_OPT} ${PG_USER} -d "${DATABASE}" -c "GRANT ALL ON ALL TABLES IN SCHEMA public TO ${OWNER};"
 
   # create rest of database
   psql ${PG_OPT} -U ${OWNER} -q -d "${DATABASE}" < "${DUMPDIR}"/*.schema
@@ -242,7 +254,7 @@ if [ "${CREATE}" == "YES" ]; then
   if [ "${QUIET}" != "YES" ]; then
     printf "Loading  %-25s : " "schema_migrations"
   fi
-  ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY schema_migrations FROM '${DUMPDIR}/schema_migrations.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8'); SELECT COUNT(*) FROM schema_migrations;" | tr -d ' ' )
+  ADD=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c "\COPY schema_migrations FROM '${DUMPDIR}/schema_migrations.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8'); SELECT COUNT(*) FROM schema_migrations;" | tr -d ' ' )
   if [ "${QUIET}" != "YES" ]; then
     echo "ADDED ${ADD}"
   fi
@@ -252,7 +264,7 @@ else
   fi
 
   # find current schema version
-  VERSION=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT md5(array_agg(version)::text) FROM (SELECT version FROM schema_migrations ORDER BY version) as v;' | tr -d ' ' )
+  VERSION=$( psql ${PG_OPT} -U ${OWNER} -t -q -d "${DATABASE}" -c 'SELECT md5(array_agg(version)::text) FROM (SELECT version FROM schema_migrations ORDER BY version) as v;' | tr -d ' ' )
 
   if [ ! -e "${DUMPDIR}/${VERSION}.schema" ]; then
     echo "EXPECTED SCHEMA version ${VERSION}"
@@ -288,7 +300,7 @@ PSQL_PIPE_INP=/tmp/psql_inp.$$
 PSQL_PIPE_OUT=/tmp/psql_out.$$
 mkfifo -m 600 $PSQL_PIPE_INP
 mkfifo -m 600 $PSQL_PIPE_OUT
-psql ${PG_OPT} --quiet --no-align --no-readline --tuples-only -P footer=off --dbname ${DATABASE} <$PSQL_PIPE_INP >$PSQL_PIPE_OUT &
+psql ${PG_OPT} -U ${OWNER} --quiet --no-align --no-readline --tuples-only -P footer=off --dbname ${DATABASE} <$PSQL_PIPE_INP >$PSQL_PIPE_OUT &
 exec 3>$PSQL_PIPE_INP
 exec 4<$PSQL_PIPE_OUT
 PSQL_PID=$!

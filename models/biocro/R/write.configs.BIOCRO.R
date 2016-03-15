@@ -97,6 +97,7 @@ write.config.BIOCRO <- function(defaults = NULL,
   
   ## create launch script (which will create symlink)
   writeLines(c("#!/bin/bash",
+               paste(settings$model$job.sh),
                paste("mkdir -p", outdir),
                paste("cd", rundir),
                ## model binary takes rundir, outdir as arguments

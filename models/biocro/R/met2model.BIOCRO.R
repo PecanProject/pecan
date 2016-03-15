@@ -22,7 +22,7 @@
 ##' @author Rob Kooper, David LeBauer
 ##-------------------------------------------------------------------------------------------------#
 met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite=FALSE, ...) {
-  ncfiles = dir(in.path, full.names = TRUE, pattern = paste0(in.prefix, "*.nc$"),  
+  ncfiles <- dir(in.path, full.names = TRUE, pattern = paste0(in.prefix, "*.nc$"),  
                 all.files = FALSE, recursive = FALSE)
   metlist <- list()
   for(file in ncfiles){
@@ -116,7 +116,6 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE){
                        Temp = ud.convert(air_temperature, "Kelvin", "Celsius"), 
                        RH = relative_humidity, 
                        WS = wind_speed, 
-                       precip = ud.convert(precipitation_flux, "s-1", "h-1"))] 
-  
+                       precip = ud.convert(precipitation_flux, "s-1", "h-1"))][hour <= 23]
   return(as.data.frame(newmet))
 }

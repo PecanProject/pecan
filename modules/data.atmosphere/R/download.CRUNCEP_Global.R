@@ -38,12 +38,11 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
   
   var = data.frame(DAP.name = c("tair","lwdown","press","swdown","uwind","vwind","qair","rain"),
                    CF.name = c("air_temperature","surface_downwelling_longwave_flux_in_air","air_pressure","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux"),
-                   units = c('Kelvin',"W/m2","Pascal","W/m2","m/s","m/s","g/g","mm/6h")
+                   units = c('Kelvin',"W/m2","Pascal","W/m2","m/s","m/s","g/g","kg/m2/s")
   )
   
   for (i in 1:rows){
     year = ylist[i]    
-    
     ntime = ifelse(year%%4 == 0,1463,1459)
     
     loc.file = file.path(outfolder,paste("CRUNCEP",year,"nc",sep="."))
@@ -67,6 +66,9 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
       nc_close(dap)
       
     }
+    ## change units of precip to kg/m2/s instead of 6 hour accumulated precip
+    dat.list[[8]] = dat.list[[8]]/21600
+    
     
     ## put data in new file
     loc <- nc_create(filename=loc.file, vars=var.list, verbose=verbose)
@@ -74,7 +76,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
       ncvar_put(nc=loc, varid=as.character(var$CF.name[j]), vals=dat.list[[j]])
     }
     nc_close(loc)
-    
+     
     results$file[i] <- loc.file
     results$host[i] <- fqdn()
     results$startdate[i] <- paste0(year,"-01-01 00:00:00")
@@ -86,3 +88,5 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
   
   invisible(results)
 }
+
+
