@@ -26,7 +26,7 @@ library(rjags)
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 # Open and read in settings file for PEcAn run.
-settings <- read.settings("/fs/data2/output//PEcAn_1000001249/pecan.xml")
+settings <- read.settings("~/demo.sda/demo.xml")
 #--------------------------------------------------------------------------------------------------#
 
 #---------------- Load plot and tree ring data. -------------------------------------------------------#
