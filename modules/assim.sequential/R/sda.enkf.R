@@ -13,10 +13,8 @@
 ##' 
 ##' @return NONE
 ##' 
-sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=NULL){
-  
-  if(is.null(processvar)) processvar = TRUE #tag for adding process variance estimation
-  
+sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=FALSE){
+
   ## settings
   model <- settings$model$type
   write <- settings$database$bety$write
@@ -29,7 +27,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=NULL){
   spin.up <- 100 #eventually in settings
   nens = nrow(IC)
   start.year <- strftime(settings$run$start.date,"%Y")
-  end.year   <- strftime(settings$run$end.date,"%Y") + forecast.time.step
+  end.year   <- strftime(settings$run$end.date,"%Y")
 
   
   if(nrow(prior) == 1 | is.null(nrow(prior))){
@@ -114,9 +112,8 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=NULL){
     ## write config
     # do.call(my.write.config,args=list(defaults,list(pft=prior[i,],env=NA),
     #                                  settings, run.id[[i]],inputs = settings$run,IC=IC[i,]))
-    # linkages 15min for every 100 years
     settings$run$start.date <- paste0((as.numeric(start.year) - spin.up),strftime(settings$run$end.date,"/%m/%d"))
-    settings$run$end.date <- paste0((as.numeric(start.year) + forecast.time.step),strftime(settings$run$end.date,"/%m/%d"))
+    settings$run$end.date <- paste0((as.numeric(end.year)),strftime(settings$run$end.date,"/%m/%d"))
     do.call(my.write.config,args=list(settings=settings,run.id = run.id[[i]],restart=FALSE))
     
     ## write a README for the run
@@ -146,7 +143,8 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=NULL){
   ## start model run
   start.model.runs(settings,settings$database$bety$write)
    
-  total.time = as.numeric(end.year):(as.numeric(end.year)+nrow(obs.mean))
+  total.time = as.numeric(start.year):(as.numeric(start.year)+nrow(obs.mean)) #RETHINK
+
   nt = length(total.time)
   #NPPm = rep(NA,nens)
   FORECAST <- ANALYSIS <- list()
@@ -179,8 +177,13 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=NULL){
   ###-------------------------------------------
   for(t in 1:nt){
 
-    ### load output
-    X <- do.call(my.read.restart,args=list(outdir,run.id,time = total.time[t],IC,prior,spin.up))
+    ### load output    
+    X = matrix(NA, nrow = nrow(IC), ncol = ncol(IC))
+    for(i in 1:nens){
+      X[i,] <- do.call(my.read.restart,args=list(outdir=outdir,run.id = run.id[[i]],
+                                                 time = total.time[t],spin.up = spin.up,
+                                                 X.vec = X[i,]))
+    }
     FORECAST[[t]] = X
     
     ### Analysis step
@@ -245,9 +248,14 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=NULL){
  ## update state matrix
     analysis = as.data.frame(rmvnorm(nens,mu.a,Pa,method="svd"))
     #analysis = exp(analysis)
+    
+ #HACK #not a good assumption #
     analysis[is.na(analysis)] <- 0
     analysis <- abs(analysis)
+ #HACK
     names(analysis) = names(X)
+ 
+ 
 #  # EAKF
 #  if(FALSE){
 #    analysis = X
@@ -278,7 +286,12 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=NULL){
     ANALYSIS[[t]] = analysis
     ### Forecast step
     if(t < nt){
-      do.call(my.write.restart,args=list(nens,outdir,run.id,time = total.time[t],settings,prior,analysis))
+      for(i in 1:nens){
+        do.call(my.write.restart,args=list(outdir = outdir, run.id = run.id[[i]],
+                                           time = total.time[t], settings = settings,
+                                           analysis = analysis[i,c(1,2,4,3)],
+                                           RENAME = TRUE))
+      }
       ## start model run
       start.model.runs(settings,settings$database$bety$write)
     }
