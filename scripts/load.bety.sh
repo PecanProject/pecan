@@ -189,7 +189,7 @@ if [ -z "${DUMPURL}" ]; then
   elif [ "${REMOTESITE}" == "1" ]; then
     DUMPURL="http://psql-pecan.bu.edu/sync/dump/bety.tar.gz"
   elif [ "${REMOTESITE}" == "2" ]; then
-    DUMPURL="https://www.dropbox.com/s/wr8sldv080wa9y8/bety.tar.gz?dl=0"
+    DUMPURL="https://modex.bnl.gov/sync/dump/bety.tar.gz"
   elif [ "${REMOTESITE}" == "5" ]; then  
     DUMPURL="http://tree.aos.wisc.edu:6480/sync/dump/bety.tar.gz"
   elif [ "${REMOTESITE}" == "6" ]; then
