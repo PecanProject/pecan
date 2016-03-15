@@ -290,7 +290,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=FALSE){
         do.call(my.write.restart,args=list(outdir = outdir, run.id = run.id[[i]],
                                            time = total.time[t], settings = settings,
                                            analysis = analysis[i,c(1,2,4,3)],
-                                           RENAME = TRUE))
+                                           RENAME = TRUE,PLOT=FALSE))
       }
       ## start model run
       start.model.runs(settings,settings$database$bety$write)
