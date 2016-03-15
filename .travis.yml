@@ -85,7 +85,7 @@ before_script:
   - psql -U postgres -c "CREATE USER bety WITH UNENCRYPTED PASSWORD 'bety'";
   - psql -U postgres -c "CREATE DATABASE bety OWNER bety;"
   - psql -U postgres -c "CREATE EXTENSION postgis;"
-  - scripts/load.bety.sh -c -u
+  - scripts/load.bety.sh -a postgres -c -u
 
 script:
   - scripts/build.sh --dependencies --no-git --check --no-manual --tests --name travis
