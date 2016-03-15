@@ -32,16 +32,12 @@ settings <- read.settings("/fs/data2/output//PEcAn_1000001249/pecan.xml")
 #---------------- Load plot and tree ring data. -------------------------------------------------------#
 status.start("LOAD DATA")
 ## Read tree data
-trees <- read.csv("/home/araiho/Camp2014/ForestPlots/treecores2014.csv")
+trees <- read.csv("/home/carya/Camp2014/ForestPlots/treecores2014.csv")
 
 ## Read tree ring data
-source("/home/araiho/Camp2014/statsR/Read_Tuscon.R")
-rings <- Read_Tuscon("/home/araiho/Camp2014/ForestPlots/Tucson")
+rings <- Read_Tuscon("/home/carya/Camp2014/ForestPlots/Tucson/")
 
 ## Match observations & format for JAGS
-source("/home/araiho/pecan/modules/data.land/R/matchInventoryRings.R")
-source("/home/araiho/pecan/modules/data.land/R/extract.stringCode.R")
-source("/home/araiho/pecan/modules/data.land/R/buildJAGSdata_InventoryRings.R")
 combined <- matchInventoryRings(trees,rings,extractor="Tag",nyears=36,coredOnly=FALSE) #WARNINGS
 data <- buildJAGSdata_InventoryRings(combined) #WARNINGS
 status.end()
@@ -50,14 +46,11 @@ status.end()
 status.start("TREE RING MODEL")
 ## Tree Ring model
 n.iter = 3000
-source("/home/araiho/pecan/modules/data.land/R/InventoryGrowthFusion.R")
 jags.out = InventoryGrowthFusion(data,n.iter=n.iter) #WARNINGS
 save(trees,rings,combined,data,jags.out,
      file=file.path(settings$outdir,"treering.Rdata"))
 
 pdf(file.path(settings$outdir,"treering.Diagnostics.pdf"))
-source("/home/araiho/pecan/modules/data.land/R/InventoryGrowthFusionDiagnostics.R")
-source("/home/araiho/pecan/visualization/R/ciEnvelope.R")
 InventoryGrowthFusionDiagnostics(jags.out,combined)
 dev.off()
 status.end()
@@ -105,7 +98,7 @@ status.end()
 status.start("IC")
 ne = as.numeric(settings$ensemble$size) # do we want this to point somewhere else?
 #IC = sample.IC.SIPNET(ne,state)
-source("/home/araiho/pecan/modules/assim.sequential/R/sample.IC.LINKAGES.R")
+source("/pecan/modules/assim.sequential/R/sample.IC.LINKAGES.R")
 IC = sample.IC.LINKAGES(ne,state)
 status.end()
 
