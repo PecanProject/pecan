@@ -17,8 +17,8 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
 		       irrigation = FALSE){
   require(data.table)
   require(lubridate)
-  start.date <- ceiling_date(as.POSIXct(config$simulationPeriod$dateofplanting), "day")
-  end.date <- floor_date(as.POSIXct(config$simulationPeriod$dateofharvest), "day")
+  start.date <- ceiling_date(as.POSIXct(config$run$start.date), "day")
+  end.date <- floor_date(as.POSIXct(config$run$end.date), "day")
   genus <- config$pft$type$genus
 
   ## Meteorology
@@ -44,10 +44,15 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
   if(dt > 1){
     met <- cfmet.downscale.time(cfmet = met, output.dt = 1)
   } 
-  if(irrigation) met$
-  biocro.met <- cf2biocro(met)
 
-  if(irrigation) biocro.met$precip
+  ## add irrigation
+  if(irrigation) {
+     # 1 mm / hr = 24 mm / d every seven days
+     met[,`:=`(precipitation_flux = ifelse(doy %in% seq(7,364, by = 7), 
+                                           precipitation_flux + 1/3600, precipitation_flux))]
+  }
+
+  biocro.met <- cf2biocro(met)
 
   if(!is.null(soil.nc)){
     soil <- get.soil(lat = lat, lon = lon, soil.nc = soil.nc)
@@ -68,7 +73,8 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
 
     ## day1 = last spring frost
     ## dayn = first fall frost from Miguez et al 2009
-    if(as.numeric(config$location$latitude) > 0) {
+
+    if(lat > 0) {
       day1 <-  as.numeric(as.data.table(WetDat)[doy < 180 & Temp < 0, list(day1 = max(doy))])
       dayn <-  as.numeric(as.data.table(WetDat)[doy > 180 & Temp < 0, list(day1 = min(doy))])
     } else if (as.numeric(config$location$latitude) < 0){
