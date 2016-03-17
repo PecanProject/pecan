@@ -86,15 +86,20 @@ for(year in start_year:end_year) {
   nc <- nc_open(ncfile)
 
   # check lat/lon
+  flat <- try(ncvar_get(nc, "latitude"), silent=TRUE)
+  if (!is.numeric(flat)) flat <- nc$dim[[1]]$vals[1]
   if (is.na(lat)) {
-    lat <- nc$dim[[1]]$vals[1]
-  } else if (lat != nc$dim[[1]]$vals[1]) {
-    logger.warn("Latitude does not match that of file", lat, "!=", nc$dim[[1]]$vals[1])
+    lat <- flat
+  } else if (lat != flat) {
+    logger.warn("Latitude does not match that of file", lat, "!=", flat)
   }
+
+  flon <- try(ncvar_get(nc, "longitude"), silent=TRUE)
+  if (!is.numeric(flon)) flat <- nc$dim[[2]]$vals[1]
   if (is.na(lon)) {
-    lon <- nc$dim[[2]]$vals[1]
-  } else if (lon != nc$dim[[2]]$vals[1]) {
-    logger.warn("Longitude does not match that of file", lon, "!=", nc$dim[[2]]$vals[1])
+    lon <- flon
+  } else if (lon != flon) {
+    logger.warn("Longitude does not match that of file", lon, "!=", flon)
   }
 
   ## determine GMT adjustment
@@ -142,6 +147,7 @@ for(year in start_year:end_year) {
 
 
   ##build time variables (year, month, day of year)
+  skip <- FALSE
   nyr <- floor(length(sec)/86400/365*dt)
   yr <- NULL
   doy <- NULL
@@ -164,16 +170,31 @@ for(year in start_year:end_year) {
       hr <- c(hr,rep(NA,length(dtmp)))
     }
     rng <- length(doy) - length(ytmp):1 + 1
+    if(!all(rng>=0)){
+      skip = TRUE
+      logger.warn(paste(year,"is not a complete year and will not be included"))
+      break
+    }
     asec[rng] <- asec[rng] - asec[rng[1]]
     hr[rng] <- (asec[rng] - (dtmp-1)*86400)/86400*24
   }
-  mo <- day2mo(yr,doy)
+  mo<-day2mo(yr,doy)
   if(length(yr) < length(sec)){
     rng <- (length(yr)+1):length(sec)
+    if(!all(rng>=0)){
+      skip = TRUE
+      logger.warn(paste(year,"is not a complete year and will not be included"))
+      break
+    }
     yr[rng] <- rep(y+1,length(rng))
     doy[rng] <- rep(1:366,each=86400/dt)[1:length(rng)]
     hr[rng] <- rep(seq(0,length=86400/dt,by=dt/86400*24),366)[1:length(rng)]
   }
+  if(skip){
+    print("Skipping to next year")
+    next
+  }
+  
 
   ## calculate potential radiation
   ## in order to estimate diffuse/direct
