@@ -27,7 +27,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values, settings, run.id,
                                   restart=NULL, spinup=NULL){
   #850-869 repeated to fill 1000 years
   if(is.null(restart)) restart = FALSE
-  if(is.null(spinup)) spinup = FALSE
+  if(is.null(spinup)) spinup = TRUE
   
   require(linkages) 
   

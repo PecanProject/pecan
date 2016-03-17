@@ -304,6 +304,8 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=FALSE){
 save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdata"))
 
 #### Post-processing
+sqrt(diag(Pf))
+1/sqrt(diag(q.bar))
 
 ### LOAD CLIMATE ### HACK ### LINKAGE SPECIFIC
 climate_file <- settings$run$inputs$met$path
@@ -338,86 +340,99 @@ if(processvar==TRUE){
       legend("right",c(paste("proc cor =",signif(cov2cor(aqq[nt,,]/bqq[nt])[r,c],digits=3)),
                           paste("proc cov =",signif(aqq[nt,r,c]/bqq[nt],digits=3)),
                        paste("model cor = ",signif(cov2cor(Pf)[r,c],digits=3)),
-                       paste("model cov = ",signif(Pf[r,c],digits=3))),cex=1)
+                       paste("model cov = ",signif(Pf[r,c],digits=3))),cex=.8)
     }
   }
   
 }
 
 ## plot ensemble, filter, and data mean's and CI's
-plot.EnKF.time.series <- function(obs.mean,obs.sd,FORECAST,ANALYSIS,var.name,mean.name,sd.name,t1,t,ylim){
+plot.EnKF.time.series <- function(obs.mean,obs.sd,FORECAST,ANALYSIS,
+                                  var.name,mean.name,sd.name,t1,t,ylim,
+                                  plot.name){
   y.mean = obs.mean[t1:t,]
   y.sd = obs.sd[t1:t,]
   
-  pink = col2rgb("pink")
-  alphapink = rgb(pink[1],pink[2],pink[3],100,max=255)
-  Xbar = laply(FORECAST,function(x){return(mean(x[,var.name],na.rm=TRUE))})
-  Xci  = laply(FORECAST,function(x){return(quantile(x[,var.name],c(0.025,0.975)))})
-  
+  pink = col2rgb("deeppink")
+  alphapink = rgb(pink[1],pink[2],pink[3],180,max=255)
   green = col2rgb("green")
-  alphagreen = rgb(green[1],green[2],green[3],100,max=255)
-  Xa = laply(ANALYSIS,function(x){return(mean(x[,var.name],na.rm=TRUE))})
-  XaCI  = laply(ANALYSIS,function(x){return(quantile(x[,var.name],c(0.025,0.975)))})
+  alphagreen = rgb(green[1],green[2],green[3],75,max=255)
+  blue = col2rgb("blue")
+  alphablue = rgb(blue[1],blue[2],blue[3],75,max=255)
+  
+  Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,var.name],na.rm=TRUE))})
+  Xci  = laply(FORECAST[t1:t],function(x){return(quantile(x[,var.name],c(0.025,0.975)))})
+  
+  Xa = laply(ANALYSIS[((t1:t)-1)],function(x){return(mean(x[,var.name],na.rm=TRUE))})
+  XaCI  = laply(ANALYSIS[(t1:t)-1],function(x){return(quantile(x[,var.name],c(0.025,0.975)))})
   
   plot(total.time[t1:t],y.mean[,mean.name],ylim=ylim,
-       type='n',xlab="total.time",ylab="kg/m^2/yr",main=var.name)
+       type='n',xlab="Year",ylab="kg/m^2",main=plot.name)
   
-  ciEnvelope(total.time[t1:t],y.mean[,mean.name]-y.sd[,sd.name]*1.96,y.mean[,mean.name]+y.sd[,sd.name]*1.96,col="lightblue")
-  lines(total.time[t1:t],y.mean[,mean.name],type='b',col="darkblue")
+  #observation / data
+  ciEnvelope(total.time[t1:t],y.mean[,mean.name]-y.sd[,sd.name]*1.96,y.mean[,mean.name]+y.sd[,sd.name]*1.96,col=alphagreen)
+  lines(total.time[t1:t],y.mean[,mean.name],type='l',col="darkgreen",lwd=2)
   
-  ciEnvelope(total.time[t1:t],Xci[t1:t,1],Xci[t1:t,2],col=alphapink)
-  lines(total.time[t1:t],Xbar[t1:t],col=2,type='b')
+  #forecast
+  ciEnvelope(total.time[t1:t],Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
+  lines(total.time[t1:t],Xbar,col="darkblue",type='l',lwd=2)
   
-  ciEnvelope(total.time[t1:t],XaCI[t1:t,1],XaCI[t1:t,2],col=alphagreen)
-  lines(total.time[t1:t],Xa[t1:t],col="darkgreen",type='b')
+  #analysis
+  ciEnvelope(total.time[(t1:t)],XaCI[,1],XaCI[,2],col=alphapink)
+  lines(total.time[t1:t],Xa,col="black",lty=2,lwd=2)
   
-  #Forecast minus data = error
-  reg <- lm(Xbar[t1:t] - y.mean[t1:t,mean.name]~c(t1:t))
-  plot(t1:t,Xbar[t1:t] - y.mean[t1:t,mean.name],pch=16,cex=1,ylim=c(min(Xci[t1:t,1]-y.mean[,mean.name]),max(Xci[t1:t,2]-y.mean[,mean.name])),xlab="Time", ylab="Error",main="Error = Forecast - Data")
-  ciEnvelope(rev(t1:t),rev(Xci[t1:t,1]-y.mean[t1:t,mean.name]),rev(Xci[t1:t,2]-y.mean[t1:t,mean.name]),col=alphapink)
-  abline(h=0,lty=2,lwd=2)
-  abline(reg)
-  mtext(paste("slope =",signif(summary(reg)$coefficients[2],digits=3),"intercept =",signif(summary(reg)$coefficients[1],digits=3)))
-  d<-density(c(Xbar[t1:t] - y.mean[,mean.name]))
-  lines(d$y+1,d$x)
-  
-  #forecast minus analysis = update
-  reg1 <- lm(Xbar[t1:t] - Xa[t1:t] ~ c(t1:t))
-  plot(t1:t,Xbar[t1:t] - Xa[t1:t],pch=16,cex=1,ylim=c(min(XaCI[t1:t,2]-Xbar[t1:t]),max(Xbar[t1:t]-XaCI[t1:t,1])),
-       xlab="Time", ylab="Update",main="Update = Forecast - Analysis")
-  ciEnvelope(rev(t1:t),rev(Xbar[t1:t] - XaCI[t1:t,1]),rev(Xbar[t1:t] - XaCI[t1:t,2]),col=alphagreen)
-  abline(h=0,lty=2,lwd=2)
-  abline(reg1)
-  mtext(paste("slope =",signif(summary(reg1)$coefficients[2],digits=3),"intercept =",signif(summary(reg1)$coefficients[1],digits=3)))
-  d<-density(c(Xbar[t1:t] - Xa[t1:t]))
-  lines(d$y+1,d$x)
-  
-  #plot(temp.mat[,1],Xbar)
-  par(mfrow=c(2,2))
-  plot(rowMeans(temp.mat[t1:t,]),Xbar[t1:t] - y.mean[t1:t,mean.name],xlim=c(min(rowMeans(temp.mat[t1:t,]))-2,
-                                      max(rowMeans(temp.mat[t1:t,]))+2),
-       ylim = c(min(Xbar[t1:t] - y.mean[,mean.name]),max(Xbar[t1:t] - y.mean[,mean.name])),pch=16,cex=1,xlab="Average Monthly Temp",
-       ylab="Error",main = paste(mean.name))
-  plot(rowSums(precip.mat[t1:t,]),Xbar[t1:t] - y.mean[t1:t,mean.name],xlim=c(min(rowSums(precip.mat[t1:t,]))-10,
-                                       max(rowSums(precip.mat[t1:t,]))+10),
-       ylim = c(min(Xbar[t1:t] - y.mean[,mean.name]),max(Xbar[t1:t] - y.mean[,mean.name])),pch=16,cex=1,xlab="Total Yearly Precip",
-       ylab="Error",main = paste(mean.name))
-  
-
-  plot(rowMeans(temp.mat[t1:t,]),Xbar[t1:t] - Xa[t1:t],pch=16,
-       cex=1,xlab="Average Monthly Temp",
-       ylab="Update",main = paste(mean.name))
-  plot(rowSums(precip.mat[t1:t,]),Xbar[t1:t] - Xa[t1:t],pch=16,
-       cex=1, xlab="Total Yearly Precip",
-       ylab="Update",main = paste(mean.name))
+#   #Forecast minus data = error
+#   reg <- lm(Xbar[t1:t] - y.mean[t1:t,mean.name]~c(t1:t))
+#   plot(t1:t,Xbar[t1:t] - y.mean[t1:t,mean.name],pch=16,cex=1,
+#        ylim=c(min(Xci[t1:t,1]-y.mean[,mean.name]),
+#               max(Xci[t1:t,2]-y.mean[,mean.name])),
+#        xlab="Time", ylab="Error",main="Error = Forecast - Data")
+#   ciEnvelope(rev(t1:t),rev(Xci[t1:t,1]-y.mean[t1:t,mean.name]),rev(Xci[t1:t,2]-y.mean[t1:t,mean.name]),col=alphapink)
+#   abline(h=0,lty=2,lwd=2)
+#   abline(reg)
+#   mtext(paste("slope =",signif(summary(reg)$coefficients[2],digits=3),"intercept =",signif(summary(reg)$coefficients[1],digits=3)))
+#   d<-density(c(Xbar[t1:t] - y.mean[,mean.name]))
+#   lines(d$y+1,d$x)
+#   
+#   #forecast minus analysis = update
+#   reg1 <- lm(Xbar[t1:t] - Xa[t1:t] ~ c(t1:t))
+#   plot(t1:t,Xbar[t1:t] - Xa[t1:t],pch=16,cex=1,ylim=c(min(XaCI[t1:t,2]-Xbar[t1:t]),max(Xbar[t1:t]-XaCI[t1:t,1])),
+#        xlab="Time", ylab="Update",main="Update = Forecast - Analysis")
+#   ciEnvelope(rev(t1:t),rev(Xbar[t1:t] - XaCI[t1:t,1]),rev(Xbar[t1:t] - XaCI[t1:t,2]),col=alphagreen)
+#   abline(h=0,lty=2,lwd=2)
+#   abline(reg1)
+#   mtext(paste("slope =",signif(summary(reg1)$coefficients[2],digits=3),"intercept =",signif(summary(reg1)$coefficients[1],digits=3)))
+#   d<-density(c(Xbar[t1:t] - Xa[t1:t]))
+#   lines(d$y+1,d$x)
+#   
+#   #plot(temp.mat[,1],Xbar)
+#   #par(mfrow=c(2,2))
+#   plot(rowMeans(temp.mat[t1:t,]),Xbar[t1:t] - y.mean[t1:t,mean.name],xlim=c(min(rowMeans(temp.mat[t1:t,]))-2,
+#                                       max(rowMeans(temp.mat[t1:t,]))+2),
+#        ylim = c(min(Xbar[t1:t] - y.mean[,mean.name]),max(Xbar[t1:t] - y.mean[,mean.name])),pch=16,cex=1,xlab="Average Monthly Temp",
+#        ylab="Error",main = paste(mean.name))
+#   plot(rowSums(precip.mat[t1:t,]),Xbar[t1:t] - y.mean[t1:t,mean.name],xlim=c(min(rowSums(precip.mat[t1:t,]))-10,
+#                                        max(rowSums(precip.mat[t1:t,]))+10),
+#        ylim = c(min(Xbar[t1:t] - y.mean[,mean.name]),max(Xbar[t1:t] - y.mean[,mean.name])),pch=16,cex=1,xlab="Total Yearly Precip",
+#        ylab="Error",main = paste(mean.name))
+#   
+# 
+#   plot(rowMeans(temp.mat[t1:t,]),Xbar[t1:t] - Xa[t1:t],pch=16,
+#        cex=1,xlab="Average Monthly Temp",
+#        ylab="Update",main = paste(mean.name))
+#   plot(rowSums(precip.mat[t1:t,]),Xbar[t1:t] - Xa[t1:t],pch=16,
+#        cex=1, xlab="Total Yearly Precip",
+#        ylab="Update",main = paste(mean.name))
   
   #legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
 }
 
 par(mfrow=c(1,1))
 t1=2
-t = 36
-plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,"biomass_tsca","mean_tsca","sd_tsca",t1=t1,t=t,ylim=c(6,18))
+t = 35
+plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,
+                      "biomass_tsca","mean_tsca","sd_tsca",
+                      t1=t1,t=t,ylim=c(6,18),plot.name="Hemlock Biomass")
 plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,var.name="biomass_acsa3",
         mean.name="mean_acsa3",sd.name="sd_acsa3",t1=t1,t=t,ylim=c(0,1))
 plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,"biomass_beal2","mean_beal2","sd_beal2",t1=t1,t=t,ylim=c(0,4))
