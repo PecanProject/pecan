@@ -223,6 +223,11 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults=settings$c
   ed2in.text <- gsub('@END_YEAR@', format(enddate, "%Y"), ed2in.text)
   
   ##----------------------------------------------------------------------
+  if (is.null(settings$run$host$scratchdir)) {
+    modeloutdir <- file.path(settings$run$host$outdir, run.id)
+  } else {
+    modeloutdir <- file.path(settings$run$host$scratchdir, run.id)
+  }
   ed2in.text <- gsub('@OUTDIR@', modeloutdir, ed2in.text)
   ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
   ed2in.text <- gsub('@CONFIGFILE@', file.path(settings$run$host$rundir, run.id, "config.xml"), ed2in.text)
