@@ -2,9 +2,13 @@
 \alias{write.config.MAESPA}
 \title{Write MAESPA configuration files}
 \usage{
-write.config.MAESPA(settings, run.id)
+write.config.MAESPA(defaults, trait.values, settings, run.id)
 }
 \arguments{
+  \item{defaults}{list of defaults to process}
+
+  \item{trait.samples}{vector of samples for a given trait}
+
   \item{settings}{list of settings from pecan settings
   file}
 
