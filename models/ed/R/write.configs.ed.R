@@ -367,6 +367,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults=settings$const
         pft <- group
       }
       # TODO: Not sure if this is how this is supposed to work, but idea is to check for pft.number in defaults (settings$constants) first
+      names(defaults) <- sapply(defaults, function(x) x$name) 
       pft.number <- defaults[[pft]]$num
       if(is.null(pft.number)){
           pft.number <- pftmapping$ED[which(pftmapping == pft)]
@@ -387,7 +388,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults=settings$const
       vals <- modifyList(vals, converted.trait.values)
 
       ## Convert settings constants to ED units
-      converted.defaults <- convert.samples.ED(defaults[[pft]])
+      converted.defaults <- convert.samples.ED(defaults[[pft]]$constants)
 
       ## Selectively replace defaults and trait values with constants from settings
       if(!is.null(defaults)) vals <- modifyList(vals, converted.defaults)
