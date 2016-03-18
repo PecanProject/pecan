@@ -24,7 +24,8 @@ Depends:
     PEcAn.data.land,
     PEcAn.data.remote,
     PEcAn.assim.batch,
-    PEcAn.priors
+    PEcAn.priors,
+    PEcAn.benchmark
 Suggests:
     PEcAn.ed,
     PEcAn.sipnet,

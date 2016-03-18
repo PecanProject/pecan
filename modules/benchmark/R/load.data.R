@@ -12,7 +12,40 @@
 ##' 
 ##' Water fluxes: Evaporation (Evap), Transpiration(TVeg),
 ##' surface runoff (Qs), subsurface runoff (Qsb), and rainfall (Rainf).
+##' @name load.data
+##' @title load.data
+##' @export
+##' @param data.path
+##' @param format
+##' @param start_year
+##' @param end_year
+##' @param site
 ##' 
+##' @author Betsy Cowdery
+
+load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA){
+  
+  require(PEcAn.benchmark)
+  require(lubridate)
+  
+  fcn1 <- paste0("load.",format$file_name)
+  fcn2 <- paste0("load.",format$mimetype)
+  if(exists(fcn1)){
+    fcn <- match.fun(fcn1)
+  }else if(exists(fcn2)){
+    fcn <- match.fun(fcn2)
+  }else{
+    logger.warn("no load data for current mimetype - converting using browndog")
+    # Browndog
+    # convert the observations to a mime pecan can use
+    # ex: exel -> csv
+  }
+  
+  result <- fcn(data.path, format, start_year, end_year, site)
+  
+return(result) 
+}
+
 ##' Future things to think about
 ##'   - error estimates
 ##'   - QAQC
@@ -22,27 +55,4 @@
 ##'   - Is there a generic structure to ovbs?
 
 
-load.data <- function(input_path, format_table, vars_names_units, start_year = NA, end_year=NA, site=NA){
-    
-  require(lubridate)
-  
-  fcn1 <- paste0("load.",format_table$name)
-  fcn2 <- paste0("load.",format_table$mimetype)
-  if(exists(fcn1)){
-    fcn <- fcn1
-  }else if(exists(fcn2)){
-    fcn <- fcn2
-  }else{
-    logger.warn("no load data for current mimetype - converting using browndog")
-    # Browndog
-    # convert the observations to a mime pecan can use
-    # ex: exel -> csv
-  }
-  
-  args <- list(input_path,vars_names_units, start_year, end_year, site))
-  
-  results <- apply(fcn,args)
-
-  return(result) 
-}
 

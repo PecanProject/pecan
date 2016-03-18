@@ -13,6 +13,9 @@ query.format.vars <- function(input.id,con){
   # get input info
   f <- db.query(paste("SELECT * from formats as f join inputs as i on f.id = i.format_id where i.id = ", input.id),con)
   
+  mimetype <- db.query(paste("SELECT * from  mimetypes where id = ", f$mimetype_id),con)[["type_string"]]
+  f$mimetype <- tail(unlist(strsplit(mimetype, "/")),1)
+  
   # get variable names and units of input data
   fv <- db.query(paste("SELECT variable_id,name,unit from formats_variables where format_id = ", f$id),con)
   colnames(fv) <- c("variable_id", "orig_name", "orig_units")
@@ -48,7 +51,9 @@ query.format.vars <- function(input.id,con){
   skip <- ifelse(is.na(as.numeric(f$skip)),0,as.numeric(f$skip))
   
   # merge tables 
-  format <- list(orig_name = df$orig_name,
+  format <- list(file_name = f$name,
+                 mimetype = f$mimetype,
+                 orig_name = df$orig_name,
                  orig_units = df$orig_units,
                  bety_name = df$bety_name,
                  CF_name = df$CF_name, 

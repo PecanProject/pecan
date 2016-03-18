@@ -253,7 +253,7 @@ write.config.ED2 <- function(defaults, trait.values, settings, run.id){
   
   ed2in.text <- gsub('@SITE_LAT@', settings$run$site$lat, ed2in.text)
   ed2in.text <- gsub('@SITE_LON@', settings$run$site$lon, ed2in.text)
-  ed2in.text <- gsub('@SITE_MET@', settings$run$inputs$me$path, ed2in.text)
+  ed2in.text <- gsub('@SITE_MET@', settings$run$inputs$met$path, ed2in.text)
   ed2in.text <- gsub('@MET_START@', metstart, ed2in.text)
   ed2in.text <- gsub('@MET_END@', metend, ed2in.text)
   

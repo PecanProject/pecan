@@ -584,7 +584,7 @@ check.settings <- function(settings) {
   # check if we need to use qsub
   if ("qsub" %in% names(settings$run$host)) {
     if (is.null(settings$run$host$qsub)) {
-      settings$run$host$qsub <- "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash"
+      settings$run$host$qsub <- "qsub -l h_rt=24:00:00 -pe omp 8 -q 'geo*' -V -v OMP_NUM_THREADS=8 -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash"
       logger.info("qsub not specified using default value :", settings$run$host$qsub)
     }
     if (is.null(settings$run$host$qsub.jobid)) {

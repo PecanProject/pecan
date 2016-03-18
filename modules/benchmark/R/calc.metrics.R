@@ -1,17 +1,29 @@
-calc.metrics <- function(input_path, format_table, vars_names_units, model_run, metrics, start_year=NA, end_year=NA, site=NA){
+##' @name calc.metrics
+##' @title calc.metrics
+##' @export
+##' @param data.path
+##' @param format
+##' @param model_run
+##' @param metrics
+##' @param start_year
+##' @param end_year
+##' 
+##' @author Betsy Cowdery
 
-  # Right now parameters are being read in as R objects - this won't work remotely but 
-  # I haven't decided exactly how to pass the parameters over
+calc.metrics <- function(data.path, format, model_run, metrics, start_year=NA, end_year=NA, site=NA){
+
+  # Right now many argument are being read in as R list objects
+  # This won't work remotely but at the moment I don't have a good solution
   
   # create results table
   results <- metrics
   results$score <- rep(NA, dim(metrics)[1])
   
   model <- read.output(model_run$id, model_run$outdir, start_year=NA, end_year=NA, var=vars_names_units$bety_names) #which names????
-  # model output list object with values, variable name and units 
+  # model output list object with variable values (including time) variable name and units
   
-  obvs <- load.data(input_path, format_table, vars_names_units, start_year = NA, end_year=NA, site=NA)
-  # observation list object with values, variable name and units 
+  obvs <- load.data(data.path, format, start_year = NA, end_year=NA, site=NA)
+  # observation list object with variable values (including time), variable name and units
   
   dat <- align.data(model, obvs)
   
