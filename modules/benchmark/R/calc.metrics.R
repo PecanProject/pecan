@@ -19,7 +19,7 @@ calc.metrics <- function(data.path, format, model_run, metrics, start_year=NA, e
   results <- metrics
   results$score <- rep(NA, dim(metrics)[1])
   
-  model <- read.output(model_run$id, model_run$outdir, start_year=NA, end_year=NA, var=vars_names_units$bety_names) #which names????
+  model <- read.output(model_run$id, model_run$outdir, start.year=NA, end.year=NA, var=format$bety_name) #which names????
   # model output list object with variable values (including time) variable name and units
   
   obvs <- load.data(data.path, format, start_year = NA, end_year=NA, site=NA)
