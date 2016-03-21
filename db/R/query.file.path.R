@@ -11,7 +11,7 @@ query.file.path <- function(input.id, host_name, con){
   machine = db.query(paste0("SELECT * from machines where hostname = '",machine.host,"'"),con)
   dbfile = db.query(paste("SELECT file_name,file_path from dbfiles where container_id =",input.id," and container_type = 'Input' and machine_id =",machine$id),con)
   path <- file.path(dbfile$file_path,dbfile$file_name)
-  cmd <- paste("file.exists( '",path,"')")
+  cmd <- paste0("file.exists('",path,"')")
   remote.execute.R(cmd,machine.host,verbose=TRUE)
   #   Check - to be determined later   
   #   if(file.exists(path)){
