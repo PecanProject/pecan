@@ -350,6 +350,14 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults=settings$const
 
   ## Get ED2 specific model settings and put into output config xml file
   xml <- listToXml(settings$model$config.header, 'config')
+
+  ## Process the names in defaults. Runs only if names(defaults) are null or have at least one instance of name attribute "pft". Otherwise, AS assumes that names in defaults are already set to the corresponding PFT names.
+  currentnames <- names(defaults)
+  if(is.null(currentnames) | "pft" %in% currentnames){
+    newnames <- sapply(defaults, "[[", "name")
+    newnames.notnull <- which(!sapply(newnames, is.null))
+    names(defaults)[newnames.notnull] <- newnames[newnames.notnull]
+  }
   
   for(i in seq_along(trait.values)){
     group <- names(trait.values)[i]
@@ -367,7 +375,6 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults=settings$const
         pft <- group
       }
       # TODO: Not sure if this is how this is supposed to work, but idea is to check for pft.number in defaults (settings$constants) first
-      names(defaults) <- sapply(defaults, function(x) x$name) 
       pft.number <- defaults[[pft]]$num
       if(is.null(pft.number)){
           pft.number <- pftmapping$ED[which(pftmapping == pft)]
@@ -391,7 +398,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults=settings$const
       converted.defaults <- convert.samples.ED(defaults[[pft]]$constants)
 
       ## Selectively replace defaults and trait values with constants from settings
-      if(!is.null(defaults)) vals <- modifyList(vals, converted.defaults)
+      if(!is.null(converted.defaults)) vals <- modifyList(vals, converted.defaults)
 
       pft.xml <- listToXml(vals, 'pft')
       xml <- append.xmlNode(xml, pft.xml)

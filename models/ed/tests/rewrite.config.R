@@ -1,12 +1,14 @@
-#install.packages("~/pecan/models/ed", repos=NULL)
-#detach('package:PEcAn.ED2', unload=TRUE)
+#try(install.packages("~/Projects/pecan/models/ed/", repos=NULL))
+#try(detach('package:PEcAn.ED2', unload=TRUE))
 library(PEcAn.ED2)
 
 # Define settings list
 settings <- list()
 settings$model$revision <- "git"
 settings$model$config.header <- ''
-settings$constants <- NULL
+
+settings$constants <- list(pft = list(name = "Optics.Temperate_Early_Hardwood",
+                                      constants = list(SLA = 999)))
 
 # Set test trait values
 trait.values <- list(pft = list(name = "Optics.Temperate_Early_Hardwood",
