@@ -8,18 +8,18 @@
 #-------------------------------------------------------------------------------
 
 ##-------------------------------------------------------------------------------------------------#
-##' Writes a MODEL config file.
+##' Writes a LPJ-GUESS config file.
 ##'
 ##' Requires a pft xml object, a list of trait values for a single model run,
 ##' and the name of the file to create
 ##'
 ##' @name write.config.LPJGUESS
-##' @title Write MODEL configuration files
+##' @title Write LPJ-GUESS configuration files
 ##' @param defaults list of defaults to process
 ##' @param trait.samples vector of samples for a given trait
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
-##' @return configuration file for MODEL for given run
+##' @return configuration file for LPJ-GUESS for given run
 ##' @export
 ##' @author Istem Fer, Tony Gardella
 ##-------------------------------------------------------------------------------------------------#

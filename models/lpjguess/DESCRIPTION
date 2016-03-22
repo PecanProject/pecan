@@ -1,6 +1,6 @@
 Package: PEcAn.LPJGUESS
 Type: Package
-Title: PEcAn package for integration of the ModelName model
+Title: PEcAn package for integration of the LPJ-GUESS model
 Version: 1.4.5
 Date: 2016-03-03
 Author: Istem Fer, Tony Gardella
@@ -10,7 +10,7 @@ Depends:
     PEcAn.utils
 Suggests:
     testthat
-SystemRequirements: ModelName
+SystemRequirements: LPJ-GUESS model
 OS_type: unix
 License: FreeBSD + file LICENSE
 Copyright: Authors
