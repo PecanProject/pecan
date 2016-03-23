@@ -4,16 +4,17 @@
 \alias{write.config.ED2}
 \title{Write ED configuration files}
 \usage{
-write.config.ED2(defaults, trait.values, settings, run.id)
+write.config.ED2(trait.values, settings, run.id,
+  defaults = settings$constants)
 }
 \arguments{
-\item{defaults}{list of defaults to process}
+\item{trait.values}{Named list of trait values, with names corresponding to PFT}
 
 \item{settings}{list of settings from pecan settings file}
 
 \item{run.id}{id of run}
 
-\item{trait.samples}{vector of samples for a given trait}
+\item{defaults}{list of defaults to process. Default=settings$constants}
 }
 \value{
 configuration file and ED2IN namelist for given run
@@ -26,6 +27,6 @@ Requires a pft xml object, a list of trait values for a single model run,
 and the name of the file to create
 }
 \author{
-David LeBauer, Shawn Serbin, Carl Davidson
+David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
 }
 
