@@ -1,3 +1,9 @@
+#--------------------------------------------------------------------------------------------------#
+##' 
+##' @title update.jump
+##' @export
+##'
+
 `update.jump` <-
 function(jmp,chain){
   ##check for valid typing
@@ -18,6 +24,11 @@ function(jmp,chain){
   }
   jmp
 }
+
+##  multivariate version
+##' @title update.mvjump 
+##' @export
+##' 
 
 `update.mvjump` <-
     function(jmp,chain){

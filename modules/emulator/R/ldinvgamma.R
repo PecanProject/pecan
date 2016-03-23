@@ -1,3 +1,9 @@
+#--------------------------------------------------------------------------------------------------#
+##' 
+##' @title ldinvgamma 
+##' @export
+##'
+
 `ldinvgamma` <-
 function (x, shape, scale = 1)
   #log dinvgamma, based on MCMCpack 

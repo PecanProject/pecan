@@ -1,3 +1,9 @@
+#--------------------------------------------------------------------------------------------------#
+##' 
+##' @title minimize.GP 
+##' @export
+##' 
+
 `minimize.GP` <-
 function(gp,rng,x0,splinefuns = NULL){
   
@@ -48,6 +54,10 @@ function(gp,rng,x0,splinefuns = NULL){
 
 
 #calculates the probability of a set of parameter values, given by xnew
+##' @title gpeval 
+##' @export
+##' 
+
 gpeval <- function(xnew,k,mu,tau,psi,x,rng,splinefcns){
     
   ## second calc value

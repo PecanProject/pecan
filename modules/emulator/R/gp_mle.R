@@ -1,3 +1,9 @@
+#--------------------------------------------------------------------------------------------------#
+##' 
+##' @title gp_mle 
+##' @export
+##' 
+
 `gp_mle` <-
 function(theta,d,nugget,myY,maxval=Inf){
 
@@ -21,7 +27,13 @@ function(theta,d,nugget,myY,maxval=Inf){
   
 }
 
+
 ## zero mean version
+##' @title gp_mle2 
+##' @export
+##' 
+
+
 `gp_mle2` <- function(theta,d,nugget,myY,maxval=Inf){
 
   ##get parms

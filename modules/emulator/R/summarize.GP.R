@@ -1,3 +1,9 @@
+#--------------------------------------------------------------------------------------------------#
+##' 
+##' @title summarize.GP 
+##' @export
+##'
+
 `summarize.GP` <-
 function(gp,pdf_file=NULL,txt_file=NULL){
   require("coda")

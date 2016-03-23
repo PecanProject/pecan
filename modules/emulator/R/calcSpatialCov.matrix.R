@@ -1,3 +1,7 @@
+#--------------------------------------------------------------------------------------------------#
+##' @title calcSpatialCov
+##' @export
+
 `calcSpatialCov.matrix` <-
 function(d,psi,tau){
   ##currently assumes an exponential spatial dependency

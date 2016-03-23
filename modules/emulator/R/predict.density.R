@@ -1,3 +1,9 @@
+#--------------------------------------------------------------------------------------------------#
+##' 
+##' @title predict.density 
+##' @export
+##'
+
 `predict.density` <-
 function(den,xnew){
 ##function does simple interpolation of a density object to new points
