@@ -10,7 +10,9 @@
 "leaf_turnover_rate";"Leaf Turnover Rate";"yr-1";"leaf_turnover_rate"
 "turn_over_time";"Litter Turnover Time";"yr-1";"turn_over_time"
 "leaf_width";"Leaf Width";"mm";"leaf_width"
-"mort2";"Mortality Rate";"yr-1";"mort2"
+"mort1";"Maximum density-dependent Mortality Rate";"yr-1";"mort1"
+"mort2";"Density Dependent Mortality Coefficient";"unitless";"mort2"
+"mort3";"Density-independent Mortality Rate";"yr-1";"mort3"
 "nonlocal_dispersal";"Seed Dispersal";"fraction";"nonlocal_dispersal"
 "fineroot2leaf";"Fine Root Allocation";"ratio";"q"
 "quantum_efficiency";"Quantum Efficiency";"fraction";"quantum_efficiency"
@@ -67,3 +69,26 @@
 "wood_trans_vis";"wood VIS transmittance";"0-1";"wood_trans_vis"
 "wood_trans_nir";"wood NIR transmittance";"0-1";"wood_trans_nir"
 "orient_factor";"Leaf orientation";"0-1";"orient_factor"
+"num";"ED2 PFT Number";"Constant";"num"
+"HTMAX";"Max Height";"meters";
+"DBHMAX";"Max DBH";"meters";
+"AGEMX";"Max Age";"years";
+"G";"G";"cm";
+"D3";"D3";"percent";
+"FROST";"Min January Temp";"Celsius";
+"TL";"TL";"index";
+"CM1";"CM1";"";""
+"CM2";"CM2";"";""
+"CM3";"CM3";"";""
+"CM4";"CM4";"";""
+"CM5";"CM5";"";""
+"FWT";"FWT";"100g/m^2";
+"SLTA";"SLTA";"";""
+"SLTB";"SLTB";"";""
+"MPLANT";"MPLANT";"seed/plant/year";""
+"SPRTMN";"SPRTMN";"cm";""
+"SPRTND";"SPRTND";"sprouts/year";""
+"SPRTMX";"SPRTMX";"cm";""
+"DMAX";"DMAX";"degree days";""
+"DMIN";"DMIN";"degree days";""
+"leaf_longevity";"leaf longevity";"year";""

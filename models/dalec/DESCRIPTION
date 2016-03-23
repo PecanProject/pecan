@@ -1,8 +1,8 @@
 Package: PEcAn.DALEC
 Type: Package
 Title: PEcAn package for integration of the DALEC model
-Version: 1.4.4
-Date: 2015-11-10
+Version: 1.4.5
+Date: 2016-03-03
 Author: Mike Dietze, Tristain Quaife
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: This module provides functions to link DALEC to PEcAn.
@@ -14,3 +14,4 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
+RoxygenNote: 5.0.1

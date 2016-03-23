@@ -1,8 +1,8 @@
 Package: PEcAnRTM
 Type: Package
 Title: PEcAn functions used for radiative transfer modeling
-Version: 1.4.4
-Date: 2015-11-10
+Version: 1.4.5
+Date: 2016-03-03
 Author: Alexey Shiklomanov, Shawn Serbin, Mike Dietze
 Maintainer: Alexey Shiklomanov <ashiklom@bu.edu>
 Description: This package contains functions for performing forward runs and
@@ -10,6 +10,8 @@ Description: This package contains functions for performing forward runs and
     using maximum likelihood, or more complex hierarchical Bayesian methods.
     Underlying numerical analyses are optimized for speed using Fortran code.
 Depends:
+    PEcAn.utils,
+    PEcAn.ED2,
     data.table,
     minpack.lm,
     MASS,

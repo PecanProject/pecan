@@ -17,6 +17,7 @@ if ($authentication) {
     exit;
   }
 }
+close_database();
 
 ?>
 <!DOCTYPE html>
@@ -38,21 +39,90 @@ if ($authentication) {
 
   function filter() {
     $(".unknown").toggle($("#unknown").is(':checked'));
+    var query = "";
+    if ($("#unknown").is(':checked')) {
+      query += (query == "") ? "?" : "&";
+      query += "show_unknown=on"
+    }
+    if ($("#onlyme").is(':checked')) {
+      query += (query == "") ? "?" : "&";
+      query += "onlyme=on"
+    }
+    if ($("#search").val() != "") {
+      query += (query == "") ? "?" : "&";
+      query += "search=" + $("#search").val()
+    }
+
+    // remote all elements
+    $(".history").remove();
+    $(".table").append('<div class="row history">Please wait loading history.</div>');
+    $("#workflows").text("");
+
+    // disable some things
+    $("#unknown").attr("disabled", true);
+    $("#onlyme").attr("disabled", true);
+    $("#search").attr("disabled", true);
+
+    // add new elements
+    jQuery.get("historylist.php" + query, {}, function(data) {
+      $(".history").remove();
+      count=0;
+      jQuery(data).find("workflow").each(function() {
+        count++;
+        var workflow = jQuery(this);
+        var style = "";
+        if (workflow.attr("status") == "DONE") {
+          style="background: #BBFFBB; color: black;";
+        } else if (workflow.attr("status") == "ERROR") {
+          style="background: #FFBBBB; color: black;";
+        } else if (workflow.attr("status") == "RUNNING") {
+          style="background: #BBFFFF; color: black;";
+        } else {
+          style="background: #FFFFFF; color: black;";
+        }
+
+        row = '<div class="row history" style="' + style + '">';
+        if (workflow.attr("url") != "") {
+          row += '  <div class="cell"><a href="' + workflow.attr("url") + '">' + workflow.attr("id") + '</a></div>';
+        } else {
+          row += '  <div class="cell">' + workflow.attr("id") + '</div>';
+        }
+        row += '  <div class="cell">' + workflow.attr("sitename") + '</div>';
+        row += '  <div class="cell">' + workflow.attr("modelname") + '</div>';
+        row += '  <div class="cell">' + workflow.attr("name") + '</div>';
+        row += '  <div class="cell">' + workflow.attr("start_date") + '</div>';
+        row += '  <div class="cell">' + workflow.attr("end_date") + '</div>';
+        row += '  <div class="cell">' + workflow.attr("started_at") + '</div>';
+        row += '  <div class="cell">' + workflow.attr("finished_at") + '</div>';
+<?php if (check_login() && (get_page_acccess_level() <= $min_delete_level)) { ?>
+        row += '  <div class="cell"><a href="delete.php?workflowid=' + workflow.attr("id") + '">DELETE</a></div>';
+<?php } ?>
+        row += '</div>';
+        $(".table").append(row);
+      });
+      $("#workflows").text(count + " workflows");
+
+      // enable some things
+      $("#unknown").attr("disabled", false);
+      $("#onlyme").attr("disabled", false);
+      $("#search").attr("disabled", false);
+    });
   }
 
   $(document).ready(function () {
     filter();
+
+    $("#search").keyup(function(event) {
+      if (event.which == 13) {
+        filter();
+      }
+    });
   });
 </script>
 </head>
 <body>
   <div id="wrap">
     <div id="stylized">
-      <form id="formnext" method="POST" action="01-introduction.php" />
-<!--
-      <h1>Filters</h1>
-      <p>Filter executions showing on the right.</p>
--->
       <h1>Legend</h1>
       <input type="text" readonly style="background: #BBFFBB; color: black;" value="Successful runs"/>
       <input type="text" readonly style="background: #FFBBBB; color: black;" value="Runs with errors"/>
@@ -61,95 +131,37 @@ if ($authentication) {
       <p></p>
       <label>Show runs in unknown state?</label>
       <input id="unknown" type="checkbox" onclick="filter();"/>
-<?php if (!$authentication || (get_page_acccess_level() <= $min_run_level)) { ?>
+      <label>Show only my runs?</label>
+      <input id="onlyme" type="checkbox" onclick="filter();"/>
+      <label>Filter history by text</label>
+    	<input id="search" type="text"/>
       <p></p>
-      <input id="prev" type="button" value="Start Over" onclick="nextStep();"/>
+<?php if (!$authentication || (get_page_acccess_level() <= $min_run_level)) { ?>
+      <form id="formprev" method="POST" action="01-introduction.php"> 
+      <input id="prev" type="button" value="Start Over" onclick="prevStep();"/> 
+      </form>
 <?php } ?>
       <div class="spacer"></div>
-<?php
-  if (check_login()) {
-    echo "<p></p>";
-    echo "Logged in as " . get_user_name();
-    echo "<a href=\"index.php?logout\" style=\"float: right;\">logout</a>";
-  }
-?>    
+<?php whoami(); ?>    
     </div>
     <div id="output">
-      <h2>Execution Status</h2>
-      <div id="table">
-        <div id="row">
-          <div id="header">ID</div>
-          <div id="header">Site Name</div>
-          <div id="header">Model Name</div>
-          <div id="header">Model Type</div>
-          <div id="header">Start Date</div>
-          <div id="header">End Date</div>
-          <div id="header">Started</div>
-          <div id="header">Finished</div>
+      <h2>Execution Status <span id="workflows"></span></h2>
+      <div class="table">
+        <div class="row">
+          <div class="header">ID</div>
+          <div class="header">Site Name</div>
+          <div class="header">Model Name</div>
+          <div class="header">Model Type</div>
+          <div class="header">Start Date</div>
+          <div class="header">End Date</div>
+          <div class="header">Started</div>
+          <div class="header">Finished</div>
 <?php if (check_login() && (get_page_acccess_level() <= $min_delete_level)) { ?>
-          <div id="header">Delete</div>
+          <div class="header">Delete</div>
 <?php } ?>
         </div>
-<?php
-// get run information
-$query = "SELECT workflows.id, workflows.folder, workflows.start_date, workflows.end_date, workflows.started_at, workflows.finished_at, " .
-         "CONCAT(coalesce(sites.sitename, ''), ', ', coalesce(sites.city, ''), ', ', coalesce(sites.state, ''), ', ', coalesce(sites.country, '')) AS sitename, " .
-         "CONCAT(coalesce(models.model_name, ''), ' ', coalesce(models.revision, '')) AS modelname, modeltypes.name " .
-         "FROM workflows " .
-         "LEFT OUTER JOIN sites on workflows.site_id=sites.id " .
-         "LEFT OUTER JOIN models on workflows.model_id=models.id " .
-         "LEFT OUTER JOIN modeltypes on models.modeltype_id=modeltypes.id " .
-         "ORDER BY workflows.id DESC";
-$result = $pdo->query($query);
-if (!$result) {
-  die('Invalid query: ' . error_database());
-}
-while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
-  // check result
-  $style="";
-  $url="05-running.php";
-  if (file_exists($row['folder'] . DIRECTORY_SEPARATOR . "STATUS")) {
-    $status=file($row['folder'] . DIRECTORY_SEPARATOR . "STATUS");
-    foreach ($status as $line) {
-      $data = explode("\t", $line);
-      if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
-        $style="style='background: #FFBBBB; color: black;'";
-      }
-    }
-  } else {
-    $style="style='background: #FFFFFF; color: black; display: none;' class='unknown'";
-  }
-  if (($style == "") && ($row['finished_at'] == "")) {
-    $style="style='background: #BBFFFF; color: black'";
-  }
-  if ($style == "") {
-    $style="style='background: #BBFFBB; color: black'";
-    $url="08-finished.php";
-  }
-?>        
-        <div id="row" <?php echo $style; ?>>
-          <div id="cell"><a href="<?php echo $url; ?>?workflowid=<?php echo $row['id']; ?>"><?php echo $row['id']; ?></a></div>
-          <div id="cell"><?php echo $row['sitename']; ?></div>
-          <div id="cell"><?php echo $row['modelname']; ?></div>
-          <div id="cell"><?php echo $row['name']; ?></div>
-          <div id="cell"><?php echo $row['start_date']; ?></div>
-          <div id="cell"><?php echo $row['end_date']; ?></div>
-          <div id="cell"><?php echo $row['started_at']; ?></div>
-          <div id="cell"><?php echo $row['finished_at']; ?></div>
-<?php if (check_login() && (get_page_acccess_level() <= $min_delete_level)) { ?>
-          <div id="cell"><a href="delete.php?workflowid=<?php echo $row['id']; ?>">DELETE</a></div>
-<?php } ?>
-        </div>
-<?php
-}
-close_database();
-?>
-      </div>
+     </div>
     </div>
-    <div id="footer">
-      The <a href="http://pecanproject.org">PEcAn project</a> is supported by the National Science Foundation
-      (ABI #1062547, ARC #1023477) and the <a href="http://www.energybiosciencesinstitute.org/">Energy
-      Biosciences Institute</a>.
-    </div>
+    <div id="footer"><?php echo get_footer(); ?></div>
   </div>
 </body>  

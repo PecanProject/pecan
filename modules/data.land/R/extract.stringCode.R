@@ -1,7 +1,13 @@
+##' @name extract.stringCode
+##' @title extract.string.code
+##' @export
 extract.stringCode <- function(x,extractor=from.TreeCode){
   return(extractor(x))
 }
 
+##' @name from.TreeCode
+##' @title from.TreeCode
+##' @export
 from.TreeCode <- function(x){
   SITE = substr(x,1,1)
   PLOT = substr(x,2,2)
@@ -10,6 +16,9 @@ from.TreeCode <- function(x){
   return(data.frame(SITE,PLOT,SUBPLOT,TAG))
 }
 
+##' @name to.TreeCode
+##' @title to.TreeCode
+##' @export
 to.TreeCode <- function(SITE,PLOT,SUBPLOT,TAG=NULL){
   SITE = as.character(SITE)
   PLOT = as.character(PLOT)
@@ -22,11 +31,17 @@ to.TreeCode <- function(SITE,PLOT,SUBPLOT,TAG=NULL){
   return(x)
 }
 
+##' @name from.Tag
+##' @title from.Tag
+##' @export
 from.Tag <- function(x){
   miss = rep(NA,length(x))
   return(data.frame(SITE=miss,PLOT=miss,SUBPLOT=miss,TAG=x))
 }
 
+##' @name to.Tag
+##' @title to.Tag
+##' @export
 to.Tag <- function(SITE,PLOT,SUBPLOT,TAG=NULL){
   SITE = as.character(SITE)
   PLOT = as.character(PLOT)

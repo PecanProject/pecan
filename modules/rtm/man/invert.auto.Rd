@@ -50,11 +50,12 @@ do.lsq.first Initialize using least-squares optimization on first
 try. Default = FALSE.
 
 do.lsq.after Number of tries before starting initialization using 
-least-squares optimization. Default = TRUE.}
+least-squares optimization. Default = TRUE.
 
-\item{return.samples}{Include full samples list in output. Default = TRUE.
 target.adj Amount by which to adjust target acceptance rate every 
 attempt. Default = 0.8}
+
+\item{return.samples}{Include full samples list in output. Default = TRUE.}
 
 \item{save.samples}{Filename for saving samples after each iteration. If 
 'NULL', do not save samples. Default = NULL.}

@@ -39,17 +39,32 @@ $min_delete_level=2;
 $REST_AUTH_SITE_KEY="thisisnotasecret";
 $REST_AUTH_DIGEST_STRETCHES =10;
 
-# List of allowed hosts
+# anonymous access level
+$anonymous_level = 99;
+$anonymous_page = 99;
+
+# name of current machine
 $fqdn=exec('hostname -f');
-$hostlist=array($fqdn);
 
-# List of hosts that need qsub
-$qsublist=array();
-
-# List of qsub options, this might only be needed for certain systems
-# the list should be the server pointing to an array, the second array
-# can contain 3 values (qsub, jobid and qstat).
-$qsuboptions=array("geo.bu.edu" => 
+# List of all host and options. The list should be the server pointing
+# to an array. The second array contains a key value pair used to 
+# configure the host. Currenly the following options are available:
+# - qsub     : if specified the jobs are launched using qsub, this can
+#              be an empty value to indicate to use default settings.
+#              If not specified jobs are run on the host itself.
+# - jobid    : regex used to parse jobid, only used if qsub specified.
+# - qstat    : command used to check if job submitted using qsub is
+#              finished.
+# - launcher : path to modellauncher, used to for a single job that
+#              consists of many smaller jobs
+# - job.sh   : any special parameters to add to the job.sh file.
+# - folder   : folder on remote machine, will add username and the
+#              workflowid to the folder name
+# - models   : any special options to add to a specific model that is 
+#              launched. This is an array of the modeltype and
+#              additional parameters for the job.sh.
+$hostlist=array($fqdn => array(),
+                "geo.bu.edu" => 
                     array("qsub"   => "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
                           "jobid"  => "Your job ([0-9]+) .*",
                           "qstat"  => "qstat -j @JOBID@ || echo DONE",
@@ -68,11 +83,6 @@ $output_folder="/home/carya/output/";
 # Folder where the generated files are stored
 $dbfiles_folder=$output_folder . "/dbfiles";
 
-# ED specific inputs, should come from database
-$ed_veg="/home/carya/oge2OLD/OGE2_";
-$ed_soil="/home/carya/faoOLD/FAO_";
-$ed_inputs="/home/carya/ed_inputs/";
-
 # location of BETY DB set to empty to not create links, can be both
 # relative or absolute paths or full URL's. Should point to the base
 # of BETYDB
@@ -83,14 +93,6 @@ $betydb="/bety";
 # ----------------------------------------------------------------------
 # Number of items to show on a page
 $pagesize = 30;
-
-# anonymous access level
-$anonymous_level = 99;
-$anonymous_page = 99;
-
-# Used for authentication, needs to be same as ruby
-$REST_AUTH_SITE_KEY          = "thisisnotasecret";
-$REST_AUTH_DIGEST_STRETCHES  = 10;
 
 # Location where logs should be written
 $logfile = "/home/carya/output/betydb.log";
