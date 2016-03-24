@@ -139,7 +139,7 @@ done
 # packages that are to be compiled
 PACKAGES="utils db settings visualization"
 PACKAGES="${PACKAGES} models/clm45"
-PACKAGES="${PACKAGES} models/preles"
+PACKAGES="${PACKAGES} models/preles models/gday models/lpjguess models/maespa"
 PACKAGES="${PACKAGES} modules/priors modules/meta.analysis modules/uncertainty"
 PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere modules/data.remote"
 PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential"
