@@ -2,16 +2,20 @@
 \alias{write.config.GDAY}
 \title{Write GDAY configuration files}
 \usage{
-write.config.GDAY(settings, run.id)
+write.config.GDAY(defaults, trait.values, settings, run.id)
 }
 \arguments{
+  \item{defaults}{list of defaults to process}
+
+  \item{trait.samples}{vector of samples for a given trait}
+
   \item{settings}{list of settings from pecan settings
   file}
 
   \item{run.id}{id of run}
 }
 \value{
-configuration file for MODEL for given run
+configuration file for GDAY for given run
 }
 \description{
 Writes a config file for GDAY
@@ -23,3 +27,4 @@ single model run, and the name of the file to create
 \author{
 Martin De Kauwe
 }
+
