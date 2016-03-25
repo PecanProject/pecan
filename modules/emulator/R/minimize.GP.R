@@ -3,7 +3,8 @@
 ##' @export
 ##'
 ##' @param gp
-##' @param rng 
+##' @param rng
+##' @param x0 
 ##' @param splinefuns
 ##' 
 ##' @author Michael Dietze
@@ -155,6 +156,7 @@ is.accepted <- function(ycurr, ynew, format='lin'){
 ##'
 ##' @param gp
 ##' @param x0 
+##' @param nmcmc
 ##' @param rng
 ##' @param format lin = lnlike fcn, log = log(lnlike)
 ##' @param mix each = jump each dim. independently, joint = jump all at once 
