@@ -1,9 +1,12 @@
-#--------------------------------------------------------------------------------------------------#
-##' 
-##' @title summarize.GP 
+##' @name summarize.GP
+##' @title summarize.GP
 ##' @export
-##'
-
+##' 
+##' @param gp
+##' @param pdf_file
+##' @param txt_file
+##' 
+##' @author Michael Dietze
 `summarize.GP` <-
 function(gp,pdf_file=NULL,txt_file=NULL){
   require("coda")

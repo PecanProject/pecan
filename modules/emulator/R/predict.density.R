@@ -1,12 +1,17 @@
-#--------------------------------------------------------------------------------------------------#
+##' Simple interpolation of a density object to new points
 ##' 
-##' @title predict.density 
+##' @name predict.density
+##' @title predict.density
 ##' @export
+##' 
+##' @param den
+##' @param xnew
+##' 
+##' @return ynew
 ##'
-
+##' @author Michael Dietze
 `predict.density` <-
 function(den,xnew){
-##function does simple interpolation of a density object to new points
   neval <- length(den$x)
   nnew <- length(xnew)
   ynew <- rep(NA,nnew)

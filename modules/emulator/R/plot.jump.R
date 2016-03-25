@@ -1,9 +1,10 @@
-#--------------------------------------------------------------------------------------------------#
-##' 
-##' @title plot.jump 
+##' @name plot.jump
+##' @title plot.jump
 ##' @export
-##'
-
+##' 
+##' @param jmp jump parameter
+##' 
+##' @author Michael Dietze
 `plot.jump` <-
 function(jmp){
   par(mfrow=c(1,2))

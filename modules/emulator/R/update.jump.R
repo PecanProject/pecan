@@ -1,9 +1,13 @@
-#--------------------------------------------------------------------------------------------------#
-##' 
+##' @name update.jump
 ##' @title update.jump
 ##' @export
-##'
-
+##' 
+##' @param jmp jump parameter
+##' @param chain mcmc chain
+##' 
+##' @return jmp updated jump parameter
+##' 
+##' @author Michael Dietze
 `update.jump` <-
 function(jmp,chain){
   ##check for valid typing

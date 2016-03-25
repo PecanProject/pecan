@@ -1,12 +1,18 @@
-#--------------------------------------------------------------------------------------------------#
+##' Log-dinvgamma, based on MCMCpack
 ##' 
-##' @title ldinvgamma 
+##' @name ldinvgamma
+##' @title ldinvgamma
 ##' @export
 ##'
-
+##' @param x
+##' @param shape
+##' @param scale
+##' 
+##' @return log.density
+##' 
+##' @author Michael Dietze
 `ldinvgamma` <-
 function (x, shape, scale = 1)
-  #log dinvgamma, based on MCMCpack 
 {
     if (shape <= 0 | scale <= 0) {
         stop("Shape or scale parameter negative in dinvgamma().\n")

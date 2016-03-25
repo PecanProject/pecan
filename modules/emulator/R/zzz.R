@@ -1,8 +1,8 @@
-#--------------------------------------------------------------------------------------------------#
-##' 
-##' @title setClass jump 
+##' @name setClass jump
+##' @title setClass jump
 ##' @export
-##'
+##' 
+##' @author Michael Dietze
 
 # .First.lib <- function(which.lib.loc, package){
 
@@ -19,7 +19,7 @@ setClass("jump",
 setIs("jump","list")
 
 
-
+##' @name setClass mvjump
 ##' @title setClass mvjump 
 ##' @export
 ##' 

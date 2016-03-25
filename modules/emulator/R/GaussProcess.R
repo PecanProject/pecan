@@ -1,14 +1,25 @@
-#--------------------------------------------------------------------------------------------------#
-##'
+##' @name GaussProcess
 ##' @title GaussProcess
 ##' @export
 ##'
-
+##' @param x
+##' @param y
+##' @param isotropic
+##' @param nugget allows additional error in Y rather than fix interpolation to go through points
+##' @param method
+##' @param ngibbs
+##' @param burnin
+##' @param thin
+##' @param jump.ic
+##' @param prior "unif", "IG"
+##' @param mix joint=mix over psi simultanously, each=mix over psi individually
+##' @param psi
+##' @param zeroMean
+##' @param exclude
+##'
+##' @author Michael Dietze
 `GaussProcess` <-
 function(x,y,isotropic=TRUE,nugget=TRUE,method="bayes",ngibbs=5000,burnin=1000,thin=1,jump.ic=c(1.1,0.2),prior="IG",mix="joint",psi=NULL,zeroMean = FALSE,exclude = NULL,...){
-  ##"nugget" allows additional error in Y rather than fix interpolation to go through points
-  ## prior options: "unif","IG"
-  ## mix options: joint=mix over psi simultanously, each=mix over psi individually
 ## isotropic <- FALSE;nugget<-FALSE;method="bayes";ngibbs <- 50; burnin <- 10;thin<- 1; jump.ic<-c(1.1,0.2); prior <- "unif"
   
   ##check for packages

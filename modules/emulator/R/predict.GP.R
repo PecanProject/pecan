@@ -1,9 +1,13 @@
-#--------------------------------------------------------------------------------------------------#
-##' 
-##' @title predict.GP 
+##' @name predict.GP
+##' @title predict.GP
 ##' @export
-##'
-
+##' 
+##' @param gp
+##' @param xpred
+##' @param cI credible interval
+##' @param pI prediction interval
+##' 
+##' @author Michael Dietze
 `predict.GP` <-
 function(gp,xpred,cI = NULL,pI = NULL,splinefcns=NULL){
   
