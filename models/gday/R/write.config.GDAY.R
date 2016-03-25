@@ -52,16 +52,13 @@ write.config.GDAY <- function(defaults, trait.values, settings, run.id){
     hostspecific <- paste(hostspecific, sep="\n",
                           paste(settings$run$host$job.sh, collapse="\n"))
   }
-
-  #MET FILE
-  metdat <- settings$run$input$met$path 
   
   # create job.sh
   jobsh <- gsub('@HOSTSPECIFIC@', hostspecific, jobsh)
   
   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
-  jobsh <- gsub('@SITE_MET@', metdat, jobsh)
+  jobsh <- gsub('@SITE_MET@', settings$run$input$met$path, jobsh)
   
   jobsh <- gsub('@START_DATE@', settings$run$start.date, jobsh)
   jobsh <- gsub('@END_DATE@', settings$run$end.date, jobsh)
