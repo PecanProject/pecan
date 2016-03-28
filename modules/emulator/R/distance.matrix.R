@@ -1,3 +1,14 @@
+##' @name distance.martix
+##' @title distance.matrix
+##' @export
+##'
+##' @param x
+##' @param power
+##' @param dim
+##' 
+##' @return d
+##' 
+##' @author Michael Dietze
 `distance.matrix` <-
 function(x,power=1,dim=2){
   n <- nrow(x)
