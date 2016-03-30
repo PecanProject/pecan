@@ -50,22 +50,24 @@ write.config.LPJGUESS <- function(defaults, trait.values, settings, run.id){
   if (!is.null(settings$run$host$job.sh)) {
     hostspecific <- paste(hostspecific, sep="\n", paste(settings$run$host$job.sh, collapse="\n"))
   }
-
+  
+  #MET FILE
+  metfile<- settings$run$input$met$path 
+  
   # create job.sh
   jobsh <- gsub('@HOSTSPECIFIC@', hostspecific, jobsh)
 
-  #jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
-  #jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
-  #jobsh <- gsub('@SITE_MET@', settings$run$site$met, jobsh)
+  jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
+  jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
+  jobsh <- gsub('@SITE_MET@', metfile, jobsh)
   
-  #jobsh <- gsub('@START_DATE@', settings$run$start.date, jobsh)
-  #jobsh <- gsub('@END_DATE@', settings$run$end.date, jobsh)
+  jobsh <- gsub('@START_DATE@', settings$run$start.date, jobsh)
+  jobsh <- gsub('@END_DATE@', settings$run$end.date, jobsh)
   
   jobsh <- gsub('@OUTDIR@', outdir, jobsh)
   jobsh <- gsub('@RUNDIR@', rundir, jobsh)
   
   jobsh <- gsub('@BINARY@', settings$model$binary, jobsh)
-  jobsh <- gsub('@INSFILE@', settings$model$insfile, jobsh)
   
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))

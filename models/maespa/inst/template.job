@@ -13,9 +13,11 @@ mkdir -p "@OUTDIR@"
 # see if application needs running
 if [ ! -e "@OUTDIR@/.dat" ]; then
   cd "@RUNDIR@"
-  ln  -s "@SITE_MET@" example2
-  
-  "@BINARY@" > @OUTDIR@
+  cp -r  /fs/data5/pecan.models/maespa/inputfiles/example2 "@RUNDIR@"
+  cd example2
+
+  "@BINARY@"
+  mv *.dat "@OUTDIR@"
   STATUS=$?
   
   # check the status
@@ -28,7 +30,7 @@ if [ ! -e "@OUTDIR@/.dat" ]; then
   #echo "require (PEcAn.MAESPA)
 #model2netcdf.MAESPA('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
 #" | R --vanilla
-#fi
+fi
 
 
 # copy readme with specs to output
