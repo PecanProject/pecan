@@ -22,11 +22,11 @@ cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, lat = l
     downscaled.result <- cfmet
   }
   
-  if("specific_humidity" %in% colnames(cfmet) & (!"relative_humidity" %in% colnames(cfmet))){
-    cfmet$relative_humidity <- cfmet[,list(qair2rh(qair = specific_humidity, 
-                                                   temp = ud.convert(air_temperature, "Kelvin", "Celsius"), 
-                                                   press = air_pressure))]
-  }
+#   if("specific_humidity" %in% colnames(cfmet) & (!"relative_humidity" %in% colnames(cfmet))){
+#     cfmet$relative_humidity <- cfmet[,list(qair2rh(qair = specific_humidity, 
+#                                                    temp = ud.convert(air_temperature, "Kelvin", "Celsius"), 
+#                                                    press = ud.convert(air_pressure, "Pa", "millibar"))]
+#   }
   
   if(dt_hr > output.dt & dt_hr <= 6) {
     downscaled.result <- cfmet.downscale.subdaily(subdailymet = cfmet, output.dt = output.dt)
