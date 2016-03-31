@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<pecan>
+  <outdir>/data/sserbin/Modeling/maat/maat_test/</outdir>
+
+  <database>
+    <bety>
+      <driver>PostgreSQL</driver>
+      <user>bety</user>
+      <password>bety</password>
+      <host>localhost</host>
+      <dbname>bety</dbname>
+      <write>FALSE</write>
+    </bety>
+  </database>
+
+  <pfts>
+    <pft>
+      <name>maat.all.plants</name> 
+    </pft>
+  </pfts>
+
+  <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+    <threshold>1.2</threshold>
+    <update>TRUE</update>
+  </meta.analysis>
+
+  <ensemble>
+    <size>1</size>
+    <notes/>
+    <variable>GPP</variable>
+  </ensemble>
+
+  <sensitivity.analysis>
+    <quantiles>
+      <sigma>-1</sigma>
+      <sigma>1</sigma>
+    </quantiles>
+    <variable>GPP</variable>
+  </sensitivity.analysis>
+
+  <model>
+     <id>2000000006</id>
+     <type>MAAT</type>
+  </model>
+
+  <run>
+    <start.date>2005-07-15 00:00:00</start.date>
+    <end.date>2005-07-16 00:00:00</end.date>
+    <host> 
+      <name>localhost</name>
+    </host>
+  </run>
+
+</pecan>

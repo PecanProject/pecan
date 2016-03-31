@@ -2,10 +2,9 @@
 % Please edit documentation in R/write.config.MAAT.R
 \name{write.config.MAAT}
 \alias{write.config.MAAT}
-\alias{write.config.MODEL}
 \title{Write MAAT model configuration files}
 \usage{
-write.config.MODEL(defaults, trait.values, settings, run.id)
+write.config.MAAT(defaults = NULL, trait.values, settings, run.id)
 }
 \arguments{
 \item{defaults}{list of defaults to process}

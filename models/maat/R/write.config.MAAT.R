@@ -25,13 +25,15 @@
 ##' @export
 ##' @author Shawn Serbin, Anthony Walker
 ##-------------------------------------------------------------------------------------------------#
-write.config.MODEL <- function(defaults, trait.values, settings, run.id){
+write.config.MAAT <- function(defaults=NULL, trait.values, settings, run.id){
   
   # find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, run.id)
   outdir <- file.path(settings$run$host$outdir, run.id)
   
   ### Define run parameters for MAAT
+  print(rundir)
+  print(outdir)
   print(" Under development ")
   
 }
