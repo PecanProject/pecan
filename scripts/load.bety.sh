@@ -230,6 +230,10 @@ mkdir "${DUMPDIR}"
 
 # download dump file and unpack
 curl -s -L -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
+if [ ! -s ${DUMPDIR}/dump.tar.gz ]; then
+  echo "File downloaded is 0 bytes, skipping"
+  exit -1
+fi
 tar zxf "${DUMPDIR}/dump.tar.gz" -C "${DUMPDIR}" -m
 
 # create database if need be, otherwise check version of schema
