@@ -49,7 +49,7 @@ convert.samples.DALEC <- function(trait.samples){
   #t6 proportion of woody material becoming woody debris every time step
   if('wood_turnover_rate' %in% names(trait.samples)){
     trait.samples[['wood_turnover_rate']] <- trait.samples[['wood_turnover_rate']]/365
-    names(trait.samples)[which(names(trait.samples)=="wood_turnover_rate")] <- "t7"
+    names(trait.samples)[which(names(trait.samples)=="wood_turnover_rate")] <- "t6"
   }
   
   #t7 proportion of fine roots becoming soil/woody debris every time step
