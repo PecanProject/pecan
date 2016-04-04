@@ -22,8 +22,6 @@ configuration file for MAAT for given run
 Writes a MAAT config file.
 }
 \details{
-NOTE: !Under development!
-
 Requires a pft xml object, a list of trait values for a single model run,
 and the name of the file to create
 }
