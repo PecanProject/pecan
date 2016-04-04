@@ -28,9 +28,15 @@ PREFIX_XML <- '<?xml version="1.0"?>'
 convert.samples.MAAT <- function(trait.samples){
     
     if(is.list(trait.samples)) trait.samples <- as.data.frame(trait.samples)
-    ## first rename variables
+    #print(colnames(trait.samples))
+    ### first rename variables
     trait.names <- colnames(trait.samples)
-    print(trait.names)
+    trait.names[trait.names == "Vcmax"] <- "atref.vcmax"
+    trait.names[trait.names == "Jmax"] <- "atref.jmax"
+    colnames(trait.samples) <- trait.names
+    
+    
+    return(trait.samples)
 }
 ##-------------------------------------------------------------------------------------------------#
     
@@ -80,5 +86,27 @@ write.config.MAAT <- function(defaults=NULL, trait.values, settings, run.id){
   #pft.traits <- unlist(trait.values[[pft.traits]])
   #pft.names  <- names(pft.traits)
   #print(pft.names)
+  
+  traits  <- convert.samples.MAAT(trait.samples = trait.values[[settings$pfts$pft$name]])
+  print(traits)
+  print(colnames(traits))
+  print(leaf.defaults.list$leaf$pars$atref.vcmax)
+  print(leaf.defaults.list$leaf$pars$atref.jmax)
+  
+  #Vcmax
+  if("atref.vcmax" %in% colnames(traits)){
+      leaf.defaults.list$leaf$pars$atref.vcmax <- as.numeric(traits[which(colnames(traits) == 'atref.vcmax')])
+  }
+  print(leaf.defaults.list$leaf$pars$atref.vcmax)
+  
+  #Jmax
+  if("atref.jmax" %in% colnames(traits)){
+      leaf.defaults.list$leaf$pars$atref.jmax <- as.numeric(traits[which(colnames(traits) == 'atref.jmax')])
+  }
+  print(leaf.defaults.list$leaf$pars$atref.jmax)
+  
+  ## Write out new XML  _ NEED TO FIX THIS BIT. NEED TO CONVERT WHOLE LIST TO XML
+  xml <- listToXml(leaf.defaults.list, "default")
+  saveXML(xml, file = file.path(settings$rundir, run.id, "leaf_default.xml"), indent=TRUE, prefix = PREFIX_XML)
 }
 ##-------------------------------------------------------------------------------------------------#
