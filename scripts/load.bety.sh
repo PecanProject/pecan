@@ -95,7 +95,7 @@ while getopts a:cd:efghl:m:o:p:qr:tu opt; do
     EMPTY="YES"
     ;;
   f)
-    FIXSEQUENCE=$OPTARG
+    FIXSEQUENCE="YES"
     ;;
   g)
     GUESTUSER="YES"
