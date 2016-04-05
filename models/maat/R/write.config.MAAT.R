@@ -10,7 +10,9 @@
 
 ##-------------------------------------------------------------------------------------------------#
 ## Functions to prepare and write out MAAT model xml files for MA, SA, and Ensemble runs
-PREFIX_XML <- '<?xml version="1.0"?>'
+#PREFIX_XML <- '<?xml version="1.0"?>'
+#PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "maat.dtd">\n'
+PREFIX_XML <- '<?xml version="1.0"?>\n'
 ##-------------------------------------------------------------------------------------------------#
 
 

@@ -9,7 +9,7 @@
 #--------------------------------------------------------------------------------------------------#
 # Template for functions to prepare and write out files model-specific configuration files for MA
 #--------------------------------------------------------------------------------------------------#
-PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
+PREFIX_XML <- '<?xml version="1.0"?>\n'
 
 convert.samples.DALEC <- function(trait.samples){
     
