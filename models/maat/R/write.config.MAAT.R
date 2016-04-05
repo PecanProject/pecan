@@ -27,19 +27,21 @@ PREFIX_XML <- '<?xml version="1.0"?>\n'
 ##' @author Shawn Serbin, Anthony Walker
 convert.samples.MAAT <- function(trait.samples){
     
+    ### Convert object
     if(is.list(trait.samples)) trait.samples <- as.data.frame(trait.samples)
-    #print(colnames(trait.samples))
+
     ### first rename variables
     trait.names <- colnames(trait.samples)
     trait.names[trait.names == "Vcmax"] <- "atref.vcmax"
     trait.names[trait.names == "Jmax"] <- "atref.jmax"
     colnames(trait.samples) <- trait.names
     
-    
+    ### Return trait.samples as modified by function
     return(trait.samples)
 }
 ##-------------------------------------------------------------------------------------------------#
-    
+
+
 ##-------------------------------------------------------------------------------------------------#
 ##' Writes a MAAT config file.
 ##'
@@ -61,13 +63,7 @@ write.config.MAAT <- function(defaults=NULL, trait.values, settings, run.id){
   rundir <- file.path(settings$run$host$rundir, run.id)
   outdir <- file.path(settings$run$host$outdir, run.id)
 
-  ### Define run parameters for MAAT
-  #print(rundir) # for debugging. turn off when working
-  #print(outdir) # for debugging. turn off when working
-  #print(run.id) # for debugging. turn off when working
-  #print(" Under development ") # for debugging. turn off when working
-
-  ## Move model files to run dirs. Use built-in MAAT script setup_MAAT_project.bs
+  ### Move model files to run dirs. Use built-in MAAT script setup_MAAT_project.bs
   system(paste0(settings$model$binary,'./run_scripts/setup_MAAT_project.bs'," ",rundir," ",
   settings$model$binary,"/run_scripts"," ",settings$model$binary,"/src"))
   
@@ -77,36 +73,34 @@ write.config.MAAT <- function(defaults=NULL, trait.values, settings, run.id){
   
   ### Overwrite XML defaults
   leaf.defaults.list <- xmlToList(leaf.defaults)
-  #print(leaf.defaults.list)
-  
-  #names(trait.values)
-  #str(trait.values)
-  
-  #pft.traits <- which(!(names(trait.values) %in% 'env'))[1]
-  #pft.traits <- unlist(trait.values[[pft.traits]])
-  #pft.names  <- names(pft.traits)
-  #print(pft.names)
-  
+
+  # Run rename and conversion function
   traits  <- convert.samples.MAAT(trait.samples = trait.values[[settings$pfts$pft$name]])
-#  print(traits)
-#  print(colnames(traits))
-#  print(leaf.defaults.list$leaf$pars$atref.vcmax)
-#  print(leaf.defaults.list$leaf$pars$atref.jmax)
-  
-  #Vcmax
+
+  # Vcmax
   if("atref.vcmax" %in% colnames(traits)){
       leaf.defaults.list$leaf$pars$atref.vcmax <- as.numeric(traits[which(colnames(traits) == 'atref.vcmax')])
   }
 #  print(leaf.defaults.list$leaf$pars$atref.vcmax)
   
-  #Jmax
+  # Jmax
   if("atref.jmax" %in% colnames(traits)){
       leaf.defaults.list$leaf$pars$atref.jmax <- as.numeric(traits[which(colnames(traits) == 'atref.jmax')])
   }
 #  print(leaf.defaults.list$leaf$pars$atref.jmax)
-  
-  ## Write out new XML  _ NEED TO FIX THIS BIT. NEED TO CONVERT WHOLE LIST TO XML
+
+
+  ### Write out new XML  _ NEED TO FIX THIS BIT. NEED TO CONVERT WHOLE LIST TO XML
   xml <- listToXml(leaf.defaults.list, "default")
   saveXML(xml, file = file.path(settings$rundir, run.id, "leaf_default.xml"), indent=TRUE, prefix = PREFIX_XML)
+  
+  
+  ### Write out the job.sh file - will be used to run the model code in the correct PEcAn run folder
+  jobsh <- paste0("#!/bin/bash\n","Rscript run_MAAT.R"," ","\"odir <- ","'",outdir,"'","\""," > logfile.txt")
+                
+  writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
+  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  
+  #print(warnings())
 }
 ##-------------------------------------------------------------------------------------------------#

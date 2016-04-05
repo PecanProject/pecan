@@ -42,3 +42,12 @@ if (!file.exists(file.path(settings$rundir, "runs.txt")) | settings$meta.analysi
   logger.info("Already wrote configuraiton files")    
 }
 #--------------------------------------------------------------------------------------------------#
+
+#--------------------------------------------------------------------------------------------------#
+# run model
+if (!file.exists(file.path(settings$rundir, "runs.txt"))) {
+  logger.severe("No ensemble or sensitivity analysis specified in pecan.xml, work is done.")
+} else {
+  start.model.runs(settings, settings$database$bety$write)
+}
+#--------------------------------------------------------------------------------------------------#
