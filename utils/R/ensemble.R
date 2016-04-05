@@ -62,8 +62,6 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir,
 ##' @return matrix of random samples from trait distributions
 ##' @export
 ##' @import randtoolbox
-##' @references Halton, J. (1964), Algorithm 247: Radical-inverse quasi-random point sequence, 
-##' ACM, p. 701, doi:10.1145/355588.365104.
 ##' @author David LeBauer
 get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="uniform") {
   
@@ -92,6 +90,21 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
       if(method == "halton"){
         logger.info("Using ", method, "method for sampling")
         random.samples <- halton(n = ensemble.size, dim=total.sample.num)
+        ##force as a matrix in case length(samples)=1
+        random.samples <- as.matrix(random.samples)
+      } else if(method == "sobol"){
+        logger.info("Using ", method, "method for sampling")
+        random.samples <- sobol(n = ensemble.size, dim=total.sample.num)
+        ##force as a matrix in case length(samples)=1
+        random.samples <- as.matrix(random.samples)
+      } else if(method == "torus"){
+        logger.info("Using ", method, "method for sampling")
+        random.samples <- torus(n = ensemble.size, dim=total.sample.num)
+        ##force as a matrix in case length(samples)=1
+        random.samples <- as.matrix(random.samples)
+      } else if(method == "lhc"){
+        logger.info("Using ", method, "method for sampling")
+        random.samples <- lhc(t(matrix(0:1, ncol=total.sample.num, nrow=2)),ensemble.size)
         ##force as a matrix in case length(samples)=1
         random.samples <- as.matrix(random.samples)
       } else if(method == "uniform"){
