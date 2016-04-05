@@ -64,18 +64,27 @@ write.config.MAAT <- function(defaults=NULL, trait.values, settings, run.id){
   outdir <- file.path(settings$run$host$outdir, run.id)
 
   ### Move model files to run dirs. Use built-in MAAT script setup_MAAT_project.bs
-  system(paste0(settings$model$binary,'./run_scripts/setup_MAAT_project.bs'," ",rundir," ",
-  settings$model$binary,"/run_scripts"," ",settings$model$binary,"/src"))
+  #  system(paste0(settings$model$binary,'./run_scripts/setup_MAAT_project.bs'," ",rundir," ",
+  #settings$model$binary,"/run_scripts"," ",settings$model$binary,"/src"))
   
-  ### Read in XML defaults
+  # changed to below as advised by Rob Kooper, 20160405
+  system2(file.path(settings$model$binary, 'run_scripts/setup_MAAT_project.bs'),
+  c(rundir, file.path(settings$model$binary, "run_scripts"),  file.path(settings$model$binary, "src")))
+  
+  ### Read in XML defaults - REMOVE THIS BIT. create leaf_user_static.xml dynamically and use that
   xml.file <- paste0(rundir,"/leaf_default.xml")  # could move this up to the call and use where defaults=NULL
   leaf.defaults <- xmlParse(xml.file)
   
   ### Overwrite XML defaults
   leaf.defaults.list <- xmlToList(leaf.defaults)
+  
+  # next step: create lists first ,then save to XML
 
   # Run rename and conversion function
   traits  <- convert.samples.MAAT(trait.samples = trait.values[[settings$pfts$pft$name]])
+  
+  # HERE NEED TO CREATE THE leaf_user_static.xml LIST ON THE FLY AND OUTPUT. COMBINATION OF THE fnames, pars, and env
+
 
   # Vcmax
   if("atref.vcmax" %in% colnames(traits)){
@@ -92,11 +101,11 @@ write.config.MAAT <- function(defaults=NULL, trait.values, settings, run.id){
 
   ### Write out new XML  _ NEED TO FIX THIS BIT. NEED TO CONVERT WHOLE LIST TO XML
   xml <- listToXml(leaf.defaults.list, "default")
-  saveXML(xml, file = file.path(settings$rundir, run.id, "leaf_default.xml"), indent=TRUE, prefix = PREFIX_XML)
-  
+  #saveXML(xml, file = file.path(settings$rundir, run.id, "leaf_default.xml"), indent=TRUE, prefix = PREFIX_XML)
+  saveXML(xml, file = file.path(settings$rundir, run.id, "leaf_user_static.xml"), indent=TRUE, prefix = PREFIX_XML)
   
   ### Write out the job.sh file - will be used to run the model code in the correct PEcAn run folder
-  jobsh <- paste0("#!/bin/bash\n","Rscript run_MAAT.R"," ","\"odir <- ","'",outdir,"'","\""," > logfile.txt")
+  jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ","\"odir <- ","'",outdir,"'","\""," > ",rundir,"/logfile.txt")
                 
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
