@@ -10,8 +10,6 @@
 
 ##-------------------------------------------------------------------------------------------------#
 ## Functions to prepare and write out MAAT model xml files for MA, SA, and Ensemble runs
-#PREFIX_XML <- '<?xml version="1.0"?>'
-#PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "maat.dtd">\n'
 PREFIX_XML <- '<?xml version="1.0"?>\n'
 ##-------------------------------------------------------------------------------------------------#
 
@@ -90,22 +88,22 @@ write.config.MAAT <- function(defaults=NULL, trait.values, settings, run.id){
   #print(pft.names)
   
   traits  <- convert.samples.MAAT(trait.samples = trait.values[[settings$pfts$pft$name]])
-  print(traits)
-  print(colnames(traits))
-  print(leaf.defaults.list$leaf$pars$atref.vcmax)
-  print(leaf.defaults.list$leaf$pars$atref.jmax)
+#  print(traits)
+#  print(colnames(traits))
+#  print(leaf.defaults.list$leaf$pars$atref.vcmax)
+#  print(leaf.defaults.list$leaf$pars$atref.jmax)
   
   #Vcmax
   if("atref.vcmax" %in% colnames(traits)){
       leaf.defaults.list$leaf$pars$atref.vcmax <- as.numeric(traits[which(colnames(traits) == 'atref.vcmax')])
   }
-  print(leaf.defaults.list$leaf$pars$atref.vcmax)
+#  print(leaf.defaults.list$leaf$pars$atref.vcmax)
   
   #Jmax
   if("atref.jmax" %in% colnames(traits)){
       leaf.defaults.list$leaf$pars$atref.jmax <- as.numeric(traits[which(colnames(traits) == 'atref.jmax')])
   }
-  print(leaf.defaults.list$leaf$pars$atref.jmax)
+#  print(leaf.defaults.list$leaf$pars$atref.jmax)
   
   ## Write out new XML  _ NEED TO FIX THIS BIT. NEED TO CONVERT WHOLE LIST TO XML
   xml <- listToXml(leaf.defaults.list, "default")
