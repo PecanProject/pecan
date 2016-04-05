@@ -14,7 +14,7 @@ mkdir -p "@OUTDIR@"
 if [ ! -e "@OUTDIR@/results.out" ]; then
   cd "@RUNDIR@"
   
-  "@BINARY@" -input cf "@INSFILE@"
+  "@BINARY@" -input cf "@SITE_MET@"
   STATUS=$?
 
   mv "@RUNDIR@"/*.out "@OUTDIR@"

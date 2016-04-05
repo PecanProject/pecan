@@ -13,9 +13,16 @@ mkdir -p "@OUTDIR@"
 # see if application needs running
 if [ ! -e "@OUTDIR@/.dat" ]; then
   cd "@RUNDIR@"
-  ln  -s "@SITE_MET@" example2
+  # For now, pecan doesn't handle inputs for G'day, so specific run input files will need to be fed to G'day.
+  #Point to example input files through symbolic link or copy the actual input files to run directory.
+   #this "cp" would copy example input files to the rundirectory where model will be executed.
+  cp -r  path/to/where/example/input/files/are  "@RUNDIR@"
 
-  "@BINARY@" > @OUTDIR@
+  # This will execute the model
+  "@BINARY@" 
+  # Move ouput files to output folder.
+    # EDIT: If Gday doesn't produce .dat files, then edit accordingly
+  mv *.dat "@OUTDIR@"
   STATUS=$?
 
   # check the status
@@ -24,15 +31,15 @@ if [ ! -e "@OUTDIR@/.dat" ]; then
     exit $STATUS
   fi
 
-  # convert to MsTMIP
+  # convert to MsTMIP. Uncomment this code once model2netcdf is written
   #echo "require (PEcAn.GDAY)
 #model2netcdf.GDAY('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
 #" | R --vanilla
-#fi
+fi
 
 
 # copy readme with specs to output
-#cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
+cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 
 # run getdata to extract right variables
 

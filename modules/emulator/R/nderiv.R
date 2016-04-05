@@ -1,3 +1,10 @@
+##' @name nderiv
+##' @title nderiv
+##' @export
+##' 
+##' @return der
+##'
+##' @author Michael Dietze
 `nderiv` <-
 function(x,y){
   der <- 0 * x

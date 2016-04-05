@@ -19,19 +19,12 @@
 ##' @param trait.samples vector of samples for a given trait
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
-##' @return configuration file for MODEL for given run
+##' @return configuration file for MAESPA for given run
 ##' @export
 ##' @author Tony Gardella
 ##-------------------------------------------------------------------------------------------------#
 write.config.MAESPA <- function(defaults, trait.values, settings, run.id){
-  
-  #WARNING: This script is correctly formatted, however it cannot be used to run MAESPA from the PEcAn
-  #workflow without functioning met2model amd model2met scripts, or a customized workflow script
-  # TODO
-  # add arguments that allows pecan met to be used 
-  # In template file, met is hard coded. Once met2model works, revert back to 
-  # using gsub to point to met file in database
-  # add code that will format traitvalues as necessary .dat files.
+
   
   # find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, as.character(run.id))
