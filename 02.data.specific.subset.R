@@ -50,5 +50,11 @@ try.dat[DatasetID == 216, keep := TRUE]
 tmp.dat <- try.dat[DatasetID == 263][, cols.to.check, with=F]
 try.dat[DatasetID == 263, keep := TRUE]
 
+# Repeat subset on trait-containing observation IDs.
+# Have to do this again because this script can result in Lat-Lon pairs that don't correspond to any traits
+setkey(try.dat, ObservationID)
+obsid.trait <- try.dat[, has.trait := any(type == "t"), by=ObservationID][has.trait == TRUE, ObservationID]
+try.dat <- try.dat[ObservationID %in% obsid.trait]
+
 try.dat <- try.dat[keep == TRUE]
 save(try.dat, file="try.2.RData")
