@@ -100,6 +100,6 @@ setkey(try.sites, try.site.id)
 try.dat <- try.dat[try.sites[, list(try.site.id, bety.site.id)]]
 print(try.dat[sample(1:nrow(try.dat), 20), list(ObservationID, try.site.id, bety.site.id)])
 
-save(try.dat, file="try.3.RData")
+save(try.dat, file="try.3.RData", compress=TRUE)
 
 #   TODO: In the future, change centroid to bounding box containing all sites?
