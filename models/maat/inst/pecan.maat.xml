@@ -34,8 +34,13 @@
 
   <sensitivity.analysis>
     <quantiles>
+      <sigma>-3</sigma>
+      <sigma>-2</sigma>
       <sigma>-1</sigma>
+      <sigma>0</sigma>
       <sigma>1</sigma>
+      <sigma>2</sigma>
+      <sigma>3</sigma>
     </quantiles>
     <variable>GPP</variable>
   </sensitivity.analysis>
