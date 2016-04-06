@@ -1,4 +1,25 @@
-write.restart.LINKAGES <- function(outdir,run.id,time,settings,analysis,RENAME,PLOT){
+##' @title write.restart.LINKAGES
+##' @name  write.restart.LINKAGES
+##' @author Ann Raiho \email{araiho@@nd.edu}
+##' 
+##' @param outdir      output directory
+##' @param runid       run ID
+##' @param time        year that is being read
+##' @param settings    PEcAn settings object
+##' @param analysis    analysis matrix
+##' @param RENAME      flag to either rename output file or not
+##' @param PLOT        flag to make plots or not
+##' 
+##' @description Write restart files for LINKAGES
+##' 
+##' @return NONE
+##' 
+write.restart.LINKAGES <- function(outdir,run.id,time,settings,analysis,
+                                   RENAME,PLOT){
+  for(i in 1:length(analysis)){
+    if(analysis[i]<0) analysis[i] <- 0
+  }
+  
   
   biomass_function<-function(dbh){ #kg/tree
       .1193 * dbh^2.393 + ((slta+sltb*dbh)/2)^2 * 3.14 * fwt * frt * .001
@@ -51,11 +72,14 @@ write.restart.LINKAGES <- function(outdir,run.id,time,settings,analysis,RENAME,P
     iage <- as.vector(iage.save[,ncol(iage.save),1]) # individual age
     
     dbh = as.vector(dbh.save[,ncol(dbh.save),1])
-
-    n.index = c(rep(1,ntrees[1]),rep(2,ntrees[2]),rep(3,ntrees[3]),rep(4,ntrees[4]))
+    
+    n.index = c(rep(1,ntrees[1]))
+    for(i in 2:length(settings$pfts)){
+      n.index = c(n.index,rep(i,ntrees[i]))
+    }
     
     large.trees <- which(dbh>=17)
-    for(s in 1:4){
+    for(s in 1:length(settings$pfts)){
       ntrees[s] <- length(which(n.index[large.trees]==s))
     }
     
@@ -65,7 +89,7 @@ write.restart.LINKAGES <- function(outdir,run.id,time,settings,analysis,RENAME,P
     iage <- iage[large.trees]
     nogro <- nogro[large.trees]
     
-    new.ntrees = numeric(4)
+    new.ntrees = numeric(length(settings$pfts))
     
     print(paste0("ntrees =",ntrees))
     
@@ -91,14 +115,14 @@ write.restart.LINKAGES <- function(outdir,run.id,time,settings,analysis,RENAME,P
       sltb <- spp.params$SLTB[n.index[j]]
       fwt <- spp.params$FWT[n.index[j]]
       frt <- spp.params$FRT[n.index[j]]
-      ind.biomass[j] <- biomass_function(dbh[j]) / 833 /.48 #changing units to be kgC/m^2
+      ind.biomass[j] <- biomass_function(dbh[j]) * (1 / 833) * .48 #changing units to be kgC/m^2
     }
     
     data2 = data.frame(ind.biomass = ind.biomass,n.index = n.index)
     mean.biomass.spp <- aggregate(ind.biomass ~ n.index,mean,data=data2) #calculate mean individual biomass for each species
     
     #calculate number of individuals needed to match analysis
-    for(s in 1:4){      
+    for(s in 1:length(settings$pfts)){      
       if(ntrees[s]>0){
         fix <- analysis[s]/mean.biomass.spp[mean.biomass.spp[,1]==s,2] #number of individuals needed to agree with analysis      
       }else{
@@ -112,8 +136,10 @@ write.restart.LINKAGES <- function(outdir,run.id,time,settings,analysis,RENAME,P
     }
     print(paste0("new.ntrees =",new.ntrees))
     
-    new.n.index = c(rep(1,new.ntrees[1]),rep(2,new.ntrees[2]),rep(3,new.ntrees[3]),
-                      rep(4,new.ntrees[4]))
+    new.n.index = c(rep(1,new.ntrees[1]))
+    for(i in 2:length(settings$pfts)){
+      new.n.index <- c(new.n.index,rep(i,new.ntrees[i]))
+    }
 
     dbh.temp <- numeric(15000)
     iage.temp <- numeric(15000)
@@ -148,9 +174,9 @@ write.restart.LINKAGES <- function(outdir,run.id,time,settings,analysis,RENAME,P
 
     #fix dbh of sampled individuals to match analysis
     nl = 1 ## individual counter
-    b_calc <- numeric(4) #biomass of sampled trees
-    b_calc1 <- numeric(4) #biomass of sampled trees
-    bcorr <- numeric(4) #biomass correction factor to analysis
+    b_calc <- numeric(length(settings$pfts)) #biomass of sampled trees
+    b_calc1 <- numeric(length(settings$pfts)) #biomass of sampled trees
+    bcorr <- numeric(length(settings$pfts)) #biomass correction factor to analysis
     for(s in 1:nspec){
       if(new.ntrees[s]==0) next
       slta <- spp.params$SLTA[s]
@@ -159,13 +185,13 @@ write.restart.LINKAGES <- function(outdir,run.id,time,settings,analysis,RENAME,P
       frt <- spp.params$FRT[s]
       nu <- nl + new.ntrees[s] - 1
       for(j in nl:nu){
-        b_calc[s] <- biomass_function(dbh.temp[j]) / 883 / .48 + b_calc[s]
+        b_calc[s] <- biomass_function(dbh.temp[j]) * (1 / 883) * .48 + b_calc[s]
       }
       bcorr[s] <- analysis[s] / b_calc[s]
       for(j in nl:nu){
         b_obs <- biomass_function(dbh.temp[j])*as.numeric(bcorr[s])
         dbh.temp[j] <- optimize(merit, c(1,200))$minimum 
-        b_calc1[s] <- biomass_function(dbh.temp[j]) / 883 / .48 + b_calc1[s]       
+        b_calc1[s] <- biomass_function(dbh.temp[j]) * (1 / 883) * .48 + b_calc1[s]       
       }
       nl <- nu + 1 
     }
