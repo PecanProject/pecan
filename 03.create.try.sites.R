@@ -61,20 +61,26 @@ for(r in 1:nrow(try.sites)){
     next
   }
   if(nrow(search.df) > 0){
-    newsite <- FALSE
-    ## Print site options and allow user to select site
-    search.df$site.lat <- site.lat
-    search.df$site.lon <- site.lon
     search.df <- search.df[order(search.df$distance),]
     rownames(search.df) <- 1:nrow(search.df)
+    newsite <- FALSE
+    ## Select closest existing site automatically, if it's within the radius.
     print(search.df)
-    user.input <- readline("Select site row number or type 'n' to create a new site: ")
-    if(tolower(user.input) == "n"){
-      newsite <- TRUE
-    } else {
-      user.choice <- as.numeric(user.input)
-      bety.site.id <- as.character(search.df[user.choice, "id"])
-    }
+    bety.site.id <- as.character(search.df[1,"id"])
+    print(bety.site.id)
+    readline("Press enter:")
+    ## TODO: Alternative is to select sites manually at each step, as implemented below.
+    ## Print site options and allow user to select site
+#     search.df$site.lat <- site.lat
+#     search.df$site.lon <- site.lon
+#     print(search.df)
+#     user.input <- readline("Select site row number or type 'n' to create a new site: ")
+#     if(tolower(user.input) == "n"){
+#       newsite <- TRUE
+#     } else {
+#       user.choice <- as.numeric(user.input)
+#       bety.site.id <- as.character(search.df[user.choice, "id"])
+#     }
   } else {
     newsite <- TRUE
   }
@@ -82,10 +88,8 @@ for(r in 1:nrow(try.sites)){
     ## Create new site from centroid
     sitename <- try.sites[r, try.site.id]
     notes <- try.sites[r, notes]
-    #print(sprintf(insert.query.string, sitename, notes, lat, lon, user_id))    
-    # db.query(sprintf(insert.query.string, sitename, notes, lat, lon, user_id))
-    # bety.site.id <- db.query(sprintf("SELECT id FROM sites WHERE sitename = %s", sitename))$id
-    bety.site.id <- NA
+    db.query(sprintf(insert.query.string, sitename, notes, lat, lon, user_id), con)
+    bety.site.id <- db.query(sprintf("SELECT id FROM sites WHERE sitename = %s", sitename))$id
   }
   # Append "site_id" to try.dat
   set(try.dat, i=r, j=bety.site.index, value=bety.site.id)
