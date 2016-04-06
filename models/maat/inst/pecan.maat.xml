@@ -43,6 +43,14 @@
   <model>
      <id>2000000006</id>
      <type>MAAT</type>
+     <config>
+       <leaf>	
+         <fnames>
+           <vcmax>'f_constant_vcmax'</vcmax>
+           <jmax>'f_constant_jmax'</jmax>
+        </fnames>
+       </leaf>
+     </config>
   </model>
 
   <run>
