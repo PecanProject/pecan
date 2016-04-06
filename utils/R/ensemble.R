@@ -48,7 +48,7 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir,
 #==================================================================================================#
 ##' Get parameter values used in ensemble
 ##'
-##' Returns a matrix of randomly sampled trait values 
+##' Returns a matrix of randomly or quasi-randomly sampled trait values 
 ##' to be assigned to traits over several model runs.
 ##' given the number of model runs and a list of sample distributions for traits
 ##' The model run is indexed first by model run, then by trait
@@ -56,14 +56,14 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir,
 ##' @title Get Ensemble Samples
 ##' @name get.ensemble.samples
 ##' @param ensemble.size number of runs in model ensemble
-##' @param pft.samples random samples from parameter distribution, e.g. from a MCMC chain or a 
+##' @param pft.samples random samples from parameter distribution, e.g. from a MCMC chain  
 ##' @param env.samples env samples
-##' @param method the method used to generate the ensemble samples.  default = uniform
-##' @return matrix of random samples from trait distributions
+##' @param method the method used to generate the ensemble samples. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton. 
+##' @return matrix of (quasi-)random samples from trait distributions
 ##' @export
 ##' @import randtoolbox
 ##' @author David LeBauer
-get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="uniform") {
+get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples, method="uniform", ...) {
   
   if(is.null(method)) {
     logger.info("No sampling method supplied, defaulting to uniform random sampling")
@@ -89,17 +89,17 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 
       if(method == "halton"){
         logger.info("Using ", method, "method for sampling")
-        random.samples <- halton(n = ensemble.size, dim=total.sample.num)
+        random.samples <- halton(n = ensemble.size, dim=total.sample.num, ...)
         ##force as a matrix in case length(samples)=1
         random.samples <- as.matrix(random.samples)
       } else if(method == "sobol"){
         logger.info("Using ", method, "method for sampling")
-        random.samples <- sobol(n = ensemble.size, dim=total.sample.num)
+        random.samples <- sobol(n = ensemble.size, dim=total.sample.num, ...)
         ##force as a matrix in case length(samples)=1
         random.samples <- as.matrix(random.samples)
       } else if(method == "torus"){
         logger.info("Using ", method, "method for sampling")
-        random.samples <- torus(n = ensemble.size, dim=total.sample.num)
+        random.samples <- torus(n = ensemble.size, dim=total.sample.num, ...)
         ##force as a matrix in case length(samples)=1
         random.samples <- as.matrix(random.samples)
       } else if(method == "lhc"){
