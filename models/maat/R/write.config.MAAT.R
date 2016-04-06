@@ -71,41 +71,19 @@ write.config.MAAT <- function(defaults=NULL, trait.values, settings, run.id){
   system2(file.path(settings$model$binary, 'run_scripts/setup_MAAT_project.bs'),
   c(rundir, file.path(settings$model$binary, "run_scripts"),  file.path(settings$model$binary, "src")))
   
-  ### Read in XML defaults - REMOVE THIS BIT. create leaf_user_static.xml dynamically and use that
-  #  xml.file <- paste0(rundir,"/leaf_default.xml")  # could move this up to the call and use where defaults=NULL
-  #leaf.defaults <- xmlParse(xml.file)
-  
-  ### Overwrite XML defaults
-  #leaf.defaults.list <- xmlToList(leaf.defaults)
-  
   ### Parse config options to XML
   xml <- listToXml(settings$model$config, "default")
 
   ### Run rename and conversion function on PEcAn trait values
   traits  <- convert.samples.MAAT(trait.samples = trait.values[[settings$pfts$pft$name]])
 
-  # !!! REMOVE
-  # Vcmax
-  #  if("atref.vcmax" %in% colnames(traits)){
-  #    leaf.defaults.list$leaf$pars$atref.vcmax <- as.numeric(traits[which(colnames(traits) == 'atref.vcmax')])
-  #}
-#  print(leaf.defaults.list$leaf$pars$atref.vcmax)
-  
-  # Jmax
-  #if("atref.jmax" %in% colnames(traits)){
-  #    leaf.defaults.list$leaf$pars$atref.jmax <- as.numeric(traits[which(colnames(traits) == 'atref.jmax')])
-  #}
-#  print(leaf.defaults.list$leaf$pars$atref.jmax)
-  # !!!
-  
   ### Convert traits to list
   traits.list <- as.list(traits)
   traits.xml <- listToXml(traits.list, 'pars')
   
   ### Finalize XML
-  #xml <- listToXml(leaf.defaults.list, "default")
-  #xml <- listToXml(traits.list, "default")
-  xml <- append.xmlNode(xml, traits.xml) # append new child?  insert node?
+  #xml <- append.xmlNode(xml, traits.xml) # append new child?  insert node?
+  xml[[1]] <- addChildren(xml[[1]], traits.xml)
   
   ### Write out new XML  _ NEED TO FIX THIS BIT. NEED TO CONVERT WHOLE LIST TO XML
   #saveXML(xml, file = file.path(settings$rundir, run.id, "leaf_default.xml"), indent=TRUE, prefix = PREFIX_XML)
