@@ -7,9 +7,17 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-outdir <- "/Volumes/data/sserbin/Modeling/maat/maat_test/out/SA-median/"
-start_date <- '2005-07-15 00:00:00'
-end_date <- '2005-07-15 00:00:01'
+
+### !!! REMOVE AFTER DEBUGGING
+#outdir <- "/Volumes/data/sserbin/Modeling/maat/maat_test/out/SA-median/"
+#start_date <- '2005-07-15 00:00:00'
+#end_date <- '2005-07-15 00:00:01'
+#sitelat=46.5
+#sitelon=-89.2
+#sitelat=-999
+#sitelon=-999
+### !!!
+
 
 ##-------------------------------------------------------------------------------------------------#
 ##' Convert MAAT output to netCDF
@@ -24,10 +32,12 @@ end_date <- '2005-07-15 00:00:01'
 ##' @param end_date End time of the simulation
 ##' @export
 ##' @author Shawn Serbin, Anthony Walker
-model2netcdf.MAAT <- function(outdir, sitelat=NULL, sitelon=NULL, start_date=NULL, end_date=NULL) {
+model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NULL, end_date=NULL) {
+  
+  ## TODO is it OK to give site lat/long -999 if not running at a "site"?
   
   ### Load required libraries
-  require(PEcAn.utils) #nescessary??
+  #require(PEcAn.utils) #nescessary??
   require(ncdf4)
   
   ### Read in model output in SIPNET format
@@ -51,7 +61,7 @@ model2netcdf.MAAT <- function(outdir, sitelat=NULL, sitelon=NULL, start_date=NUL
   for (y in years){
     #print(y)
     if (file.exists(file.path(outdir, paste(y,"nc", sep=".")))) {
-      next
+      next ## skip, model output already present.
     }
     
     print(paste("---- Processing year: ", y))  # turn on for debugging
@@ -62,14 +72,16 @@ model2netcdf.MAAT <- function(outdir, sitelat=NULL, sitelon=NULL, start_date=NUL
     output[[2]] <- (maat.output$A*0.001)    # GPP in kgC/m2/s
     
     #******************** Declare netCDF variables ********************#
-#    t <- ncdim_def(name = "time",
-#                   units = paste0("days since ", y, "-01-01 00:00:00"),
-#                   vals = as.numeric(strptime(end_date, "%Y-%m-%d %H:%M:%S")-strptime(start_date, "%Y-%m-%d %H:%M:%S"),units="days"),
-#                   calendar = "standard", unlim = TRUE) # is this correct? fraction of days or whole days
+    ## TODO !!!THIS BIT NEEDS UPDATING TO CAPTURE HIGH-FREQUENCY (sub daily) OUTPUTS !!!
+    #t <- ncdim_def(name = "time",
+    #               units = paste0("days since ", y, "-01-01 00:00:00"),
+    #               vals = as.numeric(strptime(end_date, "%Y-%m-%d %H:%M:%S")-strptime(start_date, "%Y-%m-%d %H:%M:%S"),units="days"),
+    #               calendar = "standard", unlim = TRUE) # is this correct? fraction of days or whole days
     t <- ncdim_def(name = "time",
                    units = paste0("days since ", y, "-01-01 00:00:00"),
                    vals = 1:nrow(maat.output),
                    calendar = "standard", unlim = TRUE)
+    ##
     lat <- ncdim_def("lat", "degrees_east",vals =  as.numeric(sitelat),
                    longname = "station_latitude") 
     lon <- ncdim_def("lon", "degrees_north",vals = as.numeric(sitelon),
@@ -84,6 +96,17 @@ model2netcdf.MAAT <- function(outdir, sitelat=NULL, sitelon=NULL, start_date=NUL
     var[[1]]  <- mstmipvar("Year", lat, lon, t, NA)
     var[[2]]  <- mstmipvar("GPP", lat, lon, t, NA)
     
-  }
-}
+    ### Output netCDF data
+    nc <- nc_create(file.path(outdir, paste(y,"nc", sep=".")), var)
+    varfile <- file(file.path(outdir, paste(y, "nc", "var", sep=".")), "w")
+    for(i in 1:length(var)){
+      print(i) # just on for debugging
+      ncvar_put(nc,var[[i]],output[[i]])  
+      cat(paste(var[[i]]$name, var[[i]]$longname), file=varfile, sep="\n")
+    } ## netCDF loop
+    close(varfile)
+    nc_close(nc)
+    
+  } ## Year loop
+} ## Main loop
 ##-------------------------------------------------------------------------------------------------#
