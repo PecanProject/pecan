@@ -63,6 +63,10 @@ model2netcdf.LPJGUESS <- function(outdir, sitelat, sitelon, start_date, end_date
   ### Loop over years in LPJ-GUESS output to create separate netCDF outputs
   for (y in years){
     
+    if (file.exists(file.path(outdir, paste(y,"nc", sep=".")))) {
+      next
+    }
+    
     print(paste("---- Processing year: ", y))
     
     ## Setup outputs for netCDF file in appropriate units
