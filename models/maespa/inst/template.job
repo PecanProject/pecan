@@ -27,14 +27,15 @@ if [ ! -e "@OUTDIR@/.dat" ]; then
   fi
 
   # convert to MsTMIP
-  #echo "require (PEcAn.MAESPA)
-#model2netcdf.MAESPA('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
-#" | R --vanilla
+  cd @OUTDIR@
+  echo "require (PEcAn.MAESPA)
+model2netcdf.MAESPA('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
+" | R --vanilla
 fi
 
 
 # copy readme with specs to output
-#cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
+cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 
 # run getdata to extract right variables
 
