@@ -1,6 +1,20 @@
-# Overall TRY workflow
-Author: Alexey Shiklomanov
+---
+title: "Import TRY database into BETY""
+Author: "Alexey Shiklomanov"
+---
 
+# Package dependencies
+1. `data.table` -- Makes it remotely possible to work with the TRY database. Requires an up-to-date version, so if parts of the workflow break, try re-installing this.
+2. `bit64` -- Used by `data.table` to read and store large integers, which constitude most of the ID's in TRY and BETY.
+3. `rcrossref` -- Citation matching service. Used to programmatically grab TRY reference DOI's.
+4. `PEcAn.DB` -- For interfacing with BETY database.
+5. `RPostgreSQL` -- Also for interfacing with BETY.
+
+With a recent-enough R version (> 3.2), we can bring in the following:
+1. `taxize` -- Powerful taxanomic name resolution service.
+
+
+# Workflow
   1. Global subset
     a. Select only standardized values -- !is.na(StdValue)
     b. Merge with TRY-BETY translation and select only data that have a match -- !is.na(bety_name) OR Measurement Date (DataID = 241) and Time (DataID = 394).

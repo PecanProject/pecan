@@ -49,8 +49,9 @@ bety.site.index <- which(names(try.sites) == "bety.site.id")
 
 # f. Loop over rows... 
 radius.query.string <- 'SELECT id, sitename, ST_Y(ST_Centroid(geometry)) AS lat, ST_X(ST_Centroid(geometry)) AS lon, ST_Distance(ST_Centroid(geometry), ST_SetSRID(ST_MakePoint(%2$f, %1$f), 4326)) as distance FROM sites WHERE ST_Distance(ST_Centroid(geometry), ST_SetSRID(ST_MakePoint(%2$f, %1$f), 4326)) <= %3$f'
-insert.query.string <- "INSERT INTO sites(sitename,notes,geometry,user_id,created_at,updated_at) VALUES('%s','%s',ST_Force3D(ST_SetSRID(ST_MakePoint(%f, %f), 4326)),'%s', NOW(), NOW() );"
+insert.query.string <- "INSERT INTO sites(sitename,notes,geometry,user_id,created_at,updated_at) VALUES('%s','%s',ST_Force3D(ST_SetSRID(ST_MakePoint(%f, %f), 4326)),'%s', NOW(), NOW() ) RETURNING id;"
 
+message("Looping over sites and adding to BETY")
 pb <- txtProgressBar(0, nrow(try.sites), style=3)
 for(r in 1:nrow(try.sites)){
   # Check site centroid against BETY.
@@ -86,8 +87,7 @@ for(r in 1:nrow(try.sites)){
     ## Create new site from centroid
     sitename <- try.sites[r, try.site.id]
     notes <- try.sites[r, notes]
-    db.query(sprintf(insert.query.string, sitename, notes, site.lon, site.lat, user_id), con)
-    bety.site.id <- db.query(sprintf("SELECT id FROM sites WHERE sitename = '%s'", sitename), con)$id
+    bety.side.id <- db.query(sprintf(insert.query.string, sitename, notes, site.lon, site.lat, user_id), con)$id
   }
   # Append "site_id" to try.sites
   set(try.sites, i=r, j=bety.site.index, value=bety.site.id)

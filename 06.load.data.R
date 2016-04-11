@@ -1,26 +1,62 @@
 # 6. Add TRY data to BETY
+source("common.R")
+load("try.5.RData")
+
+setkey(try.dat, ObservationID)
+try.entities <- try.dat[, .GRP, by=ObservationID]
+try.entities[, c("bety.entity.id", "bety.trait.id") := character(nrow(try.entities))]
 
 # a. Loop over entities...
-#   i. Add entity to entities table
-#     name = TRY_OBSERVATION_<ObservationID>
-#     notes = DatasetID, Dataset, ObservationID
-#   ii. Store entity_id.
-#   iii. Loop over rows...
-#     1. INSERT INTO traits(...) VALUES (...)
-#       site_id --> site_id
-#       specie_id --> specie_id
-#       citation_id --> citation_id
-#       mean --> StdValue
-#       n --> Replicates (if present)
-#       user_id --> user_id
-#       entity_id --> entity_id
-#       variable_id --> bety_id
-#       notes --> paste("TRY_VALUE", DatasetID, ObservationID, DataID, ObsDataID)
-#       date_year --> from measurement date
-#       date_month --> ^^
-#       date_day --> ^^
-#       time_hour --> from measurement time
-#       time_minute --> ^^
-#       created_at --> NOW()
-#       updated_at --> NOW()
-#     2. Store ID at every time step -- match with ObsDataID of TRY? Not perfect because miss time, etc., but may help later.
+add.entity.query <- "INSERT INTO entities(name, notes) VALUES('%s', '%s') RETURNING id"
+insert.trait <- function(vals){
+  vals.na <- which(is.na(vals))
+  vals.sub <- vals[-vals.na]
+  n <- names(vals.sub)
+  lhs <- paste(n, collapse = ",")
+  rhs <- paste(vals.sub, collapse=",")
+  query.string <- sprintf("INSERT INTO traits(%s) VALUES(%s) RETURNING id", lhs, rhs)
+  id <- db.query(query.string, con)$id
+  return(id)
+}
+
+string <- function(x) {
+  x <- fixquote(x)
+  return(sprintf("'%s'", x))
+}
+
+message("Looping over entities and adding values to BETY")
+pb <- txtProgressBar(0, nrow(try.entities), style=3)
+for(i in 1:nrow(try.entities)){
+  # i. Add entity to entities table
+  entity <- try.entities[i, ObservationID]
+  entity.name <- fixquote(paste0("TRY_OBSERVATION_", entity))
+  check <- db.query(sprintf("SELECT id FROM entities WHERE name LIKE '%s'", entity.name), con)
+  if(length(check) > 0) next
+  try.sub <- try.dat[ObservationID == entity]
+  entity.notes <- fixquote(try.sub[, paste(unique(DatasetID),
+                                           unique(Dataset),
+                                           unique(ObservationID),
+                                           collapse = " ; ")])
+  entity.id <- db.query(sprintf(add.entity.query, entity.name, entity.notes), con)$id
+  # ii. Store entity_id.
+  try.entities[, bety.entity.id := entity.id]
+  # iii. Loop over rows...
+  for(j in 1:nrow(try.sub)){
+    vals <- list(
+      site_id = try.sub[j, bety.site.id],
+      specie_id = try.sub[j, bety.species.id],
+      citation_id = try.sub[j, bety.citation.id],
+      mean = try.sub[j, StdValue],
+      n = try.sub[j, Replicates],
+      user_id = user_id,
+      entity_id = entity,
+      variable_id = try.sub[j, bety_id],
+      notes = string(try.sub[j, paste("TRY_VALUE", DatasetID, ObservationID, DataID, ObsDataID)])
+    )
+    id <- insert.trait(vals)
+    try.entities[i, bety.trait.id := paste(bety.trait.id, id)]
+  }
+  setTxtProgressBar(pb, i)
+}
+
+save(try.entities, file="try.entities.RData")

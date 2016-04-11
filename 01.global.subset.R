@@ -1,7 +1,10 @@
 # 1. Global subset
 library(data.table)
+library(bit64)
 message("Loading TRY data...")
-load("try.RData")     # Loads try.raw ("data.table")
+tryfile <- "1584.txt"
+try.raw <- fread(tryfile, header=TRUE)
+#load("try.RData")     # Loads try.raw ("data.table")
 message("Loaded!")
 
 # a. Select only standardized values
