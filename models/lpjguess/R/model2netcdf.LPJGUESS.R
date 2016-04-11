@@ -25,8 +25,7 @@ model2netcdf.LPJGUESS <- function(outdir, sitelat, sitelon, start_date, end_date
   require(lubridate)
   
   ### Read in model output in LPJ-GUESS format
-  lpjguess.out.files <- list.files(outdir)
-  lpjguess.out.files =lpjguess.out.files[-(which(lpjguess.out.files %in% "logfile.txt"))]
+  lpjguess.out.files <- list.files(outdir, pattern = "\\.out$")
 
   
   if(length(lpjguess.out.files)==0)  logger.error("No output files found at ", outdir)
