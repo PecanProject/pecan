@@ -72,6 +72,5 @@ if (!file.exists(file.path(settings$outdir, "sensitivity.results.Rdata"))) {
   logger.info("Already executed run.sensitivity.analysis()")    
 }
 
-# all done
-status.start("FINISHED")
-
+db.print.connections()
+print("---------- PEcAn Workflow Complete ----------")

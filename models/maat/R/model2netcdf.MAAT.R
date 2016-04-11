@@ -10,10 +10,12 @@
 
 ### !!! REMOVE AFTER DEBUGGING
 #outdir <- "/Volumes/data/sserbin/Modeling/maat/maat_test/out/SA-median/"
+#outdir <- "/data/sserbin/Modeling/maat/maat_test/out/SA-median/"
 #start_date <- '2005-07-15 00:00:00'
 #end_date <- '2005-07-15 00:00:01'
 #sitelat=46.5
 #sitelon=-89.2
+#y="2005"
 #sitelat=-999
 #sitelon=-999
 ### !!!
@@ -38,6 +40,7 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
   
   ### Load required libraries
   #require(PEcAn.utils) #nescessary??
+  require(udunits2)
   require(ncdf4)
   
   ### Read in model output in SIPNET format
@@ -70,6 +73,7 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
     ### standard variables: Carbon Pools [not currently relevant to MAAT]
     output[[1]] <- y   # Year
     output[[2]] <- (maat.output$A)    # assimilation in umolsC/m2/s - OR KEEP AS ASSIMILATION?
+    #output[[2]] <- c(maat.output$A,-999)
     
     #******************** Declare netCDF variables ********************#
     ## TODO !!!THIS BIT NEEDS UPDATING TO CAPTURE HIGH-FREQUENCY (sub daily) OUTPUTS !!!
@@ -96,7 +100,9 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
     umol2kg_C <- Mc * ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
     
     ### Convert outputs
-    output <- conversion( 2, umol2kg_C)  ## convert GPP in umolC/m2 s-1 to kgC/m2 s-1 (MsTMIP)
+    #output <- conversion( 2, umol2kg_C)  ## convert GPP in umolC/m2 s-1 to kgC/m2 s-1 (MsTMIP)
+    #output[[2]][output[[2]] != -999] <- output[[2]][output[[2]] != -999] * umol2kg_C
+    output[[2]] <- ifelse(output[[2]]==-999,-999,output[[2]]*umol2kg_C)
     
     ### Put output into netCDF format
     mstmipvar <- PEcAn.utils::mstmipvar

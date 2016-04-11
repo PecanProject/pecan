@@ -127,6 +127,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     }
   }
   
+  # TODO - remove this function and replace with ifelse statements inline below (SPS)
   conversion <- function(col, mult) {
     ## make sure only to convert those values that are not -999
     out[[col]][out[[col]] != -999] <- out[[col]][out[[col]] != -999] * mult
