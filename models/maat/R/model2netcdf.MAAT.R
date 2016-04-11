@@ -69,7 +69,7 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
     
     ### standard variables: Carbon Pools [not currently relevant to MAAT]
     output[[1]] <- y   # Year
-    output[[2]] <- maat.output$A*12*0.000001*0.001   # GPP in kgC/m2/s
+    output[[2]] <- (maat.output$A)    # assimilation in umolsC/m2/s - OR KEEP AS ASSIMILATION?
     
     #******************** Declare netCDF variables ********************#
     ## TODO !!!THIS BIT NEEDS UPDATING TO CAPTURE HIGH-FREQUENCY (sub daily) OUTPUTS !!!
@@ -91,6 +91,14 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
       if(length(output[[i]])==0) output[[i]] <- rep(-999,length(t$vals))
     }
     
+    ### Conversion factor for umol C -> kg C
+    Mc <- 12.017 #molar mass of C, g/mol
+    umol2kg_C <- Mc * ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
+    
+    ### Convert outputs
+    output <- conversion( 2, umol2kg_C)  ## convert GPP in umolC/m2 s-1 to kgC/m2 s-1 (MsTMIP)
+    
+    ### Put output into netCDF format
     mstmipvar <- PEcAn.utils::mstmipvar
     var <- list()
     var[[1]]  <- mstmipvar("Year", lat, lon, t, NA)
