@@ -1,3 +1,6 @@
 *.RData
 *.Rproj
 .Rproj.user
+ 
+# TRY data files (e.g. 1584.txt)
+15*.txt
