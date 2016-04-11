@@ -69,7 +69,7 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
     
     ### standard variables: Carbon Pools [not currently relevant to MAAT]
     output[[1]] <- y   # Year
-    output[[2]] <- (maat.output$A*0.001)    # GPP in kgC/m2/s
+    output[[2]] <- maat.output$A*12*0.000001*0.001   # GPP in kgC/m2/s
     
     #******************** Declare netCDF variables ********************#
     ## TODO !!!THIS BIT NEEDS UPDATING TO CAPTURE HIGH-FREQUENCY (sub daily) OUTPUTS !!!

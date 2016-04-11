@@ -59,6 +59,9 @@
   </model>
 
   <run>
+    <site>
+      <id>772</id>
+    </site>
     <start.date>2005-07-15 00:00:00</start.date>
     <end.date>2005-07-16 00:00:00</end.date>
     <host> 

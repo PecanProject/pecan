@@ -57,3 +57,21 @@ if (!file.exists(file.path(settings$rundir, "runs.txt"))) {
 # get results
 get.results(settings)
 #--------------------------------------------------------------------------------------------------#
+
+# ensemble analysis
+#if (!file.exists(file.path(settings$outdir,"ensemble.ts.pdf"))) {
+#  run.ensemble.analysis(TRUE)    
+#} else {
+#  logger.info("Already executed run.ensemble.analysis()")
+#}
+
+# sensitivity analysis
+if (!file.exists(file.path(settings$outdir, "sensitivity.results.Rdata"))) {
+  run.sensitivity.analysis()
+} else {
+  logger.info("Already executed run.sensitivity.analysis()")    
+}
+
+# all done
+status.start("FINISHED")
+

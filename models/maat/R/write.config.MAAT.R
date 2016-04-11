@@ -90,7 +90,16 @@ write.config.MAAT <- function(defaults=NULL, trait.values, settings, run.id){
   saveXML(xml, file = file.path(settings$rundir, run.id, "leaf_user_static.xml"), indent=TRUE, prefix = PREFIX_XML)
   
   ### Write out the job.sh file - will be used to run the model code in the correct PEcAn run folder
-  jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ","\"odir <- ","'",outdir,"'","\""," > ",rundir,"/logfile.txt")
+  jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ",
+                  "\"odir <- ","'",outdir,"'","\""," > ",rundir,
+                  "/logfile.txt","\n",'echo "',
+                  ' require(PEcAn.MAAT); model2netcdf.MAAT(',
+                  "'",outdir,"',",
+                  settings$run$site$lat,",",
+                  settings$run$site$lon,", '",
+                  settings$run$start.date,"', '",
+                  settings$run$end.date,"') ",
+                  '" | R --vanilla')
                 
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
