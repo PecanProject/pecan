@@ -1,3 +1,8 @@
+##' @name groupid
+##' @title groupid
+##' @export
+##' 
+##' @author Michael Dietze
 `groupid` <-
 function(x){
 

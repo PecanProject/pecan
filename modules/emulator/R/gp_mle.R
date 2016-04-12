@@ -1,3 +1,16 @@
+##' @name gp_mle
+##' @title gp_mle
+##' @export
+##'
+##' @param theta
+##' @param d
+##' @param nugget
+##' @param myY
+##' @param maxval
+##' 
+##' @return val
+##' 
+##' @author Michael Dietze
 `gp_mle` <-
 function(theta,d,nugget,myY,maxval=Inf){
 
@@ -21,7 +34,13 @@ function(theta,d,nugget,myY,maxval=Inf){
   
 }
 
-## zero mean version
+
+##' zero mean version
+##' @title gp_mle2 
+##' @export
+##' 
+
+
 `gp_mle2` <- function(theta,d,nugget,myY,maxval=Inf){
 
   ##get parms

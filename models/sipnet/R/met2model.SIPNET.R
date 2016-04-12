@@ -93,14 +93,15 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       lon  <- ncvar_get(nc,"longitude")
       Tair <- ncvar_get(nc,"air_temperature")  ## in Kelvin
       Qair <- ncvar_get(nc,"specific_humidity")  #humidity (kg/kg)
-      U <- ncvar_get(nc,"eastward_wind")
-      V <- ncvar_get(nc,"northward_wind")
-      
       ws <- try(ncvar_get(nc,"wind_speed"))
-      if(!is.numeric(ws)) ws = sqrt(U^2+V^2)
+      if(!is.numeric(ws)) {
+        U <- ncvar_get(nc,"eastward_wind")
+        V <- ncvar_get(nc,"northward_wind")
+        ws = sqrt(U^2+V^2)
+      }
       
       Rain <- ncvar_get(nc,"precipitation_flux")
-      pres <- ncvar_get(nc,"air_pressure") ## in pascal
+#      pres <- ncvar_get(nc,"air_pressure") ## in pascal
       SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") ## in W/m2
       
       PAR  <- try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air")) ## in mol/m2/s
