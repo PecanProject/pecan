@@ -5,15 +5,15 @@
 ##' @param settings    PEcAn settings object
 ##' @param IC          data.frame of initial condition sample (nens X nstate)
 ##' @param prior       data.frame of model parameter sample (nens X nstate)
-##' @param obs.mean    data.frame of observations of the mean of variables
-##' @param obs.sd      data.frame of observations of the sd of variables
+##' @param obs.mean    data.frame of observations of the mean of variables (time X nstate)
+##' @param obs.sd      data.frame of observations of the sd of variables (time X nstate)
 ##' @param processvar  flag for if process variance should be estimated or not
 ##' 
 ##' @description State Variable Data Assimilation: Ensemble Kalman Filter
 ##' 
 ##' @return NONE
 ##' 
-sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=FALSE){
+sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALSE){
 
   ## settings
   model <- settings$model$type
@@ -28,13 +28,15 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=FALSE){
   nens = nrow(IC)
   start.year <- strftime(settings$run$start.date,"%Y")
   end.year   <- strftime(settings$run$end.date,"%Y")
-
   
-  if(nrow(prior) == 1 | is.null(nrow(prior))){
-    var.names = names(prior)
-    prior = as.data.frame(matrix(rep(prior,each=nens),nrow=nens))
-    names(prior) = var.names
-  }
+  ###HACK
+  new.met <- paste0(rundir,"/climate.Rdata")
+  
+#   if(nrow(prior) == 1 | is.null(nrow(prior))){
+#     var.names = names(prior)
+#     prior = as.data.frame(matrix(rep(prior,each=nens),nrow=nens))
+#     names(prior) = var.names
+#   }
   
   ## sda.demo <- TRUE  ## debugging flag
     
@@ -143,10 +145,9 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=FALSE){
   ## start model run
   start.model.runs(settings,settings$database$bety$write)
    
-  total.time = as.numeric(start.year):(as.numeric(start.year)+nrow(obs.mean)) #RETHINK
+  total.time = as.numeric(start.year):(as.numeric(start.year)+(length(obs.mean)-1)) #RETHINK
 
   nt = length(total.time)
-  #NPPm = rep(NA,nens)
   FORECAST <- ANALYSIS <- list()
   enkf.params <- list()
   aqq = array(0,dim=c(nt+1,ncol(IC),ncol(IC)))
@@ -175,23 +176,28 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=FALSE){
   ###-------------------------------------------
   ### loop over time
   ###-------------------------------------------
-  for(t in 1:nt){
+  for(t in 6:9){
 
-    ### load output    
-    X = matrix(NA, nrow = nrow(IC), ncol = ncol(IC))
+    ### READ RESTART
+    X <- list()
     for(i in 1:nens){
-      X[i,] <- do.call(my.read.restart,args=list(outdir=outdir,run.id = run.id[[i]],
-                                                 time = total.time[t],spin.up = spin.up,
-                                                 X.vec = X[i,]))
+      X[[i]] <- do.call(my.read.restart,args=list(outdir=outdir, runid = run.id[[i]],
+                                                 time = total.time[t], settings = settings,
+                                                 variables = variables))
     }
+    
+    X <- do.call(rbind,X)
+    
     FORECAST[[t]] = X
     
-    ### Analysis step
-    mu.f = apply(X,2,mean,na.rm=TRUE)
-    Pf   = cov(X)
-    Y    = t(obs.mean[t,])#obs$mean[t]
-    R    = diag(as.numeric(obs.sd[t,])^2)#obs$sd[t]^2
-    H    = diag(ncol(obs.mean))
+    ### ANALYSIS
+    mu.f = as.numeric(apply(X,2,mean,na.rm=TRUE))
+    Pf   = cov(X)+1
+    Y    = obs.mean[[t]][[1]][pmatch(colnames(X), colnames(obs.mean[[t]][[1]]))]
+    
+    H = diag(length(obs.mean[[t]][[1]]))
+    R = diag(as.numeric(obs.sd[[t]][[1]][pmatch(colnames(X),names(obs.mean[[t]][[1]]))])^2)
+        
     if(processvar == FALSE){
       K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
       mu.a = mu.f + K%*%(Y-H%*%mu.f)
@@ -203,7 +209,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=FALSE){
         aqq[1,,] <- diag(length(mu.f))*bqq[1]
         
         ### analysis of model and data
-        update = list(Y=Y, muf=mu.f, pf=solve(Pf,tol=0), aq=aqq[t,,], bq=bqq[t], r=solve(R))
+        update = list(Y=Y, muf=mu.f, pf=solve(Pf), aq=aqq[t,,], bq=bqq[t], r=solve(R))
         mod <- jags.model(file=textConnection(AnalysisFilterQ),
                           data=update,
                           n.adapt=1000,n.chains=3,
@@ -243,17 +249,11 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=FALSE){
         bqq[t+1] = n
     }
 
-    enkf.params[[t]] = list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa) 
+    enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa, q.bar=q.bar, n=n) 
  
  ## update state matrix
-    analysis = as.data.frame(rmvnorm(nens,mu.a,Pa,method="svd"))
-    #analysis = exp(analysis)
-    
- #HACK #not a good assumption #
-    analysis[is.na(analysis)] <- 0
-    analysis <- abs(analysis)
- #HACK
-    names(analysis) = names(X)
+    analysis <- as.data.frame(rmvnorm(nens,mu.a,Pa,method="svd"))
+    colnames(analysis) <- colnames(X)
  
  
 #  # EAKF
@@ -289,7 +289,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=FALSE){
       for(i in 1:nens){
         do.call(my.write.restart,args=list(outdir = outdir, run.id = run.id[[i]],
                                            time = total.time[t], settings = settings,
-                                           analysis = analysis[i,c(1,2,4,3)],
+                                           analysis = analysis[i,],
                                            RENAME = TRUE,PLOT=FALSE))
       }
       ## start model run
@@ -303,29 +303,40 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=FALSE){
 ## save all outputs
 save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdata"))
 
-#### Post-processing
-sqrt(diag(Pf))
-1/sqrt(diag(q.bar))
+  #### Post-processing
+  sqrt(diag(Pf))
+  1/sqrt(diag(q.bar))
 
-### LOAD CLIMATE ### HACK ### LINKAGE SPECIFIC
-climate_file <- settings$run$inputs$met$path
-load(climate_file)
-temp.mat <- temp.mat[total.time-849,]
-precip.mat <- precip.mat[total.time-849,]
+  ### LOAD CLIMATE ### HACK ### LINKAGES SPECIFIC
+  climate_file <- settings$run$inputs$met$path
+  load(climate_file)
+  temp.mat <- temp.mat[total.time-849,]
+  precip.mat <- precip.mat[total.time-849,]
 
-### Diagnostic graphs  
-pdf(file.path(settings$outdir,"EnKF.pdf"))
+   ### Diagnostic graphs  
+   pdf(file.path(settings$outdir,"EnKF.pdf"))
 
-if(processvar==TRUE){
+   if(processvar==TRUE){
   
   #Degrees of Freedom
+     t1=1
+     t = nt
   par(mfrow=c(1,1))
-  pairs(dat[,iX])
+  #pairs(dat[,iX])
   
   plot(total.time[t1:t],bqq[t1:t],pch=16,cex=1,ylab="Degrees of Freedom",
        xlab="Time")
   
   #Process Covariance
+  library(corrplot)
+  cor.mat <- cov2cor(aqq[nt,,]/bqq[nt])
+  colnames(cor.mat)<-c("Hemlock","Maple","Yellow Birch","Cedar")
+  rownames(cor.mat)<-c("Hemlock","Maple","Yellow Birch","Cedar")
+  par(mfrow=c(1,1),mai=c(1,1,4,1))
+  #cairo_ps("corr_plot_linkages_da.eps")
+  corrplot(cor.mat,type="upper",tl.srt=45, 
+           addCoef.col = "black")
+  
   par(mfrow=c(4,4),mar=c(2,1,1,1),oma=c(0,2,2,0))
   for(r in 1:4){
     for(c in 1:4){
@@ -348,10 +359,8 @@ if(processvar==TRUE){
 
 ## plot ensemble, filter, and data mean's and CI's
 plot.EnKF.time.series <- function(obs.mean,obs.sd,FORECAST,ANALYSIS,
-                                  var.name,mean.name,sd.name,t1,t,ylim,
+                                  var.name,mean.name,sd.name,t1,t,ylim.set,
                                   plot.name){
-  y.mean = obs.mean[t1:t,]
-  y.sd = obs.sd[t1:t,]
   
   pink = col2rgb("deeppink")
   alphapink = rgb(pink[1],pink[2],pink[3],180,max=255)
@@ -360,84 +369,111 @@ plot.EnKF.time.series <- function(obs.mean,obs.sd,FORECAST,ANALYSIS,
   blue = col2rgb("blue")
   alphablue = rgb(blue[1],blue[2],blue[3],75,max=255)
   
-  Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,var.name],na.rm=TRUE))})
-  Xci  = laply(FORECAST[t1:t],function(x){return(quantile(x[,var.name],c(0.025,0.975)))})
+  Ybar = laply(obs.mean[t1:t],function(x){return(x[[1]])})
+  Ybar = Ybar[,pmatch(colnames(X), colnames(obs.mean[[nt]][[1]]))]
+  YCI = as.matrix(laply(obs.sd[t1:t],function(x){return(x[[1]])})) 
+  YCI = YCI[,pmatch(colnames(X), colnames(obs.mean[[nt]][[1]]))]
+ 
+  for(i in 1:ncol(X)){
   
-  Xa = laply(ANALYSIS[((t1:t)-1)],function(x){return(mean(x[,var.name],na.rm=TRUE))})
-  XaCI  = laply(ANALYSIS[(t1:t)-1],function(x){return(quantile(x[,var.name],c(0.025,0.975)))})
+    Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
+    Xci  = laply(FORECAST[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
+    
+    Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
+    XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
+    
+    plot(total.time[t1:t],Ybar[,i],ylim=range(Ybar[,i])+c(-10,10),
+         type='n',xlab="Year",ylab="kg/m^2",main=colnames(Ybar)[i])
+    
+    #observation / data
+    ciEnvelope(total.time[t1:t],as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
+               as.numeric(Ybar[,i])+as.numeric(YCI[,i])*1.96,col=alphagreen)
+    lines(total.time[t1:t],as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
+    
+    #forecast
+    ciEnvelope(total.time[t1:t],Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
+    lines(total.time[t1:t],Xbar,col="darkblue",type='l',lwd=2)
+    
+    #analysis
+    ciEnvelope(total.time[(t1:t)],XaCI[,1],XaCI[,2],col=alphapink)
+    lines(total.time[t1:t],Xa,col="black",lty=2,lwd=2)
+  }
+
+  for(i in 1:6){
+    plot(density(unlist(ANALYSIS[[i]][1])),col="pink",xlim=c(8,12))
+    lines(density(FORECAST[[i]][,1]),col="blue")
+    lines(density(rnorm(1000,as.numeric(obs.mean[[i]][[1]][1]),
+                        as.numeric(obs.sd[[i]][[1]][1]))),col="green")
+  }
+
   
-  plot(total.time[t1:t],y.mean[,mean.name],ylim=ylim,
-       type='n',xlab="Year",ylab="kg/m^2",main=plot.name)
+  #Forecast minus data = error
+  reg <- lm(Xbar[t1:t] - y.mean[t1:t,mean.name]~c(t1:t))
+  plot(t1:t,Xbar - y.mean[,mean.name],pch=16,cex=1,
+       ylim=c(min(Xci[,1]-y.mean[,mean.name]),
+              max(Xci[,2]-y.mean[,mean.name])),
+       xlab="Time", ylab="Error",main="Error = Forecast - Data")
+  ciEnvelope(rev(t1:t),rev(Xci[,1]-y.mean[,mean.name]),rev(Xci[,2]-y.mean[,mean.name]),col=alphapink)
+  abline(h=0,lty=2,lwd=2)
+  abline(reg)
+  mtext(paste("slope =",signif(summary(reg)$coefficients[2],digits=3),"intercept =",signif(summary(reg)$coefficients[1],digits=3)))
+  d<-density(c(Xbar - y.mean[,mean.name]))
+  lines(d$y+1,d$x)
   
-  #observation / data
-  ciEnvelope(total.time[t1:t],y.mean[,mean.name]-y.sd[,sd.name]*1.96,y.mean[,mean.name]+y.sd[,sd.name]*1.96,col=alphagreen)
-  lines(total.time[t1:t],y.mean[,mean.name],type='l',col="darkgreen",lwd=2)
+  #forecast minus analysis = update
+  reg1 <- lm(Xbar[t1:t] - Xa[t1:t] ~ c(t1:t))
+  plot(t1:t,Xbar - Xa,pch=16,cex=1,ylim=c(min(XaCI[,2]-Xbar),max(Xbar-XaCI[,1])),
+       xlab="Time", ylab="Update",main="Update = Forecast - Analysis")
+  ciEnvelope(rev(t1:t),rev(Xbar - XaCI[,1]),rev(Xbar - XaCI[,2]),col=alphagreen)
+  abline(h=0,lty=2,lwd=2)
+  abline(reg1)
+  mtext(paste("slope =",signif(summary(reg1)$coefficients[2],digits=3),"intercept =",signif(summary(reg1)$coefficients[1],digits=3)))
+  d<-density(c(Xbar - Xa))
+  lines(d$y+1,d$x)
   
-  #forecast
-  ciEnvelope(total.time[t1:t],Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
-  lines(total.time[t1:t],Xbar,col="darkblue",type='l',lwd=2)
+  #plot(temp.mat[,1],Xbar)
+  #par(mfrow=c(2,2))
+  plot(rowMeans(temp.mat[t1:t,]),Xbar - y.mean[,mean.name],xlim=c(min(rowMeans(temp.mat[t1:t,]))-2,
+                                      max(rowMeans(temp.mat[t1:t,]))+2),
+       ylim = c(min(Xbar - y.mean[,mean.name]),max(Xbar - y.mean[,mean.name])),pch=16,cex=1,xlab="Average Monthly Temp",
+       ylab="Error",main = paste(mean.name))
+  plot(rowSums(precip.mat[t1:t,]),Xbar - y.mean[,mean.name],xlim=c(min(rowSums(precip.mat[t1:t,]))-10,
+                                       max(rowSums(precip.mat[t1:t,]))+10),
+       ylim = c(min(Xbar - y.mean[,mean.name]),max(Xbar - y.mean[,mean.name])),pch=16,cex=1,xlab="Total Yearly Precip",
+       ylab="Error",main = paste(mean.name))
   
-  #analysis
-  ciEnvelope(total.time[(t1:t)],XaCI[,1],XaCI[,2],col=alphapink)
-  lines(total.time[t1:t],Xa,col="black",lty=2,lwd=2)
+
+  plot(rowMeans(temp.mat[t1:t,]),Xbar - Xa,pch=16,
+       cex=1,xlab="Average Monthly Temp",
+       ylab="Update",main = paste(mean.name))
+  plot(rowSums(precip.mat[t1:t,]),Xbar - Xa,pch=16,
+       cex=1, xlab="Total Yearly Precip",
+       ylab="Update",main = paste(mean.name))
   
-#   #Forecast minus data = error
-#   reg <- lm(Xbar[t1:t] - y.mean[t1:t,mean.name]~c(t1:t))
-#   plot(t1:t,Xbar[t1:t] - y.mean[t1:t,mean.name],pch=16,cex=1,
-#        ylim=c(min(Xci[t1:t,1]-y.mean[,mean.name]),
-#               max(Xci[t1:t,2]-y.mean[,mean.name])),
-#        xlab="Time", ylab="Error",main="Error = Forecast - Data")
-#   ciEnvelope(rev(t1:t),rev(Xci[t1:t,1]-y.mean[t1:t,mean.name]),rev(Xci[t1:t,2]-y.mean[t1:t,mean.name]),col=alphapink)
-#   abline(h=0,lty=2,lwd=2)
-#   abline(reg)
-#   mtext(paste("slope =",signif(summary(reg)$coefficients[2],digits=3),"intercept =",signif(summary(reg)$coefficients[1],digits=3)))
-#   d<-density(c(Xbar[t1:t] - y.mean[,mean.name]))
-#   lines(d$y+1,d$x)
-#   
-#   #forecast minus analysis = update
-#   reg1 <- lm(Xbar[t1:t] - Xa[t1:t] ~ c(t1:t))
-#   plot(t1:t,Xbar[t1:t] - Xa[t1:t],pch=16,cex=1,ylim=c(min(XaCI[t1:t,2]-Xbar[t1:t]),max(Xbar[t1:t]-XaCI[t1:t,1])),
-#        xlab="Time", ylab="Update",main="Update = Forecast - Analysis")
-#   ciEnvelope(rev(t1:t),rev(Xbar[t1:t] - XaCI[t1:t,1]),rev(Xbar[t1:t] - XaCI[t1:t,2]),col=alphagreen)
-#   abline(h=0,lty=2,lwd=2)
-#   abline(reg1)
-#   mtext(paste("slope =",signif(summary(reg1)$coefficients[2],digits=3),"intercept =",signif(summary(reg1)$coefficients[1],digits=3)))
-#   d<-density(c(Xbar[t1:t] - Xa[t1:t]))
-#   lines(d$y+1,d$x)
-#   
-#   #plot(temp.mat[,1],Xbar)
-#   #par(mfrow=c(2,2))
-#   plot(rowMeans(temp.mat[t1:t,]),Xbar[t1:t] - y.mean[t1:t,mean.name],xlim=c(min(rowMeans(temp.mat[t1:t,]))-2,
-#                                       max(rowMeans(temp.mat[t1:t,]))+2),
-#        ylim = c(min(Xbar[t1:t] - y.mean[,mean.name]),max(Xbar[t1:t] - y.mean[,mean.name])),pch=16,cex=1,xlab="Average Monthly Temp",
-#        ylab="Error",main = paste(mean.name))
-#   plot(rowSums(precip.mat[t1:t,]),Xbar[t1:t] - y.mean[t1:t,mean.name],xlim=c(min(rowSums(precip.mat[t1:t,]))-10,
-#                                        max(rowSums(precip.mat[t1:t,]))+10),
-#        ylim = c(min(Xbar[t1:t] - y.mean[,mean.name]),max(Xbar[t1:t] - y.mean[,mean.name])),pch=16,cex=1,xlab="Total Yearly Precip",
-#        ylab="Error",main = paste(mean.name))
-#   
-# 
-#   plot(rowMeans(temp.mat[t1:t,]),Xbar[t1:t] - Xa[t1:t],pch=16,
-#        cex=1,xlab="Average Monthly Temp",
-#        ylab="Update",main = paste(mean.name))
-#   plot(rowSums(precip.mat[t1:t,]),Xbar[t1:t] - Xa[t1:t],pch=16,
-#        cex=1, xlab="Total Yearly Precip",
-#        ylab="Update",main = paste(mean.name))
-  
-  #legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
+  legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
 }
 
 par(mfrow=c(1,1))
-t1=2
-t = 35
-plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,
-                      "biomass_tsca","mean_tsca","sd_tsca",
-                      t1=t1,t=t,ylim=c(6,18),plot.name="Hemlock Biomass")
+t1=
+t = nt
+obs.mean.mat <- matrix(unlist(obs.mean),nrow=36,ncol=4,byrow=T)
+colnames(obs.mean.mat) <- colnames(X)
+obs.sd.mat <- matrix(unlist(obs.sd),nrow=36,ncol=4,byrow=T)
+colnames(obs.sd.mat) <- colnames(X)
+plot.EnKF.time.series(obs.mean = obs.mean.mat,obs.sd = obs.sd.mat,FORECAST,ANALYSIS,
+                      "AGB.pft.Hemlock(Tsuga Canadensis)","AGB.pft.Hemlock(Tsuga Canadensis)",
+                      "AGB.pft.Hemlock(Tsuga Canadensis)",t1=t1,t=t,ylim.set=c(6,18),
+                      plot.name="Hemlock Biomass")
+#legend('topleft',c("Tree Ring Data","Model Prediction","Model-Data Fusion"),col=c(alphagreen,alphablue,alphapink),lty=1,lwd=6)
 plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,var.name="biomass_acsa3",
-        mean.name="mean_acsa3",sd.name="sd_acsa3",t1=t1,t=t,ylim=c(0,1))
-plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,"biomass_beal2","mean_beal2","sd_beal2",t1=t1,t=t,ylim=c(0,4))
-plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,"biomass_thoc2","mean_thoc2","sd_thoc2",t1=t1,t=t,ylim=c(0,.2))
-
+        mean.name="mean_acsa3",sd.name="sd_acsa3",t1=t1,t=t,ylim=c(0,1),
+        plot.name="Maple Biomass")
+plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,"biomass_beal2",
+                      "mean_beal2","sd_beal2",t1=t1,t=t,ylim=c(1,3),
+                      plot.name="Yellow Birch Biomass")
+plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,"biomass_thoc2",
+                      "mean_thoc2","sd_thoc2",t1=t1,t=t,ylim=c(0,.17),
+                      plot.name="Cedar Biomass")
 
 ### Read in output and restart files
 # nt <- t
