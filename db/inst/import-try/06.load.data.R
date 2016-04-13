@@ -1,6 +1,7 @@
 # 6. Add TRY data to BETY
 source("common.R")
 load("try.5.RData")
+library(udunits2)
 
 setkey(try.dat, ObservationID)
 try.entities <- try.dat[, .GRP, by=ObservationID]
@@ -46,7 +47,7 @@ for(i in 1:nrow(try.entities)){
       site_id = try.sub[j, bety.site.id],
       specie_id = try.sub[j, bety.species.id],
       citation_id = try.sub[j, bety.citation.id],
-      mean = try.sub[j, StdValue],
+      mean = try.sub[j, StdValue],   ## TODO: Unit conversion to bety units
       n = try.sub[j, Replicates],
       user_id = user_id,
       entity_id = entity,
