@@ -2,6 +2,7 @@
 source("common.R")
 load("try.5.RData")
 library(udunits2)
+library(stringr)
 
 setkey(try.dat, ObservationID)
 try.entities <- try.dat[, .GRP, by=ObservationID]
@@ -33,7 +34,8 @@ for(i in 1:nrow(try.entities)){
   entity.name <- fixquote(paste0("TRY_OBSERVATION_", entity))
   check <- db.query(sprintf("SELECT id FROM entities WHERE name LIKE '%s'", entity.name), con)
   if(length(check) > 0) next
-  try.sub <- try.dat[ObservationID == entity]
+  try.sub <- try.dat[ObservationID == entity & type == "t"]   # Select only traits -- for now, ignore covariates
+  if(nrow(try.sub) == 0) next
   entity.notes <- fixquote(try.sub[, paste(unique(DatasetID),
                                            unique(Dataset),
                                            unique(ObservationID),
