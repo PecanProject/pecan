@@ -100,7 +100,8 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   bt.prior <- pda.create.btprior(prior[prior.ind,])
   
   ## Create log-likelihood function for createbayesianSetup{BayesianTools}
-  bt.likelihood <- function(x, sum = T){
+  
+  bt.likelihood <- function(x){
     parm[prior.ind]=x
     
     now <- format(Sys.time(), "%Y%m%d%H%M%S")
