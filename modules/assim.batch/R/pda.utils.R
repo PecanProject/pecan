@@ -22,6 +22,8 @@ assim.batch <- function(settings) {
     settings <- pda.mcmc.bs(settings)
   } else if(settings$assim.batch$method == "emulator") {
     settings <- pda.emulator(settings)
+  } else if(settings$assim.batch$method == "bayesian.tools") {
+    settings <- pda.bayesian.tools(settings)
   } else {
     logger.error(paste0("PDA method ", settings$assim.batch$method, " not found!"))
   }
@@ -767,4 +769,40 @@ pda.postprocess <- function(settings, con, params, pname, prior, prior.ind, burn
     paste0('pecan.pda', settings$assim.batch$ensemble.id, '.xml')))
 
   return(settings)
+}
+
+
+##' Helper function for creating log-priors compatible with BayesianTools package
+##'
+##' @title Create priors for BayesianTools
+##' @param prior.sel prior distributions of the selected parameters
+##'
+##' @return out prior class object for BayesianTools package
+##'
+##' @author Istem Fer
+##' @export
+pda.create.btprior <- function(prior.sel){
+  
+  dens.fn <- samp.fn <-list()
+  
+  #TODO: test exponential
+  for(i in 1:nrow(prior.sel)){
+  #  if(prior.sel$distn[i] == 'exp'){
+  #    dens.fn[[i]]=paste("d",prior.sel$distn[i],"(x[",i,"],",prior.sel$parama[i],",log=TRUE)",sep="")
+  #    samp.fn[[i]] <- paste("x[",i,"]=r",prior.sel$distn[i],"(1,",prior.sel$parama[i],")",sep="")
+  #  }else{  
+      dens.fn[[i]]=paste("d",prior.sel$distn[i],"(x[",i,"],",prior.sel$parama[i],",",prior.sel$paramb[i],",log=TRUE)",sep="")
+      samp.fn[[i]] <- paste("x[",i,"]=r",prior.sel$distn[i],"(1,",prior.sel$parama[i],",",prior.sel$paramb[i],")",sep="")
+  #  }
+  }
+  
+  to.density <- paste(dens.fn,collapse=",")
+  to.sampler <- paste(samp.fn,collapse=" ", "\n")
+  
+  density <- eval(parse(text=paste("function(x){ \n return(sum(",to.density,")) \n }",sep="")))
+  sampler <- eval(parse(text=paste("function(){ \n x=rep(NA,",nrow(prior.sel),") \n",to.sampler,"return(x) \n ","}",sep="")))
+  
+  # Use createPrior{BayesianTools} function to create prior class object compatible with rest of the functions
+  out <- createPrior(density = density, sampler = sampler)
+  return(out)
 }
