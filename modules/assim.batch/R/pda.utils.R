@@ -806,3 +806,31 @@ pda.create.btprior <- function(prior.sel){
   out <- createPrior(density = density, sampler = sampler)
   return(out)
 }
+
+
+##' Helper function for applying BayesianTools specific settings from PEcAn general settings
+##'
+##' @title Apply settings for BayesianTools
+##' @param settings PEcAn settings
+##'
+##' @return bt.settings list of BayesianTools runMCMC settings
+##'
+##' @author Istem Fer
+##' @export
+##' 
+## Generate proposal  
+pda.settings.bt <- function(settings){
+# TODO: pass jump variances to proposalGenerator from settings
+# sqrt(unlist(settings$assim.batch$jump$jvar))
+# proposalGenerator <- createProposalGenerator(covariance = sqrt(c(settings$assim.batch$jump$jvar,0.000005)), message = T)
+
+# TODO: this should have the broadest options possible
+# apply BayesianTools specific settings from PEcAn settings list
+#bt.settings=list(iterations = as.numeric(settings$assim.batch$bt.settings$iter), consoleUpdates=as.numeric(settings$assim.batch$bt.settings$consoleUpdates), optimize=settings$assim.batch$bt.settings$optimize, 
+#                 adapt=settings$assim.batch$bt.settings$adapt, adaptationInverval=as.numeric(settings$assim.batch$bt.settings$adaptationInverval), adaptationNotBefore=as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore),
+#                 DRlevels=as.numeric(settings$assim.batch$bt.settings$DRlevels), gibbsProbabilities=NULL,
+#                 initialParticles=list("prior",as.numeric(settings$assim.batch$bt.settings$n.initialParticles)))
+  bt.settings=list(iterations = as.numeric(settings$assim.batch$bt.settings$iter), optimize=F)
+  
+  return(bt.settings) 
+}

@@ -126,19 +126,9 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   ## Set starting values
   bayesianSetup$prior$best = parm[prior.ind]
   
-  ## Generate proposal  
+  ## Apply BayesianTools specific settings
+  bt.settings=pda.settings.bt(settings)
   
-  # TODO: pass jump variances to proposalGenerator from settings
-  # sqrt(unlist(settings$assim.batch$jump$jvar))
-  # proposalGenerator <- createProposalGenerator(covariance = sqrt(c(settings$assim.batch$jump$jvar,0.000005)), message = T)
-
-  # TODO: this should have the broadest options possible
-  # apply BayesianTools specific settings from PEcAn settings list
-  #bt.settings=list(iterations = as.numeric(settings$assim.batch$bt.settings$iter), consoleUpdates=as.numeric(settings$assim.batch$bt.settings$consoleUpdates), optimize=settings$assim.batch$bt.settings$optimize, 
-  #                 adapt=settings$assim.batch$bt.settings$adapt, adaptationInverval=as.numeric(settings$assim.batch$bt.settings$adaptationInverval), adaptationNotBefore=as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore),
-  #                 DRlevels=as.numeric(settings$assim.batch$bt.settings$DRlevels), gibbsProbabilities=NULL)
-  
-  bt.settings=list(iterations = as.numeric(settings$assim.batch$bt.settings$iter), optimize=F)
   out <- runMCMC(bayesianSetup = bayesianSetup, sampler = settings$assim.batch$bt.settings$sampler, settings = bt.settings)
   
   # save(out,file=file.path(settings$outdir, "out.Rda"))
