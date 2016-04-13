@@ -141,10 +141,13 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
        
   ## Create params matrix
   # *** TODO: Generalize to >1 chain
+  # TODO : Generalize for more than one parameter
   if(settings$assim.batch$bt.settings$sampler=="Metropolis"){
     params <- matrix(rep(parm,nrow(out$chain)), nrow=nrow(out$chain), ncol=n.param.all, byrow=T)
-    #colnames(params) <- pname
-    params[, prior.ind] <- out$chain[,1]
+    params[, prior.ind] <- out$chain[,1:length(prior.ind)]
+  } else if(settings$assim.batch$bt.settings$sampler=="DE") {
+    params <- matrix(rep(parm,length(out$chain)), nrow=length(out$chain), ncol=n.param.all, byrow=T)
+    params[, prior.ind] <- out$chain
   }
 
        
