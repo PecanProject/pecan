@@ -324,33 +324,23 @@ pda.define.llik.fn <- function(settings) {
   llik.fn <- list()
   for(i in 1:length(settings$assim.batch$input)) {
     llik.fn[[i]] <- function(NEEm, obs) {
-#       NEEo <- obs$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
-#       NEEq <- obs$data$NEE_or_fMDSqc #data$qf_Fc
-#       NEEo[NEEq > 1] <- NA
-    
-      NEE.resid <- abs(NEEm - obs$NEEo)
-      NEE.pos <- (NEEm >= 0)
-      LL <- c(dexp(NEE.resid[NEE.pos], 1/(obs$b0 + obs$bp*NEEm[NEE.pos]), log=TRUE), 
-              dexp(NEE.resid[!NEE.pos],1/(obs$b0 + obs$bn*NEEm[!NEE.pos]),log=TRUE))
-#       NEE.pos <- (NEEo >= 0)
-#       LL <- c(dexp(NEE.resid[NEE.pos], 1/(obs$b0 + obs$bp*NEEo[NEE.pos]), log=TRUE), 
-#               dexp(NEE.resid[!NEE.pos],1/(obs$b0 + obs$bn*NEEo[!NEE.pos]),log=TRUE))
-      return(list(LL=sum(LL,na.rm=TRUE), n=sum(!is.na(LL))))
-    }
-
-#     llik.fn[[i]] <- function(model, obs) {
-#       NEEo <- obs$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
-#       NEEq <- obs$data$NEE_or_fMDSqc #data$qf_Fc
-#       NEEo[NEEq > 1] <- NA
-#     
-#       NEEm <- model
-#     
-#       NEE.resid <- NEEm - NEEo
-#       LL <- dnorm(NEE.resid, 0, 1, log=TRUE)
-#       n.obs = sum(!is.na(LL))
-#       return(list(LL=sum(LL,na.rm=TRUE), n=n.obs))
-#     }
-
+      # NEE + heteroskedastic Laplace likelihood
+      if(settings$assim.batch$inputs[[i]]$variable.id == 297 && 
+         settings$assim.batch$inputs[[i]]$likelihood == "Laplace") {
+        llik.fn[[i]] <- function(NEEm, obs) {
+          NEE.resid <- abs(NEEm - obs$NEEo)
+          NEE.pos <- (NEEm >= 0)
+          LL <- c(dexp(NEE.resid[NEE.pos], 1/(obs$b0 + obs$bp*NEEm[NEE.pos]), log=TRUE), 
+                  dexp(NEE.resid[!NEE.pos],1/(obs$b0 + obs$bn*NEEm[!NEE.pos]),log=TRUE))
+          return(list(LL=sum(LL,na.rm=TRUE), n=sum(!is.na(LL))))
+        }
+      } else {
+        # Default to Normal(0,1)
+        llik.fn[[i]] <- function(model.out, obs.data) {
+          LL <- dnorm(model.out - obs.data$data, log=TRUE)
+          return(list(LL=sum(LL,na.rm=TRUE), n=sum(!is.na(LL))))
+        }
+      }
   }
 
   return(llik.fn)
