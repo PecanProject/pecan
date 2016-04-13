@@ -97,45 +97,45 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values, settings, run.id,
   ### Create species parameter matrix with correct PFTs
   # trait.values$`Hemlock(Tsuga Canadensis)`$
   #group will be each spp. 
-  # for(group in names(trait.values)){
-  #   if(group == "env"){
-  # 
-  #     ## leave defaults
-  #     ##
-  # 
-  #   } else {
-  #     ## copy values
-  #     if(!is.null(trait.values[[group]])){
-  #       vals <- trait.values[[group]]
-  # 
-  #       #replace defaults with traits
-  #       new.params.locs <- which(names(spp.params) %in% names(vals))
-  #       new.vals.locs <- which(names(vals) %in% names(spp.params))
-  #       spp.params[spp.params$Spp_Name==group,new.params.locs] <- vals[new.vals.locs]
-  # 
-  #       #conversion of some traits to match what LINKAGES needs
-  #       #Going to have to look up this paper Botkin 1972 Some Ecological Consequences of a computer model of forest growth
-  #       if('HTMAX' %in% names(vals) & 'DBHMAX' %in% names(vals)){
-  #         spp.params[spp.params$Spp_Name==group,]$B2 <- 2*(((vals$HTMAX*100) - 137) / (vals$DBHMAX*100))
-  #         spp.params[spp.params$Spp_Name==group,]$B3 <- (vals$HTMAX*100 - 137) / (vals$DBHMAX*100 ^ 2)
-  #       }
-  # 
-  #       if('root2shoot' %in% names(vals)){
-  #         spp.params[spp.params$Spp_Name==group,]$RTST <- vals$root2shoot
-  #       }
-  # 
-  #       if('leaf_longevity' %in% names(vals)){
-  #         spp.params[spp.params$Spp_Name==group,]$FRT <- vals$leaf_longevity
-  #       }
-  # 
-  #       if('TL' %in% names(vals)){
-  #         spp.params[spp.params$Spp_Name==group,]$TL <- ceiling(vals$TL)
-  #       }
-  # 
-  # 
-  #     }
-  #  }
-  #}
+  for(group in names(trait.values)){
+    if(group == "env"){
+
+      ## leave defaults
+      ##
+
+    } else {
+      ## copy values
+      if(!is.null(trait.values[[group]])){
+        vals <- trait.values[[group]]
+
+        #replace defaults with traits
+        new.params.locs <- which(names(spp.params) %in% names(vals))
+        new.vals.locs <- which(names(vals) %in% names(spp.params))
+        spp.params[spp.params$Spp_Name==group,new.params.locs] <- vals[new.vals.locs]
+
+        #conversion of some traits to match what LINKAGES needs
+        #Going to have to look up this paper Botkin 1972 Some Ecological Consequences of a computer model of forest growth
+        if('HTMAX' %in% names(vals) & 'DBHMAX' %in% names(vals)){
+          spp.params[spp.params$Spp_Name==group,]$B2 <- 2*(((vals$HTMAX*100) - 137) / (vals$DBHMAX*100))
+          spp.params[spp.params$Spp_Name==group,]$B3 <- (vals$HTMAX*100 - 137) / (vals$DBHMAX*100 ^ 2)
+        }
+
+        if('root2shoot' %in% names(vals)){
+          spp.params[spp.params$Spp_Name==group,]$RTST <- vals$root2shoot
+        }
+
+        if('leaf_longevity' %in% names(vals)){
+          spp.params[spp.params$Spp_Name==group,]$FRT <- vals$leaf_longevity
+        }
+
+        if('TL' %in% names(vals)){
+          spp.params[spp.params$Spp_Name==group,]$TL <- ceiling(vals$TL)
+        }
+
+
+      }
+    }
+  }
 
   switch.mat <- switch.mat[spp.params.save,]
   
