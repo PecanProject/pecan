@@ -99,7 +99,7 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   ## Create prior class object for BayesianTools
   bt.prior <- pda.create.btprior(prior[prior.ind,])
   
-  ## Create log-likelihood function for bayesianSetup{BayesianTools}
+  ## Create log-likelihood function for createbayesianSetup{BayesianTools}
   bt.likelihood <- function(x, sum = T){
     parm[prior.ind]=x
     
@@ -127,14 +127,14 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   
   ## Generate proposal  
   
-  ########## TODO: pass jump variances to proposalGenerator from settings ######################
-  #sqrt(unlist(settings$assim.batch$jump$jvar))
-  
-  #proposalGenerator <- createProposalGenerator(covariance = sqrt(c(settings$assim.batch$jump$jvar,0.000005)), message = T)
+  # TODO: pass jump variances to proposalGenerator from settings
+  # sqrt(unlist(settings$assim.batch$jump$jvar))
+  # proposalGenerator <- createProposalGenerator(covariance = sqrt(c(settings$assim.batch$jump$jvar,0.000005)), message = T)
 
   # TODO: this should have the broadest options possible
   # bt.settings=list(iterations = settings$assim.batch$bt.settings$iter, proposalGenerator=proposalGenerator, adapt = settings$assim.batch$bt.settings$adapt, DRlevels = settings$assim.batch$bt.settings$DRlevels, gibbsProbabilities = settings$assim.batch$bt.settings$gibbsProbs, temperingFunction = NULL, optimize = settings$assim.batch$bt.settings$optim)
-  bt.settings=list(iterations = settings$assim.batch$bt.settings$iter, optimize=F)
+
+  bt.settings=list(iterations = as.numeric(settings$assim.batch$iter), optimize=F)
   out <- runMCMC(bayesianSetup = bayesianSetup, sampler = settings$assim.batch$bt.settings$sampler, settings = bt.settings)
   
   # save(out,file=file.path(settings$outdir, "out.Rda"))
@@ -149,14 +149,14 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
 
        
        
-       ## ------------------------------------ Clean up ------------------------------------ ##
-       ## Save outputs to plots, files, and db
-       settings <- pda.postprocess(settings, con, params, pname, prior, prior.ind)
+  ## ------------------------------------ Clean up ------------------------------------ ##
+  ## Save outputs to plots, files, and db
+  settings <- pda.postprocess(settings, con, params, pname, prior, prior.ind)
        
-       ## close database connection
-       if(!is.null(con)) db.close(con)
+  ## close database connection
+  if(!is.null(con)) db.close(con)
        
-       ## Output an updated settings list
-       return(settings)
+  ## Output an updated settings list
+  return(settings)
        
 } ## end pda.bayesian.tools

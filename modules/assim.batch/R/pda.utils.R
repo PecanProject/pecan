@@ -247,7 +247,7 @@ pda.load.priors <- function(settings, con) {
 pda.create.ensemble <- function(settings, con, workflow.id) {
   if (!is.null(con)) {
     # Identifiers for ensemble 'runtype'
-    if(settings$assim.batch$method == "bruteforce" | settings$assim.batch$method == "bruteforce.bs") {
+    if(settings$assim.batch$method == "bruteforce" | settings$assim.batch$method == "bruteforce.bs" | settings$assim.batch$method == "bayesian.tools") {
       ensemble.type <- "pda.MCMC"
     } else if(settings$assim.batch$method == "emulator") {
       ensemble.type <- "pda.emulator"
