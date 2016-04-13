@@ -134,7 +134,7 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   # TODO: this should have the broadest options possible
   # bt.settings=list(iterations = settings$assim.batch$bt.settings$iter, proposalGenerator=proposalGenerator, adapt = settings$assim.batch$bt.settings$adapt, DRlevels = settings$assim.batch$bt.settings$DRlevels, gibbsProbabilities = settings$assim.batch$bt.settings$gibbsProbs, temperingFunction = NULL, optimize = settings$assim.batch$bt.settings$optim)
 
-  bt.settings=list(iterations = as.numeric(settings$assim.batch$iter), optimize=F)
+  bt.settings=list(iterations = as.numeric(settings$assim.batch$bt.settings$iter), optimize=F)
   out <- runMCMC(bayesianSetup = bayesianSetup, sampler = settings$assim.batch$bt.settings$sampler, settings = bt.settings)
   
   # save(out,file=file.path(settings$outdir, "out.Rda"))
