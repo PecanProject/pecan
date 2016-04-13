@@ -323,7 +323,6 @@ pda.define.llik.fn <- function(settings) {
   # Currently just returns a single likelihood, assuming the data are flux NEE.
   llik.fn <- list()
   for(i in 1:length(settings$assim.batch$input)) {
-    llik.fn[[i]] <- function(NEEm, obs) {
       # NEE + heteroskedastic Laplace likelihood
       if(settings$assim.batch$inputs[[i]]$variable.id == 297 && 
          settings$assim.batch$inputs[[i]]$likelihood == "Laplace") {
