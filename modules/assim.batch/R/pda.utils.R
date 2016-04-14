@@ -852,7 +852,7 @@ pda.settings.bt <- function(settings){
   } else if(sampler == "SMC") {
     settings <- list(initialParticles = initialParticles, iterations= iterations)
   } else if(sampler %in% c("DREAM", "DREAMzs")) {
-    bt.settings <- list()
+    bt.settings <- list(ndraw=iterations*n.param)
   } else {
     logger.error(paste0(sampler, "sampler not found!"))
   }
