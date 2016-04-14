@@ -162,18 +162,12 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   # SHOULD WE USE PACKAGE'S PLOT METHODS?
   n.row = as.numeric(settings$assim.batch$bt.settings$iter)
   
-  if(sampler=="Metropolis"){
-    params <- matrix(rep(parm,n.row), nrow=n.row, ncol=n.param.all, byrow=T)
-    params[, prior.ind] <- out$chain[,1:length(prior.ind)]
-  } else if(sampler %in% c("M","DR","DE","DEzs")) {
-    params <- matrix(rep(parm,n.row), nrow=n.row, ncol=n.param.all, byrow=T)
-    params[, prior.ind] <- out$chain
-  } else if(sampler %in% c("AM","DRAM")) {
-    params <- matrix(rep(parm,(n.row+1000)), nrow=(n.row+1000), ncol=n.param.all, byrow=T)
-    params[, prior.ind] <- out$chain
-  } else if(sampler=="SMC") {
+  if(sampler=="SMC"){
     params <- matrix(rep(parm,bt.settings$initialParticles[[2]]), nrow=bt.settings$initialParticles[[2]], ncol=n.param.all, byrow=T)
     params[, prior.ind] <- out$particles
+  } else {
+    params <- matrix(rep(parm,n.row), nrow=n.row, ncol=n.param.all, byrow=T)
+    params[, prior.ind] <- out$chain[,1:length(prior.ind)]
   }
 
        
