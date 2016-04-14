@@ -820,20 +820,42 @@ pda.create.btprior <- function(prior.sel){
 ##' 
 pda.settings.bt <- function(settings){
   
+  sampler = settings$assim.batch$bt.settings$sampler 
+  
+  iterations = as.numeric(settings$assim.batch$bt.settings$iter)
+  optimize = settings$assim.batch$bt.settings$optimize
+  consoleUpdates = as.numeric(settings$assim.batch$bt.settings$consoleUpdates)
+  parallel = settings$assim.batch$bt.settings$parallel
+  adapt = settings$assim.batch$bt.settings$adapt
+  adaptationInverval = as.numeric(settings$assim.batch$bt.settings$adaptationInverval)
+  adaptationNotBefore = as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore)
+  initialParticles=list("prior",as.numeric(settings$assim.batch$bt.settings$n.initialParticles))
+  DRlevels = as.numeric(settings$assim.batch$bt.settings$DRlevels)
+  proposalScaling = settings$assim.batch$bt.settings$proposalScaling
+  adaptationDepth = settings$assim.batch$bt.settings$adaptationDepth
+  temperingFunction = settings$assim.batch$bt.settings$temperingFunction
+  gibbsProbabilities = as.numeric(unlist(settings$assim.batch$bt.settings$gibbsProbabilities))
+  
 ## Generate proposal  
 # TODO: pass jump variances to proposalGenerator from settings
 # sqrt(unlist(settings$assim.batch$jump$jvar))
 # proposalGenerator <- createProposalGenerator(covariance = sqrt(c(settings$assim.batch$jump$jvar,0.000005)), message = T)
 
-  ######## TODO : algorithm specific setup ############
   
-# TODO: this should have the broadest options possible
-# apply BayesianTools specific settings from PEcAn settings list
-#bt.settings=list(iterations = as.numeric(settings$assim.batch$bt.settings$iter), consoleUpdates=as.numeric(settings$assim.batch$bt.settings$consoleUpdates), optimize=settings$assim.batch$bt.settings$optimize, 
-#                 adapt=settings$assim.batch$bt.settings$adapt, adaptationInverval=as.numeric(settings$assim.batch$bt.settings$adaptationInverval), adaptationNotBefore=as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore),
-#                 DRlevels=as.numeric(settings$assim.batch$bt.settings$DRlevels), gibbsProbabilities=NULL,
-#                 initialParticles=list("prior",as.numeric(settings$assim.batch$bt.settings$n.initialParticles)))
-  bt.settings=list(iterations = as.numeric(settings$assim.batch$bt.settings$iter), optimize=F)
+  if(sampler == "Metropolis") {
+    bt.settings <- list(iterations = iterations, adapt = adapt, DRlevels = DRlevels, gibbsProbabilities = gibbsProbabilities, 
+                     temperingFunction = temperingFunction, optimize = optimize)
+  } else if(sampler %in% c("AM", "M", "DRAM", "DR")) {
+    settings = list(iterations = iterations, startValue = "prior")
+  } else if(sampler %in% c("DE", "DEzs")) {
+    bt.settings <- list(iterations = iterations)
+  } else if(sampler == "SMC") {
+    settings <- list(initialParticles = initialParticles, iterations= iterations)
+  } else if(sampler %in% c("DREAM", "DREAMzs")) {
+    bt.settings <- list()
+  } else {
+    logger.error(paste0(sampler, "sampler not found!"))
+  }
   
   return(bt.settings) 
 }
