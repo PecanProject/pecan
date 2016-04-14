@@ -119,6 +119,7 @@ get.elasticity <- function(sensitivity, samples, outputs){
 ##' @param sa.output  list of data.frames, similar to sa.samples, except cells contain the results of a model run with that trait x quantile combination and all other traits held at their median value  
 ##' @param outdir directory to which plots are written
 ##' @return results of sensitivity analysis
+##' @export
 ##' @author David LeBauer
 ##' @examples
 ##' \dontrun{
