@@ -17,6 +17,8 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   # install_url("https://dl.dropboxusercontent.com/s/hy9l6mokresqyel/BayesianTools_0.0.0.9000.tar.gz")
   library(BayesianTools)
   
+  sampler = settings$assim.batch$bt.settings$sampler
+  
 
   ## this bit of code is useful for defining the variables passed to this function 
   ## if you are debugging
@@ -64,6 +66,9 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   prior.ind <- which(rownames(prior) %in% settings$assim.batch$param.names)
   n.param <- length(prior.ind)
   
+  ## NOTE: The listed samplers here require more than 1 parameter for now because of the way their cov is calculated 
+  if(sampler %in% c("M","AM","DR","DRAM") & n.param<2) logger.error(paste0(sampler, " sampler can be used with >=2 paramaters"))
+    
   ## Get the workflow id
   if ("workflow" %in% names(settings)) {
     workflow.id <- settings$workflow$id
@@ -123,21 +128,39 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   ## Create bayesianSetup object for BayesianTools
   bayesianSetup = createBayesianSetup(bt.likelihood, bt.prior)
   
+  
   ## Set starting values
   bayesianSetup$prior$best = parm[prior.ind]
+  
+  ## NOTE: The listed samplers here require upper and lower boundaries for now in the BayesianTools package
+  ## check if the user provided them, if not try to extract if the prior is uniform, or throw an error
+  upper = as.numeric(unlist(settings$assim.batch$bt.settings$upper))
+  lower = as.numeric(unlist(settings$assim.batch$bt.settings$lower))
+   if(sampler %in% c("DREAM","DREAMzs","M","AM","DR","DRAM")){
+    if(length(upper)!=0 & length(lower)!=0){
+      bayesianSetup$prior$upper=upper
+      bayesianSetup$prior$lower=lower
+    } else if(length(upper)==0 & length(upper)==0 && all(prior[prior.ind,1]=="unif")){
+      bayesianSetup$prior$upper=prior[prior.ind,3]
+      bayesianSetup$prior$lower=prior[prior.ind,2]
+    } else{
+      logger.error(paste0(sampler, " sampler requires upper and lower boundaries!"))
+    }
+  }
   
   ## Apply BayesianTools specific settings
   bt.settings=pda.settings.bt(settings)
   
+  ## central function in BayesianTools
   out <- runMCMC(bayesianSetup = bayesianSetup, sampler = settings$assim.batch$bt.settings$sampler, settings = bt.settings)
   
   # save(out,file=file.path(settings$outdir, "out.Rda"))
        
   ## Create params matrix
   # *** TODO: Generalize to >1 chain
-  # TODO : Generalize for more than one parameter
+  
+  # SHOULD WE USE PACKAGE'S PLOT METHODS?
   n.row = as.numeric(settings$assim.batch$bt.settings$iter)
-  sampler = settings$assim.batch$bt.settings$sampler
   
   if(sampler=="Metropolis"){
     params <- matrix(rep(parm,n.row), nrow=n.row, ncol=n.param.all, byrow=T)

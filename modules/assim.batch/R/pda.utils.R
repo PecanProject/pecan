@@ -846,15 +846,15 @@ pda.settings.bt <- function(settings){
     bt.settings <- list(iterations = iterations, adapt = adapt, DRlevels = DRlevels, gibbsProbabilities = gibbsProbabilities, 
                      temperingFunction = temperingFunction, optimize = optimize)
   } else if(sampler %in% c("AM", "M", "DRAM", "DR")) {
-    settings = list(iterations = iterations, startValue = "prior")
+    bt.settings = list(iterations = iterations, startValue = "prior")
   } else if(sampler %in% c("DE", "DEzs")) {
     bt.settings <- list(iterations = iterations)
   } else if(sampler == "SMC") {
-    settings <- list(initialParticles = initialParticles, iterations= iterations)
+    bt.settings <- list(initialParticles = initialParticles, iterations= iterations)
   } else if(sampler %in% c("DREAM", "DREAMzs")) {
     bt.settings <- list(ndraw=iterations*n.param)
   } else {
-    logger.error(paste0(sampler, "sampler not found!"))
+    logger.error(paste0(sampler, " sampler not found!"))
   }
   
   return(bt.settings) 
