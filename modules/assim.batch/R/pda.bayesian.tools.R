@@ -133,7 +133,7 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   bayesianSetup$prior$best = parm[prior.ind]
   
   ## NOTE: The listed samplers here require upper and lower boundaries for now in the BayesianTools package
-  ## check if the user provided them, if not try to extract if the prior is uniform, or throw an error
+  ## check if the user provided them, if not try to extract from the prior if it is uniform, or throw an error
   upper = as.numeric(unlist(settings$assim.batch$bt.settings$upper))
   lower = as.numeric(unlist(settings$assim.batch$bt.settings$lower))
    if(sampler %in% c("DREAM","DREAMzs","M","AM","DR","DRAM")){
@@ -144,7 +144,7 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
       bayesianSetup$prior$upper=prior[prior.ind,3]
       bayesianSetup$prior$lower=prior[prior.ind,2]
     } else{
-      logger.error(paste0(sampler, " sampler requires upper and lower boundaries!"))
+      logger.error(paste0(sampler, " sampler requires upper and lower boundaries for all parameters!"))
     }
   }
   
@@ -165,9 +165,12 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   if(sampler=="Metropolis"){
     params <- matrix(rep(parm,n.row), nrow=n.row, ncol=n.param.all, byrow=T)
     params[, prior.ind] <- out$chain[,1:length(prior.ind)]
-  } else if(sampler=="DE") {
+  } else if(sampler %in% c("M","AM","DR","DRAM","DE","DEzs")) {
     params <- matrix(rep(parm,n.row), nrow=n.row, ncol=n.param.all, byrow=T)
     params[, prior.ind] <- out$chain
+  } else if(sampler=="SMC") {
+    params <- matrix(rep(parm,bt.settings$initialParticles[[2]]), nrow=bt.settings$initialParticles[[2]], ncol=n.param.all, byrow=T)
+    params[, prior.ind] <- out$particles
   }
 
        
