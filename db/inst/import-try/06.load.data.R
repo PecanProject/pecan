@@ -1,8 +1,8 @@
 # 6. Add TRY data to BETY
 source("common.R")
 load("try.5.RData")
-library(stringr)
 library(udunits2)
+library(stringr)
 
 setkey(try.dat, ObservationID)
 try.entities <- try.dat[, .GRP, by=ObservationID]
