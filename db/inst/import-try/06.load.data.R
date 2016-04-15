@@ -2,10 +2,19 @@
 source("common.R")
 load("try.5.RData")
 library(stringr)
+library(udunits2)
 
 setkey(try.dat, ObservationID)
 try.entities <- try.dat[, .GRP, by=ObservationID]
 try.entities[, c("bety.entity.id", "bety.trait.id") := character(nrow(try.entities))]
+
+# Get units from BETY
+bety.units <- data.table(db.query("SELECT DISTINCT id, units FROM variables;", con))
+bety.units[, id := as.character(id)]
+setkey(bety.units, id)
+setkey(try.dat, bety_id)
+try.dat <- bety.units[try.dat]
+setnames(try.dat, "id", "bety_id")
 
 # a. Loop over entities...
 add.entity.query <- "INSERT INTO entities(name, notes) VALUES('%s', '%s') RETURNING id"
@@ -48,7 +57,7 @@ for(i in 1:nrow(try.entities)){
       site_id = try.sub[j, bety.site.id],
       specie_id = try.sub[j, bety.species.id],
       citation_id = try.sub[j, bety.citation.id],
-      mean = try.sub[j, StdValue],
+      mean = try.sub[j, ud.convert(StdValue, UnitName, units)],
       n = try.sub[j, Replicates],
       user_id = user_id,
       entity_id = entity,
