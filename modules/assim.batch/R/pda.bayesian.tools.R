@@ -66,9 +66,11 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   prior.ind <- which(rownames(prior) %in% settings$assim.batch$param.names)
   n.param <- length(prior.ind)
   
-  ## NOTE: The listed samplers here require more than 1 parameter for now because of the way their cov is calculated 
+  ## NOTE: The listed samplers here require more than 1 (DEzs more than2) parameter for now because of the way their cov is calculated 
   if(sampler %in% c("M","AM","DR","DRAM") & n.param<2) logger.error(paste0(sampler, " sampler can be used with >=2 paramaters"))
-    
+  if(sampler == "DEzs" & n.param<3) logger.error(paste0(sampler, " sampler can be used with >=3 paramaters"))
+  
+  
   ## Get the workflow id
   if ("workflow" %in% names(settings)) {
     workflow.id <- settings$workflow$id
