@@ -4,14 +4,14 @@
 \alias{invert.auto}
 \title{Inversion with automatic convergence checking}
 \usage{
-invert.auto(observed, settings, return.samples = TRUE, save.samples = NULL,
-  quiet = FALSE)
+invert.auto(observed, invert.options, return.samples = TRUE,
+  save.samples = NULL, quiet = FALSE, ...)
 }
 \arguments{
 \item{observed}{Matrix of observed values. Must line up with output of 
 'model'.}
 
-\item{settings}{R list object containing the following elements:
+\item{invert.options}{R list object containing the following elements:
 
 inits Vector of initial values of model parameters to be inverted.
 
@@ -32,7 +32,8 @@ steps). Default=100
 adj_min Minimum threshold for rescaling Jump standard deviation.  Default = 
 0.1.
 
-target Target acceptance rate. Default=0.234
+target Target acceptance rate. Default=0.234, based on recommendation for 
+multivariate block sampling in Haario et al. 2001
 
 do.lsq Perform least squares optimization first (see `invert.lsq`), and use 
 outputs to initialize Metropolis Hastings. This may improve mixing time, but 
@@ -59,6 +60,8 @@ attempt. Default = 0.8}
 
 \item{save.samples}{Filename for saving samples after each iteration. If 
 'NULL', do not save samples. Default = NULL.}
+
+\item{...}{Other arguments to `check.convergence`}
 }
 \value{
 List of "results" (summary statistics and Gelman Diagnostic) and 

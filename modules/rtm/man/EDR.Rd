@@ -4,9 +4,10 @@
 \alias{EDR}
 \title{ED radiative transfer module (EDR) wrapper function}
 \usage{
-EDR(paths, RT.matrix, par.wl, nir.wl, datetime, history.prefix = "history",
-  edr.exe.name = "ed_2.1-opt", change.history.time = TRUE,
-  output.path = getwd(), clean = FALSE)
+EDR(paths, RT.matrix, par.wl, nir.wl, datetime, trait.values = list(),
+  settings = list(model = list(revision = "git", config.header = NULL)),
+  history.prefix = "history", edr.exe.name = "ed_2.1-opt",
+  change.history.time = TRUE, output.path = getwd(), clean = FALSE)
 }
 \arguments{
 \item{paths}{List of relevant paths. Must contain the following:
@@ -29,6 +30,10 @@ versions of PROSPECT in this package.}
 take place. N datetime POSIXlt object defining the date and at which the run 
 will take place. Note that runs at night and during the winter can give poor 
 results.}
+
+\item{trait.values}{Named, hierarchical list of trait values for generating config.xml file.}
+
+\item{settings}{PEcAn settings list. Default is model$revision = "git", model$config.header = NULL.}
 
 \item{history.prefix}{Prefix in histroy file name. Will be appended to 
 history path.}
