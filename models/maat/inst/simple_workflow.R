@@ -42,3 +42,35 @@ if (!file.exists(file.path(settings$rundir, "runs.txt")) | settings$meta.analysi
   logger.info("Already wrote configuraiton files")    
 }
 #--------------------------------------------------------------------------------------------------#
+
+#--------------------------------------------------------------------------------------------------#
+# run model
+if (!file.exists(file.path(settings$rundir, "runs.txt"))) {
+  logger.severe("No ensemble or sensitivity analysis specified in pecan.xml, work is done.")
+} else {
+  start.model.runs(settings, settings$database$bety$write)
+}
+#--------------------------------------------------------------------------------------------------#
+
+
+#--------------------------------------------------------------------------------------------------#
+# get results
+get.results(settings)
+#--------------------------------------------------------------------------------------------------#
+
+# ensemble analysis
+#if (!file.exists(file.path(settings$outdir,"ensemble.ts.pdf"))) {
+#  run.ensemble.analysis(TRUE)    
+#} else {
+#  logger.info("Already executed run.ensemble.analysis()")
+#}
+
+# sensitivity analysis
+if (!file.exists(file.path(settings$outdir, "sensitivity.results.Rdata"))) {
+  run.sensitivity.analysis()
+} else {
+  logger.info("Already executed run.sensitivity.analysis()")    
+}
+
+db.print.connections()
+print("---------- PEcAn Workflow Complete ----------")
