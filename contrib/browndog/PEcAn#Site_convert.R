@@ -77,16 +77,18 @@ if (mettype == "Ameriflux") {
   metgapfill(cffolder, sitename, gapfolder, start_date, end_date, 0, overwrite, verbose)
 
   folder <- gapfolder
+  outname <- sitename
 } else if (mettype == "NARR") {
   permutefolder <- file.path(cacheDir, mettype, "permute")
   dir.create(permutefolder, showWarnings=FALSE, recursive=TRUE)
   permute.nc(cffolder, mettype, permutefolder, start_date, end_date, overwrite, verbose)
 
-  sitefolder <- file.path(cacheDir, mettype, "site")
+  sitefolder <- file.path(cacheDir, mettype, "site", sitename)
   dir.create(sitefolder, showWarnings=FALSE, recursive=TRUE)
-  extract.nc(permutefolder, mettype, sitefolder, sitename, start_date, end_date, site_lat, site_lon, overwrite, verbose)
+  extract.nc(permutefolder, mettype, sitefolder, start_date, end_date, site_lat, site_lon, overwrite, verbose)
 
   folder <- sitefolder
+  outname <- mettype
 }
 
 # get start/end year code works on whole years only
@@ -98,7 +100,7 @@ if (grepl("\\.zip$", outputfile) || (end_year - start_year > 1)) {
     # get list of files we need to zip
     files <- c()
     for(year in start_year:end_year) {
-      files <- c(files, file.path(folder, paste(sitename, year, "nc", sep=".")))
+      files <- c(files, file.path(folder, paste(outname, year, "nc", sep=".")))
     }
 
     # use intermediate file so it does not get marked as done until really done
@@ -109,6 +111,6 @@ if (grepl("\\.zip$", outputfile) || (end_year - start_year > 1)) {
     file.rename(zipfile, outputfile)
 } else {
     start_year <- year(start_date)
-    outfile <- file.path(folder, paste(sitename, start_year, "nc", sep="."))
+    outfile <- file.path(folder, paste(outname, start_year, "nc", sep="."))
     file.link(outfile, outputfile)
 }
