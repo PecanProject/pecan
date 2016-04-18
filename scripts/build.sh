@@ -143,7 +143,7 @@ PACKAGES="${PACKAGES} models/preles models/gday models/lpjguess models/maespa"
 PACKAGES="${PACKAGES} modules/priors modules/meta.analysis modules/uncertainty"
 PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere modules/data.remote"
 PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential modules/emulator"
-PACKAGES="${PACKAGES} modules/allometry modules/photosynthesis"
+PACKAGES="${PACKAGES} modules/allometry modules/photosynthesis modules/rtm"
 PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro models/dalec models/linkages"
 PACKAGES="${PACKAGES} all"
 
