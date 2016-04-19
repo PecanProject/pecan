@@ -25,8 +25,6 @@
 ##-------------------------------------------------------------------------------------------------#
 write.config.LPJGUESS <- function(defaults, trait.values, settings, run.id){
   
-  require(PEcAn.settings)
-  
   
   # find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, run.id)
