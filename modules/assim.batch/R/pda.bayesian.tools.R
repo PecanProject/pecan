@@ -13,8 +13,6 @@
 pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
                        iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL) {
   
-  # library(devtools)
-  # install_url("https://dl.dropboxusercontent.com/s/hy9l6mokresqyel/BayesianTools_0.0.0.9000.tar.gz")
   library(BayesianTools)
   
   sampler = settings$assim.batch$bt.settings$sampler
@@ -68,8 +66,7 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   
   ## NOTE: The listed samplers here require more than 1 (DEzs more than2) parameter for now because of the way their cov is calculated 
   if(sampler %in% c("M","AM","DR","DRAM") & n.param<2) logger.error(paste0(sampler, " sampler can be used with >=2 paramaters"))
-  if(sampler == "DEzs" & n.param<3) logger.error(paste0(sampler, " sampler can be used with >=3 paramaters"))
-  
+
   
   ## Get the workflow id
   if ("workflow" %in% names(settings)) {
@@ -86,9 +83,6 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
-  
-  # Warn the user if jvar is not provided
-  if(is.null(settings$assim.batch$jump$jvar)) logger.warn("Jump variances are not provided, default to 0.1 * 90% prior CI. If chains are not mixing well, provide smaller values for low acceptance rates and bigger values for high acceptance rates.")
   
   # Default jump variances. Looped for clarity
   ind <- which(is.na(settings$assim.batch$jump$jvar))
