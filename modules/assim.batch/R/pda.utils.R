@@ -641,9 +641,9 @@ pda.calc.llik <- function(settings, con, model.out, run.id, inputs, llik.fn) {
 ##' @title Generate Parameter Knots for PDA Emulator
 ##' @param all params are the identically named variables in pda.mcmc / pda.emulator
 ##'
-##' @return A matrix of parameter values, with one row for each knot in the emulator.
+##' @return A list of probabilities and parameter values, with one row for each knot in the emulator.
 ##'
-##' @author Ryan Kelly
+##' @author Ryan Kelly, Istem Fer
 ##' @export
 pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn, pname) {
   # By default, all parameters will be fixed at their median
@@ -658,8 +658,9 @@ pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn, pname) 
     params[,i] <- eval(prior.fn$qprior[[i]], list(p=probs[,i]))
   }
   colnames(params) <- pname
+  colnames(probs) <- pname
   
-  return(params)
+  return(list(params=params,probs=probs))
 }
 
 
