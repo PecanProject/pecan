@@ -1,6 +1,7 @@
 # MAC specific files
 .DS_Store
 ._.DS_Store
+._*
 # CMD check generated folders
 *.Rcheck
 # build.sh generated files

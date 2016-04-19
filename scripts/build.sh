@@ -145,6 +145,7 @@ PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere modules/data.rem
 PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential modules/emulator"
 PACKAGES="${PACKAGES} modules/allometry modules/photosynthesis"
 PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro models/dalec models/linkages"
+PACKAGES="${PACKAGES} modules/rtm"
 PACKAGES="${PACKAGES} all"
 
 # location where to install packages
@@ -289,7 +290,7 @@ echo "build took ${TIME} seconds."
 echo "----------------------------------------------------------------------"
 
 # cleanup
-rm -rf out.log *.Rcheck PEcAn.*.tar.gz PEcAn.*.tgz
+rm -rf out.log *.Rcheck PEcAn.*.tar.gz PEcAnRTM*.tar.gz PEcAn.*.tgz
 
 # run tests
 if [ "$TESTS" == "yes" ]; then

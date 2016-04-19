@@ -7,7 +7,9 @@ Author: Shawn Serbin, Anthony Walker
 Maintainer: Shawn Serbin <sserbin@bnl.gov>
 Description: This module provides functions to link the MAAT to PEcAn.
 Depends:
-    PEcAn.utils
+    PEcAn.utils,
+    ncdf4,
+    udunits2
 Suggests:
     testthat
 SystemRequirements: MAAT
