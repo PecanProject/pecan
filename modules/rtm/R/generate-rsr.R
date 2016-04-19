@@ -34,7 +34,7 @@ trim.rsr <- function(rsr, wl.min=400, wl.max=2500){
 #' @title Generate RSR matrices for all sensors and return as list
 #' @description Only needs to be called when updating these funcitons with new 
 #' data
-generate.rsr.all <- function(){
+generate.rsr.all <- function(path.to.licor=NULL){
     data(raw.sensor.data)
     rsr.aviris.ng <- with(fwhm.aviris.ng, rsr.from.fwhm(Wavelength, fwhm))
     rsr.aviris.classic <- with(fwhm.aviris.classic, rsr.from.fwhm(avg, fwhm))
@@ -46,8 +46,11 @@ generate.rsr.all <- function(){
     rsr.modis <- trim.rsr(rsr.modis)
     rsr.viirs <- trim.rsr(rsr.viirs)
     rsr.avhrr <- trim.rsr(rsr.avhrr)
-    csv.path <- "~/pecan/modules/rtm/data/spectral-response/LiCor_6400-40_chamber_RSRs-final.csv"
-    rsr.licor <- process.licor.rsr(csv.path)
+    if(!is.null(path.to.licor)){
+        rsr.licor <- process.licor.rsr(path.to.licor)
+    } else {
+        rsr.licro <- NA
+    }
     sensor.rsr <- list(aviris.ng = rsr.aviris.ng, 
                        aviris.classic = rsr.aviris.classic,
                        hyperion = rsr.hyperion,
