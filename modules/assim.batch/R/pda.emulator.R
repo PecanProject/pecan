@@ -86,10 +86,13 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
   ## ------------------------------------ Emulator ------------------------------------ ##
   ## Propose parameter knots (X) for emulator design
-  params.X <- pda.generate.knots(settings$assim.batch$n.knot, n.param.all, prior.ind, prior.fn, pname)
-
+  knots.list <- pda.generate.knots(settings$assim.batch$n.knot, n.param.all, prior.ind, prior.fn, pname)
+  knots.params <- knots.list$params
+  knots.probs <- knots.list$probs
+  
+  
   ## Set up runs and write run configs for all proposed knots X
-  run.ids <- pda.init.run(settings, con, my.write.config, workflow.id, params.X, 
+  run.ids <- pda.init.run(settings, con, my.write.config, workflow.id, knots.params, 
                           n=settings$assim.batch$n.knot, 
                           run.names=paste0("Knot.",1:settings$assim.batch$n.knot))
 
