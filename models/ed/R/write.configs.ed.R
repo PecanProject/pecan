@@ -67,7 +67,7 @@ convert.samples.ED <- function(trait.samples){
         trait.samples[['Vcmax']]
       
       ## Remove leaf_respiration_rate from trait samples
-      trait.samples$leaf_respiration_rate_m2 = NULL
+      trait.samples$leaf_respiration_rate_m2 = NULL # !!!WHY DO WE DO THIS??!!!
       
     } ## End dark_respiration_factor loop
   } ## End Vcmax  
