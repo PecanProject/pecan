@@ -90,14 +90,17 @@ EDR <- function(paths,
 # Generate input files
     par.nir.lengths <- c(length(par.wl), length(nir.wl))
     cat(par.nir.lengths, file=file.path(output.path, "lengths.dat"), sep = ' ')
-    par.ind <- which(RT.matrix[,"wl"] %in% par.wl)    # PAR indices -- offset by 399
+    par.ind <- which(RT.matrix[,"wl"] %in% par.wl)    # PAR indices
     nir.ind <- which(RT.matrix[,"wl"] %in% nir.wl)    # NIR indices 
     cat(RT.matrix[par.ind,1], file = file.path(output.path, "reflect_par.dat"), sep=" ")
     cat(RT.matrix[nir.ind,1], file = file.path(output.path, "reflect_nir.dat"), sep=" ")
     cat(RT.matrix[par.ind,2], file = file.path(output.path, "trans_par.dat"), sep=" ")
     cat(RT.matrix[nir.ind,2], file = file.path(output.path, "trans_nir.dat"), sep=" ")
 # Call EDR -- NOTE that this requires that the ED2IN 
+    albedo.files <- list.files(output.path, "albedo.*",full.names = TRUE)
+    file.remove(albedo.files)
     system(file.path(output.path, edr.exe.name), intern=TRUE)
+    if(!file.exists("albedo_par.dat")) stop("Error executing EDR")
 # Analyze output
     albedo <- get.EDR.output(output.path)
 # Optionally, clean up all generated files
@@ -152,10 +155,8 @@ EDR.prospect <- function(prospect.param, prospect.version=5, paths, par.wl, nir.
 #' @title Read EDR output
 #' @param path Path to directory containing `albedo_par/nir.dat` files
 get.EDR.output <- function(path=getwd()){
-    nir.table <- read.table(file.path(path, "albedo_nir.dat"))
-    par.table <- read.table(file.path(path, "albedo_par.dat"))
-    alb.nir <- unlist(nir.table[1,])
-    alb.par <- unlist(par.table[1,])
+    alb.par <- as.matrix(read.table(file.path(path, "albedo_par.dat")))[1,]
+    alb.nir <- as.matrix(read.table(file.path(path, "albedo_nir.dat")))[1,]
     albedo <- c(alb.par, alb.nir)
     return(albedo)
 }
