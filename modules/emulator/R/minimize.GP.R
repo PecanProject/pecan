@@ -125,8 +125,16 @@ calculate.prior <- function(samples, priors){
 ##' @name get.y
 ##' @title get.y
 ##' @export
-get.y <- function(gp, xnew, priors, ...){
-  likelihood <- predict(gp, xnew)
+get.y <- function(gp, pckg, xnew, priors, ...){
+  
+  if(pckg==1){
+    X=matrix(unlist(xnew), nrow=1, byrow=T)
+    Y=GPfit::predict.GP(gp,X)
+    likelihood <- Y$Y_hat
+  } else if(pckg==2){
+    likelihood <- predict(gp, xnew)
+  }
+  
   prior.prob <- calculate.prior(xnew, priors)
   return(likelihood + prior.prob)
 }
@@ -166,13 +174,13 @@ is.accepted <- function(ycurr, ynew, format='lin'){
 ##' @param priors
 ##' 
 ##' @author Michael Dietze
-mcmc.GP <- function(gp,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL, 
+mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL, 
     jmp0=0.35*(rng[,2]-rng[,1]), ar.target=0.5, priors=NA){
   
   haveTime <- FALSE #require("time")
 
   ## storage
-  ycurr <- get.y(gp, x0, priors)
+  ycurr <- get.y(gp, pckg, x0, priors)
 
   xcurr <- x0
   dim <- length(x0)
@@ -190,7 +198,7 @@ mcmc.GP <- function(gp,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
         xnew[i] <- rnorm(1,xcurr[[i]],p(jmp)[i])
       }
       #if(bounded(xnew,rng)){
-        ynew <- get.y(gp, xnew, priors)
+        ynew <- get.y(gp, pckg, xnew, priors)
         if(is.accepted(ycurr,ynew)){
           xcurr <- xnew
           ycurr <- ynew
@@ -202,7 +210,7 @@ mcmc.GP <- function(gp,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
         xnew <- xcurr
         xnew[i] <- rnorm(1,xcurr[[i]],p(jmp)[i])
         #if(bounded(xnew,rng)){
-          ynew <- get.y(gp, xnew, priors)
+          ynew <- get.y(gp, pckg, xnew, priors)
           if(is.accepted(ycurr,ynew)){
             xcurr <- xnew
             ycurr <- ynew

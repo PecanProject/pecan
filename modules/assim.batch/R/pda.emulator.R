@@ -117,7 +117,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   if(settings$assim.batch$GPpckg=="GPfit"){
     ## GPfit optimization routine assumes that inputs are in [0,1]
     ## Instead of drawing from parameters, we draw from probabilities
-    X <- data.frame(knots.probs[, prior.ind])
+    X <- knots.probs[, prior.ind]
 
     logger.info(paste0("Using 'GPfit' package for Gaussian Process Model fitting."))
     require(GPfit)
@@ -129,7 +129,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     prior[prior.ind,]=rep(c("unif",0,1,"NA"),each=n.param)
     ## Set up prior functions accordingly
     prior.fn <- pda.define.prior.fn(prior)
-    
+    pckg=1
   } else{
     X <- data.frame(knots.params[, prior.ind])
     df <- data.frame(LL = LL.X, X)
@@ -139,6 +139,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     ## Generate emulator on LL-params
     kernlab.gp <- gausspr(LL~., data=df)
     gp=kernlab.gp
+    pckg=2
   }
   
 
@@ -148,6 +149,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
          init.x <- lapply(prior.ind, function(v) eval(prior.fn$rprior[[v]], list(n=1)))
          names(init.x) <- pname[prior.ind]
          mcmc.GP(gp        = gp, ## Emulator
+                 pckg      = pckg, ## flag to determine which predict method to use
                  x0        = init.x,     ## Initial conditions
                  nmcmc     = settings$assim.batch$iter,       ## Number of reps
                  rng       = NULL,       ## 'rng' (not used since jmp0 is specified below)
@@ -168,7 +170,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     prior.fn <- pda.define.prior.fn(prior)
     
     ## Convert probabilities back to parameter values
-    for(i in n.param) {
+    for(i in 1:n.param) {
       mcmc.out[,i] <- eval(prior.fn$qprior[prior.ind][[i]], list(p=m[[1]][,i]))
     }
   }
@@ -182,8 +184,8 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
   ## Create params matrix
   # *** TODO: Generalize to >1 chain
-  params <- matrix(params.X[1,], nrow=nrow(m[[1]]), ncol=n.param.all, byrow=T)
-  params[, prior.ind] <- m[[1]]
+  params <- matrix(knots.params[1,], nrow=nrow(mcmc.out), ncol=n.param.all, byrow=T)
+  params[, prior.ind] <- mcmc.out
 
 
   ## ------------------------------------ Clean up ------------------------------------ ##
