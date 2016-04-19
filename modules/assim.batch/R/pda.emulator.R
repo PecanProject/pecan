@@ -112,20 +112,42 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   ## Collect all likelihoods (Y)
   # For now, just the likelihoods from the runs we just did. 
   # *** TODO: Soon, need to add ability to retrieve them from previous runs, because we want to build the emulator from as many points as possible. The likelihoods are easy—they're being stored in BETY. But we need to know the parameter values associated with them too, and that will take a bit of doing.
-  X <- data.frame(params.X[, prior.ind])
-    names(X) <- pname[prior.ind]
-  Y <- LL.X
   
-  ## Generate emulator on (X,Y)
-  require(kernlab)
-  df <- data.frame(LL = Y, X)
-  kernlab.gp <- gausspr(LL~., data=df)
+
+  if(settings$assim.batch$GPpckg=="GPfit"){
+    ## GPfit optimization routine assumes that inputs are in [0,1]
+    ## Instead of drawing from parameters, we draw from probabilities
+    X <- data.frame(knots.probs[, prior.ind])
+
+    logger.info(paste0("Using 'GPfit' package for Gaussian Process Model fitting."))
+    require(GPfit)
+    ## Generate emulator on LL-probs
+    GPmodel <- GP_fit(X=X,Y=LL.X)
+    gp=GPmodel
+    
+    ## Change the priors to unif(0,1) for mcmc.GP
+    prior[prior.ind,]=rep(c("unif",0,1,"NA"),each=n.param)
+    ## Set up prior functions accordingly
+    prior.fn <- pda.define.prior.fn(prior)
+    
+  } else{
+    X <- data.frame(knots.params[, prior.ind])
+    df <- data.frame(LL = LL.X, X)
+    
+    logger.info(paste0("Using 'kernlab' package for Gaussian Process Model fitting."))
+    require(kernlab)
+    ## Generate emulator on LL-params
+    kernlab.gp <- gausspr(LL~., data=df)
+    gp=kernlab.gp
+  }
+  
+
 
   ## Sample posterior from emulator
   m <- lapply(1, function(chain){
          init.x <- lapply(prior.ind, function(v) eval(prior.fn$rprior[[v]], list(n=1)))
          names(init.x) <- pname[prior.ind]
-         mcmc.GP(gp        = kernlab.gp, ## Emulator
+         mcmc.GP(gp        = gp, ## Emulator
                  x0        = init.x,     ## Initial conditions
                  nmcmc     = settings$assim.batch$iter,       ## Number of reps
                  rng       = NULL,       ## 'rng' (not used since jmp0 is specified below)
@@ -137,6 +159,19 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
                  priors    = prior.fn$dprior[prior.ind]             ## Priors
           )$mcmc
         })
+  
+  mcmc.out=m[[1]]
+  
+  if(settings$assim.batch$GPpckg=="GPfit"){
+    ## Set the prior functions back to work with actual parameter range
+    prior <- temp$prior
+    prior.fn <- pda.define.prior.fn(prior)
+    
+    ## Convert probabilities back to parameter values
+    for(i in n.param) {
+      mcmc.out[,i] <- eval(prior.fn$qprior[prior.ind][[i]], list(p=m[[1]][,i]))
+    }
+  }
 
   if(FALSE) {
     gp = kernlab.gp; x0 = init.x; nmcmc = settings$assim.batch$iter; rng= NULL; format = "lin"
