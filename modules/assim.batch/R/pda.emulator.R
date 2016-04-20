@@ -112,7 +112,9 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   ## Collect all likelihoods (Y)
   # For now, just the likelihoods from the runs we just did. 
   # *** TODO: Soon, need to add ability to retrieve them from previous runs, because we want to build the emulator from as many points as possible. The likelihoods are easy—they're being stored in BETY. But we need to know the parameter values associated with them too, and that will take a bit of doing.
-  
+ 
+  ## if it is not specified, default to GPfit
+  if(is.null(settings$assim.batch$GPpckg)) settings$assim.batch$GPpckg="GPfit"
 
   if(settings$assim.batch$GPpckg=="GPfit"){
     ## GPfit optimization routine assumes that inputs are in [0,1]
