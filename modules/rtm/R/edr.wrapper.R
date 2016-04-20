@@ -19,6 +19,8 @@
 #' take place. N datetime POSIXlt object defining the date and at which the run 
 #' will take place. Note that runs at night and during the winter can give poor 
 #' results.
+#' @param trait.values Named, hierarchical list of trait values for generating config.xml file.
+#' @param settings PEcAn settings list. Default is model$revision = "git", model$config.header = NULL.
 #' @param history.prefix Prefix in histroy file name. Will be appended to 
 #' history path.
 #' @param edr.exe.name Name of EDR executable. Default = 'ed_2.1-opt'
@@ -33,13 +35,19 @@ EDR <- function(paths,
                 par.wl,
                 nir.wl,
                 datetime,
+                trait.values = list(),
+                settings = list(model = list(revision = "git",
+                                             config.header = NULL)),
                 history.prefix = 'history',
                 edr.exe.name = 'ed_2.1-opt',
                 change.history.time = TRUE,
                 output.path = getwd(),
                 clean = FALSE){
+    require(PEcAn.ED2)
 
 # Extract paths
+# TODO: Provide option to just a results path with implied file structure
+# (ED2IN, config.xml, history)
     ed2in.path <- paths$ed2in
     history.path <- paths$history
 
@@ -53,10 +61,31 @@ EDR <- function(paths,
         history.full.prefix <- file.path(history.path, history.prefix)
     }
 
+# TODO: Read old config file as template
+# This ensures that all PFTs and previous default trait values that were in the
+# run are loaded.
+# Pseudocode:
+# xml.old <- xmlToList(xmlParse(old.config.path))
+# defaults.old <- xml.old$defaults
+# settings.old <- xml.old$settings
+# trait.values.old <- xml.old$trait.values
+
+# Write ED2 config.xml file
+    defaults <- list() 
+    xml <- write.config.xml.ED2(defaults = defaults,
+                                settings = settings,
+                                trait.values = trait.values)
+
+    new.config.path <- file.path(output.path, "config.xml")
+    PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
+    saveXML(xml, file = new.config.path, indent=TRUE, prefix = PREFIX_XML)
+
 # Preprocess ED2IN
     if(!is.na(ed2in.path)){     # Otherwise, skip this step
-        EDR.preprocess.ed2in(ed2in.path, output.path, datetime, history.full.prefix)
+        EDR.preprocess.ed2in(ed2in.path, output.path, new.config.path, 
+                             datetime, history.full.prefix)
     }
+
 
 # Generate input files
     par.nir.lengths <- c(length(par.wl), length(nir.wl))
@@ -176,7 +205,8 @@ EDR.preprocess.history <- function(history.path, output.path, datetime, history.
 #' is performed)
 #' @param datetime POSIX datetime object defining the time at which to run EDR
 #' @param history.full.prefix Full path and prefix for history file
-EDR.preprocess.ed2in <- function(ed2in.path, output.path, datetime, history.full.prefix){
+EDR.preprocess.ed2in <- function(ed2in.path, output.path, config.path, 
+                                 datetime, history.full.prefix){
 # Process datetime
     day <- strftime(datetime, "%d")
     month <- strftime(datetime, "%m")
@@ -231,6 +261,9 @@ EDR.preprocess.ed2in <- function(ed2in.path, output.path, datetime, history.full
                   sprintf('\\1 = %s  !! MODIFIED BY R WRAPPER', month), ed2in)
     ed2in <- gsub('(NL%IYEARH).*', 
                   sprintf('\\1 = %s  !! MODIFIED BY R WRAPPER', year), ed2in)
+    # config.xml file
+    ed2in <- gsub('(NL%IEDCNFGF).*', 
+                  sprintf("\\1 = '%s'  !! MODIFIED BY R WRAPPER", config.path), ed2in)
     # Write resulting ED2IN to file
     write(ed2in, file = ed2in.local.path)
 }

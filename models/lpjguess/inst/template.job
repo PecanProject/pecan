@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# redirect output
+exec 3>&1
+exec &> "@OUTDIR@/logfile.txt"
+
+# host specific setup
+@HOSTSPECIFIC@
+
+# create output folder
+mkdir -p "@OUTDIR@"
+
+# see if application needs running
+if [ ! -e "@OUTDIR@/results.out" ]; then
+  cd "@RUNDIR@"
+  
+  "@BINARY@" -input cf "@SITE_MET@"
+  STATUS=$?
+
+  mv "@RUNDIR@"/*.out "@OUTDIR@"
+  
+  # check the status:
+  #if [ $STATUS -ne 0 ]; then
+    #echo -e "ERROR IN MODEL RUN\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
+   # exit $STATUS
+  #fi
+
+  # convert to MsTMIP
+#  echo "require (PEcAn.MODEL)
+#model2netcdf.MODEL('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
+#" | R --vanilla
+fi
+
+# copy readme with specs to output
+#cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
+
+# run getdata to extract right variables
+
+# all done
+echo -e "MODEL FINISHED\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3

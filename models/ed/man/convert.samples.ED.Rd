@@ -20,6 +20,6 @@ Performs model specific unit conversions on a a list of trait values,
 such as those provided to write.config
 }
 \author{
-Shawn Serbin, David LeBauer, Carl Davidson
+Shawn Serbin, David LeBauer, Carl Davidson, Ryan Kelly
 }
 

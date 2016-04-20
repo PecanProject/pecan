@@ -1,3 +1,13 @@
+##' @name minimize.GP
+##' @title minimize.GP
+##' @export
+##'
+##' @param gp
+##' @param rng
+##' @param x0 
+##' @param splinefuns
+##' 
+##' @author Michael Dietze
 `minimize.GP` <-
 function(gp,rng,x0,splinefuns = NULL){
   
@@ -47,7 +57,22 @@ function(gp,rng,x0,splinefuns = NULL){
 }
 
 
-#calculates the probability of a set of parameter values, given by xnew
+##' Calculates the probability of a set of parameter values, given by xnew
+##'
+##' @name gpeval
+##' @title gpeval
+##' @export
+##'
+##' @param xnew
+##' @param k
+##' @param mu
+##' @param tau
+##' @param psi
+##' @param x
+##' @param rng range
+##' @param splinefcns
+##' 
+##' @author Michael Dietze 
 gpeval <- function(xnew,k,mu,tau,psi,x,rng,splinefcns){
     
   ## second calc value
@@ -70,6 +95,10 @@ gpeval <- function(xnew,k,mu,tau,psi,x,rng,splinefcns){
   return(yprime)
 }
 
+
+##' @name ddist
+##' @title ddist
+##' @export
 ddist<- function(x, prior){
   eval(parse(text=paste('d', prior$distn, sep='')))(x, prior$parama, prior$paramb)
 }
@@ -83,6 +112,9 @@ ddist<- function(x, prior){
 #   return(joint)
 # }
 
+##' @name calculate.prior
+##' @title calculate.prior
+##' @export
 calculate.prior <- function(samples, priors){
   joint <- sum(sapply(1:length(priors), 
           function(i) eval(priors[[i]], list(x=samples[[i]])) 
@@ -90,6 +122,9 @@ calculate.prior <- function(samples, priors){
   return(joint)
 }
 
+##' @name get.y
+##' @title get.y
+##' @export
 get.y <- function(gp, xnew, priors, ...){
   likelihood <- predict(gp, xnew)
   prior.prob <- calculate.prior(xnew, priors)
@@ -102,21 +137,37 @@ get.y <- function(gp, xnew, priors, ...){
 #   return(acceptance)
 # }
 
+##' @name is.accepted
+##' @title is.accepted
+##' @export
 is.accepted <- function(ycurr, ynew, format='lin'){
   a <- exp(ynew - ycurr)
   acceptance <- a>runif(1)
   return(acceptance)
 }
 
-## function to sample from a GP model
-## that is assumed to be a -lnLikelihood surface
-## with flat priors and bounded region
+##' Function to sample from a GP model
+##' that is assumed to be a -lnLikelihood surface
+##' with flat priors and bounded region
+##'
+##' @name mcmc.GP
+##' @title mcmc.GP
+##' @export
+##'
+##' @param gp
+##' @param x0 
+##' @param nmcmc
+##' @param rng
+##' @param format lin = lnlike fcn, log = log(lnlike)
+##' @param mix each = jump each dim. independently, joint = jump all at once 
+##' @param splinefcns
+##' @param jmp0
+##' @param ar.target
+##' @param priors
+##' 
+##' @author Michael Dietze
 mcmc.GP <- function(gp,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL, 
     jmp0=0.35*(rng[,2]-rng[,1]), ar.target=0.5, priors=NA){
-  ##formats: lin = lnlike fcn
-  ##         log = log(lnlike)
-  ##mix:     each = jump each dim. independently
-  ##         joint = jump all at once
   
   haveTime <- FALSE #require("time")
 
@@ -173,7 +224,9 @@ mcmc.GP <- function(gp,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
 ###################   IN PROGRESS ##############
 }
 
-
+##' @name bounded
+##' @title bounded
+##' @export
 bounded <- function(xnew,rng)
 {
   xnew <- as.vector(as.matrix(xnew))
@@ -183,7 +236,13 @@ bounded <- function(xnew,rng)
 }
 
 
-
+##' @name plot.mvjump
+##' @title plot.mvjump
+##' @export
+##'
+##' @param jmp
+##' 
+##' @author Michael Dietze
 
 `plot.mvjump` <-
 function(jmp){

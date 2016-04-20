@@ -82,9 +82,8 @@ install:
   - popd
 
 before_script:
-  - psql -U postgres -c "CREATE USER bety WITH UNENCRYPTED PASSWORD 'bety'";
+  - psql -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
   - psql -U postgres -c "CREATE DATABASE bety OWNER bety;"
-  - psql -U postgres -c "CREATE EXTENSION postgis;"
   - scripts/load.bety.sh -a postgres -c -u
 
 script:
