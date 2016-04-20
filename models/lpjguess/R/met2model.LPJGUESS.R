@@ -32,7 +32,7 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   in.prefix='CRUNCEP'
   outfolder='/fs/data5/pecan.models/LPJ-GUESS/build/CRUNCEP_LPJGUESS_site_0-622/'
   start_date='2002/01/01'
-  end_date='2002/12/31'
+  end_date='2003/12/31'
   verbose=FALSE
   
   library(PEcAn.utils)
@@ -54,7 +54,7 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   var.names=c("tmp","pre","cld")
   n.var=length(var.names)
   long.names=c("air_temperature","precipitation_flux","surface_downwelling_shortwave_flux_in_air")
-  for(i in 1:length(out.names)) out.files[[i]] <- paste(in.prefix, start_year, end_year, var.names[[i]], "nc", sep=".")
+  for(i in 1:n.var) out.files[[i]] <- paste(in.prefix, start_year, end_year, var.names[[i]], "nc", sep=".")
   
   
   ## check to see if the outfolder is defined, if not create directory for output
@@ -75,7 +75,7 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
     
     ## convert time to seconds
     sec   <- ncin$dim$time$vals  
-    #sec = udunits2::ud.convert(sec,unlist(strsplit(ncin$dim$time$units," "))[1],"seconds")
+    days = udunits2::ud.convert(sec,unlist(strsplit(ncin$dim$time$units," "))[1],"days")
     ifelse(leap_year(as.numeric(year[i]))==TRUE,
            dt <- (366*24*60*60)/length(sec), #leap year
            dt <- (365*24*60*60)/length(sec)) #non-leap year
@@ -139,7 +139,7 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
       
       ncatt_put(nc=ncout, varid="time",attname="calendar", "gregorian")
       nc_close(ncout)
-    } # end n-loop
+    } # end n.var loop
     
     ## close netcdf file
     nc_close(ncin)
