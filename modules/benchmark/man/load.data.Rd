@@ -3,7 +3,8 @@
 \alias{load.data}
 \title{load.data}
 \usage{
-load.data(data.path, format, start_year = NA, end_year = NA, site = NA)
+load.data(data.path, format, start_year = NA, end_year = NA, site = NA,
+  vars_used)
 }
 \arguments{
 \item{data.path}{}

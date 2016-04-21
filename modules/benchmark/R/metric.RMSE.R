@@ -1,13 +1,12 @@
 ##' @name metric.RMSE
 ##' @title metric.RMSE
 ##' @export
-##' @param data.path
-##' @param format
+##' @param dat
 ##' 
 ##' @author Betsy Cowdery
 
-metric.RMSE <- function(dat){
-  score <- sqrt(mean((dat$obvs - dat$model)^2))
+metric.RMSE <- function(dat, ...){
+  score <- sqrt(mean((dat$model - dat$obvs)^2, na.rm = TRUE))
   return(score)
 }
 

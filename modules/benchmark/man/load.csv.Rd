@@ -3,18 +3,18 @@
 \alias{load.csv}
 \title{load.csv}
 \usage{
-load.csv(data.path, format, start_year, end_year, site)
+load.csv(data.path, format, site, vars = NULL)
 }
 \arguments{
 \item{data.path}{}
 
 \item{format}{}
 
+\item{site}{}
+
 \item{start_year}{}
 
 \item{end_year}{}
-
-\item{site}{}
 }
 \description{
 load.csv
