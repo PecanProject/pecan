@@ -44,6 +44,12 @@ query.format.vars <- function(input.id,con){
   
   vars_full <- merge(fv, merge(vars, bety_mstmip, by = "bety_name", all.x = TRUE), by="variable_id", all=TRUE) # not sure if all=TRUE is appropriate here or not.
   
+  vars_full$pecan_name <- vars_full$mstmip_name
+  vars_full$pecan_units <- vars_full$mstmip_units
+  ind <- is.na(vars_full$pecan_name)
+  vars_full$pecan_name[ind] <- vars_full$bety_name[ind]
+  vars_full$pecan_units[ind] <- vars_full$bety_units[ind]
+  
   header <- as.numeric(f$header)
   skip <- ifelse(is.na(as.numeric(f$skip)),0,as.numeric(f$skip))
   
