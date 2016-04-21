@@ -30,6 +30,8 @@ query.format.vars <- function(input.id,con){
                                fv$variable_id[i]),con))
   }
   colnames(vars) <- c("variable_id", "bety_name", "bety_units")
+  vars$variable_id <- as.numeric(fv$variable_id)
+  
   
   # Fill in CF vars
   # This will ultimately be useful when looking at met variables where CF != Bety
@@ -40,7 +42,7 @@ query.format.vars <- function(input.id,con){
   
   bety_mstmip <- read.csv(system.file("bety_mstmip_lookup.csv", package= "PEcAn.DB"), header = T, stringsAsFactors=FALSE)
   
-  vars_full <- merge(fv, merge(vars,bety_mstmip,by = "bety_name", all.x = TRUE), by="variable_id")
+  vars_full <- merge(fv, merge(vars, bety_mstmip, by = "bety_name", all.x = TRUE), by="variable_id", all=TRUE) # not sure if all=TRUE is appropriate here or not.
   
   header <- as.numeric(f$header)
   skip <- ifelse(is.na(as.numeric(f$skip)),0,as.numeric(f$skip))
