@@ -18,18 +18,15 @@ calc.benchmark <- function(settings, con){ #settings file is output from start.b
   
   # Query BRR for benchmark ids
   
-  bm.id <- settings$benchmark$id #maybe something like that?
+  bm.id <- settings$benchmark$id 
+  obvs.id <- settings$benchmark$input_id
   
-  # For each bm.id
+  
+  # For each bm.id - don't have this written as a loop yet. 
   #  Query database for: input path, variables, site, start/end dates, metrics, formats
   
-  data.path <- query.file.path(bm.id,settings$run$host$name,con)
-  format <- query.format.vars(bm.id,con)  
-  
-  
-  # Need to do something here to narrow down the variables to be used
-  # rows <- which(vars_names_units$bety_name %in% calc.vars)
-  # vars_names_units <- vars_names_units[rows,]
+  data.path <- query.file.path(obvs.id,settings$run$host$name,con)
+  format <- query.format.vars(obvs.id,con)  
   
   site  <- query.site(settings$run$site$id, con)
   
@@ -42,8 +39,12 @@ calc.benchmark <- function(settings, con){ #settings file is output from start.b
   # Local or remote
   # format is a list, metrics is a dataframe, both can be long. How to pass to calc.metrics remotely? 
   # Maybe as an Rdata file?
-  results <- calc.metrics(data.path, format, model_run, metrics, 
-                          start_year=NA, end_year=NA, site=NA)
+  
+  start_year <- year(settings$run$start.date)
+  end_year <- year(settings$run$end.date)
+  
+  results <- calc.metrics(data.path, format, vars_used, model_run, metrics, 
+                          start_year= tart_year, end_year=end_year, site=site)
   
   #  Update benchmark ensemble scores table
   
