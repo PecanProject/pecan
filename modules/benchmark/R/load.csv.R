@@ -9,7 +9,7 @@
 ##' 
 ##' @author Betsy Cowdery
 
-load.csv <- function(data.path, format, start_year, end_year, site, vars=NULL){
+load.csv <- function(data.path, format, site, vars=NULL){
   
   
   if (format$header == 0 | format$header == 1){

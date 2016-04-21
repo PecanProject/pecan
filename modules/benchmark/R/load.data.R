@@ -27,7 +27,9 @@ load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA, 
   
   require(PEcAn.benchmark)
   require(lubridate)
+  require(udunits2)
   
+  # Determine the function that should be used to load the data 
   fcn1 <- paste0("load.",format$file_name)
   fcn2 <- paste0("load.",format$mimetype)
   if(exists(fcn1)){
@@ -36,14 +38,33 @@ load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA, 
     fcn <- match.fun(fcn2)
   }else{
     logger.warn("no load data for current mimetype - converting using browndog")
-    # Browndog
-    # convert the observations to a mime pecan can use
-    # ex: exel -> csv
   }
   
-  result <- fcn(data.path, format, start_year, end_year, site, vars_used$orig_name)
-
-  return(result) 
+  loaded <- fcn(data.path, format, site, vars_used$orig_name)
+  
+  out <- loaded
+  # Convert loaded data to the same standard varialbe names and units
+  
+  for(i in 1:nrow(vars_used)){
+    col <- names(out)==vars_used$orig_name[i]
+    if(vars_used$orig_units[i] == vars_used$pecan_units[i]){
+      print("match")
+      colnames(out)[col] <- vars_used$pecan_name[i]
+    }else{
+      print(paste("convert", vars_used$orig_name[i]))
+      x <- as.matrix(out[col])
+      u1 = vars_used$orig_units[i]
+      u2 = vars_used$pecan_units[i]
+      print(u1)
+      print(u2)
+      if(udunits2::ud.are.convertible(u1,u2)){
+        out[col] <- udunits2::ud.convert(x,u1,u2)
+        colnames(out)[col] <- vars_used$pecan_name[i]
+      }else{logger.error("Units cannot be converted")} #This error should probably be thrown much earlier, like in query.format.vars - will move it eventually
+    }
+  }
+  
+  return(out) 
 }
 
 ##' Future things to think about
