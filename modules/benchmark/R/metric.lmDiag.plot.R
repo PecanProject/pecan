@@ -46,4 +46,5 @@ metric.lmDiag.plot <- function(metric_dat){
   grid.arrange(p1,p2,p3,p4,p5,p6,nrow=3)
   
   # return(list(rvfPlot=p1, qqPlot=p2, sclLocPlot=p3, cdPlot=p4, rvlevPlot=p5, cvlPlot=p6))
+  return(NA)
 }

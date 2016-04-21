@@ -15,4 +15,6 @@ metric.timeseries.plot <- function(dat, var){
     geom_path(aes(x=time,y=obvs), colour = "#619CFF", size=2) + 
     geom_point(aes(x=time,y=obvs), colour = "#619CFF", size=4)+ 
     labs(title=var)
+  
+  return(NA)
 }

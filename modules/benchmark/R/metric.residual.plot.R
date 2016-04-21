@@ -6,7 +6,7 @@
 ##' @author Betsy Cowdery
 
 metric.residual.plot <- function(dat, var){
-
+  
   require(ggplot2)
   
   ind <- intersect(which(!is.na(dat$obvs)),  which(!is.na(dat$model)))
@@ -22,5 +22,7 @@ metric.residual.plot <- function(dat, var){
   # ind <- intersect(which(!is.na(dat$obvs)),  which(!is.na(dat$model)))
   # plot(dat$model[ind]-dat$obvs[ind], ylim = c(-max(dat$model[ind]-dat$obvs[ind]),max(dat$model[ind]-dat$obvs[ind])))
   # abline(h=0)
+  
+  return(NA)
 }
 
