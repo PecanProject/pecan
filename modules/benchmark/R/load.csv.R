@@ -9,7 +9,7 @@
 ##' 
 ##' @author Betsy Cowdery
 
-load.csv <- function(data.path, format, start_year, end_year, site){
+load.csv <- function(data.path, format, start_year, end_year, site, vars=NULL){
   
   
   if (format$header == 0 | format$header == 1){
@@ -24,6 +24,10 @@ load.csv <- function(data.path, format, start_year, end_year, site){
                     check.names = FALSE)
   }
   
-  return(dat)
+  if(!is.null(vars)){
+    return(dat[vars])
+  }else{
+    return(dat)
+  }
   
 }
