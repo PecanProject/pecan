@@ -101,7 +101,7 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
 
     latdim <- ncdim_def(name='lat', "degrees_north", as.double(lat))
     londim <- ncdim_def(name='lon', "degrees_east", as.double(lon))
-    timedim=ncdim_def("time", "days since 1900-12-31",as.double(c(1:length(unlist(tmp.list)))))
+    timedim=ncdim_def("time", paste0("days since ", start_year-1, "-12-31",sep=""),as.double(c(1:length(unlist(tmp.list)))))
     
     
     fillvalue=9.96920996838687e+36
