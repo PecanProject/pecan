@@ -47,6 +47,17 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   long.names=c("air_temperature","precipitation_flux","surface_downwelling_shortwave_flux_in_air")
   for(i in 1:n.var) out.files[[i]] <- paste(in.prefix, start_year, end_year, var.names[[i]], "nc", sep=".")
   
+  results <- data.frame(file = paste(in.prefix, start_year, end_year,"*","nc", sep="."),
+                        host = fqdn(),
+                        mimetype ='application/x-netcdf',
+                        formatname = 'lpj-guess.metfile' ,
+                        startdate = start_date ,
+                        enddate = end_date,
+                        dbfile.name = paste(in.prefix, start_year, end_year,"*","nc", sep="."),
+                        stringsAsFactors = FALSE)
+  print("internal results")
+  print(results)
+  
   
   ## check to see if the outfolder is defined, if not create directory for output
   if(!file.exists(outfolder)){
@@ -123,5 +134,6 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
     ## close netcdf files
     sapply(ncin,nc_close)
 
-   
+    invisible(results)
+    
 } ### end met2model.LPJGUESS
