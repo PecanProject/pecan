@@ -28,11 +28,11 @@
 met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite=FALSE,verbose=FALSE){
   
   ## function arguments for development
-  in.path='/fs/data5/pecan.models/LPJ-GUESS/build/NARR_CF_site_0-622'
-  in.prefix='NARR'
-  outfolder='/fs/data5/pecan.models/LPJ-GUESS/build/NARR_LPJGUESS_site_0-622/'
-  start_date='2002/01/01'
-  end_date='2003/12/31'
+  in.path='/fs/data5/pecan.models/LPJ-GUESS/build/NARR_LPJGUESS_site_0-622/_site_0-622'
+  in.prefix='CRUNCEP'
+  outfolder='/fs/data5/pecan.models/LPJ-GUESS/build/CRUNCEP_LPJGUESS_site_0-622'
+  start_date='1901/01/01'
+  end_date='2006/12/31'
   verbose=FALSE
   
   library(PEcAn.utils)
@@ -67,6 +67,10 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
     lon=ncvar_get(ncin[[1]],"longitude")
     lat=ncvar_get(ncin[[1]],"latitude")
     
+    ## at least 2 lat-lon required for LPJ-GUESS to load the data
+    lon=c(lon,lon)
+    lat=c(lat,lat)
+    
     ## calculate time step from the time-dimension length, check for leap year
     tstep=ifelse(ncin[[1]]$dim$time$len%%365==0, ncin[[1]]$dim$time$len/365, ncin[[1]]$dim$time$len/366)
     
@@ -84,59 +88,44 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
       cld.list[[y]] <- tapply(nc.cld[[y]],ind.vec,mean)
     }
     
-    var.list=list(unlist(tmp.list),unlist(pre.list),unlist(cld.list))
+ 
+    var.list=list(array(unlist(tmp.list),dim=c(length(unlist(tmp.list)),1,1)),
+                  array(unlist(pre.list),dim=c(length(unlist(pre.list)),1,1)),
+                  array(unlist(cld.list),dim=c(length(unlist(cld.list)),1,1)))
+    var.units=c("K","kg m-2 s-1","W m-2")
     
     ## write climate data
     ## define dimensions
-    latdim <- ncdim_def(name='lat', units='', vals=1:length(lon), create_dimvar=FALSE)
-    londim <- ncdim_def(name='lon', units='', vals=1:length(lon), create_dimvar=FALSE)
-    timedim=ncdim_def("time", units='',vals=1:length(var.list[[1]]),create_dimvar=FALSE)
-    
 
+     latdim <- ncdim_def(name='lat', "degrees_north", as.double(lat))
+     londim <- ncdim_def(name='lon', "degrees_east", as.double(lon))
+     timedim=ncdim_def("time", "days since 1900-12-31",as.double(c(1:length(unlist(tmp.list)))))
+    
+    
     fillvalue=9.96920996838687e+36
     
 
     for(n in 1:n.var) {
-      
-      var <- ncvar_def(name="time",
-                       units=paste0("days since ",start_year,"-1-1"),
-                       dim=timedim, missval=as.numeric(-9999))
-      
-      ncout<- nc_create(filename=file.path(outfolder,paste(out.files[[n]],sep=".")), vars=var, verbose=verbose)
 
-      ncvar_put(nc=ncout, varid='time', vals=1:length(var.list[[1]]))
+      var.def <- ncvar_def(name=var.names[n],units=var.units[n],dim=(list(londim,latdim,timedim)),fillvalue,long.names[n],verbose=verbose,prec="float")
+      ncfile <-nc_create(file.path(outfolder,paste(out.files[[n]],sep=".")), vars=var.def,force_v4=T)
+      ncvar_put(ncfile,var.def,rep(var.list[[n]],each=4))
+
+      ncatt_put(nc=ncfile, varid=var.names[n],attname="standard_name", long.names[n])
+
+      ncatt_put(nc=ncfile, varid="lon",attname="axis", "X")
+      ncatt_put(nc=ncfile, varid="lon",attname="standard_name", "longitude")
+
+      ncatt_put(nc=ncfile, varid="lat",attname="axis", "Y")
+      ncatt_put(nc=ncfile, varid="lat",attname="standard_name", "latitude")
+
+      ncatt_put(nc=ncfile, varid="time",attname="calendar", "gregorian")
+
+      nc_close(ncfile)
+    }
       
-      var <- ncvar_def(name="lon",
-                       units="degree_east",
-                       dim=londim, missval=as.numeric(-9999))
-      ncout <- ncvar_add(nc=ncout, v=var, verbose=verbose)
-      ncvar_put(nc=ncout, varid='lon', vals=lon)
-      
-      var <- ncvar_def(name="lat",
-                       units="degree_north",
-                       dim=latdim, missval=as.numeric(-9999))
-      ncout<- ncvar_add(nc=ncout, v=var, verbose=verbose)
-      ncvar_put(nc=ncout, varid='lat', vals=lat)
-      
-      var <- ncvar_def(name=var.names[n],units=var.units[n],dim=(list(latdim,londim,timedim)),fillvalue,long.names[n],verbose=verbose,prec="float")
-      
-      ncout=ncvar_add(nc=ncout, v=var,verbose=verbose)
-      ncvar_put(nc=ncout,varid=var.names[n],vals=var.list[[n]])
-      ncatt_put(nc=ncout, varid=var.names[n],attname="standard_name", long.names[n])
-      
-      ncatt_put(nc=ncout, varid="lon",attname="axis", "X")
-      ncatt_put(nc=ncout, varid="lon",attname="standard_name", "longitude")
-      
-      ncatt_put(nc=ncout, varid="lat",attname="axis", "Y")
-      ncatt_put(nc=ncout, varid="lat",attname="standard_name", "latitude")
-      
-      ncatt_put(nc=ncout, varid="time",attname="calendar", "gregorian")
-      nc_close(ncout)
-    } # end n.var loop
-    
     ## close netcdf files
     sapply(ncin,nc_close)
 
    
-  
 } ### end met2model.LPJGUESS
