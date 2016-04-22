@@ -86,7 +86,7 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
     ## aggregate to daily time steps, LPJ-GUESS reads daily climate data
     tmp.list <- pre.list <- cld.list <- list()
     for(y in 1:nyear){
-      if(as.numeric(year[y])%%4 == 0) ind.vec=rep(1:366,each=tstep) else ind.vec=rep(1:365,each=tstep)
+      if(leap_year(as.numeric(year[y]))==TRUE) ind.vec=rep(1:366,each=tstep) else ind.vec=rep(1:365,each=tstep)
       tmp.list[[y]] <- tapply(nc.tmp[[y]],ind.vec,mean)
       pre.list[[y]] <- tapply(nc.pre[[y]],ind.vec,mean)
       cld.list[[y]] <- tapply(nc.cld[[y]],ind.vec,mean)
