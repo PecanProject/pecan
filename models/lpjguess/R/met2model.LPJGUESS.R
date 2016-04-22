@@ -27,16 +27,9 @@
 ##' @author Istem Fer
 met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite=FALSE,verbose=FALSE){
   
-  ## function arguments for development
-  in.path='/fs/data5/pecan.models/LPJ-GUESS/build/NARR_LPJGUESS_site_0-622/_site_0-622'
-  in.prefix='CRUNCEP'
-  outfolder='/fs/data5/pecan.models/LPJ-GUESS/build/CRUNCEP_LPJGUESS_site_0-622'
-  start_date='1901/01/01'
-  end_date='2006/12/31'
-  verbose=FALSE
-  
   library(PEcAn.utils)
   require(ncdf4)
+  require(lubridate)
   
   print("START met2model.LPJGUESS")
   start_date <- as.POSIXlt(start_date, tz = "GMT")
@@ -79,7 +72,7 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
     nc.pre <- lapply(ncin, ncvar_get, long.names[2])
     nc.cld <- lapply(ncin, ncvar_get, long.names[3])
     
-    ## aggregate to daily time steps
+    ## aggregate to daily time steps, LPJ-GUESS reads daily climate data
     tmp.list <- pre.list <- cld.list <- list()
     for(y in 1:nyear){
       if(as.numeric(year[y])%%4 == 0) ind.vec=rep(1:366,each=tstep) else ind.vec=rep(1:365,each=tstep)
@@ -88,29 +81,32 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
       cld.list[[y]] <- tapply(nc.cld[[y]],ind.vec,mean)
     }
     
- 
-    var.list=list(array(unlist(tmp.list),dim=c(length(unlist(tmp.list)),1,1)),
-                  array(unlist(pre.list),dim=c(length(unlist(pre.list)),1,1)),
-                  array(unlist(cld.list),dim=c(length(unlist(cld.list)),1,1)))
+    var.list=list(unlist(tmp.list),unlist(pre.list),unlist(cld.list))
+
     var.units=c("K","kg m-2 s-1","W m-2")
     
     ## write climate data
     ## define dimensions
 
-     latdim <- ncdim_def(name='lat', "degrees_north", as.double(lat))
-     londim <- ncdim_def(name='lon', "degrees_east", as.double(lon))
-     timedim=ncdim_def("time", "days since 1900-12-31",as.double(c(1:length(unlist(tmp.list)))))
+    latdim <- ncdim_def(name='lat', "degrees_north", as.double(lat))
+    londim <- ncdim_def(name='lon', "degrees_east", as.double(lon))
+    timedim=ncdim_def("time", "days since 1900-12-31",as.double(c(1:length(unlist(tmp.list)))))
     
     
     fillvalue=9.96920996838687e+36
     
 
     for(n in 1:n.var) {
-
+      # define variable
       var.def <- ncvar_def(name=var.names[n],units=var.units[n],dim=(list(londim,latdim,timedim)),fillvalue,long.names[n],verbose=verbose,prec="float")
+
+      # create netCD file for LPJ-GUESS
       ncfile <-nc_create(file.path(outfolder,paste(out.files[[n]],sep=".")), vars=var.def,force_v4=T)
+  
+      # put variable, rep(...,each=4) is a hack to write the same data for all grids (which all are the same)
       ncvar_put(ncfile,var.def,rep(var.list[[n]],each=4))
 
+      # additional attributes for LPJ-GUESS
       ncatt_put(nc=ncfile, varid=var.names[n],attname="standard_name", long.names[n])
 
       ncatt_put(nc=ncfile, varid="lon",attname="axis", "X")
