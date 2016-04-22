@@ -41,12 +41,11 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   nyear = length(year) #number of years to simulate
   
   ## LPJ-GUESS looks for different input files for different climate variables
-  out.files <- out.files.full <- list()
+  out.files.full <- list()
   var.names=c("tmp","pre","cld")
   n.var=length(var.names)
   long.names=c("air_temperature","precipitation_flux","surface_downwelling_shortwave_flux_in_air")
-  for(i in 1:n.var) out.files[[i]] <- paste(in.prefix, start_year, end_year, var.names[[i]], "nc", sep=".")
-  for(i in 1:n.var) out.files.full[[i]] <-file.path(outfolder,paste(out.files[[i]],sep="."))
+  for(i in 1:n.var) out.files.full[[i]] <-file.path(outfolder,paste(in.prefix, start_year, end_year, var.names[[i]], "nc", sep="."))
   
   results <- data.frame(file = unlist(out.files.full),
                         host = fqdn(),
@@ -113,7 +112,7 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
       var.def <- ncvar_def(name=var.names[n],units=var.units[n],dim=(list(londim,latdim,timedim)),fillvalue,long.names[n],verbose=verbose,prec="float")
 
       # create netCD file for LPJ-GUESS
-      ncfile <-nc_create(file.path(outfolder,paste(out.files[[n]],sep=".")), vars=var.def,force_v4=T)
+      ncfile <-nc_create(out.files.full[[n]], vars=var.def,force_v4=T)
   
       # put variable, rep(...,each=4) is a hack to write the same data for all grids (which all are the same)
       ncvar_put(ncfile,var.def,rep(var.list[[n]],each=4))
