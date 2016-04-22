@@ -31,7 +31,6 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   require(ncdf4)
   require(lubridate)
   
-  logger.info(paste("in.path: ",in.path," in.prefix: ",in.prefix))
   print("START met2model.LPJGUESS")
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date <- as.POSIXlt(end_date, tz = "GMT")
