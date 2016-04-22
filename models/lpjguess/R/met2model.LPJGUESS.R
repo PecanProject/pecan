@@ -41,19 +41,20 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   nyear = length(year) #number of years to simulate
   
   ## LPJ-GUESS looks for different input files for different climate variables
-  out.files <- list()
+  out.files <- out.files.full <- list()
   var.names=c("tmp","pre","cld")
   n.var=length(var.names)
   long.names=c("air_temperature","precipitation_flux","surface_downwelling_shortwave_flux_in_air")
   for(i in 1:n.var) out.files[[i]] <- paste(in.prefix, start_year, end_year, var.names[[i]], "nc", sep=".")
+  for(i in 1:n.var) out.files.full[[i]] <-file.path(outfolder,paste(out.files[[i]],sep="."))
   
-  results <- data.frame(file = unlist(out.files),
+  results <- data.frame(file = unlist(out.files.full),
                         host = fqdn(),
                         mimetype ='application/x-netcdf',
                         formatname = 'lpj-guess.metfile' ,
                         startdate = start_date ,
                         enddate = end_date,
-                        dbfile.name = unlist(out.files),
+                        dbfile.name = unlist(out.files.full),
                         stringsAsFactors = FALSE)
   print("internal results")
   print(results)
