@@ -45,6 +45,12 @@ if(!("BioCro" %in% installed.packages()[,"Package"])) {
   devtools::install_github("ebimodeling/biocro")
 }
 
+# BayesianTools package snapshot
+if(!("BayesianTools" %in% installed.packages()[,"Package"])) {
+  devtools::install_url("https://dl.dropboxusercontent.com/s/hy9l6mokresqyel/BayesianTools_0.0.0.9000.tar.gz")
+}
+
+
 # install rhdf5 from bioconductor for met2model.ED
 if(!("rhdf5" %in% installed.packages()[,"Package"])) {
   source("http://bioconductor.org/biocLite.R")

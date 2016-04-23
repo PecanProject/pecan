@@ -22,6 +22,8 @@ assim.batch <- function(settings) {
     settings <- pda.mcmc.bs(settings)
   } else if(settings$assim.batch$method == "emulator") {
     settings <- pda.emulator(settings)
+  } else if(settings$assim.batch$method == "bayesian.tools") {
+    settings <- pda.bayesian.tools(settings)
   } else {
     logger.error(paste0("PDA method ", settings$assim.batch$method, " not found!"))
   }
@@ -30,85 +32,6 @@ assim.batch <- function(settings) {
 }
 
 
-##' Load Dataset for Paramater Data Assimilation
-##'
-##' @title Load Dataset for Paramater Data Assimilation
-##' @param input.settings = settings$assim.batch$inputs from pecan.xml or similar
-##'
-##' @return A list containg the loaded input data, plus metadata
-##'
-##' @author Ryan Kelly
-##' @export
-load.pda.data <- function(input.settings, con) {
-  ## load data
-  # Outlining setup for multiple datasets, although for now the only option is to assimilate 
-  # against a single NEE input
-  inputs <- list()
-  n.input <- length(input.settings)
-
-  for(i in 1:n.input) {
-    inputs[[i]] <- list()
-    inputs[[i]]$variable.id <- input.settings[[i]]$data.model$variable.id
-
-    ## Load input based on ID, PATH, or SOURCE
-    if(!is.null(input.settings[[i]]$id)) {             # Input specified by ID
-      ## Get file path from input id
-      inputs[[i]]$input.id <- input.settings[[i]]$id
-      file <- db.query(paste0('SELECT * FROM dbfiles WHERE container_id = ', input.settings[[i]]$id), con)
-      input.settings[[i]]$path <- file.path(file$file_path, file$file_name)
-    } else if(!is.null(input.settings[[i]]$path)) {    # Input specified by PATH
-      inputs[[i]]$input.id <- -1
-    } else if(!is.null(input.settings[[i]]$source)) {  # Input specified by SOURCE
-      # TODO: insert code to extract data from standard sources (e.g. AMF)
-    } else {
-      logger.error("Must provide ID, PATH, or SOURCE for all data assimilation inputs")
-    }
-      
-
-    ## Preprocess data
-    # TODO: Generalize
-    if(as.numeric(inputs[[i]]$variable.id) == 297) {
-      # Need to have two cases now--proper L4 data, or Ustar-screened L2. Defaulting to L4 for backwards compatibility. For future, obviously the $format tag should be populated from inputs table in bety.
-      if(is.null(input.settings[[i]]$format)) input.settings[[i]]$format <- 'Ameriflux.L4'
-      if(input.settings[[i]]$format == 'Ameriflux.L4') {
-        # Load L4 from a csv
-        inputs[[i]]$data <- read.csv(input.settings[[i]]$path)
-        
-        ## calculate flux uncertainty parameters
-        NEEo <- inputs[[i]]$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
-        NEEq <- inputs[[i]]$data$NEE_or_fMDSqc #data$qf_Fc
-        NEEo[NEEq > 0] <- NA
-        dTa <- get.change(inputs[[i]]$data$Ta_f)
-        flags <- dTa < 3   ## filter data to temperature differences that are less than 3 degrees
-      } else if(input.settings[[i]]$format == 'Ameriflux.L2') {
-        # Load L2 from netcdf
-        ustar.thresh <- 0.2 # TODO: soft code this
-
-        inputs[[i]]$data <- load.L2Ameriflux.cf(input.settings[[i]]$path)
-
-        NEEo <- inputs[[i]]$data$NEE
-        UST <- inputs[[i]]$data$UST
-        NEEo[NEEo == -9999] <- NA
-        NEEo[UST < ustar.thresh] <- NA
-        
-        # Have to just pretend like these quality control variables exist...
-        NEEq <- rep(0, length(NEEo))
-        flags <- TRUE
-      } else {
-        logger.severe(paste0("Unknown data type ", input.settings[[i]]$format, " for variable ID ", inputs[[i]]$variable.id))
-      }
-
-      NEE.params <- flux.uncertainty(NEEo,NEEq,flags,bin.num=20)
-      
-      inputs[[i]]$NEEo <- NEEo
-      inputs[[i]]$b0 <- NEE.params$intercept
-      inputs[[i]]$bp <- NEE.params$slopeP
-      inputs[[i]]$bn <- NEE.params$slopeN
-    }
-  } # end loop over files
-  
-  return(inputs)
-}
 
 
 ##' Set PDA Settings
@@ -324,7 +247,7 @@ pda.load.priors <- function(settings, con) {
 pda.create.ensemble <- function(settings, con, workflow.id) {
   if (!is.null(con)) {
     # Identifiers for ensemble 'runtype'
-    if(settings$assim.batch$method == "bruteforce" | settings$assim.batch$method == "bruteforce.bs") {
+    if(settings$assim.batch$method == "bruteforce" | settings$assim.batch$method == "bruteforce.bs" | settings$assim.batch$method == "bayesian.tools") {
       ensemble.type <- "pda.MCMC"
     } else if(settings$assim.batch$method == "emulator") {
       ensemble.type <- "pda.emulator"
@@ -401,35 +324,24 @@ pda.define.llik.fn <- function(settings) {
   # *** TODO: Generalize!
   # Currently just returns a single likelihood, assuming the data are flux NEE.
   llik.fn <- list()
-  for(i in 1:length(settings$assim.batch$input)) {
-    llik.fn[[i]] <- function(NEEm, obs) {
-#       NEEo <- obs$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
-#       NEEq <- obs$data$NEE_or_fMDSqc #data$qf_Fc
-#       NEEo[NEEq > 1] <- NA
-    
-      NEE.resid <- abs(NEEm - obs$NEEo)
-      NEE.pos <- (NEEm >= 0)
-      LL <- c(dexp(NEE.resid[NEE.pos], 1/(obs$b0 + obs$bp*NEEm[NEE.pos]), log=TRUE), 
-              dexp(NEE.resid[!NEE.pos],1/(obs$b0 + obs$bn*NEEm[!NEE.pos]),log=TRUE))
-#       NEE.pos <- (NEEo >= 0)
-#       LL <- c(dexp(NEE.resid[NEE.pos], 1/(obs$b0 + obs$bp*NEEo[NEE.pos]), log=TRUE), 
-#               dexp(NEE.resid[!NEE.pos],1/(obs$b0 + obs$bn*NEEo[!NEE.pos]),log=TRUE))
-      return(list(LL=sum(LL,na.rm=TRUE), n=sum(!is.na(LL))))
-    }
-
-#     llik.fn[[i]] <- function(model, obs) {
-#       NEEo <- obs$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
-#       NEEq <- obs$data$NEE_or_fMDSqc #data$qf_Fc
-#       NEEo[NEEq > 1] <- NA
-#     
-#       NEEm <- model
-#     
-#       NEE.resid <- NEEm - NEEo
-#       LL <- dnorm(NEE.resid, 0, 1, log=TRUE)
-#       n.obs = sum(!is.na(LL))
-#       return(list(LL=sum(LL,na.rm=TRUE), n=n.obs))
-#     }
-
+  for(i in 1:length(settings$assim.batch$inputs)) {
+      # NEE + heteroskedastic Laplace likelihood
+      if(settings$assim.batch$inputs[[i]]$variable.id == 297 && 
+         settings$assim.batch$inputs[[i]]$likelihood == "Laplace") {
+        llik.fn[[i]] <- function(NEEm, obs) {
+          NEE.resid <- abs(NEEm - obs$NEEo)
+          NEE.pos <- (NEEm >= 0)
+          LL <- c(dexp(NEE.resid[NEE.pos], 1/(obs$b0 + obs$bp*NEEm[NEE.pos]), log=TRUE), 
+                  dexp(NEE.resid[!NEE.pos],1/(obs$b0 + obs$bn*NEEm[!NEE.pos]),log=TRUE))
+          return(list(LL=sum(LL,na.rm=TRUE), n=sum(!is.na(LL))))
+        }
+      } else {
+        # Default to Normal(0,1)
+        llik.fn[[i]] <- function(model.out, obs.data) {
+          LL <- dnorm(model.out - obs.data$data, log=TRUE)
+          return(list(LL=sum(LL,na.rm=TRUE), n=sum(!is.na(LL))))
+        }
+      }
   }
 
   return(llik.fn)
@@ -857,4 +769,93 @@ pda.postprocess <- function(settings, con, params, pname, prior, prior.ind, burn
     paste0('pecan.pda', settings$assim.batch$ensemble.id, '.xml')))
 
   return(settings)
+}
+
+
+##' Helper function for creating log-priors compatible with BayesianTools package
+##'
+##' @title Create priors for BayesianTools
+##' @param prior.sel prior distributions of the selected parameters
+##'
+##' @return out prior class object for BayesianTools package
+##'
+##' @author Istem Fer
+##' @export
+pda.create.btprior <- function(prior.sel){
+  
+  dens.fn <- samp.fn <-list()
+  
+  #TODO: test exponential
+  for(i in 1:nrow(prior.sel)){
+  #  if(prior.sel$distn[i] == 'exp'){
+  #    dens.fn[[i]]=paste("d",prior.sel$distn[i],"(x[",i,"],",prior.sel$parama[i],",log=TRUE)",sep="")
+  #    samp.fn[[i]] <- paste("x[",i,"]=r",prior.sel$distn[i],"(1,",prior.sel$parama[i],")",sep="")
+  #  }else{  
+      dens.fn[[i]]=paste("d",prior.sel$distn[i],"(x[",i,"],",prior.sel$parama[i],",",prior.sel$paramb[i],",log=TRUE)",sep="")
+      samp.fn[[i]] <- paste("x[",i,"]=r",prior.sel$distn[i],"(1,",prior.sel$parama[i],",",prior.sel$paramb[i],")",sep="")
+  #  }
+  }
+  
+  to.density <- paste(dens.fn,collapse=",")
+  to.sampler <- paste(samp.fn,collapse=" ", "\n")
+  
+  density <- eval(parse(text=paste("function(x){ \n return(sum(",to.density,")) \n }",sep="")))
+  sampler <- eval(parse(text=paste("function(){ \n x=rep(NA,",nrow(prior.sel),") \n",to.sampler,"return(x) \n ","}",sep="")))
+  
+  # Use createPrior{BayesianTools} function to create prior class object compatible with rest of the functions
+  out <- createPrior(density = density, sampler = sampler)
+  return(out)
+}
+
+
+##' Helper function for applying BayesianTools specific settings from PEcAn general settings
+##'
+##' @title Apply settings for BayesianTools
+##' @param settings PEcAn settings
+##'
+##' @return bt.settings list of runMCMC{BayesianTools} settings
+##'
+##' @author Istem Fer
+##' @export
+##' 
+pda.settings.bt <- function(settings){
+  
+  sampler = settings$assim.batch$bt.settings$sampler 
+  
+  iterations = as.numeric(settings$assim.batch$bt.settings$iter)
+  optimize = settings$assim.batch$bt.settings$optimize
+  consoleUpdates = as.numeric(settings$assim.batch$bt.settings$consoleUpdates)
+  parallel = settings$assim.batch$bt.settings$parallel
+  adapt = settings$assim.batch$bt.settings$adapt
+  adaptationInverval = as.numeric(settings$assim.batch$bt.settings$adaptationInverval)
+  adaptationNotBefore = as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore)
+  initialParticles=list("prior",as.numeric(settings$assim.batch$bt.settings$n.initialParticles))
+  DRlevels = as.numeric(settings$assim.batch$bt.settings$DRlevels)
+  proposalScaling = settings$assim.batch$bt.settings$proposalScaling
+  adaptationDepth = settings$assim.batch$bt.settings$adaptationDepth
+  temperingFunction = settings$assim.batch$bt.settings$temperingFunction
+  gibbsProbabilities = as.numeric(unlist(settings$assim.batch$bt.settings$gibbsProbabilities))
+  
+## Generate proposal  
+# TODO: pass jump variances to proposalGenerator from settings
+# sqrt(unlist(settings$assim.batch$jump$jvar))
+# proposalGenerator <- createProposalGenerator(covariance = sqrt(c(settings$assim.batch$jump$jvar,0.000005)), message = T)
+
+  
+  if(sampler == "Metropolis") {
+    bt.settings <- list(iterations = iterations, adapt = adapt, DRlevels = DRlevels, gibbsProbabilities = gibbsProbabilities, 
+                     temperingFunction = temperingFunction, optimize = optimize)
+  } else if(sampler %in% c("AM", "M", "DRAM", "DR")) {
+    bt.settings = list(iterations = iterations, startValue = "prior")
+  } else if(sampler %in% c("DE", "DEzs")) {
+    bt.settings <- list(iterations = iterations)
+  } else if(sampler == "SMC") {
+    bt.settings <- list(initialParticles = initialParticles, iterations= iterations)
+  } else if(sampler %in% c("DREAM", "DREAMzs")) {
+    bt.settings <- list(ndraw=iterations*n.param)
+  } else {
+    logger.error(paste0(sampler, " sampler not found!"))
+  }
+  
+  return(bt.settings) 
 }
