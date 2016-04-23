@@ -82,7 +82,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
       sec   <- nc$dim$time$vals  
       sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
       
-      ifelse(leap_year(year)==TRUE,
+      ifelse(leap_year(year),
              dt <- (366*24*60*60)/length(sec), #leap year
              dt <- (365*24*60*60)/length(sec)) #non-leap year
       tstep = round(86400/dt)
@@ -116,7 +116,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
       ##############
       
       #mmol m-2s-1   hourly incident photosynthetically active radiation. If nonexistant Calculated from RAD.If RAD absent, calculated from TAIR (DELTAT needed).
-      if(!is.numeric(PAR)==TRUE){
+      if(!is.numeric(PAR)){
         print("Photosynthetically Active Radiation(PAR)Calculated from RAD.If RAD absent, calculated from TAIR (DELTAT needed).")}else{
           #4.6= unit conversion of W/m2 to mmol/m2/s
           #0.4805 = based on the approximation that PAR is 0.45-0.50 of the total radiation
@@ -145,7 +145,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
       ####Same as SWMAX   Soil water content.   Not used.
       #if(!is.numeric(SW)==TRUE){print("Soil Water potential will not be used y MAESPA")}
       ####ppm. atmospheric CO2 concentration. Constant from Enviiron namelist used instead
-      if(!is.numeric(CA)==TRUE){print("Atmospheric CO2 concentration will be set to constant value set in ENVIRON namelist ")
+      if(!is.numeric(CA)){print("Atmospheric CO2 concentration will be set to constant value set in ENVIRON namelist ")
                                 rm(CA)
                                 defaultCO2= 400 #400 is estimation of atmospheric CO2 in ppm)
       }else{defaultCO2= 400} #400 is estimation of atmospheric CO2 in ppm))
