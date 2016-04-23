@@ -26,4 +26,7 @@ met2model.MAESPA(in.path, in.prefix, outfolder, start_date, end_date, ...,
 \description{
 met2model wrapper for MAESPA
 }
+\author{
+Tony Gardella
+}
 

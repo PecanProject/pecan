@@ -16,7 +16,7 @@ if [ ! -e "@OUTDIR@/.dat" ]; then
   cp -r  /fs/data5/pecan.models/maespa/inputfiles/example2 "@RUNDIR@"
   cd example2
   rm met.dat
-  cp @SITE_MET@ .
+  cp  @SITE_MET@ ./met.dat
   "@BINARY@"
   mv *.dat "@OUTDIR@"
   STATUS=$?

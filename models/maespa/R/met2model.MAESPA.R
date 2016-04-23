@@ -25,7 +25,7 @@
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 ##' 
-##'
+##' @author Tony Gardella
 
 met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite=FALSE,verbose=FALSE){
   
@@ -39,8 +39,8 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   
   results <- data.frame(file = out.file.full,
                         host = fqdn(),
-                        mimetype ='text/csv',
-                        formatname = 'Sipnet.climna' ,
+                        mimetype ='text/plain',
+                        formatname = 'maespa.met' ,
                         startdate = start_date ,
                         enddate = end_date,
                         dbfile.name = out.file,
@@ -93,173 +93,145 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
       ## extract variables
       lat  <- ncvar_get(nc,"latitude")
       lon  <- ncvar_get(nc,"longitude")       
-      #RAD <-  ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") #W m-2
+      RAD <-  ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") #W m-2
       PAR <-   try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air")) #mol m-2 s-1
       TAIR <-  ncvar_get(nc,"air_temperature") #K
-      #TSOIL <-  try(ncvar_get(nc,"soil_temperature")) #K
-      #RHperc <-  try(ncvar_get(nc,"relative_humidity_percentage")) 
-      `RH%` <- try(ncvar_get(nc,"relative_humidity"))
-      #VMFD <-  try(ncvar_get(nc,"vapour_pressure_mole_fraction_deficit")) 
-      #SH <- ncvar_get(nc,"specific_humidity") #
+      `RH%` <- try(ncvar_get(nc,"relative_humidity")) #percentage
       PPT <-  ncvar_get(nc,"precipitation_flux") #kg m-2 s-1
-      #WIND <- try(ncvar_get(nc,"wind_speed")) #m/s
-      #PRESS <-  ncvar_get(nc,"air_pressure")# Pa
-      #SW <-  try(ncvar_get(nc,"soil_moisture"))# kg m-2
       CA <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air")) #mol/mol
-      ##############
-      # Not part of example being used for testing. Needs to be active at some point though:
+      PRESS <-  ncvar_get(nc,"air_pressure")# Pa
+      
+      # TSOIL <-  try(ncvar_get(nc,"soil_temperature")) #K
+      # VMFD <-  try(ncvar_get(nc,"vapour_pressure_mole_fraction_deficit")) 
+      # WIND <- try(ncvar_get(nc,"wind_speed")) #m/s   
+      # SW <-  try(ncvar_get(nc,"soil_moisture"))# kg m-2
       # SWP <- ncvar_get(nc,"soil_water_potential)# MPa
       # TDEW <- try(ncvar_get(nc, "dew_point_temperature")) #Celsius
-      # FBEAM <- ncvar_get try((nc,"fraction_of_surface_downwelling_photosynthetic_photon_flux_in_air"))#fraction
-      # RH <- try(ncvar_get(nc,"relative_humidity"))# percentage
-      # RAD<- try(ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air))#Wm-2
-      ##############
+      # FBEAM <- ncvar_get try((nc,"fraction_of_surface_downwelling_photosynthetic_photon_flux_in_air") #frction of direct beam
+      # RH <- try(ncvar_get(nc,"relative_humidity"))# fraction
       
-      #mmol m-2s-1   hourly incident photosynthetically active radiation. If nonexistant Calculated from RAD.If RAD absent, calculated from TAIR (DELTAT needed).
-      if(!is.numeric(PAR)){
-        print("Photosynthetically Active Radiation(PAR)Calculated from RAD.If RAD absent, calculated from TAIR (DELTAT needed).")}else{
-          #4.6= unit conversion of W/m2 to mmol/m2/s
-          #0.4805 = based on the approximation that PAR is 0.45-0.50 of the total radiation
-          PAR <- round(PAR*4.6*0.4805,digits=3) ##Convert W/m2 to mmol/m2/s 
+          if(!is.numeric(PAR)){
+            print("Photosynthetically Active Radiation(PAR)Calculated from RAD.If RAD absent, calculated from TAIR (DELTAT needed).")}else{
+              #4.6= unit conversion of W/m2 to mmol/m2/s
+              #0.4805 = based on the approximation that PAR is 0.45-0.50 of the total radiation
+              PAR <- PAR*4.6*0.4805##Convert W/m2 to mmol/m2/s 
+            }
+          # ºC   air temperature. If nonexistant. Error.
+          TAIR <- udunits2::ud.convert(TAIR,"kelvin","celsius") 
+          
+          ####ppm. atmospheric CO2 concentration. Constant from Enviiron namelist used instead
+          if(!is.numeric(CA)){print("Atmospheric CO2 concentration will be set to constant value set in ENVIRON namelist ")
+                              rm(CA)
+                              defaultCO2= 400 #400 is estimation of atmospheric CO2 in ppm)
+          }else{defaultCO2= 400} #400 is estimation of atmospheric CO2 in ppm))
+          
+          nc_close(nc)
+        } else {
+          print("Skipping to next year")
+          next
         }
-      # ºC   air temperature. If nonexistant. Error.
-      TAIR <- udunits2::ud.convert(TAIR,"kelvin","celsius") 
-      TAIR<-round(TAIR,digits =3)
-      # ºC   soil temperature. If nonexistent, assumed = TAIR
-      #if(!is.numeric(TSOIL)==TRUE){print("Soil Temperature(TSOIL)
-      #will be assumed to beair temperature(TAIR)")}else{
-      # TSOIL <-udunits2::ud.convert(TSOIL,"kelvin","celsius") ##need to be converted to hourly
-      # }
+        
+        ##build time variables (year, month, day of year)
+        skip = FALSE
+        nyr <- floor(length(sec)/86400/365*dt)
+        yr <- NULL
+        doy <- NULL
+        hr <- NULL
+        asec <- sec
+        for(y in year+1:nyr-1){
+          ytmp <- rep(y,365*86400/dt)
+          dtmp <- rep(1:365,each=86400/dt)
+          if(y %% 4 == 0){  ## is leap
+            ytmp <- rep(y,366*86400/dt)
+            dtmp <- rep(1:366,each=86400/dt)
+          }
+          if(is.null(yr)){
+            yr <- ytmp
+            doy <- dtmp
+            hr <- rep(NA,length(dtmp))
+          } else {
+            yr <- c(yr,ytmp)
+            doy <- c(doy,dtmp)
+            hr <- c(hr,rep(NA,length(dtmp)))
+          }
+          rng <- length(doy) - length(ytmp):1 + 1
+          if(!all(rng>=0)){
+            skip = TRUE
+            logger.warn(paste(year,"is not a complete year and will not be included"))
+            break
+          }
+          asec[rng] <- asec[rng] - asec[rng[1]]
+          hr[rng] <- (asec[rng] - (dtmp-1)*86400)/86400*24
+        }
+        if(length(yr) < length(sec)){
+          rng <- (length(yr)+1):length(sec)
+          if(!all(rng>=0)){
+            skip = TRUE
+            logger.warn(paste(year,"is not a complete year and will not be included"))
+            break
+          }
+          yr[rng] <- rep(y+1,length(rng))
+          doy[rng] <- rep(1:366,each=86400/dt)[1:length(rng)]
+          hr[rng] <- rep(seq(0,length=86400/dt,by=dt/86400*24),366)[1:length(rng)]
+        }
+        if(skip){
+          print("Skipping to next year")
+          next
+        }
+        tmp<-rbind(TAIR,PPT,RAD)
+        
+        if(is.null(out)){
+          out = tmp
+        } else {
+          out = cbind(out,tmp)}
+        
+    }### end loop over years
       
-      # percent   relative humidity (different units)   Calculated from VPD, VMFD or TAIR
-      #if(!is.numeric(RHperc)==TRUE){print("Percent Relative Humidity(RH%) 
-      # will be calculated from VPD, VMFD, or TAIR by MAESPA")}
-      #mmol mol-1   vapour pressure mole fraction deficit   Calculated from RH or VPD, and PRESS
-      #if(!is.numeric(VMFD)== TRUE){print("Vapor pressure mole fraction deficit(VMFD) will be calulated from RH or VPD an PRESS by MAESPA")}
-      ####mm   Precipitation.   Assume zero precipitation.
-      #PPT <- units are fine (kg m-2 = mm). need to convert to hourly though
-      ####m s-1   wind speed above the canopy   Assumed = DEFWIND (defined in maestcom.f90)
-      #WIND <- units fine. need to convert to hourly
-      ####Pa   atmospheric pressure   Constant value from ENVIRON namelist used.
-      #PRESS <- units are fine. need to convert to houly
-      ####Same as SWMAX   Soil water content.   Not used.
-      #if(!is.numeric(SW)==TRUE){print("Soil Water potential will not be used y MAESPA")}
-      ####ppm. atmospheric CO2 concentration. Constant from Enviiron namelist used instead
-      if(!is.numeric(CA)){print("Atmospheric CO2 concentration will be set to constant value set in ENVIRON namelist ")
-                                rm(CA)
-                                defaultCO2= 400 #400 is estimation of atmospheric CO2 in ppm)
-      }else{defaultCO2= 400} #400 is estimation of atmospheric CO2 in ppm))
       
-      nc_close(nc)
-    } else {
-      print("Skipping to next year")
-      next
-    }
+      DOY = doy
+      out[is.na(out)] <-0
+      #Get names
+      columnnames =  paste0("'",rownames(out),"'",collapse= " ")
+      #Get number of variables
+      numbercolumns = nrow(out)
+      #turn into matrix
+      out<- matrix(out,ncol= numbercolumns)
+      
+      #Set day or hour Option(1 or 0)
+      if(tstep>=1){dayorhour=1}else{dayorhour=0}
+      #Set number of timesteps in a day(timetsep of input data)
+      timesteps = tstep
+      # Set distribution of diffuse radiation incident from the sky.(0.0) is default. 
+      difsky= 0.5
+      #Change format of date to DD/MM/YY
+      startdate = paste0("'",format(as.Date(start_date),"%d/%m/%y"),"'")
+      enddate = paste0("'",format(as.Date(end_date),"%d/%m/%y"),"'")
+      metdat <- readLines(con=system.file("template.met", package = "PEcAn.MAESPA"), n=-1)
+      
+      
+      ## write output
+      #metdat<- gsub('@MAESPAMETHEADER@',metheader,metdat)
+      metdat<- gsub('@DISTDIFFRADINCIDENCE@',difsky,metdat)
+      metdat<- gsub('@DEFCO2@',defaultCO2,metdat)
+      #metdat<- gsub('@DEFSWMIN@',defaultSWmin,metdat)
+      #metdat<- gsub('@DEFSWMAX@',defaultSWmax,metdat)
+      #metdat<- gsub('@DEFATMOSPRESSURE@',deafaultatmospress,metdat)
+      metdat<- gsub('@LATITUDE@',lat,metdat)
+      metdat<- gsub('@LONGITUDE@',lon,metdat)
+      #metdat<- gsub('@TZLONG@',longmeridian,metdat)
+      #metdat<- gsub('@LONGHEM@',longhemisphere,metdat)
+      #metdat<- gsub('@LATHEM@',lathemisphere,metdat)
+      metdat<- gsub('@DAYORHR@',dayorhour,metdat)
+      metdat<- gsub('@TSTEPS@',timesteps,metdat)
+      metdat<- gsub('@NUMCOLUMNS@',numbercolumns,metdat)
+      metdat<- gsub('@STARTDATE@',startdate,metdat)
+      metdat<- gsub('@ENDDATE@',enddate,metdat)
+      metdat<- gsub('@COLNAMES@',columnnames,metdat)
+      
+      writeLines(metdat, con=file.path(out.file.full))
+      write(paste(out),file=file.path(outfolder, out.file.full),append = TRUE,ncol=numbercolumns)
+      
+      invisible(results)
+      
+    }  ### End of function
     
-    ##build time variables (year, month, day of year)
-    skip = FALSE
-    nyr <- floor(length(sec)/86400/365*dt)
-    yr <- NULL
-    doy <- NULL
-    hr <- NULL
-    asec <- sec
-    for(y in year+1:nyr-1){
-      ytmp <- rep(y,365*86400/dt)
-      dtmp <- rep(1:365,each=86400/dt)
-      if(y %% 4 == 0){  ## is leap
-        ytmp <- rep(y,366*86400/dt)
-        dtmp <- rep(1:366,each=86400/dt)
-      }
-      if(is.null(yr)){
-        yr <- ytmp
-        doy <- dtmp
-        hr <- rep(NA,length(dtmp))
-      } else {
-        yr <- c(yr,ytmp)
-        doy <- c(doy,dtmp)
-        hr <- c(hr,rep(NA,length(dtmp)))
-      }
-      rng <- length(doy) - length(ytmp):1 + 1
-      if(!all(rng>=0)){
-        skip = TRUE
-        logger.warn(paste(year,"is not a complete year and will not be included"))
-        break
-      }
-      asec[rng] <- asec[rng] - asec[rng[1]]
-      hr[rng] <- (asec[rng] - (dtmp-1)*86400)/86400*24
-    }
-    if(length(yr) < length(sec)){
-      rng <- (length(yr)+1):length(sec)
-      if(!all(rng>=0)){
-        skip = TRUE
-        logger.warn(paste(year,"is not a complete year and will not be included"))
-        break
-      }
-      yr[rng] <- rep(y+1,length(rng))
-      doy[rng] <- rep(1:366,each=86400/dt)[1:length(rng)]
-      hr[rng] <- rep(seq(0,length=86400/dt,by=dt/86400*24),366)[1:length(rng)]
-    }
-    if(skip){
-      print("Skipping to next year")
-      next
-    }
-    tmp<-rbind(TAIR,PPT)
-    
-    if(is.null(out)){
-      out = tmp
-    } else {
-      out = cbind(out,tmp)}
-    
-  }### end loop over years
-  
-  
-  DOY = doy
-  #Bind met data and get rid of empty parmeters
-  
-  out[is.na(out)] <-0
-  #Get names
-  columnnames =  paste0("'",rownames(out),"'",collapse= " ")
-  #Get number of variables
-  numbercolumns = nrow(out)
-  #turn into matrix
-  out<- matrix(out,ncol= numbercolumns)
-  
-  #Set day or hour Option(1 or 0)
-  if(tstep>=1){dayorhour=1}else{dayorhour=0}
-  #Set number of timesteps in a day(timetsep of input data)
-  timesteps = tstep
-  # Set distribution of diffuse radiation incident from the sky.(0.0) is default. 
-  difsky= 0.5
-  #Change format of date to DD/MM/YY
-  startdate = paste0("'",format(as.Date(start_date),"%d/%m/%y"),"'")
-  enddate = paste0("'",format(as.Date(end_date),"%d/%m/%y"),"'")
-  metdat <- readLines(con=system.file("template.met", package = "PEcAn.MAESPA"), n=-1)
-  
-  
-  ## write output
-  #metdat<- gsub('@MAESPAMETHEADER@',metheader,metdat)
-  metdat<- gsub('@DISTDIFFRADINCIDENCE@',difsky,metdat)
-  metdat<- gsub('@DEFCO2@',defaultCO2,metdat)
-  #metdat<- gsub('@DEFSWMIN@',defaultSWmin,metdat)
-  #metdat<- gsub('@DEFSWMAX@',defaultSWmax,metdat)
-  #metdat<- gsub('@DEFATMOSPRESSURE@',deafaultatmospress,metdat)
-  metdat<- gsub('@LATITUDE@',lat,metdat)
-  metdat<- gsub('@LONGITUDE@',lon,metdat)
-  #metdat<- gsub('@TZLONG@',longmeridian,metdat)
-  #metdat<- gsub('@LONGHEM@',longhemisphere,metdat)
-  #metdat<- gsub('@LATHEM@',lathemisphere,metdat)
-  metdat<- gsub('@DAYORHR@',dayorhour,metdat)
-  metdat<- gsub('@TSTEPS@',timesteps,metdat)
-  metdat<- gsub('@NUMCOLUMNS@',numbercolumns,metdat)
-  metdat<- gsub('@STARTDATE@',startdate,metdat)
-  metdat<- gsub('@ENDDATE@',enddate,metdat)
-  metdat<- gsub('@COLNAMES@',columnnames,metdat)
-  
-  writeLines(metdat, con=file.path(outfolder, "met.dat"))
-  write(paste(out),file=file.path(outfolder, "met.dat"),append = TRUE,ncol=numbercolumns)
-  writeLines(metdat, con=file.path(out.file.full))
-  write(paste(out),file=file.path(out.file.full),append = TRUE,ncol=numbercolumns)
-  
-  invisible(results)
-  
-} ### end met2model.MAESPA
