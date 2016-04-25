@@ -131,53 +131,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
           next
         }
         
-        ##build time variables (year, month, day of year)
-        skip = FALSE
-        nyr <- floor(length(sec)/86400/365*dt)
-        yr <- NULL
-        doy <- NULL
-        hr <- NULL
-        asec <- sec
-        for(y in year+1:nyr-1){
-          ytmp <- rep(y,365*86400/dt)
-          dtmp <- rep(1:365,each=86400/dt)
-          if(y %% 4 == 0){  ## is leap
-            ytmp <- rep(y,366*86400/dt)
-            dtmp <- rep(1:366,each=86400/dt)
-          }
-          if(is.null(yr)){
-            yr <- ytmp
-            doy <- dtmp
-            hr <- rep(NA,length(dtmp))
-          } else {
-            yr <- c(yr,ytmp)
-            doy <- c(doy,dtmp)
-            hr <- c(hr,rep(NA,length(dtmp)))
-          }
-          rng <- length(doy) - length(ytmp):1 + 1
-          if(!all(rng>=0)){
-            skip = TRUE
-            logger.warn(paste(year,"is not a complete year and will not be included"))
-            break
-          }
-          asec[rng] <- asec[rng] - asec[rng[1]]
-          hr[rng] <- (asec[rng] - (dtmp-1)*86400)/86400*24
-        }
-        if(length(yr) < length(sec)){
-          rng <- (length(yr)+1):length(sec)
-          if(!all(rng>=0)){
-            skip = TRUE
-            logger.warn(paste(year,"is not a complete year and will not be included"))
-            break
-          }
-          yr[rng] <- rep(y+1,length(rng))
-          doy[rng] <- rep(1:366,each=86400/dt)[1:length(rng)]
-          hr[rng] <- rep(seq(0,length=86400/dt,by=dt/86400*24),366)[1:length(rng)]
-        }
-        if(skip){
-          print("Skipping to next year")
-          next
-        }
+    
         tmp<-rbind(TAIR,PPT,RAD)
         
         if(is.null(out)){
@@ -188,7 +142,6 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
     }### end loop over years
       
       
-      DOY = doy
       out[is.na(out)] <-0
       #Get names
       columnnames =  paste0("'",rownames(out),"'",collapse= " ")
