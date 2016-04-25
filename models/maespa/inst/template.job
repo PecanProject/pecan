@@ -15,7 +15,8 @@ if [ ! -e "@OUTDIR@/.dat" ]; then
   cd "@RUNDIR@"
   cp -r  /fs/data5/pecan.models/maespa/inputfiles/example2 "@RUNDIR@"
   cd example2
-
+  rm met.dat
+  ln -s  @SITE_MET@ met.dat
   "@BINARY@"
   mv *.dat "@OUTDIR@"
   STATUS=$?
@@ -27,14 +28,15 @@ if [ ! -e "@OUTDIR@/.dat" ]; then
   fi
 
   # convert to MsTMIP
-  #echo "require (PEcAn.MAESPA)
-#model2netcdf.MAESPA('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
-#" | R --vanilla
+  cd @OUTDIR@
+  echo "require (PEcAn.MAESPA)
+model2netcdf.MAESPA('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
+" | R --vanilla
 fi
 
 
 # copy readme with specs to output
-#cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
+cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 
 # run getdata to extract right variables
 
