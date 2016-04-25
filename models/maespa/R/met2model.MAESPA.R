@@ -229,7 +229,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
       metdat<- gsub('@COLNAMES@',columnnames,metdat)
       
       writeLines(metdat, con=file.path(out.file.full))
-      write(paste(out),file=file.path(outfolder, out.file.full),append = TRUE,ncol=numbercolumns)
+      write(paste(out),file=file.path(out.file.full),append = TRUE,ncol=numbercolumns)
       
       invisible(results)
       
