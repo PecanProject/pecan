@@ -5,7 +5,7 @@
 #' performed using the multivariate Gelman-Rubin diagnostic.
 #' @param observed Matrix of observed values. Must line up with output of 
 #' 'model'.
-#' @param settings R list object containing the following elements:
+#' @param invert.options R list object containing the following elements:
 #' 
 #' inits Vector of initial values of model parameters to be inverted.
 #'
@@ -57,11 +57,12 @@
 #' @return List of "results" (summary statistics and Gelman Diagnostic) and 
 #' "samples"(mcmc.list object, or "NA" if return.samples=FALSE)
 
-invert.auto <- function(observed, settings, return.samples=TRUE, save.samples=NULL, quiet=FALSE, ...){
-    n.tries <- settings$n.tries
-    nchains <- settings$nchains
-    inits.function <- settings$inits.function
-    settings$do.lsq <- settings$do.lsq.first
+invert.auto <- function(observed, invert.options, return.samples=TRUE, save.samples=NULL, quiet=FALSE, ...){
+    library(coda)
+    n.tries <- invert.options$n.tries
+    nchains <- invert.options$nchains
+    inits.function <- invert.options$inits.function
+    invert.options$do.lsq <- invert.options$do.lsq.first
     try.again <- TRUE
     i.try <- 1
     while(try.again & i.try <= n.tries){
@@ -69,8 +70,8 @@ invert.auto <- function(observed, settings, return.samples=TRUE, save.samples=NU
         samps.list <- list()
         for(chain in 1:nchains){
             print(sprintf("Chain %d of %d", chain, nchains))
-            settings$inits <- inits.function() 
-            samps.list[[chain]] <- invert.custom(observed=observed, settings=settings, quiet=quiet)
+            invert.options$inits <- inits.function() 
+            samps.list[[chain]] <- invert.custom(observed=observed, invert.options=invert.options, quiet=quiet)
         }
         if(!is.null(save.samples)) save(samps.list, file=save.samples)
         # Check for convergence. Repeat if necessary.
@@ -89,8 +90,8 @@ invert.auto <- function(observed, settings, return.samples=TRUE, save.samples=NU
                 results$gelman.diag <- conv.check$diagnostic
             } else {
                 i.try <- i.try + 1
-                settings$target <- settings$target * settings$target.adj
-                if(i.try > settings$do.lsq.after) settings$do.lsq <- TRUE
+                invert.options$target <- invert.options$target * invert.options$target.adj
+                if(i.try > invert.options$do.lsq.after) invert.options$do.lsq <- TRUE
             }
         }
     }

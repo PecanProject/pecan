@@ -7,7 +7,7 @@
 #' @param observed Vector, matrix, or data frame (coerced to matrix) of 
 #' observed values. For spectral data, wavelengths are rows and spectra are 
 #' columns.
-#' @param settings R list object containing the following elements:
+#' @param invert.options R list object containing the following elements:
 #' 
 #' inits Vector of initial values of model parameters to be inverted.
 #'
@@ -35,33 +35,33 @@
 #' outputs to initialize Metropolis Hastings. This may improve mixing time, but 
 #' risks getting caught in a local minimum.  Default=FALSE
 #' @param quiet Do not show progress bar. Default=FALSE
-invert.custom <- function(observed, settings, quiet=FALSE){
+invert.custom <- function(observed, invert.options, quiet=FALSE){
     observed <- as.matrix(observed)
     nspec <- ncol(observed)
     nwl <- nrow(observed)
 
-    need.settings <- c("inits", "ngibbs", "prior.function", "param.mins", "adapt", 
+    need.invert.options <- c("inits", "ngibbs", "prior.function", "param.mins", "adapt", 
                        "adj_min", "target", "do.lsq", "model")
-    have.settings <- names(settings)
-    overlap.settings <- need.settings %in% have.settings
-    if(any(!overlap.settings)){
-        error.msg <- paste("Missing the following settings:",
-                        paste(need.settings[!overlap.settings], collapse=" "),
-                        "Try modifying a default.settings() object",
+    have.invert.options <- names(invert.options)
+    overlap.invert.options <- need.invert.options %in% have.invert.options
+    if(any(!overlap.invert.options)){
+        error.msg <- paste("Missing the following invert.options:",
+                        paste(need.invert.options[!overlap.invert.options], collapse=" "),
+                        "Try modifying a default.invert.options() object",
                         sep = "\n")
         stop(error.msg)
     }
 
-# Unpack settings list
-    model <- settings$model
-    inits <- settings$inits
-    ngibbs <- settings$ngibbs
-    prior.function <- settings$prior.function
-    param.mins <- settings$param.mins
-    adapt <- settings$adapt
-    adj_min <- settings$adj_min
-    target <- settings$target
-    do.lsq <- settings$do.lsq
+# Unpack invert.options list
+    model <- invert.options$model
+    inits <- invert.options$inits
+    ngibbs <- invert.options$ngibbs
+    prior.function <- invert.options$prior.function
+    param.mins <- invert.options$param.mins
+    adapt <- invert.options$adapt
+    adj_min <- invert.options$adj_min
+    target <- invert.options$target
+    do.lsq <- invert.options$do.lsq
 
 # Set up inversion
     npars <- length(inits)

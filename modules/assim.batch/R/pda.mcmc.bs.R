@@ -46,7 +46,7 @@ pda.mcmc.bs <- function(settings, params.id=NULL, param.names=NULL, prior.id=NUL
   n.param.all  <- nrow(prior)
 
   ## Load data to assimilate against
-  inputs <- load.pda.data(settings$assim.batch$inputs, con)
+  inputs <- load.pda.data(settings, con)
   n.input <- length(inputs)
 
   ## Set model-specific functions
