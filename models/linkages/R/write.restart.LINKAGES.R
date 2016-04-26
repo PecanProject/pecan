@@ -15,11 +15,16 @@
 ##' @return NONE
 ##' 
 write.restart.LINKAGES <- function(out.dir,runid,time,settings,analysis.vec,
-                                   RENAME,PLOT){
+                                   RENAME,PLOT,variables){
+  
+  ### Removing negative numbers because biomass can't be negative ###
   for(i in 1:length(analysis.vec)){
     if(analysis.vec[i]<0) analysis.vec[i] <- 0
   }
   
+  analysis.vec.save <- analysis.vec
+  analysis.vec <- analysis.vec.save[grep('pft',names(analysis.vec.save))]
+  analysis.vec.other <- analysis.vec.save[grep('pft',names(analysis.vec.save),invert=TRUE)]
   
   biomass_function<-function(dbh){ #kg/tree
       .1193 * dbh^2.393 + ((slta+sltb*dbh)/2)^2 * 3.14 * fwt * frt * .001
@@ -28,6 +33,7 @@ write.restart.LINKAGES <- function(out.dir,runid,time,settings,analysis.vec,
     (b_obs - biomass_function(dbh))^2
   }
   
+  ### Going to need to change this... ### Get some expert opinion
   distance.matrix <- rbind(c(0,3,4,5,7,6,2,8,1),
                            c(5,0	,3	,4	,8	,1	,2	,7	,6),
                            c(5,3	,0	,1	,8	,4	,2	,7	,6),
@@ -37,7 +43,7 @@ write.restart.LINKAGES <- function(out.dir,runid,time,settings,analysis.vec,
                            c(5,3	,1	,2	,8	,6	,0	,7	,4),
                            c(3,6	,4	,5	,1	,7	,8	,0	,2),
                            c(1,5	,3	,2	,7	,6	,4	,8	,0))
-  
+  ### Flag for plotting ### probably worthless after diagnostics
   PLOT = FALSE
 
   ##HACK
@@ -243,6 +249,13 @@ write.restart.LINKAGES <- function(out.dir,runid,time,settings,analysis.vec,
 #     nu <- nl + ntrees[n] - 1
 #     nl <- nu + 1 
 #   }
+
+##### SOIL
+    leaf.sum <- sum(tyl[1:12]) * 0.48
+    soil.org.mat <- analysis.vec.other['TotSoilCarb'] - leaf.sum
+    soil.corr <- soil.org.mat / (sum(C.mat[C.mat[,5],1]) * 0.48)
+    C.mat[C.mat[,5],1] <- C.mat[C.mat[,5],1] * as.numeric(soil.corr)
+
     if(RENAME==TRUE){ 
       file.rename(file.path(settings$rundir,runid,"linkages.restart.Rdata"),
                   file.path(settings$rundir,runid,

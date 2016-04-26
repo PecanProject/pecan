@@ -166,28 +166,50 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
   X.mod ~ dmnorm(muf,pf) ## Model Forecast
   
   for(i in 1:length(X.mod)){
-    X.mod.real[map[i]] <- X.mod[i]
+  X.mod.not.zero[F2M[i]] <- X.mod[i]
   }
-
-  X.mod.real[2]<-0
-  X.mod.real[4]<-0
-
+  
+  for(i in 1:length(E)){
+  X.mod.not.zero[E[i]]<-0
+  }
+  
   ## add process error
   q  ~ dwish(aq,bq)
   Q <- inverse(q) 
-  X  ~ dmnorm(X.mod.real,q)
+  X  ~ dmnorm(X.mod.not.zero,q)
   
   ## Analysis
   for(i in 1:length(X.keep)){
-    X.keep[i] <- X[map1[i]]
+  X.keep[i] <- X[X2Y[i]]
   }
   Y  ~ dmnorm(X.keep,r)
-  }"       
+}"     
+  
+  AnalysisFilterQ1 <- "
+  model{
+  
+  X.mod ~ dmnorm(muf,pf) ## Model Forecast
+  
+  for(i in 1:length(X.mod)){
+  X.mod.not.zero[F2M[i]] <- X.mod[i]
+  }
+  
+  ## add process error
+  q  ~ dwish(aq,bq)
+  Q <- inverse(q) 
+  X  ~ dmnorm(X.mod.not.zero,q)
+  
+  ## Analysis
+  for(i in 1:length(X.keep)){
+  X.keep[i] <- X[X2Y[i]]
+  }
+  Y  ~ dmnorm(X.keep,r)
+}"     
   
   ###-------------------------------------------
   ### loop over time
   ###-------------------------------------------
-  for(t in 6:9){
+  for(t in 1:5){
     
     ### READ RESTART
     X <- list()
@@ -227,32 +249,6 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
       bqq[1] <- length(mu.f)
       aqq[1,,] <- diag(length(mu.f))*bqq[1]
       
-      
-      AnalysisFilterQ <- "
-  model{
-
-      X.mod ~ dmnorm(muf,pf) ## Model Forecast
-      
-      for(i in 1:length(X.mod)){
-        X.mod.not.zero[F2M[i]] <- X.mod[i]
-      }
-      
-      for(i in 1:length(E)){
-        X.mod.not.zero[E[i]]<-0
-      }
-
-      ## add process error
-      q  ~ dwish(aq,bq)
-      Q <- inverse(q) 
-      X  ~ dmnorm(X.mod.not.zero,q)
-      
-      ## Analysis
-      for(i in 1:length(X.keep)){
-      X.keep[i] <- X[X2Y[i]]
-      }
-      Y  ~ dmnorm(X.keep,r)
-    }"  
-      
       #### extinct vector
       E <- which(colSums(X)==0)
       F2M<- seq(1,length(mu.f),1)
@@ -263,17 +259,32 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
       X2Y <- X2Y[!is.na(Y)]
     
       ### analysis of model and data
-      update = list(Y=na.omit(Y), r=solve(R[-10,-10]),
-                    muf=mu.f[-E], pf=solve(Pf[-E,-E]),
-                    aq=aqq[t,,], bq=bqq[t],
-                    F2M=F2M,X2Y=X2Y,X.mod=rep(NA,length(mu.f[-E])),
-                    X=rep(NA,length(mu.f)),
-                    X.keep=rep(NA,length(na.omit(Y))),
-                    E=E)
-      mod <- jags.model(file=textConnection(AnalysisFilterQ),
-                        data=update,
-                        n.adapt=1000,n.chains=3,
-                        init=list(X.mod=as.vector(mu.f[-c(E)]))) #inits for q?
+      if(length(E)>0){
+        update = list(Y=na.omit(Y), r=solve(R[-10,-10]),
+                      muf=mu.f[-E], pf=solve(Pf[-E,-E]),
+                      aq=aqq[t,,], bq=bqq[t],
+                      F2M=F2M,X2Y=X2Y,X.mod=rep(NA,length(mu.f[-E])),
+                      X=rep(NA,length(mu.f)),
+                      X.keep=rep(NA,length(na.omit(Y))),
+                      E=E)
+        mod <- jags.model(file=textConnection(AnalysisFilterQ),
+                          data=update,
+                          n.adapt=1000,n.chains=3,
+                          init=list(X.mod=as.vector(mu.f[-c(E)]))) #inits for q?
+      }else{
+        update = list(Y=na.omit(Y), r=solve(R[-10,-10]),
+                      muf=mu.f, pf=solve(Pf),
+                      aq=aqq[t,,], bq=bqq[t],
+                      F2M=F2M,X2Y=X2Y,X.mod=rep(NA,length(mu.f)),
+                      X=rep(NA,length(mu.f)),
+                      X.keep=rep(NA,length(na.omit(Y))))
+        mod <- jags.model(file=textConnection(AnalysisFilterQ1),
+                          data=update,
+                          n.adapt=1000,n.chains=3,
+                          init=list(X.mod=as.vector(mu.f))) #inits for q?
+      }
+      
+     
       jdat <- coda.samples(mod,variable.names=c("X","q"),n.iter=10000) 
       
       ## update parameters  
@@ -347,10 +358,10 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
     ### Forecast step
     if(t < nt){
       for(i in 1:nens){
-        do.call(my.write.restart,args=list(outdir = outdir, run.id = run.id[[i]],
+        do.call(my.write.restart,args=list(out.dir = outdir, runid = run.id[[i]],
                                            time = total.time[t], settings = settings,
-                                           analysis = analysis[i,],
-                                           RENAME = TRUE,PLOT=FALSE))
+                                           analysis.vec = analysis[i,],
+                                           RENAME = TRUE, PLOT=FALSE, variables=variables))
       }
       ## start model run
       start.model.runs(settings,settings$database$bety$write)
@@ -389,7 +400,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
     
     #Process Covariance
     library(corrplot)
-    cor.mat <- cov2cor(aqq[nt,,]/bqq[nt])
+    cor.mat <- cov2cor(aqq[t,,]/bqq[t])
     colnames(cor.mat)<-c("Hemlock","Maple","Yellow Birch","Cedar")
     rownames(cor.mat)<-c("Hemlock","Maple","Yellow Birch","Cedar")
     par(mfrow=c(1,1),mai=c(1,1,4,1))
@@ -430,10 +441,10 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
     alphablue = rgb(blue[1],blue[2],blue[3],75,max=255)
     
     Ybar = laply(obs.mean[t1:t],function(x){return(x[[1]])})
-    Ybar = Ybar[,pmatch(colnames(X), colnames(obs.mean[[nt]][[1]]))]
+    Ybar = Ybar[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
     YCI = as.matrix(laply(obs.sd[t1:t],function(x){return(x[[1]])})) 
-    YCI = YCI[,pmatch(colnames(X), colnames(obs.mean[[nt]][[1]]))]
-    
+    YCI = YCI[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
+   # pdf("ly.ts.2.pdf")
     for(i in 1:ncol(X)){
       
       Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
@@ -442,7 +453,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
       Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
       XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
       
-      plot(total.time[t1:t],Ybar[,i],ylim=range(Ybar[,i])+c(-10,10),
+      plot(total.time[t1:t],Ybar[,i],ylim=range(XaCI),
            type='n',xlab="Year",ylab="kg/m^2",main=colnames(Ybar)[i])
       
       #observation / data
