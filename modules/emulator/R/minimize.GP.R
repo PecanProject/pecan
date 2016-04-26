@@ -131,7 +131,7 @@ get.y <- function(gp, pckg, xnew, priors, ...){
     X=matrix(unlist(xnew), nrow=1, byrow=T)
     Y=GPfit::predict.GP(gp,X)
     #likelihood <- Y$Y_hat
-    likelihood <- rnorm(1,Y$Y_hat,(sqrt(Y$MSE))/2)
+    likelihood <- rnorm(1,Y$Y_hat,sqrt(Y$MSE))
   } else if(pckg==2){
     likelihood <- predict(gp, xnew)
   }
