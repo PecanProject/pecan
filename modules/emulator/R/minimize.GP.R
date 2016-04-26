@@ -130,10 +130,7 @@ get.y <- function(gp, pckg, xnew, priors, ...){
   if(pckg==1){
     X=matrix(unlist(xnew), nrow=1, byrow=T)
     Y=GPfit::predict.GP(gp,X)
-    Y$Upper=Y$Y_hat+ 2*(sqrt(Y$MSE))
-    Y$Lower=Y$Y_hat- 2*(sqrt(Y$MSE))
     #likelihood <- Y$Y_hat
-    #likelihood <- runif(1,Y$Lower,Y$Upper)
     likelihood <- rnorm(1,Y$Y_hat,(sqrt(Y$MSE))/2)
   } else if(pckg==2){
     likelihood <- predict(gp, xnew)
@@ -181,7 +178,7 @@ is.accepted <- function(ycurr, ynew, format='lin'){
 mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL, 
     jmp0=0.35*(rng[,2]-rng[,1]), ar.target=0.5, priors=NA){
   
-  haveTime <- FALSE #require("time")
+  #haveTime <- FALSE #require("time")
 
   ## storage
   ycurr <- get.y(gp, pckg, x0, priors)
@@ -192,33 +189,41 @@ mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
   samp <- matrix(NA,nmcmc,dim)
   
   ## loop
-  prevTime<- NULL; if(haveTime) prevTime <- progressBar();
+  #prevTime<- NULL; if(haveTime) prevTime <- progressBar();
   for(g in 1:nmcmc){
 
     if(mix == "joint"){
       ## propose new
       xnew <- xcurr
       for(i in 1:dim){
-        xnew[i] <- rnorm(1,xcurr[[i]],p(jmp)[i])
+        repeat{
+          xnew[i] <- rnorm(1,xcurr[[i]],p(jmp)[i])
+          if(bounded(xnew[i],rng[i,,drop=FALSE])) break
+        }
       }
       #if(bounded(xnew,rng)){
+        ycurr <- get.y(gp, pckg, xcurr, priors)
         ynew <- get.y(gp, pckg, xnew, priors)
         if(is.accepted(ycurr,ynew)){
           xcurr <- xnew
-          ycurr <- ynew
+          #ycurr <- ynew
         }
       #}
     } else {  ## mix = each
       for(i in 1:dim){
         ## propose new
         xnew <- xcurr
-        xnew[i] <- rnorm(1,xcurr[[i]],p(jmp)[i])
+        repeat{
+          xnew[i] <- rnorm(1,xcurr[[i]],p(jmp)[i])
+          if(bounded(xnew,rng)) break
+        }
         #if(bounded(xnew,rng)){
+          ycurr <- get.y(gp, pckg, xcurr, priors)
           ynew <- get.y(gp, pckg, xnew, priors)
-          if(is.accepted(ycurr,ynew)){
+        if(is.accepted(ycurr,ynew)){
             xcurr <- xnew
-            ycurr <- ynew
-          }
+            #ycurr <- ynew
+        }
         #}
       }
     }
@@ -226,9 +231,9 @@ mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
     #print(p(jmp))
     jmp <- update(jmp,samp)
 
-    if(haveTime) prevTime <- progressBar(g/nmcmc,prevTime)
+    #if(haveTime) prevTime <- progressBar(g/nmcmc,prevTime)
   }
-  if(haveTime) progressBar(1.1,prevTime);
+  #if(haveTime) progressBar(1.1,prevTime);
   
   return(list(mcmc=samp,jump=jmp))
 ##    xnew <- gpeval,x0,k=k,mu=ey,tau=tauwbar,psi=psibar,x=gp$x.compact,rng=rng)

@@ -144,7 +144,10 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     pckg=2
   }
   
-
+  rng=matrix(c(sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0)),
+        sapply(prior.fn$qprior[prior.ind] ,eval,list(p=1))),
+        nrow=n.param)
+        
 
   ## Sample posterior from emulator
   m <- lapply(1, function(chain){
@@ -154,13 +157,13 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
                  pckg      = pckg, ## flag to determine which predict method to use
                  x0        = init.x,     ## Initial conditions
                  nmcmc     = settings$assim.batch$iter,       ## Number of reps
-                 rng       = NULL,       ## 'rng' (not used since jmp0 is specified below)
+                 rng       = rng,       ## 'rng' (not used since jmp0 is specified below)
                  format    = "lin",      ## "lin"ear vs "log" of LogLikelihood 
                  mix       = "each",     ## Jump "each" dimension independently or update them "joint"ly
 #                  jmp0 = apply(X,2,function(x) 0.3*diff(range(x))), ## Initial jump size
                  jmp0      = sqrt(unlist(settings$assim.batch$jump$jvar)),  ## Initial jump size
                  ar.target = settings$assim.batch$jump$ar.target,   ## Target acceptance rate
-                 priors    = prior.fn$dprior[prior.ind]             ## Priors
+                 priors    = prior.fn$dprior[prior.ind]
           )$mcmc
         })
   
@@ -176,6 +179,8 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
       mcmc.out[,i] <- eval(prior.fn$qprior[prior.ind][[i]], list(p=m[[1]][,i]))
     }
   }
+  dm=as.mcmc(mcmc.out[,1][1000:10000])
+  plot(dm)
 
   if(FALSE) {
     gp = kernlab.gp; x0 = init.x; nmcmc = settings$assim.batch$iter; rng= NULL; format = "lin"
@@ -192,6 +197,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
   ## ------------------------------------ Clean up ------------------------------------ ##
   ## Save outputs to plots, files, and db
+  con <- try(db.open(settings$database$bety), silent=TRUE)
   settings <- pda.postprocess(settings, con, params, pname, prior, prior.ind)
 
   ## close database connection
