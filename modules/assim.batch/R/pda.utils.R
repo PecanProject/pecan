@@ -427,15 +427,20 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
     }
     dir.create(file.path(settings$rundir, run.ids[i]), recursive=TRUE)
     dir.create(file.path(settings$modeloutdir, run.ids[i]), recursive=TRUE)
+    
+    # works for one PFT
+    trait.values = list(pft=as.list(params[i,]),env=NA)
+    newnames <- sapply(settings$pfts, "[[", "name")
+    names(trait.values)[which(!(names(trait.values) %in% 'env'))] <- newnames
 
     ## write config
     do.call(my.write.config,
             args=list(defaults = settings$pfts, 
-                      trait.values = list(pft=params[i,],env=NA), 
+                      trait.values = trait.values, 
                       settings = settings, run.id = run.ids[i]))
 
     # Identifiers for ensemble 'runtype'
-    if(settings$assim.batch$method == "bruteforce") {
+    if(settings$assim.batch$method == "bruteforce" | settings$assim.batch$method == "bruteforce.bs" | settings$assim.batch$method == "bayesian.tools") {
       ensemble.type <- "pda.MCMC"
     } else if(settings$assim.batch$method == "emulator") {
       ensemble.type <- "pda.emulator"
