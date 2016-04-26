@@ -178,7 +178,7 @@ is.accepted <- function(ycurr, ynew, format='lin'){
 mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL, 
     jmp0=0.35*(rng[,2]-rng[,1]), ar.target=0.5, priors=NA){
   
-  #haveTime <- FALSE #require("time")
+  haveTime <- FALSE #require("time")
 
   ## storage
   ycurr <- get.y(gp, pckg, x0, priors)
@@ -189,7 +189,7 @@ mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
   samp <- matrix(NA,nmcmc,dim)
   
   ## loop
-  #prevTime<- NULL; if(haveTime) prevTime <- progressBar();
+  prevTime<- NULL; if(haveTime) prevTime <- progressBar();
   for(g in 1:nmcmc){
 
     if(mix == "joint"){
@@ -215,7 +215,7 @@ mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
         xnew <- xcurr
         repeat{
           xnew[i] <- rnorm(1,xcurr[[i]],p(jmp)[i])
-          if(bounded(xnew,rng)) break
+          if(bounded(xnew[i],rng[i,,drop=FALSE])) break
         }
         #if(bounded(xnew,rng)){
           ycurr <- get.y(gp, pckg, xcurr, priors)
@@ -231,9 +231,9 @@ mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
     #print(p(jmp))
     jmp <- update(jmp,samp)
 
-    #if(haveTime) prevTime <- progressBar(g/nmcmc,prevTime)
+    if(haveTime) prevTime <- progressBar(g/nmcmc,prevTime)
   }
-  #if(haveTime) progressBar(1.1,prevTime);
+  if(haveTime) progressBar(1.1,prevTime);
   
   return(list(mcmc=samp,jump=jmp))
 ##    xnew <- gpeval,x0,k=k,mu=ey,tau=tauwbar,psi=psibar,x=gp$x.compact,rng=rng)
