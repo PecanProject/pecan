@@ -150,7 +150,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
   nt = length(total.time)
   FORECAST <- ANALYSIS <- list()
   enkf.params <- list()
-  aqq = array(0,dim=c(nt+1,ncol(IC),ncol(IC)))
+  aqq = array(0,dim=c(nt+1,ncol(IC)+1,ncol(IC)+1)) #HACK
   bqq = numeric(nt+1)
   CI.X1 <- matrix(0,3,nt) ; CI.X2 = CI.X1
   
@@ -161,16 +161,27 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
   
   ## numerical update of state and process error
   AnalysisFilterQ <- "
-  model{ 
+  model{
+
   X.mod ~ dmnorm(muf,pf) ## Model Forecast
   
+  for(i in 1:length(X.mod)){
+    X.mod.real[map[i]] <- X.mod[i]
+  }
+
+  X.mod.real[2]<-0
+  X.mod.real[4]<-0
+
   ## add process error
   q  ~ dwish(aq,bq)
   Q <- inverse(q) 
-  X  ~ dmnorm(X.mod,q)
+  X  ~ dmnorm(X.mod.real,q)
   
   ## Analysis
-  Y  ~ dmnorm(X,r)
+  for(i in 1:length(X.keep)){
+    X.keep[i] <- X[map1[i]]
+  }
+  Y  ~ dmnorm(X.keep,r)
   }"       
   
   ###-------------------------------------------
@@ -193,11 +204,19 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
     ### ANALYSIS
     mu.f = as.numeric(apply(X,2,mean,na.rm=TRUE))
     Pf   = cov(X)
-    Y    = obs.mean[[t]][[1]][pmatch(colnames(X), colnames(obs.mean[[t]][[1]]))]
+    Y    = obs.mean[[t]][[1]][pmatch(colnames(X), names(obs.mean[[t]][[1]]))]
+    
+   # Y    = Y[-which(is.na(Y))]
     
     H = diag(length(obs.mean[[t]][[1]]))
     R = diag(as.numeric(obs.sd[[t]][[1]][pmatch(colnames(X),names(obs.mean[[t]][[1]]))])^2)
     
+    for(s in 1:9){
+      if(diag(R)[s]==0){
+        diag(R)[s] <- .01^2
+      }
+    }
+   
     if(processvar == FALSE){
       K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
       mu.a = mu.f + K%*%(Y-H%*%mu.f)
@@ -208,12 +227,53 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
       bqq[1] <- length(mu.f)
       aqq[1,,] <- diag(length(mu.f))*bqq[1]
       
+      
+      AnalysisFilterQ <- "
+  model{
+
+      X.mod ~ dmnorm(muf,pf) ## Model Forecast
+      
+      for(i in 1:length(X.mod)){
+        X.mod.not.zero[F2M[i]] <- X.mod[i]
+      }
+      
+      for(i in 1:length(E)){
+        X.mod.not.zero[E[i]]<-0
+      }
+
+      ## add process error
+      q  ~ dwish(aq,bq)
+      Q <- inverse(q) 
+      X  ~ dmnorm(X.mod.not.zero,q)
+      
+      ## Analysis
+      for(i in 1:length(X.keep)){
+      X.keep[i] <- X[X2Y[i]]
+      }
+      Y  ~ dmnorm(X.keep,r)
+    }"  
+      
+      #### extinct vector
+      E <- which(colSums(X)==0)
+      F2M<- seq(1,length(mu.f),1)
+      F2M[E]<-NA
+      F2M <- na.omit(F2M)
+      
+      X2Y<- seq(1,length(Y),1)
+      X2Y <- X2Y[!is.na(Y)]
+    
       ### analysis of model and data
-      update = list(Y=Y, muf=mu.f, pf=solve(Pf), aq=aqq[t,,], bq=bqq[t], r=solve(R))
+      update = list(Y=na.omit(Y), r=solve(R[-10,-10]),
+                    muf=mu.f[-E], pf=solve(Pf[-E,-E]),
+                    aq=aqq[t,,], bq=bqq[t],
+                    F2M=F2M,X2Y=X2Y,X.mod=rep(NA,length(mu.f[-E])),
+                    X=rep(NA,length(mu.f)),
+                    X.keep=rep(NA,length(na.omit(Y))),
+                    E=E)
       mod <- jags.model(file=textConnection(AnalysisFilterQ),
                         data=update,
                         n.adapt=1000,n.chains=3,
-                        init=list(X.mod=as.vector(mu.f))) #inits for q?
+                        init=list(X.mod=as.vector(mu.f[-c(E)]))) #inits for q?
       jdat <- coda.samples(mod,variable.names=c("X","q"),n.iter=10000) 
       
       ## update parameters  
