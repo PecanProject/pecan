@@ -1,10 +1,18 @@
+##' Currently assumes an exponential spatial dependency
+##' 
+##' can make gaussian by passing squared distance matrix
+##' 
+##' @name calcSpatialCov.matrix
+##' @title calcSpatialCov.matrix 
+##' @export
+##'
+##' @param d spatial distance matrix
+##' @param psi spatial corr
+##' @param tau spatial var
+##' 
+##' @author Michael Dietze
 `calcSpatialCov.matrix` <-
 function(d,psi,tau){
-  ##currently assumes an exponential spatial dependency
-  ## can make gaussian by passing squared distance matrix
-  ## d - spatial distance matrix
-  ## psi - spatial corr
-  ## tau - spatial var
   nl <- nrow(d)
   H <- matrix(0,nl,nl)
   for(i in 1:nl){

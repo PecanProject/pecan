@@ -1,8 +1,8 @@
 ##' Get Soil
 ##'
 ##' @title get.soil 
-##' @param lat
-##' @param lon 
+##' @param lat  latitude
+##' @param lon  longitude
 ##' @param soil.nc netCDFe file with soil data 
 ##' @return usda soil class 
 ##' @export

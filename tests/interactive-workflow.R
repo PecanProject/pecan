@@ -1,8 +1,10 @@
 #!/usr/bin/env Rscript
+
+# install_github("blernermhc/RDataTracker")
 library(RDataTracker)
 #args <- commandArgs(trailingOnly = TRUE)
 #settings.file = args[1]
-settings.file <- "tests/migration-test-ebi-forecast.xml"
+settings.file <- "tests/ebi-forecast.igb.illinois.edu.biocro.xml"
 ## See README in tests/ folder for details
 require("PEcAn.all")
 
@@ -18,11 +20,6 @@ unlink("pecan", recursive=TRUE)
 
 # check settings
 settings <- read.settings(settings.file)
-settings$database$bety$write <- TRUE
-settings$meta.analysis$update <- TRUE
-
-# remove status file
-unlink(file.path(settings$outdir, "STATUS"))
 
 # get traits of pfts
 settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
@@ -73,48 +70,39 @@ for(i in 1:length(settings$run$inputs)) {
   # narr download
 }
 saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
-status.end()
+
 
 # write configurations
-status.start("CONFIG")
 if (!file.exists(file.path(settings$rundir, "runs.txt")) | settings$meta.analysis$update == "TRUE") {
   run.write.configs(settings, settings$database$bety$write)
 } else {
   logger.info("Already wrote configuraiton files")    
 }
-status.end()
+
 
 # run model
-status.start("MODEL")
 if (!file.exists(file.path(settings$rundir, "runs.txt"))) {
   logger.severe("No ensemble or sensitivity analysis specified in pecan.xml, work is done.")
 } else {
   start.model.runs(settings, settings$database$bety$write)
 }
-status.end()
 
 # get results
-status.start("OUTPUT")
 get.results(settings)
-status.end()
 
 # ensemble analysis
-status.start("ENSEMBLE")
 if (!file.exists(file.path(settings$outdir,"ensemble.ts.pdf"))) {
   run.ensemble.analysis(TRUE)    
 } else {
   logger.info("Already executed run.ensemble.analysis()")
 }
-status.end()
 
 # sensitivity analysis
-status.start("SENSITIVITY")
 if (!file.exists(file.path(settings$outdir, "sensitivity.results.Rdata"))) {
   run.sensitivity.analysis()
 } else {
   logger.info("Already executed run.sensitivity.analysis()")    
 }
-status.end()
 
 # all done
 status.start("FINISHED")

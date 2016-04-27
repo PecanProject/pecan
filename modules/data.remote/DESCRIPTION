@@ -1,8 +1,8 @@
 Package: PEcAn.data.remote
 Type: Package
 Title: PEcAn functions used for remote sensing
-Version: 1.4.6
-Date: 2016-01-28
+Version: 1.4.5
+Date: 2016-03-03
 Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: PEcAn module for processing remote data

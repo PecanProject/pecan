@@ -15,7 +15,7 @@ if [ ! -e "@OUTDIR@/linkages.out.Rdata" ]; then
   cd "@RUNDIR@"
   
   echo "require (linkages)
-linkages('@INPUT@','@OUTDIR@')
+linkages('@INPUT@','@OUTDIR@','@RESTART@','@RESTARTFILE@')
 " | R --vanilla
   STATUS=$?
   

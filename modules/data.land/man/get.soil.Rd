@@ -7,7 +7,9 @@
 get.soil(lat, lon, soil.nc = soil.nc)
 }
 \arguments{
-\item{lon}{}
+\item{lat}{latitude}
+
+\item{lon}{longitude}
 
 \item{soil.nc}{netCDFe file with soil data}
 }

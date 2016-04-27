@@ -45,6 +45,10 @@ plot2AGB <- function(combined,out,outfolder,allom.stats,unit.conv=0.02){
   ## set up storage
   NPP <- array(NA,c(mplot,nrep,nt-1))
   AGB <- array(NA,c(mplot,nrep,nt))
+  biomass_tsca <- array(NA,c(mplot,nrep,nt))
+  biomass_acsa3 <- array(NA,c(mplot,nrep,nt))
+  biomass_beal2 <- array(NA,c(mplot,nrep,nt))
+  biomass_thoc2 <- array(NA,c(mplot,nrep,nt))
   
   ## sample over tree chronologies
   pb <- txtProgressBar(min = 0, max = nrep, style = 3)
@@ -61,7 +65,12 @@ plot2AGB <- function(combined,out,outfolder,allom.stats,unit.conv=0.02){
       ## aggregate to stand AGB      
       AGB[j,g,] <- apply(biomass,2,sum,na.rm=TRUE)*unit.conv
 #      AGB[j,g,] <- apply(biomass[ijindex[,1]==j,],2,sum,na.rm=TRUE)*unit.conv
-  
+
+      biomass_tsca[j,g,] <- apply(biomass[combined$SPP == "TSCA",],2,sum,na.rm=TRUE)*unit.conv
+      biomass_acsa3[j,g,] <- apply(biomass[combined$SPP == "ACSA3",],2,sum,na.rm=TRUE)*unit.conv 
+      biomass_beal2[j,g,] <- apply(biomass[combined$SPP == "BEAL2",],2,sum,na.rm=TRUE)*unit.conv
+      biomass_thoc2[j,g,] <- apply(biomass[combined$SPP == "THOC2",],2,sum,na.rm=TRUE)*unit.conv
+
       ## diff to get NPP
       NPP[j,g,] <- diff(AGB[j,g,])
       
@@ -71,11 +80,26 @@ plot2AGB <- function(combined,out,outfolder,allom.stats,unit.conv=0.02){
   
   mAGB <- sAGB <- matrix(NA,mplot,nt)
   mNPP <- sNPP <- matrix(NA,mplot,nt-1)
+
+  mbiomass_tsca <- sbiomass_tsca <- matrix(NA,mplot,nt)
+  mbiomass_acsa3 <- sbiomass_acsa3 <- matrix(NA,mplot,nt)
+  mbiomass_beal2 <- sbiomass_beal2 <- matrix(NA,mplot,nt)
+  mbiomass_thoc2 <- sbiomass_thoc2 <- matrix(NA,mplot,nt)
+
   for(i in 1:mplot){
     mNPP[i,] <- apply(NPP[i,,],2,mean,na.rm=TRUE)
     sNPP[i,] <- apply(NPP[i,,],2,sd,na.rm=TRUE)
     mAGB[i,] <- apply(AGB[i,,],2,mean,na.rm=TRUE)
     sAGB[i,] <- apply(AGB[i,,],2,sd,na.rm=TRUE)
+    
+    mbiomass_tsca[i,] <- apply(biomass_tsca[i,,],2,mean,na.rm=TRUE)
+    sbiomass_tsca[i,] <- apply(biomass_tsca[i,,],2,sd,na.rm=TRUE)
+    mbiomass_acsa3[i,] <- apply(biomass_acsa3[i,,],2,mean,na.rm=TRUE)
+    sbiomass_acsa3[i,] <- apply(biomass_acsa3[i,,],2,sd,na.rm=TRUE)
+    mbiomass_beal2[i,] <- apply(biomass_beal2[i,,],2,mean,na.rm=TRUE)
+    sbiomass_beal2[i,] <- apply(biomass_beal2[i,,],2,sd,na.rm=TRUE)
+    mbiomass_thoc2[i,] <- apply(biomass_thoc2[i,,],2,mean,na.rm=TRUE)
+    sbiomass_thoc2[i,] <- apply(biomass_thoc2[i,,],2,sd,na.rm=TRUE)
   }
 
   pdf(file.path(outfolder,"plot2AGB.pdf"))
@@ -93,7 +117,11 @@ plot2AGB <- function(combined,out,outfolder,allom.stats,unit.conv=0.02){
     lines(yrvec,lowA)
   }
   dev.off()
-  save(AGB,NPP,mNPP,sNPP,mAGB,sAGB,yrvec,file=file.path(outfolder,"plot2AGB.Rdata"))
-  return(list(AGB=AGB,NPP=NPP))
+  save(AGB,NPP,mNPP,sNPP,mAGB,sAGB,yrvec,mbiomass_tsca,sbiomass_tsca,
+       mbiomass_acsa3, sbiomass_acsa3, mbiomass_beal2, sbiomass_beal2,
+       mbiomass_thoc2, sbiomass_thoc2, file=file.path(outfolder,"plot2AGB.Rdata"))
+  return(list(AGB=AGB,NPP=NPP,biomass_tsca=biomass_tsca,
+              biomass_acsa3=biomass_acsa3,biomass_beal2=biomass_beal2,
+              biomass_thoc2=biomass_thoc2))
   
 }

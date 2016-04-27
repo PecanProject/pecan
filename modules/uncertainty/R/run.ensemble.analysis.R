@@ -17,28 +17,17 @@
 ##'
 run.ensemble.analysis <- function(plot.timeseries=NA, ensemble.id=NULL,
                            variable=NULL, start.year=NULL, end.year=NULL, ...) {
-                        
-  if(FALSE) {
-    plot.timeseries=NA
-    ensemble.id=variable=start.year=end.year=NULL
-  }
-
-  if(!exists("settings")){ # temporary hack
-                        # waiting on http://stackoverflow.com/q/11005478/199217
-    settings <- list(outdir = "/tmp/",
-                     pfts = list(pft = list(name = "ebifarm.pavi", outdir = "/tmp/")),
-                     ensemble.analysis = NULL)
-  }
-  
   
   # Set variable and years. Use args first, then settings, then defaults/error
   if(is.null(ensemble.id)) ensemble.id <- settings$ensemble$ensemble.id
   if(is.null(ensemble.id)) {
     # Try to just grab the most recent one
-    ens.ids <- as.numeric(sub("ensemble.samples.", "", 
-                            sub(".Rdata", "",
-                              dir(settings$outdir, "ensemble.samples")
-               )))
+    suppressWarnings(
+      ens.ids <- as.numeric(sub("ensemble.samples.", "", 
+                                sub(".Rdata", "",
+                                    dir(settings$outdir, "ensemble.samples")
+                                )))
+    )
     
     if(length(ens.ids) > 0) {
       ensemble.id <- max(ens.ids)

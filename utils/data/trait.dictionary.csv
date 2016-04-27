@@ -70,3 +70,25 @@
 "wood_trans_nir";"wood NIR transmittance";"0-1";"wood_trans_nir"
 "orient_factor";"Leaf orientation";"0-1";"orient_factor"
 "num";"ED2 PFT Number";"Constant";"num"
+"HTMAX";"Max Height";"meters";
+"DBHMAX";"Max DBH";"meters";
+"AGEMX";"Max Age";"years";
+"G";"G";"cm";
+"D3";"D3";"percent";
+"FROST";"Min January Temp";"Celsius";
+"TL";"TL";"index";
+"CM1";"CM1";"";""
+"CM2";"CM2";"";""
+"CM3";"CM3";"";""
+"CM4";"CM4";"";""
+"CM5";"CM5";"";""
+"FWT";"FWT";"100g/m^2";
+"SLTA";"SLTA";"";""
+"SLTB";"SLTB";"";""
+"MPLANT";"MPLANT";"seed/plant/year";""
+"SPRTMN";"SPRTMN";"cm";""
+"SPRTND";"SPRTND";"sprouts/year";""
+"SPRTMX";"SPRTMX";"cm";""
+"DMAX";"DMAX";"degree days";""
+"DMIN";"DMIN";"degree days";""
+"leaf_longevity";"leaf longevity";"year";""

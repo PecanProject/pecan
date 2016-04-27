@@ -1,3 +1,6 @@
+##' @name matchInventoryRings
+##' @title matchInventoryRings
+##' @export
 matchInventoryRings <- function(trees,rings,extractor="TreeCode",nyears=30,coredOnly=TRUE){
 
   ## build tree codes

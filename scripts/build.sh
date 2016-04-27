@@ -22,6 +22,8 @@ FORCE="no"
 GIT="no"
 INSTALL="yes"
 TESTS="no"
+NAME="$HOSTNAME"
+MANUAL=""
 
 # no arguments means build
 if [ $# == 0 ]; then
@@ -43,10 +45,12 @@ while true; do
       echo " --git           : do a git pull"
       echo " --help          : this help text"
       echo " --install       : install all R packages (default)"
+      echo " --manual        : generate PDF manual during check, requires tex installed"
+      echo " --name X        : use X as hostname"
       echo " --tests         : run tests"
       echo ""
       echo "You can prefix any option with --no- to set it to ignore that option,"
-      echo "for example --no-git will not do a git pull."
+      echo "for example --no-git will not do a git pull. Except for name"
       echo ""
       echo "If you do not pass any arguments it will assume that you want to build"
       echo "even if there are no changes pulled from git. You can change this by"
@@ -102,6 +106,19 @@ while true; do
       INSTALL="no"
       ;;
 
+    --manual)
+      MANUAL=""
+      ;;
+      
+    --no-manual)
+      MANUAL="--no-manual"
+      ;;
+      
+    --name)
+      shift
+      NAME="$1"
+      ;;
+
     --tests)
       TESTS="yes"
       ;;
@@ -109,6 +126,7 @@ while true; do
     --no-tests)
       TESTS="no"
       ;;
+
 
     *)
       echo "unknown argument $1"
@@ -120,13 +138,14 @@ done
 
 # packages that are to be compiled
 PACKAGES="utils db settings visualization"
-PACKAGES="${PACKAGES} models/clm45"
-PACKAGES="${PACKAGES} models/preles"
+PACKAGES="${PACKAGES} models/clm45 models/maat"
+PACKAGES="${PACKAGES} models/preles models/gday models/lpjguess models/maespa"
 PACKAGES="${PACKAGES} modules/priors modules/meta.analysis modules/uncertainty"
 PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere modules/data.remote"
-PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential"
+PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential modules/emulator"
 PACKAGES="${PACKAGES} modules/allometry modules/photosynthesis"
 PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro models/dalec models/linkages"
+PACKAGES="${PACKAGES} modules/rtm"
 PACKAGES="${PACKAGES} all"
 
 # location where to install packages
@@ -214,7 +233,7 @@ for p in ${PACKAGES}; do
 
   if [ "$CHECK" == "yes" ]; then
     ACTION="CHECK"
-    R CMD check ${R_LIB_INC} $p &> out.log
+    R CMD check ${R_LIB_INC} ${MANUAL} $p &> out.log
     if [ $? -ne 0 ]; then
       STATUS="BROKEN"
       PACKAGE="BROKEN"
@@ -271,13 +290,13 @@ echo "build took ${TIME} seconds."
 echo "----------------------------------------------------------------------"
 
 # cleanup
-rm -rf out.log *.Rcheck PEcAn.*.tar.gz PEcAn.*.tgz
+rm -rf out.log *.Rcheck PEcAn.*.tar.gz PEcAnRTM*.tar.gz PEcAn.*.tgz
 
 # run tests
 if [ "$TESTS" == "yes" ]; then
   START=`date +'%s'`
   cd tests
-  for f in ${HOSTNAME}.*.xml; do
+  for f in ${NAME}.*.xml; do
     rm -rf pecan
     Rscript --vanilla ../web/workflow.R --settings $f &> output.log
     if [ $? -ne 0 ]; then

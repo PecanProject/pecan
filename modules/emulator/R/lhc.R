@@ -1,9 +1,17 @@
+##' Latin Hyper Cube
+##' 
+##' Simple uniform sampling with LHC permutation
+##' 
+##' @name lhc
+##' @title lhc
+##' @export
+##'
+##' @param x <- list (n.dim x 2)
+##' @param n.samp number of samples
+##' 
+##' @author Michael Dietze
 `lhc` <-
 function(x,n.samp){
-  ## Latin Hyper Cube
-  ## simple uniform sampling w/ LHC permutation
-  ## x <- list (n.dim x 2)
-  ## n.samp <- number of samples
   n.dim <- nrow(x)
   samp <- permute <- matrix(runif(n.dim*n.samp),n.dim,n.samp)
   for(i in 1:n.dim) permute[i,] <- order(permute[i,])

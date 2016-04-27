@@ -8,7 +8,7 @@
 ##'
 ##' @author David LeBauer, Shawn Serbin
 ### Identify PFTs in the input settings.xml file
-get.parameter.samples <- function(pfts = settings$pfts, posterior.files=rep(NA, length(settings$pfts))){
+get.parameter.samples <- function(pfts = settings$pfts, posterior.files=rep(NA, length(settings$pfts)), ens.sample.method="uniform"){
   require(coda)
   require(PEcAn.priors)
   num.pfts <- length(settings$pfts)
@@ -117,7 +117,7 @@ get.parameter.samples <- function(pfts = settings$pfts, posterior.files=rep(NA, 
       
       ## subset the trait.samples to ensemble size using Halton sequence 
       ensemble.samples <- get.ensemble.samples(settings$ensemble$size, 
-                                               trait.samples, env.samples)
+                                               trait.samples, env.samples, ens.sample.method)
     }
   }
   

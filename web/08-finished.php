@@ -66,7 +66,7 @@ if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
 $pecanfiles = array();
 if (is_dir($folder)) {
   foreach(scandir("$folder") as $file) {
-    if (is_dir("$folder/$file") || ($file == ".") || ($file == "..") || ($file == ".RData") || ($file == "plot.out")) {
+    if (is_dir("$folder/$file") || ($file[0] == ".") || ($file == "plot.out")) {
       continue;
     }
     $pecanfiles[] = $file;
@@ -74,12 +74,16 @@ if (is_dir($folder)) {
 }
 if (is_dir("$folder/ensemble")) {
   foreach(recursive_scandir("$folder/ensemble", "ensemble") as $file) {
-    $pecanfiles[] = $file;
+    if ($file[0] != ".") {
+      $pecanfiles[] = $file;      
+    }
   }
 }
 if (is_dir("$folder/sensitivity")) {
   foreach(recursive_scandir("$folder/sensitivity", "sensitivity") as $file) {
-    $pecanfiles[] = $file;
+    if ($file[0] != ".") {
+      $pecanfiles[] = $file;
+    }
   }
 }
 
@@ -87,7 +91,7 @@ if (is_dir("$folder/sensitivity")) {
 $pfts = array();
 if (is_dir("$folder/pft")) {
   foreach(scandir("$folder/pft") as $pft) {
-    if (!is_dir("$folder/pft/$pft") || ($pft == ".") || ($pft == "..")) {
+    if (!is_dir("$folder/pft/$pft") || ($pft[0] == ".")) {
       continue;
     }
     $pfts[$pft] = array();
@@ -106,14 +110,14 @@ $outfile = array();
 $outplot = array();
 if (is_dir("$folder/run")) {
   foreach(scandir("$folder/run") as $runid) {
-    if (!is_dir("$folder/run/$runid") || ($runid == ".") || ($runid == "..")) {
+    if (!is_dir("$folder/run/$runid") || ($runid[0] == ".")) {
       continue;
     }
 
     # input files
     $inpfile[$runid] = array();
     foreach(scandir("$folder/run/$runid") as $file) {
-      if (is_dir("$folder/run/$runid/$file")) {
+      if (is_dir("$folder/run/$runid/$file") || ($file[0] == ".")) {
         continue;
       }
       $inpfile[$runid][] = $file;
@@ -123,7 +127,7 @@ if (is_dir("$folder/run")) {
     $outfile[$runid] = array();
     $outplot[$runid] = array();
     foreach(scandir("$folder/out/$runid") as $file) {
-      if (is_dir("$folder/out/$runid/$file")) {
+      if (is_dir("$folder/out/$runid/$file") || ($file[0] == ".")) {
         continue;
       }
       if (preg_match('/^\d\d\d\d.nc.var$/', $file)) {
@@ -337,6 +341,9 @@ if (is_dir("$folder/run")) {
     $('#graphxvar').empty();
 <?php } ?>
     $('#graphyvar').empty();
+    if (outplot[run][year] === undefined) {
+      return;
+    }
     $.each(outplot[run][year], function(key, value) {
          $('#graphxvar')
              .append($("<option></option>")

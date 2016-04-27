@@ -102,10 +102,9 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
     nc_close(ncin)
     if(i%%100==0) cat(i," "); flush.console()
   }
-
   
-  temp.mat <- month_matrix_precip
-  precip.mat <- month_matrix_temp_mean
+  precip.mat <- month_matrix_precip
+  temp.mat <- month_matrix_temp_mean
   save(precip.mat, temp.mat,file= out.file)
   invisible(results)
 }

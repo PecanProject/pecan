@@ -6,7 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-
+    
 ##' Function to insert a file into the dbfiles table as an input
 ##'
 ##' This will write into the dbfiles, inputs, machines and formats the required
@@ -294,9 +294,9 @@ dbfile.check <- function(type, id, con, hostname=fqdn()) {
   # hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
   if (is.null(hostid)) {
     invisible(data.frame())
+  } else {
+    invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND machine_id=", hostid), con))
   }
-
-  invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND machine_id=", hostid), con))
 }
 
 

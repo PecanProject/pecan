@@ -4,7 +4,7 @@
 \name{sensor.list}
 \alias{sensor.list}
 \title{Sensor spectral response functions}
-\format{An object of class \code{character} of length 11.}
+\format{An object of class \code{character} of length 12.}
 \usage{
 sensor.list
 }

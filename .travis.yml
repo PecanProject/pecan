@@ -1,0 +1,90 @@
+# .travis.yml using container-based infrastructure
+# travis configuration file courtesy of Jan Tilly:
+# https://github.com/jtilly/R-travis-container-example
+
+# use c as catch-all language
+language: c
+
+# use containers
+sudo: false
+
+# only run for pushes to master branch
+#branches:
+#  only:
+#   - master
+
+# install R: use r-packages-precise (https://cran.r-project.org/bin/linux/ubuntu/precise/) 
+# as source which is white listed (https://github.com/travis-ci/apt-source-whitelist/)
+addons:
+  postgresql: 9.4
+  apt:
+    sources:
+      - r-packages-precise
+    packages:
+      - postgresql-9.4-postgis-2.1
+      - postgresql-9.4-postgis-2.1-scripts
+      - jags
+      - liblapack-dev
+      - libnetcdf-dev
+      - netcdf-bin
+      - bc
+      - libcurl4-gnutls-dev
+      - curl
+      - udunits-bin 
+      - libudunits2-dev
+      - libgmp-dev
+      - python-dev 
+      - libproj-dev
+      - r-base-dev
+      # need to compile documentation
+      # BROKEN MISSING FONT
+      #- texinfo
+      #- texlive-latex-base
+      #- texlive-latex-recommended
+      #- texlive-latex-extra
+      #- texlive-fonts-recommended
+      #- texlive-fonts-extra
+  
+# notifications should go to gitter
+notifications:
+  webhooks:
+    urls:
+      - secure: "gL81TwDOcK/32Hxxl2BcY7pioyrtyV4y1f+D/vGEpQz8mYL+M+55tUkhHJF53779XSUdQdML/gsr8JZVtApJdLIBysFU67GVYXm1s7x/b8J61CkMfDgsmposEWK4NFYHfeIRj32ioeajrQ+RKi1I6chjzYT7gLyl70gtPelRJ4s="
+    on_success: always
+    on_failure: always
+    on_start: always
+  email:
+    on_success: always
+    on_failure: always
+
+# cache local R libraries directory:
+cache:
+  - directories:
+    - $HOME/R/Library
+  - packages
+
+# list of services to be running
+services:
+  - postgresql
+
+# environment variables
+env:
+  - R_LIBS_USER=$HOME/R/Library
+
+# install sipnet and clim file
+install:
+  - pushd .
+  - cd $HOME
+  - curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_unk.tar.gz
+  - tar zxf sipnet_unk.tar.gz
+  - cd sipnet_unk
+  - make
+  - popd
+
+before_script:
+  - psql -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
+  - psql -U postgres -c "CREATE DATABASE bety OWNER bety;"
+  - scripts/load.bety.sh -a postgres -c -u
+
+script:
+  - scripts/build.sh --dependencies --no-git --check --no-manual --tests --name travis

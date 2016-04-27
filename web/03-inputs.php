@@ -116,7 +116,7 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 	if (empty($row['input_name'])){
     		$row['name']="Weather " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
 	} else {
-    		$row['name']= $row['input_name'];
+    		$row['name']= $row['input_name'] . " " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
 	}
   } else if ($row['file_name'] == '') {
     $row['name']=$row['sitename'];

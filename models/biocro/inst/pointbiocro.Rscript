@@ -1,0 +1,44 @@
+#!/usr/bin/env Rscript
+
+args   <- commandArgs(trailingOnly = TRUE)
+rundir <- args[1]
+outdir <- args[2]
+
+require(PEcAn.data.land)
+require(PEcAn.BIOCRO)
+require(BioCro)
+require(PEcAn.data.atmosphere)
+require(PEcAn.utils)
+require(lubridate)
+
+config <- read.biocro.config(file.path(rundir, "config.xml"))
+
+met.nc  <- nc_open(config$run$met.file)
+if(!is.null(config$run$soil.file)){
+  soil.nc <- nc_open(config$run$soil.file)
+} else {
+  soil.nc <- NULL
+}
+
+# atmco2.nc <- nc_open(file.path(inputdir, "co2/CO2_Global_HD_v1.nc"))
+
+lat <- as.numeric(config$location$latitude)
+lon <- as.numeric(config$location$longitude)
+
+out <- run.biocro(lat, lon, 
+                  met.nc = met.nc, 
+                  soil.nc = soil.nc, 
+                  config = config)
+
+save(out$daily, file = file.path(outdir, 'daily.result.RData'))
+
+biocro_result <- data.table(lat = lat, lon = lon, out$daily)
+save(biocro_result, file = file.path(outdir, "biocro_output.RData"))
+
+#hourly <- out$hourly
+#save(hourly, file = file.path(outdir, "biocro_hourly.RData"))
+
+model2netcdf.BIOCRO(result = hourly, 
+                    genus = config$pft$type$genus, 
+                    outdir = outdir, 
+                    lat = lat, lon = lon)

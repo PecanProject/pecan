@@ -12,6 +12,9 @@ DATABASE=${DATABASE:-"bety"}
 # also used to connect to the database for most operations
 OWNER=${OWNER:-"bety"}
 
+# postgres user to use for root level access
+PG_USER=${PG_USER:-""}
+
 # psql options
 # this allows you to add any other options
 PG_OPT=${PG_OPT:-""}
@@ -77,8 +80,11 @@ LOG=${LOG:-"$PWD/dump/sync.log"}
 # ----------------------------------------------------------------------
 
 # parse command line options
-while getopts cd:efghl:m:o:p:qr:tu opt; do
+while getopts a:cd:efghl:m:o:p:qr:tu opt; do
   case $opt in
+  a)
+    PG_USER=$OPTARG
+    ;;
   c)
     CREATE="YES"
     ;;
@@ -89,13 +95,14 @@ while getopts cd:efghl:m:o:p:qr:tu opt; do
     EMPTY="YES"
     ;;
   f)
-    FIXSEQUENCE=$OPTARG
+    FIXSEQUENCE="YES"
     ;;
   g)
     GUESTUSER="YES"
     ;;
   h)
-    echo "$0 [-c] [-d database] [-e] [-f] [-g] [-h] [-m my siteid] [-o owner] [-p psql options] [-r remote siteid] [-t] [-u]"
+    echo "$0 [-a postgres] [-c] [-d database] [-e] [-f] [-g] [-h] [-l logfile] [-m my siteid] [-o owner] [-p psql options] [-r remote siteid] [-t] [-u]"
+    echo " -a access database as this user, this is NOT the owner of the database, often this is postgres"
     echo " -c create database, THIS WILL ERASE THE CURRENT DATABASE, default is NO"
     echo " -d database, default is bety"
     echo " -e empty database, default is NO"
@@ -152,6 +159,17 @@ if [ "${CREATE}" == "YES" ]; then
   FIXSEQUENCE="YES"
 fi
 
+# add right flag to PG_USER
+if [ "$PG_USER" != "" ]; then
+  PG_USER="-U ${PG_USER}"
+fi
+if [ "$OWNER" != "" ]; then
+  PG_OWNER="-U ${OWNER}"
+fi
+
+# this seems to be a good option always
+PG_OPT="${PG_OPT} -v ON_ERROR_ROLLBACK=on"
+
 # list of all tables, schema_migrations is ignored since that
 # will be imported during creaton
 
@@ -189,7 +207,7 @@ if [ -z "${DUMPURL}" ]; then
   elif [ "${REMOTESITE}" == "1" ]; then
     DUMPURL="http://psql-pecan.bu.edu/sync/dump/bety.tar.gz"
   elif [ "${REMOTESITE}" == "2" ]; then
-    DUMPURL="https://www.dropbox.com/s/wr8sldv080wa9y8/bety.tar.gz?dl=0"
+    DUMPURL="https://modex.bnl.gov/sync/dump/bety.tar.gz"
   elif [ "${REMOTESITE}" == "5" ]; then  
     DUMPURL="http://tree.aos.wisc.edu:6480/sync/dump/bety.tar.gz"
   elif [ "${REMOTESITE}" == "6" ]; then
@@ -204,11 +222,11 @@ fi
 ID_RANGE=1000000000
 
 # before anything is done, check to make sure database exists
-if ! psql -lqt | cut -d \| -f 1 | grep -w "${DATABASE}" > /dev/null ; then
+if ! psql ${PG_OPT} ${PG_USER} -lqt | cut -d \| -f 1 | grep -w "${DATABASE}" > /dev/null ; then
   echo "Database ${DATABASE} does not exist, please create it:"
   echo "(see https://github.com/PecanProject/pecan/wiki/Installing-PEcAn#installing-bety)"
-  echo "  sudo -u postgres createuser -d -l -P -R -S bety"
-  echo "  sudo -u postgres createdb -O bety ${DATABASE}"
+  echo "  psql ${PG_OPT} ${PG_USER} -c \"CREATE ROLE ${OWNER} WITH LOGIN CREATEDB NOSUPERUSER NOCREATEROLE PASSWORD 'password'\""
+  echo "  psql ${PG_OPT} ${PG_USER} -c \"CREATE DATABASE ${DATABASE} WITH OWNER ${OWNER}\""
   exit 1
 fi
 
@@ -218,6 +236,10 @@ mkdir "${DUMPDIR}"
 
 # download dump file and unpack
 curl -s -L -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
+if [ ! -s ${DUMPDIR}/dump.tar.gz ]; then
+  echo "File downloaded is 0 bytes, skipping"
+  exit -1
+fi
 tar zxf "${DUMPDIR}/dump.tar.gz" -C "${DUMPDIR}" -m
 
 # create database if need be, otherwise check version of schema
@@ -225,15 +247,14 @@ if [ "${CREATE}" == "YES" ]; then
   if [ "${QUIET}" != "YES" ]; then
      printf "Loading %-25s : " "schema"
   fi
+
   # create empty public schema
-  psql -q -d "${DATABASE}" -c "DROP SCHEMA public CASCADE"
-  psql -U ${OWNER} -q -d "${DATABASE}" -c "CREATE SCHEMA public"
+  psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "DROP SCHEMA public CASCADE;"
+  psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "CREATE SCHEMA public AUTHORIZATION ${OWNER};"
+  psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "CREATE EXTENSION postgis;"
+  psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "GRANT ALL ON ALL TABLES IN SCHEMA public TO ${OWNER};"
 
-  # following commands require superuser abilities
-  psql -d "${DATABASE}" -c 'CREATE EXTENSION Postgis;'
-  psql -d "${DATABASE}" -c "GRANT ALL ON ALL TABLES IN SCHEMA public TO ${OWNER};"
-
-  # create rest of database
+  # load the schema
   psql ${PG_OPT} -U ${OWNER} -q -d "${DATABASE}" < "${DUMPDIR}"/*.schema
   if [ "${QUIET}" != "YES" ]; then
     echo "CREATED SCHEMA"
@@ -242,7 +263,7 @@ if [ "${CREATE}" == "YES" ]; then
   if [ "${QUIET}" != "YES" ]; then
     printf "Loading  %-25s : " "schema_migrations"
   fi
-  ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY schema_migrations FROM '${DUMPDIR}/schema_migrations.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8'); SELECT COUNT(*) FROM schema_migrations;" | tr -d ' ' )
+  ADD=$( psql ${PG_OPT} ${PG_OWNER} -t -q -d "${DATABASE}" -c "\COPY schema_migrations FROM '${DUMPDIR}/schema_migrations.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8'); SELECT COUNT(*) FROM schema_migrations;" | tr -d ' ' )
   if [ "${QUIET}" != "YES" ]; then
     echo "ADDED ${ADD}"
   fi
@@ -252,7 +273,7 @@ else
   fi
 
   # find current schema version
-  VERSION=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT md5(array_agg(version)::text) FROM (SELECT version FROM schema_migrations ORDER BY version) as v;' | tr -d ' ' )
+  VERSION=$( psql ${PG_OPT} ${PG_OWNER} -t -q -d "${DATABASE}" -c 'SELECT md5(array_agg(version)::text) FROM (SELECT version FROM schema_migrations ORDER BY version) as v;' | tr -d ' ' )
 
   if [ ! -e "${DUMPDIR}/${VERSION}.schema" ]; then
     echo "EXPECTED SCHEMA version ${VERSION}"
@@ -283,12 +304,17 @@ REM_LAST_ID=$(( REM_START_ID + ID_RANGE - 1 ))
 REM_WHERE="WHERE (id >= ${REM_START_ID} AND id <= ${REM_LAST_ID})"
 MY_WHERE="WHERE (id >= ${MY_START_ID} AND id <= ${MY_LAST_ID})"
 
+# disable all triggers 
+for T in ${EMPTY_TABLES} ${CLEAN_TABLES} ${MANY_TABLES}; do
+  psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "ALTER TABLE ${T} DISABLE TRIGGER ALL;"
+done
+
 # create psql process that will be used for all code
 PSQL_PIPE_INP=/tmp/psql_inp.$$
 PSQL_PIPE_OUT=/tmp/psql_out.$$
 mkfifo -m 600 $PSQL_PIPE_INP
 mkfifo -m 600 $PSQL_PIPE_OUT
-psql ${PG_OPT} --quiet --no-align --no-readline --tuples-only -P footer=off --dbname ${DATABASE} <$PSQL_PIPE_INP >$PSQL_PIPE_OUT &
+psql ${PG_OPT} ${PG_USER} -q --no-align --no-readline --tuples-only -P footer=off -d ${DATABASE} <$PSQL_PIPE_INP >$PSQL_PIPE_OUT &
 exec 3>$PSQL_PIPE_INP
 exec 4<$PSQL_PIPE_OUT
 PSQL_PID=$!
@@ -311,7 +337,6 @@ trap '
 ' EXIT
 
 # start transaction
-echo "BEGIN;" >&3
 
 # for all tables
 # 1) disable constraints on this table
@@ -320,7 +345,10 @@ echo "BEGIN;" >&3
 # 4) set last inserted item in my range
 # 5) enable constraints on this table
 for T in ${EMPTY_TABLES} ${CLEAN_TABLES} ${MANY_TABLES}; do
+  # start
+  echo "BEGIN;" >&3
   echo "ALTER TABLE ${T} DISABLE TRIGGER ALL;" >&3
+
   echo "SELECT count(*) FROM ${T} ${REM_WHERE};" >&3 && read DEL <&4
   # TODO what is last index in range we are adding, this will give a better
   #      indication if rows are added.
@@ -343,12 +371,28 @@ for T in ${EMPTY_TABLES} ${CLEAN_TABLES} ${MANY_TABLES}; do
       fi
     fi
   fi
+
+  # fix sequence number
+  if [ "${FIXSEQUENCE}" == "YES" ]; then
+    echo "SELECT last_value from ${T}_id_seq;" >&3 && read OLD <&4
+    echo "SELECT setval('${T}_id_seq', ${MY_START_ID}, false);" >&3 && read IGN <&4
+    echo "SELECT setval('${T}_id_seq', (SELECT MAX(id) FROM ${T} ${MY_WHERE}), true);" >&3 && read IGN <&4
+    echo "SELECT last_value from ${T}_id_seq;" >&3 && read NEXT <&4
+    if [ "${QUIET}" != "YES" ]; then
+      if [ "$OLD" != "$NEXT" ]; then
+        printf "Fixed    %-25s : %s\n" "${T}" "${NEXT}"
+      fi
+    fi
+  fi
+
+  # finish off
   echo "ALTER TABLE ${T} ENABLE TRIGGER ALL;" >&3
+  echo "END;" >&3
 done
 
 # fix sequence numbers if needed
 if [ "${FIXSEQUENCE}" == "YES" ]; then
-  for T in ${EMPTY_TABLES} ${CLEAN_TABLES} ${MANY_TABLES} ${IGNORE_TABLES}; do
+  for T in ${IGNORE_TABLES}; do
     echo "SELECT last_value from ${T}_id_seq;" >&3 && read OLD <&4
     echo "SELECT setval('${T}_id_seq', ${MY_START_ID}, false);" >&3 && read IGN <&4
     echo "SELECT setval('${T}_id_seq', (SELECT MAX(id) FROM ${T} ${MY_WHERE}), true);" >&3 && read IGN <&4
@@ -406,7 +450,6 @@ fi
 if [ -e ${LOG} ]; then
   echo `date -u` $REMOTESITE 0 >> $LOG
 fi
-echo "END;" >&3
 echo "\quit" >&3
 wait $PSQL_PID
 
