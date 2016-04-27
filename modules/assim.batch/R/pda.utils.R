@@ -427,15 +427,20 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
     }
     dir.create(file.path(settings$rundir, run.ids[i]), recursive=TRUE)
     dir.create(file.path(settings$modeloutdir, run.ids[i]), recursive=TRUE)
+    
+    # works for one PFT
+    trait.values = list(pft=as.list(params[i,]),env=NA)
+    newnames <- sapply(settings$pfts, "[[", "name")
+    names(trait.values)[which(!(names(trait.values) %in% 'env'))] <- newnames
 
     ## write config
     do.call(my.write.config,
             args=list(defaults = settings$pfts, 
-                      trait.values = list(pft=params[i,],env=NA), 
+                      trait.values = trait.values, 
                       settings = settings, run.id = run.ids[i]))
 
     # Identifiers for ensemble 'runtype'
-    if(settings$assim.batch$method == "bruteforce") {
+    if(settings$assim.batch$method == "bruteforce" | settings$assim.batch$method == "bruteforce.bs" | settings$assim.batch$method == "bayesian.tools") {
       ensemble.type <- "pda.MCMC"
     } else if(settings$assim.batch$method == "emulator") {
       ensemble.type <- "pda.emulator"
@@ -641,9 +646,9 @@ pda.calc.llik <- function(settings, con, model.out, run.id, inputs, llik.fn) {
 ##' @title Generate Parameter Knots for PDA Emulator
 ##' @param all params are the identically named variables in pda.mcmc / pda.emulator
 ##'
-##' @return A matrix of parameter values, with one row for each knot in the emulator.
+##' @return A list of probabilities and parameter values, with one row for each knot in the emulator.
 ##'
-##' @author Ryan Kelly
+##' @author Ryan Kelly, Istem Fer
 ##' @export
 pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn, pname) {
   # By default, all parameters will be fixed at their median
@@ -658,8 +663,9 @@ pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn, pname) 
     params[,i] <- eval(prior.fn$qprior[[i]], list(p=probs[,i]))
   }
   colnames(params) <- pname
+  colnames(probs) <- pname
   
-  return(params)
+  return(list(params=params,probs=probs))
 }
 
 
