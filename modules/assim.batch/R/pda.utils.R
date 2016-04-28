@@ -559,7 +559,7 @@ pda.get.model.output <- function(settings, run.id, inputs) {
 ##'
 ##' @author Ryan Kelly
 ##' @export
-pda.calc.llik <- function(settings, con, model.out, run.id, inputs, llik.fn) {
+pda.calc.llik <- function(settings, con, model.out, run.id, inputs, llik.fn, ...) {
   if(is.na(model.out)) { # Probably indicates model failed entirely
     return(-Inf)
   }
@@ -568,7 +568,7 @@ pda.calc.llik <- function(settings, con, model.out, run.id, inputs, llik.fn) {
   
   LL.vec <- n.vec <- numeric(n.input)
   for(k in 1:n.input) {
-    llik <- llik.fn[[k]](model.out[[k]], inputs[[k]])
+    llik <- llik.fn[[k]](model.out[[k]], inputs[[k]], ...)
     LL.vec[k] <- llik$LL
     n.vec[k]  <- llik$n
   }
