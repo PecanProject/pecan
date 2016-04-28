@@ -205,4 +205,4 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   ## Output an updated settings list
   return(settings)
   
-} ## end pda.mcmc
+} ## end pda.emulator

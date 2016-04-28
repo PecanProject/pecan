@@ -550,59 +550,6 @@ pda.get.model.output <- function(settings, run.id, inputs) {
 }
 
 
-##' Calculate Likelihoods for PDA
-##'
-##' @title Calculate Likelihoods for PDA
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
-##'
-##' @return Total log likelihood (i.e., sum of log likelihoods for each dataset)
-##'
-##' @author Ryan Kelly
-##' @export
-pda.calc.llik <- function(settings, con, model.out, run.id, inputs, llik.fn, ...) {
-  if(is.na(model.out)) { # Probably indicates model failed entirely
-    return(-Inf)
-  }
-
-  n.input <- length(inputs)
-  
-  LL.vec <- n.vec <- numeric(n.input)
-  for(k in 1:n.input) {
-    llik <- llik.fn[[k]](model.out[[k]], inputs[[k]], ...)
-    LL.vec[k] <- llik$LL
-    n.vec[k]  <- llik$n
-  }
-  weights <- rep(1/n.input, n.input) # TODO: Implement user-defined weights
-  LL.total <- sum(LL.vec * weights)
-  neff <- n.vec * weights
-
-
-  ## insert Likelihood records in database
-  if (!is.null(con)) {
-    now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-
-    # BETY requires likelihoods to be associated with inputs, so only proceed 
-    # for inputs with valid input ID (i.e., not the -1 dummy id). 
-    # Note that analyses requiring likelihoods to be stored therefore require 
-    # inputs to be registered in BETY first.
-    db.input.ind <- which( sapply(inputs, function(x) x$input.id) != -1 )
-    for(k in db.input.ind) {
-      db.query(
-        paste0("INSERT INTO likelihoods ", 
-          "(run_id,            variable_id,                     input_id, ",
-          " loglikelihood,     n_eff,                           weight,   ",
-          " created_at) ",
-        "values ('", 
-            run.id, "', '",    inputs[[k]]$variable.id, "', '", inputs[[k]]$input.id, "', '", 
-            LL.vec[k], "', '", floor(neff[k]), "', '",          weights[k] , "', '", 
-            now,"')"
-        ), 
-      con)
-    }
-  }
-  
-  return(LL.total)
-}
 
 
 ##' Generate Parameter Knots for PDA Emulator
