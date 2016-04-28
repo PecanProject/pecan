@@ -12,8 +12,7 @@ pda.define.llik.fn <- function(settings) {
   llik.fn <- list()
   for(i in 1:length(settings$assim.batch$inputs)) {
     # NEE + heteroskedastic Laplace likelihood
-    if(settings$assim.batch$inputs[[i]]$variable.id == 297 && 
-       settings$assim.batch$inputs[[i]]$likelihood == "Laplace") {
+    if(settings$assim.batch$inputs[[i]]$likelihood == "Laplace") {
         llik.fn[[i]] <- function(NEEm, obs) {
           NEE.resid <- abs(NEEm - obs$NEEo)
           NEE.pos <- (NEEm >= 0)
