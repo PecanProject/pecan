@@ -18,7 +18,11 @@ if [ ! -e "@OUTDIR@/history.xml" ]; then
   cd "@RUNDIR@"
   
   "@BINARY@"
-  STATUS=$?
+  if grep -Fq '!!! FATAL ERROR !!!' "@OUTDIR@/logfile.txt"; then
+    STATUS=1
+  else
+    STATUS=0
+  fi
   
   # copy scratch if needed
   @SCRATCH_COPY@
