@@ -23,7 +23,7 @@
 ##' Water fluxes: Evaporation (Evap), Transpiration(TVeg),
 ##' surface runoff (Qs), subsurface runoff (Qsb), and rainfall (Rainf).  
 
-load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA, vars_used){
+load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA, vars.used.index, time.row){
   
   require(PEcAn.benchmark)
   require(lubridate)
@@ -40,10 +40,11 @@ load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA, 
     logger.warn("no load data for current mimetype - converting using browndog")
   }
   
-  loaded <- fcn(data.path, format, site, vars_used$orig_name)
+  out <- fcn(data.path, format, site, format$vars$orig_name[c(vars.used.index,time.row)])
   
-  out <- loaded
   # Convert loaded data to the same standard varialbe names and units
+  
+  vars_used <- format$vars[vars.used.index,]
   
   for(i in 1:nrow(vars_used)){
     col <- names(out)==vars_used$orig_name[i]
@@ -51,18 +52,23 @@ load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA, 
       print("match")
       colnames(out)[col] <- vars_used$pecan_name[i]
     }else{
-      print(paste("convert", vars_used$orig_name[i]))
       x <- as.matrix(out[col])
       u1 = vars_used$orig_units[i]
       u2 = vars_used$pecan_units[i]
-      print(u1)
-      print(u2)
       if(udunits2::ud.are.convertible(u1,u2)){
+        print(sprintf("convert %s %s to %s %s", vars_used$orig_name[i], vars_used$orig_units[i],
+                      vars_used$pecan_name[i], vars_used$pecan_units[i]))
         out[col] <- udunits2::ud.convert(x,u1,u2)
         colnames(out)[col] <- vars_used$pecan_name[i]
       }else{logger.error("Units cannot be converted")} #This error should probably be thrown much earlier, like in query.format.vars - will move it eventually
     }
   }
+  
+  # Need a much more spohisticated approach to converting into time format. 
+  y <- out[,names(out)==format$vars$orig_name[time.row]]
+  
+  out$posix <- strptime(apply(y,1,function(x) paste(x,collapse=" ")),format=paste(format$vars$storage_type[time.row], collapse=" "))
+
   
   return(out) 
 }
