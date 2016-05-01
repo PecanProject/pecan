@@ -1,11 +1,11 @@
 ##' @name load.csv
 ##' @title load.csv
 ##' @export
-##' @param data.path
-##' @param format
-##' @param start_year
-##' @param end_year
-##' @param site
+##' @param data.path character
+##' @param format list
+##' @param start_year numeric
+##' @param end_year numeric
+##' @param site list
 ##' 
 ##' @author Betsy Cowdery
 

@@ -1,10 +1,17 @@
 ##' @name align.data
-##' @title align.data
+##' @title Align timeseries data
 ##' @export
-##' @param model
-##' @param obvs
+##' @param model_full data.frame
+##' @param obvs_full data.frame
+##' @param dat_vars data.frame
+##' @param start_year numeric
+##' @param end_year numeric
+##' @return dat
+
 ##' @author Betsy Cowdery
 
+
+## Align timeseries data using different functions 
 
 align.data <- function(model_full, obvs_full, dat_vars, start_year, end_year){
   

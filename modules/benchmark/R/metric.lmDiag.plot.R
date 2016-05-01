@@ -1,11 +1,11 @@
 ##' @name metric.lmDiag.plot
 ##' @title metric.lmDiag.plot
 ##' @export
-##' @param dat
+##' @param metric_dat data.frame
 ##' 
 ##' @author Betsy Cowdery
 
-metric.lmDiag.plot <- function(metric_dat){
+metric.lmDiag.plot <- function(metric_dat,...){
   
   fit <- lm(metric_dat[,1]~metric_dat[,2])
   

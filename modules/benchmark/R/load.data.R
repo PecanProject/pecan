@@ -1,27 +1,14 @@
 ##' @name load.data
 ##' @title load.data
 ##' @export
-##' @param data.path
-##' @param format
-##' @param start_year
-##' @param end_year
-##' @param site
+##' @param data.path character
+##' @param format list
+##' @param start_year numeric
+##' @param end_year numeric
+##' @param site list
 ##' @author Betsy Cowdery
-
 ##' Generic function to convert input files containing observational data to 
 ##' a common PEcAn format. 
-##' 
-##' This should be the same as the read.output function:
-##' This function uses MsTMIP variables except that units of (kg m-2 d-1)  
-##' are converted to kg ha-1 y-1. 
-##' 
-##' Currently this function converts
-##' 
-##' Carbon fluxes: GPP, NPP, NEE, TotalResp, AutoResp, HeteroResp,
-##' DOC_flux, Fire_flux, and Stem (Stem is specific to the BioCro model)
-##' 
-##' Water fluxes: Evaporation (Evap), Transpiration(TVeg),
-##' surface runoff (Qs), subsurface runoff (Qsb), and rainfall (Rainf).  
 
 load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA, vars.used.index, time.row){
   
@@ -58,7 +45,7 @@ load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA, 
       if(udunits2::ud.are.convertible(u1,u2)){
         print(sprintf("convert %s %s to %s %s", vars_used$orig_name[i], vars_used$orig_units[i],
                       vars_used$pecan_name[i], vars_used$pecan_units[i]))
-        out[col] <- udunits2::ud.convert(x,u1,u2)
+        out[col] <- udunits2::ud.convert(x,u1,u2)[[1]]
         colnames(out)[col] <- vars_used$pecan_name[i]
       }else{logger.error("Units cannot be converted")} #This error should probably be thrown much earlier, like in query.format.vars - will move it eventually
     }

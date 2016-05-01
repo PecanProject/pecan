@@ -43,8 +43,8 @@ calc.benchmark <- function(settings, con){ #settings file is output from start.b
   start_year <- year(settings$run$start.date)
   end_year <- year(settings$run$end.date)
   
-  results <- calc.metrics(data.path, format, vars_used, model_run, metrics, 
-                          start_year= tart_year, end_year=end_year, site=site)
+  results <- calc.metrics(data.path, format, vars_used, model_run, metrics, start_year, end_year, site)
+  
   
   #  Update benchmark ensemble scores table
   
