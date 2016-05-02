@@ -142,8 +142,9 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
     }
 
 
-    # For now setting this to be always true till I figure out how to interface
-    # with the sub_daily param file.
+    ## For now setting this to be always true till I figure out how to
+    ## interface with the sub_daily param file. Should detech if met-data
+    ## is coarser than 30-min and swapped to day version?
     sub_daily = TRUE
 
     if (sub_daily) {
