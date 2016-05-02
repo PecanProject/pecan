@@ -172,11 +172,11 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     } ## end loop over variables
 
     ## Diagnostic figure
-    if(!is.null(settings$assim.batch$diag.plot.iter) && is.finite(prior.star) && 
+    if(!is.null(settings$assim.batch$diag.plot.iter) && is.finite(prior.star) &&
         (i==start | i==finish | (i %% settings$assim.batch$diag.plot.iter == 0))) {
       pdf(file.path(settings$outdir, paste0('diag.pda', settings$assim.batch$ensemble.id),
         paste0("data.vs.model_", gsub(" ", "0",sprintf("%5.0f", i)), ".pdf")))
-        NEEo <- inputs[[1]]$NEEo
+        NEEo <- inputs[[1]]$obs
 
         NEEm <- model.out[[1]]
         NEE.resid <- NEEm - NEEo
@@ -199,6 +199,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
   ## ------------------------------------ Clean up ------------------------------------ ##
   ## Save outputs to plots, files, and db
+  con <- try(db.open(settings$database$bety), silent=TRUE)
   settings <- pda.postprocess(settings, con, params, pname, prior, prior.ind)
 
   ## close database connection

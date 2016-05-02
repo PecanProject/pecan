@@ -145,9 +145,8 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   }
   
   # define range to make sure mcmc.GP doesn't propose new values outside 
-  rng=matrix(c(sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0)),
-        sapply(prior.fn$qprior[prior.ind] ,eval,list(p=1))),
-        nrow=n.param)
+  
+  rng=matrix(c(apply(X,2,min), apply(X ,2,max)),nrow=n.param)
         
 
   ## Sample posterior from emulator
@@ -164,7 +163,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 #                  jmp0 = apply(X,2,function(x) 0.3*diff(range(x))), ## Initial jump size
                  jmp0      = sqrt(unlist(settings$assim.batch$jump$jvar)),  ## Initial jump size
                  ar.target = settings$assim.batch$jump$ar.target,   ## Target acceptance rate
-                 priors    = prior.fn$dprior[prior.ind]
+                 priors    = prior.fn$dprior[prior.ind] ## priors
           )$mcmc
         })
   
