@@ -153,28 +153,34 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
       } else {
         ndays <- 365
       }
+      idx = 0
       for(doy in 1:ndays) {
 
+        ## If there is no Tsoil variabile use Tair...it doesn't look like Tsoil
+        ## is a standard input
+        tsoil = mean(tair[idx:idx+48])
         for(hod in 1:48) {
 
+          rain = ppt[idx] * SEC_TO_HFHR
+          par = SW[idx] * SW_2_PAR
+          tair = udunits2::ud.convert(Tair[idx], "Kelvin", "Celsius")
+          wind = wind_speed[idx]
+          press = air_pressure[idx] * PA_2_KPA
+          rh = qair2rh(SH[idx], Tair[idx])
+          vpd = get.vpd(rh[idx], Tair[idx])
 
+          ## No NDEP, so N-cycle will have to be switched off by default
+          ndep = -999.9                   # t ha-1
+
+          idx <- idx + 1
         }
 
       }
-      ## NEED year, day, hod loops here...
-      for(doy in year+1:nyr-1){
 
-      rain = ppt * SEC_TO_HFHR
-      par = SW * SW_2_PAR
-      tair = udunits2::ud.convert(Tair, "Kelvin", "Celsius")
-      tsoil = mean(tair)
-      wind = wind_speed
-      press = air_pressure * PA_2_KPA
-      rh = qair2rh(SH, Tair)
-      vpd = get.vpd(rh, Tair)
+      #Need to bind this in with this matrix below...not sure how to do that
+      #as my vars aren't arrays...
 
-      ## No NDEP, so N-cycle will have to be switched off by default
-      ndep = -999.9                   # t ha-1
+
 
       ## build data matrix
       tmp <- cbind(year,
