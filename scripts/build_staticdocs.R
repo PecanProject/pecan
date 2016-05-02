@@ -32,6 +32,6 @@ for(i in start:length(pkgs)){
   build.doc(pkgs[[i]])
 }
 
-links <- unlist(lapply(pkgs, function(x) paste0("* [", x, "](", file.path("https://pecanproject.github.io/pecan/", x, "inst/web/index.html"))))
+links <- unlist(lapply(pkgs, function(x) paste0("* [", x, "](", file.path("https://pecanproject.github.io/pecan/", x, "inst/web/index.htmlg)"))))
 writeLines("## Documentation:\n \n", paste(links, collapse = "\n"), con = "index.md")
 system2("pandoc index.md -o index.html")
