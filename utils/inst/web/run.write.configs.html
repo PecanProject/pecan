@@ -2,10 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>run.write.configs. PEcAn.utils 1.4.1</title>
+<title>run.write.configs. PEcAn.utils 1.4.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
-David LeBauer, Shawn Serbin
+David LeBauer, Shawn Serbin, Ryan Kelly
 ">
 
 <link href="css/bootstrap.css" rel="stylesheet">
@@ -16,13 +16,25 @@ David LeBauer, Shawn Serbin
 <!--[if lt IE 9]>
   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
   </head>
 
   <body>
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">PEcAn.utils 1.4.1</a>
+      <a class="brand" href="#">PEcAn.utils 1.4.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -42,20 +54,37 @@ David LeBauer, Shawn Serbin
 <div class="row">
   <div class="span8">
     <h2>Usage</h2>
-    <pre><div>run.write.configs(settings, write&nbsp;=&nbsp;TRUE)</div></pre>
+    <pre><div>run.write.configs(settings, write&nbsp;=&nbsp;TRUE, ens.sample.method&nbsp;=&nbsp;"halton", posterior.files&nbsp;=&nbsp;rep(NA, length(settings$pfts)))</div></pre>
     
     <h2>Arguments</h2>
     <dl>
       <dt>write</dt>
       <dd>should the runs be written to the database</dd>
+      <dt>ens.sample.method</dt>
+      <dd>how to sample the ensemble members("halton" sequence or "uniform" random)</dd>
+      <dt>posterior.files</dt>
+      <dd>Filenames for posteriors for drawing samples for ensemble and sensitivity
+analysis (e.g. post.distns.Rdata, or prior.distns.Rdata). Defaults to NA, in which case the 
+most recent posterior or prior (in that order) for the workflow is used. Should be a vector, 
+with one entry for each PFT. File name only; PFT outdirs will be appended (this forces use of only
+files within this workflow, to avoid confusion).</dd>
       <dt>model</dt>
       <dd>the ecosystem model to generate the configuration files for</dd>
     </dl>
     
+    <div class="Value">
+      <h2>Value</h2>
+
+      <p><dl>
+an updated settings list, which includes ensemble IDs for SA and ensemble analysis
+</dl></p>
+  
+    </div>
+
     <div class="Description">
       <h2>Description</h2>
 
-      <p>Main driver function to call the ecosystem model specific (e.g. ED, SiPNET)
+      <p>Main driver function to call the ecosystem model specific (e.g. ED, SiPNET) 
 run and configuration file scripts</p>
   
     </div>
@@ -71,7 +100,7 @@ run and configuration file scripts</p>
     
     <h2>Author</h2>
     
-David LeBauer, Shawn Serbin
+David LeBauer, Shawn Serbin, Ryan Kelly
 
     
   </div>
@@ -79,7 +108,7 @@ David LeBauer, Shawn Serbin
       
       <footer>
       <p class="pull-right"><a href="#">Back to top</a></p>
-<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="https://getbootstrap.com/2.0.4/">bootstrap</a>.</p>
       </footer>
     </div>
   </body>

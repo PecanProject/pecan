@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>Index. PEcAn.MA 1.4.1</title>
+<title>Index. PEcAn.MA 1.4.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
 Davidson, Rob Kooper, Shawn Serbin">
@@ -15,13 +15,25 @@ Davidson, Rob Kooper, Shawn Serbin">
 <!--[if lt IE 9]>
   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
   </head>
 
   <body>
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">PEcAn.MA 1.4.1</a>
+      <a class="brand" href="#">PEcAn.MA 1.4.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -59,13 +71,13 @@ the functions used in the Bayesian meta-analysis of trait data.
         <code><a href="jagify.html">jagify</a></code><br />Prepare trait data for JAGS meta-analysis</li>
             
       <li>
+        <code><a href="p.point.in.prior.html">p.point.in.prior</a></code><br />find quantile of point within prior distribution</li>
+            
+      <li>
         <code><a href="pecan.ma.html">pecan.ma</a></code><br />Trait Meta-analysis</li>
             
       <li>
         <code><a href="pecan.ma.summary.html">pecan.ma.summary</a></code><br />Generate summary statitics and diagnostics for PEcAn meta.analysis</li>
-            
-      <li>
-        <code><a href="p.point.in.prior.html">p.point.in.prior</a></code><br />find quantile of point within prior distribution</li>
             
       <li>
         <code><a href="run.meta.analysis.html">run.meta.analysis</a></code><br />Invoke PEcAn meta.analysis
@@ -87,10 +99,10 @@ the functions used in the Bayesian meta-analysis of trait data.
         
     <h2>Dependencies</h2>
     <ul>
-      <li><strong>Depends</strong>: XML, rjags, MASS, PEcAn.utils, PEcAn.DB</li>
-      <li><strong>Imports</strong>: </li>
-      <li><strong>Suggests</strong>: testthat</li>
-      <li><strong>Extends</strong>: </li>
+      <li><strong>Depends</strong>: XML, lattice, MASS, PEcAn.utils, PEcAn.DB</li>
+      
+      <li><strong>Suggests</strong>: rjags, testthat, PEcAn.priors</li>
+      
     </ul>
     <h2>Authors</h2>
     <ul>
@@ -101,7 +113,7 @@ the functions used in the Bayesian meta-analysis of trait data.
       
       <footer>
       <p class="pull-right"><a href="#">Back to top</a></p>
-<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="https://getbootstrap.com/2.0.4/">bootstrap</a>.</p>
       </footer>
     </div>
   </body>

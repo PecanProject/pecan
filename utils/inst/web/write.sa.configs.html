@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>write.sa.configs. PEcAn.utils 1.4.1</title>
+<title>write.sa.configs. PEcAn.utils 1.4.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 David LeBauer, Carl Davidson
@@ -16,13 +16,25 @@ David LeBauer, Carl Davidson
 <!--[if lt IE 9]>
   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
   </head>
 
   <body>
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">PEcAn.utils 1.4.1</a>
+      <a class="brand" href="#">PEcAn.utils 1.4.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -53,9 +65,9 @@ David LeBauer, Carl Davidson
       <dt>pft</dt>
       <dd>pft id used to query PEcAn database</dd>
       <dt>write.config</dt>
-      <dd>a model-specific function to write config files, e.g. <a href='http://www.inside-r.org/packages/cran/PECAn/docs/write.config.ED'>write.config.ED</a></dd>
+      <dd>a model-specific function to write config files, e.g. write.config.ED</dd>
       <dt>convert.samples</dt>
-      <dd>a model-specific function that transforms variables from units used in database to units used by model, e.g. convert.samples.ED</dd>
+      <dd>a model-specific function that transforms variables from units used in database to units used by model, e.g. <a href='http://www.inside-r.org/packages/cran/PEcAn.ED2/docs/convert.samples.ED'>convert.samples.ED</a></dd>
       <dt>ensemble.samples</dt>
       <dd>list of lists supplied by <a href='get.sa.samples.html'>get.sa.samples</a></dd>
     </dl>
@@ -64,7 +76,7 @@ David LeBauer, Carl Davidson
       <h2>Value</h2>
 
       <p><dl>
-data frame of runids, writes sensitivity analysis configuration files as a side effect
+list, containing $runs = data frame of runids, and $ensemble.id = the ensemble ID for these runs. Also writes sensitivity analysis configuration files as a side effect
 </dl></p>
   
     </div>
@@ -102,7 +114,7 @@ David LeBauer, Carl Davidson
       
       <footer>
       <p class="pull-right"><a href="#">Back to top</a></p>
-<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="https://getbootstrap.com/2.0.4/">bootstrap</a>.</p>
       </footer>
     </div>
   </body>

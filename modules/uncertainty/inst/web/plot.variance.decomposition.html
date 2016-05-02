@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>plot.variance.decomposition. PEcAn.uncertainty 1.4.1</title>
+<title>plot.variance.decomposition. PEcAn.uncertainty 1.4.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 David LeBauer, Carl Davidson
@@ -16,13 +16,25 @@ David LeBauer, Carl Davidson
 <!--[if lt IE 9]>
   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
   </head>
 
   <body>
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">PEcAn.uncertainty 1.4.1</a>
+      <a class="brand" href="#">PEcAn.uncertainty 1.4.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -49,7 +61,7 @@ David LeBauer, Carl Davidson
       <dt>fontsize</dt>
       <dd>list specifying the font size of the titles and axes of the graph</dd>
       <dt>...</dt>
-      <dd>Output from any number of sensitivity analyses. Output must be of the form
+      <dd>Output from any number of sensitivity analyses. Output must be of the form 
 given by sensitivity.results$variance.decomposition.output in model output</dd>
       <dt>all.plot.inputs</dt>
       <dd>Optional argument allowing output from sensitivity analyses to be specified in a list</dd>
@@ -94,7 +106,7 @@ Defaults to the first sensitivity analysis output given</dd>
           variances    = c(a = 20, b=30, c = 10))
 do.call(grid.arrange, c(plot.variance.decomposition(x), ncol = 4))
 </div>
-<p><img src='plot.variance.decomposition-2.png' alt='' width='540' height='400' /></p></pre>
+<strong class='error'>Error: C stack usage  9962196 is too close to the limit</strong></pre>
   </div>
   <div class="span4">
     <!-- <ul>
@@ -115,7 +127,7 @@ David LeBauer, Carl Davidson
       
       <footer>
       <p class="pull-right"><a href="#">Back to top</a></p>
-<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="https://getbootstrap.com/2.0.4/">bootstrap</a>.</p>
       </footer>
     </div>
   </body>

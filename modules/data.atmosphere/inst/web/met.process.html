@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>met.process. PEcAn.data.atmosphere 1.4.1</title>
+<title>met.process. PEcAn.data.atmosphere 1.4.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Elizabeth Cowdery, Michael Dietze
@@ -16,13 +16,25 @@ Elizabeth Cowdery, Michael Dietze
 <!--[if lt IE 9]>
   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
   </head>
 
   <body>
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">PEcAn.data.atmosphere 1.4.1</a>
+      <a class="brand" href="#">PEcAn.data.atmosphere 1.4.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -42,7 +54,7 @@ Elizabeth Cowdery, Michael Dietze
 <div class="row">
   <div class="span8">
     <h2>Usage</h2>
-    <pre><div>met.process(site, input, start_date, end_date, model, host, bety, dir)</div></pre>
+    <pre><div>met.process(site, input_met, start_date, end_date, model, host, dbparms, dir, browndog&nbsp;=&nbsp;NULL)</div></pre>
     
     <h2>Arguments</h2>
     <dl>
@@ -51,14 +63,16 @@ Elizabeth Cowdery, Michael Dietze
       <dt>input</dt>
       <dd>currently "NARR" or "Ameriflux"</dd>
       <dt>start_date</dt>
-      <dd>the start date of the data to be downloaded (will only use the year part of the date)</dd>
+      <dd>the start date of the data to be
+  downloaded (will only use the year part of the date)</dd>
       <dt>end_date</dt>
-      <dd>the end date of the data to be downloaded (will only use the year part of the date)</dd>
+      <dd>the end date of the data to be downloaded
+  (will only use the year part of the date)</dd>
       <dt>model</dt>
       <dd>model_type name</dd>
       <dt>host</dt>
       <dd>Host info from settings file</dd>
-      <dt>bety</dt>
+      <dt>dbparms</dt>
       <dd>database settings from settings file</dd>
       <dt>dir</dt>
       <dd>directory to write outputs to</dd>
@@ -90,7 +104,7 @@ Elizabeth Cowdery, Michael Dietze
       
       <footer>
       <p class="pull-right"><a href="#">Back to top</a></p>
-<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="https://getbootstrap.com/2.0.4/">bootstrap</a>.</p>
       </footer>
     </div>
   </body>

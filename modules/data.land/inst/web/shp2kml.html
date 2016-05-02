@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>shp2kml. PEcAn.data.land 1.4.1</title>
+<title>shp2kml. PEcAn.data.land 1.4.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Shawn P. Serbin
@@ -16,13 +16,25 @@ Shawn P. Serbin
 <!--[if lt IE 9]>
   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
   </head>
 
   <body>
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">PEcAn.data.land 1.4.1</a>
+      <a class="brand" href="#">PEcAn.data.land 1.4.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -54,7 +66,7 @@ Shawn P. Serbin
       <dt>kmz</dt>
       <dd>TRUE/FALSE. Option to write out file as a compressed kml. Requires zip utility</dd>
       <dt>proj4</dt>
-      <dd>OPTIONAL. Define output proj4 projection string.  If set, input vector will be
+      <dd>OPTIONAL. Define output proj4 projection string.  If set, input vector will be 
 reprojected to desired projection.  Not yet implemented.</dd>
       <dt>color</dt>
       <dd>OPTIONAL. Fill color for output kml/kmz file</dd>
@@ -72,12 +84,13 @@ reprojected to desired projection.  Not yet implemented.</dd>
     </div>
     
     <h2 id="examples">Examples</h2>
-    <pre class="examples"><div class='input'>## &lt;strong&gt;Not run&lt;/strong&gt;: 
+    <pre class="examples"><div class='input'>## Not run: 
 # dir &lt;- Sys.glob(file.path(R.home(), &quot;library&quot;, &quot;PEcAn.data.land&quot;,&quot;data&quot;))
 # out.dir &lt;- path.expand(&quot;~/temp&quot;)
 # shp2kml(dir,&#39;.shp&#39;,kmz=FALSE,NameField=&quot;STATE&quot;,out.dir=out.dir)
 # system(paste(&quot;rm -r &quot;,out.dir))
-# ## &lt;strong&gt;End(Not run)&lt;/strong&gt;
+# ## End(Not run)
+
 </div></pre>
   </div>
   <div class="span4">
@@ -99,7 +112,7 @@ Shawn P. Serbin
       
       <footer>
       <p class="pull-right"><a href="#">Back to top</a></p>
-<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="https://getbootstrap.com/2.0.4/">bootstrap</a>.</p>
       </footer>
     </div>
   </body>

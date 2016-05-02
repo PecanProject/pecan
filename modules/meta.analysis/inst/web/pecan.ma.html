@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>pecan.ma. PEcAn.MA 1.4.1</title>
+<title>pecan.ma. PEcAn.MA 1.4.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 David LeBauer, Michael C. Dietze
@@ -16,13 +16,25 @@ David LeBauer, Michael C. Dietze
 <!--[if lt IE 9]>
   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
   </head>
 
   <body>
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">PEcAn.MA 1.4.1</a>
+      <a class="brand" href="#">PEcAn.MA 1.4.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -84,21 +96,21 @@ four chains with 5000 total samples from posterior
       <p><code>pecan.ma</code> runs a heirarchical Bayes meta-analytical model.
 This model combines prior information with data from studies on the particular species or group of interest.
 Data that is incorporated into the meta-analysis include the mean (Y), sample size (n),
-and precision (obs.prec).
+and precision (obs.prec). 
 Where a set of data includes more than one level of treatment, comes from more than one site,
 or comes from both field and greenhouse studies, these variables are included as random (treatment, site)
-or fixed (greenhouse) effects.
+or fixed (greenhouse) effects. 
 The pecan.ma function writes a model for each specific data set and prior using the write.ma.model()
 function to modify the ma.model.template.bug generic model.</p>
   
     </div>
     
     <h2 id="examples">Examples</h2>
-    <pre class="examples"><div class='input'>## &lt;strong&gt;Not run&lt;/strong&gt;: 
+    <pre class="examples"><div class='input'>## Not run: 
 # prior.distns &lt;- query.priors(&#39;ebifarm.c4crop&#39;, c(&#39;SLA&#39;, &#39;c2n_leaf&#39;))
 # trait.data &lt;- query.traits(&#39;938&#39;, c(&#39;SLA&#39;, &#39;c2n_leaf&#39;))
 # pecan.ma(prior.distns, trait.data, 25000)
-# ## &lt;strong&gt;End(Not run)&lt;/strong&gt;
+# ## End(Not run)
 </div></pre>
   </div>
   <div class="span4">
@@ -120,7 +132,7 @@ David LeBauer, Michael C. Dietze
       
       <footer>
       <p class="pull-right"><a href="#">Back to top</a></p>
-<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="https://getbootstrap.com/2.0.4/">bootstrap</a>.</p>
       </footer>
     </div>
   </body>

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>metgapfill. PEcAn.data.atmosphere 1.4.1</title>
+<title>metgapfill. PEcAn.data.atmosphere 1.4.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 Ankur Desai
@@ -16,13 +16,25 @@ Ankur Desai
 <!--[if lt IE 9]>
   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
   </head>
 
   <body>
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">PEcAn.data.atmosphere 1.4.1</a>
+      <a class="brand" href="#">PEcAn.data.atmosphere 1.4.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -39,7 +51,7 @@ Ankur Desai
       
       <h1>Take an Ameriflux NetCDF file
 Fill missing met values using MDS approach using MPI-BGC REddyProc library
-Currently
+Currently 
 Future version: Choose which variables to gap fill
 Future version will first downscale and fill with NARR, then REddyProc</h1>
 
@@ -73,7 +85,7 @@ Future version will first downscale and fill with NARR, then REddyProc</h1>
 
       <p>Take an Ameriflux NetCDF file
 Fill missing met values using MDS approach using MPI-BGC REddyProc library
-Currently
+Currently 
 Future version: Choose which variables to gap fill
 Future version will first downscale and fill with NARR, then REddyProc</p>
   
@@ -98,7 +110,7 @@ Ankur Desai
       
       <footer>
       <p class="pull-right"><a href="#">Back to top</a></p>
-<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="https://getbootstrap.com/2.0.4/">bootstrap</a>.</p>
       </footer>
     </div>
   </body>

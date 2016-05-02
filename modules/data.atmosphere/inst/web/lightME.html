@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>lightME. PEcAn.data.atmosphere 1.4.1</title>
+<title>lightME. PEcAn.data.atmosphere 1.4.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="">
 
@@ -14,13 +14,25 @@
 <!--[if lt IE 9]>
   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
   </head>
 
   <body>
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">PEcAn.data.atmosphere 1.4.1</a>
+      <a class="brand" href="#">PEcAn.data.atmosphere 1.4.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -64,11 +76,11 @@
       <p><dl>
 a <code><a href='http://www.inside-r.org/r-doc/base/list'>list</a></code> structure with components:
 <ul>
-<li>"I.dir"Direct radiation (<code class = 'eq'>\mu</code> mol <code class = 'eq'>m^{-2}s^{-1}</code>
+<li>"I.dir"Direct radiation ($\mu$ mol $m^{-2}s^{-1}$
  </li>
-<li>"I.diff"Indirect (diffuse) radiation (<code class = 'eq'>\mu</code> mol<code class = 'eq'>m^{-2}s^{-1}</code>
+<li>"I.diff"Indirect (diffuse) radiation ($\mu$ mol$m^{-2}s^{-1}$
  </li>
-<li>"cos.th"cosine of <code class = 'eq'>\theta</code>, solar zenith angle.
+<li>"cos.th"cosine of $\theta$, solar zenith angle.
  </li>
 <li>"propIdir"proportion of direct radiation.
  </li>
@@ -102,7 +114,7 @@ Other coefficients can be adjusted.</p>
       
       <footer>
       <p class="pull-right"><a href="#">Back to top</a></p>
-<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="https://getbootstrap.com/2.0.4/">bootstrap</a>.</p>
       </footer>
     </div>
   </body>

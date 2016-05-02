@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>par2ppfd. PEcAn.data.atmosphere 1.4.1</title>
+<title>par2ppfd. PEcAn.data.atmosphere 1.4.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 David LeBauer
@@ -18,13 +18,25 @@ David LeBauer
 <!--[if lt IE 9]>
   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
   </head>
 
   <body>
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">PEcAn.data.atmosphere 1.4.1</a>
+      <a class="brand" href="#">PEcAn.data.atmosphere 1.4.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -72,11 +84,10 @@ PPFD (mol / m2 / s)
       <h2>Details</h2>
 
       <p>Converts photosynthetically active radiation (PAR, units of Watts / m2) to
-photosynthetic photon flux density (PPFD) in units of mol / m2 / s
+photosynthetic photon flux density (PPFD) in units of mol / m2 / s 
 From Campbell and Norman p151
 PPFD = PAR * (J/m2/s) * (1 mol / 2.35e5 J)
-2.35e5 J / mol is the energy content of solar radiation in the PAR waveband
-0.486 is based on the approximation that PAR is 0.45-0.50 of the total radiation</p>
+2.35e5 J / mol is the energy content of solar radiation in the PAR waveband</p>
   
     </div>
       </div>
@@ -101,7 +112,7 @@ David LeBauer
       
       <footer>
       <p class="pull-right"><a href="#">Back to top</a></p>
-<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="https://getbootstrap.com/2.0.4/">bootstrap</a>.</p>
       </footer>
     </div>
   </body>

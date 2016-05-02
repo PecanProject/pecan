@@ -5,7 +5,7 @@ library(staticdocs)
 
 pkgs <- list( "db", "settings", "utils","visualization",
               "modules/allometry","modules/assim.batch",
-              "modules/assim.sequential","modules/benchmark",
+              "modules/assim.sequential",
               "modules/data.atmosphere","modules/data.land",
               "modules/data.remote","modules/emulator",
               "modules/meta.analysis","modules/photosynthesis",
@@ -21,11 +21,16 @@ pkgs <- list( "db", "settings", "utils","visualization",
               "all")
  
 lapply(pkgs, function(x) dir.create(file.path(x, "inst/staticdocs"), recursive = TRUE))
-lapply(pkgs, function(x){
-    setwd(file.path("~/tmp/pecan/", x))
-    y <- basename(x)
-    build_site(file.path("../", y))
-})
+build.doc <- function(x){
+  setwd(file.path("~/pecan", x))
+  y <- basename(x)
+  build_site(file.path("../", y))
+}
+start = 1
+for(i in start:length(pkgs)){
+  print(i)
+  build.doc(pkgs[[i]])
+}
 
 links <- unlist(lapply(pkgs, function(x) paste0("* [", x, "](", file.path("https://pecanproject.github.io/pecan/", x, "inst/web/index.html"))))
 writeLines("## Documentation:\n \n", paste(links, collapse = "\n"), con = "index.md")
