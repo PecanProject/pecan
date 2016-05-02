@@ -44,7 +44,9 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
   ##        par_am (umol m-2 s-1), par_pm (umol m-2 s-1)
 
   SW_2_PAR <- 2.3
-  #DEG_TO_KELVIN <- 273.15
+  PA_2_KPA <- 0.001
+  SEC_TO_HFHR <- 60.0 * 30.0
+  DEG_TO_KELVIN <- 273.15
 
   if(!require(PEcAn.utils)) print("install PEcAn.utils")
 
@@ -111,11 +113,16 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
     dt = timestep.s/tstep #dt is now an integer
 
     ## extract variables
-    lat  <- ncvar_get(nc,"latitude")
-    lon  <- ncvar_get(nc,"longitude")
-    Tair <- ncvar_get(nc,"air_temperature")  ## in Kelvin
-    SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") ## in W/m2
-    CO2  <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air"))
+    lat  <- ncvar_get(nc, "latitude")
+    lon  <- ncvar_get(nc, "longitude")
+    Tair <- ncvar_get(nc, "air_temperature")  ## in Kelvin
+    SW   <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air") ##in W/m2
+    CO2  <- try(ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
+    SH  <- try(ncvar_get(nc, "specific_humidity")) ## kg/kg
+    wind_speed  <- try(ncvar_get(nc, "wind_speed")) ## m/s
+    air_pressure <- try(ncvar_get(nc, "air_pressure")) ## Pa
+    ppt <- try(ncvar_get(nc, "precipitation_flux")) ## kg/m2/s
+
     nc_close(nc)
 
     useCO2 = is.numeric(CO2)
@@ -134,15 +141,19 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
       doy <- rep(1:366,each=timestep.s/dt)[1:length(sec)]
     }
 
+    rh = qair2rh(SH, Tair)
+    vpd = get.vpd(rh, Tair)
+
     if (sub_daily) {
-      rain = ?
-      par = SW * SW_2_PAR # W/m2 to umol m-2 s-1
+      rain = ppt * SEC_TO_HFHR
+      par = SW * SW_2_PAR
       tair = udunits2::ud.convert(Tair, "Kelvin", "Celsius")
-      tsoil = tapply(tair, doy, mean)
-      vpd = ?
-      ndep = ?
-      wind = ?
-      press = ?
+      tsoil = mean(tair)
+      wind = wind_speed
+      press = air_pressure * PA_2_KPA 
+
+      ## No NDEP, so N-cycle will have to be switched off by default
+      ndep = -999.9                   # t ha-1
 
       ## build data matrix
       tmp <- cbind(year,
@@ -180,9 +191,10 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
                                   "Kelvin","Celsius")
       tmin = udunits2::ud.convert(tapply(Tair,doy,min,na.rm=TRUE),
                                   "Kelvin","Celsius")
-      ndep = ?
-      wind = ?
-      press = ?
+      ## No NDEP, so N-cycle will have to be switched off by default
+      ndep = -999.9
+      wind = mean(wind_speed)
+      press = mean(air_pressure * PA_2_KPA)
       wind_am = ?
       wind_pm = ?
       par_am = ?
