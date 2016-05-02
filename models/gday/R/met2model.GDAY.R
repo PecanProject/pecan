@@ -144,13 +144,17 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
     rh = qair2rh(SH, Tair)
     vpd = get.vpd(rh, Tair)
 
+    # For now setting this to be always true till I figure out how to interface
+    # with the sub_daily param file.
+    sub_daily = TRUE
+
     if (sub_daily) {
       rain = ppt * SEC_TO_HFHR
       par = SW * SW_2_PAR
       tair = udunits2::ud.convert(Tair, "Kelvin", "Celsius")
       tsoil = mean(tair)
       wind = wind_speed
-      press = air_pressure * PA_2_KPA 
+      press = air_pressure * PA_2_KPA
 
       ## No NDEP, so N-cycle will have to be switched off by default
       ndep = -999.9                   # t ha-1
