@@ -2,10 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>arrhenius.scaling.traits. PEcAn.DB 1.4.1</title>
+<title>arrhenius.scaling.traits. PEcAn.DB 1.4.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
-Carl Davidson, David LeBauer
+Carl Davidson, David LeBauer, Ryan Kelly
 ">
 
 <link href="css/bootstrap.css" rel="stylesheet">
@@ -16,13 +16,25 @@ Carl Davidson, David LeBauer
 <!--[if lt IE 9]>
   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
   </head>
 
   <body>
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">PEcAn.DB 1.4.1</a>
+      <a class="brand" href="#">PEcAn.DB 1.4.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -42,30 +54,24 @@ Carl Davidson, David LeBauer
 <div class="row">
   <div class="span8">
     <h2>Usage</h2>
-    <pre><div>arrhenius.scaling.traits(data, covariates, temp.covariates, new.temp&nbsp;=&nbsp;25)</div></pre>
+    <pre><div>arrhenius.scaling.traits(data, covariates, temp.covariates, new.temp&nbsp;=&nbsp;25, missing.temp&nbsp;=&nbsp;25)</div></pre>
     
     <h2>Arguments</h2>
     <dl>
       <dt>data</dt>
-      <dd>the data to scale</dd>
+      <dd>data frame of data to scale, as returned by query.data()</dd>
       <dt>covariates</dt>
-      <dd>the relevant covariates</dd>
+      <dd>data frame of covariates, as returned by query.covariates().
+Note that data with no matching covariates will be unchanged.</dd>
       <dt>temp.covariates</dt>
       <dd>names of covariates used to adjust for temperature;
 if length > 1, order matters (first will be used preferentially)</dd>
       <dt>new.temp</dt>
       <dd>the reference temperature for the scaled traits. Curerntly 25 degC</dd>
+      <dt>missing.temp</dt>
+      <dd>the temperature assumed for traits with no covariate found. Curerntly 25 degC</dd>
     </dl>
-    
-    <div class="Description">
-      <h2>Description</h2>
-
-      <p></p>
-  
-      <p></p>
-  
-    </div>
-      </div>
+          </div>
   <div class="span4">
     <!-- <ul>
       <li>arrhenius.scaling.traits</li>
@@ -77,7 +83,7 @@ if length > 1, order matters (first will be used preferentially)</dd>
     
     <h2>Author</h2>
     
-Carl Davidson, David LeBauer
+Carl Davidson, David LeBauer, Ryan Kelly
 
     
   </div>
@@ -85,7 +91,7 @@ Carl Davidson, David LeBauer
       
       <footer>
       <p class="pull-right"><a href="#">Back to top</a></p>
-<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="https://getbootstrap.com/2.0.4/">bootstrap</a>.</p>
       </footer>
     </div>
   </body>

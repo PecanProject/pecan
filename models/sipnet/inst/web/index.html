@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>Index. PEcAn.SIPNET 1.4.1</title>
+<title>Index. PEcAn.SIPNET 1.4.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="Mike Dietze">
 
@@ -14,13 +14,25 @@
 <!--[if lt IE 9]>
   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
   </head>
 
   <body>
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">PEcAn.SIPNET 1.4.1</a>
+      <a class="brand" href="#">PEcAn.SIPNET 1.4.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -63,9 +75,6 @@ efficacy of scientific investigation.
         <code><a href="remove.config.SIPNET.html">remove.config.SIPNET</a></code><br />Clear out previous SIPNET config and parameter files.</li>
             
       <li>
-        <code><a href="start.runs.SIPNET.html">start.runs.SIPNET</a></code><br />Start SIPNET model runs</li>
-            
-      <li>
         <code><a href="write.config.SIPNET.html">write.config.SIPNET</a></code><br />Writes a configuration files for SIPNET model</li>
             
       <li>
@@ -81,7 +90,7 @@ efficacy of scientific investigation.
       <li><strong>Depends</strong>: ncdf4, lubridate</li>
       <li><strong>Imports</strong>: PEcAn.utils</li>
       <li><strong>Suggests</strong>: coda, PEcAn.data.atmosphere, udunits2, testthat</li>
-      <li><strong>Extends</strong>: </li>
+      
     </ul>
     <h2>Authors</h2>
     <ul>
@@ -92,7 +101,7 @@ efficacy of scientific investigation.
       
       <footer>
       <p class="pull-right"><a href="#">Back to top</a></p>
-<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="https://getbootstrap.com/2.0.4/">bootstrap</a>.</p>
       </footer>
     </div>
   </body>

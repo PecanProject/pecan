@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>query.trait.data. PEcAn.DB 1.4.1</title>
+<title>query.trait.data. PEcAn.DB 1.4.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 David LeBauer, Carl Davidson, Shawn Serbin
@@ -16,13 +16,25 @@ David LeBauer, Carl Davidson, Shawn Serbin
 <!--[if lt IE 9]>
   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
   </head>
 
   <body>
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">PEcAn.DB 1.4.1</a>
+      <a class="brand" href="#">PEcAn.DB 1.4.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -42,7 +54,7 @@ Extracts data from database for a given trait and set of species,
 converts all statistics to summary statistics, and prepares a dataframe for use in meta-analysis.
 For Vcmax and SLA data, only data collected between  April and July are queried, and only data collected from the top of the canopy (canopy height > 0.66).
 For Vcmax and root_respiration_rate, data are scaled
-converted from measurement temperature to <code class = 'eq'>25^oC</code> via the arrhenius equation.</h1>
+converted from measurement temperature to $25^oC$ via the arrhenius equation.</h1>
 
 <div class="row">
   <div class="span8">
@@ -74,10 +86,10 @@ dataframe ready for use in meta-analysis
     </div>
     
     <h2 id="examples">Examples</h2>
-    <pre class="examples"><div class='input'>## &lt;strong&gt;Not run&lt;/strong&gt;: 
+    <pre class="examples"><div class='input'>## Not run: 
 # settings &lt;- read.settings()
 # query.trait.data(&quot;Vcmax&quot;, &quot;938&quot;, con = con)
-# ## &lt;strong&gt;End(Not run)&lt;/strong&gt;
+# ## End(Not run)
 </div></pre>
   </div>
   <div class="span4">
@@ -99,7 +111,7 @@ David LeBauer, Carl Davidson, Shawn Serbin
       
       <footer>
       <p class="pull-right"><a href="#">Back to top</a></p>
-<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="https://getbootstrap.com/2.0.4/">bootstrap</a>.</p>
       </footer>
     </div>
   </body>

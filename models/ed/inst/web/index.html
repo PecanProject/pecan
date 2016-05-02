@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>Index. PEcAn.ED2 1.4.1</title>
+<title>Index. PEcAn.ED2 1.4.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
 Davidson, Rob Kooper, Shawn Serbin">
@@ -15,13 +15,25 @@ Davidson, Rob Kooper, Shawn Serbin">
 <!--[if lt IE 9]>
   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
   </head>
 
   <body>
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">PEcAn.ED2 1.4.1</a>
+      <a class="brand" href="#">PEcAn.ED2 1.4.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -77,10 +89,13 @@ link the Ecosystem Demography Model, version 2, to PEcAn.
         <code><a href="remove.config.ED2.html">remove.config.ED2</a></code><br />Clear out old config and ED model run files.</li>
             
       <li>
-        <code><a href="start.runs.ED2.html">start.runs.ED2</a></code><br />Start ED2 model runs</li>
+        <code><a href="write.config.ED2.html">write.config.ED2</a></code><br />Write ED configuration files</li>
             
       <li>
-        <code><a href="write.config.ED2.html">write.config.ED2</a></code><br />Write ED configuration files</li>
+        <code><a href="write.config.jobsh.ED2.html">write.config.jobsh.ED2</a></code><br />Write ED2 config.xml file</li>
+            
+      <li>
+        <code><a href="write.config.xml.ED2.html">write.config.xml.ED2</a></code><br />Write ED2 config.xml file</li>
             
       <li>
         <code><a href="write.run.ED.html">write.run.ED</a></code><br />Function to generate ED2.2 model run script files</li>
@@ -93,9 +108,9 @@ link the Ecosystem Demography Model, version 2, to PEcAn.
     <h2>Dependencies</h2>
     <ul>
       <li><strong>Depends</strong>: PEcAn.utils, abind, coda, ncdf4, stringr</li>
-      <li><strong>Imports</strong>: </li>
-      <li><strong>Suggests</strong>: testthat</li>
-      <li><strong>Extends</strong>: </li>
+      
+      <li><strong>Suggests</strong>: testthat, udunits2</li>
+      
     </ul>
     <h2>Authors</h2>
     <ul>
@@ -106,7 +121,7 @@ link the Ecosystem Demography Model, version 2, to PEcAn.
       
       <footer>
       <p class="pull-right"><a href="#">Back to top</a></p>
-<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="https://getbootstrap.com/2.0.4/">bootstrap</a>.</p>
       </footer>
     </div>
   </body>

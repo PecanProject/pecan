@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<title>take.samples. PEcAn.DB 1.4.1</title>
+<title>take.samples. PEcAn.DB 1.4.5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="
 David LeBauer, Carl Davidson
@@ -16,13 +16,25 @@ David LeBauer, Carl Davidson
 <!--[if lt IE 9]>
   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
   </head>
 
   <body>
     <div class="navbar">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">PEcAn.DB 1.4.1</a>
+      <a class="brand" href="#">PEcAn.DB 1.4.5</a>
       <div class="nav">
         <ul class="nav">
           <li><a href="index.html"><i class="icon-home icon-white"></i> Index</a></li>
@@ -46,8 +58,6 @@ David LeBauer, Carl Davidson
     
     <h2>Arguments</h2>
     <dl>
-      <dt>sample.size</dt>
-      <dd></dd>
       <dt>trait</dt>
       <dd>data.frame with values of mean and sd</dd>
     </dl>
@@ -77,9 +87,10 @@ take.samples(summary = data.frame(mean = 10, stat = NA))
 <div class='input'>## return vector of length \code{sample.size} from N(mean,stat)
 take.samples(summary = data.frame(mean = 10, stat = 10), sample.size = 10)
 </div>
-<div class='output'> [1] 22.6295428  6.7376664 23.2979926 22.7242932 14.1464143 -5.3995004
- [7]  0.7143297  7.0527955  9.9423283 34.0465339
-</div></pre>
+<div class='output'> [1] 22.6295428  6.7376664 23.2979926 22.7242932 14.1464143 -5.3995004  0.7143297
+ [8]  7.0527955  9.9423283 34.0465339
+</div>
+<div class='input'></div></pre>
   </div>
   <div class="span4">
     <!-- <ul>
@@ -100,7 +111,7 @@ David LeBauer, Carl Davidson
       
       <footer>
       <p class="pull-right"><a href="#">Back to top</a></p>
-<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="http://twitter.github.com/bootstrap">bootstrap</a>.</p>
+<p>Built by <a href="https://github.com/hadley/staticdocs">staticdocs</a>. Styled with <a href="https://getbootstrap.com/2.0.4/">bootstrap</a>.</p>
       </footer>
     </div>
   </body>
