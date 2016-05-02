@@ -141,13 +141,16 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
       doy <- rep(1:366,each=timestep.s/dt)[1:length(sec)]
     }
 
-
     ## For now setting this to be always true till I figure out how to
     ## interface with the sub_daily param file. Should detech if met-data
     ## is coarser than 30-min and swapped to day version?
     sub_daily = TRUE
 
     if (sub_daily) {
+
+      ## NEED year, day, hod loops here...
+
+
       rain = ppt * SEC_TO_HFHR
       par = SW * SW_2_PAR
       tair = udunits2::ud.convert(Tair, "Kelvin", "Celsius")
