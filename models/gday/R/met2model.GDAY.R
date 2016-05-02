@@ -136,10 +136,10 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
 
 
     ##build day of year
-    doy <- rep(1:365,each=timestep.s/dt)[1:length(sec)]
-    if(year %% 4 == 0){  ## is leap
-      doy <- rep(1:366,each=timestep.s/dt)[1:length(sec)]
-    }
+    #doy <- rep(1:365,each=timestep.s/dt)[1:length(sec)]
+    #if(year %% 4 == 0){  ## is leap
+    #  doy <- rep(1:366,each=timestep.s/dt)[1:length(sec)]
+    #}
 
     ## For now setting this to be always true till I figure out how to
     ## interface with the sub_daily param file. Should detech if met-data
@@ -148,8 +148,21 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
 
     if (sub_daily) {
 
-      ## NEED year, day, hod loops here...
+      if(year %% 4 == 0) {
+        ndays <= 366
+      } else {
+        ndays <- 365
+      }
+      for(doy in 1:ndays) {
 
+        for(hod in 1:48) {
+
+
+        }
+
+      }
+      ## NEED year, day, hod loops here...
+      for(doy in year+1:nyr-1){
 
       rain = ppt * SEC_TO_HFHR
       par = SW * SW_2_PAR
