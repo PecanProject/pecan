@@ -3,12 +3,22 @@
 library(devtools)
 library(staticdocs)
 
-pkgs <- list("utils", "db", "settings", "visualization",
-    "modules/priors",
-    "modules/meta.analysis",
-            "modules/uncertainty", "modules/data.land", "modules/data.atmosphere", "modules/assim.batch",
-            "modules/assim.sequential",
-             "models/ed", "models/sipnet", "models/biocro", "all")
+pkgs <- list( "db", "settings", "utils","visualization",
+              "modules/allometry","modules/assim.batch",
+              "modules/assim.sequential","modules/benchmark",
+              "modules/data.atmosphere","modules/data.land",
+              "modules/data.remote","modules/emulator",
+              "modules/meta.analysis","modules/photosynthesis",
+              "modules/priors","modules/rtm",
+              "modules/uncertainty", 
+              "models/biocro", "models/clm45",
+              "models/dalec",
+              "models/ed", "models/gday",
+              "models/linkages","models/lpjguess",
+              "models/maat","models/maespa",
+              "models/preles",
+              "models/sipnet",
+              "all")
  
 lapply(pkgs, function(x) dir.create(file.path(x, "inst/staticdocs"), recursive = TRUE))
 lapply(pkgs, function(x){
