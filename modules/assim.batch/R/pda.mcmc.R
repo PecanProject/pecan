@@ -199,7 +199,6 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
   ## ------------------------------------ Clean up ------------------------------------ ##
   ## Save outputs to plots, files, and db
-  con <- try(db.open(settings$database$bety), silent=TRUE)
   settings <- pda.postprocess(settings, con, params, pname, prior, prior.ind)
 
   ## close database connection
