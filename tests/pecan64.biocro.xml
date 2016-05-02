@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<pecan>
+  <outdir>pecan</outdir>
+
+  <database>
+    <bety>
+      <driver>PostgreSQL</driver>
+      <user>bety</user>
+      <password>bety</password>
+      <host>localhost</host>
+      <dbname>bety</dbname>
+      <write>FALSE</write>
+    </bety>
+  </database>
+
+  <pfts>
+    <pft>
+      <name>Miscanthus_x_giganteus</name>
+    </pft>
+  </pfts>
+
+  <ensemble>
+    <variable>StemBiom</variable>
+  </ensemble>
+
+  <sensitivity.analysis>
+    <quantiles>
+      <sigma>-1</sigma>
+      <sigma>1</sigma>
+    </quantiles>
+    <variable>StemBiom</variable>
+  </sensitivity.analysis>
+
+  <model>
+    <type>BIOCRO</type>
+    <binary>/home/carya/pecan/models/biocro/inst/pointbiocro.Rscript</binary>
+  </model>
+
+  <run>
+    <site>
+      <id>753</id>
+    </site>
+    <inputs>
+      <met>
+        <output>BIOCRO</output>
+        <path>/home/carya/pecan/models/biocro/tests/testthat/data/US-Bo1.2004.nc</path>
+      </met>
+    </inputs>
+      <start.date>2004/01/01</start.date>
+      <end.date>2004/12/31</end.date>
+    <host>
+      <name>localhost</name>
+    </host>
+    <dbfiles>pecan/dbfiles</dbfiles>
+  </run>
+</pecan>

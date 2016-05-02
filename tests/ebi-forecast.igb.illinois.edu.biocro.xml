@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<pecan>
+  <outdir>pecan</outdir>
+
+  <database>
+    <bety>
+      <driver>PostgreSQL</driver>
+      <user>bety</user>
+      <password>bety</password>
+      <host>localhost</host>
+      <dbname>bety</dbname>
+      <write>FALSE</write>
+    </bety>
+  </database>
+
+  <pfts>
+    <pft>
+      <name>Miscanthus_x_giganteus</name> 
+    </pft>
+  </pfts>
+
+  <ensemble>
+    <variable>StemBiom</variable>
+  </ensemble>
+  
+  <sensitivity.analysis>
+    <quantiles>
+      <sigma>-1</sigma>
+      <sigma>1</sigma>
+    </quantiles>
+    <variable>StemBiom</variable>
+  </sensitivity.analysis>
+  <model>
+    <binary>/home/dlebauer/dev/pecan/models/biocro/inst/pointbiocro.Rscript</binary>
+    <type>BIOCRO</type>
+    <job.sh>PATH=/usr/local/bin:$PATH</job.sh>
+  </model>
+  
+
+  <run>
+    <site>
+      <name>EBI Energy farm</name>
+      <id>76</id>
+    </site>
+    <start.date>2004-01-01 00:00:00</start.date>
+    <end.date>2005-12-31 00:00:00</end.date>
+    <inputs>
+      <met>
+        <id>299</id>
+      </met>
+      <soil>
+        <id>303</id><!--hwsd.nc-->
+      </soil>
+    </inputs>
+    <host>
+      <name>localhost</name>
+    </host>
+    <dbfiles>.pecan/dbfiles</dbfiles>
+  </run>
+</pecan>

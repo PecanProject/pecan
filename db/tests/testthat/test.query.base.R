@@ -9,6 +9,8 @@
 
 con <- db.open(list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
 
+context("test db.query")
+
 test_that("db.query can execute a trivial SQL statement and return results",{  
     ans <- db.query("select count(*) from traits;", con = con)
     expect_is(ans, "data.frame")

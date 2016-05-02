@@ -17,10 +17,16 @@ if ($authentication) {
     close_database();
     exit;
   }
+  if (get_page_acccess_level() > $min_run_level) {
+    header( "Location: history.php");
+    close_database();
+    exit;
+  }
 }
 
 # boolean parameters
 $offline=isset($_REQUEST['offline']);
+$conversion = (isset($_REQUEST['conversion'])) ? "checked" : "";
 
 $hostname = $fqdn;
 if (isset($_REQUEST['hostname'])) {
@@ -43,7 +49,7 @@ if (!$result) {
 }
 $hosts = "";
 while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
-  if (in_array($row['hostname'], $hostlist)) {
+  if (array_key_exists($row['hostname'], $hostlist)) {
     if ($hostname == $row['hostname']) {
       $hosts = "$hosts<option selected data-id='${row['id']}'>${row['hostname']}</option>\n";
     } else {
@@ -163,9 +169,9 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
           name += " (" + model.attr("revision") + ")";
         }
         if(model.attr("id") == curModel) {
-          $('#modelid').append('<option value="' + model.attr("id") + '" selected>' +name + '</option>');  //reselect our curModel if still available
+          $('#modelid').append('<option value="' + model.attr("id") + '" selected>' + name + '</option>');  //reselect our curModel if still available
         } else {
-          $('#modelid').append('<option value="' + model.attr("id") + '">' +name + '</option>');
+          $('#modelid').append('<option value="' + model.attr("id") + '">' + name + '</option>');
         }
       });
       modelSelected();
@@ -230,6 +236,13 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
     map = new google.maps.Map(document.getElementById("output"), myOptions);
     infowindow = new google.maps.InfoWindow({content: ""});
     hostSelected();
+
+    $("#sitename").keyup(function( event ) {
+      var search = $("#sitename").val().toLowerCase();
+      markersArray.forEach(function(m) {
+        m.setVisible(m.sitename.toLowerCase().indexOf(search) > -1);
+      });
+    });
   }
 
   function showSite(marker, selected) {
@@ -291,9 +304,8 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
       <h1>Select host</h1>
-      <p>Based on the host selected certain sites and models
-      will be available. In the current version you can only
-      pick as host <b><?php echo $hostname; ?></b></p>
+      <p>Based on the host selected certain sites and models will be
+      available.</p>
 
       <label id="hostlabel">Host:</label>
       <select name="hostname" id="hostname" onChange="hostSelected();">
@@ -309,12 +321,12 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       <div class="spacer"></div>
 
       <label id="conversionlabel">Conversion:</label>
-      <input type="checkbox" id="conversion" name="conversion" onChange="modelSelected();" /> 
+      <input type="checkbox" id="conversion" name="conversion" onChange="modelSelected();" <?php echo $conversion; ?>  /> 
       <div class="spacer"></div>
 
       <label id="sitelabel">Site:</label>
       <input name="siteid" id="siteid" type="hidden" value="<?php echo $siteid; ?>"/>
-      <input name="sitename" id="sitename" type="text" readonly value="No site selected" />
+      <input name="sitename" id="sitename" type="text" />
 <?php if ($betydb != "") { ?>
       <span class="small">Add a new site in <a href="<?php echo $betydb; ?>/sites/new" target="BETY">BETY</a>. Requires a refresh of this page after site is added.</span>
 <?php } ?>
@@ -327,13 +339,7 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       <input id="next" type="button" value="Next" onclick="nextStep();" />    
       <div class="spacer"></div>
     </form>
-<?php
-  if (check_login()) {
-    echo "<p></p>";
-    echo "Logged in as " . get_user_name();
-    echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
-  }
-?>    
+<?php whoami(); ?>    
   </div>
   <div id="output"></div>
   <div id="footer"><?php echo get_footer(); ?></div>

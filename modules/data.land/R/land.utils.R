@@ -11,25 +11,6 @@ get.elevation <- function(lat, lon){
   (height <- as.numeric(xmlValue(heightNode)))  
 }
 
-get.soil <- function(lat, lon, soil.nc = soil.nc){
-  
-  ## Lat and Lon
-  Lat <- ncvar_get(soil.nc, "lat")
-  Lon <- ncvar_get(soil.nc, "lon")
-  
-  lati <- which.min(abs(Lat - lat))
-  loni <- which.min(abs(Lon - lon))
-  
-  ## topsoil
-  usda_class <- ncvar_get(soil.nc, "t_usda_tex",
-                          start = c(loni, lati),
-                          count = c(1,1))
-  ref_depth <- ud.convert(ncvar_get(soil.nc, "ref_depth",
-                                    start = c(loni, lati),
-                                    count = c(1, 1)), "cm", "m")
-  return(list(usda_class = usda_class, ref_depth = ref_depth))
-}
-
 is.land <- function(lat, lon){
   Lat <- ncvar_get(nc = met.nc, varid = "lat")
   Lon <- ncvar_get(nc = met.nc, varid = "lon")

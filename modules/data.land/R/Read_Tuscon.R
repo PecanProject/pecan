@@ -1,5 +1,6 @@
-
-## tree core QAQC
+##' @title Clean_Tucson
+##' @name Clean_Tucson
+##' @description  tree core QAQC
 Clean_Tucson <- function(file){
   lines = scan(file,character(),sep="\n")
   split = strsplit(lines," ")
@@ -30,12 +31,19 @@ Clean_Tucson <- function(file){
   return(newfile)
 }
 
-Read_Tuscon <- function(folder){
+##' @title Read_Tucson
+##' @name Read_Tucson
+##' @export
+##' @description wrapper around read.tucson that loads a whole directory of tree ring files 
+##' and calls a 'clean' function that removes redundant records 
+##' (WinDendro can sometimes create duplicate records when editing)
+Read_Tucson <- function(folder){
   
   require(dplR)
   
   filenames <- dir(folder,pattern =  "TXT",full.names=TRUE)
   filenames <- c(filenames,dir(folder,pattern =  "rwl",full.names=TRUE))
+  filenames <- c(filenames,dir(folder,pattern = "rw",full.names=TRUE))
   corrected = grep(pattern="COR.txt",x=filenames)
   if(length(corrected)>0){
     filenames = filenames[-corrected]

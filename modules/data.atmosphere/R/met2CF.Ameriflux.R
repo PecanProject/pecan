@@ -67,9 +67,10 @@ getLatLon <- function(nc1) {
 ##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
+##' @param verbose should ouput of function be extra verbose
 ##' 
 ##' @author Josh Mantooth, Mike Dietze, Elizabeth Cowdery, Ankur Desai
-met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE){
+met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE,...){
 
   #---------------- Load libraries. -----------------------------------------------------------------#
   require(ncdf4)
@@ -90,6 +91,7 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
                         startdate=character(rows), enddate=character(rows),
+                        dbfile.name = in.prefix,
                         stringsAsFactors = FALSE)
   for(year in start_year:end_year){
     old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
@@ -137,8 +139,6 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     dim=list(lat,lon,time)
     
     # copy lat attribute to latitude
-    print(latlon)
-    print(lst)
     var <- ncvar_def(name="latitude",
                      units="degree_north",
                      dim=list(lat,lon), missval=as.numeric(-9999))
@@ -187,7 +187,7 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     # convert CO2 to mole_fraction_of_carbon_dioxide_in_air
     copyvals(nc1=nc1, var1='CO2',
              nc2=nc2, var2='mole_fraction_of_carbon_dioxide_in_air', units2='mole/mole', dim2=dim, 
-             conv=function(x) { x * 1e6 }, verbose=verbose)
+             conv=function(x) { x / 1e6 }, verbose=verbose)
     
     # convert TS1 to soil_temperature
     copyvals(nc1=nc1, var1='TS1',

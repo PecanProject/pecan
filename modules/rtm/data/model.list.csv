@@ -1,0 +1,5 @@
+        modname,    modcode,         fullname,                                                                  par.names, par.default
+  "prospect_5b",       1152,    "PROSPECT 5B",                                                   "N Cab Car Cbrown Cw Cm", "N=1.5 Cab=40 Car=8 Cbrown=0 Cw=0.01 Cm=0.009"
+   "prospect_5",       1151,     "PROSPECT 5",                                                          "N Cab Car Cw Cm", "N=1.5 Cab=40 Car=8 Cw=0.01 Cm=0.009"
+   "prospect_4",       1141,     "PROSPECT 4",                                                              "N Cab Cw Cm", "N=1.5 Cab=40 Cw=0.01 Cm=0.009"
+     "pro4sail",       2111,       "PRO4SAIL",    "N Cab Car Cbrown Cw Cm LIDFa LIDFb TypeLIDF_r LAI q tts tto psi psoil", "N=1.5 Cab=40 Car=8 Cbrown=0 Cw=0.01 Cm=0.009 LIDFa=-0.35 LIDFb=-0.15 TypeLIDF=1 LAI=3 q=0.01 tts=30 tto=10 psi=0 psoil=1"

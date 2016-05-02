@@ -13,7 +13,7 @@
 ##' @param mcmc.object JAGS mcmc output from \code{\link{pecan.ma}}
 ##' @param pft plant functional type
 ##' @param outdir output directory
-##' @param threshold Gelman-Rubin convergence threshold;
+##' @param threshold Gelman-Rubin convergence diagnostic (MGPRF)
 ##' default = 1.2 following Bolker 2008 Ecological Models and Data in R
 ##' @export
 ##'
@@ -23,9 +23,7 @@
 ##' }
 ##' @author David LeBauer, Shawn Serbin
 pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FALSE){
-  #if(!is.null(settings$meta.analysis$threshold)) {
-  #  threshold = settings$meta.analysis$threshold
-  #}
+
   fail = FALSE
   sink(file = file.path(outdir,'meta-analysis.log'), append = TRUE, split = TRUE)
   for (trait in names(mcmc.object)){

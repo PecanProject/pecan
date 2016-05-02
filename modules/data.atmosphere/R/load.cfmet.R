@@ -16,6 +16,10 @@
 ##' @author David LeBauer
 load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
   ## Lat and Lon
+  require(lubridate)
+  require(udunits2)
+  require(data.table)
+  require(PEcAn.utils)
   Lat <- ncvar_get(met.nc, "latitude")
   Lon <- ncvar_get(met.nc, "longitude")
   
@@ -27,26 +31,37 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
   time.idx <- ncvar_get(met.nc, "time")
   
   ## confirm that time units are PEcAn standard
-  time.units <- unlist(strsplit(met.nc$dim$time$units, " since "))
-  if(!grepl("days", time.units[1])) {
-    logger.error("time dimension does not have units of days")
+  basetime.string <- ncatt_get(met.nc, 'time', 'units')$value
+  base.date <- parse_date_time(basetime.string, c("ymd_hms", "ymd_h", "ymd"))
+  
+  base.units <- strsplit(basetime.string, " since ")[[1]][1]
+
+  
+  ## convert to days
+  if(!base.units == "days") {
+    time.idx <- ud.convert(time.idx, basetime.string, paste("days since ", base.date))
   }
-  if(!grepl("1700-01-01", time.units[2])){
-    logger.error("time dimension of met input does not start at 1700-01-01")
-  }
-  all.dates <- data.table(index = seq(time.idx),
-                          date = ymd("1700-01-01") +
-                            days(floor(time.idx)) +
-                            minutes(as.integer(ud.convert(time.idx - floor(time.idx), "days", "minutes"))))
+  time.idx <- ud.convert(time.idx, 'days', 'seconds')
+  date <- as.POSIXct.numeric(time.idx, origin = base.date, tz = "UTC")
   
   
-  if(ymd(start.date) + days(1) < min(all.dates$date)) logger.error("run start date", ymd(start.date), "before met data starts", min(all.dates$date))
-  if(ymd(end.date) > max(all.dates$date)) logger.error("run end date",   ymd(start.date), "after met data ends", min(all.dates$date))
+
+  suppressWarnings(
+    ## data table warns not to use POSIXlt, which is induced by round()
+    ## but POSIXlt moves times off by a second
+    all.dates <- data.table(index = seq(time.idx),
+                            date = round(date))
+  )
   
-  run.dates <- all.dates[date > ymd(start.date) & date < ymd(end.date),
-                         list(index, date, doy = yday(date),
+
+  
+  if(ymd(as.Date(start.date)) + days(1) < min(all.dates$date)) logger.error("run start date", ymd(as.Date(start.date)), "before met data starts", min(all.dates$date))
+  if(ymd(as.Date(end.date)) > max(all.dates$date)) logger.error("run end date",   ymd(as.Date(start.date)), "after met data ends", min(all.dates$date))
+  
+  run.dates <- all.dates[date > ymd(as.Date(start.date)) & date < ymd(as.Date(end.date)),
+                         list(index, date = date, doy = yday(date),
                               year = year(date), month = month(date),
-                              day  = day(date), hour = hour(date))]
+                              day  = day(date), hour = hour(date) + minute(date)/60)]
   
   results <- list()
   

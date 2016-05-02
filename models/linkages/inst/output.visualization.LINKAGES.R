@@ -1,11 +1,13 @@
 if(FALSE){
 ### set working directory to output file.
-link = as.matrix(read.csv("OUT.csv",head=FALSE))
+  
+outdir = "/Users/paleolab/pecan/pecan//PEcAn_LINKAGES_PMB/out/ENS-00001/"
+link = as.matrix(read.csv(paste0(outdir,"OUT.csv"),head=FALSE))
 
 x=seq(0,1150,50) #change to match output interval in OUT.csv
-ecol_proc=link[1:(nrow(link)-2)/4,]
+ecol_proc=link[1:24,]
 colnames(ecol_proc) = c("year","num stems","ag biomass","leaf litter","leaf litter N","ag npp","avail n","humus C:N","soil co2-c","soil OM","aet")
-ecol_proc_cis = link[((nrow(link)-2)/4)+1:2*(nrow(link)-2)/4,]
+ecol_proc_cis = link[25:48,]
 
 par(mfrow=c(3,3))
 for(i in 2:10){
@@ -35,6 +37,7 @@ lines(x,biomass[,11],col="pink",lwd=4)
 plot.new()
 legend("center",c(colnames(biomass[,2:11])),lwd=rep(4,9),lty=rep(1,9),col=c("black","red","yellow","blue","green","purple","gray","orange","lightblue","pink"),xpd=TRUE)
 
-
+#to check to see if the model2netCDF was working
+#nc_open(paste0(outdir,"1.nc"))
 
 }

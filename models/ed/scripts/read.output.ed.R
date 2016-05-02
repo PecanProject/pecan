@@ -15,6 +15,7 @@
 ##' @export
 read.output.ed <- function(){
   ### OLD CODE THAT NEEDS TO BE UPDATED. SPS
+  ### Rkelly: For one, need to fix ensemble.Rdata and sensitivity.Rdata filenames to include ensemble id. 
   sensitivity.output <- list()
   ensemble.output    <- list()
   

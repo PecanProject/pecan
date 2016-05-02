@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<CRUNCEP>
+<scale>regional</scale>
+<siteid>1160</siteid>
+<format>
+  <id>33</id>
+  <name>CF Meteorology</name>
+  <mimetype>application/x-netcdf</mimetype>
+  <inputtype>nc</inputtype>
+</format>
+</CRUNCEP>

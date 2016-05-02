@@ -30,23 +30,22 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   print("START met2model.SIPNET")
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date<- as.POSIXlt(end_date, tz = "GMT")
-  out.file <- file.path(outfolder, paste(in.prefix,
-                                         strptime(start_date, "%Y-%m-%d"),
-                                         strptime(end_date, "%Y-%m-%d"),
-                                         "clim", sep="."))
+  out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"),strptime(end_date, "%Y-%m-%d"),"clim", sep=".")
+  out.file.full <- file.path(outfolder, out.file)
   
-  results <- data.frame(file = out.file,
+  results <- data.frame(file = out.file.full,
                         host = fqdn(),
                         mimetype ='text/csv',
                         formatname = 'Sipnet.climna' ,
                         startdate = start_date ,
                         enddate = end_date,
+                        dbfile.name = out.file,
                         stringsAsFactors = FALSE)
   print("internal results")
   print(results)
   
-  if (file.exists(out.file) && !overwrite) {
-    logger.debug("File '", out.file, "' already exists, skipping to next file.")
+  if (file.exists(out.file.full) && !overwrite) {
+    logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
     return(invisible(results))
   }
   
@@ -86,21 +85,23 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       ifelse(leap_year(year)==TRUE,
              dt <- (366*24*60*60)/length(sec), #leap year
              dt <- (365*24*60*60)/length(sec)) #non-leap year
-      tstep = 86400/dt
+      tstep = round(86400/dt)
+      dt = 86400/tstep
       
       ## extract variables
       lat  <- ncvar_get(nc,"latitude")
       lon  <- ncvar_get(nc,"longitude")
       Tair <- ncvar_get(nc,"air_temperature")  ## in Kelvin
       Qair <- ncvar_get(nc,"specific_humidity")  #humidity (kg/kg)
-      U <- ncvar_get(nc,"eastward_wind")
-      V <- ncvar_get(nc,"northward_wind")
-      
       ws <- try(ncvar_get(nc,"wind_speed"))
-      if(!is.numeric(ws)) ws = sqrt(U^2+V^2)
+      if(!is.numeric(ws)) {
+        U <- ncvar_get(nc,"eastward_wind")
+        V <- ncvar_get(nc,"northward_wind")
+        ws = sqrt(U^2+V^2)
+      }
       
       Rain <- ncvar_get(nc,"precipitation_flux")
-      pres <- ncvar_get(nc,"air_pressure") ## in pascal
+#      pres <- ncvar_get(nc,"air_pressure") ## in pascal
       SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") ## in W/m2
       
       PAR  <- try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air")) ## in mol/m2/s
@@ -124,7 +125,11 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       VPDsoil = ud.convert(get.es(soilT),"millibar","Pa")*(1-qair2rh(Qair,soilT))
       
       nc_close(nc)
+    } else {
+      print("Skipping to next year")
+      next
     }
+    
     ##build time variables (year, month, day of year)
     nyr <- floor(length(sec)/86400/365*dt)
     yr <- NULL
@@ -175,7 +180,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     ##0 YEAR DAY HOUR TIMESTEP AirT SoilT PAR PRECIP VPD VPD_Soil AirVP(e_a) WIND SoilM   
     ## build data matrix
     n = length(Tair)
-    tmp <- cbind(rep(0,n),yr,doy,hr,rep(dt/86400,n),
+    tmp <- cbind(rep(0,n),yr[1:n],doy[1:n],hr[1:n],rep(dt/86400,n),
                  Tair-273.15,
                  soilT, 
                  PAR*dt, #mol/m2/hr
@@ -187,6 +192,10 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
                  rep(0.6,n) ## put soil water at a constant. Don't use, set SIPNET to MODEL_WATER = 1
     )
     
+    ## quick error check, sometimes get a NA in the last hr
+    hr.na = which(is.na(tmp[,4]))
+    if(length(hr.na)>0) tmp[hr.na,4] = tmp[hr.na-1,4] + dt/86400*24
+    
     if(is.null(out)){
       out = tmp
     } else {
@@ -195,10 +204,17 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     
   } ## end loop over years
   
-  ## write output
-  write.table(out,out.file,quote = FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
+  if(!is.null(out)){
   
-  invisible(results)
+    ## write output
+    write.table(out,out.file.full,quote = FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
+  
+    invisible(results)
+  
+  } else {
+    print("NO MET TO OUTPUT")
+    invisible(NULL)
+  }  
   
   
 } ### end met2model.SIPNET

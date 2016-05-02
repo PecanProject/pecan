@@ -12,7 +12,7 @@
 ##' Plots variance decomposition tryptich
 ##' @name plot.variance.decomposition
 ##' @title Variance Decomposition Plots
-##' @export
+##' @export plot.variance.decomposition
 ##' @author David LeBauer, Carl Davidson
 ##' @param ... Output from any number of sensitivity analyses. Output must be of the form 
 ##'          given by sensitivity.results$variance.decomposition.output in model output

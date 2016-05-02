@@ -33,27 +33,29 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
   ## The nine columns of driving data are: day of year; mean air temperature (deg C); max daily temperature (deg C); min daily temperature (deg C); incident radiation (MJ/m2/day); maximum soil-leaf water potential difference (MPa); atmospheric carbon dioxide concentration (ppm); total plant-soil hydraulic resistance (MPa.m2.s/mmol-1); average foliar nitorgen (gC/m2 leaf area).
   ## Calculate these from air_temperature (K), surface_downwelling_shortwave_flux_in_air (W/m2), CO2 (ppm)
   
-  require(PEcAn.utils)
+  if(!require(PEcAn.utils)) print("install PEcAn.utils")
   
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date<- as.POSIXlt(end_date, tz = "GMT")
-  out.file <- file.path(outfolder, paste(in.prefix,
-                                         strptime(start_date, "%Y-%m-%d"),
-                                         strptime(end_date, "%Y-%m-%d"),
-                                         "dat", sep="."))
+  out.file <- paste(in.prefix,
+                    strptime(start_date, "%Y-%m-%d"),
+                    strptime(end_date, "%Y-%m-%d"),
+                    "dat", sep=".")
+  out.file.full <- file.path(outfolder, out.file)
   
-  results <- data.frame(file=c(out.file),
+  results <- data.frame(file=c(out.file.full),
                         host=c(fqdn()),
                         mimetype=c('text/plain'),
                         formatname=c('DALEC meteorology'),
                         startdate=c(start_date),
                         enddate=c(end_date),
+                        dbfile.name = out.file,
                         stringsAsFactors = FALSE)
   print("internal results")
   print(results)
   
-  if (file.exists(out.file) && !overwrite) {
-    logger.debug("File '", out.file, "' already exists, skipping to next file.")
+  if (file.exists(out.file.full) && !overwrite) {
+    logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
     return(invisible(results))
   }
   
@@ -90,11 +92,12 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     ## convert time to seconds
     sec   <- nc$dim$time$vals  
     sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
-    
+    timestep.s=86400 #seconds in a day
     ifelse(leap_year(year)==TRUE,
            dt <- (366*24*60*60)/length(sec), #leap year
            dt <- (365*24*60*60)/length(sec)) #non-leap year
-    tstep = 86400/dt
+    tstep = round(timestep.s/dt)
+    dt = timestep.s/tstep #dt is now an integer
     
     ## extract variables
     lat  <- ncvar_get(nc,"latitude")
@@ -105,7 +108,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     nc_close(nc)
     
     useCO2 = is.numeric(CO2)  
-    if(useCO2)  CO2 <- CO2/1e6  ## convert from mole fraction (kg/kg) to ppm
+    if(useCO2)  CO2 <- CO2 * 1e6  ## convert from mole fraction (kg/kg) to ppm
     
     
     ## is CO2 present?
@@ -128,9 +131,9 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     }
     
     ##build day of year
-    doy <- rep(1:365,each=86400/dt)
+    doy <- rep(1:365,each=timestep.s/dt)[1:length(sec)]
     if(year %% 4 == 0){  ## is leap
-      doy <- rep(1:366,each=86400/dt)
+      doy <- rep(1:366,each=timestep.s/dt)[1:length(sec)]
     }
     
     ## Aggregate variables up to daily
@@ -166,7 +169,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
   } ## end loop over years
   
   ## write output
-  write.table(out,out.file,quote = FALSE,sep=" ",row.names=FALSE,col.names=FALSE)
+  write.table(out,out.file.full,quote = FALSE,sep=" ",row.names=FALSE,col.names=FALSE)
   
   invisible(results)
   

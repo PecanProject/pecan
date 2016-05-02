@@ -1,3 +1,13 @@
+##' @name update.jump
+##' @title update.jump
+##' @export
+##' 
+##' @param jmp jump parameter
+##' @param chain mcmc chain
+##' 
+##' @return jmp updated jump parameter
+##' 
+##' @author Michael Dietze
 `update.jump` <-
 function(jmp,chain){
   ##check for valid typing
@@ -18,6 +28,11 @@ function(jmp,chain){
   }
   jmp
 }
+
+##  multivariate version
+##' @title update.mvjump 
+##' @export
+##' 
 
 `update.mvjump` <-
     function(jmp,chain){

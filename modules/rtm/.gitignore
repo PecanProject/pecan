@@ -1,4 +1,7 @@
 *.so
 *.o
 *RcppExports.*
+*.mod
+*.rds
+*Rplots.pdf
 

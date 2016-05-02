@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<NARR>
+<scale>regional</scale>
+<siteid>1135</siteid>
+<format>
+  <id>37</id>
+  <name>NARR</name>
+  <mimetype>application/x-netcdf</mimetype>
+  <inputtype>pecan.zip</inputtype>
+</format>
+</NARR>

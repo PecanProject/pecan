@@ -117,6 +117,7 @@ zero.truncate <- function(y) {
 ##' @author Shawn Serbin
 #--------------------------------------------------------------------------------------------------#
 rsync <- function(args, from, to, pattern='') {
+  logger.warn("NEED TO USE TUNNEL")
   system(paste0('rsync',' ', args,' ', from, pattern, ' ', to), intern=TRUE )
 }
 #==================================================================================================#
@@ -132,6 +133,7 @@ rsync <- function(args, from, to, pattern='') {
 ##' @export
 #--------------------------------------------------------------------------------------------------#
 ssh <- function(host, ..., args=''){
+  logger.warn("NEED TO USE TUNNEL")
   if(host == 'localhost'){
     command <- paste(..., args, sep='')
   } else {

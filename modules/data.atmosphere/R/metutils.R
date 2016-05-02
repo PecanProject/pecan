@@ -38,10 +38,15 @@ qair2rh <- function(qair, temp, press = 1013.25){
 ##' @param rh relative humidity (proportion, not %)
 ##' @param T absolute temperature (Kelvin)
 ##' @export
-##' @author Mike Dietze
+##' @author Mike Dietze, Ankur Desai
 ##' @aliases rh2rv
-rh2qair <- function(rh, T){
-  qair <- rh * 2.541e6 * exp(-5415.0 / T) * 18/29
+rh2qair <- function(rh, T, press = 101325.0){
+  Tc <- T - 273.15
+  es <-  6.112 * exp((17.67 * Tc)/(Tc + 243.5))
+  e <- rh * es
+  p_mb <- press / 100.0
+  qair <- (0.622 * e) / (p_mb - (0.378 * e))
+  ##  qair <- rh * 2.541e6 * exp(-5415.0 / T) * 18/29
   return(qair)
 }
  
@@ -147,12 +152,13 @@ par2ppfd <- function(watts){
 ##' Solar Radiation to PPFD
 ##' 
 ##' Here the input is the total solar radiation 
-##' so to obtain in the PAR spectrum need to multiply by 0.486
+##' so to obtain in the PAR spectrum need to multiply by 0.486 From Campbell and Norman p151
 ##' This is based on the approximation that PAR is 0.45-0.50 of the total radiation
 ##' 
 ##' @title SW to PAR
 ##' @author David LeBauer
 ##' @param sw shortwave radiation (W/m2 == J/m2/s)
+##' @export
 ##' @return PAR W/m2
 sw2par <- function(sw){
   par <- sw * 0.486
@@ -163,6 +169,7 @@ sw2par <- function(sw){
 ##' Cambell and Norman 1998 p 151, ch 10
 ##' @title SW to PPFD
 ##' @author David LeBauer
+##' @export
 ##' @param SW CF surface_downwelling_shortwave_flux_in_air W/m2
 ##' @return PPFD umol /m2 / s
 sw2ppfd <- function(sw){
@@ -191,6 +198,7 @@ sw2ppfd <- function(sw){
 ##' @author Fernando Miguez
 ##' @author David LeBauer
 ##' @param solarMJ MJ per day
+##' @export
 ##' @return PPFD umol /m2 / s
 solarMJ2ppfd <- function(solarMJ){
   solarR <- (0.12 * solarMJ) * 2.07 * 1e6 / 3600

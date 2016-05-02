@@ -21,28 +21,26 @@
 ##' @param end.year last year to include in ensemble analysis
 ##' @param variables targe variables for ensemble analysis
 ##' @export
+##' @author Ryan Kelly, David LeBauer, Rob Kooper
 #--------------------------------------------------------------------------------------------------#
 read.ensemble.output <- function(ensemble.size, pecandir, outdir, 
-                                 start.year, end.year, variables){
-  if (exists('runs.samples')) {
-    ensemble.runs <- runs.samples$ensemble
-  } else {
-    ensemble.runs <- list()
+                                 start.year, end.year, variable, ens.run.ids=NULL){
+  if (is.null(ens.run.ids)) {
     samples.file <- file.path(pecandir, 'samples.Rdata')
     if(file.exists(samples.file)){
       load(samples.file)
-      ensemble.runs <- runs.samples$ensemble
+      ens.run.ids <- runs.samples$ensemble
     } else {
       stop(samples.file, "not found required by read.ensemble.output")      
     }
   }
 
   ensemble.output <- list()
-  for(row in rownames(ensemble.runs)) {
-    run.id <- ensemble.runs[row, 'id']
+  for(row in rownames(ens.run.ids)) {
+    run.id <- ens.run.ids[row, 'id']
     logger.info("reading ensemble output from run id: ", run.id)
     ensemble.output[[row]] <- sapply(read.output(run.id, file.path(outdir, run.id),
-                                                 start.year, end.year, variables),
+                                                 start.year, end.year, variable),
                                      mean,na.rm=TRUE)
   }
   return(ensemble.output)
@@ -50,7 +48,7 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir,
 #==================================================================================================#
 ##' Get parameter values used in ensemble
 ##'
-##' Returns a matrix of trait values sampled quasi-randomly based on the Halton sequence
+##' Returns a matrix of randomly or quasi-randomly sampled trait values 
 ##' to be assigned to traits over several model runs.
 ##' given the number of model runs and a list of sample distributions for traits
 ##' The model run is indexed first by model run, then by trait
@@ -58,16 +56,20 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir,
 ##' @title Get Ensemble Samples
 ##' @name get.ensemble.samples
 ##' @param ensemble.size number of runs in model ensemble
-##' @param pft.samples random samples from parameter distribution, e.g. from a MCMC chain or a 
+##' @param pft.samples random samples from parameter distribution, e.g. from a MCMC chain  
 ##' @param env.samples env samples
-##' @param method the method used to generate the ensemble samples.  default = halton
-##' @return matrix of quasi-random (overdispersed) samples from trait distributions
+##' @param method the method used to generate the ensemble samples. Random generators: uniform, uniform with latin hypercube permutation. Quasi-random generators: halton, sobol, torus. Random generation draws random variates whereas quasi-random generation is deterministic but well equidistributed. Default is uniform. For small ensemble size with relatively large parameter number (e.g ensemble size < 5 and # of traits > 5) use methods other than halton. 
+##' @return matrix of (quasi-)random samples from trait distributions
 ##' @export
 ##' @import randtoolbox
-##' @references Halton, J. (1964), Algorithm 247: Radical-inverse quasi-random point sequence, 
-##' ACM, p. 701, doi:10.1145/355588.365104.
 ##' @author David LeBauer
-get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="halton") {
+get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples, method="uniform", ...) {
+  
+  if(is.null(method)) {
+    logger.info("No sampling method supplied, defaulting to uniform random sampling")
+    method="uniform"
+  }
+  
   ##force as numeric for compatibility with Fortran code in halton()
   ensemble.size <- as.numeric(ensemble.size)
   if(ensemble.size <= 0){
@@ -81,30 +83,38 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
     for(i in 1:length(pft.samples)){
       pft2col <- c(pft2col,rep(i,length(pft.samples[[i]])))
     }
-    
-    halton.samples <- NULL
-    if(method == "halton"){
-      halton.samples <- halton(n = ensemble.size, dim=length(pft2col))
-      ##force as a matrix in case length(samples)=1
-      halton.samples <- as.matrix(halton.samples)
-    } else {
-      #uniform random
-      halton.samples <- matrix(runif(ensemble.size*length(pft2col))
-                               ,ensemble.size,length(pft2col))
-      
-    }
-    
+        
     total.sample.num <- sum(sapply(pft.samples, length))
-    halton.samples <- NULL
-    if(method == "halton"){
-      halton.samples <- halton(n = ensemble.size, dim=total.sample.num)
-      ##force as a matrix in case length(samples)=1
-      halton.samples <- as.matrix(halton.samples)
-    } else {
-      #uniform random
-      halton.samples <- matrix(runif(ensemble.size*total.sample.num),
-                               ensemble.size, dim=total.sample.num)
-    }
+    random.samples <- NULL
+
+      if(method == "halton"){
+        logger.info("Using ", method, "method for sampling")
+        random.samples <- halton(n = ensemble.size, dim=total.sample.num, ...)
+        ##force as a matrix in case length(samples)=1
+        random.samples <- as.matrix(random.samples)
+      } else if(method == "sobol"){
+        logger.info("Using ", method, "method for sampling")
+        random.samples <- sobol(n = ensemble.size, dim=total.sample.num, ...)
+        ##force as a matrix in case length(samples)=1
+        random.samples <- as.matrix(random.samples)
+      } else if(method == "torus"){
+        logger.info("Using ", method, "method for sampling")
+        random.samples <- torus(n = ensemble.size, dim=total.sample.num, ...)
+        ##force as a matrix in case length(samples)=1
+        random.samples <- as.matrix(random.samples)
+      } else if(method == "lhc"){
+        logger.info("Using ", method, "method for sampling")
+        random.samples <- lhc(t(matrix(0:1, ncol=total.sample.num, nrow=2)),ensemble.size)
+      } else if(method == "uniform"){
+        logger.info("Using ", method, "random sampling")
+        #uniform random
+        random.samples <- matrix(runif(ensemble.size*total.sample.num), ensemble.size, total.sample.num)
+      } else {
+        logger.info("Method ", method, " has not been implemented yet, using uniform random sampling")
+        #uniform random
+        random.samples <- matrix(runif(ensemble.size*total.sample.num), ensemble.size, total.sample.num)
+      }
+    
     
     ensemble.samples <- list()
     
@@ -116,7 +126,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
         col.i<-col.i+1
         ensemble.samples[[pft.i]][, trait.i] <- 
           quantile(pft.samples[[pft.i]][[trait.i]],
-                   halton.samples[, col.i])
+                   random.samples[, col.i])
       } # end trait
       ensemble.samples[[pft.i]] <- as.data.frame(ensemble.samples[[pft.i]])
       colnames(ensemble.samples[[pft.i]]) <- names(pft.samples[[pft.i]])
@@ -138,7 +148,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples,env.samples,method="
 ##' @param settings list of PEcAn settings
 ##' @param write.config a model-specific function to write config files, e.g. \link{write.config.ED}  
 ##' @param clean remove old output first?
-##' @return data frame of runids, writes ensemble configuration files as a side effect
+##' @return list, containing $runs = data frame of runids, and $ensemble.id = the ensemble ID for these runs. Also writes sensitivity analysis configuration files as a side effect
 ##' @export
 ##' @author David LeBauer, Carl Davidson
 write.ensemble.configs <- function(defaults, ensemble.samples, settings,
@@ -146,7 +156,7 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
   
   my.write.config <- paste("write.config.", model, sep="")
 
-  if(is.null(ensemble.samples)) return(NULL)
+  if(is.null(ensemble.samples)) return(list(runs=NULL, ensemble.id=NULL))
   
   # Open connection to database so we can store all run/ensemble information
   if(write.to.db){
@@ -171,9 +181,13 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
     now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
     db.query(paste0("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", 
                      now, "', 'ensemble', ", workflow.id, ")"), con=con)
-    ensemble.id <- db.query(paste0("SELECT id FROM ensembles WHERE created_at='", now, "'"), con=con)[['id']]
+    ensemble.id <- db.query(paste0("SELECT id FROM ensembles WHERE created_at='", now, "' AND runtype='ensemble'"), con=con)[['id']]
+    for (pft in defaults) {
+      db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id, created_at, updated_at) values (",
+                      pft$posteriorid, ", ", ensemble.id, ", '", now, "', '", now, "');"), con=con)
+    }
   } else {
-    ensemble.id <- "NA"
+    ensemble.id <- NA
   }
 
   # find all inputs that have an id
@@ -233,16 +247,15 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
         "outdir      : ", file.path(settings$run$host$outdir, run.id), "\n",
         file=file.path(settings$rundir, run.id, "README.txt"), sep='')
     
-    do.call(my.write.config,args=list(defaults,
-                                      lapply(ensemble.samples,function(x,n){x[n,]},n=counter),
-                                      settings, run.id))
+    do.call(my.write.config, args = list(defaults = defaults,
+                                         trait.values = lapply(ensemble.samples, function(x, n){x[n, ]},n = counter),
+                                         settings = settings, run.id = run.id))
     cat(run.id, file=file.path(settings$rundir, "runs.txt"), sep="\n", append=TRUE)
   }
   if (!is.null(con)) {
     db.close(con)
   }
   
-  invisible(runs)
-  
+  invisible(list(runs=runs, ensemble.id=ensemble.id))
 } ### End of function: write.ensemble.configs
 #==================================================================================================#

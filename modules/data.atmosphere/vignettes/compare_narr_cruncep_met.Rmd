@@ -32,6 +32,7 @@ TODO: clean up figure titles, labels, write explanations
 
 ```{r loading-libraries}
 library(PEcAn.data.atmosphere)
+library(data.table)
 theme_set(theme_bw())
 data(narr_cruncep_ebifarm)
 
@@ -44,11 +45,24 @@ knitr::opts_chunk$set(echo=FALSE, cache = TRUE, comment=NA, tidy=TRUE, warning=F
 These data are on biocluster.igb.illinois.edu, most 10-100s GB. 
 Scripts used to download and convert these data to PEcAn CF format, optimized for time series extraction, are on [GitHub ebimodeling/model-drivers](https://github.com/ebimodeling/model-drivers).
 
+
+```sh
+mkdir ~/testmet/
+ncks -O -d lon,-76.75,-76.25 -d lat,2.75,3.25 /home/groups/ebimodeling/met/narr/threehourly_32km/1979_2013.nc ~/testmet/narr32km_champaign.nc
+
+ncks -O -d lon,-76.75,-76.25 -d lat,2.75,3.25 /home/groups/ebimodeling/met/narr/threehourly/all.nc ~/testmet/narr_champaign.nc
+
+ncks -O -d lon,-76.75,-76.25 -d lat,2.75,3.25 /home/groups/ebimodeling/met/cruncep/all.nc ~/testmet/cruncep_champaign.nc
+```
+
+
 ```{r extract-data, eval=FALSE}
 
 Lat <- 40.08
 Lon <- -88.2
  
+
+
 narr <- data.table(getNARRforBioCro(lat = Lat, lon = Lon, year = 2010))
 
 ## NARR 3 hourly

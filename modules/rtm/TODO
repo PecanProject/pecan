@@ -7,3 +7,5 @@ TODO: Write diagnostic code
 TODO: Edit code to handle spectra of differing lengths (ie. 400-2500nm, 400-1100nm, etc)
 TODO: Include 4SAIL2 canopy model
 TODO: Include snow albedo code
+TODO: Finish README!
+TODO: Create module for running PROSPECT leaf transmittance and reflectance model for use in meta.analysis and in the ED (and other) model

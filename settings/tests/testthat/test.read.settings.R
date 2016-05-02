@@ -204,3 +204,10 @@ test_that("check settings runs with only model$name and no database", {
   s1 <- check.settings(update.settings(s))
   expect_identical(s$model$name, s1$model$type)
 })
+
+test_that("invalid pathname is placed in home directory",{
+  s <- settings
+  s$run$dbfiles <- "foo/bar"
+  s1 <- check.settings(s)
+  expect_equal(s1$run$dbfiles, file.path(Sys.getenv("HOME"), s$run$dbfiles))
+})

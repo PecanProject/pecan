@@ -8,6 +8,8 @@
 #-------------------------------------------------------------------------------
 con <- db.open(list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
 
+context("Basic Sanity tests for PEcAn functions that query BETYdb")
+
 test_that("append.covariates appends managements to yields",{
   test.traits <- db.query("select * from traits where id in (select trait_id from covariates) limit 10;", con = con)
   tmpcov <- query.covariates(test.traits$id, con = con)
@@ -27,8 +29,8 @@ test_that("query.data works",{
 context("test that expected tables exist") # modeltypes
 expected_tables <- c("citations", "citations_sites", "citations_treatments", 
                      "covariates", "cultivars", "dbfiles", "ensembles", "entities",
-                     "formats", "formats_variables", "inputs", "inputs_runs", "inputs_variables",
-                     "likelihoods", "location_yields", "machines", "managements", "managements_treatments",
+                     "formats", "formats_variables", "inputs", "inputs_runs",
+                     "likelihoods", "machines", "managements", "managements_treatments",
                      "methods", "mimetypes", "models", "pfts", "pfts_priors", "pfts_species", 
                      "posteriors", "priors", "runs", "schema_migrations", 
                      "sessions", "sites", "species", "traits", "treatments", "users", 

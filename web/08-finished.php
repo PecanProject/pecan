@@ -42,6 +42,7 @@ $stmt->closeCursor();
 $start = substr($workflow['start_date'], 0, 4);
 $end = substr($workflow['end_date'], 0, 4);
 $folder = $workflow['folder'];
+$notes = htmlspecialchars($workflow['notes']);
 
 # check to make sure all is ok
 $error=false;
@@ -63,22 +64,38 @@ if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
 
 # check the PEcAn folder
 $pecanfiles = array();
-foreach(scandir("$folder") as $file) {
-  if (is_dir("$folder/$file") || ($file == ".") || ($file == "..") || ($file == ".RData") || ($file == "plot.out")) {
-    continue;
+if (is_dir($folder)) {
+  foreach(scandir("$folder") as $file) {
+    if (is_dir("$folder/$file") || ($file[0] == ".") || ($file == "plot.out")) {
+      continue;
+    }
+    $pecanfiles[] = $file;
   }
-  $pecanfiles[] = $file;
+}
+if (is_dir("$folder/ensemble")) {
+  foreach(recursive_scandir("$folder/ensemble", "ensemble") as $file) {
+    if ($file[0] != ".") {
+      $pecanfiles[] = $file;      
+    }
+  }
+}
+if (is_dir("$folder/sensitivity")) {
+  foreach(recursive_scandir("$folder/sensitivity", "sensitivity") as $file) {
+    if ($file[0] != ".") {
+      $pecanfiles[] = $file;
+    }
+  }
 }
 
 # check the pft folder
 $pfts = array();
 if (is_dir("$folder/pft")) {
   foreach(scandir("$folder/pft") as $pft) {
-    if (!is_dir("$folder/pft/$pft") || ($pft == ".") || ($pft == "..")) {
+    if (!is_dir("$folder/pft/$pft") || ($pft[0] == ".")) {
       continue;
     }
     $pfts[$pft] = array();
-    foreach(scandir("$folder/pft/${pft}") as $file) {
+    foreach(recursive_scandir("$folder/pft/${pft}", "") as $file) {
       if (is_dir("$folder/pft/$pft/$file")) {
         continue;
       }
@@ -93,14 +110,14 @@ $outfile = array();
 $outplot = array();
 if (is_dir("$folder/run")) {
   foreach(scandir("$folder/run") as $runid) {
-    if (!is_dir("$folder/run/$runid") || ($runid == ".") || ($runid == "..")) {
+    if (!is_dir("$folder/run/$runid") || ($runid[0] == ".")) {
       continue;
     }
 
     # input files
     $inpfile[$runid] = array();
     foreach(scandir("$folder/run/$runid") as $file) {
-      if (is_dir("$folder/run/$runid/$file")) {
+      if (is_dir("$folder/run/$runid/$file") || ($file[0] == ".")) {
         continue;
       }
       $inpfile[$runid][] = $file;
@@ -110,7 +127,7 @@ if (is_dir("$folder/run")) {
     $outfile[$runid] = array();
     $outplot[$runid] = array();
     foreach(scandir("$folder/out/$runid") as $file) {
-      if (is_dir("$folder/out/$runid/$file")) {
+      if (is_dir("$folder/out/$runid/$file") || ($file[0] == ".")) {
         continue;
       }
       if (preg_match('/^\d\d\d\d.nc.var$/', $file)) {
@@ -121,6 +138,7 @@ if (is_dir("$folder/run")) {
         $year = substr($file, 0, 4);
         $vars = explode("\n", file_get_contents("${folder}/out/${runid}/${file}.var"));
         $outplot[$runid][$year] = array_filter($vars);
+        sort($outplot[$runid][$year]);
       }
     }
   }
@@ -291,12 +309,14 @@ if (is_dir("$folder/run")) {
     var run = $('#runid').val();
 
     $('#graphyear').empty();
-    $.each(Object.keys(outplot[run]), function(key, value) {
-         $('#graphyear')
-             .append($("<option></option>")
-             .text(value)); 
-    });
-    updateGraphYear();
+    if (outplot[run]) {
+      $.each(Object.keys(outplot[run]), function(key, value) {
+           $('#graphyear')
+               .append($("<option></option>")
+               .text(value)); 
+      });
+      updateGraphYear();
+    }
 
     $('#inpfile').empty();
     $.each(inpfile[run], function(key, value) {   
@@ -321,6 +341,9 @@ if (is_dir("$folder/run")) {
     $('#graphxvar').empty();
 <?php } ?>
     $('#graphyvar').empty();
+    if (outplot[run][year] === undefined) {
+      return;
+    }
     $.each(outplot[run][year], function(key, value) {
          $('#graphxvar')
              .append($("<option></option>")
@@ -485,17 +508,13 @@ if (is_dir("$folder/run")) {
     <p></p>
     <span id="error" class="small">&nbsp;</span>
     <input id="prev" type="button" value="History" onclick="prevStep();" />
+<?php if (!$authentication || (get_page_acccess_level() <= $min_run_level)) { ?>
     <input id="next" type="button" value="Start Over" onclick="nextStep();"/>    
+<?php } ?>
     <div class="spacer"></div>
-<?php
-  if (check_login()) {
-    echo "<p></p>";
-    echo "Logged in as " . get_user_name();
-    echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
-  }
-?>    
+<?php whoami(); ?>    
   </div>
-  <div id="output">Please select an option on the left.</div>
+  <div id="output">Please select an option on the left<br><br><b>NOTES:</b><br><?php echo $notes; ?></div>
   <div id="footer"><?php echo get_footer(); ?></div>
 </div>
 </body>
@@ -507,4 +526,24 @@ if (is_dir("$folder/run")) {
 
 <?php 
 $pdo = null;
+
+function recursive_scandir($dir, $base) {
+  $files = array();
+  foreach (array_diff(scandir($dir), array('.','..')) as $file) {
+    if (is_dir("$dir/$file")) {
+      if ($base == "") {
+        $files = array_merge($files, recursive_scandir("$dir/$file", "$file"));
+      } else {
+        $files = array_merge($files, recursive_scandir("$dir/$file", "$base/$file"));
+      }
+    } else {
+      if ($base == "") {
+        $files[] = $file;
+      } else {
+        $files[] = "$base/$file"; 
+      }
+    }
+  }
+  return $files;
+}
 ?>
