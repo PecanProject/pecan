@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+##
 ##' @title PEcAn Network Status
 ##' @author Michael Dietze
 ##' 
@@ -5,6 +7,7 @@
 ##' 
 
 #args <- commandArgs(TRUE)
+.libPaths("/fs/data5/dietze/library/")
 
 library(PEcAn.DB)
 library(RPostgreSQL)
@@ -57,16 +60,18 @@ if(file.exists(network.file)){
     # ip <- nsl(hostname)
     # getUrl(paste0("http://api.hostip.info/get_html.php?position=true&ip=", ip))
     # and cache result in geoip.cache
-    result <- getURL(paste0("freegeoip.net/csv/",hostname))
+    #result <- getURL(paste0("freegeoip.net/csv/",hostname))
+    result <- getURL(paste0("ip-api.com/csv/",hostname))
     pecan.geo[pecan.nodes$sync_host_id[i]+1,] = strsplit(result,",")[[1]]
   }
   ## HACK FOR BNL
-  pecan.geo[3,9:10] = c(40.868,-72.879)
-
+  #pecan.geo[3,9:10] = c(40.868,-72.879)
+  lat = 8
+  lon = 9
   latest.schema = 0
   pecan.state = matrix(NA,n,n)
-  schema.list = NULL
-  node.schemas = rep(0,n)
+  schema.list = 0
+  node.schemas = rep(1,n)
   last.dump.size = rep(0,n)
   last.dump.time = rep(Sys.time(),n)
 } ## end init
@@ -201,8 +206,8 @@ rng.buffer <- function(x,b=0.1){
 }
 
 ## STATUS MAP
-x = as.numeric(pecan.geo[,10])
-y = as.numeric(pecan.geo[,9])
+x = as.numeric(pecan.geo[,lon])
+y = as.numeric(pecan.geo[,lat])
 png(filename="NetworkStatus.png",width=1200)
 colors = c("grey","green","yellow","red","purple")
 status = diag(pecan.state)+2;status[is.na(status)]=1
@@ -243,7 +248,7 @@ for(i in 1:n){
   }
 }
 ## NODES
-points(pecan.geo[,10:9],col=colors[status],pch=19,cex=3)
+points(pecan.geo[,c(lon,lat)],col=colors[status],pch=19,cex=3)
 text(xlim[1],ylim[1],labels = Sys.time(),pos=4)
 dev.off()
 
