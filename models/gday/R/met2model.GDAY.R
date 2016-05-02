@@ -43,6 +43,9 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
   ##        press (kPa), wind_am (m-2 s-1), wind_pm (m-2 s-1),
   ##        par_am (umol m-2 s-1), par_pm (umol m-2 s-1)
 
+  SW_2_PAR <- 2.3
+  #DEG_TO_KELVIN <- 273.15
+
   if(!require(PEcAn.utils)) print("install PEcAn.utils")
 
   start_date <- as.POSIXlt(start_date, tz = "GMT")
@@ -59,8 +62,8 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
                         formatname=c('GDAY meteorology'),
                         startdate=c(start_date),
                         enddate=c(end_date),
-                        dbfile.name = out.file,
-                        stringsAsFactors = FALSE)
+                        dbfile.name=out.file,
+                        stringsAsFactors=FALSE)
   print("internal results")
   print(results)
 
@@ -91,12 +94,6 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
   # TODO need to filter out the data that is not inside start_date, end_date
   for(year in start_year:end_year) {
     print(year)
-    ## Assuming default values for leaf water potential, hydraulic resistance,
-    ## foliar N
-    leafN = 2.5
-    HydResist = 1
-    LeafWaterPot = -0.8
-
     old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
 
     ## open netcdf
@@ -124,25 +121,12 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
     useCO2 = is.numeric(CO2)
     if(useCO2)  CO2 <- CO2 * 1e6  ## convert from mole fraction (kg/kg) to ppm
 
-
     ## is CO2 present?
     if(!is.numeric(CO2)){
       logger.warn("CO2 not found in",old.file,"setting to default: 400 ppm")
       CO2 = rep(400,length(Tair))
     }
 
-    if(length(leafN) == 1){
-      logger.warn("Leaf N not specified, setting to default: ",leafN)
-      leafN = rep(leafN,length(Tair))
-    }
-    if(length(HydResist)==1){
-      logger.warn("total plant-soil hydraulic resistance (MPa.m2.s/mmol-1) not specified, setting to default: ",HydResist)
-      HydResist = rep(HydResist,length(Tair))
-    }
-    if(length(LeafWaterPot)==1){
-      logger.warn("maximum soil-leaf water potential difference (MPa) not specified, setting to default: ",LeafWaterPot)
-      LeafWaterPot = rep(LeafWaterPot,length(Tair))
-    }
 
     ##build day of year
     doy <- rep(1:365,each=timestep.s/dt)[1:length(sec)]
@@ -150,29 +134,82 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
       doy <- rep(1:366,each=timestep.s/dt)[1:length(sec)]
     }
 
-    ## Aggregate variables up to daily
-    Tmean = udunits2::ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),"Kelvin","Celsius")
-    Tmin  = udunits2::ud.convert(tapply(Tair,doy,min,na.rm=TRUE),"Kelvin","Celsius")
-    Tmax  = udunits2::ud.convert(tapply(Tair,doy,max,na.rm=TRUE),"Kelvin","Celsius")
-    Rin   = tapply(SW,doy,sum)*dt*1e-6 # J/m2/s * s * MJ/J
-    LeafWaterPot = tapply(LeafWaterPot,doy,mean)
-    CO2   = tapply(CO2,doy,mean)
-    HydResist = tapply(HydResist,doy,mean)
-    leafN = tapply(leafN,doy,mean)
-    doy   = tapply(doy,doy,mean)
+    if (sub_daily) {
+      rain = ?
+      par = SW * SW_2_PAR # W/m2 to umol m-2 s-1
+      tair = udunits2::ud.convert(Tair, "Kelvin", "Celsius")
+      tsoil = tapply(tair, doy, mean)
+      vpd = ?
+      ndep = ?
+      wind = ?
+      press = ?
 
-    ## The nine columns of driving data are: day of year; mean air temperature (deg C); max daily temperature (deg C); min daily temperature (deg C); incident radiation (MJ/m2/day); maximum soil-leaf water potential difference (MPa); atmospheric carbon dioxide concentration (ppm); total plant-soil hydraulic resistance (MPa.m2.s/mmol-1); average foliar nitorgen (gC/m2 leaf area).
+      ## build data matrix
+      tmp <- cbind(year,
+                   doy,
+                   hod,
+                   rain,
+                   par,
+                   tair,
+                   tsoil,
+                   vpd,
+                   CO2,
+                   ndep,
+                   wind,
+                   press)
+    } else {
+      ## Aggregate variables up to daily
+      Tmean = udunits2::ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),
+                                   "Kelvin","Celsius")
+      Tmin = udunits2::ud.convert(tapply(Tair,doy,min,na.rm=TRUE),
+                                   "Kelvin","Celsius")
+      Tmax = udunits2::ud.convert(tapply(Tair,doy,max,na.rm=TRUE),
+                                   "Kelvin","Celsius")
+      #Rin = tapply(SW,doy,sum)*dt*1e-6 # J/m2/s * s * MJ/J
 
-    ## build data matrix
-    tmp <- cbind(doy,
-                 Tmean,
-                 Tmax,
-                 Tmin,
-                 Rin,
-                 LeafWaterPot,
-                 CO2,
-                 HydResist,
-                 leafN)
+      doy = tapply(doy,doy,mean)
+      CO2 = tapply(CO2,doy,mean)
+
+      # Needs to be daylight hours...how do we access sun up/down
+      tair = ?
+      tsoil = udunits2::ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),
+                                   "Kelvin","Celsius")
+      tday = udunits2::ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),
+                                  "Kelvin","Celsius")
+      tmax = udunits2::ud.convert(tapply(Tair,doy,max,na.rm=TRUE),
+                                  "Kelvin","Celsius")
+      tmin = udunits2::ud.convert(tapply(Tair,doy,min,na.rm=TRUE),
+                                  "Kelvin","Celsius")
+      ndep = ?
+      wind = ?
+      press = ?
+      wind_am = ?
+      wind_pm = ?
+      par_am = ?
+      par_pm = ?
+
+      ## build data matrix
+      tmp <- cbind(year,
+                   doy,
+                   tair,
+                   rain,
+                   tsoil,
+                   tam,
+                   tpm,
+                   tmin,
+                   tmax,
+                   tday,
+                   vpd_am,
+                   vpd_pm,
+                   CO2,
+                   ndep,
+                   wind,
+                   press,
+                   wind_am,
+                   wind_pm,
+                   par_am,
+                   par_pm)
+    }
 
     if(is.null(out)){
       out = tmp
@@ -183,7 +220,8 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
   } ## end loop over years
 
   ## write output
-  write.table(out,out.file.full,quote = FALSE,sep=" ",row.names=FALSE,col.names=FALSE)
+  write.table(out, out.file.full, quote=FALSE,sep=" ", row.names=FALSE,
+              col.names=FALSE)
 
   invisible(results)
 
