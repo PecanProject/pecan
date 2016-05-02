@@ -37,9 +37,10 @@ download.CMIP5 <- function(outfolder, CMIP5_model, experiment, ensemble_member, 
   lat_IPSL = trunc(.5278*(lat.in))
   if (lon.in<0){
     lon.in = lon.in*(-1)+180
-  }
+  } #nc.dods?vas[0][0][0]
   lon_IPSL = trunc((.2667)*(lon.in))
-  dap_IPSL =paste0('http://jsimkins2:Zulu88**@https://pcmdi.llnl.gov/esgf-idp/openid/jsimkins2.http://esgf.extra.cea.fr/thredds/dodsC/work_cmip5/output1/IPSL/',CMIP5_model,'/',experiment,'/3hr/atmos/3hr')
+  dap_IPSL =paste0('https://vesg.ipsl.upmc.fr/thredds/dodsC/GeoMIP/output/IPSL/',CMIP5_model,'/',experiment,'/3hr/atmos/3hr')
+  # x = https://vesg.ipsl.upmc.fr/thredds/dodsC/GeoMIP/output/IPSL/IPSL-CM5A-LR/rcp45/3hr/atmos/3hr/r1i1p1/v20130428/vas/vas_3hr_IPSL-CM5A-LR_rcp45_r1i1p1_200601010300-205601010000.nc
 
   dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
   
@@ -74,12 +75,13 @@ download.CMIP5 <- function(outfolder, CMIP5_model, experiment, ensemble_member, 
     dim=list(lat,lon,time)
     
     ##no leap year in this dataset
-    
+    #nc.dods?vas[0][0][0]
     var.list = list()
     dat.list = list()
     ## get data off OpenDAP
     for(j in 1:nrow(var)){
-      dap_end = paste0('/',ensemble_member,'/v20110914/',var$DAP.name[j],'/',var$DAP.name[j],'_3hr_',CMIP5_model,'_',experiment,'_',ensemble_member,'_200601010300-205601010000.nc?')
+      dap_end = paste0('/',ensemble_member,'/v20130428/',var$DAP.name[j],'/',var$DAP.name[j],'_3hr_',CMIP5_model,'_',experiment,'_',ensemble_member,'_200601010300-205601010000.nc.dods?')
+      #dappp = 'https://vesg.ipsl.upmc.fr/thredds/dodsC/GeoMIP/output/IPSL/IPSL-CM5A-LR/rcp45/3hr/atmos/3hr/r1i1p1/v20130428/vas/vas_3hr_IPSL-CM5A-LR_rcp45_r1i1p1_200601010300-205601010000.nc.dods?'
       dap_file = paste0(dap_IPSL,dap_end,var$DAP.name[j],time_IPSL,'[',lat_IPSL,'][',lon_IPSL,']')
       dap = nc_open(dap_file)
       dat.list[[j]] = ncvar_get(dap,as.character(var$DAP.name[j]),c(lon_IPSL,lat_IPSL,1),c(1,1,ntime))
@@ -106,5 +108,5 @@ download.CMIP5 <- function(outfolder, CMIP5_model, experiment, ensemble_member, 
 }
 
 # https://pcmdi.llnl.gov/esgf-idp/openid/jsimkins2 is the OpenID used to access the files
-# download.CMIP5('C:/Users/James Simkins/', IPSL-CM5A-LR, rcp45, r1i1p1, '2006-01-01 00:00:00', '2007-12-31 23:59:59', 2, 45, -90
+# download.CMIP5('C:/Users/James Simkins/', IPSL-CM5A-LR, rcp45, r1i1p1, '2006-01-01 00:00:00', '2007-12-31 23:59:59', 2, 45, -90)
 
