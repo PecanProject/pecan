@@ -37,7 +37,7 @@ PG_OPT=${PG_OPT:-""}
 #  9 - TERRA TAMU    - TBD
 # 99 - VM
 MYSITE=${MYSITE:-99}
-REMOTESITE=${REMOTESITE:-0}
+REMOTESITE=${REMOTESITE:--1}
 
 # Create the database from scratch
 # Set this to YES to create the database, this will remove all existing
@@ -183,7 +183,7 @@ CLEAN_TABLES="${CLEAN_TABLES} managements methods"
 CLEAN_TABLES="${CLEAN_TABLES} models"
 CLEAN_TABLES="${CLEAN_TABLES} modeltypes modeltypes_formats"
 CLEAN_TABLES="${CLEAN_TABLES} pfts posterior_samples posteriors"
-CLEAN_TABLES="${CLEAN_TABLES} priors runs sites"
+CLEAN_TABLES="${CLEAN_TABLES} priors runs sites sitegroups"
 CLEAN_TABLES="${CLEAN_TABLES} species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
 CLEAN_TABLES="${CLEAN_TABLES} traits yields"
@@ -194,6 +194,7 @@ MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
 MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
 MANY_TABLES="${MANY_TABLES} managements_treatments pfts_priors"
 MANY_TABLES="${MANY_TABLES} pfts_species posteriors_ensembles"
+MANY_TABLES="${MANY_TABLES} sitegroups_sites"
 
 # tables that should NOT be dumped
 IGNORE_TABLES="sessions"
@@ -214,7 +215,7 @@ if [ -z "${DUMPURL}" ]; then
     DUMPURL="http://file-server.igb.illinois.edu/~dlebauer/bety/bety.tar.gz"
   else
     echo "Don't know where to get data for site ${REMOTESITE}"
-    exit 1
+    DUMPURL=""
   fi
 fi
 
@@ -235,62 +236,67 @@ DUMPDIR="/tmp/$$"
 mkdir "${DUMPDIR}"
 
 # download dump file and unpack
-curl -s -L -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
-if [ ! -s ${DUMPDIR}/dump.tar.gz ]; then
-  echo "File downloaded is 0 bytes, skipping"
-  exit -1
+if [ "${DUMPURL}" != "" ]; then
+  curl -s -L -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
+  if [ ! -s ${DUMPDIR}/dump.tar.gz ]; then
+    echo "File downloaded is 0 bytes, skipping"
+    DUMPURL=""
+  else
+    tar zxf "${DUMPDIR}/dump.tar.gz" -C "${DUMPDIR}" -m
+  fi
 fi
-tar zxf "${DUMPDIR}/dump.tar.gz" -C "${DUMPDIR}" -m
 
 # create database if need be, otherwise check version of schema
-if [ "${CREATE}" == "YES" ]; then
-  if [ "${QUIET}" != "YES" ]; then
-     printf "Loading %-25s : " "schema"
-  fi
-
-  # create empty public schema
-  psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "DROP SCHEMA public CASCADE;"
-  psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "CREATE SCHEMA public AUTHORIZATION ${OWNER};"
-  psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "CREATE EXTENSION postgis;"
-  psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "GRANT ALL ON ALL TABLES IN SCHEMA public TO ${OWNER};"
-
-  # load the schema
-  psql ${PG_OPT} -U ${OWNER} -q -d "${DATABASE}" < "${DUMPDIR}"/*.schema
-  if [ "${QUIET}" != "YES" ]; then
-    echo "CREATED SCHEMA"
-  fi
-
-  if [ "${QUIET}" != "YES" ]; then
-    printf "Loading  %-25s : " "schema_migrations"
-  fi
-  ADD=$( psql ${PG_OPT} ${PG_OWNER} -t -q -d "${DATABASE}" -c "\COPY schema_migrations FROM '${DUMPDIR}/schema_migrations.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8'); SELECT COUNT(*) FROM schema_migrations;" | tr -d ' ' )
-  if [ "${QUIET}" != "YES" ]; then
-    echo "ADDED ${ADD}"
-  fi
-else
-  if [ "${QUIET}" != "YES" ]; then
-    printf "Checking %-25s : " "schema"
-  fi
-
-  # find current schema version
-  VERSION=$( psql ${PG_OPT} ${PG_OWNER} -t -q -d "${DATABASE}" -c 'SELECT md5(array_agg(version)::text) FROM (SELECT version FROM schema_migrations ORDER BY version) as v;' | tr -d ' ' )
-
-  if [ ! -e "${DUMPDIR}/${VERSION}.schema" ]; then
-    echo "EXPECTED SCHEMA version ${VERSION}"
-    echo "Dump is from a different schema, please fix schema in database."
-    if [ "$KEEPTMP" == "YES" ]; then
-      echo "Files are in ${DUMPDIR}"
-    else
-      rm -rf "${DUMPDIR}"
+if [ "${DUMPURL}" != "" ]; then
+  if [ "${CREATE}" == "YES" ]; then
+    if [ "${QUIET}" != "YES" ]; then
+       printf "Loading %-25s : " "schema"
     fi
-    if [ -e ${LOG} ]; then
-      echo `date -u` $REMOTESITE 1 >> $LOG
-    fi
-    exit 1
-  fi
 
-  if [ "${QUIET}" != "YES" ]; then
-    echo "MATCHED SCHEMA version ${VERSION}"
+    # create empty public schema
+    psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "DROP SCHEMA public CASCADE;"
+    psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "CREATE SCHEMA public AUTHORIZATION ${OWNER};"
+    psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "CREATE EXTENSION postgis;"
+    psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "GRANT ALL ON ALL TABLES IN SCHEMA public TO ${OWNER};"
+
+    # load the schema
+    psql ${PG_OPT} -U ${OWNER} -q -d "${DATABASE}" < "${DUMPDIR}"/*.schema
+    if [ "${QUIET}" != "YES" ]; then
+      echo "CREATED SCHEMA"
+    fi
+
+    if [ "${QUIET}" != "YES" ]; then
+      printf "Loading  %-25s : " "schema_migrations"
+    fi
+    ADD=$( psql ${PG_OPT} ${PG_OWNER} -t -q -d "${DATABASE}" -c "\COPY schema_migrations FROM '${DUMPDIR}/schema_migrations.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8'); SELECT COUNT(*) FROM schema_migrations;" | tr -d ' ' )
+    if [ "${QUIET}" != "YES" ]; then
+      echo "ADDED ${ADD}"
+    fi
+  else
+    if [ "${QUIET}" != "YES" ]; then
+      printf "Checking %-25s : " "schema"
+    fi
+
+    # find current schema version
+    VERSION=$( psql ${PG_OPT} ${PG_OWNER} -t -q -d "${DATABASE}" -c 'SELECT md5(array_agg(version)::text) FROM (SELECT version FROM schema_migrations ORDER BY version) as v;' | tr -d ' ' )
+
+    if [ ! -e "${DUMPDIR}/${VERSION}.schema" ]; then
+      echo "EXPECTED SCHEMA version ${VERSION}"
+      echo "Dump is from a different schema, please fix schema in database."
+      if [ "$KEEPTMP" == "YES" ]; then
+        echo "Files are in ${DUMPDIR}"
+      else
+        rm -rf "${DUMPDIR}"
+      fi
+      if [ -e ${LOG} ]; then
+        echo `date -u` $REMOTESITE 1 >> $LOG
+      fi
+      exit 1
+    fi
+
+    if [ "${QUIET}" != "YES" ]; then
+      echo "MATCHED SCHEMA version ${VERSION}"
+    fi
   fi
 fi
 
@@ -349,29 +355,31 @@ for T in ${EMPTY_TABLES} ${CLEAN_TABLES} ${MANY_TABLES}; do
   echo "BEGIN;" >&3
   echo "ALTER TABLE ${T} DISABLE TRIGGER ALL;" >&3
 
-  echo "SELECT count(*) FROM ${T} ${REM_WHERE};" >&3 && read DEL <&4
-  # TODO what is last index in range we are adding, this will give a better
-  #      indication if rows are added.
-  echo "DELETE FROM ${T} ${REM_WHERE};" >&3
-  echo "SELECT COUNT(*) FROM ${T};" >&3 && read START <&4
-  if [[ "${EMPTY}" == "NO" || ${EMPTY_TABLES} == *"$T"* ]]; then
-    if [ -f "${DUMPDIR}/${T}.csv" ]; then
-      echo "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')" >&3
+  if [ "${DUMPURL}" != "" ]; then
+    echo "SELECT count(*) FROM ${T} ${REM_WHERE};" >&3 && read DEL <&4
+    # TODO what is last index in range we are adding, this will give a better
+    #      indication if rows are added.
+    echo "DELETE FROM ${T} ${REM_WHERE};" >&3
+    echo "SELECT COUNT(*) FROM ${T};" >&3 && read START <&4
+    if [[ "${EMPTY}" == "NO" || ${EMPTY_TABLES} == *"$T"* ]]; then
+      if [ -f "${DUMPDIR}/${T}.csv" ]; then
+        echo "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')" >&3
+      fi
     fi
-  fi
-  echo "SELECT COUNT(*) FROM ${T};" >&3 && read END <&4
-  ADD=$(( END - START ))
-  DIFF=$(( ADD - DEL ))
-  if [ "${QUIET}" != "YES" ]; then
-    if [ "$DEL" != "0" -o "$ADD" != "0" ]; then
-      if [ "$DIFF" != "0" ]; then
-        printf "Updated  %-25s : %6d (%+d)\n" "${T}" ${ADD} ${DIFF}
-      else
-        printf "Updated  %-25s : %6d\n" "${T}" ${ADD}
+    echo "SELECT COUNT(*) FROM ${T};" >&3 && read END <&4
+    ADD=$(( END - START ))
+    DIFF=$(( ADD - DEL ))
+    if [ "${QUIET}" != "YES" ]; then
+      if [ "$DEL" != "0" -o "$ADD" != "0" ]; then
+        if [ "$DIFF" != "0" ]; then
+          printf "Updated  %-25s : %6d (%+d)\n" "${T}" ${ADD} ${DIFF}
+        else
+          printf "Updated  %-25s : %6d\n" "${T}" ${ADD}
+        fi
       fi
     fi
   fi
-
+  
   # fix sequence number
   if [ "${FIXSEQUENCE}" == "YES" ]; then
     echo "SELECT last_value from ${T}_id_seq;" >&3 && read OLD <&4
