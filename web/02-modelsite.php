@@ -40,9 +40,9 @@ $siteid = "";
 if (isset($_REQUEST['siteid'])) {
   $siteid = $_REQUEST['siteid'];
 }
-$clusterid = "";
-if (isset($_REQUEST['clusterid'])) {
-  $clusterid = $_REQUEST['clusterid'];
+$sitegroupid = "";
+if (isset($_REQUEST['sitegroupid'])) {
+  $sitegroupid = $_REQUEST['sitegroupid'];
 }
 
 // check if fqdn exists
@@ -55,18 +55,18 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
   $hostname = $fqdn;
 }
 
-// get clusters
-$query = "SELECT id, name FROM clusters WHERE everybody OR user_id=? ORDER BY name";
+// get sitegroups
+$query = "SELECT id, name FROM sitegroups WHERE public_access OR user_id=? ORDER BY name";
 $stmt = $pdo->prepare($query);
 if (!$stmt->execute(array(get_userid()))) {
   die('Invalid query: ' . error_database());
 }
-$clusters = "";
+$sitegroups = "";
 while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
-  if ($clusterid == $row['id']) {
-    $clusters .= "<option value='${row['id']}' selected>${row['name']}</option>\n";
+  if ($sitegroupid == $row['id']) {
+    $sitegroups .= "<option value='${row['id']}' selected>${row['name']}</option>\n";
   } else {
-    $clusters .= "<option value='${row['id']}'>${row['name']}</option>\n";    
+    $sitegroups .= "<option value='${row['id']}'>${row['name']}</option>\n";    
   }
 }
 
@@ -109,10 +109,10 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 <?php } ?>
     }
 <?php if ($betydb != "") { ?>
-    if ($("#clusterid").val() == null || $("#clusterid").val() == "") {
-      $("#clusterlabel").html("Clusters:");
+    if ($("#sitegroupid").val() == null || $("#sitegroupid").val() == "") {
+      $("#sitegrouplabel").html("Site Group:");
     } else {
-      $("#clusterlabel").html("Clusters: (Show in <a href=\"<?php echo $betydb; ?>/clusters/" + $("#clusterid").val() + "\" target=\"BETY\">BETY</a>)");
+      $("#sitegrouplabel").html("Site Group: (Show in <a href=\"<?php echo $betydb; ?>/sitegroups/" + $("#sitegroupid").val() + "\" target=\"BETY\">BETY</a>)");
     }
 <?php } ?>
     if ($("#siteid").val() == "") {
@@ -131,7 +131,7 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 
     $("#hostname").prop('disabled', option);
     $("#modelid").prop('disabled', option);
-    $("#clusterid").prop('disabled', option);
+    $("#sitegroupid").prop('disabled', option);
     $("#conversion").prop('disabled', option);
     $("#siteid").prop('disabled', option);
   }
@@ -152,7 +152,7 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 
     var curHost = $("#hostname").val();
     var curModel = $("#modelid").val();
-    var curCluster = $("#clusterid").val();
+    var curSitegroup = $("#sitegroupid").val();
     var curSite = $("#siteid").val();
 
     // remove everything
@@ -170,7 +170,7 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 
     // get all sites
     //console.log($('#modelid option:selected'))
-    var url = "hostmodelinfo.php?host=" + curHost + "&model=" + curModel + "&cluster=" + curCluster;
+    var url = "hostmodelinfo.php?host=" + curHost + "&model=" + curModel + "&sitegroup=" + curSitegroup;
     if ($('#conversion').is(':checked')) {
       url = url + "&conversion=1";
     }
@@ -360,10 +360,10 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
       </select>
       <div class="spacer"></div>
 
-      <label id="clusterlabel">Clusters:</label>
-      <select name="clusterid" id="clusterid" onChange="updateData();">
+      <label id="sitegrouplabel">Site Group:</label>
+      <select name="sitegroupid" id="sitegroupid" onChange="updateData();">
         <option value="">All Sites</option>
-        <?php echo $clusters; ?>
+        <?php echo $sitegroups; ?>
       </select>
       <div class="spacer"></div>
 

@@ -36,7 +36,7 @@ $met = array('CF'     => 33,
 
 $host = isset($_REQUEST['host']) ? $_REQUEST['host'] : "";
 $model = isset($_REQUEST['model']) ? $_REQUEST['model'] : "";
-$cluster = isset($_REQUEST['cluster']) ? $_REQUEST['cluster'] : "";
+$sitegroup = isset($_REQUEST['sitegroup']) ? $_REQUEST['sitegroup'] : "";
 
 // Start XML file, create parent node
 $dom = new DOMDocument("1.0");
@@ -135,7 +135,7 @@ function get_models() {
 // ----------------------------------------------------------------------
 function get_sites() {
   global $pdo, $dom, $root, $hostlist;
-  global $earth, $met, $host, $model, $cluster;
+  global $earth, $met, $host, $model, $sitegroup;
 
   $parnode = $root->appendChild($dom->createElement("markers"));
 
@@ -143,11 +143,11 @@ function get_sites() {
   $subs = array();
   $where = "";
   $query = "SELECT sites.id, sites.sitename, sites.city, sites.country, ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat FROM sites";
-  if ($cluster) {
-    $query .= " INNER JOIN clusters_sites ON clusters_sites.site_id=sites.id";
+  if ($sitegroup) {
+    $query .= " INNER JOIN sitegroups_sites ON sitegroups_sites.site_id=sites.id";
     $where .= $where == "" ? " WHERE" : " AND";
-    $where .= " clusters_sites.cluster_id=?";
-    $subs[] = $cluster;
+    $where .= " sitegroups_sites.sitegroup_id=?";
+    $subs[] = $sitegroup;
   }
   $query .= $where;
   $stmt = $pdo->prepare($query);
@@ -168,10 +168,10 @@ function get_sites() {
     $query .= " INNER JOIN inputs ON sites.id=inputs.site_id";
     $query .= " INNER JOIN dbfiles ON inputs.id=dbfiles.container_id";
     $where = " AND dbfiles.container_type='Input'";
-    if ($cluster) {
-      $query .= " INNER JOIN clusters_sites ON clusters_sites.site_id=sites.id";
-      $where .= " AND clusters_sites.cluster_id=?";
-      $subs[] = $cluster;
+    if ($sitegroup) {
+      $query .= " INNER JOIN sitegroups_sites ON sitegroups_sites.site_id=sites.id";
+      $where .= " AND sitegroups_sites.sitegroup_id=?";
+      $subs[] = $sitegroup;
     }
     if ($host) {
       $query .= " INNER JOIN machines ON dbfiles.machine_id=machines.id";
