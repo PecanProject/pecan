@@ -135,12 +135,6 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
     }
 
 
-    ##build day of year
-    #doy <- rep(1:365,each=timestep.s/dt)[1:length(sec)]
-    #if(year %% 4 == 0){  ## is leap
-    #  doy <- rep(1:366,each=timestep.s/dt)[1:length(sec)]
-    #}
-
     ## For now setting this to be always true till I figure out how to
     ## interface with the sub_daily param file. Should detech if met-data
     ## is coarser than 30-min and swapped to day version?
@@ -168,6 +162,11 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
           press = air_pressure[idx] * PA_2_KPA
           rh = qair2rh(SH[idx], Tair[idx])
           vpd = get.vpd(rh[idx], Tair[idx])
+
+          # This is an assumption of the Medlyn gs model
+          if (vpd < 0.05) {
+            vpd = 0.05
+          }
 
           ## No NDEP, so N-cycle will have to be switched off by default
           ndep = -999.9                   # t ha-1
