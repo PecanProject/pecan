@@ -741,17 +741,17 @@ pda.settings.bt <- function(settings){
   
   iterations = as.numeric(settings$assim.batch$bt.settings$iter)
   optimize = settings$assim.batch$bt.settings$optimize
-  consoleUpdates = as.numeric(settings$assim.batch$bt.settings$consoleUpdates)
+  if(!is.null(consoleUpdates)) consoleUpdates = as.numeric(settings$assim.batch$bt.settings$consoleUpdates)
   parallel = settings$assim.batch$bt.settings$parallel
   adapt = settings$assim.batch$bt.settings$adapt
-  adaptationInverval = as.numeric(settings$assim.batch$bt.settings$adaptationInverval)
-  adaptationNotBefore = as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore)
+  if(!is.null(adaptationInverval)) adaptationInverval = as.numeric(settings$assim.batch$bt.settings$adaptationInverval)
+  if(!is.null(adaptationNotBefore)) adaptationNotBefore = as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore)
   initialParticles=list("prior",as.numeric(settings$assim.batch$bt.settings$n.initialParticles))
-  DRlevels = as.numeric(settings$assim.batch$bt.settings$DRlevels)
+  if(!is.null(DRlevels)) DRlevels = as.numeric(settings$assim.batch$bt.settings$DRlevels)
   proposalScaling = settings$assim.batch$bt.settings$proposalScaling
   adaptationDepth = settings$assim.batch$bt.settings$adaptationDepth
   temperingFunction = settings$assim.batch$bt.settings$temperingFunction
-  gibbsProbabilities = as.numeric(unlist(settings$assim.batch$bt.settings$gibbsProbabilities))
+  if(!is.null(gibbsProbabilities)) gibbsProbabilities = as.numeric(unlist(settings$assim.batch$bt.settings$gibbsProbabilities))
   
 ## Generate proposal  
 # TODO: pass jump variances to proposalGenerator from settings
