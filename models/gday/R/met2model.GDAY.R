@@ -248,37 +248,6 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
 
       }
 
-      ## Aggregate variables up to daily
-      Tmean = udunits2::ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),
-                                   "Kelvin","Celsius")
-      Tmin = udunits2::ud.convert(tapply(Tair,doy,min,na.rm=TRUE),
-                                   "Kelvin","Celsius")
-      Tmax = udunits2::ud.convert(tapply(Tair,doy,max,na.rm=TRUE),
-                                   "Kelvin","Celsius")
-      #Rin = tapply(SW,doy,sum)*dt*1e-6 # J/m2/s * s * MJ/J
-
-      doy = tapply(doy,doy,mean)
-      CO2 = tapply(CO2,doy,mean)
-
-      # Needs to be daylight hours...how do we access sun up/down
-      tair = ?
-      tsoil = udunits2::ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),
-                                   "Kelvin","Celsius")
-      tday = udunits2::ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),
-                                  "Kelvin","Celsius")
-      tmax = udunits2::ud.convert(tapply(Tair,doy,max,na.rm=TRUE),
-                                  "Kelvin","Celsius")
-      tmin = udunits2::ud.convert(tapply(Tair,doy,min,na.rm=TRUE),
-                                  "Kelvin","Celsius")
-      ## No NDEP, so N-cycle will have to be switched off by default
-      ndep = -999.9
-      wind = mean(wind_speed)
-      press = mean(air_pressure * PA_2_KPA)
-      wind_am = ?
-      wind_pm = ?
-      par_am = ?
-      par_pm = ?
-
       ## build data matrix
       tmp <- cbind(year,
                    doy,
