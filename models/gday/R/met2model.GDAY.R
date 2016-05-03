@@ -312,7 +312,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
   } ## end loop over years
 
   ## write output
-  write.table(out, out.file.full, quote=FALSE,sep=" ", row.names=FALSE,
+  write.table(out, out.file.full, quote=FALSE, sep=",", row.names=FALSE,
               col.names=FALSE)
 
   invisible(results)
