@@ -56,7 +56,7 @@ require(ncdf4)
     ## standard variables: Fluxes
     output[[1]] <- (sub.GDAY.output[,"auto_resp"] * THA_2_KG_M2) / timestep.s
     output[[2]] <- (sub.GDAY.output[,"hetero_resp"] * THA_2_KG_M2) / timestep.s
-    output[[3]] <- (sub.GDAY.output[,"auto_resp"] + \
+    output[[3]] <- (sub.GDAY.output[,"auto_resp"] +
                     sub.GDAY.output[,"hetero_resp"] * THA_2_KG_M2) / timestep.s
     output[[4]] <- (sub.GDAY.output[,"gpp"] * THA_2_KG_M2) / timestep.s
     output[[5]] <- (sub.GDAY.output[,"nep"] * -1.0 * THA_2_KG_M2) / timestep.s
