@@ -173,27 +173,30 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
           ndep = -999.9                   # t ha-1
 
           idx <- idx + 1
+        } ## Hour of day loop
+
+        ## build data matrix
+        tmp <- cbind(year,
+                     doy,
+                     hod,
+                     rain,
+                     par,
+                     tair,
+                     tsoil,
+                     vpd,
+                     CO2,
+                     ndep,
+                     wind,
+                     press)
+
+        if (is.null(out)) {
+          out = tmp
+        } else {
+          out = rbind(out, tmp)
         }
-      }
-
-      #Need to bind this in with this matrix below...not sure how to do that
-      #as my vars aren't arrays...
+      } ## Day of year loop
 
 
-
-      ## build data matrix
-      tmp <- cbind(year,
-                   doy,
-                   hod,
-                   rain,
-                   par,
-                   tair,
-                   tsoil,
-                   vpd,
-                   CO2,
-                   ndep,
-                   wind,
-                   press)
     } else {
       idx = 0
       if(year %% 4 == 0) {
