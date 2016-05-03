@@ -61,7 +61,10 @@ require(ncdf4)
     output[[4]] <- (sub.GDAY.output[,"gpp"] * THA_2_KG_M2) / timestep.s
     output[[5]] <- (sub.GDAY.output[,"nep"] * -1.0 * THA_2_KG_M2) / timestep.s
     output[[6]] <- (sub.GDAY.output[,"npp"] * THA_2_KG_M2) / timestep.s
+
+    ## standard variables: State
     output[[7]] <- (sub.GDAY.output[,"lai"])
+    # Add the rest...
 
 
     #******************** Declare netCDF variables ********************#
