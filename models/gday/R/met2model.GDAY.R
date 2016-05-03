@@ -147,9 +147,13 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
     lat <- ncvar_get(nc, "latitude")
     lon <- ncvar_get(nc, "longitude")
     Tair <- ncvar_get(nc, "air_temperature")  ## in Kelvin
-    PAR <- ncvar_get(nc,
-                     "surface_downwelling_photosynthetic_photon_flux_in_air")
+    PAR <- try(ncvar_get(nc,
+                     "surface_downwelling_photosynthetic_photon_flux_in_air"))
     PAR <- PAR * MOL_2_UMOL
+    if (!is.numeric(PAR)) {
+      SW <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air") ##in W/m2
+      PAR <- SW * SW_2_PAR
+    }
     CO2 <- try(ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
     SH <- try(ncvar_get(nc, "specific_humidity")) ## kg/kg
     wind_speed  <- try(ncvar_get(nc, "wind_speed")) ## m/s
