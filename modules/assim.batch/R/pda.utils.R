@@ -747,7 +747,7 @@ pda.settings.bt <- function(settings){
   if(!is.null(adaptationInverval)) adaptationInverval = as.numeric(settings$assim.batch$bt.settings$adaptationInverval)
   if(!is.null(adaptationNotBefore)) adaptationNotBefore = as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore)
   initialParticles=list("prior",as.numeric(settings$assim.batch$bt.settings$n.initialParticles))
-  DRlevels = as.numeric(settings$assim.batch$bt.settings$DRlevels)
+  if(!is.null(DRlevels)) DRlevels = as.numeric(settings$assim.batch$bt.settings$DRlevels)
   proposalScaling = settings$assim.batch$bt.settings$proposalScaling
   adaptationDepth = settings$assim.batch$bt.settings$adaptationDepth
   temperingFunction = settings$assim.batch$bt.settings$temperingFunction
