@@ -37,7 +37,7 @@ PG_OPT=${PG_OPT:-""}
 #  9 - TERRA TAMU    - TBD
 # 99 - VM
 MYSITE=${MYSITE:-99}
-REMOTESITE=${REMOTESITE:--1}
+REMOTESITE=${REMOTESITE:-0}
 
 # Create the database from scratch
 # Set this to YES to create the database, this will remove all existing
