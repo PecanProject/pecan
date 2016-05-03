@@ -82,7 +82,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
 
   ## check to see if the outfolder is defined, if not create directory for
   ## output
-  if(!file.exists(outfolder)){
+  if (!file.exists(outfolder)){
     dir.create(outfolder)
   }
 
@@ -94,7 +94,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
 
   ## loop over files
   # TODO need to filter out the data that is not inside start_date, end_date
-  for(year in start_year:end_year) {
+  for (year in start_year:end_year) {
     print(year)
     old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
 
@@ -129,7 +129,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
     if(useCO2)  CO2 <- CO2 * 1e6  ## convert from mole fraction (kg/kg) to ppm
 
     ## is CO2 present?
-    if(!is.numeric(CO2)){
+    if (!is.numeric(CO2)){
       logger.warn("CO2 not found in",old.file,"setting to default: 400 ppm")
       CO2 = rep(400,length(Tair))
     }
@@ -148,16 +148,16 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
         ndays <- 365
       }
       idx = 0
-      for(doy in 1:ndays) {
+      for (doy in 1:ndays) {
 
         ## If there is no Tsoil variabile use Tair...it doesn't look like Tsoil
         ## is a standard input
         tsoil = mean(tair[idx:idx+48])
-        for(hod in 1:48) {
+        for (hod in 1:48) {
 
           rain = ppt[idx] * SEC_TO_HFHR
           par = SW[idx] * SW_2_PAR
-          tair = udunits2::ud.convert(Tair[idx], "Kelvin", "Celsius")
+          tair = Tair[idx] + DEG_TO_KELVIN
           wind = wind_speed[idx]
           press = air_pressure[idx] * PA_2_KPA
           rh = qair2rh(SH[idx], Tair[idx])
