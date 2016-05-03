@@ -47,6 +47,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
   PA_2_KPA <- 0.001
   SEC_TO_HFHR <- 60.0 * 30.0
   K_TO_DEG <- -273.15
+  MOL_2_UMOL <- 1E6
 
   if(!require(PEcAn.utils)) print("install PEcAn.utils")
 
@@ -143,16 +144,18 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
     dt = timestep.s/tstep #dt is now an integer
 
     ## extract variables
-    lat  <- ncvar_get(nc, "latitude")
-    lon  <- ncvar_get(nc, "longitude")
+    lat <- ncvar_get(nc, "latitude")
+    lon <- ncvar_get(nc, "longitude")
     Tair <- ncvar_get(nc, "air_temperature")  ## in Kelvin
-    SW   <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air") ##in W/m2
-    CO2  <- try(ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
-    SH  <- try(ncvar_get(nc, "specific_humidity")) ## kg/kg
+    PAR <- ncvar_get(nc,
+                     "surface_downwelling_photosynthetic_photon_flux_in_air")
+    PAR <- PAR * MOL_2_UMOL
+    CO2 <- try(ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
+    SH <- try(ncvar_get(nc, "specific_humidity")) ## kg/kg
     wind_speed  <- try(ncvar_get(nc, "wind_speed")) ## m/s
     air_pressure <- try(ncvar_get(nc, "air_pressure")) ## Pa
     ppt <- try(ncvar_get(nc, "precipitation_flux")) ## kg/m2/s
-    PAR <- SW * SW_2_PAR
+
 
     nc_close(nc)
 
