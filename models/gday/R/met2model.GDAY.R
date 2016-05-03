@@ -86,7 +86,37 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
     dir.create(outfolder)
   }
 
+  ## For now setting this to be always true till I figure out how to
+  ## interface with the sub_daily param file. Should detech if met-data
+  ## is coarser than 30-min and swapped to day version?
+  sub_daily = TRUE
+
   out <- NULL
+
+  ## write the expected header information
+  if (sub_daily) {
+    ounits <- paste("#--,--,--,mm/30min,umol/m2/s,degC,degC,kPa,ppm,"
+                    "t/ha/30min,m/s,kPa", sep="")
+    ovar_names <- "#year,doy,hod,rain,par,tair,tsoil,vpd,co2,ndep,wind,press"
+
+    # Do we have a site name that we can append here?
+    out = rbind(out, "Site? 30-min met forcing")
+    out = rbind(out, paste("Created by met2model.GDAY.R:", Sys.Date()))
+    out = rbind(out, ounits)
+    out = rbind(out, ovar_names)
+  } else {
+    ounits <- paste("#--,--,degC,mm,degC,degC,degC,degC,degC,degC,kPa,kPa,"
+                    "ppm,t/ha/d,m/s,m/s,umol/m2/s,umol/m2/s", sep="")
+    ovar_names <- paste("#year,doy,tair,rain,tsoil,tam,tpm,tmin,tmax,tday,"
+                        "vpd_am,vpd_pm,co2,ndep,wind,press,wind_am,wind_pm,"
+                        "par_am,par_pm", sep="")
+
+    # Do we have a site name that we can append here?
+    out = rbind(out, "Site? 30-min met forcing")
+    out = rbind(out, paste("Created by met2model.GDAY.R:", Sys.Date()))
+    out = rbind(out, ounits)
+    out = rbind(out, ovar_names)
+  }
 
   # get start/end year since inputs are specified on year basis
   start_year <- year(start_date)
@@ -133,12 +163,6 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
       logger.warn("CO2 not found in",old.file,"setting to default: 400 ppm")
       CO2 = rep(400,length(Tair))
     }
-
-
-    ## For now setting this to be always true till I figure out how to
-    ## interface with the sub_daily param file. Should detech if met-data
-    ## is coarser than 30-min and swapped to day version?
-    sub_daily = TRUE
 
     if (sub_daily) {
 
