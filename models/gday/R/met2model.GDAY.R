@@ -152,7 +152,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
 
         ## If there is no Tsoil variabile use Tair...it doesn't look like Tsoil
         ## is a standard input
-        tsoil = mean(tair[idx:idx+48])
+        tsoil = mean(tair[idx:idx+48] + DEG_TO_KELVIN)
         for (hod in 1:48) {
 
           rain = ppt[idx] * SEC_TO_HFHR
@@ -162,6 +162,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
           press = air_pressure[idx] * PA_2_KPA
           rh = qair2rh(SH[idx], Tair[idx])
           vpd = get.vpd(rh[idx], Tair[idx])
+          co2 = CO2[idx]
 
           # This is an assumption of the Medlyn gs model
           if (vpd < 0.05) {
@@ -173,7 +174,6 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
 
           idx <- idx + 1
         }
-
       }
 
       #Need to bind this in with this matrix below...not sure how to do that
@@ -195,6 +195,54 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
                    wind,
                    press)
     } else {
+      idx = 0
+      for (doy in 1:ndays) {
+
+        ## Needs to be daylight hours...how do we access sun up/down
+        tair = ?
+        rain = sum(ppt[idx:idx+48] * SEC_TO_HFHR)
+
+        ## If there is no Tsoil variabile use Tair...it doesn't look like Tsoil
+        ## is a standard input
+        tsoil = mean(tair[idx:idx+48] + DEG_TO_KELVIN)
+
+        ## Needs to be AM/PM
+        tam = ?
+        tpm = ?
+
+        tmin = min(tair[idx:idx+48] + DEG_TO_KELVIN)
+        tmax = max(tair[idx:idx+48] + DEG_TO_KELVIN)
+        tday = mean(tair[idx:idx+48] + DEG_TO_KELVIN)
+
+        # Needs to be AM/PM
+        vpd_am = ?
+        # This is an assumption of the Medlyn gs model
+        if (vpd_am < 0.05) {
+          vpd_am = 0.05
+        }
+
+        vpd_pm = ?
+        # This is an assumption of the Medlyn gs model
+        if (vpd_pm < 0.05) {
+          vpd_pm = 0.05
+        }
+        co2 = mean(CO2[idx:idx+48])
+
+        ## No NDEP, so N-cycle will have to be switched off by default
+        ndep = -999.9
+
+        wind = mean(wind_speed[idx:idx+48])
+        press = mean(air_pressure[idx:idx+48] * PA_2_KPA)
+
+        # Needs to be AM/PM
+        wind_am = ?
+        wind_pm = ?
+        par_am = ?
+        par_pm = ?
+
+      
+      }
+
       ## Aggregate variables up to daily
       Tmean = udunits2::ud.convert(tapply(Tair,doy,mean,na.rm=TRUE),
                                    "Kelvin","Celsius")
