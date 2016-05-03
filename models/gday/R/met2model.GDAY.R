@@ -152,6 +152,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
     wind_speed  <- try(ncvar_get(nc, "wind_speed")) ## m/s
     air_pressure <- try(ncvar_get(nc, "air_pressure")) ## Pa
     ppt <- try(ncvar_get(nc, "precipitation_flux")) ## kg/m2/s
+    PAR <- SW * SW_2_PAR
 
     nc_close(nc)
 
@@ -171,7 +172,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
       } else {
         ndays <- 365
       }
-      idx = 0
+      idx = 1
       for (doy in 1:ndays) {
 
         ## If there is no Tsoil variabile use Tair...it doesn't look like Tsoil
@@ -180,7 +181,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
         for (hod in 1:48) {
 
           rain = ppt[idx] * SEC_TO_HFHR
-          par = SW[idx] * SW_2_PAR
+          par = PAR[idx]
           tair = Tair[idx] + K_TO_DEG
           wind = wind_speed[idx]
           press = air_pressure[idx] * PA_2_KPA
@@ -222,7 +223,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
 
     } else {
 
-      idx = 0
+      idx = 1
       if(year %% 4 == 0) {
         ndays <= 366
       } else {
@@ -230,47 +231,54 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
       }
       for (doy in 1:ndays) {
 
+        # Build day, morning and afternoon indicies
+        day_idx <- idx:idx+48
+        mor_idx <- idx:idx+23
+        eve_idx <- idx+24:idx+48
+
+        tam <- Tair[mor_idx][PAR[mor_idx] > 0.0]
+        tpm <- Tair[eve_idx][PAR[eve_idx] > 0.0]
+
         ## Needs to be daylight hours...how do we access sun up/down
-        tair = ?
-        rain = sum(ppt[idx:idx+48] * SEC_TO_HFHR)
+        tair = Tair[day_idx][PAR[mor_idx] > 0.0]
+        rain = sum(ppt[day_idx] * SEC_TO_HFHR)
 
         ## If there is no Tsoil variabile use Tair...it doesn't look like Tsoil
         ## is a standard input
-        tsoil = mean(tair[idx:idx+48] + K_TO_DEG)
+        tsoil = mean(tair[day_idx] + K_TO_DEG)
 
         ## Needs to be AM/PM
-        tam = ?
-        tpm = ?
+        tam = Tair[mor_idx][PAR[mor_idx] > 0.0]
+        tpm = Tair[eve_idx][PAR[eve_idx] > 0.0]
 
-        tmin = min(tair[idx:idx+48] + K_TO_DEG)
-        tmax = max(tair[idx:idx+48] + K_TO_DEG)
-        tday = mean(tair[idx:idx+48] + K_TO_DEG)
+        tmin = min(tair[day_idx] + K_TO_DEG)
+        tmax = max(tair[day_idx] + K_TO_DEG)
+        tday = mean(tair[day_idx] + K_TO_DEG)
 
-        # Needs to be AM/PM
-        vpd_am = ?
+        vpd_am = vpd[mor_idx][PAR[mor_idx] > 0.0]
         # This is an assumption of the Medlyn gs model
         if (vpd_am < 0.05) {
           vpd_am = 0.05
         }
 
-        vpd_pm = ?
+        vpd_am = vpd[eve_idx][PAR[eve_idx] > 0.0]
         # This is an assumption of the Medlyn gs model
         if (vpd_pm < 0.05) {
           vpd_pm = 0.05
         }
-        co2 = mean(CO2[idx:idx+48])
+        co2 = mean(CO2[day_idx])
 
         ## No NDEP, so N-cycle will have to be switched off by default
         ndep = -999.9
 
-        wind = mean(wind_speed[idx:idx+48])
-        press = mean(air_pressure[idx:idx+48] * PA_2_KPA)
+        wind = mean(wind_speed[day_idx])
+        press = mean(air_pressure[day_idx] * PA_2_KPA)
 
         # Needs to be AM/PM
-        wind_am = ?
-        wind_pm = ?
-        par_am = ?
-        par_pm = ?
+        wind_am = wind_speed[mor_idx][PAR[mor_idx] > 0.0]
+        wind_pm = wind_speed[eve_idx][PAR[eve_idx] > 0.0]
+        par_am = PAR[mor_idx][PAR[mor_idx] > 0.0]
+        par_pm = PAR[eve_idx][PAR[eve_idx] > 0.0]
       }
 
       ## build data matrix
