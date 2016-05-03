@@ -46,7 +46,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
   SW_2_PAR <- 2.3
   PA_2_KPA <- 0.001
   SEC_TO_HFHR <- 60.0 * 30.0
-  DEG_TO_KELVIN <- 273.15
+  K_TO_DEG <- -273.15
 
   if(!require(PEcAn.utils)) print("install PEcAn.utils")
 
@@ -152,12 +152,12 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
 
         ## If there is no Tsoil variabile use Tair...it doesn't look like Tsoil
         ## is a standard input
-        tsoil = mean(tair[idx:idx+48] + DEG_TO_KELVIN)
+        tsoil = mean(tair[idx:idx+48] + K_TO_DEG)
         for (hod in 1:48) {
 
           rain = ppt[idx] * SEC_TO_HFHR
           par = SW[idx] * SW_2_PAR
-          tair = Tair[idx] + DEG_TO_KELVIN
+          tair = Tair[idx] + K_TO_DEG
           wind = wind_speed[idx]
           press = air_pressure[idx] * PA_2_KPA
           rh = qair2rh(SH[idx], Tair[idx])
@@ -209,15 +209,15 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
 
         ## If there is no Tsoil variabile use Tair...it doesn't look like Tsoil
         ## is a standard input
-        tsoil = mean(tair[idx:idx+48] + DEG_TO_KELVIN)
+        tsoil = mean(tair[idx:idx+48] + K_TO_DEG)
 
         ## Needs to be AM/PM
         tam = ?
         tpm = ?
 
-        tmin = min(tair[idx:idx+48] + DEG_TO_KELVIN)
-        tmax = max(tair[idx:idx+48] + DEG_TO_KELVIN)
-        tday = mean(tair[idx:idx+48] + DEG_TO_KELVIN)
+        tmin = min(tair[idx:idx+48] + K_TO_DEG)
+        tmax = max(tair[idx:idx+48] + K_TO_DEG)
+        tday = mean(tair[idx:idx+48] + K_TO_DEG)
 
         # Needs to be AM/PM
         vpd_am = ?
