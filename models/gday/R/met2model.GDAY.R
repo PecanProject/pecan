@@ -170,7 +170,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
           }
 
           ## No NDEP, so N-cycle will have to be switched off by default
-          ndep = -999.9                   # t ha-1
+          ndep = -999.9
 
           idx <- idx + 1
         } ## Hour of day loop
@@ -196,8 +196,8 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
         }
       } ## Day of year loop
 
-
     } else {
+
       idx = 0
       if(year %% 4 == 0) {
         ndays <= 366
@@ -247,8 +247,6 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
         wind_pm = ?
         par_am = ?
         par_pm = ?
-
-
       }
 
       ## build data matrix
@@ -272,14 +270,13 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
                    wind_pm,
                    par_am,
                    par_pm)
-    }
 
-    if(is.null(out)){
-      out = tmp
-    } else {
-      out = rbind(out,tmp)
-    }
-
+      if (is.null(out)) {
+        out = tmp
+      } else {
+        out = rbind(out,tmp)
+      }
+    } ## end sub-daily/day if/else block
   } ## end loop over years
 
   ## write output
