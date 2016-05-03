@@ -56,9 +56,12 @@ require(ncdf4)
     ## standard variables: Fluxes
     output[[1]] <- (sub.GDAY.output[,"auto_resp"] * THA_2_KG_M2) / timestep.s
     output[[2]] <- (sub.GDAY.output[,"hetero_resp"] * THA_2_KG_M2) / timestep.s
-    output[[3]] <- (sub.GDAY.output[,"gpp"] * THA_2_KG_M2) / timestep.s
-    output[[4]] <- (sub.GDAY.output[,"nep"] * -1 * THA_2_KG_M2) / timestep.s
-    output[[5]] <- (sub.GDAY.output[,"npp"] * THA_2_KG_M2) / timestep.s
+    output[[3]] <- (sub.GDAY.output[,"auto_resp"] + \
+                    sub.GDAY.output[,"hetero_resp"] * THA_2_KG_M2) / timestep.s
+    output[[4]] <- (sub.GDAY.output[,"gpp"] * THA_2_KG_M2) / timestep.s
+    output[[5]] <- (sub.GDAY.output[,"nep"] * -1.0 * THA_2_KG_M2) / timestep.s
+    output[[6]] <- (sub.GDAY.output[,"npp"] * THA_2_KG_M2) / timestep.s
+    output[[7]] <- (sub.GDAY.output[,"lai"])
 
 
     #******************** Declare netCDF variables ********************#
@@ -82,9 +85,12 @@ require(ncdf4)
     var <- list()
     var[[1]]  <- mstmipvar("AutoResp", lat, lon, t, NA)
     var[[2]]  <- mstmipvar("HeteroResp", lat, lon, t, NA)
-    var[[3]]  <- mstmipvar("GPP", lat, lon, t, NA)
-    var[[4]]  <- mstmipvar("NEE", lat, lon, t, NA)
-    var[[5]]  <- mstmipvar("NPP", lat, lon, t, NA)
+    var[[3]]  <- mstmipvar("TotalResp", lat, lon, t, NA)
+    var[[4]]  <- mstmipvar("GPP", lat, lon, t, NA)
+    var[[5]]  <- mstmipvar("NEE", lat, lon, t, NA)
+    var[[6]]  <- mstmipvar("NPP", lat, lon, t, NA)
+
+    var[[7]]  <- mstmipvar("LAI", lat, lon, t, NA)
 
     #var[[6]]  <- ncvar_def("LeafLitter", "kgC/m2/s", list(lon,lat,t), -999)
     #var[[7]]  <- ncvar_def("WoodyLitter", "kgC/m2/s", list(lon,lat,t), -999)
