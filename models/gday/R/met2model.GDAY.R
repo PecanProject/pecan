@@ -196,6 +196,11 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
                    press)
     } else {
       idx = 0
+      if(year %% 4 == 0) {
+        ndays <= 366
+      } else {
+        ndays <- 365
+      }
       for (doy in 1:ndays) {
 
         ## Needs to be daylight hours...how do we access sun up/down
@@ -240,7 +245,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
         par_am = ?
         par_pm = ?
 
-      
+
       }
 
       ## Aggregate variables up to daily
