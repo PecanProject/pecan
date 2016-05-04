@@ -30,7 +30,6 @@
 met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
                              end_date, ..., overwrite=FALSE,verbose=FALSE) {
 
-  MOL_2_UMOL <- 1E6
   library(PEcAn.utils)
   print("START met2model.MAESPA")
   start.date <- as.POSIXlt(start_date, tz = "GMT")
@@ -98,11 +97,6 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
       lon  <- ncvar_get(nc,"longitude")
       RAD <-  ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") #W m-2
       PAR <-   try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air")) #mol m-2 s-1
-      PAR <- PAR * MOL_2_UMOL
-      if (!is.numeric(PAR)) {
-        SW <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air") ##in W/m2
-        PAR <- SW * SW_2_PAR
-      }
       TAIR <-  ncvar_get(nc,"air_temperature") #K
       `RH%` <- try(ncvar_get(nc,"relative_humidity")) #percentage
       PPT <-  ncvar_get(nc,"precipitation_flux") #kg m-2 s-1
@@ -118,6 +112,14 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
       # FBEAM <- ncvar_get try((nc,"fraction_of_surface_downwelling_photosynthetic_photon_flux_in_air") #frction of direct beam
       # RH <- try(ncvar_get(nc,"relative_humidity"))# fraction
 
+      if(!is.numeric(PAR)){
+        #This function, from data.atmosphere will convert SW, in this case RAD,
+        #to a photosynthetic flux in umol/m2/s
+        PAR <- sw2ppfd(RAD)
+        }else{
+          #convert 
+          PAR <- udunits2::ud.convert(PAR,"mol","umol")
+        }
       # ºC   air temperature. If nonexistant. Error.
       TAIR <- udunits2::ud.convert(TAIR,"kelvin","celsius")
 
@@ -135,7 +137,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
       print("Skipping to next year")
       next
     }
-    tmp<-rbind(TAIR,PPT,RAD)
+    tmp<-rbind(TAIR,PPT,RAD,PAR)
 
     if(is.null(out)) {
       out = tmp
