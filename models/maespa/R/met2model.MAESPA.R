@@ -27,14 +27,16 @@
 ##'
 ##' @author Tony Gardella
 
-met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite=FALSE,verbose=FALSE){
+met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
+                             end_date, ..., overwrite=FALSE,verbose=FALSE) {
 
   MOL_2_UMOL <- 1E6
   library(PEcAn.utils)
   print("START met2model.MAESPA")
   start.date <- as.POSIXlt(start_date, tz = "GMT")
   end.date<- as.POSIXlt(end_date, tz = "GMT")
-  out.file <- paste(in.prefix, strptime(start.date, "%Y-%m-%d"),strptime(end.date, "%Y-%m-%d"),"dat", sep=".")
+  out.file <- paste(in.prefix, strptime(start.date, "%Y-%m-%d"),
+                    strptime(end.date, "%Y-%m-%d"),"dat", sep=".")
   out.file.full <- file.path(outfolder, out.file)
 
   results <- data.frame(file = out.file.full,
@@ -49,7 +51,8 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   print(results)
 
   if (file.exists(out.file.full) && !overwrite) {
-    logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
+    logger.debug("File '", out.file.full,
+                 "' already exists, skipping to next file.")
     return(invisible(results))
   }
 
@@ -70,12 +73,12 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   end_year <- year(end.date)
 
   ## loop over files
-  for(year in start_year:end_year){
+  for (year in start_year:end_year) {
     print(year)
 
     old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
 
-    if(file.exists(old.file)){
+    if (file.exists(old.file)) {
       ## open netcdf
       nc <- nc_open(old.file)
       ## convert time to seconds
@@ -95,10 +98,11 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
       lon  <- ncvar_get(nc,"longitude")
       RAD <-  ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") #W m-2
       PAR <-   try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air")) #mol m-2 s-1
+      PAR <- PAR * MOL_2_UMOL
       if (!is.numeric(PAR)) {
-        PAR <- PAR * MOL_2_UMOL
+        SW <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air") ##in W/m2
+        PAR <- SW * SW_2_PAR
       }
-
       TAIR <-  ncvar_get(nc,"air_temperature") #K
       `RH%` <- try(ncvar_get(nc,"relative_humidity")) #percentage
       PPT <-  ncvar_get(nc,"precipitation_flux") #kg m-2 s-1
@@ -114,74 +118,82 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
       # FBEAM <- ncvar_get try((nc,"fraction_of_surface_downwelling_photosynthetic_photon_flux_in_air") #frction of direct beam
       # RH <- try(ncvar_get(nc,"relative_humidity"))# fraction
 
-          # ºC   air temperature. If nonexistant. Error.
-          TAIR <- udunits2::ud.convert(TAIR,"kelvin","celsius")
+      # ºC   air temperature. If nonexistant. Error.
+      TAIR <- udunits2::ud.convert(TAIR,"kelvin","celsius")
 
-          ####ppm. atmospheric CO2 concentration. Constant from Enviiron namelist used instead
-          if(!is.numeric(CA)){print("Atmospheric CO2 concentration will be set to constant value set in ENVIRON namelist ")
-                              rm(CA)
-                              defaultCO2= 400 #400 is estimation of atmospheric CO2 in ppm)
-          }else{defaultCO2= 400} #400 is estimation of atmospheric CO2 in ppm))
+      ####ppm. atmospheric CO2 concentration. Constant from Enviiron namelist used instead
+      if(!is.numeric(CA)) {
+        print("Atmospheric CO2 concentration will be set to constant value set in ENVIRON namelist ")
+        rm(CA)
+        defaultCO2= 400 #400 is estimation of atmospheric CO2 in ppm)
+      } else {
+        defaultCO2= 400
+      } #400 is estimation of atmospheric CO2 in ppm))
 
-          nc_close(nc)
-        } else {
-          print("Skipping to next year")
-          next
-        }
+      nc_close(nc)
+    } else {
+      print("Skipping to next year")
+      next
+    }
+    tmp<-rbind(TAIR,PPT,RAD)
+
+    if(is.null(out)) {
+      out = tmp
+    } else {
+      out = cbind(out,tmp)
+    }
+
+  }### end loop over years
+
+  out[is.na(out)] <-0
+  #Get names
+  columnnames =  paste0("'",rownames(out),"'",collapse= " ")
+  #Get number of variables
+  numbercolumns = nrow(out)
+  #turn into matrix
+  out<- matrix(out,ncol= numbercolumns)
+
+  #Set day or hour Option(1 or 0)
+  if (tstep>=1) {
+    dayorhour = 1
+  } else {
+    dayorhour = 0
+  }
+
+  #Set number of timesteps in a day(timetsep of input data)
+  timesteps = tstep
+  # Set distribution of diffuse radiation incident from the sky.(0.0) is default.
+  difsky= 0.5
+  #Change format of date to DD/MM/YY
+  startdate = paste0("'",format(as.Date(start_date),"%d/%m/%y"),"'")
+  enddate = paste0("'",format(as.Date(end_date),"%d/%m/%y"),"'")
+  metdat <- readLines(con=system.file("template.met",
+                      package = "PEcAn.MAESPA"), n=-1)
 
 
-        tmp<-rbind(TAIR,PPT,RAD)
+  ## write output
+  #metdat<- gsub('@MAESPAMETHEADER@',metheader,metdat)
+  metdat<- gsub('@DISTDIFFRADINCIDENCE@',difsky,metdat)
+  metdat<- gsub('@DEFCO2@',defaultCO2,metdat)
+  #metdat<- gsub('@DEFSWMIN@',defaultSWmin,metdat)
+  #metdat<- gsub('@DEFSWMAX@',defaultSWmax,metdat)
+  #metdat<- gsub('@DEFATMOSPRESSURE@',deafaultatmospress,metdat)
+  metdat<- gsub('@LATITUDE@',lat,metdat)
+  metdat<- gsub('@LONGITUDE@',lon,metdat)
+  #metdat<- gsub('@TZLONG@',longmeridian,metdat)
+  #metdat<- gsub('@LONGHEM@',longhemisphere,metdat)
+  #metdat<- gsub('@LATHEM@',lathemisphere,metdat)
+  metdat<- gsub('@DAYORHR@',dayorhour,metdat)
+  metdat<- gsub('@TSTEPS@',timesteps,metdat)
+  metdat<- gsub('@NUMCOLUMNS@',numbercolumns,metdat)
+  metdat<- gsub('@STARTDATE@',startdate,metdat)
+  metdat<- gsub('@ENDDATE@',enddate,metdat)
+  metdat<- gsub('@COLNAMES@',columnnames,metdat)
 
-        if(is.null(out)){
-          out = tmp
-        } else {
-          out = cbind(out,tmp)}
+  writeLines(metdat, con=file.path(out.file.full))
+  write(paste(out),file=file.path(out.file.full),append = TRUE,
+        ncol=numbercolumns)
 
-    }### end loop over years
+  invisible(results)
 
-
-      out[is.na(out)] <-0
-      #Get names
-      columnnames =  paste0("'",rownames(out),"'",collapse= " ")
-      #Get number of variables
-      numbercolumns = nrow(out)
-      #turn into matrix
-      out<- matrix(out,ncol= numbercolumns)
-
-      #Set day or hour Option(1 or 0)
-      if(tstep>=1){dayorhour=1}else{dayorhour=0}
-      #Set number of timesteps in a day(timetsep of input data)
-      timesteps = tstep
-      # Set distribution of diffuse radiation incident from the sky.(0.0) is default.
-      difsky= 0.5
-      #Change format of date to DD/MM/YY
-      startdate = paste0("'",format(as.Date(start_date),"%d/%m/%y"),"'")
-      enddate = paste0("'",format(as.Date(end_date),"%d/%m/%y"),"'")
-      metdat <- readLines(con=system.file("template.met", package = "PEcAn.MAESPA"), n=-1)
-
-
-      ## write output
-      #metdat<- gsub('@MAESPAMETHEADER@',metheader,metdat)
-      metdat<- gsub('@DISTDIFFRADINCIDENCE@',difsky,metdat)
-      metdat<- gsub('@DEFCO2@',defaultCO2,metdat)
-      #metdat<- gsub('@DEFSWMIN@',defaultSWmin,metdat)
-      #metdat<- gsub('@DEFSWMAX@',defaultSWmax,metdat)
-      #metdat<- gsub('@DEFATMOSPRESSURE@',deafaultatmospress,metdat)
-      metdat<- gsub('@LATITUDE@',lat,metdat)
-      metdat<- gsub('@LONGITUDE@',lon,metdat)
-      #metdat<- gsub('@TZLONG@',longmeridian,metdat)
-      #metdat<- gsub('@LONGHEM@',longhemisphere,metdat)
-      #metdat<- gsub('@LATHEM@',lathemisphere,metdat)
-      metdat<- gsub('@DAYORHR@',dayorhour,metdat)
-      metdat<- gsub('@TSTEPS@',timesteps,metdat)
-      metdat<- gsub('@NUMCOLUMNS@',numbercolumns,metdat)
-      metdat<- gsub('@STARTDATE@',startdate,metdat)
-      metdat<- gsub('@ENDDATE@',enddate,metdat)
-      metdat<- gsub('@COLNAMES@',columnnames,metdat)
-
-      writeLines(metdat, con=file.path(out.file.full))
-      write(paste(out),file=file.path(out.file.full),append = TRUE,ncol=numbercolumns)
-
-      invisible(results)
-
-    }  ### End of function
+}  ### End of function
