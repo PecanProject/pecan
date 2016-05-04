@@ -30,7 +30,6 @@
 met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite=FALSE,verbose=FALSE){
 
   MOL_2_UMOL <- 1E6
-  
   library(PEcAn.utils)
   print("START met2model.MAESPA")
   start.date <- as.POSIXlt(start_date, tz = "GMT")
@@ -96,6 +95,10 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
       lon  <- ncvar_get(nc,"longitude")
       RAD <-  ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") #W m-2
       PAR <-   try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air")) #mol m-2 s-1
+      if (!is.numeric(PAR)) {
+        PAR <- PAR * MOL_2_UMOL
+      }
+
       TAIR <-  ncvar_get(nc,"air_temperature") #K
       `RH%` <- try(ncvar_get(nc,"relative_humidity")) #percentage
       PPT <-  ncvar_get(nc,"precipitation_flux") #kg m-2 s-1
@@ -111,12 +114,6 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
       # FBEAM <- ncvar_get try((nc,"fraction_of_surface_downwelling_photosynthetic_photon_flux_in_air") #frction of direct beam
       # RH <- try(ncvar_get(nc,"relative_humidity"))# fraction
 
-          if(!is.numeric(PAR)){
-            print("Photosynthetically Active Radiation(PAR)Calculated from RAD.If RAD absent, calculated from TAIR (DELTAT needed).")}else{
-              #4.6= unit conversion of W/m2 to mmol/m2/s
-              #0.4805 = based on the approximation that PAR is 0.45-0.50 of the total radiation
-              PAR <- PAR*4.6*0.4805##Convert W/m2 to mmol/m2/s
-            }
           # ºC   air temperature. If nonexistant. Error.
           TAIR <- udunits2::ud.convert(TAIR,"kelvin","celsius")
 
