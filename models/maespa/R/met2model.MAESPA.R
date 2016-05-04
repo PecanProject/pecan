@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+./#-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the
@@ -95,10 +95,11 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
       lon  <- ncvar_get(nc,"longitude")
       RAD <-  ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") #W m-2
       PAR <-   try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air")) #mol m-2 s-1
+      PAR <- PAR * MOL_2_UMOL
       if (!is.numeric(PAR)) {
-        PAR <- PAR * MOL_2_UMOL
+        SW <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air") ##in W/m2
+        PAR <- SW * SW_2_PAR
       }
-
       TAIR <-  ncvar_get(nc,"air_temperature") #K
       `RH%` <- try(ncvar_get(nc,"relative_humidity")) #percentage
       PPT <-  ncvar_get(nc,"precipitation_flux") #kg m-2 s-1
@@ -114,74 +115,76 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
       # FBEAM <- ncvar_get try((nc,"fraction_of_surface_downwelling_photosynthetic_photon_flux_in_air") #frction of direct beam
       # RH <- try(ncvar_get(nc,"relative_humidity"))# fraction
 
-          # ºC   air temperature. If nonexistant. Error.
-          TAIR <- udunits2::ud.convert(TAIR,"kelvin","celsius")
+      # ºC   air temperature. If nonexistant. Error.
+      TAIR <- udunits2::ud.convert(TAIR,"kelvin","celsius")
 
-          ####ppm. atmospheric CO2 concentration. Constant from Enviiron namelist used instead
-          if(!is.numeric(CA)){print("Atmospheric CO2 concentration will be set to constant value set in ENVIRON namelist ")
-                              rm(CA)
-                              defaultCO2= 400 #400 is estimation of atmospheric CO2 in ppm)
-          }else{defaultCO2= 400} #400 is estimation of atmospheric CO2 in ppm))
+      ####ppm. atmospheric CO2 concentration. Constant from Enviiron namelist used instead
+      if(!is.numeric(CA)) {
+        print("Atmospheric CO2 concentration will be set to constant value set in ENVIRON namelist ")
+        rm(CA)
+        defaultCO2= 400 #400 is estimation of atmospheric CO2 in ppm)
+      } else {
+        defaultCO2= 400
+      } #400 is estimation of atmospheric CO2 in ppm))
 
-          nc_close(nc)
-        } else {
-          print("Skipping to next year")
-          next
-        }
+      nc_close(nc)
+    } else {
+      print("Skipping to next year")
+      next
+    }
+    tmp<-rbind(TAIR,PPT,RAD)
 
+    if(is.null(out)) {
+      out = tmp
+    } else {
+      out = cbind(out,tmp)
+    }
 
-        tmp<-rbind(TAIR,PPT,RAD)
-
-        if(is.null(out)){
-          out = tmp
-        } else {
-          out = cbind(out,tmp)}
-
-    }### end loop over years
-
-
-      out[is.na(out)] <-0
-      #Get names
-      columnnames =  paste0("'",rownames(out),"'",collapse= " ")
-      #Get number of variables
-      numbercolumns = nrow(out)
-      #turn into matrix
-      out<- matrix(out,ncol= numbercolumns)
-
-      #Set day or hour Option(1 or 0)
-      if(tstep>=1){dayorhour=1}else{dayorhour=0}
-      #Set number of timesteps in a day(timetsep of input data)
-      timesteps = tstep
-      # Set distribution of diffuse radiation incident from the sky.(0.0) is default.
-      difsky= 0.5
-      #Change format of date to DD/MM/YY
-      startdate = paste0("'",format(as.Date(start_date),"%d/%m/%y"),"'")
-      enddate = paste0("'",format(as.Date(end_date),"%d/%m/%y"),"'")
-      metdat <- readLines(con=system.file("template.met", package = "PEcAn.MAESPA"), n=-1)
+  }### end loop over years
 
 
-      ## write output
-      #metdat<- gsub('@MAESPAMETHEADER@',metheader,metdat)
-      metdat<- gsub('@DISTDIFFRADINCIDENCE@',difsky,metdat)
-      metdat<- gsub('@DEFCO2@',defaultCO2,metdat)
-      #metdat<- gsub('@DEFSWMIN@',defaultSWmin,metdat)
-      #metdat<- gsub('@DEFSWMAX@',defaultSWmax,metdat)
-      #metdat<- gsub('@DEFATMOSPRESSURE@',deafaultatmospress,metdat)
-      metdat<- gsub('@LATITUDE@',lat,metdat)
-      metdat<- gsub('@LONGITUDE@',lon,metdat)
-      #metdat<- gsub('@TZLONG@',longmeridian,metdat)
-      #metdat<- gsub('@LONGHEM@',longhemisphere,metdat)
-      #metdat<- gsub('@LATHEM@',lathemisphere,metdat)
-      metdat<- gsub('@DAYORHR@',dayorhour,metdat)
-      metdat<- gsub('@TSTEPS@',timesteps,metdat)
-      metdat<- gsub('@NUMCOLUMNS@',numbercolumns,metdat)
-      metdat<- gsub('@STARTDATE@',startdate,metdat)
-      metdat<- gsub('@ENDDATE@',enddate,metdat)
-      metdat<- gsub('@COLNAMES@',columnnames,metdat)
+  out[is.na(out)] <-0
+  #Get names
+  columnnames =  paste0("'",rownames(out),"'",collapse= " ")
+  #Get number of variables
+  numbercolumns = nrow(out)
+  #turn into matrix
+  out<- matrix(out,ncol= numbercolumns)
 
-      writeLines(metdat, con=file.path(out.file.full))
-      write(paste(out),file=file.path(out.file.full),append = TRUE,ncol=numbercolumns)
+  #Set day or hour Option(1 or 0)
+  if(tstep>=1){dayorhour=1}else{dayorhour=0}
+  #Set number of timesteps in a day(timetsep of input data)
+  timesteps = tstep
+  # Set distribution of diffuse radiation incident from the sky.(0.0) is default.
+  difsky= 0.5
+  #Change format of date to DD/MM/YY
+  startdate = paste0("'",format(as.Date(start_date),"%d/%m/%y"),"'")
+  enddate = paste0("'",format(as.Date(end_date),"%d/%m/%y"),"'")
+  metdat <- readLines(con=system.file("template.met", package = "PEcAn.MAESPA"), n=-1)
 
-      invisible(results)
 
-    }  ### End of function
+  ## write output
+  #metdat<- gsub('@MAESPAMETHEADER@',metheader,metdat)
+  metdat<- gsub('@DISTDIFFRADINCIDENCE@',difsky,metdat)
+  metdat<- gsub('@DEFCO2@',defaultCO2,metdat)
+  #metdat<- gsub('@DEFSWMIN@',defaultSWmin,metdat)
+  #metdat<- gsub('@DEFSWMAX@',defaultSWmax,metdat)
+  #metdat<- gsub('@DEFATMOSPRESSURE@',deafaultatmospress,metdat)
+  metdat<- gsub('@LATITUDE@',lat,metdat)
+  metdat<- gsub('@LONGITUDE@',lon,metdat)
+  #metdat<- gsub('@TZLONG@',longmeridian,metdat)
+  #metdat<- gsub('@LONGHEM@',longhemisphere,metdat)
+  #metdat<- gsub('@LATHEM@',lathemisphere,metdat)
+  metdat<- gsub('@DAYORHR@',dayorhour,metdat)
+  metdat<- gsub('@TSTEPS@',timesteps,metdat)
+  metdat<- gsub('@NUMCOLUMNS@',numbercolumns,metdat)
+  metdat<- gsub('@STARTDATE@',startdate,metdat)
+  metdat<- gsub('@ENDDATE@',enddate,metdat)
+  metdat<- gsub('@COLNAMES@',columnnames,metdat)
+
+  writeLines(metdat, con=file.path(out.file.full))
+  write(paste(out),file=file.path(out.file.full),append = TRUE,ncol=numbercolumns)
+
+  invisible(results)
+
+}  ### End of function
