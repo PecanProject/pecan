@@ -185,7 +185,7 @@ CLEAN_TABLES="${CLEAN_TABLES} methods models modeltypes"
 CLEAN_TABLES="${CLEAN_TABLES} pfts posteriors priors"
 CLEAN_TABLES="${CLEAN_TABLES} runs sites species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
-CLEAN_TABLES="${CLEAN_TABLES} projects"
+CLEAN_TABLES="${CLEAN_TABLES} projects sitegroups"
 
 # tables that have checks that need to be looked at.
 CHECK_TABLES="traits yields"
@@ -200,6 +200,7 @@ MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
 MANY_TABLES="${MANY_TABLES} managements_treatments modeltypes_formats"
 MANY_TABLES="${MANY_TABLES} pfts_priors pfts_species"
 MANY_TABLES="${MANY_TABLES} posterior_samples posteriors_ensembles"
+MANY_TABLES="${MANY_TABLES} sitegroups_sites"
 
 # tables that should NOT be dumped
 IGNORE_TABLES="sessions"
