@@ -53,7 +53,7 @@ require(ncdf4)
     ## Setup outputs for netCDF file in appropriate units
     output <- list()
 
-    ## standard variables: Fluxes
+    ## standard variables: C-Fluxes
     output[[1]] <- (sub.GDAY.output[,"auto_resp"] * THA_2_KG_M2) / timestep.s
     output[[2]] <- (sub.GDAY.output[,"hetero_resp"] * THA_2_KG_M2) / timestep.s
     output[[3]] <- (sub.GDAY.output[,"auto_resp"] +
@@ -62,9 +62,15 @@ require(ncdf4)
     output[[5]] <- (sub.GDAY.output[,"nep"] * -1.0 * THA_2_KG_M2) / timestep.s
     output[[6]] <- (sub.GDAY.output[,"npp"] * THA_2_KG_M2) / timestep.s
 
-    ## standard variables: State
-    output[[7]] <- (sub.GDAY.output[,"lai"])
-    # Add the rest...
+    ## standard variables: C-State
+    output[[7]] <- (sub.GDAY.output[,"stem"] +
+                    sub.GDAY.output[,"branch"] * THA_2_KG_M2) / timestep.s
+    output[[8]] <- (sub.GDAY.output[,"soilc"] * THA_2_KG_M2) / timestep.s
+    output[[9]] <- (sub.GDAY.output[,"lai"])
+
+    ## standard variables: water fluxes
+    output[[10]] <- (sub.GDAY.output[,"et"]) / timestep.s
+    output[[11]] <- (sub.GDAY.output[,"transpiration"]) / timestep.s
 
 
     #******************** Declare netCDF variables ********************#
@@ -86,6 +92,7 @@ require(ncdf4)
     }
 
     var <- list()
+    ## C-Fluxes
     var[[1]]  <- mstmipvar("AutoResp", lat, lon, t, NA)
     var[[2]]  <- mstmipvar("HeteroResp", lat, lon, t, NA)
     var[[3]]  <- mstmipvar("TotalResp", lat, lon, t, NA)
@@ -93,7 +100,16 @@ require(ncdf4)
     var[[5]]  <- mstmipvar("NEE", lat, lon, t, NA)
     var[[6]]  <- mstmipvar("NPP", lat, lon, t, NA)
 
-    var[[7]]  <- mstmipvar("LAI", lat, lon, t, NA)
+
+    ## C-State
+    var[[7]]  <- mstmipvar("AbvGrndWood", lat, lon, t, NA)
+    var[[8]]  <- mstmipvar("TotSoilCarb", lat, lon, t, NA)
+    var[[9]]  <- mstmipvar("LAI", lat, lon, t, NA)
+
+    ## Water fluxes
+    var[[10]]  <- mstmipvar("Evap", lat, lon, t, NA)
+    var[[11]]  <- mstmipvar("TVeg", lat, lon, t, NA)
+
 
     #var[[6]]  <- ncvar_def("LeafLitter", "kgC/m2/s", list(lon,lat,t), -999)
     #var[[7]]  <- ncvar_def("WoodyLitter", "kgC/m2/s", list(lon,lat,t), -999)
@@ -103,10 +119,6 @@ require(ncdf4)
     #var[[11]]  <- ncvar_def("RootBiomass", "kgC/m2", list(lon,lat,t), -999)
     #var[[12]]  <- ncvar_def("LitterBiomass", "kgC/m2", list(lon,lat,t), -999)
     #var[[13]]  <- ncvar_def("SoilC", "kgC/m2", list(lon,lat,t), -999)
-
-    #var[[14]]  <- mstmipvar("TotalResp", lat, lon, t, NA)
-    #var[[15]]  <- mstmipvar("TotLivBiom", lat, lon, t, NA)
-    #var[[16]]  <- mstmipvar("TotSoilCarb", lat, lon, t, NA)
 
     #******************** Declar netCDF variables ********************#
 
