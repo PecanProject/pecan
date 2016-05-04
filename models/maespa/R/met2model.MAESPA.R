@@ -1,4 +1,4 @@
-./#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the
@@ -27,14 +27,16 @@
 ##'
 ##' @author Tony Gardella
 
-met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite=FALSE,verbose=FALSE){
+met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
+                             end_date, ..., overwrite=FALSE,verbose=FALSE) {
 
   MOL_2_UMOL <- 1E6
   library(PEcAn.utils)
   print("START met2model.MAESPA")
   start.date <- as.POSIXlt(start_date, tz = "GMT")
   end.date<- as.POSIXlt(end_date, tz = "GMT")
-  out.file <- paste(in.prefix, strptime(start.date, "%Y-%m-%d"),strptime(end.date, "%Y-%m-%d"),"dat", sep=".")
+  out.file <- paste(in.prefix, strptime(start.date, "%Y-%m-%d"),
+                    strptime(end.date, "%Y-%m-%d"),"dat", sep=".")
   out.file.full <- file.path(outfolder, out.file)
 
   results <- data.frame(file = out.file.full,
@@ -49,7 +51,8 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   print(results)
 
   if (file.exists(out.file.full) && !overwrite) {
-    logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
+    logger.debug("File '", out.file.full,
+                 "' already exists, skipping to next file.")
     return(invisible(results))
   }
 
@@ -151,7 +154,12 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   out<- matrix(out,ncol= numbercolumns)
 
   #Set day or hour Option(1 or 0)
-  if(tstep>=1){dayorhour=1}else{dayorhour=0}
+  if (tstep>=1) {
+    dayorhour = 1
+  } else {
+    dayorhour = 0
+  }
+
   #Set number of timesteps in a day(timetsep of input data)
   timesteps = tstep
   # Set distribution of diffuse radiation incident from the sky.(0.0) is default.
@@ -159,7 +167,8 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   #Change format of date to DD/MM/YY
   startdate = paste0("'",format(as.Date(start_date),"%d/%m/%y"),"'")
   enddate = paste0("'",format(as.Date(end_date),"%d/%m/%y"),"'")
-  metdat <- readLines(con=system.file("template.met", package = "PEcAn.MAESPA"), n=-1)
+  metdat <- readLines(con=system.file("template.met",
+                      package = "PEcAn.MAESPA"), n=-1)
 
 
   ## write output
@@ -182,7 +191,8 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   metdat<- gsub('@COLNAMES@',columnnames,metdat)
 
   writeLines(metdat, con=file.path(out.file.full))
-  write(paste(out),file=file.path(out.file.full),append = TRUE,ncol=numbercolumns)
+  write(paste(out),file=file.path(out.file.full),append = TRUE,
+        ncol=numbercolumns)
 
   invisible(results)
 
