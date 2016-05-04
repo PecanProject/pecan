@@ -113,9 +113,8 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
       # RH <- try(ncvar_get(nc,"relative_humidity"))# fraction
 
       if(!is.numeric(PAR)){
-        #This function, from data.atmosphere will convert SW, in this case RAD,
-        #to a photosynthetic flux in umol/m2/s
-        PAR <- sw2ppfd(RAD)
+        #This function, from data.atmosphere will convert SW to par in W/m2
+        PAR <- sw2par(RAD)
         }else{
           #convert 
           PAR <- udunits2::ud.convert(PAR,"mol","umol")
@@ -137,7 +136,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
       print("Skipping to next year")
       next
     }
-    tmp<-rbind(TAIR,PPT,RAD,PAR)
+    tmp<-rbind(TAIR,PPT,RAD)
 
     if(is.null(out)) {
       out = tmp
