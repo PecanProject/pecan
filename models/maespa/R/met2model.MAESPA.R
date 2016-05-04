@@ -70,12 +70,12 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   end_year <- year(end.date)
 
   ## loop over files
-  for(year in start_year:end_year){
+  for (year in start_year:end_year) {
     print(year)
 
     old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
 
-    if(file.exists(old.file)){
+    if (file.exists(old.file)) {
       ## open netcdf
       nc <- nc_open(old.file)
       ## convert time to seconds
@@ -141,7 +141,6 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
     }
 
   }### end loop over years
-
 
   out[is.na(out)] <-0
   #Get names
