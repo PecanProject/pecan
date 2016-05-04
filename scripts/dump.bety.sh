@@ -100,27 +100,30 @@ USER_TABLES="users"
 # will be imported during creaton
 CLEAN_TABLES="citations covariates cultivars dbfiles"
 CLEAN_TABLES="${CLEAN_TABLES} ensembles entities formats inputs"
-CLEAN_TABLES="${CLEAN_TABLES} likelihoods"
-CLEAN_TABLES="${CLEAN_TABLES} machines managements methods"
-CLEAN_TABLES="${CLEAN_TABLES} mimetypes models modeltypes"
-CLEAN_TABLES="${CLEAN_TABLES} modeltypes_formats pfts"
-CLEAN_TABLES="${CLEAN_TABLES} posterior_samples posteriors"
-CLEAN_TABLES="${CLEAN_TABLES} priors runs sites sitegroups"
-CLEAN_TABLES="${CLEAN_TABLES} species treatments"
+CLEAN_TABLES="${CLEAN_TABLES} likelihoods machines managements"
+CLEAN_TABLES="${CLEAN_TABLES} methods mimetypes models modeltypes"
+CLEAN_TABLES="${CLEAN_TABLES} pfts posteriors priors"
+CLEAN_TABLES="${CLEAN_TABLES} runs sites species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
+CLEAN_TABLES="${CLEAN_TABLES} projects"
 
 # tables that have checks that need to be looked at.
 CHECK_TABLES="traits yields"
 
 # tables that have many to many relationships
+# Following tables that don't have id's yet and are not included
+#  - cultivars_pfts
+#  - trait_covariate_associations
 MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
+MANY_TABLES="${MANY_TABLES} current_posteriors"
 MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
-MANY_TABLES="${MANY_TABLES} managements_treatments pfts_priors"
-MANY_TABLES="${MANY_TABLES} pfts_species posteriors_ensembles"
-MANY_TABLES="${MANY_TABLES} sitegroups_sites"
+MANY_TABLES="${MANY_TABLES} managements_treatments modeltypes_formats"
+MANY_TABLES="${MANY_TABLES} pfts_priors pfts_species"
+MANY_TABLES="${MANY_TABLES} posterior_samples posteriors_ensembles"
 
 # tables that should NOT be dumped
 IGNORE_TABLES="sessions"
+SYSTEM_TABLES="schema_migrations spatial_ref_sys"
 
 # be quiet if not interactive
 if ! tty -s ; then

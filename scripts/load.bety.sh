@@ -173,31 +173,37 @@ PG_OPT="${PG_OPT} -v ON_ERROR_ROLLBACK=on"
 # list of all tables, schema_migrations is ignored since that
 # will be imported during creaton
 
-# list of tables that are one to many relationships
+# list of tables that are part of an empty setup
 EMPTY_TABLES="formats machines mimetypes users"
 
-CLEAN_TABLES="citations covariates cultivars"
-CLEAN_TABLES="${CLEAN_TABLES} ensembles entities"
-CLEAN_TABLES="${CLEAN_TABLES} inputs likelihoods"
-CLEAN_TABLES="${CLEAN_TABLES} managements methods"
-CLEAN_TABLES="${CLEAN_TABLES} models"
-CLEAN_TABLES="${CLEAN_TABLES} modeltypes modeltypes_formats"
-CLEAN_TABLES="${CLEAN_TABLES} pfts posterior_samples posteriors"
-CLEAN_TABLES="${CLEAN_TABLES} priors runs sites sitegroups"
-CLEAN_TABLES="${CLEAN_TABLES} species treatments"
+# list of all tables, schema_migrations is ignored since that
+# will be imported during creaton
+CLEAN_TABLES="citations covariates cultivars dbfiles"
+CLEAN_TABLES="${CLEAN_TABLES} ensembles entities inputs"
+CLEAN_TABLES="${CLEAN_TABLES} likelihoods managements"
+CLEAN_TABLES="${CLEAN_TABLES} methods models modeltypes"
+CLEAN_TABLES="${CLEAN_TABLES} pfts posteriors priors"
+CLEAN_TABLES="${CLEAN_TABLES} runs sites species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
-CLEAN_TABLES="${CLEAN_TABLES} traits yields"
-CLEAN_TABLES="${CLEAN_TABLES} dbfiles"
+CLEAN_TABLES="${CLEAN_TABLES} projects"
 
-# list of tables that are many to many relationships
+# tables that have checks that need to be looked at.
+CHECK_TABLES="traits yields"
+
+# tables that have many to many relationships
+# Following tables that don't have id's yet and are not included
+#  - cultivars_pfts
+#  - trait_covariate_associations
 MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
+MANY_TABLES="${MANY_TABLES} current_posteriors"
 MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
-MANY_TABLES="${MANY_TABLES} managements_treatments pfts_priors"
-MANY_TABLES="${MANY_TABLES} pfts_species posteriors_ensembles"
-MANY_TABLES="${MANY_TABLES} sitegroups_sites"
+MANY_TABLES="${MANY_TABLES} managements_treatments modeltypes_formats"
+MANY_TABLES="${MANY_TABLES} pfts_priors pfts_species"
+MANY_TABLES="${MANY_TABLES} posterior_samples posteriors_ensembles"
 
 # tables that should NOT be dumped
 IGNORE_TABLES="sessions"
+SYSTEM_TABLES="schema_migrations spatial_ref_sys"
 
 # list where to download data from. This data should come
 # from the database. Same as mysite which should come from
@@ -350,7 +356,7 @@ trap '
 # 3) load new data
 # 4) set last inserted item in my range
 # 5) enable constraints on this table
-for T in ${EMPTY_TABLES} ${CLEAN_TABLES} ${MANY_TABLES}; do
+for T in ${EMPTY_TABLES} ${CLEAN_TABLES} ${CHECK_TABLES} ${MANY_TABLES}; do
   # start
   echo "BEGIN;" >&3
   echo "ALTER TABLE ${T} DISABLE TRIGGER ALL;" >&3
