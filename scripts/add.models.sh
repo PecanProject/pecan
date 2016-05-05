@@ -9,6 +9,7 @@ addLocalModel "ED2.2" "ED2" "82" "ed2.r82"
 addLocalModel "SIPNET" "SIPNET" "unk" "sipnet.runk"
 addLocalModel "DALEC" "DALEC" "" "dalec_seqMH"
 addLocalModel "Linkages" "LINKAGES" "git" "linkages.git"
+addLocalModel "MAESPA" "MAESPA" "git" "maespa.git"
 
 # special case for BioCro
 addModelFile "${FQDN}" "BioCro" "BIOCRO" "" "biocro.Rscript" "${R_LIBS_USER}/PEcAn.BIOCRO"
