@@ -22,11 +22,14 @@ if ($authentication) {
 # boolean parameters
 $offline=isset($_REQUEST['offline']) ? "&offline=offline" : "";
 
-// runid
+// workflowid
 if (!isset($_REQUEST['workflowid'])) {
   die("Need a workflowid.");
 }
 $workflowid=$_REQUEST['workflowid'];
+
+// number of log lines
+$loglines = isset($_REQUEST['loglines']) ? $_REQUEST['loglines'] : 10;
 
 // get run information
 $stmt = $pdo->prepare("SELECT folder, params FROM workflows WHERE workflows.id=?");
@@ -48,6 +51,7 @@ if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
 
 // quick checks for error and finished
 $finished = false;
+$error = false;
 $title = "Job Executing";
 $message = "Job is currently executing, please wait.";
 foreach ($status as $line) {
@@ -60,10 +64,9 @@ foreach ($status as $line) {
     if (isset($params['email']) && ($params['email'] != "")) {
       $url = (isset($_SERVER['HTTPS']) ? "https://" : "http://");
       $url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'] . $_SERVER["SCRIPT_NAME"];
+      $url .= "?workflowid=${workflowid}&loglines=${loglines}";
       if ($offline) {
-        $url .= "?workflowid=${workflowid}&offline=offline";
-      } else {
-        $url .= "?workflowid=${workflowid}";
+        $url .= "&offline=offline";
       }
       mail($params['email'], "Workflow has failed", "You can find the results on $url");
     }
@@ -72,6 +75,7 @@ foreach ($status as $line) {
       die('Invalid query: ' . error_database());
     }
     $finished = true;
+    $error = true;
   }
   if ($data[0] == "ADVANCED" && count($data) < 3) {
     header( "Location: 06-edit.php?workflowid=${workflowid}${offline}");
@@ -109,6 +113,14 @@ if (!$finished) {
   function nextStep() {
     $("#formnext").submit();
   }
+
+  function refresh() {
+    var url="<?php echo $_SERVER["SCRIPT_NAME"] . '?workflowid=' . $workflowid; ?>";
+    url += "&loglines=" + $("#loglines").val();
+    //window.location.replace(url);
+    console.log(url);
+    return false;
+  }
 </script>
 </head>
 <body>
@@ -128,6 +140,7 @@ if (!$finished) {
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
       <input type="hidden" name="workflowid" value="<?php echo $workflowid; ?>" />
+      <input type="hidden" name="loglines" value="<?php echo $loglines; ?>" />
     </form>
 
     <span id="error" class="small">&nbsp;</span>
@@ -180,6 +193,54 @@ foreach ($status as $line) {
 }
 ?>
   </table>
+<?php if ($error) { ?>
+  <h2>ERROR</h2>
+  There was an error in the execution of the workflow. Please see the log below, or see the
+  full log in the finished view. Good places to look for what could have gone wrong is the
+  workflow.Rout file (which can be found under PEcAn Files pull down) or at the output from
+  the model (which can be found under the Outputs pull down).
+<?php } ?>
+  <h2>Workflow Log</h2>
+  Last <select id="loglines" onchange="refresh();">
+<?php
+$lines=array(10, 20, 50, 100);
+foreach($lines as &$v) {
+  if ($v == $loglines) {
+    echo "<option selected>${v}</option>";
+  } else {
+    echo "<option>${v}</option>";
+  }
+}
+?>
+  </select> lines of the workflow.Rout
+  <div class="logfile">
+<?php
+  $lines=array();
+  if (file_exists("$folder/workflow2.Rout")) {
+    $fp = fopen("$folder/workflow2.Rout", "r");
+    while(!feof($fp)) {
+      $line = htmlentities(fgets($fp, 4096));
+      array_push($lines, $line);
+      if (count($lines) > $loglines) {
+        array_shift($lines);
+      }
+    }
+    fclose($fp);
+  }
+  if (file_exists("$folder/workflow.Rout")) {
+    $fp = fopen("$folder/workflow.Rout", "r");
+    while(!feof($fp)) {
+      $line = htmlentities(fgets($fp, 4096));
+      array_push($lines, $line);
+      if (count($lines) > $loglines) {
+        array_shift($lines);
+      }
+    }
+    fclose($fp);
+  }
+  echo implode("<br/>\n", $lines);
+?>
+  </div>
   </div>
   <div id="footer"><?php echo get_footer(); ?></div>
 </div>
