@@ -10,6 +10,7 @@ addLocalModel "SIPNET" "SIPNET" "unk" "sipnet.runk"
 addLocalModel "DALEC" "DALEC" "" "dalec_seqMH"
 addLocalModel "Linkages" "LINKAGES" "git" "linkages.git"
 addLocalModel "MAESPA" "MAESPA" "git" "maespa.git"
+addLocalModel "LPJ-GUESS" "LPJGUESS" "3.1" "guess.3.1"
 
 # special case for BioCro
 addModelFile "${FQDN}" "BioCro" "BIOCRO" "" "biocro.Rscript" "${R_LIBS_USER}/PEcAn.BIOCRO"
