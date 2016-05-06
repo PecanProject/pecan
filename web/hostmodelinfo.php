@@ -32,7 +32,8 @@ $earth = 1118;
 $met = array('CF'     => 33, 
              'SIPNET' => 24,
              'ED2'    => 12,
-             'DALEC'  => 1000000002);
+             'DALEC'  => 1000000002,
+             'LINKAGES' => 1000000003);
 
 $host = isset($_REQUEST['host']) ? $_REQUEST['host'] : "";
 $model = isset($_REQUEST['model']) ? $_REQUEST['model'] : "";
