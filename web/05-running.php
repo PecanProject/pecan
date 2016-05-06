@@ -29,7 +29,7 @@ if (!isset($_REQUEST['workflowid'])) {
 $workflowid=$_REQUEST['workflowid'];
 
 // number of log lines
-$loglines = isset($_REQUEST['loglines']) ? $_REQUEST['loglines'] : 10;
+$loglines = isset($_REQUEST['loglines']) ? $_REQUEST['loglines'] : 20;
 
 // get run information
 $stmt = $pdo->prepare("SELECT folder, params FROM workflows WHERE workflows.id=?");
@@ -117,8 +117,7 @@ if (!$finished) {
   function refresh() {
     var url="<?php echo $_SERVER["SCRIPT_NAME"] . '?workflowid=' . $workflowid; ?>";
     url += "&loglines=" + $("#loglines").val();
-    //window.location.replace(url);
-    console.log(url);
+    window.location.replace(url);
     return false;
   }
 </script>
