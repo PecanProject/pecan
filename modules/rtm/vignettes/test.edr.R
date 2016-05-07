@@ -4,17 +4,24 @@
 library(PEcAnRTM)
 #print(write.config.xml.ED2)
 
+
+
 analysis.path <- '~/dietzelab/ED2/EDR/run/'
 setwd(analysis.path)
-#ed2in.path <- '/projectnb/dietzelab/pecan.data/output/ashiklom/1000001494/run/1000443342/ED2IN'
-ed2in.path <- NA
-history.path <- '/projectnb/dietzelab/pecan.data/output/ashiklom/1000001494/out/1000443342/'
+#pecan.id <- "1000001494"
+#run.id <- "1000443342"
+pecan.id <- "1000001502"
+run.id <- "1000443579"
+base.path <- '/projectnb/dietzelab/pecan.data/output/ashiklom'
+ed2in.path <- file.path(base.path, pecan.id, 'run', run.id, 'ED2IN')
+history.path <- file.path(base.path, pecan.id, 'out', run.id)
+print(list.files(history.path))
 paths <- list(ed2in.path = ed2in.path, history.path = history.path)
 par.wl <- 400:2499
 nir.wl <- 2500
 prospect.param <- c(1.4, 40, 5, 0.01, 0.01)
 prospect.version <- 5
-datetime <- ISOdatetime(2004, 07, 02, 12, 00, 00)
+datetime <- ISOdatetime(2004, 07, 01, 12, 00, 00)
 lenout <- 10
 trait.seq <- seq(0.1, 0.4, length.out = lenout)
 albedo.mat <- matrix(NA, 2101, lenout)

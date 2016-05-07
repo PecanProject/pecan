@@ -48,8 +48,9 @@ EDR <- function(paths,
 # Extract paths
 # TODO: Provide option to just a results path with implied file structure
 # (ED2IN, config.xml, history)
-    ed2in.path <- paths$ed2in
-    history.path <- paths$history
+    ed2in.path <- normalizePath(paths$ed2in)
+    history.path <- normalizePath(paths$history)
+    output.path <- normalizePath(output.path)
 
 # Process datetime
     if(!any(grepl("POSIX", class(datetime)))) stop("datetime is not POSIX")
@@ -99,8 +100,12 @@ EDR <- function(paths,
 # Call EDR -- NOTE that this requires that the ED2IN 
     albedo.files <- list.files(output.path, "albedo.*",full.names = TRUE)
     file.remove(albedo.files)
-    system(file.path(output.path, edr.exe.name), intern=TRUE)
-    if(!file.exists("albedo_par.dat")) stop("Error executing EDR")
+    exec.command <- sprintf("(cd %s; ./%s)", output.path, edr.exe.name)
+    ex <- system(exec.command, intern=TRUE)
+    if(any(grepl("fatal error", ex, ignore.case=TRUE))){
+        print(ex)
+        stop("Error executing EDR")
+    }
 # Analyze output
     albedo <- get.EDR.output(output.path)
 # Optionally, clean up all generated files
