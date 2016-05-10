@@ -97,6 +97,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values, settings, run.id,
   ### Create species parameter matrix with correct PFTs
   # trait.values$`Hemlock(Tsuga Canadensis)`$
   #group will be each spp. 
+  if(FALSE){
   for(group in names(trait.values)){
     if(group == "env"){
 
@@ -136,7 +137,8 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values, settings, run.id,
       }
     }
   }
-
+  }
+  
   switch.mat <- switch.mat[spp.params.save,]
   
   if(spinup==TRUE){
