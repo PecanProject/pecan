@@ -1,0 +1,12 @@
+##' @name metric.MAE
+##' @title metric.MAE
+##' @export
+##' @param dat
+##' 
+##' @author Betsy Cowdery
+
+metric.MSE <- function(dat, ...){
+  score <- mean(abs(dat$model - dat$obvs, na.rm = TRUE), na.rm = TRUE)
+  return(score)
+}
+

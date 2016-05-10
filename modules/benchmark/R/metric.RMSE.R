@@ -1,7 +1,7 @@
 ##' @name metric.RMSE
-##' @title metric.RMSE
+##' @title Root Mean Square Error
 ##' @export
-##' @param dat
+##' @param dat dataframe
 ##' 
 ##' @author Betsy Cowdery
 
