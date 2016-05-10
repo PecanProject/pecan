@@ -178,8 +178,8 @@ EMPTY_TABLES="formats machines mimetypes users"
 
 # list of all tables, schema_migrations is ignored since that
 # will be imported during creaton
-CLEAN_TABLES="citations covariates cultivars dbfiles"
-CLEAN_TABLES="${CLEAN_TABLES} ensembles entities inputs"
+CLEAN_TABLES="citations covariates cultivars inputs"
+CLEAN_TABLES="${CLEAN_TABLES} ensembles entities dbfiles"
 CLEAN_TABLES="${CLEAN_TABLES} likelihoods managements"
 CLEAN_TABLES="${CLEAN_TABLES} methods models modeltypes"
 CLEAN_TABLES="${CLEAN_TABLES} pfts posteriors priors"
