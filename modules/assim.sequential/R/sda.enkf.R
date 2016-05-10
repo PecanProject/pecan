@@ -15,6 +15,10 @@
 ##' 
 sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALSE){
   
+  #ensemble.samples <- get.ensemble.samples
+  #write.ensemble.configs #look inside for what you need #just the lapply thing
+  #flag for sampling parameters vs. running with mean
+  
   ## settings
   model <- settings$model$type
   write <- settings$database$bety$write
@@ -24,7 +28,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
   host <- settings$run$host
   forecast.duration <- 1 #eventually in settings
   forecast.time.step <- 1 #eventually in settings #dt
-  spin.up <- 100 #eventually in settings
+  spin.up <- 10 #eventually in settings
   nens = nrow(IC)
   start.year <- strftime(settings$run$start.date,"%Y")
   end.year   <- strftime(settings$run$end.date,"%Y")
@@ -116,6 +120,18 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
     #                                  settings, run.id[[i]],inputs = settings$run,IC=IC[i,]))
     settings$run$start.date <- paste0((as.numeric(start.year) - spin.up),strftime(settings$run$end.date,"/%m/%d"))
     settings$run$end.date <- paste0((as.numeric(end.year)),strftime(settings$run$end.date,"/%m/%d"))
+    
+    if(sample.parameters==TRUE){
+      settings$ensemble$start.date <- settings$run$start.date
+      settings$ensemble$end.date <- settings$run$end.date
+    }
+    
+    status.start("CONFIG")
+    settings <- run.write.configs(settings, write=settings$database$bety$write, ens.sample.method=settings$ensemble$method)
+   saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.CONFIGS.xml'))
+    status.end()
+   
+    
     do.call(my.write.config,args=list(settings=settings,run.id = run.id[[i]],restart=FALSE))
     
     ## write a README for the run
@@ -391,7 +407,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
     
     #Degrees of Freedom
     t1=1
-    t = nt
+    t = 15
     par(mfrow=c(1,1))
     #pairs(dat[,iX])
     

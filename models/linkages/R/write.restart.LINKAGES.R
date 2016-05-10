@@ -274,7 +274,7 @@ write.restart.LINKAGES <- function(out.dir,runid,time,settings,analysis.vec,
     settings$run$end.date <- paste0(time + 1,"/12/31")
 #    settings$run$start.date <- paste0(time,strftime(settings$run$end.date,"/%m/%d"))
 #    settings$run$end.date <- paste0(time,strftime(settings$run$end.date,"/%m/%d"))
-   
+
     do.call(my.write.config,args=list(settings=settings,run.id = runid,restart = TRUE,spinup = FALSE))   
 
 }
