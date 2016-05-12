@@ -4,14 +4,14 @@
 \alias{invert.custom}
 \title{Bayesian inversion of a model}
 \usage{
-invert.custom(observed, settings, quiet = FALSE)
+invert.custom(observed, invert.options, quiet = FALSE)
 }
 \arguments{
 \item{observed}{Vector, matrix, or data frame (coerced to matrix) of 
 observed values. For spectral data, wavelengths are rows and spectra are 
 columns.}
 
-\item{settings}{R list object containing the following elements:
+\item{invert.options}{R list object containing the following elements:
 
 inits Vector of initial values of model parameters to be inverted.
 
@@ -31,7 +31,8 @@ steps). Default=100
 adj_min Minimum threshold for rescaling Jump standard deviation.  Default = 
 0.1.
 
-target Target acceptance rate. Default=0.234
+target Target acceptance rate. Default=0.234, based on recommendation for 
+multivariate block sampling in Haario et al. 2001
 
 do.lsq Perform least squares optimization first (see `invert.lsq`), and use 
 outputs to initialize Metropolis Hastings. This may improve mixing time, but 

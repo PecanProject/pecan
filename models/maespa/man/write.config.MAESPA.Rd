@@ -15,7 +15,7 @@ write.config.MAESPA(defaults, trait.values, settings, run.id)
   \item{run.id}{id of run}
 }
 \value{
-configuration file for MODEL for given run
+configuration file for MAESPA for given run
 }
 \description{
 Writes a config file for Maespa

@@ -4,7 +4,8 @@
 \alias{EDR.preprocess.ed2in}
 \title{Preprocess ED2IN file for EDR}
 \usage{
-EDR.preprocess.ed2in(ed2in.path, output.path, datetime, history.full.prefix)
+EDR.preprocess.ed2in(ed2in.path, output.path, config.path, datetime,
+  history.full.prefix)
 }
 \arguments{
 \item{ed2in.path}{Path to original ED2IN file.}
