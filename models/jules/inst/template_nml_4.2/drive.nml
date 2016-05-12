@@ -1,0 +1,16 @@
+&jules_drive
+data_end='@MET_END@',
+data_period=1800,
+data_start='@MET_START@',
+file='@SITE_MET@',
+interp=8*'nf',
+l_daily_disagg=.false.,
+l_imogen=.false.,
+nvars=8,
+read_list=.false.,
+tpl_name='',
+var='sw_down','lw_down','tot_rain','tot_snow','t','wind',
+'pstar','q',
+var_name='',
+z1_tq_vary=.false.,
+/

@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# redirect output
+exec 3>&1
+exec &> "@OUTDIR@/logfile.txt"
+
+# host specific setup
+@HOSTSPECIFIC@
+
+# create output folder
+mkdir -p "@OUTDIR@"
+
+# see if application needs running
+if [ ! -e "@OUTDIR@/*.nc" ]; then
+  cd "@RUNDIR@"
+
+  "@BINARY@"
+  STATUS=$?
+  
+  # check the status
+  if [ $STATUS -ne 0 ]; then
+    echo -e "ERROR IN MODEL RUN\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
+    exit $STATUS
+  fi
+
+
+# copy readme with specs to output
+cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
+
+# all done
+echo -e "MODEL JULES FINISHED\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
