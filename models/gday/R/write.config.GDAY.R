@@ -41,6 +41,17 @@ write.config.GDAY <- function(defaults, trait.values, settings, run.id){
   } else {
     jobsh <- readLines(con=system.file("template.job", package = "PEcAn.GDAY"),n=-1)
   }
+  #-------------------------------------------------------------------------
+  paramfile <- readLines(con=system.file("template.params", package = "PEcAn.GDAY"),n=-1)
+  paramfile <- gsub('@cfg_fnameval@',paste("paramfile.txt")), paramfile)
+  metpath<-(paste(),
+            strptime(start_date, tz ="GMT"))
+  metfilename<- file.path()
+  paramfile <- gsub('@met_fnameval@',metfilepath, paramfile)
+  paramfile <- gsub('@out_fnameval@',paste("paramfile.txt")), paramfile)
+  paramfile <- gsub('@out_param_fnameval@',paste("paramfile.txt")), paramfile)
+
+
 
   # create host specific settings
   hostspecific <- ""
