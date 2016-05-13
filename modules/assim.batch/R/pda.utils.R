@@ -311,42 +311,6 @@ pda.define.prior.fn <- function(prior) {
 }
 
 
-##' Define PDA Likelihood Functions
-##'
-##' @title Define PDA Likelihood Functions
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
-##'
-##' @return List of likelihood functions, one for each dataset to be assimilated against.
-##'
-##' @author Ryan Kelly
-##' @export
-pda.define.llik.fn <- function(settings) {
-  # *** TODO: Generalize!
-  # Currently just returns a single likelihood, assuming the data are flux NEE.
-  llik.fn <- list()
-  for(i in 1:length(settings$assim.batch$inputs)) {
-      # NEE + heteroskedastic Laplace likelihood
-      if(settings$assim.batch$inputs[[i]]$variable.id == 297 && 
-         settings$assim.batch$inputs[[i]]$likelihood == "Laplace") {
-        llik.fn[[i]] <- function(NEEm, obs) {
-          NEE.resid <- abs(NEEm - obs$NEEo)
-          NEE.pos <- (NEEm >= 0)
-          LL <- c(dexp(NEE.resid[NEE.pos], 1/(obs$b0 + obs$bp*NEEm[NEE.pos]), log=TRUE), 
-                  dexp(NEE.resid[!NEE.pos],1/(obs$b0 + obs$bn*NEEm[!NEE.pos]),log=TRUE))
-          return(list(LL=sum(LL,na.rm=TRUE), n=sum(!is.na(LL))))
-        }
-      } else {
-        # Default to Normal(0,1)
-        llik.fn[[i]] <- function(model.out, obs.data) {
-          LL <- dnorm(model.out - obs.data$data, log=TRUE)
-          return(list(LL=sum(LL,na.rm=TRUE), n=sum(!is.na(LL))))
-        }
-      }
-  }
-
-  return(llik.fn)
-}
-
 
 ##' Initialise Parameter Matrix for PDA
 ##'
@@ -427,15 +391,20 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
     }
     dir.create(file.path(settings$rundir, run.ids[i]), recursive=TRUE)
     dir.create(file.path(settings$modeloutdir, run.ids[i]), recursive=TRUE)
+    
+    # works for one PFT
+    trait.values = list(pft=as.list(params[i,]),env=NA)
+    newnames <- sapply(settings$pfts, "[[", "name")
+    names(trait.values)[which(!(names(trait.values) %in% 'env'))] <- newnames
 
     ## write config
     do.call(my.write.config,
             args=list(defaults = settings$pfts, 
-                      trait.values = list(pft=params[i,],env=NA), 
+                      trait.values = trait.values, 
                       settings = settings, run.id = run.ids[i]))
 
     # Identifiers for ensemble 'runtype'
-    if(settings$assim.batch$method == "bruteforce") {
+    if(settings$assim.batch$method == "bruteforce" | settings$assim.batch$method == "bruteforce.bs" | settings$assim.batch$method == "bayesian.tools") {
       ensemble.type <- "pda.MCMC"
     } else if(settings$assim.batch$method == "emulator") {
       ensemble.type <- "pda.emulator"
@@ -581,59 +550,6 @@ pda.get.model.output <- function(settings, run.id, inputs) {
 }
 
 
-##' Calculate Likelihoods for PDA
-##'
-##' @title Calculate Likelihoods for PDA
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
-##'
-##' @return Total log likelihood (i.e., sum of log likelihoods for each dataset)
-##'
-##' @author Ryan Kelly
-##' @export
-pda.calc.llik <- function(settings, con, model.out, run.id, inputs, llik.fn) {
-  if(is.na(model.out)) { # Probably indicates model failed entirely
-    return(-Inf)
-  }
-
-  n.input <- length(inputs)
-  
-  LL.vec <- n.vec <- numeric(n.input)
-  for(k in 1:n.input) {
-    llik <- llik.fn[[k]](model.out[[k]], inputs[[k]])
-    LL.vec[k] <- llik$LL
-    n.vec[k]  <- llik$n
-  }
-  weights <- rep(1/n.input, n.input) # TODO: Implement user-defined weights
-  LL.total <- sum(LL.vec * weights)
-  neff <- n.vec * weights
-
-
-  ## insert Likelihood records in database
-  if (!is.null(con)) {
-    now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-
-    # BETY requires likelihoods to be associated with inputs, so only proceed 
-    # for inputs with valid input ID (i.e., not the -1 dummy id). 
-    # Note that analyses requiring likelihoods to be stored therefore require 
-    # inputs to be registered in BETY first.
-    db.input.ind <- which( sapply(inputs, function(x) x$input.id) != -1 )
-    for(k in db.input.ind) {
-      db.query(
-        paste0("INSERT INTO likelihoods ", 
-          "(run_id,            variable_id,                     input_id, ",
-          " loglikelihood,     n_eff,                           weight,   ",
-          " created_at) ",
-        "values ('", 
-            run.id, "', '",    inputs[[k]]$variable.id, "', '", inputs[[k]]$input.id, "', '", 
-            LL.vec[k], "', '", floor(neff[k]), "', '",          weights[k] , "', '", 
-            now,"')"
-        ), 
-      con)
-    }
-  }
-  
-  return(LL.total)
-}
 
 
 ##' Generate Parameter Knots for PDA Emulator
@@ -641,9 +557,9 @@ pda.calc.llik <- function(settings, con, model.out, run.id, inputs, llik.fn) {
 ##' @title Generate Parameter Knots for PDA Emulator
 ##' @param all params are the identically named variables in pda.mcmc / pda.emulator
 ##'
-##' @return A matrix of parameter values, with one row for each knot in the emulator.
+##' @return A list of probabilities and parameter values, with one row for each knot in the emulator.
 ##'
-##' @author Ryan Kelly
+##' @author Ryan Kelly, Istem Fer
 ##' @export
 pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn, pname) {
   # By default, all parameters will be fixed at their median
@@ -658,8 +574,9 @@ pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn, pname) 
     params[,i] <- eval(prior.fn$qprior[[i]], list(p=probs[,i]))
   }
   colnames(params) <- pname
+  colnames(probs) <- pname
   
-  return(params)
+  return(list(params=params,probs=probs))
 }
 
 
@@ -824,17 +741,17 @@ pda.settings.bt <- function(settings){
   
   iterations = as.numeric(settings$assim.batch$bt.settings$iter)
   optimize = settings$assim.batch$bt.settings$optimize
-  consoleUpdates = as.numeric(settings$assim.batch$bt.settings$consoleUpdates)
+  if(!is.null(settings$assim.batch$bt.settings$consoleUpdates)) consoleUpdates = as.numeric(settings$assim.batch$bt.settings$consoleUpdates) else consoleUpdates = NULL
   parallel = settings$assim.batch$bt.settings$parallel
   adapt = settings$assim.batch$bt.settings$adapt
-  adaptationInverval = as.numeric(settings$assim.batch$bt.settings$adaptationInverval)
-  adaptationNotBefore = as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore)
+  if(!is.null(settings$assim.batch$bt.settings$adaptationInverval)) adaptationInverval = as.numeric(settings$assim.batch$bt.settings$adaptationInverval) else adaptationInverval=NULL
+  if(!is.null(settings$assim.batch$bt.settings$adaptationNotBefore)) adaptationNotBefore = as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore) else adaptationNotBefore=NULL
   initialParticles=list("prior",as.numeric(settings$assim.batch$bt.settings$n.initialParticles))
-  DRlevels = as.numeric(settings$assim.batch$bt.settings$DRlevels)
+  if(!is.null(settings$assim.batch$bt.settings$DRlevels)) DRlevels = as.numeric(settings$assim.batch$bt.settings$DRlevels) else DRlevels=1
   proposalScaling = settings$assim.batch$bt.settings$proposalScaling
   adaptationDepth = settings$assim.batch$bt.settings$adaptationDepth
   temperingFunction = settings$assim.batch$bt.settings$temperingFunction
-  gibbsProbabilities = as.numeric(unlist(settings$assim.batch$bt.settings$gibbsProbabilities))
+  if(!is.null(settings$assim.batch$bt.settings$gibbsProbabilities)) gibbsProbabilities = as.numeric(unlist(settings$assim.batch$bt.settings$gibbsProbabilities)) else gibbsProbabilities = NULL
   
 ## Generate proposal  
 # TODO: pass jump variances to proposalGenerator from settings

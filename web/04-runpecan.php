@@ -188,15 +188,15 @@ umask(0002);
 
 # create the folder(s)
 if (!mkdir($folder)) {
-    die('Can\'t create output folder [${folder}]');
+    die("Can't create output folder [${folder}]");
 }
 if (!is_dir($dbfiles_folder) && !mkdir($dbfiles_folder, 0777, true)) {
-    die('Can\'t create output folder [${dbfiles_folder}]');
+    die("Can't create output folder [${dbfiles_folder}]");
 }
 if ($hostname != $fqdn) {
     $tunnel_folder = $folder . DIRECTORY_SEPARATOR . "tunnel";
     if (!mkdir($tunnel_folder)) {
-        die('Can\'t create output folder [${tunnel_folder}]');
+        die("Can't create output folder [${tunnel_folder}]");
     }
 }
 

@@ -118,7 +118,7 @@ invert.custom <- function(observed, invert.options, quiet=FALSE){
         rsd <- 1/sqrt(rinv)
         results[ng,npars+1] <- rsd
     }
-    close(pb)
+    if(!quiet) close(pb)
     return(results)
 }
 

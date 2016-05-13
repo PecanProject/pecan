@@ -125,8 +125,17 @@ calculate.prior <- function(samples, priors){
 ##' @name get.y
 ##' @title get.y
 ##' @export
-get.y <- function(gp, xnew, priors, ...){
-  likelihood <- predict(gp, xnew)
+get.y <- function(gp, pckg, xnew, priors, ...){
+  
+  if(pckg==1){
+    X=matrix(unlist(xnew), nrow=1, byrow=T)
+    Y=GPfit::predict.GP(gp,X)
+    #likelihood <- Y$Y_hat
+    likelihood <- rnorm(1,Y$Y_hat,sqrt(Y$MSE))
+  } else if(pckg==2){
+    likelihood <- predict(gp, xnew)
+  }
+  
   prior.prob <- calculate.prior(xnew, priors)
   return(likelihood + prior.prob)
 }
@@ -166,13 +175,13 @@ is.accepted <- function(ycurr, ynew, format='lin'){
 ##' @param priors
 ##' 
 ##' @author Michael Dietze
-mcmc.GP <- function(gp,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL, 
+mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL, 
     jmp0=0.35*(rng[,2]-rng[,1]), ar.target=0.5, priors=NA){
   
   haveTime <- FALSE #require("time")
 
   ## storage
-  ycurr <- get.y(gp, x0, priors)
+  ycurr <- get.y(gp, pckg, x0, priors)
 
   xcurr <- x0
   dim <- length(x0)
@@ -187,26 +196,34 @@ mcmc.GP <- function(gp,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
       ## propose new
       xnew <- xcurr
       for(i in 1:dim){
-        xnew[i] <- rnorm(1,xcurr[[i]],p(jmp)[i])
+        repeat{
+          xnew[i] <- rnorm(1,xcurr[[i]],p(jmp)[i])
+          if(bounded(xnew[i],rng[i,,drop=FALSE])) break
+        }
       }
       #if(bounded(xnew,rng)){
-        ynew <- get.y(gp, xnew, priors)
+        ycurr <- get.y(gp, pckg, xcurr, priors)
+        ynew <- get.y(gp, pckg, xnew, priors)
         if(is.accepted(ycurr,ynew)){
           xcurr <- xnew
-          ycurr <- ynew
+          #ycurr <- ynew
         }
       #}
     } else {  ## mix = each
       for(i in 1:dim){
         ## propose new
         xnew <- xcurr
-        xnew[i] <- rnorm(1,xcurr[[i]],p(jmp)[i])
+        repeat{
+          xnew[i] <- rnorm(1,xcurr[[i]],p(jmp)[i])
+          if(bounded(xnew[i],rng[i,,drop=FALSE])) break
+        }
         #if(bounded(xnew,rng)){
-          ynew <- get.y(gp, xnew, priors)
-          if(is.accepted(ycurr,ynew)){
+          ycurr <- get.y(gp, pckg, xcurr, priors)
+          ynew <- get.y(gp, pckg, xnew, priors)
+        if(is.accepted(ycurr,ynew)){
             xcurr <- xnew
-            ycurr <- ynew
-          }
+            #ycurr <- ynew
+        }
         #}
       }
     }
