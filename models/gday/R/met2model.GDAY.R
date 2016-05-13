@@ -27,6 +27,9 @@
 ##'        the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
+##'
+##' @author Martin De Kauwe
+
 met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
                            end_date, ..., overwrite=FALSE, verbose=FALSE){
 
