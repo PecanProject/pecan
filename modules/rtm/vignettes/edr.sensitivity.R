@@ -2,17 +2,19 @@ library(PEcAnRTM)
 library(lubridate)
 
 # Set paths and get files
-analysis.path <- 'analysis.output'
+# pecan.workflow.id <- "1000001494"
+# ed.run.id <- "1000443342"
+#pecan.workflow.id <- "1000001502"  # Worked, but low sensitivity
+#ed.run.id <- "1000443579"
+pecan.workflow.id <- "1000001543"
+ed.run.id <- "1000443674"
+analysis.path <- sprintf('analysis.output.%s.%s', pecan.workflow.id, ed.run.id)
 dir.create(analysis.path)
 if(!file.exists("analysis.output/ed_2.1-opt")){
   file.link("/projectnb/dietzelab/ashiklom/ED2/EDR/build/ed_2.1-opt",
           "analysis.output/ed_2.1-opt")
   system("chmod +x analysis.output/ed_2.1-opt")
 }
-# pecan.workflow.id <- "1000001494"
-# ed.run.id <- "1000443342"
-pecan.workflow.id <- "1000001502"
-ed.run.id <- "1000443579"
 base.output.dir <- file.path("/projectnb", "dietzelab", "pecan.data",
                              "output", "ashiklom")
 ed2in.path <- file.path(base.output.dir, pecan.workflow.id,
@@ -33,8 +35,18 @@ sensitivity.means <- list(
   prospect.Car = 7,
   prospect.Cw = 0.01,
   prospect.Cm = 0.007,
+  ed.sla = 22,
+  ed.b1bl = 0.08,
+  ed.b2bl = 1,
+  ed.b1bs = 0.147,
+  ed.b2bs = 2.432,
+  ed.b1ht = 0.4778,
+  ed.b2ht = -0.3884,
   ed.clumping_factor = 0.85,
   ed.leaf_width = 0.068,
+  ed.hgt_min = 0.5,
+  ed.dbh_crit = 53.1459,
+  ed.rho = 0.2,
   ed.leaf_scatter_vis = 0.21,
   ed.diffuse_backscatter_vis = 0.5,
   ed.emis_v = 0.95,
@@ -52,8 +64,20 @@ sensitivity.seqs <- list(
                    seq(0.015, 0.05, length.out = n.sens/2)),
   prospect.Cm = c(seq(0.001, 0.005, length.out = n.sens/2),
                    seq(0.006, 0.015, length.out = n.sens/2)),
+  ed.sla = c(seq(6, 50, length.out = n.sens)),
+  ed.b1bl = c(seq(0.01, 0.08, length.out = n.sens/2),
+              seq(0.1, 0.8, length.out = n.sens/2)),
+  ed.b2bl = c(seq(0.9, 2, length.out = n.sens)),
+  ed.b1bs = c(seq(0.00001, 0.3, length.out = n.sens)),
+  ed.b2bs = c(seq(1, 3, length.out = n.sens)),
+  ed.b1ht = c(seq(0.03, 0.5, length.out = n.sens/2),
+              seq(1, 27, length.out = n.sens/2)),
+  ed.b2ht = c(seq(-0.75, 0.75, length.out = n.sens)),
   ed.clumping_factor = seq(0.5, 1, length.out = n.sens),
   ed.leaf_width = seq(0.02, 0.15, length.out = n.sens),
+  ed.hgt_min = seq(0.15, 2, length.out = n.sens),
+  ed.dbh_crit = seq(0.6, 100, length.out = n.sens),
+  ed.rho = seq(0, 0.9, length.out = n.sens),
   ed.leaf_scatter_vis = seq(0.1, 0.4, length.out = n.sens),
   ed.diffuse_backscatter_vis = seq(0.4, 0.7, length.out = n.sens),
   ed.emis_v = seq(0.9, 0.99, length.out = n.sens),
