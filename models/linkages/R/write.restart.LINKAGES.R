@@ -34,15 +34,20 @@ write.restart.LINKAGES <- function(out.dir,runid,time,settings,analysis.vec,
   }
   
   ### Going to need to change this... ### Get some expert opinion
-  distance.matrix <- rbind(c(0,3,4,5,7,6,2,8,1),
-                           c(5,0	,3	,4	,8	,1	,2	,7	,6),
-                           c(5,3	,0	,1	,8	,4	,2	,7	,6),
-                           c(6,2	,1	,0	,8	,4	,3	,7	,5),
-                           c(2,7	,5	,4	,0	,8	,6	,1	,3),
-                           c(6,1	,3	,4	,8	,0	,2	,7	,5),
-                           c(5,3	,1	,2	,8	,6	,0	,7	,4),
-                           c(3,6	,4	,5	,1	,7	,8	,0	,2),
-                           c(1,5	,3	,2	,7	,6	,4	,8	,0))
+  # distance.matrix <- rbind(c(0,3,4,5,7,6,2,8,1),
+  #                          c(5,0	,3	,4	,8	,1	,2	,7	,6),
+  #                          c(5,3	,0	,1	,8	,4	,2	,7	,6),
+  #                          c(6,2	,1	,0	,8	,4	,3	,7	,5),
+  #                          c(2,7	,5	,4	,0	,8	,6	,1	,3),
+  #                          c(6,1	,3	,4	,8	,0	,2	,7	,5),
+  #                          c(5,3	,1	,2	,8	,6	,0	,7	,4),
+  #                          c(3,6	,4	,5	,1	,7	,8	,0	,2),
+  #                          c(1,5	,3	,2	,7	,6	,4	,8	,0))
+  
+  distance.matrix <- rbind(c(0,3,1,2),
+                           c(3,0,2,1),
+                           c(1,2,0,3),
+                           c(2,1,3,0))
   ### Flag for plotting ### probably worthless after diagnostics
   PLOT = FALSE
 
@@ -251,10 +256,12 @@ write.restart.LINKAGES <- function(out.dir,runid,time,settings,analysis.vec,
 #   }
 
 ##### SOIL
+    if(FALSE){
     leaf.sum <- sum(tyl[1:12]) * 0.48
     soil.org.mat <- analysis.vec.other['TotSoilCarb'] - leaf.sum
     soil.corr <- soil.org.mat / (sum(C.mat[C.mat[,5],1]) * 0.48)
     C.mat[C.mat[,5],1] <- C.mat[C.mat[,5],1] * as.numeric(soil.corr)
+    }
 
     if(RENAME==TRUE){ 
       file.rename(file.path(settings$rundir,runid,"linkages.restart.Rdata"),

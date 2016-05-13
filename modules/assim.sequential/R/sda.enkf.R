@@ -13,7 +13,7 @@
 ##' 
 ##' @return NONE
 ##' 
-sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALSE){
+sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALSE,sample.parameters=FALSE){
   
   #ensemble.samples <- get.ensemble.samples
   #write.ensemble.configs #look inside for what you need #just the lapply thing
@@ -28,8 +28,8 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
   host <- settings$run$host
   forecast.duration <- 1 #eventually in settings
   forecast.time.step <- 1 #eventually in settings #dt
-  spin.up <- 10 #eventually in settings
-  nens = nrow(IC)
+  spin.up <- 90 #eventually in settings
+  nens = 15#nrow(IC)
   start.year <- strftime(settings$run$start.date,"%Y")
   end.year   <- strftime(settings$run$end.date,"%Y")
   
@@ -126,10 +126,10 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
       settings$ensemble$end.date <- settings$run$end.date
     }
     
-    status.start("CONFIG")
-    settings <- run.write.configs(settings, write=settings$database$bety$write, ens.sample.method=settings$ensemble$method)
-   saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.CONFIGS.xml'))
-    status.end()
+    #status.start("CONFIG")
+    #settings <- run.write.configs(settings, write=settings$database$bety$write, ens.sample.method=settings$ensemble$method)
+    #saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.CONFIGS.xml'))
+    #status.end()
    
     
     do.call(my.write.config,args=list(settings=settings,run.id = run.id[[i]],restart=FALSE))
@@ -166,7 +166,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
   nt = length(total.time)
   FORECAST <- ANALYSIS <- list()
   enkf.params <- list()
-  aqq = array(0,dim=c(nt+1,ncol(IC)+1,ncol(IC)+1)) #HACK
+  aqq = array(0,dim=c(nt+1,ncol(IC),ncol(IC))) #HACK
   bqq = numeric(nt+1)
   CI.X1 <- matrix(0,3,nt) ; CI.X2 = CI.X1
   
@@ -225,7 +225,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
   ###-------------------------------------------
   ### loop over time
   ###-------------------------------------------
-  for(t in 1:5){
+  for(t in 6:36){
     
     ### READ RESTART
     X <- list()
@@ -249,7 +249,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
     H = diag(length(obs.mean[[t]][[1]]))
     R = diag(as.numeric(obs.sd[[t]][[1]][pmatch(colnames(X),names(obs.mean[[t]][[1]]))])^2)
     
-    for(s in 1:9){
+    for(s in 1:length(obs.mean[[t]][[1]])){
       if(diag(R)[s]==0){
         diag(R)[s] <- .01^2
       }
@@ -389,7 +389,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
   
   ## save all outputs
   save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdata"))
-  
+  save.image(file="pecan_meeting.Rdata")
   #### Post-processing
   sqrt(diag(Pf))
   1/sqrt(diag(q.bar))
@@ -407,48 +407,37 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
     
     #Degrees of Freedom
     t1=1
-    t = 15
-    par(mfrow=c(1,1))
+    #t = 15
+    #par(mfrow=c(1,1))
     #pairs(dat[,iX])
     
-    plot(total.time[t1:t],bqq[t1:t],pch=16,cex=1,ylab="Degrees of Freedom",
-         xlab="Time")
+
     
-    #Process Covariance
-    library(corrplot)
-    cor.mat <- cov2cor(aqq[t,,]/bqq[t])
-    colnames(cor.mat)<-c("Hemlock","Maple","Yellow Birch","Cedar")
-    rownames(cor.mat)<-c("Hemlock","Maple","Yellow Birch","Cedar")
-    par(mfrow=c(1,1),mai=c(1,1,4,1))
-    #cairo_ps("corr_plot_linkages_da.eps")
-    corrplot(cor.mat,type="upper",tl.srt=45, 
-             addCoef.col = "black")
-    
-    par(mfrow=c(4,4),mar=c(2,1,1,1),oma=c(0,2,2,0))
-    for(r in 1:4){
-      for(c in 1:4){
-        plot(aqq[2:nt,r,c]/bqq[2:nt],xlab=NA,
-             ylab=NA,pch=16,cex=1)
-        if(r==1) {
-          mtext(paste(c("hemlock","maple","Y.birch",
-                        "cedar")[c]),cex=2)
-        }
-        if(c==1) mtext(c("hemlock","maple","Y.birch",
-                         "cedar")[r],2,cex=2)
-        legend("right",c(paste("proc cor =",signif(cov2cor(aqq[nt,,]/bqq[nt])[r,c],digits=3)),
-                         paste("proc cov =",signif(aqq[nt,r,c]/bqq[nt],digits=3)),
-                         paste("model cor = ",signif(cov2cor(Pf)[r,c],digits=3)),
-                         paste("model cov = ",signif(Pf[r,c],digits=3))),cex=.8)
-      }
-    }
-    
-  }
-  
+  #   par(mfrow=c(4,4),mar=c(2,1,1,1),oma=c(0,2,2,0))
+  #   for(r in 1:4){
+  #     for(c in 1:4){
+  #       plot(aqq[2:nt,r,c]/bqq[2:nt],xlab=NA,
+  #            ylab=NA,pch=16,cex=1)
+  #       if(r==1) {
+  #         mtext(paste(c("hemlock","maple","Y.birch",
+  #                       "cedar")[c]),cex=2)
+  #       }
+  #       if(c==1) mtext(c("hemlock","maple","Y.birch",
+  #                        "cedar")[r],2,cex=2)
+  #       legend("right",c(paste("proc cor =",signif(cov2cor(aqq[nt,,]/bqq[nt])[r,c],digits=3)),
+  #                        paste("proc cov =",signif(aqq[nt,r,c]/bqq[nt],digits=3)),
+  #                        paste("model cor = ",signif(cov2cor(Pf)[r,c],digits=3)),
+  #                        paste("model cov = ",signif(Pf[r,c],digits=3))),cex=.8)
+  #     }
+  #   }
+  #   
+  # }
+  # 
   ## plot ensemble, filter, and data mean's and CI's
-  plot.EnKF.time.series <- function(obs.mean,obs.sd,FORECAST,ANALYSIS,
-                                    var.name,mean.name,sd.name,t1,t,ylim.set,
-                                    plot.name){
-    
+  # plot.EnKF.time.series <- function(obs.mean,obs.sd,FORECAST,ANALYSIS,
+  #                                   var.name,mean.name,sd.name,t1,t,ylim.set,
+  #                                   plot.name){
+  #   
     pink = col2rgb("deeppink")
     alphapink = rgb(pink[1],pink[2],pink[3],180,max=255)
     green = col2rgb("green")
@@ -460,9 +449,11 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
     Ybar = Ybar[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
     YCI = as.matrix(laply(obs.sd[t1:t],function(x){return(x[[1]])})) 
     YCI = YCI[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
-   # pdf("ly.ts.2.pdf")
+   
+   pdf("pecan_workshop.pdf")
+   
     for(i in 1:ncol(X)){
-      
+      t1=1
       Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
       Xci  = laply(FORECAST[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
       
@@ -484,7 +475,74 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
       #analysis
       ciEnvelope(total.time[(t1:t)],XaCI[,1],XaCI[,2],col=alphapink)
       lines(total.time[t1:t],Xa,col="black",lty=2,lwd=2)
+      
+      legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
+      
+      t1=5
+      #Forecast minus data = error
+      reg <- lm(Xbar[t1:t] - unlist(Ybar[t1:t,i])~c(t1:t))
+      plot(t1:t,Xbar[t1:t] - unlist(Ybar[t1:t,i]),pch=16,cex=1,
+           ylim=c(min(Xci[t1:t,1]-unlist(Ybar[t1:t,i])),
+                  max(Xci[t1:t,2]-unlist(Ybar[t1:t,i]))),
+           xlab="Time", ylab="Error",main="Error = Forecast - Data")
+      ciEnvelope(rev(t1:t),rev(Xci[t1:t,1]-unlist(Ybar[t1:t,i])),
+                 rev(Xci[t1:t,2]-unlist(Ybar[t1:t,i])),col=alphapink)
+      abline(h=0,lty=2,lwd=2)
+      abline(reg)
+      mtext(paste("slope =",signif(summary(reg)$coefficients[2],digits=3),"intercept =",signif(summary(reg)$coefficients[1],digits=3)))
+      #d<-density(c(Xbar[t1:t] - unlist(Ybar[t1:t,i])))
+      #lines(d$y+1,d$x)
+      
+      plot(rowMeans(temp.mat[5:t,]),
+           Xbar[5:t] -  unlist(Ybar[5:t,i]),
+           xlim=range(rowMeans(temp.mat[5:t,])),
+           ylim = range(Xbar[5:t] -  unlist(Ybar[5:t,i])),pch=16,cex=1,
+           xlab="Average Monthly Temp",
+           ylab="Error",
+           main=colnames(Ybar)[i])
+      
+      plot(rowSums(precip.mat[5:t,]),
+           Xbar[5:t] - unlist(Ybar[5:t,i]),
+           xlim=range(rowSums(precip.mat[5:t,])),
+           ylim = range(Xbar [5:t]- unlist(Ybar[5:t,i])),
+           pch=16,cex=1,xlab="Total Yearly Precip",
+           ylab="Error",main=colnames(Ybar)[i])
+      
+      #forecast minus analysis = update
+      reg1 <- lm(Xbar[t1:t] - Xa[t1:t] ~ c(t1:t))
+      plot(t1:t,Xbar[t1:t] - Xa[t1:t],pch=16,cex=1,
+           ylim=c(min(Xbar[t1:t]-XaCI[t1:t,2]),max(Xbar[t1:t]-XaCI[t1:t,1])),
+           xlab="Time", ylab="Update",main="Update = Forecast - Analysis")
+      ciEnvelope(rev(t1:t),rev(Xbar[t1:t] - XaCI[t1:t,1]),
+                 rev(Xbar[t1:t] - XaCI[t1:t,2]),col=alphagreen)
+      abline(h=0,lty=2,lwd=2)
+      abline(reg1)
+      mtext(paste("slope =",signif(summary(reg1)$coefficients[2],digits=3),"intercept =",signif(summary(reg1)$coefficients[1],digits=3)))
+      #d<-density(c(Xbar[t1:t] - Xa[t1:t]))
+      #lines(d$y+1,d$x)
+      
+      plot(rowMeans(temp.mat[5:t,]),Xbar[5:t] - Xa[5:t],pch=16,
+           cex=1,xlab="Average Monthly Temp",
+           ylab="Update",main=colnames(Ybar)[i])
+      plot(rowSums(precip.mat[5:t,]),Xbar[5:t] - Xa[5:t],pch=16,
+           cex=1, xlab="Total Yearly Precip",
+           ylab="Update",main=colnames(Ybar)[i])
     }
+   t1=1
+   plot(total.time[t1:t],bqq[t1:t],pch=16,cex=1,ylab="Degrees of Freedom",
+        xlab="Time")
+   
+   #Process Covariance
+   library(corrplot)
+   cor.mat <- cov2cor(aqq[t,,]/bqq[t])
+   colnames(cor.mat)<-c("Hemlock","Maple","Yellow Birch","Cedar")
+   rownames(cor.mat)<-c("Hemlock","Maple","Yellow Birch","Cedar")
+   par(mfrow=c(1,1),mai=c(1,1,4,1))
+   #cairo_ps("corr_plot_linkages_da.eps")
+   corrplot(cor.mat,type="upper",tl.srt=45, 
+            addCoef.col = "black")
+   
+   dev.off()
     
     for(i in 1:6){
       plot(density(unlist(ANALYSIS[[i]][1])),col="pink",xlim=c(8,12))
@@ -494,51 +552,13 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
     }
     
     
-    #Forecast minus data = error
-    reg <- lm(Xbar[t1:t] - y.mean[t1:t,mean.name]~c(t1:t))
-    plot(t1:t,Xbar - y.mean[,mean.name],pch=16,cex=1,
-         ylim=c(min(Xci[,1]-y.mean[,mean.name]),
-                max(Xci[,2]-y.mean[,mean.name])),
-         xlab="Time", ylab="Error",main="Error = Forecast - Data")
-    ciEnvelope(rev(t1:t),rev(Xci[,1]-y.mean[,mean.name]),rev(Xci[,2]-y.mean[,mean.name]),col=alphapink)
-    abline(h=0,lty=2,lwd=2)
-    abline(reg)
-    mtext(paste("slope =",signif(summary(reg)$coefficients[2],digits=3),"intercept =",signif(summary(reg)$coefficients[1],digits=3)))
-    d<-density(c(Xbar - y.mean[,mean.name]))
-    lines(d$y+1,d$x)
-    
-    #forecast minus analysis = update
-    reg1 <- lm(Xbar[t1:t] - Xa[t1:t] ~ c(t1:t))
-    plot(t1:t,Xbar - Xa,pch=16,cex=1,ylim=c(min(XaCI[,2]-Xbar),max(Xbar-XaCI[,1])),
-         xlab="Time", ylab="Update",main="Update = Forecast - Analysis")
-    ciEnvelope(rev(t1:t),rev(Xbar - XaCI[,1]),rev(Xbar - XaCI[,2]),col=alphagreen)
-    abline(h=0,lty=2,lwd=2)
-    abline(reg1)
-    mtext(paste("slope =",signif(summary(reg1)$coefficients[2],digits=3),"intercept =",signif(summary(reg1)$coefficients[1],digits=3)))
-    d<-density(c(Xbar - Xa))
-    lines(d$y+1,d$x)
+
     
     #plot(temp.mat[,1],Xbar)
     #par(mfrow=c(2,2))
-    plot(rowMeans(temp.mat[t1:t,]),Xbar - y.mean[,mean.name],xlim=c(min(rowMeans(temp.mat[t1:t,]))-2,
-                                                                    max(rowMeans(temp.mat[t1:t,]))+2),
-         ylim = c(min(Xbar - y.mean[,mean.name]),max(Xbar - y.mean[,mean.name])),pch=16,cex=1,xlab="Average Monthly Temp",
-         ylab="Error",main = paste(mean.name))
-    plot(rowSums(precip.mat[t1:t,]),Xbar - y.mean[,mean.name],xlim=c(min(rowSums(precip.mat[t1:t,]))-10,
-                                                                     max(rowSums(precip.mat[t1:t,]))+10),
-         ylim = c(min(Xbar - y.mean[,mean.name]),max(Xbar - y.mean[,mean.name])),pch=16,cex=1,xlab="Total Yearly Precip",
-         ylab="Error",main = paste(mean.name))
+
     
-    
-    plot(rowMeans(temp.mat[t1:t,]),Xbar - Xa,pch=16,
-         cex=1,xlab="Average Monthly Temp",
-         ylab="Update",main = paste(mean.name))
-    plot(rowSums(precip.mat[t1:t,]),Xbar - Xa,pch=16,
-         cex=1, xlab="Total Yearly Precip",
-         ylab="Update",main = paste(mean.name))
-    
-    legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
-  }
+    }
   
   par(mfrow=c(1,1))
   t1=
