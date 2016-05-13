@@ -23,11 +23,18 @@ $JULES_NETCDF_PATH{?} = /usr
 ```
 4) Compile
 ```
-../../../fcm-2015.05.0/bin/fcm make -f make.cfg --new
+cd ../..
+../fcm-2015.05.0/bin/fcm make -f etc/fcm-make/make.cfg --new
 ```
 
 5) Run test example
 ```
-cd ../../examples/point_loobos
+cd examples/point_loobos
 ../../build/bin/jules.exe
 ```
+
+6) Add local executable to BETY database
+* Create new File record for the relevant machine with File name = jules.exe and File path = /path/to/jules/build/bin
+* Got to Model and search for the version of JULES you are running (currently 4.2)
+* Edit Record > View Related Files and search for the File record you just created in order to link the new model executable to the existing Model record
+* Go to PEcAn web interface to verify correct JULES version shows up in pull down menu

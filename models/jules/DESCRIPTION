@@ -6,7 +6,6 @@ Date: 2016-05-05
 Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: This module provides functions to link the (JULES) to PEcAn.
-Depends:
 Suggests:
     testthat
 SystemRequirements: JULES
@@ -15,3 +14,4 @@ License: NCSA
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
+RoxygenNote: 5.0.1

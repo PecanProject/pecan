@@ -20,8 +20,8 @@
 ##' @param settings list of settings from pecan settings file
 ##' @param run.id id of run
 ##' @return configuration file for JULES for given run
-##' @export
 ##' @author Mike Dietze, Rob Kooper
+##' ##' @export
 ##-------------------------------------------------------------------------------------------------#
 write.config.JULES <- function(defaults, trait.values, settings, run.id){
   
@@ -105,6 +105,8 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id){
   # soil physical parameters
   
   ## Edit INITIAL_CONDITIONS.NML
+  # soil carbon
+  # LAI
   
   
   ## Edit PFT_PARAMS.NML to set model parameters
