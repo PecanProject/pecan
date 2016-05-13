@@ -63,14 +63,21 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id){
   }
   system2("cp",args = c(template.dir,rundir))
   
+  ## detect time step of met data
+  met.file = dir(settings$run$inputs$met$path)[1]
+  delta_t = system(paste("ncdump -h ",met.file,"| grep 'time:delta_t'"),intern = TRUE)
+  #Example: delta_t = '		time:delta_t = "0000-00-00 03:00:00" ;'
+  dt = diff(strptime(c("00:00:00",substring(strsplit(delta_t,'"')[[1]][2],11)),format="%T"))
+  units(dt) <- "secs"
+  
   ## Edit DRIVE.NML to set met variables
   drive.file <- file.path(rundir,"drive.nml")
   drive.text <- readLines(con=drive.file, n=-1)
   drive.text <- gsub('@MET_START@', settings$run$site$met.start, drive.text)
   drive.text <- gsub('@MET_END@', settings$run$site$met.end, drive.text)
   drive.text <- gsub('@SITE_MET@', settings$run$inputs$met$path, drive.text)
+  drive.text <- gsub('@DT@',as.numeric(dt),drive.text)
   writeLines(drive.text, con = drive.file)
-  ## Need to also set data_period in met ***************************************
 
   ## Edit TIMESTEPS.NML to set start/end date
   timesteps.file <- file.path(rundir,"timesteps.nml")

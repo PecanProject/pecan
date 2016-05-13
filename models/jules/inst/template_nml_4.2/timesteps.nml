@@ -1,9 +1,9 @@
 &jules_time
 l_leap=.true.,
 main_run_end='@END_DATE@',
-main_run_start='@START_DATE',
+main_run_start='@START_DATE@',
 print_step=48,
-timestep_len=1800,
+timestep_len=@DT@,
 /
 &jules_spinup
 max_spinup_cycles=0,
