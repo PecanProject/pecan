@@ -1,5 +1,5 @@
 &jules_frac
-file='data/tile_fractions.dat',
+file='tile_fractions.dat',
 /
 &jules_soil_props
 const_val=6.63,0.049460,0.004715,0.458150,0.242433,0.136328,1185676.0,

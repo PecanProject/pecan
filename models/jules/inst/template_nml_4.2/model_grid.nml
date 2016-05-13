@@ -2,6 +2,8 @@
 grid_is_1d=.false.,
 nx=1,
 ny=1,
+x_dim_name="longitude",
+y_dim_name="latitude",
 /
 &jules_latlon
 latitude=@SITE_LAT@,

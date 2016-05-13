@@ -71,8 +71,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id){
   drive.text <- gsub('@SITE_MET@', settings$run$inputs$met$path, drive.text)
   writeLines(drive.text, con = drive.file)
   ## Need to also set data_period in met ***************************************
-  ## Need to set defaults for PECAN netCDF CF met variables
-  
+
   ## Edit TIMESTEPS.NML to set start/end date
   timesteps.file <- file.path(rundir,"timesteps.nml")
   timesteps.text <- readLines(con=timesteps.file, n=-1)
@@ -93,8 +92,17 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id){
   output.text <- gsub('@RUNID@', run.id, output.text)
   output.text <- gsub('@OUTDIR@', outdir, output.text)
   writeLines(output.text, con = output.file)
+ 
+  ## Edit ANCILLARIES.NML
+  # tile frac
+  # soil physical parameters
+  
+  ## Edit INITIAL_CONDITIONS.NML
+  
   
   ## Edit PFT_PARAMS.NML to set model parameters
   ## ******************************************************
+  
+ 
 
 }
