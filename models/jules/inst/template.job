@@ -23,6 +23,16 @@ if [ ! -e "@OUTDIR@/*.nc" ]; then
     exit $STATUS
   fi
 
+  ## rename JULES output netcdf to PEcAn standard [YEAR].nc
+  rename 's/@RUNID@.STATIC.//g' @OUTDIR@/*
+
+  
+  ## convert to PEcAn output standard
+  echo "require (PEcAn.JULES)
+        model2netcdf.JULES('@OUTDIR@')
+        " | R --vanilla
+  
+fi
 
 # copy readme with specs to output
 cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"

@@ -21,7 +21,8 @@
 ##' @param run.id id of run
 ##' @return configuration file for JULES for given run
 ##' @author Mike Dietze, Rob Kooper
-##' ##' @export
+##' 
+##' @export
 ##-------------------------------------------------------------------------------------------------#
 write.config.JULES <- function(defaults, trait.values, settings, run.id){
   
@@ -50,6 +51,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id){
   jobsh <- gsub('@HOSTSPECIFIC@', hostspecific, jobsh)
   jobsh <- gsub('@OUTDIR@', outdir, jobsh)
   jobsh <- gsub('@RUNDIR@', rundir, jobsh)
+  jobsh <- gsub('@RUNID@', run.id, jobsh)
   jobsh <- gsub('@BINARY@', settings$model$binary, jobsh)
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
@@ -59,16 +61,37 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id){
   if(!is.null(settings$model$config) && dir.exists(settings$model$config)){
     template.dir = settings$model$config
   } else {
-    template.dir = file.path(system.file(package = "PEcAn.JULES"),"inst",paste0("template_nml_", settings$model$revision))
+    template.dir = file.path(system.file(package = "PEcAn.JULES"),paste0("template_nml_", settings$model$revision))
   }
-  system2("cp",args = c(template.dir,rundir))
+  system2("cp",args = paste0(template.dir,"/* ",rundir))
   
-  ## detect time step of met data
-  met.file = dir(settings$run$inputs$met$path)[1]
-  delta_t = system(paste("ncdump -h ",met.file,"| grep 'time:delta_t'"),intern = TRUE)
-  #Example: delta_t = '		time:delta_t = "0000-00-00 03:00:00" ;'
-  dt = diff(strptime(c("00:00:00",substring(strsplit(delta_t,'"')[[1]][2],11)),format="%T"))
-  units(dt) <- "secs"
+  ## ------------------ Detect time step of met data ------------------
+  met.file = dir(dirname(settings$run$inputs$met$path),pattern = basename(settings$run$inputs$met$path),full.names = TRUE)[1]
+  met.header = system(paste("ncdump -h ",met.file),intern = TRUE)
+  id = grep("time:delta_t",met.header) 
+  if(length(id)>0){
+    delta_t = met.header[id]
+    #Example: delta_t = '		time:delta_t = "0000-00-00 03:00:00" ;'
+    dt = diff(strptime(c("00:00:00",substring(strsplit(delta_t,'"')[[1]][2],11)),format="%T"))
+    units(dt) <- "secs"
+  } else {
+    id = grep("time_coverage_resolution",met.header)
+    if(length(id)>0){
+      delta_t = met.header[id]
+      dt = strsplit(strsplit(delta_t,'"')[[1]][2]," ")[[1]]
+      if(dt[2]=="min") {dt[1] = as.numeric(dt[1])*60; dt[2]="sec"}
+      if(dt[2]=="sec") {
+        dt = dt[1]
+      } else {
+        print(c("write.config.JULES timestep not detected",dt))
+        dt = 1800
+      }
+    } else {
+      print(c("write.config.JULES timestep not detected",dt))
+      dt = 1800
+    }
+  }
+  ## --------------------  END DETECT TIMESTEP --------------------
   
   ## Edit DRIVE.NML to set met variables
   drive.file <- file.path(rundir,"drive.nml")
@@ -82,8 +105,8 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id){
   ## Edit TIMESTEPS.NML to set start/end date
   timesteps.file <- file.path(rundir,"timesteps.nml")
   timesteps.text <- readLines(con=timesteps.file, n=-1)
-  timesteps.text <- gsub('@START_DATE@', startdate, timesteps.text)
-  timesteps.text <- gsub('@END_DATE@', enddate, timesteps.text)
+  timesteps.text <- gsub('@START_DATE@', format(as.Date(settings$run$start.date),"%F %H:%M:%S"), timesteps.text)
+  timesteps.text <- gsub('@END_DATE@', format(as.Date(settings$run$end.date),"%F %H:%M:%S"), timesteps.text)
   writeLines(timesteps.text, con = timesteps.file)
   
   ## Edit MODEL_GRID.NML to set lat/lon

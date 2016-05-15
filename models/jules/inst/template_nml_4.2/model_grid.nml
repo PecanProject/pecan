@@ -4,6 +4,7 @@ nx=1,
 ny=1,
 x_dim_name="longitude",
 y_dim_name="latitude",
+time_dim_name="time",
 /
 &jules_latlon
 latitude=@SITE_LAT@,

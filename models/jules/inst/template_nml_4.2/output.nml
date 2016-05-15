@@ -4,7 +4,7 @@ output_dir='@OUTDIR@',
 run_id='@RUNID@',
 /
 &jules_output_profile
-file_period=0,
+file_period=-2,
 output_main_run=.true.,
 output_spinup=.false.,
 profile_name='STATIC',

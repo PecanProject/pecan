@@ -89,9 +89,6 @@ plot.netcdf <- function(datafile, yvar, xvar='time', width=800, height=600, file
   yval_max  <- data.fetch(yvar, nc, max)
   yval_min  <- data.fetch(yvar, nc, min)
   
-  # done with netcdf file
-  nc_close(nc)
-  
   # setup output
   if (!is.null(filename)) {
     if (tolower(filename) == 'x11') {
@@ -124,6 +121,9 @@ plot.netcdf <- function(datafile, yvar, xvar='time', width=800, height=600, file
       title(main=paste(xvar, "VS", yvar, "for", year))
     }
   }
+  # done with netcdf file
+  nc_close(nc)
+  
   
   # remove all NA's
   removeme <- unique(c(which(is.na(yval_min)), which(is.na(xval_mean)), which(is.na(yval_mean)), which(is.na(yval_max))))
