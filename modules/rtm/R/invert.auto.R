@@ -67,18 +67,26 @@ invert.auto <- function(observed, invert.options, return.samples=TRUE, save.samp
     i.try <- 1
     while(try.again & i.try <= n.tries){
         print(sprintf("Attempt %d of %d", i.try, n.tries))
+        if(parallel & !require(parallel)){
+            warning("'parallel' package not installed. Proceeding without parallelization")
+            parallel <- FALSE
+        }
         if(parallel){
-            if(!require(parallel)) stop("'parallel' package not installed")
+            library(parallel)
             invert.function <- function(x){
                 invert.options$inits <- inits.function()
                 samps <- invert.custom(observed=observed, invert.options=invert.options, quiet=quiet)
                 return(samps)
             }
+            maxcores <- detectCores()
             if(is.null(parallel.cores)){
-                cl <- makeCluster(detectCores() - 1, "FORK")
+                cl <- makeCluster(maxcores - 1, "FORK")
             } else {
                 if(!is.numeric(parallel.cores) | parallel.cores %% 1 != 0){
                     stop("Invalid argument to 'parallel.cores'. Must be integer or NULL")
+                } else if (parallel.cores > maxcores){
+                    warning(sprintf("Requested %1$d cores but only %2$d cores available. Using only %2$d cores.", parallel.cores, maxcores))
+                    parallel.cores <- maxcores
                 }
                 cl <- makeCluster(parallel.cores, "FORK")
             }
