@@ -34,6 +34,7 @@
 
 invert.fast <- function(modname, observed, inits, cons, 
                    pmu, psd, plog, minp, ngibbs){
+    library(data.table)
     data(model.list)
     setkey(model.list, modname)
     model.set <- model.list[modname]

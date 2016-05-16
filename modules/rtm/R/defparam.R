@@ -4,6 +4,7 @@
 #' @param modname Model name. Must match `modname` in `model.list`
 #' @return Named vector of default parameter values
 defparam <- function(modname){
+    library(data.table)
     data(model.list)
     setkey(model.list, modname)
     p.raw <- model.list[modname, par.default]

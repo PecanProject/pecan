@@ -21,7 +21,7 @@ check.convergence <- function(mcmc.samples.list,
                               verbose = TRUE,
                               autoburnin = FALSE,
                               ...){
-    require(coda)
+    library(coda)
     if(class(mcmc.samples.list) != "mcmc.list") stop("Input needs to be of class 'mcmc.list'")
     gd <- try(gelman.diag(mcmc.samples.list, autoburnin = autoburnin, ...))
     if(class(gd) == "try-error"){

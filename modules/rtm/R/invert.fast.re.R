@@ -35,6 +35,7 @@
 invert.fast.re <- function(modname, observed, inits, rand, cons, 
                    pmu, psd, plog, minp, ngibbs){
 # Get model code number
+    library(data.table)
     data(model.list)
     setkey(model.list, modname)
     model.set <- model.list[modname]

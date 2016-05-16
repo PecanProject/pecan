@@ -1,5 +1,6 @@
 # Test slow inversion
 library(PEcAnRTM)
+library(testthat)
 context("PROSPECT R inversion")
 data(sensor.rsr)
 params <- c(1.4, 40, 8, 0.01, 0.01)
@@ -12,7 +13,7 @@ settings$ngibbs <- 5000
 settings$burnin <- 4000
 settings$do.lsq.first <- TRUE
 settings$n.tries <- 1
-settings$nchains <- 5
+settings$nchains <- 3
 #test <- invert.auto(obs, settings, return.samples=TRUE, save.samples=NULL, quiet=FALSE)
 #test_that("Inversion output is list of length 2", {
               #expect_is(test, "list")
@@ -23,4 +24,9 @@ test.parallel <- invert.auto(obs, settings, return.samples=TRUE, save.samples=NU
 test_that("Parallel inversion output is list of length 2", {
               expect_is(test.parallel, "list")
               expect_equal(length(test.parallel), 2)
+})
+
+test_that("Parallel inversion output produces distinct chains", {
+              expect_false(identical(test.parallel$samples[[1]],
+                                     test.parallel$samples[[2]]))
 })
