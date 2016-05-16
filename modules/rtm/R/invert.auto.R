@@ -96,6 +96,7 @@ invert.auto <- function(observed, invert.options, return.samples=TRUE, save.samp
             seed.list <- as.list(1e8 * runif(nchains))
             samps.list <- parLapply(cl, seed.list, invert.function)
         } else {
+            message("Running in serial mode. Better performance can be achieved by running multiple chains in parallel (set 'parallel=TRUE').")
             samps.list <- list()
             for(chain in 1:nchains){
                 print(sprintf("Chain %d of %d", chain, nchains))
