@@ -76,7 +76,11 @@ if (isset($_REQUEST['notes'])) {
 
 
 // get site information
-$stmt = $pdo->prepare("SELECT sitename, city, state, country, ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat FROM sites WHERE sites.id=?");
+$stmt = $pdo->prepare("SELECT sitename, city, state, country, ST_X(ST_CENTROID(sites.geometry)) AS lon," . 
+		      "	ST_Y(ST_CENTROID(sites.geometry)) AS lat, " . 
+		      "	mat, map, soil, notes, soilnotes, greenhouse, local_time, sand_pct, clay_pct," . 
+		      "	FROM sites WHERE sites.id=?"); 
+
 if (!$stmt->execute(array($siteid))) {
   die('Invalid query: ' . error_database());
 }
@@ -308,6 +312,15 @@ $stmt->closeCursor();
     // create the tooltip and its text
     var info="<b><?php echo $siteinfo['sitename']; ?></b><br />";
     info+="<?php echo $siteinfo['city']; ?>, <?php echo $siteinfo['state']; ?>, <?php echo $siteinfo['country']; ?><br/>";
+    info+="Mean Annual Temp: <?php echo $siteinfo['mat']; ?><br/>";
+    info+="Mean Annual Precip: <?php echo $siteinfo['map']; ?><br/>";
+    info+="Greenhouse Study: <?php echo $siteinfo['greenhouse']; ?><br/>";
+    info+="Local Time: <?php echo $siteinfo['local_time']; ?><br/>";
+    info+="Sand Pct: <?php echo $siteinfo['sand_pct']; ?><br/>";
+    info+="Clay Pct: <?php echo $siteinfo['clay_pct']; ?><br/>";
+    info+="Soil: <?php echo $siteinfo['soil']; ?><br/>";
+    info+="Notes: <?php echo $siteinfo['notes']; ?><br/>";
+    info+="Soil Notes: <?php echo $siteinfo['soilnotes']; ?><br/>";
     var infowindow = new google.maps.InfoWindow({content: info});
     infowindow.open(map, marker);
     validate();
