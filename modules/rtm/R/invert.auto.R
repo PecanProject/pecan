@@ -63,6 +63,7 @@ invert.auto <- function(observed, invert.options, return.samples=TRUE, save.samp
     nchains <- invert.options$nchains
     inits.function <- invert.options$inits.function
     invert.options$do.lsq <- invert.options$do.lsq.first
+    if(invert.options$do.lsq) library(minpack.lm)
     try.again <- TRUE
     i.try <- 1
     while(try.again & i.try <= n.tries){
@@ -74,6 +75,7 @@ invert.auto <- function(observed, invert.options, return.samples=TRUE, save.samp
         if(parallel){
             library(parallel)
             invert.function <- function(x){
+                set.seed(x)
                 invert.options$inits <- inits.function()
                 samps <- invert.custom(observed=observed, invert.options=invert.options, quiet=quiet)
                 return(samps)
@@ -91,7 +93,8 @@ invert.auto <- function(observed, invert.options, return.samples=TRUE, save.samp
                 cl <- makeCluster(parallel.cores, "FORK")
             }
             print(sprintf("Running %d chains in parallel. Progress bar unavailable", nchains))
-            samps.list <- parLapply(cl, as.list(1:nchains), invert.function)
+            seed.list <- as.list(1e8 * runif(nchains))
+            samps.list <- parLapply(cl, seed.list, invert.function)
         } else {
             samps.list <- list()
             for(chain in 1:nchains){

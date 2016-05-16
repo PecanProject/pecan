@@ -43,7 +43,7 @@ EDR <- function(paths,
                 change.history.time = TRUE,
                 output.path = getwd(),
                 clean = FALSE){
-    require(PEcAn.ED2)
+    library(PEcAn.ED2)
 
 # Extract paths
 # TODO: Provide option to just a results path with implied file structure
