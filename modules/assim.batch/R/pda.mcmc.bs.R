@@ -46,7 +46,7 @@ pda.mcmc.bs <- function(settings, params.id=NULL, param.names=NULL, prior.id=NUL
   n.param.all  <- nrow(prior)
 
   ## Load data to assimilate against
-  inputs <- load.pda.data(settings$assim.batch$inputs, con)
+  inputs <- load.pda.data(settings, con)
   n.input <- length(inputs)
 
   ## Set model-specific functions
@@ -179,7 +179,7 @@ pda.mcmc.bs <- function(settings, params.id=NULL, param.names=NULL, prior.id=NUL
         (i==start | i==finish | (i %% settings$assim.batch$diag.plot.iter == 0))) {
       pdf(file.path(settings$outdir, paste0('diag.pda', settings$assim.batch$ensemble.id),
         paste0("data.vs.model_", gsub(" ", "0",sprintf("%5.0f", i)), ".pdf")))
-        NEEo <- inputs[[1]]$NEEo
+        NEEo <- inputs[[1]]$obs
 
         NEEm <- model.out[[1]]
         NEE.resid <- NEEm - NEEo

@@ -1,1 +1,3 @@
+export(met2model.MAESPA)
+export(model2netcdf.MAESPA)
 export(write.config.MAESPA)

@@ -116,7 +116,7 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 	if (empty($row['input_name'])){
     		$row['name']="Weather " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
 	} else {
-    		$row['name']= $row['input_name'];
+    		$row['name']= $row['input_name'] . " " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
 	}
   } else if ($row['file_name'] == '') {
     $row['name']=$row['sitename'];
@@ -157,7 +157,7 @@ foreach($modeltypes as $type) {
         $x['files'][] = array("id"=>"Ameriflux." . $type, "name"=>"Use Ameriflux");
       }
       // check for NARR,this is not exact since it is a conical projection
-      if ($siteinfo['lat'] > 1 && $siteinfo['lat'] < 46 && $siteinfo['lon'] < -68 && $siteinfo['lon'] > -145) {
+      if ($siteinfo['lat'] > 1 && $siteinfo['lat'] < 85 && $siteinfo['lon'] < -68 && $siteinfo['lon'] > -145) {
         $x['files'][] = array("id"=>"NARR." . $type, "name"=>"Use NARR");
       }
       // CRUNCEP is global

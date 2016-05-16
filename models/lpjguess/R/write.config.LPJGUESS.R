@@ -25,8 +25,6 @@
 ##-------------------------------------------------------------------------------------------------#
 write.config.LPJGUESS <- function(defaults, trait.values, settings, run.id){
   
-  require(PEcAn.settings)
-  
   
   # find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, run.id)
@@ -68,6 +66,7 @@ write.config.LPJGUESS <- function(defaults, trait.values, settings, run.id){
   jobsh <- gsub('@RUNDIR@', rundir, jobsh)
   
   jobsh <- gsub('@BINARY@', settings$model$binary, jobsh)
+  jobsh <- gsub('@INSFILE@', settings$model$insfile, jobsh)
   
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))

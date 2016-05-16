@@ -27,7 +27,8 @@ list.of.packages <- c('abind', 'car', 'chron', 'coda', 'data.table', 'doSNOW', '
                       'plotrix', 'plyr', 'raster', 'randtoolbox', 'rjags',
                       'rgdal', 'tgp', 'DBI', 'roxygen2', 'stringr', 'testthat', 'boot',
                       'XML', 'RNCEP', 'foreign', 'RCurl', 'udunits2', 'RPostgreSQL',
-                      'rPython','minpack.lm', 'mclust', 'geonames', 'Rcpp','devtools', 'inline', 'segmented')
+                      'rPython','minpack.lm', 'mclust', 'geonames', 'Rcpp','devtools', 'inline', 'segmented',
+                      'msm')
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) {
   print("installing : ")
@@ -44,6 +45,12 @@ if(!("REddyProc" %in% installed.packages()[,"Package"])) {
 if(!("BioCro" %in% installed.packages()[,"Package"])) {
   devtools::install_github("ebimodeling/biocro")
 }
+
+# BayesianTools package snapshot
+if(!("BayesianTools" %in% installed.packages()[,"Package"])) {
+  devtools::install_url("https://dl.dropboxusercontent.com/s/hy9l6mokresqyel/BayesianTools_0.0.0.9000.tar.gz")
+}
+
 
 # install rhdf5 from bioconductor for met2model.ED
 if(!("rhdf5" %in% installed.packages()[,"Package"])) {

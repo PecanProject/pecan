@@ -130,6 +130,10 @@ th,td {
     height: calc( 100% - 30px );
 }
 
+#output p {
+    padding-top: 10px;
+}
+
 #editor {
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
@@ -153,6 +157,16 @@ th,td {
 
 .header {
     font-weight: bold;
+}
+
+.logfile {
+    margin-top: 8px;
+    border-top: 1px solid #D9D9D9;
+    border-bottom: 1px solid #D9D9D9;
+    padding: 7px 10px;
+    font: 11px "Courier New", monospace;
+    background-color: #F2F2F2;
+    color: black;
 }
 
 #logout {

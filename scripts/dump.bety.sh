@@ -100,26 +100,31 @@ USER_TABLES="users"
 # will be imported during creaton
 CLEAN_TABLES="citations covariates cultivars dbfiles"
 CLEAN_TABLES="${CLEAN_TABLES} ensembles entities formats inputs"
-CLEAN_TABLES="${CLEAN_TABLES} likelihoods"
-CLEAN_TABLES="${CLEAN_TABLES} machines managements methods"
-CLEAN_TABLES="${CLEAN_TABLES} mimetypes models modeltypes"
-CLEAN_TABLES="${CLEAN_TABLES} modeltypes_formats pfts"
-CLEAN_TABLES="${CLEAN_TABLES} posterior_samples posteriors"
-CLEAN_TABLES="${CLEAN_TABLES} priors runs sites"
-CLEAN_TABLES="${CLEAN_TABLES} species treatments"
+CLEAN_TABLES="${CLEAN_TABLES} likelihoods machines managements"
+CLEAN_TABLES="${CLEAN_TABLES} methods mimetypes models modeltypes"
+CLEAN_TABLES="${CLEAN_TABLES} pfts posteriors priors"
+CLEAN_TABLES="${CLEAN_TABLES} runs sites species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
+CLEAN_TABLES="${CLEAN_TABLES} projects sitegroups"
 
 # tables that have checks that need to be looked at.
 CHECK_TABLES="traits yields"
 
 # tables that have many to many relationships
+# Following tables that don't have id's yet and are not included
+#  - cultivars_pfts
+#  - trait_covariate_associations
 MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
+MANY_TABLES="${MANY_TABLES} current_posteriors"
 MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
-MANY_TABLES="${MANY_TABLES} managements_treatments pfts_priors"
-MANY_TABLES="${MANY_TABLES} pfts_species posteriors_ensembles"
+MANY_TABLES="${MANY_TABLES} managements_treatments modeltypes_formats"
+MANY_TABLES="${MANY_TABLES} pfts_priors pfts_species"
+MANY_TABLES="${MANY_TABLES} posterior_samples posteriors_ensembles"
+MANY_TABLES="${MANY_TABLES} sitegroups_sites"
 
 # tables that should NOT be dumped
 IGNORE_TABLES="sessions"
+SYSTEM_TABLES="schema_migrations spatial_ref_sys"
 
 # be quiet if not interactive
 if ! tty -s ; then
@@ -184,7 +189,7 @@ fi
 if [ "${KEEPUSERS}" == "YES" ]; then
     psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT * FROM ${USER_TABLES} WHERE (id >= ${START_ID} AND id <= ${LAST_ID}))  TO '${DUMPDIR}/users.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
 else
-    psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT id, CONCAT('user', id) AS login, CONCAT('user ' , id) AS name, CONCAT('betydb+', id, '@gmail.com') as email, 'Urbana' AS city,  'USA' AS country, '' AS area, '1234567890abcdef' AS crypted_password, 'BU' AS salt, NOW() AS created_at, NOW() AS updated_at, NULL as remember_token, NULL AS remember_token_expires_at, 3 AS access_level, 4 AS page_access_level, '9999999999999999999999999999999999999999' AS apikey, 'IL' AS state_prov, '61801' AS postal_code FROM ${USER_TABLES} WHERE (id >= ${START_ID} AND id <= ${LAST_ID})) TO '${DUMPDIR}/users.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
+    psql ${PG_OPT} -t -q -d "${DATABASE}" -c "\COPY (SELECT id, CONCAT('user', id) AS login, CONCAT('user ' , id) AS name, CONCAT('betydb+', id, '@gmail.com') as email, 'Urbana' AS city,  'USA' AS country, '' AS area, '1234567890abcdef' AS crypted_password, 'BU' AS salt, NOW() AS created_at, NOW() AS updated_at, NULL as remember_token, NULL AS remember_token_expires_at, 3 AS access_level, 4 AS page_access_level, NULL AS apikey, 'IL' AS state_prov, '61801' AS postal_code FROM ${USER_TABLES} WHERE (id >= ${START_ID} AND id <= ${LAST_ID})) TO '${DUMPDIR}/users.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')"
 fi
 ADD=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c "SELECT count(*) FROM ${USER_TABLES} WHERE (id >= ${START_ID} AND id <= ${LAST_ID});" | tr -d ' ' )
 if [ "${QUIET}" != "YES" ]; then

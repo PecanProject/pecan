@@ -66,7 +66,7 @@ if (file_exists($folder . DIRECTORY_SEPARATOR . "STATUS")) {
 $pecanfiles = array();
 if (is_dir($folder)) {
   foreach(scandir("$folder") as $file) {
-    if (is_dir("$folder/$file") || ($file == ".") || ($file == "..") || ($file == ".RData") || ($file == "plot.out")) {
+    if (is_dir("$folder/$file") || ($file[0] == ".") || ($file == "plot.out")) {
       continue;
     }
     $pecanfiles[] = $file;
@@ -74,12 +74,16 @@ if (is_dir($folder)) {
 }
 if (is_dir("$folder/ensemble")) {
   foreach(recursive_scandir("$folder/ensemble", "ensemble") as $file) {
-    $pecanfiles[] = $file;
+    if ($file[0] != ".") {
+      $pecanfiles[] = $file;      
+    }
   }
 }
 if (is_dir("$folder/sensitivity")) {
   foreach(recursive_scandir("$folder/sensitivity", "sensitivity") as $file) {
-    $pecanfiles[] = $file;
+    if ($file[0] != ".") {
+      $pecanfiles[] = $file;
+    }
   }
 }
 
@@ -87,7 +91,7 @@ if (is_dir("$folder/sensitivity")) {
 $pfts = array();
 if (is_dir("$folder/pft")) {
   foreach(scandir("$folder/pft") as $pft) {
-    if (!is_dir("$folder/pft/$pft") || ($pft == ".") || ($pft == "..")) {
+    if (!is_dir("$folder/pft/$pft") || ($pft[0] == ".")) {
       continue;
     }
     $pfts[$pft] = array();
@@ -106,14 +110,14 @@ $outfile = array();
 $outplot = array();
 if (is_dir("$folder/run")) {
   foreach(scandir("$folder/run") as $runid) {
-    if (!is_dir("$folder/run/$runid") || ($runid == ".") || ($runid == "..")) {
+    if (!is_dir("$folder/run/$runid") || ($runid[0] == ".")) {
       continue;
     }
 
     # input files
     $inpfile[$runid] = array();
     foreach(scandir("$folder/run/$runid") as $file) {
-      if (is_dir("$folder/run/$runid/$file")) {
+      if (is_dir("$folder/run/$runid/$file") || ($file[0] == ".")) {
         continue;
       }
       $inpfile[$runid][] = $file;
@@ -123,7 +127,7 @@ if (is_dir("$folder/run")) {
     $outfile[$runid] = array();
     $outplot[$runid] = array();
     foreach(scandir("$folder/out/$runid") as $file) {
-      if (is_dir("$folder/out/$runid/$file")) {
+      if (is_dir("$folder/out/$runid/$file") || ($file[0] == ".")) {
         continue;
       }
       if (preg_match('/^\d\d\d\d.nc.var$/', $file)) {
@@ -137,6 +141,20 @@ if (is_dir("$folder/run")) {
         sort($outplot[$runid][$year]);
       }
     }
+  }
+}
+
+// quick checks for error and finished
+$error = false;
+$finished = false;
+foreach ($status as $line) {
+  $data = explode("\t", $line);
+  if ((count($data) >= 4) && ($data[3] == 'ERROR')) {
+    $error = true;
+    $finished = true;
+  }
+  if ($data[0] == "FINISHED" && count($data) >= 3) {
+    $finished = true;
   }
 }
 
@@ -337,6 +355,9 @@ if (is_dir("$folder/run")) {
     $('#graphxvar').empty();
 <?php } ?>
     $('#graphyvar').empty();
+    if (outplot[run][year] === undefined) {
+      return;
+    }
     $.each(outplot[run][year], function(key, value) {
          $('#graphxvar')
              .append($("<option></option>")
@@ -507,7 +528,92 @@ if (is_dir("$folder/run")) {
     <div class="spacer"></div>
 <?php whoami(); ?>    
   </div>
-  <div id="output">Please select an option on the left<br><br><b>NOTES:</b><br><?php echo $notes; ?></div>
+  <div id="output">
+<?php if ($notes == "") {
+
+}
+?>
+  <h2>Execution Status</h2>
+  <h2>Execution Status</h2>
+  <table border=1>
+    <tr>
+      <th>Stage Name</th>
+      <th>Start Time</th>
+      <th>End Time</th>
+      <th>Status</th>
+    </tr>
+<?php
+foreach ($status as $line) {
+  $data = explode("\t", $line);
+  echo "    <tr>\n";
+  if ($data[0] == "BrownDog") {
+    echo "      <td><a href=\"http://browndog.ncsa.illinois.edu\">";
+    echo "${data[0]} <img src=\"images/browndog-small-transparent.gif\" alt=\"BrownDog\" width=\"16px\"></a></td>\n";
+  } else {
+    echo "      <td>${data[0]}</td>\n";    
+  }
+  if (count($data) >= 2) {
+    echo "      <td>${data[1]}</td>\n";
+  } else {
+    echo "      <td></td>\n";    
+  }
+  if (count($data) >= 3) {
+    echo "      <td>${data[2]}</td>\n";
+  } else {
+    echo "      <td></td>\n";    
+  }
+  if (count($data) >= 4) {
+    echo "      <td>${data[3]}</td>\n";
+  } else {
+    echo "      <td>RUNNING</td>\n";        
+  }
+  echo "    <t/r>\n";
+}
+?>
+  </table>
+<?php if ($error) { ?>
+  <h2>Error in run</h2>
+  <p>There was an error in the execution of the workflow. Good places to look for what could
+  have gone wrong is the workflow.Rout file (which can be found under PEcAn Files pull
+  down) or at the output from the model (which can be found under the Outputs pull down).</p>
+<?php } else if ($finished) { ?>
+  <h2>Successful Run</h2>
+  <p>The workflow finished running without any errors. You can now analyze the results. You
+  can create graphs from the results, or look at the outputs generated during the various
+  parts of the workflow execution.</p>
+<?php } else { ?>
+  <h2>Still running</h2>
+  <p>It looks like the model is still running, you can still look at some of the intermediate
+  results, however most of the results will not be available until the end. You can also go
+  <a href="05-running.php?workflowid=<?php echo $workflowid; ?>">back</a> to the running page
+  which will update continously.</p>
+<?php } ?>
+  <h2>Workflow Results</h2>
+<?php if ($finished && !$error) { ?>
+  <p>On the top left, if you have more than one run, you can select the specific run you are
+  interested in. Once you have selected a run you can create graphs from the outputs of the
+  run by selecting from the three pull down menus below. You can select the year you are
+  interested in, and what you want to plot on the X and Y axis. Once you have made your
+  selections, pressing the "Plot run/year/variable" button will create the graph.</p>
+<?php } ?>
+<?php if ($finished) { ?>
+  <p>Under Inputs you can select the files that were used as the inputs for the model run,
+  this includes the configuration files, as well as the job file that is actually executed.
+  You will also find a README.txt file that gives an overview of the parameters specified
+  for this actual model run.</p>
+  <p>Under Outputs you will find any outputs generated by the model, such as the actual
+  model outputs as well as the logfiles of the model run. You can look at these logfiles
+  to see if the model run was successful. In case of a successful model execution you will
+  also find the converted outputs of the model into
+  <a targe="MsTMIP" href="http://nacp.ornl.gov/">MsTMIP</a> format.</p> 
+<?php } ?>
+  <p>The next selection will list the PFTs and all the files that were used to generate the
+  input data for the models based on the PFT and trait information available.</p>
+  <p>The final selection will list PEcAn specific files, and include the actual workflow.R
+  script that was executed, as well as the pecan.xml that contains all the parameters used
+  during the workflow execution. You will also find here the output files generated by the
+  workflow execution (workflow.Rout and workflow2.Rout).</p>
+  </div>
   <div id="footer"><?php echo get_footer(); ?></div>
 </div>
 </body>

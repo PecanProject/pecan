@@ -32,9 +32,17 @@ convert.samples.MAAT <- function(trait.samples){
 
     ### first rename variables
     trait.names <- colnames(trait.samples)
+    trait.names[trait.names == "leaf_respiration_rate_m2"] <- "atref.rd"
     trait.names[trait.names == "Vcmax"] <- "atref.vcmax"
     trait.names[trait.names == "Jmax"] <- "atref.jmax"
     colnames(trait.samples) <- trait.names
+    
+    ### Conversions
+    if('atref.rd' %in% names(trait.samples)) {
+      ## Calculate dark_resp_factor - rd as a proportion of Vcmax, Williams & Flannagan 1998 ~ 0.1 (unitless)
+      trait.samples[['rd_prop_vcmax']] <- trait.samples[['atref.rd']]/
+        trait.samples[['atref.vcmax']]
+    }
     
     ### Return trait.samples as modified by function
     return(trait.samples)

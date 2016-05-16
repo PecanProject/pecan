@@ -28,7 +28,7 @@ if ($authentication) {
 $offline=isset($_REQUEST['offline']);
 $conversion = (isset($_REQUEST['conversion'])) ? "checked" : "";
 
-$hostname = $fqdn;
+$hostname = "";
 if (isset($_REQUEST['hostname'])) {
   $hostname = $_REQUEST['hostname'];
 }
@@ -40,23 +40,36 @@ $siteid = "";
 if (isset($_REQUEST['siteid'])) {
   $siteid = $_REQUEST['siteid'];
 }
+$sitegroupid = "";
+if (isset($_REQUEST['sitegroupid'])) {
+  $sitegroupid = $_REQUEST['sitegroupid'];
+}
 
-// get hosts
-$query = "SELECT id, hostname FROM machines ORDER BY hostname";
-$result = $pdo->query($query);
-if (!$result) {
+// check if fqdn exists
+$query = "SELECT id FROM machines WHERE hostname=?";
+$stmt = $pdo->prepare($query);
+if (!$stmt->execute(array($fqdn))) {
   die('Invalid query: ' . error_database());
 }
-$hosts = "";
-while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
-  if (array_key_exists($row['hostname'], $hostlist)) {
-    if ($hostname == $row['hostname']) {
-      $hosts = "$hosts<option selected data-id='${row['id']}'>${row['hostname']}</option>\n";
-    } else {
-      $hosts = "$hosts<option data-id='${row['id']}'>${row['hostname']}</option>\n";
-    }
+while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
+  $hostname = $fqdn;
+}
+
+// get sitegroups
+$query = "SELECT id, name FROM sitegroups WHERE public_access OR user_id=? ORDER BY name";
+$stmt = $pdo->prepare($query);
+if (!$stmt->execute(array(get_userid()))) {
+  die('Invalid query: ' . error_database());
+}
+$sitegroups = "";
+while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
+  if ($sitegroupid == $row['id']) {
+    $sitegroups .= "<option value='${row['id']}' selected>${row['name']}</option>\n";
+  } else {
+    $sitegroups .= "<option value='${row['id']}'>${row['name']}</option>\n";    
   }
 }
+
 
 ?>
 <!DOCTYPE html>
@@ -77,13 +90,13 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
     $("#next").removeAttr("disabled");       
     $("#error").html("&nbsp;");
 
-    if ($("#siteid").val() == "") {
+    if ($("#hostname").val() == "") {
       $("#next").attr("disabled", "disabled");
-      $("#error").html("Select a site to continue");
-      $("#sitelabel").html("Site:");
+      $("#error").html("Select a host to continue");
+      $("#hostlabel").html("Host:")
 <?php if ($betydb != "") { ?>
     } else {
-      $("#sitelabel").html("Site: (Show in <a href=\"<?php echo $betydb; ?>/sites/" + $("#siteid").val() + "\" target=\"BETY\">BETY</a>)");
+      $("#hostlabel").html("Host: (Show in <a href=\"<?php echo $betydb; ?>/machines/" + $("#hostname option:selected")[0].getAttribute("data-id") + "\" target=\"BETY\">BETY</a>)");
 <?php } ?>
     }
     if ($("#modelid").val() == null || $("#modelid").val() == "") {
@@ -95,15 +108,32 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       $("#modellabel").html("Model: (Show in <a href=\"<?php echo $betydb; ?>/models/" + $("#modelid").val() + "\" target=\"BETY\">BETY</a>)");
 <?php } ?>
     }
-    if ($("#hostname").val() == "") {
+<?php if ($betydb != "") { ?>
+    if ($("#sitegroupid").val() == null || $("#sitegroupid").val() == "") {
+      $("#sitegrouplabel").html("Site Group:");
+    } else {
+      $("#sitegrouplabel").html("Site Group: (Show in <a href=\"<?php echo $betydb; ?>/sitegroups/" + $("#sitegroupid").val() + "\" target=\"BETY\">BETY</a>)");
+    }
+<?php } ?>
+    if ($("#siteid").val() == "") {
       $("#next").attr("disabled", "disabled");
-      $("#error").html("Select a host to continue");
-      $("#hostlabel").html("Host:")
+      $("#error").html("Select a site to continue");
+      $("#sitelabel").html("Site:");
 <?php if ($betydb != "") { ?>
     } else {
-      $("#hostlabel").html("Host: (Show in <a href=\"<?php echo $betydb; ?>/machines/" + $("#hostname option:selected")[0].getAttribute("data-id") + "\" target=\"BETY\">BETY</a>)");
+      $("#sitelabel").html("Site: (Show in <a href=\"<?php echo $betydb; ?>/sites/" + $("#siteid").val() + "\" target=\"BETY\">BETY</a>)");
 <?php } ?>
     }
+  }
+
+  function switchUI(busy) {
+    var option = busy ? 'disabled' : false;
+
+    $("#hostname").prop('disabled', option);
+    $("#modelid").prop('disabled', option);
+    $("#sitegroupid").prop('disabled', option);
+    $("#conversion").prop('disabled', option);
+    $("#siteid").prop('disabled', option);
   }
         
   function prevStep() {
@@ -114,67 +144,78 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
     $("#formnext").submit();
   }
 
-  function modelSelected() {
-    var curSite = $("#siteid").val();  //we'll clear this and replace it if it still exists in the new model
+  function updateData() {
+    if ($("#hostname").is(':disabled')) {
+      return;
+    }
+    switchUI(true);
+
+    var curHost = $("#hostname").val();
+    var curModel = $("#modelid").val();
+    var curSitegroup = $("#sitegroupid").val();
+    var curSite = $("#siteid").val();
 
     // remove everything
     if (markersArray) {
       clearSites();
       markersArray.length = 0;
     }
+    $('#hostname').find('option').remove();
+    $('#hostname').append('<option value="">Any Host</option>');
+    $('#modelid').find('option').remove();
+    $('#modelid').append('<option value="">All Models</option>');
     $("#siteid").val("");
     $("#sitename").val("");
     validate();
 
     // get all sites
     //console.log($('#modelid option:selected'))
-    var url ="sites.php?host=" + $('#hostname')[0].value + "&model=" + $('#modelid option:selected')[0].value;
-
+    var url = "hostmodelinfo.php?host=" + curHost + "&model=" + curModel + "&sitegroup=" + curSitegroup;
     if ($('#conversion').is(':checked')) {
-      url =url + "&conversion=1";
+      url = url + "&conversion=1";
     }
  
     jQuery.get(url, {}, function(data) {
-      jQuery(data).find("marker").each(function() {
-        var marker = jQuery(this);
-        if (marker.attr("lat") == "" || marker.attr("lon") == "") {
-          console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
-        } else {
-          showSite(marker, curSite);
+      var jdata = jQuery(data);
+      //console.log(data);
+      // fill in host list
+      jdata.find("host").each(function() {
+        var host = jQuery(this);
+        var hostname = host.attr("hostname");
+        var option = "<option data-id='" + host.attr("id") + "'";
+        if(hostname == curHost) {
+          option = option + " selected";
         }
+        option = option + ">" + hostname + "</option>";
+        $('#hostname').append(option);
       });
-      renderSites(curSite);
-    });
-  }
 
-  function hostSelected() {
-    var curModel = $("#modelid").val();
-
-    // remove everything
-    if (markersArray) {
-      clearSites();
-      markersArray.length = 0;
-    }
-    $('#modelid').find('option').remove();
-    $('#modelid').append('<option value="">All Models</option>');
-    validate();
-
-    // get all models
-    var url="models.php?host=" + $('#hostname')[0].value;
-    jQuery.get(url, {}, function(data) {
-      jQuery(data).find("model").each(function() {
+      // fill in model list
+      jdata.find("model").each(function() {
         var model = jQuery(this);
         var name = model.attr("name");
         if (model.attr("revision") != "") {
           name += " (" + model.attr("revision") + ")";
         }
         if(model.attr("id") == curModel) {
-          $('#modelid').append('<option value="' + model.attr("id") + '" selected>' + name + '</option>');  //reselect our curModel if still available
+          $('#modelid').append('<option value="' + model.attr("id") + '" selected>' + name + '</option>');
         } else {
           $('#modelid').append('<option value="' + model.attr("id") + '">' + name + '</option>');
         }
       });
-      modelSelected();
+
+      // fill in site list      
+      jdata.find("marker").each(function() {
+        var marker = jQuery(this);
+        if (marker.attr("lat") == "" || marker.attr("lon") == "") {
+          //console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
+        } else {
+          showSite(marker, curSite);
+        }
+      });
+      renderSites(curSite);
+
+      switchUI(false);
     });
   }
 
@@ -186,7 +227,7 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
   
 <?php if ($offline) { ?>
   $(document).ready(function () {
-    hostSelected();
+    updateData();
   });
 
   function clearSites() {
@@ -213,7 +254,7 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
   }
 
 <?php } else { ?>
-  google.load("maps", "3",  {other_params:"sensor=false"});
+  google.load("maps", "3");
   google.setOnLoadCallback(mapsLoaded);
 
   var map = null;
@@ -235,7 +276,7 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
 
     map = new google.maps.Map(document.getElementById("output"), myOptions);
     infowindow = new google.maps.InfoWindow({content: ""});
-    hostSelected();
+    updateData();
 
     $("#sitename").keyup(function( event ) {
       var search = $("#sitename").val().toLowerCase();
@@ -308,20 +349,26 @@ while ($row = @$result->fetch(PDO::FETCH_ASSOC)) {
       available.</p>
 
       <label id="hostlabel">Host:</label>
-      <select name="hostname" id="hostname" onChange="hostSelected();">
-        <option value="">All Sites</option>
-        <?php echo $hosts; ?>
+      <select name="hostname" id="hostname" onChange="updateData();">
+        <option selected><?php echo $hostname; ?></option>
       </select>
       <div class="spacer"></div>
 
       <label id="modellabel">Model:</label>
-      <select name="modelid" id="modelid" onChange="modelSelected();">
+      <select name="modelid" id="modelid" onChange="updateData();">
         <option selected value="<?php echo $modelid; ?>"><?php echo $modelid; ?></option>
       </select>
       <div class="spacer"></div>
 
+      <label id="sitegrouplabel">Site Group:</label>
+      <select name="sitegroupid" id="sitegroupid" onChange="updateData();">
+        <option value="">All Sites</option>
+        <?php echo $sitegroups; ?>
+      </select>
+      <div class="spacer"></div>
+
       <label id="conversionlabel">Conversion:</label>
-      <input type="checkbox" id="conversion" name="conversion" onChange="modelSelected();" <?php echo $conversion; ?>  /> 
+      <input type="checkbox" id="conversion" name="conversion" onChange="updateData();" <?php echo $conversion; ?>  /> 
       <div class="spacer"></div>
 
       <label id="sitelabel">Site:</label>

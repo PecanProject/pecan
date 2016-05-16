@@ -19,6 +19,13 @@ if [ ! -e "@OUTDIR@/history.xml" ]; then
   
   "@BINARY@"
   STATUS=$?
+  if [ $STATUS == 0 ]; then
+    if grep -Fq '=== Time integration ends; Total elapsed time=' "@OUTDIR@/logfile.txt"; then
+      STATUS=0
+    else
+      STATUS=1
+    fi
+  fi
   
   # copy scratch if needed
   @SCRATCH_COPY@
