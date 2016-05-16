@@ -1,10 +1,8 @@
-#' @name invert.auto
+#' @name invert.auto 
+#' 
 #' @title Inversion with automatic convergence checking
-#' @details Performs an inversion via the `invert.custom` function with 
-#' multiple chains and automatic convergence checking. Convergence checks are 
-#' performed using the multivariate Gelman-Rubin diagnostic.
-#' @param observed Matrix of observed values. Must line up with output of 
-#' 'model'.
+#' @details Performs an inversion via the `invert.custom` function with multiple chains and automatic convergence checking. Convergence checks are performed using the multivariate Gelman-Rubin diagnostic.
+#' @param observed Matrix of observed values. Must line up with output of 'model'.
 #' @param invert.options R list object containing the following elements:
 #' 
 #' inits Vector of initial values of model parameters to be inverted.
@@ -53,11 +51,13 @@
 #' @param return.samples Include full samples list in output. Default = TRUE.
 #' @param save.samples Filename for saving samples after each iteration. If 
 #' 'NULL', do not save samples. Default = NULL.
+#' @param parallel Logical. Whether or not to run multiple chains in parallel on multiple cores (defualt=FALSE).
+#' @param parallel.cores Number of cores to use for parallelization. If NULL (default), allocate one fewer than detected number of cores.
 #' @param ... Other arguments to `check.convergence`
 #' @return List of "results" (summary statistics and Gelman Diagnostic) and 
 #' "samples"(mcmc.list object, or "NA" if return.samples=FALSE)
 
-invert.auto <- function(observed, invert.options, return.samples=TRUE, save.samples=NULL, quiet=FALSE, ...){
+invert.auto <- function(observed, invert.options, return.samples=TRUE, save.samples=NULL, quiet=FALSE, parallel=FALSE, parallel.cores=NULL, ...){
     library(coda)
     n.tries <- invert.options$n.tries
     nchains <- invert.options$nchains
@@ -67,11 +67,30 @@ invert.auto <- function(observed, invert.options, return.samples=TRUE, save.samp
     i.try <- 1
     while(try.again & i.try <= n.tries){
         print(sprintf("Attempt %d of %d", i.try, n.tries))
-        samps.list <- list()
-        for(chain in 1:nchains){
-            print(sprintf("Chain %d of %d", chain, nchains))
-            invert.options$inits <- inits.function() 
-            samps.list[[chain]] <- invert.custom(observed=observed, invert.options=invert.options, quiet=quiet)
+        if(parallel){
+            if(!require(parallel)) stop("'parallel' package not installed")
+            invert.function <- function(x){
+                invert.options$inits <- inits.function()
+                samps <- invert.custom(observed=observed, invert.options=invert.options, quiet=quiet)
+                return(samps)
+            }
+            if(is.null(parallel.cores)){
+                cl <- makeCluster(detectCores() - 1, "FORK")
+            } else {
+                if(!is.numeric(parallel.cores) | parallel.cores %% 1 != 0){
+                    stop("Invalid argument to 'parallel.cores'. Must be integer or NULL")
+                }
+                cl <- makeCluster(parallel.cores, "FORK")
+            }
+            print(sprintf("Running %d chains in parallel. Progress bar unavailable", nchains))
+            samps.list <- parLapply(cl, as.list(1:nchains), invert.function)
+        } else {
+            samps.list <- list()
+            for(chain in 1:nchains){
+                print(sprintf("Chain %d of %d", chain, nchains))
+                invert.options$inits <- inits.function() 
+                samps.list[[chain]] <- invert.custom(observed=observed, invert.options=invert.options, quiet=quiet)
+            }
         }
         if(!is.null(save.samples)) save(samps.list, file=save.samples)
         # Check for convergence. Repeat if necessary.
