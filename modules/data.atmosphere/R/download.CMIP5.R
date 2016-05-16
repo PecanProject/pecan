@@ -108,5 +108,19 @@ download.CMIP5 <- function(outfolder, CMIP5_model, experiment, ensemble_member, 
 }
 
 # https://pcmdi.llnl.gov/esgf-idp/openid/jsimkins2 is the OpenID used to access the files
-# download.CMIP5('C:/Users/James Simkins/', IPSL-CM5A-LR, rcp45, r1i1p1, '2006-01-01 00:00:00', '2007-12-31 23:59:59', 2, 45, -90)
+# download.CMIP5('C:/Users/James Simkins/', 'IPSL-CM5A-LR', 'rcp45', 'r1i1p1', '2006-01-01 00:00:00', '2007-12-31 23:59:59', 2, 45, -90)
 
+
+# dapfile = https://vesg.ipsl.upmc.fr/thredds/dodsC/GeoMIP/output/IPSL/IPSL-CM5A-LR/rcp45/3hr/atmos/3hr/r1i1p1/v20130428/vas/vas_3hr_IPSL-CM5A-LR_rcp45_r1i1p1_200601010300-205601010000.nc.dods?vas[0][0][0]
+# http://jsimkins2:W!scons1n@vesg.ipsl.upmc.fr/thredds/dodsC/GeoMIP/output/IPSL/IPSL-CM5A-LR/rcp45/3hr/atmos/3hr/r1i1p1/v20130428/vas/vas_3hr_IPSL-CM5A-LR_rcp45_r1i1p1_200601010300-205601010000.nc.dods?vas[0][0][0]
+
+#myproxyclient logon -b -T -s esgf-node.jpl.nasa.gov -l <your username> -o ~/.esg/credentials.pem -C ~/.esg/certificates
+# tree.aos.wisc.edu jsimkins@tree.aos.wisc.edu
+# myproxyclient logon -b -T -s pcmdi.llnl.gov -l jsimkins2 -o ~/.esg/credentials.pem -C ~/.esg/certificates
+
+
+# using R.utils
+# require(R.utils)
+# downloadFile('https://pcmdi.llnl.gov/esgf-idp/openid/jsimkins2', 'C:', username = "jsimkins2", password ="W!scons1n")
+### can also use this to create the file
+  # downloadFile('https://pcmdi.llnl.gov', 'C:', username = "https://pcmdi.llnl.gov/esgf-idp/openid/jsimkins2", password ="W!scons1n")
