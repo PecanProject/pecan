@@ -10,10 +10,10 @@ pecan.workflow.id <- "1000001543"
 ed.run.id <- "1000443674"
 analysis.path <- sprintf('analysis.output.%s.%s', pecan.workflow.id, ed.run.id)
 dir.create(analysis.path)
-if(!file.exists("analysis.output/ed_2.1-opt")){
-  file.link("/projectnb/dietzelab/ashiklom/ED2/EDR/build/ed_2.1-opt",
-          "analysis.output/ed_2.1-opt")
-  system("chmod +x analysis.output/ed_2.1-opt")
+exec.path <- file.path(analysis.path, "ed_2.1-opt")
+if(!file.exists(exec.path)){
+  file.link("/projectnb/dietzelab/ashiklom/ED2/EDR/build/ed_2.1-opt", exec.path)
+  system(paste("chmod +x", exec.path))
 }
 base.output.dir <- file.path("/projectnb", "dietzelab", "pecan.data",
                              "output", "ashiklom")
@@ -28,7 +28,12 @@ datetime <- strptime(date.raw, "%Y-%m-%d-%H%M%S", tz = "GMT")
 if(hour(datetime) < 8 | hour(datetime) > 6) hour(datetime) <- 12
 
 # Set sensitivity parameters
-n.sens <- 10
+arg <- commandArgs(trailingOnly=TRUE)
+if(length(arg) > 0){
+    n.sens <- as.numeric(arg[1])
+} else {
+    n.sens <- 4
+}
 sensitivity.means <- list(
   prospect.N = 1.4,
   prospect.Cab = 40,
@@ -109,7 +114,7 @@ for(i in seq_along(sensitivity.means)){
       trait.in <- NULL
     } else {
       trait.in <- sensitivity.seqs[[current.trait]][j]
-      names(trait.in) <- current.trait    
+      names(trait.in) <- substring(current.trait, 4)  ## Remove "ed." from trait name
     }
     trait.values <- lapply(pft.names, function(x) c(list(name=x), trait.in))
     names(trait.values) <- pft.names
