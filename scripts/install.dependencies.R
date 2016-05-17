@@ -48,7 +48,7 @@ if(!("BioCro" %in% installed.packages()[,"Package"])) {
 
 # BayesianTools package snapshot
 if(!("BayesianTools" %in% installed.packages()[,"Package"])) {
-  devtools::install_url("https://dl.dropboxusercontent.com/s/hy9l6mokresqyel/BayesianTools_0.0.0.9000.tar.gz")
+  devtools::install_url("https://dl.dropboxusercontent.com/s/ccvpnvblf3vzuvs/BayesianTools_0.0.0.9000.tar.gz")
 }
 
 
