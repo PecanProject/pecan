@@ -147,7 +147,9 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   
   # define range to make sure mcmc.GP doesn't propose new values outside 
   
-  rng=matrix(c(apply(X,2,min), apply(X ,2,max)),nrow=n.param)
+  rng=matrix(c(sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0)),
+               sapply(prior.fn$qprior[prior.ind] ,eval,list(p=1))),
+               nrow=n.param)
         
 
   ## Sample posterior from emulator
