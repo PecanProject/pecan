@@ -34,11 +34,9 @@
 
 invert.fast <- function(modname, observed, inits, cons, 
                    pmu, psd, plog, minp, ngibbs){
-    library(data.table)
     data(model.list)
-    setkey(model.list, modname)
-    model.set <- model.list[modname]
-    if(all(is.na(model.set[,-1,with=FALSE]))){
+    model.set <- model.list[model.list$modname == modname,]
+    if(nrow(model.set) < 1){
         stop(sprintf("Error: Model '%s' not found", modname))
     }
     modcode <- as.integer(model.set$modcode)
