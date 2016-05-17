@@ -98,8 +98,6 @@ EDR <- function(paths,
     cat(RT.matrix[par.ind,2], file = file.path(output.path, "trans_par.dat"), sep=" ")
     cat(RT.matrix[nir.ind,2], file = file.path(output.path, "trans_nir.dat"), sep=" ")
 # Call EDR -- NOTE that this requires that the ED2IN 
-    albedo.files <- list.files(output.path, "albedo.*",full.names = TRUE)
-    file.remove(albedo.files)
     exec.command <- sprintf("(cd %s; ./%s)", output.path, edr.exe.name)
     ex <- system(exec.command, intern=TRUE)
     if(any(grepl("fatal error", ex, ignore.case=TRUE))){
