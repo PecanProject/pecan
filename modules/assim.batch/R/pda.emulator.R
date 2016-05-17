@@ -134,6 +134,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     pckg=1
   } else{
     X <- data.frame(knots.params[, prior.ind])
+    names(X) <- pname[prior.ind]
     df <- data.frame(LL = LL.X, X)
     
     logger.info(paste0("Using 'kernlab' package for Gaussian Process Model fitting."))
