@@ -9,7 +9,7 @@
 ##'  are saved as files and db records.
 ##'
 ##' @author Mike Dietze
-##' @author Ryan Kelly
+##' @author Ryan Kelly, Istem Fer
 ##' @export
 pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
                      iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL) {
@@ -119,7 +119,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   if(settings$assim.batch$GPpckg=="GPfit"){
     ## GPfit optimization routine assumes that inputs are in [0,1]
     ## Instead of drawing from parameters, we draw from probabilities
-    X <- knots.probs[, prior.ind]
+    X <- knots.probs[, prior.ind, drop=FALSE]
 
     logger.info(paste0("Using 'GPfit' package for Gaussian Process Model fitting."))
     require(GPfit)
