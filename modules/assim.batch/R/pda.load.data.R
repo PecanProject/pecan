@@ -58,7 +58,7 @@ load.pda.data <- function(settings, con) {
         
         inputs[[i]]$data <- load.L2Ameriflux.cf(input.settings[[i]]$path)
         
-        NEEo <- inputs[[i]]$data$NEE
+        NEEo <- inputs[[i]]$data$FC
         UST <- inputs[[i]]$data$UST
         NEEo[NEEo == -9999] <- NA
         NEEo[UST < ustar.thresh] <- NA
