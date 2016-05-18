@@ -740,13 +740,12 @@ pda.settings.bt <- function(settings){
   sampler = settings$assim.batch$bt.settings$sampler 
   
   iterations = as.numeric(settings$assim.batch$bt.settings$iter)
-  if(is.null(settings$assim.batch$bt.settings$optimize)) optimize = settings$assim.batch$bt.settings$optimize
+  if(!is.null(settings$assim.batch$bt.settings$optimize)) optimize = settings$assim.batch$bt.settings$optimize else optimize=TRUE
   if(!is.null(settings$assim.batch$bt.settings$consoleUpdates)) consoleUpdates = as.numeric(settings$assim.batch$bt.settings$consoleUpdates) else consoleUpdates = NULL
   parallel = settings$assim.batch$bt.settings$parallel
-  if(!is.null(settings$assim.batch$bt.settings$adapt)) adapt = settings$assim.batch$bt.settings$adapt
+  if(!is.null(settings$assim.batch$bt.settings$adapt)) adapt = settings$assim.batch$bt.settings$adapt else adapt=TRUE
   if(!is.null(settings$assim.batch$bt.settings$adaptationInverval)) adaptationInverval = as.numeric(settings$assim.batch$bt.settings$adaptationInverval) else adaptationInverval=NULL
   if(!is.null(settings$assim.batch$bt.settings$adaptationNotBefore)) adaptationNotBefore = as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore) else adaptationNotBefore=NULL
-  initialParticles=list("prior",as.numeric(settings$assim.batch$bt.settings$n.initialParticles))
   if(!is.null(settings$assim.batch$bt.settings$DRlevels)) DRlevels = as.numeric(settings$assim.batch$bt.settings$DRlevels) else DRlevels=1
   proposalScaling = settings$assim.batch$bt.settings$proposalScaling
   adaptationDepth = settings$assim.batch$bt.settings$adaptationDepth
