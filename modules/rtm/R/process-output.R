@@ -50,6 +50,7 @@ load.from.name <- function(filename, filepath="."){
 #' matrix as a long list (for easy construction of data.tables)
 #' @param samples Matrix of MCMC samples.
 summary.mvnorm <- function(samples){
+    library(mclust)
     stopifnot(colnames(samples) != NULL)
     parnames <- colnames(samples)
     sigmanames <- sprintf("%s.%s.sigma", rep(parnames, 1, each=6),
