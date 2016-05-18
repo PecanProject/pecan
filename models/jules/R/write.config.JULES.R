@@ -127,14 +127,91 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id){
   # tile frac
   # soil physical parameters
   
+  
+  ## --------------------- Edit PFT_PARAMS.NML to set model parameters  -------------------------
+  pft.file <- file.path(rundir,"pft_params.nml")
+  pft.text <- readLines(con=pft.file, n=-1)
+  if(length(pft.text)<3) logger.severe("No DEFAULT parameters provided for JULES")
+
+  ##split NML into variable list and parameter values
+  pft.parse = unlist(strsplit(pft.text[2:(length(pft.text)-1)],"="))
+  variables = pft.parse[seq(1,length(pft.parse),by=2)]
+  defaults = pft.parse[seq(2,length(pft.parse),by=2)]
+  
+  ## expand out NML multiplication notation
+  mult = grep("*",defaults,fixed=TRUE)
+  for(i in mult){
+    tmp = unlist(strsplit(defaults[i],"*",fixed=TRUE))
+    defaults[i] = paste0(rep(tmp[2],tmp[1]),collapse = "")
+  }
+  
+  ## parse into matrix of current defaults
+  defaults = read.csv(textConnection(defaults),header=FALSE)
+  defaults = defaults[,-ncol(defaults)] ## remove extra column created by NML line ending comma
+  rownames(defaults) <- variables
+  colnames(defaults) <- c("DEC","EV","C3","C4","SH")[1:ncol(defaults)]
+    
+  ## match selected PFTs to correct defaults
+  npft = length(trait.values)-1
+  pft.id = rep(NA,npft)
+  for(i in 1:npft){
+    pft.name = names(trait.values)[i]
+    if(grepl("DEC",pft.name)|grepl("decid",pft.name)|grepl("hardwood",pft.name)) pft.id[i] = 1
+    if(grepl("EV",pft.name)|grepl("everg",pft.name)|grepl("conif",pft.name)) pft.id[i] = 2
+    if(grepl("C3",pft.name,ignore.case = TRUE)) pft.id[i] = 3
+    if(grepl("C4",pft.name,ignore.case = TRUE)) pft.id[i] = 4
+    if(is.na(pft.id[i])) pft.id[i] = 5
+  }
+  
+  ## reorder defaults to match supplied PFTs
+  pft.ord = pft.id
+  unused = NULL
+  if(length(pft.ord)<5){
+    unused = (1:5)[!(1:5 %in% pft.ord)]
+    pft.ord = c(pft.ord,unused)[1:5]
+    unused = (npft+1):5
+  } 
+  defaults = defaults[,pft.ord]
+  
+  ## Loop over PFTS
+  for(i in 1:npft){
+    pft = trait.values[[i]]
+    
+    for(v in 1:length(pft)){
+      
+      ## convert names and units
+      var = names(pft)[v]
+      if(var == "quantum_efficiency") names(pft)[v] <- "alpha_io"  ## double check units
+      
+      ## detect any unmatched variables
+      mch = which(rownames(defaults) == names(pft[v]))
+      if(length(mch) != 1){
+        logger.warn("unmatched parameter in write.configs.JULES", names(pft[v]), "in PFT", names(trait.values)[i])
+      } else {
+        
+        ## insert into defaults table
+        defaults[mch,i] = pft[v]     
+      }
+    } ## end loop over parameters
+  }   ## end loop over PFTs
+    
+  ## write out new file
+  write(pft.text[1],pft.file)  ## Header
+  for(i in 1:nrow(defaults)){
+    write(paste0(rownames(defaults)[i],"=",paste(defaults[i,],collapse=","),","),pft.file,append=TRUE)
+  }
+  write(pft.text[length(pft.text)],pft.file,append=TRUE) ## Footer
+    
+  ## set npft to the value needed for surface type definition
+  npft = max(c(npft,5))
+
+  ## ---------------------------   END PFTS ------------------------------------------
+  
+  
+  ## Edit jules_surface_types.nml to set correct number of PFTS
+  
   ## Edit INITIAL_CONDITIONS.NML
   # soil carbon
   # LAI
   
-  
-  ## Edit PFT_PARAMS.NML to set model parameters
-  ## ******************************************************
-  
- 
-
 }
