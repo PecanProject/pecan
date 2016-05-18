@@ -740,10 +740,10 @@ pda.settings.bt <- function(settings){
   sampler = settings$assim.batch$bt.settings$sampler 
   
   iterations = as.numeric(settings$assim.batch$bt.settings$iter)
-  optimize = settings$assim.batch$bt.settings$optimize
+  if(is.null(settings$assim.batch$bt.settings$optimize)) optimize = settings$assim.batch$bt.settings$optimize
   if(!is.null(settings$assim.batch$bt.settings$consoleUpdates)) consoleUpdates = as.numeric(settings$assim.batch$bt.settings$consoleUpdates) else consoleUpdates = NULL
   parallel = settings$assim.batch$bt.settings$parallel
-  adapt = settings$assim.batch$bt.settings$adapt
+  if(!is.null(settings$assim.batch$bt.settings$adapt)) adapt = settings$assim.batch$bt.settings$adapt
   if(!is.null(settings$assim.batch$bt.settings$adaptationInverval)) adaptationInverval = as.numeric(settings$assim.batch$bt.settings$adaptationInverval) else adaptationInverval=NULL
   if(!is.null(settings$assim.batch$bt.settings$adaptationNotBefore)) adaptationNotBefore = as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore) else adaptationNotBefore=NULL
   initialParticles=list("prior",as.numeric(settings$assim.batch$bt.settings$n.initialParticles))
@@ -764,12 +764,10 @@ pda.settings.bt <- function(settings){
                      temperingFunction = temperingFunction, optimize = optimize)
   } else if(sampler %in% c("AM", "M", "DRAM", "DR")) {
     bt.settings = list(iterations = iterations, startValue = "prior")
-  } else if(sampler %in% c("DE", "DEzs")) {
+  } else if(sampler %in% c("DE", "DEzs","DREAM", "DREAMzs")) {
     bt.settings <- list(iterations = iterations)
   } else if(sampler == "SMC") {
-    bt.settings <- list(initialParticles = initialParticles, iterations= iterations)
-  } else if(sampler %in% c("DREAM", "DREAMzs")) {
-    bt.settings <- list(ndraw=iterations*n.param)
+    bt.settings <- list(initialParticles = list("prior", iterations))
   } else {
     logger.error(paste0(sampler, " sampler not found!"))
   }
