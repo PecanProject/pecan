@@ -8,16 +8,19 @@
 ##' @param obs.mean    data.frame of observations of the mean of variables (time X nstate)
 ##' @param obs.sd      data.frame of observations of the sd of variables (time X nstate)
 ##' @param processvar  flag for if process variance should be estimated or not
+##' @param sample.parameters flag for if parameters should come from meta.analysis or be defaults. if false parameters are set to defaults
 ##' 
 ##' @description State Variable Data Assimilation: Ensemble Kalman Filter
 ##' 
 ##' @return NONE
 ##' 
-sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALSE,sample.parameters=FALSE){
+sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
+                     processvar=FALSE,sample.parameters=FALSE){
   
   #ensemble.samples <- get.ensemble.samples
   #write.ensemble.configs #look inside for what you need #just the lapply thing
   #flag for sampling parameters vs. running with mean
+  #pda.init.run
   
   ## settings
   model <- settings$model$type
@@ -96,6 +99,11 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
   ###-------------------------------------------------------------------###  
   X = IC
   run.id = list()
+#   
+#   pda.init.run(settings = settings, con = con, my.write.config = my.write.config, workflow.id = workflow.id,
+#                params = c(1000000012),n=ifelse(is.null(dim(params)), 1, nrow(params)),
+#                run.names=paste("run", 1:n, sep="."))
+#   
   for(i in 1:nens){
     
     ## set RUN.ID
@@ -115,24 +123,17 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
     dir.create(file.path(settings$rundir, run.id[[i]]), recursive=TRUE)
     dir.create(file.path(settings$modeloutdir, run.id[[i]]), recursive=TRUE)
     
-    ## write config
-    # do.call(my.write.config,args=list(defaults,list(pft=prior[i,],env=NA),
-    #                                  settings, run.id[[i]],inputs = settings$run,IC=IC[i,]))
     settings$run$start.date <- paste0((as.numeric(start.year) - spin.up),strftime(settings$run$end.date,"/%m/%d"))
     settings$run$end.date <- paste0((as.numeric(end.year)),strftime(settings$run$end.date,"/%m/%d"))
     
-    if(sample.parameters==TRUE){
-      settings$ensemble$start.date <- settings$run$start.date
-      settings$ensemble$end.date <- settings$run$end.date
+    if(sample.parameters == TRUE){
+      get.parameter.samples(pfts = settings$pfts, ens.sample.method=settings$ensemble$method)
+      load(file.path(settings$outdir, "samples.Rdata"))
+      do.call(my.write.config, args = list(trait.values = lapply(ensemble.samples, function(x, n){x[n, ]},n = i),
+                                           settings = settings, run.id = run.id[[i]]))
+    } else {
+      do.call(my.write.config,args=list(trait.values = NA,settings=settings,run.id = run.id[[i]],restart=FALSE))
     }
-    
-    #status.start("CONFIG")
-    #settings <- run.write.configs(settings, write=settings$database$bety$write, ens.sample.method=settings$ensemble$method)
-    #saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.CONFIGS.xml'))
-    #status.end()
-   
-    
-    do.call(my.write.config,args=list(settings=settings,run.id = run.id[[i]],restart=FALSE))
     
     ## write a README for the run
     cat("runtype     : sda.enkf\n",
@@ -225,7 +226,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
   ###-------------------------------------------
   ### loop over time
   ###-------------------------------------------
-  for(t in 6:36){
+  for(t in 16:50){
     
     ### READ RESTART
     X <- list()
@@ -374,10 +375,15 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
     ### Forecast step
     if(t < nt){
       for(i in 1:nens){
-        do.call(my.write.restart,args=list(out.dir = outdir, runid = run.id[[i]],
-                                           time = total.time[t], settings = settings,
-                                           analysis.vec = analysis[i,],
-                                           RENAME = TRUE, PLOT=FALSE, variables=variables))
+        do.call(my.write.restart,
+                args=list(out.dir = outdir, runid = run.id[[i]],
+                          time = total.time[t], settings = settings,
+                          analysis.vec = analysis[i,],
+                          RENAME = TRUE, PLOT=FALSE, variables=variables,
+                          sample.parameters = sample.parameters,
+                          trait.values = lapply(ensemble.samples,
+                                                function(x, n){x[n, ]},
+                                                n = i)))
       }
       ## start model run
       start.model.runs(settings,settings$database$bety$write)
@@ -438,6 +444,8 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
   #                                   var.name,mean.name,sd.name,t1,t,ylim.set,
   #                                   plot.name){
   #   
+  
+  t1=1
     pink = col2rgb("deeppink")
     alphapink = rgb(pink[1],pink[2],pink[3],180,max=255)
     green = col2rgb("green")
@@ -450,7 +458,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
     YCI = as.matrix(laply(obs.sd[t1:t],function(x){return(x[[1]])})) 
     YCI = YCI[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
    
-   pdf("pecan_workshop.pdf")
+   pdf("new.ts.pdf")
    
     for(i in 1:ncol(X)){
       t1=1
@@ -476,9 +484,9 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
       ciEnvelope(total.time[(t1:t)],XaCI[,1],XaCI[,2],col=alphapink)
       lines(total.time[t1:t],Xa,col="black",lty=2,lwd=2)
       
-      legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
+      #legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
       
-      t1=5
+      t1=2
       #Forecast minus data = error
       reg <- lm(Xbar[t1:t] - unlist(Ybar[t1:t,i])~c(t1:t))
       plot(t1:t,Xbar[t1:t] - unlist(Ybar[t1:t,i]),pch=16,cex=1,
@@ -492,6 +500,21 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
       mtext(paste("slope =",signif(summary(reg)$coefficients[2],digits=3),"intercept =",signif(summary(reg)$coefficients[1],digits=3)))
       #d<-density(c(Xbar[t1:t] - unlist(Ybar[t1:t,i])))
       #lines(d$y+1,d$x)
+      
+      #forecast minus analysis = update
+      reg1 <- lm(Xbar[t1:t] - Xa[t1:t] ~ c(t1:t))
+      plot(t1:t,Xbar[t1:t] - Xa[t1:t],pch=16,cex=1,
+           ylim=c(min(Xbar[t1:t]-XaCI[t1:t,2]),max(Xbar[t1:t]-XaCI[t1:t,1])),
+           xlab="Time", ylab="Update",main="Update = Forecast - Analysis")
+      ciEnvelope(rev(t1:t),rev(Xbar[t1:t] - XaCI[t1:t,1]),
+                 rev(Xbar[t1:t] - XaCI[t1:t,2]),col=alphagreen)
+      abline(h=0,lty=2,lwd=2)
+      abline(reg1)
+      mtext(paste("slope =",signif(summary(reg1)$coefficients[2],digits=3),"intercept =",signif(summary(reg1)$coefficients[1],digits=3)))
+      #d<-density(c(Xbar[t1:t] - Xa[t1:t]))
+      #lines(d$y+1,d$x)
+    }
+      dev.off()
       
       plot(rowMeans(temp.mat[5:t,]),
            Xbar[5:t] -  unlist(Ybar[5:t,i]),
@@ -508,18 +531,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
            pch=16,cex=1,xlab="Total Yearly Precip",
            ylab="Error",main=colnames(Ybar)[i])
       
-      #forecast minus analysis = update
-      reg1 <- lm(Xbar[t1:t] - Xa[t1:t] ~ c(t1:t))
-      plot(t1:t,Xbar[t1:t] - Xa[t1:t],pch=16,cex=1,
-           ylim=c(min(Xbar[t1:t]-XaCI[t1:t,2]),max(Xbar[t1:t]-XaCI[t1:t,1])),
-           xlab="Time", ylab="Update",main="Update = Forecast - Analysis")
-      ciEnvelope(rev(t1:t),rev(Xbar[t1:t] - XaCI[t1:t,1]),
-                 rev(Xbar[t1:t] - XaCI[t1:t,2]),col=alphagreen)
-      abline(h=0,lty=2,lwd=2)
-      abline(reg1)
-      mtext(paste("slope =",signif(summary(reg1)$coefficients[2],digits=3),"intercept =",signif(summary(reg1)$coefficients[1],digits=3)))
-      #d<-density(c(Xbar[t1:t] - Xa[t1:t]))
-      #lines(d$y+1,d$x)
+
       
       plot(rowMeans(temp.mat[5:t,]),Xbar[5:t] - Xa[5:t],pch=16,
            cex=1,xlab="Average Monthly Temp",
@@ -542,7 +554,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,processvar=FALS
    corrplot(cor.mat,type="upper",tl.srt=45, 
             addCoef.col = "black")
    
-   dev.off()
+   
     
     for(i in 1:6){
       plot(density(unlist(ANALYSIS[[i]][1])),col="pink",xlim=c(8,12))
