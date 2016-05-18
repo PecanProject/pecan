@@ -105,7 +105,7 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   bt.likelihood <- function(x){
     parm[prior.ind]=x
     
-    now <- format(Sys.time(), "%Y%m%d%H%M%S")
+    now <- format(Sys.time(), "%Y%m%d%H%M%OS3")
     
     run.id <- pda.init.run(settings, con, my.write.config, workflow.id, parm, n=1, run.names=paste("run", now, sep="."))
     
