@@ -158,7 +158,7 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   # *** TODO: Generalize to >1 chain
   
   # SHOULD WE USE PACKAGE'S PLOT METHODS?
-  n.row = as.numeric(settings$assim.batch$bt.settings$iter)
+  n.row = as.numeric(settings$assim.batch$bt.settings$iter)+1
   
   if(sampler=="SMC"){
     params <- matrix(rep(parm,bt.settings$initialParticles[[2]]), nrow=bt.settings$initialParticles[[2]], ncol=n.param.all, byrow=T)
