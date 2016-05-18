@@ -133,7 +133,7 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   if(sampler %in% c("DREAM","DREAMzs","M","AM","DR","DRAM")){
     logger.info(paste0(sampler, " sampler requires upper and lower boundaries for selected parameters."))
     
-    if(is.null(settings$assim.batch$bt.settings$upper) | is.null(settings$assim.batch$bt.settings$lower){
+    if(is.null(settings$assim.batch$bt.settings$upper) | is.null(settings$assim.batch$bt.settings$lower)){
       logger.info(paste0("Upper and lower boundaries are not provided by the user, extracting from priors."))
       rng=matrix(c(sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0.00001)), # M/AM/DR/DRAM can't work with -Inf, Inf values
                    sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0.99999))),
