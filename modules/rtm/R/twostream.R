@@ -24,10 +24,15 @@ pro2s <- function(param, prospect.version = 5){
     out.names <- c("alpha.c", "alpha.i",
                    "Tc", "Ti",
                    "Ac", "Ai")
-    plist[out.names] <- rep(list(numeric(nw)), length(out.names))
+    plist$alpha.c <- numeric(nw)
+    plist$alpha.i <- numeric(nw)
+    plist$Tc <- numeric(nw)
+    plist$Ti <- numeric(nw)
+    plist$Ac <- numeric(nw)
+    plist$Ai <- numeric(nw)
     inlist <- c(modname, plist)
     outlist <- do.call(.Fortran, inlist)
-    out.mat <- do.call(cbind, outlist)
+    out.mat <- do.call(cbind, outlist[out.names])
     return(out.mat)
 }
     

@@ -44,14 +44,14 @@ subroutine two_stream(rl, tl, solar_zenith, L, soil_moisture, &     ! Inputs
     rho_soil = hapke_soil(soil_moisture)
 
     !! Gamma coefficients
-    call pinty(nw, rl, tl, mu0, gammas_c)
-    call pinty(nw, rl, tl, mui, gammas_i)
+    call pinty(rl, tl, mu0, gammas_c)
+    call pinty(rl, tl, mui, gammas_i)
 
     !! Black background solutions (from Meador & Weaver 1980, plane-parallel atmospheres)
-    call meador_plane_parallel(nw, w0, mu0, tau_c, &
+    call meador_plane_parallel(w0, mu0, tau_c, &
         gammas_c(:,1), gammas_c(:,2), gammas_c(:,3), gammas_c(:,4), &
         RcBB, TcBB)
-    call meador_plane_parallel(nw, w0, mui, tau_i, &
+    call meador_plane_parallel(w0, mui, tau_i, &
         gammas_i(:,1), gammas_i(:,2), gammas_i(:,3), gammas_i(:,4), &
         RiBB, TiBB)
 
