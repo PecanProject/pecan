@@ -15,7 +15,6 @@ Depends:
 Suggests:
     minpack.lm,
     mclust,
-    data.table,
     PEcAn.utils,
     PEcAn.ED2,
     testthat,
