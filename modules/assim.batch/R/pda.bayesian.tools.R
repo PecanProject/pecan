@@ -84,15 +84,6 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
   
-  # Default jump variances. Looped for clarity
-  ind <- which(is.na(settings$assim.batch$jump$jvar))
-  for(i in seq_along(ind)) {
-    # default to 0.1 * 90% prior CI
-    settings$assim.batch$jump$jvar[[i]] <- 
-      0.1 * diff(eval(prior.fn$qprior[[prior.ind[ind[i]]]], list(p=c(0.05,0.95))))
-    logger.info(paste("--- current jvar for ",settings$assim.batch$param.names[[i]]," is ",settings$assim.batch$jump$jvar[[i]]," ---"))
-  }
-  
   ## Set initial conditions
   parm <- sapply(prior.fn$qprior,eval,list(p=0.5))
   names(parm) <- pname
@@ -150,7 +141,7 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   bt.settings=pda.settings.bt(settings)
   
   ## central function in BayesianTools
-  out <- runMCMC(bayesianSetup = bayesianSetup, sampler = settings$assim.batch$bt.settings$sampler, settings = bt.settings)
+  out <- runMCMC(bayesianSetup = bayesianSetup, sampler = sampler, settings = bt.settings)
   
   # save(out,file=file.path(settings$outdir, "out.Rda"))
        
