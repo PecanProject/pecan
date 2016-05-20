@@ -129,8 +129,8 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
       rng=matrix(c(sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0.00001)), # M/AM/DR/DRAM can't work with -Inf, Inf values
                    sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0.99999))),
                  nrow=n.param)
-      bayesianSetup$prior$upper=rng[,1]
-      bayesianSetup$prior$lower=rng[,2]
+      bayesianSetup$prior$lower=rng[,1]
+      bayesianSetup$prior$upper=rng[,2]
     } else{
       logger.info(paste0("Using the upper and lower boundaries provided by the user."))
       bayesianSetup$prior$upper=as.numeric(unlist(settings$assim.batch$bt.settings$upper))
