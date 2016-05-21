@@ -10,14 +10,13 @@ Description: This package contains functions for performing forward runs and
     using maximum likelihood, or more complex hierarchical Bayesian methods.
     Underlying numerical analyses are optimized for speed using Fortran code.
 Depends:
-    PEcAn.utils,
-    PEcAn.ED2,
-    data.table,
-    minpack.lm,
     MASS,
-    mclust,
     coda
 Suggests:
+    minpack.lm,
+    mclust,
+    PEcAn.utils,
+    PEcAn.ED2,
     testthat,
     knitr
 OS_type: unix

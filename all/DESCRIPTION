@@ -24,6 +24,7 @@ Depends:
     PEcAn.data.land,
     PEcAn.data.remote,
     PEcAn.assim.batch,
+    PEcAn.emulator,
     PEcAn.priors
 Suggests:
     PEcAn.ed,
