@@ -113,11 +113,12 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   }
   
   ## Create bayesianSetup object for BayesianTools
-  bayesianSetup = createBayesianSetup(bt.likelihood, bt.prior, numPars=n.param)
+  bayesianSetup = createBayesianSetup(bt.likelihood, bt.prior)
   
   
-  ## Set starting values
+  ## Set starting values and numPars
   bayesianSetup$prior$best = parm[prior.ind]
+  bayesianSetup$numPars=n.param
   
 
   logger.info(paste0("Extracting upper and lower boundaries from priors."))
