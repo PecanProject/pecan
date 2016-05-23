@@ -741,7 +741,7 @@ pda.settings.bt <- function(settings){
   
   iterations = as.numeric(settings$assim.batch$bt.settings$iter)
   if(!is.null(settings$assim.batch$bt.settings$optimize)) optimize = settings$assim.batch$bt.settings$optimize else optimize=TRUE
-  if(!is.null(settings$assim.batch$bt.settings$consoleUpdates)) consoleUpdates = as.numeric(settings$assim.batch$bt.settings$consoleUpdates) else consoleUpdates = NULL
+  if(!is.null(settings$assim.batch$bt.settings$consoleUpdates)) consoleUpdates = as.numeric(settings$assim.batch$bt.settings$consoleUpdates) else consoleUpdates = round(iterations/10)
   if(!is.null(settings$assim.batch$bt.settings$adapt)) adapt = settings$assim.batch$bt.settings$adapt else adapt=TRUE
   if(!is.null(settings$assim.batch$bt.settings$adaptationInverval)) adaptationInverval = as.numeric(settings$assim.batch$bt.settings$adaptationInverval) else adaptationInverval=NULL
   if(!is.null(settings$assim.batch$bt.settings$adaptationNotBefore)) adaptationNotBefore = as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore) else adaptationNotBefore=NULL
