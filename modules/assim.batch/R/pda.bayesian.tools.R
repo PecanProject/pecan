@@ -119,24 +119,15 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   ## Set starting values
   bayesianSetup$prior$best = parm[prior.ind]
   
-  ## NOTE: The listed samplers here require upper and lower boundaries for now in the BayesianTools package
-  ## check if the user provided them, if not try to extract from the prior
-  if(sampler %in% c("DREAM","DREAMzs","M","AM","DR","DRAM")){
-    logger.info(paste0(sampler, " sampler requires upper and lower boundaries for selected parameters."))
-    
-    if(is.null(settings$assim.batch$bt.settings$upper) | is.null(settings$assim.batch$bt.settings$lower)){
-      logger.info(paste0("Upper and lower boundaries are not provided by the user, extracting from priors."))
-      rng=matrix(c(sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0.00001)), # M/AM/DR/DRAM can't work with -Inf, Inf values
-                   sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0.99999))),
-                 nrow=n.param)
-      bayesianSetup$prior$lower=rng[,1]
-      bayesianSetup$prior$upper=rng[,2]
-    } else{
-      logger.info(paste0("Using the upper and lower boundaries provided by the user."))
-      bayesianSetup$prior$upper=as.numeric(unlist(settings$assim.batch$bt.settings$upper))
-      bayesianSetup$prior$lower= as.numeric(unlist(settings$assim.batch$bt.settings$lower))
-    }
-  }
+
+  logger.info(paste0("Extracting upper and lower boundaries from priors."))
+  rng=matrix(c(sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0.00001)), # M/AM/DR/DRAM can't work with -Inf, Inf values
+               sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0.99999))),
+               nrow=n.param)
+      
+  bayesianSetup$prior$lower=rng[,1]
+  bayesianSetup$prior$upper=rng[,2]
+
   ## Apply BayesianTools specific settings
   bt.settings=pda.settings.bt(settings)
   
