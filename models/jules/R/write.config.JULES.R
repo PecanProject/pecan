@@ -288,7 +288,6 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id){
       ## vsl_io      ## Units: μmol CO2 gN-1 s-1
       ## kn_io       ## Decay of nitrogen through the canopy
       if(var == "leaf_respiration Q10") names(pft)[v] = "q10_leaf_io"
-      
 
       ## detect any unmatched variables
       mch = which(rownames(defaults) == names(pft[v]))
