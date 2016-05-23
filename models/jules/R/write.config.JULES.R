@@ -27,6 +27,7 @@
 write.config.JULES <- function(defaults, trait.values, settings, run.id){
   # constants
   molH2O_to_grams = 18.01528
+  leafC = 0.48
   
   # find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, run.id)
@@ -128,7 +129,17 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id){
   ## Edit ANCILLARIES.NML
   # tile frac
   # soil physical parameters
-  
+ 
+  ## PARSE JULES_VEGETATION.NML
+  ## some of these settings affect which parameter settings are used
+  veg.file <- file.path(rundir,"jules_vegetation.nml")
+  veg.text <- readLines(con=veg.file,n=-1)
+  l_trait_phys = grep("l_trait_phys",veg.text)
+  if(length(l_trait_phys) > 0){
+    l_trait_phys = grepl("true",veg.text[l_trait_phys],ignore.case = TRUE)
+  } else {
+    l_trait_phys = FALSE ## default value
+  }
   
   ## --------------------- Edit PFT_PARAMS.NML to set model parameters  -------------------------
   pft.file <- file.path(rundir,"pft_params.nml")
@@ -234,9 +245,51 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id){
       ## nr_nl_io ## Ratio of root nitrogen concentration to leaf nitrogen concentration
           ## calcuate this from leaf and root N as well as leaf and root C:N
       ## ns_nl_io ## Ratio of stem nitrogen concentration to leaf nitrogen concentration
+      ## omega_io ## Leaf scattering coefficient for PAR
+      ## omegau_io ## Upper limit for the leaf scattering coefficient for PAR
+      ## omegal_io ## Lower limit for the leaf scattering coefficient for PAR
+      ## omnir_io  ## Leaf scattering coefficient for NIR
+      ## omniru_io ## Upper limit for the leaf scattering coefficient for NIR
+      ## omnirl_io ## Lower limit for the leaf scattering coefficient for NIR
+      if(var == "growth_resp_factor") names(pft)[v] = "r_grow_io" ## Growth respiration fraction (fraction of NPP = GPP - Ra)
+      ## rootd_ft_io ## Root depth e-folding length assuming exponential model (meters).
+      if(var == "SLA") {  ## BETY: m2 kg-1
+        if(l_trait_phys){
+          names(pft)[v] <- "lma_io"   ## Leaf mass per unit area (kgLeaf m-2).
+          pft[v] = 1/pft[v] 
+        } else {
+          names(pft)[v] <- "xsigl_io" ## Specific density of leaf carbon (kg C/m2 leaf).
+          pft[v] = leafC/pft[v]
+        }
+      }
+      ## tleaf_of_io ## Temperature below which leaves are dropped (K).
+      if(var == "pstemp_min") names(pft)[v] = "tlow_io" ## Lower temperature for photosynthesis (deg C); BETY: degrees C
+      if(var == "pstemp_max") names(pft)[v] = "tupp_io" ## Upper temperature for photosynthesis (deg C)
+      if(var == "emis_v") { ## Surface emissivity. BETY: per mil
+        names(pft)[v] == "emis_pft_io"  
+        pft[v] = pft[v]/1000
+      }
+      ## z0hm_pft_io ## Ratio of the roughness length for heat to the roughness length for momentum
+      ## fl_o3_ct_io ## Critical flux of O3 to vegetation (mmol m-2 s-1)
+      ## dfp_dcuo_io ## Fractional reduction of photosynthesis with the cumulative uptake of O3 by leaves (mmol m-2)
+      ## ief_io      ## Isoprene Emission Factor (μg g-1 h-1)
+      ## tef_io      ## Monoterpene Emission Factor (μg g-1 h-1)
+      ## mef_io      ## Methanol Emission Factor (μg g-1 h-1)
+      ## aef_io      ## Acetone Emission Factor (μg g-1 h-1)
+      ## ci_st_io    ## Leaf-internal CO2concentration at standard conditions (Pa)
+      ## gpp_st_io   ## Gross primary production (GPP) at standard conditions (kgC m-2 s-1)
+      if(var == "leafN") { ## Top leaf nitrogen content per unit mass (kgN kgLeaf-1); BETY: percent 
+        names(pft)[v] = "nmass_io"
+        pft[v] = pft[v]/100
+      }
+      ## There is a linear relationship between Vcmax and Narea. Previously Vcmax was calculated as the product of nl0 and neff.
+      ## This is now replaced by a linear regression based on data reported in Kattge et al. 2009. Vint is the y-intercept, vsl is the slope.
+      ## vint_io     ## Units: μmol CO2 m-2 s-1.
+      ## vsl_io      ## Units: μmol CO2 gN-1 s-1
+      ## kn_io       ## Decay of nitrogen through the canopy
+      if(var == "leaf_respiration Q10") names(pft)[v] = "q10_leaf_io"
       
-      
-        
+
       ## detect any unmatched variables
       mch = which(rownames(defaults) == names(pft[v]))
       if(length(mch) != 1){
