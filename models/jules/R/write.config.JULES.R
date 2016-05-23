@@ -25,6 +25,8 @@
 ##' @export
 ##-------------------------------------------------------------------------------------------------#
 write.config.JULES <- function(defaults, trait.values, settings, run.id){
+  # constants
+  molH2O_to_grams = 18.01528
   
   # find out where to write run/ouput
   rundir <- file.path(settings$run$host$rundir, run.id)
@@ -180,9 +182,61 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id){
     for(v in 1:length(pft)){
       
       ## convert names and units
+      ## see JULES variable definitions at http://jules-lsm.github.io/vn4.2/namelists/pft_params.nml.html
       var = names(pft)[v]
-      if(var == "quantum_efficiency") names(pft)[v] <- "alpha_io"  ## double check units
+      if(var == "height") names(pft)[v] <- "canht_ft_io"           ## Canopy height, JULES: meters  NOTE: prognostic if TRIFFID is on;  BETY: meters
+      ## c3_io     ## C3 photosynthesis = 1; C4 = 0;  BETY: unmatched
+      ## orient_io ## leaf angle distribution. 0 - Spherical. 1 - Horizontal;  BETY: unmatched
+      ## a_wl_io   ## Allometric coefficient relating the target woody biomass to the leaf area index (kg carbon m-2); BETY: unmatched
+          ## possible to estimate from wood allometry, leaf allometry, and SLA?
+      ## a_ws_io   ## Woody biomass as a multiple of live stem biomass; BETY: unmatched
+          ## possible to estimate from DBH allometries?
+      ## albsnc_max_io ## Snow-covered albedo for large leaf area index.; BETY: unmatched
+      ## albsnc_min_io ## Snow-covered albedo for zero leaf area index.; BETY: unmatched
+      ## albsnf_max_io ## Snow-free albedo for large LAI.; BETY: unmatched
+          ## link to RTM package
+      ## albsnf_maxu_io ## Upper bound for the snow-free albedo for large LAI, when scaled to match input obs
+      ## albsnf_maxl_io ## Lower bound for the snow-free albedo for large LAI, when scaled to match input obs
+      if(var == "quantum_efficiency") names(pft)[v] <- "alpha_io"  ## JULES: mol CO2 per mol PAR photons; BETY: fraction
+      if(var == "leaf_reflect_nir")   names(pft)[v] <- "alnir_io"    ## Leaf reflection coefficient for NIR
+      ## alniru_io ## Upper limit for the leaf reflection coefficient for NIR
+      ## alnirl_io ## Lower limit for the leaf reflection coefficient for NIR
+      if(var == "leaf_reflect_par")   names(pft)[v] <- "alpar_io"
+      ## alparu_io ## Upper limit for the leaf reflection coefficient for VIS
+      ## alparl_io ## Lower limit for the leaf reflection coefficient for VIS
+      ## b_wl_io   ## Allometric exponent relating the target woody biomass to the leaf area index.
+      ## catch0_io ## Minimum canopy capacity (kg m-2).
+      ## dcatch_dlai_io ## Rate of change of canopy capacity with LAI (kg m-2).
+          ## Canopy capacity is calculated as catch0 + dcatch_dlai*lai
+      ## dgl_dm_io ## Rate of change of leaf turnover rate with moisture availability
+      ## dgl_dt_io ## Rate of change of leaf turnover rate with temperature (K-1)
+      ## dqcrit_io ## Critical humidity deficit (kg H2O per kg air).
+      ## dz0v_dh_io ## Rate of change of vegetation roughness length for momentum with height.
+          ## Roughness length is calculated as dz0v_dh * canht_ft    
+      ## eta_sl_io ## Live stemwood coefficient (kg C/m/LAI)
+      ## fd_io     ## Scale factor for dark respiration
+          ## **** look up equation
+      ## fsmc_of_io ## Moisture availability below which leaves are dropped
+      ## f0_io     ## CI / CA for DQ = 0
+      if(var == "leaf_turnover_rate"){         ## Minimum turnover rate for leaves (/360days); BETY: year-1
+          names(pft)[v] <- "g_leaf_0_io"
+          pft[v] = pft[v]/365*360
+      }
+      if(var == "cuticular_cond"){ ## Minimum leaf conductance for H2O (m s-1) -> m3/m2 s-1, BETY: umol H2O m-2 s-1
+        names(pft)[v] <- "glmin_io"  
+        pft[v] = pft[v] * molH2O_to_grams # 10^6 umol/mol * 18 g/mol * 1kg(= 1 mm)/1000g * 1m/1000mm
+      }
+      ## infil_f_io ## Infiltration enhancement factor
+      if(var == "extinction_coefficient	") names(pft)[v] = "kext_io" ## Light extinction coefficient - used with Beer’s Law for light absorption through tile canopies
+      ## kpar_io  ## PAR Extinction coefficient (m2 leaf / m2 ground)
+      ## neff_io  ## Scale factor relating Vcmax with leaf nitrogen concentration
+      ## nl0_io   ## Top leaf nitrogen concentration (kg N/kg C)
+      ## nr_nl_io ## Ratio of root nitrogen concentration to leaf nitrogen concentration
+          ## calcuate this from leaf and root N as well as leaf and root C:N
+      ## ns_nl_io ## Ratio of stem nitrogen concentration to leaf nitrogen concentration
       
+      
+        
       ## detect any unmatched variables
       mch = which(rownames(defaults) == names(pft[v]))
       if(length(mch) != 1){
