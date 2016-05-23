@@ -90,8 +90,14 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id){
         dt = 1800
       }
     } else {
-      print(c("write.config.JULES timestep not detected",dt))
-      dt = 1800
+      tlen = grep("time =",met.header)
+      if(length(tlen)>0){
+         tlen = as.numeric(gsub(pattern = "[^[:digit:]]","",met.header[tlen])) 
+         dt = 86400/round(tlen/(365+lubridate::leap_year(as.Date(settings$run$start.date))))
+      }else{
+        print(c("write.config.JULES timestep not detected",dt))
+        dt = 1800
+      }
     }
   }
   ## --------------------  END DETECT TIMESTEP --------------------
@@ -235,7 +241,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id){
       }
       if(var == "cuticular_cond"){ ## Minimum leaf conductance for H2O (m s-1) -> m3/m2 s-1, BETY: umol H2O m-2 s-1
         names(pft)[v] <- "glmin_io"  
-        pft[v] = pft[v] * molH2O_to_grams # 10^6 umol/mol * 18 g/mol * 1kg(= 1 mm)/1000g * 1m/1000mm
+        pft[v] = pft[v] * molH2O_to_grams*1e-12 # 10^-6 mol/umol * 18 g/mol * 1kg(= 1 mm)/1000g * 1m/1000mm
       }
       ## infil_f_io ## Infiltration enhancement factor
       if(var == "extinction_coefficient	") names(pft)[v] = "kext_io" ## Light extinction coefficient - used with Beer’s Law for light absorption through tile canopies
