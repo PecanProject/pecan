@@ -741,10 +741,10 @@ pda.settings.bt <- function(settings){
   
   iterations = as.numeric(settings$assim.batch$bt.settings$iter)
   if(!is.null(settings$assim.batch$bt.settings$optimize)) optimize = settings$assim.batch$bt.settings$optimize else optimize=TRUE
-  if(!is.null(settings$assim.batch$bt.settings$consoleUpdates)) consoleUpdates = as.numeric(settings$assim.batch$bt.settings$consoleUpdates) else consoleUpdates = round(iterations/10)
+  if(!is.null(settings$assim.batch$bt.settings$consoleUpdates)) consoleUpdates = as.numeric(settings$assim.batch$bt.settings$consoleUpdates) else consoleUpdates = max(round(iterations/10),100)
   if(!is.null(settings$assim.batch$bt.settings$adapt)) adapt = settings$assim.batch$bt.settings$adapt else adapt=TRUE
-  if(!is.null(settings$assim.batch$bt.settings$adaptationInverval)) adaptationInverval = as.numeric(settings$assim.batch$bt.settings$adaptationInverval) else adaptationInverval=NULL
-  if(!is.null(settings$assim.batch$bt.settings$adaptationNotBefore)) adaptationNotBefore = as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore) else adaptationNotBefore=NULL
+  if(!is.null(settings$assim.batch$bt.settings$adaptationInverval)) adaptationInverval = as.numeric(settings$assim.batch$bt.settings$adaptationInverval) else adaptationInverval=max(round(iterations/100*5),100)
+  if(!is.null(settings$assim.batch$bt.settings$adaptationNotBefore)) adaptationNotBefore = as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore) else adaptationNotBefore=adaptationInverval
   if(!is.null(settings$assim.batch$bt.settings$DRlevels)) DRlevels = as.numeric(settings$assim.batch$bt.settings$DRlevels) else DRlevels=1
   if(!is.null(settings$assim.batch$bt.settings$gibbsProbabilities)) gibbsProbabilities = as.numeric(unlist(settings$assim.batch$bt.settings$gibbsProbabilities)) else gibbsProbabilities = NULL
   

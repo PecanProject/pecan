@@ -135,24 +135,18 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   ## central function in BayesianTools
   out <- runMCMC(bayesianSetup = bayesianSetup, sampler = sampler, settings = bt.settings)
   
-  # save(out,file=file.path(settings$outdir, "out.Rda"))
-       
+  # save the out object for further inspection
+  save(out, file=file.path(settings$outdir, paste0(sampler, '_out.Rdata')))
+  
   ## Create params matrix
-  # *** TODO: Generalize to >1 chain
+  # *** TODO: Generalize to >1 chain, DREAM has 3 chains
   
-  # SHOULD WE USE PACKAGE'S PLOT METHODS?
-  n.row = as.numeric(settings$assim.batch$bt.settings$iter)+1
+  samples=getSample(out, parametersOnly = T) # getSample{BayesianTools}
+  n.row=length(samples)/n.param
+  params <- matrix(rep(parm,n.row), nrow=n.row, ncol=n.param.all, byrow=T)
+  params[, prior.ind] <- samples
   
-  if(sampler=="SMC"){
-    params <- matrix(rep(parm,bt.settings$initialParticles[[2]]), nrow=bt.settings$initialParticles[[2]], ncol=n.param.all, byrow=T)
-    params[, prior.ind] <- out$particles
-  } else {
-    params <- matrix(rep(parm,n.row), nrow=n.row, ncol=n.param.all, byrow=T)
-    params[, prior.ind] <- out$chain[,1:length(prior.ind)]
-  }
 
-       
-       
   ## ------------------------------------ Clean up ------------------------------------ ##
   ## Save outputs to plots, files, and db
   settings <- pda.postprocess(settings, con, params, pname, prior, prior.ind)
