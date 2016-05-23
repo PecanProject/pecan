@@ -22,7 +22,7 @@ if(!("Rgraphviz" %in% installed.packages()[,"Package"])) {
 
 # install packages needed from CRAN
 list.of.packages <- c('abind', 'car', 'chron', 'coda', 'data.table', 'doSNOW', 'dplR', 'earth', 'emulator',
-                      'ggmap', 'ggplot2', 'gridExtra', 'Hmisc', 'kernlab',
+                      'ggmap', 'ggplot2', 'gridExtra', 'Hmisc', 'kernlab','GPfit',
                       'knitr', 'lubridate', 'MASS', 'MCMCpack', 'mvtnorm', 'ncdf4',
                       'plotrix', 'plyr', 'raster', 'randtoolbox', 'rjags',
                       'rgdal', 'tgp', 'DBI', 'roxygen2', 'stringr', 'testthat', 'boot',
