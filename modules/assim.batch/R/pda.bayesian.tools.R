@@ -113,7 +113,7 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   }
   
   ## Create bayesianSetup object for BayesianTools
-  bayesianSetup = createBayesianSetup(bt.likelihood, bt.prior)
+  bayesianSetup = createBayesianSetup(bt.likelihood, bt.prior, numPars=n.param)
   
   
   ## Set starting values
