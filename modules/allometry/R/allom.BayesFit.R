@@ -107,8 +107,10 @@ allom.BayesFit <- function(allom,nrep=10000,form="power",dmin=0.1,dmax=500) {
      n.mod[i] <- round(n[i]*length(tmp.seq[tmp.seq>dmin & tmp.seq<dmax])/length(tmp.seq),digits=0)
    }
 
-  ntally  <- which(nu(allom[['parm']][,"Xmax"])>=dmin & nu(allom[['parm']][,"Xmin"])<=dmax & n.mod>0); 
-  if(is.null(ntally)) ntally = 0;
+  ntally  <- which(nu(allom[['parm']][,"Xmax"])>=dmin & nu(allom[['parm']][,"Xmin"])<=dmax & n.mod>0) 
+  if(is.null(ntally)) {
+  	ntally = 0
+  }
   print(c("Dropping allom rows: ", which(!(1:nrow(allom[['parm']]) %in% ntally))))
 
   nfield = length(allom[['field']])
@@ -122,45 +124,45 @@ allom.BayesFit <- function(allom,nrep=10000,form="power",dmin=0.1,dmax=500) {
   }
   
   ## define priors
-  s1  = s2 = 0.1 # IG prior on the within-study variance
-  mu0 = c(0.2,8/3) # normal prior mean on global mean
-  V0  = matrix(c(100,0,0,100),2,2) # normal prior variance on global mean
-  V0I = solve(V0)
-  m0V0 = t(mu0)%*%V0I %*% mu0
-  V0Imu0 = V0I %*% mu0
-  v = 0.1         ## wishart prior on across-study variance
-  S = diag(0.1,2) 
+  s1  <- s2 = 0.1 # IG prior on the within-study variance
+  mu0 <- c(0.2,8/3) # normal prior mean on global mean
+  V0  <- matrix(c(100,0,0,100),2,2) # normal prior variance on global mean
+  V0I <- solve(V0)
+  m0V0 <- t(mu0)%*%V0I %*% mu0
+  V0Imu0 <- V0I %*% mu0
+  v <- 0.1         ## wishart prior on across-study variance
+  S <- diag(0.1,2) 
 
   ## declare storage
-  b0GIBBS  = matrix(0,nrep,nsite)
-  b1GIBBS  = matrix(0,nrep,nsite)
-  muGIBBS  = matrix(0,nrep,2)
-  sigGIBBS = rep(NA,nrep)
-  tauGIBBS = matrix(0,nrep,3)
-  DGIBBS   = rep(NA,nrep)
-  BgGIBBS  = matrix(0,nrep,2)
-  SgGIBBS  = rep(NA,nrep)
-  DgGIBBS  = rep(NA,nrep)
+  b0GIBBS  <- matrix(0,nrep,nsite)
+  b1GIBBS  <- matrix(0,nrep,nsite)
+  muGIBBS  <- matrix(0,nrep,2)
+  sigGIBBS <- rep(NA,nrep)
+  tauGIBBS <- matrix(0,nrep,3)
+  DGIBBS   <- rep(NA,nrep)
+  BgGIBBS  <- matrix(0,nrep,2)
+  SgGIBBS  <- rep(NA,nrep)
+  DgGIBBS  <- rep(NA,nrep)
   
   ## initialization
-  mu  = mu0
-  b0  = rep(mu[1],nsite)
-  b1  = rep(mu[2],nsite)
-  tau = diag(c(1,1))
-  tauI= solve(tau)
-  sigma = 0.3
-  sinv  = 1/sigma
-  data  = allom[['field']]
+  mu  <- mu0
+  b0  <- rep(mu[1],nsite)
+  b1  <- rep(mu[2],nsite)
+  tau <- diag(c(1,1))
+  tauI<- solve(tau)
+  sigma <- 0.3
+  sinv  <- 1/sigma
+  data  <- allom[['field']]
   if(length(ntally) > 0){
     for(i in 1:length(ntally)){
-      data[[i+nfield]] = list(x=rep(0,n.mod[ntally[i]]),y=rep(0,n.mod[ntally[i]]))
+      data[[i+nfield]] <- list(x=rep(0,n.mod[ntally[i]]),y=rep(0,n.mod[ntally[i]]))
     }
   }
-  x=y<-NULL
-  Sg = 1
-  Bg = mu0
-  SgI = 1/Sg
-  D = Dg = 0
+  x<-y<-NULL
+  Sg <- 1
+  Bg <- mu0
+  SgI <- 1/Sg
+  D <- Dg <- 0
 
   ## MCMC LOOP
   pb <- txtProgressBar(min = 0, max = nrep, style = 3)
@@ -175,51 +177,51 @@ allom.BayesFit <- function(allom,nrep=10000,form="power",dmin=0.1,dmax=500) {
       }else{
         if(Xtype[j] == "d.b.h.^2"){
           ## convert to sq inches
-          x = x0*x0/(2.54*2.54)
+          x <- x0*x0/(2.54*2.54)
         } else {
-          x = x0*x0*pi/4 ## convert to cm Basal Area
+          x <- x0*x0*pi/4 ## convert to cm Basal Area
         }
       }      
       y <- NA      
       if(eqn[j] == 1){        
-        y = a[j] + b[j]*c[j]*log10(x)
-        y = 10^rnorm(n.mod[j],y,se[j])
+        y <- a[j] + b[j]*c[j]*log10(x)
+        y <- 10^rnorm(n.mod[j],y,se[j])
       } else if(eqn[j] == 2){
-        y = a[j] + b[j]*x + c[j]*d[j]*log(x)
-        y = exp(rnorm(n.mod[j],y,se[j]))
+        y <- a[j] + b[j]*x + c[j]*d[j]*log(x)
+        y <- exp(rnorm(n.mod[j],y,se[j]))
       } else if(eqn[j] == 3){
-        y = a[j] + b[j]*log(x) + c[j]*(d[j]+(e[j]*log(x)))
-        y = exp(rnorm(n.mod[j],y,se[j]))
+        y <- a[j] + b[j]*log(x) + c[j]*(d[j]+(e[j]*log(x)))
+        y <- exp(rnorm(n.mod[j],y,se[j]))
       } else if(eqn[j] == 4){
-        y = a[j] + b[j]*x + c[j]*x^d[j]
-        y = rnorm(n.mod[j],y,se[j])
+        y <- a[j] + b[j]*x + c[j]*x^d[j]
+        y <- rnorm(n.mod[j],y,se[j])
       } else if(eqn[j] == 5){
-        y = a[j] + b[j]*x + c[j]*x^2 + d[j]*x^3      
-        y = rnorm(n.mod[j],y,se[j])
+        y <- a[j] + b[j]*x + c[j]*x^2 + d[j]*x^3      
+        y <- rnorm(n.mod[j],y,se[j])
       } else if(eqn[j] == 6){
-        y = a[j] *(exp( b[j] + (c[j]*log(x)) + d[j]*x))
-        y = rnorm(n.mod[j],y,se[j])
+        y <- a[j] *(exp( b[j] + (c[j]*log(x)) + d[j]*x))
+        y <- rnorm(n.mod[j],y,se[j])
       } else if(eqn[j] == 7){
-        y = a[j] + ((b[j]*(x^c[j]))/((x^c[j])+ d[j]))
-        y = rnorm(n.mod[j],y,se[j])
+        y <- a[j] + ((b[j]*(x^c[j]))/((x^c[j])+ d[j]))
+        y <- rnorm(n.mod[j],y,se[j])
       } else if(eqn[j] == 8){
-        y = a[j] + b[j]*log10(x)
-        y = 100^rnorm(n.mod[j],y,se[j])
+        y <- a[j] + b[j]*log10(x)
+        y <- 100^rnorm(n.mod[j],y,se[j])
       }else if(eqn[j] == 9){
-        y = log(a[j]) + b[j]*log(x)
-        y = exp(rnorm(n.mod[j],y,se[j]))
+        y <- log(a[j]) + b[j]*log(x)
+        y <- exp(rnorm(n.mod[j],y,se[j]))
       }else if(eqn[j] == 10){
-        y = a[j] + b[j]*log(x)
-        y = exp(rnorm(n.mod[j],y,se[j]))
+        y <- a[j] + b[j]*log(x)
+        y <- exp(rnorm(n.mod[j],y,se[j]))
       }else if(eqn[j] == 11){
-        y = a[j]*x^(b[j])
+        y <- a[j]*x^(b[j])
         y =rnorm(n.mod[j],y,se[j])
       }
       y[y<=0] <- NA
-      y = y*Ycor[j]
-      s2 = which(!is.na(y))
-      data[[nfield+which(ntally==j)]]$x = x0[s2] ## store the std units, not the transformed
-      data[[nfield+which(ntally==j)]]$y = y[s2]  ## store y transformed to std units
+      y <- y*Ycor[j]
+      s2 <- which(!is.na(y))
+      data[[nfield+which(ntally==j)]]$x <- x0[s2] ## store the std units, not the transformed
+      data[[nfield+which(ntally==j)]]$y <- y[s2]  ## store y transformed to std units
     } ## end loop over tally entries
     } ## end check for ntally > 0
     
@@ -240,14 +242,14 @@ allom.BayesFit <- function(allom,nrep=10000,form="power",dmin=0.1,dmax=500) {
 
   if(nsite > 1){ #Hierarchical Bayes Fit Model
   
-    tauImu = tauI %*% mu
+    tauImu <- tauI %*% mu
     u1 <- s1
     u2 <- s2
     for(j in 1:nsite){
       
       ## Update study-level regression parameters
-      X = cbind(rep(1,length(data[[j]]$x)),log(data[[j]]$x))
-      Y = log(data[[j]]$y)
+      X <- cbind(rep(1,length(data[[j]]$x)),log(data[[j]]$x))
+      Y <- log(data[[j]]$y)
       bigV <- solve(sinv*t(X)%*%X + tauI)
       littlev <- sinv*t(X) %*% Y + tauImu
       beta <- t(rmvnorm(1,bigV %*% littlev,bigV))
@@ -265,7 +267,7 @@ allom.BayesFit <- function(allom,nrep=10000,form="power",dmin=0.1,dmax=500) {
     sigma <- 1/sinv  ## variance
     
     ## Update across-study means
-    B = cbind(b0,b1)
+    B <- cbind(b0,b1)
     bigV <- solve( nrow(B)*tauI + V0I)
     littlev <- V0Imu0
     for(i in 1:nrow(B)){
@@ -305,8 +307,8 @@ allom.BayesFit <- function(allom,nrep=10000,form="power",dmin=0.1,dmax=500) {
       X <- c(X,data[[i]]$x)
       Y <- c(Y,data[[i]]$y)
     }
-    Y = log(Y)
-    X = cbind(rep(1,length(X)),log(X))
+    Y <- log(Y)
+    X <- cbind(rep(1,length(X)),log(X))
     bigV <- solve(SgI*t(X)%*%X + V0I )
     littlev <- SgI*t(X) %*% Y + V0Imu0
     Bg  <- t(rmvnorm(1,bigV %*% littlev,bigV))
