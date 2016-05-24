@@ -15,7 +15,7 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   
   library(BayesianTools)
   
-  sampler = settings$assim.batch$bt.settings$sampler
+  sampler <- settings$assim.batch$bt.settings$sampler
   
 
   ## this bit of code is useful for defining the variables passed to this function 
@@ -94,7 +94,7 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   ## Create log-likelihood function for createbayesianSetup{BayesianTools}
   
   bt.likelihood <- function(x){
-    parm[prior.ind]=x
+    parm[prior.ind] <- x
     
     now <- format(Sys.time(), "%Y%m%d%H%M%OS3")
     
@@ -113,21 +113,21 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   }
   
   ## Create bayesianSetup object for BayesianTools
-  bayesianSetup = createBayesianSetup(bt.likelihood, bt.prior)
+  bayesianSetup <- createBayesianSetup(bt.likelihood, bt.prior)
   
   
   ## Set starting values and numPars
-  bayesianSetup$prior$best = parm[prior.ind]
-  bayesianSetup$numPars=n.param
+  bayesianSetup$prior$best <- parm[prior.ind]
+  bayesianSetup$numPars <- n.param
   
 
   logger.info(paste0("Extracting upper and lower boundaries from priors."))
-  rng=matrix(c(sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0.00001)), # M/AM/DR/DRAM can't work with -Inf, Inf values
-               sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0.99999))),
-               nrow=n.param)
+  rng <- matrix(c(sapply(prior.fn$qprior[prior.ind], eval, list(p=0.00001)), # M/AM/DR/DRAM can't work with -Inf, Inf values
+                sapply(prior.fn$qprior[prior.ind], eval, list(p=0.99999))),
+                nrow=n.param)
       
-  bayesianSetup$prior$lower=rng[,1]
-  bayesianSetup$prior$upper=rng[,2]
+  bayesianSetup$prior$lower <- rng[,1]
+  bayesianSetup$prior$upper <- rng[,2]
 
   ## Apply BayesianTools specific settings
   bt.settings=pda.settings.bt(settings)
@@ -141,9 +141,9 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   ## Create params matrix
   # *** TODO: Generalize to >1 chain, DREAM has 3 chains
   
-  samples=getSample(out, parametersOnly = T) # getSample{BayesianTools}
-  n.row=length(samples)/n.param
-  params <- matrix(rep(parm,n.row), nrow=n.row, ncol=n.param.all, byrow=T)
+  samples <- getSample(out, parametersOnly = T) # getSample{BayesianTools}
+  n.row <- length(samples)/n.param
+  params <- matrix(rep(parm, n.row), nrow=n.row, ncol=n.param.all, byrow=T)
   params[, prior.ind] <- samples
   
 
