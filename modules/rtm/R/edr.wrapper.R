@@ -48,8 +48,9 @@ EDR <- function(paths,
 # Extract paths
 # TODO: Provide option to just a results path with implied file structure
 # (ED2IN, config.xml, history)
-    ed2in.path <- paths$ed2in
-    history.path <- paths$history
+    ed2in.path <- normalizePath(paths$ed2in)
+    history.path <- normalizePath(paths$history)
+    output.path <- normalizePath(output.path)
 
 # Process datetime
     if(!any(grepl("POSIX", class(datetime)))) stop("datetime is not POSIX")
@@ -90,14 +91,19 @@ EDR <- function(paths,
 # Generate input files
     par.nir.lengths <- c(length(par.wl), length(nir.wl))
     cat(par.nir.lengths, file=file.path(output.path, "lengths.dat"), sep = ' ')
-    par.ind <- which(RT.matrix[,"wl"] %in% par.wl)    # PAR indices -- offset by 399
+    par.ind <- which(RT.matrix[,"wl"] %in% par.wl)    # PAR indices
     nir.ind <- which(RT.matrix[,"wl"] %in% nir.wl)    # NIR indices 
     cat(RT.matrix[par.ind,1], file = file.path(output.path, "reflect_par.dat"), sep=" ")
     cat(RT.matrix[nir.ind,1], file = file.path(output.path, "reflect_nir.dat"), sep=" ")
     cat(RT.matrix[par.ind,2], file = file.path(output.path, "trans_par.dat"), sep=" ")
     cat(RT.matrix[nir.ind,2], file = file.path(output.path, "trans_nir.dat"), sep=" ")
 # Call EDR -- NOTE that this requires that the ED2IN 
-    system(file.path(output.path, edr.exe.name), intern=TRUE)
+    exec.command <- sprintf("(cd %s; ./%s)", output.path, edr.exe.name)
+    ex <- system(exec.command, intern=TRUE)
+    if(any(grepl("fatal error", ex, ignore.case=TRUE))){
+        print(ex)
+        stop("Error executing EDR")
+    }
 # Analyze output
     albedo <- get.EDR.output(output.path)
 # Optionally, clean up all generated files
@@ -152,10 +158,8 @@ EDR.prospect <- function(prospect.param, prospect.version=5, paths, par.wl, nir.
 #' @title Read EDR output
 #' @param path Path to directory containing `albedo_par/nir.dat` files
 get.EDR.output <- function(path=getwd()){
-    nir.table <- read.table(file.path(path, "albedo_nir.dat"))
-    par.table <- read.table(file.path(path, "albedo_par.dat"))
-    alb.nir <- unlist(nir.table[1,])
-    alb.par <- unlist(par.table[1,])
+    alb.par <- as.matrix(read.table(file.path(path, "albedo_par.dat")))[1,]
+    alb.nir <- as.matrix(read.table(file.path(path, "albedo_nir.dat")))[1,]
     albedo <- c(alb.par, alb.nir)
     return(albedo)
 }
