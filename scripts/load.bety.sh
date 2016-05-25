@@ -219,7 +219,7 @@ if [ -z "${DUMPURL}" ]; then
   elif [ "${REMOTESITE}" == "5" ]; then  
     DUMPURL="http://tree.aos.wisc.edu:6480/sync/dump/bety.tar.gz"
   elif [ "${REMOTESITE}" == "6" ]; then
-    DUMPURL="https://terraref.ncsa.illinois.edu/bety/dump/dump.tar.gz"
+    DUMPURL="https://terraref.ncsa.illinois.edu/bety/dump/bety.tar.gz"
   else
     echo "Don't know where to get data for site ${REMOTESITE}"
     DUMPURL=""
