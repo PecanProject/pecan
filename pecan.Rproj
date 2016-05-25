@@ -13,4 +13,5 @@ RnwWeave: Sweave
 LaTeX: pdfLaTeX
 
 BuildType: Package
+PackagePath: models/jules
 PackageInstallArgs: --no-multiarch --with-keep.source
