@@ -1,3 +1,16 @@
+!!!!!
+! This subroutine calculates the gamma coefficients for the Meador & 
+! Weaver two-stream plane-parallel atmosphere radiative transfer code.  
+! The calculations are taken directly from Pinty et al. (2006) Table 
+! 4.
+!
+! Pinty, B., Lavergne, T., Dickinson, R.E., Widlowski, J.-L., Gobron, 
+! N., Verstraete, M.M., 2006. Simplifying the interaction of land 
+! surfaces with radiation for relating remote sensing products to 
+! climate models. J. Geophys. Res. 111, D02116. 
+! doi:10.1029/2005JD005952
+!!!!!
+
 subroutine pinty(rl, tl, mu0, gammas)
     use mod_dataspec_wavelength
     implicit none
