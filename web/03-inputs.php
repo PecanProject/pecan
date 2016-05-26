@@ -78,7 +78,7 @@ if (isset($_REQUEST['notes'])) {
 // get site information
 $stmt = $pdo->prepare("SELECT sitename, city, state, country, ST_X(ST_CENTROID(sites.geometry)) AS lon," . 
 		      "	ST_Y(ST_CENTROID(sites.geometry)) AS lat, " . 
-		      "	mat, map, soil, notes, soilnotes, greenhouse, local_time, sand_pct, clay_pct" . 
+		      "	mat, map, soil, notes, soilnotes, greenhouse, time_zone, sand_pct, clay_pct" . 
 		      "	FROM sites WHERE sites.id=?"); 
 
 if (!$stmt->execute(array($siteid))) {
@@ -321,8 +321,8 @@ $stmt->closeCursor();
     if ("<?php echo $siteinfo['greenhouse']; ?>") {
     	info+="Greenhouse Study: <?php echo $siteinfo['greenhouse']; ?><br/>";
     }
-    if ("<?php echo $siteinfo['local_time']; ?>") {
-    	info+="Local Time: <?php echo $siteinfo['local_time']; ?><br/>";
+    if ("<?php echo $siteinfo['time_zone']; ?>") {
+    	info+="Local Time: <?php echo $siteinfo['time_zone']; ?><br/>";
     }
     if ("<?php echo $siteinfo['sand_pct']; ?>") {
     	info+="Sand Pct: <?php echo $siteinfo['sand_pct']; ?><br/>";
