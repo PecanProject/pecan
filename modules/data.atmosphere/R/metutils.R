@@ -224,3 +224,44 @@ exner <- function(pres){
 AirDens <- function(pres, T, rv){
   pres/(287.0*T*(1.0+0.61*rv))
 }
+
+##' Calculate PET
+##'
+##' Uses Thornwaite equation (1948): http://en.wikipedia.org/wiki/Potential_evaporation
+##' PET = 16 * (L/12) * (N / 30) * (10 * Ta / I) ^ alpha
+##' Ta average daily temp
+##' N number of days in month being calculated
+##' L average daylength
+##' I = heat index
+##' @title count traits with no covariates
+##' @param temp average daily temperature
+##' @param days vector of days of year over which to integrate
+##' @param mat mean annual temperature to calculate I
+##' @param doy integer, day of year 
+##' @return result of expect_equal
+##' @author David LeBauer
+#get.pet.thornwaite <- function(temp, mat, doy)){
+#  #I <-
+#  tem
+#}
+
+##' Calculate daylength
+##'
+##' Uses Thornwaite equation (1948): http://en.wikipedia.org/wiki/Potential_evaporation
+##' PET = 16 * (L/12) * (N / 30) * (10 * Ta / I) ^ alpha
+##' Ta average daily temp
+##' N number of days in month being calculated
+##' L average daylength
+##' I = heat index
+##' @title count traits with no covariates
+##' @param latitude
+##' @param doy integer, day of year 
+##' @return day length
+##' @author David LeBauer, Justin McGrath
+daylength <- function(lat, doy) {
+  psi = (pi / 180) * lat
+  delta = 0.409 * sin((2 * pi * doy / 365 ) - 1.39)
+  ws = acos(-tan(psi) * tan(delta))
+  d = ( 24 / pi) * ws
+  return(d)
+}
