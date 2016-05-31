@@ -19,10 +19,10 @@ if [ ! -e "@OUTDIR@/.dat" ]; then
   cp -r  path/to/where/example/input/files/are  "@RUNDIR@"
 
   # This will execute the model
-  "@BINARY@" -s -p @param_filenameval@
-  grep print
-  "@BINARY@" -p @out_param_fnameval@
-
+  "@BINARY@" 
+  # Move ouput files to output folder.
+    # EDIT: If Gday doesn't produce .dat files, then edit accordingly
+  mv *.dat "@OUTDIR@"
   STATUS=$?
 
   # check the status
@@ -32,9 +32,9 @@ if [ ! -e "@OUTDIR@/.dat" ]; then
   fi
 
   # convert to MsTMIP. Uncomment this code once model2netcdf is written
-  echo "require (PEcAn.GDAY)
-model2netcdf.GDAY('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
-" | R --vanilla
+  #echo "require (PEcAn.GDAY)
+#model2netcdf.GDAY('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
+#" | R --vanilla
 fi
 
 
