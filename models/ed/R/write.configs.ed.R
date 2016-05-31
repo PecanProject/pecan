@@ -222,6 +222,24 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults=settings$c
   ed2in.text <- gsub('@END_DAY@', format(enddate, "%d"), ed2in.text)
   ed2in.text <- gsub('@END_YEAR@', format(enddate, "%Y"), ed2in.text)
   
+  ##-----------------------------------------------------------------------
+  #Set The flag for IMETAVG telling ED what to do given how input radiation was originally averaged
+  # -1 = I don't know, use linear interpolation
+  # 0 = No average, the values are instantaneous 
+  # 1 = Averages ending at the reference time
+  # 2 = Averages beginning at the reference time
+  # 3 = Averages centered at the reference time
+  
+  if (settings$run$inputs$met$source == "NARR") {
+    ed2in.text <- gsub('@MET_SOURCE@', 2,ed2in.text)
+  }else if (settings$run$inputs$met$source == "Ameriflux"){
+    ed2in.text <- gsub('@MET_SOURCE@', 2,ed2in.text)
+  }else if (settings$run$inputs$met$source == "CRUNCEP"){
+    ed2in.text <- gsub('@MET_SOURCE@', 2,ed2in.text)
+  }else{
+    ed2in.text <- gsub('@MET_SOURCE@', -1,ed2in.text)    
+  }
+ 
   ##----------------------------------------------------------------------
   if (is.null(settings$run$host$scratchdir)) {
     modeloutdir <- file.path(settings$run$host$outdir, run.id)
