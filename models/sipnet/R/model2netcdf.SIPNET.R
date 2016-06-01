@@ -70,11 +70,15 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       (sub.sipnet.output$fineRootC * 0.001)                       # Total living C kgC/m2
     output[[12]] <- (sub.sipnet.output$soil * 0.001)+
       (sub.sipnet.output$litter * 0.001)                          # Total soil C kgC/m2
-    output[[13]] <- (sub.sipnet.output$fluxestranspiration * 0.001) / timestep.s  #Transpiration kgW/m2/s
-    output[[14]] <- (sub.sipnet.output$soilWater * 10)            # Soil moisture kgW/m2
-    output[[15]] <- (sub.sipnet.output$soilWetnessFrac)         # Fractional soil wetness
-    output[[16]] <- (sub.sipnet.output$snow * 10)                 # SWE
-    output[[17]] <- sub.sipnet.output$litter * 0.001 ## litter kgC/m2
+    ## *** NOTE : npp in the sipnet output file is actually evapotranspiration, this is due to a bug in our version of sipnet.c : ***
+    ## *** it says "npp" in the header (written by L774) but the values being written are trackers.evapotranspiration (L806) ***
+    ##  water density = 1000 kg m-3 , latent heat of vaporization = 2.501*10^6 J kg-1
+    output[[13]] <- (sub.sipnet.output$npp*0.01*1000*2.501*10^6) / timestep.s  # Qle W/m2
+    output[[14]] <- (sub.sipnet.output$fluxestranspiration * 0.001) / timestep.s  #Transpiration kgW/m2/s
+    output[[15]] <- (sub.sipnet.output$soilWater * 10)            # Soil moisture kgW/m2
+    output[[16]] <- (sub.sipnet.output$soilWetnessFrac)         # Fractional soil wetness
+    output[[17]] <- (sub.sipnet.output$snow * 10)                 # SWE
+    output[[18]] <- sub.sipnet.output$litter * 0.001 ## litter kgC/m2
           
     #******************** Declare netCDF variables ********************#
     t <- ncdim_def(name = "time",
@@ -109,11 +113,12 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     var[[10]]  <- mstmipvar("LeafC", lat, lon, t, NA)
     var[[11]]  <- mstmipvar("TotLivBiom", lat, lon, t, NA)
     var[[12]]  <- mstmipvar("TotSoilCarb", lat, lon, t, NA)
-    var[[13]]  <- mstmipvar("TVeg", lat, lon, t, NA)
-    var[[14]]  <- mstmipvar("SoilMoist", lat, lon, t, NA)
-    var[[15]]  <- mstmipvar("SoilMoistFrac", lat, lon, t, NA)
-    var[[16]]  <- mstmipvar("SWE", lat, lon, t, NA)
-    var[[17]]  <- mstmipvar("Litter", lat, lon, t, NA)
+    var[[13]]  <- mstmipvar("Qle", lat, lon, t, NA)
+    var[[14]]  <- mstmipvar("TVeg", lat, lon, t, NA)
+    var[[15]]  <- mstmipvar("SoilMoist", lat, lon, t, NA)
+    var[[16]]  <- mstmipvar("SoilMoistFrac", lat, lon, t, NA)
+    var[[17]]  <- mstmipvar("SWE", lat, lon, t, NA)
+    var[[18]]  <- mstmipvar("Litter", lat, lon, t, NA)
    
     #******************** Declar netCDF variables ********************#
     
