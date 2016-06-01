@@ -59,7 +59,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[[5]] <- (sub.sipnet.output$rtot * 0.001) / timestep.s    # Total Respiration in kgC/m2/s
     output[[6]] <- (sub.sipnet.output$rAboveground * 0.001) / timestep.s +
       (sub.sipnet.output$rRoot * 0.001) / timestep.s                # Autotrophic Respiration in kgC/m2/s
-    output[[7]] <- (sub.sipnet.output$rSoil * 0.001) / timestep.s   # Heterotropic Respiration in kgC/m2/s
+    output[[7]] <- ((sub.sipnet.output$rSoil - sub.sipnet.output$rRoot) * 0.001) / timestep.s   # Heterotrophic Respiration in kgC/m2/s
     output[[8]] <- (sub.sipnet.output$nee * 0.001) / timestep.s     # NEE in kgC/m2/s
     #output[[9]] <- rep(-999,sipnet.output.dims[1])             # CarbPools
     output[[9]] <- (sub.sipnet.output$plantWoodC * 0.001)         # Above ground wood kgC/m2
