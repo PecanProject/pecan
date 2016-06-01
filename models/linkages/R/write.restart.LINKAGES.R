@@ -112,7 +112,7 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
     
     new.ntrees = numeric(length(settings$pfts))
     
-    print(paste0("ntrees =",ntrees))
+    print(paste0("ntrees (large trees) =",ntrees)) #these are the large trees
     
     if(PLOT == TRUE){
       n.name <- c(rep("Hemlock",ntrees[1]),rep("Maple",ntrees[2]),rep("Cedar",ntrees[3]),rep("Yellow Birch",ntrees[4]))
@@ -290,7 +290,8 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
 if(sample.parameters == TRUE){
   do.call(my.write.config,
           args = list(trait.values = trait.values,
-                      settings = settings, run.id = runid))
+                      settings = settings, run.id = runid,
+                      restart=TRUE, spinup=FALSE))
 } else {
   do.call(my.write.config,
           args=list(trait.values = NA, settings=settings,

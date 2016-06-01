@@ -338,12 +338,12 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
       aqq[t+1,,] = V
       bqq[t+1] = n
     }
-    }else{
+    } else {
       
       if(processvar==FALSE){
         mu.a = mu.f
         Pa = Pa
-      }else{
+      } else {
         mu.a = mu.f
         Pa = given.process.variance #from full DA analysis
       }
