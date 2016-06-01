@@ -15,7 +15,8 @@
 ##' @return NONE
 ##' 
 sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
-                     processvar=FALSE,sample.parameters=FALSE){
+                     processvar=FALSE,sample.parameters=FALSE,
+                     pick.trait.params,given.process.variance){
   
   #ensemble.samples <- get.ensemble.samples
   #write.ensemble.configs #look inside for what you need #just the lapply thing
@@ -129,7 +130,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
     if(sample.parameters == TRUE){
       get.parameter.samples(pfts = settings$pfts, ens.sample.method=settings$ensemble$method)
       load(file.path(settings$outdir, "samples.Rdata"))
-      do.call(my.write.config, args = list(trait.values = lapply(ensemble.samples, function(x, n){x[n, ]},n = i),
+      do.call(my.write.config, args = list(trait.values = lapply(ensemble.samples, function(x, n){x[n,pick.trait.params]},n = i),
                                            settings = settings, run.id = run.id[[i]]))
     } else {
       do.call(my.write.config,args=list(trait.values = NA,settings=settings,run.id = run.id[[i]],restart=FALSE))
@@ -167,7 +168,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
   nt = length(total.time)
   FORECAST <- ANALYSIS <- list()
   enkf.params <- list()
-  aqq = array(0,dim=c(nt+1,ncol(IC),ncol(IC))) #HACK
+  aqq = array(0,dim=c(nt+1,ncol(IC)+1,ncol(IC)+1)) #HACK
   bqq = numeric(nt+1)
   CI.X1 <- matrix(0,3,nt) ; CI.X2 = CI.X1
   
@@ -226,7 +227,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
   ###-------------------------------------------
   ### loop over time
   ###-------------------------------------------
-  for(t in 16:50){
+  for(t in 11:50){
     
     ### READ RESTART
     X <- list()
@@ -240,13 +241,14 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
     
     FORECAST[[t]] = X
     
+    obs = !is.na(obs.mean[[t]])
+    
     ### ANALYSIS
+    if(any(obs)){
     mu.f = as.numeric(apply(X,2,mean,na.rm=TRUE))
     Pf   = cov(X)
     Y    = obs.mean[[t]][[1]][pmatch(colnames(X), names(obs.mean[[t]][[1]]))]
-    
-   # Y    = Y[-which(is.na(Y))]
-    
+
     H = diag(length(obs.mean[[t]][[1]]))
     R = diag(as.numeric(obs.sd[[t]][[1]][pmatch(colnames(X),names(obs.mean[[t]][[1]]))])^2)
     
@@ -336,6 +338,17 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
       aqq[t+1,,] = V
       bqq[t+1] = n
     }
+    }else{
+      
+      if(processvar==FALSE){
+        mu.a = mu.f
+        Pa = Pa
+      }else{
+        mu.a = mu.f
+        Pa = given.process.variance #from full DA analysis
+      }
+      
+    }
     
     enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa, q.bar=q.bar, n=n) 
     
@@ -382,7 +395,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
                           RENAME = TRUE, PLOT=FALSE, variables=variables,
                           sample.parameters = sample.parameters,
                           trait.values = lapply(ensemble.samples,
-                                                function(x, n){x[n, ]},
+                                                function(x, n){x[n,pick.trait.params]},
                                                 n = i)))
       }
       ## start model run
@@ -394,8 +407,8 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
   ###-------------------------------------------
   
   ## save all outputs
-  save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdata"))
-  save.image(file="pecan_meeting.Rdata")
+  save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.with.soil.Rdata"))
+  #save.image(file="pecan_meeting.Rdata")
   #### Post-processing
   sqrt(diag(Pf))
   1/sqrt(diag(q.bar))
@@ -458,7 +471,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
     YCI = as.matrix(laply(obs.sd[t1:t],function(x){return(x[[1]])})) 
     YCI = YCI[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
    
-   pdf("new.ts.pdf")
+   pdf("tree.ring.obs.with.soil.pdf")
    
     for(i in 1:ncol(X)){
       t1=1
@@ -514,6 +527,16 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
       #d<-density(c(Xbar[t1:t] - Xa[t1:t]))
       #lines(d$y+1,d$x)
     }
+  
+  #Process Covariance
+  library(corrplot)
+  cor.mat <- cov2cor(aqq[t,,]/bqq[t])
+  colnames(cor.mat)<-c("Beech","BCherry","ROak","Chestnut","Hemlock","RMaple","WAsh","WPine","YBirch","TotSoilCarb")
+  rownames(cor.mat)<-c("Beech","BCherry","ROak","Chestnut","Hemlock","RMaple","WAsh","WPine","YBirch","TotSoilCarb")
+  par(mfrow=c(1,1),mai=c(1,1,4,1))
+  #cairo_ps("corr_plot_linkages_da.eps")
+  corrplot(cor.mat,type="upper",tl.srt=45, 
+           addCoef.col = "black")
       dev.off()
       
       plot(rowMeans(temp.mat[5:t,]),
@@ -543,16 +566,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
    t1=1
    plot(total.time[t1:t],bqq[t1:t],pch=16,cex=1,ylab="Degrees of Freedom",
         xlab="Time")
-   
-   #Process Covariance
-   library(corrplot)
-   cor.mat <- cov2cor(aqq[t,,]/bqq[t])
-   colnames(cor.mat)<-c("Hemlock","Maple","Yellow Birch","Cedar")
-   rownames(cor.mat)<-c("Hemlock","Maple","Yellow Birch","Cedar")
-   par(mfrow=c(1,1),mai=c(1,1,4,1))
-   #cairo_ps("corr_plot_linkages_da.eps")
-   corrplot(cor.mat,type="upper",tl.srt=45, 
-            addCoef.col = "black")
+  
    
    
     
