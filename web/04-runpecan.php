@@ -356,6 +356,9 @@ if (isset($hostoptions['folder'])) {
   }
   fwrite($fh, "      <folder>" . toXML($remote) . "</folder>" . PHP_EOL);
 }
+if (isset($hostoptions['scratchdir'])) {
+  fwrite($fh, "      <scratchdir>" . toXML($hostoptions['scratchdir']) . "</scratchdir>" . PHP_EOL);
+}
 if (isset($hostoptions['qsub'])) {
   fwrite($fh, "      <qsub>" . toXML($hostoptions['qsub']) . "</qsub>" . PHP_EOL);
 }
