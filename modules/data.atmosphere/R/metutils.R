@@ -228,7 +228,7 @@ AirDens <- function(pres, T, rv){
 ##' calculate latent heat of vaporization for water 
 ##' 
 ##' @title Latent heat of vaporization
-##' @param T    air temperature (Kelvin)
+##' @param airtemp  air temperature (Kelvin)
 ##' @export
 ##' @author Istem Fer
 ##' @return lV   latent heat of vaporization (J kg-1)
