@@ -71,7 +71,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       (sub.sipnet.output$fineRootC * 0.001)                       # Total living C kgC/m2
     output[[13]] <- (sub.sipnet.output$soil * 0.001)+
       (sub.sipnet.output$litter * 0.001)                          # Total soil C kgC/m2
-    ## *** NOTE : npp in the sipnet output file is actually evapotranspiration, this is due to a bug in our version of sipnet.c : ***
+    ## *** NOTE : npp in the sipnet output file is actually evapotranspiration, this is due to a bug in sipnet.c : ***
     ## *** it says "npp" in the header (written by L774) but the values being written are trackers.evapotranspiration (L806) ***
     ##  water density = 1000 kg m-3 , latent heat of vaporization = 2.501*10^6 J kg-1
     output[[14]] <- (sub.sipnet.output$npp*0.01*1000*2.501*10^6) / timestep.s  # Qle W/m2
