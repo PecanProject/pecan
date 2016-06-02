@@ -447,7 +447,7 @@ write.config.jobsh.ED2 <- function(settings, run.id){
   } else {
     modeloutdir <- file.path(settings$run$host$scratchdir, settings$workflow$id, run.id)
     mkdirscratch <- paste("mkdir -p", modeloutdir)
-    copyscratch <- paste("rsync", "-a", paste0('"', file.path(modeloutdir, "*"), '"'), paste0('"', outdir, '"'))
+    copyscratch <- paste("rsync", "-a", paste0('"', file.path(modeloutdir, ""), '"'), paste0('"', file.path(outdir, ""), '"'))
     if (is.null(settings$run$host$clearscratch) || is.na(as.logical(settings$run$host$clearscratch)) || as.logical(settings$run$host$clearscratch)) {
       clearscratch <- paste("rm", "-rf", paste0('"', modeloutdir, '"'))
     } else {
