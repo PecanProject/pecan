@@ -9,6 +9,7 @@ exec &> "@OUTDIR@/logfile.txt"
 
 # create output folder
 mkdir -p "@OUTDIR@"
+@SCRATCH_MKDIR@
 
 # flag needed for ubuntu
 export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
