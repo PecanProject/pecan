@@ -1,6 +1,6 @@
 <html>
     <head>
-    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />`
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
     <meta http-equiv="refresh" content="60">
     </head>
     <body>
