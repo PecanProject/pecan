@@ -229,16 +229,9 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults=settings$c
   # 1 = Averages ending at the reference time
   # 2 = Averages beginning at the reference time
   # 3 = Averages centered at the reference time
+  ## Deafult is -1
   
-  if (settings$run$inputs$met$source == "NARR") {
-    ed2in.text <- gsub('@MET_SOURCE@', 2,ed2in.text)
-  }else if (settings$run$inputs$met$source == "Ameriflux"){
-    ed2in.text <- gsub('@MET_SOURCE@', 2,ed2in.text)
-  }else if (settings$run$inputs$met$source == "CRUNCEP"){
-    ed2in.text <- gsub('@MET_SOURCE@', 2,ed2in.text)
-  }else{
-    ed2in.text <- gsub('@MET_SOURCE@', -1,ed2in.text)    
-  }
+  ed2in.text <- gsub('@MET_SOURCE@', -1,ed2in.text)    
  
   ##----------------------------------------------------------------------
   if (is.null(settings$run$host$scratchdir)) {
