@@ -75,7 +75,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     ## *** it says "npp" in the header (written by L774) but the values being written are trackers.evapotranspiration (L806) ***
     ## evapotranspiration in SIPNET is cm^3 water per cm^2 of area, to convert it to latent heat units W/m2 multiply with :
     ## 0.01 (cm2m) * 1000 (water density, kg m-3) * latent heat of evapotranspiration (J kg-1) 
-    ## latent heat of vaporization is not constant and it varies slightly with temperature, get.lv(268.6465) returns 2.5e6 J kg-1
+    ## latent heat of vaporization is not constant and it varies slightly with temperature, get.lv() returns 2.5e6 J kg-1 by default 
     output[[14]] <- (sub.sipnet.output$npp * 10 * get.lv()) / timestep.s  # Qle W/m2
     output[[15]] <- (sub.sipnet.output$fluxestranspiration * 10) / timestep.s  # Transpiration kgW/m2/s
     output[[16]] <- (sub.sipnet.output$soilWater * 10)            # Soil moisture kgW/m2
