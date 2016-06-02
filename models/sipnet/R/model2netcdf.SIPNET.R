@@ -98,7 +98,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     for(i in 1:length(output)){
       if(length(output[[i]])==0) output[[i]] <- rep(-999,length(t$vals))
     }
-    dims=list(lon, lat, time)
+
     mstmipvar <- PEcAn.utils::mstmipvar
     var <- list()
     var[[1]]  <- mstmipvar("Year", lat, lon, t, NA)
