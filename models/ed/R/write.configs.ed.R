@@ -226,7 +226,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults=settings$c
   if (is.null(settings$run$host$scratchdir)) {
     modeloutdir <- file.path(settings$run$host$outdir, run.id)
   } else {
-    modeloutdir <- file.path(settings$run$host$scratchdir, run.id)
+    modeloutdir <- file.path(settings$run$host$scratchdir, settings$workflow$id, run.id)
   }
   ed2in.text <- gsub('@OUTDIR@', modeloutdir, ed2in.text)
   ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
@@ -430,10 +430,12 @@ write.config.jobsh.ED2 <- function(settings, run.id){
   # command if scratch is used
   if (is.null(settings$run$host$scratchdir)) {
     modeloutdir <- outdir
+    mkdirscratch <- "# no need to mkdir for scratch" 
     copyscratch <- "# no need to copy from scratch"
     clearscratch <- "# no need to clear scratch"
   } else {
-    modeloutdir <- file.path(settings$run$host$scratchdir, run.id)
+    modeloutdir <- file.path(settings$run$host$scratchdir, settings$workflow$id, run.id)
+    mkdirscratch <- paste("mkdir -p", modeloutdir)
     copyscratch <- paste("rsync", "-a", paste0('"', file.path(modeloutdir, "*"), '"'), paste0('"', outdir, '"'))
     if (is.null(settings$run$host$clearscratch) || is.na(as.logical(settings$run$host$clearscratch)) || as.logical(settings$run$host$clearscratch)) {
       clearscratch <- paste("rm", "-rf", paste0('"', modeloutdir, '"'))
@@ -464,6 +466,7 @@ write.config.jobsh.ED2 <- function(settings, run.id){
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
   jobsh <- gsub('@SITE_MET@', settings$run$inputs$met$path, jobsh)
   
+  jobsh <- gsub('@SCRATCH_MKDIR@', mkdirscratch, jobsh)
   jobsh <- gsub('@SCRATCH_COPY@', copyscratch, jobsh)
   jobsh <- gsub('@SCRATCH_CLEAR@', clearscratch, jobsh)
   
