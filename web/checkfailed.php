@@ -29,6 +29,7 @@ if ($authentication) {
 <html>
 	<head>
 		<title>The submission might have errors</title>
+		<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />`
 		<link rel="stylesheet" type="text/css" href="sites.css" />
 		<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 		<script type="text/javascript">
