@@ -612,6 +612,24 @@ check.settings <- function(settings) {
     }
   }
 
+  # some warnings for deprecated job.sh
+  if ("job.sh" %in% names(settings$model)) {
+    if ("prerun" %in% names(settings$model)) {
+      logger.severe("You have both settings$model$job.sh and settings$model$prerun, please combine.")
+    }
+    logger.info("settings$model$job.sh is deprecated use settings$model$prerun instead.")
+    settings$model$prerun <- settings$model$job.sh
+    settings$model$job.sh <- NULL
+  }
+  if ("job.sh" %in% names(settings$run$host)) {
+    if ("prerun" %in% names(settings$run$host)) {
+      logger.severe("You have both settings$run$host$job.sh and settings$run$host$prerun, please combine.")
+    }
+    logger.info("settings$run$host$job.sh is deprecated use settings$run$host$prerun instead.")
+    settings$run$host$prerun <- settings$run$host$job.sh
+    settings$run$host$job.sh <- NULL
+  }
+
   # Check folder where outputs are written before adding to dbfiles
   if(is.null(settings$run$dbfiles)) {
     settings$run$dbfiles <- full.path("~/.pecan/dbfiles")

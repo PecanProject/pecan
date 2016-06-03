@@ -309,7 +309,16 @@ if ($modeltype == "ED2") {
 	fwrite($fh, "    <phenol.scheme>0</phenol.scheme>" . PHP_EOL);
 }
 if (isset($hostoptions['models']) && isset($hostoptions['models'][$modeltype])) {
-  fwrite($fh, "    <job.sh>" . toXML($hostoptions['models'][$modeltype]) . "</job.sh>" . PHP_EOL);      
+  if (is_array($hostoptions['models'][$modeltype])) {
+    if (isset($hostoptions['models'][$modeltype]['prerun'])) {
+      fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$modeltype]['prerun']) . "</prerun>" . PHP_EOL);      
+    }
+    if (isset($hostoptions['models'][$modeltype]['postrun'])) {
+      fwrite($fh, "    <postrun>" . toXML($hostoptions['models'][$modeltype]['postrun']) . "</postrun>" . PHP_EOL);      
+    }
+  } else {
+    fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$modeltype]) . "</prerun>" . PHP_EOL);      
+  }
 }
 fwrite($fh, "  </model>" . PHP_EOL);
 fwrite($fh, "  <workflow>" . PHP_EOL);
@@ -355,6 +364,15 @@ if (isset($hostoptions['folder'])) {
     $remote = $remote . "/" . $_REQUEST['username'];
   }
   fwrite($fh, "      <folder>" . toXML($remote) . "</folder>" . PHP_EOL);
+}
+if (isset($hostoptions['scratchdir'])) {
+  fwrite($fh, "      <scratchdir>" . toXML($hostoptions['scratchdir']) . "</scratchdir>" . PHP_EOL);
+}
+if (isset($hostoptions['prerun'])) {
+  fwrite($fh, "      <prerun>" . toXML($hostoptions['prerun']) . "</prerun>" . PHP_EOL);
+}
+if (isset($hostoptions['postrun'])) {
+  fwrite($fh, "      <postrun>" . toXML($hostoptions['postrun']) . "</postrun>" . PHP_EOL);
 }
 if (isset($hostoptions['qsub'])) {
   fwrite($fh, "      <qsub>" . toXML($hostoptions['qsub']) . "</qsub>" . PHP_EOL);
