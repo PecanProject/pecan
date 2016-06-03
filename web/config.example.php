@@ -57,7 +57,9 @@ $fqdn=exec('hostname -f');
 #                finished.
 # - launcher   : path to modellauncher, used to for a single job that
 #                consists of many smaller jobs
-# - job.sh     : any special parameters to add to the job.sh file.
+# - job.sh     : any special parameters to add to the job.sh file. (deprecated)
+# - prerun     : any special options to add at the begging of the job.
+# - postrun    : any special options to add at the end of the job.
 # - folder     : folder on remote machine, will add username and the
 #                workflowid to the folder name
 # - models     : any special options to add to a specific model that is 
@@ -67,11 +69,13 @@ $fqdn=exec('hostname -f');
 #                models (such as ED)
 $hostlist=array($fqdn => array(),
                 "geo.bu.edu" => 
-                    array("qsub"   => "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
-                          "jobid"  => "Your job ([0-9]+) .*",
-                          "qstat"  => "qstat -j @JOBID@ || echo DONE",
-                          "job.sh" => "module load udunits R/R-3.0.0_gnu-4.4.6",
-                          "models" => array("ED2"    => "module load hdf5")));
+                    array("qsub"    => "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash",
+                          "jobid"   => "Your job ([0-9]+) .*",
+                          "qstat"   => "qstat -j @JOBID@ || echo DONE",
+                          "prerun"  => "module load udunits R/R-3.0.0_gnu-4.4.6",
+                          "postrun" => "sleep 60"
+                          "models"  => array("ED2" =>
+                              array("prerun"  => "module load hdf5"))));
 
 # Folder where PEcAn is installed
 $pecan_install="/home/carya/R/library";
