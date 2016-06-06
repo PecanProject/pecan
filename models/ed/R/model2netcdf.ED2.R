@@ -163,8 +163,8 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
       if (file.exists(file.path(outdir, sub('-T-', '-Y-', flist[i])))) {
         ncY <- nc_open(file.path(outdir, sub('-T-', '-Y-', flist[i])))
         slzdata <- getHdf5Data(ncY, 'SLZ')
-        laidata <- getHdf5Data(ncY,"LAI_PY")
-        if(!is.null(laidata)){
+        laidata <- getHdf5Data(ncT,"LAI_PY")
+        if(length(dim(laidata)) > 0){
           LAI = apply(laidata,3,sum)
         } else {
           LAI = -9999
