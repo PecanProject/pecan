@@ -2,6 +2,7 @@
 % Please edit documentation in R/add_icon.R
 \name{add_icon}
 \alias{add_icon}
+\title{add_icon}
 \usage{
 add_icon(id = NULL, x = 0, y = 0)
 }
