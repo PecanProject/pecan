@@ -232,7 +232,7 @@ if (status.check("FINISHED") == 0) {
   # Send email if configured
   if (!is.null(settings$email) && !is.null(settings$email$to) && (settings$email$to != "")) {
     sendmail(settings$email$from, settings$email$to,
-             paste0("Workflow has finished executing at ", date()),
+             paste0("Workflow has finished executing at ", base::date()),
              paste0("You can find the results on ", settings$email$url))
   }
   status.end()

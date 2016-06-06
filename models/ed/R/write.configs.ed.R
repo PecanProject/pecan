@@ -447,7 +447,7 @@ write.config.jobsh.ED2 <- function(settings, run.id){
   } else {
     modeloutdir <- file.path(settings$run$host$scratchdir, settings$workflow$id, run.id)
     mkdirscratch <- paste("mkdir -p", modeloutdir)
-    copyscratch <- paste("rsync", "-a", paste0('"', file.path(modeloutdir, "*"), '"'), paste0('"', outdir, '"'))
+    copyscratch <- paste("rsync", "-a", paste0('"', file.path(modeloutdir, ""), '"'), paste0('"', file.path(outdir, ""), '"'))
     if (is.null(settings$run$host$clearscratch) || is.na(as.logical(settings$run$host$clearscratch)) || as.logical(settings$run$host$clearscratch)) {
       clearscratch <- paste("rm", "-rf", paste0('"', modeloutdir, '"'))
     } else {
@@ -462,16 +462,25 @@ write.config.jobsh.ED2 <- function(settings, run.id){
   }
   
   # create host specific setttings
-  hostspecific <- ""
-  if (!is.null(settings$model$job.sh)) {
-    hostspecific <- paste(hostspecific, sep="\n", paste(settings$model$job.sh, collapse="\n"))
+  hostsetup <- ""
+  if (!is.null(settings$model$prerun)) {
+    hostsetup <- paste(hostsetup, sep="\n", paste(settings$model$prerun, collapse="\n"))
   }
-  if (!is.null(settings$run$host$job.sh)) {
-    hostspecific <- paste(hostspecific, sep="\n", paste(settings$run$host$job.sh, collapse="\n"))
+  if (!is.null(settings$run$host$prerun)) {
+    hostsetup <- paste(hostsetup, sep="\n", paste(settings$run$host$prerun, collapse="\n"))
+  }
+
+  hostteardown <- ""
+  if (!is.null(settings$model$postrun)) {
+    hostteardown <- paste(hostteardown, sep="\n", paste(settings$model$postrun, collapse="\n"))
+  }
+  if (!is.null(settings$run$host$postrun)) {
+    hostteardown <- paste(hostteardown, sep="\n", paste(settings$run$host$postrun, collapse="\n"))
   }
 
   # create job.sh
-  jobsh <- gsub('@HOSTSPECIFIC@', hostspecific, jobsh)
+  jobsh <- gsub('@HOST_SETUP@', hostsetup, jobsh)
+  jobsh <- gsub('@HOST_TEARDOWN@', hostteardown, jobsh)
 
   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
