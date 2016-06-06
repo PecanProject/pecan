@@ -6,8 +6,8 @@
 ##' @author Mike Dietze
 ##' 
 add_icon <- function(id=NULL,x=0,y=0){
-  include(png)
-  include(grid)
+  library(png)
+  library(grid)
   icon <- readPNG(system.file("favicon.png",package = "PEcAn.visualization"))
   dims <- dim(icon)
   logo <- rasterGrob(icon,unit(x,"npc"),unit(y,"npc"),unit(dims[1],"points"),unit(dims[2],"points"),just=c("left","bottom"))
