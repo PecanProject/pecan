@@ -163,12 +163,17 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
       if (file.exists(file.path(outdir, sub('-T-', '-Y-', flist[i])))) {
         ncY <- nc_open(file.path(outdir, sub('-T-', '-Y-', flist[i])))
         slzdata <- getHdf5Data(ncY, 'SLZ')
-        LAI = apply(getHdf5Data(ncT,"LAI_PY"),3,sum)
+        laidata <- getHdf5Data(ncT,"LAI_PY")
+        if(length(dim(laidata)) > 0){
+          LAI = apply(laidata,3,sum)
+        } else {
+          LAI = -9999
+        }
         nc_close(ncY)
       } else {
         logger.warn("Could not find SLZ in Y file, making a crude assumpution.")
         slzdata <- array(c(-2.00, -1.50, -1.00, -0.80, -0.60, -0.40, -0.20, -0.10, -0.05))
-        LAI = NULL
+        LAI = -9999
       }
 
       ## Check for which version of ED2 we are using.
