@@ -313,33 +313,17 @@ $stmt->closeCursor();
     // create the tooltip and its text
     var info="<b><?php echo $siteinfo['sitename']; ?></b><br />";
     info+="<?php echo $siteinfo['city']; ?>, <?php echo $siteinfo['state']; ?>, <?php echo $siteinfo['country']; ?><br/>";
-    if ("<?php echo $siteinfo['mat']; ?>") {
-    	info+="Mean Annual Temp: <?php echo $siteinfo['mat']; ?><br/>";
-    }
-    if ("<?php echo $siteinfo['map']; ?>") {
-    	info+="Mean Annual Precip: <?php echo $siteinfo['map']; ?><br/>";
-    }
-    if ("<?php echo $siteinfo['greenhouse']; ?>") {
-    	info+="Greenhouse Study: <?php echo $siteinfo['greenhouse']; ?><br/>";
-    }
-    if ("<?php echo $siteinfo['time_zone']; ?>") {
-    	info+="Local Time: <?php echo $siteinfo['time_zone']; ?><br/>";
-    }
-    if ("<?php echo $siteinfo['sand_pct']; ?>") {
-    	info+="Sand Pct: <?php echo $siteinfo['sand_pct']; ?><br/>";
-    }
-    if ("<?php echo $siteinfo['clay_pct']; ?>") {
-    	info+="Clay Pct: <?php echo $siteinfo['clay_pct']; ?><br/>";
-    }
-    if ("<?php echo $siteinfo['soil']; ?>") {
-    	info+="Soil: <?php echo $siteinfo['soil']; ?><br/>";
-    }
-    if ("<?php echo $siteinfo['notes']; ?>") {
-    	info+="Notes: <?php echo $siteinfo['notes']; ?><br/>";
-    }
-    if ("<?php echo $siteinfo['soilnotes']; ?>") {
-    	info+="Soil Notes: <?php echo $siteinfo['soilnotes']; ?><br/>";
-    }
+<?php
+  printInfo($siteinfo, 'mat', 'Mean Annual Temp');
+  printInfo($siteinfo, 'map', 'Mean Annual Precip');
+  printInfo($siteinfo, 'greenhouse', 'Greenhouse Study');
+  printInfo($siteinfo, 'time_zone', 'Local Time');
+  printInfo($siteinfo, 'sand_pct', 'Sand Pct');
+  printInfo($siteinfo, 'clay_pct', 'Clay Pct');
+  printInfo($siteinfo, 'soil', 'Soil');
+  printInfo($siteinfo, 'notes', 'Notes');
+  printInfo($siteinfo, 'soilnotes', 'Soil Notes');
+?>
     var infowindow = new google.maps.InfoWindow({content: info});
     infowindow.open(map, marker);
     validate();
@@ -485,4 +469,11 @@ foreach($inputs as $input) {
 
 <?php
 close_database();
+
+function printInfo($siteinfo, $var, $text) {
+  if (isset($siteinfo[$var])) {
+    $tmp = preg_replace('/\s\s+/', ' ', toXML($siteinfo[$var]));
+    echo "    info+= \"${text} : ${tmp}</br/>\";";
+  }
+}
 ?>
