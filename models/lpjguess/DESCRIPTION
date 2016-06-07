@@ -1,8 +1,8 @@
 Package: PEcAn.LPJGUESS
 Type: Package
 Title: PEcAn package for integration of the LPJ-GUESS model
-Version: 1.4.5
-Date: 2016-03-03
+Version: 1.4.6
+Date: 2016-05-05
 Author: Istem Fer, Tony Gardella
 Maintainer: Istem Fer <fer.istem@gmail.com>
 Description: This module provides functions to link LPJ-GUESS to PEcAn.

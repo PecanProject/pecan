@@ -58,7 +58,7 @@ load.pda.data <- function(settings, con) {
         
         inputs[[i]]$data <- load.L2Ameriflux.cf(input.settings[[i]]$path)
         
-        NEEo <- inputs[[i]]$data$NEE
+        NEEo <- inputs[[i]]$data$FC
         UST <- inputs[[i]]$data$UST
         NEEo[NEEo == -9999] <- NA
         NEEo[UST < ustar.thresh] <- NA
@@ -72,10 +72,8 @@ load.pda.data <- function(settings, con) {
       
       NEE.params <- flux.uncertainty(NEEo,NEEq,flags,bin.num=20)
       
-      inputs[[i]]$NEEo <- NEEo
-      inputs[[i]]$b0 <- NEE.params$intercept
-      inputs[[i]]$bp <- NEE.params$slopeP
-      inputs[[i]]$bn <- NEE.params$slopeN
+      inputs[[i]]$obs <- NEEo
+      inputs[[i]]$par <- c(NEE.params$intercept, NEE.params$slopeP, NEE.params$slopeN)
     }
   } # end loop over files
   

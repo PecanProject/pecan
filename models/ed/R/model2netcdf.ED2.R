@@ -287,7 +287,14 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
       out <- add(-999,33,row, yrs[y]) ## fPAR
       ##lai <- matrix(apply(getHdf5Data(ncT, 'LAI_PFT'),1,sum,na.rm=TRUE),nrow=block)
       ## out <- add(lai,34,row, yrs[y]) ## LAI******************
-      out <- add(getHdf5Data(ncT, 'FMEAN_LAI_PY'),34,row, yrs[y]) ## LAI
+      ## out <- add(getHdf5Data(ncT, 'FMEAN_LAI_PY'),34,row, yrs[y]) ## LAI
+      laidata <- getHdf5Data(ncT,"LAI_PY")
+      if(length(dim(laidata)) == 3){
+        out <- add(apply(laidata,3,sum),34,row,yrs[y])
+      } else {
+        out <- add(-999,34,row, yrs[y])
+      }
+
       ##z <- getHdf5Data(ncT, 'SLZ')
       ##if(z[length(z)] < 0.0) z <- c(z,0.0)
       ##dz <- diff(z)

@@ -10,12 +10,12 @@ pda.generate.knots(n.knot, n.param.all, prior.ind, prior.fn, pname)
 \item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
 }
 \value{
-A matrix of parameter values, with one row for each knot in the emulator.
+A list of probabilities and parameter values, with one row for each knot in the emulator.
 }
 \description{
 Generate Parameter Knots for PDA Emulator
 }
 \author{
-Ryan Kelly
+Ryan Kelly, Istem Fer
 }
 

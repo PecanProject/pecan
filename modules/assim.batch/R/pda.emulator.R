@@ -9,7 +9,7 @@
 ##'  are saved as files and db records.
 ##'
 ##' @author Mike Dietze
-##' @author Ryan Kelly
+##' @author Ryan Kelly, Istem Fer
 ##' @export
 pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
                      iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL) {
@@ -119,7 +119,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   if(settings$assim.batch$GPpckg=="GPfit"){
     ## GPfit optimization routine assumes that inputs are in [0,1]
     ## Instead of drawing from parameters, we draw from probabilities
-    X <- knots.probs[, prior.ind]
+    X <- knots.probs[, prior.ind, drop=FALSE]
 
     logger.info(paste0("Using 'GPfit' package for Gaussian Process Model fitting."))
     require(GPfit)
@@ -134,6 +134,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     pckg=1
   } else{
     X <- data.frame(knots.params[, prior.ind])
+    names(X) <- pname[prior.ind]
     df <- data.frame(LL = LL.X, X)
     
     logger.info(paste0("Using 'kernlab' package for Gaussian Process Model fitting."))
@@ -145,9 +146,10 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   }
   
   # define range to make sure mcmc.GP doesn't propose new values outside 
+  
   rng=matrix(c(sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0)),
-        sapply(prior.fn$qprior[prior.ind] ,eval,list(p=1))),
-        nrow=n.param)
+               sapply(prior.fn$qprior[prior.ind] ,eval,list(p=1))),
+               nrow=n.param)
         
 
   ## Sample posterior from emulator
@@ -164,7 +166,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 #                  jmp0 = apply(X,2,function(x) 0.3*diff(range(x))), ## Initial jump size
                  jmp0      = sqrt(unlist(settings$assim.batch$jump$jvar)),  ## Initial jump size
                  ar.target = settings$assim.batch$jump$ar.target,   ## Target acceptance rate
-                 priors    = prior.fn$dprior[prior.ind]
+                 priors    = prior.fn$dprior[prior.ind] ## priors
           )$mcmc
         })
   
@@ -205,4 +207,4 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   ## Output an updated settings list
   return(settings)
   
-} ## end pda.mcmc
+} ## end pda.emulator

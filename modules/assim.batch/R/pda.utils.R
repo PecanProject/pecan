@@ -311,42 +311,6 @@ pda.define.prior.fn <- function(prior) {
 }
 
 
-##' Define PDA Likelihood Functions
-##'
-##' @title Define PDA Likelihood Functions
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
-##'
-##' @return List of likelihood functions, one for each dataset to be assimilated against.
-##'
-##' @author Ryan Kelly
-##' @export
-pda.define.llik.fn <- function(settings) {
-  # *** TODO: Generalize!
-  # Currently just returns a single likelihood, assuming the data are flux NEE.
-  llik.fn <- list()
-  for(i in 1:length(settings$assim.batch$inputs)) {
-      # NEE + heteroskedastic Laplace likelihood
-      if(settings$assim.batch$inputs[[i]]$variable.id == 297 && 
-         settings$assim.batch$inputs[[i]]$likelihood == "Laplace") {
-        llik.fn[[i]] <- function(NEEm, obs) {
-          NEE.resid <- abs(NEEm - obs$NEEo)
-          NEE.pos <- (NEEm >= 0)
-          LL <- c(dexp(NEE.resid[NEE.pos], 1/(obs$b0 + obs$bp*NEEm[NEE.pos]), log=TRUE), 
-                  dexp(NEE.resid[!NEE.pos],1/(obs$b0 + obs$bn*NEEm[!NEE.pos]),log=TRUE))
-          return(list(LL=sum(LL,na.rm=TRUE), n=sum(!is.na(LL))))
-        }
-      } else {
-        # Default to Normal(0,1)
-        llik.fn[[i]] <- function(model.out, obs.data) {
-          LL <- dnorm(model.out - obs.data$data, log=TRUE)
-          return(list(LL=sum(LL,na.rm=TRUE), n=sum(!is.na(LL))))
-        }
-      }
-  }
-
-  return(llik.fn)
-}
-
 
 ##' Initialise Parameter Matrix for PDA
 ##'
@@ -586,59 +550,6 @@ pda.get.model.output <- function(settings, run.id, inputs) {
 }
 
 
-##' Calculate Likelihoods for PDA
-##'
-##' @title Calculate Likelihoods for PDA
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
-##'
-##' @return Total log likelihood (i.e., sum of log likelihoods for each dataset)
-##'
-##' @author Ryan Kelly
-##' @export
-pda.calc.llik <- function(settings, con, model.out, run.id, inputs, llik.fn) {
-  if(is.na(model.out)) { # Probably indicates model failed entirely
-    return(-Inf)
-  }
-
-  n.input <- length(inputs)
-  
-  LL.vec <- n.vec <- numeric(n.input)
-  for(k in 1:n.input) {
-    llik <- llik.fn[[k]](model.out[[k]], inputs[[k]])
-    LL.vec[k] <- llik$LL
-    n.vec[k]  <- llik$n
-  }
-  weights <- rep(1/n.input, n.input) # TODO: Implement user-defined weights
-  LL.total <- sum(LL.vec * weights)
-  neff <- n.vec * weights
-
-
-  ## insert Likelihood records in database
-  if (!is.null(con)) {
-    now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-
-    # BETY requires likelihoods to be associated with inputs, so only proceed 
-    # for inputs with valid input ID (i.e., not the -1 dummy id). 
-    # Note that analyses requiring likelihoods to be stored therefore require 
-    # inputs to be registered in BETY first.
-    db.input.ind <- which( sapply(inputs, function(x) x$input.id) != -1 )
-    for(k in db.input.ind) {
-      db.query(
-        paste0("INSERT INTO likelihoods ", 
-          "(run_id,            variable_id,                     input_id, ",
-          " loglikelihood,     n_eff,                           weight,   ",
-          " created_at) ",
-        "values ('", 
-            run.id, "', '",    inputs[[k]]$variable.id, "', '", inputs[[k]]$input.id, "', '", 
-            LL.vec[k], "', '", floor(neff[k]), "', '",          weights[k] , "', '", 
-            now,"')"
-        ), 
-      con)
-    }
-  }
-  
-  return(LL.total)
-}
 
 
 ##' Generate Parameter Knots for PDA Emulator
@@ -829,36 +740,29 @@ pda.settings.bt <- function(settings){
   sampler = settings$assim.batch$bt.settings$sampler 
   
   iterations = as.numeric(settings$assim.batch$bt.settings$iter)
-  optimize = settings$assim.batch$bt.settings$optimize
-  consoleUpdates = as.numeric(settings$assim.batch$bt.settings$consoleUpdates)
-  parallel = settings$assim.batch$bt.settings$parallel
-  adapt = settings$assim.batch$bt.settings$adapt
-  adaptationInverval = as.numeric(settings$assim.batch$bt.settings$adaptationInverval)
-  adaptationNotBefore = as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore)
-  initialParticles=list("prior",as.numeric(settings$assim.batch$bt.settings$n.initialParticles))
-  DRlevels = as.numeric(settings$assim.batch$bt.settings$DRlevels)
-  proposalScaling = settings$assim.batch$bt.settings$proposalScaling
-  adaptationDepth = settings$assim.batch$bt.settings$adaptationDepth
-  temperingFunction = settings$assim.batch$bt.settings$temperingFunction
-  gibbsProbabilities = as.numeric(unlist(settings$assim.batch$bt.settings$gibbsProbabilities))
+  optimize = ifelse(!is.null(settings$assim.batch$bt.settings$optimize), settings$assim.batch$bt.settings$optimize, TRUE)
+  consoleUpdates = ifelse(!is.null(settings$assim.batch$bt.settings$consoleUpdates), as.numeric(settings$assim.batch$bt.settings$consoleUpdates), max(round(iterations/10),100))
+  adapt = ifelse(!is.null(settings$assim.batch$bt.settings$adapt), settings$assim.batch$bt.settings$adapt, TRUE)
+  adaptationInverval = ifelse(!is.null(settings$assim.batch$bt.settings$adaptationInverval), as.numeric(settings$assim.batch$bt.settings$adaptationInverval), max(round(iterations/100*5),100))
+  adaptationNotBefore = ifelse(!is.null(settings$assim.batch$bt.settings$adaptationNotBefore), as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore), adaptationInverval)
+  DRlevels = ifelse(!is.null(settings$assim.batch$bt.settings$DRlevels), as.numeric(settings$assim.batch$bt.settings$DRlevels), 1)
+  if(!is.null(settings$assim.batch$bt.settings$gibbsProbabilities)){
+    gibbsProbabilities = as.numeric(unlist(settings$assim.batch$bt.settings$gibbsProbabilities)) 
+  }else {
+    gibbsProbabilities = NULL
+  }
   
-## Generate proposal  
-# TODO: pass jump variances to proposalGenerator from settings
-# sqrt(unlist(settings$assim.batch$jump$jvar))
-# proposalGenerator <- createProposalGenerator(covariance = sqrt(c(settings$assim.batch$jump$jvar,0.000005)), message = T)
-
   
   if(sampler == "Metropolis") {
-    bt.settings <- list(iterations = iterations, adapt = adapt, DRlevels = DRlevels, gibbsProbabilities = gibbsProbabilities, 
-                     temperingFunction = temperingFunction, optimize = optimize)
+    bt.settings <- list(iterations = iterations, optimize = optimize, DRlevels = DRlevels, adapt = adapt, 
+                        adaptationInverval = adaptationInverval, adaptationNotBefore = adaptationNotBefore,
+                        gibbsProbabilities = gibbsProbabilities, consoleUpdates = consoleUpdates)
   } else if(sampler %in% c("AM", "M", "DRAM", "DR")) {
-    bt.settings = list(iterations = iterations, startValue = "prior")
-  } else if(sampler %in% c("DE", "DEzs")) {
+    bt.settings <- list(iterations = iterations, startValue = "prior")
+  } else if(sampler %in% c("DE", "DEzs","DREAM", "DREAMzs")) {
     bt.settings <- list(iterations = iterations)
   } else if(sampler == "SMC") {
-    bt.settings <- list(initialParticles = initialParticles, iterations= iterations)
-  } else if(sampler %in% c("DREAM", "DREAMzs")) {
-    bt.settings <- list(ndraw=iterations*n.param)
+    bt.settings <- list(initialParticles = list("prior", iterations))
   } else {
     logger.error(paste0(sampler, " sampler not found!"))
   }

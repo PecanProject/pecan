@@ -76,7 +76,11 @@ if (isset($_REQUEST['notes'])) {
 
 
 // get site information
-$stmt = $pdo->prepare("SELECT sitename, city, state, country, ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat FROM sites WHERE sites.id=?");
+$stmt = $pdo->prepare("SELECT sitename, city, state, country, ST_X(ST_CENTROID(sites.geometry)) AS lon," . 
+		      "	ST_Y(ST_CENTROID(sites.geometry)) AS lat, " . 
+		      "	mat, map, soil, notes, soilnotes, greenhouse, time_zone, sand_pct, clay_pct" . 
+		      "	FROM sites WHERE sites.id=?"); 
+
 if (!$stmt->execute(array($siteid))) {
   die('Invalid query: ' . error_database());
 }
@@ -157,7 +161,7 @@ foreach($modeltypes as $type) {
         $x['files'][] = array("id"=>"Ameriflux." . $type, "name"=>"Use Ameriflux");
       }
       // check for NARR,this is not exact since it is a conical projection
-      if ($siteinfo['lat'] > 1 && $siteinfo['lat'] < 46 && $siteinfo['lon'] < -68 && $siteinfo['lon'] > -145) {
+      if ($siteinfo['lat'] > 1 && $siteinfo['lat'] < 85 && $siteinfo['lon'] < -68 && $siteinfo['lon'] > -145) {
         $x['files'][] = array("id"=>"NARR." . $type, "name"=>"Use NARR");
       }
       // CRUNCEP is global
@@ -185,6 +189,7 @@ $stmt->closeCursor();
 <html>
 <head>
 <title>PEcAn Parameter Selection</title>
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="sites.css" />
@@ -308,6 +313,17 @@ $stmt->closeCursor();
     // create the tooltip and its text
     var info="<b><?php echo $siteinfo['sitename']; ?></b><br />";
     info+="<?php echo $siteinfo['city']; ?>, <?php echo $siteinfo['state']; ?>, <?php echo $siteinfo['country']; ?><br/>";
+<?php
+  printInfo($siteinfo, 'mat', 'Mean Annual Temp');
+  printInfo($siteinfo, 'map', 'Mean Annual Precip');
+  printInfo($siteinfo, 'greenhouse', 'Greenhouse Study');
+  printInfo($siteinfo, 'time_zone', 'Local Time');
+  printInfo($siteinfo, 'sand_pct', 'Sand Pct');
+  printInfo($siteinfo, 'clay_pct', 'Clay Pct');
+  printInfo($siteinfo, 'soil', 'Soil');
+  printInfo($siteinfo, 'notes', 'Notes');
+  printInfo($siteinfo, 'soilnotes', 'Soil Notes');
+?>
     var infowindow = new google.maps.InfoWindow({content: info});
     infowindow.open(map, marker);
     validate();
@@ -453,4 +469,11 @@ foreach($inputs as $input) {
 
 <?php
 close_database();
+
+function printInfo($siteinfo, $var, $text) {
+  if (isset($siteinfo[$var])) {
+    $tmp = preg_replace('/\s\s+/', ' ', toXML($siteinfo[$var]));
+    echo "    info+= \"${text} : ${tmp}</br/>\";";
+  }
+}
 ?>

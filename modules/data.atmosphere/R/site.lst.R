@@ -10,8 +10,8 @@ site.lst <- function(site.id, con){
   
   site <- db.query(paste("SELECT * from SITES where id =", site.id),con)
   
-  if ("local_time" %in% names(site) && !is.na(site[["local_time"]])){
-    lst <- site$local_time
+  if ("time_zone" %in% names(site) && !is.na(site[["time_zone"]])){
+    lst <- site$time_zone
   } else {
     site <- db.query(paste("SELECT ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",site.id),con)
     require(geonames)

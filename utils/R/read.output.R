@@ -123,8 +123,6 @@ read.output <- function(runid, outdir, start.year=NA,
 
   if(!nofiles){
     for(ncfile in ncfiles) {
-      valid.nc <- tryl(nc_open(ncfile))
-      if(valid.nc){
         nc <- nc_open(ncfile)
         for(v in variables){
           if(v %in% c(names(nc$var),names(nc$dim))){
@@ -139,13 +137,12 @@ read.output <- function(runid, outdir, start.year=NA,
         }
         nc_close(nc)
       }
-    } 
   } else if (nofiles) {
     result <- lapply(variables, function(x) NA)
   }
   logger.info(variables, 
               "Mean:", lapply(result, function(x) signif(mean(x, na.rm = TRUE), 3)),
-              "Median:", lapply(result, function(x) signif(mean(x, na.rm = TRUE), 3)))
+              "Median:", lapply(result, function(x) signif(median(x, na.rm = TRUE), 3)))
   return(result)
 }
 

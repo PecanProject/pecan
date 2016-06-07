@@ -173,30 +173,38 @@ PG_OPT="${PG_OPT} -v ON_ERROR_ROLLBACK=on"
 # list of all tables, schema_migrations is ignored since that
 # will be imported during creaton
 
-# list of tables that are one to many relationships
+# list of tables that are part of an empty setup
 EMPTY_TABLES="formats machines mimetypes users"
 
-CLEAN_TABLES="citations covariates cultivars"
-CLEAN_TABLES="${CLEAN_TABLES} ensembles entities"
-CLEAN_TABLES="${CLEAN_TABLES} inputs likelihoods"
-CLEAN_TABLES="${CLEAN_TABLES} managements methods"
-CLEAN_TABLES="${CLEAN_TABLES} models"
-CLEAN_TABLES="${CLEAN_TABLES} modeltypes modeltypes_formats"
-CLEAN_TABLES="${CLEAN_TABLES} pfts posterior_samples posteriors"
-CLEAN_TABLES="${CLEAN_TABLES} priors runs sites"
-CLEAN_TABLES="${CLEAN_TABLES} species treatments"
+# list of all tables, schema_migrations is ignored since that
+# will be imported during creaton
+CLEAN_TABLES="citations covariates cultivars inputs"
+CLEAN_TABLES="${CLEAN_TABLES} ensembles entities dbfiles"
+CLEAN_TABLES="${CLEAN_TABLES} likelihoods managements"
+CLEAN_TABLES="${CLEAN_TABLES} methods models modeltypes"
+CLEAN_TABLES="${CLEAN_TABLES} pfts posteriors priors"
+CLEAN_TABLES="${CLEAN_TABLES} runs sites species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
-CLEAN_TABLES="${CLEAN_TABLES} traits yields"
-CLEAN_TABLES="${CLEAN_TABLES} dbfiles"
+CLEAN_TABLES="${CLEAN_TABLES} projects sitegroups"
 
-# list of tables that are many to many relationships
+# tables that have checks that need to be looked at.
+CHECK_TABLES="traits yields"
+
+# tables that have many to many relationships
+# Following tables that don't have id's yet and are not included
+#  - cultivars_pfts
+#  - trait_covariate_associations
 MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
+MANY_TABLES="${MANY_TABLES} current_posteriors"
 MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
-MANY_TABLES="${MANY_TABLES} managements_treatments pfts_priors"
-MANY_TABLES="${MANY_TABLES} pfts_species posteriors_ensembles"
+MANY_TABLES="${MANY_TABLES} managements_treatments modeltypes_formats"
+MANY_TABLES="${MANY_TABLES} pfts_priors pfts_species"
+MANY_TABLES="${MANY_TABLES} posterior_samples posteriors_ensembles"
+MANY_TABLES="${MANY_TABLES} sitegroups_sites"
 
 # tables that should NOT be dumped
 IGNORE_TABLES="sessions"
+SYSTEM_TABLES="schema_migrations spatial_ref_sys"
 
 # list where to download data from. This data should come
 # from the database. Same as mysite which should come from
@@ -211,10 +219,10 @@ if [ -z "${DUMPURL}" ]; then
   elif [ "${REMOTESITE}" == "5" ]; then  
     DUMPURL="http://tree.aos.wisc.edu:6480/sync/dump/bety.tar.gz"
   elif [ "${REMOTESITE}" == "6" ]; then
-    DUMPURL="http://file-server.igb.illinois.edu/~dlebauer/bety/bety.tar.gz"
+    DUMPURL="https://terraref.ncsa.illinois.edu/bety/dump/bety.tar.gz"
   else
     echo "Don't know where to get data for site ${REMOTESITE}"
-    exit 1
+    DUMPURL=""
   fi
 fi
 
@@ -235,62 +243,67 @@ DUMPDIR="/tmp/$$"
 mkdir "${DUMPDIR}"
 
 # download dump file and unpack
-curl -s -L -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
-if [ ! -s ${DUMPDIR}/dump.tar.gz ]; then
-  echo "File downloaded is 0 bytes, skipping"
-  exit -1
+if [ "${DUMPURL}" != "" ]; then
+  curl -s -L -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
+  if [ ! -s ${DUMPDIR}/dump.tar.gz ]; then
+    echo "File downloaded is 0 bytes, skipping"
+    DUMPURL=""
+  else
+    tar zxf "${DUMPDIR}/dump.tar.gz" -C "${DUMPDIR}" -m
+  fi
 fi
-tar zxf "${DUMPDIR}/dump.tar.gz" -C "${DUMPDIR}" -m
 
 # create database if need be, otherwise check version of schema
-if [ "${CREATE}" == "YES" ]; then
-  if [ "${QUIET}" != "YES" ]; then
-     printf "Loading %-25s : " "schema"
-  fi
-
-  # create empty public schema
-  psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "DROP SCHEMA public CASCADE;"
-  psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "CREATE SCHEMA public AUTHORIZATION ${OWNER};"
-  psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "CREATE EXTENSION postgis;"
-  psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "GRANT ALL ON ALL TABLES IN SCHEMA public TO ${OWNER};"
-
-  # load the schema
-  psql ${PG_OPT} -U ${OWNER} -q -d "${DATABASE}" < "${DUMPDIR}"/*.schema
-  if [ "${QUIET}" != "YES" ]; then
-    echo "CREATED SCHEMA"
-  fi
-
-  if [ "${QUIET}" != "YES" ]; then
-    printf "Loading  %-25s : " "schema_migrations"
-  fi
-  ADD=$( psql ${PG_OPT} ${PG_OWNER} -t -q -d "${DATABASE}" -c "\COPY schema_migrations FROM '${DUMPDIR}/schema_migrations.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8'); SELECT COUNT(*) FROM schema_migrations;" | tr -d ' ' )
-  if [ "${QUIET}" != "YES" ]; then
-    echo "ADDED ${ADD}"
-  fi
-else
-  if [ "${QUIET}" != "YES" ]; then
-    printf "Checking %-25s : " "schema"
-  fi
-
-  # find current schema version
-  VERSION=$( psql ${PG_OPT} ${PG_OWNER} -t -q -d "${DATABASE}" -c 'SELECT md5(array_agg(version)::text) FROM (SELECT version FROM schema_migrations ORDER BY version) as v;' | tr -d ' ' )
-
-  if [ ! -e "${DUMPDIR}/${VERSION}.schema" ]; then
-    echo "EXPECTED SCHEMA version ${VERSION}"
-    echo "Dump is from a different schema, please fix schema in database."
-    if [ "$KEEPTMP" == "YES" ]; then
-      echo "Files are in ${DUMPDIR}"
-    else
-      rm -rf "${DUMPDIR}"
+if [ "${DUMPURL}" != "" ]; then
+  if [ "${CREATE}" == "YES" ]; then
+    if [ "${QUIET}" != "YES" ]; then
+       printf "Loading %-25s : " "schema"
     fi
-    if [ -e ${LOG} ]; then
-      echo `date -u` $REMOTESITE 1 >> $LOG
-    fi
-    exit 1
-  fi
 
-  if [ "${QUIET}" != "YES" ]; then
-    echo "MATCHED SCHEMA version ${VERSION}"
+    # create empty public schema
+    psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "DROP SCHEMA public CASCADE;"
+    psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "CREATE SCHEMA public AUTHORIZATION ${OWNER};"
+    psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "CREATE EXTENSION postgis;"
+    psql ${PG_OPT} ${PG_USER} -q -d "${DATABASE}" -c "GRANT ALL ON ALL TABLES IN SCHEMA public TO ${OWNER};"
+
+    # load the schema
+    psql ${PG_OPT} -U ${OWNER} -q -d "${DATABASE}" < "${DUMPDIR}"/*.schema
+    if [ "${QUIET}" != "YES" ]; then
+      echo "CREATED SCHEMA"
+    fi
+
+    if [ "${QUIET}" != "YES" ]; then
+      printf "Loading  %-25s : " "schema_migrations"
+    fi
+    ADD=$( psql ${PG_OPT} ${PG_OWNER} -t -q -d "${DATABASE}" -c "\COPY schema_migrations FROM '${DUMPDIR}/schema_migrations.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8'); SELECT COUNT(*) FROM schema_migrations;" | tr -d ' ' )
+    if [ "${QUIET}" != "YES" ]; then
+      echo "ADDED ${ADD}"
+    fi
+  else
+    if [ "${QUIET}" != "YES" ]; then
+      printf "Checking %-25s : " "schema"
+    fi
+
+    # find current schema version
+    VERSION=$( psql ${PG_OPT} ${PG_OWNER} -t -q -d "${DATABASE}" -c 'SELECT md5(array_agg(version)::text) FROM (SELECT version FROM schema_migrations ORDER BY version) as v;' | tr -d ' ' )
+
+    if [ ! -e "${DUMPDIR}/${VERSION}.schema" ]; then
+      echo "EXPECTED SCHEMA version ${VERSION}"
+      echo "Dump is from a different schema, please fix schema in database."
+      if [ "$KEEPTMP" == "YES" ]; then
+        echo "Files are in ${DUMPDIR}"
+      else
+        rm -rf "${DUMPDIR}"
+      fi
+      if [ -e ${LOG} ]; then
+        echo `date -u` $REMOTESITE 1 >> $LOG
+      fi
+      exit 1
+    fi
+
+    if [ "${QUIET}" != "YES" ]; then
+      echo "MATCHED SCHEMA version ${VERSION}"
+    fi
   fi
 fi
 
@@ -344,34 +357,36 @@ trap '
 # 3) load new data
 # 4) set last inserted item in my range
 # 5) enable constraints on this table
-for T in ${EMPTY_TABLES} ${CLEAN_TABLES} ${MANY_TABLES}; do
+for T in ${EMPTY_TABLES} ${CLEAN_TABLES} ${CHECK_TABLES} ${MANY_TABLES}; do
   # start
   echo "BEGIN;" >&3
   echo "ALTER TABLE ${T} DISABLE TRIGGER ALL;" >&3
 
-  echo "SELECT count(*) FROM ${T} ${REM_WHERE};" >&3 && read DEL <&4
-  # TODO what is last index in range we are adding, this will give a better
-  #      indication if rows are added.
-  echo "DELETE FROM ${T} ${REM_WHERE};" >&3
-  echo "SELECT COUNT(*) FROM ${T};" >&3 && read START <&4
-  if [[ "${EMPTY}" == "NO" || ${EMPTY_TABLES} == *"$T"* ]]; then
-    if [ -f "${DUMPDIR}/${T}.csv" ]; then
-      echo "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')" >&3
+  if [ "${DUMPURL}" != "" ]; then
+    echo "SELECT count(*) FROM ${T} ${REM_WHERE};" >&3 && read DEL <&4
+    # TODO what is last index in range we are adding, this will give a better
+    #      indication if rows are added.
+    echo "DELETE FROM ${T} ${REM_WHERE};" >&3
+    echo "SELECT COUNT(*) FROM ${T};" >&3 && read START <&4
+    if [[ "${EMPTY}" == "NO" || ${EMPTY_TABLES} == *"$T"* ]]; then
+      if [ -f "${DUMPDIR}/${T}.csv" ]; then
+        echo "\COPY ${T} FROM '${DUMPDIR}/${T}.csv' WITH (DELIMITER '	',  NULL '\\N', ESCAPE '\\', FORMAT CSV, ENCODING 'UTF-8')" >&3
+      fi
     fi
-  fi
-  echo "SELECT COUNT(*) FROM ${T};" >&3 && read END <&4
-  ADD=$(( END - START ))
-  DIFF=$(( ADD - DEL ))
-  if [ "${QUIET}" != "YES" ]; then
-    if [ "$DEL" != "0" -o "$ADD" != "0" ]; then
-      if [ "$DIFF" != "0" ]; then
-        printf "Updated  %-25s : %6d (%+d)\n" "${T}" ${ADD} ${DIFF}
-      else
-        printf "Updated  %-25s : %6d\n" "${T}" ${ADD}
+    echo "SELECT COUNT(*) FROM ${T};" >&3 && read END <&4
+    ADD=$(( END - START ))
+    DIFF=$(( ADD - DEL ))
+    if [ "${QUIET}" != "YES" ]; then
+      if [ "$DEL" != "0" -o "$ADD" != "0" ]; then
+        if [ "$DIFF" != "0" ]; then
+          printf "Updated  %-25s : %6d (%+d)\n" "${T}" ${ADD} ${DIFF}
+        else
+          printf "Updated  %-25s : %6d\n" "${T}" ${ADD}
+        fi
       fi
     fi
   fi
-
+  
   # fix sequence number
   if [ "${FIXSEQUENCE}" == "YES" ]; then
     echo "SELECT last_value from ${T}_id_seq;" >&3 && read OLD <&4
@@ -412,7 +427,7 @@ if [ "${USERS}" == "YES" ]; then
   echo "SELECT count(id) FROM users WHERE login='carya';" >&3 && read RESULT <&4
   if [ ${RESULT} -eq 0 ]; then
     echo "SELECT nextval('users_id_seq');" >&3 && read ID <&4
-    echo "INSERT INTO users (login, name, email, crypted_password, salt, city, state_prov, postal_code, country, area, access_level, page_access_level, created_at, updated_at, apikey, remember_token, remember_token_expires_at) VALUES ('carya', 'carya', 'betydb+${ID}@gmail.com', 'df8428063fb28d75841d719e3447c3f416860bb7', 'carya', 'Urbana', 'IL', '61801', 'USA', '', 1, 1, NOW(), NOW(), '9999999999999999999999999999999999999999', NULL, NULL);" >&3
+    echo "INSERT INTO users (login, name, email, crypted_password, salt, city, state_prov, postal_code, country, area, access_level, page_access_level, created_at, updated_at, apikey, remember_token, remember_token_expires_at) VALUES ('carya', 'carya', 'betydb+${ID}@gmail.com', 'df8428063fb28d75841d719e3447c3f416860bb7', 'carya', 'Urbana', 'IL', '61801', 'USA', '', 1, 1, NOW(), NOW(), NULL, NULL, NULL);" >&3
     if [ "${QUIET}" != "YES" ]; then
       echo "Added carya with admin privileges with id=${ID}"
     fi
@@ -424,7 +439,7 @@ if [ "${USERS}" == "YES" ]; then
       echo "SELECT count(id) FROM users WHERE login='carya${f}${g}';" >&3 && read RESULT <&4
       if [ ${RESULT} -eq 0 ]; then
         echo "SELECT nextval('users_id_seq');" >&3 && read ID <&4
-        echo "INSERT INTO users (login, name, email, crypted_password, salt, city, state_prov, postal_code, country, area, access_level, page_access_level, created_at, updated_at, apikey, remember_token, remember_token_expires_at) VALUES ('carya${f}${g}', 'carya${f}${g}', 'betydb+${ID}@gmail.com', 'df8428063fb28d75841d719e3447c3f416860bb7', 'carya', 'Urbana', 'IL', '61801', 'USA', '', $f, $g, NOW(), NOW(), '9999999999999999999999999999999999999999', NULL, NULL);" >&3
+        echo "INSERT INTO users (login, name, email, crypted_password, salt, city, state_prov, postal_code, country, area, access_level, page_access_level, created_at, updated_at, apikey, remember_token, remember_token_expires_at) VALUES ('carya${f}${g}', 'carya${f}${g}', 'betydb+${ID}@gmail.com', 'df8428063fb28d75841d719e3447c3f416860bb7', 'carya', 'Urbana', 'IL', '61801', 'USA', '', $f, $g, NOW(), NOW(), NULL, NULL, NULL);" >&3
         if [ "${QUIET}" != "YES" ]; then
           echo "Added carya$f$g with access_level=$f and page_access_level=$g with id=${ID}"
         fi
@@ -439,7 +454,7 @@ if [ "${GUESTUSER}" == "YES" ]; then
   echo "SELECT count(id) FROM users WHERE login='guestuser';" >&3 && read RESULT <&4
   if [ ${RESULT} -eq 0 ]; then
     echo "SELECT nextval('users_id_seq');" >&3 && read ID <&4
-    echo "INSERT INTO users (login, name, email, crypted_password, salt, city, state_prov, postal_code, country, area, access_level, page_access_level, created_at, updated_at, apikey, remember_token, remember_token_expires_at) VALUES ('guestuser', 'guestuser', 'betydb+${ID}@gmail.com', '994363a949b6486fc7ea54bf40335127f5413318', 'bety', 'Urbana', 'IL', '61801', 'USA', '', 4, 4, NOW(), NOW(), '9999999999999999999999999999999999999999', NULL, NULL);" >&3
+    echo "INSERT INTO users (login, name, email, crypted_password, salt, city, state_prov, postal_code, country, area, access_level, page_access_level, created_at, updated_at, apikey, remember_token, remember_token_expires_at) VALUES ('guestuser', 'guestuser', 'betydb+${ID}@gmail.com', '994363a949b6486fc7ea54bf40335127f5413318', 'bety', 'Urbana', 'IL', '61801', 'USA', '', 4, 4, NOW(), NOW(), NULL, NULL, NULL);" >&3
     if [ "${QUIET}" != "YES" ]; then
       echo "Added guestuser with access_level=4 and page_access_level=4 with id=${ID}"
     fi
