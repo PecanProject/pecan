@@ -549,7 +549,7 @@ pda.get.model.output <- function(settings, run.id, inputs) {
     model <- as.data.frame(read.output(run.id, outdir = file.path(settings$run$host$outdir, run.id),
                                        start.year, end.year, variables = vars))
 
-    if(length(NEEm) == 0) {   # Probably indicates model failed entirely
+    if(length(model) == 0) {   # Probably indicates model failed entirely
       return(NA)
     }
     
