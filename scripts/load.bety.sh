@@ -246,8 +246,8 @@ mkdir "${DUMPDIR}"
 if [ "${DUMPURL}" != "" ]; then
   curl -s -L -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
   if [ ! -s ${DUMPDIR}/dump.tar.gz ]; then
-    echo "File downloaded is 0 bytes, skipping"
-    DUMPURL=""
+    echo "File downloaded is 0 bytes"
+    exit 1
   else
     tar zxf "${DUMPDIR}/dump.tar.gz" -C "${DUMPDIR}" -m
   fi
