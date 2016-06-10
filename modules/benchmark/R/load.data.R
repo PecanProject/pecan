@@ -12,6 +12,7 @@
 
 load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA, vars.used.index, time.row=NULL){
   
+  require(PEcAn.utils)
   require(PEcAn.benchmark)
   require(lubridate)
   require(udunits2)
