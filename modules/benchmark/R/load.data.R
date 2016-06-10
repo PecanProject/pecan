@@ -18,9 +18,9 @@ load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA, 
   require(udunits2)
   
   # Determine the function that should be used to load the data 
-  mimetype = sub("-","_",format$mimetype)
-  fcn1 <- paste0("load.",format$file_name)
-  fcn2 <- paste0("load.",format$mimetype)
+  mimetype = sub("-", "_", format$mimetype)
+  fcn1 <- paste0("load.", format$file_name)
+  fcn2 <- paste0("load.", mimetype)
   if(exists(fcn1)){
     fcn <- match.fun(fcn1)
   }else if(exists(fcn2)){
@@ -29,7 +29,7 @@ load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA, 
     logger.warn("no load data for current mimetype - converting using browndog")
   }
   
-  out <- fcn(data.path, format, site, format$vars$orig_name[c(vars.used.index,time.row)])
+  out <- fcn(data.path, format, site, format$vars$bety_name[c(vars.used.index,time.row)])
   
   # Convert loaded data to the same standard varialbe names and units
   
