@@ -10,6 +10,7 @@ dec_date,yr,
 dec_date_bnds,yr,
 DOC_flux,kg C m-2 s-1,
 Evap,kg m-2 s-1,
+FC,kg C m-2 s-1,FC
 Fdepth,m,
 Fire_flux,kg C m-2 s-1,
 fPAR,(-),
@@ -23,13 +24,13 @@ lon_bnds,degrees_east,
 LW_albedo,(-),
 LWdown,W/m2,
 Lwnet,W m-2,
-NEE,kg C m-2 s-1,
+NEE,kg C m-2 s-1,NEE
 NPP,kg C m-2 s-1,NPP_1_C
 poolname,(-),
 Psurf,Pa,
 Qair,kg kg-1,
 Qh,W m-2,
-Qle,W m-2,
+Qle,W m-2,LE
 Qs,kg m-2 s-1,
 Qsb,kg m-2 s-1,
 Rainf,kg m-2 s-1,
