@@ -7,7 +7,7 @@
 pro2s <- function(param, prospect.version = 5){
     prospect.version <- toupper(as.character(prospect.version))
     plist <- as.list(param)
-    if (prospect.version == "4"){
+    if (prospect.version == "4") {
         if(length(plist) != 7) stop("Wrong number of parameters")
         modname <- "pro42s"
     }
@@ -20,7 +20,7 @@ pro2s <- function(param, prospect.version = 5){
         modname <- "pro5b2s"
     }
     else stop("prospect.version must be 4, 5, or 5B") 
-    nw <- 2101
+    nw <- 2101  # Length of PROSPECT output vector (400-2500nm, in 1 nm increments)
     out.names <- c("alpha.c", "alpha.i",
                    "Tc", "Ti",
                    "Ac", "Ai")

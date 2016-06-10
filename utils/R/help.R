@@ -8,7 +8,7 @@
 #-------------------------------------------------------------------------------
 ##' R package to support PEcAn, the Predictive Ecosystem Analyzer
 ##'
-##' Instructions for the use of this package are provided in the project wiki \url{http://128.174.125.122/wiki/index.php/PECAn_Documentation:Use}.
+##' Instructions for the use of this package are provided in the project documentation \url{https://pecan.gitbooks.io/pecan-documentation/content/}.
 ##'
 ##' Project homepage: \url{pecanproject.org}
 ##'

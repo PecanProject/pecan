@@ -1,3 +1,15 @@
+!!!!!
+! This subroutine implements the full two-stream model. For 
+! information on the logic and theoretical basis for the calculations, 
+! see Pinty et al. (2006).
+!
+!  Pinty, B., Lavergne, T., Dickinson, R.E., Widlowski, J.-L., Gobron, 
+!  N., Verstraete, M.M., 2006. Simplifying the interaction of land 
+!  surfaces with radiation for relating remote sensing products to 
+!  climate models. J. Geophys. Res. 111, D02116. 
+!  doi:10.1029/2005JD005952
+!!!!!
+
 subroutine two_stream(rl, tl, solar_zenith, L, soil_moisture, &     ! Inputs
         alpha_c, alpha_i, Tc, Ti, Ac, Ai)       ! Outputs
 
@@ -11,18 +23,20 @@ subroutine two_stream(rl, tl, solar_zenith, L, soil_moisture, &     ! Inputs
 
     real*8, intent(out), dimension(nw) :: alpha_c, alpha_i, Tc, Ti, Ac, Ai
 
-    !! TODO: More intelligent treatment of zeta and zetastar
+    !! TODO: More intelligent treatment of zeta_c and zeta_i
     !! TODO: Scale leaf optics by forward/backward scattering efficiency (depends on leaf orientation function)
     !! TODO: Implement alternative G functions (as callable functions of mu)
 
     !! Fixed parameters
     real*8, parameter :: mui = 0.5d0 / 0.705d0      ! Isotropic cosine constant
     real*8, parameter :: G = 0.5d0                ! Structure factor for spherically (randomly) distributed leaf angles
-    real*8, parameter :: zeta = 0.67d0          ! Structure factor for collimated radiation (see Pinty 2006)
-    real*8, parameter :: zetastar_factor = 1.0d0    ! Structure factor scaling term for isotropic radiation (see Pinty 2006)
+    real*8, parameter :: zeta_c = 0.67d0          ! Structure factor for collimated radiation (see Pinty 2006)
+    real*8, parameter :: zeta_i_factor = 1.0d0    ! Structure factor scaling term for isotropic radiation (see Pinty 2006)
 
     !! Derived quantities
-    real*8 :: mu0, KL, zetastar
+    real*8 :: mu0                       ! Solar zenith angle (in radians)
+    real*8 :: KL                        ! Vegetation optical depth (K * L, where K = G / mu0) 
+    real*8 :: zeta_i                    ! Structure factor for isotropic radiation
     real*8 :: tau_c, tau_i, exptaui             ! Optical depths for collimated (c) and isotropic (i) radiation
     real*8, dimension(nw, 4) :: gammas_c, gammas_i      ! gamma terms for Meador & Weaver (1980) solutions
     real*8, dimension(nw) :: w0, rho_soil               ! Canopy albedo, soil reflectance
@@ -33,12 +47,12 @@ subroutine two_stream(rl, tl, solar_zenith, L, soil_moisture, &     ! Inputs
     real*8, dimension(nw) :: rhoxTiT
 
     mu0 = cos(solar_zenith)
-    zetastar = zeta * zetastar_factor
+    zeta_i = zeta_c * zeta_i_factor
 
     w0 = rl + tl
     KL = L * G / mu0
-    tau_c = KL * zeta
-    tau_i = KL * zetastar
+    tau_c = KL * zeta_c
+    tau_i = KL * zeta_i
 
     !! Calculate soil reflectance from soil moisture (simple Hapke model)
     rho_soil = hapke_soil(soil_moisture)

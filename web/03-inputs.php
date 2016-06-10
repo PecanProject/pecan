@@ -78,7 +78,7 @@ if (isset($_REQUEST['notes'])) {
 // get site information
 $stmt = $pdo->prepare("SELECT sitename, city, state, country, ST_X(ST_CENTROID(sites.geometry)) AS lon," . 
 		      "	ST_Y(ST_CENTROID(sites.geometry)) AS lat, " . 
-		      "	mat, map, soil, notes, soilnotes, greenhouse, local_time, sand_pct, clay_pct" . 
+		      "	mat, map, soil, notes, soilnotes, greenhouse, time_zone, sand_pct, clay_pct" . 
 		      "	FROM sites WHERE sites.id=?"); 
 
 if (!$stmt->execute(array($siteid))) {
@@ -189,6 +189,7 @@ $stmt->closeCursor();
 <html>
 <head>
 <title>PEcAn Parameter Selection</title>
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="sites.css" />
@@ -312,33 +313,17 @@ $stmt->closeCursor();
     // create the tooltip and its text
     var info="<b><?php echo $siteinfo['sitename']; ?></b><br />";
     info+="<?php echo $siteinfo['city']; ?>, <?php echo $siteinfo['state']; ?>, <?php echo $siteinfo['country']; ?><br/>";
-    if ("<?php echo $siteinfo['mat']; ?>") {
-    	info+="Mean Annual Temp: <?php echo $siteinfo['mat']; ?><br/>";
-    }
-    if ("<?php echo $siteinfo['map']; ?>") {
-    	info+="Mean Annual Precip: <?php echo $siteinfo['map']; ?><br/>";
-    }
-    if ("<?php echo $siteinfo['greenhouse']; ?>") {
-    	info+="Greenhouse Study: <?php echo $siteinfo['greenhouse']; ?><br/>";
-    }
-    if ("<?php echo $siteinfo['local_time']; ?>") {
-    	info+="Local Time: <?php echo $siteinfo['local_time']; ?><br/>";
-    }
-    if ("<?php echo $siteinfo['sand_pct']; ?>") {
-    	info+="Sand Pct: <?php echo $siteinfo['sand_pct']; ?><br/>";
-    }
-    if ("<?php echo $siteinfo['clay_pct']; ?>") {
-    	info+="Clay Pct: <?php echo $siteinfo['clay_pct']; ?><br/>";
-    }
-    if ("<?php echo $siteinfo['soil']; ?>") {
-    	info+="Soil: <?php echo $siteinfo['soil']; ?><br/>";
-    }
-    if ("<?php echo $siteinfo['notes']; ?>") {
-    	info+="Notes: <?php echo $siteinfo['notes']; ?><br/>";
-    }
-    if ("<?php echo $siteinfo['soilnotes']; ?>") {
-    	info+="Soil Notes: <?php echo $siteinfo['soilnotes']; ?><br/>";
-    }
+<?php
+  printInfo($siteinfo, 'mat', 'Mean Annual Temp');
+  printInfo($siteinfo, 'map', 'Mean Annual Precip');
+  printInfo($siteinfo, 'greenhouse', 'Greenhouse Study');
+  printInfo($siteinfo, 'time_zone', 'Local Time');
+  printInfo($siteinfo, 'sand_pct', 'Sand Pct');
+  printInfo($siteinfo, 'clay_pct', 'Clay Pct');
+  printInfo($siteinfo, 'soil', 'Soil');
+  printInfo($siteinfo, 'notes', 'Notes');
+  printInfo($siteinfo, 'soilnotes', 'Soil Notes');
+?>
     var infowindow = new google.maps.InfoWindow({content: info});
     infowindow.open(map, marker);
     validate();
@@ -484,4 +469,11 @@ foreach($inputs as $input) {
 
 <?php
 close_database();
+
+function printInfo($siteinfo, $var, $text) {
+  if (isset($siteinfo[$var])) {
+    $tmp = preg_replace('/\s\s+/', ' ', toXML($siteinfo[$var]));
+    echo "    info+= \"${text} : ${tmp}</br/>\";";
+  }
+}
 ?>

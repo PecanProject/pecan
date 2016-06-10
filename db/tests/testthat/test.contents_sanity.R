@@ -59,8 +59,8 @@ test_that("sites have id and geometry column",{
   sites <- db.query("select * from sites limit 1;", con = con)
   expect_true(all(c("id", "city", "state", "country", "mat", "map", "soil", "som", 
                     "notes", "soilnotes", "created_at", "updated_at", "sitename", 
-                    "greenhouse", "user_id", "local_time", "sand_pct", "clay_pct", 
-                    "geometry")
+                    "greenhouse", "user_id", "sand_pct", "clay_pct", 
+                    "geometry","time_zone")
                   %in% colnames(sites)))
 })
 

@@ -5,7 +5,7 @@ exec 3>&1
 exec &> "@OUTDIR@/logfile.txt"
 
 # host specific setup
-@HOSTSPECIFIC@
+@HOST_SETUP@
 
 # create output folder
 mkdir -p "@OUTDIR@"
@@ -35,6 +35,9 @@ fi
 cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 
 # run getdata to extract right variables
+
+# host specific teardown
+@HOST_TEARDOWN@
 
 # all done
 echo -e "LINKAGES FINISHED\nLogile is located at '@OUTDIR@/logfile.txt'" >&3

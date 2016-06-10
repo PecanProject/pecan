@@ -1,3 +1,9 @@
+!!!!!
+! This subroutine implements the simple Hapke soil reflectance model, 
+! which averages reflectance spectra of fully wet soil and fully dry 
+! soil weighted by a soil moisture coefficient between 0 and 1.
+!!!!!
+
 module mod_hapke_soil
 contains
 function hapke_soil(soil_moisture) result(rho_soil)

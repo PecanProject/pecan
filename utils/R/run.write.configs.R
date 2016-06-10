@@ -70,18 +70,6 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method="uniform
   ### Sensitivity Analysis
   if('sensitivity.analysis' %in% names(settings)) {
 
-    ### Get info on the quantiles to be run in the sensitivity analysis (if requested)
-    quantiles <- get.quantiles(settings$sensitivity.analysis$quantiles)
-    ### Get info on the years to run the sensitivity analysis (if requested)
-    sa.years <- data.frame(sa.start = settings$sensitivity.analysis$start.year,
-                          sa.end = settings$sensitivity.analysis$end.year)
-    
-    logger.info("\n Selected Quantiles: ", vecpaste(round(quantiles, 3)))
-    
-    ### Generate list of sample quantiles for SA run
-    sa.samples <-  get.sa.sample.list(pft       = trait.samples, 
-                                      env       = env.samples, 
-                                      quantiles = quantiles)
     ### Write out SA config files
     if(!exists("cnt")) {            
       cnt <- 0
