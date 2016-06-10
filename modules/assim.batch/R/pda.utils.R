@@ -555,21 +555,22 @@ pda.get.model.output <- function(settings, run.id, inputs) {
     
     # FC - NEE specific hack 2: change NEE back to FC only if "FC" was specified in the first place
     if(any(vars.used %in% c("FC"))) colnames(model)[colnames(model) %in% "NEE"] <- "FC"
+  
+  
+    ## Handle model time
+    # the model output time is in days since the beginning of the year
+    model.secs <- ud.convert(model$time, "days" ,"seconds")
+  
+    # seq.POSIXt returns class "POSIXct"
+    # the model output is since the beginning of the year but 'settings$run$start.date' may not be the first day of the year, using lubridate::floor_date
+    model$posix <- seq.POSIXt(from = lubridate::floor_date(as.POSIXct(settings$run$start.date), "year"), by = diff(model.secs)[1], length.out = length(model$time))
+  
+    dat <- align.data(model_full = model, obvs_full = inputs[[k]]$data, dat_vars = vars.used, 
+                      start_year = start.year, end_year = end.year)
+  
+    model.out[[k]] <- dat[,colnames(dat) %in% paste0(vars.used,".m"), drop = FALSE]
+    colnames(model.out[[k]]) <- vars.used
   }
-  
-  ## Handle model time
-  # the model output time is in days since the beginning of the year
-  model.secs <- ud.convert(model$time, "days" ,"seconds")
-  
-  # seq.POSIXt returns class "POSIXct"
-  # the model output is since the beginning of the year but 'settings$run$start.date' may not be the first day of the year, using lubridate::floor_date
-  model$posix <- seq.POSIXt(from = lubridate::floor_date(as.POSIXct(settings$run$start.date), "year"), by = diff(model.secs)[1], length.out = length(model$time))
-  
-  dat <- align.data(model_full = model, obvs_full = inputs[[k]]$data, dat_vars = vars.used, 
-                    start_year = start.year, end_year = end.year)
-  
-  model.out[[k]] <- dat[,colnames(dat) %in% paste0(vars.used,".m"), drop = FALSE]
-  colnames(model.out[[k]]) <- vars.used
   
   return(model.out)
 }
