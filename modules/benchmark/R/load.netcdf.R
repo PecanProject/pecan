@@ -1,29 +1,72 @@
-load.netcdf <- function(path,vars,units,newunits){
+##' @name load.x_netcdf
+##' @title load.x_netcdf
+##' @export
+##' @param data.path character vector or list
+##' @param format list
+##' @param start_year numeric
+##' @param end_year numeric
+##' @param site list
+##' @param vars character
+
+load.x_netcdf <- function(data.path, format, site, vars=NULL){
   
-  print(paste("Years: ",start.year," - ",end.year),sep="")
-  result <- list()
-  for(ncfile in ncfiles) {
-    nc <- nc_open(ncfile)
-    for(i in i:length(vars)){
-      v <- vars[i]
-      u1 <- units[i]
-      u2 <- newunits[i]
-      if(v %in% c(names(nc$var),names(nc$dim))){
-        newresult <- ncvar_get(nc, v)
-        newresult <- ud.convert(newresult, u1, u2)
-        result[[v]] <- abind(result[[v]], newresult)
-      } else if (!(v %in% names(nc$var))){
-        logger.warn(paste(v, "missing in", ncfile))
-      }
-    }
-    nc_close(nc)
+  data.path <- sapply(data.path, function(x) dir(dirname(x), basename(x), full.names = TRUE))
+  
+  library(ncdf4)
+  
+  nc <- lapply(data.path,nc_open)
+  
+  dat <- list()
+  for (ind in 1:length(vars)){
+    nc.dat <- lapply(nc, ncvar_get, vars[ind]) 
+    dat[vars[ind]] <- as.data.frame(unlist(nc.dat))
   }
   
-  print(paste("----- Mean ", variables, " : ",
-              lapply(result, mean, na.rm = TRUE)))
-  print(paste("----- Median ", variables, ": ",
-              lapply(result, median, na.rm = TRUE)))
+  dat <- as.matrix(as.data.frame(dat))
+  
+  # we need to replace filling/missing values with NA now 
+  # we don't want these values to go into unit conversion
+  dat[dat %in% as.numeric(format$na.strings)] <- NA
+  dat <- as.data.frame(dat)
+  colnames(dat) <- vars
+  
+  # deal with time
+  time.col <- list()
+  for(i in 1:length(nc)){
+    dims <- names(nc[[i]]$dim)
+    time.var <- grep(pattern = "time", dims, ignore.case = TRUE)
+    time.col[[i]] <- ncvar_get(nc[[i]], dims[time.var])
+    
+    
+    # for heterogenous formats
+    # try parsing ymd_hms
+    date.origin <- suppressWarnings(try(ymd_hms(ncatt_get(nc[[i]], dims[time.var])$units)))
+    
+    # parsing ymd
+    if(is.na(date.origin)){
+      date.origin <- ymd(ncatt_get(nc[[i]], dims[time.var])$units)
+    }
+    # throw error if can't parse time format  
+    if(is.na(date.origin)) logger.error("All time formats failed to parse. No formats found.")
+    
+    time.stamp.match <- gsub("UTC", "", date.origin)
+    t.units <- gsub(paste0(" since ", time.stamp.match, ".*"), "", ncatt_get(nc[[i]], dims[time.var])$units)
+    
+    
+    foo <- date.origin + ud.convert(time.col[[i]], t.units ,"seconds")
+    time.col[[i]] <- foo
+    
+  }
+  
+  # needed to use 'round' to 'mins' here, otherwise I end up with values like "2006-12-31 23:29:59" while reading Ameriflux for example
+  # however the model timesteps are more regular and the last value can be "2006-12-31 23:30:00"..
+  # this will result in cutting the last value in the align.data step
+  dat$posix <- round(as.POSIXct(as.vector(as.matrix(as.data.frame(time.col)))), "mins")
   
   
+  lapply(nc, nc_close)
+  
+  return(dat)
   
 }
+
