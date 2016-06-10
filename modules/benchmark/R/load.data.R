@@ -42,7 +42,7 @@ load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA, 
       colnames(out)[col] <- vars_used$pecan_name[i]
     }else{
       x <- as.matrix(out[col])
-      u1 = vars_used$orig_units[i]
+      u1 = vars_used$bety_units[i]
       u2 = vars_used$pecan_units[i]
       if(udunits2::ud.are.convertible(u1,u2)){
         print(sprintf("convert %s %s to %s %s", vars_used$bety_name[i], vars_used$bety_units[i],
