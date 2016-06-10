@@ -30,14 +30,12 @@ load.pda.data <- function(settings, con) {
     # I require that the user defines data.path in the settings as well, instead of using query.file.path
     # because 'data.path <- query.file.path(obvs.id, con)' might return an incomplete path 
     # which results in reading all the files in that particular directory in the load.x_netcdf step
-    # this may not be a problem but when there are hundreds of files in the folder and we want to read a few that would be unnecessary
     if(is.null(obvs.id) | is.null(data.path)) {            
       logger.error("Must provide both ID and PATH for all data assimilation inputs.")
     }
     
     format <- query.format.vars(obvs.id, con) 
     
-    #model_vars <- format$vars$pecan_name
     vars.used.index <- which(format$vars$bety_name %in% c(inputs[[i]]$variable.name))
     
     

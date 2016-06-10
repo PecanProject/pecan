@@ -61,7 +61,7 @@ load.x_netcdf <- function(data.path, format, site, vars=NULL){
   # needed to use 'round' to 'mins' here, otherwise I end up with values like "2006-12-31 23:29:59" while reading Ameriflux for example
   # however the model timesteps are more regular and the last value can be "2006-12-31 23:30:00"..
   # this will result in cutting the last value in the align.data step
-  dat$posix <- round(as.POSIXct(as.vector(as.matrix(as.data.frame(time.col)))), "mins")
+  dat$posix <- round(as.POSIXct(as.matrix(as.data.frame(time.col))), "mins")
   
   
   lapply(nc, nc_close)
