@@ -1,4 +1,5 @@
 #' @name invert.custom
+#'
 #' @title Bayesian inversion of a model
 #' @details Performs an inversion of an arbitrary model using a modified 
 #' Metropolis Hastings algorithm with block sampling. This may be slightly 
@@ -18,7 +19,7 @@
 #' output.
 #'
 #' param.mins Vector of minimum values for inversion parameters
-
+#'
 #' model The model to be inverted. This should be an R function that takes 
 #' `params` as input and returns one column of `observed` (nrows should be the 
 #' same). Constants should be implicitly included here.
@@ -36,6 +37,7 @@
 #' risks getting caught in a local minimum.  Default=FALSE
 #' @param quiet Do not show progress bar. Default=FALSE
 invert.custom <- function(observed, invert.options, quiet=FALSE){
+    library(MASS)
     observed <- as.matrix(observed)
     nspec <- ncol(observed)
     nwl <- nrow(observed)
@@ -118,7 +120,7 @@ invert.custom <- function(observed, invert.options, quiet=FALSE){
         rsd <- 1/sqrt(rinv)
         results[ng,npars+1] <- rsd
     }
-    close(pb)
+    if(!quiet) close(pb)
     return(results)
 }
 

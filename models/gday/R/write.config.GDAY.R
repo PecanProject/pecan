@@ -41,31 +41,27 @@ write.config.GDAY <- function(defaults, trait.values, settings, run.id){
   } else {
     jobsh <- readLines(con=system.file("template.job", package = "PEcAn.GDAY"),n=-1)
   }
-  #-------------------------------------------------------------------------
-  paramfile <- readLines(con=system.file("template.params", package = "PEcAn.GDAY"),n=-1)
-  paramfile <- gsub('@cfg_fnameval@',paste("paramfile.txt")), paramfile)
-  metpath<-(paste(),
-            strptime(start_date, tz ="GMT"))
-  metfilename<- file.path()
-  paramfile <- gsub('@met_fnameval@',metfilepath, paramfile)
-  paramfile <- gsub('@out_fnameval@',paste("paramfile.txt")), paramfile)
-  paramfile <- gsub('@out_param_fnameval@',paste("paramfile.txt")), paramfile)
 
-
-
-  # create host specific settings
-  hostspecific <- ""
-  if (!is.null(settings$model$job.sh)) {
-    hostspecific <- paste(hostspecific, sep="\n", paste(settings$model$job.sh,
-                          collapse="\n"))
+  # create host specific setttings
+  hostsetup <- ""
+  if (!is.null(settings$model$prerun)) {
+    hostsetup <- paste(hostsetup, sep="\n", paste(settings$model$prerun, collapse="\n"))
   }
-  if (!is.null(settings$run$host$job.sh)) {
-    hostspecific <- paste(hostspecific, sep="\n",
-                          paste(settings$run$host$job.sh, collapse="\n"))
+  if (!is.null(settings$run$host$prerun)) {
+    hostsetup <- paste(hostsetup, sep="\n", paste(settings$run$host$prerun, collapse="\n"))
   }
-  
+
+  hostteardown <- ""
+  if (!is.null(settings$model$postrun)) {
+    hostteardown <- paste(hostteardown, sep="\n", paste(settings$model$postrun, collapse="\n"))
+  }
+  if (!is.null(settings$run$host$postrun)) {
+    hostteardown <- paste(hostteardown, sep="\n", paste(settings$run$host$postrun, collapse="\n"))
+  }
+
   # create job.sh
-  jobsh <- gsub('@HOSTSPECIFIC@', hostspecific, jobsh)
+  jobsh <- gsub('@HOST_SETUP@', hostsetup, jobsh)
+  jobsh <- gsub('@HOST_TEARDOWN@', hostteardown, jobsh)
   
   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)

@@ -29,10 +29,13 @@ $earth = 1118;
 
 // some constants for met formats, this is a list of all models that
 // implement a CF to model code, with the appropriate output format.
-$met = array('CF'     => 33, 
-             'SIPNET' => 24,
-             'ED2'    => 12,
-             'DALEC'  => 1000000002);
+$met = array('ED2'      => 12,
+             'SIPNET'   => 24,
+             'CF'       => 33,
+             'DALEC'    => 1000000002,
+             'LINKAGES' => 1000000003,
+             'MAESPA'   => 1000000016,
+             'LPJGUESS' => 1000000017);
 
 $host = isset($_REQUEST['host']) ? $_REQUEST['host'] : "";
 $model = isset($_REQUEST['model']) ? $_REQUEST['model'] : "";
