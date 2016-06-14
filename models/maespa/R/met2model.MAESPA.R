@@ -109,7 +109,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
      RAD <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") #W m-2
      PAR <- try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air")) #mol m-2 s-1
      TAIR <- ncvar_get(nc,"air_temperature") # K
-     QAIR <- ncvar_get(nc,"specific_humidity"))# 1
+     QAIR <- ncvar_get(nc,"specific_humidity")# 1
      PPT <- ncvar_get(nc,"precipitation_flux") #kg m-2 s-1
      CA <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air")) #mol/mol
      PRESS <- ncvar_get(nc,"air_pressure")# Pa
