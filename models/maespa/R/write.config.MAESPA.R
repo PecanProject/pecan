@@ -19,7 +19,6 @@
 ##' @return configuration file for MAESPA for given run
 ##' @export
 ##' @author Tony Gardella
-<<<<<<< HEAD
 ##-------------------------------------------------------------------------------------------------#
 write.config.MAESPA <- function(defaults, trait.values, settings, run.id){
 
@@ -81,7 +80,6 @@ write.config.MAESPA <- function(defaults, trait.values, settings, run.id){
   
 }
 
-=======
 ## -------------------------------------------------------------------------------------------------#
 write.config.MAESPA <- function(defaults, trait.values, settings, run.id) {
     
@@ -207,4 +205,3 @@ write.config.MAESPA <- function(defaults, trait.values, settings, run.id) {
     
     
 }  ### END SCRIPT 
->>>>>>> maespa_branch
