@@ -13,11 +13,11 @@
 
 download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, overwrite=FALSE, verbose=FALSE, ...){  
   require(PEcAn.utils)
-  require(RCurl)
-  require(XML)
-  require(lubridate)
-  require(ncdf4)
-  require(stringr)
+  library(RCurl)
+  library(XML)
+  library(lubridate)
+  library(ncdf4)
+  library(stringr)
   
   # Date stuff
   start_date <- as.POSIXlt(start_date, tz = "GMT")
