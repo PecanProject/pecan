@@ -14,6 +14,7 @@
 download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, overwrite=FALSE, verbose=FALSE, ...){  
   require(PEcAn.utils)
   require(RCurl)
+  require(XML)
   require(lubridate)
   require(ncdf4)
   require(stringr)
