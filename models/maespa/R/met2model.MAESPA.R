@@ -137,32 +137,29 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
        rm(CA)
        defaultCO2 = 400 #400 is estimation of atmospheric CO2 in ppm)
      } else {
-       defaultCO2 = 400
-     } #400 is estimation of atmospheric CO2 in ppm))
+       CA <- CA*1e6
+     } 
      
      nc_close(nc)
    } else {
      print("Skipping to next year")
      next
    }
-   tmp <- rbind(TAIR,PPT,RAD,PRESS,PAR,RH)
+   tmp <- cbind(TAIR,PPT,RAD,PRESS,PAR,RH,CA)
    
    if (is.null(out)) {
      out = tmp
    } else {
-     out = cbind(out,tmp)
+     out = rbind(out,tmp)
    }
    
  }### end loop over years
  
+ if(!is.numeric(out[,"CA"])){
+   out[,"CA"] <- NULL
+ }
  
- #Get names for columns of variable table
- columnnames <-  paste0(rownames(tmp),collapse = "'     '")
- #Get number of variables
- numbercolumns <- nrow(out)
- #turn into matrix
- out <- matrix(out,ncol = numbercolumns, byrow=TRUE)
- 
+ columnnames <- colnames(out)
 
  #Set number of timesteps in a day(timetsep of input data)
  timesteps <- tstep
