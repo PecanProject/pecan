@@ -22,6 +22,7 @@ as input and return a single value -- the sum of their log-densities -- as
 output.
 
 param.mins Vector of minimum values for inversion parameters
+
 model The model to be inverted. This should be an R function that takes 
 `params` as input and returns one column of `observed` (nrows should be the 
 same). Constants should be implicitly included here.

@@ -740,36 +740,29 @@ pda.settings.bt <- function(settings){
   sampler = settings$assim.batch$bt.settings$sampler 
   
   iterations = as.numeric(settings$assim.batch$bt.settings$iter)
-  optimize = settings$assim.batch$bt.settings$optimize
-  if(!is.null(settings$assim.batch$bt.settings$consoleUpdates)) consoleUpdates = as.numeric(settings$assim.batch$bt.settings$consoleUpdates) else consoleUpdates = NULL
-  parallel = settings$assim.batch$bt.settings$parallel
-  adapt = settings$assim.batch$bt.settings$adapt
-  if(!is.null(settings$assim.batch$bt.settings$adaptationInverval)) adaptationInverval = as.numeric(settings$assim.batch$bt.settings$adaptationInverval) else adaptationInverval=NULL
-  if(!is.null(settings$assim.batch$bt.settings$adaptationNotBefore)) adaptationNotBefore = as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore) else adaptationNotBefore=NULL
-  initialParticles=list("prior",as.numeric(settings$assim.batch$bt.settings$n.initialParticles))
-  if(!is.null(settings$assim.batch$bt.settings$DRlevels)) DRlevels = as.numeric(settings$assim.batch$bt.settings$DRlevels) else DRlevels=1
-  proposalScaling = settings$assim.batch$bt.settings$proposalScaling
-  adaptationDepth = settings$assim.batch$bt.settings$adaptationDepth
-  temperingFunction = settings$assim.batch$bt.settings$temperingFunction
-  if(!is.null(settings$assim.batch$bt.settings$gibbsProbabilities)) gibbsProbabilities = as.numeric(unlist(settings$assim.batch$bt.settings$gibbsProbabilities)) else gibbsProbabilities = NULL
+  optimize = ifelse(!is.null(settings$assim.batch$bt.settings$optimize), settings$assim.batch$bt.settings$optimize, TRUE)
+  consoleUpdates = ifelse(!is.null(settings$assim.batch$bt.settings$consoleUpdates), as.numeric(settings$assim.batch$bt.settings$consoleUpdates), max(round(iterations/10),100))
+  adapt = ifelse(!is.null(settings$assim.batch$bt.settings$adapt), settings$assim.batch$bt.settings$adapt, TRUE)
+  adaptationInverval = ifelse(!is.null(settings$assim.batch$bt.settings$adaptationInverval), as.numeric(settings$assim.batch$bt.settings$adaptationInverval), max(round(iterations/100*5),100))
+  adaptationNotBefore = ifelse(!is.null(settings$assim.batch$bt.settings$adaptationNotBefore), as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore), adaptationInverval)
+  DRlevels = ifelse(!is.null(settings$assim.batch$bt.settings$DRlevels), as.numeric(settings$assim.batch$bt.settings$DRlevels), 1)
+  if(!is.null(settings$assim.batch$bt.settings$gibbsProbabilities)){
+    gibbsProbabilities = as.numeric(unlist(settings$assim.batch$bt.settings$gibbsProbabilities)) 
+  }else {
+    gibbsProbabilities = NULL
+  }
   
-## Generate proposal  
-# TODO: pass jump variances to proposalGenerator from settings
-# sqrt(unlist(settings$assim.batch$jump$jvar))
-# proposalGenerator <- createProposalGenerator(covariance = sqrt(c(settings$assim.batch$jump$jvar,0.000005)), message = T)
-
   
   if(sampler == "Metropolis") {
-    bt.settings <- list(iterations = iterations, adapt = adapt, DRlevels = DRlevels, gibbsProbabilities = gibbsProbabilities, 
-                     temperingFunction = temperingFunction, optimize = optimize)
+    bt.settings <- list(iterations = iterations, optimize = optimize, DRlevels = DRlevels, adapt = adapt, 
+                        adaptationInverval = adaptationInverval, adaptationNotBefore = adaptationNotBefore,
+                        gibbsProbabilities = gibbsProbabilities, consoleUpdates = consoleUpdates)
   } else if(sampler %in% c("AM", "M", "DRAM", "DR")) {
-    bt.settings = list(iterations = iterations, startValue = "prior")
-  } else if(sampler %in% c("DE", "DEzs")) {
+    bt.settings <- list(iterations = iterations, startValue = "prior")
+  } else if(sampler %in% c("DE", "DEzs","DREAM", "DREAMzs")) {
     bt.settings <- list(iterations = iterations)
   } else if(sampler == "SMC") {
-    bt.settings <- list(initialParticles = initialParticles, iterations= iterations)
-  } else if(sampler %in% c("DREAM", "DREAMzs")) {
-    bt.settings <- list(ndraw=iterations*n.param)
+    bt.settings <- list(initialParticles = list("prior", iterations))
   } else {
     logger.error(paste0(sampler, " sampler not found!"))
   }
