@@ -1,0 +1,63 @@
+Tumbarumba example water balance
+
+&watcontrol
+keepwet = 0
+simtsoil = 1
+reassignrain = 0
+retfunction = 1
+equaluptake = 0
+usemeaset = 0
+usemeassw = 0
+/
+
+&wattfall
+rutterb = 3.7
+rutterd = 0.002
+maxstorage = 0.5
+throughfall = 0.7
+/
+
+&watinfilt
+expinf = 0.25
+/
+
+&rootpars
+rootrad = 0.0001
+rootdens = 0.5e6
+rootmasstot = 1000
+nrootlayer = 25
+fracroot = 0.072783 0.067486 0.062574 0.161698 0.128899 0.102752 0.08191 0.065295 0.05205 0.041492 0.033076 0.026367 0.021018 0.016755 0.013356 0.010647 0.008487 0.006766 0.005393 0.004299 0.003427 0.002732 0.002178 0.001736 0.001384 
+/
+
+&plantpars
+minleafwp = -3
+plantk = 3.0
+/
+
+Variable soil water retention functions with depth.
+&soilret
+bpar = 6.087 6.203 6.319 6.668 7.017 7.366 7.715 8.063 8.412
+psie = -0.000529 -0.000556 -0.000583 -0.000664 -0.000744 -0.000825 -0.000905 -0.000986 -0.001066
+ksat = 6.8
+/
+
+&laypars
+nlayer = 50
+laythick = 0.05 0.05 0.05 0.15
+porefrac = 0.67 0.66 0.65 0.63 0.61 0.58 0.56 0.54 0.52
+fracorganic = 1 0.1805 0.0782 0.0495 0.0335 0.0277 0.0210 0.0154 0.0110 0.0077 0.0056
+/
+
+&initpars
+initwater = 0.4
+soiltemp = 15
+/
+
+&soiletpars
+drythickmin = 0.001
+tortpar = 0.66
+/
+
+
+
+

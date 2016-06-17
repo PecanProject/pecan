@@ -17,6 +17,6 @@ A list containing model outputs extracted to correspond to each observational
 Get Model Output for PDA
 }
 \author{
-Ryan Kelly
+Ryan Kelly, Istem Fer
 }
 
