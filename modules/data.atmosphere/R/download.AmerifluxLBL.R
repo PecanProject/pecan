@@ -13,13 +13,6 @@
 ##' 
 ##' @author Ankur Desai, based on download.Ameriflux.R by Josh Mantooth, Rob Kooper
 
-# lookup the site based on the site_id
-download.AmerifluxLBL.site <- function(site_id) {
-  sites <- read.csv(system.file("data/FLUXNET.sitemap.csv",package="PEcAn.data.atmosphere"),
-                    stringsAsFactors=FALSE)
-  sites$FLUX.id[which(sites$site.id == site_id)]
-}
-
 download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) {
   # get start/end year code works on whole years only
   
@@ -43,53 +36,81 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, ove
   
   #need to query to get full file name #this is Ameriflux version
   url <- "http://wile.lbl.gov:8080/AmeriFlux/DataDownload.svc/datafileURLs"
-  json_query <- paste0('{"username":"AnkurDesai","siteList":["',site,'"],"intendedUse":"Research - Land model/Earth system model","description":"testing REST download"}')
+  json_query <- paste0('{"username":"AnkurDesai","siteList":["',site,'"],"intendedUse":"Research - Land model/Earth system model","description":"PEcAn download"}')
   result <- POST(url, body = json_query, encode = "json", add_headers("Content-Type" = "application/json"))
   link <- content(result)
   ftplink <- link$dataURLsList[[1]]$URL
   
   #test to see that we got back a FTP
   if (is.null(ftplink)) {    logger.severe("Could not get information about", site, ".",
-                                         "Is this an Fluxnet2015 site?")}
+                                         "Is this an AmerifluxLBL site?")}
 
-
-  #copy file name to outputfile
-  #set up outputfile stuff
-  #download the FTP to outfolder
-  #unzip the file
+   
+  #get zip and csv filenames
+  outfname <- strsplit(ftplink,'/')
+  outfname <- outfname[[1]][length(outfname[[1]])]
   
-  # find all links we need based on the years and download them
-  rows <- end_year - start_year + 1
+  endname <- strsplit(outfname,'_')
+  endname <- endname[[1]][length(endname[[1]])]
+  endname <- substr(endname,1,nchar(endname)-3)
+  
+  outcsvname <- paste0(substr(outfname,1,15),'_HH_',endname,'csv')
+  output_zip_file <- file.path(outfolder, outfname)
+  output_csv_file <- file.path(outfolder, outcsvname)
+  
+  #if CSV file exists, then skip extraction
+  if (!file.exists(output_csv_file) || overwrite) {
+    #if zip file downloaded, then skip ftp
+    if (!file.exists(output_zip_file) || overwrite) {
+      download.file(ftplink,output_zip_file)
+    } else {   logger.debug("File '", output_zip_file, "' already exists, skipping download.")
+    }
+    #if FTP failed to output a file, then error
+    if (!file.exists(output_zip_file)) {
+      logger.severe("FTP did not download ", output_zip_file, " from ",ftplink)
+    } else {
+      #extract the half hourly file only
+      unzip(output_zip_file,outcsvname)
+      #make sure a CSV file output
+      if(!file.exists(output_csv_file)) {
+        logger.severe("ZIP file ",output_zip_file," did not contain CSV file ",outcsvname)
+      }
+    }
+  } else {   logger.debug("File '", output_csv_file, "' already exists, skipping extraction.")
+  }
+  
+  #get start and end year of data from file
+  firstline <- system(paste0("head -4 ",output_csv_file),intern=TRUE)
+  firstline <- firstline[4]
+  lastline <- system(paste0("tail -1 ",output_csv_file),intern=TRUE)
+  
+  firstdate_st <- paste0(substr(firstline,1,4),"-",substr(firstline,5,6),"-",substr(firstline,7,8)," ",substr(firstline,9,10),":",substr(firstline,11,12))
+  firstdate <- as.POSIXlt(firstdate_st)
+  lastdate_st <- paste0(substr(lastline,1,4),"-",substr(lastline,5,6),"-",substr(lastline,7,8)," ",substr(lastline,9,10),":",substr(lastline,11,12))
+  lastdate <- as.POSIXlt(lastdate_st)
+  
+  syear <- year(firstdate)
+  eyear <- year(lastdate)
+
+  if (start_year>eyear) {logger.severe("Start_Year", start_year, "exceeds end of record ",eyear," for ",site)}
+  if (end_year<syear) {logger.severe("End_Year", end_year, "precedes start of record ",syear," for ",site)}
+  
+  rows <- 1  
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
                         startdate=character(rows), enddate=character(rows),
                         dbfile.name = site,
                         stringsAsFactors = FALSE)
-  for(year in start_year:end_year) {
-    outputfile <- file.path(outfolder, paste(site, year, "nc", sep="."))
-    
-    # create array with results
-    row <- year - start_year + 1
-    results$file[row] <- outputfile
-    results$host[row] <- fqdn()
-    results$startdate[row] <- paste0(year,"-01-01 00:00:00")
-    results$enddate[row] <- paste0(year,"-12-31 23:59:59")
-    results$mimetype[row] <- 'application/x-netcdf'
-    results$formatname[row] <- 'AmeriFlux.level2.h.nc'
-    
-    # see if file exists
-    if (file.exists(outputfile) && !overwrite) {
-      logger.debug("File '", outputfile, "' already exists, skipping to next file.")
-      next
-    }
-    
-    file <- tail(as.character(links[grep(paste0('_', year, '_.*.nc'), links)]), n=1)
-    if (length(file) == 0) {
-      logger.severe("Could not download data for", site, "for the year", year)
-    }
-    download.file(paste0(baseurl, file), outputfile)
-  }
+  
+  row <- 1
+  results$file[row] <- output_csv_file
+  results$host[row] <- fqdn()
+  results$startdate[row] <- firstdate_st
+  results$enddate[row] <- lastedate_st
+  results$mimetype[row] <- 'test/csv'
+  results$formatname[row] <- 'AMERIFLUX_BASE_HH'
   
   # return list of files downloaded
   invisible(results)
+
 }
