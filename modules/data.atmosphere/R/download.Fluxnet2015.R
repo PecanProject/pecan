@@ -13,13 +13,6 @@
 ##' 
 ##' @author Ankur Desai, based on download.Ameriflux.R by Josh Mantooth, Rob Kooper
 
-# lookup the site based on the site_id
-download.Fluxnet2015.site <- function(site_id) {
-  sites <- read.csv(system.file("data/FLUXNET.sitemap.csv",package="PEcAn.data.atmosphere"),
-                    stringsAsFactors=FALSE)
-  sites$FLUX.id[which(sites$site.id == site_id)]
-}
-
 download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) {
   # get start/end year code works on whole years only
   
