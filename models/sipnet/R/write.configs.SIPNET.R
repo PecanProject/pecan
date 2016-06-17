@@ -75,6 +75,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   jobsh <- gsub('@END_DATE@', settings$run$end.date, jobsh)
   
   jobsh <- gsub('@BINARY@', settings$model$binary, jobsh)
+  jobsh <- gsub('@REVISION@', settings$model$revision, jobsh)
   
   if(is.null(settings$model$delete.raw)) settings$model$delete.raw <- FALSE
   jobsh <- gsub('@DELETE.RAW@', settings$model$delete.raw, jobsh)
