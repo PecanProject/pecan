@@ -4,23 +4,49 @@ library(RPostgreSQL)
 library(dplyr)
 library(lubridate)
 
-bety <-  src_postgres(dbname = "bety", host = "localhost",
-                      user = "bety", password = "bety")
-
 options(scipen=12)
+
+betyConnect <- function(php.config="../../web/config.php") {
+  ## Read PHP config file for webserver
+  config = scan(php.config,what="character",sep="\n")
+  config = config[grep("^\\$",config)]  ## find lines that begin with $ (variables)
+  config = sub("$","",config,fixed = TRUE) ## remove $
+  config = sub(";","",config,fixed = TRUE) ## remove ;
+  config = sub("false","FALSE",config,fixed = TRUE) ##  Boolean capitalization
+  config = sub("true","TRUE",config,fixed = TRUE) ##  Boolean capitalization
+  config = config[-grep("$",config,fixed=TRUE)] ## lines with variable references fail
+  config = config[-grep("exec",config,fixed=TRUE)] ## lines 'exec' fail
+  config.list = eval(parse(text=paste('list(', paste0(config[1:14],collapse=","), ')')))
+
+  ## Database connection
+  src_postgres(dbname   = config.list$db_bety_database,
+               host     = config.list$db_bety_hostname,
+               user     = config.list$db_bety_username,
+               password = config.list$db_bety_password)
+}
+
+fancy_scientific <- function(l) {
+  # turn in to character string in scientific notation
+  l <- format(l, scientific = TRUE)
+  # quote the part before the exponent to keep all the digits
+  l <- gsub("^(.*)e", "'\\1'e", l)
+  # turn the 'e+' into plotmath format
+  l <- gsub("e", "%*%10^", l)
+  # keep 0 as 0
+  l <- gsub("0e\\+00","0", l)
+  # return this as an expression
+  parse(text=l)
+}
 
 dplyr.count <- function(df) {
   collect(tally(df))[['n']]
 }
 
-ncdays2date <- function(time) {
-  basetime.string <- time$units
-  base.date <- parse_date_time(basetime.string, c("ymd_hms", "ymd_h", "ymd"))
-  base.units <- strsplit(basetime.string, " since ")[[1]][1]
-  time.idx <- c(min(nc$dim$time$vals), max(nc$dim$time$vals))
-  time.idx <- ud.convert(time.idx, basetime.string, paste("days since ", base.date))
-  time.idx <- ud.convert(time.idx, 'days', 'seconds')
-  as.POSIXct.numeric(time.idx, origin = base.date, tz = "UTC")
+ncdays2date <- function(time, unit) {
+  date <- parse_date_time(unit, c("ymd_hms", "ymd_h", "ymd"))
+  days <- ud.convert(time, unit, paste("days since ", date))
+  seconds <- ud.convert(days, 'days', 'seconds')
+  as.POSIXct.numeric(seconds, origin = date, tz = "UTC")
 }
 
 db.hostInfo <- function(bety) {
