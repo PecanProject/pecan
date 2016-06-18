@@ -1,10 +1,15 @@
 library(shiny)
 library(ncdf4)
+library(ggplot2)
 
 source("helper.R")
 
 # Define server logic
 server <- shinyServer(function(input, output, session) {
+  bety <- betyConnect()
+
+  ranges <- reactiveValues(x = NULL, y = NULL)
+
   print("RESTART")
   # set the workflow id(s)
   query <- isolate(parseQueryString(session$clientData$url_search))
@@ -32,8 +37,6 @@ server <- shinyServer(function(input, output, session) {
     workflow_id <- isolate(input$workflow_id)
     run_id <- input$run_id
     var_names <- list()
-    start_date <- NA
-    end_date <- NA
     if (workflow_id != "" && run_id != "") {
       workflow <- collect(workflow(bety, workflow_id))
       if(nrow(workflow) > 0) {
@@ -42,16 +45,7 @@ server <- shinyServer(function(input, output, session) {
           files <- list.files(outputfolder, "*.nc$", full.names=TRUE)
           for(file in files) {
             nc <- nc_open(file)
-            # get variable names
             lapply(nc$var, function(x) if(x$name != "") var_names[[x$longname]] <<- x$name)
-
-            # get start/end date
-            dates <- ncdays2date(nc$dim$time)
-            date.min <- min(dates)
-            date.max <- max(dates)
-            if (is.na(start_date) || date.min < start_date) start_date = date.min
-            if (is.na(end_date) || date.max > end_date) end_date = date.max
-
             nc_close(nc)
           }
         }
@@ -59,45 +53,63 @@ server <- shinyServer(function(input, output, session) {
     }
     if (length(var_names) == 0) {
       var_names <- list("")
-    # } else {
-    #   var_names <- sort(var_names)
     }
     updateSelectizeInput(session, "variable_name", choices=var_names)
-    updateDateRangeInput(session, "dates", start=start_date, end=end_date, min=start_date, max=end_date)
   })
 
   observe({
+    ignore <- input$variable_name
+    ranges$x <- NULL
+    ranges$y <- NULL
+  })
+
+  observeEvent(input$plot_dblclick, {
+    brush <- input$plot_brush
+    if (!is.null(brush)) {
+      ranges$x <- as.POSIXct(c(brush$xmin, brush$xmax), origin = "1970-01-01", tz = "UTC")
+      ranges$y <- c(brush$ymin, brush$ymax)
+    } else {
+      ranges$x <- NULL
+      ranges$y <- NULL
+    }
+  })
+
+  output$outputPlot <- renderPlot({
     workflow_id <- isolate(input$workflow_id)
     run_id <- isolate(input$run_id)
     var_name <- input$variable_name
-    dates <- input$dates
     if (workflow_id != "" && run_id != "" && var_name != "") {
       workflow <- collect(workflow(bety, workflow_id))
       if(nrow(workflow) > 0) {
         outputfolder <- file.path(workflow$folder, 'out', run_id)
         files <- list.files(outputfolder, "*.nc$", full.names=TRUE)
-
-        # for(file in files) {
-        #   nc <- nc_open(file)
-        #
-        #   nc_close(nc)
-        # }
+        dates <- NA
+        vals <- NA
+        title <- var_name
+        ylab <- ""
+        for(file in files) {
+          nc <- nc_open(file)
+          var <- ncatt_get(nc, var_name)
+          title <- var$long_name
+          ylab <- var$units
+          x <- ncdays2date(ncvar_get(nc, 'time'), ncatt_get(nc, 'time'))
+          y <- ncvar_get(nc, var_name)
+          b <- !is.na(x) & !is.na(y)
+          dates <- if(is.na(dates)) x[b] else c(dates, x[b])
+          vals <- if(is.na(vals)) y[b] else c(vals, y[b])
+          nc_close(nc)
+        }
+        xlab <- if (is.null(ranges$x)) "Time" else paste(ranges$x, collapse=" - ")
+        # plot result
+        print(ranges$x)
+        ggplot(data.frame(dates, vals), aes(x=dates, y=vals)) +
+          geom_point() +
+          geom_smooth() +
+          coord_cartesian(xlim = ranges$x, ylim = ranges$y) +
+          scale_y_continuous(labels=fancy_scientific) +
+          labs(title=title, x=xlab, y=ylab)
       }
     }
-  })
-
-  output$params <- renderTable({
-    start_date <- format(input$dates[1], format="%B %d %Y")
-    end_date <- format(input$dates[2], format="%B %d %Y")
-    variable <- c("workflow_id", "run_id", "variable_name", "start_date", "end_date")
-    value <- c(input$workflow_id, input$run_id, input$variable_name, start_date, end_date)
-    data.frame(variable, value)
-  })
-
-  output$testOutput <- renderText({
-    paste0("input$workflow_id is ", input$workflow_id, "\n",
-           "input$run_id is ", input$run_id, "\n",
-           "input$variable_name is ", input$variable_name, "\n")
   })
 })
 

@@ -9,14 +9,13 @@ ui <- shinyUI(fluidPage(
     sidebarPanel(
       selectInput("workflow_id", "Workflow ID", c()),
       selectInput("run_id", "Run ID", c()),
-      selectInput("variable_name", "Variable Name", ""),
-      dateRangeInput("dates", "Date range")
+      selectInput("variable_name", "Variable Name", "")
     ),
-
     mainPanel(
-      tableOutput("params"),
-      plotOutput("outputPlot")
+      plotOutput("outputPlot",
+                 brush = brushOpts(id = "plot_brush",
+                                   resetOnNew = TRUE),
+                 dblclick = "plot_dblclick")
     )
   )
-
 ))
