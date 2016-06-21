@@ -28,7 +28,7 @@ download.GFDL <- function(outfolder, model, experiment, scenario, start_date, en
   lon.in = as.numeric(lon.in)
   lon_floor = floor(lon.in)
   if (lon_floor < 0){
-    lon_floor = lon_floor + 180
+    lon_floor = lon_floor*(-1) + 180
   }
   lat_GFDL = lat_floor*(.5) +45
   lat_GFDL = round(lat_GFDL)
@@ -136,21 +136,21 @@ download.GFDL <- function(outfolder, model, experiment, scenario, start_date, en
     start_url = paste0(20960101)
     end_url = paste0(21001231)
   }
-  
+
   if (start_year%%5 == 1){
-    time_range <- c(1:2919)
+    time_range <- c(1:2920)
   }
   if (start_year%%5 == 2){
-    time_range = c(2920:5839)
+    time_range = c(2921:5840)
   }
   if (start_year%%5 == 3){
-    time_range = c(5840:8759)
+    time_range = c(5841:8760)
   }
   if (start_year%%5 == 4){
-    time_range = c(8760:11679)
+    time_range = c(8761:11680)
   }
   if (start_year%%5 == 0){
-    time_range = c(11679:14599)
+    time_range = c(11681:14600)
   }
 
   for (i in 1:rows){
@@ -173,7 +173,7 @@ download.GFDL <- function(outfolder, model, experiment, scenario, start_date, en
       dap_end = paste0('-',model,'/',experiment,'/3hr/atmos/3hr/',scenario,'/v20110601/',var$DAP.name[j],'/',var$DAP.name[j],'_3hr_GFDL-',model,'_',experiment,'_',scenario,'_',start_url,'00-',end_url,'23.nc')
       dap_file = paste0(dap_base,dap_end)
       dap = nc_open(dap_file)
-      dat.list[[j]] = ncvar_get(dap,as.character(var$DAP.name[j]),c(lat_GFDL,lon_GFDL,1),c(1,1,ntime))
+      dat.list[[j]] = ncvar_get(dap,as.character(var$DAP.name[j]),c(lon_GFDL,lat_GFDL,1),c(1,1,ntime))
       var.list[[j]] = ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=dim, missval=-999, verbose=verbose)
       nc_close(dap)
       
@@ -202,6 +202,4 @@ download.GFDL <- function(outfolder, model, experiment, scenario, start_date, en
   invisible(results)
 }
 
-#download.GFDL <- function(outfolder, model, experiment, scenario, start_date, end_date, site_id, lat.in, lon.in, overwrite=FALSE, verbose=FALSE, ...)
-#download.GFDL('C:/Users/James Simkins/', 'ESM2M', 'rcp45', 'r1i1p1', '2006-01-01 00:00:00', '2007-12-31 23:59:59', 2, 45, -90)
 
