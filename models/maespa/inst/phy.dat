@@ -1,0 +1,97 @@
+Tumbarumba example physiology
+	
+number of age classes of foliage
+&noages
+noagep = 1
+/
+	
+proportion of leaf area in each age class
+&phenol
+prop = 1.0
+/
+	
+reflectance and transmittance
+&absorp
+nolayers = 1
+rhosol = 0.10 0.30 0.05
+atau = 0.093		0.34	0.01
+arho = 0.082		0.49	0.05
+/	
+
+&bbgscon
+nodates = 1
+condunits = 'H2O'
+/
+
+&bbmgs
+dates = '01/01/02'
+g0 = 0.001
+g1 = 6.9
+nsides = 2
+wleaf = 0.02
+gamma = 0
+/
+
+&jmaxcon			
+nolayers = 1			
+noages = 1			
+nodates = 1			
+/
+	
+&jmax
+values = 191
+dates = '14/11/01'
+/
+	
+&vcmaxcon
+nolayers = 1
+noages = 1
+nodates = 1
+/
+	
+&vcmax
+values = 82
+dates = '14/11/01'
+/
+	
+&jmaxpars
+theta =0.7
+eavj = 43790
+edvj = 200000
+delsj = 644.4338
+ajq = 0.324
+/
+	
+&vcmaxpars
+eavc = 51560
+/
+	
+&rdcon
+nolayers = 1
+noages = 1
+nodates = 1
+/
+
+&rd
+values = 0.41
+dates = '14/11/01' 
+/
+
+&rdpars
+rtemp = 0.0
+q10f = 0.0575
+dayresp = 0.6
+effyrf = 0.4
+/ 
+	
+&slacon
+noages = 1
+nodates = 1
+nolayers = 1
+/
+	
+&sla
+values = 4.6
+dates = '14/11/01'
+/
+	

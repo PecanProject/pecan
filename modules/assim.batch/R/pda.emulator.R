@@ -101,12 +101,14 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
   ## Retrieve model outputs, calculate likelihoods (and store them in database)
   LL.X <- rep(NA, settings$assim.batch$n.knot)
+  model.out <- list()
+  
   for(i in 1:settings$assim.batch$n.knot) {
     ## read model outputs
-    model.out <- pda.get.model.output(settings, run.ids[i], inputs)
+    model.out[[i]] <- pda.get.model.output(settings, run.ids[i], inputs)
 
     ## calculate likelihood
-    LL.X[i] <- pda.calc.llik(settings, con, model.out, run.ids[i], inputs, llik.fn)
+    LL.X[i] <- pda.calc.llik(settings, con, model.out[[i]], run.ids[i], inputs, llik.fn)
   }
 
   ## Collect all likelihoods (Y)
