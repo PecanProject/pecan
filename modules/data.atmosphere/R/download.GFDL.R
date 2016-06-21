@@ -7,9 +7,12 @@
 ##' @param end_date
 ##' @param lat
 ##' @param lon
+##' @param model
+##' @param experiment
+##' @param scenario
 ##'
 ##' @author James Simkins
-download.GFDL <- function(outfolder, model, experiment, scenario, start_date, end_date, site_id, lat.in, lon.in, overwrite=FALSE, verbose=FALSE, ...){  
+download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, overwrite=FALSE, verbose=FALSE, model, experiment, scenario, ...){  
   require(PEcAn.utils)
   require(lubridate)
   require(ncdf4)

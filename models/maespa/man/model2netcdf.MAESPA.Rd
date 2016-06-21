@@ -17,11 +17,8 @@ model2netcdf.MAESPA(outdir, sitelat, sitelon, start_date, end_date,
 \item{start_date}{Start time of the simulation}
 
 \item{end_date}{End time of the simulation}
-<<<<<<< HEAD
-=======
 
 \item{stem_density}{Number of trees/plotsize. Values in trees.dat}
->>>>>>> d526d75f00d922feefb2089d62317e2c84c3179d
 }
 \description{
 Convert MAESPA output into the NACP Intercomparison format (ALMA using netCDF)
