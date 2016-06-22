@@ -7,9 +7,9 @@
 ##' @param end_date
 ##' @param lat
 ##' @param lon
-##' @param model
-##' @param experiment
-##' @param scenario
+##' @param model , select which GFDL model to run (options are CM3, ESM2M, ESM2G)
+##' @param experiment , select which experiment to run (options are rcp26, rcp45, rcp60, rcp85)
+##' @param scenario , select which scenario to initialize the run (options are r1i1p1, r3i1p1, r5i1p1)
 ##'
 ##' @author James Simkins
 download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, overwrite=FALSE, verbose=FALSE, model, experiment, scenario, ...){  
@@ -34,9 +34,9 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     lon_floor = lon_floor*(-1) + 180
   }
   lat_GFDL = lat_floor*(.5) +45
-  lat_GFDL = round(lat_GFDL)
+  lat_GFDL = floor(lat_GFDL)
   lon_GFDL = lon_floor/2.5 
-  lon_GFDL = round(lon_GFDL)
+  lon_GFDL = floor(lon_GFDL)
   
   
   
@@ -63,105 +63,35 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   )
   #2920 values per year for 3 hourly 
   
-  if (start >= 20060101 & start< 20101231){
-    start_url = paste0(20060101)
-    end_url = paste0(20101231)
-  }
-  if (start >= 20110101 & start< 20151231){
-    start_url = paste0(20110101)
-    end_url = paste0(20151231)
-  }
-  if (start >= 20160101 & start< 20201231){
-    start_url = paste0(20160101)
-    end_url = paste0(20201231)
-  }
-  if (start >= 20210101 & start< 20251231){
-    start_url = paste0(20210101)
-    end_url = paste0(20251231)
-  }
-  if (start >= 20260101 & start< 20301231){
-    start_url = paste0(20260101)
-    end_url = paste0(20301231)
-  }
-  if (start >= 20310101 & start< 20351231){
-    start_url = paste0(20310101)
-    end_url = paste0(20351231)
-  }
-  if (start >= 20360101 & start< 20401231){
-    start_url = paste0(20360101)
-    end_url = paste0(20401231)
-  }
-  if (start >= 20410101 & start< 20451231){
-    start_url = paste0(20410101)
-    end_url = paste0(20451231)
-  }
-  if (start >= 20460101 & start< 20501231){
-    start_url = paste0(20460101)
-    end_url = paste0(20501231)
-  }
-  if (start >= 20510101 & start< 20551231){
-    start_url = paste0(20510101)
-    end_url = paste0(20551231)
-  }
-  if (start >= 20560101 & start< 20601231){
-    start_url = paste0(20560101)
-    end_url = paste0(20601231)
-  }
-  if (start >= 20610101 & start< 20651231){
-    start_url = paste0(20610101)
-    end_url = paste0(20651231)
-  }
-  if (start >= 20660101 & start< 20701231){
-    start_url = paste0(20660101)
-    end_url = paste0(20701231)
-  }
-  if (start >= 20710101 & start< 20751231){
-    start_url = paste0(20710101)
-    end_url = paste0(20751231)
-  }
-  if (start >= 20760101 & start< 20801231){
-    start_url = paste0(20760101)
-    end_url = paste0(20801231)
-  }
-  if (start >= 20810101 & start< 20851231){
-    start_url = paste0(20810101)
-    end_url = paste0(20851231)
-  }
-  if (start >= 20860101 & start< 20901231){
-    start_url = paste0(20860101)
-    end_url = paste0(20901231)
-  }
-  if (start >= 20910101 & start< 20951231){
-    start_url = paste0(20910101)
-    end_url = paste0(20951231)
-  }
-  if (start >= 20960101 & start< 21001231){
-    start_url = paste0(20960101)
-    end_url = paste0(21001231)
-  }
-
-  if (start_year%%5 == 1){
-    time_range <- c(1:2920)
-  }
-  if (start_year%%5 == 2){
-    time_range = c(2921:5840)
-  }
-  if (start_year%%5 == 3){
-    time_range = c(5841:8760)
-  }
-  if (start_year%%5 == 4){
-    time_range = c(8761:11680)
-  }
-  if (start_year%%5 == 0){
-    time_range = c(11681:14600)
-  }
-
+  
+  
   for (i in 1:rows){
     year = ylist[i]    
     ntime = (14599)
     
-    loc.file = file.path(outfolder,paste("GFDL",model,start_year,"nc",sep="."))
+    loc.file = file.path(outfolder,paste("GFDL",model,year,"nc",sep="."))
     
+    met_start = 2006
+    met_block = 5
+    url_year = met_start + floor((year-met_start)/met_block)*met_block
+    start_url = paste0(url_year,"0101")
+    end_url = paste0(url_year+met_block-1,"1231")
+    
+    if (year%%5 == 1){
+      time_range <- paste0('1:2920')
+    }
+    if (year%%5 == 2){
+      time_range = paste0('2921:5840')
+    }
+    if (year%%5 == 3){
+      time_range = paste0('5841:8760')
+    }
+    if (year%%5 == 4){
+      time_range = paste0('8761:11680')
+    }
+    if (year%%5 == 0){
+      time_range = paste0('11681:14600')
+    }
     ## Create dimensions
     lat <- ncdim_def(name='latitude', units='degree_north', vals=lat.in, create_dimvar=TRUE)
     lon <- ncdim_def(name='longitude', units='degree_east', vals=lon.in, create_dimvar=TRUE)
