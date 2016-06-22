@@ -76,13 +76,6 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
 
-  # Default jump variances. Looped for clarity
-  ind <- which(is.na(settings$assim.batch$jump$jvar))
-  for(i in seq_along(ind)) {
-    # default to 0.1 * 90% prior CI
-    settings$assim.batch$jump$jvar[[i]] <- 
-      0.1 * diff(eval(prior.fn$qprior[[prior.ind[ind[i]]]], list(p=c(0.05,0.95))))
-  }
 
   ## ------------------------------------ Emulator ------------------------------------ ##
   ## Propose parameter knots (X) for emulator design
@@ -149,10 +142,26 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   
   # define range to make sure mcmc.GP doesn't propose new values outside 
   
-  rng=matrix(c(sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0)),
+  rng <- matrix(c(sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0)),
                sapply(prior.fn$qprior[prior.ind] ,eval,list(p=1))),
                nrow=n.param)
-        
+  
+  # Default jump variances. Looped for clarity
+  ind <- which(is.na(settings$assim.batch$jump$jvar))
+  for(i in seq_along(ind)) {
+    # default to 0.1 * 90% prior CI
+    settings$assim.batch$jump$jvar[[i]] <- 
+      0.1 * diff(eval(prior.fn$qprior[[prior.ind[ind[i]]]], list(p=c(0.05,0.95))))
+  }
+  
+  if(!is.null(settings$assim.batch$mix)){
+    mix <- settings$assim.batch$mix
+  }else if(n.param > 1){
+    mix <- "joint"
+  }else{
+    mix <- "each"
+  } 
+  
 
   ## Sample posterior from emulator
   m <- lapply(1, function(chain){
@@ -164,11 +173,12 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
                  nmcmc     = settings$assim.batch$iter,       ## Number of reps
                  rng       = rng,       ## range
                  format    = "lin",      ## "lin"ear vs "log" of LogLikelihood 
-                 mix       = "each",     ## Jump "each" dimension independently or update them "joint"ly
+                 mix       = mix,     ## Jump "each" dimension independently or update them "joint"ly
 #                  jmp0 = apply(X,2,function(x) 0.3*diff(range(x))), ## Initial jump size
                  jmp0      = sqrt(unlist(settings$assim.batch$jump$jvar)),  ## Initial jump size
                  ar.target = settings$assim.batch$jump$ar.target,   ## Target acceptance rate
-                 priors    = prior.fn$dprior[prior.ind] ## priors
+                 priors    = prior.fn$dprior[prior.ind], ## priors
+                 settings  = settings
           )$mcmc
         })
   
