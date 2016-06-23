@@ -4,7 +4,7 @@
 ##' @title download.Fluxnet2015
 ##' @export
 ##' @param site the FLUXNET ID of the site to be downloaded, used as file name prefix. 
-##' The "SITE_ID" field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}
+##' The "SITE_ID" field in \href{http://fluxnet.fluxdata.org//sites/site-list-and-pages/}{list of Ameriflux sites}
 ##' @param outfolder location on disk where outputs will be stored
 ##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
 ##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
@@ -34,12 +34,13 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date, over
     dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
   }
   
-  #need to query to get full file name #this is Ameriflux version
+  #need to query to get full file name - this is Fluxnet2015 version, TIER1 only
   url <- "http://wile.lbl.gov:8080/AmeriFlux/DataDownload.svc/datafileURLs"
   json_query <- paste0('{"username":"AnkurDesai","siteList":["',site,'"],"intendedUse":"Research - Land model/Earth system model","description":"PEcAn download","dataProduct":"SUBSET","policy":"TIER1"}')  
   result <- POST(url, body = json_query, encode = "json", add_headers("Content-Type" = "application/json"))
   link <- content(result)
-  ftplink <- link$dataURLsList[[1]]$URL
+  ftplink <- NULL
+  if (length(link$dataURLsList) > 0) { ftplink <- link$dataURLsList[[1]]$URL } 
   
   #test to see that we got back a FTP
   if (is.null(ftplink)) {    logger.severe("Could not get information about", site, ".",
