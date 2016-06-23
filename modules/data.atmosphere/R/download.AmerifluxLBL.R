@@ -1,9 +1,9 @@
 ##' Download Ameriflux LBL CSV files
 ##'
-##' @name download.Ameriflux
-##' @title download.Ameriflux
+##' @name download.AmerifluxLBL
+##' @title download.AmerifluxLBL
 ##' @export
-##' @param site the FLUXNET ID of the site to be downloaded, used as file name prefix. 
+##' @param site the Ameriflux ID of the site to be downloaded, used as file name prefix. 
 ##' The "SITE_ID" field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}
 ##' @param outfolder location on disk where outputs will be stored
 ##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
@@ -39,13 +39,13 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, ove
   json_query <- paste0('{"username":"AnkurDesai","siteList":["',site,'"],"intendedUse":"Research - Land model/Earth system model","description":"PEcAn download"}')
   result <- POST(url, body = json_query, encode = "json", add_headers("Content-Type" = "application/json"))
   link <- content(result)
-  ftplink <- link$dataURLsList[[1]]$URL
+
+  ftplink <- NULL
+  if (length(link$dataURLsList) > 0) { ftplink <- link$dataURLsList[[1]]$URL } 
   
   #test to see that we got back a FTP
   if (is.null(ftplink)) {    logger.severe("Could not get information about", site, ".",
-                                         "Is this an AmerifluxLBL site?")}
-
-   
+                                                     "Is this an AmerifluxLBL site?")}
   #get zip and csv filenames
   outfname <- strsplit(ftplink,'/')
   outfname <- outfname[[1]][length(outfname[[1]])]
@@ -106,7 +106,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, ove
   results$file[row] <- output_csv_file
   results$host[row] <- fqdn()
   results$startdate[row] <- firstdate_st
-  results$enddate[row] <- lastdate_st
+  results$enddate[row] <- lastrdate_st
   results$mimetype[row] <- 'test/csv'
   results$formatname[row] <- 'AMERIFLUX_BASE_HH'
   
