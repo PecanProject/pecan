@@ -5,11 +5,11 @@
 \title{Inversion with automatic convergence checking}
 \usage{
 invert.auto(observed, invert.options, return.samples = TRUE,
-  save.samples = NULL, quiet = FALSE, ...)
+  save.samples = NULL, quiet = FALSE, parallel = FALSE,
+  parallel.cores = NULL, ...)
 }
 \arguments{
-\item{observed}{Matrix of observed values. Must line up with output of 
-'model'.}
+\item{observed}{Matrix of observed values. Must line up with output of 'model'.}
 
 \item{invert.options}{R list object containing the following elements:
 
@@ -61,6 +61,10 @@ attempt. Default = 0.8}
 \item{save.samples}{Filename for saving samples after each iteration. If 
 'NULL', do not save samples. Default = NULL.}
 
+\item{parallel}{Logical. Whether or not to run multiple chains in parallel on multiple cores (defualt=FALSE).}
+
+\item{parallel.cores}{Number of cores to use for parallelization. If NULL (default), allocate one fewer than detected number of cores.}
+
 \item{...}{Other arguments to `check.convergence`}
 }
 \value{
@@ -68,8 +72,6 @@ List of "results" (summary statistics and Gelman Diagnostic) and
 "samples"(mcmc.list object, or "NA" if return.samples=FALSE)
 }
 \details{
-Performs an inversion via the `invert.custom` function with 
-multiple chains and automatic convergence checking. Convergence checks are 
-performed using the multivariate Gelman-Rubin diagnostic.
+Performs an inversion via the `invert.custom` function with multiple chains and automatic convergence checking. Convergence checks are performed using the multivariate Gelman-Rubin diagnostic.
 }
 

@@ -222,11 +222,22 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults=settings$c
   ed2in.text <- gsub('@END_DAY@', format(enddate, "%d"), ed2in.text)
   ed2in.text <- gsub('@END_YEAR@', format(enddate, "%Y"), ed2in.text)
   
+  ##-----------------------------------------------------------------------
+  #Set The flag for IMETAVG telling ED what to do given how input radiation was originally averaged
+  # -1 = I don't know, use linear interpolation
+  # 0 = No average, the values are instantaneous 
+  # 1 = Averages ending at the reference time
+  # 2 = Averages beginning at the reference time
+  # 3 = Averages centered at the reference time
+  ## Deafult is -1
+  
+  ed2in.text <- gsub('@MET_SOURCE@', -1,ed2in.text)    
+ 
   ##----------------------------------------------------------------------
   if (is.null(settings$run$host$scratchdir)) {
     modeloutdir <- file.path(settings$run$host$outdir, run.id)
   } else {
-    modeloutdir <- file.path(settings$run$host$scratchdir, run.id)
+    modeloutdir <- file.path(settings$run$host$scratchdir, settings$workflow$id, run.id)
   }
   ed2in.text <- gsub('@OUTDIR@', modeloutdir, ed2in.text)
   ed2in.text <- gsub('@ENSNAME@', run.id, ed2in.text)
@@ -430,11 +441,13 @@ write.config.jobsh.ED2 <- function(settings, run.id){
   # command if scratch is used
   if (is.null(settings$run$host$scratchdir)) {
     modeloutdir <- outdir
+    mkdirscratch <- "# no need to mkdir for scratch" 
     copyscratch <- "# no need to copy from scratch"
     clearscratch <- "# no need to clear scratch"
   } else {
-    modeloutdir <- file.path(settings$run$host$scratchdir, run.id)
-    copyscratch <- paste("rsync", "-a", paste0('"', file.path(modeloutdir, "*"), '"'), paste0('"', outdir, '"'))
+    modeloutdir <- file.path(settings$run$host$scratchdir, settings$workflow$id, run.id)
+    mkdirscratch <- paste("mkdir -p", modeloutdir)
+    copyscratch <- paste("rsync", "-a", paste0('"', file.path(modeloutdir, ""), '"'), paste0('"', file.path(outdir, ""), '"'))
     if (is.null(settings$run$host$clearscratch) || is.na(as.logical(settings$run$host$clearscratch)) || as.logical(settings$run$host$clearscratch)) {
       clearscratch <- paste("rm", "-rf", paste0('"', modeloutdir, '"'))
     } else {
@@ -449,21 +462,31 @@ write.config.jobsh.ED2 <- function(settings, run.id){
   }
   
   # create host specific setttings
-  hostspecific <- ""
-  if (!is.null(settings$model$job.sh)) {
-    hostspecific <- paste(hostspecific, sep="\n", paste(settings$model$job.sh, collapse="\n"))
+  hostsetup <- ""
+  if (!is.null(settings$model$prerun)) {
+    hostsetup <- paste(hostsetup, sep="\n", paste(settings$model$prerun, collapse="\n"))
   }
-  if (!is.null(settings$run$host$job.sh)) {
-    hostspecific <- paste(hostspecific, sep="\n", paste(settings$run$host$job.sh, collapse="\n"))
+  if (!is.null(settings$run$host$prerun)) {
+    hostsetup <- paste(hostsetup, sep="\n", paste(settings$run$host$prerun, collapse="\n"))
+  }
+
+  hostteardown <- ""
+  if (!is.null(settings$model$postrun)) {
+    hostteardown <- paste(hostteardown, sep="\n", paste(settings$model$postrun, collapse="\n"))
+  }
+  if (!is.null(settings$run$host$postrun)) {
+    hostteardown <- paste(hostteardown, sep="\n", paste(settings$run$host$postrun, collapse="\n"))
   }
 
   # create job.sh
-  jobsh <- gsub('@HOSTSPECIFIC@', hostspecific, jobsh)
+  jobsh <- gsub('@HOST_SETUP@', hostsetup, jobsh)
+  jobsh <- gsub('@HOST_TEARDOWN@', hostteardown, jobsh)
 
   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
   jobsh <- gsub('@SITE_MET@', settings$run$inputs$met$path, jobsh)
   
+  jobsh <- gsub('@SCRATCH_MKDIR@', mkdirscratch, jobsh)
   jobsh <- gsub('@SCRATCH_COPY@', copyscratch, jobsh)
   jobsh <- gsub('@SCRATCH_CLEAR@', clearscratch, jobsh)
   
