@@ -45,7 +45,7 @@ load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA, 
       if(udunits2::ud.are.convertible(u1,u2)){
         print(sprintf("convert %s %s to %s %s", vars_used$orig_name[i], vars_used$orig_units[i],
                       vars_used$pecan_name[i], vars_used$pecan_units[i]))
-        out[col] <- udunits2::ud.convert(x,u1,u2)[[1]]
+        out[col] <- udunits2::ud.convert(x,u1,u2)[,1]
         colnames(out)[col] <- vars_used$pecan_name[i]
       }else{logger.error("Units cannot be converted")} #This error should probably be thrown much earlier, like in query.format.vars - will move it eventually
     }
