@@ -4,9 +4,9 @@
 ##' @name convert.input
 ##' @title convert.input
 ##' @export
-##' @author Betsy Cowdery, Michael Dietze
+##' @author Betsy Cowdery, Michael Dietze, Ankur Desai
 convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,
-                          pkg,fcn,username,con=con,hostname='localhost',browndog, write=TRUE,...){
+                          pkg,fcn,username,con=con,hostname='localhost',browndog, write=TRUE,format.vars=format.vars,...){
   logger.info(paste("Convert.Inputs",fcn,input.id,hostname,outfolder,formatname,mimetype,site.id,start_date,end_date))
   l <- list(...); #print(l)
   n <- nchar(outfolder)
@@ -139,7 +139,11 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   }
   
   else if (conversion == "local.remote") { # perform conversion on local or remote host
-    args = c(dbfile$file_path,dbfile$file_name,outfolder,start_date,end_date)
+    if (missing(format.vars)) {
+      args = c(dbfile$file_path,dbfile$file_name,outfolder,start_date,end_date) } 
+    else {
+      args = c(dbfile$file_path,dbfile$file_name,outfolder,start_date,end_date,format.vars) } 
+    }
     if(!is.null(names(l))){
       cmdFcn  = paste0(paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=",")),",",paste(paste(names(l),"=",unlist(l)), collapse=","),")")
     }else{
