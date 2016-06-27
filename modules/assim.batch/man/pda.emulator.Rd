@@ -24,6 +24,6 @@ Brute-force, only to be used on simple models
 \author{
 Mike Dietze
 
-Ryan Kelly
+Ryan Kelly, Istem Fer
 }
 
