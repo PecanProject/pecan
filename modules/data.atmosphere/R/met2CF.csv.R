@@ -5,17 +5,43 @@
 ##' @param in.path
 ##' @param in.prefix
 ##' @param outfolder
-##' @param format data frame or list with elements orig, bety, units for the original variable name, bety variable name, 
-##' and original units. Columns with NA for bety variable name are dropped. Units for datetime field are the lubridate function 
-##' that will be used to parse the date (e.g. \code{ymd_hms} or \code{mdy_hm}). 
+##' @param format data frame or list with elements as described below
+##' format is output from db/R/query.format.vars, and should have:
+##'   format$skip = lines to skip excluding header
+##'   format$header = lines of header
+##'   format$na.strings = list of missing value, such as -9999
+##'   format$site = ID of site (UNUSED)
+##'   format$lat = latitude of site
+##'   format$lon = longitude of site
+##'   format$vars is a data.frame with lists of information for each variable to read
+##'   format$vars$orig_name = Name in CSV file
+##'   format$vars$orig_units = Units in CSV file
+##'   format$vars$variable_id = BETY variable ID
+##'   format$vars$bety_name = Name in BETY
+##'   format$vars$bety_units = Units in BETY
+##'   OPTIONAL:
+##'   format$vars$column_number = Column number in CSV file (optional, else will use header)
+##'   format$vars$storage_type UNUSED
+##'   format$vars$mstmip_name = Name in MSTIMIP (UNUSED)
+##'   format$vars$mstimip_units = Units in MSTIMIP (UNUSED)
+##'   format$vars$pecan_name = Internal Pecan name (UNUSED)
+##'   format$vars$pecan_units = Internal Pecan units (UNUSED)
+##'   
+##' OLD: orig, bety, units for the original variable name, bety variable name, and original units
+##' Columns with NA for bety variable name are dropped. 
+##' Units for datetime field are the lubridate function that will be used to parse the date (e.g. \code{ymd_hms} or \code{mdy_hm}). 
 ##' @param nc_verbose logical: run ncvar_add in verbose mode?
 ##' @export
-##' @author Mike Dietze, David LeBauer
+##' @author Mike Dietze, David LeBauer, Ankur Desai
 ##' @examples
 ##' \dontrun{
 ##'   in.path = "~/Downloads/"
 ##'   in.file = "WR_E"
 ##'   outfolder = "/tmp/"
+##'   con <- db.open(settings$database$bety)
+##'   format <- query.format.vars(input.id,con)
+##'   met2CF.csv(in.path,in.file,outfolder,format)
+##'   #OLD FORMAT
 ##'   format = list(
 ##'                 orig_name = c("TA","PRECIP","RH","WS","WD","SW","PAR_in"),
 ##'                 orig_units =  c("celsius","mm","%","m/s","degrees","W m-2","umol m-2 s-1"),
@@ -27,10 +53,9 @@
 ##'                 na.strings=c("-9999","-6999","9999"))  
 ##'   lat = 40
 ##'   lon = -80
-##'   met2CF.csv(in.path,in.file,outfolder,format,lat,lon)
 ##' }
-met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL, nc_verbose = FALSE,...){
-  
+met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format=format, lat=NULL, lon=NULL, nc_verbose = FALSE,...){
+    
   files <- dir(in.path, in.file, full.names = TRUE)
   files <- files[grep("*.csv",files)]
   if(length(files)==0){
@@ -38,6 +63,10 @@ met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL, 
     logger.warn("No met files named ", in.file, "found in ", in.path)
   }
   dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)  # does nothing if dir exists
+  
+  # get lat/lon from format.vars if not passed directly
+  if (is.null(lat)) { lat <- format.vars$lat }
+  if (is.null(lon)) { lon <- format.vars$lon }
   
   for(i in 1:length(files)){
     
@@ -60,7 +89,9 @@ met2CF.csv <- function(in.path, in.file, outfolder, format, lat=NULL, lon=NULL, 
     }
     
     ## Get datetime vector
+    ## change this -> if format$bety_name has datetime, use that column, else assume column 1 is datetime
     datetime_index <- which(format$bety == "datetime")
+    ## if length(dti) == 0 then make it 1, assume units ymd_hms
     datetime_raw <- dat[, datetime_index]
     datetime <- do.call(format$units[datetime_index], list(datetime_raw))
     ## and remove datetime from 'dat' dataframe
