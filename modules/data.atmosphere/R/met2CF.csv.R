@@ -18,10 +18,10 @@
 ##'   format$vars$orig_units = Units in CSV file
 ##'   format$vars$variable_id = BETY variable ID
 ##'   format$vars$bety_name = Name in BETY
-##'   format$vars$bety_units = Units in BETY
 ##'   OPTIONAL:
 ##'   format$vars$column_number = Column number in CSV file (optional, else will use header)
 ##'   format$vars$storage_type UNUSED
+##'   format$vars$bety_units = Units in BETY (UNUSED)
 ##'   format$vars$mstmip_name = Name in MSTIMIP (UNUSED)
 ##'   format$vars$mstimip_units = Units in MSTIMIP (UNUSED)
 ##'   format$vars$pecan_name = Internal Pecan name (UNUSED)
@@ -90,15 +90,21 @@ met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format
     
     ## Get datetime vector
     ## change this -> if format$bety_name has datetime, use that column, else assume column 1 is datetime
-    datetime_index <- which(format$bety == "datetime")
-    ## if length(dti) == 0 then make it 1, assume units ymd_hms
+    datetime_index <- which(format$vars$bety_name == "datetime")
+    if (length(datetime_index)==0) { 
+      datetime_index <- 1
+      datetime_units <- 'ymd_hms'
+    } else {
+      datetime_units <- format$vars$orig_units[datetime_index]
+    }
     datetime_raw <- dat[, datetime_index]
-    datetime <- do.call(format$units[datetime_index], list(datetime_raw))
+    datetime <- do.call(datetime_units, list(datetime_raw))
     ## and remove datetime from 'dat' dataframe
     dat[, datetime_index] <- format$na.strings
     
+    ## FUTURE: Make this much more generic to deal with multiple ways datetime can be passed in a CSV such as Year,Month,Day, and so on
+      
     ## convert data to numeric
-    
     dat <- as.data.frame(datetime = datetime, sapply(dat[,-datetime_index], as.numeric))
     
     ### create time dimension 
@@ -106,12 +112,18 @@ met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format
     t <- ncdim_def("time", "days since 1700-01-01", as.numeric(days_since_1700)) #define netCDF dimensions for variables
     timestep <- as.numeric(mean(ud.convert(diff(days_since_1700), "d", "s")))
     
-    
     ## create lat lon dimensions
     x <- ncdim_def("longitude", "degrees_east", lon) #define netCDF dimensions for variables
     y <- ncdim_def("latitude", "degrees_north", lat)
     
     xytdim <- list(x,y,t)
+    
+    ## TODO: generalize all BETY names for variables which have more than one
+    ## TODO: add NEE, H, and LE extractions
+    ## TODO: change format$bety to format$vars$bety_name
+    ## TODO: change format$orig to format$vars$orig_name
+    ## TODO: change format$units to format$vars$orig_units
+    
     ## air_temperature / airT
     if("airT" %in% format$bety){
       k <- which(format$bety=="airT")
