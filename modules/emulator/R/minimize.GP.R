@@ -176,7 +176,7 @@ is.accepted <- function(ycurr, ynew, format='lin'){
 ##' 
 ##' @author Michael Dietze
 mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL, 
-    jmp0=0.35*(rng[,2]-rng[,1]), ar.target=0.5, priors=NA){
+    jmp0=0.35*(rng[,2]-rng[,1]), ar.target=0.5, priors=NA, settings){
   
   haveTime <- FALSE #require("time")
 
@@ -186,6 +186,7 @@ mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
   xcurr <- x0
   dim <- length(x0)
   jmp <- mvjump(ic=jmp0,rate=ar.target, nc=dim)
+  jcov <- diag((jmp0)^2)
   samp <- matrix(NA,nmcmc,dim)
   
   ## loop
@@ -195,12 +196,16 @@ mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
     if(mix == "joint"){
       ## propose new
       xnew <- xcurr
-      for(i in 1:dim){
-        repeat{
-          xnew[i] <- rnorm(1,xcurr[[i]],p(jmp)[i])
-          if(bounded(xnew[i],rng[i,,drop=FALSE])) break
-        }
+      if((g > 2) && ((g - 1) %% settings$assim.batch$jump$adapt == 0)){
+        params.recent <- samp[(g - settings$assim.batch$jump$adapt):(g-1),]
+        colnames(params.recent) <- names(x0)
+        accept.count <- round(jmp@arate[(g-1)/settings$assim.batch$jump$adapt]*100)
+        jcov <- pda.adjust.jumps.bs(settings, jcov, accept.count, params.recent)
       }
+        repeat{
+          xnew <- mvrnorm(1, unlist(xcurr), jcov)
+          if(bounded(xnew,rng)) break
+        }
       #if(bounded(xnew,rng)){
         ycurr <- get.y(gp, pckg, xcurr, priors)
         ynew <- get.y(gp, pckg, xnew, priors)

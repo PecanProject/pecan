@@ -28,7 +28,9 @@ Depends:
     ncdf4,
     stringr
 Suggests:
-    testthat
+    testthat,
+    png,
+    grid
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes

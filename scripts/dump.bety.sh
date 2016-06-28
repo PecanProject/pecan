@@ -155,7 +155,8 @@ fi
 MIGRATIONS=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT COUNT(version) FROM schema_migrations' | tr -d ' ' )
 VERSION=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT md5(array_agg(version)::text) FROM (SELECT version FROM schema_migrations ORDER BY version) as v;' | tr -d ' ' )
 LATEST=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1' | tr -d ' ' )
-echo "${MIGRATIONS}	${VERSION}	${LATEST}" > "${OUTPUT}/version.txt"
+NOW=$( date -u +"%Y-%m-%dT%H:%M:%SZ" )
+echo "${MIGRATIONS}	${VERSION}	${LATEST}	${NOW}" > "${OUTPUT}/version.txt"
 
 # dump schema
 if [ "${QUIET}" != "YES" ]; then
