@@ -87,8 +87,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
     if (is.null(pft$posteriorid)) {
       pft$posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " ORDER BY created_at DESC LIMIT 1"), dbcon)[['id']]  
     }
-    if (!is.null(pft$posteriorid)) {
-      db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " ORDER BY created_at DESC LIMIT 1"), dbcon)[['id']]   
+    if (!is.null(pft$posteriorid)) { 
       files <- dbfile.check('Posterior', pft$posteriorid, dbcon)
       ids <- match(c('trait.data.Rdata', 'prior.distns.Rdata', 'species.csv'), files$file_name)
       if (!any(is.na(ids))) {
@@ -141,6 +140,18 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
           logger.info("Reusing existing files from posterior", pft$posteriorid, "for", pft$name)
           for(id in 1:nrow(files)) {
             file.copy(file.path(files[[id, 'file_path']], files[[id, 'file_name']]), file.path(pft$outdir, files[[id, 'file_name']]))
+          }
+          
+          # May need to symlink the generic post.distns.Rdata to a specific post.distns.*.Rdata file.
+          if(length(dir(pft$outdir, "post.distns.Rdata"))==0) {
+            all.files <- dir(pft$outdir)
+            post.distn.file <- all.files[grep("post.distns.*.Rdata", all.files)]
+            if(length(post.distn.file) > 1)
+              stop("get.trait.data.pft() doesn't know how to handle multiple post.distns.*.Rdata files")
+            else if(length(post.distn.file) == 1) {
+              # Found exactly one post.distns.*.Rdata file. Use it.
+              file.symlink(file.path(pft$outdir, post.distn.file), file.path(pft$outdir, 'post.distns.Rdata'))
+            }
           }
           return(pft)
         }

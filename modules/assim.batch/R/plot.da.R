@@ -221,7 +221,6 @@ for(pft in pfts) {
 foo<-as.data.frame(foo)
 names(foo) <- c('pft','trait','cv1','cv2','cv3','reduction1','reduction2','reductiontot')
 
-#browser()
 par(mfrow = c(1,1), cex=0.5)
 #plot(foo[,6] ~ as.factor(rownames(priors)))
 
