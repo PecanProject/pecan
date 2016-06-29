@@ -6,7 +6,7 @@
 ##' @author Betsy Cowdery
 
 metric.AME <- function(dat, ...){
-  score <- max(abs(dat$model - dat$obvs, na.rm = TRUE))
+  score <- max(abs(dat$model - dat$obvs))
   return(score)
 }
 

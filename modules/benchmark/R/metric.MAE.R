@@ -6,7 +6,7 @@
 ##' @author Betsy Cowdery
 
 metric.MAE <- function(dat, ...){
-  score <- mean(abs(dat$model - dat$obvs, na.rm = TRUE), na.rm = TRUE)
+  score <- mean(abs(dat$model - dat$obvs))
   return(score)
 }
 

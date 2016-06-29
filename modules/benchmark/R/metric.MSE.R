@@ -6,7 +6,7 @@
 ##' @author Betsy Cowdery
 
 metric.MSE <- function(dat, ...){
-  score <- mean((dat$model - dat$obvs)^2, na.rm = TRUE)
+  score <- mean((dat$model - dat$obvs)^2)
   return(score)
 }
 

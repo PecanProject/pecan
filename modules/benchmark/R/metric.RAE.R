@@ -6,8 +6,8 @@
 ##' @author Betsy Cowdery
 
 metric.RAE <- function(dat, ...){
-  numer <- mean(abs(dat$obvs - dat$model, na.rm = TRUE), na.rm = TRUE)
-  denom <- mean(abs(dat$obvs - mean(dat$obvs, na.rm = TRUE), na.rm = TRUE), na.rm = TRUE)
+  numer <- mean(abs(dat$obvs - dat$model))
+  denom <- mean(abs(dat$obvs - mean(dat$obvs)))
   score <- numer/denom
   return(score)
 }
