@@ -426,7 +426,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults=settings$const
 #' @export
 #' @param settings PEcAn settings list. For this function, need the following: 
 #' run$host$rundir, run$host$outdir, run$host$scratchdir, 
-#' run$host$clearscratch, run$jobtemplate, model$job.sh, run$host$job.sh, 
+#' run$host$clearscratch, model$jobtemplate, model$job.sh, run$host$job.sh, 
 #' run$site$lat, run$site$lon, run$inputs$met$path, run$start.date, 
 #' run$end.date, model$binary
 #' @param run.id PEcAn run ID
@@ -455,8 +455,8 @@ write.config.jobsh.ED2 <- function(settings, run.id){
     }
   }
   # create launch script (which will create symlink)
-  if (!is.null(settings$run$jobtemplate) && file.exists(settings$run$jobtemplate)) {
-    jobsh <- readLines(con=settings$run$jobtemplate, n=-1)
+  if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
+    jobsh <- readLines(con=settings$model$jobtemplate, n=-1)
   } else {
     jobsh <- readLines(con=system.file("template.job", package = "PEcAn.ED2"), n=-1)
   }

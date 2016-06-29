@@ -35,8 +35,8 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id){
 
   #-----------------------------------------------------------------------
   # create launch script (which will create symlink)
-  if (!is.null(settings$run$jobtemplate) && file.exists(settings$run$jobtemplate)) {
-    jobsh <- readLines(con=settings$run$jobtemplate, n=-1)
+  if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
+    jobsh <- readLines(con=settings$model$jobtemplate, n=-1)
   } else {
     jobsh <- readLines(con=system.file("template.job", package = "PEcAn.JULES"), n=-1)
   }

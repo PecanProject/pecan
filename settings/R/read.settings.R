@@ -234,12 +234,16 @@ check.settings <- function(settings) {
   scipen = getOption("scipen")
   options(scipen=12)
 
+  # check for and try to fix deprecated settings structure
+  settings <- fix.deprecated.settings(settings)
+  
   # check database secions if exist
   dbcon <- "NONE"
   if (!is.null(settings$database)) {
     # check all databases
     for (name in names(settings$database)) {
-      settings$database[[name]] <- check.database(settings$database[[name]])
+      if(name != "dbfiles") # 'dbfiles' is kept in <database>, but isn't actually a db settings block
+        settings$database[[name]] <- check.database(settings$database[[name]])
     }
 
     # check bety database
@@ -631,18 +635,18 @@ check.settings <- function(settings) {
   }
 
   # Check folder where outputs are written before adding to dbfiles
-  if(is.null(settings$run$dbfiles)) {
-    settings$run$dbfiles <- full.path("~/.pecan/dbfiles")
+  if(is.null(settings$database$dbfiles)) {
+    settings$database$dbfiles <- full.path("~/.pecan/dbfiles")
   } else {
-      if (substr(settings$run$dbfiles, 1, 1) != '/'){
-          logger.warn("settings$run$dbfiles pathname", settings$run$dbfiles, " is invalid\n
+      if (substr(settings$database$dbfiles, 1, 1) != '/'){
+          logger.warn("settings$database$dbfiles pathname", settings$database$dbfiles, " is invalid\n
                   placing it in the home directory ", Sys.getenv("HOME"))
-          settings$run$dbfiles <- file.path(Sys.getenv("HOME"), settings$run$dbfiles)
+          settings$database$dbfiles <- file.path(Sys.getenv("HOME"), settings$database$dbfiles)
       } 
       
-      settings$run$dbfiles <- normalizePath(settings$run$dbfiles, mustWork=FALSE)
+      settings$database$dbfiles <- normalizePath(settings$database$dbfiles, mustWork=FALSE)
   }
-  dir.create(settings$run$dbfiles, showWarnings = FALSE, recursive = TRUE)
+  dir.create(settings$database$dbfiles, showWarnings = FALSE, recursive = TRUE)
 
   # check all inputs exist
   settings <- check.inputs(settings)
@@ -775,6 +779,36 @@ check.settings <- function(settings) {
   
   # all done return cleaned up settings
   invisible(settings)
+}
+
+##' Checks for and attempts to fix deprecated settings structure
+##'
+##' @title Fix Deprecated Settings
+##' @param settings settings list
+##' @return updated settings list
+##' @author Ryan Kelly
+fix.deprecated.settings <- function(settings) {
+  # settings$model$jobtemplate
+  if(!is.null(settings$run$jobtemplate)) {
+    if(!is.null(settings$model$jobtemplate)) {
+      logger.severe("You have both deprecated settings$run$jobtemplate and settings$model$jobtemplate. Use latter only.")
+    }
+    logger.info("settings$run$jobtemplate is deprecated. uwe settings$model$jobtemplate instead")
+    settings$model$jobtemplate <- settings$run$jobtemplate
+    settings$run$jobtemplate <- NULL
+  }
+
+  # settings$database$dbfiles
+  if(!is.null(settings$run$dbfiles)) {
+    if(!is.null(settings$database$dbfiles)) {
+      logger.severe("You have both deprecated settings$run$dbfiles and settings$database$dbfiles. Use latter only.")
+    }
+    logger.info("settings$run$dbfiles is deprecated. uwe settings$database$dbfiles instead")
+    settings$database$dbfiles <- settings$run$dbfiles
+    settings$run$dbfiles <- NULL
+  }
+  return(settings)
+
 }
 
 ##' Updates a pecan.xml file to match new layout. This will take care of the
@@ -1043,6 +1077,7 @@ addSecrets <- function(settings) {
 ##' @author Shawn Serbin
 ##' @author Rob Kooper
 ##' @author David LeBauer
+##' @author Ryan Kelly
 ##' @examples
 ##' \dontrun{
 ##' ## bash shell:

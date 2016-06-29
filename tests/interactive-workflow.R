@@ -22,13 +22,13 @@ unlink("pecan", recursive=TRUE)
 settings <- read.settings(settings.file)
 
 # get traits of pfts
-settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
+settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$database$dbfiles, settings$database$bety, settings$meta.analysis$update)
 saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 
 
 # run meta-analysis
 run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, 
-                  settings$meta.analysis$threshold, settings$run$dbfiles, settings$database$bety)
+                  settings$meta.analysis$threshold, settings$database$dbfiles, settings$database$bety)
 
 # do conversions
 for(i in 1:length(settings$run$inputs)) {
@@ -52,18 +52,18 @@ for(i in 1:length(settings$run$inputs)) {
 
     # download data
     fcn <- paste("download", input['input'], sep=".")
-    do.call(fcn, list(site, file.path(settings$run$dbfiles, input['input']), start_date=start_date, end_date=end_date))
+    do.call(fcn, list(site, file.path(settings$database$dbfiles, input['input']), start_date=start_date, end_date=end_date))
 
     # convert to CF
-    met2CF.Ameriflux(file.path(settings$run$dbfiles, input['input']), site, file.path(settings$run$dbfiles, "cf"), start_date=start_date, end_date=end_date)
+    met2CF.Ameriflux(file.path(settings$database$dbfiles, input['input']), site, file.path(settings$database$dbfiles, "cf"), start_date=start_date, end_date=end_date)
 
     # gap filing
-    metgapfill(file.path(settings$run$dbfiles, "cf"), site, file.path(settings$run$dbfiles, "gapfill"), start_date=start_date, end_date=end_date)
+    metgapfill(file.path(settings$database$dbfiles, "cf"), site, file.path(settings$database$dbfiles, "gapfill"), start_date=start_date, end_date=end_date)
 
     # model specific
     load.modelpkg(input['output'])
     fcn <- paste("met2model", input['output'], sep=".")
-    r <- do.call(fcn, list(file.path(settings$run$dbfiles, "gapfill"), site, file.path(settings$run$dbfiles, input['output']), start_date=start_date, end_date=end_date))
+    r <- do.call(fcn, list(file.path(settings$database$dbfiles, "gapfill"), site, file.path(settings$database$dbfiles, input['output']), start_date=start_date, end_date=end_date))
     settings$run$inputs[[i]] <- r[['file']]
   }
 

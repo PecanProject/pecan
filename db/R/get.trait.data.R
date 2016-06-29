@@ -220,7 +220,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
 ##' - settings$pfts
 ##' - settings$model$type
 ##' - settings$database$bety
-##' - settings$run$dbfiles
+##' - settings$database$dbfiles
 ##' - settings$meta.analysis$update
 ##' @name get.trait.data
 ##' @title Gets trait data from the database

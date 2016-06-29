@@ -49,7 +49,7 @@ clean.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml") {
 	}
 
 	# 5) remove explicit location of storage
-	settings$run$dbfiles <- NULL
+	settings$database$dbfiles <- NULL
 
 	# 5) remove workflow completely (including id)
 	settings$workflow <- NULL
