@@ -1,6 +1,12 @@
-.First.lib <- function(which.lib.loc, package){
+##' @name setClass jump
+##' @title setClass jump
+##' @export
+##' 
+##' @author Michael Dietze
 
-  ## define a class for automatically tuning jump distributions
+# .First.lib <- function(which.lib.loc, package){
+
+## define a class for automatically tuning jump distributions
 setClass("jump",
          representation(history="numeric",count="numeric",target="numeric",clen="numeric",arate="numeric"),
          prototype=list(history=vector("numeric",0),count=0,target=0.4,clen=100,arate=vector("numeric",0))
@@ -11,6 +17,12 @@ setClass("jump",
 ## target = target acceptance rate
 ## clen = update period (recompute when count > clen)
 setIs("jump","list")
+
+
+##' @name setClass mvjump
+##' @title setClass mvjump 
+##' @export
+##' 
 
 setClass("mvjump",
          representation(history="matrix",count="numeric",target="numeric",clen="numeric",arate="numeric",mydim="numeric"),
@@ -23,4 +35,4 @@ setClass("mvjump",
 setIs("mvjump","list")
 
   
-}
+# }

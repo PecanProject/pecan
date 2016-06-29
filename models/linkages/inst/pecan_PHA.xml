@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<pecan>
+  <outdir>/fs/data2/output//PEcAn_1000000630</outdir>
+  <database>
+    <bety>
+      <user>bety</user>
+      <password>bety</password>
+      <host>psql-pecan.bu.edu</host>
+      <dbname>bety</dbname>
+      <driver>PostgreSQL</driver>
+      <write>true</write>
+    </bety>
+  </database>
+  <pfts>
+    <pft>
+      <name>Tsuga canadensis</name> 
+      <constants>
+        <num>1</num>
+      </constants>
+    </pft>
+  </pfts>
+  <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+  </meta.analysis>
+  <ensemble>
+    <size>1</size>
+    <variable>NPP</variable>
+  </ensemble>
+  <model>
+    <id>1000000005</id>
+  </model>
+  <workflow>
+    <id>1000000630</id>
+  </workflow>
+  <run>
+    <site>
+      <id>758</id>
+      <met.start></met.start>
+      <met.end>2010-12-31 00:00:00</met.end>
+    </site>
+    <inputs>
+      <met>
+        <id>1000000481</id>
+      </met>
+    </inputs>
+    <start.date>0850/01/01</start.date>
+    <end.date>2000/12/31</end.date>
+    <dbfiles>/fs/data2/output//dbfiles</dbfiles>
+    <host>
+      <name>localhost</name>
+    </host>
+  </run>
+</pecan>

@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <pecan>
-  <outdir>/home/dlebauer/.pecan/demo</outdir>
+  <outdir>/home/dlebauer/pecan_remote/remote_sensing_da</outdir>
   <pfts>
     <pft>
-      <name>biocro.misp</name>
+      <name>Miscanthus_x_giganteus</name>
     </pft>
   </pfts>
   <meta.analysis>
@@ -11,7 +11,7 @@
     <random.effects>FALSE</random.effects>
   </meta.analysis>
   <ensemble>
-    <size>5</size>
+    <size>2</size>
     <variable>StemBiom</variable>
   </ensemble>
   <sensitivity.analysis>
@@ -21,22 +21,31 @@
       <sigma>-1</sigma>
     </quantiles>
     <variable>StemBiom</variable>
-    <start.year>2004</start.year>
-    <end.year>2004</end.year>
+    <start.year>2012</start.year>
+    <end.year>2012</end.year>
   </sensitivity.analysis>
   <model>
-    <name>BIOCRO</name>
-    <id>9</id>
+    <type>BIOCRO</type>
+    <id>12</id>
   </model>
   <run>
     <site>
-      <id>76</id>
-      <name>EBI Energy farm</name>
+      <name>SoyFACE</name>
     </site>
-    <start.date>2004-01-01 06:00:00</start.date>
-    <end.date>2005-12-31 05:59:00</end.date>
-    <host> 
-      <name>localhost</name>
+    <start.date>2012-01-01 00:00:00</start.date>
+    <end.date>2012-12-31 23:59:00</end.date>
+    <host> <host>
+   <name>roger-login.ncsa.illinois.edu</name>
+   <qsub>qsub -l walltime=03:00:00,nodes=5:ppn=10 -N @NAME@ -o @STDOUT@ -e @STDERR@</qsub>
+   <qsub.jobid>lionxo_test ([0-9]+) .*</qsub.jobid>
+   <qstat>qstat -j @JOBID@ 2&gt;1 &gt;/dev/null || echo DONE</qstat>
+   <modellauncher>
+    <binary>/home/dlebauer/dev/pecan/utils/modellauncher/modellauncher</binary>
+    <qsub.extra>-l ncpus=10</qsub.extra>
+   </modellauncher>
+   <rundir>/home/dlebauer/pecan_remote/remote_sensing_da/run</rundir>
+   <outdir>/home/dlebauer/pecan_remote/remote_sensing_da/out</outdir>
+  </host>
     </host>
   </run>
   <database>
@@ -51,5 +60,4 @@
   <bety>
     <write>TRUE</write>
   </bety>
-  <workflow><id>1</id></workflow>
 </pecan>

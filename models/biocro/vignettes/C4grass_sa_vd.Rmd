@@ -1,0 +1,28 @@
+
+
+```{r}
+library(PEcAn.all)
+logger.setQuitOnSevere(FALSE)
+
+settings <- read.settings("models/biocro/inst/extdata/c4grass.xml")
+
+
+# Query the trait database for data and priors
+settings$pfts <- get.trait.data(pft = settings$pfts, modeltype = settings$model$type, 
+                                dbfiles = settings$run$dbfiles, database = settings$database$bety, 
+                                forceupdate = TRUE)
+
+# Run the PEcAn meta.analysis
+run.meta.analysis(pfts = settings$pfts, iterations = settings$meta.analysis$iter, threshold = settings$meta.analysis$threshold, 
+                  dbfiles = settings$run$dbfiles, database = settings$database$bety)
+
+run.write.configs(settings = settings, write = FALSE) # Calls model specific write.configs e.g. write.config.ed.R
+## load met data
+start.model.runs(settings = settings, write = FALSE)         # Start ecosystem model runs
+
+get.results(settings)         # Get results of model runs
+
+run.sensitivity.analysis()      # Run sensitivity analysis and variance decomposition on model output
+
+run.ensemble.analysis()		      # Run ensemble analysis on model output. 
+```

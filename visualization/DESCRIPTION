@@ -1,8 +1,8 @@
 Package: PEcAn.visualization
 Type: Package
 Title: PEcAn visualization functions.
-Version: 1.4.1
-Date: 2015-01-22
+Version: 1.4.6
+Date: 2016-05-05
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
     Davidson, Rob Kooper
 Maintainer: David LeBauer <dlebauer@illinois.edu>
@@ -28,8 +28,11 @@ Depends:
     ncdf4,
     stringr
 Suggests:
-    testthat
+    testthat,
+    png,
+    grid
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
+RoxygenNote: 5.0.1

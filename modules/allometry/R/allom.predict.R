@@ -91,9 +91,10 @@ allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",int
   }
   ## set and check component
   if(is.null(component)) component = which.max(apply(pftByComp,2,sum))
-  if(!all(pftByComp[,component])){
+#  if(!all(pftByComp[,component])){
+  if(!all(unique(pft) %in% names(object)[pftByComp[,component]])){
     print(paste("Missing component",component,"for some PFTs"))
-    print(names(object)[!pftByComp])
+    print(names(object)[!pftByComp[,component]])
     return(NA)
   }
   ## set use
@@ -118,6 +119,7 @@ allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",int
   ## stick in a list by PFT
   params <- list()
   for(i in 1:npft){
+    if(length(object[[i]][[component]])==0) next
     if(interval == "none"){
       ## interval = none       -> mean of mu or Bg
       if(use[i] == "Bg"){
@@ -222,6 +224,9 @@ load.allom <- function(object){
     } else {
       my.files = dir(object[i],"Allom.*.Rdata",full.names = TRUE)
     }
+    ## Need to add a 3rd option if the files are remotely on Dropbox
+    ## download.file(object,"foo.Rdata",method="curl") works for a single file
+    ## not sure how to get the file listing
     
     for(j in seq_along(my.files)){
       ## parse file name  
@@ -235,10 +240,10 @@ load.allom <- function(object){
         k = which(names(tmp) == my.pft)
       } else {
         k = length(tmp)+1
+        tmp[[k]] = list()
+        names(tmp)[k] = my.pft
       }
       load(my.files[j])
-      tmp[[k]] = list()
-      names(tmp)[k] = my.pft
       tmp[[k]][[my.comp]] = mc
     }
   }

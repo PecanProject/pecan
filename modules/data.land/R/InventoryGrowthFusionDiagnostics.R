@@ -10,23 +10,22 @@ InventoryGrowthFusionDiagnostics <- function(jags.out,combined){
   
   ### DBH
   #par(mfrow=c(3,2))
-  layout(matrix(1:8,4,2))
+  layout(matrix(1:8,4,2,byrow=TRUE))
   out <- as.matrix(jags.out)
   x.cols = which(substr(colnames(out),1,1)=="x")
   ci <- apply(out[,x.cols],2,quantile,c(0.025,0.5,0.975))
   ci.names = parse.MatrixNames(colnames(ci),numeric=TRUE)
   
-  smp = sample.int(data$ni,4)
+  smp = sample.int(data$ni,min(8,data$ni))
   for(i in smp){
     sel = which(ci.names$row == i)
-    plot(data$time,ci[2,sel],type='n',ylim=range(ci[,sel],na.rm=TRUE),ylab="DBH (cm)",main=i)
+    rng = c(range(ci[,sel],na.rm=TRUE),range(data$z[i,],na.rm=TRUE))
+    plot(data$time,ci[2,sel],type='n',ylim=range(rng),ylab="DBH (cm)",main=i)
     ciEnvelope(data$time,ci[1,sel],ci[3,sel],col="lightBlue")
     points(data$time,data$z[i,],pch="+",cex=1.5)
  #   lines(data$time,z0[i,],lty=2)
-  }
   
   ## growth
-  for(i in smp){
     sel = which(ci.names$row == i)
     inc.mcmc = apply(out[,x.cols[sel]],1,diff)
     inc.ci = apply(inc.mcmc,1,quantile,c(0.025,0.5,0.975))*5
@@ -79,7 +78,7 @@ InventoryGrowthFusionDiagnostics <- function(jags.out,combined){
   ### INDIV
   ind.cols= which(substr(colnames(out),1,3)=="ind")
   if(length(ind.cols)>0){
-    boxplot(out[,ind.cols],horizontal=TRUE,outline=FALSE,col=combined$PLOT)
+    boxplot(out[,ind.cols],horizontal=TRUE,outline=FALSE,col=as.factor(combined$PLOT))
     abline(v=0,lty=2)
     tapply(apply(out[,ind.cols],2,mean),combined$PLOT,mean)
     table(combined$PLOT)

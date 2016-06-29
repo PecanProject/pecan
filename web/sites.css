@@ -78,13 +78,13 @@ th,td {
     width: 180px;
 }
 
-#stylized select,input {
+#stylized select, input, textarea {
     font-size: 12px;
     border: solid 1px #aacfe4;
     width: 190px;
 }
 
-#stylized input[type=text] {
+#stylized input[type=text], input[type=password], textarea {
     text-overflow: ellipsis;
     width: 184px;
     padding: 4px 2px;
@@ -92,6 +92,10 @@ th,td {
 
 #stylized input[type=checkbox] {
     width: 180px;
+}
+
+#stylized textarea {
+    resize: none;
 }
 
 #stylized button {
@@ -126,6 +130,10 @@ th,td {
     height: calc( 100% - 30px );
 }
 
+#output p {
+    padding-top: 10px;
+}
+
 #editor {
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
@@ -134,21 +142,31 @@ th,td {
     height: calc( 100% - 40px );
 }
 
-#table {
+.table {
     display: table;
 }
 
-#row {
+.row {
     display: table-row;
 }
 
-#cell, #header {
+.cell, .header {
     display: table-cell;
     padding: 0px 5px 0px 5px;
 }
 
-#header {
+.header {
     font-weight: bold;
+}
+
+.logfile {
+    margin-top: 8px;
+    border-top: 1px solid #D9D9D9;
+    border-bottom: 1px solid #D9D9D9;
+    padding: 7px 10px;
+    font: 11px "Courier New", monospace;
+    background-color: #F2F2F2;
+    color: black;
 }
 
 #logout {

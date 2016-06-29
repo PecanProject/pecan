@@ -1,11 +1,12 @@
 if(FALSE){
   
-  in.path = "/Users/paleolab/Linkages/PalEON.Met/PHA/pecan2.bu.edu/input/PalEON.MIP.PHA/"
-  outfolder = "/Users/paleolab/Linkages/PalEON.Met/PHA/pecan2.bu.edu/output/PHA/"
-  
   start.year = 850
   end.year = 2010
+  site = "PUN"
   
-  met2model.LINKAGES(in.path = in.path, outfolder = outfolder, start.year = start.year, end.year = end.year)
+  in.path = paste0("/Users/paleolab/Linkages/phase1a_met_drivers_v4.1/",site,"/")
+  outfolder = paste0("/Users/paleolab/Linkages/met2model_output/",site,"/")
+  
+  met2model.LINKAGES(site = site, in.path = in.path, outfolder = outfolder, start.year = start.year, end.year = end.year)
   
 }

@@ -2,7 +2,7 @@
 /**
  * Copyright (c) 2012 University of Illinois, NCSA.
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the 
+ * are made available under the terms of the
  * University of Illinois/NCSA Open Source License
  * which accompanies this distribution, and is available at
  * http://opensource.ncsa.illinois.edu/license.html
@@ -20,12 +20,18 @@ if ($authentication) {
     close_database();
     exit;
   }
+  if (get_page_acccess_level() > $min_run_level) {
+    header( "Location: history.php");
+    close_database();
+    exit;
+  }
 }
 
 # boolean parameters
 $userok=isset($_REQUEST['userok']);
 $offline=isset($_REQUEST['offline']);
 $pecan_edit = (isset($_REQUEST['pecan_edit'])) ? "checked" : "";
+$adv_setup = (isset($_REQUEST['adv_setup'])) ? "checked" : "";
 $model_edit = (isset($_REQUEST['model_edit'])) ? "checked" : "";
 $browndog = (isset($_REQUEST['browndog'])) ? "checked" : "";
 
@@ -47,21 +53,34 @@ $selected_pfts = array();
 if (isset($_REQUEST['pft'])) {
   $selected_pfts = $_REQUEST['pft'];
 }
-$startdate = "2006/01/01";
-if (isset($_REQUEST['start'])) { 
+
+$startdate = "2004/01/01";
+if (isset($_REQUEST['start'])) {
   $startdate=$_REQUEST['start'];
 }
-$enddate = "2006/12/31";
-if (isset($_REQUEST['end'])) { 
+
+$enddate = "2004/12/31";
+if (isset($_REQUEST['end'])) {
   $enddate=$_REQUEST['end'];
 }
-$email="";
+
+$email = "";
 if (isset($_REQUEST['email'])) {
   $email=$_REQUEST['email'];
 }
 
+$notes = "";
+if (isset($_REQUEST['notes'])) {
+  $notes=$_REQUEST['notes'];
+}
+
+
 // get site information
-$stmt = $pdo->prepare("SELECT sitename, city, state, country, ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat FROM sites WHERE sites.id=?");
+$stmt = $pdo->prepare("SELECT sitename, city, state, country, ST_X(ST_CENTROID(sites.geometry)) AS lon," . 
+		      "	ST_Y(ST_CENTROID(sites.geometry)) AS lat, " . 
+		      "	mat, map, soil, notes, soilnotes, greenhouse, time_zone, sand_pct, clay_pct" . 
+		      "	FROM sites WHERE sites.id=?"); 
+
 if (!$stmt->execute(array($siteid))) {
   die('Invalid query: ' . error_database());
 }
@@ -81,11 +100,11 @@ $inputs = array();
 while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
   $row['files'] = array();
   $inputs[$row['tag']] = $row;
-} 
+}
 $stmt->closeCursor();
 
 // get list of files
-$stmt = $pdo->prepare("SELECT tag, inputs.id, dbfiles.file_name, sites.sitename, inputs.start_date, inputs.end_date" .
+$stmt = $pdo->prepare("SELECT tag, inputs.name AS input_name, inputs.id, dbfiles.file_name, sites.sitename, inputs.start_date, inputs.end_date" .
                       " FROM sites, inputs, dbfiles, machines, modeltypes_formats, models, formats" .
                       " WHERE (inputs.site_id=${earth} OR inputs.site_id=?)" .
                       " AND inputs.id=dbfiles.container_id AND dbfiles.container_type='Input'" .
@@ -98,7 +117,11 @@ if (!$stmt->execute(array($siteid, $hostname, $modelid))) {
 }
 while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
   if ($row['tag'] == 'met') {
-    $row['name']="Weather " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
+	if (empty($row['input_name'])){
+    		$row['name']="Weather " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
+	} else {
+    		$row['name']= $row['input_name'] . " " . substr($row['start_date'], 0, 4) . "-" . substr($row['end_date'], 0, 4);
+	}
   } else if ($row['file_name'] == '') {
     $row['name']=$row['sitename'];
   } else {
@@ -137,7 +160,12 @@ foreach($modeltypes as $type) {
       if (preg_match("/ \(US-.*\)$/", $siteinfo["sitename"])) {
         $x['files'][] = array("id"=>"Ameriflux." . $type, "name"=>"Use Ameriflux");
       }
-      $x['files'][] = array("id"=>"NARR." . $type, "name"=>"Use NARR");
+      // check for NARR,this is not exact since it is a conical projection
+      if ($siteinfo['lat'] > 1 && $siteinfo['lat'] < 85 && $siteinfo['lon'] < -68 && $siteinfo['lon'] > -145) {
+        $x['files'][] = array("id"=>"NARR." . $type, "name"=>"Use NARR");
+      }
+      // CRUNCEP is global
+      $x['files'][] = array("id"=>"CRUNCEP." . $type, "name"=>"Use CRUNCEP");
     }
   }
 }
@@ -161,6 +189,7 @@ $stmt->closeCursor();
 <html>
 <head>
 <title>PEcAn Parameter Selection</title>
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="sites.css" />
@@ -170,7 +199,7 @@ $stmt->closeCursor();
 <?php }?>
 <script type="text/javascript">
   function validate() {
-    $("#next").removeAttr("disabled");       
+    $("#next").removeAttr("disabled");
     $("#error").html("&nbsp;");
 
     // check PFTs
@@ -192,12 +221,20 @@ $stmt->closeCursor();
     if ($("#<?php echo $input['tag']; ?>").val() == null) {
       $("#next").attr("disabled", "disabled");
       $("#error").html("Missing value for <?php echo $input['name']; ?>");
+<?php if ($betydb != "") { ?>
+    } else {
+      var metlabeldiv = document.getElementById('metlabeldiv');
+      metlabeldiv.innerHTML="";
+	if (!(isNaN($("#met option:selected")[0].getAttribute("value")))) {
+      		metlabeldiv.innerHTML = " (Show in <a href=\"<?php echo $betydb; ?>/inputs/" + $("#met option:selected")[0].getAttribute("value") + "\" target=\"BETY\">BETY</a>)";
+	}
+<?php } ?>
     }
 <?php
     }
   }
 ?>
-  
+
     // check dates
     if ($("#start").length != 0) {
       var start = checkDate($("#start").val(), "Start");
@@ -207,8 +244,21 @@ $stmt->closeCursor();
         $("#error").html("End date should be after start date.");
       }
     }
+
+    // redirect to data policy if needed
+    if ($("#met").val()) {
+      if ($("#met").val().startsWith("Ameriflux")) {
+        $("#formnext").attr("action", "03a-ameriflux.php");
+      } else if ($("#met").val().startsWith("NARR")) {
+        $("#formnext").attr("action", "03a-narr.php");
+      } else if ($("#adv_setup").is(':checked')){
+        $("#formnext").attr("action", "07-analysis.php");
+      } else if (!$("#adv_setup").is(':checked')) {
+        $("#formnext").attr("action", "<?php echo ($hostname != $fqdn ? '04-remote.php' : '04-runpecan.php'); ?>");
+      }
+    }
   }
-      
+
   function prevStep() {
     $("#formprev").submit();
   }
@@ -216,7 +266,7 @@ $stmt->closeCursor();
   function nextStep() {
     $("#formnext").submit();
   }
-  
+
   function checkDate(date, field) {
     var arr = date.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
     if (arr == null) {
@@ -246,7 +296,7 @@ $stmt->closeCursor();
 <?php } else { ?>
     google.load("maps", "3",  {other_params:"sensor=false"});
   google.setOnLoadCallback(mapsLoaded);
-    
+
     function mapsLoaded() {
     var latlng = new google.maps.LatLng(<?php echo $siteinfo['lat']; ?>, <?php echo $siteinfo['lon']; ?>);
     var myOptions = {
@@ -262,7 +312,18 @@ $stmt->closeCursor();
 
     // create the tooltip and its text
     var info="<b><?php echo $siteinfo['sitename']; ?></b><br />";
-    info+="<?php echo $siteinfo['city']; ?>, <?php echo $siteinfo['state']; ?>, <?php echo $siteinfo['country']; ?>";
+    info+="<?php echo $siteinfo['city']; ?>, <?php echo $siteinfo['state']; ?>, <?php echo $siteinfo['country']; ?><br/>";
+<?php
+  printInfo($siteinfo, 'mat', 'Mean Annual Temp');
+  printInfo($siteinfo, 'map', 'Mean Annual Precip');
+  printInfo($siteinfo, 'greenhouse', 'Greenhouse Study');
+  printInfo($siteinfo, 'time_zone', 'Local Time');
+  printInfo($siteinfo, 'sand_pct', 'Sand Pct');
+  printInfo($siteinfo, 'clay_pct', 'Clay Pct');
+  printInfo($siteinfo, 'soil', 'Soil');
+  printInfo($siteinfo, 'notes', 'Notes');
+  printInfo($siteinfo, 'soilnotes', 'Soil Notes');
+?>
     var infowindow = new google.maps.InfoWindow({content: info});
     infowindow.open(map, marker);
     validate();
@@ -280,27 +341,44 @@ $stmt->closeCursor();
 <?php if ($offline) { ?>
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
-      <input type="hidden" name="siteid" value="<?php echo $siteid; ?>" />
-      <input type="hidden" name="modelid" value="<?php echo $modelid; ?>" />
-      <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
+<?php if (isset($_REQUEST['conversion'])) { ?>
+      <input name="conversion" type="hidden" value="on">
+<?php } ?>
+<?php foreach($_REQUEST as $key => $value){
+	if(is_array($value)) {
+	  foreach($value as $v) {
+	    echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+	  }
+	} else {
+	  echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+	}
+      }
+?>
     </form>
 
-    <form id="formnext" method="POST" action="04-runpecan.php">
+    <form id="formnext" method="POST" action="<?php echo ($hostname != $fqdn ? '04-remote.php' : '04-runpecan.php'); ?>">
 <?php if ($offline) { ?>
-      <input name="offline" type="hidden" value="on">
+        <input name="offline" type="hidden" value="on">
 <?php } ?>
 <?php if ($userok) { ?>
-      <input name="userok" type="hidden" value="on">
+        <input name="userok" type="hidden" value="on">
 <?php } ?>
-      <input type="hidden" name="siteid" value="<?php echo $siteid; ?>" />
-      <input type="hidden" name="modelid" value="<?php echo $modelid; ?>" />
-      <input type="hidden" name="hostname" value="<?php echo $hostname; ?>" />
-
+<?php foreach($_REQUEST as $key => $value){
+		file_put_contents('php://stderr', print_r('key top ' + $key, TRUE));
+        if(is_array($value)) {
+          foreach($value as $v) {
+            echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
+          }
+        } else {
+	  echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
+        }
+      }
+?>
       <label id="pftlabel">PFT<sup>*</sup></label>
       <select id="pft" name="pft[]" multiple size=5 onChange="validate();">
-<?php 
+<?php
 foreach($pfts as $pft) {
-  print "        <option data-id='{$pft['id']}' ${pft['selected']}>${pft['name']}</option>\n";
+  print "        <option data-id='{$pft['id']}' ${pft['selected']} title=\"${pft['name']}\">${pft['name']}</option>\n";
 }
 ?>
       </select>
@@ -318,26 +396,34 @@ foreach($inputs as $input) {
   $name=substr($input['name'], 0, 20);
   $tag=$input['tag'];
   if ($input['required']) {
-    print "      <label>${name}<sup>*</sup></label>\n";
-  } else {
-    print "      <label>${name}</label>\n";
+    print "      <label id=\"metlabel\">${name}*<div id=\"metlabeldiv\"></div></label>\n";
+  } else { 
+    print "      <label id=\"metlabel\">${name}<div id=\"metlabeldiv\"></div></label>\n";
   }
   print "      <select id=\"${tag}\" name=\"input_${tag}\" onChange=\"validate();\">\n";
   if (!$input['required']) {
     print "      <option value='-1'></option>\n";
   }
   foreach($input['files'] as $file) {
-    print "        <option value='${file['id']}'>${file['name']}</option>\n";
+    print "        <option value='${file['id']}'";
+    if (isset($_REQUEST["input_${tag}"]) && $_REQUEST["input_${tag}"] == "${file['id']}") {
+      print " selected";
+    }
+    print ">${file['name']}</option>\n";
   }
   print "      </select>\n";
   print "      <div class=\"spacer\"></div>\n";
 }
 ?>
       <label title="Used to send email when the run is finished.">Email</label>
-      <input id="email" name="email" type="text" value="<?php echo $email; ?>"/>  
+      <input id="email" name="email" type="text" value="<?php echo $email; ?>"/>
       <div class="spacer"></div>
 
-<?php if ($browndog_url != "") { ?>
+      <label>Notes</label>
+      <textarea name="notes" id="notes" rows="4"><?php echo $notes; ?></textarea>
+      <div class="spacer"></div>
+
+<?php if (isset($browndog_url) && $browndog_url != "") { ?>
       <label title="Use BrownDog for conversions.">Use <a href="http://browndog.ncsa.illinois.edu/">BrownDog</a></label>
       <input id="browndog" name="browndog" type="checkbox" <?php echo $browndog; ?>/>
 <?php } ?>
@@ -345,22 +431,20 @@ foreach($inputs as $input) {
       <input id="pecan_edit" name="pecan_edit" type="checkbox" <?php echo $pecan_edit; ?>/>
       <label title="Allows to edit files generated by PEcAn before model executions.">Edit model config</label>
       <input id="model_edit" name="model_edit" type="checkbox" <?php echo $model_edit; ?>/>
+      <label title="Allows user to do advanced analysis (quantiles and sigma options) ">Advanced setup</label>
+      <input id="adv_setup" name="adv_setup" type="checkbox" <?php echo $adv_setup; ?> onChange=validate(); />
       <div class="spacer"></div>
 
       <span class="small"><sup>*</sup> are required fields.</span>
       <p></p>
       <span id="error" class="small">&nbsp;</span>
+
+      <div class="spacer"></div>
       <input id="prev" type="button" value="Prev" onclick="prevStep();" />
-      <input id="next" type="button" value="Next" onclick="nextStep();" <?php if (!$userok) echo "disabled" ?>/>    
+      <input id="next" type="button" value="Next" onclick="nextStep();" <?php if (!$userok) echo "disabled" ?>/>
       <div class="spacer"></div>
     </form>
-<?php
-  if (check_login()) {
-    echo "<p></p>";
-    echo "Logged in as " . get_user_name();
-    echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
-  }
-?>    
+<?php whoami(); ?>    
   </div>
   <div id="output">
     name : <b><?php echo $siteinfo["sitename"]; ?></b><br/>
@@ -376,13 +460,20 @@ foreach($inputs as $input) {
     if($(this).is(':checked')){
       browndog_add();
     } else {
-      browndog_del();      
+      browndog_del();
     }
   });
 </script>
 </body>
 </html>
 
-<?php 
+<?php
 close_database();
+
+function printInfo($siteinfo, $var, $text) {
+  if (isset($siteinfo[$var])) {
+    $tmp = preg_replace('/\s\s+/', ' ', toXML($siteinfo[$var]));
+    echo "    info+= \"${text} : ${tmp}</br/>\";";
+  }
+}
 ?>

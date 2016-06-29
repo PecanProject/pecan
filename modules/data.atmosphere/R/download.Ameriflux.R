@@ -10,20 +10,23 @@ download.Ameriflux.site <- function(site_id) {
 ##' @name download.Ameriflux
 ##' @title download.Ameriflux
 ##' @export
-##' @param site the site to be downloaded, will be used as prefix as well
+##' @param site the FLUXNET ID of the site to be downloaded, used as file name prefix. 
+##' The "SITE_ID" field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}
 ##' @param outfolder location on disk where outputs will be stored
-##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
-##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
+##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
+##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 ##' 
-##' @author Josh Mantooth, Rob Kooper
-download.Ameriflux <- function(site, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) {
+##' @author Josh Mantooth, Rob Kooper, Ankur Desai
+download.Ameriflux <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) {
   # get start/end year code works on whole years only
   
   require(lubridate) #is this necessary?
   require(PEcAn.utils)
   require(data.table)
+  
+  site = sub(".* \\((.*)\\)", "\\1", sitename)
   
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date <- as.POSIXlt(end_date, tz = "GMT")
@@ -38,6 +41,8 @@ download.Ameriflux <- function(site, outfolder, start_date, end_date, overwrite=
   
   # url where Ameriflux data is stored
   baseurl <- paste0("http://cdiac.ornl.gov/ftp/ameriflux/data/Level2/Sites_ByID/", site, "/with_gaps/")
+  # Hack needed for US-UMB which has hourly and half-hourly folders separate. This version sticks with hourly which has longer site record
+  if (site == 'US-UMB') { baseurl <- paste0(baseurl,'/hourly/') }
   
   # fetch all links
   links <- tryCatch({
@@ -52,9 +57,10 @@ download.Ameriflux <- function(site, outfolder, start_date, end_date, overwrite=
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
                         startdate=character(rows), enddate=character(rows),
+                        dbfile.name = site,
                         stringsAsFactors = FALSE)
   for(year in start_year:end_year) {
-    outputfile <- file.path(outfolder, paste(site, year, "nc", sep="."))
+      outputfile <- file.path(outfolder, paste(site, year, "nc", sep=".")) 
     
     # create array with results
     row <- year - start_year + 1
@@ -63,7 +69,7 @@ download.Ameriflux <- function(site, outfolder, start_date, end_date, overwrite=
     results$startdate[row] <- paste0(year,"-01-01 00:00:00")
     results$enddate[row] <- paste0(year,"-12-31 23:59:59")
     results$mimetype[row] <- 'application/x-netcdf'
-    results$formatname[row] <- 'Ameriflux'
+    results$formatname[row] <- 'AmeriFlux.level2.h.nc'
     
     # see if file exists
     if (file.exists(outputfile) && !overwrite) {

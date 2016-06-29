@@ -37,6 +37,27 @@ write.config.MODEL <- function(defaults, trait.values, settings, run.id){
     jobsh <- readLines(con=system.file("template.job", package = "PEcAn.MODEL"), n=-1)
   }
   
+  # create host specific setttings
+  hostsetup <- ""
+  if (!is.null(settings$model$prerun)) {
+    hostsetup <- paste(hostsetup, sep="\n", paste(settings$model$prerun, collapse="\n"))
+  }
+  if (!is.null(settings$run$host$prerun)) {
+    hostsetup <- paste(hostsetup, sep="\n", paste(settings$run$host$prerun, collapse="\n"))
+  }
+
+  hostteardown <- ""
+  if (!is.null(settings$model$postrun)) {
+    hostteardown <- paste(hostteardown, sep="\n", paste(settings$model$postrun, collapse="\n"))
+  }
+  if (!is.null(settings$run$host$postrun)) {
+    hostteardown <- paste(hostteardown, sep="\n", paste(settings$run$host$postrun, collapse="\n"))
+  }
+
+  # create job.sh
+  jobsh <- gsub('@HOST_SETUP@', hostsetup, jobsh)
+  jobsh <- gsub('@HOST_TEARDOWN@', hostteardown, jobsh)
+
   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
   jobsh <- gsub('@SITE_MET@', settings$run$site$met, jobsh)

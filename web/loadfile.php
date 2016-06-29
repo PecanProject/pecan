@@ -13,10 +13,15 @@ require("common.php");
 open_database();
 if ($authentication) {
 	if (!check_login()) {
-		close_database();
 		header('HTTP/1.1 403 Unauthorized');
-		exit;
+        close_database();
+        exit;
 	}
+    if (get_page_acccess_level() > $min_run_level) {
+		header('HTTP/1.1 403 Unauthorized');
+        close_database();
+        exit;
+    }
 }
 
 // runid

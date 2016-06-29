@@ -10,9 +10,9 @@
 ##'  Plot results of variance decomposition
 ##'
 ##' Plots variance decomposition tryptich
-##' @name variance.decomposition.plot
+##' @name plot.variance.decomposition
 ##' @title Variance Decomposition Plots
-##' @export
+##' @export plot.variance.decomposition
 ##' @author David LeBauer, Carl Davidson
 ##' @param ... Output from any number of sensitivity analyses. Output must be of the form 
 ##'          given by sensitivity.results$variance.decomposition.output in model output
@@ -33,8 +33,8 @@
 ##'           coef.vars = c(a=1,b=0.5, c=0.1),
 ##'           elasticities = c(a=1,b=2,c=0.5),
 ##'           variances    = c(a = 20, b=30, c = 10))
-##' do.call(grid.arrange, c(variance.decomposition.plot(x), ncol = 4))
-variance.decomposition.plot <- function(plot.inputs,
+##' do.call(grid.arrange, c(plot.variance.decomposition(x), ncol = 4))
+plot.variance.decomposition <- function(plot.inputs,
                                         fontsize = list(title = 18, axis = 14)){
   require(ggmap)
   theme_set(theme_classic() +

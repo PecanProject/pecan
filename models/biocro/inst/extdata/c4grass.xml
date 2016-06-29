@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<pecan>
+  <outdir>/home/dlebauer/.pecan/demo</outdir>
+  <pfts>
+    <pft>
+      <name>sorghum</name>
+    </pft>
+  </pfts>
+  <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+  </meta.analysis>
+  <ensemble>
+    <size>5</size>
+    <variable>StemBiom</variable>
+  </ensemble>
+  <sensitivity.analysis>
+    <!--<quantiles>
+      <sigma>1</sigma>
+      <sigma>0</sigma>
+      <sigma>-1</sigma>
+    </quantiles>-->
+    <variable>StemBiom</variable>
+    <start.year>2004</start.year>
+    <end.year>2004</end.year>
+  </sensitivity.analysis>
+  <model>
+    <name>BIOCRO</name>
+    <id>7</id>
+  </model>
+  <run>
+    <site>
+      <id>76</id>
+      <name>EBI Energy farm</name>
+    </site>
+    <start.date>2004-01-01 06:00:00</start.date>
+    <end.date>2004-12-31 05:59:00</end.date>
+     <inputs>
+      <met>
+        <id>299</id>
+      </met>
+      <soil>
+        <id>303</id><!--hwsd.nc-->
+      </soil>
+    </inputs>
+    <host> 
+      <name>localhost</name>
+    </host>
+  </run>
+  
+  <database>
+    <bety>
+      <driver>PostgreSQL</driver>
+      <user>bety</user>
+      <password>bety</password>
+      <host>ebi-forecast.igb.illinois.edu</host>
+      <dbname>ebi_production</dbname>
+    </bety>
+  </database>
+  <bety>
+    <write>TRUE</write>
+  </bety>
+  <workflow><id>1</id></workflow>
+</pecan>

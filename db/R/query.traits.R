@@ -32,18 +32,23 @@ query.traits <- function(spstr, priors, con = NULL, update.check.only=FALSE){
   }
   if(is.list(con)){
     print("query.traits")
-    print("WEB QUERY OF DATABASE NOTE IMPLEMENTED")
+    print("WEB QUERY OF DATABASE NOT IMPLEMENTED")
     return(NULL)
   }
   
-  query <- paste("select distinct variables.name from traits join variables 
+  if(!spstr == "''"){
+    query <- paste("select distinct variables.name from traits join variables 
                  on (traits.variable_id = variables.id) where specie_id in (", spstr,");", sep = "")
-  traits <- db.query(query, con)$name
-  traits <- unique(traits[traits %in% priors])
+    traits <- db.query(query, con)$name
+    traits <- unique(traits[traits %in% priors])
   
-  ### Grab trait data
-  trait.data <- lapply(traits, function(trait) query.trait.data(trait, spstr, con=con, update.check.only=update.check.only))
-  names(trait.data) <- traits
+    ### Grab trait data
+    trait.data <- lapply(traits, function(trait) query.trait.data(trait, spstr, con=con, update.check.only=update.check.only))
+    names(trait.data) <- traits
+  } else {
+    trait.data <- list()
+  }
+  
   return(trait.data)
 }
 #==================================================================================================#

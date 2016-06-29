@@ -1,0 +1,91 @@
+---
+title: "Create PostGIS polygon"
+author: "David LeBauer"
+date: "7/30/2015"
+output: html_document
+---
+
+Code used to insert a polygon for Champaign County into a PostGIS geometry column.
+
+Note that the `sites.geometry` column has three dimensions. Latitude and longitude are queried using `ggplot2::map_data('counties')` and elevation data is queried using `rgbif::elevation(latidutde, longitude)`.
+
+This query is used to define the boundary of [site 1254, Champaign County](https://www.betydb.org/sites/1254), which will be used for testing and development of regional runs of PEcAn
+
+### Load Libraries
+
+```{r}
+library(ggplot2)
+library(data.table)
+library(rgbif)
+library(knitr)
+```
+
+### Select lat and lon points for Champaign County Boundary
+
+
+```{r}
+d <- data.table(map_data("county"))
+champaign <- d[region == "illinois" & subregion == "champaign"]
+
+kable(champaign)
+```
+
+### Query Elevation points
+
+```{r}
+### for PostGIS, need polygon to return to start point
+champaign <- rbind(champaign, champaign[1])
+
+## need to get key from Google Maps API
+## I've put mine in a ~/.googlemapskey
+key <- readLines(con = "~/.googlemapskey")
+champaign_pts <- data.table(champaign[,elevation(latitude = lat, longitude = long, key = key)])
+
+kable(champaign_pts, caption = "Table with elevations")
+```
+
+
+### Define boundary in postGIS
+
+```{r}
+boundary <- champaign_pts[,paste(longitude, latitude, elevation, collapse = ",")]
+
+writeLines(boundary)
+```
+
+### Define PostGIS geom
+
+Use `srid = 4326`
+
+```{r}
+geometry <- paste0("ST_SetSRID(ST_MakePolygon(ST_GeomFromText('LINESTRING(", boundary , ")')), 4326)")
+
+writeLines(geometry)
+```
+
+#### insert statement
+
+```{r}
+insert_polygon <- paste0("INSERT into sites (sitename, geometry) VALUES ('Champaign County', ", geometry, ");")
+writeLines(insert_polygon)
+```
+
+#### Update geom statement
+
+```{r}
+update_polygon <- paste0("update sites set geometry = ", geometry , " where sitename = 'Champaign County';")
+writeLines(update_polygon)
+```
+
+
+### Insert into BETYdb
+
+```{r, eval = FALSE}
+
+library(PEcAn.DB)
+library(RPostgreSQL)
+#settings <- read.settings('settings.xml')
+settings <-list(database = list(bety = list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")))
+
+db.query(insert_polygon, con = db.open(settings$database$bety))
+```
