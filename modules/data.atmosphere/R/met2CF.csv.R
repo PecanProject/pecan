@@ -47,9 +47,9 @@
 ##' format <- query.format.vars(input.id=input.id,con)
 ##' start_date <- ymd_hm('199901010000')
 ##' end_date <- ymd_hm('201412312330')
-##' met2CF.csv(in.path,in.file,outfolder,start_date,end_date,format=format)
+##' met2CF.csv(in.path,in.file,outfolder,start_date,end_date,format=format,overwrite=TRUE)
 ##' }
-met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format=format, lat=NULL, lon=NULL, nc_verbose = FALSE,...){
+met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format=format, lat=NULL, lon=NULL, nc_verbose = FALSE, overwrite=FALSE,...){
   require(lubridate)
   require(udunits2)  
   
@@ -69,7 +69,11 @@ met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format
   for(i in 1:length(files)){
     #create new filename by swapping .csv with .nc    
     new.file <- file.path(outfolder, gsub(".csv","_CF.nc",basename(files[i])))
-    
+    if (file.exists(new.file) && !overwrite) {
+      logger.debug("File '", new.file, "' already exists, skipping to next file.")
+      next
+    }
+        
     ## some files have a line under the header that lists variable units
     ## search for NA's after conversion to numeric
     if(is.null(format$header)){
@@ -94,7 +98,7 @@ met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format
     datetime_raw <- dat[, format$vars$orig_name[datetime_index]]
     datetime <- do.call(datetime_units, list(datetime_raw))  #convert to POSIXct convention
     ## and remove datetime from 'dat' dataframe
-    dat[, datetime_index] <- format$na.strings    
+    ##dat[, datetime_index] <- format$na.strings    
  
     ## Only run if years > start_date < end_date, only if both are provided
     ## FUTURE OPTION: Clip array to available dates before writing, maybe rename output file in that case
@@ -103,8 +107,8 @@ met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format
       if (length(availdat)==0) { logger.error("data does not contain output after start_date or before end_date")}
     }
     
-    ## convert data to numeric
-    dat <- as.data.frame(datetime = datetime, sapply(dat[,-datetime_index], as.numeric))
+    ## convert data to numeric - not needed
+    #dat <- as.data.frame(datetime = datetime, sapply(dat[,-datetime_index], as.numeric))
     
     ### create time dimension 
     days_since_1700 <- datetime - ymd("1700-01-01")
@@ -174,7 +178,7 @@ met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format
     locs <- which(format$vars$bety_name %in% "soilM")
     if (length(locs)>0) {
       k <- locs[1]
-      soilM.var <- ncvar_def(name="volume_fraction_of_condensed_water_in_soil",units = "%",dim = xytdim)
+      soilM.var <- ncvar_def(name="volume_fraction_of_condensed_water_in_soil",units = "1",dim = xytdim)
       nc <- ncvar_add(nc = nc, v = soilM.var, verbose = nc_verbose)
       arrloc <- as.character(format$vars$orig_name[k])
       if (arrloc=="") {
@@ -185,7 +189,7 @@ met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format
         }
       }
       ncvar_put(nc, varid = soilM.var,
-                vals=met.conv(dat[,arrloc],format$vars$orig_units[k],"%","%"))  
+                vals=met.conv(dat[,arrloc],format$vars$orig_units[k],"1","1"))  
     }
     
     ## soilT (celsius) => soil_temperature (K)
@@ -326,7 +330,7 @@ met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format
     }
     
     ## precipitation_flux (kg m-2 s-1) => precipitation_flux (kg m-2 s-1)
-    locs <- which(format$vars$bety_name %in% c("precipitation_flux"))
+    locs <- which(format$vars$bety_name %in% "precipitation_flux")
     if (length(locs)>0) {
       k <- locs[1]
       precip.var <- ncvar_def(name="precipitation_flux",units = "kg m-2 s-1",dim = xytdim)
@@ -336,84 +340,128 @@ met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format
         if (any(colnames(format$vars)=="column_number")) { 
           arrloc <- format$vars$column_number[k]
         } else {
-          logger.error("Cannot find column location for PAR by name or column number")
+          logger.error("Cannot find column location for precipitation_flux by name or column number")
         }
       }
-      rain = dat[,arrloc]
-      rain.units = as.character(format$vars$orig_units[k])
-      rain.units = switch(rain.units,
-                      mm = {rain = rain / timestep; "kg/m2/s"},
-                      m  = {rain = rain / timestep; "Mg/m2/s"},
-                      'in' = {rain=ud.convert(rain / timestep, "in", "mm"); "kg/m2/s"},
-                      'mm h-1' = {rain = ud.convert(rain / timestep, "h", "s"); "kg/m2/s"})        
+      rain <- dat[,arrloc]
+      rain.units <- as.character(format$vars$orig_units[k])
+      rain.units <- switch(rain.units,
+                      mm = {rain = rain / timestep; "kg m-2 s-1"},
+                      m  = {rain = rain / timestep; "Mg m-2 s-1"},
+                      'in' = {rain=ud.convert(rain / timestep, "in", "mm"); "kg m-2 s-1"},
+                      'mm h-1' = {rain = ud.convert(rain / timestep, "h", "s"); "kg m-2 s-1"})        
       ncvar_put(nc, varid = precip.var,
                 vals = met.conv(rain, rain.units, "kg m-2 s-1", "kg m-2 s-1"))  
     }
-    
-    ## wind_direction (degrees) => wind_from_direction (degrees) 
-    
-    ## Wspd (m s-1) => wind_speed (m s-1)
-
+        
     ## eastward_wind (m s-1) => eastward_wind (m s-1)
-    
     ## northward_wind (m s-1) => northward_wind (m s-1)
-
-     
-#     ## wind_speed
-#     if("eastward_wind" %in% format$bety & "northward_wind" %in% format$bety){
-#       
-#       k = which(format$bety=="eastward_wind")
-#       uwind.var = ncvar_def(name="eastward_wind",units="m/s",dim=xytdim)
-#       nc = ncvar_add(nc = nc, v = uwind.var, verbose = nc_verbose) #add variable to existing netCDF file
-#       ncvar_put(nc, varid = 'eastward_wind',
-#                 vals=met.conv(dat[,as.character(format$orig[k])],format$units[k],"m/s","m/s"))
-#       
-#       k = which(format$bety=="northward_wind")
-#       uwind.var = ncvar_def(name="northward_wind",units="m/s",dim=xytdim)
-#       nc = ncvar_add(nc = nc, v = uwind.var, verbose = nc_verbose) #add variable to existing netCDF file
-#       ncvar_put(nc, varid = 'northward_wind',
-#                 vals=met.conv(dat[,as.character(format$orig[k])],format$units[k],"m/s","m/s"))
-#       
-#     } else{
-#       if("Wspd" %in% format$bety){
-#         
-#         ## extract & convert wind_speed
-#         k = which(format$bety=="Wspd")
-#         wind = met.conv(dat[,as.character(format$orig[k])],format$units[k],"m/s","m/s")
-#         
-#         if("wind_direction" %in% format$bety){
-#           
-#           k = which(format$bety=="wind_direction")
-#           wind_direction = met.conv(dat[,as.character(format$orig[k])],format$units[k],"degrees","radians")
-#           
-#           ## Convert wind_speed and wind_direction into eastward_wind and northward_wind
-#           uwind <- wind*cos(wind_direction)
-#           vwind <- wind*sin(wind_direction)
-#           
-#           u.var <- ncvar_def(name='eastward_wind',units='m/s',dim=list(xytdim)) #define netCDF variable, doesn't include longname and comments
-#           nc = ncvar_add(nc = nc, v = u.var, verbose = nc_verbose) #add variable to existing netCDF file
-#           ncvar_put(nc, varid = 'eastward_wind',vals=uwind)
-#           
-#           v.var <- ncvar_def(name='northward_wind',units='m/s',dim=list(xytdim)) #define netCDF variable, doesn't include longname and comments
-#           nc = ncvar_add(nc = nc, v = v.var, verbose = nc_verbose) #add variable to existing netCDF file
-#           ncvar_put(nc, varid = 'northward_wind',vals=vwind)          
-#         } else {
-#           
-#           ## if no direction information is available, just insert wind_speed
-#           wind.var = ncvar_def(name="wind_speed",units="m/s",dim=xytdim)
-#           nc = ncvar_add(nc = nc, v = wind.var, verbose = nc_verbose) #add variable to existing netCDF file
-#           ncvar_put(nc, varid = 'wind_speed',vals=wind)
-#         }
-#         
-#       }
-#     }  ## end wind
-#     
-#        
-    nc_close(nc)
+    if (("eastward_wind" %in% format$vars$bety_name) & ("northward_wind" %in% format$vars$bety_name)) {
+      locs <- which(format$vars$bety_name %in% "northward_wind")
+      k <- locs[1]
+      Nwind.var <- ncvar_def(name="northward_wind",units = "m s-1",dim = xytdim)
+      nc <- ncvar_add(nc = nc, v = Nwind.var, verbose = nc_verbose)
+      arrloc <- as.character(format$vars$orig_name[k])
+      if (arrloc=="") {
+        if (any(colnames(format$vars)=="column_number")) { 
+          arrloc <- format$vars$column_number[k]
+        } else {
+          logger.error("Cannot find column location for eastward_wind by name or column number")
+        }
+      }
+      ncvar_put(nc, varid = Nwind.var,
+                vals=met.conv(dat[,arrloc],format$vars$orig_units[k],"m s-1","m s-1"))  
+      locs <- which(format$vars$bety_name %in% "eastward_wind")
+       k <- locs[1]
+      Ewind.var <- ncvar_def(name="eastward_wind",units = "m s-1",dim = xytdim)
+      nc <- ncvar_add(nc = nc, v = Ewind.var, verbose = nc_verbose)
+      arrloc <- as.character(format$vars$orig_name[k])
+      if (arrloc=="") {
+        if (any(colnames(format$vars)=="column_number")) { 
+          arrloc <- format$vars$column_number[k]
+        } else {
+          logger.error("Cannot find column location for northward_wind by name or column number")
+        }
+      ncvar_put(nc, varid = Ewind.var,
+                vals=met.conv(dat[,arrloc],format$vars$orig_units[k],"m s-1","m s-1"))  
+      }      
+    } else {
+      locs_wd <- which(format$vars$bety_name %in% "wind_direction")
+      locs_ws <- which(format$vars$bety_name %in% "Wspd")
+      if (length(locs_wd)>0 & length(locs_ws)>0) {
+        #wind speed and direction available, convert to northward and eastward
+        k_wd = locs_wd[1]
+        arrloc_wd <- as.character(format$vars$orig_name[k_wd])
+        if (arrloc_wd=="") {
+          if (any(colnames(format$vars)=="column_number")) { 
+            arrloc_wd <- format$vars$column_number[k_wd]
+          } else {
+            logger.error("Cannot find column location for wind_direction by name or column number")
+          }
+        }
+        arrloc_ws <- as.character(format$vars$orig_name[k_ws])
+        if (arrloc_ws=="") {
+          if (any(colnames(format$vars)=="column_number")) { 
+            arrloc_ws <- format$vars$column_number[k_ws]
+          } else {
+            logger.error("Cannot find column location for wind_speed by name or column number")
+          }
+        }        
+        wind <- met.conv(dat[,arrloc_ws],format$vars$orig_units[k_ws],"m s-1","m s-1")
+        wind_direction <- met.conv(dat[,arrloc_wd],format$vars$orig_units[k_wd],"radians","radians")
+        uwind <- wind*cos(wind_direction)
+        vwind <- wind*sin(wind_direction)
+        Ewind.var <- ncvar_def(name="eastward_wind",units = "m s-1",dim = xytdim)
+        nc <- ncvar_add(nc = nc, v = Ewind.var, verbose = nc_verbose)
+        Nwind.var <- ncvar_def(name="northward_wind",units = "m s-1",dim = xytdim)
+        nc <- ncvar_add(nc = nc, v = Nwind.var, verbose = nc_verbose)
+        ncvar_put(nc, varid = Ewind.var,vals=uwind)  
+        ncvar_put(nc, varid = Nwind.var,vals=vwind)  
+      } else {
+        #no wind direction is present, just insert wind_speed
+        ## Wspd (m s-1) => wind_speed (m s-1)
+        locs <- which(format$vars$bety_name %in% "Wspd")
+        if (length(locs)>0) {
+          k <- locs[1]
+          Wspd.var <- ncvar_def(name="wind_speed",units = "m s-1",dim = xytdim)
+          nc <- ncvar_add(nc = nc, v = Wspd.var, verbose = nc_verbose)
+          arrloc <- as.character(format$vars$orig_name[k])
+          if (arrloc=="") {
+            if (any(colnames(format$vars)=="column_number")) { 
+              arrloc <- format$vars$column_number[k]
+            } else {
+              logger.error("Cannot find column location for Wspd by name or column number")
+            }
+          }
+          ncvar_put(nc, varid = Wspd.var,
+                    vals=met.conv(dat[,arrloc],format$vars$orig_units[k],"m s-1","m s-1"))  
+        }
+      }
+    }  ## end wind 
     
+#       ## wind_direction (degrees) => wind_from_direction (degrees) 
+#       locs <- which(format$vars$bety_name %in% "wind_direction")
+#       if (length(locs)>0) {
+#         k <- locs[1]
+#         Wdir.var <- ncvar_def(name="wind_from_direction",units = "degrees",dim = xytdim)
+#         nc <- ncvar_add(nc = nc, v = Wdir.var, verbose = nc_verbose)
+#         arrloc <- as.character(format$vars$orig_name[k])
+#         if (arrloc=="") {
+#           if (any(colnames(format$vars)=="column_number")) { 
+#             arrloc <- format$vars$column_number[k]
+#           } else {
+#             logger.error("Cannot find column location for wind_direction by name or column number")
+#           }
+#         }
+#         ncvar_put(nc, varid = Wdir.var,
+#                   vals=met.conv(dat[,arrloc],format$vars$orig_units[k],"degrees","degrees"))  
+#       } 
+    
+    nc_close(nc)
   } ## end loop over files
-  
-}
+} ## end function met2CF.csv
+
+
 datetime <- function(list){
   date_string <- sapply(list,as.character)
   datetime = paste(list,"00")
