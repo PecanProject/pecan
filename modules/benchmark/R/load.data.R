@@ -16,6 +16,7 @@ load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA, 
   require(PEcAn.benchmark)
   require(lubridate)
   require(udunits2)
+  require(dplyr)
   
   # Determine the function that should be used to load the data 
   mimetype = sub("-", "_", format$mimetype)
@@ -29,28 +30,28 @@ load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA, 
     logger.warn("no load data for current mimetype - converting using browndog")
   }
   
-  out <- fcn(data.path, format, site, format$vars$bety_name[c(vars.used.index,time.row)])
+  out <- fcn(data.path, format, site, format$vars$input_name[c(vars.used.index,time.row)])
   
   # Convert loaded data to the same standard varialbe names and units
   
   vars_used <- format$vars[vars.used.index,]
   
   for(i in 1:nrow(vars_used)){
-    col <- names(out)==vars_used$bety_name[i]
-    if(vars_used$bety_units[i] == vars_used$pecan_units[i]){
+    col <- names(out)==vars_used$input_name[i]
+    if(vars_used$input_units[i] == vars_used$pecan_units[i]){
       print("match")
       colnames(out)[col] <- vars_used$pecan_name[i]
     }else{
       x <- as.matrix(out[col])
-      u1 = vars_used$bety_units[i]
+      u1 = vars_used$input_units[i]
       u2 = vars_used$pecan_units[i]
       if(udunits2::ud.are.convertible(u1,u2)){
-        print(sprintf("convert %s %s to %s %s", vars_used$bety_name[i], vars_used$bety_units[i],
+        print(sprintf("convert %s %s to %s %s", vars_used$input_name[i], vars_used$input_units[i],
                       vars_used$pecan_name[i], vars_used$pecan_units[i]))
         out[col] <- udunits2::ud.convert(x,u1,u2)[,1]
         colnames(out)[col] <- vars_used$pecan_name[i]
       }else if(misc.are.convertible(u1,u2)){ 
-        print(sprintf("convert %s %s to %s %s", vars_used$bety_name[i], u1,
+        print(sprintf("convert %s %s to %s %s", vars_used$input_name[i], u1,
                       vars_used$pecan_name[i], u2))
         out[col] <- misc.convert(x, u1, u2) 
         colnames(out)[col] <- vars_used$pecan_name[i]
@@ -60,7 +61,7 @@ load.data <- function(data.path, format, start_year = NA, end_year=NA, site=NA, 
 
   if(!is.null(time.row)){  
      # Need a much more spohisticated approach to converting into time format. 
-     y <- out[,names(out)==format$vars$orig_name[time.row]]
+     y <- select(out, one_of(format$vars$input_name[time.row]))
      out$posix <- strptime(apply(y,1,function(x) paste(x,collapse=" ")),format=paste(format$vars$storage_type[time.row], collapse=" "))
   }
 

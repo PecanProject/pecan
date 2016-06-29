@@ -16,7 +16,7 @@ query.format.vars <- function(input.id,con){
   
   # get variable names and units of input data
   fv <- db.query(paste("SELECT variable_id,name,unit,storage_type from formats_variables where format_id = ", f$id),con)
-  colnames(fv) <- c("variable_id", "orig_name", "orig_units", "storage_type")
+  colnames(fv) <- c("variable_id", "input_name", "input_units", "storage_type")
   fv$variable_id <- as.numeric(fv$variable_id)
   
   n <- dim(fv)[1]
