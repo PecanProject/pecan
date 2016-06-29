@@ -56,13 +56,13 @@ start.model.runs <- function(settings, write = TRUE){
 
     # if running on a remote cluster,
     # create folders and copy any data to remote host
-    if (!is.localhost(settings$run$host)) {
-      remote.execute.cmd(settings$run$host, "mkdir", c("-p", file.path(settings$run$host$outdir, format(run,scientific=FALSE))))
-      remote.copy.to(settings$run$host, file.path(settings$rundir, format(run,scientific=FALSE)), settings$run$host$rundir, delete=TRUE)
+    if (!is.localhost(settings$host)) {
+      remote.execute.cmd(settings$host, "mkdir", c("-p", file.path(settings$host$outdir, format(run,scientific=FALSE))))
+      remote.copy.to(settings$host, file.path(settings$rundir, format(run,scientific=FALSE)), settings$host$rundir, delete=TRUE)
     }
 
     # check to see if we use the model launcer
-    if (!is.null(settings$run$host$modellauncher)) {
+    if (!is.null(settings$host$modellauncher)) {
       pbi <- pbi + 1
 
       # set up launcher script if we use modellauncher 
@@ -73,38 +73,38 @@ start.model.runs <- function(settings, write = TRUE){
         jobfile <- file(file.path(settings$rundir, format(run,scientific=FALSE), "joblist.txt"), "w")
 
         writeLines(c("#!/bin/bash",
-                     paste(settings$run$host$modellauncher$mpirun,
-                           settings$run$host$modellauncher$binary,
-                           file.path(settings$run$host$rundir, format(run,scientific=FALSE), "joblist.txt"))), con=launcherfile)
+                     paste(settings$host$modellauncher$mpirun,
+                           settings$host$modellauncher$binary,
+                           file.path(settings$host$rundir, format(run,scientific=FALSE), "joblist.txt"))), con=launcherfile)
         writeLines(c("./job.sh"), con=jobfile)
       }
-      writeLines(c(file.path(settings$run$host$rundir, format(run,scientific=FALSE))), con=jobfile)
+      writeLines(c(file.path(settings$host$rundir, format(run,scientific=FALSE))), con=jobfile)
 
     } else {
       # if qsub is requested
-      if (!is.null(settings$run$host$qsub)){
-        qsub <- gsub("@NAME@", paste("PEcAn-", format(run,scientific=FALSE), sep=""), settings$run$host$qsub)
-        qsub <- gsub("@STDOUT@", file.path(settings$run$host$outdir, format(run,scientific=FALSE), "stdout.log"), qsub)
-        qsub <- gsub("@STDERR@", file.path(settings$run$host$outdir, format(run,scientific=FALSE), "stderr.log"), qsub)
+      if (!is.null(settings$host$qsub)){
+        qsub <- gsub("@NAME@", paste("PEcAn-", format(run,scientific=FALSE), sep=""), settings$host$qsub)
+        qsub <- gsub("@STDOUT@", file.path(settings$host$outdir, format(run,scientific=FALSE), "stdout.log"), qsub)
+        qsub <- gsub("@STDERR@", file.path(settings$host$outdir, format(run,scientific=FALSE), "stderr.log"), qsub)
         qsub <- strsplit(qsub, " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl=TRUE)
 
         # start the actual model run
         cmd <- qsub[[1]]
         args <- qsub[-1]
-        if (is.localhost(settings$run$host)) {
+        if (is.localhost(settings$host)) {
           out <- system2(cmd, c(args, file.path(settings$rundir, format(run,scientific=FALSE), "job.sh")), stdout=TRUE, stderr=TRUE)
         } else {
-          out <- remote.execute.cmd(settings$run$host, cmd, c(args, file.path(settings$run$host$rundir, format(run,scientific=FALSE), "job.sh")), stderr=TRUE)
+          out <- remote.execute.cmd(settings$host, cmd, c(args, file.path(settings$host$rundir, format(run,scientific=FALSE), "job.sh")), stderr=TRUE)
         }
         print(out) # <-- for debugging
-        jobids[run] <- sub(settings$run$host$qsub.jobid, "\\1", out)
+        jobids[run] <- sub(settings$host$qsub.jobid, "\\1", out)
 
       # if qsub option is not invoked.  just start model runs in serial.
       } else {
-        if (is.localhost(settings$run$host)) {
+        if (is.localhost(settings$host)) {
           out <- system2(file.path(settings$rundir, format(run,scientific=FALSE), "job.sh"), stdout=TRUE, stderr=TRUE)
         } else {
-          out <- remote.execute.cmd(settings$run$host, file.path(settings$run$host$rundir, format(run,scientific=FALSE), "job.sh"), stderr=TRUE)
+          out <- remote.execute.cmd(settings$host, file.path(settings$host$rundir, format(run,scientific=FALSE), "job.sh"), stderr=TRUE)
         }
 
         # check output to see if an error occurred during the model run
@@ -113,8 +113,8 @@ start.model.runs <- function(settings, write = TRUE){
         }
 
         # copy data back to local
-        if (!is.localhost(settings$run$host)) {
-          remote.copy.from(settings$run$host, file.path(settings$run$host$outdir, format(run,scientific=FALSE)), settings$modeloutdir)
+        if (!is.localhost(settings$host)) {
+          remote.copy.from(settings$host, file.path(settings$host$outdir, format(run,scientific=FALSE)), settings$modeloutdir)
         }
 
         # write finished time to database
@@ -131,36 +131,36 @@ start.model.runs <- function(settings, write = TRUE){
   close(pb)
 
   # if using the model launcer
-  if (!is.null(settings$run$host$modellauncher)) {
+  if (!is.null(settings$host$modellauncher)) {
     close(jobfile)
 
     # copy launcer and joblist
-    if (!is.localhost(settings$run$host)) {
-      remote.copy.to(settings$run$host, file.path(settings$rundir, format(firstrun,scientific=FALSE)), settings$run$host$rundir, delete=TRUE)
+    if (!is.localhost(settings$host)) {
+      remote.copy.to(settings$host, file.path(settings$rundir, format(firstrun,scientific=FALSE)), settings$host$rundir, delete=TRUE)
     }
 
     # if qsub is requested
-    if (!is.null(settings$run$host$qsub)) {
-      qsub <- gsub("@NAME@", "PEcAn-all", settings$run$host$qsub)
-      qsub <- gsub("@STDOUT@", file.path(settings$run$host$outdir, format(firstrun,scientific=FALSE), "launcher.out.log"), qsub)
-      qsub <- gsub("@STDERR@", file.path(settings$run$host$outdir, format(firstrun,scientific=FALSE), "launcher.err.log"), qsub)
-      qsub <- strsplit(paste(qsub, settings$run$host$modellauncher$qsub.extra), " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl=TRUE)
+    if (!is.null(settings$host$qsub)) {
+      qsub <- gsub("@NAME@", "PEcAn-all", settings$host$qsub)
+      qsub <- gsub("@STDOUT@", file.path(settings$host$outdir, format(firstrun,scientific=FALSE), "launcher.out.log"), qsub)
+      qsub <- gsub("@STDERR@", file.path(settings$host$outdir, format(firstrun,scientific=FALSE), "launcher.err.log"), qsub)
+      qsub <- strsplit(paste(qsub, settings$host$modellauncher$qsub.extra), " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl=TRUE)
 
       # start the actual model run
-      if (is.localhost(settings$run$host)) {
+      if (is.localhost(settings$host)) {
         cmd <- qsub[[1]]
         qsub <- qsub[-1]
         out <- system2(cmd, c(qsub, file.path(settings$rundir, format(run,scientific=FALSE), "launcher.sh"), recursive=TRUE), stdout=TRUE)
       } else {
-        out <- system2("ssh", c(settings$run$host$name, qsub, file.path(settings$run$host$rundir, format(firstrun,scientific=FALSE), "launcher.sh"), recursive=TRUE), stdout=TRUE)
+        out <- system2("ssh", c(settings$host$name, qsub, file.path(settings$host$rundir, format(firstrun,scientific=FALSE), "launcher.sh"), recursive=TRUE), stdout=TRUE)
       }
       #print(out) # <-- for debugging
-      jobids[run] <- sub(settings$run$host$qsub.jobid, "\\1", out)
+      jobids[run] <- sub(settings$host$qsub.jobid, "\\1", out)
     } else {
-      if (is.localhost(settings$run$host)) {
+      if (is.localhost(settings$host)) {
         out <- system2(file.path(settings$rundir, format(firstrun,scientific=FALSE), "launcher.sh"), stdout=TRUE)
       } else {
-        out <- system2("ssh", c(settings$run$host$name, file.path(settings$run$host$rundir, format(firstrun,scientific=FALSE), "launcher.sh")), stdout=TRUE)
+        out <- system2("ssh", c(settings$host$name, file.path(settings$host$rundir, format(firstrun,scientific=FALSE), "launcher.sh")), stdout=TRUE)
       }
 
       # check output to see if an error occurred during the model run
@@ -187,15 +187,15 @@ start.model.runs <- function(settings, write = TRUE){
       Sys.sleep(10)
       for(run in names(jobids)) {
         # check to see if job is done
-        check <- gsub("@JOBID@", jobids[run], settings$run$host$qstat)
+        check <- gsub("@JOBID@", jobids[run], settings$host$qstat)
         args <- strsplit(check, " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl=TRUE)
-        if (is.localhost(settings$run$host)) {
+        if (is.localhost(settings$host)) {
           #cmd <- args[[1]]
           #args <- args[-1]
           #out <- system2(cmd, args, stdout=TRUE)
           out <- system(check, intern=TRUE, ignore.stdout = FALSE, ignore.stderr = FALSE, wait=TRUE) 
         } else {
-          out <- remote.execute.cmd(settings$run$host, check, stderr=TRUE)
+          out <- remote.execute.cmd(settings$host, check, stderr=TRUE)
         }
 
         if ((length(out) > 0) && (substring(out, nchar(out)-3) == "DONE")) {
@@ -203,15 +203,15 @@ start.model.runs <- function(settings, write = TRUE){
           jobids[run] <- NULL
 
           # copy data back to local
-          if (!is.localhost(settings$run$host)) {
-            remote.copy.from(settings$run$host, file.path(settings$run$host$outdir, format(run,scientific=FALSE)), settings$modeloutdir)
+          if (!is.localhost(settings$host)) {
+            remote.copy.from(settings$host, file.path(settings$host$outdir, format(run,scientific=FALSE)), settings$modeloutdir)
           }
 
           # TODO check output log
 
           # write finish time to database
           if (!is.null(dbcon)) {
-            if (!is.null(settings$run$host$modellauncher)) {
+            if (!is.null(settings$host$modellauncher)) {
               for (run in readLines(con = file.path(settings$rundir, "runs.txt"))) {
                 db.query(paste("UPDATE runs SET finished_at =  NOW() WHERE id = ", format(run,scientific=FALSE)), con=dbcon)
               }
@@ -221,7 +221,7 @@ start.model.runs <- function(settings, write = TRUE){
           } # end writing to database
 
           # update progress bar
-          if (is.null(settings$run$host$modellauncher)) {
+          if (is.null(settings$host$modellauncher)) {
             pbi <- pbi + 1
           }
           setTxtProgressBar(pb, pbi)

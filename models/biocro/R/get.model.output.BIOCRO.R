@@ -21,7 +21,7 @@
 get.model.output.BIOCRO <- function(settings){
 
   ### Get model output on the localhost
-  if(settings$run$host$name == 'localhost'){
+  if(settings$host$name == 'localhost'){
 
     get.results(settings = settings)
 

@@ -29,9 +29,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }
   
   # find out where to write run/ouput
-  rundir <- file.path(settings$run$host$rundir, as.character(run.id))
-  outdir <- file.path(settings$run$host$outdir, as.character(run.id))
-  if (is.null(settings$run$host$qsub) && (settings$run$host$name == "localhost")) {
+  rundir <- file.path(settings$host$rundir, as.character(run.id))
+  outdir <- file.path(settings$host$outdir, as.character(run.id))
+  if (is.null(settings$host$qsub) && (settings$host$name == "localhost")) {
     rundir <- file.path(settings$rundir, as.character(run.id))
     outdir <- file.path(settings$modeloutdir, as.character(run.id))
   }
@@ -48,16 +48,16 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   if (!is.null(settings$model$prerun)) {
     hostsetup <- paste(hostsetup, sep="\n", paste(settings$model$prerun, collapse="\n"))
   }
-  if (!is.null(settings$run$host$prerun)) {
-    hostsetup <- paste(hostsetup, sep="\n", paste(settings$run$host$prerun, collapse="\n"))
+  if (!is.null(settings$host$prerun)) {
+    hostsetup <- paste(hostsetup, sep="\n", paste(settings$host$prerun, collapse="\n"))
   }
 
   hostteardown <- ""
   if (!is.null(settings$model$postrun)) {
     hostteardown <- paste(hostteardown, sep="\n", paste(settings$model$postrun, collapse="\n"))
   }
-  if (!is.null(settings$run$host$postrun)) {
-    hostteardown <- paste(hostteardown, sep="\n", paste(settings$run$host$postrun, collapse="\n"))
+  if (!is.null(settings$host$postrun)) {
+    hostteardown <- paste(hostteardown, sep="\n", paste(settings$host$postrun, collapse="\n"))
   }
 
   # create job.sh
@@ -360,14 +360,14 @@ write.run.generic <- function(settings){
   run.text <- scan(file = run.script.template, 
                    what="character",sep='@', quote=NULL, quiet=TRUE)
   run.text  <- gsub('TMP', paste("/scratch/",Sys.getenv("USER"),sep=""), run.text)
-  run.text  <- gsub('BINARY', settings$run$host$ed$binary, run.text)
-  run.text <- gsub('OUTDIR', settings$run$host$outdir, run.text)
+  run.text  <- gsub('BINARY', settings$host$ed$binary, run.text)
+  run.text <- gsub('OUTDIR', settings$host$outdir, run.text)
   runfile <- paste(settings$outdir, 'run', sep='')
   writeLines(run.text, con = runfile)
-  if(settings$run$host$name == 'localhost') {
-    system(paste('cp ', runfile, settings$run$host$rundir))
+  if(settings$host$name == 'localhost') {
+    system(paste('cp ', runfile, settings$host$rundir))
   }else{
-    system(paste("rsync -outi ", runfile , ' ', settings$run$host$name, ":", settings$run$host$rundir, sep = ''))
+    system(paste("rsync -outi ", runfile , ' ', settings$host$name, ":", settings$host$rundir, sep = ''))
   }
 }
 #==================================================================================================#
@@ -388,7 +388,7 @@ write.run.generic <- function(settings){
 remove.config.SIPNET <- function(main.outdir,settings) {
   
   ### Remove files on localhost
-  if(settings$run$host$name == 'localhost'){
+  if(settings$host$name == 'localhost'){
     files <- paste(settings$outdir,
                    list.files(path=settings$outdir, recursive=FALSE),sep="") # Need to change this to the run folder when implemented
     files <- files[-grep('*.xml',files)] # Keep pecan.xml file

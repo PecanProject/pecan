@@ -59,17 +59,17 @@ test_that("check.settings gives sensible defaults",{
   expect_equal(s2$database$bety$driver, "PostgreSQL")
 
   ## dir. paths, with default localhost
-  expect_equal(s2$run$host$name, "localhost")
+  expect_equal(s2$host$name, "localhost")
   
   ## outdirs
   outdir <- file.path(getwd(), paste0("PEcAn_", s2$workflow$id))
   expect_equal(s2$outdir, outdir)
-  expect_equal(s2$run$host$outdir, file.path(outdir, "out"))
-  expect_equal(s2$modeloutdir, s2$run$host$outdir)
+  expect_equal(s2$host$outdir, file.path(outdir, "out"))
+  expect_equal(s2$modeloutdir, s2$host$outdir)
   
   ## rundir
   expect_equal(s2$rundir, file.path(outdir, "run"))  
-  expect_equal(s2$rundir, s2$run$host$rundir)
+  expect_equal(s2$rundir, s2$host$rundir)
   
 #   expect_true(s2$database$bety$write) # RyK commented out because had to change as noted above
   expect_true(s2$meta.analysis$iter > 1000)

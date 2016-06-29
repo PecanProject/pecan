@@ -68,8 +68,8 @@ status.check <- function(name) {
   return (0)
 }
 kill.tunnel <- function() {
-  if (exists("settings") && !is.null(settings$run$host$tunnel)) {
-    pidfile <- file.path(dirname(settings$run$host$tunnel), "pid")
+  if (exists("settings") && !is.null(settings$host$tunnel)) {
+    pidfile <- file.path(dirname(settings$host$tunnel), "pid")
     pid <- readLines(pidfile)
     print(paste("Killing tunnel with PID", pid))
     tools::pskill(pid)
@@ -134,7 +134,7 @@ for(i in 1:length(settings$run$inputs)) {
         start_date = settings$run$start.date,
         end_date   = settings$run$end.date,
         model      = settings$model$type,
-        host       = settings$run$host,
+        host       = settings$host,
         dbparms    = settings$database$bety, 
         dir        = settings$database$dbfiles,
         browndog   = settings$browndog)

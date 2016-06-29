@@ -95,7 +95,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
           start_date = settings$run$start.date,
           end_date   = settings$run$end.date,
           model      = settings$model$type,
-          host       = settings$run$host,
+          host       = settings$host,
           dbparms    = settings$database$bety, 
           dir        = settings$database$dbfiles,
           browndog   = settings$browndog)

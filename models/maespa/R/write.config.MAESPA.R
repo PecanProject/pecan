@@ -24,9 +24,9 @@ write.config.MAESPA <- function(defaults, trait.values, settings, run.id){
 
   
   # find out where to write run/ouput
-  rundir <- file.path(settings$run$host$rundir, as.character(run.id))
-  outdir <- file.path(settings$run$host$outdir, as.character(run.id))
-  if (is.null(settings$run$host$qsub) && (settings$run$host$name == "localhost")) {
+  rundir <- file.path(settings$host$rundir, as.character(run.id))
+  outdir <- file.path(settings$host$outdir, as.character(run.id))
+  if (is.null(settings$host$qsub) && (settings$host$name == "localhost")) {
     rundir <- file.path(settings$rundir, as.character(run.id))
     outdir <- file.path(settings$modeloutdir, as.character(run.id))
   }
@@ -44,16 +44,16 @@ write.config.MAESPA <- function(defaults, trait.values, settings, run.id){
   if (!is.null(settings$model$prerun)) {
     hostsetup <- paste(hostsetup, sep="\n", paste(settings$model$prerun, collapse="\n"))
   }
-  if (!is.null(settings$run$host$prerun)) {
-    hostsetup <- paste(hostsetup, sep="\n", paste(settings$run$host$prerun, collapse="\n"))
+  if (!is.null(settings$host$prerun)) {
+    hostsetup <- paste(hostsetup, sep="\n", paste(settings$host$prerun, collapse="\n"))
   }
 
   hostteardown <- ""
   if (!is.null(settings$model$postrun)) {
     hostteardown <- paste(hostteardown, sep="\n", paste(settings$model$postrun, collapse="\n"))
   }
-  if (!is.null(settings$run$host$postrun)) {
-    hostteardown <- paste(hostteardown, sep="\n", paste(settings$run$host$postrun, collapse="\n"))
+  if (!is.null(settings$host$postrun)) {
+    hostteardown <- paste(hostteardown, sep="\n", paste(settings$host$postrun, collapse="\n"))
   }
 
   #MET FILE
@@ -85,9 +85,9 @@ write.config.MAESPA <- function(defaults, trait.values, settings, run.id) {
     
     
     # find out where to write run/ouput
-    rundir <- file.path(settings$run$host$rundir, as.character(run.id))
-    outdir <- file.path(settings$run$host$outdir, as.character(run.id))
-    if (is.null(settings$run$host$qsub) && (settings$run$host$name == "localhost")) {
+    rundir <- file.path(settings$host$rundir, as.character(run.id))
+    outdir <- file.path(settings$host$outdir, as.character(run.id))
+    if (is.null(settings$host$qsub) && (settings$host$name == "localhost")) {
         rundir <- file.path(settings$rundir, as.character(run.id))
         outdir <- file.path(settings$modeloutdir, as.character(run.id))
     }
@@ -105,8 +105,8 @@ write.config.MAESPA <- function(defaults, trait.values, settings, run.id) {
     if (!is.null(settings$model$job.sh)) {
         hostspecific <- paste(hostspecific, sep = "\n", paste(settings$model$job.sh, collapse = "\n"))
     }
-    if (!is.null(settings$run$host$job.sh)) {
-        hostspecific <- paste(hostspecific, sep = "\n", paste(settings$run$host$job.sh, collapse = "\n"))
+    if (!is.null(settings$host$job.sh)) {
+        hostspecific <- paste(hostspecific, sep = "\n", paste(settings$host$job.sh, collapse = "\n"))
     }
     # ------------------------------------------------------------------------------------ Begin writing
     # input files

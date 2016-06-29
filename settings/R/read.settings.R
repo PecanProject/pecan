@@ -35,7 +35,7 @@ check.inputs <- function(settings) {
   if (nrow(inputs) > 0) {
     for(i in 1:nrow(inputs)) {
       tag <- inputs$tag[i]
-      hostname <- settings$run$host$name
+      hostname <- settings$host$name
       allinputs <- allinputs[allinputs != tag]
 
       # check if tag exists
@@ -291,9 +291,9 @@ check.settings <- function(settings) {
     logger.warn("No Run Settings specified")
   }
   # check to make sure a host is given
-  if (is.null(settings$run$host$name)) {
+  if (is.null(settings$host$name)) {
     logger.info("Setting localhost for execution host.")
-    settings$run$host$name <- "localhost"
+    settings$host$name <- "localhost"
   }
   
   # check start/end date are specified and correct
@@ -506,7 +506,7 @@ check.settings <- function(settings) {
 
     # check on binary for given host
     if (!is.null(settings$model$id) && (settings$model$id >= 0)) {
-      binary <- dbfile.file("Model", settings$model$id, dbcon, settings$run$host$name)
+      binary <- dbfile.file("Model", settings$model$id, dbcon, settings$host$name)
       if (!is.na(binary)) {
         if (is.null(settings$model$binary)) {
           settings$model$binary <- binary
@@ -581,38 +581,38 @@ check.settings <- function(settings) {
   # end site check code
 
   ## if run$host is localhost, set to "localhost
-  if (any(settings$run$host %in% c(Sys.info()['nodename'], gsub("illinois", "uiuc", Sys.info()['nodename'])))){
-    settings$run$host$name <- "localhost"
+  if (any(settings$host %in% c(Sys.info()['nodename'], gsub("illinois", "uiuc", Sys.info()['nodename'])))){
+    settings$host$name <- "localhost"
   }
 
   # check if we need to use qsub
-  if ("qsub" %in% names(settings$run$host)) {
-    if (is.null(settings$run$host$qsub)) {
-      settings$run$host$qsub <- "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash"
-      logger.info("qsub not specified using default value :", settings$run$host$qsub)
+  if ("qsub" %in% names(settings$host)) {
+    if (is.null(settings$host$qsub)) {
+      settings$host$qsub <- "qsub -V -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash"
+      logger.info("qsub not specified using default value :", settings$host$qsub)
     }
-    if (is.null(settings$run$host$qsub.jobid)) {
-      settings$run$host$qsub.jobid <- "Your job ([0-9]+) .*"
-      logger.info("qsub.jobid not specified using default value :", settings$run$host$qsub.jobid)
+    if (is.null(settings$host$qsub.jobid)) {
+      settings$host$qsub.jobid <- "Your job ([0-9]+) .*"
+      logger.info("qsub.jobid not specified using default value :", settings$host$qsub.jobid)
     }
-    if (is.null(settings$run$host$qstat)) {
-      settings$run$host$qstat <- "qstat -j @JOBID@ &> /dev/null || echo DONE"
-      logger.info("qstat not specified using default value :", settings$run$host$qstat)
+    if (is.null(settings$host$qstat)) {
+      settings$host$qstat <- "qstat -j @JOBID@ &> /dev/null || echo DONE"
+      logger.info("qstat not specified using default value :", settings$host$qstat)
     }
   }
 
   # modellauncher to launch on multiple nodes/cores
-  if ("modellauncher" %in% names(settings$run$host)) {
-    if (is.null(settings$run$host$modellauncher$binary)) {
-      settings$run$host$modellauncher$binary <- "modellauncher"
-      logger.info("binary not specified using default value :", settings$run$host$modellauncher$binary)
+  if ("modellauncher" %in% names(settings$host)) {
+    if (is.null(settings$host$modellauncher$binary)) {
+      settings$host$modellauncher$binary <- "modellauncher"
+      logger.info("binary not specified using default value :", settings$host$modellauncher$binary)
     }
-    if (is.null(settings$run$host$modellauncher$qsub.extra)) {
+    if (is.null(settings$host$modellauncher$qsub.extra)) {
       logger.severe("qsub.extra not specified, can not launch in parallel environment.")
     }
-    if (is.null(settings$run$host$modellauncher$mpirun)) {
-      settings$run$host$modellauncher$mpirun <- "mpirun"
-      logger.info("mpirun not specified using default value :", settings$run$host$modellauncher$mpirun)
+    if (is.null(settings$host$modellauncher$mpirun)) {
+      settings$host$modellauncher$mpirun <- "mpirun"
+      logger.info("mpirun not specified using default value :", settings$host$modellauncher$mpirun)
     }
   }
 
@@ -625,13 +625,13 @@ check.settings <- function(settings) {
     settings$model$prerun <- settings$model$job.sh
     settings$model$job.sh <- NULL
   }
-  if ("job.sh" %in% names(settings$run$host)) {
-    if ("prerun" %in% names(settings$run$host)) {
-      logger.severe("You have both settings$run$host$job.sh and settings$run$host$prerun, please combine.")
+  if ("job.sh" %in% names(settings$host)) {
+    if ("prerun" %in% names(settings$host)) {
+      logger.severe("You have both settings$host$job.sh and settings$host$prerun, please combine.")
     }
-    logger.info("settings$run$host$job.sh is deprecated use settings$run$host$prerun instead.")
-    settings$run$host$prerun <- settings$run$host$job.sh
-    settings$run$host$job.sh <- NULL
+    logger.info("settings$host$job.sh is deprecated use settings$host$prerun instead.")
+    settings$host$prerun <- settings$host$job.sh
+    settings$host$job.sh <- NULL
   }
 
   # Check folder where outputs are written before adding to dbfiles
@@ -657,7 +657,7 @@ check.settings <- function(settings) {
     if (!'workflow' %in% names(settings)) {
       now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
       db.query(paste0("INSERT INTO workflows (folder, site_id, model_id, hostname, start_date, end_date, started_at, created_at) values ('",
-                      settings$outdir, "','" , settings$run$site$id, "','", settings$model$id, "', '", settings$run$host$name, "', '",
+                      settings$outdir, "','" , settings$run$site$id, "','", settings$model$id, "', '", settings$host$name, "', '",
                       settings$run$start.date, "', '", settings$run$end.date, "', '", now, "', '", now, "')"), con=dbcon)
       settings$workflow$id <- db.query(paste0("SELECT id FROM workflows WHERE created_at='", now, "' ORDER BY id DESC LIMIT 1;"), con=dbcon)[['id']]
       fixoutdir <- TRUE
@@ -703,24 +703,24 @@ check.settings <- function(settings) {
   }
   
   # make sure remote folders are specified if need be
-  if (!is.localhost(settings$run$host)) {
-    if (is.null(settings$run$host$folder)) {
-      settings$run$host$folder <- paste0(remote.execute.cmd("pwd", host=settings$run$host), "/pecan_remote")
-      logger.info("Using ", settings$run$host$folder, "to store output on remote machine")      
+  if (!is.localhost(settings$host)) {
+    if (is.null(settings$host$folder)) {
+      settings$host$folder <- paste0(remote.execute.cmd("pwd", host=settings$host), "/pecan_remote")
+      logger.info("Using ", settings$host$folder, "to store output on remote machine")      
     }
-    if (is.null(settings$run$host$rundir)) {
-      settings$run$host$rundir <- paste0(settings$run$host$folder, "/@WORKFLOW@/run")
+    if (is.null(settings$host$rundir)) {
+      settings$host$rundir <- paste0(settings$host$folder, "/@WORKFLOW@/run")
     }
-    settings$run$host$rundir <- gsub("@WORKFLOW@", settings$workflow$id, settings$run$host$rundir)
-    logger.info("Using ", settings$run$host$rundir, "to store runs on remote machine")
-    if (is.null(settings$run$host$outdir)) {
-      settings$run$host$outdir <- paste0(settings$run$host$folder, "/@WORKFLOW@/out")
+    settings$host$rundir <- gsub("@WORKFLOW@", settings$workflow$id, settings$host$rundir)
+    logger.info("Using ", settings$host$rundir, "to store runs on remote machine")
+    if (is.null(settings$host$outdir)) {
+      settings$host$outdir <- paste0(settings$host$folder, "/@WORKFLOW@/out")
     }
-    settings$run$host$outdir <- gsub("@WORKFLOW@", settings$workflow$id, settings$run$host$outdir)
-    logger.info("Using ", settings$run$host$outdir, "to store output on remote machine")
-  } else if (settings$run$host$name == "localhost") {
-    settings$run$host$rundir <- settings$rundir
-    settings$run$host$outdir <- settings$modeloutdir
+    settings$host$outdir <- gsub("@WORKFLOW@", settings$workflow$id, settings$host$outdir)
+    logger.info("Using ", settings$host$outdir, "to store output on remote machine")
+  } else if (settings$host$name == "localhost") {
+    settings$host$rundir <- settings$rundir
+    settings$host$outdir <- settings$modeloutdir
   }
 
   # check/create the pft folders
@@ -807,8 +807,18 @@ fix.deprecated.settings <- function(settings) {
     settings$database$dbfiles <- settings$run$dbfiles
     settings$run$dbfiles <- NULL
   }
-  return(settings)
 
+  # settings$host
+  if(!is.null(settings$run$host)) {
+    if(!is.null(settings$host)) {
+      logger.severe("You have both deprecated settings$run$host and settings$host. Use latter only.")
+    }
+    logger.info("settings$run$host is deprecated. uwe settings$host instead")
+    settings$host <- settings$run$host
+    settings$run$host <- NULL
+  }
+  
+  return(settings)
 }
 
 ##' Updates a pecan.xml file to match new layout. This will take care of the
