@@ -1,3 +1,13 @@
+##' @name distance
+##' @title distance
+##' @export
+##'
+##' @param x
+##' @param power
+##'
+##' @return dst
+##'  
+##' @author Michael Dietze
 `distance` <-
 function(x,power=1){
   dst <- list()

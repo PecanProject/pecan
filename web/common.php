@@ -11,18 +11,18 @@ session_start();
 function get_footer() {
   return "The <a href=\"http://pecanproject.org\">PEcAn project</a> is supported by the National Science Foundation
     (ABI #1062547, ARC #1023477) and the <a href=\"http://www.energybiosciencesinstitute.org/\">Energy
-    Biosciences Institute</a>. <span style=\"float:right\">PEcAn Version 1.4.5</span>";
+    Biosciences Institute</a>. <span style=\"float:right\">PEcAn Version 1.4.6</span>";
 }
 
 function whoami() {
   if (check_login()) {
     echo "<p></p>";
     echo "Logged in as " . get_user_name();
-    echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
+    echo "<a style=\"float: right;\" href=\"index.php?logout\" id=\"logout\">logout</a>";
   } else {
     echo "<p></p>";
     echo "Not Logged in.";
-    echo "<a href=\"login.php\">login</a>";
+    echo "<a style=\"float: right;\" href=\"login.php\">login</a>";
   }
 }
 

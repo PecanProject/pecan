@@ -19,6 +19,8 @@
 #' take place. N datetime POSIXlt object defining the date and at which the run 
 #' will take place. Note that runs at night and during the winter can give poor 
 #' results.
+#' @param trait.values Named, hierarchical list of trait values for generating config.xml file.
+#' @param settings PEcAn settings list. Default is model$revision = "git", model$config.header = NULL.
 #' @param history.prefix Prefix in histroy file name. Will be appended to 
 #' history path.
 #' @param edr.exe.name Name of EDR executable. Default = 'ed_2.1-opt'
@@ -33,15 +35,22 @@ EDR <- function(paths,
                 par.wl,
                 nir.wl,
                 datetime,
+                trait.values = list(),
+                settings = list(model = list(revision = "git",
+                                             config.header = NULL)),
                 history.prefix = 'history',
                 edr.exe.name = 'ed_2.1-opt',
                 change.history.time = TRUE,
                 output.path = getwd(),
                 clean = FALSE){
+    library(PEcAn.ED2)
 
 # Extract paths
-    ed2in.path <- paths$ed2in
-    history.path <- paths$history
+# TODO: Provide option to just a results path with implied file structure
+# (ED2IN, config.xml, history)
+    ed2in.path <- normalizePath(paths$ed2in)
+    history.path <- normalizePath(paths$history)
+    output.path <- normalizePath(output.path)
 
 # Process datetime
     if(!any(grepl("POSIX", class(datetime)))) stop("datetime is not POSIX")
@@ -53,22 +62,48 @@ EDR <- function(paths,
         history.full.prefix <- file.path(history.path, history.prefix)
     }
 
+# TODO: Read old config file as template
+# This ensures that all PFTs and previous default trait values that were in the
+# run are loaded.
+# Pseudocode:
+# xml.old <- xmlToList(xmlParse(old.config.path))
+# defaults.old <- xml.old$defaults
+# settings.old <- xml.old$settings
+# trait.values.old <- xml.old$trait.values
+
+# Write ED2 config.xml file
+    defaults <- list() 
+    xml <- write.config.xml.ED2(defaults = defaults,
+                                settings = settings,
+                                trait.values = trait.values)
+
+    new.config.path <- file.path(output.path, "config.xml")
+    PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
+    saveXML(xml, file = new.config.path, indent=TRUE, prefix = PREFIX_XML)
+
 # Preprocess ED2IN
     if(!is.na(ed2in.path)){     # Otherwise, skip this step
-        EDR.preprocess.ed2in(ed2in.path, output.path, datetime, history.full.prefix)
+        EDR.preprocess.ed2in(ed2in.path, output.path, new.config.path, 
+                             datetime, history.full.prefix)
     }
+
 
 # Generate input files
     par.nir.lengths <- c(length(par.wl), length(nir.wl))
     cat(par.nir.lengths, file=file.path(output.path, "lengths.dat"), sep = ' ')
-    par.ind <- which(RT.matrix[,"wl"] %in% par.wl)    # PAR indices -- offset by 399
+    par.ind <- which(RT.matrix[,"wl"] %in% par.wl)    # PAR indices
     nir.ind <- which(RT.matrix[,"wl"] %in% nir.wl)    # NIR indices 
     cat(RT.matrix[par.ind,1], file = file.path(output.path, "reflect_par.dat"), sep=" ")
     cat(RT.matrix[nir.ind,1], file = file.path(output.path, "reflect_nir.dat"), sep=" ")
     cat(RT.matrix[par.ind,2], file = file.path(output.path, "trans_par.dat"), sep=" ")
     cat(RT.matrix[nir.ind,2], file = file.path(output.path, "trans_nir.dat"), sep=" ")
 # Call EDR -- NOTE that this requires that the ED2IN 
-    system(file.path(output.path, edr.exe.name), intern=TRUE)
+    exec.command <- sprintf("(cd %s; ./%s)", output.path, edr.exe.name)
+    ex <- system(exec.command, intern=TRUE)
+    if(any(grepl("fatal error", ex, ignore.case=TRUE))){
+        print(ex)
+        stop("Error executing EDR")
+    }
 # Analyze output
     albedo <- get.EDR.output(output.path)
 # Optionally, clean up all generated files
@@ -95,22 +130,24 @@ EDR <- function(paths,
 #' @param datetime POSIX datetime object for EDR run
 #' @param ... Other arguments to EDR
 #' @examples
-#' ed2in.path <- '/projectnb/dietzelab/pecan.data/output/ashiklom/1000001295/run/1000336885/ED2IN' # Note that the file itself is pointed to
-#' history.path <- '/projectnb/dietzelab/pecan.data/output/ashiklom/1000001295/out/1000336885/'    # Note that the prefix is NOT included -- only the directory path
-#' paths <- list(ed2in.path = ed2in.path, history.path = history.path)
-#' par.wl <- 400:750
-#' nir.wl <- 751:2500
-#' prospect.param <- c(1.4, 40, 5, 0.01, 0.01)
-#' prospect.version <- 5
-#' datetime <- ISOdatetime(2004, 07, 01, 12, 00, 00)
-#' albedo <- EDR.prospect(prospect.param = prospect.param,
-#'                        prospect.version = prospect.version,
-#'                        paths=paths, 
-#'                        par.wl = par.wl, nir.wl = nir.wl,
-#'                        datetime = datetime, 
-#'                        history.prefix = 'history', change.history.time = TRUE,
-#'                        output.path = getwd())
-#' plot(albedo, type='l')
+#' \dontrun{
+#'      ed2in.path <- '/projectnb/dietzelab/pecan.data/output/ashiklom/1000001295/run/1000336885/ED2IN' # Note that the file itself is pointed to
+#'      history.path <- '/projectnb/dietzelab/pecan.data/output/ashiklom/1000001295/out/1000336885/'    # Note that the prefix is NOT included -- only the directory path
+#'      paths <- list(ed2in.path = ed2in.path, history.path = history.path)
+#'      par.wl <- 400:750
+#'      nir.wl <- 751:2500
+#'      prospect.param <- c(1.4, 40, 5, 0.01, 0.01)
+#'      prospect.version <- 5
+#'      datetime <- ISOdatetime(2004, 07, 01, 12, 00, 00)
+#'      albedo <- EDR.prospect(prospect.param = prospect.param,
+#'                             prospect.version = prospect.version,
+#'                             paths=paths, 
+#'                             par.wl = par.wl, nir.wl = nir.wl,
+#'                             datetime = datetime, 
+#'                             history.prefix = 'history', change.history.time = TRUE,
+#'                             output.path = getwd())
+#'      plot(albedo, type='l')
+#' }
 EDR.prospect <- function(prospect.param, prospect.version=5, paths, par.wl, nir.wl, datetime, ...){
     RT.matrix <- prospect(prospect.param, prospect.version, include.wl=TRUE)
     albedo <- EDR(paths, RT.matrix, par.wl, nir.wl, datetime, ...)
@@ -121,10 +158,8 @@ EDR.prospect <- function(prospect.param, prospect.version=5, paths, par.wl, nir.
 #' @title Read EDR output
 #' @param path Path to directory containing `albedo_par/nir.dat` files
 get.EDR.output <- function(path=getwd()){
-    nir.table <- read.table(file.path(path, "albedo_nir.dat"))
-    par.table <- read.table(file.path(path, "albedo_par.dat"))
-    alb.nir <- unlist(nir.table[1,])
-    alb.par <- unlist(par.table[1,])
+    alb.par <- as.matrix(read.table(file.path(path, "albedo_par.dat")))[1,]
+    alb.nir <- as.matrix(read.table(file.path(path, "albedo_nir.dat")))[1,]
     albedo <- c(alb.par, alb.nir)
     return(albedo)
 }
@@ -176,7 +211,8 @@ EDR.preprocess.history <- function(history.path, output.path, datetime, history.
 #' is performed)
 #' @param datetime POSIX datetime object defining the time at which to run EDR
 #' @param history.full.prefix Full path and prefix for history file
-EDR.preprocess.ed2in <- function(ed2in.path, output.path, datetime, history.full.prefix){
+EDR.preprocess.ed2in <- function(ed2in.path, output.path, config.path, 
+                                 datetime, history.full.prefix){
 # Process datetime
     day <- strftime(datetime, "%d")
     month <- strftime(datetime, "%m")
@@ -231,6 +267,9 @@ EDR.preprocess.ed2in <- function(ed2in.path, output.path, datetime, history.full
                   sprintf('\\1 = %s  !! MODIFIED BY R WRAPPER', month), ed2in)
     ed2in <- gsub('(NL%IYEARH).*', 
                   sprintf('\\1 = %s  !! MODIFIED BY R WRAPPER', year), ed2in)
+    # config.xml file
+    ed2in <- gsub('(NL%IEDCNFGF).*', 
+                  sprintf("\\1 = '%s'  !! MODIFIED BY R WRAPPER", config.path), ed2in)
     # Write resulting ED2IN to file
     write(ed2in, file = ed2in.local.path)
 }

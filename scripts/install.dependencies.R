@@ -22,12 +22,13 @@ if(!("Rgraphviz" %in% installed.packages()[,"Package"])) {
 
 # install packages needed from CRAN
 list.of.packages <- c('abind', 'car', 'chron', 'coda', 'data.table', 'doSNOW', 'dplR', 'earth', 'emulator',
-                      'ggmap', 'ggplot2', 'gridExtra', 'Hmisc', 'kernlab',
+                      'ggmap', 'ggplot2', 'gridExtra', 'Hmisc', 'httr', 'kernlab','GPfit',
                       'knitr', 'lubridate', 'MASS', 'MCMCpack', 'mvtnorm', 'ncdf4',
                       'plotrix', 'plyr', 'raster', 'randtoolbox', 'rjags',
                       'rgdal', 'tgp', 'DBI', 'roxygen2', 'stringr', 'testthat', 'boot',
                       'XML', 'RNCEP', 'foreign', 'RCurl', 'udunits2', 'RPostgreSQL',
-                      'rPython','minpack.lm','geonames', 'Rcpp','devtools', 'inline', 'segmented')
+                      'rPython','minpack.lm', 'mclust', 'geonames', 'Rcpp','devtools', 'inline', 'segmented',
+                      'msm', 'dplyr')
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) {
   print("installing : ")
@@ -44,6 +45,12 @@ if(!("REddyProc" %in% installed.packages()[,"Package"])) {
 if(!("BioCro" %in% installed.packages()[,"Package"])) {
   devtools::install_github("ebimodeling/biocro")
 }
+
+# BayesianTools package snapshot
+if(!("BayesianTools" %in% installed.packages()[,"Package"])) {
+  devtools::install_url("https://dl.dropboxusercontent.com/s/ccvpnvblf3vzuvs/BayesianTools_0.0.0.9000.tar.gz")
+}
+
 
 # install rhdf5 from bioconductor for met2model.ED
 if(!("rhdf5" %in% installed.packages()[,"Package"])) {

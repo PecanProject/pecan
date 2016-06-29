@@ -138,13 +138,14 @@ done
 
 # packages that are to be compiled
 PACKAGES="utils db settings visualization"
-PACKAGES="${PACKAGES} models/clm45"
-PACKAGES="${PACKAGES} models/preles"
+PACKAGES="${PACKAGES} models/jules models/clm45 models/maat"
+PACKAGES="${PACKAGES} models/preles models/gday models/lpjguess models/maespa"
 PACKAGES="${PACKAGES} modules/priors modules/meta.analysis modules/uncertainty"
 PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere modules/data.remote"
-PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential"
+PACKAGES="${PACKAGES} modules/assim.batch modules/assim.sequential modules/emulator"
 PACKAGES="${PACKAGES} modules/allometry modules/photosynthesis"
 PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro models/dalec models/linkages"
+PACKAGES="${PACKAGES} modules/rtm"
 PACKAGES="${PACKAGES} all"
 
 # location where to install packages
@@ -289,7 +290,7 @@ echo "build took ${TIME} seconds."
 echo "----------------------------------------------------------------------"
 
 # cleanup
-rm -rf out.log *.Rcheck PEcAn.*.tar.gz PEcAn.*.tgz
+rm -rf out.log *.Rcheck PEcAn.*.tar.gz PEcAnRTM*.tar.gz PEcAn.*.tgz
 
 # run tests
 if [ "$TESTS" == "yes" ]; then

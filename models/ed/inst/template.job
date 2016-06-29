@@ -5,10 +5,11 @@ exec 3>&1
 exec &> "@OUTDIR@/logfile.txt"
 
 # host specific setup
-@HOSTSPECIFIC@
+@HOST_SETUP@
 
 # create output folder
 mkdir -p "@OUTDIR@"
+@SCRATCH_MKDIR@
 
 # flag needed for ubuntu
 export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
@@ -19,6 +20,13 @@ if [ ! -e "@OUTDIR@/history.xml" ]; then
   
   "@BINARY@"
   STATUS=$?
+  if [ $STATUS == 0 ]; then
+    if grep -Fq '=== Time integration ends; Total elapsed time=' "@OUTDIR@/logfile.txt"; then
+      STATUS=0
+    else
+      STATUS=1
+    fi
+  fi
   
   # copy scratch if needed
   @SCRATCH_COPY@
@@ -40,6 +48,9 @@ fi
 cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 
 # run getdata to extract right variables
+
+# host specific teardown
+@HOST_TEARDOWN@
 
 # all done
 echo -e "MODEL FINISHED\nLogile is located at '@OUTDIR@/logfile.txt'" >&3

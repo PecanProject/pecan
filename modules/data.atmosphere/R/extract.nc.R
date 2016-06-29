@@ -64,6 +64,12 @@ extract.nc <- function(in.path, in.prefix, outfolder, start_date, end_date, slat
     if (verbose)
       print(paste(c("ncks", list("-d", paste0("x,",x,",",x), "-d", paste0("y,",y,",",y), infile, outfile)), collapse=" "))
     system2("ncks", list("-d", paste0("x,",x,",",x), "-d", paste0("y,",y,",",y), infile, outfile))
+
+    ## Hack to ensure lat and lon are consistant
+	  nc = nc_open(outfile,write=TRUE)
+	  ncvar_put(nc,"latitude",vals= slat)
+	  ncvar_put(nc,"longitude",vals=slon)
+	  nc_close(nc)
   }
   return(invisible(results))
 }
