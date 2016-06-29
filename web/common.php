@@ -18,11 +18,11 @@ function whoami() {
   if (check_login()) {
     echo "<p></p>";
     echo "Logged in as " . get_user_name();
-    echo "<a href=\"index.php?logout\" id=\"logout\">logout</a>";
+    echo "<a style=\"float: right;\" href=\"index.php?logout\" id=\"logout\">logout</a>";
   } else {
     echo "<p></p>";
     echo "Not Logged in.";
-    echo "<a href=\"login.php\">login</a>";
+    echo "<a style=\"float: right;\" href=\"login.php\">login</a>";
   }
 }
 

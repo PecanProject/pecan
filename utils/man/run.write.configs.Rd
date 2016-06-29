@@ -4,7 +4,7 @@
 \alias{run.write.configs}
 \title{Run model specific write configuration functions}
 \usage{
-run.write.configs(settings, write = TRUE, ens.sample.method = "halton",
+run.write.configs(settings, write = TRUE, ens.sample.method = "uniform",
   posterior.files = rep(NA, length(settings$pfts)))
 }
 \arguments{

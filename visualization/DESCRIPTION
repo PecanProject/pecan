@@ -27,7 +27,9 @@ Suggests:
     XML,
     ncdf4,
     stringr,
-    testthat
+    testthat,
+    png,
+    grid
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
