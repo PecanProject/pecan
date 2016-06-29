@@ -163,6 +163,8 @@ If you are using methods other than *bruteforce* and *bruteforce.bs*, some addit
 
 * `<GPpckg>` Specifies which R package to use for fitting a Gaussian process to interpolate the likelihood surface in between the calculated values that are obtained from actual model runs. Current options are `kernlab` and `GPfit` (recommended). 
 
+* Also, `<jvar>` tag(s) under the `<jump>` block is better left empty for emulator runs if you are doing this for the first time.
+
 **bayesian.tools** would look for sampler specific settings that can be passed through the pecan.xml as a block under the `<bt.settings>` tag. Currently, the available samplers in the BayesianTools package are:
 
 * Metropolis

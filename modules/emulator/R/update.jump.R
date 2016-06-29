@@ -54,7 +54,7 @@ function(jmp,chain){
       j <- attr(jmp,"history")[l,i]
       hnew[i] <- j*a/attr(jmp,"target")
     }
-    print(hnew)
+    #print(hnew)
     attr(jmp,"history")<- rbind(attr(jmp,"history"),hnew)
     attr(jmp,"arate")[l+1] <- a
   }
