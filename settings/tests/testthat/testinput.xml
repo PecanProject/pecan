@@ -6,7 +6,7 @@
   <bety>
     <user>bety</user>
     <password>bety</password>
-    <host>psql-pecan.bu.edu</host>
+    <host>localhost</host>
     <dbname>bety</dbname>
     <driver>PostgreSQL</driver>
   </bety>
