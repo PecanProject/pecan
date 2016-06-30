@@ -36,8 +36,8 @@
 ##' outfolder <- '~/'
 ##' input.id <- 5000000005
 ##' format <- query.format.vars(input.id=input.id,con)
-##' start_date <- ymd_hm('199901010000')
-##' end_date <- ymd_hm('201412312330')
+##' start_date <- ymd_hm('200401010000')
+##' end_date <- ymd_hm('200412312330')
 ##' PEcAn.data.atmosphere::met2CF.csv(in.path,in.prefix,outfolder,start_date,end_date,format,overwrite=TRUE)
 ##' }
 met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, format, lat=NULL, lon=NULL, nc_verbose = FALSE, overwrite=FALSE, ...){
@@ -126,11 +126,13 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
   
   ## Only run if years > start_date < end_date,  if both are provided, clip data to those dates
   ## Otherwise set start/end to first/last datetime of file
+  years = year(alldatetime)  
   if (!missing(start_date) && !missing(end_date)) {
-    availdat <- which((alldatetime >= start_date) & (alldatetime <= end_date))
+    availdat <- which(years >= year(start_date) & years <= year(end_date))
     if (length(availdat)==0) { logger.error("data does not contain output after start_date or before end_date")}
     alldat <- alldat[availdat, ]
     alldatetime <- alldatetime[availdat]
+    years <- years[availdat]
   } else {
     start_date = alldatetime[1]
     end_date = alldatetime[length(alldatetime)]
@@ -139,7 +141,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
   #dat <- as.data.frame(datetime = datetime, sapply(dat[,-datetime_index], as.numeric))
   
   ## loop over years that need to be read
-  years = year(alldatetime)  
+
   for (i in 1:length(all_years)) {
     
     ## Test that file has data for year being processed, else move on
