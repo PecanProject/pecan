@@ -15,7 +15,7 @@
 met.process <- function(site, input_met, start_date, end_date, model, host, dbparms, dir, browndog=NULL){
   require(RPostgreSQL)
   require(XML)
-
+  
   #setup connection and host information
   con      <- db.open(dbparms)
   username <- ""
@@ -99,7 +99,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     }else{
 
       args <- list(outfolder, start_date, end_date)
-      if(met %in% "CRUNCEP") {
+      if((met %in% "CRUNCEP") | (met %in% "GFDL")) {
         ## this is a hack for regional products that go direct to site-level extraction. Needs generalization (mcd)
         args <- c(args, new.site$id, new.site$lat, new.site$lon)
         stage$met2cf = FALSE
@@ -118,7 +118,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                     parentid = NA,
                                     con = con,
                                     hostname = host$name)
-      if(met %in% "CRUNCEP"){ready.id = raw.id}
+      if((met %in% "CRUNCEP") | (met %in% "GFDL")) {ready.id = raw.id}
     }
 
   }else if(register$scale=="site") { # Site-level met
@@ -162,7 +162,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   if(stage$met2cf == TRUE){
   logger.info("Begin change to CF Standards")
 
-  input.id  <-  raw.id[1]
+  input.id  <-  raw.id$input.id[1]
+  
   pkg       <- "PEcAn.data.atmosphere"
   formatname <- 'CF Meteorology'
   mimetype <- 'application/x-netcdf'
@@ -195,7 +196,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         fcn <- fcn1
       }else if(exists(fcn2)){
         fcn <- fcn2
-      }else{logger.error("met2CF function doesn't exists")}
+      }else{logger.error("met2CF function ",fcn1," or ",fcn2," don't exist")}
 
       cf0.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE,format.vars=format.vars)
@@ -238,17 +239,19 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       cf.id <- list(input.id=check$container_id, dbfile.id=check$id)
     }else{
       fcn1 <- paste0("met2CF.",met)
-      fcn2 <- paste0("met2CF.",register$format$mimetype)
+      mimename <- register$format$mimetype
+      mimename <- substr(mimename,regexpr('/',mimename)+1,nchar(mimename))
+      mimename <- substr(mimename,regexpr('-',mimename)+1,nchar(mimename))
+      fcn2 <- paste0("met2CF.",mimename)
       if(exists(fcn1)){
         fcn <- fcn1
         cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                                username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon)
       }else if(exists(fcn2)){
         fcn <- fcn2
-        format <- query.format(input.id,con)
         cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon,format)
-      }else{logger.error("met2CF function doesn't exists")}
+                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon,format.vars=format.vars)
+      }else{logger.error("met2CF function ",fcn1, " or ", fcn2," doesn't exists")}
     }
   }
 
@@ -335,7 +338,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   }else{
     model.id = ready.id
     
-    if("CRUNCEP" %in% met){outfolder <- file.path(dir,paste0(met,"_site_",str_ns))}
+    if(("CRUNCEP" %in% met) | ("GFDL" %in% met)) {outfolder <- file.path(dir,paste0(met,"_site_",str_ns))}
   }
 
   logger.info(paste("Finished Model Specific Conversion",model.id[1]))
