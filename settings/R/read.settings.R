@@ -1157,6 +1157,9 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
     .libPaths(settings$Rlib)
   }
 
+  # Set class to Settings to override fuzzy matching with $
+  class(settings) = c("Settings", class(settings))
+  
   ## Return settings file as a list
   invisible(settings)
 }
