@@ -5,15 +5,16 @@
 ##' @title convert.input
 ##' @export
 ##' @author Betsy Cowdery, Michael Dietze, Ankur Desai
-convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,
-                          pkg,fcn,username,con=con,hostname='localhost',browndog, write=TRUE,format.vars=format.vars,...){
-  logger.info(paste("Convert.Inputs",fcn,input.id,hostname,outfolder,formatname,mimetype,site.id,start_date,end_date))
+convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, start_date, end_date, 
+                          pkg, fcn, username, con=con, hostname='localhost', browndog, write=TRUE, format.vars=format.vars, ...) {
   l <- list(...); #print(l)
+  logger.info(paste("Convert.Inputs",fcn,input.id,hostname,outfolder,formatname,mimetype,site.id,start_date,end_date))
   n <- nchar(outfolder)
   if(substr(outfolder,n,n) != "/"){outfolder = paste0(outfolder,"/")}
   
   outname = tail(unlist(strsplit(outfolder,'/')),n=1)
   
+  print(start_date)
   startdate <- as.POSIXlt(start_date, tz = "GMT")
   enddate   <- as.POSIXlt(end_date, tz = "GMT")
   
@@ -41,7 +42,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
     logger.warning("multiple dbfile records, using last",dbfile);
     dbfile = dbfile[nrow(dbfile),]
   }
-  
+
   #--------------------------------------------------------------------------------------------------#
   # Perform Conversion 
   
@@ -139,15 +140,16 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   }
   
   else if (conversion == "local.remote") { # perform conversion on local or remote host
-    if (missing(format.vars)) {
-      args = c(dbfile$file_path,dbfile$file_name,outfolder,start_date,end_date) } 
-    else {
-      args = c(dbfile$file_path,dbfile$file_name,outfolder,start_date,end_date,format.vars) } 
-    }
-    if(!is.null(names(l))){
-      cmdFcn  = paste0(paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=",")),",",paste(paste(names(l),"=",unlist(l)), collapse=","),")")
-    }else{
-      cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")") 
+     if (missing(format.vars)) {
+       args = c(dbfile$file_path,dbfile$file_name,outfolder,start_date,end_date) 
+       if(!is.null(names(l))){
+         cmdFcn  = paste0(paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=",")),",",paste(paste(names(l),"=",unlist(l)), collapse=","),")")
+       }else{
+         cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")") 
+       } 
+    } else {
+       args = c(dbfile$file_path,dbfile$file_name,outfolder,start_date,end_date) 
+       cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),",format=",paste0(list(format.vars)),")")
     } 
     print(cmdFcn) #do we want to print this?
     result <- remote.execute.R(script=cmdFcn,hostname,user=NA,verbose=TRUE,R="R")
