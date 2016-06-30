@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-con <- db.open(list(host="psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
+con <- db.open(list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
 
 context("test db.query")
 

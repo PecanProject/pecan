@@ -8,7 +8,7 @@
 #-------------------------------------------------------------------------------
 context("Testing utility functions")
 
-con <- db.open(list(host="psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
+con <- db.open(list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
 
 test_that("get.id works on some tables, and with different inputs", {
   pftid <- get.id("pfts", "name", "salix", con)
