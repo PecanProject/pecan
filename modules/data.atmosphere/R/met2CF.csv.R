@@ -18,15 +18,7 @@
 ##'   OPTIONAL:
 ##'   format$na.strings = list of missing values to convert to NA, such as -9999
 ##'   format$skip = lines to skip excluding header
-##'   format$site = ID of site (UNUSED)
-##'     format$vars$column_number = Column number in CSV file (optional, will use header name first)
-##'     format$vars$storage_type (UNUSED)
-##'     format$vars$bety_units = Units in BETY (UNUSED)
-##'     format$vars$variable_id = BETY variable ID (UNUSED)
-##'     format$vars$mstmip_name = Name in MSTIMIP (UNUSED)
-##'     format$vars$mstimip_units = Units in MSTIMIP (UNUSED)
-##'     format$vars$pecan_name = Internal Pecan name (UNUSED)
-##'     format$vars$pecan_units = Internal Pecan units (UNUSED)
+##'   format$vars$column_number = Column number in CSV file (optional, will use header name first)
 ##' Columns with NA for bety variable name are dropped. 
 ##' Units for datetime field are the lubridate function that will be used to parse the date (e.g. \code{ymd_hms} or \code{mdy_hm}). 
 ##' @param nc_verbose logical: run ncvar_add in verbose mode?
@@ -36,79 +28,132 @@
 ##' \dontrun{
 ##' library(PEcAn.DB)
 ##' library(lubridate)
-##' library(udunits2)
-##' source('~/pecan/modules/data.atmosphere/R/met2CF.csv.R')
+##' library(RPostgreSQL)
 ##' bety = list(user="bety", password="bety", host="localhost", dbname="bety", driver="PostgreSQL", write=TRUE)
 ##' con <- db.open(bety)
 ##' in.path <- '/home/carya/sites/willow/'
-##' in.file <- 'FLX_US-WCr_FLUXNET2015_SUBSET_HH_1999-2014_1-1.csv'
+##' in.prefix <- 'FLX_US-WCr_FLUXNET2015_SUBSET_HH_1999-2014_1-1'
 ##' outfolder <- '~/'
 ##' input.id <- 5000000005
 ##' format <- query.format.vars(input.id=input.id,con)
 ##' start_date <- ymd_hm('199901010000')
 ##' end_date <- ymd_hm('201412312330')
-##' met2CF.csv(in.path,in.file,outfolder,start_date,end_date,format=format,overwrite=TRUE)
+##' PEcAn.data.atmosphere::met2CF.csv(in.path,in.prefix,outfolder,start_date,end_date,format,overwrite=TRUE)
 ##' }
-met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format=format, lat=NULL, lon=NULL, nc_verbose = FALSE, overwrite=FALSE,...){
+met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, format, lat=NULL, lon=NULL, nc_verbose = FALSE, overwrite=FALSE, ...){
+  require(PEcAn.utils)
   require(lubridate)
   require(udunits2)  
+  require(ncdf4)
   
+  start_year <- year(start_date)
+  end_year <- year(end_date)
+  if(!file.exists(outfolder)){
+    dir.create(outfolder)
+  }
+  
+  ## set up results output to return
+  rows <- end_year - start_year + 1
+  results <- data.frame(file=character(rows), host=character(rows),
+                        mimetype=character(rows), formatname=character(rows),
+                        startdate=character(rows), enddate=character(rows),
+                        dbfile.name = in.prefix,
+                        stringsAsFactors = FALSE)
+  
+  in.file <- paste0(in.prefix,'.csv')
   files <- dir(in.path, in.file, full.names = TRUE)
   files <- files[grep("*.csv",files)]
   if(length(files)==0){
     return(NULL)
     logger.warn("No met files named ", in.file, "found in ", in.path)
   }
-  dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)  # does nothing if dir exists
+  files <- files[1]
   
   # get lat/lon from format.vars if not passed directly
-  if (missing(lat) || is.null(lat)) { lat <- format.vars$lat }
-  if (missing(lon) || is.null(lon)) { lon <- format.vars$lon }
+  if (missing(lat) || is.null(lat)) { lat <- format$lat }
+  if (missing(lon) || is.null(lon)) { lon <- format$lon }
   
-  #loop over all files passed and create one NC file per each
-  for(i in 1:length(files)){
-    #create new filename by swapping .csv with .nc    
-    new.file <- file.path(outfolder, gsub(".csv","_CF.nc",basename(files[i])))
-    if (file.exists(new.file) && !overwrite) {
-      logger.debug("File '", new.file, "' already exists, skipping to next file.")
+  #create new filename by swapping .csv with .nc, and adding year strings from start to end year
+  #year(start_date)
+  all_years <- start_year:end_year
+  all_files <- paste0(file.path(outfolder,gsub(".csv","",basename(files))),".",as.character(all_years),".nc")
+  
+  results$file <- all_files
+  results$host <- fqdn()
+  results$startdate <- paste0(all_years,"-01-01 00:00:00")
+  results$enddate <- paste0(all_years,"-12-31 23:59:59")
+  results$mimetype <- 'application/x-netcdf'
+  results$formatname <- 'CF'
+  
+  #If all the files already exist, then skip the conversion unless overwrite=TRUE
+  if (!overwrite && all(file.exists(all_files))) {
+    logger.debug("File '", all_files, "' already exist, skipping to next file.")
+    next
+  }
+  #If some of the files already exist, skip those, but still need to read file
+  if (!overwrite && any(file.exists(all_files))) {
+    logger.debug("Files ",all_files[which(file.exists(all_files))]," already exist, skipping those")
+    all_years <- all_years[which(!file.exists(all_files))]
+    all_files <- all_files[which(!file.exists(all_files))]
+  }
+  
+  ## Read the CSV file
+  ## some files have a line under the header that lists variable units
+  ## search for NA's after conversion to numeric
+  if(is.null(format$header)){
+    logger.warn("please specify number of header rows in file")
+    alldat <- read.csv(files, skip = format$skip, na.strings = format$na.strings, as.is=TRUE, 
+                       check.names = FALSE)
+  } else if (format$header == 0 | format$header == 1){
+    alldat <- read.csv(files, skip = format$skip, na.strings = format$na.strings, as.is=TRUE,
+                       check.names = FALSE, header = as.logical(format$header))
+  }else if (format$header > 1) {
+    alldat <- read.csv(files, skip = format$skip, na.strings = format$na.strings, as.is=TRUE, 
+                       check.names = FALSE, header = TRUE)
+    alldat <- alldat[-c(1:header-1),]
+  }
+  
+  ## Get datetime vector - requires one column be connected to bety variable datetime
+  ## FUTURE: Make this much more generic to deal with multiple ways datetime can be passed in a CSV such as Year,Month,Day, and so on
+  datetime_index <- which(format$vars$bety_name == "datetime")
+  if (length(datetime_index)==0) { logger.error("datetime column is not specified in format") }
+  datetime_units <- format$vars$orig_units[datetime_index] #lubridate function to call such as ymd_hms
+  if (datetime_units=="") { datetime_units <- "ymd_hm" }
+  datetime_raw <- alldat[, format$vars$orig_name[datetime_index]]
+  alldatetime <- do.call(datetime_units, list(datetime_raw))  #convert to POSIXct convention
+  ## and remove datetime from 'dat' dataframe
+  ##dat[, datetime_index] <- format$na.strings    
+  
+  ## Only run if years > start_date < end_date,  if both are provided, clip data to those dates
+  ## Otherwise set start/end to first/last datetime of file
+  if (!missing(start_date) && !missing(end_date)) {
+    availdat <- which((alldatetime >= start_date) & (alldatetime <= end_date))
+    if (length(availdat)==0) { logger.error("data does not contain output after start_date or before end_date")}
+    alldat <- alldat[availdat, ]
+    alldatetime <- alldatetime[availdat]
+  } else {
+    start_date = alldatetime[1]
+    end_date = alldatetime[length(alldatetime)]
+  }
+  ## convert data to numeric - not needed and is slow
+  #dat <- as.data.frame(datetime = datetime, sapply(dat[,-datetime_index], as.numeric))
+  
+  ## loop over years that need to be read
+  years = year(alldatetime)  
+  for (i in 1:length(all_years)) {
+    
+    ## Test that file has data for year being processed, else move on
+    this.year <- all_years[i]
+    availdat.year <- which(years==this.year)
+    if (length(availdat.year)==0) {
+      logger.debug("File ",in.file," has no data for year ",this.year)
       next
     }
-        
-    ## some files have a line under the header that lists variable units
-    ## search for NA's after conversion to numeric
-    if(is.null(format$header)){
-      logger.warn("please specify number of header rows in file")
-      dat <- read.csv(files[i], skip = format$skip, na.strings = format$na.strings, as.is=TRUE, 
-                      check.names = FALSE)
-    } else if (format$header == 0 | format$header == 1){
-      dat <- read.csv(files[i], skip = format$skip, na.strings = format$na.strings, as.is=TRUE,
-                      check.names = FALSE, header = as.logical(format$header))
-    }else if (format$header > 1) {
-      dat <- read.csv(files[i], skip = format$skip, na.strings = format$na.strings, as.is=TRUE, 
-                      check.names = FALSE, header = TRUE)
-      dat <- dat[-c(1:header-1),]
-    }
+    new.file <- all_files[i]
     
-    ## Get datetime vector - requires one column be connected to bety variable datetime
-    ## FUTURE: Make this much more generic to deal with multiple ways datetime can be passed in a CSV such as Year,Month,Day, and so on
-    datetime_index <- which(format$vars$bety_name == "datetime")
-    if (length(datetime_index)==0) { logger.error("datetime column is not specified in format") }
-    datetime_units <- format$vars$orig_units[datetime_index] #lubridate function to call such as ymd_hms
-    if (datetime_units=="") { datetime_units <- "ymd_hm" }
-    datetime_raw <- dat[, format$vars$orig_name[datetime_index]]
-    datetime <- do.call(datetime_units, list(datetime_raw))  #convert to POSIXct convention
-    ## and remove datetime from 'dat' dataframe
-    ##dat[, datetime_index] <- format$na.strings    
- 
-    ## Only run if years > start_date < end_date, only if both are provided
-    ## FUTURE OPTION: Clip array to available dates before writing, maybe rename output file in that case
-    if (!missing(start_date) && !missing(end_date)) {
-      availdat <- which(datetime >= start_date && datetime <= end_date)
-      if (length(availdat)==0) { logger.error("data does not contain output after start_date or before end_date")}
-    }
-    
-    ## convert data to numeric - not needed
-    #dat <- as.data.frame(datetime = datetime, sapply(dat[,-datetime_index], as.numeric))
+    ## Extract that year's data from large file
+    dat <- alldat[availdat.year,]
+    datetime <- alldatetime[availdat.year]
     
     ### create time dimension 
     days_since_1700 <- datetime - ymd("1700-01-01")
@@ -119,7 +164,7 @@ met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format
     x <- ncdim_def("longitude", "degrees_east", lon) #define netCDF dimensions for variables
     y <- ncdim_def("latitude", "degrees_north", lat)
     xytdim <- list(x,y,t)
-      
+    
     ## airT (celsius) => air_temperature (K) - REQUIRED for all met files
     locs <- which(format$vars$bety_name %in% "airT")
     if (length(locs)>0) {
@@ -227,7 +272,7 @@ met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format
       ncvar_put(nc, varid = RH.var,
                 vals=met.conv(dat[,arrloc],format$vars$orig_units[k],"%","%"))  
     }
-
+    
     ## specific_humidity (g g-1) => specific_humidity (kg kg-1)
     locs <- which(format$vars$bety_name %in% "specific_humidity")
     if (length(locs)>0) {
@@ -249,7 +294,7 @@ met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format
       nc_close(nc)
       nc = nc_open(new.file,write=TRUE,readunlim=FALSE)
       if("relative_humidity" %in% names(nc$var) & "air_temperature" %in% names(nc$var)){
-            ## Convert RH to SH
+        ## Convert RH to SH
         qair = rh2qair(rh=ncvar_get(nc,"relative_humidity")/100,T=ncvar_get(nc,"air_temperature"))
         qair.var = ncvar_def(name="specific_humidity",units="kg kg-1",dim=xytdim)
         nc = ncvar_add(nc = nc, v = qair.var, verbose = nc_verbose) #add variable to existing netCDF file
@@ -346,14 +391,14 @@ met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format
       rain <- dat[,arrloc]
       rain.units <- as.character(format$vars$orig_units[k])
       rain.units <- switch(rain.units,
-                      mm = {rain = rain / timestep; "kg m-2 s-1"},
-                      m  = {rain = rain / timestep; "Mg m-2 s-1"},
-                      'in' = {rain=ud.convert(rain / timestep, "in", "mm"); "kg m-2 s-1"},
-                      'mm h-1' = {rain = ud.convert(rain / timestep, "h", "s"); "kg m-2 s-1"})        
+                           mm = {rain = rain / timestep; "kg m-2 s-1"},
+                           m  = {rain = rain / timestep; "Mg m-2 s-1"},
+                           'in' = {rain=ud.convert(rain / timestep, "in", "mm"); "kg m-2 s-1"},
+                           'mm h-1' = {rain = ud.convert(rain / timestep, "h", "s"); "kg m-2 s-1"})        
       ncvar_put(nc, varid = precip.var,
                 vals = met.conv(rain, rain.units, "kg m-2 s-1", "kg m-2 s-1"))  
     }
-        
+    
     ## eastward_wind (m s-1) => eastward_wind (m s-1)
     ## northward_wind (m s-1) => northward_wind (m s-1)
     if (("eastward_wind" %in% format$vars$bety_name) & ("northward_wind" %in% format$vars$bety_name)) {
@@ -372,7 +417,7 @@ met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format
       ncvar_put(nc, varid = Nwind.var,
                 vals=met.conv(dat[,arrloc],format$vars$orig_units[k],"m s-1","m s-1"))  
       locs <- which(format$vars$bety_name %in% "eastward_wind")
-       k <- locs[1]
+      k <- locs[1]
       Ewind.var <- ncvar_def(name="eastward_wind",units = "m s-1",dim = xytdim)
       nc <- ncvar_add(nc = nc, v = Ewind.var, verbose = nc_verbose)
       arrloc <- as.character(format$vars$orig_name[k])
@@ -382,8 +427,8 @@ met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format
         } else {
           logger.error("Cannot find column location for northward_wind by name or column number")
         }
-      ncvar_put(nc, varid = Ewind.var,
-                vals=met.conv(dat[,arrloc],format$vars$orig_units[k],"m s-1","m s-1"))  
+        ncvar_put(nc, varid = Ewind.var,
+                  vals=met.conv(dat[,arrloc],format$vars$orig_units[k],"m s-1","m s-1"))  
       }      
     } else {
       locs_wd <- which(format$vars$bety_name %in% "wind_direction")
@@ -439,26 +484,27 @@ met2CF.csv <- function(in.path, in.file, outfolder, start_date, end_date, format
       }
     }  ## end wind 
     
-#       ## wind_direction (degrees) => wind_from_direction (degrees) 
-#       locs <- which(format$vars$bety_name %in% "wind_direction")
-#       if (length(locs)>0) {
-#         k <- locs[1]
-#         Wdir.var <- ncvar_def(name="wind_from_direction",units = "degrees",dim = xytdim)
-#         nc <- ncvar_add(nc = nc, v = Wdir.var, verbose = nc_verbose)
-#         arrloc <- as.character(format$vars$orig_name[k])
-#         if (arrloc=="") {
-#           if (any(colnames(format$vars)=="column_number")) { 
-#             arrloc <- format$vars$column_number[k]
-#           } else {
-#             logger.error("Cannot find column location for wind_direction by name or column number")
-#           }
-#         }
-#         ncvar_put(nc, varid = Wdir.var,
-#                   vals=met.conv(dat[,arrloc],format$vars$orig_units[k],"degrees","degrees"))  
-#       } 
+    #       ## wind_direction (degrees) => wind_from_direction (degrees) 
+    #       locs <- which(format$vars$bety_name %in% "wind_direction")
+    #       if (length(locs)>0) {
+    #         k <- locs[1]
+    #         Wdir.var <- ncvar_def(name="wind_from_direction",units = "degrees",dim = xytdim)
+    #         nc <- ncvar_add(nc = nc, v = Wdir.var, verbose = nc_verbose)
+    #         arrloc <- as.character(format$vars$orig_name[k])
+    #         if (arrloc=="") {
+    #           if (any(colnames(format$vars)=="column_number")) { 
+    #             arrloc <- format$vars$column_number[k]
+    #           } else {
+    #             logger.error("Cannot find column location for wind_direction by name or column number")
+    #           }
+    #         }
+    #         ncvar_put(nc, varid = Wdir.var,
+    #                   vals=met.conv(dat[,arrloc],format$vars$orig_units[k],"degrees","degrees"))  
+    #       } 
     
     nc_close(nc)
-  } ## end loop over files
+  } ## end loop over years
+  invisible(results)
 } ## end function met2CF.csv
 
 
