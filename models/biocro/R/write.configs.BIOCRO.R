@@ -88,9 +88,9 @@ write.config.BIOCRO <- function(defaults = NULL,
                                 run.id) {
   
   ## find out where to write run/ouput
-  rundir <- file.path(settings$run$host$rundir, as.character(run.id))
-  outdir <- file.path(settings$run$host$outdir, as.character(run.id))
-  if (is.null(settings$run$host$qsub) && (settings$run$host$name == "localhost")) {
+  rundir <- file.path(settings$host$rundir, as.character(run.id))
+  outdir <- file.path(settings$host$outdir, as.character(run.id))
+  if (is.null(settings$host$qsub) && (settings$host$name == "localhost")) {
     rundir <- file.path(settings$rundir, as.character(run.id))
     outdir <- file.path(settings$modeloutdir, as.character(run.id))
   }
@@ -211,7 +211,7 @@ write.config.BIOCRO <- function(defaults = NULL,
 remove.config.BIOCRO <- function(main.outdir, settings) {
     
 ### Remove files on localhost
-    if(settings$run$host$name == 'localhost'){
+    if(settings$host$name == 'localhost'){
         files <- paste(settings$outdir,
                        list.files(path=settings$outdir, recursive=FALSE),sep="") # Need to change this to the run folder when implemented
         files <- files[-grep('*.xml',files)] # Keep pecan.xml file

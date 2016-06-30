@@ -17,7 +17,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   print(start_date)
   startdate <- as.POSIXlt(start_date, tz = "GMT")
   enddate   <- as.POSIXlt(end_date, tz = "GMT")
-  
+
   # Consider adding a force option to skip the check and continue with conversion
   print("start CHECK")
   check = dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, parentid=input.id, con=con, hostname)
@@ -152,6 +152,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
        cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),",format=",paste0(list(format.vars)),")")
     } 
     print(cmdFcn) #do we want to print this?
+
     result <- remote.execute.R(script=cmdFcn,hostname,user=NA,verbose=TRUE,R="R")
   }
   
