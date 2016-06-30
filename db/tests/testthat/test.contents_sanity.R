@@ -6,7 +6,11 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-con <- db.open(list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
+if(fqdn() == "pecan2.bu.edu") {
+  con <- db.open(list(host="psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
+} else {
+  con <- db.open(list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
+}
 
 context("Basic Sanity tests for PEcAn functions that query BETYdb")
 

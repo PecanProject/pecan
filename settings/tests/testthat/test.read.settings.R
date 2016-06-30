@@ -11,7 +11,17 @@ logger.setQuitOnSevere(FALSE)
 logger.setLevel("OFF")
 context("tests for read.settings and related functions")
 
-settings <- read.settings("testinput.xml")
+
+.get.test.settings = function() {
+  if(fqdn() == "pecan2.bu.edu") {
+    settings <- read.settings("testinput.pecan2.bu.edu.xml")
+  } else {
+    settings <- read.settings("testinput.xml")
+  }
+  return(settings)
+}
+
+settings <- .get.test.settings()
 
 test_that("read.settings returned correctly", {
 	expect_true(file.exists(settings$outdir))
