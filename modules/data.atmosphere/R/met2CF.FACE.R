@@ -9,7 +9,7 @@
 ##' @author Elizabeth Cowdery
 ##' 
 
-met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date){
+met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,...){
   
   require(ncdf4)
   require(ncdf4.helpers)

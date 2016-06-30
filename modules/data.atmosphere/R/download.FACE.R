@@ -10,7 +10,7 @@
 ##' 
 ##' @author Betsy Cowdery
 
-download.FACE <- function(sitename,outfolder, start_date, end_date, overwrite=FALSE){
+download.FACE <- function(sitename,outfolder, start_date, end_date, overwrite=FALSE, ...){
   # download.FACE <- function(data.set,outfolder,pkg,raw.host,start_year,end_year,site.id,dbparams,con){
   
   require(lubridate)
