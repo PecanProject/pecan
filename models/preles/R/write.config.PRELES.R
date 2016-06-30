@@ -23,8 +23,8 @@
 write.config.PRELES<- function(defaults, trait.values, settings, run.id){
   
   #find out where to write run/ouput
-  rundir <- file.path(settings$run$host$rundir, run.id)
-  outdir <- file.path(settings$run$host$outdir, run.id)
+  rundir <- file.path(settings$host$rundir, run.id)
+  outdir <- file.path(settings$host$outdir, run.id)
   
   ### Define PARAMETERS
   filename = paste(rundir,"/",'PRELES_params.',run.id,'.Rdata',sep='')
