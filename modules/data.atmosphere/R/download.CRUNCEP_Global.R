@@ -43,7 +43,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
   
   for (i in 1:rows){
     year = ylist[i]    
-    ntime = ifelse(year%%4 == 0,1463,1459)
+    ntime = ifelse(lubridate:: leap_year(year), 366*4, 365*4)
     
     loc.file = file.path(outfolder,paste("CRUNCEP",year,"nc",sep="."))
     
