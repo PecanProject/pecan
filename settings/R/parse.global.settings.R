@@ -30,11 +30,22 @@ parse.global.settings <- function(global.settings){
     for(i in seq_along(runs)) {
       settings.i <- shared.settings
       settings.i$run <- runs[[i]]
-      settings.list[[i]] <- c(settings.list, settings.i)
+      settings.list[[i]] <- settings.i
     }
-    invisible(settings.list)
+    return(settings.list)
+  }
+    
+  # Otherwise, just convert to a settings object and return
+  return(Settings(global.settings))
+}
+
+
+get.global.setting <- function(x, name) UseMethod("get.global.setting")
+get.global.setting.SettingsList <- function(settingsList, name) {
+  vals <- lapply(settingsList, function(x) x[[name]])
+  if(!all(sapply(vals, function(x, x1) identical(x, x1), vals[[1]]))) {
+    logger.severe(paste("Setting", name, "is supposed to be identical across all Settings, but isn't"))
   }
   
-  # Otherwise, just convert to a settings object and return
-  invisible(Settings(global.settings))
+  return(vals[1])
 }
