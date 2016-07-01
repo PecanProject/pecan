@@ -26,7 +26,7 @@ settings <- .get.test.settings()
 test_that("read.settings returned correctly", {
 	expect_true(file.exists(settings$outdir))
 	expect_true(file.info(settings$outdir)$isdir)
-	expect_true(file.exists(file.path(settings$outdir, "pecan.xml")))
+	expect_true(file.exists(file.path(settings$outdir, "pecan.CHECKED.xml")))
 })
 
 test_that("read settings returns error if no settings file found (issue #1124)",{

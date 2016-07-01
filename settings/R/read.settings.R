@@ -1101,7 +1101,7 @@ addSecrets <- function(settings) {
 ##' test.settings.file <- system.file("tests/test.xml", package = "PEcAn.all")
 ##' settings <- read.settings(test.settings.file)
 ##' }
-read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
+read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.CHECKED.xml"){
   if(inputfile == ""){
     logger.warn("settings files specified as empty string; \n\t\tthis may be caused by an incorrect argument to system.file.")
   }
