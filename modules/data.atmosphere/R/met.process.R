@@ -99,6 +99,13 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         stage$met2cf = FALSE
         stage$standardize = FALSE
       }
+      
+      if (met %in% "GFDL") {
+        args <- c(args, input_met$id, input_met$lat, input_met$lon, input_met$model, input_met$experiment, input_met$scenario)
+        stage$met2cf = FALSE
+        stage$standardize = FALSE
+      }
+      
       cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
       new.files <- remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
 
@@ -113,8 +120,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                     con = con,
                                     hostname = host$name)
       if(met %in% "CRUNCEP"){ready.id = raw.id}
+      if(met %in% "GFDL"){ready.id = raw.id}
     }
-
   }else if(register$scale=="site") { # Site-level met
 
     print("start CHECK")
@@ -327,8 +334,9 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     model.id = ready.id
     
     if("CRUNCEP" %in% met){outfolder <- file.path(dir,paste0(met,"_site_",str_ns))}
+    if("GFDL" %in% met){outfolder <- file.path(dir,paste0(met,"_site_",str_ns))}
   }
-
+    
   logger.info(paste("Finished Model Specific Conversion",model.id[1]))
 
   model.file <- db.query(paste("SELECT * from dbfiles where id =",model.id[[2]]),con)[["file_name"]]
