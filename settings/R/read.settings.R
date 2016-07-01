@@ -1141,9 +1141,9 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
   global.settings <- xmlToList(xml)
   settings <- parse.global.settings(global.settings)
   
-  settings <- addSecrets(settings)
-  settings <- update.settings(settings)
-  settings <- check.settings(settings)
+  settings <- papply(settings, addSecrets)
+  settings <- papply(settings, update.settings)
+  settings <- papply(settings, check.settings)
 
   ## save the checked/fixed pecan.xml
   if (!is.null(outputfile)) {
@@ -1159,10 +1159,6 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
     .libPaths(settings$Rlib)
   }
 
-  # Set class to Settings to override fuzzy matching with $
-  class(settings) = c("Settings", class(settings))
-  
-  ## Return settings file as a list
   invisible(settings)
 }
 ##=================================================================================================#
