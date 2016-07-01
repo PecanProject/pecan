@@ -5,7 +5,7 @@
 ##' @title Start benchmark ensemble
 ##' @param benchmark_reference_run.id
 ##' @param con database connection
-##' @export 
+##' @export start.bm.ensemble
 ##' 
 ##' @author Betsy Cowdery 
 
