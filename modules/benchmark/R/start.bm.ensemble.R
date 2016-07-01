@@ -12,9 +12,11 @@
 start.bm.ensemble <- function(BRR, con){ 
   
     old.settings <- file.path(BRR$settings, "pecan.xml")
-    new.settings <- sprintf("%s/%s.pecan.xml",BRR$settings, basename(BRR$settings))
-  
-  system(sprintf("Rscript web/workflow.R %s", new.settings))
+    new.settings <<- sprintf("%s/%s.pecan.xml",BRR$settings, basename(BRR$settings))
+    clean.settings(old.settings,new.settings)
+    
+    commandArgs <- function(trailingOnly = TRUE) new.settings 
+    source("web/workflow.R")
   
   ensemble.id <- db.query(sprintf("SELECT id from ensembles as e join workflows as w on e.workflow_id = w.id where w.id = ", settings$workflow$id))
   
