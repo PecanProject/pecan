@@ -2,10 +2,9 @@
 % Please edit documentation in R/metric.AME.R
 \name{metric.AME}
 \alias{metric.AME}
-\alias{metric.MSE}
 \title{Absolute Maximum Error}
 \usage{
-metric.MSE(dat, ...)
+metric.AME(dat, ...)
 }
 \arguments{
 \item{dat}{dataframe}

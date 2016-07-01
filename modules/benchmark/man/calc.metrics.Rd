@@ -4,8 +4,8 @@
 \alias{calc.metrics}
 \title{calc.metrics}
 \usage{
-calc.metrics(data.path, format, vars_used, model_run, metrics, start_year,
-  end_year, site)
+calc.metrics(data.path, format, model_run, metrics, start_year, end_year, site,
+  bm, ens)
 }
 \arguments{
 \item{end_year}{}

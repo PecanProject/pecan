@@ -2,10 +2,9 @@
 % Please edit documentation in R/metric.MAE.R
 \name{metric.MAE}
 \alias{metric.MAE}
-\alias{metric.MSE}
 \title{Mean Absolute Error}
 \usage{
-metric.MSE(dat, ...)
+metric.MAE(dat, ...)
 }
 \arguments{
 \item{dat}{dataframe}

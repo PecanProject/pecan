@@ -7,7 +7,7 @@
 \usage{
 metric.MSE(dat, ...)
 
-metric.MSE(dat, ...)
+metric.PPMC(dat, ...)
 }
 \arguments{
 \item{dat}{}
