@@ -21,7 +21,7 @@ settings <- read.settings(system.file("pecan.maat.xml",package = "PEcAn.MAAT"))
 
 #--------------------------------------------------------------------------------------------------#
 # get traits of pfts
-settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, 
+settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$database$dbfiles, 
 	settings$database$bety, settings$meta.analysis$update)
 saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 #--------------------------------------------------------------------------------------------------#
@@ -30,7 +30,7 @@ saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml
 #--------------------------------------------------------------------------------------------------#
 # run meta-analysis
 run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, 
-                  settings$meta.analysis$threshold, settings$run$dbfiles, settings$database$bety)
+                  settings$meta.analysis$threshold, settings$database$dbfiles, settings$database$bety)
 #--------------------------------------------------------------------------------------------------#
 
 

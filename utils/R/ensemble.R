@@ -242,9 +242,9 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
         "met data    : ", settings$run$site$met, "\n",
         "start date  : ", settings$run$start.date, "\n",
         "end date    : ", settings$run$end.date, "\n",
-        "hostname    : ", settings$run$host$name, "\n",
-        "rundir      : ", file.path(settings$run$host$rundir, run.id), "\n",
-        "outdir      : ", file.path(settings$run$host$outdir, run.id), "\n",
+        "hostname    : ", settings$host$name, "\n",
+        "rundir      : ", file.path(settings$host$rundir, run.id), "\n",
+        "outdir      : ", file.path(settings$host$outdir, run.id), "\n",
         file=file.path(settings$rundir, run.id, "README.txt"), sep='')
     
     do.call(my.write.config, args = list(defaults = defaults,

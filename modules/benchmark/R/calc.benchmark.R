@@ -22,7 +22,7 @@ calc.benchmark <- function(bm.ensemble, con){
   
   # All benchmarking records for the given benchmarking ensemble id
   bms <- db.query(paste("SELECT * FROM benchmarks as b join benchmarks_benchmarks_reference_runs as r on b.id=r.benchmark_id  join  benchmarks_ensembles as be on r.reference_run_id = be.reference_run_id where be.ensemble_id = ",bm.ensemble$ensemble_id,";"), con) 
-  
+
   # Determine how many data sets inputs are associated with the benchmark id's
   inputs <- unique(bms$input_id)
   # This thought isn't done yet - what needs to happen is that the number of bm.ids need to be split up in to groups according to their input data. So that the observations are only loaded once. 

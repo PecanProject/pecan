@@ -95,9 +95,9 @@ if (length(which(commandArgs() == "--continue")) == 0) {
           start_date = settings$run$start.date,
           end_date   = settings$run$end.date,
           model      = settings$model$type,
-          host       = settings$run$host,
+          host       = settings$host,
           dbparms    = settings$database$bety, 
-          dir        = settings$run$dbfiles,
+          dir        = settings$database$dbfiles,
           browndog   = settings$browndog)
         settings$run$inputs[[i]][['path']] <- result
         status.end()
@@ -131,7 +131,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
   # Query the trait database for data and priors
   if (check.status("TRAIT") == 0){
     status.start("TRAIT")
-    settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
+    settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$database$dbfiles, settings$database$bety, settings$meta.analysis$update)
     saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.TRAIT.xml'))
     status.end()
   }
@@ -140,7 +140,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
   if (check.status("META") == 0){
     status.start("META")
     if('meta.analysis' %in% names(settings)) {
-      run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$meta.analysis$threshold, settings$run$dbfiles, settings$database$bety)
+      run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$meta.analysis$threshold, settings$database$dbfiles, settings$database$bety)
     }
     status.end()
   }

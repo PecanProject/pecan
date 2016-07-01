@@ -43,13 +43,13 @@ clean.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml") {
 	}
 
 	# 4) remove rundir/outdir under host if localhost
-	if (settings$run$host$name == 'localhost') {
-		settings$run$host$rundir <- NULL
-		settings$run$host$outdir <- NULL
+	if (settings$host$name == 'localhost') {
+		settings$host$rundir <- NULL
+		settings$host$outdir <- NULL
 	}
 
 	# 5) remove explicit location of storage
-	settings$run$dbfiles <- NULL
+	settings$database$dbfiles <- NULL
 
 	# 5) remove workflow completely (including id)
 	settings$workflow <- NULL

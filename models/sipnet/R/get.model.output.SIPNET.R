@@ -22,7 +22,7 @@ get.model.output.SIPNET <- function(settings) {
   model="SIPNET"
   
   ### Get model output on the localhost
-  if(settings$run$host$name == 'localhost'){
+  if(settings$host$name == 'localhost'){
     get.results(settings)
     
   } else {
@@ -40,14 +40,14 @@ get.model.output.SIPNET <- function(settings) {
 
     ### Copy required PEcAn.functions.R to remote host
     rsync('-outi',remoteScript,
-          paste(settings$run$host$name, ':',settings$run$host$outdir, sep = '') )
+          paste(settings$host$name, ':',settings$host$outdir, sep = '') )
 
     ### Run script on remote host
-    system(paste("ssh -T", settings$run$host$name, "'",
-             "cd", settings$run$host$outdir, "; R --vanilla < PEcAn.functions.R'"))
+    system(paste("ssh -T", settings$host$name, "'",
+             "cd", settings$host$outdir, "; R --vanilla < PEcAn.functions.R'"))
     
     ### Get PEcAn output from remote host
-    rsync('-outi', from = paste(settings$run$host$name, ':', settings$run$host$outdir, 'output.Rdata', sep=''),
+    rsync('-outi', from = paste(settings$host$name, ':', settings$host$outdir, 'output.Rdata', sep=''),
       to = settings$outdir)
 
   } ### End of if/else
