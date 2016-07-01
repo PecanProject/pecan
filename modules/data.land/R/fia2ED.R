@@ -58,11 +58,6 @@ fia.to.psscss <- function(settings,gridres=0.075) {
 	lon     <- as.numeric(settings$run$site$lon)
 	
 	## output path  
-	if ("text" %in% names(settings$model$psscss)) {
-		path <- settings$model$psscss$text
-	} else {
-		path <- settings$model$psscss
-	}
 	path <- settings$outdir
 	## time info
 	year    <- as.numeric(format(as.Date(settings$run$start.date), '%Y'))
