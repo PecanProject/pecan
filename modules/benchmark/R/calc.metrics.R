@@ -3,7 +3,6 @@
 ##' @export
 ##' @param data.path
 ##' @param format
-##' @param vars_used
 ##' @param model_run
 ##' @param metrics
 ##' @param start_year
@@ -12,44 +11,74 @@
 ##' 
 ##' @author Betsy Cowdery
 
-calc.metrics <- function(data.path, format, vars_used, model_run, metrics, start_year, end_year, site){
+calc.metrics <- function(data.path, format, model_run, metrics, start_year, end_year, site, bm, ens){
   
-  # Right now many argument are being read in as R list objects
-  # This won't work remotely but at the moment I don't have a good solution
+  # Right now I'm making the inappropriate assumption that storage type will be 
+  # empty unless it's a time variable. 
+  # This is because I haven't come up for a good way to test that a character string is a date format
+  st <- format$vars$storage_type
   
-  # create results table
-  results <- as.data.frame(matrix(NA, nrow = length(vars_used$pecan_name), ncol = length(metrics$name)))
-  rownames(results) <- vars_used$pecan_name
-  colnames(results) <- metrics$name
+  time.row <- which(nchar(st)>1 & substr(st, 1,1) == "%")
   
-  # Do I need these?
-  # start.year <- lubridate::year(settings$run$start.date)
-  # end.year <- lubridate::year(settings$run$end.date)
+  # ---- MODEL DATA ---- #
   
-  model <- as.data.frame(read.output(runid=basename(model_run), outdir=model_run, start.year=start_year, end.year=end_year, format$vars$pecan_name))
-  # returns model output list object with variable values (including time), variable name and units
+  model_vars <- format$vars$pecan_name[-time.row]
+  model <- as.data.frame(read.output(runid=basename(model_run), outdir=model_run, 
+                                     start.year=start_year, end.year=end_year, 
+                                     c("time",model_vars)))
+  vars.used.index <- which(format$vars$pecan_name %in% names(model)[!names(model)=="time"])
   
-  vars_used <- as.data.frame(matrix(NA, nrow = length(names(model)), ncol = ncol(format$vars)))
-  colnames(vars_used) <- colnames(format$vars)
-  for(i in  1:length(names(model))){
-    vars_used[i,] <- format$vars[which(format$vars$pecan_name == names(model)[i]),]
+  # We know that the model output time is days since the beginning of the year.
+  # Make a column of years to supplement the column of days of the year.
+  years <- start_year:end_year
+  Diff <- diff(model$time)
+  n <- model$time[c(which(Diff < 0), length(model$time))]
+  y <- c()
+  for(i in 1:length(n)){
+    y <- c(y, rep(years[i], n[i]))
+  }
+  model$year <- y
+  model$posix <- strptime(paste(model$time, model$year), format = "%j %Y")
+  model_full = model
+  
+  # ---- INPUT DATA ---- #
+  
+  obvs <- load.data(data.path, format, start_year, end_year, site=settings$run$site, vars.used.index, time.row)
+  dat_vars <- format$vars$pecan_name[vars.used.index]
+  obvs_full = obvs
+  
+  #########################
+  
+  source("modules/benchmark/R/mean.over.larger.timestep.R")
+  dat <- align.data(model_full, obvs_full, dat_vars, start_year, end_year)
+  
+  results <- as.data.frame(matrix(NA, nrow = length(metrics$name), ncol = length(dat_vars)+1))
+  colnames(results) <- c("metric", dat_vars)
+  rownames(results) <- metrics$name
+  results$metric <- metrics$name
+  
+  file.sources = list.files("modules/benchmark/R/", pattern = "^metric.*", full.names = TRUE)
+  for(i in 1:length(file.sources)){
+    source(file.sources[i])
   }
   
-  obvs <- load.data(data.path, format, start_year, end_year, site=settings$run$site, vars_used)
-  # observation list object with variable values (including time), variable name and units
-  
-  dat <- align.data(model, obvs, vars_used, start_year, end_year)
-  
-  for(v in 1:length(vars_used$pecan_name)){
-    metric_dat <- dat[,c(paste(vars_used$pecan_name[v], c("model", "obvs"),sep = "_" ),"time")]
+  for(v in 1:length(dat_vars)){
+    metric_dat <- dat[,c(paste(dat_vars[v], c("m", "o"),sep = "." ),"posix")]
     colnames(metric_dat)<- c("model","obvs","time")
-    #for(m in 1:length(metrics$name)){
+    
+    for(m in 1:length(metrics$name)){
+      
       fcn <- paste0("metric.",metrics$name[m])
-      results[vars_used$pecan_name[v],metrics$name[m]] <- do.call(fcn,list(metric_dat, vars_used$pecan_name[v]))
-    #}
-  }
-
+      score <- as.character(do.call(fcn, args <- list(metric_dat,dat_vars[v])))
+      results[metrics$name[m],dat_vars[v]] <- score
+      
+      benchmarks_ensemble_id <- db.query(paste("SELECT id FROM benchmarks_ensembles where ensemble_id = ", ens$id),con )[[1]]
+      
+      db.query(sprintf("INSERT into benchmarks_ensembles_scores (score, benchmarks_ensemble_id, benchmark_id, metric_id, created_at, updated_at) VALUES ('%s', %.0f, %.0f, %.0f, NOW(), NOW())",
+                       score, benchmarks_ensemble_id, bm$id, metrics$id[m]),con)
+      
+    } #end loop over metrics
+  } #end loop over variables
 
 return(results)
-
 }
