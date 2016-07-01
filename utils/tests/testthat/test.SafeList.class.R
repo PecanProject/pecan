@@ -6,24 +6,32 @@
 ## which accompanies this distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
 ## #-------------------------------------------------------------------------------
-context("test settings class")
+context("test SafeList class")
 
-.getNewTestList <- function() {
-  return(list(aa=1, bb=2))
-}
+test_that("SafeList constructors work as expected", {
+    l <- list(aa=1, bb=2, cc=list(dd=3, ee=4))
+    s1 <- SafeList(aa=1, bb=2, cc=list(dd=3, ee=4))
+    s2 <- SafeList(l)
+    s3 <- as.SafeList(l)
+    
+    for(i in seq_along(l)) {
+      expect_identical(s1[[i]], l[[i]])
+    }
+    expect_identical(s1, s2)
+    expect_identical(s1, s3)
+    
+    expect_true(is(s1, "list"))
+    expect_true(is(s1, "SafeList"))
+    expect_true(is.SafeList(s1))
+    expect_false(is.SafeList(l))
+    expect_equal(length(class(s1)), 2)
+})
 
-.getNewTestSettings = function() {
-  s <- .getNewTestList()
-  class(s) = c("Settings", "list")
-  return(s)
-}
-
-
-test_that("settings indexing works as expected", {
-  l <- .getNewTestList()
-  s <- .getNewTestSettings()
+test_that("SafeList indexing works as expected", {
+  l <- list(aa=1, bb=2)
+  s <- SafeList(l)
   
-  # [[ works same for list and settings object
+  # [[ works same for list and SafeList object
   expect_equal(s[["bb"]], 2) 
   expect_equal(l[["bb"]], 2) 
   expect_equal(s[["bb", exact=T]], 2) 
@@ -41,3 +49,4 @@ test_that("settings indexing works as expected", {
   expect_equal(l$b, 2)
   expect_null(s$b)
 })
+
