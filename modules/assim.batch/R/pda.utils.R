@@ -425,9 +425,9 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
         "met data    : ", settings$run$site$met, "\n",
         "start date  : ", settings$run$start.date, "\n",
         "end date    : ", settings$run$end.date, "\n",
-        "hostname    : ", settings$run$host$name, "\n",
-        "rundir      : ", file.path(settings$run$host$rundir, run.ids[i]), "\n",
-        "outdir      : ", file.path(settings$run$host$outdir, run.ids[i]), "\n",
+        "hostname    : ", settings$host$name, "\n",
+        "rundir      : ", file.path(settings$host$rundir, run.ids[i]), "\n",
+        "outdir      : ", file.path(settings$host$outdir, run.ids[i]), "\n",
         file=file.path(settings$rundir, run.ids[i], "README.txt"), sep='')
 
     ## add the job to the list of runs
@@ -514,36 +514,62 @@ pda.adjust.jumps.bs <- function(settings, jcov, accept.count, params.recent) {
 ##' @return A list containing model outputs extracted to correspond to each observational
 ##'         dataset being used for PDA. 
 ##'
-##' @author Ryan Kelly
+##' @author Ryan Kelly, Istem Fer
 ##' @export
 pda.get.model.output <- function(settings, run.id, inputs) {
-  # TODO: Generalize to multiple outputs and outputs other than NEE
+  
+  require(PEcAn.benchmark)
+  require(lubridate)
 
-  # Placeholder code to remind us that this function should eventually deal with assimilating
-  # multiple variables. If so, look at the list of PDA inputs to determine which corresponding
-  # model outputs to grab.
   input.info <- settings$assim.batch$inputs
 
+  start.year <- strftime(settings$run$start.date,"%Y")
+  end.year <- strftime(settings$run$end.date,"%Y")
   
   model.out <- list()
   n.input <- length(inputs)
+  
   for(k in 1:n.input){
-    NEEm <- read.output(run.id, outdir = file.path(settings$run$host$outdir, run.id),
-                        strftime(settings$run$start.date,"%Y"), 
-                        strftime(settings$run$end.date,"%Y"), 
-                        variables="NEE")$NEE*0.0002640674
+    
+    vars.used <- unlist(input.info[[k]]$variable.name)
+    
+    # change input variable names (e.g. "LE") to model output variable names (e.g. "Qle")
+    match.table <- read.csv(system.file("bety_mstmip_lookup.csv", package= "PEcAn.DB"), header = T, stringsAsFactors=FALSE)
+    vars.used[vars.used %in% match.table$bety_name] <- match.table$mstmip_name[match.table$bety_name %in% vars.used[vars.used %in% match.table$bety_name]]
 
-    if(length(NEEm) == 0) {   # Probably indicates model failed entirely
+    # UST is never in the model outputs
+    vars.used <- vars.used[!vars.used %in% c("UST")]
+    
+    # We also want 'time' from model outputs for aligning step
+    vars <- c("time", vars.used)  
+    
+    # this is only for FC-NEE as we are using them interchangably when NEE isn't present, e.g. Ameriflux data
+    vars[vars %in% c("FC")] <- "NEE"      # FC - NEE specific hack 1
+    
+    model <- as.data.frame(read.output(run.id, outdir = file.path(settings$host$outdir, run.id),
+                                       start.year, end.year, variables = vars))
+
+    if(length(model) == 0) {   # Probably indicates model failed entirely
       return(NA)
     }
-      
-    ## match model and observations
-    NEEm <- rep(NEEm,each= nrow(inputs[[k]]$data)/length(NEEm))
-    set <- 1:length(NEEm)  ## ***** need a more intellegent year matching!!!
-      # NPPm <- rep(NPPm,each=length(NPPo)/length(NPPm))
-      # set <- 1:length(NPPm) 
-
-    model.out[[k]] <- NEEm[set]
+    
+    # FC - NEE specific hack 2: change NEE back to FC only if "FC" was specified in the first place
+    if(any(vars.used %in% c("FC"))) colnames(model)[colnames(model) %in% "NEE"] <- "FC"
+  
+  
+    ## Handle model time
+    # the model output time is in days since the beginning of the year
+    model.secs <- ud.convert(model$time, "days" ,"seconds")
+  
+    # seq.POSIXt returns class "POSIXct"
+    # the model output is since the beginning of the year but 'settings$run$start.date' may not be the first day of the year, using lubridate::floor_date
+    model$posix <- seq.POSIXt(from = lubridate::floor_date(as.POSIXct(settings$run$start.date), "year"), by = diff(model.secs)[1], length.out = length(model$time))
+  
+    dat <- align.data(model_full = model, obvs_full = inputs[[k]]$data, dat_vars = vars.used, 
+                      start_year = start.year, end_year = end.year)
+  
+    model.out[[k]] <- dat[,colnames(dat) %in% paste0(vars.used,".m"), drop = FALSE]
+    colnames(model.out[[k]]) <- vars.used
   }
   
   return(model.out)

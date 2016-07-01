@@ -175,7 +175,7 @@ plot.hdf5 <- function(year, yvar, xvar='time', width=800, height=600, filename, 
 	}
 
 	# find the Tower file
-	filename <- list.files(settings$run$host$outdir, full.names=TRUE,pattern=paste('.*-T-', year, '-.*.h5', sep=''))[1]
+	filename <- list.files(settings$host$outdir, full.names=TRUE,pattern=paste('.*-T-', year, '-.*.h5', sep=''))[1]
 	data <- hdf5load(filename, load = FALSE)
 
 	# compute variables
