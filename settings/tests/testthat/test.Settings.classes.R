@@ -82,18 +82,18 @@ test_that("SettingsList assignments work as expected", {
   # dollar sign
   expect_error(settingsList$a <- l)
   expect_silent(settingsList$a <- settings)
-  expect_identical(settingsList[["a"]], settings)
+  expect_identical(settingsList[[4]], settings)
   expect_equal(length(settingsList), 4)
-  expect_identical(names(settingsList), c("", "", "", "a"))
+  expect_identical(names(settingsList), c("settings.1", "settings.2", "settings.3", "a"))
   
   # nullify values
   expect_silent(settingsList[[1]] <- NULL)
   expect_equal(length(settingsList), 3)
-  expect_identical(names(settingsList), c("", "", "a"))
+  expect_identical(names(settingsList), c("settings.2", "settings.3", "a"))
   
   expect_silent(settingsList$a <- NULL)
   expect_equal(length(settingsList), 2)
-  expect_identical(names(settingsList), c("", ""))
+  expect_identical(names(settingsList), c("settings.2", "settings.3"))
   
   expect_silent(settingsList[1:2] <- NULL)
   expect_equal(length(settingsList), 0)
