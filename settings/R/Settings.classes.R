@@ -66,16 +66,18 @@ SettingsList <- function(...) {
   return(result)
 }
 
+##' @export
 ##' @describeIn 
 as.SettingsList <- function(x) {
   return(SettingsList(x))
 }
 
+##' @export
 is.SettingsList <- function(x) {
   return(is(x, "SettingsList"))
 }
 
-
+##' @export
 "[[<-.SettingsList" <- function(x, value, i) {
   if(!is.Settings(value) && !is.null(value)) {
     stop("Can only add Settings to SettingsList")
@@ -83,6 +85,7 @@ is.SettingsList <- function(x) {
   NextMethod()
 }
 
+##' @export
 "$<-.SettingsList" <- function(x, value, i) {
   # Don't know why this didn't work with just NextMethod...
   x[[i]] <- value
@@ -91,6 +94,7 @@ is.SettingsList <- function(x) {
 
 
 # This one's confusing so I didn't override it. No need to use single brackets for assigning to list, anyway.
+##' @export
 "[<-.SettingsList" <- function(x, value, i) {
   stop("Single bracket assignments to SettingsList not allowed. Use double brackets.")
 }

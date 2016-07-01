@@ -1137,8 +1137,10 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml"){
     logger.severe("Could not find a pecan.xml file")
   }
 
-  ## convert the xml to a list for ease and return
-  settings <- xmlToList(xml)
+  ## convert the xml to a list
+  global.settings <- xmlToList(xml)
+  settings <- parse.global.settings(global.settings)
+  
   settings <- addSecrets(settings)
   settings <- update.settings(settings)
   settings <- check.settings(settings)

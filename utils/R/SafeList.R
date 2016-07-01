@@ -35,11 +35,13 @@ SafeList <- function(...) {
   return(result)
 }
 
+##' @export
 ##' @describeIn SafeList Coerce an object to SafeList. 
 as.SafeList <- function(x) {
   return(SafeList(x))
 }
 
+##' @export
 is.SafeList <- function(x) {
   return(is(x, "SafeList"))
 }
