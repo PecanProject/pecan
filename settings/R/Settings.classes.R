@@ -93,9 +93,38 @@ is.SettingsList <- function(x) {
 }
 
 
-# This one's confusing so I didn't override it. No need to use single brackets for assigning to list, anyway.
 ##' @export
 "[<-.SettingsList" <- function(x, value, i) {
-  stop("Single bracket assignments to SettingsList not allowed. Use double brackets.")
+  if(!is.null(value))
+    value <- SettingsList(value) # Throws errorr if value can't be coerced to SettingsList
+  NextMethod()
 }
+
+
+##' @export
+"[[.SettingsList" <- function(x, i) {
+  if(is.character(i)) {
+    vals <- lapply(x, function(y) y[[i]])
+    if(!all(sapply(vals, function(y, y1) identical(y, y1), vals[[1]]))) {
+      stop(paste("Tried to get", i, "by name from a SettingsList, but the value varies across settings"))
+    }
+    return(vals[[1]])
+  } else {
+    NextMethod()
+  }
+}
+
+##' @export
+"$.SettingsList" <- function(x, i) {
+  return(x[[i]])
+}
+
+
+##' @export
+"[.SettingsList" <- function(x, i) {
+  if(is.character(i))
+    stop("Selecting from SettingsList using single brackets and character indices is not allowed")
+  SettingsList(NextMethod())
+}
+
 

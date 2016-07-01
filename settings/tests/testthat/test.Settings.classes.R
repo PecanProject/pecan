@@ -63,30 +63,65 @@ test_that("SettingsList constructor works as expected", {
 test_that("SettingsList assignments work as expected", {
   l <- list(aa=1, bb=2, cc=list(dd=3, ee=4))
   settings <- Settings(l)
-  
+
+  # double-bracket
   settingsList <- SettingsList()
-  
   expect_error(settingsList[[1]] <- l)
   expect_silent(settingsList[[1]] <- settings)
   expect_identical(settingsList[[1]], settings)
   expect_equal(length(settingsList), 1)
   
+    
+  # single-bracket
+  expect_error(settingsList[2:3] <- list(l, l))
+  expect_silent(settingsList[2:3] <- settingsList)
+  expect_identical(settingsList[[2]], settings)
+  expect_identical(settingsList[[3]], settings)
+  expect_equal(length(settingsList), 3)  
+  
+  # dollar sign
   expect_error(settingsList$a <- l)
   expect_silent(settingsList$a <- settings)
-  expect_identical(settingsList[[2]], settings)
-  expect_equal(length(settingsList), 2)
-  expect_identical(names(settingsList), c("", "a"))
+  expect_identical(settingsList[["a"]], settings)
+  expect_equal(length(settingsList), 4)
+  expect_identical(names(settingsList), c("", "", "", "a"))
   
+  # nullify values
   expect_silent(settingsList[[1]] <- NULL)
-  expect_equal(length(settingsList), 1)
-  expect_identical(names(settingsList), c("a"))
+  expect_equal(length(settingsList), 3)
+  expect_identical(names(settingsList), c("", "", "a"))
   
   expect_silent(settingsList$a <- NULL)
-  expect_equal(length(settingsList), 0)
+  expect_equal(length(settingsList), 2)
+  expect_identical(names(settingsList), c("", ""))
   
-  expect_error(settingsList[1] <- l)
-  expect_error(settingsList[1] <- settings)
+  expect_silent(settingsList[1:2] <- NULL)
+  expect_equal(length(settingsList), 0)
 })
+
+test_that("SettingsList extracts work as expected", {
+  s1 <- Settings(a=1, b=2, c=3)
+  s2 <- Settings(a=1, b=22, d=4)
+  s3 <- s2
+  settingsList <- SettingsList(s1, s2, s3)
+  
+  # -- Normal extraction
+  expect_identical(settingsList[[1]], s1)
+  expect_identical(settingsList[1], SettingsList(s1))
+  expect_identical(settingsList[1:3], settingsList)
+  
+  # Extract by name
+  expect_equal(settingsList[["a"]], 1)
+  expect_equal(settingsList$a, 1)
+  expect_error(settingsList[["b"]]) # Because not identical
+  expect_error(settingsList$b) # Because not identical
+  expect_error(settingsList[["c"]]) # Because not shared by all
+  expect_error(settingsList$c) # Because not identical
+  expect_error(settingsList["a"]) # Because explicitly prohibited to prevent confusion
+})
+
+
+
 
 
 
