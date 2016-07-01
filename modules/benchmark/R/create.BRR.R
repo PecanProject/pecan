@@ -10,8 +10,13 @@
 ##' @author Betsy Cowdery 
 
 create.BRR <- function(ensemble.id, workflow, con){
+
+cnd1 <- workflow$hostname == fqdn() 
+cnd2 <- workflow$hostname == 'test-pecan.bu.edu' & fqdn() == 'pecan2.bu.edu'
+cnd3 <- workflow$hostname == 'pecan2.bu.edu' & fqdn() == 'test-pecan.bu.edu'
   
-if(workflow$hostname == fqdn()){  # If the ensemble run was done on localhost, turn into a BRR
+  
+if(cnd1|cnd2|cnd3){  # If the ensemble run was done on localhost, turn into a BRR
   
     BRR <- db.query(paste0("INSERT INTO reference_runs (model_id, settings, user_id, created_at, updated_at) VALUES(",workflow$model_id,", '",workflow$folder,"' , ",user_id,", NOW() , NOW()) RETURNING *;"),con)
     
