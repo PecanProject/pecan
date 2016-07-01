@@ -21,6 +21,10 @@ if(cnd1|cnd2|cnd3){  # If the ensemble run was done on localhost, turn into a BR
     BRR <- db.query(paste0("INSERT INTO reference_runs (model_id, settings, user_id, created_at, updated_at) VALUES(",workflow$model_id,", '",workflow$folder,"' , ",user_id,", NOW() , NOW()) RETURNING *;"),con)
     
     bm.ensemble <- db.query(paste0("INSERT INTO benchmarks_ensembles (reference_run_id, ensemble_id, model_id, user_id, created_at, updated_at, citation_id) VALUES(",BRR$id,",",ensemble.id,",", BRR$model_id,", ",user_id,", NOW() , NOW(), 1000000001 ) RETURNING *;"),con)
+    
+    warning("Because you are creating a new reference run you will need to manually relate benchmarks.  This is done by 1) creating records for new data sources using the formats, inputs and dbfiles tables 2) Relating benchmarks with the reference run in the benchmarks_benchmarks_reference_runs table.")
+    
+    return(BRR)
   }
   
   # Case in which we would need a remote connection to get the pecan.xml file - not functional
