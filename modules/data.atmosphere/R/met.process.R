@@ -11,11 +11,11 @@
 ##' @param dbparms  database settings from settings file
 ##' @param dir  directory to write outputs to
 ##'
-##' @author Elizabeth Cowdery, Michael Dietze
+##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai
 met.process <- function(site, input_met, start_date, end_date, model, host, dbparms, dir, browndog=NULL){
   require(RPostgreSQL)
   require(XML)
-
+  
   #setup connection and host information
   con      <- db.open(dbparms)
   username <- ""
@@ -53,8 +53,11 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   # first attempt at function that designates where to start met.process
   if(is.null(input_met$id)){
     stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
+    format.vars <- query.format.vars(con=con,format.id=register$format$id) #query variable info from format id
   }else{
     stage <- met.process.stage(input_met$id,register$format$id,con)
+    format.vars <- query.format.vars(input.id=input_met$id,con=con) #query DB to get format variable information if available
+    
     # Is there a situation in which the input ID could be given but not the file path?
     # I'm assuming not right now
     assign(stage$id.name,list(
@@ -66,10 +69,13 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   #setup additional browndog arguments
   if(!is.null(browndog)){browndog$inputtype <- register$format$inputtype}
 
-  #setup site database number, lat, lon and name
+  #setup site database number, lat, lon and name and copy for format.vars if new input
   new.site <- data.frame(id = as.numeric(site$id), lat = db.site.lat.lon(site$id,con=con)$lat, lon = db.site.lat.lon(site$id,con=con)$lon)
   str_ns    <- paste0(new.site$id %/% 1000000000, "-", new.site$id %% 1000000000)
-
+  if (is.null(format.vars$lat)) { format.vars$lat <- new.site$lat }
+  if (is.null(format.vars$lon)) { format.vars$lon <- new.site$lon }
+  if (is.null(format.vars$site)) { format.vars$site <- new.site$id }
+  
   #--------------------------------------------------------------------------------------------------#
   # Download raw met from the internet
 
@@ -93,7 +99,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     }else{
 
       args <- list(outfolder, start_date, end_date)
-      if(met %in% "CRUNCEP") {
+      if((met %in% "CRUNCEP") | (met %in% "GFDL")) {
         ## this is a hack for regional products that go direct to site-level extraction. Needs generalization (mcd)
         args <- c(args, new.site$id, new.site$lat, new.site$lon)
         stage$met2cf = FALSE
@@ -112,7 +118,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                     parentid = NA,
                                     con = con,
                                     hostname = host$name)
-      if(met %in% "CRUNCEP"){ready.id = raw.id}
+      if((met %in% "CRUNCEP") | (met %in% "GFDL")) {ready.id = raw.id}
     }
 
   }else if(register$scale=="site") { # Site-level met
@@ -156,7 +162,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   if(stage$met2cf == TRUE){
   logger.info("Begin change to CF Standards")
 
-  input.id  <-  raw.id[1]
+  input.id  <-  raw.id$input.id[1]
+  
   pkg       <- "PEcAn.data.atmosphere"
   formatname <- 'CF Meteorology'
   mimetype <- 'application/x-netcdf'
@@ -181,15 +188,18 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     }else{
 
       fcn1 <- paste0("met2CF.",met)
-      fcn2 <- paste0("met2CF.",register$format$mimetype)
+      mimename <- register$format$mimetype
+      mimename <- substr(mimename,regexpr('/',mimename)+1,nchar(mimename))
+      mimename <- substr(mimename,regexpr('-',mimename)+1,nchar(mimename))
+      fcn2 <- paste0("met2CF.",mimename)
       if(exists(fcn1)){
         fcn <- fcn1
       }else if(exists(fcn2)){
         fcn <- fcn2
-      }else{logger.error("met2CF function doesn't exists")}
+      }else{logger.error("met2CF function ",fcn1," or ",fcn2," don't exist")}
 
       cf0.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                              username,con=con,hostname=host$name,browndog=NULL,write=TRUE)
+                              username,con=con,hostname=host$name,browndog=NULL,write=TRUE,format.vars=format.vars)
     }
 
     input_name <- paste0(met,"_CF_Permute")
@@ -229,17 +239,19 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       cf.id <- list(input.id=check$container_id, dbfile.id=check$id)
     }else{
       fcn1 <- paste0("met2CF.",met)
-      fcn2 <- paste0("met2CF.",register$format$mimetype)
+      mimename <- register$format$mimetype
+      mimename <- substr(mimename,regexpr('/',mimename)+1,nchar(mimename))
+      mimename <- substr(mimename,regexpr('-',mimename)+1,nchar(mimename))
+      fcn2 <- paste0("met2CF.",mimename)
       if(exists(fcn1)){
         fcn <- fcn1
         cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                                username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon)
       }else if(exists(fcn2)){
         fcn <- fcn2
-        format <- query.format(input.id,con)
         cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon,format)
-      }else{logger.error("met2CF function doesn't exists")}
+                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon,format.vars=format.vars)
+      }else{logger.error("met2CF function ",fcn1, " or ", fcn2," doesn't exists")}
     }
   }
 
@@ -326,7 +338,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   }else{
     model.id = ready.id
     
-    if("CRUNCEP" %in% met){outfolder <- file.path(dir,paste0(met,"_site_",str_ns))}
+    if(("CRUNCEP" %in% met) | ("GFDL" %in% met)) {outfolder <- file.path(dir,paste0(met,"_site_",str_ns))}
   }
 
   logger.info(paste("Finished Model Specific Conversion",model.id[1]))
