@@ -349,7 +349,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   }
   
   logger.info(paste("Finished Model Specific Conversion",model.id[1]))
-  
+
   model.file <- db.query(paste("SELECT * from dbfiles where id =",model.id[[2]]),con)[["file_name"]]
   
   db.close(con)
