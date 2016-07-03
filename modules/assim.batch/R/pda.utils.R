@@ -655,8 +655,8 @@ pda.postprocess <- function(settings, con, params, pname, prior, prior.ind, burn
 
   ## create a new Posteriors DB entry
   now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-  pft.id <- db.query(paste0(
-    "SELECT id from pfts where name = '", settings$pfts$pft$name,"'"), con)
+
+  pft.id <- db.query(paste0("SELECT pfts.id FROM pfts, modeltypes WHERE pfts.name='", settings$pfts$pft$name, "' and pfts.modeltype_id=modeltypes.id and modeltypes.name='", settings$model$type, "'"), con)[['id']]
 
   db.query(paste0(
     "INSERT INTO posteriors (pft_id, created_at, updated_at) VALUES (", 
