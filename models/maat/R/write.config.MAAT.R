@@ -68,8 +68,8 @@ convert.samples.MAAT <- function(trait.samples){
 write.config.MAAT <- function(defaults=NULL, trait.values, settings, run.id){
   
   # find out where to write run/ouput
-  rundir <- file.path(settings$run$host$rundir, run.id)
-  outdir <- file.path(settings$run$host$outdir, run.id)
+  rundir <- file.path(settings$host$rundir, run.id)
+  outdir <- file.path(settings$host$outdir, run.id)
 
   ### Move model files to run dirs. Use built-in MAAT script setup_MAAT_project.bs
   #  system(paste0(settings$model$binary,'./run_scripts/setup_MAAT_project.bs'," ",rundir," ",

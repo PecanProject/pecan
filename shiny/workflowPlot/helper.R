@@ -54,14 +54,13 @@ db.hostInfo <- function(bety) {
   # get host id
   result <- db.query("select cast(floor(nextval('users_id_seq') / 1e9) as bigint);", bety$con)
   hostid <- result[['floor']]
-  hostid <- 99
 
   # get machine start and end based on hostid
   machine <- tbl(bety, 'machines') %>%
                 filter(sync_host_id == hostid) %>%
                 select(sync_start, sync_end)
 
-  if (nrow(machine) == 0) {
+  if (is.na(nrow(machine)) || nrow(machine) == 0) {
     list(hostid = hostid, start = 1000000000 * hostid, end = 1000000000 * (hostid + 1) - 1)
   } else {
     list(hostid = hostid, start = machine$sync_start, end = machine$sync_end)

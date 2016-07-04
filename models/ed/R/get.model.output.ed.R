@@ -96,8 +96,8 @@ get.model.output.ED2 <- function(settings){
   model <- settings$model$type
   
   ### Get ED2 model output on the localhost
-  if(settings$run$host$name == 'localhost'){
-    #setwd(settings$run$host$outdir)  # Host model output directory
+  if(settings$host$name == 'localhost'){
+    #setwd(settings$host$outdir)  # Host model output directory
     get.results(settings)
     ### Move required functions to host
     ## TODO: take out functions read.output.file.ed & read.output.ed from write.configs.ed &
@@ -132,16 +132,16 @@ get.model.output.ED2 <- function(settings){
 
     ### Copy required PEcAn.functions.R and settings object to remote host
     rsync('-outi',paste(settings$outdir,"settings.Rdata",sep=""),
-          paste(settings$run$host$name, ':',settings$run$host$outdir, sep = '') )
+          paste(settings$host$name, ':',settings$host$outdir, sep = '') )
     rsync('-outi',paste(settings$outdir,"PEcAn.functions.R",sep=""),
-          paste(settings$run$host$name, ':',settings$run$host$outdir, sep = '') )
+          paste(settings$host$name, ':',settings$host$outdir, sep = '') )
 
     ### Run script on remote host
-    system(paste("ssh -T", settings$run$host$name, "'",
-             "cd", settings$run$host$outdir, "; R --vanilla < PEcAn.functions.R'"))
+    system(paste("ssh -T", settings$host$name, "'",
+             "cd", settings$host$outdir, "; R --vanilla < PEcAn.functions.R'"))
     
     ### Get PEcAn output from remote host
-    rsync('-outi', from = paste(settings$run$host$name, ':', settings$run$host$outdir, 'output.Rdata', sep=''),
+    rsync('-outi', from = paste(settings$host$name, ':', settings$host$outdir, 'output.Rdata', sep=''),
       to = settings$outdir)
 
   } ### End of if/else

@@ -25,7 +25,7 @@ calc.benchmark <- function(settings, con){ #settings file is output from start.b
   # For each bm.id - don't have this written as a loop yet. 
   #  Query database for: input path, variables, site, start/end dates, metrics, formats
   
-  data.path <- query.file.path(obvs.id,settings$run$host$name,con)
+  data.path <- query.file.path(obvs.id,settings$host$name,con)
   format <- query.format.vars(obvs.id,con)  
   
   site  <- query.site(settings$run$site$id, con)
@@ -33,7 +33,7 @@ calc.benchmark <- function(settings, con){ #settings file is output from start.b
   metrics <- db.query(paste("SELECT m.name from metrics as m JOIN benchmarks_metrics as b 
                               ON m.id = b.metric_id WHERE b.benchmark_id = ", bm.id),con)
   
-  model_run <- dir(settings$run$host$outdir, full.names=TRUE)[1]
+  model_run <- dir(settings$host$outdir, full.names=TRUE)[1]
   #How are we dealing with ensemble runs? Right now I've hardcoded to select the first run.
   
   # Local or remote

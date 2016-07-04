@@ -23,7 +23,7 @@ if(interactive()){
 settings.xml <- xmlParse(settings.file)
 settings <- xmlToList(settings.xml)
 outdir   <- settings$outdir
-host <- settings$run$host
+host <- settings$host
 
 if(!is.null(settings$Rlib)){ .libPaths(settings$Rlib)} 
 library(PEcAn)

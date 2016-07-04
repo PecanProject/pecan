@@ -4,8 +4,8 @@
 \alias{download.CRUNCEP}
 \title{download.CRUNCEP}
 \usage{
-download.CRUNCEP(outfolder, start_date, end_date, lat, lon, overwrite = FALSE,
-  verbose = FALSE, ...)
+download.CRUNCEP(outfolder, start_date, end_date, site_id, lat.in, lon.in,
+  overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{lon}{}
@@ -14,6 +14,6 @@ download.CRUNCEP(outfolder, start_date, end_date, lat, lon, overwrite = FALSE,
 Download and conver to CF CRUNCEP single grid point from MSTIMIP server using OPENDAP interface
 }
 \author{
-James Simkins
+James Simkins, Mike Dietze
 }
 
