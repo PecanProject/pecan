@@ -162,7 +162,7 @@ settings <- do.conversions(settings)
 # Query the trait database for data and priors
 if (status.check("TRAIT") == 0){
   status.start("TRAIT")
-  settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$database$dbfiles, settings$database$bety, settings$meta.analysis$update)
+  settings <- runModule.get.trait.data(settings)
   saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.TRAIT.xml'))
   status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.TRAIT.xml'))) {
@@ -171,10 +171,10 @@ if (status.check("TRAIT") == 0){
 
   
 # Run the PEcAn meta.analysis
-if('meta.analysis' %in% names(settings)) {
+if(!is.null(settings$meta.analysis) {
   if (status.check("META") == 0){
     status.start("META")
-    run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$meta.analysis$threshold, settings$database$dbfiles, settings$database$bety)
+    runModule.run.meta.analysis(settings)
     status.end()
   }
 }
@@ -182,7 +182,7 @@ if('meta.analysis' %in% names(settings)) {
 # Write model specific configs
 if (status.check("CONFIG") == 0){
   status.start("CONFIG")
-  settings <- run.write.configs(settings, write=settings$database$bety$write, ens.sample.method=settings$ensemble$method)
+  settings <- runModule.run.write.configs(settings)
   saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.CONFIGS.xml'))
   status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
@@ -197,14 +197,14 @@ if ((length(which(commandArgs() == "--advanced")) != 0) && (status.check("ADVANC
 # Start ecosystem model runs
 if (status.check("MODEL") == 0) {
   status.start("MODEL")
-  start.model.runs(settings, settings$database$bety$write)
+  runModule.start.model.runs(settings)
   status.end()
 }
 
 # Get results of model runs
 if (status.check("OUTPUT") == 0) {
   status.start("OUTPUT")
-  get.results(settings)
+  runModule.get.results(settings)
   status.end()
 }
 

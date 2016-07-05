@@ -235,17 +235,6 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
 ##' @export
 ##'
 get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,trait.names=NULL) {
-  if(is.SettingsList(pfts)) {
-    return(papply(settings, get.trait.data))
-  } else if (is.Settings(pfts)) {
-    settings <- pfts
-    pfts <- settings$pfts
-    modeltype <- settings$model$type
-    dbfiles <- settings$database$dbfiles
-    database <- settings$database$bety
-    forceupdate <- settings$meta.analysis$update
-  }
-  
   ##---------------- Load trait dictionary --------------#
   if(is.logical(trait.names)){
     if(trait.names){
@@ -262,6 +251,22 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,trait
   invisible(result)
 }
 ##==================================================================================================#
+
+runModule.get.trait.data <- function(settings) {
+  if(is.SettingsList(settings)) {
+    return(papply(settings, runModule.get.trait.data))
+  } else if(is.Settings(settings)) {
+    pfts <- settings$pfts
+    modeltype <- settings$model$type
+    dbfiles <- settings$database$dbfiles
+    database <- settings$database$bety
+    forceupdate <- settings$meta.analysis$update
+    settings$pfts <- get.trait.data(pfts, modeltype, dbfiles, database, forceupdate)
+    return(settings)
+  } else {
+    stop("runModule.get.trait.data only works with Settings or SettingsList")
+  }
+}
 
 
 ####################################################################################################

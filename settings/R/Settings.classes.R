@@ -62,7 +62,8 @@ SettingsList <- function(...) {
   }
   
   result <- args
-  result <- fix.SettingsList.names(result)
+  names(result) <- paste("settings", seq_along(result), sep=".")
+  # result <- fix.SettingsList.names(result)
   class(result) <- c("SettingsList", class(result))
   return(result)
 }
@@ -126,10 +127,11 @@ is.SettingsList <- function(x) {
 "[[.SettingsList" <- function(x, i) {
   if(is.character(i)) {
     vals <- lapply(x, function(y) y[[i]])
-    if(!all(sapply(vals, function(y, y1) identical(y, y1), vals[[1]]))) {
-      stop(paste("Tried to get", i, "by name from a SettingsList, but the value varies across settings"))
+    if(all(sapply(vals, function(y, y1) identical(y, y1), vals[[1]]))) {
+      return(vals[[1]])
+    } else {
+      return(vals)
     }
-    return(vals[[1]])
   } else {
     NextMethod()
   }
@@ -148,4 +150,14 @@ is.SettingsList <- function(x) {
   SettingsList(NextMethod())
 }
 
-
+##' @export
+names.SettingsList <- function(x) {
+  for(i in seq_along(x)) {
+    if(i == 1) {
+      result <- names(x[[i]])
+    } else {
+      result <- intersect(result, names(x[[i]])) 
+    }
+  }
+  return(result)
+}

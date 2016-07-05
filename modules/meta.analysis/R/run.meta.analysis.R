@@ -161,6 +161,21 @@ run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, 
 } ### End of function: run.meta.analysis.R
 ##==================================================================================================#
 
+runModule.run.meta.analysis <- function(settings) {
+  if(is.SettingsList(settings)) {
+    return(papply(settings, runModule.run.meta.analysis))
+  } else if (is.Settings(settings)) {
+    pfts <- settings$pfts
+    iterations <- settings$meta.analysis$iter
+    random <- settings$meta.analysis$random.effects
+    threshold <- settings$meta.analysis$threshold
+    dbfiles <- settings$database$dbfiles
+    database <- settings$database$bety
+    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database) 
+  } else {
+    stop("runModule.run.meta.analysis only works with Settings or SettingsList")
+  }
+}
 
 ##--------------------------------------------------------------------------------------------------#
 ##' compare point to prior distribution

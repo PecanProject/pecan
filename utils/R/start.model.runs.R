@@ -240,6 +240,17 @@ start.model.runs <- function(settings, write = TRUE){
 ##==================================================================================================#
 
 
+runModule.start.model.runs <- function(settings) {
+  if(is.SettingsList(settings)) {
+    return(papply(settings, runModule.start.model.runs))
+  } else if(is.Settings(settings)) {
+    write <- settings$database$bety$write
+    start.model.runs(settings, write)
+  } else {
+    stop("runModule.start.model.runs only works with Settings or SettingsList")
+  }
+}
+
 ####################################################################################################
 ### EOF.  End of R script file.              
 ####################################################################################################

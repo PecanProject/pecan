@@ -13,6 +13,7 @@
 ##'
 ##' @author Elizabeth Cowdery, Michael Dietze
 met.process <- function(site, input_met, start_date, end_date, model, host, dbparms, dir, browndog=NULL){
+# browser()
   require(RPostgreSQL)
   require(XML)
 

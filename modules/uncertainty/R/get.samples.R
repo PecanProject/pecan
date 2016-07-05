@@ -8,9 +8,10 @@
 ##'
 ##' @author David LeBauer, Shawn Serbin
 ### Identify PFTs in the input settings.xml file
-get.parameter.samples <- function(pfts = settings$pfts, posterior.files=rep(NA, length(settings$pfts)), ens.sample.method="uniform"){
+get.parameter.samples <- function(settings, posterior.files=rep(NA, length(settings$pfts)), ens.sample.method="uniform"){
   require(coda)
   require(PEcAn.priors)
+  pfts <- settings$pfts
   num.pfts <- length(settings$pfts)
   pft.names <- list()
   outdirs <- list()
