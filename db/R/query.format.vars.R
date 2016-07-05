@@ -4,19 +4,37 @@
 ##' @param con : database connection
 ##' @export 
 ##' 
-##' @author Betsy Cowdery 
+##' @author Betsy Cowdery , Ankur Desai
 ##' 
-query.format.vars <- function(input.id,con){
+query.format.vars <- function(input.id,con,format.id){
 
-  # get input info
-  f <- db.query(paste("SELECT * from formats as f join inputs as i on f.id = i.format_id where i.id = ", input.id),con)
+  # get input info either form input.id or format.id, depending which is provided
+  # defaults to format.id if both provided
+  # also query site information (id/lat/lon) if an input.id
+  
+  site.id <- NULL
+  site.lat <- NULL
+  site.lon <- NULL
+  
+  if (missing(format.id)) {
+    f <- db.query(paste("SELECT * from formats as f join inputs as i on f.id = i.format_id where i.id = ", input.id),con)
+    site.id <- db.query(paste("SELECT site_id from inputs where id =",input.id),con)
+    if (is.data.frame(site.id) && nrow(site.id)>0) {
+      site.id <- site.id$site_id
+      site.info <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",site.id),con)
+      site.lat <- site.info$lat
+      site.lon <- site.info$lon
+    } 
+  } else {
+    f <- db.query(paste("SELECT * from formats where id = ", format.id),con)
+  }
   
   mimetype <- db.query(paste("SELECT * from  mimetypes where id = ", f$mimetype_id),con)[["type_string"]]
   f$mimetype <- tail(unlist(strsplit(mimetype, "/")),1)
   
   # get variable names and units of input data
-  fv <- db.query(paste("SELECT variable_id,name,unit,storage_type from formats_variables where format_id = ", f$id),con)
-  colnames(fv) <- c("variable_id", "orig_name", "orig_units", "storage_type")
+  fv <- db.query(paste("SELECT variable_id,name,unit,storage_type,column_number from formats_variables where format_id = ", f$id),con)
+  colnames(fv) <- c("variable_id", "orig_name", "orig_units", "storage_type", "column_number")
   fv$variable_id <- as.numeric(fv$variable_id)
   
   n <- dim(fv)[1]
@@ -59,7 +77,10 @@ query.format.vars <- function(input.id,con){
                  vars = vars_full,
                  skip = skip, 
                  header = header,
-                 na.strings=c("-9999","-6999","9999") # This shouldn't be hardcoded in, but not specified in format table ?
+                 na.strings=c("-9999","-6999","9999"), # This shouldn't be hardcoded in, but not specified in format table ?
+                 site = site.id,
+                 lat = site.lat,
+                 lon = site.lon
                  )
   return(format)
 }

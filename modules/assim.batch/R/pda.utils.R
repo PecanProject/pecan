@@ -425,9 +425,9 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
         "met data    : ", settings$run$site$met, "\n",
         "start date  : ", settings$run$start.date, "\n",
         "end date    : ", settings$run$end.date, "\n",
-        "hostname    : ", settings$run$host$name, "\n",
-        "rundir      : ", file.path(settings$run$host$rundir, run.ids[i]), "\n",
-        "outdir      : ", file.path(settings$run$host$outdir, run.ids[i]), "\n",
+        "hostname    : ", settings$host$name, "\n",
+        "rundir      : ", file.path(settings$host$rundir, run.ids[i]), "\n",
+        "outdir      : ", file.path(settings$host$outdir, run.ids[i]), "\n",
         file=file.path(settings$rundir, run.ids[i], "README.txt"), sep='')
 
     ## add the job to the list of runs
@@ -546,7 +546,7 @@ pda.get.model.output <- function(settings, run.id, inputs) {
     # this is only for FC-NEE as we are using them interchangably when NEE isn't present, e.g. Ameriflux data
     vars[vars %in% c("FC")] <- "NEE"      # FC - NEE specific hack 1
     
-    model <- as.data.frame(read.output(run.id, outdir = file.path(settings$run$host$outdir, run.id),
+    model <- as.data.frame(read.output(run.id, outdir = file.path(settings$host$outdir, run.id),
                                        start.year, end.year, variables = vars))
 
     if(length(model) == 0) {   # Probably indicates model failed entirely

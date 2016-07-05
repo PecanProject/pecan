@@ -19,9 +19,9 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=FALSE){
   model <- settings$model$type
   write <- settings$database$bety$write
   defaults <- settings$pfts
-  outdir <- settings$run$host$outdir
-  rundir <- settings$run$host$rundir
-  host <- settings$run$host
+  outdir <- settings$host$outdir
+  rundir <- settings$host$rundir
+  host <- settings$host
   forecast.duration <- 1 #eventually in settings
   forecast.time.step <- 1 #eventually in settings #dt
   spin.up <- 100 #eventually in settings
@@ -130,9 +130,9 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,processvar=FALSE){
         "met data    : ", new.met, "\n",
         "start date  : ", settings$run$start.date, "\n",
         "end date    : ", settings$run$end.date, "\n",
-        "hostname    : ", settings$run$host$name, "\n",
-        "rundir      : ", file.path(settings$run$host$rundir, run.id[[i]]), "\n",
-        "outdir      : ", file.path(settings$run$host$outdir, run.id[[i]]), "\n",
+        "hostname    : ", settings$host$name, "\n",
+        "rundir      : ", file.path(settings$host$rundir, run.id[[i]]), "\n",
+        "outdir      : ", file.path(settings$host$outdir, run.id[[i]]), "\n",
         file=file.path(settings$rundir, run.id[[i]], "README.txt"), sep='')
       
   }
