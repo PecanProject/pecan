@@ -43,7 +43,7 @@ calc.metrics <- function(data.path, format, model_run, metrics, start_year, end_
   
   # ---- INPUT DATA ---- #
   
-  obvs <- load.data(data.path, format, start_year, end_year, site=settings$run$site, vars.used.index, time.row)
+  obvs <- load.data(data.path, format, start_year, end_year, site, vars.used.index, time.row)
   dat_vars <- format$vars$pecan_name[vars.used.index]
   obvs_full = obvs
   
