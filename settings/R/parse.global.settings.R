@@ -26,12 +26,13 @@ parse.global.settings <- function(global.settings){
     shared.settings <- Settings(global.settings)
       shared.settings$runs <- NULL
       
-    settings.list = SettingsList()
+    plain.list = list()
     for(i in seq_along(runs)) {
       settings.i <- shared.settings
       settings.i$run <- runs[[i]]
-      settings.list[[i]] <- settings.i
+      plain.list[[i]] <- settings.i
     }
+    settings.list <- SettingsList(plain.list)
     return(settings.list)
   }
     

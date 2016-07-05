@@ -60,44 +60,27 @@ test_that("SettingsList constructor works as expected", {
 })
 
 
-test_that("SettingsList assignments work as expected", {
-  l <- list(aa=1, bb=2, cc=list(dd=3, ee=4))
-  settings <- Settings(l)
-
-  # double-bracket
-  settingsList <- SettingsList()
-  expect_error(settingsList[[1]] <- l)
-  expect_silent(settingsList[[1]] <- settings)
+test_that("SettingsList assignments are blocked", {
+  settings <- Settings(aa=1, bb=2, cc=list(dd=3, ee=4))
+  settingsList <- SettingsList(settings)
+  
   expect_identical(settingsList[[1]], settings)
   expect_equal(length(settingsList), 1)
   
-    
-  # single-bracket
+  expect_error(settingsList[[1]] <- l)
+  expect_error(settingsList[[1]] <- settings)
   expect_error(settingsList[2:3] <- list(l, l))
-  expect_silent(settingsList[2:3] <- settingsList)
-  expect_identical(settingsList[[2]], settings)
-  expect_identical(settingsList[[3]], settings)
-  expect_equal(length(settingsList), 3)  
-  
-  # dollar sign
+  expect_error(settingsList[2:3] <- settingsList)
   expect_error(settingsList$a <- l)
-  expect_silent(settingsList$a <- settings)
-  expect_identical(settingsList[[4]], settings)
-  expect_equal(length(settingsList), 4)
-  expect_identical(names(settingsList), c("settings.1", "settings.2", "settings.3", "a"))
-  
-  # nullify values
-  expect_silent(settingsList[[1]] <- NULL)
-  expect_equal(length(settingsList), 3)
-  expect_identical(names(settingsList), c("settings.2", "settings.3", "a"))
-  
-  expect_silent(settingsList$a <- NULL)
-  expect_equal(length(settingsList), 2)
-  expect_identical(names(settingsList), c("settings.2", "settings.3"))
-  
-  expect_silent(settingsList[1:2] <- NULL)
-  expect_equal(length(settingsList), 0)
+  expect_error(settingsList$a <- settings)
+  expect_error(settingsList[[1]] <- NULL)
+  expect_error(settingsList$a <- NULL)
+  expect_error(settingsList[1:2] <- NULL)
+
+  expect_identical(settingsList[[1]], settings)
+  expect_equal(length(settingsList), 1)
 })
+
 
 test_that("SettingsList extracts work as expected", {
   s1 <- Settings(a=1, b=2, c=3)
@@ -126,8 +109,10 @@ test_that("names.SettingsList works as expected", {
   s3 <- s2
   settingsList <- SettingsList(s1, s2, s3)
   
-  # -- Normal extraction
   expect_identical(names(settingsList), c("a", "b"))
+  expect_error(names(settingsList) <- c("a", "b"))
+  expect_error(names(settingsList) <- NULL)
+  expect_error(names(settingsList)[1] <- "c")
 })
 
 

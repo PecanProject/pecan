@@ -63,26 +63,10 @@ SettingsList <- function(...) {
   
   result <- args
   names(result) <- paste("settings", seq_along(result), sep=".")
-  # result <- fix.SettingsList.names(result)
   class(result) <- c("SettingsList", class(result))
   return(result)
 }
 
-# Settings all need names so they can be read/written to xml. This gives dummy ones.
-fix.SettingsList.names <- function(settingsList) {
-  if(length(settingsList) == 0) {
-    return(settingsList)
-  }
-  # browser()
-  sl.names <- names(settingsList)
-  if(is.null(sl.names)) {
-    names(settingsList) <- paste("settings", seq_along(settingsList), sep=".")
-  } else {
-    ind <- which(is.na(sl.names) | sl.names=="")
-    names(settingsList)[ind] <- paste("settings", ind, sep=".")
-  }
-  return(settingsList)
-}
 
 ##' @export
 ##' @describeIn 
@@ -97,29 +81,18 @@ is.SettingsList <- function(x) {
 
 ##' @export
 "[[<-.SettingsList" <- function(x, value, i) {
-  if(!is.Settings(value) && !is.null(value)) {
-    stop("Can only add Settings to SettingsList")
-  }
-  result <- NextMethod()
-  result <- fix.SettingsList.names(result)
+  stop("Can't add elements to a SettingsList. Use SettingsList() to create a new one.")
 }
 
 ##' @export
 "$<-.SettingsList" <- function(x, value, i) {
-  # Don't know why this didn't work with just NextMethod...
-  x[[i]] <- value
-  x <- fix.SettingsList.names(x)
-  return(x)
+  stop("Can't add elements to a SettingsList. Use SettingsList() to create a new one.")
 }
 
 
 ##' @export
 "[<-.SettingsList" <- function(x, value, i) {
-  if(!is.null(value))
-    value <- SettingsList(value) # Throws errorr if value can't be coerced to SettingsList
-  result <- NextMethod()
-  result <- fix.SettingsList.names(result)
-  return(result)
+  stop("Can't add elements to a SettingsList. Use SettingsList() to create a new one.")
 }
 
 
@@ -160,4 +133,9 @@ names.SettingsList <- function(x) {
     }
   }
   return(result)
+}
+
+##' @export
+"names<-.SettingsList" <- function(x, value) {
+  stop("Can't name elements of SettingsList.")
 }
