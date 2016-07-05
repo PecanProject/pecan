@@ -81,12 +81,23 @@ is.SettingsList <- function(x) {
 
 ##' @export
 "[[<-.SettingsList" <- function(x, value, i) {
-  stop("Can't add elements to a SettingsList. Use SettingsList() to create a new one.")
+  # stop("Can't add elements to a SettingsList. Use SettingsList() to create a new one.")
+  if(is.character(i) || is.null(i)) {
+    x.list <- x
+    class(x.list) <- "list"
+    for(j in seq_along(x.list)) {
+      x.list[[j]][[i]] <- value
+    }
+    return(SettingsList(x.list))
+  } else {
+    stop("Can't add elements to a SettingsList using numeric indexing")
+  }
 }
 
 ##' @export
 "$<-.SettingsList" <- function(x, value, i) {
-  stop("Can't add elements to a SettingsList. Use SettingsList() to create a new one.")
+  x[[i]] <- value
+  return(x)
 }
 
 
@@ -100,11 +111,10 @@ is.SettingsList <- function(x) {
 "[[.SettingsList" <- function(x, i) {
   if(is.character(i)) {
     vals <- lapply(x, function(y) y[[i]])
-    if(all(sapply(vals, function(y, y1) identical(y, y1), vals[[1]]))) {
-      return(vals[[1]])
-    } else {
-      return(vals)
+    if(!all(sapply(vals, function(y, y1) identical(y, y1), vals[[1]]))) {
+      stop(paste("Tried to get", i, "by name from a SettingsList, but the value varies across settings"))
     }
+    return(vals[[1]])
   } else {
     NextMethod()
   }

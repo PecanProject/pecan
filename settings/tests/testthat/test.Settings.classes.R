@@ -71,14 +71,25 @@ test_that("SettingsList assignments are blocked", {
   expect_error(settingsList[[1]] <- settings)
   expect_error(settingsList[2:3] <- list(l, l))
   expect_error(settingsList[2:3] <- settingsList)
-  expect_error(settingsList$a <- l)
-  expect_error(settingsList$a <- settings)
-  expect_error(settingsList[[1]] <- NULL)
-  expect_error(settingsList$a <- NULL)
-  expect_error(settingsList[1:2] <- NULL)
-
-  expect_identical(settingsList[[1]], settings)
-  expect_equal(length(settingsList), 1)
+  
+  expect_silent(settingsList$x <- 1)
+  new.settings <- settings
+  new.settings$x <- 1
+  for(i in seq_along(settingsList)) {
+    expect_identical(settingsList[[i]], new.settings)
+  }
+  
+  expect_silent(settingsList[["y"]] <- "y")
+  new.settings$y <- "y"
+  for(i in seq_along(settingsList)) {
+    expect_identical(settingsList[[i]], new.settings)
+  }
+  
+  expect_silent(settingsList[["y"]] <- NULL)
+  new.settings$y <- NULL
+  for(i in seq_along(settingsList)) {
+    expect_identical(settingsList[[i]], new.settings)
+  }
 })
 
 
@@ -96,23 +107,11 @@ test_that("SettingsList extracts work as expected", {
   # Extract by name
   expect_equal(settingsList[["a"]], 1)
   expect_equal(settingsList$a, 1)
-  expect_equivalent(settingsList[["b"]], list(2, 22, 22))
-  expect_equivalent(settingsList$b, list(2, 22, 22))
-  expect_equivalent(settingsList[["c"]], list(3, NULL, NULL))
-  expect_equivalent(settingsList$c, list(3, NULL, NULL))
+  expect_error(settingsList[["b"]]) # Because not identical
+  expect_error(settingsList$b) # Because not identical
+  expect_error(settingsList[["c"]]) # Because not shared by all
+  expect_error(settingsList$c) # Because not identical
   expect_error(settingsList["a"]) # Because explicitly prohibited to prevent confusion
-})
-
-test_that("names.SettingsList works as expected", {
-  s1 <- Settings(a=1, b=2, c=3)
-  s2 <- Settings(a=1, b=22, d=4)
-  s3 <- s2
-  settingsList <- SettingsList(s1, s2, s3)
-  
-  expect_identical(names(settingsList), c("a", "b"))
-  expect_error(names(settingsList) <- c("a", "b"))
-  expect_error(names(settingsList) <- NULL)
-  expect_error(names(settingsList)[1] <- "c")
 })
 
 

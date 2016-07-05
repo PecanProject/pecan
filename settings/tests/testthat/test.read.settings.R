@@ -11,6 +11,7 @@ logger.setQuitOnSevere(FALSE)
 logger.setLevel("OFF")
 context("tests for read.settings and related functions")
 
+# setwd('~/pecan/settings/tests/testthat')
 
 .get.test.settings = function() {
   if(fqdn() == "pecan2.bu.edu") {
@@ -37,12 +38,12 @@ test_that("check.settings throws error if required content not there", {
 
   s <- settings
   s[['run']] <- NULL
-  expect_error(check.settings(update.settings(s)))
+  expect_error(check.run.settings(update.settings(s)))
 
   for(date in c("start.date", "end.date")){
     s <- settings
     s$run[[date]] <- NULL
-    expect_error(check.settings(update.settings(s)))
+    expect_error(check.run.settings(update.settings(s)))
   }
 
 })
