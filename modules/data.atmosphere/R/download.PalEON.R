@@ -8,7 +8,7 @@
 ##' @param end_year
 ##' 
 ##' @author Betsy Cowdery
-download.PalEON <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE){
+download.PalEON <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE, ...){
   
   if(sitename == "Harvard Forest - Lyford Plots (PalEON PHA)"){site <- "PHA"}      # 1-650 done
   else if(sitename == "Howland Forest- main tower (US-Ho1) (PalEON PHO)"){site <- "PHO"} # 0-759
