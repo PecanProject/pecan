@@ -7,7 +7,7 @@
 
 metric.residual.plot <- function(dat, var){
   
-  require(ggplot2)
+  library(ggplot2)
   # 
   # ind <- intersect(which(!is.na(dat$obvs)),  which(!is.na(dat$model)))
   # 

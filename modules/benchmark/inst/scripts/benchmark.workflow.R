@@ -10,11 +10,11 @@ rm(list = setdiff(ls(), lsf.str()))  # clear environment except for sourced func
 for (i in dbListConnections(PostgreSQL())) db.close(i) #close any stray database connections
 options(digits = 20) # just to make things easier to read
 
-require(PEcAn.all)
-require(PEcAn.benchmark)
-require(RPostgreSQL)
-require(XML)
-require(dplyr)
+library(PEcAn.all)
+library(PEcAn.benchmark)
+library(RPostgreSQL)
+library(XML)
+library(dplyr)
 
 #db connection and host information
 

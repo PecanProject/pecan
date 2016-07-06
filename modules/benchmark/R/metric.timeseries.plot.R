@@ -8,7 +8,7 @@
 
 metric.timeseries.plot <- function(dat, var){
   
-  require(ggplot2)
+  library(ggplot2)
   
   localenv <- environment()
   dat$time <- as.Date(dat$time)
