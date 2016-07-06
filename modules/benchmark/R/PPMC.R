@@ -5,7 +5,7 @@
 ##' 
 ##' @author Betsy Cowdery
 
-metric.MSE <- function(dat, ...){
+metric.PPMC <- function(dat, ...){
   numer <- mean(abs(dat$model - dat$obvs, na.rm = TRUE), na.rm = TRUE)
   denom <- mean(abs(dat$model - mean(dat$model, na.rm = TRUE), na.rm = TRUE), na.rm = TRUE)
   score <- numer/denom
