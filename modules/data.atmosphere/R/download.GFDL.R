@@ -131,5 +131,3 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   invisible(results)
 }
 
-
-download.GFDL('C:/Users/James Simkins/', '2010-01-01 00:00:00', '2010-12-31 23:59:59', 2, 43, -88) 
