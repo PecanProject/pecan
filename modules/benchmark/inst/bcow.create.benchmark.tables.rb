@@ -1,3 +1,6 @@
+# Based off of benchmarking schema from
+# https://github.com/PecanProject/bety/blob/4109b7633b23ff225abc42b416b71d1e0c6228bb/db/migrate/20140929150849_create_benchmarks_tables.rb
+
 class CreateBenchmarksTables < ActiveRecord::Migration
   def self.up
     # Create the table as normal, then change id to bigint, so all
