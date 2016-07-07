@@ -1,8 +1,8 @@
-source("helper.R")
+library(PEcAn.visualization)
 source("plotEnsemble.R")
 source("load_ensemble.R")
 
-bety <- betyConnect()
+bety <- betyConnect("../../web/config.php")
 workflow_id <- 1000001488
 run_ids <- get_run_ids(bety, workflow_id)
 var_names <- get_var_names(bety, workflow_id, run_ids[1])
@@ -17,5 +17,3 @@ workflow <- current_workflow
 workflow_dir <- workflow$folder
 output_dir <- file.path(workflow_dir, "out")
 settings <- xmlToList(xmlParse(file.path(workflow_dir, "pecan.xml")))
-
-

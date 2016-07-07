@@ -1,14 +1,6 @@
-library(shiny)
-library(PEcAn.DB)
-library(RPostgreSQL)
-library(udunits2)
-library(lubridate)
-library(dplyr)
-library(ncdf4)
-
-
-options(scipen=12)
-
+#' Connect to bety using current PEcAn configuration
+#' @param php.config Path to `config.php`
+#' @export
 betyConnect <- function(php.config="../../web/config.php") {
   ## Read PHP config file for webserver
   config = scan(php.config,what="character",sep="\n")
@@ -28,7 +20,11 @@ betyConnect <- function(php.config="../../web/config.php") {
                password = config.list$db_bety_password)
 }
 
+#' Convert number to scientific notation pretty expression
+#' @param l Number to convert to scientific notation
+#' @export
 fancy_scientific <- function(l) {
+  options(scipen=12)
   # turn in to character string in scientific notation
   l <- format(l, scientific = TRUE)
   # quote the part before the exponent to keep all the digits
@@ -41,10 +37,15 @@ fancy_scientific <- function(l) {
   parse(text=l)
 }
 
+#' Count rows of a data frame
+#' @param df Data frame of which to count length
+#' @export
 dplyr.count <- function(df) {
   collect(tally(df))[['n']]
 }
 
+#' Convert netcdf number of days to date
+#' @export
 ncdays2date <- function(time, unit) {
   date <- parse_date_time(unit, c("ymd_hms", "ymd_h", "ymd"))
   days <- ud.convert(time, unit, paste("days since ", date))
@@ -52,7 +53,11 @@ ncdays2date <- function(time, unit) {
   as.POSIXct.numeric(seconds, origin = date, tz = "UTC")
 }
 
-db.hostInfo <- function(bety) {
+#' @name dbHostInfo
+#' @title Database host information
+#' @param bety BETYdb connection, as opened by `betyConnect()`
+#' @export
+dbHostInfo <- function(bety) {
   # get host id
   result <- db.query("select cast(floor(nextval('users_id_seq') / 1e9) as bigint);", bety$con)
   hostid <- result[['floor']]
@@ -69,9 +74,12 @@ db.hostInfo <- function(bety) {
   }
 }
 
-# list of workflows that exist
+#' list of workflows that exist
+#' @param ensemble Logical. Use workflows from ensembles table.
+#' @inheritParams dbHostInfo
+#' @export
 workflows <- function(bety, ensemble=FALSE) {
-  hostinfo <- db.hostInfo(bety)
+  hostinfo <- dbHostInfo(bety)
   if(ensemble){
     query <- paste("SELECT ensembles.id AS ensemble_id, ensembles.workflow_id, workflows.folder",
                    "FROM ensembles, workflows WHERE runtype = 'ensemble'")
@@ -82,12 +90,20 @@ workflows <- function(bety, ensemble=FALSE) {
   return(out)
 }
 
-workflow <- function(bety, workflowId) {
-  workflows(bety) %>% filter(workflow_id == workflowId)
+#' Get single workflow by workflow_id
+#' @param workflow_id Workflow ID
+#' @inheritParams dbHostInfo
+#' @export
+workflow <- function(bety, workflow_id) {
+  workflows(bety) %>% filter_(paste("workflow_id ==", workflow_id))
 }
 
-runs <- function(bety, workflowId) {
-  Workflows <- workflow(bety, workflowId) %>%
+#' Get table of runs corresponding to a workflow
+#' @inheritParams dbHostInfo
+#' @inheritParams workflow
+#' @export
+runs <- function(bety, workflow_id) {
+  Workflows <- workflow(bety, workflow_id) %>%
     dplyr::select(workflow_id, folder)
   Ensembles <- tbl(bety, 'ensembles') %>%
     dplyr::select(ensemble_id=id, workflow_id) %>%
@@ -98,6 +114,10 @@ runs <- function(bety, workflowId) {
   dplyr::select(Runs, -workflow_id, -ensemble_id)
 }
 
+#' Get vector of workflow IDs
+#' @inheritParams dbHostInfo
+#' @param session Session object passed through Shiny
+#' @export
 get_workflow_ids <- function(bety, session){
   query <- isolate(parseQueryString(session$clientData$url_search))
   if ("workflow_id" %in% names(query)) {
@@ -109,6 +129,10 @@ get_workflow_ids <- function(bety, session){
   return(ids)
 }
 
+#' Get vector of run IDs for a given workflow ID
+#' @inheritParams dbHostInfo
+#' @inheritParams workflow
+#' @export
 get_run_ids <- function(bety, workflow_id){
     run_ids <- c("No runs found")
     if (workflow_id != "") {
@@ -120,6 +144,11 @@ get_run_ids <- function(bety, workflow_id){
     return(run_ids)
 }
 
+#' Get vector of variable names for a particular workflow and run ID
+#' @inheritParams dbHostInfo
+#' @inheritParams workflow
+#' @param run_id Run ID
+#' @export
 get_var_names <- function(bety, workflow_id, run_id, remove_pool = TRUE){
   var_names <- character(0)
   if (workflow_id != "" && run_id != "") {

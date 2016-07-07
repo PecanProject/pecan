@@ -4,7 +4,7 @@ Title: PEcAn visualization functions.
 Version: 1.4.6
 Date: 2016-05-05
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze, Carl
-    Davidson, Rob Kooper
+    Davidson, Rob Kooper, Alexey Shiklomanov
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     workflow management tool that is designed to simplify the management of
@@ -26,7 +26,13 @@ Depends:
     earth,
     XML,
     ncdf4,
-    stringr
+    stringr,
+    shiny,
+    PEcAn.DB,
+    RPostgreSQL,
+    udunits2,
+    lubridate,
+    dplyr
 Suggests:
     testthat,
     png,

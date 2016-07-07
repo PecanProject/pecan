@@ -1,4 +1,5 @@
-source("helper.R")
+library(PEcAn.visualization)
+
 source("plotEnsemble.R")
 source("load_ensemble.R")
 
