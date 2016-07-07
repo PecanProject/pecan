@@ -44,18 +44,22 @@ calc.benchmark <- function(bm.ensemble, con){
     # Maybe as an Rdata file?
     
     results.list <- list()
+    vars.list <- list()
+    metrics.list <- list()
     
     # Loop over benchmark ids
     for(i in 1:length(bm.ids)){
       bm <- db.query(paste("SELECT * from benchmarks where id =", bm.ids[i]), con)
-      format$vars <- format_full$vars[nchar(format_full$vars$storage_type) > 0 | 
-                                        format_full$vars$variable_id == bm$variable_id,]
-      metrics <- db.query(paste("SELECT m.name, m.id from metrics as m JOIN benchmarks_metrics as b 
-                              ON m.id = b.metric_id WHERE b.benchmark_id = ", bm.ids[i]),con)
-      
-      r <- calc.metrics(data.path, format, model_run, metrics, start_year, end_year, site,bm,ens)
-      results.list <- append(results.list, list(r))
+      vars.list <- append(vars.list,format_full$vars[nchar(format_full$vars$storage_type) > 0 | 
+                                        format_full$vars$variable_id == bm$variable_id,])
+      metrics.list <- append(metrics.list,db.query(paste(
+        "SELECT m.name, m.id from metrics as m JOIN benchmarks_metrics as b ON m.id = b.metric_id WHERE b.benchmark_id = ",
+        bm.ids[i]),con))
     } #end loop over benchmark ids
+    
+    r <- calc.metrics(data.path, format, model_run, metrics, start_year, end_year, site,bm,ens)
+    results.list <- append(results.list, list(r))
+    
     
     results <- append(results, list(list(Reduce(function(...) merge(..., by="metric", all=T), 
                                                 results.list), data.path, format_full)))
