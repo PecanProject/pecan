@@ -48,8 +48,7 @@ calc.metrics <- function(data.path, format, model_run, metrics, start_year, end_
   obvs_full = obvs
   
   #########################
-  
-  source("modules/benchmark/R/mean.over.larger.timestep.R")
+
   dat <- align.data(model_full, obvs_full, dat_vars, start_year, end_year)
   
   results <- as.data.frame(matrix(NA, nrow = length(metrics$name), ncol = length(dat_vars)+1))
