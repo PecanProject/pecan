@@ -68,28 +68,32 @@ db.hostInfo <- function(bety) {
 }
 
 # list of workflows that exist
-workflows <- function(bety) {
+workflows <- function(bety, ensemble=FALSE) {
   hostinfo <- db.hostInfo(bety)
-
-  tbl(bety, 'workflows') %>%
-    filter(id >= hostinfo$start & id <= hostinfo$end)
+  if(ensemble){
+    query <- paste("SELECT ensembles.id AS ensemble_id, ensembles.workflow_id, workflows.folder",
+                   "FROM ensembles, workflows WHERE runtype = 'ensemble'")
+  } else {
+    query <- "SELECT id AS workflow_id, folder FROM workflows"
+  }
+  out <- tbl(bety, sql(query)) %>% filter(workflow_id >= hostinfo$start & workflow_id <= hostinfo$end)
+  return(out)
 }
 
 workflow <- function(bety, workflowId) {
-  tbl(bety, 'workflows') %>%
-    filter(id == workflowId)
+  workflows(bety) %>% filter(workflow_id == workflowId)
 }
 
 runs <- function(bety, workflowId) {
-  workflows <- workflow(bety, workflowId) %>%
-    dplyr::select(workflow_id=id, folder)
-  ensembles <- tbl(bety, 'ensembles') %>%
+  Workflows <- workflow(bety, workflowId) %>%
+    dplyr::select(workflow_id, folder)
+  Ensembles <- tbl(bety, 'ensembles') %>%
     dplyr::select(ensemble_id=id, workflow_id) %>%
-    inner_join(workflows, by='workflow_id')
-  runs <- tbl(bety, 'runs') %>%
+    inner_join(Workflows, by='workflow_id')
+  Runs <- tbl(bety, 'runs') %>%
     dplyr::select(run_id=id, ensemble_id) %>%
-    inner_join(ensembles, by='ensemble_id')
-  dplyr::select(runs, -workflow_id, -ensemble_id)
+    inner_join(Ensembles, by='ensemble_id')
+  dplyr::select(Runs, -workflow_id, -ensemble_id)
 }
 
 get_workflow_ids <- function(bety, session){
@@ -97,7 +101,8 @@ get_workflow_ids <- function(bety, session){
   if ("workflow_id" %in% names(query)) {
     ids <- unlist(query[names(query) == 'workflow_id'], use.names=FALSE)
   } else {
-    ids <- workflows(bety) %>% dplyr::select(id) %>% collect %>% .[["id"]] %>% rev
+    # Get all workflow IDs
+    ids <- workflows(bety, ensemble=TRUE) %>% distinct(workflow_id) %>% collect %>% .[["workflow_id"]] %>% sort(decreasing = TRUE)
   }
   return(ids)
 }
@@ -113,7 +118,7 @@ get_run_ids <- function(bety, workflow_id){
     return(run_ids)
 }
 
-get_var_names <- function(bety, workflow_id, run_id){
+get_var_names <- function(bety, workflow_id, run_id, remove_pool = TRUE){
   var_names <- character(0)
   if (workflow_id != "" && run_id != "") {
     workflow <- collect(workflow(bety, workflow_id))
@@ -130,6 +135,9 @@ get_var_names <- function(bety, workflow_id, run_id){
     }
     if (length(var_names) == 0) {
       var_names <- "No variables found"
+    }
+    if (remove_pool){
+      var_names <- var_names[!grepl("pool", var_names, ignore.case = TRUE)]  ## Ignore "poolnames" and "carbon pools" variables
     }
   }
   return(var_names)

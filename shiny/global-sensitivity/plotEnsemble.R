@@ -4,15 +4,28 @@
 #' @param pdfs Display probability density functions outside plots. Default=TRUE.
 #' @param fit.method Method for regression fit. Either "lm" for linear OLS regression (default) or "spline" for `smooth.spline` fit.
 plotEnsemble <- function(ensemble.out, x, y, pdfs=TRUE, fit.method="lm"){
+  error_plot <- function(err){
+    plot.new()
+    text(0.5, 0.5, err[1])
+  }
   if(pdfs){
-    zones <- matrix(c(1, 0, 3, 2), ncol=2, byrow=TRUE)
+    zones <- matrix(c(1, 4, 3, 2), ncol=2, byrow=TRUE)
     layout(zones, widths=c(4/5, 1/5), heights=c(1/5, 4/5))
-    pdfx <- density(ensemble.out[,x])
-    pdfy <- density(ensemble.out[,y])
-    par(mar=c(0,3,1,1))
-    plot(pdfx$x, pdfx$y, type="l", lwd=3, axes = FALSE, bty = "n", xlab = "", ylab = "")
-    par(mar=c(3,0,1,1))
-    plot(pdfy$y, pdfy$x, type="l", lwd=3, axes = FALSE, bty = "n", xlab = "", ylab = "")
+    pdfx <- try(density(ensemble.out[,x]))
+    pdfy <- try(density(ensemble.out[,y]))
+    pdf_succ <- c(class(pdfx), c(class(pdfy))) != "try-error"
+    if(pdf_succ[1]){
+      par(mar=c(0,3,1,1))
+      plot(pdfx$x, pdfx$y, type="l", lwd=3, axes = FALSE, bty = "n", xlab = "", ylab = "")
+    } else {
+      error_plot(pdfx)
+    }
+    if(pdf_succ[2]){
+      par(mar=c(3,0,1,1))
+      plot(pdfy$y, pdfy$x, type="l", lwd=3, axes = FALSE, bty = "n", xlab = "", ylab = "")
+    } else {
+      error_plot(pdfy)
+    }
   }
   par(mar=c(4,4,1,1))
   form <- formula(sprintf("%s ~ %s", y, x))
@@ -24,9 +37,20 @@ plotEnsemble <- function(ensemble.out, x, y, pdfs=TRUE, fit.method="lm"){
     } else if(fit.method == "spline"){
       fitline <- smooth.spline(ensemble.out[,x], ensemble.out[,y])
       lines(fitline, lwd=3)
+      plot.new()
+      text(0.5, 0.5, "Spline -- no statistics")
     }
     else{
       stop("Unrecognized fit function")
     }
   }
+}
+
+fitSummary <- function(ensemble.out, x, y) {
+  form <- formula(sprintf("%s ~ %s", y, x))
+  fitline <- lm(form, data=ensemble.out)
+  fit_summary <- summary(fitline)
+  coefs <- fit_summary$coefficients
+  r2 <- with(fit_summary, sprintf("R2 = %.3g, Adj. R2 = %.3g", r.squared, adj.r.squared))
+  return(list(coefs = coefs, r2 = r2))
 }

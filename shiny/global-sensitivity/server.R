@@ -16,8 +16,7 @@ server <- shinyServer(function(input, output, session) {
     
     # set the workflow id(s)
     ids <- get_workflow_ids(bety, session)
-    default_workflow_id <- 1000001488    # Working default
-    updateSelectInput(session, "workflow_id", choices=ids, selected=default_workflow_id)
+    updateSelectInput(session, "workflow_id", choices=ids)
     workflow_id <- reactive({
         req(input$workflow_id)
         workflow_id <- input$workflow_id
@@ -28,7 +27,6 @@ server <- shinyServer(function(input, output, session) {
     var_names <- reactive({
         run_ids <- get_run_ids(bety, workflow_id())
         var_names <- get_var_names(bety, workflow_id(), run_ids[1])
-        var_names <- var_names[!grepl("pool", var_names, ignore.case = TRUE)]  ## Ignore "poolnames" and "carbon pools" variables
         return(var_names)
     })
     
@@ -49,6 +47,7 @@ server <- shinyServer(function(input, output, session) {
     })
     
     ensemble.out <- reactive({
+        req(current_workflow())
         workflow <- current_workflow()
         if(nrow(workflow) > 0) {
             workflow_dir <- workflow$folder
@@ -63,9 +62,16 @@ server <- shinyServer(function(input, output, session) {
     })
     
     output$ensemble_plot <- renderPlot({
-        plotEnsemble(ensemble.out(), input$x_variable, input$y_variable)
+      req(ensemble.out())  
+      plotEnsemble(ensemble.out(), input$x_variable, input$y_variable)
     })
     
+    lm_fit <- reactive({
+      req(ensemble.out())
+      fitSummary(ensemble.out(), input$x_variable, input$y_variable)
+      })
+    output$coef_table <- renderTable(lm_fit()$coefs, digits = 4, display = c("s", rep("g", 4)))
+    output$r2 <- renderText(lm_fit()$r2)
 })  # End shinyServer
 
 

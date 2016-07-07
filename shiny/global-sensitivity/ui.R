@@ -12,8 +12,9 @@ ui <- shinyUI(
             ),
             mainPanel(
                 p("If no plot or error message appears, please be patient. Loading ensemble output can take a few minutes."),
-                plotOutput("ensemble_plot")
-                # verbatimTextOutput("test")
+                plotOutput("ensemble_plot"),
+                tableOutput("coef_table"),
+                textOutput("r2")
             ) # End mainPanel
         ) # End sidebarLayout
     ) # End fluidPage
