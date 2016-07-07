@@ -1,20 +1,14 @@
-library(shiny)
-library(ncdf4)
-library(ggplot2)
-
 source("helper.R")
 source("plotEnsemble.R")
 source("load_ensemble.R")
 
+message("Starting shiny server...")
 # Define server logic
 server <- shinyServer(function(input, output, session) {
+    message("Trying to connect to BETY...")  
     bety <- betyConnect()
-    logger.setLevel("OFF")
-    ranges <- reactiveValues(x = NULL, y = NULL)
-    
-    print("RESTART")
-    
     # set the workflow id(s)
+    message("Getting workflow IDs...")
     ids <- get_workflow_ids(bety, session)
     updateSelectInput(session, "workflow_id", choices=ids)
     workflow_id <- reactive({
@@ -22,6 +16,7 @@ server <- shinyServer(function(input, output, session) {
         workflow_id <- input$workflow_id
     })
     
+    message("Getting run IDs...")
     run_ids <- reactive(get_run_ids(bety, workflow_id()))
     
     var_names <- reactive({
@@ -30,20 +25,24 @@ server <- shinyServer(function(input, output, session) {
         return(var_names)
     })
     
+    param_names <- reactive({
+        workflow_dir <- current_workflow()$folder
+        load(file.path(workflow_dir, "samples.Rdata"))
+        pft.names <- names(ensemble.samples) %>% .[. != "env"]
+        param_names <- paste0(pft.names, ".", colnames(ensemble.samples[[1]]))
+        return(param_names)
+    })
+    
     current_workflow <- reactive({
         id <- workflow_id()
         current_workflow <- collect(workflow(bety, id))
         return(current_workflow)
     })
     
-    # Update variable names based on current workflow ID
+    # Update variable and parameter names based on current workflow ID
     observe({
-        workflow_dir <- current_workflow()$folder
-        load(file.path(workflow_dir, "samples.Rdata"))
-        pft.names <- names(ensemble.samples) %>% .[. != "env"]
-        param_names <- paste0(pft.names, ".", colnames(ensemble.samples[[1]]))
-        updateSelectInput(session, "x_variable", choices=param_names)
-        updateSelectInput(session, "y_variable", choices=var_names())
+        updateSelectInput(session, "parameter", choices=param_names())
+        updateSelectInput(session, "variable", choices=var_names())
     })
     
     ensemble.out <- reactive({
@@ -62,16 +61,27 @@ server <- shinyServer(function(input, output, session) {
     })
     
     output$ensemble_plot <- renderPlot({
-      req(ensemble.out())  
-      plotEnsemble(ensemble.out(), input$x_variable, input$y_variable)
+        req(ensemble.out())
+        plot_cols <- 3
+        if(input$output_type == "Pairwise"){
+            plotEnsemble(ensemble.out(), input$parameter, input$variable)
+        } else if (input$output_type == "All parameters"){
+            plotAllParams(ensemble.out(), input$variable, param_names(), plot_cols=plot_cols)
+        } else if (input$output_type == "All variables"){
+            plotAllVars(ensemble.out(), input$parameter, var_names(), plot_cols=plot_cols)
+        }
     })
     
     lm_fit <- reactive({
-      req(ensemble.out())
-      fitSummary(ensemble.out(), input$x_variable, input$y_variable)
-      })
+        req(ensemble.out())
+        fitSummary(ensemble.out(), input$parameter, input$variable)
+    })
+    
     output$coef_table <- renderTable(lm_fit()$coefs, digits = 4, display = c("s", rep("g", 4)))
-    output$r2 <- renderText(lm_fit()$r2)
+    
+    output$r2 <- renderText({
+        with(lm_fit(), sprintf("R2 = %.3g, Adj. R2 = %.3g", r2, adjr2))
+    })
 })  # End shinyServer
 
 

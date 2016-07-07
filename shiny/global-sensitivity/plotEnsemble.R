@@ -3,7 +3,7 @@
 #' @param y Name of variable to plot on Y axis
 #' @param pdfs Display probability density functions outside plots. Default=TRUE.
 #' @param fit.method Method for regression fit. Either "lm" for linear OLS regression (default) or "spline" for `smooth.spline` fit.
-plotEnsemble <- function(ensemble.out, x, y, pdfs=TRUE, fit.method="lm"){
+plotEnsemble <- function(ensemble.out, x, y, pdfs=TRUE, fit.method="lm", ...){
   error_plot <- function(err){
     plot.new()
     text(0.5, 0.5, err[1])
@@ -26,10 +26,10 @@ plotEnsemble <- function(ensemble.out, x, y, pdfs=TRUE, fit.method="lm"){
     } else {
       error_plot(pdfy)
     }
+    par(mar=c(4,4,1,1))
   }
-  par(mar=c(4,4,1,1))
   form <- formula(sprintf("%s ~ %s", y, x))
-  plot(form, ensemble.out, col="grey50")
+  plot(form, ensemble.out, col="grey50", ...)
   if(!is.na(fit.method)){
     if(fit.method == "lm"){
       fitline <- lm(form, data=ensemble.out)
@@ -37,8 +37,6 @@ plotEnsemble <- function(ensemble.out, x, y, pdfs=TRUE, fit.method="lm"){
     } else if(fit.method == "spline"){
       fitline <- smooth.spline(ensemble.out[,x], ensemble.out[,y])
       lines(fitline, lwd=3)
-      plot.new()
-      text(0.5, 0.5, "Spline -- no statistics")
     }
     else{
       stop("Unrecognized fit function")
@@ -46,11 +44,36 @@ plotEnsemble <- function(ensemble.out, x, y, pdfs=TRUE, fit.method="lm"){
   }
 }
 
+plotAllParams <- function(ensemble.out, variable, param_names, plot_cols = 3){
+  plot_rows <- ceiling(length(param_names) / plot_cols)
+  par(mfrow = c(plot_rows, plot_cols), mar=c(4, 2, 3, 1), 
+      mgp = c(2, 1, 0), oma = c(0, 2, 0, 0))
+  for(param in param_names){
+    fit_summary <- fitSummary(ensemble.out, param, variable)
+    main <- with(fit_summary, sprintf("R2 = %.3g, m = %.3g, p = %.3g", r2, coefs[2,1], coefs[2,4]))
+    plotEnsemble(ensemble.out, param, variable, pdfs=FALSE, ylab=NA, main=main)
+  }
+  mtext(variable, 2, outer = TRUE)  
+}
+
+plotAllVars <- function(ensemble.out, param, var_names, plot_cols = 3){
+  plot_rows <- ceiling(length(var_names) / plot_cols)
+  par(mfrow = c(plot_rows, plot_cols), mar=c(2, 3, 2, 1), 
+      mgp = c(2, 1, 0), oma = c(2, 0, 1, 0))
+  for(variable in var_names){
+    fit_summary <- fitSummary(ensemble.out, param, variable)
+    main <- with(fit_summary, sprintf("R2 = %.3g, m = %.3g, p = %.3g", r2, coefs[2,1], coefs[2,4]))
+    plotEnsemble(ensemble.out, param, variable, pdfs=FALSE, xlab=NA, main=main)
+  }
+  mtext(param, 1, outer = TRUE)  
+}
+
 fitSummary <- function(ensemble.out, x, y) {
   form <- formula(sprintf("%s ~ %s", y, x))
   fitline <- lm(form, data=ensemble.out)
   fit_summary <- summary(fitline)
   coefs <- fit_summary$coefficients
-  r2 <- with(fit_summary, sprintf("R2 = %.3g, Adj. R2 = %.3g", r.squared, adj.r.squared))
-  return(list(coefs = coefs, r2 = r2))
+  r2 <- fit_summary$r.squared
+  adjr2 <- fit_summary$adj.r.squared
+  return(list(coefs = coefs, r2 = r2, adjr2 = adjr2))
 }

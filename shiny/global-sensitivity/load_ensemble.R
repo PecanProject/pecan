@@ -2,7 +2,7 @@
 #' @param settings PEcAn settings list
 #' @param variable Variable names to read, as a character vector
 #' @param quiet If TRUE, don't show status messages from `read.ensemble.output`
-load_ensemble <- function(workflow_dir, settings, variable, quiet=TRUE){
+load_ensemble <- function(workflow_dir, settings, variable){
     library(PEcAn.all)
     library(ncdf4)
     
@@ -10,14 +10,12 @@ load_ensemble <- function(workflow_dir, settings, variable, quiet=TRUE){
     ## ANS -- NOTE: There may be a faster/better way to do this using built-in PEcAn functions
     ## ANS -- or...should these be automatically stored somewhere?
     
-    if(quiet) sink("/dev/null")
     ensemble.output.raw <- read.ensemble.output(ensemble.size = NULL,
                                                 pecandir = workflow_dir,
                                                 outdir = settings$modeloutdir,
                                                 start.year = as.numeric(settings$ensemble$start.year),
                                                 end.year = as.numeric(settings$ensemble$end.year),
                                                 variable = variable)
-    if(quiet) sink()
     ensemble.output <- data.frame(do.call(rbind, ensemble.output.raw))
     
     ## NOTE: read.ensemble.output only returns the mean value at each timestep.
