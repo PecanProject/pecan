@@ -425,9 +425,9 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
         "met data    : ", settings$run$site$met, "\n",
         "start date  : ", settings$run$start.date, "\n",
         "end date    : ", settings$run$end.date, "\n",
-        "hostname    : ", settings$run$host$name, "\n",
-        "rundir      : ", file.path(settings$run$host$rundir, run.ids[i]), "\n",
-        "outdir      : ", file.path(settings$run$host$outdir, run.ids[i]), "\n",
+        "hostname    : ", settings$host$name, "\n",
+        "rundir      : ", file.path(settings$host$rundir, run.ids[i]), "\n",
+        "outdir      : ", file.path(settings$host$outdir, run.ids[i]), "\n",
         file=file.path(settings$rundir, run.ids[i], "README.txt"), sep='')
 
     ## add the job to the list of runs
@@ -514,36 +514,62 @@ pda.adjust.jumps.bs <- function(settings, jcov, accept.count, params.recent) {
 ##' @return A list containing model outputs extracted to correspond to each observational
 ##'         dataset being used for PDA. 
 ##'
-##' @author Ryan Kelly
+##' @author Ryan Kelly, Istem Fer
 ##' @export
 pda.get.model.output <- function(settings, run.id, inputs) {
-  # TODO: Generalize to multiple outputs and outputs other than NEE
+  
+  require(PEcAn.benchmark)
+  require(lubridate)
 
-  # Placeholder code to remind us that this function should eventually deal with assimilating
-  # multiple variables. If so, look at the list of PDA inputs to determine which corresponding
-  # model outputs to grab.
   input.info <- settings$assim.batch$inputs
 
+  start.year <- strftime(settings$run$start.date,"%Y")
+  end.year <- strftime(settings$run$end.date,"%Y")
   
   model.out <- list()
   n.input <- length(inputs)
+  
   for(k in 1:n.input){
-    NEEm <- read.output(run.id, outdir = file.path(settings$run$host$outdir, run.id),
-                        strftime(settings$run$start.date,"%Y"), 
-                        strftime(settings$run$end.date,"%Y"), 
-                        variables="NEE")$NEE*0.0002640674
+    
+    vars.used <- unlist(input.info[[k]]$variable.name)
+    
+    # change input variable names (e.g. "LE") to model output variable names (e.g. "Qle")
+    match.table <- read.csv(system.file("bety_mstmip_lookup.csv", package= "PEcAn.DB"), header = T, stringsAsFactors=FALSE)
+    vars.used[vars.used %in% match.table$bety_name] <- match.table$mstmip_name[match.table$bety_name %in% vars.used[vars.used %in% match.table$bety_name]]
 
-    if(length(NEEm) == 0) {   # Probably indicates model failed entirely
+    # UST is never in the model outputs
+    vars.used <- vars.used[!vars.used %in% c("UST")]
+    
+    # We also want 'time' from model outputs for aligning step
+    vars <- c("time", vars.used)  
+    
+    # this is only for FC-NEE as we are using them interchangably when NEE isn't present, e.g. Ameriflux data
+    vars[vars %in% c("FC")] <- "NEE"      # FC - NEE specific hack 1
+    
+    model <- as.data.frame(read.output(run.id, outdir = file.path(settings$host$outdir, run.id),
+                                       start.year, end.year, variables = vars))
+
+    if(length(model) == 0) {   # Probably indicates model failed entirely
       return(NA)
     }
-      
-    ## match model and observations
-    NEEm <- rep(NEEm,each= nrow(inputs[[k]]$data)/length(NEEm))
-    set <- 1:length(NEEm)  ## ***** need a more intellegent year matching!!!
-      # NPPm <- rep(NPPm,each=length(NPPo)/length(NPPm))
-      # set <- 1:length(NPPm) 
-
-    model.out[[k]] <- NEEm[set]
+    
+    # FC - NEE specific hack 2: change NEE back to FC only if "FC" was specified in the first place
+    if(any(vars.used %in% c("FC"))) colnames(model)[colnames(model) %in% "NEE"] <- "FC"
+  
+  
+    ## Handle model time
+    # the model output time is in days since the beginning of the year
+    model.secs <- ud.convert(model$time, "days" ,"seconds")
+  
+    # seq.POSIXt returns class "POSIXct"
+    # the model output is since the beginning of the year but 'settings$run$start.date' may not be the first day of the year, using lubridate::floor_date
+    model$posix <- seq.POSIXt(from = lubridate::floor_date(as.POSIXct(settings$run$start.date), "year"), by = diff(model.secs)[1], length.out = length(model$time))
+  
+    dat <- align.data(model_full = model, obvs_full = inputs[[k]]$data, dat_vars = vars.used, 
+                      start_year = start.year, end_year = end.year)
+  
+    model.out[[k]] <- dat[,colnames(dat) %in% paste0(vars.used,".m"), drop = FALSE]
+    colnames(model.out[[k]]) <- vars.used
   }
   
   return(model.out)
@@ -599,7 +625,7 @@ pda.plot.params <- function(settings, params.subset, prior.ind) {
     summary(dm)
     if(length(prior.ind)>1){
       crosscorr(dm)
-      pairs(params.subset)
+      correlationPlot(params.subset)
     }
   dev.off()
 }
@@ -629,8 +655,10 @@ pda.postprocess <- function(settings, con, params, pname, prior, prior.ind, burn
 
   ## create a new Posteriors DB entry
   now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-  pft.id <- db.query(paste0(
-    "SELECT id from pfts where name = '", settings$pfts$pft$name,"'"), con)
+
+  pft.id <- db.query(paste0("SELECT pfts.id FROM pfts, modeltypes WHERE pfts.name='", settings$pfts$pft$name, "' and pfts.modeltype_id=modeltypes.id and modeltypes.name='", settings$model$type, "'"), con)[['id']]
+
+
 
   db.query(paste0(
     "INSERT INTO posteriors (pft_id, created_at, updated_at) VALUES (", 
@@ -638,7 +666,8 @@ pda.postprocess <- function(settings, con, params, pname, prior, prior.ind, burn
 
   posteriorid <- db.query(paste0(
     "SELECT id FROM posteriors WHERE pft_id=", pft.id, " AND created_at='", now, "'"), con)[['id']]
-
+  logger.info(paste0("--- Posteriorid is ", posteriorid, " ---"))
+  settings$pfts$pft$posteriorid <- posteriorid
   settings$assim.batch$params.id <- dbfile.insert(
     dirname(filename.mcmc), basename(filename.mcmc), 'Posterior', posteriorid, con, reuse=TRUE)
 
@@ -768,4 +797,86 @@ pda.settings.bt <- function(settings){
   }
   
   return(bt.settings) 
+}
+
+
+#' Flexible function to create correlation density plots
+#' numeric matrix or data.frame
+#' @author Florian Hartig
+#' @param mat matrix or data frame of variables
+#' @param density type of plot to do
+#' @param thin thinning of the matrix to make things faster. Default is to thin to 5000 
+#' @param method method for calculating correlations
+#' @import IDPmisc
+#' @import ellipse
+#' @references The code for the correlation density plot originates from Hartig, F.; Dislich, C.; Wiegand, T. & Huth, A. (2014) Technical Note: Approximate Bayesian parameterization of a process-based tropical forest model. Biogeosciences, 11, 1261-1272.
+#' @export
+#' 
+correlationPlot<- function(mat, density = "smooth", thin = "auto", method = "pearson", whichParameters = NULL){
+  
+  if(inherits(mat,"bayesianOutput")) mat = getSample(mat, thin = thin, whichParameters = whichParameters, ...)
+  
+  numPars = ncol(mat)
+  names = colnames(mat)
+  
+  panel.hist.dens <- function(x, ...)
+  {
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(usr[1:2], 0, 1.5) )
+    h <- hist(x, plot = FALSE)
+    breaks <- h$breaks; nB <- length(breaks)
+    y <- h$counts; y <- y/max(y)
+    rect(breaks[-nB], 0, breaks[-1], y, col="blue4", ...)
+  }
+  
+  # replaced by spearman 
+  panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
+  {
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    r <- cor(x, y, use = "complete.obs", method = method)
+    txt <- format(c(r, 0.123456789), digits = digits)[1]
+    txt <- paste0(prefix, txt)
+    if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+    text(0.5, 0.5, txt, cex = cex.cor * abs(r))
+  }
+  
+  plotEllipse <- function(x,y){ 
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(usr[1:2], 0, 1.5) )
+    cor <- cor(x,y) 
+    el = ellipse::ellipse(cor) 
+    polygon(el[,1] + mean(x), el[,2] + mean(y), col = "red")
+  }
+  
+  
+  correlationEllipse <- function(x){
+    cor = cor(x)
+    ToRGB <- function(x){rgb(x[1]/255, x[2]/255, x[3]/255)}
+    C1 <- ToRGB(c(178, 24, 43))
+    C2 <- ToRGB(c(214, 96, 77))
+    C3 <- ToRGB(c(244, 165, 130))
+    C4 <- ToRGB(c(253, 219, 199))
+    C5 <- ToRGB(c(247, 247, 247))
+    C6 <- ToRGB(c(209, 229, 240))
+    C7 <- ToRGB(c(146, 197, 222))
+    C8 <- ToRGB(c(67, 147, 195))
+    C9 <- ToRGB(c(33, 102, 172))
+    CustomPalette <- colorRampPalette(rev(c(C1, C2, C3, C4, C5, C6, C7, C8, C9)))
+    ord <- order(cor[1, ])
+    xc <- cor[ord, ord]
+    colors <- unlist(CustomPalette(100))
+    ellipse::plotcorr(xc, col=colors[xc * 50 + 50])
+  }
+  
+  if (density == "smooth"){ 
+    return(pairs(mat, lower.panel=function(...) {par(new=TRUE);IDPmisc::ipanel.smooth(...)}, diag.panel=panel.hist.dens, upper.panel=panel.cor))
+  }else if (density == "corellipseCor"){
+    return(pairs(mat, lower.panel=plotEllipse, diag.panel=panel.hist.dens, upper.panel=panel.cor))  
+  }else if (density == "ellipse"){
+    correlationEllipse(mat)   
+  }else if (density == F){
+    return(pairs(mat, lower.panel=panel.cor, diag.panel=panel.hist.dens, upper.panel=panel.cor))      
+  }else stop("wrong sensity argument")
+  
 }

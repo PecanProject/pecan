@@ -18,8 +18,8 @@ download.Ameriflux.site <- function(site_id) {
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 ##' 
-##' @author Josh Mantooth, Rob Kooper
-download.Ameriflux <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) {
+##' @author Josh Mantooth, Rob Kooper, Ankur Desai
+download.Ameriflux <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, ...) {
   # get start/end year code works on whole years only
   
   require(lubridate) #is this necessary?
@@ -41,6 +41,8 @@ download.Ameriflux <- function(sitename, outfolder, start_date, end_date, overwr
   
   # url where Ameriflux data is stored
   baseurl <- paste0("http://cdiac.ornl.gov/ftp/ameriflux/data/Level2/Sites_ByID/", site, "/with_gaps/")
+  # Hack needed for US-UMB which has hourly and half-hourly folders separate. This version sticks with hourly which has longer site record
+  if (site == 'US-UMB') { baseurl <- paste0(baseurl,'/hourly/') }
   
   # fetch all links
   links <- tryCatch({
@@ -58,7 +60,7 @@ download.Ameriflux <- function(sitename, outfolder, start_date, end_date, overwr
                         dbfile.name = site,
                         stringsAsFactors = FALSE)
   for(year in start_year:end_year) {
-    outputfile <- file.path(outfolder, paste(site, year, "nc", sep="."))
+      outputfile <- file.path(outfolder, paste(site, year, "nc", sep=".")) 
     
     # create array with results
     row <- year - start_year + 1

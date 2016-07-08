@@ -139,7 +139,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 ##' This will use the following items from setings:
 ##' - settings$pfts
 ##' - settings$database$bety
-##' - settings$run$dbfiles
+##' - settings$database$dbfiles
 ##' - settings$meta.analysis$update
 ##' @param pfts the list of pfts to get traits for
 ##' @param iterations the number of iterations for the mcmc analysis

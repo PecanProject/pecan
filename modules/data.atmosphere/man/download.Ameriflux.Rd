@@ -5,7 +5,7 @@
 \title{download.Ameriflux}
 \usage{
 download.Ameriflux(sitename, outfolder, start_date, end_date,
-  overwrite = FALSE, verbose = FALSE)
+  overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{outfolder}{location on disk where outputs will be stored}
@@ -25,6 +25,6 @@ The "SITE_ID" field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/
 Download Ameriflux L2 netCDF files
 }
 \author{
-Josh Mantooth, Rob Kooper
+Josh Mantooth, Rob Kooper, Ankur Desai
 }
 
