@@ -21,7 +21,6 @@ Depends:
     raster,
     sp,
     ggplot2,
-    scales,
     data.table,
     earth,
     XML,
