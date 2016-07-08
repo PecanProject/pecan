@@ -1,8 +1,8 @@
+library(PEcAn.visualization)
 library(shiny)
 library(ncdf4)
 library(ggplot2)
 
-source("helper.R")
 
 # Define server logic
 server <- shinyServer(function(input, output, session) {
@@ -12,52 +12,27 @@ server <- shinyServer(function(input, output, session) {
 
   print("RESTART")
   # set the workflow id(s)
-  query <- isolate(parseQueryString(session$clientData$url_search))
-  if ("workflow_id" %in% names(query)) {
-    ids <- as.list(unlist(query[names(query) == 'workflow_id'], use.names=FALSE))
-    updateSelectizeInput(session, "workflow_id", choices=ids)
-  } else {
-    ids <- as.list(collect(workflows(bety) %>% select(id)))
-    updateSelectizeInput(session, "workflow_id", choices=ids)
-  }
-
-  # update the run_ids if user changes workflow
-  observe({
+  ids <- get_workflow_ids(bety, session)
+  updateSelectizeInput(session, "workflow_id", choices=ids)
+  workflow_id <- reactive({
+    req(input$workflow_id)
     workflow_id <- input$workflow_id
-    run_ids <- c("")
-    if (workflow_id != "") {
-      runs <- runs(bety, workflow_id)
-      if (dplyr.count(runs) > 0) {
-        run_ids <- collect(runs)[['run_id']]
-      }
-    }
-    updateSelectizeInput(session, "run_id", choices=run_ids)
   })
 
-  # update variables and dates if user changes run
+  # update the run_ids if user changes workflow
+  run_ids <- reactive(get_run_ids(bety, workflow_id()))
   observe({
-    # isolate workflow since we don't want to be triggered by this
-    workflow_id <- isolate(input$workflow_id)
-    run_id <- input$run_id
-    var_names <- list()
-    if (workflow_id != "" && run_id != "") {
-      workflow <- collect(workflow(bety, workflow_id))
-      if(nrow(workflow) > 0) {
-        outputfolder <- file.path(workflow$folder, 'out', run_id)
-        if(file_test('-d', outputfolder)) {
-          files <- list.files(outputfolder, "*.nc$", full.names=TRUE)
-          for(file in files) {
-            nc <- nc_open(file)
-            lapply(nc$var, function(x) if(x$name != "") var_names[[x$longname]] <<- x$name)
-            nc_close(nc)
-          }
-        }
-      }
-    }
-    if (length(var_names) == 0) {
-      var_names <- list("")
-    }
-    updateSelectizeInput(session, "variable_name", choices=var_names)
+    updateSelectizeInput(session, "run_id", choices=run_ids())
+  })
+
+  # update variables if user changes run
+  var_names <- reactive({
+      run_ids <- get_run_ids(bety, workflow_id())
+      var_names <- get_var_names(bety, workflow_id(), run_ids[1])
+      return(var_names)
+  })
+  observe({
+    updateSelectizeInput(session, "variable_name", choices=var_names())
   })
 
   observe({
