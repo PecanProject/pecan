@@ -1,6 +1,6 @@
 Type: Shiny
 Title: Global sensitivity analysis
-License: NCSA
+License: FreeBSD + file LICENSE
 Author: Alexey Shiklomanov <ashiklom@bu.edu>
 AuthorUrl: http://ashiklom.github.io
 Tags: PEcAn
