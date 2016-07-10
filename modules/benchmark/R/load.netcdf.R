@@ -53,7 +53,7 @@ load.x_netcdf <- function(data.path, format, site, vars=NULL){
     t.units <- gsub(paste0(" since ", time.stamp.match, ".*"), "", ncatt_get(nc[[i]], dims[time.var])$units)
     
     
-    foo <- date.origin + ud.convert(time.col[[i]], t.units ,"seconds")
+    foo <- as.POSIXct(date.origin) + ud.convert(time.col[[i]], t.units ,"seconds")
     time.col[[i]] <- foo
     
   }
