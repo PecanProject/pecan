@@ -71,7 +71,7 @@ server <- shinyServer(function(input, output, session) {
         } else if (input$output_type == "All variables"){
             plotAllVars(ensemble.out(), input$parameter, var_names(), plot_cols=plot_cols)
         }
-        add_icon(x=1)
+        add_icon()
     })
     
     lm_fit <- reactive({
