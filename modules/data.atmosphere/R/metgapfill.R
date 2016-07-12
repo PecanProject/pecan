@@ -248,13 +248,28 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
     if ((all(is.na(rH))) & (!all(is.na(VPD)))) {
       es <- get.es(Tair-273.15)*100.
       rH <- 100. * ((es-VPD) / es)
-      rH[rH < 0] < -0
+      rH[rH < 0] <- 0
       rH[rH > 100] <- 100
     }
     # try again if we computed rH from VPD, get sHum from VPD-based rH
     if ((all(is.na(sHum))) & (!all(is.na(rH)))) { sHum <- rh2qair(rH/100.,Tair,press) }
     #try again if we computed rH from sHum, get VPD from sHum-based rH
     if ((all(is.na(VPD))) & (!all(is.na(rH)))) { VPD <- as.numeric(fCalcVPDfromRHandTair(rH,Tair-273.15))*100. }
+
+    #now fill partial missing values of each
+    badrH <- is.na(rH)
+    if ((any(badrH)) & (!all(is.na(sHum)))) { rH[badrH] <- qair2rh(sHum[badrH],Tair[badrH]-273.15,press[badrH]/100.)*100.}
+    badrH <- is.na(rH)
+    if ((any(badrH)) & (!all(is.na(VPD)))) { 
+      es <- get.es(Tair[badrH]-273.15)*100.
+      rH[badrH] <- 100. * ((es-VPD[badrH]) / es)
+      rH[rH < 0] <- 0
+      rH[rH > 100] <- 100
+    }
+    badsHum <- is.na(sHum)
+    if ((any(badsHum)) & (!all(is.na(rH)))) { sHum[badsHum] <- rh2qair(rH[badsHum]/100.,Tair[badsHum],press[badsHum]) }    
+    badVPD <- is.na(VPD)
+    if ((any(badVPD)) & (!all(is.na(rH)))) { VPD[badVPD] <- as.numeric(fCalcVPDfromRHandTair(rH[badVPD],Tair[badVPD]-273.15))*100. }
     
     ## one set of these must exist (either wind_speed or east+north wind)
     ws <-try(ncvar_get(nc=nc,varid='wind_speed'),silent=TRUE)
