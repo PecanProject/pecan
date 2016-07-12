@@ -98,7 +98,7 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date, over
   results$host[row] <- fqdn()
   results$startdate[row] <- paste0(syear,"-01-01 00:00:00")
   results$enddate[row] <- paste0(eyear,"-12-31 23:59:59")
-  results$mimetype[row] <- 'test/csv'
+  results$mimetype[row] <- 'text/csv'
   results$formatname[row] <- 'FLUXNET2015_SUBSET_HH'
 
   # return list of files downloaded
