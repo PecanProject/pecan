@@ -440,6 +440,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
         if (length(locs_wd)>0 & length(locs_ws)>0) {
           #wind speed and direction available, convert to northward and eastward
           k_wd = locs_wd[1]
+          k_ws = locs_ws[1]
           arrloc_wd <- as.character(format$vars$orig_name[k_wd])
           if (arrloc_wd=="") {
             if (any(colnames(format$vars)=="column_number")) { 
