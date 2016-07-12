@@ -107,7 +107,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, ove
   results$host[row] <- fqdn()
   results$startdate[row] <- firstdate_st
   results$enddate[row] <- lastdate_st
-  results$mimetype[row] <- 'test/csv'
+  results$mimetype[row] <- 'text/csv'
   results$formatname[row] <- 'AMERIFLUX_BASE_HH'
   
   # return list of files downloaded
