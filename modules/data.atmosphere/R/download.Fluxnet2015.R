@@ -77,7 +77,7 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date, over
       logger.severe("FTP did not download ", output_zip_file, " from ",ftplink)
     } else {
       #extract the half hourly file only
-      unzip(output_zip_file,outcsvname)
+      unzip(output_zip_file,outcsvname,exdir=outfolder)
       #make sure a CSV file output
       if(!file.exists(output_csv_file)) {
         logger.severe("ZIP file ",output_zip_file," did not contain CSV file ",outcsvname)
