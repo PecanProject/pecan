@@ -161,6 +161,7 @@ get.results <- function(settings, sa.ensemble.id=NULL, ens.ensemble.id=NULL,
 }
 #==================================================================================================#
 
+##' @export
 runModule.get.results <- function(settings) {
   if(is.SettingsList(settings)) {
     return(papply(settings, runModule.get.results))

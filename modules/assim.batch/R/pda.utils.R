@@ -31,6 +31,7 @@ assim.batch <- function(settings) {
   return(settings)
 }
 
+##' @export
 runModule.assim.batch <- function(settings) {
   if(is.SettingsList(settings)) {
     return(papply(settings, runModule.assim.batch))

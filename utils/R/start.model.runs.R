@@ -240,6 +240,7 @@ start.model.runs <- function(settings, write = TRUE){
 ##==================================================================================================#
 
 
+##' @export
 runModule.start.model.runs <- function(settings) {
   if(is.SettingsList(settings)) {
     return(papply(settings, runModule.start.model.runs))

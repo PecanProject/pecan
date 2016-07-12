@@ -6,7 +6,7 @@
 This will use the following items from setings:
 - settings$pfts
 - settings$database$bety
-- settings$run$dbfiles
+- settings$database$dbfiles
 - settings$meta.analysis$update}
 \usage{
 run.meta.analysis(pfts, iterations, random = TRUE, threshold = 1.2, dbfiles,

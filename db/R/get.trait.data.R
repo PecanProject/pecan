@@ -252,6 +252,7 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,trait
 }
 ##==================================================================================================#
 
+##' @export
 runModule.get.trait.data <- function(settings) {
   if(is.SettingsList(settings)) {
     return(papply(settings, runModule.get.trait.data))

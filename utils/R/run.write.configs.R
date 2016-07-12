@@ -127,6 +127,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method="uniform
 #==================================================================================================#
 
 
+##' @export
 runModule.run.write.configs <- function(settings, overwrite=TRUE) {
   if(is.SettingsList(settings)) {
     if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {
