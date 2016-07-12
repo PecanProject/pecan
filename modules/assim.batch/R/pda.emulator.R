@@ -76,13 +76,6 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
 
-  # Default jump variances. Looped for clarity
-  ind <- which(is.na(settings$assim.batch$jump$jvar))
-  for(i in seq_along(ind)) {
-    # default to 0.1 * 90% prior CI
-    settings$assim.batch$jump$jvar[[i]] <- 
-      0.1 * diff(eval(prior.fn$qprior[[prior.ind[ind[i]]]], list(p=c(0.05,0.95))))
-  }
 
   ## ------------------------------------ Emulator ------------------------------------ ##
   ## Propose parameter knots (X) for emulator design
@@ -101,12 +94,14 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
   ## Retrieve model outputs, calculate likelihoods (and store them in database)
   LL.X <- rep(NA, settings$assim.batch$n.knot)
+  model.out <- list()
+  
   for(i in 1:settings$assim.batch$n.knot) {
     ## read model outputs
-    model.out <- pda.get.model.output(settings, run.ids[i], inputs)
+    model.out[[i]] <- pda.get.model.output(settings, run.ids[i], inputs)
 
     ## calculate likelihood
-    LL.X[i] <- pda.calc.llik(settings, con, model.out, run.ids[i], inputs, llik.fn)
+    LL.X[i] <- pda.calc.llik(settings, con, model.out[[i]], run.ids[i], inputs, llik.fn)
   }
 
   ## Collect all likelihoods (Y)
@@ -147,10 +142,26 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   
   # define range to make sure mcmc.GP doesn't propose new values outside 
   
-  rng=matrix(c(sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0)),
+  rng <- matrix(c(sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0)),
                sapply(prior.fn$qprior[prior.ind] ,eval,list(p=1))),
                nrow=n.param)
-        
+  
+  # Default jump variances. Looped for clarity
+  ind <- which(is.na(settings$assim.batch$jump$jvar))
+  for(i in seq_along(ind)) {
+    # default to 0.1 * 90% prior CI
+    settings$assim.batch$jump$jvar[[i]] <- 
+      0.1 * diff(eval(prior.fn$qprior[[prior.ind[ind[i]]]], list(p=c(0.05,0.95))))
+  }
+  
+  if(!is.null(settings$assim.batch$mix)){
+    mix <- settings$assim.batch$mix
+  }else if(n.param > 1){
+    mix <- "joint"
+  }else{
+    mix <- "each"
+  } 
+  
 
   ## Sample posterior from emulator
   m <- lapply(1, function(chain){
@@ -162,11 +173,12 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
                  nmcmc     = settings$assim.batch$iter,       ## Number of reps
                  rng       = rng,       ## range
                  format    = "lin",      ## "lin"ear vs "log" of LogLikelihood 
-                 mix       = "each",     ## Jump "each" dimension independently or update them "joint"ly
+                 mix       = mix,     ## Jump "each" dimension independently or update them "joint"ly
 #                  jmp0 = apply(X,2,function(x) 0.3*diff(range(x))), ## Initial jump size
                  jmp0      = sqrt(unlist(settings$assim.batch$jump$jvar)),  ## Initial jump size
                  ar.target = settings$assim.batch$jump$ar.target,   ## Target acceptance rate
-                 priors    = prior.fn$dprior[prior.ind] ## priors
+                 priors    = prior.fn$dprior[prior.ind], ## priors
+                 settings  = settings
           )$mcmc
         })
   

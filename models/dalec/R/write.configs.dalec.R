@@ -120,9 +120,9 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id){
   }
   
   # find out where to write run/ouput
-  rundir <- file.path(settings$run$host$rundir, as.character(run.id))
-  outdir <- file.path(settings$run$host$outdir, as.character(run.id))
-  if (is.null(settings$run$host$qsub) && (settings$run$host$name == "localhost")) {
+  rundir <- file.path(settings$host$rundir, as.character(run.id))
+  outdir <- file.path(settings$host$outdir, as.character(run.id))
+  if (is.null(settings$host$qsub) && (settings$host$name == "localhost")) {
     rundir <- file.path(settings$rundir, as.character(run.id))
     outdir <- file.path(settings$modeloutdir, as.character(run.id))
   }
@@ -173,15 +173,15 @@ write.run.DALEC <- function(settings){
   run.text <- scan(file = run.script.template, 
                    what="character",sep='@', quote=NULL, quiet=TRUE)
   run.text  <- gsub('TMP', paste("/scratch/",Sys.getenv("USER"),sep=""), run.text)
-  run.text  <- gsub('BINARY', settings$run$host$MODEL$binary, run.text)
-  run.text <- gsub('OUTDIR', settings$run$host$outdir, run.text)
+  run.text  <- gsub('BINARY', settings$host$MODEL$binary, run.text)
+  run.text <- gsub('OUTDIR', settings$host$outdir, run.text)
   runfile <- paste(settings$outdir, 'run', sep='')
   writeLines(run.text, con = runfile)
-  if(settings$run$host$name == 'localhost') {
-    system(paste('cp ', runfile, settings$run$host$rundir))
+  if(settings$host$name == 'localhost') {
+    system(paste('cp ', runfile, settings$host$rundir))
   }else{
-    system(paste("rsync -outi ", runfile , ' ', settings$run$host$name, ":",
-                 settings$run$host$rundir, sep = ''))
+    system(paste("rsync -outi ", runfile , ' ', settings$host$name, ":",
+                 settings$host$rundir, sep = ''))
   }
 }
 #==================================================================================================#

@@ -17,9 +17,10 @@
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
+##' @param revision model revision
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
-model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw) {
+model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw, revision) {
   
   require(ncdf4)
 
@@ -28,6 +29,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   sipnet.output <- read.table(sipnet.out.file, header=T, skip=1, sep='')
   sipnet.output.dims <- dim(sipnet.output)
 
+  
   ### Determine number of years and output timestep
   num.years <- length(unique(sipnet.output$year))
   years <- unique(sipnet.output$year)
@@ -71,12 +73,16 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
       (sub.sipnet.output$fineRootC * 0.001)                       # Total living C kgC/m2
     output[[13]] <- (sub.sipnet.output$soil * 0.001)+
       (sub.sipnet.output$litter * 0.001)                          # Total soil C kgC/m2
-    ## *** NOTE : npp in the sipnet output file is actually evapotranspiration, this is due to a bug in sipnet.c : ***
-    ## *** it says "npp" in the header (written by L774) but the values being written are trackers.evapotranspiration (L806) ***
-    ## evapotranspiration in SIPNET is cm^3 water per cm^2 of area, to convert it to latent heat units W/m2 multiply with :
-    ## 0.01 (cm2m) * 1000 (water density, kg m-3) * latent heat of vaporization (J kg-1) 
-    ## latent heat of vaporization is not constant and it varies slightly with temperature, get.lv() returns 2.5e6 J kg-1 by default 
-    output[[14]] <- (sub.sipnet.output$npp * 10 * get.lv()) / timestep.s  # Qle W/m2
+    if(revision=="r136"){
+      output[[14]] <- (sub.sipnet.output$evapotranspiration * 10 * get.lv()) / timestep.s  # Qle W/m2
+    }else{
+      ## *** NOTE : npp in the sipnet output file is actually evapotranspiration, this is due to a bug in sipnet.c : ***
+      ## *** it says "npp" in the header (written by L774) but the values being written are trackers.evapotranspiration (L806) ***
+      ## evapotranspiration in SIPNET is cm^3 water per cm^2 of area, to convert it to latent heat units W/m2 multiply with :
+      ## 0.01 (cm2m) * 1000 (water density, kg m-3) * latent heat of vaporization (J kg-1) 
+      ## latent heat of vaporization is not constant and it varies slightly with temperature, get.lv() returns 2.5e6 J kg-1 by default 
+      output[[14]] <- (sub.sipnet.output$npp * 10 * get.lv()) / timestep.s  # Qle W/m2
+    }
     output[[15]] <- (sub.sipnet.output$fluxestranspiration * 10) / timestep.s  # Transpiration kgW/m2/s
     output[[16]] <- (sub.sipnet.output$soilWater * 10)            # Soil moisture kgW/m2
     output[[17]] <- (sub.sipnet.output$soilWetnessFrac)         # Fractional soil wetness

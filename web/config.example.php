@@ -26,6 +26,9 @@ $Rbinary="/usr/bin/R";
 # sshTunnel binary
 $SSHtunnel=dirname(__FILE__) . DIRECTORY_SEPARATOR . "sshtunnel.sh";
 
+# google map key
+$googleMapKey="";
+
 # Require username/password, can set min level to 0 so nobody can run/delete.
 # 4 = viewer
 # 3 = creator
@@ -73,7 +76,7 @@ $hostlist=array($fqdn => array(),
                           "jobid"   => "Your job ([0-9]+) .*",
                           "qstat"   => "qstat -j @JOBID@ || echo DONE",
                           "prerun"  => "module load udunits R/R-3.0.0_gnu-4.4.6",
-                          "postrun" => "sleep 60"
+                          "postrun" => "sleep 60",
                           "models"  => array("ED2" =>
                               array("prerun"  => "module load hdf5"))));
 

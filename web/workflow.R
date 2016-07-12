@@ -68,8 +68,8 @@ status.check <- function(name) {
   return (0)
 }
 kill.tunnel <- function() {
-  if (exists("settings") && !is.null(settings$run$host$tunnel)) {
-    pidfile <- file.path(dirname(settings$run$host$tunnel), "pid")
+  if (exists("settings") && !is.null(settings$host$tunnel)) {
+    pidfile <- file.path(dirname(settings$host$tunnel), "pid")
     pid <- readLines(pidfile)
     print(paste("Killing tunnel with PID", pid))
     tools::pskill(pid)
@@ -134,9 +134,9 @@ for(i in 1:length(settings$run$inputs)) {
         start_date = settings$run$start.date,
         end_date   = settings$run$end.date,
         model      = settings$model$type,
-        host       = settings$run$host,
+        host       = settings$host,
         dbparms    = settings$database$bety, 
-        dir        = settings$run$dbfiles,
+        dir        = settings$database$dbfiles,
         browndog   = settings$browndog)
       settings$run$inputs[[i]][['path']] <- result
       status.end()
@@ -154,7 +154,7 @@ if (needsave) {
 # Query the trait database for data and priors
 if (status.check("TRAIT") == 0){
   status.start("TRAIT")
-  settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
+  settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$database$dbfiles, settings$database$bety, settings$meta.analysis$update)
   saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.TRAIT.xml'))
   status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.TRAIT.xml'))) {
@@ -166,7 +166,7 @@ if (status.check("TRAIT") == 0){
 if('meta.analysis' %in% names(settings)) {
   if (status.check("META") == 0){
     status.start("META")
-    run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$meta.analysis$threshold, settings$run$dbfiles, settings$database$bety)
+    run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$meta.analysis$threshold, settings$database$dbfiles, settings$database$bety)
     status.end()
   }
 }

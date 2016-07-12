@@ -22,8 +22,8 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
 
   lat.in = as.numeric(lat.in)
   lon.in = as.numeric(lon.in)
-  lat_trunc = floor(2*(90-as.numeric(lat.in)))
-  lon_trunc = floor(2*(as.numeric(lon.in)+180))
+  lat_trunc = floor(2*(90-as.numeric(lat.in)))+1
+  lon_trunc = floor(2*(as.numeric(lon.in)+180))+1
   dap_base ='http://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_'
     
   dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
@@ -43,7 +43,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
   
   for (i in 1:rows){
     year = ylist[i]    
-    ntime = ifelse(year%%4 == 0,1463,1459)
+    ntime = ifelse(lubridate:: leap_year(year), 366*4, 365*4)
     
     loc.file = file.path(outfolder,paste("CRUNCEP",year,"nc",sep="."))
     

@@ -15,7 +15,7 @@
 ##' @param lst is timezone offset from UTC, if timezone is available in time:units atribute in file, it will use that, default is to assume UTC
 ##' @author Ankur Desai
 ##'
-metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=0, overwrite=FALSE, verbose=FALSE){
+metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=0, overwrite=FALSE, verbose=FALSE, ...){
 
   require(REddyProc)    
   #REddyProc installed to ~/R/library by install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
@@ -41,12 +41,13 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
                         stringsAsFactors = FALSE)
   
   for(year in start_year:end_year) {
-    old.file <- file.path(in.path, paste(in.prefix, sprintf("%04d",start_year), "nc", sep="."))
-    new.file <- file.path(outfolder, paste(in.prefix, sprintf("%04d",start_year), "nc", sep="."))
+    old.file <- file.path(in.path, paste(in.prefix, sprintf("%04d",year), "nc", sep="."))
+    new.file <- file.path(outfolder, paste(in.prefix, sprintf("%04d",year), "nc", sep="."))
     
     # check if input exists
     if (!file.exists(old.file)) {
-      logger.severe("Missing input file for year", sprintf("%04d",start_year), "in folder", in.path)
+      logger.warn("Missing input file ",old.file," for year", sprintf("%04d",year), "in folder", in.path)
+      next
     }
         
     # create array with results
@@ -70,27 +71,19 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
     nc <- nc_open(new.file,write=TRUE)
 
     ## Should probably check for variable names (need to install ncdf4-helpers package)
-    Tair <- ncvar_get(nc=nc,varid='air_temperature')
-    Rg <- ncvar_get(nc=nc,varid='surface_downwelling_shortwave_flux_in_air')
-    rH <- ncvar_get(nc=nc,varid='relative_humidity')
-    PAR <- ncvar_get(nc=nc,varid='surface_downwelling_photosynthetic_photon_flux_in_air')
-    precip <- ncvar_get(nc=nc,varid='precipitation_flux')
-    #Rn <- ncvar_get(nc=nc,varid='Rn')
-    sHum <- ncvar_get(nc=nc,varid='specific_humidity')
-    Lw <- ncvar_get(nc=nc,varid='surface_downwelling_longwave_flux_in_air')
-    Ts1 <-ncvar_get(nc=nc,varid='soil_temperature')
-    #Ts2 <-ncvar_get(nc=nc,varid='TS2')
-    VPD <-ncvar_get(nc=nc,varid='water_vapor_saturation_deficit')
-    ws <-ncvar_get(nc=nc,varid='wind_speed')
-    co2 <- ncvar_get(nc=nc,varid='mole_fraction_of_carbon_dioxide_in_air')
-    press <- ncvar_get(nc=nc,varid='air_pressure')
-    east_wind <- ncvar_get(nc=nc,varid='eastward_wind')
-    north_wind <- ncvar_get(nc=nc,varid='northward_wind')
-    
-    #extract time, lat, lon, elevation, timezone for pressure and radiation calculations
+
+    #extract time, lat, lon 
     time <- ncvar_get(nc=nc,varid='time')
     lat <- ncvar_get(nc=nc,varid='latitude')
     lon <- ncvar_get(nc=nc,varid='longitude')
+    
+    ## create time lat lon dimensions for adding new variables
+    x <- ncdim_def("longitude", "degrees_east", lon) 
+    y <- ncdim_def("latitude", "degrees_north", lat)
+    t <- ncdim_def("time", "days since 1700-01-01", time) 
+    xytdim <- list(x,y,t)
+    
+    #extract elevation and timezone for radiation calculations    
     elev <- ncatt_get(nc=nc,varid=0,'elevation')
     tzone <- ncatt_get(nc=nc,varid='time','units')
     ##Future: query elevation from site.id
@@ -107,9 +100,31 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
       }
     }
     
-    #default pressure (in Pascals) if no pressure observations are available (based on NOAA 1976 equation for pressure altitude for WMO international standard atmosphere)
-    standard_pressure <- ((1 - ((3.28084*elevation)/145366.45))^(1/.190284))*101325.0
-    if (length(which(is.na(press))) == length(press)) { press[is.na(press)] <- standard_pressure }
+    ## Required to exist in file
+    Tair <- try(ncvar_get(nc=nc,varid='air_temperature'),silent=TRUE)
+    if (!is.numeric(Tair)) { logger.error("air_temperature not defined in met file for metgapfill")}
+    precip <- try(ncvar_get(nc=nc,varid='precipitation_flux'),silent=TRUE)
+    if (!is.numeric(precip)) { logger.error("precipitation_flux not defined in met file for metgapfill")}
+    
+    ## create an array of missing values for writing new variables prior to gap filling
+    missingarr <- as.numeric(array(NA,length(Tair)))
+    
+    ## One of these must exist, create the other one for gap-filling
+    Rg <- try(ncvar_get(nc=nc,varid='surface_downwelling_shortwave_flux_in_air'),silent=TRUE)
+    if(!is.numeric(Rg)) { 
+      Rg = missingarr 
+      myvar <- ncvar_def(name="surface_downwelling_shortwave_flux_in_air",units = "W m-2", dim=xytdim)
+      nc <- ncvar_add(nc = nc, v = myvar)
+      ncvar_put(nc, varid = myvar, missingair)
+    }    
+    
+    PAR <- try(ncvar_get(nc=nc,varid='surface_downwelling_photosynthetic_photon_flux_in_air'),silent=TRUE)
+    if(!is.numeric(PAR)) { 
+      PAR = missingarr 
+      myvar <- ncvar_def(name="surface_downwelling_photosynthetic_photon_flux_in_air",units = "mol m-2 s-1", dim=xytdim)
+      nc <- ncvar_add(nc = nc, v = myvar)
+      ncvar_put(nc, varid = myvar, missingarr)
+    }
     
     # check to see if we have Rg values
     if (length(which(is.na(Rg))) == length(Rg)) {
@@ -167,6 +182,121 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
     PAR[rpot==0] <- 0    
     ## we could add Rg[Rg>rpot] <- rpot, but probably should bias correct first?
     
+    ## If these don't exist, create blank ones that will be filled with default values, or imputed from other vars
+    co2 <- try(ncvar_get(nc=nc,varid='mole_fraction_of_carbon_dioxide_in_air'),silent=TRUE)
+    if(!is.numeric(co2)) { 
+      co2 = missingarr 
+      myvar <- ncvar_def(name="mole_fraction_of_carbon_dioxide_in_air",units = "mol mol-1", dim=xytdim)
+      nc <- ncvar_add(nc = nc, v = myvar)
+      ncvar_put(nc, varid = myvar, missingarr)
+    } 
+    
+    press <- try(ncvar_get(nc=nc,varid='air_pressure'),silent=TRUE)
+    if(!is.numeric(press)) { 
+      press = missingarr 
+      myvar <- ncvar_def(name="air_pressure",units = "Pa", dim=xytdim)
+      nc <- ncvar_add(nc = nc, v = myvar)
+      ncvar_put(nc, varid = myvar, missingarr)
+    }  
+    #default pressure (in Pascals) if no pressure observations are available (based on NOAA 1976 equation for pressure altitude for WMO international standard atmosphere)
+    standard_pressure <- ((1 - ((3.28084*elevation)/145366.45))^(1/.190284))*101325.0
+    if (length(which(is.na(press))) == length(press)) { press[is.na(press)] <- standard_pressure }
+    
+    Lw <- try(ncvar_get(nc=nc,varid='surface_downwelling_longwave_flux_in_air'),silent=TRUE)
+    if(!is.numeric(Lw)) { 
+      Lw = missingarr 
+      myvar <- ncvar_def(name="surface_downwelling_longwave_flux_in_air",units = "W m-2", dim=xytdim)
+      nc <- ncvar_add(nc = nc, v = myvar)
+      ncvar_put(nc, varid = myvar, missingarr)
+    } 
+    
+    Ts1 <-try(ncvar_get(nc=nc,varid='soil_temperature'),silent=TRUE)
+    if(!is.numeric(Ts1)) { 
+      Lw = missingarr 
+      myvar <- ncvar_def(name="soil_temperature",units = "K", dim=xytdim)
+      nc <- ncvar_add(nc = nc, v = myvar)
+      ncvar_put(nc, varid = myvar, missingarr)
+    } 
+    
+    ## one of these must exist, create the others
+    rH <- try(ncvar_get(nc=nc,varid='relative_humidity'),silent=TRUE)
+    if(!is.numeric(rH)) { 
+      rH = missingarr 
+      myvar <- ncvar_def(name="relative_humidity",units = "%", dim=xytdim)
+      nc <- ncvar_add(nc = nc, v = myvar)
+      ncvar_put(nc, varid = myvar, missingarr)
+    }  
+    sHum <- try(ncvar_get(nc=nc,varid='specific_humidity'),silent=TRUE)
+    if(!is.numeric(sHum)) { 
+      sHum = missingarr 
+      myvar <- ncvar_def(name="specific_humidity",units = "kg kg-1", dim=xytdim)
+      nc <- ncvar_add(nc = nc, v = myvar)
+      ncvar_put(nc, varid = myvar, missingarr)
+    }     
+    VPD <-try(ncvar_get(nc=nc,varid='water_vapor_saturation_deficit'),silent=TRUE)
+    if(!is.numeric(VPD)) { 
+      VPD = missingarr 
+      myvar <- ncvar_def(name="water_vapor_saturation_deficit",units = "Pa", dim=xytdim)
+      nc <- ncvar_add(nc = nc, v = myvar)
+      ncvar_put(nc, varid = myvar, missingarr)
+    }  
+    
+    ## Fill these variables from each other
+    if ((all(is.na(VPD))) & (!all(is.na(rH)))) { VPD <- as.numeric(fCalcVPDfromRHandTair(rH,Tair-273.15))*100. }
+    if ((all(is.na(sHum))) & (!all(is.na(rH)))) { sHum <- rh2qair(rH/100.,Tair,press) }
+    if ((all(is.na(rH))) & (!all(is.na(sHum)))) { rH <- qair2rh(sHum,Tair-273.15,press/100.)*100.}     
+    if ((all(is.na(rH))) & (!all(is.na(VPD)))) {
+      es <- get.es(Tair-273.15)*100.
+      rH <- 100. * ((es-VPD) / es)
+      rH[rH < 0] <- 0
+      rH[rH > 100] <- 100
+    }
+    # try again if we computed rH from VPD, get sHum from VPD-based rH
+    if ((all(is.na(sHum))) & (!all(is.na(rH)))) { sHum <- rh2qair(rH/100.,Tair,press) }
+    #try again if we computed rH from sHum, get VPD from sHum-based rH
+    if ((all(is.na(VPD))) & (!all(is.na(rH)))) { VPD <- as.numeric(fCalcVPDfromRHandTair(rH,Tair-273.15))*100. }
+
+    #now fill partial missing values of each
+    badrH <- is.na(rH)
+    if ((any(badrH)) & (!all(is.na(sHum)))) { rH[badrH] <- qair2rh(sHum[badrH],Tair[badrH]-273.15,press[badrH]/100.)*100.}
+    badrH <- is.na(rH)
+    if ((any(badrH)) & (!all(is.na(VPD)))) { 
+      es <- get.es(Tair[badrH]-273.15)*100.
+      rH[badrH] <- 100. * ((es-VPD[badrH]) / es)
+      rH[rH < 0] <- 0
+      rH[rH > 100] <- 100
+    }
+    badsHum <- is.na(sHum)
+    if ((any(badsHum)) & (!all(is.na(rH)))) { sHum[badsHum] <- rh2qair(rH[badsHum]/100.,Tair[badsHum],press[badsHum]) }    
+    badVPD <- is.na(VPD)
+    if ((any(badVPD)) & (!all(is.na(rH)))) { VPD[badVPD] <- as.numeric(fCalcVPDfromRHandTair(rH[badVPD],Tair[badVPD]-273.15))*100. }
+    
+    ## one set of these must exist (either wind_speed or east+north wind)
+    ws <-try(ncvar_get(nc=nc,varid='wind_speed'),silent=TRUE)
+    if(!is.numeric(ws)) { 
+      ws = missingarr 
+      myvar <- ncvar_def(name="wind_speed",units = "m s-1", dim=xytdim)
+      nc <- ncvar_add(nc = nc, v = myvar)
+      ncvar_put(nc, varid = myvar, missingarr)
+    } 
+    east_wind <- try(ncvar_get(nc=nc,varid='eastward_wind'),silent=TRUE)
+    if(!is.numeric(east_wind)) { 
+      east_wind = missingarr 
+      myvar <- ncvar_def(name="eastward_wind",units = "m s-1", dim=xytdim)
+      nc <- ncvar_add(nc = nc, v = myvar)
+      ncvar_put(nc, varid = myvar, missingarr)
+    } 
+    north_wind <- try(ncvar_get(nc=nc,varid='northward_wind'),silent=TRUE)
+    if(!is.numeric(north_wind)) { 
+      north_wind = missingarr 
+      myvar <- ncvar_def(name="northward_wind",units = "m s-1", dim=xytdim)
+      nc <- ncvar_add(nc = nc, v = myvar)
+      ncvar_put(nc, varid = myvar, missingarr)
+    } 
+        
+    #Rn <- ncvar_get(nc=nc,varid='Rn')
+    #Ts2 <-ncvar_get(nc=nc,varid='TS2')
+    
     ## make a data frame, convert -9999 to NA, convert to degrees C
     EddyData.F <- data.frame(Tair,Rg,rH,PAR,precip,sHum,Lw,Ts1,VPD,ws,co2,press,east_wind,north_wind)
     EddyData.F['Tair'] <- EddyData.F['Tair'] - 273.15
@@ -195,20 +325,28 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
     n_north_wind <- sum(is.na(EddyData.F['north_wind']))
 
     # figure out datetime of nc file and convert to POSIX
-    time <- ncvar_get(nc=nc,varid='time')
     nelem = length(time)
     tunit <- ncatt_get(nc=nc, varid='time', attname='units', verbose=verbose)
     origin <- "1900-01-01 00:00:00"
     time <-round(as.POSIXlt(ud.convert(time, tunit$value, paste('seconds since', origin)), origin=origin, tz="GMT"), units="mins")
-    if (length(time) > 10000) {
+    dtime = diff(time)
+    if (dtime[1]==30) {
       DTS.n <- 48
       time <-  30*60 + time
     } else {
       time <-  60*60 + time
       DTS.n <- 24
     }
-    EddyData.F <- cbind(EddyData.F, DateTime=time)
     
+#     if (length(time) > 10000) {
+#       DTS.n <- 48
+#       time <-  30*60 + time
+#     } else {
+#       time <-  60*60 + time
+#       DTS.n <- 24
+#     }
+    EddyData.F <- cbind(EddyData.F, DateTime=time)
+
     ## Create EddyProc object 
     EddyProc.C <- sEddyProc$new('Site', EddyData.F, c('Tair','Rg','rH','PAR','precip','sHum','Lw','Ts1','VPD','ws','co2','press','east_wind','north_wind'), DTS.n=DTS.n)
     maxbad <- nelem/2
@@ -335,7 +473,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
     nc_close(nc)
     
     if (length(error) > 0) {
-      fail.file <- file.path(outfolder, paste(in.prefix, sprintf("%04d",start_year),"failure","nc", sep="."))
+      fail.file <- file.path(outfolder, paste(in.prefix, sprintf("%04d",year),"failure","nc", sep="."))
       file.rename(from = new.file, to = fail.file)
       logger.severe("Could not do gapfill, results are in", fail.file, ".",
                     "The following variables have NA's:", paste(error, sep=", "))

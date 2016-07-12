@@ -607,6 +607,40 @@ load.modelpkg <- function(model){
     }
   }
 }
+
+##' conversion function for the unit conversions that udunits cannot handle but often needed in PEcAn calculations
+##' @title misc.convert
+##' @param x convertible values
+##' @param u1 unit to be converted from, character
+##' @param u2 unit to be converted to, character
+##' @return val converted values
+##' @export
+##' @author Istem Fer
+misc.convert <- function(x, u1, u2){
+  if(u1 == "umol C m-2 s-1" & u2 == "kg C m-2 s-1"){
+    val <- ud.convert(x, "ug m-2 s-1", "kg ha-1 yr-1") * 12 
+  }else if(u1 == "kg C m-2 s-1" &  u2 == "umol C m-2 s-1"){
+    val <- ud.convert(x, "kg ha-1 yr-1", "ug m-2 s-1") / 12 
+  }
+  return(val)
+}
+
+
+##' function to check whether units are convertible by misc.convert function
+##' @title misc.are.convertible
+##' @param u1 unit to be converted from, character
+##' @param u2 unit to be converted to, character
+##' @return logical
+##' @export
+##' @author Istem Fer
+misc.are.convertible <- function(u1, u2){
+  if(match(u1, c("umol C m-2 s-1", "kg C m-2 s-1")) ==  match(u2, c("kg C m-2 s-1", "umol C m-2 s-1"))){
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
+
 ####################################################################################################
 ### EOF.  End of R script file.              
 ####################################################################################################
