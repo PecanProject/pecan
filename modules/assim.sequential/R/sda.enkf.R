@@ -30,7 +30,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
   outdir <- settings$run$host$outdir
   rundir <- settings$run$host$rundir
   host <- settings$run$host
-  forecast.duration <- 1 #eventually in settings
+  forecast.duration <- 1 #eventually in settings #try to run with dates
   forecast.time.step <- 1 #eventually in settings #dt
   spin.up <- 90 #eventually in settings
   nens = 15#nrow(IC)
