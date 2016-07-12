@@ -59,8 +59,9 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date, over
   
   endname <- strsplit(outfname,'_')
   endname <- endname[[1]][length(endname[[1]])]
-  endname <- substr(endname,1,nchar(endname)-3)
-  outcsvname <- paste0(substr(outfname,1,30),'HH_',syear,'-',eyear,'_',endname,'csv')
+  endname <- substr(endname,1,nchar(endname)-4)
+  dbfilename <- paste0(substr(outfname,1,30),'HH_',syear,'-',eyear,'_',endname)
+  outcsvname <- paste0(substr(outfname,1,30),'HH_',syear,'-',eyear,'_',endname,'.csv')
   
   output_zip_file <- file.path(outfolder, outfname)
   output_csv_file <- file.path(outfolder, outcsvname)
@@ -90,7 +91,7 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date, over
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
                         startdate=character(rows), enddate=character(rows),
-                        dbfile.name = site,
+                        dbfile.name = dbfilename,
                         stringsAsFactors = FALSE)
 
   row <- 1
