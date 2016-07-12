@@ -5,7 +5,7 @@
 \title{Sample from priors or posteriors}
 \usage{
 get.parameter.samples(pfts = settings$pfts, posterior.files = rep(NA,
-  length(settings$pfts)))
+  length(settings$pfts)), ens.sample.method = "uniform")
 }
 \arguments{
 \item{pfts}{the pfts node of the list of pecan settings}

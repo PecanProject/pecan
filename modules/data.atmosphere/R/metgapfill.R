@@ -41,12 +41,13 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
                         stringsAsFactors = FALSE)
   
   for(year in start_year:end_year) {
-    old.file <- file.path(in.path, paste(in.prefix, sprintf("%04d",start_year), "nc", sep="."))
-    new.file <- file.path(outfolder, paste(in.prefix, sprintf("%04d",start_year), "nc", sep="."))
+    old.file <- file.path(in.path, paste(in.prefix, sprintf("%04d",year), "nc", sep="."))
+    new.file <- file.path(outfolder, paste(in.prefix, sprintf("%04d",year), "nc", sep="."))
     
     # check if input exists
     if (!file.exists(old.file)) {
-      logger.severe("Missing input file for year", sprintf("%04d",start_year), "in folder", in.path)
+      logger.warn("Missing input file ",old.file," for year", sprintf("%04d",year), "in folder", in.path)
+      next
     }
         
     # create array with results
@@ -247,13 +248,28 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
     if ((all(is.na(rH))) & (!all(is.na(VPD)))) {
       es <- get.es(Tair-273.15)*100.
       rH <- 100. * ((es-VPD) / es)
-      rH[rH < 0] < -0
+      rH[rH < 0] <- 0
       rH[rH > 100] <- 100
     }
     # try again if we computed rH from VPD, get sHum from VPD-based rH
     if ((all(is.na(sHum))) & (!all(is.na(rH)))) { sHum <- rh2qair(rH/100.,Tair,press) }
     #try again if we computed rH from sHum, get VPD from sHum-based rH
     if ((all(is.na(VPD))) & (!all(is.na(rH)))) { VPD <- as.numeric(fCalcVPDfromRHandTair(rH,Tair-273.15))*100. }
+
+    #now fill partial missing values of each
+    badrH <- is.na(rH)
+    if ((any(badrH)) & (!all(is.na(sHum)))) { rH[badrH] <- qair2rh(sHum[badrH],Tair[badrH]-273.15,press[badrH]/100.)*100.}
+    badrH <- is.na(rH)
+    if ((any(badrH)) & (!all(is.na(VPD)))) { 
+      es <- get.es(Tair[badrH]-273.15)*100.
+      rH[badrH] <- 100. * ((es-VPD[badrH]) / es)
+      rH[rH < 0] <- 0
+      rH[rH > 100] <- 100
+    }
+    badsHum <- is.na(sHum)
+    if ((any(badsHum)) & (!all(is.na(rH)))) { sHum[badsHum] <- rh2qair(rH[badsHum]/100.,Tair[badsHum],press[badsHum]) }    
+    badVPD <- is.na(VPD)
+    if ((any(badVPD)) & (!all(is.na(rH)))) { VPD[badVPD] <- as.numeric(fCalcVPDfromRHandTair(rH[badVPD],Tair[badVPD]-273.15))*100. }
     
     ## one set of these must exist (either wind_speed or east+north wind)
     ws <-try(ncvar_get(nc=nc,varid='wind_speed'),silent=TRUE)
@@ -457,7 +473,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
     nc_close(nc)
     
     if (length(error) > 0) {
-      fail.file <- file.path(outfolder, paste(in.prefix, sprintf("%04d",start_year),"failure","nc", sep="."))
+      fail.file <- file.path(outfolder, paste(in.prefix, sprintf("%04d",year),"failure","nc", sep="."))
       file.rename(from = new.file, to = fail.file)
       logger.severe("Could not do gapfill, results are in", fail.file, ".",
                     "The following variables have NA's:", paste(error, sep=", "))

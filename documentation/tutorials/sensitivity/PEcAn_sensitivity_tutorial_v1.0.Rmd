@@ -54,7 +54,7 @@ names(sa.samples$temperate.coniferous)
 
 *R hint:* you can use the $ syntax or double bracket, so 
 ```{r,eval=FALSE}
-names(sa.samples[[“temperate.coniferous”]])
+names(sa.samples[["temperate.coniferous"]])
 ```
 
 is equivalent to the above.

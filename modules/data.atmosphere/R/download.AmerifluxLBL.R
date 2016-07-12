@@ -52,9 +52,9 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, ove
   
   endname <- strsplit(outfname,'_')
   endname <- endname[[1]][length(endname[[1]])]
-  endname <- substr(endname,1,nchar(endname)-3)
-  
-  outcsvname <- paste0(substr(outfname,1,15),'_HH_',endname,'csv')
+  endname <- substr(endname,1,nchar(endname)-4)
+  dbfilename <- paste0(substr(outfname,1,15),'_HH_',endname)
+  outcsvname <- paste0(substr(outfname,1,15),'_HH_',endname,'.csv')
   output_zip_file <- file.path(outfolder, outfname)
   output_csv_file <- file.path(outfolder, outcsvname)
   
@@ -70,7 +70,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, ove
       logger.severe("FTP did not download ", output_zip_file, " from ",ftplink)
     } else {
       #extract the half hourly file only
-      unzip(output_zip_file,outcsvname)
+      unzip(output_zip_file,outcsvname,exdir=outfolder)
       #make sure a CSV file output
       if(!file.exists(output_csv_file)) {
         logger.severe("ZIP file ",output_zip_file," did not contain CSV file ",outcsvname)
@@ -99,15 +99,15 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, ove
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
                         startdate=character(rows), enddate=character(rows),
-                        dbfile.name = site,
+                        dbfile.name = dbfilename,
                         stringsAsFactors = FALSE)
   
   row <- 1
   results$file[row] <- output_csv_file
   results$host[row] <- fqdn()
   results$startdate[row] <- firstdate_st
-  results$enddate[row] <- lastrdate_st
-  results$mimetype[row] <- 'test/csv'
+  results$enddate[row] <- lastdate_st
+  results$mimetype[row] <- 'text/csv'
   results$formatname[row] <- 'AMERIFLUX_BASE_HH'
   
   # return list of files downloaded

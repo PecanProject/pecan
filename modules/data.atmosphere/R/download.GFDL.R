@@ -34,9 +34,9 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     lon_floor = 360 + lon_floor
   }
   lat_GFDL = lat_floor*(.5) +45
-  lat_GFDL = floor(lat_GFDL)
+  lat_GFDL = floor(lat_GFDL)+1
   lon_GFDL = lon_floor/2.5 
-  lon_GFDL = floor(lon_GFDL)
+  lon_GFDL = floor(lon_GFDL)+1
   
   
   
@@ -69,7 +69,7 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     year = ylist[i]    
     ntime = (2920)
     
-    loc.file = file.path(outfolder,paste("GFDL",model,year,"nc",sep="."))
+    loc.file = file.path(outfolder,paste("GFDL",model,experiment,scenario,year,"nc",sep="."))
     
     met_start = 2006
     met_block = 5
@@ -130,5 +130,4 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   
   invisible(results)
 }
-
 
