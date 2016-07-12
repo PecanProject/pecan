@@ -76,7 +76,7 @@ $hostlist=array($fqdn => array(),
                           "jobid"   => "Your job ([0-9]+) .*",
                           "qstat"   => "qstat -j @JOBID@ || echo DONE",
                           "prerun"  => "module load udunits R/R-3.0.0_gnu-4.4.6",
-                          "postrun" => "sleep 60"
+                          "postrun" => "sleep 60",
                           "models"  => array("ED2" =>
                               array("prerun"  => "module load hdf5"))));
 

@@ -254,7 +254,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                  username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon)
         }else if(exists(fcn2)){
           fcn <- fcn2
-          format <- query.format(input.id,con)
+          format <- query.format.vars(input.id,con)
           cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                                  username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon,format.vars=format.vars)
         }else{logger.error("met2CF function ",fcn1, " or ", fcn2," doesn't exists")}
