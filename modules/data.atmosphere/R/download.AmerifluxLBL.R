@@ -70,7 +70,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, ove
       logger.severe("FTP did not download ", output_zip_file, " from ",ftplink)
     } else {
       #extract the half hourly file only
-      unzip(output_zip_file,outcsvname)
+      unzip(output_zip_file,outcsvname,exdir=outfolder)
       #make sure a CSV file output
       if(!file.exists(output_csv_file)) {
         logger.severe("ZIP file ",output_zip_file," did not contain CSV file ",outcsvname)
@@ -106,7 +106,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, ove
   results$file[row] <- output_csv_file
   results$host[row] <- fqdn()
   results$startdate[row] <- firstdate_st
-  results$enddate[row] <- lastrdate_st
+  results$enddate[row] <- lastdate_st
   results$mimetype[row] <- 'test/csv'
   results$formatname[row] <- 'AMERIFLUX_BASE_HH'
   
