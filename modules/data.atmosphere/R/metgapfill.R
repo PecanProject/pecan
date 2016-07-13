@@ -114,7 +114,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
       Rg = missingarr 
       myvar <- ncvar_def(name="surface_downwelling_shortwave_flux_in_air",units = "W m-2", dim=xytdim)
       nc <- ncvar_add(nc = nc, v = myvar)
-      ncvar_put(nc, varid = myvar, missingair)
+      ncvar_put(nc, varid = myvar, missingarr)
     }    
     
     PAR <- try(ncvar_get(nc=nc,varid='surface_downwelling_photosynthetic_photon_flux_in_air'),silent=TRUE)
