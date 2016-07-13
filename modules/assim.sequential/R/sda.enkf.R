@@ -718,6 +718,6 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
   #     lines(time,Xa,type='b',col="darkblue")
   #   }
   
-  dev.off()
+ # dev.off()
   
-}
+#}
