@@ -12,5 +12,7 @@ Encoding: UTF-8
 RnwWeave: Sweave
 LaTeX: pdfLaTeX
 
-BuildType: Custom
-CustomScriptPath: scripts/BC_build.sh
+BuildType: Package
+PackageUseDevtools: Yes
+PackagePath: modules/benchmark
+PackageInstallArgs: --no-multiarch --with-keep.source
