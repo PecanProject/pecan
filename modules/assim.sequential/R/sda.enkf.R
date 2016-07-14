@@ -160,10 +160,10 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
   ## add the jobs to the list of runs
   cat(as.character(run.id),file=file.path(settings$rundir, "runs.txt"),sep="\n",append=FALSE)
   
-  ## start model run
+  ## start model runcd
   start.model.runs(settings,settings$database$bety$write)
   
-  total.time = as.numeric(start.year):(as.numeric(start.year)+(length(obs.mean)-1)) #RETHINK
+  total.time = as.numeric(start.year):(as.numeric(start.year) + (length(obs.mean)-1)) #RETHINK
   
   nt = length(total.time)
   FORECAST <- ANALYSIS <- list()
@@ -586,28 +586,28 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
     
     }
   
-  par(mfrow=c(1,1))
-  t1=
-    t = nt
-  obs.mean.mat <- matrix(unlist(obs.mean),nrow=36,ncol=4,byrow=T)
-  colnames(obs.mean.mat) <- colnames(X)
-  obs.sd.mat <- matrix(unlist(obs.sd),nrow=36,ncol=4,byrow=T)
-  colnames(obs.sd.mat) <- colnames(X)
-  plot.EnKF.time.series(obs.mean = obs.mean.mat,obs.sd = obs.sd.mat,FORECAST,ANALYSIS,
-                        "AGB.pft.Hemlock(Tsuga Canadensis)","AGB.pft.Hemlock(Tsuga Canadensis)",
-                        "AGB.pft.Hemlock(Tsuga Canadensis)",t1=t1,t=t,ylim.set=c(6,18),
-                        plot.name="Hemlock Biomass")
-  #legend('topleft',c("Tree Ring Data","Model Prediction","Model-Data Fusion"),col=c(alphagreen,alphablue,alphapink),lty=1,lwd=6)
-  plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,var.name="biomass_acsa3",
-                        mean.name="mean_acsa3",sd.name="sd_acsa3",t1=t1,t=t,ylim=c(0,1),
-                        plot.name="Maple Biomass")
-  plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,"biomass_beal2",
-                        "mean_beal2","sd_beal2",t1=t1,t=t,ylim=c(1,3),
-                        plot.name="Yellow Birch Biomass")
-  plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,"biomass_thoc2",
-                        "mean_thoc2","sd_thoc2",t1=t1,t=t,ylim=c(0,.17),
-                        plot.name="Cedar Biomass")
-  
+  # par(mfrow=c(1,1))
+  # t1= 1
+  # t = nt
+  # obs.mean.mat <- matrix(unlist(obs.mean),nrow=36,ncol=4,byrow=T)
+  # colnames(obs.mean.mat) <- colnames(X)
+  # obs.sd.mat <- matrix(unlist(obs.sd),nrow=36,ncol=4,byrow=T)
+  # colnames(obs.sd.mat) <- colnames(X)
+  # plot.EnKF.time.series(obs.mean = obs.mean.mat,obs.sd = obs.sd.mat,FORECAST,ANALYSIS,
+  #                       "AGB.pft.Hemlock(Tsuga Canadensis)","AGB.pft.Hemlock(Tsuga Canadensis)",
+  #                       "AGB.pft.Hemlock(Tsuga Canadensis)",t1=t1,t=t,ylim.set=c(6,18),
+  #                       plot.name="Hemlock Biomass")
+  # #legend('topleft',c("Tree Ring Data","Model Prediction","Model-Data Fusion"),col=c(alphagreen,alphablue,alphapink),lty=1,lwd=6)
+  # plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,var.name="biomass_acsa3",
+  #                       mean.name="mean_acsa3",sd.name="sd_acsa3",t1=t1,t=t,ylim=c(0,1),
+  #                       plot.name="Maple Biomass")
+  # plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,"biomass_beal2",
+  #                       "mean_beal2","sd_beal2",t1=t1,t=t,ylim=c(1,3),
+  #                       plot.name="Yellow Birch Biomass")
+  # plot.EnKF.time.series(obs.mean,obs.sd,FORECAST,ANALYSIS,"biomass_thoc2",
+  #                       "mean_thoc2","sd_thoc2",t1=t1,t=t,ylim=c(0,.17),
+  #                       plot.name="Cedar Biomass")
+  # 
   ### Read in output and restart files
   # nt <- t
   # forecast.ntrees <- array(0,dim=c(nens,4,nt))
