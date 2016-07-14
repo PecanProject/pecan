@@ -106,7 +106,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         }
         
         if (met %in% "GFDL") {
-          args <- c(args, input_met$id, input_met$lat, input_met$lon, input_met$model, input_met$experiment, input_met$scenario)
+          args <- c(args, new.site$id, new.site$lat, new.site$lon, input_met$model, input_met$experiment, input_met$scenario)
           stage$met2cf = FALSE
           stage$standardize = FALSE
         }
