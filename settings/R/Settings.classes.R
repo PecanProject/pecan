@@ -25,11 +25,13 @@ Settings <- function(...) {
   return(result)
 }
 
+##' @export
 ##' @describeIn 
 as.Settings <- function(x) {
   return(Settings(x))
 }
 
+##' @export
 is.Settings <- function(x) {
   return(is(x, "Settings"))
 }
