@@ -10,8 +10,10 @@
 ##' @author David LeBauer
 ##' @export
 ##' @examples
+##' \dontrun{
 ##' data(ozone)
 ##' colnames(ozone) <- c("lon", "lat", "ozone")
+##' }
 points2county <- function(griddata){
   data(counties)
   X <- data.table(griddata)

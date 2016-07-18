@@ -159,6 +159,10 @@ foreach($modeltypes as $type) {
     if ($x['tag'] == "met") {
       if (preg_match("/ \(US-.*\)$/", $siteinfo["sitename"])) {
         $x['files'][] = array("id"=>"Ameriflux." . $type, "name"=>"Use Ameriflux");
+        $x['files'][] = array("id"=>"AmerifluxLBL." . $type, "name"=>"Use AmerifluxLBL");
+      }
+      if (preg_match("/ \([A-Z]{2}-.*\)$/", $siteinfo["sitename"])) {
+       $x['files'][] = array("id"=>"Fluxnet2015." . $type, "name"=>"Use Fluxnet2015");
       }
       // check for NARR,this is not exact since it is a conical projection
       if ($siteinfo['lat'] > 1 && $siteinfo['lat'] < 85 && $siteinfo['lon'] < -68 && $siteinfo['lon'] > -145) {
@@ -166,6 +170,8 @@ foreach($modeltypes as $type) {
       }
       // CRUNCEP is global
       $x['files'][] = array("id"=>"CRUNCEP." . $type, "name"=>"Use CRUNCEP");
+      // GFDL
+      $x['files'][] = array("id"=>"GFDL." . $type, "name"=>"Use GFDL");
     }
   }
 }
@@ -247,9 +253,13 @@ $stmt->closeCursor();
 
     // redirect to data policy if needed
     if ($("#met").val()) {
-      if ($("#met").val().startsWith("Ameriflux")) {
+      if ($("#met").val().startsWith("Ameriflux.")) {
         $("#formnext").attr("action", "03a-ameriflux.php");
-      } else if ($("#met").val().startsWith("NARR")) {
+      } else if ($("#met").val().startsWith("Fluxnet2015.")) {
+        $("#formnext").attr("action", "03a-fluxnet.php");
+      } else if ($("#met").val().startsWith("AmerifluxLBL.")) {
+        $("#formnext").attr("action", "03a-ameriflux.php");
+      } else if ($("#met").val().startsWith("NARR.")) {
         $("#formnext").attr("action", "03a-narr.php");
       } else if ($("#adv_setup").is(':checked')){
         $("#formnext").attr("action", "07-analysis.php");
@@ -293,9 +303,14 @@ $stmt->closeCursor();
   $(document).ready(function () {
     validate();
   });
-<?php } else { ?>
-    google.load("maps", "3",  {other_params:"sensor=false"});
-  google.setOnLoadCallback(mapsLoaded);
+<?php
+} else {
+  $other_params = "sensor=false";
+  if (isset($googleMapKey) && $googleMapKey != "") {
+    $other_params .= "&key=$googleMapKey";
+  }
+  echo "  google.load('maps', '3', { other_params : '$other_params', callback: 'mapsLoaded'});"
+?>
 
     function mapsLoaded() {
     var latlng = new google.maps.LatLng(<?php echo $siteinfo['lat']; ?>, <?php echo $siteinfo['lon']; ?>);

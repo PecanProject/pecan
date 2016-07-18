@@ -12,7 +12,7 @@
 ##' @param scenario , select which scenario to initialize the run (options are r1i1p1, r3i1p1, r5i1p1)
 ##'
 ##' @author James Simkins
-download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, overwrite=FALSE, verbose=FALSE, model, experiment, scenario, ...){  
+download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, overwrite=FALSE, verbose=FALSE, model='CM3', experiment='rcp45', scenario='r1i1p1', ...){  
   require(PEcAn.utils)
   require(lubridate)
   require(ncdf4)
@@ -31,12 +31,12 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   lon.in = as.numeric(lon.in)
   lon_floor = floor(lon.in)
   if (lon_floor < 0){
-    lon_floor = lon_floor*(-1) + 180
+    lon_floor = 360 + lon_floor
   }
   lat_GFDL = lat_floor*(.5) +45
-  lat_GFDL = floor(lat_GFDL)
+  lat_GFDL = floor(lat_GFDL)+1
   lon_GFDL = lon_floor/2.5 
-  lon_GFDL = floor(lon_GFDL)
+  lon_GFDL = floor(lon_GFDL)+1
   
   
   
@@ -54,7 +54,7 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
                         startdate=character(rows), enddate=character(rows),
-                        dbfile.name = "GFDL",
+                        dbfile.name = paste("GFDL",model,experiment,scenario,sep="."),#"GFDL",
                         stringsAsFactors = FALSE)
   
   var = data.frame(DAP.name = c("tas","rlds","ps","rsds","uas","vas","huss","pr"),
@@ -67,9 +67,9 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   
   for (i in 1:rows){
     year = ylist[i]    
-    ntime = (14599)
+    ntime = (2920)
     
-    loc.file = file.path(outfolder,paste("GFDL",model,year,"nc",sep="."))
+    loc.file = file.path(outfolder,paste("GFDL",model,experiment,scenario,year,"nc",sep="."))
     
     met_start = 2006
     met_block = 5
@@ -78,19 +78,19 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     end_url = paste0(url_year+met_block-1,"1231")
     
     if (year%%5 == 1){
-      time_range <- paste0('1:2920')
+      time_range <- paste0('0:2919')
     }
     if (year%%5 == 2){
-      time_range = paste0('2921:5840')
+      time_range = paste0('2920:5839')
     }
     if (year%%5 == 3){
-      time_range = paste0('5841:8760')
+      time_range = paste0('5840:8759')
     }
     if (year%%5 == 4){
-      time_range = paste0('8761:11680')
+      time_range = paste0('8760:11679')
     }
     if (year%%5 == 0){
-      time_range = paste0('11681:14600')
+      time_range = paste0('11680:14659')
     }
     ## Create dimensions
     lat <- ncdim_def(name='latitude', units='degree_north', vals=lat.in, create_dimvar=TRUE)
@@ -112,14 +112,10 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
       
     }
     
-    # GFDL data is held in 5 year datasets, so now we need to subset the dataset for the year we want
-    d = as.data.frame(dat.list)
-    d = d[c(1,2,3,4,5,6,7,8)][time_range,]
-    
     ## put data in new file
     loc <- nc_create(filename=loc.file, vars=var.list, verbose=verbose)
     for(j in 1:nrow(var)){
-      ncvar_put(nc=loc, varid=as.character(var$CF.name[j]), vals=d[[j]])
+      ncvar_put(nc=loc, varid=as.character(var$CF.name[j]), vals=dat.list[[j]])
     }
     nc_close(loc)
     
@@ -134,5 +130,4 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   
   invisible(results)
 }
-
 
