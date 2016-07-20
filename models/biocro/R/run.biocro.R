@@ -2,14 +2,15 @@
 #'
 #' @param lat latitude in decimal degrees
 #' @param lon longitude in decimal degrees
-#' @param met.nc full path and name of a netCDF file in PEcAn-CF format with meteorological driver data 
+#' @param metfile full path and name of a netCDF file in either a PEcAn-CF format with meteorological driver data 
+#' or a csv file with hourly data in BioCro format
 #' @param soil.nc full path and name of a netCDF file with soil data
 #' @param config full path and name of a config.xml file containing parameter values and configuration information for BioCro 
 #' @param coppice.interval numeric, number of years between cuttings for coppice plant or perinneal grass (default 1) 
 #' @return output from one of the \code{BioCro::*.Gro} functions (determined by \code{config$genus}), as data.table object
 #' @export
 #' @author David LeBauer
-run.biocro <- function(lat, lon, met.nc = met.nc, 
+run.biocro <- function(lat, lon, metfile, 
                        soil.nc = NULL, 
                        config = config,
                        coppice.interval = 1,
@@ -20,67 +21,68 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
   start.date <- ceiling_date(as.POSIXct(config$run$start.date), "day")
   end.date <- floor_date(as.POSIXct(config$run$end.date), "day")
   genus <- config$pft$type$genus
-
+  years <- year(start.date):year(end.date)
   ## Meteorology
-  
-  if(met.uncertainty == TRUE){
-    start.date <- "1979-01-01"
-    end.date <- "2010-12-31"
-    years <- sample(year(start.date):year(end.date), 
-                                 size = 15, replace = TRUE)
+  if(grepl('.nc$', basename(metfile))){
+    if(met.uncertainty == TRUE){
+      start.date <- "1979-01-01"
+      end.date <- "2010-12-31"
+      years <- sample(year(start.date):year(end.date), 
+                      size = 15, replace = TRUE)
+      
+      
+    }
     
-
-  } else {
-    years <- year(start.date):year(end.date)
+    met.nc  <- nc_open(metfile)
+    met <- load.cfmet(met.nc, lat = lat, lon = lon, 
+                      start.date = start.date, end.date = end.date)
+    if(met.uncertainty == TRUE){
+      met <- met[year %in% years]
+    }
+    
+    dt <- as.numeric(mean(diff(met$date)))
+    
+    if(dt > 1){
+      met <- cfmet.downscale.time(cfmet = met, output.dt = 1)
+    } 
+    
+    ## add irrigation
+    if(irrigation) {
+      # 1 mm / hr = 24 mm / d every seven days
+      met[,`:=`(precipitation_flux = ifelse(doy %in% seq(7,364, by = 7), 
+                                            precipitation_flux + 1/3600, precipitation_flux))]
+    }
+    
+    biocro.met <- cf2biocro(met)
+  } else if (grepl(".csv$", metfile)){
+    biocro.met <- fread(metfile)  
   }
-  met <- load.cfmet(met.nc, lat = lat, lon = lon, 
-                    start.date = start.date, end.date = end.date)
-  if(met.uncertainty == TRUE){
-    met <- met[year %in% years]
-  }
-
-  dt <- as.numeric(mean(diff(met$date)))
-
-  if(dt > 1){
-    met <- cfmet.downscale.time(cfmet = met, output.dt = 1)
-  } 
-
-  ## add irrigation
-  if(irrigation) {
-     # 1 mm / hr = 24 mm / d every seven days
-     met[,`:=`(precipitation_flux = ifelse(doy %in% seq(7,364, by = 7), 
-                                           precipitation_flux + 1/3600, precipitation_flux))]
-  }
-
-  biocro.met <- cf2biocro(met)
-
+  
+  
   if(!is.null(soil.nc)){
     soil <- get.soil(lat = lat, lon = lon, soil.nc = soil.nc)
-    soil.type <- ifelse(soil$usda_class %in% 1:10, soil$usda_class, 10)  
-  } else {
-    soil.type <- NA
+    config$pft$soilControl$soilType <- ifelse(soil$usda_class %in% 1:10, soil$usda_class, 10)
+    config$pft$soilControl$soilDepth <- soil$ref_depth
   }
-  if(!is.na(soil.type)) {
-      config$pft$soilControl$soilType <- soil.type
-  }
-  soil.parms <- lapply(config$pft$soilControl, as.numeric)
-  
-  
-  for(i in 1:length(years)){
+
+  for(i in seq_along(years)){
     yeari <- years[i]
     yearindex <- i*10000 + yeari ## for use with met uncertainty
     WetDat <- biocro.met[biocro.met$year == yeari, ]
 
-    ## day1 = last spring frost
-    ## dayn = first fall frost from Miguez et al 2009
 
-    if(lat > 0) {
-      day1 <-  as.numeric(as.data.table(WetDat)[doy < 180 & Temp < 0, list(day1 = max(doy))])
-      dayn <-  as.numeric(as.data.table(WetDat)[doy > 180 & Temp < 0, list(day1 = min(doy))])
-    } else if (as.numeric(config$location$latitude) < 0){
+    if (!is.null(config$simulationPeriod)){
+      day1 <- yday(config$simulationPeriod$dateofplanting)
+      dayn <- yday(config$simulationPeriod$dateofharvest)
+    } else if (lat > 0) {
+       day1 <-  as.numeric(as.data.table(WetDat)[doy < 180 & Temp < -2, list(day1 = max(doy))])
+       dayn <-  as.numeric(as.data.table(WetDat)[doy > 180 & Temp < -2, list(day1 = min(doy))])
+       ## day1 = last spring frost
+       ## dayn = first fall frost from Miguez et al 2009
+    } else {
       day1 <- NULL
       dayn <- NULL
-    }
+   }
 
     HarvestedYield <- 0
     if(genus == "Saccharum") {
@@ -90,9 +92,7 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
       tmp.result$Grain <- 0
     } else if (genus == "Salix") {
       if(i == 1){
-        iplant <- iwillowParms(iRhizome=1.0, iStem=1.0, iLeaf=0.0,
-                               iRoot=1.0, ifrRhizome=0.01, ifrStem=0.01,
-                               ifrLeaf = 0.0, ifrRoot = 0.0)
+        iplant <- config$pft$iPlantControl
       } else {
       	iplant$iRhizome <- last(tmp.result$Rhizome)
         iplant$iRoot <- last(tmp.result$Root)
@@ -105,14 +105,17 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
         } # else { # do nothing if neither coppice year nor year following
       }
       ## run willowGro
+      l <- function(x)lapply(x, as.numeric)
       tmp.result <- willowGro(WetDat = WetDat,
-                              day1 = day1, dayn = dayn,
-                              soilControl = soilParms(soilType = soil.type),
-                              canopyControl = config$pft$canopyControl,
-                              willowphenoControl = config$pft$phenoParms,
-                              seneControl = config$pft$seneControl,
-                              iPlantControl = iplant,
-                              photoControl=config$pft$photoParms)
+                              iRhizome = as.numeric(iplant$iRhizome), 
+                              iRoot = as.numeric(iplant$iRoot), 
+                              iStem = as.numeric(iplant$iStem),                              day1 = day1, dayn = dayn,
+                              soilControl = l(config$pft$soilControl),                              
+                              canopyControl = l(config$pft$canopyControl),
+                              willowphenoControl = l(config$pft$phenoParms),
+                              seneControl = l(config$pft$seneControl),
+                              photoControl = l(config$pft$photoParms)
+                              )
       
     } else if (genus == "Miscanthus"){
       if(yeari == years[1]){
@@ -125,10 +128,10 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
       tmp.result <- BioGro(WetDat = WetDat,
                            day1 = day1,
                            dayn = dayn,
-                           soilControl = soil.parms,
-                           canopyControl = config$pft$canopyControl,
-                           phenoControl = phenoParms(),#config$pft$phenoParms,
-                           seneControl = config$pft$seneControl,
+                           soilControl = l2n(config$pft$soilControl),
+                           canopyControl = l2n(config$pft$canopyControl),
+                           phenoControl = l2n(config$pft$phenoParms),
+                           seneControl = l2n(config$pft$seneControl),
                            iRhizome = as.numeric(iRhizome),
                            photoControl=config$pft$photoParms)
       
@@ -137,9 +140,9 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
       tmp.result <- BioGro(WetDat = WetDat,
                            day1 = day1,
                            dayn = dayn,
-                           soilControl = soil.parms,
+                           soilControl = config$pft$soilControl,
                            canopyControl = config$pft$canopyControl,
-                           phenoControl = phenoParms(),#config$pft$phenoParms,
+                           phenoControl = config$pft$phenoParms,
                            seneControl = config$pft$seneControl,
                            photoControl=config$pft$photoParms)
       
