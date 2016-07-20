@@ -218,6 +218,9 @@ get.ncvector <- function(var, lati = lati, loni = loni,
   start.idx = c(latitude = lati, longitude = loni, time = run.dates$index[1])
   count.idx = c(latitude = 1, longitude = 1, time = nrow(run.dates))
   dim.order <- sapply(met.nc$var$air_temperature$dim, function(x) x$name)
+
+  if(all(c('x', 'y') %in% dim.order)) names(start.idx) <- names(count.idx) <- c('y', 'x', 'time')
+
   ncvar_get2 <- function(var){
     ans <-  ncvar_get(nc = met.nc, varid = var,
                       start = start.idx[dim.order],
@@ -226,7 +229,7 @@ get.ncvector <- function(var, lati = lati, loni = loni,
   }
   
   if(var %in% attributes(met.nc$var)$names){
-    ans <- ncvar_get2(var)
+    ans <- ncvar_get2(var = var)
   } else if (var == "air_pressure"){
     ans <- 1013.25
   } else if (var == "wind"){

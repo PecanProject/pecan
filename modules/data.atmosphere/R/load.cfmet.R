@@ -70,8 +70,7 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
   ## pressure naming hack pending https://github.com/ebimodeling/model-drivers/issues/2
   standard_names <- append(as.character(mstmip_vars$standard_name), "surface_pressure")
   variables <- as.character(standard_names[standard_names %in% c("surface_pressure", attributes(met.nc$var)$names)])
-  
-  
+  variables <- variables[!variables %in% c('latitude', 'longitude')]
   vars <- lapply(variables, function(x) get.ncvector(x, lati = lati, loni = loni, 
                                                      run.dates = run.dates, met.nc = met.nc))
   
