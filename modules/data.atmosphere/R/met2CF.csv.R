@@ -119,7 +119,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
     datetime_units <- format$vars$orig_units[datetime_index] #lubridate function to call such as ymd_hms
     if (datetime_units=="") { datetime_units <- "ymd_hm" }
     datetime_raw <- alldat[, format$vars$orig_name[datetime_index]]
-    alldatetime <- do.call(datetime_units, list(datetime_raw))  #convert to POSIXct convention
+    alldatetime <- do.call(as.character(datetime_units), list(datetime_raw))  #convert to POSIXct convention
     ## and remove datetime from 'dat' dataframe
     ##dat[, datetime_index] <- format$na.strings    
     
