@@ -54,7 +54,7 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
                         startdate=character(rows), enddate=character(rows),
-                        dbfile.name = paste("GFDL",model,scenario,ensemble_member,sep="."),#"GFDL",
+                        dbfile.name = paste("GFDL",model,scenario,ensemble_member,sep="."),
                         stringsAsFactors = FALSE)
   
   var = data.frame(DAP.name = c("tas","rlds","ps","rsds","uas","vas","huss","pr"),
