@@ -8,11 +8,11 @@
 ##' @param lat
 ##' @param lon
 ##' @param model , select which GFDL model to run (options are CM3, ESM2M, ESM2G)
-##' @param experiment , select which experiment to run (options are rcp26, rcp45, rcp60, rcp85)
+##' @param scenario , select which scenario to run (options are rcp26, rcp45, rcp60, rcp85)
 ##' @param ensemble_member , select which ensemble_member to initialize the run (options are r1i1p1, r3i1p1, r5i1p1)
 ##'
 ##' @author James Simkins
-download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, overwrite=FALSE, verbose=FALSE, model='CM3', experiment='rcp45', ensemble_member='r1i1p1', ...){  
+download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, overwrite=FALSE, verbose=FALSE, model='CM3', scenario='rcp45', ensemble_member='r1i1p1', ...){  
   require(PEcAn.utils)
   require(lubridate)
   require(ncdf4)
@@ -22,7 +22,7 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   end_year   <- year(end_date)
   site_id = as.numeric(site_id)
   model = paste0(model)
-  experiment = paste0(experiment)
+  scenario = paste0(scenario)
   ensemble_member = paste0(ensemble_member)
   outfolder = paste0(outfolder,"_site_",paste0(site_id %/% 1000000000, "-", site_id %% 1000000000))
   
@@ -54,7 +54,7 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
                         startdate=character(rows), enddate=character(rows),
-                        dbfile.name = paste("GFDL",model,experiment,ensemble_member,sep="."),#"GFDL",
+                        dbfile.name = paste("GFDL",model,scenario,ensemble_member,sep="."),#"GFDL",
                         stringsAsFactors = FALSE)
   
   var = data.frame(DAP.name = c("tas","rlds","ps","rsds","uas","vas","huss","pr"),
@@ -69,7 +69,7 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     year = ylist[i]    
     ntime = (14600)
     
-    loc.file = file.path(outfolder,paste("GFDL",model,experiment,ensemble_member,year,"nc",sep="."))
+    loc.file = file.path(outfolder,paste("GFDL",model,scenario,ensemble_member,year,"nc",sep="."))
     
     met_start = 2006
     met_block = 5
@@ -89,7 +89,7 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     
     ## get data off OpenDAP
     for(j in 1:nrow(var)){
-      dap_end = paste0('-',model,'/',experiment,'/3hr/atmos/3hr/',ensemble_member,'/v20110601/',var$DAP.name[j],'/',var$DAP.name[j],'_3hr_GFDL-',model,'_',experiment,'_',ensemble_member,'_',start_url,'00-',end_url,'23.nc')
+      dap_end = paste0('-',model,'/',scenario,'/3hr/atmos/3hr/',ensemble_member,'/v20110601/',var$DAP.name[j],'/',var$DAP.name[j],'_3hr_GFDL-',model,'_',scenario,'_',ensemble_member,'_',start_url,'00-',end_url,'23.nc')
       dap_file = paste0(dap_base,dap_end)
       dap = nc_open(dap_file)
       dat.list[[j]] = ncvar_get(dap,as.character(var$DAP.name[j]),c(lon_GFDL,lat_GFDL,1),c(1,1,ntime))
