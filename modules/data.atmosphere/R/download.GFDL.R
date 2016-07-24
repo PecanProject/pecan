@@ -61,10 +61,7 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
                    CF.name = c("air_temperature","surface_downwelling_longwave_flux_in_air","air_pressure","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux"),
                    units = c('Kelvin',"W/m2","Pascal","W/m2","m/s","m/s","g/g","kg/m2/s")
   )
-  #2920 values per year for 3 hourly 
-  
-  
-  
+
   for (i in 1:rows){
     year = ylist[i]    
     ntime = (14600)
