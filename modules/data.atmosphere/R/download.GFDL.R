@@ -52,7 +52,7 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
                         startdate=character(rows), enddate=character(rows),
-                        dbfile.name = paste("GFDL",model,experiment,scenario,sep="."),#"GFDL",
+                        dbfile.name = paste("GFDL",model,scenario,ensemble_member,sep="."),#"GFDL",
                         stringsAsFactors = FALSE)
   
   var = data.frame(DAP.name = c("tas","rlds","ps","rsds","uas","vas","huss","pr"),
@@ -75,7 +75,7 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     ## Create dimensions
     lat <- ncdim_def(name='latitude', units='degree_north', vals=lat.in, create_dimvar=TRUE)
     lon <- ncdim_def(name='longitude', units='degree_east', vals=lon.in, create_dimvar=TRUE)
-    time <- ncdim_def(name='time', units="sec", vals=(1:14600)*10800, create_dimvar=TRUE, unlim=TRUE)
+    time <- ncdim_def(name='time', units="sec", vals=(1:2920)*10800, create_dimvar=TRUE, unlim=TRUE)
     dim=list(lat,lon,time)
     
     var.list = list()
