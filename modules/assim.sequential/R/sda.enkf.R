@@ -6,7 +6,7 @@
 ##' @param IC          data.frame of initial condition sample (nens X nstate)
 ##' @param prior       data.frame of model parameter sample (nens X nstate)
 ##' @param obs.mean    data.frame of observations of the mean of variables (time X nstate)
-##' @param obs.sd      data.frame of observations of the sd of variables (time X nstate)
+##' @param obs.cov      data.frame of observations of the sd of variables (time X nstate)
 ##' @param processvar  flag for if process variance should be estimated or not
 ##' @param sample.parameters flag for if parameters should come from meta.analysis or be defaults. if false parameters are set to defaults
 ##' 
@@ -14,7 +14,7 @@
 ##' 
 ##' @return NONE
 ##' 
-sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
+sda.enkf <- function(settings,IC,prior,obs.mean,obs.cov,variables,
                      processvar=FALSE,sample.parameters=FALSE,
                      pick.trait.params,given.process.variance){
   
@@ -250,7 +250,7 @@ sda.enkf <- function(settings,IC,prior,obs.mean,obs.sd,variables,
     Y    = obs.mean[[t]][[1]][pmatch(colnames(X), names(obs.mean[[t]][[1]]))]
 
     H = diag(length(obs.mean[[t]][[1]]))
-    R = diag(as.numeric(obs.sd[[t]][[1]][pmatch(colnames(X),names(obs.mean[[t]][[1]]))])^2)
+    R = obs.cov#diag(as.numeric(obs.sd[[t]][[1]][pmatch(colnames(X),names(obs.mean[[t]][[1]]))])^2)
     
     for(s in 1:length(obs.mean[[t]][[1]])){
       if(diag(R)[s]==0){

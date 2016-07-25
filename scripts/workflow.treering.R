@@ -19,6 +19,7 @@ library(PEcAn.assim.sequential)
 library(PEcAn.visualization)
 library(mvtnorm)
 library(rjags)
+library(reshape2)
 #--------------------------------------------------------------------------------------------------#
 #
 #  dir.create("~/demo.sda")
@@ -26,7 +27,7 @@ library(rjags)
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 # Open and read in settings file for PEcAn run.
-settings <- read.settings("~/demo.sda/demo.xml")
+settings <- read.settings("/fs/data2/output//PEcAn_1000001559/pecan.xml")
 #--------------------------------------------------------------------------------------------------#
 
 #---------------- Load plot and tree ring data. -------------------------------------------------------#
@@ -111,8 +112,62 @@ status.end()
 #--------------- Assimilation -------------------------------------------------------#
 status.start("MCMC")
 obs <- obs/10 #to kg/m^2
+colnames(obs) <- c('AGB.pft.Hemlock(Tsuga Canadensis)',"X1","AGB.pft.Maple(Saccharinum)","X2",
+                   "AGB.pft.Yellow Birch(Betula Alleghaniensis)","X3",
+                   "AGB.pft.Northern White-Cedar(Thuja Occidentalis)","X4")
+obs.mean <- list()
+for(i in 1:nrow(obs)){
+  obs.mean[[i]] <- list(obs[i,c(1,3,5,7)])
+}
+obs.sd <- list()
+for(i in 1:nrow(obs)){
+  obs.sd[[i]] <- list(obs[i,c(2,4,6,8)])
+}
 
-sda.enkf(settings,IC,prior,obs)
+
+### Load Lyford Data ###
+
+settings <- read.settings("/fs/data2/output//PEcAn_1000001448/pecan.xml")
+settings$ensemble$size <- 20
+IC = matrix(NA,as.numeric(settings$ensemble$size),length(settings$pft))
+settings$run$start.date <-"1960/01/01"
+settings$run$end.date <-"1960/12/31"
+new.met <- paste0(rundir,"/climage.Rdata")
+variables <- "AGB.pft"
+spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages")) #default spp.params
+
+lyford.dat <- readRDS("~/lyford_ab_group_v1.rds")
+lyford.dat <- lyford.dat[lyford.dat$name!='Havi',]
+old.names = c("Betula","Pinus","Fraxinus","Acer","Tsuga","Castanea","Quercus","Prunus",
+              "Fagus")
+new.names = c("Yellow Birch(Betula Alleghaniensis)","White Pine(Pinus Strobus)",
+              "White Ash(Fraxinus Americana)","Maple(Rubrum)",
+              "Hemlock(Tsuga Canadensis)","Chestnut(Dentana)",
+              "Champion Oak(Quercus Rubra)","Black Cherry(Prunus Serotina)",
+              "Beech(Grandifolia)")
+for(i in 1:length(old.names)){
+  lyford.dat$name <- sub(old.names[i],new.names[i],lyford.dat$name)
+}
+
+lyford.mean.melt <- melt(lyford.dat[lyford.dat$quant=="mean",],id=c("year","name","group","type","quant","site_id"))
+lyford.mean.cast <- acast(lyford.mean.melt,year ~ name, mean)
+lyford.mean.cast[is.na(lyford.mean.cast)]<-0
+obs.mean <- list()
+for(i in 1:nrow(lyford.mean.cast)){
+  obs.mean[[i]] <- list(lyford.mean.cast[i,])
+}
+
+lyford.sd.melt <- melt(lyford.dat[lyford.dat$quant=="sd",],id=c("year","name","group","type","quant","site_id"))
+lyford.sd.cast <- acast(lyford.sd.melt,year ~ name, mean)
+lyford.sd.cast[is.na(lyford.sd.cast)]<-0
+obs.sd <- list()
+for(i in 1:nrow(lyford.sd.cast)){
+  obs.sd[[i]] <- list(lyford.sd.cast[i,])
+}
+
+
+
+sda.enkf(settings,IC,prior,obs.mean,obs.sd,variables)
 status.end()
 
 #--------------------------------------------------------------------------------------------------#

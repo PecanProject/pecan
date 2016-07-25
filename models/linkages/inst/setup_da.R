@@ -29,7 +29,7 @@ library(reshape2)
 #--------------------------------------------------------------------------------------------------#
 #
 
-settings <- read.settings("/fs/data2/output//PEcAn_1000001448/pecan.xml")
+settings <- read.settings("/fs/data2/output//PEcAn_1000002229/pecan.xml")
 settings$ensemble$size <- 20
 IC = matrix(NA,as.numeric(settings$ensemble$size),length(settings$pft))
 settings$run$start.date <-"1960/01/01"
