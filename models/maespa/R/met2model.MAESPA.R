@@ -138,6 +138,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
        defaultCO2 = 400 #400 is estimation of atmospheric CO2 in ppm)
      } else {
        CA <- CA*1e6
+       defaultCO2 = 400 #Set variable but it will not be used as CA is available
      } 
      
      nc_close(nc)
@@ -145,7 +146,12 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
      print("Skipping to next year")
      next
    }
+   
+   if (exists("CA")){
    tmp <- cbind(TAIR,PPT,RAD,PRESS,PAR,RH,CA)
+   } else {
+   tmp <- cbind(TAIR,PPT,RAD,PRESS,PAR,RH)
+   }
    
    if (is.null(out)) {
      out = tmp
@@ -155,10 +161,14 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
    
  }### end loop over years
  
- if(!is.numeric(out[,"CA"])){
-   out[,"CA"] <- NULL
+ ### Check for NA
+ if(anyNA(out)){
+   print("NA introduced  in met data. Maespa will not be able to run properly. Please change Met Data Source or Site")
+ } else {
+   print("No NA values contained in data")
  }
  
+ ## Set Variable names
  columnnames <- colnames(out)
 
  #Set number of timesteps in a day(timetsep of input data)
