@@ -37,9 +37,7 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   lat_GFDL = floor(lat_GFDL)+1
   lon_GFDL = lon_floor/2.5 
   lon_GFDL = floor(lon_GFDL)+1
-  
-  
-  
+
   start = as.Date(start_date,format='Y%m%d')
   start = gsub("-", "", start)
   end = as.Date(end_date,format='Y%m%d')
@@ -54,14 +52,14 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
                         startdate=character(rows), enddate=character(rows),
-                        dbfile.name = paste("GFDL",model,scenario,ensemble_member,sep="."),
+                        dbfile.name = paste("GFDL",model,experiment,scenario,sep="."),#"GFDL",
                         stringsAsFactors = FALSE)
   
   var = data.frame(DAP.name = c("tas","rlds","ps","rsds","uas","vas","huss","pr"),
                    CF.name = c("air_temperature","surface_downwelling_longwave_flux_in_air","air_pressure","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux"),
                    units = c('Kelvin',"W/m2","Pascal","W/m2","m/s","m/s","g/g","kg/m2/s")
   )
-  
+
   for (i in 1:rows){
     year = ylist[i]    
     ntime = (14600)
@@ -73,12 +71,11 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     url_year = met_start + floor((year-met_start)/met_block)*met_block
     start_url = paste0(url_year,"0101")
     end_url = paste0(url_year+met_block-1,"1231")
-    
-    
+
     ## Create dimensions
     lat <- ncdim_def(name='latitude', units='degree_north', vals=lat.in, create_dimvar=TRUE)
     lon <- ncdim_def(name='longitude', units='degree_east', vals=lon.in, create_dimvar=TRUE)
-    time <- ncdim_def(name='time', units="sec", vals=(1:2920)*10800, create_dimvar=TRUE, unlim=TRUE)
+    time <- ncdim_def(name='time', units="sec", vals=(1:14600)*10800, create_dimvar=TRUE, unlim=TRUE)
     dim=list(lat,lon,time)
     
     var.list = list()

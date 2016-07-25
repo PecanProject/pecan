@@ -96,11 +96,11 @@ The following plots follow the trajectory of two correlated parameters, Jmax and
 ```{r}
 params <- as.matrix(fit$params)
 xrng = range(fit$params[,"alpha0"])
-yrng = range(fit$params[,"Jmax"])
+yrng = range(fit$params[,"Jmax0"])
 
 n = 1:10
-plot(params[n,"alpha0"],params[n,"Jmax"],type='n',xlim=xrng,ylim=yrng)
-arrows(params[n[-10],"alpha0"],params[n[-10],"Jmax"],params[n[-1],"alpha0"],params[n[-1],"Jmax"],length=0.125,lwd=1.1)
+plot(params[n,"alpha0"],params[n,"Jmax0"],type='n',xlim=xrng,ylim=yrng)
+arrows(params[n[-10],"alpha0"],params[n[-10],"Jmax0"],params[n[-1],"alpha0"],params[n[-1],"Jmax0"],length=0.125,lwd=1.1)
 
 ```
 
@@ -108,14 +108,14 @@ After 100 steps, we can see a cloud start to form, with occassional wanderings a
 
 ```{r}
 n = 1:100
-plot(params[n,"alpha0"],params[n,"Jmax"],type='l',xlim=xrng,ylim=yrng)
+plot(params[n,"alpha0"],params[n,"Jmax0"],type='l',xlim=xrng,ylim=yrng)
 ```
 
 After $nrow(params)$ steps what we see is a point cloud of samples from the joint posterior distribution. When viewed sequentially, points are not independent, but we are interested in working with the overall distribution, where the order of samples is not important.
 
 ```{r}
 n = 1:nrow(params)
-plot(params[n,"alpha0"],params[n,"Jmax"],type='p',pch="+",cex=0.5,xlim=xrng,ylim=yrng)
+plot(params[n,"alpha0"],params[n,"Jmax0"],type='p',pch="+",cex=0.5,xlim=xrng,ylim=yrng)
 ```
 
 

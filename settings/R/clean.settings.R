@@ -43,6 +43,10 @@ clean.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml") {
 	}
 
 	# 4) remove rundir/outdir under host if localhost
+	if(!is.null(settings$run$host)){
+	  settings$host <- settings$run$host
+	  settings$run$host <- NULL
+	}
 	if (settings$host$name == 'localhost') {
 		settings$host$rundir <- NULL
 		settings$host$outdir <- NULL

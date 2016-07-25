@@ -254,10 +254,14 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
     $("#output").html(sites);
   }
 
-<?php } else { ?>
-  google.load("maps", "3");
-  google.setOnLoadCallback(mapsLoaded);
-
+<?php
+} else {
+  $other_params = "";
+  if (isset($googleMapKey) && $googleMapKey != "") {
+    $other_params .= "key=$googleMapKey";
+  }
+  echo "  google.load('maps', '3', { other_params : '$other_params', callback: 'mapsLoaded'});"
+?>
   var map = null;
   var infowindow = null;
 

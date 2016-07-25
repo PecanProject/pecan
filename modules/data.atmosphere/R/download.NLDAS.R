@@ -81,7 +81,7 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
     ## Create dimensions
     lat <- ncdim_def(name='latitude', units='degree_north', vals=lat.in, create_dimvar=TRUE)
     lon <- ncdim_def(name='longitude', units='degree_east', vals=lon.in, create_dimvar=TRUE)
-    time <- ncdim_def(name='time', units="sec", vals=seq((min(days.use)*24*360), (max(days.use)+1-1/24)*24*360, length.out=ntime), create_dimvar=TRUE, unlim=TRUE)
+    time <- ncdim_def(name='time', units="sec", vals=seq((min(days.use)+1-1/24)*24*360, (max(days.use)+1-1/24)*24*360, length.out=ntime), create_dimvar=TRUE, unlim=TRUE)
     dim=list(lat,lon,time)
     
     var.list = list()
@@ -135,7 +135,7 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
       } # end hour
     } # end day
     ## change units of precip to kg/m2/s instead of hour accumulated precip
-    dat.list[["precipitation_flux"]] = dat.list[["precipitation_flux"]]/360
+    dat.list[["precipitation_flux"]] = dat.list[["precipitation_flux"]]/3600
     
     ## put data in new file
     loc <- nc_create(filename=loc.file, vars=var.list, verbose=verbose)

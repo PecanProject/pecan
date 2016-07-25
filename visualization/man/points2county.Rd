@@ -22,8 +22,10 @@ reproject to the (approximate) centroids of US counties, for counties that fall 
 lat / lon range of the data set
 }
 \examples{
+\dontrun{
 data(ozone)
 colnames(ozone) <- c("lon", "lat", "ozone")
+}
 }
 \author{
 David LeBauer
