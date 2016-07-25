@@ -106,7 +106,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         }
         
         if (met %in% "GFDL") {
-          args <- c(args, input_met$id, input_met$lat, input_met$lon, input_met$model, input_met$scenario, input_met$ensemble_member)
+          args <- c(args, new.site$id, new.site$lat, new.site$lon, input_met$model, input_met$scenario, input_met$ensemble_member)
           stage$met2cf = FALSE
           stage$standardize = FALSE
         }
@@ -254,7 +254,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                  username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon)
         }else if(exists(fcn2)){
           fcn <- fcn2
-          format <- query.format(input.id,con)
+          format <- query.format.vars(input.id,con)
           cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                                  username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon,format.vars=format.vars)
         }else{logger.error("met2CF function ",fcn1, " or ", fcn2," doesn't exists")}
@@ -349,7 +349,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   }
   
   logger.info(paste("Finished Model Specific Conversion",model.id[1]))
-
+  
   model.file <- db.query(paste("SELECT * from dbfiles where id =",model.id[[2]]),con)[["file_name"]]
   
   db.close(con)
