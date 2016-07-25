@@ -106,7 +106,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         }
         
         if (met %in% "GFDL") {
-          args <- c(args, new.site$id, new.site$lat, new.site$lon, input_met$model, input_met$experiment, input_met$scenario)
+          args <- c(args, new.site$id, new.site$lat, new.site$lon, input_met$model, input_met$scenario, input_met$ensemble_member)
           stage$met2cf = FALSE
           stage$standardize = FALSE
         }
@@ -349,7 +349,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   }
   
   logger.info(paste("Finished Model Specific Conversion",model.id[1]))
-
+  
   model.file <- db.query(paste("SELECT * from dbfiles where id =",model.id[[2]]),con)[["file_name"]]
   
   db.close(con)
