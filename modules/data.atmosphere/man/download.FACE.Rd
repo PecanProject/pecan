@@ -4,7 +4,8 @@
 \alias{download.FACE}
 \title{download.FACE}
 \usage{
-download.FACE(sitename, outfolder, start_date, end_date, overwrite = FALSE)
+download.FACE(sitename, outfolder, start_date, end_date, overwrite = FALSE,
+  ...)
 }
 \arguments{
 \item{end_year}{}

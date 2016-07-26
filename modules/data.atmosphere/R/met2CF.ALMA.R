@@ -1,4 +1,4 @@
-insertPmet <- function(vals, nc2, var2, dim2, units2=NA, conv=NULL, missval=-6999.0, verbose=FALSE) {
+insertPmet <- function(vals, nc2, var2, dim2, units2=NA, conv=NULL, missval=-6999.0, verbose=FALSE, ...) {
   vals[vals==-6999 | vals==-9999] <- NA
   if (!is.null(conv)) {
     vals <- lapply(vals, conv)

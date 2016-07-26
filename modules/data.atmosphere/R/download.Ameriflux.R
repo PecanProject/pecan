@@ -19,7 +19,7 @@ download.Ameriflux.site <- function(site_id) {
 ##' @param verbose should the function be very verbose
 ##' 
 ##' @author Josh Mantooth, Rob Kooper, Ankur Desai
-download.Ameriflux <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE) {
+download.Ameriflux <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, ...) {
   # get start/end year code works on whole years only
   
   require(lubridate) #is this necessary?
