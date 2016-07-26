@@ -404,7 +404,7 @@ sda.enkf <- function(settings, IC, prior, obs.mean, obs.cov, variables,
     
     Ybar =  laply(obs.mean[t1:t],function(x){return(x[[1]])})
     Ybar = Ybar[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
-    YCI = as.matrix(laply(obs.cov[t1:t],function(x){return(sqrt(diag(x)))})) 
+    YCI = as.matrix(laply(obs.cov[t1:t],function(x){return(sqrt(diag(x)))}))  #need to make this from quantiles
     YCI = YCI[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
    
    pdf("tree.ring.linkages.pdf")
