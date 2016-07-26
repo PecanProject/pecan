@@ -10,7 +10,7 @@
 ##' @param RENAME      flag to either rename output file or not
 ##' @param PLOT        flag to make plots or not
 ##' @param variables
-##' @param sample.parameters
+##' @param sample_parameters
 ##' @param trait.values
 ##' 
 ##' @description Write restart files for LINKAGES
@@ -18,8 +18,8 @@
 ##' @return NONE
 ##' 
 write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
-                                   RENAME = TRUE,PLOT = FALSE,variables,
-                                   sample.parameters = FALSE,
+                                   RENAME = TRUE, PLOT = FALSE, variables,
+                                   sample_parameters = FALSE,
                                    trait.values = NA){
   
   ### Removing negative numbers because biomass can't be negative ###
@@ -39,16 +39,29 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
   }
   
   ### Going to need to change this... ### Get some expert opinion
-   distance.matrix <- rbind(c(0,3,4,5,7,6,2,8,1),
-                            c(5,0	,3	,4	,8	,1	,2	,7	,6),
-                            c(5,3	,0	,1	,8	,4	,2	,7	,6),
-                            c(6,2	,1	,0	,8	,4	,3	,7	,5),
-                            c(2,7	,5	,4	,0	,8	,6	,1	,3),
-                            c(6,1	,3	,4	,8	,0	,2	,7	,5),
-                            c(5,3	,1	,2	,8	,6	,0	,7	,4),
-                            c(3,6	,4	,5	,1	,7	,8	,0	,2),
-                            c(1,5	,3	,2	,7	,6	,4	,8	,0))
+  N <- length(analysis.vec)
+  distance.matrix <- matrix(1,N,N)
+  for(i in 1:N){
+    distance.matrix[i,]<-sample(c(seq(1,N,1)),size=N)
+  }
+  diag(distance.matrix)<-0
   
+   distance.matrix <- rbind( c(0, 1, 4, 3, 2, 6, 2, 8, 1, 9, 10, 11, 12, 13, 14),
+                             c(5, 0	,3	,4	,8	,1	,2	,7	,6,9,10,11,12,13, 14),
+                             c(5, 3	,0	,1	,8	,4	,2	,7	,6,9,10,11,12,13, 14),
+                             c(6, 2	,1	,0	,8	,4	,3	,7	,5,9,10,11,12,13, 14),
+                             c(2, 7	,5	,4	,0	,8	,6	,1	,3,9,10,11,12,13, 14),
+                             c(6, 1	,3	,4	,8	,0	,2	,7	,5,9,10,11,12,13, 14),
+                             c(5, 3	,1	,2	,8	,6	,0	,7	,4,9,10,11,12,13, 14),
+                             c(3, 6	,4	,5	,1	,7	,8	,0	,2,9,10,11,12,13, 14),
+                             c(1, 5	,3	,2	,7	,6	,4	,8	,0,9,10,11,12,13, 14),
+                             c(3, 6	,4	,5	,1	,7	,8	,9	,2,0,10,11,12,13, 14),
+                             c(3, 6	,4	,5	,1	,7	,8	,10	,2,9,0,11,12,13, 14),
+                             c(3, 6	,4	,5	,1	,7	,8	,11	,2,9,10,0,12,13, 14),
+                             c(3, 6	,4	,5	,1	,7	,8	,12	,2,9,10,11,0,13, 14),
+                             c(3, 6	,4	,5	,1	,7	,8	,13	,2,9,10,11,12,0, 14),
+                             c(3, 6	,4	,5	,1	,7	,8	,14	,2,9,10,11,12,13, 0))
+
 #   distance.matrix <- rbind(c(0,3,1,2),
 #                            c(3,0,2,1),
 #                            c(1,2,0,3),
@@ -287,7 +300,7 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
 #    settings$run$start.date <- paste0(time,strftime(settings$run$end.date,"/%m/%d"))
 #    settings$run$end.date <- paste0(time,strftime(settings$run$end.date,"/%m/%d"))
 
-if(sample.parameters == TRUE){
+if(sample_parameters == TRUE){
   do.call(my.write.config,
           args = list(trait.values = trait.values,
                       settings = settings, run.id = runid,

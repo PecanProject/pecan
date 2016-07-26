@@ -22,15 +22,16 @@ status.end <- function(status="DONE") {
 #---------------- Load libraries. -----------------------------------------------------------------#
 require(PEcAn.all)
 library(PEcAn.assim.sequential)
-library(PEcAn.visualization)
+#library(PEcAn.visualization)
 library(mvtnorm)
 library(rjags)
 library(reshape2)
+library(PEcAn.LINKAGES)
 #--------------------------------------------------------------------------------------------------#
 #
 
 settings <- read.settings("/fs/data2/output//PEcAn_1000002229/pecan.xml")
-settings$ensemble$size <- 20
+settings$ensemble$size <- 30
 IC = matrix(NA,as.numeric(settings$ensemble$size),length(settings$pft))
 settings$run$start.date <-"1960/01/01"
 settings$run$end.date <-"1960/12/31"
@@ -39,7 +40,10 @@ settings$ensemble$end.date <-"1960/12/31"
 variables <- c("AGB.pft","TotSoilCarb")
 processvar <- TRUE
 pick.trait.params <- c("G")
-spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages")) #default spp.params
+spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages")) #default spp.params #this doesn't work unless linkages is in my home directory
+sample_parameters=TRUE
+
+
 
 ##################################################
 load("/home/araiho/lyford_summary.Rdata")
@@ -47,7 +51,14 @@ row.keep <- list()
 for(i in 1:15){
   row.keep[[i]]<-grep(rownames(ab_mat)[i],spp.params.default[,2])[1]
 }
+
+dist.mat<-spp.params.default[unlist(row.keep),]
+dist.mat<-dist.mat[-9,]
+rownames(dist.mat)<-dist.mat[,1]
+dist(dist.mat,method="canberra")
+
 new.names <- spp.params.default[unlist(row.keep),1]
+new.names[2] <- spp.params.default[18,1]
 rm.spp <- which(is.na(new.names))
 new.names<-new.names[-rm.spp]
 
