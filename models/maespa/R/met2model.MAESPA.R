@@ -162,9 +162,9 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
  
  ### Check for NA
  if(anyNA(out)){
-   logger("NA introduced in met data. Maespa will not be able to run properly. Please change Met Data Source or Site")
+   logger.debug("NA introduced in met data. Maespa will not be able to run properly. Please change Met Data Source or Site")
  } else {
-   logger("No NA values contained in data")
+   logger.debug("No NA values contained in data")
  }
  
  ## Set Variable names
