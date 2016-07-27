@@ -22,7 +22,7 @@ model{
   
   #### Data Model: DBH
   for(t in 1:nt){
-  z[i,t] ~ dnorm(x[i,t],tau_dbh)
+  log(z[i,t]) ~ dnorm(log(x[i,t]),tau_dbh)
   }
   
   #### Data Model: growth
