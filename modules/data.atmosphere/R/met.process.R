@@ -12,7 +12,7 @@
 ##' @param dir  directory to write outputs to
 ##'
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins
-met.process <- function(site, input_met, start_date, end_date, model, host, dbparms, dir, browndog=NULL){
+met.process <- function(site, input_met, start_date, end_date, model, host, dbparms, dir, browndog=NULL, username="pecan"){
   require(RPostgreSQL)
   require(XML)
   
@@ -144,7 +144,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         outfolder = paste0(outfolder,"_site_",str_ns)
         args <- list(site$name, outfolder, start_date, end_date)
         
-        cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
+        cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),paste0(",username='",username,"'"),")")
         new.files <- remote.execute.R(script=cmdFcn,host=host$name,user=NA,verbose=TRUE,R="R")
         
         ## insert database record
