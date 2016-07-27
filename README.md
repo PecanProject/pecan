@@ -1,6 +1,11 @@
-
 [![Build Status](https://travis-ci.org/PecanProject/pecan.svg?branch=master)](https://travis-ci.org/PecanProject/pecan)[![Join the chat at https://gitter.im/PecanProject/pecan](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/PecanProject/pecan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
 [![DOI](https://zenodo.org/badge/4469/PecanProject/pecan.svg)](https://zenodo.org/badge/latestdoi/4469/PecanProject/pecan)
+
+## Our Vision
+#### Ecosystem science, policy, and management informed by the best available data and models
+
+## Our Mission
+#### Develop and promote accessible tools for reproducible ecosystem modeling and forecasting
 
 
 ## What is PEcAn?
