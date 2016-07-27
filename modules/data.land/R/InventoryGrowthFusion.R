@@ -57,7 +57,6 @@ model{
 #RANDOM tau_yr  ~ dgamma(1,0.1)
   mu ~ dnorm(0.5,0.5)
  }"
-}
 
   Pformula = NULL
   ## RANDOM EFFECTS
@@ -89,13 +88,13 @@ model{
                            n.chains = 3)
   ## burn-in
   jags.out   <- coda.samples (model = j.model,
-                              variable.names = burnin.variables
+                              variable.names = burnin.variables,
                               n.iter = min(n.iter,2000))
   plot(jags.out)
   
   ## run MCMC
   jags.out   <- coda.samples (model = j.model,
-                              variable.names = out.variables
+                              variable.names = out.variables,
                               n.iter = n.iter)
   
   return(jags.out)
