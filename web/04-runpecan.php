@@ -342,6 +342,9 @@ foreach($_REQUEST as $key => $val) {
     $parts=explode(".", $val, 2);
     fwrite($fh, "        <source>${parts[0]}</source>" . PHP_EOL);
     fwrite($fh, "        <output>${parts[1]}</output>" . PHP_EOL);
+    if (isset($_REQUEST['fluxusername'])) {
+      fwrite($fh, "      <username>${_REQUEST['fluxusername']}</username>" . PHP_EOL);
+    }
   }
   fwrite($fh, "      </${tag}>" . PHP_EOL);
 }
@@ -402,8 +405,8 @@ if ($email != "") {
 		$url .= "?workflowid=${workflowid}";
 	}
 	fwrite($fh, "  <email>" . PHP_EOL);
-	fwrite($fh, "    <to>${email}</to>" . PHP_EOL);
-	fwrite($fh, "    <url>${url}</url>" . PHP_EOL);
+  fwrite($fh, "    <to>${email}</to>" . PHP_EOL);
+  fwrite($fh, "    <url>${url}</url>" . PHP_EOL);
 	fwrite($fh, "  </email>" . PHP_EOL);
 }
 fwrite($fh, "</pecan>" . PHP_EOL);
