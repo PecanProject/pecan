@@ -28,7 +28,7 @@ model{
   #### Data Model: growth
   for(t in 2:nt){
   inc[i,t] <- x[i,t]-x[i,t-1]
-  y[i,t] ~ dnorm(inc[i,t],tau_inc)
+  log(y[i,t]) ~ dnorm(log(inc[i,t]),tau_inc)
   }
   
   #### Process Model
