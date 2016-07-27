@@ -461,7 +461,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
                     "<lon>", site$lon, "</lon>",
                     "<start_date>", start_date, "</start_date>",
                     "<end_date>", end_date, "</end_date>",
-                    "<username>", username, "</username>"
+                    "<username>", username, "</username>",
                     "</input>")
 
   userpass <- paste(browndog$username, browndog$password, sep=":")
