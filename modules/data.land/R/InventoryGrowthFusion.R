@@ -22,13 +22,13 @@ model{
   
   #### Data Model: DBH
   for(t in 1:nt){
-  log(z[i,t]) ~ dnorm(log(x[i,t]),tau_dbh)
+  z[i,t] ~ dnorm(x[i,t],tau_dbh)
   }
   
   #### Data Model: growth
   for(t in 2:nt){
   inc[i,t] <- x[i,t]-x[i,t-1]
-  log(y[i,t]) ~ dnorm(log(inc[i,t]),tau_inc)
+  y[i,t] ~ dnorm(inc[i,t],tau_inc)
   }
   
   #### Process Model
