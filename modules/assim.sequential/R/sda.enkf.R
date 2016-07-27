@@ -3,49 +3,47 @@
 ##' @author Michael Dietze and Ann Raiho \email{dietze@@bu.edu}
 ##' 
 ##' @param settings    PEcAn settings object
-##' @param IC          data.frame of initial condition sample (nens X nstate)
-##' @param prior       data.frame of model parameter sample (nens X nstate)
 ##' @param obs.mean    data.frame of observations of the mean of variables (time X nstate)
 ##' @param obs.cov      data.frame of observations of the sd of variables (time X nstate)
-##' @param processvar  flag for if process variance should be estimated or not
-##' @param sample.parameters flag for if parameters should come from meta.analysis or be defaults. if false parameters are set to defaults
+##' @param pick.trait.params  character vector of traits to sample if sample.parameters == TRUE
+##' @param given.process.variance flag for if parameters should come from meta.analysis or be defaults. if false parameters are set to defaults
 ##' 
 ##' @description State Variable Data Assimilation: Ensemble Kalman Filter
 ##' 
 ##' @return NONE
 ##' 
-sda.enkf <- function(settings, IC, prior, obs.mean, obs.cov, variables,
-                     processvar=FALSE, sample_parameters=FALSE,
-                     pick.trait.params, given.process.variance){
+sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, given.process.variance = NULL){
   
-  ## settings
+  ###-------------------------------------------------------------------###
+  ### read settings                                                     ###
+  ###-------------------------------------------------------------------### 
+  
   model <- settings$model$type
   write <- settings$database$bety$write
   defaults <- settings$pfts
-  outdir <- settings$host$outdir #settings$run$host$outdir
-  rundir <- settings$host$rundir #run$
+  outdir <- settings$host$outdir
+  rundir <- settings$host$rundir
   host <- settings$host
-  forecast.duration <- 1 #eventually in settings #try to run with dates
-  forecast.time.step <- 1 #eventually in settings #dt
-  spin.up <- 90 #eventually in settings
+  #forecast.duration <- 1 #eventually in settings #try to run with dates #Do we need this?
+  forecast.time.step <- settings$state.data.assimilation$forecast.time.step #probably want to think more about this
+  spin.up.start <- strftime(settings$state.data.assimilation$spin.up$start.year,"%Y")
+  spin.up.end <- strftime(settings$state.data.assimilation$spin.up$end.year,"%Y")
   nens = settings$ensemble$size#30#nrow(IC) #right?
-  start.year <- strftime(settings$run$start.date,"%Y")
-  end.year   <- strftime(settings$run$end.date,"%Y")
-  processvar #need to be in xml
-  sample_parameters #need to be xml
+  start.year <- strftime(settings$state.data.assimilation$start.date,"%Y") #we need to make sure this matches the data years somehow
+  end.year   <- strftime(settings$state.data.assimilation$end.date,"%Y")
+  processvar <-settings$state.data.assimilation$process.variance
+  sample_parameters <-settings$state.data.assimilation$sample.parameters
+  variables <- settings$state.data.assimilation$state.variable
+  #### Should given.process.variance or pick.trait.parameters be in the xml?
   
-  ###HACK ###LINKAGES SPECIFIC
-  new.met <- paste0(rundir,"/climate.Rdata")
+  ###-------------------------------------------------------------------###
+  ### load climate data                                                 ###
+  ###-------------------------------------------------------------------### 
+  new.met <- paste0(rundir,"/climate.Rdata") #This doesn't actually do anything right now...
   
-  #   if(nrow(prior) == 1 | is.null(nrow(prior))){
-  #     var.names = names(prior)
-  #     prior = as.data.frame(matrix(rep(prior,each=nens),nrow=nens))
-  #     names(prior) = var.names
-  #   }
-  
-  ## sda.demo <- TRUE  ## debugging flag
-  
-  ## open database connection
+  ###-------------------------------------------------------------------###
+  ### open database connection                                          ###
+  ###-------------------------------------------------------------------### 
   if(write){
     con <- try(db.open(settings$database$bety), silent=TRUE)
     if(is.character(con)){
@@ -55,14 +53,18 @@ sda.enkf <- function(settings, IC, prior, obs.mean, obs.cov, variables,
     con <- NULL
   }
   
-  # Get the workflow id
+  ###-------------------------------------------------------------------###
+  ### get new workflow ids                                              ###
+  ###-------------------------------------------------------------------### 
   if ("workflow" %in% names(settings)) {
     workflow.id <- settings$workflow$id
   } else {
     workflow.id <- -1
   }
   
-  # create an ensemble id
+  ###-------------------------------------------------------------------###
+  ### create ensemble ids                                               ###
+  ###-------------------------------------------------------------------### 
   if (!is.null(con)) {
     # write enseblem first
     now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
@@ -73,7 +75,9 @@ sda.enkf <- function(settings, IC, prior, obs.mean, obs.cov, variables,
     ensemble.id <- -1
   }
   
-  ## model-specific functions
+  ###-------------------------------------------------------------------###
+  ### get model specific functions                                      ###
+  ###-------------------------------------------------------------------### 
   do.call("require",list(paste0("PEcAn.",model)))
   my.write.config <- paste("write.config.",model,sep="")
   my.read.restart <- paste("read.restart.",model,sep="")
@@ -83,19 +87,11 @@ sda.enkf <- function(settings, IC, prior, obs.mean, obs.cov, variables,
     print(paste("please make sure that the PEcAn interface is loaded for",model))
     stop()
   }
-  
-  ## split clim file
-  ## leaving in for sipnet
-  #   full.met <- settings$run$inputs$met$path
-  #   new.met  <- file.path(settings$rundir,basename(full.met))
-  #   file.copy(full.met,new.met)
-  #   met <- new.met#split.met.SIPNET(new.met)
-  
-  
+ 
   ###-------------------------------------------------------------------###
   ### perform initial set of runs                                       ###
   ###-------------------------------------------------------------------###  
-  X = IC
+  X = matrix(NA,as.numeric(settings$ensemble$size),length(settings$pft))
   run.id = list()
 #   
 #   pda.init.run(settings = settings, con = con, my.write.config = my.write.config, workflow.id = workflow.id,
@@ -121,8 +117,8 @@ sda.enkf <- function(settings, IC, prior, obs.mean, obs.cov, variables,
     dir.create(file.path(settings$rundir, run.id[[i]]), recursive=TRUE)
     dir.create(file.path(settings$modeloutdir, run.id[[i]]), recursive=TRUE)
     
-    settings$run$start.date <- paste0((as.numeric(start.year) - spin.up),strftime(settings$run$end.date,"/%m/%d"))
-    settings$run$end.date <- paste0((as.numeric(end.year)),strftime(settings$run$end.date,"/%m/%d"))
+    settings$run$start.date <- paste0((as.numeric(spin.up.start),strftime(settings$run$end.date,"/%m/%d"))
+    settings$run$end.date <- paste0((as.numeric(spin.up.end),strftime(settings$run$end.date,"/%m/%d"))
     
     if(sample_parameters == TRUE){
       get.parameter.samples(pfts = settings$pfts, ens.sample.method=settings$ensemble$method)
@@ -157,15 +153,20 @@ sda.enkf <- function(settings, IC, prior, obs.mean, obs.cov, variables,
   ## add the jobs to the list of runs
   cat(as.character(run.id),file=file.path(settings$rundir, "runs.txt"),sep="\n",append=FALSE)
   
-  ## start model runcd
+  ## start model runs
   start.model.runs(settings,settings$database$bety$write)
   
-  total.time = as.numeric(start.year):(as.numeric(start.year) + (length(obs.mean)-1)) #RETHINK
+  ###-------------------------------------------------------------------###
+  ### set up for data assimilation                                      ###
+  ###-------------------------------------------------------------------###  
   
-  nt = length(total.time)
+  ## vector to read the correct netcdfs by read.restart
+  total.time = as.numeric(start.year):as.numeric(end.year) #Is this goingt to work?
+  
+  nt = length(total.time) #could be different if time step was different right?
   FORECAST <- ANALYSIS <- list()
   enkf.params <- list()
-  aqq = array(0,dim=c(nt+1,ncol(IC)+1,ncol(IC)+1)) #HACK
+  aqq = array(0,dim=c(nt+1,ncol(X)+1,ncol(X)+1)) #HACK
   bqq = numeric(nt+1)
   CI.X1 <- matrix(0,3,nt) ; CI.X2 = CI.X1
   
@@ -174,7 +175,7 @@ sda.enkf <- function(settings, IC, prior, obs.mean, obs.cov, variables,
     return(n)
   }
   
-  ## numerical update of state and process error
+  ## JAGS models for numerical update of state and process error
   AnalysisFilterQ <- "
   model{
 
@@ -221,12 +222,14 @@ sda.enkf <- function(settings, IC, prior, obs.mean, obs.cov, variables,
   Y  ~ dmnorm(X.keep,r)
 }"     
   
-  ###-------------------------------------------
-  ### loop over time
-  ###-------------------------------------------
+  ###-------------------------------------------------------------------###
+  ### loop over time                                                    ###
+  ###-------------------------------------------------------------------###  
   for(t in 1:nt){
     
-    ### READ RESTART
+    ###-------------------------------------------------------------------###
+    ### read restart                                                      ###
+    ###-------------------------------------------------------------------###  
     X <- list()
     for(i in 1:nens){
       X[[i]] <- do.call(my.read.restart,args=list(outdir=outdir, runid = run.id[[i]],
@@ -240,20 +243,23 @@ sda.enkf <- function(settings, IC, prior, obs.mean, obs.cov, variables,
     
     obs = !is.na(obs.mean[[t]])
     
-    ### ANALYSIS
-    if(any(obs)){ #if no obs skip analysis
+    ###-------------------------------------------------------------------###
+    ### analysis                                                          ###
+    ###-------------------------------------------------------------------###  
+    if(any(obs)){ #if no observations skip analysis
     mu.f = as.numeric(apply(X,2,mean,na.rm=TRUE))
     Pf   = cov(X)
     Y    = obs.mean[[t]][[1]][pmatch(colnames(X), names(obs.mean[[t]][[1]]))]
 
     H = diag(length(obs.mean[[t]][[1]]))
-    R = obs.cov[[t]]#diag(as.numeric(obs.sd[[t]][[1]][pmatch(colnames(X),names(obs.mean[[t]][[1]]))])^2)
+    R = obs.cov[[t]]#how do we make sure this is in the right order?
     
-    for(s in 1:length(obs.mean[[t]][[1]])){
-      if(diag(R)[s]==0){
-        diag(R)[s] <- .01^2 #probably way low?
-      }
-    }
+    #shouldn't need this
+    # for(s in 1:length(obs.mean[[t]][[1]])){
+    #   if(diag(R)[s]==0){ #if covariance is 0 then set it so model with 
+    #     diag(R)[s] <- .01^2 #probably way low?
+    #   }
+    # }
    
     if(processvar == FALSE){
       K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
@@ -357,7 +363,10 @@ sda.enkf <- function(settings, IC, prior, obs.mean, obs.cov, variables,
     colnames(analysis) <- colnames(X)
     
     ANALYSIS[[t]] = analysis
-    ### Forecast step
+    
+    ###-------------------------------------------------------------------###
+    ### forecast step -- write restart                                    ###
+    ###-------------------------------------------------------------------### 
     if(t < nt){
       for(i in 1:nens){
         do.call(my.write.restart,
@@ -370,7 +379,9 @@ sda.enkf <- function(settings, IC, prior, obs.mean, obs.cov, variables,
                                                 function(x, n){x[n,pick.trait.params]},
                                                 n = i)))
       }
-      ## start model run
+      ###-------------------------------------------------------------------###
+      ### Run model                                                         ###
+      ###-------------------------------------------------------------------### 
       start.model.runs(settings,settings$database$bety$write)
     }
     
@@ -378,10 +389,15 @@ sda.enkf <- function(settings, IC, prior, obs.mean, obs.cov, variables,
   }  ## end loop over time
   ###-------------------------------------------
   
-  ## save all outputs
+  ###-------------------------------------------------------------------###
+  ### save outputs                                                      ###
+  ###-------------------------------------------------------------------### 
   save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.with.soil.Rdata"))
-  #save.image(file="pecan_meeting.Rdata")
-  #### Post-processing
+  
+  
+  ###-------------------------------------------------------------------###
+  ### create diagnostics                                                ###
+  ###-------------------------------------------------------------------### 
   
   ### LOAD CLIMATE ### HACK ### LINKAGES SPECIFIC
   climate_file <- settings$run$inputs$met$path
