@@ -674,7 +674,7 @@ pda.plot.params <- function(settings, params.subset, prior.ind) {
 ##'
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.postprocess <- function(settings, con, params, pname, prior, prior.ind, burnin) {
+pda.postprocess <- function(settings, con, mcmc.out, pname, prior, prior.ind, burnin) {
 
 
   ## Assess MCMC output

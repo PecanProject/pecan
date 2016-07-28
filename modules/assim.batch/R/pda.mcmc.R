@@ -12,13 +12,13 @@
 ##' @author Ryan Kelly
 ##' @export
 pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
-                     iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL) {
+                     iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL, burnin=NULL) {
 
   ## this bit of code is useful for defining the variables passed to this function 
   ## if you are debugging
   if(FALSE){
     params.id <- param.names <- prior.id <- chain <- iter <- NULL 
-    n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
+    n.knot <- adapt <- adj.min <- ar.target <- jvar <- burnin <- NULL
   }
 
   ## -------------------------------------- Setup ------------------------------------- ##
@@ -27,6 +27,8 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
                   settings=settings, params.id=params.id, param.names=param.names, 
                   prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
                   adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot)
+
+   burnin <- ifelse(!is.null(settings$assim.batch$burnin), settings$assim.batch$burnin, ceiling(min(2000,0.2*settings$assim.batch$iter)))
 
   ## Open database connection
   if(settings$database$bety$write){
@@ -196,10 +198,13 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     cat(c(parm,'\n'), file=filename.mcmc.temp, sep='\t', append=(i != 1))
   }
 
+  # TODO : multiple chains for bruteforce
+  mcmc.out <- list()
+  mcmc.out[[1]] <- params[,prior.ind, drop=FALSE]
 
   ## ------------------------------------ Clean up ------------------------------------ ##
   ## Save outputs to plots, files, and db
-  settings <- pda.postprocess(settings, con, params, pname, prior, prior.ind)
+  settings <- pda.postprocess(settings, con, mcmc.out, pname, prior, prior.ind, burnin)
 
   ## close database connection
   if(!is.null(con)) db.close(con)
