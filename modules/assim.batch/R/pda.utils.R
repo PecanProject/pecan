@@ -648,13 +648,17 @@ pda.plot.params <- function(settings, params.subset, prior.ind) {
   capture.output(summary(params.mcmc.list), file=filename.mcmc.temp, append=TRUE)
   cat("\n\n\n", file=filename.mcmc.temp, append=TRUE)
   
-  cat("Covariance matrix :\n", file=filename.mcmc.temp, append=TRUE)
-  capture.output(cov(dm), file=filename.mcmc.temp, append=TRUE)
-  cat("\n\n\n", file=filename.mcmc.temp, append=TRUE)
+   if(length(prior.ind)>1){
+    cat("Covariance matrix :\n", file=filename.mcmc.temp, append=TRUE)
+    capture.output(cov(dm), file=filename.mcmc.temp, append=TRUE)
+    cat("\n\n\n", file=filename.mcmc.temp, append=TRUE)
+  }
   
-  cat("Correlation matrix :\n", file=filename.mcmc.temp, append=TRUE)
-  capture.output(cor(dm), file=filename.mcmc.temp, append=TRUE)
-  cat("\n\n\n", file=filename.mcmc.temp ,append=TRUE)
+  if(length(prior.ind)>1){
+    cat("Correlation matrix :\n", file=filename.mcmc.temp, append=TRUE)
+    capture.output(cor(dm), file=filename.mcmc.temp, append=TRUE)
+    cat("\n\n\n", file=filename.mcmc.temp ,append=TRUE)
+  } 
   
   if(length(params.mcmc.list)>1){
     cat("Gelman and Rubin convergence diagnostics\n", file=filename.mcmc.temp, append=TRUE)
