@@ -100,6 +100,10 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   }
   settings$assim.batch$chain <- as.numeric(settings$assim.batch$chain)
 
+  # burnin
+  if(!is.null(burnin)){
+    settings$assim.batch$burnin <- burnin
+  }
 
   # iter: Number of MCMC iterations. 
   if(!is.null(iter)) {
@@ -613,21 +617,51 @@ pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn, pname) 
 ##'
 ##' @return Nothing. Plot is generated and saved to PDF.
 ##'
-##' @author Ryan Kelly
+##' @author Ryan Kelly, Istem Fer
 ##' @export
 pda.plot.params <- function(settings, params.subset, prior.ind) {
   # *** TODO: Generalize for multiple PFTS
   pdf(file.path(settings$pfts$pft$outdir, 
         paste0('mcmc.diagnostics.pda', settings$assim.batch$ensemble.id, '.pdf')))
-    dm <- as.mcmc(params.subset)
+   params.mcmc.list <- as.mcmc.list(lapply(params.subset, mcmc))
 
-    plot(dm)
-    summary(dm)
+   plot(params.mcmc.list)
+   
+    dm <- do.call("rbind",params.subset)
+    
     if(length(prior.ind)>1){
-      crosscorr(dm)
-      correlationPlot(params.subset)
+      correlationPlot(dm)
     }
+    
+    if(length(params.mcmc.list)>1){
+      gelman.plot(params.mcmc.list)
+    }
+    
   dev.off()
+  
+  # Write out convergence diagnostics to a txt file
+  filename.mcmc.temp <- file.path(settings$pfts$pft$outdir, 
+                                            paste0('mcmc.diagnostics.pda', settings$assim.batch$ensemble.id, '.txt'))
+  
+
+  cat("Summary statistics\n", file=filename.mcmc.temp)
+  capture.output(summary(params.mcmc.list), file=filename.mcmc.temp, append=TRUE)
+  cat("\n\n\n", file=filename.mcmc.temp, append=TRUE)
+  
+  cat("Covariance matrix :\n", file=filename.mcmc.temp, append=TRUE)
+  capture.output(cov(dm), file=filename.mcmc.temp, append=TRUE)
+  cat("\n\n\n", file=filename.mcmc.temp, append=TRUE)
+  
+  cat("Correlation matrix :\n", file=filename.mcmc.temp, append=TRUE)
+  capture.output(cor(dm), file=filename.mcmc.temp, append=TRUE)
+  cat("\n\n\n", file=filename.mcmc.temp ,append=TRUE)
+  
+  if(length(params.mcmc.list)>1){
+    cat("Gelman and Rubin convergence diagnostics\n", file=filename.mcmc.temp, append=TRUE)
+    capture.output(gelman.diag(params.mcmc.list, autoburnin = FALSE), file=filename.mcmc.temp, append=TRUE)
+  }
+  
+ return(as.data.frame(dm))
 }
 
 
@@ -638,20 +672,20 @@ pda.plot.params <- function(settings, params.subset, prior.ind) {
 ##'
 ##' @return PEcAn settings list, updated with <params.id> pointing to the new params file.
 ##'
-##' @author Ryan Kelly
+##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.postprocess <- function(settings, con, params, pname, prior, prior.ind, burnin=NULL) {
-  if(is.null(burnin)) burnin <- ceiling(min(2000,0.2*nrow(params)))
+pda.postprocess <- function(settings, con, params, pname, prior, prior.ind, burnin) {
 
-  ## Save params
-  filename.mcmc <- file.path(settings$pfts$pft$outdir, 
-                     paste0('mcmc.pda', settings$assim.batch$ensemble.id, '.Rdata'))
-  save(params, file = filename.mcmc)
 
   ## Assess MCMC output
-  params.subset <- as.data.frame(params[burnin:nrow(params),prior.ind])
-    names(params.subset) <- pname[prior.ind]
-  pda.plot.params(settings, params.subset, prior.ind)
+  params.subset <- lapply(mcmc.out, function(x) x[burnin:settings$assim.batch$iter,])
+
+  params.subset <- pda.plot.params(settings, params.subset, prior.ind)
+  
+  ## Save params
+  filename.mcmc <- file.path(settings$pfts$pft$outdir, 
+                             paste0('mcmc.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+  save(params.subset, file = filename.mcmc)
 
   ## create a new Posteriors DB entry
   now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
@@ -688,18 +722,17 @@ pda.postprocess <- function(settings, con, params, pname, prior, prior.ind, burn
 
 
   ## coerce parameter output into the same format as trait.mcmc
-  # ********* TODO: Check/fix... do we really want to save mcmc for only the parameters that were updated???
   pname <- rownames(post.distns)
   trait.mcmc <- list()
-  for(i in prior.ind){
-    beta.o <- array(params[,i],c(nrow(params),1))
+  for(i in 1:length(prior.ind)){
+    beta.o <- array(params.subset[,i],c(nrow(params.subset),1))
     colnames(beta.o) <- "beta.o"
-    if(pname[i] %in% names(trait.mcmc)) {
-      trait.mcmc[[pname[i]]] <- mcmc.list(as.mcmc(beta.o))
+    if(pname[prior.ind][i] %in% names(trait.mcmc)) {
+      trait.mcmc[[pname[prior.ind][i]]] <- mcmc.list(as.mcmc(beta.o))
     } else {
       k <- length(trait.mcmc) + 1
       trait.mcmc[[k]] <- mcmc.list(as.mcmc(beta.o))
-      names(trait.mcmc)[k] <- pname[i]      
+      names(trait.mcmc)[k] <- pname[prior.ind][i]      
     }
   }
 

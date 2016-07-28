@@ -1,8 +1,6 @@
-##' Paramater Data Assimilation using MCMC
+##' Paramater Data Assimilation using emulator
 ##'
-##' Brute-force, only to be used on simple models
-##'
-##' @title Paramater Data Assimilation using MCMC
+##' @title Paramater Data Assimilation using emulator
 ##' @param settings = a pecan settings list
 ##'
 ##' @return nothing. Diagnostic plots, MCMC samples, and posterior distributions
@@ -12,13 +10,13 @@
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
 pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
-                     iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL) {
+                     iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL, burnin=NULL) {
   
   ## this bit of code is useful for defining the variables passed to this function 
   ## if you are debugging
   if(FALSE){
     params.id <- param.names <- prior.id <- chain <- iter <- NULL 
-    n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
+    n.knot <- adapt <- adj.min <- ar.target <- jvar <- burnin <- NULL
   }
 
   ## -------------------------------------- Setup ------------------------------------- ##
@@ -26,8 +24,9 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     settings <- pda.settings(
                   settings=settings, params.id=params.id, param.names=param.names, 
                   prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
-                  adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot)
+                  adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot, burnin=burnin)
 
+   burnin <- ifelse(!is.null(settings$assim.batch$burnin), settings$assim.batch$burnin, ceiling(min(2000,0.2*settings$assim.batch$iter)))
   ## Open database connection
   if(settings$database$bety$write){
     con <- try(db.open(settings$database$bety), silent=TRUE)
@@ -164,7 +163,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   
 
   ## Sample posterior from emulator
-  m <- lapply(1, function(chain){
+  mcmc.out <- lapply(1:settings$assim.batch$chain, function(mcmc){
          init.x <- lapply(prior.ind, function(v) eval(prior.fn$rprior[[v]], list(n=1)))
          names(init.x) <- pname[prior.ind]
          mcmc.GP(gp        = gp, ## Emulator
@@ -182,19 +181,22 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
           )$mcmc
         })
   
-  mcmc.out=m[[1]]
-  
-  if(settings$assim.batch$GPpckg=="GPfit"){
-    ## Set the prior functions back to work with actual parameter range
-    prior <- temp$prior
-    prior.fn <- pda.define.prior.fn(prior)
+  for(c in 1:settings$assim.batch$chain){
+    m <- mcmc.out[[c]]
     
-    ## Convert probabilities back to parameter values
-    for(i in 1:n.param) {
-      mcmc.out[,i] <- eval(prior.fn$qprior[prior.ind][[i]], list(p=m[[1]][,i]))
+    if(settings$assim.batch$GPpckg=="GPfit"){
+      ## Set the prior functions back to work with actual parameter range
+      prior <- temp$prior
+      prior.fn <- pda.define.prior.fn(prior)
+      
+      ## Convert probabilities back to parameter values
+      for(i in 1:n.param) {
+        m[,i] <- eval(prior.fn$qprior[prior.ind][[i]], list(p=mcmc.out[[c]][,i]))
+      }
     }
+      colnames(m) <- pname[prior.ind]
+      mcmc.out[[c]] <- m
   }
-
 
   if(FALSE) {
     gp = kernlab.gp; x0 = init.x; nmcmc = settings$assim.batch$iter; rng= NULL; format = "lin"
@@ -203,15 +205,10 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     priors = prior.fn$dprior[prior.ind]
   }
 
-  ## Create params matrix
-  # *** TODO: Generalize to >1 chain
-  params <- matrix(knots.params[1,], nrow=nrow(mcmc.out), ncol=n.param.all, byrow=T)
-  params[, prior.ind] <- mcmc.out
-
 
   ## ------------------------------------ Clean up ------------------------------------ ##
   ## Save outputs to plots, files, and db
-  settings <- pda.postprocess(settings, con, params, pname, prior, prior.ind)
+  settings <- pda.postprocess(settings, con, mcmc.out, pname, prior, prior.ind, burnin)
 
   ## close database connection
   if(!is.null(con)) db.close(con)
