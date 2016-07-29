@@ -16,11 +16,12 @@
 ##' @description Write restart files for LINKAGES
 ##' 
 ##' @return NONE
+##' @export
 ##' 
 write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
                                    RENAME = TRUE, PLOT = FALSE, variables,
                                    sample_parameters = FALSE,
-                                   trait.values = NA){
+                                   trait.values = NA, my.write.config){
   
   ### Removing negative numbers because biomass can't be negative ###
   for(i in 1:length(analysis.vec)){
@@ -46,7 +47,7 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
   }
   diag(distance.matrix)<-0
   
-   distance.matrix <- rbind( c(0, 1, 4, 3, 2, 6, 2, 8, 1, 9, 10, 11, 12, 13, 14),
+   distance.matrix <- rbind( c(0, 1, 4, 3, 2, 6, 5, 8, 7, 9, 10, 11, 12, 13, 14),
                              c(5, 0	,3	,4	,8	,1	,2	,7	,6,9,10,11,12,13, 14),
                              c(5, 3	,0	,1	,8	,4	,2	,7	,6,9,10,11,12,13, 14),
                              c(6, 2	,1	,0	,8	,4	,3	,7	,5,9,10,11,12,13, 14),

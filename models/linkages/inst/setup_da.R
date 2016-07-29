@@ -29,7 +29,7 @@ library(reshape2)
 library(PEcAn.LINKAGES)
 #--------------------------------------------------------------------------------------------------#
 #
-
+source('~/pecan/modules/assim.sequential/R/sda.enkf.R')
 settings <- read.settings("/fs/data2/output//PEcAn_1000002229/pecan.xml")
 settings$ensemble$size <- 30
 IC = matrix(NA,as.numeric(settings$ensemble$size),length(settings$pft))
@@ -42,7 +42,6 @@ processvar <- TRUE
 pick.trait.params <- c("G")
 spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages")) #default spp.params #this doesn't work unless linkages is in my home directory
 sample_parameters=TRUE
-
 
 
 ##################################################
@@ -78,6 +77,10 @@ for(i in 1:dim(cov_array)[3]){
   obs.cov[[i]] <- cov_array[,,i]
 }
 
+
+sda.enkf(settings=settings,obs.mean = obs.mean,
+         obs.cov = obs.cov, pick.trait.params = c("G"),
+         given.process.variance = NULL)
 
 ##################################################
 

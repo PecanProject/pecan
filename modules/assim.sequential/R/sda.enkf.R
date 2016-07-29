@@ -26,14 +26,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
   host <- settings$host
   #forecast.duration <- 1 #eventually in settings #try to run with dates #Do we need this?
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step #probably want to think more about this
-  spin.up.start <- strftime(settings$state.data.assimilation$spin.up$start.year,"%Y")
-  spin.up.end <- strftime(settings$state.data.assimilation$spin.up$end.year,"%Y")
+  spin.up.start <- strftime(settings$state.data.assimilation$spin.up$start.date,"%Y")
+  spin.up.end <- strftime(settings$state.data.assimilation$spin.up$end.date,"%Y")
   nens = settings$ensemble$size#30#nrow(IC) #right?
   start.year <- strftime(settings$state.data.assimilation$start.date,"%Y") #we need to make sure this matches the data years somehow
   end.year   <- strftime(settings$state.data.assimilation$end.date,"%Y")
   processvar <-settings$state.data.assimilation$process.variance
   sample_parameters <-settings$state.data.assimilation$sample.parameters
-  variables <- settings$state.data.assimilation$state.variable
+  variables <- unlist(settings$state.data.assimilation$state.variables, use.names = FALSE)
   #### Should given.process.variance or pick.trait.parameters be in the xml?
   
   ###-------------------------------------------------------------------###
@@ -117,8 +117,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
     dir.create(file.path(settings$rundir, run.id[[i]]), recursive=TRUE)
     dir.create(file.path(settings$modeloutdir, run.id[[i]]), recursive=TRUE)
     
-    settings$run$start.date <- paste0((as.numeric(spin.up.start),strftime(settings$run$end.date,"/%m/%d"))
-    settings$run$end.date <- paste0((as.numeric(spin.up.end),strftime(settings$run$end.date,"/%m/%d"))
+    settings$run$start.date <- paste0(as.numeric(spin.up.start),strftime(settings$run$end.date,"/%m/%d"))
+    settings$run$end.date <- paste0(as.numeric(spin.up.end),strftime(settings$run$end.date,"/%m/%d"))
     
     if(sample_parameters == TRUE){
       get.parameter.samples(pfts = settings$pfts, ens.sample.method=settings$ensemble$method)
@@ -161,7 +161,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
   ###-------------------------------------------------------------------###  
   
   ## vector to read the correct netcdfs by read.restart
-  total.time = as.numeric(start.year):as.numeric(end.year) #Is this goingt to work?
+  total.time = as.numeric(start.year):as.numeric(end.year) #Is this going to work?
   
   nt = length(total.time) #could be different if time step was different right?
   FORECAST <- ANALYSIS <- list()
@@ -178,7 +178,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
   ## JAGS models for numerical update of state and process error
   AnalysisFilterQ <- "
   model{
-
   X.mod ~ dmnorm(muf,pf) ## Model Forecast
   
   for(i in 1:length(X.mod)){
@@ -203,7 +202,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
   
   AnalysisFilterQ1 <- "
   model{
-  
   X.mod ~ dmnorm(muf,pf) ## Model Forecast
   
   for(i in 1:length(X.mod)){
@@ -254,12 +252,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
     H = diag(length(obs.mean[[t]][[1]]))
     R = obs.cov[[t]]#how do we make sure this is in the right order?
     
-    #shouldn't need this
-    # for(s in 1:length(obs.mean[[t]][[1]])){
-    #   if(diag(R)[s]==0){ #if covariance is 0 then set it so model with 
-    #     diag(R)[s] <- .01^2 #probably way low?
-    #   }
-    # }
+    for(s in 1:length(obs.mean[[t]][[1]])){
+      if(diag(R)[s]==0){ #if covariance is 0 then set it so model with
+        diag(R)[s] <- min(diag(R)[which(diag(R)!=0)])/2#.01^2 #probably way low?
+      }
+    }
    
     if(processvar == FALSE){
       K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
@@ -271,17 +268,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
       bqq[1] <- length(mu.f)
       aqq[1,,] <- diag(length(mu.f))*bqq[1]
       
-      #### extinct in all ensemble vector
-      E <- which(colSums(X)==0)
+      #### extinct from the forecast ensembles
+      E <- which(colMeans(X) < .001)
       
-      #### forcast to model vector
+      #### forcast to modeled vector ## remove spp. that don't show up in forecast
       F2M<- seq(1,length(mu.f),1)
       F2M[E]<-NA
       F2M <- na.omit(F2M)
       
-      #### translating x to y so remove extinct species
+      #### translating x to y ## remove X that you don't have data for
       X2Y<- seq(1,length(Y),1)
-      X2Y <- X2Y[!is.na(Y)]
+      X2Y <- X2Y[which(!is.na(Y))]
     
       ### analysis of model and data
       if(length(E)>0){ #if all ensemble members 
@@ -290,7 +287,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
                       aq=aqq[t,,], bq=bqq[t],
                       F2M=F2M,X2Y=X2Y,X.mod=rep(NA,length(mu.f[-E])),
                       X=rep(NA,length(mu.f)),
-                      X.keep=rep(NA,length(na.omit(Y))),
+                      X.keep=rep(NA,length(X2Y)),
                       E=E)
         mod <- jags.model(file=textConnection(AnalysisFilterQ),
                           data=update,
@@ -351,7 +348,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
         Pa = Pa
       } else {
         mu.a = mu.f
-        Pa = given.process.variance #from full DA analysis #where are you going to get this without full DA?
+        if(is.null(given.process.variance)){
+          print("Error -- must define given.process.variance")
+          break
+        }else{
+          Pa = given.process.variance #from full DA analysis #where are you going to get this without full DA?
+        }
       }
       
     }
@@ -377,11 +379,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
                           sample_parameters = sample_parameters,
                           trait.values = lapply(ensemble.samples,
                                                 function(x, n){x[n,pick.trait.params]},
-                                                n = i)))
+                                                n = i),
+                          my.write.config))
       }
       ###-------------------------------------------------------------------###
       ### Run model                                                         ###
       ###-------------------------------------------------------------------### 
+      print(paste("Running Model for year",total.time[t]+1))
       start.model.runs(settings,settings$database$bety$write)
     }
     
@@ -407,9 +411,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
   
   ### Diagnostic graphs  
   pdf(file.path(settings$outdir,"EnKF.pdf"))
-  
-  if(processvar==TRUE){
     
+    ###-------------------------------------------------------------------###
+    ### time series                                                       ###
+    ###-------------------------------------------------------------------### 
     t1=1
     pink = col2rgb("deeppink")
     alphapink = rgb(pink[1],pink[2],pink[3],180,max=255)
@@ -422,8 +427,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
     Ybar = Ybar[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
     YCI = as.matrix(laply(obs.cov[t1:t],function(x){return(sqrt(diag(x)))}))  #need to make this from quantiles
     YCI = YCI[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
-   
-   pdf("tree.ring.linkages.pdf")
    
     for(i in 1:ncol(X)){
       t1=1
@@ -451,9 +454,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
       
     }
       
+    ###-------------------------------------------------------------------###
+    ### bias diagnostics                                                  ###
+    ###-------------------------------------------------------------------### 
       #legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
-      
-      t1=2
       #Forecast minus data = error
       reg <- lm(Xbar[t1:t] - unlist(Ybar[t1:t,i])~c(t1:t))
       plot(t1:t,Xbar[t1:t] - unlist(Ybar[t1:t,i]),pch=16,cex=1,
@@ -480,9 +484,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
       mtext(paste("slope =",signif(summary(reg1)$coefficients[2],digits=3),"intercept =",signif(summary(reg1)$coefficients[1],digits=3)))
       #d<-density(c(Xbar[t1:t] - Xa[t1:t]))
       #lines(d$y+1,d$x)
-    }
   
-  #Process Covariance
+  ###-------------------------------------------------------------------###
+  ### process variance plots                                            ###
+  ###-------------------------------------------------------------------### 
   library(corrplot)
   cor.mat <- cov2cor(aqq[t,,]/bqq[t])
   colnames(cor.mat)<-colnames(X)
@@ -491,45 +496,36 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
   corrplot(cor.mat,type="upper",tl.srt=45, 
            addCoef.col = "black")
 
-      plot(rowMeans(temp.mat[5:t,]),
-           Xbar[5:t] -  unlist(Ybar[5:t,i]),
-           xlim=range(rowMeans(temp.mat[5:t,])),
-           ylim = range(Xbar[5:t] -  unlist(Ybar[5:t,i])),pch=16,cex=1,
-           xlab="Average Monthly Temp",
-           ylab="Error",
-           main=colnames(Ybar)[i])
-      
-      plot(rowSums(precip.mat[5:t,]),
-           Xbar[5:t] - unlist(Ybar[5:t,i]),
-           xlim=range(rowSums(precip.mat[5:t,])),
-           ylim = range(Xbar [5:t]- unlist(Ybar[5:t,i])),
-           pch=16,cex=1,xlab="Total Yearly Precip",
-           ylab="Error",main=colnames(Ybar)[i])
-      
-
-      
-      plot(rowMeans(temp.mat[5:t,]),Xbar[5:t] - Xa[5:t],pch=16,
-           cex=1,xlab="Average Monthly Temp",
-           ylab="Update",main=colnames(Ybar)[i])
-      plot(rowSums(precip.mat[5:t,]),Xbar[5:t] - Xa[5:t],pch=16,
-           cex=1, xlab="Total Yearly Precip",
-           ylab="Update",main=colnames(Ybar)[i])
-    
-   t1=1
-   plot(total.time[t1:t],bqq[t1:t],pch=16,cex=1,ylab="Degrees of Freedom",
+  plot(total.time[t1:t],bqq[t1:t],pch=16,cex=1,ylab="Degrees of Freedom",
         xlab="Time")
   
    
-   
+  ###-------------------------------------------------------------------###
+  ### climate plots                                                     ###
+  ###-------------------------------------------------------------------### 
     
-    for(i in 1:6){
-      plot(density(unlist(ANALYSIS[[i]][1])),col="pink",xlim=c(8,12))
-      lines(density(FORECAST[[i]][,1]),col="blue")
-      lines(density(rnorm(1000,as.numeric(obs.mean[[i]][[1]][1]),
-                          as.numeric(obs.sd[[i]][[1]][1]))),col="green")
-    }
-   dev.off()
+  # plot(rowMeans(temp.mat[5:t,]),
+  #      Xbar[5:t] -  unlist(Ybar[5:t,i]),
+  #      xlim=range(rowMeans(temp.mat[5:t,])),
+  #      ylim = range(Xbar[5:t] -  unlist(Ybar[5:t,i])),pch=16,cex=1,
+  #      xlab="Average Monthly Temp",
+  #      ylab="Error",
+  #      main=colnames(Ybar)[i])
+  # 
+  # plot(rowSums(precip.mat[5:t,]),
+  #      Xbar[5:t] - unlist(Ybar[5:t,i]),
+  #      xlim=range(rowSums(precip.mat[5:t,])),
+  #      ylim = range(Xbar [5:t]- unlist(Ybar[5:t,i])),
+  #      pch=16,cex=1,xlab="Total Yearly Precip",
+  #      ylab="Error",main=colnames(Ybar)[i])
+  # 
+  # plot(rowMeans(temp.mat[5:t,]),Xbar[5:t] - Xa[5:t],pch=16,
+  #      cex=1,xlab="Average Monthly Temp",
+  #      ylab="Update",main=colnames(Ybar)[i])
+  # plot(rowSums(precip.mat[5:t,]),Xbar[5:t] - Xa[5:t],pch=16,
+  #      cex=1, xlab="Total Yearly Precip",
+  #      ylab="Update",main=colnames(Ybar)[i])
+
+dev.off()
    
-    }
-
-
+}

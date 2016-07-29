@@ -11,6 +11,7 @@
 ##' @description Read Restart for LINKAGES
 ##' 
 ##' @return X.vec      vector of forecasts
+##' @export
 ##' 
 read.restart.LINKAGES <- function(outdir,runid,time,settings,variables){
  
