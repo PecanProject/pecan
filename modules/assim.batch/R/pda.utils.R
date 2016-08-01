@@ -158,15 +158,18 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
 
   # jvar: Initial jump variances. Defaults to NA to be based on priors later. 
-  if(!is.null(jvar)) {
-    settings$assim.batch$jump$jvar <- jvar
-  } 
-  if(is.null(settings$assim.batch$jump$jvar)) {   # Default
-    settings$assim.batch$jump$jvar <- rep(NA, length(settings$assim.batch$param.names))
+  if(settings$assim.batch$method != "emulator"){
+    if(!is.null(jvar)) {
+      settings$assim.batch$jump$jvar <- jvar
+    } 
+    if(is.null(settings$assim.batch$jump$jvar)) {   # Default
+      settings$assim.batch$jump$jvar <- rep(NA, length(settings$assim.batch$param.names))
+    }
+    settings$assim.batch$jump$jvar <- as.list(as.numeric(settings$assim.batch$jump$jvar))
+    # have to add names or listToXml() won't work
+    names(settings$assim.batch$jump$jvar) <- rep("jvar", length(settings$assim.batch$jump$jvar))
   }
-  settings$assim.batch$jump$jvar <- as.list(as.numeric(settings$assim.batch$jump$jvar))
-  # have to add names or listToXml() won't work
-  names(settings$assim.batch$jump$jvar) <- rep("jvar", length(settings$assim.batch$jump$jvar))
+
 
   # diag.plot.iter: How often to do diagnostic plots. Just need to convert to numeric. 
   if(!is.null(settings$assim.batch$diag.plot.iter)) {
@@ -678,7 +681,7 @@ pda.plot.params <- function(settings, params.subset, prior.ind) {
 ##'
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.postprocess <- function(settings, con, mcmc.out, pname, prior, prior.ind, burnin) {
+pda.postprocess <- function(settings, con, mcmc.list, jvar.list, pname, prior, prior.ind, burnin) {
 
 
   ## Assess MCMC output
