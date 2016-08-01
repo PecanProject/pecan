@@ -396,7 +396,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
   ###-------------------------------------------------------------------###
   ### save outputs                                                      ###
   ###-------------------------------------------------------------------### 
-  save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.with.soil.Rdata"))
+  save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdata"))
   
   
   ###-------------------------------------------------------------------###
@@ -424,7 +424,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
     alphablue = rgb(blue[1],blue[2],blue[3],75,max=255)
     
     Ybar =  laply(obs.mean[t1:t],function(x){return(x[[1]])})
-    Ybar = Ybar[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
+    Ybar = Ybar[,na.omit(pmatch(colnames(X), names(obs.mean[[nt]][[1]])))]
     YCI = as.matrix(laply(obs.cov[t1:t],function(x){return(sqrt(diag(x)))}))  #need to make this from quantiles
     YCI = YCI[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
    
@@ -436,13 +436,15 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
       Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
       XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
       
-      plot(total.time[t1:t],Ybar[,i],ylim=range(XaCI),
-           type='n',xlab="Year",ylab="kg/m^2",main=colnames(Ybar)[i])
-      
-      #observation / data
-      ciEnvelope(total.time[t1:t],as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
-                 as.numeric(Ybar[,i])+as.numeric(YCI[,i])*1.96,col=alphagreen)
-      lines(total.time[t1:t],as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
+      plot(total.time[t1:t],Xbar,ylim=range(XaCI),
+           type='n',xlab="Year",ylab="kg/m^2",main=colnames(X)[i])
+     
+       #observation / data
+      if(i<=ncol(Ybar)){
+        ciEnvelope(total.time[t1:t],as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
+                   as.numeric(Ybar[,i])+as.numeric(YCI[,i])*1.96,col=alphagreen)
+        lines(total.time[t1:t],as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
+      }
       
       #forecast
       ciEnvelope(total.time[t1:t],Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
