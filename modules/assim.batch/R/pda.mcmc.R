@@ -29,7 +29,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
                   adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot, burnin=burnin)
 
    burnin <- ifelse(!is.null(settings$assim.batch$burnin), 
-                    settings$assim.batch$burnin, 
+                    as.numeric(settings$assim.batch$burnin), 
                     ceiling(min(2000,0.2*settings$assim.batch$iter)))
 
   ## Open database connection
