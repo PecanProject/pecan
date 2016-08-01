@@ -724,6 +724,30 @@ pda.postprocess <- function(settings, con, mcmc.out, pname, prior, prior.ind, bu
   }
   file.symlink(filename, file.path(dirname(filename), 'post.distns.Rdata'))
 
+  # save jump variances 
+  settings$assim.batch$jvar.path <- file.path(settings$pfts$pft$outdir, 
+                                              paste0('jvar.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+  save(jvar.list, file = settings$assim.batch$jvar.path)
+  dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
+  
+  ## If method is emulator, save knots and emulator
+  if(settings$assim.batch$method == "emulator"){
+    
+    settings$assim.batch$emulator.path <- file.path(settings$pfts$pft$outdir, 
+                                                    paste0('emulator.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+    save(gp, file = settings$assim.batch$emulator.path)
+    dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
+    
+    settings$assim.batch$llik.path <- file.path(settings$pfts$pft$outdir, 
+                                                paste0('llik.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+    save(LL, file = settings$assim.batch$llik.path)
+    dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
+    
+    settings$assim.batch$mcmc.path <- file.path(settings$pfts$pft$outdir, 
+                                                paste0('mcmc.list.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+    save(mcmc.list, file = settings$assim.batch$mcmc.path)
+    dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
+  }
 
   ## coerce parameter output into the same format as trait.mcmc
   pname <- rownames(post.distns)
