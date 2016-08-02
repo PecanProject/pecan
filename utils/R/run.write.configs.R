@@ -36,7 +36,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method="uniform
       if(!is.null(settings$pfts[[i]]$posteriorid)){
         con <- db.open(settings$database$bety)
         files = dbfile.check("Posterior",settings$pfts[[i]]$posteriorid,con,settings$host$name)
-        pid = grep("post.distns.Rdata",files$file_name)  ## is there a posterior file?
+        pid = grep("post.distns.*Rdata",files$file_name)  ## is there a posterior file?
         if(length(pid) == 0){
           pid = grep("prior.distns.Rdata",files$file_name)  ## is there a prior file?
         }
