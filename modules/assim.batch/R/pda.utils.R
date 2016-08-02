@@ -710,7 +710,7 @@ pda.postprocess <- function(settings, con, mcmc.list, jvar.list, pname, prior, p
   posteriorid <- db.query(paste0(
     "SELECT id FROM posteriors WHERE pft_id=", pft.id, " AND created_at='", now, "'"), con)[['id']]
   logger.info(paste0("--- Posteriorid is ", posteriorid, " ---"))
-  settings$pfts$pft$posteriorid <- posteriorid
+  settings$assim.batch$prior$posterior.id <- posteriorid
   settings$assim.batch$params.id <- dbfile.insert(
     dirname(filename.mcmc), basename(filename.mcmc), 'Posterior', posteriorid, con, reuse=TRUE)
 
