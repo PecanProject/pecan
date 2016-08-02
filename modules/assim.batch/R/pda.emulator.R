@@ -331,12 +331,16 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     # merge with previous run's msms samples
     mcmc.list <- mapply(rbind, mcmc.list, mcmc.list.tmp, SIMPLIFY=FALSE)
     settings$assim.batch$iter <- nrow(mcmc.list[[1]])
-    burnin <- ifelse(!is.null(settings$assim.batch$burnin), as.numeric(settings$assim.batch$burnin), ceiling(min(2000,0.2*settings$assim.batch$iter)))
+    burnin <- ifelse(!is.null(settings$assim.batch$burnin), 
+                     as.numeric(settings$assim.batch$burnin), 
+                     ceiling(min(2000,0.2*settings$assim.batch$iter)))
     
   }else{
     
     mcmc.list <- mcmc.list.tmp
-    burnin <- ifelse(!is.null(settings$assim.batch$burnin), as.numeric(settings$assim.batch$burnin), ceiling(min(2000,0.2*settings$assim.batch$iter)))
+    burnin <- ifelse(!is.null(settings$assim.batch$burnin), 
+                     as.numeric(settings$assim.batch$burnin), 
+                     ceiling(min(2000,0.2*settings$assim.batch$iter)))
   }
   
   if(FALSE) {

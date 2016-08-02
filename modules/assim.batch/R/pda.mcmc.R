@@ -200,9 +200,12 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     cat(c(parm,'\n'), file=filename.mcmc.temp, sep='\t', append=(i != 1))
   }
 
-  # TODO : multiple chains for bruteforce
-  mcmc.out <- list()
-  mcmc.out[[1]] <- params[,prior.ind, drop=FALSE]
+  # TODO: more than one chain
+  mcmc.list <- list()
+  jvar.list <- list()
+  
+  mcmc.list[[1]] <- params[,prior.ind, drop=FALSE]
+  jvar.list[[1]] <- unlist(settings$assim.batch$jump$jvar)
 
   ## ------------------------------------ Clean up ------------------------------------ ##
   ## Save outputs to plots, files, and db
