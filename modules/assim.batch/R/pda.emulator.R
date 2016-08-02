@@ -103,7 +103,12 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
       prior.fn <- pda.define.prior.fn(prior)
       
       ## Propose 75% of the new parameter knots from the posterior of previous run
-      n.post.knots <- floor(0.75*settings$assim.batch$n.knot)
+      knot.par <- ifelse(!is.null(settings$assim.batch$knot.par),
+                         as.numeric(settings$assim.batch$knot.par),
+                         0.75)
+                         
+      n.post.knots <- floor(knot.par * settings$assim.batch$n.knot)
+      
       knots.list.temp <- pda.generate.knots(n.post.knots, n.param.all, prior.ind, prior.fn, pname)
       knots.params.temp <- knots.list.temp$params
       

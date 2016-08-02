@@ -687,7 +687,7 @@ pda.postprocess <- function(settings, con, mcmc.list, jvar.list, pname, prior, p
 
 
   ## Assess MCMC output
-  params.subset <- lapply(mcmc.out, function(x) x[burnin:settings$assim.batch$iter,])
+  params.subset <- lapply(mcmc.list, function(x) x[burnin:settings$assim.batch$iter,])
 
   params.subset <- pda.plot.params(settings, params.subset, prior.ind)
   
