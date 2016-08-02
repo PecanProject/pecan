@@ -284,16 +284,18 @@ pda.create.ensemble <- function(settings, con, workflow.id) {
 ##' @export
 pda.define.prior.fn <- function(prior) {
   n.param.all <- nrow(prior)
-  dprior <- rprior <- qprior <-list()
+  dprior <- rprior <- qprior <- pprior <-list()
   for(i in 1:n.param.all){
     if(prior$distn[i] == 'exp'){
       dprior[[i]] <- parse(text=paste("dexp(x,",prior$parama[i],",log=TRUE)",sep=""))
       rprior[[i]] <- parse(text=paste("rexp(n,",prior$parama[i],")",sep=""))
       qprior[[i]] <- parse(text=paste("qexp(p,",prior$parama[i],")",sep=""))
+      pprior[[i]] <- parse(text=paste("pexp(q,",prior$parama[i],")",sep=""))
     }else{
       dprior[[i]] <- parse(text=paste("d",prior$distn[i],"(x,",prior$parama[i],",",prior$paramb[i],",log=TRUE)",sep=""))
       rprior[[i]] <- parse(text=paste("r",prior$distn[i],"(n,",prior$parama[i],",",prior$paramb[i],")",sep=""))
       qprior[[i]] <- parse(text=paste("q",prior$distn[i],"(p,",prior$parama[i],",",prior$paramb[i],")",sep=""))
+      pprior[[i]] <- parse(text=paste("p",prior$distn[i],"(q,",prior$parama[i],",",prior$paramb[i],")",sep=""))
     }
   }
   dmvprior <- function(x,log=TRUE){  #multivariate prior - density
@@ -314,7 +316,7 @@ pda.define.prior.fn <- function(prior) {
     return(p)
   }
   
-  return(list(dprior=dprior, rprior=rprior, qprior=qprior, dmvprior=dmvprior, rmvprior=rmvprior))
+  return(list(dprior=dprior, rprior=rprior, qprior=qprior, pprior=pprior, dmvprior=dmvprior, rmvprior=rmvprior))
 }
 
 
