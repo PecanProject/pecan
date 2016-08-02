@@ -206,7 +206,7 @@ pda.load.priors <- function(settings, con) {
 
   # If no path given or didn't find a valid prior, proceed to using a posterior specified by ID, either as specified in settings or get the most recent as default
   if(!exists("prior.out")) {
-    if(is.null(settings$assim.batch$prior$posterior.id)){
+    if(is.null(settings$pfts$pft$posteriorid)){
       logger.info(paste0("Defaulting to most recent posterior as PDA prior."))
       ## by default, use the most recent posterior as the prior
       pft.id <-  db.query(paste0("SELECT id from pfts where name = '",settings$pfts$pft$name,"'"),con)
@@ -218,8 +218,8 @@ pda.load.priors <- function(settings, con) {
 
       settings$assim.batch$prior$posterior.id <- prior.db$container_id[which.max(prior.db$updated_at)]
     }
-    logger.info(paste0("Using posterior ID ", settings$assim.batch$prior$posterior.id, " as PDA prior."))
-    prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", settings$assim.batch$prior$posterior.id),con)
+    logger.info(paste0("Using posterior ID ", settings$pfts$pft$posteriorid, " as PDA prior."))
+    prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", settings$pfts$pft$posteriorid),con)
     prior.db <- prior.db[ grepl("^post\\.distns\\..*Rdata$", prior.db$file_name),]
 
     # Load the file
@@ -710,7 +710,7 @@ pda.postprocess <- function(settings, con, mcmc.list, jvar.list, pname, prior, p
   posteriorid <- db.query(paste0(
     "SELECT id FROM posteriors WHERE pft_id=", pft.id, " AND created_at='", now, "'"), con)[['id']]
   logger.info(paste0("--- Posteriorid is ", posteriorid, " ---"))
-  settings$assim.batch$prior$posterior.id <- posteriorid
+  settings$pfts$pft$posteriorid <- posteriorid
   settings$assim.batch$params.id <- dbfile.insert(
     dirname(filename.mcmc), basename(filename.mcmc), 'Posterior', posteriorid, con, reuse=TRUE)
 
