@@ -24,10 +24,33 @@
 ##' @return an updated settings list, which includes ensemble IDs for SA and ensemble analysis
 ##' @export
 ##'
-##' @author David LeBauer, Shawn Serbin, Ryan Kelly
+##' @author David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze
 run.write.configs <- function(settings, write = TRUE, ens.sample.method="uniform",
                        posterior.files=rep(NA, length(settings$pfts))) {
 
+  ## Which posterior to use?
+  for(i in seq_along(settings$pfts)){
+    ## if posterior.files is specified us that
+    if(is.na(posterior.files[i])){
+      ## otherwise, check to see if posteriorid exists
+      if(!is.null(settings$pfts[[i]]$posteriorid)){
+        con <- db.open(settings$database$bety)
+        files = dbfile.check("Posterior",settings$pfts[[i]]$posteriorid,con,settings$host$name)
+        pid = grep("post.distns.Rdata",files$file_name)  ## is there a posterior file?
+        if(length(pid) == 0){
+          pid = grep("prior.distns.Rdata",files$file_name)  ## is there a prior file?
+        }
+        if(length(pid)>0){
+          posterior.files[i] = file.path(files$file_path[pid],files$file_name[pid])
+        }  ## otherwise leave posteriors as NA
+        db.close(con)
+      }
+      ## otherwise leave NA and get.parameter.samples will look for local
+    }
+  }
+  
+  
+  ## Sample parameters
   model = settings$model$type
   scipen = getOption("scipen")
   options(scipen=12)
