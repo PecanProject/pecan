@@ -2,7 +2,6 @@
 ##' @export
 ##'
 ##' @param dates, list of date information from db and run
-##'
 ##' @author Tony Gardella, Elizabeth Cowdery
 
 dates2process <- function(dates{
