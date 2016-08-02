@@ -455,7 +455,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
       lines(total.time[t1:t],Xa,col="black",lty=2,lwd=2)
       
     }
-      
+      if(FALSE){
     ###-------------------------------------------------------------------###
     ### bias diagnostics                                                  ###
     ###-------------------------------------------------------------------### 
@@ -501,7 +501,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
   plot(total.time[t1:t],bqq[t1:t],pch=16,cex=1,ylab="Degrees of Freedom",
         xlab="Time")
   
-   
+      }
   ###-------------------------------------------------------------------###
   ### climate plots                                                     ###
   ###-------------------------------------------------------------------### 
