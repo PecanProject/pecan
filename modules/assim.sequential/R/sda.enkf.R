@@ -28,18 +28,27 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step #probably want to think more about this
   spin.up.start <- strftime(settings$state.data.assimilation$spin.up$start.date,"%Y")
   spin.up.end <- strftime(settings$state.data.assimilation$spin.up$end.date,"%Y")
-  nens = settings$ensemble$size#30#nrow(IC) #right?
+  nens = settings$state.data.assimilation$n.ensemble
   start.year <- strftime(settings$state.data.assimilation$start.date,"%Y") #we need to make sure this matches the data years somehow
   end.year   <- strftime(settings$state.data.assimilation$end.date,"%Y")
   processvar <-settings$state.data.assimilation$process.variance
   sample_parameters <-settings$state.data.assimilation$sample.parameters
-  variables <- unlist(settings$state.data.assimilation$state.variables, use.names = FALSE)
+  variables <- unlist(settings$state.data.assimilation$state.variable, use.names = FALSE)
   #### Should given.process.variance or pick.trait.parameters be in the xml?
   
   ###-------------------------------------------------------------------###
   ### load climate data                                                 ###
   ###-------------------------------------------------------------------### 
-  new.met <- paste0(rundir,"/climate.Rdata") #This doesn't actually do anything right now...
+ if(model == "LINKAGES"){
+   new.met <- paste0(rundir,"/climate.Rdata") #doesn't do anything but write stuff to README
+ }
+ if(model == "SIPNET"){
+   ## split clim file
+      full.met <- settings$run$inputs$met$path
+      new.met  <- file.path(settings$rundir,basename(full.met))
+      file.copy(full.met,new.met)
+      met <- new.met #split.met.SIPNET(new.met)
+ }
   
   ###-------------------------------------------------------------------###
   ### open database connection                                          ###
@@ -123,10 +132,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
     if(sample_parameters == TRUE){
       get.parameter.samples(pfts = settings$pfts, ens.sample.method=settings$ensemble$method)
       load(file.path(settings$outdir, "samples.Rdata"))
-      do.call(my.write.config, args = list(trait.values = lapply(ensemble.samples, function(x, n){x[n,pick.trait.params]},n = i),
+      do.call(my.write.config, args = list(defaults = NULL, trait.values = lapply(ensemble.samples, function(x, n){x[n,pick.trait.params]},n = i),
                                            settings = settings, run.id = run.id[[i]]))
     } else {
-      do.call(my.write.config,args=list(trait.values = NA,settings=settings,run.id = run.id[[i]],restart=FALSE))
+      load(file.path(settings$outdir, paste0("ensemble.samples.",settings$state.data.assimilation$prior,".Rdata")))
+      do.call(my.write.config,args=list(defaults = NULL, trait.values = ens.samples, settings=settings,run.id = run.id[[i]],restart=FALSE))
     }
     
     ## write a README for the run
@@ -232,7 +242,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
     for(i in 1:nens){
       X[[i]] <- do.call(my.read.restart,args=list(outdir=outdir, runid = run.id[[i]],
                                                   time = total.time[t], settings = settings,
-                                                  variables = variables))
+                                                  variables = variables,
+                                                  sample_parameters = sample_parameters))
     }
     
     X <- do.call(rbind,X)

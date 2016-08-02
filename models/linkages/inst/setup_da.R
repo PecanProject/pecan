@@ -30,6 +30,23 @@ library(PEcAn.LINKAGES)
 #--------------------------------------------------------------------------------------------------#
 #
 source('~/pecan/modules/assim.sequential/R/sda.enkf.R')
+
+######### sipnet
+settings <- read.settings("/fs/data2/output//PEcAn_1000002306/pecan.xml")
+obs.mean <- list()
+for(i in 1:3) obs.mean[[i]]<-10+i
+names(obs.mean)<-rep("AGB",3)
+
+obs.cov <- list()
+for(i in 1:3) obs.cov[[i]]<- .1
+names(obs.cov)<-rep("AGB",3)
+
+sda.enkf(settings=settings, obs.mean = obs.mean,
+         obs.cov = obs.cov, pick.trait.params = c("G"),
+         given.process.variance = NULL)
+
+
+######### linkages
 settings <- read.settings("/fs/data2/output//PEcAn_1000002229/pecan.xml")
 settings$ensemble$size <- 30
 IC = matrix(NA,as.numeric(settings$ensemble$size),length(settings$pft))
@@ -83,34 +100,3 @@ sda.enkf(settings=settings,obs.mean = obs.mean,
          given.process.variance = NULL)
 
 ##################################################
-
-
-
-lyford.dat <- readRDS("~/lyford_ab_group_v1.rds")
-lyford.dat <- lyford.dat[lyford.dat$name!='Havi',]
-old.names = c("Betula","Pinus","Fraxinus","Acer","Tsuga","Castanea","Quercus","Prunus",
-              "Fagus")
-new.names = paste0("AGB.pft.",c("Yellow Birch(Betula Alleghaniensis)","White Pine(Pinus Strobus)",
-                                "White Ash(Fraxinus Americana)","Maple(Rubrum)",
-                                "Hemlock(Tsuga Canadensis)","Chestnut(Dentana)",
-                                "Champion Oak(Quercus Rubra)","Black Cherry(Prunus Serotina)",
-                                "Beech(Grandifolia)"))
-for(i in 1:length(old.names)){
-  lyford.dat$name <- sub(old.names[i],new.names[i],lyford.dat$name)
-}
-
-lyford.mean.melt <- melt(lyford.dat[lyford.dat$quant=="mean",],id=c("year","name","group","type","quant","site_id"))
-lyford.mean.cast <- acast(lyford.mean.melt,year ~ name, mean)
-lyford.mean.cast[is.na(lyford.mean.cast)]<-0
-obs.mean <- list()
-for(i in 1:nrow(lyford.mean.cast)){
-  obs.mean[[i]] <- list(lyford.mean.cast[i,])
-}
-
-lyford.sd.melt <- melt(lyford.dat[lyford.dat$quant=="sd",],id=c("year","name","group","type","quant","site_id"))
-lyford.sd.cast <- acast(lyford.sd.melt,year ~ name, mean)
-lyford.sd.cast[is.na(lyford.sd.cast)]<-0
-obs.sd <- list()
-for(i in 1:nrow(lyford.sd.cast)){
-  obs.sd[[i]] <- list(lyford.sd.cast[i,])
-}

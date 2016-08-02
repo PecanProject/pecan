@@ -13,7 +13,7 @@
 ##' @return X.vec      vector of forecasts
 ##' @export
 ##' 
-read.restart.LINKAGES <- function(outdir,runid,time,settings,variables){
+read.restart.LINKAGES <- function(outdir,runid,time,settings,variables,sample_parameters=NULL){
  
   #Read ensemble output
   ens <- read.output(runid = runid,outdir = file.path(outdir, runid),
