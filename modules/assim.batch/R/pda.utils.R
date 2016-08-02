@@ -738,20 +738,10 @@ pda.postprocess <- function(settings, con, mcmc.list, jvar.list, pname, prior, p
   ## If method is emulator, save knots and emulator
   if(settings$assim.batch$method == "emulator"){
     
-    settings$assim.batch$emulator.path <- file.path(settings$pfts$pft$outdir, 
-                                                    paste0('emulator.pda', settings$assim.batch$ensemble.id, '.Rdata'))
-    save(gp, file = settings$assim.batch$emulator.path)
-    dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
+    dbfile.insert(dirname(settings$assim.batch$emulator.path), basename(settings$assim.batch$emulator.path), 'Posterior', posteriorid, con)
+    dbfile.insert(dirname(settings$assim.batch$llik.path), basename(settings$assim.batch$llik.path), 'Posterior', posteriorid, con)
+    dbfile.insert(dirname(settings$assim.batch$mcmc.path), basename(settings$assim.batch$mcmc.path), 'Posterior', posteriorid, con)
     
-    settings$assim.batch$llik.path <- file.path(settings$pfts$pft$outdir, 
-                                                paste0('llik.pda', settings$assim.batch$ensemble.id, '.Rdata'))
-    save(LL, file = settings$assim.batch$llik.path)
-    dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
-    
-    settings$assim.batch$mcmc.path <- file.path(settings$pfts$pft$outdir, 
-                                                paste0('mcmc.list.pda', settings$assim.batch$ensemble.id, '.Rdata'))
-    save(mcmc.list, file = settings$assim.batch$mcmc.path)
-    dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
   }
 
   ## coerce parameter output into the same format as trait.mcmc

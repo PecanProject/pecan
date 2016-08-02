@@ -302,6 +302,20 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
   ## ------------------------------------ Clean up ------------------------------------ ##
   ## Save outputs to plots, files, and db
+  settings$assim.batch$emulator.path <- file.path(settings$pfts$pft$outdir, 
+                                                  paste0('emulator.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+  save(gp, file = settings$assim.batch$emulator.path)
+  
+  
+  settings$assim.batch$llik.path <- file.path(settings$pfts$pft$outdir, 
+                                              paste0('llik.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+  save(LL, file = settings$assim.batch$llik.path)
+  
+  
+  settings$assim.batch$mcmc.path <- file.path(settings$pfts$pft$outdir, 
+                                              paste0('mcmc.list.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+  save(mcmc.list, file = settings$assim.batch$mcmc.path)
+  
   settings <- pda.postprocess(settings, con, mcmc.list, jvar.list, pname, prior, prior.ind, burnin)
 
   ## close database connection
