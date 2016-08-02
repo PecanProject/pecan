@@ -24,8 +24,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
   outdir <- settings$host$outdir
   rundir <- settings$host$rundir
   host <- settings$host
-  #forecast.duration <- 1 #eventually in settings #try to run with dates #Do we need this?
-  forecast.time.step <- settings$state.data.assimilation$forecast.time.step #probably want to think more about this
+  forecast.time.step <- settings$state.data.assimilation$forecast.time.step
   spin.up.start <- strftime(settings$state.data.assimilation$spin.up$start.date,"%Y")
   spin.up.end <- strftime(settings$state.data.assimilation$spin.up$end.date,"%Y")
   nens = settings$state.data.assimilation$n.ensemble
@@ -34,20 +33,20 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
   processvar <-settings$state.data.assimilation$process.variance
   sample_parameters <-settings$state.data.assimilation$sample.parameters
   variables <- unlist(settings$state.data.assimilation$state.variable, use.names = FALSE)
-  #### Should given.process.variance or pick.trait.parameters be in the xml?
   
   ###-------------------------------------------------------------------###
   ### load climate data                                                 ###
   ###-------------------------------------------------------------------### 
  if(model == "LINKAGES"){
    new.met <- paste0(rundir,"/climate.Rdata") #doesn't do anything but write stuff to README
+   met <- new.met #HACK
  }
  if(model == "SIPNET"){
    ## split clim file
       full.met <- settings$run$inputs$met$path
       new.met  <- file.path(settings$rundir,basename(full.met))
       file.copy(full.met,new.met)
-      met <- new.met #split.met.SIPNET(new.met)
+      met <- split.met.SIPNET(new.met)
  }
   
   ###-------------------------------------------------------------------###
@@ -100,7 +99,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
   ###-------------------------------------------------------------------###
   ### perform initial set of runs                                       ###
   ###-------------------------------------------------------------------###  
-  X = matrix(NA,as.numeric(settings$ensemble$size),length(settings$pft))
+  X = matrix(NA,as.numeric(settings$ensemble$size),length(settings$pft)) #why does X need to be here?
   run.id = list()
 #   
 #   pda.init.run(settings = settings, con = con, my.write.config = my.write.config, workflow.id = workflow.id,
@@ -133,10 +132,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
       get.parameter.samples(pfts = settings$pfts, ens.sample.method=settings$ensemble$method)
       load(file.path(settings$outdir, "samples.Rdata"))
       do.call(my.write.config, args = list(defaults = NULL, trait.values = lapply(ensemble.samples, function(x, n){x[n,pick.trait.params]},n = i),
-                                           settings = settings, run.id = run.id[[i]]))
+                                           settings = settings, run.id = run.id[[i]],
+                                           inputs = list(met=list(path=met[1]))))
     } else {
       load(file.path(settings$outdir, paste0("ensemble.samples.",settings$state.data.assimilation$prior,".Rdata")))
-      do.call(my.write.config,args=list(defaults = NULL, trait.values = ens.samples, settings=settings,run.id = run.id[[i]],restart=FALSE))
+      do.call(my.write.config,args=list(defaults = NULL, trait.values = ens.samples, 
+                                        settings=settings,run.id = run.id[[i]],restart=FALSE,
+                                        inputs = list(met=list(path=met[1]))))
     }
     
     ## write a README for the run
@@ -176,7 +178,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
   nt = length(total.time) #could be different if time step was different right?
   FORECAST <- ANALYSIS <- list()
   enkf.params <- list()
-  aqq = array(0,dim=c(nt+1,ncol(X)+1,ncol(X)+1)) #HACK
+  aqq = array(0,dim=c(nt,ncol(X),ncol(X))) #HACK
   bqq = numeric(nt+1)
   CI.X1 <- matrix(0,3,nt) ; CI.X2 = CI.X1
   
@@ -258,22 +260,32 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
     if(any(obs)){ #if no observations skip analysis
     mu.f = as.numeric(apply(X,2,mean,na.rm=TRUE))
     Pf   = cov(X)
-    Y    = obs.mean[[t]][[1]][pmatch(colnames(X), names(obs.mean[[t]][[1]]))]
+    Y    = obs.mean[[t]][pmatch(colnames(X), names(obs.mean[[t]]))]
 
-    H = diag(length(obs.mean[[t]][[1]]))
-    R = obs.cov[[t]]#how do we make sure this is in the right order?
+    R = as.matrix(obs.cov[[t]])#how do we make sure this is in the right order?
     
-    for(s in 1:length(obs.mean[[t]][[1]])){
-      if(diag(R)[s]==0){ #if covariance is 0 then set it so model with
-        diag(R)[s] <- min(diag(R)[which(diag(R)!=0)])/2#.01^2 #probably way low?
+    if(length(obs.mean[[t]])>1){
+      for(s in 1:length(obs.mean[[t]][[1]])){
+        if(diag(R)[s]==0){ #if covariance is 0 then set it so model with
+          diag(R)[s] <- min(diag(R)[which(diag(R)!=0)])/2#.01^2 #probably way low?
+        }
       }
     }
-   
+
+    ###-------------------------------------------------------------------###
+    ### Kalman Filter                                                     ###
+    ###-------------------------------------------------------------------###
     if(processvar == FALSE){
+      H = diag(ncol(X)) #correct fix?
+      
       K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
       mu.a = mu.f + K%*%(Y-H%*%mu.f)
       Pa   = (diag(ncol(X)) - K%*%H)%*%Pf
     } else { 
+      
+      ###-------------------------------------------------------------------###
+      ### Generalized Ensemble Filter                                       ###
+      ###-------------------------------------------------------------------###
       
       #### initial conditions
       bqq[1] <- length(mu.f)
@@ -343,22 +355,27 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
         }
       }
       
-      n = mean(WV) #n + 1
+      n = mean(WV)
       if(n < length(mu.f)) n = length(mu.f)
       V = solve(q.bar)*n
       
-      #ifelse(eigen(V)$values>0,eigen(V)$values,print("matrix not positive definite"))
-      
       aqq[t+1,,] = V
       bqq[t+1] = n
+      enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa, q.bar=q.bar, n=n)
     }
+    
     } else {
-      #if no obs skip analysis
+      ###-------------------------------------------------------------------###
+      ### No Observations -- Starts Here                                    ###
+      ###-------------------------------------------------------------------### 
+      
+      ### no process variance -- forecast is the same as the analysis ###
       if(processvar==FALSE){
         mu.a = mu.f
         Pa = Pa
       } else {
         mu.a = mu.f
+        ### process variance exists -- must provide Pa from another analysis ###
         if(is.null(given.process.variance)){
           print("Error -- must define given.process.variance")
           break
@@ -366,13 +383,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
           Pa = given.process.variance #from full DA analysis #where are you going to get this without full DA?
         }
       }
-      
+      enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
     }
     
-    enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa, q.bar=q.bar, n=n) 
     
     ## update state matrix
-    analysis <- as.data.frame(rmvnorm(nens,mu.a,Pa,method="svd"))
+    analysis <- as.data.frame(rmvnorm(as.numeric(nens),mu.a,Pa,method="svd"))
     colnames(analysis) <- colnames(X)
     
     ANALYSIS[[t]] = analysis
