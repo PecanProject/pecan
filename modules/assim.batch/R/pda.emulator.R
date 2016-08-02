@@ -333,7 +333,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   
   if(length(extension.check)==1 & !run.block){
     
-    # merge with previous run's msms samples
+    # merge with previous run's mcmc samples
     mcmc.list <- mapply(rbind, mcmc.list, mcmc.list.tmp, SIMPLIFY=FALSE)
     settings$assim.batch$iter <- nrow(mcmc.list[[1]])
     burnin <- ifelse(!is.null(settings$assim.batch$burnin), 
