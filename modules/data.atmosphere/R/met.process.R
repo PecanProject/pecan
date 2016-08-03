@@ -49,7 +49,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   #read in registration xml for met specific information
   register.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
   register <- read.register(register.xml, con)
-#------------------------------------------------------------------>  
+###########------------------------------------------------------------------> 
+ 
 ##read in registration xml for model specific information
   model.register.xml <- system.file(paste0("reagistration/register.",model,".xml"), package = "PEcAn.data.atmosphere")
       ### Returns True False statement for
@@ -59,10 +60,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       ###query for model.id at site, return(db_start,db_end)
     
     # create dates = list(db_start,db_end,run_start,run_end,new_start = NULL, new_end = NULL, update_start = NA, update_end=NULL)
-    met.date.process(dates)
+    		## new_start, new_end refer to dates that need to be downloaded
+		## update_start, update_end referd to dates that need to be in record file.
+	met.date.process(dates)
       #### returns updated dates list- dates$new_start -> new_end tell what years need to be updated
                                       #update_start -> update_end tells what dates need to go into bety
-##-------------------------------------------------------------------->
+###########-------------------------------------------------------------------->
     
   # first attempt at function that designates where to start met.process
   if(is.null(input_met$id)){
