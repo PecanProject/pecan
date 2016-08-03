@@ -240,6 +240,9 @@ mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
   }
   if(haveTime) progressBar(1.1,prevTime);
   
+  # hack to retrieve the last jump variances from the funtion until I update it
+  if(mix == "joint") jmp@history[nrow(jmp@history),] <- round(diag(jcov),3)
+  
   return(list(mcmc=samp,jump=jmp))
 ##    xnew <- gpeval,x0,k=k,mu=ey,tau=tauwbar,psi=psibar,x=gp$x.compact,rng=rng)
   

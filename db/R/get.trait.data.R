@@ -181,7 +181,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   ## save priors
   save(prior.distns, file = file.path(pft$outdir, "prior.distns.Rdata"))
   write.csv(prior.distns,
-            file = file.path(pft$outdir, "prior.distns.csv"), row.names = FALSE)
+            file = file.path(pft$outdir, "prior.distns.csv"), row.names = TRUE)
 
   ## 3. display info to the console
   logger.info('Summary of Prior distributions for: ', pft$name)
