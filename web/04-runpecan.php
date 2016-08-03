@@ -53,7 +53,7 @@ $hostoptions = $hostlist[$hostname];
 if (!isset($_REQUEST['pft'])) {
 	die("Need a pft.");
 }
-$pft=$_REQUEST['pft'];
+$pft=array_unique($_REQUEST['pft']);
 
 # dates
 if (!isset($_REQUEST['start'])) {
@@ -105,10 +105,12 @@ if (isset($_REQUEST['input_met']) && is_numeric($_REQUEST['input_met'])) {
 }
 
 // Set user and runtime
-$runtime = date('Y/m/d H:i:s O'); 
+$runtime = gmdate('Y/m/d H:i:s O'); 
+$metstart2 = date("Y/m/d", strtotime($metstart));
+$metend2   = date("Y/m/d", strtotime($metend));
 
 // check input dates to make sure they agree with the dates from the weather data
-if (!$userok && ($startdate < $metstart || $enddate > $metend)) {
+if (!$userok && ($startdate < $metstart2 || $enddate > $metend2)) {
 	$params = "userok=on";
 	foreach($_REQUEST as $k => $v) {
 		if (is_array($v)) {
@@ -124,7 +126,7 @@ if (!$userok && ($startdate < $metstart || $enddate > $metend)) {
 		  }
 		}
 	}
-	$params .= "&msg=WARNING : Selected dates are not within the bounds of the weather data file you selected.";
+	$params .= "&msg=WARNING : Selected dates are not within the bounds of the weather data file you selected. \n START: ${startdate} ${metstart2}  \n END: ${enddate} ${metend2}";
 	header("Location: checkfailed.php?${params}");
 	exit();
 }

@@ -112,6 +112,14 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       alldat <- alldat[-c(1:header-1),]
     }
     
+    ##skip reading columns that are defined in format but not found in CSV header 
+    ##
+   if (format$header >= 1) {
+     csv_colnames <- names(alldat)
+      missing_col <- which(!(format$vars$orig_name %in% csv_colnames))
+     format$vars$bety_name[missing_col] = paste0(format$vars$bety_name[missing_col],"(missing)") 
+    }
+     
     ## Get datetime vector - requires one column be connected to bety variable datetime
     ## FUTURE: Make this much more generic to deal with multiple ways datetime can be passed in a CSV such as Year,Month,Day, and so on
     datetime_index <- which(format$vars$bety_name == "datetime")

@@ -16,13 +16,13 @@ get.parameter.samples <- function(pfts = settings$pfts, posterior.files=rep(NA, 
   outdirs <- list()
   
   for (i.pft in seq_along(pfts)){
-    pft.names[i.pft] <- settings$pfts[i.pft]$pft$name
+    pft.names[i.pft] <- settings$pfts[[i.pft]]$name
     
     ### If no PFT(s) are specified insert NULL to warn user 
     if(length(pft.names)==0) pft.names[1] <- "NULL" 
     
     ### Get output directory info
-    outdirs[i.pft] <- settings$pfts[i.pft]$pft$outdir
+    outdirs[i.pft] <- settings$pfts[[i.pft]]$outdir
     
   } ### End of for loop to extract pft names
   
@@ -33,6 +33,7 @@ get.parameter.samples <- function(pfts = settings$pfts, posterior.files=rep(NA, 
   
   ## Load PFT priors and posteriors
   for (i in seq_along(pft.names)){
+    rm(prior.distns,post.distns,trait.mcmc)
     ## Load posteriors
     if(!is.na(posterior.files[i])) {
       # Load specified file
