@@ -2,11 +2,12 @@
 % Please edit documentation in R/pda.emulator.R
 \name{pda.emulator}
 \alias{pda.emulator}
-\title{Paramater Data Assimilation using MCMC}
+\title{Paramater Data Assimilation using emulator}
 \usage{
 pda.emulator(settings, params.id = NULL, param.names = NULL,
   prior.id = NULL, chain = NULL, iter = NULL, adapt = NULL,
-  adj.min = NULL, ar.target = NULL, jvar = NULL, n.knot = NULL)
+  adj.min = NULL, ar.target = NULL, jvar = NULL, n.knot = NULL,
+  burnin = NULL)
 }
 \arguments{
 \item{settings}{= a pecan settings list}
@@ -16,10 +17,7 @@ nothing. Diagnostic plots, MCMC samples, and posterior distributions
  are saved as files and db records.
 }
 \description{
-Paramater Data Assimilation using MCMC
-}
-\details{
-Brute-force, only to be used on simple models
+Paramater Data Assimilation using emulator
 }
 \author{
 Mike Dietze

@@ -6,7 +6,8 @@
 \usage{
 pda.settings(settings, params.id = NULL, param.names = NULL,
   prior.id = NULL, chain = NULL, iter = NULL, adapt = NULL,
-  adj.min = NULL, ar.target = NULL, jvar = NULL, n.knot = NULL)
+  adj.min = NULL, ar.target = NULL, jvar = NULL, n.knot = NULL,
+  burnin = NULL)
 }
 \arguments{
 \item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
