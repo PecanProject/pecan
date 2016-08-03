@@ -254,10 +254,14 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
     $("#output").html(sites);
   }
 
-<?php } else { ?>
-  google.load("maps", "3");
-  google.setOnLoadCallback(mapsLoaded);
-
+<?php
+} else {
+  $other_params = "";
+  if (isset($googleMapKey) && $googleMapKey != "") {
+    $other_params .= "key=$googleMapKey";
+  }
+  echo "  google.load('maps', '3', { other_params : '$other_params', callback: 'mapsLoaded'});"
+?>
   var map = null;
   var infowindow = null;
 
@@ -268,9 +272,9 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
   }
 
   function mapsLoaded() {
-    var myLatlng = new google.maps.LatLng(40.11642, -88.243382);
+    var myLatlng = new google.maps.LatLng(0, 0);
     var myOptions = {
-      zoom: 5,
+      zoom: 2,
       center: myLatlng,
       mapTypeId: google.maps.MapTypeId.ROADMAP
     }

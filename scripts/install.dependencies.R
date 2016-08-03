@@ -28,7 +28,7 @@ list.of.packages <- c('abind', 'car', 'chron', 'coda', 'data.table', 'doSNOW', '
                       'rgdal', 'tgp', 'DBI', 'roxygen2', 'stringr', 'testthat', 'boot',
                       'XML', 'RNCEP', 'foreign', 'RCurl', 'udunits2', 'RPostgreSQL',
                       'rPython','minpack.lm', 'mclust', 'geonames', 'Rcpp','devtools', 'inline', 'segmented',
-                      'msm', 'dplyr')
+                      'msm', 'dplyr', 'shiny', 'scales', 'maps', 'sp')
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) {
   print("installing : ")

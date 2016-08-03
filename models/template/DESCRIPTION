@@ -1,8 +1,8 @@
 Package: PEcAn.ModelName
 Type: Package
 Title: PEcAn package for integration of the ModelName model
-Version: 1.4.6
-Date: 2016-05-05
+Version: 1.4.7
+Date: 2016-07-09
 Author: John Doe, Jane Doe
 Maintainer: John Doe <jdoe@illinois.edu>
 Description: This module provides functions to link the (ModelName) to PEcAn.

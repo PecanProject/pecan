@@ -131,7 +131,7 @@ for(year in start_year:end_year) {
          dt <- (366*24*60*60)/length(sec), #leap year
          dt <- (365*24*60*60)/length(sec)) #non-leap year
 
-  toff <- -lst*3600/dt
+  toff <- -as.numeric(lst)*3600/dt
 
   ##buffer to get to GMT
   slen <- length(SW)

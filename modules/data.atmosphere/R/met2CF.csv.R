@@ -112,6 +112,14 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       alldat <- alldat[-c(1:header-1),]
     }
     
+    ##skip reading columns that are defined in format but not found in CSV header 
+    ##
+   if (format$header >= 1) {
+     csv_colnames <- names(alldat)
+      missing_col <- which(!(format$vars$orig_name %in% csv_colnames))
+     format$vars$bety_name[missing_col] = paste0(format$vars$bety_name[missing_col],"(missing)") 
+    }
+     
     ## Get datetime vector - requires one column be connected to bety variable datetime
     ## FUTURE: Make this much more generic to deal with multiple ways datetime can be passed in a CSV such as Year,Month,Day, and so on
     datetime_index <- which(format$vars$bety_name == "datetime")
@@ -160,7 +168,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       results$enddate[this.year-start_year+1] <- as.character(datetime[length(datetime)])
       
       ### create time dimension 
-      days_since_1700 <- datetime - ymd("1700-01-01")
+      days_since_1700 <- datetime - ymd_hm("1700-01-01 00:00")
       t <- ncdim_def("time", "days since 1700-01-01", as.numeric(days_since_1700)) #define netCDF dimensions for variables
       timestep <- as.numeric(mean(ud.convert(diff(days_since_1700), "d", "s")))
       
@@ -440,6 +448,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
         if (length(locs_wd)>0 & length(locs_ws)>0) {
           #wind speed and direction available, convert to northward and eastward
           k_wd = locs_wd[1]
+          k_ws = locs_ws[1]
           arrloc_wd <- as.character(format$vars$orig_name[k_wd])
           if (arrloc_wd=="") {
             if (any(colnames(format$vars)=="column_number")) { 

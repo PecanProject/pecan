@@ -7,7 +7,7 @@
 addLocalModel "ED2.2"     "ED2"      "46"  "ed2.r46"
 addLocalModel "ED2.2"     "ED2"      "82"  "ed2.r82"
 addLocalModel "ED2.2"     "ED2"      "git" "ed2.git"
-addLocalModel "SIPNET"    "SIPNET"   "unk" "sipnet.unk"
+addLocalModel "SIPNET"    "SIPNET"   "unk" "sipnet.runk"
 addLocalModel "SIPNET"    "SIPNET"   "136" "sipnet.r136"
 addLocalModel "DALEC"     "DALEC"    ""    "dalec_seqMH"
 addLocalModel "Linkages"  "LINKAGES" "git" "linkages.git"
