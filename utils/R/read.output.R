@@ -98,9 +98,9 @@ read.output <- function(runid, outdir, start.year=NA,
   require(udunits2)
 
   ## vars in units s-1 to be converted to y-1
-  cflux = c("GPP", "NPP", "NEE", "TotalResp", "AutoResp", "HeteroResp",
-    "DOC_flux", "Fire_flux") # kgC m-2 s-1
-  wflux = c("Evap", "TVeg", "Qs", "Qsb", "Rainf") # kgH20 m-2 d-1
+  #cflux = c("GPP", "NPP", "NEE", "TotalResp", "AutoResp", "HeteroResp",
+  #  "DOC_flux", "Fire_flux") # kgC m-2 s-1
+  #wflux = c("Evap", "TVeg", "Qs", "Qsb", "Rainf") # kgH20 m-2 d-1
   
   # create list of *.nc years
   nc.years <- as.vector(unlist(strsplit(list.files(path = outdir, pattern="\\.nc$", full.names=FALSE),".nc")))
@@ -111,8 +111,11 @@ read.output <- function(runid, outdir, start.year=NA,
   # throw error if no *.nc files selected/availible
   nofiles <- FALSE
   if(length(ncfiles) == 0) {
-    logger.warn("no netCDF files of model output present for runid = ", runid, " in ", outdir, 
+    logger.warn("read.output: no netCDF files of model output present for runid = ", runid, " in ", outdir, 
                 "will return NA")
+    if(length(nc.years)>0) {
+      logger.info("netCDF files for other years present",nc.years)
+    }
     nofiles <- TRUE
   } else {
     logger.info("Reading output for Years: ",start.year," - ", end.year,
@@ -127,9 +130,10 @@ read.output <- function(runid, outdir, start.year=NA,
         for(v in variables){
           if(v %in% c(names(nc$var),names(nc$dim))){
             newresult <- ncvar_get(nc, v)
-            if(v %in% c(cflux, wflux)){
-              newresult <- ud.convert(newresult, "kg m-2 s-1", "kg ha-1 yr-1")
-            }
+#  Dropping attempt to provide more sensible units because of graph unit errors, issue #792            
+#            if(v %in% c(cflux, wflux)){
+#              newresult <- ud.convert(newresult, "kg m-2 s-1", "kg ha-1 yr-1")
+#            }
             result[[v]] <- abind(result[[v]], newresult)
           } else if (!(v %in% names(nc$var))){
             logger.warn(paste(v, "missing in", ncfile))
