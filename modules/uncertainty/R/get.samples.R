@@ -36,7 +36,7 @@ get.parameter.samples <- function(pfts = settings$pfts, posterior.files=rep(NA, 
     ## Load posteriors
     if(!is.na(posterior.files[i])) {
       # Load specified file
-      load(file.path(outdirs[i], posterior.files[i]))
+      load(posterior.files[i])
       if(!exists('prior.distns') & exists('post.distns')) {
         prior.distns <- post.distns
       }
