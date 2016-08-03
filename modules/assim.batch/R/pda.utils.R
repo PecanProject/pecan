@@ -682,7 +682,7 @@ pda.plot.params <- function(settings, params.subset, prior.ind) {
 pda.postprocess <- function(settings, con, mcmc.list, jvar.list, pname, prior, prior.ind) {
 
   burnin <- ifelse(!is.null(settings$assim.batch$burnin), 
-                   as.numeric(settings$assim.batch$burnin)*settings$assim.batch$iter, 
+                   as.numeric(settings$assim.batch$burnin), 
                    ceiling(min(2000,0.2*settings$assim.batch$iter)))
 
   ## Assess MCMC output
