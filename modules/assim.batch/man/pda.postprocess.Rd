@@ -4,8 +4,7 @@
 \alias{pda.postprocess}
 \title{Postprocessing for PDA Results}
 \usage{
-pda.postprocess(settings, con, mcmc.list, jvar.list, pname, prior, prior.ind,
-  burnin)
+pda.postprocess(settings, con, mcmc.list, jvar.list, pname, prior, prior.ind)
 }
 \arguments{
 \item{all}{params are the identically named variables in pda.mcmc / pda.emulator}

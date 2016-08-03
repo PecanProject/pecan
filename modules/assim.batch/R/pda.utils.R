@@ -44,7 +44,7 @@ assim.batch <- function(settings) {
 ##' @author Ryan Kelly
 ##' @export
 pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL,
-                         iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL, burnin=NULL) {
+                         iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL) {
   # Some settings can be supplied via settings (for automation) or explicitly (interactive). 
   # An explicit argument overrides whatever is in settings, if anything.
   # If neither an argument or a setting is provided, set a default value in settings. 
@@ -100,10 +100,6 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   }
   settings$assim.batch$chain <- as.numeric(settings$assim.batch$chain)
 
-  # burnin
-  if(!is.null(burnin)){
-    settings$assim.batch$burnin <- burnin
-  }
 
   # iter: Number of MCMC iterations. 
   if(!is.null(iter)) {
@@ -683,8 +679,11 @@ pda.plot.params <- function(settings, params.subset, prior.ind) {
 ##'
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.postprocess <- function(settings, con, mcmc.list, jvar.list, pname, prior, prior.ind, burnin) {
+pda.postprocess <- function(settings, con, mcmc.list, jvar.list, pname, prior, prior.ind) {
 
+  burnin <- ifelse(!is.null(settings$assim.batch$burnin), 
+                   as.numeric(settings$assim.batch$burnin)*settings$assim.batch$iter, 
+                   ceiling(min(2000,0.2*settings$assim.batch$iter)))
 
   ## Assess MCMC output
   params.subset <- lapply(mcmc.list, function(x) x[burnin:settings$assim.batch$iter,])

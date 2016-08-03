@@ -10,13 +10,13 @@
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
 pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
-                     iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL, burnin=NULL) {
+                     iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL) {
   
   ## this bit of code is useful for defining the variables passed to this function 
   ## if you are debugging
   if(FALSE){
     params.id <- param.names <- prior.id <- chain <- iter <- NULL 
-    n.knot <- adapt <- adj.min <- ar.target <- jvar <- burnin <- NULL
+    n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
   }
 
   ## -------------------------------------- Setup ------------------------------------- ##
@@ -24,7 +24,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     settings <- pda.settings(
                   settings=settings, params.id=params.id, param.names=param.names, 
                   prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
-                  adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot, burnin=burnin)
+                  adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot)
 
    
   ## Open database connection
@@ -336,16 +336,11 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     # merge with previous run's mcmc samples
     mcmc.list <- mapply(rbind, mcmc.list, mcmc.list.tmp, SIMPLIFY=FALSE)
     settings$assim.batch$iter <- nrow(mcmc.list[[1]])
-    burnin <- ifelse(!is.null(settings$assim.batch$burnin), 
-                     as.numeric(settings$assim.batch$burnin), 
-                     ceiling(min(2000,0.2*settings$assim.batch$iter)))
     
   }else{
     
     mcmc.list <- mcmc.list.tmp
-    burnin <- ifelse(!is.null(settings$assim.batch$burnin), 
-                     as.numeric(settings$assim.batch$burnin), 
-                     ceiling(min(2000,0.2*settings$assim.batch$iter)))
+
   }
   
   if(FALSE) {
@@ -372,7 +367,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
                                               paste0('mcmc.list.pda', settings$assim.batch$ensemble.id, '.Rdata'))
   save(mcmc.list, file = settings$assim.batch$mcmc.path)
   
-  settings <- pda.postprocess(settings, con, mcmc.list, jvar.list, pname, prior, prior.ind, burnin)
+  settings <- pda.postprocess(settings, con, mcmc.list, jvar.list, pname, prior, prior.ind)
 
   ## close database connection
   if(!is.null(con)) db.close(con)
