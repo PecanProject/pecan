@@ -4,7 +4,7 @@
 ##' @param dates, list of date information from db and run
 ##' @author Tony Gardella, Elizabeth Cowdery
 
-dates2process <- function(dates{
+dates2process <- function(dates){
 
   if(run_start < db_start & run_end < db_run){
     # run dates are for years before db run dates
@@ -17,7 +17,7 @@ dates2process <- function(dates{
       dates$new_start = db_end
       dates$new_end = run_end
       dates$update_new = db_start
-      dates$update_end = run _end
+      dates$update_end = run_end
   }else(run_start < db_start & run_end > db_run){
     #run dates envelope existing db dates
       dates$new_start = run_start

@@ -49,7 +49,18 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   #read in registration xml for met specific information
   register.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
   register <- read.register(register.xml, con)
-
+#->  ##read in registration xml for model specific information
+  model.register.xml <- system.file(paste0("reagistration/register.",model,".xml"), package = "PEcAn.data.atmosphere")
+  
+  ## Figure out what Years to process
+    #check run start and end dates
+    #check db for existing input start and endates 
+    # create dates dates = list(db_start,db_end,run_start,run_end,new_start = NULL, new_end = NULL, update_start = NA, update_end=NULL)
+    met.date.process(dates)
+    # returns updated dates list- new_start -> new_end tell what needs to be update
+                                  #update_start -> update_end tells what dates need to go into bety
+#-> ##
+    
   # first attempt at function that designates where to start met.process
   if(is.null(input_met$id)){
     stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
@@ -114,6 +125,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
         new.files <- remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
 
+## - >  if(new){
         raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
                                       in.prefix=new.files$dbfile.name[1],
                                       siteid = site$id,
@@ -126,6 +138,9 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                       hostname = host$name)
         if(met %in% "CRUNCEP"){ready.id = raw.id}
         if(met %in% "GFDL"){ready.id = raw.id}
+## ->   if(update){
+        dbfile.input.update(update_new, update_end,....)
+}        
       }
     }else if(register$scale=="site") { # Site-level met
 
@@ -148,6 +163,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         new.files <- remote.execute.R(script=cmdFcn,host=host$name,user=NA,verbose=TRUE,R="R")
 
         ## insert database record
+## ->   if(new)
         raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
                                       in.prefix=new.files$dbfile.name[1],
                                       siteid = site$id,
@@ -158,6 +174,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                       parentid=NA,
                                       con = con,
                                       hostname = host$name)
+## ->   if(update)
+          dbfile.input.update()
       }
     }
   }
@@ -202,11 +220,15 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         }else if(exists(fcn2)){
           fcn <- fcn2
         }else{logger.error("met2CF function ",fcn1," or ",fcn2," don't exist")}
-
+## -> if(new){
         cf0.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                                 username,con=con,hostname=host$name,browndog=NULL,write=TRUE,format.vars=format.vars)
       }
-
+    }
+## -> if(update){
+     dbfile.input.update()
+  
+}
       input_name <- paste0(met,"_CF_Permute")
       fcn       <-  "permute.nc"
       outfolder  <- file.path(dir,input_name)
@@ -249,14 +271,24 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         mimename <- substr(mimename,regexpr('-',mimename)+1,nchar(mimename))
         fcn2 <- paste0("met2CF.",mimename)
         if(exists(fcn1)){
+## ->    if(new){
           fcn <- fcn1
           cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                                  username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon)
+## ->     }
+## ->    if(update){
+            dbfiles.insert.update(update_start, update_end,input.id,con)
+          
+## ->     }
         }else if(exists(fcn2)){
+## ->     if(new){
           fcn <- fcn2
           format <- query.format.vars(input.id,con)
           cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                                  username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon,format.vars=format.vars)
+## ->    if(update){
+           dbfiles.insert.update(update_start, update_end, input.id, con)
+## ->    }          
         }else{logger.error("met2CF function ",fcn1, " or ", fcn2," doesn't exists")}
       }
     }
@@ -280,10 +312,14 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       fcn        <- "extract.nc"
       formatname <- 'CF Meteorology'
       mimetype   <- 'application/x-netcdf'
-
+## -> if(new){
       ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                                 username,con=con,hostname=host$name,browndog=NULL,write=TRUE,
                                 slat=new.site$lat,slon=new.site$lon,newsite=new.site$id)
+## -> }
+## -> if(update){
+      dbfile.insert.update()
+}
 
     }else if(register$scale=="site"){ ##### Site Level Processing
       #     if(!is.null(register$gapfill)){
@@ -297,11 +333,15 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       formatname <- 'CF Meteorology'
       mimetype   <- 'application/x-netcdf'
       lst        <- site.lst(site,con)
-
+      
+## -> if(new){
       ready.id   <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id
                                   ,start_date,end_date,pkg,fcn,username,con=con,
                                   hostname=host$name,browndog=NULL,write=TRUE,lst=lst)
-
+## -> }
+## -> if(update){
+      dbfile.insert.update()
+## -> }
       print(ready.id)
       #     }else{
       #       ready.id<-cf.id[1]
@@ -339,8 +379,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     fcn       <- paste0("met2model.",model)
     lst       <- site.lst(site,con)
 
+##-> if(new){
     model.id  <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                                username,con=con,hostname=host$name,browndog,write=TRUE,lst=lst,lat=new.site$lat,lon=new.site$lon)
+##-> if(update){
+    dbfile.insert.update()
+## ->}
   }else{
     model.id = ready.id
 
