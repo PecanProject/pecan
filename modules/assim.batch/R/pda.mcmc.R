@@ -209,7 +209,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
   ## ------------------------------------ Clean up ------------------------------------ ##
   ## Save outputs to plots, files, and db
-  settings <- pda.postprocess(settings, con, mcmc.out, pname, prior, prior.ind, burnin)
+  settings <- pda.postprocess(settings, con, mcmc.list, jvar.list, pname, prior, prior.ind, burnin)
 
   ## close database connection
   if(!is.null(con)) db.close(con)
