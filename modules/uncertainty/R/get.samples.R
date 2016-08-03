@@ -52,9 +52,11 @@ get.parameter.samples <- function(pfts = settings$pfts, posterior.files=rep(NA, 
     }
     
     ### Load trait mcmc data (if exists)
-    if("trait.mcmc.Rdata" %in% dir(unlist(outdirs))) {
+    if("trait.mcmc.Rdata" %in% dir(unlist(outdirs[i]))) {
       ma.results <- TRUE
       load(file.path(outdirs[i], 'trait.mcmc.Rdata'))
+    } else {
+      ma.results <- FALSE
     }
     
     pft.name <- unlist(pft.names[i])
