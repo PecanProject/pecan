@@ -11,8 +11,10 @@
 InventoryGrowthFusion <- function(data,n.iter,random=TRUE){
   require(rjags)
   
+  #Temp for DBH matrix, data$z
   foo <- matrix(nrow=nrow(data$z),ncol=ncol(data$y))
   
+  #subract increment from DBH
   for(g in 1:nrow(data$z)){
     for(f in rev(1:ncol(data$y))){
       foo[g,f] <- data$z[g,f]
