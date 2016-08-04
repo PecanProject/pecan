@@ -6,8 +6,7 @@
 \usage{
 pda.emulator(settings, params.id = NULL, param.names = NULL,
   prior.id = NULL, chain = NULL, iter = NULL, adapt = NULL,
-  adj.min = NULL, ar.target = NULL, jvar = NULL, n.knot = NULL,
-  burnin = NULL)
+  adj.min = NULL, ar.target = NULL, jvar = NULL, n.knot = NULL)
 }
 \arguments{
 \item{settings}{= a pecan settings list}
