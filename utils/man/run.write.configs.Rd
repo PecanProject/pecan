@@ -5,7 +5,7 @@
 \title{Run model specific write configuration functions}
 \usage{
 run.write.configs(settings, write = TRUE, ens.sample.method = "uniform",
-  posterior.files = rep(NA, length(settings$pfts)))
+  posterior.files = rep(NA, length(settings$pfts)), overwrite = TRUE)
 }
 \arguments{
 \item{write}{should the runs be written to the database}
