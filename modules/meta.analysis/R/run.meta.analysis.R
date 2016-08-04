@@ -163,7 +163,25 @@ run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, 
 
 runModule.run.meta.analysis <- function(settings) {
   if(is.SettingsList(settings)) {
-    return(papply(settings, runModule.run.meta.analysis))
+    pfts <- list()
+    pft.names <- character(0)
+    for(i in seq_along(settings)) {
+      pfts.i <- settings[[i]]$pfts
+      pft.names.i <- sapply(pfts.i, function(x) x$name)
+      ind <- which(pft.names.i %in% setdiff(pft.names.i, pft.names))
+      pfts <- c(pfts, pfts.i[ind])
+      pft.names <- sapply(pfts, function(x) x$name)
+    }
+    
+    logger.info(paste0("Running meta-analysis on all PFTs listed by any Settings object in the list: ",
+                paste(pft.names, collapse=", ")))
+
+    iterations <- settings$meta.analysis$iter
+    random <- settings$meta.analysis$random.effects
+    threshold <- settings$meta.analysis$threshold
+    dbfiles <- settings$database$dbfiles
+    database <- settings$database$bety
+    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database) 
   } else if (is.Settings(settings)) {
     pfts <- settings$pfts
     iterations <- settings$meta.analysis$iter
