@@ -1,20 +1,36 @@
-read.restart.LINKAGES <- function(outdir,run.id,time,spin.up,X.vec){
+##' @title read.restart.LINKAGES
+##' @name  read.restart.LINKAGES
+##' @author Ann Raiho \email{araiho@@nd.edu}
+##' 
+##' @param outdir      output directory
+##' @param runid       run ID
+##' @param time        year that is being read
+##' @param settings    PEcAn settings object
+##' @param variables   variables to be extracted
+##' 
+##' @description Read Restart for LINKAGES
+##' 
+##' @return X.vec      vector of forecasts
+##' 
+read.restart.LINKAGES <- function(outdir,runid,time,settings,variables){
+ 
+  #Read ensemble output
+  ens <- read.output(runid = runid,outdir = file.path(outdir, runid),
+         start.year = time, end.year=time,
+         variables=variables) #change to just "AGB" for plot level biomass
   
-  ncfiles <- list.files(path = file.path(outdir,run.id), pattern="\\.nc$", full.names=TRUE)
+  #Add PFT name to variable if applicable
+  pft.names <- numeric(length(settings$pft))
+  for(i in 1:length(settings$pft)){
+    pft.names[i] <- settings$pft[i]$pft$name
+  }
+  ens.pft.names <- grep("pft",names(ens))
+  names(ens[[grep("pft",names(ens))]]) <- pft.names
   
-  # skip ensemble member if no *.nc files selected/availible  
-  if(length(ncfiles) < spin.up-1) forecast = X.vec
+  #Put forecast into vector
+  X.vec <- t(unlist(ens))
   
-  forecast = X.vec  
-  ens <- read.output(runid = run.id,outdir = file.path(outdir, run.id),
-         start.year = time,end.year=time,
-         variables=c("AGB.pft")) #change to just "AGB" for plot level biomass
-  
-  forecast$biomass_tsca = ens$AGB.pft[1]
-  forecast$biomass_acsa3 = ens$AGB.pft[2]
-  forecast$biomass_beal2 = ens$AGB.pft[4]
-  forecast$biomass_thoc2 = ens$AGB.pft[3]
-  print(run.id)
+  print(runid)
 
-  return(forecast)
+  return(X.vec)
 }

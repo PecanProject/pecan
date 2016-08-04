@@ -13,7 +13,7 @@
 ##' 
 ##' @author Ankur Desai, based on download.Ameriflux.R by Josh Mantooth, Rob Kooper
 
-download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, ...) {
+download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, username="pecan", ...) {
   # get start/end year code works on whole years only
   
   require(lubridate) 
@@ -36,7 +36,7 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date, over
   
   #need to query to get full file name - this is Fluxnet2015 version, TIER1 only
   url <- "http://wile.lbl.gov:8080/AmeriFlux/DataDownload.svc/datafileURLs"
-  json_query <- paste0('{"username":"AnkurDesai","siteList":["',site,'"],"intendedUse":"Research - Land model/Earth system model","description":"PEcAn download","dataProduct":"SUBSET","policy":"TIER1"}')  
+  json_query <- paste0('{"username":"',username,'","siteList":["',site,'"],"intendedUse":"Research - Land model/Earth system model","description":"PEcAn download","dataProduct":"SUBSET","policy":"TIER1"}')  
   result <- POST(url, body = json_query, encode = "json", add_headers("Content-Type" = "application/json"))
   link <- content(result)
   ftplink <- NULL

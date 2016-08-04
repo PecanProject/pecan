@@ -61,16 +61,42 @@ sensitivity.filename <- function(settings,
     # This shouldn't generally arise, as run.write.configs() appends ensemble.id to settings. However,it will come up if running run.write.configs(..., write=F), because then no ensemble ID is created in the database. A simple workflow will still work in that case, but provenance will be lost if multiple ensembles are run.
     ensemble.id <- "NOENSEMBLEID"
   }
+  ## for other variables, these are just included in the filename so just need to make sure they don't crash
+  if(is.null(variable))   variable = "NA"
+  if(is.null(start.year)) start.year = "NA"
+  if(is.null(end.year))   end.year = "NA"
+  
 
   if(is.null(pft)) {
     # Goes in main output directory. 
     sensitivity.dir <- settings$outdir
   } else {
     ind <- which(sapply(settings$pfts, function(x) x$name) == pft)
-    sensitivity.dir <- settings$pfts[[ind]]$outdir
+    if(length(ind) == 0){ ## no match
+      logger.warn("sensitivity.filename: unmatched PFT = ",pft," not among ", sapply(settings$pfts, function(x) x$name))
+      sensitivity.dir <- file.path(settings$outdir,"pfts",pft)
+    } else {
+       if (length(ind) > 1){  ## multiple matches
+         logger.warn("sensitivity.filename: multiple matchs of PFT = ",pft," among ", sapply(settings$pfts, function(x) x$name)," USING")
+         ind = ind[1]
+       }
+       if(is.null(settings$pfts[[ind]]$outdir) | is.na(settings$pfts[[ind]]$outdir)){ ## no outdir
+         settings$pfts[[ind]]$outdir <- file.path(settings$outdir,"pfts",pft)
+       }
+       sensitivity.dir <- settings$pfts[[ind]]$outdir
+    }
   }
   
   dir.create(sensitivity.dir, showWarnings=FALSE, recursive=TRUE)
+  if(!dir.exists(sensitivity.dir)){
+    logger.error("sensitivity.filename: could not create directory, please check permissions ", sensitivity.dir,
+                 " will try ",settings$outdir)
+    if(dir.exists(settings$outdir)){
+      sensitivity.dir = settings$outdir
+    } else {
+      logger.error("sensitivity.filename: no OUTDIR ",settings$outdir)
+    }
+  }
   
   if(all.var.yr) {
     # All variables and years will be included; omit those from filename

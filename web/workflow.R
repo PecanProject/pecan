@@ -208,12 +208,17 @@ if (status.check("OUTPUT") == 0) {
   status.end()
 }
 
+logger.info("current C_stack_info(): ",Cstack_info()['current'])
+
 # Run ensemble analysis on model output. 
 if (status.check("ENSEMBLE") == 0) {
   status.start("ENSEMBLE")
   run.ensemble.analysis(TRUE)    
   status.end()
 }
+
+## DEBUG: getting odd C_stack errors from run.sensitivity.analysis -- checking usage prior to call
+logger.info("current C_stack_info(): ",Cstack_info()['current'])
 
 # Run sensitivity analysis and variance decomposition on model output
 if (status.check("SENSITIVITY") == 0) {
@@ -222,11 +227,22 @@ if (status.check("SENSITIVITY") == 0) {
   status.end()
 }
 
+logger.info("current C_stack_info(): ",Cstack_info()['current'])
+
 # Run parameter data assimilation
 if ('assim.batch' %in% names(settings)) {
   if (status.check("PDA") == 0) {
     status.start("PDA")
     settings <- assim.batch(settings)
+    status.end()
+  }
+}
+
+# Run state data assimilation
+if ('state.data.assimilation' %in% names(settings)) {
+  if (status.check("SDA") == 0) {
+    status.start("SDA")
+    settings <- sda.enfk(settings)
     status.end()
   }
 }
