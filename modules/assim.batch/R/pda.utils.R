@@ -51,7 +51,7 @@ runModule.assim.batch <- function(settings) {
 ##'
 ##' @return An updated settings list
 ##'
-##' @author Ryan Kelly
+##' @author Ryan Kelly, Istem Fer
 ##' @export
 pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL,
                          iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL) {
@@ -78,16 +78,16 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   if(is.null(settings$assim.batch$param.names)) {
     logger.error('Parameter data assimilation requested, but no parameters specified for PDA')
   } else {
-    settings$assim.batch$param.names <- as.list(as.character(settings$assim.batch$param.names))
+    settings$assim.batch$param.names <- lapply(settings$assim.batch$param.names, as.character)
   }
-  # have to add names or listToXml() won't work
-  names(settings$assim.batch$param.names) <- rep("param", length(settings$assim.batch$param.names))
+  # # have to add names or listToXml() won't work
+  # names(settings$assim.batch$param.names) <- rep("param", length(settings$assim.batch$param.names))
   # Finally, check that none of the names listed are specified as pft constants
   constant.names <- unlist(sapply(settings$pfts, function(x) names(x$constants)))
   params.in.constants <- which(unlist(settings$assim.batch$param.names) %in% constant.names)
   if(length(params.in.constants) > 0) {
     logger.severe(paste0("PDA requested for parameter(s) [",
-      paste(settings$assim.batch$param.names[params.in.constants], collapse=", "), 
+      paste(unlist(settings$assim.batch$param.names)[params.in.constants], collapse=", "), 
       "] but these parameters are specified as constants in pecan.xml!"))
   }
   
@@ -96,12 +96,13 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   if(!is.null(prior.id)) {
     settings$assim.batch$prior$posterior.id <- prior.id
   }
-  if(!is.null(settings$assim.batch$prior$posterior.id)) {
-    settings$assim.batch$prior$posterior.id <- as.character(settings$assim.batch$prior$posterior.id)
+  if(!is.null(settings$pfts$pft$posteriorid)) {
+    settings$assim.batch$prior <- lapply(settings$pfts, `[[`, "posteriorid")
+    names(settings$assim.batch$prior) <- sapply(settings$pfts, `[[`, "name")
   }
 
 
-  # chain: An identifier for the MCMC chain. Currently not used for anything but a label.
+  # chain: An identifier for the MCMC chain. 
   if(!is.null(chain)) {
     settings$assim.batch$chain <- chain
   }
