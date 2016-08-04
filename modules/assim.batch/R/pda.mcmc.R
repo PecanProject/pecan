@@ -28,6 +28,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
                   prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
                   adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot)
 
+
   ## Open database connection
   if(settings$database$bety$write){
     con <- try(db.open(settings$database$bety), silent=TRUE)
@@ -196,10 +197,16 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     cat(c(parm,'\n'), file=filename.mcmc.temp, sep='\t', append=(i != 1))
   }
 
+  # TODO: more than one chain
+  mcmc.list <- list()
+  jvar.list <- list()
+  
+  mcmc.list[[1]] <- params[,prior.ind, drop=FALSE]
+  jvar.list[[1]] <- unlist(settings$assim.batch$jump$jvar)
 
   ## ------------------------------------ Clean up ------------------------------------ ##
   ## Save outputs to plots, files, and db
-  settings <- pda.postprocess(settings, con, params, pname, prior, prior.ind)
+  settings <- pda.postprocess(settings, con, mcmc.list, jvar.list, pname, prior, prior.ind)
 
   ## close database connection
   if(!is.null(con)) db.close(con)

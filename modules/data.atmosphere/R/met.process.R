@@ -12,23 +12,23 @@
 ##' @param dir  directory to write outputs to
 ##'
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins
-met.process <- function(site, input_met, start_date, end_date, model, host, dbparms, dir, browndog=NULL, username="pecan"){
+met.process <- function(site, input_met, start_date, end_date, model, host, dbparms, dir, browndog=NULL){
   require(RPostgreSQL)
   require(XML)
-  
+
   #setup connection and host information
   con      <- db.open(dbparms)
-  username <- ""
+  username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
   machine.host <- ifelse(host$name == "localhost", fqdn(),host$name)
   machine = db.query(paste0("SELECT * from machines where hostname = '",machine.host,"'"),con)
-  
+
   #get met source and potentially determine where to start in the process
   met <- ifelse(is.null(input_met$source), logger.error("Must specify met source"),input_met$source)
-  
+
   # special case Brown Dog
   if (!is.null(browndog)) {
-    result <- browndog.met(browndog, met, site, start_date, end_date, model, dir)
-    
+    result <- browndog.met(browndog, met, site, start_date, end_date, model, dir, username)
+
     if (is.data.frame(result)) {
       dbfile.input.insert(in.path= dirname(result$file),
                           in.prefix = result$dbfile.name,
@@ -44,12 +44,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       invisible(return(result$file))
     }
   }
-  
-  
+
+
   #read in registration xml for met specific information
   register.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
   register <- read.register(register.xml, con)
-  
+
   # first attempt at function that designates where to start met.process
   if(is.null(input_met$id)){
     stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
@@ -64,27 +64,27 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       dbfileid = db.query(paste0("SELECT id from dbfiles where file_name = '", basename(input_met$path) ,"' AND file_path = '", dirname(input_met$path) ,"'"),con)[[1]]
     ))
   }
-  
+
   #setup additional browndog arguments
   if(!is.null(browndog)){browndog$inputtype <- register$format$inputtype}
-  
+
   #setup site database number, lat, lon and name and copy for format.vars if new input
   new.site <- data.frame(id = as.numeric(site$id), lat = db.site.lat.lon(site$id,con=con)$lat, lon = db.site.lat.lon(site$id,con=con)$lon)
   str_ns    <- paste0(new.site$id %/% 1000000000, "-", new.site$id %% 1000000000)
-  
+
   if (is.null(format.vars$lat)) { format.vars$lat <- new.site$lat }
   if (is.null(format.vars$lon)) { format.vars$lon <- new.site$lon }
   if (is.null(format.vars$site)) { format.vars$site <- new.site$id }
   #--------------------------------------------------------------------------------------------------#
   # Download raw met from the internet
-  
+
   if(stage$download.raw==TRUE){
     outfolder  <- file.path(dir,met)
     pkg        <- "PEcAn.data.atmosphere"
     fcn        <- paste0("download.",met)
-    
+
     if(register$scale=="regional"){ #Right now this only means NARR but will need to be generalized once we have more regional met products
-      
+
       print("start CHECK")
       check = db.query(
         paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",register$siteid,
@@ -96,7 +96,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       if(length(check)>0){
         raw.id <- list(input.id=check$container_id, dbfile.id=check$id)
       }else{
-        
+
         args <- list(outfolder, start_date, end_date)
         if(met %in% "CRUNCEP") {
           ## this is a hack for regional products that go direct to site-level extraction. Needs generalization (mcd)
@@ -104,16 +104,16 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
           stage$met2cf = FALSE
           stage$standardize = FALSE
         }
-        
+
         if (met %in% "GFDL") {
           args <- c(args, new.site$id, new.site$lat, new.site$lon, input_met$model, input_met$scenario, input_met$ensemble_member)
           stage$met2cf = FALSE
           stage$standardize = FALSE
         }
-        
+
         cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
         new.files <- remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
-        
+
         raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
                                       in.prefix=new.files$dbfile.name[1],
                                       siteid = site$id,
@@ -128,7 +128,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         if(met %in% "GFDL"){ready.id = raw.id}
       }
     }else if(register$scale=="site") { # Site-level met
-      
+
       print("start CHECK")
       check = db.query(
         paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",site$id,
@@ -140,13 +140,13 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       if(length(check)>0){
         raw.id <- list(input.id=check$container_id, dbfile.id=check$id)
       }else{
-        
+
         outfolder = paste0(outfolder,"_site_",str_ns)
         args <- list(site$name, outfolder, start_date, end_date)
-        
+
         cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),paste0(",username='",username,"'"),")")
         new.files <- remote.execute.R(script=cmdFcn,host=host$name,user=NA,verbose=TRUE,R="R")
-        
+
         ## insert database record
         raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
                                       in.prefix=new.files$dbfile.name[1],
@@ -161,25 +161,25 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       }
     }
   }
-  
+
   #--------------------------------------------------------------------------------------------------#
   # Change to  CF Standards
-  
+
   if(stage$met2cf == TRUE){
     logger.info("Begin change to CF Standards")
-    
+
     input.id  <-  raw.id$input.id[1]
     pkg       <- "PEcAn.data.atmosphere"
     formatname <- 'CF Meteorology'
     mimetype <- 'application/x-netcdf'
     format.id <- 33
-    
-    
+
+
     if(register$scale=="regional"){
-      
+
       input_name <- paste0(met,"_CF")
       outfolder  <- file.path(dir,input_name)
-      
+
       print("start CHECK")
       check = db.query(
         paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",register$siteid,
@@ -191,7 +191,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       if(length(check)>0){
         cf0.id <- list(input.id=check$container_id, dbfile.id=check$id)
       }else{
-        
+
         fcn1 <- paste0("met2CF.",met)
         mimename <- register$format$mimetype
         mimename <- substr(mimename,regexpr('/',mimename)+1,nchar(mimename))
@@ -202,15 +202,15 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         }else if(exists(fcn2)){
           fcn <- fcn2
         }else{logger.error("met2CF function ",fcn1," or ",fcn2," don't exist")}
-        
+
         cf0.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                                 username,con=con,hostname=host$name,browndog=NULL,write=TRUE,format.vars=format.vars)
       }
-      
+
       input_name <- paste0(met,"_CF_Permute")
       fcn       <-  "permute.nc"
       outfolder  <- file.path(dir,input_name)
-      
+
       print("start CHECK")
       check = db.query(
         paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",register$siteid,
@@ -226,12 +226,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         cf.id <- convert.input(cf0.id, outfolder2,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,permute.nc,
                                username,con=con,hostname=host$name,browndog=NULL,write=TRUE)
       }
-      
+
     }else if(register$scale=="site"){
-      
+
       input_name <- paste0(met,"_CF_site_",str_ns)
       outfolder  <- file.path(dir,input_name)
-      
+
       print("start CHECK")
       check = db.query(
         paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",new.site$id,
@@ -260,35 +260,35 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         }else{logger.error("met2CF function ",fcn1, " or ", fcn2," doesn't exists")}
       }
     }
-    
+
     logger.info("Finished change to CF Standards")
   }
-  
+
   #--------------------------------------------------------------------------------------------------#
   # Change to Site Level - Standardized Met (i.e. ready for conversion to model specific format)
-  
+
   if(stage$standardize == TRUE){
     logger.info("Begin Standardize Met")
-    
+
     if(register$scale=="regional"){ #### Site extraction
-      
+
       logger.info("Site Extraction")
-      
+
       input.id   <- cf.id[1]
       outfolder  <- file.path(dir,paste0(met,"_CF_site_",str_ns))
       pkg        <- "PEcAn.data.atmosphere"
       fcn        <- "extract.nc"
       formatname <- 'CF Meteorology'
       mimetype   <- 'application/x-netcdf'
-      
+
       ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                                 username,con=con,hostname=host$name,browndog=NULL,write=TRUE,
                                 slat=new.site$lat,slon=new.site$lon,newsite=new.site$id)
-      
+
     }else if(register$scale=="site"){ ##### Site Level Processing
       #     if(!is.null(register$gapfill)){
       logger.info("Gapfilling") # Does NOT take place on browndog!
-      
+
       input.id   <- cf.id[1]
       outfolder  <- file.path(dir,paste0(met,"_CF_gapfill_site_",str_ns))
       pkg        <- "PEcAn.data.atmosphere"
@@ -297,11 +297,11 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       formatname <- 'CF Meteorology'
       mimetype   <- 'application/x-netcdf'
       lst        <- site.lst(site,con)
-      
+
       ready.id   <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id
                                   ,start_date,end_date,pkg,fcn,username,con=con,
                                   hostname=host$name,browndog=NULL,write=TRUE,lst=lst)
-      
+
       print(ready.id)
       #     }else{
       #       ready.id<-cf.id[1]
@@ -310,51 +310,51 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     }
     logger.info("Finished Standardize Met")
   }
-  
+
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
   # Determine output format name and mimetype
-  
+
   model_info <- db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m",
                                 " join modeltypes_formats as mf on m.id = mf.modeltype_id",
                                 " join formats as f on mf.format_id = f.id",
                                 " join mimetypes as mt on f.mimetype_id = mt.id",
                                 " where m.name = '", model, "' AND mf.tag='met'"),con)
-  
+
   if (model_info[1] == "CF Meteorology"){
     stage$met2model=FALSE
-  } 
-  
+  }
+
   if(stage$met2model == TRUE){
     logger.info("Begin Model Specific Conversion")
-    
+
     formatname <- model_info[1]
     mimetype   <- model_info[3]
-    
+
     print("# Convert to model format")
-    
+
     input.id  <- ready.id$input.id[1]
     outfolder <- file.path(dir,paste0(met,"_",model,"_site_",str_ns))
     pkg       <- paste0("PEcAn.",model)
     fcn       <- paste0("met2model.",model)
     lst       <- site.lst(site,con)
-    
+
     model.id  <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                                username,con=con,hostname=host$name,browndog,write=TRUE,lst=lst,lat=new.site$lat,lon=new.site$lon)
   }else{
     model.id = ready.id
-    
+
     if("CRUNCEP" %in% met){outfolder <- file.path(dir,paste0(met,"_site_",str_ns))}
     if("GFDL" %in% met){outfolder <- file.path(dir,paste0(met,"_site_",str_ns))}
   }
-  
+
   logger.info(paste("Finished Model Specific Conversion",model.id[1]))
-  
+
   model.file <- db.query(paste("SELECT * from dbfiles where id =",model.id[[2]]),con)[["file_name"]]
-  
+
   db.close(con)
   return(file.path(outfolder, model.file))
-  
+
 }
 
 #################################################################################################################################
@@ -388,12 +388,13 @@ db.site.lat.lon <- function(site.id,con){
 ##' @param end_date, end date for result
 ##' @param model, model to convert the met data to
 ##' @param dir, folder where results are stored (in subfolder)
+##' @param username, used when downloading data from Ameriflux like sites
 ##
 ##' @author Rob Kooper
-browndog.met <- function(browndog, source, site, start_date, end_date, model, dir) {
+browndog.met <- function(browndog, source, site, start_date, end_date, model, dir, username) {
   folder <- tempfile("BD-", dir)
   dir.create(folder, showWarnings = FALSE, recursive = TRUE)
-  
+
   if (source == "Ameriflux") {
     sitename <- sub(".*\\((.+)\\)", "\\1", site$name)
   } else if (source == "NARR") {
@@ -402,7 +403,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
     logger.warn("Could not process source", source)
     invisible(return(NA))
   }
-  
+
   # this logic should live somewhere else, maybe the registry?
   if (model == "SIPNET") {
     formatname <- "clim"
@@ -452,7 +453,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
     logger.warn("Could not process model", model)
     invisible(return(NA))
   }
-  
+
   xmldata <- paste0("<input>",
                     "<type>", source, "</type>",
                     "<site>", sitename, "</site>",
@@ -460,8 +461,9 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
                     "<lon>", site$lon, "</lon>",
                     "<start_date>", start_date, "</start_date>",
                     "<end_date>", end_date, "</end_date>",
+                    "<username>", username, "</username>",
                     "</input>")
-  
+
   userpass <- paste(browndog$username, browndog$password, sep=":")
   curloptions <- list(userpwd=userpass, httpauth=1L, followlocation=TRUE)
   result <- postForm(paste0(browndog$url, formatname, "/"),
@@ -469,7 +471,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
                      .opts=curloptions)
   url <- gsub('.*<a.*>(.*)</a>.*', '\\1', result)
   downloadedfile <- download.url(url, outputfile, 600, curloptions)
-  
+
   # fix returned data
   if (model == "ED2") {
     unzip(downloadedfile, exdir=folder)
@@ -481,7 +483,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
     results$file <- downloadedfile
     results$dbfile.name <- basename(downloadedfile)
   }
-  
+
   invisible(return(results))
 }
 

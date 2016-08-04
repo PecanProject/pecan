@@ -16,6 +16,6 @@ Nothing. Plot is generated and saved to PDF.
 Plot PDA Parameter Diagnostics
 }
 \author{
-Ryan Kelly
+Ryan Kelly, Istem Fer
 }
 
