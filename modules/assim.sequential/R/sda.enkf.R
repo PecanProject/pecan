@@ -12,7 +12,8 @@
 ##' 
 ##' @return NONE
 ##' 
-sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, given.process.variance = NULL){
+sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL,
+                     given.process.variance = NULL,IC = NULL){
   
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
@@ -27,7 +28,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step
   spin.up.start <- strftime(settings$state.data.assimilation$spin.up$start.date,"%Y")
   spin.up.end <- strftime(settings$state.data.assimilation$spin.up$end.date,"%Y")
-  nens = settings$state.data.assimilation$n.ensemble
+  nens = settings$ensemble$size#settings$state.data.assimilation$n.ensemble #which one?
   start.year <- strftime(settings$state.data.assimilation$start.date,"%Y") #we need to make sure this matches the data years somehow
   end.year   <- strftime(settings$state.data.assimilation$end.date,"%Y")
   processvar <-settings$state.data.assimilation$process.variance
@@ -125,20 +126,20 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
     dir.create(file.path(settings$rundir, run.id[[i]]), recursive=TRUE)
     dir.create(file.path(settings$modeloutdir, run.id[[i]]), recursive=TRUE)
     
-    settings$run$start.date <- paste0(as.numeric(spin.up.start),strftime(settings$run$end.date,"/%m/%d"))
+    settings$run$start.date <- paste0(as.numeric(spin.up.start),strftime(settings$run$start.date,"/%m/%d"))
     settings$run$end.date <- paste0(as.numeric(spin.up.end),strftime(settings$run$end.date,"/%m/%d"))
     
     if(sample_parameters == TRUE){
       get.parameter.samples(pfts = settings$pfts, ens.sample.method=settings$ensemble$method)
       load(file.path(settings$outdir, "samples.Rdata"))
-      do.call(my.write.config, args = list(defaults = NULL, trait.values = lapply(ensemble.samples, function(x, n){x[n,pick.trait.params]},n = i),
+      do.call(my.write.config, args = list(defaults = NULL, trait.values = lapply(ensemble.samples, function(x, n){x[i,]},n = i),
                                            settings = settings, run.id = run.id[[i]],
                                            inputs = list(met=list(path=met[1]))))
     } else {
       load(file.path(settings$outdir, paste0("ensemble.samples.",settings$state.data.assimilation$prior,".Rdata")))
       do.call(my.write.config,args=list(defaults = NULL, trait.values = ens.samples, 
                                         settings=settings,run.id = run.id[[i]],restart=FALSE,
-                                        inputs = list(met=list(path=met[1]))))
+                                        inputs = list(met=list(path=met[1])),IC=IC[i,]))
     }
     
     ## write a README for the run
@@ -167,7 +168,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
   
   ## start model runs
   start.model.runs(settings,settings$database$bety$write)
-  
+  save.image(file.path(outdir,"sda.spinup.Rdata"))
   ###-------------------------------------------------------------------###
   ### set up for data assimilation                                      ###
   ###-------------------------------------------------------------------###  
@@ -178,7 +179,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
   nt = length(total.time) #could be different if time step was different right?
   FORECAST <- ANALYSIS <- list()
   enkf.params <- list()
-  aqq = array(0,dim=c(nt,ncol(X),ncol(X))) #HACK
+  aqq = array(0,dim=c(nt,length(variables)+1,length(variables)+1)) #HACK
   bqq = numeric(nt+1)
   CI.X1 <- matrix(0,3,nt) ; CI.X2 = CI.X1
   
@@ -292,7 +293,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
       aqq[1,,] <- diag(length(mu.f))*bqq[1]
       
       #### extinct from the forecast ensembles
-      E <- which(colMeans(X) < .001)
+      E <- which(colSums(Pf) == 0)
       
       #### forcast to modeled vector ## remove spp. that don't show up in forecast
       F2M<- seq(1,length(mu.f),1)
@@ -302,6 +303,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
       #### translating x to y ## remove X that you don't have data for
       X2Y<- seq(1,length(Y),1)
       X2Y <- X2Y[which(!is.na(Y))]
+      
+      for(i in 1:length(diag(Pf))){
+        if(diag(Pf)[i]<.0000001) diag(Pf)[i]<-1 #HACK
+      }
     
       ### analysis of model and data
       if(length(E)>0){ #if all ensemble members 
@@ -398,16 +403,15 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
     ###-------------------------------------------------------------------### 
     if(t < nt){
       for(i in 1:nens){
+        trait.values<-lapply(ensemble.samples, function(x, n){x[i,]},n = i)
         do.call(my.write.restart,
                 args=list(out.dir = outdir, runid = run.id[[i]],
                           time = total.time[t], settings = settings,
                           analysis.vec = analysis[i,],
                           RENAME = TRUE, PLOT=FALSE, variables=variables,
                           sample_parameters = sample_parameters,
-                          trait.values = lapply(ensemble.samples,
-                                                function(x, n){x[n,pick.trait.params]},
-                                                n = i),
-                          my.write.config))
+                          trait.values = trait.values,
+                          my.write.config,met=met))
       }
       ###-------------------------------------------------------------------###
       ### Run model                                                         ###
@@ -423,7 +427,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
   ###-------------------------------------------------------------------###
   ### save outputs                                                      ###
   ###-------------------------------------------------------------------### 
-  save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.ENKF.Rdata"))
+  save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.output.Rdata"))
   
   
   ###-------------------------------------------------------------------###
@@ -431,11 +435,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
   ###-------------------------------------------------------------------### 
   
   ### LOAD CLIMATE ### HACK ### LINKAGES SPECIFIC
-  climate_file <- settings$run$inputs$met$path
-  load(climate_file)
-  temp.mat <- temp.mat[total.time-853,]
-  precip.mat <- precip.mat[total.time-853,]
-  
+  # climate_file <- settings$run$inputs$met$path
+  # load(climate_file)
+  # temp.mat <- temp.mat[total.time-853,]
+  # precip.mat <- precip.mat[total.time-853,]
+  # 
   ### Diagnostic graphs  
   pdf(file.path(settings$outdir,"EnKF.pdf"))
     
@@ -450,10 +454,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
     blue = col2rgb("blue")
     alphablue = rgb(blue[1],blue[2],blue[3],75,max=255)
     
-    Ybar =  laply(obs.mean[t1:t],function(x){return(x[[1]])})
-    Ybar = Ybar[,na.omit(pmatch(colnames(X), names(obs.mean[[nt]][[1]])))]
-    YCI = as.matrix(laply(obs.cov[t1:t],function(x){return(sqrt(diag(x)))}))  #need to make this from quantiles
-    YCI = YCI[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
+    Ybar =  laply(obs.mean[t1:t],function(x){return(x)})
+    Ybar = Ybar[,na.omit(pmatch(colnames(X), names(obs.mean[[t]])))]
+    YCI = as.matrix(laply(obs.cov[t1:t],function(x){return(sqrt(diag(x)))}))  #need to make this from quantiles for lyford plot data
+    #YCI = YCI[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
    
     for(i in 1:ncol(X)){
       t1=1
@@ -467,7 +471,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL, give
            type='n',xlab="Year",ylab="kg/m^2",main=colnames(X)[i])
      
        #observation / data
-      if(i<=ncol(Ybar)){
+      if(i<=length(Ybar)){
         ciEnvelope(total.time[t1:t],as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
                    as.numeric(Ybar[,i])+as.numeric(YCI[,i])*1.96,col=alphagreen)
         lines(total.time[t1:t],as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)

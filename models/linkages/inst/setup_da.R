@@ -32,15 +32,16 @@ library(PEcAn.LINKAGES)
 source('~/pecan/modules/assim.sequential/R/sda.enkf.R')
 
 ######### sipnet
-settings <- read.settings("/fs/data2/output/PEcAn_1000002327/pecan.xml")
-settings$ensemble$size <- 30
+settings <- read.settings("/fs/data2/output/PEcAn_1000002340/pecan.xml")
+settings$ensemble$size <- 50
+settings$state.data.assimilation$n.ensemble<- 50
 load(file.path(settings$outdir, "samples.Rdata"))
-pick.trait.params <- names(ensemble.samples[[1]])
+pick.trait.params <- c(names(ensemble.samples[[1]]),names(ensemble.samples[[2]]))
 
 obs.mean <- list()
 for(i in 1:10) {
-  obs.mean[[i]]<-c(10+i, 5+i)
-  names(obs.mean[[i]])<-c("NPP",'AbvGrndWood')
+  obs.mean[[i]]<-c(100+i, 5+i)
+  names(obs.mean[[i]])<-c("NPP",'plantWood')
   }
 
 obs.cov <- list()

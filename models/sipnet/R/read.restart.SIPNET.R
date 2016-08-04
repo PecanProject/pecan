@@ -17,10 +17,10 @@ read.restart.SIPNET <- function(outdir,runid,time,settings,variables,sample_para
 
   if(sample_parameters == TRUE){
     load(file.path(settings$outdir, "samples.Rdata"))
-    prior.sla <- mean(ensemble.samples[[1]]$SLA)
+    prior.sla <- mean(ensemble.samples[[which(names(ensemble.samples)!='soil')[1]]]$SLA) #HACK
   }else{
     load(file.path(settings$outdir, paste0("ensemble.samples.",settings$state.data.assimilation$prior,".Rdata")))
-    prior.sla <- ens.samples[[1]]$SLA
+    prior.sla <- ens.samples[[which(names(ensemble.samples)!='soil')[1]]]$SLA
   }
   
   forecast <- list()
@@ -35,10 +35,6 @@ read.restart.SIPNET <- function(outdir,runid,time,settings,variables,sample_para
   
     forecast[[1]] <- mean(ens$NPP)*unit.conv ## kg C m-2 s-1 -> Mg/ha/yr [Check]
     forecast[[2]] = ens$AbvGrndWood[last]*1000 ## kgC/m2 -> gC/m2
-    
-    
-    if(FALSE){
-    
     forecast[[3]] = ens$LeafC[last]*prior.sla*2 ## kgC/m2*m2/kg*2kg/kgC -> m2/m2
     forecast[[4]] = ens$Litter[last]*1000 ##kgC/m2 -> gC/m2
     forecast[[5]] = ens$TotSoilCarb[last]*1000 ## kgC/m2 -> gC/m2
@@ -47,9 +43,8 @@ read.restart.SIPNET <- function(outdir,runid,time,settings,variables,sample_para
     
     forecast[[8]] = runif(1,0,0.01) #snow
     #forecast$microbe = NA
-}
   
-  names(forecast)<-c(variables) #,'snow'
+  names(forecast)<-c("NPP","plantWood","lai","litter","soil","litterWFrac","soilWFrac","snow") #,'snow'
   X.vec = unlist(forecast)
   
   print(runid)
