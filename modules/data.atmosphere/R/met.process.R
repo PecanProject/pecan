@@ -25,7 +25,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   #get met source and potentially determine where to start in the process
   met <- ifelse(is.null(input_met$source), logger.error("Must specify met source"),input_met$source)
 
-  # special case Brown Dog
+  # Brown Dog Configuration
   if (!is.null(browndog)) {
     result <- browndog.met(browndog, met, site, start_date, end_date, model, dir, username)
 
@@ -47,33 +47,46 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
 
 
   #read in registration xml for met specific information
-  register.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
-  register <- read.register(register.xml, con)
+  met.reg.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
+  met.reg <- read.register(met.reg.xml, con)
+  
 ###########------------------------------------------------------------------> 
  
-##read in registration xml for model specific information
-  model.register.xml <- system.file(paste0("reagistration/register.",model,".xml"), package = "PEcAn.data.atmosphere")
-      ### Returns True False statement for
+  ##read in registration xml for model specific information
+    ## Where should these registration files be located? Within the model package? This could be difficult given that the package name might not be the same as model name in this context. Will need to double check. 
+    model.reg.xml <- system.file(paste0("registration/register.",model,".xml"), package = "PEcAn.data.atmosphere")
+    model.reg <- read.register(model.reg.xml, con) #### Betsy: rewrite read.register to accomodate met or model
+    ## update.met = model.reg$update
+        ## FALSE: use exisintg workflow. 
+        ## TRUE: will not work until we fix the met.dates.bug
+  
 ## Figure out what Years to process
-    #we have start and end dates -> start_date, end_date
-    # Need existing record start and end dates
-      ###query for model.id at site, return(db_start,db_end)
+    ## we have run start and end dates -> run_start = start_date, run_end = end_date
+    ## Need existing record start and end dates
+      ## query for model.id at site, return(db_start,db_end)
     
-    # create dates = list(db_start,db_end,run_start,run_end,new_start = NULL, new_end = NULL, update_start = NA, update_end=NULL)
-    		## new_start, new_end refer to dates that need to be downloaded
-		## update_start, update_end referd to dates that need to be in record file.
-	met.date.process(dates)
-      #### returns updated dates list- dates$new_start -> new_end tell what years need to be updated
-                                      #update_start -> update_end tells what dates need to go into bety
-###########-------------------------------------------------------------------->
+    # dates.list = list(
+      # db_start, db_end,                    ## current met dates in database
+      # run_start, run_end,                  ## user chosen dates for run
+      # new_start = NULL, new_end = NULL,    ## dates that need to be downloaded i.e. update dates - db dates
+      # update_start = NA, update_end = NULL ## dates that need to be updated in the database  
+    # )  
+
+    # dates.list = met.date.process(dates.list)
+    ## returns updated dates list, potenitally filling in:
+  	  ## dates$new_start , dates$new_end
+      ## dates$update_start , dates$update_end 
     
   # first attempt at function that designates where to start met.process
   if(is.null(input_met$id)){
     stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
-    format.vars <- query.format.vars(con=con,format.id=register$format$id) #query variable info from format id
+    format.vars <- query.format.vars(con=con,format.id=met.reg$format$id) #query variable info from format id
   }else{
-    stage <- met.process.stage(input_met$id,register$format$id,con)
-    format.vars <- query.format.vars(input.id=input_met$id,con=con) #query DB to get format variable information if available
+    
+## Add in model update to met.process.stage code
+    stage <- met.process.stage(input_met$id,met.reg$format$id,update,con)
+    #query DB to get format variable information if available
+    format.vars <- query.format.vars(input.id=input_met$id,con=con) 
     # Is there a situation in which the input ID could be given but not the file path?
     # I'm assuming not right now
     assign(stage$id.name,list(
@@ -82,8 +95,10 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     ))
   }
 
+###########-------------------------------------------------------------------->
+    
   #setup additional browndog arguments
-  if(!is.null(browndog)){browndog$inputtype <- register$format$inputtype}
+  if(!is.null(browndog)){browndog$inputtype <- met.reg$format$inputtype}
 
   #setup site database number, lat, lon and name and copy for format.vars if new input
   new.site <- data.frame(id = as.numeric(site$id), lat = db.site.lat.lon(site$id,con=con)$lat, lon = db.site.lat.lon(site$id,con=con)$lon)
@@ -92,7 +107,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   if (is.null(format.vars$lat)) { format.vars$lat <- new.site$lat }
   if (is.null(format.vars$lon)) { format.vars$lon <- new.site$lon }
   if (is.null(format.vars$site)) { format.vars$site <- new.site$id }
-  #--------------------------------------------------------------------------------------------------#
+  
+  #------------------------------------------------------------------------------------------------#
   # Download raw met from the internet
 
   if(stage$download.raw==TRUE){
@@ -100,12 +116,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     pkg        <- "PEcAn.data.atmosphere"
     fcn        <- paste0("download.",met)
 
-    if(register$scale=="regional"){ #Right now this only means NARR but will need to be generalized once we have more regional met products
+    if(met.reg$scale=="regional"){ #Right now this only means NARR but will need to be generalized once we have more regional met products
 
       print("start CHECK")
       check = db.query(
-        paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",register$siteid,
-               " and d.container_type = 'Input' and i.format_id=",register$format$id, " and d.machine_id =",machine$id,
+        paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",met.reg$siteid,
+               " and d.container_type = 'Input' and i.format_id=",met.reg$format$id, " and d.machine_id =",machine$id,
                " and (i.start_date <= DATE '",as.POSIXlt(start_date, tz = "GMT"),"') and (DATE '", as.POSIXlt(end_date, tz = "GMT"),"' <= i.end_date)" ),con)
       print("end CHECK")
       options(digits=10)
@@ -148,12 +164,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         dbfile.input.update(update_new, update_end,....)
 }        
       }
-    }else if(register$scale=="site") { # Site-level met
+    }else if(met.reg$scale=="site") { # Site-level met
 
       print("start CHECK")
       check = db.query(
         paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",site$id,
-               " and d.container_type = 'Input' and i.format_id=",register$format$id, " and d.machine_id =",machine$id,
+               " and d.container_type = 'Input' and i.format_id=",met.reg$format$id, " and d.machine_id =",machine$id,
                " and (i.start_date <= DATE '",as.POSIXlt(start_date, tz = "GMT"),"') and (DATE '", as.POSIXlt(end_date, tz = "GMT"),"' <= i.end_date)" ),con)
       print("end CHECK")
       options(digits=10)
@@ -199,14 +215,14 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     format.id <- 33
 
 
-    if(register$scale=="regional"){
+    if(met.reg$scale=="regional"){
 
       input_name <- paste0(met,"_CF")
       outfolder  <- file.path(dir,input_name)
 
       print("start CHECK")
       check = db.query(
-        paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",register$siteid,
+        paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",met.reg$siteid,
                " and d.container_type = 'Input' and i.format_id=",format.id, " and d.machine_id =",machine$id, " and i.name = '", input_name,
                "' and (i.start_date <= DATE '",as.POSIXlt(start_date, tz = "GMT"),"') and (DATE '", as.POSIXlt(end_date, tz = "GMT"),"' <= i.end_date)" ),con)
       print("end CHECK")
@@ -217,7 +233,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       }else{
 
         fcn1 <- paste0("met2CF.",met)
-        mimename <- register$format$mimetype
+        mimename <- met.reg$format$mimetype
         mimename <- substr(mimename,regexpr('/',mimename)+1,nchar(mimename))
         mimename <- substr(mimename,regexpr('-',mimename)+1,nchar(mimename))
         fcn2 <- paste0("met2CF.",mimename)
@@ -241,7 +257,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
 
       print("start CHECK")
       check = db.query(
-        paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",register$siteid,
+        paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",met.reg$siteid,
                " and d.container_type = 'Input' and i.format_id=",format.id, " and d.machine_id =",machine$id, " and i.name = '", input_name,
                "' and (i.start_date <= DATE '",as.POSIXlt(start_date, tz = "GMT"),"') and (DATE '", as.POSIXlt(end_date, tz = "GMT"),"' <= i.end_date)" ),con)
       print("end CHECK")
@@ -255,7 +271,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                username,con=con,hostname=host$name,browndog=NULL,write=TRUE)
       }
 
-    }else if(register$scale=="site"){
+    }else if(met.reg$scale=="site"){
 
       input_name <- paste0(met,"_CF_site_",str_ns)
       outfolder  <- file.path(dir,input_name)
@@ -272,7 +288,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         cf.id <- list(input.id=check$container_id, dbfile.id=check$id)
       }else{
         fcn1 <- paste0("met2CF.",met)
-        mimename <- register$format$mimetype
+        mimename <- met.reg$format$mimetype
         mimename <- substr(mimename,regexpr('/',mimename)+1,nchar(mimename))
         mimename <- substr(mimename,regexpr('-',mimename)+1,nchar(mimename))
         fcn2 <- paste0("met2CF.",mimename)
@@ -308,7 +324,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   if(stage$standardize == TRUE){
     logger.info("Begin Standardize Met")
 
-    if(register$scale=="regional"){ #### Site extraction
+    if(met.reg$scale=="regional"){ #### Site extraction
 
       logger.info("Site Extraction")
 
@@ -327,15 +343,15 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       dbfile.insert.update()
 }
 
-    }else if(register$scale=="site"){ ##### Site Level Processing
-      #     if(!is.null(register$gapfill)){
+    }else if(met.reg$scale=="site"){ ##### Site Level Processing
+      #     if(!is.null(met.reg$gapfill)){
       logger.info("Gapfilling") # Does NOT take place on browndog!
 
       input.id   <- cf.id[1]
       outfolder  <- file.path(dir,paste0(met,"_CF_gapfill_site_",str_ns))
       pkg        <- "PEcAn.data.atmosphere"
       fcn        <- "metgapfill"
-      #       fcn        <- register$gapfill
+      #       fcn        <- met.reg$gapfill
       formatname <- 'CF Meteorology'
       mimetype   <- 'application/x-netcdf'
       lst        <- site.lst(site,con)
