@@ -213,7 +213,7 @@ logger.info("current C_stack_info(): ",Cstack_info()['current'])
 # Run ensemble analysis on model output. 
 if (status.check("ENSEMBLE") == 0) {
   status.start("ENSEMBLE")
-  run.ensemble.analysis(TRUE)    
+  run.ensemble.analysis(settings,TRUE)    
   status.end()
 }
 
@@ -223,7 +223,7 @@ logger.info("current C_stack_info(): ",Cstack_info()['current'])
 # Run sensitivity analysis and variance decomposition on model output
 if (status.check("SENSITIVITY") == 0) {
   status.start("SENSITIVITY")
-  run.sensitivity.analysis()
+  run.sensitivity.analysis(settings)
   status.end()
 }
 
