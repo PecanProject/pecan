@@ -33,7 +33,7 @@ Within both the run and out folders there will be one folder for each unique mod
 
 ## Load and plot the model output
 
-```
+```{r}
 library(PEcAn.utils)
 out <- read.output(99000000001, "output/PEcAn_99000000001/out/99000000001/" ,2006,2006,c("time","NEE"))
 plot(out$time,out$NEE,type='l',ylab="kg ha-1 yr-1",xlab="day of year")
@@ -45,7 +45,7 @@ The arguments to read.output are the run ID, the folder where the run is located
 
 **First** _load up the observations_ and take a look at the contents of the file
 
-```
+```{r}
 library(PEcAn.assim.batch)
 obs <- load.L2Ameriflux.cf("~/output/dbfiles/Ameriflux_site_0-772/US-NR1.2006.nc")
 names(obs)
@@ -55,33 +55,33 @@ Here 0-722 is the database site ID, a folder that was created when you selected 
 
 **Second**, _change all missing values_ from -9999 to not a number (NA) and also _$u*$ filter_ the fluxes. Here we will apply a conservative $u*$ of 0.2.
 
-```
+```{r}
 obs[obs==-9999]=NA
 obs$NEE[obs$UST<0.2]=NA
 ```
 
 **Third**, _convert the model to have the same units as the data_
 
-```
+```{r}
 modNEE <- ud.convert(out$NEE,"kg ha-1 yr-1","ug m-2 s-1")/12.0 #12 g C per mol
 ```
 
 **Fourth**, _plot model predictions vs. observations_ and compare this to a 1:1 line 
 
-```
+```{r}
 plot(modNEE,obs$NEE)
 abline(0,1,col="red")  ## intercept=0, slope=1
 ```
 
 **Fifth**, _calculate the Root Mean Square Error (RMSE)_ between the model and the data
 
-```
+```{r}
 rmse = sqrt(mean((modNEE-obs$NEE)^2,na.rm = TRUE))
 ```
 
 **Finally**, _plot time-series_ of both the model and data together
 
-```
+```{r}
 plot(out$time,modNEE,type='l',ylab="umol m-2 s-1",xlab="day of year")
 lines(out$time,obs$NEE,col="green")
 ```
