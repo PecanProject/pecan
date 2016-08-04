@@ -214,9 +214,11 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       
       print("start CHECK")
       check = db.query(
-        paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",register$siteid,
-               " and d.container_type = 'Input' and i.format_id=",format.id, " and d.machine_id =",machine$id, " and i.name = '", input_name,
-               "' and (i.start_date <= DATE '",as.POSIXlt(start_date, tz = "GMT"),"') and (DATE '", as.POSIXlt(end_date, tz = "GMT"),"' <= i.end_date)" ),con)
+        paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  ",
+          "from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =", register$siteid,
+          " and d.container_type = 'Input' and i.format_id=", format.id, " and d.machine_id =", machine$id, 
+          " and i.name = '", input_name, "' and (i.start_date <= DATE '" ,as.POSIXlt(start_date, tz = "GMT"), 
+          "') and (DATE '", as.POSIXlt(end_date, tz = "GMT"), "' <= i.end_date)" ), con)
       print("end CHECK")
       options(digits=10)
       print(check)
@@ -228,7 +230,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                username,con=con,hostname=host$name,browndog=NULL,write=TRUE)
       }
       
-    }else if(register$scale=="site"){
+    } else if(register$scale=="site") {
       
       input_name <- paste0(met,"_CF_site_",str_ns)
       outfolder  <- file.path(dir,input_name)
@@ -276,14 +278,21 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       logger.info("Site Extraction")
       
       input.id   <- cf.id[1]
-      outfolder  <- file.path(dir,paste0(met,"_CF_site_",str_ns))
+      outfolder  <- ifelse(host$name == "localhost", 
+                      file.path(dir, paste0(met,"_CF_site_",str_ns)),
+                      file.path(host$dbfiles, paste0(met,"_CF_site_",str_ns)))
       pkg        <- "PEcAn.data.atmosphere"
       fcn        <- "extract.nc"
       formatname <- 'CF Meteorology'
       mimetype   <- 'application/x-netcdf'
       
+
+#        site.id=site$id; hostname=host; browndog=NULL; write=TRUE; 
+#        l = list(slat=new.site$lat, slon=new.site$lon, newsite=new.site$id)
+
+      
       ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                                username,con=con,hostname=host$name,browndog=NULL,write=TRUE,
+                                username,con=con,hostname=host,browndog=NULL,write=TRUE,
                                 slat=new.site$lat,slon=new.site$lon,newsite=new.site$id)
       
     }else if(register$scale=="site"){ ##### Site Level Processing
@@ -335,13 +344,26 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     print("# Convert to model format")
     
     input.id  <- ready.id$input.id[1]
-    outfolder <- file.path(dir,paste0(met,"_",model,"_site_",str_ns))
+    outfolder <- ifelse(host$name == "localhost", 
+                file.path(dir,paste0(met,"_",model,"_site_",str_ns)),
+                file.path(host$dbfiles,paste0(met,"_",model,"_site_",str_ns)))
+    
     pkg       <- paste0("PEcAn.",model)
     fcn       <- paste0("met2model.",model)
     lst       <- site.lst(site,con)
     
-    model.id  <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                               username,con=con,hostname=host$name,browndog,write=TRUE,lst=lst,lat=new.site$lat,lon=new.site$lon)
+    
+# convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, start_date, end_date, 
+#                           pkg, fcn, username, con=con, hostname='localhost', browndog, write=TRUE,  
+#                           format.vars=format.vars, ...) {
+# site.id=site$id; hostname=host; browndog=browndog; write=TRUE; 
+# l = list(lst=lst, lat=new.site$lat, lon=new.site$lon)
+
+    
+    
+    model.id  <- convert.input(input.id, outfolder, formatname, mimetype, site.id=site$id,
+      start_date, end_date, pkg, fcn, username, con=con, hostname=host, browndog, write=TRUE, 
+      lst=lst, lat=new.site$lat, lon=new.site$lon)
   }else{
     model.id = ready.id
     
