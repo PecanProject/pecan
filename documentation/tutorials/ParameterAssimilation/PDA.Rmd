@@ -144,7 +144,7 @@ Once you’ve made and saved the changes to your XML, load the file and check th
 
 ```{r eval=FALSE}
 settings.PDA <- read.settings(file.path(outdir,paste0("PEcAn_",workflow_id),"pecan.PDA.INIT.xml"))
-settings$assim.batch
+settings.PDA$assim.batch
 ```
 
 If the printed list contains everything you just added to pecan.PDA.INIT.xml, you’re ready to proceed.
