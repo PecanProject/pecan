@@ -47,11 +47,11 @@ The arguments to read.output are the run ID, the folder where the run is located
 
 ```{r}
 library(PEcAn.assim.batch)
-obs <- load.L2Ameriflux.cf("~/output/dbfiles/Ameriflux_site_0-772/US-NR1.2006.nc")
+obs <- load.L2Ameriflux.cf("~/output/dbfiles/Ameriflux_site_0-622/US-Syv.2004.nc")
 names(obs)
 ```
 
-Here 0-722 is the database site ID, a folder that was created when you selected the site and PEcAn downloaded the Ameriflux NetCDF (.nc) file from the Ameriflux website. 
+Here 0-622 is the database site ID, a folder that was created when you selected the site and PEcAn downloaded the Ameriflux NetCDF (.nc) file from the Ameriflux website. 
 
 **Second**, _change all missing values_ from -9999 to not a number (NA) and also _$u*$ filter_ the fluxes. Here we will apply a conservative $u*$ of 0.2.
 
