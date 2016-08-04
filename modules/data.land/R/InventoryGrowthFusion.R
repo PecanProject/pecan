@@ -11,6 +11,20 @@
 InventoryGrowthFusion <- function(data,n.iter,random=TRUE){
   require(rjags)
   
+  #Temp for DBH matrix, data$z
+  foo <- matrix(nrow=nrow(data$z),ncol=ncol(data$y))
+  
+  #subract increment from DBH
+  for(g in 1:nrow(data$z)){
+    for(f in rev(1:ncol(data$y))){
+      foo[g,f] <- data$z[g,f]
+      foo[g,f-1] <- data$z[g,f] - data$y[g,f]      
+    }
+  }
+  
+  data$y = log(data$y)
+  data$z = log(data$z)
+  
   burnin.variables = c("tau_add","tau_dbh","tau_inc","mu")
   out.variables = c("x","tau_add","tau_dbh","tau_inc","mu")
   
@@ -22,19 +36,20 @@ model{
   
   #### Data Model: DBH
   for(t in 1:nt){
-  z[i,t] ~ dnorm(x[i,t],tau_dbh)
+   lx[i,t] <- log(x[i,t])
+   z[i,t] ~ dnorm(lx[i,t],tau_dbh)
   }
   
   #### Data Model: growth
   for(t in 2:nt){
-  inc[i,t] <- x[i,t]-x[i,t-1]
-  y[i,t] ~ dnorm(inc[i,t],tau_inc)
+   inc[i,t] <- log(x[i,t]-x[i,t-1])
+   y[i,t] ~ dnorm(inc[i,t],tau_inc)
   }
   
   #### Process Model
   for(t in 2:nt){
-  Dnew[i,t] <- x[i,t-1] + mu ##PROCESS
-  x[i,t]~dnorm(Dnew[i,t],tau_add)
+   Dnew[i,t] <- x[i,t-1] + mu ##PROCESS
+   x[i,t]~dnorm(Dnew[i,t],tau_add)
   }
   
 #RANDOM ## individual effects
