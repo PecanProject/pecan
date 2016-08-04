@@ -255,7 +255,25 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,trait
 ##' @export
 runModule.get.trait.data <- function(settings) {
   if(is.SettingsList(settings)) {
-    return(papply(settings, runModule.get.trait.data))
+    pfts <- list()
+    pft.names <- character(0)
+    for(i in seq_along(settings)) {
+      pfts.i <- settings[[i]]$pfts
+      pft.names.i <- sapply(pfts.i, function(x) x$name)
+      ind <- which(pft.names.i %in% setdiff(pft.names.i, pft.names))
+      pfts <- c(pfts, pfts.i[ind])
+      pft.names <- sapply(pfts, function(x) x$name)
+    }
+    
+    logger.info(paste0("Getting trait data for all PFTs listed by any Settings object in the list: ",
+                paste(pft.names, collapse=", ")))
+                
+    modeltype <- settings$model$type
+    dbfiles <- settings$database$dbfiles
+    database <- settings$database$bety
+    forceupdate <- settings$meta.analysis$update
+    settings$pfts <- get.trait.data(pfts, modeltype, dbfiles, database, forceupdate)
+    return(settings)
   } else if(is.Settings(settings)) {
     pfts <- settings$pfts
     modeltype <- settings$model$type
@@ -268,6 +286,7 @@ runModule.get.trait.data <- function(settings) {
     stop("runModule.get.trait.data only works with Settings or SettingsList")
   }
 }
+
 
 
 ####################################################################################################
