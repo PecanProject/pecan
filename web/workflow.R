@@ -171,7 +171,7 @@ if (status.check("TRAIT") == 0){
 
   
 # Run the PEcAn meta.analysis
-if(!is.null(settings$meta.analysis) {
+if(!is.null(settings$meta.analysis)) {
   if (status.check("META") == 0){
     status.start("META")
     runModule.run.meta.analysis(settings)
