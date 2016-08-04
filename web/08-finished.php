@@ -449,6 +449,8 @@ foreach ($status as $line) {
       <div class="spacer"></div>
       
       <input id="home" type="button" value="Plot run/year/variable" onclick="showGraph();" />
+            
+      <a href="../shiny/workflowPlot/?workflow_id=<?php echo $workflowid; ?>" target="_blank">Open SHINY</a>
 
       <p></p>
       <h1>Inputs</h1>
