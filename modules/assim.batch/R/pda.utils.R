@@ -44,7 +44,7 @@ assim.batch <- function(settings) {
 ##' @author Ryan Kelly
 ##' @export
 pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL,
-                         iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL, burnin=NULL) {
+                         iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL) {
   # Some settings can be supplied via settings (for automation) or explicitly (interactive). 
   # An explicit argument overrides whatever is in settings, if anything.
   # If neither an argument or a setting is provided, set a default value in settings. 
@@ -100,10 +100,6 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   }
   settings$assim.batch$chain <- as.numeric(settings$assim.batch$chain)
 
-  # burnin
-  if(!is.null(burnin)){
-    settings$assim.batch$burnin <- burnin
-  }
 
   # iter: Number of MCMC iterations. 
   if(!is.null(iter)) {
@@ -158,15 +154,18 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
 
   # jvar: Initial jump variances. Defaults to NA to be based on priors later. 
-  if(!is.null(jvar)) {
-    settings$assim.batch$jump$jvar <- jvar
-  } 
-  if(is.null(settings$assim.batch$jump$jvar)) {   # Default
-    settings$assim.batch$jump$jvar <- rep(NA, length(settings$assim.batch$param.names))
+  if(settings$assim.batch$method != "emulator"){
+    if(!is.null(jvar)) {
+      settings$assim.batch$jump$jvar <- jvar
+    } 
+    if(is.null(settings$assim.batch$jump$jvar)) {   # Default
+      settings$assim.batch$jump$jvar <- rep(NA, length(settings$assim.batch$param.names))
+    }
+    settings$assim.batch$jump$jvar <- as.list(as.numeric(settings$assim.batch$jump$jvar))
+    # have to add names or listToXml() won't work
+    names(settings$assim.batch$jump$jvar) <- rep("jvar", length(settings$assim.batch$jump$jvar))
   }
-  settings$assim.batch$jump$jvar <- as.list(as.numeric(settings$assim.batch$jump$jvar))
-  # have to add names or listToXml() won't work
-  names(settings$assim.batch$jump$jvar) <- rep("jvar", length(settings$assim.batch$jump$jvar))
+
 
   # diag.plot.iter: How often to do diagnostic plots. Just need to convert to numeric. 
   if(!is.null(settings$assim.batch$diag.plot.iter)) {
@@ -203,7 +202,7 @@ pda.load.priors <- function(settings, con) {
 
   # If no path given or didn't find a valid prior, proceed to using a posterior specified by ID, either as specified in settings or get the most recent as default
   if(!exists("prior.out")) {
-    if(is.null(settings$assim.batch$prior$posterior.id)){
+    if(is.null(settings$pfts$pft$posteriorid)){
       logger.info(paste0("Defaulting to most recent posterior as PDA prior."))
       ## by default, use the most recent posterior as the prior
       pft.id <-  db.query(paste0("SELECT id from pfts where name = '",settings$pfts$pft$name,"'"),con)
@@ -215,8 +214,8 @@ pda.load.priors <- function(settings, con) {
 
       settings$assim.batch$prior$posterior.id <- prior.db$container_id[which.max(prior.db$updated_at)]
     }
-    logger.info(paste0("Using posterior ID ", settings$assim.batch$prior$posterior.id, " as PDA prior."))
-    prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", settings$assim.batch$prior$posterior.id),con)
+    logger.info(paste0("Using posterior ID ", settings$pfts$pft$posteriorid, " as PDA prior."))
+    prior.db <- db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", settings$pfts$pft$posteriorid),con)
     prior.db <- prior.db[ grepl("^post\\.distns\\..*Rdata$", prior.db$file_name),]
 
     # Load the file
@@ -281,16 +280,18 @@ pda.create.ensemble <- function(settings, con, workflow.id) {
 ##' @export
 pda.define.prior.fn <- function(prior) {
   n.param.all <- nrow(prior)
-  dprior <- rprior <- qprior <-list()
+  dprior <- rprior <- qprior <- pprior <-list()
   for(i in 1:n.param.all){
     if(prior$distn[i] == 'exp'){
       dprior[[i]] <- parse(text=paste("dexp(x,",prior$parama[i],",log=TRUE)",sep=""))
       rprior[[i]] <- parse(text=paste("rexp(n,",prior$parama[i],")",sep=""))
       qprior[[i]] <- parse(text=paste("qexp(p,",prior$parama[i],")",sep=""))
+      pprior[[i]] <- parse(text=paste("pexp(q,",prior$parama[i],")",sep=""))
     }else{
       dprior[[i]] <- parse(text=paste("d",prior$distn[i],"(x,",prior$parama[i],",",prior$paramb[i],",log=TRUE)",sep=""))
       rprior[[i]] <- parse(text=paste("r",prior$distn[i],"(n,",prior$parama[i],",",prior$paramb[i],")",sep=""))
       qprior[[i]] <- parse(text=paste("q",prior$distn[i],"(p,",prior$parama[i],",",prior$paramb[i],")",sep=""))
+      pprior[[i]] <- parse(text=paste("p",prior$distn[i],"(q,",prior$parama[i],",",prior$paramb[i],")",sep=""))
     }
   }
   dmvprior <- function(x,log=TRUE){  #multivariate prior - density
@@ -311,7 +312,7 @@ pda.define.prior.fn <- function(prior) {
     return(p)
   }
   
-  return(list(dprior=dprior, rprior=rprior, qprior=qprior, dmvprior=dmvprior, rmvprior=rmvprior))
+  return(list(dprior=dprior, rprior=rprior, qprior=qprior, pprior=pprior, dmvprior=dmvprior, rmvprior=rmvprior))
 }
 
 
@@ -678,11 +679,14 @@ pda.plot.params <- function(settings, params.subset, prior.ind) {
 ##'
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.postprocess <- function(settings, con, mcmc.out, pname, prior, prior.ind, burnin) {
+pda.postprocess <- function(settings, con, mcmc.list, jvar.list, pname, prior, prior.ind) {
 
+  burnin <- ifelse(!is.null(settings$assim.batch$burnin), 
+                   as.numeric(settings$assim.batch$burnin), 
+                   ceiling(min(2000,0.2*settings$assim.batch$iter)))
 
   ## Assess MCMC output
-  params.subset <- lapply(mcmc.out, function(x) x[burnin:settings$assim.batch$iter,])
+  params.subset <- lapply(mcmc.list, function(x) x[burnin:settings$assim.batch$iter,])
 
   params.subset <- pda.plot.params(settings, params.subset, prior.ind)
   
@@ -724,6 +728,20 @@ pda.postprocess <- function(settings, con, mcmc.out, pname, prior, prior.ind, bu
   }
   file.symlink(filename, file.path(dirname(filename), 'post.distns.Rdata'))
 
+  # save jump variances 
+  settings$assim.batch$jvar.path <- file.path(settings$pfts$pft$outdir, 
+                                              paste0('jvar.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+  save(jvar.list, file = settings$assim.batch$jvar.path)
+  dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
+  
+  ## If method is emulator, save knots and emulator
+  if(settings$assim.batch$method == "emulator"){
+    
+    dbfile.insert(dirname(settings$assim.batch$emulator.path), basename(settings$assim.batch$emulator.path), 'Posterior', posteriorid, con)
+    dbfile.insert(dirname(settings$assim.batch$llik.path), basename(settings$assim.batch$llik.path), 'Posterior', posteriorid, con)
+    dbfile.insert(dirname(settings$assim.batch$mcmc.path), basename(settings$assim.batch$mcmc.path), 'Posterior', posteriorid, con)
+    
+  }
 
   ## coerce parameter output into the same format as trait.mcmc
   pname <- rownames(post.distns)

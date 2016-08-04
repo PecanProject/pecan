@@ -74,7 +74,14 @@ if ($authentication) {
             
             <div class="spacer"></div>
         </form>
-<?php whoami(); ?>    
+<?php whoami(); ?>  
+<p>
+  <a href="https://pecan.gitbooks.io/pecan-documentation/content/" target="_blank">Documentation</a>
+<br>
+  <a href="https://gitter.im/PecanProject/pecan" target="_blank">Chat Room</a>
+<br>
+  <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
+</p>
     </div>
     <div id="output">
         <h1>Introduction</h1>
