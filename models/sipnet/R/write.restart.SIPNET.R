@@ -1,7 +1,28 @@
+##' @title write.restart.SIPNET
+##' @name  write.restart.SIPNET
+##' @author Ann Raiho \email{araiho@@nd.edu}
+##' 
+##' @param out.dir      output directory
+##' @param runid       run ID
+##' @param time        year that is being read
+##' @param settings    PEcAn settings object
+##' @param analysis.vec    analysis vector
+##' @param RENAME      flag to either rename output file or not
+##' @param PLOT        flag to make plots or not
+##' @param variables
+##' @param sample_parameters
+##' @param trait.values
+##' @param met
+##' 
+##' @description Write restart files for SIPNET
+##' 
+##' @return NONE
+##' @export
+##' 
 write.restart.SIPNET<- function(out.dir, runid, time, settings, analysis.vec,
                                 RENAME = TRUE, PLOT = FALSE, variables,
                                 sample_parameters = FALSE,
-                                trait.values = NA, my.write.config, met){
+                                trait.values = NA, met){
  
   if(RENAME == TRUE) {
     file.rename(file.path(outdir,runid,"sipnet.out"),
@@ -12,23 +33,14 @@ write.restart.SIPNET<- function(out.dir, runid, time, settings, analysis.vec,
   }
    #file.remove(file.path(settings$rundir,runid,"sipnet.clim"))
   
-  settings$run$start.date <- paste0(time + 1,"/01/01")
+  settings$run$start.date <- paste0(time + 1,"/01/01") #TO FIX LATER #DONT WANT TO ASSUME YEARLY TIMESTEP
   settings$run$end.date <- paste0(time + 1,"/12/31")
     
-  if(sample_parameters == TRUE){
-    load(file.path(settings$outdir, "samples.Rdata"))
-    do.call(my.write.config, args = list(defaults = NULL, trait.values = trait.values,
+  do.call(write.config.SIPNET, args = list(defaults = NULL, trait.values = trait.values,
                                          settings = settings, run.id = runid,
                                          inputs = list(met=list(path=met[grep(time+1,x=met)])),
                                          IC = analysis.vec))
-  } else {
-    load(file.path(settings$outdir, paste0("ensemble.samples.",settings$state.data.assimilation$prior,".Rdata")))
-    do.call(my.write.config,args=list(defaults = NULL, trait.values = ens.samples, 
-                                      settings=settings,run.id = runid,restart=FALSE,
-                                      inputs = list(met=list(path=met[grep(time+1,x=met)])),
-                                      IC = analysis.vec))
-  }
-  
+
     # do.call(my.write.config,args=list(defaults,list(pft=prior[i,],env=NA),
     #                                   settings, run.id[[i]],inputs = settings$run,
     #                                   IC=analysis[i,-1]))

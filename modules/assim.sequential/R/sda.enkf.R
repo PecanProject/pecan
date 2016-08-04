@@ -5,15 +5,14 @@
 ##' @param settings    PEcAn settings object
 ##' @param obs.mean    data.frame of observations of the mean of variables (time X nstate)
 ##' @param obs.cov      data.frame of observations of the sd of variables (time X nstate)
-##' @param pick.trait.params  character vector of traits to sample if sample.parameters == TRUE
 ##' @param given.process.variance flag for if parameters should come from meta.analysis or be defaults. if false parameters are set to defaults
 ##' 
 ##' @description State Variable Data Assimilation: Ensemble Kalman Filter
 ##' 
 ##' @return NONE
 ##' 
-sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL,
-                     given.process.variance = NULL,IC = NULL){
+sda.enkf <- function(settings, obs.mean, obs.cov,
+                     given.process.variance = NULL, IC = NULL){
   
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
@@ -28,7 +27,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL,
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step
   spin.up.start <- strftime(settings$state.data.assimilation$spin.up$start.date,"%Y")
   spin.up.end <- strftime(settings$state.data.assimilation$spin.up$end.date,"%Y")
-  nens = settings$ensemble$size#settings$state.data.assimilation$n.ensemble #which one?
+  nens = settings$state.data.assimilation$n.ensemble
   start.year <- strftime(settings$state.data.assimilation$start.date,"%Y") #we need to make sure this matches the data years somehow
   end.year   <- strftime(settings$state.data.assimilation$end.date,"%Y")
   processvar <-settings$state.data.assimilation$process.variance
@@ -91,6 +90,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL,
   my.write.config <- paste("write.config.",model,sep="")
   my.read.restart <- paste("read.restart.",model,sep="")
   my.write.restart <- paste("write.restart.",model,sep="")
+  
   if(!exists(my.write.config)){
     print(paste(my.write.config,"does not exist"))
     print(paste("please make sure that the PEcAn interface is loaded for",model))
@@ -100,7 +100,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL,
   ###-------------------------------------------------------------------###
   ### perform initial set of runs                                       ###
   ###-------------------------------------------------------------------###  
-  X = matrix(NA,as.numeric(settings$ensemble$size),length(settings$pft)) #why does X need to be here?
   run.id = list()
 #   
 #   pda.init.run(settings = settings, con = con, my.write.config = my.write.config, workflow.id = workflow.id,
@@ -139,7 +138,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL,
       load(file.path(settings$outdir, paste0("ensemble.samples.",settings$state.data.assimilation$prior,".Rdata")))
       do.call(my.write.config,args=list(defaults = NULL, trait.values = ens.samples, 
                                         settings=settings,run.id = run.id[[i]],restart=FALSE,
-                                        inputs = list(met=list(path=met[1])),IC=IC[i,]))
+                                        inputs = list(met=list(path=met[1]))))
     }
     
     ## write a README for the run
@@ -261,14 +260,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL,
     if(any(obs)){ #if no observations skip analysis
     mu.f = as.numeric(apply(X,2,mean,na.rm=TRUE))
     Pf   = cov(X)
-    Y    = obs.mean[[t]][pmatch(colnames(X), names(obs.mean[[t]]))]
+    Y    = na.omit(obs.mean[[t]][pmatch(colnames(X), names(obs.mean[[t]]))])
 
-    R = as.matrix(obs.cov[[t]])#how do we make sure this is in the right order?
+    R = as.matrix(obs.cov[[t]])
     
     if(length(obs.mean[[t]])>1){
-      for(s in 1:length(obs.mean[[t]][[1]])){
-        if(diag(R)[s]==0){ #if covariance is 0 then set it so model with
-          diag(R)[s] <- min(diag(R)[which(diag(R)!=0)])/2#.01^2 #probably way low?
+      for(s in 1:length(obs.mean[[t]])){
+        if(diag(R)[s]==0){ #if covariance is 0 then set it to half of the minimum covariance to avoid solve() problems
+          diag(R)[s] <- min(diag(R)[which(diag(R)!=0)])/2
         }
       }
     }
@@ -277,7 +276,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL,
     ### Kalman Filter                                                     ###
     ###-------------------------------------------------------------------###
     if(processvar == FALSE){
-      H = diag(ncol(X)) #correct fix?
+      H =  matrix(0,length(Y),ncol(X))
+      H[pmatch(colnames(X), names(obs.mean[[t]]))] <- 1
       
       K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
       mu.a = mu.f + K%*%(Y-H%*%mu.f)
@@ -292,10 +292,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL,
       bqq[1] <- length(mu.f)
       aqq[1,,] <- diag(length(mu.f))*bqq[1]
       
-      #### extinct from the forecast ensembles
+      #### marks zeros from the forecast ensembles
       E <- which(colSums(Pf) == 0)
       
-      #### forcast to modeled vector ## remove spp. that don't show up in forecast
+      #### forcast to modeled vector ## remove states that don't show up in forecast
       F2M<- seq(1,length(mu.f),1)
       F2M[E]<-NA
       F2M <- na.omit(F2M)
@@ -304,8 +304,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL,
       X2Y<- seq(1,length(Y),1)
       X2Y <- X2Y[which(!is.na(Y))]
       
+      #### changing diagonal if the covariance is too small for the matrix to be inverted
       for(i in 1:length(diag(Pf))){
-        if(diag(Pf)[i]<.0000001) diag(Pf)[i]<-1 #HACK
+        if(diag(Pf)[i]<.0000001) diag(Pf)[i]<-.0001 #HACK
       }
     
       ### analysis of model and data
@@ -408,10 +409,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL,
                 args=list(out.dir = outdir, runid = run.id[[i]],
                           time = total.time[t], settings = settings,
                           analysis.vec = analysis[i,],
-                          RENAME = TRUE, PLOT=FALSE, variables=variables,
+                          RENAME = TRUE, PLOT = FALSE, variables = variables,
                           sample_parameters = sample_parameters,
                           trait.values = trait.values,
-                          my.write.config,met=met))
+                          met = met))
       }
       ###-------------------------------------------------------------------###
       ### Run model                                                         ###
@@ -435,11 +436,15 @@ sda.enkf <- function(settings, obs.mean, obs.cov, pick.trait.params = NULL,
   ###-------------------------------------------------------------------### 
   
   ### LOAD CLIMATE ### HACK ### LINKAGES SPECIFIC
-  # climate_file <- settings$run$inputs$met$path
-  # load(climate_file)
-  # temp.mat <- temp.mat[total.time-853,]
-  # precip.mat <- precip.mat[total.time-853,]
-  # 
+  if(model == 'LINKAGES'){
+    climate_file <- settings$run$inputs$met$path
+    load(climate_file)
+    temp.mat <- temp.mat[total.time-853,]
+    precip.mat <- precip.mat[total.time-853,]
+  }else{
+    print('no climate diagnostics for other models yet')
+  }
+
   ### Diagnostic graphs  
   pdf(file.path(settings$outdir,"EnKF.pdf"))
     

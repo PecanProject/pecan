@@ -32,20 +32,22 @@ read.restart.SIPNET <- function(outdir,runid,time,settings,variables,sample_para
                      variables=variables)
     
     last = length(ens$NPP)
-  
-    forecast[[1]] <- mean(ens$NPP)*unit.conv ## kg C m-2 s-1 -> Mg/ha/yr [Check]
-    forecast[[2]] = ens$AbvGrndWood[last]*1000 ## kgC/m2 -> gC/m2
-    forecast[[3]] = ens$LeafC[last]*prior.sla*2 ## kgC/m2*m2/kg*2kg/kgC -> m2/m2
-    forecast[[4]] = ens$Litter[last]*1000 ##kgC/m2 -> gC/m2
-    forecast[[5]] = ens$TotSoilCarb[last]*1000 ## kgC/m2 -> gC/m2
-    forecast[[6]] = ens$SoilMoistFrac[last] ## unitless
-    forecast[[7]] = ens$SWE[last]*0.1 ## kg/m2 -> cm
     
-    forecast[[8]] = runif(1,0,0.01) #snow
+    forecast<-numeric(8)
+  
+    forecast[1] <- mean(ens$NPP)*unit.conv ## kg C m-2 s-1 -> Mg/ha/yr [Check]
+    forecast[2] = ens$AbvGrndWood[last]*1000 ## kgC/m2 -> gC/m2
+    forecast[3] = ens$LeafC[last]*prior.sla*2 ## kgC/m2*m2/kg*2kg/kgC -> m2/m2
+    forecast[4] = ens$Litter[last]*1000 ##kgC/m2 -> gC/m2
+    forecast[5] = ens$TotSoilCarb[last]*1000 ## kgC/m2 -> gC/m2
+    forecast[6] = ens$SoilMoistFrac[last] ## unitless
+    forecast[7] = ens$SWE[last]*0.1 ## kg/m2 -> cm
+    
+    forecast[8] = runif(1,0,0.01) #snow
     #forecast$microbe = NA
   
   names(forecast)<-c("NPP","plantWood","lai","litter","soil","litterWFrac","soilWFrac","snow") #,'snow'
-  X.vec = unlist(forecast)
+  X.vec = forecast
   
   print(runid)
 

@@ -21,7 +21,7 @@
 write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
                                    RENAME = TRUE, PLOT = FALSE, variables,
                                    sample_parameters = FALSE,
-                                   trait.values = NA, my.write.config){
+                                   trait.values = NA){
   
   ### Removing negative numbers because biomass can't be negative ###
   for(i in 1:length(analysis.vec)){
@@ -302,12 +302,12 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
 #    settings$run$end.date <- paste0(time,strftime(settings$run$end.date,"/%m/%d"))
 
 if(sample_parameters == TRUE){
-  do.call(my.write.config,
+  do.call(write.config.LINKAGES,
           args = list(trait.values = trait.values,
                       settings = settings, run.id = runid,
                       restart=TRUE, spinup=FALSE))
 } else {
-  do.call(my.write.config,
+  do.call(write.config.LINKAGES,
           args=list(trait.values = NA, settings=settings,
                     run.id = runid, restart=TRUE, spinup=FALSE))
 }
