@@ -411,7 +411,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
     ###-------------------------------------------------------------------### 
     if(t < nt){
       for(i in 1:nens){
-        trait.values<-lapply(ensemble.samples, function(x, n){x[i,]},n = i)
+        if(sample_parameters == TRUE){
+          trait.values <- lapply(ensemble.samples, function(x, n){x[i,]},n = i)
+        } else {
+          trait.values <- ensemble.samples
+        }
         do.call(my.write.restart,
                 args=list(out.dir = outdir, runid = run.id[[i]],
                           time = total.time[t], settings = settings,
