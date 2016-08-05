@@ -280,13 +280,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
     ### Kalman Filter                                                     ###
     ###-------------------------------------------------------------------###
     if(processvar == FALSE){
+      ## design matrix
       H =  matrix(0,length(Y),ncol(X))
       choose<-na.omit(pmatch(colnames(X), names(obs.mean[[t]])))
       for(i in choose){
         H[i,i]<-1
       }
-      
+      ## process error
+      if(!is.null(Q)) Pf <- Pf + Q
+      ## Kalman Gain
       K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
+      ## Analysis
       mu.a = mu.f + K%*%(Y-H%*%mu.f)
       Pa   = (diag(ncol(X)) - K%*%H)%*%Pf
     } else { 
@@ -387,12 +391,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       ### no process variance -- forecast is the same as the analysis ###
       if(processvar==FALSE){
         mu.a = mu.f
-        Pa = Pf
+        Pa = Pf + Q
       ### yes process variance -- no data 
       }else{
         mu.a = mu.f
-        Pa = Pf + Q
-      }
+        Pa = Pf + solve(q.bar)
       }
       enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
     }
@@ -572,3 +575,4 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
 dev.off()
    
 }
+

@@ -99,9 +99,9 @@ _______________________________________
 _______________________________________
 _______________________________________
 
-Today we will use a statistical model developed by Clark et al 2007 that partitions out a number of sources of variability and uncertainty in tree ring and plot data (Fig 1). This model is a Bayesian statespace model that treats the true diameters (D) and increments (X) as latent variables that are connected through a fairly simple mixed effects process model
+Today we will use a statistical model based on the model developed by Clark et al 2007 that partitions out a number of sources of variability and uncertainty in tree ring and plot data (Fig 1). This model is a Bayesian statespace model that treats the true diameters (D) and increments (X) as latent variables that are connected through a fairly simple mixed effects process model
 
-$$ln( X_{ij,t})=ln(D_{ij,t+1}−D_{ij,t})= \mu + \alpha_{i} + \alpha_t + \epsilon_{ij,t}$$
+$$D_{ij,t+1} = D_{ij,t} + \mu + \alpha_{i} + \alpha_t + \epsilon_{ij,t}$$
 
 where i = individual, j = plot, t = time (year). Each of these terms are represented at normal distributions, where $\mu$ is a fixed effect (overall mean growth rate) and individual and year are random effects
 
@@ -112,8 +112,8 @@ $$\epsilon_{ij,t} \sim N(0,\tau_{e})$$
 
 The connection between the true (latent) variable and the observations is also represented as normal with these variances representing measurement error:
 
-$$ln(D_{ij,t}^O) \sim N( ln(D_{ij,t}),\tau_D)$$
-$$ln(X_{ij,t}^O) \sim N( ln(X_{ij,t}),\tau_r)$$
+$$D_{ij,t}^O \sim N( D_{ij,t},\tau_D)$$
+$$X_{ij,t}^O \sim N( X_{ij,t},\tau_r)$$
 
 Finally, there are five gamma priors on the precisions, one for the residual process error ($\tau_{e}$), two for the random effects on individual ($\tau_{i}$) and time ($\tau_t$),
 and two measurement errors or DBH ($\tau_D$) and tree rings ($\tau_r$)
