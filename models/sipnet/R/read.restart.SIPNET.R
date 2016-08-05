@@ -46,7 +46,7 @@ read.restart.SIPNET <- function(outdir,runid,time,settings,variables,sample_para
     forecast[8] = runif(1,0,0.01) #snow
     #forecast$microbe = NA
   
-  names(forecast)<-c("NPP","plantWood","lai","litter","soil","litterWFrac","soilWFrac","snow") #,'snow'
+  names(forecast)<-c("NPP","plantWood","lai","litter","soil","litterWFrac","soilWFrac","snow")
   X.vec = forecast
   
   print(runid)

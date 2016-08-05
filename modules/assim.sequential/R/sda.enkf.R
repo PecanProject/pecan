@@ -3,16 +3,16 @@
 ##' @author Michael Dietze and Ann Raiho \email{dietze@@bu.edu}
 ##' 
 ##' @param settings    PEcAn settings object
-##' @param obs.mean    data.frame of observations of the mean of variables (time X nstate)
-##' @param obs.cov      data.frame of observations of the sd of variables (time X nstate)
-##' @param given.process.variance flag for if parameters should come from meta.analysis or be defaults. if false parameters are set to defaults
+##' @param obs.mean    list of observations of the means of state variable (time X nstate)
+##' @param obs.cov     list of observations of covariance matrices of state variables (time X nstate X nstate)
+##' @param IC          initial conditions
+##' @param Q           process covariance matrix given if there is no data to estimate it
 ##' 
 ##' @description State Variable Data Assimilation: Ensemble Kalman Filter
 ##' 
 ##' @return NONE
 ##' 
-sda.enkf <- function(settings, obs.mean, obs.cov,
-                     given.process.variance = NULL, IC = NULL){
+sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
@@ -101,6 +101,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
   ### perform initial set of runs                                       ###
   ###-------------------------------------------------------------------###  
   run.id = list()
+  X <- IC
 #   
 #   pda.init.run(settings = settings, con = con, my.write.config = my.write.config, workflow.id = workflow.id,
 #                params = c(1000000012),n=ifelse(is.null(dim(params)), 1, nrow(params)),
@@ -131,14 +132,16 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
     if(sample_parameters == TRUE){
       get.parameter.samples(pfts = settings$pfts, ens.sample.method=settings$ensemble$method)
       load(file.path(settings$outdir, "samples.Rdata"))
-      do.call(my.write.config, args = list(defaults = NULL, trait.values = lapply(ensemble.samples, function(x, n){x[i,]},n = i),
+      trait.values <- lapply(ensemble.samples, function(x, n){x[i,]},n = i)
+      do.call(my.write.config, args = list(defaults = NULL, trait.values = trait.values,
                                            settings = settings, run.id = run.id[[i]],
-                                           inputs = list(met=list(path=met[1]))))
+                                           inputs = list(met=list(path=met[1])), IC = IC[i,]))
     } else {
       load(file.path(settings$outdir, paste0("ensemble.samples.",settings$state.data.assimilation$prior,".Rdata")))
-      do.call(my.write.config,args=list(defaults = NULL, trait.values = ens.samples, 
-                                        settings=settings,run.id = run.id[[i]],restart=FALSE,
-                                        inputs = list(met=list(path=met[1]))))
+      trait.values <- ens.samples
+      do.call(my.write.config,args=list(defaults = NULL, trait.values = trait.values, 
+                                        settings=settings,run.id = run.id[[i]],
+                                        inputs = list(met=list(path=met[1])), IC = IC[i,]))
     }
     
     ## write a README for the run
@@ -178,7 +181,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
   nt = length(total.time) #could be different if time step was different right?
   FORECAST <- ANALYSIS <- list()
   enkf.params <- list()
-  aqq = array(0,dim=c(nt,length(variables)+1,length(variables)+1)) #HACK
+  aqq = array(0,dim=c(nt,length(variables),length(variables)))
   bqq = numeric(nt+1)
   CI.X1 <- matrix(0,3,nt) ; CI.X2 = CI.X1
   
@@ -254,13 +257,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
     
     obs = !is.na(obs.mean[[t]])
     
+    mu.f = as.numeric(apply(X,2,mean,na.rm=TRUE))
+    Pf   = cov(X)
+    
     ###-------------------------------------------------------------------###
     ### analysis                                                          ###
     ###-------------------------------------------------------------------###  
     if(any(obs)){ #if no observations skip analysis
-    mu.f = as.numeric(apply(X,2,mean,na.rm=TRUE))
-    Pf   = cov(X)
-    Y    = na.omit(obs.mean[[t]][pmatch(colnames(X), names(obs.mean[[t]]))])
+    Y    = obs.mean[[t]][pmatch(names(obs.mean[[t]]),colnames(X))]
 
     R = as.matrix(obs.cov[[t]])
     
@@ -277,7 +281,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
     ###-------------------------------------------------------------------###
     if(processvar == FALSE){
       H =  matrix(0,length(Y),ncol(X))
-      H[pmatch(colnames(X), names(obs.mean[[t]]))] <- 1
+      choose<-na.omit(pmatch(colnames(X), names(obs.mean[[t]])))
+      for(i in choose){
+        H[i,i]<-1
+      }
       
       K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
       mu.a = mu.f + K%*%(Y-H%*%mu.f)
@@ -305,13 +312,15 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
       X2Y <- X2Y[which(!is.na(Y))]
       
       #### changing diagonal if the covariance is too small for the matrix to be inverted
+      #### This problem is different than R problem because diag(Pf) can be so small it can't be inverted
+      #### Need a different fix here someday
       for(i in 1:length(diag(Pf))){
-        if(diag(Pf)[i]<.0000001) diag(Pf)[i]<-.0001 #HACK
+        if(diag(Pf)[i]==0) diag(Pf)[i]<- min(diag(Pf)[which(diag(Pf)!=0)])/2 #HACK
       }
     
       ### analysis of model and data
       if(length(E)>0){ #if all ensemble members 
-        update = list(Y=na.omit(Y), r=solve(R[X2Y,X2Y]),
+        update = list(Y=Y, r=solve(R[X2Y,X2Y]),
                       muf=mu.f[-E], pf=solve(Pf[-E,-E]),
                       aq=aqq[t,,], bq=bqq[t],
                       F2M=F2M,X2Y=X2Y,X.mod=rep(NA,length(mu.f[-E])),
@@ -323,7 +332,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
                           n.adapt=1000,n.chains=3,
                           init=list(X.mod=as.vector(mu.f[-c(E)]))) #inits for q?
       }else{
-        update = list(Y=na.omit(Y), r=solve(R[X2Y,X2Y]),
+        update = list(Y=Y, r=solve(R[X2Y,X2Y]),
                       muf=mu.f, pf=solve(Pf),
                       aq=aqq[t,,], bq=bqq[t],
                       F2M=F2M,X2Y=X2Y,X.mod=rep(NA,length(mu.f)),
@@ -378,16 +387,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
       ### no process variance -- forecast is the same as the analysis ###
       if(processvar==FALSE){
         mu.a = mu.f
-        Pa = Pa
-      } else {
+        Pa = Pf
+      ### yes process variance -- no data 
+      }else{
         mu.a = mu.f
-        ### process variance exists -- must provide Pa from another analysis ###
-        if(is.null(given.process.variance)){
-          print("Error -- must define given.process.variance")
-          break
-        }else{
-          Pa = given.process.variance #from full DA analysis #where are you going to get this without full DA?
-        }
+        Pa = Pf + Q
+      }
       }
       enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
     }
@@ -409,7 +414,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
                 args=list(out.dir = outdir, runid = run.id[[i]],
                           time = total.time[t], settings = settings,
                           analysis.vec = analysis[i,],
-                          RENAME = TRUE, PLOT = FALSE, variables = variables,
+                          RENAME = TRUE, variables = variables,
                           sample_parameters = sample_parameters,
                           trait.values = trait.values,
                           met = met))
@@ -491,7 +496,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
       lines(total.time[t1:t],Xa,col="black",lty=2,lwd=2)
       
     }
-      if(FALSE){
+    if(FALSE){
     ###-------------------------------------------------------------------###
     ### bias diagnostics                                                  ###
     ###-------------------------------------------------------------------### 
