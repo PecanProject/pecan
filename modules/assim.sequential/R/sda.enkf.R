@@ -74,7 +74,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   ### create ensemble ids                                               ###
   ###-------------------------------------------------------------------### 
   if (!is.null(con)) {
-    # write enseblem first
+    # write ensemble first
     now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
     db.query(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", 
                    now, "', 'EnKF', ", workflow.id, ")", sep=''), con)

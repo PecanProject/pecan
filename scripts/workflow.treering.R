@@ -100,17 +100,6 @@ ne = as.numeric(settings$state.data.assimilation$n.ensemble)
 IC = sample.IC.SIPNET(ne,state)
 status.end()
 
-################################    BLOW THIS AWAY ONCE ANN'S PRIRS VERIFIED
-#---------------- Load Priors ----------------------------------------------------------------------#
-status.start("PRIORS")
-prior = sample.parameters(ne,settings,con)
-prior = NA
-
-load(file.path(settings$outdir, "samples.Rdata"))
-pick.trait.params <- c(names(ensemble.samples[[1]]),names(ensemble.samples[[2]]))
-
-status.end()
-
 #--------------- Assimilation -------------------------------------------------------#
 status.start("EnKF")
 sda.enkf(settings=settings, obs.mean = obs.mean,
