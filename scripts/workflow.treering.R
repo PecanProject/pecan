@@ -27,18 +27,16 @@ library(reshape2)
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 # Open and read in settings file for PEcAn run.
-# settings <- read.settings("/fs/data2/output//PEcAn_1000001559/pecan.xml") #LINKAGES
-settings <- read.settings("/fs/data2/output/PEcAn_1000002340/pecan.xml") #SIPNET
+settings <- read.settings() 
 #--------------------------------------------------------------------------------------------------#
 
 #---------------- Load plot and tree ring data. -------------------------------------------------------#
 status.start("LOAD DATA")
 ## Read tree data
-trees <- read.csv("~/Camp2014/ForestPlots/treecores2014.csv")
+trees <- read.csv("~/Camp2016/ForestPlots/treecores2014.csv")
 
 ## Read tree ring data
-source("~/Camp2014/statsR/Read_Tuscon.R")
-rings <- Read_Tuscon("~/Camp2014/ForestPlots/Tucson/")
+rings <- Read_Tucson("~/Camp2016/ForestPlots/Tucson/")
 
 ## Match observations & format for JAGS
 combined <- matchInventoryRings(trees,rings,extractor="Tag",nyears=36,coredOnly=FALSE) #WARNINGS

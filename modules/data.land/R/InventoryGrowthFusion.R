@@ -11,16 +11,32 @@
 InventoryGrowthFusion <- function(data,n.iter,random=TRUE){
   require(rjags)
   
-  #Temp for DBH matrix, data$z
-  foo <- matrix(nrow=nrow(data$z),ncol=ncol(data$y))
-  
-  #subract increment from DBH
+  ## Build IC for DBH matrix, data$z
+  foo <- data$z
+  #subract increment from DBH to extrapolate DBH backward
   for(g in 1:nrow(data$z)){
-    for(f in rev(1:ncol(data$y))){
-      foo[g,f] <- data$z[g,f]
-      foo[g,f-1] <- data$z[g,f] - data$y[g,f]      
+    gbar <- mean(data$y[g,],na.rm=TRUE)
+    if(is.na(gbar)){gbar <- mean(data$y,na.rm=TRUE)}
+    for(f in rev(2:ncol(data$y))){
+      if(is.na(foo[g,f-1])){  ## not NA = censused that year
+        if(is.na(data$y[g,f])){  
+          foo[g,f-1]<- foo[g,f] - gbar  ## beyond start of core
+        } else {
+          foo[g,f-1]<- foo[g,f] - data$y[g,f]
+        }
+      }
     }
   }
+  foo[foo < 0 & is.na(data$y)] <- NA #0
+#  pith = apply(foo,1,function(x){rev(which(x == 0))[1]}) + 1
+  pith = apply(foo,1,function(x){rev(which(is.na(x)))[1]}) + 1
+  data$hit_pith = which(!is.na(pith))
+  data$nhp = length(data$hit_pith)
+  data$no_pith = which(is.na(pith))
+  data$nnp = length(data$no_pith)
+  pith[data$no_pith] = 1
+  data$pith = pith
+
   
   data$y = log(data$y)
   data$z = log(data$z)
@@ -35,29 +51,36 @@ model{
   for(i in 1:ni){
   
   #### Data Model: DBH
-  for(t in 1:nt){
+  for(t in pith[i]:nt){
    lx[i,t] <- log(x[i,t])
    z[i,t] ~ dnorm(lx[i,t],tau_dbh)
   }
   
   #### Data Model: growth
-  for(t in 2:nt){
+  for(t in (pith[i]+1):nt){
    inc[i,t] <- log(x[i,t]-x[i,t-1])
    y[i,t] ~ dnorm(inc[i,t],tau_inc)
   }
   
   #### Process Model
-  for(t in 2:nt){
-   Dnew[i,t] <- x[i,t-1] + mu ##PROCESS
-   x[i,t]~dnorm(Dnew[i,t],tau_add)
+  for(t in (pith[i]+1):nt){
+   Dnew[i,t] <- log(x[i,t-1]) + mu ##PROCESS
+   lnx[i,t]~dnorm(Dnew[i,t],tau_add)
+   x[i,t] <- exp(lnx[i,t])
   }
   
 #RANDOM ## individual effects
 #RANDOM ind[i] ~ dnorm(0,tau_ind)  
 
-  ## initial condition
-  x[i,1] ~ dnorm(x_ic,tau_ic)
   }  ## end loop over individuals
+
+  ## initial condition
+  for(i in 1:nnp){
+    x[no_pith[i],1] ~ dnorm(x_ic,tau_ic)
+  }
+  for(i in 1:nhp){
+    x[hit_pith[i],pith[hit_pith[i]]] ~ dnorm(x_ic,tau_ic)
+  }
 
 #RANDOM ## year effects
 #RANDOM for(t in 1:nt){
@@ -70,7 +93,7 @@ model{
   tau_add ~ dgamma(a_add,r_add)
 #RANDOM tau_ind ~ dgamma(1,0.1)
 #RANDOM tau_yr  ~ dgamma(1,0.1)
-  mu ~ dnorm(0.5,0.5)
+  mu ~ dnorm(0,0.5)
  }"
 
   Pformula = NULL
@@ -83,7 +106,7 @@ model{
   }
 
   if(!is.null(Pformula)) TreeDataFusionMV = sub(pattern="##PROCESS",Pformula,TreeDataFusionMV)
-    
+
   ## state variable initial condition
   z0 = t(apply(data$y,1,function(y){-rev(cumsum(rev(y)))})) + data$z[,ncol(data$z)] 
   
@@ -92,7 +115,7 @@ model{
   init <- list()
   for(i in 1:nchain){
     y.samp = sample(data$y,length(data$y),replace=TRUE)
-    init[[i]] <- list(x = z0,tau_add=runif(1,1,5)/var(diff(y.samp),na.rm=TRUE),
+    init[[i]] <- list(lnx = log(foo),tau_add=runif(1,1,5)/var(diff(y.samp),na.rm=TRUE),
                       tau_dbh=1,tau_inc=1500,tau_ind=50,tau_yr=100,ind=rep(0,data$ni),year=rep(0,data$nt))
   }
   
