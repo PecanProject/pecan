@@ -410,7 +410,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL){
                 args=list(out.dir = outdir, runid = run.id[[i]],
                           time = total.time[t], settings = settings,
                           analysis.vec = analysis[i,],
-                          RENAME = TRUE, PLOT = FALSE, variables = variables,
+                          RENAME = TRUE, variables = variables,
                           sample_parameters = sample_parameters,
                           trait.values = trait.values,
                           met = met))
