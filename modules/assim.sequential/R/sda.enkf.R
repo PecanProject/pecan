@@ -102,47 +102,46 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   ###-------------------------------------------------------------------###  
   run.id = list()
   X <- IC
-#   
-#   pda.init.run(settings = settings, con = con, my.write.config = my.write.config, workflow.id = workflow.id,
-#                params = c(1000000012),n=ifelse(is.null(dim(params)), 1, nrow(params)),
-#                run.names=paste("run", 1:n, sep="."))
-#   
+
+  ## local settings changes for initial runs
+  settings$run$start.date <- paste0(as.numeric(spin.up.start),strftime(settings$run$start.date,"/%m/%d"))
+  settings$run$end.date <- paste0(as.numeric(spin.up.end),strftime(settings$run$end.date,"/%m/%d"))
+  
+  ## Load Parameters
+  if(sample_parameters == TRUE){
+    settings$ensemble$size <- settings$state.data.assimilation$n.ensemble
+  } else {
+    settings$ensemble$size <- 1
+  }
+  get.parameter.samples(settings, ens.sample.method=settings$ensemble$method)  ## Aside: if method were set to unscented, would take minimal changes to do UnKF
+  load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
+    
   for(i in 1:nens){
     
     ## set RUN.ID
     if (!is.null(con)) {
       now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
       paramlist <- paste("EnKF:",i)
-      db.query(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id,",
+      run.id[[i]] <- db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id,",
                      " parameter_list) values ('", 
                      settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", 
                      settings$run$end.date, "', '", settings$outdir , "', '", now, "', ", ensemble.id, ", '", 
-                     paramlist, "')", sep=''), con)
-      run.id[[i]]<- db.query(paste("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'", 
-                                   sep=''), con)[['id']]
+                     paramlist, "') RETURNING id"), con)
     } else {
       run.id[[i]] = paste("EnKF",i,sep=".")
     }
     dir.create(file.path(settings$rundir, run.id[[i]]), recursive=TRUE)
     dir.create(file.path(settings$modeloutdir, run.id[[i]]), recursive=TRUE)
     
-    settings$run$start.date <- paste0(as.numeric(spin.up.start),strftime(settings$run$start.date,"/%m/%d"))
-    settings$run$end.date <- paste0(as.numeric(spin.up.end),strftime(settings$run$end.date,"/%m/%d"))
-    
+    ## Write Configs
     if(sample_parameters == TRUE){
-      get.parameter.samples(pfts = settings$pfts, ens.sample.method=settings$ensemble$method)
-      load(file.path(settings$outdir, "samples.Rdata"))
       trait.values <- lapply(ensemble.samples, function(x, n){x[i,]},n = i)
-      do.call(my.write.config, args = list(defaults = NULL, trait.values = trait.values,
-                                           settings = settings, run.id = run.id[[i]],
-                                           inputs = list(met=list(path=met[1])), IC = IC[i,]))
     } else {
-      load(file.path(settings$outdir, paste0("ensemble.samples.",settings$state.data.assimilation$prior,".Rdata")))
-      trait.values <- ens.samples
-      do.call(my.write.config,args=list(defaults = NULL, trait.values = trait.values, 
-                                        settings=settings,run.id = run.id[[i]],
-                                        inputs = list(met=list(path=met[1])), IC = IC[i,]))
+      trait.values <- ensemble.samples
     }
+    do.call(my.write.config, args = list(defaults = NULL, trait.values = trait.values,
+                                         settings = settings, run.id = run.id[[i]],
+                                         inputs = list(met=list(path=met[1])), IC = IC[i,]))
     
     ## write a README for the run
     cat("runtype     : sda.enkf\n",
@@ -166,7 +165,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   }
   
   ## add the jobs to the list of runs
-  cat(as.character(run.id),file=file.path(settings$rundir, "runs.txt"),sep="\n",append=FALSE)
+  cat(as.character(unlist(run.id)),file=file.path(settings$rundir, "runs.txt"),sep="\n",append=FALSE)
   
   ## start model runs
   start.model.runs(settings,settings$database$bety$write)

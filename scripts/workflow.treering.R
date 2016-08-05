@@ -96,12 +96,11 @@ status.end()
 
 #---------------- Build Initial Conditions ----------------------------------------------------------------------#
 status.start("IC")
-ne = as.numeric(settings$ensemble$size) # do we want this to point somewhere else?
+ne = as.numeric(settings$state.data.assimilation$n.ensemble)
 IC = sample.IC.SIPNET(ne,state)
-source("/pecan/modules/assim.sequential/R/sample.IC.LINKAGES.R")
-IC = sample.IC.LINKAGES(ne,state)
 status.end()
 
+################################    BLOW THIS AWAY ONCE ANN'S PRIRS VERIFIED
 #---------------- Load Priors ----------------------------------------------------------------------#
 status.start("PRIORS")
 prior = sample.parameters(ne,settings,con)
@@ -113,13 +112,9 @@ pick.trait.params <- c(names(ensemble.samples[[1]]),names(ensemble.samples[[2]])
 status.end()
 
 #--------------- Assimilation -------------------------------------------------------#
-status.start("MCMC")
-settings$ensemble$size <- 50
-settings$state.data.assimilation$n.ensemble<- 50
-settings$state.data.assimilation$processvar<-TRUE
+status.start("EnKF")
 sda.enkf(settings=settings, obs.mean = obs.mean,
-         obs.cov = obs.cov, pick.trait.params = pick.trait.prams, #c('G') for linkages
-         given.process.variance = NULL)
+         obs.cov = obs.cov, IC = IC, Q = NULL)
 status.end()
 #--------------------------------------------------------------------------------------------------#
 ### PEcAn workflow run complete
