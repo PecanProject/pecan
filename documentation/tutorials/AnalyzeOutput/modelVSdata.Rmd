@@ -35,7 +35,7 @@ Within both the run and out folders there will be one folder for each unique mod
 
 ```{r}
 library(PEcAn.utils)
-out <- read.output(99000000001, "output/PEcAn_99000000001/out/99000000001/" ,2006,2006,c("time","NEE"))
+out <- read.output(99000000001, "output/PEcAn_99000000001/out/99000000001/" ,2004,2004,c("time","NEE"))
 plot(out$time,out$NEE,type='l',ylab="kg m-2 s-1",xlab="day of year")
 ```
 
