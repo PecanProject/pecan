@@ -168,6 +168,7 @@ Let’s go ahead and run a data assimilation MCMC with emulator. Since you've al
 
 ```{r eval=FALSE}
 settings.postPDA <- pda.emulator(settings.PDA)
+saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.PDA.POST.xml'))
 ```
 
 After executing the code above, you will see print-outs to the console. The code begins with loading the prior values which in this case are the posterior distributions coming from your previous meta analysis. Then it loads the observational data and carries out necessary conversions and formatting to align it with model outputs, as we did separately above. After this step, you will see a progress bar where the actual model is run n.knot times with the proposed parameter sets and then the outputs from these runs are read. Next, this model output is compared to the specified observational data, and the likelihood is calculated using the heteroskedastic Laplacian discussed previously. Once we calculate the likelihoods, we fit an emulator which interpolates the model output in parameter space between the points where the model has actually been run. Now we can put this emulator in the MCMC algorithm instead of the model itself. Within the MCMC loop the code proposes new parameter value from a multivariate normal jump distribution. The corresponding likelihood will be approximated by the emulator and the new parameter value is accepted or rejected based on its posterior probability relative to the current value. 

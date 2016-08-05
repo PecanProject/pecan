@@ -1,15 +1,16 @@
 ---
 title: "State-Variable Data Assimilation"
-author: "Michael Dietze"
 output: html_document
 ---
 
 # Objectives:
 * Assimilate tree ring estimated NPP & inventory AGB within the SIPNET model in order to:
- * Reconcile data and model NPP & AGB estimates
- * Constrain inferences about other ecosystem responses.
+* Reconcile data and model NPP & AGB estimates
+* Constrain inferences about other ecosystem responses.
 
 # Overview:
+* Initial Run
+* Settings
 * Load and match plot and increment data
 * Estimate tree-level data uncertainties
 * Estimate allometric relationships
@@ -17,42 +18,71 @@ output: html_document
 * Sample initial conditions and parameters
 * Run Ensemble Kalman Filter
 
-# Loading data
+# Initial Run
 
-Open the PEcAn RStudio environment back up.
+Perform a site-level SIPNET run using the following settings
 
-Open the tree-ring data assimilation workflow under Home > pecan > scripts > workflow.treering.R
+* Site = UNDERC
+* Start = 01/01/1979
+* End = 12/31/2015
+* Met = NARR
+* Check **Brown Dog**
+* When the run is complete, open the pecan.xml and cut-and-paste the **outdir** for later use
 
-Run the script from the start up through loading the PEcAN library
+# Settings:
 
-```{r,message=FALSE}
-library(PEcAn.all)
-```
+* Open the PEcAn RStudio environment back up.
 
-Make a new folder for the tree ring analysis
+* Set your working directory to the outdir from above ```setwd(outdir)``` and shift the file browser to that location (Files > More > Go To Working Directory)
 
-```{r,warning=FALSE}
-dir.create("~/demo.sda")
-```
+* Open up the latest settings file ```pecan.CONFIG.xml```. 
 
-Copy the most recent version of out settings file.
-
-```{r}
-clean.settings("~/demo.pda/demo.xml","~/demo.sda/demo.xml")
-```
-
-Open the new settings file
-
-* Set the <outdir> to be /home/carya/demo.sda
 * At the top of the file add the following tags to set the ensemble size
 
 ```
-<assim.sequential>
-   <n.ensemble>45</n.ensemble>
-</assim.sequential>
+<state.data.assimilation>
+  <n.ensemble>50</n.ensemble>
+  <process.variance>FALSE</process.variance>
+  <sample.parameters>TRUE</sample.parameters>
+  <state.variables>
+    <variable>NPP</variable>
+    <variable>AbvGrndWood</variable>
+    <variable>TotSoilCarb</variable>
+    <variable>LeafC</variable>
+    <variable>SoilMoistFrac</variable>
+    <variable>SWE</variable>
+    <variable>Litter</variable>
+    <variable>Snow</variable>
+  </state.variables>
+  <spin.up>
+    <start.date>1979/01/01</start.date>
+    <end.date>1979/12/31</end.date>
+  </spin.up>
+  <forecast.time.step>1</forecast.time.step>
+  <start.date>1980/01/01</start.date>
+  <end.date>2014/12/31</end.date>
+ </state.data.assimilation>
 ```
 
-Run from the LOAD DATA section
+* Delete the ```<pfts>`` block from the settings
+
+* In the PEcAn History, go to your PDA run and open ```pecan.PDA.POST.xml``` (the one saved AFTER you finished the PDA)
+
+* Cut-and-paste the PDA ```<pfts>``` block into the SDA settings file
+
+* Save the file as ```pecan.SDA.xls```
+
+# Loading data
+
+* If you have not done so already, clone (new) or pull (update) the PalEON Camp2016 repository
+ + Open a shell under Tools > Shell
+ + ```cd`` to go to your home directory
+ + To clone: ```git clone git@github.com:PalEON-Project/Camp2016.git```
+ + To pull: ```cd Camp2016; git pull git@github.com:PalEON-Project/Camp2016.git master```
+
+* Open the tree-ring data assimilation workflow under Home > pecan > scripts > workflow.treering.R
+
+* Run the script from the start up through the LOAD DATA section
 
 
 # Estimating tree-level data uncertainties

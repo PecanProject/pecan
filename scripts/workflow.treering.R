@@ -17,17 +17,16 @@ status.end <- function(status="DONE") {
 require(PEcAn.all)
 library(PEcAn.assim.sequential)
 library(PEcAn.visualization)
+library(PEcAn.allometry)
 library(mvtnorm)
 library(rjags)
 library(reshape2)
 #--------------------------------------------------------------------------------------------------#
 #
-#  dir.create("~/demo.sda")
-#  clean.settings("~/demo.pda/demo.xml","~/demo.sda/demo.xml")
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 # Open and read in settings file for PEcAn run.
-settings <- read.settings() 
+settings <- read.settings("pecan.SDA.xml") 
 #--------------------------------------------------------------------------------------------------#
 
 #---------------- Load plot and tree ring data. -------------------------------------------------------#
@@ -47,7 +46,7 @@ status.end()
 status.start("TREE RING MODEL")
 ## Tree Ring model
 n.iter = 3000
-jags.out = InventoryGrowthFusion(data,n.iter=n.iter) #WARNINGS
+jags.out = InventoryGrowthFusion(data,n.iter=n.iter)
 save(trees,rings,combined,data,jags.out,
      file=file.path(settings$outdir,"treering.Rdata"))
 
@@ -58,7 +57,6 @@ status.end()
 
 #-------------- Allometry Model -------------------------------#
 status.start("ALLOMETRY")
-library(PEcAn.allometry)
 con <- db.open(settings$database$bety)
 pft.data = list()
 for(ipft in 1:length(settings$pfts)){  ## loop over PFTs
@@ -66,7 +64,7 @@ for(ipft in 1:length(settings$pfts)){  ## loop over PFTs
   query <- paste0("SELECT s.spcd,",'s."Symbol"'," as acronym from pfts as p join pfts_species on p.id = pfts_species.pft_id join species as s on pfts_species.specie_id = s.id where p.name like '%",pft_name,"%'")  
   pft.data[[pft_name]] <- db.query(query, con)
 }
-allom.stats = AllomAve(pft.data,outdir = settings$outdir,ngibbs=n.iter/10) #WARNINGS
+allom.stats = AllomAve(pft.data,outdir = settings$outdir,ngibbs=n.iter/10)
 save(allom.stats,file=file.path(settings$outdir,"allom.stats.Rdata"))
 status.end()
 
@@ -74,7 +72,7 @@ status.end()
 status.start("PLOT2AGB")
 out = as.matrix(jags.out)
 sel = grep('x[',colnames(out),fixed=TRUE)
-state = plot2AGB(combined,out[,sel],settings$outdir,list(allom.stats[[2]],allom.stats[[3]]),unit.conv=0.02) #WARNINGS
+state = plot2AGB(combined,out[,sel],settings$outdir,list(allom.stats[[2]]),unit.conv=0.02)
 
 NPP.conv <- (1/10000)*(1000/1)*(1/(3.154*10^7))*.48 #mg/ha/yr -> kgC/m2/s
 AGB.conv <- (1/10000)*(1000/1)*.48 #mg/ha >-kgC/m2
@@ -94,24 +92,6 @@ for(i in 1:length(NPP)){
   colnames(obs.cov[[i]]) <- c("AGB","NPP")
   rownames(obs.cov[[i]]) <- c("AGB","NPP")
 }
-
-
-if(settings$model$type==LINKAGES){
-  obs_tsca = data.frame(mean = apply(state$biomass_tsca[1,,],2,mean,na.rm=TRUE),
-                        sd = apply(state$biomass_tsca[1,,],2,sd,na.rm=TRUE))
-  obs_acsa3 = data.frame(mean = apply(state$biomass_acsa3[1,,],2,mean,na.rm=TRUE),
-                         sd = apply(state$biomass_acsa3[1,,],2,sd,na.rm=TRUE))
-  obs_beal2 = data.frame(mean = apply(state$biomass_beal2[1,,],2,mean,na.rm=TRUE),
-                         sd = apply(state$biomass_beal2[1,,],2,sd,na.rm=TRUE))
-  obs_thoc2 = data.frame(mean = apply(state$biomass_thoc2[1,,],2,mean,na.rm=TRUE),
-                         sd = apply(state$biomass_thoc2[1,,],2,sd,na.rm=TRUE))
-  
-  obs = cbind(obs_tsca,obs_acsa3,obs_beal2,obs_thoc2)
-  colnames(obs)<-c("mean_tsca","sd_tsca","mean_acsa3","sd_acsa3","mean_beal2",
-                   "sd_beal2","mean_thoc2","sd_thoc2")
-}
-
-
 status.end()
 
 #---------------- Build Initial Conditions ----------------------------------------------------------------------#

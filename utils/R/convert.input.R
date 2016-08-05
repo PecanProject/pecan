@@ -22,7 +22,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
 
   # Consider adding a force option to skip the check and continue with conversion
   print("start CHECK")
-  check = dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, parentid=input.id, con=con, hostname$name)
+  check = dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, parentid=input.id, con=con, hostname)
   print("end CHECK")
   print(check)
   if(length(check)>0){
