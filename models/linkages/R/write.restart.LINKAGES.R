@@ -16,6 +16,7 @@
 ##' @description Write restart files for LINKAGES
 ##' 
 ##' @return NONE
+##' @export
 ##' 
 write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
                                    RENAME = TRUE, PLOT = FALSE, variables,
@@ -46,7 +47,7 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
   }
   diag(distance.matrix)<-0
   
-   distance.matrix <- rbind( c(0, 1, 4, 3, 2, 6, 2, 8, 1, 9, 10, 11, 12, 13, 14),
+   distance.matrix <- rbind( c(0, 1, 4, 3, 2, 6, 5, 8, 7, 9, 10, 11, 12, 13, 14),
                              c(5, 0	,3	,4	,8	,1	,2	,7	,6,9,10,11,12,13, 14),
                              c(5, 3	,0	,1	,8	,4	,2	,7	,6,9,10,11,12,13, 14),
                              c(6, 2	,1	,0	,8	,4	,3	,7	,5,9,10,11,12,13, 14),
@@ -301,12 +302,12 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
 #    settings$run$end.date <- paste0(time,strftime(settings$run$end.date,"/%m/%d"))
 
 if(sample_parameters == TRUE){
-  do.call(my.write.config,
+  do.call(write.config.LINKAGES,
           args = list(trait.values = trait.values,
                       settings = settings, run.id = runid,
                       restart=TRUE, spinup=FALSE))
 } else {
-  do.call(my.write.config,
+  do.call(write.config.LINKAGES,
           args=list(trait.values = NA, settings=settings,
                     run.id = runid, restart=TRUE, spinup=FALSE))
 }

@@ -27,16 +27,18 @@ library(reshape2)
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 # Open and read in settings file for PEcAn run.
-settings <- read.settings("/fs/data2/output//PEcAn_1000001559/pecan.xml")
+# settings <- read.settings("/fs/data2/output//PEcAn_1000001559/pecan.xml") #LINKAGES
+settings <- read.settings("/fs/data2/output/PEcAn_1000002340/pecan.xml") #SIPNET
 #--------------------------------------------------------------------------------------------------#
 
 #---------------- Load plot and tree ring data. -------------------------------------------------------#
 status.start("LOAD DATA")
 ## Read tree data
-trees <- read.csv("/home/carya/Camp2014/ForestPlots/treecores2014.csv")
+trees <- read.csv("~/Camp2014/ForestPlots/treecores2014.csv")
 
 ## Read tree ring data
-rings <- Read_Tuscon("/home/carya/Camp2014/ForestPlots/Tucson/")
+source("~/Camp2014/statsR/Read_Tuscon.R")
+rings <- Read_Tuscon("~/Camp2014/ForestPlots/Tucson/")
 
 ## Match observations & format for JAGS
 combined <- matchInventoryRings(trees,rings,extractor="Tag",nyears=36,coredOnly=FALSE) #WARNINGS
@@ -74,31 +76,50 @@ status.end()
 status.start("PLOT2AGB")
 out = as.matrix(jags.out)
 sel = grep('x[',colnames(out),fixed=TRUE)
-state = plot2AGB(combined,out[,sel],settings$outdir,allom.stats,unit.conv=0.01) #WARNINGS
-obs = data.frame(mean = apply(state$NPP[1,,],2,mean,na.rm=TRUE),
-                 sd = apply(state$NPP[1,,],2,sd,na.rm=TRUE))
-obs = data.frame(mean = apply(state$AGB[1,,],2,mean,na.rm=TRUE),
-                 sd = apply(state$AGB[1,,],2,sd,na.rm=TRUE))
+state = plot2AGB(combined,out[,sel],settings$outdir,list(allom.stats[[2]],allom.stats[[3]]),unit.conv=0.02) #WARNINGS
 
-obs_tsca = data.frame(mean = apply(state$biomass_tsca[1,,],2,mean,na.rm=TRUE),
-                 sd = apply(state$biomass_tsca[1,,],2,sd,na.rm=TRUE))
-obs_acsa3 = data.frame(mean = apply(state$biomass_acsa3[1,,],2,mean,na.rm=TRUE),
-                 sd = apply(state$biomass_acsa3[1,,],2,sd,na.rm=TRUE))
-obs_beal2 = data.frame(mean = apply(state$biomass_beal2[1,,],2,mean,na.rm=TRUE),
-                 sd = apply(state$biomass_beal2[1,,],2,sd,na.rm=TRUE))
-obs_thoc2 = data.frame(mean = apply(state$biomass_thoc2[1,,],2,mean,na.rm=TRUE),
-                 sd = apply(state$biomass_thoc2[1,,],2,sd,na.rm=TRUE))
+NPP.conv <- (1/10000)*(1000/1)*(1/(3.154*10^7))*.48 #mg/ha/yr -> kgC/m2/s
+AGB.conv <- (1/10000)*(1000/1)*.48 #mg/ha >-kgC/m2
 
-obs = cbind(obs_tsca,obs_acsa3,obs_beal2,obs_thoc2)
-colnames(obs)<-c("mean_tsca","sd_tsca","mean_acsa3","sd_acsa3","mean_beal2",
-"sd_beal2","mean_thoc2","sd_thoc2")
+NPP = apply(state$NPP[1,,],2,mean,na.rm=TRUE)*NPP.conv 
+AGB = apply(state$AGB[1,,],2,mean,na.rm=TRUE)*AGB.conv
+
+obs.mean <- list()
+for(i in 1:length(NPP)) {
+  obs.mean[[i]]<-c(NPP[i],AGB[i])
+  names(obs.mean[[i]])<-c("NPP",'plantWood')
+}
+
+obs.cov <- list()
+for(i in 1:length(NPP)){
+  obs.cov[[i]]<- cov(cbind(state$AGB[,,i],state$NPP[,,i]))
+  colnames(obs.cov[[i]]) <- c("AGB","NPP")
+  rownames(obs.cov[[i]]) <- c("AGB","NPP")
+}
+
+
+if(settings$model$type==LINKAGES){
+  obs_tsca = data.frame(mean = apply(state$biomass_tsca[1,,],2,mean,na.rm=TRUE),
+                        sd = apply(state$biomass_tsca[1,,],2,sd,na.rm=TRUE))
+  obs_acsa3 = data.frame(mean = apply(state$biomass_acsa3[1,,],2,mean,na.rm=TRUE),
+                         sd = apply(state$biomass_acsa3[1,,],2,sd,na.rm=TRUE))
+  obs_beal2 = data.frame(mean = apply(state$biomass_beal2[1,,],2,mean,na.rm=TRUE),
+                         sd = apply(state$biomass_beal2[1,,],2,sd,na.rm=TRUE))
+  obs_thoc2 = data.frame(mean = apply(state$biomass_thoc2[1,,],2,mean,na.rm=TRUE),
+                         sd = apply(state$biomass_thoc2[1,,],2,sd,na.rm=TRUE))
+  
+  obs = cbind(obs_tsca,obs_acsa3,obs_beal2,obs_thoc2)
+  colnames(obs)<-c("mean_tsca","sd_tsca","mean_acsa3","sd_acsa3","mean_beal2",
+                   "sd_beal2","mean_thoc2","sd_thoc2")
+}
+
 
 status.end()
 
 #---------------- Build Initial Conditions ----------------------------------------------------------------------#
 status.start("IC")
 ne = as.numeric(settings$ensemble$size) # do we want this to point somewhere else?
-#IC = sample.IC.SIPNET(ne,state)
+IC = sample.IC.SIPNET(ne,state)
 source("/pecan/modules/assim.sequential/R/sample.IC.LINKAGES.R")
 IC = sample.IC.LINKAGES(ne,state)
 status.end()
@@ -107,69 +128,21 @@ status.end()
 status.start("PRIORS")
 prior = sample.parameters(ne,settings,con)
 prior = NA
+
+load(file.path(settings$outdir, "samples.Rdata"))
+pick.trait.params <- c(names(ensemble.samples[[1]]),names(ensemble.samples[[2]]))
+
 status.end()
 
 #--------------- Assimilation -------------------------------------------------------#
 status.start("MCMC")
-obs <- obs/10 #to kg/m^2
-colnames(obs) <- c('AGB.pft.Hemlock(Tsuga Canadensis)',"X1","AGB.pft.Maple(Saccharinum)","X2",
-                   "AGB.pft.Yellow Birch(Betula Alleghaniensis)","X3",
-                   "AGB.pft.Northern White-Cedar(Thuja Occidentalis)","X4")
-obs.mean <- list()
-for(i in 1:nrow(obs)){
-  obs.mean[[i]] <- list(obs[i,c(1,3,5,7)])
-}
-obs.sd <- list()
-for(i in 1:nrow(obs)){
-  obs.sd[[i]] <- list(obs[i,c(2,4,6,8)])
-}
-
-
-### Load Lyford Data ###
-
-settings <- read.settings("/fs/data2/output//PEcAn_1000001448/pecan.xml")
-settings$ensemble$size <- 20
-IC = matrix(NA,as.numeric(settings$ensemble$size),length(settings$pft))
-settings$run$start.date <-"1960/01/01"
-settings$run$end.date <-"1960/12/31"
-new.met <- paste0(rundir,"/climage.Rdata")
-variables <- "AGB.pft"
-spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages")) #default spp.params
-
-lyford.dat <- readRDS("~/lyford_ab_group_v1.rds")
-lyford.dat <- lyford.dat[lyford.dat$name!='Havi',]
-old.names = c("Betula","Pinus","Fraxinus","Acer","Tsuga","Castanea","Quercus","Prunus",
-              "Fagus")
-new.names = c("Yellow Birch(Betula Alleghaniensis)","White Pine(Pinus Strobus)",
-              "White Ash(Fraxinus Americana)","Maple(Rubrum)",
-              "Hemlock(Tsuga Canadensis)","Chestnut(Dentana)",
-              "Champion Oak(Quercus Rubra)","Black Cherry(Prunus Serotina)",
-              "Beech(Grandifolia)")
-for(i in 1:length(old.names)){
-  lyford.dat$name <- sub(old.names[i],new.names[i],lyford.dat$name)
-}
-
-lyford.mean.melt <- melt(lyford.dat[lyford.dat$quant=="mean",],id=c("year","name","group","type","quant","site_id"))
-lyford.mean.cast <- acast(lyford.mean.melt,year ~ name, mean)
-lyford.mean.cast[is.na(lyford.mean.cast)]<-0
-obs.mean <- list()
-for(i in 1:nrow(lyford.mean.cast)){
-  obs.mean[[i]] <- list(lyford.mean.cast[i,])
-}
-
-lyford.sd.melt <- melt(lyford.dat[lyford.dat$quant=="sd",],id=c("year","name","group","type","quant","site_id"))
-lyford.sd.cast <- acast(lyford.sd.melt,year ~ name, mean)
-lyford.sd.cast[is.na(lyford.sd.cast)]<-0
-obs.sd <- list()
-for(i in 1:nrow(lyford.sd.cast)){
-  obs.sd[[i]] <- list(lyford.sd.cast[i,])
-}
-
-
-
-sda.enkf(settings,IC,prior,obs.mean,obs.sd,variables)
+settings$ensemble$size <- 50
+settings$state.data.assimilation$n.ensemble<- 50
+settings$state.data.assimilation$processvar<-TRUE
+sda.enkf(settings=settings, obs.mean = obs.mean,
+         obs.cov = obs.cov, pick.trait.params = pick.trait.prams, #c('G') for linkages
+         given.process.variance = NULL)
 status.end()
-
 #--------------------------------------------------------------------------------------------------#
 ### PEcAn workflow run complete
 status.start("FINISHED")

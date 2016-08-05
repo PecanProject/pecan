@@ -29,7 +29,30 @@ library(reshape2)
 library(PEcAn.LINKAGES)
 #--------------------------------------------------------------------------------------------------#
 #
+source('~/pecan/modules/assim.sequential/R/sda.enkf.R')
 
+######### sipnet
+settings <- read.settings("/fs/data2/output/PEcAn_1000002340/pecan.xml")
+settings$ensemble$size <- 50
+settings$state.data.assimilation$n.ensemble<- 50
+load(file.path(settings$outdir, "samples.Rdata"))
+pick.trait.params <- c(names(ensemble.samples[[1]]),names(ensemble.samples[[2]]))
+
+obs.mean <- list()
+for(i in 1:10) {
+  obs.mean[[i]]<-c(100+i, 5+i)
+  names(obs.mean[[i]])<-c("NPP",'plantWood')
+  }
+
+obs.cov <- list()
+for(i in 1:10) obs.cov[[i]]<- diag(c(.1,.08))
+
+sda.enkf(settings=settings, obs.mean = obs.mean,
+         obs.cov = obs.cov, pick.trait.params = c("G"),
+         given.process.variance = NULL)
+
+
+######### linkages
 settings <- read.settings("/fs/data2/output//PEcAn_1000002229/pecan.xml")
 settings$ensemble$size <- 30
 IC = matrix(NA,as.numeric(settings$ensemble$size),length(settings$pft))
@@ -42,7 +65,6 @@ processvar <- TRUE
 pick.trait.params <- c("G")
 spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages")) #default spp.params #this doesn't work unless linkages is in my home directory
 sample_parameters=TRUE
-
 
 
 ##################################################
@@ -79,35 +101,8 @@ for(i in 1:dim(cov_array)[3]){
 }
 
 
+sda.enkf(settings=settings,obs.mean = obs.mean,
+         obs.cov = obs.cov, pick.trait.params = c("G"),
+         given.process.variance = NULL)
+
 ##################################################
-
-
-
-lyford.dat <- readRDS("~/lyford_ab_group_v1.rds")
-lyford.dat <- lyford.dat[lyford.dat$name!='Havi',]
-old.names = c("Betula","Pinus","Fraxinus","Acer","Tsuga","Castanea","Quercus","Prunus",
-              "Fagus")
-new.names = paste0("AGB.pft.",c("Yellow Birch(Betula Alleghaniensis)","White Pine(Pinus Strobus)",
-                                "White Ash(Fraxinus Americana)","Maple(Rubrum)",
-                                "Hemlock(Tsuga Canadensis)","Chestnut(Dentana)",
-                                "Champion Oak(Quercus Rubra)","Black Cherry(Prunus Serotina)",
-                                "Beech(Grandifolia)"))
-for(i in 1:length(old.names)){
-  lyford.dat$name <- sub(old.names[i],new.names[i],lyford.dat$name)
-}
-
-lyford.mean.melt <- melt(lyford.dat[lyford.dat$quant=="mean",],id=c("year","name","group","type","quant","site_id"))
-lyford.mean.cast <- acast(lyford.mean.melt,year ~ name, mean)
-lyford.mean.cast[is.na(lyford.mean.cast)]<-0
-obs.mean <- list()
-for(i in 1:nrow(lyford.mean.cast)){
-  obs.mean[[i]] <- list(lyford.mean.cast[i,])
-}
-
-lyford.sd.melt <- melt(lyford.dat[lyford.dat$quant=="sd",],id=c("year","name","group","type","quant","site_id"))
-lyford.sd.cast <- acast(lyford.sd.melt,year ~ name, mean)
-lyford.sd.cast[is.na(lyford.sd.cast)]<-0
-obs.sd <- list()
-for(i in 1:nrow(lyford.sd.cast)){
-  obs.sd[[i]] <- list(lyford.sd.cast[i,])
-}
