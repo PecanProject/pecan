@@ -6,12 +6,13 @@
 ##' @param obs.mean    list of observations of the means of state variable (time X nstate)
 ##' @param obs.cov     list of observations of covariance matrices of state variables (time X nstate X nstate)
 ##' @param IC          initial conditions
+##' @param Q           process covariance matrix given if there is no data to estimate it
 ##' 
 ##' @description State Variable Data Assimilation: Ensemble Kalman Filter
 ##' 
 ##' @return NONE
 ##' 
-sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL){
+sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
@@ -134,13 +135,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL){
       trait.values <- lapply(ensemble.samples, function(x, n){x[i,]},n = i)
       do.call(my.write.config, args = list(defaults = NULL, trait.values = trait.values,
                                            settings = settings, run.id = run.id[[i]],
-                                           inputs = list(met=list(path=met[1]))), IC = IC)
+                                           inputs = list(met=list(path=met[1])), IC = IC[i,]))
     } else {
       load(file.path(settings$outdir, paste0("ensemble.samples.",settings$state.data.assimilation$prior,".Rdata")))
       trait.values <- ens.samples
       do.call(my.write.config,args=list(defaults = NULL, trait.values = trait.values, 
                                         settings=settings,run.id = run.id[[i]],
-                                        inputs = list(met=list(path=met[1]))), IC = IC)
+                                        inputs = list(met=list(path=met[1])), IC = IC[i,]))
     }
     
     ## write a README for the run
@@ -280,7 +281,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL){
     ###-------------------------------------------------------------------###
     if(processvar == FALSE){
       H =  matrix(0,length(Y),ncol(X))
-      H[pmatch(colnames(X), names(obs.mean[[t]]))] <- 1
+      choose<-na.omit(pmatch(colnames(X), names(obs.mean[[t]])))
+      for(i in choose){
+        H[i,i]<-1
+      }
       
       K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
       mu.a = mu.f + K%*%(Y-H%*%mu.f)
@@ -311,12 +315,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL){
       #### This problem is different than R problem because diag(Pf) can be so small it can't be inverted
       #### Need a different fix here someday
       for(i in 1:length(diag(Pf))){
-        if(diag(Pf)[i]<.0000001) diag(Pf)[i]<-.0001 #HACK
+        if(diag(Pf)[i]==0) diag(Pf)[i]<- min(diag(Pf)[which(diag(Pf)!=0)])/2 #HACK
       }
     
       ### analysis of model and data
       if(length(E)>0){ #if all ensemble members 
-        update = list(Y=na.omit(Y), r=solve(R[X2Y,X2Y]),
+        update = list(Y=Y, r=solve(R[X2Y,X2Y]),
                       muf=mu.f[-E], pf=solve(Pf[-E,-E]),
                       aq=aqq[t,,], bq=bqq[t],
                       F2M=F2M,X2Y=X2Y,X.mod=rep(NA,length(mu.f[-E])),
@@ -328,7 +332,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL){
                           n.adapt=1000,n.chains=3,
                           init=list(X.mod=as.vector(mu.f[-c(E)]))) #inits for q?
       }else{
-        update = list(Y=na.omit(Y), r=solve(R[X2Y,X2Y]),
+        update = list(Y=Y, r=solve(R[X2Y,X2Y]),
                       muf=mu.f, pf=solve(Pf),
                       aq=aqq[t,,], bq=bqq[t],
                       F2M=F2M,X2Y=X2Y,X.mod=rep(NA,length(mu.f)),
