@@ -54,7 +54,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
  
   ##read in registration xml for model specific information
     ## Where should these registration files be located? Within the model package? This could be difficult given that the package name might not be the same as model name in this context. Will need to double check. 
-    model.reg.xml <- system.file(paste0("registration/register.",model,".xml"), package = "PEcAn.data.atmosphere")
+    model.reg.xml <- system.file(paste0("registration/register.",model,".xml"), package = paste0("PEcAn.",model))
     model.reg <- read.register(model.reg.xml, con) #### Betsy: rewrite read.register to accomodate met or model
     ## update.met = model.reg$update
         ## FALSE: use exisintg workflow. 
@@ -202,7 +202,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     }
   }
 
-  #--------------------------------------------------------------------------------------------------#
+  #------------------------------------------------------------------------------------------------#
   # Change to  CF Standards
 
   if(stage$met2cf == TRUE){
@@ -318,7 +318,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     logger.info("Finished change to CF Standards")
   }
 
-  #--------------------------------------------------------------------------------------------------#
+  #------------------------------------------------------------------------------------------------#
   # Change to Site Level - Standardized Met (i.e. ready for conversion to model specific format)
 
   if(stage$standardize == TRUE){
@@ -373,7 +373,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     logger.info("Finished Standardize Met")
   }
 
-  #--------------------------------------------------------------------------------------------------#
+  #------------------------------------------------------------------------------------------------#
   # Prepare for Model
   # Determine output format name and mimetype
 
@@ -440,7 +440,7 @@ db.site.lat.lon <- function(site.id,con){
   }
 }
 
-#################################################################################################################################
+####################################################################################################
 
 
 ##' @name browndog.met
@@ -553,7 +553,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
   invisible(return(results))
 }
 
-#################################################################################################################################
+####################################################################################################
 
 ##' @name site_from_tag
 ##' @title site_from_tag
