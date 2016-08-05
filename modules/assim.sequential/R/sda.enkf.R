@@ -175,7 +175,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   ###-------------------------------------------------------------------###  
   
   ## vector to read the correct netcdfs by read.restart
-  total.time = as.numeric(start.year):as.numeric(end.year) #Is this going to work?
+  total.time = as.numeric(spin.up.end):as.numeric(end.year) #Is this going to work?
   
   nt = length(total.time) #could be different if time step was different right?
   FORECAST <- ANALYSIS <- list()
