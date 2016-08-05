@@ -75,9 +75,9 @@ sel = grep('x[',colnames(out),fixed=TRUE)
 state = plot2AGB(combined,out[,sel],settings$outdir,list(allom.stats[[2]]),unit.conv=0.02)
 
 NPP.conv <- (1/10000)*(1000/1)*(1/(3.154*10^7))*.48 #mg/ha/yr -> kgC/m2/s
-AGB.conv <- (1/10000)*(1000/1)*.48 #mg/ha >-kgC/m2
+AGB.conv <- (1/1000000)*(1000/1)*.48 #mg/ha >-gC/m2
 
-NPP = apply(state$NPP[1,,],2,mean,na.rm=TRUE)*NPP.conv 
+NPP = apply(state$NPP[1,,],2,mean,na.rm=TRUE)#*NPP.conv 
 AGB = apply(state$AGB[1,,],2,mean,na.rm=TRUE)*AGB.conv
 
 obs.mean <- list()
@@ -88,7 +88,7 @@ for(i in 1:length(NPP)) {
 
 obs.cov <- list()
 for(i in 1:length(NPP)){
-  obs.cov[[i]]<- cov(cbind(state$AGB[,,i],state$NPP[,,i]))
+  obs.cov[[i]]<- cov(cbind(state$AGB[,,i]*AGB.conv,state$NPP[,,i]))
   colnames(obs.cov[[i]]) <- c("AGB","NPP")
   rownames(obs.cov[[i]]) <- c("AGB","NPP")
 }

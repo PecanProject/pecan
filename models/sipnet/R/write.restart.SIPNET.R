@@ -2,13 +2,12 @@
 ##' @name  write.restart.SIPNET
 ##' @author Ann Raiho \email{araiho@@nd.edu}
 ##' 
-##' @param out.dir      output directory
-##' @param runid       run ID
-##' @param time        year that is being read
-##' @param settings    PEcAn settings object
+##' @param out.dir         output directory
+##' @param runid           run ID
+##' @param time            year that is being read
+##' @param settings        PEcAn settings object
 ##' @param analysis.vec    analysis vector
-##' @param RENAME      flag to either rename output file or not
-##' @param PLOT        flag to make plots or not
+##' @param RENAME          flag to either rename output file or not
 ##' @param variables
 ##' @param sample_parameters
 ##' @param trait.values
@@ -20,7 +19,7 @@
 ##' @export
 ##' 
 write.restart.SIPNET<- function(out.dir, runid, time, settings, analysis.vec,
-                                RENAME = TRUE, PLOT = FALSE, variables,
+                                RENAME = TRUE, variables,
                                 sample_parameters = FALSE,
                                 trait.values = NA, met){
  
