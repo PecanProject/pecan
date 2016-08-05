@@ -27,7 +27,7 @@ InventoryGrowthFusion <- function(data,n.iter,random=TRUE){
       }
     }
   }
-  foo[foo < 0 & is.na(data$y)] <- NA #0
+  foo[foo < 0 & is.na(data$y)] <- NA#0
 #  pith = apply(foo,1,function(x){rev(which(x == 0))[1]}) + 1
   pith = apply(foo,1,function(x){rev(which(is.na(x)))[1]}) + 1
   data$hit_pith = which(!is.na(pith))
@@ -63,10 +63,10 @@ model{
   }
   
   #### Process Model
-  for(t in (pith[i]+1):nt){
-   Dnew[i,t] <- log(x[i,t-1]) + mu ##PROCESS
-   lnx[i,t]~dnorm(Dnew[i,t],tau_add)
-   x[i,t] <- exp(lnx[i,t])
+  for(t in (pith[i]+1):nt){  ## for pith, should be able to go one earlier
+   Einc[i,t] <- mu ##PROCESS
+   true_log_inc[i,t] ~ dnorm(Einc[i,t],tau_add)
+   x[i,t] <- x[i,t-1] + exp(true_log_inc[i,t])
   }
   
 #RANDOM ## individual effects
@@ -75,11 +75,13 @@ model{
   }  ## end loop over individuals
 
   ## initial condition
-  for(i in 1:nnp){
-    x[no_pith[i],1] ~ dnorm(x_ic,tau_ic)
+  for(i in 1:nnp){  ## number no pith
+    x[no_pith[i],1] ~ dlnorm(x_ic,tau_ic)
+    #x[no_pith[i],1] <- exp(lnx[no_pith[i],1])
   }
-  for(i in 1:nhp){
-    x[hit_pith[i],pith[hit_pith[i]]] ~ dnorm(x_ic,tau_ic)
+  for(i in 1:nhp){ ## number hit pith
+    x[hit_pith[i],pith[hit_pith[i]]] ~ dlnorm(x_ic,tau_ic)
+    #x[hit_pith[i],pith[hit_pith[i]]] <- exp(lnx[hit_pith[i],pith[hit_pith[i]]])
   }
 
 #RANDOM ## year effects
@@ -115,7 +117,9 @@ model{
   init <- list()
   for(i in 1:nchain){
     y.samp = sample(data$y,length(data$y),replace=TRUE)
-    init[[i]] <- list(lnx = log(foo),tau_add=runif(1,1,5)/var(diff(y.samp),na.rm=TRUE),
+    #x = foo
+    init[[i]] <- list(true_log_inc = t(apply(foo,1,function(x){c(NA,log(diff(x)))})),
+                      tau_add=runif(1,1,5)/var(diff(y.samp),na.rm=TRUE),
                       tau_dbh=1,tau_inc=1500,tau_ind=50,tau_yr=100,ind=rep(0,data$ni),year=rep(0,data$nt))
   }
   
