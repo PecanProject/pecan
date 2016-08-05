@@ -52,21 +52,19 @@ model{
   
   #### Data Model: DBH
   for(t in pith[i]:nt){
-   lx[i,t] <- log(x[i,t])
-   z[i,t] ~ dnorm(lx[i,t],tau_dbh)
+   z[i,t] ~ dnorm(x[i,t],tau_dbh)
   }
   
   #### Data Model: growth
   for(t in (pith[i]+1):nt){
-   inc[i,t] <- log(x[i,t]-x[i,t-1])
    y[i,t] ~ dnorm(inc[i,t],tau_inc)
   }
   
   #### Process Model
   for(t in (pith[i]+1):nt){  ## for pith, should be able to go one earlier
    Einc[i,t] <- mu ##PROCESS
-   true_log_inc[i,t] ~ dnorm(Einc[i,t],tau_add)
-   x[i,t] <- x[i,t-1] + exp(true_log_inc[i,t])
+   inc[i,t] ~ dnorm(Einc[i,t],tau_add)
+   x[i,t] <- x[i,t-1] + exp(inc[i,t])
   }
   
 #RANDOM ## individual effects
