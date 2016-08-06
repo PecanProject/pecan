@@ -374,16 +374,25 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
                                               paste0('mcmc.list.pda', settings$assim.batch$ensemble.id, '.Rdata'))
   save(mcmc.list, file = settings$assim.batch$mcmc.path)
   
+  settings$assim.batch$jvar.path <- file.path(settings$outdir, 
+                                              paste0('jvar.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+  save(jvar.list, file = settings$assim.batch$jvar.path)
   
-  # Separate each PFT's samples to their own list
+  
+  # Separate each PFT's parametes samples to their own list
   mcmc.param.list <- list()
   ind <- 0
   for(i in seq_along(settings$pfts)){
     mcmc.param.list[[i]] <-  lapply(mcmc.list, function(x) x[, (ind+1):(ind + n.param[i]), drop=FALSE])
+    names(mcmc.param.list[[i]])
     ind <- ind + n.param[i]
   }
-  
-  settings <- pda.postprocess(settings, con, mcmc.param.list, jvar.list, pname, prior, prior.ind)
+
+  # # re-shuffle list to separate each parameter samples to their own list
+  # mcmc.param.list <- lapply(seq_along(prior.ind.all), function(v) sapply(mcmc.list, function(x) x[,v]))
+  # names(mcmc.param.list) <- unlist(pname)[prior.ind.all]
+  # 
+  settings <- pda.postprocess(settings, con, mcmc.param.list, jvar.list, pname, prior.list, prior.ind)
 
   ## close database connection
   if(!is.null(con)) db.close(con)

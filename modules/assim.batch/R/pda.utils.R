@@ -663,6 +663,7 @@ pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn, pname) 
 pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
   
   params.subset <- list()
+
   for(i in seq_along(settings$pfts)){
     params.subset[[i]]  <- as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
     
@@ -671,15 +672,17 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
     burnin <- GBR$last.iter[iters+1]
     if(any(is.na(burnin))) logger.info(paste0("Chains have not converged yet"))
     params.subset[[i]] <- window(params.subset[[i]], start=max(burnin, na.rm = TRUE))
-
     
     pdf(file.path(settings$pfts[[i]]$outdir, 
                   paste0('mcmc.diagnostics.pda.', 
                          settings$pfts[[i]]$name,'_',
                          settings$assim.batch$ensemble.id, 
                          '.pdf')))
+    layout(matrix(c(1,2,
+                    3,4,
+                    5,6), ncol = 2, byrow = TRUE))
     
-    plot(params.subset[[i]])
+    plot(params.subset[[i]], auto.layout = FALSE)
     
     dm <- do.call("rbind", params.subset[[i]])
     
@@ -688,43 +691,51 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
     }
     
     if(length(params.subset[[i]])>1){
-      gelman.plot(params.subset[[i]])
+      gelman.plot(params.subset[[i]], auto.layout = FALSE)
     }
     
+    layout(1)
     dev.off()
-  
-  
-  # Write out convergence diagnostics to a txt file
-  filename.mcmc.temp <- file.path(file.path(settings$pfts[[i]]$outdir, 
-                                            paste0('mcmc.diagnostics.pda.', 
-                                                   settings$pfts[[i]]$name,'_',
-                                                   settings$assim.batch$ensemble.id, 
-                                                   '.txt')))
+    
+    # Write out convergence diagnostics to a txt file
+    filename.mcmc.temp <- file.path(file.path(settings$pfts[[i]]$outdir, 
+                                              paste0('mcmc.diagnostics.pda.', 
+                                                     settings$pfts[[i]]$name,'_',
+                                                     settings$assim.batch$ensemble.id, 
+                                                     '.txt')))
+    
+    
+    cat("Summary statistics\n", file=filename.mcmc.temp)
+    capture.output(summary(params.subset[[i]]), file=filename.mcmc.temp, append=TRUE)
+    cat("\n\n\n", file=filename.mcmc.temp, append=TRUE)
+    
+    if(length(prior.ind[[i]])>1){
+      cat("Covariance matrix :\n", file=filename.mcmc.temp, append=TRUE)
+      capture.output(cov(dm), file=filename.mcmc.temp, append=TRUE)
+      cat("\n\n\n", file=filename.mcmc.temp, append=TRUE)
+    }
+    
+    if(length(prior.ind[[i]])>1){
+      cat("Correlation matrix :\n", file=filename.mcmc.temp, append=TRUE)
+      capture.output(cor(dm), file=filename.mcmc.temp, append=TRUE)
+      cat("\n\n\n", file=filename.mcmc.temp ,append=TRUE)
+    } 
+    
+    if(length(params.subset[[i]])>1){
+      cat("Gelman and Rubin convergence diagnostics\n", file=filename.mcmc.temp, append=TRUE)
+      capture.output(gelman.diag(params.subset[[i]], autoburnin = FALSE), file=filename.mcmc.temp, append=TRUE)
+    }
   
 
-  cat("Summary statistics\n", file=filename.mcmc.temp)
-  capture.output(summary(params.subset[[i]]), file=filename.mcmc.temp, append=TRUE)
-  cat("\n\n\n", file=filename.mcmc.temp, append=TRUE)
+  } # end of for-loop over PFTs
   
-   if(length(prior.ind[[i]])>1){
-    cat("Covariance matrix :\n", file=filename.mcmc.temp, append=TRUE)
-    capture.output(cov(dm), file=filename.mcmc.temp, append=TRUE)
-    cat("\n\n\n", file=filename.mcmc.temp, append=TRUE)
-  }
+  # conver mcmc.list to list of matrices 
+  params.subset.list <-lapply(params.subset, as.matrix)
   
-  if(length(prior.ind[[i]])>1){
-    cat("Correlation matrix :\n", file=filename.mcmc.temp, append=TRUE)
-    capture.output(cor(dm), file=filename.mcmc.temp, append=TRUE)
-    cat("\n\n\n", file=filename.mcmc.temp ,append=TRUE)
-  } 
+  # reformat each sublist such that params have their own list
+  params.subset.list <- lapply(1:length(params.subset.list), function(x) as.list(data.frame(mm[[x]])))
   
-  if(length(params.subset[[i]])>1){
-    cat("Gelman and Rubin convergence diagnostics\n", file=filename.mcmc.temp, append=TRUE)
-    capture.output(gelman.diag(params.subset[[i]], autoburnin = FALSE), file=filename.mcmc.temp, append=TRUE)
-  }
-  
- }
- return(params.subset)
+ return(params.subset.list)
 }
 
 
@@ -748,7 +759,8 @@ pda.postprocess <- function(settings, con, mcmc.param.list, jvar.list, pname, pr
                              paste0('mcmc.pda.', 
                                     settings$pfts[[i]]$name,'_',
                                     settings$assim.batch$ensemble.id, '.Rdata'))
-  save(params.subset[[i]], file = filename.mcmc)
+  params.pft <- params.subset[[i]]
+  save(params.pft, file = filename.mcmc)
 
   ## create a new Posteriors DB entry
   now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
@@ -761,23 +773,21 @@ pda.postprocess <- function(settings, con, mcmc.param.list, jvar.list, pname, pr
       "INSERT INTO posteriors (pft_id, created_at, updated_at) VALUES (", 
       pft.id, ", '", now, "', '", now, "')"), con)
     
-  }
 
- 
 
   posteriorid <- db.query(paste0(
     "SELECT id FROM posteriors WHERE pft_id=", pft.id, " AND created_at='", now, "'"), con)[['id']]
-  logger.info(paste0("--- Posteriorid is ", posteriorid, " ---"))
+  
+  logger.info(paste0("--- Posteriorid for " , settings$pfts[[i]]$name, " is ", posteriorid, " ---"))
   settings$pfts[[i]]$posteriorid <- posteriorid
-  settings$assim.batch$params.id <- dbfile.insert(
-    dirname(filename.mcmc), basename(filename.mcmc), 'Posterior', posteriorid, con, reuse=TRUE)
+  
 
   ## save named distributions
   # *** TODO: Generalize for multiple PFTS
-  post.distns <- approx.posterior(params.subset, prior, outdir = settings$pfts$pft$outdir,
-                    filename.flag=paste0('.pda.', settings$assim.batch$ensemble.id))
-  filename <- file.path(settings$pfts$pft$outdir, 
-                paste0('post.distns.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+  post.distns <- approx.posterior(params.subset[[i]], prior[[i]], outdir = settings$pfts[[i]]$outdir,
+                    filename.flag=paste0('.pda.',settings$pfts[[i]]$name,'_', settings$assim.batch$ensemble.id))
+  filename <- file.path(settings$pfts[[i]]$outdir, 
+                        paste0('post.distns.pda.',settings$pfts[[i]]$name,'_', settings$assim.batch$ensemble.id, '.Rdata'))
   save(post.distns, file = filename)
   dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
   
@@ -787,43 +797,30 @@ pda.postprocess <- function(settings, con, mcmc.param.list, jvar.list, pname, pr
   }
   file.symlink(filename, file.path(dirname(filename), 'post.distns.Rdata'))
 
-  # save jump variances 
-  settings$assim.batch$jvar.path <- file.path(settings$pfts$pft$outdir, 
-                                              paste0('jvar.pda', settings$assim.batch$ensemble.id, '.Rdata'))
-  save(jvar.list, file = settings$assim.batch$jvar.path)
-  dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
-  
-  ## If method is emulator, save knots and emulator
-  if(settings$assim.batch$method == "emulator"){
-    
-    dbfile.insert(dirname(settings$assim.batch$emulator.path), basename(settings$assim.batch$emulator.path), 'Posterior', posteriorid, con)
-    dbfile.insert(dirname(settings$assim.batch$llik.path), basename(settings$assim.batch$llik.path), 'Posterior', posteriorid, con)
-    dbfile.insert(dirname(settings$assim.batch$mcmc.path), basename(settings$assim.batch$mcmc.path), 'Posterior', posteriorid, con)
-    
-  }
 
   ## coerce parameter output into the same format as trait.mcmc
   pname <- rownames(post.distns)
   trait.mcmc <- list()
-  for(i in 1:length(prior.ind)){
-    beta.o <- array(params.subset[,i],c(nrow(params.subset),1))
+  for(v in 1:length(prior.ind[[i]])){
+    beta.o <- array(params.subset[[i]][[v]],c(length(params.subset[[i]][[v]]),1))
     colnames(beta.o) <- "beta.o"
-    if(pname[prior.ind][i] %in% names(trait.mcmc)) {
-      trait.mcmc[[pname[prior.ind][i]]] <- mcmc.list(as.mcmc(beta.o))
+    if(pname[prior.ind[[i]][v]] %in% names(trait.mcmc)) {
+      trait.mcmc[[pname[prior.ind[[i]][v]]]] <- mcmc.list(as.mcmc(beta.o))
     } else {
       k <- length(trait.mcmc) + 1
       trait.mcmc[[k]] <- mcmc.list(as.mcmc(beta.o))
-      names(trait.mcmc)[k] <- pname[prior.ind][i]      
+      names(trait.mcmc)[k] <- pname[prior.ind[[i]]][v]      
     }
   }
 
   ## save updated parameter distributions as trait.mcmc so that they can be read by the ensemble code
   # *** TODO: Generalize for multiple PFTS
-  filename <- file.path(settings$pfts$pft$outdir, 
-                paste0('trait.mcmc.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+  filename <- file.path(settings$pfts[[i]]$outdir, 
+                paste0('trait.mcmc.pda',settings$pfts[[i]]$name,'_', settings$assim.batch$ensemble.id, '.Rdata'))
   save(trait.mcmc, file = filename)
   dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
-
+  
+ } #end of loop over PFTs
   ## save updated settings XML
   saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 
     paste0('pecan.pda', settings$assim.batch$ensemble.id, '.xml')))
