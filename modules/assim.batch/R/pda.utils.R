@@ -198,6 +198,7 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 ##' @export
 pda.load.priors <- function(settings, con) {
   
+  
   # Load a prior.distns or post.distns file directly by path
   if(!is.null(settings$assim.batch$prior$path)) {
     if(file.exists(settings$assim.batch$prior$path)) load(settings$assim.batch$prior$path)
@@ -248,18 +249,35 @@ pda.load.priors <- function(settings, con) {
     prior.distns.check <- sapply(file.names, function(x) grepl("^prior\\.distns\\..*Rdata$", x))
     
     prior.out <- list()
+    prior.paths <- list()
     for(i in seq_along(settings$assim.batch$prior$prior.id)){
       
              if(any(post.distns.check[[i]]==TRUE)){
-               load(file.path(file.paths[[i]][post.distns.check[[i]]], 
-                              file.names[[i]][post.distns.check[[i]]]))
+               file.name <-file.path(file.paths[[i]][post.distns.check[[i]]], 
+                              file.names[[i]][post.distns.check[[i]]])
+               load(file.name)
                prior.out[[i]] <- post.distns
+               prior.paths[[i]] <-  file.name
+               
+                 
              }else{
-               load(file.path(file.paths[[i]][prior.distns.check[[i]]], 
-                              file.names[[i]][prior.distns.check[[i]]]))
+               file.name <- file.path(file.paths[[i]][prior.distns.check[[i]]], 
+                                      file.names[[i]][prior.distns.check[[i]]])
+               load(file.name)
                prior.out[[i]] <- prior.distns
+               prior.paths[[i]] <-  file.name
              }
-      }
+    }
+    
+               # if this is the first PDA round, save the initial PDA prior to path
+               if(is.null(settings$assim.batch$extension)){
+                 
+                 settings$assim.batch$prior$path <- prior.paths
+                 names(settings$assim.batch$prior$path) <- sapply(settings$pfts, `[[`, "name")
+                 
+               }
+    
+    
     
   }
   
@@ -273,6 +291,7 @@ pda.load.priors <- function(settings, con) {
       paste(unlist(settings$assim.batch$param.names)[params.no.priors], collapse=", "), 
       "] but no prior found!"))
   }
+  
     
   return(list(prior=prior.out, settings=settings))
 }
@@ -664,14 +683,39 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
   
   params.subset <- list()
 
+  # flag for gelman.plot 
+  enough.iter <- TRUE
+  
   for(i in seq_along(settings$pfts)){
     params.subset[[i]]  <- as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
     
-    GBR <- gelman.plot(params.subset[[i]])
-    iters <- apply(GBR$shrink[,,2,drop=FALSE], 2, function(x) which(x > 1.1)[length(which(x > 1.1))])
-    burnin <- GBR$last.iter[iters+1]
-    if(any(is.na(burnin))) logger.info(paste0("Chains have not converged yet"))
+    if(settings$assim.batch$chain > 1){
+      
+      GBR <- gelman.plot(params.subset[[i]])
+      iters <- apply(GBR$shrink[,,2,drop=FALSE], 2, function(x) which(x > 1.1)[length(which(x > 1.1))])
+      burnin <- GBR$last.iter[iters+1]
+      if(any(is.na(burnin))){
+        logger.info(paste0("*** Chains have not converged yet ***"))
+        burnin[is.na(burnin)] <- 1
+      }
+
+      
+    }else{
+      
+      burnin <- ifelse(!is.null(settings$assim.batch$burnin), 
+                       as.numeric(settings$assim.batch$burnin), 
+                       ceiling(min(2000,0.2*settings$assim.batch$iter)))
+      
+    }
+
     params.subset[[i]] <- window(params.subset[[i]], start=max(burnin, na.rm = TRUE))
+
+    # chek number of iterations left after throwing the burnin, gelman.plot requires > 50
+    if(nrow(params.subset[[i]][[1]]) < 50){
+      logger.info(paste0("*** Not enough iterations in the chain after removing burn-in, skipping gelman.plot ***"))
+      enough.iter <- FALSE
+    }
+
     
     pdf(file.path(settings$pfts[[i]]$outdir, 
                   paste0('mcmc.diagnostics.pda.', 
@@ -690,7 +734,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
       correlationPlot(dm)
     }
     
-    if(length(params.subset[[i]])>1){
+    if(length(params.subset[[i]])>1 & enough.iter){
       gelman.plot(params.subset[[i]], auto.layout = FALSE)
     }
     

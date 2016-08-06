@@ -181,8 +181,8 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
       
       ## GPfit optimization routine assumes that inputs are in [0,1]
       ## Instead of drawing from parameters, we draw from probabilities
-      knots.probs.all <- do.call(cbind, knots.probs)
-      prior.ind.all <- do.call(c, prior.ind)
+      knots.probs.all <- do.call("cbind", knots.probs)
+      prior.ind.all <- do.call("c", prior.ind)
         
       X <- knots.probs.all[, prior.ind.all, drop=FALSE]
       
@@ -223,7 +223,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     }
     
     ## Change the priors to unif(0,1) for mcmc.GP
-    prior.all <- do.call(rbind, prior.list)
+    prior.all <- do.call("rbind", prior.list)
     
     prior.all[prior.ind.all,]=rep(c("unif",0,1,"NA"),each=sum(n.param))
     ## Set up prior functions accordingly
@@ -323,7 +323,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     if(settings$assim.batch$GPpckg=="GPfit"){
       ## Set the prior functions back to work with actual parameter range
 
-      prior.all <- do.call(rbind, prior.list)
+      prior.all <- do.call("rbind", prior.list)
       prior.fn.all <- pda.define.prior.fn(prior.all)
      
       ## Convert probabilities back to parameter values
@@ -388,10 +388,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     ind <- ind + n.param[i]
   }
 
-  # # re-shuffle list to separate each parameter samples to their own list
-  # mcmc.param.list <- lapply(seq_along(prior.ind.all), function(v) sapply(mcmc.list, function(x) x[,v]))
-  # names(mcmc.param.list) <- unlist(pname)[prior.ind.all]
-  # 
+
   settings <- pda.postprocess(settings, con, mcmc.param.list, jvar.list, pname, prior.list, prior.ind)
 
   ## close database connection
