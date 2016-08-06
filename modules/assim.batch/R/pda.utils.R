@@ -78,7 +78,7 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   if(is.null(settings$assim.batch$param.names)) {
     logger.error('Parameter data assimilation requested, but no parameters specified for PDA')
   } else {
-    settings$assim.batch$param.names <- lapply(settings$assim.batch$param.names, as.character)
+    settings$assim.batch$param.names <- lapply(settings$assim.batch$param.names, as.list)
   }
   # # have to add names or listToXml() won't work
   # names(settings$assim.batch$param.names) <- rep("param", length(settings$assim.batch$param.names))
@@ -201,15 +201,20 @@ pda.load.priors <- function(settings, con) {
   
   # Load a prior.distns or post.distns file directly by path
   if(!is.null(settings$assim.batch$prior$path)) {
-    if(file.exists(settings$assim.batch$prior$path)) load(settings$assim.batch$prior$path)
-    if(exists("prior.distns")) {
-      logger.info(paste0("Loaded prior ", basename(settings$assim.batch$prior$path), " as PDA prior."))
-      prior.out <- prior.distns
-    } else if(exists("post.distns")) {
-      logger.info(paste0("Loaded posterior ", basename(settings$assim.batch$prior$path), " as PDA prior."))
-      prior.out <- post.distns
-    } else {
-      logger.warn("Didn't find a valid PDA prior at ", settings$assim.batch$prior$path)
+    prior.out <-list()
+    for(i in seq_along(settings$pfts)){
+      if(file.exists(settings$assim.batch$prior$path[[i]])) load(settings$assim.batch$prior$path[[i]])
+      if(exists("prior.distns")) {
+        logger.info(paste0("Loaded prior ", basename(settings$assim.batch$prior$path[[i]]), " as PDA prior."))
+        prior.out[[i]] <- prior.distns
+        rm(prior.distns)
+      } else if(exists("post.distns")) {
+        logger.info(paste0("Loaded posterior ", basename(settings$assim.batch$prior$path[[i]]), " as PDA prior."))
+        prior.out[[i]] <- post.distns
+        rm(post.distns)
+      } else {
+        logger.warn("Didn't find a valid PDA prior at ", settings$assim.batch$prior$path[[i]])
+      }
     }
   }
 
@@ -277,15 +282,13 @@ pda.load.priors <- function(settings, con) {
                  
                }
     
-    
-    
   }
   
   # Finally, check that PDA parameters requested are in the prior; can't assimilate them if not.
   # Could proceed with any valid params. But probably better to just bonk out now to avoid wasting
   # a lot of time in case the mis-specified parameter(s) is really important to the analysis. 
   params.no.priors <- which(is.na(match(unlist(settings$assim.batch$param.names), 
-                                        unlist(sapply(prior.out, rownames)))))
+                                        unlist(lapply(prior.out, rownames)))))
   if(length(params.no.priors) > 0) {
     logger.severe(paste0("PDA requested for parameter(s) [",
       paste(unlist(settings$assim.batch$param.names)[params.no.priors], collapse=", "), 
@@ -866,6 +869,8 @@ pda.postprocess <- function(settings, con, mcmc.param.list, jvar.list, pname, pr
   dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
   
  } #end of loop over PFTs
+  
+  
   ## save updated settings XML
   saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 
     paste0('pecan.pda', settings$assim.batch$ensemble.id, '.xml')))
