@@ -730,12 +730,13 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
   } # end of for-loop over PFTs
   
   # conver mcmc.list to list of matrices 
-  params.subset.list <-lapply(params.subset, as.matrix)
+  params.subset.list <- list()
+  for(i in 1:length(params.subset)) params.subset.list[[i]] <-do.call("rbind", params.subset[[i]])
   
   # reformat each sublist such that params have their own list
-  params.subset.list <- lapply(1:length(params.subset.list), function(x) as.list(data.frame(mm[[x]])))
+  return.samples <- lapply(1:length(params.subset.list), function(x) as.list(data.frame(params.subset.list[[x]])))
   
- return(params.subset.list)
+ return(return.samples)
 }
 
 
