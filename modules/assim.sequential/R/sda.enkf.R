@@ -43,7 +43,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
  }
  if(model == "SIPNET"){
    ## split clim file
-      full.met <- settings$run$inputs$met$path
+      full.met <- c("/fs/data1/pecan.data/dbfiles/BD-4e27913632c/sipnet.clim") #settings$run$inputs$met$path
       new.met  <- file.path(settings$rundir,basename(full.met))
       file.copy(full.met,new.met)
       met <- split.met.SIPNET(new.met)
@@ -274,6 +274,45 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
         }
       }
     }
+    
+    #### Plot Data and Forecast
+    if(interactive() & t > 1){
+      t1=1
+      names.y <- unique(unlist(lapply(obs.mean[t1:t],function(x){return(names(x))})))
+      Ybar = t(sapply(obs.mean[t1:t],function(x){
+        tmp <- rep(NA,length(names.y))
+        names(tmp) <- names.y 
+        mch = match(names(x),names.y)
+        tmp[mch] = x[mch]
+        return(tmp)
+      }))
+      
+      Ybar = Ybar[,na.omit(pmatch(colnames(X), colnames(Ybar)))]
+      YCI = t(as.matrix(sapply(obs.cov[t1:t],function(x){
+          if(is.null(x)) return(rep(NA,length(names.y)))
+          return(sqrt(diag(x)))}))) 
+      
+      for(i in 1){
+          t1=1
+          Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
+          Xci  = laply(FORECAST[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
+
+          plot(total.time[t1:t],Xbar,ylim=range(Xci,na.rm=TRUE),
+               type='n',xlab="Year",ylab="kg/m^2",main=colnames(X)[i])
+          
+          #observation / data
+            if(i<=ncol(Ybar)){
+              ciEnvelope(total.time[t1:t],as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
+                         as.numeric(Ybar[,i])+as.numeric(YCI[,i])*1.96,col=alphagreen)
+              lines(total.time[t1:t],as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
+            }
+          
+          #forecast
+          ciEnvelope(total.time[t1:t],Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
+          lines(total.time[t1:t],Xbar,col="darkblue",type='l',lwd=2)
+          
+        }
+    }
 
     ###-------------------------------------------------------------------###
     ### Kalman Filter                                                     ###
@@ -292,6 +331,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       ## Analysis
       mu.a = mu.f + K%*%(Y-H%*%mu.f)
       Pa   = (diag(ncol(X)) - K%*%H)%*%Pf
+      enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
     } else { 
       
       ###-------------------------------------------------------------------###
@@ -399,12 +439,56 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
     }
     
-    
     ## update state matrix
     analysis <- as.data.frame(rmvnorm(as.numeric(nens),mu.a,Pa,method="svd"))
     colnames(analysis) <- colnames(X)
     
     ANALYSIS[[t]] = analysis
+    
+    if(interactive() & t>1){
+      t1=1
+      names.y <- unique(unlist(lapply(obs.mean[t1:t],function(x){return(names(x))})))
+      Ybar = t(sapply(obs.mean[t1:t],function(x){
+        tmp <- rep(NA,length(names.y))
+        names(tmp) <- names.y 
+        mch = match(names(x),names.y)
+        tmp[mch] = x[mch]
+        return(tmp)
+      }))
+      Ybar = Ybar[,na.omit(pmatch(colnames(X), colnames(Ybar)))]
+      YCI = t(as.matrix(sapply(obs.cov[t1:t],function(x){
+        if(is.null(x)) return(rep(NA,length(names.y)))
+        return(sqrt(diag(x)))})))
+        
+      for(i in 2){
+          t1=1
+          Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
+          Xci  = laply(FORECAST[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
+          
+          Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
+          XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
+          
+          plot(total.time[t1:t],Xbar,ylim=range(c(XaCI),na.rm=TRUE),
+               type='n',xlab="Year",ylab="kg/m^2",main=colnames(X)[i])
+          
+          #observation / data
+          if(i<=ncol(Ybar)){
+            ciEnvelope(total.time[t1:t],as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
+                       as.numeric(Ybar[,i])+as.numeric(YCI[,i])*1.96,col=alphagreen)
+            lines(total.time[t1:t],as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
+          }
+          
+          #forecast
+          ciEnvelope(total.time[t1:t],Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
+          lines(total.time[t1:t],Xbar,col="darkblue",type='l',lwd=2)
+          
+          #analysis
+          ciEnvelope(total.time[(t1:t)],XaCI[,1],XaCI[,2],col=alphapink)
+          lines(total.time[t1:t],Xa,col="black",lty=2,lwd=2)
+          
+        }
+      }
+
     
     ###-------------------------------------------------------------------###
     ### forecast step -- write restart                                    ###
@@ -428,7 +512,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       ###-------------------------------------------------------------------###
       ### Run model                                                         ###
       ###-------------------------------------------------------------------### 
-      print(paste("Running Model for year",total.time[t]+1))
+      print(paste("Running Model for Year",total.time[t]+1))
       start.model.runs(settings,settings$database$bety$write)
     }
     
@@ -512,12 +596,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       lines(total.time[t1:t],Xa,col="black",lty=2,lwd=2)
       
     }
-    if(FALSE){
+
     ###-------------------------------------------------------------------###
     ### bias diagnostics                                                  ###
     ###-------------------------------------------------------------------### 
       #legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
       #Forecast minus data = error
+    for(i in 1:2){
       reg <- lm(Xbar[t1:t] - unlist(Ybar[t1:t,i])~c(t1:t))
       plot(t1:t,Xbar[t1:t] - unlist(Ybar[t1:t,i]),pch=16,cex=1,
            ylim=c(min(Xci[t1:t,1]-unlist(Ybar[t1:t,i])),
@@ -543,22 +628,23 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       mtext(paste("slope =",signif(summary(reg1)$coefficients[2],digits=3),"intercept =",signif(summary(reg1)$coefficients[1],digits=3)))
       #d<-density(c(Xbar[t1:t] - Xa[t1:t]))
       #lines(d$y+1,d$x)
-  
+    }
   ###-------------------------------------------------------------------###
   ### process variance plots                                            ###
   ###-------------------------------------------------------------------### 
-  library(corrplot)
-  cor.mat <- cov2cor(aqq[t,,]/bqq[t])
-  colnames(cor.mat)<-colnames(X)
-  rownames(cor.mat)<-colnames(X)
-  par(mfrow=c(1,1),mai=c(1,1,4,1))
-  corrplot(cor.mat,type="upper",tl.srt=45, 
-           addCoef.col = "black")
-
-  plot(total.time[t1:t],bqq[t1:t],pch=16,cex=1,ylab="Degrees of Freedom",
-        xlab="Time")
-  
-      }
+  if(processvar==TRUE){
+    library(corrplot)
+    cor.mat <- cov2cor(aqq[t,,]/bqq[t])
+    colnames(cor.mat)<-colnames(X)
+    rownames(cor.mat)<-colnames(X)
+    par(mfrow=c(1,1),mai=c(1,1,4,1))
+    corrplot(cor.mat,type="upper",tl.srt=45, 
+             addCoef.col = "black")
+    
+    plot(total.time[t1:t],bqq[t1:t],pch=16,cex=1,ylab="Degrees of Freedom",
+         xlab="Time")
+  }
+      
   ###-------------------------------------------------------------------###
   ### climate plots                                                     ###
   ###-------------------------------------------------------------------### 

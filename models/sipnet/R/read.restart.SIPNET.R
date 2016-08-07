@@ -38,7 +38,7 @@ read.restart.SIPNET <- function(outdir,runid,time,settings,variables,sample_para
     #### PEcAn Standard Outputs
     forecast[1] <- mean(ens$NPP) ## kg C m-2 s-1 
     forecast[2] = ens$AbvGrndWood[last]## kgC/m2 
-    forecast[3] = ens$LeafC[last]*prior.sla*2 ## kgC/m2*m2/kg*2kg/kgC
+    forecast[3] = ens$LeafC[last] ## kgC/m2*m2/kg*2kg/kgC
     forecast[4] = ens$Litter[last]##kgC/m2
     forecast[5] = ens$TotSoilCarb[last]## kgC/m2
     forecast[6] = ens$SoilMoistFrac[last]## unitless

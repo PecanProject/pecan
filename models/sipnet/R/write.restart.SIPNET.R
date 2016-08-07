@@ -34,6 +34,25 @@ write.restart.SIPNET<- function(out.dir, runid, time, settings, analysis.vec,
   
   settings$run$start.date <- paste0(time + 1,"/01/01") #TO FIX LATER #DONT WANT TO ASSUME YEARLY TIMESTEP
   settings$run$end.date <- paste0(time + 1,"/12/31")
+  
+  ## Converting to sipnet units
+  if(sample_parameters == TRUE){
+    load(file.path(settings$outdir, "samples.Rdata"))
+    prior.sla <- mean(ensemble.samples[[which(names(ensemble.samples)!='soil')[1]]]$SLA) #HACK
+  }else{
+    load(file.path(settings$outdir, paste0("ensemble.samples.",settings$state.data.assimilation$prior,".Rdata")))
+    prior.sla <- ens.samples[[which(names(ensemble.samples)!='soil')[1]]]$SLA
+  }
+  unit.conv <-  0.001*2
+  
+  analysis.vec$NPP<-analysis.vec$NPP*unit.conv
+  analysis.vec$plantWood<-analysis.vec$plantWood*1000
+  analysis.vec$lai<-analysis.vec$lai*prior.sla*2
+  analysis.vec$litter<-analysis.vec$litter*1000
+  analysis.vec$soil<- analysis.vec$soil*1000
+  analysis.vec$litterWFrac<-analysis.vec$litterWFrac
+  analysis.vec$soilWFrac<-analysis.vec$soilWFrac
+  analysis.vec$snow<-analysis.vec$snow*0.1
     
   do.call(write.config.SIPNET, args = list(defaults = NULL, trait.values = trait.values,
                                          settings = settings, run.id = runid,
