@@ -97,11 +97,11 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
       
       ## Re-load priors
       temp <- pda.load.priors(settings, con) # loads the posterior dist. from previous emulator run
-      prior <- temp$prior
+      prior.list <- temp$prior
       settings$assim.batch$prior$path = temp.path
       
       ## Re-set prior distribution functions 
-      prior.fn <- pda.define.prior.fn(prior)
+      prior.fn <- lapply(prior.list, pda.define.prior.fn)
       
       ## Propose a percentage of the new parameter knots from the posterior of previous run
       knot.par <- ifelse(!is.null(settings$assim.batch$knot.par),
@@ -110,26 +110,33 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
                          
       n.post.knots <- floor(knot.par * settings$assim.batch$n.knot)
       
-      knots.list.temp <- pda.generate.knots(n.post.knots, n.param.all, prior.ind, prior.fn, pname)
-      knots.params.temp <- knots.list.temp$params
-      
-      # mixture of knots 
-      knots.list$params <- rbind(knots.params[sample(nrow(knots.params), (settings$assim.batch$n.knot - n.post.knots)),], 
-                                 knots.list.temp$params)
+      knots.list.temp <- lapply(seq_along(settings$pfts),
+                           function(x) pda.generate.knots(n.post.knots, n.param.all[x], prior.ind[[x]], prior.fn[[x]], pname[[x]]))
+      knots.params.temp <- sapply(knots.list.temp, `[[`, "params")
+
+      for(i in seq_along(settings$pfts)){
+        # mixture of knots 
+        knots.list[[i]]$params <- rbind(knots.params[[i]][sample(nrow(knots.params[[i]]), (settings$assim.batch$n.knot - n.post.knots)),], 
+                                   knots.list.temp[[i]]$params)
+        
+      }
+
       
       # Return to original prior distribution
       temp <- pda.load.priors(settings, con)
-      prior <- temp$prior
-      prior.fn <- pda.define.prior.fn(prior)
+      prior.list <- temp$prior
+      prior.fn <- lapply(prior.list, pda.define.prior.fn)
       
       
       # Convert parameter values to probabilities according to previous prior distribution
       knots.list$probs <- knots.list$params
-      for(i in 1:n.param.all) {
-        knots.list$probs[,i] <- eval(prior.fn$pprior[[i]], list(q=knots.list$params[,i]))
+      for(pft in seq_along(settings$pfts)){
+        for(i in 1:n.param.all[[pft]]) {
+          knots.list[[pft]]$probs[,i] <- eval(prior.fn[[pft]]$pprior[[i]], list(q=knots.list[[pft]]$params[,i]))
+        }
       }
-      colnames(knots.list$probs) <- pname
-      
+
+      # colnames(knots.list$probs) <- pname
       knots.params <- knots.list$params
       knots.probs <- knots.list$probs
       

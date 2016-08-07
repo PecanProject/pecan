@@ -243,44 +243,35 @@ pda.load.priors <- function(settings, con) {
                        paste(unlist(settings$assim.batch$prior$prior.id), collapse=", "),
                        " as PDA prior(s)."))
     
-    prior.db <- lapply(settings$assim.batch$prior$prior.id, 
-                       function(x) db.query(paste0("SELECT * from dbfiles where container_type = 'Posterior' and container_id = ", x),con))
-    
-    file.names <- sapply(prior.db, `[[`, "file_name")
-    file.paths <- sapply(prior.db, `[[`, "file_path")
-    
-    # check if post.distns.*Rdata present
-    post.distns.check <- sapply(file.names, function(x) grepl("^post\\.distns\\..*Rdata$", x))
-    prior.distns.check <- sapply(file.names, function(x) grepl("^prior\\.distns\\..*Rdata$", x))
-    
     prior.out <- list()
     prior.paths <- list()
-    for(i in seq_along(settings$assim.batch$prior$prior.id)){
-      
-             if(any(post.distns.check[[i]]==TRUE)){
-               file.name <-file.path(file.paths[[i]][post.distns.check[[i]]], 
-                              file.names[[i]][post.distns.check[[i]]])
-               load(file.name)
-               prior.out[[i]] <- post.distns
-               prior.paths[[i]] <-  file.name
-               
-                 
-             }else{
-               file.name <- file.path(file.paths[[i]][prior.distns.check[[i]]], 
-                                      file.names[[i]][prior.distns.check[[i]]])
-               load(file.name)
-               prior.out[[i]] <- prior.distns
-               prior.paths[[i]] <-  file.name
-             }
-    }
     
-               # if this is the first PDA round, save the initial PDA prior to path
-               if(is.null(settings$assim.batch$extension)){
-                 
-                 settings$assim.batch$prior$path <- prior.paths
-                 names(settings$assim.batch$prior$path) <- sapply(settings$pfts, `[[`, "name")
-                 
-               }
+    for(i in seq_along(settings$pfts)){
+      
+      files = dbfile.check("Posterior",settings$pfts[[i]]$posteriorid,con,settings$host$name)
+      pid = grep("post.distns.*Rdata",files$file_name)  ## is there a posterior file?
+      if(length(pid) == 0){
+        pid = grep("prior.distns.Rdata",files$file_name)  ## is there a prior file?
+      }
+      if(length(pid)>0){
+        prior.paths[[i]] = file.path(files$file_path[pid],files$file_name[pid])
+      } 
+      load(prior.paths[[i]])
+      if(!exists("post.distns")){
+        prior.out[[i]] <- prior.distns
+      }else{
+        prior.out[[i]] <- post.distns
+        rm(post.distns)
+      }
+    
+    }
+
+            
+      # if this is the first PDA round, save the initial PDA prior to path
+      if(settings$assim.batch$extension!="round"){
+        settings$assim.batch$prior$path <- prior.paths
+        names(settings$assim.batch$prior$path) <- sapply(settings$pfts, `[[`, "name")
+      }
     
   }
   
