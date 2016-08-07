@@ -432,14 +432,15 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       start.model.runs(settings,settings$database$bety$write)
     }
     
+    ###-------------------------------------------------------------------###
+    ### save outputs                                                      ###
+    ###-------------------------------------------------------------------### 
+    save(t,FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.output.Rdata"))
+    
     
   }  ## end loop over time
   ###-------------------------------------------
   
-  ###-------------------------------------------------------------------###
-  ### save outputs                                                      ###
-  ###-------------------------------------------------------------------### 
-  save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.output.Rdata"))
   
   
   ###-------------------------------------------------------------------###
@@ -470,9 +471,18 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
     blue = col2rgb("blue")
     alphablue = rgb(blue[1],blue[2],blue[3],75,max=255)
     
-    Ybar =  laply(obs.mean[t1:t],function(x){return(x)})
-    Ybar = Ybar[,na.omit(pmatch(colnames(X), names(obs.mean[[t]])))]
-    YCI = as.matrix(laply(obs.cov[t1:t],function(x){return(sqrt(diag(x)))}))  #need to make this from quantiles for lyford plot data
+    names.y <- unique(unlist(lapply(obs.mean[t1:t],function(x){return(names(x))})))
+    Ybar = t(sapply(obs.mean[t1:t],function(x){
+      tmp <- rep(NA,length(names.y))
+      names(tmp) <- names.y 
+      mch = match(names(x),names.y)
+      tmp[mch] = x[mch]
+      return(tmp)
+      }))
+    Ybar = Ybar[,na.omit(pmatch(colnames(X), colnames(Ybar)))]
+    YCI = t(as.matrix(sapply(obs.cov[t1:t],function(x){
+      if(is.null(x)) return(rep(NA,length(names.y)))
+      return(sqrt(diag(x)))})))  #need to make this from quantiles for lyford plot data
     #YCI = YCI[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
    
     for(i in 1:ncol(X)){
@@ -483,11 +493,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
       XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
       
-      plot(total.time[t1:t],Xbar,ylim=range(XaCI),
+      plot(total.time[t1:t],Xbar,ylim=range(XaCI,na.rm=TRUE),
            type='n',xlab="Year",ylab="kg/m^2",main=colnames(X)[i])
      
        #observation / data
-      if(i<=length(Ybar)){
+      if(i<=ncol(Ybar)){
         ciEnvelope(total.time[t1:t],as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
                    as.numeric(Ybar[,i])+as.numeric(YCI[,i])*1.96,col=alphagreen)
         lines(total.time[t1:t],as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
