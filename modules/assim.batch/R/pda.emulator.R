@@ -136,10 +136,9 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
         }
       }
 
-      # colnames(knots.list$probs) <- pname
-      knots.params <- knots.list$params
-      knots.probs <- knots.list$probs
-      
+      knots.params <- sapply(knots.list, `[[`, "params")
+      knots.probs <- sapply(knots.list, `[[`, "probs")
+
     } # end of round-if
   } # end of extension-if
   
