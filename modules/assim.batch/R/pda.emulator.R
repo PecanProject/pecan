@@ -217,8 +217,12 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
       for(c in 1:settings$assim.batch$chain){
         init.x <- mcmc.list[[c]][nrow(mcmc.list[[c]]),]
         
-        init.list[[c]] <-  as.list(sapply(seq_along(prior.ind), 
-                                          function(x) eval(prior.fn$pprior[[prior.ind[x]]], list(q=init.x[x]))))
+        prior.all <- do.call("rbind", prior.list)
+        prior.ind.all <- do.call("c", prior.ind)
+        prior.fn.all <- pda.define.prior.fn(prior.all)
+        
+        init.list[[c]] <-  as.list(sapply(seq_along(prior.ind.all), 
+                                          function(x) eval(prior.fn.all$pprior[[prior.ind.all[x]]], list(q=init.x[x]))))
       }
     }
     

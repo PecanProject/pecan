@@ -864,7 +864,7 @@ pda.postprocess <- function(settings, con, mcmc.param.list, jvar.list, pname, pr
   ## save updated parameter distributions as trait.mcmc so that they can be read by the ensemble code
   # *** TODO: Generalize for multiple PFTS
   filename <- file.path(settings$pfts[[i]]$outdir, 
-                paste0('trait.mcmc.pda',settings$pfts[[i]]$name,'_', settings$assim.batch$ensemble.id, '.Rdata'))
+                paste0('trait.mcmc.pda.',settings$pfts[[i]]$name,'_', settings$assim.batch$ensemble.id, '.Rdata'))
   save(trait.mcmc, file = filename)
   dbfile.insert(dirname(filename), basename(filename), 'Posterior', posteriorid, con)
   
