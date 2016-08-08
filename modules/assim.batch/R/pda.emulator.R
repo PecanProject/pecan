@@ -389,12 +389,11 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   save(jvar.list, file = settings$assim.batch$jvar.path)
   
   
-  # Separate each PFT's parametes samples to their own list
+  # Separate each PFT's parameter samples to their own list
   mcmc.param.list <- list()
   ind <- 0
   for(i in seq_along(settings$pfts)){
     mcmc.param.list[[i]] <-  lapply(mcmc.list, function(x) x[, (ind+1):(ind + n.param[i]), drop=FALSE])
-    names(mcmc.param.list[[i]])
     ind <- ind + n.param[i]
   }
 

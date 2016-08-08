@@ -170,7 +170,7 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
       settings$assim.batch$jump$jvar <- jvar
     } 
     if(is.null(settings$assim.batch$jump$jvar)) {   # Default
-      settings$assim.batch$jump$jvar <- rep(NA, length(settings$assim.batch$param.names))
+      settings$assim.batch$jump$jvar <- rep(NA, length(unlist(settings$assim.batch$param.names)))
     }
     settings$assim.batch$jump$jvar <- as.list(as.numeric(settings$assim.batch$jump$jvar))
     # have to add names or listToXml() won't work
@@ -268,7 +268,7 @@ pda.load.priors <- function(settings, con) {
 
             
       # if this is the first PDA round, save the initial PDA prior to path
-      if(settings$assim.batch$extension!="round"){
+      if(is.null(settings$assim.batch$extension)){
         settings$assim.batch$prior$path <- prior.paths
         names(settings$assim.batch$prior$path) <- sapply(settings$pfts, `[[`, "name")
       }
@@ -414,13 +414,6 @@ pda.init.params <- function(settings, con, pname, n.param.all) {
 pda.init.run <- function(settings, con, my.write.config, workflow.id, params, 
                          n=ifelse(is.null(dim(params)), 1, nrow(params)), 
                          run.names=paste("run", 1:n, sep=".")) {
-
-  # # If n=1, convert params to a 1-row data frame (for generically accessing it below)
-  # if(is.null(dim(params))) {
-  #   pnames <- names(params)
-  #   params <- as.data.frame(matrix(params, nrow=1))
-  #   names(params) <- pnames
-  # }
 
 
   run.ids <- rep(NA, n)

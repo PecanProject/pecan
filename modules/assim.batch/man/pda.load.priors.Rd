@@ -16,6 +16,6 @@ A previously-generated posterior distribution, to be used as the prior for PDA.
 Load Priors for Paramater Data Assimilation
 }
 \author{
-Ryan Kelly
+Ryan Kelly, Istem Fer
 }
 
