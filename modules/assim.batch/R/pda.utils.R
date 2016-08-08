@@ -196,7 +196,7 @@ pda.settings <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 ##'
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.load.priors <- function(settings, con) {
+pda.load.priors <- function(settings, con, path.flag=TRUE) {
   
   
   # Load a prior.distns or post.distns file directly by path
@@ -268,7 +268,7 @@ pda.load.priors <- function(settings, con) {
 
             
       # if this is the first PDA round, save the initial PDA prior to path
-      if(is.null(settings$assim.batch$extension)){
+      if(path.flag == TRUE){
         settings$assim.batch$prior$path <- prior.paths
         names(settings$assim.batch$prior$path) <- sapply(settings$pfts, `[[`, "name")
       }
