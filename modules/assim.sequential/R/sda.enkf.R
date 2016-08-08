@@ -43,7 +43,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
  }
  if(model == "SIPNET"){
    ## split clim file
-      full.met <- c("/fs/data1/pecan.data/dbfiles/BD-4e27913632c/sipnet.clim") #settings$run$inputs$met$path
+      full.met <- c(settings$run$inputs$met$path) #
       new.met  <- file.path(settings$rundir,basename(full.met))
       file.copy(full.met,new.met)
       met <- split.met.SIPNET(new.met)
@@ -238,6 +238,15 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   Y  ~ dmnorm(X.keep,r)
 }"     
   
+  t1=1
+  pink = col2rgb("deeppink")
+  alphapink = rgb(pink[1],pink[2],pink[3],180,max=255)
+  green = col2rgb("green")
+  alphagreen = rgb(green[1],green[2],green[3],75,max=255)
+  blue = col2rgb("blue")
+  alphablue = rgb(blue[1],blue[2],blue[3],75,max=255)
+  
+  
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
@@ -331,7 +340,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       ## process error
       if(!is.null(Q)) Pf <- Pf + Q
       ## Kalman Gain
-      K    = Pf%*%t(H)%*%solve((R+H%*%Pf%*%t(H)),tol=0)
+      K    = Pf%*%t(H)%*%solve((R+H%*%Pf%*%t(H)))
       ## Analysis
       mu.a = mu.f + K%*%(Y-H%*%mu.f)
       Pa   = (diag(ncol(X)) - K%*%H)%*%Pf
@@ -464,7 +473,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
         if(is.null(x)) return(rep(NA,length(names.y)))
         return(sqrt(diag(x)))})))
         
-      for(i in 2){
+      par(mfrow=c(2,1))
+      for(i in 1:2){
           t1=1
           Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
           Xci  = laply(FORECAST[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
@@ -472,8 +482,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
           Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
           XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
           
+          ylab.names<-c("KgC/m^2/s","KgC/m^2")
+          
           plot(total.time[t1:t],Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
-               type='n',xlab="Year",ylab="kg/m^2",main=colnames(X)[i])
+               type='n',xlab="Year",ylab=ylab.names[i],main=colnames(X)[i])
           
           #observation / data
           if(i<=ncol(Ybar)){
@@ -551,14 +563,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
     ###-------------------------------------------------------------------###
     ### time series                                                       ###
     ###-------------------------------------------------------------------### 
-    t1=1
-    pink = col2rgb("deeppink")
-    alphapink = rgb(pink[1],pink[2],pink[3],180,max=255)
-    green = col2rgb("green")
-    alphagreen = rgb(green[1],green[2],green[3],75,max=255)
-    blue = col2rgb("blue")
-    alphablue = rgb(blue[1],blue[2],blue[3],75,max=255)
-    
+   
     names.y <- unique(unlist(lapply(obs.mean[t1:t],function(x){return(names(x))})))
     Ybar = t(sapply(obs.mean[t1:t],function(x){
       tmp <- rep(NA,length(names.y))
