@@ -41,7 +41,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
   ## Load priors
   temp <- pda.load.priors(settings, con)
-  prior <- temp$prior
+  prior <- temp$prior[[1]] #TODO : more PFTs for bruteforce
   settings <- temp$settings
   pname <-  rownames(prior) 
   n.param.all  <- nrow(prior)
@@ -58,7 +58,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   }
 
   ## Select parameters to constrain
-  prior.ind <- which(rownames(prior) %in% settings$assim.batch$param.names)
+  prior.ind <- which(rownames(prior) %in% unlist(settings$assim.batch$param.names))
   n.param <- length(prior.ind)
 
   ## Get the workflow id
@@ -145,9 +145,19 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
       ## Check that value falls within the prior
       prior.star <- prior.fn$dmvprior(pstar)
+      
+      # Convert pstar to a list of 1-row data frame 
+      if(is.null(dim(pstar))) {
+        pnames <- names(pstar)
+        run.params <- as.data.frame(matrix(pstar, nrow=1))
+        names(run.params) <- pnames
+      }
+      run.params=list(run.params)
+      
+      
       if(is.finite(prior.star)){
         ## Set up run and write run configs
-        run.id <- pda.init.run(settings, con, my.write.config, workflow.id, pstar, n=1,
+        run.id <- pda.init.run(settings, con, my.write.config, workflow.id, run.params, n=1,
                                run.names=paste0("MCMC_chain.",chain,"_iteration.",i,"_variable.",j))
 
         ## Start model run
@@ -201,12 +211,27 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   mcmc.list <- list()
   jvar.list <- list()
   
-  mcmc.list[[1]] <- params[,prior.ind, drop=FALSE]
+
+  mcmc.list[[1]] <- params[ , prior.ind, drop=FALSE]
   jvar.list[[1]] <- unlist(settings$assim.batch$jump$jvar)
+  
+  # TODO: generalize bruteforce for >1 PFTs
+  pname=list(pname)
+  prior=list(prior)
+  prior.ind=list(prior.ind)
+  
+  # Separate each PFT's parameter samples to their own list
+  mcmc.param.list <- list()
+  ind <- 0
+  for(i in seq_along(settings$pfts)){
+    mcmc.param.list[[i]] <-  lapply(mcmc.list, function(x) x[, (ind+1):(ind + n.param[i]), drop=FALSE])
+    ind <- ind + n.param[i]
+  }
+
 
   ## ------------------------------------ Clean up ------------------------------------ ##
   ## Save outputs to plots, files, and db
-  settings <- pda.postprocess(settings, con, mcmc.list, jvar.list, pname, prior, prior.ind)
+  settings <- pda.postprocess(settings, con, mcmc.param.list, jvar.list, pname, prior, prior.ind)
 
   ## close database connection
   if(!is.null(con)) db.close(con)

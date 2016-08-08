@@ -3,7 +3,7 @@ title: "PEcAn.assim.batch Vignette"
 author: 
 - "Ryan Kelly"
 - "Istem Fer"
-date: "July 12, 2015 (Updated on 06/13/16)"
+date: "July 12, 2015 (Updated on 08/08/16)"
 output: html_document
 ---
 
@@ -42,12 +42,12 @@ The easiest way to use PEcAn's parameter data assimilation module is to add an `
 <assim.batch>
   <iter>10000</iter>
   <method>bruteforce</method>
-  <prior>
-    <path>/path/to/(prior/post).distns.(MA.)Rdata</path>
-  </prior>
   <param.names>
-    <param>Amax</param>
-    <param>psnTOpt</param>
+   <temperate.coniferous>                        <--- YOUR PFT
+    <param>veg_respiration_Q10</param>
+    <param>stem_respiration_rate</param>
+    <param>Vm_low_temp</param>
+   </temperate.coniferous>
   </param.names>
   <inputs>
     <file>
@@ -85,9 +85,11 @@ Here are details about the settings:
 
 * `<prior>` Identifies the prior to be used for PDA. Can be one of either:
 
-       + `<posterior.id>` A posterior ID in BETY specifying the posterior from a previous PEcAn analysis (e.g., meta-analysis or previous PDA) to be used as the prior for PDA. Defaults to the most recent relevant posterior in the database if omitted (and no `<path>` specified instead; see below). It is recommended to specify the `<path>` to the posterior distribution of your meta analysis if you are doing this for the first time.
+       + `<posterior.id>` A posterior ID in BETY specifying the posterior from a previous PEcAn analysis (e.g., meta-analysis or previous PDA) to be used as the prior for PDA. Defaults to the most recent relevant posterior in the database if omitted (and no `<path>` specified instead; see below).
 
        + `<path>` As an alternative to using a posterior ID, can specify a file path to either a `prior.distns.Rdata` or `post.distns.Rdata` file generated from an earlier analysis. Conceptually, using a posterior distribution as the prior for PDA is preferred, as this allows the multiple analyses to work together to iteratively constrain parameters. In practice, previous analyses may have over-constrained parameters to ranges that do not actually optimize model outputs, so using a less informative prior for PDA might yield better results. 
+       
+       NOTE: It is recommended to leave the `<prior>` tag empty if you are doing this for the first time. PEcAn workflow will handle it for you.
 
 * `<param.names>` The names of parameters to be constrained by assimilation, listed in individual `<param>` tags. These must be the standard names given in the `id` column of the `trait.dictionary`, i.e. :
 
@@ -151,19 +153,30 @@ head(trait.dictionary[,c("id", "figid")])
 
 If you are using methods other than *bruteforce* and *bruteforce.bs*, some additional tags and different settings may apply. 
 
-**emulator** would look for additional tags such as `<n.knot>` and `<GPpckg>`:
+**emulator** would use additional tags:
 ```
   ...
   <method>emulator</method>
   <n.knot>20</n.knot>
   <GPpckg>GPfit</GPpckg>
+  <chain>3</chain>
+  <extension>round</extension>
+  <knot.par>0.75</knot.par>
   ...
 ```
 * `<n.knot>` Specifies the number of locations in parameter space to be sampled by the Latin Hypercube design. These locations are where the model will actually be run. In other words the model will be run for `<n.knots>` times. 
 
 * `<GPpckg>` Specifies which R package to use for fitting a Gaussian process to interpolate the likelihood surface in between the calculated values that are obtained from actual model runs. Current options are `kernlab` and `GPfit` (recommended). 
 
-* Also, `<jvar>` tag(s) under the `<jump>` block is better left empty for emulator runs if you are doing this for the first time.
+* `<chain>` Specifies the number of MCMC chains to be run.
+
+* `<extension>` Specifies the extension type of additional emulator runs, should be skipped if this a first emulator run of its own. Otherwise it is possible to extend emulator PDA runs in two ways:      
+
+    + `<extension>longer</extension>` using the same emulator, this extension run takes the MCMC sampling from where it was left in the previous emulator run and runs a longer MCMC chain.
+     
+    + `<extension>round</extension>` this extension run proposes new points in the parameter space in addition to the previous ones, and builds a new emulator including these additional points for a new MCMC sampling. These new points can come from both your inital PDA prior and the posterior of your first round of emulator run. You can determine the percentage of new knots coming from the posterior of your previous run in the `<knot.par>` tag. If you leave it empty, 75% of your new points will be drawn from the posterior of your previous run by default.
+
+* Also, you can leave the `<jvar>` tag(s) under the `<jump>` block empty for emulator runs.
 
 **bayesian.tools** would look for sampler specific settings that can be passed through the pecan.xml as a block under the `<bt.settings>` tag. Currently, the available samplers in the BayesianTools package are:
 
