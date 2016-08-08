@@ -7,12 +7,25 @@ write.restart.SIPNET(out.dir, runid, time, settings, analysis.vec,
   met)
 }
 \arguments{
-  \item{out.dir}{output directory} \item{runid}{run ID}
-  \item{time}{year that is being read} \item{settings}
-  {PEcAn settings object} \item{analysis.vec}{analysis
-  vector} \item{RENAME}{flag to either rename output file
-  or not} \item{variables}{} \item{sample_parameters}{}
-  \item{trait.values}{} \item{met}{}
+  \item{out.dir}{output directory}
+
+  \item{runid}{run ID}
+
+  \item{time}{year that is being read}
+
+  \item{settings}{PEcAn settings object}
+
+  \item{analysis.vec}{analysis vector}
+
+  \item{RENAME}{flag to either rename output file or not}
+
+  \item{variables}{}
+
+  \item{sample_parameters}{}
+
+  \item{trait.values}{}
+
+  \item{met}{}
 }
 \value{
 NONE

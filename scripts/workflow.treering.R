@@ -74,11 +74,11 @@ out = as.matrix(jags.out)
 sel = grep('x[',colnames(out),fixed=TRUE)
 state = plot2AGB(combined,out[,sel],settings$outdir,list(allom.stats[[2]]),unit.conv=0.02)
 
-NPP.conv <- (1/10000)*(1000/1)*(1/(3.154*10^7))*.48 #mg/ha/yr -> kgC/m2/s
-AGB.conv <- (1/10000)*(1000/1)*.48 #mg/ha -> kgC/m2
+NPP.conv <- .48 #Mg/ha/yr -> MgC/ha/yr
+AGB.conv <- (1/10000)*(1000/1)*.48 #Mg/ha -> kgC/m2
 
-NPP = apply(state$NPP[1,,],2,mean,na.rm=TRUE)*NPP.conv 
-AGB = apply(state$AGB[1,,],2,mean,na.rm=TRUE)*AGB.conv
+NPP = apply(state$NPP[1,,],2,mean,na.rm=TRUE)*NPP.conv##MgC/ha/yr 
+AGB = apply(state$AGB[1,,],2,mean,na.rm=TRUE)*AGB.conv#kgC/m2
 
 obs.mean <- list()
 for(i in 1:length(NPP)) {

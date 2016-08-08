@@ -24,7 +24,6 @@ read.restart.SIPNET <- function(outdir,runid,time,settings,variables,sample_para
   }
   
   forecast <- list()
-  unit.conv <-  0.001*2#  kgC/ha/yr to Mg/ha/yr
   
   #Read ensemble output
   ens <- read.output(runid = runid,outdir = file.path(outdir, runid),
@@ -38,9 +37,9 @@ read.restart.SIPNET <- function(outdir,runid,time,settings,variables,sample_para
     unit.conv <- (10000/1)*(1/10000)*(365.25*24*60*60)
   
     #### PEcAn Standard Outputs
-    forecast[1] <- mean(ens$NPP) * unit.conv ## kg m-2 s-1 -> Mg/ha/yr
+    forecast[1] <- mean(ens$NPP) * unit.conv ## kgC m-2 s-1 -> MgC/ha/yr
     forecast[2] = ens$AbvGrndWood[last] / (1 - .2 - .2) ## kgC/m2
-    forecast[3] = ens$LeafC[last] ## kgC/m2*m2/kg*2kg/kgC
+    forecast[3] = ens$LeafC[last]*prior.sla*2 ## kgC/m2*m2/kg*2kg/kgC
     forecast[4] = ens$Litter[last]##kgC/m2
     forecast[5] = ens$TotSoilCarb[last]## kgC/m2
     forecast[6] = ens$SoilMoistFrac[last]## unitless

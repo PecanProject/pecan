@@ -176,10 +176,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   
   ## vector to read the correct netcdfs by read.restart
   total.time = as.numeric(spin.up.end):as.numeric(end.year)
-  if(length(obs.mean)!=length(total.time)){
-    print('data time length does not match settings time length')
-    break
-  }
   
   nt = length(total.time) #could be different if time step was different right?
   FORECAST <- ANALYSIS <- list()
@@ -267,7 +263,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
     
     FORECAST[[t]] = X
     
-    obs = !is.na(obs.mean[[t]])
+    obs = which(!is.na(obs.mean[[t]]))
     
     mu.f = as.numeric(apply(X,2,mean,na.rm=TRUE))
     Pf   = cov(X)
@@ -482,7 +478,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
           Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
           XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
           
-          ylab.names<-c("KgC/m^2/s","KgC/m^2")
+          ylab.names<-c("MgC/ha/yr","KgC/m^2","m^2/m^2","gC/m^2","gC/m^2","","","cm")
           
           plot(total.time[t1:t],Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
                type='n',xlab="Year",ylab=ylab.names[i],main=colnames(X)[i])
@@ -554,7 +550,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
     temp.mat <- temp.mat[total.time-853,]
     precip.mat <- precip.mat[total.time-853,]
   }else{
-    print('no climate diagnostics for other models yet')
+    print('climate diagnostics under development')
   }
 
   ### Diagnostic graphs  
@@ -578,6 +574,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       return(sqrt(diag(x)))})))  #need to make this from quantiles for lyford plot data
     #YCI = YCI[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
    
+    ylab.names<-c("MgC/ha/yr","KgC/m^2","m^2/m^2","gC/m^2","gC/m^2","","","cm")
+    
     for(i in 1:ncol(X)){
       t1=1
       Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
@@ -587,7 +585,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
       
       plot(total.time[t1:t],Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
-           type='n',xlab="Year",ylab="kg/m^2",main=colnames(X)[i])
+           type='n',xlab="Year",ylab=ylab.names[i],main=colnames(X)[i])
      
        #observation / data
       if(i<=ncol(Ybar)){
@@ -612,11 +610,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       #legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
       #Forecast minus data = error
     for(i in 1:2){
+      Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
+      Xci  = laply(FORECAST[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
+      
+      Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
+      XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
+      
       reg <- lm(Xbar[t1:t] - unlist(Ybar[t1:t,i])~c(t1:t))
       plot(t1:t,Xbar[t1:t] - unlist(Ybar[t1:t,i]),pch=16,cex=1,
            ylim=c(min(Xci[t1:t,1]-unlist(Ybar[t1:t,i])),
                   max(Xci[t1:t,2]-unlist(Ybar[t1:t,i]))),
-           xlab="Time", ylab="Error",main="Error = Forecast - Data")
+           xlab="Time", ylab="Error",main=paste(colnames(X)[i]," Error = Forecast - Data"))
       ciEnvelope(rev(t1:t),rev(Xci[t1:t,1]-unlist(Ybar[t1:t,i])),
                  rev(Xci[t1:t,2]-unlist(Ybar[t1:t,i])),col=alphapink)
       abline(h=0,lty=2,lwd=2)
@@ -629,7 +633,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       reg1 <- lm(Xbar[t1:t] - Xa[t1:t] ~ c(t1:t))
       plot(t1:t,Xbar[t1:t] - Xa[t1:t],pch=16,cex=1,
            ylim=c(min(Xbar[t1:t]-XaCI[t1:t,2]),max(Xbar[t1:t]-XaCI[t1:t,1])),
-           xlab="Time", ylab="Update",main="Update = Forecast - Analysis")
+           xlab="Time", ylab="Update",main=paste(colnames(X)[i],"Update = Forecast - Analysis"))
       ciEnvelope(rev(t1:t),rev(Xbar[t1:t] - XaCI[t1:t,1]),
                  rev(Xbar[t1:t] - XaCI[t1:t,2]),col=alphagreen)
       abline(h=0,lty=2,lwd=2)

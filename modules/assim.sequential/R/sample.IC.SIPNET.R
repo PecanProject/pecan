@@ -1,7 +1,7 @@
 sample.IC.SIPNET <- function(ne,state){
-  ## g C * m-2 NPP
+  ## Mg C / ha / yr NPP
   NPP = ifelse(rep("NPP" %in% names(state),ne),
-                     state$NPP[1,sample.int(ncol(state$NPP),ne),1], ## unit Mg/ha/yr
+                     state$NPP[1,sample.int(ncol(state$NPP),ne),1]*.48, ## unit MgC/ha/yr
                      runif(ne,0,10)) ## prior
   ## g C * m-2 ground area in wood (above-ground + roots)
   plantWood = ifelse(rep("AGB" %in% names(state),ne),

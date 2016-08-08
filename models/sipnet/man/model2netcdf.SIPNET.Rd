@@ -7,9 +7,15 @@ model2netcdf.SIPNET(outdir, sitelat, sitelon, start_date, end_date, delete.raw,
 }
 \arguments{
   \item{outdir}{Location of SIPNET model output}
-  \item{sitelat}{Latitude of the site} \item{sitelon}
-  {Longitude of the site} \item{start_date}{Start time of
-  the simulation} \item{end_date}{End time of the simulation}
+
+  \item{sitelat}{Latitude of the site}
+
+  \item{sitelon}{Longitude of the site}
+
+  \item{start_date}{Start time of the simulation}
+
+  \item{end_date}{End time of the simulation}
+
   \item{revision}{model revision}
 }
 \description{

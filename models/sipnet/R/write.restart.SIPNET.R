@@ -45,9 +45,9 @@ write.restart.SIPNET<- function(out.dir, runid, time, settings, analysis.vec,
   }
   unit.conv <- 2*(10000/1)*(1/1000)*(3.154*10^7) # kgC/m2/s -> Mg/ha/yr
   
-  analysis.vec$NPP <- analysis.vec$NPP#*unit.conv
+  analysis.vec$NPP <- analysis.vec$NPP#*unit.conv -> Mg/ha/yr
   analysis.vec$plantWood <- analysis.vec$plantWood*1000 #kgC/m2 -> g/m2 #no (1-.2-.2) because that's on sipnet side
-  analysis.vec$lai <- analysis.vec$lai*prior.sla*2 ## kgC/m2*m2/kg*2kg/kgC -> m2/m2
+  analysis.vec$lai <- analysis.vec$lai ## kgC/m2*m2/kg*2kg/kgC -> m2/m2
   if(analysis.vec$lai<0) analysis.vec$lai <- 0
   analysis.vec$litter <- analysis.vec$litter*1000 ##kgC/m2 -> gC/m2
   analysis.vec$soil <- analysis.vec$soil*1000 ## kgC/m2 -> gC/m2
