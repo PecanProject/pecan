@@ -175,7 +175,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   ###-------------------------------------------------------------------###  
   
   ## vector to read the correct netcdfs by read.restart
-  total.time = as.numeric(spin.up.end):as.numeric(end.year) #Is this going to work?
+  total.time = as.numeric(spin.up.end):as.numeric(end.year)
+  if(length(obs.mean)!=length(total.time)){
+    print('data time length does not match settings time length')
+    break
+  }
   
   nt = length(total.time) #could be different if time step was different right?
   FORECAST <- ANALYSIS <- list()
@@ -292,12 +296,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
           if(is.null(x)) return(rep(NA,length(names.y)))
           return(sqrt(diag(x)))}))) 
       
-      for(i in 1){
+      for(i in 2){
           t1=1
           Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
           Xci  = laply(FORECAST[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
 
-          plot(total.time[t1:t],Xbar,ylim=range(Xci,na.rm=TRUE),
+          plot(total.time[t1:t],Xbar,ylim=range(c(Ybar,Xci),na.rm=TRUE),
                type='n',xlab="Year",ylab="kg/m^2",main=colnames(X)[i])
           
           #observation / data
@@ -327,7 +331,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       ## process error
       if(!is.null(Q)) Pf <- Pf + Q
       ## Kalman Gain
-      K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
+      K    = Pf%*%t(H)%*%solve((R+H%*%Pf%*%t(H)),tol=0)
       ## Analysis
       mu.a = mu.f + K%*%(Y-H%*%mu.f)
       Pa   = (diag(ncol(X)) - K%*%H)%*%Pf
@@ -468,7 +472,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
           Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
           XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
           
-          plot(total.time[t1:t],Xbar,ylim=range(c(XaCI),na.rm=TRUE),
+          plot(total.time[t1:t],Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
                type='n',xlab="Year",ylab="kg/m^2",main=colnames(X)[i])
           
           #observation / data
@@ -577,7 +581,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
       XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
       
-      plot(total.time[t1:t],Xbar,ylim=range(XaCI,na.rm=TRUE),
+      plot(total.time[t1:t],Xbar,ylim=range(c(XaCI,Ybar[,i],Xci),na.rm=TRUE),
            type='n',xlab="Year",ylab="kg/m^2",main=colnames(X)[i])
      
        #observation / data

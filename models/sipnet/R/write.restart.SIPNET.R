@@ -43,16 +43,16 @@ write.restart.SIPNET<- function(out.dir, runid, time, settings, analysis.vec,
     load(file.path(settings$outdir, paste0("ensemble.samples.",settings$state.data.assimilation$prior,".Rdata")))
     prior.sla <- ens.samples[[which(names(ensemble.samples)!='soil')[1]]]$SLA
   }
-  unit.conv <-  0.001*2
+  unit.conv <- 2*(10000/1)*(1/1000)*(3.154*10^7) # kgC/m2/s -> Mg/ha/yr
   
   analysis.vec$NPP<-analysis.vec$NPP*unit.conv
-  analysis.vec$plantWood<-analysis.vec$plantWood*1000
-  analysis.vec$lai<-analysis.vec$lai*prior.sla*2
-  analysis.vec$litter<-analysis.vec$litter*1000
-  analysis.vec$soil<- analysis.vec$soil*1000
-  analysis.vec$litterWFrac<-analysis.vec$litterWFrac
-  analysis.vec$soilWFrac<-analysis.vec$soilWFrac
-  analysis.vec$snow<-analysis.vec$snow*0.1
+  analysis.vec$plantWood<-analysis.vec$plantWood*1000 #kgC/m2 -> gC/m2
+  analysis.vec$lai<-analysis.vec$lai*prior.sla*2 ## kgC/m2*m2/kg*2kg/kgC -> m2/m2
+  analysis.vec$litter<-analysis.vec$litter*1000 ##kgC/m2 -> gC/m2
+  analysis.vec$soil<- analysis.vec$soil*1000 ## kgC/m2 -> gC/m2
+  analysis.vec$litterWFrac<-analysis.vec$litterWFrac ## unitless
+  analysis.vec$soilWFrac<-analysis.vec$soilWFrac ## unitless
+  analysis.vec$snow<-analysis.vec$snow*0.1 ## kg/m2 -> cm
     
   do.call(write.config.SIPNET, args = list(defaults = NULL, trait.values = trait.values,
                                          settings = settings, run.id = runid,
