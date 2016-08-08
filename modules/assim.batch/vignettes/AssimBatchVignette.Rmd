@@ -153,7 +153,7 @@ head(trait.dictionary[,c("id", "figid")])
 
 If you are using methods other than *bruteforce* and *bruteforce.bs*, some additional tags and different settings may apply. 
 
-**emulator** would look for additional tags such as `<n.knot>` and `<GPpckg>`:
+**emulator** would use additional tags:
 ```
   ...
   <method>emulator</method>
