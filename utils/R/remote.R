@@ -201,8 +201,8 @@ remote.execute.R <- function(script, host="localhost", user=NA, verbose=FALSE, R
   } else {
     remote <- ifelse(is.na(user), host, paste(user, host, sep='@'))[[1]]
     result = system2('ssh', c('-T', remote, R, "--vanilla"), stdout=verbose, stderr=verbose, input=input)
-    remote.copy.from(host, tmpfile, user, "localhost", tmpfile)
-    remote.execute.cmd("rm", c("-f", tmpfile), host, user)
+    remote.copy.from(host, tmpfile, tmpfile)
+    remote.execute.cmd(host, "rm", c("-f", tmpfile))
   }
   
   # load result
@@ -212,3 +212,5 @@ remote.execute.R <- function(script, host="localhost", user=NA, verbose=FALSE, R
   unlink(tmpfile)
   invisible(result)
 }
+
+# remote.execute.cmd <- function(host, cmd, args=character(), stderr=FALSE) {

@@ -120,14 +120,30 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
      format$vars$bety_name[missing_col] = paste0(format$vars$bety_name[missing_col],"(missing)") 
     }
      
-    ## Get datetime vector - requires one column be connected to bety variable datetime
-    ## FUTURE: Make this much more generic to deal with multiple ways datetime can be passed in a CSV such as Year,Month,Day, and so on
-    datetime_index <- which(format$vars$bety_name == "datetime")
-    if (length(datetime_index)==0) { logger.error("datetime column is not specified in format") }
+    ## Get datetime vector - requires one column be connected to bety variable datetime or 3  columns year,day,hour
+    ## FUTURE: Also consider year,month,day_of_month,hour or year,MMDD or fjday or other combinations
+   
+   datetime_index <- which(format$vars$bety_name == "datetime")
+    if (length(datetime_index)==0) { 
+      if (all(any(format$vars$bety_name == "year"),any(format$vars$bety_name == "day"),any(format$vars$bety_name == "hour"))) {
+        year_index = which(format$vars$bety_name == "year")
+        DOY_index = which(format$vars$bety_name == "day")
+        hour_index = which(format$vars$bety_name == "hour")
+        yearday <- format(strptime(paste0(alldat[,format$vars$orig_name[year_index]],"-",alldat[,format$vars$orig_name[DOY_index]]),format="%Y-%j"),format="%Y-%m-%d")
+        hh <- floor(alldat[,format$vars$orig_name[hour_index]])
+        mm <- (alldat[,format$vars$orig_name[hour_index]]-hh)*60
+        yyddhhmm <- strptime(paste0(yearday," ",hh,":",mm),format="%Y-%m-%d %H:%M")
+        alldatetime <- as.POSIXct(yyddhhmm)          
+      } else {
+        ## Does not match any of the known date formats, add new ones here!
+        logger.error("datetime column is not specified in format") 
+      }
+    } else {
     datetime_units <- format$vars$orig_units[datetime_index] #lubridate function to call such as ymd_hms
     if (datetime_units=="") { datetime_units <- "ymd_hm" }
     datetime_raw <- alldat[, format$vars$orig_name[datetime_index]]
     alldatetime <- do.call(datetime_units, list(datetime_raw))  #convert to POSIXct convention
+    }
     ## and remove datetime from 'dat' dataframe
     ##dat[, datetime_index] <- format$na.strings    
     
