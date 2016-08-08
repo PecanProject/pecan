@@ -581,7 +581,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
       XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
       
-      plot(total.time[t1:t],Xbar,ylim=range(c(XaCI,Ybar[,i],Xci),na.rm=TRUE),
+      plot(total.time[t1:t],Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
            type='n',xlab="Year",ylab="kg/m^2",main=colnames(X)[i])
      
        #observation / data
