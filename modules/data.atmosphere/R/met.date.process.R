@@ -8,31 +8,36 @@
 ##' @author Tony Gardella, Elizabeth Cowdery
 
 met.process.set.stage <- function(input.info.list,start_date,end_date,con){
+  result <- NULL
   stage <- NULL
   dates <-NULL
   ## Check if Raw exists
   if(!is.null(input.info.list$raw[[1]])){
     ## If YES then check if Raw dates match run dates
-    if(input.info.list$raw[[2]] == start_date & input.info.list$raw[[3]] == end_date){
+    if(input.info.list$raw[[2]] <= start_date & input.info.list$raw[[3]] >= end_date ){
       stage$download.raw <- FALSE
       
       ## Since Raw dates match up, check if met2cf exists and dates match up
       if(!is.null(input.info.list$met2cf[[1]])){
-        if(input.info.list$met2cf[[2]] == start_date & input.info.list$met2cf[[3]] == end_date){
+        if(input.info.list$met2cf[[2]] <= start_date & input.info.list$met2cf[[3]] >= end_date){
           stage$met2cf <- FALSE
           
           ## Since CF dates match up, check if gapfilled file exists and dates match up
           if(!is.null(input.info.list$gfill[[1]])){
-            if(input.info.list$gfill[[2]] == start_date & input.info.list$gfill[[3]] == end_date){
+            if(input.info.list$gfill[[2]] <= start_date & input.info.list$gfill[[3]] >= end_date){
               stage$standardize <- FALSE   
               
               ## Since gapfill dates match up, check if model formatted file exists and dates match up
-              if(!is.null(input.info.list$met.model.input.id[[1]])){
-                if(input.info.list$met2model[[2]]== start_date & input.info.list$met2model[[3]] == end_date){
+              if(!is.null(input.info.list$met2model[[1]])){
+                if(input.info.list$met2model[[2]] == start_date & input.info.list$met2model[[3]] == end_date){
                   stage$met2model <- FALSE
                   
+                  ### Dates Line up exactly and model formatted file exists.
+                  input.id <- input.info.list$met2model[[1]]
+                  
+                  
                 }else if (start_date < input.info.list$met2model[[2]] & end_date <= input.info.list$met2model[[3]]){
-                  stage$download.raw <- stage$met2met.model <-  stage$standardize <- stage$met2model <-TRUE
+                  stage$download.raw <- stage$met2.model <-  stage$standardize <- stage$met2model <-TRUE
                   stage$update <- TRUE
                   #Run dates include years before db input record dates
                   ## Dates to be put into input record
@@ -53,7 +58,7 @@ met.process.set.stage <- function(input.info.list,start_date,end_date,con){
                   dates$download$start_date <- input.info.list$met2model[[3]]
                   dates$download$end_date <- end_date
                 }else if (start_date < input.info.list$met2model[[2]] & end_date > input.info.list$met2model[[3]]){
-                  stage$download.raw <- stage$met2met.model <-  stage$standardize <- stage$met2model <-TRUE
+                  stage$download.raw <- stage$met2model <-  stage$standardize <- stage$met2model <-TRUE
                   stage$update <- TRUE
                   #Run dates envelope existing db dates
                   ## Dates to be put into input records
@@ -64,6 +69,16 @@ met.process.set.stage <- function(input.info.list,start_date,end_date,con){
                   dates$download$end_date[1] <-input.info.list$met2model[[2]]
                   dates$download$start_date[2] <- input.info.list$met2model[[3]]
                   dates$download$end_date[2] <- end_date
+                } else if (start_date > input.info.list$met2model[[2]] & end_date < input.info.list$met2model[[3]]){
+                  stage$download.raw <- stage$met2model <- stage$standardize  <- FALSE
+                  stage$met2model <- stage$update <- TRUE
+                  # Run dates are a subset of existing Met data
+                  ## Dates to be put into database
+                  dates$update$start_date <- start_date
+                  dates$update$end_date <- end_date
+                  ## Dates to be converted to model format
+                  dates$download$start_date <- start_date
+                  dates$download$end_date <- end_date
                 }
               }
               
@@ -103,7 +118,6 @@ met.process.set.stage <- function(input.info.list,start_date,end_date,con){
               dates$download$end_date[2] <- end_date
             }
           }
-          
           
           
         }else if (start_date < input.info.list$met2cf[[2]] & end_date <= input.info.list$met2cf[[3]]){
@@ -191,5 +205,9 @@ met.process.set.stage <- function(input.info.list,start_date,end_date,con){
     datesupdate.end_date <- start_date
     
   } 
+  
+  result$stage <- stage
+  result$dates <- dates 
+  return(result)
   
 } ### END OF FUNCTION
