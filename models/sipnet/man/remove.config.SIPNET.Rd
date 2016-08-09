@@ -5,8 +5,10 @@
 remove.config.SIPNET(main.outdir, settings)
 }
 \arguments{
-  \item{main.outdir}{Primary PEcAn output directory (will be
-  depreciated)} \item{settings}{PEcAn settings file}
+  \item{main.outdir}{Primary PEcAn output directory (will
+  be depreciated)}
+
+  \item{settings}{PEcAn settings file}
 }
 \value{
 nothing, removes config files as side effect

@@ -24,7 +24,6 @@ read.restart.SIPNET <- function(outdir,runid,time,settings,variables,sample_para
   }
   
   forecast <- list()
-  unit.conv <-  0.001*2#  kgC/ha/yr to Mg/ha/yr
   
   #Read ensemble output
   ens <- read.output(runid = runid,outdir = file.path(outdir, runid),
@@ -33,21 +32,47 @@ read.restart.SIPNET <- function(outdir,runid,time,settings,variables,sample_para
     
     last = length(ens$NPP)
     
-    forecast<-numeric(8)
-  
-    forecast[1] <- mean(ens$NPP)*unit.conv ## kg C m-2 s-1 -> Mg/ha/yr [Check]
-    forecast[2] = ens$AbvGrndWood[last]*1000 ## kgC/m2 -> gC/m2
-    forecast[3] = ens$LeafC[last]*prior.sla*2 ## kgC/m2*m2/kg*2kg/kgC -> m2/m2
-    forecast[4] = ens$Litter[last]*1000 ##kgC/m2 -> gC/m2
-    forecast[5] = ens$TotSoilCarb[last]*1000 ## kgC/m2 -> gC/m2
-    forecast[6] = ens$SoilMoistFrac[last] ## unitless
-    forecast[7] = ens$SWE[last]*0.1 ## kg/m2 -> cm
+    forecast<-list()
     
-    forecast[8] = runif(1,0,0.01) #snow
-    #forecast$microbe = NA
+    unit.conv <- (10000/1)*(1/10000)*(365.25*24*60*60)
   
-  names(forecast)<-c("NPP","plantWood","lai","litter","soil","litterWFrac","soilWFrac","snow")
-  X.vec = forecast
+    #### PEcAn Standard Outputs
+    if("NPP" %in% variables){
+      forecast[[1]] <- mean(ens$NPP) * unit.conv ## kgC m-2 s-1 -> MgC/ha/yr
+      names(forecast[[1]])<-c("NPP")
+    }
+    
+    if("AbvGrndWood" %in% variables){
+      forecast[[2]] = ens$AbvGrndWood[last] / (1 - .2 - .2) ## kgC/m2
+      names(forecast[[2]])<-c("AbvGrndWood")
+    }
+    
+    if("LeafC" %in% variables){
+      forecast[[3]] = ens$LeafC[last]## kgC/m2*m2/kg*2kg/kgC
+      names(forecast[[3]])<-c("LeafC")
+    }
+    
+    if("Litter" %in% variables){
+      forecast[[4]] = ens$Litter[last]##kgC/m2
+      names(forecast[[4]])<-c("Litter")
+    }
+    
+    if("TotSoilCarb" %in% variables){
+      forecast[[5]] = ens$TotSoilCarb[last]## kgC/m2
+      names(forecast[[5]])<-c("TotSoilCarb")
+    }
+    
+    if("SoilMoistFrac" %in% variables){
+      forecast[[6]] = ens$SoilMoistFrac[last]## kgC/m2
+      names(forecast[[6]])<-c("SoilMoistFrac")
+    }
+    
+    if("SWE" %in% variables){
+      forecast[[7]] = ens$SWE[last]## kgC/m2
+      names(forecast[[7]])<-c("SWE")
+    }
+  
+  X.vec = unlist(forecast)
   
   print(runid)
 

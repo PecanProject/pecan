@@ -254,6 +254,7 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,trait
 
 ##' @export
 runModule.get.trait.data <- function(settings) {
+  if(is.null(settings$meta.analysis)) return(settings) ## if there's no MA, there's no need for traits
   if(is.SettingsList(settings)) {
     pfts <- list()
     pft.names <- character(0)
@@ -271,7 +272,7 @@ runModule.get.trait.data <- function(settings) {
     modeltype <- settings$model$type
     dbfiles <- settings$database$dbfiles
     database <- settings$database$bety
-    forceupdate <- settings$meta.analysis$update
+    forceupdate <- !is.null(settings$meta.analysis) & settings$meta.analysis$update
     settings$pfts <- get.trait.data(pfts, modeltype, dbfiles, database, forceupdate)
     return(settings)
   } else if(is.Settings(settings)) {
@@ -279,7 +280,7 @@ runModule.get.trait.data <- function(settings) {
     modeltype <- settings$model$type
     dbfiles <- settings$database$dbfiles
     database <- settings$database$bety
-    forceupdate <- settings$meta.analysis$update
+    forceupdate <- !is.null(settings$meta.analysis) &settings$meta.analysis$update
     settings$pfts <- get.trait.data(pfts, modeltype, dbfiles, database, forceupdate)
     return(settings)
   } else {
