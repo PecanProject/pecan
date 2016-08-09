@@ -311,7 +311,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       if(length(check)>0){
         cf0.id <- list(input.id=check$container_id, dbfile.id=check$id)
       }else{
-
+  
         fcn1 <- paste0("met2CF.",met)
         mimename <- met.reg$format$mimetype
         mimename <- substr(mimename,regexpr('/',mimename)+1,nchar(mimename))
@@ -322,9 +322,11 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         }else if(exists(fcn2)){
           fcn <- fcn2
         }else{logger.error("met2CF function ",fcn1," or ",fcn2," don't exist")}
-
-        cf0.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                                username,con=con,hostname=host$name,browndog=NULL,write=TRUE,format.vars=format.vars)
+        
+        for (dates in 1:length(input.info$dates$download$start_date)){
+        cf0.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,input.info$dates$download$start_date,
+                                input.info$dates$download$end_date,pkg,fcn,username,con=con,hostname=host$name,browndog=NULL,write=TRUE,format.vars=format.vars)
+        }
       }
     
       input_name <- paste0(met,"_CF_Permute")
@@ -343,8 +345,10 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         cf.id <- list(input.id=check$container_id, dbfile.id=check$id)
       }else{
         # Just a draft of what would happen - doesn't include using the cluster so it would be SLOW. Hasn't been tested.
-        cf.id <- convert.input(cf0.id, outfolder2,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,permute.nc,
-                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE)
+        for (dates in 1: length(input.info$dates$download$start_date))
+        cf.id <- convert.input(cf0.id, outfolder2,formatname,mimetype,site.id=site$id,input.info$dates$download$start_date,
+                               input.info$dates$download$end_date,pkg,permute.nc,username,con=con,hostname=host$name,
+                               browndog=NULL,write=TRUE)
       }
 
     }else if(met.reg$scale=="site"){
@@ -369,21 +373,25 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         mimename <- substr(mimename,regexpr('-',mimename)+1,nchar(mimename))
         fcn2 <- paste0("met2CF.",mimename)
         if(exists(fcn1)){
-
+          
+          for (dates in 1: length(input.info$dates$download$start_date)){
           fcn <- fcn1
-          cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
+          cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,input.info$dates$download$start_date,
+                                 input.info$dates$download$end_date,pkg,fcn,
                                  username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon)
+          }
 
 
-            dbfiles.insert.update(update_start, update_end,input.id,con)
 
         }else if(exists(fcn2)){
           fcn <- fcn2
           format <- query.format.vars(input.id,con)
-          cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                                 username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon,format.vars=format.vars)
-
-           dbfiles.insert.update(update_start, update_end, input.id, con)
+          for (dates in 1: length(input.info$dates$download$start_date)){
+          cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,input.info$dates$download$start_date,
+                                 input.info$dates$download$end_date,pkg,fcn,username,con=con,hostname=host$name,browndog=NULL,
+                                 write=TRUE,site$lat,site$lon,format.vars=format.vars)
+          }
+          }
          
         }else{logger.error("met2CF function ",fcn1, " or ", fcn2," doesn't exists")}
       }
@@ -408,10 +416,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       fcn        <- "extract.nc"
       formatname <- 'CF Meteorology'
       mimetype   <- 'application/x-netcdf'
-
-      ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                                username,con=con,hostname=host$name,browndog=NULL,write=TRUE,
-                                slat=new.site$lat,slon=new.site$lon,newsite=new.site$id)
+        
+      for (dates in 1: length(input.info$dates$download$start_date)){
+      ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,input.info$dates$download$start_date,
+                                input.info$dates$download$end_date,pkg,fcn,username,con=con,hostname=host$name,browndog=NULL,
+                                write=TRUE,slat=new.site$lat,slon=new.site$lon,newsite=new.site$id)
+      }
 
 
     }else if(met.reg$scale=="site"){ ##### Site Level Processing
@@ -427,12 +437,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       mimetype   <- 'application/x-netcdf'
       lst        <- site.lst(site,con)
       
-
+      for (dates in 1: length(input.info$dates$download$start_date)){
       ready.id   <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id
-                                  ,start_date,end_date,pkg,fcn,username,con=con,
-                                  hostname=host$name,browndog=NULL,write=TRUE,lst=lst)
+                                  ,input.info$dates$download$start_date,input.info$dates$download$end_date,
+                                  pkg,fcn,username,con=con,hostname=host$name,browndog=NULL,write=TRUE,lst=lst)
+      }
 
-      dbfile.insert.update()
 
       print(ready.id)
       #     }else{
@@ -471,11 +481,11 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     fcn       <- paste0("met2model.",model)
     lst       <- site.lst(site,con)
 
-
+    for (dates in 1: length(input.info$dates$download$start_date)){
     model.id  <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                                username,con=con,hostname=host$name,browndog,write=TRUE,lst=lst,lat=new.site$lat,lon=new.site$lon)
+    }
 
-    dbfile.insert.update()
 
   }else{
     model.id = ready.id
