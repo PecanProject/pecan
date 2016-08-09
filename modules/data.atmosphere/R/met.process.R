@@ -63,62 +63,55 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                   machine$id,
                                   "and d.container_type = ",
                                   "'Input'"), con)
- ##Clean up info Table
- # Raw  files 
- raw.info = input.file.info[input.file.info$format_id == register$format$id,]
- ### grab latest created input record start and end dates
- raw.clean.info = raw.info[raw.info$updated_at == max(raw.info$updated_at),]
- ### grab start and end date of record
- raw.start_date = raw.clean.info$start_date
- raw.end_date = raw.clean.info$end_date
- ### grab id of raw record 
- raw.input.id = raw.clean.info$id
- 
- # CF files that have raw.id as parent.id
- cf.info = input.file.info[input.file.info$parent_id %in% raw.input.id,]
- # Grab file that was last updated
- cf.clean.info = cf.info[cf.info$updated_at == max(cf.info$updated_at),]
- ### grab start and end_dates
- cf.start_date = cf.clean.info$start_date
- cf.end_date = cf.clean.info$end_date
- ## grab id of cf record 
- cf.input.id = cf.clean.info$id
- 
- # Gapfill files that have cf.id as parent.id
- gfill.info = input.file.info[input.file.info$parent_id %in% cf.input.id,]
- # Grab file that was last updated
- gfill.clean.info = gfill.info[gfill.info$updated_at == max(gfill.info$updated_at),]
- ### grab start and end_dates
- gfill.start_date = gfill.clean.info$start_date
- gfill.end_date = gfill.clean.info$end_date
- ## grab id of cf record 
- gfill.input.id = gfill.clean.info$id
- 
- # Model specific met files that have gapfill.id as parent.id
- met.model.info = input.file.info[input.file.info$parent_id %in% gfill.input.id,]
- # Grab file that was last updated
- met.model.clean.info = met.model.info[met.model.info$updated_at == max(met.model.info$updated_at),]
- ### grab start and end_dates
- met.model.start_date = met.model.clean.info$start_date
- met.model.end_date = met.model.clean.info$end_date
- ## grab id of model record 
- met.model.input.id = met.model.clean.info$id
- 
- input.info.table <- rbind(raw.clean.info, cf.clean.info, gfill.clean.info, met.model.clean.info)
- ## Drop unecessary columns
- input.info.table <- input.info[,!(names(input.info) %in% 
-                               c("notes","user_id","access_level","raw",
-                                 "created_user_id","md5","container_type",
-                                 "updated_user_id","machine_id")),drop=FALSE]
- input.info.list = list(raw = list(raw.input.id,raw.start_date,raw.end_date),
-                        met2cf = list(cf.input.id,cf.start_date,cf.end_date),
-                        gfill = list(gfill.input.id,gfill.start_date, gfill.end_date),
-                        met2model = list(met.model.input.id, met.model.start_date,met.model.end_date))
-
-
+     ##Clean up info Table
+     # Raw  files 
+     raw.info = input.file.info[input.file.info$format_id == met.reg$format$id,]
+     ### grab latest created input record start and end dates
+     raw.clean.info = raw.info[raw.info$updated_at == max(raw.info$updated_at),]
+     ### grab start and end date of record
+     raw.start_date = raw.clean.info$start_date
+     raw.end_date = raw.clean.info$end_date
+     ### grab id of raw record 
+     raw.input.id = raw.clean.info$id
+     
+     # CF files that have raw.id as parent.id
+     cf.info = input.file.info[input.file.info$parent_id %in% raw.input.id,]
+     # Grab file that was last updated
+     cf.clean.info = cf.info[cf.info$updated_at == max(cf.info$updated_at),]
+     ### grab start and end_dates
+     cf.start_date = cf.clean.info$start_date
+     cf.end_date = cf.clean.info$end_date
+     ## grab id of cf record 
+     cf.input.id = cf.clean.info$id
+     
+     # Gapfill files that have cf.id as parent.id
+     gfill.info = input.file.info[input.file.info$parent_id %in% cf.input.id,]
+     # Grab file that was last updated
+     gfill.clean.info = gfill.info[gfill.info$updated_at == max(gfill.info$updated_at),]
+     ### grab start and end_dates
+     gfill.start_date = gfill.clean.info$start_date
+     gfill.end_date = gfill.clean.info$end_date
+     ## grab id of cf record 
+     gfill.input.id = gfill.clean.info$id
+     
+     # Model specific met files that have gapfill.id as parent.id
+     met.model.info = input.file.info[input.file.info$parent_id %in% gfill.input.id,]
+     # Grab file that was last updated
+     met.model.clean.info = met.model.info[met.model.info$updated_at == max(met.model.info$updated_at),]
+     ### grab start and end_dates
+     met.model.start_date = met.model.clean.info$start_date
+     met.model.end_date = met.model.clean.info$end_date
+     ## grab id of model record 
+     met.model.input.id = met.model.clean.info$id
+     
+     input.info.list = list(raw = list(raw.input.id,raw.start_date,raw.end_date),
+                            met2cf = list(cf.input.id,cf.start_date,cf.end_date),
+                            gfill = list(gfill.input.id,gfill.start_date, gfill.end_date),
+                            met2model = list(met.model.input.id, met.model.start_date,met.model.end_date))
+     
   # first attempt at function that designates where to start met.process
   if(is.null(input_met$id)){
-    met.process.set.stage(input.info.list,start_date,end_date,con)
+    input.info <- met.process.set.stage(input.info.list,start_date,end_date,con)
     format.vars <- query.format.vars(con=con,format.id=met.reg$format$id) #query variable info from format id
   }else{
     stage <- met.process.stage(input_met$id,met.reg$format$id,update,con)
@@ -167,8 +160,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         raw.id <- list(input.id=check$container_id, dbfile.id=check$id)
       }else{
         
-      for (years in 1:length(dates$download.start_date)){
-        args <- list(outfolder, dates$download.start_date[years], dates$download.end_date[years])
+      for (dates in 1:length(input.info$dates$download$start_date)){
+        args <- list(outfolder, input.info$dates$download$start_date[dates], input.info$dates$download$start_date[dates])
         if(met %in% "CRUNCEP") {
           ## this is a hack for regional products that go direct to site-level extraction. Needs generalization (mcd)
           args <- c(args, new.site$id, new.site$lat, new.site$lon)
@@ -184,8 +177,34 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
 
         cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
         new.files <- remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
+        }
       }
-        if(new){
+      if(input.info$stage$update){
+        start_date <- input.info$dates$update$start_date
+        end_date <- input.info$dates$update$end_date
+        ## Change Start and end date of Input record to include entire range of existing dates
+        db.query(paste("UPDATE inputs SET (start_date, end_date) = (",
+                       "'",as.POSIXlt(start_date),"'",
+                       ",",
+                       "'",as.POSIXlt(end_date), "'",
+                       ") WHERE id = "raw.id),con)
+        
+        #loop over individual files and insert them into database
+        raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
+                                      in.prefix=new.files$dbfile.name[1],
+                                      siteid = site$id,
+                                      startdate = start_date,
+                                      enddate = end_date,
+                                      mimetype=new.files$mimetype[1],
+                                      formatname=new.files$formatname[1],
+                                      parentid = input.id,
+                                      con = con,
+                                      hostname = host$name)
+        
+        if(met %in% "CRUNCEP"){ready.id = raw.id}
+        if(met %in% "GFDL"){ready.id = raw.id}
+      } else{
+        
         raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
                                       in.prefix=new.files$dbfile.name[1],
                                       siteid = site$id,
@@ -196,37 +215,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                       parentid = NA,
                                       con = con,
                                       hostname = host$name)
+        
         if(met %in% "CRUNCEP"){ready.id = raw.id}
         if(met %in% "GFDL"){ready.id = raw.id}
         
-        }else if (update){
-          start_date <- dates$update$start_date
-          end_date <- dates$update$end_date
-          ## Change Start and end date of Input record to include entire range of existing dates
-          db.query(paste("UPDATE inputs SET (start_date, end_date) = (",
-                         "'",as.POSIXlt(start_date),"'",
-                         ",",
-                         "'",as.POSIXlt(start_date), "'",
-                         ") WHERE id = ",input.id),con)
-          for(file in files)
-            #loop over individual files and insert them into database
-          raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
-                                        in.prefix=new.files$dbfile.name[1],
-                                        siteid = site$id,
-                                        startdate = start_date,
-                                        enddate = end_date,
-                                        mimetype=new.files$mimetype[1],
-                                        formatname=new.files$formatname[1],
-                                        parentid = input.id,
-                                        con = con,
-                                        hostname = host$name)
-          
-        }
-        
-## ->   if(update){
-        dbfile.input.update(update_new, update_end,....)
-}        
-      }
+      }  
+    
     }else if(met.reg$scale=="site") { # Site-level met
 
       print("start CHECK")
@@ -240,31 +234,54 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       if(length(check)>0){
         raw.id <- list(input.id=check$container_id, dbfile.id=check$id)
       }else{
-
+        
+        
+        for (dates in 1:length(input.info$dates$download$start_date)){
         outfolder = paste0(outfolder,"_site_",str_ns)
         args <- list(site$name, outfolder, start_date, end_date)
 
         cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),paste0(",username='",username,"'"),")")
         new.files <- remote.execute.R(script=cmdFcn,host=host$name,user=NA,verbose=TRUE,R="R")
-
-        ## insert database record
-## ->   if(new)
-        raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
-                                      in.prefix=new.files$dbfile.name[1],
-                                      siteid = site$id,
-                                      startdate = start_date,
-                                      enddate = end_date,
-                                      mimetype=new.files$mimetype[1],
-                                      formatname=new.files$formatname[1],
-                                      parentid=NA,
-                                      con = con,
-                                      hostname = host$name)
-## ->   if(update)
-          dbfile.input.update()
+        }
+        
+        if(input.info$stage$update){
+          
+          start_date <- input.info$dates$update$start_date
+          end_date <- input.info$dates$update$end_date
+          ## Change Start and end date of Input record to include entire range of existing dates
+          db.query(paste("UPDATE inputs SET (start_date, end_date) = (",
+                         "'",as.POSIXlt(start_date),"'",
+                         ",",
+                         "'",as.POSIXlt(end_date), "'",
+                         ") WHERE id = "raw.id),con)
+          
+          raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
+                                        in.prefix=new.files$dbfile.name[1],
+                                        siteid = site$id,
+                                        startdate = start_date,
+                                        enddate = end_date,
+                                        mimetype=new.files$mimetype[1],
+                                        formatname=new.files$formatname[1],
+                                        parentid = input.id,
+                                        con = con,
+                                        hostname = host$name)
+          
+        } else{
+          raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
+                                        in.prefix=new.files$dbfile.name[1],
+                                        siteid = site$id,
+                                        startdate = start_date,
+                                        enddate = end_date,
+                                        mimetype=new.files$mimetype[1],
+                                        formatname=new.files$formatname[1],
+                                        parentid=NA,
+                                        con = con,
+                                        hostname = host$name)
+          
+        }
       }
     }
-  
-
+  }
   #------------------------------------------------------------------------------------------------#
   # Change to  CF Standards
 
