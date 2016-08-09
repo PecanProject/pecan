@@ -95,8 +95,9 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   ## Propose parameter knots (X) for emulator design
   knots.list <- lapply(seq_along(settings$pfts),
                        function(x) pda.generate.knots(settings$assim.batch$n.knot, n.param.all[x], prior.ind[[x]], prior.fn[[x]], pname[[x]]))
-  knots.params <- sapply(knots.list, `[[`, "params")
-  knots.probs <- sapply(knots.list, `[[`, "probs")
+
+  knots.params <- lapply(knots.list, `[[`, "params")
+  knots.probs <- lapply(knots.list, `[[`, "probs")
 
   ## Check which emulator extension type requested if any
   if(!is.null(settings$assim.batch$extension)){
@@ -126,7 +127,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
       
       knots.list.temp <- lapply(seq_along(settings$pfts),
                            function(x) pda.generate.knots(n.post.knots, n.param.all[x], prior.ind[[x]], prior.fn[[x]], pname[[x]]))
-      knots.params.temp <- sapply(knots.list.temp, `[[`, "params")
+      knots.params.temp <- lapply(knots.list.temp, `[[`, "params")
 
       for(i in seq_along(settings$pfts)){
         # mixture of knots 
@@ -150,8 +151,8 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
         }
       }
 
-      knots.params <- sapply(knots.list, `[[`, "params")
-      knots.probs <- sapply(knots.list, `[[`, "probs")
+      knots.params <- lapply(knots.list, `[[`, "params")
+      knots.probs <- lapply(knots.list, `[[`, "probs")
 
     } # end of round-if
   } # end of extension-if
