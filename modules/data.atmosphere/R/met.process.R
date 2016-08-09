@@ -104,20 +104,21 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
  ## grab id of model record 
  met.model.input.id = met.model.clean.info$id
  
- input.info <- rbind(raw.clean.info, cf.clean.info, gfill.clean.info, met.model.clean.info)
+ input.info.table <- rbind(raw.clean.info, cf.clean.info, gfill.clean.info, met.model.clean.info)
  ## Drop unecessary columns
- input.info <- input.info[,!(names(input.info) %in% 
+ input.info.table <- input.info[,!(names(input.info) %in% 
                                c("notes","user_id","access_level","raw",
                                  "created_user_id","md5","container_type",
                                  "updated_user_id","machine_id")),drop=FALSE]
- 
-   
-    
+ input.info.list = list(raw = list(raw.input.id,raw.start_date,raw.end_date),
+                        met2cf = list(cf.input.id,cf.start_date,cf.end_date),
+                        gfill = list(gfill.input.id,gfill.start_date, gfill.end_date),
+                        met2model = list(met.model.input.id, met.model.start_date,met.model.end_date))
+
 
   # first attempt at function that designates where to start met.process
   if(is.null(input_met$id)){
     met.process.set.stage(input.info.list,start_date,end_date,con)
-    stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
     format.vars <- query.format.vars(con=con,format.id=met.reg$format$id) #query variable info from format id
   }else{
     stage <- met.process.stage(input_met$id,met.reg$format$id,update,con)
@@ -165,8 +166,9 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       if(length(check)>0){
         raw.id <- list(input.id=check$container_id, dbfile.id=check$id)
       }else{
-
-        args <- list(outfolder, start_date, end_date)
+        
+      for (years in 1:length(dates$download.start_date)){
+        args <- list(outfolder, dates$download.start_date[years], dates$download.end_date[years])
         if(met %in% "CRUNCEP") {
           ## this is a hack for regional products that go direct to site-level extraction. Needs generalization (mcd)
           args <- c(args, new.site$id, new.site$lat, new.site$lon)
@@ -182,8 +184,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
 
         cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
         new.files <- remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
-
-## - >  if(new){
+      }
+        if(new){
         raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
                                       in.prefix=new.files$dbfile.name[1],
                                       siteid = site$id,
@@ -196,6 +198,31 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
                                       hostname = host$name)
         if(met %in% "CRUNCEP"){ready.id = raw.id}
         if(met %in% "GFDL"){ready.id = raw.id}
+        
+        }else if (update){
+          start_date <- dates$update$start_date
+          end_date <- dates$update$end_date
+          ## Change Start and end date of Input record to include entire range of existing dates
+          db.query(paste("UPDATE inputs SET (start_date, end_date) = (",
+                         "'",as.POSIXlt(start_date),"'",
+                         ",",
+                         "'",as.POSIXlt(start_date), "'",
+                         ") WHERE id = ",input.id),con)
+          for(file in files)
+            #loop over individual files and insert them into database
+          raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
+                                        in.prefix=new.files$dbfile.name[1],
+                                        siteid = site$id,
+                                        startdate = start_date,
+                                        enddate = end_date,
+                                        mimetype=new.files$mimetype[1],
+                                        formatname=new.files$formatname[1],
+                                        parentid = input.id,
+                                        con = con,
+                                        hostname = host$name)
+          
+        }
+        
 ## ->   if(update){
         dbfile.input.update(update_new, update_end,....)
 }        
@@ -236,7 +263,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
           dbfile.input.update()
       }
     }
-  }
+  
 
   #------------------------------------------------------------------------------------------------#
   # Change to  CF Standards
@@ -278,15 +305,11 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         }else if(exists(fcn2)){
           fcn <- fcn2
         }else{logger.error("met2CF function ",fcn1," or ",fcn2," don't exist")}
-## -> if(new){
+
         cf0.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                                 username,con=con,hostname=host$name,browndog=NULL,write=TRUE,format.vars=format.vars)
       }
-    }
-## -> if(update){
-     dbfile.input.update()
-  
-}
+    
       input_name <- paste0(met,"_CF_Permute")
       fcn       <-  "permute.nc"
       outfolder  <- file.path(dir,input_name)
@@ -329,24 +352,22 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         mimename <- substr(mimename,regexpr('-',mimename)+1,nchar(mimename))
         fcn2 <- paste0("met2CF.",mimename)
         if(exists(fcn1)){
-## ->    if(new){
+
           fcn <- fcn1
           cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                                  username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon)
-## ->     }
-## ->    if(update){
+
+
             dbfiles.insert.update(update_start, update_end,input.id,con)
-          
-## ->     }
+
         }else if(exists(fcn2)){
-## ->     if(new){
           fcn <- fcn2
           format <- query.format.vars(input.id,con)
           cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                                  username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon,format.vars=format.vars)
-## ->    if(update){
+
            dbfiles.insert.update(update_start, update_end, input.id, con)
-## ->    }          
+         
         }else{logger.error("met2CF function ",fcn1, " or ", fcn2," doesn't exists")}
       }
     }
@@ -370,14 +391,11 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       fcn        <- "extract.nc"
       formatname <- 'CF Meteorology'
       mimetype   <- 'application/x-netcdf'
-## -> if(new){
+
       ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                                 username,con=con,hostname=host$name,browndog=NULL,write=TRUE,
                                 slat=new.site$lat,slon=new.site$lon,newsite=new.site$id)
-## -> }
-## -> if(update){
-      dbfile.insert.update()
-}
+
 
     }else if(met.reg$scale=="site"){ ##### Site Level Processing
       #     if(!is.null(met.reg$gapfill)){
@@ -392,14 +410,13 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       mimetype   <- 'application/x-netcdf'
       lst        <- site.lst(site,con)
       
-## -> if(new){
+
       ready.id   <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id
                                   ,start_date,end_date,pkg,fcn,username,con=con,
                                   hostname=host$name,browndog=NULL,write=TRUE,lst=lst)
-## -> }
-## -> if(update){
+
       dbfile.insert.update()
-## -> }
+
       print(ready.id)
       #     }else{
       #       ready.id<-cf.id[1]
@@ -437,12 +454,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     fcn       <- paste0("met2model.",model)
     lst       <- site.lst(site,con)
 
-##-> if(new){
+
     model.id  <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
                                username,con=con,hostname=host$name,browndog,write=TRUE,lst=lst,lat=new.site$lat,lon=new.site$lon)
-##-> if(update){
+
     dbfile.insert.update()
-## ->}
+
   }else{
     model.id = ready.id
 
