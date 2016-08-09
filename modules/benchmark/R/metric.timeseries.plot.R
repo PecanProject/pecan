@@ -6,7 +6,7 @@
 ##' 
 ##' @author Betsy Cowdery
 
-metric.timeseries.plot <- function(dat, var, filename){
+metric.timeseries.plot <- function(dat, var, filename = NA, draw.plot = FALSE){
   
   library(ggplot2)
   
@@ -26,9 +26,15 @@ metric.timeseries.plot <- function(dat, var, filename){
     geom_point(aes(y=model,colour = "Model"), size=4) +
     geom_path(aes(y=obvs, colour = "Observed"), size=2) + 
     geom_point(aes(y=obvs, colour = "Observed"), size=4) 
-    
-  pdf(filename, width = 10, height = 6)
-  plot(p)
-  dev.off()
+  
+  if(!is.na(filename)){
+    pdf(filename, width = 10, height = 6)
+    plot(p)
+    dev.off()
+  }  
+
+  if(draw.plot){
+    plot(p)
+  }
   
 }

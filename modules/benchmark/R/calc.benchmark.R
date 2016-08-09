@@ -88,6 +88,8 @@ calc.benchmark <- function(bm.ensemble, con){
 
     ####################################################
     results.list <- list()
+    dat.list <- list()
+    var.list <- c()
 
     # Loop over benchmark ids
     for(i in 1:length(bm.ids)){
@@ -97,32 +99,40 @@ calc.benchmark <- function(bm.ensemble, con){
         "JOIN benchmarks_metrics as b ON m.id = b.metric_id",
         "WHERE b.benchmark_id = ", bm.ids[i]),con)
       var <- filter(format$vars, variable_id == bm$variable_id)[,"pecan_name"]
+      var.list <- c(var.list, var)
       
       obvs.bm <- obvs_full %>% select(., one_of(c("posix", var )))
       model.bm <- model_full %>% select(., one_of(c("posix", var )))
 
-      r <- calc.metrics(model.bm, obvs.bm, var, metrics, start_year, end_year, bm, ens, model_run)
+      out.calc.metrics <- calc.metrics(model.bm, obvs.bm, var, metrics, start_year, end_year, bm, ens, model_run)
+      
+      
       
       benchmarks_ensemble_id <- db.query(paste("SELECT id FROM benchmarks_ensembles where ensemble_id = ",
                                                ens$id),con )[[1]]
-      # for(j in 1:nrow(r)){
+      # for(j in 1:out.calc.metrics[["r"]]){
       # db.query(paste0(
       #   "INSERT INTO benchmarks_ensembles_scores",
       #   "(score, benchmarks_ensemble_id, benchmark_id, metric_id, created_at, updated_at) VALUES ",
       #   "('",score[j],"',",benchmarks_ensemble_id,", ",bm$id,",",metrics$id[j],", NOW(), NOW())"),con)
       # }
       
-      results.list <- append(results.list, list(r))
+      results.list <- append(results.list, list(out.calc.metrics[["r"]]))
       
+      dat.list <- append(dat.list, list(out.calc.metrics[["dat"]]))
+
     } #end loop over benchmark ids
     
-    
+    names(dat.list) <- var.list
     
     results <- append(results,
                       list(list( bench.results = Reduce(function(...) merge(..., by="metric", all=T), 
                                                 results.list),
                                  data.path = data.path, 
-                                 format = format_full)))
+                                 format = format_full$vars,
+                                 model = model_full, 
+                                 obvs = obvs_full,
+                                 aligned.dat = dat.list)))
   }
   
   names(results) <- sprintf("input.%0.f",inputs)

@@ -44,5 +44,5 @@ calc.metrics <- function(model.bm, obvs.bm, var, metrics, start_year, end_year, 
   } #end loop over metrics
   
   
-  return(results)
+  return(list(r = results, dat = dat))
 }

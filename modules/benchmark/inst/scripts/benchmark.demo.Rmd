@@ -1,0 +1,178 @@
+---
+title: "Benchmarking Demo"
+author: "Betsy Cowdery"
+date: "August 9, 2016"
+output: html_document
+runtime: shiny
+---
+## Setup 
+
+```{r,message=FALSE,warning=FALSE}
+
+options(digits = 10) # just to make things easier to read
+
+library(PEcAn.all)
+library(PEcAn.benchmark)
+library(RPostgreSQL)
+library(XML)
+library(dplyr)
+
+#db connection and host information
+
+dbparms <- list(
+  user = "bety",
+  password = "bety",
+  host = "psql-pecan.bu.edu",
+  dbname = "bety",
+  write = TRUE,
+  driver = "PostgreSQL"
+)
+con     <- db.open(dbparms)
+user_id <- 1000000003 # Betsy's ID 
+
+# In case you want to re-run calc.benchmark for an existing benchmark ensemble run - but if that's the case then you should probably start the workflow with the given bm.enseble id. This may just end up being for testing. 
+new.run <-  FALSE
+
+# Example ensemble.ids to try
+ensemble.id <- 1000003655
+```
+
+## Definition
+### By hand: Formats, Inputs and Database files
+
+There are parts of the process that are not fully automated yet so before proceeding, make sure you do these steps:
+
+1) Create records for the benchmarking data sources you are going to use in the formats, inputs and dbfiles tables. 
+
+For example, my format record looks like this:
+```{r}
+print(db.query("SELECT * FROM formats WHERE name = 'NPP_Synthesis_CDIAC'",con))
+```
+then my input record looks like this:
+```{r}
+print(db.query("SELECT * FROM inputs WHERE id = 1000000651",con))
+```
+and finally my database file record looks like this:
+```{r}
+print(db.query("SELECT * FROM dbfiles WHERE container_id = 1000000651 AND container_type = 'Input'",con))
+```
+
+2) Create new benchmark etries for variables of interest in the new data sources.
+
+For example, I made two benchmark entries that look like this:
+```{r}
+print(db.query("SELECT * FROM benchmarks WHERE input_id = 1000000651",con))
+```
+
+### Benchmark Reference Run and Ensemble
+
+```{r}
+# get information about the ensemble and workflow 
+ensemble <- db.query(paste("SELECT * FROM ensembles where id = ",ensemble.id,";"), con)
+workflow <- db.query(paste("SELECT * FROM workflows where id = ",ensemble$workflow_id,";"), con)
+
+# check if there is already a BRR for ensemble.id
+BRR <- db.query(sprintf("SELECT * FROM reference_runs where settings = '%s' ", workflow$folder), con)
+if(length(BRR) == 0){
+  BRR <- create.BRR(ensemble.id, workflow, con)
+} 
+
+bm.ensembles <- db.query(sprintf("SELECT * FROM benchmarks_ensembles WHERE reference_run_id = %0.f ", BRR$id),con)
+```
+
+If you are making a new benchmark reference run, then you will have to relate you existing benchmarks with the reference run in the benchmarks_benchmarks_reference_runs table.
+
+```{r}
+# benchmarks_BRR <- db.query(paste(
+#   "INSERT INTO benchmarks_benchmarks_reference_runs (benchmark_id, reference_run_id)",
+#   "VALUES (",benchmarks$id,",",BRR$id,") RETURNING * "),con)
+
+print(db.query(paste("SELECT * FROM benchmarks_benchmarks_reference_runs WHERE reference_run_id = ",BRR$id),con))
+
+bm.ensembles <- db.query(sprintf("SELECT * FROM benchmarks_ensembles WHERE reference_run_id = %0.f ", BRR$id),con)
+```
+
+### New Runs (currently not functional)
+```{r}
+
+bm.host <- db.query(sprintf("SELECT w.hostname, e.id FROM workflows as w JOIN ensembles as e ON w.id = e.workflow_id JOIN benchmarks_ensembles as be ON e.id = be.ensemble_id WHERE be.reference_run_id = %0.f ", BRR$id),con)
+local <- which(bm.host$hostname == fqdn())
+
+if(length(local) == 0 | new.run == TRUE){
+  bm.ensemble <- start.bm.ensemble(BRR, con)
+}else{
+  # how do you choose which ref run to use? Maybe through shiny? For now, take the 1st one...
+  bm.ensemble <- filter(bm.ensembles, ensemble_id == bm.host$id[local][1])
+}
+```
+## Evaluation
+### Calculations
+
+```{r,echo=FALSE}
+
+results <- calc.benchmark(bm.ensemble, con)
+
+```
+
+### Reports
+
+Ultimately should launch a nicer shiny app
+print(source('modules/benchmark/R/prototype.shiny.2.R')$value)
+
+```{r}
+
+dat.vars <- setdiff(names(results$input.1000000651$bench.results), "metric")
+metrics <- results$input.1000000651$bench.results$metric
+metric.plot <- metrics[grep("plot",metrics)]
+
+ui <- shinyUI(pageWithSidebar(
+  headerPanel = ("Benchmarking Visualization Prototype"),
+  sidebarPanel(
+    conditionalPanel(condition="input.conditionedPanels==1",
+                     selectInput(inputId = "b", label = "Benchmark Data Set", choices = names(results)),
+                     selectInput(inputId = "v", label = "Variable", choices = dat.vars),
+                     radioButtons(inputId = "metric.plot", label="What plot you like to see?", 
+                                  choices = metric.plot)
+    ),
+    conditionalPanel(condition="input.conditionedPanels==2",
+                     selectInput(inputId = "b", label = "Benchmark Data Set", choices = names(results))
+    ),
+    conditionalPanel(condition="input.conditionedPanels==3",
+                     selectInput(inputId = "b", label = "Benchmark Data Set", choices = names(results)),
+                     selectInput(inputId = "v", label = "Variable", choices = dat.vars)
+    )
+  ),
+  mainPanel(
+    tabsetPanel(
+      tabPanel("Plot", plotOutput("p"), value = 1), 
+      tabPanel("Scores", dataTableOutput('scores'), value=2), 
+      tabPanel("Benchmarking Inputs", dataTableOutput('obvs'), value=2),
+      tabPanel("Model Outputs", dataTableOutput('model'), value=2),
+      tabPanel("Aligned data", dataTableOutput('dat'), value=3),
+      tabPanel("Formats", dataTableOutput('format'), value=2), 
+      id = "conditionedPanels"
+    )
+    
+  )
+)
+)
+
+
+server <- function(input, output){
+  output$p <- renderPlot({
+    metric_dat <- results[[input$b]]$aligned.dat[[input$v]]
+    colnames(metric_dat)<- c("model","obvs","time")
+    fcn <- paste0("metric.",input$metric.plot)
+    do.call(fcn, args <- list(metric_dat,input$v,draw.plot=TRUE))
+  })
+  output$scores <- renderDataTable(results[[input$b]]$bench.results[-grep("plot",metrics),])
+  output$obvs  <- renderDataTable(results[[input$b]]$obvs[,-which(colnames(results[[input$b]]$obvs)=="posix")])
+  output$model <- renderDataTable(as.data.frame(results[[input$b]]$model[,-which(colnames(results[[input$b]]$model)=="posix")]))
+  output$dat <- renderDataTable(as.data.frame(results[[input$b]]$aligned.dat[[input$v]][,-which(colnames(results[[input$b]]$aligned.dat[[input$v]])=="posix")]))
+  output$format <- renderDataTable(results[[input$b]]$format)
+}
+
+shinyApp(ui=ui, server=server, options = list(width = "100%", height = 800))
+
+```
+
