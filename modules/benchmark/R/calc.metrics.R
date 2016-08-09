@@ -15,7 +15,7 @@
 ##' @author Betsy Cowdery
 
 calc.metrics <- function(model.bm, obvs.bm, var, metrics, start_year, end_year, bm, ens, model_run){
-
+  
   dat <- align.data(model.bm, obvs.bm, var, start_year, end_year)
   
   results <- as.data.frame(matrix(NA, nrow = length(metrics$name), ncol = length(var)+1))
@@ -23,31 +23,26 @@ calc.metrics <- function(model.bm, obvs.bm, var, metrics, start_year, end_year, 
   rownames(results) <- metrics$name
   results$metric <- metrics$name
   
-  file.sources = list.files("modules/benchmark/R/", pattern = "^metric.*", full.names = TRUE)
-  for(i in 1:length(file.sources)){
-    source(file.sources[i])
-  }
-
-    metric_dat <- dat[,c(paste(var, c("m", "o"),sep = "." ),"posix")]
-    colnames(metric_dat)<- c("model","obvs","time")
+  metric_dat <- dat[,c(paste(var, c("m", "o"),sep = "." ),"posix")]
+  colnames(metric_dat)<- c("model","obvs","time")
+  
+  for(m in 1:length(metrics$name)){
     
-    for(m in 1:length(metrics$name)){
-      
-      fcn <- paste0("metric.",metrics$name[m])
-      
-      if(tail(unlist(strsplit(fcn, "[.]")),1) =="plot"){
-        filename = file.path(dirname(dirname(model_run)), 
-                             paste("benchmark",metrics$name[m],var,ens$id,"pdf", sep = "."))
-        do.call(fcn, args <- list(metric_dat,var,filename))
-        score <- filename
-        results[metrics$name[m],var] <- score
-      }else{
-        score <- as.character(do.call(fcn, args <- list(metric_dat,var)))
-        results[metrics$name[m],var] <- score
-      }
-      
-    } #end loop over metrics
-
-
-return(results)
+    fcn <- paste0("metric.",metrics$name[m])
+    
+    if(tail(unlist(strsplit(fcn, "[.]")),1) =="plot"){
+      filename = file.path(dirname(dirname(model_run)), 
+                           paste("benchmark",metrics$name[m],var,ens$id,"pdf", sep = "."))
+      do.call(fcn, args <- list(metric_dat,var,filename))
+      score <- filename
+      results[metrics$name[m],var] <- score
+    }else{
+      score <- as.character(do.call(fcn, args <- list(metric_dat,var)))
+      results[metrics$name[m],var] <- score
+    }
+    
+  } #end loop over metrics
+  
+  
+  return(results)
 }
