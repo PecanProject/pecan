@@ -50,40 +50,76 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   met.reg.xml <- system.file(paste0("registration/register.", met, ".xml"), package = "PEcAn.data.atmosphere")
   met.reg <- read.register(met.reg.xml, con)
   
-###########------------------------------------------------------------------> 
- 
-  ##read in registration xml for model specific information
-    ## Where should these registration files be located? Within the model package? This could be difficult given that the package name might not be the same as model name in this context. Will need to double check. 
-    model.reg.xml <- system.file(paste0("registration/register.",model,".xml"), package = paste0("PEcAn.",model))
-    model.reg <- read.register(model.reg.xml, con) #### Betsy: rewrite read.register to accomodate met or model
-    ## update.met = model.reg$update
-        ## FALSE: use exisintg workflow. 
-        ## TRUE: will not work until we fix the met.dates.bug
+ ##read in registration xml for model specific information
+ ## Where should these registration files be located? Within the model package? This could be difficult given that the package name might not be the same as model name in this context. Will need to double check. 
+  model.reg.xml <- system.file(paste0("registration/register.",model,".xml"), package = paste0("PEcAn.",model))
+  model.reg <- read.register(model.reg.xml, con) #### Betsy: rewrite read.register to accomodate met or model
+    
   
-## Figure out what Years to process
-    ## we have run start and end dates -> run_start = start_date, run_end = end_date
-    ## Need existing record start and end dates
-      ## query for model.id at site, return(db_start,db_end)
+ ## Query Database for Input(Site,Source,Machine)
+ input.file.info = db.query(paste("SELECT * from inputs as i join dbfiles as d on i.id = d.container_id where i.site_id = ", 
+                                  site$id,
+                                  "and d.machine_id = ",
+                                  machine$id,
+                                  "and d.container_type = ",
+                                  "'Input'"), con)
+ ##Clean up info Table
+ # Raw  files 
+ raw.info = input.file.info[input.file.info$format_id == register$format$id,]
+ ### grab latest created input record start and end dates
+ raw.clean.info = raw.info[raw.info$updated_at == max(raw.info$updated_at),]
+ ### grab start and end date of record
+ raw.start_date = raw.clean.info$start_date
+ raw.end_date = raw.clean.info$end_date
+ ### grab id of raw record 
+ raw.input.id = raw.clean.info$id
+ 
+ # CF files that have raw.id as parent.id
+ cf.info = input.file.info[input.file.info$parent_id %in% raw.input.id,]
+ # Grab file that was last updated
+ cf.clean.info = cf.info[cf.info$updated_at == max(cf.info$updated_at),]
+ ### grab start and end_dates
+ cf.start_date = cf.clean.info$start_date
+ cf.end_date = cf.clean.info$end_date
+ ## grab id of cf record 
+ cf.input.id = cf.clean.info$id
+ 
+ # Gapfill files that have cf.id as parent.id
+ gfill.info = input.file.info[input.file.info$parent_id %in% cf.input.id,]
+ # Grab file that was last updated
+ gfill.clean.info = gfill.info[gfill.info$updated_at == max(gfill.info$updated_at),]
+ ### grab start and end_dates
+ gfill.start_date = gfill.clean.info$start_date
+ gfill.end_date = gfill.clean.info$end_date
+ ## grab id of cf record 
+ gfill.input.id = gfill.clean.info$id
+ 
+ # Model specific met files that have gapfill.id as parent.id
+ met.model.info = input.file.info[input.file.info$parent_id %in% gfill.input.id,]
+ # Grab file that was last updated
+ met.model.clean.info = met.model.info[met.model.info$updated_at == max(met.model.info$updated_at),]
+ ### grab start and end_dates
+ met.model.start_date = met.model.clean.info$start_date
+ met.model.end_date = met.model.clean.info$end_date
+ ## grab id of model record 
+ met.model.input.id = met.model.clean.info$id
+ 
+ input.info <- rbind(raw.clean.info, cf.clean.info, gfill.clean.info, met.model.clean.info)
+ ## Drop unecessary columns
+ input.info <- input.info[,!(names(input.info) %in% 
+                               c("notes","user_id","access_level","raw",
+                                 "created_user_id","md5","container_type",
+                                 "updated_user_id","machine_id")),drop=FALSE]
+ 
+   
     
-    # dates.list = list(
-      # db_start, db_end,                    ## current met dates in database
-      # run_start, run_end,                  ## user chosen dates for run
-      # new_start = NULL, new_end = NULL,    ## dates that need to be downloaded i.e. update dates - db dates
-      # update_start = NA, update_end = NULL ## dates that need to be updated in the database  
-    # )  
 
-    # dates.list = met.date.process(dates.list)
-    ## returns updated dates list, potenitally filling in:
-  	  ## dates$new_start , dates$new_end
-      ## dates$update_start , dates$update_end 
-    
   # first attempt at function that designates where to start met.process
   if(is.null(input_met$id)){
+    met.process.set.stage(input.info.list,start_date,end_date,con)
     stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
     format.vars <- query.format.vars(con=con,format.id=met.reg$format$id) #query variable info from format id
   }else{
-    
-## Add in model update to met.process.stage code
     stage <- met.process.stage(input_met$id,met.reg$format$id,update,con)
     #query DB to get format variable information if available
     format.vars <- query.format.vars(input.id=input_met$id,con=con) 
