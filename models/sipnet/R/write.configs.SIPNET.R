@@ -14,7 +14,7 @@
 ##' @export
 ##' @author Michael Dietze
 #--------------------------------------------------------------------------------------------------#
-write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs=NULL, IC=NULL){
+write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs=NULL, IC=NULL, restart=NULL, spinup=NULL){
   ### WRITE sipnet.in
   template.in <- system.file("sipnet.in", package="PEcAn.SIPNET")
   config.text <- readLines(con=template.in, n=-1)
@@ -29,31 +29,40 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }
   
   # find out where to write run/ouput
-  rundir <- file.path(settings$run$host$rundir, as.character(run.id))
-  outdir <- file.path(settings$run$host$outdir, as.character(run.id))
-  if (is.null(settings$run$host$qsub) && (settings$run$host$name == "localhost")) {
+  rundir <- file.path(settings$host$rundir, as.character(run.id))
+  outdir <- file.path(settings$host$outdir, as.character(run.id))
+  if (is.null(settings$host$qsub) && (settings$host$name == "localhost")) {
     rundir <- file.path(settings$rundir, as.character(run.id))
     outdir <- file.path(settings$modeloutdir, as.character(run.id))
   }
   
   # create launch script (which will create symlink)
-  if (!is.null(settings$run$jobtemplate) && file.exists(settings$run$jobtemplate)) {
-    jobsh <- readLines(con=settings$run$jobtemplate, n=-1)
+  if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
+    jobsh <- readLines(con=settings$model$jobtemplate, n=-1)
   } else {
     jobsh <- readLines(con=system.file("template.job", package = "PEcAn.SIPNET"), n=-1)
   }
   
   # create host specific setttings
-  hostspecific <- ""
-  if (!is.null(settings$model$job.sh)) {
-    hostspecific <- paste(hostspecific, sep="\n", paste(settings$model$job.sh, collapse="\n"))
+  hostsetup <- ""
+  if (!is.null(settings$model$prerun)) {
+    hostsetup <- paste(hostsetup, sep="\n", paste(settings$model$prerun, collapse="\n"))
   }
-  if (!is.null(settings$run$host$job.sh)) {
-    hostspecific <- paste(hostspecific, sep="\n", paste(settings$run$host$job.sh, collapse="\n"))
+  if (!is.null(settings$host$prerun)) {
+    hostsetup <- paste(hostsetup, sep="\n", paste(settings$host$prerun, collapse="\n"))
+  }
+
+  hostteardown <- ""
+  if (!is.null(settings$model$postrun)) {
+    hostteardown <- paste(hostteardown, sep="\n", paste(settings$model$postrun, collapse="\n"))
+  }
+  if (!is.null(settings$host$postrun)) {
+    hostteardown <- paste(hostteardown, sep="\n", paste(settings$host$postrun, collapse="\n"))
   }
 
   # create job.sh
-  jobsh <- gsub('@HOSTSPECIFIC@', hostspecific, jobsh)
+  jobsh <- gsub('@HOST_SETUP@', hostsetup, jobsh)
+  jobsh <- gsub('@HOST_TEARDOWN@', hostteardown, jobsh)
 
   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
@@ -66,6 +75,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   jobsh <- gsub('@END_DATE@', settings$run$end.date, jobsh)
   
   jobsh <- gsub('@BINARY@', settings$model$binary, jobsh)
+  jobsh <- gsub('@REVISION@', settings$model$revision, jobsh)
   
   if(is.null(settings$model$delete.raw)) settings$model$delete.raw <- FALSE
   jobsh <- gsub('@DELETE.RAW@', settings$model$delete.raw, jobsh)
@@ -120,21 +130,10 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
   }
   
-  #### write run-specific environmental parameters here ####
-  env.traits <- which(names(trait.values) %in% 'env')
-  env.traits <- trait.values[[env.traits]]
-  env.names <- names(env.traits)
-  
-  
-  if("turn_over_time" %in% env.names){
-    id = which(param[,1] == 'litterBreakdownRate')
-    param[id,2] = env.traits[which(env.names == 'turn_over_time')]
-  }
-  
   #### write run-specific PFT parameters here ####
   ## Get parameters being handled by PEcAn
-  pft.traits <- which(!(names(trait.values) %in% 'env'))[1]
-  pft.traits <- unlist(trait.values[[pft.traits]])
+for(pft in seq_along(trait.values)){
+  pft.traits <- unlist(trait.values[[pft]])
   pft.names  <- names(pft.traits)
 
   ## Append/replace params specified as constants
@@ -317,6 +316,33 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       pft.traits[which(pft.names == 'coarse_root_respiration_Q10')]
   } 
   
+  ### ----- Soil parameters
+  # soil respiration Q10.
+  if('soil_respiration_Q10' %in% pft.names){
+    param[which(param[,1] == 'soilRespQ10'),2] = 
+      pft.traits[which(pft.names == 'soil_respiration_Q10')]
+  }
+  # soil respiration rate -- units = 1/year, reference = 0C
+  if('som_respiration_rate' %in% pft.names){
+    param[which(param[,1] == 'baseSoilResp'),2] = 
+      pft.traits[which(pft.names == 'som_respiration_rate')]
+  }
+  # litterBreakdownRate
+  if("turn_over_time" %in% pft.names){
+    id = which(param[,1] == 'litterBreakdownRate')
+    param[id,2] = pft.traits[which(pft.names == 'turn_over_time')]
+  }
+  # frozenSoilEff
+  if('frozenSoilEff' %in% pft.names){
+    param[which(param[,1] == 'frozenSoilEff'),2] = 
+      pft.traits[which(pft.names == 'frozenSoilEff')]
+  }
+  # soilWHC
+  if('soilWHC' %in% pft.names){
+    param[which(param[,1] == 'soilWHC'),2] = 
+      pft.traits[which(pft.names == 'soilWHC')]
+  }
+  
   ### ----- Phenology parameters
   # GDD leaf on
   if("GDD" %in% pft.names){
@@ -332,7 +358,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   if('leafGrowth' %in% pft.names){
     param[which(param[,1] == 'leafGrowth'),2] = pft.traits[which(pft.names == 'leafGrowth')]
   }
-  
+}    ## end loop over PFTS
+####### end parameter update
+    
   write.table(param,file.path(settings$rundir, run.id,"sipnet.param"),row.names=FALSE,col.names=FALSE,quote=FALSE)
 }
 #==================================================================================================#
@@ -350,14 +378,14 @@ write.run.generic <- function(settings){
   run.text <- scan(file = run.script.template, 
                    what="character",sep='@', quote=NULL, quiet=TRUE)
   run.text  <- gsub('TMP', paste("/scratch/",Sys.getenv("USER"),sep=""), run.text)
-  run.text  <- gsub('BINARY', settings$run$host$ed$binary, run.text)
-  run.text <- gsub('OUTDIR', settings$run$host$outdir, run.text)
+  run.text  <- gsub('BINARY', settings$host$ed$binary, run.text)
+  run.text <- gsub('OUTDIR', settings$host$outdir, run.text)
   runfile <- paste(settings$outdir, 'run', sep='')
   writeLines(run.text, con = runfile)
-  if(settings$run$host$name == 'localhost') {
-    system(paste('cp ', runfile, settings$run$host$rundir))
+  if(settings$host$name == 'localhost') {
+    system(paste('cp ', runfile, settings$host$rundir))
   }else{
-    system(paste("rsync -outi ", runfile , ' ', settings$run$host$name, ":", settings$run$host$rundir, sep = ''))
+    system(paste("rsync -outi ", runfile , ' ', settings$host$name, ":", settings$host$rundir, sep = ''))
   }
 }
 #==================================================================================================#
@@ -378,7 +406,7 @@ write.run.generic <- function(settings){
 remove.config.SIPNET <- function(main.outdir,settings) {
   
   ### Remove files on localhost
-  if(settings$run$host$name == 'localhost'){
+  if(settings$host$name == 'localhost'){
     files <- paste(settings$outdir,
                    list.files(path=settings$outdir, recursive=FALSE),sep="") # Need to change this to the run folder when implemented
     files <- files[-grep('*.xml',files)] # Keep pecan.xml file

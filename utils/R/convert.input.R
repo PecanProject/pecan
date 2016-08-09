@@ -4,19 +4,22 @@
 ##' @name convert.input
 ##' @title convert.input
 ##' @export
-##' @author Betsy Cowdery, Michael Dietze
-convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_date,end_date,
-                          pkg,fcn,username,con=con,hostname='localhost',browndog, write=TRUE,...){
-  logger.info(paste("Convert.Inputs",fcn,input.id,hostname,outfolder,formatname,mimetype,site.id,start_date,end_date))
+##' @author Betsy Cowdery, Michael Dietze, Ankur Desai
+convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, start_date, end_date, 
+                          pkg, fcn, username, con=con, hostname='localhost', browndog, write=TRUE,  
+                          format.vars=format.vars, ...) {
   l <- list(...); #print(l)
+
+  logger.info(paste("Convert.Inputs",fcn,input.id,hostname,outfolder,formatname,mimetype,site.id,start_date,end_date))
   n <- nchar(outfolder)
   if(substr(outfolder,n,n) != "/"){outfolder = paste0(outfolder,"/")}
   
   outname = tail(unlist(strsplit(outfolder,'/')),n=1)
   
+  print(start_date)
   startdate <- as.POSIXlt(start_date, tz = "GMT")
   enddate   <- as.POSIXlt(end_date, tz = "GMT")
-  
+
   # Consider adding a force option to skip the check and continue with conversion
   print("start CHECK")
   check = dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, parentid=input.id, con=con, hostname)
@@ -41,7 +44,7 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
     logger.warning("multiple dbfile records, using last",dbfile);
     dbfile = dbfile[nrow(dbfile),]
   }
-  
+
   #--------------------------------------------------------------------------------------------------#
   # Perform Conversion 
   
@@ -82,7 +85,6 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
   }
   
   if(conversion == "browndog"){
-    
     url <- file.path(browndog$url,outputtype) 
     #print(url)
     
@@ -136,17 +138,24 @@ convert.input <- function(input.id,outfolder,formatname,mimetype,site.id,start_d
       result$mimetype[i] <- mimetype
       result$formatname[i] <- formatname    
     }
-  }
   
-  else if (conversion == "local.remote") { # perform conversion on local or remote host
-    args = c(dbfile$file_path,dbfile$file_name,outfolder,start_date,end_date)
-    if(!is.null(names(l))){
-      cmdFcn  = paste0(paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=",")),",",paste(paste(names(l),"=",unlist(l)), collapse=","),")")
-    }else{
-      cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")") 
+  } else if (conversion == "local.remote") { # perform conversion on local or remote host
+     if (missing(format.vars)) {
+       args = c(dbfile$file_path, dbfile$file_name,outfolder,start_date,end_date) 
+       if(!is.null(names(l))){
+         cmdFcn = paste0(
+           paste0(pkg, "::", fcn, "(", paste0("'", args, "'", collapse=",")), ",",
+           paste( paste(names(l), "=", paste0("'", unlist(l), "'")), collapse=","), ")")
+       }else{
+         cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")") 
+       } 
+    } else {
+       args = c(dbfile$file_path,dbfile$file_name,outfolder,start_date,end_date) 
+       cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),",format=",paste0(list(format.vars)),")")
     } 
     print(cmdFcn) #do we want to print this?
-    result <- remote.execute.R(script=cmdFcn,hostname,user=NA,verbose=TRUE,R="R")
+
+    result <- remote.execute.R(script=cmdFcn, hostname, user=NA, verbose=TRUE, R="R")
   }
   
   print("RESULTS: Convert.Input")

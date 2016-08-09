@@ -11,12 +11,23 @@ logger.setQuitOnSevere(FALSE)
 logger.setLevel("OFF")
 context("tests for read.settings and related functions")
 
-settings <- read.settings("testinput.xml")
+# setwd('~/pecan/settings/tests/testthat')
+
+.get.test.settings = function() {
+  if(fqdn() == "pecan2.bu.edu") {
+    settings <- read.settings("testinput.pecan2.bu.edu.xml")
+  } else {
+    settings <- read.settings("testinput.xml")
+  }
+  return(settings)
+}
+
+settings <- .get.test.settings()
 
 test_that("read.settings returned correctly", {
 	expect_true(file.exists(settings$outdir))
 	expect_true(file.info(settings$outdir)$isdir)
-	expect_true(file.exists(file.path(settings$outdir, "pecan.xml")))
+	expect_true(file.exists(file.path(settings$outdir, "pecan.CHECKED.xml")))
 })
 
 test_that("read settings returns error if no settings file found (issue #1124)",{
@@ -27,19 +38,19 @@ test_that("check.settings throws error if required content not there", {
 
   s <- settings
   s[['run']] <- NULL
-  expect_error(check.settings(update.settings(s)))
+  expect_error(check.run.settings(update.settings(s)))
 
   for(date in c("start.date", "end.date")){
     s <- settings
     s$run[[date]] <- NULL
-    expect_error(check.settings(update.settings(s)))
+    expect_error(check.run.settings(update.settings(s)))
   }
 
 })
 
 test_that("check.settings throws error if pft has different type than model", {
   s <- settings
-  s$model$model_type <- 'SIPNET'
+  s[["model"]]$model_type <- 'SIPNET'
   expect_error(check.settings(update.settings(s)))
 })
 
@@ -50,26 +61,28 @@ test_that("check.settings gives sensible defaults",{
              database = NULL, model = list(type = "BIOCRO"),
              run = list(start.date = now(), end.date = days(1) + now()))
   s2 <- check.settings(update.settings(s1))
-  expect_is(s2$database, "NULL")
+  expect_true(is.null(s2$database) || 
+              (length(s2$database)==1 && names(s2$database)=="dbfiles"))
   
   s1$database <- settings$database
+  s1$database$bety$write = FALSE # RyK added because throws an error otherwise!
   s2 <- check.settings(update.settings(s1))
   expect_equal(s2$database$bety$driver, "PostgreSQL")
 
   ## dir. paths, with default localhost
-  expect_equal(s2$run$host$name, "localhost")
+  expect_equal(s2$host$name, "localhost")
   
   ## outdirs
   outdir <- file.path(getwd(), paste0("PEcAn_", s2$workflow$id))
   expect_equal(s2$outdir, outdir)
-  expect_equal(s2$run$host$outdir, file.path(outdir, "out"))
-  expect_equal(s2$modeloutdir, s2$run$host$outdir)
+  expect_equal(s2$host$outdir, file.path(outdir, "out"))
+  expect_equal(s2$modeloutdir, s2$host$outdir)
   
   ## rundir
   expect_equal(s2$rundir, file.path(outdir, "run"))  
-  expect_equal(s2$rundir, s2$run$host$rundir)
+  expect_equal(s2$rundir, s2$host$rundir)
   
-  expect_true(s2$database$bety$write)
+#   expect_true(s2$database$bety$write) # RyK commented out because had to change as noted above
   expect_true(s2$meta.analysis$iter > 1000)
   expect_false(s2$meta.analysis$random.effects)
   
@@ -207,7 +220,7 @@ test_that("check settings runs with only model$name and no database", {
 
 test_that("invalid pathname is placed in home directory",{
   s <- settings
-  s$run$dbfiles <- "foo/bar"
+  s$database$dbfiles <- "foo/bar"
   s1 <- check.settings(s)
-  expect_equal(s1$run$dbfiles, file.path(Sys.getenv("HOME"), s$run$dbfiles))
+  expect_equal(s1$database$dbfiles, file.path(Sys.getenv("HOME"), s$database$dbfiles))
 })

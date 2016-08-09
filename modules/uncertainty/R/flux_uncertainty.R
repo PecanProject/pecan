@@ -125,6 +125,14 @@ flux.uncertainty <- function(measurement, QC=0, flags=TRUE, bin.num=10, transfor
 
 
 #--------------------------------------------------------------------------------------------------#
+##' Plot fit for heteroskedastic flux uncertainty
+##' 
+##' @name plot.flux.uncertainty
+##' @title Plot fit for heteroskedastic flux uncertainty
+##' @param f  output of flux.uncertainty functions
+##' @param ...  optional graphical paramters
+##' @export
+##' @author Mike Dietze, Carl Davidson
 plot.flux.uncertainty <- function(f, ...){
   plot(f$mag, f$err, ...)
   big = 10000

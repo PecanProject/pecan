@@ -109,7 +109,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
      RAD <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") #W m-2
      PAR <- try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air")) #mol m-2 s-1
      TAIR <- ncvar_get(nc,"air_temperature") # K
-     QAIR <- ncvar_get(nc,"specific_humidity"))# 1
+     QAIR <- ncvar_get(nc,"specific_humidity")# 1
      PPT <- ncvar_get(nc,"precipitation_flux") #kg m-2 s-1
      CA <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air")) #mol/mol
      PRESS <- ncvar_get(nc,"air_pressure")# Pa
@@ -129,40 +129,46 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
      # Convert air temperature to Celsius 
      TAIR <- udunits2::ud.convert(TAIR,"kelvin","celsius")
      
-     ####ppm. atmospheric CO2 concentration. Constant from Enviiron namelist used instead
+     ####ppm. atmospheric CO2 concentration. Constant from Environ namelist used instead if CA is nonexistant
+     defaultCO2 = 400
      if (!is.numeric(CA)) {
        print(
          "Atmospheric CO2 concentration will be set to constant value set in ENVIRON namelist "
        )
        rm(CA)
-       defaultCO2 = 400 #400 is estimation of atmospheric CO2 in ppm)
      } else {
-       defaultCO2 = 400
-     } #400 is estimation of atmospheric CO2 in ppm))
+       CA <- CA*1e6
+     } 
      
      nc_close(nc)
    } else {
      print("Skipping to next year")
      next
    }
-   tmp <- rbind(TAIR,PPT,RAD,PRESS,PAR,RH)
+   
+   if (exists("CA")){
+   tmp <- cbind(TAIR,PPT,RAD,PRESS,PAR,RH,CA)
+   } else {
+   tmp <- cbind(TAIR,PPT,RAD,PRESS,PAR,RH)
+   }
    
    if (is.null(out)) {
      out = tmp
    } else {
-     out = cbind(out,tmp)
+     out = rbind(out,tmp)
    }
    
  }### end loop over years
  
+ ### Check for NA
+ if(anyNA(out)){
+   logger.debug("NA introduced in met data. Maespa will not be able to run properly. Please change Met Data Source or Site")
+ } else {
+   logger.debug("No NA values contained in data")
+ }
  
- #Get names for columns of variable table
- columnnames <-  paste0(rownames(tmp),collapse = "'     '")
- #Get number of variables
- numbercolumns <- nrow(out)
- #turn into matrix
- out <- matrix(out,ncol = numbercolumns, byrow=TRUE)
- 
+ ## Set Variable names
+ columnnames <- colnames(out)
 
  #Set number of timesteps in a day(timetsep of input data)
  timesteps <- tstep

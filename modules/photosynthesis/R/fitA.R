@@ -51,7 +51,10 @@ if(is.null(V.fixed)){
   if(is.null(cov.data)) print("Vcmax formula provided but covariate data is absent:",V.fixed)
   if(length(grep("~",V.fixed)) == 0) V.fixed= paste("~",V.fixed)
   XV = with(cov.data,model.matrix(formula(V.fixed)))  
-  XV = as.matrix(XV[,-which(colnames(XV)=="(Intercept)")])
+  XV.cols <- colnames(XV)
+  XV.cols <- XV.cols[XV.cols != "(Intercept)"]
+  XV = as.matrix(XV[,XV.cols])
+  colnames(XV) <- XV.cols
   Vcenter = apply(XV,2,mean,na.rm=TRUE)
   XV = t(t(XV)-Vcenter)
 }
@@ -195,7 +198,7 @@ if(!is.null(XV)){
   Vnames = gsub(" ","_",colnames(XV))
   Vformula = paste(Vformula,paste0("+ betaV",Vnames,"*XV[rep[i],",1:ncol(XV),"]",collapse=" "))
   Vpriors = paste0("     betaV",Vnames,"~dnorm(0,0.001)",collapse="\n")
-  my.model = sub(pattern="## Vcmax BETAs",Vpriors,my.model)  
+  my.model = sub(pattern="## Vcmax BETAS",Vpriors,my.model)  
   mydat[["XV"]] = XV
   out.variables = c(out.variables,paste0("betaV",Vnames))  
 }
@@ -225,7 +228,7 @@ init<-list()
  init[[2]]<-list(r0=1, vmax0=100, alpha0=0.20, tau=20, cp0=4, Jmax0=150) ##tau.Vleaf=20,beta1=1,beta2=1,beta5=-1,tau.Vmon=20,tpu=13,
  init[[3]]<-list(r0=2, vmax0=60, alpha0=0.28, tau=20, cp0=5,Jmax0=60)    ##tau.Vleaf=100,beta1=1,beta2=2,beta5=2,tau.Vmon=3,tpu=20,
 
-mc3 <- jags.model(file=textConnection(my.model),data=mydat,
+ mc3 <- jags.model(file=textConnection(my.model),data=mydat,
  inits=init,
  n.chains=3)
 

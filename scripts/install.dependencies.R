@@ -24,10 +24,13 @@ if(!("Rgraphviz" %in% installed.packages()[,"Package"])) {
 list.of.packages <- c('abind', 'car', 'chron', 'coda', 'data.table', 'doSNOW', 'dplR', 'earth', 'emulator',
                       'ggmap', 'ggplot2', 'gridExtra', 'Hmisc', 'kernlab',
                       'knitr', 'lubridate','Maeswrap', 'MASS', 'MCMCpack', 'mvtnorm', 'ncdf4',
+                      'ggmap', 'ggplot2', 'gridExtra', 'Hmisc', 'httr', 'kernlab','GPfit',
+                      'knitr', 'lubridate', 'MASS', 'MCMCpack', 'mvtnorm', 'ncdf4',
                       'plotrix', 'plyr', 'raster', 'randtoolbox', 'rjags',
                       'rgdal', 'tgp', 'DBI', 'roxygen2', 'stringr', 'testthat', 'boot',
                       'XML', 'RNCEP', 'foreign', 'RCurl', 'udunits2', 'RPostgreSQL',
-                      'rPython','minpack.lm', 'mclust', 'geonames', 'Rcpp','devtools', 'inline', 'segmented')
+                      'rPython','minpack.lm', 'mclust', 'geonames', 'Rcpp','devtools', 'inline', 'segmented',
+                      'msm', 'dplyr', 'shiny', 'scales', 'maps', 'sp')
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) {
   print("installing : ")
@@ -49,7 +52,7 @@ if(!("BioCro" %in% installed.packages()[,"Package"])) {
 
 # BayesianTools package snapshot
 if(!("BayesianTools" %in% installed.packages()[,"Package"])) {
-  devtools::install_url("https://dl.dropboxusercontent.com/s/hy9l6mokresqyel/BayesianTools_0.0.0.9000.tar.gz")
+  devtools::install_url("https://dl.dropboxusercontent.com/s/ccvpnvblf3vzuvs/BayesianTools_0.0.0.9000.tar.gz")
 }
 
 

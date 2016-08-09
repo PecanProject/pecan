@@ -89,9 +89,6 @@ plot.netcdf <- function(datafile, yvar, xvar='time', width=800, height=600, file
   yval_max  <- data.fetch(yvar, nc, max)
   yval_min  <- data.fetch(yvar, nc, min)
   
-  # done with netcdf file
-  nc_close(nc)
-  
   # setup output
   if (!is.null(filename)) {
     if (tolower(filename) == 'x11') {
@@ -124,6 +121,9 @@ plot.netcdf <- function(datafile, yvar, xvar='time', width=800, height=600, file
       title(main=paste(xvar, "VS", yvar, "for", year))
     }
   }
+  # done with netcdf file
+  nc_close(nc)
+  
   
   # remove all NA's
   removeme <- unique(c(which(is.na(yval_min)), which(is.na(xval_mean)), which(is.na(yval_mean)), which(is.na(yval_max))))
@@ -144,10 +144,17 @@ plot.netcdf <- function(datafile, yvar, xvar='time', width=800, height=600, file
   lines(x=xval_mean[o], y=yval_mean[o], col="red")
   points(x=xval_mean[o], y=yval_mean[o], col="black", pch=".", cex=5)
   
+  # legend
+  legend("bottomright",col=c(1,"gray"),lwd=c(3,6),legend=c("mean","min/max"),cex=1.5)
+  
   # draw axis and box
   axis(1)
   axis(2)
   box()
+  
+  ## add PEcAn icon
+  add_icon()
+  
   if (!is.null(filename) && (tolower(filename) != 'x11')) {
     dev.off()
   }

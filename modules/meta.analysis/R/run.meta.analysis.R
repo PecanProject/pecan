@@ -139,7 +139,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 ##' This will use the following items from setings:
 ##' - settings$pfts
 ##' - settings$database$bety
-##' - settings$run$dbfiles
+##' - settings$database$dbfiles
 ##' - settings$meta.analysis$update
 ##' @param pfts the list of pfts to get traits for
 ##' @param iterations the number of iterations for the mcmc analysis
@@ -161,6 +161,40 @@ run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, 
 } ### End of function: run.meta.analysis.R
 ##==================================================================================================#
 
+##' @export
+runModule.run.meta.analysis <- function(settings) {
+  if(is.SettingsList(settings)) {
+    pfts <- list()
+    pft.names <- character(0)
+    for(i in seq_along(settings)) {
+      pfts.i <- settings[[i]]$pfts
+      pft.names.i <- sapply(pfts.i, function(x) x$name)
+      ind <- which(pft.names.i %in% setdiff(pft.names.i, pft.names))
+      pfts <- c(pfts, pfts.i[ind])
+      pft.names <- sapply(pfts, function(x) x$name)
+    }
+    
+    logger.info(paste0("Running meta-analysis on all PFTs listed by any Settings object in the list: ",
+                paste(pft.names, collapse=", ")))
+
+    iterations <- settings$meta.analysis$iter
+    random <- settings$meta.analysis$random.effects
+    threshold <- settings$meta.analysis$threshold
+    dbfiles <- settings$database$dbfiles
+    database <- settings$database$bety
+    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database) 
+  } else if (is.Settings(settings)) {
+    pfts <- settings$pfts
+    iterations <- settings$meta.analysis$iter
+    random <- settings$meta.analysis$random.effects
+    threshold <- settings$meta.analysis$threshold
+    dbfiles <- settings$database$dbfiles
+    database <- settings$database$bety
+    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database) 
+  } else {
+    stop("runModule.run.meta.analysis only works with Settings or SettingsList")
+  }
+}
 
 ##--------------------------------------------------------------------------------------------------#
 ##' compare point to prior distribution

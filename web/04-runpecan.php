@@ -53,7 +53,7 @@ $hostoptions = $hostlist[$hostname];
 if (!isset($_REQUEST['pft'])) {
 	die("Need a pft.");
 }
-$pft=$_REQUEST['pft'];
+$pft=array_unique($_REQUEST['pft']);
 
 # dates
 if (!isset($_REQUEST['start'])) {
@@ -105,10 +105,12 @@ if (isset($_REQUEST['input_met']) && is_numeric($_REQUEST['input_met'])) {
 }
 
 // Set user and runtime
-$runtime = date('Y/m/d H:i:s O'); 
+$runtime = gmdate('Y/m/d H:i:s O'); 
+$metstart2 = date("Y/m/d", strtotime($metstart));
+$metend2   = date("Y/m/d", strtotime($metend));
 
 // check input dates to make sure they agree with the dates from the weather data
-if (!$userok && ($startdate < $metstart || $enddate > $metend)) {
+if (!$userok && ($startdate < $metstart2 || $enddate > $metend2)) {
 	$params = "userok=on";
 	foreach($_REQUEST as $k => $v) {
 		if (is_array($v)) {
@@ -124,7 +126,7 @@ if (!$userok && ($startdate < $metstart || $enddate > $metend)) {
 		  }
 		}
 	}
-	$params .= "&msg=WARNING : Selected dates are not within the bounds of the weather data file you selected.";
+	$params .= "&msg=WARNING : Selected dates are not within the bounds of the weather data file you selected. \n START: ${startdate} ${metstart2}  \n END: ${enddate} ${metend2}";
 	header("Location: checkfailed.php?${params}");
 	exit();
 }
@@ -188,15 +190,15 @@ umask(0002);
 
 # create the folder(s)
 if (!mkdir($folder)) {
-    die('Can\'t create output folder [${folder}]');
+    die("Can't create output folder [${folder}]");
 }
 if (!is_dir($dbfiles_folder) && !mkdir($dbfiles_folder, 0777, true)) {
-    die('Can\'t create output folder [${dbfiles_folder}]');
+    die("Can't create output folder [${dbfiles_folder}]");
 }
 if ($hostname != $fqdn) {
     $tunnel_folder = $folder . DIRECTORY_SEPARATOR . "tunnel";
     if (!mkdir($tunnel_folder)) {
-        die('Can\'t create output folder [${tunnel_folder}]');
+        die("Can't create output folder [${tunnel_folder}]");
     }
 }
 
@@ -309,7 +311,16 @@ if ($modeltype == "ED2") {
 	fwrite($fh, "    <phenol.scheme>0</phenol.scheme>" . PHP_EOL);
 }
 if (isset($hostoptions['models']) && isset($hostoptions['models'][$modeltype])) {
-  fwrite($fh, "    <job.sh>" . toXML($hostoptions['models'][$modeltype]) . "</job.sh>" . PHP_EOL);      
+  if (is_array($hostoptions['models'][$modeltype])) {
+    if (isset($hostoptions['models'][$modeltype]['prerun'])) {
+      fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$modeltype]['prerun']) . "</prerun>" . PHP_EOL);      
+    }
+    if (isset($hostoptions['models'][$modeltype]['postrun'])) {
+      fwrite($fh, "    <postrun>" . toXML($hostoptions['models'][$modeltype]['postrun']) . "</postrun>" . PHP_EOL);      
+    }
+  } else {
+    fwrite($fh, "    <prerun>" . toXML($hostoptions['models'][$modeltype]) . "</prerun>" . PHP_EOL);      
+  }
 }
 fwrite($fh, "  </model>" . PHP_EOL);
 fwrite($fh, "  <workflow>" . PHP_EOL);
@@ -333,6 +344,9 @@ foreach($_REQUEST as $key => $val) {
     $parts=explode(".", $val, 2);
     fwrite($fh, "        <source>${parts[0]}</source>" . PHP_EOL);
     fwrite($fh, "        <output>${parts[1]}</output>" . PHP_EOL);
+    if (isset($_REQUEST['fluxusername'])) {
+      fwrite($fh, "      <username>${_REQUEST['fluxusername']}</username>" . PHP_EOL);
+    }
   }
   fwrite($fh, "      </${tag}>" . PHP_EOL);
 }
@@ -356,6 +370,15 @@ if (isset($hostoptions['folder'])) {
   }
   fwrite($fh, "      <folder>" . toXML($remote) . "</folder>" . PHP_EOL);
 }
+if (isset($hostoptions['scratchdir'])) {
+  fwrite($fh, "      <scratchdir>" . toXML($hostoptions['scratchdir']) . "</scratchdir>" . PHP_EOL);
+}
+if (isset($hostoptions['prerun'])) {
+  fwrite($fh, "      <prerun>" . toXML($hostoptions['prerun']) . "</prerun>" . PHP_EOL);
+}
+if (isset($hostoptions['postrun'])) {
+  fwrite($fh, "      <postrun>" . toXML($hostoptions['postrun']) . "</postrun>" . PHP_EOL);
+}
 if (isset($hostoptions['qsub'])) {
   fwrite($fh, "      <qsub>" . toXML($hostoptions['qsub']) . "</qsub>" . PHP_EOL);
 }
@@ -375,7 +398,7 @@ fwrite($fh, "    </host>" . PHP_EOL);
 fwrite($fh, "  </run>" . PHP_EOL);
 
 if ($email != "") {
-	$url = ($_SERVER['HTTPS'] ? "https://" : "http://");
+	$url = isset($_SERVER['HTTPS']) ? "https://" : "http://";
 	$url .= $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'];
 	$url .= str_replace("04-runpecan.php", "08-finished.php", $_SERVER["SCRIPT_NAME"]);
 	if ($offline) {
@@ -384,8 +407,8 @@ if ($email != "") {
 		$url .= "?workflowid=${workflowid}";
 	}
 	fwrite($fh, "  <email>" . PHP_EOL);
-	fwrite($fh, "    <to>${email}</to>" . PHP_EOL);
-	fwrite($fh, "    <url>${url}</url>" . PHP_EOL);
+  fwrite($fh, "    <to>${email}</to>" . PHP_EOL);
+  fwrite($fh, "    <url>${url}</url>" . PHP_EOL);
 	fwrite($fh, "  </email>" . PHP_EOL);
 }
 fwrite($fh, "</pecan>" . PHP_EOL);
