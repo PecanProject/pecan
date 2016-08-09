@@ -2,12 +2,12 @@
 % Please edit documentation in R/metric.RMSE.R
 \name{metric.RMSE}
 \alias{metric.RMSE}
-\title{metric.RMSE}
+\title{Root Mean Square Error}
 \usage{
 metric.RMSE(dat, ...)
 }
 \arguments{
-\item{dat}{}
+\item{dat}{dataframe}
 }
 \author{
 Betsy Cowdery

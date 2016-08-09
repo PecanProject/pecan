@@ -44,15 +44,35 @@ Perform a site-level SIPNET run using the following settings
   <n.ensemble>50</n.ensemble>
   <process.variance>FALSE</process.variance>
   <sample.parameters>TRUE</sample.parameters>
-  <state.variables>
-    <variable>NPP</variable>
-    <variable>AbvGrndWood</variable>
-    <variable>TotSoilCarb</variable>
-    <variable>LeafC</variable>
-    <variable>SoilMoistFrac</variable>
-    <variable>SWE</variable>
-    <variable>Litter</variable>
-    <variable>Snow</variable>
+   <state.variables>
+    <variable>
+      <variable.name>NPP</variable.name>
+      <unit>MgC/ha/yr</unit>
+    </variable>
+    <variable>
+      <variable.name>AbvGrndWood</variable.name>
+      <unit>KgC/m^2</unit>
+    </variable>
+    <variable>
+      <variable.name>TotSoilCarb</variable.name>
+      <unit>KgC/m^2</unit>
+    </variable>
+    <variable>
+      <variable.name>LeafC</variable.name>
+      <unit>m^2/m^2</unit>
+    </variable>
+    <variable>
+      <variable.name>SoilMoistFrac</variable.name>
+      <unit></unit>
+    </variable>
+    <variable>
+      <variable.name>SWE</variable.name>
+      <unit>cm</unit>
+    </variable>
+    <variable>
+      <variable.name>Litter</variable.name>
+      <unit>gC/m^2</unit>
+    </variable>
   </state.variables>
   <spin.up>
     <start.date>1979/01/01</start.date>

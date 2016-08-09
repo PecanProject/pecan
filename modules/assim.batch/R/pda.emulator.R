@@ -25,6 +25,20 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
                   settings=settings, params.id=params.id, param.names=param.names, 
                   prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
                   adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot)
+    
+    
+    extension.check <- settings$assim.batch$extension == "longer"
+    
+    if(length(extension.check)==0){ # not an extension run
+      run.block = TRUE
+      path.flag = TRUE
+    }else if(length(extension.check)==1 & extension.check == FALSE){ # "round" extension
+      run.block = TRUE
+      path.flag = FALSE
+    }else{ # "longer" extension
+      run.block = FALSE
+      path.flag = FALSE
+    }
 
    
   ## Open database connection
@@ -38,7 +52,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   }
 
   ## Load priors
-  temp <- pda.load.priors(settings, con)
+  temp <- pda.load.priors(settings, con, path.flag)
   prior.list <- temp$prior
   settings <- temp$settings
   pname <-  lapply(prior.list, rownames)
@@ -81,8 +95,9 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   ## Propose parameter knots (X) for emulator design
   knots.list <- lapply(seq_along(settings$pfts),
                        function(x) pda.generate.knots(settings$assim.batch$n.knot, n.param.all[x], prior.ind[[x]], prior.fn[[x]], pname[[x]]))
-  knots.params <- sapply(knots.list, `[[`, "params")
-  knots.probs <- sapply(knots.list, `[[`, "probs")
+
+  knots.params <- lapply(knots.list, `[[`, "params")
+  knots.probs <- lapply(knots.list, `[[`, "probs")
 
   ## Check which emulator extension type requested if any
   if(!is.null(settings$assim.batch$extension)){
@@ -112,7 +127,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
       
       knots.list.temp <- lapply(seq_along(settings$pfts),
                            function(x) pda.generate.knots(n.post.knots, n.param.all[x], prior.ind[[x]], prior.fn[[x]], pname[[x]]))
-      knots.params.temp <- sapply(knots.list.temp, `[[`, "params")
+      knots.params.temp <- lapply(knots.list.temp, `[[`, "params")
 
       for(i in seq_along(settings$pfts)){
         # mixture of knots 
@@ -136,23 +151,11 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
         }
       }
 
-      knots.params <- sapply(knots.list, `[[`, "params")
-      knots.probs <- sapply(knots.list, `[[`, "probs")
+      knots.params <- lapply(knots.list, `[[`, "params")
+      knots.probs <- lapply(knots.list, `[[`, "probs")
 
     } # end of round-if
   } # end of extension-if
-  
-  
-  
-  extension.check <- settings$assim.batch$extension == "longer"
-  
-  if(length(extension.check)==0){
-    run.block = TRUE
-  }else if(length(extension.check)==1 & extension.check == FALSE){
-    run.block = TRUE
-  }else{
-    run.block = FALSE
-  }
   
   
   if(run.block){
@@ -389,12 +392,11 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   save(jvar.list, file = settings$assim.batch$jvar.path)
   
   
-  # Separate each PFT's parametes samples to their own list
+  # Separate each PFT's parameter samples to their own list
   mcmc.param.list <- list()
   ind <- 0
   for(i in seq_along(settings$pfts)){
     mcmc.param.list[[i]] <-  lapply(mcmc.list, function(x) x[, (ind+1):(ind + n.param[i]), drop=FALSE])
-    names(mcmc.param.list[[i]])
     ind <- ind + n.param[i]
   }
 
