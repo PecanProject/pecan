@@ -347,7 +347,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     colnames(m) <- unlist(pname)[prior.ind.all]
     mcmc.list.tmp[[c]] <- m
     
-    jvar.list[[c]] <- sqrt(mcmc.out[[c]]$jump@history[nrow(mcmc.out[[c]]$jump@history),])
+    jvar.list[[c]] <- mcmc.out[[c]]$jump@history[nrow(mcmc.out[[c]]$jump@history),]
   }
   
   
