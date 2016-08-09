@@ -23,7 +23,7 @@ if(!("Rgraphviz" %in% installed.packages()[,"Package"])) {
 # install packages needed from CRAN
 list.of.packages <- c('abind', 'car', 'chron', 'coda', 'data.table', 'doSNOW', 'dplR', 'earth', 'emulator',
                       'ggmap', 'ggplot2', 'gridExtra', 'Hmisc', 'kernlab',
-                      'knitr', 'lubridate', 'MASS', 'MCMCpack', 'mvtnorm', 'ncdf4',
+                      'knitr', 'lubridate','Maeswrap', 'MASS', 'MCMCpack', 'mvtnorm', 'ncdf4',
                       'plotrix', 'plyr', 'raster', 'randtoolbox', 'rjags',
                       'rgdal', 'tgp', 'DBI', 'roxygen2', 'stringr', 'testthat', 'boot',
                       'XML', 'RNCEP', 'foreign', 'RCurl', 'udunits2', 'RPostgreSQL',
@@ -33,6 +33,8 @@ if(length(new.packages)) {
   print("installing : ")
   print(new.packages)
   install.packages(new.packages, repos="http://cran.rstudio.com/")
+	
+warning("If Maeswrap Package download fails, please refer to PEcAn documentation for download instructions")
 }
 
 # install packages from forge
