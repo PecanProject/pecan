@@ -83,14 +83,14 @@ AGB = apply(state$AGB[1,,],2,mean,na.rm=TRUE)*AGB.conv#kgC/m2
 obs.mean <- list()
 for(i in 1:length(NPP)) {
   obs.mean[[i]]<-c(NPP[i],AGB[i])
-  names(obs.mean[[i]])<-c("NPP",'plantWood')
+  names(obs.mean[[i]])<-c("NPP",'AbvGrndWood')
 }
 
 obs.cov <- list()
 for(i in 1:length(NPP)){
   obs.cov[[i]]<- cov(cbind(state$NPP[,,i]*NPP.conv,state$AGB[,,i]*AGB.conv))
-  colnames(obs.cov[[i]]) <- c("NPP","AGB")
-  rownames(obs.cov[[i]]) <- c("NPP","AGB")
+  colnames(obs.cov[[i]]) <- c("NPP","AbvGrndWood")
+  rownames(obs.cov[[i]]) <- c("NPP","AbvGrndWood")
 }
 status.end()
 

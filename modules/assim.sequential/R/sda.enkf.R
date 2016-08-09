@@ -32,7 +32,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   end.year   <- strftime(settings$state.data.assimilation$end.date,"%Y")
   processvar <-settings$state.data.assimilation$process.variance
   sample_parameters <-settings$state.data.assimilation$sample.parameters
-  variables <- unlist(settings$state.data.assimilation$state.variable, use.names = FALSE)
+  variables <- unlist(sapply(settings$state.data.assimilation$state.variable,function(x){x})[1,], use.names = FALSE)
   
   ###-------------------------------------------------------------------###
   ### load climate data                                                 ###
@@ -478,10 +478,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
           Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
           XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
           
-          ylab.names<-c("MgC/ha/yr","KgC/m^2","m^2/m^2","gC/m^2","gC/m^2","","","cm")
+          ylab.names<-unlist(sapply(settings$state.data.assimilation$state.variable,function(x){x})[2,], use.names = FALSE)
           
           plot(total.time[t1:t],Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
-               type='n',xlab="Year",ylab=ylab.names[i],main=colnames(X)[i])
+               type='n',xlab="Year",ylab=ylab.names[grep(colnames(X)[i],variables)],main=colnames(X)[i])
           
           #observation / data
           if(i<=ncol(Ybar)){
@@ -574,8 +574,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       return(sqrt(diag(x)))})))  #need to make this from quantiles for lyford plot data
     #YCI = YCI[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
    
-    ylab.names<-c("MgC/ha/yr","KgC/m^2","m^2/m^2","gC/m^2","gC/m^2","","","cm")
-    
     for(i in 1:ncol(X)){
       t1=1
       Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
@@ -585,7 +583,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
       
       plot(total.time[t1:t],Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
-           type='n',xlab="Year",ylab=ylab.names[i],main=colnames(X)[i])
+           type='n',xlab="Year",ylab=ylab.names[grep(colnames(X)[i],variables)],main=colnames(X)[i])
      
        #observation / data
       if(i<=ncol(Ybar)){

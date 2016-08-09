@@ -32,22 +32,47 @@ read.restart.SIPNET <- function(outdir,runid,time,settings,variables,sample_para
     
     last = length(ens$NPP)
     
-    forecast<-numeric(8)
+    forecast<-list()
     
     unit.conv <- (10000/1)*(1/10000)*(365.25*24*60*60)
   
     #### PEcAn Standard Outputs
-    forecast[1] <- mean(ens$NPP) * unit.conv ## kgC m-2 s-1 -> MgC/ha/yr
-    forecast[2] = ens$AbvGrndWood[last] / (1 - .2 - .2) ## kgC/m2
-    forecast[3] = ens$LeafC[last]*prior.sla*2 ## kgC/m2*m2/kg*2kg/kgC
-    forecast[4] = ens$Litter[last]##kgC/m2
-    forecast[5] = ens$TotSoilCarb[last]## kgC/m2
-    forecast[6] = ens$SoilMoistFrac[last]## unitless
-    forecast[7] = ens$SoilMoistFrac[last]## unitless
-    forecast[8] = ens$SWE[last]## kg/m^2
+    if("NPP" %in% variables){
+      forecast[[1]] <- mean(ens$NPP) * unit.conv ## kgC m-2 s-1 -> MgC/ha/yr
+      names(forecast[[1]])<-c("NPP")
+    }
+    
+    if("AbvGrndWood" %in% variables){
+      forecast[[2]] = ens$AbvGrndWood[last] / (1 - .2 - .2) ## kgC/m2
+      names(forecast[[2]])<-c("AbvGrndWood")
+    }
+    
+    if("LeafC" %in% variables){
+      forecast[[3]] = ens$LeafC[last]## kgC/m2*m2/kg*2kg/kgC
+      names(forecast[[3]])<-c("LeafC")
+    }
+    
+    if("Litter" %in% variables){
+      forecast[[4]] = ens$Litter[last]##kgC/m2
+      names(forecast[[4]])<-c("Litter")
+    }
+    
+    if("TotSoilCarb" %in% variables){
+      forecast[[5]] = ens$TotSoilCarb[last]## kgC/m2
+      names(forecast[[5]])<-c("TotSoilCarb")
+    }
+    
+    if("SoilMoistFrac" %in% variables){
+      forecast[[6]] = ens$SoilMoistFrac[last]## kgC/m2
+      names(forecast[[6]])<-c("SoilMoistFrac")
+    }
+    
+    if("SWE" %in% variables){
+      forecast[[7]] = ens$SWE[last]## kgC/m2
+      names(forecast[[7]])<-c("SWE")
+    }
   
-  names(forecast)<-c("NPP","plantWood","lai","litter","soil","litterWFrac","soilWFrac","snow")
-  X.vec = forecast
+  X.vec = unlist(forecast)
   
   print(runid)
 
