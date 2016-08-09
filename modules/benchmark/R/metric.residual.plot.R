@@ -5,7 +5,7 @@
 ##' 
 ##' @author Betsy Cowdery
 
-metric.residual.plot <- function(dat, var){
+metric.residual.plot <- function(dat, var,filename){
   
   library(ggplot2)
   # 
@@ -21,11 +21,12 @@ metric.residual.plot <- function(dat, var){
     geom_path(aes(y=zeros), colour = "#666666", size=2, linetype = 2, lineend = "round") +
     geom_point(aes(y=diff), size=4,  colour = "#619CFF") + labs(title=var, x= "years", y="abs(model - observation)")
   
+  pdf(filename, width = 10, height = 6)
   plot(p)
+  dev.off()
   # ind <- intersect(which(!is.na(dat$obvs)),  which(!is.na(dat$model)))
   # plot(dat$model[ind]-dat$obvs[ind], ylim = c(-max(dat$model[ind]-dat$obvs[ind]),max(dat$model[ind]-dat$obvs[ind])))
   # abline(h=0)
 
-  return(NA)
 }
 
