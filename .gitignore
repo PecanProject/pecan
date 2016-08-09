@@ -64,3 +64,4 @@ FACE.sublime-workspace
 pecan.sublime-project
 sync2pecan
 tests/RyK*
+documentation/tutorials/*/*.html
