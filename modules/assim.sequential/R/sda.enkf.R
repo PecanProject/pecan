@@ -32,7 +32,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   end.year   <- strftime(settings$state.data.assimilation$end.date,"%Y")
   processvar <-settings$state.data.assimilation$process.variance
   sample_parameters <-settings$state.data.assimilation$sample.parameters
-  variables <- unlist(settings$state.data.assimilation$state.variable, use.names = FALSE)
+  variables <- unlist(sapply(settings$state.data.assimilation$state.variable,function(x){x})[1,], use.names = FALSE)
   
   ###-------------------------------------------------------------------###
   ### load climate data                                                 ###
@@ -43,7 +43,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
  }
  if(model == "SIPNET"){
    ## split clim file
-      full.met <- settings$run$inputs$met$path
+      full.met <- c(settings$run$inputs$met$path) #
       new.met  <- file.path(settings$rundir,basename(full.met))
       file.copy(full.met,new.met)
       met <- split.met.SIPNET(new.met)
@@ -175,7 +175,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   ###-------------------------------------------------------------------###  
   
   ## vector to read the correct netcdfs by read.restart
-  total.time = as.numeric(spin.up.end):as.numeric(end.year) #Is this going to work?
+  total.time = as.numeric(spin.up.end):as.numeric(end.year)
   
   nt = length(total.time) #could be different if time step was different right?
   FORECAST <- ANALYSIS <- list()
@@ -234,6 +234,15 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   Y  ~ dmnorm(X.keep,r)
 }"     
   
+  t1=1
+  pink = col2rgb("deeppink")
+  alphapink = rgb(pink[1],pink[2],pink[3],180,max=255)
+  green = col2rgb("green")
+  alphagreen = rgb(green[1],green[2],green[3],75,max=255)
+  blue = col2rgb("blue")
+  alphablue = rgb(blue[1],blue[2],blue[3],75,max=255)
+  
+  
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
@@ -254,7 +263,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
     
     FORECAST[[t]] = X
     
-    obs = !is.na(obs.mean[[t]])
+    obs = which(!is.na(obs.mean[[t]]))
     
     mu.f = as.numeric(apply(X,2,mean,na.rm=TRUE))
     Pf   = cov(X)
@@ -274,6 +283,45 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
         }
       }
     }
+    
+    #### Plot Data and Forecast
+    if(interactive() & t > 1){
+      t1=1
+      names.y <- unique(unlist(lapply(obs.mean[t1:t],function(x){return(names(x))})))
+      Ybar = t(sapply(obs.mean[t1:t],function(x){
+        tmp <- rep(NA,length(names.y))
+        names(tmp) <- names.y 
+        mch = match(names(x),names.y)
+        tmp[mch] = x[mch]
+        return(tmp)
+      }))
+      
+      Ybar = Ybar[,na.omit(pmatch(colnames(X), colnames(Ybar)))]
+      YCI = t(as.matrix(sapply(obs.cov[t1:t],function(x){
+          if(is.null(x)) return(rep(NA,length(names.y)))
+          return(sqrt(diag(x)))}))) 
+      
+      for(i in 2){
+          t1=1
+          Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
+          Xci  = laply(FORECAST[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
+
+          plot(total.time[t1:t],Xbar,ylim=range(c(Ybar,Xci),na.rm=TRUE),
+               type='n',xlab="Year",ylab="kg/m^2",main=colnames(X)[i])
+          
+          #observation / data
+            if(i<=ncol(Ybar)){
+              ciEnvelope(total.time[t1:t],as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
+                         as.numeric(Ybar[,i])+as.numeric(YCI[,i])*1.96,col=alphagreen)
+              lines(total.time[t1:t],as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
+            }
+          
+          #forecast
+          ciEnvelope(total.time[t1:t],Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
+          lines(total.time[t1:t],Xbar,col="darkblue",type='l',lwd=2)
+          
+        }
+    }
 
     ###-------------------------------------------------------------------###
     ### Kalman Filter                                                     ###
@@ -288,10 +336,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       ## process error
       if(!is.null(Q)) Pf <- Pf + Q
       ## Kalman Gain
-      K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
+      K    = Pf%*%t(H)%*%solve((R+H%*%Pf%*%t(H)))
       ## Analysis
       mu.a = mu.f + K%*%(Y-H%*%mu.f)
       Pa   = (diag(ncol(X)) - K%*%H)%*%Pf
+      enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
     } else { 
       
       ###-------------------------------------------------------------------###
@@ -399,12 +448,59 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
     }
     
-    
     ## update state matrix
     analysis <- as.data.frame(rmvnorm(as.numeric(nens),mu.a,Pa,method="svd"))
     colnames(analysis) <- colnames(X)
     
     ANALYSIS[[t]] = analysis
+    
+    if(interactive() & t>1){
+      t1=1
+      names.y <- unique(unlist(lapply(obs.mean[t1:t],function(x){return(names(x))})))
+      Ybar = t(sapply(obs.mean[t1:t],function(x){
+        tmp <- rep(NA,length(names.y))
+        names(tmp) <- names.y 
+        mch = match(names(x),names.y)
+        tmp[mch] = x[mch]
+        return(tmp)
+      }))
+      Ybar = Ybar[,na.omit(pmatch(colnames(X), colnames(Ybar)))]
+      YCI = t(as.matrix(sapply(obs.cov[t1:t],function(x){
+        if(is.null(x)) return(rep(NA,length(names.y)))
+        return(sqrt(diag(x)))})))
+        
+      par(mfrow=c(2,1))
+      for(i in 1:2){
+          t1=1
+          Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
+          Xci  = laply(FORECAST[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
+          
+          Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
+          XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
+          
+          ylab.names<-unlist(sapply(settings$state.data.assimilation$state.variable,function(x){x})[2,], use.names = FALSE)
+          
+          plot(total.time[t1:t],Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
+               type='n',xlab="Year",ylab=ylab.names[grep(colnames(X)[i],variables)],main=colnames(X)[i])
+          
+          #observation / data
+          if(i<=ncol(Ybar)){
+            ciEnvelope(total.time[t1:t],as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
+                       as.numeric(Ybar[,i])+as.numeric(YCI[,i])*1.96,col=alphagreen)
+            lines(total.time[t1:t],as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
+          }
+          
+          #forecast
+          ciEnvelope(total.time[t1:t],Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
+          lines(total.time[t1:t],Xbar,col="darkblue",type='l',lwd=2)
+          
+          #analysis
+          ciEnvelope(total.time[(t1:t)],XaCI[,1],XaCI[,2],col=alphapink)
+          lines(total.time[t1:t],Xa,col="black",lty=2,lwd=2)
+          
+        }
+      }
+
     
     ###-------------------------------------------------------------------###
     ### forecast step -- write restart                                    ###
@@ -428,7 +524,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       ###-------------------------------------------------------------------###
       ### Run model                                                         ###
       ###-------------------------------------------------------------------### 
-      print(paste("Running Model for year",total.time[t]+1))
+      print(paste("Running Model for Year",total.time[t]+1))
       start.model.runs(settings,settings$database$bety$write)
     }
     
@@ -454,7 +550,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
     temp.mat <- temp.mat[total.time-853,]
     precip.mat <- precip.mat[total.time-853,]
   }else{
-    print('no climate diagnostics for other models yet')
+    print('climate diagnostics under development')
   }
 
   ### Diagnostic graphs  
@@ -463,14 +559,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
     ###-------------------------------------------------------------------###
     ### time series                                                       ###
     ###-------------------------------------------------------------------### 
-    t1=1
-    pink = col2rgb("deeppink")
-    alphapink = rgb(pink[1],pink[2],pink[3],180,max=255)
-    green = col2rgb("green")
-    alphagreen = rgb(green[1],green[2],green[3],75,max=255)
-    blue = col2rgb("blue")
-    alphablue = rgb(blue[1],blue[2],blue[3],75,max=255)
-    
+   
     names.y <- unique(unlist(lapply(obs.mean[t1:t],function(x){return(names(x))})))
     Ybar = t(sapply(obs.mean[t1:t],function(x){
       tmp <- rep(NA,length(names.y))
@@ -493,8 +582,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
       XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
       
-      plot(total.time[t1:t],Xbar,ylim=range(XaCI,na.rm=TRUE),
-           type='n',xlab="Year",ylab="kg/m^2",main=colnames(X)[i])
+      plot(total.time[t1:t],Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
+           type='n',xlab="Year",ylab=ylab.names[grep(colnames(X)[i],variables)],main=colnames(X)[i])
      
        #observation / data
       if(i<=ncol(Ybar)){
@@ -512,17 +601,24 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       lines(total.time[t1:t],Xa,col="black",lty=2,lwd=2)
       
     }
-    if(FALSE){
+
     ###-------------------------------------------------------------------###
     ### bias diagnostics                                                  ###
     ###-------------------------------------------------------------------### 
       #legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
       #Forecast minus data = error
+    for(i in 1:2){
+      Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
+      Xci  = laply(FORECAST[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
+      
+      Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
+      XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
+      
       reg <- lm(Xbar[t1:t] - unlist(Ybar[t1:t,i])~c(t1:t))
       plot(t1:t,Xbar[t1:t] - unlist(Ybar[t1:t,i]),pch=16,cex=1,
            ylim=c(min(Xci[t1:t,1]-unlist(Ybar[t1:t,i])),
                   max(Xci[t1:t,2]-unlist(Ybar[t1:t,i]))),
-           xlab="Time", ylab="Error",main="Error = Forecast - Data")
+           xlab="Time", ylab="Error",main=paste(colnames(X)[i]," Error = Forecast - Data"))
       ciEnvelope(rev(t1:t),rev(Xci[t1:t,1]-unlist(Ybar[t1:t,i])),
                  rev(Xci[t1:t,2]-unlist(Ybar[t1:t,i])),col=alphapink)
       abline(h=0,lty=2,lwd=2)
@@ -535,7 +631,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       reg1 <- lm(Xbar[t1:t] - Xa[t1:t] ~ c(t1:t))
       plot(t1:t,Xbar[t1:t] - Xa[t1:t],pch=16,cex=1,
            ylim=c(min(Xbar[t1:t]-XaCI[t1:t,2]),max(Xbar[t1:t]-XaCI[t1:t,1])),
-           xlab="Time", ylab="Update",main="Update = Forecast - Analysis")
+           xlab="Time", ylab="Update",main=paste(colnames(X)[i],"Update = Forecast - Analysis"))
       ciEnvelope(rev(t1:t),rev(Xbar[t1:t] - XaCI[t1:t,1]),
                  rev(Xbar[t1:t] - XaCI[t1:t,2]),col=alphagreen)
       abline(h=0,lty=2,lwd=2)
@@ -543,22 +639,23 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       mtext(paste("slope =",signif(summary(reg1)$coefficients[2],digits=3),"intercept =",signif(summary(reg1)$coefficients[1],digits=3)))
       #d<-density(c(Xbar[t1:t] - Xa[t1:t]))
       #lines(d$y+1,d$x)
-  
+    }
   ###-------------------------------------------------------------------###
   ### process variance plots                                            ###
   ###-------------------------------------------------------------------### 
-  library(corrplot)
-  cor.mat <- cov2cor(aqq[t,,]/bqq[t])
-  colnames(cor.mat)<-colnames(X)
-  rownames(cor.mat)<-colnames(X)
-  par(mfrow=c(1,1),mai=c(1,1,4,1))
-  corrplot(cor.mat,type="upper",tl.srt=45, 
-           addCoef.col = "black")
-
-  plot(total.time[t1:t],bqq[t1:t],pch=16,cex=1,ylab="Degrees of Freedom",
-        xlab="Time")
-  
-      }
+  if(processvar==TRUE){
+    library(corrplot)
+    cor.mat <- cov2cor(aqq[t,,]/bqq[t])
+    colnames(cor.mat)<-colnames(X)
+    rownames(cor.mat)<-colnames(X)
+    par(mfrow=c(1,1),mai=c(1,1,4,1))
+    corrplot(cor.mat,type="upper",tl.srt=45, 
+             addCoef.col = "black")
+    
+    plot(total.time[t1:t],bqq[t1:t],pch=16,cex=1,ylab="Degrees of Freedom",
+         xlab="Time")
+  }
+      
   ###-------------------------------------------------------------------###
   ### climate plots                                                     ###
   ###-------------------------------------------------------------------### 

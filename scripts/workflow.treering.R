@@ -74,23 +74,23 @@ out = as.matrix(jags.out)
 sel = grep('x[',colnames(out),fixed=TRUE)
 state = plot2AGB(combined,out[,sel],settings$outdir,list(allom.stats[[2]]),unit.conv=0.02)
 
-NPP.conv <- (1/10000)*(1000/1)*(1/(3.154*10^7))*.48 #mg/ha/yr -> kgC/m2/s
-AGB.conv <- (1/1000000)*(1000/1)*.48 #mg/ha >-gC/m2
+NPP.conv <- .48 #Mg/ha/yr -> MgC/ha/yr
+AGB.conv <- (1/10000)*(1000/1)*.48 #Mg/ha -> kgC/m2
 
-NPP = apply(state$NPP[1,,],2,mean,na.rm=TRUE)#*NPP.conv 
-AGB = apply(state$AGB[1,,],2,mean,na.rm=TRUE)*AGB.conv
+NPP = apply(state$NPP[1,,],2,mean,na.rm=TRUE)*NPP.conv##MgC/ha/yr 
+AGB = apply(state$AGB[1,,],2,mean,na.rm=TRUE)*AGB.conv#kgC/m2
 
 obs.mean <- list()
 for(i in 1:length(NPP)) {
   obs.mean[[i]]<-c(NPP[i],AGB[i])
-  names(obs.mean[[i]])<-c("NPP",'plantWood')
+  names(obs.mean[[i]])<-c("NPP",'AbvGrndWood')
 }
 
 obs.cov <- list()
 for(i in 1:length(NPP)){
-  obs.cov[[i]]<- cov(cbind(state$AGB[,,i]*AGB.conv,state$NPP[,,i]))
-  colnames(obs.cov[[i]]) <- c("AGB","NPP")
-  rownames(obs.cov[[i]]) <- c("AGB","NPP")
+  obs.cov[[i]]<- cov(cbind(state$NPP[,,i]*NPP.conv,state$AGB[,,i]*AGB.conv))
+  colnames(obs.cov[[i]]) <- c("NPP","AbvGrndWood")
+  rownames(obs.cov[[i]]) <- c("NPP","AbvGrndWood")
 }
 status.end()
 
