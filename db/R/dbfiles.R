@@ -379,23 +379,4 @@ dbfile.id <- function(type, file, con, hostname=fqdn()) {
   }
 }
 
-##' Function to update dbfile input record dates
-##'
-##' This will update an input record with dates,
-##' and return the full filename with path to the first one found. If
-##' none is found it will return NA.
-##'
-##' @name dbfile.input.update
-##' @title update dbfiles input record
-##' @param type the type of dbfile (Input, Posterior)
-##' @param id the id of container type
-##' @param con database connection object
-##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
-##' @return filename on host, or NA if none found
-##' @author Betsy Cowdery, Tony Gardella
-##' @export
-##' @examples
 
-dbfile.input.update(input.id, start_date,end_date,con){
-  
-}
