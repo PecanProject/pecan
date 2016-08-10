@@ -272,7 +272,8 @@ runModule.get.trait.data <- function(settings) {
     modeltype <- settings$model$type
     dbfiles <- settings$database$dbfiles
     database <- settings$database$bety
-    forceupdate <- !is.null(settings$meta.analysis) & settings$meta.analysis$update
+    if ((forceupdate == 'AUTO') || !as.logical(forceupdate))
+    forceupdate <- !is.null(settings$meta.analysis) && (as.logical(settings$meta.analysis$update) || (settings$meta.analysis$update == 'AUTO'))
     settings$pfts <- get.trait.data(pfts, modeltype, dbfiles, database, forceupdate)
     return(settings)
   } else if(is.Settings(settings)) {
@@ -280,7 +281,7 @@ runModule.get.trait.data <- function(settings) {
     modeltype <- settings$model$type
     dbfiles <- settings$database$dbfiles
     database <- settings$database$bety
-    forceupdate <- !is.null(settings$meta.analysis) &settings$meta.analysis$update
+    forceupdate <- !is.null(settings$meta.analysis) && (as.logical(settings$meta.analysis$update) || (settings$meta.analysis$update == 'AUTO'))
     settings$pfts <- get.trait.data(pfts, modeltype, dbfiles, database, forceupdate)
     return(settings)
   } else {
