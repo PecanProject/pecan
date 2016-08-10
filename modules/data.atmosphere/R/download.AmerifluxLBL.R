@@ -13,7 +13,7 @@
 ##' 
 ##' @author Ankur Desai, based on download.Ameriflux.R by Josh Mantooth, Rob Kooper
 
-download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, ...) {
+download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, username="pecan", ...) {
   # get start/end year code works on whole years only
   
   require(lubridate) 
@@ -36,7 +36,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, ove
   
   #need to query to get full file name #this is Ameriflux version
   url <- "http://wile.lbl.gov:8080/AmeriFlux/DataDownload.svc/datafileURLs"
-  json_query <- paste0('{"username":"AnkurDesai","siteList":["',site,'"],"intendedUse":"Research - Land model/Earth system model","description":"PEcAn download"}')
+  json_query <- paste0('{"username":"',username,'","siteList":["',site,'"],"intendedUse":"Research - Land model/Earth system model","description":"PEcAn download"}')
   result <- POST(url, body = json_query, encode = "json", add_headers("Content-Type" = "application/json"))
   link <- content(result)
 
@@ -50,34 +50,69 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, ove
   outfname <- strsplit(ftplink,'/')
   outfname <- outfname[[1]][length(outfname[[1]])]
   
+  output_zip_file <- file.path(outfolder, outfname)
+  file_timestep_hh = 'HH'
+  file_timestep_hr = 'HR'
+  file_timestep = file_timestep_hh
+  
   endname <- strsplit(outfname,'_')
   endname <- endname[[1]][length(endname[[1]])]
   endname <- substr(endname,1,nchar(endname)-4)
-  dbfilename <- paste0(substr(outfname,1,15),'_HH_',endname)
-  outcsvname <- paste0(substr(outfname,1,15),'_HH_',endname,'.csv')
-  output_zip_file <- file.path(outfolder, outfname)
+  outcsvname <- paste0(substr(outfname,1,15),'_',file_timestep_hh,'_',endname,'.csv')
   output_csv_file <- file.path(outfolder, outcsvname)
+  outcsvname_hr <- paste0(substr(outfname,1,15),'_',file_timestep_hr,'_',endname,'.csv')
+  output_csv_file_hr <- file.path(outfolder, outcsvname_hr)
   
-  #if CSV file exists, then skip extraction
-  if (!file.exists(output_csv_file) || overwrite) {
-    #if zip file downloaded, then skip ftp
-    if (!file.exists(output_zip_file) || overwrite) {
-      download.file(ftplink,output_zip_file)
-    } else {   logger.debug("File '", output_zip_file, "' already exists, skipping download.")
+  download_file_flag <- TRUE
+  extract_file_flag <- TRUE
+  if (!overwrite && file.exists(output_zip_file)) {
+    logger.debug("File '", output_zip_file, "' already exists, skipping download")
+    download_file_flag <- FALSE 
+  }
+  if (!overwrite && file.exists(output_csv_file)) { 
+    logger.debug("File '", output_csv_file, "' already exists, skipping extraction.")
+    download_file_flag <- FALSE
+    extract_file_flag <- FALSE
+    file_timestep <- 'HH'
+  } else {
+    if (!overwrite && file.exists(output_csv_file_hr)) { 
+      logger.debug("File '", output_csv_file_hr, "' already exists, skipping extraction.")
+      download_file_flag <- FALSE 
+      extract_file_flag <- FALSE
+      file_timestep <- 'HR'
+      outcsvname <- outcsvname_hr
+      output_csv_file <- output_csv_file_hr
     }
-    #if FTP failed to output a file, then error
+  }
+  
+  if (download_file_flag) {
+    extract_file_flag <- TRUE
+    download.file(ftplink,output_zip_file)
     if (!file.exists(output_zip_file)) {
       logger.severe("FTP did not download ", output_zip_file, " from ",ftplink)
+    }
+  }
+  if (extract_file_flag) {
+    avail_file <- unzip(output_zip_file,list=TRUE)
+    if (length(grep('HH',avail_file))>0) {
+      file_timestep <- 'HH'
     } else {
-      #extract the half hourly file only
-      unzip(output_zip_file,outcsvname,exdir=outfolder)
-      #make sure a CSV file output
-      if(!file.exists(output_csv_file)) {
-        logger.severe("ZIP file ",output_zip_file," did not contain CSV file ",outcsvname)
+      if (length(grep('HR',avail_file))>0) 
+      {
+        file_timestep <- 'HR'
+        output_csv_file <- output_csv_file_hr
+        outcsvname <- outcsvname_hr
+      } else {
+        logger.severe("Half-hourly or Hourly data file was not found in ",output_zip_file)
       }
     }
-  } else {   logger.debug("File '", output_csv_file, "' already exists, skipping extraction.")
+    unzip(output_zip_file,outcsvname,exdir=outfolder)
+    if(!file.exists(output_csv_file)) {
+      logger.severe("ZIP file ",output_zip_file," did not contain CSV file ",outcsvname)
+    }
   }
+  
+  dbfilename <- paste0(substr(outfname,1,15),'_',file_timestep,'_',endname)
   
   #get start and end year of data from file
   firstline <- system(paste0("head -4 ",output_csv_file),intern=TRUE)

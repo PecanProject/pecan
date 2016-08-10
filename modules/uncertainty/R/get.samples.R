@@ -8,21 +8,22 @@
 ##'
 ##' @author David LeBauer, Shawn Serbin
 ### Identify PFTs in the input settings.xml file
-get.parameter.samples <- function(pfts = settings$pfts, posterior.files=rep(NA, length(settings$pfts)), ens.sample.method="uniform"){
+get.parameter.samples <- function(settings, posterior.files=rep(NA, length(settings$pfts)), ens.sample.method="uniform"){
   require(coda)
   require(PEcAn.priors)
+  pfts <- settings$pfts
   num.pfts <- length(settings$pfts)
   pft.names <- list()
   outdirs <- list()
   
   for (i.pft in seq_along(pfts)){
-    pft.names[i.pft] <- settings$pfts[i.pft]$pft$name
+    pft.names[i.pft] <- settings$pfts[[i.pft]]$name
     
     ### If no PFT(s) are specified insert NULL to warn user 
     if(length(pft.names)==0) pft.names[1] <- "NULL" 
     
     ### Get output directory info
-    outdirs[i.pft] <- settings$pfts[i.pft]$pft$outdir
+    outdirs[i.pft] <- settings$pfts[[i.pft]]$outdir
     
   } ### End of for loop to extract pft names
   
@@ -33,10 +34,11 @@ get.parameter.samples <- function(pfts = settings$pfts, posterior.files=rep(NA, 
   
   ## Load PFT priors and posteriors
   for (i in seq_along(pft.names)){
+    rm(prior.distns,post.distns,trait.mcmc)
     ## Load posteriors
     if(!is.na(posterior.files[i])) {
       # Load specified file
-      load(file.path(outdirs[i], posterior.files[i]))
+      load(posterior.files[i])
       if(!exists('prior.distns') & exists('post.distns')) {
         prior.distns <- post.distns
       }
@@ -52,9 +54,11 @@ get.parameter.samples <- function(pfts = settings$pfts, posterior.files=rep(NA, 
     }
     
     ### Load trait mcmc data (if exists)
-    if("trait.mcmc.Rdata" %in% dir(unlist(outdirs))) {
+    if("trait.mcmc.Rdata" %in% dir(unlist(outdirs[i]))) {
       ma.results <- TRUE
       load(file.path(outdirs[i], 'trait.mcmc.Rdata'))
+    } else {
+      ma.results <- FALSE
     }
     
     pft.name <- unlist(pft.names[i])

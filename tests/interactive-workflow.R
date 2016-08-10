@@ -92,14 +92,14 @@ get.results(settings)
 
 # ensemble analysis
 if (!file.exists(file.path(settings$outdir,"ensemble.ts.pdf"))) {
-  run.ensemble.analysis(TRUE)    
+  run.ensemble.analysis(settings,TRUE)    
 } else {
   logger.info("Already executed run.ensemble.analysis()")
 }
 
 # sensitivity analysis
 if (!file.exists(file.path(settings$outdir, "sensitivity.results.Rdata"))) {
-  run.sensitivity.analysis()
+  run.sensitivity.analysis(settings)
 } else {
   logger.info("Already executed run.sensitivity.analysis()")    
 }

@@ -14,7 +14,7 @@
 ##' @export
 ##' @author Michael Dietze
 #--------------------------------------------------------------------------------------------------#
-write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs=NULL, IC=NULL){
+write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs=NULL, IC=NULL, restart=NULL, spinup=NULL){
   ### WRITE sipnet.in
   template.in <- system.file("sipnet.in", package="PEcAn.SIPNET")
   config.text <- readLines(con=template.in, n=-1)
@@ -130,21 +130,10 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
   }
   
-  #### write run-specific environmental parameters here ####
-  env.traits <- which(names(trait.values) %in% 'env')
-  env.traits <- trait.values[[env.traits]]
-  env.names <- names(env.traits)
-  
-  
-  if("turn_over_time" %in% env.names){
-    id = which(param[,1] == 'litterBreakdownRate')
-    param[id,2] = env.traits[which(env.names == 'turn_over_time')]
-  }
-  
   #### write run-specific PFT parameters here ####
   ## Get parameters being handled by PEcAn
-  pft.traits <- which(!(names(trait.values) %in% 'env'))[1]
-  pft.traits <- unlist(trait.values[[pft.traits]])
+for(pft in seq_along(trait.values)){
+  pft.traits <- unlist(trait.values[[pft]])
   pft.names  <- names(pft.traits)
 
   ## Append/replace params specified as constants
@@ -327,6 +316,33 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       pft.traits[which(pft.names == 'coarse_root_respiration_Q10')]
   } 
   
+  ### ----- Soil parameters
+  # soil respiration Q10.
+  if('soil_respiration_Q10' %in% pft.names){
+    param[which(param[,1] == 'soilRespQ10'),2] = 
+      pft.traits[which(pft.names == 'soil_respiration_Q10')]
+  }
+  # soil respiration rate -- units = 1/year, reference = 0C
+  if('som_respiration_rate' %in% pft.names){
+    param[which(param[,1] == 'baseSoilResp'),2] = 
+      pft.traits[which(pft.names == 'som_respiration_rate')]
+  }
+  # litterBreakdownRate
+  if("turn_over_time" %in% pft.names){
+    id = which(param[,1] == 'litterBreakdownRate')
+    param[id,2] = pft.traits[which(pft.names == 'turn_over_time')]
+  }
+  # frozenSoilEff
+  if('frozenSoilEff' %in% pft.names){
+    param[which(param[,1] == 'frozenSoilEff'),2] = 
+      pft.traits[which(pft.names == 'frozenSoilEff')]
+  }
+  # soilWHC
+  if('soilWHC' %in% pft.names){
+    param[which(param[,1] == 'soilWHC'),2] = 
+      pft.traits[which(pft.names == 'soilWHC')]
+  }
+  
   ### ----- Phenology parameters
   # GDD leaf on
   if("GDD" %in% pft.names){
@@ -342,7 +358,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   if('leafGrowth' %in% pft.names){
     param[which(param[,1] == 'leafGrowth'),2] = pft.traits[which(pft.names == 'leafGrowth')]
   }
-  
+}    ## end loop over PFTS
+####### end parameter update
+    
   write.table(param,file.path(settings$rundir, run.id,"sipnet.param"),row.names=FALSE,col.names=FALSE,quote=FALSE)
 }
 #==================================================================================================#

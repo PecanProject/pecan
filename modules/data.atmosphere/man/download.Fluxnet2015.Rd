@@ -5,7 +5,7 @@
 \title{download.Fluxnet2015}
 \usage{
 download.Fluxnet2015(sitename, outfolder, start_date, end_date,
-  overwrite = FALSE, verbose = FALSE, ...)
+  overwrite = FALSE, verbose = FALSE, username = "pecan", ...)
 }
 \arguments{
 \item{outfolder}{location on disk where outputs will be stored}

@@ -11,12 +11,23 @@ logger.setQuitOnSevere(FALSE)
 logger.setLevel("OFF")
 context("tests for read.settings and related functions")
 
-settings <- read.settings("testinput.xml")
+# setwd('~/pecan/settings/tests/testthat')
+
+.get.test.settings = function() {
+  if(fqdn() == "pecan2.bu.edu") {
+    settings <- read.settings("testinput.pecan2.bu.edu.xml")
+  } else {
+    settings <- read.settings("testinput.xml")
+  }
+  return(settings)
+}
+
+settings <- .get.test.settings()
 
 test_that("read.settings returned correctly", {
 	expect_true(file.exists(settings$outdir))
 	expect_true(file.info(settings$outdir)$isdir)
-	expect_true(file.exists(file.path(settings$outdir, "pecan.xml")))
+	expect_true(file.exists(file.path(settings$outdir, "pecan.CHECKED.xml")))
 })
 
 test_that("read settings returns error if no settings file found (issue #1124)",{
@@ -27,12 +38,12 @@ test_that("check.settings throws error if required content not there", {
 
   s <- settings
   s[['run']] <- NULL
-  expect_error(check.settings(update.settings(s)))
+  expect_error(check.run.settings(update.settings(s)))
 
   for(date in c("start.date", "end.date")){
     s <- settings
     s$run[[date]] <- NULL
-    expect_error(check.settings(update.settings(s)))
+    expect_error(check.run.settings(update.settings(s)))
   }
 
 })

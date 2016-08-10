@@ -84,7 +84,7 @@ server <- shinyServer(function(input, output, session) {
         print(ranges$x)
         plt <- ggplot(data.frame(dates, vals), aes(x=dates, y=vals)) +
           geom_point(aes(color="Model output")) +
-          geom_smooth(aes(fill = "Spline fit")) +
+#          geom_smooth(aes(fill = "Spline fit")) +
           coord_cartesian(xlim = ranges$x, ylim = ranges$y) +
           scale_y_continuous(labels=fancy_scientific) +
           labs(title=title, x=xlab, y=ylab) + 

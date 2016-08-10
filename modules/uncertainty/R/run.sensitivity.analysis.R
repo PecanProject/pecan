@@ -21,7 +21,7 @@
 ##' @export
 ##' @author David LeBauer, Shawn Serbin, Ryan Kelly
 ##'
-run.sensitivity.analysis <- function(plot=TRUE, ensemble.id=NULL, variable=NULL, start.year=NULL, end.year=NULL){
+run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, variable=NULL, start.year=NULL, end.year=NULL){
                         
   if(FALSE) {
     plot=TRUE

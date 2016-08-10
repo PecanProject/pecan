@@ -30,6 +30,7 @@ if (!isset($_REQUEST['hostname'])) {
 }
 $hostname=$_REQUEST['hostname'];
 $adv_setup = (isset($_REQUEST['adv_setup'])) ? "checked" : "";
+$fluxusername = (isset($_REQUEST['fluxusername'])) ? $_REQUEST['fluxusername'] : "";
 
 ?>
 <!DOCTYPE html>
@@ -43,6 +44,13 @@ $adv_setup = (isset($_REQUEST['adv_setup'])) ? "checked" : "";
 <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 <script type="text/javascript">
   function validate() {
+    $("#next").removeAttr("disabled");       
+    $("#error").html("&nbsp;");
+
+    if ($("#fluxusername").val() == "") {
+      $("#next").attr("disabled", "disabled");
+      $("#error").html("Need to provide a username to download data (pecan)");
+    }
   }
       
   function prevStep() {
@@ -96,15 +104,19 @@ $adv_setup = (isset($_REQUEST['adv_setup'])) ? "checked" : "";
         echo "<input name=\"${key}[]\" id=\"${key}[]\" type=\"hidden\" value=\"${v}\"/>";
       }
     } else {
-      if(strcmp($key, "notes") == 0 ) {
+      if (strcmp($key, "notes") == 0 ) {
         $str = htmlentities($value, ENT_QUOTES);
         echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${str}\"/>";
-      } else {
+      } else if (strcmp($key, "fluxusername") != 0 ) {
         echo "<input name=\"${key}\" id=\"${key}\" type=\"hidden\" value=\"${value}\"/>";
       }
     }
   }
 ?>
+      <label title="Used when downloading the data">Username (<a href="https://ameriflux-data.lbl.gov/Accounts/Pages/default.aspx" target="_blank">register here</a>)</label>
+      <input id="fluxusername" name="fluxusername" type="text" value="<?php echo $fluxusername; ?>" onkeyup="validate()"/>
+      <div class="spacer"></div>
+
       <span id="error" class="small">&nbsp;</span>
       <input id="prev" type="button" value="Prev" onclick="prevStep();" />
       <input id="next" type="button" value="Agree" onclick="nextStep();" />    

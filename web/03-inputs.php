@@ -159,8 +159,10 @@ foreach($modeltypes as $type) {
     if ($x['tag'] == "met") {
       if (preg_match("/ \(US-.*\)$/", $siteinfo["sitename"])) {
         $x['files'][] = array("id"=>"Ameriflux." . $type, "name"=>"Use Ameriflux");
-        $x['files'][] = array("id"=>"Fluxnet2015." . $type, "name"=>"Use Fluxnet2015");
         $x['files'][] = array("id"=>"AmerifluxLBL." . $type, "name"=>"Use AmerifluxLBL");
+      }
+      if (preg_match("/ \([A-Z]{2}-.*\)$/", $siteinfo["sitename"])) {
+       $x['files'][] = array("id"=>"Fluxnet2015." . $type, "name"=>"Use Fluxnet2015");
       }
       // check for NARR,this is not exact since it is a conical projection
       if ($siteinfo['lat'] > 1 && $siteinfo['lat'] < 85 && $siteinfo['lon'] < -68 && $siteinfo['lon'] > -145) {
@@ -458,6 +460,13 @@ foreach($inputs as $input) {
       <div class="spacer"></div>
     </form>
 <?php whoami(); ?>    
+<p>
+  <a href="https://pecan.gitbooks.io/pecan-documentation/content/" target="_blank">Documentation</a>
+  <br>
+  <a href="https://gitter.im/PecanProject/pecan" target="_blank">Chat Room</a>
+  <br>
+  <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
+</p>
   </div>
   <div id="output">
     name : <b><?php echo $siteinfo["sitename"]; ?></b><br/>

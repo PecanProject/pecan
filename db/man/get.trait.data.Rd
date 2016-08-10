@@ -31,7 +31,7 @@ This will use the following items from setings:
 - settings$pfts
 - settings$model$type
 - settings$database$bety
-- settings$run$dbfiles
+- settings$database$dbfiles
 - settings$meta.analysis$update
 }
 \author{
