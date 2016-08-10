@@ -20,7 +20,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
   #setup connection and host information
   con      <- db.open(dbparms)
   username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
-  machine.host <- ifelse(host$name == "localhost", fqdn(),host$name)
+  machine.host <- ifelse(host$name == "localhost", fqdn(), host$name)
   machine = db.query(paste0("SELECT * from machines where hostname = '",machine.host,"'"),con)
 
   #get met source and potentially determine where to start in the process
@@ -285,7 +285,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       mimetype   <- 'application/x-netcdf'
 
       ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                                username,con=con,hostname=host,browndog=NULL,write=TRUE,
+                                username,con=con,hostname=host$name,browndog=NULL,write=TRUE,
                                 slat=new.site$lat,slon=new.site$lon,newsite=new.site$id)
 
     }else if(register$scale=="site"){ ##### Site Level Processing
@@ -346,7 +346,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     lst       <- site.lst(site,con)
     
     model.id  <- convert.input(input.id, outfolder, formatname, mimetype, site.id=site$id,
-      start_date, end_date, pkg, fcn, username, con=con, hostname=host, browndog, write=TRUE, 
+      start_date, end_date, pkg, fcn, username, con=con, hostname=host$name, browndog, write=TRUE, 
       lst=lst, lat=new.site$lat, lon=new.site$lon)
 
   } else {
