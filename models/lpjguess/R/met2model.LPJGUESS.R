@@ -27,6 +27,13 @@
 ##' @author Istem Fer
 met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite=FALSE,verbose=FALSE){
   
+  # in.path = "/fs/data1/pecan.data/input//PalEON_CF_site_1-675"
+  # in.prefix = "PalEON"
+  # start_date = settings$run$start.date
+  # end_date = settings$run$end.date
+  # PalEON = TRUE
+  # outfolder =  settings$outdir
+  
   library(PEcAn.utils)
   require(ncdf4)
   require(lubridate)
@@ -45,8 +52,8 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   var.names=c("tmp","pre","cld")
   n.var=length(var.names)
   long.names=c("air_temperature","precipitation_flux","surface_downwelling_shortwave_flux_in_air")
-  for(i in 1:n.var) out.file[[i]] <-paste(in.prefix, start_year, end_year, var.names[[i]], "nc", sep=".")
-  for(i in 1:n.var) out.files.full[[i]] <-file.path(outfolder,out.file[[i]])
+  for(i in 1:n.var) out.file[[i]] <-paste(in.prefix, sprintf("%04d", start_year), end_year, var.names[[i]], "nc", sep=".")
+  for(i in 1:n.var) out.files.full[[i]] <-file.path(outfolder, out.file[[i]])
   
   results <- data.frame(file = unlist(out.files.full),
                         host = fqdn(),
@@ -66,11 +73,15 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   }
 
     ## open netcdf files
-    ncin <- lapply(file.path(in.path,paste(in.prefix,year,"nc",sep=".")),nc_open)
+    ncin <- lapply(file.path(in.path, paste(in.prefix, year, "nc", sep=".")), nc_open)
     
     ## retrieve lat/lon 
     lon=ncvar_get(ncin[[1]],"longitude")
     lat=ncvar_get(ncin[[1]],"latitude")
+    
+    if(is.na(lat)) lat = settings$run$site$lat
+    if(is.na(lon)) lon = settings$run$site$lon
+
     
     ## at least 2 lat-lon required for LPJ-GUESS to load the data
     lon=c(lon,lon)
