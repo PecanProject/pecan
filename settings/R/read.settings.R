@@ -738,7 +738,7 @@ check.workflow.settings <- function(settings, dbcon=NULL) {
   if(!is.null(dbcon) && settings$database$bety$write && ("model" %in% names(settings))) {
     if (!'workflow' %in% names(settings)) {
       now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-      if(is.SettingsList(settings)) {
+      if(is.MultiSettings(settings)) {
         db.query(paste0("INSERT INTO workflows (folder, model_id, hostname, started_at, created_at) values ('",
                       settings$outdir, "','" , settings$model$id, "', '", settings$host$name, "', '",
                       now, "', '", now, "')"), con=dbcon)

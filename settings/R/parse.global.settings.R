@@ -32,7 +32,7 @@ parse.global.settings <- function(global.settings){
       settings.i$run <- runs[[i]]
       plain.list[[i]] <- settings.i
     }
-    settings.list <- SettingsList(plain.list)
+    settings.list <- MultiSettings(plain.list)
     return(settings.list)
   }
     
@@ -42,8 +42,8 @@ parse.global.settings <- function(global.settings){
 
 
 get.global.setting <- function(x, name) UseMethod("get.global.setting")
-get.global.setting.SettingsList <- function(settingsList, name) {
-  vals <- lapply(settingsList, function(x) x[[name]])
+get.global.setting.MultiSettings <- function(multiSettings, name) {
+  vals <- lapply(multiSettings, function(x) x[[name]])
   if(!all(sapply(vals, function(x, x1) identical(x, x1), vals[[1]]))) {
     logger.severe(paste("Setting", name, "is supposed to be identical across all Settings, but isn't"))
   }

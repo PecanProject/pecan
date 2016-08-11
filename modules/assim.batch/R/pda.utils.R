@@ -33,12 +33,12 @@ assim.batch <- function(settings) {
 
 ##' @export
 runModule.assim.batch <- function(settings) {
-  if(is.SettingsList(settings)) {
+  if(is.MultiSettings(settings)) {
     return(papply(settings, runModule.assim.batch))
   } else if (is.Settings(settings)) {
     return( assim.batch(settings) )
   } else {
-    stop("runModule.assim.batch only works with Settings or SettingsList")
+    stop("runModule.assim.batch only works with Settings or MultiSettings")
   }
 }
 

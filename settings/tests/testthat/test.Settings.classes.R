@@ -33,85 +33,85 @@ test_that("Settings constructors work as expected", {
 })
 
 
-test_that("SettingsList constructor works as expected", {
+test_that("MultiSettings constructor works as expected", {
   l <- list(aa=1, bb=2, cc=list(dd=3, ee=4))
   sl <- SafeList(l)
   settings <- Settings(l)
   
-  expect_error(SettingsList(l, l))
-  expect_error(SettingsList(sl, l))
-  expect_error(SettingsList(settings, l))
+  expect_error(MultiSettings(l, l))
+  expect_error(MultiSettings(sl, l))
+  expect_error(MultiSettings(settings, l))
   
-  settingsList <- SettingsList(settings, settings, settings)
-  settingsList2 <- SettingsList(list(settings, settings, settings))
-  settingsList3 <- SettingsList(settingsList)
-  expect_identical(settingsList2, settingsList)
-  expect_identical(settingsList3, settingsList)
+  multiSettings <- MultiSettings(settings, settings, settings)
+  multiSettings2 <- MultiSettings(list(settings, settings, settings))
+  multiSettings3 <- MultiSettings(multiSettings)
+  expect_identical(multiSettings2, multiSettings)
+  expect_identical(multiSettings3, multiSettings)
   
-  for(i in seq_along(settingsList)) {
-    expect_identical(settingsList[[i]], settings)
+  for(i in seq_along(multiSettings)) {
+    expect_identical(multiSettings[[i]], settings)
   }
   
-  expect_true(is(settingsList, "list"))
-  expect_true(is(settingsList, "SettingsList"))
-  expect_true(is.SettingsList(settingsList))
-  expect_false(is.SettingsList(l))
-  expect_equal(length(class(settingsList)), 2)
+  expect_true(is(multiSettings, "list"))
+  expect_true(is(multiSettings, "MultiSettings"))
+  expect_true(is.MultiSettings(multiSettings))
+  expect_false(is.MultiSettings(l))
+  expect_equal(length(class(multiSettings)), 2)
 })
 
 
-test_that("SettingsList assignments are blocked", {
+test_that("MultiSettings assignments are blocked", {
   settings <- Settings(aa=1, bb=2, cc=list(dd=3, ee=4))
-  settingsList <- SettingsList(settings)
+  multiSettings <- MultiSettings(settings)
   
-  expect_identical(settingsList[[1]], settings)
-  expect_equal(length(settingsList), 1)
+  expect_identical(multiSettings[[1]], settings)
+  expect_equal(length(multiSettings), 1)
   
-  expect_error(settingsList[[1]] <- l)
-  expect_error(settingsList[[1]] <- settings)
-  expect_error(settingsList[2:3] <- list(l, l))
-  expect_error(settingsList[2:3] <- settingsList)
+  expect_error(multiSettings[[1]] <- l)
+  expect_error(multiSettings[[1]] <- settings)
+  expect_error(multiSettings[2:3] <- list(l, l))
+  expect_error(multiSettings[2:3] <- multiSettings)
   
-  expect_silent(settingsList$x <- 1)
+  expect_silent(multiSettings$x <- 1)
   new.settings <- settings
   new.settings$x <- 1
-  for(i in seq_along(settingsList)) {
-    expect_identical(settingsList[[i]], new.settings)
+  for(i in seq_along(multiSettings)) {
+    expect_identical(multiSettings[[i]], new.settings)
   }
   
-  expect_silent(settingsList[["y"]] <- "y")
+  expect_silent(multiSettings[["y"]] <- "y")
   new.settings$y <- "y"
-  for(i in seq_along(settingsList)) {
-    expect_identical(settingsList[[i]], new.settings)
+  for(i in seq_along(multiSettings)) {
+    expect_identical(multiSettings[[i]], new.settings)
   }
   
-  expect_silent(settingsList[["y"]] <- NULL)
+  expect_silent(multiSettings[["y"]] <- NULL)
   new.settings$y <- NULL
-  for(i in seq_along(settingsList)) {
-    expect_identical(settingsList[[i]], new.settings)
+  for(i in seq_along(multiSettings)) {
+    expect_identical(multiSettings[[i]], new.settings)
   }
 })
 
 
-test_that("SettingsList extracts work as expected", {
+test_that("MultiSettings extracts work as expected", {
   s1 <- Settings(a=1, b=2, c=3)
   s2 <- Settings(a=1, b=22, d=4)
   s3 <- s2
-  settingsList <- SettingsList(s1, s2, s3)
+  multiSettings <- MultiSettings(s1, s2, s3)
   
   # -- Normal extraction
-  expect_identical(settingsList[[1]], s1)
-  expect_identical(settingsList[1], SettingsList(s1))
-  expect_identical(settingsList[1:3], settingsList)
+  expect_identical(multiSettings[[1]], s1)
+  expect_identical(multiSettings[1], MultiSettings(s1))
+  expect_identical(multiSettings[1:3], multiSettings)
   
   # Extract by name
-  expect_equal(settingsList[["a"]], 1)
-  expect_equal(settingsList$a, 1)
-  expect_error(settingsList[["b"]]) # Because not identical
-  expect_error(settingsList$b) # Because not identical
-  expect_error(settingsList[["c"]]) # Because not shared by all
-  expect_error(settingsList$c) # Because not identical
-  expect_error(settingsList["a"]) # Because explicitly prohibited to prevent confusion
+  expect_equal(multiSettings[["a"]], 1)
+  expect_equal(multiSettings$a, 1)
+  expect_error(multiSettings[["b"]]) # Because not identical
+  expect_error(multiSettings$b) # Because not identical
+  expect_error(multiSettings[["c"]]) # Because not shared by all
+  expect_error(multiSettings$c) # Because not identical
+  expect_error(multiSettings["a"]) # Because explicitly prohibited to prevent confusion
 })
 
 
