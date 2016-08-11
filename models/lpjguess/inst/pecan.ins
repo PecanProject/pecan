@@ -298,16 +298,6 @@ group "summergreen" (
 )
 
 
-group "temperate" (
-
-	! Parameters common to all temperate trees
-
-	pstemp_min -2
-	pstemp_low 15
-	pstemp_high 25
-	pstemp_max 38
-	respcoeff 1.0
-)
 
 group "tropical" (
 
@@ -485,10 +475,10 @@ pft "TeBS" (
 	shade_tolerant
 	summergreen
 	leaflong 0.5
-	turnover_leaf 1
+	turnover_leaf TeBS_turnover_leaf.@1
         pstemp_min -2
         pstemp_low 15
-        pstemp_high TeBS_pstemp_high
+        pstemp_high TeBS_pstemp_high.@25
         pstemp_max 38
         respcoeff 1.0
         tcmin_surv -14

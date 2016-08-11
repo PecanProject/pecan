@@ -98,13 +98,23 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   paramsins <- readLines(con=system.file("pecan.ins", package = "PEcAn.LPJGUESS"), n=-1)
   
   # write parameter values
-  param.names <- lapply(seq_along(settings$pfts), function(x) paste0(names(trait.values)[x],"_",names(trait.values[[x]])))
-  
+  param.names <- lapply(seq_along(settings$pfts), function(x) paste0(names(trait.values)[x], "_", names(trait.values[[x]]), ".*"))
+
+  # write params with values from trait.values  
   for(i in seq_along(settings$pfts)){
     for(n in seq_along(trait.values[[i]])){
-      paramsins<- gsub(param.names[[i]][n], trait.values[[i]][n], paramsins)
+      paramsins <- gsub(param.names[[i]][n], trait.values[[i]][n], paramsins)
     }
   }
+  
+  # if anything is not replaced use the defaults param value
+  # if ".@" exists, remove the string infront of ".@" and use the value 
+  for(i in seq_along(paramsins)){
+    if(grepl(".@",paramsins[i])){
+      paramsins[i] <- gsub("\\s*\\w*$", paste0(" ", gsub("^[^:]*.@", "", paramsins[i])), gsub(".@.*","", paramsins[i]))
+    }
+  }
+  
   
   
   # write clim file names
@@ -126,17 +136,19 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   # for pre-industrial values just use 280 ppm
   if(end.year < 1850){
     CO2 <- data.frame(start.year:end.year, rep(280,n.year))
-    write.table(CO2, file = co2.file, row.names = FALSE, col.names = FALSE, sep = "\t", eol = "\n")
-  }else if(end.year < 2011){
-    load("co2.1850.2011.Rdata", package = "PEcAn.LPJGUESS")
+  }else if(end.year < 2012){
+    data(co2.1850.2011, package = "PEcAn.LPJGUESS")
     if(start.year < 1850){
       CO2_preind <- data.frame(year = start.year:1849, ppm = rep(280, length(start.year:1849))) 
-      CO2_postind <- co2.1850.2011.data[1:which(co2.1850.2011.data[,1] == end.year), ]
+      CO2_postind <- co2.1850.2011[1:which(co2.1850.2011[,1] == end.year), ]
       CO2 <- rbind(CO2_preind, CO2_postind)
     }else{
-      CO2 <- co2.1850.2011.data[1:which(co2.1850.2011.data[,1] == end.year), ]
+      CO2 <- co2.1850.2011[1:which(co2.1850.2011[,1] == end.year), ]
     }
+  }else{
+    logger.severe("End year should be < 2012 for CO2")
   } 
+  write.table(CO2, file = co2.file, row.names = FALSE, col.names = FALSE, sep = "\t", eol = "\n")
   guessins<- gsub("@CO2_FILE@", co2.file, guessins)
   
   settings$model$insfile <- file.path(settings$rundir, run.id, "guess.ins")
