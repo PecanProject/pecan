@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <mpi.h>
 
 /* Actual processing of the file */
@@ -34,11 +33,7 @@ int process(int rank, int size, char *filename) {
             line[strlen(line) - 1] = '\0';
             if (chdir(line) == 0) {
                 sprintf(execute, "%s 2>stderr.txt >stdout.txt", command);
-//                 sprintf(execute, "ls -l; %s ", command);
 
-                char cwd[1024];
-                getcwd(cwd, sizeof(cwd));
-                printf("Dir is %s\nexecute=%s\n", cwd, execute);
                 printf("[%d] cwd=%s exec=%s\n", rank, line, execute);
                 int ret = system(execute);
                 if (ret != 0) {
@@ -92,12 +87,10 @@ int main (int argc, char** argv) {
             }
             counter++;
         }
-        printf("Master done\n");
     } else {
         int buffer[1];
         buffer[0] = exitcode;
         MPI_Send(buffer, 1, MPI_INT, 0, 123, MPI_COMM_WORLD);
-        printf("Slave %d done\n", rank);
     }
 
     /* All done */
