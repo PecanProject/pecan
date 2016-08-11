@@ -42,13 +42,17 @@ echo "######################################################################"
 case "$OS_VERSION" in
   RH_*)
     sudo yum update -y
-    sudo sed -i -e "s/^127.0.0.1 .*\$/127.0.0.1 ${HOSTNAME}.pecan ${HOSTNAME} localhost localhost.localdomain localhost4 localhost4.localdomain4/" /etc/hosts
+    if [ "$SETUP_VM" != "" ]; then
+      sudo sed -i -e "s/^127.0.0.1 .*\$/127.0.0.1 ${HOSTNAME}.pecan ${HOSTNAME} localhost localhost.localdomain localhost4 localhost4.localdomain4/" /etc/hosts
+    fi
     ;;
   Ubuntu)
     sudo apt-get -qq -y update
     sudo apt-get -y dist-upgrade
     sudo apt-get -y purge --auto-remove
-    sudo sed -i -e "s/^127.0.0.1 .*\$/127.0.0.1 ${HOSTNAME}.pecan ${HOSTNAME} localhost/" /etc/hosts
+    if [ "$SETUP_VM" != "" ]; then
+      sudo sed -i -e "s/^127.0.0.1 .*\$/127.0.0.1 ${HOSTNAME}.pecan ${HOSTNAME} localhost/" /etc/hosts
+    fi
     ;;
   *)
     echo "Unknown OS"
@@ -199,9 +203,11 @@ if [ -z "${R_LIBS_USER}" ]; then
 fi
 echo 'if(!"devtools" %in% installed.packages()) install.packages("devtools", repos="http://cran.rstudio.com/")' | R --vanilla
 echo 'if(!"udunits2" %in% installed.packages()) install.packages("udunits2", configure.args=c(udunits2="--with-udunits2-include=/usr/include/udunits2"), repo="http://cran.rstudio.com")'  | R --vanilla
+
+#echo 'update.packages(repos="http://cran.rstudio.com/", ask=FALSE)' | sudo R --vanilla
 echo 'x <- rownames(old.packages(repos="http://cran.rstudio.com/")); update.packages(repos="http://cran.rstudio.com/", ask=FALSE, oldPkgs=x[!x %in% "rgl"])' | sudo R --vanilla
-echo 'update.packages(repos="http://cran.rstudio.com/", ask=FALSE)' | sudo R --vanilla
-echo 'update.packages(repos="http://cran.rstudio.com/", ask=FALSE)' | R --vanilla
+
+#echo 'update.packages(repos="http://cran.rstudio.com/", ask=FALSE)' | R --vanilla
 echo 'x <- rownames(old.packages(repos="http://cran.rstudio.com/")); update.packages(repos="http://cran.rstudio.com/", ask=FALSE, oldPkgs=x[!x %in% "rgl"])' | R --vanilla
 
 echo "######################################################################"
