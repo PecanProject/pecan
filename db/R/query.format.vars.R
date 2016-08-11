@@ -29,29 +29,34 @@ query.format.vars <- function(input.id,con,format.id){
     f <- db.query(paste("SELECT * from formats where id = ", format.id),con)
   }
   
-  mimetype <- db.query(paste("SELECT * from  mimetypes where id = ", f$mimetype_id),con)[["type_string"]]
+  mimetype <- db.query(paste("SELECT * from  mimetypes where id = ",
+                             f$mimetype_id),con)[["type_string"]]
   f$mimetype <- tail(unlist(strsplit(mimetype, "/")),1)
   
   # get variable names and units of input data
   fv <- db.query(paste("SELECT variable_id,name,unit,storage_type,column_number from formats_variables where format_id = ", f$id),con)
+  
   if (nrow(fv)>0) {
     colnames(fv) <- c("variable_id", "input_name", "input_units", "storage_type", "column_number")
     fv$variable_id <- as.numeric(fv$variable_id)
-  
     n <- dim(fv)[1]
   
-    vars <- as.data.frame(matrix(NA, ncol=3, nrow=n))
-  
     # get bety names and units 
-
+    vars <- as.data.frame(matrix(NA, ncol=3, nrow=n))
     for(i in 1:n){
       vars[i,] <- as.matrix(db.query(paste("SELECT id, name, units from variables where id = ",
                                  fv$variable_id[i]),con))
     }
     colnames(vars) <- c("variable_id", "bety_name", "bety_units")
     vars$variable_id <- as.numeric(fv$variable_id)
-  
-  
+    
+    # Fill in input names and units with bety names and units if they are missing
+    
+    ind1 <- fv$input_name == ""
+    fv$input_name[ind1] <- vars$bety_name[ind1]
+    ind2 <- fv$input_units == ""
+    fv$input_units[ind2] <- vars$bety_units[ind2]
+      
     # Fill in CF vars
     # This will ultimately be useful when looking at met variables where CF != Bety
     # met <- read.csv(system.file("/data/met.lookup.csv", package= "PEcAn.data.atmosphere"), header = T, stringsAsFactors=FALSE)
