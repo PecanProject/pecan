@@ -26,21 +26,22 @@ int process(int rank, int size, char *filename) {
     command[strlen(command) - 1] = '\0';
 
     /* read configuration file and execute */
-    //printf("Executing %s of every %dth line starting with line %d of %s\n", command, size, rank+1, filename);
+    printf("Executing %s of every %dth line starting with line %d of %s\n", command, size, rank+1, filename);
     lineno = 0;
     while(fgets(line, 1024, fp)) {
         if (lineno % size == rank) {
             line[strlen(line) - 1] = '\0';
             if (chdir(line) == 0) {
                 sprintf(execute, "%s 2>stderr.txt >stdout.txt", command);
-                //printf("[%d] cwd=%s exec=%s\n", rank, line, execute);
+
+                printf("[%d] cwd=%s exec=%s\n", rank, line, execute);
                 int ret = system(execute);
                 if (ret != 0) {
-                    printf("[%d] returned %d as exit status.", rank, ret);
+                    printf("[%d] returned %d as exit status.\n", rank, ret);
                     exitcode = ret;
                 }
             } else {
-                printf("[%d] could not change directory to %s.", rank, line);
+                printf("[%d] could not change directory to %s.\n", rank, line);
                 exitcode = -1;
             }
         }
