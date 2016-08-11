@@ -171,7 +171,7 @@ if (status.check("TRAIT") == 0){
 
   
 # Run the PEcAn meta.analysis
-if(!is.null(settings$meta.analysis) {
+if(!is.null(settings$meta.analysis)) {
   if (status.check("META") == 0){
     status.start("META")
     runModule.run.meta.analysis(settings)
@@ -208,26 +208,19 @@ if (status.check("OUTPUT") == 0) {
   status.end()
 }
 
-logger.info("current C_stack_info(): ",Cstack_info()['current'])
-
 # Run ensemble analysis on model output. 
 if (status.check("ENSEMBLE") == 0) {
   status.start("ENSEMBLE")
-  run.ensemble.analysis(TRUE)    
+  run.ensemble.analysis(settings,TRUE)    
   status.end()
 }
-
-## DEBUG: getting odd C_stack errors from run.sensitivity.analysis -- checking usage prior to call
-logger.info("current C_stack_info(): ",Cstack_info()['current'])
 
 # Run sensitivity analysis and variance decomposition on model output
 if (status.check("SENSITIVITY") == 0) {
   status.start("SENSITIVITY")
-  run.sensitivity.analysis()
+  run.sensitivity.analysis(settings)
   status.end()
 }
-
-logger.info("current C_stack_info(): ",Cstack_info()['current'])
 
 # Run parameter data assimilation
 if ('assim.batch' %in% names(settings)) {

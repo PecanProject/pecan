@@ -14,7 +14,7 @@
 ##' @export
 ##' @author Michael Dietze
 #--------------------------------------------------------------------------------------------------#
-write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs=NULL, IC=NULL){
+write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs=NULL, IC=NULL, restart=NULL, spinup=NULL){
   ### WRITE sipnet.in
   template.in <- system.file("sipnet.in", package="PEcAn.SIPNET")
   config.text <- readLines(con=template.in, n=-1)

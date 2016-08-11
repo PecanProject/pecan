@@ -65,3 +65,5 @@ pecan.sublime-project
 sync2pecan
 tests/RyK*
 compile_on_geo.sh
+documentation/tutorials/*/*.html
+pecan.Rproj

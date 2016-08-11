@@ -18,6 +18,6 @@ An updated settings list
 Set PDA Settings
 }
 \author{
-Ryan Kelly
+Ryan Kelly, Istem Fer
 }
 

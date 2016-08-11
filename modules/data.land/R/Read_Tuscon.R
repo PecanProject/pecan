@@ -1,6 +1,7 @@
 ##' @title Clean_Tucson
 ##' @name Clean_Tucson
 ##' @description  tree core QAQC
+##' @export
 Clean_Tucson <- function(file){
   lines = scan(file,character(),sep="\n")
   split = strsplit(lines," ")

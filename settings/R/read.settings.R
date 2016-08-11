@@ -261,7 +261,8 @@ check.settings <- function(settings) {
   settings <- papply(settings, check.run.settings, dbcon=dbcon)
   
   # check meta-analysis
-  if (is.null(settings$meta.analysis) || is.null(settings$meta.analysis$iter)) {
+if(!is.null(settings$meta.analysis)){  
+  if (is.null(settings$meta.analysis$iter)) {
     settings$meta.analysis$iter <- 3000
     logger.info("Setting meta.analysis iterations to ", settings$meta.analysis$iter)
   }
@@ -283,7 +284,8 @@ check.settings <- function(settings) {
     logger.info("meta.analysis update can only be AUTO/TRUE/FALSE, defaulting to FALSE")
     settings$meta.analysis$update <- FALSE
   }
-
+}
+  
   settings <- check.model.settings(settings, dbcon)
 
   ## if run$host is localhost, set to "localhost

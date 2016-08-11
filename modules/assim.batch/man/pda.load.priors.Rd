@@ -4,7 +4,7 @@
 \alias{pda.load.priors}
 \title{Load Priors for Paramater Data Assimilation}
 \usage{
-pda.load.priors(settings, con)
+pda.load.priors(settings, con, path.flag = TRUE)
 }
 \arguments{
 \item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
@@ -16,6 +16,6 @@ A previously-generated posterior distribution, to be used as the prior for PDA.
 Load Priors for Paramater Data Assimilation
 }
 \author{
-Ryan Kelly
+Ryan Kelly, Istem Fer
 }
 

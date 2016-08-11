@@ -161,6 +161,7 @@ run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, 
 } ### End of function: run.meta.analysis.R
 ##==================================================================================================#
 
+##' @export
 runModule.run.meta.analysis <- function(settings) {
   if(is.SettingsList(settings)) {
     pfts <- list()

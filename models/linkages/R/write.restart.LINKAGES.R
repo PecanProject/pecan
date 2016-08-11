@@ -8,7 +8,6 @@
 ##' @param settings    PEcAn settings object
 ##' @param analysis.vec    analysis vector
 ##' @param RENAME      flag to either rename output file or not
-##' @param PLOT        flag to make plots or not
 ##' @param variables
 ##' @param sample_parameters
 ##' @param trait.values
@@ -16,9 +15,10 @@
 ##' @description Write restart files for LINKAGES
 ##' 
 ##' @return NONE
+##' @export
 ##' 
 write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
-                                   RENAME = TRUE, PLOT = FALSE, variables,
+                                   RENAME = TRUE, variables,
                                    sample_parameters = FALSE,
                                    trait.values = NA){
   
@@ -46,7 +46,7 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
   }
   diag(distance.matrix)<-0
   
-   distance.matrix <- rbind( c(0, 1, 4, 3, 2, 6, 2, 8, 1, 9, 10, 11, 12, 13, 14),
+   distance.matrix <- rbind( c(0, 1, 4, 3, 2, 6, 5, 8, 7, 9, 10, 11, 12, 13, 14),
                              c(5, 0	,3	,4	,8	,1	,2	,7	,6,9,10,11,12,13, 14),
                              c(5, 3	,0	,1	,8	,4	,2	,7	,6,9,10,11,12,13, 14),
                              c(6, 2	,1	,0	,8	,4	,3	,7	,5,9,10,11,12,13, 14),
@@ -66,8 +66,7 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
 #                            c(3,0,2,1),
 #                            c(1,2,0,3),
 #                            c(2,1,3,0))
-#   ### Flag for plotting ### probably worthless after diagnostics
-  PLOT = FALSE
+
 
   ##HACK
   spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages")) #default spp.params
@@ -126,17 +125,7 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
     new.ntrees = numeric(length(settings$pfts))
     
     print(paste0("ntrees (large trees) =",ntrees)) #these are the large trees
-    
-    if(PLOT == TRUE){
-      n.name <- c(rep("Hemlock",ntrees[1]),rep("Maple",ntrees[2]),rep("Cedar",ntrees[3]),rep("Yellow Birch",ntrees[4]))
-      data1 <- data.frame(DBH = dbh[dbh>0],Trees = as.character(n.name), AGE = iage[iage>0], NOGRO = nogro[1:sum(ntrees)])
-      A<-qplot(DBH,data = data1,geom="histogram",group=Trees,fill=Trees,binwidth=1) + theme_bw()
-      B<-qplot(AGE,data = data1,geom="histogram",group=Trees,fill=Trees,binwidth=1) + theme_bw()
-      C<-qplot(NOGRO,data = data1,geom="histogram",group=Trees,fill=Trees,binwidth=1) + theme_bw()
-      #grid.arrange(arrangeGrob(A,B,C,ncol=3,nrow=1), nrow=1)
-    }
 
-    
     ##### This takes the average individual biomass of each species from the model and computes
     ##### how many individuals you should keep to match the biomass estimated from the data.
     ##### Still have to correct for the total species biomass in the next step.
@@ -237,16 +226,6 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
     ntrees <- new.ntrees
     
     #print(dbh[1:ntrees[1]])
-    
-    if(PLOT == TRUE){
-      #have to fix the colors
-      n.name <- c(rep("Hemlock",ntrees[1]),rep("Maple",ntrees[2]),rep("Cedar",ntrees[3]),rep("Yellow Birch",ntrees[4]))
-      data3 <- data.frame(DBH = dbh[dbh>0],Trees = as.character(n.name), AGE = iage[iage>0], NOGRO = nogro[1:sum(ntrees)])
-      D<-qplot(DBH,data = data3,geom="histogram",group=Trees,fill=Trees,binwidth=1) + theme_bw()
-      E<-qplot(AGE,data = data3,geom="histogram",group=Trees,fill=Trees,binwidth=1) + theme_bw()
-      F<-qplot(NOGRO,data = data3,geom="histogram",group=Trees,fill=Trees,binwidth=1) + theme_bw()
-      grid.arrange(arrangeGrob(A,B,C,D,E,F,ncol=3,nrow=2), nrow=1)
-    }
 
    #translate agb to dbh
 
@@ -301,12 +280,12 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
 #    settings$run$end.date <- paste0(time,strftime(settings$run$end.date,"/%m/%d"))
 
 if(sample_parameters == TRUE){
-  do.call(my.write.config,
+  do.call(write.config.LINKAGES,
           args = list(trait.values = trait.values,
                       settings = settings, run.id = runid,
                       restart=TRUE, spinup=FALSE))
 } else {
-  do.call(my.write.config,
+  do.call(write.config.LINKAGES,
           args=list(trait.values = NA, settings=settings,
                     run.id = runid, restart=TRUE, spinup=FALSE))
 }
