@@ -124,9 +124,18 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   co2.file <- file.path(settings$rundir, paste0("co2.", sprintf("%04d",start.year), ".", end.year, ".txt"))
 
   # for pre-industrial values just use 280 ppm
-  if(end.year < 1901){
+  if(end.year < 1850){
     CO2 <- data.frame(start.year:end.year, rep(280,n.year))
     write.table(CO2, file = co2.file, row.names = FALSE, col.names = FALSE, sep = "\t", eol = "\n")
+  }else if(end.year < 2011){
+    load("co2.1850.2011.Rdata", package = "PEcAn.LPJGUESS")
+    if(start.year < 1850){
+      CO2_preind <- data.frame(year = start.year:1849, ppm = rep(280, length(start.year:1849))) 
+      CO2_postind <- co2.1850.2011.data[1:which(co2.1850.2011.data[,1] == end.year), ]
+      CO2 <- rbind(CO2_preind, CO2_postind)
+    }else{
+      CO2 <- co2.1850.2011.data[1:which(co2.1850.2011.data[,1] == end.year), ]
+    }
   } 
   guessins<- gsub("@CO2_FILE@", co2.file, guessins)
   
