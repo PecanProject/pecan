@@ -447,15 +447,15 @@ pft "TeNE" (
 	evergreen
 	leaflong 3
 	turnover_leaf 0.33
-        pstemp_min -2
-        pstemp_low 15
-        pstemp_high 25
-        pstemp_max 38
+        pstemp_min TeNE_pstemp_min.@-2
+        pstemp_low TeNE_pstemp_low.@15
+        pstemp_high TeNE_pstemp_high.@25
+        pstemp_max TeNE_pstemp_max.@38
         respcoeff 1.0	
-        tcmin_surv -2 ! As in Sitch et al. (2003), a little lower than TeBE
-	tcmin_est -2 ! As in Sitch et al. (2003), a little lower than TeBE
-	tcmax_est 10 ! Hickler et al. (2012) have 9 degC for Pin_hal
-	twmin_est 5  ! low, since Hickler et al. (2012) have -1000 for Jun_oxy
+        tcmin_surv TeNE_tcmin_surv.@-2 
+      	tcmin_est TeNE_tcmin_est.@-2 
+      	tcmax_est TeNE_tcmax_est.@10 
+      	twmin_est TeNE_twmin_est.@5  
 	gdd5min_est 2000 !(Stefans value 900)2000 ! As TeBE, a little lower than Jun_oxy, Pin_hal in europe.ins
 	longevity 300  ! Hickler et al. (2012) have 350 for Pin_hal
 	fireresist 0.3 ! Hickler et al. (2012) have 0.2 for Pin_hal and 0.4 for Jun_oxy
