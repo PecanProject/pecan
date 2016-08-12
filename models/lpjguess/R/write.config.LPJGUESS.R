@@ -88,6 +88,9 @@ write.config.LPJGUESS <- function(defaults, trait.values, settings, run.id){
 #' @title Write LPJ-GUESS instruction script
 #' @export
 #' @param settings PEcAn settings list
+#' @param trait.values trait.values
+#' @param rundir rundir
+#' @param outdir outdir
 #' @param run.id PEcAn run ID
 #' @return settings Updated list
 #' @author Istem Fer
@@ -150,6 +153,10 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   } 
   write.table(CO2, file = co2.file, row.names = FALSE, col.names = FALSE, sep = "\t", eol = "\n")
   guessins<- gsub("@CO2_FILE@", co2.file, guessins)
+  
+  # write soil file path
+  soil.file <- settings$run$inputs$soil$path
+  guessins<- gsub("@SOIL_FILE@", soil.file, guessins)
   
   settings$model$insfile <- file.path(settings$rundir, run.id, "guess.ins")
   
