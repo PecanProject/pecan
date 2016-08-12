@@ -475,16 +475,16 @@ pft "TeBS" (
 	shade_tolerant
 	summergreen
 	leaflong 0.5
-	turnover_leaf TeBS_turnover_leaf.@1
-        pstemp_min -2
-        pstemp_low 15
+	turnover_leaf 1
+        pstemp_min TeBS_pstemp_min.@-2
+        pstemp_low TeBS_pstemp_low.@15
         pstemp_high TeBS_pstemp_high.@25
-        pstemp_max 38
+        pstemp_max TeBS_pstemp_max.@38
         respcoeff 1.0
-        tcmin_surv -14
-        tcmin_est -13
-        tcmax_est 6
-        twmin_est 5
+        tcmin_surv TeBS_tcmin_surv.@-14
+        tcmin_est TeBS_tcmin_est.@-13
+        tcmax_est TeBS_tcmax_est.@6
+        twmin_est TeBS_twmin_est.@5
 	gdd5min_est 1100
 	longevity 400
 	fireresist 0.1
@@ -534,15 +534,15 @@ pft "TeBE" (
 	evergreen
 	leaflong 3
 	turnover_leaf 0.33
-        pstemp_min -2
-        pstemp_low 15
-        pstemp_high 25
-        pstemp_max 38
+        pstemp_min TeBE_pstemp_min.@-2
+        pstemp_low TeBE_pstemp_low.@15
+        pstemp_high TeBE_pstemp_high.@25
+        pstemp_max TeBE_pstemp_max.@38
         respcoeff 1.0
-        tcmin_surv -1
-        tcmin_est 0
-        tcmax_est 18.8
-        twmin_est 5
+        tcmin_surv TeBE_tcmin_surv.@-1
+        tcmin_est TeBE_tcmin_est.@0
+        tcmax_est TeBE_tcmax_est.@18.8
+        twmin_est TeBE_twmin_est.@5
 	gdd5min_est 2000
 	longevity 300 !from TH 2010-04-07 was 350 AA
 	fireresist 0.3

@@ -9,6 +9,12 @@ write.insfile.LPJGUESS(settings, trait.values, rundir, outdir, run.id)
 \arguments{
 \item{settings}{PEcAn settings list}
 
+\item{trait.values}{trait.values}
+
+\item{rundir}{rundir}
+
+\item{outdir}{outdir}
+
 \item{run.id}{PEcAn run ID}
 }
 \value{
