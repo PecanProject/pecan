@@ -7,21 +7,22 @@
 ##' @export
 ##' @author Ryan Kelly
 MultiSettings <- function(...) {
-  args <- list(...)
-  result <- list()
-  
-  for(i in seq_along(args)) {
-    arg.i = args[[i]]
-    if(is.Settings(arg.i) || is.MultiSettings(arg.i) || 
-       (is.list(arg.i) && all(sapply(arg.i, is.Settings)))) {
-      browser()
-      result <- c(result, arg.i)
-    } else {
-      stop("MultiSettings can only be made from Setting, MultiSettings, or a list of Settings")
+  result <- list(...)
+
+  if(length(result) == 1) {
+    if(is.MultiSettings(result[[1]])) {
+      return(result[[1]])
+    } else if(is.list(result[[1]]) && all(sapply(result[[1]], is.Settings))) {
+      result <- result[[1]]
     }
   }
+  
+  if(!all(sapply(result, is.Settings))) {
+    stop("MultiSettings can only be made from Setting, MultiSettings, or a list of Settings")
+  }
 
-  names(result) <- paste("settings", seq_along(result), sep=".")
+  if(length(result) > 0)
+    names(result) <- paste("settings", seq_along(result), sep=".")
   class(result) <- c("MultiSettings", class(result))
   return(result)
 }
@@ -41,67 +42,64 @@ is.MultiSettings <- function(x) {
 ##' @export
 "[[<-.MultiSettings" <- function(x, value, i, global=TRUE) {
   if(is.character(i)) {
-    for(j in seq_along(x)) {
-      x[[j]][[i]] <- value
+    if(global) {
+      value <- replicate(length(x), value, simplify=FALSE)
+      x[[i, global=F]] <- value
+    } else {
+      if(length(x) == length(value)) {
+        value <- as.list(value)
+        for(j in seq_along(x)) {
+          x[[j]][[i]] <- value[[j]]
+        }
+      } else if(length(x) == 1 && length(value) > 1) {
+        x <- MultiSettings(replicate(length(value), x[[1]], simplify=FALSE))
+        x[[i, global=FALSE]] <- value
+      } else {
+        stop("Length mismatch in assigning to MultiSettings")
+      }
     }
     return(x)
-  } else if(is.numeric(i)) {
-    if(is.Settings(value)) {
+  } else {
+    if(is.Settings(value) || is.null(value)) {
       NextMethod()
     } else {
       stop("Can only add a Settings object to MultiSettings.")
     }
-  } else {
-    stop("Invalid indexing to MultiSettings object")
   }
 }
 
 ##' @export
-"$<-.MultiSettings" <- function(x, value, i) {
-  if(is.character(i)) {
-    x[[i]] <- value
-    return(x)
-  } else {
-    stop("Invalid indexing to MultiSettings object")
-  }
+"$<-.MultiSettings" <- function(x, value, i, global=TRUE) {
+  return("[[<-.MultiSettings"(x, value, i, global))
 }
 
 
 ##' @export
 "[<-.MultiSettings" <- function(x, value, i) {
-  if(is.numeric(i)) {
-    if(is.Settings(value)) {
-      for(j in seq_along(i)) {
-        x[[i[j]]] <- value
-      }
-    } else if(is.MultiSettings(value)) {
-      if(length(value) == length(i)) {
-        for(j in seq_along(i)) {
-          x[[i[j]]] <- value[[j]]
-        }
-      } else {
-        stop("Length mismatch when assigning to MultiSettings")
-      }
-    } else {
-      stop("Can only add Settings objets to MultiSettings")
-    }
-    return(x)
-  } else {
-    stop("Invalid indexing to MultiSettings object")
-  }
+  stop("MultiSettings don't support assignments using '['")
 }
 
 
 ##' @export
-"[[.MultiSettings" <- function(x, i) {
+"[[.MultiSettings" <- function(x, i, collapse=TRUE) {
   if(is.character(i)) {
-    vals <- lapply(x, function(y) y[[i]])
-    if(!all(sapply(vals, function(y, y1) identical(y, y1), vals[[1]]))) {
-      stop(paste("Tried to get", i, "by name from a MultiSettings, but the value varies across settings"))
+    result <- lapply(x, function(y) y[[i]])
+    if(collapse) {
+      result <- .collapseList(result)
     }
-    return(vals[[1]])
+    return(result)
   } else {
     NextMethod()
+  }
+}
+
+.collapseList <- function(x) {
+  firstElement <- x[[1]]
+  replicatedFirstElement <- replicate(length(x), firstElement, simplify=FALSE)
+  if(isTRUE(all.equal(replicatedFirstElement, x, check.attributes=FALSE))) {
+    return(firstElement)
+  } else {
+    return(x)
   }
 }
 
@@ -113,21 +111,16 @@ is.MultiSettings <- function(x) {
 
 ##' @export
 "[.MultiSettings" <- function(x, i) {
-  if(is.character(i))
-    stop("Selecting from MultiSettings using single brackets and character indices is not allowed")
-  MultiSettings(NextMethod())
+  if(is.character(i)) {
+    stop("MultiSettings don't support selecting by '[' with character indices")
+  } else {
+    return(MultiSettings(NextMethod()))
+  }
 }
 
 ##' @export
 names.MultiSettings <- function(x) {
-  for(i in seq_along(x)) {
-    if(i == 1) {
-      result <- names(x[[i]])
-    } else {
-      result <- intersect(result, names(x[[i]])) 
-    }
-  }
-  return(result)
+  return(union(lapply(x, names)))
 }
 
 ##' @export
@@ -135,23 +128,31 @@ names.MultiSettings <- function(x) {
   stop("Can't name elements of MultiSettings.")
 }
 
-# print.MultiSettings <- function(x, printAll=FALSE, ...) {
-#   if(printAll) {
-#     NextMethod()
-#   } else {
-#     print(paste0("A MultiSettings object containing ", length(x), " Settings."), ...)
-#   }
-# }
+print.MultiSettings <- function(x, printAll=FALSE, ...) {
+  if(printAll) {
+    NextMethod()
+  } else {
+    print(paste0("A MultiSettings object containing ", length(x), " Settings."), ...)
+  }
+}
 
-# 
-# ##' @export
-# listToXml.MultiSettings <- function(item, tag, collapse=TRUE) {
-#   if(collapse) {
-#     collapsedItem <- list()
-#     for(i in seq_along(item)) {
-#       collapsedItem <- 
-#     }
-#   } else {
-#     NextMethod()
-#   }
-# }
+
+##' @export
+listToXml.MultiSettings <- function(item, tag, collapse=TRUE) {
+  if(collapse) {
+    tmp <- list()
+    expandableItems <- character(0)
+    for(setting in names(item)) {
+      tmp[[setting]] <- item[[setting, collapse=T]]
+    }
+    item <- tmp
+    
+    expandableItemsTag <- "multisettings"
+    if(expandableItemsTag %in% names(item)) {
+      stop("Settings can't contain reserved tag 'multisettings'.")
+    }
+    
+  }
+  
+  NextMethod()
+}
