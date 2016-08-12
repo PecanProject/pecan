@@ -108,53 +108,61 @@ if (length(which(commandArgs() == "--continue")) == 0) {
 }
   
 # Do conversions
-needsave <- FALSE
-for(i in 1:length(settings$run$inputs)) {
-  input <- settings$run$inputs[[i]]
-  if (is.null(input)) next
-  
-  input.tag <- names(settings$run$input)[i]
-  
-  # fia database
-  if ((input['input'] == 'fia') && (status.check("FIA2ED") == 0)) {
-    status.start("FIA2ED")
-    fia.to.psscss(settings)
-    status.end()
-    needsave <- TRUE
+do.conversions <- function(settings) {
+  if(is.SettingsList(settings)) {
+    return(papply(settings, do.conversions))
   }
   
-  # met conversion
-  if(input.tag == 'met') {
-    name <- ifelse(is.null(settings$browndog), "MET Process", "BrownDog")
-    if (is.null(input$path) && (status.check(name) == 0)) {
-      status.start(name)
-      result <- PEcAn.data.atmosphere::met.process(
-        site       = settings$run$site, 
-        input_met  = settings$run$inputs$met,
-        start_date = settings$run$start.date,
-        end_date   = settings$run$end.date,
-        model      = settings$model$type,
-        host       = settings$host,
-        dbparms    = settings$database$bety, 
-        dir        = settings$database$dbfiles,
-        browndog   = settings$browndog)
-      settings$run$inputs[[i]][['path']] <- result
+  needsave <- FALSE
+  for(i in 1:length(settings$run$inputs)) {
+    input <- settings$run$inputs[[i]]
+    if (is.null(input)) next
+  
+    input.tag <- names(settings$run$input)[i]
+  
+    # fia database
+    if ((input['input'] == 'fia') && (status.check("FIA2ED") == 0)) {
+      status.start("FIA2ED")
+      fia.to.psscss(settings)
       status.end()
       needsave <- TRUE
     }
+  
+    # met conversion
+    if(input.tag == 'met') {
+      name <- ifelse(is.null(settings$browndog), "MET Process", "BrownDog")
+      if (is.null(input$path) && (status.check(name) == 0)) {
+        status.start(name)
+        result <- PEcAn.data.atmosphere::met.process(
+          site       = settings$run$site, 
+          input_met  = settings$run$inputs$met,
+          start_date = settings$run$start.date,
+          end_date   = settings$run$end.date,
+          model      = settings$model$type,
+          host       = settings$host,
+          dbparms    = settings$database$bety, 
+          dir        = settings$database$dbfiles,
+          browndog   = settings$browndog)
+        settings$run$inputs[[i]][['path']] <- result
+        status.end()
+        needsave <- TRUE
+      }
+    }
   }
+  if (needsave) {
+    saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.METProcess.xml'))  
+  } else if (file.exists(file.path(settings$outdir, 'pecan.METProcess.xml'))) {
+    settings <- read.settings(file.path(settings$outdir, 'pecan.METProcess.xml'))
+  }
+  return(settings)
 }
-if (needsave) {
-  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.METProcess.xml'))  
-} else if (file.exists(file.path(settings$outdir, 'pecan.METProcess.xml'))) {
-  settings <- read.settings(file.path(settings$outdir, 'pecan.METProcess.xml'))
-}
+settings <- do.conversions(settings)
 
 
 # Query the trait database for data and priors
 if (status.check("TRAIT") == 0){
   status.start("TRAIT")
-  settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$database$dbfiles, settings$database$bety, settings$meta.analysis$update)
+  settings <- runModule.get.trait.data(settings)
   saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.TRAIT.xml'))
   status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.TRAIT.xml'))) {
@@ -163,10 +171,10 @@ if (status.check("TRAIT") == 0){
 
   
 # Run the PEcAn meta.analysis
-if('meta.analysis' %in% names(settings)) {
+if(!is.null(settings$meta.analysis)) {
   if (status.check("META") == 0){
     status.start("META")
-    run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$meta.analysis$threshold, settings$database$dbfiles, settings$database$bety)
+    runModule.run.meta.analysis(settings)
     status.end()
   }
 }
@@ -174,7 +182,7 @@ if('meta.analysis' %in% names(settings)) {
 # Write model specific configs
 if (status.check("CONFIG") == 0){
   status.start("CONFIG")
-  settings <- run.write.configs(settings, write=settings$database$bety$write, ens.sample.method=settings$ensemble$method)
+  settings <- runModule.run.write.configs(settings)
   saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.CONFIGS.xml'))
   status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
@@ -189,28 +197,28 @@ if ((length(which(commandArgs() == "--advanced")) != 0) && (status.check("ADVANC
 # Start ecosystem model runs
 if (status.check("MODEL") == 0) {
   status.start("MODEL")
-  start.model.runs(settings, settings$database$bety$write)
+  runModule.start.model.runs(settings)
   status.end()
 }
 
 # Get results of model runs
 if (status.check("OUTPUT") == 0) {
   status.start("OUTPUT")
-  get.results(settings)
+  runModule.get.results(settings)
   status.end()
 }
 
 # Run ensemble analysis on model output. 
 if (status.check("ENSEMBLE") == 0) {
   status.start("ENSEMBLE")
-  run.ensemble.analysis(TRUE)    
+  run.ensemble.analysis(settings,TRUE)    
   status.end()
 }
 
 # Run sensitivity analysis and variance decomposition on model output
 if (status.check("SENSITIVITY") == 0) {
   status.start("SENSITIVITY")
-  run.sensitivity.analysis()
+  run.sensitivity.analysis(settings)
   status.end()
 }
 
@@ -219,6 +227,15 @@ if ('assim.batch' %in% names(settings)) {
   if (status.check("PDA") == 0) {
     status.start("PDA")
     settings <- assim.batch(settings)
+    status.end()
+  }
+}
+
+# Run state data assimilation
+if ('state.data.assimilation' %in% names(settings)) {
+  if (status.check("SDA") == 0) {
+    status.start("SDA")
+    settings <- sda.enfk(settings)
     status.end()
   }
 }

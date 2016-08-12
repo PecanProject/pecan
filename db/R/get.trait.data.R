@@ -181,7 +181,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   ## save priors
   save(prior.distns, file = file.path(pft$outdir, "prior.distns.Rdata"))
   write.csv(prior.distns,
-            file = file.path(pft$outdir, "prior.distns.csv"), row.names = FALSE)
+            file = file.path(pft$outdir, "prior.distns.csv"), row.names = TRUE)
 
   ## 3. display info to the console
   logger.info('Summary of Prior distributions for: ', pft$name)
@@ -251,6 +251,43 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,trait
   invisible(result)
 }
 ##==================================================================================================#
+
+##' @export
+runModule.get.trait.data <- function(settings) {
+  if(is.null(settings$meta.analysis)) return(settings) ## if there's no MA, there's no need for traits
+  if(is.SettingsList(settings)) {
+    pfts <- list()
+    pft.names <- character(0)
+    for(i in seq_along(settings)) {
+      pfts.i <- settings[[i]]$pfts
+      pft.names.i <- sapply(pfts.i, function(x) x$name)
+      ind <- which(pft.names.i %in% setdiff(pft.names.i, pft.names))
+      pfts <- c(pfts, pfts.i[ind])
+      pft.names <- sapply(pfts, function(x) x$name)
+    }
+    
+    logger.info(paste0("Getting trait data for all PFTs listed by any Settings object in the list: ",
+                paste(pft.names, collapse=", ")))
+                
+    modeltype <- settings$model$type
+    dbfiles <- settings$database$dbfiles
+    database <- settings$database$bety
+    forceupdate <- !is.null(settings$meta.analysis) && (as.logical(settings$meta.analysis$update) || (settings$meta.analysis$update == 'AUTO'))
+    settings$pfts <- get.trait.data(pfts, modeltype, dbfiles, database, forceupdate)
+    return(settings)
+  } else if(is.Settings(settings)) {
+    pfts <- settings$pfts
+    modeltype <- settings$model$type
+    dbfiles <- settings$database$dbfiles
+    database <- settings$database$bety
+    forceupdate <- !is.null(settings$meta.analysis) && (as.logical(settings$meta.analysis$update) || (settings$meta.analysis$update == 'AUTO'))
+    settings$pfts <- get.trait.data(pfts, modeltype, dbfiles, database, forceupdate)
+    return(settings)
+  } else {
+    stop("runModule.get.trait.data only works with Settings or SettingsList")
+  }
+}
+
 
 
 ####################################################################################################

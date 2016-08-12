@@ -82,12 +82,16 @@ server <- shinyServer(function(input, output, session) {
         xlab <- if (is.null(ranges$x)) "Time" else paste(ranges$x, collapse=" - ")
         # plot result
         print(ranges$x)
-        ggplot(data.frame(dates, vals), aes(x=dates, y=vals)) +
-          geom_point() +
-          geom_smooth() +
+        plt <- ggplot(data.frame(dates, vals), aes(x=dates, y=vals)) +
+          geom_point(aes(color="Model output")) +
+#          geom_smooth(aes(fill = "Spline fit")) +
           coord_cartesian(xlim = ranges$x, ylim = ranges$y) +
           scale_y_continuous(labels=fancy_scientific) +
-          labs(title=title, x=xlab, y=ylab)
+          labs(title=title, x=xlab, y=ylab) + 
+          scale_color_manual(name = "", values = "black") +
+          scale_fill_manual(name = "", values = "grey50")
+        plot(plt)
+        add_icon()
       }
     }
   })
