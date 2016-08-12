@@ -84,23 +84,20 @@ is.MultiSettings <- function(x) {
 "[[.MultiSettings" <- function(x, i, collapse=TRUE) {
   if(is.character(i)) {
     result <- lapply(x, function(y) y[[i]])
-    if(collapse) {
-      result <- .collapseList(result)
+    if(collapse && .allListElementsEqual(result)) {
+      return(result[[1]])
+    } else {
+      return(result)
     }
-    return(result)
   } else {
     NextMethod()
   }
 }
 
-.collapseList <- function(x) {
+.allListElementsEqual <- function(x) {
   firstElement <- x[[1]]
   replicatedFirstElement <- replicate(length(x), firstElement, simplify=FALSE)
-  if(isTRUE(all.equal(replicatedFirstElement, x, check.attributes=FALSE))) {
-    return(firstElement)
-  } else {
-    return(x)
-  }
+  return(isTRUE(all.equal(replicatedFirstElement, x, check.attributes=FALSE)))
 }
 
 ##' @export
@@ -120,7 +117,7 @@ is.MultiSettings <- function(x) {
 
 ##' @export
 names.MultiSettings <- function(x) {
-  return(union(lapply(x, names)))
+  return(unique(unlist(lapply(x, names))))
 }
 
 ##' @export
@@ -137,22 +134,32 @@ print.MultiSettings <- function(x, printAll=FALSE, ...) {
 }
 
 
+
+
 ##' @export
-listToXml.MultiSettings <- function(item, tag, collapse=TRUE) {
-  if(collapse) {
-    tmp <- list()
-    expandableItems <- character(0)
-    for(setting in names(item)) {
-      tmp[[setting]] <- item[[setting, collapse=T]]
-    }
-    item <- tmp
-    
+listToXml.MultiSettings <- function(item, tag="pecan.multi", collapse=TRUE) {
+  if(collapse && length(item) > 1) {
     expandableItemsTag <- "multisettings"
     if(expandableItemsTag %in% names(item)) {
       stop("Settings can't contain reserved tag 'multisettings'.")
     }
     
+    tmp <- list()
+    expandableItems <- character(0)
+    for(setting in names(item)) {
+      if(.allListElementsEqual(item[[setting]])) {
+        tmp[[setting]] <- item[[setting]][[1]]
+        expandableItems <- c(expandableItems, setting)
+      } else {
+        tmp[[setting]] <- item[[setting]]
+      }
+    }
+    item <- tmp
+
+    item[[expandableItemsTag]] <- expandableItems
   }
   
-  NextMethod()
+  NextMethod(tag=tag)
 }
+
+
