@@ -100,6 +100,12 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
   guessins <- readLines(con=system.file("template.ins", package = "PEcAn.LPJGUESS"), n=-1)
   paramsins <- readLines(con=system.file("pecan.ins", package = "PEcAn.LPJGUESS"), n=-1)
   
+  # cp the grid indices file
+  grid.file <- file.path(settings$host$rundir, "gridind.txt")
+  gridind = system.file("gridind.txt", package="PEcAn.LPJGUESS")
+  system(paste('cp ', gridind, settings$rundir))
+  guessins<- gsub("@GRID_FILE@", grid.file, guessins)
+  
   # write parameter values
   param.names <- lapply(seq_along(settings$pfts), function(x) paste0(names(trait.values)[x], "_", names(trait.values[[x]]), ".*"))
 
