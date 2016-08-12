@@ -27,13 +27,6 @@
 ##' @author Istem Fer
 met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite=FALSE,verbose=FALSE){
   
-  # in.path = "/fs/data1/pecan.data/input//PalEON_CF_site_1-675"
-  # in.prefix = "PalEON"
-  # start_date = settings$run$start.date
-  # end_date = settings$run$end.date
-  # PalEON = TRUE
-  # outfolder =  settings$outdir
-  
   library(PEcAn.utils)
   require(ncdf4)
   require(lubridate)
@@ -79,10 +72,7 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
     lon=ncvar_get(ncin[[1]],"longitude")
     lat=ncvar_get(ncin[[1]],"latitude")
     
-    if(is.na(lat)) lat = settings$run$site$lat
-    if(is.na(lon)) lon = settings$run$site$lon
 
-    
     ## at least 2 lat-lon required for LPJ-GUESS to load the data
     lon=c(lon,lon)
     lat=c(lat,lat)
