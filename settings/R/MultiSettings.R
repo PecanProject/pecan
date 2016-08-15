@@ -179,7 +179,7 @@ expandMultiSettings <- function(x) {
 ##' @export
 expandMultiSettings.list <- function(x) {
   if(!(.expandableItemsTag %in% names(x))) {
-    return(multiSettings)
+    return(x)
   } else {
     result <- MultiSettings(Settings(x))
     for(setting in x[[.expandableItemsTag]]) {

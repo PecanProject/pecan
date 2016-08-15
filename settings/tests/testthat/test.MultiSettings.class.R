@@ -298,3 +298,9 @@ test_that("multiSettings write to and read from xml as expcted (i.e., with colla
 })
 
 
+test_that("expandMultiSettings does nothing to a non-MultiSettings list", {
+  expect_identical(settings, expandMultiSettings(settings))
+  expect_identical(l, expandMultiSettings(l))
+})
+
+
