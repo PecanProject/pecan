@@ -153,8 +153,8 @@ In addition, you may need to edit ```<inputs><file><path>```, depending on the s
 Once you’ve made and saved the changes to your XML, load the file and check that it contains the new settings:
 
 ```{r eval=FALSE}
-settings.PDA <- read.settings(file.path(outdir,paste0("PEcAn_",workflow_id),"pecan.PDA.INIT.xml"))
-settings.PDA$assim.batch
+settings <- read.settings(file.path(outdir,paste0("PEcAn_",workflow_id),"pecan.PDA.INIT.xml"))
+settings$assim.batch
 ```
 
 If the printed list contains everything you just added to pecan.PDA.INIT.xml, you’re ready to proceed.
@@ -177,7 +177,7 @@ For now, we just want you to get a glimpse at the overall structure of the code,
 Let’s go ahead and run a data assimilation MCMC with emulator. Since you've already loaded the settings containing your modified <assim.batch> XML block, all you need to do to start the PDA is run
 
 ```{r eval=FALSE}
-settings.postPDA <- pda.emulator(settings.PDA)
+settings <- pda.emulator(settings)
 ```
 
 After executing the code above, you will see print-outs to the console. The code begins with loading the prior values which in this case are the posterior distributions coming from your previous meta analysis. Then it loads the observational data and carries out necessary conversions and formatting to align it with model outputs, as we did separately above. After this step, you will see a progress bar where the actual model is run n.knot times with the proposed parameter sets and then the outputs from these runs are read. Next, this model output is compared to the specified observational data, and the likelihood is calculated using the heteroskedastic Laplacian discussed previously. Once we calculate the likelihoods, we fit an emulator which interpolates the model output in parameter space between the points where the model has actually been run. Now we can put this emulator in the MCMC algorithm instead of the model itself. Within the MCMC loop the code proposes new parameter value from a multivariate normal jump distribution. The corresponding likelihood will be approximated by the emulator and the new parameter value is accepted or rejected based on its posterior probability relative to the current value. 
@@ -207,21 +207,21 @@ The PDA you ran has automatically produced an updated XML file that includes the
 
 ```{r eval=FALSE}
  # Call model specific write.configs
-  settings.postPDA <- run.write.configs(settings.postPDA,
-                          write=settings.postPDA$database$bety$write,     
-                          ens.sample.method=settings.postPDA$ensemble$method)
+  settings <- run.write.configs(settings,
+                          write=settings$database$bety$write,     
+                          ens.sample.method=settings$ensemble$method)
 
  # Start ecosystem model runs, this one takes awhile...
-  start.model.runs(settings.postPDA, settings.postPDA$database$bety$write)
+  start.model.runs(settings, settings$database$bety$write)
 
  # Get results of model runs
-  get.results(settings.postPDA)
+  get.results(settings)
 
  # Repeat ensemble analysis with PDA-constrained params 
- run.ensemble.analysis(settings.postPDA, plot.timeseries=TRUE, observations=NEEo, window=48, variable="NEE")
+ run.ensemble.analysis(settings, plot.timeseries=TRUE, observations=NEEo, window=48, variable="NEE")
 
  # Repeat variance decomposition to see how constraints have changed
- run.sensitivity.analysis(settings.postPDA)
+ run.sensitivity.analysis(settings)
 ```
 
 
