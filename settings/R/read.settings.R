@@ -1184,8 +1184,8 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.CHECKED.x
   }
 
   ## convert the xml to a list
-  global.settings <- xmlToList(xml)
-  settings <- parse.global.settings(global.settings)
+  settings <- xmlToList(xml)
+  settings <- expandMultiSettings(settings)
   
   settings <- papply(settings, fix.deprecated.settings)
   settings <- papply(settings, addSecrets)
