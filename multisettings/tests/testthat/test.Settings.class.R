@@ -266,4 +266,35 @@ test_that("Assigning non-globally to a single-element MultiSettings expands it t
 })
 
 
+# ------------ To/From XML
+# helper fn
+are.equal.possiblyNumericToCharacter <- function(o1, o2) {
+  if(length(o1) != length(o2)) {
+    return(FALSE)
+  } else if(is.list(o1)) {
+    for(i in seq_along(o1)) {
+      if(!are.equal.possiblyNumericToCharacter(o1[[i]], o2[[i]])) {
+        return(FALSE)
+      }
+    }
+    return(TRUE)
+  } else {
+    if(is.numeric(o1) || is.numeric(o2)) {
+      o2 <- as.numeric(o2)
+      o1 <- as.numeric(o1)
+    }
+    return(isTRUE(all.equal(o1, o2)))
+  }
+}
+
+test_that("multiSettings write to and read from xml as expcted (i.e., with collapsing/expanding global settings)", {
+  msOrig <- multiSettingsTemplate
+  
+  msXML <- listToXml(msOrig)
+  listNew <- xmlToList(msXML)
+  msNew <- expandMultiSettings(listNew)
+  
+  expect_true(are.equal.possiblyNumericToCharacter(msNew, msOrig))
+})
+
 

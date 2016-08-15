@@ -81,14 +81,20 @@ is.MultiSettings <- function(x) {
 
 
 ##' @export
-"[[.MultiSettings" <- function(x, i, collapse=TRUE) {
+"[[.MultiSettings" <- function(x, i, collapse=TRUE, setAttributes=FALSE) {
   if(is.character(i)) {
     result <- lapply(x, function(y) y[[i]])
     if(collapse && .allListElementsEqual(result)) {
-      return(result[[1]])
+      result <- result[[1]]
+      if(setAttributes) {
+        attr(result, "settingType") <- "global"
+      }
     } else {
-      return(result)
+      if(setAttributes) {
+        attr(result, "settingType") <- "multi"
+      }
     }
+    return(result)
   } else {
     NextMethod()
   }
@@ -134,32 +140,53 @@ print.MultiSettings <- function(x, printAll=FALSE, ...) {
 }
 
 
-
+.expandableItemsTag <- "multisettings"
 
 ##' @export
 listToXml.MultiSettings <- function(item, tag="pecan.multi", collapse=TRUE) {
   if(collapse && length(item) > 1) {
-    expandableItemsTag <- "multisettings"
-    if(expandableItemsTag %in% names(item)) {
+    if(.expandableItemsTag %in% names(item)) {
       stop("Settings can't contain reserved tag 'multisettings'.")
     }
     
     tmp <- list()
-    expandableItems <- character(0)
+    expandableItems <- list()
     for(setting in names(item)) {
-      if(.allListElementsEqual(item[[setting]])) {
-        tmp[[setting]] <- item[[setting]][[1]]
+      value <- item[[setting, setAttributes=T]]
+      tmp[[setting]] <- value
+      if(attr(value, "settingType") == "multi") {
         expandableItems <- c(expandableItems, setting)
-      } else {
-        tmp[[setting]] <- item[[setting]]
       }
     }
     item <- tmp
 
-    item[[expandableItemsTag]] <- expandableItems
+    names(expandableItems) <- rep(.expandableItemsTag, length(expandableItems))
+    item[[.expandableItemsTag]] <- expandableItems
   }
-  
+
   NextMethod(tag=tag)
+}
+
+
+##' @export
+expandMultiSettings <- function(x) {
+  UseMethod("expandMultiSettings")
+}
+
+##' @export
+expandMultiSettings.list <- function(x) {
+  if(!(.expandableItemsTag %in% names(x))) {
+    return(multiSettings)
+  } else {
+    result <- MultiSettings(Settings(x))
+    for(setting in x[[.expandableItemsTag]]) {
+      result[[setting, global=FALSE]] <- x[[setting]]
+    }
+
+    result[[.expandableItemsTag]] <- NULL
+    
+    return(result)
+  }
 }
 
 
