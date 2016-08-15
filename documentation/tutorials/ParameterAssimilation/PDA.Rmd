@@ -47,7 +47,7 @@ Today, we're again going to work mostly in Rstudio, in order to easily edit adva
 
 The following variables need to be set specific to the site being run and the workflow being run
 ```{r}
-workflow_id <- 900000002  ## comes from the History table
+workflow_id <- 99000000002  ## comes from the History table
 
 years       <- 2003:2006
 
@@ -56,7 +56,7 @@ years       <- 2003:2006
 ##   Find the "plain" site record (no CF or model name) that's on your server 
 ##    (probably last in the list)
 ##   Click on the magnifying glass icon then look under "View Related Files"
-datadir     <- "/home/carya/output/dbfiles/Ameriflux_site_0-676/US-Wcr." 
+datadir     <- "/home/carya/output/dbfiles/Ameriflux_site_0-676/US-WCr." 
 
 ## where PEcAn is saving output (default OK on VM)
 outdir      <- "/home/carya/output" 
@@ -208,11 +208,11 @@ The PDA you ran has automatically produced an updated XML file that includes the
 ```{r eval=FALSE}
  # Call model specific write.configs
   settings.postPDA <- run.write.configs(settings.postPDA,
-                          write=settings$database$bety$write,     
-                          ens.sample.method=settings$ensemble$method)
+                          write=settings.postPDA$database$bety$write,     
+                          ens.sample.method=settings.postPDA$ensemble$method)
 
  # Start ecosystem model runs, this one takes awhile...
-  start.model.runs(settings.postPDA, settings$database$bety$write)
+  start.model.runs(settings.postPDA, settings.postPDA$database$bety$write)
 
  # Get results of model runs
   get.results(settings.postPDA)
