@@ -32,7 +32,7 @@ parse.global.settings <- function(global.settings){
       settings.i$run <- runs[[i]]
       plain.list[[i]] <- settings.i
     }
-    settings.list <- MultiSettings(plain.list)
+    settings.list <- PEcAn.multisettings::MultiSettings(plain.list)
     return(settings.list)
   }
     
