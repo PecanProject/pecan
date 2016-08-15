@@ -48,6 +48,9 @@ is.MultiSettings <- function(x) {
     } else {
       if(length(x) == length(value)) {
         value <- as.list(value)
+        if(is.null(names(value))) {
+          names(value) <- rep(i, length(x))
+        }
         for(j in seq_along(x)) {
           x[[j]][[i]] <- value[[j]]
         }
@@ -143,7 +146,7 @@ print.MultiSettings <- function(x, printAll=FALSE, ...) {
 .expandableItemsTag <- "multisettings"
 
 ##' @export
-listToXml.MultiSettings <- function(item, tag="pecan.multi", collapse=TRUE) {
+listToXml.MultiSettings <- function(item, tag, collapse=TRUE) {
   if(collapse && length(item) > 1) {
     if(.expandableItemsTag %in% names(item)) {
       stop("Settings can't contain reserved tag 'multisettings'.")
@@ -164,7 +167,7 @@ listToXml.MultiSettings <- function(item, tag="pecan.multi", collapse=TRUE) {
     item[[.expandableItemsTag]] <- expandableItems
   }
 
-  NextMethod(tag=tag)
+  NextMethod()
 }
 
 

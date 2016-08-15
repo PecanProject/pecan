@@ -8,7 +8,7 @@
 ## #-------------------------------------------------------------------------------
 context("test Settings classes")
 
-if(TRUE) {
+if(FALSE) {
   library(testthat)
   library(devtools)
   rm(list=ls())
@@ -290,7 +290,7 @@ are.equal.possiblyNumericToCharacter <- function(o1, o2) {
 test_that("multiSettings write to and read from xml as expcted (i.e., with collapsing/expanding global settings)", {
   msOrig <- multiSettingsTemplate
   
-  msXML <- listToXml(msOrig)
+  msXML <- listToXml(msOrig, "pecan.multi")
   listNew <- xmlToList(msXML)
   msNew <- expandMultiSettings(listNew)
   

@@ -196,6 +196,7 @@ listToXml <- function (x, ...) {
 ##' @author David LeBauer, Carl Davidson, Rob Kooper
 #--------------------------------------------------------------------------------------------------#
 listToXml.default <- function(item, tag) {
+
   # just a textnode, or empty node with attributes
   if(typeof(item) != 'list') {
     if (length(item) > 1) {
