@@ -114,7 +114,7 @@ In addition, you may need to edit ```<inputs><file><path>```, depending on the s
   <assim.batch>
     <method>emulator</method>
     <n.knot>75</n.knot>
-    <iter>20000</iter>
+    <iter>10000</iter>
     <chain>3</chain>
     <param.names>
       <soil>
