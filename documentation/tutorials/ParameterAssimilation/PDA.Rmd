@@ -270,10 +270,10 @@ Finally, let's run SIPNET again, once with mean values from priors and once with
  plot(NEEo, ylim=c(min(NEEo, na.rm=TRUE), max(NEEo, na.rm = TRUE)), ylab= "NEE", main="Ameriflux NEE data", col="green")
  legend("bottomright", legend="Data", pch=1, col="green")
  plot(NEEo, ylim=c(min(NEEo, na.rm=TRUE), max(NEEo, na.rm = TRUE)), ylab= "NEE", main="Pre-PDA comparison", col="green")
- points(pre.assimilation.model, col="purple", pch=3, cex=0.5))
+ points(pre.assimilation.model, col="purple", pch=3, cex=0.5)
  legend("bottomright", legend=c("Data","Model"), pch=c(1,3), col=c("green","purple"))
  plot(NEEo, ylim=c(min(NEEo, na.rm=TRUE), max(NEEo, na.rm = TRUE)), ylab= "NEE", main="Post-PDA comparison", col="green")
- points(post.assimilation.model, col="purple", pch=3, cex=0.5))
+ points(post.assimilation.model, col="purple", pch=3, cex=0.5)
  legend("bottomright", legend=c("Data","Model"), pch=c(1,3), col=c("green","purple"))
  
  dev.off()
