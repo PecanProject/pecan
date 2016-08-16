@@ -202,7 +202,7 @@ If you haven't done so already, take a look at all of the outputs described here
 ## Post-PDA analyses
 
 In addition to the outputs of the PDA itself, you may want to conduct ensemble and/or sensitivity analyses based on the posteriors of the data assimilation, in order to check progress towards improved model fit and/or changing sensitivity. For this, you need to generate new model runs based on parameters sampled from the updated (by PDA) posterior, which is a simple matter of rerunning several steps of the PEcAn workflow. 
-The PDA you ran has automatically produced an updated XML file that includes the posterior id to be used in the next round of runs. Locate this file in your run directory and load the file for the post-pda ensemble/sensitivity analysis (if you already have the `settings.postPDA` list in your working environment you don't need to re-read the settings):
+The PDA you ran has automatically produced an updated XML file that includes the posterior id to be used in the next round of runs. Locate this file in your run directory and load the file for the post-pda ensemble/sensitivity analysis (if you already have the `settings` list in your working environment you don't need to re-read the settings):
 
 
 ```{r eval=FALSE}
@@ -224,8 +224,64 @@ The PDA you ran has automatically produced an updated XML file that includes the
  run.sensitivity.analysis(settings)
 ```
 
+Finally, let's run SIPNET again, once with mean values from priors and once with mean values from posteriors, and plot the outputs against data :
 
-Now you can check the new figures produced by your analyses under ```PEcAn_[workflow_id]/ensemble.ts.*.pdf```, ```PEcAn_[workflow_id]/pft/*/variance.decomposition.*.pdf``` and ```PEcAn_[workflow_id]/pft/*/sensitivity.analysis.*.pdf```, and compare them to the previous ones.
+```{r eval=FALSE}
+ # now we will run SIPNET one more time with the mean values of the constrained posterior
+ settings$ensemble$size = 1    # results in running the model once with the mean values
+ settings$sensitivity.analysis = NULL   # we don't want to repeat sensitivity
+ 
+ # write configs
+ settings <- run.write.configs(settings, write=settings$database$bety$write,      
+                              ens.sample.method=settings$ensemble$method)
+
+ # run model
+ start.model.runs(settings, settings$database$bety$write)
+ 
+ # let's do the same for pre-assimilation priors
+ # load the original pecan.PDA.INIT.xml (which has the information for your initial distributions)
+ settings <- read.settings(file.path(outdir,paste0("PEcAn_",workflow_id),"pecan.CONFIGS.xml"))
+ 
+ # run SIPNET one more time with the mean values from the priors
+ settings$ensemble$size = 1    
+ settings$sensitivity.analysis = NULL  
+ 
+ # write configs
+ settings <- run.write.configs(settings, write=settings$database$bety$write,      
+                              ens.sample.method=settings$ensemble$method)
+
+ # run model
+ start.model.runs(settings, settings$database$bety$write)
+ 
+ 
+ # read outputs
+ run.ids <- list.files(settings$rundir)
+ post.assimilation.model <-as.data.frame(read.output(as.numeric(run.ids[length(run.ids)-2]), 
+                                    outdir =   file.path(settings$host$outdir,run.ids[length(run.ids)-2]),
+                                    2003, 2006, variables = "NEE"))
+ 
+  pre.assimilation.model <-as.data.frame(read.output(as.numeric(run.ids[length(run.ids)-1]), 
+                                    outdir = file.path(settings$host$outdir,run.ids[length(run.ids)-1]),
+                                    2003, 2006, variables = "NEE"))
+ 
+ # save the comparison plots to pdf
+ pdf(file.path(outdir,paste0("PEcAn_",workflow_id),"model.data.comparison.pdf"), onefile=T, paper='A4r', height=15, width=20) 
+
+ plot(NEEo, ylim=c(min(NEEo, na.rm=TRUE), max(NEEo, na.rm = TRUE)), ylab= "NEE", main="Ameriflux NEE data", col="green")
+ legend("bottomright", legend="Data", pch=1, col="green")
+ plot(NEEo, ylim=c(min(NEEo, na.rm=TRUE), max(NEEo, na.rm = TRUE)), ylab= "NEE", main="Pre-PDA comparison", col="green")
+ points(pre.assimilation.model, col="purple", pch=3, cex=0.5))
+ legend("bottomright", legend=c("Data","Model"), pch=c(1,3), col=c("green","purple"))
+ plot(NEEo, ylim=c(min(NEEo, na.rm=TRUE), max(NEEo, na.rm = TRUE)), ylab= "NEE", main="Post-PDA comparison", col="green")
+ points(post.assimilation.model, col="purple", pch=3, cex=0.5))
+ legend("bottomright", legend=c("Data","Model"), pch=c(1,3), col=c("green","purple"))
+ 
+ dev.off()
+
+```
+
+
+Now you can check the new figures produced by your analyses under ```PEcAn_[workflow_id]/ensemble.ts.*.pdf```, ```PEcAn_[workflow_id]/pft/*/variance.decomposition.*.pdf``` and ```PEcAn_[workflow_id]/pft/*/sensitivity.analysis.*.pdf```, and compare them to the previous ones. Also, take a look at the comparison of model outputs to data when we run SIPNET with pre- and post-PDA parameter (mean) values under ```PEcAn_[workflow_id]/model.data.comparison.pdf```.
 
 ### Questions: 
 *	Looking at the ensemble analysis outputs in order (i.e., in order of increasing ID in the filenames), qualitatively how did the model fit to data change over the course of the analysis?
