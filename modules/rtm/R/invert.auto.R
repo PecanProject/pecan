@@ -77,7 +77,7 @@ invert.auto <- function(observed, invert.options, return.samples=TRUE, save.samp
             invert.function <- function(x){
                 set.seed(x)
                 invert.options$inits <- inits.function()
-                samps <- invert.custom(observed=observed, invert.options=invert.options, quiet=quiet)
+                samps <- invert.custom(observed=observed, invert.options=invert.options, quiet=quiet, seed=x)
                 return(samps)
             }
             maxcores <- detectCores()
