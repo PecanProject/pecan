@@ -48,6 +48,7 @@ all/inst/tests/$HOME
 #backup files
 *~
 # system setup files
+scripts/install_pecan.config
 web/config.php
 web/db/config.php
 DUKE_forcing_h.nc
@@ -64,3 +65,6 @@ FACE.sublime-workspace
 pecan.sublime-project
 sync2pecan
 tests/RyK*
+compile_on_geo.sh
+documentation/tutorials/*/*.html
+pecan.Rproj

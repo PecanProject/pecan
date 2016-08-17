@@ -154,6 +154,13 @@ if (!$finished) {
 <?php } ?>
     <div class="spacer"></div>
 <?php whoami(); ?>    
+<p>
+  <a href="https://pecan.gitbooks.io/pecan-documentation/content/" target="_blank">Documentation</a>
+  <br>
+  <a href="https://gitter.im/PecanProject/pecan" target="_blank">Chat Room</a>
+  <br>
+  <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
+</p>
   </div>
   <div id="output">
   <h2>Execution Status</h2>

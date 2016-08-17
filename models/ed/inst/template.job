@@ -2,7 +2,10 @@
 
 # redirect output
 exec 3>&1
-exec &> "@OUTDIR@/logfile.txt"
+exec &>> "@OUTDIR@/logfile.txt"
+
+TIMESTAMP=`date +%Y/%m/%d_%H:%M:%S`
+echo "Logging on "$TIMESTAMP
 
 # host specific setup
 @HOST_SETUP@
@@ -34,7 +37,9 @@ if [ ! -e "@OUTDIR@/history.xml" ]; then
 
   # check the status
   if [ $STATUS -ne 0 ]; then
-  	echo -e "ERROR IN MODEL RUN\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
+  	echo -e "ERROR IN MODEL RUN\nLogfile is located at '@OUTDIR@/logfile.txt'"
+  	echo "************************************************* End Log $TIMESTAMP"
+    echo ""
   	exit $STATUS
   fi
 
@@ -53,4 +58,6 @@ cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 @HOST_TEARDOWN@
 
 # all done
-echo -e "MODEL FINISHED\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
+echo -e "MODEL FINISHED\nLogfile is located at '@OUTDIR@/logfile.txt'"
+echo "************************************************* End Log $TIMESTAMP"
+echo ""

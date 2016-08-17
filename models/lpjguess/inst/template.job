@@ -21,7 +21,7 @@ if [ ! -e "@OUTDIR@/results.out" ]; then
   
    #check the status:
   if [ $STATUS -ne 0 ]; then
-    echo -e "ERROR IN MODEL RUN\nLogile is located at '@OUTDIR@/logfile.txt'" >&3
+    echo -e "ERROR IN MODEL RUN\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
     exit $STATUS
   fi
 

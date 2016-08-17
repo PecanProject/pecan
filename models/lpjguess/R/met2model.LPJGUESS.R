@@ -45,8 +45,8 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   var.names=c("tmp","pre","cld")
   n.var=length(var.names)
   long.names=c("air_temperature","precipitation_flux","surface_downwelling_shortwave_flux_in_air")
-  for(i in 1:n.var) out.file[[i]] <-paste(in.prefix, start_year, end_year, var.names[[i]], "nc", sep=".")
-  for(i in 1:n.var) out.files.full[[i]] <-file.path(outfolder,out.file[[i]])
+  for(i in 1:n.var) out.file[[i]] <-paste(in.prefix, sprintf("%04d", start_year), end_year, var.names[[i]], "nc", sep=".")
+  for(i in 1:n.var) out.files.full[[i]] <-file.path(outfolder, out.file[[i]])
   
   results <- data.frame(file = unlist(out.files.full),
                         host = fqdn(),
@@ -66,12 +66,13 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   }
 
     ## open netcdf files
-    ncin <- lapply(file.path(in.path,paste(in.prefix,year,"nc",sep=".")),nc_open)
+    ncin <- lapply(file.path(in.path, paste(in.prefix, year, "nc", sep=".")), nc_open)
     
     ## retrieve lat/lon 
     lon=ncvar_get(ncin[[1]],"longitude")
     lat=ncvar_get(ncin[[1]],"latitude")
     
+
     ## at least 2 lat-lon required for LPJ-GUESS to load the data
     lon=c(lon,lon)
     lat=c(lat,lat)
