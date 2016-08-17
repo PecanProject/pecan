@@ -6,7 +6,11 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-con <- db.open(list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
+if(fqdn() == "pecan2.bu.edu") {
+  con <- db.open(list(host="psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
+} else {
+  con <- db.open(list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
+}
 
 context("Basic Sanity tests for PEcAn functions that query BETYdb")
 
@@ -37,7 +41,10 @@ expected_tables <- c("citations", "citations_sites", "citations_treatments",
                      "variables", "workflows", "yields")
 for (t in expected_tables){
   test_that(paste(t, "table exists and has >= 1 columns"),{
-    tmp <- db.query(paste("select * from", t, "limit 1"), con = con) # will fail if table missing
+    tmp <- NULL
+    suppressWarnings(tmp <- db.query(paste("select * from", t, "limit 1"), con = con))
+      #RyK added suppressWarnings for sites.geometry having unrecognized field type
+    expect_false(is.null(tmp))
   })
 }  
 
@@ -56,7 +63,8 @@ test_that("database has a workflows table with appropriate columns",{
 ## the following suite could be more comprehensive, and only focus on fields used by PEcAn
 test_that("sites have id and geometry column",{
   ## regression test for redmine #1128
-  sites <- db.query("select * from sites limit 1;", con = con)
+  sites <- suppressWarnings(db.query("select * from sites limit 1;", con = con)) 
+    #RyK added suppressWarnings for geometry having unrecognized field type
   expect_true(all(c("id", "city", "state", "country", "mat", "map", "soil", "som", 
                     "notes", "soilnotes", "created_at", "updated_at", "sitename", 
                     "greenhouse", "user_id", "sand_pct", "clay_pct", 

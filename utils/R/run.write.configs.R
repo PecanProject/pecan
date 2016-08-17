@@ -26,7 +26,7 @@
 ##'
 ##' @author David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze
 run.write.configs <- function(settings, write = TRUE, ens.sample.method="uniform",
-                       posterior.files=rep(NA, length(settings$pfts))) {
+                       posterior.files=rep(NA, length(settings$pfts)), overwrite=TRUE) {
 
   ## Which posterior to use?
   for(i in seq_along(settings$pfts)){
@@ -54,12 +54,12 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method="uniform
   model = settings$model$type
   scipen = getOption("scipen")
   options(scipen=12)
-  get.parameter.samples(pfts = settings$pfts, posterior.files, ens.sample.method)
+  get.parameter.samples(settings, posterior.files, ens.sample.method)
   load(file.path(settings$outdir, "samples.Rdata"))
 
   require(coda)
   ## remove previous runs.txt
-  if (file.exists(file.path(settings$rundir, "runs.txt"))) {
+  if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {
     logger.warn("Existing runs.txt file will be removed.")
     unlink(file.path(settings$rundir, "runs.txt"))
   }
@@ -149,6 +149,23 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method="uniform
 }
 #==================================================================================================#
 
+
+##' @export
+runModule.run.write.configs <- function(settings, overwrite=TRUE) {
+  if(is.SettingsList(settings)) {
+    if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {
+      logger.warn("Existing runs.txt file will be removed.")
+      unlink(file.path(settings$rundir, "runs.txt"))
+    }
+    return(papply(settings, runModule.run.write.configs, overwrite=FALSE))
+  } else if (is.Settings(settings)) {
+    write <- settings$database$bety$write
+    ens.sample.method <- settings$ensemble$method
+    return(run.write.configs(settings, write, ens.sample.method, overwrite=overwrite))
+  } else {
+    stop("runModule.run.write.configs only works with Settings or SettingsList")
+  }
+}
  
 ####################################################################################################
 ### EOF.  End of R script file.          		

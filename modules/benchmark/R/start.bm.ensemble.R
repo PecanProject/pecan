@@ -1,21 +1,44 @@
 ##-------------------------------------------------------------------------------------------------#
-##' Start Benchmark Run
+##' Start Benchmark Ensemble
 ##'  
-##' @name start.bm.run
-##' @title Start benchmark run
-##' @param benchmark_reference_run.id,
-##' @param machine.id
-##' @export 
+##' @name start.bm.ensemble
+##' @title Start benchmark ensemble
+##' @param benchmark_reference_run.id
+##' @param con database connection
+##' @export start.bm.ensemble
 ##' 
 ##' @author Betsy Cowdery 
 
-start.bm.run <- function(BRR.id, database, machine.id){ #- leverage workflow.R
+start.bm.ensemble <- function(BRR, con){ 
+  
+    old.settings <- file.path(BRR$settings, "pecan.xml")
+    new.settings <<- sprintf("%s/%s.pecan.xml",BRR$settings, basename(BRR$settings))
+    clean.settings(old.settings,new.settings)
+    
+    commandArgs <- function(trailingOnly = TRUE) new.settings 
+    source("web/workflow.R")
+  
+  ensemble.id <- db.query(sprintf("SELECT id from ensembles as e join workflows as w on e.workflow_id = w.id where w.id = ", settings$workflow$id))
+  
+  bm.ensemble <- db.query(paste0("INSERT INTO benchmarks_ensembles (reference_run_id, ensemble_id, model_id, user_id, created_at, updated_at, citation_id) VALUES(",BRR$id,",",ensemble.id,",", BRR$model_id,", ",user_id,", NOW() , NOW(), 1000000001 ) RETURNING *;"),con)
+  
+  return(bm.ensemble)
+  
+}
+  
+  
+  
+  
+  
+  
+  #- leverage workflow.R
 #  - fill in new settings details
 #  - start.runs
 #  - update DB
 #  - return a settings object (R-list) <- workflow.id, ensemble.id, benchmark_ensemble.id, etc.
 #  - wait for runs to finish - status check function?
-}
+
+
 
 # https://github.com/PecanProject/pecan/issues/204
 # 

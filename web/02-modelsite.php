@@ -349,34 +349,42 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 <?php if ($offline) { ?>
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
-      <h1>Select host</h1>
+      <h1>Select host, model, site</h1>
       <p>Based on the host selected certain sites and models will be
       available.</p>
+      
+      <p>Mouse over menu headers for additional info</p>
 
-      <label id="hostlabel">Host:</label>
+      <span title="Server that models will be run on">
+      <label id="hostlabel">Host:</label></span>
       <select name="hostname" id="hostname" onChange="updateData();">
         <option selected><?php echo $hostname; ?></option>
       </select>
       <div class="spacer"></div>
 
-      <label id="modellabel">Model:</label>
+      <a href="https://pecan.gitbooks.io/pecan-documentation/content/models/" target="_blank" 
+      title="Link opens model descriptions in another window">
+      <label id="modellabel">Model:</label></a>
       <select name="modelid" id="modelid" onChange="updateData();">
         <option selected value="<?php echo $modelid; ?>"><?php echo $modelid; ?></option>
       </select>
       <div class="spacer"></div>
 
-      <label id="sitegrouplabel">Site Group:</label>
+      <span title="Filter map by networks of sites">
+      <label id="sitegrouplabel">Site Group:</label></span>
       <select name="sitegroupid" id="sitegroupid" onChange="updateData();">
         <option value="">All Sites</option>
         <?php echo $sitegroups; ?>
       </select>
       <div class="spacer"></div>
 
-      <label id="conversionlabel">Conversion:</label>
+      <span title="Click to add sites to the map that PEcAn can automatically process model inputs for. Default is to show just sites where a model already has all required inputs installed">
+      <label id="conversionlabel">Conversion:</label></span>
       <input type="checkbox" id="conversion" name="conversion" onChange="updateData();" <?php echo $conversion; ?>  /> 
       <div class="spacer"></div>
 
-      <label id="sitelabel">Site:</label>
+      <span title="Type here to search for sites by name. Click on map to select site">
+      <label id="sitelabel">Site:</label></span>
       <input name="siteid" id="siteid" type="hidden" value="<?php echo $siteid; ?>"/>
       <input name="sitename" id="sitename" type="text" />
 <?php if ($betydb != "") { ?>
@@ -391,7 +399,14 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
       <input id="next" type="button" value="Next" onclick="nextStep();" />    
       <div class="spacer"></div>
     </form>
-<?php whoami(); ?>    
+<?php whoami(); ?>  
+<p>
+  <a href="https://pecan.gitbooks.io/pecan-documentation/content/" target="_blank">Documentation</a>
+  <br>
+  <a href="https://gitter.im/PecanProject/pecan" target="_blank">Chat Room</a>
+  <br>
+  <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
+</p>
   </div>
   <div id="output"></div>
   <div id="footer"><?php echo get_footer(); ?></div>

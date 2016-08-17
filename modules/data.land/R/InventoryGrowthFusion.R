@@ -8,7 +8,7 @@
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion <- function(data,n.iter,random=TRUE){
+InventoryGrowthFusion <- function(data,n.iter,random=TRUE,burnin_plot=FALSE){
   require(rjags)
   
   burnin.variables = c("tau_add","tau_dbh","tau_inc","mu")
@@ -90,7 +90,7 @@ model{
   jags.out   <- coda.samples (model = j.model,
                               variable.names = burnin.variables,
                               n.iter = min(n.iter,2000))
-  plot(jags.out)
+  if(burnin_plot) plot(jags.out)
   
   ## run MCMC
   jags.out   <- coda.samples (model = j.model,
