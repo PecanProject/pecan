@@ -80,7 +80,7 @@ Perform a site-level SIPNET run using the following settings
   </spin.up>
   <forecast.time.step>1</forecast.time.step>
   <start.date>1980/01/01</start.date>
-  <end.date>2016/12/31</end.date>
+  <end.date>2015/12/31</end.date>
  </state.data.assimilation>
 ```
 
