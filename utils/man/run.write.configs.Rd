@@ -28,6 +28,6 @@ Main driver function to call the ecosystem model specific (e.g. ED, SiPNET)
 run and configuration file scripts
 }
 \author{
-David LeBauer, Shawn Serbin, Ryan Kelly
+David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze
 }
 

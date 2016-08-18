@@ -86,7 +86,7 @@ Perform a site-level SIPNET run using the following settings
 
 * Delete the ```<pfts>`` block from the settings
 
-* In the PEcAn History, go to your PDA run and open ```pecan.PDA.POST.xml``` (the one saved AFTER you finished the PDA)
+* In the PEcAn History, go to your PDA run and open ```pecan.pda[UNIQUEID].xml``` (the one PEcAn saved for you AFTER you finished the PDA)
 
 * Cut-and-paste the PDA ```<pfts>``` block into the SDA settings file
 
@@ -98,7 +98,7 @@ Perform a site-level SIPNET run using the following settings
  + Open a shell under Tools > Shell
  + ```cd`` to go to your home directory
  + To clone: ```git clone git@github.com:PalEON-Project/Camp2016.git```
- + To pull: ```cd Camp2016; git pull git@github.com:PalEON-Project/Camp2016.git master```
+ + To pull: ```cd Camp2016; git pull https://github.com/PalEON-Project/Camp2016.git master```
 
 * Open the tree-ring data assimilation workflow under Home > pecan > scripts > workflow.treering.R
 
