@@ -230,7 +230,6 @@ EDR.preprocess.ed2in <- function(ed2in.path, output.path, config.path,
         warning("Could not copy ED2IN with overwrite=FALSE. Attempting with overwrite=TRUE")
         ed2in.copy <- file.copy(ed2in.path, output.path, overwrite=TRUE)
         if(!ed2in.copy) stop('Unable to copy ED2IN file, even with overwrite=TRUE. Check permissions on both input and output directories.')
-        stop('Error copying ED2IN')
     }
     # Modify ED2IN
     ed2in.local.path <- file.path(output.path, "ED2IN")
