@@ -32,20 +32,20 @@ settings <- read.settings("pecan.SDA.xml")
 #---------------- Load plot and tree ring data. -------------------------------------------------------#
 status.start("LOAD DATA")
 ## Read tree data
-trees <- read.csv("~/Camp2016/ForestPlots/treecores2014.csv")
+trees <- read.csv("~/Camp2016/ForestPlots/2016/TenderfootBog_2016_Cleaned.csv")
 
 ## Read tree ring data
-rings <- Read_Tucson("~/Camp2016/ForestPlots/Tucson/")
+rings <- Read_Tucson("~/Camp2016/ForestPlots/2016/TucsonCombined/")
 
 ## Match observations & format for JAGS
-combined <- matchInventoryRings(trees,rings,extractor="Tag",nyears=36,coredOnly=FALSE) #WARNINGS
+combined <- matchInventoryRings(trees,rings,extractor="Tag",nyears=39,coredOnly=FALSE) #WARNINGS
 data <- buildJAGSdata_InventoryRings(combined) #WARNINGS
 status.end()
 
 #---------------- Load plot and tree ring data. -------------------------------------------------------#
 status.start("TREE RING MODEL")
 ## Tree Ring model
-n.iter = 3000
+n.iter = 5000
 jags.out = InventoryGrowthFusion(data,n.iter=n.iter)
 save(trees,rings,combined,data,jags.out,
      file=file.path(settings$outdir,"treering.Rdata"))
@@ -72,7 +72,8 @@ status.end()
 status.start("PLOT2AGB")
 out = as.matrix(jags.out)
 sel = grep('x[',colnames(out),fixed=TRUE)
-state = plot2AGB(combined,out[,sel],settings$outdir,list(allom.stats[[2]]),unit.conv=0.02)
+unit.conv = pi*10^2/10000
+state = plot2AGB(combined,out[,sel],settings$outdir,list(allom.stats[[2]]),unit.conv=unit.conv)
 
 NPP.conv <- .48 #Mg/ha/yr -> MgC/ha/yr
 AGB.conv <- (1/10000)*(1000/1)*.48 #Mg/ha -> kgC/m2
