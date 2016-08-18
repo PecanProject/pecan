@@ -41,7 +41,7 @@ Perform a site-level SIPNET run using the following settings
 
 ```
 <state.data.assimilation>
-  <n.ensemble>50</n.ensemble>
+  <n.ensemble>35</n.ensemble>
   <process.variance>FALSE</process.variance>
   <sample.parameters>TRUE</sample.parameters>
    <state.variables>
@@ -80,7 +80,7 @@ Perform a site-level SIPNET run using the following settings
   </spin.up>
   <forecast.time.step>1</forecast.time.step>
   <start.date>1980/01/01</start.date>
-  <end.date>2014/12/31</end.date>
+  <end.date>2015/12/31</end.date>
  </state.data.assimilation>
 ```
 
@@ -90,7 +90,7 @@ Perform a site-level SIPNET run using the following settings
 
 * Cut-and-paste the PDA ```<pfts>``` block into the SDA settings file
 
-* Save the file as ```pecan.SDA.xls```
+* Save the file as ```pecan.SDA.xml```
 
 # Loading data
 
