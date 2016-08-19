@@ -1,5 +1,14 @@
 ## split clim file into smaller time units to use in KF
-
+##' @title split.met.SIPNET
+##' @name  split.met.SIPNET
+##' @author Mike Dietze
+##' 
+##' @param met SIPNET met
+##' @description Splits climate met for SIPNET
+##' 
+##' @return files split up climate files
+##' @export
+##' 
 split.met.SIPNET <- function(met){
   
   path <- dirname(met)
