@@ -36,7 +36,8 @@
 #' outputs to initialize Metropolis Hastings. This may improve mixing time, but 
 #' risks getting caught in a local minimum.  Default=FALSE
 #' @param quiet Do not show progress bar. Default=FALSE
-invert.custom <- function(observed, invert.options, quiet=FALSE){
+#' @param return.jump If TRUE, return results as list that includes current Jump distribution (useful for continuing an ongoing run). Default = FALSE.
+invert.custom <- function(observed, invert.options, quiet=FALSE, return.jump=FALSE){
     library(MASS)
     observed <- as.matrix(observed)
     nspec <- ncol(observed)
@@ -60,10 +61,14 @@ invert.custom <- function(observed, invert.options, quiet=FALSE){
     ngibbs <- invert.options$ngibbs
     prior.function <- invert.options$prior.function
     param.mins <- invert.options$param.mins
+    if (length(inits) != length(param.mins)) {
+        stop(sprintf("Length mismatch between inits (%d) and param.mins (%d)", length(inits), length(param.mins)))
+    }
     adapt <- invert.options$adapt
     adj_min <- invert.options$adj_min
     target <- invert.options$target
     do.lsq <- invert.options$do.lsq
+    init.Jump <- invert.options$init.Jump
 
 # Set up inversion
     npars <- length(inits)
@@ -75,8 +80,12 @@ invert.custom <- function(observed, invert.options, quiet=FALSE){
     rsd <- 0.5
     PrevSpec <- model(inits)
     PrevError <- PrevSpec - observed
-    initsd <- inits * 0.05
-    Jump <- diag(initsd)
+    if (is.null(init.Jump)) {
+        initsd <- inits * 0.05
+        Jump <- diag(initsd)
+    } else {
+        Jump <- init.Jump
+    }
     results <- matrix(NA, nrow=ngibbs, ncol=npars+1)
     if(!is.null(names(inits))) cnames <- names(inits)
     else cnames <- sprintf("par%d", 1:length(inits))
@@ -121,6 +130,11 @@ invert.custom <- function(observed, invert.options, quiet=FALSE){
         results[ng,npars+1] <- rsd
     }
     if(!quiet) close(pb)
-    return(results)
+    if (return.jump){
+        out <- list(results = results, jump = Jump)
+        return(out)
+    } else {
+        return(results)
+    }
 }
 

@@ -34,10 +34,15 @@
 #' nchains Number of independent chains.
 #' 
 #' inits.function Function for randomly generating initial conditions.
-#' burnin Number of samples to burn-in before computing Gelman 
-#' Diagnostic. Default = 0.8 * ngibbs.
+#' 
+#' burnin Number of samples to burn-in before computing Gelman Diagnostic.
+#' Default = 0.8 * ngibbs.
 #'
-#' n.tries Number of attempted runs before giving up. Default = 5
+#' ngibbs.max Maximum number of total iterations (per chain). DEFAULT = 5e6
+#'
+#' ngibbs.min Minimum number of total iterations (per chain). DEFAULT = 5000.
+#'
+#' ngibbs.step Number of iterations between convergence checks. Default = 1000.
 #'
 #' do.lsq.first Initialize using least-squares optimization on first 
 #' try. Default = FALSE.
@@ -49,89 +54,146 @@
 #' attempt. Default = 0.8
 #'
 #' @param return.samples Include full samples list in output. Default = TRUE.
-#' @param save.samples Filename for saving samples after each iteration. If 
-#' 'NULL', do not save samples. Default = NULL.
 #' @param parallel Logical. Whether or not to run multiple chains in parallel on multiple cores (defualt=FALSE).
 #' @param parallel.cores Number of cores to use for parallelization. If NULL (default), allocate one fewer than detected number of cores.
 #' @param ... Other arguments to `check.convergence`
 #' @return List of "results" (summary statistics and Gelman Diagnostic) and 
 #' "samples"(mcmc.list object, or "NA" if return.samples=FALSE)
 
-invert.auto <- function(observed, invert.options, return.samples=TRUE, save.samples=NULL, quiet=FALSE, parallel=FALSE, parallel.cores=NULL, ...){
+invert.auto <- function(observed, invert.options, quiet=FALSE, parallel.cores=NULL, ...){
     library(coda)
-    n.tries <- invert.options$n.tries
+    library(parallel)
+    ngibbs.max <- invert.options$ngibbs.max
+    ngibbs.step <- invert.options$ngibbs.step
     nchains <- invert.options$nchains
     inits.function <- invert.options$inits.function
     invert.options$do.lsq <- invert.options$do.lsq.first
     if(invert.options$do.lsq) library(minpack.lm)
-    try.again <- TRUE
-    i.try <- 1
-    while(try.again & i.try <= n.tries){
-        print(sprintf("Attempt %d of %d", i.try, n.tries))
-        if(parallel & !require(parallel)){
-            warning("'parallel' package not installed. Proceeding without parallelization")
-            parallel <- FALSE
+    invert.options$ngibbs <- invert.options$ngibbs.min
+    burnin <- invert.options$ngibbs * 0.8
+
+    # Begin first set of runs
+    i.ngibbs <- invert.options$ngibbs.min
+
+    ## Create cluster
+    maxcores <- detectCores()
+    if(is.null(parallel.cores)){
+        cl <- makeCluster(maxcores - 1, "FORK")
+    } else {
+        if(!is.numeric(parallel.cores) | parallel.cores %% 1 != 0){
+            stop("Invalid argument to 'parallel.cores'. Must be integer or NULL")
+        } else if (parallel.cores > maxcores){
+            warning(sprintf("Requested %1$d cores but only %2$d cores available. Using only %2$d cores.", parallel.cores, maxcores))
+            parallel.cores <- maxcores
         }
-        if(parallel){
-            library(parallel)
-            invert.function <- function(x){
-                set.seed(x)
-                invert.options$inits <- inits.function()
-                samps <- invert.custom(observed=observed, invert.options=invert.options, quiet=quiet)
-                return(samps)
+        cl <- makeCluster(parallel.cores, "FORK")
+    }
+    print(sprintf("Running %d chains in parallel. Progress bar unavailable", nchains))
+
+    # Create inversion function
+    invert.function <- function(x){
+        set.seed(x$seed)
+        invert.options$inits <- x$inits
+        invert.options$init.Jump <- x$init.Jump
+        samps <- invert.custom(observed=observed, invert.options=invert.options, 
+                               quiet=quiet, return.jump=TRUE)
+        return(samps)
+    }
+    seeds <- 1e8 * runif(nchains)
+    inits <- lapply(1:nchains, function(x) inits.function())
+    inputs <- list()
+    for (i in 1:nchains) inputs[[i]] <- list(seed = seeds[i], inits = inits[[i]], jump = NULL)
+
+    # Begin inversion
+    invert.options$ngibbs <- invert.options$ngibbs.min
+    output.list <- parLapply(cl, inputs, invert.function)
+    samps.list <- lapply(output.list, "[[", 'results')
+    jump.list <- lapply(output.list, "[[", 'jump')
+
+    # Check for convergence
+    smcmc <- makeMCMCList(samps.list)
+    conv.check <- check.convergence(smcmc, autoburnin=TRUE)
+    if (conv.check$error) {
+        warning("Could not calculate Gelman diag. Assuming no convergence.")
+        conv.check$converged <- FALSE
+    }
+    if (conv.check$converged) {
+        # Done
+        out <- postProcess(i.ngibbs, samps.list, conv.check)
+    } else {
+        # Loop until convergence
+        continue <- TRUE
+        i.ngibbs <- invert.options$ngibbs.min
+        while (continue & i.ngibbs < ngibbs.max) {
+            print(sprintf("Starting at iteration %d...", i.ngibbs))
+            seeds <- 1e8 * runif(nchains)
+            inits <- lapply(samps.list, getLastRow)
+            inputs <- list()
+            for (i in 1:nchains) inputs[[i]] <- list(seed = seeds[i],
+                                                     inits = inits[[i]],
+                                                     jump = jump.list[[i]])
+            invert.options$ngibbs <- invert.options$ngibbs.step
+            output.list <- parLapply(cl, inputs, invert.function)
+            samps.list.current <- lapply(output.list, "[[", 'results')
+            samps.list <- combineChains(samps.list, samps.list.current)
+            jump.list <- lapply(output.list, "[[", 'jump')
+            
+            # Check for convergence
+            smcmc <- makeMCMCList(samps.list)
+            conv.check <- check.convergence(smcmc, autoburnin=TRUE)
+            if (conv.check$error) {
+                warning("Could not calculate Gelman diag. Assuming no convergence.")
+                conv.check$converged <- FALSE
             }
-            maxcores <- detectCores()
-            if(is.null(parallel.cores)){
-                cl <- makeCluster(maxcores - 1, "FORK")
+            if (conv.check$converged) {
+                # Done
+                out <- postProcess(i.ngibbs, samps.list, conv.check)
+                continue <- FALSE
             } else {
-                if(!is.numeric(parallel.cores) | parallel.cores %% 1 != 0){
-                    stop("Invalid argument to 'parallel.cores'. Must be integer or NULL")
-                } else if (parallel.cores > maxcores){
-                    warning(sprintf("Requested %1$d cores but only %2$d cores available. Using only %2$d cores.", parallel.cores, maxcores))
-                    parallel.cores <- maxcores
-                }
-                cl <- makeCluster(parallel.cores, "FORK")
-            }
-            print(sprintf("Running %d chains in parallel. Progress bar unavailable", nchains))
-            seed.list <- as.list(1e8 * runif(nchains))
-            samps.list <- parLapply(cl, seed.list, invert.function)
-        } else {
-            message("Running in serial mode. Better performance can be achieved by running multiple chains in parallel (set 'parallel=TRUE').")
-            samps.list <- list()
-            for(chain in 1:nchains){
-                print(sprintf("Chain %d of %d", chain, nchains))
-                invert.options$inits <- inits.function() 
-                samps.list[[chain]] <- invert.custom(observed=observed, invert.options=invert.options, quiet=quiet)
+                continue <- TRUE
+                i.ngibbs <- i.ngibbs + invert.options$ngibbs.step
             }
         }
-        if(!is.null(save.samples)) save(samps.list, file=save.samples)
-        # Check for convergence. Repeat if necessary.
-        samps.list.bt <- lapply(samps.list, burnin.thin, burnin=burnin, thin=1)
-        smcmc <- as.mcmc.list(lapply(samps.list.bt, as.mcmc))
-        conv.check <- check.convergence(smcmc, ...)
-        if(conv.check$error) {
-            i.try <- i.try + 1
-            warning("Could not calculate Gelman diag. Trying again")
-            next
-        } else {
-            if(conv.check$converged){
-                try.again <- FALSE
-                samps <- burnin.thin(do.call(rbind, samps.list.bt), burnin=0)
-                results <- summary.simple(samps)
-                results$gelman.diag <- conv.check$diagnostic
-            } else {
-                i.try <- i.try + 1
-                invert.options$target <- invert.options$target * invert.options$target.adj
-                if(i.try > invert.options$do.lsq.after) invert.options$do.lsq <- TRUE
-            }
+        if (i.ngibbs > ngibbs.max & continue) {
+            warning("Convergence was not achieved. Returning results as 'NA'.")
+            out$results <- NA
         }
     }
-    if(return.samples) samples <- as.mcmc.list(lapply(samps.list, as.mcmc))
-    else samples <- NA
-    if((i.try >= n.tries) & try.again){
-        warning("Convergence was not achieved. Returning results as 'NA'.")
-        results <- NA
-    }
-    out <- list(results=results, samples=samples)
     return(out)
+}
+
+getLastRow <- function(samps, exclude.cols = ncol(samps)){
+    cols <- 1:ncol(samps)
+    cols <- cols[-exclude.cols]
+    last_row <- samps[nrow(samps), cols]
+    return(last_row)
+}
+
+combineChains <- function(samps1, samps2){
+    stopifnot(length(samps1) == length(samps2))
+    nchains <- length(samps1)
+    sampsfinal <- list()
+    for (i in 1:nchains) sampsfinal[[i]] <- rbind(samps1[[1]], samps2[[i]])
+    stopifnot(length(sampsfinal) == length(samps1))
+    return(sampsfinal)
+}
+
+makeMCMCList <- function(samps) {
+    samps.mcmc <- lapply(samps, mcmc)
+    stopifnot(all(sapply(samps.mcmc, is.mcmc)))
+    samps.mcmc.list <- mcmc.list(samps.mcmc)
+    stopifnot(is.mcmc.list(samps.mcmc.list))
+    return(samps.mcmc.list)
+}
+
+postProcess <- function(i.ngibbs, samps.list, conv.check) {
+    print(sprintf("Converged after %d iterations with Gelman diag. %.4f",
+                  i.ngibbs, conv.check$diagnostic))
+    samps.out <- makeMCMCList(samps.list)
+    # Calculate summary statistics
+    samps.bt <- lapply(samps.list, burnin.thin)
+    samps.combined <- do.call(rbind, samps.bt)
+    results <- summary.simple(samps.combined)
+    results$gelman.diag <- conv.check$diagnostic
+    return(list(results = results, samples = samps.out))
 }
