@@ -50,11 +50,11 @@ load.x_netcdf <- function(data.path, format, site, vars=NULL){
     # throw error if can't parse time format  
     if(is.na(date.origin)) logger.error("All time formats failed to parse. No formats found.")
     
-    time.stamp.match <- gsub("UTC", "", date.origin)
+    time.stamp.match <- gsub("UTC", "", date.origin) 
     t.units <- gsub(paste0(" since ", time.stamp.match, ".*"), "", ncatt_get(nc[[i]], dims[time.var])$units)
     
     
-    foo <- as.POSIXct(date.origin) + ud.convert(time.col[[i]], t.units ,"seconds")
+    foo <- as.POSIXlt(date.origin, tz="GMT") + ud.convert(time.col[[i]], t.units ,"seconds")
     time.col[[i]] <- foo
     
   }
