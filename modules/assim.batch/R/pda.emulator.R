@@ -283,10 +283,10 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
                 nrow=sum(n.param))
   
   
-  jmp.list <- list() 
+
   
   if(run.block){
-
+    jmp.list <- list() 
     init.list <- list()
     
     for(c in 1:settings$assim.batch$chain){
@@ -300,10 +300,6 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     }
     
     
-  }else{
-    
-    jmp.list <- jcov
-      
   }
   
   
