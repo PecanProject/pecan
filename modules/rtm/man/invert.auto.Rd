@@ -5,8 +5,8 @@
 \title{Inversion with automatic convergence checking}
 \usage{
 invert.auto(observed, invert.options, return.samples = TRUE,
-  save.samples = NULL, quiet = FALSE, parallel = FALSE,
-  parallel.cores = NULL, ...)
+  save.samples = NULL, quiet = FALSE, parallel = TRUE,
+  parallel.cores = NULL)
 }
 \arguments{
 \item{observed}{Matrix of observed values. Must line up with output of 'model'.}
@@ -29,6 +29,7 @@ same). Constants should be implicitly included here.
 
 adapt Number of steps for adapting covariance matrix (i.e. adapt every 'n' 
 steps). Default=100
+
 adj_min Minimum threshold for rescaling Jump standard deviation.  Default = 
 0.1.
 
@@ -42,36 +43,27 @@ risks getting caught in a local minimum.  Default=FALSE
 nchains Number of independent chains.
 
 inits.function Function for randomly generating initial conditions.
-burnin Number of samples to burn-in before computing Gelman 
-Diagnostic. Default = 0.8 * ngibbs.
 
-n.tries Number of attempted runs before giving up. Default = 5
+ngibbs.max Maximum number of total iterations (per chain). DEFAULT = 5e6
 
-do.lsq.first Initialize using least-squares optimization on first 
-try. Default = FALSE.
+ngibbs.min Minimum number of total iterations (per chain). DEFAULT = 5000.
 
-do.lsq.after Number of tries before starting initialization using 
-least-squares optimization. Default = TRUE.
-
-target.adj Amount by which to adjust target acceptance rate every 
-attempt. Default = 0.8}
+ngibbs.step Number of iterations between convergence checks. Default = 1000.}
 
 \item{return.samples}{Include full samples list in output. Default = TRUE.}
 
-\item{save.samples}{Filename for saving samples after each iteration. If 
-'NULL', do not save samples. Default = NULL.}
+\item{save.samples}{Save samples to file as the inversion proceeds (useful for debugging).
+If NULL, do not save samples. Default = NULL.}
 
-\item{parallel}{Logical. Whether or not to run multiple chains in parallel on multiple cores (defualt=FALSE).}
+\item{parallel}{Logical. Whether or not to run multiple chains in parallel on multiple cores (default = TRUE).}
 
 \item{parallel.cores}{Number of cores to use for parallelization. If NULL (default), allocate one fewer than detected number of cores.}
-
-\item{...}{Other arguments to `check.convergence`}
 }
 \value{
-List of "results" (summary statistics and Gelman Diagnostic) and 
-"samples"(mcmc.list object, or "NA" if return.samples=FALSE)
+List of "results" (summary statistics and Gelman Diagnostic) and "samples" (mcmc.list object, or "NA" if return.samples=FALSE)
 }
 \details{
-Performs an inversion via the `invert.custom` function with multiple chains and automatic convergence checking. Convergence checks are performed using the multivariate Gelman-Rubin diagnostic.
+Performs an inversion via the `invert.custom` function with multiple chains and automatic convergence checking. 
+Convergence checks are performed using the multivariate Gelman-Rubin diagnostic.
 }
 

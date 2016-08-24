@@ -37,7 +37,7 @@ check.convergence <- function(mcmc.samples.list,
             msg <- sprintf("Converged with Gelman diag = %.3f", diagnostic)
         } else {
             converged <- FALSE
-            msg <- sprintf("Did not converge (Gelman Diag = %.3f). Trying again.",
+            msg <- sprintf("Did not converge (Gelman Diag = %.3f).",
                            diagnostic)
         }
         if(verbose) print(msg)

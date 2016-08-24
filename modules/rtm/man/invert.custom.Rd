@@ -4,7 +4,7 @@
 \alias{invert.custom}
 \title{Bayesian inversion of a model}
 \usage{
-invert.custom(observed, invert.options, quiet = FALSE)
+invert.custom(observed, invert.options, quiet = FALSE, return.jump = FALSE)
 }
 \arguments{
 \item{observed}{Vector, matrix, or data frame (coerced to matrix) of 
@@ -40,6 +40,8 @@ outputs to initialize Metropolis Hastings. This may improve mixing time, but
 risks getting caught in a local minimum.  Default=FALSE}
 
 \item{quiet}{Do not show progress bar. Default=FALSE}
+
+\item{return.jump}{If TRUE, return results as list that includes current Jump distribution (useful for continuing an ongoing run). Default = FALSE.}
 }
 \details{
 Performs an inversion of an arbitrary model using a modified 
