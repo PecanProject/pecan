@@ -4,7 +4,8 @@
 \alias{invert.custom}
 \title{Bayesian inversion of a model}
 \usage{
-invert.custom(observed, invert.options, quiet = FALSE, return.jump = FALSE)
+invert.custom(observed, invert.options, quiet = FALSE, return.jump = FALSE,
+  seed = NULL)
 }
 \arguments{
 \item{observed}{Vector, matrix, or data frame (coerced to matrix) of 
@@ -17,31 +18,33 @@ inits Vector of initial values of model parameters to be inverted.
 
 ngibbs Number of MCMC iterations
 
-prior.function Function for use as prior. Should take a vector of parameters 
-as input and return a single value -- the sum of their log-densities -- as 
-output.
+prior.function Function for use as prior.
+Should take a vector of parameters as input and return a single value -- the sum of their log-densities -- as output.
 
 param.mins Vector of minimum values for inversion parameters
 
-model The model to be inverted. This should be an R function that takes 
-`params` as input and returns one column of `observed` (nrows should be the 
-same). Constants should be implicitly included here.
+model The model to be inverted.
+This should be an R function that takes `params` and `seed` as input and returns one column of `observed` (nrows should be the same).
+Constants should be implicitly included here.
 
-adapt Number of steps for adapting covariance matrix (i.e. adapt every 'n' 
-steps). Default=100
-adj_min Minimum threshold for rescaling Jump standard deviation.  Default = 
-0.1.
+adapt Number of steps for adapting covariance matrix (i.e. adapt every 'n' steps).
+Default=100
 
-target Target acceptance rate. Default=0.234, based on recommendation for 
-multivariate block sampling in Haario et al. 2001
+adj_min Minimum threshold for rescaling Jump standard deviation.
+Default = 0.1.
 
-do.lsq Perform least squares optimization first (see `invert.lsq`), and use 
-outputs to initialize Metropolis Hastings. This may improve mixing time, but 
-risks getting caught in a local minimum.  Default=FALSE}
+target Target acceptance rate.
+Default=0.234, based on recommendation for multivariate block sampling in Haario et al. 2001
+
+do.lsq Perform least squares optimization first (see `invert.lsq`), and use outputs to initialize Metropolis Hastings.
+This may improve mixing time, but risks getting caught in a local minimum.
+Default=FALSE}
 
 \item{quiet}{Do not show progress bar. Default=FALSE}
 
 \item{return.jump}{If TRUE, return results as list that includes current Jump distribution (useful for continuing an ongoing run). Default = FALSE.}
+
+\item{seed}{Run-unique ID. Useful for parallel runs. Default=NULL}
 }
 \details{
 Performs an inversion of an arbitrary model using a modified 

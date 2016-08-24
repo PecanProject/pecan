@@ -51,7 +51,7 @@ params.prospect5b <- c("N", "Cab", "Car", "Cbrown", "Cw", "Cm")
 
 # Default settings for PROSPECT inversion
 default.settings.prospect <- list(
-    model = function(params) prospect(params, 5)[,1],
+    model = function(params, seed=NULL) prospect(params, 5)[,1],
     inits.function = function() 
         with(prior.defaultvals.prospect(sd.inflate=3), 
              rlnorm(5, mu, sigma) + c("N"=1,"Cab"=0,"Car"=0,"Cw"=0,"Cm"=0)),
