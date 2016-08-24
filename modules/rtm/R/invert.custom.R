@@ -14,30 +14,32 @@
 #'
 #' ngibbs Number of MCMC iterations
 #'
-#' prior.function Function for use as prior. Should take a vector of parameters 
-#' as input and return a single value -- the sum of their log-densities -- as 
-#' output.
+#' prior.function Function for use as prior.
+#' Should take a vector of parameters as input and return a single value -- the sum of their log-densities -- as output.
 #'
 #' param.mins Vector of minimum values for inversion parameters
 #'
-#' model The model to be inverted. This should be an R function that takes 
-#' `params` as input and returns one column of `observed` (nrows should be the 
-#' same). Constants should be implicitly included here.
+#' model The model to be inverted.
+#' This should be an R function that takes `params` and `seed` as input and returns one column of `observed` (nrows should be the same).
+#' Constants should be implicitly included here.
 #'
-#' adapt Number of steps for adapting covariance matrix (i.e. adapt every 'n' 
-#' steps). Default=100
-#' adj_min Minimum threshold for rescaling Jump standard deviation.  Default = 
-#' 0.1.
+#' adapt Number of steps for adapting covariance matrix (i.e. adapt every 'n' steps).
+#' Default=100
 #' 
-#' target Target acceptance rate. Default=0.234, based on recommendation for 
-#' multivariate block sampling in Haario et al. 2001
+#' adj_min Minimum threshold for rescaling Jump standard deviation.
+#' Default = 0.1.
 #' 
-#' do.lsq Perform least squares optimization first (see `invert.lsq`), and use 
-#' outputs to initialize Metropolis Hastings. This may improve mixing time, but 
-#' risks getting caught in a local minimum.  Default=FALSE
+#' target Target acceptance rate.
+#' Default=0.234, based on recommendation for multivariate block sampling in Haario et al. 2001
+#' 
+#' do.lsq Perform least squares optimization first (see `invert.lsq`), and use outputs to initialize Metropolis Hastings.
+#' This may improve mixing time, but risks getting caught in a local minimum.
+#' Default=FALSE
+#' 
 #' @param quiet Do not show progress bar. Default=FALSE
 #' @param return.jump If TRUE, return results as list that includes current Jump distribution (useful for continuing an ongoing run). Default = FALSE.
-invert.custom <- function(observed, invert.options, quiet=FALSE, return.jump=FALSE){
+#' @param seed Run-unique ID. Useful for parallel runs. Default=NULL
+invert.custom <- function(observed, invert.options, quiet=FALSE, return.jump=FALSE, seed=NULL){
     library(MASS)
     observed <- as.matrix(observed)
     nspec <- ncol(observed)
@@ -70,6 +72,13 @@ invert.custom <- function(observed, invert.options, quiet=FALSE, return.jump=FAL
     do.lsq <- invert.options$do.lsq
     init.Jump <- invert.options$init.Jump
 
+# If `model` doesn't have a seed argument (second argument), add it.
+    model.args <- names(formals(model))
+    if(length(model.args) != 2){
+        warning("Model was missing 'seed' argument. Adding as empty argument.")
+        model <- function(params, seed=NULL) invert.options$model(params)
+    }
+
 # Set up inversion
     npars <- length(inits)
     if(do.lsq){
@@ -78,7 +87,7 @@ invert.custom <- function(observed, invert.options, quiet=FALSE, return.jump=FAL
     }
     rp1 <- 0.001 + nspec*nwl/2
     rsd <- 0.5
-    PrevSpec <- model(inits)
+    PrevSpec <- model(inits, seed)
     PrevError <- PrevSpec - observed
     if (is.null(init.Jump)) {
         initsd <- inits * 0.05
@@ -111,7 +120,7 @@ invert.custom <- function(observed, invert.options, quiet=FALSE, return.jump=FAL
         }
         tvec <- mvrnorm(1, inits, Jump)
         if(all(tvec > param.mins)){
-            TrySpec <- model(tvec)
+            TrySpec <- model(tvec, seed)
             TryError <- TrySpec - observed
             TryPost <- sum(dnorm(TryError,0,rsd,1)) + prior.function(tvec)
             PrevPost <- sum(dnorm(PrevError,0,rsd,1)) + prior.function(inits)

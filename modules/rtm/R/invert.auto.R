@@ -70,8 +70,6 @@ invert.auto <-
     burnin <- invert.options$ngibbs * 0.8
 
     # Begin first set of runs
-    i.ngibbs <- invert.options$ngibbs.min
-
     ## Create cluster
     maxcores <- detectCores()
     if(is.null(parallel.cores)){
@@ -94,7 +92,7 @@ invert.auto <-
         invert.options$inits <- x$inits
         invert.options$init.Jump <- x$init.Jump
         samps <- invert.custom(observed=observed, invert.options=invert.options, 
-                               quiet=quiet, return.jump=TRUE)
+                               quiet=quiet, return.jump=TRUE, seed = x)
         return(samps)
     }
     seeds <- 1e8 * runif(nchains)
@@ -124,15 +122,16 @@ invert.auto <-
         continue <- TRUE
         i.ngibbs <- invert.options$ngibbs.min
         while (continue & i.ngibbs < ngibbs.max) {
-            if (!quiet) print(sprintf("Starting at iteration %d...", i.ngibbs))
+            if (!quiet) print(sprintf("Running iterations %d to %d", i.ngibbs, i.ngibbs + ngibbs.step))
             seeds <- 1e8 * runif(nchains)
             inits <- lapply(samps.list, getLastRow)
             inputs <- list()
             for (i in 1:nchains) inputs[[i]] <- list(seed = seeds[i],
                                                      inits = inits[[i]],
                                                      jump = jump.list[[i]])
-            invert.options$ngibbs <- invert.options$ngibbs.step
+            invert.options$ngibbs <- ngibbs.step
             output.list <- parLapply(cl, inputs, invert.function)
+            i.ngibbs <- i.ngibbs + ngibbs.step
             if (!is.null(save.samples)) save(output.list, samps.list, file = save.samples)
             samps.list.current <- lapply(output.list, "[[", 'results')
             samps.list <- combineChains(samps.list, samps.list.current)
@@ -151,7 +150,6 @@ invert.auto <-
                 continue <- FALSE
             } else {
                 continue <- TRUE
-                i.ngibbs <- i.ngibbs + invert.options$ngibbs.step
             }
         }
         if (i.ngibbs > ngibbs.max & continue) {
