@@ -780,7 +780,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
 ##'
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.postprocess <- function(settings, con, mcmc.param.list, jvar.list, pname, prior, prior.ind) {
+pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.ind) {
 
   params.subset <- pda.plot.params(settings, mcmc.param.list, prior.ind)
 
