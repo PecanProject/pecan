@@ -218,7 +218,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     }else{
       load(settings$assim.batch$emulator.path) # load previously built emulator to run a longer mcmc
       load(settings$assim.batch$llik.path)
-      load(settings$assim.batch$jvar.path)
+      load(settings$assim.batch$jcov.path)
       load(settings$assim.batch$mcmc.path)
       
       init.list <- list()
@@ -283,20 +283,27 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
                 nrow=sum(n.param))
   
   
+  jmp.list <- list() 
   
   if(run.block){
-    
-    jvar.list <- list() 
+
     init.list <- list()
     
     for(c in 1:settings$assim.batch$chain){
-      jvar.list[[c]]  <- sapply(prior.fn.all$qprior, 
+      jmp.list[[c]]  <- sapply(prior.fn.all$qprior, 
                                 function(x) 0.1 * diff(eval(x, list(p=c(0.05,0.95)))))[prior.ind.all]
+      jmp.list[[c]] <- sqrt(jmp.list[[c]])
       
       init.x <- lapply(prior.ind.all, function(v) eval(prior.fn.all$rprior[[v]], list(n=1)))
       names(init.x) <- unlist(pname)[prior.ind.all]
       init.list[[c]] <- init.x
     }
+    
+    
+  }else{
+    
+    jmp.list <- jcov
+      
   }
   
   
@@ -319,11 +326,11 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
             rng       = rng,       ## range
             format    = "lin",      ## "lin"ear vs "log" of LogLikelihood 
             mix       = mix,     ## Jump "each" dimension independently or update them "joint"ly
-            #                  jmp0 = apply(X,2,function(x) 0.3*diff(range(x))), ## Initial jump size
-            jmp0      = sqrt(jvar.list[[chain]]),  ## Initial jump size
+            jmp0      = jmp.list[[chain]],  ## Initial jump size
             ar.target = settings$assim.batch$jump$ar.target,   ## Target acceptance rate
             priors    = prior.fn.all$dprior[prior.ind.all], ## priors
-            settings  = settings
+            settings  = settings,
+            run.block  = run.block
     )})
   
   mcmc.list.tmp <- list()
@@ -347,7 +354,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     colnames(m) <- unlist(pname)[prior.ind.all]
     mcmc.list.tmp[[c]] <- m
     
-    jvar.list[[c]] <- mcmc.out[[c]]$jump@history[nrow(mcmc.out[[c]]$jump@history),]
+    jmp.list[[c]] <- mcmc.out[[c]]$jump
   }
   
   
@@ -387,9 +394,9 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
                                               paste0('mcmc.list.pda', settings$assim.batch$ensemble.id, '.Rdata'))
   save(mcmc.list, file = settings$assim.batch$mcmc.path)
   
-  settings$assim.batch$jvar.path <- file.path(settings$outdir, 
+  settings$assim.batch$jcov.path <- file.path(settings$outdir, 
                                               paste0('jvar.pda', settings$assim.batch$ensemble.id, '.Rdata'))
-  save(jvar.list, file = settings$assim.batch$jvar.path)
+  save(jmp.list, file = settings$assim.batch$jcov.path)
   
   
   # Separate each PFT's parameter samples to their own list
@@ -401,7 +408,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   }
 
 
-  settings <- pda.postprocess(settings, con, mcmc.param.list, jvar.list, pname, prior.list, prior.ind)
+  settings <- pda.postprocess(settings, con, mcmc.param.list, pname, prior.list, prior.ind)
 
   ## close database connection
   if(!is.null(con)) db.close(con)

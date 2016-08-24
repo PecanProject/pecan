@@ -176,7 +176,7 @@ is.accepted <- function(ycurr, ynew, format='lin'){
 ##' 
 ##' @author Michael Dietze
 mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL, 
-    jmp0=0.35*(rng[,2]-rng[,1]), ar.target=0.5, priors=NA, settings){
+    jmp0=0.35*(rng[,2]-rng[,1]), ar.target=0.5, priors=NA, settings, run.block = TRUE){
   
   haveTime <- FALSE #require("time")
 
@@ -185,8 +185,15 @@ mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
 
   xcurr <- x0
   dim <- length(x0)
-  jmp <- mvjump(ic=jmp0,rate=ar.target, nc=dim)
-  jcov <- diag((jmp0)^2)
+
+  if(run.block){
+    jcov <- diag((jmp0)^2)
+    jmp <- mvjump(ic=jmp0,rate=ar.target, nc=dim)
+  }else{
+    jcov <- jmp0
+    jmp <- mvjump(ic=diag(jmp0),rate=ar.target, nc=dim)
+  }
+  
   samp <- matrix(NA,nmcmc,dim)
   
   ## loop
@@ -241,7 +248,7 @@ mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
   if(haveTime) progressBar(1.1,prevTime);
   
   # hack to retrieve the last jump variances from the funtion until I update it
-  if(mix == "joint") jmp@history[nrow(jmp@history),] <- round(diag(jcov),3)
+  if(mix == "joint") jmp <- jcov
   
   return(list(mcmc=samp,jump=jmp))
 ##    xnew <- gpeval,x0,k=k,mu=ey,tau=tauwbar,psi=psibar,x=gp$x.compact,rng=rng)
