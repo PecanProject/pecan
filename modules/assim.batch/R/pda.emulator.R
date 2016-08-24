@@ -395,7 +395,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   save(mcmc.list, file = settings$assim.batch$mcmc.path)
   
   settings$assim.batch$jcov.path <- file.path(settings$outdir, 
-                                              paste0('jvar.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+                                              paste0('jcov.pda', settings$assim.batch$ensemble.id, '.Rdata'))
   save(jmp.list, file = settings$assim.batch$jcov.path)
   
   
