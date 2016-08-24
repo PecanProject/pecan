@@ -1,7 +1,8 @@
 #' @name invert.auto 
 #' 
 #' @title Inversion with automatic convergence checking
-#' @details Performs an inversion via the `invert.custom` function with multiple chains and automatic convergence checking. Convergence checks are performed using the multivariate Gelman-Rubin diagnostic.
+#' @details Performs an inversion via the `invert.custom` function with multiple chains and automatic convergence checking. 
+#' Convergence checks are performed using the multivariate Gelman-Rubin diagnostic.
 #' @param observed Matrix of observed values. Must line up with output of 'model'.
 #' @param invert.options R list object containing the following elements:
 #' 
@@ -21,6 +22,7 @@
 #'
 #' adapt Number of steps for adapting covariance matrix (i.e. adapt every 'n' 
 #' steps). Default=100
+#' 
 #' adj_min Minimum threshold for rescaling Jump standard deviation.  Default = 
 #' 0.1.
 #' 
@@ -35,39 +37,34 @@
 #' 
 #' inits.function Function for randomly generating initial conditions.
 #' 
-#' burnin Number of samples to burn-in before computing Gelman Diagnostic.
-#' Default = 0.8 * ngibbs.
-#'
 #' ngibbs.max Maximum number of total iterations (per chain). DEFAULT = 5e6
 #'
 #' ngibbs.min Minimum number of total iterations (per chain). DEFAULT = 5000.
 #'
 #' ngibbs.step Number of iterations between convergence checks. Default = 1000.
 #'
-#' do.lsq.first Initialize using least-squares optimization on first 
-#' try. Default = FALSE.
-#'
-#' do.lsq.after Number of tries before starting initialization using 
-#' least-squares optimization. Default = TRUE.
-#'
-#' target.adj Amount by which to adjust target acceptance rate every 
-#' attempt. Default = 0.8
-#'
 #' @param return.samples Include full samples list in output. Default = TRUE.
-#' @param parallel Logical. Whether or not to run multiple chains in parallel on multiple cores (defualt=FALSE).
+#' @param save.samples Save samples to file as the inversion proceeds (useful for debugging).
+#' If NULL, do not save samples. Default = NULL.
+#' @param parallel Logical. Whether or not to run multiple chains in parallel on multiple cores (default = TRUE).
 #' @param parallel.cores Number of cores to use for parallelization. If NULL (default), allocate one fewer than detected number of cores.
-#' @param ... Other arguments to `check.convergence`
-#' @return List of "results" (summary statistics and Gelman Diagnostic) and 
-#' "samples"(mcmc.list object, or "NA" if return.samples=FALSE)
+#' @return List of "results" (summary statistics and Gelman Diagnostic) and "samples" (mcmc.list object, or "NA" if return.samples=FALSE)
 
-invert.auto <- function(observed, invert.options, quiet=FALSE, parallel.cores=NULL, ...){
+invert.auto <- 
+    function(observed, invert.options, return.samples = TRUE, save.samples = NULL, 
+             quiet=FALSE, parallel=TRUE, parallel.cores=NULL){
     library(coda)
-    library(parallel)
+    if (parallel == TRUE) {
+        library(parallel)
+    } else {
+        warning("Running in serial mode is currently unsupported. Switching to parallel.")
+        library(parallel)
+        parallel <- TRUE
+    }
     ngibbs.max <- invert.options$ngibbs.max
     ngibbs.step <- invert.options$ngibbs.step
     nchains <- invert.options$nchains
     inits.function <- invert.options$inits.function
-    invert.options$do.lsq <- invert.options$do.lsq.first
     if(invert.options$do.lsq) library(minpack.lm)
     invert.options$ngibbs <- invert.options$ngibbs.min
     burnin <- invert.options$ngibbs * 0.8
@@ -83,7 +80,8 @@ invert.auto <- function(observed, invert.options, quiet=FALSE, parallel.cores=NU
         if(!is.numeric(parallel.cores) | parallel.cores %% 1 != 0){
             stop("Invalid argument to 'parallel.cores'. Must be integer or NULL")
         } else if (parallel.cores > maxcores){
-            warning(sprintf("Requested %1$d cores but only %2$d cores available. Using only %2$d cores.", parallel.cores, maxcores))
+            warning(sprintf("Requested %1$d cores but only %2$d cores available. Using only %2$d cores.", 
+                            parallel.cores, maxcores))
             parallel.cores <- maxcores
         }
         cl <- makeCluster(parallel.cores, "FORK")
@@ -107,12 +105,13 @@ invert.auto <- function(observed, invert.options, quiet=FALSE, parallel.cores=NU
     # Begin inversion
     invert.options$ngibbs <- invert.options$ngibbs.min
     output.list <- parLapply(cl, inputs, invert.function)
+    if (!is.null(save.samples)) save(output.list, file = save.samples)
     samps.list <- lapply(output.list, "[[", 'results')
     jump.list <- lapply(output.list, "[[", 'jump')
 
     # Check for convergence
     smcmc <- makeMCMCList(samps.list)
-    conv.check <- check.convergence(smcmc, autoburnin=TRUE)
+    conv.check <- check.convergence(smcmc, autoburnin=TRUE, verbose = !quiet)
     if (conv.check$error) {
         warning("Could not calculate Gelman diag. Assuming no convergence.")
         conv.check$converged <- FALSE
@@ -125,7 +124,7 @@ invert.auto <- function(observed, invert.options, quiet=FALSE, parallel.cores=NU
         continue <- TRUE
         i.ngibbs <- invert.options$ngibbs.min
         while (continue & i.ngibbs < ngibbs.max) {
-            print(sprintf("Starting at iteration %d...", i.ngibbs))
+            if (!quiet) print(sprintf("Starting at iteration %d...", i.ngibbs))
             seeds <- 1e8 * runif(nchains)
             inits <- lapply(samps.list, getLastRow)
             inputs <- list()
@@ -134,13 +133,14 @@ invert.auto <- function(observed, invert.options, quiet=FALSE, parallel.cores=NU
                                                      jump = jump.list[[i]])
             invert.options$ngibbs <- invert.options$ngibbs.step
             output.list <- parLapply(cl, inputs, invert.function)
+            if (!is.null(save.samples)) save(output.list, samps.list, file = save.samples)
             samps.list.current <- lapply(output.list, "[[", 'results')
             samps.list <- combineChains(samps.list, samps.list.current)
             jump.list <- lapply(output.list, "[[", 'jump')
             
             # Check for convergence
             smcmc <- makeMCMCList(samps.list)
-            conv.check <- check.convergence(smcmc, autoburnin=TRUE)
+            conv.check <- check.convergence(smcmc, autoburnin=TRUE, verbose = !quiet)
             if (conv.check$error) {
                 warning("Could not calculate Gelman diag. Assuming no convergence.")
                 conv.check$converged <- FALSE
@@ -159,6 +159,7 @@ invert.auto <- function(observed, invert.options, quiet=FALSE, parallel.cores=NU
             out$results <- NA
         }
     }
+    if (!return.samples) out$samples <- c("Samples not returned" = NA)
     return(out)
 }
 
