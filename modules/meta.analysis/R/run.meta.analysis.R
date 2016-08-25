@@ -163,7 +163,7 @@ run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, 
 
 ##' @export
 runModule.run.meta.analysis <- function(settings) {
-  if(is.SettingsList(settings)) {
+  if(is.MultiSettings(settings)) {
     pfts <- list()
     pft.names <- character(0)
     for(i in seq_along(settings)) {
@@ -192,7 +192,7 @@ runModule.run.meta.analysis <- function(settings) {
     database <- settings$database$bety
     run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database) 
   } else {
-    stop("runModule.run.meta.analysis only works with Settings or SettingsList")
+    stop("runModule.run.meta.analysis only works with Settings or MultiSettings")
   }
 }
 
