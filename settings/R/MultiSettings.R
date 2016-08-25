@@ -21,7 +21,7 @@ MultiSettings <- function(...) {
     stop("MultiSettings can only be made from Setting, MultiSettings, or a list of Settings")
   }
 
-  if(length(result) > 0)
+  if(length(result) > 0 && is.null(names(result)))
     names(result) <- paste("settings", seq_along(result), sep=".")
   class(result) <- c("MultiSettings", class(result))
   return(result)
