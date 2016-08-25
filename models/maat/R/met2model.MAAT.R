@@ -14,26 +14,6 @@
 ##only gives user the notice that file already exists. If user wants to overwrite the existing files, just change 
 ##overwrite statement below to TRUE.
 
-
-## For testing
-# "PEcAn.SIPNET::met2model.SIPNET('/data/Model_Output/pecan.output/dbfiles/Ameriflux_CF_gapfill_site_1-146','US-Dix',
-# '/data/Model_Output/pecan.output/dbfiles/Ameriflux_SIPNET_site_1-146/','2006/01/01','2006/12/31',lst = '-5',lat = '39.9712',lon = '-74.4346')"
-in.path <- '~/Data/Projects/NGEE-Tropics/Met_Drivers/testing/Ameriflux_site_0-676/'
-in.prefix <- 'US-WCr'
-outfolder <- '~/Data/Projects/NGEE-Tropics/Met_Drivers/testing/Ameriflux_MAAT_site_0-676/'
-start_date <- '2001/01/01'
-end_date <- '2001/12/31'
-year <- 2001
-
-in.path <- '~/Data/Projects/NGEE-Tropics/Met_Drivers/testing/Ameriflux_CF_gapfill_site_1-146/'
-in.prefix <- 'US-Dix'
-outfolder <- '~/Data/Projects/NGEE-Tropics/Met_Drivers/testing/Ameriflux_MAAT_site_1-146/'
-start_date <- '2006/01/01'
-end_date <- '2006/12/31'
-year <- 2006
-
-
-
 ##-------------------------------------------------------------------------------------------------#
 ##' met2model wrapper for MAAT
 ##'
@@ -109,46 +89,113 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
       nc <- nc_open(ncdf.file)
       
       ## convert time to seconds
-      #if (!is.null(nc$dim$DTIME$vals)){
-      #  sec   <- nc$dim$DTIME$vals
-        #sec <- udunits2::ud.convert(sec,unlist(strsplit(nc$dim$DTIME$units," "))[1],"seconds")
-      #} else {
-      #  sec   <- nc$dim$time$vals 
-        #sec <- udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
-      #}
-
-      sec <- nc$dim$time$vals  
+      sec <- nc$dim$time$vals
+      frac.day <- nc$dim$time$vals
       sec <- udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
 
       ifelse(leap_year(year)==TRUE,
              dt <- (366*24*60*60)/length(sec), #leap year
              dt <- (365*24*60*60)/length(sec)) #non-leap year
-      tstep = round(86400/dt)
-      dt = 86400/tstep
+      tstep <- round(86400/dt)
+      dt <- 86400/tstep
       
       ## extract required MAAT driver variables
       #names(nc$var) # what is in the nc file?
       lat  <- ncvar_get(nc,"latitude")
       lon  <- ncvar_get(nc,"longitude")
       Tair <- ncvar_get(nc,"air_temperature")  ## in Kelvin
-      RH_perc <- ncvar_get(nc,"relative_humidity") ## RH Percentage
+      Rain <- ncvar_get(nc,"precipitation_flux") ## "kg/m^2/s"
       
+      # get humidity vars (NOTE:later add VPD here!!)
+      RH_perc <- ncvar_get(nc,"relative_humidity") ## RH Percentage
+
+      # get radiation
       SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") ## in W/m2
       PAR  <- try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air")) ## in mol/m2/s
-      if(!is.numeric(PAR)) PAR = SW*0.45 
+      if(!is.numeric(PAR)) {
+        PAR <- SW*0.45
+        ##!! UPDATE SO UNITS ARE CONVERTED TO umol/m2/s, converted later to dt
+      }
       
+      # get CO2 (if exists)
       CO2  <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air"))
       useCO2 = is.numeric(CO2)  
       if(useCO2)  CO2 <- CO2 * 1e6  ## convert from mole fraction (kg/kg) to ppm
-      
 
-      
-      
       nc_close(nc)
-      
+      } else {
+        print("Skipping to next year")
+        next
+      }
     
+    ##build time variables (year, month, day of year)
+    nyr <- floor(length(sec)/86400/365*dt)
+    yr <- NULL
+    doy <- NULL
+    hr <- NULL
+    asec <- sec
+    for(y in year+1:nyr-1){
+      ytmp <- rep(y,365*86400/dt)
+      dtmp <- rep(1:365,each=86400/dt)
+      if(y %% 4 == 0){  ## is leap
+        ytmp <- rep(y,366*86400/dt)
+        dtmp <- rep(1:366,each=86400/dt)
+      }
+      if(is.null(yr)){
+        yr <- ytmp
+        doy <- dtmp
+        hr <- rep(NA,length(dtmp))
+      } else {
+        yr <- c(yr,ytmp)
+        doy <- c(doy,dtmp)
+        hr <- c(hr,rep(NA,length(dtmp)))
+      }
+      rng <- length(doy) - length(ytmp):1 + 1
+      if(!all(rng>=0)){
+        skip = TRUE
+        logger.warn(paste(year,"is not a complete year and will not be included"))
+        break
+      }
+      asec[rng] <- asec[rng] - asec[rng[1]]
+      hr[rng] <- (asec[rng] - (dtmp-1)*86400)/86400*24
+    }
     
+    # output matrix
+    n <- length(Tair)
+    tmp <- cbind(YEAR=yr[1:n],DOY=doy[1:n],HOUR=hr[1:n],FRAC_DAY=frac.day[1:n],TIMESTEP=rep(dt/86400,n),
+                 # CHANGE TO BETTER NAMES!
+                 CO2=CO2,
+                 AT=Tair-273.15,  # convert to celcius
+                 PRC=Rain*dt, ## converts from mm/s to mm
+                 RH=RH_perc,
+                 #PAR=PAR*dt #mol/m2/dt
+                 PAR=PAR*1000000 #umols/m2/s
+    )
     
+    ## quick error check, sometimes get a NA in the last hr ?? NEEDED?
+    hr.na <- which(is.na(tmp[,3]))
+    if(length(hr.na)>0) tmp[hr.na,3] <- tmp[hr.na-1,3] + dt/86400*24
+    
+    if(is.null(out)){
+      out <- tmp
+    } else {
+      out <- rbind(out,tmp)
+    }
+  } ## end loop over years
+  
+  if(!is.null(out)){
+    
+    ## write output
+    #write.table(out,out.file.full,quote = FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
+    write.csv(out,out.file.full,row.names=FALSE)
+    
+    invisible(results)
+    
+  } else {
+    print("NO MET TO OUTPUT")
+    invisible(NULL)
+  }
+  
 } # End of function
 ##-------------------------------------------------------------------------------------------------#
 ### EOF
