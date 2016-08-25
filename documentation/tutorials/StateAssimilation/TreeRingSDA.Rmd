@@ -41,7 +41,7 @@ Perform a site-level SIPNET run using the following settings
 
 ```
 <state.data.assimilation>
-  <n.ensemble>50</n.ensemble>
+  <n.ensemble>35</n.ensemble>
   <process.variance>FALSE</process.variance>
   <sample.parameters>TRUE</sample.parameters>
    <state.variables>
@@ -80,17 +80,17 @@ Perform a site-level SIPNET run using the following settings
   </spin.up>
   <forecast.time.step>1</forecast.time.step>
   <start.date>1980/01/01</start.date>
-  <end.date>2014/12/31</end.date>
+  <end.date>2015/12/31</end.date>
  </state.data.assimilation>
 ```
 
 * Delete the ```<pfts>`` block from the settings
 
-* In the PEcAn History, go to your PDA run and open ```pecan.PDA.POST.xml``` (the one saved AFTER you finished the PDA)
+* In the PEcAn History, go to your PDA run and open ```pecan.pda[UNIQUEID].xml``` (the one PEcAn saved for you AFTER you finished the PDA)
 
 * Cut-and-paste the PDA ```<pfts>``` block into the SDA settings file
 
-* Save the file as ```pecan.SDA.xls```
+* Save the file as ```pecan.SDA.xml```
 
 # Loading data
 
@@ -98,7 +98,7 @@ Perform a site-level SIPNET run using the following settings
  + Open a shell under Tools > Shell
  + ```cd`` to go to your home directory
  + To clone: ```git clone git@github.com:PalEON-Project/Camp2016.git```
- + To pull: ```cd Camp2016; git pull git@github.com:PalEON-Project/Camp2016.git master```
+ + To pull: ```cd Camp2016; git pull https://github.com/PalEON-Project/Camp2016.git master```
 
 * Open the tree-ring data assimilation workflow under Home > pecan > scripts > workflow.treering.R
 

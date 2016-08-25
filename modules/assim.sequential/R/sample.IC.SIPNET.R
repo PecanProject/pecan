@@ -1,3 +1,15 @@
+## samples intial conditions for SIPNET
+##' @title sample.IC.SIPNET
+##' @name  sample.IC.SIPNET
+##' @author Mike Dietze and Ann Raiho
+##' 
+##' @param ne number of ensembles
+##' @param state state variables you want to pull
+##' @description samples intial conditions for SIPNET
+##' 
+##' @return IC matrix of initial conditions
+##' @export
+##' 
 sample.IC.SIPNET <- function(ne,state){
   ## Mg C / ha / yr NPP
   NPP = ifelse(rep("NPP" %in% names(state),ne),
