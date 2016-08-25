@@ -11,16 +11,7 @@ logger.setQuitOnSevere(FALSE)
 logger.setLevel("OFF")
 context("fix.deprecated.settings")
 
-# setwd('~/pecan/settings/tests/testthat')
-
-.get.test.settings = function() {
-  if(fqdn() == "pecan2.bu.edu") {
-    settings <- read.settings("testinput.pecan2.bu.edu.xml")
-  } else {
-    settings <- read.settings("testinput.xml")
-  }
-  return(settings)
-}
+source('get.test.settings.r')
 
 test_that("deprecated jobtemplate settings handled correctly", {
   settings <- .get.test.settings()

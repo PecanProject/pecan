@@ -179,6 +179,10 @@ get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL){
 }
 #==================================================================================================#
 
+##' @export
+listToXml <- function (x, ...) {
+  UseMethod("listToXml")
+}
 
 #--------------------------------------------------------------------------------------------------#
 ##' Convert List to XML
@@ -191,7 +195,8 @@ get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL){
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Rob Kooper
 #--------------------------------------------------------------------------------------------------#
-listToXml <- function(item, tag) {
+listToXml.default <- function(item, tag) {
+
   # just a textnode, or empty node with attributes
   if(typeof(item) != 'list') {
     if (length(item) > 1) {
