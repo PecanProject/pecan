@@ -22,6 +22,8 @@ write.restart.SIPNET<- function(out.dir, runid, time, settings, analysis.vec,
                                 RENAME = TRUE, variables,
                                 sample_parameters = FALSE,
                                 trait.values = NA, met){
+  
+  rundir<-settings$host$rundir
  
   if(RENAME == TRUE) {
     file.rename(file.path(outdir,runid,"sipnet.out"),
