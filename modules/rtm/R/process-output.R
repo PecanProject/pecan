@@ -37,6 +37,7 @@ burnin.thin <- function(samples,
 #' @title Load object from an RData file
 #' @param filename Full name (without path!) of RData file
 #' @param filepath Path of RData file (default=".")
+#' @export
 load.from.name <- function(filename, filepath="."){
     f.path <- file.path(filepath, filename)
     load(f.path)
@@ -50,6 +51,7 @@ load.from.name <- function(filename, filepath="."){
 #' @description Fit multivariate normal to samples. Return means and covariance 
 #' matrix as a long list (for easy construction of data.tables)
 #' @param samples Matrix of MCMC samples.
+#' @export
 summary.mvnorm <- function(samples){
     library(mclust)
     stopifnot(colnames(samples) != NULL)
@@ -70,6 +72,7 @@ summary.mvnorm <- function(samples){
 #' @description Calculate simple univariate summary statistics and return as 
 #' named list
 #' @param samples Matrix of MCMC samples
+#' @export
 summary.simple <- function(samples){
     stopifnot(colnames(samples) != NULL)
     parnames <- colnames(samples)
