@@ -47,7 +47,8 @@ invert.auto <-
     if (is.null(invert.options$do.lsq)) invert.options$do.lsq <- FALSE
     if (invert.options$do.lsq) library(minpack.lm)
     invert.options$ngibbs <- invert.options$ngibbs.min
-    burnin <- invert.options$ngibbs * 0.8
+
+    convergenceCheck <- function(smcmc) check.convergence(smcmc, verbose = !quiet)
 
     # Begin first set of runs
     if (parallel) {
@@ -72,16 +73,16 @@ invert.auto <-
     invert.function <- function(x){
         set.seed(x$seed)
         invert.options$inits <- x$inits
-        invert.options$init.Jump <- x$init.Jump
+        invert.options$resume <- x$resume
         samps <- invert.custom(observed=observed, invert.options=invert.options, 
-                               quiet=quiet, return.jump=TRUE, seed = x$seed)
+                               quiet=quiet, return.resume=TRUE, seed = x$seed)
         return(samps)
     }
     seeds <- 1e8 * runif(nchains)
-    inits <- lapply(1:nchains, function(x) inits.function())
     inputs <- list()
-    for (i in 1:nchains) inputs[[i]] <- list(seed = seeds[i], inits = inits[[i]], jump = NULL)
-
+    for (i in 1:nchains) inputs[[i]] <- list(seed = seeds[i], 
+                                             inits = inits.function(), 
+                                             resume = NULL)
     # Begin inversion
     invert.options$ngibbs <- invert.options$ngibbs.min
     if (parallel) {
@@ -93,13 +94,14 @@ invert.auto <-
             output.list[[i]] <- invert.function(inputs[[i]])
         }
     }
+    i.ngibbs <- invert.options$ngibbs.min
     if (!is.null(save.samples)) save(output.list, file = save.samples)
     samps.list <- lapply(output.list, "[[", 'results')
-    jump.list <- lapply(output.list, "[[", 'jump')
+    resume <- lapply(output.list, "[[", 'resume')
 
     # Check for convergence
     smcmc <- makeMCMCList(samps.list)
-    conv.check <- check.convergence(smcmc, autoburnin=TRUE, verbose = !quiet)
+    conv.check <- convergenceCheck(smcmc)
     if (conv.check$error) {
         warning("Could not calculate Gelman diag. Assuming no convergence.")
         conv.check$converged <- FALSE
@@ -110,7 +112,6 @@ invert.auto <-
     } else {
         # Loop until convergence
         continue <- TRUE
-        i.ngibbs <- invert.options$ngibbs.min
         while (continue & i.ngibbs < ngibbs.max) {
             if (!quiet) print(sprintf("Running iterations %d to %d", i.ngibbs, i.ngibbs + ngibbs.step))
             seeds <- 1e8 * runif(nchains)
@@ -118,7 +119,7 @@ invert.auto <-
             inputs <- list()
             for (i in 1:nchains) inputs[[i]] <- list(seed = seeds[i],
                                                      inits = inits[[i]],
-                                                     jump = jump.list[[i]])
+                                                     resume = resume[[i]])
             invert.options$ngibbs <- ngibbs.step
             if (parallel) {
                 output.list <- parLapply(cl, inputs, invert.function)
@@ -133,11 +134,11 @@ invert.auto <-
             if (!is.null(save.samples)) save(output.list, samps.list, file = save.samples)
             samps.list.current <- lapply(output.list, "[[", 'results')
             samps.list <- combineChains(samps.list, samps.list.current)
-            jump.list <- lapply(output.list, "[[", 'jump')
+            resume <- lapply(output.list, "[[", 'resume')
             
             # Check for convergence
             smcmc <- makeMCMCList(samps.list)
-            conv.check <- check.convergence(smcmc, autoburnin=TRUE, verbose = !quiet)
+            conv.check <- convergenceCheck(smcmc)
             if (conv.check$error) {
                 warning("Could not calculate Gelman diag. Assuming no convergence.")
                 conv.check$converged <- FALSE
@@ -170,11 +171,15 @@ combineChains <- function(samps1, samps2){
     stopifnot(length(samps1) == length(samps2))
     nchains <- length(samps1)
     sampsfinal <- list()
-    for (i in 1:nchains) sampsfinal[[i]] <- rbind(samps1[[1]], samps2[[i]])
+    for (i in 1:nchains) sampsfinal[[i]] <- rbind(samps1[[i]], samps2[[i]])
     stopifnot(length(sampsfinal) == length(samps1))
     return(sampsfinal)
 }
 
+#' @name makeMCMCList
+#' @title Make MCMC list from samples list
+#' @param samps samples list (output from invert.custom)
+#' @export
 makeMCMCList <- function(samps) {
     samps.mcmc <- lapply(samps, mcmc)
     stopifnot(all(sapply(samps.mcmc, is.mcmc)))
@@ -188,7 +193,7 @@ postProcess <- function(i.ngibbs, samps.list, conv.check) {
                   i.ngibbs, conv.check$diagnostic))
     samps.out <- makeMCMCList(samps.list)
     # Calculate summary statistics
-    samps.bt <- lapply(samps.list, burnin.thin)
+    samps.bt <- autoburnin(samps.out)
     samps.combined <- do.call(rbind, samps.bt)
     results <- summary_simple(samps.combined)
     results$gelman.diag <- conv.check$diagnostic

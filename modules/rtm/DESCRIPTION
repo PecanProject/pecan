@@ -11,7 +11,8 @@ Description: This package contains functions for performing forward runs and
     Underlying numerical analyses are optimized for speed using Fortran code.
 Depends:
     MASS,
-    coda
+    coda,
+    PEcAn.assim.batch
 Suggests:
     minpack.lm,
     mclust,

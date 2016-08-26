@@ -4,8 +4,7 @@
 \alias{check.convergence}
 \title{Check convergence of multiple MCMC chains}
 \usage{
-check.convergence(mcmc.samples.list, threshold = 1.1, verbose = TRUE,
-  autoburnin = FALSE, ...)
+check.convergence(mcmc.samples.list, threshold = 1.1, verbose = TRUE, ...)
 }
 \arguments{
 \item{mcmc.samples.list}{mcmc.list object (from coda package) containing 
@@ -14,9 +13,6 @@ samples from MCMC chains.}
 \item{threshold}{Gelman-Rubin diagnostic parameter threshold. Default = 1.1}
 
 \item{verbose}{If TRUE, print convergence result. Default = TRUE}
-
-\item{autoburnin}{Whether or not to automaticall perform burnin in 
-calculation of Gelman-Rubin diagnostic. Default = FALSE}
 
 \item{...}{Additional arguments to `gelman.diag` (from coda package)}
 }

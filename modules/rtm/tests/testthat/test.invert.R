@@ -34,24 +34,39 @@ output_tests <- function(output){
     test_that("Saving samples is successful", {
                   expect_true(file.exists(save.samples))
                              })
-    file.remove(save.samples)
+}
+
+diag_table <- function(output, params){
+    mus <- unlist(output$results[1:length(params)])
+    diag_table <- rbind(params, mus, mus - params)
+    rownames(diag_table) <- c("True", "Inversion", "Inv. - True")
+    colnames(diag_table) <- names(params)
+    print(diag_table)
+}
+
+diag_plot <- function(output) {
+    samps <- makeMCMCList(output$samples)
+    plot(samps)
 }
 
 test.parallel <- invert.auto(obs, invert.options, return.samples = TRUE,
-                             save.samples = save.samples)
+                             save.samples = save.samples, quiet=FALSE)
 output_tests(test.parallel)
+diag_table(test.parallel, params)
 
-mus <- unlist(test.parallel$results[1:5])
-diag_table <- rbind(params, mus, mus - params)
-rownames(diag_table) <- c("True", "Inversion", "Inv. - True")
-colnames(diag_table) <- names(params)
-print(diag_table)
 
 # Run in series, with settings that facilitate convergence
-obs <- prospect(params, 5)
-invert.options$nchains <- 2
+obs <- prospect(params, 5)[,1]
+invert.options$nchains <- 3
 invert.options$do.lsq <- TRUE
 test.serial <- invert.auto(obs, invert.options, return.samples = TRUE,
                            save.samples = save.samples, parallel = FALSE,
                            quiet = FALSE)
 
+output_tests(test.serial)
+diag_table(test.serial, params)
+
+pdf("diag_plots.pdf")
+diag_plot(test.parallel)
+diag_plot(test.serial)
+dev.off()

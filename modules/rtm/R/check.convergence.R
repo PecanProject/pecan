@@ -6,8 +6,6 @@
 #' samples from MCMC chains.
 #' @param threshold Gelman-Rubin diagnostic parameter threshold. Default = 1.1
 #' @param verbose If TRUE, print convergence result. Default = TRUE
-#' @param autoburnin Whether or not to automaticall perform burnin in 
-#' calculation of Gelman-Rubin diagnostic. Default = FALSE
 #' @param ... Additional arguments to `gelman.diag` (from coda package)
 #' @return List length 3 containing the following:
 #'
@@ -20,14 +18,13 @@
 check.convergence <- function(mcmc.samples.list, 
                               threshold = 1.1,
                               verbose = TRUE,
-                              autoburnin = FALSE,
                               ...){
     library(coda)
     if(class(mcmc.samples.list) != "mcmc.list") stop("Input needs to be of class 'mcmc.list'")
-    gd <- try(gelman.diag(mcmc.samples.list, autoburnin = autoburnin, ...))
+    gd <- try(gelman.diag(mcmc.samples.list, ...))
     if(class(gd) == "try-error"){
-        warning("Could not calculate Gelman diag. Returning NULL")
-        converged <- NULL
+        warning("Could not calculate Gelman diag. Assuming no convergence.")
+        converged <- FALSE
         diagnostic <- NULL
         error <- TRUE
     } else {
@@ -47,3 +44,4 @@ check.convergence <- function(mcmc.samples.list,
                 diagnostic = diagnostic,
                 error = error))
 }
+
