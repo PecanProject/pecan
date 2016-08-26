@@ -12,6 +12,7 @@
 #' target number of samples.
 #' @param burnin Number of samples to discard as burnin (auto must be FALSE)
 #' @param thin Thinning interval (auto must be FALSE)
+#' @export
 burnin.thin <- function(samples,
                         target = 5000,
                         burnin.ratio = 2,

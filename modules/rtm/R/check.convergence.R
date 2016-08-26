@@ -16,6 +16,7 @@
 #'      diagnostic: Numerical value of the Gelman-Rubin multivariate diagnostic
 #'
 #'      error: Logical. Whether or not an error occured in the Gelman-Rubin calculation.  
+#' @export
 check.convergence <- function(mcmc.samples.list, 
                               threshold = 1.1,
                               verbose = TRUE,

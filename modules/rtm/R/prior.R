@@ -1,10 +1,21 @@
 #' Functions for default priors
+#' @name lognorm.mu
+#' @title Lognormal mean parameters
+#' @param mean Sample mean
+#' @param sd Sample standard deviation
+#' @export
 lognorm.mu <- function(mean, sd) log(mean / sqrt(1 + (mean/sd)^2))
+
+#' @name lognorm.sigma
+#' @title Lognormal sigma parameter
+#' @inheritParams lognorm.mu
+#' @export
 lognorm.sigma <- function(mean, sd) sqrt(log(1 + (mean/sd)^2))
 
 #' @name prior.defaultvals.prospect
 #' @title Default prior parameters for PROSPECT models
 #' @param sd.inflate Standard deviation multiplier (default = 3)
+#' @export
 prior.defaultvals.prospect <- function(sd.inflate = 3){
     pmean <- c("N" = 0.7,
                "Cab" =32.81,
@@ -28,6 +39,7 @@ prior.defaultvals.prospect <- function(sd.inflate = 3){
 #' @param psigma Lognormal sigma parameter
 #' @details Assumes lognormal distribution for all parameters. NOTE that prior 
 #' on N is shifted by 1.
+#' @export
 priorfunc.prospect <- function(pmu, psigma){
     prior <- function(params){
         if(is.null(names(params))){

@@ -1,34 +1,35 @@
-#'@name f.data.module
-#'@title List to FORTRAN data module
-#'@author Alexey Shiklomanov
-#'@details For models with large constants (e.g. absorption features in the
-#'      PROSPECT model), it may be preferable to store these in FORTRAN90
-#'      modules. However, manually creating and formatting these files is 
-#'      tedious. This script allows you to automatically generate module files
-#'      from R lists. It automatically interprets the object lengths as array
-#'      dimensions (only vectors are supported right now -- higher dimension
-#'      arrays may be in the future) and splits long data into rows of 10.
-#'      Currently, only numeric data are supported (i.e. no characters).
-#'@param dat Named list object for creating module. List names will be used
-#'      to initialize FORTRAN variabiles.
-#'@param types Character vector of FORTAN types (e.g. real*8, integer)
-#'@param modname Name of the module. We suggest the format 'MOD_yourmodname'.
-#'@param fname Output file name. Defaults to 'yourmodname.f90'
-#'@examples
-#'      w <- 3.2
-#'      x <- 1:5
-#'      y <- 6:15
-#'      z <- seq(exp(1), pi, length.out=42)
-#'      l <- list(x=x, y=y, z=z) ## NOTE that names must be explicitly declared
-#'      l.types <- c("real","integer", "real*4", "real*8")
-#'      f.data.module(l, l.types, "testmod")
-#' 
-#'      x <- runif(10)
-#'      y <- rnorm(10)
-#'      z <- rgamma(10, 3)
-#'      d <- data.frame(x,y,z) ## NOTE that data.frames are just named lists
-#'      d.types <- rep("real*8", ncol(d))
-#'      f.data.module(d, d.types, "random") 
+#' @name f.data.module
+#' @title List to FORTRAN data module
+#' @author Alexey Shiklomanov
+#' @details For models with large constants (e.g. absorption features in the
+#'       PROSPECT model), it may be preferable to store these in FORTRAN90
+#'       modules. However, manually creating and formatting these files is 
+#'       tedious. This script allows you to automatically generate module files
+#'       from R lists. It automatically interprets the object lengths as array
+#'       dimensions (only vectors are supported right now -- higher dimension
+#'       arrays may be in the future) and splits long data into rows of 10.
+#'       Currently, only numeric data are supported (i.e. no characters).
+#' @param dat Named list object for creating module. List names will be used
+#'       to initialize FORTRAN variabiles.
+#' @param types Character vector of FORTAN types (e.g. real*8, integer)
+#' @param modname Name of the module. We suggest the format 'MOD_yourmodname'.
+#' @param fname Output file name. Defaults to 'yourmodname.f90'
+#' @examples
+#'       w <- 3.2
+#'       x <- 1:5
+#'       y <- 6:15
+#'       z <- seq(exp(1), pi, length.out=42)
+#'       l <- list(x=x, y=y, z=z) ## NOTE that names must be explicitly declared
+#'       l.types <- c("real","integer", "real*4", "real*8")
+#'       f.data.module(l, l.types, "testmod")
+#'  
+#'       x <- runif(10)
+#'       y <- rnorm(10)
+#'       z <- rgamma(10, 3)
+#'       d <- data.frame(x,y,z) ## NOTE that data.frames are just named lists
+#'       d.types <- rep("real*8", ncol(d))
+#'       f.data.module(d, d.types, "random") 
+#' @export
 
 f.data.module <- function(dat, types, modname, fname = paste0(modname,".f90")){
     if(!is.list(dat)) dat <- as.list(dat)

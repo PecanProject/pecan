@@ -31,7 +31,7 @@
 #' @param ngibbs Number of iterations for MCMC 
 #' @return Matrix (ngibbs x (length(inits) + 1)) of MCMC samples 
 #'          of parameters.
-
+#' @export
 invert.fast <- function(modname, observed, inits, cons, 
                    pmu, psd, plog, minp, ngibbs){
     data(model.list)
