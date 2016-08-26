@@ -9,36 +9,17 @@ invert.auto(observed, invert.options, return.samples = TRUE,
   parallel.cores = NULL)
 }
 \arguments{
-\item{observed}{Matrix of observed values. Must line up with output of 'model'.}
+\item{observed}{Vector, matrix, or data frame (coerced to matrix) of 
+observed values. For spectral data, wavelengths are rows and spectra are 
+columns. Dimensions must align with the output of `model`.}
 
-\item{invert.options}{R list object containing the following elements:
-
-inits Vector of initial values of model parameters to be inverted.
-
-ngibbs Number of MCMC iterations
-
-prior.function Function for use as prior. Should take a vector of parameters 
-as input and return a single value -- the sum of their log-densities -- as 
-output.
-
-param.mins Vector of minimum values for inversion parameters
+\item{invert.options}{Parameters related to inversion.
+Parameters specific to `invert.auto` are described here.
+For the remaining parameters, see \code{\link{invert.custom}}.
 
 model The model to be inverted. This should be an R function that takes 
 `params` as input and returns one column of `observed` (nrows should be the 
 same). Constants should be implicitly included here.
-
-adapt Number of steps for adapting covariance matrix (i.e. adapt every 'n' 
-steps). Default=100
-
-adj_min Minimum threshold for rescaling Jump standard deviation.  Default = 
-0.1.
-
-target Target acceptance rate. Default=0.234, based on recommendation for 
-multivariate block sampling in Haario et al. 2001
-
-do.lsq Perform least squares optimization first (see `invert.lsq`), and use 
-outputs to initialize Metropolis Hastings. This may improve mixing time, but 
-risks getting caught in a local minimum.  Default=FALSE
 
 nchains Number of independent chains.
 
@@ -54,6 +35,8 @@ ngibbs.step Number of iterations between convergence checks. Default = 1000.}
 
 \item{save.samples}{Save samples to file as the inversion proceeds (useful for debugging).
 If NULL, do not save samples. Default = NULL.}
+
+\item{quiet}{Suppress progress bar and status messages. Default=FALSE}
 
 \item{parallel}{Logical. Whether or not to run multiple chains in parallel on multiple cores (default = TRUE).}
 

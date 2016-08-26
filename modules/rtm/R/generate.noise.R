@@ -5,6 +5,7 @@
 #' @param fw Filter width. Will be coerced to an odd number if even (default = 
 #' 201).
 #' @param fsd Scaling factor for filter standard deviation (default = 6)
+#' @export
 generate.noise <- function(n=2101, sigma=1e-4, fw=201, fsd=6){
     if(fw %% 2 == 0) fw <- fw + 1   # fw must be odd
     f.in <- 1:fw

@@ -7,7 +7,7 @@
 #' the model can be any R function.
 #' @param observed Vector, matrix, or data frame (coerced to matrix) of 
 #' observed values. For spectral data, wavelengths are rows and spectra are 
-#' columns.
+#' columns. Dimensions must align with the output of `model`.
 #' @param invert.options R list object containing the following elements:
 #' 
 #' inits Vector of initial values of model parameters to be inverted.
@@ -36,9 +36,10 @@
 #' This may improve mixing time, but risks getting caught in a local minimum.
 #' Default=FALSE
 #' 
-#' @param quiet Do not show progress bar. Default=FALSE
+#' @param quiet Suppress progress bar and status messages. Default=FALSE
 #' @param return.jump If TRUE, return results as list that includes current Jump distribution (useful for continuing an ongoing run). Default = FALSE.
 #' @param seed Run-unique ID. Useful for parallel runs. Default=NULL
+#' @export
 invert.custom <- function(observed, invert.options, quiet=FALSE, return.jump=FALSE, seed=NULL){
     library(MASS)
     observed <- as.matrix(observed)

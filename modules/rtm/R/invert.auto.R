@@ -3,35 +3,13 @@
 #' @title Inversion with automatic convergence checking
 #' @details Performs an inversion via the `invert.custom` function with multiple chains and automatic convergence checking. 
 #' Convergence checks are performed using the multivariate Gelman-Rubin diagnostic.
-#' @param observed Matrix of observed values. Must line up with output of 'model'.
-#' @param invert.options R list object containing the following elements:
+#' @param invert.options Parameters related to inversion.
+#' Parameters specific to `invert.auto` are described here.
+#' For the remaining parameters, see \code{\link{invert.custom}}.
 #' 
-#' inits Vector of initial values of model parameters to be inverted.
-#'
-#' ngibbs Number of MCMC iterations
-#'
-#' prior.function Function for use as prior. Should take a vector of parameters 
-#' as input and return a single value -- the sum of their log-densities -- as 
-#' output.
-#'
-#' param.mins Vector of minimum values for inversion parameters
-#'
 #' model The model to be inverted. This should be an R function that takes 
 #' `params` as input and returns one column of `observed` (nrows should be the 
 #' same). Constants should be implicitly included here.
-#'
-#' adapt Number of steps for adapting covariance matrix (i.e. adapt every 'n' 
-#' steps). Default=100
-#' 
-#' adj_min Minimum threshold for rescaling Jump standard deviation.  Default = 
-#' 0.1.
-#' 
-#' target Target acceptance rate. Default=0.234, based on recommendation for 
-#' multivariate block sampling in Haario et al. 2001
-#' 
-#' do.lsq Perform least squares optimization first (see `invert.lsq`), and use 
-#' outputs to initialize Metropolis Hastings. This may improve mixing time, but 
-#' risks getting caught in a local minimum.  Default=FALSE
 #'
 #' nchains Number of independent chains.
 #' 
@@ -48,7 +26,9 @@
 #' If NULL, do not save samples. Default = NULL.
 #' @param parallel Logical. Whether or not to run multiple chains in parallel on multiple cores (default = TRUE).
 #' @param parallel.cores Number of cores to use for parallelization. If NULL (default), allocate one fewer than detected number of cores.
+#' @inheritParams invert.custom
 #' @return List of "results" (summary statistics and Gelman Diagnostic) and "samples" (mcmc.list object, or "NA" if return.samples=FALSE)
+#' @export
 
 invert.auto <- 
     function(observed, invert.options, return.samples = TRUE, save.samples = NULL, 
@@ -57,34 +37,35 @@ invert.auto <-
     if (parallel == TRUE) {
         library(parallel)
     } else {
-        warning("Running in serial mode is currently unsupported. Switching to parallel.")
-        library(parallel)
-        parallel <- TRUE
+        message("Running in serial mode. Better performance can be achived with `parallel=TRUE`.")
     }
     ngibbs.max <- invert.options$ngibbs.max
     ngibbs.step <- invert.options$ngibbs.step
     nchains <- invert.options$nchains
     inits.function <- invert.options$inits.function
-    if(invert.options$do.lsq) library(minpack.lm)
+    if (is.null(invert.options$do.lsq)) invert.options$do.lsq <- FALSE
+    if (invert.options$do.lsq) library(minpack.lm)
     invert.options$ngibbs <- invert.options$ngibbs.min
     burnin <- invert.options$ngibbs * 0.8
 
     # Begin first set of runs
-    ## Create cluster
-    maxcores <- detectCores()
-    if(is.null(parallel.cores)){
-        cl <- makeCluster(maxcores - 1, "FORK")
-    } else {
-        if(!is.numeric(parallel.cores) | parallel.cores %% 1 != 0){
-            stop("Invalid argument to 'parallel.cores'. Must be integer or NULL")
-        } else if (parallel.cores > maxcores){
-            warning(sprintf("Requested %1$d cores but only %2$d cores available. Using only %2$d cores.", 
-                            parallel.cores, maxcores))
-            parallel.cores <- maxcores
+    if (parallel) {
+        ## Create cluster
+        maxcores <- detectCores()
+        if(is.null(parallel.cores)){
+            cl <- makeCluster(maxcores - 1, "FORK")
+        } else {
+            if(!is.numeric(parallel.cores) | parallel.cores %% 1 != 0){
+                stop("Invalid argument to 'parallel.cores'. Must be integer or NULL")
+            } else if (parallel.cores > maxcores){
+                warning(sprintf("Requested %1$d cores but only %2$d cores available. Using only %2$d cores.", 
+                                parallel.cores, maxcores))
+                parallel.cores <- maxcores
+            }
+            cl <- makeCluster(parallel.cores, "FORK")
         }
-        cl <- makeCluster(parallel.cores, "FORK")
+        print(sprintf("Running %d chains in parallel. Progress bar unavailable", nchains))
     }
-    print(sprintf("Running %d chains in parallel. Progress bar unavailable", nchains))
 
     # Create inversion function
     invert.function <- function(x){
@@ -92,7 +73,7 @@ invert.auto <-
         invert.options$inits <- x$inits
         invert.options$init.Jump <- x$init.Jump
         samps <- invert.custom(observed=observed, invert.options=invert.options, 
-                               quiet=quiet, return.jump=TRUE, seed = x)
+                               quiet=quiet, return.jump=TRUE, seed = x$seed)
         return(samps)
     }
     seeds <- 1e8 * runif(nchains)
@@ -102,7 +83,15 @@ invert.auto <-
 
     # Begin inversion
     invert.options$ngibbs <- invert.options$ngibbs.min
-    output.list <- parLapply(cl, inputs, invert.function)
+    if (parallel) {
+        output.list <- parLapply(cl, inputs, invert.function)
+    } else {
+        output.list <- list()
+        for (i in seq_along(inputs)) {
+            print(sprintf("Running chain %d of %d", i, nchains))
+            output.list[[i]] <- invert.function(inputs[[i]])
+        }
+    }
     if (!is.null(save.samples)) save(output.list, file = save.samples)
     samps.list <- lapply(output.list, "[[", 'results')
     jump.list <- lapply(output.list, "[[", 'jump')
@@ -130,7 +119,15 @@ invert.auto <-
                                                      inits = inits[[i]],
                                                      jump = jump.list[[i]])
             invert.options$ngibbs <- ngibbs.step
-            output.list <- parLapply(cl, inputs, invert.function)
+            if (parallel) {
+                output.list <- parLapply(cl, inputs, invert.function)
+            } else {
+                output.list <- list()
+                for (i in seq_along(inputs)) {
+                    print(sprintf("Running chain %d of %d", i, nchains))
+                    output.list[[i]] <- invert.function(inputs[[i]])
+                }
+            }
             i.ngibbs <- i.ngibbs + ngibbs.step
             if (!is.null(save.samples)) save(output.list, samps.list, file = save.samples)
             samps.list.current <- lapply(output.list, "[[", 'results')

@@ -5,3 +5,10 @@
 *.rds
 *Rplots.pdf
 
+# Outputs produced by testthat
+tests/testthat/*.RData
+
+# R CMD check and build results
+check
+.tar.gz
+

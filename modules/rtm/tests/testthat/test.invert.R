@@ -48,10 +48,10 @@ colnames(diag_table) <- names(params)
 print(diag_table)
 
 # Run in series, with settings that facilitate convergence
-#obs <- prospect(params, 5)
-#invert.options$nchains <- 2
-#invert.options$do.lsq <- TRUE
-#test.serial <- invert.auto(obs, invert.options, return.samples = TRUE,
-                           #save.samples = save.samples, parallel = FALSE,
-                           #quiet = FALSE)
+obs <- prospect(params, 5)
+invert.options$nchains <- 2
+invert.options$do.lsq <- TRUE
+test.serial <- invert.auto(obs, invert.options, return.samples = TRUE,
+                           save.samples = save.samples, parallel = FALSE,
+                           quiet = FALSE)
 

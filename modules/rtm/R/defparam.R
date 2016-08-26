@@ -3,6 +3,7 @@
 #' @details Extract default parameter values from `model.list`
 #' @param modname Model name. Must match `modname` in `model.list`
 #' @return Named vector of default parameter values
+#' @export
 defparam <- function(modname){
     data(model.list)
     p.raw <- model.list[model.list$modname == modname, "par.default"]

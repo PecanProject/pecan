@@ -3,6 +3,7 @@
 #' @param wavelength Vector of average band widths, as reported in FWHM data.
 #' @param fwhm Vector of full-width half maximum (FWHM) bandwidths, as reported 
 #' in FWHM data.
+#' @export
 rsr.from.fwhm <- function(wavelength, fwhm) {
     sigma <- fwhm / 2 / abs(qnorm(0.25))
     rsr <- t(sapply(400:2500, dnorm, wavelength, sigma))
@@ -20,6 +21,7 @@ rsr.from.fwhm <- function(wavelength, fwhm) {
 #' @param rsr RSR matrix
 #' @param wl.min Minimum wavelength (inclusive, default = 400)
 #' @param wl.max Maximum wavelength (inclusive, default = 2500)
+#' @export
 trim.rsr <- function(rsr, wl.min=400, wl.max=2500){
     inds.rsr <- as.logical((rsr[,"Wavelength"] >= wl.min) *
                            (rsr[,"Wavelength"] <= wl.max))
@@ -34,6 +36,7 @@ trim.rsr <- function(rsr, wl.min=400, wl.max=2500){
 #' @title Generate RSR matrices for all sensors and return as list
 #' @description Only needs to be called when updating these funcitons with new 
 #' data
+#' @export
 generate.rsr.all <- function(path.to.licor=NULL){
     data(raw.sensor.data)
     rsr.aviris.ng <- with(fwhm.aviris.ng, rsr.from.fwhm(Wavelength, fwhm))
@@ -69,6 +72,7 @@ generate.rsr.all <- function(path.to.licor=NULL){
 #' @title Read and process RSR data from directory
 #' @param dir.path Directory containing RSR data
 #' @param type Type of sensor. Options are: landsat, avhrr
+#' @export
 read.rsr.folder <- function(dir.path, type){
     type <- tolower(type)
     flist <- list.files(dir.path)

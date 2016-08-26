@@ -10,7 +10,7 @@ invert.custom(observed, invert.options, quiet = FALSE, return.jump = FALSE,
 \arguments{
 \item{observed}{Vector, matrix, or data frame (coerced to matrix) of 
 observed values. For spectral data, wavelengths are rows and spectra are 
-columns.}
+columns. Dimensions must align with the output of `model`.}
 
 \item{invert.options}{R list object containing the following elements:
 
@@ -40,7 +40,7 @@ do.lsq Perform least squares optimization first (see `invert.lsq`), and use outp
 This may improve mixing time, but risks getting caught in a local minimum.
 Default=FALSE}
 
-\item{quiet}{Do not show progress bar. Default=FALSE}
+\item{quiet}{Suppress progress bar and status messages. Default=FALSE}
 
 \item{return.jump}{If TRUE, return results as list that includes current Jump distribution (useful for continuing an ongoing run). Default = FALSE.}
 

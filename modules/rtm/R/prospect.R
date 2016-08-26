@@ -16,6 +16,8 @@
 #' @return Matrix (2101 x 3) of simulated reflectance (column 1, "R"), 
 #'      transmittance (column 2, "T"), and wavelength (column 3, "wl") values 
 #'      from 400:2500 nm
+#' @export
+#' @useDynLib PEcAnRTM
 
 prospect <- function(param, version, include.wl = FALSE){
     version <- toupper(as.character(version))
@@ -44,12 +46,27 @@ prospect <- function(param, version, include.wl = FALSE){
     }
 }
 
-# Shortcut lists for PROSPECT parameter names
+#' Shortcut lists for PROSPECT parameter names
+
+#' @name params.prospect4
+#' @title PROSPECT 4 parameters
+#' @export
 params.prospect4 <- c("N", "Cab", "Cw", "Cm")
+
+#' @name params.prospect5
+#' @title PROSPECT 5 parameters
+#' @export
 params.prospect5 <- c("N", "Cab", "Car", "Cw", "Cm")
+
+#' @name params.prospect5b
+#' @title PROSPECT 5B parameters
+#' @export
 params.prospect5b <- c("N", "Cab", "Car", "Cbrown", "Cw", "Cm")
 
-# Default settings for PROSPECT inversion
+#' Default settings for PROSPECT inversion
+#' @name default.settings.prospect
+#' @title Defult inversion settings for PROSPECT 5 models
+#' @export
 default.settings.prospect <- list(
     model = function(params, seed=NULL) prospect(params, 5)[,1],
     inits.function = function() 
@@ -57,17 +74,15 @@ default.settings.prospect <- list(
              rlnorm(5, mu, sigma) + c("N"=1,"Cab"=0,"Car"=0,"Cw"=0,"Cm"=0)),
     prior.function = with(prior.defaultvals.prospect(sd.inflate=3), priorfunc.prospect(mu,sigma)),
     param.mins = c(1, 0, 0, 0, 0),
-    ngibbs = 100000,
+    ngibbs = 10000,
     nchains = 5,
-    burnin = 80000,
+    burnin = 8000,
     ngibbs.max = 1e7,
     ngibbs.min = 5000,
     ngibbs.step = 1000,
     return.samples = TRUE,
     target = 0.234,
-    target.adj = 0.8,
-    do.lsq.first = FALSE,
-    do.lsq.after = 3,
+    do.lsq = FALSE,
     save.samples = NULL,
     quiet = FALSE,
     adapt = 100,
