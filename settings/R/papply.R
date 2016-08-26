@@ -1,9 +1,9 @@
 ##' @export
 papply <- function(settings, fn, ...) {
-  if(is.SettingsList(settings)) {
+  if(is.MultiSettings(settings)) {
     result <- lapply(settings, fn, ...)
     if(all(sapply(result, is.Settings)))
-      result <- SettingsList(result)
+      result <- MultiSettings(result)
     return(result)
   } else if(is.Settings(settings)) {
     return(fn(settings, ...))
@@ -11,6 +11,6 @@ papply <- function(settings, fn, ...) {
     # Assume it's settings list that hasn't been coerced to Settings class...
     return (fn(as.Settings(settings), ...))
   } else {
-    logger.severe("The function", fn, "requires input of type SettingsList or Settings")
+    logger.severe("The function", fn, "requires input of type MultiSettings or Settings")
   }
 }

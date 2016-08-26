@@ -255,7 +255,7 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,trait
 ##' @export
 runModule.get.trait.data <- function(settings) {
   if(is.null(settings$meta.analysis)) return(settings) ## if there's no MA, there's no need for traits
-  if(is.SettingsList(settings)) {
+  if(is.MultiSettings(settings)) {
     pfts <- list()
     pft.names <- character(0)
     for(i in seq_along(settings)) {
@@ -284,7 +284,7 @@ runModule.get.trait.data <- function(settings) {
     settings$pfts <- get.trait.data(pfts, modeltype, dbfiles, database, forceupdate)
     return(settings)
   } else {
-    stop("runModule.get.trait.data only works with Settings or SettingsList")
+    stop("runModule.get.trait.data only works with Settings or MultiSettings")
   }
 }
 
