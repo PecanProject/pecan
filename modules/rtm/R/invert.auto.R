@@ -26,13 +26,14 @@
 #' If NULL, do not save samples. Default = NULL.
 #' @param parallel Logical. Whether or not to run multiple chains in parallel on multiple cores (default = TRUE).
 #' @param parallel.cores Number of cores to use for parallelization. If NULL (default), allocate one fewer than detected number of cores.
+#' @param parallel.output Filename (or '' for stdout) for printing parallel outputs. Use with caution. Default = '/dev/null'.
 #' @inheritParams invert.custom
 #' @return List of "results" (summary statistics and Gelman Diagnostic) and "samples" (mcmc.list object, or "NA" if return.samples=FALSE)
 #' @export
 
 invert.auto <- 
     function(observed, invert.options, return.samples = TRUE, save.samples = NULL, 
-             quiet=FALSE, parallel=TRUE, parallel.cores=NULL){
+             quiet=FALSE, parallel=TRUE, parallel.cores=NULL, parallel.output = '/dev/null'){
     library(coda)
     if (parallel == TRUE) {
         library(parallel)
@@ -53,7 +54,7 @@ invert.auto <-
         ## Create cluster
         maxcores <- detectCores()
         if(is.null(parallel.cores)){
-            cl <- makeCluster(maxcores - 1, "FORK")
+            parallel.cores <- maxcores - 1
         } else {
             if(!is.numeric(parallel.cores) | parallel.cores %% 1 != 0){
                 stop("Invalid argument to 'parallel.cores'. Must be integer or NULL")
@@ -62,8 +63,8 @@ invert.auto <-
                                 parallel.cores, maxcores))
                 parallel.cores <- maxcores
             }
-            cl <- makeCluster(parallel.cores, "FORK")
         }
+        cl <- makeCluster(parallel.cores, "FORK", outfile=parallel.output)
         print(sprintf("Running %d chains in parallel. Progress bar unavailable", nchains))
     }
 

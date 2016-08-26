@@ -6,7 +6,7 @@
 \usage{
 invert.auto(observed, invert.options, return.samples = TRUE,
   save.samples = NULL, quiet = FALSE, parallel = TRUE,
-  parallel.cores = NULL)
+  parallel.cores = NULL, parallel.output = "/dev/null")
 }
 \arguments{
 \item{observed}{Vector, matrix, or data frame (coerced to matrix) of 
@@ -41,6 +41,8 @@ If NULL, do not save samples. Default = NULL.}
 \item{parallel}{Logical. Whether or not to run multiple chains in parallel on multiple cores (default = TRUE).}
 
 \item{parallel.cores}{Number of cores to use for parallelization. If NULL (default), allocate one fewer than detected number of cores.}
+
+\item{parallel.output}{Filename (or '' for stdout) for printing parallel outputs. Use with caution. Default = '/dev/null'.}
 }
 \value{
 List of "results" (summary statistics and Gelman Diagnostic) and "samples" (mcmc.list object, or "NA" if return.samples=FALSE)
