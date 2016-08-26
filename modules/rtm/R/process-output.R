@@ -24,7 +24,7 @@ burnin.thin <- function(samples,
         burnin <- floor(ngibbs / burnin.ratio)
         thin <- floor((ngibbs - burnin) / target)
         if(thin < 1){
-            warning("Fewer than target samples after burnin. No thinning applied.")
+            message("Fewer than target samples after burnin. No thinning applied.")
             thin <- 1
         }
     }
