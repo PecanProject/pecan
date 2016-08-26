@@ -4,10 +4,15 @@
 \alias{autoburnin}
 \title{Automatically calculate and apply burnin value}
 \usage{
-autoburnin(jags_out, ...)
+autoburnin(jags_out, return.burnin = FALSE, ...)
 }
 \arguments{
 \item{jags_out}{List of MCMC sample matrices or `mcmc.list` object}
+
+\item{return.burnin}{Return burnin value in addition to samples (as list). 
+Default = FALSE.}
+
+\item{...}{Other parameters to `gelman.plot`}
 }
 \author{
 Michael Dietze, Alexey Shiklomanov

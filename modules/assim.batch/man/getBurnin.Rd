@@ -4,12 +4,14 @@
 \alias{getBurnin}
 \title{Calculate burnin value}
 \usage{
-getBurnin(jags_out, threshold = 1.1)
+getBurnin(jags_out, threshold = 1.1, ...)
 }
 \arguments{
 \item{jags_out}{List of MCMC sample matrices or `mcmc.list` object}
 
 \item{threshold}{Maximum value of Gelman diagnostic}
+
+\item{...}{Other parameters to `gelman.plot`}
 }
 \description{
 Use `coda::gelman_plot` to calculate first iteration number where Gelman diagnostic never exceeds the specified threshold.
