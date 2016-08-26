@@ -46,13 +46,13 @@ load.from.name <- function(filename, filepath="."){
     return(f.get)
 }
 
-#' @name summary.mvnorm
+#' @name summary_mvnorm
 #' @title Multivariate normal fit
 #' @description Fit multivariate normal to samples. Return means and covariance 
 #' matrix as a long list (for easy construction of data.tables)
 #' @param samples Matrix of MCMC samples.
 #' @export
-summary.mvnorm <- function(samples){
+summary_mvnorm <- function(samples){
     library(mclust)
     stopifnot(colnames(samples) != NULL)
     parnames <- colnames(samples)
@@ -67,13 +67,13 @@ summary.mvnorm <- function(samples){
     return(out.list)
 }
 
-#' @name summary.simple
+#' @name summary_simple
 #' @title Simple summary statistics on MCMC samples
 #' @description Calculate simple univariate summary statistics and return as 
 #' named list
 #' @param samples Matrix of MCMC samples
 #' @export
-summary.simple <- function(samples){
+summary_simple <- function(samples){
     stopifnot(colnames(samples) != NULL)
     parnames <- colnames(samples)
     mu <- colMeans(samples, na.rm=TRUE)

@@ -189,7 +189,7 @@ postProcess <- function(i.ngibbs, samps.list, conv.check) {
     # Calculate summary statistics
     samps.bt <- lapply(samps.list, burnin.thin)
     samps.combined <- do.call(rbind, samps.bt)
-    results <- summary.simple(samps.combined)
+    results <- summary_simple(samps.combined)
     results$gelman.diag <- conv.check$diagnostic
     return(list(results = results, samples = samps.out))
 }
