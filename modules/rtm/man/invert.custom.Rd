@@ -4,8 +4,8 @@
 \alias{invert.custom}
 \title{Bayesian inversion of a model}
 \usage{
-invert.custom(observed, invert.options, quiet = FALSE, return.jump = FALSE,
-  seed = NULL)
+invert.custom(observed, invert.options, quiet = FALSE,
+  return.resume = FALSE, seed = NULL)
 }
 \arguments{
 \item{observed}{Vector, matrix, or data frame (coerced to matrix) of 
@@ -42,7 +42,7 @@ Default=FALSE}
 
 \item{quiet}{Suppress progress bar and status messages. Default=FALSE}
 
-\item{return.jump}{If TRUE, return results as list that includes current Jump distribution (useful for continuing an ongoing run). Default = FALSE.}
+\item{return.resume}{If TRUE, return results as list that includes current Jump distribution (useful for continuing an ongoing run) and acceptance rate. Default = FALSE.}
 
 \item{seed}{Run-unique ID. Useful for parallel runs. Default=NULL}
 }

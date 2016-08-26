@@ -37,10 +37,10 @@
 #' Default=FALSE
 #' 
 #' @param quiet Suppress progress bar and status messages. Default=FALSE
-#' @param return.jump If TRUE, return results as list that includes current Jump distribution (useful for continuing an ongoing run). Default = FALSE.
+#' @param return.resume If TRUE, return results as list that includes current Jump distribution (useful for continuing an ongoing run) and acceptance rate. Default = FALSE.
 #' @param seed Run-unique ID. Useful for parallel runs. Default=NULL
 #' @export
-invert.custom <- function(observed, invert.options, quiet=FALSE, return.jump=FALSE, seed=NULL){
+invert.custom <- function(observed, invert.options, quiet=FALSE, return.resume=FALSE, seed=NULL){
     library(MASS)
     observed <- as.matrix(observed)
     nspec <- ncol(observed)
@@ -71,7 +71,9 @@ invert.custom <- function(observed, invert.options, quiet=FALSE, return.jump=FAL
     adj_min <- invert.options$adj_min
     target <- invert.options$target
     do.lsq <- invert.options$do.lsq
-    init.Jump <- invert.options$init.Jump
+    resume <- invert.options$resume
+    init.Jump <- resume$jump
+    init.ar <- resume$ar
 
 # If `model` doesn't have a seed argument (second argument), add it.
     model.args <- names(formals(model))
@@ -100,7 +102,11 @@ invert.custom <- function(observed, invert.options, quiet=FALSE, return.jump=FAL
     if(!is.null(names(inits))) cnames <- names(inits)
     else cnames <- sprintf("par%d", 1:length(inits))
     colnames(results) <- c(cnames, "residual")
-    ar <- 0
+    if (is.null(init.ar)) {
+        ar <- 0
+    } else {
+        ar <- init.ar
+    }
     if(!quiet) pb <- txtProgressBar(min=0, max=ngibbs, style=3)
     for(ng in 1:ngibbs){
         if(!quiet) setTxtProgressBar(pb, ng)
@@ -140,8 +146,8 @@ invert.custom <- function(observed, invert.options, quiet=FALSE, return.jump=FAL
         results[ng,npars+1] <- rsd
     }
     if(!quiet) close(pb)
-    if (return.jump){
-        out <- list(results = results, jump = Jump)
+    if (return.resume){
+        out <- list(results = results, resume = list(jump = Jump, ar = ar))
         return(out)
     } else {
         return(results)
