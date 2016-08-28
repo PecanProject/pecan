@@ -14,6 +14,9 @@
 ##only gives user the notice that file already exists. If user wants to overwrite the existing files, just change 
 ##overwrite statement below to TRUE.
 
+# leaf_user_met prefix
+PREFIX_XML <- '<?xml version="1.0"?>\n'
+
 ##-------------------------------------------------------------------------------------------------#
 ##' met2model wrapper for MAAT
 ##'
@@ -165,11 +168,11 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
     tmp <- cbind(YEAR=yr[1:n],DOY=doy[1:n],HOUR=hr[1:n],FRAC_DAY=frac.day[1:n],TIMESTEP=rep(dt/86400,n),
                  # CHANGE TO BETTER NAMES!
                  CO2=CO2,
-                 AT=Tair-273.15,  # convert to celcius
-                 PRC=Rain*dt, ## converts from mm/s to mm
-                 RH=RH_perc,
+                 Tair_degC=Tair-273.15,  # convert to celcius
+                 Prec_mm=Rain*dt, ## converts from mm/s to mm
+                 RH_perc=RH_perc,
                  #PAR=PAR*dt #mol/m2/dt
-                 PAR=PAR*1000000 #umols/m2/s
+                 PAR_umol_m2_s=PAR*1000000 #umols/m2/s
     )
     
     ## quick error check, sometimes get a NA in the last hr ?? NEEDED?
@@ -185,10 +188,32 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
   
   if(!is.null(out)){
     
-    ## write output
+    ## write met csv output 
     #write.table(out,out.file.full,quote = FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
     write.csv(out,out.file.full,row.names=FALSE)
     
+    # write out leaf_user_met.xml
+    #<met_data_translator>
+    #<leaf>
+      #<env>
+        #<par>'PAR'</par>
+        #<temp>'AT'</temp>
+        #<vpd>'VPD'</vpd>
+      #</env>
+    #</leaf>
+    #</met_data_translator>
+    
+    # leaf_user_met.xml
+    main.tag <- newXMLNode("met_data_translator")
+    #newXMLNode("leaf", "With some text", parent = top)
+    #list <- as.list(leaf = "env")   
+    #li <- list(a = list(aa = 1, ab=2), b=list(ba = 1, bb= 2, bc =3))
+    
+    # make this dynamic with names above!
+    li <- list(leaf = list(env = list(par = "PAR_umol_m2_s", temp = "Tair_degC")))
+    # use listToXml here!! should be a built in pecan function, this will create the xml file
+
+ 
     invisible(results)
     
   } else {

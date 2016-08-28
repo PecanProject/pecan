@@ -37,7 +37,7 @@ convert.samples.MAAT <- function(trait.samples){
     trait.names[trait.names == "Jmax"] <- "atref.jmax"
     colnames(trait.samples) <- trait.names
     
-    ### Conversions
+    ### Conversions  -- change to only use if Collatz, should also provide standard Rd oputput
     if('atref.rd' %in% names(trait.samples)) {
       ## Calculate dark_resp_factor - rd as a proportion of Vcmax, Williams & Flannagan 1998 ~ 0.1 (unitless)
       trait.samples[['rd_prop_vcmax']] <- trait.samples[['atref.rd']]/
@@ -70,11 +70,8 @@ write.config.MAAT <- function(defaults=NULL, trait.values, settings, run.id){
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
   outdir <- file.path(settings$host$outdir, run.id)
-
-  ### Move model files to run dirs. Use built-in MAAT script setup_MAAT_project.bs
-  #  system(paste0(settings$model$binary,'./run_scripts/setup_MAAT_project.bs'," ",rundir," ",
-  #settings$model$binary,"/run_scripts"," ",settings$model$binary,"/src"))
   
+  ### Move model files to run dirs. Use built-in MAAT script setup_MAAT_project.bs 
   # changed to below as advised by Rob Kooper, 20160405
   system2(file.path(settings$model$binary, 'run_scripts/setup_MAAT_project.bs'),
   c(rundir, file.path(settings$model$binary, "run_scripts"),  file.path(settings$model$binary, "src")))
@@ -90,7 +87,6 @@ write.config.MAAT <- function(defaults=NULL, trait.values, settings, run.id){
   traits.xml <- listToXml(traits.list, 'pars')
   
   ### Finalize XML
-  #xml <- append.xmlNode(xml, traits.xml) # append new child?  insert node?
   xml[[1]] <- addChildren(xml[[1]], traits.xml)
   
   ### Write out new XML  _ NEED TO FIX THIS BIT. NEED TO CONVERT WHOLE LIST TO XML
@@ -98,6 +94,7 @@ write.config.MAAT <- function(defaults=NULL, trait.values, settings, run.id){
   saveXML(xml, file = file.path(settings$rundir, run.id, "leaf_user_static.xml"), indent=TRUE, prefix = PREFIX_XML)
   
   ### Write out the job.sh file - will be used to run the model code in the correct PEcAn run folder
+  # !!Need to update for running with met, needs to paste mdir (met dir) to command !!
   jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ",
                   "\"odir <- ","'",outdir,"'","\""," > ",rundir,
                   "/logfile.txt","\n",'echo "',
