@@ -9,10 +9,10 @@ autoburnin(jags_out, return.burnin = FALSE, ...)
 \arguments{
 \item{jags_out}{List of MCMC sample matrices or `mcmc.list` object}
 
-\item{return.burnin}{Logical. If `TRUE`, return burnin value in addition to samples (as list). 
-Default = FALSE.}
+\item{return.burnin}{Logical. If `TRUE`, return burnin value in addition to samples (as list).}
 
-\item{...}{Other parameters to `gelman.plot`}
+\item{...}{Additional arguments for `getBurnin`, `gelman.plot`, and `gelman.diag`
+Default = FALSE.}
 }
 \examples{
      library(coda)

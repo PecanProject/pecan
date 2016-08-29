@@ -4,12 +4,21 @@
 \alias{getBurnin}
 \title{Calculate burnin value}
 \usage{
-getBurnin(jags_out, threshold = 1.1, ...)
+getBurnin(jags_out, threshold = 1.1, use.confidence = TRUE,
+  autoburnin = FALSE, ...)
 }
 \arguments{
 \item{jags_out}{List of MCMC sample matrices or `mcmc.list` object}
 
 \item{threshold}{Maximum value of Gelman diagnostic}
+
+\item{use.confidence}{Logical. If TRUE (default), use 95% confidence interval for Gelman Diagnostic.
+If FALSE, use the point estimate.}
+
+\item{autoburnin}{a logical flag indicating whether only the second half
+  of the series should be used in the computation.  If set to TRUE
+  (default) and \code{start(x)} is less than \code{end(x)/2} then start
+  of series will be adjusted so that only second half of series is used.}
 
 \item{...}{Other parameters to `gelman.plot`}
 }
