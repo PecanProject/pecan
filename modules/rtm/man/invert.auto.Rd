@@ -45,7 +45,7 @@ If NULL, do not save samples. Default = NULL.}
 \item{parallel.output}{Filename (or '' for stdout) for printing parallel outputs. Use with caution. Default = '/dev/null'.}
 }
 \value{
-List of "results" (summary statistics and Gelman Diagnostic) and "samples" (mcmc.list object, or "NA" if return.samples=FALSE)
+List of "results" (summary statistics) and "samples" (mcmc.list object, or "NA" if return.samples=FALSE)
 }
 \details{
 Performs an inversion via the `invert.custom` function with multiple chains and automatic convergence checking. 
