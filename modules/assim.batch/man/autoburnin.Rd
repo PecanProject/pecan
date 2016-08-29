@@ -9,10 +9,15 @@ autoburnin(jags_out, return.burnin = FALSE, ...)
 \arguments{
 \item{jags_out}{List of MCMC sample matrices or `mcmc.list` object}
 
-\item{return.burnin}{Return burnin value in addition to samples (as list). 
+\item{return.burnin}{Logical. If `TRUE`, return burnin value in addition to samples (as list). 
 Default = FALSE.}
 
 \item{...}{Other parameters to `gelman.plot`}
+}
+\examples{
+     library(coda)
+     data(line)
+     line_burned <- autoburnin(line, threshold = 1.05, return.burnin=FALSE)
 }
 \author{
 Michael Dietze, Alexey Shiklomanov
