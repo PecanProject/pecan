@@ -28,7 +28,7 @@
 #' @param parallel.cores Number of cores to use for parallelization. If NULL (default), allocate one fewer than detected number of cores.
 #' @param parallel.output Filename (or '' for stdout) for printing parallel outputs. Use with caution. Default = '/dev/null'.
 #' @inheritParams invert.custom
-#' @return List of "results" (summary statistics and Gelman Diagnostic) and "samples" (mcmc.list object, or "NA" if return.samples=FALSE)
+#' @return List of "results" (summary statistics) and "samples" (mcmc.list object, or "NA" if return.samples=FALSE)
 #' @export
 
 invert.auto <- 
@@ -48,7 +48,17 @@ invert.auto <-
     if (invert.options$do.lsq) library(minpack.lm)
     invert.options$ngibbs <- invert.options$ngibbs.min
 
-    convergenceCheck <- function(smcmc) check.convergence(smcmc, verbose = !quiet)
+    burninFunc <- function(smcmc) getBurnin(smcmc, use.confidence = TRUE, 
+                                            autoburnin = FALSE)
+
+    convergenceCheck <- function(smcmc) {
+        out <- check.convergence(smcmc, autoburnin = TRUE, verbose = !quiet)
+        if (out$converged) {
+            burnin <- getBurnin(smcmc, use.confidence = TRUE, autoburnin = FALSE)
+            if (burnin == 1) out$converged <- FALSE
+        }
+        return(out)
+    }
 
     # Begin first set of runs
     if (parallel) {
@@ -66,6 +76,7 @@ invert.auto <-
             }
         }
         cl <- makeCluster(parallel.cores, "FORK", outfile=parallel.output)
+        on.exit(stopCluster(cl))
         print(sprintf("Running %d chains in parallel. Progress bar unavailable", nchains))
     }
 
@@ -108,7 +119,7 @@ invert.auto <-
     }
     if (conv.check$converged) {
         # Done
-        out <- postProcess(i.ngibbs, samps.list, conv.check)
+        out <- postProcess(i.ngibbs, samps.list)
     } else {
         # Loop until convergence
         continue <- TRUE
@@ -133,27 +144,29 @@ invert.auto <-
             i.ngibbs <- i.ngibbs + ngibbs.step
             if (!is.null(save.samples)) save(output.list, samps.list, file = save.samples)
             samps.list.current <- lapply(output.list, "[[", 'results')
-            samps.list <- combineChains(samps.list, samps.list.current)
             resume <- lapply(output.list, "[[", 'resume')
-            
-            # Check for convergence
+
+            samps.list <- combineChains(samps.list, samps.list.current)
             smcmc <- makeMCMCList(samps.list)
             conv.check <- convergenceCheck(smcmc)
+            
+            # Check for convergence
             if (conv.check$error) {
                 warning("Could not calculate Gelman diag. Assuming no convergence.")
                 conv.check$converged <- FALSE
             }
             if (conv.check$converged) {
                 # Done
-                out <- postProcess(i.ngibbs, samps.list, conv.check)
+                out <- postProcess(i.ngibbs, samps.list)
                 continue <- FALSE
             } else {
                 continue <- TRUE
             }
         }
         if (i.ngibbs > ngibbs.max & continue) {
-            warning("Convergence was not achieved. Returning results as 'NA'.")
-            out$results <- NA
+            warning("Convergence was not achieved, and max iterations exceeded. Returning results as 'NA'.")
+            out <- list(results = NA, 
+                        samples = makeMCMCList(samps.list))
         }
     }
     if (!return.samples) out$samples <- c("Samples not returned" = NA)
@@ -176,26 +189,12 @@ combineChains <- function(samps1, samps2){
     return(sampsfinal)
 }
 
-#' @name makeMCMCList
-#' @title Make MCMC list from samples list
-#' @param samps samples list (output from invert.custom)
-#' @export
-makeMCMCList <- function(samps) {
-    samps.mcmc <- lapply(samps, mcmc)
-    stopifnot(all(sapply(samps.mcmc, is.mcmc)))
-    samps.mcmc.list <- mcmc.list(samps.mcmc)
-    stopifnot(is.mcmc.list(samps.mcmc.list))
-    return(samps.mcmc.list)
-}
-
-postProcess <- function(i.ngibbs, samps.list, conv.check) {
-    print(sprintf("Converged after %d iterations with Gelman diag. %.4f",
-                  i.ngibbs, conv.check$diagnostic))
+postProcess <- function(i.ngibbs, samps.list) {
+    print(sprintf("Converged after %d iterations", i.ngibbs))
     samps.out <- makeMCMCList(samps.list)
     # Calculate summary statistics
     samps.bt <- autoburnin(samps.out)
     samps.combined <- do.call(rbind, samps.bt)
     results <- summary_simple(samps.combined)
-    results$gelman.diag <- conv.check$diagnostic
     return(list(results = results, samples = samps.out))
 }

@@ -2,7 +2,6 @@
 library(PEcAnRTM)
 library(testthat)
 context("PROSPECT R inversion")
-data(sensor.rsr)
 params <- c('N' = 1.4, 
             'Cab' = 40,
             'Car' = 8,
@@ -10,12 +9,14 @@ params <- c('N' = 1.4,
             'Cm' = 0.01)
 obs.raw <- prospect(params, 5)[,1] + generate.noise()
 sensor <- "identity"
+data(sensor.rsr)
 obs <- spectral.response(obs.raw, sensor)
 
 invert.options <- default.settings.prospect
 invert.options$model <- function(params) spectral.response(prospect(params,5)[,1], sensor)
-invert.options$ngibbs.min <- 1000
-invert.options$ngibbs.step <- 500
+invert.options$ngibbs.min <- 5000
+invert.options$ngibbs.step <- 2000
+invert.options$ngibbs.max <- 10000
 invert.options$do.lsq <- FALSE
 invert.options$nchains <- 3
 
@@ -52,21 +53,21 @@ diag_plot <- function(output) {
 test.parallel <- invert.auto(obs, invert.options, return.samples = TRUE,
                              save.samples = save.samples, quiet=FALSE)
 output_tests(test.parallel)
-diag_table(test.parallel, params)
+#diag_table(test.parallel, params)
 
 
 # Run in series, with settings that facilitate convergence
-obs <- prospect(params, 5)[,1]
-invert.options$nchains <- 3
-invert.options$do.lsq <- TRUE
-test.serial <- invert.auto(obs, invert.options, return.samples = TRUE,
-                           save.samples = save.samples, parallel = FALSE,
-                           quiet = FALSE)
+#obs <- prospect(params, 5)[,1]
+#invert.options$nchains <- 3
+#invert.options$do.lsq <- TRUE
+#test.serial <- invert.auto(obs, invert.options, return.samples = TRUE,
+                           #save.samples = save.samples, parallel = FALSE,
+                           #quiet = FALSE)
 
-output_tests(test.serial)
-diag_table(test.serial, params)
+#output_tests(test.serial)
+#diag_table(test.serial, params)
 
 pdf("diag_plots.pdf")
 diag_plot(test.parallel)
-diag_plot(test.serial)
+#diag_plot(test.serial)
 dev.off()

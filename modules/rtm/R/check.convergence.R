@@ -2,7 +2,7 @@
 #' @title Check convergence of multiple MCMC chains
 #' @details Uses Gelman multivariate Gelman-Rubin diagnostic to check if 
 #' multiple MCMC chains have converged
-#' @param mcmc.samples.list mcmc.list object (from coda package) containing 
+#' @param jags_out mcmc.list object (from coda package) containing 
 #' samples from MCMC chains.
 #' @param threshold Gelman-Rubin diagnostic parameter threshold. Default = 1.1
 #' @param verbose If TRUE, print convergence result. Default = TRUE
@@ -11,37 +11,39 @@
 #'
 #'      convergence: Logical. Whether or not convergence was achieved.
 #'
-#'      diagnostic: Numerical value of the Gelman-Rubin multivariate diagnostic
+#'      diagnostics: Numerical value of Gelman-Rubin diagnostics for each parameter and multivariate diagnostic
 #'
 #'      error: Logical. Whether or not an error occured in the Gelman-Rubin calculation.  
 #' @export
-check.convergence <- function(mcmc.samples.list, 
+check.convergence <- function(jags_out, 
                               threshold = 1.1,
                               verbose = TRUE,
                               ...){
     library(coda)
-    if(class(mcmc.samples.list) != "mcmc.list") stop("Input needs to be of class 'mcmc.list'")
-    gd <- try(gelman.diag(mcmc.samples.list, ...))
+    if(class(jags_out) != "mcmc.list") stop("Input needs to be of class 'mcmc.list'")
+    gd <- try(gelman.diag(jags_out, ...))
     if(class(gd) == "try-error"){
         warning("Could not calculate Gelman diag. Assuming no convergence.")
         converged <- FALSE
-        diagnostic <- NULL
+        diagnostics <- NULL
         error <- TRUE
     } else {
         error <- FALSE
-        diagnostic <- gd$mpsrf
-        if(diagnostic < threshold){
+        diagnostics <- c(gd$psrf[,2], "mpsrf" = gd$mpsrf)
+        if(all(diagnostics < threshold)){
             converged <- TRUE
-            msg <- sprintf("Converged with Gelman diag = %.3f", diagnostic)
+            msg <- sprintf("Converged with all Gelman diag <= %.3f", min(diagnostics))
         } else {
             converged <- FALSE
-            msg <- sprintf("Did not converge (Gelman Diag = %.3f).",
-                           diagnostic)
+            too_large <- diagnostics[diagnostics > threshold]
+            msg <- sprintf("The following parameters did not converge: %s",
+                           paste(sprintf("%s (%.3f)", names(too_large), too_large),
+                                 collapse = ", "))
         }
         if(verbose) print(msg)
     }
     return(list(converged = converged,
-                diagnostic = diagnostic,
+                diagnostics = diagnostics,
                 error = error))
 }
 

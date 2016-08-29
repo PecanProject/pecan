@@ -4,10 +4,10 @@
 \alias{check.convergence}
 \title{Check convergence of multiple MCMC chains}
 \usage{
-check.convergence(mcmc.samples.list, threshold = 1.1, verbose = TRUE, ...)
+check.convergence(jags_out, threshold = 1.1, verbose = TRUE, ...)
 }
 \arguments{
-\item{mcmc.samples.list}{mcmc.list object (from coda package) containing 
+\item{jags_out}{mcmc.list object (from coda package) containing 
 samples from MCMC chains.}
 
 \item{threshold}{Gelman-Rubin diagnostic parameter threshold. Default = 1.1}
@@ -21,7 +21,7 @@ List length 3 containing the following:
 
      convergence: Logical. Whether or not convergence was achieved.
 
-     diagnostic: Numerical value of the Gelman-Rubin multivariate diagnostic
+     diagnostics: Numerical value of Gelman-Rubin diagnostics for each parameter and multivariate diagnostic
 
      error: Logical. Whether or not an error occured in the Gelman-Rubin calculation.
 }
