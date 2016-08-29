@@ -25,8 +25,14 @@ getBurnin <- function(jags_out, threshold = 1.1, ...) {
         msg("Unable to calculate Gelman diagnostic. Assuming no convergence.")
         return(1)
     }
-    burnin <- GBR$last.iter[tail(which(rowSums(GBR$shrink[,,2] > threshold) > 0), 1) + 1]
-    if (is.na(burnin) | length(burnin) == 0) {
+    gbr_shrink <- GBR$shrink[,,2] > threshold
+    if (all(!gbr_shrink)) {
+        # Chains converged instantly -- no burnin required
+        burnin <- 1
+    } else {
+        burnin <- GBR$last.iter[tail(which(rowSums(gbr_shrink) > 0), 1) + 1]
+    }
+    if (is.na(burnin)) {
         msg("*** Chains have not converged yet ***")
         burnin <- 1
     }
@@ -36,12 +42,17 @@ getBurnin <- function(jags_out, threshold = 1.1, ...) {
 #' @name autoburnin
 #' @title Automatically calculate and apply burnin value
 #' @author Michael Dietze, Alexey Shiklomanov
-#' @param return.burnin Return burnin value in addition to samples (as list). 
+#' @param return.burnin Logical. If `TRUE`, return burnin value in addition to samples (as list). 
 #' Default = FALSE.
 #' @inheritParams getBurnin
+#' @examples
+#'      library(coda)
+#'      data(line)
+#'      line_burned <- autoburnin(line, threshold = 1.05, return.burnin=FALSE)
 #' @export
 autoburnin <- function(jags_out, return.burnin = FALSE, ...){
     burnin <- getBurnin(jags_out, ...)
+    if (burnin == 1) return(jags_out)
     out <- window(jags_out, start = burnin)
     if (return.burnin) {
         out <- list(samples = samples, burnin = burnin)
