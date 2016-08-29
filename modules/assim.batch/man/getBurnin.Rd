@@ -5,7 +5,7 @@
 \title{Calculate burnin value}
 \usage{
 getBurnin(jags_out, threshold = 1.1, use.confidence = TRUE,
-  autoburnin = FALSE, ...)
+  autoburnin = FALSE, plotfile = "/dev/null", ...)
 }
 \arguments{
 \item{jags_out}{List of MCMC sample matrices or `mcmc.list` object}
