@@ -107,7 +107,9 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 <?php }?>
 <script type="text/javascript">
 
-	$(function()  {
+  //$(function()  {
+  $(window).load(function() {
+
 	var dialog, form,
 		sitename = $( "#txtsitename" ),
 		elevation =$( "#txtelevation" ),
@@ -176,7 +178,7 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 			}
 		},
 		close: function () {
-			form[ 0 ].reset();
+			form[0].reset();
 			allFields.removeClass( "ui-state-error" );
 		}
 	});
@@ -189,10 +191,27 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 	$( "#create-site" ).button().on( "click", function() {
 		dialog.dialog( "open" );
 	});
-	});
+
+});
+////////Additional Function and Variables for modals//////////////////////
 
   var markersArray = [];
-  
+
+//    map.addListener('dblclick', function(event) {
+//      addMarker(event.latLng);
+//      console.log("dialog should fire");
+//      dialog.dialog("open");
+//   });
+
+
+//  function addMarker(location) {
+//    var marker = new google.maps.Marker({
+//      position: location,
+//      map: map
+//    });
+//    markersArray.push(marker);
+//  }
+
   function validate() {
     $("#next").removeAttr("disabled");       
     $("#error").html("&nbsp;");
@@ -391,7 +410,23 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
         m.setVisible(m.sitename.toLowerCase().indexOf(search) > -1);
       });
     });
+
+    map.addListener('dblclick', function(event) {
+      addMarker(event.latLng);
+      console.log("dialog should fire");
+      $( "#dialog-form").dialog("open");
+    });
   }
+
+
+  function addMarker(location) {
+    var marker = new google.maps.Marker({
+      position: location,
+      map: map
+    });
+    markersArray.push(marker);
+  }
+////////////////////New Functions//////////////////////////
 
   function showSite(marker, selected) {
     var latlng;
@@ -419,9 +454,6 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
     }
   }
 
-  function renderSites(selected) {
-  }
-
   function goHome() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(position) {
@@ -436,6 +468,8 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
     }  
   }
 <?php } ?>
+////////Additional Function and Variables for modals//////////////////////
+//});
 </script>
 </head>
 <body>
@@ -482,7 +516,8 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
       <input name="siteid" id="siteid" type="hidden" value="<?php echo $siteid; ?>"/>
       <input name="sitename" id="sitename" type="text" />
 <?php if ($betydb != "") { ?>
-      <span class="small">Add a new site in <a href="<?php echo $betydb; ?>/sites/new" target="BETY">BETY</a>. Requires a refresh of this page after site is added.</span>
+      <span class="small">Add a new site, double click map.</span>
+      <span class="small"><a href="<?php echo $betydb; ?>/sites/new" target="BETY">Remove Pins</a></span>
 <?php } ?>
       <div class="spacer"></div>
 
