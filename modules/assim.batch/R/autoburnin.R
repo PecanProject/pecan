@@ -13,7 +13,8 @@
 #'      burnin <- getBurnin(line, threshold = 1.05)
 #' @author Michael Dietze, Alexey Shiklomanov
 #' @export
-getBurnin <- function(jags_out, threshold = 1.1, use.confidence = TRUE, autoburnin = FALSE, ...) {
+getBurnin <- function(jags_out, threshold = 1.1, use.confidence = TRUE, autoburnin = FALSE,
+                      plotfile = "/dev/null", ...) {
     library(coda)
     if (length(find("logger.info")) == 0) {
         msg <- message
@@ -21,7 +22,7 @@ getBurnin <- function(jags_out, threshold = 1.1, use.confidence = TRUE, autoburn
         msg <- logger.info
     }
     if (!is.mcmc.list(jags_out)) jags_out <- makeMCMCList(jags_out)
-    png("/dev/null")
+    png(plotfile)
     GBR <- try(gelman.plot(jags_out, autoburnin = autoburnin, ...))
     dev.off()
     if (class(GBR) == "try-error") {
@@ -39,7 +40,9 @@ getBurnin <- function(jags_out, threshold = 1.1, use.confidence = TRUE, autoburn
     }
     if (is.na(burnin)) {
         msg("*** Chains have not converged yet ***")
-        print(cbind(tail(gbr_values), tail(gbr_exceed)))
+        mvals <- matrix(gbr_values, nrow(gbr_values), ncol(gbr_values))
+        mex <- matrix(gbr_exceed, nrow(gbr_exceed), ncol(gbr_exceed))
+        print(cbind(tail(mvals), tail(mex)))
         burnin <- 1
     }
     return(burnin)
