@@ -8,6 +8,7 @@
 # Outputs produced by testthat
 tests/testthat/*.RData
 tests/testthat/*.pdf
+tests/testthat/*.png
 
 # R CMD check and build results
 check
