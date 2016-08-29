@@ -48,9 +48,6 @@ invert.auto <-
     if (invert.options$do.lsq) library(minpack.lm)
     invert.options$ngibbs <- invert.options$ngibbs.min
 
-    burninFunc <- function(smcmc) getBurnin(smcmc, use.confidence = TRUE, 
-                                            autoburnin = FALSE)
-
     convergenceCheck <- function(smcmc) {
         out <- check.convergence(smcmc, autoburnin = TRUE, verbose = !quiet)
         if (out$converged) {
