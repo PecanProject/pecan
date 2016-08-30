@@ -40,8 +40,10 @@ getBurnin <- function(jags_out, threshold = 1.1, use.confidence = TRUE, autoburn
     }
     if (is.na(burnin)) {
         msg("*** Chains have not converged yet ***")
-        mvals <- matrix(gbr_values, nrow(gbr_values), ncol(gbr_values))
-        mex <- matrix(gbr_exceed, nrow(gbr_exceed), ncol(gbr_exceed))
+        mvals <- as.data.frame(matrix(gbr_values, nrow(gbr_values), ncol(gbr_values)))
+        colnames(mvals) <- colnames(gbr_value)
+        mex <- as.data.frame(matrix(gbr_exceed, nrow(gbr_exceed), ncol(gbr_exceed)))
+        colnames(mex) <- sprintf("PSRF %s > %.2f", colnames(gbr_exceed), threshold)
         print(cbind(tail(mvals), tail(mex)))
         burnin <- 1
     }
