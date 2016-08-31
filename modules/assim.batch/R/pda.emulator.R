@@ -283,9 +283,8 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
                 nrow=sum(n.param))
   
   
-
-  
   if(run.block){
+
     jmp.list <- list() 
     init.list <- list()
     
@@ -300,6 +299,10 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     }
     
     
+  }else{
+    
+    jmp.list <- jmp.list
+      
   }
   
   
