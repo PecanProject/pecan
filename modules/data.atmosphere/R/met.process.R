@@ -226,7 +226,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         cf.id <- list(input.id=check$container_id, dbfile.id=check$id)
       }else{
         # Just a draft of what would happen - doesn't include using the cluster so it would be SLOW. Hasn't been tested.
-        cf.id <- convert.input(cf0.id, outfolder2,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,permute.nc,
+        cf.id <- convert.input(cf0.id, outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,permute.nc,
                                username,con=con,host=host,browndog=NULL,write=TRUE)
       }
     } else if(register$scale=="site") {
