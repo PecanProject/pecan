@@ -6,7 +6,7 @@
 ## which accompanies this distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
 ## #-------------------------------------------------------------------------------
-context("test Settings classes")
+context("test Settings class")
 
 test_that("Settings constructors work as expected", {
   l <- list(aa=1, bb=2, cc=list(dd=3, ee=4))
