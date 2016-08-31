@@ -25,7 +25,7 @@ met.files.tree <- function  (site.id,machine.id,met,met.reg, con){
                                     "'Input'"), con)
   
   if ( !exists("input.file.info") | length(input.file.info) == 0){
-    ## Nothing was returned or there was an error
+    ## Nothing was returned or there was an error 
     logger.error("Unable to find existing Met file records")
     info.list <- NULL
     
@@ -77,7 +77,7 @@ met.files.tree <- function  (site.id,machine.id,met,met.reg, con){
     
     # Model specific met files that have gapfill.id as parent.id
     if((gf.input.id %in% file.table$parent_id)){
-      model.file.info <- file.table[file.table$parent_id %in% gf.input.id,]
+      model.file.info <- file.table[file.table$parent_id %in% gf.input.id | file.table$parent_id %in% cf.input.id,]
       ### grab start and end_dates
       model.info$model.start_date <- model.info$start_date
       model.info$model.end_date <- model.info$end_date
