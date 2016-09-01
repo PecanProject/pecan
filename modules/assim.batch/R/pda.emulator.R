@@ -184,6 +184,9 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   ## if it is not specified, default to GPfit
   if(is.null(settings$assim.batch$GPpckg)) settings$assim.batch$GPpckg="GPfit"
   
+  init.list <- list()
+  jmp.list <- list()
+  
   if(settings$assim.batch$GPpckg=="GPfit"){ # GPfit-if
     
     if(run.block){ 
@@ -218,20 +221,23 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     }else{
       load(settings$assim.batch$emulator.path) # load previously built emulator to run a longer mcmc
       load(settings$assim.batch$llik.path)
-      load(settings$assim.batch$jcov.path)
-      load(settings$assim.batch$mcmc.path)
+      load(settings$assim.batch$resume.path)
+      #load(settings$assim.batch$mcmc.path)
       
-      init.list <- list()
+      prior.all <- do.call("rbind", prior.list)
+      prior.ind.all <- which(unlist(pname) %in% unlist(settings$assim.batch$param.names))
+      prior.fn.all <- pda.define.prior.fn(prior.all)
       
+
       for(c in 1:settings$assim.batch$chain){
-        init.x <- mcmc.list[[c]][nrow(mcmc.list[[c]]),]
-        
-        prior.all <- do.call("rbind", prior.list)
-        prior.ind.all <- which(unlist(pname) %in% unlist(settings$assim.batch$param.names))
-        prior.fn.all <- pda.define.prior.fn(prior.all)
-        
-        init.list[[c]] <-  as.list(sapply(seq_along(prior.ind.all), 
-                                          function(x) eval(prior.fn.all$pprior[[prior.ind.all[x]]], list(q=init.x[x]))))
+        init.list[[c]] <- resume.list[[c]]$prev.samp[nrow(resume.list[[c]]$prev.samp),]
+        jmp.list[[c]] <- resume.list[[c]]$jump
+        # init.x <- mcmc.list[[c]][nrow(mcmc.list[[c]]),]
+        # 
+
+        # 
+        # init.list[[c]] <-  as.list(sapply(seq_along(prior.ind.all), 
+        #                                   function(x) eval(prior.fn.all$pprior[[prior.ind.all[x]]], list(q=init.x[x]))))
       }
     }
     
@@ -280,13 +286,12 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   
   rng <- matrix(c(sapply(prior.fn.all$qprior[prior.ind.all] ,eval,list(p=0)),
                   sapply(prior.fn.all$qprior[prior.ind.all] ,eval,list(p=1))),
-                nrow=sum(n.param))
+                  nrow=sum(n.param))
   
   
   if(run.block){
 
-    jmp.list <- list() 
-    init.list <- list()
+    resume.list <- list()
     
     for(c in 1:settings$assim.batch$chain){
       jmp.list[[c]]  <- sapply(prior.fn.all$qprior, 
@@ -296,13 +301,9 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
       init.x <- lapply(prior.ind.all, function(v) eval(prior.fn.all$rprior[[v]], list(n=1)))
       names(init.x) <- unlist(pname)[prior.ind.all]
       init.list[[c]] <- init.x
+      resume.list[[c]] <- NA
     }
     
-    
-  }else{
-    
-    jmp.list <- jmp.list
-      
   }
   
   
@@ -329,10 +330,11 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
             ar.target = settings$assim.batch$jump$ar.target,   ## Target acceptance rate
             priors    = prior.fn.all$dprior[prior.ind.all], ## priors
             settings  = settings,
-            run.block  = run.block
+            run.block = run.block,
+            resume.list = resume.list[[chain]]
     )})
   
-  mcmc.list.tmp <- list()
+  mcmc.list <- list()
   
   for(c in 1:settings$assim.batch$chain) {
     
@@ -351,23 +353,24 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
       }
     }
     colnames(m) <- unlist(pname)[prior.ind.all]
-    mcmc.list.tmp[[c]] <- m
+    mcmc.list[[c]] <- m
     
-    jmp.list[[c]] <- mcmc.out[[c]]$jump
+    #jmp.list[[c]] <- mcmc.out[[c]]$jump
+    resume.list[[c]] <- mcmc.out[[c]]$chain.res
   }
   
   
-  if(length(extension.check)==1 & !run.block){
-    
-    # merge with previous run's mcmc samples
-    mcmc.list <- mapply(rbind, mcmc.list, mcmc.list.tmp, SIMPLIFY=FALSE)
-    settings$assim.batch$iter <- nrow(mcmc.list[[1]])
-    
-  }else{
-    
-    mcmc.list <- mcmc.list.tmp
-
-  }
+  # if(length(extension.check)==1 & !run.block){
+  #   
+  #   # merge with previous run's mcmc samples
+  #   mcmc.list <- mapply(rbind, mcmc.list, mcmc.list.tmp, SIMPLIFY=FALSE)
+  #   settings$assim.batch$iter <- nrow(mcmc.list[[1]])
+  #   
+  # }else{
+  #   
+  #   mcmc.list <- mcmc.list.tmp
+  # 
+  # }
   
   if(FALSE) {
     gp = kernlab.gp; x0 = init.x; nmcmc = settings$assim.batch$iter; rng= NULL; format = "lin"
@@ -393,9 +396,10 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
                                               paste0('mcmc.list.pda', settings$assim.batch$ensemble.id, '.Rdata'))
   save(mcmc.list, file = settings$assim.batch$mcmc.path)
   
-  settings$assim.batch$jcov.path <- file.path(settings$outdir, 
-                                              paste0('jcov.pda', settings$assim.batch$ensemble.id, '.Rdata'))
-  save(jmp.list, file = settings$assim.batch$jcov.path)
+  
+  settings$assim.batch$resume.path <- file.path(settings$outdir, 
+                                              paste0('resume.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+  save(resume.list, file = settings$assim.batch$resume.path)
   
   
   # Separate each PFT's parameter samples to their own list
