@@ -50,10 +50,6 @@ invert.auto <-
 
     convergenceCheck <- function(smcmc) {
         out <- check.convergence(smcmc, autoburnin = TRUE, verbose = !quiet)
-        if (out$converged) {
-            burnin <- getBurnin(smcmc, use.confidence = TRUE, autoburnin = FALSE)
-            if (burnin == 1) out$converged <- FALSE
-        }
         return(out)
     }
 
@@ -86,6 +82,7 @@ invert.auto <-
                                quiet=quiet, return.resume=TRUE, seed = x$seed)
         return(samps)
     }
+
     seeds <- 1e8 * runif(nchains)
     inputs <- list()
     for (i in 1:nchains) inputs[[i]] <- list(seed = seeds[i], 
@@ -103,9 +100,10 @@ invert.auto <-
         }
     }
     i.ngibbs <- invert.options$ngibbs.min
-    if (!is.null(save.samples)) save(output.list, file = save.samples)
     samps.list <- lapply(output.list, "[[", 'results')
     resume <- lapply(output.list, "[[", 'resume')
+    if (!is.null(save.samples)) saveRDS(list(resume = resume, samps.list = samps.list),
+                                        file = save.samples)
 
     # Check for convergence
     smcmc <- makeMCMCList(samps.list)
@@ -139,11 +137,12 @@ invert.auto <-
                 }
             }
             i.ngibbs <- i.ngibbs + ngibbs.step
-            if (!is.null(save.samples)) save(output.list, samps.list, file = save.samples)
             samps.list.current <- lapply(output.list, "[[", 'results')
             resume <- lapply(output.list, "[[", 'resume')
 
             samps.list <- combineChains(samps.list, samps.list.current)
+            if (!is.null(save.samples)) saveRDS(list(resume = resume, samps.list = samps.list), 
+                                                file = save.samples)
             smcmc <- makeMCMCList(samps.list)
             conv.check <- convergenceCheck(smcmc)
             
@@ -190,7 +189,9 @@ postProcess <- function(i.ngibbs, samps.list) {
     print(sprintf("Converged after %d iterations", i.ngibbs))
     samps.out <- makeMCMCList(samps.list)
     # Calculate summary statistics
-    samps.bt <- autoburnin(samps.out)
+    samps.bt.out <- autoburnin(samps.out, return.burnin = TRUE)
+    samps.bt <- samps.bt.out$samples
+    print(paste("Burnin =", samps.bt.out$burnin))
     samps.combined <- do.call(rbind, samps.bt)
     results <- summary_simple(samps.combined)
     return(list(results = results, samples = samps.out))
