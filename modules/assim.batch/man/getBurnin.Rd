@@ -12,13 +12,15 @@ getBurnin(jags_out, threshold = 1.1, use.confidence = TRUE,
 
 \item{threshold}{Maximum value of Gelman diagnostic}
 
-\item{use.confidence}{Logical. If TRUE (default), use 95% confidence interval for Gelman Diagnostic.
-If FALSE, use the point estimate.}
+\item{use.confidence}{Logical. If TRUE (default), use 95% confidence interval for Gelman Diagnostic.}
 
 \item{autoburnin}{a logical flag indicating whether only the second half
   of the series should be used in the computation.  If set to TRUE
   (default) and \code{start(x)} is less than \code{end(x)/2} then start
   of series will be adjusted so that only second half of series is used.}
+
+\item{plotfile}{Filename for a PNG of the Gelman plot. Default = '/dev/null'
+If FALSE, use the point estimate.}
 
 \item{...}{Other parameters to `gelman.plot`}
 }

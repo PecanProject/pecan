@@ -4,6 +4,7 @@
 #' @param jags_out List of MCMC sample matrices or `mcmc.list` object
 #' @param threshold Maximum value of Gelman diagnostic
 #' @param use.confidence Logical. If TRUE (default), use 95% confidence interval for Gelman Diagnostic.
+#' @param plotfile Filename for a PNG of the Gelman plot. Default = '/dev/null'
 #' If FALSE, use the point estimate.
 #' @inheritParams coda::gelman.diag
 #' @param ... Other parameters to `gelman.plot`
@@ -40,8 +41,10 @@ getBurnin <- function(jags_out, threshold = 1.1, use.confidence = TRUE, autoburn
     }
     if (is.na(burnin)) {
         msg("*** Chains have not converged yet ***")
-        mvals <- matrix(gbr_values, nrow(gbr_values), ncol(gbr_values))
-        mex <- matrix(gbr_exceed, nrow(gbr_exceed), ncol(gbr_exceed))
+        mvals <- as.data.frame(matrix(gbr_values, nrow(gbr_values), ncol(gbr_values)))
+        colnames(mvals) <- colnames(gbr_values)
+        mex <- as.data.frame(matrix(gbr_exceed, nrow(gbr_exceed), ncol(gbr_exceed)))
+        colnames(mex) <- sprintf("PSRF %s > %.2f", colnames(gbr_exceed), threshold)
         print(cbind(tail(mvals), tail(mex)))
         burnin <- 1
     }
