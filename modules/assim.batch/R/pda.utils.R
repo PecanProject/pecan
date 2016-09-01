@@ -694,6 +694,11 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
                        ceiling(min(2000,0.2*settings$assim.batch$iter)))
       
     }
+    
+    # rare, but this can happen, better to throw an error than continue, it might lead mis-interpretation of posteriors otherwise
+    if(max(burnin) == nrow(params.subset[[i]][[1]])){
+      logger.severe(paste0("*** Burn-in is the same as the length of the chain, please run a longer chain ***"))
+    }
 
     params.subset[[i]] <- window(params.subset[[i]], start=max(burnin, na.rm = TRUE))
 
