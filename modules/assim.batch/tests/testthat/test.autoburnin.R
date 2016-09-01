@@ -4,8 +4,8 @@ context("Autoburnin functions")
 
 # Simple test with `line` data from `coda`
 data(line)
-burnin <- getBurnin(line, threshold = 1.1)
-line_burned <- autoburnin(line)
+burnin <- getBurnin(line, threshold = 1.1, method = "gelman.plot")
+line_burned <- autoburnin(line, method = "gelman.plot")
 
 test_that("Burnin value is a number and within the dimensions of `line`", {
               expect_is(burnin, "numeric")
