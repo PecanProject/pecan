@@ -48,21 +48,30 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
   maat.output <- read.csv(maat.out.file, header=T)
   maat.output.dims <- dim(maat.output)
   
+  ## !! OLD
   ### Current runs do not span multiple dates.  Update this code when running over multiple
   ### days and with a explicit timestep. This will occur once use real met data
+  #days <- as.Date(start_date):as.Date(end_date)
+  #year <- strftime(as.Date(days,origin="1970-01-01"), "%Y")
+  ###start <- strftime(as.Date(start_date,origin="1970-01-01"), "%Y-%m-%d")
+  ###end <- strftime(as.Date(end_date,origin="1970-01-01"), "%Y-%m-%d")
+  ###start <- as.Date(start_date,"%Y-%m-%d")
+  ###end <- as.Date(end_date,"%Y-%m-%d")
+  #num.years <- length(unique(year))
+  #years <- unique(year)
+  #timestep.s <- 86400
+  # !!
+  
+  ### Determine number of years and output timestep
+  # !!! Need to output year and day in out.csv to be able to determine timestep.
   days <- as.Date(start_date):as.Date(end_date)
   year <- strftime(as.Date(days,origin="1970-01-01"), "%Y")
-  #start <- strftime(as.Date(start_date,origin="1970-01-01"), "%Y-%m-%d")
-  #end <- strftime(as.Date(end_date,origin="1970-01-01"), "%Y-%m-%d")
-  #start <- as.Date(start_date,"%Y-%m-%d")
-  #end <- as.Date(end_date,"%Y-%m-%d")
   num.years <- length(unique(year))
   years <- unique(year)
-  timestep.s <- 86400
-
+  timestep.s <- 86400 / 48 # hard-coded for Ameriflux....need to change, read from met file?
+  
   ### Setup outputs for netCDF file in appropriate units
   for (y in years){
-    #print(y)
     if (file.exists(file.path(outdir, paste(y,"nc", sep=".")))) {
       next ## skip, model output already present.
     }
@@ -70,8 +79,16 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
     print(paste("---- Processing year: ", y))  # turn on for debugging
     output <- list()
     
+    ## Subset data for processing - !!! NEED TO ADD YEAR TO OUTPUT FILE TO SUBSET OVER MULT YEARS
+    #sub.maat.output <- subset(maat.output, year == y)
+    #sub.maat.output.dims <- dim(sub.maat.output)
+    #dayfrac = 1 / out.day
+    #step <- seq(0, 0.99, 1 / out.day)
+    
+    
+    
     ### standard variables: Carbon Pools [not currently relevant to MAAT]
-    output[[1]] <- y   # Year
+    output[[1]] <- y   # Year - REMOVE!  ALREADY IN THE NETCDF AS TIME!!
     output[[2]] <- (maat.output$A)    # assimilation in umolsC/m2/s - OR KEEP AS ASSIMILATION?
     #output[[2]] <- c(maat.output$A,-999)
     
