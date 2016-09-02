@@ -208,7 +208,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
     # Create leaf_user_met.xml
     # TODO: make this dynamic with names above!
     # TODO: add the additional met variables, make dynamic
-    leaf_user_met_list <- list(leaf = list(env = list(temp = "Tair_degC", par = "PAR_umol_m2_s")))
+    leaf_user_met_list <- list(leaf = list(env = list(temp = "'Tair_degC'", par = "'PAR_umol_m2_s'")))
     leaf_user_met_xml <- listToXml(leaf_user_met_list,"met_data_translator")
     
     # output XML file

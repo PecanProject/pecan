@@ -94,18 +94,43 @@ write.config.MAAT <- function(defaults=NULL, trait.values, settings, run.id){
   saveXML(xml, file = file.path(settings$rundir, run.id, "leaf_user_static.xml"), indent=TRUE, prefix = PREFIX_XML)
   
   ### Write out the job.sh file - will be used to run the model code in the correct PEcAn run folder
-  # !!Need to update for running with met, needs to paste mdir (met dir) to command !!
-  jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ",
-                  "\"odir <- ","'",outdir,"'","\""," > ",rundir,
-                  "/logfile.txt","\n",'echo "',
-                  ' require(PEcAn.MAAT); model2netcdf.MAAT(',
-                  "'",outdir,"',",
-                  settings$run$site$lat,",",
-                  settings$run$site$lon,", '",
-                  settings$run$start.date,"', '",
-                  settings$run$end.date,"') ",
-                  '" | R --vanilla')
-                
+  # Run w/o met drivers
+  if (is.null(settings$run$inputs$met)){ 
+    logger.info("-- No met selected. Running without a met driver --")
+    jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ",
+                    "\"odir <- ","'",outdir,"'","\""," > ",rundir,
+                    "/logfile.txt","\n",'echo "',
+                    ' require(PEcAn.MAAT); model2netcdf.MAAT(',
+                    "'",outdir,"',",
+                    settings$run$site$lat,",",
+                    settings$run$site$lon,", '",
+                    settings$run$start.date,"', '",
+                    settings$run$end.date,"') ",
+                    '" | R --vanilla')
+    # Run with met drivers
+    # !!Need to update for running with met, needs to paste mdir (met dir) to command !!
+  } else if (!is.null(settings$run$inputs$met)){
+    met.dir <- dirname(settings$run$inputs$met$path)
+    met.file <- basename(settings$run$inputs$met$path)
+    logger.info("-- Copy leaf_user_met.xml to rundirs --")
+    file.copy(file.path(met.dir,list.files(met.dir,'*.xml')), rundir, overwrite = TRUE, recursive = FALSE,
+              copy.mode = TRUE, copy.date = TRUE)
+    logger.info("-- Create job.sh scripts and place in rundirs --")
+    # need to update code below to include met data dir
+    jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ",
+                    "\"odir <- ","'",outdir,"'","\""," ","\"mdir <- ","'",met.dir,"'",
+                    "\""," ","\"metdata <- ","'",met.file,"'","\""," > ",rundir,
+                    "/logfile.txt","\n",'echo "',
+                    ' require(PEcAn.MAAT); model2netcdf.MAAT(',
+                    "'",outdir,"',",
+                    settings$run$site$lat,",",
+                    settings$run$site$lon,", '",
+                    settings$run$start.date,"', '",
+                    settings$run$end.date,"') ",
+                    '" | R --vanilla')
+    } #End if/else
+  
+  # Write the job.sh script
   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
   
