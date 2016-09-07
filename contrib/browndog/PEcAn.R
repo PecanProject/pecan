@@ -1,0 +1,108 @@
+#!/usr/bin/Rscript
+#PEcAn
+#data
+#xml
+#pecan.zip
+
+# input files is a xml file specifying what to get
+#<input>
+#  <type>Ameriflux</type>
+#  <site>US-Dk3</site>
+#  <lat>35.9782</lat>
+#  <lon>-79.0942</lon>
+#  <start_date>2001-01-01 00:00:00</start_date>
+#  <end_date>2001-12-31 23:59:59</end_date>
+#</input>
+
+#send all output to stdout (incl stderr)
+sink(stdout(), type="message")
+
+# get command line arguments
+args <- commandArgs(trailingOnly = TRUE)
+if (length(args) < 2) {
+  allargs <- commandArgs(trailingOnly = FALSE)
+  myCommand <- sub('--file=', '', allargs[grep('--file=', allargs)])
+  print(paste0("Usage:    ", myCommand, " xml_Input_File  cf-nc_Output_File [tempDirectory] [cacheDirectory]"))
+  print(paste0("Example1: ", myCommand, " US-Dk3.xml US-Dk3.pecan.nc [/tmp/watever] [/tmp/cache]"))
+  print(paste0("Example2: ", myCommand, " US-Dk3.xml US-Dk3.pecan.zip [/tmp/watever] [/tmp/cache]"))
+  q()
+}
+
+# load required libraries
+require(XML)
+require(RPostgreSQL)
+require(PEcAn.data.atmosphere)
+require(PEcAn.DB)
+
+# 1st argument is the input xml file
+input <- xmlToList(xmlParse(args[1]))
+
+# 2nd argument is the output file
+outputfile <- args[2]
+
+# 3rd argument is the temp folder
+ifelse(length(args) > 2, tempDir <- args[3], tempDir <- ".")
+
+# 4th argument is the cachefolder
+ifelse(length(args) > 3, cacheDir <- args[4], cacheDir <- tempDir)
+cacheDir <- "/home/polyglot/cache/PEcAn"
+
+dbparams <- list(user = "bety", dbname = "bety", password="bety", host="localhost")
+# variables definitioni
+site_lat   <- ifelse(is.null(input$lat), NA, input$lat)
+site_lon   <- ifelse(is.null(input$lon), NA, input$lon)
+
+#connect DB and get site name
+con      <- db.open(dbparams)
+#query site based on location
+site <- db.query(paste0("SELECT id, sitename AS name FROM sites WHERE geometry = ST_GeogFromText('POINT(", site_lon, " ", site_lat, ")')"),con)
+if(length(site) < 0){
+  #query site based on name
+  site <- db.query(paste0("SELECT id, sitename AS name FROM sites WHERE sitename LIKE '%", input$site, "%'"),con)
+}
+if(length(site) < 0){
+  #insert site info
+  #didn't implement since I didn't find db insert function. The only one seem to insert to dbfiles.
+} else {
+  #remove multiple entries. 
+  site <-list(id = site$id[1], name = site$name[1])
+}
+db.close(con)
+
+model      <- ifelse(is.null(input$model), 'SIPNET', input$model)
+mettype    <- ifelse(is.null(input$type), 'Ameriflux', input$type)
+input_met <- list(username = "pecan", source = mettype)
+start_date <- input$start_date
+end_date   <- input$end_date
+host <- list(name = "localhost")
+
+
+print("Using met.process to download files")
+outfile_clim <-  met.process(site, input_met, start_date, end_date, model, host, dbparams, cacheDir)
+folder  <- gsub(paste0(model,"_site"),"CF_gapfill_site", dirname(outfile_clim))
+outname <- unlist(strsplit(basename(outfile_clim), "[.]"))[1]
+# get start/end year code works on whole years only
+start_year <- year(start_date)
+end_year <- year(end_date)
+
+# if more than 1 year, or zip specified, zip result
+if (grepl("\\.zip$", outputfile) || (end_year - start_year > 1)) {
+  # get list of files we need to zip
+  files <- c()
+  for(year in start_year:end_year) {
+    files <- c(files, file.path(folder, paste(outname, year, "nc", sep=".")))
+  }
+  
+  # use intermediate file so it does not get marked as done until really done
+  dir.create(tempDir, showWarnings=FALSE, recursive=TRUE)
+  zipfile <- file.path(tempDir, "temp.zip")
+  zip(zipfile, files, extras="-j")
+  # move file should be fast
+  file.rename(zipfile, outputfile)
+} else {
+  start_year <- year(start_date)
+  outfile <- file.path(folder, paste(outname, start_year, "nc", sep="."))
+  file.link(outfile, outputfile)
+}
+
+
