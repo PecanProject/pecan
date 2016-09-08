@@ -227,7 +227,7 @@ fia.to.psscss <- function(settings, gridres=0.075) {
   ##################
   # Obviously, this is just a placeholder for now...
   site <- c(
-    "nsite 1 file_format 2", 
+    "nsite 1 file_format 1", 
     "sitenum area TCI elev slope aspect soil",
     "1 1.0 -7 100.0 0.0 0.0 3"
   )
