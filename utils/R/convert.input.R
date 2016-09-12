@@ -10,61 +10,80 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                           format.vars=format.vars, ...) {
   l <- list(...); #print(l)
 
-  logger.info(paste("Convert.Inputs",fcn,input.id,host$name,outfolder,formatname,mimetype,site.id,start_date,end_date))
+  logger.info(paste(
+    "Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, mimetype, 
+    site.id, start_date, end_date))
+
   n <- nchar(outfolder)
-  if(substr(outfolder,n,n) != "/"){outfolder = paste0(outfolder,"/")}
+  if(substr(outfolder,n,n) != "/") {
+    outfolder = paste0(outfolder,"/")
+  }
   
-  outname = tail(unlist(strsplit(outfolder,'/')),n=1)
+  outname = tail(unlist(strsplit(outfolder,'/')), n=1)
   
   print(start_date)
   startdate <- as.POSIXlt(start_date, tz = "GMT")
   enddate   <- as.POSIXlt(end_date, tz = "GMT")
 
-  # Consider adding a force option to skip the check and continue with conversion
-  print("start CHECK")
-  check = dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, parentid=input.id, con=con, host$name)
+  print(paste(
+    "start CHECK Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, mimetype, 
+    site.id, start_date, end_date))
+  check = dbfile.input.check(
+    site.id, startdate, enddate, mimetype, formatname, parentid=input.id, con=con, host$name)
+  print(check, digits=10)
   print("end CHECK")
-  print(check)
   if(length(check)>0){
     return(list(input.id=check$container_id, dbfile.id=check$id))
   }
   
-  input = db.query(paste("SELECT * from inputs where id =",input.id),con)
-  if(nrow(input)==0){logger.error("input not found",input.id);return(NULL)}
+  input = db.query(paste("SELECT * from inputs where id =", input.id), con)
+  if(nrow(input)==0){
+    logger.error("input not found", input.id)
+    return(NULL)
+  }
   
-  ifelse(host$name == "localhost", machine.host <- fqdn(), machine.host <- host$name)
-  machine = db.query(paste0("SELECT * from machines where hostname = '",machine.host,"'"),con)
-  # machine = db.query(paste("SELECT * from machines where id = ",dbfile$machine_id),con)
-  if(nrow(machine)==0){logger.error("machine not found",host$name);return(NULL)}
+  machine.host <- ifelse(host$name == "localhost", fqdn(), host$name)
+  machine = db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
+
+  if(nrow(machine)==0){
+    logger.error("machine not found", host$name)
+    return(NULL)
+  }
   
   # dbfile may return more than one row -> may need to loop over machine ids
-  dbfile = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input' and machine_id =",machine$id),con)
-  if(nrow(dbfile)==0){logger.error("dbfile not found",input.id);return(NULL)}
-  if(nrow(dbfile)>1){
+  dbfile = db.query(paste(
+    "SELECT * from dbfiles where container_id =", input.id, 
+    " and container_type = 'Input' and machine_id =", machine$id), con)
+  if(nrow(dbfile)==0) {
+    logger.error("dbfile not found",input.id);return(NULL)
+  }
+
+  if(nrow(dbfile)>1) {
     logger.warning("multiple dbfile records, using last",dbfile);
     dbfile = dbfile[nrow(dbfile),]
   }
-
+  
   #--------------------------------------------------------------------------------------------------#
   # Perform Conversion 
-  
   conversion = "local.remote" #default
   
-  if(!is.null(browndog) & host$name == 'localhost'){ # perform conversions with Brown Dog - only works locally right now
+  if(!is.null(browndog) && host$name == 'localhost'){ 
+    # perform conversions with Brown Dog - only works locally right now
     require(RCurl) 
     
     # Determine outputtype using formatname and mimetype of output file
     # Add issue to github that extension of formats table to include outputtype 
-    if(mimetype ==  'application/x-netcdf'){ # Convert to netcdf - only using localhost
+    if(mimetype ==  'application/x-netcdf') { # Convert to netcdf - only using localhost
       outputtype <- 'pecan.zip'
-    }else{ # Convert to model specific format
-      if(formatname == 'ed.met_driver_header_files_format' | formatname == 'ed.met_driver_header files format'){
+    } else { # Convert to model specific format
+      if(formatname == 'ed.met_driver_header_files_format' ||
+         formatname == 'ed.met_driver_header files format') {
         outputtype <- 'ed.zip'
-      }else if(formatname == 'Sipnet.climna'){
+      } else if(formatname == 'Sipnet.climna') {
         outputtype <- 'clim'
-      }else if(formatname == 'DALEC meteorology'){
+      } else if(formatname == 'DALEC meteorology') {
         outputtype <- 'dalec.dat'
-      }else if(formatname == 'LINKAGES met'){
+      } else if(formatname == 'LINKAGES met') {
         outputtype <- 'linkages.dat'
       }
     }
@@ -77,23 +96,23 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     curloptions <- c(curloptions, followlocation=TRUE)
     
     # check if we can do conversion 
-    out.html <- getURL(paste0("http://dap-dev.ncsa.illinois.edu:8184/inputs/",browndog$inputtype), .opts = curloptions)
+    out.html <- getURL(paste0(
+      "http://dap-dev.ncsa.illinois.edu:8184/inputs/", browndog$inputtype), .opts = curloptions)
     if(outputtype %in% unlist(strsplit(out.html, '\n'))){
-      logger.info(paste("Conversion from", browndog$inputtype,"to", outputtype, "through Brown Dog"))
+      logger.info(paste("Conversion from", browndog$inputtype, "to", outputtype, "through Brown Dog"))
       conversion <- "browndog"
     }
   }
   
   if(conversion == "browndog"){
     url <- file.path(browndog$url,outputtype) 
-    #print(url)
     
     # loop over files in localhost and zip to send to Brown Dog 
     files <- list.files(dbfile$file_path, pattern=dbfile$file_name)
-    files <- grep(dbfile$file_name,files,value=T)
-    zipfile <- paste0(dbfile$file_name,".",browndog$inputtype)
+    files <- grep(dbfile$file_name, files,value=T)
+    zipfile <- paste0(dbfile$file_name,".", browndog$inputtype)
     system(paste("cd", dbfile$file_path, "; zip", zipfile,  paste(files, collapse = " ")))
-    zipfile <- file.path(dbfile$file_path,zipfile) 
+    zipfile <- file.path(dbfile$file_path, zipfile) 
     
     # check for and create output folder
     if(!file.exists(outfolder)){
@@ -103,21 +122,21 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     # post zipped file to Brown Dog
     html <- postForm(url,"fileData" = fileUpload(zipfile), .opts = curloptions)
     link <- getHTMLLinks(html)
-    #print(link)
     file.remove(zipfile)
     
     # download converted file
     outfile <- file.path(outfolder,unlist(strsplit(basename(link),"_"))[2])
     download.url(url = link, file = outfile, timeout = 600, .opts = curloptions, retry404 = TRUE)  
-    #print(list.files(outfolder))
     
     # unzip downloaded file if necessary
-    if(file.exists(outfile)){
-      if(tail(unlist(strsplit(outfile,"[.]")),1)=="zip"){
+    if(file.exists(outfile)) {
+      if(tail(unlist(strsplit(outfile, "[.]")), 1)=="zip"){
         fname <- unzip(outfile, list=TRUE)$Name
         unzip(outfile, files=fname, exdir=outfolder, overwrite=TRUE)
         file.remove(outfile)
-      }else{fname <- list.files(outfolder)}
+      } else {
+        fname <- list.files(outfolder)
+      }
     }
     
     # settings$run$inputs$path <- outputfile what if there is more than 1 output file?
@@ -166,8 +185,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   # Insert into Database
   
   # Use existing site, unless otherwise specified (ex: subsetting case, using newsite)
-  if("newsite" %in% names(l) && is.null(l[["newsite"]])==FALSE){
-    siteid <- l$newsite
+  if("newsite" %in% names(input.args) && is.null(input.args[["newsite"]])==FALSE){
+    siteid <- input.args$newsite
   }else{
     siteid <- site.id
   }
@@ -187,7 +206,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                     con = con,
                                     hostname = machine$hostname) 
     return(newinput)
-  }else{
+  } else {
     logger.warn('Input was not added to the database')
     return(NULL)
   }
