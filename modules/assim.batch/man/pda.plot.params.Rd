@@ -4,7 +4,7 @@
 \alias{pda.plot.params}
 \title{Plot PDA Parameter Diagnostics}
 \usage{
-pda.plot.params(settings, params.subset, prior.ind)
+pda.plot.params(settings, mcmc.param.list, prior.ind)
 }
 \arguments{
 \item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
@@ -16,6 +16,6 @@ Nothing. Plot is generated and saved to PDF.
 Plot PDA Parameter Diagnostics
 }
 \author{
-Ryan Kelly
+Ryan Kelly, Istem Fer
 }
 

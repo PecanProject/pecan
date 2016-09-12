@@ -1,7 +1,23 @@
+## samples intial conditions for SIPNET
+##' @title sample.IC.SIPNET
+##' @name  sample.IC.SIPNET
+##' @author Mike Dietze and Ann Raiho
+##' 
+##' @param ne number of ensembles
+##' @param state state variables you want to pull
+##' @description samples intial conditions for SIPNET
+##' 
+##' @return IC matrix of initial conditions
+##' @export
+##' 
 sample.IC.SIPNET <- function(ne,state){
+  ## Mg C / ha / yr NPP
+  NPP = ifelse(rep("NPP" %in% names(state),ne),
+                     state$NPP[1,sample.int(ncol(state$NPP),ne),1]*.48, ## unit MgC/ha/yr
+                     runif(ne,0,10)) ## prior
   ## g C * m-2 ground area in wood (above-ground + roots)
   plantWood = ifelse(rep("AGB" %in% names(state),ne),
-                     state$AGB[1,sample.int(ncol(state$AGB),ne),1]*50, ## unit Mg/ha
+                     state$AGB[1,sample.int(ncol(state$AGB),ne),1]*(1/10000)*(1000000/1)*.48, ## unit Mg/ha -> g C /m^2
                      runif(ne,0,14000)) ## prior
   ## initial leaf area, m2 leaves * m-2 ground area (multiply by leafCSpWt to get initial plant leaf C)
   lai = ifelse(rep("LAI" %in% names(state),ne),
@@ -30,7 +46,7 @@ sample.IC.SIPNET <- function(ne,state){
   microbe = ifelse(rep("microbe" %in% names(state),ne),
                    state$microbe[1,sample.int(ncol(state$microbe),ne),1],
                    runif(ne,0,1)) ## prior                  
-  IC = data.frame(plantWood,lai,litter,soil,litterWFrac,soilWFrac,snow,microbe) 
+  IC = data.frame(NPP,plantWood,lai,litter,soil,litterWFrac,soilWFrac,snow,microbe) 
   return(IC)
   
 }

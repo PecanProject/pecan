@@ -1,8 +1,6 @@
-##' Paramater Data Assimilation using MCMC
+##' Paramater Data Assimilation using emulator
 ##'
-##' Brute-force, only to be used on simple models
-##'
-##' @title Paramater Data Assimilation using MCMC
+##' @title Paramater Data Assimilation using emulator
 ##' @param settings = a pecan settings list
 ##'
 ##' @return nothing. Diagnostic plots, MCMC samples, and posterior distributions
@@ -27,7 +25,22 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
                   settings=settings, params.id=params.id, param.names=param.names, 
                   prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
                   adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot)
+    
+    
+    extension.check <- settings$assim.batch$extension == "longer"
+    
+    if(length(extension.check)==0){ # not an extension run
+      run.block = TRUE
+      path.flag = TRUE
+    }else if(length(extension.check)==1 & extension.check == FALSE){ # "round" extension
+      run.block = TRUE
+      path.flag = FALSE
+    }else{ # "longer" extension
+      run.block = FALSE
+      path.flag = FALSE
+    }
 
+   
   ## Open database connection
   if(settings$database$bety$write){
     con <- try(db.open(settings$database$bety), silent=TRUE)
@@ -39,11 +52,11 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   }
 
   ## Load priors
-  temp <- pda.load.priors(settings, con)
-  prior <- temp$prior
+  temp <- pda.load.priors(settings, con, path.flag)
+  prior.list <- temp$prior
   settings <- temp$settings
-  pname <-  rownames(prior) 
-  n.param.all  <- nrow(prior)
+  pname <-  lapply(prior.list, rownames)
+  n.param.all  <- sapply(prior.list, nrow)
 
   ## Load data to assimilate against
   inputs <- load.pda.data(settings, con)
@@ -57,8 +70,9 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   }
 
   ## Select parameters to constrain
-  prior.ind <- which(rownames(prior) %in% settings$assim.batch$param.names)
-  n.param <- length(prior.ind)
+  prior.ind <- lapply(seq_along(settings$pfts), 
+                      function(x) which(pname[[x]] %in% settings$assim.batch$param.names[[x]]))
+  n.param <- sapply(prior.ind, length)
 
   ## Get the workflow id
   if ("workflow" %in% names(settings)) {
@@ -71,7 +85,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
 
   ## Set prior distribution functions (d___, q___, r___, and multivariate versions)
-  prior.fn <- pda.define.prior.fn(prior)
+  prior.fn <- lapply(prior.list, pda.define.prior.fn)
 
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
@@ -79,84 +93,217 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
 
   ## ------------------------------------ Emulator ------------------------------------ ##
   ## Propose parameter knots (X) for emulator design
-  knots.list <- pda.generate.knots(settings$assim.batch$n.knot, n.param.all, prior.ind, prior.fn, pname)
-  knots.params <- knots.list$params
-  knots.probs <- knots.list$probs
+  knots.list <- lapply(seq_along(settings$pfts),
+                       function(x) pda.generate.knots(settings$assim.batch$n.knot, n.param.all[x], prior.ind[[x]], prior.fn[[x]], pname[[x]]))
+
+  knots.params <- lapply(knots.list, `[[`, "params")
+  knots.probs <- lapply(knots.list, `[[`, "probs")
+
+  ## Check which emulator extension type requested if any
+  if(!is.null(settings$assim.batch$extension)){
+    
+    if(settings$assim.batch$extension == "round"){
+      
+      # save the original prior path
+      temp.path = settings$assim.batch$prior$path
+      
+      # set prior path to NULL to use the previous PDA's posterior densities as new priors this time
+      settings$assim.batch$prior$path = NULL
+      
+      ## Re-load priors
+      temp <- pda.load.priors(settings, con) # loads the posterior dist. from previous emulator run
+      prior.list <- temp$prior
+      settings$assim.batch$prior$path = temp.path
+      
+      ## Re-set prior distribution functions 
+      prior.fn <- lapply(prior.list, pda.define.prior.fn)
+      
+      ## Propose a percentage of the new parameter knots from the posterior of previous run
+      knot.par <- ifelse(!is.null(settings$assim.batch$knot.par),
+                         as.numeric(settings$assim.batch$knot.par),
+                         0.75)
+                         
+      n.post.knots <- floor(knot.par * settings$assim.batch$n.knot)
+      
+      knots.list.temp <- lapply(seq_along(settings$pfts),
+                           function(x) pda.generate.knots(n.post.knots, n.param.all[x], prior.ind[[x]], prior.fn[[x]], pname[[x]]))
+      knots.params.temp <- lapply(knots.list.temp, `[[`, "params")
+
+      for(i in seq_along(settings$pfts)){
+        # mixture of knots 
+        knots.list[[i]]$params <- rbind(knots.params[[i]][sample(nrow(knots.params[[i]]), (settings$assim.batch$n.knot - n.post.knots)),], 
+                                   knots.list.temp[[i]]$params)
+        
+      }
+
+      
+      # Return to original prior distribution
+      temp <- pda.load.priors(settings, con)
+      prior.list <- temp$prior
+      prior.fn <- lapply(prior.list, pda.define.prior.fn)
+      
+      
+      # Convert parameter values to probabilities according to previous prior distribution
+      knots.list$probs <- knots.list$params
+      for(pft in seq_along(settings$pfts)){
+        for(i in 1:n.param.all[[pft]]) {
+          knots.list[[pft]]$probs[,i] <- eval(prior.fn[[pft]]$pprior[[i]], list(q=knots.list[[pft]]$params[,i]))
+        }
+      }
+
+      knots.params <- lapply(knots.list, `[[`, "params")
+      knots.probs <- lapply(knots.list, `[[`, "probs")
+
+    } # end of round-if
+  } # end of extension-if
   
   
-  ## Set up runs and write run configs for all proposed knots X
-  run.ids <- pda.init.run(settings, con, my.write.config, workflow.id, knots.params, 
-                          n=settings$assim.batch$n.knot, 
-                          run.names=paste0("Knot.",1:settings$assim.batch$n.knot))
-
-  ## start model runs
-  start.model.runs(settings,settings$database$bety$write)
-
-  ## Retrieve model outputs, calculate likelihoods (and store them in database)
-  LL.X <- rep(NA, settings$assim.batch$n.knot)
-  model.out <- list()
+  if(run.block){
+    ## Set up runs and write run configs for all proposed knots 
+    run.ids <- pda.init.run(settings, con, my.write.config, workflow.id, knots.params, 
+                            n=settings$assim.batch$n.knot, 
+                            run.names=paste0(settings$assim.batch$ensemble.id,".knot.",1:settings$assim.batch$n.knot))
+    
+    ## start model runs
+    start.model.runs(settings,settings$database$bety$write)
+    
+    ## Retrieve model outputs, calculate likelihoods (and store them in database)
+    LL.0 <- rep(NA, settings$assim.batch$n.knot)
+    model.out <- list()
+    
+    for(i in 1:settings$assim.batch$n.knot) {
+      ## read model outputs
+      model.out[[i]] <- pda.get.model.output(settings, run.ids[i], inputs)
+      
+      ## calculate likelihood
+      LL.0[i] <- pda.calc.llik(settings, con, model.out[[i]], run.ids[i], inputs, llik.fn)
+    }
+  } 
   
-  for(i in 1:settings$assim.batch$n.knot) {
-    ## read model outputs
-    model.out[[i]] <- pda.get.model.output(settings, run.ids[i], inputs)
-
-    ## calculate likelihood
-    LL.X[i] <- pda.calc.llik(settings, con, model.out[[i]], run.ids[i], inputs, llik.fn)
-  }
-
-  ## Collect all likelihoods (Y)
-  # For now, just the likelihoods from the runs we just did. 
-  # *** TODO: Soon, need to add ability to retrieve them from previous runs, because we want to build the emulator from as many points as possible. The likelihoods are easy—they're being stored in BETY. But we need to know the parameter values associated with them too, and that will take a bit of doing.
- 
+  
   ## if it is not specified, default to GPfit
   if(is.null(settings$assim.batch$GPpckg)) settings$assim.batch$GPpckg="GPfit"
-
-  if(settings$assim.batch$GPpckg=="GPfit"){
-    ## GPfit optimization routine assumes that inputs are in [0,1]
-    ## Instead of drawing from parameters, we draw from probabilities
-    X <- knots.probs[, prior.ind, drop=FALSE]
-
-    logger.info(paste0("Using 'GPfit' package for Gaussian Process Model fitting."))
-    require(GPfit)
-    ## Generate emulator on LL-probs
-    GPmodel <- GP_fit(X=X,Y=LL.X)
-    gp=GPmodel
+  
+  if(settings$assim.batch$GPpckg=="GPfit"){ # GPfit-if
+    
+    if(run.block){ 
+      
+      ## GPfit optimization routine assumes that inputs are in [0,1]
+      ## Instead of drawing from parameters, we draw from probabilities
+      knots.probs.all <- do.call("cbind", knots.probs)
+      prior.ind.all <- which(unlist(pname) %in% unlist(settings$assim.batch$param.names))
+        
+      X <- knots.probs.all[, prior.ind.all, drop=FALSE]
+      
+      LL.X <- cbind(X, LL.0)
+      
+      if(!is.null(settings$assim.batch$extension)){ 
+        # check whether another "round" of emulator requested
+        
+        # load original knots
+        load(settings$assim.batch$llik.path)
+        LL <- rbind(LL.X, LL)
+        
+      }else{ 
+        LL <- LL.X
+      }
+      
+      logger.info(paste0("Using 'GPfit' package for Gaussian Process Model fitting."))
+      require(GPfit)
+      ## Generate emulator on LL-probs
+      GPmodel <- GP_fit(X = LL[,-ncol(LL), drop=FALSE],
+                        Y = LL[,ncol(LL), drop=FALSE])
+      gp=GPmodel
+      
+    }else{
+      load(settings$assim.batch$emulator.path) # load previously built emulator to run a longer mcmc
+      load(settings$assim.batch$llik.path)
+      load(settings$assim.batch$jvar.path)
+      load(settings$assim.batch$mcmc.path)
+      
+      init.list <- list()
+      
+      for(c in 1:settings$assim.batch$chain){
+        init.x <- mcmc.list[[c]][nrow(mcmc.list[[c]]),]
+        
+        prior.all <- do.call("rbind", prior.list)
+        prior.ind.all <- which(unlist(pname) %in% unlist(settings$assim.batch$param.names))
+        prior.fn.all <- pda.define.prior.fn(prior.all)
+        
+        init.list[[c]] <-  as.list(sapply(seq_along(prior.ind.all), 
+                                          function(x) eval(prior.fn.all$pprior[[prior.ind.all[x]]], list(q=init.x[x]))))
+      }
+    }
     
     ## Change the priors to unif(0,1) for mcmc.GP
-    prior[prior.ind,]=rep(c("unif",0,1,"NA"),each=n.param)
-    ## Set up prior functions accordingly
-    prior.fn <- pda.define.prior.fn(prior)
-    pckg=1
-  } else{
-    X <- data.frame(knots.params[, prior.ind])
-    names(X) <- pname[prior.ind]
-    df <- data.frame(LL = LL.X, X)
+    prior.all <- do.call("rbind", prior.list)
     
-    logger.info(paste0("Using 'kernlab' package for Gaussian Process Model fitting."))
-    require(kernlab)
-    ## Generate emulator on LL-params
-    kernlab.gp <- gausspr(LL~., data=df)
-    gp=kernlab.gp
+    prior.all[prior.ind.all,]=rep(c("unif",0,1,"NA"),each=sum(n.param))
+    ## Set up prior functions accordingly
+    prior.fn.all <- pda.define.prior.fn(prior.all)
+    pckg=1
+    
+  }else{  # GPfit-else
+    
+    if(run.block){
+      X <- data.frame(knots.params[, prior.ind])
+      names(X) <- pname[prior.ind]
+      
+      LL.X <- data.frame(LLik = LL.0, X)
+      
+      if(!is.null(settings$assim.batch$extension)){ 
+        # check whether another "round" of emulator requested
+        
+        # load original knots
+        load(settings$assim.batch$llik.path)
+        LL <- rbind(LL.X, LL)
+        
+      }else{ 
+        LL <- LL.X
+      }
+      
+      
+      logger.info(paste0("Using 'kernlab' package for Gaussian Process Model fitting."))
+      require(kernlab)
+      ## Generate emulator on LL-params
+      kernlab.gp <- gausspr(LLik~., data=LL)
+      gp=kernlab.gp
+      
+    }else{
+      load(settings$assim.batch$emulator.path)
+    }
+    
     pckg=2
   }
   
   # define range to make sure mcmc.GP doesn't propose new values outside 
   
-  rng <- matrix(c(sapply(prior.fn$qprior[prior.ind] ,eval,list(p=0)),
-               sapply(prior.fn$qprior[prior.ind] ,eval,list(p=1))),
-               nrow=n.param)
+  rng <- matrix(c(sapply(prior.fn.all$qprior[prior.ind.all] ,eval,list(p=0)),
+                  sapply(prior.fn.all$qprior[prior.ind.all] ,eval,list(p=1))),
+                nrow=sum(n.param))
   
-  # Default jump variances. Looped for clarity
-  ind <- which(is.na(settings$assim.batch$jump$jvar))
-  for(i in seq_along(ind)) {
-    # default to 0.1 * 90% prior CI
-    settings$assim.batch$jump$jvar[[i]] <- 
-      0.1 * diff(eval(prior.fn$qprior[[prior.ind[ind[i]]]], list(p=c(0.05,0.95))))
+  
+  
+  if(run.block){
+    
+    jvar.list <- list() 
+    init.list <- list()
+    
+    for(c in 1:settings$assim.batch$chain){
+      jvar.list[[c]]  <- sapply(prior.fn.all$qprior, 
+                                function(x) 0.1 * diff(eval(x, list(p=c(0.05,0.95)))))[prior.ind.all]
+      
+      init.x <- lapply(prior.ind.all, function(v) eval(prior.fn.all$rprior[[v]], list(n=1)))
+      names(init.x) <- unlist(pname)[prior.ind.all]
+      init.list[[c]] <- init.x
+    }
   }
+  
+  
   
   if(!is.null(settings$assim.batch$mix)){
     mix <- settings$assim.batch$mix
-  }else if(n.param > 1){
+  }else if(sum(n.param) > 1){
     mix <- "joint"
   }else{
     mix <- "each"
@@ -164,38 +311,58 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   
 
   ## Sample posterior from emulator
-  m <- lapply(1, function(chain){
-         init.x <- lapply(prior.ind, function(v) eval(prior.fn$rprior[[v]], list(n=1)))
-         names(init.x) <- pname[prior.ind]
-         mcmc.GP(gp        = gp, ## Emulator
-                 pckg      = pckg, ## flag to determine which predict method to use
-                 x0        = init.x,     ## Initial conditions
-                 nmcmc     = settings$assim.batch$iter,       ## Number of reps
-                 rng       = rng,       ## range
-                 format    = "lin",      ## "lin"ear vs "log" of LogLikelihood 
-                 mix       = mix,     ## Jump "each" dimension independently or update them "joint"ly
-#                  jmp0 = apply(X,2,function(x) 0.3*diff(range(x))), ## Initial jump size
-                 jmp0      = sqrt(unlist(settings$assim.batch$jump$jvar)),  ## Initial jump size
-                 ar.target = settings$assim.batch$jump$ar.target,   ## Target acceptance rate
-                 priors    = prior.fn$dprior[prior.ind], ## priors
-                 settings  = settings
-          )$mcmc
-        })
+  mcmc.out <- lapply(1:settings$assim.batch$chain, function(chain){
+    mcmc.GP(gp        = gp, ## Emulator
+            pckg      = pckg, ## flag to determine which predict method to use
+            x0        = init.list[[chain]],     ## Initial conditions
+            nmcmc     = settings$assim.batch$iter,       ## Number of reps
+            rng       = rng,       ## range
+            format    = "lin",      ## "lin"ear vs "log" of LogLikelihood 
+            mix       = mix,     ## Jump "each" dimension independently or update them "joint"ly
+            #                  jmp0 = apply(X,2,function(x) 0.3*diff(range(x))), ## Initial jump size
+            jmp0      = sqrt(jvar.list[[chain]]),  ## Initial jump size
+            ar.target = settings$assim.batch$jump$ar.target,   ## Target acceptance rate
+            priors    = prior.fn.all$dprior[prior.ind.all], ## priors
+            settings  = settings
+    )})
   
-  mcmc.out=m[[1]]
+  mcmc.list.tmp <- list()
   
-  if(settings$assim.batch$GPpckg=="GPfit"){
-    ## Set the prior functions back to work with actual parameter range
-    prior <- temp$prior
-    prior.fn <- pda.define.prior.fn(prior)
+  for(c in 1:settings$assim.batch$chain) {
     
-    ## Convert probabilities back to parameter values
-    for(i in 1:n.param) {
-      mcmc.out[,i] <- eval(prior.fn$qprior[prior.ind][[i]], list(p=m[[1]][,i]))
+    m <- mcmc.out[[c]]$mcmc
+    
+    
+    if(settings$assim.batch$GPpckg=="GPfit"){
+      ## Set the prior functions back to work with actual parameter range
+
+      prior.all <- do.call("rbind", prior.list)
+      prior.fn.all <- pda.define.prior.fn(prior.all)
+     
+      ## Convert probabilities back to parameter values
+      for(i in 1:sum(n.param)) {
+        m[,i] <- eval(prior.fn.all$qprior[prior.ind.all][[i]], list(p=mcmc.out[[c]]$mcmc[,i]))
+      }
     }
+    colnames(m) <- unlist(pname)[prior.ind.all]
+    mcmc.list.tmp[[c]] <- m
+    
+    jvar.list[[c]] <- mcmc.out[[c]]$jump@history[nrow(mcmc.out[[c]]$jump@history),]
   }
+  
+  
+  if(length(extension.check)==1 & !run.block){
+    
+    # merge with previous run's mcmc samples
+    mcmc.list <- mapply(rbind, mcmc.list, mcmc.list.tmp, SIMPLIFY=FALSE)
+    settings$assim.batch$iter <- nrow(mcmc.list[[1]])
+    
+  }else{
+    
+    mcmc.list <- mcmc.list.tmp
 
-
+  }
+  
   if(FALSE) {
     gp = kernlab.gp; x0 = init.x; nmcmc = settings$assim.batch$iter; rng= NULL; format = "lin"
     mix = "each"; jmp0 = apply(X,2,function(x) 0.3*diff(range(x)))
@@ -203,15 +370,38 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     priors = prior.fn$dprior[prior.ind]
   }
 
-  ## Create params matrix
-  # *** TODO: Generalize to >1 chain
-  params <- matrix(knots.params[1,], nrow=nrow(mcmc.out), ncol=n.param.all, byrow=T)
-  params[, prior.ind] <- mcmc.out
-
 
   ## ------------------------------------ Clean up ------------------------------------ ##
-  ## Save outputs to plots, files, and db
-  settings <- pda.postprocess(settings, con, params, pname, prior, prior.ind)
+  ## Save emulator, outputs files
+  settings$assim.batch$emulator.path <- file.path(settings$outdir, 
+                                                  paste0('emulator.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+  save(gp, file = settings$assim.batch$emulator.path)
+  
+  
+  settings$assim.batch$llik.path <- file.path(settings$outdir, 
+                                              paste0('llik.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+  save(LL, file = settings$assim.batch$llik.path)
+  
+  
+  settings$assim.batch$mcmc.path <- file.path(settings$outdir, 
+                                              paste0('mcmc.list.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+  save(mcmc.list, file = settings$assim.batch$mcmc.path)
+  
+  settings$assim.batch$jvar.path <- file.path(settings$outdir, 
+                                              paste0('jvar.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+  save(jvar.list, file = settings$assim.batch$jvar.path)
+  
+  
+  # Separate each PFT's parameter samples to their own list
+  mcmc.param.list <- list()
+  ind <- 0
+  for(i in seq_along(settings$pfts)){
+    mcmc.param.list[[i]] <-  lapply(mcmc.list, function(x) x[, (ind+1):(ind + n.param[i]), drop=FALSE])
+    ind <- ind + n.param[i]
+  }
+
+
+  settings <- pda.postprocess(settings, con, mcmc.param.list, jvar.list, pname, prior.list, prior.ind)
 
   ## close database connection
   if(!is.null(con)) db.close(con)

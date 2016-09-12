@@ -144,6 +144,9 @@ plot.netcdf <- function(datafile, yvar, xvar='time', width=800, height=600, file
   lines(x=xval_mean[o], y=yval_mean[o], col="red")
   points(x=xval_mean[o], y=yval_mean[o], col="black", pch=".", cex=5)
   
+  # legend
+  legend("bottomright",col=c(1,"gray"),lwd=c(3,6),legend=c("mean","min/max"),cex=1.5)
+  
   # draw axis and box
   axis(1)
   axis(2)

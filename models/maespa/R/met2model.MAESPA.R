@@ -129,13 +129,13 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
      # Convert air temperature to Celsius 
      TAIR <- udunits2::ud.convert(TAIR,"kelvin","celsius")
      
-     ####ppm. atmospheric CO2 concentration. Constant from Enviiron namelist used instead
+     ####ppm. atmospheric CO2 concentration. Constant from Environ namelist used instead if CA is nonexistant
+     defaultCO2 = 400
      if (!is.numeric(CA)) {
        print(
          "Atmospheric CO2 concentration will be set to constant value set in ENVIRON namelist "
        )
        rm(CA)
-       defaultCO2 = 400 #400 is estimation of atmospheric CO2 in ppm)
      } else {
        CA <- CA*1e6
      } 
@@ -145,7 +145,12 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
      print("Skipping to next year")
      next
    }
+   
+   if (exists("CA")){
    tmp <- cbind(TAIR,PPT,RAD,PRESS,PAR,RH,CA)
+   } else {
+   tmp <- cbind(TAIR,PPT,RAD,PRESS,PAR,RH)
+   }
    
    if (is.null(out)) {
      out = tmp
@@ -155,10 +160,14 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
    
  }### end loop over years
  
- if(!is.numeric(out[,"CA"])){
-   out[,"CA"] <- NULL
+ ### Check for NA
+ if(anyNA(out)){
+   logger.debug("NA introduced in met data. Maespa will not be able to run properly. Please change Met Data Source or Site")
+ } else {
+   logger.debug("No NA values contained in data")
  }
  
+ ## Set Variable names
  columnnames <- colnames(out)
 
  #Set number of timesteps in a day(timetsep of input data)
