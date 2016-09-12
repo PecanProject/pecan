@@ -19,6 +19,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
 
   #setup connection and host information
   con      <- db.open(dbparms)
+  on.exit(db.close(con, showWarnings=FALSE))
   username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
   machine.host <- ifelse(host$name == "localhost", fqdn(), host$name)
   machine = db.query(paste0("SELECT * from machines where hostname = '",machine.host,"'"),con)
@@ -360,9 +361,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
 
   model.file <- db.query(paste("SELECT * from dbfiles where id =",model.id[[2]]),con)[["file_name"]]
 
-  db.close(con)
   return(file.path(outfolder, model.file))
-
 }
 
 #################################################################################################################################
