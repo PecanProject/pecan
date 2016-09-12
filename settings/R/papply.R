@@ -4,7 +4,7 @@ papply <- function(settings, fn, stop.on.error=FALSE, ...) {
     result <- list()
     for(i in seq_along(settings)) {
       logger.debug(paste0("papply executing ", deparse(substitute(fn)), 
-        " on element ", i, " of a MultiSettings object."))
+        " on element ", i, " of ", length(settings), "."))
       
       result.i <- try(fn(settings[[i]], ...), silent = TRUE)
                       
@@ -16,11 +16,11 @@ papply <- function(settings, fn, stop.on.error=FALSE, ...) {
         }
       } else {
         if(stop.on.error) {
-          stop(paste0("papply threw an error for element ", i, 
+          stop(paste0("papply threw an error for element ", i, " of ", length(settings),
             ", and is aborting since stop.on.error=TRUE. Message was: '", 
             as.character(result.i), "'"))
         } else {
-          warning(paste0("papply threw an error for element ", i, 
+          warning(paste0("papply threw an error for element ", i, " of ", length(settings),
             ", but is continuing since stop.on.error=FALSE", 
             " (there will be no results for this element, however). Message was: '", 
             as.character(result.i), "'"))
