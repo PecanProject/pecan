@@ -11,12 +11,13 @@ logger.setQuitOnSevere(FALSE)
 logger.setLevel("OFF")
 context("tests for read.settings and related functions")
 
-settings <- read.settings("testinput.xml")
+source('get.test.settings.r')
 
 test_that("read.settings returned correctly", {
-	expect_true(file.exists(settings$outdir))
+  settings <- .get.test.settings()
+  expect_true(file.exists(settings$outdir))
 	expect_true(file.info(settings$outdir)$isdir)
-	expect_true(file.exists(file.path(settings$outdir, "pecan.xml")))
+	expect_true(file.exists(file.path(settings$outdir, "pecan.CHECKED.xml")))
 })
 
 test_that("read settings returns error if no settings file found (issue #1124)",{
@@ -24,28 +25,27 @@ test_that("read settings returns error if no settings file found (issue #1124)",
 })
 
 test_that("check.settings throws error if required content not there", {
-
-  s <- settings
+  s <- .get.test.settings()
   s[['run']] <- NULL
-  expect_error(check.settings(update.settings(s)))
+  expect_error(check.run.settings(update.settings(s)))
 
   for(date in c("start.date", "end.date")){
-    s <- settings
+    s <- .get.test.settings()
     s$run[[date]] <- NULL
-    expect_error(check.settings(update.settings(s)))
+    expect_error(check.run.settings(update.settings(s)))
   }
 
 })
 
 test_that("check.settings throws error if pft has different type than model", {
-  s <- settings
+  s <- .get.test.settings()
   s[["model"]]$model_type <- 'SIPNET'
   expect_error(check.settings(update.settings(s)))
 })
 
 test_that("check.settings gives sensible defaults",{
   ## This provides the minimum inputs 
-  s <- settings
+  s <- .get.test.settings()
   s1 <- list(pfts = list(pft = list(name = "salix", outdir = "testdir")), 
              database = NULL, model = list(type = "BIOCRO"),
              run = list(start.date = now(), end.date = days(1) + now()))
@@ -79,7 +79,7 @@ test_that("check.settings gives sensible defaults",{
 })
 
 test_that("pfts are defined and are in database",{
-  s <- settings
+  s <- .get.test.settings()
 
   s$pfts <- list(pft = list())
   expect_error(check.settings(update.settings(s)))
@@ -92,7 +92,7 @@ test_that("pfts are defined and are in database",{
 })
 
 test_that("check.settings uses run dates if dates not given in ensemble or sensitivity analysis", {
-  s <- settings
+  s <- .get.test.settings()
   
   for(node in c("ensemble", "sensitivity.analysis")) {
     s1 <- list(pfts = s$pfts, database = list(bety = s$database$bety), run = s$run, model=s$model)
@@ -109,7 +109,7 @@ test_that("check.settings uses run dates if dates not given in ensemble or sensi
 })
 
 test_that("sensitivity.analysis and ensemble use other's settings if null",{
-  s <- settings
+  s <- .get.test.settings()
   
   nodes <- c("sensitivity.analysis", "ensemble")
   for(node1 in nodes) {
@@ -126,7 +126,7 @@ test_that("sensitivity.analysis and ensemble use other's settings if null",{
 })
 
 test_that("workflow id is numeric if settings$database$bety$write = FALSE", {
-  s <- settings
+  s <- .get.test.settings()
   s1 <- check.settings(update.settings(s))
   expect_is(s1$workflow$id, c("character", "numeric"))
   
@@ -137,7 +137,7 @@ test_that("workflow id is numeric if settings$database$bety$write = FALSE", {
 
 test_that("check.settings will fail if db does not exist",{
 
-  s <- settings
+  s <- .get.test.settings()
   expect_true(db.exists(s$database$bety))
   s$database$bety$dbname <- "blabla"
   expect_false(db.exists(s$database$bety))
@@ -149,8 +149,7 @@ test_that("check.settings will fail if db does not exist",{
 
 
 test_that("check.settings handles userid and username properly", {
-
-  s1 <- settings
+  s1 <- .get.test.settings()
   s1$database$bety[["userid"]] <- "bety"
   s1$database$bety[["user"]] <- NULL
   s2 <- check.settings(update.settings(s1))
@@ -179,28 +178,28 @@ test_that("check.settings handles userid and username properly", {
 })
 
 test_that("check settings sets model$type based on model$name and model$model_type", {
-  s <- settings
+  s <- .get.test.settings()
   s$model <- list(name = "BIOCRO")
   s1 <- check.settings(update.settings(s))
   expect_identical(s$model$name, s1$model$type)
 
-  s <- settings
+  s <- .get.test.settings()
   s$model <- list(model_type = "BIOCRO")
   s1 <- check.settings(update.settings(s))
   expect_identical(s$model$model_type, s1$model$type)
 
-  s <- settings
+  s <- .get.test.settings()
   s$model <- list(id = 7)
   s1 <- check.settings(update.settings(s))
   expect_identical(s1$model$type, "BIOCRO")
 
-  s <- settings
+  s <- .get.test.settings()
   s$model <- list(binary = "/bin/true")
   expect_error(check.settings(update.settings(s)))
 })
 
 test_that("check settings runs with only model$name and no database", {
-  s <- settings
+  s <- .get.test.settings()
   s$model <- list(name = "BIOCRO")
   s$database <- NULL
   s1 <- check.settings(update.settings(s))
@@ -208,7 +207,7 @@ test_that("check settings runs with only model$name and no database", {
 })
 
 test_that("invalid pathname is placed in home directory",{
-  s <- settings
+  s <- .get.test.settings()
   s$database$dbfiles <- "foo/bar"
   s1 <- check.settings(s)
   expect_equal(s1$database$dbfiles, file.path(Sys.getenv("HOME"), s$database$dbfiles))

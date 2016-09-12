@@ -3,9 +3,9 @@
 ##' @param date.fine numeric
 ##' @param data.fine data.frame
 ##' @param date.coarse numeric
-##' @export 
+##' @export mean.over.larger.timestep
 ##' 
 ##' @author Betsy Cowdery, Michael Dietze
 mean.over.larger.timestep <- function(date.coarse, date.fine, data.fine){
-  tapply(X=data.fine, INDEX=findInterval(as.Date(date.fine), as.Date(date.coarse)), FUN=mean)
+  tapply(X=data.fine, INDEX=findInterval(date.fine, date.coarse), FUN=mean)
 }

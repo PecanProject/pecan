@@ -109,7 +109,7 @@ db.open <- function(params) {
 ##' }
 db.close <- function(con) {
   if (is.null(con)) {
-    return
+    return()
   }
   
   id <- attr(con, "pecanid")
