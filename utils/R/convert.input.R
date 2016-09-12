@@ -6,9 +6,9 @@
 ##' @export
 ##' @author Betsy Cowdery, Michael Dietze, Ankur Desai
 convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, start_date, end_date, 
-                          pkg, fcn, username, con=con, host, browndog, write=TRUE,  
-                          format.vars=format.vars, ...) {
-  l <- list(...); #print(l)
+                          pkg, fcn, con=con, host, browndog, write=TRUE,  
+  input.args <- list(...)
+ 
 
   logger.info(paste(
     "Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, mimetype, 
@@ -32,7 +32,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     site.id, startdate, enddate, mimetype, formatname, parentid=input.id, con=con, host$name)
   print(check, digits=10)
   print("end CHECK")
-  if(length(check)>0){
+
+  if(!overwrite && length(check) > 0) {
     return(list(input.id=check$container_id, dbfile.id=check$id))
   }
   
@@ -157,22 +158,25 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       result$mimetype[i] <- mimetype
       result$formatname[i] <- formatname    
     }
-  
-  } else if (conversion == "local.remote") { # perform conversion on local or remote host
-     if (missing(format.vars)) {
-       args = c(dbfile$file_path, dbfile$file_name,outfolder,start_date,end_date) 
-       if(!is.null(names(l))){
-         cmdFcn = paste0(
-           paste0(pkg, "::", fcn, "(", paste0("'", args, "'", collapse=",")), ",",
-           paste( paste(names(l), "=", paste0("'", unlist(l), "'")), collapse=","), ")")
-       }else{
-         cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")") 
-       } 
-    } else {
-       args = c(dbfile$file_path,dbfile$file_name,outfolder,start_date,end_date) 
-       cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),",format=",paste0(list(format.vars)),")")
-    } 
-    print(cmdFcn) #do we want to print this?
+  } else if (conversion == "local.remote") { 
+    # perform conversion on local or remote host
+    fcn.args <- input.args
+    fcn.args$overwrite <- overwrite
+    fcn.args$in.path <- dbfile$file_path
+    fcn.args$in.prefix <- dbfile$file_name
+    fcn.args$outfolder <- outfolder
+    fcn.args$start_date <- start_date
+    fcn.args$end_date <- end_date 
+    
+    arg.string <- listToArgString(fcn.args)
+    
+    if(!missing(format.vars)) {
+      arg.string <- paste0(arg.string, ", format=", paste0(list(format.vars)))
+    }
+    
+    cmdFcn = paste0(pkg, "::", fcn, "(", arg.string, ")")
+    logger.debug(paste0("convert.input executing the following function:\n", cmdFcn))
+
 
     result <- remote.execute.R(script=cmdFcn, host, user=NA, verbose=TRUE, R="R")
   }

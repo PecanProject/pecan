@@ -10,10 +10,11 @@
 ##' @param host Host info from settings file
 ##' @param dbparms  database settings from settings file
 ##' @param dir  directory to write outputs to
+##' @param overwrite Whether to force met.process to proceed, even if check criteria don't think it's necessary. Will overwrite any resulting files that happen to exist already. 
 ##'
-##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins
-met.process <- function(site, input_met, start_date, end_date, model, host, dbparms, dir, browndog=NULL){
-# browser()
+##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
+met.process <- function(
+  site, input_met, start_date, end_date, model, host, dbparms, dir, browndog=NULL, overwrite=FALSE){
   require(RPostgreSQL)
   require(XML)
 
@@ -108,30 +109,44 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
           "') and (DATE '", as.POSIXlt(end_date, tz = "GMT"), "' <= i.end_date)" ), con)
       print(check, digits=10)
       print("end CHECK")
-      if(length(check)>0){
+
+      if(length(check) > 0) {
         raw.id <- list(input.id=check$container_id, dbfile.id=check$id)
-      }else{
+        logger.info("Skipping raw met download because files are already available.")
+      } else {
+        fcn.args <- list(
+          outfolder=outfolder, start_date=start_date, end_date=end_date, overwrite=overwrite)
 
-        args <- list(outfolder, start_date, end_date)
-        if(met %in% "CRUNCEP") {
-          ## this is a hack for regional products that go direct to site-level extraction. Needs generalization (mcd)
-          args <- c(args, new.site$id, new.site$lat, new.site$lon)
+        raw.data.site.id <- register$siteid
+        if(met == "CRUNCEP") {
+          ## this is a hack for regional products that go direct to site-level extraction. 
+          ## Needs generalization (mcd)
+          fcn.args$site_id <- new.site$id
+          fcn.args$lat.in  <- new.site$lat
+          fcn.args$lon.in  <- new.site$lon
           stage$met2cf = FALSE
           stage$standardize = FALSE
+          raw.data.site.id <- new.site$id
         }
 
-        if (met %in% "GFDL") {
-          args <- c(args, new.site$id, new.site$lat, new.site$lon, input_met$model, input_met$scenario, input_met$ensemble_member)
+        if (met == "GFDL") {
+          fcn.args$site_id         <- new.site$id
+          fcn.args$lat.in          <- new.site$lat
+          fcn.args$lon.in          <- new.site$lon
+          fcn.args$model           <- input_met$model
+          fcn.args$scenario        <- input_met$scenario
+          fcn.args$ensemble_member <- input_met$ensemble_member
           stage$met2cf = FALSE
           stage$standardize = FALSE
+          raw.data.site.id         <- new.site$id
         }
 
-        cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
-        new.files <- remote.execute.R(cmdFcn,host,user=NA, verbose=TRUE)
+        cmdFcn  = paste0(pkg, "::", fcn, "(", listToArgString(fcn.args), ")")
+        new.files <- remote.execute.R(cmdFcn, host,user=NA, verbose=TRUE)
 
         raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
                                       in.prefix=new.files$dbfile.name[1],
-                                      siteid = site$id,
+                                      siteid = raw.data.site.id,
                                       startdate = start_date,
                                       enddate = end_date,
                                       mimetype=new.files$mimetype[1],
@@ -162,10 +177,15 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         logger.info("Skipping raw met download because files are already available.")
       } else {
         outfolder = paste0(outfolder,"_site_",str_ns)
-        args <- list(site$name, outfolder, start_date, end_date)
+        fcn.args <- list(
+          sitename=site$name, outfolder=outfolder, 
+          start_date=start_date, end_date=end_date, 
+          overwrite=overwrite, username=username)
 
-        cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),paste0(",username='",username,"'"),")")
-        new.files <- remote.execute.R(script=cmdFcn,host=host,user=NA,verbose=TRUE,R="R")
+        cmdFcn = paste0(pkg, "::", fcn, "(", listToArgString(fcn.args), ")")
+
+        new.files <- remote.execute.R(
+          script=cmdFcn, host=host, user=NA, verbose=TRUE, R="R")
 
         ## insert database record
         raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
@@ -208,8 +228,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
           "') and (DATE '", as.POSIXlt(end_date, tz = "GMT"), "' <= i.end_date)" ),con)
       print(check, digits=10)
       print("end CHECK")
-      if(length(check)>0){
 
+      if(!overwrite && length(check) > 0) {
         cf0.id <- list(input.id=check$container_id, dbfile.id=check$id)
         logger.info("Skipping met2CF because files are already available.")
       } else {
@@ -226,8 +246,9 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
           logger.error("met2CF function ", fcn1, " or ", fcn2, " don't exist")
         }
 
-        cf0.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                                username,con=con,host=host,browndog=NULL,write=TRUE,format.vars=format.vars)
+        cf0.id <- convert.input(input.id, outfolder, formatname, mimetype, site.id=site$id,
+          start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL, write=TRUE,
+          format.vars=format.vars, overwrite=overwrite)
       }
 
       input_name <- paste0(met,"_CF_Permute")
@@ -245,13 +266,15 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       print(check, digits=10)
       print("end CHECK")
 
+      if(!overwrite && length(check) > 0) {
         cf.id <- list(input.id=check$container_id, dbfile.id=check$id)
-        cf.id <- convert.input(cf0.id, outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,permute.nc,
-                               username,con=con,host=host,browndog=NULL,write=TRUE)
         logger.info("Skipping permute.nc because files are already available.")
       } else {
         # Just a draft of what would happen - doesn't include using the cluster so it would be SLOW. 
         # Hasn't been tested.
+        cf.id <- convert.input(cf0.id$input.id, outfolder, formatname, mimetype, site.id=site$id, 
+          start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL,
+          write=TRUE, overwrite=overwrite)
       }
     } else if(register$scale=="site") {
       input_name <- paste0(met,"_CF_site_",str_ns)
@@ -267,7 +290,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
           "') and (DATE '", as.POSIXlt(end_date, tz = "GMT"), "' <= i.end_date)" ), con)
       print(check, digits=10)
       print("end CHECK")
-      if(length(check)>0){
+
+      if(!overwrite && length(check)>0) {
         cf.id <- list(input.id=check$container_id, dbfile.id=check$id)
         logger.info("Skipping met2CF because files are already available.")
       } else {
@@ -278,13 +302,18 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         fcn2 <- paste0("met2CF.", mimename)
         if(exists(fcn1)) {
           fcn <- fcn1
-          cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                                 username,con=con,host=host,browndog=NULL,write=TRUE,site$lat,site$lon)
+          cf.id <- convert.input(
+            input.id, outfolder, formatname, mimetype, site.id=site$id, 
+            start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL, 
+            write=TRUE, site$lat, site$lon, overwrite=overwrite)
         } else if(exists(fcn2)) {
           fcn <- fcn2
           format <- query.format.vars(input.id,con)
-          cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                                 username,con=con,host=host,browndog=NULL,write=TRUE,site$lat,site$lon,format.vars=format.vars)
+          cf.id <- convert.input(
+            input.id, outfolder, formatname, mimetype, site.id=site$id, 
+            start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL, 
+            write=TRUE, site$lat, site$lon, format.vars=format.vars, 
+            overwrite=overwrite)
         } else {
           logger.error("met2CF function ", fcn1, " or ", fcn2," doesn't exists")
         }
@@ -313,9 +342,11 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       formatname <- 'CF Meteorology'
       mimetype   <- 'application/x-netcdf'
 
-      ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                                username,con=con,host=host,browndog=NULL,write=TRUE,
-                                slat=new.site$lat,slon=new.site$lon,newsite=new.site$id)
+      ready.id <- convert.input(
+        input.id, outfolder, formatname, mimetype, site.id=site$id,
+        start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL,
+        write=TRUE, slat=new.site$lat, slon=new.site$lon, newsite=new.site$id,
+        overwrite=overwrite)
 
     } else if(register$scale=="site") { ##### Site Level Processing
       logger.info("Gapfilling") # Does NOT take place on browndog!
@@ -329,9 +360,10 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       mimetype   <- 'application/x-netcdf'
       lst        <- site.lst(site,con)
 
-      ready.id   <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id
-                                  ,start_date,end_date,pkg,fcn,username,con=con,
-                                  host=host,browndog=NULL,write=TRUE,lst=lst)
+      ready.id   <- convert.input(
+        input.id, outfolder, formatname, mimetype, site.id=site$id,
+        start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL,
+        write=TRUE, lst=lst, overwrite=overwrite)
 
       print(ready.id)
     }
