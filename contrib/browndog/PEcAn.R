@@ -2,7 +2,7 @@
 #PEcAn
 #data
 #xml
-#pecan.zip
+#pecan.zip, clim
 
 # input files is a xml file specifying what to get
 #<input>
@@ -62,7 +62,7 @@ if(length(site) < 0){
 }
 if(length(site) < 0){
   #insert site info
-  #didn't implement since I didn't find db insert function. The only one seem to insert to dbfiles.
+  return()
 } else {
   #remove multiple entries. 
   site <-list(id = site$id[1], name = site$name[1])
@@ -70,7 +70,7 @@ if(length(site) < 0){
 db.close(con)
 
 model      <- ifelse(is.null(input$model), 'SIPNET', input$model)
-mettype    <- ifelse(is.null(input$type), 'Ameriflux', input$type)
+mettype    <- ifelse(is.null(input$type), 'CRUNCEP', input$type)
 input_met <- list(username = "pecan", source = mettype)
 start_date <- input$start_date
 end_date   <- input$end_date
@@ -79,14 +79,17 @@ host <- list(name = "localhost")
 
 print("Using met.process to download files")
 outfile_clim <-  met.process(site, input_met, start_date, end_date, model, host, dbparams, cacheDir)
-folder  <- gsub(paste0(model,"_site"),"CF_gapfill_site", dirname(outfile_clim))
-outname <- unlist(strsplit(basename(outfile_clim), "[.]"))[1]
+
 # get start/end year code works on whole years only
 start_year <- year(start_date)
 end_year <- year(end_date)
 
 # if more than 1 year, or zip specified, zip result
 if (grepl("\\.zip$", outputfile) || (end_year - start_year > 1)) {
+  # folder for files with gapfilling
+  folder  <- gsub(paste0(model,"_site"),"CF_gapfill_site", dirname(outfile_clim))
+  outname <- unlist(strsplit(basename(outfile_clim), "[.]"))[1]
+  
   # get list of files we need to zip
   files <- c()
   for(year in start_year:end_year) {
@@ -99,8 +102,11 @@ if (grepl("\\.zip$", outputfile) || (end_year - start_year > 1)) {
   zip(zipfile, files, extras="-j")
   # move file should be fast
   file.rename(zipfile, outputfile)
+} else if(grepl("\\.clim$", outputfile)) {
+  file.link(outfile_clim, outputfile)
 } else {
-  start_year <- year(start_date)
+  folder  <- gsub(paste0(model,"_site"),"CF_gapfill_site", dirname(outfile_clim))
+  outname <- unlist(strsplit(basename(outfile_clim), "[.]"))[1]
   outfile <- file.path(folder, paste(outname, start_year, "nc", sep="."))
   file.link(outfile, outputfile)
 }
