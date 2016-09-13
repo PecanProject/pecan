@@ -18,6 +18,14 @@
 #y="2005"
 #sitelat=-999
 #sitelon=-999
+
+#outdir <- "/data/sserbin/Modeling/maat/maat_met_tests.4/out/SA-median/"
+#start_date <- '2006-01-01 00:00:00'
+#end_date <- '2006-12-31 00:00:00'
+#sitelat <- 39.9712
+#sitelon <- -74.4346
+#y <- "2006"
+
 ### !!!
 
 
@@ -47,48 +55,35 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
   maat.out.file <- file.path(outdir, "out.csv")
   maat.output <- read.csv(maat.out.file, header=T)
   maat.output.dims <- dim(maat.output)
-  
-  ## !! OLD
-  ### Current runs do not span multiple dates.  Update this code when running over multiple
-  ### days and with a explicit timestep. This will occur once use real met data
-  #days <- as.Date(start_date):as.Date(end_date)
-  #year <- strftime(as.Date(days,origin="1970-01-01"), "%Y")
-  ###start <- strftime(as.Date(start_date,origin="1970-01-01"), "%Y-%m-%d")
-  ###end <- strftime(as.Date(end_date,origin="1970-01-01"), "%Y-%m-%d")
-  ###start <- as.Date(start_date,"%Y-%m-%d")
-  ###end <- as.Date(end_date,"%Y-%m-%d")
-  #num.years <- length(unique(year))
-  #years <- unique(year)
-  #timestep.s <- 86400
-  # !!
-  
+
   ### Determine number of years and output timestep
-  # !!! Need to output year and day in out.csv to be able to determine timestep.
   days <- as.Date(start_date):as.Date(end_date)
   year <- strftime(as.Date(days,origin="1970-01-01"), "%Y")
   num.years <- length(unique(year))
-  years <- unique(year)
-  timestep.s <- 86400 / 48 # hard-coded for Ameriflux....need to change, read from met file?
-  
+  timestep.s <- 86400 / 48  # initially hard coded at half hour time steps
+
   ### Setup outputs for netCDF file in appropriate units
-  for (y in years){
+  for (y in unique(year)){
     if (file.exists(file.path(outdir, paste(y,"nc", sep=".")))) {
       next ## skip, model output already present.
     }
     
     print(paste("---- Processing year: ", y))  # turn on for debugging
-    output <- list()
+
     
     ## Subset data for processing - !!! NEED TO ADD YEAR TO OUTPUT FILE TO SUBSET OVER MULT YEARS
     #sub.maat.output <- subset(maat.output, year == y)
     #sub.maat.output.dims <- dim(sub.maat.output)
     #dayfrac = 1 / out.day
     #step <- seq(0, 0.99, 1 / out.day)
-    
-    
-    
+
     ### standard variables: Carbon Pools [not currently relevant to MAAT]
-    output[[1]] <- y   # Year - REMOVE!  ALREADY IN THE NETCDF AS TIME!!
+    #output[[1]] <- y   # Year - REMOVE!  ALREADY IN THE NETCDF AS TIME!!
+    #output[[1]] <- year
+    output <- list()
+    out.year <- rep(y,maat.output.dims[1])
+    output[[1]] <- out.year           # Simulation year
+    #output[[2]] <-                   # Fractional day - NEED TO IMPLEMENT  
     output[[2]] <- (maat.output$A)    # assimilation in umolsC/m2/s - OR KEEP AS ASSIMILATION?
     #output[[2]] <- c(maat.output$A,-999)
     
@@ -98,10 +93,14 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
     #               units = paste0("days since ", y, "-01-01 00:00:00"),
     #               vals = as.numeric(strptime(end_date, "%Y-%m-%d %H:%M:%S")-strptime(start_date, "%Y-%m-%d %H:%M:%S"),units="days"),
     #               calendar = "standard", unlim = TRUE) # is this correct? fraction of days or whole days
+    #t <- ncdim_def(name = "time",
+    #               units = paste0("days since ", y, "-01-01 00:00:00"),
+    #               vals = 1:nrow(maat.output),
+    #               calendar = "standard", unlim = TRUE)
     t <- ncdim_def(name = "time",
                    units = paste0("days since ", y, "-01-01 00:00:00"),
-                   vals = 1:nrow(maat.output),
-                   calendar = "standard", unlim = TRUE)
+                   vals = seq(365/17520,365,365/17520),
+                   calendar = "standard", unlim = TRUE) # is this correct? fraction of days or whole days
     ##
     lat <- ncdim_def("lat", "degrees_east",vals =  as.numeric(sitelat),
                    longname = "station_latitude") 
