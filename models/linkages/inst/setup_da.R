@@ -34,7 +34,7 @@ source('~/pecan/modules/assim.sequential/R/sda.enkf.R')
 ######### sipnet
 settings <- read.settings("/fs/data2/output/PEcAn_1000002340/pecan.xml")
 settings$ensemble$size <- 50
-settings$state.data.assimilation$n.ensemble<- 50
+settings$state.data.assimilation$n.ensemble<- 100
 load(file.path(settings$outdir, "samples.Rdata"))
 pick.trait.params <- c(names(ensemble.samples[[1]]),names(ensemble.samples[[2]]))
 
@@ -48,8 +48,7 @@ obs.cov <- list()
 for(i in 1:10) obs.cov[[i]]<- diag(c(.1,.08))
 
 sda.enkf(settings=settings, obs.mean = obs.mean,
-         obs.cov = obs.cov, pick.trait.params = c("G"),
-         given.process.variance = NULL)
+         obs.cov = obs.cov, IC = IC, Q = NULL)
 
 
 ######### linkages

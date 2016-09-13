@@ -192,7 +192,7 @@ $ED_NL
    !---------------------------------------------------------------------------------------!
    NL%IFOUTPUT  =  0			! Instantaneous analysis (site average)
    NL%IDOUTPUT  =  0			! Daily means (site average)
-   NL%IMOUTPUT  =  0			! Monthly means (site average)
+   NL%IMOUTPUT  =  3			! Monthly means (site average)
    NL%IQOUTPUT  =  0			! Monthly means (diurnal cycle)
    NL%IYOUTPUT  =  3			! Annual output
    NL%ITOUTPUT  =  3			! Instantaneous fluxes (site average) --> "Tower" Files

@@ -245,6 +245,7 @@ if (isset($db_fia_database) && ($db_fia_database != "")) {
 	fwrite($fh, "    </fia>" . PHP_EOL);
 }
 
+fwrite($fh, "    <dbfiles>${dbfiles_folder}</dbfiles>" . PHP_EOL);
 fwrite($fh, "  </database>" . PHP_EOL);
 
 if ($browndog) {
@@ -353,49 +354,49 @@ foreach($_REQUEST as $key => $val) {
 fwrite($fh, "    </inputs>" . PHP_EOL);
 fwrite($fh, "    <start.date>${startdate}</start.date>" . PHP_EOL);
 fwrite($fh, "    <end.date>${enddate}</end.date>" . PHP_EOL);
-fwrite($fh, "    <dbfiles>${dbfiles_folder}</dbfiles>" . PHP_EOL);
-fwrite($fh, "    <host>" . PHP_EOL);
+fwrite($fh, "  </run>" . PHP_EOL);
+
+fwrite($fh, "  <host>" . PHP_EOL);
 if ($hostname == $fqdn) {
-  fwrite($fh, "      <name>localhost</name>" . PHP_EOL);
+  fwrite($fh, "    <name>localhost</name>" . PHP_EOL);
 } else {
-  fwrite($fh, "      <name>${hostname}</name>" . PHP_EOL);
+  fwrite($fh, "    <name>${hostname}</name>" . PHP_EOL);
 }
 if (isset($_REQUEST['username'])) {
-  fwrite($fh, "      <user>${_REQUEST['username']}</user>" . PHP_EOL);
+  fwrite($fh, "    <user>${_REQUEST['username']}</user>" . PHP_EOL);
 }
 if (isset($hostoptions['folder'])) {
   $remote = $hostoptions['folder'];
   if (isset($_REQUEST['username'])) {
     $remote = $remote . "/" . $_REQUEST['username'];
   }
-  fwrite($fh, "      <folder>" . toXML($remote) . "</folder>" . PHP_EOL);
+  fwrite($fh, "    <folder>" . toXML($remote) . "</folder>" . PHP_EOL);
 }
 if (isset($hostoptions['scratchdir'])) {
-  fwrite($fh, "      <scratchdir>" . toXML($hostoptions['scratchdir']) . "</scratchdir>" . PHP_EOL);
+  fwrite($fh, "    <scratchdir>" . toXML($hostoptions['scratchdir']) . "</scratchdir>" . PHP_EOL);
 }
 if (isset($hostoptions['prerun'])) {
-  fwrite($fh, "      <prerun>" . toXML($hostoptions['prerun']) . "</prerun>" . PHP_EOL);
+  fwrite($fh, "    <prerun>" . toXML($hostoptions['prerun']) . "</prerun>" . PHP_EOL);
 }
 if (isset($hostoptions['postrun'])) {
-  fwrite($fh, "      <postrun>" . toXML($hostoptions['postrun']) . "</postrun>" . PHP_EOL);
+  fwrite($fh, "    <postrun>" . toXML($hostoptions['postrun']) . "</postrun>" . PHP_EOL);
 }
 if (isset($hostoptions['qsub'])) {
-  fwrite($fh, "      <qsub>" . toXML($hostoptions['qsub']) . "</qsub>" . PHP_EOL);
+  fwrite($fh, "    <qsub>" . toXML($hostoptions['qsub']) . "</qsub>" . PHP_EOL);
 }
 if (isset($hostoptions['jobid'])) {
-  fwrite($fh, "      <qsub.jobid>" . toXML($hostoptions['jobid']) . "</qsub.jobid>" . PHP_EOL);
+  fwrite($fh, "    <qsub.jobid>" . toXML($hostoptions['jobid']) . "</qsub.jobid>" . PHP_EOL);
 }
 if (isset($hostoptions['qstat'])) {
-  fwrite($fh, "      <qstat>" . toXML($hostoptions['qstat']) . "</qstat>" . PHP_EOL);
+  fwrite($fh, "    <qstat>" . toXML($hostoptions['qstat']) . "</qstat>" . PHP_EOL);
 }
 if (isset($hostoptions['job.sh'])) {
-  fwrite($fh, "      <job.sh>" . toXML($hostoptions['job.sh']) . "</job.sh>" . PHP_EOL);
+  fwrite($fh, "    <job.sh>" . toXML($hostoptions['job.sh']) . "</job.sh>" . PHP_EOL);
 }
 if ($hostname != $fqdn) {
-  fwrite($fh, "      <tunnel>" . $tunnel_folder . DIRECTORY_SEPARATOR . "tunnel" . "</tunnel>" . PHP_EOL);
+  fwrite($fh, "    <tunnel>" . $tunnel_folder . DIRECTORY_SEPARATOR . "tunnel" . "</tunnel>" . PHP_EOL);
 }
-fwrite($fh, "    </host>" . PHP_EOL);
-fwrite($fh, "  </run>" . PHP_EOL);
+fwrite($fh, "  </host>" . PHP_EOL);
 
 if ($email != "") {
 	$url = isset($_SERVER['HTTPS']) ? "https://" : "http://";

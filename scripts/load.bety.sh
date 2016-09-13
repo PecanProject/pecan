@@ -177,9 +177,9 @@ PG_OPT="${PG_OPT} -v ON_ERROR_ROLLBACK=on"
 EMPTY_TABLES="formats machines mimetypes users"
 
 # list of all tables, schema_migrations is ignored since that
-# will be imported during creaton
+# will be imported during creaton. Order is semi important.
 CLEAN_TABLES="benchmark_sets benchmarks"
-CLEAN_TABLES="${CLEAN_TABLES} citations covariates cultivars dbfiles"
+CLEAN_TABLES="${CLEAN_TABLES} citations covariates cultivars"
 CLEAN_TABLES="${CLEAN_TABLES} ensembles entities formats inputs"
 CLEAN_TABLES="${CLEAN_TABLES} likelihoods machines managements metrics"
 CLEAN_TABLES="${CLEAN_TABLES} methods mimetypes models modeltypes"
@@ -187,6 +187,7 @@ CLEAN_TABLES="${CLEAN_TABLES} pfts posteriors priors reference_runs"
 CLEAN_TABLES="${CLEAN_TABLES} runs sites species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
 CLEAN_TABLES="${CLEAN_TABLES} projects sitegroups"
+CLEAN_TABLES="${CLEAN_TABLES} dbfiles"
 
 # tables that have checks that need to be looked at.
 CHECK_TABLES="traits yields"

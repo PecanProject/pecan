@@ -152,7 +152,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method="uniform
 
 ##' @export
 runModule.run.write.configs <- function(settings, overwrite=TRUE) {
-  if(is.SettingsList(settings)) {
+  if(is.MultiSettings(settings)) {
     if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {
       logger.warn("Existing runs.txt file will be removed.")
       unlink(file.path(settings$rundir, "runs.txt"))
@@ -163,7 +163,7 @@ runModule.run.write.configs <- function(settings, overwrite=TRUE) {
     ens.sample.method <- settings$ensemble$method
     return(run.write.configs(settings, write, ens.sample.method, overwrite=overwrite))
   } else {
-    stop("runModule.run.write.configs only works with Settings or SettingsList")
+    stop("runModule.run.write.configs only works with Settings or MultiSettings")
   }
 }
  

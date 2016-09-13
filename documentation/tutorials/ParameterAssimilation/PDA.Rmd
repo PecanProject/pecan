@@ -5,7 +5,7 @@ output: html_document
 
 ## Objectives
 * Gain hands-on experience in using Bayesian MCMC techniques to calibrate a simple ecosystem model using parameter data assimilation (PDA)
-* Set up and run a PDA in PEcAn using model emulation technique, assimilating NEE data from Sylvania
+* Set up and run a PDA in PEcAn using model emulation technique, assimilating NEE data from Willow Creek
 * Examine outputs from a PDA for the SIPNET model and evaluation of the calibrated model against i) data used to constrain model, ii) additional data for the same site
 
 ## Larger Context
@@ -47,16 +47,16 @@ Today, we're again going to work mostly in Rstudio, in order to easily edit adva
 
 The following variables need to be set specific to the site being run and the workflow being run
 ```{r}
-workflow_id <- 900000002  ## comes from the History table
+workflow_id <- 99000000002  ## comes from the History table
 
-years       <- 2004:2007
+years       <- 2003:2006
 
 ## from URL/bety/inputs.  
-##   Search by Ameriflux ID (e.g. US-Syv)
+##   Search by Ameriflux ID (e.g. US-WCr)
 ##   Find the "plain" site record (no CF or model name) that's on your server 
 ##    (probably last in the list)
 ##   Click on the magnifying glass icon then look under "View Related Files"
-datadir     <- "/home/carya/output/dbfiles/Ameriflux_site_0-622/US-Syv." 
+datadir     <- "/home/carya/output/dbfiles/Ameriflux_site_0-676/US-WCr." 
 
 ## where PEcAn is saving output (default OK on VM)
 outdir      <- "/home/carya/output" 
@@ -76,13 +76,13 @@ for(i in seq_along(years)){
 obs <- do.call(rbind,obs)
 obs[obs==-9999] <- NA       ## remove missing values  
 obs$NEE[obs$UST<0.2] <- NA  ## U* filter
-NEEo <- ud.convert(obs$NEE,"ug m-2 s-1","kg m-2 s-1")*12.0  ## convert units
+NEEo <- misc.convert(obs$NEE, "umol C m-2 s-1", "kg C m-2 s-1") ## convert units
 ```
 
 Now let's load up our settings from the previous ensemble analysis (Demo 2) and recreate the Ensemble Analysis output plots, this time including our NEE observations. 
 ```{r eval=FALSE}
 settings <- read.settings(file.path(outdir,paste0("PEcAn_",workflow_id),"pecan.CONFIGS.xml"))
-run.ensemble.analysis(plot.timeseries=TRUE, observations=NEEo, window=48, variable="NEE")
+run.ensemble.analysis(settings, plot.timeseries=TRUE, observations=NEEo, window=48, variable="NEE")
 ```
 
 Here the argument window specifies that we will smooth both the model and the data with a moving window, which makes the detection of trends in the model and data much easier to observe. Our outputs are half-hourly, so window=48 specifies a daily plot. 
@@ -98,14 +98,14 @@ When finished, open the resulting plot ensemble.ts.*.pdf (where * depends on you
 Beyond exploratory exercises, the first step of PDA analysis is to choose the model parameters you will target for optimization. PDA is computationally expensive (even when using an emulator), and the cost increases exponentially with the number of parameters targeted. The number you can handle in any given analysis completely depends on the complexity of the model and your available computational resources, but in practice it's going to be rather small (~1–10) relative to the large number of parameters in a mechanistic ecosystem model (~10–100). 
 Given this limitation, it is important to target parameters that can contribute substantially to improving model fit. If you recall, identifying those parameters was the goal of the uncertainty analysis you conducted previously, in the second PEcAn demo. Let's revisit that analysis now. Open your variance decomposition graph from Demo 2 
 From this figure decide which variables you will target with PDA. As noted, an obvious criterion is that the parameter should be contributing a large amount of uncertainty to the current model, because otherwise it simply can't change the model output much no matter how much you try to optimize it. But there are other considerations too. For example, if two parameters have similar or competing roles in the model, you may have trouble optimizing both simultaneously. In practice, there will likely be some guess-and-testing involved, though a good understanding of how the model works will help. It may also help to look at the shape of the Sensitivity responses and details of model fit to data (your ensemble analysis from the previous section). 
-For the purposes of this demo, choose three to five parameters that contribute high uncertainty to model output and/or seem like good choices for some other rational reason. 
+For the purposes of this demo, choose three to five parameters (in total, if you have more than PFTs) that contribute high uncertainty to model output and/or seem like good choices for some other rational reason. 
 
 ### Questions: 
 *	Which parameters did you choose, and why?
 
 ## Editing PEcAn settings
 Now let’s add settings to tell PEcAn how to run the PDA with emulator, we will come to the details of model emulation later. Open up the pecan.CONFIGS.xml file you located previously, and choose ```File > Save as...``` from the menu to save a new copy as **pecan.PDA.INIT.xml**. Now add the block of XML listed below to the file, immediately after the <pecan> line. Check and fill in the parts corresponding to your run when necessary.
-In this block, use the ```<param.names><param>``` tags to identify the parameters you’ve chosen for PDA (it's up to you to choose the number of parameters you want to constrain, then you can set the ```<n.knot>``` to be >= 10 per parameter you choose, e.g. 60 knots for 3 parameters).  Here, you need to use PEcAn’s standard parameter names, which are generally not the same as what’s printed on your variance decomposition graph. To find your parameters look at the row names in the ```prior.distns.csv``` file for each PFT under the PFT pulldown menu. Insert the variable name (exactly, and case sensitive) into the ```<param>``` tags of the XML code below. 
+In this block, use the ```<param.names><param>``` tags to identify the parameters you’ve chosen for PDA (it's up to you to choose the number of parameters you want to constrain, then you can set the ```<n.knot>``` to be >= 10 per parameter you choose, e.g. 75 knots for 5 parameters).  Here, you need to use PEcAn’s standard parameter names, which are generally not the same as what’s printed on your variance decomposition graph. To find your parameters look at the row names in the ```prior.distns.csv``` file for each PFT under the PFT pulldown menu. Insert the variable name (exactly, and case sensitive) into the ```<param>``` tags of the XML code below. 
 In addition, you may need to edit ```<inputs><file><path>```, depending on the site and year you ran previously. The rest of the settings control options for the PDA analysis (how long to run, etc.), and also identify the data to be used for assimilation. For more details, see the assim.batch vignette on the PEcAn GitHub page (https://goo.gl/9hYVPQ).
 
 ```
@@ -113,23 +113,33 @@ In addition, you may need to edit ```<inputs><file><path>```, depending on the s
 <pecan>                  <-- just paste the <assim.batch> block below right after them. 
   <assim.batch>
     <method>emulator</method>
-    <n.knot>60</n.knot>
+    <n.knot>75</n.knot>
     <iter>10000</iter>
+    <chain>3</chain>
     <param.names>
-     <param>YOUR_PARAM_1</param>              <-- FILL IN
-     <param>YOUR_PARAM_2</param>              <-- FILL IN
-     <param>YOUR_PARAM_3</param>              <-- FILL IN
+      <soil>
+        <param>YOUR_PFT_1_PARAM_1</param>        <-- FILL IN
+        <param>YOUR_PFT_1_PARAM_2</param>        <-- FILL IN
+      </soil>
+       <temperate.deciduous>                                      
+         <param>YOUR_PFT_2_PARAM_1</param>       <-- FILL IN
+         <param>YOUR_PFT_2_PARAM_2</param>       <-- FILL IN
+         <param>YOUR_PFT_2_PARAM_3</param>       <-- FILL IN
+       </temperate.deciduous> 
     </param.names>
     <jump>
-     <adapt>100</adapt>
-     <adj.min>0.1</adj.min>
-     <ar.target>0.3</ar.target>
+        <adapt>100</adapt>
+        <adj.min>0.1</adj.min>
+        <ar.target>0.3</ar.target>
     </jump>
     <inputs>
      <file>
-      <path>~/output/dbfiles/Ameriflux_site_0-622/US-Syv.2004.nc</path>   <-- FILL IN
+      <path>
+         <path>~/output/dbfiles/Ameriflux_site_0-676/US-WCr.2003.nc</path>       <-- FILL IN
+         <path>~/output/dbfiles/Ameriflux_site_0-676/US-WCr.2004.nc</path>       <-- FILL IN
+      </path>
       <format>Ameriflux.L2</format>
-      <input.id>1000000463</input.id>                                     <-- FILL IN
+      <input.id>99000000001</input.id>              <-- FILL IN
       <likelihood>Laplace</likelihood>
       <variable.name>
         <variable.name>NEE</variable.name>
@@ -143,8 +153,8 @@ In addition, you may need to edit ```<inputs><file><path>```, depending on the s
 Once you’ve made and saved the changes to your XML, load the file and check that it contains the new settings:
 
 ```{r eval=FALSE}
-settings.PDA <- read.settings(file.path(outdir,paste0("PEcAn_",workflow_id),"pecan.PDA.INIT.xml"))
-settings.PDA$assim.batch
+settings <- read.settings(file.path(outdir,paste0("PEcAn_",workflow_id),"pecan.PDA.INIT.xml"))
+settings$assim.batch
 ```
 
 If the printed list contains everything you just added to pecan.PDA.INIT.xml, you’re ready to proceed.
@@ -167,19 +177,19 @@ For now, we just want you to get a glimpse at the overall structure of the code,
 Let’s go ahead and run a data assimilation MCMC with emulator. Since you've already loaded the settings containing your modified <assim.batch> XML block, all you need to do to start the PDA is run
 
 ```{r eval=FALSE}
-settings.postPDA <- pda.emulator(settings.PDA)
+settings <- pda.emulator(settings)
 ```
 
 After executing the code above, you will see print-outs to the console. The code begins with loading the prior values which in this case are the posterior distributions coming from your previous meta analysis. Then it loads the observational data and carries out necessary conversions and formatting to align it with model outputs, as we did separately above. After this step, you will see a progress bar where the actual model is run n.knot times with the proposed parameter sets and then the outputs from these runs are read. Next, this model output is compared to the specified observational data, and the likelihood is calculated using the heteroskedastic Laplacian discussed previously. Once we calculate the likelihoods, we fit an emulator which interpolates the model output in parameter space between the points where the model has actually been run. Now we can put this emulator in the MCMC algorithm instead of the model itself. Within the MCMC loop the code proposes new parameter value from a multivariate normal jump distribution. The corresponding likelihood will be approximated by the emulator and the new parameter value is accepted or rejected based on its posterior probability relative to the current value. 
 
 ## Outputs from PEcAn’s Parameter Data Assimilation
 
-When the PDA is finished, a number of outputs are automatically produced that are either the same as or similar to posterior outputs that we’ve seen before. These are located in the ```PEcAn_[workflow_id]/pft/*``` output directory and are identified by ```pda.[workflow_id]``` in the filenames:
+When the PDA is finished, a number of outputs are automatically produced that are either the same as or similar to posterior outputs that we’ve seen before. These are located in the ```PEcAn_[workflow_id]/pft/*``` output directory and are identified by ```pda.[PFT]_[workflow_id]``` in the filenames:
 
-* posteriors.pda.*.pdf shows the posterior distributions resulting from your PDA
-*	trait.mcmc.pda.*.Rdata contains all the parameter samples contained in the PDA posterior 
-*	mcmc.pda.*.Rdata is essentially the same thing in a different format
-*	mcmc.diagnostics.pda.*.pdf shows trace plots and posterior densities for each assimilated parameter, as well as pairs plots showing all pairwise parameter correlations. 
+* posteriors.pda.[PFT]*.pdf shows the posterior distributions resulting from your PDA
+*	trait.mcmc.pda.[PFT]*.Rdata contains all the parameter samples contained in the PDA posterior 
+*	mcmc.pda.[PFT]*.Rdata is essentially the same thing in a different format
+*	mcmc.diagnostics.pda.[PFT]*.pdf shows trace plots and posterior densities for each assimilated parameter, as well as pairs plots showing all pairwise parameter correlations. 
 
 Together, these files allow you to evaluate whether a completed PDA analysis has converged and how the posterior distributions compare to the priors, and to use the posterior samples in further analyses, including additional PDA. 
 If you haven't done so already, take a look at all of the outputs described here. 
@@ -192,30 +202,86 @@ If you haven't done so already, take a look at all of the outputs described here
 ## Post-PDA analyses
 
 In addition to the outputs of the PDA itself, you may want to conduct ensemble and/or sensitivity analyses based on the posteriors of the data assimilation, in order to check progress towards improved model fit and/or changing sensitivity. For this, you need to generate new model runs based on parameters sampled from the updated (by PDA) posterior, which is a simple matter of rerunning several steps of the PEcAn workflow. 
-The PDA you ran has automatically produced an updated XML file that includes the posterior id to be used in the next round of runs. Locate this file in your run directory and load the file for the post-pda ensemble/sensitivity analysis:
+The PDA you ran has automatically produced an updated XML file that includes the posterior id to be used in the next round of runs. Locate this file in your run directory and load the file for the post-pda ensemble/sensitivity analysis (if you already have the `settings` list in your working environment you don't need to re-read the settings):
 
 
 ```{r eval=FALSE}
  # Call model specific write.configs
-  settings.postPDA <- run.write.configs(settings.postPDA,
+  settings <- run.write.configs(settings,
                           write=settings$database$bety$write,     
                           ens.sample.method=settings$ensemble$method)
 
  # Start ecosystem model runs, this one takes awhile...
-  start.model.runs(settings.postPDA, settings$database$bety$write)
+  start.model.runs(settings, settings$database$bety$write)
 
  # Get results of model runs
-  get.results(settings.postPDA)
+  get.results(settings)
 
  # Repeat ensemble analysis with PDA-constrained params 
- run.ensemble.analysis(settings.postPDA,plot.timeseries=TRUE, observations=NEEo, window=48, variable="NEE")
+ run.ensemble.analysis(settings, plot.timeseries=TRUE, observations=NEEo, window=48, variable="NEE")
 
  # Repeat variance decomposition to see how constraints have changed
- run.sensitivity.analysis(settings.postPDA)
+ run.sensitivity.analysis(settings)
+```
+
+Finally, let's run SIPNET again, once with mean values from priors and once with mean values from posteriors, and plot the outputs against data :
+
+```{r eval=FALSE}
+ # now we will run SIPNET one more time with the mean values of the constrained posterior
+ settings$ensemble$size = 1    # results in running the model once with the mean values
+ settings$sensitivity.analysis = NULL   # we don't want to repeat sensitivity
+ 
+ # write configs
+ settings <- run.write.configs(settings, write=settings$database$bety$write,      
+                              ens.sample.method=settings$ensemble$method)
+
+ # run model
+ start.model.runs(settings, settings$database$bety$write)
+ 
+ # let's do the same for pre-assimilation priors
+ # load the original pecan.PDA.INIT.xml (which has the information for your initial distributions)
+ settings <- read.settings(file.path(outdir,paste0("PEcAn_",workflow_id),"pecan.CONFIGS.xml"))
+ 
+ # run SIPNET one more time with the mean values from the priors
+ settings$ensemble$size = 1    
+ settings$sensitivity.analysis = NULL  
+ 
+ # write configs
+ settings <- run.write.configs(settings, write=settings$database$bety$write,      
+                              ens.sample.method=settings$ensemble$method)
+
+ # run model
+ start.model.runs(settings, settings$database$bety$write)
+ 
+ 
+ # read outputs
+ run.ids <- list.files(settings$rundir)
+ post.assimilation.model <-as.data.frame(read.output(as.numeric(run.ids[length(run.ids)-2]), 
+                                    outdir =   file.path(settings$host$outdir,run.ids[length(run.ids)-2]),
+                                    2003, 2006, variables = "NEE"))
+ 
+  pre.assimilation.model <-as.data.frame(read.output(as.numeric(run.ids[length(run.ids)-1]), 
+                                    outdir = file.path(settings$host$outdir,run.ids[length(run.ids)-1]),
+                                    2003, 2006, variables = "NEE"))
+ 
+ # save the comparison plots to pdf
+ pdf(file.path(outdir,paste0("PEcAn_",workflow_id),"model.data.comparison.pdf"), onefile=T, paper='A4r', height=15, width=20) 
+
+ plot(NEEo, ylim=c(min(NEEo, na.rm=TRUE), max(NEEo, na.rm = TRUE)), ylab= "NEE", main="Ameriflux NEE data", col="green")
+ legend("bottomright", legend="Data", pch=1, col="green")
+ plot(NEEo, ylim=c(min(NEEo, na.rm=TRUE), max(NEEo, na.rm = TRUE)), ylab= "NEE", main="Pre-PDA comparison", col="green")
+ points(pre.assimilation.model, col="purple", pch=3, cex=0.5)
+ legend("bottomright", legend=c("Data","Model"), pch=c(1,3), col=c("green","purple"))
+ plot(NEEo, ylim=c(min(NEEo, na.rm=TRUE), max(NEEo, na.rm = TRUE)), ylab= "NEE", main="Post-PDA comparison", col="green")
+ points(post.assimilation.model, col="purple", pch=3, cex=0.5)
+ legend("bottomright", legend=c("Data","Model"), pch=c(1,3), col=c("green","purple"))
+ 
+ dev.off()
+
 ```
 
 
-Now you can check the new figures produced by your analyses under ```PEcAn_[workflow_id]/ensemble.ts.*.pdf```, ```PEcAn_[workflow_id]/pft/*/variance.decomposition.*.pdf``` and ```PEcAn_[workflow_id]/pft/*/sensitivity.analysis.*.pdf```, and compare them to the previous ones.
+Now you can check the new figures produced by your analyses under ```PEcAn_[workflow_id]/ensemble.ts.*.pdf```, ```PEcAn_[workflow_id]/pft/*/variance.decomposition.*.pdf``` and ```PEcAn_[workflow_id]/pft/*/sensitivity.analysis.*.pdf```, and compare them to the previous ones. Also, take a look at the comparison of model outputs to data when we run SIPNET with pre- and post-PDA parameter (mean) values under ```PEcAn_[workflow_id]/model.data.comparison.pdf```.
 
 ### Questions: 
 *	Looking at the ensemble analysis outputs in order (i.e., in order of increasing ID in the filenames), qualitatively how did the model fit to data change over the course of the analysis?
