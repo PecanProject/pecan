@@ -1,6 +1,17 @@
 library(devtools)
 devtools::install_github("ropensci/EML") #install EML package
 library(EML)
+
+#Steps for meta2format.EML:
+# 1) Extract the required metadata from the file
+# 2) Insert metadata into the database.
+# Brown Dog will extract the required metadata and
+# insertion into DB happens only in pecan.
+# function has to handle formats table and formats_variables table
+
+# outside of meta2format create a generic function for inserting
+# database formats and formats variables into Bety
+
 #meta2format.EML <- function(){}
 ###try on file I gave to Gene
 #f3 <- "/Users/josh/Downloads/doi_10.5063_AA_nceas.980.2-METADATA(1).xml"
