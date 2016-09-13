@@ -179,6 +179,10 @@ get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL){
 }
 #==================================================================================================#
 
+##' @export
+listToXml <- function (x, ...) {
+  UseMethod("listToXml")
+}
 
 #--------------------------------------------------------------------------------------------------#
 ##' Convert List to XML
@@ -191,7 +195,8 @@ get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL){
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Rob Kooper
 #--------------------------------------------------------------------------------------------------#
-listToXml <- function(item, tag) {
+listToXml.default <- function(item, tag) {
+
   # just a textnode, or empty node with attributes
   if(typeof(item) != 'list') {
     if (length(item) > 1) {
@@ -618,9 +623,9 @@ load.modelpkg <- function(model){
 ##' @author Istem Fer
 misc.convert <- function(x, u1, u2){
   if(u1 == "umol C m-2 s-1" & u2 == "kg C m-2 s-1"){
-    val <- ud.convert(x, "ug m-2 s-1", "kg ha-1 yr-1") * 12 
+    val <- ud.convert(x, "ug", "kg") * 12    # atomic mass of carbon
   }else if(u1 == "kg C m-2 s-1" &  u2 == "umol C m-2 s-1"){
-    val <- ud.convert(x, "kg ha-1 yr-1", "ug m-2 s-1") / 12 
+    val <- ud.convert(x, "kg", "ug") / 12    # atomic mass of carbon
   }
   return(val)
 }

@@ -3,16 +3,17 @@
 ##' @author Michael Dietze and Ann Raiho \email{dietze@@bu.edu}
 ##' 
 ##' @param settings    PEcAn settings object
-##' @param obs.mean    data.frame of observations of the mean of variables (time X nstate)
-##' @param obs.cov      data.frame of observations of the sd of variables (time X nstate)
-##' @param given.process.variance flag for if parameters should come from meta.analysis or be defaults. if false parameters are set to defaults
+##' @param obs.mean    list of observations of the means of state variable (time X nstate)
+##' @param obs.cov     list of observations of covariance matrices of state variables (time X nstate X nstate)
+##' @param IC          initial conditions
+##' @param Q           process covariance matrix given if there is no data to estimate it
 ##' 
 ##' @description State Variable Data Assimilation: Ensemble Kalman Filter
 ##' 
 ##' @return NONE
+##' @export
 ##' 
-sda.enkf <- function(settings, obs.mean, obs.cov,
-                     given.process.variance = NULL, IC = NULL){
+sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
@@ -32,7 +33,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
   end.year   <- strftime(settings$state.data.assimilation$end.date,"%Y")
   processvar <-settings$state.data.assimilation$process.variance
   sample_parameters <-settings$state.data.assimilation$sample.parameters
-  variables <- unlist(settings$state.data.assimilation$state.variable, use.names = FALSE)
+  variables <- unlist(sapply(settings$state.data.assimilation$state.variable,function(x){x})[1,], use.names = FALSE)
   
   ###-------------------------------------------------------------------###
   ### load climate data                                                 ###
@@ -43,7 +44,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
  }
  if(model == "SIPNET"){
    ## split clim file
-      full.met <- settings$run$inputs$met$path
+      full.met <- c(settings$run$inputs$met$path) #
       new.met  <- file.path(settings$rundir,basename(full.met))
       file.copy(full.met,new.met)
       met <- split.met.SIPNET(new.met)
@@ -74,7 +75,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
   ### create ensemble ids                                               ###
   ###-------------------------------------------------------------------### 
   if (!is.null(con)) {
-    # write enseblem first
+    # write ensemble first
     now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
     db.query(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", 
                    now, "', 'EnKF', ", workflow.id, ")", sep=''), con)
@@ -101,45 +102,47 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
   ### perform initial set of runs                                       ###
   ###-------------------------------------------------------------------###  
   run.id = list()
-#   
-#   pda.init.run(settings = settings, con = con, my.write.config = my.write.config, workflow.id = workflow.id,
-#                params = c(1000000012),n=ifelse(is.null(dim(params)), 1, nrow(params)),
-#                run.names=paste("run", 1:n, sep="."))
-#   
+  X <- IC
+
+  ## local settings changes for initial runs
+  settings$run$start.date <- paste0(as.numeric(spin.up.start),strftime(settings$run$start.date,"/%m/%d"))
+  settings$run$end.date <- paste0(as.numeric(spin.up.end),strftime(settings$run$end.date,"/%m/%d"))
+  
+  ## Load Parameters
+  if(sample_parameters == TRUE){
+    settings$ensemble$size <- settings$state.data.assimilation$n.ensemble
+  } else {
+    settings$ensemble$size <- 1
+  }
+  get.parameter.samples(settings, ens.sample.method=settings$ensemble$method)  ## Aside: if method were set to unscented, would take minimal changes to do UnKF
+  load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
+    
   for(i in 1:nens){
     
     ## set RUN.ID
     if (!is.null(con)) {
       now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
       paramlist <- paste("EnKF:",i)
-      db.query(paste("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id,",
+      run.id[[i]] <- db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id,",
                      " parameter_list) values ('", 
                      settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", 
                      settings$run$end.date, "', '", settings$outdir , "', '", now, "', ", ensemble.id, ", '", 
-                     paramlist, "')", sep=''), con)
-      run.id[[i]]<- db.query(paste("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'", 
-                                   sep=''), con)[['id']]
+                     paramlist, "') RETURNING id"), con)
     } else {
       run.id[[i]] = paste("EnKF",i,sep=".")
     }
     dir.create(file.path(settings$rundir, run.id[[i]]), recursive=TRUE)
     dir.create(file.path(settings$modeloutdir, run.id[[i]]), recursive=TRUE)
     
-    settings$run$start.date <- paste0(as.numeric(spin.up.start),strftime(settings$run$start.date,"/%m/%d"))
-    settings$run$end.date <- paste0(as.numeric(spin.up.end),strftime(settings$run$end.date,"/%m/%d"))
-    
+    ## Write Configs
     if(sample_parameters == TRUE){
-      get.parameter.samples(pfts = settings$pfts, ens.sample.method=settings$ensemble$method)
-      load(file.path(settings$outdir, "samples.Rdata"))
-      do.call(my.write.config, args = list(defaults = NULL, trait.values = lapply(ensemble.samples, function(x, n){x[i,]},n = i),
-                                           settings = settings, run.id = run.id[[i]],
-                                           inputs = list(met=list(path=met[1]))))
+      trait.values <- lapply(ensemble.samples, function(x, n){x[i,]},n = i)
     } else {
-      load(file.path(settings$outdir, paste0("ensemble.samples.",settings$state.data.assimilation$prior,".Rdata")))
-      do.call(my.write.config,args=list(defaults = NULL, trait.values = ens.samples, 
-                                        settings=settings,run.id = run.id[[i]],restart=FALSE,
-                                        inputs = list(met=list(path=met[1]))))
+      trait.values <- ensemble.samples
     }
+    do.call(my.write.config, args = list(defaults = NULL, trait.values = trait.values,
+                                         settings = settings, run.id = run.id[[i]],
+                                         inputs = list(met=list(path=met[1])), IC = IC[i,]))
     
     ## write a README for the run
     cat("runtype     : sda.enkf\n",
@@ -163,7 +166,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
   }
   
   ## add the jobs to the list of runs
-  cat(as.character(run.id),file=file.path(settings$rundir, "runs.txt"),sep="\n",append=FALSE)
+  cat(as.character(unlist(run.id)),file=file.path(settings$rundir, "runs.txt"),sep="\n",append=FALSE)
   
   ## start model runs
   start.model.runs(settings,settings$database$bety$write)
@@ -173,12 +176,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
   ###-------------------------------------------------------------------###  
   
   ## vector to read the correct netcdfs by read.restart
-  total.time = as.numeric(start.year):as.numeric(end.year) #Is this going to work?
+  total.time = as.numeric(spin.up.end):as.numeric(end.year)
   
   nt = length(total.time) #could be different if time step was different right?
   FORECAST <- ANALYSIS <- list()
   enkf.params <- list()
-  aqq = array(0,dim=c(nt,length(variables)+1,length(variables)+1)) #HACK
+  aqq = array(0,dim=c(nt,length(variables),length(variables)))
   bqq = numeric(nt+1)
   CI.X1 <- matrix(0,3,nt) ; CI.X2 = CI.X1
   
@@ -232,6 +235,15 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
   Y  ~ dmnorm(X.keep,r)
 }"     
   
+  t1=1
+  pink = col2rgb("deeppink")
+  alphapink = rgb(pink[1],pink[2],pink[3],180,max=255)
+  green = col2rgb("green")
+  alphagreen = rgb(green[1],green[2],green[3],75,max=255)
+  blue = col2rgb("blue")
+  alphablue = rgb(blue[1],blue[2],blue[3],75,max=255)
+  
+  
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
@@ -252,15 +264,16 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
     
     FORECAST[[t]] = X
     
-    obs = !is.na(obs.mean[[t]])
+    obs = which(!is.na(obs.mean[[t]]))
+    
+    mu.f = as.numeric(apply(X,2,mean,na.rm=TRUE))
+    Pf   = cov(X)
     
     ###-------------------------------------------------------------------###
     ### analysis                                                          ###
     ###-------------------------------------------------------------------###  
     if(any(obs)){ #if no observations skip analysis
-    mu.f = as.numeric(apply(X,2,mean,na.rm=TRUE))
-    Pf   = cov(X)
-    Y    = na.omit(obs.mean[[t]][pmatch(colnames(X), names(obs.mean[[t]]))])
+    Y    = obs.mean[[t]][pmatch(names(obs.mean[[t]]),colnames(X))]
 
     R = as.matrix(obs.cov[[t]])
     
@@ -271,17 +284,64 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
         }
       }
     }
+    
+    #### Plot Data and Forecast
+    if(interactive() & t > 1){
+      t1=1
+      names.y <- unique(unlist(lapply(obs.mean[t1:t],function(x){return(names(x))})))
+      Ybar = t(sapply(obs.mean[t1:t],function(x){
+        tmp <- rep(NA,length(names.y))
+        names(tmp) <- names.y 
+        mch = match(names(x),names.y)
+        tmp[mch] = x[mch]
+        return(tmp)
+      }))
+      
+      Ybar = Ybar[,na.omit(pmatch(colnames(X), colnames(Ybar)))]
+      YCI = t(as.matrix(sapply(obs.cov[t1:t],function(x){
+          if(is.null(x)) return(rep(NA,length(names.y)))
+          return(sqrt(diag(x)))}))) 
+      
+      for(i in 2){
+          t1=1
+          Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
+          Xci  = laply(FORECAST[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
+
+          plot(total.time[t1:t],Xbar,ylim=range(c(Ybar,Xci),na.rm=TRUE),
+               type='n',xlab="Year",ylab="kg/m^2",main=colnames(X)[i])
+          
+          #observation / data
+            if(i<=ncol(Ybar)){
+              ciEnvelope(total.time[t1:t],as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
+                         as.numeric(Ybar[,i])+as.numeric(YCI[,i])*1.96,col=alphagreen)
+              lines(total.time[t1:t],as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
+            }
+          
+          #forecast
+          ciEnvelope(total.time[t1:t],Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
+          lines(total.time[t1:t],Xbar,col="darkblue",type='l',lwd=2)
+          
+        }
+    }
 
     ###-------------------------------------------------------------------###
     ### Kalman Filter                                                     ###
     ###-------------------------------------------------------------------###
     if(processvar == FALSE){
+      ## design matrix
       H =  matrix(0,length(Y),ncol(X))
-      H[pmatch(colnames(X), names(obs.mean[[t]]))] <- 1
-      
-      K    = Pf%*%t(H)%*%solve(R+H%*%Pf%*%t(H))
+      choose<-na.omit(pmatch(colnames(X), names(obs.mean[[t]])))
+      for(i in choose){
+        H[i,i]<-1
+      }
+      ## process error
+      if(!is.null(Q)) Pf <- Pf + Q
+      ## Kalman Gain
+      K    = Pf%*%t(H)%*%solve((R+H%*%Pf%*%t(H)))
+      ## Analysis
       mu.a = mu.f + K%*%(Y-H%*%mu.f)
       Pa   = (diag(ncol(X)) - K%*%H)%*%Pf
+      enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
     } else { 
       
       ###-------------------------------------------------------------------###
@@ -305,13 +365,15 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
       X2Y <- X2Y[which(!is.na(Y))]
       
       #### changing diagonal if the covariance is too small for the matrix to be inverted
+      #### This problem is different than R problem because diag(Pf) can be so small it can't be inverted
+      #### Need a different fix here someday
       for(i in 1:length(diag(Pf))){
-        if(diag(Pf)[i]<.0000001) diag(Pf)[i]<-.0001 #HACK
+        if(diag(Pf)[i]==0) diag(Pf)[i]<- min(diag(Pf)[which(diag(Pf)!=0)])/2 #HACK
       }
     
       ### analysis of model and data
       if(length(E)>0){ #if all ensemble members 
-        update = list(Y=na.omit(Y), r=solve(R[X2Y,X2Y]),
+        update = list(Y=Y, r=solve(R[X2Y,X2Y]),
                       muf=mu.f[-E], pf=solve(Pf[-E,-E]),
                       aq=aqq[t,,], bq=bqq[t],
                       F2M=F2M,X2Y=X2Y,X.mod=rep(NA,length(mu.f[-E])),
@@ -323,7 +385,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
                           n.adapt=1000,n.chains=3,
                           init=list(X.mod=as.vector(mu.f[-c(E)]))) #inits for q?
       }else{
-        update = list(Y=na.omit(Y), r=solve(R[X2Y,X2Y]),
+        update = list(Y=Y, r=solve(R[X2Y,X2Y]),
                       muf=mu.f, pf=solve(Pf),
                       aq=aqq[t,,], bq=bqq[t],
                       F2M=F2M,X2Y=X2Y,X.mod=rep(NA,length(mu.f)),
@@ -378,20 +440,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
       ### no process variance -- forecast is the same as the analysis ###
       if(processvar==FALSE){
         mu.a = mu.f
-        Pa = Pa
-      } else {
+        Pa = Pf + Q
+      ### yes process variance -- no data 
+      }else{
         mu.a = mu.f
-        ### process variance exists -- must provide Pa from another analysis ###
-        if(is.null(given.process.variance)){
-          print("Error -- must define given.process.variance")
-          break
-        }else{
-          Pa = given.process.variance #from full DA analysis #where are you going to get this without full DA?
-        }
+        Pa = Pf + solve(q.bar)
       }
       enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
     }
-    
     
     ## update state matrix
     analysis <- as.data.frame(rmvnorm(as.numeric(nens),mu.a,Pa,method="svd"))
@@ -399,17 +455,69 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
     
     ANALYSIS[[t]] = analysis
     
+    if(interactive() & t>1){
+      t1=1
+      names.y <- unique(unlist(lapply(obs.mean[t1:t],function(x){return(names(x))})))
+      Ybar = t(sapply(obs.mean[t1:t],function(x){
+        tmp <- rep(NA,length(names.y))
+        names(tmp) <- names.y 
+        mch = match(names(x),names.y)
+        tmp[mch] = x[mch]
+        return(tmp)
+      }))
+      Ybar = Ybar[,na.omit(pmatch(colnames(X), colnames(Ybar)))]
+      YCI = t(as.matrix(sapply(obs.cov[t1:t],function(x){
+        if(is.null(x)) return(rep(NA,length(names.y)))
+        return(sqrt(diag(x)))})))
+        
+      par(mfrow=c(2,1))
+      for(i in 1:2){
+          t1=1
+          Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
+          Xci  = laply(FORECAST[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
+          
+          Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
+          XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
+          
+          ylab.names<-unlist(sapply(settings$state.data.assimilation$state.variable,function(x){x})[2,], use.names = FALSE)
+          
+          plot(total.time[t1:t],Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
+               type='n',xlab="Year",ylab=ylab.names[grep(colnames(X)[i],variables)],main=colnames(X)[i])
+          
+          #observation / data
+          if(i<=ncol(Ybar)){
+            ciEnvelope(total.time[t1:t],as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
+                       as.numeric(Ybar[,i])+as.numeric(YCI[,i])*1.96,col=alphagreen)
+            lines(total.time[t1:t],as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
+          }
+          
+          #forecast
+          ciEnvelope(total.time[t1:t],Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
+          lines(total.time[t1:t],Xbar,col="darkblue",type='l',lwd=2)
+          
+          #analysis
+          ciEnvelope(total.time[(t1:t)],XaCI[,1],XaCI[,2],col=alphapink)
+          lines(total.time[t1:t],Xa,col="black",lty=2,lwd=2)
+          
+        }
+      }
+
+    
     ###-------------------------------------------------------------------###
     ### forecast step -- write restart                                    ###
     ###-------------------------------------------------------------------### 
     if(t < nt){
       for(i in 1:nens){
-        trait.values<-lapply(ensemble.samples, function(x, n){x[i,]},n = i)
+        if(sample_parameters == TRUE){
+          trait.values <- lapply(ensemble.samples, function(x, n){x[i,]},n = i)
+        } else {
+          trait.values <- ensemble.samples
+        }
         do.call(my.write.restart,
                 args=list(out.dir = outdir, runid = run.id[[i]],
                           time = total.time[t], settings = settings,
                           analysis.vec = analysis[i,],
-                          RENAME = TRUE, PLOT = FALSE, variables = variables,
+                          RENAME = TRUE, variables = variables,
                           sample_parameters = sample_parameters,
                           trait.values = trait.values,
                           met = met))
@@ -417,18 +525,19 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
       ###-------------------------------------------------------------------###
       ### Run model                                                         ###
       ###-------------------------------------------------------------------### 
-      print(paste("Running Model for year",total.time[t]+1))
+      print(paste("Running Model for Year",total.time[t]+1))
       start.model.runs(settings,settings$database$bety$write)
     }
+    
+    ###-------------------------------------------------------------------###
+    ### save outputs                                                      ###
+    ###-------------------------------------------------------------------### 
+    save(t,FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.output.Rdata"))
     
     
   }  ## end loop over time
   ###-------------------------------------------
   
-  ###-------------------------------------------------------------------###
-  ### save outputs                                                      ###
-  ###-------------------------------------------------------------------### 
-  save(FORECAST,ANALYSIS,enkf.params,file=file.path(settings$outdir,"sda.output.Rdata"))
   
   
   ###-------------------------------------------------------------------###
@@ -442,7 +551,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
     temp.mat <- temp.mat[total.time-853,]
     precip.mat <- precip.mat[total.time-853,]
   }else{
-    print('no climate diagnostics for other models yet')
+    print('climate diagnostics under development')
   }
 
   ### Diagnostic graphs  
@@ -451,17 +560,19 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
     ###-------------------------------------------------------------------###
     ### time series                                                       ###
     ###-------------------------------------------------------------------### 
-    t1=1
-    pink = col2rgb("deeppink")
-    alphapink = rgb(pink[1],pink[2],pink[3],180,max=255)
-    green = col2rgb("green")
-    alphagreen = rgb(green[1],green[2],green[3],75,max=255)
-    blue = col2rgb("blue")
-    alphablue = rgb(blue[1],blue[2],blue[3],75,max=255)
-    
-    Ybar =  laply(obs.mean[t1:t],function(x){return(x)})
-    Ybar = Ybar[,na.omit(pmatch(colnames(X), names(obs.mean[[t]])))]
-    YCI = as.matrix(laply(obs.cov[t1:t],function(x){return(sqrt(diag(x)))}))  #need to make this from quantiles for lyford plot data
+   
+    names.y <- unique(unlist(lapply(obs.mean[t1:t],function(x){return(names(x))})))
+    Ybar = t(sapply(obs.mean[t1:t],function(x){
+      tmp <- rep(NA,length(names.y))
+      names(tmp) <- names.y 
+      mch = match(names(x),names.y)
+      tmp[mch] = x[mch]
+      return(tmp)
+      }))
+    Ybar = Ybar[,na.omit(pmatch(colnames(X), colnames(Ybar)))]
+    YCI = t(as.matrix(sapply(obs.cov[t1:t],function(x){
+      if(is.null(x)) return(rep(NA,length(names.y)))
+      return(sqrt(diag(x)))})))  #need to make this from quantiles for lyford plot data
     #YCI = YCI[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
    
     for(i in 1:ncol(X)){
@@ -472,11 +583,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
       Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
       XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
       
-      plot(total.time[t1:t],Xbar,ylim=range(XaCI),
-           type='n',xlab="Year",ylab="kg/m^2",main=colnames(X)[i])
+      plot(total.time[t1:t],Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
+           type='n',xlab="Year",ylab=ylab.names[grep(colnames(X)[i],variables)],main=colnames(X)[i])
      
        #observation / data
-      if(i<=length(Ybar)){
+      if(i<=ncol(Ybar)){
         ciEnvelope(total.time[t1:t],as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
                    as.numeric(Ybar[,i])+as.numeric(YCI[,i])*1.96,col=alphagreen)
         lines(total.time[t1:t],as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
@@ -491,17 +602,24 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
       lines(total.time[t1:t],Xa,col="black",lty=2,lwd=2)
       
     }
-      if(FALSE){
+
     ###-------------------------------------------------------------------###
     ### bias diagnostics                                                  ###
     ###-------------------------------------------------------------------### 
       #legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
       #Forecast minus data = error
+    for(i in 1:2){
+      Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
+      Xci  = laply(FORECAST[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
+      
+      Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
+      XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
+      
       reg <- lm(Xbar[t1:t] - unlist(Ybar[t1:t,i])~c(t1:t))
       plot(t1:t,Xbar[t1:t] - unlist(Ybar[t1:t,i]),pch=16,cex=1,
            ylim=c(min(Xci[t1:t,1]-unlist(Ybar[t1:t,i])),
                   max(Xci[t1:t,2]-unlist(Ybar[t1:t,i]))),
-           xlab="Time", ylab="Error",main="Error = Forecast - Data")
+           xlab="Time", ylab="Error",main=paste(colnames(X)[i]," Error = Forecast - Data"))
       ciEnvelope(rev(t1:t),rev(Xci[t1:t,1]-unlist(Ybar[t1:t,i])),
                  rev(Xci[t1:t,2]-unlist(Ybar[t1:t,i])),col=alphapink)
       abline(h=0,lty=2,lwd=2)
@@ -514,7 +632,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
       reg1 <- lm(Xbar[t1:t] - Xa[t1:t] ~ c(t1:t))
       plot(t1:t,Xbar[t1:t] - Xa[t1:t],pch=16,cex=1,
            ylim=c(min(Xbar[t1:t]-XaCI[t1:t,2]),max(Xbar[t1:t]-XaCI[t1:t,1])),
-           xlab="Time", ylab="Update",main="Update = Forecast - Analysis")
+           xlab="Time", ylab="Update",main=paste(colnames(X)[i],"Update = Forecast - Analysis"))
       ciEnvelope(rev(t1:t),rev(Xbar[t1:t] - XaCI[t1:t,1]),
                  rev(Xbar[t1:t] - XaCI[t1:t,2]),col=alphagreen)
       abline(h=0,lty=2,lwd=2)
@@ -522,22 +640,23 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
       mtext(paste("slope =",signif(summary(reg1)$coefficients[2],digits=3),"intercept =",signif(summary(reg1)$coefficients[1],digits=3)))
       #d<-density(c(Xbar[t1:t] - Xa[t1:t]))
       #lines(d$y+1,d$x)
-  
+    }
   ###-------------------------------------------------------------------###
   ### process variance plots                                            ###
   ###-------------------------------------------------------------------### 
-  library(corrplot)
-  cor.mat <- cov2cor(aqq[t,,]/bqq[t])
-  colnames(cor.mat)<-colnames(X)
-  rownames(cor.mat)<-colnames(X)
-  par(mfrow=c(1,1),mai=c(1,1,4,1))
-  corrplot(cor.mat,type="upper",tl.srt=45, 
-           addCoef.col = "black")
-
-  plot(total.time[t1:t],bqq[t1:t],pch=16,cex=1,ylab="Degrees of Freedom",
-        xlab="Time")
-  
-      }
+  if(processvar==TRUE){
+    library(corrplot)
+    cor.mat <- cov2cor(aqq[t,,]/bqq[t])
+    colnames(cor.mat)<-colnames(X)
+    rownames(cor.mat)<-colnames(X)
+    par(mfrow=c(1,1),mai=c(1,1,4,1))
+    corrplot(cor.mat,type="upper",tl.srt=45, 
+             addCoef.col = "black")
+    
+    plot(total.time[t1:t],bqq[t1:t],pch=16,cex=1,ylab="Degrees of Freedom",
+         xlab="Time")
+  }
+      
   ###-------------------------------------------------------------------###
   ### climate plots                                                     ###
   ###-------------------------------------------------------------------### 
@@ -567,3 +686,4 @@ sda.enkf <- function(settings, obs.mean, obs.cov,
 dev.off()
    
 }
+
