@@ -36,7 +36,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
   if(!require(PEcAn.utils)) print("**Plesae install PEcAn.utils then retry**")
   
   ## MAAT driver format (.csv):
-  ## Timestep,  Air Temp (°C), PAR (umols m-2 s-1), Precipitation( ??), Atmospheric CO2 (μmol mol-1) ... # STILL IN DEVELOPMENT
+  ## Time (POSIX),  Air Temp (°C), PAR (umols m-2 s-1), Precipitation( ??), Atmospheric CO2 (μmol mol-1) ... # STILL IN DEVELOPMENT
   
   print("START met2model.MAAT")
   
@@ -174,7 +174,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
                  Prec_mm=Rain*dt, ## converts from mm/s to mm
                  RH_perc=RH_perc,
                  #PAR=PAR*dt #mol/m2/dt
-                 PAR_umol_m2_s=PAR*1000000 #umols/m2/s
+                 PAR_umols_m2_s=PAR*1000000 #umols/m2/s
     )
     
     ## quick error check, sometimes get a NA in the last hr ?? NEEDED?
