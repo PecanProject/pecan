@@ -45,9 +45,11 @@
 model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NULL, end_date=NULL) {
   
   ## TODO is it OK to give site lat/long -999 if not running at a "site"?
+  ## TODO  !!UPDATE SO IT WILL WORK WITH NO MET AND WITH MET DRIVER!!
   
   ### Load required libraries
   #require(PEcAn.utils) #nescessary??
+  require(lubridate)
   require(udunits2)
   require(ncdf4)
   
@@ -60,7 +62,10 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
   days <- as.Date(start_date):as.Date(end_date)
   year <- strftime(as.Date(days,origin="1970-01-01"), "%Y")
   num.years <- length(unique(year))
-  timestep.s <- 86400 / 48  # initially hard coded at half hour time steps
+  maat.dates <- as.Date(maat.output$time, format = "%m/%d/%y")
+  dims <- dim(subset(maat.output, as.Date(time, format = "%m/%d/%y") == seq(as.Date(start_date),
+                                                                            by='days',length=1)))
+  timestep.s <- 86400 / dims[1]
 
   ### Setup outputs for netCDF file in appropriate units
   for (y in unique(year)){
@@ -69,39 +74,37 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
     }
     
     print(paste("---- Processing year: ", y))  # turn on for debugging
-
     
-    ## Subset data for processing - !!! NEED TO ADD YEAR TO OUTPUT FILE TO SUBSET OVER MULT YEARS
-    #sub.maat.output <- subset(maat.output, year == y)
-    #sub.maat.output.dims <- dim(sub.maat.output)
-    #dayfrac = 1 / out.day
-    #step <- seq(0, 0.99, 1 / out.day)
+    ## Subset data for processing
+    sub.maat.output <- subset(maat.output, format(maat.dates, "%Y") == y)
+    sub.maat.dates <- as.Date(sub.maat.output$time, format = "%m/%d/%y")
+    sub.maat.doy <- yday(sub.maat.dates)
+    sub.maat.output.dims <- dim(sub.maat.output)
+    dayfrac <- 1 / dims[1]
+    day.steps <- seq(0, 0.99, 1 / dims[1])
 
     ### standard variables: Carbon Pools [not currently relevant to MAAT]
-    #output[[1]] <- y   # Year - REMOVE!  ALREADY IN THE NETCDF AS TIME!!
-    #output[[1]] <- year
-    output <- list()
-    out.year <- rep(y,maat.output.dims[1])
-    output[[1]] <- out.year           # Simulation year
-    #output[[2]] <-                   # Fractional day - NEED TO IMPLEMENT  
-    output[[2]] <- (maat.output$A)    # assimilation in umolsC/m2/s - OR KEEP AS ASSIMILATION?
-    #output[[2]] <- c(maat.output$A,-999)
+    output <- list()                              # create empty output
+    out.year <- as.numeric(rep(y,sub.maat.output.dims[1]))
+    output[[1]] <- out.year                       # Simulation year
+    output[[2]] <- sub.maat.doy+day.steps         # Fractional day - NEED TO IMPLEMENT  
+    output[[3]] <- (sub.maat.output$A)            # assimilation in umolsC/m2/s
+    
+    ## TODO: ADD MORE MAAT OUTPUTS HERE ##
     
     #******************** Declare netCDF variables ********************#
-    ## TODO !!!THIS BIT NEEDS UPDATING TO CAPTURE HIGH-FREQUENCY (sub daily) OUTPUTS !!!
+    ## This version doesn't provide enough output timesteps when running with met data that has
+    ## a step greater than 1 per day
     #t <- ncdim_def(name = "time",
     #               units = paste0("days since ", y, "-01-01 00:00:00"),
     #               vals = as.numeric(strptime(end_date, "%Y-%m-%d %H:%M:%S")-strptime(start_date, "%Y-%m-%d %H:%M:%S"),units="days"),
     #               calendar = "standard", unlim = TRUE) # is this correct? fraction of days or whole days
-    #t <- ncdim_def(name = "time",
-    #               units = paste0("days since ", y, "-01-01 00:00:00"),
-    #               vals = 1:nrow(maat.output),
-    #               calendar = "standard", unlim = TRUE)
+   
+    ## Something like this works for mult timesteps per day
     t <- ncdim_def(name = "time",
                    units = paste0("days since ", y, "-01-01 00:00:00"),
-                   vals = seq(365/17520,365,365/17520),
-                   calendar = "standard", unlim = TRUE) # is this correct? fraction of days or whole days
-    ##
+                   vals = sub.maat.doy+day.steps,
+                   calendar = "standard", unlim = TRUE)
     lat <- ncdim_def("lat", "degrees_east",vals =  as.numeric(sitelat),
                    longname = "station_latitude") 
     lon <- ncdim_def("lon", "degrees_north",vals = as.numeric(sitelon),
@@ -118,13 +121,14 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
     ### Convert outputs
     #output <- conversion( 2, umol2kg_C)  ## convert GPP in umolC/m2 s-1 to kgC/m2 s-1 (MsTMIP)
     #output[[2]][output[[2]] != -999] <- output[[2]][output[[2]] != -999] * umol2kg_C
-    output[[2]] <- ifelse(output[[2]]==-999,-999,output[[2]]*umol2kg_C)
+    output[[3]] <- ifelse(output[[2]]==-999,-999,output[[3]]*umol2kg_C)  # convert A/GPP to kgC/m2/s
     
     ### Put output into netCDF format
     mstmipvar <- PEcAn.utils::mstmipvar
     var <- list()
     var[[1]]  <- mstmipvar("Year", lat, lon, t, NA)
-    var[[2]]  <- mstmipvar("GPP", lat, lon, t, NA)
+    var[[2]]  <- mstmipvar("FracJulianDay", lat, lon, t, NA)
+    var[[3]]  <- mstmipvar("GPP", lat, lon, t, NA)
     
     ### Output netCDF data
     nc <- nc_create(file.path(outdir, paste(y,"nc", sep=".")), var)
