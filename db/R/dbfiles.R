@@ -49,11 +49,12 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     parent <- paste0(" AND parent_id=", parentid)
   }
 
-  # find appropriate input, if not in database, instert new input
-  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND name= '", name, 
+  # find appropriate input, if not in database, insert new input
+  existing.input <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND name= '", name, 
     "' AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , 
-    parent, ";"), con)[['id']]
-  if (is.null(inputid)) {
+    parent, ";"), con)
+  
+  if (nrow(existing.input) == 0) {
     # insert input
     if(parent == ""){
       cmd <- paste0("INSERT INTO inputs (site_id, format_id, created_at, updated_at, start_date, end_date, name) VALUES (",
@@ -67,8 +68,14 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
   }
 
+  if(nrow(existing.input) > 1) {
+    print(existing.input)
+    logger.warn("Multiple existing inputs found. Using last.")
+    existing.input <- existing.input[nrow(existing.input),]
+  }
+  inputid <- existing.input[['id']]
+  
   # find appropriate dbfile, if not in database, insert new dbfile
-
   dbfile <- dbfile.check('Input', inputid, con, hostname)
   if(nrow(dbfile>0)) {
     if(nrow(dbfile>1)) {
