@@ -23,7 +23,7 @@ met.process <- function(
   on.exit(db.close(con, showWarnings=FALSE))
   username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
   machine.host <- ifelse(host$name == "localhost", fqdn(), host$name)
-  machine = db.query(paste0("SELECT * from machines where hostname = '",machine.host,"'"),con)
+  machine = db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
 
   #get met source and potentially determine where to start in the process
   met <- ifelse(is.null(input_met$source), logger.error("Must specify met source"), input_met$source)
@@ -73,7 +73,7 @@ met.process <- function(
   }
 
   #setup additional browndog arguments
-  if(!is.null(browndog)){
+  if(!is.null(browndog)) {
     browndog$inputtype <- register$format$inputtype
   }
 
@@ -87,334 +87,51 @@ met.process <- function(
   if (is.null(format.vars$lat)) { format.vars$lat <- new.site$lat }
   if (is.null(format.vars$lon)) { format.vars$lon <- new.site$lon }
   if (is.null(format.vars$site)) { format.vars$site <- new.site$id }
+
   #--------------------------------------------------------------------------------------------------#
-  # Download raw met from the internet
-
+  # Download raw met
   if(stage$download.raw) {
-    outfolder  <- file.path(dir, met)
-    pkg        <- "PEcAn.data.atmosphere"
-    fcn        <- paste0("download.",met)
-
-    if(register$scale=="regional") { 
-      # Right now this only means NARR but will need to be generalized once we have more 
-      # regional met products
-
-      print("start CHECK download raw met")
-      check = db.query(
-        paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id ",
-          "from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id=", 
-          register$siteid," and d.container_type = 'Input' and i.format_id=",
-          register$format$id, " and d.machine_id =", machine$id,
-          " and (i.start_date <= DATE'", as.POSIXlt(start_date, tz = "GMT"),
-          "') and (DATE '", as.POSIXlt(end_date, tz = "GMT"), "' <= i.end_date)" ), con)
-      print(check, digits=10)
-      print("end CHECK")
-
-      if(length(check) > 0) {
-        raw.id <- list(input.id=check$container_id, dbfile.id=check$id)
-        logger.info("Skipping raw met download because files are already available.")
-      } else {
-        fcn.args <- list(
-          outfolder=outfolder, start_date=start_date, end_date=end_date, overwrite=overwrite)
-
-        raw.data.site.id <- register$siteid
-        if(met == "CRUNCEP") {
-          ## this is a hack for regional products that go direct to site-level extraction. 
-          ## Needs generalization (mcd)
-          fcn.args$site_id <- new.site$id
-          fcn.args$lat.in  <- new.site$lat
-          fcn.args$lon.in  <- new.site$lon
-          stage$met2cf = FALSE
-          stage$standardize = FALSE
-          raw.data.site.id <- new.site$id
-        }
-
-        if (met == "GFDL") {
-          fcn.args$site_id         <- new.site$id
-          fcn.args$lat.in          <- new.site$lat
-          fcn.args$lon.in          <- new.site$lon
-          fcn.args$model           <- input_met$model
-          fcn.args$scenario        <- input_met$scenario
-          fcn.args$ensemble_member <- input_met$ensemble_member
-          stage$met2cf = FALSE
-          stage$standardize = FALSE
-          raw.data.site.id         <- new.site$id
-        }
-
-        cmdFcn  = paste0(pkg, "::", fcn, "(", listToArgString(fcn.args), ")")
-        new.files <- remote.execute.R(cmdFcn, host,user=NA, verbose=TRUE)
-
-        raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
-                                      in.prefix=new.files$dbfile.name[1],
-                                      siteid = raw.data.site.id,
-                                      startdate = start_date,
-                                      enddate = end_date,
-                                      mimetype=new.files$mimetype[1],
-                                      formatname=new.files$formatname[1],
-                                      parentid = NA,
-                                      con = con,
-                                      hostname = host$name)
-
-        if(met %in% c("CRUNCEP", "GFDL")) {
-          ready.id = raw.id
-        }
-      }
-    } else if(register$scale=="site") { # Site-level met
-
-      print("start CHECK download raw met")
-      check = db.query(
-        paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id ",
-        "from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",
-        site$id, " and d.container_type = 'Input' and i.format_id=", register$format$id, 
-        " and d.machine_id =", machine$id,
-        " and (i.start_date <= DATE '", as.POSIXlt(start_date, tz = "GMT"), 
-        "') and (DATE '", as.POSIXlt(end_date, tz = "GMT"),"' <= i.end_date)" ), con)
-      print(check, digits=10)
-      print("end CHECK")
-      
-      if(length(check) > 0) {
-        raw.id <- list(input.id=check$container_id, dbfile.id=check$id)
-        logger.info("Skipping raw met download because files are already available.")
-      } else {
-        outfolder = paste0(outfolder,"_site_",str_ns)
-        fcn.args <- list(
-          sitename=site$name, outfolder=outfolder, 
-          start_date=start_date, end_date=end_date, 
-          overwrite=overwrite, username=username)
-
-        cmdFcn = paste0(pkg, "::", fcn, "(", listToArgString(fcn.args), ")")
-
-        new.files <- remote.execute.R(
-          script=cmdFcn, host=host, user=NA, verbose=TRUE, R="R")
-
-        ## insert database record
-        raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
-                                      in.prefix=new.files$dbfile.name[1],
-                                      siteid = site$id,
-                                      startdate = start_date,
-                                      enddate = end_date,
-                                      mimetype=new.files$mimetype[1],
-                                      formatname=new.files$formatname[1],
-                                      parentid=NA,
-                                      con = con,
-                                      hostname = host$name)
-      }
+    raw.id <- .download.raw.met.module(
+      dir=dir, met=met, register=register, machine=machine, 
+      start_date=start_date, end_date=end_date, con=con, new.site=new.site, host=host
+    )
+    if(met %in% c("CRUNCEP", "GFDL")) {
+      ready.id <- raw.id
     }
   }
-
+  
   #--------------------------------------------------------------------------------------------------#
   # Change to  CF Standards
 
-  if(stage$met2cf == TRUE){
-    logger.info("Begin change to CF Standards")
-
-    input.id  <-  raw.id$input.id[1]
-    pkg       <- "PEcAn.data.atmosphere"
-    formatname <- 'CF Meteorology'
-    mimetype <- 'application/x-netcdf'
-    format.id <- 33
-
-    if(register$scale=="regional"){
-      input_name <- paste0(met,"_CF")
-      outfolder  <- file.path(dir, input_name)
-
-      print("start CHECK change to CF standards")
-      check = db.query(
-        paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id ", 
-          "from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id=",
-          register$siteid, " and d.container_type = 'Input' and i.format_id=", format.id, 
-          " and d.machine_id =", machine$id, " and i.name = '", input_name, 
-          "' and (i.start_date <= DATE '", as.POSIXlt(start_date, tz = "GMT"), 
-          "') and (DATE '", as.POSIXlt(end_date, tz = "GMT"), "' <= i.end_date)" ),con)
-      print(check, digits=10)
-      print("end CHECK")
-
-      if(!overwrite && length(check) > 0) {
-        cf0.id <- list(input.id=check$container_id, dbfile.id=check$id)
-        logger.info("Skipping met2CF because files are already available.")
-      } else {
-        fcn1 <- paste0("met2CF.", met)
-        mimename <- register$format$mimetype
-        mimename <- substr(mimename, regexpr('/', mimename) + 1, nchar(mimename))
-        mimename <- substr(mimename, regexpr('-',mimename) + 1, nchar(mimename))
-        fcn2 <- paste0("met2CF.", mimename)
-        if(exists(fcn1)) {
-          fcn <- fcn1
-        } else if(exists(fcn2)) {
-          fcn <- fcn2
-        } else {
-          logger.error("met2CF function ", fcn1, " or ", fcn2, " don't exist")
-        }
-
-        cf0.id <- convert.input(input.id, outfolder, formatname, mimetype, site.id=site$id,
-          start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL, write=TRUE,
-          format.vars=format.vars, overwrite=overwrite)
-      }
-
-      input_name <- paste0(met,"_CF_Permute")
-      fcn       <-  "permute.nc"
-      outfolder  <- file.path(dir, input_name)
-
-      print("start CHECK permute nc")
-      check = db.query(
-        paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  ",
-          "from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =", 
-          register$siteid, " and d.container_type = 'Input' and i.format_id=", format.id, 
-          " and d.machine_id =", machine$id, " and i.name = '", input_name, 
-          "' and (i.start_date <= DATE '" ,as.POSIXlt(start_date, tz = "GMT"), 
-          "') and (DATE '", as.POSIXlt(end_date, tz = "GMT"), "' <= i.end_date)" ), con)
-      print(check, digits=10)
-      print("end CHECK")
-
-      if(!overwrite && length(check) > 0) {
-        cf.id <- list(input.id=check$container_id, dbfile.id=check$id)
-        logger.info("Skipping permute.nc because files are already available.")
-      } else {
-        # Just a draft of what would happen - doesn't include using the cluster so it would be SLOW. 
-        # Hasn't been tested.
-        cf.id <- convert.input(cf0.id$input.id, outfolder, formatname, mimetype, site.id=site$id, 
-          start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL,
-          write=TRUE, overwrite=overwrite)
-      }
-    } else if(register$scale=="site") {
-      input_name <- paste0(met,"_CF_site_",str_ns)
-      outfolder  <- file.path(dir,input_name)
-
-      print("start CHECK change to CF standards")
-      check = db.query(
-        paste0("SELECT i.start_date, i.end_date, d.file_path, d.container_id, d.id  ", 
-          "from dbfiles as d join inputs as i on i.id = d.container_id where i.site_id =",
-          new.site$id, " and d.container_type = 'Input' and i.format_id=", 33, 
-          " and d.machine_id =", machine$id, " and i.name = '", input_name,
-          "' and (i.start_date <= DATE '", as.POSIXlt(start_date, tz = "GMT"),
-          "') and (DATE '", as.POSIXlt(end_date, tz = "GMT"), "' <= i.end_date)" ), con)
-      print(check, digits=10)
-      print("end CHECK")
-
-      if(!overwrite && length(check)>0) {
-        cf.id <- list(input.id=check$container_id, dbfile.id=check$id)
-        logger.info("Skipping met2CF because files are already available.")
-      } else {
-        fcn1 <- paste0("met2CF.",met)
-        mimename <- register$format$mimetype
-        mimename <- substr(mimename, regexpr('/', mimename) + 1, nchar(mimename))
-        mimename <- substr(mimename, regexpr('-', mimename) + 1, nchar(mimename))
-        fcn2 <- paste0("met2CF.", mimename)
-        if(exists(fcn1)) {
-          fcn <- fcn1
-          cf.id <- convert.input(
-            input.id, outfolder, formatname, mimetype, site.id=site$id, 
-            start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL, 
-            write=TRUE, site$lat, site$lon, overwrite=overwrite)
-        } else if(exists(fcn2)) {
-          fcn <- fcn2
-          format <- query.format.vars(input.id,con)
-          cf.id <- convert.input(
-            input.id, outfolder, formatname, mimetype, site.id=site$id, 
-            start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL, 
-            write=TRUE, site$lat, site$lon, format.vars=format.vars, 
-            overwrite=overwrite)
-        } else {
-          logger.error("met2CF function ", fcn1, " or ", fcn2," doesn't exists")
-        }
-      }
-    }
-
-    logger.info("Finished change to CF Standards")
+  if(stage$met2cf) {
+    cf.id <- .met2cf.module(
+      raw.id=raw.id, register=register, met=met, dir=dir, machine=machine, 
+      start_date=start_date, end_date=end_date, con=con, overwrite=overwrite, format.vars=format.vars)
   }
 
   #--------------------------------------------------------------------------------------------------#
   # Change to Site Level - Standardized Met (i.e. ready for conversion to model specific format)
-
-  if(stage$standardize == TRUE){
-    logger.info("Begin Standardize Met")
-
-    if(register$scale=="regional"){ #### Site extraction
-
-      logger.info("Site Extraction")
-
-      input.id   <- cf.id[1]
-      outfolder  <- ifelse(host$name == "localhost", 
-                      file.path(dir, paste0(met,"_CF_site_",str_ns)),
-                      file.path(host$dbfiles, paste0(met,"_CF_site_",str_ns)))
-      pkg        <- "PEcAn.data.atmosphere"
-      fcn        <- "extract.nc"
-      formatname <- 'CF Meteorology'
-      mimetype   <- 'application/x-netcdf'
-
-      ready.id <- convert.input(
-        input.id, outfolder, formatname, mimetype, site.id=site$id,
-        start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL,
-        write=TRUE, slat=new.site$lat, slon=new.site$lon, newsite=new.site$id,
-        overwrite=overwrite)
-
-    } else if(register$scale=="site") { ##### Site Level Processing
-      logger.info("Gapfilling") # Does NOT take place on browndog!
-
-      input.id   <- cf.id[1]
-      outfolder  <- file.path(dir,paste0(met,"_CF_gapfill_site_",str_ns))
-      pkg        <- "PEcAn.data.atmosphere"
-      fcn        <- "metgapfill"
-      #       fcn        <- register$gapfill
-      formatname <- 'CF Meteorology'
-      mimetype   <- 'application/x-netcdf'
-      lst        <- site.lst(site,con)
-
-      ready.id   <- convert.input(
-        input.id, outfolder, formatname, mimetype, site.id=site$id,
-        start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL,
-        write=TRUE, lst=lst, overwrite=overwrite)
-
-      print(ready.id)
-    }
-    logger.info("Finished Standardize Met")
+  if(stage$standardize) {
+    ready.id <- .extract.nc.module(
+      cf.id=cf.id, register=register, dir=dir, met=met, str_ns=str_ns, 
+      site=site, new.site=new.site, con=con, start_date=start_date, end_date=end_date, 
+      host=host, overwrite=overwrite
+    ) 
   }
 
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
-  # Determine output format name and mimetype
-
-  model_info <- db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m",
-                                " join modeltypes_formats as mf on m.id = mf.modeltype_id",
-                                " join formats as f on mf.format_id = f.id",
-                                " join mimetypes as mt on f.mimetype_id = mt.id",
-                                " where m.name = '", model, "' AND mf.tag='met'"),con)
-
-  if (model_info[1] == "CF Meteorology"){
-    stage$met2model=FALSE
+  if(stage$met2model) {
+    met2model.result <- .met2model.module(
+      ready.id=ready.id, model=model, con=con, stage=stage, host=host, dir=dir, met=met, 
+      str_ns=str_ns, site=site, start_date=start_date, end_date=end_date, browndog=browndog, 
+      new.site=new.site, overwrite=overwrite
+    )
+    model.id <- met2model.result$model.id
+    outfolder <- met2model.result$outfolder
   }
-
-  if(stage$met2model == TRUE){
-    logger.info("Begin Model Specific Conversion")
-
-    formatname <- model_info[1]
-    mimetype   <- model_info[3]
-
-    print("Convert to model format")
-
-    input.id  <- ready.id$input.id[1]
-    outfolder <- ifelse(host$name == "localhost", 
-                file.path(dir,paste0(met,"_",model,"_site_",str_ns)),
-                file.path(host$dbfiles,paste0(met,"_",model,"_site_",str_ns)))
-    
-    pkg       <- paste0("PEcAn.",model)
-    fcn       <- paste0("met2model.",model)
-    lst       <- site.lst(site,con)
-    
-    model.id  <- convert.input(input.id, outfolder, formatname, mimetype, site.id=site$id,
-      start_date, end_date, pkg, fcn, con=con, host=host, browndog, write=TRUE, 
-      lst=lst, lat=new.site$lat, lon=new.site$lon, overwrite=overwrite)
-
-  } else {
-    model.id = ready.id
-
-    if("CRUNCEP" %in% met){outfolder <- file.path(dir,paste0(met,"_site_",str_ns))}
-    if("GFDL" %in% met){outfolder <- file.path(dir,paste0(met,"_site_",str_ns))}
-  }
-
-  logger.info(paste("Finished Model Specific Conversion",model.id[1]))
-
-  model.file <- db.query(paste("SELECT * from dbfiles where id =",model.id[[2]]),con)[["file_name"]]
+  
+  model.file <- db.query(paste("SELECT * from dbfiles where id =", model.id$dbfile.id), con)[["file_name"]]
 
   return(file.path(outfolder, model.file))
 }
