@@ -69,8 +69,25 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 
   # find appropriate dbfile, if not in database, insert new dbfile
 
-  dbfileid <- dbfile.check('Input', inputid, con, hostname)[['id']]
-  if(is.null(dbfileid)){
+  dbfile <- dbfile.check('Input', inputid, con, hostname)
+  if(nrow(dbfile>0)) {
+    if(nrow(dbfile>1)) {
+      print(dbfile)
+      logger.warn("Multiple dbfiles found. Using last.")
+      dbfile <- dbfile[nrow(dbfile),]
+    }
+    if(dbfile$file_name != in.prefix || dbfile$file_path != in.path) {
+      print(dbfile)
+      logger.error(paste0(
+        "The existing dbfile record printed above has the same machine_id and container ",
+        "but a diferent file name than expected (prefix='", in.prefix, "', path=", in.path, ").",
+        "This is not allowed."
+      ))
+      dbfileid <- NA
+    } else {
+      dbfileid <- dbfile[['id']]
+    }
+  } else {
     #insert dbfile & return dbfile id
     dbfileid <- dbfile.insert(in.path, in.prefix, 'Input', inputid, con, reuse=TRUE, hostname)
   }
@@ -252,25 +269,41 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
 
   # Query for existing dbfile record with same file_name, file_path, machine_id, 
   # container_type, and container_id.
-  file.id <- invisible(db.query(
+  dbfile <- invisible(db.query(
     paste0(
       "SELECT * FROM dbfiles WHERE ",
       "file_name='", basename(in.prefix), "' AND ", 
       "file_path='", in.path, "' AND ", 
       "machine_id='", hostid, "'"
-    ), con)[['id']])
+    ), con))
 
-  if(is.null(file.id)) {
+  if(nrow(dbfile)==0) {
     # If no exsting record, insert one
     now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
 
-    db.query(paste0("INSERT INTO dbfiles (container_type, container_id, file_name, file_path, machine_id, created_at, updated_at) VALUES (",
-                    "'", type, "', ", id, ", '", basename(in.prefix), "', '", in.path, "', ", hostid, ", '", now, "', '", now, "')"), con)
+    db.query(paste0("INSERT INTO dbfiles ",
+      "(container_type, container_id, file_name, file_path, machine_id, created_at, updated_at) VALUES (",
+      "'", type, "', ", id, ", '", basename(in.prefix), "', '", in.path, "', ", hostid, 
+      ", '", now, "', '", now, "')"), con)
 
-    file.id <- invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND created_at='", now, "' ORDER BY id DESC LIMIT 1"), con)[['id']])
+    file.id <- invisible(db.query(paste0(
+      "SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, 
+      " AND created_at='", now, "' ORDER BY id DESC LIMIT 1"), con)[['id']])
   } else if(!reuse) {
     # If there is an existing record but reuse==FALSE, return NA.
     file.id <- NA
+  } else {
+    if(dbfile$container_type != type || dbfile$container_id != id) {
+      print(dbfile)
+      logger.error(paste0(
+        "The existing dbfile record printed above has the same machine_id, file_path, and file_name ",
+        "but is associated with a different input than requested (type='", type, "', id=", id, ").",
+        "This is not allowed."
+      ))
+      file.id <- NA
+    } else {
+      file.id <- dbfile[['id']]
+    }
   }
 
   # Return the new dbfile ID, or the one that existed already (reuse==T), or NA (reuse==F)
