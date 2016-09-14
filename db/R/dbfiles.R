@@ -146,11 +146,17 @@ dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname,
   }
 
   # find appropriate input
-  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid,
-                             " AND start_date>='", startdate, "' AND end_date<='", enddate, "'", parent,";" ), con)[['id']]
+  if(missing(startdate) || missing(enddate)) {
+    inputid <- db.query(paste0(
+      "SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, parent), con)[['id']]
+  } else {
+    inputid <- db.query(paste0(
+      "SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid,
+      " AND start_date>='", startdate, "' AND end_date<='", enddate, "'", parent), con)[['id']]
+  }
   if (is.null(inputid)) {
     invisible(data.frame())
-  }else{
+  } else {
     invisible(dbfile.check('Input', inputid, con, hostname))
   }
 }
