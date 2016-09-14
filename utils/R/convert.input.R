@@ -9,8 +9,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                           pkg, fcn, con=con, host, browndog, write=TRUE,  
                           format.vars, overwrite=FALSE, ...) {
   input.args <- list(...)
- 
-
+  
   logger.debug(paste(
     "Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, mimetype, 
     site.id, start_date, end_date))
@@ -30,13 +29,44 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     "start CHECK Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, mimetype, 
     site.id, start_date, end_date))
   check = dbfile.input.check(
-    site.id, startdate, enddate, mimetype, formatname, parentid=input.id, con=con, host$name)
+    siteid=site.id, mimetype=mimetype, formatname=formatname, parentid=input.id, con=con, hostname=host$name)
   print(check, digits=10)
   print("end CHECK")
 
-  if(!overwrite && length(check) > 0) {
-    return(list(input.id=check$container_id, dbfile.id=check$id))
+  if(nrow(check) > 0) {
+    if(nrow(check>1)) {
+      print(check)
+      logger.warn("Multiple existing inputs found. Using last.")
+      check <- check[nrow(check),]
+    }
+    
+    start_date <- as.POSIXct(start_date)
+    end_date <- as.POSIXct(end_date)
+    if(!overwrite && (start_date >= check$start_date) && (end_date <= check$end_date)) {
+      # There's an existing input that spans desired start/end dates. Use that one. 
+      return(list(input.id=check$container_id, dbfile.id=check$id))
+    } else if(overwrite) {
+      # start and end dates stay the same. 
+      # collect files to flag for deletion
+    } else {
+      # Start/end dates need to be updated so that the input spans a continuous timeframe
+      start_date <- min(start_date, check$start_date)
+      end_date <- max(end_date, check$end_date)
+      logger.info("Changed start/end dates to '", start_date, "'/'", end_date, "' ",
+                  "so that existing input can be updated while maintaining continuous time span.")
+      
+      # There might be existing files for some years (but not all; checked that above)
+      # fcn should be smart enough not overwrite the existing ones, 
+      # and hopefully won't waste time working on them either
+      # At the end, if convert.inputs was successful we'll need to update its start/end dates
+      # We don't know the dbfile path/prefix until after fcn runs, so unfortunately can't check 
+      # that the new dbfile record won't conflict with existing ones. 
+    }
+  } else {
+    # No existing record found. Should be good to go?
   }
+  
+  
   
   input = db.query(paste("SELECT * from inputs where id =", input.id), con)
   if(nrow(input)==0){
@@ -183,21 +213,27 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   print("RESULTS: Convert.Input")
   print(result)
   print(names(result))
-  
+
   #--------------------------------------------------------------------------------------------------#
   # Insert into Database
   
   # Use existing site, unless otherwise specified (ex: subsetting case, using newsite)
   if("newsite" %in% names(input.args) && !is.null(input.args[["newsite"]])){
     siteid <- input.args$newsite
-  }else{
+  } else {
     siteid <- site.id
   }
   
   outlist <- unlist(strsplit(outname,"_")) 
   
   ## insert new record into database
-  if(write==TRUE){
+  if(write==TRUE) {
+    if(nrow(check) > 0) {
+      db.query(paste0(
+        "UPDATE inputs SET start_date='", start_date, "', end_date='", end_date, "', ", 
+        "updated_at=NOW() WHERE id=", check$id), con)
+    }
+
     newinput <- dbfile.input.insert(in.path=dirname(result$file[1]),
                                     in.prefix=result$dbfile.name[1],
                                     siteid = siteid, 
