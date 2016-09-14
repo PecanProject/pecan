@@ -50,7 +50,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   }
 
   # find appropriate input, if not in database, insert new input
-  existing.input <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND name= '", name, 
+  existing.input <- db.query(paste0("SELECT * FROM inputs WHERE site_id=", siteid, " AND name= '", name, 
     "' AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , 
     parent, ";"), con)
   
@@ -77,7 +77,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   
   # find appropriate dbfile, if not in database, insert new dbfile
   dbfile <- dbfile.check('Input', inputid, con, hostname)
-  if(nrow(dbfile>0)) {
+  if(nrow(dbfile) > 0) {
     if(nrow(dbfile>1)) {
       print(dbfile)
       logger.warn("Multiple dbfiles found. Using last.")
