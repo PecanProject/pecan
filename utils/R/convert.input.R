@@ -7,10 +7,11 @@
 ##' @author Betsy Cowdery, Michael Dietze, Ankur Desai
 convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, start_date, end_date, 
                           pkg, fcn, con=con, host, browndog, write=TRUE,  
+                          format.vars, overwrite=FALSE, ...) {
   input.args <- list(...)
  
 
-  logger.info(paste(
+  logger.debug(paste(
     "Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, mimetype, 
     site.id, start_date, end_date))
 
@@ -51,14 +52,12 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     return(NULL)
   }
   
-  # dbfile may return more than one row -> may need to loop over machine ids
   dbfile = db.query(paste(
     "SELECT * from dbfiles where container_id =", input.id, 
     " and container_type = 'Input' and machine_id =", machine$id), con)
   if(nrow(dbfile)==0) {
     logger.error("dbfile not found",input.id);return(NULL)
   }
-
   if(nrow(dbfile)>1) {
     logger.warning("multiple dbfile records, using last",dbfile);
     dbfile = dbfile[nrow(dbfile),]
@@ -189,7 +188,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   # Insert into Database
   
   # Use existing site, unless otherwise specified (ex: subsetting case, using newsite)
-  if("newsite" %in% names(input.args) && is.null(input.args[["newsite"]])==FALSE){
+  if("newsite" %in% names(input.args) && !is.null(input.args[["newsite"]])){
     siteid <- input.args$newsite
   }else{
     siteid <- site.id

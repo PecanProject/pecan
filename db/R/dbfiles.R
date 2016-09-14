@@ -30,9 +30,7 @@
 ##' \dontrun{
 ##'   dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
-
 dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
-
   name <- basename(in.path)
   filename <- file.path(in.path, in.prefix)
   
@@ -52,7 +50,9 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   }
 
   # find appropriate input, if not in database, instert new input
-  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND name= '", name, "' AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
+  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND name= '", name, 
+    "' AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , 
+    parent, ";"), con)[['id']]
   if (is.null(inputid)) {
     # insert input
     if(parent == ""){

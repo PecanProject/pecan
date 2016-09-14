@@ -9,7 +9,6 @@
 site.lst <- function(site.id, con){
   
   time.zone <- db.query(paste("SELECT time_zone from SITES where id =", site.id),con)
-  
   if (!is.na(time.zone) && !is.na(as.numeric(time.zone))){
     lst <- as.numeric(time.zone)
   } else {
