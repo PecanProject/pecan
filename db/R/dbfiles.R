@@ -51,8 +51,8 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 
   # find appropriate input, if not in database, insert new input
   existing.input <- db.query(paste0("SELECT * FROM inputs WHERE site_id=", siteid, " AND name= '", name, 
-    "' AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , 
-    parent, ";"), con)
+    "' AND format_id=", formatid, parent), con)
+
   
   if (nrow(existing.input) == 0) {
     # insert input
@@ -66,25 +66,43 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     db.query(cmd, con)
     # return input id
     inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
+  } else {
+    if(nrow(existing.input) > 1) {
+      print(existing.input)
+      logger.warn("Multiple existing inputs found. Using last.")
+      existing.input <- existing.input[nrow(existing.input),]
+    }
+    
+    # Convert dates to Date objects and strip all time zones (DB values are timezone-free)
+    startdate <- force_tz(as_date(startdate), 'GMT')
+    enddate <- force_tz(as_date(enddate), 'GMT')
+    existing.input$start_date <- force_tz(as_date(existing.input$start_date), 'GMT')
+    existing.input$end_date <- force_tz(as_date(existing.input$end_date), 'GMT')
+    
+    if(existing.input$start_date != startdate || existing.input$end_date != enddate) {
+      print(existing.input, digits=10)
+      logger.error(paste0(
+        "Duplicate inputs (in terms of site_id, name, and format_id) with differing start/end dates ",
+        "are not allowed. The existing input record printed above would conflict with the one ",
+        "to be inserted, which has requested start/end dates of ", startdate, "/", enddate,
+        "Please resolve this conflict."
+      ))
+      return(NULL)
+    }
+    
+    inputid <- existing.input[['id']]
   }
-
-  if(nrow(existing.input) > 1) {
-    print(existing.input)
-    logger.warn("Multiple existing inputs found. Using last.")
-    existing.input <- existing.input[nrow(existing.input),]
-  }
-  inputid <- existing.input[['id']]
   
   # find appropriate dbfile, if not in database, insert new dbfile
   dbfile <- dbfile.check('Input', inputid, con, hostname)
   if(nrow(dbfile) > 0) {
-    if(nrow(dbfile>1)) {
+    if(nrow(dbfile) > 1) {
       print(dbfile)
       logger.warn("Multiple dbfiles found. Using last.")
       dbfile <- dbfile[nrow(dbfile),]
     }
     if(dbfile$file_name != in.prefix || dbfile$file_path != in.path) {
-      print(dbfile)
+      print(dbfile, digits=10)
       logger.error(paste0(
         "The existing dbfile record printed above has the same machine_id and container ",
         "but a diferent file name than expected (prefix='", in.prefix, "', path=", in.path, ").",
@@ -124,7 +142,8 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##' \dontrun{
 ##'   dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
-dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
+dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, formatname, parentid=NA, 
+                               con, hostname=fqdn(), ignore.dates=FALSE) {
   if (hostname == "localhost") hostname <- fqdn();
 
   mimetypeid <- get.id('mimetypes', 'type_string', mimetype, con = con)
@@ -146,7 +165,7 @@ dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname,
   }
 
   # find appropriate input
-  if(missing(startdate) || missing(enddate)) {
+  if(ignore.dates) {
     inputid <- db.query(paste0(
       "SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, parent), con)[['id']]
   } else {
@@ -307,7 +326,7 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
     file.id <- NA
   } else {
     if(dbfile$container_type != type || dbfile$container_id != id) {
-      print(dbfile)
+      print(dbfile, digits=10)
       logger.error(paste0(
         "The existing dbfile record printed above has the same machine_id, file_path, and file_name ",
         "but is associated with a different input than requested (type='", type, "', id=", id, ").",
