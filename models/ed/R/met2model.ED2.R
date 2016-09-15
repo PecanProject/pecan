@@ -118,7 +118,7 @@ for(year in start_year:end_year) {
   pres <- ncvar_get(nc,"air_pressure")
   SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air")
   LW   <- ncvar_get(nc,"surface_downwelling_longwave_flux_in_air")
-  CO2  <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air"))
+  CO2  <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air"), silent=TRUE)
 
   useCO2 = is.numeric(CO2)
 

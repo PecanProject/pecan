@@ -38,7 +38,7 @@
       } else {
         logger.error("met2CF function ", fcn1, " or ", fcn2, " don't exist")
       }
-      
+
       cf0.id <- convert.input(input.id, outfolder, formatname, mimetype, site.id=site$id,
                               start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL, write=TRUE,
                               format.vars=format.vars, overwrite=overwrite)
