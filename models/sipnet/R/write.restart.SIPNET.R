@@ -2,7 +2,7 @@
 ##' @name  write.restart.SIPNET
 ##' @author Ann Raiho \email{araiho@@nd.edu}
 ##' 
-##' @param out.dir         output directory
+##' @param outdir         output directory
 ##' @param runid           run ID
 ##' @param time            year that is being read
 ##' @param settings        PEcAn settings object
@@ -18,7 +18,7 @@
 ##' @return NONE
 ##' @export
 ##' 
-write.restart.SIPNET<- function(out.dir, runid, time, settings, analysis.vec,
+write.restart.SIPNET<- function(outdir, runid, time, settings, analysis.vec,
                                 RENAME = TRUE, variables,
                                 sample_parameters = FALSE,
                                 trait.values = NA, met){
@@ -94,9 +94,6 @@ write.restart.SIPNET<- function(out.dir, runid, time, settings, analysis.vec,
                                          inputs = list(met=list(path=met[grep(time+1,x=met)])),
                                          IC = analysis.save.mat))
 
-    # do.call(my.write.config,args=list(defaults,list(pft=prior[i,],env=NA),
-    #                                   settings, run.id[[i]],inputs = settings$run,
-    #                                   IC=analysis[i,-1]))
 print(runid)
   
 }
