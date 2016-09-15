@@ -13,7 +13,7 @@ listToArgString <- function(l) {
   arg.names <- names(l)
   for(i in seq_along(l)) {
     # Quote value if character
-    val <- ifelse(is.character(l[[i]]), paste0("'", l[[i]], "'"), l[[i]])
+    val <- ifelse(.shouldBeQuoted(l[[i]]), paste0("'", l[[i]], "'"), l[[i]])
     name <- ifelse(is.null(arg.names), "", arg.names[i])
     
     if(i>1) {
@@ -26,4 +26,12 @@ listToArgString <- function(l) {
     }
   }
   return(arg.string)
+}
+
+.shouldBeQuoted <- function(x) {
+  return(
+    is.character(x) ||
+    is.POSIXt(x) || 
+    is.Date(x)
+  )
 }
