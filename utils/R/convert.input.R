@@ -43,7 +43,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     end_date <- force_tz(as_date(end_date), 'GMT')
     existing.input$start_date <- force_tz(as_date(existing.input$start_date), 'GMT')
     existing.input$end_date <- force_tz(as_date(existing.input$end_date), 'GMT')
-    
+
     if(!overwrite && (start_date >= existing.input$start_date) && (end_date <= existing.input$end_date)) {
       # There's an existing input that spans desired start/end dates. Use that one. 
       logger.info("Skipping this input conversion because files are already available.")
@@ -51,6 +51,15 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     } else if(overwrite) {
       # start and end dates stay the same. 
       # collect files to flag for deletion
+      existing.dbfile <- dbfile.check('Input', existing.input[['id']], con, host$name)
+      if(nrow(existing.dbfile) == 0) {
+        initial.snapshot <- NULL
+      } else {
+        # There should only be one existing dbfile record, but by passing all paths we will get all files anyway
+        initial.snapshot <- remote.execute.R(paste0(
+            "fileSnapshot('", existing.dbfile[['file_path']], "', full.names=TRUE)"), 
+            host, user=NA, verbose=TRUE, R="R")
+      }
     } else {
       # Start/end dates need to be updated so that the input spans a continuous timeframe
       start_date <- min(start_date, existing.input$start_date)
@@ -230,7 +239,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   
   ## insert new record into database
   if(write==TRUE) {
-    if(exists("existing.input") && nrow(existing.input) > 0) {
+    if(exists("existing.input") && nrow(existing.input) > 0 &&
+       (existing.input$start_date != start_date || existing.input$end_date != end_date)) {
       db.query(paste0(
         "UPDATE inputs SET start_date='", start_date, "', end_date='", end_date, "', ", 
         "updated_at=NOW() WHERE id=", existing.input$id), con)
@@ -246,9 +256,37 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                     parentid = input$id,
                                     con = con,
                                     hostname = machine$hostname) 
+    
+    if(overwrite) {
+      new.dbfile = db.query(paste0("SELECT * FROM dbfiles WHERE id=", newinput$dbfile.id), con)
+
+      new.snapshot <- remote.execute.R(paste0(
+            "fileSnapshot('", new.dbfile[['file_path']], "', full.names=TRUE)"),
+            host, user=NA, verbose=TRUE, R="R")
+
+      # Any file that hasn't changed should be removed now
+      files.to.remove <- changedFiles(initial.snapshot, new.snapshot)$unchanged
+
+      trash.dirs <- file.path(unique(dirname(files.to.remove)), 'OVERWRITTEN')
+      trash.paths.to <- file.path(dirname(files.to.remove), 'OVERWRITTEN', basename(files.to.remove))
+      trash.paths.from <- files.to.remove
+      
+      trash.dirs.string <- paste0("c(", paste(paste0("'", trash.dirs, "'"), collapse=', '), ")")
+      trash.path.to.string <- paste0("c(", paste(paste0("'", trash.paths.to, "'"), collapse=', '), ")")
+      trash.paths.from.string <- paste0("c(", paste(paste0("'", trash.paths.from, "'"), collapse=', '), ")")
+
+      cmd <- paste0(
+        "dir.create(", trash.dirs.string, ", recursive=TRUE); ",
+        "file.rename(from=", trash.paths.from.string, ", to=", trash.path.to.string, ")"
+      ) 
+      
+      remote.execute.R(cmd, host, user=NA, verbose=TRUE, R="R")
+    }
     return(newinput)
   } else {
     logger.warn('Input was not added to the database')
     return(NULL)
   }
 }
+
+# .overwrite.files <- function()
