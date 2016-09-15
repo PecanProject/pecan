@@ -49,10 +49,16 @@ download.NARR <- function(outfolder, start_date, end_date, overwrite=FALSE, verb
         next
       }
 
-      url <- paste0("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/", v, ".", year, ".nc")
+      # url <- paste0("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/", v, ".", year, ".nc")
+      # 
+      # PEcAn.utils::logger.debug(paste0("Downloading from:\n", url, "\nto:\n", new.file))
+      # download.file(url, new.file)
       
+      
+      url <- paste0("~/Neptune/Projects/MANDIFORE/pecan.data/NARR_server/", v, ".", year, ".nc")
       PEcAn.utils::logger.debug(paste0("Downloading from:\n", url, "\nto:\n", new.file))
-      download.file(url, new.file)
+      file.copy(url, new.file)
+
     }
   }
 
