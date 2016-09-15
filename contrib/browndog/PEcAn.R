@@ -2,7 +2,7 @@
 #PEcAn
 #data
 #xml
-#pecan.zip, clim
+#pecan.zip, pecan.nc, clim, ed.zip, linkages, dalec
 
 # input files is a xml file specifying what to get
 #<input>
@@ -22,7 +22,7 @@ args <- commandArgs(trailingOnly = TRUE)
 if (length(args) < 2) {
   allargs <- commandArgs(trailingOnly = FALSE)
   myCommand <- sub('--file=', '', allargs[grep('--file=', allargs)])
-  print(paste0("Usage:    ", myCommand, " xml_Input_File  cf-nc_Output_File [tempDirectory] [cacheDirectory]"))
+  print(paste0("Usage:    ", myCommand, " xml_Input_File  Output_File [tempDirectory] [cacheDirectory]"))
   print(paste0("Example1: ", myCommand, " US-Dk3.xml US-Dk3.pecan.nc [/tmp/watever] [/tmp/cache]"))
   print(paste0("Example2: ", myCommand, " US-Dk3.xml US-Dk3.pecan.zip [/tmp/watever] [/tmp/cache]"))
   q()
@@ -68,8 +68,14 @@ if(length(site) < 0){
   site <-list(id = site$id[1], name = site$name[1])
 }
 db.close(con)
+#assign default model according to output file 
+if (grepl("\\.pecan.zip$", outputfile) || grepl("\\.pecan.nc$", outputfile) ){
+  model      <- ifelse(is.null(input$model), 'BIOCRO', input$model)
+} else {
+  #if (grepl("\\.cf$", outputfile))
+  model      <- ifelse(is.null(input$model), 'LINKAGES', input$model)
+} 
 
-model      <- ifelse(is.null(input$model), 'SIPNET', input$model)
 mettype    <- ifelse(is.null(input$type), 'CRUNCEP', input$type)
 input_met <- list(username = "pecan", source = mettype)
 start_date <- input$start_date
@@ -78,22 +84,21 @@ host <- list(name = "localhost")
 
 
 print("Using met.process to download files")
-outfile_clim <-  met.process(site, input_met, start_date, end_date, model, host, dbparams, cacheDir)
+outfile_met <-  met.process(site, input_met, start_date, end_date, model, host, dbparams, cacheDir)
 
 # get start/end year code works on whole years only
 start_year <- year(start_date)
 end_year <- year(end_date)
 
-# if more than 1 year, or zip specified, zip result
-if (grepl("\\.zip$", outputfile) || (end_year - start_year > 1)) {
-  # folder for files with gapfilling
-  folder  <- gsub(paste0(model,"_site"),"CF_gapfill_site", dirname(outfile_clim))
-  outname <- unlist(strsplit(basename(outfile_clim), "[.]"))[1]
-  
-  # get list of files we need to zip
+# if more than 1 year for *.pecan.nc , or zip specified, zip result
+if (grepl("\\.zip$", outputfile) || grepl("\\.pecan.nc$", outputfile) && (end_year - start_year > 1)) {
+  # folder for output files
+  folder  <- dirname(outfile_met)
+  outname <- basename(outfile_met)
+  # get list of files we need to zip by matching years, may need matching outname
   files <- c()
   for(year in start_year:end_year) {
-    files <- c(files, file.path(folder, paste(outname, year, "nc", sep=".")))
+    files <- c(files, file.path(folder,list.files(folder, pattern = paste0("*", year, "*"))))
   }
   
   # use intermediate file so it does not get marked as done until really done
@@ -102,13 +107,8 @@ if (grepl("\\.zip$", outputfile) || (end_year - start_year > 1)) {
   zip(zipfile, files, extras="-j")
   # move file should be fast
   file.rename(zipfile, outputfile)
-} else if(grepl("\\.clim$", outputfile)) {
-  file.link(outfile_clim, outputfile)
 } else {
-  folder  <- gsub(paste0(model,"_site"),"CF_gapfill_site", dirname(outfile_clim))
-  outname <- unlist(strsplit(basename(outfile_clim), "[.]"))[1]
-  outfile <- file.path(folder, paste(outname, start_year, "nc", sep="."))
-  file.link(outfile, outputfile)
+  file.link(outfile_met, outputfile)
 }
 
 
