@@ -1,4 +1,4 @@
-.download.raw.met.module <- function(dir, met, register, machine, start_date, end_date, con, new.site=NULL, host) {
+.download.raw.met.module <- function(dir, met, register, machine, start_date, end_date, con, new.site=NULL, host, overwrite=FALSE) {
   outfolder  <- file.path(dir, met)
   pkg        <- "PEcAn.data.atmosphere"
   fcn        <- paste0("download.",met)
