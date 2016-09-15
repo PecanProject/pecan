@@ -102,7 +102,6 @@ met.process <- function(
   
   #--------------------------------------------------------------------------------------------------#
   # Change to  CF Standards
-
   if(stage$met2cf) {
     cf.id <- .met2cf.module(
       raw.id=raw.id, register=register, met=met, dir=dir, machine=machine, 
