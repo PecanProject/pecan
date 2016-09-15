@@ -62,7 +62,7 @@ if(length(site) < 0){
 }
 if(length(site) < 0){
   #insert site info
-  return()
+  quit(status=-1)
 } else {
   #remove multiple entries. 
   site <-list(id = site$id[1], name = site$name[1])
