@@ -17,6 +17,20 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
 #if [ ! -e "@OUTDIR@/history.xml" ]; then
   cd "@RUNDIR@"
   
+  ## copy required files from default case
+  cp -rf @CASE@/* .
+  
+  ## update configurations
+  ./xmlchange -file env_build.xml -id EXEROOT -val @BLD@
+  
+  ## SITE INFO --> DOMAIN FILE
+  ## @CASE@/share/domains/domain.clm/
+  
+  ## DATES -> ENV_RUN
+  
+  ## MET --> DATM
+  
+  cd run
   "@BINARY@"
   STATUS=$?
   
