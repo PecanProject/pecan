@@ -10,13 +10,43 @@
 ##' @param host Host info from settings file
 ##' @param dbparms  database settings from settings file
 ##' @param dir  directory to write outputs to
-##' @param overwrite Whether to force met.process to proceed, even if check criteria don't think it's necessary. Will overwrite any resulting files that happen to exist already. 
+##' @param overwrite Whether to force met.process to proceed.
+##' 
+##'        `overwrite` may be a list with individual components corresponding to 
+##'        `download`, `met2cf`, `standardize`, and `met2model`. If it is instead a simple boolean,
+##'        the default behavior for `overwrite=FALSE` is to overwrite nothing, as you might expect.
+##'        Note however that the default behavior for `overwrite=TRUE` is to overwrite everything
+##'        *except* raw met downloads (i.e., it corresponds to the same )
 ##'
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(
-  site, input_met, start_date, end_date, model, host, dbparms, dir, browndog=NULL, overwrite=FALSE){
+  site, input_met, start_date, end_date, model, host, dbparms, dir, browndog=NULL, 
+  overwrite=list(download=FALSE, met2cf=FALSE, standardize=FALSE, met2model=FALSE)){
   require(RPostgreSQL)
   require(XML)
+  
+  # If overwrite is a plain boolean, fill in defaults for each stage
+  if(!is.list(overwrite)) {
+    if(overwrite) {
+      # Default for overwrite==TRUE is to overwrite everything but download
+      overwrite <- overwrite=list(download=FALSE, met2cf=TRUE, standardize=TRUE, met2model=TRUE)
+    } else {
+      overwrite <- list(download=FALSE, met2cf=FALSE, standardize=FALSE, met2model=FALSE)
+    }
+  } else {
+    if(is.null(overwrite$download)) {
+      overwrite$download <- FALSE
+    }
+    if(is.null(overwrite$met2cf)) {
+      overwrite$met2cf <- FALSE
+    }
+    if(is.null(overwrite$standardize)) {
+      overwrite$standardize <- FALSE
+    }
+    if(is.null(overwrite$met2model)) {
+      overwrite$met2model <- FALSE
+    }
+  }
 
   #setup connection and host information
   con      <- db.open(dbparms)
@@ -94,7 +124,7 @@ met.process <- function(
     raw.id <- .download.raw.met.module(
       dir=dir, met=met, register=register, machine=machine, 
       start_date=start_date, end_date=end_date, con=con, new.site=new.site, host=host, 
-      overwrite=FALSE # Don't allow overwriting raw downloads currently
+      overwrite=overwrite$download
     )
     if(met %in% c("CRUNCEP", "GFDL")) {
       ready.id <- raw.id
@@ -106,7 +136,7 @@ met.process <- function(
   if(stage$met2cf) {
     cf.id <- .met2cf.module(
       raw.id=raw.id, register=register, met=met, dir=dir, machine=machine, 
-      start_date=start_date, end_date=end_date, con=con, overwrite=overwrite, format.vars=format.vars)
+      start_date=start_date, end_date=end_date, con=con, overwrite=overwrite$met2cf, format.vars=format.vars)
   }
 
   #--------------------------------------------------------------------------------------------------#
@@ -115,17 +145,17 @@ met.process <- function(
     ready.id <- .extract.nc.module(
       cf.id=cf.id, register=register, dir=dir, met=met, str_ns=str_ns, 
       site=site, new.site=new.site, con=con, start_date=start_date, end_date=end_date, 
-      host=host, overwrite=overwrite
+      host=host, overwrite=overwrite$standardize
     ) 
   }
-
+  
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
   if(stage$met2model) {
     met2model.result <- .met2model.module(
       ready.id=ready.id, model=model, con=con, stage=stage, host=host, dir=dir, met=met, 
       str_ns=str_ns, site=site, start_date=start_date, end_date=end_date, browndog=browndog, 
-      new.site=new.site, overwrite=overwrite
+      new.site=new.site, overwrite=overwrite$met2model
     )
     model.id <- met2model.result$model.id
     outfolder <- met2model.result$outfolder
