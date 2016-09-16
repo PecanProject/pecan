@@ -93,7 +93,8 @@ met.process <- function(
   if(stage$download.raw) {
     raw.id <- .download.raw.met.module(
       dir=dir, met=met, register=register, machine=machine, 
-      start_date=start_date, end_date=end_date, con=con, new.site=new.site, host=host, overwrite=F
+      start_date=start_date, end_date=end_date, con=con, new.site=new.site, host=host, 
+      overwrite=FALSE # Don't allow overwriting raw downloads currently
     )
     if(met %in% c("CRUNCEP", "GFDL")) {
       ready.id <- raw.id
