@@ -176,6 +176,10 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
   if (is.null(inputid)) {
     invisible(data.frame())
   } else {
+    if(length(inputid) > 1) {
+      logger.warn("Found multiple matching inputs. Using last.")
+      inputid <- inputid[length(inputid)]
+    }
     invisible(dbfile.check('Input', inputid, con, hostname))
   }
 }

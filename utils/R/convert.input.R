@@ -47,29 +47,26 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     if(overwrite) {
       # start and end dates stay the same. 
       # collect files to flag for deletion
-      existing.dbfile <- dbfile.check('Input', existing.input[['id']], con, host$name)
-      if(nrow(existing.dbfile) > 0) {
         # There should only be one existing dbfile record, but by passing all paths we will get all files anyway
-        files.to.delete <- remote.execute.R(paste0(
-          "list.files('", existing.dbfile[['file_path']], "', full.names=TRUE)"), 
-          host, user=NA, verbose=TRUE, R="R")
+      files.to.delete <- remote.execute.R(paste0(
+        "list.files('", existing.dbfile[['file_path']], "', full.names=TRUE)"), 
+        host, user=NA, verbose=TRUE, R="R")
 
-        file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
-        
-        remote.execute.R(file.deletion.commands$move.to.tmp, host, user=NA, verbose=TRUE, R="R")
-        
-        # Schedule files to be replaced or deleted on exiting the function
-        succesful <- FALSE
-        on.exit(
-          if(successful) {
-            logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-            remote.execute.R(file.deletion.commands$delete.tmp, host, user=NA, verbose=TRUE, R="R")
-          } else {
-            logger.info("Conversion failed. Replacing old files.")
-            remote.execute.R(file.deletion.commands$replace.from.tmp, host, user=NA, verbose=TRUE, R="R")
-          }
-        )
-      }
+      file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
+      
+      remote.execute.R(file.deletion.commands$move.to.tmp, host, user=NA, verbose=TRUE, R="R")
+      
+      # Schedule files to be replaced or deleted on exiting the function
+      succesful <- FALSE
+      on.exit(
+        if(successful) {
+          logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
+          remote.execute.R(file.deletion.commands$delete.tmp, host, user=NA, verbose=TRUE, R="R")
+        } else {
+          logger.info("Conversion failed. Replacing old files.")
+          remote.execute.R(file.deletion.commands$replace.from.tmp, host, user=NA, verbose=TRUE, R="R")
+        }
+      )
     } else if((start_date >= existing.input$start_date) && (end_date <= existing.input$end_date)) {
       # There's an existing input that spans desired start/end dates. Use that one. 
       logger.info("Skipping this input conversion because files are already available.")
