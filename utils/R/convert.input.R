@@ -31,12 +31,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   print("end CHECK")
 
   if(nrow(existing.dbfile) > 0) {
-    if(nrow(existing.dbfile) > 1) {
-      print(existing.dbfile)
-      logger.warn("Multiple existing inputs found. Using last.")
-      existing.dbfile <- existing.dbfile[nrow(existing.dbfile),]
-    }
-
     existing.input <- db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[['container_id']]), con)    
     # Convert dates to Date objects and strip all time zones (DB values are timezone-free)
     start_date <- force_tz(as_date(start_date), 'GMT')
@@ -45,9 +39,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     existing.input$end_date <- force_tz(as_date(existing.input$end_date), 'GMT')
 
     if(overwrite) {
-      # start and end dates stay the same. 
       # collect files to flag for deletion
-        # There should only be one existing dbfile record, but by passing all paths we will get all files anyway
       files.to.delete <- remote.execute.R(paste0(
         "list.files('", existing.dbfile[['file_path']], "', full.names=TRUE)"), 
         host, user=NA, verbose=TRUE, R="R")
@@ -260,6 +252,19 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       db.query(paste0(
         "UPDATE inputs SET start_date='", start_date, "', end_date='", end_date, "', ", 
         "updated_at=NOW() WHERE id=", existing.input$id), con)
+    }
+    
+    if(overwrite) {
+      # A bit hacky, but need to make sure that all fields are updated to expected values 
+      # (i.e., what they'd be if convert.input was creating a new record)
+      db.query(paste0(
+        "UPDATE inputs SET name='", basename(dirname(result$file[1])), "', ", 
+        "updated_at=NOW() WHERE id=", existing.input$id), con)
+      
+      db.query(paste0(
+        "UPDATE dbfiles SET file_path='", dirname(result$file[1]), "', ",
+        "file_name='", result$dbfile.name[1], "', ", 
+        "updated_at=NOW() WHERE id=", existing.dbfile$id), con)
     }
 
     parent.id <- ifelse(is.null(input), NA, input$id)
