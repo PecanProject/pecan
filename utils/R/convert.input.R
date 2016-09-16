@@ -53,6 +53,22 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         files.to.delete <- remote.execute.R(paste0(
           "list.files('", existing.dbfile[['file_path']], "', full.names=TRUE)"), 
           host, user=NA, verbose=TRUE, R="R")
+
+        file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
+        
+        remote.execute.R(file.deletion.commands$move.to.tmp, host, user=NA, verbose=TRUE, R="R")
+        
+        # Schedule files to be replaced or deleted on exiting the function
+        succesful <- FALSE
+        on.exit(
+          if(successful) {
+            logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
+            remote.execute.R(file.deletion.commands$delete.tmp, host, user=NA, verbose=TRUE, R="R")
+          } else {
+            logger.info("Conversion failed. Replacing old files.")
+            remote.execute.R(file.deletion.commands$replace.from.tmp, host, user=NA, verbose=TRUE, R="R")
+          }
+        )
       }
     } else if((start_date >= existing.input$start_date) && (end_date <= existing.input$end_date)) {
       # There's an existing input that spans desired start/end dates. Use that one. 
@@ -239,7 +255,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   }
   
   outlist <- unlist(strsplit(outname,"_")) 
-  
+
   ## insert new record into database
   if(write==TRUE) {
     if(exists("existing.input") && nrow(existing.input) > 0 &&
@@ -261,26 +277,40 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                     con = con,
                                     hostname = machine$hostname) 
 
-    if(overwrite && exists("files.to.delete") && length(files.to.delete) > 0) {
-      files.to.keep <- result$file
-      files.to.keep.string <- paste0("c(", paste(paste0("'", files.to.keep, "'"), collapse=', '), ")")
-      files.to.delete.string <- paste0("c(", paste(paste0("'", files.to.delete, "'"), collapse=', '), ")")
-
-      cmd <- paste0(
-        "files.to.keep <- normalizePath(", files.to.keep.string, ");",
-        "files.to.delete <- normalizePath(", files.to.delete.string, ");",
-        "files.to.delete <- setdiff(files.to.delete, files.to.keep);", 
-        "file.remove(files.to.delete)"
-      ) 
-      
-      remote.execute.R(cmd, host, user=NA, verbose=TRUE, R="R")
-    }
-
+    successful <- TRUE
     return(newinput)
   } else {
     logger.warn('Input was not added to the database')
+    successful <- TRUE
     return(NULL)
   }
 }
 
-# .overwrite.files <- function()
+
+.get.file.deletion.commands <- function(files.to.delete) {
+  if(length(files.to.delete) > 0) {
+    tmp.dirs <- file.path(unique(dirname(files.to.delete)), 'tmp')
+    tmp.paths <- file.path(dirname(files.to.delete), 'tmp', basename(files.to.delete))
+    
+    tmp.dirs.string <- paste0("c(", paste(paste0("'", tmp.dirs, "'"), collapse=', '), ")")
+    tmp.path.string <- paste0("c(", paste(paste0("'", tmp.paths, "'"), collapse=', '), ")")
+    original.path.string <- paste0("c(", paste(paste0("'", files.to.delete, "'"), collapse=', '), ")")
+
+    move.to.tmp <- paste0(
+      "dir.create(", tmp.dirs.string, ", recursive=TRUE, showWarnings=FALSE); ",
+      "file.rename(from=", original.path.string, ", to=", tmp.path.string, ")"
+    ) 
+    
+    replace.from.tmp <- paste0(
+      "file.rename(from=", tmp.path.string, ", to=", original.path.string, ");",
+      "unlink(", tmp.dirs.string, ", recursive=TRUE)"
+    )
+    
+    delete.tmp <- paste0(
+      "unlink(", tmp.dirs.string, ", recursive=TRUE)"
+    )
+    return(list(move.to.tmp=move.to.tmp, replace.from.tmp=replace.from.tmp, delete.tmp=delete.tmp))
+  } else {
+    return(NULL)
+  }
+}
