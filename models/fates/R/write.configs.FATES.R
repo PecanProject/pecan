@@ -7,7 +7,7 @@
 ##http://opensource.ncsa.illinois.edu/license.html
 ##------------------------------------------------------------------------------
 ##-------------------------------------------------------------------------------------------------#
-##' Writes config files for use with the Community Land Model model.
+##' Writes config files for use with FATES.
 ##'
 ##' @name write.config.FATES
 ##' @title Write FATES configuration files
@@ -29,53 +29,65 @@
 #   # call met2model and add to namelists
 #   #
 # 
-#   # find out where to write run/ouput
-#   rundir <- file.path(settings$host$rundir, run.id)
-#   outdir <- file.path(settings$host$outdir, run.id)
-#   
-#   # create launch script (which will create symlink)
-#   if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
-#     jobsh <- readLines(con=settings$model$jobtemplate, n=-1)
-#   } else {
-#     jobsh <- readLines(con=system.file("template.job", package = "PEcAn.FATES"), n=-1)
-#   }
-#   
-  # # create host specific setttings
-  # hostsetup <- ""
-  # if (!is.null(settings$model$prerun)) {
-  #   hostsetup <- paste(hostsetup, sep="\n", paste(settings$model$prerun, collapse="\n"))
-  # }
-  # if (!is.null(settings$host$prerun)) {
-  #   hostsetup <- paste(hostsetup, sep="\n", paste(settings$host$prerun, collapse="\n"))
-  # }
+# find out where things are
+   rundir <- file.path(settings$host$rundir, run.id)
+   outdir <- file.path(settings$host$outdir, run.id)
+   case   <- settings$model$binary
+   bld    <- file.path(case,"bld")
+   binary <- file.path(case,"cesm.exe")
+   
+# create launch script (which will create symlink)
+   if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
+     jobsh <- readLines(con=settings$model$jobtemplate, n=-1)
+   } else {
+     jobsh <- readLines(con=system.file("template.job", package = "PEcAn.FATES"), n=-1)
+   }
+   
+ # create host specific setttings
+   hostsetup <- ""
+   if (!is.null(settings$model$prerun)) {
+     hostsetup <- paste(hostsetup, sep="\n", paste(settings$model$prerun, collapse="\n"))
+   }
+   if (!is.null(settings$host$prerun)) {
+     hostsetup <- paste(hostsetup, sep="\n", paste(settings$host$prerun, collapse="\n"))
+   }
 
-  # hostteardown <- ""
-  # if (!is.null(settings$model$postrun)) {
-  #   hostteardown <- paste(hostteardown, sep="\n", paste(settings$model$postrun, collapse="\n"))
-  # }
-  # if (!is.null(settings$host$postrun)) {
-  #   hostteardown <- paste(hostteardown, sep="\n", paste(settings$host$postrun, collapse="\n"))
-  # }
+   hostteardown <- ""
+   if (!is.null(settings$model$postrun)) {
+     hostteardown <- paste(hostteardown, sep="\n", paste(settings$model$postrun, collapse="\n"))
+   }
+   if (!is.null(settings$host$postrun)) {
+     hostteardown <- paste(hostteardown, sep="\n", paste(settings$host$postrun, collapse="\n"))
+   }
 
-  # # create job.sh
-  # jobsh <- gsub('@HOST_SETUP@', hostsetup, jobsh)
-  # jobsh <- gsub('@HOST_TEARDOWN@', hostteardown, jobsh)
+# create job.sh
+   jobsh <- gsub('@HOST_SETUP@', hostsetup, jobsh)
+   jobsh <- gsub('@HOST_TEARDOWN@', hostteardown, jobsh)
 
-# 
+   ## PATHS
+   jobsh <- gsub('@RUNDIR@', rundir, jobsh)
+   jobsh <- gsub('@OUTDIR@', outdir, jobsh)
+   jobsh <- gsub('@CASE@', case, jobsh)
+   jobsh <- gsub('@BLD@', bld, jobsh)
+   jobsh <- gsub('@BINARY@', binary, jobsh)
+ 
+   ## SITE INFO --> DOMAIN FILE
 #   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
 #   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
-#   jobsh <- gsub('@SITE_MET@', settings$run$inputs$met$path, jobsh)
-#   
+## note: domain file seems relatively simple, might be easier to write from scratch than to edit on remote via bash
+   ## FOR FIRST STEP, CAN USE DEFAULT
+   
+   ## DATES -> ENV_RUN
 #   jobsh <- gsub('@START_DATE@', settings$run$start.date, jobsh)
 #   jobsh <- gsub('@END_DATE@', settings$run$end.date, jobsh)
-#   
-#   jobsh <- gsub('@OUTDIR@', outdir, jobsh)
-#   jobsh <- gsub('@RUNDIR@', rundir, jobsh)
-#   
-#   jobsh <- gsub('@BINARY@', settings$model$binary, jobsh)
-#   
-#   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
-#   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+   ## FOR FIRST STEP, CAN USE DEFAULT
+   
+   ## MET --> DATM
+#   jobsh <- gsub('@SITE_MET@', settings$run$inputs$met$path, jobsh)
+   ## FOR FIRST STEP, CAN USE DEFAULT
+   
+   writeLines(jobsh, con=file.path(settings$rundir, run.id, "job.sh"))
+   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
 #   
 #   ## Write PARAMETER file
 # 
