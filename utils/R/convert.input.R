@@ -254,34 +254,21 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                     parentid = input$id,
                                     con = con,
                                     hostname = machine$hostname) 
-    if(!exists("files.to.delete")) {
-      browser()
-    }
-    if(overwrite && exists("files.to.delete")) {
-      new.dbfile = db.query(paste0("SELECT * FROM dbfiles WHERE id=", newinput$dbfile.id), con)
 
-      new.files <- remote.execute.R(paste0(
-            "list.files('", new.dbfile[['file_path']], "', full.names=TRUE)"),
-            host, user=NA, verbose=TRUE, R="R")
+    if(overwrite && exists("files.to.delete") && length(files.to.delete) > 0) {
+      files.to.keep <- result$file
+      files.to.keep.string <- paste0("c(", paste(paste0("'", files.to.keep, "'"), collapse=', '), ")")
+      files.to.delete.string <- paste0("c(", paste(paste0("'", files.to.delete, "'"), collapse=', '), ")")
 
-      # Any file that hasn't changed should be removed now
-      files.to.remove <- setdiff(files.to.delete, new.files)
+      cmd <- paste0(
+        "files.to.keep <- normalizePath(", files.to.keep.string, ");",
+        "files.to.delete <- normalizePath(", files.to.delete.string, ");",
+        "files.to.delete <- setdiff(files.to.delete, files.to.keep);", 
+        "file.remove(files.to.delete)"
+      ) 
+      
+      remote.execute.R(cmd, host, user=NA, verbose=TRUE, R="R")
 
-      if(length(files.to.remove) > 0) {
-        trash.dirs <- file.path(unique(dirname(files.to.remove)), 'OVERWRITTEN')
-        trash.paths <- file.path(dirname(files.to.remove), 'OVERWRITTEN', basename(files.to.remove))
-        
-        trash.dirs.string <- paste0("c(", paste(paste0("'", trash.dirs, "'"), collapse=', '), ")")
-        trash.path.to.string <- paste0("c(", paste(paste0("'", trash.paths, "'"), collapse=', '), ")")
-        trash.paths.from.string <- paste0("c(", paste(paste0("'", files.to.remove, "'"), collapse=', '), ")")
-  
-        cmd <- paste0(
-          "dir.create(", trash.dirs.string, ", recursive=TRUE); ",
-          "file.rename(from=", trash.paths.from.string, ", to=", trash.path.to.string, ")"
-        ) 
-        
-        remote.execute.R(cmd, host, user=NA, verbose=TRUE, R="R")
-      }
     }
 
     return(newinput)
