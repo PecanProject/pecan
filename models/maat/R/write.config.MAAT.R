@@ -35,8 +35,10 @@ convert.samples.MAAT <- function(trait.samples){
     trait.names[trait.names == "leaf_respiration_rate_m2"] <- "atref.rd"
     trait.names[trait.names == "Vcmax"] <- "atref.vcmax"
     trait.names[trait.names == "Jmax"] <- "atref.jmax"
-    trait.names[trait.names == "stomatal_slope"] <- "g1_leuning"
     trait.names[trait.names == "Ev_Arrhenius"] <- "Ha.vcmax" # Arrhenius activation energy
+    trait.names[trait.names == "stomatal_slope"] <- "g1_leuning"
+    trait.names[trait.names == "stomatal_slope.g1"] <- "g1_medlyn"
+    trait.names[trait.names == "stomatal_slope.BB"] <- "g1_ball"
     colnames(trait.samples) <- trait.names
     
     ### Conversions  -- change to only use if Collatz, should also provide standard Rd oputput
