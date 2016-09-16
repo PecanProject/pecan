@@ -514,7 +514,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
           trait.values <- ensemble.samples
         }
         do.call(my.write.restart,
-                args=list(out.dir = outdir, runid = run.id[[i]],
+                args=list(outdir = outdir, runid = run.id[[i]],
                           time = total.time[t], settings = settings,
                           analysis.vec = analysis[i,],
                           RENAME = TRUE, variables = variables,
