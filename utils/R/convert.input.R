@@ -44,22 +44,20 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     existing.input$start_date <- force_tz(as_date(existing.input$start_date), 'GMT')
     existing.input$end_date <- force_tz(as_date(existing.input$end_date), 'GMT')
 
-    if(!overwrite && (start_date >= existing.input$start_date) && (end_date <= existing.input$end_date)) {
-      # There's an existing input that spans desired start/end dates. Use that one. 
-      logger.info("Skipping this input conversion because files are already available.")
-      return(list(input.id=existing.input$id, dbfile.id=existing.dbfile$id))
-    } else if(overwrite) {
+    if(overwrite) {
       # start and end dates stay the same. 
       # collect files to flag for deletion
       existing.dbfile <- dbfile.check('Input', existing.input[['id']], con, host$name)
-      if(nrow(existing.dbfile) == 0) {
-        initial.snapshot <- NULL
-      } else {
+      if(nrow(existing.dbfile) > 0) {
         # There should only be one existing dbfile record, but by passing all paths we will get all files anyway
-        initial.snapshot <- remote.execute.R(paste0(
-            "fileSnapshot('", existing.dbfile[['file_path']], "', full.names=TRUE)"), 
-            host, user=NA, verbose=TRUE, R="R")
+        files.to.delete <- remote.execute.R(paste0(
+          "list.files('", existing.dbfile[['file_path']], "', full.names=TRUE)"), 
+          host, user=NA, verbose=TRUE, R="R")
       }
+    } else if((start_date >= existing.input$start_date) && (end_date <= existing.input$end_date)) {
+      # There's an existing input that spans desired start/end dates. Use that one. 
+      logger.info("Skipping this input conversion because files are already available.")
+      return(list(input.id=existing.input$id, dbfile.id=existing.dbfile$id))
     } else {
       # Start/end dates need to be updated so that the input spans a continuous timeframe
       start_date <- min(start_date, existing.input$start_date)
@@ -256,32 +254,36 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                     parentid = input$id,
                                     con = con,
                                     hostname = machine$hostname) 
-    
-    if(overwrite) {
+    if(!exists("files.to.delete")) {
+      browser()
+    }
+    if(overwrite && exists("files.to.delete")) {
       new.dbfile = db.query(paste0("SELECT * FROM dbfiles WHERE id=", newinput$dbfile.id), con)
 
-      new.snapshot <- remote.execute.R(paste0(
-            "fileSnapshot('", new.dbfile[['file_path']], "', full.names=TRUE)"),
+      new.files <- remote.execute.R(paste0(
+            "list.files('", new.dbfile[['file_path']], "', full.names=TRUE)"),
             host, user=NA, verbose=TRUE, R="R")
 
       # Any file that hasn't changed should be removed now
-      files.to.remove <- changedFiles(initial.snapshot, new.snapshot)$unchanged
+      files.to.remove <- setdiff(files.to.delete, new.files)
 
-      trash.dirs <- file.path(unique(dirname(files.to.remove)), 'OVERWRITTEN')
-      trash.paths.to <- file.path(dirname(files.to.remove), 'OVERWRITTEN', basename(files.to.remove))
-      trash.paths.from <- files.to.remove
-      
-      trash.dirs.string <- paste0("c(", paste(paste0("'", trash.dirs, "'"), collapse=', '), ")")
-      trash.path.to.string <- paste0("c(", paste(paste0("'", trash.paths.to, "'"), collapse=', '), ")")
-      trash.paths.from.string <- paste0("c(", paste(paste0("'", trash.paths.from, "'"), collapse=', '), ")")
-
-      cmd <- paste0(
-        "dir.create(", trash.dirs.string, ", recursive=TRUE); ",
-        "file.rename(from=", trash.paths.from.string, ", to=", trash.path.to.string, ")"
-      ) 
-      
-      remote.execute.R(cmd, host, user=NA, verbose=TRUE, R="R")
+      if(length(files.to.remove) > 0) {
+        trash.dirs <- file.path(unique(dirname(files.to.remove)), 'OVERWRITTEN')
+        trash.paths <- file.path(dirname(files.to.remove), 'OVERWRITTEN', basename(files.to.remove))
+        
+        trash.dirs.string <- paste0("c(", paste(paste0("'", trash.dirs, "'"), collapse=', '), ")")
+        trash.path.to.string <- paste0("c(", paste(paste0("'", trash.paths, "'"), collapse=', '), ")")
+        trash.paths.from.string <- paste0("c(", paste(paste0("'", files.to.remove, "'"), collapse=', '), ")")
+  
+        cmd <- paste0(
+          "dir.create(", trash.dirs.string, ", recursive=TRUE); ",
+          "file.rename(from=", trash.paths.from.string, ", to=", trash.path.to.string, ")"
+        ) 
+        
+        remote.execute.R(cmd, host, user=NA, verbose=TRUE, R="R")
+      }
     }
+
     return(newinput)
   } else {
     logger.warn('Input was not added to the database')
