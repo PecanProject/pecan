@@ -1,4 +1,5 @@
-.met2cf.module <- function(raw.id, register, met, dir, machine, start_date, end_date, con, overwrite=FALSE, format.vars) {
+.met2cf.module <- function(raw.id, register, met, dir, machine, site, start_date, end_date, 
+                           con, overwrite=FALSE, format.vars) {
   logger.info("Begin change to CF Standards")
   
   input.id  <-  raw.id$input.id[1]
@@ -6,6 +7,9 @@
   formatname <- 'CF Meteorology'
   mimetype <- 'application/x-netcdf'
   format.id <- 33
+  
+  # Probably are other formats for which the CF file is not site specific?
+  new.site.id <- ifelse(met %in% c("NARR"), register$siteid, site$id) 
   
   if(register$scale=="regional"){
     input_name <- paste0(met,"_CF")
@@ -24,7 +28,7 @@
       logger.error("met2CF function ", fcn1, " or ", fcn2, " don't exist")
     }
 
-    cf0.id <- convert.input(input.id, outfolder, formatname, mimetype, site.id=site$id,
+    cf0.id <- convert.input(input.id, outfolder, formatname, mimetype, site.id=new.site.id,
       start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL, write=TRUE,
       format.vars=format.vars, overwrite=overwrite)
     
@@ -32,7 +36,7 @@
     fcn       <-  "permute.nc"
     outfolder  <- file.path(dir, input_name)
     
-    cf.id <- convert.input(cf0.id$input.id, outfolder, formatname, mimetype, site.id=site$id, 
+    cf.id <- convert.input(cf0.id$input.id, outfolder, formatname, mimetype, site.id=new.site.id, 
                            start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL,
                            write=TRUE, overwrite=overwrite)
 
