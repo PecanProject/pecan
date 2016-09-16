@@ -9,7 +9,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                           pkg, fcn, con=con, host, browndog, write=TRUE,  
                           format.vars, overwrite=FALSE, ...) {
   input.args <- list(...)
-  
+
   logger.debug(paste(
     "Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, mimetype, 
     site.id, start_date, end_date))
@@ -78,31 +78,35 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   
   
   
-  input = db.query(paste("SELECT * from inputs where id =", input.id), con)
-  if(nrow(input)==0){
-    logger.error("input not found", input.id)
-    return(NULL)
-  }
-  
   machine.host <- ifelse(host$name == "localhost", fqdn(), host$name)
   machine = db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
-
+  
   if(nrow(machine)==0){
     logger.error("machine not found", host$name)
     return(NULL)
   }
-  
-  dbfile = db.query(paste(
-    "SELECT * from dbfiles where container_id =", input.id, 
-    " and container_type = 'Input' and machine_id =", machine$id), con)
-  if(nrow(dbfile)==0) {
-    logger.error("dbfile not found",input.id);return(NULL)
-  }
-  if(nrow(dbfile)>1) {
-    logger.warning("multiple dbfile records, using last",dbfile);
-    dbfile = dbfile[nrow(dbfile),]
-  }
-  
+
+  if(missing(input.id) || is.na(input.id) || is.null(input.id)) {
+    input <- dbfile <- NULL
+  } else {
+    input = db.query(paste("SELECT * from inputs where id =", input.id), con)
+    if(nrow(input)==0){
+      logger.error("input not found", input.id)
+      return(NULL)
+    }
+    
+    dbfile = db.query(paste(
+      "SELECT * from dbfiles where container_id =", input.id, 
+      " and container_type = 'Input' and machine_id =", machine$id), con)
+    if(nrow(dbfile)==0) {
+      logger.error("dbfile not found",input.id);return(NULL)
+    }
+    if(nrow(dbfile)>1) {
+      logger.warning("multiple dbfile records, using last",dbfile);
+      dbfile = dbfile[nrow(dbfile),]
+    }
+  } 
+
   #--------------------------------------------------------------------------------------------------#
   # Perform Conversion 
   conversion = "local.remote" #default
@@ -199,6 +203,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     }
   } else if (conversion == "local.remote") { 
     # perform conversion on local or remote host
+
     fcn.args <- input.args
     fcn.args$overwrite <- overwrite
     fcn.args$in.path <- dbfile$file_path
@@ -206,7 +211,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     fcn.args$outfolder <- outfolder
     fcn.args$start_date <- start_date
     fcn.args$end_date <- end_date 
-    
+
     arg.string <- listToArgString(fcn.args)
     
     if(!missing(format.vars)) {
@@ -244,6 +249,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         "updated_at=NOW() WHERE id=", existing.input$id), con)
     }
 
+    parent.id <- ifelse(is.null(input), NA, input$id)
     newinput <- dbfile.input.insert(in.path=dirname(result$file[1]),
                                     in.prefix=result$dbfile.name[1],
                                     siteid = siteid, 
@@ -251,7 +257,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                     enddate = end_date, 
                                     mimetype, 
                                     formatname,
-                                    parentid = input$id,
+                                    parentid = parent.id,
                                     con = con,
                                     hostname = machine$hostname) 
 
@@ -268,7 +274,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       ) 
       
       remote.execute.R(cmd, host, user=NA, verbose=TRUE, R="R")
-
     }
 
     return(newinput)
