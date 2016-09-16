@@ -89,6 +89,7 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
     output[[1]] <- out.year                       # Simulation year
     output[[2]] <- sub.maat.doy+day.steps         # Fractional day - NEED TO IMPLEMENT  
     output[[3]] <- (sub.maat.output$A)            # assimilation in umolsC/m2/s
+    output[[4]] <- (sub.maat.output$gs)           # stomatal conductance in ???
     
     ## TODO: ADD MORE MAAT OUTPUTS HERE ##
     
@@ -129,6 +130,7 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
     var[[1]]  <- mstmipvar("Year", lat, lon, t, NA)
     var[[2]]  <- mstmipvar("FracJulianDay", lat, lon, t, NA)
     var[[3]]  <- mstmipvar("GPP", lat, lon, t, NA)
+    var[[4]]  <- mstmipvar("gs", lat, lon, t, NA)
     
     ### Output netCDF data
     nc <- nc_create(file.path(outdir, paste(y,"nc", sep=".")), var)
