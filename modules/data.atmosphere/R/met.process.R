@@ -47,7 +47,17 @@ met.process <- function(
       overwrite$met2model <- FALSE
     }
   }
-
+  overwrite.check <- unlist(overwrite)
+  for(i in seq_along(overwrite.check)) {
+    if(i<length(overwrite.check) && 
+       overwrite.check[i]==TRUE && 
+       !all(overwrite.check[(i+1):length(overwrite.check)])) {
+      print(overwrite)
+      logger.error(paste0("If overwriting any stage of met.process, ",
+        "all subsequent stages need to be overwritten too. Please correct."))
+    }
+  }
+  
   #setup connection and host information
   con      <- db.open(dbparms)
   on.exit(db.close(con, showWarnings=FALSE))
