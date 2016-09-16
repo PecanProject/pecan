@@ -113,7 +113,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         }
 
         cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
-        new.files <- remote.execute.R(cmdFcn,host$name,user=NA, verbose=TRUE)
+        new.files <- remote.execute.R(cmdFcn,host,user=NA, verbose=TRUE)
 
         raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
                                       in.prefix=new.files$dbfile.name[1],
@@ -146,7 +146,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         args <- list(site$name, outfolder, start_date, end_date)
 
         cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),paste0(",username='",username,"'"),")")
-        new.files <- remote.execute.R(script=cmdFcn,host=host$name,user=NA,verbose=TRUE,R="R")
+        new.files <- remote.execute.R(script=cmdFcn,host=host,user=NA,verbose=TRUE,R="R")
 
         ## insert database record
         raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
@@ -205,7 +205,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         }else{logger.error("met2CF function ",fcn1," or ",fcn2," don't exist")}
 
         cf0.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                                username,con=con,hostname=host$name,browndog=NULL,write=TRUE,format.vars=format.vars)
+                                username,con=con,host=host,browndog=NULL,write=TRUE,format.vars=format.vars)
       }
 
       input_name <- paste0(met,"_CF_Permute")
@@ -226,8 +226,8 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         cf.id <- list(input.id=check$container_id, dbfile.id=check$id)
       }else{
         # Just a draft of what would happen - doesn't include using the cluster so it would be SLOW. Hasn't been tested.
-        cf.id <- convert.input(cf0.id, outfolder2,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,permute.nc,
-                               username,con=con,hostname=host$name,browndog=NULL,write=TRUE)
+        cf.id <- convert.input(cf0.id, outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,permute.nc,
+                               username,con=con,host=host,browndog=NULL,write=TRUE)
       }
     } else if(register$scale=="site") {
       input_name <- paste0(met,"_CF_site_",str_ns)
@@ -252,12 +252,12 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         if(exists(fcn1)){
           fcn <- fcn1
           cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                                 username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon)
+                                 username,con=con,host=host,browndog=NULL,write=TRUE,site$lat,site$lon)
         }else if(exists(fcn2)){
           fcn <- fcn2
           format <- query.format.vars(input.id,con)
           cf.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                                 username,con=con,hostname=host$name,browndog=NULL,write=TRUE,site$lat,site$lon,format.vars=format.vars)
+                                 username,con=con,host=host,browndog=NULL,write=TRUE,site$lat,site$lon,format.vars=format.vars)
         }else{logger.error("met2CF function ",fcn1, " or ", fcn2," doesn't exists")}
       }
     }
@@ -285,7 +285,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       mimetype   <- 'application/x-netcdf'
 
       ready.id <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id,start_date,end_date,pkg,fcn,
-                                username,con=con,hostname=host$name,browndog=NULL,write=TRUE,
+                                username,con=con,host=host,browndog=NULL,write=TRUE,
                                 slat=new.site$lat,slon=new.site$lon,newsite=new.site$id)
 
     }else if(register$scale=="site"){ ##### Site Level Processing
@@ -303,7 +303,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
 
       ready.id   <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id
                                   ,start_date,end_date,pkg,fcn,username,con=con,
-                                  hostname=host$name,browndog=NULL,write=TRUE,lst=lst)
+                                  host=host,browndog=NULL,write=TRUE,lst=lst)
 
       print(ready.id)
       #     }else{
@@ -346,7 +346,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     lst       <- site.lst(site,con)
     
     model.id  <- convert.input(input.id, outfolder, formatname, mimetype, site.id=site$id,
-      start_date, end_date, pkg, fcn, username, con=con, hostname=host$name, browndog, write=TRUE, 
+      start_date, end_date, pkg, fcn, username, con=con, host=host, browndog, write=TRUE, 
       lst=lst, lat=new.site$lat, lon=new.site$lon)
 
   } else {

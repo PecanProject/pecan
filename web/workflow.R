@@ -109,7 +109,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
   
 # Do conversions
 do.conversions <- function(settings) {
-  if(is.SettingsList(settings)) {
+  if(is.MultiSettings(settings)) {
     return(papply(settings, do.conversions))
   }
   
