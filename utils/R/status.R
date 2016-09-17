@@ -3,6 +3,7 @@
 #--------------------------------------------------------------------------------#
 ##' @export
 ##' @name status.start
+##' @title status.start
 ##' @description PEcAn workflow status tracking: start module
 ##' @author Rob Kooper
 status.start <- function(name) {
@@ -14,6 +15,7 @@ status.start <- function(name) {
 }
 
 ##' @name status.end
+##' @title status.end
 ##' @description PEcAn workflow status tracking: end module
 ##' @author Rob Kooper
 ##' @export
@@ -28,6 +30,7 @@ status.end <- function(status="DONE") {
 }
 
 ##' @name status.skip
+##' @title status.skip
 ##' @description PEcAn workflow status tracking: skip module
 ##' @author Rob Kooper
 ##' @export
@@ -44,6 +47,7 @@ status.skip <- function(name) {
 }
 
 ##' @name status.check
+##' @title status.check
 ##' @description PEcAn workflow status tracking: check module status
 ##' @author Rob Kooper
 ##' @export

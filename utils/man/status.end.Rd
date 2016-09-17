@@ -2,6 +2,7 @@
 % Please edit documentation in R/status.R
 \name{status.end}
 \alias{status.end}
+\title{status.end}
 \usage{
 status.end(status = "DONE")
 }

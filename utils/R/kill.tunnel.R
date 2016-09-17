@@ -1,5 +1,6 @@
 ##' @export
 ##' @name kill.tunnel
+##' @title kill.tunnel
 ##' @description kill tunnel to remote machine
 ##' @author Rob Kooper
 kill.tunnel <- function() {

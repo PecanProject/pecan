@@ -2,6 +2,7 @@
 % Please edit documentation in R/status.R
 \name{status.skip}
 \alias{status.skip}
+\title{status.skip}
 \usage{
 status.skip(name)
 }

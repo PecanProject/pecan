@@ -2,6 +2,7 @@
 % Please edit documentation in R/status.R
 \name{status.check}
 \alias{status.check}
+\title{status.check}
 \usage{
 status.check(name)
 }

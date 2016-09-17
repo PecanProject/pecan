@@ -2,6 +2,7 @@
 % Please edit documentation in R/status.R
 \name{status.start}
 \alias{status.start}
+\title{status.start}
 \usage{
 status.start(name)
 }
