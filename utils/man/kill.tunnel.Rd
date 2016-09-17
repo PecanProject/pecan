@@ -2,6 +2,7 @@
 % Please edit documentation in R/kill.tunnel.R
 \name{kill.tunnel}
 \alias{kill.tunnel}
+\title{kill.tunnel}
 \usage{
 kill.tunnel()
 }

@@ -1,5 +1,6 @@
 ##' @export
 ##' @name do.conversions
+##' @title do.conversions
 ##' @description Input conversion workflow
 ##' @author Ryan Kelly, Rob Kooper, Betsy Cowdery
 do.conversions <- function(settings) {

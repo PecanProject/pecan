@@ -2,6 +2,7 @@
 % Please edit documentation in R/do.conversions.R
 \name{do.conversions}
 \alias{do.conversions}
+\title{do.conversions}
 \usage{
 do.conversions(settings)
 }
