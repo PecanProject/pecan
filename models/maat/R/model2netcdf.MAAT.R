@@ -119,10 +119,12 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
     Mc <- 12.017 #molar mass of C, g/mol
     umol2kg_C <- Mc * ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
     
-    ### Convert outputs
+    ### Find missing and convert outputs
     #output <- conversion( 2, umol2kg_C)  ## convert GPP in umolC/m2 s-1 to kgC/m2 s-1 (MsTMIP)
     #output[[2]][output[[2]] != -999] <- output[[2]][output[[2]] != -999] * umol2kg_C
-    output[[3]] <- ifelse(output[[2]]==-999,-999,output[[3]]*umol2kg_C)  # convert A/GPP to kgC/m2/s
+    output[[3]] <- ifelse(output[[3]]==-999,-999,output[[3]]*umol2kg_C)  # convert A/GPP to kgC/m2/s
+    output[[4]] <- ifelse(output[[4]]=="Inf",-999,output[[4]]) # here is where we will convert gs to CF units
+    
     
     ### Put output into netCDF format
     mstmipvar <- PEcAn.utils::mstmipvar
