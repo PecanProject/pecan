@@ -1,0 +1,23 @@
+Package: PEcAn.FATES
+Type: Package
+Title: PEcAn package for integration of FATES model
+Version: 1.4.9
+Date: 2016-09-15
+Author: Mike Dietze
+Maintainer: Mike Dietze <dietze@bu.edu>
+Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
+    workflow management tool that is designed to simplify the management of
+    model parameterization, execution, and analysis. The goal of PECAn is to
+    streamline the interaction between data and models, and to improve the
+    efficacy of scientific investigation. This package provides functions to
+    link the FATES model to PEcAn.
+Depends:
+    PEcAn.utils,
+    ncdf4
+Suggests:
+    testthat
+License: FreeBSD + file LICENSE
+Copyright: Authors
+LazyLoad: yes
+LazyData: FALSE
+RoxygenNote: 5.0.1
