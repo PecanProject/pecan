@@ -23,16 +23,25 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   ## FATES seems to need a timing folder, but doesn't create it itself
   mkdir run/timing
   
-  ## update configurations
+  ## ENV_BUILD update configurations
+  ./xmlchange -file env_build.xml -id CESMSCRATCHROOT -val @CASE@
   ./xmlchange -file env_build.xml -id EXEROOT -val @BLD@
   
   ## SITE INFO --> DOMAIN FILE
   ## @CASE@/share/domains/domain.clm/
   
   ## DATES -> ENV_RUN
-  
+  ./xmlchange -file env_run.xml -id RUNDIR -val @RUNDIR@/run
+  ./xmlchange -file env_run.xml -id RUN_STARTDATE -val @START_DATE@
+  ./xmlchange -file env_run.xml -id STOP_OPTION -val ndays
+  ./xmlchange -file env_run.xml -id STOP_N -val @STOP_N@
+    
   ## MET --> DATM
   
+  ## APPLY CONFIG CHANGES
+  ./case.setup
+  
+  ## RUN
   cd run
   "@BINARY@"
   STATUS=$?
