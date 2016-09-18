@@ -20,6 +20,7 @@
 ##' @author Mike Dietze
 ##-------------------------------------------------------------------------------------------------#
  write.config.FATES <- function(defaults, trait.values, settings, run.id){
+   library(PEcAn.utils)
 #  
 # #OUTLINE OF MODULES
 #   # Copy Case and Build
@@ -78,9 +79,13 @@
    ## FOR FIRST STEP, CAN USE DEFAULT
    
    ## DATES -> ENV_RUN
-#   jobsh <- gsub('@START_DATE@', settings$run$start.date, jobsh)
-#   jobsh <- gsub('@END_DATE@', settings$run$end.date, jobsh)
-   ## FOR FIRST STEP, CAN USE DEFAULT
+   ## CLM is a bit odd and takes a start date and length, so we need to precompute
+   ## this needs to be generalized to fractional years, but accounting for 365 day year
+   start_date <- as.Date(settings$run$start.date)
+   end_date   <- as.Date(settings$run$end.date)
+   stop_n     <- as.numeric(end_date - start_date, units="days") - n_leap_day(start_date,end_date)  
+   jobsh <- gsub('@START_DATE@', start_date, jobsh)
+   jobsh <- gsub('@STOP_N@', stop_n, jobsh)
    
    ## MET --> DATM
 #   jobsh <- gsub('@SITE_MET@', settings$run$inputs$met$path, jobsh)
