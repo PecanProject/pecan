@@ -83,7 +83,7 @@
    ## this needs to be generalized to fractional years, but accounting for 365 day year
    start_date <- as.Date(settings$run$start.date)
    end_date   <- as.Date(settings$run$end.date)
-   stop_n     <- as.numeric(end_date - start_date, units="days") - n_leap_day(start_date,end_date)  
+   stop_n     <- as.numeric(end_date - start_date, units="days") - n_leap_day(start_date,end_date) + 1  
    jobsh <- gsub('@START_DATE@', start_date, jobsh)
    jobsh <- gsub('@STOP_N@', stop_n, jobsh)
    
