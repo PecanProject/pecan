@@ -18,11 +18,43 @@
 ##' @export
 ##'
 ##' @author Michael Dietze
- model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date) {
-#   
-#   require("ncdf4")
-#   
-# for (year in start_year:end_year){
+ model2netcdf.FATES <- function(outdir) {
+   
+   library("ncdf4")
+   library(lubridate)
+   library(PEcAn.utils)
+   
+   ## Get files and years
+   files <- dir(outdir,"*clm2.h0.*.nc",full.names=TRUE)
+   file.dates <- as.Date(sub(".nc","",sub(".*clm2.h0.","",files)))
+   years <- year(file.dates)
+   
+   for (year in unique(years)){
+     ysel <- which(years == year)    ## subselect files for selected year
+     ysel <- order(file.dates[ysel]) ## double check dates are in order
+     if(length(ysel)>1){
+       logger.warn("PEcAn.FATES::model2netcdf.FATES does not currently support multiple files per year")
+     }
+     fname = files[ysel[1]]
+     oname = file.path(dirname(fname),paste0(year,".nc"))
+     logger.info(paste("model2netcdf.FATES:",fname,"to",oname))
+     file.copy(fname,oname)
+     nc = nc_open(oname,write = TRUE)
+     
+     ## FATES time is in multiple columns, create 'time' 
+     day  <- ncvar_get(nc,"mdcur") #current day (from base day)
+     sec  <- ncvar_get(nc,"mscur") #current seconds of current day
+     time <- day + sec/86400
+     var <- ncvar_def(name='time', units='days', dim=nc$dim[['time']])
+# These lines throw an error saying time already exists, but not showing up in VAR file
+#     nc  <- ncvar_add(nc=nc, v=var)
+#     ncvar_put(nc,"time",time)
+#     ncvar_get(nc,"time")
+     
+     ## extract variable and long names to VAR file for PEcAn vis
+     write.table(sapply(nc$var,function(x){x$longname}),file = paste0(oname,".var"),col.names=FALSE,row.names = TRUE,quote=FALSE)
+     
+     nc_close(nc)
 #   
   ### extract variables. These need to be read in and converted to PEcAN standard
  
@@ -434,7 +466,7 @@
 #   WOOD_HARVESTN:long_name = "wood harvest N (to product pools)" ;
 #   W_SCALAR:long_name = "Moisture (dryness) inhibition of decomposition" 
 
-#}
+  }
  
 }  ## end model2netcdf.FATES
 ##==================================================================================================#

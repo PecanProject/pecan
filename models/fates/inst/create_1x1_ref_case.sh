@@ -66,7 +66,7 @@ cd ${CASEROOT}
 #./xmlchange -file env_run.xml -id CLM_BLDNML_OPTS -val "-no-megan" --append
 
 # Modifying : env_run.xml
-./xmlchange -file env_run.xml -id STOP_N -val 50
+./xmlchange -file env_run.xml -id STOP_N -val 2
 ./xmlchange -file env_run.xml -id RUN_STARTDATE -val '1500-01-01'
 ./xmlchange -file env_run.xml -id STOP_OPTION -val nyears
 ./xmlchange -file env_run.xml -id REST_N -val 1
@@ -106,7 +106,7 @@ cd ${CASEROOT}
 cat >> user_nl_clm << \EOF
 hist_empty_htapes = .true.
 hist_fincl1='EFLX_LH_TOT','TSOI_10CM','QVEGT','NEP','GPP','AR','ED_bleaf','ED_biomass','NPP_column'
-hist_mfilt             = 480
+hist_mfilt             = 8760
 hist_nhtfrq            = -1
 EOF
 

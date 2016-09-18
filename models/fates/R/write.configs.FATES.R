@@ -34,7 +34,7 @@
    outdir <- file.path(settings$host$outdir, run.id)
    case   <- settings$model$binary
    bld    <- file.path(case,"bld")
-   binary <- file.path(case,"cesm.exe")
+   binary <- file.path(bld,"cesm.exe")
    
 # create launch script (which will create symlink)
    if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
