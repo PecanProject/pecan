@@ -20,8 +20,7 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   ## copy required files from default case
   cp -rf @CASE@/* .
   
-  ## FATES seems to need a timing folder somewhere, but doesn't create it itself... need to fix
-  mkdir timing
+  ## FATES seems to need a timing folder, but doesn't create it itself
   mkdir run/timing
   
   ## update configurations
@@ -40,11 +39,10 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   
   
   # check the status
-# TEMPORARILY DISABLED DURING TESTING BECAUSE OF timing FOLDER ISSUE, FIX THIS ************
-#  if [ $STATUS -ne 0 ]; then
-#  	echo -e "ERROR IN MODEL RUN\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
-#  	exit $STATUS
-#  fi
+  if [ $STATUS -ne 0 ]; then
+  	echo -e "ERROR IN MODEL RUN\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
+  	exit $STATUS
+  fi
 
   #  convert output
   cp *clm2.h0.*.nc @OUTDIR@
