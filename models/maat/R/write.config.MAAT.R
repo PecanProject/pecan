@@ -37,6 +37,8 @@ convert.samples.MAAT <- function(trait.samples){
     trait.names[trait.names == "Jmax"] <- "atref.jmax"
     trait.names[trait.names == "Ev_Arrhenius"] <- "Ha.vcmax" # Arrhenius activation energy
     trait.names[trait.names == "Ej_Arrhenius"] <- "Ha.jmax" # Arrhenius activation energy
+    trait.names[trait.names == "Ha_Modified_Arrhenius_Jmax"] <- "Ha.jmax" # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+    trait.names[trait.names == "Hd_Modified_Arrhenius_Jmax"] <- "Hd.jmax" # !!TODO: Allow for the same prior to update both Vcmax and Jmax
     trait.names[trait.names == "stomatal_slope"] <- "g1_leuning"
     trait.names[trait.names == "stomatal_slope.g1"] <- "g1_medlyn"
     trait.names[trait.names == "stomatal_slope.BB"] <- "g1_ball"
@@ -55,6 +57,10 @@ convert.samples.MAAT <- function(trait.samples){
     if('Ha.jmax' %in% names(trait.samples)) {
       ## Convert from kJ mol-1 to J mol-1
       trait.samples <- transform(trait.samples, Ha.jmax = ud.convert(Ha.jmax , "kJ", "J"))
+    }
+    if('Hd.jmax' %in% names(trait.samples)) {
+      ## Convert from kJ mol-1 to J mol-1
+      trait.samples <- transform(trait.samples, Hd.jmax = ud.convert(Hd.jmax , "kJ", "J"))
     }
     
     ### Return trait.samples as modified by function
