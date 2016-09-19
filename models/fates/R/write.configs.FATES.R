@@ -31,7 +31,7 @@
 #   #
 # 
 # find out where things are
-   rundir <- file.path(settings$host$rundir, run.id)
+   rundir <- file.path(settings$host$rundir, run.id,"case")  ## ADDITION OF CASE SHOULD BE REMOVED ONCE NEWCASE AVOIDED ****
    outdir <- file.path(settings$host$outdir, run.id)
    case   <- settings$model$binary
    bld    <- file.path(case,"bld")
