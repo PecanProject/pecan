@@ -499,20 +499,26 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
 ##'
 ##' @author Ryan Kelly
 ##' @export
-pda.adjust.jumps <- function(settings, accept.rate, pnames=NULL) {
+pda.adjust.jumps <- function(settings, jmp.list, accept.rate, pnames=NULL) {
   logger.info(paste0("Acceptance rates were (", 
                     paste(pnames, collapse=", "), ") = (", 
                     paste(round(accept.rate/settings$assim.batch$jump$adapt,3), 
                       collapse=", "), ")"))
-  logger.info(paste0("Using jump variances (", 
-                    paste(round(unlist(settings$assim.batch$jump$jvar),3), collapse=", "), ")"))
+  # logger.info(paste0("Using jump variances (", 
+  #                   paste(round(unlist(settings$assim.batch$jump$jvar),3), collapse=", "), ")"))
 
+  logger.info(paste0("Old jump variances were (", 
+                     paste(round(jmp.list,3), collapse=", "), ")"))
+  
   adj <- accept.rate / settings$assim.batch$jump$adapt / settings$assim.batch$jump$ar.target
   adj[adj < settings$assim.batch$jump$adj.min] <- settings$assim.batch$jump$adj.min
-  settings$assim.batch$jump$jvar <- as.list(unlist(settings$assim.batch$jump$jvar) * adj)
+  # settings$assim.batch$jump$jvar <- as.list(unlist(settings$assim.batch$jump$jvar) * adj)
+  # logger.info(paste0("New jump variances are (", 
+  #                   paste(round(unlist(settings$assim.batch$jump$jvar),3), collapse=", "), ")"))
+  jmp.list <- jmp.list * adj
   logger.info(paste0("New jump variances are (", 
-                    paste(round(unlist(settings$assim.batch$jump$jvar),3), collapse=", "), ")"))
-  return(settings)
+                                        paste(round(jmp.list,3), collapse=", "), ")"))
+  return(jmp.list)
 }
 
 
