@@ -195,7 +195,7 @@ mcmc.GP <- function(gp, pckg, x0, nmcmc, rng, format="lin", mix="joint", splinef
     jcov <- jmp0
     accept.count <- resume.list$ac
     prev.samp <- resume.list$prev.samp
-    colnames(params.samp) <- names(x0)
+    colnames(prev.samp) <- names(x0)
     samp <- rbind(prev.samp, samp)
     start <- dim(prev.samp)[1] + 1
     nmcmc <- dim(samp)[1]

@@ -41,10 +41,10 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
   ## Load priors
   temp <- pda.load.priors(settings, con)
-  prior <- temp$prior[[1]] #TODO : more PFTs for bruteforce
+  prior.list <- temp$prior
   settings <- temp$settings
-  pname <-  rownames(prior) 
-  n.param.all  <- nrow(prior)
+  pname <-  lapply(prior.list, rownames)
+  n.param.all  <- sapply(prior.list, nrow)
 
   ## Load data to assimilate against
   inputs <- load.pda.data(settings, con)
@@ -58,8 +58,10 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   }
 
   ## Select parameters to constrain
-  prior.ind <- which(rownames(prior) %in% unlist(settings$assim.batch$param.names))
-  n.param <- length(prior.ind)
+  prior.ind <- lapply(seq_along(settings$pfts), 
+                      function(x) which(pname[[x]] %in% settings$assim.batch$param.names[[x]]))
+  n.param <- sapply(prior.ind, length)
+  
 
   ## Get the workflow id
   if ("workflow" %in% names(settings)) {
@@ -72,7 +74,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
 
   ## Set prior distribution functions (d___, q___, r___, and multivariate versions)
-  prior.fn <- pda.define.prior.fn(prior)
+  #prior.fn <- lapply(prior.list, pda.define.prior.fn)
 
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
@@ -80,10 +82,17 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
   ## ----------------------------------- MCMC Setup ----------------------------------- ##
   ## Initialize empty params matrix (concatenated to params from a previous PDA, if provided)
-  params <- pda.init.params(settings, con, pname, n.param.all)
-    start  <- params$start
-    finish <- params$finish
-    params <- params$params
+  pname.all <- unlist(pname)
+  params.list <- pda.init.params(settings, con, pname.all, sum(n.param.all)) 
+  params <- params.list$params
+  start  <- params.list$start
+  finish <- params.list$finish
+  
+  
+
+  prior.all <- do.call("rbind", prior.list)
+  prior.fn.all <- pda.define.prior.fn(prior.all)
+  prior.ind.all <- which(unlist(pname) %in% unlist(settings$assim.batch$param.names))
 
   ## File for temp storage of params (in case of crash)
   #  Using .txt here to allow quick append after each iteration (maybe a better way?)
@@ -92,23 +101,21 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
   ## Set initial conditions
   if(start==1) {
-    parm <- sapply(prior.fn$qprior,eval,list(p=0.5))
+    parm <- sapply(prior.fn.all$qprior,eval,list(p=0.5))
   } else {
     parm <- params[start-1, ]
   }
-  names(parm) <- pname
+  names(parm) <- pname.all
   LL.old <- prior.old <- -Inf
 
   ## Jump distribution setup
-  accept.rate <- numeric(n.param)  ## Create acceptance rate vector of 0's (one zero per parameter)
+  accept.rate <- numeric(sum(n.param))  ## Create acceptance rate vector of 0's (one zero per parameter)
 
-  # Default jump variances. Looped for clarity
-  ind <- which(is.na(settings$assim.batch$jump$jvar))
-  for(i in seq_along(ind)) {
+  # Default jump variances. 
+  #for(c in 1:settings$assim.batch$chain){
     # default to 0.1 * 90% prior CI
-    settings$assim.batch$jump$jvar[[i]] <- 
-      0.1 * diff(eval(prior.fn$qprior[[prior.ind[ind[i]]]], list(p=c(0.05,0.95))))
-  }
+    jmp.list <-sapply(prior.fn.all$qprior, function(x) 0.1 * diff(eval(x, list(p=c(0.05,0.95)))))[prior.ind.all]
+  #}
 
   ## Create dir for diagnostic output
   if(!is.null(settings$assim.batch$diag.plot.iter)) {
@@ -126,25 +133,26 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
     ## Adjust Jump distribution
     if(i %% settings$assim.batch$jump$adapt < 1){
-      settings <- pda.adjust.jumps(settings, accept.rate, pnames=pname[prior.ind])
-      accept.rate <- numeric(n.param)
+      jmp.list <- pda.adjust.jumps(settings, jmp.list, accept.rate, pnames=pname.all[prior.ind.all])
+      accept.rate <- numeric(sum(n.param))
 
-      # Save updated settings XML. Will be overwritten at end, but useful in case of crash
-      saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 
-        paste0('pecan.pda', settings$assim.batch$ensemble.id, '.xml')))
+      save(jmp.list, file=file.path(settings$outdir, paste0('pecan.pda.jmp.list.', settings$assim.batch$ensemble.id, '.Rdata')))
+      # # Save updated settings XML. Will be overwritten at end, but useful in case of crash
+      # saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 
+      #   paste0('pecan.pda', settings$assim.batch$ensemble.id, '.xml')))
     }
 
-    for(j in 1:n.param){
+    for(j in 1:sum(n.param)){
       pstar <- parm
       
       ## Propose parameter values
       if(i > 1) {
-        pnew  <- rnorm(1, parm[prior.ind[j]], settings$assim.batch$jump$jvar[[j]])
-        pstar[prior.ind[j]] <- pnew
+        pnew  <- rnorm(1, parm[prior.ind.all[j]], jmp.list[j])
+        pstar[prior.ind.all[j]] <- pnew
       }
 
       ## Check that value falls within the prior
-      prior.star <- prior.fn$dmvprior(pstar)
+      prior.star <- prior.fn.all$dmvprior(pstar)
       
       # Convert pstar to a list of 1-row data frame 
       if(is.null(dim(pstar))) {
@@ -212,13 +220,10 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   jvar.list <- list()
   
 
-  mcmc.list[[1]] <- params[ , prior.ind, drop=FALSE]
-  jvar.list[[1]] <- unlist(settings$assim.batch$jump$jvar)
+  mcmc.list[[1]] <- params[ , prior.ind.all, drop=FALSE]
+  #jvar.list[[1]] <- unlist(settings$assim.batch$jump$jvar)
+  jvar.list[[1]] <- jmp.list
   
-  # TODO: generalize bruteforce for >1 PFTs
-  pname=list(pname)
-  prior=list(prior)
-  prior.ind=list(prior.ind)
   
   # Separate each PFT's parameter samples to their own list
   mcmc.param.list <- list()
@@ -231,7 +236,8 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
   ## ------------------------------------ Clean up ------------------------------------ ##
   ## Save outputs to plots, files, and db
-  settings <- pda.postprocess(settings, con, mcmc.param.list, jvar.list, pname, prior, prior.ind)
+  save(jmp.list, file=file.path(settings$outdir, paste0('pecan.pda.jmp.list.', settings$assim.batch$ensemble.id, '.Rdata')))
+  settings <- pda.postprocess(settings, con, mcmc.param.list, pname, prior.list, prior.ind)
 
   ## close database connection
   if(!is.null(con)) db.close(con)
