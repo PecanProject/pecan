@@ -15,17 +15,56 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
 
 # see if application needs running
 #if [ ! -e "@OUTDIR@/history.xml" ]; then
+
+  ## Seem to be stuck having to build a new case. Will try and avoid this in the future
+  ## HACK: hard coding path
+  cd /home/carya/ed-clm/cime/scripts
+  ./create_newcase -case @RUNDIR@ -res 1x1_brazil -compset ICLM45ED -mach eddi -compiler gnu
+
   cd "@RUNDIR@"
   
   ## copy required files from default case
-  cp -rf @CASE@/* .
+  #cp -rf @CASE@/* .
+  
+  ## THINGS THAT ARE IN REFCASE
+  # Modifying : env_mach_pes.xml
+./xmlchange -file env_mach_pes.xml -id NTASKS_ATM -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_LND -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_ICE -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_OCN -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_CPL -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_GLC -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_ROF -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_WAV -val 1
+./xmlchange -file env_mach_pes.xml -id MAX_TASKS_PER_NODE -val 1
+./xmlchange -file env_mach_pes.xml -id TOTALPES -val 1
+  # Modifying : env_build.xml
+./xmlchange -file env_build.xml -id GMAKE -val make
+./xmlchange -file env_build.xml -id DEBUG -val TRUE
+  # Modifying : env_run.xml
+./xmlchange -file env_run.xml -id REST_N -val 1
+./xmlchange -file env_run.xml -id REST_OPTION -val nyears
+./xmlchange -file env_run.xml -id DATM_CLMNCEP_YR_START -val 1999
+./xmlchange -file env_run.xml -id DATM_CLMNCEP_YR_END -val 1999
+## TWO MORE HARDCODE HACKS
+./xmlchange -file env_run.xml -id DIN_LOC_ROOT -val /home/carya/FATESinput/
+./xmlchange -file env_run.xml -id DIN_LOC_ROOT_CLMFORC -val '/home/carya/FATESinput/'
+./xmlchange -file env_run.xml -id DOUT_S -val TRUE
+./xmlchange -file env_run.xml -id DOUT_S_ROOT -val '@RUNDIR@/run'
+./xmlchange -file env_run.xml -id BATCHQUERY -val ''
+./xmlchange -file env_run.xml -id BATCHSUBMIT -val ''
+./xmlchange -file env_run.xml -id PIO_DEBUG_LEVEL -val 0
+mkdir case/run/timing
+## END REFCASE  
   
   ## FATES seems to need a timing folder, but doesn't create it itself
   mkdir run/timing
+  mkdir timing
   
   ## ENV_BUILD update configurations
   ./xmlchange -file env_build.xml -id CESMSCRATCHROOT -val @CASE@
   ./xmlchange -file env_build.xml -id EXEROOT -val @BLD@
+  ./xmlchange -file env_build.xml -id BUILD_COMPLETE -val TRUE
   
   ## SITE INFO --> DOMAIN FILE
   ## @CASE@/share/domains/domain.clm/
@@ -41,8 +80,26 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   ## APPLY CONFIG CHANGES
   ./case.setup
   
+  ## ADDITIONAL MODS THAT ARE JUST ASSOCIATED WITH REFCASE
+cat >> user_nl_clm << EOF
+hist_empty_htapes = .true.
+hist_fincl1='EFLX_LH_TOT','TSOI_10CM','QVEGT','NEP','GPP','AR','ED_bleaf','ED_biomass','NPP_column'
+hist_mfilt             = 8760
+hist_nhtfrq            = -1
+EOF
+
+# Modify user_nl_datm
+#cat >> user_nl_datm << EOF
+#EOF  
+  
+  ./case.build
+  
   ## RUN
   cd run
+  mkdir timing
+  echo `pwd`
+  echo `ls -altr`
+  
   "@BINARY@"
   STATUS=$?
   
