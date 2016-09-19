@@ -684,14 +684,14 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
     
     if(settings$assim.batch$chain > 1){
       
-      GBR <- gelman.plot(params.subset[[i]], autoburnin = FALSE)
-      iters <- apply(GBR$shrink[,,2,drop=FALSE], 2, function(x) which(x > 1.1)[length(which(x > 1.1))])
-      burnin <- GBR$last.iter[iters+1]
-      if(any(is.na(burnin))){
-        logger.info(paste0("*** Chains have not converged yet ***"))
-        burnin[is.na(burnin)] <- 1
-      }
-
+      # GBR <- gelman.plot(params.subset[[i]], autoburnin = FALSE)
+      # iters <- apply(GBR$shrink[,,2,drop=FALSE], 2, function(x) which(x > 1.1)[length(which(x > 1.1))])
+      # burnin <- GBR$last.iter[iters+1]
+      # if(any(is.na(burnin))){
+      #   logger.info(paste0("*** Chains have not converged yet ***"))
+      #   burnin[is.na(burnin)] <- 1
+      # }
+    burnin <- getBurnin(params.subset[[i]])
       
     }else{
       
