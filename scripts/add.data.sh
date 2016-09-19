@@ -16,12 +16,16 @@ DALEC="$DATADIR/dalec_EnKF_pub/input_data"
 ED_INPUT="$DATADIR/ed_inputs"
 FAO_INPUT="$DATADIR/faoOLD"
 OGE2_INPUT="$DATADIR/oge2OLD"
+LPJ_GUESS="$DATADIR/lpj-guess"
 
 # ED inputs
 addInputFile "${FQDN}" "294" "" "${ED_INPUT}/glu"
 addInputFile "${FQDN}" "295" "" "${ED_INPUT}"
 addInputFile "${FQDN}" "297" "FAO_" "${FAO_INPUT}"
 addInputFile "${FQDN}" "296" "OGE2_" "${OGE2_INPUT}"
+
+# LPJ-GUESS inputs
+addInputFile "${FQDN}" "1000000903" "cru_1901_2006.bin" "${LPJ_GUESS}"
 
 # [76] EBIFARM
 addInputFile "${FQDN}" "7" "ED_MET_DRIVER_HEADER" "${SITES}/ebifarm"

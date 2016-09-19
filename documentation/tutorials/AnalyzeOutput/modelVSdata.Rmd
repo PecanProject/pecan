@@ -63,7 +63,7 @@ obs$NEE[obs$UST<0.2]=NA
 **Third**, _convert the model to have the same units as the data_
 
 ```{r}
-modNEE <- ud.convert(out$NEE,"kg ha-1 yr-1","ug m-2 s-1")/12.0 #12 g C per mol
+modNEE <- ud.convert(out$NEE,"kg m-2 s-1","ug m-2 s-1")/12.0 #12 g C per mol
 ```
 
 **Fourth**, _plot model predictions vs. observations_ and compare this to a 1:1 line 

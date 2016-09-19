@@ -191,7 +191,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
       ## GPfit optimization routine assumes that inputs are in [0,1]
       ## Instead of drawing from parameters, we draw from probabilities
       knots.probs.all <- do.call("cbind", knots.probs)
-      prior.ind.all <- do.call("c", prior.ind)
+      prior.ind.all <- which(unlist(pname) %in% unlist(settings$assim.batch$param.names))
         
       X <- knots.probs.all[, prior.ind.all, drop=FALSE]
       
@@ -227,7 +227,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
         init.x <- mcmc.list[[c]][nrow(mcmc.list[[c]]),]
         
         prior.all <- do.call("rbind", prior.list)
-        prior.ind.all <- do.call("c", prior.ind)
+        prior.ind.all <- which(unlist(pname) %in% unlist(settings$assim.batch$param.names))
         prior.fn.all <- pda.define.prior.fn(prior.all)
         
         init.list[[c]] <-  as.list(sapply(seq_along(prior.ind.all), 

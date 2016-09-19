@@ -33,12 +33,12 @@ assim.batch <- function(settings) {
 
 ##' @export
 runModule.assim.batch <- function(settings) {
-  if(is.SettingsList(settings)) {
+  if(is.MultiSettings(settings)) {
     return(papply(settings, runModule.assim.batch))
   } else if (is.Settings(settings)) {
     return( assim.batch(settings) )
   } else {
-    stop("runModule.assim.batch only works with Settings or SettingsList")
+    stop("runModule.assim.batch only works with Settings or MultiSettings")
   }
 }
 
@@ -678,7 +678,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
     
     if(settings$assim.batch$chain > 1){
       
-      GBR <- gelman.plot(params.subset[[i]])
+      GBR <- gelman.plot(params.subset[[i]], autoburnin = FALSE)
       iters <- apply(GBR$shrink[,,2,drop=FALSE], 2, function(x) which(x > 1.1)[length(which(x > 1.1))])
       burnin <- GBR$last.iter[iters+1]
       if(any(is.na(burnin))){
@@ -722,7 +722,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
     }
     
     if(length(params.subset[[i]])>1 & enough.iter){
-      gelman.plot(params.subset[[i]], auto.layout = FALSE)
+      gelman.plot(params.subset[[i]], auto.layout = FALSE, autoburnin = FALSE)
     }
     
     layout(1)

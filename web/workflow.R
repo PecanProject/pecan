@@ -14,69 +14,6 @@
 library(PEcAn.all)
 library(RCurl)
 
-#--------------------------------------------------------------------------------#
-# Functions used to write STATUS used by history
-#--------------------------------------------------------------------------------#
-status.start <- function(name) {
-  if (exists("settings")) {
-    cat(paste(name,
-              format(Sys.time(), "%F %T"), sep="\t"),
-        file=file.path(settings$outdir, "STATUS"), append=TRUE)
-  }
-}
-status.end <- function(status="DONE") {
-  if (exists("settings")) {
-    cat(paste("",
-              format(Sys.time(), "%F %T"),
-              status,
-              "\n", sep="\t"),
-        file=file.path(settings$outdir, "STATUS"), append=TRUE)
-  }
-}
-status.skip <- function(name) {
-  if (exists("settings")) {
-    cat(paste(name,
-              format(Sys.time(), "%F %T"),
-              "",
-              format(Sys.time(), "%F %T"),
-              "SKIPPED",
-              "\n", sep="\t"),
-        file=file.path(settings$outdir, "STATUS"), append=TRUE)
-  }
-}
-status.check <- function(name) {
-  if (!exists("settings")) return (0)
-  status.file=file.path(settings$outdir, "STATUS")
-  if (!file.exists(status.file)){
-    return (0)
-  }
-  status.data <- read.table(status.file, row.names=1, header=FALSE, sep="\t", quote="", fill=TRUE)
-  if (! name %in% row.names(status.data)) {
-    return (0)
-  }
-  status.data[name,]
-  if (is.na(status.data[name, 3])) {
-    logger.warn("UNKNOWN STATUS FOR", name)
-    return (0)
-  }
-  if (status.data[name, 3] == "DONE") {
-    return (1)
-  }
-  if (status.data[name, 3] == "ERROR") {
-    return (-1)
-  }
-  return (0)
-}
-kill.tunnel <- function() {
-  if (exists("settings") && !is.null(settings$host$tunnel)) {
-    pidfile <- file.path(dirname(settings$host$tunnel), "pid")
-    pid <- readLines(pidfile)
-    print(paste("Killing tunnel with PID", pid))
-    tools::pskill(pid)
-    file.remove(pidfile)
-  }
-}
-
 # make sure always to call status.end
 options(warn=1)
 options(error=quote({
@@ -108,54 +45,6 @@ if (length(which(commandArgs() == "--continue")) == 0) {
 }
   
 # Do conversions
-do.conversions <- function(settings) {
-  if(is.SettingsList(settings)) {
-    return(papply(settings, do.conversions))
-  }
-  
-  needsave <- FALSE
-  for(i in 1:length(settings$run$inputs)) {
-    input <- settings$run$inputs[[i]]
-    if (is.null(input)) next
-  
-    input.tag <- names(settings$run$input)[i]
-  
-    # fia database
-    if ((input['input'] == 'fia') && (status.check("FIA2ED") == 0)) {
-      status.start("FIA2ED")
-      fia.to.psscss(settings)
-      status.end()
-      needsave <- TRUE
-    }
-  
-    # met conversion
-    if(input.tag == 'met') {
-      name <- ifelse(is.null(settings$browndog), "MET Process", "BrownDog")
-      if (is.null(input$path) && (status.check(name) == 0)) {
-        status.start(name)
-        result <- PEcAn.data.atmosphere::met.process(
-          site       = settings$run$site, 
-          input_met  = settings$run$inputs$met,
-          start_date = settings$run$start.date,
-          end_date   = settings$run$end.date,
-          model      = settings$model$type,
-          host       = settings$host,
-          dbparms    = settings$database$bety, 
-          dir        = settings$database$dbfiles,
-          browndog   = settings$browndog)
-        settings$run$inputs[[i]][['path']] <- result
-        status.end()
-        needsave <- TRUE
-      }
-    }
-  }
-  if (needsave) {
-    saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.METProcess.xml'))  
-  } else if (file.exists(file.path(settings$outdir, 'pecan.METProcess.xml'))) {
-    settings <- read.settings(file.path(settings$outdir, 'pecan.METProcess.xml'))
-  }
-  return(settings)
-}
 settings <- do.conversions(settings)
 
 
@@ -208,8 +97,6 @@ if (status.check("OUTPUT") == 0) {
   status.end()
 }
 
-logger.info("current C_stack_info(): ",Cstack_info()['current'])
-
 # Run ensemble analysis on model output. 
 if (status.check("ENSEMBLE") == 0) {
   status.start("ENSEMBLE")
@@ -217,17 +104,12 @@ if (status.check("ENSEMBLE") == 0) {
   status.end()
 }
 
-## DEBUG: getting odd C_stack errors from run.sensitivity.analysis -- checking usage prior to call
-logger.info("current C_stack_info(): ",Cstack_info()['current'])
-
 # Run sensitivity analysis and variance decomposition on model output
 if (status.check("SENSITIVITY") == 0) {
   status.start("SENSITIVITY")
   run.sensitivity.analysis(settings)
   status.end()
 }
-
-logger.info("current C_stack_info(): ",Cstack_info()['current'])
 
 # Run parameter data assimilation
 if ('assim.batch' %in% names(settings)) {
