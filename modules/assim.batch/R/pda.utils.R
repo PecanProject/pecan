@@ -683,25 +683,8 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
   for(i in seq_along(settings$pfts)){
     params.subset[[i]]  <- as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
     
-    if(settings$assim.batch$chain > 1){
-      
-      # GBR <- gelman.plot(params.subset[[i]], autoburnin = FALSE)
-      # iters <- apply(GBR$shrink[,,2,drop=FALSE], 2, function(x) which(x > 1.1)[length(which(x > 1.1))])
-      # burnin <- GBR$last.iter[iters+1]
-      # if(any(is.na(burnin))){
-      #   logger.info(paste0("*** Chains have not converged yet ***"))
-      #   burnin[is.na(burnin)] <- 1
-      # }
     burnin <- getBurnin(params.subset[[i]])
       
-    }else{
-      
-      burnin <- ifelse(!is.null(settings$assim.batch$burnin), 
-                       as.numeric(settings$assim.batch$burnin), 
-                       ceiling(min(2000,0.2*settings$assim.batch$iter)))
-      
-    }
-    
     # rare, but this can happen, better to throw an error than continue, it might lead mis-interpretation of posteriors otherwise
     if(max(burnin) == nrow(params.subset[[i]][[1]])){
       logger.severe(paste0("*** Burn-in is the same as the length of the chain, please run a longer chain ***"))
@@ -927,9 +910,9 @@ pda.settings.bt <- function(settings){
   
   iterations = as.numeric(settings$assim.batch$bt.settings$iter)
   optimize = ifelse(!is.null(settings$assim.batch$bt.settings$optimize), settings$assim.batch$bt.settings$optimize, TRUE)
-  consoleUpdates = ifelse(!is.null(settings$assim.batch$bt.settings$consoleUpdates), as.numeric(settings$assim.batch$bt.settings$consoleUpdates), max(round(iterations/10),100))
+  #consoleUpdates = ifelse(!is.null(settings$assim.batch$bt.settings$consoleUpdates), as.numeric(settings$assim.batch$bt.settings$consoleUpdates), max(round(iterations/10),100))
   adapt = ifelse(!is.null(settings$assim.batch$bt.settings$adapt), settings$assim.batch$bt.settings$adapt, TRUE)
-  adaptationInverval = ifelse(!is.null(settings$assim.batch$bt.settings$adaptationInverval), as.numeric(settings$assim.batch$bt.settings$adaptationInverval), max(round(iterations/100*5),100))
+  #adaptationInverval = ifelse(!is.null(settings$assim.batch$bt.settings$adaptationInverval), as.numeric(settings$assim.batch$bt.settings$adaptationInverval), max(round(iterations/100*5),100))
   adaptationNotBefore = ifelse(!is.null(settings$assim.batch$bt.settings$adaptationNotBefore), as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore), adaptationInverval)
   DRlevels = ifelse(!is.null(settings$assim.batch$bt.settings$DRlevels), as.numeric(settings$assim.batch$bt.settings$DRlevels), 1)
   if(!is.null(settings$assim.batch$bt.settings$gibbsProbabilities)){
@@ -941,11 +924,10 @@ pda.settings.bt <- function(settings){
   
   if(sampler == "Metropolis") {
     bt.settings <- list(iterations = iterations, optimize = optimize, DRlevels = DRlevels, adapt = adapt, 
-                        adaptationInverval = adaptationInverval, adaptationNotBefore = adaptationNotBefore,
-                        gibbsProbabilities = gibbsProbabilities, consoleUpdates = consoleUpdates)
+                        adaptationNotBefore = adaptationNotBefore, gibbsProbabilities = gibbsProbabilities)
   } else if(sampler %in% c("AM", "M", "DRAM", "DR")) {
     bt.settings <- list(iterations = iterations, startValue = "prior")
-  } else if(sampler %in% c("DE", "DEzs","DREAM", "DREAMzs")) {
+  } else if(sampler %in% c("DE", "DEzs","DREAM", "DREAMzs", "Twalk")) {
     bt.settings <- list(iterations = iterations)
   } else if(sampler == "SMC") {
     bt.settings <- list(initialParticles = list("prior", iterations))
