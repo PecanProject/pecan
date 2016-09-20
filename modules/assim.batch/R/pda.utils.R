@@ -382,12 +382,13 @@ pda.define.prior.fn <- function(prior) {
 ##'
 ##' @author Ryan Kelly
 ##' @export
-pda.init.params <- function(settings, con, pname, n.param.all) {
+pda.init.params <- function(settings, con, chain, pname, n.param.all) {
   ## Load params from previous run, if provided. 
-  if(!is.null(settings$assim.batch$params.id)) {
-    params.db <- db.query(paste0("SELECT * FROM dbfiles WHERE id = ", settings$assim.batch$params.id), con)
-    load(file.path(params.db$file_path, params.db$file_name)) # loads params
+  if(!is.null(settings$assim.batch$extension)) {
 
+    load(settings$assim.batch$mcmc.path) # loads params
+    params <- mcmc.list[[chain]]
+    
     start  <- nrow(params) + 1
     finish <- nrow(params) + as.numeric(settings$assim.batch$iter)
     params <- rbind(params, matrix(NA, finish - start + 1, n.param.all))
