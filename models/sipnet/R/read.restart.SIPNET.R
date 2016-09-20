@@ -34,7 +34,7 @@ read.restart.SIPNET <- function(outdir,runid,time,settings,variables,sample_para
     
     forecast<-list()
     
-    unit.conv <- (10000/1)*(1/10000)*(365.25*24*60*60)
+    unit.conv <- (10000/1)*(1/1000)*(365.25*24*60*60)
   
     #### PEcAn Standard Outputs
     if("NPP" %in% variables){
