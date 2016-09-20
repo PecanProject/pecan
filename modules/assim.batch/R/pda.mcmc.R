@@ -94,12 +94,12 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   #filename.mcmc.temp <- file.path(settings$outdir, "pda.mcmc.txt")
   
 
-  # TODO: more than one chain
-  mcmc.list <- list()
-  jvar.list <- list()
+
+  mcmc.list <- jvar.list <- list()
+
   
-  for(c in 1:settings$assim.batch$chain){
-    params.list <- pda.init.params(settings, con, pname.all, sum(n.param.all)) 
+  for(chain in 1:settings$assim.batch$chain){
+    params.list <- pda.init.params(settings, con, chain, pname.all, sum(n.param.all)) 
     params <- params.list$params
     start  <- params.list$start
     finish <- params.list$finish
@@ -120,8 +120,13 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     # Default jump variances. 
     #for(c in 1:settings$assim.batch$chain){
     # default to 0.1 * 90% prior CI
-    jmp.vars <-sapply(prior.fn.all$qprior, function(x) 0.1 * diff(eval(x, list(p=c(0.05,0.95)))))[prior.ind.all]
-    #}
+    if(!is.null(settings$assim.batch$extension)) {
+      load(settings$assim.batch$jvar.path) # loads params
+      jmp.vars <- jvar.list[[chain]]
+    }else{
+      jmp.vars <- sapply(prior.fn.all$qprior, function(x) 0.1 * diff(eval(x, list(p=c(0.05,0.95)))))[prior.ind.all]
+    }
+
     
     ## Create dir for diagnostic output
     if(!is.null(settings$assim.batch$diag.plot.iter)) {
@@ -171,7 +176,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
         if(is.finite(prior.star)){
           ## Set up run and write run configs
           run.id <- pda.init.run(settings, con, my.write.config, workflow.id, run.params, n=1,
-                                 run.names=paste0("MCMC_chain.",c,"_iteration.",i,"_variable.",j))
+                                 run.names=paste0("MCMC_chain.",chain,"_iteration.",i,"_variable.",j))
           
           ## Start model run
           start.model.runs(settings,settings$database$bety$write)
@@ -223,11 +228,16 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     
     
     
-    mcmc.list[[c]] <- params[ , prior.ind.all, drop=FALSE]
-    jvar.list[[c]] <- jmp.vars
+    mcmc.list[[chain]] <- params
+    jvar.list[[chain]] <- jmp.vars
   } # end of chain-loop
-
   
+  settings$assim.batch$mcmc.path <- file.path(settings$outdir, 
+                                              paste0('mcmc.list.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+  save(mcmc.list, file = settings$assim.batch$mcmc.path)
+
+  # subset to params of interst only
+  mcmc.list <-lapply(mcmc.list, "[", , prior.ind.all, drop=FALSE)
   
   # Separate each PFT's parameter samples to their own list
   mcmc.param.list <- list()
@@ -240,7 +250,11 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
   ## ------------------------------------ Clean up ------------------------------------ ##
   ## Save outputs to plots, files, and db
-  save(jvar.list, file=file.path(settings$outdir, paste0('pecan.pda.jvar.', settings$assim.batch$ensemble.id, '.Rdata')))
+  settings$assim.batch$jvar.path <- file.path(settings$outdir, 
+                                              paste0('jvar.pda', settings$assim.batch$ensemble.id, '.Rdata'))
+  save(jvar.list, file=settings$assim.batch$jvar.path)
+  
+  
   settings <- pda.postprocess(settings, con, mcmc.param.list, pname, prior.list, prior.ind)
 
   ## close database connection
