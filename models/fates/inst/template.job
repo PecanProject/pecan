@@ -19,20 +19,19 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   ## Seem to be stuck having to build a new case. Will try and avoid this in the future
   ## HACK: hard coding path
   cd /home/carya/ed-clm/cime/scripts
-  ./create_newcase -case @RUNDIR@ -res 1x1_brazil -compset ICLM45ED -mach eddi -compiler gnu
+  ./create_newcase -case @CASEDIR@ -res 1x1_brazil -compset ICLM45ED -mach eddi -compiler gnu
 
   cd "@RUNDIR@"
-  cd ..
   
   ## copy required files from default case
-  #cp -rf @CASE@/* .
+  ## cp -rf @REFCASE@/* .
   
   ## RECURSIVELY COPY/SYMLINK REFERENCE INPUTS DIRECTORY (DIN_LOC_ROOT)
   ## create folders and symbolic links. Links will later be deleted when non-default files are specified
   mkdir input
   echo "PEcAn.FATES::recurse.create('input','@DEFAULT@')" | R --vanilla
 
-  cd case
+  cd "@CASEDIR@"
 
   ## THINGS THAT ARE IN REFCASE
   # Modifying : env_mach_pes.xml
@@ -57,7 +56,7 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
 ./xmlchange -file env_run.xml -id DIN_LOC_ROOT -val @INDIR@
 ./xmlchange -file env_run.xml -id DIN_LOC_ROOT_CLMFORC -val '@INDIR@'
 ./xmlchange -file env_run.xml -id DOUT_S -val TRUE
-./xmlchange -file env_run.xml -id DOUT_S_ROOT -val '@RUNDIR@/run'
+./xmlchange -file env_run.xml -id DOUT_S_ROOT -val '@CASEDIR@/run'
 ./xmlchange -file env_run.xml -id BATCHQUERY -val ''
 ./xmlchange -file env_run.xml -id BATCHSUBMIT -val ''
 ./xmlchange -file env_run.xml -id PIO_DEBUG_LEVEL -val 0
@@ -69,18 +68,19 @@ mkdir case/run/timing
   mkdir timing
   
   ## ENV_BUILD update configurations
-  ./xmlchange -file env_build.xml -id CESMSCRATCHROOT -val @CASE@
+  ./xmlchange -file env_build.xml -id CESMSCRATCHROOT -val @CASEDIR@
   ./xmlchange -file env_build.xml -id EXEROOT -val @BLD@
   ./xmlchange -file env_build.xml -id BUILD_COMPLETE -val TRUE
   
-  ## SITE INFO --> DOMAIN FILE
-  ## @CASE@/share/domains/domain.clm/
-  
   ## DATES -> ENV_RUN
-  ./xmlchange -file env_run.xml -id RUNDIR -val @RUNDIR@/run
+  ./xmlchange -file env_run.xml -id RUNDIR -val @CASEDIR@/run
   ./xmlchange -file env_run.xml -id RUN_STARTDATE -val @START_DATE@
   ./xmlchange -file env_run.xml -id STOP_OPTION -val ndays
   ./xmlchange -file env_run.xml -id STOP_N -val @STOP_N@
+  
+  ## SITE INFO --> DOMAIN FILE
+  rm @INDIR@/share/domains/domain.clm/*
+  ln -s @RUNDIR@/domain.*.nc @INDIR@/share/domains/domain.clm/
     
   ## MET --> DATM
   
