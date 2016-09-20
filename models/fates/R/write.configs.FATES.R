@@ -36,7 +36,8 @@
    case   <- settings$model$binary
    bld    <- file.path(case,"bld")
    binary <- file.path(bld,"cesm.exe")
-   indir  <- file.path(settings$host$rundir, run.id,"input")
+   indir  <- file.path(settings$host$rundir, run.id,"input") ## input directory
+   default <- settings$run$inputs$default$path ## reference inputs file structure
    
    ##-----------------------------------------------------------------------##
    ##                                                                       ##
@@ -46,10 +47,7 @@
    dir.create(indir)
    
    ## DEFAULTS
-   def.path <- settings$run$inputs$met$path
-   ## create folders and symbolic links. Links will later be deleted when non-default files are specified
-   recurse.create(indir,def.path)
-   ## need to import database, create record, update path below, and then test
+   ## need to import database, create record, and then test
    
    ## SITE INFO --> DOMAIN FILE (lat/lon)
 
@@ -102,6 +100,8 @@
    jobsh <- gsub('@CASE@', case, jobsh)
    jobsh <- gsub('@BLD@', bld, jobsh)
    jobsh <- gsub('@BINARY@', binary, jobsh)
+   jobsh <- gsub('@INDIR@', indir, jobsh)
+   jobsh <- gsub('@DEFAULT@', default, jobsh)
  
    ## DATES -> ENV_RUN
    ## CLM is a bit odd and takes a start date and length, so we need to precompute
