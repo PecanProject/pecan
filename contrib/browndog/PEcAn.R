@@ -102,7 +102,7 @@ if (grepl("\\.zip$", outputfile) || (end_year - start_year > 1) && grepl("\\.pec
   for(year in start_year:end_year) {
     files <- c(files, files <- file.path(folder, list.files(folder, pattern = paste0("*", year, "*"))))
   }
-  print(length(files))
+  
   # use intermediate file so it does not get marked as done until really done
   dir.create(tempDir, showWarnings=FALSE, recursive=TRUE)
   zipfile <- file.path(tempDir, "temp.zip")
