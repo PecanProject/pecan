@@ -68,14 +68,16 @@ if(length(site) < 0){
   site <-list(id = site$id[1], name = site$name[1])
 }
 db.close(con)
-#assign default model according to output file 
-if (grepl("\\.pecan.zip$", outputfile) || grepl("\\.pecan.nc$", outputfile) ){
-  model      <- ifelse(is.null(input$model), 'BIOCRO', input$model)
-} else {
-  #if (grepl("\\.cf$", outputfile))
-  model      <- ifelse(is.null(input$model), 'LINKAGES', input$model)
-} 
 
+if (grepl("\\.ed.zip$", outputfile) ){
+  model      <- ifelse(is.null(input$model), 'ED2', input$model)
+} else if (grepl("\\.cf$", outputfile)) {
+  model      <- ifelse(is.null(input$model), 'LINKAGES', input$model)
+} else if (grepl("\\.clim$", outputfile)){
+  model      <- ifelse(is.null(input$model), 'SIPNET', input$model)
+} else {
+  model      <- ifelse(is.null(input$model), 'BIOCRO', input$model)
+}
 mettype    <- ifelse(is.null(input$type), 'CRUNCEP', input$type)
 input_met <- list(username = "pecan", source = mettype)
 start_date <- input$start_date
@@ -90,17 +92,17 @@ outfile_met <-  met.process(site, input_met, start_date, end_date, model, host, 
 start_year <- year(start_date)
 end_year <- year(end_date)
 
-# if more than 1 year for *.pecan.nc , or zip specified, zip result
-if (grepl("\\.zip$", outputfile) || grepl("\\.pecan.nc$", outputfile) && (end_year - start_year > 1)) {
-  # folder for output files
+# if more than 1 year, or zip specified, zip result
+if (grepl("\\.zip$", outputfile) || (end_year - start_year > 1) && grepl("\\.pecan.nc$", outputfile)) {
+  # folder for files with gapfilling
   folder  <- dirname(outfile_met)
   outname <- basename(outfile_met)
-  # get list of files we need to zip by matching years, may need matching outname
+  # get list of files we need to zip
   files <- c()
   for(year in start_year:end_year) {
-    files <- c(files, file.path(folder,list.files(folder, pattern = paste0("*", year, "*"))))
+    files <- c(files, files <- file.path(folder, list.files(folder, pattern = paste0("*", year, "*"))))
   }
-  
+  print(length(files))
   # use intermediate file so it does not get marked as done until really done
   dir.create(tempDir, showWarnings=FALSE, recursive=TRUE)
   zipfile <- file.path(tempDir, "temp.zip")
@@ -108,6 +110,9 @@ if (grepl("\\.zip$", outputfile) || grepl("\\.pecan.nc$", outputfile) && (end_ye
   # move file should be fast
   file.rename(zipfile, outputfile)
 } else {
+  if(!file.exists(outfile_met)){
+    outfile_met = paste0(outfile_met, ".", start_year, ".nc")
+  }
   file.link(outfile_met, outputfile)
 }
 
