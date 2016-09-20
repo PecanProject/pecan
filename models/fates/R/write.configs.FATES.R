@@ -31,12 +31,14 @@
 #   #
 
    # find out where things are
-   rundir <- file.path(settings$host$rundir, run.id,"case")  ## ADDITION OF CASE SHOULD BE REMOVED ONCE NEWCASE AVOIDED ****
+   local.rundir <- file.path(settings$rundir, run.id) ## this is on local machine for staging
+   rundir <- file.path(settings$host$rundir, run.id)  ## this is on remote machine for execution
+   casedir <- file.path(rundir,"case") 
    outdir <- file.path(settings$host$outdir, run.id)
-   case   <- settings$model$binary
-   bld    <- file.path(case,"bld")
+   refcase   <- settings$model$binary
+   bld    <- file.path(refcase,"bld")
    binary <- file.path(bld,"cesm.exe")
-   indir  <- file.path(settings$host$rundir, run.id,"input") ## input directory
+   indir  <- file.path(rundir,"input") ## input directory
    default <- settings$run$inputs$default$path ## reference inputs file structure
    
    ##-----------------------------------------------------------------------##
@@ -46,7 +48,19 @@
    ##-----------------------------------------------------------------------##
 
    ## SITE INFO --> DOMAIN FILE (lat/lon)
-
+   gridres = 0.125  ## ultimately this should be a variable
+   lat = settings$run$site$lat
+   lon = (settings$run$site$lon + 360) %% 360 ## make sure coords in 0-360 range, not negative
+   domain.default <- system.file("domain.lnd.1x1pt-brazil_navy.090715.nc",package="PEcAn.FATES")
+   file.copy(domain.default,local.rundir)
+   domain.nc <- nc_open(file.path(local.rundir,basename(domain.default)),write=TRUE)
+   ncvar_put(nc=domain.nc, varid='xc', vals=lon)
+   ncvar_put(nc=domain.nc, varid='yc', vals=lat)
+   ncvar_put(nc=domain.nc, varid='xv', vals=lon+c(-1,1,1,-1)*gridres)
+   ncvar_put(nc=domain.nc, varid='yv', vals=lat+c(-1,-1,1,1)*gridres)
+   ncvar_put(nc=domain.nc, varid='area', vals=(2*gridres*pi/180)^2)   
+   nc_close(domain.nc)
+   
    #   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
    #   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
    ## note: domain file seems relatively simple, might be easier to write from scratch than to edit on remote via bash
@@ -92,8 +106,9 @@
 
    ## PATHS
    jobsh <- gsub('@RUNDIR@', rundir, jobsh)
+   jobsh <- gsub('@CASEDIR@', casedir, jobsh)
    jobsh <- gsub('@OUTDIR@', outdir, jobsh)
-   jobsh <- gsub('@CASE@', case, jobsh)
+   jobsh <- gsub('@REFCASE@', refcase, jobsh)
    jobsh <- gsub('@BLD@', bld, jobsh)
    jobsh <- gsub('@BINARY@', binary, jobsh)
    jobsh <- gsub('@INDIR@', indir, jobsh)
