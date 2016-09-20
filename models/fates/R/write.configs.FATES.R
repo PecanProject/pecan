@@ -29,13 +29,44 @@
 #   # make Jobs.sh -case_submit
 #   # call met2model and add to namelists
 #   #
-# 
-# find out where things are
+
+   # find out where things are
    rundir <- file.path(settings$host$rundir, run.id,"case")  ## ADDITION OF CASE SHOULD BE REMOVED ONCE NEWCASE AVOIDED ****
    outdir <- file.path(settings$host$outdir, run.id)
    case   <- settings$model$binary
    bld    <- file.path(case,"bld")
    binary <- file.path(bld,"cesm.exe")
+   indir  <- file.path(settings$host$rundir, run.id,"input")
+   
+   ##-----------------------------------------------------------------------##
+   ##                                                                       ##
+   ##                             INPUTS                                    ##
+   ##                                                                       ##
+   ##-----------------------------------------------------------------------##
+   dir.create(indir)
+   
+   ## DEFAULTS
+   def.path <- settings$run$inputs$met$path
+   ## create folders and symbolic links. Links will later be deleted when non-default files are specified
+   recurse.create(indir,def.path)
+   ## need to import database, create record, update path below, and then test
+   
+   ## SITE INFO --> DOMAIN FILE (lat/lon)
+
+   #   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
+   #   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
+   ## note: domain file seems relatively simple, might be easier to write from scratch than to edit on remote via bash
+   ## FOR FIRST STEP, CAN USE DEFAULT
+   ## @CASE@/share/domains/domain.clm/
+   
+   
+   
+   
+   ##-----------------------------------------------------------------------##
+   ##                                                                       ##
+   ##                             JOB.SH                                    ##
+   ##                                                                       ##
+   ##-----------------------------------------------------------------------##
    
 # create launch script (which will create symlink)
    if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
@@ -72,12 +103,6 @@
    jobsh <- gsub('@BLD@', bld, jobsh)
    jobsh <- gsub('@BINARY@', binary, jobsh)
  
-   ## SITE INFO --> DOMAIN FILE
-#   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
-#   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
-## note: domain file seems relatively simple, might be easier to write from scratch than to edit on remote via bash
-   ## FOR FIRST STEP, CAN USE DEFAULT
-   
    ## DATES -> ENV_RUN
    ## CLM is a bit odd and takes a start date and length, so we need to precompute
    ## this needs to be generalized to fractional years, but accounting for 365 day year
