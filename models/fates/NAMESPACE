@@ -2,4 +2,5 @@
 
 export(met2model.FATES)
 export(model2netcdf.FATES)
+export(recurse.create)
 export(write.config.FATES)
