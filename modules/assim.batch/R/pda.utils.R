@@ -382,7 +382,7 @@ pda.define.prior.fn <- function(prior) {
 ##'
 ##' @author Ryan Kelly
 ##' @export
-pda.init.params <- function(settings, con, chain, pname, n.param.all) {
+pda.init.params <- function(settings, chain, pname, n.param.all) {
   ## Load params from previous run, if provided. 
   if(!is.null(settings$assim.batch$extension)) {
 
