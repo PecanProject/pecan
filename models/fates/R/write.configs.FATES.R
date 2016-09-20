@@ -44,11 +44,7 @@
    ##                             INPUTS                                    ##
    ##                                                                       ##
    ##-----------------------------------------------------------------------##
-   dir.create(indir)
-   
-   ## DEFAULTS
-   ## need to import database, create record, and then test
-   
+
    ## SITE INFO --> DOMAIN FILE (lat/lon)
 
    #   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)

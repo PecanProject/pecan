@@ -22,6 +22,7 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   ./create_newcase -case @RUNDIR@ -res 1x1_brazil -compset ICLM45ED -mach eddi -compiler gnu
 
   cd "@RUNDIR@"
+  cd ..
   
   ## copy required files from default case
   #cp -rf @CASE@/* .
@@ -30,7 +31,9 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   ## create folders and symbolic links. Links will later be deleted when non-default files are specified
   mkdir input
   echo "PEcAn.FATES::recurse.create('input','@DEFAULT@')" | R --vanilla
-  
+
+  cd case
+
   ## THINGS THAT ARE IN REFCASE
   # Modifying : env_mach_pes.xml
 ./xmlchange -file env_mach_pes.xml -id NTASKS_ATM -val 1
