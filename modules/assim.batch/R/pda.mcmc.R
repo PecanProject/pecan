@@ -99,7 +99,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
 
   
   for(chain in 1:settings$assim.batch$chain){
-    params.list <- pda.init.params(settings, con, chain, pname.all, sum(n.param.all)) 
+    params.list <- pda.init.params(settings, chain, pname.all, sum(n.param.all)) 
     params <- params.list$params
     start  <- params.list$start
     finish <- params.list$finish
