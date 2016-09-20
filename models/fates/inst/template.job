@@ -26,6 +26,11 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   ## copy required files from default case
   #cp -rf @CASE@/* .
   
+  ## RECURSIVELY COPY/SYMLINK REFERENCE INPUTS DIRECTORY (DIN_LOC_ROOT)
+  ## create folders and symbolic links. Links will later be deleted when non-default files are specified
+  mkdir input
+  echo "PEcAn.FATES::recurse.create('input','@DEFAULT@')" | R --vanilla
+  
   ## THINGS THAT ARE IN REFCASE
   # Modifying : env_mach_pes.xml
 ./xmlchange -file env_mach_pes.xml -id NTASKS_ATM -val 1
@@ -46,9 +51,8 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
 ./xmlchange -file env_run.xml -id REST_OPTION -val nyears
 ./xmlchange -file env_run.xml -id DATM_CLMNCEP_YR_START -val 1999
 ./xmlchange -file env_run.xml -id DATM_CLMNCEP_YR_END -val 1999
-## TWO MORE HARDCODE HACKS
-./xmlchange -file env_run.xml -id DIN_LOC_ROOT -val /home/carya/FATESinput/
-./xmlchange -file env_run.xml -id DIN_LOC_ROOT_CLMFORC -val '/home/carya/FATESinput/'
+./xmlchange -file env_run.xml -id DIN_LOC_ROOT -val @INDIR@
+./xmlchange -file env_run.xml -id DIN_LOC_ROOT_CLMFORC -val '@INDIR@'
 ./xmlchange -file env_run.xml -id DOUT_S -val TRUE
 ./xmlchange -file env_run.xml -id DOUT_S_ROOT -val '@RUNDIR@/run'
 ./xmlchange -file env_run.xml -id BATCHQUERY -val ''
