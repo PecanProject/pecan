@@ -13,11 +13,11 @@
 sample.IC.SIPNET <- function(ne,state,year=1){
   ## Mg C / ha / yr NPP
   NPP = ifelse(rep("NPP" %in% names(state),ne),
-                     state$NPP[1,sample.int(ncol(state$NPP),ne),year]*.48, ## unit MgC/ha/yr
+                     state$NPP[1,sample.int(ncol(state$NPP),ne),year],#*.48, ## unit MgC/ha/yr
                      runif(ne,0,10)) ## prior
   ## g C * m-2 ground area in wood (above-ground + roots)
   plantWood = ifelse(rep("AGB" %in% names(state),ne),
-                     state$AGB[1,sample.int(ncol(state$AGB),ne),year]*(1/10000)*(1000000/1)*.48, ## unit Mg/ha -> g C /m^2
+                     state$AGB[1,sample.int(ncol(state$AGB),ne),year]*(1/1000)*(1000000/1), ## unit KgC/ha -> g C /m^2
                      runif(ne,0,14000)) ## prior
   ## initial leaf area, m2 leaves * m-2 ground area (multiply by leafCSpWt to get initial plant leaf C)
   lai = ifelse(rep("LAI" %in% names(state),ne),
