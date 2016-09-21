@@ -81,7 +81,6 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   ## Create an ensemble id
   settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
   
-  
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
   
@@ -114,7 +113,7 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
     run.params=list(run.params)
     
     now <- format(Sys.time(), "%Y%m%d%H%M%OS3")
-    
+
     run.id <- pda.init.run(settings, con, my.write.config, workflow.id, run.params, n=1, run.names=paste("run", now, sep="."))
     
     ## Start model run
@@ -156,7 +155,6 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   if(!is.null(settings$assim.batch$extension)){
     
     load(settings$assim.batch$out.path) # loads previous out list
-    con <- try(db.open(settings$database$bety), silent=TRUE)
     out <- runMCMC(bayesianSetup = out, sampler = sampler, settings = bt.settings)
     
   }else{
