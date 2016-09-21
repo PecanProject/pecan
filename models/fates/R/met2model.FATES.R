@@ -79,7 +79,8 @@ met2model.FATES <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
          lat.dim <- ncdim_def(name='latitude', units='', vals=1:1, create_dimvar=FALSE)
          lon.dim <- ncdim_def(name='longitude', units='', vals=1:1, create_dimvar=FALSE)
          time.dim <- ncdim_def(name='time', units="seconds", vals=time, create_dimvar=TRUE, unlim=TRUE)
-         dim=list(lat.dim,lon.dim,time.dim)
+         dim=list(lat.dim,lon.dim,time.dim)  ## docs say this should be time,lat,lon but get error writing unlimited first
+                                             ## http://www.cesm.ucar.edu/models/cesm1.2/clm/models/lnd/clm/doc/UsersGuide/x12979.html
          
          # LATITUDE
          var <- ncvar_def(name="latitude",
@@ -149,6 +150,15 @@ met2model.FATES <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
 } ### end loop over met files
 
 logger.info("Done with met2model.FATES")
+
+results <- data.frame(file=outfolder,
+                      host=c(fqdn()),
+                      mimetype=c('text/plain'),
+                      formatname=c('CLM met'),
+                      startdate=c(start_date),
+                      enddate=c(end_date),
+                      dbfile.name = paste0("CLM_met_",in.prefix),
+                      stringsAsFactors = FALSE)
 
 } ### end met2model.FATES
 
