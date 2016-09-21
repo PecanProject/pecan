@@ -686,7 +686,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
     burnin <- getBurnin(params.subset[[i]])
       
     # rare, but this can happen, better to throw an error than continue, it might lead mis-interpretation of posteriors otherwise
-    if(max(burnin) == nrow(params.subset[[i]][[1]])){
+    if(burnin == nrow(params.subset[[i]][[1]])){
       logger.severe(paste0("*** Burn-in is the same as the length of the chain, please run a longer chain ***"))
     }
 
