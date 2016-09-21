@@ -51,7 +51,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       # Schedule files to be replaced or deleted on exiting the function
       succesful <- FALSE
       on.exit(
-        if(successful) {
+        if(exists("successful") && successful) {
           logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
           remote.execute.R(file.deletion.commands$delete.tmp, host, user=NA, verbose=TRUE, R="R")
         } else {
@@ -232,7 +232,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   print("RESULTS: Convert.Input")
   print(result)
   print(names(result))
-
+  
   #--------------------------------------------------------------------------------------------------#
   # Insert into Database
 

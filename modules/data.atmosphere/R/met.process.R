@@ -20,7 +20,7 @@
 ##'
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(
-  site, input_met, start_date, end_date, model, host, dbparms, dir, browndog=NULL, 
+  site, input_met, start_date, end_date, model, host="localhost", dbparms, dir, browndog=NULL, 
   overwrite=list(download=FALSE, met2cf=FALSE, standardize=FALSE, met2model=FALSE)){
   require(RPostgreSQL)
   require(XML)
@@ -62,7 +62,7 @@ met.process <- function(
   con      <- db.open(dbparms)
   on.exit(db.close(con, showWarnings=FALSE))
   username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
-  machine.host <- ifelse(host$name == "localhost", fqdn(), host$name)
+  machine.host <- ifelse(host=="localhost" || host$name == "localhost", fqdn(), host$name)
   machine = db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
 
   #get met source and potentially determine where to start in the process
