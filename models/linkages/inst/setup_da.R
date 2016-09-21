@@ -54,7 +54,7 @@ sda.enkf(settings=settings, obs.mean = obs.mean,
 ######### linkages
 settings <- read.settings("/fs/data2/output//PEcAn_1000002229/pecan.xml")
 settings$ensemble$size <- 30
-IC = matrix(NA,as.numeric(settings$ensemble$size),length(settings$pft))
+IC = matrix(NA,as.numeric(settings$ensemble$size),length(settings$pfts))
 settings$run$start.date <-"1960/01/01"
 settings$run$end.date <-"1960/12/31"
 settings$ensemble$start.date <-"1960/01/01"
@@ -67,7 +67,7 @@ sample_parameters=TRUE
 
 
 ##################################################
-load("/home/araiho/lyford_summary.Rdata")
+load("/home/araiho/linkages_lyford_summary.Rdata")
 row.keep <- list()
 for(i in 1:15){
   row.keep[[i]]<-grep(rownames(ab_mat)[i],spp.params.default[,2])[1]
@@ -88,7 +88,7 @@ ab_mat<-ab_mat[-rm.spp,]
 rownames(ab_mat)<- paste0("AGB.pft.",new.names)
 obs.mean <- list()
 for(i in 1:ncol(ab_mat)){
-  obs.mean[[i]] <- list(ab_mat[,i])
+  obs.mean[[i]] <- ab_mat[,i]
 }
 
 cov_array<-cov_array[-rm.spp,-rm.spp,]

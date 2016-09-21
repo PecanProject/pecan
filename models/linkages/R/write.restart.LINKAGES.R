@@ -2,7 +2,7 @@
 ##' @name  write.restart.LINKAGES
 ##' @author Ann Raiho \email{araiho@@nd.edu}
 ##' 
-##' @param out.dir      output directory
+##' @param outdir      output directory
 ##' @param runid       run ID
 ##' @param time        year that is being read
 ##' @param settings    PEcAn settings object
@@ -17,10 +17,10 @@
 ##' @return NONE
 ##' @export
 ##' 
-write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
+write.restart.LINKAGES <- function(outdir, runid, time, settings, analysis.vec,
                                    RENAME = TRUE, variables,
                                    sample_parameters = FALSE,
-                                   trait.values = NA){
+                                   trait.values = NA,met=NULL){
   
   ### Removing negative numbers because biomass can't be negative ###
   for(i in 1:length(analysis.vec)){
@@ -30,13 +30,6 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
   analysis.vec.save <- analysis.vec
   analysis.vec <- analysis.vec.save[grep('pft',names(analysis.vec.save))]
   analysis.vec.other <- analysis.vec.save[grep('pft',names(analysis.vec.save),invert=TRUE)]
-  
-  biomass_function<-function(dbh){ #kg/tree
-      .1193 * dbh^2.393 + ((slta+sltb*dbh)/2)^2 * 3.14 * fwt * frt * .001
-  }
-  merit<-function(dbh){
-    (b_obs - biomass_function(dbh))^2
-  }
   
   ### Going to need to change this... ### Get some expert opinion
   N <- length(analysis.vec)
@@ -77,10 +70,18 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
   }
   
   spp.params <- spp.params.default[spp.params.save,]
+  
+  biomass_function<-function(dbh){ #kg/tree
+    .1193 * dbh^2.393 + ((slta+sltb*dbh)/2)^2 * 3.14 * fwt * frt * .001
+  }
+  merit<-function(dbh){
+    (b_obs - biomass_function(dbh))^2
+  }
+  
   ##HACK
 
     # skip ensemble member if no file availible  
-    outfile = file.path(out.dir,runid,"linkages.out.Rdata")
+    outfile = file.path(outdir,runid,"linkages.out.Rdata")
     if(!file.exists(outfile)){
       print(paste0("missing outfile ens #",runid))
       next
@@ -91,8 +92,8 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
     load(outfile)
     #save original output
     if(RENAME==TRUE){
-      file.rename(file.path(out.dir,runid,"linkages.out.Rdata"),
-                  file.path(out.dir,runid,paste0(time,"linkages.out.Rdata")))
+      file.rename(file.path(outdir,runid,"linkages.out.Rdata"),
+                  file.path(outdir,runid,paste0(time,"linkages.out.Rdata")))
     }
     
     nspec <- length(settings$pfts)
@@ -175,7 +176,7 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
       #  print("new are less than the old of the same spp.")
         select <- sample(size = new.ntrees[s], x = which(n.index == s), replace = FALSE)
       }else{
-        if(new.ntrees[s] > ntrees[s] & ntrees[s] > 1){ #new are greater than the old of the same spp. and there are old trees to clone
+        if(new.ntrees[s] > ntrees[s] & ntrees[s] >= 1){ #new are greater than the old of the same spp. and there are old trees to clone
         #  print("new are greater than the old of the same spp. and there are old trees of same spp. to clone")
           select <- c(which(n.index == s), sample(size = (new.ntrees[s] - ntrees[s]), 
                                                   x = which(n.index == s), replace = TRUE))
