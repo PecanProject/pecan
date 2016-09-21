@@ -61,13 +61,11 @@
    ncvar_put(nc=domain.nc, varid='area', vals=(2*gridres*pi/180)^2)   
    nc_close(domain.nc)
    
-   #   jobsh <- gsub('@SITE_LAT@', settings$run$site$lat, jobsh)
-   #   jobsh <- gsub('@SITE_LON@', settings$run$site$lon, jobsh)
-   ## note: domain file seems relatively simple, might be easier to write from scratch than to edit on remote via bash
-   ## FOR FIRST STEP, CAN USE DEFAULT
-   ## @CASE@/share/domains/domain.clm/
-   
-   
+   ## DATM HEADER: datm_atm_in
+   datm <- readLines(con=system.file("datm_atm_in.template",package = "PEcAn.FATES"),n=-1)
+
+#   ... fill in this template, the met template, and then have jobs.sh put them in the right place. 
+#   ... Test, then adjust DB to have met required
    
    
    ##-----------------------------------------------------------------------##
