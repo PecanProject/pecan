@@ -41,6 +41,14 @@
    indir  <- file.path(rundir,"input") ## input directory
    default <- settings$run$inputs$default$path ## reference inputs file structure
    
+   ## DATES
+   ## CLM is a bit odd and takes a start date and length, so we need to precompute
+   ## this needs to be generalized to fractional years, but accounting for 365 day year
+   start_date <- as.Date(settings$run$start.date)
+   end_date   <- as.Date(settings$run$end.date)
+   stop_n     <- as.numeric(end_date - start_date, units="days") - n_leap_day(start_date,end_date) + 1  
+   
+   
    ##-----------------------------------------------------------------------##
    ##                                                                       ##
    ##                             INPUTS                                    ##
@@ -61,9 +69,26 @@
    ncvar_put(nc=domain.nc, varid='area', vals=(2*gridres*pi/180)^2)   
    nc_close(domain.nc)
    
-   ## DATM HEADER: datm_atm_in
-   datm <- readLines(con=system.file("datm_atm_in.template",package = "PEcAn.FATES"),n=-1)
+   ## MET HEADERS
+   if(!is.null(settings$run$inputs$met)){
 
+     ## DATM HEADER: datm_atm_in
+     datm <- readLines(con=system.file("datm_atm_in.template",package = "PEcAn.FATES"),n=-1)
+     datm <- gsub('@DOMAIN@', file.path(indir,"share/domains/domain.clm",basename(domain.default)), datm)
+     datm <- gsub('@START_YEAR@',lubridate::year(start_date), datm)
+     datm <- gsub('@END_YEAR@',lubridate::year(end_date), datm)
+     writeLines(datm, con=file.path(local.rundir, "datm_atm_in"))
+     
+     ## DATM STREAM MET
+     met <- readLines(con=system.file("datm.streams.txt.PEcAn_met.template",package = "PEcAn.FATES"),n=-1)
+     met <- gsub('@INDIR@',indir, met)
+     met <- gsub('@MET_PATH@',settings$run$inputs$met$path, met)
+     met.files <- dir(settings$run$inputs$met$path,"*.nc")
+     met <- gsub('@MET_FILES@',paste(met.files,collapse = "\n            "), met)
+     writeLines(met, con=file.path(local.rundir, "datm.streams.txt.PEcAn_met"))
+     
+   }
+   
 #   ... fill in this template, the met template, and then have jobs.sh put them in the right place. 
 #   ... Test, then adjust DB to have met required
    
@@ -113,11 +138,6 @@
    jobsh <- gsub('@DEFAULT@', default, jobsh)
  
    ## DATES -> ENV_RUN
-   ## CLM is a bit odd and takes a start date and length, so we need to precompute
-   ## this needs to be generalized to fractional years, but accounting for 365 day year
-   start_date <- as.Date(settings$run$start.date)
-   end_date   <- as.Date(settings$run$end.date)
-   stop_n     <- as.numeric(end_date - start_date, units="days") - n_leap_day(start_date,end_date) + 1  
    jobsh <- gsub('@START_DATE@', start_date, jobsh)
    jobsh <- gsub('@STOP_N@', stop_n, jobsh)
    

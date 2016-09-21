@@ -107,6 +107,18 @@ EOF
   echo `pwd`
   echo `ls -altr`
   
+  ## RUNDIR FILE LINKS
+  if [ -e @RUNDIR@/datm_atm_in]
+    then 
+    rm datm_atm_in
+    ln -s @RUNDIR@/datm_atm_in . 
+  fi
+  if [ -e @RUNDIR@/datm.streams.txt.PEcAn_met]
+    then 
+    rm datm.stream.txt.CLM_QIAN*
+    ln -s @RUNDIR@/datm.streams.txt.PEcAn_met .
+  fi
+  
   "@BINARY@"
   STATUS=$?
   
