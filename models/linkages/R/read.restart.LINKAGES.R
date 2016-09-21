@@ -21,9 +21,9 @@ read.restart.LINKAGES <- function(outdir,runid,time,settings,variables,sample_pa
          variables=variables) #change to just "AGB" for plot level biomass
   
   #Add PFT name to variable if applicable
-  pft.names <- numeric(length(settings$pft))
-  for(i in 1:length(settings$pft)){
-    pft.names[i] <- settings$pft[i]$pft$name
+  pft.names <- numeric(length(settings$pfts))
+  for(i in 1:length(settings$pfts)){
+    pft.names[i] <- settings$pfts[i]$pft$name
   }
   ens.pft.names <- grep("pft",names(ens))
   names(ens[[grep("pft",names(ens))]]) <- pft.names
