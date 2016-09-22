@@ -26,18 +26,36 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   rundir <- settings$host$rundir
   host <- settings$host
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step
-  spin.up.start <- strftime(settings$state.data.assimilation$spin.up$start.date,"%Y")
-  spin.up.end <- strftime(settings$state.data.assimilation$spin.up$end.date,"%Y")
   nens = settings$state.data.assimilation$n.ensemble
   start.year <- strftime(settings$state.data.assimilation$start.date,"%Y") #we need to make sure this matches the data years somehow
   end.year   <- strftime(settings$state.data.assimilation$end.date,"%Y")
   processvar <-settings$state.data.assimilation$process.variance
   sample_parameters <-settings$state.data.assimilation$sample.parameters
-  variables <- unlist(sapply(settings$state.data.assimilation$state.variable,function(x){x})[1,], use.names = FALSE)
+  var.names <- unlist(sapply(settings$state.data.assimilation$state.variable,function(x){x})[1,], use.names = FALSE)
   
   ###-------------------------------------------------------------------###
-  ### load climate data                                                 ###
+  ### get model specific functions                                      ###
   ###-------------------------------------------------------------------### 
+  do.call("require",list(paste0("PEcAn.",model)))
+  my.write.config <- paste("write.config.",model,sep="")
+  my.read.restart <- paste("read.restart.",model,sep="")
+  my.write.restart <- paste("write.restart.",model,sep="")
+  my.split.inputs <- paste("split.inputs.",model,sep="")
+  
+  if(!exists(my.write.config)){
+    print(paste(my.write.config,"does not exist"))
+    print(paste("please make sure that the PEcAn interface is loaded for",model))
+    stop()
+  }
+  
+  ###-------------------------------------------------------------------###
+  ### load model specific inputs                                        ###
+  ###-------------------------------------------------------------------### 
+  
+  my.split.inputs(input=settings$run$inputs,start.time,stop.time)
+  
+  #### replaces stuff below
+  
  if(model == "LINKAGES"){
    new.met <- paste0(rundir,"/climate.Rdata") #doesn't do anything but write stuff to README
    met <- new.met #HACK
@@ -84,19 +102,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
     ensemble.id <- -1
   }
   
-  ###-------------------------------------------------------------------###
-  ### get model specific functions                                      ###
-  ###-------------------------------------------------------------------### 
-  do.call("require",list(paste0("PEcAn.",model)))
-  my.write.config <- paste("write.config.",model,sep="")
-  my.read.restart <- paste("read.restart.",model,sep="")
-  my.write.restart <- paste("write.restart.",model,sep="")
-  
-  if(!exists(my.write.config)){
-    print(paste(my.write.config,"does not exist"))
-    print(paste("please make sure that the PEcAn interface is loaded for",model))
-    stop()
-  }
  
   ###-------------------------------------------------------------------###
   ### perform initial set of runs                                       ###
@@ -104,10 +109,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   run.id = list()
   X <- IC
 
-  ## local settings changes for initial runs
-  settings$run$start.date <- paste0(as.numeric(spin.up.start),strftime(settings$run$start.date,"/%m/%d"))
-  settings$run$end.date <- paste0(as.numeric(spin.up.end),strftime(settings$run$end.date,"/%m/%d"))
-  
   ## Load Parameters
   if(sample_parameters == TRUE){
     settings$ensemble$size <- settings$state.data.assimilation$n.ensemble
@@ -176,12 +177,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   ###-------------------------------------------------------------------###  
   
   ## vector to read the correct netcdfs by read.restart
-  total.time = as.numeric(spin.up.end):as.numeric(end.year)
+  total.time = as.numeric(settings$run$end.date):as.numeric(end.year)
   
   nt = length(total.time) #could be different if time step was different right?
   FORECAST <- ANALYSIS <- list()
   enkf.params <- list()
-  aqq = array(0,dim=c(nt,length(variables),length(variables)))
+  aqq = array(0,dim=c(nt,length(var.names),length(var.names)))
   bqq = numeric(nt+1)
   CI.X1 <- matrix(0,3,nt) ; CI.X2 = CI.X1
   
@@ -254,10 +255,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
     ###-------------------------------------------------------------------###  
     X <- list()
     for(i in 1:nens){
-      X[[i]] <- do.call(my.read.restart,args=list(outdir=outdir, runid = run.id[[i]],
-                                                  time = total.time[t], settings = settings,
-                                                  variables = variables,
-                                                  sample_parameters = sample_parameters))
+      X[[i]] <- do.call(my.read.restart,args=list(outdir = outdir, runid = run.id[[i]],
+                                                  stop.time = total.time[t],
+                                                  multi.settings = multi.settings,
+                                                  var.names = var.names,
+                                                  params = params))
     }
     
     X <- do.call(rbind,X)
@@ -281,6 +283,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       for(s in 1:length(obs.mean[[t]])){
         if(diag(R)[s]==0){ #if covariance is 0 then set it to half of the minimum covariance to avoid solve() problems
           diag(R)[s] <- min(diag(R)[which(diag(R)!=0)])/2
+        }
+        if(diag(Pf)[s]==0){ #if covariance is 0 then set it to half of the minimum covariance to avoid solve() problems
+          diag(Pf)[s] <- min(diag(Pf)[which(diag(Pf)!=0)])/2
         }
       }
     }
@@ -335,7 +340,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
         H[i,i]<-1
       }
       ## process error
-      if(!is.null(Q)) Pf <- Pf + Q
+      if(exists('Q')) Pf <- Pf + Q
       ## Kalman Gain
       K    = Pf%*%t(H)%*%solve((R+H%*%Pf%*%t(H)))
       ## Analysis
@@ -482,7 +487,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
           ylab.names<-unlist(sapply(settings$state.data.assimilation$state.variable,function(x){x})[2,], use.names = FALSE)
           
           plot(total.time[t1:t],Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
-               type='n',xlab="Year",ylab=ylab.names[grep(colnames(X)[i],variables)],main=colnames(X)[i])
+               type='n',xlab="Year",ylab=ylab.names[grep(colnames(X)[i],var.names)],main=colnames(X)[i])
           
           #observation / data
           if(i<=ncol(Ybar)){
@@ -515,12 +520,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
         }
         do.call(my.write.restart,
                 args=list(outdir = outdir, runid = run.id[[i]],
-                          time = total.time[t], settings = settings,
-                          analysis.vec = analysis[i,],
-                          RENAME = TRUE, variables = variables,
-                          sample_parameters = sample_parameters,
-                          trait.values = trait.values,
-                          met = met))
+                          start.time = total.time[t],
+                          stop.time = total.time[t],
+                          multi.settings = settings,
+                          new.state = analysis[i,],
+                          new.params = trait.values,
+                          inputs = inputs))
       }
       ###-------------------------------------------------------------------###
       ### Run model                                                         ###
@@ -584,7 +589,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
       
       plot(total.time[t1:t],Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
-           type='n',xlab="Year",ylab=ylab.names[grep(colnames(X)[i],variables)],main=colnames(X)[i])
+           type='n',xlab="Year",ylab=ylab.names[grep(colnames(X)[i],var.names)],main=colnames(X)[i])
      
        #observation / data
       if(i<=ncol(Ybar)){
@@ -608,7 +613,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
     ###-------------------------------------------------------------------### 
       #legend("topleft",c("Data","Forecast","Analysis"),col=c(4,2,3),lty=1,cex=1)
       #Forecast minus data = error
-    for(i in 1:2){
+    for(i in 1:nt){
       Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
       Xci  = laply(FORECAST[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
       
