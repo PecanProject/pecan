@@ -3,22 +3,22 @@
 \alias{split.inputs.SIPNET}
 \title{split.inputs.SIPNET}
 \usage{
-split.inputs.SIPNET(inputs, start.time, stop.time)
+split.inputs.SIPNET(settings, start.time, stop.time)
 }
 \arguments{
-\item{inputs}{settings$run$inputs}
-
 \item{start.time}{}
 
 \item{stop.time}{}
+
+\item{multi.settings}{}
 }
 \value{
-files split up climate files
+file split up climate file
 }
 \description{
 Splits climate met for SIPNET
 }
 \author{
-Mike Dietze
+Mike Dietze and Ann Raiho
 }
 
