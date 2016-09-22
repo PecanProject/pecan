@@ -133,7 +133,8 @@ met.process <- function(
   if(stage$download.raw) {
     raw.id <- .download.raw.met.module(
       dir=dir, met=met, register=register, machine=machine, 
-      start_date=start_date, end_date=end_date, con=con, new.site=new.site, host=host, 
+      start_date=start_date, end_date=end_date, con=con, 
+      input_met=input_met, new.site=new.site, host=host, 
       overwrite=overwrite$download
     )
     if(met %in% c("CRUNCEP", "GFDL")) {
@@ -146,7 +147,8 @@ met.process <- function(
   if(stage$met2cf) {
     cf.id <- .met2cf.module(
       raw.id=raw.id, register=register, met=met, dir=dir, machine=machine, site=site,
-      start_date=start_date, end_date=end_date, con=con, overwrite=overwrite$met2cf, format.vars=format.vars)
+      start_date=start_date, end_date=end_date, con=con, host=host,
+      overwrite=overwrite$met2cf, format.vars=format.vars)
   }
 
   #--------------------------------------------------------------------------------------------------#

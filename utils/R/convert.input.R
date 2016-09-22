@@ -257,14 +257,17 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     if(overwrite) {
       # A bit hacky, but need to make sure that all fields are updated to expected values 
       # (i.e., what they'd be if convert.input was creating a new record)
-      db.query(paste0(
-        "UPDATE inputs SET name='", basename(dirname(result$file[1])), "', ", 
-        "updated_at=NOW() WHERE id=", existing.input$id), con)
-      
-      db.query(paste0(
-        "UPDATE dbfiles SET file_path='", dirname(result$file[1]), "', ",
-        "file_name='", result$dbfile.name[1], "', ", 
-        "updated_at=NOW() WHERE id=", existing.dbfile$id), con)
+      if(exists("existing.input") && nrow(existing.input) > 0) {
+        db.query(paste0(
+          "UPDATE inputs SET name='", basename(dirname(result$file[1])), "', ", 
+          "updated_at=NOW() WHERE id=", existing.input$id), con)
+      } 
+      if(exists("existing.dbfile") && nrow(existing.dbfile) > 0) {
+        db.query(paste0(
+          "UPDATE dbfiles SET file_path='", dirname(result$file[1]), "', ",
+          "file_name='", result$dbfile.name[1], "', ", 
+          "updated_at=NOW() WHERE id=", existing.dbfile$id), con)
+      }
     }
 
     parent.id <- ifelse(is.null(input), NA, input$id)
