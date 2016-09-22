@@ -52,7 +52,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   ### load model specific inputs                                        ###
   ###-------------------------------------------------------------------### 
   
-  my.split.inputs(input=settings$run$inputs,start.time,stop.time)
+  inputs <- my.split.inputs(input=settings$run$inputs,
+                  start.time=settings$run$start.date,
+                  stop.time=settings$run$end.date)
   
   #### replaces stuff below
   
@@ -143,7 +145,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
     }
     do.call(my.write.config, args = list(defaults = NULL, trait.values = trait.values,
                                          settings = settings, run.id = run.id[[i]],
-                                         inputs = list(met=list(path=met[1])), IC = IC[i,]))
+                                         inputs = inputs, IC = IC[i,]))
     
     ## write a README for the run
     cat("runtype     : sda.enkf\n",
@@ -156,7 +158,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
         "model id    : ", settings$model$id, "\n",
         "site        : ", settings$run$site$name, "\n",
         "site  id    : ", settings$run$site$id, "\n",
-        "met data    : ", new.met, "\n",
+        "met data    : ", inputs$met, "\n",
         "start date  : ", settings$run$start.date, "\n",
         "end date    : ", settings$run$end.date, "\n",
         "hostname    : ", settings$host$name, "\n",
