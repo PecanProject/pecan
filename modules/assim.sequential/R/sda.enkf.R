@@ -30,8 +30,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   start.year <- strftime(settings$state.data.assimilation$start.date,"%Y") #we need to make sure this matches the data years somehow
   end.year   <- strftime(settings$state.data.assimilation$end.date,"%Y")
   processvar <-settings$state.data.assimilation$process.variance
-  sample_parameters <-settings$state.data.assimilation$sample.parameters
-  var.names <- unlist(sapply(settings$state.data.assimilation$state.variable,function(x){x})[1,], use.names = FALSE)
+  #sample_parameters <-settings$state.data.assimilation$sample.parameters
+  var.names <- unlist(sapply(settings$state.data.assimilation$state.variable,function(x){x}), use.names = FALSE)
   
   ###-------------------------------------------------------------------###
   ### get model specific functions                                      ###
@@ -52,23 +52,23 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   ### load model specific inputs                                        ###
   ###-------------------------------------------------------------------### 
   
-  inputs <- my.split.inputs(input=settings$run$inputs,
-                  start.time=settings$run$start.date,
-                  stop.time=settings$run$end.date)
+  inputs <- do.call(my.split.inputs,args=list(settings = settings,
+                  start.time = settings$run$start.date,
+                  stop.time = settings$run$end.date))
   
   #### replaces stuff below
   
- if(model == "LINKAGES"){
-   new.met <- paste0(rundir,"/climate.Rdata") #doesn't do anything but write stuff to README
-   met <- new.met #HACK
- }
- if(model == "SIPNET"){
-   ## split clim file
-      full.met <- c(settings$run$inputs$met$path) #
-      new.met  <- file.path(settings$rundir,basename(full.met))
-      file.copy(full.met,new.met)
-      met <- split.met.SIPNET(new.met)
- }
+ # if(model == "LINKAGES"){
+ #   new.met <- paste0(rundir,"/climate.Rdata") #doesn't do anything but write stuff to README
+ #   met <- new.met #HACK
+ # }
+ # if(model == "SIPNET"){
+ #   ## split clim file
+ #      full.met <- c(settings$run$inputs$met$path) #
+ #      new.met  <- file.path(settings$rundir,basename(full.met))
+ #      file.copy(full.met,new.met)
+ #      met <- split.met.SIPNET(new.met)
+ # }
   
   ###-------------------------------------------------------------------###
   ### open database connection                                          ###
