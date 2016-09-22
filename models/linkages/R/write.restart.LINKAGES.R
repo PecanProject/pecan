@@ -18,9 +18,9 @@
 ##' @export
 ##' 
 write.restart.LINKAGES <- function(outdir, runid, time, settings, analysis.vec,
-                                   RENAME = TRUE, variables,
+                                  variables,
                                    sample_parameters = FALSE,
-                                   trait.values = NA,met=NULL){
+                                   trait.values = NA,met=NULL,RENAME = TRUE){
   
   ### Removing negative numbers because biomass can't be negative ###
   for(i in 1:length(analysis.vec)){
@@ -90,11 +90,6 @@ write.restart.LINKAGES <- function(outdir, runid, time, settings, analysis.vec,
         
     #load output
     load(outfile)
-    #save original output
-    if(RENAME==TRUE){
-      file.rename(file.path(outdir,runid,"linkages.out.Rdata"),
-                  file.path(outdir,runid,paste0(time,"linkages.out.Rdata")))
-    }
     
     nspec <- length(settings$pfts)
     ncohrt <- ncohrt
@@ -290,5 +285,11 @@ if(sample_parameters == TRUE){
           args=list(trait.values = NA, settings=settings,
                     run.id = runid, restart=TRUE, spinup=FALSE))
 }
+    
+    #save original output
+    if(RENAME==TRUE){
+      file.rename(file.path(outdir,runid,"linkages.out.Rdata"),
+                  file.path(outdir,runid,paste0(time,"linkages.out.Rdata")))
+    }
 
 }
