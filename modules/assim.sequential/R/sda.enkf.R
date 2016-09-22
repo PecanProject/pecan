@@ -30,7 +30,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   start.year <- strftime(settings$state.data.assimilation$start.date,"%Y") #we need to make sure this matches the data years somehow
   end.year   <- strftime(settings$state.data.assimilation$end.date,"%Y")
   processvar <-settings$state.data.assimilation$process.variance
-  #sample_parameters <-settings$state.data.assimilation$sample.parameters
+  sample_parameters <-settings$state.data.assimilation$sample.parameters
   var.names <- unlist(sapply(settings$state.data.assimilation$state.variable,function(x){x}), use.names = FALSE)
   
   ###-------------------------------------------------------------------###
@@ -44,6 +44,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   
   if(!exists(my.write.config)){
     print(paste(my.write.config,"does not exist"))
+    print(paste("please make sure that the PEcAn interface is loaded for",model))
+    stop()
+  }
+  
+  if(!exists(my.split.inputs)){
+    print(paste(my.split.inputs,"does not exist"))
     print(paste("please make sure that the PEcAn interface is loaded for",model))
     stop()
   }
@@ -119,7 +125,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   }
   get.parameter.samples(settings, ens.sample.method=settings$ensemble$method)  ## Aside: if method were set to unscented, would take minimal changes to do UnKF
   load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
-    
+  
+  if('env' %in% names(ensemble.samples)){
+    ensemble.samples$env<-NULL
+  }
+   
   for(i in 1:nens){
     
     ## set RUN.ID
@@ -158,7 +168,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
         "model id    : ", settings$model$id, "\n",
         "site        : ", settings$run$site$name, "\n",
         "site  id    : ", settings$run$site$id, "\n",
-        "met data    : ", inputs$met, "\n",
+        "met data    : ", inputs$met$path, "\n",
         "start date  : ", settings$run$start.date, "\n",
         "end date    : ", settings$run$end.date, "\n",
         "hostname    : ", settings$host$name, "\n",
@@ -173,7 +183,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   
   ## start model runs
   start.model.runs(settings,settings$database$bety$write)
-  save.image(file.path(outdir,"sda.spinup.Rdata"))
+  save.image(file.path(outdir,"sda.initial.runs.Rdata"))
   ###-------------------------------------------------------------------###
   ### set up for data assimilation                                      ###
   ###-------------------------------------------------------------------###  

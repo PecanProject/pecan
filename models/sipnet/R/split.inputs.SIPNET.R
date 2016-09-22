@@ -13,8 +13,12 @@
 ##' 
 split.inputs.SIPNET <- function(settings,start.time,stop.time){
   
-  start.time<-strftime(start.time,"%Y")
-  stop.time<-strftime(stop.time,"%Y")
+  
+  start.day<-strftime(start.time, format = "%j")
+  start.year<-strftime(start.time,"%Y")
+  
+  end.day<-strftime(stop.time, format = "%j")
+  end.year<-strftime(stop.time,"%Y")
   
   full.met <- c(settings$run$inputs$met$path)
   new.met  <- file.path(settings$rundir,basename(full.met))
@@ -26,11 +30,16 @@ split.inputs.SIPNET <- function(settings,start.time,stop.time){
   dat <- read.table(met,header=FALSE)
   file <- NA
   names(file) <- paste(start.time,"-",stop.time)
-  sel <- which(dat[,2] == as.vector(start.time:stop.time))
-  file<- paste(path,"/",prefix,".",paste(start.time,"-",stop.time),".clim",sep="") 
-  write.table(dat[sel,],file,row.names=FALSE,col.names=FALSE)
   
-  inputs$met$path<-file
+  sel1 <- which(dat[,2] == as.numeric(start.year) & dat[,3] == as.numeric(start.day))[1]
+  sel2 <- which(dat[,2] == as.numeric(end.year) & dat[,3] == as.numeric(end.day))[length(which(dat[,2] == as.numeric(end.year) & dat[,3] == as.numeric(end.day)))]
+  
+  file<- paste(path,"/",prefix,".",paste0(as.Date(start.time),"-",as.Date(stop.time)),".clim",sep="") 
+  
+  write.table(dat[sel1:sel2,],file,row.names=FALSE,col.names=FALSE)
+  
+  settings$run$inputs$met$path<-file
+  inputs<-settings$run$inputs
   
   return(inputs)
   
