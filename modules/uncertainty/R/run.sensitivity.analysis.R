@@ -151,6 +151,17 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
 }
 #==================================================================================================#
 
+##' @export
+runModule.run.sensitivity.analysis <- function(settings, ...) {
+  if(is.MultiSettings(settings)) {
+    return(papply(settings, runModule.run.sensitivity.analysis, ...))
+  } else if (is.Settings(settings)) {
+    run.sensitivity.analysis(settings, ...) 
+  } else {
+    stop("runModule.run.sensitivity.analysis only works with Settings or MultiSettings")
+  }
+}
+
 
 ####################################################################################################
 ### EOF.  End of R script file.        			
