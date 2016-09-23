@@ -25,13 +25,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   outdir <- settings$host$outdir
   rundir <- settings$host$rundir
   host <- settings$host
-  forecast.time.step <- settings$state.data.assimilation$forecast.time.step
+  forecast.time.step <- settings$state.data.assimilation$forecast.time.step #idea for later generalizing
   nens = settings$state.data.assimilation$n.ensemble
-  start.year <- strftime(settings$state.data.assimilation$start.date,"%Y") #we need to make sure this matches the data years somehow
-  end.year   <- strftime(settings$state.data.assimilation$end.date,"%Y")
   processvar <-settings$state.data.assimilation$process.variance
   sample_parameters <-settings$state.data.assimilation$sample.parameters
-  var.names <- unlist(sapply(settings$state.data.assimilation$state.variable,function(x){x}), use.names = FALSE)
+  var.names <- unlist(sapply(settings$state.data.assimilation$state.variable,
+                             function(x){x$variable.name},
+                             USE.NAMES = FALSE), use.names = FALSE)
+  names(var.names) <- NULL
   
   ###-------------------------------------------------------------------###
   ### get model specific functions                                      ###
@@ -55,7 +56,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   }
   
   ###-------------------------------------------------------------------###
-  ### load model specific inputs                                        ###
+  ### load model specific inputs for initial runs                       ###
   ###-------------------------------------------------------------------### 
   
   inputs <- do.call(my.split.inputs,args=list(settings = settings,
@@ -129,7 +130,16 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   if('env' %in% names(ensemble.samples)){
     ensemble.samples$env<-NULL
   }
-   
+  
+  params <- list()
+  for(i in 1:nens){
+    if(sample_parameters == TRUE){
+      params[[i]] <- lapply(ensemble.samples, function(x, n){x[i,]},n = i)
+    }else {
+      params[[i]] <- ensemble.samples
+    }
+  }
+
   for(i in 1:nens){
     
     ## set RUN.ID
@@ -148,12 +158,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
     dir.create(file.path(settings$modeloutdir, run.id[[i]]), recursive=TRUE)
     
     ## Write Configs
-    if(sample_parameters == TRUE){
-      trait.values <- lapply(ensemble.samples, function(x, n){x[i,]},n = i)
-    } else {
-      trait.values <- ensemble.samples
-    }
-    do.call(my.write.config, args = list(defaults = NULL, trait.values = trait.values,
+    do.call(my.write.config, args = list(defaults = NULL, trait.values = params[[i]],
                                          settings = settings, run.id = run.id[[i]],
                                          inputs = inputs, IC = IC[i,]))
     
@@ -184,14 +189,22 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   ## start model runs
   start.model.runs(settings,settings$database$bety$write)
   save.image(file.path(outdir,"sda.initial.runs.Rdata"))
+ 
+  ###-------------------------------------------------------------------###
+  ### tests before data assimilation                                      ###
+  ###-------------------------------------------------------------------###  
+  
+  # at some point add a lot of error checking
+  # read time from data
+  # if data is missing you still need to have NAs or NULL with date name
+  ## vector to read the correct netcdfs by read.restart
+  obs.times = names(obs.mean)
+  
   ###-------------------------------------------------------------------###
   ### set up for data assimilation                                      ###
   ###-------------------------------------------------------------------###  
-  
-  ## vector to read the correct netcdfs by read.restart
-  total.time = as.numeric(settings$run$end.date):as.numeric(end.year)
-  
-  nt = length(total.time) #could be different if time step was different right?
+
+  nt = length(obs.times)
   FORECAST <- ANALYSIS <- list()
   enkf.params <- list()
   aqq = array(0,dim=c(nt,length(var.names),length(var.names)))
@@ -226,7 +239,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   X.keep[i] <- X[X2Y[i]]
   }
   Y  ~ dmnorm(X.keep,r)
-}"     
+  }"     
   
   AnalysisFilterQ1 <- "
   model{
@@ -246,7 +259,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   X.keep[i] <- X[X2Y[i]]
   }
   Y  ~ dmnorm(X.keep,r)
-}"     
+  }"     
   
   t1=1
   pink = col2rgb("deeppink")
@@ -268,10 +281,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
     X <- list()
     for(i in 1:nens){
       X[[i]] <- do.call(my.read.restart,args=list(outdir = outdir, runid = run.id[[i]],
-                                                  stop.time = total.time[t],
-                                                  multi.settings = multi.settings,
+                                                  stop.time = obs.times[t],
+                                                  settings = settings,
                                                   var.names = var.names,
-                                                  params = params))
+                                                  params = params[[i]]))
     }
     
     X <- do.call(rbind,X)
@@ -324,19 +337,19 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
           Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
           Xci  = laply(FORECAST[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
 
-          plot(total.time[t1:t],Xbar,ylim=range(c(Ybar,Xci),na.rm=TRUE),
+          plot(obs.times[t1:t],Xbar,ylim=range(c(Ybar,Xci),na.rm=TRUE),
                type='n',xlab="Year",ylab="kg/m^2",main=colnames(X)[i])
           
           #observation / data
             if(i<=ncol(Ybar)){
-              ciEnvelope(total.time[t1:t],as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
+              ciEnvelope(obs.times[t1:t],as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
                          as.numeric(Ybar[,i])+as.numeric(YCI[,i])*1.96,col=alphagreen)
-              lines(total.time[t1:t],as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
+              lines(obs.times[t1:t],as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
             }
           
           #forecast
-          ciEnvelope(total.time[t1:t],Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
-          lines(total.time[t1:t],Xbar,col="darkblue",type='l',lwd=2)
+          ciEnvelope(obs.times[t1:t],Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
+          lines(obs.times[t1:t],Xbar,col="darkblue",type='l',lwd=2)
           
         }
     }
@@ -470,6 +483,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
     analysis <- as.data.frame(rmvnorm(as.numeric(nens),mu.a,Pa,method="svd"))
     colnames(analysis) <- colnames(X)
     
+    ## in the future will have to be separated from analysis
+    new.state <- analysis
+    new.params <- params
+    
     ANALYSIS[[t]] = analysis
     
     if(interactive() & t>1){
@@ -498,51 +515,59 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
           
           ylab.names<-unlist(sapply(settings$state.data.assimilation$state.variable,function(x){x})[2,], use.names = FALSE)
           
-          plot(total.time[t1:t],Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
+          plot(obs.times[t1:t],Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
                type='n',xlab="Year",ylab=ylab.names[grep(colnames(X)[i],var.names)],main=colnames(X)[i])
           
           #observation / data
           if(i<=ncol(Ybar)){
-            ciEnvelope(total.time[t1:t],as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
+            ciEnvelope(obs.times[t1:t],as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
                        as.numeric(Ybar[,i])+as.numeric(YCI[,i])*1.96,col=alphagreen)
-            lines(total.time[t1:t],as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
+            lines(obs.times[t1:t],as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
           }
           
           #forecast
-          ciEnvelope(total.time[t1:t],Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
-          lines(total.time[t1:t],Xbar,col="darkblue",type='l',lwd=2)
+          ciEnvelope(obs.times[t1:t],Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
+          lines(obs.times[t1:t],Xbar,col="darkblue",type='l',lwd=2)
           
           #analysis
-          ciEnvelope(total.time[(t1:t)],XaCI[,1],XaCI[,2],col=alphapink)
-          lines(total.time[t1:t],Xa,col="black",lty=2,lwd=2)
+          ciEnvelope(obs.times[(t1:t)],XaCI[,1],XaCI[,2],col=alphapink)
+          lines(obs.times[t1:t],Xa,col="black",lty=2,lwd=2)
           
         }
       }
 
     
     ###-------------------------------------------------------------------###
-    ### forecast step -- write restart                                    ###
+    ### forecast step                                                     ###
     ###-------------------------------------------------------------------### 
     if(t < nt){
+      
+      ###-------------------------------------------------------------------###
+      ### load model specific inputs for initial runs                       ###
+      ###-------------------------------------------------------------------### 
+      
+      inputs <- do.call(my.split.inputs,args=list(settings = settings,
+                                                  start.time = format(as.Date(obs.times[t])+1,"%Y/%m/%d"),
+                                                  stop.time = obs.times[t+1]))
+      
+      ###-------------------------------------------------------------------###
+      ### write restart by ensemble                                         ###
+      ###-------------------------------------------------------------------### 
+      
       for(i in 1:nens){
-        if(sample_parameters == TRUE){
-          trait.values <- lapply(ensemble.samples, function(x, n){x[i,]},n = i)
-        } else {
-          trait.values <- ensemble.samples
-        }
         do.call(my.write.restart,
                 args=list(outdir = outdir, runid = run.id[[i]],
-                          start.time = total.time[t],
-                          stop.time = total.time[t],
-                          multi.settings = settings,
-                          new.state = analysis[i,],
-                          new.params = trait.values,
-                          inputs = inputs))
+                          start.time = format(as.Date(obs.times[t])+1,"%Y/%m/%d"),
+                          stop.time = obs.times[t+1],
+                          settings = settings,
+                          new.state = new.state[i,],
+                          new.params = new.params[[i]],
+                          inputs = inputs,RENAME=TRUE))
       }
       ###-------------------------------------------------------------------###
       ### Run model                                                         ###
       ###-------------------------------------------------------------------### 
-      print(paste("Running Model for Year",total.time[t]+1))
+      print(paste("Running Model for Year",obs.times[t]+1))
       start.model.runs(settings,settings$database$bety$write)
     }
     
@@ -565,8 +590,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   if(model == 'LINKAGES'){
     climate_file <- settings$run$inputs$met$path
     load(climate_file)
-    temp.mat <- temp.mat[total.time-853,]
-    precip.mat <- precip.mat[total.time-853,]
+    temp.mat <- temp.mat[obs.times-853,]
+    precip.mat <- precip.mat[obs.times-853,]
   }else{
     print('climate diagnostics under development')
   }
@@ -600,23 +625,23 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
       XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
       
-      plot(total.time[t1:t],Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
+      plot(obs.times[t1:t],Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
            type='n',xlab="Year",ylab=ylab.names[grep(colnames(X)[i],var.names)],main=colnames(X)[i])
      
        #observation / data
       if(i<=ncol(Ybar)){
-        ciEnvelope(total.time[t1:t],as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
+        ciEnvelope(obs.times[t1:t],as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
                    as.numeric(Ybar[,i])+as.numeric(YCI[,i])*1.96,col=alphagreen)
-        lines(total.time[t1:t],as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
+        lines(obs.times[t1:t],as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
       }
       
       #forecast
-      ciEnvelope(total.time[t1:t],Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
-      lines(total.time[t1:t],Xbar,col="darkblue",type='l',lwd=2)
+      ciEnvelope(obs.times[t1:t],Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
+      lines(obs.times[t1:t],Xbar,col="darkblue",type='l',lwd=2)
       
       #analysis
-      ciEnvelope(total.time[(t1:t)],XaCI[,1],XaCI[,2],col=alphapink)
-      lines(total.time[t1:t],Xa,col="black",lty=2,lwd=2)
+      ciEnvelope(obs.times[(t1:t)],XaCI[,1],XaCI[,2],col=alphapink)
+      lines(obs.times[t1:t],Xa,col="black",lty=2,lwd=2)
       
     }
 
@@ -670,7 +695,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
     corrplot(cor.mat,type="upper",tl.srt=45, 
              addCoef.col = "black")
     
-    plot(total.time[t1:t],bqq[t1:t],pch=16,cex=1,ylab="Degrees of Freedom",
+    plot(obs.times[t1:t],bqq[t1:t],pch=16,cex=1,ylab="Degrees of Freedom",
          xlab="Time")
   }
       
