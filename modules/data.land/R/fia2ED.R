@@ -30,6 +30,7 @@ fia.to.psscss <- function(settings, gridres=0.075) {
 
 	## connect to database
 	con <-  db.open(settings$database$bety)
+	on.exit(db.close(con))
 	
 	### collect mapping from spcd to pftid
 	query <- NULL
@@ -78,6 +79,7 @@ fia.to.psscss <- function(settings, gridres=0.075) {
 
 	## connect to database
 	fia.con <- db.open(settings$database$fia)
+	on.exit(db.close(fia.con))
   
 	### select just most current
 	query <- paste('SELECT invyr, statecd, stateab, statenm, cycle, subcycle from survey', sep="")
@@ -297,11 +299,6 @@ fia.to.psscss <- function(settings, gridres=0.075) {
   	settings$run$inputs$site$path <- site.file.remote
   }
 
-  
-	## closing the connections to database
-	db.close(con)
-	db.close(fia.con)
-	
 	return(settings)
 }
 
