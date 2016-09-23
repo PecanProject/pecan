@@ -60,7 +60,7 @@ met.process <- function(
   
   #setup connection and host information
   con      <- db.open(dbparms)
-  on.exit(db.close(con, showWarnings=FALSE))
+  on.exit(db.close(con))
   username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
   machine.host <- ifelse(host=="localhost" || host$name == "localhost", fqdn(), host$name)
   machine = db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
@@ -83,7 +83,6 @@ met.process <- function(
                           parentid= NA,
                           con = con,
                           hostname = result$host)
-      db.close(con)
       invisible(return(result$file))
     }
   }
