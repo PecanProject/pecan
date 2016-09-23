@@ -13,22 +13,17 @@
 ##' @return X.vec      vector of forecasts
 ##' @export
 ##' 
-read.restart.SIPNET <- function(outdir,runid,stop.time,settings,var.names,sample_parameters=NULL){
+read.restart.SIPNET <- function(outdir,runid,stop.time,settings,var.names,params){
 
-  if(sample_parameters == TRUE){
-    load(file.path(outdir, "samples.Rdata"))
-    prior.sla <- mean(ensemble.samples[[which(names(ensemble.samples)!='soil')[1]]]$SLA) #HACK
-  }else{
-    load(file.path(outdir, paste0("ensemble.samples.",settings$state.data.assimilation$prior,".Rdata")))
-    prior.sla <- ens.samples[[which(names(ensemble.samples)!='soil')[1]]]$SLA
-  }
+  prior.sla <- params[[which(names(ensemble.samples)!='soil')[1]]]$SLA
   
   forecast <- list()
   
   #Read ensemble output
   ens <- read.output(runid = runid,outdir = file.path(outdir, runid),
-                     start.year = stop.time, end.year=stop.time,
-                     var.names=var.names)
+                     start.year = strftime(stop.time, '%Y'),
+                     end.year = strftime(stop.time,'%Y'),
+                     variables = var.names)
     
     last = length(ens$NPP)
     
