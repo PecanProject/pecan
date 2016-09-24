@@ -10,7 +10,11 @@ papply <- function(settings, fn, stop.on.error=FALSE, ...) {
                       
       if(!is(result.i, "try-error")) {
         ind <- length(result) + 1
-        result[[ind]] <- result.i
+        if(!is.null(result.i)) {
+          result[[ind]] <- result.i
+        } else {
+          result[ind] <- list(NULL) # Have to use special syntax to actually get a null value in
+        }
         if(!is.null(settingNames(settings))) {
           names(result)[ind] <- settingNames(settings)[i]
         }
@@ -29,7 +33,14 @@ papply <- function(settings, fn, stop.on.error=FALSE, ...) {
     }
     if(all(sapply(result, is.Settings)))
       result <- MultiSettings(result)
-    return(result)
+
+    if(length(errors) > 0) {
+      PEcAn.utils::logger.warn(paste0("papply encountered the following errors, ",
+        "but continued since stop.on.error=FALSE. ",
+        paste(errors, collapse='; ')))
+    }
+    return(invisible(result))
+
   } else if(is.Settings(settings)) {
     return(fn(settings, ...))
   } else if(is.list((settings))) {
