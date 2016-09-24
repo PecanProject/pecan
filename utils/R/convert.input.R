@@ -78,7 +78,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       # that the new dbfile record won't conflict with existing ones. 
     }
   } else {
-    # No existing record found. Should be good to go?
+    # No existing record found. Should be good to go.
   }
   
   
