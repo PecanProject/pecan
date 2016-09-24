@@ -17,7 +17,7 @@ library(PEcAn.DB)
 ##' @param create pss/css files based on data in the fia database
 ##' @return nothing
 ##' @export
-##' @author Mike Dietze, Rob Kooper
+##' @author Mike Dietze, Rob Kooper, Ryan Kelly
 fia.to.psscss <- function(settings, gridres=0.075) {
 	lat     <- as.numeric(settings$run$site$lat)
 	lon     <- as.numeric(settings$run$site$lon)
@@ -31,6 +31,7 @@ fia.to.psscss <- function(settings, gridres=0.075) {
 	## connect to database
 	con <-  db.open(settings$database$bety)
 	on.exit(db.close(con))
+
 	
 	### collect mapping from spcd to pftid
 	query <- NULL
@@ -45,8 +46,19 @@ fia.to.psscss <- function(settings, gridres=0.075) {
 	}
 	pfts <- db.query(query, con=con)
 	
-	for (pft in settings$pfts) {
-		pfts[pfts==pft$name] <- pft$constants$num
+	# Convert PFT names to ED2 Numbers
+  data(pftmapping)
+	for(pft.i in settings$pfts) {
+	  pft.number <- NULL
+	  pft.number <- pft.i$constants$num
+    if(is.null(pft.number)){
+      pft.number <- pftmapping$ED[which(pftmapping == pft.i$name)]
+    }
+    if(is.null(pft.number)) {
+      logger.error(paste0("Couldn't find an ED2 PFT number for ", pft.i$name))
+      stop()
+    }
+		pfts$pft[pfts$pft == pft.i$name] <- pft.number
 	}
 	
   	
@@ -79,7 +91,7 @@ fia.to.psscss <- function(settings, gridres=0.075) {
 
 	## connect to database
 	fia.con <- db.open(settings$database$fia)
-	on.exit(db.close(fia.con))
+	on.exit(db.close(fia.con), add=T)
   
 	### select just most current
 	query <- paste('SELECT invyr, statecd, stateab, statenm, cycle, subcycle from survey', sep="")
@@ -182,8 +194,6 @@ fia.to.psscss <- function(settings, gridres=0.075) {
   fia.only <- fia.species[fia.ind]						
 
   if(length(fia.only) > 0){									
-    over.ten <- ifelse(length(fia.only) > 30, paste(", and ", length(fia.only) - 30, " more.", sep=""), ".")
-  
     if(!exists("symbol.table")){
       symbol.table <- db.query('SELECT spcd, "Symbol" FROM species where spcd IS NOT NULL', con=con)
       names(symbol.table) = tolower(names(symbol.table))
@@ -193,7 +203,7 @@ fia.to.psscss <- function(settings, gridres=0.075) {
     if(length(name.list) > 0) {
       logger.error(paste0("\nThe FIA database expects the following species at ", lat," and ", lon, 
         " but they are not described by the selected PFTs: \n", 
-        paste(name.list[1:min(30,length(name.list))], collapse=", "), over.ten, "\n\tPlease select additional pfts.")) 
+        paste(name.list, collapse=", "), "\n\tPlease select additional pfts.")) 
       stop("Execution stopped due to insufficient PFTs.")
     }
   }
