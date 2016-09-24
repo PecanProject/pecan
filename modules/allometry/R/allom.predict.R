@@ -42,7 +42,9 @@
 #' 
 #' @export
 #' 
-allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",interval="prediction"){
+# allom.predict(allom.fit[pft],dbh = dbh,pft = 'BEAL',component = 6,use = "Bg",interval = "prediction",single.tree=TRUE)
+
+allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",interval="prediction", single.tree=FALSE){
   library(coda)
   library(tools)
   
@@ -146,7 +148,7 @@ allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",int
       }       
     } else if(interval == "prediction"){
       ##          = prediction -> sample of (mu/Bg), sample of (sigma/Sg), if Bg sample of tau
-      sel = sample.int(nrow(object[[i]][[component]]),n,replace = TRUE)    
+      sel = sample.int(nrow(object[[i]][[component]]),n,replace = TRUE)
       if(use[i] == "Bg"){
         params[[i]] <- object[[i]][[component]][sel,c("Bg0","Bg1","Sg")]
       } else if(use[i]=="mu"){
@@ -179,8 +181,17 @@ allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",int
     if(ncol(params[[p]])>2){
       s = sqrt(params[[p]][,3]) ## sigma was originally calculated as a variance, so convert to std dev
     } else {s = 0}
+    
     for(i in sel){
       out[,i]=exp(rnorm(n,a+b*log(dbh[i]),s))
+    }
+    
+    # for a dbh time-series for a single tree, fix error for each draw
+    if (single.tree==TRUE){
+      epsilon = rnorm(n, 0, s)
+      for (i in 1:n){
+        out[i,]=exp(a[i]+b[i]*log(dbh) + epsilon[i])
+      }
     }
   }
 
