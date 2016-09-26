@@ -55,7 +55,7 @@ site_lon   <- ifelse(is.null(input$lon), NA, input$lon)
 #connect DB and get site name
 con      <- db.open(dbparams)
 #query site based on location
-site <- db.query(paste0("SELECT id, sitename AS name FROM sites WHERE geometry = ST_GeogFromText('POINT(", site_lon, " ", site_lat, ")')"),con)
+site <- db.query(paste0("SELECT id, sitename AS name FROM sites ORDER BY st_distance(geometry, ST_GeogFromText('POINT(", site_lon, " ", site_lat, ")'))  limit 1"),con)
 if(length(site) < 0){
   #query site based on name
   site <- db.query(paste0("SELECT id, sitename AS name FROM sites WHERE sitename LIKE '%", input$site, "%'"),con)
