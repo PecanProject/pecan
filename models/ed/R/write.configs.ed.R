@@ -385,11 +385,21 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults=settings$const
       } else {
         pft <- group
       }
-      # TODO: Not sure if this is how this is supposed to work, but idea is to check for pft.number in defaults (settings$constants) first
-      pft.number <- defaults[[pft]]$num
-      if(is.null(pft.number)){
-          pft.number <- pftmapping$ED[which(pftmapping == pft)]
-      }
+
+      # RyK: Changed this so that pftmapping is required. pft$constants$num is the number that
+      # will be written to config.xml, and it's used by fia.to.ed when mapping spp to a PFT #.
+      # But if you're overriding an existing ED2 pft, then you might not want that PFT number to be 
+      # used to look up default param values. 
+      #
+      # e.g. if you're trying to run temperate.Hydric PFT, which which doesn't exist in ED,
+      # you would need to assign it either an existing but currently unused ED2 PFT number 
+      # (e.g. #2 = "early tropical"), or an unused one (e.g. #18). Either way, that number
+      # isn't necessarily what you'd want to look up default parameters for the PFT. 
+      #
+      # What really should happen is for there to be two settings for each PFT: the "num"
+      # to use to represent the PFT to ED, and the "defaults.PFT" (name or number) to use
+      # for pulling default parameter values. 
+      pft.number <- pftmapping$ED[which(pftmapping == pft)]
       if(length(pft.number) == 0){
           logger.error(pft, 'was not matched with a number in settings$constants or pftmapping data. Consult the PEcAn instructions on defining new PFTs.')
           stop('Unable to set PFT number')
