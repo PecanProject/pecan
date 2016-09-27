@@ -28,6 +28,7 @@ met.process(site, input_met, start_date, end_date, model, host, dbparms, dir,
 met.process
 }
 \author{
-Elizabeth Cowdery, Michael Dietze
+Elizabeth Cowdery, Michael Dietze, Ankur Desai, James
+Simkins
 }
 
