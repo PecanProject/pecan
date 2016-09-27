@@ -10,8 +10,7 @@
 ##' @author Betsy Cowdery
 
 load.csv <- function(data.path, format, site, vars=NULL){
-  
-  
+
   if (format$header == 0 | format$header == 1){
     dat <- read.csv(data.path, skip = format$skip, na.strings = format$na.strings, as.is=TRUE,
                     check.names = FALSE, header = as.logical(format$header))
@@ -25,7 +24,7 @@ load.csv <- function(data.path, format, site, vars=NULL){
   }
   
   if(!is.null(vars)){
-    return(dat[vars])
+    return(dplyr::select(dat, one_of(vars)))
   }else{
     return(dat)
   }

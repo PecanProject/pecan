@@ -155,7 +155,12 @@ start.model.runs <- function(settings, write = TRUE){
         out <- system2("ssh", c(settings$host$name, qsub, file.path(settings$host$rundir, format(firstrun,scientific=FALSE), "launcher.sh"), recursive=TRUE), stdout=TRUE)
       }
       #print(out) # <-- for debugging
-      jobids[run] <- sub(settings$host$qsub.jobid, "\\1", out)
+
+      # HACK: Code below gets 'run' from names(jobids) so need an entry for each run.
+      # But when using modellauncher all runs have the same jobid
+      for (run in readLines(con = file.path(settings$rundir, "runs.txt"))) {
+        jobids[run] <- sub(settings$host$qsub.jobid, "\\1", out)
+      }
     } else {
       if (is.localhost(settings$host)) {
         out <- system2(file.path(settings$rundir, format(firstrun,scientific=FALSE), "launcher.sh"), stdout=TRUE)
@@ -239,6 +244,18 @@ start.model.runs <- function(settings, write = TRUE){
 } ### End of function
 ##==================================================================================================#
 
+
+##' @export
+runModule.start.model.runs <- function(settings) {
+  if(is.MultiSettings(settings)) {
+    return(papply(settings, runModule.start.model.runs))
+  } else if(is.Settings(settings)) {
+    write <- settings$database$bety$write
+    start.model.runs(settings, write)
+  } else {
+    stop("runModule.start.model.runs only works with Settings or MultiSettings")
+  }
+}
 
 ####################################################################################################
 ### EOF.  End of R script file.              

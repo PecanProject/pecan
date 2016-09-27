@@ -7,7 +7,7 @@
 
 metric.scatter.plot <- function(dat, var){
   
-  require(ggplot2)
+  library(ggplot2)
   
   ggplot(data = dat) + 
     geom_point(aes(x=model,y=obvs), size=4) + 

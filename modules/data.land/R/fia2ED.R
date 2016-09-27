@@ -7,42 +7,9 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-# make sure indeces exist
-# CREATE INDEX spcd ON species (spcd);
-# CREATE INDEX tree_spcd on fia5data.TREE (SPCD);
-# CREATE INDEX tree_plt_cn on fia5data.TREE (PLT_CN);
-# CREATE INDEX plot_cn on fia5data.PLOT (CN);
-
 library(XML)
 library(PEcAn.utils)
 library(PEcAn.DB)
-
-#fia.database <- "fia5data"
-
-#--------------------------------------------------------------------------------------------------#
-# INTERNAL FUNCTIONS DO NOT EXPORT
-#--------------------------------------------------------------------------------------------------#
-
-##' convert x into a table
-##'
-##' @title table.expand
-##' @param x first xml list 
-##' @return table
-##' @author Mike Dietze
-table.expand <- function(x){
-	n <- max(x[,1],na.rm=T)
-	y <- rep(NA,n)
-	for(i in 1:n){
-		sel <-which(x[,1]==i)
-		if(length(sel)>0)
-			y[i] <- x[sel,2]
-	}
-	return(y)
-}
-
-#--------------------------------------------------------------------------------------------------#
-# EXTERNAL FUNCTIONS
-#--------------------------------------------------------------------------------------------------#
 
 ##' convert x into a table
 ##'
@@ -50,45 +17,47 @@ table.expand <- function(x){
 ##' @param create pss/css files based on data in the fia database
 ##' @return nothing
 ##' @export
-##' @author Mike Dietze, Rob Kooper
-fia.to.psscss <- function(settings,gridres=0.075) {
-	## spatial info
-	POI	    <- TRUE	 ## point or region?	
+##' @author Mike Dietze, Rob Kooper, Ryan Kelly
+fia.to.psscss <- function(settings, gridres=0.075) {
 	lat     <- as.numeric(settings$run$site$lat)
 	lon     <- as.numeric(settings$run$site$lon)
-	
-	## output path  
-	if ("text" %in% names(settings$model$psscss)) {
-		path <- settings$model$psscss$text
-	} else {
-		path <- settings$model$psscss
-	}
-	path <- settings$outdir
-	## time info
-	year    <- as.numeric(format(as.Date(settings$run$start.date), '%Y'))
-	
-	## SOILS
-	soil = c(1.0,5.0,5.0,0.01,0.0,1.0,1.0) #soil C & N pools (biogeochem) defaults (fsc,stsc,stsl,ssc,psc,msn,fsn)	
-  
-  ##Sites
-  #site = c(1) #Assuming extraction for one site so the site number is 1 and should be the same as "sitenum" in .site file
-	
+	latmax = lat + gridres
+  latmin = lat - gridres
+  lonmax = lon + gridres
+  lonmin = lon - gridres	
+	year <- as.numeric(format(as.Date(settings$run$start.date), '%Y'))
+
+
 	## connect to database
 	con <-  db.open(settings$database$bety)
+	on.exit(db.close(con))
 	
 	### collect mapping from spcd to pftid
 	query <- NULL
 	for (pft in settings$pfts) {
 		if (is.null(query)) {
-			query <- paste("SELECT bp.name as pft, bs.spcd FROM pfts as bp INNER JOIN pfts_species AS bps ON bps.pft_id = bp.id INNER JOIN species AS bs ON bs.id = bps.specie_id WHERE bp.name = '", pft$name, "'", sep='')
+			query <- paste0("SELECT bp.name as pft, bs.spcd FROM pfts as bp INNER JOIN ",
+			  "pfts_species AS bps ON bps.pft_id = bp.id INNER JOIN species AS bs ON bs.id = bps.specie_id WHERE ",
+			  "bp.name = '", pft$name, "'")
 		} else {
 			query <- paste(query, " OR bp.name = '", pft$name, "'", sep='')
 		}
 	}
 	pfts <- db.query(query, con=con)
 	
-	for (pft in settings$pfts) {
-		pfts[pfts==pft$name] <- pft$constants$num
+	# Convert PFT names to ED2 Numbers
+  data(pftmapping)
+	for(pft.i in settings$pfts) {
+	  pft.number <- NULL
+	  pft.number <- pft.i$constants$num
+    if(is.null(pft.number)){
+      pft.number <- pftmapping$ED[which(pftmapping == pft.i$name)]
+    }
+    if(is.null(pft.number)) {
+      logger.error(paste0("Couldn't find an ED2 PFT number for ", pft.i$name))
+      stop()
+    }
+		pfts$pft[pfts$pft == pft.i$name] <- pft.number
 	}
 	
   	
@@ -101,20 +70,28 @@ fia.to.psscss <- function(settings,gridres=0.075) {
 	
 	bad <- pfts$spcd[duplicated(pfts$spcd)]
 	if (length(bad) > 0) {
-		over.ten <- ifelse(length(bad) > 10, paste(", and ", length(bad) - 10, " more.", sep=""), ".")		# format the "and x more." bit if >10 bad species
+  	# format the "and x more." bit if >10 bad species
+		over.ten <- ifelse(length(bad) > 10, paste(", and ", length(bad) - 10, " more.", sep=""), ".")		
 		
 		#Coerce spcds back into species names using data from FIA manual. Makes a more readable warning.
 		symbol.table <- db.query('SELECT spcd, "Symbol" FROM species where spcd IS NOT NULL', con=con)
 		names(symbol.table) = tolower(names(symbol.table))
-		name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% bad]) 							# grab the names where we have bad spcds in the symbol.table, exclude NAs
-		logger.error(paste("\nThe following species are found in multiple PFTs: \n", paste(name.list[1:min(10,length(name.list))], collapse=", "), over.ten, "\n\tPlease remove overlapping PFTs.", sep=""))
-		stop("Execution stopped due to duplicate species.")												#Using stop naturally causes an error with the tests - comment stops out for testing.
+		
+		# grab the names where we have bad spcds in the symbol.table, exclude NAs
+		name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% bad]) 		
+							
+		logger.error(paste0("\nThe following species are found in multiple PFTs: \n",   
+		  paste(name.list[1:min(10,length(name.list))], collapse=", "), over.ten, 
+		  "\n\tPlease remove overlapping PFTs."))
+		
+		# Using stop naturally causes an error with the tests - comment stops out for testing.
+		stop("Execution stopped due to duplicate species.")			
 	}
 
 	## connect to database
-  #fia.db.settings <- settings$database$fia
 	fia.con <- db.open(settings$database$fia)
-	
+	on.exit(db.close(fia.con), add=T)
+
   
 	### select just most current
 	query <- paste('SELECT invyr, statecd, stateab, statenm, cycle, subcycle from survey', sep="")
@@ -133,170 +110,220 @@ fia.to.psscss <- function(settings,gridres=0.075) {
 		cycle[s] <- surv$cycle[sel[which.min(abs(year-surv$invyr[sel]))]]
 	}
 	
-	if(POI){
-		latmax = lat + gridres
-		latmin = lat - gridres
-		lonmax = lon + gridres
-		lonmin = lon - gridres
-	} else {
-		latmin = min(lat)
-		latmax = max(lat)
-		lonmin = min(lon)
-		lonmax = max(lon)
-	}
-	n.poi = length(latmin)
 	
-		
-	for(r in 1:n.poi) {
-		##################
-		##              ##
-		##     PSS      ##
-		##              ##
-		##################
-		## query to get PSS info
-		query <- paste('SELECT p.cycle,p.statecd,p.measyear as time,p.cn as patch,MIN(2-c.stdorgcd) as trk,AVG(c.stdage) as age,p.lat,p.lon FROM plot as p LEFT JOIN cond as c on p.cn=c.plt_cn WHERE 
-             p.lon >= ',lonmin[r],' and p.lon < ',lonmax[r],
-			      	' and p.lat >= ',latmin[r],' and p.lat < ',latmax[r],' GROUP BY p.cn')
-		pss <- db.query(query, con=fia.con)
-    names(pss) = tolower(names(pss))
-		pss <- pss[pss$cycle == cycle[pss$statecd],]
-		if(length(pss) == 0) next
-		
-		pss$trk[which(is.na(pss$trk))] <- 1
-		pss$age[which(is.na(pss$age))] <- 0
-		
-		grid.bin <- nx <- ny <- 1
-		if(POI){
-			grid.bin <- rep(1,nrow(pss))
-		} else {	
-			## assign spatial index
-			nx <- (lonmax[r]-lonmin[r])/gridres
-			ny <- (latmax[r]-latmin[r])/gridres
-			grid.bin <- round((floor(pss$lat/gridres)-latmin[r]/gridres)*nx + floor(pss$lon/gridres)-lonmin[r]/gridres + 1)
-		}
-		
-		## fill missing data w/ defaults
-		##area.median <- median(pss$area[which(pss$area > 0)])
-		##pss$area[which(is.na(pss$area))] <- area.median
-		##pss$area[which(pss$area == 0)] <- area.median
-		pss$area = rep(1,nrow(pss))
-		
-		##normalize area
-		area.norm <- tapply(pss$area,grid.bin,sum)
-		area.norm <- table.expand(cbind(sort(unique(grid.bin)),as.vector(area.norm)))
-		area <- pss$area/area.norm[grid.bin]
-		
-		##write out pss by location
-		for(i in 1:max(grid.bin,na.rm=T)){
-			sel <- which(grid.bin == i)
-			if(length(sel) > 0){
-				y <- floor((i-1)/nx)
-				x <- i-1-y*nx
-				#fname <- paste(path,"lat",(x+0.5)*gridres+latmin[r],"lon",(y+0.5)*gridres+lonmin[r],".pss",sep="") #filename 
-				fname <- paste(path,".radius ",gridres,".lat ",round(lat,digits=4)," lon ",round(lon,digits=4),".pss",sep="") #filename
-				water = rep(0,length(sel))
-				#write.table(cbind(site,pss[sel,2+1:4],area[sel],water,matrix(soil,length(sel),7,byrow=TRUE)),file=fname,quote=FALSE,row.names=FALSE)
-				write.table(cbind(pss[sel,2+1:4],area[sel],water,matrix(soil,length(sel),7,byrow=TRUE)),file=fname,quote=FALSE,row.names=FALSE)
-			}
-		}
-		
-		##################
-		##              ##
-		##     CSS      ##
-		##              ##
-		##################
-		
-    
-    query <- paste('SELECT p.measyear as time,p.cycle,p.statecd,p.cn as patch,CONCAT(CAST(t.subp AS CHAR),CAST(t.tree AS CHAR)) as cohort,t.dia*2.54 as dbh, t.spcd as spcd, t.tpa_unadj*0.0002471 as n FROM plot as p LEFT JOIN tree as t on p.cn=t.plt_cn WHERE 
-             p.lon >= ',lonmin[r],' and p.lon < ',lonmax[r],
-				' and p.lat >= ',latmin[r],' and p.lat < ',latmax[r], sep='')
 
-		css <- db.query(query, con=fia.con)
-		names(css) = tolower(names(css))
-		css <- css[css$cycle == cycle[css$statecd],]
-		
-		## fill in missing data
-		notree <- which(apply(is.na(css[,6:8]),1,sum) == 3)
-		if (length(notree) > 0){
-			css <- css[-notree,]
-		}
-		
-		
-		## Consistency tests between PFTs and FIA begin here - done inside loop in case of multiple areas
-		fia.species <-unique(css$spcd)
-		
-		## check for species in PFTs which the FIA db doesn't expect
-		pft.ind <- which(!pfts$spcd %in% fia.species)										#vect shows pft's spcds that are confirmed by fia
-		pft.only <- pfts$spcd[pft.ind]														#what were the spcds at those indices? 
-		
-		if(length(pft.only) > 0){								
-			over.ten <- ifelse(length(pft.only) > 10, paste(", and ", length(pft.only) - 10, " more.", sep=""), ".")
-			
-			if(!exists("symbol.table")){
-				symbol.table <- db.query('SELECT spcd, "Symbol" FROM species where spcd IS NOT NULL', con=con)
-				names(symbol.table) = tolower(names(symbol.table))
-			}
-			name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% pft.only]) 
-			logger.warn(paste("\nThe selected PFTs contain the following species for which the FIA database contains no data at ", lat, " and ", lon, "\n", paste(name.list[1:min(10,length(name.list))], collapse=", "), over.ten, "\n\tThese will be populated with zero values in the output.", sep=""))	
-		} 
-		
-		## check for species expected by FIA which the PFTs don't cover
-		fia.ind <- which(!fia.species %in% pfts$spcd)	
-		fia.only <- fia.species[fia.ind]						
-		
-		if(length(fia.only) > 0){									
-			over.ten <- ifelse(length(fia.only) > 30, paste(", and ", length(fia.only) - 30, " more.", sep=""), ".")
-			
-			if(!exists("symbol.table")){
-				symbol.table <- db.query('SELECT spcd, "Symbol" FROM species where spcd IS NOT NULL', con=con)
-				names(symbol.table) = tolower(names(symbol.table))
-			}
-			name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% fia.only])
-      name.list <- name.list[name.list != "DEAD"]
-			if(length(name.list) > 0) {
-			logger.error(paste("\nThe FIA database expects the following species at ", lat," and ", lon, " but they are not described by the selected PFTs: \n", 
-							paste(name.list[1:min(30,length(name.list))], collapse=", "), over.ten, "\n\tPlease select additional pfts.", sep="")) 
-			stop("Execution stopped due to insufficient PFTs.")
-			}
-		}
-		
-		
-		# Continue work formatting css now that we've checked for species problems
-		if(nrow(css) > 0){
-			css$time[is.na(css$time)] <- 1
-			css$cohort[is.na(css$cohort)] <- 1:sum(is.na(css$cohort))
-			css$dbh[is.na(css$dbh)] <- 1	# assign nominal small dbh to missing
-			density.median <- median(css$n[which(css$n > 0)])
-			css$n[is.na(css$n)] <- density.median
-		} else {
-			## no trees at all at this site
-		}
-		
-		## map spcd to pft
-		css <- merge(css,pfts,by="spcd")
-		
-		## write out
-		for(i in 1:max(grid.bin,na.rm=T)){
-			sel <- which(grid.bin == i)
-			if(length(sel) > 0){
-				y <- floor((i-1)/nx)
-				x <- i-1-y*nx
-				#cssfile <- file(paste(path,"lat",(y+0.5)*gridres+latmin[r],"lon",(x+0.5)*gridres+lonmin[r],".css",sep=""), "w")
-				cssfile <- file(paste(path,".radius ",gridres,".lat ",round(lat,digits=4)," lon ",round(lon,digits=4),".css",sep=""), "w")
-				writeLines("time patch cohort dbh hite pft n bdead balive lai",con=cssfile)
-				for(j in sel){
-					sel2 <- which(as.character(css$patch) == pss$patch[j])
-					hite <- rep(0,length(sel2))
-					dtemp <- cbind(css[sel2,c("time","patch","cohort","dbh")],hite,css[sel2,c("pft","n")],matrix(0,length(sel2),3))
-					write.table(dtemp,file=cssfile,append=T,row.names=F,col.names=F,quote=F)
-				}
-				close(cssfile)
-				##		write.table(cbind(pss[sel,1:4],area[sel],matrix(0,length(sel),8)),file=fname,quote=F,row.names=FALSE)
-			}
-		}
-	}	## end loop over n.poi
+  ##################
+  ##              ##
+  ##     PSS      ##
+  ##              ##
+  ##################
+  ## query to get PSS info
+  query <- paste('SELECT p.cycle,p.statecd,p.measyear as time,p.cn as patch,MIN(2-c.stdorgcd) ',
+                 'as trk,AVG(c.stdage) as age,p.lat,p.lon FROM plot as p LEFT JOIN cond as c on p.cn=c.plt_cn ',
+                 'WHERE p.lon >= ', lonmin, ' and p.lon < ', lonmax,
+                 ' and p.lat >= ', latmin, ' and p.lat < ', latmax, ' GROUP BY p.cn')
+  pss <- db.query(query, con=fia.con)
+  names(pss) = tolower(names(pss))
+  pss <- pss[pss$cycle == cycle[pss$statecd],]
+  if(length(pss) == 0) logger.error("Couldn't find pss data.")
+
+  pss$trk[which(is.na(pss$trk))] <- 1
+  pss$age[which(is.na(pss$age))] <- 0
+
+  n.patch <- nrow(pss)
+
+  ## fill missing data w/ defaults
+  pss$site <- rep(1, n.patch)
+  pss$area <- rep(1/n.patch, n.patch)
+  pss$water <- rep(0, n.patch)
+  
+  # Reorder columns, dropping unneeded ones
+  pss <- pss[, c('site', 'time', 'patch', 'trk', 'age', 'area', 'water')]
+
+  # Add soil data
+	soil = c(1.0,5.0,5.0,0.01,0.0,1.0,1.0) #soil C & N pools (biogeochem) defaults (fsc,stsc,stsl,ssc,psc,msn,fsn)	
+  soil.dat <- as.data.frame(matrix(soil, n.patch, 7, byrow=TRUE))
+  names(soil.dat) <- c('fsc', 'stsc', 'stsl', 'ssc', 'psc', 'msn', 'fsn')
+  pss <- cbind(pss, soil.dat)
+  
+
+
+  ##################
+  ##              ##
+  ##     CSS      ##
+  ##              ##
+  ##################
+  query <- paste0('SELECT p.measyear as time,p.cycle,p.statecd,p.cn as patch, ',
+                 'CONCAT(CAST(t.subp AS CHAR),CAST(t.tree AS CHAR)) as cohort,t.dia*2.54 as dbh, ',
+                 't.spcd as spcd, t.tpa_unadj*0.0002471 as n FROM plot as p LEFT JOIN tree as t on p.cn=t.plt_cn ',
+                 'WHERE p.lon >= ', lonmin, ' and p.lon < ', lonmax, 
+                 ' and p.lat >= ', latmin, ' and p.lat < ', latmax)
+  css <- db.query(query, con=fia.con)
+  names(css) = tolower(names(css))
+  css <- css[css$cycle == cycle[css$statecd],]
+
+  ## fill in missing data
+  notree <- which(apply(is.na(css[,6:8]),1,sum) == 3)
+  if (length(notree) > 0){
+    css <- css[-notree,]
+  }
+
+
+  # --- Consistency tests between PFTs and FIA
+  fia.species <-unique(css$spcd)
+
+  # check for species in PFTs which the FIA db doesn't expect
+  pft.ind <- which(!pfts$spcd %in% fia.species)										#vect shows pft's spcds that are confirmed by fia
+  pft.only <- pfts$spcd[pft.ind]														#what were the spcds at those indices? 
+
+  if(length(pft.only) > 0){								
+    over.ten <- ifelse(length(pft.only) > 10, paste(", and ", length(pft.only) - 10, " more.", sep=""), ".")
+  
+    if(!exists("symbol.table")){
+      symbol.table <- db.query('SELECT spcd, "Symbol" FROM species where spcd IS NOT NULL', con=con)
+      names(symbol.table) = tolower(names(symbol.table))
+    }
+    name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% pft.only]) 
+    logger.warn(paste0("\nThe selected PFTs contain the following species for which the FIA database ", 
+       "contains no data at ", lat, " and ", lon, "\n", 
+       paste(name.list[1:min(10,length(name.list))], collapse=", "),  over.ten))	
+  } 
+
+  # check for species expected by FIA which the PFTs don't cover
+  fia.ind <- which(!fia.species %in% pfts$spcd)	
+  fia.only <- fia.species[fia.ind]						
+
+  if(length(fia.only) > 0){									
+    if(!exists("symbol.table")){
+      symbol.table <- db.query('SELECT spcd, "Symbol" FROM species where spcd IS NOT NULL', con=con)
+      names(symbol.table) = tolower(names(symbol.table))
+    }
+    name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% fia.only])
+    name.list <- name.list[name.list != "DEAD"]
+    if(length(name.list) > 0) {
+      logger.error(paste0("\nThe FIA database expects the following species at ", lat," and ", lon, 
+        " but they are not described by the selected PFTs: \n", 
+        paste(name.list, collapse=", "), "\n\tPlease select additional pfts.")) 
+      stop("Execution stopped due to insufficient PFTs.")
+    }
+  }
+
+
+  # --- Continue work formatting css now that we've checked for species problems
+  n.cohort = nrow(css)
+  if(n.cohort == 0)
+    logger.warn("No trees found while trying to generate .css from FIA data!")
+  
+  css$time[is.na(css$time)] <- 1
+  css$cohort[is.na(css$cohort)] <- 1:sum(is.na(css$cohort))
+  css$dbh[is.na(css$dbh)] <- 1	# assign nominal small dbh to missing
+  density.median <- median(css$n[which(css$n > 0)])
+  css$n[is.na(css$n)] <- density.median
+  css$hite <- css$bdead <- css$balive <- css$lai <- rep(0, n.cohort)
+ 
+  ## map spcd to pft
+  css <- merge(css,pfts,by="spcd")
+  css <- css[, c('time', 'patch', 'cohort', 'dbh', 'hite', 'pft', 'n', 'bdead', 'balive', 'lai')]
+
+  pfts.represented <- sapply(settings$pfts, function(x) x$constants$num) %in% css$pft
+  if(!all(pfts.represented))
+    logger.warn(paste0("\nThe following PFTs listed in settings are not represented in the FIA data: ", 
+       paste(sapply(settings$pfts, function(x) x$name)[!pfts.represented], collapse=", ")))	
+
+
+
+  ##################
+  ##              ##
+  ##     SITE     ##
+  ##              ##
+  ##################
+  # Obviously, this is just a placeholder for now...
+  site <- c(
+    "nsite 1 file_format 1", 
+    "sitenum area TCI elev slope aspect soil",
+    "1 1.0 -7 100.0 0.0 0.0 3"
+  )
+
+
+
+  # ----- Write files
+  # Write files locally
+  out.dir.local <- file.path(settings$database$dbfiles, "fia")
+  prefix.psscss <- paste0("siteid", settings$run$site$id, ".radius", gridres, 
+                          get.ed.file.latlon.text(lat, lon, site.style=FALSE))
+  prefix.site   <- paste0("siteid", settings$run$site$id, ".radius", gridres, 
+                          get.ed.file.latlon.text(lat, lon, site.style=TRUE))
+  pss.file.local <- file.path(out.dir.local, paste0(prefix.psscss, ".pss"))
+  css.file.local <- file.path(out.dir.local, paste0(prefix.psscss, ".css"))
+  site.file.local <- file.path(out.dir.local, paste0(prefix.site, ".site"))
+
+  dir.create(out.dir.local, showWarnings=F, recursive=T)
+  write.table(pss, pss.file.local, quote=FALSE, row.names=FALSE)
+  write.table(css, css.file.local, quote=FALSE, row.names=FALSE)
+  
+  site.file.con <- file(site.file.local)
+  writeLines(site, site.file.con)
+  close(site.file.con)
+
+  
+  # Copy to remote if needed
+  if(settings$host$name != "localhost") {
+    out.dir.remote <- file.path(settings$host$dbfiles, "fia")
+    pss.file.remote <- file.path(out.dir.remote, paste0(prefix.psscss, ".pss"))
+    css.file.remote <- file.path(out.dir.remote, paste0(prefix.psscss, ".css"))
+    site.file.remote <- file.path(out.dir.remote, paste0(prefix.site, ".site"))
+
+    remote.execute.cmd(settings$host, "mkdir", c("-p", out.dir.remote))
+    remote.copy.to(settings$host, pss.file.local, pss.file.remote)
+    remote.copy.to(settings$host, css.file.local, css.file.remote)
+    remote.copy.to(settings$host, site.file.local, site.file.remote)
+  }
+
+  # Insert into DB  
+  files <- c(pss.file.local, css.file.local, site.file.local)
+  formatnames <- c("ED2.patch", "ED2.cohort", "ED2.site")
+  for(i in seq_along(files)) {
+    dbfile.input.insert(
+      in.path    = dirname(files[i]),
+      in.prefix  = basename(files[i]),
+      siteid     = settings$run$site$id,
+      startdate  = format(as.Date(settings$run$start.date), "%Y-%m-%d %H:%M:%S"),
+      enddate    = format(as.Date(settings$run$end.date), "%Y-%m-%d %H:%M:%S"),
+      mimetype   = 'text/plain',
+      formatname = formatnames[i],
+      parentid   = NA,
+      con        = con,
+      hostname   = fqdn()
+    )
+  }
+
+
+  # Add file paths to settings
+  if(settings$host$name == "localhost") {
+  	settings$run$inputs$pss$path <- pss.file.local
+  	settings$run$inputs$css$path <- css.file.local
+  	settings$run$inputs$site$path <- site.file.local
+  } else {
+  	settings$run$inputs$pss$path <- pss.file.remote
+  	settings$run$inputs$css$path <- css.file.remote
+  	settings$run$inputs$site$path <- site.file.remote
+  }
+
   
 	## closing the connections to database
 	db.close(con)
 	db.close(fia.con)
+	
+	return(settings)
+}
+
+# See ed_read_ed10_20_history...
+get.ed.file.latlon.text <- function(lat, lon, site.style=FALSE, ed.res=1) {
+  if(site.style) {
+    lat <- ifelse(lat>=0, ed.res * floor(lat/ed.res) + 0.5 * ed.res, -ed.res * floor(-lat/ed.res) - 0.5 * ed.res)
+    lon <- ifelse(lon>=0, ed.res * floor(lon/ed.res) + 0.5 * ed.res, -ed.res * floor(-lon/ed.res) - 0.5 * ed.res)
+    return(paste0(".lat", round(lat, 1), "lon", round(lon, 1)))
+  } else {
+    return(paste0(".lat", round(lat, 4), "lon", round(lon, 4)))  
+  }
 }

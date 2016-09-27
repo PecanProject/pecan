@@ -1,8 +1,8 @@
 Package: PEcAn.DB
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.4.7
-Date: 2016-07-09
+Version: 1.4.8
+Date: 2016-08-09
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Carl
     Davidson, Rob Kooper, Shawn Serbin
 Maintainer: David LeBauer <dlebauer@illinois.edu>

@@ -17,37 +17,36 @@ status.end <- function(status="DONE") {
 require(PEcAn.all)
 library(PEcAn.assim.sequential)
 library(PEcAn.visualization)
+library(PEcAn.allometry)
 library(mvtnorm)
 library(rjags)
 library(reshape2)
 #--------------------------------------------------------------------------------------------------#
 #
-#  dir.create("~/demo.sda")
-#  clean.settings("~/demo.pda/demo.xml","~/demo.sda/demo.xml")
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 # Open and read in settings file for PEcAn run.
-settings <- read.settings("/fs/data2/output//PEcAn_1000001559/pecan.xml")
+settings <- read.settings("pecan.SDA.xml") 
 #--------------------------------------------------------------------------------------------------#
 
 #---------------- Load plot and tree ring data. -------------------------------------------------------#
 status.start("LOAD DATA")
 ## Read tree data
-trees <- read.csv("/home/carya/Camp2014/ForestPlots/treecores2014.csv")
+trees <- read.csv("~/Camp2016/ForestPlots/2016/TenderfootBog_2016_Cleaned.csv")
 
 ## Read tree ring data
-rings <- Read_Tuscon("/home/carya/Camp2014/ForestPlots/Tucson/")
+rings <- Read_Tucson("~/Camp2016/ForestPlots/2016/TucsonCombined/")
 
 ## Match observations & format for JAGS
-combined <- matchInventoryRings(trees,rings,extractor="Tag",nyears=36,coredOnly=FALSE) #WARNINGS
+combined <- matchInventoryRings(trees,rings,extractor="Tag",nyears=39,coredOnly=FALSE) #WARNINGS
 data <- buildJAGSdata_InventoryRings(combined) #WARNINGS
 status.end()
 
 #---------------- Load plot and tree ring data. -------------------------------------------------------#
 status.start("TREE RING MODEL")
 ## Tree Ring model
-n.iter = 3000
-jags.out = InventoryGrowthFusion(data,n.iter=n.iter) #WARNINGS
+n.iter = 5000
+jags.out = InventoryGrowthFusion(data,n.iter=n.iter)
 save(trees,rings,combined,data,jags.out,
      file=file.path(settings$outdir,"treering.Rdata"))
 
@@ -58,7 +57,6 @@ status.end()
 
 #-------------- Allometry Model -------------------------------#
 status.start("ALLOMETRY")
-library(PEcAn.allometry)
 con <- db.open(settings$database$bety)
 pft.data = list()
 for(ipft in 1:length(settings$pfts)){  ## loop over PFTs
@@ -66,7 +64,7 @@ for(ipft in 1:length(settings$pfts)){  ## loop over PFTs
   query <- paste0("SELECT s.spcd,",'s."Symbol"'," as acronym from pfts as p join pfts_species on p.id = pfts_species.pft_id join species as s on pfts_species.specie_id = s.id where p.name like '%",pft_name,"%'")  
   pft.data[[pft_name]] <- db.query(query, con)
 }
-allom.stats = AllomAve(pft.data,outdir = settings$outdir,ngibbs=n.iter/10) #WARNINGS
+allom.stats = AllomAve(pft.data,outdir = settings$outdir,ngibbs=n.iter/10)
 save(allom.stats,file=file.path(settings$outdir,"allom.stats.Rdata"))
 status.end()
 
@@ -74,102 +72,40 @@ status.end()
 status.start("PLOT2AGB")
 out = as.matrix(jags.out)
 sel = grep('x[',colnames(out),fixed=TRUE)
-state = plot2AGB(combined,out[,sel],settings$outdir,allom.stats,unit.conv=0.01) #WARNINGS
-obs = data.frame(mean = apply(state$NPP[1,,],2,mean,na.rm=TRUE),
-                 sd = apply(state$NPP[1,,],2,sd,na.rm=TRUE))
-obs = data.frame(mean = apply(state$AGB[1,,],2,mean,na.rm=TRUE),
-                 sd = apply(state$AGB[1,,],2,sd,na.rm=TRUE))
+unit.conv = pi*10^2/10000
+state = plot2AGB(combined,out[,sel],settings$outdir,list(allom.stats[[2]]),unit.conv=unit.conv)
 
-obs_tsca = data.frame(mean = apply(state$biomass_tsca[1,,],2,mean,na.rm=TRUE),
-                 sd = apply(state$biomass_tsca[1,,],2,sd,na.rm=TRUE))
-obs_acsa3 = data.frame(mean = apply(state$biomass_acsa3[1,,],2,mean,na.rm=TRUE),
-                 sd = apply(state$biomass_acsa3[1,,],2,sd,na.rm=TRUE))
-obs_beal2 = data.frame(mean = apply(state$biomass_beal2[1,,],2,mean,na.rm=TRUE),
-                 sd = apply(state$biomass_beal2[1,,],2,sd,na.rm=TRUE))
-obs_thoc2 = data.frame(mean = apply(state$biomass_thoc2[1,,],2,mean,na.rm=TRUE),
-                 sd = apply(state$biomass_thoc2[1,,],2,sd,na.rm=TRUE))
+NPP.conv <- .48 #Mg/ha/yr -> MgC/ha/yr
+AGB.conv <- (1/10000)*(1000/1)*.48 #Mg/ha -> kgC/m2
 
-obs = cbind(obs_tsca,obs_acsa3,obs_beal2,obs_thoc2)
-colnames(obs)<-c("mean_tsca","sd_tsca","mean_acsa3","sd_acsa3","mean_beal2",
-"sd_beal2","mean_thoc2","sd_thoc2")
+NPP = apply(state$NPP[1,,],2,mean,na.rm=TRUE)*NPP.conv##MgC/ha/yr 
+AGB = apply(state$AGB[1,,],2,mean,na.rm=TRUE)*AGB.conv#kgC/m2
 
+obs.mean <- list()
+for(i in 1:length(NPP)) {
+  obs.mean[[i]]<-c(NPP[i],AGB[i])
+  names(obs.mean[[i]])<-c("NPP",'AbvGrndWood')
+}
+
+obs.cov <- list()
+for(i in 1:length(NPP)){
+  obs.cov[[i]]<- cov(cbind(state$NPP[,,i]*NPP.conv,state$AGB[,,i]*AGB.conv))
+  colnames(obs.cov[[i]]) <- c("NPP","AbvGrndWood")
+  rownames(obs.cov[[i]]) <- c("NPP","AbvGrndWood")
+}
 status.end()
 
 #---------------- Build Initial Conditions ----------------------------------------------------------------------#
 status.start("IC")
-ne = as.numeric(settings$ensemble$size) # do we want this to point somewhere else?
-#IC = sample.IC.SIPNET(ne,state)
-source("/pecan/modules/assim.sequential/R/sample.IC.LINKAGES.R")
-IC = sample.IC.LINKAGES(ne,state)
-status.end()
-
-#---------------- Load Priors ----------------------------------------------------------------------#
-status.start("PRIORS")
-prior = sample.parameters(ne,settings,con)
-prior = NA
+ne = as.numeric(settings$state.data.assimilation$n.ensemble)
+IC = sample.IC.SIPNET(ne,state)
 status.end()
 
 #--------------- Assimilation -------------------------------------------------------#
-status.start("MCMC")
-obs <- obs/10 #to kg/m^2
-colnames(obs) <- c('AGB.pft.Hemlock(Tsuga Canadensis)',"X1","AGB.pft.Maple(Saccharinum)","X2",
-                   "AGB.pft.Yellow Birch(Betula Alleghaniensis)","X3",
-                   "AGB.pft.Northern White-Cedar(Thuja Occidentalis)","X4")
-obs.mean <- list()
-for(i in 1:nrow(obs)){
-  obs.mean[[i]] <- list(obs[i,c(1,3,5,7)])
-}
-obs.sd <- list()
-for(i in 1:nrow(obs)){
-  obs.sd[[i]] <- list(obs[i,c(2,4,6,8)])
-}
-
-
-### Load Lyford Data ###
-
-settings <- read.settings("/fs/data2/output//PEcAn_1000001448/pecan.xml")
-settings$ensemble$size <- 20
-IC = matrix(NA,as.numeric(settings$ensemble$size),length(settings$pft))
-settings$run$start.date <-"1960/01/01"
-settings$run$end.date <-"1960/12/31"
-new.met <- paste0(rundir,"/climage.Rdata")
-variables <- "AGB.pft"
-spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages")) #default spp.params
-
-lyford.dat <- readRDS("~/lyford_ab_group_v1.rds")
-lyford.dat <- lyford.dat[lyford.dat$name!='Havi',]
-old.names = c("Betula","Pinus","Fraxinus","Acer","Tsuga","Castanea","Quercus","Prunus",
-              "Fagus")
-new.names = c("Yellow Birch(Betula Alleghaniensis)","White Pine(Pinus Strobus)",
-              "White Ash(Fraxinus Americana)","Maple(Rubrum)",
-              "Hemlock(Tsuga Canadensis)","Chestnut(Dentana)",
-              "Champion Oak(Quercus Rubra)","Black Cherry(Prunus Serotina)",
-              "Beech(Grandifolia)")
-for(i in 1:length(old.names)){
-  lyford.dat$name <- sub(old.names[i],new.names[i],lyford.dat$name)
-}
-
-lyford.mean.melt <- melt(lyford.dat[lyford.dat$quant=="mean",],id=c("year","name","group","type","quant","site_id"))
-lyford.mean.cast <- acast(lyford.mean.melt,year ~ name, mean)
-lyford.mean.cast[is.na(lyford.mean.cast)]<-0
-obs.mean <- list()
-for(i in 1:nrow(lyford.mean.cast)){
-  obs.mean[[i]] <- list(lyford.mean.cast[i,])
-}
-
-lyford.sd.melt <- melt(lyford.dat[lyford.dat$quant=="sd",],id=c("year","name","group","type","quant","site_id"))
-lyford.sd.cast <- acast(lyford.sd.melt,year ~ name, mean)
-lyford.sd.cast[is.na(lyford.sd.cast)]<-0
-obs.sd <- list()
-for(i in 1:nrow(lyford.sd.cast)){
-  obs.sd[[i]] <- list(lyford.sd.cast[i,])
-}
-
-
-
-sda.enkf(settings,IC,prior,obs.mean,obs.sd,variables)
+status.start("EnKF")
+sda.enkf(settings=settings, obs.mean = obs.mean,
+         obs.cov = obs.cov, IC = IC, Q = NULL)
 status.end()
-
 #--------------------------------------------------------------------------------------------------#
 ### PEcAn workflow run complete
 status.start("FINISHED")

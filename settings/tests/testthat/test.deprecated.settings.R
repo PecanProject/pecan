@@ -11,11 +11,10 @@ logger.setQuitOnSevere(FALSE)
 logger.setLevel("OFF")
 context("fix.deprecated.settings")
 
-# setwd('~/pecan/settings/tests/testthat')
-
+source('get.test.settings.r')
 
 test_that("deprecated jobtemplate settings handled correctly", {
-  settings <- read.settings("testinput.xml")
+  settings <- .get.test.settings()
   settings$run$jobtemplate = "somefile"
   settings$model$jobtemplate = "otherfile"
   expect_error(fix.deprecated.settings(settings))
@@ -32,7 +31,7 @@ test_that("deprecated jobtemplate settings handled correctly", {
 
 
 test_that("deprecated dbfiles settings handled correctly", {
-  settings <- read.settings("testinput.xml")
+  settings <- .get.test.settings()
   settings$run$dbfiles = "somefile"
   settings$database$dbfiles = "otherfile"
   expect_error(fix.deprecated.settings(settings))
@@ -48,7 +47,7 @@ test_that("deprecated dbfiles settings handled correctly", {
 })
 
 test_that("deprecated host settings handled correctly", {
-  settings <- read.settings("testinput.xml")
+  settings <- .get.test.settings()
   host <- list(name = "localhost")
   settings$run$host = host
   settings$host = host

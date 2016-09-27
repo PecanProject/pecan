@@ -1,12 +1,12 @@
 ##' @name metric.RMSE
-##' @title metric.RMSE
+##' @title Root Mean Square Error
 ##' @export
-##' @param dat
+##' @param dat dataframe
 ##' 
 ##' @author Betsy Cowdery
 
 metric.RMSE <- function(dat, ...){
-  score <- sqrt(mean((dat$model - dat$obvs)^2, na.rm = TRUE))
+  score <- sqrt(mean((dat$model - dat$obvs)^2))
   return(score)
 }
 

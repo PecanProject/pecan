@@ -6,9 +6,11 @@
 ##' @export
 ##' @author Betsy Cowdery, Michael Dietze, Ankur Desai
 convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, start_date, end_date, 
-                          pkg, fcn, username, con=con, hostname='localhost', browndog, write=TRUE, format.vars=format.vars, ...) {
+                          pkg, fcn, username, con=con, host, browndog, write=TRUE,  
+                          format.vars=format.vars, ...) {
   l <- list(...); #print(l)
-  logger.info(paste("Convert.Inputs",fcn,input.id,hostname,outfolder,formatname,mimetype,site.id,start_date,end_date))
+
+  logger.info(paste("Convert.Inputs",fcn,input.id,host$name,outfolder,formatname,mimetype,site.id,start_date,end_date))
   n <- nchar(outfolder)
   if(substr(outfolder,n,n) != "/"){outfolder = paste0(outfolder,"/")}
   
@@ -20,7 +22,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
 
   # Consider adding a force option to skip the check and continue with conversion
   print("start CHECK")
-  check = dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, parentid=input.id, con=con, hostname)
+  check = dbfile.input.check(site.id, startdate, enddate, mimetype, formatname, parentid=input.id, con=con, host$name)
   print("end CHECK")
   print(check)
   if(length(check)>0){
@@ -30,10 +32,10 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   input = db.query(paste("SELECT * from inputs where id =",input.id),con)
   if(nrow(input)==0){logger.error("input not found",input.id);return(NULL)}
   
-  ifelse(hostname == "localhost", machine.host <- fqdn(), machine.host <- hostname)
+  ifelse(host$name == "localhost", machine.host <- fqdn(), machine.host <- host$name)
   machine = db.query(paste0("SELECT * from machines where hostname = '",machine.host,"'"),con)
   # machine = db.query(paste("SELECT * from machines where id = ",dbfile$machine_id),con)
-  if(nrow(machine)==0){logger.error("machine not found",hostname);return(NULL)}
+  if(nrow(machine)==0){logger.error("machine not found",host$name);return(NULL)}
   
   # dbfile may return more than one row -> may need to loop over machine ids
   dbfile = db.query(paste("SELECT * from dbfiles where container_id =",input.id," and container_type = 'Input' and machine_id =",machine$id),con)
@@ -48,7 +50,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   
   conversion = "local.remote" #default
   
-  if(!is.null(browndog) & hostname == 'localhost'){ # perform conversions with Brown Dog - only works locally right now
+  if(!is.null(browndog) & host$name == 'localhost'){ # perform conversions with Brown Dog - only works locally right now
     require(RCurl) 
     
     # Determine outputtype using formatname and mimetype of output file
@@ -83,7 +85,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   }
   
   if(conversion == "browndog"){
-    
     url <- file.path(browndog$url,outputtype) 
     #print(url)
     
@@ -137,13 +138,14 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       result$mimetype[i] <- mimetype
       result$formatname[i] <- formatname    
     }
-  }
   
-  else if (conversion == "local.remote") { # perform conversion on local or remote host
+  } else if (conversion == "local.remote") { # perform conversion on local or remote host
      if (missing(format.vars)) {
-       args = c(dbfile$file_path,dbfile$file_name,outfolder,start_date,end_date) 
+       args = c(dbfile$file_path, dbfile$file_name,outfolder,start_date,end_date) 
        if(!is.null(names(l))){
-         cmdFcn  = paste0(paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=",")),",",paste(paste(names(l),"=",paste0("'",unlist(l),"'")), collapse=","),")")
+         cmdFcn = paste0(
+           paste0(pkg, "::", fcn, "(", paste0("'", args, "'", collapse=",")), ",",
+           paste( paste(names(l), "=", paste0("'", unlist(l), "'")), collapse=","), ")")
        }else{
          cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")") 
        } 
@@ -153,7 +155,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     } 
     print(cmdFcn) #do we want to print this?
 
-    result <- remote.execute.R(script=cmdFcn,hostname,user=NA,verbose=TRUE,R="R")
+    result <- remote.execute.R(script=cmdFcn, host, user=NA, verbose=TRUE, R="R")
   }
   
   print("RESULTS: Convert.Input")

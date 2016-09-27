@@ -13,7 +13,7 @@
 ##'
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins
 met.process <- function(site, input_met, start_date, end_date, model, host, dbparms, dir, browndog=NULL){
-  # browser()
+
   require(RPostgreSQL)
   require(XML)
   
@@ -114,7 +114,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         
         cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),")")
         new.files <- remote.execute.R(cmdFcn,host,user=NA, verbose=TRUE)
-        
+
         raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
                                       in.prefix=new.files$dbfile.name[1],
                                       siteid = site$id,
@@ -147,7 +147,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
         
         cmdFcn  = paste0(pkg,"::",fcn,"(",paste0("'",args,"'",collapse=","),paste0(",username='",username,"'"),")")
         new.files <- remote.execute.R(script=cmdFcn,host=host,user=NA,verbose=TRUE,R="R")
-        
+
         ## insert database record
         raw.id <- dbfile.input.insert(in.path=dirname(new.files$file[1]),
                                       in.prefix=new.files$dbfile.name[1],
@@ -277,7 +277,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       
       input.id   <- cf.id[1]
       outfolder  <- ifelse(host$name == "localhost", 
-                           file.path(dir, paste0(met,"_CF_site_",str_ns)),
+                            file.path(dir, paste0(met,"_CF_site_",str_ns)),
                            file.path(host$dbfiles, paste0(met,"_CF_site_",str_ns)))
       pkg        <- "PEcAn.data.atmosphere"
       fcn        <- "extract.nc"
@@ -304,7 +304,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
       ready.id   <- convert.input(input.id,outfolder,formatname,mimetype,site.id=site$id
                                   ,start_date,end_date,pkg,fcn,username,con=con,
                                   host=host,browndog=NULL,write=TRUE,lst=lst)
-      
+
       print(ready.id)
       #     }else{
       #       ready.id<-cf.id[1]
@@ -340,7 +340,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     outfolder <- ifelse(host$name == "localhost", 
                         file.path(dir,paste0(met,"_",model,"_site_",str_ns)),
                         file.path(host$dbfiles,paste0(met,"_",model,"_site_",str_ns)))
-    
+
     pkg       <- paste0("PEcAn.",model)
     fcn       <- paste0("met2model.",model)
     lst       <- site.lst(site,con)
@@ -348,7 +348,7 @@ met.process <- function(site, input_met, start_date, end_date, model, host, dbpa
     model.id  <- convert.input(input.id, outfolder, formatname, mimetype, site.id=site$id,
                                start_date, end_date, pkg, fcn, username, con=con, host=host, browndog, write=TRUE, 
                                lst=lst, lat=new.site$lat, lon=new.site$lon)
-    
+
   } else {
     model.id = ready.id
     

@@ -250,8 +250,15 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
   # find appropriate host
   hostid <- get.id("machines", colname = "hostname", value = hostname, con, create=TRUE, dates=TRUE)
 
-  # Query for existing dbfile record with same file_name, file_path, and machine_id.
-  file.id <- invisible(db.query(paste0("SELECT * FROM dbfiles WHERE file_name='", basename(in.prefix), "' AND file_path='", in.path, "' AND machine_id='", hostid, "'"), con)[['id']])
+  # Query for existing dbfile record with same file_name, file_path, machine_id, 
+  # container_type, and container_id.
+  file.id <- invisible(db.query(
+    paste0(
+      "SELECT * FROM dbfiles WHERE ",
+      "file_name='", basename(in.prefix), "' AND ", 
+      "file_path='", in.path, "' AND ", 
+      "machine_id='", hostid, "'"
+    ), con)[['id']])
 
   if(is.null(file.id)) {
     # If no exsting record, insert one
