@@ -67,7 +67,7 @@ met.process.set.stage <- function(info.list,start_date,end_date,con){
     skip <- TRUE
   }
   #----------------------------- Move onto checking next CF Met Files-----------------------------------------------------#  
-  if(length(info.list$cf.info) > 0 $ skip == FALSE){
+  if(length(info.list$cf.info) > 0 & skip == FALSE){
     #CF standardized met files exists. Check dates.
     if(info.list$cf.info$start_date == start_date & info.list$cf.info$end_date == end_date){
       #Dates line-up. CF stage unecessary
@@ -108,14 +108,14 @@ met.process.set.stage <- function(info.list,start_date,end_date,con){
       dates$download$start_date[2] <- info.list$cf.info$cf.end_date
       dates$download$end_date[2] <- end_date
     }
-  }else if(info.list$cf.info == 0 $ skip == FALSE){
+  }else if(info.list$cf.info == 0 & skip == FALSE){
     stage$standardize <- stage$met2model <- TRUE
     stage$new <- TRUE
     stage$update <- FALSE
     skip <- TRUE
   }
   #----------------------------- Move onto gap filled section ----------------------------------------------------------# 
-  if(length(info.list$gf.info) < 0 $ skip == FALSE){
+  if(length(info.list$gf.info) < 0 & skip == FALSE){
     #Gapfilled met files files exists. Check dates. 
     if(info.list$gf.info$start_date == start_date & info.list$gf.info$end_date == end_date){
       #Dates line-up. gf stage unecessary
@@ -156,7 +156,7 @@ met.process.set.stage <- function(info.list,start_date,end_date,con){
       dates$download$start_date[2] <- info.list$gf.info$gf.end_date
       dates$download$end_date[2] <- end_date
     }
-  }else if (info.list$gf.info == 0 $ skip == FALSE){
+  }else if (info.list$gf.info == 0 & skip == FALSE){
     stage$standardize <- stage$met2model <- TRUE
     stage$new <- TRUE
     stage$update <- FALSE
@@ -205,7 +205,7 @@ met.process.set.stage <- function(info.list,start_date,end_date,con){
       dates$download$start_date[2] <- info.list$model.info$model.end_date
       dates$download$end_date[2] <- end_date
     }
-  }else if (info.list$model.info == 0 $ skip == FALSE){
+  }else if (info.list$model.info == 0 & skip == FALSE){
     stage$met2model <- TRUE
     stage$new <- TRUE
     stage$update <- FALSE
