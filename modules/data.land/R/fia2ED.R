@@ -100,14 +100,20 @@ fia.to.psscss <- function(settings, gridres=0.075) {
   
 	states <- sort(unique(surv$statecd))
 	states <- states[states < 72]
-	cycle  <- rep(NA,max(states))
+	cycle  <- as.list(rep(NA,max(states)))
 	old    <- rep(FALSE,max(states))
 	
 	## choose the cycle closest to the specified year
 	## note:	does not check for COMPLETE cycles
 	for(s in states){
-		sel <- which(surv$statecd == s)
-		cycle[s] <- surv$cycle[sel[which.min(abs(year-surv$invyr[sel]))]]
+	  surv.s <- surv[which(surv$statecd == s), ]
+	  ranked.cycles.s <- numeric(0)
+	  while(nrow(surv.s) > 0) {
+	    next.closest.cycle <- surv.s$cycle[which.min(abs(surv.s$invyr - year))]
+	    ranked.cycles.s <- c(ranked.cycles.s, next.closest.cycle)
+	    surv.s <- surv.s[surv.s$cycle != next.closest.cycle, ]
+	  }
+		cycle[[s]] <- ranked.cycles.s
 	}
 	
 	
@@ -119,13 +125,73 @@ fia.to.psscss <- function(settings, gridres=0.075) {
   ##################
   ## query to get PSS info
   query <- paste('SELECT p.cycle,p.statecd,p.measyear as time,p.cn as patch,MIN(2-c.stdorgcd) ',
-                 'as trk,AVG(c.stdage) as age,p.lat,p.lon FROM plot as p LEFT JOIN cond as c on p.cn=c.plt_cn ',
+                 'as trk,AVG(c.stdage) as age, p.lat,p.lon, p.prev_plt_cn FROM plot as p LEFT JOIN cond as c on p.cn=c.plt_cn ',
                  'WHERE p.lon >= ', lonmin, ' and p.lon < ', lonmax,
                  ' and p.lat >= ', latmin, ' and p.lat < ', latmax, ' GROUP BY p.cn')
+
   pss <- db.query(query, con=fia.con)
   names(pss) = tolower(names(pss))
+  if(nrow(pss) == 0) logger.error("Couldn't find pss data.")
+  
+  pss$prev_plt_cn[pss$prev_plt_cn==""] = NA
+  pss$unique.plot.id = NA
+  for(i in 1:nrow(pss)) {
+    if(!is.na(pss$unique.plot.id[i])) {
+      # already been assigned
+      next
+    } else {
+      pss$unique.plot.id[i] <- i
+    }
+    
+    if(!is.na(pss$prev_plt_cn[i])) {
+      # This record is a remeasure of another plot
+      parent.ind = which(pss$patch == pss$prev_plt_cn[i])
+      if(length(parent.ind) > 0) {
+        if(!is.na(pss$unique.plot.id[parent.ind])) {
+          pss$unique.plot.id[i] = pss$unique.plot.id[parent.ind]
+        } else {
+          pss$unique.plot.id[parent.ind] = pss$unique.plot.id[i]
+        }
+        next
+      }
+    }
+
+    child.ind = which(pss$prev_plt_cn == pss$patch[i])
+    if(length(child.ind) > 0) {
+      # This record is the parent of another plot
+      if(!is.na(pss$unique.plot.id[child.ind])) {
+        pss$unique.plot.id[i] = pss$unique.plot.id[child.ind]
+      } else {
+        pss$unique.plot.id[child.ind] = pss$unique.plot.id[i]
+      }
+    }
+  }
+  
+  unique.id=2
+  for(unique.id in unique(pss$unique.plot.id)) {
+    ind.i <- which(pss$unique.plot.id == unique.id)
+    if(length(ind.i) > 1) {
+      ind.keep <- ind.i[which.min(abs(pss$time[ind.i] - year))]
+      if(length(ind.keep) > 1) {
+        ind.keep <- ind.keep[1]
+      }
+      ind.remove <- ind.i[ind.i != ind.keep]
+      pss <- pss[-ind.remove,]
+    }
+  }
+  
+  
+  
+  
+  
+  
+  
   pss <- pss[pss$cycle == cycle[pss$statecd],]
-  if(length(pss) == 0) logger.error("Couldn't find pss data.")
+  
+  
+  
+  
+  if(nrow(pss) == 0) logger.error("Couldn't find pss data.")
 
   pss$trk[which(is.na(pss$trk))] <- 1
   pss$age[which(is.na(pss$age))] <- 0
@@ -162,8 +228,8 @@ fia.to.psscss <- function(settings, gridres=0.075) {
   names(css) = tolower(names(css))
   css <- css[css$cycle == cycle[css$statecd],]
 
-  ## fill in missing data
-  notree <- which(apply(is.na(css[,6:8]),1,sum) == 3)
+  ## Remove rows with no dbh, spcd, or n
+  notree <- which(is.na(css$dbh) & is.na(css$spcd) & is.na(css$n))
   if (length(notree) > 0){
     css <- css[-notree,]
   }
@@ -201,24 +267,25 @@ fia.to.psscss <- function(settings, gridres=0.075) {
     name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% fia.only])
     name.list <- name.list[name.list != "DEAD"]
     if(length(name.list) > 0) {
-      logger.error(paste0("\nThe FIA database expects the following species at ", lat," and ", lon, 
+      logger.warn(paste0("\nThe FIA database expects the following species at ", lat," and ", lon, 
         " but they are not described by the selected PFTs: \n", 
-        paste(name.list, collapse=", "), "\n\tPlease select additional pfts.")) 
-      stop("Execution stopped due to insufficient PFTs.")
+        paste(name.list, collapse=", "), 
+          "\nYou should select additional pfts if you want to include these. .")) 
     }
   }
 
 
   # --- Continue work formatting css now that we've checked for species problems
   n.cohort = nrow(css)
-  if(n.cohort == 0)
+  if(n.cohort == 0) {
     logger.warn("No trees found while trying to generate .css from FIA data!")
+  }
   
   css$time[is.na(css$time)] <- 1
   css$cohort[is.na(css$cohort)] <- 1:sum(is.na(css$cohort))
   css$dbh[is.na(css$dbh)] <- 1	# assign nominal small dbh to missing
   density.median <- median(css$n[which(css$n > 0)])
-  css$n[is.na(css$n)] <- density.median
+  css$n[is.na(css$n) | css$n==0] <- density.median
   css$hite <- css$bdead <- css$balive <- css$lai <- rep(0, n.cohort)
  
   ## map spcd to pft
