@@ -15,7 +15,7 @@
 ##' 
 read.restart.SIPNET <- function(outdir,runid,stop.time,settings,var.names,params){
 
-  prior.sla <- params[[which(names(ensemble.samples)!='soil')[1]]]$SLA
+  prior.sla <- params[[which(names(params)!='soil')[1]]]$SLA
   
   forecast <- list()
   
@@ -29,11 +29,11 @@ read.restart.SIPNET <- function(outdir,runid,stop.time,settings,var.names,params
     
     forecast<-list()
     
-    unit.conv <- (10000/1)*(1/1000)*(365.25*24*60*60)
+    #unit.conv <- (10000/1)*(1/1000)*(365.25*24*60*60) ## kgC m-2 s-1 -> MgC/ha/yr
   
     #### PEcAn Standard Outputs
     if("NPP" %in% var.names){
-      forecast[[1]] <- mean(ens$NPP) * unit.conv ## kgC m-2 s-1 -> MgC/ha/yr
+      forecast[[1]] <- ud.convert(mean(ens$NPP),'kg/m^2/s','Mg/ha/yr') #* unit.conv 
       names(forecast[[1]])<-c("NPP")
     }
     

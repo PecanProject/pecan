@@ -32,7 +32,7 @@ library(PEcAn.LINKAGES)
 source('~/pecan/modules/assim.sequential/R/sda.enkf.R')
 
 ######### sipnet
-settings <- read.settings("/fs/data2/output/PEcAn_1000002340/pecan.xml")
+settings <- read.settings("/fs/data2/output//PEcAn_1000002613/pecan.SDA.xml")
 settings$ensemble$size <- 50
 settings$state.data.assimilation$n.ensemble<- 100
 load(file.path(settings$outdir, "samples.Rdata"))

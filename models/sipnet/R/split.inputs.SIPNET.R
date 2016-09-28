@@ -20,10 +20,7 @@ split.inputs.SIPNET <- function(settings,start.time,stop.time){
   end.day<-strftime(stop.time, format = "%j")
   end.year<-strftime(stop.time,"%Y")
   
-  full.met <- c(settings$run$inputs$met$path)
-  new.met  <- file.path(settings$rundir,basename(full.met))
-  file.copy(full.met,new.met)
-  met <- new.met
+  met <- c(settings$run$inputs$met$path)
   
   path <- dirname(met)
   prefix <- sub(".clim","",basename(met),fixed=TRUE)

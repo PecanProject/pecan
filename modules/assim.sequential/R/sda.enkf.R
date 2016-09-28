@@ -337,19 +337,19 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
           Xbar = laply(FORECAST[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
           Xci  = laply(FORECAST[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
 
-          plot(strftime(obs.times[t1:t],'%Y'),Xbar,ylim=range(c(Ybar,Xci),na.rm=TRUE),
+          plot(as.Date(obs.times[t1:t]),Xbar,ylim=range(c(Ybar,Xci),na.rm=TRUE),
                type='n',xlab="Year",ylab="kg/m^2",main=colnames(X)[i])
           
           #observation / data
             if(i<=ncol(Ybar)){
-              ciEnvelope(strftime(obs.times[t1:t],'%Y'),as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
+              ciEnvelope(as.Date(obs.times[t1:t]),as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
                          as.numeric(Ybar[,i])+as.numeric(YCI[,i])*1.96,col=alphagreen)
-              lines(strftime(obs.times[t1:t],'%Y'),as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
+              lines(as.Date(obs.times[t1:t]),as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
             }
           
           #forecast
-          ciEnvelope(strftime(obs.times[t1:t],'%Y'),Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
-          lines(strftime(obs.times[t1:t],'%Y'),Xbar,col="darkblue",type='l',lwd=2)
+          ciEnvelope(as.Date(obs.times[t1:t]),Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
+          lines(as.Date(obs.times[t1:t]),Xbar,col="darkblue",type='l',lwd=2)
           
         }
     }
@@ -515,23 +515,23 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
           
           ylab.names<-unlist(sapply(settings$state.data.assimilation$state.variable,function(x){x})[2,], use.names = FALSE)
           
-          plot(strftime(obs.times[t1:t],'%Y'),Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
+          plot(as.Date(obs.times[t1:t]),Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
                type='n',xlab="Year",ylab=ylab.names[grep(colnames(X)[i],var.names)],main=colnames(X)[i])
           
           #observation / data
           if(i<=ncol(Ybar)){
-            ciEnvelope(strftime(obs.times[t1:t],'%Y'),as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
+            ciEnvelope(as.Date(obs.times[t1:t]),as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
                        as.numeric(Ybar[,i])+as.numeric(YCI[,i])*1.96,col=alphagreen)
-            lines(strftime(obs.times[t1:t],'%Y'),as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
+            lines(as.Date(obs.times[t1:t]),as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
           }
           
           #forecast
-          ciEnvelope(strftime(obs.times[t1:t],'%Y'),Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
-          lines(strftime(obs.times[t1:t],'%Y'),Xbar,col="darkblue",type='l',lwd=2)
+          ciEnvelope(as.Date(obs.times[t1:t]),Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
+          lines(as.Date(obs.times[t1:t]),Xbar,col="darkblue",type='l',lwd=2)
           
           #analysis
-          ciEnvelope(strftime(obs.times[t1:t],'%Y'),XaCI[,1],XaCI[,2],col=alphapink)
-          lines(strftime(obs.times[t1:t],'%Y'),Xa,col="black",lty=2,lwd=2)
+          ciEnvelope(as.Date(obs.times[t1:t]),XaCI[,1],XaCI[,2],col=alphapink)
+          lines(as.Date(obs.times[t1:t]),Xa,col="black",lty=2,lwd=2)
           
         }
       }
@@ -625,23 +625,23 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       Xa = laply(ANALYSIS[t1:t],function(x){return(mean(x[,i],na.rm=TRUE))})
       XaCI  = laply(ANALYSIS[t1:t],function(x){return(quantile(x[,i],c(0.025,0.975)))})
       
-      plot(strftime(obs.times[t1:t],'%Y'),Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
+      plot(as.Date(obs.times[t1:t]),Xbar,ylim=range(c(XaCI,Xci),na.rm=TRUE),
            type='n',xlab="Year",ylab=ylab.names[grep(colnames(X)[i],var.names)],main=colnames(X)[i])
      
        #observation / data
       if(i<=ncol(Ybar)){
-        ciEnvelope(strftime(obs.times[t1:t],'%Y'),as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
+        ciEnvelope(as.Date(obs.times[t1:t]),as.numeric(Ybar[,i])-as.numeric(YCI[,i])*1.96,
                    as.numeric(Ybar[,i])+as.numeric(YCI[,i])*1.96,col=alphagreen)
-        lines(strftime(obs.times[t1:t],'%Y'),as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
+        lines(as.Date(obs.times[t1:t]),as.numeric(Ybar[,i]),type='l',col="darkgreen",lwd=2)
       }
       
       #forecast
-      ciEnvelope(strftime(obs.times[t1:t],'%Y'),Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
-      lines(strftime(obs.times[t1:t],'%Y'),Xbar,col="darkblue",type='l',lwd=2)
+      ciEnvelope(as.Date(obs.times[t1:t]),Xci[,1],Xci[,2],col=alphablue)#col="lightblue")
+      lines(as.Date(obs.times[t1:t]),Xbar,col="darkblue",type='l',lwd=2)
       
       #analysis
-      ciEnvelope(strftime(obs.times[t1:t],'%Y'),XaCI[,1],XaCI[,2],col=alphapink)
-      lines(strftime(obs.times[t1:t],'%Y'),Xa,col="black",lty=2,lwd=2)
+      ciEnvelope(as.Date(obs.times[t1:t]),XaCI[,1],XaCI[,2],col=alphapink)
+      lines(as.Date(obs.times[t1:t]),Xa,col="black",lty=2,lwd=2)
       
     }
 
@@ -695,7 +695,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
     corrplot(cor.mat,type="upper",tl.srt=45, 
              addCoef.col = "black")
     
-    plot(obs.times[t1:t],bqq[t1:t],pch=16,cex=1,ylab="Degrees of Freedom",
+    plot(as.Date(obs.times[t1:t]),bqq[t1:t],pch=16,cex=1,ylab="Degrees of Freedom",
          xlab="Time")
   }
       

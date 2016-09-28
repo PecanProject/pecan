@@ -6,7 +6,7 @@
 ##' @param runid       run ID
 ##' @param time        year that is being read
 ##' @param settings    PEcAn settings object
-##' @param analysis.vec    analysis vector
+##' @param new.state    analysis vector
 ##' @param RENAME      flag to either rename output file or not
 ##' @param variables
 ##' @param sample_parameters
@@ -17,22 +17,29 @@
 ##' @return NONE
 ##' @export
 ##' 
-write.restart.LINKAGES <- function(outdir, runid, time, settings, analysis.vec,
-                                  variables,
-                                   sample_parameters = FALSE,
-                                   trait.values = NA,met=NULL,RENAME = TRUE){
+
+# outdir, runid, time, settings, new.state,
+# variables,
+# sample_parameters = FALSE,
+# trait.values = NA,met=NULL,RENAME = TRUE
+
+write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
+                                   settings, new.state,
+                                   RENAME = TRUE,
+                                   new.params = FALSE,
+                                   inputs){
   
   ### Removing negative numbers because biomass can't be negative ###
-  for(i in 1:length(analysis.vec)){
-    if(analysis.vec[i]<0) analysis.vec[i] <- 0
+  for(i in 1:length(new.state)){
+    if(new.state[i]<0) new.state[i] <- 0
   }
   
-  analysis.vec.save <- analysis.vec
-  analysis.vec <- analysis.vec.save[grep('pft',names(analysis.vec.save))]
-  analysis.vec.other <- analysis.vec.save[grep('pft',names(analysis.vec.save),invert=TRUE)]
+  new.state.save <- new.state
+  new.state <- new.state.save[grep('pft',names(new.state.save))]
+  new.state.other <- new.state.save[grep('pft',names(new.state.save),invert=TRUE)]
   
   ### Going to need to change this... ### Get some expert opinion
-  N <- length(analysis.vec)
+  N <- length(new.state)
   distance.matrix <- matrix(1,N,N)
   for(i in 1:N){
     distance.matrix[i,]<-sample(c(seq(1,N,1)),size=N)
@@ -71,7 +78,7 @@ write.restart.LINKAGES <- function(outdir, runid, time, settings, analysis.vec,
   
   spp.params <- spp.params.default[spp.params.save,]
   
-  biomass_function<-function(dbh){ #kg/tree
+  biomass_function<-function(dbh,params){ #kg/tree
     .1193 * dbh^2.393 + ((slta+sltb*dbh)/2)^2 * 3.14 * fwt * frt * .001
   }
   merit<-function(dbh){
@@ -140,16 +147,16 @@ write.restart.LINKAGES <- function(outdir, runid, time, settings, analysis.vec,
     data2 = data.frame(ind.biomass = ind.biomass,n.index = n.index)
     mean.biomass.spp <- aggregate(ind.biomass ~ n.index,mean,data=data2) #calculate mean individual biomass for each species
     
-    #calculate number of individuals needed to match analysis.vec
+    #calculate number of individuals needed to match new.state
     for(s in 1:length(settings$pfts)){      
       if(ntrees[s]>0){
-        fix <- analysis.vec[s]/mean.biomass.spp[mean.biomass.spp[,1]==s,2] #number of individuals needed to agree with analysis.vec      
+        fix <- new.state[s]/mean.biomass.spp[mean.biomass.spp[,1]==s,2] #number of individuals needed to agree with new.state      
       }else{
         for(r in 1:(length(settings$pfts)-1)){
           s.select <- which(distance.matrix[s,] == r) #select a new spp. to clone from
           if(ntrees[s.select]>0) break
         }
-        fix <- analysis.vec[s] / mean.biomass.spp[mean.biomass.spp[,1]==s.select,2]
+        fix <- new.state[s] / mean.biomass.spp[mean.biomass.spp[,1]==s.select,2]
       }
       new.ntrees[s] <- as.numeric(ceiling(fix)) #new number of ind. of each species
     }
@@ -191,11 +198,11 @@ write.restart.LINKAGES <- function(outdir, runid, time, settings, analysis.vec,
       nogro.temp[which(new.n.index==s)] <- nogro[select]
     }
 
-    #fix dbh of sampled individuals to match analysis.vec
+    #fix dbh of sampled individuals to match new.state
     nl = 1 ## individual counter
     b_calc <- numeric(length(settings$pfts)) #biomass of sampled trees
     b_calc1 <- numeric(length(settings$pfts)) #biomass of sampled trees
-    bcorr <- numeric(length(settings$pfts)) #biomass correction factor to analysis.vec
+    bcorr <- numeric(length(settings$pfts)) #biomass correction factor to new.state
     for(s in 1:nspec){
       if(new.ntrees[s]==0) next
       slta <- spp.params$SLTA[s]
@@ -206,7 +213,7 @@ write.restart.LINKAGES <- function(outdir, runid, time, settings, analysis.vec,
       for(j in nl:nu){
         b_calc[s] <- biomass_function(dbh.temp[j]) * (1 / 883) * .48 + b_calc[s]
       }
-      bcorr[s] <- analysis.vec[s] / b_calc[s]
+      bcorr[s] <- new.state[s] / b_calc[s]
       for(j in nl:nu){
         b_obs <- biomass_function(dbh.temp[j])*as.numeric(bcorr[s])
         dbh.temp[j] <- optimize(merit, c(1,200))$minimum 
@@ -226,7 +233,7 @@ write.restart.LINKAGES <- function(outdir, runid, time, settings, analysis.vec,
    #translate agb to dbh
 
 #dbh_spp[s] <- optimize(merit, c(0,200))$minimum
-# bcorr = analysis.vec[i,] / agb.pft[,ncol(agb.pft),1]
+# bcorr = new.state[i,] / agb.pft[,ncol(agb.pft),1]
 #*(bcorr[s]/ntrees[s])
 #dbh.temp1[j] <- optimize(merit, c(0,200))$minimum
 
@@ -235,7 +242,7 @@ write.restart.LINKAGES <- function(outdir, runid, time, settings, analysis.vec,
 #     sltb <- spp.params$SLTB[n]
 #     fwt <- spp.params$FWT[n]
 #     frt <- spp.params$FRT[n]
-#     if (agb.pft[n,ncol(agb.pft),1]==0 & analysis.vec[i,n]>0){
+#     if (agb.pft[n,ncol(agb.pft),1]==0 & new.state[i,n]>0){
 #       abg.pft.temp <- sum(distance.matrix[,n]%*%t(agb.pft[n,ncol(agb.pft),1]))
 #       ntrees.temp <- sum(distance.matrix[,n]%*%t(t(as.matrix(ntrees)))) 
 #       dbh.temp <- dbh[sum(ntrees[1:n])-1]
@@ -251,7 +258,7 @@ write.restart.LINKAGES <- function(outdir, runid, time, settings, analysis.vec,
 ##### SOIL
     if("TotSoilCarb"%in%variables){
     leaf.sum <- sum(tyl[1:12]) * 0.48
-    soil.org.mat <- analysis.vec.other['TotSoilCarb'] - leaf.sum
+    soil.org.mat <- new.state.other['TotSoilCarb'] - leaf.sum
     soil.corr <- soil.org.mat / (sum(C.mat[C.mat[,5],1]) * 0.48)
     C.mat[C.mat[,5],1] <- C.mat[C.mat[,5],1] * as.numeric(soil.corr)
     }
