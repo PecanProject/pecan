@@ -90,7 +90,7 @@ mkdir case/run/timing
   ## ADDITIONAL MODS THAT ARE JUST ASSOCIATED WITH REFCASE
 cat >> user_nl_clm << EOF
 hist_empty_htapes = .true.
-hist_fincl1='EFLX_LH_TOT','TSOI_10CM','QVEGT','NEP','GPP','AR','ED_bleaf','ED_biomass','NPP_column'
+hist_fincl1='EFLX_LH_TOT','TSOI_10CM','QVEGT','NEP','GPP','AR','ED_bleaf','ED_biomass','NPP_column','TSA','FSDS'
 hist_mfilt             = 8760
 hist_nhtfrq            = -1
 EOF
