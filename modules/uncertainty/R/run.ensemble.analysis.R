@@ -67,7 +67,7 @@ run.ensemble.analysis <- function(settings,plot.timeseries=NA, ensemble.id=NULL,
   load(fname)
   my.dat = unlist(ensemble.output)
   if(is.null(my.dat)){
-    logger.warning("no data in ensemble.output")
+    logger.warn("no data in ensemble.output")
     return()
   }
   
