@@ -8,14 +8,6 @@ model2netcdf.FATES(outdir)
 }
 \arguments{
 \item{outdir}{Location of FATES model output}
-
-\item{sitelat}{Latitude of the site}
-
-\item{sitelon}{Longitude of the site}
-
-\item{start_date}{Start time of the simulation}
-
-\item{end_date}{End time of the simulation}
 }
 \author{
 Michael Dietze
