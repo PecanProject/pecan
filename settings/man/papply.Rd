@@ -68,7 +68,7 @@ multiSettings <- MultiSettings(settings1, settings2)
 
 # The fucntion should add element $d = D to either a Settings, or each entry in a MultiSettings
 f(settings1, d="D")
-print(f(multiSettings, d="D"), T)
+print(f(multiSettings, d="D"), TRUE)
 }
 \author{
 Ryan Kelly
