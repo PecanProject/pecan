@@ -74,7 +74,7 @@ test_that("papply stop.on.error works as expected", {
   expected <- multiSettings$aa
   expected[[2]] <- NULL
   
-  expect_warning(actual <- papply(multiSettings, fun, stop.on.error=FALSE))
+  actual <- papply(multiSettings, fun, stop.on.error=FALSE)
   expect_identical(actual, expected)
   
   actual <- NULL
@@ -98,7 +98,7 @@ test_that("stop.on.error works as expected when returning new MultiSettings", {
   expected[[1]]$aa <- 0
   expect_true(is.MultiSettings(expected))
   
-  expect_warning(actual <- papply(multiSettings, fun2, stop.on.error=FALSE))
+  actual <- papply(multiSettings, fun2, stop.on.error=FALSE)
   expect_true(identical(actual, expected))
 
   actual <- NULL
