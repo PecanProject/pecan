@@ -51,14 +51,12 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
                         stringsAsFactors = FALSE)
   
   
-  prevar = data.frame(DAP.name = c("tasmax","tasmin","rsds","uas","vas","huss","pr"), 
-                      CF.name = c("air_temperature","air_temperature","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation"),
-                      units = c('Kelvin','Kelvin',"W/m2","m/s","m/s","g/g","kg/m2/s")
+  var = data.frame(DAP.name = c("tasmax","tasmin","rsds","uas","vas","huss","pr"), 
+                  long_DAP.name = c("air_temperature","air_temperature","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation"),
+                  CF.name = c("air_temperature_max","air_temperature_min","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux"),
+                  units = c('Kelvin','Kelvin',"W/m2","m/s","m/s","g/g","kg/m2/s")
                       )
-  var = data.frame(DAP.name = c("air_temperature", "rsds","uas","vas","huss","pr"),
-                   CF.name = c("air_temperature","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux"),
-                   units = c('Kelvin',"W/m2","m/s","m/s","g/g","kg/m2/s")
-  )
+  
   
   for (i in 1:rows){
     year = ylist[i]    
@@ -79,33 +77,28 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     time <- ncdim_def(name='time', units="sec", vals=(1:365)*86400, create_dimvar=TRUE, unlim=TRUE)
     dim=list(lat,lon,time)
     
-    prevar.list = list()
-    predat.list = list()
+    var.list = list()
+    dat.list = list()
     
     ## get data off OpenDAP
-    for(j in 1:length(prevar$DAP.name)){
-      dap_end = paste0('/',model,'/macav2metdata_',prevar$DAP.name[j],'_',model,'_',ensemble_member,'_',scenario,'_',start_url,'_',end_url,'_CONUS_daily.nc')
+    for(j in 1:length(var$DAP.name)){
+      dap_end = paste0('/',model,'/macav2metdata_',var$DAP.name[j],'_',model,'_',ensemble_member,'_',scenario,'_',start_url,'_',end_url,'_CONUS_daily.nc')
       dap_file = paste0(dap_base,dap_end)
       dap = nc_open(dap_file)
-      predat.list[[j]] = ncvar_get(dap,as.character(prevar$CF.name[j]),c(lon_MACA,lat_MACA,1),c(1,1,ntime))
-      prevar.list[[j]] = ncvar_def(name=as.character(prevar$CF.name[j]), units=as.character(prevar$units[j]), dim=dim, missval=-9999.0, verbose=verbose)
+      dat.list[[j]] = ncvar_get(dap,as.character(var$long_DAP.name[j]),c(lon_MACA,lat_MACA,1),c(1,1,ntime))
+      var.list[[j]] = ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=dim, missval=-9999.0, verbose=verbose)
       nc_close(dap)
     }
     
+    dat.list = as.data.frame(dat.list)
+    colnames(dat.list) = c("air_temperature_max","air_temperature_min","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux")
     #take average of temperature min and max
-    predat.list[[1]] = (predat.list[[1]]+predat.list[[2]])/2
+    #dat.list[[1]] = (dat.list[[1]]+dat.list[[2]])/2
     #convert mm precipitation to precipitation flux
-    predat.list[[7]] = (predat.list[[7]]/(24*3600))
-    prevar.list[[7]]$name = "precipitation_flux"
-    predat.list[[2]] <- NULL
-    prevar.list[[2]] <- NULL
-    dat.list = list()
-    var.list = list()
-    dat.list = predat.list
-    var.list = prevar.list
+    dat.list[["precipitation_flux"]] = (dat.list[["precipitation_flux"]]/(24*3600))
+
     
     #read in a 5 year file, but only storing 1 year at a time, so this selects the particular year of the 5 year span that you want
-    dat.list = as.data.frame(dat.list)
     if (year%%5 == 1){
       dat.list = dat.list[1:365,]
     }
