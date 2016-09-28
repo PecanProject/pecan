@@ -52,8 +52,8 @@ debias.met <- function(outfolder, source_met, train_met, site_id, de_method='mea
   #Create dataframes from the lists of data pulled from the source/train and give them column names 
   sou = data.frame(sou)
   train = data.frame(train)
-  colnames(sou) = c("tas","rlds","ps","rsds","uas","vas","huss","pr")
-  colnames(train) = c("tas","rlds","ps","rsds","uas","vas","huss","pr")
+  colnames(sou) = c("air_temperature","surface_downwelling_longwave_flux_in_air","air_pressure","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux")
+  colnames(train) = c("air_temperature","surface_downwelling_longwave_flux_in_air","air_pressure","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux")
   
   #Grab the means/medians of the source and train, find the difference, and correct the source dataset accordingly
 
@@ -61,22 +61,27 @@ debias.met <- function(outfolder, source_met, train_met, site_id, de_method='mea
   if (de_method == 'mean'){
     mean_sou = apply(sou,2,mean)
     mean_train = apply(train,2,mean)
-    mean_diff = mean_train - mean_sou
+    mean_diff = mean_train/mean_sou
     debi = list()
     for (k in 1:length(mean_diff)){
-      debi[[k]] = (sou[[k]] + mean_diff[[k]])
+      debi[[k]] = (sou[[k]]*mean_diff[[k]])
     }
   } else {
     if(de_method == 'median'){
       med_sou = apply(sou, 2, median)
       med_train = apply(train,2,median)
-      med_diff = med_train - med_sou
+      med_diff = med_train/med_sou
       debi = list()
       for (k in 1:length(med_diff)){
-        debi[[k]] = (sou[[k]] + med_diff[[k]])
+        debi[[k]] = (sou[[k]]*med_diff[[k]])
       }
     }
   }
+  
+  debi = data.frame(debi)
+  
+
+
   rows = 1
   dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
   results <- data.frame(file=character(rows), host=character(rows),
@@ -85,7 +90,6 @@ debias.met <- function(outfolder, source_met, train_met, site_id, de_method='mea
                         dbfile.name = paste("debias.met",sep="."),
                         stringsAsFactors = FALSE)
   
-  debi = data.frame(debi)
   loc.file = file.path(outfolder,paste("debias",year,"nc",sep="."))
   
   loc <- nc_create(filename=loc.file, vars=sou.list, verbose=verbose)
