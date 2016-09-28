@@ -29,7 +29,7 @@ write.restart.SIPNET<- function(outdir, runid, start.time, stop.time,
  
   if(RENAME == TRUE) {
     file.rename(file.path(outdir,runid,"sipnet.out"),
-                file.path(outdir,runid,paste0("sipnet.out",strftime(as.Date(start.time)-1,"%Y"))))
+                file.path(outdir,runid,paste0("sipnet.",as.Date(start.time),".out")))
     system(paste("rm",file.path(rundir,runid,"sipnet.clim")))
   }else{
     print(paste("Files not renamed -- Need to rerun year",start.time,"before next time step"))
