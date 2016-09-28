@@ -70,13 +70,17 @@ papply <- function(settings, fn, stop.on.error=FALSE, ...) {
         }
       }
     }
-    if(all(sapply(result, is.Settings)))
+
+    if(all(sapply(result, is.Settings))) {
       result <- MultiSettings(result)
+    }
+
     if(length(errors) > 0) {
       PEcAn.utils::logger.warn(paste0("papply encountered the following errors, ",
         "but continued since stop.on.error=FALSE. ",
         paste(errors, collapse='; ')))
     }
+
     return(invisible(result))
 
   } else if(is.Settings(settings)) {
