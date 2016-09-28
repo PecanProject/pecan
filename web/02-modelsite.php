@@ -114,7 +114,8 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 		sitename = $( "#txtsitename" ),
 		elevation =$( "#txtelevation" ),
 		allFields = $( [] ).add( sitename ).add( elevation ),
-		tips = $( ".validateTips" );
+		tips = $( ".validateTips" ),
+		request;
 
 	function updateTips( t ) {
 		tips
@@ -150,16 +151,61 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 		var valid = true;
 		allFields.removeClass( "ui-state-error" );
 
-		valid = valid && checkLength ( sitename, "sitename", 3, 16);
-		valid = valid && checkLength ( email, "email", 6, 80);
+		//valid = valid && checkLength ( sitename, "sitename", 3, 16);
+		//valid = valid && checkLength ( email, "email", 6, 80);
 
-		valid = valid && checkRegexp ( sitename, /^[a-z]([0-9a-z_\s])+$/i, "Site name may consist of a-z, 0-9, underscores, spaces and must begin with a letter.");
+		//valid = valid && checkRegexp ( sitename, /^[a-z]([0-9a-z_\s])+$/i, "Site name may consist of a-z, 0-9, underscores, spaces and must begin with a letter.");
 		
 		if ( valid ) {
-			$( "#users tbody" ).append( "<tr>" +
-				"<td>" + sitename.val() + "</td>" +
-				"<td>" + sitename.val() + "</td>" +
-			"</tr>" );
+			if (request) {
+				request.abort();;
+			}
+			var $form = $(this);
+			
+			//Let's select and cache all the fields
+			var $inputs = $form.find("input, select, button, textarea");
+			
+			//Serialize the data in the form
+			var serializedData = $form.serialize();
+
+			//Let's disable the inputs for the duration of the ajax request
+			// Note: we disable elements AFTER the form data has been serialized.
+			// Disabled form elements will not be serialized.
+			$inputs.prop("disabled", true);
+
+			// Fire off the request to /input-site.php
+			request = $.ajax({
+				url: "/pecan/insert-site.php",
+				type: "post",
+				data: serializedData
+			
+			});
+
+
+			request.done(function( response, textStatus, jqXHR) {
+				// Log a message to the console
+				console.log("It worked.");
+			
+			});
+
+			request.fail(function(jqXHR, textStatus, errorThrow) {
+				// Log the error to the console
+				console.error(
+					"The following error occurred. " +
+					textStatus, errorThown
+					);
+			});
+
+			// Callback handler that will be called regardless
+			// if the request failed or succeeded
+			request.always(function(){
+				// Reenable the inputs
+				$inputs.prop("disabled", false);
+			});
+
+			// Prevent default posting of form
+			event.preventDefault();
+
 			dialog.dialog( "close" );
 		}
 		return valid;
@@ -168,8 +214,8 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 
 	dialog = $( "#dialog-form" ).dialog({
 		autoOpen: false,
-		height: 800,
-		width: 850,
+		height: 630,
+		width: 750,
 		modal: true,
 		buttons: {
 			"Create a site": addSite,
