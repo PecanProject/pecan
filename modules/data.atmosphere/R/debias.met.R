@@ -5,7 +5,7 @@
 ##' @param outfolder
 ##' @param source_met - the met data that you want to be altered 
 ##' @param train_met - the met data that we use to train the other dataset
-##' @param de_method - select which debias method you would like to use, options are 'mean, median 
+##' @param de_method - select which debias method you would like to use, options are 'normal', 'linear regression'
 ##' @param site.id
 ##' @author James Simkins
 debias.met <- function(outfolder, source_met, train_met, site_id, de_method='mean', overwrite=FALSE, verbose=FALSE, ...){  
@@ -57,29 +57,56 @@ debias.met <- function(outfolder, source_met, train_met, site_id, de_method='mea
   
   #Grab the means/medians of the source and train, find the difference, and correct the source dataset accordingly
 
+  sou_add = data.frame(sou$air_temperature, sou$air_pressure, sou$eastward_wind, sou$northward_wind)
+  sou_mult = data.frame(sou$surface_downwelling_longwave_flux_in_air, sou$surface_downwelling_shortwave_flux_in_air, sou$specific_humidity, sou$precipitation_flux)
+  train_add = data.frame(train$air_temperature, train$air_pressure, train$eastward_wind, train$northward_wind)
+  train_mult = data.frame(train$surface_downwelling_longwave_flux_in_air, train$surface_downwelling_shortwave_flux_in_air, train$specific_humidity, train$precipitation_flux)
+  add_var = c("air_temperature", "air_pressure", "eastward_wind", "northward_wind")
+  mult_var = c("surface_downwelling_longwave_flux_in_air","surface_downwelling_shortwave_flux_in_air","specific_humidity","precipitation_flux")
     
   if (de_method == 'mean'){
-    mean_sou = apply(sou,2,mean)
-    mean_train = apply(train,2,mean)
-    mean_diff = mean_train/mean_sou
-    debi = list()
-    for (k in 1:length(mean_diff)){
-      debi[[k]] = (sou[[k]]*mean_diff[[k]])
+    mean_sou_add = apply(sou_add,2,mean)
+    mean_train_add = apply(train_add,2,mean)
+    mean_diff = mean_train - mean_sou
+    mean_ratio = mean_train/mean_sou
+    debi_add = list()
+    debi_mult = list()
+    for (k in 1:length(add_var)){
+      debi_add[[k]] = (sou_add[[k]] + mean_diff[[k]])
     }
+    for (k in 1:length(mult_var)){
+      debi_mult[[k]] = (sou_mult[[k]]*mean_ratio[[k]])
+    }
+    debi_add = data.frame(debi_add)
+    colnames(debi_add) = add_var
+    debi_mult = data.frame(debi_mult)
+    colnames(debi_mult) = mult_var
+    debi = data.frame(debi_add,debi_mult)
   } else {
     if(de_method == 'median'){
-      med_sou = apply(sou, 2, median)
-      med_train = apply(train,2,median)
-      med_diff = med_train/med_sou
-      debi = list()
-      for (k in 1:length(med_diff)){
-        debi[[k]] = (sou[[k]]*med_diff[[k]])
+      med_sou_add = apply(sou_add,2,median)
+      med_train_add = apply(train_add,2,median)
+      med_diff = med_train - med_sou
+      med_ratio = med_train/med_sou
+      debi_add = list()
+      debi_mult = list()
+      for (k in 1:length(add_var)){
+        debi_add[[k]] = (sou_add[[k]] + med_diff[[k]])
+      }
+      for (k in 1:length(mult_var)){
+        debi_mult[[k]] = (sou_mult[[k]]*med_ratio[[k]])
+      }
+      debi_add = data.frame(debi_add)
+      colnames(debi_add) = add_var
+      debi_mult = data.frame(debi_mult)
+      colnames(debi_mult) = mult_var
+      debi = data.frame(debi_add,debi_mult)
       }
     }
   }
   
-  debi = data.frame(debi)
-  
+  debi$precipitation_flux[debi$precipitation_flux < 0] <- 0
+  debi$specific_humidity[debi$specific_humidity < 0] <- 0
 
 
   rows = 1
