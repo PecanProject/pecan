@@ -11,10 +11,6 @@
 ##' @title Code to convert FATES netcdf output into into CF standard
 ##'
 ##' @param outdir Location of FATES model output
-##' @param sitelat Latitude of the site
-##' @param sitelon Longitude of the site
-##' @param start_date Start time of the simulation
-##' @param end_date End time of the simulation
 ##' @export
 ##'
 ##' @author Michael Dietze

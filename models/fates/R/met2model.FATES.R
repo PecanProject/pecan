@@ -43,10 +43,10 @@ met2model.FATES <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
    dir.create(outfolder)
   
    #Process start and end dates
-   start_date<-as.POSIXlt(start.date,tz="GMT")
-   end_date<-as.POSIXlt(end.date,tz="GMT")
-   start_year <- year(start_date)
-   end_year <- year(end_date)
+   start_date<-as.POSIXlt(start_date,tz="GMT")
+   end_date<-as.POSIXlt(end_date,tz="GMT")
+   start_year <- lubridate::year(start_date)
+   end_year <- lubridate::year(end_date)
 
    ## Build met
    for(year in start_year:end_year){
@@ -151,13 +151,13 @@ met2model.FATES <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
 
 logger.info("Done with met2model.FATES")
 
-results <- data.frame(file=outfolder,
+results <- data.frame(file=paste0(outfolder,"/"),
                       host=c(fqdn()),
-                      mimetype=c('text/plain'),
+                      mimetype=c('application/x-netcdf'),
                       formatname=c('CLM met'),
                       startdate=c(start_date),
                       enddate=c(end_date),
-                      dbfile.name = paste0("CLM_met_",in.prefix),
+                      dbfile.name = "",
                       stringsAsFactors = FALSE)
 
 } ### end met2model.FATES
