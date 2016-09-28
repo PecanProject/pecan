@@ -2,6 +2,8 @@
 ##' @title recurse.create
 ##' @description recursively follow the file structure in 'ins' and create all the same folders in 'path' as well as symbolic links to all the file. This is done, rather than creating a symbolic link to the whole structure, so individual files can later be unlinked and replaced with different files/links.
 ##' @author Mike Dietze
+##' @param path new location to create folders and links
+##' @param ins  reference location of inputs
 ##' @export
 recurse.create <- function(path,ins){
   files <- list.files(ins,full.names=TRUE)
