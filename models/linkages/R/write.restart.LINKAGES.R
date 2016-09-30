@@ -313,9 +313,6 @@ write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
 
     settings$run$start.date <- paste0(start.time + 1,"/01/01")
     settings$run$end.date <- paste0(stop.time + 1,"/12/31")
-#    settings$run$start.date <- paste0(time,strftime(settings$run$end.date,"/%m/%d"))
-#    settings$run$end.date <- paste0(time,strftime(settings$run$end.date,"/%m/%d"))
-
 
   do.call(write.config.LINKAGES,
           args = list(trait.values = new.params,

@@ -14,11 +14,11 @@
 split.inputs.SIPNET <- function(settings,start.time,stop.time){
   
   
-  start.day<-strftime(start.time, format = "%j")
-  start.year<-strftime(start.time,"%Y")
+  start.day<-day(start.time)
+  start.year<-year(start.time)
   
-  end.day<-strftime(stop.time, format = "%j")
-  end.year<-strftime(stop.time,"%Y")
+  end.day<-day(stop.time)
+  end.year<-year(stop.time)
   
   met <- c(settings$run$inputs$met$path)
   
