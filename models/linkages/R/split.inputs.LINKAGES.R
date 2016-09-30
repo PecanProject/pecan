@@ -13,7 +13,9 @@
 split.inputs.LINKAGES <- function(settings,start.time,stop.time){
   
   new.met <- paste0(settings$rundir,"/climate.Rdata") #doesn't do anything but write stuff to README
-  inputs$met$path <- new.met #HACK
+  settings$run$inputs$met$path <- new.met #HACK
+  
+  inputs<-settings$run$inputs
 
   return(inputs)
   

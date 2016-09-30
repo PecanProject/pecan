@@ -13,12 +13,13 @@
 ##' @return X.vec      vector of forecasts
 ##' @export
 ##' 
-read.restart.LINKAGES <- function(outdir,runid,stop.time,multi.settings,var.names,params=NULL){
+read.restart.LINKAGES <- function(outdir,runid,stop.time,settings,var.names=NULL,params=NULL){
  
   #Read ensemble output
   ens <- read.output(runid = runid,outdir = file.path(outdir, runid),
-         start.year = stop.time, end.year=stop.time,
-         var.names=var.names) #change to just "AGB" for plot level biomass
+         start.year = strftime(stop.time, '%Y'),
+         end.year=strftime(stop.time, '%Y'),
+         variables = var.names) #change to just "AGB" for plot level biomass
   
   #Add PFT name to variable if applicable
   pft.names <- numeric(length(settings$pfts))

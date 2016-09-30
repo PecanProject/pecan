@@ -191,14 +191,33 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
   save.image(file.path(outdir,"sda.initial.runs.Rdata"))
  
   ###-------------------------------------------------------------------###
-  ### tests before data assimilation                                      ###
+  ### tests before data assimilation                                    ###
   ###-------------------------------------------------------------------###  
   
   # at some point add a lot of error checking
   # read time from data
   # if data is missing you still need to have NAs or NULL with date name
   ## vector to read the correct netcdfs by read.restart
+  
   obs.times = names(obs.mean)
+  obs.times.POSIX = ymd_hms(obs.times)
+  
+  for(i in 1:length(obs.times)){
+    if(is.na(obs.times.POSIX[i])){
+      if(is.na(ymd(obs.times[i]))){
+        print('Error: no dates associated with observations')
+      }else{
+        ### Data does not have time associated with dates 
+        ### Adding 12:59:59PM assuming next time step starts one second later
+        print('Pumpkin Warning: adding one minute before midnight time assumption to dates associated with data')
+        obs.times.POSIX[i] <- ymd_hms(paste(obs.times[i],"23:59:59"))
+      }
+    }
+  }
+  obs.times <- obs.times.POSIX
+  
+  #need explicit forecast length variable in settings
+  #start time, stop time, restart time if restart time is not provided restart in stop time
   
   ###-------------------------------------------------------------------###
   ### set up for data assimilation                                      ###
@@ -547,7 +566,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       ###-------------------------------------------------------------------### 
       
       inputs <- do.call(my.split.inputs,args=list(settings = settings,
-                                                  start.time = format(as.Date(obs.times[t])+1,"%Y/%m/%d"),
+                                                  start.time = (ymd_hms(obs.times[t])+second(hms('00:00:01'))),
                                                   stop.time = obs.times[t+1]))
       
       ###-------------------------------------------------------------------###
@@ -557,12 +576,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL){
       for(i in 1:nens){
         do.call(my.write.restart,
                 args=list(outdir = outdir, runid = run.id[[i]],
-                          start.time = format(as.Date(obs.times[t])+1,"%Y/%m/%d"),
+                          start.time = (ymd_hms(obs.times[t])+second(hms('00:00:01'))),
                           stop.time = obs.times[t+1],
                           settings = settings,
                           new.state = new.state[i,],
                           new.params = new.params[[i]],
-                          inputs = inputs,RENAME=TRUE))
+                          inputs = inputs, RENAME=FALSE))
       }
       ###-------------------------------------------------------------------###
       ### Run model                                                         ###
