@@ -26,7 +26,7 @@
 write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
                                    settings, new.state,
                                    RENAME = TRUE,
-                                   new.params = FALSE,
+                                   new.params,
                                    inputs){
   
   ### Removing negative numbers because biomass can't be negative ###
@@ -38,6 +38,7 @@ write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   new.state <- new.state.save[grep('pft',names(new.state.save))]
   new.state.other <- new.state.save[grep('pft',names(new.state.save),invert=TRUE)]
   
+  variables<-names(new.state)
   ### Going to need to change this... ### Get some expert opinion
   N <- length(new.state)
   distance.matrix <- matrix(1,N,N)
@@ -78,11 +79,37 @@ write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   
   spp.params <- spp.params.default[spp.params.save,]
   
-  biomass_function<-function(dbh,params){ #kg/tree
-    .1193 * dbh^2.393 + ((slta+sltb*dbh)/2)^2 * 3.14 * fwt * frt * .001
+  biomass_spp_params <- function(new.params,default.params,pft){
+    if('SLTA' %in% names(new.params)){
+      slta<-new.params$pft$SLTA
+    }else{
+      slta <- default.params[default.params$Spp_Name==pft,]$SLTA
+    }
+    if('SLTB' %in% names(new.params)){
+      sltb<-new.params$pft$SLTB
+    }else{
+      sltb <- default.params[default.params$Spp_Name==pft,]$SLTB
+    }
+    if('FWT' %in% names(new.params)){
+      fwt<-new.params$pft$FWT
+    }else{
+      fwt <- default.params[default.params$Spp_Name==pft,]$FWT
+    }
+    if('FRT' %in% names(new.params)){
+      frt<-new.params$pft$FRT
+    }else{
+      frt <- default.params[default.params$Spp_Name==pft,]$FRT
+    }
+    return(list(slta=slta,sltb=sltb,fwt=fwt,frt=frt))
   }
-  merit<-function(dbh){
-    (b_obs - biomass_function(dbh))^2
+  
+  biomass_function<-function(dbh,spp.biomass.params){ #kg/tree
+    biomass <-.1193 * dbh^2.393 + ((spp.biomass.params$slta+spp.biomass.params$sltb*dbh)/2)^2 * 3.14 * spp.biomass.params$fwt * spp.biomass.params$frt * .001
+    return(biomass)
+    }
+  
+  merit <- function(dbh,b_obs,spp.biomass.params){
+    (b_obs - biomass_function(dbh,spp.biomass.params))^2
   }
   
   ##HACK
@@ -114,7 +141,7 @@ write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
       n.index = c(n.index,rep(i,ntrees[i]))
     }
     
-    large.trees <- which(dbh>=(max(dbh)-5))
+    large.trees <- which(dbh>=(max(dbh)/1.05))
     for(s in 1:length(settings$pfts)){
       ntrees[s] <- length(which(n.index[large.trees]==s))
     }
@@ -137,11 +164,13 @@ write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
     
     #calculate biomass of each individual
     for(j in 1:sum(ntrees)){
-      slta <- spp.params$SLTA[n.index[j]]
-      sltb <- spp.params$SLTB[n.index[j]]
-      fwt <- spp.params$FWT[n.index[j]]
-      frt <- spp.params$FRT[n.index[j]]
-      ind.biomass[j] <- biomass_function(dbh[j]) * (1 / 833) * .48 #changing units to be kgC/m^2
+      # slta <- spp.params$SLTA[n.index[j]]
+      # sltb <- spp.params$SLTB[n.index[j]]
+      # fwt <- spp.params$FWT[n.index[j]]
+      # frt <- spp.params$FRT[n.index[j]]
+      pft <- spp.params$Spp_Name[n.index[j]]
+      spp.biomass.params <- biomass_spp_params(new.params = new.params,default.params = default.params,pft=pft)
+      ind.biomass[j] <- biomass_function(dbh[j],spp.biomass.params) * (1 / 833) * .48 #changing units to be kgC/m^2
     }
     
     data2 = data.frame(ind.biomass = ind.biomass,n.index = n.index)
@@ -203,22 +232,27 @@ write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
     b_calc <- numeric(length(settings$pfts)) #biomass of sampled trees
     b_calc1 <- numeric(length(settings$pfts)) #biomass of sampled trees
     bcorr <- numeric(length(settings$pfts)) #biomass correction factor to new.state
+    b_obs<- numeric(sum(new.ntrees))
     for(s in 1:nspec){
       if(new.ntrees[s]==0) next
-      slta <- spp.params$SLTA[s]
-      sltb <- spp.params$SLTB[s]
-      fwt <- spp.params$FWT[s]
-      frt <- spp.params$FRT[s]
       nu <- nl + new.ntrees[s] - 1
-      for(j in nl:nu){
-        b_calc[s] <- biomass_function(dbh.temp[j]) * (1 / 883) * .48 + b_calc[s]
-      }
+      pft <- unique(spp.params$Spp_Name[new.n.index[nl:nu]])
+      spp.biomass.params<-biomass_spp_params(new.params = new.params,default.params = default.params,pft=pft)
+      b_calc[s] <-  sum(biomass_function(dbh.temp[nl:nu],spp.biomass.params=spp.biomass.params)) * (1 / 833) * .48#changing units to be kgC/m^2
+      
       bcorr[s] <- new.state[s] / b_calc[s]
-      for(j in nl:nu){
-        b_obs <- biomass_function(dbh.temp[j])*as.numeric(bcorr[s])
-        dbh.temp[j] <- optimize(merit, c(1,200))$minimum 
-        b_calc1[s] <- biomass_function(dbh.temp[j]) * (1 / 883) * .48 + b_calc1[s]       
+      
+      if(length(pft)>1){
+        print("error too many pfts assigned")
+        stop()
       }
+      
+      b_obs[nl:nu] <- biomass_function(dbh.temp[nl:nu],spp.biomass.params=spp.biomass.params)*as.numeric(bcorr[s])
+      for(j in nl:nu){
+        dbh.temp[j] <- optimize(merit, c(1,200), b_obs = b_obs[j], spp.biomass.params=spp.biomass.params)$minimum
+      }
+
+      b_calc1[s] <- sum(biomass_function(dbh.temp[nl:nu],spp.biomass.params=spp.biomass.params)) * (1 / 883) * .48 
       nl <- nu + 1 
     }
   
@@ -266,7 +300,7 @@ write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
     if(RENAME==TRUE){ 
       file.rename(file.path(settings$rundir,runid,"linkages.restart.Rdata"),
                   file.path(settings$rundir,runid,
-                            paste0(time,"linkages.restart.Rdata"))) #save original output
+                            paste0(start.time,"linkages.restart.Rdata"))) #save original output
     }
     restart.file <- file.path(settings$rundir,runid,"linkages.restart.Rdata")
     sprintf("%s",restart.file)
@@ -277,26 +311,22 @@ write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
     #make a new settings with the right years
     #min start date and end date - fail in informative way
 
-    settings$run$start.date <- paste0(time + 1,"/01/01")
-    settings$run$end.date <- paste0(time + 1,"/12/31")
+    settings$run$start.date <- paste0(start.time + 1,"/01/01")
+    settings$run$end.date <- paste0(stop.time + 1,"/12/31")
 #    settings$run$start.date <- paste0(time,strftime(settings$run$end.date,"/%m/%d"))
 #    settings$run$end.date <- paste0(time,strftime(settings$run$end.date,"/%m/%d"))
 
-if(sample_parameters == TRUE){
+
   do.call(write.config.LINKAGES,
-          args = list(trait.values = trait.values,
+          args = list(trait.values = new.params,
                       settings = settings, run.id = runid,
                       restart=TRUE, spinup=FALSE))
-} else {
-  do.call(write.config.LINKAGES,
-          args=list(trait.values = NA, settings=settings,
-                    run.id = runid, restart=TRUE, spinup=FALSE))
-}
+
     
     #save original output
     if(RENAME==TRUE){
       file.rename(file.path(outdir,runid,"linkages.out.Rdata"),
-                  file.path(outdir,runid,paste0(time,"linkages.out.Rdata")))
+                  file.path(outdir,runid,paste0(start.time,"linkages.out.Rdata")))
     }
 
 }
