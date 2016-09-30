@@ -32,72 +32,83 @@ $offline=isset($_REQUEST['offline']);
 
 
 $sitename = "test-site";
-if (isset($_POST['txtsitename'])) {
-  $sitename = $_POST['txtsitename'];
+if (isset($_REQUEST['txtsitename'])) {
+  $sitename = $_REQUEST['txtsitename'];
 }
-debug_to_console( "Test");
-debug_to_console( "Sitename " . $sitename);
+#debug_to_console( "Test");
+#debug_to_console( "Sitename " . $sitename);
 
 $city = "test-city";
-if (isset($_POST['txtcity'])) {
-  $city = $_POST['txtcity'];
+if (isset($_REQUEST['txtcity'])) {
+  $city = $_REQUEST['txtcity'];
 }
 
 $state = "test-state";
-if (isset($_POST['txtstate'])) {
-  $state = $_POST['txtstate'];
+if (isset($_REQUEST['txtstate'])) {
+  $state = $_REQUEST['txtstate'];
 }
 
 $country = "test-country";
-if (isset($_POST['txtcountry'])) {
-  $country = $_POST['txtcountry'];
+if (isset($_REQUEST['txtcountry'])) {
+  $country = $_REQUEST['txtcountry'];
 }
 
 $mat = "1";
-if (isset($_POST['mat'])) {
-  $mat = $_POST['mat'];
+if (isset($_REQUEST['txtmat'])) {
+  $mat = $_REQUEST['txtmat'];
 }
 
 $map = "1";
-if (isset($_POST['map'])) {
-  $map = $_POST['map'];
+if (isset($_REQUEST['txtmap'])) {
+  $map = $_REQUEST['txtmap'];
 }
 
 $soil = "test-soil";
-if (isset($_POST['soil'])) {
-  $soil = $_POST['soil'];
+if (isset($_REQUEST['txtsoil'])) {
+  $soil = $_REQUEST['txtsoil'];
+}
+
+$notes = "test-notes";
+if (isset($_REQUEST['txtnotes'])) {
+  $notes = $_REQUEST['txtnotes'];
+}
+
+$soilnotes = "test-soil-notes";
+if (isset($_REQUEST['txtsoilnotes'])) {
+  $soilnotes = $_REQUEST['txtsoilnotes'];
 }
 
 
-
-$greenhouse = "true";
-if (isset($_REQUEST['greenhouse'])) {
-  $greenhouse = $_REQUEST['greenhouse'];
-}
+$greenhouse = isset($_REQUEST['txtgreenhouse']);
 
 $user_id = "1";
-if (isset($_REQUEST['user_id'])) {
-  $user_id = $_REQUEST['user_id'];
+if (isset($_REQUEST['txtuser_id'])) {
+  $user_id = $_REQUEST['txtuser_id'];
 }
 
 $time_zone = "Central";
-if (isset($_REQUEST['time_zone'])) {
-  $time_zone = $_REQUEST['time_zone'];
+if (isset($_REQUEST['txttime_zone'])) {
+  $time_zone = $_REQUEST['txttime_zone'];
 }
 
-$sand_percentage = "1";
-if (isset($_REQUEST['sand_percentage'])) {
-  $sand_percentage = $_REQUEST['sand_percentage'];
+$sand_percentage = "1.0";
+if (isset($_REQUEST['txtpctsand'])) {
+  $sand_percentage = $_REQUEST['txtpctsand'];
 }
 
-$clay_percentage = "2";
-if (isset($_REQUEST['clay_percentage'])) {
-  $clay_percentage = $_REQUEST['clay_percentage'];
+$clay_percentage = "2.0";
+if (isset($_REQUEST['txtpctclay'])) {
+  $clay_percentage = $_REQUEST['txtpctclay'];
 }
 
-$geometry = "90";
-if (isset($_REQUEST['geometry'])) {
-  $geometry = $_REQUEST['geometry'];
+$lat = "-88.2826";
+if (isset($_REQUEST['txtlat'])) {
+  $lat = $_REQUEST['txtlat'];
+}
+
+$long = "40.0703";
+if (isset($_REQUEST['txtlong'])) {
+  $long = $_REQUEST['txtlong'];
 }
 
 // Insert new site
@@ -107,7 +118,7 @@ $query = "INSERT INTO sites (city, state, country, mat, map, soil, created_at, u
                  VALUES
                             (:city, :state, :country, :mat, :map, :soil, NOW(), NOW(),
                              :sitename, :greenhouse, :user_id, :time_zone, :sand_percentage,
-                             :clay_percentage, ST_GeomFromText('POINT(:long, :lat)',4326))";
+                             :clay_percentage, ST_Force3D(ST_SetSRID(ST_MakePoint(:long, :lat),4326)))";
 
 $stmt = $pdo->prepare($query);
 
@@ -116,19 +127,20 @@ $stmt->bindParam(':state', $state, PDO::PARAM_STR);
 $stmt->bindParam(':country', $country, PDO::PARAM_STR);
 $stmt->bindParam(':mat', $mat, PDO::PARAM_INT);
 $stmt->bindParam(':map', $map, PDO::PARAM_INT);
-$stmt->bindParam(':lat', $lat, PDO::PARAM_INT);
-$stmt->bindParam(':long', $long, PDO::PARAM_INT);
+$stmt->bindParam(':lat', $lat, PDO::PARAM_STR);
+$stmt->bindParam(':long', $long, PDO::PARAM_STR);
 $stmt->bindParam(':soil', $soil, PDO::PARAM_STR);
 $stmt->bindParam(':sitename', $sitename, PDO::PARAM_STR);
-$stmt->bindParam(':greenhouse', $greenhouse, PDO::PARAM_STR);
+$stmt->bindParam(':greenhouse', $greenhouse, PDO::PARAM_BOOL);
 $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
 $stmt->bindParam(':time_zone', $time_zone, PDO::PARAM_STR);
-$stmt->bindParam(':sand_percentage', $sand_percentage, PDO::PARAM_INT);
-$stmt->bindParam(':clay_percentage', $clay_percentage, PDO::PARAM_INT);
+$stmt->bindParam(':sand_percentage', $sand_percentage, PDO::PARAM_STR);
+$stmt->bindParam(':clay_percentage', $clay_percentage, PDO::PARAM_STR);
 
 if ($stmt->execute() === FALSE) {
   die('Can\'t insert new site query: ' . error_database());
+} else {
+	//Need to return structure of new marker to add to markersArray
 }
-//Need to return structure of new marker to add to markersArray
 
 ?>

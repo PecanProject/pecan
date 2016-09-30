@@ -219,7 +219,7 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 		modal: true,
 		buttons: {
 			"Create a site": addSite,
-			Cancel: function() {
+		Cancel: function() {
 				dialog.dialog( "close" );
 			}
 		},
@@ -460,7 +460,9 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
     map.addListener('dblclick', function(event) {
       addMarker(event.latLng);
       console.log("dialog should fire");
-      $( "#dialog-form").dialog("open");
+      $("#dialog-form").dialog("open");
+      $("#txtlong").val(event.latLng.lat());
+      $("#txtlat").val(event.latLng.lng());
     });
   }
 
@@ -586,8 +588,10 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 				<fieldset>
 					<div id="container">
 						<div id="row">
-						<label for="sitename" id="lblsitename">Site name</label>
-						<input id="txtsitename" size="30" type="text"></input>
+							<div id="left">
+								<label for="sitename" id="lblsitename">Site name</label>
+								<input id="txtsitename" size="30" type="text"></input>
+							</div>
 						</div>
 						<div id="row">
 							<div id="left">
