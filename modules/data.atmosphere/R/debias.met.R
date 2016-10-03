@@ -102,8 +102,7 @@ debias.met <- function(outfolder, source_met, train_met, site_id, de_method='mea
       colnames(debi_mult) = mult_var
       debi = data.frame(debi_add,debi_mult)
       }
-    }
-  }
+    } 
   
   debi$precipitation_flux[debi$precipitation_flux < 0] <- 0
   debi$specific_humidity[debi$specific_humidity < 0] <- 0
