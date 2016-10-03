@@ -617,7 +617,7 @@ pda.get.model.output <- function(settings, run.id, inputs) {
     model$posix <- seq.POSIXt(from = lubridate::floor_date(as.POSIXct(settings$run$start.date), "year"), by = diff(model.secs)[1], length.out = length(model$time))
   
     dat <- align.data(model_full = model, obvs_full = inputs[[k]]$data, dat_vars = vars.used, 
-                      start_year = start.year, end_year = end.year)
+                      start_year = start.year, end_year = end.year, align_method = inputs[[k]]$align.method)
   
     model.out[[k]] <- dat[,colnames(dat) %in% paste0(vars.used,".m"), drop = FALSE]
     colnames(model.out[[k]]) <- vars.used

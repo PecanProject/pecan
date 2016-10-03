@@ -88,6 +88,8 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[[17]] <- (sub.sipnet.output$soilWetnessFrac)         # Fractional soil wetness
     output[[18]] <- (sub.sipnet.output$snow * 10)                 # SWE
     output[[19]] <- sub.sipnet.output$litter * 0.001 ## litter kgC/m2
+    output[[20]] <- 2*output[[8]]-output[[7]]  #SR
+    output[[21]] <- output[[13]]-output[[19]]
           
     #******************** Declare netCDF variables ********************#
     t <- ncdim_def(name = "time",
@@ -116,7 +118,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     var[[5]]  <- mstmipvar("TotalResp", lat, lon, t, NA)
     var[[6]]  <- mstmipvar("AutoResp", lat, lon, t, NA)
     var[[7]]  <- mstmipvar("HeteroResp", lat, lon, t, NA)
-    var[[8]]  <- ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, longname = "Soil Respiration")
+    var[[8]]  <- ncvar_def("SoilRespiration", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, longname = "Soil Respiration")
     var[[9]]  <- mstmipvar("NEE", lat, lon, t, NA)
     #var[[9]]  <- mstmipvar("CarbPools", lat, lon, t, NA)
     var[[10]]  <- mstmipvar("AbvGrndWood", lat, lon, t, NA)
@@ -129,6 +131,8 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     var[[17]]  <- mstmipvar("SoilMoistFrac", lat, lon, t, NA)
     var[[18]]  <- mstmipvar("SWE", lat, lon, t, NA)
     var[[19]]  <- mstmipvar("Litter", lat, lon, t, NA)
+    #var[[20]]  <- ncvar_def("SoilR", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, longname = "Total Soil Respiration")
+    #var[[21]]  <- ncvar_def("SC", units = "kg C m-2", dim = list(lon, lat, t), missval = -999, longname = "Soil Carbon")
    
     #******************** Declar netCDF variables ********************#
     
