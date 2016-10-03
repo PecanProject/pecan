@@ -8,27 +8,6 @@
 #-------------------------------------------------------------------------------
 
 
-### !!! REMOVE AFTER DEBUGGING
-#outdir <- "/Volumes/data/sserbin/Modeling/maat/maat_test/out/SA-median/"
-#outdir <- "/data/sserbin/Modeling/maat/maat_test/out/SA-median/"
-#start_date <- '2005-07-15 00:00:00'
-#end_date <- '2005-07-15 00:00:01'
-#sitelat=46.5
-#sitelon=-89.2
-#y="2005"
-#sitelat=-999
-#sitelon=-999
-
-#outdir <- "/data/sserbin/Modeling/maat/maat_met_tests.4/out/SA-median/"
-#start_date <- '2006-01-01 00:00:00'
-#end_date <- '2006-12-31 00:00:00'
-#sitelat <- 39.9712
-#sitelon <- -74.4346
-#y <- "2006"
-
-### !!!
-
-
 ##-------------------------------------------------------------------------------------------------#
 ##' Convert MAAT output to netCDF
 ##'
@@ -89,9 +68,9 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
     output[[1]] <- out.year                       # Simulation year
     output[[2]] <- sub.maat.doy+day.steps         # Fractional day - NEED TO IMPLEMENT  
     output[[3]] <- (sub.maat.output$A)            # assimilation in umolsC/m2/s
-    output[[4]] <- (sub.maat.output$gs)           # stomatal conductance in ???
+    output[[4]] <- (sub.maat.output$gs)           # stomatal conductance in mol H2O m-2 s-1
     
-    ## TODO: ADD MORE MAAT OUTPUTS HERE ##
+    ## !!TODO: ADD MORE MAAT OUTPUTS HERE!! ##
     
     #******************** Declare netCDF variables ********************#
     ## This version doesn't provide enough output timesteps when running with met data that has
@@ -115,16 +94,20 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
       if(length(output[[i]])==0) output[[i]] <- rep(-999,length(t$vals))
     }
     
+    ############ Variable Conversions
     ### Conversion factor for umol C -> kg C
-    Mc <- 12.017 #molar mass of C, g/mol
+    Mc <- 12.017 # molar mass of C, g/mol
     umol2kg_C <- Mc * ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
     
-    ### Find missing and convert outputs
-    #output <- conversion( 2, umol2kg_C)  ## convert GPP in umolC/m2 s-1 to kgC/m2 s-1 (MsTMIP)
-    #output[[2]][output[[2]] != -999] <- output[[2]][output[[2]] != -999] * umol2kg_C
-    output[[3]] <- ifelse(output[[3]]==-999,-999,output[[3]]*umol2kg_C)  # convert A/GPP to kgC/m2/s
-    output[[4]] <- ifelse(output[[4]]=="Inf",-999,output[[4]]) # here is where we will convert gs to CF units
+    ### Conversion factor for mol H2O -> kg H2O
+    Mw <- 18.01528  # molar mass of H2O, g/mol
+    mol2kg_H2O <- Mw * ud.convert(1, "g", "kg")
+    ############ 
     
+    ### Find/replace missing and convert outputs to standardized BETYdb units
+    output[[3]] <- ifelse(output[[3]]==-999,-999,output[[3]]*umol2kg_C)  # convert A/GPP to kgC/m2/s
+    #output[[4]] <- ifelse(output[[4]]=="Inf",-999,output[[4]]) # gs in mol H2O m-2 s-1
+    output[[4]] <- ifelse(output[[4]]=="Inf",-999,output[[4]]*mol2kg_H2O) # stomatal_conductance in kg H2O m2 s1
     
     ### Put output into netCDF format
     mstmipvar <- PEcAn.utils::mstmipvar
@@ -132,7 +115,7 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
     var[[1]]  <- mstmipvar("Year", lat, lon, t, NA)
     var[[2]]  <- mstmipvar("FracJulianDay", lat, lon, t, NA)
     var[[3]]  <- mstmipvar("GPP", lat, lon, t, NA)
-    var[[4]]  <- mstmipvar("gs", lat, lon, t, NA)
+    var[[4]]  <- mstmipvar("stomatal_conductance", lat, lon, t, NA)
     
     ### Output netCDF data
     nc <- nc_create(file.path(outdir, paste(y,"nc", sep=".")), var)
