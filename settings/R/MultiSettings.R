@@ -124,6 +124,7 @@ is.MultiSettings <- function(x) {
   }
 }
 
+
 ##' @export
 names.MultiSettings <- function(x) {
   return(unique(unlist(lapply(x, names))))
@@ -131,9 +132,21 @@ names.MultiSettings <- function(x) {
 
 ##' @export
 "names<-.MultiSettings" <- function(x, value) {
-  stop("Can't name elements of MultiSettings.")
+  stop("Can't name MultiSettings this way. Use settingNames() instead.")
 }
 
+##' @export
+settingNames <- function(multiSettings, settingNames) {
+  if(missing(settingNames)) {
+    return(attr(multiSettings, "names"))
+  } else {
+    attr(multiSettings, "names") <- settingNames
+    return(multiSettings)
+  }
+}
+
+
+##' @export
 print.MultiSettings <- function(x, printAll=FALSE, ...) {
   if(printAll) {
     NextMethod()
@@ -142,9 +155,21 @@ print.MultiSettings <- function(x, printAll=FALSE, ...) {
   }
 }
 
+##' @export
+printAll <- function (x) {
+  UseMethod("printAll", x)
+}
+
+
+##' @export
+printAll.MultiSettings <- function(multiSettings) {
+  return(print(multiSettings, TRUE))
+}
+
 
 .expandableItemsTag <- "multisettings"
 
+##' @import PEcAn.utils
 ##' @export
 listToXml.MultiSettings <- function(item, tag, collapse=TRUE) {
   if(collapse && length(item) > 1) {
