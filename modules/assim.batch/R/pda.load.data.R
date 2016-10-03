@@ -89,6 +89,9 @@ load.pda.data <- function(settings, con) {
       
       inputs[[i]]$obs <- AMFo
       inputs[[i]]$par <- c(AMF.params$intercept, AMF.params$slopeP, AMF.params$slopeN)
+    }else{
+      inputs[[i]]$obs <- inputs[[i]]$data[colnames(inputs[[i]]$data) %in% inputs[[i]]$variable.name]
+      inputs[[i]]$par <- sd(unlist(inputs[[i]]$obs), na.rm = TRUE) # testing
     }
   } # end loop over files
   
