@@ -27,6 +27,8 @@ load.pda.data <- function(settings, con) {
 
     inputs[[i]]$variable.id <- input.settings[[i]]$variable.id
     inputs[[i]]$input.id <- input.settings[[i]]$input.id
+    inputs[[i]]$align.method <- input.settings[[i]]$align.method
+    
     # I require that the user defines data.path in the settings as well, instead of using query.file.path
     # because 'data.path <- query.file.path(obvs.id, con)' might return an incomplete path 
     # which results in reading all the files in that particular directory in the load.x_netcdf step
@@ -38,13 +40,19 @@ load.pda.data <- function(settings, con) {
     
     vars.used.index <- which(format$vars$bety_name %in% c(inputs[[i]]$variable.name))
     
+    if(format$file_name == "AmeriFlux.level2.h.nc"){
+      time.row <- NULL
+    }else{
+      time.row <- which(format$vars$bety_name %in% c("year", "month", "week", "day", "hour", "minute", "second"))
+    }
     
     inputs[[i]]$data <- load.data(data.path, format, start_year = year(settings$run$start.date), 
                                   end_year = year(settings$run$end.date), site = settings$run$site, 
-                                  vars.used.index, time.row = NULL)
+                                  vars.used.index, time.row)
     
     ## Preprocess data
     # TODO: Generalize
+    # TODO: Soil Respiration uncertainty calculation
     if(all(inputs[[i]]$variable.name %in% c("NEE", "FC", "LE", "UST"))) {    
     
 
