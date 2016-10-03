@@ -6,7 +6,7 @@
 ## which accompanies this distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
 ## #-------------------------------------------------------------------------------
-context("test Settings classes")
+context("test MultiSettings class")
 
 if(FALSE) {
   library(testthat)

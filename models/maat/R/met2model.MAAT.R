@@ -14,6 +14,9 @@
 ##only gives user the notice that file already exists. If user wants to overwrite the existing files, just change 
 ##overwrite statement below to TRUE.
 
+# leaf_user_met prefix
+PREFIX_XML <- '<?xml version="1.0"?>\n'
+
 ##-------------------------------------------------------------------------------------------------#
 ##' met2model wrapper for MAAT
 ##'
@@ -33,7 +36,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
   if(!require(PEcAn.utils)) print("**Plesae install PEcAn.utils then retry**")
   
   ## MAAT driver format (.csv):
-  ## Timestep,  Air Temp (°C), PAR (umols m-2 s-1), Precipitation( ??), Atmospheric CO2 (μmol mol-1) ... # STILL IN DEVELOPMENT
+  ## Time (POSIX),  Air Temp (°C), PAR (umols m-2 s-1), Precipitation( ??), Atmospheric CO2 (μmol mol-1) ... # STILL IN DEVELOPMENT
   
   print("START met2model.MAAT")
   
@@ -111,15 +114,14 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
 
       # get radiation
       SW   <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") ## in W/m2
-      PAR  <- try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air")) ## in mol/m2/s
+      PAR  <- try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air")*1000000) ## mol/m2/s to umols/m2/s
       if(!is.numeric(PAR)) {
-        PAR <- SW*0.45
-        ##!! UPDATE SO UNITS ARE CONVERTED TO umol/m2/s, converted later to dt
+        PAR <- SW*2.114 #W/m2 TO umol/m2/s
       }
       
       # get CO2 (if exists)
       CO2  <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air"))
-      useCO2 = is.numeric(CO2)  
+      useCO2 <- is.numeric(CO2)  
       if(useCO2)  CO2 <- CO2 * 1e6  ## convert from mole fraction (kg/kg) to ppm
 
       nc_close(nc)
@@ -160,16 +162,18 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
       hr[rng] <- (asec[rng] - (dtmp-1)*86400)/86400*24
     }
     
+    # Time
+    time <- as.POSIXct(asec, tz = "UTC",origin = start_date)
+    
     # output matrix
     n <- length(Tair)
-    tmp <- cbind(YEAR=yr[1:n],DOY=doy[1:n],HOUR=hr[1:n],FRAC_DAY=frac.day[1:n],TIMESTEP=rep(dt/86400,n),
-                 # CHANGE TO BETTER NAMES!
+    tmp <- cbind.data.frame(Time=time[1:n],YEAR=yr[1:n],DOY=doy[1:n],HOUR=hr[1:n],FRAC_DAY=frac.day[1:n],TIMESTEP=rep(dt/86400,n),
+                 #TODO: Add VPD, etc
                  CO2=CO2,
-                 AT=Tair-273.15,  # convert to celcius
-                 PRC=Rain*dt, ## converts from mm/s to mm
-                 RH=RH_perc,
-                 #PAR=PAR*dt #mol/m2/dt
-                 PAR=PAR*1000000 #umols/m2/s
+                 Tair_degC=Tair-273.15,  # convert to celcius
+                 Prec_mm=Rain*dt, ## converts from mm/s to mm
+                 RH_perc=RH_perc,
+                 PAR_umols_m2_s=PAR #umols/m2/s
     )
     
     ## quick error check, sometimes get a NA in the last hr ?? NEEDED?
@@ -185,9 +189,29 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
   
   if(!is.null(out)){
     
-    ## write output
+    ## write met csv output 
     #write.table(out,out.file.full,quote = FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
     write.csv(out,out.file.full,row.names=FALSE)
+    
+    # write out leaf_user_met.xml - example
+    #<met_data_translator>
+    #<leaf>
+      #<env>
+        #<par>'PAR'</par>
+        #<temp>'AT'</temp>
+        #<vpd>'VPD'</vpd>
+      #</env>
+    #</leaf>
+    #</met_data_translator>
+    
+    # Create leaf_user_met.xml
+    # TODO: make this dynamic with names above!
+    # TODO: add the additional met variables, make dynamic
+    leaf_user_met_list <- list(leaf = list(env = list(time = "'Time'", temp = "'Tair_degC'", par = "'PAR_umols_m2_s'")))
+    leaf_user_met_xml <- listToXml(leaf_user_met_list,"met_data_translator")
+    
+    # output XML file
+    saveXML(leaf_user_met_xml, file = file.path(outfolder, "leaf_user_met.xml"), indent=TRUE, prefix = PREFIX_XML)
     
     invisible(results)
     
