@@ -8,8 +8,6 @@
 ##' @author Istem Fer
 match.timestep <- function(date.coarse, date.fine, data.fine){
   
-  library(data.table)
-  
   # convert data.frame to data.table using date as the reference 
   fine.dt <- setDT(data.frame(data = data.fine, date = date.fine), key = "date")
   coarse.dt <- setDT(data.frame(date = date.coarse), key = "date")

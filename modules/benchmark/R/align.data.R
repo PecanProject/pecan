@@ -15,6 +15,8 @@
 
 align.data <- function(model_full, obvs_full, dat_vars, start_year, end_year, align_method = "match.timestep"){
   
+  library(data.table) # needed for match.timestep function
+  
   fcn <- match.fun(align_method)
   
   rng_model <- range(model_full$posix)
