@@ -232,12 +232,6 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
       for(c in 1:settings$assim.batch$chain){
         init.list[[c]] <- resume.list[[c]]$prev.samp[nrow(resume.list[[c]]$prev.samp),]
         jmp.list[[c]] <- resume.list[[c]]$jump
-        # init.x <- mcmc.list[[c]][nrow(mcmc.list[[c]]),]
-        # 
-
-        # 
-        # init.list[[c]] <-  as.list(sapply(seq_along(prior.ind.all), 
-        #                                   function(x) eval(prior.fn.all$pprior[[prior.ind.all[x]]], list(q=init.x[x]))))
       }
     }
     
@@ -359,18 +353,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
     resume.list[[c]] <- mcmc.out[[c]]$chain.res
   }
   
-  
-  # if(length(extension.check)==1 & !run.block){
-  #   
-  #   # merge with previous run's mcmc samples
-  #   mcmc.list <- mapply(rbind, mcmc.list, mcmc.list.tmp, SIMPLIFY=FALSE)
-  #   settings$assim.batch$iter <- nrow(mcmc.list[[1]])
-  #   
-  # }else{
-  #   
-  #   mcmc.list <- mcmc.list.tmp
-  # 
-  # }
+
   
   if(FALSE) {
     gp = kernlab.gp; x0 = init.x; nmcmc = settings$assim.batch$iter; rng= NULL; format = "lin"

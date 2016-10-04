@@ -112,7 +112,6 @@ pda.mcmc.bs <- function(settings, params.id=NULL, param.names=NULL, prior.id=NUL
     accept.count <- 0
     
     # Default jump variances. 
-    #for(c in 1:settings$assim.batch$chain){
     # default to 0.1 * 90% prior CI
     if(!is.null(settings$assim.batch$extension)) {
       load(settings$assim.batch$jcov.path) # load jcov

@@ -61,7 +61,6 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
   }
   
   ## Select parameters to constrain
-  ## Select parameters to constrain
   prior.ind <- lapply(seq_along(settings$pfts), 
                       function(x) which(pname[[x]] %in% settings$assim.batch$param.names[[x]]))
   n.param <- sapply(prior.ind, length)
