@@ -94,10 +94,6 @@ pda.mcmc.bs <- function(settings, params.id=NULL, param.names=NULL, prior.id=NUL
     finish <- params.list$finish
     params <- params.list$params
     
-    ## File for temp storage of params (in case of crash)
-    #  Using .txt here to allow quick append after each iteration (maybe a better way?)
-    #  At the end of MCMC the entire object is saved as .Rdata
-    #filename.mcmc.temp <- file.path(settings$outdir, "pda.mcmc.txt")
     
     ## Set initial conditions
     if(start==1) {
