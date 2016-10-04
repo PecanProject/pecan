@@ -73,33 +73,25 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
   ## Create an ensemble id
   settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
 
-  ## Set prior distribution functions (d___, q___, r___, and multivariate versions)
-  #prior.fn <- lapply(prior.list, pda.define.prior.fn)
 
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
   
-  
+  ## Set prior distribution functions (d___, q___, r___, and multivariate versions)
   prior.all <- do.call("rbind", prior.list)
   prior.fn.all <- pda.define.prior.fn(prior.all)
   prior.ind.all <- which(unlist(pname) %in% unlist(settings$assim.batch$param.names))
   pname.all <- unlist(pname)
 
   ## ----------------------------------- MCMC Setup ----------------------------------- ##
-  ## Initialize empty params matrix (concatenated to params from a previous PDA, if provided)
-
-  ## File for temp storage of params (in case of crash)
-  #  Using .txt here to allow quick append after each iteration (maybe a better way?)
-  #  At the end of MCMC the entire object is saved as .Rdata
-  #filename.mcmc.temp <- file.path(settings$outdir, "pda.mcmc.txt")
   
-
-
   mcmc.list <- jvar.list <- list()
 
   
   for(chain in 1:settings$assim.batch$chain){
     params.list <- pda.init.params(settings, chain, pname.all, sum(n.param.all)) 
+    
+    ## Initialize empty params matrix (concatenated to params from a previous PDA, if provided)
     params <- params.list$params
     start  <- params.list$start
     finish <- params.list$finish
@@ -118,7 +110,6 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
     accept.rate <- numeric(sum(n.param))  ## Create acceptance rate vector of 0's (one zero per parameter)
     
     # Default jump variances. 
-    #for(c in 1:settings$assim.batch$chain){
     # default to 0.1 * 90% prior CI
     if(!is.null(settings$assim.batch$extension)) {
       load(settings$assim.batch$jvar.path) # loads params
