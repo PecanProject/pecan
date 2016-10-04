@@ -1,7 +1,7 @@
 ##' @name match.timestep 
 ##' @title Match time step
 ##' @param date.fine numeric
-##' @param data.fine data.frame
+##' @param data.fine matrix
 ##' @param date.coarse numeric
 ##' @export match.timestep
 ##' 
