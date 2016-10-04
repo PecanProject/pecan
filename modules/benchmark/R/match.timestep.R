@@ -8,7 +8,9 @@
 ##' @author Istem Fer
 match.timestep <- function(date_coarse, date_fine, data_fine){
   
-  out <- data_fine[findInterval(date_coarse, c(-Inf, head(date_fine, -1)) + c(0, diff(as.numeric(date_fine))/2))]
+  midpoints <- c(-Inf, head(date_fine, -1)) + c(0, diff(as.numeric(date_fine))/2)
+  
+  out <- data_fine[findInterval(date_coarse, midpoints)]
   
   return(out)
 }
