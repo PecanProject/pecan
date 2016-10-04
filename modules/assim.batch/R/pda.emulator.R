@@ -181,7 +181,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
   } 
   
   
-  ## if it is not specified, default to GPfit
+  ## if which package to use for creating the Gaussian Process is not specified, default to GPfit
   if(is.null(settings$assim.batch$GPpckg)) settings$assim.batch$GPpckg="GPfit"
   
   init.list <- list()
