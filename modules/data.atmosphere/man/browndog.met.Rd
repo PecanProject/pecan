@@ -2,7 +2,7 @@
 \alias{browndog.met}
 \title{get met data from browndog}
 \usage{
-browndog.met(browndog, source, site, start_date, end_date, model, dir)
+browndog.met(browndog, source, site, start_date, end_date, model, dir, username)
 }
 \arguments{
   \item{browndog,}{list with url, username and password to
@@ -22,6 +22,9 @@ browndog.met(browndog, source, site, start_date, end_date, model, dir)
 
   \item{dir,}{folder where results are stored (in
   subfolder)}
+
+  \item{username,}{used when downloading data from
+  Ameriflux like sites}
 }
 \description{
 Use browndog to get the met data for a specific model

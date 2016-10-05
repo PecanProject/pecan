@@ -8,4 +8,5 @@
   <mimetype>application/x-netcdf</mimetype>
   <inputtype>nc</inputtype>
 </format>
+<direct_extract>TRUE</direct_extract>
 </GFDL>
