@@ -305,12 +305,12 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
     file.remove(todelete)
   } 
   rm(todelete)
-  
+
   ## Remove model run configs and model run log files on local/remote host
   if(!settings$host$name == 'localhost'){
     ## Remove model run congfig and log files on remote host
     remote_ls <- function(path, pattern) {
-        remote.execute.cmd(host = settings$host$name,
+        remote.execute.cmd(host = settings$host,
                            cmd = "ls",
                            args = file.path(path, pattern))
     }
@@ -321,7 +321,7 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
 
     if(length(config) > 0 | length(ed2in) > 0) {
       todelete <- c(config, ed2in[-grep('log', ed2in)], output) ## Keep log files
-      remote.execute.cmd(settings$host$name, "rm", c("-f", todelete))
+      remote.execute.cmd(settings$host, "rm", c("-f", todelete))
     }
   }
 }
