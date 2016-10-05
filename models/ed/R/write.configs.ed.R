@@ -289,7 +289,7 @@ write.run.ED <- function(settings){
 ##' @title Clear out old config and ED model run files.
 ##' @return nothing, removes config files as side effect
 ##' @export
-##' @author Shawn Serbin, David LeBauer
+##' @author Shawn Serbin, David LeBauer, Alexey Shikomanov
 remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
   
   
@@ -309,25 +309,19 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
   ## Remove model run configs and model run log files on local/remote host
   if(!settings$host$name == 'localhost'){
     ## Remove model run congfig and log files on remote host
-    config <- system(paste("ssh ", settings$host$name, " 'ls ", 
-                           settings$host$rundir, 
-                           "c.*'", sep = ''), intern = TRUE)
-    ed2in <- system(paste("ssh ", settings$host$name, " 'ls ", 
-                          settings$host$rundir, 
-                          "ED2INc.", "*'", sep = ''), intern = TRUE)
-    output <- paste(settings$host$outdir,
-                    system(paste("ssh ", settings$host$name, " 'ls ", 
-                                 settings$host$outdir,
-                                 "'", sep = ''), intern = TRUE),sep="/")
+    remote_ls <- function(path, pattern) {
+        remote.execute.cmd(host = settings$host$name,
+                           cmd = "ls",
+                           args = file.path(path, pattern))
+    }
+    config <- remote_ls(settings$host$rundir, "c.*")
+    ed2in <- remote_ls(settings$host$rundir, "ls")
+    output_remote <- remote_ls(settings$host$outdir, ".")
+    output <- file.path(settings$host$outdir, output_remote)
+
     if(length(config) > 0 | length(ed2in) > 0) {
-      todelete <- c(config,ed2in[-grep('log', ed2in)],output) ## Keep log files
-      
-      ## Very slow method.  NEEDS UPDATING
-      for(i in todelete){
-        print(i)
-        system(paste("ssh -T ", settings$host$name, " 'rm ",i,"'",sep=""))
-      }
-      
+      todelete <- c(config, ed2in[-grep('log', ed2in)], output) ## Keep log files
+      remote.execute.cmd(settings$host$name, "rm", c("-f", todelete))
     }
   }
 }
