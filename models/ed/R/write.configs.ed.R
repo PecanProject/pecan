@@ -315,7 +315,7 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
                            args = file.path(path, pattern))
     }
     config <- remote_ls(settings$host$rundir, "c.*")
-    ed2in <- remote_ls(settings$host$rundir, "ls")
+    ed2in <- remote_ls(settings$host$rundir, "ED2INc.*")
     output_remote <- remote_ls(settings$host$outdir, ".")
     output <- file.path(settings$host$outdir, output_remote)
 
