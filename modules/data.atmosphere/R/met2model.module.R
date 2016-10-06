@@ -1,4 +1,4 @@
-.met2model.module <- function(ready.id, model, con, stage, host, dir, met, str_ns, site, start_date, end_date, browndog, new.site, overwrite=FALSE) {
+.met2model.module <- function(ready.id, model, con, host, dir, met, str_ns, site, start_date, end_date, browndog, new.site, overwrite=FALSE) {
   # Determine output format name and mimetype
   model_info <- db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", 
                                 " join modeltypes_formats as mf on m.id = mf.modeltype_id",
@@ -7,10 +7,9 @@
                                 " where m.name = '", model, "' AND mf.tag='met'"), con)
   
   if (model_info[1] == "CF Meteorology"){
-    stage$met2model=FALSE
-  }
-  
-  if(stage$met2model == TRUE){
+    model.id = ready.id
+    outfolder <- file.path(dir,paste0(met,"_site_",str_ns))  
+  } else {   
     logger.info("Begin Model Specific Conversion")
     
     formatname <- model_info[1]
@@ -30,14 +29,8 @@
     model.id  <- convert.input(input.id, outfolder, formatname, mimetype, site.id=site$id,
                                start_date, end_date, pkg, fcn, con=con, host=host, browndog, write=TRUE, 
                                lst=lst, lat=new.site$lat, lon=new.site$lon, overwrite=overwrite)
-    
-  } else {
-    model.id = ready.id
-    
-    if("CRUNCEP" %in% met){outfolder <- file.path(dir,paste0(met,"_site_",str_ns))}
-    if("GFDL" %in% met){outfolder <- file.path(dir,paste0(met,"_site_",str_ns))}
   }
   
-  logger.info(paste("Finished Model Specific Conversion",model.id[1]))
+  logger.info(paste("Finished Model Specific Conversion", model.id[1]))
   return(list(outfolder=outfolder, model.id=model.id))
 }

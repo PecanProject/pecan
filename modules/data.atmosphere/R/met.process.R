@@ -130,22 +130,30 @@ met.process <- function(
   #--------------------------------------------------------------------------------------------------#
   # Download raw met
   if(stage$download.raw) {
+    raw.data.site.id <- ifelse(is.null(register$siteid), new.site$id, register$siteid)
+    
     raw.id <- .download.raw.met.module(
       dir=dir, met=met, register=register, machine=machine, 
       start_date=start_date, end_date=end_date, con=con, 
-      input_met=input_met, new.site=new.site, host=host, 
+      input_met=input_met, site.id=raw.data.site.id, 
+      lat.in=new.site$lat, lon.in=new.site$lon, host=host, 
       overwrite=overwrite$download
     )
     if(met %in% c("CRUNCEP", "GFDL")) {
       ready.id <- raw.id
+      stage$met2cf <- FALSE
+      stage$standardize <- FALSE
     }
   }
   
   #--------------------------------------------------------------------------------------------------#
   # Change to  CF Standards
   if(stage$met2cf) {
+    new.site.id <- ifelse(met %in% c("NARR"), register$siteid, site$id) 
+    
     cf.id <- .met2cf.module(
-      raw.id=raw.id, register=register, met=met, dir=dir, machine=machine, site=site,
+      raw.id=raw.id, register=register, met=met, dir=dir, machine=machine, 
+      site.id=new.site.id, lat=site$lat, lon=site$lon,
       start_date=start_date, end_date=end_date, con=con, host=host,
       overwrite=overwrite$met2cf, format.vars=format.vars)
   }
@@ -153,23 +161,34 @@ met.process <- function(
   #--------------------------------------------------------------------------------------------------#
   # Change to Site Level - Standardized Met (i.e. ready for conversion to model specific format)
   if(stage$standardize) {
-    ready.id <- .extract.nc.module(
-      cf.id=cf.id, register=register, dir=dir, met=met, str_ns=str_ns, 
-      site=site, new.site=new.site, con=con, start_date=start_date, end_date=end_date, 
-      host=host, overwrite=overwrite$standardize
-    ) 
+    if(register$scale=="regional") { #### Site extraction
+      ready.id <- .extract.nc.module(
+        cf.id=cf.id, register=register, dir=dir, met=met, str_ns=str_ns, 
+        site=site, new.site=new.site, con=con, start_date=start_date, end_date=end_date, 
+        host=host, overwrite=overwrite$standardize
+      ) 
+    } else if(register$scale=="site") { ##### Site Level Processing
+      ready.id <- .metgapfill.module(
+        cf.id=cf.id, register=register, dir=dir, met=met, str_ns=str_ns, 
+        site=site, new.site=new.site, con=con, start_date=start_date, end_date=end_date, 
+        host=host, overwrite=overwrite$standardize
+      )
+    }
   }
   
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
   if(stage$met2model) {
     met2model.result <- .met2model.module(
-      ready.id=ready.id, model=model, con=con, stage=stage, host=host, dir=dir, met=met, 
+      ready.id=ready.id, model=model, con=con, host=host, dir=dir, met=met, 
       str_ns=str_ns, site=site, start_date=start_date, end_date=end_date, browndog=browndog, 
       new.site=new.site, overwrite=overwrite$met2model
     )
     model.id <- met2model.result$model.id
     outfolder <- met2model.result$outfolder
+  } else {
+    model.id = ready.id
+    outfolder <- file.path(dir, paste0(met, "_site_", str_ns))
   }
   
   model.file <- db.query(paste("SELECT * from dbfiles where id =", model.id$dbfile.id), con)[["file_name"]]
