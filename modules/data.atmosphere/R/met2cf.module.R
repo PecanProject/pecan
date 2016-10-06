@@ -1,4 +1,4 @@
-.met2cf.module <- function(raw.id, register, met, dir, machine, site, start_date, end_date, 
+.met2cf.module <- function(raw.id, register, met, dir, machine, site.id, lat, lon, start_date, end_date, 
                            con, host, overwrite=FALSE, format.vars) {
   logger.info("Begin change to CF Standards")
   
@@ -7,9 +7,6 @@
   formatname <- 'CF Meteorology'
   mimetype <- 'application/x-netcdf'
   format.id <- 33
-  
-  # Probably are other formats for which the CF file is not site specific?
-  new.site.id <- ifelse(met %in% c("NARR"), register$siteid, site$id) 
   
   if(register$scale=="regional"){
     input_name <- paste0(met,"_CF")
@@ -28,7 +25,7 @@
       logger.error("met2CF function ", fcn1, " or ", fcn2, " don't exist")
     }
 
-    cf0.id <- convert.input(input.id, outfolder, formatname, mimetype, site.id=new.site.id,
+    cf0.id <- convert.input(input.id, outfolder, formatname, mimetype, site.id=site.id,
       start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL, write=TRUE,
       format.vars=format.vars, overwrite=overwrite)
     
@@ -36,7 +33,7 @@
     fcn       <-  "permute.nc"
     outfolder  <- file.path(dir, input_name)
     
-    cf.id <- convert.input(cf0.id$input.id, outfolder, formatname, mimetype, site.id=new.site.id, 
+    cf.id <- convert.input(cf0.id$input.id, outfolder, formatname, mimetype, site.id=site.id, 
                            start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL,
                            write=TRUE, overwrite=overwrite)
 
@@ -52,16 +49,16 @@
     if(exists(fcn1)) {
       fcn <- fcn1
       cf.id <- convert.input(
-        input.id, outfolder, formatname, mimetype, site.id=site$id, 
+        input.id, outfolder, formatname, mimetype, site.id=site.id, 
         start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL, 
-        write=TRUE, site$lat, site$lon, overwrite=overwrite)
+        write=TRUE, lat, lon, overwrite=overwrite)
     } else if(exists(fcn2)) {
       fcn <- fcn2
       format <- query.format.vars(input.id,con)
       cf.id <- convert.input(
-        input.id, outfolder, formatname, mimetype, site.id=site$id, 
+        input.id, outfolder, formatname, mimetype, site.id=site.id, 
         start_date, end_date, pkg, fcn, con=con, host=host, browndog=NULL, 
-        write=TRUE, site$lat, site$lon, format.vars=format.vars, 
+        write=TRUE, lat, lon, format.vars=format.vars, 
         overwrite=overwrite)
     } else {
       logger.error("met2CF function ", fcn1, " or ", fcn2," doesn't exists")

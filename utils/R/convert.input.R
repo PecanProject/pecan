@@ -235,14 +235,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   
   #--------------------------------------------------------------------------------------------------#
   # Insert into Database
-
-  # Use existing site, unless otherwise specified (ex: subsetting case, using newsite)
-  if("newsite" %in% names(input.args) && !is.null(input.args[["newsite"]])){
-    siteid <- input.args$newsite
-  } else {
-    siteid <- site.id
-  }
-  
   outlist <- unlist(strsplit(outname,"_")) 
 
   ## insert new record into database
@@ -271,9 +263,14 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     }
 
     parent.id <- ifelse(is.null(input), NA, input$id)
+    
+    if("newsite" %in% names(input.args) && !is.null(input.args[["newsite"]])){
+      site.id <- input.args$newsite
+    } 
+    
     newinput <- dbfile.input.insert(in.path=dirname(result$file[1]),
                                     in.prefix=result$dbfile.name[1],
-                                    siteid = siteid, 
+                                    siteid = site.id, 
                                     startdate = start_date, 
                                     enddate = end_date, 
                                     mimetype, 
