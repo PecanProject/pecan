@@ -18,14 +18,26 @@ library(PEcAn.DB)
 ##' @return nothing
 ##' @export
 ##' @author Mike Dietze, Rob Kooper, Ryan Kelly
-fia.to.psscss <- function(settings, gridres=0.075) {
-	lat     <- as.numeric(settings$run$site$lat)
-	lon     <- as.numeric(settings$run$site$lon)
+fia.to.psscss <- function(settings, 
+                      	  lat = as.numeric(settings$run$site$lat),
+                          lon = as.numeric(settings$run$site$lon),
+                          year = lubridate::year(settings$run$start.date),
+                          gridres=0.075, 
+                          min.year = year - 5,
+                          max.year = year + 5) {
+if(FALSE) {
+  lat = as.numeric(settings$run$site$lat)
+  lon = as.numeric(settings$run$site$lon)
+  year = lubridate::year(settings$run$start.date)
+  gridres=0.075 
+  min.year = year - 5
+  max.year = year + 5
+}
+
 	latmax = lat + gridres
   latmin = lat - gridres
   lonmax = lon + gridres
   lonmin = lon - gridres	
-	year <- as.numeric(format(as.Date(settings$run$start.date), '%Y'))
 
 
 	## connect to database
@@ -91,105 +103,39 @@ fia.to.psscss <- function(settings, gridres=0.075) {
 	## connect to database
 	fia.con <- db.open(settings$database$fia)
 	on.exit(db.close(fia.con), add=T)
-
-
-	### select just most current
-	query <- paste('SELECT invyr, statecd, stateab, statenm, cycle, subcycle from survey', sep="")
-	surv <- db.query(query, con=fia.con)
-	names(surv) = tolower(names(surv))
   
-	states <- sort(unique(surv$statecd))
-	states <- states[states < 72]
-	cycle  <- as.list(rep(NA,max(states)))
-	old    <- rep(FALSE,max(states))
-	
-	## choose the cycle closest to the specified year
-	## note:	does not check for COMPLETE cycles
-	for(s in states){
-	  surv.s <- surv[which(surv$statecd == s), ]
-	  ranked.cycles.s <- numeric(0)
-	  while(nrow(surv.s) > 0) {
-	    next.closest.cycle <- surv.s$cycle[which.min(abs(surv.s$invyr - year))]
-	    ranked.cycles.s <- c(ranked.cycles.s, next.closest.cycle)
-	    surv.s <- surv.s[surv.s$cycle != next.closest.cycle, ]
-	  }
-		cycle[[s]] <- ranked.cycles.s
-	}
-	
-	
-
+  
   ##################
   ##              ##
   ##     PSS      ##
   ##              ##
   ##################
   ## query to get PSS info
-  query <- paste('SELECT p.cycle,p.statecd,p.measyear as time,p.cn as patch,MIN(2-c.stdorgcd) ',
-                 'as trk,AVG(c.stdage) as age, p.lat,p.lon, p.prev_plt_cn FROM plot as p LEFT JOIN cond as c on p.cn=c.plt_cn ',
-                 'WHERE p.lon >= ', lonmin, ' and p.lon < ', lonmax,
-                 ' and p.lat >= ', latmin, ' and p.lat < ', latmax, ' GROUP BY p.cn')
+  query <- paste('SELECT p.cycle, p.statecd, p.measyear as time, p.cn as patch, ', 
+                 'MIN(2-c.stdorgcd) as trk, AVG(c.stdage) as age, p.lat, p.lon, p.prev_plt_cn ',
+                 'FROM plot as p LEFT JOIN cond as c on p.cn=c.plt_cn ',
+                 'WHERE p.lon >= ', lonmin, ' AND p.lon < ', lonmax,
+                 ' AND p.lat >= ', latmin, ' AND p.lat < ', latmax, 
+                 ' AND p.measyear >= ', min.year, ' AND p.measyear < ', max.year, 
+                 ' GROUP BY p.cn')
 
   pss <- db.query(query, con=fia.con)
-  names(pss) = tolower(names(pss))
-  if(nrow(pss) == 0) logger.error("Couldn't find pss data.")
   
-  pss$prev_plt_cn[pss$prev_plt_cn==""] = NA
-  pss$unique.plot.id = NA
-  for(i in 1:nrow(pss)) {
-    if(!is.na(pss$unique.plot.id[i])) {
-      # already been assigned
-      next
-    } else {
-      pss$unique.plot.id[i] <- i
-    }
-    
-    if(!is.na(pss$prev_plt_cn[i])) {
-      # This record is a remeasure of another plot
-      parent.ind = which(pss$patch == pss$prev_plt_cn[i])
-      if(length(parent.ind) > 0) {
-        if(!is.na(pss$unique.plot.id[parent.ind])) {
-          pss$unique.plot.id[i] = pss$unique.plot.id[parent.ind]
-        } else {
-          pss$unique.plot.id[parent.ind] = pss$unique.plot.id[i]
-        }
-        next
-      }
-    }
+  for(statecd in unique(pss$statecd)) {
+    # Count up occurrences of each cycle
+    cycle.count <- table(pss$cycle[pss$statecd == statecd])
 
-    child.ind = which(pss$prev_plt_cn == pss$patch[i])
-    if(length(child.ind) > 0) {
-      # This record is the parent of another plot
-      if(!is.na(pss$unique.plot.id[child.ind])) {
-        pss$unique.plot.id[i] = pss$unique.plot.id[child.ind]
-      } else {
-        pss$unique.plot.id[child.ind] = pss$unique.plot.id[i]
-      }
-    }
+    # Find the best valid cycle, in terms of providing the most records. In case of ties,
+    # which.max will return the first one, which will be the earliest
+    best.cycle <- as.numeric(names(cycle.count)[which.max(cycle.count)])
+    
+    row.drop.ind <- which((pss$statecd == statecd) & (pss$cycle != best.cycle))
+    pss <- pss[ -row.drop.ind,  ]
   }
   
-  unique.id=2
-  for(unique.id in unique(pss$unique.plot.id)) {
-    ind.i <- which(pss$unique.plot.id == unique.id)
-    if(length(ind.i) > 1) {
-      ind.keep <- ind.i[which.min(abs(pss$time[ind.i] - year))]
-      if(length(ind.keep) > 1) {
-        ind.keep <- ind.keep[1]
-      }
-      ind.remove <- ind.i[ind.i != ind.keep]
-      pss <- pss[-ind.remove,]
-    }
-  }
-  
-  
-  
-  
-  
-  
-  
-  pss <- pss[pss$cycle == cycle[pss$statecd],]
-  
-  
-  
+  # as an extra precaution, remove any records that are explicitly remeasurments of the
+  # same plot
+  pss <- pss[.select.unique.fia.plot.records(pss$patch, pss$prev_plt_cn, pss$time, year), ]
   
   if(nrow(pss) == 0) logger.error("Couldn't find pss data.")
 
@@ -226,8 +172,10 @@ fia.to.psscss <- function(settings, gridres=0.075) {
                  ' and p.lat >= ', latmin, ' and p.lat < ', latmax)
   css <- db.query(query, con=fia.con)
   names(css) = tolower(names(css))
-  css <- css[css$cycle == cycle[css$statecd],]
-
+  
+  # Remove rows that don't map to any retained patch
+  css <- css[ which(css$patch %in% pss$patch), ]
+  
   ## Remove rows with no dbh, spcd, or n
   notree <- which(is.na(css$dbh) & is.na(css$spcd) & is.na(css$n))
   if (length(notree) > 0){
@@ -362,6 +310,19 @@ fia.to.psscss <- function(settings, gridres=0.075) {
       con        = con,
       hostname   = fqdn()
     )
+    dbfile.input.insert(
+      in.path    = dirname(files[i]),
+      in.prefix  = basename(files[i]),
+      siteid     = settings$run$site$id,
+      startdate  = format(as.Date(settings$run$start.date), "%Y-%m-%d %H:%M:%S"),
+      enddate    = format(as.Date(settings$run$end.date), "%Y-%m-%d %H:%M:%S"),
+      mimetype   = 'text/plain',
+      formatname = formatnames[i],
+      parentid   = NA,
+      con        = con,
+      hostname   = settings$host
+    )
+
   }
 
 
@@ -388,4 +349,71 @@ get.ed.file.latlon.text <- function(lat, lon, site.style=FALSE, ed.res=1) {
   } else {
     return(paste0(".lat", round(lat, 4), "lon", round(lon, 4)))  
   }
+}
+
+
+
+# A function for identifying fia plot records that are remeasurements of one another,
+# and upon finding them retaining only the one that is closest to some target year. 
+# Since fia.to.psscss currently selects plots from only a single cycle (for a given state)
+# it shouldn't be getting remeasurements, and this probably isn't doing anything in the 
+# current code. But it could be useful for future updates. 
+.select.unique.fia.plot.records <- function(plt_cn, prev_plt_cn, measyear, target.year) {
+  if(length(plt_cn) != length(prev_plt_cn)) {
+    logger.error("Inputs must have same length!")
+    return(NULL)
+  }
+
+  # Identify records that are part of the same remeasurement sequence
+  prev_plt_cn[prev_plt_cn==""] <- NA
+  unique.plot.id = rep(NA, length(plt_cn))
+  for(i in seq_along(plt_cn)) {
+    if(!is.na(unique.plot.id[i])) {
+      # already been assigned
+      next
+    } else {
+      # assign a new plot id
+      unique.plot.id[i] <- i
+    }
+    
+    # Check whether this record is a remeasurement of another one in the list
+    if(!is.na(prev_plt_cn[i])) {
+      parent.ind = which(plt_cn == prev_plt_cn[i])
+      if(length(parent.ind) > 0) {
+        if(!is.na(unique.plot.id[parent.ind])) {
+          # if the parent record has already been given an id, assign it to this plot too
+          unique.plot.id[i] = unique.plot.id[parent.ind]
+        } else {
+          # Otherwise, use this plot's new id
+          unique.plot.id[parent.ind] = unique.plot.id[i]
+        }
+        next
+      }
+    }
+    
+    # Check whether any other record is a remeasurement of this one
+    child.ind = which(prev_plt_cn == plt_cn[i])
+    if(length(child.ind) > 0) {
+      # As above, ensure both records have the same plot id
+      if(!is.na(unique.plot.id[child.ind])) {
+        unique.plot.id[i] = unique.plot.id[child.ind]
+      } else {
+        unique.plot.id[child.ind] = unique.plot.id[i]
+      }
+    }
+  }
+  
+  
+  # For any identified remeasurement sequences, choose to keep the record that is closest 
+  # to the target year
+  ind.keep <- numeric(0)
+  for(unique.id in unique(unique.plot.id)) {
+    ind.keep.i <- which(unique.plot.id == unique.id)
+    if(length(ind.keep.i) > 1) {
+      ind.keep.i <- ind.keep.i[which.min(abs(measyear[ind.keep.i] - target.year))]
+    } 
+    ind.keep <- c(ind.keep, ind.keep.i)
+  }
+  
+  return(sort(ind.keep))
 }
