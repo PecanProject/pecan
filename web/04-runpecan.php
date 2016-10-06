@@ -126,7 +126,7 @@ if (!$userok && ($startdate < $metstart2 || $enddate > $metend2)) {
 		  }
 		}
 	}
-	$params .= "&msg=WARNING : Selected dates are not within the bounds of the weather data file you selected. \n START: ${startdate} ${metstart2}  \n END: ${enddate} ${metend2}";
+	$params .= "&msg=WARNING : Selected dates are not within the bounds of the weather data file you selected.  START: ${startdate} ${metstart2}   END: ${enddate} ${metend2}";
 	header("Location: checkfailed.php?${params}");
 	exit();
 }
