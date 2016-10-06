@@ -2,11 +2,11 @@
 ##' @name  write.restart.LINKAGES
 ##' @author Ann Raiho \email{araiho@@nd.edu}
 ##' 
-##' @param out.dir      output directory
+##' @param outdir      output directory
 ##' @param runid       run ID
 ##' @param time        year that is being read
 ##' @param settings    PEcAn settings object
-##' @param analysis.vec    analysis vector
+##' @param new.state    analysis vector
 ##' @param RENAME      flag to either rename output file or not
 ##' @param variables
 ##' @param sample_parameters
@@ -17,29 +17,30 @@
 ##' @return NONE
 ##' @export
 ##' 
-write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
-                                   RENAME = TRUE, variables,
-                                   sample_parameters = FALSE,
-                                   trait.values = NA){
+
+# outdir, runid, time, settings, new.state,
+# variables,
+# sample_parameters = FALSE,
+# trait.values = NA,met=NULL,RENAME = TRUE
+
+write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
+                                   settings, new.state,
+                                   RENAME = TRUE,
+                                   new.params,
+                                   inputs){
   
   ### Removing negative numbers because biomass can't be negative ###
-  for(i in 1:length(analysis.vec)){
-    if(analysis.vec[i]<0) analysis.vec[i] <- 0
+  for(i in 1:length(new.state)){
+    if(new.state[i]<0) new.state[i] <- 0
   }
   
-  analysis.vec.save <- analysis.vec
-  analysis.vec <- analysis.vec.save[grep('pft',names(analysis.vec.save))]
-  analysis.vec.other <- analysis.vec.save[grep('pft',names(analysis.vec.save),invert=TRUE)]
+  new.state.save <- new.state
+  new.state <- new.state.save[grep('pft',names(new.state.save))]
+  new.state.other <- new.state.save[grep('pft',names(new.state.save),invert=TRUE)]
   
-  biomass_function<-function(dbh){ #kg/tree
-      .1193 * dbh^2.393 + ((slta+sltb*dbh)/2)^2 * 3.14 * fwt * frt * .001
-  }
-  merit<-function(dbh){
-    (b_obs - biomass_function(dbh))^2
-  }
-  
+  variables<-names(new.state)
   ### Going to need to change this... ### Get some expert opinion
-  N <- length(analysis.vec)
+  N <- length(new.state)
   distance.matrix <- matrix(1,N,N)
   for(i in 1:N){
     distance.matrix[i,]<-sample(c(seq(1,N,1)),size=N)
@@ -77,10 +78,44 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
   }
   
   spp.params <- spp.params.default[spp.params.save,]
+  
+  biomass_spp_params <- function(new.params,default.params,pft){
+    if('SLTA' %in% names(new.params)){
+      slta<-new.params$pft$SLTA
+    }else{
+      slta <- default.params[default.params$Spp_Name==pft,]$SLTA
+    }
+    if('SLTB' %in% names(new.params)){
+      sltb<-new.params$pft$SLTB
+    }else{
+      sltb <- default.params[default.params$Spp_Name==pft,]$SLTB
+    }
+    if('FWT' %in% names(new.params)){
+      fwt<-new.params$pft$FWT
+    }else{
+      fwt <- default.params[default.params$Spp_Name==pft,]$FWT
+    }
+    if('FRT' %in% names(new.params)){
+      frt<-new.params$pft$FRT
+    }else{
+      frt <- default.params[default.params$Spp_Name==pft,]$FRT
+    }
+    return(list(slta=slta,sltb=sltb,fwt=fwt,frt=frt))
+  }
+  
+  biomass_function<-function(dbh,spp.biomass.params){ #kg/tree
+    biomass <-.1193 * dbh^2.393 + ((spp.biomass.params$slta+spp.biomass.params$sltb*dbh)/2)^2 * 3.14 * spp.biomass.params$fwt * spp.biomass.params$frt * .001
+    return(biomass)
+    }
+  
+  merit <- function(dbh,b_obs,spp.biomass.params){
+    (b_obs - biomass_function(dbh,spp.biomass.params))^2
+  }
+  
   ##HACK
 
     # skip ensemble member if no file availible  
-    outfile = file.path(out.dir,runid,"linkages.out.Rdata")
+    outfile = file.path(outdir,runid,"linkages.out.Rdata")
     if(!file.exists(outfile)){
       print(paste0("missing outfile ens #",runid))
       next
@@ -89,11 +124,6 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
         
     #load output
     load(outfile)
-    #save original output
-    if(RENAME==TRUE){
-      file.rename(file.path(out.dir,runid,"linkages.out.Rdata"),
-                  file.path(out.dir,runid,paste0(time,"linkages.out.Rdata")))
-    }
     
     nspec <- length(settings$pfts)
     ncohrt <- ncohrt
@@ -111,7 +141,7 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
       n.index = c(n.index,rep(i,ntrees[i]))
     }
     
-    large.trees <- which(dbh>=(max(dbh)-5))
+    large.trees <- which(dbh>=(max(dbh)/1.05))
     for(s in 1:length(settings$pfts)){
       ntrees[s] <- length(which(n.index[large.trees]==s))
     }
@@ -134,26 +164,28 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
     
     #calculate biomass of each individual
     for(j in 1:sum(ntrees)){
-      slta <- spp.params$SLTA[n.index[j]]
-      sltb <- spp.params$SLTB[n.index[j]]
-      fwt <- spp.params$FWT[n.index[j]]
-      frt <- spp.params$FRT[n.index[j]]
-      ind.biomass[j] <- biomass_function(dbh[j]) * (1 / 833) * .48 #changing units to be kgC/m^2
+      # slta <- spp.params$SLTA[n.index[j]]
+      # sltb <- spp.params$SLTB[n.index[j]]
+      # fwt <- spp.params$FWT[n.index[j]]
+      # frt <- spp.params$FRT[n.index[j]]
+      pft <- spp.params$Spp_Name[n.index[j]]
+      spp.biomass.params <- biomass_spp_params(new.params = new.params,default.params = default.params,pft=pft)
+      ind.biomass[j] <- biomass_function(dbh[j],spp.biomass.params) * (1 / 833) * .48 #changing units to be kgC/m^2
     }
     
     data2 = data.frame(ind.biomass = ind.biomass,n.index = n.index)
     mean.biomass.spp <- aggregate(ind.biomass ~ n.index,mean,data=data2) #calculate mean individual biomass for each species
     
-    #calculate number of individuals needed to match analysis.vec
+    #calculate number of individuals needed to match new.state
     for(s in 1:length(settings$pfts)){      
       if(ntrees[s]>0){
-        fix <- analysis.vec[s]/mean.biomass.spp[mean.biomass.spp[,1]==s,2] #number of individuals needed to agree with analysis.vec      
+        fix <- new.state[s]/mean.biomass.spp[mean.biomass.spp[,1]==s,2] #number of individuals needed to agree with new.state      
       }else{
         for(r in 1:(length(settings$pfts)-1)){
           s.select <- which(distance.matrix[s,] == r) #select a new spp. to clone from
           if(ntrees[s.select]>0) break
         }
-        fix <- analysis.vec[s] / mean.biomass.spp[mean.biomass.spp[,1]==s.select,2]
+        fix <- new.state[s] / mean.biomass.spp[mean.biomass.spp[,1]==s.select,2]
       }
       new.ntrees[s] <- as.numeric(ceiling(fix)) #new number of ind. of each species
     }
@@ -175,7 +207,7 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
       #  print("new are less than the old of the same spp.")
         select <- sample(size = new.ntrees[s], x = which(n.index == s), replace = FALSE)
       }else{
-        if(new.ntrees[s] > ntrees[s] & ntrees[s] > 1){ #new are greater than the old of the same spp. and there are old trees to clone
+        if(new.ntrees[s] > ntrees[s] & ntrees[s] >= 1){ #new are greater than the old of the same spp. and there are old trees to clone
         #  print("new are greater than the old of the same spp. and there are old trees of same spp. to clone")
           select <- c(which(n.index == s), sample(size = (new.ntrees[s] - ntrees[s]), 
                                                   x = which(n.index == s), replace = TRUE))
@@ -195,27 +227,32 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
       nogro.temp[which(new.n.index==s)] <- nogro[select]
     }
 
-    #fix dbh of sampled individuals to match analysis.vec
+    #fix dbh of sampled individuals to match new.state
     nl = 1 ## individual counter
     b_calc <- numeric(length(settings$pfts)) #biomass of sampled trees
     b_calc1 <- numeric(length(settings$pfts)) #biomass of sampled trees
-    bcorr <- numeric(length(settings$pfts)) #biomass correction factor to analysis.vec
+    bcorr <- numeric(length(settings$pfts)) #biomass correction factor to new.state
+    b_obs<- numeric(sum(new.ntrees))
     for(s in 1:nspec){
       if(new.ntrees[s]==0) next
-      slta <- spp.params$SLTA[s]
-      sltb <- spp.params$SLTB[s]
-      fwt <- spp.params$FWT[s]
-      frt <- spp.params$FRT[s]
       nu <- nl + new.ntrees[s] - 1
-      for(j in nl:nu){
-        b_calc[s] <- biomass_function(dbh.temp[j]) * (1 / 883) * .48 + b_calc[s]
+      pft <- unique(spp.params$Spp_Name[new.n.index[nl:nu]])
+      spp.biomass.params<-biomass_spp_params(new.params = new.params,default.params = default.params,pft=pft)
+      b_calc[s] <-  sum(biomass_function(dbh.temp[nl:nu],spp.biomass.params=spp.biomass.params)) * (1 / 833) * .48#changing units to be kgC/m^2
+      
+      bcorr[s] <- new.state[s] / b_calc[s]
+      
+      if(length(pft)>1){
+        print("error too many pfts assigned")
+        stop()
       }
-      bcorr[s] <- analysis.vec[s] / b_calc[s]
+      
+      b_obs[nl:nu] <- biomass_function(dbh.temp[nl:nu],spp.biomass.params=spp.biomass.params)*as.numeric(bcorr[s])
       for(j in nl:nu){
-        b_obs <- biomass_function(dbh.temp[j])*as.numeric(bcorr[s])
-        dbh.temp[j] <- optimize(merit, c(1,200))$minimum 
-        b_calc1[s] <- biomass_function(dbh.temp[j]) * (1 / 883) * .48 + b_calc1[s]       
+        dbh.temp[j] <- optimize(merit, c(1,200), b_obs = b_obs[j], spp.biomass.params=spp.biomass.params)$minimum
       }
+
+      b_calc1[s] <- sum(biomass_function(dbh.temp[nl:nu],spp.biomass.params=spp.biomass.params)) * (1 / 883) * .48 
       nl <- nu + 1 
     }
   
@@ -230,7 +267,7 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
    #translate agb to dbh
 
 #dbh_spp[s] <- optimize(merit, c(0,200))$minimum
-# bcorr = analysis.vec[i,] / agb.pft[,ncol(agb.pft),1]
+# bcorr = new.state[i,] / agb.pft[,ncol(agb.pft),1]
 #*(bcorr[s]/ntrees[s])
 #dbh.temp1[j] <- optimize(merit, c(0,200))$minimum
 
@@ -239,7 +276,7 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
 #     sltb <- spp.params$SLTB[n]
 #     fwt <- spp.params$FWT[n]
 #     frt <- spp.params$FRT[n]
-#     if (agb.pft[n,ncol(agb.pft),1]==0 & analysis.vec[i,n]>0){
+#     if (agb.pft[n,ncol(agb.pft),1]==0 & new.state[i,n]>0){
 #       abg.pft.temp <- sum(distance.matrix[,n]%*%t(agb.pft[n,ncol(agb.pft),1]))
 #       ntrees.temp <- sum(distance.matrix[,n]%*%t(t(as.matrix(ntrees)))) 
 #       dbh.temp <- dbh[sum(ntrees[1:n])-1]
@@ -255,7 +292,7 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
 ##### SOIL
     if("TotSoilCarb"%in%variables){
     leaf.sum <- sum(tyl[1:12]) * 0.48
-    soil.org.mat <- analysis.vec.other['TotSoilCarb'] - leaf.sum
+    soil.org.mat <- new.state.other['TotSoilCarb'] - leaf.sum
     soil.corr <- soil.org.mat / (sum(C.mat[C.mat[,5],1]) * 0.48)
     C.mat[C.mat[,5],1] <- C.mat[C.mat[,5],1] * as.numeric(soil.corr)
     }
@@ -263,7 +300,7 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
     if(RENAME==TRUE){ 
       file.rename(file.path(settings$rundir,runid,"linkages.restart.Rdata"),
                   file.path(settings$rundir,runid,
-                            paste0(time,"linkages.restart.Rdata"))) #save original output
+                            paste0(start.time,"linkages.restart.Rdata"))) #save original output
     }
     restart.file <- file.path(settings$rundir,runid,"linkages.restart.Rdata")
     sprintf("%s",restart.file)
@@ -274,20 +311,19 @@ write.restart.LINKAGES <- function(out.dir, runid, time, settings, analysis.vec,
     #make a new settings with the right years
     #min start date and end date - fail in informative way
 
-    settings$run$start.date <- paste0(time + 1,"/01/01")
-    settings$run$end.date <- paste0(time + 1,"/12/31")
-#    settings$run$start.date <- paste0(time,strftime(settings$run$end.date,"/%m/%d"))
-#    settings$run$end.date <- paste0(time,strftime(settings$run$end.date,"/%m/%d"))
+    settings$run$start.date <- paste0(start.time + 1,"/01/01")
+    settings$run$end.date <- paste0(stop.time + 1,"/12/31")
 
-if(sample_parameters == TRUE){
   do.call(write.config.LINKAGES,
-          args = list(trait.values = trait.values,
+          args = list(trait.values = new.params,
                       settings = settings, run.id = runid,
                       restart=TRUE, spinup=FALSE))
-} else {
-  do.call(write.config.LINKAGES,
-          args=list(trait.values = NA, settings=settings,
-                    run.id = runid, restart=TRUE, spinup=FALSE))
-}
+
+    
+    #save original output
+    if(RENAME==TRUE){
+      file.rename(file.path(outdir,runid,"linkages.out.Rdata"),
+                  file.path(outdir,runid,paste0(start.time,"linkages.out.Rdata")))
+    }
 
 }
