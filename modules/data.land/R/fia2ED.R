@@ -28,11 +28,11 @@ fia.to.psscss <- function(settings,
                           overwrite=FALSE) {
 
   mimetype   <- 'text/plain'
-  startdate  <- format(as.Date(settings$run$start.date), "%Y-%m-%d %H:%M:%S")
-  enddate    <- format(as.Date(settings$run$end.date), "%Y-%m-%d %H:%M:%S")
+  startdate  <- as_date(paste0(year, '-01-01'))
+  enddate    <- as_date(paste0(year, '-12-31'))
   formatnames <- c("ED2.cohort", "ED2.patch", "ED2.site")
 
-	latmax = lat + gridres
+  latmax = lat + gridres
   latmin = lat - gridres
   lonmax = lon + gridres
   lonmin = lon - gridres	
