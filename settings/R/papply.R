@@ -80,9 +80,8 @@ papply <- function(settings, fn, stop.on.error=FALSE, ...) {
         "but continued since stop.on.error=FALSE. ",
         paste(errors, collapse='; ')))
     }
-    
-    return(invisible(result))
 
+    return(invisible(result))
   } else if(is.Settings(settings)) {
     return(fn(settings, ...))
   } else if(is.list((settings))) {
