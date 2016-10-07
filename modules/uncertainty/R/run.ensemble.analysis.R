@@ -15,7 +15,7 @@
 ##' @export
 ##' @author David LeBauer, Shawn Serbin, Ryan Kelly
 ##'
-run.ensemble.analysis <- function(settings,plot.timeseries=NA, ensemble.id=NULL,
+run.ensemble.analysis <- function(settings, plot.timeseries=NA, ensemble.id=NULL,
                            variable=NULL, start.year=NULL, end.year=NULL, ...) {
   
   # Set variable and years. Use args first, then settings, then defaults/error
@@ -117,6 +117,17 @@ run.ensemble.analysis <- function(settings,plot.timeseries=NA, ensemble.id=NULL,
 
 } ### End of function
 #==================================================================================================#
+
+##' @export
+runModule.run.ensemble.analysis <- function(settings, ...) {
+  if(is.MultiSettings(settings)) {
+    return(papply(settings, runModule.run.ensemble.analysis, ...))
+  } else if (is.Settings(settings)) {
+    run.ensemble.analysis(settings, ...) 
+  } else {
+    stop("runModule.run.ensemble.analysis only works with Settings or MultiSettings")
+  }
+}
 
 
 #--------------------------------------------------------------------------------------------------#
