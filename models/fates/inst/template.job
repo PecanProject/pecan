@@ -1,0 +1,146 @@
+#!/bin/bash -l
+
+# redirect output
+exec 3>&1
+exec &> "@OUTDIR@/logfile.txt"
+
+# host specific setup
+@HOST_SETUP@
+
+# create output folder
+mkdir -p "@OUTDIR@"
+
+# flag needed for ubuntu
+export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
+
+# see if application needs running
+#if [ ! -e "@OUTDIR@/history.xml" ]; then
+
+  ## Seem to be stuck having to build a new case. Will try and avoid this in the future
+  ## HACK: hard coding path
+  cd /home/carya/ed-clm/cime/scripts
+  ./create_newcase -case @CASEDIR@ -res 1x1_brazil -compset ICLM45ED -mach eddi -compiler gnu
+
+  cd "@RUNDIR@"
+  
+  ## copy required files from default case
+  ## cp -rf @REFCASE@/* .
+  
+  ## RECURSIVELY COPY/SYMLINK REFERENCE INPUTS DIRECTORY (DIN_LOC_ROOT)
+  ## create folders and symbolic links. Links will later be deleted when non-default files are specified
+  mkdir input
+  echo "PEcAn.FATES::recurse.create('input','@DEFAULT@')" | R --vanilla
+
+  cd "@CASEDIR@"
+
+  ## THINGS THAT ARE IN REFCASE
+  # Modifying : env_mach_pes.xml
+./xmlchange -file env_mach_pes.xml -id NTASKS_ATM -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_LND -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_ICE -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_OCN -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_CPL -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_GLC -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_ROF -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_WAV -val 1
+./xmlchange -file env_mach_pes.xml -id MAX_TASKS_PER_NODE -val 1
+./xmlchange -file env_mach_pes.xml -id TOTALPES -val 1
+  # Modifying : env_build.xml
+./xmlchange -file env_build.xml -id GMAKE -val make
+./xmlchange -file env_build.xml -id DEBUG -val TRUE
+  # Modifying : env_run.xml
+./xmlchange -file env_run.xml -id REST_N -val 1
+./xmlchange -file env_run.xml -id REST_OPTION -val nyears
+./xmlchange -file env_run.xml -id DATM_CLMNCEP_YR_START -val 1999
+./xmlchange -file env_run.xml -id DATM_CLMNCEP_YR_END -val 1999
+./xmlchange -file env_run.xml -id DIN_LOC_ROOT -val @INDIR@
+./xmlchange -file env_run.xml -id DIN_LOC_ROOT_CLMFORC -val '@INDIR@'
+./xmlchange -file env_run.xml -id DOUT_S -val TRUE
+./xmlchange -file env_run.xml -id DOUT_S_ROOT -val '@CASEDIR@/run'
+./xmlchange -file env_run.xml -id BATCHQUERY -val ''
+./xmlchange -file env_run.xml -id BATCHSUBMIT -val ''
+./xmlchange -file env_run.xml -id PIO_DEBUG_LEVEL -val 0
+mkdir case/run/timing
+## END REFCASE  
+  
+  ## FATES seems to need a timing folder, but doesn't create it itself
+  mkdir run/timing
+  mkdir timing
+  
+  ## ENV_BUILD update configurations
+  ./xmlchange -file env_build.xml -id CESMSCRATCHROOT -val @CASEDIR@
+  ./xmlchange -file env_build.xml -id EXEROOT -val @BLD@
+  ./xmlchange -file env_build.xml -id BUILD_COMPLETE -val TRUE
+  
+  ## DATES -> ENV_RUN
+  ./xmlchange -file env_run.xml -id RUNDIR -val @CASEDIR@/run
+  ./xmlchange -file env_run.xml -id RUN_STARTDATE -val @START_DATE@
+  ./xmlchange -file env_run.xml -id STOP_OPTION -val ndays
+  ./xmlchange -file env_run.xml -id STOP_N -val @STOP_N@
+  
+  ## SITE INFO --> DOMAIN FILE
+  rm @INDIR@/share/domains/domain.clm/*
+  ln -s @RUNDIR@/domain.*.nc @INDIR@/share/domains/domain.clm/
+    
+  ## MET --> DATM
+  
+  ## APPLY CONFIG CHANGES
+  ./case.setup
+  
+  ## ADDITIONAL MODS THAT ARE JUST ASSOCIATED WITH REFCASE
+cat >> user_nl_clm << EOF
+hist_empty_htapes = .true.
+hist_fincl1='EFLX_LH_TOT','TSOI_10CM','QVEGT','NEP','GPP','AR','ED_bleaf','ED_biomass','NPP_column'
+hist_mfilt             = 8760
+hist_nhtfrq            = -1
+EOF
+
+# Modify user_nl_datm
+#cat >> user_nl_datm << EOF
+#EOF  
+  
+  ./case.build
+  
+  ## RUN
+  cd run
+  mkdir timing
+  echo `pwd`
+  echo `ls -altr`
+  
+  ## RUNDIR FILE LINKS
+  if [ -e @RUNDIR@/datm_atm_in]
+    then 
+    rm datm_atm_in
+    ln -s @RUNDIR@/datm_atm_in . 
+  fi
+  if [ -e @RUNDIR@/datm.streams.txt.PEcAn_met]
+    then 
+    rm datm.stream.txt.CLM_QIAN*
+    ln -s @RUNDIR@/datm.streams.txt.PEcAn_met .
+  fi
+  
+  "@BINARY@"
+  STATUS=$?
+  
+  
+  # check the status
+  if [ $STATUS -ne 0 ]; then
+  	echo -e "ERROR IN MODEL RUN\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
+  	exit $STATUS
+  fi
+
+  #  convert output
+  cp *clm2.h0.*.nc @OUTDIR@
+  echo "library(PEcAn.FATES); model2netcdf.FATES('@OUTDIR@')" | R --vanilla
+  
+
+# copy readme with specs to output
+cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
+
+# run getdata to extract right variables
+
+# host specific teardown
+@HOST_TEARDOWN@
+
+# all done
+echo -e "MODEL FINISHED\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
