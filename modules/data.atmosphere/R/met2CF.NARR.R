@@ -50,6 +50,8 @@ met2CF.NARR <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
     if (file.exists(newfile) && !overwrite) {
       PEcAn.utils::logger.debug("File '", newfile, "' already exists, skipping to next file.")
       next
+    } else {
+      PEcAn.utils::logger.info("Preparing file '", newfile, "'. ")
     }
 
     # use tempfile
