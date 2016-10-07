@@ -263,7 +263,11 @@ if(FALSE) {
 
   # ----- Write files
   # Write files locally
-  out.dir.local <- file.path(settings$database$dbfiles, "fia")
+  if(settings$host$name == "localhost") {
+    out.dir.local <- file.path(settings$database$dbfiles, "fia")
+  } else {
+    out.dir.local <- '/tmp'
+  }
   prefix.psscss <- paste0("siteid", settings$run$site$id, ".radius", gridres, 
                           get.ed.file.latlon.text(lat, lon, site.style=FALSE))
   prefix.site   <- paste0("siteid", settings$run$site$id, ".radius", gridres, 
@@ -282,7 +286,9 @@ if(FALSE) {
 
   
   # Copy to remote if needed
-  if(settings$host$name != "localhost") {
+  if(settings$host$name == "localhost") {
+    files <- c(pss.file.local, css.file.local, site.file.local)
+  } else {
     out.dir.remote <- file.path(settings$host$dbfiles, "fia")
     pss.file.remote <- file.path(out.dir.remote, paste0(prefix.psscss, ".pss"))
     css.file.remote <- file.path(out.dir.remote, paste0(prefix.psscss, ".css"))
@@ -292,10 +298,10 @@ if(FALSE) {
     remote.copy.to(settings$host, pss.file.local, pss.file.remote)
     remote.copy.to(settings$host, css.file.local, css.file.remote)
     remote.copy.to(settings$host, site.file.local, site.file.remote)
+    files <- c(pss.file.remote, css.file.remote, site.file.remote)
   }
 
   # Insert into DB  
-  files <- c(pss.file.local, css.file.local, site.file.local)
   formatnames <- c("ED2.patch", "ED2.cohort", "ED2.site")
   for(i in seq_along(files)) {
     dbfile.input.insert(
@@ -308,21 +314,8 @@ if(FALSE) {
       formatname = formatnames[i],
       parentid   = NA,
       con        = con,
-      hostname   = fqdn()
+      hostname   = settings$host$name
     )
-    dbfile.input.insert(
-      in.path    = dirname(files[i]),
-      in.prefix  = basename(files[i]),
-      siteid     = settings$run$site$id,
-      startdate  = format(as.Date(settings$run$start.date), "%Y-%m-%d %H:%M:%S"),
-      enddate    = format(as.Date(settings$run$end.date), "%Y-%m-%d %H:%M:%S"),
-      mimetype   = 'text/plain',
-      formatname = formatnames[i],
-      parentid   = NA,
-      con        = con,
-      hostname   = settings$host
-    )
-
   }
 
 
