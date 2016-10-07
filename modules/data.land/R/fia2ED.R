@@ -24,7 +24,8 @@ fia.to.psscss <- function(settings,
                           year = lubridate::year(settings$run$start.date),
                           gridres=0.075, 
                           min.year = year - 5,
-                          max.year = year + 5) {
+                          max.year = year + 5,
+                          overwrite=FALSE) {
 if(FALSE) {
   lat = as.numeric(settings$run$site$lat)
   lon = as.numeric(settings$run$site$lon)
@@ -32,17 +33,55 @@ if(FALSE) {
   gridres=0.075 
   min.year = year - 5
   max.year = year + 5
+  overwrite=FALSE
 }
+
+  mimetype   <- 'text/plain'
+  startdate  <- format(as.Date(settings$run$start.date), "%Y-%m-%d %H:%M:%S")
+  enddate    <- format(as.Date(settings$run$end.date), "%Y-%m-%d %H:%M:%S")
+  formatnames <- c("ED2.cohort", "ED2.patch", "ED2.site")
 
 	latmax = lat + gridres
   latmin = lat - gridres
   lonmax = lon + gridres
   lonmin = lon - gridres	
-
-
+  
+  
 	## connect to database
 	con <-  db.open(settings$database$bety)
 	on.exit(db.close(con))
+
+  # Check whether inputs exist already
+  if(!overwrite) {
+    existing.files <- list()
+    for(format in formatnames) {
+      existing.files[[format]] <- dbfile.input.check(
+        siteid     = settings$run$site$id,
+        startdate  = startdate,
+        enddate    = enddate,
+        mimetype   = mimetype,
+        formatname = format,
+        parentid   = NA,
+        con        = con,
+        hostname   = settings$host$name
+      )
+    }
+  
+    if(all(sapply(existing.files, function(x) nrow(x)>0))) {
+      file.paths <- lapply(existing.files, function(x) file.path(x$file_path, x$file_name))
+    
+      settings <- .add.ed2.file.paths.to.settings(settings,
+        css.path=file.paths$ED2.cohort, 
+        pss.path=file.paths$ED2.patch, 
+        site.path=file.paths$ED2.site)
+        
+      logger.info("Using existing pss, css, and site files.")
+      return(settings)
+    } else {
+      logger.info("No existing pss, css, and site files.")
+    }
+  }
+
 	
 	### collect mapping from spcd to pftid
 	query <- NULL
@@ -263,8 +302,10 @@ if(FALSE) {
 
   # ----- Write files
   # Write files locally
+  site.string <- paste0(as.numeric(settings$run$site$id) %/% 1000000000, "-",
+                        as.numeric(settings$run$site$id) %% 1000000000)
   if(settings$host$name == "localhost") {
-    out.dir.local <- file.path(settings$database$dbfiles, "fia")
+    out.dir.local <- file.path(settings$database$dbfiles, paste0("FIA_ED2_site_", site.string))
   } else {
     out.dir.local <- '/tmp'
   }
@@ -289,7 +330,7 @@ if(FALSE) {
   if(settings$host$name == "localhost") {
     files <- c(pss.file.local, css.file.local, site.file.local)
   } else {
-    out.dir.remote <- file.path(settings$host$dbfiles, "fia")
+    out.dir.remote <- file.path(settings$host$dbfiles, paste0("FIA_ED2_site_", site.string))
     pss.file.remote <- file.path(out.dir.remote, paste0(prefix.psscss, ".pss"))
     css.file.remote <- file.path(out.dir.remote, paste0(prefix.psscss, ".css"))
     site.file.remote <- file.path(out.dir.remote, paste0(prefix.site, ".site"))
@@ -302,15 +343,14 @@ if(FALSE) {
   }
 
   # Insert into DB  
-  formatnames <- c("ED2.patch", "ED2.cohort", "ED2.site")
   for(i in seq_along(files)) {
     dbfile.input.insert(
       in.path    = dirname(files[i]),
       in.prefix  = basename(files[i]),
       siteid     = settings$run$site$id,
-      startdate  = format(as.Date(settings$run$start.date), "%Y-%m-%d %H:%M:%S"),
-      enddate    = format(as.Date(settings$run$end.date), "%Y-%m-%d %H:%M:%S"),
-      mimetype   = 'text/plain',
+      startdate  = startdate,
+      enddate    = enddate,
+      mimetype   = mimetype,
       formatname = formatnames[i],
       parentid   = NA,
       con        = con,
@@ -319,18 +359,24 @@ if(FALSE) {
   }
 
 
+
   # Add file paths to settings
   if(settings$host$name == "localhost") {
-  	settings$run$inputs$pss$path <- pss.file.local
-  	settings$run$inputs$css$path <- css.file.local
-  	settings$run$inputs$site$path <- site.file.local
+    settings <- .add.ed2.file.paths.to.settings(settings, 
+      css.path=css.file.local, pss.path=pss.file.local, site.path=site.file.local)
   } else {
-  	settings$run$inputs$pss$path <- pss.file.remote
-  	settings$run$inputs$css$path <- css.file.remote
-  	settings$run$inputs$site$path <- site.file.remote
+    settings <- .add.ed2.file.paths.to.settings(settings, 
+      css.path=css.file.remote, pss.path=pss.file.remote, site.path=site.file.remote)
   }
 
 	return(settings)
+}
+
+.add.ed2.file.paths.to.settings <- function(settings, css.path, pss.path, site.path) {
+  settings$run$inputs$css$path <- css.path
+ 	settings$run$inputs$pss$path <- pss.path
+  settings$run$inputs$site$path <- site.path
+  return(settings)
 }
 
 # See ed_read_ed10_20_history...
