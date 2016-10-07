@@ -289,7 +289,7 @@ write.run.ED <- function(settings){
 ##' @title Clear out old config and ED model run files.
 ##' @return nothing, removes config files as side effect
 ##' @export
-##' @author Shawn Serbin, David LeBauer
+##' @author Shawn Serbin, David LeBauer, Alexey Shikomanov
 remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
   
   
@@ -305,29 +305,23 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
     file.remove(todelete)
   } 
   rm(todelete)
-  
+
   ## Remove model run configs and model run log files on local/remote host
   if(!settings$host$name == 'localhost'){
     ## Remove model run congfig and log files on remote host
-    config <- system(paste("ssh ", settings$host$name, " 'ls ", 
-                           settings$host$rundir, 
-                           "c.*'", sep = ''), intern = TRUE)
-    ed2in <- system(paste("ssh ", settings$host$name, " 'ls ", 
-                          settings$host$rundir, 
-                          "ED2INc.", "*'", sep = ''), intern = TRUE)
-    output <- paste(settings$host$outdir,
-                    system(paste("ssh ", settings$host$name, " 'ls ", 
-                                 settings$host$outdir,
-                                 "'", sep = ''), intern = TRUE),sep="/")
+    remote_ls <- function(path, pattern) {
+        remote.execute.cmd(host = settings$host,
+                           cmd = "ls",
+                           args = file.path(path, pattern))
+    }
+    config <- remote_ls(settings$host$rundir, "c.*")
+    ed2in <- remote_ls(settings$host$rundir, "ED2INc.*")
+    output_remote <- remote_ls(settings$host$outdir, ".")
+    output <- file.path(settings$host$outdir, output_remote)
+
     if(length(config) > 0 | length(ed2in) > 0) {
-      todelete <- c(config,ed2in[-grep('log', ed2in)],output) ## Keep log files
-      
-      ## Very slow method.  NEEDS UPDATING
-      for(i in todelete){
-        print(i)
-        system(paste("ssh -T ", settings$host$name, " 'rm ",i,"'",sep=""))
-      }
-      
+      todelete <- c(config, ed2in[-grep('log', ed2in)], output) ## Keep log files
+      remote.execute.cmd(settings$host, "rm", c("-f", todelete))
     }
   }
 }
@@ -347,11 +341,11 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults=settings$const
   ## TODO this should come from the database
   histfile <- paste("data/history.r", settings$model$revision, ".csv", sep='')
   if (file.exists(system.file(histfile, package="PEcAn.ED2"))) {
-    #print(paste("--- Using ED2 History File: ","data/history.r", settings$model$revision, ".csv", sep=''))
+    print(paste("--- Using ED2 History File: ","data/history.r", settings$model$revision, ".csv", sep=''))
     edhistory <- read.csv2(system.file(histfile, package="PEcAn.ED2"), sep=";", 
                            stringsAsFactors=FALSE, dec='.')
   } else {
-    #print("--- Using Generic ED2 History File: data/history.csv")
+    print("--- Using Generic ED2 History File: data/history.csv")
     edhistory <- read.csv2(system.file("data/history.csv",  package="PEcAn.ED2"), sep=";",
                            stringsAsFactors=FALSE, dec='.')
   }
@@ -385,11 +379,21 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults=settings$const
       } else {
         pft <- group
       }
-      # TODO: Not sure if this is how this is supposed to work, but idea is to check for pft.number in defaults (settings$constants) first
-      pft.number <- defaults[[pft]]$num
-      if(is.null(pft.number)){
-          pft.number <- pftmapping$ED[which(pftmapping == pft)]
-      }
+
+      # RyK: Changed this so that pftmapping is required. pft$constants$num is the number that
+      # will be written to config.xml, and it's used by fia.to.ed when mapping spp to a PFT #.
+      # But if you're overriding an existing ED2 pft, then you might not want that PFT number to be 
+      # used to look up default param values. 
+      #
+      # e.g. if you're trying to run temperate.Hydric PFT, which which doesn't exist in ED,
+      # you would need to assign it either an existing but currently unused ED2 PFT number 
+      # (e.g. #2 = "early tropical"), or an unused one (e.g. #18). Either way, that number
+      # isn't necessarily what you'd want to look up default parameters for the PFT. 
+      #
+      # What really should happen is for there to be two settings for each PFT: the "num"
+      # to use to represent the PFT to ED, and the "defaults.PFT" (name or number) to use
+      # for pulling default parameter values. 
+      pft.number <- pftmapping$ED[which(pftmapping == pft)]
       if(length(pft.number) == 0){
           logger.error(pft, 'was not matched with a number in settings$constants or pftmapping data. Consult the PEcAn instructions on defining new PFTs.')
           stop('Unable to set PFT number')

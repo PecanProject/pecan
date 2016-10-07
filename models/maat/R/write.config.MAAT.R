@@ -35,6 +35,13 @@ convert.samples.MAAT <- function(trait.samples){
     trait.names[trait.names == "leaf_respiration_rate_m2"] <- "atref.rd"
     trait.names[trait.names == "Vcmax"] <- "atref.vcmax"
     trait.names[trait.names == "Jmax"] <- "atref.jmax"
+    trait.names[trait.names == "Ev_Arrhenius"] <- "Ha.vcmax" # Arrhenius activation energy
+    trait.names[trait.names == "Ej_Arrhenius"] <- "Ha.jmax" # Arrhenius activation energy
+    trait.names[trait.names == "Ha_Modified_Arrhenius_Jmax"] <- "Ha.jmax" # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+    trait.names[trait.names == "Hd_Modified_Arrhenius_Jmax"] <- "Hd.jmax" # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+    trait.names[trait.names == "stomatal_slope"] <- "g1_leuning"
+    trait.names[trait.names == "stomatal_slope.g1"] <- "g1_medlyn"
+    trait.names[trait.names == "stomatal_slope.BB"] <- "g1_ball"
     colnames(trait.samples) <- trait.names
     
     ### Conversions  -- change to only use if Collatz, should also provide standard Rd oputput
@@ -42,6 +49,18 @@ convert.samples.MAAT <- function(trait.samples){
       ## Calculate dark_resp_factor - rd as a proportion of Vcmax, Williams & Flannagan 1998 ~ 0.1 (unitless)
       trait.samples[['rd_prop_vcmax']] <- trait.samples[['atref.rd']]/
         trait.samples[['atref.vcmax']]
+    }
+    if('Ha.vcmax' %in% names(trait.samples)) {
+      ## Convert from kJ mol-1 to J mol-1
+      trait.samples <- transform(trait.samples, Ha.vcmax = ud.convert(Ha.vcmax , "kJ", "J"))
+    }
+    if('Ha.jmax' %in% names(trait.samples)) {
+      ## Convert from kJ mol-1 to J mol-1
+      trait.samples <- transform(trait.samples, Ha.jmax = ud.convert(Ha.jmax , "kJ", "J"))
+    }
+    if('Hd.jmax' %in% names(trait.samples)) {
+      ## Convert from kJ mol-1 to J mol-1
+      trait.samples <- transform(trait.samples, Hd.jmax = ud.convert(Hd.jmax , "kJ", "J"))
     }
     
     ### Return trait.samples as modified by function
@@ -112,11 +131,10 @@ write.config.MAAT <- function(defaults=NULL, trait.values, settings, run.id){
   } else if (!is.null(settings$run$inputs$met)){
     met.dir <- dirname(settings$run$inputs$met$path)
     met.file <- basename(settings$run$inputs$met$path)
-    logger.info("-- Copy leaf_user_met.xml to rundirs --")
+    #logger.info("-- Copy leaf_user_met.xml to rundirs --")
     file.copy(file.path(met.dir,list.files(met.dir,'*.xml')), rundir, overwrite = TRUE, recursive = FALSE,
               copy.mode = TRUE, copy.date = TRUE)
-    logger.info("-- Create job.sh scripts and place in rundirs --")
-    # need to update code below to include met data dir
+    #logger.info("-- Create job.sh scripts and place in rundirs --")
     jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ",
                     "\"odir <- ","'",outdir,"'","\""," ","\"mdir <- ","'",met.dir,"'",
                     "\""," ","\"metdata <- ","'",met.file,"'","\""," > ",rundir,
