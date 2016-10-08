@@ -620,9 +620,7 @@ pda.get.model.output <- function(settings, run.id, inputs) {
     # UST is never in the model outputs
     data.vars <- data.vars[!data.vars %in% c("UST")]
 
-    # this is only for FC-NEE as we are using them interchangably when NEE isn't present, e.g. Ameriflux data
-    data.vars[data.vars %in% c("FC")] <- "NEE"      # FC - NEE specific hack 
-    
+
     colnames(out) <- data.vars
     model <- data.frame(time = model.raw$time, out)
     
