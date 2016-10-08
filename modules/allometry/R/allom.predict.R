@@ -156,11 +156,7 @@ allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",int
       }       
     } else if(interval == "prediction"){
       ##          = prediction -> sample of (mu/Bg), sample of (sigma/Sg), if Bg sample of tau
-<<<<<<< HEAD
-      sel = sample.int(nrow(object[[i]][[component]]),n,replace = TRUE)
-=======
       sel <- sample.int(nrow(object[[i]][[component]]),n,replace = TRUE)    
->>>>>>> 9a11080bafb2e4812e25430edb7509ef402f4403
       if(use[i] == "Bg"){
         params[[i]] <- object[[i]][[component]][sel,c("Bg0","Bg1","Sg")]
       } else if(use[i]=="mu"){
@@ -191,16 +187,10 @@ allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",int
     a <- params[[p]][,1]
     b <- params[[p]][,2]
     if(ncol(params[[p]])>2){
-<<<<<<< HEAD
-      s = sqrt(params[[p]][,3]) ## sigma was originally calculated as a variance, so convert to std dev
-    } else {s = 0}
-    
-=======
     	s <- sqrt(params[[p]][,3]) ## sigma was originally calculated as a variance, so convert to std dev
     } else {
     	s <- 0
     }
->>>>>>> 9a11080bafb2e4812e25430edb7509ef402f4403
     for(i in sel){
       out[,i] <- exp(rnorm(n,a+b*log(dbh[i]),s))
     }
