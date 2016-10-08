@@ -1,12 +1,16 @@
 #!/usr/bin/env Rscript
 args <- commandArgs(trailingOnly = TRUE)
 #-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.  All rights reserved. This program and the accompanying materials are made
-# available under the terms of the University of Illinois/NCSA Open Source License which accompanies this distribution, and is
-# available at http://opensource.ncsa.illinois.edu/license.html
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-# ---------------------------------------------------------------------- Load required libraries
+# ---------------------------------------------------------------------- 
+# Load required libraries
 # ----------------------------------------------------------------------
 library(PEcAn.all)
 library(RCurl)
@@ -38,8 +42,10 @@ options(error = quote({
 # options(warning.expression=status.end('ERROR'))
 
 
-# ---------------------------------------------------------------------- PEcAn Workflow
-# ---------------------------------------------------------------------- Open and read in settings file for PEcAn run.
+# ---------------------------------------------------------------------- 
+# PEcAn Workflow
+# ---------------------------------------------------------------------- 
+# Open and read in settings file for PEcAn run.
 if (is.na(args[1])) {
   settings <- read.settings("pecan.xml")
 } else {
@@ -93,7 +99,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
   
   # Check status to avoid repeating work
   check.status <- function(check.name) {
-    status.file <- file.path(settings$outdir, "STATU")
+    status.file <- file.path(settings$outdir, "STATUS")
     if (!file.exists(status.file)) {
       return(0)
     }
@@ -193,7 +199,7 @@ if (check.status("SENSITIVITY") == 0) {
 }
 
 # Run parameter data assimilation
-if (("assim.batch" %in% names(settings))) {
+if ("assim.batch" %in% names(settings)) {
   status.start("PDA")
   settings$assim.batch <- pda.mcmc(settings)
   status.end()
