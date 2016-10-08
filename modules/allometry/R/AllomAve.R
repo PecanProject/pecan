@@ -64,27 +64,29 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
   require(coda)
   
   nested.range <- function(obs){
-    w = NULL
+    w <- NULL
     for(i in 1:length(obs)){
       for(j in 1:length(obs[[i]])){
-        w = t(apply(cbind(w,t(sapply(obs[[i]][[j]],range))),1,range))
+        w <- t(apply(cbind(w,t(sapply(obs[[i]][[j]],range))),1,range))
       }
     }
     return(t(w))
   }
     
-  if(is.null(outdir)) outdir = getwd()
+  if(is.null(outdir)){
+  	outdir <- getwd()
+  }
   print(c("writing output to",outdir))
   
-  sel    =  floor(seq(ngibbs*0.25,ngibbs,length=min(ngibbs*0.75,5000)))  
+  sel    <-  floor(seq(ngibbs*0.25,ngibbs,length=min(ngibbs*0.75,5000)))  
 
-  allom.stats = list()
+  allom.stats <- list()
   
   ########## BAYESIAN VERSION ###############
   for(ipft in 1:length(pfts)){  ## loop over PFTs
-    pft = pfts[[ipft]]
-    pft.name = names(pfts)[ipft]
-    allom.stats[[pft.name]] = list()
+    pft <- pfts[[ipft]]
+    pft.name <- names(pfts)[ipft]
+    allom.stats[[pft.name]] <- list()
     
     for(component in components){ 
       print(c(pft,component))
@@ -92,7 +94,7 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
       ## load data
       if(!is.null(con)){
         ### If running within PEcAn, grab the data from the database
-        pft.name = pft$name
+        pft.name <- pft$name
         allom <- query.allom.data(pft.name,component,con)
       } else {
         allom <- read.allom.data(pft,component,field,parm)        
@@ -106,9 +108,9 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
       obs <- list()
       for(i in 1:nchain){
         if(component == 40){
-          allom.out = allom.BayesFit(allom,ngibbs,"exp",dmin,dmax)
+          allom.out <- allom.BayesFit(allom,ngibbs,"exp",dmin,dmax)
         } else {
-          allom.out = allom.BayesFit(allom,ngibbs,dmin=dmin,dmax=dmax)
+          allom.out <- allom.BayesFit(allom,ngibbs,dmin=dmin,dmax=dmax)
         }
         mc[[i]] <- as.mcmc(allom.out[["mc"]][sel,])
         obs[[i]] <- allom.out[["obs"]]
@@ -116,21 +118,21 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
       mc <- as.mcmc.list(mc)
       
       ## Model Selection
-      D = as.array(mc)[,'D',]
-      pD = mean(D) - min(D)
-      DIC = mean(D) + pD
+      D <- as.array(mc)[,'D',]
+      pD <- mean(D) - min(D)
+      DIC <- mean(D) + pD
       
-      Dg = as.array(mc)[,'Dg',]
-      pDg = mean(Dg) - min(Dg)
-      DICg = mean(Dg) + pDg
+      Dg <- as.array(mc)[,'Dg',]
+      pDg <- mean(Dg) - min(Dg)
+      DICg <- mean(Dg) + pDg
       
       ## Save MCMC objects (Pass to MCMC diagnostics module)
-      outfile = paste(outdir,paste("/Allom",pft.name,component,"Rdata",sep="."),sep="")
+      outfile <- paste(outdir,paste("/Allom",pft.name,component,"Rdata",sep="."),sep="")
       print(c("saving MCMC output to",outfile))
       save(mc,DIC,DICg,pD,pDg,obs,allom,file=outfile)
 
-      allom.stats[[pft.name]][[component]] = summary(mc)  
-      allom.stats[[pft.name]][[component]]$cov = cov(as.matrix(mc))
+      allom.stats[[pft.name]][[component]] <- summary(mc)  
+      allom.stats[[pft.name]][[component]]$cov <- cov(as.matrix(mc))
       
       ## Save Posterior information (Pass to update.posterior module)
       if(FALSE){
@@ -138,7 +140,7 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
       }
       
       ## Analysis/visualization
-      pdffile = paste(outdir,paste("/Allom",pft.name,component,"MCMC","pdf",sep="."),sep="")
+      pdffile <- paste(outdir,paste("/Allom",pft.name,component,"MCMC","pdf",sep="."),sep="")
       print(c("saving diagnostic graphs to",pdffile))
       pdf(pdffile)
         
@@ -152,10 +154,13 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
            n.mod[i] <- round(n[i]*length(tmp.seq[tmp.seq>dmin & tmp.seq<dmax])/length(tmp.seq),digits=0)
         }
 
-        ntally  <- which(nu(allom[['parm']][,"Xmax"])>=dmin & nu(allom[['parm']][,"Xmin"])<=dmax); if(is.null(ntally)) ntally = 0;
+        ntally  <- which(nu(allom[['parm']][,"Xmax"])>=dmin & nu(allom[['parm']][,"Xmin"])<=dmax)
+        if(is.null(ntally)){
+        	ntally <- 0;
+		}
 
         ### scatter plot  
-        rng = nested.range(obs)
+        rng <- nested.range(obs)
         plot(1,1,type='n',log='xy',xlim=rng[,'x'],ylim=rng[,'y'],#xlim=c(0.1,1000),ylim=c(0.0001,100000),
            xlab="DBH (cm)",ylab="Biomass (kg)")
         #pseudodata
@@ -165,11 +170,11 @@ AllomAve <- function(pfts,components=6,outdir=NULL,con=NULL,field=NULL,
           }
         }      
         #naive prediction
-        dseq = seq(dmin,dmax,length=100)  ## diameter sequence
-        beta = allom.stats[[pft.name]][[component]]$statistics[,"Mean"]
-        y.0  = exp(beta['mu0'] + beta['mu1']*log(dseq))
-        y.g  = exp(beta['Bg0'] + beta['Bg1']*log(dseq))  
-        y.o  = predict.allom.orig(dseq,allom$parm[ntally,])    
+        dseq <- seq(dmin,dmax,length=100)  ## diameter sequence
+        beta <- allom.stats[[pft.name]][[component]]$statistics[,"Mean"]
+        y.0  <- exp(beta['mu0'] + beta['mu1']*log(dseq))
+        y.g  <- exp(beta['Bg0'] + beta['Bg1']*log(dseq))  
+        y.o  <- predict.allom.orig(dseq,allom$parm[ntally,])    
         lines(dseq,y.0,lwd=2,col=1)
         lines(dseq,y.g,lwd=2,col=2)
         for(i in seq_len(nrow(y.o))){
@@ -194,15 +199,15 @@ predict.allom.orig <- function(x,parm){
 
     out <- matrix(NA,nrow(parm),length(x))
 
-	  eqn   = nu(parm$eqn)
-	  a     = nu(parm$a)
-	  b     = nu(parm$b)
-	  c     = nu(parm$c)
-	  d     = nu(parm$d)
-	  e     = nu(parm$e)
-	  Xcor  = nu(parm$Xcor)
-	  Ycor  = nu(parm$Ycor)
-	  Xtype = as.character(parm$Xtype)
+	  eqn   <- nu(parm$eqn)
+	  a     <- nu(parm$a)
+	  b     <- nu(parm$b)
+	  c     <- nu(parm$c)
+	  d     <- nu(parm$d)
+	  e     <- nu(parm$e)
+	  Xcor  <- nu(parm$Xcor)
+	  Ycor  <- nu(parm$Ycor)
+	  Xtype <- as.character(parm$Xtype)
 	  
 	for(i in 1:nrow(parm))	{
 
@@ -212,40 +217,48 @@ predict.allom.orig <- function(x,parm){
       }else{
         if(Xtype[i] == "d.b.h.^2"){
           ## convert to sq inches
-          x = x*x/(2.54*2.54)
+          x <- x*x/(2.54*2.54)
         } else {
-          x = x*x*pi/4 ## convert to cm Basal Area
+          x <- x*x*pi/4 ## convert to cm Basal Area
         }
       }
 
 	
 	  if(eqn[i] == 1){
-        if(b[i] == 0 & c[i] > 0) b[i] = 1
-        if(c[i] == 0 & b[i] > 0) c[i] = 1
-        y = 10^(a[i] + b[i]*c[i]*log10(x))
+        if(b[i] == 0 & c[i] > 0){
+        	b[i] <- 1
+        }
+        if(c[i] == 0 & b[i] > 0){
+        	c[i] <- 1
+        }
+        y <- 10^(a[i] + b[i]*c[i]*log10(x))
       } else if(eqn[i] == 2){
-        if(is.na(d[i]) | d[i] == 0) d[i] <- 1
-        y = exp(a[i] + b[i]*x + c[i]*d[i]*log(x))
+        if(is.na(d[i]) | d[i] == 0){
+        	d[i] <- 1
+        }
+        y <- exp(a[i] + b[i]*x + c[i]*d[i]*log(x))
       } else if(eqn[i] == 3){
-        y = exp(a[i] + b[i]*log(x) + c[i]*(d[i]+(e[i]*log(x))))
+        y <- exp(a[i] + b[i]*log(x) + c[i]*(d[i]+(e[i]*log(x))))
       } else if(eqn[i] == 4){
-        if(is.na(d[i])) d[i] <- 0
-        y = a[i] + b[i]*x + c[i]*x^d[i]
+        if(is.na(d[i])){
+        	d[i] <- 0
+		}
+        y <- a[i] + b[i]*x + c[i]*x^d[i]
       } else if(eqn[i] == 5){
-        y = a[i] + b[i]*x + c[i]*x^2 + d[i]*x^3
+        y <- a[i] + b[i]*x + c[i]*x^2 + d[i]*x^3
       } else if(eqn[i] == 6){
-        y = a[i] *(exp( b[i] + (c[i]*log(x)) + d[i]*x))
+        y <- a[i] *(exp( b[i] + (c[i]*log(x)) + d[i]*x))
       } else if(eqn[i] == 7){
-        y = a[i] + ((b[i]*(x^c[i]))/((x^c[i])+ d[i]))
+        y <- a[i] + ((b[i]*(x^c[i]))/((x^c[i])+ d[i]))
       } else if(eqn[i] == 8){
-        y = 10^(a[i] + b[i]*log10(x))
+        y <- 10^(a[i] + b[i]*log10(x))
       }else if(eqn[i] == 9){
-        y = exp(log(a[i]) + b[i]*log(x))
+        y <- exp(log(a[i]) + b[i]*log(x))
       }else if(eqn[i] == 10){
-        y = exp(a[i] + b[i]*log(x))
+        y <- exp(a[i] + b[i]*log(x))
       }else if(eqn[i] == 11){
         if(is.na(b[i])) b[i] <- 0
-        y = a[i]*x^(b[i])
+        y <- a[i]*x^(b[i])
       }
       out[i,] <- y*Ycor[i]
    }
