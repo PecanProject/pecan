@@ -496,34 +496,45 @@ check.run.settings <- function(settings, dbcon=NULL) {
     }
     
     if(is.null(settings$ensemble$start.year)) {
-      if(is.null(settings$sensitivity.analysis$start.year)) {
+      if(!is.null(settings$run$start.date)) {
         settings$ensemble$start.year <- year(settings$run$start.date) 
-        logger.info("No start date passed to ensemble - using the run date (", settings$ensemble$start.date, ").")
-      } else { 
+        logger.info("No start date passed to ensemble - using the run date (", 
+          settings$ensemble$start.year, ").")
+      } else if(!is.null(settings$sensitivity.analysis$start.year)) {
         settings$ensemble$start.year <- settings$sensitivity.analysis$start.year 
-        logger.info("No start date passed to ensemble - using the sensitivity.analysis date (", settings$ensemble$start.date, ").")
+        logger.info("No start date passed to ensemble - using the sensitivity.analysis date (",
+          settings$ensemble$start.year, ").")
+      } else {
+        logger.info("No start date passed to ensemble, and no default available.")
       }
     }
     
     if(is.null(settings$ensemble$end.year)) {
-      if(is.null(settings$sensitivity.analysis$end.year)) {
+      if(!is.null(settings$run$end.date)) {
         settings$ensemble$end.year <- year(settings$run$end.date) 
-        logger.info("No end date passed to ensemble - using the run date (", settings$ensemble$end.date, ").")
-      } else { 
+        logger.info("No end date passed to ensemble - using the run date (", 
+          settings$ensemble$end.year, ").")
+      } else if(!is.null(settings$sensitivity.analysis$end.year)){ 
         settings$ensemble$end.year <- settings$sensitivity.analysis$end.year 
-        logger.info("No end date passed to ensemble - using the sensitivity.analysis date (", settings$ensemble$end.date, ").")
+        logger.info("No end date passed to ensemble - using the sensitivity.analysis date (",  
+          settings$ensemble$end.year, ").")
+      } else {
+        logger.info("No end date passed to ensemble, and no default available.")
       }
     }
     
     # check start and end dates
-    if (year(startdate) > settings$ensemble$start.year) {
-      logger.severe("Start year of ensemble should come after the start.date of the run")
+    if (exists("startdate") && !is.null(settings$ensemble$start.year) &&
+      year(startdate) > settings$ensemble$start.year) {
+        logger.severe("Start year of ensemble should come after the start.date of the run")
     }
-    if (year(enddate) < settings$ensemble$end.year) {
-      logger.severe("End year of ensemble should come before the end.date of the run")
+    if (exists("enddate") && !is.null(settings$ensemble$end.year) &&
+      year(enddate) < settings$ensemble$end.year) {
+        logger.severe("End year of ensemble should come before the end.date of the run")
     }
-    if (settings$ensemble$start.year > settings$ensemble$end.year) {
-      logger.severe("Start year of ensemble should come before the end year of the ensemble")
+    if (!is.null(settings$ensemble$start.year) && !is.null(settings$ensemble$end.year) &&
+      settings$ensemble$start.year > settings$ensemble$end.year) {
+        logger.severe("Start year of ensemble should come before the end year of the ensemble")
     }
   }
   
@@ -533,39 +544,53 @@ check.run.settings <- function(settings, dbcon=NULL) {
       if (is.null(settings$ensemble$variable)) {
         logger.severe("No variable specified to compute sensitivity.analysis for.")
       }
-      logger.info("Setting sensitivity.analysis variable to the same as ensemble variable [", settings$ensemble$variable, "]")
+      logger.info("Setting sensitivity.analysis variable to the same as ensemble variable [", 
+        settings$ensemble$variable, "]")
       settings$sensitivity.analysis$variable <- settings$ensemble$variable
     }
     
     if(is.null(settings$sensitivity.analysis$start.year)) {
-      if(is.null(settings$ensemble$start.year)) {
+      if(!is.null(settings$run$start.date)) {
         settings$sensitivity.analysis$start.year <- year(settings$run$start.date) 
-        logger.info("No start date passed to sensitivity.analysis - using the run date (", settings$sensitivity.analysis$start.date, ").")
-      } else { 
+        logger.info("No start date passed to sensitivity.analysis - using the run date (",
+          settings$sensitivity.analysis$start.year, ").")
+      } else if(!is.null(settings$ensemble$start.year)) {
         settings$sensitivity.analysis$start.year <- settings$ensemble$start.year 
-        logger.info("No start date passed to sensitivity.analysis - using the ensemble date (", settings$sensitivity.analysis$start.date, ").")
+        logger.info("No start date passed to sensitivity.analysis - using the ensemble date (", 
+          settings$sensitivity.analysis$start.year, ").")
+      } else {
+        logger.info("No start date passed to sensitivity.analysis, and no default available.")
       }
     }
     
     if(is.null(settings$sensitivity.analysis$end.year)) {
-      if(is.null(settings$ensemble$end.year)) {
+      if(!is.null(settings$run$end.date)) {
         settings$sensitivity.analysis$end.year <- year(settings$run$end.date) 
-        logger.info("No end date passed to sensitivity.analysis - using the run date (", settings$sensitivity.analysis$end.date, ").")
-      } else { 
+        logger.info("No end date passed to sensitivity.analysis - using the run date (", 
+          settings$sensitivity.analysis$end.year, ").")
+      } else if(!is.null(settings$ensemble$end.year)){ 
         settings$sensitivity.analysis$end.year <- settings$ensemble$end.year 
-        logger.info("No end date passed to sensitivity.analysis - using the ensemble date (", settings$sensitivity.analysis$end.date, ").")
+        logger.info("No end date passed to sensitivity.analysis - using the ensemble date (", 
+          settings$sensitivity.analysis$end.year, ").")
+      } else {
+        logger.info("No end date passed to sensitivity.analysis, and no default available.")
       }
     }
     
+    
     # check start and end dates
-    if (year(startdate) > settings$sensitivity.analysis$start.year) {
-      logger.severe("Start year of sensitivity.analysis should come after the start.date of the run")
+    if (exists("startdate") && !is.null(settings$sensitivity.analysis$start.year) &&
+      year(startdate) > settings$sensitivity.analysis$start.year) {
+        logger.severe("Start year of SA should come after the start.date of the run")
     }
-    if (year(enddate) < settings$sensitivity.analysis$end.year) {
-      logger.severe("End year of sensitivity.analysis should come before the end.date of the run")
+    if (exists("enddate") && !is.null(settings$sensitivity.analysis$end.year) &&
+      year(enddate) < settings$sensitivity.analysis$end.year) {
+        logger.severe("End year of SA should come before the end.date of the run")
     }
-    if (settings$sensitivity.analysis$start.year > settings$sensitivity.analysis$end.year) {
-      logger.severe("Start year of sensitivity.analysis should come before the end year of the ensemble")
+    if (!is.null(settings$sensitivity.analysis$start.year) && 
+      !is.null(settings$sensitivity.analysis$end.year) &&
+      settings$sensitivity.analysis$start.year > settings$sensitivity.analysis$end.year) {
+        logger.severe("Start year of SA should come before the end year of the SA")
     }
   }
   
@@ -738,7 +763,7 @@ check.workflow.settings <- function(settings, dbcon=NULL) {
   if(!is.null(dbcon) && settings$database$bety$write && ("model" %in% names(settings))) {
     if (!'workflow' %in% names(settings)) {
       now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-      if(is.SettingsList(settings)) {
+      if(is.MultiSettings(settings)) {
         db.query(paste0("INSERT INTO workflows (folder, model_id, hostname, started_at, created_at) values ('",
                       settings$outdir, "','" , settings$model$id, "', '", settings$host$name, "', '",
                       now, "', '", now, "')"), con=dbcon)
@@ -1184,8 +1209,8 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.CHECKED.x
   }
 
   ## convert the xml to a list
-  global.settings <- xmlToList(xml)
-  settings <- parse.global.settings(global.settings)
+  settings <- xmlToList(xml)
+  settings <- expandMultiSettings(settings)
   
   settings <- papply(settings, fix.deprecated.settings)
   settings <- papply(settings, addSecrets)

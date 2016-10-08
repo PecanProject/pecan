@@ -470,6 +470,13 @@ if [ ! -e ${HOME}/inputs ]; then
   rm inputs.tgz
 fi
 
+if [ ! -e ${HOME}/lpj-guess/cru_1901_2006.bin ]; then
+  if [ ! -d ${HOME}/lpj-guess ]; then
+    mkdir ${HOME}/lpj-guess
+  fi
+  curl -s -o ${HOME}/lpj-guess/cru_1901_2006.bin http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/cru_1901_2006.bin
+fi
+
 if [ ! -e ${HOME}/plot ]; then
   curl -s -o plot.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/plot.tgz
   tar zxf plot.tgz

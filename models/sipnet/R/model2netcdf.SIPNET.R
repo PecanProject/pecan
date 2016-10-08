@@ -88,6 +88,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[[17]] <- (sub.sipnet.output$soilWetnessFrac)         # Fractional soil wetness
     output[[18]] <- (sub.sipnet.output$snow * 10)                 # SWE
     output[[19]] <- sub.sipnet.output$litter * 0.001 ## litter kgC/m2
+
           
     #******************** Declare netCDF variables ********************#
     t <- ncdim_def(name = "time",
@@ -129,6 +130,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     var[[17]]  <- mstmipvar("SoilMoistFrac", lat, lon, t, NA)
     var[[18]]  <- mstmipvar("SWE", lat, lon, t, NA)
     var[[19]]  <- mstmipvar("Litter", lat, lon, t, NA)
+
    
     #******************** Declar netCDF variables ********************#
     

@@ -33,12 +33,12 @@ assim.batch <- function(settings) {
 
 ##' @export
 runModule.assim.batch <- function(settings) {
-  if(is.SettingsList(settings)) {
+  if(is.MultiSettings(settings)) {
     return(papply(settings, runModule.assim.batch))
   } else if (is.Settings(settings)) {
     return( assim.batch(settings) )
   } else {
-    stop("runModule.assim.batch only works with Settings or SettingsList")
+    stop("runModule.assim.batch only works with Settings or MultiSettings")
   }
 }
 
@@ -382,12 +382,13 @@ pda.define.prior.fn <- function(prior) {
 ##'
 ##' @author Ryan Kelly
 ##' @export
-pda.init.params <- function(settings, con, pname, n.param.all) {
+pda.init.params <- function(settings, chain, pname, n.param.all) {
   ## Load params from previous run, if provided. 
-  if(!is.null(settings$assim.batch$params.id)) {
-    params.db <- db.query(paste0("SELECT * FROM dbfiles WHERE id = ", settings$assim.batch$params.id), con)
-    load(file.path(params.db$file_path, params.db$file_name)) # loads params
+  if(!is.null(settings$assim.batch$extension)) {
 
+    load(settings$assim.batch$mcmc.path) # loads params
+    params <- mcmc.list[[chain]]
+    
     start  <- nrow(params) + 1
     finish <- nrow(params) + as.numeric(settings$assim.batch$iter)
     params <- rbind(params, matrix(NA, finish - start + 1, n.param.all))
@@ -499,20 +500,26 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
 ##'
 ##' @author Ryan Kelly
 ##' @export
-pda.adjust.jumps <- function(settings, accept.rate, pnames=NULL) {
+pda.adjust.jumps <- function(settings, jmp.list, accept.rate, pnames=NULL) {
   logger.info(paste0("Acceptance rates were (", 
                     paste(pnames, collapse=", "), ") = (", 
                     paste(round(accept.rate/settings$assim.batch$jump$adapt,3), 
                       collapse=", "), ")"))
-  logger.info(paste0("Using jump variances (", 
-                    paste(round(unlist(settings$assim.batch$jump$jvar),3), collapse=", "), ")"))
+  # logger.info(paste0("Using jump variances (", 
+  #                   paste(round(unlist(settings$assim.batch$jump$jvar),3), collapse=", "), ")"))
 
+  logger.info(paste0("Old jump variances were (", 
+                     paste(round(jmp.list,3), collapse=", "), ")"))
+  
   adj <- accept.rate / settings$assim.batch$jump$adapt / settings$assim.batch$jump$ar.target
   adj[adj < settings$assim.batch$jump$adj.min] <- settings$assim.batch$jump$adj.min
-  settings$assim.batch$jump$jvar <- as.list(unlist(settings$assim.batch$jump$jvar) * adj)
+  # settings$assim.batch$jump$jvar <- as.list(unlist(settings$assim.batch$jump$jvar) * adj)
+  # logger.info(paste0("New jump variances are (", 
+  #                   paste(round(unlist(settings$assim.batch$jump$jvar),3), collapse=", "), ")"))
+  jmp.list <- jmp.list * adj
   logger.info(paste0("New jump variances are (", 
-                    paste(round(unlist(settings$assim.batch$jump$jvar),3), collapse=", "), ")"))
-  return(settings)
+                                        paste(round(jmp.list,3), collapse=", "), ")"))
+  return(jmp.list)
 }
 
 
@@ -614,10 +621,10 @@ pda.get.model.output <- function(settings, run.id, inputs) {
   
     # seq.POSIXt returns class "POSIXct"
     # the model output is since the beginning of the year but 'settings$run$start.date' may not be the first day of the year, using lubridate::floor_date
-    model$posix <- seq.POSIXt(from = lubridate::floor_date(as.POSIXct(settings$run$start.date), "year"), by = diff(model.secs)[1], length.out = length(model$time))
+    model$posix <- seq.POSIXt(from = lubridate::floor_date(as.POSIXlt(settings$run$start.date, tz="GMT"), "year"), by = diff(model.secs)[1], length.out = length(model$time))
   
     dat <- align.data(model_full = model, obvs_full = inputs[[k]]$data, dat_vars = vars.used, 
-                      start_year = start.year, end_year = end.year)
+                      start_year = start.year, end_year = end.year, align_method = inputs[[k]]$align.method)
   
     model.out[[k]] <- dat[,colnames(dat) %in% paste0(vars.used,".m"), drop = FALSE]
     colnames(model.out[[k]]) <- vars.used
@@ -676,23 +683,11 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
   for(i in seq_along(settings$pfts)){
     params.subset[[i]]  <- as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
     
-    if(settings$assim.batch$chain > 1){
+    burnin <- getBurnin(params.subset[[i]])
       
-      GBR <- gelman.plot(params.subset[[i]])
-      iters <- apply(GBR$shrink[,,2,drop=FALSE], 2, function(x) which(x > 1.1)[length(which(x > 1.1))])
-      burnin <- GBR$last.iter[iters+1]
-      if(any(is.na(burnin))){
-        logger.info(paste0("*** Chains have not converged yet ***"))
-        burnin[is.na(burnin)] <- 1
-      }
-
-      
-    }else{
-      
-      burnin <- ifelse(!is.null(settings$assim.batch$burnin), 
-                       as.numeric(settings$assim.batch$burnin), 
-                       ceiling(min(2000,0.2*settings$assim.batch$iter)))
-      
+    # rare, but this can happen, better to throw an error than continue, it might lead mis-interpretation of posteriors otherwise
+    if(burnin == nrow(params.subset[[i]][[1]])){
+      logger.severe(paste0("*** Burn-in is the same as the length of the chain, please run a longer chain ***"))
     }
 
     params.subset[[i]] <- window(params.subset[[i]], start=max(burnin, na.rm = TRUE))
@@ -722,7 +717,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
     }
     
     if(length(params.subset[[i]])>1 & enough.iter){
-      gelman.plot(params.subset[[i]], auto.layout = FALSE)
+      gelman.plot(params.subset[[i]], auto.layout = FALSE, autoburnin = FALSE)
     }
     
     layout(1)
@@ -780,7 +775,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
 ##'
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.postprocess <- function(settings, con, mcmc.param.list, jvar.list, pname, prior, prior.ind) {
+pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.ind) {
 
   params.subset <- pda.plot.params(settings, mcmc.param.list, prior.ind)
 
@@ -915,9 +910,9 @@ pda.settings.bt <- function(settings){
   
   iterations = as.numeric(settings$assim.batch$bt.settings$iter)
   optimize = ifelse(!is.null(settings$assim.batch$bt.settings$optimize), settings$assim.batch$bt.settings$optimize, TRUE)
-  consoleUpdates = ifelse(!is.null(settings$assim.batch$bt.settings$consoleUpdates), as.numeric(settings$assim.batch$bt.settings$consoleUpdates), max(round(iterations/10),100))
+  #consoleUpdates = ifelse(!is.null(settings$assim.batch$bt.settings$consoleUpdates), as.numeric(settings$assim.batch$bt.settings$consoleUpdates), max(round(iterations/10),100))
   adapt = ifelse(!is.null(settings$assim.batch$bt.settings$adapt), settings$assim.batch$bt.settings$adapt, TRUE)
-  adaptationInverval = ifelse(!is.null(settings$assim.batch$bt.settings$adaptationInverval), as.numeric(settings$assim.batch$bt.settings$adaptationInverval), max(round(iterations/100*5),100))
+  #adaptationInverval = ifelse(!is.null(settings$assim.batch$bt.settings$adaptationInverval), as.numeric(settings$assim.batch$bt.settings$adaptationInverval), max(round(iterations/100*5),100))
   adaptationNotBefore = ifelse(!is.null(settings$assim.batch$bt.settings$adaptationNotBefore), as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore), adaptationInverval)
   DRlevels = ifelse(!is.null(settings$assim.batch$bt.settings$DRlevels), as.numeric(settings$assim.batch$bt.settings$DRlevels), 1)
   if(!is.null(settings$assim.batch$bt.settings$gibbsProbabilities)){
@@ -929,11 +924,10 @@ pda.settings.bt <- function(settings){
   
   if(sampler == "Metropolis") {
     bt.settings <- list(iterations = iterations, optimize = optimize, DRlevels = DRlevels, adapt = adapt, 
-                        adaptationInverval = adaptationInverval, adaptationNotBefore = adaptationNotBefore,
-                        gibbsProbabilities = gibbsProbabilities, consoleUpdates = consoleUpdates)
+                        adaptationNotBefore = adaptationNotBefore, gibbsProbabilities = gibbsProbabilities)
   } else if(sampler %in% c("AM", "M", "DRAM", "DR")) {
     bt.settings <- list(iterations = iterations, startValue = "prior")
-  } else if(sampler %in% c("DE", "DEzs","DREAM", "DREAMzs")) {
+  } else if(sampler %in% c("DE", "DEzs","DREAM", "DREAMzs", "Twalk")) {
     bt.settings <- list(iterations = iterations)
   } else if(sampler == "SMC") {
     bt.settings <- list(initialParticles = list("prior", iterations))
