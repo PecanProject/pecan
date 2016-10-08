@@ -576,8 +576,9 @@ pda.adjust.jumps.bs <- function(settings, jcov, accept.count, params.recent) {
 ##' @export
 pda.get.model.output <- function(settings, run.id, inputs) {
   
-  require(PEcAn.benchmark)
-  require(lubridate)
+  library(PEcAn.benchmark)
+  library(lubridate)
+  library(stringi)
 
   input.info <- settings$assim.batch$inputs
 
@@ -589,32 +590,43 @@ pda.get.model.output <- function(settings, run.id, inputs) {
   
   for(k in 1:n.input){
     
-    vars.used <- unlist(input.info[[k]]$variable.name)
+    variable <- unlist(input.info[[k]]$variable.name$model.var)
     
-    # change input variable names (e.g. "LE") to model output variable names (e.g. "Qle")
-    match.table <- read.csv(system.file("bety_mstmip_lookup.csv", package= "PEcAn.DB"), header = T, stringsAsFactors=FALSE)
-    vars.used[vars.used %in% match.table$bety_name] <- match.table$mstmip_name[match.table$bety_name %in% vars.used[vars.used %in% match.table$bety_name]]
-
-    # UST is never in the model outputs
-    vars.used <- vars.used[!vars.used %in% c("UST")]
+    non.match <- gregexpr('[^a-zA-Z_.]', variable) # match characters that are not "a-zA-Z_."
+    split.chars <- unlist(regmatches(variable, non.match)) # where to split at
+    # split the expression to retrieve variable names to be used in read.output
+    model.vars  <- unlist(stri_split_charclass(variable, paste0("[",noquote(paste0(split.chars, collapse="")),"]"), omit_empty = TRUE))
     
     # We also want 'time' from model outputs for aligning step
-    vars <- c("time", vars.used)  
+    vars <- c("time", model.vars)  
     
-    # this is only for FC-NEE as we are using them interchangably when NEE isn't present, e.g. Ameriflux data
-    vars[vars %in% c("FC")] <- "NEE"      # FC - NEE specific hack 1
-    
-    model <- as.data.frame(read.output(run.id, outdir = file.path(settings$host$outdir, run.id),
+    model.raw <- as.data.frame(read.output(run.id, outdir = file.path(settings$host$outdir, run.id),
                                        start.year, end.year, variables = vars))
 
-    if(length(model) == 0) {   # Probably indicates model failed entirely
+    if(length(model.raw) == 0) {   # Probably indicates model failed entirely
       return(NA)
     }
     
-    # FC - NEE specific hack 2: change NEE back to FC only if "FC" was specified in the first place
-    if(any(vars.used %in% c("FC"))) colnames(model)[colnames(model) %in% "NEE"] <- "FC"
-  
-  
+    # calculate the derived variable
+    for(var in seq_along(model.vars)) assign(model.vars[var], model.raw[model.vars[var]])
+    out <- eval(parse(text = variable))
+    
+    model <- data.frame(time = model.raw$time, out)
+    
+    # prepare for the variables that is going to be used in align.data
+    # change data variable names (e.g. "LE") to model output variable names (e.g. "Qle")
+    data.vars <- unlist(input.info[[k]]$variable.name$data.var)
+    match.table <- read.csv(system.file("bety_mstmip_lookup.csv", package= "PEcAn.DB"), header = T, stringsAsFactors=FALSE)
+    data.vars[data.vars %in% match.table$bety_name] <- match.table$mstmip_name[match.table$bety_name %in% data.vars[data.vars %in% match.table$bety_name]]
+    
+    # UST is never in the model outputs
+    data.vars <- data.vars[!data.vars %in% c("UST")]
+    colnames(out) <- data.vars
+    
+    # this is only for FC-NEE as we are using them interchangably when NEE isn't present, e.g. Ameriflux data
+    data.vars[data.vars %in% c("FC")] <- "NEE"      # FC - NEE specific hack 
+    
+    
     ## Handle model time
     # the model output time is in days since the beginning of the year
     model.secs <- ud.convert(model$time, "days" ,"seconds")
@@ -623,11 +635,11 @@ pda.get.model.output <- function(settings, run.id, inputs) {
     # the model output is since the beginning of the year but 'settings$run$start.date' may not be the first day of the year, using lubridate::floor_date
     model$posix <- seq.POSIXt(from = lubridate::floor_date(as.POSIXlt(settings$run$start.date, tz="GMT"), "year"), by = diff(model.secs)[1], length.out = length(model$time))
   
-    dat <- align.data(model_full = model, obvs_full = inputs[[k]]$data, dat_vars = vars.used, 
+    dat <- align.data(model_full = model, obvs_full = inputs[[k]]$data, dat_vars = data.vars, 
                       start_year = start.year, end_year = end.year, align_method = inputs[[k]]$align.method)
   
-    model.out[[k]] <- dat[,colnames(dat) %in% paste0(vars.used,".m"), drop = FALSE]
-    colnames(model.out[[k]]) <- vars.used
+    model.out[[k]] <- dat[,colnames(dat) %in% paste0(data.vars,".m"), drop = FALSE]
+    colnames(model.out[[k]]) <- data.vars
   }
   
   return(model.out)
