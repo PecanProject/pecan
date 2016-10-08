@@ -22,7 +22,7 @@ load.pda.data <- function(settings, con) {
   
   for(i in 1:n.input) {
     inputs[[i]] <- list()
-    inputs[[i]]$variable.name <- input.settings[[i]]$variable.name
+    inputs[[i]]$variable.name <- input.settings[[i]]$variable.name$data.var
     data.path <- input.settings[[i]]$path
 
     inputs[[i]]$variable.id <- input.settings[[i]]$variable.id
