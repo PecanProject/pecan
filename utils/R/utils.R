@@ -553,7 +553,7 @@ as.sequence <- function(x, na.rm = TRUE){
 ##' @return logical - TRUE if remote connection is available 
 ##' @author Rob Kooper
 test.remote <- function(host){
-  return(try(system(paste("ssh", host, "/bin/true"))) == 0)
+  return(try(remote.execute.cmd(host, "/bin/true")) == 0)
 }
 
 ##' Create a temporary settings file
