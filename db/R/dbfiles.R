@@ -30,9 +30,7 @@
 ##' \dontrun{
 ##'   dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
-
 dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
-
   name <- basename(in.path)
   filename <- file.path(in.path, in.prefix)
   
@@ -51,9 +49,12 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     parent <- paste0(" AND parent_id=", parentid)
   }
 
-  # find appropriate input, if not in database, instert new input
-  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND name= '", name, "' AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
-  if (is.null(inputid)) {
+  # find appropriate input, if not in database, insert new input
+  existing.input <- db.query(paste0("SELECT * FROM inputs WHERE site_id=", siteid, " AND name= '", name, 
+    "' AND format_id=", formatid, parent), con)
+
+  
+  if (nrow(existing.input) == 0) {
     # insert input
     if(parent == ""){
       cmd <- paste0("INSERT INTO inputs (site_id, format_id, created_at, updated_at, start_date, end_date, name) VALUES (",
@@ -65,12 +66,53 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     db.query(cmd, con)
     # return input id
     inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
+  } else {
+    if(nrow(existing.input) > 1) {
+      print(existing.input)
+      logger.warn("Multiple existing inputs found. Using last.")
+      existing.input <- existing.input[nrow(existing.input),]
+    }
+    
+    # Convert dates to Date objects and strip all time zones (DB values are timezone-free)
+    startdate <- force_tz(as_date(startdate), 'GMT')
+    enddate <- force_tz(as_date(enddate), 'GMT')
+    existing.input$start_date <- force_tz(as_date(existing.input$start_date), 'GMT')
+    existing.input$end_date <- force_tz(as_date(existing.input$end_date), 'GMT')
+    
+    if(existing.input$start_date != startdate || existing.input$end_date != enddate) {
+      print(existing.input, digits=10)
+      logger.error(paste0(
+        "Duplicate inputs (in terms of site_id, name, and format_id) with differing start/end dates ",
+        "are not allowed. The existing input record printed above would conflict with the one ",
+        "to be inserted, which has requested start/end dates of ", startdate, "/", enddate,
+        "Please resolve this conflict."
+      ))
+      return(NULL)
+    }
+    
+    inputid <- existing.input[['id']]
   }
-
+  
   # find appropriate dbfile, if not in database, insert new dbfile
-
-  dbfileid <- dbfile.check('Input', inputid, con, hostname)[['id']]
-  if(is.null(dbfileid)){
+  dbfile <- dbfile.check('Input', inputid, con, hostname)
+  if(nrow(dbfile) > 0) {
+    if(nrow(dbfile) > 1) {
+      print(dbfile)
+      logger.warn("Multiple dbfiles found. Using last.")
+      dbfile <- dbfile[nrow(dbfile),]
+    }
+    if(dbfile$file_name != in.prefix || dbfile$file_path != in.path) {
+      print(dbfile, digits=10)
+      logger.error(paste0(
+        "The existing dbfile record printed above has the same machine_id and container ",
+        "but a diferent file name than expected (prefix='", in.prefix, "', path=", in.path, ").",
+        "This is not allowed."
+      ))
+      dbfileid <- NA
+    } else {
+      dbfileid <- dbfile[['id']]
+    }
+  } else {
     #insert dbfile & return dbfile id
     dbfileid <- dbfile.insert(in.path, in.prefix, 'Input', inputid, con, reuse=TRUE, hostname)
   }
@@ -100,7 +142,8 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##' \dontrun{
 ##'   dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
-dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
+dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, formatname, parentid=NA, 
+                               con, hostname=fqdn(), ignore.dates=FALSE) {
   if (hostname == "localhost") hostname <- fqdn();
 
   mimetypeid <- get.id('mimetypes', 'type_string', mimetype, con = con)
@@ -122,11 +165,21 @@ dbfile.input.check <- function(siteid, startdate, enddate, mimetype, formatname,
   }
 
   # find appropriate input
-  inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid,
-                             " AND start_date>='", startdate, "' AND end_date<='", enddate, "'", parent,";" ), con)[['id']]
+  if(ignore.dates) {
+    inputid <- db.query(paste0(
+      "SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, parent), con)[['id']]
+  } else {
+    inputid <- db.query(paste0(
+      "SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid,
+      " AND start_date>='", startdate, "' AND end_date<='", enddate, "'", parent), con)[['id']]
+  }
   if (is.null(inputid)) {
     invisible(data.frame())
-  }else{
+  } else {
+    if(length(inputid) > 1) {
+      logger.warn("Found multiple matching inputs. Using last.")
+      inputid <- inputid[length(inputid)]
+    }
     invisible(dbfile.check('Input', inputid, con, hostname))
   }
 }
@@ -250,20 +303,43 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
   # find appropriate host
   hostid <- get.id("machines", colname = "hostname", value = hostname, con, create=TRUE, dates=TRUE)
 
-  # Query for existing dbfile record with same file_name, file_path, and machine_id.
-  file.id <- invisible(db.query(paste0("SELECT * FROM dbfiles WHERE file_name='", basename(in.prefix), "' AND file_path='", in.path, "' AND machine_id='", hostid, "'"), con)[['id']])
+  # Query for existing dbfile record with same file_name, file_path, machine_id, 
+  # container_type, and container_id.
+  dbfile <- invisible(db.query(
+    paste0(
+      "SELECT * FROM dbfiles WHERE ",
+      "file_name='", basename(in.prefix), "' AND ", 
+      "file_path='", in.path, "' AND ", 
+      "machine_id='", hostid, "'"
+    ), con))
 
-  if(is.null(file.id)) {
+  if(nrow(dbfile)==0) {
     # If no exsting record, insert one
     now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
 
-    db.query(paste0("INSERT INTO dbfiles (container_type, container_id, file_name, file_path, machine_id, created_at, updated_at) VALUES (",
-                    "'", type, "', ", id, ", '", basename(in.prefix), "', '", in.path, "', ", hostid, ", '", now, "', '", now, "')"), con)
+    db.query(paste0("INSERT INTO dbfiles ",
+      "(container_type, container_id, file_name, file_path, machine_id, created_at, updated_at) VALUES (",
+      "'", type, "', ", id, ", '", basename(in.prefix), "', '", in.path, "', ", hostid, 
+      ", '", now, "', '", now, "')"), con)
 
-    file.id <- invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND created_at='", now, "' ORDER BY id DESC LIMIT 1"), con)[['id']])
+    file.id <- invisible(db.query(paste0(
+      "SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, 
+      " AND created_at='", now, "' ORDER BY id DESC LIMIT 1"), con)[['id']])
   } else if(!reuse) {
     # If there is an existing record but reuse==FALSE, return NA.
     file.id <- NA
+  } else {
+    if(dbfile$container_type != type || dbfile$container_id != id) {
+      print(dbfile, digits=10)
+      logger.error(paste0(
+        "The existing dbfile record printed above has the same machine_id, file_path, and file_name ",
+        "but is associated with a different input than requested (type='", type, "', id=", id, ").",
+        "This is not allowed."
+      ))
+      file.id <- NA
+    } else {
+      file.id <- dbfile[['id']]
+    }
   }
 
   # Return the new dbfile ID, or the one that existed already (reuse==T), or NA (reuse==F)
@@ -295,7 +371,8 @@ dbfile.check <- function(type, id, con, hostname=fqdn()) {
   if (is.null(hostid)) {
     invisible(data.frame())
   } else {
-    invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, "' AND container_id=", id, " AND machine_id=", hostid), con))
+    invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, 
+                              "' AND container_id=", id, " AND machine_id=", hostid), con))
   }
 }
 

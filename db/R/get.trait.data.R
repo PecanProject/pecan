@@ -83,7 +83,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   traits <- names(trait.data.check)
 
   # check to see if we need to update
-  if ((forceupdate == 'AUTO') || !as.logical(forceupdate)) {
+  if (forceupdate || !as.logical(forceupdate)) {
     if (is.null(pft$posteriorid)) {
       pft$posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " ORDER BY created_at DESC LIMIT 1"), dbcon)[['id']]  
     }
@@ -97,7 +97,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
           if (!file.exists(file.path(files$file_path[[id]], files$file_name[[id]]))) {
             foundallfiles <- FALSE
             logger.error("can not find posterior file: ", file.path(files$file_path[[id]], files$file_name[[id]]))
-          } else if ((forceupdate == 'AUTO') && (files$file_name[[id]] == "species.csv")) {
+          } else if (forceupdate && (files$file_name[[id]] == "species.csv")) {
             logger.debug("Checking if species have changed")
             testme <- read.csv(file.path(files$file_path[[id]], files$file_name[[id]]))
             if (!check.lists(species, testme)) {
@@ -105,7 +105,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
               logger.error("species have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
             }
             remove(testme)
-          } else if ((forceupdate == 'AUTO') && (files$file_name[[id]] == "prior.distns.Rdata")) {
+          } else if (forceupdate && (files$file_name[[id]] == "prior.distns.Rdata")) {
             logger.debug("Checking if priors have changed")
             prior.distns.tmp <- prior.distns
             load(file.path(files$file_path[[id]], files$file_name[[id]]))
@@ -116,7 +116,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
               logger.error("priors have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
             }
             remove(testme)
-          } else if ((forceupdate == 'AUTO') && (files$file_name[[id]] == "trait.data.Rdata")) {
+          } else if (forceupdate && (files$file_name[[id]] == "trait.data.Rdata")) {
             logger.debug("Checking if trait data has changed")
             load(file.path(files$file_path[[id]], files$file_name[[id]]))
 
@@ -255,7 +255,7 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,trait
 ##' @export
 runModule.get.trait.data <- function(settings) {
   if(is.null(settings$meta.analysis)) return(settings) ## if there's no MA, there's no need for traits
-  if(is.SettingsList(settings)) {
+  if(is.MultiSettings(settings)) {
     pfts <- list()
     pft.names <- character(0)
     for(i in seq_along(settings)) {
@@ -284,7 +284,7 @@ runModule.get.trait.data <- function(settings) {
     settings$pfts <- get.trait.data(pfts, modeltype, dbfiles, database, forceupdate)
     return(settings)
   } else {
-    stop("runModule.get.trait.data only works with Settings or SettingsList")
+    stop("runModule.get.trait.data only works with Settings or MultiSettings")
   }
 }
 

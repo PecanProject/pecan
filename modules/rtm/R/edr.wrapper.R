@@ -48,7 +48,7 @@ EDR <- function(paths,
 # Extract paths
 # TODO: Provide option to just a results path with implied file structure
 # (ED2IN, config.xml, history)
-    ed2in.path <- normalizePath(paths$ed2in)
+    ed2in.path <- ifelse(is.na(paths$ed2in), NA, normalizePath(paths$ed2in))
     history.path <- normalizePath(paths$history)
     output.path <- normalizePath(output.path)
 

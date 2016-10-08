@@ -18,3 +18,4 @@
 "17";17;3;17;"Yes";"VegT";"K";"VegT";0;"Carbon Fluxes";"Yes";"Yes";"real";1;"lon";"lat";"time";"na";""
 "18";18;3;18;"Yes";"LeafC";"kg C m-2";"LeafC";0;"Carbon Fluxes";"Yes";"Yes";"real";1;"lon";"lat";"time";"na";""
 "19";19;3;19;"Yes";"Yield";"kg m-2";"Yield";0;"Carbon Fluxes";"Yes";"Yes";"real";1;"lon";"lat";"time";"na";""
+"20";20;3;20;"Yes";"stomatal_conductance";"kg m-2 s-1";"Stomatal Conductance";0;"Energy Fluxes";"Yes";"Yes";"real";1;"lon";"lat";"time";"na";""
