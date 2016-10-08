@@ -49,16 +49,16 @@ allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",int
   library(tools)
   
   if(class(object) == "character"){
-    object = load.allom(object)
+    object <- load.allom(object)
   }   
 
   ## error checking
-  npft = length(object)
+  npft <- length(object)
   if(npft==0){
     print("No PFT objects found")
     return(NA)
   }
-  ncomp = max(sapply(object,length))
+  ncomp <- max(sapply(object,length))
   if(ncomp <= 1){
     print("No COMPONENTS found")
     return(NA)
@@ -84,15 +84,19 @@ allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",int
 
         
   ## build PFT x Component table and convert mcmclist objects to mcmc
-  pftByComp = matrix(NA,npft,ncomp)
+  pftByComp <- matrix(NA,npft,ncomp)
   for(i in 1:npft){
     pftByComp[i,] <- !sapply(object[[i]],is.null)
     for(j in which(pftByComp[i,])){
-      if(is.mcmc.list(object[[i]][[j]])) object[[i]][[j]] = as.mcmc(as.matrix(object[[i]][[j]]))
+      if(is.mcmc.list(object[[i]][[j]])){
+      	object[[i]][[j]] <- as.mcmc(as.matrix(object[[i]][[j]]))
+      }
     }
   }
   ## set and check component
-  if(is.null(component)) component = which.max(apply(pftByComp,2,sum))
+  if(is.null(component)){
+  	component <- which.max(apply(pftByComp,2,sum))
+  }
 #  if(!all(pftByComp[,component])){
   if(!all(unique(pft) %in% names(object)[pftByComp[,component]])){
     print(paste("Missing component",component,"for some PFTs"))
@@ -100,14 +104,18 @@ allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",int
     return(NA)
   }
   ## set use
-  if(length(use)<npft) use = rep(use,npft)
+  if(length(use)<npft){
+  	use <- rep(use,npft)
+  }
   ## set n
   if(is.null(n)){
-    n = min(sapply(object,function(x){
-      y = NA
+    n <- min(sapply(object,function(x){
+      y <- NA
       for(j in seq_along(x)){
-        z = nrow(x[[j]])
-        if(!is.null(z)) y[j]=z
+        z <- nrow(x[[j]])
+        if(!is.null(z)){
+        	y[j]=z
+        }
       }
       return(min(y,na.rm=TRUE))
     }))
@@ -134,7 +142,7 @@ allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",int
       }            
     } else if(interval == "confidence"){
       ##          = confidence -> sample of (mu/Bg)
-      sel = sample.int(nrow(object[[i]][[component]]),n,replace = TRUE)    
+      sel <- sample.int(nrow(object[[i]][[component]]),n,replace = TRUE)    
       if(use[i] == "Bg"){
         params[[i]] <- object[[i]][[component]][sel,c("Bg0","Bg1")]
       } else if(use[i]=="mu"){
@@ -148,17 +156,17 @@ allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",int
       }       
     } else if(interval == "prediction"){
       ##          = prediction -> sample of (mu/Bg), sample of (sigma/Sg), if Bg sample of tau
-      sel = sample.int(nrow(object[[i]][[component]]),n,replace = TRUE)
+      sel <- sample.int(nrow(object[[i]][[component]]),n,replace = TRUE)    
       if(use[i] == "Bg"){
         params[[i]] <- object[[i]][[component]][sel,c("Bg0","Bg1","Sg")]
       } else if(use[i]=="mu"){
         library(mvtnorm)
-        p = object[[i]][[component]][sel,c("mu0","mu1","sigma","tau11","tau12","tau22")] 
+        p <- object[[i]][[component]][sel,c("mu0","mu1","sigma","tau11","tau12","tau22")] 
         ## pre-sample random effect variability
-        mu = matrix(NA,n,2)
+        mu <- matrix(NA,n,2)
         for(j in 1:n){
-          tau = matrix(p[j,c("tau11","tau12","tau12","tau22")],2,2)
-          mu[j,] = rmvnorm(1,p[j,c("mu0","mu1")],tau)
+          tau <- matrix(p[j,c("tau11","tau12","tau12","tau22")],2,2)
+          mu[j,] <- rmvnorm(1,p[j,c("mu0","mu1")],tau)
         }
         params[[i]] <- cbind(mu,p[,"sigma"])
       } else {
@@ -170,20 +178,21 @@ allom.predict <- function(object,dbh,pft=NULL,component=NULL,n=NULL,use="Bg",int
       return(NA)
     }    
   }
-  names(params) = names(object)
+  names(params) <- names(object)
   
   ### perform actual allometric calculation
-  out = matrix(NA,n,length(dbh))
+  out <- matrix(NA,n,length(dbh))
   for(p in unique(pft)){
-    sel = which(pft == p)
-    a = params[[p]][,1]
-    b = params[[p]][,2]
+    sel <- which(pft == p)
+    a <- params[[p]][,1]
+    b <- params[[p]][,2]
     if(ncol(params[[p]])>2){
-      s = sqrt(params[[p]][,3]) ## sigma was originally calculated as a variance, so convert to std dev
-    } else {s = 0}
-    
+    	s <- sqrt(params[[p]][,3]) ## sigma was originally calculated as a variance, so convert to std dev
+    } else {
+    	s <- 0
+    }
     for(i in sel){
-      out[,i]=exp(rnorm(n,a+b*log(dbh[i]),s))
+      out[,i] <- exp(rnorm(n,a+b*log(dbh[i]),s))
     }
     
     # for a dbh time-series for a single tree, fix error for each draw
@@ -231,9 +240,9 @@ load.allom <- function(object){
   for(i in seq_along(object)){
     
     if(tolower(file_ext(object[i])) == "rdata"){
-      my.files = object[i]
+      my.files <- object[i]
     } else {
-      my.files = dir(object[i],"Allom.*.Rdata",full.names = TRUE)
+      my.files <- dir(object[i],"Allom.*.Rdata",full.names = TRUE)
     }
     ## Need to add a 3rd option if the files are remotely on Dropbox
     ## download.file(object,"foo.Rdata",method="curl") works for a single file
@@ -241,28 +250,30 @@ load.allom <- function(object){
     
     for(j in seq_along(my.files)){
       ## parse file name  
-      my.name = basename(my.files[j])
-      my.name.parts = strsplit(my.name,split = ".",fixed=TRUE)[[1]]
-      my.pft  = my.name.parts[length(my.name.parts)-2]
-      my.comp = as.numeric(my.name.parts[length(my.name.parts)-1])
+      my.name <- basename(my.files[j])
+      my.name.parts <- strsplit(my.name,split = ".",fixed=TRUE)[[1]]
+      my.pft  <- my.name.parts[length(my.name.parts)-2]
+      my.comp <- as.numeric(my.name.parts[length(my.name.parts)-1])
       
       ## load file itself
       if(my.pft %in% names(tmp)){
-        k = which(names(tmp) == my.pft)
+        k <- which(names(tmp) == my.pft)
       } else {
-        k = length(tmp)+1
-        tmp[[k]] = list()
-        names(tmp)[k] = my.pft
+        k <- length(tmp)+1
+        tmp[[k]] <- list()
+        names(tmp)[k] <- my.pft
       }
       load(my.files[j])
-      tmp[[k]][[my.comp]] = mc
+      tmp[[k]][[my.comp]] <- mc
     }
   }
   
   ## convert mcmclist objects to mcmc
   for(i in 1:length(tmp)){
     for(j in which(!sapply(tmp[[i]],is.null))){
-      if(is.mcmc.list(tmp[[i]][[j]])) tmp[[i]][[j]] = as.mcmc(as.matrix(tmp[[i]][[j]]))
+      if(is.mcmc.list(tmp[[i]][[j]])){
+      	tmp[[i]][[j]] <- as.mcmc(as.matrix(tmp[[i]][[j]]))
+      }
     }
   }
   

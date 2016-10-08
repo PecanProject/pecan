@@ -30,23 +30,23 @@ read.allom.data <- function(pft.data, component, field, parm,nsim=10000) {
   ## FIELD DATA ------------------------------------------------
   
   if(!is.null(field)){
-    allom$field = list()        
+    allom$field <- list()        
     for(i in 1:length(field)){
       
       ## load data
       dat <- read.csv(field[i])
       
       ## grab the response component
-      y = switch(as.character(component),
+      y <- switch(as.character(component),
                  '40' = dat$Ht,
                  '43' = dat$Ca
       )
       
       ## if it exists, grab the other columns
       if(!is.null(y)){
-        spp = dat$spp
-        x = dat$Dia
-        entry = data.frame(x,y,spp)
+        spp <- dat$spp
+        x <- dat$Dia
+        entry <- data.frame(x,y,spp)
         
         ## match spp to PFT
         spp2pft <- match(dat$spp,pft.data$acronym)
@@ -54,7 +54,7 @@ read.allom.data <- function(pft.data, component, field, parm,nsim=10000) {
         
         ## insert each species separately
         for(s in unique(entry$spp)){
-          sel = which(entry$spp == s)
+          sel <- which(entry$spp == s)
           allom$field[[length(allom$field)+1]] <- entry[sel,]
         }
       } ## end Y data exists
@@ -67,7 +67,7 @@ read.allom.data <- function(pft.data, component, field, parm,nsim=10000) {
   
   
   if(!is.null(parm)){
-    allom$parm = read.csv(parm,skip=2,as.is=TRUE)
+    allom$parm <- read.csv(parm,skip=2,as.is=TRUE)
 
     ## debugging hack
   ##allom$parm <- read.csv("/home/mdietze/stats/AllomAve/Table3_GTR-NE-319.csv",skip=2)
@@ -88,10 +88,10 @@ read.allom.data <- function(pft.data, component, field, parm,nsim=10000) {
     sel <- sel[!is.na(allompft[sel])]
     
     ## eliminate entries that lack an error estimate
-    R2 = apply(rbind(nu(allom$parm$R2[sel]),nu(allom$parm$r[sel])^2),2,max)
+    R2 <- apply(rbind(nu(allom$parm$R2[sel]),nu(allom$parm$r[sel])^2),2,max)
     R2[R2 == 0] <- NA
     sel <- sel[!is.na(R2)]
-    spp = allompft[sel]
+    spp <- allompft[sel]
     
     ## check and make sure we have data and can continue
     if(sum(!is.na(allompft)) == 0 | length(sel) == 0){      
@@ -124,7 +124,7 @@ read.allom.data <- function(pft.data, component, field, parm,nsim=10000) {
     nt <- sum(n)  ## total sample size
     
     ## data error
-    R2 = apply(rbind(nu(allom$parm$R2[sel]),nu(allom$parm$r[sel])^2),2,max)
+    R2 <- apply(rbind(nu(allom$parm$R2[sel]),nu(allom$parm$r[sel])^2),2,max)
     R2[R2 == 0] <- NA
     
     ## bias correction factor (multiplicative)
@@ -158,52 +158,62 @@ read.allom.data <- function(pft.data, component, field, parm,nsim=10000) {
     Rratio <- (1-R2)/R2
     for(i in 1:length(sel)){
       
-      x = runif(nsim,rng[1,i],rng[2,i])
+      x <- runif(nsim,rng[1,i],rng[2,i])
       if(!is.na(Xcor[i])){
-        x = Xcor[i]*x
+        x <- Xcor[i]*x
       } else {
         if(Xtype[i] == "d.b.h.^2"){
           ## convert to sq inches
-          x = x*x/(2.54*2.54)
+          x <- x*x/(2.54*2.54)
         } else {
-          x = x*x*pi/4 ## convert to cm Basal Area
+          x <- x*x*pi/4 ## convert to cm Basal Area
         }
       }
       if(eqn[i] == 1){
-        if(b[i] == 0 & c[i] > 0) b[i] = 1
-        if(c[i] == 0 & b[i] > 0) c[i] = 1
-        y = a[i] + b[i]*c[i]*log10(x)
+        if(b[i] == 0 & c[i] > 0){
+        	b[i] <- 1
+		}
+        if(c[i] == 0 & b[i] > 0){
+        	c[i] <- 1
+        }
+        y <- a[i] + b[i]*c[i]*log10(x)
       } else if(eqn[i] == 2){
-        if(is.na(d[i]) | d[i] == 0) d[i] <- 1
-        y = a[i] + b[i]*x + c[i]*d[i]*log(x)
+        if(is.na(d[i]) | d[i] == 0){
+        	d[i] <- 1
+		}
+        y <- a[i] + b[i]*x + c[i]*d[i]*log(x)
       } else if(eqn[i] == 3){
-        y = a[i] + b[i]*log(x) + c[i]*(d[i]+(e[i]*log(x)))
+        y <- a[i] + b[i]*log(x) + c[i]*(d[i]+(e[i]*log(x)))
       } else if(eqn[i] == 4){
-        if(is.na(d[i])) d[i] <- 0
-        y = a[i] + b[i]*x + c[i]*x^d[i]
+        if(is.na(d[i])){
+        	d[i] <- 0
+		}
+        y <- a[i] + b[i]*x + c[i]*x^d[i]
       } else if(eqn[i] == 5){
-        y = a[i] + b[i]*x + c[i]*x^2 + d[i]*x^3
+        y <- a[i] + b[i]*x + c[i]*x^2 + d[i]*x^3
       } else if(eqn[i] == 6){
-        y = a[i] *(exp( b[i] + (c[i]*log(x)) + d[i]*x))
+        y <- a[i] *(exp( b[i] + (c[i]*log(x)) + d[i]*x))
       } else if(eqn[i] == 7){
-        y = a[i] + ((b[i]*(x^c[i]))/((x^c[i])+ d[i]))
+        y <- a[i] + ((b[i]*(x^c[i]))/((x^c[i])+ d[i]))
       } else if(eqn[i] == 8){
-        y = a[i] + b[i]*log10(x)
+        y <- a[i] + b[i]*log10(x)
       }else if(eqn[i] == 9){
-        y = log(a[i]) + b[i]*log(x)
+        y <- log(a[i]) + b[i]*log(x)
       }else if(eqn[i] == 10){
-        y = a[i] + b[i]*log(x)
+        y <- a[i] + b[i]*log(x)
       }else if(eqn[i] == 11){
-        if(is.na(b[i])) b[i] <- 0
-        y = a[i]*x^(b[i])
+        if(is.na(b[i])){
+        	b[i] <- 0
+		}
+        y <- a[i]*x^(b[i])
       }
 
-      se[i] = sqrt(Rratio[i]*var(y))
+      se[i] <- sqrt(Rratio[i]*var(y))
       ## note: y is not units corrected because SE needs to be
       ## in original units, same as the other parms
     }
-    Xmin = rng[1,]
-    Xmax = rng[2,]
+    Xmin <- rng[1,]
+    Xmax <- rng[2,]
     
     allomParms <- as.data.frame(cbind(a,b,c,d,e,se,R2,Rratio,cf,eqn,n,Xmin,Xmax,Xcor,Ycor,Xtype,cite,spp))
     

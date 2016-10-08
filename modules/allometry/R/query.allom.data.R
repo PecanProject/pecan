@@ -81,7 +81,7 @@ nu <- function(x){as.numeric(as.character(x))}
 #'  converts mass units TO kg FROM specificed units
 AllomUnitCoef <- function(x,tp=NULL){
 
-  y = rep(1,length(x))
+  y <- rep(1,length(x))
 
   for(i in 1:length(x)){
     y[i] <- switch(x[i],
@@ -97,8 +97,12 @@ AllomUnitCoef <- function(x,tp=NULL){
                    )
     ## variable type corrections
     if(!is.null(tp)){
-      if(tp[i] == 'd.b.h.^2') y[i] <- NA
-      if(tp[i] %in% c('cbh','crc')) y[i] <- y[i]*pi
+      if(tp[i] == 'd.b.h.^2'){
+    	y[i] <- NA
+      }
+      if(tp[i] %in% c('cbh','crc')){
+    	y[i] <- y[i]*pi
+      }
     }
   }  
   return(as.numeric(y))
