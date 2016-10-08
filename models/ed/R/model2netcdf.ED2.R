@@ -42,8 +42,10 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
   }
   
   ## set up storage
+  block <- 4 # assumes 6-hourly
   ##block <- 24 # assumes hourly  
-  block <- 48 # assumes half-hourly  # Need to generalize (SPS)
+  ##block <- 48 # assumes half-hourly  # Need to generalize (SPS)
+
  
   add <- function(dat, col, row, year) {
     ## data is always given for whole year, except it will start always at 0

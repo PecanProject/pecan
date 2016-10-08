@@ -13,6 +13,7 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     access diverse climate data sets.
 Depends:
     PEcAn.utils,
+    PEcAn.DB,
     ncdf4,
     udunits2,
     ggplot2,
