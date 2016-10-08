@@ -17,8 +17,8 @@ align.data <- function(model_full, obvs_full, dat_vars, start_year, end_year, al
   
   fcn <- match.fun(align_method)
   
-  rng_model <- range(model_full$posix)
-  rng_obvs <- range(obvs_full$posix)
+  rng_model <- range(model_full$posix, na.rm = TRUE)
+  rng_obvs <- range(obvs_full$posix, na.rm = TRUE)
   rng_dat <- sort(c(rng_obvs, rng_model))[c(2,3)]
   
   model <- model_full[model_full$posix >= rng_dat[1] & model_full$posix <= rng_dat[2],]

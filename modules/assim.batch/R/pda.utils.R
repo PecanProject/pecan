@@ -611,8 +611,6 @@ pda.get.model.output <- function(settings, run.id, inputs) {
     for(var in seq_along(model.vars)) assign(model.vars[var], model.raw[model.vars[var]])
     out <- eval(parse(text = variable))
     
-    model <- data.frame(time = model.raw$time, out)
-    
     # prepare for the variables that is going to be used in align.data
     # change data variable names (e.g. "LE") to model output variable names (e.g. "Qle")
     data.vars <- unlist(input.info[[k]]$variable.name$data.var)
@@ -621,11 +619,12 @@ pda.get.model.output <- function(settings, run.id, inputs) {
     
     # UST is never in the model outputs
     data.vars <- data.vars[!data.vars %in% c("UST")]
-    colnames(out) <- data.vars
-    
+
     # this is only for FC-NEE as we are using them interchangably when NEE isn't present, e.g. Ameriflux data
     data.vars[data.vars %in% c("FC")] <- "NEE"      # FC - NEE specific hack 
     
+    colnames(out) <- data.vars
+    model <- data.frame(time = model.raw$time, out)
     
     ## Handle model time
     # the model output time is in days since the beginning of the year
