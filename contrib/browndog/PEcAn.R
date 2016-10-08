@@ -69,14 +69,17 @@ if(length(site) < 0){
 }
 db.close(con)
 
-if (grepl("\\.ed.zip$", outputfile) ){
-  model      <- ifelse(is.null(input$model), 'ED2', input$model)
-} else if (grepl("\\.cf$", outputfile)) {
-  model      <- ifelse(is.null(input$model), 'LINKAGES', input$model)
-} else if (grepl("\\.clim$", outputfile)){
-  model      <- ifelse(is.null(input$model), 'SIPNET', input$model)
-} else {
-  model      <- ifelse(is.null(input$model), 'BIOCRO', input$model)
+# if no model specified make a guess based on the output requested
+if (is.null(input$model)) {
+  if (grepl("\\.ed.zip$", outputfile) ){
+    model      <- 'ED2'
+  } else if (grepl("\\.cf$", outputfile)) {
+    model      <- 'LINKAGES'
+  } else if (grepl("\\.clim$", outputfile)){
+    model      <- 'SIPNET'
+  } else {
+    model      <- 'BIOCRO'
+  }
 }
 mettype    <- ifelse(is.null(input$type), 'CRUNCEP', input$type)
 input_met <- list(username = "pecan", source = mettype)
