@@ -73,8 +73,10 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
     if(!exists("sa.run.ids"))   sa.run.ids <- runs.samples$sa
     
     ### Load parsed model results
-    fname <- sensitivity.filename(settings, "sensitivity.output", "Rdata", all.var.yr=FALSE,
-      ensemble.id=ensemble.id, variable=variable, start.year=start.year, end.year=end.year)
+    var_names <- convert.expr(variable)
+    var_name <- paste0(var_names, collapse = "_")
+    fname <- sensitivity.filename(settings, "sensitivity.output", "Rdata", all.var.yr = FALSE,
+      ensemble.id = ensemble.id, variable = var_name, start.year = start.year, end.year = end.year)
     load(fname)
 
     ### Generate SA output and diagnostic plots
@@ -114,7 +116,7 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
         ### Plotting - Optional
         if(plot){
           fname <- sensitivity.filename(settings, "sensitivity.analysis", "pdf", 
-            all.var.yr=FALSE, pft=pft$name, ensemble.id=ensemble.id, variable=variable,
+            all.var.yr=FALSE, pft=pft$name, ensemble.id=ensemble.id, variable=var_name,
             start.year=start.year, end.year=end.year)
           
           ### Generate SA diagnostic plots
@@ -132,7 +134,7 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
           vd.plots <- plot.variance.decomposition(sensitivity.results[[pft$name]]$variance.decomposition.output)
           #variance.scale = log, variance.prefix='Log')
           fname <- sensitivity.filename(settings, "variance.decomposition", "pdf", 
-            all.var.yr=FALSE, pft=pft$name, ensemble.id=ensemble.id, variable=variable,
+            all.var.yr=FALSE, pft=pft$name, ensemble.id=ensemble.id, variable=var_name,
             start.year=start.year, end.year=end.year)
 
           pdf(fname, width = 11, height = 8)
@@ -143,7 +145,7 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
     }  ## end if sensitivity analysis
 
     fname <- sensitivity.filename(settings, "sensitivity.results", "Rdata", 
-      all.var.yr=FALSE, pft=NULL, ensemble.id=ensemble.id, variable=variable,
+      all.var.yr=FALSE, pft=NULL, ensemble.id=ensemble.id, variable=var_name,
       start.year=start.year, end.year=end.year)
 
     save(sensitivity.results, file = fname)

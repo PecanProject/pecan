@@ -646,6 +646,25 @@ misc.are.convertible <- function(u1, u2){
   }
 }
 
+
+##' Convert expression to variable names
+##' @title convert.expr
+##' @param expr expression string
+##' @return variables variable names
+##' @export
+##' @author Istem Fer
+convert.expr <- function(expr){
+  
+  library(stringi)
+  
+  non.match <- gregexpr('[^a-zA-Z_.]', expr) # match characters that are not "a-zA-Z_."
+  split.chars <- unlist(regmatches(expr, non.match)) # where to split at
+  # split the expression to retrieve variable names to be used in read.output
+  variables <- unlist(stri_split_charclass(expr, paste0("[",noquote(paste0(split.chars, collapse="")),"]"), omit_empty = TRUE))
+  
+  return(variables)
+}
+
 ####################################################################################################
 ### EOF.  End of R script file.              
 ####################################################################################################
