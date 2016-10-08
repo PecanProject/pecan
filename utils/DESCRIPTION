@@ -20,6 +20,7 @@ Depends:
     XML,
     ggplot2,
     randtoolbox,
+    stringi,
     RCurl
 Suggests:
     coda,
