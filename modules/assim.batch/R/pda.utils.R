@@ -592,11 +592,8 @@ pda.get.model.output <- function(settings, run.id, inputs) {
     
     variable <- unlist(input.info[[k]]$variable.name$model.var)
     
-    non.match <- gregexpr('[^a-zA-Z_.]', variable) # match characters that are not "a-zA-Z_."
-    split.chars <- unlist(regmatches(variable, non.match)) # where to split at
-    # split the expression to retrieve variable names to be used in read.output
-    model.vars  <- unlist(stri_split_charclass(variable, paste0("[",noquote(paste0(split.chars, collapse="")),"]"), omit_empty = TRUE))
-    
+    model.vars <- convert.expr(variable)
+
     # We also want 'time' from model outputs for aligning step
     vars <- c("time", model.vars)  
     
