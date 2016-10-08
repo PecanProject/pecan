@@ -40,15 +40,9 @@ load.pda.data <- function(settings, con) {
     
     vars.used.index <- which(format$vars$bety_name %in% c(inputs[[i]]$variable.name))
     
-    if(format$file_name == "AmeriFlux.level2.h.nc"){
-      time.row <- NULL
-    }else{
-      time.row <- which(format$vars$bety_name %in% c("year", "month", "week", "day", "hour", "minute", "second"))
-    }
-    
     inputs[[i]]$data <- load.data(data.path, format, start_year = year(settings$run$start.date), 
                                   end_year = year(settings$run$end.date), site = settings$run$site, 
-                                  vars.used.index, time.row)
+                                  vars.used.index, time.row = format$time.row)
     
     ## Preprocess data
     # TODO: Generalize
