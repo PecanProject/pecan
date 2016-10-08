@@ -1,11 +1,15 @@
 #!/usr/bin/env Rscript
 #-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.  All rights reserved. This program and the accompanying materials are made
-# available under the terms of the University of Illinois/NCSA Open Source License which accompanies this distribution, and is
-# available at http://opensource.ncsa.illinois.edu/license.html
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-# ---------------------------------------------------------------------- Load required libraries
+# ----------------------------------------------------------------------
+# Load required libraries
 # ----------------------------------------------------------------------
 library(PEcAn.all)
 library(RCurl)
@@ -74,8 +78,10 @@ options(error = quote({
 }))
 
 
-# ---------------------------------------------------------------------- PEcAn Workflow
-# ---------------------------------------------------------------------- Open and read in settings file for PEcAn run.
+# ---------------------------------------------------------------------- 
+# PEcAn Workflow
+# ---------------------------------------------------------------------- 
+# Open and read in settings file for PEcAn run.
 args <- commandArgs(trailingOnly = TRUE)
 # if (is.na(args[1])){ settings <- read.settings('pecan.xml') } else { settings.file = args[1] settings <-
 # read.settings(settings.file) }
