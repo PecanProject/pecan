@@ -22,10 +22,12 @@
 ##' @param end.year last year to include in sensitivity analysis
 ##' @param variables variables to be read from model output
 ##' @export
-##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze
+##' @author Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze, Istem Fer
 #--------------------------------------------------------------------------------------------------#
 read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='', 
                            start.year, end.year, variable, sa.run.ids=NULL){
+  
+  library(stringi)
   
   if (is.null(sa.run.ids)) {
     samples.file <- file.path(pecandir, 'samples.Rdata')
@@ -43,9 +45,25 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='',
   for(trait in traits){
     for(quantile in quantiles){
       run.id <- sa.run.ids[[pft.name]][quantile, trait]
-      out <- read.output(run.id, file.path(outdir, run.id),
-                         start.year, end.year, variable)
-      sa.output[quantile, trait] <- sapply(out, mean, na.rm=TRUE)
+      
+      # if analysis on a derived variable is requested these lines will split them to variable names that can be read by read.input
+      # e.g. 2*Total_C+Litter.Carbon  :  Currently allows underscore and period separated names
+      variable <- unlist(variable)
+      non.match <- gregexpr('[^a-zA-Z_.]', variable) # match characters that are not "a-zA-Z_."
+      split.chars <- unlist(regmatches(variable, non.match)) # where to split at
+      # split the expression to retrieve variable names to be used in read.output
+      variables <- unlist(stri_split_charclass(variable, paste0("[",noquote(paste0(split.chars, collapse="")),"]"), omit_empty = TRUE))
+      
+      for(var in seq_along(variables)){
+        out.tmp <- read.output(run.id, file.path(outdir, run.id), start.year, end.year, variables[var])
+        assign(variables[var], out.tmp[[variables[var]]])
+      }
+      
+      # derivation
+      out <- eval(parse(text = variable))
+      
+      sa.output[quantile, trait] <- mean(out, na.rm=TRUE)
+
     } ## end loop over quantiles
     logger.info("reading sensitivity analysis output for model run at ", quantiles, "quantiles of trait", trait)
   } ## end loop over traits
