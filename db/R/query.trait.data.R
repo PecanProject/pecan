@@ -193,6 +193,8 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
 
     #remove temporary covariate column.
     data<-data[,colnames(data)!='temp']
+  } else {
+    data <- NULL
   }
   return(data)
 }
@@ -215,6 +217,8 @@ filter.sunleaf.traits <- function(data, covariates){
     
     # remove temporary covariate column
     data<-data[,colnames(data)!='canopy_layer']
+  } else {
+    data <- NULL
   }
   return(data)
 }
