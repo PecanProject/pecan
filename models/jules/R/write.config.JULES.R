@@ -228,38 +228,45 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
       if (var == "height") {
         names(pft)[v] <- "canht_ft_io"  ## Canopy height, JULES: meters  NOTE: prognostic if TRIFFID is on;  BETY: meters
       }
-      ## c3_io ## C3 photosynthesis = 1; C4 = 0; BETY: unmatched orient_io ## leaf angle distribution. 0
-      ## - Spherical. 1 - Horizontal; BETY: unmatched a_wl_io ## Allometric coefficient relating the
-      ## target woody biomass to the leaf area index (kg carbon m-2); BETY: unmatched possible to
-      ## estimate from wood allometry, leaf allometry, and SLA?  a_ws_io ## Woody biomass as a multiple
-      ## of live stem biomass; BETY: unmatched possible to estimate from DBH allometries?  albsnc_max_io
-      ## ## Snow-covered albedo for large leaf area index.; BETY: unmatched albsnc_min_io ## Snow-covered
-      ## albedo for zero leaf area index.; BETY: unmatched albsnf_max_io ## Snow-free albedo for large
-      ## LAI.; BETY: unmatched link to RTM package albsnf_maxu_io ## Upper bound for the snow-free albedo
-      ## for large LAI, when scaled to match input obs albsnf_maxl_io ## Lower bound for the snow-free
-      ## albedo for large LAI, when scaled to match input obs
+      ## c3_io     ## C3 photosynthesis = 1; C4 = 0;  BETY: unmatched
+      ## orient_io ## leaf angle distribution. 0 - Spherical. 1 - Horizontal;  BETY: unmatched
+      ## a_wl_io   ## Allometric coefficient relating the target woody biomass to the leaf area index (kg carbon m-2); BETY: unmatched
+      ## possible to estimate from wood allometry, leaf allometry, and SLA?
+      ## a_ws_io   ## Woody biomass as a multiple of live stem biomass; BETY: unmatched
+      ## possible to estimate from DBH allometries?
+      ## albsnc_max_io ## Snow-covered albedo for large leaf area index.; BETY: unmatched
+      ## albsnc_min_io ## Snow-covered albedo for zero leaf area index.; BETY: unmatched
+      ## albsnf_max_io ## Snow-free albedo for large LAI.; BETY: unmatched
+      ## link to RTM package
+      ## albsnf_maxu_io ## Upper bound for the snow-free albedo for large LAI, when scaled to match input obs
+      ## albsnf_maxl_io ## Lower bound for the snow-free albedo for large LAI, when scaled to match input obs
       if (var == "quantum_efficiency") {
         names(pft)[v] <- "alpha_io"  ## JULES: mol CO2 per mol PAR photons; BETY: fraction
       }
       if (var == "leaf_reflect_nir") {
         names(pft)[v] <- "alnir_io"  ## Leaf reflection coefficient for NIR
       }
-      ## alniru_io ## Upper limit for the leaf reflection coefficient for NIR alnirl_io ## Lower limit
-      ## for the leaf reflection coefficient for NIR
+      ## alniru_io ## Upper limit for the leaf reflection coefficient for NIR
+      ## alnirl_io ## Lower limit for the leaf reflection coefficient for NIR
       if (var == "leaf_reflect_par")  {
         names(pft)[v] <- "alpar_io"
       }
-      ## alparu_io ## Upper limit for the leaf reflection coefficient for VIS alparl_io ## Lower limit
-      ## for the leaf reflection coefficient for VIS b_wl_io ## Allometric exponent relating the target
-      ## woody biomass to the leaf area index.  catch0_io ## Minimum canopy capacity (kg m-2).
-      ## dcatch_dlai_io ## Rate of change of canopy capacity with LAI (kg m-2).  Canopy capacity is
-      ## calculated as catch0 + dcatch_dlai*lai dgl_dm_io ## Rate of change of leaf turnover rate with
-      ## moisture availability dgl_dt_io ## Rate of change of leaf turnover rate with temperature (K-1)
-      ## dqcrit_io ## Critical humidity deficit (kg H2O per kg air).  dz0v_dh_io ## Rate of change of
-      ## vegetation roughness length for momentum with height.  Roughness length is calculated as dz0v_dh
-      ## * canht_ft eta_sl_io ## Live stemwood coefficient (kg C/m/LAI) fd_io ## Scale factor for dark
-      ## respiration **** look up equation fsmc_of_io ## Moisture availability below which leaves are
-      ## dropped f0_io ## CI / CA for DQ = 0 Minimum turnover rate for leaves (/360days); BETY: year-1
+      ## alparu_io ## Upper limit for the leaf reflection coefficient for VIS
+      ## alparl_io ## Lower limit for the leaf reflection coefficient for VIS
+      ## b_wl_io   ## Allometric exponent relating the target woody biomass to the leaf area index.
+      ## catch0_io ## Minimum canopy capacity (kg m-2).
+      ## dcatch_dlai_io ## Rate of change of canopy capacity with LAI (kg m-2).
+      ## Canopy capacity is calculated as catch0 + dcatch_dlai*lai
+      ## dgl_dm_io ## Rate of change of leaf turnover rate with moisture availability
+      ## dgl_dt_io ## Rate of change of leaf turnover rate with temperature (K-1)
+      ## dqcrit_io ## Critical humidity deficit (kg H2O per kg air).
+      ## dz0v_dh_io ## Rate of change of vegetation roughness length for momentum with height.
+      ## Roughness length is calculated as dz0v_dh * canht_ft    
+      ## eta_sl_io ## Live stemwood coefficient (kg C/m/LAI)
+      ## fd_io     ## Scale factor for dark respiration
+      ## **** look up equation
+      ## fsmc_of_io ## Moisture availability below which leaves are dropped
+      ## f0_io     ## CI / CA for DQ = 0
       if (var == "leaf_turnover_rate") {
         names(pft)[v] <- "g_leaf_0_io"
         pft[v] <- pft[v] / 365 * 360
@@ -273,15 +280,18 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
       if (var == "extinction_coefficient\t") {
         names(pft)[v] <- "kext_io"  ## Light extinction coefficient - used with Beer’s Law for light absorption through tile canopies
       }
-      ## kpar_io ## PAR Extinction coefficient (m2 leaf / m2 ground) neff_io ## Scale factor relating
-      ## Vcmax with leaf nitrogen concentration nl0_io ## Top leaf nitrogen concentration (kg N/kg C)
-      ## nr_nl_io ## Ratio of root nitrogen concentration to leaf nitrogen concentration calcuate this
-      ## from leaf and root N as well as leaf and root C:N ns_nl_io ## Ratio of stem nitrogen
-      ## concentration to leaf nitrogen concentration omega_io ## Leaf scattering coefficient for PAR
-      ## omegau_io ## Upper limit for the leaf scattering coefficient for PAR omegal_io ## Lower limit
-      ## for the leaf scattering coefficient for PAR omnir_io ## Leaf scattering coefficient for NIR
-      ## omniru_io ## Upper limit for the leaf scattering coefficient for NIR omnirl_io ## Lower limit
-      ## for the leaf scattering coefficient for NIR
+      ## kpar_io  ## PAR Extinction coefficient (m2 leaf / m2 ground)
+      ## neff_io  ## Scale factor relating Vcmax with leaf nitrogen concentration
+      ## nl0_io   ## Top leaf nitrogen concentration (kg N/kg C)
+      ## nr_nl_io ## Ratio of root nitrogen concentration to leaf nitrogen concentration
+      ## calcuate this from leaf and root N as well as leaf and root C:N
+      ## ns_nl_io ## Ratio of stem nitrogen concentration to leaf nitrogen concentration
+      ## omega_io ## Leaf scattering coefficient for PAR
+      ## omegau_io ## Upper limit for the leaf scattering coefficient for PAR
+      ## omegal_io ## Lower limit for the leaf scattering coefficient for PAR
+      ## omnir_io  ## Leaf scattering coefficient for NIR
+      ## omniru_io ## Upper limit for the leaf scattering coefficient for NIR
+      ## omnirl_io ## Lower limit for the leaf scattering coefficient for NIR
       if (var == "growth_resp_factor") {
         names(pft)[v] <- "r_grow_io"  ## Growth respiration fraction (fraction of NPP = GPP - Ra)
       }
@@ -308,21 +318,23 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
         pft[v] <- pft[v] / 1000
       }
       ## z0hm_pft_io ## Ratio of the roughness length for heat to the roughness length for momentum
-      ## fl_o3_ct_io ## Critical flux of O3 to vegetation (mmol m-2 s-1) dfp_dcuo_io ## Fractional
-      ## reduction of photosynthesis with the cumulative uptake of O3 by leaves (mmol m-2) ief_io ##
-      ## Isoprene Emission Factor (μg g-1 h-1) tef_io ## Monoterpene Emission Factor (μg g-1 h-1) mef_io
-      ## ## Methanol Emission Factor (μg g-1 h-1) aef_io ## Acetone Emission Factor (μg g-1 h-1) ci_st_io
-      ## ## Leaf-internal CO2concentration at standard conditions (Pa) gpp_st_io ## Gross primary
-      ## production (GPP) at standard conditions (kgC m-2 s-1) Top leaf nitrogen content per unit mass
-      ## (kgN kgLeaf-1); BETY: percent
+      ## fl_o3_ct_io ## Critical flux of O3 to vegetation (mmol m-2 s-1)
+      ## dfp_dcuo_io ## Fractional reduction of photosynthesis with the cumulative uptake of O3 by leaves (mmol m-2)
+      ## ief_io      ## Isoprene Emission Factor (μg g-1 h-1)
+      ## tef_io      ## Monoterpene Emission Factor (μg g-1 h-1)
+      ## mef_io      ## Methanol Emission Factor (μg g-1 h-1)
+      ## aef_io      ## Acetone Emission Factor (μg g-1 h-1)
+      ## ci_st_io    ## Leaf-internal CO2concentration at standard conditions (Pa)
+      ## gpp_st_io   ## Gross primary production (GPP) at standard conditions (kgC m-2 s-1)
       if (var == "leafN") {
         names(pft)[v] <- "nmass_io"
         pft[v] <- pft[v] / 100
       }
-      ## There is a linear relationship between Vcmax and Narea. Previously Vcmax was calculated as the
-      ## product of nl0 and neff.  This is now replaced by a linear regression based on data reported in
-      ## Kattge et al. 2009. Vint is the y-intercept, vsl is the slope.  vint_io ## Units: μmol CO2 m-2
-      ## s-1.  vsl_io ## Units: μmol CO2 gN-1 s-1 kn_io ## Decay of nitrogen through the canopy
+      ## There is a linear relationship between Vcmax and Narea. Previously Vcmax was calculated as the product of nl0 and neff.
+      ## This is now replaced by a linear regression based on data reported in Kattge et al. 2009. Vint is the y-intercept, vsl is the slope.
+      ## vint_io     ## Units: μmol CO2 m-2 s-1.
+      ## vsl_io      ## Units: μmol CO2 gN-1 s-1
+      ## kn_io       ## Decay of nitrogen through the canopy
       if (var == "leaf_respiration Q10") {
         names(pft)[v] <- "q10_leaf_io"
       }
