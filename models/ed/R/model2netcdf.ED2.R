@@ -205,10 +205,9 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
         if (length(dim(soiltemp)) == 3) {
           fdepth <- array(0, dim = dim(soiltemp)[1:2])
           tdepth <- array(0, dim = dim(soiltemp)[1:2])
-          for (t in 1:dim(soiltemp)[1]) {
-            # time polygon depth
-            for (p in 1:dim(soiltemp)[2]) {
-              for (i in dim(soiltemp)[3]:2) {
+          for (t in 1:dim(soiltemp)[1]) { # time
+            for (p in 1:dim(soiltemp)[2]) { # polygon
+              for (i in dim(soiltemp)[3]:2) { # depth
                 if (fdepth[t, p] == 0 & soiltemp[t, p, i] < 273.15 & 
                     soiltemp[t, p, i - 1] > 273.13) {
                   fdepth[t, p] <- i
@@ -238,9 +237,8 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
           # no polygons, just time vs depth?
           fdepth <- array(0, ncol(soiltemp))
           tdepth <- array(0, ncol(soiltemp))
-          for (t in seq_along(soiltemp)) {
-            # time depth
-            for (d in 2:nrow(soiltemp)) {
+          for (t in 1:ncol(soiltemp)) { # time
+            for (d in 2:nrow(soiltemp)) { # depth
               if (fdepth[t] == 0 & soiltemp[d, t] < 273.15 & soiltemp[d - 1, t] > 273.13) {
                 fdepth[t] <- d
               }
@@ -358,10 +356,9 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
         if (length(dim(soiltemp)) == 3) {
           fdepth <- array(0, dim = dim(soiltemp)[1:2])
           tdepth <- array(0, dim = dim(soiltemp)[1:2])
-          for (t in 1:dim(soiltemp)[1]) {
-            # time polygon depth
-            for (p in 1:dim(soiltemp)[2]) {
-              for (i in dim(soiltemp)[3]:2) {
+          for (t in 1:dim(soiltemp)[1]) { # time
+            for (p in 1:dim(soiltemp)[2]) { # polygon
+              for (i in dim(soiltemp)[3]:2) { # depth
                 if (fdepth[t, p] == 0 & soiltemp[t, p, i] < 273.15 & 
                     soiltemp[t, p, i - 1] > 273.13) {
                   fdepth[t, p] <- i
@@ -391,9 +388,8 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
           # no polygons, just time vs depth?
           fdepth <- array(0, ncol(soiltemp))
           tdepth <- array(0, ncol(soiltemp))
-          for (t in seq_along(soiltemp)) {
-            # time depth
-            for (d in 2:nrow(soiltemp)) {
+          for (t in 1:ncol(soiltemp)) { # time
+            for (d in 2:nrow(soiltemp)) { # depth
               if (fdepth[t] == 0 & soiltemp[d, t] < 273.15 & soiltemp[d - 1, t] > 273.13) {
                 fdepth[t] <- d
               }
