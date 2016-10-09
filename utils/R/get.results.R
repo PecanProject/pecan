@@ -86,7 +86,7 @@ get.results <- function(settings, sa.ensemble.id=NULL, ens.ensemble.id=NULL,
     }
 
     # Save sensitivity output
-    var_names <- convert.expr(unlist(variable))
+    var_names <- convert.expr(unlist(variable.sa))
     var_name <- paste0(var_names, collapse = "_")
     
     fname <- sensitivity.filename(
