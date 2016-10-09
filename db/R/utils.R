@@ -1,13 +1,13 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-.db.utils <- new.env() 
+.db.utils <- new.env()
 .db.utils$created <- 0
 .db.utils$queries <- 0
 .db.utils$deprecated <- 0
@@ -31,9 +31,9 @@
 ##' \dontrun{
 ##' db.query('select count(id) from traits;', params=settings$database$bety)
 ##' }
-db.query <- function(query, con=NULL, params=NULL) {
+db.query <- function(query, con = NULL, params = NULL) {
   iopened <- 0
-  if(is.null(con)){
+  if (is.null(con)) {
     if (is.null(params)) {
       logger.error("No parameters or connection specified")
       stop()
@@ -46,15 +46,16 @@ db.query <- function(query, con=NULL, params=NULL) {
   }
   data <- dbGetQuery(con, query)
   res <- dbGetException(con)
-  if (res$errorNum != 0 || (res$errorMsg != 'OK' && res$errorMsg != '')) {
-    logger.severe(paste("Error executing db query '", query, "' errorcode=", res$errorNum, " message='", res$errorMsg, "'", sep=''))
+  if (res$errorNum != 0 || (res$errorMsg != "OK" && res$errorMsg != "")) {
+    logger.severe(paste("Error executing db query '", query, "' errorcode=", res$errorNum, " message='", 
+                        res$errorMsg, "'", sep = ""))
   }
-  .db.utils$queries <- .db.utils$queries+1
-  if(iopened==1) {
+  .db.utils$queries <- .db.utils$queries + 1
+  if (iopened == 1) {
     db.close(con)
   }
   invisible(data)
-}
+} # db.query
 
 ##' Generic function to open a database connection
 ##'
@@ -74,25 +75,25 @@ db.open <- function(params) {
   params$dbfiles <- NULL
   params$write <- NULL
   if (is.null(params$driver)) {
-    args <- c(drv=dbDriver("PostgreSQL"), params, recursive=TRUE)
+    args <- c(drv = dbDriver("PostgreSQL"), params, recursive = TRUE)
   } else {
-    args <- c(drv=dbDriver(params$driver), params, recursive=TRUE)
-    args[['driver']] <- NULL
+    args <- c(drv = dbDriver(params$driver), params, recursive = TRUE)
+    args[["driver"]] <- NULL
   }
   c <- do.call(dbConnect, as.list(args))
-  id <- sample(1000, size=1)
-  while(length(which(.db.utils$connections$id==id)) != 0) {
-    id <- sample(1000, size=1)
+  id <- sample(1000, size = 1)
+  while (length(which(.db.utils$connections$id == id)) != 0) {
+    id <- sample(1000, size = 1)
   }
   attr(c, "pecanid") <- id
   dump.log <- NULL
-  dump.frames(dumpto="dump.log")
-  .db.utils$created <- .db.utils$created+1
+  dump.frames(dumpto = "dump.log")
+  .db.utils$created <- .db.utils$created + 1
   .db.utils$connections$id <- append(.db.utils$connections$id, id)
   .db.utils$connections$con <- append(.db.utils$connections$con, c)
   .db.utils$connections$log <- append(.db.utils$connections$log, list(dump.log))
   invisible(c)
-}
+} # db.open
 
 ##' Generic function to close a database connection
 ##'
@@ -107,7 +108,7 @@ db.open <- function(params) {
 ##' \dontrun{
 ##' db.close(con)
 ##' }
-db.close <- function(con, showWarnings=TRUE) {
+db.close <- function(con, showWarnings = TRUE) {
   if (is.null(con)) {
     return()
   }
@@ -116,9 +117,9 @@ db.close <- function(con, showWarnings=TRUE) {
   if (showWarnings && is.null(id)) {
     logger.warn("Connection created outside of PEcAn.db package")
   } else {
-    deleteme <- which(.db.utils$connections$id==id)
+    deleteme <- which(.db.utils$connections$id == id)
     if (showWarnings && length(deleteme) == 0) {
-      logger.warn("Connection might have been closed already.");
+      logger.warn("Connection might have been closed already.")
     } else {
       .db.utils$connections$id <- .db.utils$connections$id[-deleteme]
       .db.utils$connections$con <- .db.utils$connections$con[-deleteme]
@@ -126,7 +127,7 @@ db.close <- function(con, showWarnings=TRUE) {
     }
   }
   dbDisconnect(con)
-}
+} # db.close
 
 ##' Debug method for db.open and db.close
 ##'
@@ -149,14 +150,13 @@ db.print.connections <- function() {
   if (length(.db.utils$connections$id) == 0) {
     logger.debug("No open database connections.\n")
   } else {
-    for(x in 1:length(.db.utils$connections$id)) {
+    for (x in seq_along(.db.utils$connections$id)) {
       logger.info(paste("Connection", x, "with id", .db.utils$connections$id[[x]], "was created at:\n"))
       logger.info(paste("\t", names(.db.utils$connections$log[[x]]), "\n"))
-      #      cat("\t database object : ")
-      #      print(.db.utils$connections$con[[x]])
+      # cat('\t database object : ') print(.db.utils$connections$con[[x]])
     }
   }
-}
+} # db.print.connections
 
 ##' Test connection to database
 ##' 
@@ -166,7 +166,7 @@ db.print.connections <- function() {
 ##' @return TRUE if database connection works; else FALSE
 ##' @export
 ##' @author David LeBauer, Rob Kooper
-db.exists <- function(params, write=TRUE, table=NA) {
+db.exists <- function(params, write = TRUE, table = NA) {
   # open connection
   con <- tryCatch({
     invisible(db.open(params))
@@ -178,30 +178,32 @@ db.exists <- function(params, write=TRUE, table=NA) {
     return(invisible(FALSE))
   }
   
-  #check table's privilege about read and write permission
+  # check table's privilege about read and write permission
   user.permission <<- tryCatch({
-    invisible(db.query(paste0("select privilege_type from information_schema.role_table_grants where grantee='",params$user,"' and table_catalog = '",params$dbname,"' and table_name='",table,"'"), con))
+    invisible(db.query(paste0("select privilege_type from information_schema.role_table_grants where grantee='", 
+                              params$user, "' and table_catalog = '", params$dbname, "' and table_name='", table, "'"), 
+                       con))
   }, error = function(e) {
     logger.error("Could not query database.\n\t", e)
     db.close(con)
     invisible(NULL)
   })
-
-  if (!is.na(table)){
-    read.perm = FALSE
-    write.perm = FALSE
+  
+  if (!is.na(table)) {
+    read.perm <- FALSE
+    write.perm <- FALSE
     
     # check read permission
-    if ('SELECT' %in% user.permission[['privilege_type']]) {
-      read.perm = TRUE
+    if ("SELECT" %in% user.permission[["privilege_type"]]) {
+      read.perm <- TRUE
     }
     
-    #check write permission
-    if ('INSERT' %in% user.permission[['privilege_type']] &&'UPDATE' %in% user.permission[['privilege_type']] ) {
-      write.perm = TRUE
+    # check write permission
+    if ("INSERT" %in% user.permission[["privilege_type"]] && "UPDATE" %in% user.permission[["privilege_type"]]) {
+      write.perm <- TRUE
     }
     
-    if (read.perm == FALSE){
+    if (read.perm == FALSE) {
       return(invisible(FALSE))
     }
     
@@ -212,7 +214,7 @@ db.exists <- function(params, write=TRUE, table=NA) {
       logger.error("Could not query database.\n\t", e)
       db.close(con)
       invisible(NULL)
-    })  
+    })
     if (is.null(read.result)) {
       return(invisible(FALSE))
     }
@@ -220,13 +222,15 @@ db.exists <- function(params, write=TRUE, table=NA) {
     # get the table's primary key column
     get.key <- tryCatch({
       db.query(paste("SELECT pg_attribute.attname,format_type(pg_attribute.atttypid, pg_attribute.atttypmod) 
-                     FROM pg_index, pg_class, pg_attribute 
-                     WHERE 
-                     pg_class.oid = '",table,"'::regclass AND
-                     indrelid = pg_class.oid AND
-                     pg_attribute.attrelid = pg_class.oid AND 
-                     pg_attribute.attnum = any(pg_index.indkey)
-                     AND indisprimary"), con)     
+           FROM pg_index, pg_class, pg_attribute 
+           WHERE 
+           pg_class.oid = '", 
+                     table, "'::regclass AND
+           indrelid = pg_class.oid AND
+           pg_attribute.attrelid = pg_class.oid AND 
+           pg_attribute.attnum = any(pg_index.indkey)
+           AND indisprimary"), 
+               con)
     }, error = function(e) {
       logger.error("Could not query database.\n\t", e)
       db.close(con)
@@ -239,27 +243,25 @@ db.exists <- function(params, write=TRUE, table=NA) {
     # if requested write a row to the database
     if (write) {
       # in the case when has read permission but no write
-      if (write.perm == FALSE)
-      {
+      if (write.perm == FALSE) {
         return(invisible(FALSE))
       }
       
       # when the permission correct to check whether write works
-      key <- get.key$attname 
-      key.value<- read.result[key]
+      key <- get.key$attname
+      key.value <- read.result[key]
       coln.name <- names(read.result)
       write.coln <- ""
-      for (name in coln.name)
-      {
-        if (name != key)
-        {
-          write.coln <- name 
-          break 
+      for (name in coln.name) {
+        if (name != key) {
+          write.coln <- name
+          break
         }
       }
       write.value <- read.result[write.coln]
       result <- tryCatch({
-        db.query(paste("UPDATE ", table, " SET ", write.coln,"='", write.value, "' WHERE ",  key, "=", key.value, sep=""), con)
+        db.query(paste("UPDATE ", table, " SET ", write.coln, "='", write.value, "' WHERE ", 
+                       key, "=", key.value, sep = ""), con)
         invisible(TRUE)
       }, error = function(e) {
         logger.error("Could not write to database.\n\t", e)
@@ -268,12 +270,9 @@ db.exists <- function(params, write=TRUE, table=NA) {
     } else {
       result <- TRUE
     }
-  }
-  
-  else{
+  } else {
     result <- TRUE
   }
-  
   
   # close database, all done
   tryCatch({
@@ -283,7 +282,7 @@ db.exists <- function(params, write=TRUE, table=NA) {
   })
   
   invisible(result)
-}
+} # db.exists
 
 ##' Sets if the queries should be shown that are being executed
 ##' 
@@ -294,7 +293,7 @@ db.exists <- function(params, write=TRUE, table=NA) {
 ##' @author Rob Kooper
 db.showQueries <- function(show) {
   .db.utils$showquery <- show
-}
+} # db.showQueries
 
 ##' Returns if the queries should be shown that are being executed
 ##' 
@@ -304,7 +303,7 @@ db.showQueries <- function(show) {
 ##' @author Rob Kooper
 db.getShowQueries <- function() {
   invisible(.db.utils$showquery)
-}
+} # db.getShowQueries
 
 ##' Retrieve id from a table matching query
 ##' 
@@ -317,22 +316,26 @@ db.getShowQueries <- function() {
 ##' @author David LeBauer
 ##' @examples
 ##' \dontrun{
-##' pftid <- get.id("pfts", "name", "salix", con)
-##' pftid <- get.id("pfts", c("name", "modeltype_id"), c("ebifarm.salix", 1), con)
+##' pftid <- get.id('pfts', 'name', 'salix', con)
+##' pftid <- get.id('pfts', c('name', 'modeltype_id'), c('ebifarm.salix', 1), con)
 ##' }
-get.id <- function(table, colnames, values, con, create=FALSE, dates=FALSE){
+get.id <- function(table, colnames, values, con, create = FALSE, dates = FALSE) {
   values <- lapply(values, function(x) ifelse(is.character(x), shQuote(x), x))
-  where_clause <- paste(colnames, values , sep = " = ", collapse = " and ")
+  where_clause <- paste(colnames, values, sep = " = ", collapse = " and ")
   query <- paste("select id from", table, "where", where_clause, ";")
   id <- db.query(query, con)[["id"]]
   if (is.null(id) && create) {
-    colinsert <- paste0(colnames, collapse=", ")
-    if (dates) colinsert <- paste0(colinsert, ", created_at, updated_at")
-    valinsert <- paste0(values, collapse=", ")
-    if (dates) valinsert <- paste0(valinsert, ", NOW(), NOW()")
+    colinsert <- paste0(colnames, collapse = ", ")
+    if (dates) {
+      colinsert <- paste0(colinsert, ", created_at, updated_at")
+    }
+    valinsert <- paste0(values, collapse = ", ")
+    if (dates) {
+      valinsert <- paste0(valinsert, ", NOW(), NOW()")
+    }
     logger.info("INSERT INTO ", table, " (", colinsert, ") VALUES (", valinsert, ")")
     db.query(paste0("INSERT INTO ", table, " (", colinsert, ") VALUES (", valinsert, ")"), con)
     id <- db.query(query, con)[["id"]]
   }
   return(id)
-}
+} # get.id
