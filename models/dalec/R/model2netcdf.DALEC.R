@@ -26,14 +26,14 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
   library(ncdf4)
   
   ### Read in model output in DALEC format
-  DALEC.output <- read.table(file.path(outdir, "out.txt"), header = FALSE, sep = "")
+  DALEC.output      <- read.table(file.path(outdir, "out.txt"), header = FALSE, sep = "")
   DALEC.output.dims <- dim(DALEC.output)
   
   ### Determine number of years and output timestep
-  days <- as.Date(start_date):as.Date(end_date)
-  year <- strftime(as.Date(days, origin = "1970-01-01"), "%Y")
-  num.years <- length(unique(year))
-  years <- unique(year)
+  days       <- as.Date(start_date):as.Date(end_date)
+  year       <- strftime(as.Date(days, origin = "1970-01-01"), "%Y")
+  num.years  <- length(unique(year))
+  years      <- unique(year)
   timestep.s <- 86400
   
   ### Loop over years in DALEC output to create separate netCDF outputs
@@ -63,7 +63,7 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     output[[8]] <- (sub.DALEC.output[, 13] * 0.001) / timestep.s  # Root Litter, kgC/m2/s
     
     ## non-standard variables: Pools
-    output[[9]] <- (sub.DALEC.output[, 15] * 0.001)  # Leaf Biomass, kgC/m2
+    output[[9]]  <- (sub.DALEC.output[, 15] * 0.001)  # Leaf Biomass, kgC/m2
     output[[10]] <- (sub.DALEC.output[, 17] * 0.001)  # Wood Biomass, kgC/m2
     output[[11]] <- (sub.DALEC.output[, 19] * 0.001)  # Root Biomass, kgC/m2
     output[[12]] <- (sub.DALEC.output[, 27] * 0.001)  # Litter Biomass, kgC/m2
@@ -75,8 +75,9 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     output[[16]] <- output[[12]] + output[[13]]  ## TotSoilCarb
     
     # ******************** Declare netCDF variables ********************#
-    t <- ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), vals = 1:nrow(sub.DALEC.output), 
-      calendar = "standard", unlim = TRUE)
+    t   <- ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
+                     vals = 1:nrow(sub.DALEC.output), 
+                     calendar = "standard", unlim = TRUE)
     lat <- ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
     lon <- ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
     
@@ -88,16 +89,16 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     }
     
     var <- list()
-    var[[1]] <- mstmipvar("AutoResp", lat, lon, t, NA)
-    var[[2]] <- mstmipvar("HeteroResp", lat, lon, t, NA)
-    var[[3]] <- mstmipvar("GPP", lat, lon, t, NA)
-    var[[4]] <- mstmipvar("NEE", lat, lon, t, NA)
-    var[[5]] <- mstmipvar("NPP", lat, lon, t, NA)
+    var[[1]]  <- mstmipvar("AutoResp", lat, lon, t, NA)
+    var[[2]]  <- mstmipvar("HeteroResp", lat, lon, t, NA)
+    var[[3]]  <- mstmipvar("GPP", lat, lon, t, NA)
+    var[[4]]  <- mstmipvar("NEE", lat, lon, t, NA)
+    var[[5]]  <- mstmipvar("NPP", lat, lon, t, NA)
     
-    var[[6]] <- ncvar_def("LeafLitter", "kgC/m2/s", list(lon, lat, t), -999)
-    var[[7]] <- ncvar_def("WoodyLitter", "kgC/m2/s", list(lon, lat, t), -999)
-    var[[8]] <- ncvar_def("RootLitter", "kgC/m2/s", list(lon, lat, t), -999)
-    var[[9]] <- ncvar_def("LeafBiomass", "kgC/m2", list(lon, lat, t), -999)
+    var[[6]]  <- ncvar_def("LeafLitter", "kgC/m2/s", list(lon, lat, t), -999)
+    var[[7]]  <- ncvar_def("WoodyLitter", "kgC/m2/s", list(lon, lat, t), -999)
+    var[[8]]  <- ncvar_def("RootLitter", "kgC/m2/s", list(lon, lat, t), -999)
+    var[[9]]  <- ncvar_def("LeafBiomass", "kgC/m2", list(lon, lat, t), -999)
     var[[10]] <- ncvar_def("WoodBiomass", "kgC/m2", list(lon, lat, t), -999)
     var[[11]] <- ncvar_def("RootBiomass", "kgC/m2", list(lon, lat, t), -999)
     var[[12]] <- ncvar_def("LitterBiomass", "kgC/m2", list(lon, lat, t), -999)
