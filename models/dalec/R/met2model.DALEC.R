@@ -25,7 +25,7 @@
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
-                            overwrite = FALSE, verbose = FALSE) {
+                            overwrite = FALSE, verbose = FALSE, ...) {
   
   ## DALEC 1 driver format (.csv): Runday, Min temp (°C), Max temp (°C), Radiation (MJ d-1),
   ## Atmospheric CO2 (μmol mol-1), Day of year
@@ -101,14 +101,14 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
            dt <- (366 * 24 * 60 * 60) / length(sec), # leap year 
            dt <- (365 * 24 * 60 * 60) / length(sec)) # non-leap year
     tstep <- round(timestep.s / dt)
-    dt <- timestep.s / tstep  #dt is now an integer
+    dt    <- timestep.s / tstep  #dt is now an integer
     
     ## extract variables
-    lat <- ncvar_get(nc, "latitude")
-    lon <- ncvar_get(nc, "longitude")
+    lat  <- ncvar_get(nc, "latitude")
+    lon  <- ncvar_get(nc, "longitude")
     Tair <- ncvar_get(nc, "air_temperature")  ## in Kelvin
-    SW <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  ## in W/m2
-    CO2 <- try(ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
+    SW   <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  ## in W/m2
+    CO2  <- try(ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
     nc_close(nc)
     
     useCO2 <- is.numeric(CO2)
@@ -144,15 +144,15 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     }
     
     ## Aggregate variables up to daily
-    Tmean <- udunits2::ud.convert(tapply(Tair, doy, mean, na.rm = TRUE), "Kelvin", "Celsius")
-    Tmin <- udunits2::ud.convert(tapply(Tair, doy, min, na.rm = TRUE), "Kelvin", "Celsius")
-    Tmax <- udunits2::ud.convert(tapply(Tair, doy, max, na.rm = TRUE), "Kelvin", "Celsius")
-    Rin <- tapply(SW, doy, sum) * dt * 1e-06  # J/m2/s * s * MJ/J
+    Tmean        <- udunits2::ud.convert(tapply(Tair, doy, mean, na.rm = TRUE), "Kelvin", "Celsius")
+    Tmin         <- udunits2::ud.convert(tapply(Tair, doy, min, na.rm = TRUE), "Kelvin", "Celsius")
+    Tmax         <- udunits2::ud.convert(tapply(Tair, doy, max, na.rm = TRUE), "Kelvin", "Celsius")
+    Rin          <- tapply(SW, doy, sum) * dt * 1e-06  # J/m2/s * s * MJ/J
     LeafWaterPot <- tapply(LeafWaterPot, doy, mean)
-    CO2 <- tapply(CO2, doy, mean)
-    HydResist <- tapply(HydResist, doy, mean)
-    leafN <- tapply(leafN, doy, mean)
-    doy <- tapply(doy, doy, mean)
+    CO2          <- tapply(CO2, doy, mean)
+    HydResist    <- tapply(HydResist, doy, mean)
+    leafN        <- tapply(leafN, doy, mean)
+    doy          <- tapply(doy, doy, mean)
     
     ## The nine columns of driving data are: day of year; mean air temperature (deg C); max daily
     ## temperature (deg C); min daily temperature (deg C); incident radiation (MJ/m2/day); maximum
