@@ -31,7 +31,7 @@
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat = NA, 
-                          lon = NA, ..., overwrite = FALSE, verbose = FALSE) {
+                          lon = NA, overwrite = FALSE, verbose = FALSE, ...) {
   overwrite <- as.logical(overwrite)
   
   library(rhdf5)
