@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
@@ -25,16 +25,16 @@
 ##' \dontrun{
 ##' query.base('select count(id) from traits;')
 ##' }
-query.base <- function(query, con=NULL, ...){
+query.base <- function(query, con = NULL, ...) {
   .Deprecated("db.query")
-  .db.utils$deprecated <- .db.utils$deprecated+1
-  if(is.null(con)){
-    invisible(db.query(query, params=settings$database$bety))
+  .db.utils$deprecated <- .db.utils$deprecated + 1
+  if (is.null(con)) {
+    invisible(db.query(query, params = settings$database$bety))
   } else {
     invisible(db.query(query, con))
   }
-}
-#==================================================================================================#
+} # query.base
+# ==================================================================================================#
 
 #---------------- Base database connection function. ----------------------------------------------#
 ##' Creates database connection object.
@@ -52,12 +52,12 @@ query.base <- function(query, con=NULL, ...){
 ##' \dontrun{
 ##' con <- query.base.con(settings)
 ##' }
-query.base.con <- function(settings,...){
+query.base.con <- function(settings, ...) {
   .Deprecated("db.open")
-  .db.utils$deprecated <- .db.utils$deprecated+1
+  .db.utils$deprecated <- .db.utils$deprecated + 1
   invisible(db.open(settings$database$bety))
-}
-#==================================================================================================#
+} # query.base.con
+# ==================================================================================================#
 
 #---------------- Close open database connections. --------------------------------------------#
 ##' Close database connection
@@ -73,10 +73,10 @@ query.base.con <- function(settings,...){
 ##' @export
 query.close <- function(con) {
   .Deprecated("db.close")
-  .db.utils$deprecated <- .db.utils$deprecated+1
+  .db.utils$deprecated <- .db.utils$deprecated + 1
   invisible(db.close(con))
-}
-#==================================================================================================#
+} # query.close
+# ==================================================================================================#
 
 #---------------- Close all open database connections. --------------------------------------------#
 ##' Kill existing database connections
@@ -88,14 +88,9 @@ query.close <- function(con) {
 ##' @title Kill existing database connections 
 ##' @return nothing, as a side effect closes all open connections
 ##' @author David LeBauer
-killdbcons <- function(){
+killdbcons <- function() {
   .Deprecated("NeverCallThisFunction")
-  .db.utils$deprecated <- .db.utils$deprecated+1
+  .db.utils$deprecated <- .db.utils$deprecated + 1
   for (i in dbListConnections(MySQL())) db.close(i)
-}
-#==================================================================================================#
-
-
-####################################################################################################
-### EOF.  End of R script file.      				
-####################################################################################################
+} # killdbcons
+# ==================================================================================================#
