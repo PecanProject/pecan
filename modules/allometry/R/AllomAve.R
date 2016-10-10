@@ -54,8 +54,12 @@
 AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NULL, 
                      parm = system.file("data/Table3_GTR-NE-319.v2.csv", package = "PEcAn.allometry"), 
                      ngibbs = 5000, nchain = 3, dmin = 0.1, dmax = 500) {
-  ## common components: 6=stem (Bs), 18 = leaf (Bl), 40 = height (Ht) 41 = rooting depth (Rd) 42 =
-  ## Rooting volume (Vol) 43 = Canopy Area
+  ## common components:
+  ## 6=stem (Bs), 18 = leaf (Bl)
+  ## 40 = height (Ht)		
+  ## 41 = rooting depth (Rd)		
+  ## 42 = Rooting volume (Vol)		
+  ## 43 = Canopy Area
   library(coda)
   
   nested.range <- function(obs) {
@@ -77,8 +81,8 @@ AllomAve <- function(pfts, components = 6, outdir = NULL, con = NULL, field = NU
   
   allom.stats <- list()
   
-  ########## BAYESIAN VERSION ############### loop over PFTs
-  for (ipft in seq_along(pfts)) {
+  ########## BAYESIAN VERSION ############### 
+  for (ipft in seq_along(pfts)) { # loop over PFTs
     pft <- pfts[[ipft]]
     pft.name <- names(pfts)[ipft]
     allom.stats[[pft.name]] <- list()
