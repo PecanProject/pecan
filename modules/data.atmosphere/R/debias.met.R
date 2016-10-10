@@ -76,12 +76,12 @@ debias.met <- function(outfolder, source_met, train_met, site_id, de_method='mea
   ### De_method routines!!!!! ###
   for (n in 1:length(var$DAP.name)){
     if (de_method == 'mean'){
-    mean_sou_add = apply(sou_add,2,mean)
-    mean_train_add = apply(train_add,2,mean)
-    mean_diff = mean_train - mean_sou
-    mean_ratio = mean_train/mean_sou
-    debi_add = list()
-    debi_mult = list()
+      mean_sou = apply(sou,2,mean)
+      mean_train = apply(train,2,mean)
+      mean_diff = mean_train - mean_sou
+      mean_ratio = mean_train/mean_sou
+      debi_add = list()
+      debi_mult = list()
     for (k in 1:length(add_var)){
       debi_add[[k]] = (sou_add[[k]] + mean_diff[[k]])
     }
@@ -95,8 +95,8 @@ debias.met <- function(outfolder, source_met, train_met, site_id, de_method='mea
     debi = data.frame(debi_add,debi_mult)
   } else {
     if(de_method == 'median'){
-      med_sou_add = apply(sou_add,2,median)
-      med_train_add = apply(train_add,2,median)
+      med_sou = apply(sou_add,2,median)
+      med_train= apply(train_add,2,median)
       med_diff = med_train - med_sou
       med_ratio = med_train/med_sou
       debi_add = list()
@@ -163,4 +163,4 @@ debias.met <- function(outfolder, source_met, train_met, site_id, de_method='mea
   invisible(results)
 }
 
-#debias.met('debi','GFDL', 'US-WCr.2006.nc', 4, de_method = 'linear')
+#debias.met('debi','GFDL.CM3.rcp45.r1i1p1.2006.nc', 'US-WCr.2006.nc', 4, de_method = 'linear')
