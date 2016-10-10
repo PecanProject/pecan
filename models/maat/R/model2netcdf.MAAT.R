@@ -1,10 +1,11 @@
 #-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.  All rights reserved. This program and the
-# accompanying materials are made available under the terms of the University of Illinois/NCSA
-# Open Source License which accompanies this distribution, and is available at
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-
 
 ##-------------------------------------------------------------------------------------------------#
 ##' Convert MAAT output to netCDF
@@ -21,17 +22,18 @@
 ##' @author Shawn Serbin, Anthony Walker
 model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date = NULL, end_date = NULL) {
   
-  ## TODO is it OK to give site lat/long -999 if not running at a 'site'?  TODO !!UPDATE SO IT WILL
-  ## WORK WITH NO MET AND WITH MET DRIVER!!
+  ## TODO is it OK to give site lat/long -999 if not running at a 'site'? 
+  ## TODO !!UPDATE SO IT WILL WORK WITH NO MET AND WITH MET DRIVER!!
   
-  ### Load required libraries require(PEcAn.utils) #nescessary??
+  ### Load required libraries
+  library(PEcAn.utils)
   library(lubridate)
   library(udunits2)
   library(ncdf4)
   
   ### Read in model output in SIPNET format
   maat.out.file <- file.path(outdir, "out.csv")
-  maat.output <- read.csv(maat.out.file, header = T)
+  maat.output <- read.csv(maat.out.file, header = TRUE)
   maat.output.dims <- dim(maat.output)
   
   ### Determine number of years and output timestep
@@ -89,7 +91,8 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
         output[[i]] <- rep(-999, length(t$vals))
     }
     
-    ############ Variable Conversions Conversion factor for umol C -> kg C
+    ############ Variable Conversions 
+    ### Conversion factor for umol C -> kg C
     Mc <- 12.017  # molar mass of C, g/mol
     umol2kg_C <- Mc * ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
     

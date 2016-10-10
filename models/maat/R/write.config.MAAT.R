@@ -1,7 +1,9 @@
 #-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.  All rights reserved. This program and the
-# accompanying materials are made available under the terms of the University of Illinois/NCSA
-# Open Source License which accompanies this distribution, and is available at
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
@@ -90,8 +92,8 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   ### Move model files to run dirs. Use built-in MAAT script setup_MAAT_project.bs changed to below as
   ### advised by Rob Kooper, 20160405
   system2(file.path(settings$model$binary, "run_scripts/setup_MAAT_project.bs"), 
-          c(rundir, file.path(settings$model$binary, 
-                              "run_scripts"), file.path(settings$model$binary, "src")))
+          c(rundir, file.path(settings$model$binary, "run_scripts"), 
+            file.path(settings$model$binary, "src")))
   
   ### Parse config options to XML
   xml <- listToXml(settings$model$config, "default")
@@ -156,6 +158,5 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   # Write the job.sh script
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
-  
   # print(warnings())
 } # write.config.MAAT
