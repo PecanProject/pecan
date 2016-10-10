@@ -51,10 +51,10 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
                         stringsAsFactors = FALSE)
   
   
-  var = data.frame(DAP.name = c("tasmax","tasmin","rsds","uas","vas","huss","pr"), 
-                  long_DAP.name = c("air_temperature","air_temperature","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation"),
-                  CF.name = c("air_temperature_max","air_temperature_min","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux"),
-                  units = c('Kelvin','Kelvin',"W/m2","m/s","m/s","g/g","kg/m2/s")
+  var = data.frame(DAP.name = c("tasmax","tasmin","rsds","uas","vas","huss","pr","none","none"), 
+                  long_DAP.name = c("air_temperature","air_temperature","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation","air_pressure", "surface_downwelling_longwave_flux_in_air"),
+                  CF.name = c("air_temperature_max","air_temperature_min","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux","air_pressure", "surface_downwelling_longwave_flux_in_air"),
+                  units = c('Kelvin','Kelvin',"W/m2","m/s","m/s","g/g","kg/m2/s", "Pascal", "W/m2")
                       )
   
   
@@ -81,17 +81,24 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     dat.list = list()
     
     ## get data off OpenDAP
-    for(j in 1:length(var$DAP.name)){
+    for(j in 1:length(var$CF.name)){
       dap_end = paste0('/',model,'/macav2metdata_',var$DAP.name[j],'_',model,'_',ensemble_member,'_',scenario,'_',start_url,'_',end_url,'_CONUS_daily.nc')
       dap_file = paste0(dap_base,dap_end)
+      if(j < 8){
       dap = nc_open(dap_file)
       dat.list[[j]] = ncvar_get(dap,as.character(var$long_DAP.name[j]),c(lon_MACA,lat_MACA,1),c(1,1,ntime))
       var.list[[j]] = ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=dim, missval=-9999.0, verbose=verbose)
       nc_close(dap)
+      } else {
+        dat.list[[j]] = NA
+        var.list[[j]] = ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=dim, missval=-9999.0, verbose=verbose)}
     }
     
     dat.list = as.data.frame(dat.list)
     colnames(dat.list) = c("air_temperature_max","air_temperature_min","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux")
+    for (n in 1:1825){
+      dat.list[n,"air_pressure"] = 1
+      dat.list[n,"surface_downwelling_longwave_flux_in_air"] = 1}
     #take average of temperature min and max
     #dat.list[[1]] = (dat.list[[1]]+dat.list[[2]])/2
     #convert mm precipitation to precipitation flux
@@ -117,7 +124,7 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     
     ## put data in new file
     loc <- nc_create(filename=loc.file, vars=var.list, verbose=verbose)
-    for(j in 1:nrow(var)){
+    for(j in 1:length(var$CF.name)){
       ncvar_put(nc=loc, varid=as.character(var$CF.name[j]), vals=dat.list[[j]])
     }
     nc_close(loc)
