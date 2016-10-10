@@ -1,10 +1,11 @@
 #-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.  All rights reserved. This program and the
-# accompanying materials are made available under the terms of the University of Illinois/NCSA
-# Open Source License which accompanies this distribution, and is available at
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-# 
 
 ## R Code to convert NetCDF CF met files into MAAT model met files
 
@@ -30,9 +31,12 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
 ##' @export
 ##' @author Shawn P. Serbin
 ##'
-met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite = FALSE, 
-                           verbose = FALSE) {
+met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
+                           overwrite = FALSE, verbose = FALSE, ...) {
   library(PEcAn.utils)
+  library(ncdf4)
+  library(lubridate)
+  library(PEcAn.data.atmosphere)
   
   ## MAAT driver format (.csv):
   ## Time (POSIX),  Air Temp (°C), PAR (umols m-2 s-1), Precipitation( ??), Atmospheric CO2 (μmol mol-1) ... # STILL IN DEVELOPMENT
@@ -45,7 +49,8 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
   out.file <- paste(in.prefix, 
                     strptime(start_date, "%Y-%m-%d"), 
                     strptime(end_date, "%Y-%m-%d"), 
-                    "csv", sep = ".")
+                    "csv", 
+                    sep = ".")
   out.file.full <- file.path(outfolder, out.file)
   
   results <- data.frame(file = out.file.full, 
@@ -64,10 +69,6 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
     return(invisible(results))
   }
   
-  library(ncdf4)
-  library(lubridate)
-  library(PEcAn.data.atmosphere)
-
   ## check to see if the outfolder is defined, if not create directory for output
   if (!file.exists(outfolder)) {
     dir.create(outfolder)
@@ -79,7 +80,8 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
   start_year <- year(start_date)
   end_year <- year(end_date)
   
-  ## loop over files TODO need to filter out the data that is not inside start_date, end_date
+  ## loop over files 
+  ## TODO need to filter out the data that is not inside start_date, end_date
   for (year in start_year:end_year) {
     
     skip <- FALSE
@@ -103,7 +105,8 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
       tstep <- round(86400 / dt)
       dt    <- 86400 / tstep
       
-      ## extract required MAAT driver variables names(nc$var) # what is in the nc file?
+      ## extract required MAAT driver variables names(nc$var)
+      # what is in the nc file?
       lat  <- ncvar_get(nc, "latitude")
       lon  <- ncvar_get(nc, "longitude")
       Tair <- ncvar_get(nc, "air_temperature")  ## in Kelvin
@@ -198,8 +201,8 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
   
   if (!is.null(out)) {
     
-    ## write met csv output write.table(out,out.file.full,quote =
-    ## FALSE,sep='\t',row.names=FALSE,col.names=FALSE)
+    ## write met csv output 
+    # write.table(out,out.file.full,quote = FALSE,sep='\t',row.names=FALSE,col.names=FALSE)
     write.csv(out, out.file.full, row.names = FALSE)
     
     # write out leaf_user_met.xml - example
