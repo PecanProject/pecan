@@ -22,14 +22,14 @@ download.Ameriflux.site <- function(site_id) {
 download.Ameriflux <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, ...) {
   # get start/end year code works on whole years only
   
-  require(lubridate) #is this necessary?
-  require(PEcAn.utils)
-  require(data.table)
+  library(lubridate) #is this necessary?
+  library(PEcAn.utils)
+  library(data.table)
   
   site = sub(".* \\((.*)\\)", "\\1", sitename)
   
-  start_date <- as.POSIXlt(start_date, tz = "GMT")
-  end_date <- as.POSIXlt(end_date, tz = "GMT")
+  start_date <- as.POSIXlt(start_date, tz = "UTC")
+  end_date <- as.POSIXlt(end_date, tz = "UTC")
   
   start_year <- year(start_date)
   end_year <- year(end_date)

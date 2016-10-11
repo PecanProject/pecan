@@ -9,7 +9,7 @@
 ##' @return an mcmc.list object
 ##' @export
 InventoryGrowthFusion <- function(data,n.iter,random=TRUE,burnin_plot=FALSE){
-  require(rjags)
+  library(rjags)
   
   burnin.variables = c("tau_add","tau_dbh","tau_inc","mu")
   out.variables = c("x","tau_add","tau_dbh","tau_inc","mu")
