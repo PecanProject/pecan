@@ -11,9 +11,9 @@
 
 met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,...){
   
-  require(ncdf4)
-  require(ncdf4.helpers)
-  require(PEcAn.utils)
+  library(ncdf4)
+  library(ncdf4.helpers)
+  library(PEcAn.utils)
   
   files = dir(in.path,in.prefix)
   file = files[grep(pattern="*.nc",files)]

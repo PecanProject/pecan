@@ -21,7 +21,7 @@ pda.mcmc.recover <- function(settings, params.id=NULL, param.names=NULL, prior.i
     n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
   }
   
-  require(coda)
+  library(coda)
   
   ## Handle settings
     settings <- pda.settings(
