@@ -19,15 +19,9 @@
 #==========================================================================================#
 #      Function that determines the number of days in a given month.                       #
 #------------------------------------------------------------------------------------------#
-daymax = function(month,year){
-  mmm  = c(31,28,31,30,31,30,31,31,30,31,30,31)
-  mday = mmm[month]
-
-  addone       = month == 2 & lubridate::leap_year(year)
-  mday[addone] = mday[addone] + 1
-
-  return(mday)
-} #end function
+daymax = function(month, year) {
+  as.integer(days_in_month(as.Date(paste(year, month, 1, sep='-'))))
+} # daymax
 #==========================================================================================#
 #==========================================================================================#
 
