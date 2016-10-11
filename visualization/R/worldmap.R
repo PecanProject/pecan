@@ -74,7 +74,7 @@ pecan.worldmap <- function(df.in, outfile = NULL,
          width = 44*diff(xlim)/360, height = 34*diff(ylim)/180, 
          units="in", dpi = 100, bg="transparent")
   
-  require(grid)
+    library(grid)
 
   g_legend<-function(a.gplot){
     tmp <- ggplot_gtable(ggplot_build(a.gplot))

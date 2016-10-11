@@ -15,9 +15,9 @@
 ##' @export
 ##' @author Betsy Cowdery
 extract.nc <- function(in.path, in.prefix, outfolder, start_date, end_date, slat, slon, overwrite=FALSE, verbose=FALSE,...) {
-  require("PEcAn.utils")
-  require("lubridate")
-  require("ncdf4")
+  library(PEcAn.utils)
+  library(lubridate)
+  library(ncdf4)
 
   in.path <- as.character(in.path)
   in.prefix <- as.character(in.prefix)

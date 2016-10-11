@@ -27,10 +27,10 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
   ## TODO  !!UPDATE SO IT WILL WORK WITH NO MET AND WITH MET DRIVER!!
   
   ### Load required libraries
-  #require(PEcAn.utils) #nescessary??
-  require(lubridate)
-  require(udunits2)
-  require(ncdf4)
+  #library(PEcAn.utils) #nescessary??
+  library(lubridate)
+  library(udunits2)
+  library(ncdf4)
   
   ### Read in model output in SIPNET format
   maat.out.file <- file.path(outdir, "out.csv")

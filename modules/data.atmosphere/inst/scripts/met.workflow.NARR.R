@@ -1,12 +1,13 @@
 #---------------- Load libraries. -----------------------------------------------------------------#
-require(PEcAn.all)
-require(PEcAn.data.atmosphere)
-require(RPostgreSQL)
+library(PEcAn.all)
+library(PEcAn.data.atmosphere)
+library(RPostgreSQL)
 
 #--------------------------------------------------------------------------------------------------#
 # Clear old database connections
-for (i in dbListConnections(PostgreSQL())) db.close(i)
-dbparms <- list(driver=driver, user=user, dbname=dbname, password=password, host=host)
+for (i in dbListConnections(PostgreSQL())) db.close(i) {
+  dbparms <- list(driver=driver, user=user, dbname=dbname, password=password, host=host)
+}
 
 #--------------------------------------------------------------------------------------------------#
 # Download raw NARR from the internet 

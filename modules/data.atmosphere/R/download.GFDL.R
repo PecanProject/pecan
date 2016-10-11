@@ -13,9 +13,9 @@
 ##'
 ##' @author James Simkins
 download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, overwrite=FALSE, verbose=FALSE, model='CM3', scenario='rcp45', ensemble_member='r1i1p1', ...){  
-  require(PEcAn.utils)
-  require(lubridate)
-  require(ncdf4)
+  library(PEcAn.utils)
+  library(lubridate)
+  library(ncdf4)
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- year(start_date)

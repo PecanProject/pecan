@@ -2,7 +2,7 @@
 bayes.curve.fit<-function(outpath,coord.set,fia,n.reps,n.chain){
   
 library(rjags)
-require(R2HTML)
+  library(R2HTML)
 
 dat48<-read.csv(file=paste(outpath,"/",coord.set[fia+1],"_dat48.csv",sep=""),header=T,sep=",")
 dir.create(file.path(outpath,"model_output"))

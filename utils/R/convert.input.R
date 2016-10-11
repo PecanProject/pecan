@@ -118,7 +118,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   
   if(!is.null(browndog) && host$name == 'localhost'){ 
     # perform conversions with Brown Dog - only works locally right now
-    require(RCurl) 
+    library(RCurl) 
     
     # Determine outputtype using formatname and mimetype of output file
     # Add issue to github that extension of formats table to include outputtype 

@@ -4,9 +4,9 @@
 ##Author: Brady S. Hardiman 04/30/2013
 
 ##load required pkgs and libraries
-require(rgdal)
-require(proj4)
-require(raster)
+library(rgdal)
+library(proj4)
+library(raster)
 library(sp)
 library(rgdal)
 library(proj4)

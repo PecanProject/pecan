@@ -81,7 +81,7 @@ if (grepl("pecan.zip$", args[1])) {
 }
 
 # convert CF to output, in this case ed.zip
-require(PEcAn.DALEC)
+library(PEcAn.DALEC)
 result <- met2model.DALEC(cffolder, site, outfolder, start_date=startDate, end_date=endDate, overwrite=overwrite)
 
 # next rename outfile to output file

@@ -1,6 +1,6 @@
 #!/usr/bin/Rscript
 
-require(RCurl)
+library(RCurl)
 
 ##' Try and download a file.
 ##'
