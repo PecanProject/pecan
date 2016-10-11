@@ -144,12 +144,13 @@ fia.to.psscss <- function(settings,
   query <- paste('SELECT p.cycle, p.statecd, p.measyear as time, p.cn as patch, ', 
                  'MIN(2-c.stdorgcd) as trk, AVG(c.stdage) as age, p.lat, p.lon, p.prev_plt_cn ',
                  'FROM plot as p LEFT JOIN cond as c on p.cn=c.plt_cn ',
-                 'WHERE p.lon >= ', lonmin, ' AND p.lon < ', lonmax,
-                 ' AND p.lat >= ', latmin, ' AND p.lat < ', latmax, 
-                 ' AND p.measyear >= ', min.year, ' AND p.measyear < ', max.year, 
+                 'WHERE p.lon >= ', lonmin, ' AND p.lon <= ', lonmax,
+                 ' AND p.lat >= ', latmin, ' AND p.lat <= ', latmax, 
+                 ' AND p.measyear >= ', min.year, ' AND p.measyear <= ', max.year, 
                  ' GROUP BY p.cn')
 
   pss <- db.query(query, con=fia.con)
+  if(nrow(pss) == 0) stop(logger.error("No pss data found."))
   
   for(statecd in unique(pss$statecd)) {
     # Count up occurrences of each cycle
@@ -168,7 +169,8 @@ fia.to.psscss <- function(settings,
   # same plot
   pss <- pss[.select.unique.fia.plot.records(pss$patch, pss$prev_plt_cn, pss$time, year), ]
   
-  if(nrow(pss) == 0) logger.error("Couldn't find pss data.")
+  if(nrow(pss) == 0) stop(logger.error("All pss data were invalid."))
+  
 
   pss$trk[which(is.na(pss$trk))] <- 1
   pss$age[which(is.na(pss$age))] <- 0
@@ -203,6 +205,7 @@ fia.to.psscss <- function(settings,
                  ' and p.lat >= ', latmin, ' and p.lat < ', latmax)
   css <- db.query(query, con=fia.con)
   names(css) = tolower(names(css))
+  if(nrow(css) == 0) stop(logger.error("No css data found."))
   
   # Remove rows that don't map to any retained patch
   css <- css[ which(css$patch %in% pss$patch), ]
@@ -256,10 +259,6 @@ fia.to.psscss <- function(settings,
 
   # --- Continue work formatting css now that we've checked for species problems
   n.cohort = nrow(css)
-  if(n.cohort == 0) {
-    logger.warn("No trees found while trying to generate .css from FIA data!")
-  }
-  
   css$time[is.na(css$time)] <- 1
   css$cohort[is.na(css$cohort)] <- 1:sum(is.na(css$cohort))
   css$dbh[is.na(css$dbh)] <- 1	# assign nominal small dbh to missing
@@ -268,7 +267,7 @@ fia.to.psscss <- function(settings,
   css$hite <- css$bdead <- css$balive <- css$lai <- rep(0, n.cohort)
  
   ## map spcd to pft
-  css <- merge(css,pfts,by="spcd")
+  css <- merge(css, pfts, by="spcd")
   css <- css[, c('time', 'patch', 'cohort', 'dbh', 'hite', 'pft', 'n', 'bdead', 'balive', 'lai')]
 
   pfts.represented <- sapply(settings$pfts, function(x) x$constants$num) %in% css$pft
@@ -276,6 +275,7 @@ fia.to.psscss <- function(settings,
     logger.warn(paste0("\nThe following PFTs listed in settings are not represented in the FIA data: ", 
        paste(sapply(settings$pfts, function(x) x$name)[!pfts.represented], collapse=", ")))	
 
+  if(nrow(css) == 0) stop(logger.error("No valid css data found."))
   logger.debug(paste0("Found ", nrow(css), " cohorts for site ", settings$run$site$id))
 
   ##################
