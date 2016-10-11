@@ -177,6 +177,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     prefix.css <- sub(".lat.*", "", settings$run$inputs$pss$path)
     # pss and css prefix is not the same, kill
     if (!identical(prefix.pss, prefix.css)) {
+      print(paste("pss prefix:", prefix.pss))
+      print(paste("css prefix:", prefix.css))
       logger.severe("ED2 css/pss/ files have different prefix")
     } else {
       # pss and css are both present
@@ -186,6 +188,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
         prefix.sites <- sub(".lat.*", "", settings$run$inputs$site$path)
         # sites and pss have different prefix name, kill
         if (!identical(prefix.sites, prefix.pss)) {
+          print(paste("site prefix:", prefix.site))
+          print(paste("pss prefix:", prefix.pss))
           logger.severe("ED2 sites/pss/ files have different prefix")
         } else {
           # sites and pass same prefix name, case 3
