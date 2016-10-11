@@ -4,10 +4,10 @@
 \alias{calc.benchmark}
 \title{Calculate benchmarking statistics}
 \usage{
-calc.benchmark(settings, con)
+calc.benchmark(bm.ensemble, con)
 }
 \arguments{
-\item{settings}{object from start.benchmark.runs (for now - we many only need a few variables)}
+\item{bm.ensemble}{object, either from create.BRR or start.bm.ensemle}
 
 \item{con}{database connection}
 }

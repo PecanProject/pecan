@@ -36,8 +36,7 @@ invert.fast.re <- function(modname, observed, inits, rand, cons,
                    pmu, psd, plog, minp, ngibbs){
 # Get model code number
     data(model.list)
-    setkey(model.list, modname)
-    model.set <- model.list[modname]
+    model.set <- model.list[model.list$modname == modname, ]
     if(all(is.na(model.set[,-1,with=FALSE]))){
         stop(sprintf("Error: Model '%s' not found", modname))
     }

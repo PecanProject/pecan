@@ -10,10 +10,10 @@
 ##' @author Betsy Cowdery
 download.NARR <- function(outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, ...){
 
-  require(PEcAn.utils)
-  require(lubridate)
-  start_date <- as.POSIXlt(start_date, tz = "GMT")
-  end_date <- as.POSIXlt(end_date, tz = "GMT")
+  library(PEcAn.utils)
+  library(lubridate)
+  start_date <- as.POSIXlt(start_date, tz = "UTC")
+  end_date <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- year(start_date)
   end_year   <- year(end_date)
 
@@ -38,18 +38,20 @@ download.NARR <- function(outfolder, start_date, end_date, overwrite=FALSE, verb
       # create array with results
       row <- which(vlist==v)*which(ylist==year)
       results$file[row] <- new.file
-      results$host[row] <- fqdn()
+      results$host[row] <- PEcAn.utils::fqdn()
       results$startdate[row] <- paste0(year,"-01-01 00:00:00")
       results$enddate[row] <- paste0(year,"-12-31 23:59:59")
       results$mimetype[row] <- 'application/x-netcdf'
       results$formatname[row] <- 'NARR'
 
       if (file.exists(new.file) && !overwrite) {
-        logger.debug("File '", new.file, "' already exists, skipping to next file.")
+        PEcAn.utils::logger.debug("File '", new.file, "' already exists, skipping to next file.")
         next
       }
 
       url <- paste0("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/", v, ".", year, ".nc")
+      
+      PEcAn.utils::logger.debug(paste0("Downloading from:\n", url, "\nto:\n", new.file))
       download.file(url, new.file)
     }
   }

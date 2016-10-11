@@ -98,11 +98,12 @@ USER_TABLES="users"
 
 # list of all tables, schema_migrations is ignored since that
 # will be imported during creaton
-CLEAN_TABLES="citations covariates cultivars dbfiles"
+CLEAN_TABLES="benchmark_sets benchmarks"
+CLEAN_TABLES="${CLEAN_TABLES} citations covariates cultivars dbfiles"
 CLEAN_TABLES="${CLEAN_TABLES} ensembles entities formats inputs"
-CLEAN_TABLES="${CLEAN_TABLES} likelihoods machines managements"
+CLEAN_TABLES="${CLEAN_TABLES} likelihoods machines managements metrics"
 CLEAN_TABLES="${CLEAN_TABLES} methods mimetypes models modeltypes"
-CLEAN_TABLES="${CLEAN_TABLES} pfts posteriors priors"
+CLEAN_TABLES="${CLEAN_TABLES} pfts posteriors priors reference_runs"
 CLEAN_TABLES="${CLEAN_TABLES} runs sites species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
 CLEAN_TABLES="${CLEAN_TABLES} projects sitegroups"
@@ -114,6 +115,8 @@ CHECK_TABLES="traits yields"
 # Following tables that don't have id's yet and are not included
 #  - cultivars_pfts
 #  - trait_covariate_associations
+MANY_TABLES="benchmarks_benchmarks_reference_runs benchmarks_ensembles"
+MANY_TABLES="${MANY_TABLES} benchmarks_ensembles_scores benchmarks_metrics benchmark_sets_benchmark_reference_runs"
 MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
 MANY_TABLES="${MANY_TABLES} current_posteriors"
 MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
@@ -155,7 +158,8 @@ fi
 MIGRATIONS=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT COUNT(version) FROM schema_migrations' | tr -d ' ' )
 VERSION=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT md5(array_agg(version)::text) FROM (SELECT version FROM schema_migrations ORDER BY version) as v;' | tr -d ' ' )
 LATEST=$( psql ${PG_OPT} -t -q -d "${DATABASE}" -c 'SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1' | tr -d ' ' )
-echo "${MIGRATIONS}	${VERSION}	${LATEST}" > "${OUTPUT}/version.txt"
+NOW=$( date -u +"%Y-%m-%dT%H:%M:%SZ" )
+echo "${MIGRATIONS}	${VERSION}	${LATEST}	${NOW}" > "${OUTPUT}/version.txt"
 
 # dump schema
 if [ "${QUIET}" != "YES" ]; then

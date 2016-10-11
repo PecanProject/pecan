@@ -26,7 +26,7 @@
 ##' @author David LeBauer, Michael C. Dietze
 single.MA <- function(data, j.chains, j.iter, tauA, tauB, prior,
                       jag.model.file, overdispersed = TRUE){
-  require(rjags)
+  library(rjags)
   ## Convert R distributions to JAGS distributions
   jagsprior <- r2bugs.distributions(prior)
   jagsprior <- jagsprior[, c('distn', 'parama', 'paramb', 'n')]

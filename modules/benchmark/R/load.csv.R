@@ -10,7 +10,8 @@
 ##' @author Betsy Cowdery
 
 load.csv <- function(data.path, format, site, vars=NULL){
-  
+
+  data.path <- sapply(data.path, function(x) dir(dirname(x), basename(x), full.names = TRUE))
   
   if (format$header == 0 | format$header == 1){
     dat <- read.csv(data.path, skip = format$skip, na.strings = format$na.strings, as.is=TRUE,
@@ -25,7 +26,7 @@ load.csv <- function(data.path, format, site, vars=NULL){
   }
   
   if(!is.null(vars)){
-    return(dat[vars])
+    return(dplyr::select(dat, one_of(vars)))
   }else{
     return(dat)
   }

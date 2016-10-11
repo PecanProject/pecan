@@ -21,6 +21,7 @@
 ##' download.url('http://localhost/', index.html)
 ##' }
 download.url = function(url, file, timeout=600, .opts=list(), retry404=TRUE) {
+  dir.create(basename(file), recursive=TRUE)
   count <- 0
   while (!url.exists(url, .opts=.opts) && count < timeout) {
     count <- count + 1

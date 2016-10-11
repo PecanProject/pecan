@@ -21,7 +21,7 @@
 ##' @export
 ##' @author David LeBauer, Shawn Serbin, Ryan Kelly
 ##'
-run.sensitivity.analysis <- function(plot=TRUE, ensemble.id=NULL, variable=NULL, start.year=NULL, end.year=NULL){
+run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, variable=NULL, start.year=NULL, end.year=NULL){
                         
   if(FALSE) {
     plot=TRUE
@@ -150,6 +150,17 @@ run.sensitivity.analysis <- function(plot=TRUE, ensemble.id=NULL, variable=NULL,
   }
 }
 #==================================================================================================#
+
+##' @export
+runModule.run.sensitivity.analysis <- function(settings, ...) {
+  if(is.MultiSettings(settings)) {
+    return(papply(settings, runModule.run.sensitivity.analysis, ...))
+  } else if (is.Settings(settings)) {
+    run.sensitivity.analysis(settings, ...) 
+  } else {
+    stop("runModule.run.sensitivity.analysis only works with Settings or MultiSettings")
+  }
+}
 
 
 ####################################################################################################

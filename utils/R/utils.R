@@ -179,6 +179,10 @@ get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL){
 }
 #==================================================================================================#
 
+##' @export
+listToXml <- function (x, ...) {
+  UseMethod("listToXml")
+}
 
 #--------------------------------------------------------------------------------------------------#
 ##' Convert List to XML
@@ -191,7 +195,8 @@ get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL){
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Rob Kooper
 #--------------------------------------------------------------------------------------------------#
-listToXml <- function(item, tag) {
+listToXml.default <- function(item, tag) {
+
   # just a textnode, or empty node with attributes
   if(typeof(item) != 'list') {
     if (length(item) > 1) {
@@ -213,7 +218,7 @@ listToXml <- function(item, tag) {
     # node with child nodes
     xml <- xmlNode(tag)
     for(i in 1:length(item)) {
-      if (names(item)[i] != ".attrs") {
+      if (is.null(names(item)) || names(item)[i] != ".attrs") {
         xml <- append.xmlNode(xml, listToXml(item[[i]], names(item)[i]))
       }
     }    
@@ -548,7 +553,7 @@ as.sequence <- function(x, na.rm = TRUE){
 ##' @return logical - TRUE if remote connection is available 
 ##' @author Rob Kooper
 test.remote <- function(host){
-  return(try(system(paste("ssh", host, "/bin/true"))) == 0)
+  return(try(remote.execute.cmd(host, "/bin/true")) == 0)
 }
 
 ##' Create a temporary settings file
@@ -607,6 +612,40 @@ load.modelpkg <- function(model){
     }
   }
 }
+
+##' conversion function for the unit conversions that udunits cannot handle but often needed in PEcAn calculations
+##' @title misc.convert
+##' @param x convertible values
+##' @param u1 unit to be converted from, character
+##' @param u2 unit to be converted to, character
+##' @return val converted values
+##' @export
+##' @author Istem Fer
+misc.convert <- function(x, u1, u2){
+  if(u1 == "umol C m-2 s-1" & u2 == "kg C m-2 s-1"){
+    val <- ud.convert(x, "ug", "kg") * 12    # atomic mass of carbon
+  }else if(u1 == "kg C m-2 s-1" &  u2 == "umol C m-2 s-1"){
+    val <- ud.convert(x, "kg", "ug") / 12    # atomic mass of carbon
+  }
+  return(val)
+}
+
+
+##' function to check whether units are convertible by misc.convert function
+##' @title misc.are.convertible
+##' @param u1 unit to be converted from, character
+##' @param u2 unit to be converted to, character
+##' @return logical
+##' @export
+##' @author Istem Fer
+misc.are.convertible <- function(u1, u2){
+  if(match(u1, c("umol C m-2 s-1", "kg C m-2 s-1")) ==  match(u2, c("kg C m-2 s-1", "umol C m-2 s-1"))){
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
+
 ####################################################################################################
 ### EOF.  End of R script file.              
 ####################################################################################################

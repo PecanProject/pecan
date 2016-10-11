@@ -9,7 +9,7 @@
 ##' @author Ryan Kelly
 ##' @export
 load.L2Ameriflux.cf <- function(file.in) {
-  require(ncdf4)
+  library(ncdf4)
 
   nc <- nc_open(file.in)
   

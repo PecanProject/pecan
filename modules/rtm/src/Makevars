@@ -10,7 +10,7 @@ OBJECTS = $(SOURCES:.f90=.o)
 all : modules $(SHLIB)
 
 clean :
-	rm -f $(OBJECTS) *.mod RTM/*.mod *.so *.o 
+	rm -f $(OBJECTS) *.mod RTM/*.mod *.so *.o symbols.rds
 
 md = RTM/modules/
 
@@ -22,7 +22,7 @@ m2 : m1 \
     $(md)mod_combine.o \
     $(md)mod_statistics.o
 
-m3 : m2 $(md)mod_rtm.o 
+m3 : m2 $(md)mod_rtm.o
 
 modules : m3 \
     $(md)dataSpec/dataSpec_sun.o \
@@ -30,5 +30,6 @@ modules : m3 \
     $(md)dataSpec/dataSpec_refractive.o \
     $(md)dataSpec/dataSpec_prospect5b.o \
     $(md)dataSpec/dataSpec_prospect4.o \
-    $(md)dataSpec/dataSpec_soil.o
-
+    $(md)dataSpec/dataSpec_soil.o \
+    RTM/twostream/mod_hapke_soil.o \
+    RTM/twostream/mod_biggamma.o

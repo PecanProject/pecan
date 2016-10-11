@@ -177,15 +177,17 @@ PG_OPT="${PG_OPT} -v ON_ERROR_ROLLBACK=on"
 EMPTY_TABLES="formats machines mimetypes users"
 
 # list of all tables, schema_migrations is ignored since that
-# will be imported during creaton
-CLEAN_TABLES="citations covariates cultivars inputs"
-CLEAN_TABLES="${CLEAN_TABLES} ensembles entities dbfiles"
-CLEAN_TABLES="${CLEAN_TABLES} likelihoods managements"
-CLEAN_TABLES="${CLEAN_TABLES} methods models modeltypes"
-CLEAN_TABLES="${CLEAN_TABLES} pfts posteriors priors"
+# will be imported during creaton. Order is semi important.
+CLEAN_TABLES="benchmark_sets benchmarks"
+CLEAN_TABLES="${CLEAN_TABLES} citations covariates cultivars"
+CLEAN_TABLES="${CLEAN_TABLES} ensembles entities formats inputs"
+CLEAN_TABLES="${CLEAN_TABLES} likelihoods machines managements metrics"
+CLEAN_TABLES="${CLEAN_TABLES} methods mimetypes models modeltypes"
+CLEAN_TABLES="${CLEAN_TABLES} pfts posteriors priors reference_runs"
 CLEAN_TABLES="${CLEAN_TABLES} runs sites species treatments"
 CLEAN_TABLES="${CLEAN_TABLES} variables workflows"
 CLEAN_TABLES="${CLEAN_TABLES} projects sitegroups"
+CLEAN_TABLES="${CLEAN_TABLES} dbfiles"
 
 # tables that have checks that need to be looked at.
 CHECK_TABLES="traits yields"
@@ -194,6 +196,8 @@ CHECK_TABLES="traits yields"
 # Following tables that don't have id's yet and are not included
 #  - cultivars_pfts
 #  - trait_covariate_associations
+MANY_TABLES="benchmarks_benchmarks_reference_runs benchmarks_ensembles"
+MANY_TABLES="${MANY_TABLES} benchmarks_ensembles_scores benchmarks_metrics benchmark_sets_benchmark_reference_runs"
 MANY_TABLES="${MANY_TABLES} citations_sites citations_treatments"
 MANY_TABLES="${MANY_TABLES} current_posteriors"
 MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
@@ -219,7 +223,7 @@ if [ -z "${DUMPURL}" ]; then
   elif [ "${REMOTESITE}" == "5" ]; then  
     DUMPURL="http://tree.aos.wisc.edu:6480/sync/dump/bety.tar.gz"
   elif [ "${REMOTESITE}" == "6" ]; then
-    DUMPURL="http://file-server.igb.illinois.edu/~dlebauer/bety/bety.tar.gz"
+    DUMPURL="https://terraref.ncsa.illinois.edu/bety/dump/bety.tar.gz"
   else
     echo "Don't know where to get data for site ${REMOTESITE}"
     DUMPURL=""
@@ -246,8 +250,8 @@ mkdir "${DUMPDIR}"
 if [ "${DUMPURL}" != "" ]; then
   curl -s -L -o "${DUMPDIR}/dump.tar.gz" "${DUMPURL}"
   if [ ! -s ${DUMPDIR}/dump.tar.gz ]; then
-    echo "File downloaded is 0 bytes, skipping"
-    DUMPURL=""
+    echo "File downloaded is 0 bytes"
+    exit 1
   else
     tar zxf "${DUMPDIR}/dump.tar.gz" -C "${DUMPDIR}" -m
   fi

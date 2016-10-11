@@ -9,8 +9,8 @@ metric.lmDiag.plot <- function(metric_dat,...){
   
   fit <- lm(metric_dat[,1]~metric_dat[,2])
   
-  require(ggplot2)
-  require(gridExtra)
+  library(ggplot2)
+  library(gridExtra)
   
   p1<-ggplot(fit, aes(.fitted, .resid))+geom_point()
   p1<-p1+stat_smooth(method="loess")+geom_hline(yintercept=0, col="red", linetype="dashed")

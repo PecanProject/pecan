@@ -4,8 +4,8 @@
 \alias{run.write.configs}
 \title{Run model specific write configuration functions}
 \usage{
-run.write.configs(settings, write = TRUE, ens.sample.method = "halton",
-  posterior.files = rep(NA, length(settings$pfts)))
+run.write.configs(settings, write = TRUE, ens.sample.method = "uniform",
+  posterior.files = rep(NA, length(settings$pfts)), overwrite = TRUE)
 }
 \arguments{
 \item{write}{should the runs be written to the database}
@@ -28,6 +28,6 @@ Main driver function to call the ecosystem model specific (e.g. ED, SiPNET)
 run and configuration file scripts
 }
 \author{
-David LeBauer, Shawn Serbin, Ryan Kelly
+David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze
 }
 

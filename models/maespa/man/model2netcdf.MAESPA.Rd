@@ -2,7 +2,8 @@
 \alias{model2netcdf.MAESPA}
 \title{Code to convert MAESPA's output into netCDF format}
 \usage{
-model2netcdf.MAESPA(outdir, sitelat, sitelon, start_date, end_date)
+model2netcdf.MAESPA(outdir, sitelat, sitelon, start_date, end_date,
+  stem_density)
 }
 \arguments{
   \item{outdir}{Location of MAESPA output}
@@ -14,6 +15,9 @@ model2netcdf.MAESPA(outdir, sitelat, sitelon, start_date, end_date)
   \item{start_date}{Start time of the simulation}
 
   \item{end_date}{End time of the simulation}
+
+  \item{stem_density}{Number of trees/plotsize. Values in
+  trees.dat}
 }
 \description{
 Convert MAESPA output into the NACP Intercomparison format
