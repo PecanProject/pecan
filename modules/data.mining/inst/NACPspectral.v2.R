@@ -8,7 +8,7 @@
 
 
 ### Specify required functions
-require(dplR) ## Andy Bunn's Dendrochronology package
+library(dplR) ## Andy Bunn's Dendrochronology package
 
 WAVE <- function (crn.vec, yr.vec, p2=NULL, dj = 0.25, siglvl = 0.99, ...) 
 {
