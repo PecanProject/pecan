@@ -212,7 +212,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
       }
       
       logger.info(paste0("Using 'GPfit' package for Gaussian Process Model fitting."))
-      require(GPfit)
+      library(GPfit)
       ## Generate emulator on LL-probs
       GPmodel <- GP_fit(X = LL[,-ncol(LL), drop=FALSE],
                         Y = LL[,ncol(LL), drop=FALSE])
@@ -264,7 +264,7 @@ pda.emulator <- function(settings, params.id=NULL, param.names=NULL, prior.id=NU
       
       
       logger.info(paste0("Using 'kernlab' package for Gaussian Process Model fitting."))
-      require(kernlab)
+      library(kernlab)
       ## Generate emulator on LL-params
       kernlab.gp <- gausspr(LLik~., data=LL)
       gp=kernlab.gp
