@@ -15,11 +15,13 @@
 ##' @export
 ##' @author David LeBauer
 load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
+
+  library(lubridate)
+  library(udunits2)
+  library(data.table)
+  library(PEcAn.utils)
+  
   ## Lat and Lon
-  require(lubridate)
-  require(udunits2)
-  require(data.table)
-  require(PEcAn.utils)
   Lat <- ncvar_get(met.nc, "latitude")
   Lon <- ncvar_get(met.nc, "longitude")
   

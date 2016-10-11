@@ -24,9 +24,9 @@ insertPmet <- function(vals, nc2, var2, dim2, units2=NA, conv=NULL, missval=-699
 met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, lat, lon, overwrite=FALSE, verbose=FALSE,...){
   
   #---------------- Load libraries. -----------------------------------------------------------------#
-  require(ncdf4)
-  require(lubridate)
-  require(PEcAn.utils)
+  library(ncdf4)
+  library(lubridate)
+  library(PEcAn.utils)
   #--------------------------------------------------------------------------------------------------#  
   
   # get start/end year code works on whole years only
