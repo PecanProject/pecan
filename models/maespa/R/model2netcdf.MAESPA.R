@@ -29,9 +29,7 @@ model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, 
   library(Maeswrap)
   
   ### Read in model output using Maeswrap. Dayflx.dat, watbalday.dat
-  
-  dayflx.dataframe <- readdayflux(filename = "Dayflx.dat")
-  
+  dayflx.dataframe    <- readdayflux(filename = "Dayflx.dat")
   watbalday.dataframe <- readwatbal(filename = "watbalday.dat")
   
   # moles of Carbon to kilograms
@@ -52,7 +50,7 @@ model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, 
     }
     print(paste("---- Processing year: ", y))  # turn on for debugging
     
-    ## Setup outputs for netCDF file in appropriate units
+    ## Set up outputs for netCDF file in appropriate units
     output <- list()
     output[[1]] <- (dayflx.dataframe$totPs) * mole2kg_C * stem_density  # (GPP) gross photosynthesis. mol tree-1 d-1 -> kg C m-2 s-1
     output[[2]] <- (dayflx.dataframe$netPs) * mole2kg_C * stem_density  # (NPP) photosynthesis net of foliar resp mol tree-1 d-1 -> kg C m-2 s-1
@@ -86,7 +84,7 @@ model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, 
     var[[5]] <- ncvar_def("Qle", units = ("W m-2"), dim = list(lat, lon, t), missval = -999, longname = "latent Heat Flux")
     
     ### Output netCDF data
-    nc <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc      <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
       # print(i)
