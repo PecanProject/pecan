@@ -12,8 +12,8 @@ download.NARR <- function(outfolder, start_date, end_date, overwrite=FALSE, verb
 
   require(PEcAn.utils)
   require(lubridate)
-  start_date <- as.POSIXlt(start_date, tz = "GMT")
-  end_date <- as.POSIXlt(end_date, tz = "GMT")
+  start_date <- as.POSIXlt(start_date, tz = "UTC")
+  end_date <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- year(start_date)
   end_year   <- year(end_date)
 
