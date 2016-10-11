@@ -146,13 +146,13 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
     ## First: calculate potential radiation
     sec   <- nc$dim$time$vals
     sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
-    ifelse(leap_year(year)==TRUE,
+    ifelse(leap_year(year),
            dt <- (366*24*60*60)/length(sec), #leap year
            dt <- (365*24*60*60)/length(sec)) #non-leap year
-    ifelse(leap_year(year)==TRUE,
+    ifelse(leap_year(year),
            doy <- rep(1:366,each=86400/dt),
            doy <- rep(1:365,each=86400/dt))
-    ifelse(leap_year(year)==TRUE,
+    ifelse(leap_year(year),
            hr <- rep(seq(0,length=86400/dt,by=dt/86400*24),366),
            hr <- rep(seq(0,length=86400/dt,by=dt/86400*24),365))
     f <- pi/180*(279.5+0.9856*doy)
