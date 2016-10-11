@@ -185,9 +185,9 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
       value <- 2
       # site exists
       if (!is.null(settings$run$inputs$site$path)) {
-        prefix.sites <- sub(".lat.*", "", settings$run$inputs$site$path)
+        prefix.site <- sub(".lat.*", "", settings$run$inputs$site$path)
         # sites and pss have different prefix name, kill
-        if (!identical(prefix.sites, prefix.pss)) {
+        if (!identical(prefix.site, prefix.pss)) {
           print(paste("site prefix:", prefix.site))
           print(paste("pss prefix:", prefix.pss))
           logger.severe("ED2 sites/pss/ files have different prefix")
