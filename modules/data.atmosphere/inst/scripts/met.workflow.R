@@ -8,8 +8,8 @@ site <- "US-Dk3"
 overwrite <- FALSE
 verbose <- TRUE
 
-start_date <- as.POSIXlt("2001-01-01 00:00:00", tz = "GMT")
-end_date <- as.POSIXlt("2001-12-31 23:59:59", tz = "GMT")
+start_date <- as.POSIXlt("2001-01-01 00:00:00", tz = "UTC")
+end_date <- as.POSIXlt("2001-12-31 23:59:59", tz = "UTC")
 
 # download data
 print(download.Ameriflux(site, "/tmp/met/ameriflux", start_date=start_date, end_date=end_date, overwrite=overwrite))

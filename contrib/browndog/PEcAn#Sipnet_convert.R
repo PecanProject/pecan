@@ -63,8 +63,8 @@ if (grepl("pecan.zip$", args[1])) {
     if (is.na(endYear) || pieces[2] > endYear) {
       endYear <- pieces[2]
     }
-    startDate <- as.POSIXlt(paste0(startYear, "-01-01 00:00:00"), tz = "GMT")
-    endDate <- as.POSIXlt(paste0(endYear, "-12-31 23:59:59"), tz = "GMT")
+    startDate <- as.POSIXlt(paste0(startYear, "-01-01 00:00:00"), tz = "UTC")
+    endDate <- as.POSIXlt(paste0(endYear, "-12-31 23:59:59"), tz = "UTC")
   }
 } else if (grepl("pecan.nc$", inputFile)) {
   pieces <- strsplit(inputFile, ".", fixed = TRUE)[[1]]
@@ -74,8 +74,8 @@ if (grepl("pecan.zip$", args[1])) {
   site <- pieces[1]
   year <- pieces[2]
   file.copy(inputFile, file.path(cffolder, paste(site, year, "nc", sep = ".")))
-  startDate <- as.POSIXlt(paste0(year, "-01-01 00:00:00"), tz = "GMT")
-  endDate <- as.POSIXlt(paste0(year, "-12-31 23:59:59"), tz = "GMT")
+  startDate <- as.POSIXlt(paste0(year, "-01-01 00:00:00"), tz = "UTC")
+  endDate <- as.POSIXlt(paste0(year, "-12-31 23:59:59"), tz = "UTC")
 } else {
   usage("Did not recognize type of file")
 }

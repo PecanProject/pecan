@@ -202,7 +202,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     } else if (is.na(pft.id[i])) {
       pft.id[i] <- 5
     } else {
-      stop("Unknown PFT")
+      logger.severe("Unknown PFT")
     }
   }
   
