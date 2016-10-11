@@ -16,7 +16,7 @@
 ##' @author David LeBauer
 load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date){
 
-    library(lubridate)
+  library(lubridate)
   library(udunits2)
   library(data.table)
   library(PEcAn.utils)
