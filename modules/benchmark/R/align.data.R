@@ -13,8 +13,9 @@
 
 ## Align timeseries data using different functions 
 
-align.data <- function(model_full, obvs_full, dat_vars, start_year, end_year){
+align.data <- function(model_full, obvs_full, dat_vars, start_year, end_year, align_method = "match.timestep"){
   
+  fcn <- match.fun(align_method)
   
   rng_model <- range(model_full$posix)
   rng_obvs <- range(obvs_full$posix)
@@ -48,7 +49,7 @@ align.data <- function(model_full, obvs_full, dat_vars, start_year, end_year){
   
   if(mode.o != mode.m){
     # There will be other functions eventually
-    out2 <-apply(data.fine,2,function(x) mean.over.larger.timestep(date.coarse, date.fine, x))
+    out2 <-apply(data.fine, 2, function(x) fcn(date.coarse, date.fine, x))
     dat <- cbind(out1, out2)
     dat$posix <- date.coarse
   } else if(mode.o == mode.m){ 

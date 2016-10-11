@@ -48,25 +48,21 @@ calc.benchmark <- function(bm.ensemble, con){
     format_full <- format <- query.format.vars(obvs.id,con) 
 
     # ---- LOAD INPUT DATA ---- #
-    # Right now I'm making the inappropriate assumption that storage type will be 
-    # empty unless it's a time variable. 
-    # This is because I haven't come up for a good way to test that a character string is a date format
 
-    format$vars <- format_full$vars %>% filter(., variable_id %in% db.query(paste(
-      "SELECT variable_id from benchmarks WHERE id IN (", paste(bm.ids, collapse = ","),");"),con)[[1]] | 
-        nchar(storage_type) > 0)  
-    st <- format$vars$storage_type
-    time.row <- which(nchar(st)>1 & substr(st, 1,1) == "%")
+    time.row <- format$time.row
     # vars.used.index is redundant and will be removed when I'm sure it won't break the PDA code. 
-    vars.used.index <- which(nchar(st)==0) 
+    vars.used.index <- which(nchar(format$vars$storage_type)==0) 
     
     obvs <- load.data(data.path, format, start_year, end_year, site, vars.used.index, time.row)
-    dat_vars <- format$vars$pecan_name
+    dat_vars <- format$vars$pecan_name # IF : is this line redundant?
     obvs_full = obvs
     
     # ---- LOAD MODEL DATA ---- #
 
-    model_vars <- format$vars$pecan_name[-time.row]
+    model_vars <- format$vars$pecan_name[-time.row] # IF : what will happen when time.row is NULL? 
+    # For example "AmeriFlux.level2.h.nc" format (38) has time vars year-day-hour listed, but storage type column is empty and it should be
+    # because in load.netcdf we extract the time from netcdf files using the time dimension
+    # we can remove time variables from this format's related variables list or can hardcode "time.row=NULL" in load.x_netcdf function
     model <- as.data.frame(read.output(runid=basename(model_run), outdir=model_run, 
                                        start.year=start_year, end.year=end_year, 
                                        c("time",model_vars)))

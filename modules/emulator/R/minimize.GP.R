@@ -175,32 +175,48 @@ is.accepted <- function(ycurr, ynew, format='lin'){
 ##' @param priors
 ##' 
 ##' @author Michael Dietze
-mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL, 
-    jmp0=0.35*(rng[,2]-rng[,1]), ar.target=0.5, priors=NA, settings){
+mcmc.GP <- function(gp, pckg, x0, nmcmc, rng, format="lin", mix="joint", splinefcns=NULL, 
+    jmp0=0.35*(rng[,2]-rng[,1]), ar.target=0.5, priors=NA, settings, run.block = TRUE, resume.list = NULL){
   
   haveTime <- FALSE #require("time")
 
   ## storage
   ycurr <- get.y(gp, pckg, x0, priors)
-
   xcurr <- x0
   dim <- length(x0)
-  jmp <- mvjump(ic=jmp0,rate=ar.target, nc=dim)
-  jcov <- diag((jmp0)^2)
   samp <- matrix(NA,nmcmc,dim)
+
+  if(run.block){
+    jcov <- diag((jmp0)^2)
+    accept.count <- 0
+    start <- 1
+    #jmp <- mvjump(ic=jmp0,rate=ar.target, nc=dim)
+  }else{
+    jcov <- jmp0
+    accept.count <- resume.list$ac
+    prev.samp <- resume.list$prev.samp
+    colnames(prev.samp) <- names(x0)
+    samp <- rbind(prev.samp, samp)
+    start <- dim(prev.samp)[1] + 1
+    nmcmc <- dim(samp)[1]
+    #jmp <- mvjump(ic=diag(jmp0),rate=ar.target, nc=dim)
+  }
+  
+
   
   ## loop
   prevTime<- NULL; if(haveTime) prevTime <- progressBar();
-  for(g in 1:nmcmc){
-
+  for(g in start:nmcmc){
+ 
     if(mix == "joint"){
       ## propose new
       xnew <- xcurr
       if((g > 2) && ((g - 1) %% settings$assim.batch$jump$adapt == 0)){
         params.recent <- samp[(g - settings$assim.batch$jump$adapt):(g-1),]
         colnames(params.recent) <- names(x0)
-        accept.count <- round(jmp@arate[(g-1)/settings$assim.batch$jump$adapt]*100)
+        #accept.count <- round(jmp@arate[(g-1)/settings$assim.batch$jump$adapt]*100)
         jcov <- pda.adjust.jumps.bs(settings, jcov, accept.count, params.recent)
+        accept.count <- 0 # Reset counter
       }
         repeat{
           xnew <- mvrnorm(1, unlist(xcurr), jcov)
@@ -212,6 +228,7 @@ mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
         if(is.accepted(ycurr,ynew)){
           xcurr <- xnew
           #ycurr <- ynew
+          accept.count <- accept.count + 1
         }
       #}
     } else {  ## mix = each
@@ -233,17 +250,19 @@ mcmc.GP <- function(gp,pckg,x0,nmcmc,rng,format="lin",mix, splinefcns=NULL,
       }
     }
     samp[g,] <- unlist(xcurr)
+
     #print(p(jmp))
-    jmp <- update(jmp,samp)
+    #jmp <- update(jmp,samp)
 
     if(haveTime) prevTime <- progressBar(g/nmcmc,prevTime)
   }
   if(haveTime) progressBar(1.1,prevTime);
   
-  # hack to retrieve the last jump variances from the funtion until I update it
-  if(mix == "joint") jmp@history[nrow(jmp@history),] <- round(diag(jcov),3)
+
+  chain.res <- list(jump=jcov, ac=accept.count, prev.samp=samp)
   
-  return(list(mcmc=samp,jump=jmp))
+  
+  return(list(mcmc=samp, chain.res=chain.res))
 ##    xnew <- gpeval,x0,k=k,mu=ey,tau=tauwbar,psi=psibar,x=gp$x.compact,rng=rng)
   
 ###################   IN PROGRESS ##############
