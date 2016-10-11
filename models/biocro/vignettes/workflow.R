@@ -1,6 +1,6 @@
 
 ## @knitr , echo=FALSE,warning=FALSE
-require(PEcAn.all)
+library(PEcAn.all)
 
 
 ## @knitr , echo=FALSE,warning=FALSE

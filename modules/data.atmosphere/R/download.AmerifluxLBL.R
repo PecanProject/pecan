@@ -16,10 +16,10 @@
 download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, username="pecan", ...) {
   # get start/end year code works on whole years only
   
-  require(lubridate) 
-  require(PEcAn.utils)
-  require(data.table)
-  require(httr)
+  library(lubridate) 
+  library(PEcAn.utils)
+  library(data.table)
+  library(httr)
   
   site <- sub(".* \\((.*)\\)", "\\1", sitename)
   

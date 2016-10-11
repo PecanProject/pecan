@@ -29,8 +29,8 @@ if (length(args) < 2) {
 }
 
 # load required libraries
-require(XML)
-require(PEcAn.data.atmosphere)
+library(XML)
+library(PEcAn.data.atmosphere)
 
 # 1st argument is the input xml file
 input <- xmlToList(xmlParse(args[1]))

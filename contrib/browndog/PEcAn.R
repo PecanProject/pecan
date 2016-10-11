@@ -29,10 +29,10 @@ if (length(args) < 2) {
 }
 
 # load required libraries
-require(XML)
-require(RPostgreSQL)
-require(PEcAn.data.atmosphere)
-require(PEcAn.DB)
+library(XML)
+library(RPostgreSQL)
+library(PEcAn.data.atmosphere)
+library(PEcAn.DB)
 
 # 1st argument is the input xml file
 input <- xmlToList(xmlParse(args[1]))

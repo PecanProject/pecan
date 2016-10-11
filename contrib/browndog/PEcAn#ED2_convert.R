@@ -81,7 +81,7 @@ if (grepl("pecan.zip$", args[1])) {
 }
 
 # convert CF to output, in this case ed.zip
-require(PEcAn.ED2)
+library(PEcAn.ED2)
 result <- met2model.ED2(cffolder, site, edfolder, start_date=startDate, end_date=endDate, overwrite=overwrite)
 
 # next rename combine files into single output file

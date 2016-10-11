@@ -12,7 +12,7 @@ assim.batch <- function(settings) {
   if(!('assim.batch' %in% names(settings))) {
     return(settings)
   }
-  require(coda)
+  library(coda)
 
   if(is.null(settings$assim.batch$method)) settings$assim.batch$method = "bruteforce.bs"
   
@@ -576,8 +576,8 @@ pda.adjust.jumps.bs <- function(settings, jcov, accept.count, params.recent) {
 ##' @export
 pda.get.model.output <- function(settings, run.id, inputs) {
   
-  require(PEcAn.benchmark)
-  require(lubridate)
+  library(PEcAn.benchmark)
+  library(lubridate)
 
   input.info <- settings$assim.batch$inputs
 

@@ -38,8 +38,8 @@
 ##'
 shp2kml <- function(dir,ext,kmz=FALSE,proj4=NULL,color=NULL,NameField=NULL,out.dir=NULL){
   
-  if(!require(rgdal)) print("install rgdal")
-  
+  library(rgdal)
+
   # TODO: Enable compression of KML files using zip/gzip utility.  Not quite figured this out yet
   # TODO: Allow assignment of output projection info by entering proj4 string
   # TODO: Allow for customization of output fill colors and line size
@@ -142,8 +142,8 @@ get.attributes <- function(file,coords) {
   # ogr tools do not seem to function properly in R.  Need to figure out a work around
   # reading in kml files drops important fields inside the layers.
   
-  if(!require(fields)){print("fields not installed")}
-  if(!require(rgdal)) print("install rgdal")
+  library(fields)
+  library(rgdal)
   
   #print("NOT IMPLEMENTED YET")
   #subset.layer(file,coords)
