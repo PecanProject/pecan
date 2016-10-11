@@ -4,12 +4,10 @@
 ##Author: Brady S. Hardiman 04/30/2013
 
 ##load required pkgs and libraries
-library(rgdal)
+require(rgdal)
 library(proj4)
 library(raster)
 library(sp)
-library(rgdal)
-library(proj4)
 library(spatstat)
 library(maptools)
 

@@ -68,7 +68,7 @@ download.NLCD <- function(outdir,year=2011,con=NULL){
 extract_NLCD <- function(buffer, coords,
                           data_dir=NULL,con=NULL,year=2011){
   library(raster)
-  library(rgdal)
+  require(rgdal)
   library(stringr)
   
   if(!is.null(con)){

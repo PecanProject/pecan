@@ -5,7 +5,7 @@
 ################################
 ## Load Required Packages
 ################################
-library(rgdal)
+require(rgdal)
 library(raster)
 library(sp)
 library(RgoogleMaps)
