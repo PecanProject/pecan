@@ -20,7 +20,7 @@
 ##' @export
 plot2AGB <- function(combined,out,outfolder,allom.stats,unit.conv=0.02){
   
-  require(mvtnorm)
+  library(mvtnorm)
   
   ## Jenkins: hemlock (kg)
   #b0 <- -2.5384

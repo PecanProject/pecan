@@ -16,7 +16,7 @@ site.lst <- function(site.id, con){
       "SELECT ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat",
       "FROM sites WHERE id =", site.id), con)
     options(geonamesUsername="carya")
-    require(geonames)
+    library(geonames)
     lst <- GNtimezone(site$lat, site$lon, radius = 0)$gmtOffset 
   }
   return(lst)
