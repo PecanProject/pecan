@@ -32,10 +32,6 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   library(PEcAn.utils)
   
   print("START met2model.MAESPA")
-<<<<<<< HEAD
-  start.date <- as.POSIXlt(start_date, tz = "UTC")
-  end.date <-as.POSIXlt(end_date, tz = "UTC")
-=======
   start.date <- as.POSIXlt(start_date, tz = "GMT")
   end.date <- as.POSIXlt(end_date, tz = "GMT")
   
@@ -44,7 +40,6 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
                     strptime(end.date, "%Y-%m-%d"), 
                     "dat", 
                     sep = ".")
->>>>>>> PecanProject/master
   
   out.file.full <- file.path(outfolder, out.file)
   
