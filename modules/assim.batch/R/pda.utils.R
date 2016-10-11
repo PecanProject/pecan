@@ -344,7 +344,7 @@ pda.define.prior.fn <- function(prior) {
   dprior <- rprior <- qprior <- pprior <- list()
   for (i in seq_len(n.param.all)) {
     if (prior$distn[i] == "exp") {
-      dprior[[i]] <- parse(text = past0e("dexp(x,", prior$parama[i], ",log=TRUE)"))
+      dprior[[i]] <- parse(text = paste0("dexp(x,", prior$parama[i], ",log=TRUE)"))
       rprior[[i]] <- parse(text = paste0("rexp(n,", prior$parama[i], ")"))
       qprior[[i]] <- parse(text = paste0("qexp(p,", prior$parama[i], ")"))
       pprior[[i]] <- parse(text = paste0("pexp(q,", prior$parama[i], ")"))
