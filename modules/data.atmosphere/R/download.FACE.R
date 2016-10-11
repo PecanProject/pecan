@@ -17,8 +17,8 @@ download.FACE <- function(sitename,outfolder, start_date, end_date, overwrite=FA
   require(PEcAn.utils)
   require(data.table)
   
-  start_date <- as.POSIXlt(start_date, tz = "GMT")
-  end_date <- as.POSIXlt(end_date, tz = "GMT")
+  start_date <- as.POSIXlt(start_date, tz = "UTC")
+  end_date <- as.POSIXlt(end_date, tz = "UTC")
   
   site <- site_from_tag(sitename, "FACE")
   
