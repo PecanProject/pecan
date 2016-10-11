@@ -43,7 +43,6 @@ dir.create(edfolder, showWarnings = FALSE, recursive = TRUE)
 
 # unzip and parse filenames
 if (grepl("pecan.zip$", args[1])) {
-<<<<<<< HEAD
   system2(Sys.which("unzip"), c("-o", "-d", cffolder, inputFile))
   site <- NA
   startYear <- NA
