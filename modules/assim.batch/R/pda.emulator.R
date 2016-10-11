@@ -155,9 +155,9 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       # Convert parameter values to probabilities according to previous prior distribution
       knots.list$probs <- knots.list$params
       for (pft in seq_along(settings$pfts)) {
-        for (i in 1:n.param.all[[pft]]) {
-          knots.list[[pft]]$probs[, i] <- eval(prior.fn[[pft]]$pprior[[i]], list(q = knots.list[[pft]]$params[, 
-                                                                                                              i]))
+        for (i in seq_len(n.param.all[[pft]])) {
+          knots.list[[pft]]$probs[, i] <- eval(prior.fn[[pft]]$pprior[[i]], 
+                                               list(q = knots.list[[pft]]$params[, i]))
         }
       }
       
@@ -390,13 +390,11 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                                                      ".Rdata"))
   save(LL, file = settings$assim.batch$llik.path)
   
-  
   settings$assim.batch$mcmc.path <- file.path(settings$outdir, 
                                               paste0("mcmc.list.pda", 
                                                      settings$assim.batch$ensemble.id, 
                                                      ".Rdata"))
   save(mcmc.list, file = settings$assim.batch$mcmc.path)
-  
   
   settings$assim.batch$resume.path <- file.path(settings$outdir, 
                                                 paste0("resume.pda", 
