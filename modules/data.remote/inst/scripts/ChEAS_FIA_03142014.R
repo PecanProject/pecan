@@ -5,17 +5,17 @@
 ################################
 ## Load Required Packages
 ################################
-require(sp)
+library(sp)
 require(rgdal)
-require(raster)
+library(raster)
 
-require(RgoogleMaps)
-require(maptools)
-require(ggplot2)
-require(car)
-require(spatstat)
-require(fields)
-require(reshape)
+library(RgoogleMaps)
+library(maptools)
+library(ggplot2)
+library(car)
+library(spatstat)
+library(fields)
+library(reshape)
 
 ################################
 ## OPTIONS

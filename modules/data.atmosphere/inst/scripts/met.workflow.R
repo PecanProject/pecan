@@ -1,6 +1,6 @@
-require(PEcAn.data.atmosphere)
-require(PEcAn.ED2)
-require(PEcAn.SIPNET)
+library(PEcAn.data.atmosphere)
+library(PEcAn.ED2)
+library(PEcAn.SIPNET)
 
 options(warn=2)
 

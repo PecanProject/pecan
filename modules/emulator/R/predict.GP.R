@@ -11,7 +11,7 @@
 `predict.GP` <-
 function(gp,xpred,cI = NULL,pI = NULL,splinefcns=NULL){
   
-  require("coda")
+  library(coda)
   npred <- length(xpred); if(is.matrix(xpred)) npred <- nrow(xpred)
   nugget <- gp$nugget
   isotropic <- gp$isotropic
@@ -97,7 +97,7 @@ function(gp,xpred,cI = NULL,pI = NULL,splinefcns=NULL){
   nsamp <- length(samp)
 #  cInt <- pInt <- matrix(NA,nsamp,npred*dim)
   cInt <- pInt <- matrix(NA,nsamp,npred)
-  haveTime <- require("time")
+  haveTime <- require(time)
   prevTime<- NULL; if(haveTime) prevTime <- progressBar();  
   for(g in samp){
     j <- i <- which(g == samp)

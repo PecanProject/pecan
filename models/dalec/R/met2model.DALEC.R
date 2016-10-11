@@ -37,10 +37,8 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
   ## (MPa.m2.s/mmol-1); average foliar nitorgen (gC/m2 leaf area).  Calculate these from
   ## air_temperature (K), surface_downwelling_shortwave_flux_in_air (W/m2), CO2 (ppm)
   
-  if (!require(PEcAn.utils)) {
-    print("install PEcAn.utils")
-  }
-  
+  library(PEcAn.utils)
+
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
   out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"), 
@@ -67,8 +65,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
   library(ncdf4)
   library(lubridate)
   library(PEcAn.data.atmosphere)
-  # require(ncdf)
-  
+
   ## check to see if the outfolder is defined, if not create directory for output
   if (!file.exists(outfolder)) {
     dir.create(outfolder)
