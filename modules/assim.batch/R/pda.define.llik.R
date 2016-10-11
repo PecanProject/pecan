@@ -22,9 +22,11 @@ pda.define.llik.fn <- function(settings) {
         }
     } else {
       # Default to Normal(0,1)
-        llik.fn[[i]] <- function(model.out, obs.data, llik.par=1) {
-          LL <- dnorm(x= obs.data, mean=model.out, sd=llik.par, log=TRUE)
-          return(list(LL=sum(LL,na.rm=TRUE), n=sum(!is.na(LL))))
+        llik.fn[[i]] <- function(model.out, obs.data, llik.par = 1) {
+          if(is.list(model.out)) model.out <- unlist(model.out)
+          if(is.list(obs.data)) obs.data <- unlist(obs.data)
+          LL <- dnorm(x = obs.data, mean = model.out, sd = llik.par, log = TRUE)
+          return(list(LL = sum(LL, na.rm = TRUE), n = sum(!is.na(LL))))
         }
     }
   }

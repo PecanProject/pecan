@@ -151,6 +151,7 @@ install_github(&quot;PecanProject/pecan&quot;, subdir=&quot;all&quot;)</code></p
 <pre><code>&lt;assim.batch&gt;
   &lt;iter&gt;10000&lt;/iter&gt;
   &lt;method&gt;bruteforce&lt;/method&gt;
+  &lt;chain&gt;3&lt;/chain&gt;
   &lt;param.names&gt;
    &lt;temperate.coniferous&gt;                        &lt;--- YOUR PFT
     &lt;param&gt;veg_respiration_Q10&lt;/param&gt;
@@ -176,10 +177,6 @@ install_github(&quot;PecanProject/pecan&quot;, subdir=&quot;all&quot;)</code></p
   &lt;jump&gt;
     &lt;ar.target&gt;0.3&lt;/ar.target&gt;
     &lt;adapt&gt;200&lt;/adapt&gt;
-    &lt;jvar&gt;
-      &lt;jvar&gt;0.1&lt;/jvar&gt;
-      &lt;jvar&gt;0.1&lt;/jvar&gt;
-    &lt;/jvar&gt;
     &lt;adj.min&gt;0.1&lt;/adj.min&gt;
   &lt;/jump&gt;
   &lt;diag.plot.iter&gt;500&lt;/diag.plot.iter&gt;
@@ -187,6 +184,7 @@ install_github(&quot;PecanProject/pecan&quot;, subdir=&quot;all&quot;)</code></p
 <p>Here are details about the settings:</p>
 <ul>
 <li><p><code>&lt;iter&gt;</code> Specifies the number of MCMC iterations to run. If continuing a previous MCMC, this is the number of additional iterations, which will be added to the previous total. Defaults to 100 if missing. Ignored by pda.emulator().</p></li>
+<li><p><code>&lt;chain&gt;</code> Specifies the number of MCMC chains to be run.</p></li>
 <li><p><code>&lt;prior&gt;</code> Identifies the prior to be used for PDA. Can be one of either:</p>
 <ul>
 <li><p><code>&lt;posterior.id&gt;</code> A posterior ID in BETY specifying the posterior from a previous PEcAn analysis (e.g., meta-analysis or previous PDA) to be used as the prior for PDA. Defaults to the most recent relevant posterior in the database if omitted (and no <code>&lt;path&gt;</code> specified instead; see below).</p></li>
@@ -206,7 +204,7 @@ head(trait.dictionary[,c(&quot;id&quot;, &quot;figid&quot;)])</code></pre>
 ## 5 leaf_respiration_rate_m2   Leaf Respiration Rate
 ## 6  dark_respiration_factor Dark Respiration Factor</code></pre>
 <ul>
-<li><code>&lt;inputs&gt;</code> Observation data to be compared to the model. In principle, can be one or more datasets, specified in a variety of ways. In practice, the code is tested for assimilating Ameriflux dataset currently, and assumes the input is Ameriflux NEE/FC or LE.
+<li><p><code>&lt;inputs&gt;</code> Observation data to be compared to the model. In principle, can be one or more datasets, specified in a variety of ways. In practice, the code is tested for assimilating Ameriflux dataset currently, and assumes the input is Ameriflux NEE/FC or LE.</p>
 <ul>
 <li><code>&lt;file&gt;</code> Denotes a set of tags for a single input. Would be repeated for multiple datasets/variables, e.g. in this case note the differences in <code>&lt;variable.id&gt;</code> and <code>&lt;variable.name&gt;</code> :</li>
 </ul>
@@ -245,23 +243,31 @@ head(trait.dictionary[,c(&quot;id&quot;, &quot;figid&quot;)])</code></pre>
 <li><code>&lt;path&gt;</code> File path to the input. Both <code>&lt;id&gt;</code> and <code>&lt;path&gt;</code> of the observation data should be supplied for the PDA.</li>
 <li><code>&lt;source&gt;</code> A standardized source of input data (e.g., Ameriflux). Not implemented yet, but the idea would be similar to the met workflow, PEcAn would be able to use standard data sources automatically where available. Only used if no <code>&lt;id&gt;</code> or <code>&lt;path&gt;</code> is given.</li>
 <li><code>&lt;likelihood&gt;</code> Identifier for the likelihood to use. E.g., the Ameriflux NEE/FC and LE data use a Laplacian likelihood.</li>
-<li><code>&lt;variable.id&gt;</code> The BETY variable ID associated with this dataset. The idea is that specific preprocessing steps (e.g., estimating heteroskedastic error for tower NEE) would be associated with particular IDs. Could automate further by assigning default <code>&lt;likelihood&gt;</code> to variable.id values (allowing <code>&lt;likelihood&gt;</code> to be omitted from pecan.xml).</li>
+<li><p><code>&lt;variable.id&gt;</code> The BETY variable ID associated with this dataset. The idea is that specific preprocessing steps (e.g., estimating heteroskedastic error for tower NEE) would be associated with particular IDs. Could automate further by assigning default <code>&lt;likelihood&gt;</code> to variable.id values (allowing <code>&lt;likelihood&gt;</code> to be omitted from pecan.xml).</p>
+<p>NOTE : <code>&lt;inputs&gt;</code> chunk should always be on your xml file regardless of the method you use in the PDA.</p></li>
 </ul></li>
 <li><code>&lt;jump&gt;</code> Settings for the specifics of the proposal schema and adaptation functionality.
 <ul>
 <li><code>&lt;ar.target&gt;</code> Target acceptance rate for the adaptive jump algorithm. Defaults to 0.5 if missing.</li>
-<li><code>&lt;adapt&gt;</code> Number of iterations between jump variance adaptations. Defaults to <code>floor(iter/10)</code> if missing. If set equal to the number of <code>&lt;iter&gt;</code>, basically turns off the adaptation functionality.</li>
-<li><code>&lt;jvar&gt;</code> Initial jump variances for proposing parameter values, listed in individual <code>&lt;jvar&gt;</code> tags (one for each <code>&lt;param&gt;</code> specified in <code>&lt;param.names&gt;</code>). Will be adjusted adaptively if adaption is not turned off on purpose. Defaults to 1/10 the prior variance if missing.</li>
+<li><code>&lt;adapt&gt;</code> Number of iterations between jump variance adaptations. Defaults to <code>floor(iter/10)</code> if missing. If set equal to the number of <code>&lt;iter&gt;</code>, basically turns off the adaptation functionality, it is not recommended to turn-off this functionality.</li>
 <li><code>&lt;adj.min&gt;</code> Minimum factor by which to reduce jump variance when adapting. Prevents jump variances from degenerating to 0. Defaults to 0.1 if missing.</li>
 </ul></li>
 <li><code>&lt;diag.plot.iter&gt;</code> Interval between saving diagnostic plots. Omit or set to NULL to skip them.</li>
-<li><code>&lt;params.id&gt;</code> (Not shown.) A BETY dbfile ID for an MCMC output from previous PDA. If specified, that file is loaded, the new MCMC starts from the last parameter values of the previous, and when finished the extended chain is saved as a new output. If missing, then MCMC starts fresh from prior median parameter values. Regardless, the MCMC parameter values of the PDA are saved to file and inserted in BETY, and the new dbfile ID is inserted into <code>&lt;params.id&gt;</code>. The <code>pda.mcmc()</code> funtion returns the <code>&lt;assim.batch&gt;</code> settings, which can then be saved. Then, calling a new round of PDA using these returned settings will automatically continue the previous MCMC.</li>
+<li><p><code>&lt;params.id&gt;</code> (Not shown.) A BETY dbfile ID for an MCMC output from previous PDA. If specified, that file is loaded, the new MCMC starts from the last parameter values of the previous, and when finished the extended chain is saved as a new output. If missing, then MCMC starts fresh from prior median parameter values. Regardless, the MCMC parameter values of the PDA are saved to file and inserted in BETY, and the new dbfile ID is inserted into <code>&lt;params.id&gt;</code>. The <code>pda.mcmc()</code> funtion returns the <code>&lt;assim.batch&gt;</code> settings, which can then be saved. Then, calling a new round of PDA using these returned settings will automatically continue the previous MCMC.</p></li>
 </ul>
 </div>
 <div id="method-specific-settings" class="section level2">
 <h2>Method specific settings</h2>
+<p>If you want to extend your previous <em>bruteforce</em> and <em>bruteforce.bs</em> MCMC-chains, you can add an <code>&lt;extension&gt;</code> tag within your <code>&lt;assim.batch&gt;</code> chunk after reading your post-PDA settings (which would be saved as “pecan.pda[UNIQUE_ID].xml” in your working directory) and set it to “longer”.</p>
+<pre><code>  ...
+  &lt;method&gt;bruteforce.bs&lt;/method&gt;
+  &lt;iter&gt;10000&lt;/iter&gt;
+  &lt;method&gt;bruteforce&lt;/method&gt;
+  &lt;chain&gt;3&lt;/chain&gt;
+  &lt;extension&gt;longer&lt;/extension&gt;
+  ...</code></pre>
 <p>If you are using methods other than <em>bruteforce</em> and <em>bruteforce.bs</em>, some additional tags and different settings may apply.</p>
-<p><strong>emulator</strong> would look for additional tags such as <code>&lt;n.knot&gt;</code> and <code>&lt;GPpckg&gt;</code>:</p>
+<p><strong>emulator</strong> would use additional tags:</p>
 <pre><code>  ...
   &lt;method&gt;emulator&lt;/method&gt;
   &lt;n.knot&gt;20&lt;/n.knot&gt;
@@ -279,14 +285,13 @@ head(trait.dictionary[,c(&quot;id&quot;, &quot;figid&quot;)])</code></pre>
 <li><p><code>&lt;extension&gt;longer&lt;/extension&gt;</code> using the same emulator, this extension run takes the MCMC sampling from where it was left in the previous emulator run and runs a longer MCMC chain.</p></li>
 <li><p><code>&lt;extension&gt;round&lt;/extension&gt;</code> this extension run proposes new points in the parameter space in addition to the previous ones, and builds a new emulator including these additional points for a new MCMC sampling. These new points can come from both your inital PDA prior and the posterior of your first round of emulator run. You can determine the percentage of new knots coming from the posterior of your previous run in the <code>&lt;knot.par&gt;</code> tag. If you leave it empty, 75% of your new points will be drawn from the posterior of your previous run by default.</p></li>
 </ul></li>
-<li><p>Also, you can leave the <code>&lt;jvar&gt;</code> tag(s) under the <code>&lt;jump&gt;</code> block empty for emulator runs.</p></li>
 </ul>
 <p><strong>bayesian.tools</strong> would look for sampler specific settings that can be passed through the pecan.xml as a block under the <code>&lt;bt.settings&gt;</code> tag. Currently, the available samplers in the BayesianTools package are:</p>
 <ul>
 <li>Metropolis
 <ul>
 <li>Standard MH-MCMC</li>
-<li>Prior optimization</li>
+<li>With prior optimization</li>
 <li>Adaptive MCMC</li>
 <li>Delayed rejection</li>
 <li>Gibbs updating</li>
@@ -299,9 +304,11 @@ head(trait.dictionary[,c(&quot;id&quot;, &quot;figid&quot;)])</code></pre>
 <li>DEzs : Differential Evolution with a snooker updater</li>
 <li>DREAM : Differential Evolution Adaptive Metropolis</li>
 <li>DREAMzs : Differential Evolution Adaptive Metropolis with a snooker updater</li>
+<li>Twalk : “traverse” or “thoughtful” walk, a general purpose sampling algorithm</li>
 <li>SMC : Sequential Monte Carlo</li>
 </ul>
 <p>The name of the chosen sampler would be passed under <code>&lt;sampler&gt;</code> tag within the <code>&lt;bt.settings&gt;</code> block :</p>
+<p>It is not possible to use some of the samplers in this package for univariate cases. The ones that you can use for univariate cases are: “Metropolis”, “DE”, “DEzs” and “Twalk”.</p>
 <pre><code>  ...
   &lt;method&gt;bayesian.tools&lt;/method&gt;
   &lt;bt.settings&gt;
@@ -315,6 +322,7 @@ head(trait.dictionary[,c(&quot;id&quot;, &quot;figid&quot;)])</code></pre>
     &lt;consoleUpdates&gt;100&lt;/consoleUpdates&gt;
   &lt;/bt.settings&gt;
   ...</code></pre>
+<p>Some of the samplers are also restartable : “Metropolis”, “DE”, “DEzs”, “DREAM”, “DREAMzs”, “Twalk”</p>
 </div>
 
 
