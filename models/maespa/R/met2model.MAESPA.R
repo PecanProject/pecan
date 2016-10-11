@@ -33,8 +33,8 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
   library(PEcAn.utils)
                 
   print("START met2model.MAESPA")
-  start.date <- as.POSIXlt(start_date, tz = "GMT")
-  end.date <-as.POSIXlt(end_date, tz = "GMT")
+  start.date <- as.POSIXlt(start_date, tz = "UTC")
+  end.date <-as.POSIXlt(end_date, tz = "UTC")
   
   out.file <-paste(in.prefix, 
                    strptime(start.date, "%Y-%m-%d"),

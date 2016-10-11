@@ -39,8 +39,8 @@ model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, 
     secINday <- 60 * 60 * 24
     
     ### Determine number of years and output timestep
-    start_date <- as.POSIXlt(start_date, tz = "GMT")
-    end_date <- as.POSIXlt(end_date, tz = "GMT")
+    start_date <- as.POSIXlt(start_date, tz = "UTC")
+    end_date <- as.POSIXlt(end_date, tz = "UTC")
     start_year <- year(start_date)
     end_year <- year(end_date)
     years <- start_year:end_year
