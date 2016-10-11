@@ -17,13 +17,13 @@
 ##'
 metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=0, overwrite=FALSE, verbose=FALSE, ...){
 
-  require(REddyProc)    
+  library(REddyProc)    
   #REddyProc installed to ~/R/library by install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
   #dependency minpack.lm may not install automatically, so install it first
-  require(ncdf4)
-  require(udunits2)
-  require(PEcAn.utils)
-  require(lubridate)
+  library(ncdf4)
+  library(udunits2)
+  library(PEcAn.utils)
+  library(lubridate)
   
   # get start/end year code works on whole years only
   start_year <- year(start_date)

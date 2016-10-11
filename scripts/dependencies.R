@@ -16,8 +16,8 @@
 ##' @author Rob Kooper
 ##'
 dependencygraph <- function(packages, filename = "", suggests = FALSE, filter = NA) {
-  require(graphics)
-  require(igraph)
+  library(graphics)
+  library(igraph)
   
   graphData <- data.frame(from = numeric(0), to = numeric(0), relationship = numeric(0))
   seen <- c()
