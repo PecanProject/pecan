@@ -115,8 +115,7 @@ AirDens <- function(pres, T, rv){
 firstday <- function(mo,yr){
   ldoy = c(0,31,60,91,121,152,182,213,244,274,305,335,366)  
   doy = c(0,31,59,90,120,151,181,212,243,273,304,334,365)  
-  if(lubridate::leap_year(yr)){return(ldoy[mo])}
-  return(doy[mo])
+  ifelse(lubridate::leap_year(yr), ldoy[mo], doy[mo])
 }
 
 nday <- function(mo,yr){
