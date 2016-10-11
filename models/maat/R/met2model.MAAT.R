@@ -33,8 +33,9 @@ PREFIX_XML <- '<?xml version="1.0"?>\n'
 ##' @author Shawn P. Serbin
 ##'
 met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite=FALSE,verbose=FALSE){
-  if(!require(PEcAn.utils)) print("**Plesae install PEcAn.utils then retry**")
-  
+
+  library(PEcAn.utils)
+
   ## MAAT driver format (.csv):
   ## Time (POSIX),  Air Temp (°C), PAR (umols m-2 s-1), Precipitation( ??), Atmospheric CO2 (μmol mol-1) ... # STILL IN DEVELOPMENT
   
@@ -62,11 +63,10 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
     return(invisible(results))
   }
   
-  require(ncdf4)
-  require(lubridate)
-  require(PEcAn.data.atmosphere)
-  #  require(ncdf)
-  
+  library(ncdf4)
+  library(lubridate)
+  library(PEcAn.data.atmosphere)
+
   ## check to see if the outfolder is defined, if not create directory for output
   if(!file.exists(outfolder)){
     dir.create(outfolder)

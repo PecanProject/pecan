@@ -23,9 +23,9 @@ function(x,y,isotropic=TRUE,nugget=TRUE,method="bayes",ngibbs=5000,burnin=1000,t
 ## isotropic <- FALSE;nugget<-FALSE;method="bayes";ngibbs <- 50; burnin <- 10;thin<- 1; jump.ic<-c(1.1,0.2); prior <- "unif"
   
   ##check for packages
-  require("mvtnorm")
-  require("MCMCpack")
-##  require("dietze")
+  library(mvtnorm)
+  library(MCMCpack)
+##  library("dietze")
   if(burnin > ngibbs) burnin <- floor(ngibbs*0.25)
   
   if(!(method %in% c("bayes","MLE"))){

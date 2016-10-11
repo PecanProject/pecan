@@ -7,8 +7,8 @@ plot.da <- function(prior.dir,prior.file,in.dir,out.dir,next.run.dir){
 
 #source('code/R/approx.posterior.R')
 #source('code/R/utils.R')
-require(MASS)
-require(coda)
+  library(MASS)
+  library(coda)
 
 #prior.dir <- './pecan/Toolik/growth/'
 #prior.file<-'/post.distns.Rdata'
