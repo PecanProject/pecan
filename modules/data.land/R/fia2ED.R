@@ -159,8 +159,9 @@ fia.to.psscss <- function(settings,
     # which.max will return the first one, which will be the earliest
     best.cycle <- as.numeric(names(cycle.count)[which.max(cycle.count)])
     
-    row.drop.ind <- which((pss$statecd == statecd) & (pss$cycle != best.cycle))
-    pss <- pss[ -row.drop.ind,  ]
+    row.keep.ind <- (pss$statecd != statecd) | (pss$cycle == best.cycle)
+
+    pss <- pss[ row.keep.ind,  ]
   }
   
   # as an extra precaution, remove any records that are explicitly remeasurments of the
