@@ -7,7 +7,9 @@
 metric.timeseries.plot(dat, var)
 }
 \arguments{
-\item{dat}{}
+\item{dat}{dataframe}
+
+\item{var}{character}
 }
 \author{
 Betsy Cowdery

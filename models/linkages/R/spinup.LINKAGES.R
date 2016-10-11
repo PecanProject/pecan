@@ -19,6 +19,9 @@ spinup.LINKAGES <- function(start.year,end.year,temp.mat,precip.mat,paleon=NULL)
     precip.mat = rbind(precip.mat[1:spin.num,],precip.mat)
   }
 
+  
+  ###Add some sort of test for steady state or not
+  
   return(list(start.year=start.year,nyear=nyear,temp.mat=temp.mat,precip.mat=precip.mat))
   
 }

@@ -10,11 +10,11 @@
 ##'
 ##' @author James Simkins, Mike Dietze
 download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, overwrite=FALSE, verbose=FALSE, ...){  
-  require(PEcAn.utils)
-  require(lubridate)
-  require(ncdf4)
-  start_date <- as.POSIXlt(start_date, tz = "GMT")
-  end_date <- as.POSIXlt(end_date, tz = "GMT")
+  library(PEcAn.utils)
+  library(lubridate)
+  library(ncdf4)
+  start_date <- as.POSIXlt(start_date, tz = "UTC")
+  end_date <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- year(start_date)
   end_year   <- year(end_date)
   site_id = as.numeric(site_id)
@@ -22,8 +22,8 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
 
   lat.in = as.numeric(lat.in)
   lon.in = as.numeric(lon.in)
-  lat_trunc = floor(2*(90-as.numeric(lat.in)))
-  lon_trunc = floor(2*(as.numeric(lon.in)+180))
+  lat_trunc = floor(2*(90-as.numeric(lat.in)))+1
+  lon_trunc = floor(2*(as.numeric(lon.in)+180))+1
   dap_base ='http://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_'
     
   dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
@@ -43,7 +43,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
   
   for (i in 1:rows){
     year = ylist[i]    
-    ntime = ifelse(year%%4 == 0,1463,1459)
+    ntime = ifelse(lubridate:: leap_year(year), 366*4, 365*4)
     
     loc.file = file.path(outfolder,paste("CRUNCEP",year,"nc",sep="."))
     

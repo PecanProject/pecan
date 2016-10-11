@@ -89,7 +89,7 @@ for(j in 1:m){
     schema = scan(temporaryFile,what = "character", sep="\t") 
     unlink(temporaryFile)
     
-    if (!(length(schema) %in% c(1,3))) {
+    if (!(length(schema) %in% c(1,3,4))) {
       ## wasn't actually a version.txt file
       pecan.state[i,i] = 2    ## set status to DOWN
     } else {
@@ -127,9 +127,9 @@ for(j in 1:m){
     bety.size = as.numeric(sub("Content-Length:","",bety.state[grep("Content-Length",bety.state)]))
     if(bety.size != last.dump.size[i]){ ## size has changed
       bety.time = sub("Last-Modified: ","",bety.state[grep("Last-Modified",bety.state)])
-      bety.time=sub(" GMT\r","",bety.time)
-      #bety.time=sub("GMT\r","0000",bety.time)
-      bety.time = strptime(bety.time,"%a, %d %b %Y %T",tz="GMT")
+      bety.time=sub(" UTC\r","",bety.time)
+      #bety.time=sub("UTC\r","0000",bety.time)
+      bety.time = strptime(bety.time,"%a, %d %b %Y %T",tz="UTC")
       last.dump.time[i] = as.POSIXlt(bety.time)   
       last.dump.size[i] = bety.size
     }
@@ -167,7 +167,7 @@ for(j in 1:m){
     unlink(temporaryFile)
     if(length(grep("html",sync)) == 0) { ## detected log file, not error page
       sync.time = sub("UTC ","",substr(sync,1,28))
-      sync.time = strptime(sync.time,"%a %b %d %T %Y",tz="GMT")
+      sync.time = strptime(sync.time,"%a %b %d %T %Y",tz="UTC")
       sync.cols = matrix(as.numeric(unlist(strsplit(sync," "))),ncol=8,byrow=TRUE)
       sync.stat = sync.cols[,7:8]
 #      sync.stat = matrix(as.numeric(unlist(strsplit(substring(sync,30)," "))),ncol=2,byrow = TRUE)

@@ -73,10 +73,10 @@ getLatLon <- function(nc1) {
 met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE,...){
 
   #---------------- Load libraries. -----------------------------------------------------------------#
-  require(ncdf4)
-  require(PEcAn.utils)
-  require(geonames)
-  require(lubridate)
+  library(ncdf4)
+  library(PEcAn.utils)
+  library(geonames)
+  library(lubridate)
   #--------------------------------------------------------------------------------------------------#  
 
   # get start/end year code works on whole years only
@@ -202,7 +202,7 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     # convert VPD to water_vapor_saturation_deficit
     # HACK : conversion will make all values < 0 to be NA
     copyvals(nc1=nc1, var1='VPD',
-             nc2=nc2, var2='water_vapor_saturation_deficit', units2='mol m-2 s-1', dim2=dim, 
+             nc2=nc2, var2='water_vapor_saturation_deficit', units2='Pa', dim2=dim, 
              conv=function(x) { ifelse(x<0, NA, x*1000) }, verbose=verbose)
 
     # copy Rg to surface_downwelling_shortwave_flux_in_air

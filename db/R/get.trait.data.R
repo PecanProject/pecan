@@ -83,12 +83,11 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   traits <- names(trait.data.check)
 
   # check to see if we need to update
-  if ((forceupdate == 'AUTO') || !as.logical(forceupdate)) {
+  if (forceupdate || !as.logical(forceupdate)) {
     if (is.null(pft$posteriorid)) {
       pft$posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " ORDER BY created_at DESC LIMIT 1"), dbcon)[['id']]  
     }
-    if (!is.null(pft$posteriorid)) {
-      db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " ORDER BY created_at DESC LIMIT 1"), dbcon)[['id']]   
+    if (!is.null(pft$posteriorid)) { 
       files <- dbfile.check('Posterior', pft$posteriorid, dbcon)
       ids <- match(c('trait.data.Rdata', 'prior.distns.Rdata', 'species.csv'), files$file_name)
       if (!any(is.na(ids))) {
@@ -98,7 +97,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
           if (!file.exists(file.path(files$file_path[[id]], files$file_name[[id]]))) {
             foundallfiles <- FALSE
             logger.error("can not find posterior file: ", file.path(files$file_path[[id]], files$file_name[[id]]))
-          } else if ((forceupdate == 'AUTO') && (files$file_name[[id]] == "species.csv")) {
+          } else if (forceupdate && (files$file_name[[id]] == "species.csv")) {
             logger.debug("Checking if species have changed")
             testme <- read.csv(file.path(files$file_path[[id]], files$file_name[[id]]))
             if (!check.lists(species, testme)) {
@@ -106,7 +105,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
               logger.error("species have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
             }
             remove(testme)
-          } else if ((forceupdate == 'AUTO') && (files$file_name[[id]] == "prior.distns.Rdata")) {
+          } else if (forceupdate && (files$file_name[[id]] == "prior.distns.Rdata")) {
             logger.debug("Checking if priors have changed")
             prior.distns.tmp <- prior.distns
             load(file.path(files$file_path[[id]], files$file_name[[id]]))
@@ -117,7 +116,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
               logger.error("priors have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
             }
             remove(testme)
-          } else if ((forceupdate == 'AUTO') && (files$file_name[[id]] == "trait.data.Rdata")) {
+          } else if (forceupdate && (files$file_name[[id]] == "trait.data.Rdata")) {
             logger.debug("Checking if trait data has changed")
             load(file.path(files$file_path[[id]], files$file_name[[id]]))
 
@@ -141,6 +140,18 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
           logger.info("Reusing existing files from posterior", pft$posteriorid, "for", pft$name)
           for(id in 1:nrow(files)) {
             file.copy(file.path(files[[id, 'file_path']], files[[id, 'file_name']]), file.path(pft$outdir, files[[id, 'file_name']]))
+          }
+          
+          # May need to symlink the generic post.distns.Rdata to a specific post.distns.*.Rdata file.
+          if(length(dir(pft$outdir, "post.distns.Rdata"))==0) {
+            all.files <- dir(pft$outdir)
+            post.distn.file <- all.files[grep("post.distns.*.Rdata", all.files)]
+            if(length(post.distn.file) > 1)
+              stop("get.trait.data.pft() doesn't know how to handle multiple post.distns.*.Rdata files")
+            else if(length(post.distn.file) == 1) {
+              # Found exactly one post.distns.*.Rdata file. Use it.
+              file.symlink(file.path(pft$outdir, post.distn.file), file.path(pft$outdir, 'post.distns.Rdata'))
+            }
           }
           return(pft)
         }
@@ -170,7 +181,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   ## save priors
   save(prior.distns, file = file.path(pft$outdir, "prior.distns.Rdata"))
   write.csv(prior.distns,
-            file = file.path(pft$outdir, "prior.distns.csv"), row.names = FALSE)
+            file = file.path(pft$outdir, "prior.distns.csv"), row.names = TRUE)
 
   ## 3. display info to the console
   logger.info('Summary of Prior distributions for: ', pft$name)
@@ -209,7 +220,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
 ##' - settings$pfts
 ##' - settings$model$type
 ##' - settings$database$bety
-##' - settings$run$dbfiles
+##' - settings$database$dbfiles
 ##' - settings$meta.analysis$update
 ##' @name get.trait.data
 ##' @title Gets trait data from the database
@@ -240,6 +251,43 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,trait
   invisible(result)
 }
 ##==================================================================================================#
+
+##' @export
+runModule.get.trait.data <- function(settings) {
+  if(is.null(settings$meta.analysis)) return(settings) ## if there's no MA, there's no need for traits
+  if(is.MultiSettings(settings)) {
+    pfts <- list()
+    pft.names <- character(0)
+    for(i in seq_along(settings)) {
+      pfts.i <- settings[[i]]$pfts
+      pft.names.i <- sapply(pfts.i, function(x) x$name)
+      ind <- which(pft.names.i %in% setdiff(pft.names.i, pft.names))
+      pfts <- c(pfts, pfts.i[ind])
+      pft.names <- sapply(pfts, function(x) x$name)
+    }
+    
+    logger.info(paste0("Getting trait data for all PFTs listed by any Settings object in the list: ",
+                paste(pft.names, collapse=", ")))
+                
+    modeltype <- settings$model$type
+    dbfiles <- settings$database$dbfiles
+    database <- settings$database$bety
+    forceupdate <- !is.null(settings$meta.analysis) && (as.logical(settings$meta.analysis$update) || (settings$meta.analysis$update == 'AUTO'))
+    settings$pfts <- get.trait.data(pfts, modeltype, dbfiles, database, forceupdate)
+    return(settings)
+  } else if(is.Settings(settings)) {
+    pfts <- settings$pfts
+    modeltype <- settings$model$type
+    dbfiles <- settings$database$dbfiles
+    database <- settings$database$bety
+    forceupdate <- !is.null(settings$meta.analysis) && (as.logical(settings$meta.analysis$update) || (settings$meta.analysis$update == 'AUTO'))
+    settings$pfts <- get.trait.data(pfts, modeltype, dbfiles, database, forceupdate)
+    return(settings)
+  } else {
+    stop("runModule.get.trait.data only works with Settings or MultiSettings")
+  }
+}
+
 
 
 ####################################################################################################

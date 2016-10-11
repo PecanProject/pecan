@@ -119,7 +119,7 @@ get.rh <- function(T, Td){
 ##' @export
 ##' @author David LeBauer
 wide2long <- function(data.wide, lat, lon, var){
-  require(reshape)
+  library(reshape)
   colnames(data.wide) <- lon
   data.wide <- cbind(lat, data.wide)
   data.long <- melt(data.wide, id = "lat")
@@ -223,4 +223,16 @@ exner <- function(pres){
 ##' @author Mike Dietze
 AirDens <- function(pres, T, rv){
   pres/(287.0*T*(1.0+0.61*rv))
+}
+
+##' calculate latent heat of vaporization for water 
+##' 
+##' @title Latent heat of vaporization
+##' @param airtemp   air temperature (Kelvin)
+##' @export
+##' @author Istem Fer
+##' @return lV   latent heat of vaporization (J kg-1)
+get.lv <- function(airtemp = 268.6465){
+  lv <- (94.210 * (365 - (airtemp - 273.15)) ^ 0.31249) * 4.183 * 1000
+  return(lv)
 }

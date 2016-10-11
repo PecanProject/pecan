@@ -6,13 +6,12 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-#
-## R Code to convert NetCDF CF met files into GDAY met files
 
-##If files already exist in "Outfolder", the default function is NOT to
-## overwrite them and only gives user the notice that file already exists. If
-## user wants to overwrite the existing files, just change overwrite statement
-## below to TRUE.
+# R Code to convert NetCDF CF met files into GDAY met files
+
+## If files already exist in 'Outfolder', the default function is NOT to overwrite them and only
+## gives user the notice that file already exists. If user wants to overwrite the existing files,
+## just change overwrite statement below to TRUE.
 
 ##' met2model for GDAY
 ##'
@@ -27,9 +26,11 @@
 ##'        the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
-met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
-                           end_date, ..., overwrite=FALSE,verbose=FALSE){
-
+##'
+##' @author Martin De Kauwe
+met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date, 
+                           overwrite = FALSE, verbose = FALSE, ...) {
+  
   ## GDAY driver format (.csv):
   ## 30min: year (-), doy (-; NB. leap years), hod (-), rainfall (mm 30 min-1),
   ##        par (umol m-2 s-1), tair (deg C), tsoil (deg C), vpd (kPa),
@@ -42,287 +43,229 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date,
   ##        vpd_pm (kPa), co2 (ppm), ndep (t ha-1 day-1), wind (m-2 s-1),
   ##        press (kPa), wind_am (m-2 s-1), wind_pm (m-2 s-1),
   ##        par_am (umol m-2 s-1), par_pm (umol m-2 s-1)
-
+  
   SW_2_PAR <- 2.3
   PA_2_KPA <- 0.001
-  SEC_TO_HFHR <- 60.0 * 30.0
+  SEC_TO_HFHR <- 60 * 30
   K_TO_DEG <- -273.15
-  MOL_2_UMOL <- 1E6
-
-  if(!require(PEcAn.utils)) print("install PEcAn.utils")
-
-  start_date <- as.POSIXlt(start_date, tz = "GMT")
-  end_date<- as.POSIXlt(end_date, tz = "GMT")
-  out.file <- paste(in.prefix,
-                    strptime(start_date, "%Y-%m-%d"),
-                    strptime(end_date, "%Y-%m-%d"),
-                    "dat", sep=".")
+  MOL_2_UMOL <- 1e+06
+  
+  library(PEcAn.utils)
+  
+  start_date <- as.POSIXlt(start_date, tz = "UTC")
+  end_date <- as.POSIXlt(end_date, tz = "UTC")
+  out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"), 
+                    strptime(end_date, "%Y-%m-%d"), 
+                    "dat", sep = ".")
   out.file.full <- file.path(outfolder, out.file)
-
-  results <- data.frame(file=c(out.file.full),
-                        host=c(fqdn()),
-                        mimetype=c('text/plain'),
-                        formatname=c('GDAY meteorology'),
-                        startdate=c(start_date),
-                        enddate=c(end_date),
-                        dbfile.name=out.file,
-                        stringsAsFactors=FALSE)
-  print("internal results")
-  print(results)
-
+  
+  results <- data.frame(file = c(out.file.full), 
+                        host = c(fqdn()), 
+                        mimetype = c("text/plain"), 
+                        formatname = c("GDAY meteorology"), 
+                        startdate = c(start_date), 
+                        enddate = c(end_date), 
+                        dbfile.name = out.file, 
+                        stringsAsFactors = FALSE)
+  
   if (file.exists(out.file.full) && !overwrite) {
-    logger.debug("File '", out.file.full,
-                 "' already exists, skipping to next file.")
+    logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
     return(invisible(results))
   }
-
-  require(ncdf4)
-  require(lubridate)
-  require(PEcAn.data.atmosphere)
-  #  require(ncdf)
-
-  ## check to see if the outfolder is defined, if not create directory for
-  ## output
-  if (!file.exists(outfolder)){
+  
+  library(ncdf4)
+  library(lubridate)
+  library(PEcAn.data.atmosphere)
+  
+  ## check to see if the outfolder is defined, if not create directory for output
+  if (!file.exists(outfolder)) {
     dir.create(outfolder)
   }
-
-  ## For now setting this to be always true till I figure out how to
-  ## interface with the sub_daily param file. Should detech if met-data
-  ## is coarser than 30-min and swapped to day version?
-  sub_daily = TRUE
-
+  
+  ## For now setting this to be false till we resolve the best route forward
+  sub_daily <- FALSE
+  
+  # Create an empty holder for each (hour)days translated met file
   out <- NULL
-
-  ## write the expected header information
-  if (sub_daily) {
-    ounits <- paste("#--,--,--,mm/30min,umol/m2/s,degC,degC,kPa,ppm,",
-                    "t/ha/30min,m/s,kPa", sep="")
-    ovar_names <- "#year,doy,hod,rain,par,tair,tsoil,vpd,co2,ndep,wind,press"
-
-    # Do we have a site name that we can append here?
-    out = rbind(out, "Site? 30-min met forcing")
-    out = rbind(out, paste("Created by met2model.GDAY.R:", Sys.Date()))
-    out = rbind(out, ounits)
-    out = rbind(out, ovar_names)
-  } else {
-    ounits <- paste("#--,--,degC,mm,degC,degC,degC,degC,degC,degC,kPa,kPa,",
-                    "ppm,t/ha/d,m/s,kPa,m/s,m/s,umol/m2/s,umol/m2/s", sep="")
-    ovar_names <- paste("#year,doy,tair,rain,tsoil,tam,tpm,tmin,tmax,tday,",
-                        "vpd_am,vpd_pm,co2,ndep,wind,press,wind_am,wind_pm,",
-                        "par_am,par_pm", sep="")
-
-    # Do we have a site name that we can append here?
-    out = rbind(out, "Site? 30-min met forcing")
-    out = rbind(out, paste("Created by met2model.GDAY.R:", Sys.Date()))
-    out = rbind(out, ounits)
-    out = rbind(out, ovar_names)
-  }
-
-  # get start/end year since inputs are specified on year basis
+  
   start_year <- year(start_date)
   end_year <- year(end_date)
-
-  ## loop over files
-  # TODO need to filter out the data that is not inside start_date, end_date
+  
   for (year in start_year:end_year) {
-    print(year)
-    old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
-
-    ## open netcdf
+    old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
+    
     nc <- nc_open(old.file)
-
-    ## convert time to seconds
-    sec   <- nc$dim$time$vals
-    sec = udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],
-                               "seconds")
-    timestep.s=86400 #seconds in a day
-    ifelse(leap_year(year)==TRUE,
-           dt <- (366*24*60*60)/length(sec), #leap year
-           dt <- (365*24*60*60)/length(sec)) #non-leap year
-    tstep = round(timestep.s/dt)
-    dt = timestep.s/tstep #dt is now an integer
-
+    
     ## extract variables
-    lat <- ncvar_get(nc, "latitude")
-    lon <- ncvar_get(nc, "longitude")
+    lat  <- ncvar_get(nc, "latitude")
+    lon  <- ncvar_get(nc, "longitude")
     Tair <- ncvar_get(nc, "air_temperature")  ## in Kelvin
-    PAR <- try(ncvar_get(nc,
-                     "surface_downwelling_photosynthetic_photon_flux_in_air"))
-    PAR <- PAR * MOL_2_UMOL
+    Tair <- Tair + K_TO_DEG
+    PAR  <- try(ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air"))
+    PAR  <- PAR * MOL_2_UMOL
     if (!is.numeric(PAR)) {
-      SW <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air") ##in W/m2
+      SW <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  ##in W/m2
       PAR <- SW * SW_2_PAR
     }
     CO2 <- try(ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
-    SH <- try(ncvar_get(nc, "specific_humidity")) ## kg/kg
-    wind_speed  <- try(ncvar_get(nc, "wind_speed")) ## m/s
-    air_pressure <- try(ncvar_get(nc, "air_pressure")) ## Pa
-    ppt <- try(ncvar_get(nc, "precipitation_flux")) ## kg/m2/s
-
-
-    nc_close(nc)
-
-    useCO2 = is.numeric(CO2)
-    if(useCO2)  CO2 <- CO2 * 1e6  ## convert from mole fraction (kg/kg) to ppm
-
-    ## is CO2 present?
-    if (!is.numeric(CO2)){
-      logger.warn("CO2 not found in",old.file,"setting to default: 400 ppm")
-      CO2 = rep(400,length(Tair))
-    }
-
-    if (sub_daily) {
-
-      if(year %% 4 == 0) {
-        ndays <= 366
-      } else {
-        ndays <- 365
-      }
-      idx = 1
-      for (doy in 1:ndays) {
-
-        ## If there is no Tsoil variabile use Tair...it doesn't look like Tsoil
-        ## is a standard input
-        tsoil = mean(tair[idx:idx+48] + K_TO_DEG)
-        for (hod in 1:48) {
-
-          rain = ppt[idx] * SEC_TO_HFHR
-          par = PAR[idx]
-          tair = Tair[idx] + K_TO_DEG
-          wind = wind_speed[idx]
-          press = air_pressure[idx] * PA_2_KPA
-          rh = qair2rh(SH[idx], Tair[idx])
-          vpd = get.vpd(rh[idx], Tair[idx])
-          co2 = CO2[idx]
-
-          # This is an assumption of the Medlyn gs model
-          if (vpd < 0.05) {
-            vpd = 0.05
-          }
-
-          ## No NDEP, so N-cycle will have to be switched off by default
-          ndep = -999.9
-
-          idx <- idx + 1
-        } ## Hour of day loop
-
-        ## build data matrix
-        tmp <- cbind(year,
-                     doy,
-                     hod,
-                     rain,
-                     par,
-                     tair,
-                     tsoil,
-                     vpd,
-                     CO2,
-                     ndep,
-                     wind,
-                     press)
-
-        if (is.null(out)) {
-          out = tmp
-        } else {
-          out = rbind(out, tmp)
-        }
-      } ## Day of year loop
-
+    SH  <- try(ncvar_get(nc, "specific_humidity"))  ## kg/kg
+    VPD <- try(ncvar_get(nc, "water_vapor_saturation_deficit"))  ## Pa
+    if (!is.numeric(VPD)) {
+      RH  <- qair2rh(SH, Tair)
+      VPD <- get.vpd(RH, Tair) * MB_2_KPA
     } else {
-
-      idx = 1
-      if(year %% 4 == 0) {
-        ndays <= 366
+      VPD <- VPD * PA_2_KPA
+    }
+    
+    wind_speed <- try(ncvar_get(nc, "wind_speed"))  ## m/s
+    air_pressure <- try(ncvar_get(nc, "air_pressure"))  ## Pa
+    ppt <- try(ncvar_get(nc, "precipitation_flux"))  ## kg/m2/s
+    
+    nc_close(nc)
+    
+    ## is CO2 present?
+    if (!is.numeric(CO2)) {
+      logger.warn("CO2 not found in", old.file, "setting to default: 400 ppm")
+      CO2 <- rep(400, length(Tair))
+    } else {
+      CO2 <- CO2 * MOL_2_UMOL
+    }
+    
+    if (sub_daily) {
+      
+      if (year%%4 == 0) {
+        ndays <- 366
       } else {
         ndays <- 365
       }
+      
       for (doy in 1:ndays) {
-
-        # Build day, morning and afternoon indicies
-        day_idx <- idx:idx+48
-        mor_idx <- idx:idx+23
-        eve_idx <- idx+24:idx+48
-
-        tam <- Tair[mor_idx][PAR[mor_idx] > 0.0]
-        tpm <- Tair[eve_idx][PAR[eve_idx] > 0.0]
-
-        ## Needs to be daylight hours...how do we access sun up/down
-        tair = Tair[day_idx][PAR[mor_idx] > 0.0]
-        rain = sum(ppt[day_idx] * SEC_TO_HFHR)
-
-        ## If there is no Tsoil variabile use Tair...it doesn't look like Tsoil
-        ## is a standard input
-        tsoil = mean(tair[day_idx] + K_TO_DEG)
-
-        ## Needs to be AM/PM
-        tam = Tair[mor_idx][PAR[mor_idx] > 0.0]
-        tpm = Tair[eve_idx][PAR[eve_idx] > 0.0]
-
-        tmin = min(tair[day_idx] + K_TO_DEG)
-        tmax = max(tair[day_idx] + K_TO_DEG)
-        tday = mean(tair[day_idx] + K_TO_DEG)
-
-        vpd_am = vpd[mor_idx][PAR[mor_idx] > 0.0]
-        # This is an assumption of the Medlyn gs model
-        if (vpd_am < 0.05) {
-          vpd_am = 0.05
-        }
-
-        vpd_am = vpd[eve_idx][PAR[eve_idx] > 0.0]
-        # This is an assumption of the Medlyn gs model
-        if (vpd_pm < 0.05) {
-          vpd_pm = 0.05
-        }
-        co2 = mean(CO2[day_idx])
-
-        ## No NDEP, so N-cycle will have to be switched off by default
-        ndep = -999.9
-
-        wind = mean(wind_speed[day_idx])
-        press = mean(air_pressure[day_idx] * PA_2_KPA)
-
-        # Needs to be AM/PM
-        wind_am = wind_speed[mor_idx][PAR[mor_idx] > 0.0]
-        wind_pm = wind_speed[eve_idx][PAR[eve_idx] > 0.0]
-        par_am = PAR[mor_idx][PAR[mor_idx] > 0.0]
-        par_pm = PAR[eve_idx][PAR[eve_idx] > 0.0]
-      }
-
-      ## build data matrix
-      tmp <- cbind(year,
-                   doy,
-                   tair,
-                   rain,
-                   tsoil,
-                   tam,
-                   tpm,
-                   tmin,
-                   tmax,
-                   tday,
-                   vpd_am,
-                   vpd_pm,
-                   CO2,
-                   ndep,
-                   wind,
-                   press,
-                   wind_am,
-                   wind_pm,
-                   par_am,
-                   par_pm)
-
-      if (is.null(out)) {
-        out = tmp
+        
+        day_idx <- idx:((idx - 1) + 48)
+        
+        # Grab the days data
+        tair_day  <- Tair[day_idx]
+        rain_day  <- ppt[day_idx]
+        par_day   <- PAR[day_idx]
+        vpd_day   <- VPD[day_idx]
+        wind_day  <- wind_speed[day_idx]
+        press_day <- air_pressure[day_idx] * PA_2_KPA
+        co2_day   <- CO2[day_idx]
+        
+        ## If there is no Tsoil variabile use Tair...it doesn't look like Tsoil is a standard input
+        tsoil_out <- mean(tair_day)
+        
+        for (hod in 1:48) {
+          
+          rain_out  <- rain_day[hod] * SEC_TO_HFHR
+          par_out   <- par_day[hod]
+          tair_out  <- tair_day[hod]
+          wind_out  <- wind_day[hod]
+          press_out <- press_day[hod]
+          vpd_out   <- vpd_day[hod]
+          co2_out   <- co2_day[hod]
+          
+          # This is an assumption of the Medlyn gs model
+          if (vpd_out < 0.05) {
+            vpd_out <- 0.05
+          }
+          
+          ## No NDEP, so N-cycle will have to be switched off by default
+          ndep_out <- -999.9
+          
+          ## build output data matrix
+          tmp <- cbind(year, doy, hod, 
+                       rain_out, par_out, tair_out, tsoil_out, vpd_out, 
+                       co2_out, ndep_out, wind_out, press_out)
+          
+          if (is.null(out)) {
+            out <- tmp
+          } else {
+            out <- rbind(out, tmp)
+          }
+          
+          idx <- idx + 48
+        }  ## Hour of day loop
+      }  ## Day of year loop
+      
+    } else {
+      
+      if (year%%4 == 0) {
+        ndays <- 366
       } else {
-        out = rbind(out,tmp)
+        ndays <- 365
       }
-    } ## end sub-daily/day if/else block
-  } ## end loop over years
-
+      
+      for (doy in 1:ndays) {
+        
+        # Build day, morning and afternoon indicies
+        day_idx <- idx:((idx - 1) + 48)
+        mor_idx <- 1:24
+        eve_idx <- 25:48
+        
+        # Grab the days data
+        tair_day <- Tair[day_idx]
+        par_day  <- PAR[day_idx]
+        vpd_day  <- VPD[day_idx]
+        wind_day <- wind_speed[day_idx]
+        
+        # Calculate the output met vars
+        tair_out <- mean(tair_day)
+        rain_out <- sum(ppt[day_idx] * SEC_TO_HFHR)
+        
+        ## If there is no Tsoil variabile use Tair...it doesn't look like Tsoil is a standard input
+        tsoil_out <- mean(tair_day)
+        
+        ## No NDEP, so N-cycle will have to be switched off by default
+        ndep_out <- -999.9
+        
+        co2_out   <- mean(CO2[day_idx])
+        wind_out  <- mean(wind_speed[day_idx])
+        press_out <- mean(air_pressure[day_idx] * PA_2_KPA)
+        
+        ## Needs to be morning (am) / afternoon (pm)
+        tair_am_out <- mean(tair_day[mor_idx][par_day[mor_idx] > 0])
+        tair_pm_out <- mean(tair_day[eve_idx][par_day[eve_idx] > 0])
+        tmin_out    <- min(tair_day)
+        tmax_out    <- max(tair_day)
+        tday_out    <- mean(tair_day)
+        
+        vpd_am_out <- mean(vpd_day[mor_idx][par_day[mor_idx] > 0])
+        # This is an assumption of the Medlyn gs model
+        if (vpd_am_out < 0.05) {
+          vpd_am_out <- 0.05
+        }
+        
+        vpd_pm_out <- mean(vpd_day[eve_idx][par_day[eve_idx] > 0])
+        # This is an assumption of the Medlyn gs model
+        if (vpd_pm_out < 0.05) {
+          vpd_pm_out <- 0.05
+        }
+        
+        wind_am_out <- mean(wind_day[mor_idx][par_day[mor_idx] > 0])
+        wind_pm_out <- mean(wind_day[eve_idx][par_day[eve_idx] > 0])
+        par_am_out <- sum(par_day[mor_idx][par_day[mor_idx] > 0])
+        par_pm_out <- sum(par_day[eve_idx][par_day[eve_idx] > 0])
+        
+        ## build output data matrix
+        tmp <- cbind(year, doy, tair_out, rain_out, tsoil_out, tair_am_out, tair_pm_out, 
+                     tmin_out, tmax_out, tday_out, vpd_am_out, vpd_pm_out, co2_out, ndep_out, wind_out, 
+                     press_out, wind_am_out, wind_pm_out, par_am_out, par_pm_out)
+        
+        if (is.null(out)) {
+          out <- tmp
+        } else {
+          out <- rbind(out, tmp)
+        }
+        
+        idx <- idx + 1
+      }  ## end of day loop
+      
+    }  ## end sub-daily/day if/else block
+  }  ## end loop over years
+  
   ## write output
-  write.table(out, out.file.full, quote=FALSE, sep=",", row.names=FALSE,
-              col.names=FALSE)
-
+  write.table(out, out.file.full, quote = FALSE, sep = ",", row.names = FALSE, col.names = FALSE)
+  
   invisible(results)
-
-
-}
+} # met2model.GDAY

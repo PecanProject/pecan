@@ -14,69 +14,6 @@
 library(PEcAn.all)
 library(RCurl)
 
-#--------------------------------------------------------------------------------#
-# Functions used to write STATUS used by history
-#--------------------------------------------------------------------------------#
-status.start <- function(name) {
-  if (exists("settings")) {
-    cat(paste(name,
-              format(Sys.time(), "%F %T"), sep="\t"),
-        file=file.path(settings$outdir, "STATUS"), append=TRUE)
-  }
-}
-status.end <- function(status="DONE") {
-  if (exists("settings")) {
-    cat(paste("",
-              format(Sys.time(), "%F %T"),
-              status,
-              "\n", sep="\t"),
-        file=file.path(settings$outdir, "STATUS"), append=TRUE)
-  }
-}
-status.skip <- function(name) {
-  if (exists("settings")) {
-    cat(paste(name,
-              format(Sys.time(), "%F %T"),
-              "",
-              format(Sys.time(), "%F %T"),
-              "SKIPPED",
-              "\n", sep="\t"),
-        file=file.path(settings$outdir, "STATUS"), append=TRUE)
-  }
-}
-status.check <- function(name) {
-  if (!exists("settings")) return (0)
-  status.file=file.path(settings$outdir, "STATUS")
-  if (!file.exists(status.file)){
-    return (0)
-  }
-  status.data <- read.table(status.file, row.names=1, header=FALSE, sep="\t", quote="", fill=TRUE)
-  if (! name %in% row.names(status.data)) {
-    return (0)
-  }
-  status.data[name,]
-  if (is.na(status.data[name, 3])) {
-    logger.warn("UNKNOWN STATUS FOR", name)
-    return (0)
-  }
-  if (status.data[name, 3] == "DONE") {
-    return (1)
-  }
-  if (status.data[name, 3] == "ERROR") {
-    return (-1)
-  }
-  return (0)
-}
-kill.tunnel <- function() {
-  if (exists("settings") && !is.null(settings$run$host$tunnel)) {
-    pidfile <- file.path(dirname(settings$run$host$tunnel), "pid")
-    pid <- readLines(pidfile)
-    print(paste("Killing tunnel with PID", pid))
-    tools::pskill(pid)
-    file.remove(pidfile)
-  }
-}
-
 # make sure always to call status.end
 options(warn=1)
 options(error=quote({
@@ -108,53 +45,13 @@ if (length(which(commandArgs() == "--continue")) == 0) {
 }
   
 # Do conversions
-needsave <- FALSE
-for(i in 1:length(settings$run$inputs)) {
-  input <- settings$run$inputs[[i]]
-  if (is.null(input)) next
-  
-  input.tag <- names(settings$run$input)[i]
-  
-  # fia database
-  if ((input['input'] == 'fia') && (status.check("FIA2ED") == 0)) {
-    status.start("FIA2ED")
-    fia.to.psscss(settings)
-    status.end()
-    needsave <- TRUE
-  }
-  
-  # met conversion
-  if(input.tag == 'met') {
-    name <- ifelse(is.null(settings$browndog), "MET Process", "BrownDog")
-    if (is.null(input$path) && (status.check(name) == 0)) {
-      status.start(name)
-      result <- PEcAn.data.atmosphere::met.process(
-        site       = settings$run$site, 
-        input_met  = settings$run$inputs$met,
-        start_date = settings$run$start.date,
-        end_date   = settings$run$end.date,
-        model      = settings$model$type,
-        host       = settings$run$host,
-        dbparms    = settings$database$bety, 
-        dir        = settings$run$dbfiles,
-        browndog   = settings$browndog)
-      settings$run$inputs[[i]][['path']] <- result
-      status.end()
-      needsave <- TRUE
-    }
-  }
-}
-if (needsave) {
-  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.METProcess.xml'))  
-} else if (file.exists(file.path(settings$outdir, 'pecan.METProcess.xml'))) {
-  settings <- read.settings(file.path(settings$outdir, 'pecan.METProcess.xml'))
-}
+settings <- do.conversions(settings)
 
 
 # Query the trait database for data and priors
 if (status.check("TRAIT") == 0){
   status.start("TRAIT")
-  settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
+  settings <- runModule.get.trait.data(settings)
   saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.TRAIT.xml'))
   status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.TRAIT.xml'))) {
@@ -163,10 +60,10 @@ if (status.check("TRAIT") == 0){
 
   
 # Run the PEcAn meta.analysis
-if('meta.analysis' %in% names(settings)) {
+if(!is.null(settings$meta.analysis)) {
   if (status.check("META") == 0){
     status.start("META")
-    run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.analysis$random.effects, settings$meta.analysis$threshold, settings$run$dbfiles, settings$database$bety)
+    runModule.run.meta.analysis(settings)
     status.end()
   }
 }
@@ -174,7 +71,7 @@ if('meta.analysis' %in% names(settings)) {
 # Write model specific configs
 if (status.check("CONFIG") == 0){
   status.start("CONFIG")
-  settings <- run.write.configs(settings, write=settings$database$bety$write, ens.sample.method=settings$ensemble$method)
+  settings <- runModule.run.write.configs(settings)
   saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.CONFIGS.xml'))
   status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
@@ -189,28 +86,28 @@ if ((length(which(commandArgs() == "--advanced")) != 0) && (status.check("ADVANC
 # Start ecosystem model runs
 if (status.check("MODEL") == 0) {
   status.start("MODEL")
-  start.model.runs(settings, settings$database$bety$write)
+  runModule.start.model.runs(settings)
   status.end()
 }
 
 # Get results of model runs
 if (status.check("OUTPUT") == 0) {
   status.start("OUTPUT")
-  get.results(settings)
+  runModule.get.results(settings)
   status.end()
 }
 
 # Run ensemble analysis on model output. 
 if (status.check("ENSEMBLE") == 0) {
   status.start("ENSEMBLE")
-  run.ensemble.analysis(TRUE)    
+  run.ensemble.analysis(settings,TRUE)    
   status.end()
 }
 
 # Run sensitivity analysis and variance decomposition on model output
 if (status.check("SENSITIVITY") == 0) {
   status.start("SENSITIVITY")
-  run.sensitivity.analysis()
+  run.sensitivity.analysis(settings)
   status.end()
 }
 
@@ -219,6 +116,15 @@ if ('assim.batch' %in% names(settings)) {
   if (status.check("PDA") == 0) {
     status.start("PDA")
     settings <- assim.batch(settings)
+    status.end()
+  }
+}
+
+# Run state data assimilation
+if ('state.data.assimilation' %in% names(settings)) {
+  if (status.check("SDA") == 0) {
+    status.start("SDA")
+    settings <- sda.enfk(settings)
     status.end()
   }
 }
@@ -232,7 +138,7 @@ if (status.check("FINISHED") == 0) {
   # Send email if configured
   if (!is.null(settings$email) && !is.null(settings$email$to) && (settings$email$to != "")) {
     sendmail(settings$email$from, settings$email$to,
-             paste0("Workflow has finished executing at ", date()),
+             paste0("Workflow has finished executing at ", base::date()),
              paste0("You can find the results on ", settings$email$url))
   }
   status.end()

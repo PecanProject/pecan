@@ -22,11 +22,11 @@
 model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon = -9999) {
   
 
-  require(data.table)
-  require(lubridate)
-  require(ncdf4)
-  require(udunits2)
-  require(PEcAn.utils)
+  library(data.table)
+  library(lubridate)
+  library(ncdf4)
+  library(udunits2)
+  library(PEcAn.utils)
   
   if(!("hour" %in% colnames(result))){
     result$hour <- 0

@@ -76,7 +76,11 @@ if (isset($_REQUEST['notes'])) {
 
 
 // get site information
-$stmt = $pdo->prepare("SELECT sitename, city, state, country, ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat FROM sites WHERE sites.id=?");
+$stmt = $pdo->prepare("SELECT sitename, city, state, country, ST_X(ST_CENTROID(sites.geometry)) AS lon," . 
+		      "	ST_Y(ST_CENTROID(sites.geometry)) AS lat, " . 
+		      "	mat, map, soil, notes, soilnotes, greenhouse, time_zone, sand_pct, clay_pct" . 
+		      "	FROM sites WHERE sites.id=?"); 
+
 if (!$stmt->execute(array($siteid))) {
   die('Invalid query: ' . error_database());
 }
@@ -155,6 +159,10 @@ foreach($modeltypes as $type) {
     if ($x['tag'] == "met") {
       if (preg_match("/ \(US-.*\)$/", $siteinfo["sitename"])) {
         $x['files'][] = array("id"=>"Ameriflux." . $type, "name"=>"Use Ameriflux");
+        $x['files'][] = array("id"=>"AmerifluxLBL." . $type, "name"=>"Use AmerifluxLBL");
+      }
+      if (preg_match("/ \([A-Z]{2}-.*\)$/", $siteinfo["sitename"])) {
+       $x['files'][] = array("id"=>"Fluxnet2015." . $type, "name"=>"Use Fluxnet2015");
       }
       // check for NARR,this is not exact since it is a conical projection
       if ($siteinfo['lat'] > 1 && $siteinfo['lat'] < 85 && $siteinfo['lon'] < -68 && $siteinfo['lon'] > -145) {
@@ -162,6 +170,8 @@ foreach($modeltypes as $type) {
       }
       // CRUNCEP is global
       $x['files'][] = array("id"=>"CRUNCEP." . $type, "name"=>"Use CRUNCEP");
+      // GFDL
+      $x['files'][] = array("id"=>"GFDL." . $type, "name"=>"Use GFDL");
     }
   }
 }
@@ -185,6 +195,7 @@ $stmt->closeCursor();
 <html>
 <head>
 <title>PEcAn Parameter Selection</title>
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="sites.css" />
@@ -242,9 +253,13 @@ $stmt->closeCursor();
 
     // redirect to data policy if needed
     if ($("#met").val()) {
-      if ($("#met").val().startsWith("Ameriflux")) {
+      if ($("#met").val().startsWith("Ameriflux.")) {
         $("#formnext").attr("action", "03a-ameriflux.php");
-      } else if ($("#met").val().startsWith("NARR")) {
+      } else if ($("#met").val().startsWith("Fluxnet2015.")) {
+        $("#formnext").attr("action", "03a-fluxnet.php");
+      } else if ($("#met").val().startsWith("AmerifluxLBL.")) {
+        $("#formnext").attr("action", "03a-ameriflux.php");
+      } else if ($("#met").val().startsWith("NARR.")) {
         $("#formnext").attr("action", "03a-narr.php");
       } else if ($("#adv_setup").is(':checked')){
         $("#formnext").attr("action", "07-analysis.php");
@@ -288,9 +303,14 @@ $stmt->closeCursor();
   $(document).ready(function () {
     validate();
   });
-<?php } else { ?>
-    google.load("maps", "3",  {other_params:"sensor=false"});
-  google.setOnLoadCallback(mapsLoaded);
+<?php
+} else {
+  $other_params = "sensor=false";
+  if (isset($googleMapKey) && $googleMapKey != "") {
+    $other_params .= "&key=$googleMapKey";
+  }
+  echo "  google.load('maps', '3', { other_params : '$other_params', callback: 'mapsLoaded'});"
+?>
 
     function mapsLoaded() {
     var latlng = new google.maps.LatLng(<?php echo $siteinfo['lat']; ?>, <?php echo $siteinfo['lon']; ?>);
@@ -308,6 +328,17 @@ $stmt->closeCursor();
     // create the tooltip and its text
     var info="<b><?php echo $siteinfo['sitename']; ?></b><br />";
     info+="<?php echo $siteinfo['city']; ?>, <?php echo $siteinfo['state']; ?>, <?php echo $siteinfo['country']; ?><br/>";
+<?php
+  printInfo($siteinfo, 'mat', 'Mean Annual Temp');
+  printInfo($siteinfo, 'map', 'Mean Annual Precip');
+  printInfo($siteinfo, 'greenhouse', 'Greenhouse Study');
+  printInfo($siteinfo, 'time_zone', 'Local Time');
+  printInfo($siteinfo, 'sand_pct', 'Sand Pct');
+  printInfo($siteinfo, 'clay_pct', 'Clay Pct');
+  printInfo($siteinfo, 'soil', 'Soil');
+  printInfo($siteinfo, 'notes', 'Notes');
+  printInfo($siteinfo, 'soilnotes', 'Soil Notes');
+?>
     var infowindow = new google.maps.InfoWindow({content: info});
     infowindow.open(map, marker);
     validate();
@@ -429,6 +460,13 @@ foreach($inputs as $input) {
       <div class="spacer"></div>
     </form>
 <?php whoami(); ?>    
+<p>
+  <a href="https://pecan.gitbooks.io/pecan-documentation/content/" target="_blank">Documentation</a>
+  <br>
+  <a href="https://gitter.im/PecanProject/pecan" target="_blank">Chat Room</a>
+  <br>
+  <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
+</p>
   </div>
   <div id="output">
     name : <b><?php echo $siteinfo["sitename"]; ?></b><br/>
@@ -453,4 +491,11 @@ foreach($inputs as $input) {
 
 <?php
 close_database();
+
+function printInfo($siteinfo, $var, $text) {
+  if (isset($siteinfo[$var])) {
+    $tmp = preg_replace('/\s\s+/', ' ', toXML($siteinfo[$var]));
+    echo "    info+= \"${text} : ${tmp}</br/>\";";
+  }
+}
 ?>

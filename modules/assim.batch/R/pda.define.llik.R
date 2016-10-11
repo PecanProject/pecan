@@ -8,7 +8,7 @@
 ##' @author Ryan Kelly
 ##' @export
 pda.define.llik.fn <- function(settings) {
-  # Currently just returns a single likelihood, assuming the data are flux NEE.
+  # Currently just returns a single likelihood, assuming the data are flux NEE/FC or LE.
   llik.fn <- list()
   for(i in 1:length(settings$assim.batch$inputs)) {
     # NEE + heteroskedastic Laplace likelihood
@@ -22,9 +22,11 @@ pda.define.llik.fn <- function(settings) {
         }
     } else {
       # Default to Normal(0,1)
-        llik.fn[[i]] <- function(model.out, obs.data, llik.par=1) {
-          LL <- dnorm(x= obs.data, mean=model.out, sd=llik.par, log=TRUE)
-          return(list(LL=sum(LL,na.rm=TRUE), n=sum(!is.na(LL))))
+        llik.fn[[i]] <- function(model.out, obs.data, llik.par = 1) {
+          if(is.list(model.out)) model.out <- unlist(model.out)
+          if(is.list(obs.data)) obs.data <- unlist(obs.data)
+          LL <- dnorm(x = obs.data, mean = model.out, sd = llik.par, log = TRUE)
+          return(list(LL = sum(LL, na.rm = TRUE), n = sum(!is.na(LL))))
         }
     }
   }
@@ -43,14 +45,17 @@ pda.define.llik.fn <- function(settings) {
 ##' @author Ryan Kelly
 ##' @export
 pda.calc.llik <- function(settings, con, model.out, run.id, inputs, llik.fn) {
-  if(is.na(model.out)) { # Probably indicates model failed entirely
-    return(-Inf)
-  }
-  
+
   n.input <- length(inputs)
   
   LL.vec <- n.vec <- numeric(n.input)
+  
   for(k in 1:n.input) {
+    
+    if(all(is.na(model.out))) { # Probably indicates model failed entirely
+      return(-Inf)
+    }
+    
     llik <- llik.fn[[k]](model.out[[k]], inputs[[k]]$obs, inputs[[k]]$par)
     LL.vec[k] <- llik$LL
     n.vec[k]  <- llik$n

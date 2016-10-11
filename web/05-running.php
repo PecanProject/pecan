@@ -101,6 +101,7 @@ if (!$finished) {
 <html>
 <head>
 <title><?php echo $title; ?></title>
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="sites.css" />
@@ -153,6 +154,13 @@ if (!$finished) {
 <?php } ?>
     <div class="spacer"></div>
 <?php whoami(); ?>    
+<p>
+  <a href="https://pecan.gitbooks.io/pecan-documentation/content/" target="_blank">Documentation</a>
+  <br>
+  <a href="https://gitter.im/PecanProject/pecan" target="_blank">Chat Room</a>
+  <br>
+  <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
+</p>
   </div>
   <div id="output">
   <h2>Execution Status</h2>
@@ -186,7 +194,15 @@ foreach ($status as $line) {
   if (count($data) >= 4) {
     echo "      <td>${data[3]}</td>\n";
   } else {
-    echo "      <td>RUNNING</td>\n";        
+    $line = "RUNNING";
+    if ($data[0] == "MODEL") {
+      foreach(scandir("$folder/out") as $runid) {
+        if (file_exists("$folder/out/$runid/logfile.txt")) {
+          $line = tailCustom("$folder/out/$runid/logfile.txt");
+        }
+      }
+    }
+    echo "      <td>${line}</td>\n";    
   }
   echo "    <t/r>\n";
 }
@@ -215,28 +231,17 @@ foreach($lines as &$v) {
   <div class="logfile">
 <?php
   $lines=array();
-  if (file_exists("$folder/workflow2.Rout")) {
-    $fp = fopen("$folder/workflow2.Rout", "r");
-    while(!feof($fp)) {
-      $line = htmlentities(fgets($fp, 4096));
-      array_push($lines, $line);
-      if (count($lines) > $loglines) {
-        array_shift($lines);
-      }
-    }
-    fclose($fp);
-  }
   if (file_exists("$folder/workflow.Rout")) {
-    $fp = fopen("$folder/workflow.Rout", "r");
-    while(!feof($fp)) {
-      $line = htmlentities(fgets($fp, 4096));
-      array_push($lines, $line);
-      if (count($lines) > $loglines) {
-        array_shift($lines);
-      }
-    }
-    fclose($fp);
+    $tail = explode("\n", tailCustom("$folder/workflow.Rout", $loglines));
+    $lines = array_merge($lines, $tail);
   }
+  if (file_exists("$folder/workflow2.Rout")) {
+    $tail = explode("\n", tailCustom("$folder/workflow2.Rout", $loglines));
+    $lines = array_merge($lines, $tail);
+  }
+  if (count($lines) > $loglines) {
+    $lines = array_slice($lines, -$loglines);
+  }  
   echo implode("<br/>\n", $lines);
 ?>
   </div>
@@ -247,30 +252,45 @@ foreach($lines as &$v) {
 </html>
 
 <?php 
-function status($token) {
-  global $folder;
-  global $status;
-
-  foreach ($status as $line) {
-    $data = explode("\t", $line);
-    if ($data[0] == $token) {
-      if (count($data) >= 4) {
-        return $data[3];
-      }
-      if ($token == "MODEL") {
-    foreach(scandir("$folder/out") as $runid) {
-      if (!is_dir("$folder/out/$runid") || ($runid == ".") || ($runid == "..")) {
-        continue;
-      }
-      if (file_exists("$folder/out/$runid/logfile.txt")) {
-        $running = "$runid - " . exec("awk '/Simulating/ { print $3 }' $folder/out/$runid/logfile.txt | tail -1");
-      }
-    }
-    return $running;
-      }
-      return "Running";
-    }
+// see http://stackoverflow.com/a/15025877
+function tailCustom($filepath, $lines = 1, $adaptive = true) {
+  // Open file
+  $f = @fopen($filepath, "rb");
+  if ($f === false) return false;
+  // Sets buffer size
+  if (!$adaptive) $buffer = 4096;
+  else $buffer = ($lines < 2 ? 64 : ($lines < 10 ? 512 : 4096));
+  // Jump to last character
+  fseek($f, -1, SEEK_END);
+  // Read it and adjust line number if necessary
+  // (Otherwise the result would be wrong if file doesn't end with a blank line)
+  if (fread($f, 1) != "\n") $lines -= 1;
+  
+  // Start reading
+  $output = '';
+  $chunk = '';
+  // While we would like more
+  while (ftell($f) > 0 && $lines >= 0) {
+    // Figure out how far back we should jump
+    $seek = min(ftell($f), $buffer);
+    // Do the jump (backwards, relative to where we are)
+    fseek($f, -$seek, SEEK_CUR);
+    // Read a chunk and prepend it to our output
+    $output = ($chunk = fread($f, $seek)) . $output;
+    // Jump back to where we started reading
+    fseek($f, -strlen($chunk), SEEK_CUR);
+    // Decrease our line counter
+    $lines -= substr_count($chunk, "\n");
   }
-  return "";
+  // While we have too many lines
+  // (Because of buffer size we might have read too many)
+  while ($lines++ < 0) {
+    // Find first newline and remove all text before that
+    $output = substr($output, strpos($output, "\n") + 1);
+  }
+  // Close file and return
+  fclose($f);
+  return trim($output);
 }
+
 ?>
