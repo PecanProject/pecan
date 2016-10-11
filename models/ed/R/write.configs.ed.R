@@ -173,13 +173,13 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     ed2in.text <- gsub("@INIT_MODEL@", 0, ed2in.text)
     ed2in.text <- gsub("@SITE_PSSCSS@", "", ed2in.text)
   } else {
-    lat_rxp <- "\\.lat\\.*"
+    lat_rxp <- "(\\.lat\\.*)?\\.(css|pss|site)"
     prefix.pss <- sub(lat_rxp, "", settings$run$inputs$css$path)
     prefix.css <- sub(lat_rxp, "", settings$run$inputs$pss$path)
     # pss and css prefix is not the same, kill
     if (!identical(prefix.pss, prefix.css)) {
-      print(paste("pss prefix:", prefix.pss))
-      print(paste("css prefix:", prefix.css))
+      logger.info(paste("pss prefix:", prefix.pss))
+      logger.info(paste("css prefix:", prefix.css))
       logger.severe("ED2 css/pss/ files have different prefix")
     } else {
       # pss and css are both present
@@ -189,8 +189,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
         prefix.site <- sub(lat_rxp, "", settings$run$inputs$site$path)
         # sites and pss have different prefix name, kill
         if (!identical(prefix.site, prefix.pss)) {
-          print(paste("site prefix:", prefix.site))
-          print(paste("pss prefix:", prefix.pss))
+          logger.info(paste("site prefix:", prefix.site))
+          logger.info(paste("pss prefix:", prefix.pss))
           logger.severe("ED2 sites/pss/ files have different prefix")
         } else {
           # sites and pass same prefix name, case 3
