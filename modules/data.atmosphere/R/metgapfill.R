@@ -328,7 +328,8 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst=
     nelem = length(time)
     tunit <- ncatt_get(nc=nc, varid='time', attname='units', verbose=verbose)
     origin <- "1900-01-01 00:00:00"
-    time <-round(as.POSIXlt(ud.convert(time, tunit$value, paste('seconds since', origin)), origin=origin, tz="GMT"), units="mins")
+    time <-round(as.POSIXlt(ud.convert(time, tunit$value, paste('seconds since', origin)),
+                            origin=origin, tz="UTC"), units="mins")
     dtime = diff(time)
     if (dtime[1]==30) {
       DTS.n <- 48

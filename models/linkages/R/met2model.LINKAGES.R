@@ -23,8 +23,8 @@
 met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite=FALSE,verbose=FALSE) {
   require(PEcAn.utils)
   
-  start_date <- as.POSIXlt(start_date, tz = "GMT")
-  end_date<- as.POSIXlt(end_date, tz = "GMT")
+  start_date <- as.POSIXlt(start_date, tz = "UTC")
+  end_date<- as.POSIXlt(end_date, tz = "UTC")
   out.file <- file.path(outfolder,"climate.Rdata")
   #   out.file <- file.path(outfolder, paste(in.prefix,
   #                                          strptime(start_date, "%Y-%m-%d"),
