@@ -46,7 +46,7 @@ download.MsTMIP_NARR <- function(outfolder, start_date, end_date, site_id, lat.i
   for (i in 1:rows){
     year = ylist[i]    
     
-    ntime = ifelse(year%%4 == 0,2923,2919)
+    ntime = ifelse(lubridate::leap_year(year), 2923, 2919)
     
     loc.file = file.path(outfolder,paste("MsTMIP_NARR",year,"nc",sep="."))
     

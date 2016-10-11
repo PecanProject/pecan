@@ -54,11 +54,11 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
     
     # figure out how many days we're working with
     if(rows>1 & i!=1 & i!=rows){ # If we have multiple years and we're not in the first or last year, we're taking a whole year
-      nday  = ifelse(lubridate:: leap_year(year), 366, 365) # leap year or not; days per year
+      nday  = ifelse(lubridate::leap_year(year), 366, 365) # leap year or not; days per year
       days.use = 1:nday
     } else if(rows==1){
       # if we're working with only 1 year, lets only pull what we need to
-      nday  = ifelse(lubridate:: leap_year(year), 366, 365) # leap year or not; days per year
+      nday  = ifelse(lubridate::leap_year(year), 366, 365) # leap year or not; days per year
       day1 <- yday(start_date)
       # Now we need to check whether we're ending on the right day
       day2 <- yday(end_date)
@@ -66,13 +66,13 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
       nday=length(days.use) # Update nday
     } else if(i==1) {
       # If this is the first of many years, we only need to worry about the start date
-      nday  = ifelse(lubridate:: leap_year(year), 366, 365) # leap year or not; days per year
+      nday  = ifelse(lubridate::leap_year(year), 366, 365) # leap year or not; days per year
       day1 <- yday(start_date)
       days.use = day1:nday
       nday=length(days.use) # Update nday
     } else if(i==rows) {
       # If this is the last of many years, we only need to worry about the start date
-      nday  = ifelse(lubridate:: leap_year(year), 366, 365) # leap year or not; days per year
+      nday  = ifelse(lubridate::leap_year(year), 366, 365) # leap year or not; days per year
       day2 <- yday(end_date)
       days.use = 1:day2
       nday=length(days.use) # Update nday
