@@ -1,7 +1,7 @@
 palsar.extractor<-function(kml,fia,leaf.off,plot_ext){
   
   library(sp)
-  library(rgdal)
+  require(rgdal)
   library(raster)
   library(chron)
   library(RgoogleMaps)

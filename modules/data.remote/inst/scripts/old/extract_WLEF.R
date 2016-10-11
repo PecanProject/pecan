@@ -1,5 +1,5 @@
 ##Author: Brady S. Hardiman 04/30/2013
-library(rgdal)
+require(rgdal)
 library(raster)
 library(sp)
 library(RgoogleMaps)

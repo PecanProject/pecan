@@ -38,7 +38,7 @@
 ##'
 shp2kml <- function(dir,ext,kmz=FALSE,proj4=NULL,color=NULL,NameField=NULL,out.dir=NULL){
   
-  library(rgdal)
+  require(rgdal)
 
   # TODO: Enable compression of KML files using zip/gzip utility.  Not quite figured this out yet
   # TODO: Allow assignment of output projection info by entering proj4 string
@@ -143,7 +143,7 @@ get.attributes <- function(file,coords) {
   # reading in kml files drops important fields inside the layers.
   
   library(fields)
-  library(rgdal)
+  require(rgdal)
   
   #print("NOT IMPLEMENTED YET")
   #subset.layer(file,coords)
