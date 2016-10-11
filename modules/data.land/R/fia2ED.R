@@ -67,7 +67,7 @@ fia.to.psscss <- function(settings,
         site.path=file.paths$ED2.site)
         
       logger.info("Using existing pss, css, and site files.")
-      return(settings)
+      return(invisible(settings))
     } else {
       logger.info("No existing pss, css, and site files.")
     }
@@ -188,7 +188,7 @@ fia.to.psscss <- function(settings,
   names(soil.dat) <- c('fsc', 'stsc', 'stsl', 'ssc', 'psc', 'msn', 'fsn')
   pss <- cbind(pss, soil.dat)
   
-
+  logger.debug(paste0("Found ", nrow(pss), " patches for site ", settings$run$site$id))
 
   ##################
   ##              ##
@@ -275,7 +275,7 @@ fia.to.psscss <- function(settings,
     logger.warn(paste0("\nThe following PFTs listed in settings are not represented in the FIA data: ", 
        paste(sapply(settings$pfts, function(x) x$name)[!pfts.represented], collapse=", ")))	
 
-
+  logger.debug(paste0("Found ", nrow(css), " cohorts for site ", settings$run$site$id))
 
   ##################
   ##              ##
@@ -300,10 +300,12 @@ fia.to.psscss <- function(settings,
   } else {
     out.dir.local <- '/tmp'
   }
-  prefix.psscss <- paste0("siteid", settings$run$site$id, ".radius", gridres, 
-                          get.ed.file.latlon.text(lat, lon, site.style=FALSE))
-  prefix.site   <- paste0("siteid", settings$run$site$id, ".radius", gridres, 
-                          get.ed.file.latlon.text(lat, lon, site.style=TRUE))
+  prefix.psscss <- paste0(
+    "siteid", settings$run$site$id, ".fia", year, ".radius", gridres, 
+    get.ed.file.latlon.text(lat, lon, site.style=FALSE))
+  prefix.site   <- paste0(
+    "siteid", settings$run$site$id, ".fia", year, ".radius", gridres, 
+    get.ed.file.latlon.text(lat, lon, site.style=TRUE))
   pss.file.local <- file.path(out.dir.local, paste0(prefix.psscss, ".pss"))
   css.file.local <- file.path(out.dir.local, paste0(prefix.psscss, ".css"))
   site.file.local <- file.path(out.dir.local, paste0(prefix.site, ".site"))
@@ -345,7 +347,8 @@ fia.to.psscss <- function(settings,
       formatname = formatnames[i],
       parentid   = NA,
       con        = con,
-      hostname   = settings$host$name
+      hostname   = settings$host$name,
+      allow.conflicting.dates = TRUE
     )
   }
 
@@ -360,7 +363,7 @@ fia.to.psscss <- function(settings,
       css.path=css.file.remote, pss.path=pss.file.remote, site.path=site.file.remote)
   }
 
-	return(settings)
+	return(invisible(settings))
 }
 
 .add.ed2.file.paths.to.settings <- function(settings, css.path, pss.path, site.path) {
