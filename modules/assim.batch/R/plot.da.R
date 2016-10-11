@@ -2,6 +2,7 @@
 ## ported by M. Dietze 08/30/12
 ## some of this is redundant with other parts of PEcAn and needs to be cleaned up 
 
+<<<<<<< HEAD
 plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
   
   # source('code/R/approx.posterior.R') source('code/R/utils.R')
@@ -35,6 +36,117 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
       return(dexp(x, prior$parama))
     }
     eval(parse(text = paste("d", prior$distn, sep = "")))(x, prior$parama, prior$paramb)
+=======
+
+plot.da <- function(prior.dir,prior.file,in.dir,out.dir,next.run.dir){
+
+#source('code/R/approx.posterior.R')
+#source('code/R/utils.R')
+  library(MASS)
+  library(coda)
+
+#prior.dir <- './pecan/Toolik/growth/'
+#prior.file<-'/post.distns.Rdata'
+#in.dir <- './pecan/Toolik/growth/'
+#out.dir <- './pecan/Toolik/growth/'
+#next.run.dir <- './pecan/Toolik/growth/'
+
+#prior.dir <- './pecan/Toolik/growth/'
+#prior.file<-'/da.post.distns.Rdata'
+#in.dir <- './pecan/BarrowDA5param/'
+#out.dir <- './pecan/BarrowDA5param/'
+#next.run.dir <- './pecan/AnaktuvukControl/'
+
+prior.dir <- './pecan/BarrowDA5param/'
+prior.file<-'/da.post.distns.Rdata'
+in.dir <- './pecan/AtqasukDA5param/'
+out.dir <- './pecan/AtqasukDA5param/'
+next.run.dir <- './pecan/AnaktuvukControl/'
+
+num.run.ids<-5#commandArgs(trailingOnly = TRUE)
+print(num.run.ids)
+
+load(paste(in.dir, 'samples.Rdata', sep=''))
+load(paste(in.dir, 'L.nee.Rdata', sep=''))
+prior.x <- x; prior.y <- y
+
+ddist<- function(x, prior){
+  if(prior$distn=='exp') {return(dexp(x, prior$parama))}
+  eval(parse(text=paste('d', prior$distn, sep='')))(x, prior$parama, prior$paramb)
+}
+rdist<- function(x, prior){
+  if(prior$distn=='exp') {return(rexp(x, prior$parama))}
+  eval(parse(text=paste('r', prior$distn, sep='')))(x, prior$parama, prior$paramb)
+}
+pfts<-names(ensemble.samples)
+pfts<-pfts[pfts != 'env']
+
+pdf(paste(out.dir, '/da.plots.pdf', sep=''), height=8, width=11)
+
+#ORIGINAL PRIORS
+priors<-do.call(rbind, lapply(pfts, function(pft){
+          traits<-names(ensemble.samples[[pft]])
+          load(paste('./pecan/Toolik/growth/', pft, '/post.distns.Rdata', sep = ''))
+          return(post.distns[traits,])
+        }))
+traits <- rownames(priors)
+
+priors0<-do.call(rbind, lapply(pfts, function(pft){
+          traits<-names(ensemble.samples[[pft]])
+          load(paste('./pecan/Toolik/growth/', pft, '/da.post.distns.Rdata', sep = ''))
+          return(post.distns[traits,])
+        }))
+traits <- rownames(priors)
+
+traits <- rownames(priors)
+
+#IMMEDIATE PRIORS
+priors2<-do.call(rbind, lapply(pfts, function(pft){
+          traits<-names(ensemble.samples[[pft]])
+          load(paste(prior.dir, pft, '/', prior.file, sep = ''))
+          return(post.distns[traits,])
+        }))
+ 
+p.rng <- do.call(rbind, lapply(pfts, function(pft){
+          t(sa.samples[[pft]][c(1,nrow(sa.samples[[pft]])),])
+        }))
+
+#PLOT LIKELIHOODS
+par(mfrow = c(3,5))
+good.runs <- y < quantile(y, 0.95)
+print(nrow(x))
+print(length(good.runs))
+for(i in 1:ncol(x)) {
+  trait.entry <- trait.lookup(gsub('[1-2]$', '', traits[i]))
+  if(is.na(trait.entry)) trait.entry <- trait.lookup(traits[i])
+  
+  plot(x[good.runs,i], y[good.runs], main = trait.entry$figid, 
+       xlim=p.rng[i,], xlab=trait.entry$units, ylab='-log(likelihood)', pch=1)
+  points(prior.x[,i], prior.y, col='grey')
+}
+
+samp<-lapply(seq(num.run.ids), function(run.id){
+      print(paste(in.dir, './mcmc', run.id, '.Rdata', sep=''))
+      load(paste(in.dir, './mcmc', run.id, '.Rdata', sep=''))
+      return(m)
+    }) 
+samp<-unlist(samp,recursive=FALSE)
+nmcmc<-nrow(samp[[1]])   
+print(nmcmc)
+thin <- seq(500, nmcmc, by=7)
+par(mfrow = c(2,3))
+for(i in 1:ncol(samp[[1]])) {
+  all <- do.call(rbind, lapply(samp, function(chain) chain[thin,i]))
+  
+  #MCMC chain
+  plot(c(),
+      ylim =range(all, na.rm=TRUE),
+      xlim =c(1,length(thin)),
+      ylab='',
+      type = 'l')
+  for(chain in seq(samp)){
+    lines(samp[[chain]][thin,i], col=chain)
+>>>>>>> PecanProject/master
   }
   rdist <- function(x, prior) {
     if (prior$distn == "exp") {

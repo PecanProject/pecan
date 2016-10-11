@@ -13,7 +13,11 @@
 load.pda.data <- function(settings, con) {
   
   library(PEcAn.benchmark)
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> PecanProject/master
   # Outlining setup for multiple datasets
   
   inputs         <- list()
