@@ -173,8 +173,9 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     ed2in.text <- gsub("@INIT_MODEL@", 0, ed2in.text)
     ed2in.text <- gsub("@SITE_PSSCSS@", "", ed2in.text)
   } else {
-    prefix.pss <- sub(".lat.*", "", settings$run$inputs$css$path)
-    prefix.css <- sub(".lat.*", "", settings$run$inputs$pss$path)
+    lat_rxp <- "\\.lat\\.*"
+    prefix.pss <- sub(lat_rxp, "", settings$run$inputs$css$path)
+    prefix.css <- sub(lat_rxp, "", settings$run$inputs$pss$path)
     # pss and css prefix is not the same, kill
     if (!identical(prefix.pss, prefix.css)) {
       print(paste("pss prefix:", prefix.pss))
@@ -185,7 +186,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
       value <- 2
       # site exists
       if (!is.null(settings$run$inputs$site$path)) {
-        prefix.site <- sub(".lat.*", "", settings$run$inputs$site$path)
+        prefix.site <- sub(lat_rxp, "", settings$run$inputs$site$path)
         # sites and pss have different prefix name, kill
         if (!identical(prefix.site, prefix.pss)) {
           print(paste("site prefix:", prefix.site))
