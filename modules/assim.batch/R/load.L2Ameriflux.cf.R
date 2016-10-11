@@ -9,13 +9,8 @@
 ##' @author Ryan Kelly
 ##' @export
 load.L2Ameriflux.cf <- function(file.in) {
-<<<<<<< HEAD
-  
-  library(ncdf4)
-=======
   library(ncdf4)
 
->>>>>>> PecanProject/master
   nc <- nc_open(file.in)
   
   vars <- list()
