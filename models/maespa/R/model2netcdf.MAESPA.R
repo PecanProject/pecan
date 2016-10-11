@@ -85,7 +85,6 @@ model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, 
     var[[4]] <- ncvar_def("Qh", units = ("W m-2"), dim = list(lat, lon, t), missval = -999, longname = "Sensible Heat Flux")
     var[[5]] <- ncvar_def("Qle", units = ("W m-2"), dim = list(lat, lon, t), missval = -999, longname = "latent Heat Flux")
     
-<<<<<<< HEAD
     dayflx.dataframe <- readdayflux(filename = "Dayflx.dat")
     
     watbalday.dataframe <- readwatbal(filename = "watbalday.dat")
@@ -124,7 +123,7 @@ model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, 
         lat <- ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
         lon <- ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
         
-        for (i in 1:length(output)) {
+        for (i in seq_along(output)) {
             if (length(output[[i]]) == 0) 
                 output[[i]] <- rep(-999, length(t$vals))
         }
@@ -141,22 +140,6 @@ model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, 
         var[[5]] <- ncvar_def("Qle", units = ("W m-2"), dim = list(lat, lon, t), missval = -999, longname = "latent Heat Flux")
         
         
-        ### Output netCDF data
-        nc <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
-        varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
-        for (i in 1:length(var)) {
-            # print(i)
-            ncvar_put(nc, var[[i]], output[[i]])
-            cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
-        }
-        close(varfile)
-        nc_close(nc)
-    }  ### End of year loop
-    
-    
-    
-}  ### End of function  
-=======
     ### Output netCDF data
     nc <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
@@ -169,4 +152,3 @@ model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, 
     nc_close(nc)
   }  ### End of year loop
 } # model2netcdf.MAESPA
->>>>>>> PecanProject/master
