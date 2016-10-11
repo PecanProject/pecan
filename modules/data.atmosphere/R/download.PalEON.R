@@ -17,10 +17,10 @@ download.PalEON <- function(sitename, outfolder, start_date, end_date, overwrite
   else if(sitename == "Minden Bog (PalEON PMB)"){site <- "PMB"}     # 1-674 done
   else if(sitename == "University of Notre Dame Environmental Research Center (PalEON UNDERC)"){site <- "PUN"}         # 1-675 done
 
-  require(PEcAn.utils)
-  require(lubridate)
-  start_date <- as.POSIXlt(start_date, tz = "GMT")
-  end_date <- as.POSIXlt(end_date, tz = "GMT")
+  library(PEcAn.utils)
+  library(lubridate)
+  start_date <- as.POSIXlt(start_date, tz = "UTC")
+  end_date <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- year(start_date)
   end_year   <- year(end_date)
   ylist <- start_year:end_year

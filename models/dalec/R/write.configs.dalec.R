@@ -134,7 +134,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
                   outdir, "/out.txt\n", 
                   # 'echo ".libPaths(',"'~/R/library');",
                   "echo \"", 
-                  " require(PEcAn.DALEC); model2netcdf.DALEC(", "'", 
+                  " library(PEcAn.DALEC); model2netcdf.DALEC(", "'", 
                   outdir, "',", 
                   settings$run$site$lat, ",", 
                   settings$run$site$lon, ", '", 
@@ -161,9 +161,7 @@ remove.config.DALEC <- function(outdir, settings) {
 ##' @author <unknown>
 #--------------------------------------------------------------------------------------------------#
 write.run.DALEC <- function(settings) {
-  if (!require(PEcAn.utils)) {
-    print("install PEcAn.utils")
-  }
+  library(PEcAn.utils)
   run.script.template <- system.file("data", "run.template.DALEC", package = "PEcAn.DALEC")
   run.text <- scan(file = run.script.template, what = "character", sep = "@", quote = NULL, quiet = TRUE)
   run.text <- gsub("TMP", paste0("/scratch/", Sys.getenv("USER")), run.text)
