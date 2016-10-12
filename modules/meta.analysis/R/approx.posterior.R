@@ -24,9 +24,9 @@
 ##' @author David LeBauer, Carl Davidson, Mike Dietze
 ##' @examples
 ##' \dontrun{
-##' data('trait.mcmc', package = 'PEcAn.utils')
-##' data('prior.distns', package = 'PEcAn.utils')
-##' approx.posterior(trait.mcmc, priors = prior.distns)
+##'   data('trait.mcmc', package = 'PEcAn.utils')
+##'   data('prior.distns', package = 'PEcAn.utils')
+##'   approx.posterior(trait.mcmc, priors = prior.distns)
 ##' }
 approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NULL, filename.flag = "") {
   
@@ -101,7 +101,7 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
       dist.names <- dist.names[!failfit.bool]
       
       fparm <- lapply(fit, function(x) { as.numeric(x$estimate) })
-      fAIC <- lapply(fit, function(x) { AIC(x) })
+      fAIC <- lapply(fit, AIC) 
       
       bestfit <- which.min(fAIC)
       posteriors[ptrait, "distn"] <- dist.names[bestfit]

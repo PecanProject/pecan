@@ -76,11 +76,12 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   trait.average <- sapply(jagged.data, function(x) mean(x$Y, na.rm = TRUE) )
   
   ## Set gamma distribution prior
+  tau_value <- 0.01
   prior.variances <- as.data.frame(rep(1, nrow(prior.distns)))
   row.names(prior.variances) <- row.names(prior.distns)
   prior.variances[names(trait.average), ] <- 0.001 * trait.average ^ 2
   prior.variances["seedling_mortality", 1] <- 1
-  taupriors <- list(tauA = 0.01, tauB = apply(prior.variances, 1, function(x) min(0.01, x)))
+  taupriors <- list(tauA = tau_value, tauB = apply(prior.variances, 1, function(x) min(tau_value, x)))
   
   ### Run the meta-analysis
   trait.mcmc <- pecan.ma(jagged.data,
@@ -117,13 +118,16 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   save(trait.mcmc, file = file.path(pft$outdir, "trait.mcmc.Rdata"))
   
   post.distns <- approx.posterior(trait.mcmc, prior.distns, jagged.data, pft$outdir)
-  save(post.distns, file = file.path(pft$outdir, "post.distns.MA.Rdata"))
+  dist_MA_path <- file.path(pft$outdir, "post.distns.MA.Rdata")
+  save(post.distns, file = dist_MA_path)
+
+  dist_path <- file.path(pft$outdir, "post.distns.Rdata")
   
   # Symlink to post.distns.Rdata (no 'MA' identifier)
-  if (file.exists(file.path(pft$outdir, "post.distns.Rdata"))) {
-    file.remove(file.path(pft$outdir, "post.distns.Rdata"))
+  if (file.exists(dist_path)) {
+    file.remove(dist_path)
   }
-  file.symlink(file.path(pft$outdir, "post.distns.MA.Rdata"), file.path(pft$outdir, "post.distns.Rdata"))
+  file.symlink(dist_MA_path), dist_path)
   
   ### save and store in database all results except those that were there already
   for (file in list.files(path = pft$outdir)) {
@@ -216,6 +220,7 @@ p.point.in.prior <- function(point, prior) {
   # Why is this (below) called, and then never used?
   prior.median <- do.call(paste0("q", prior$distn),
                           list(0.5, prior$parama, prior$paramb))
-  do.call(paste0("p", prior$distn), 
-          list(point, prior$parama, prior$paramb))
+  out <- do.call(paste0("p", prior$distn), 
+                 list(point, prior$parama, prior$paramb))
+  return(out)
 } # p.point.in.prior
