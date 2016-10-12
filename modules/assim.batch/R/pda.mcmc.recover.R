@@ -13,7 +13,6 @@
 # read.settings(path/to/original/settings/file)
 # settings$assim.batch <- pda.mcmc.recover(settings) # wrap up unfinished run
 # settings$assim.batch <- pda.mcmc(settings) # start new pda
-<<<<<<< HEAD
 pda.mcmc.recover <- function(settings, params.id = NULL, param.names = NULL, prior.id = NULL,
                              chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL, 
                              ar.target = NULL, jvar = NULL, n.knot = NULL, burnin = NULL) {
@@ -21,29 +20,6 @@ pda.mcmc.recover <- function(settings, params.id = NULL, param.names = NULL, pri
     if (FALSE) {
         params.id <- param.names <- prior.id <- chain <- iter <- NULL
         n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
-=======
-pda.mcmc.recover <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, chain=NULL, 
-                     iter=NULL, adapt=NULL, adj.min=NULL, ar.target=NULL, jvar=NULL, n.knot=NULL, burnin=NULL) {
-
-  if(FALSE){
-    params.id <- param.names <- prior.id <- chain <- iter <- NULL 
-    n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
-  }
-  
-  library(coda)
-  
-  ## Handle settings
-    settings <- pda.settings(
-                  settings=settings, params.id=params.id, param.names=param.names, 
-                  prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
-                  adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot)
-
-  ## Open database connection
-  if(settings$database$bety$write){
-    con <- try(db.open(settings$database$bety), silent=TRUE)
-    if(is.character(con)){
-      con <- NULL
->>>>>>> PecanProject/master
     }
     
     library(coda)
