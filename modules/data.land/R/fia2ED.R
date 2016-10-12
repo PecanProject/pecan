@@ -18,19 +18,61 @@ library(PEcAn.DB)
 ##' @return nothing
 ##' @export
 ##' @author Mike Dietze, Rob Kooper, Ryan Kelly
-fia.to.psscss <- function(settings, gridres=0.075) {
-	lat     <- as.numeric(settings$run$site$lat)
-	lon     <- as.numeric(settings$run$site$lon)
-	latmax = lat + gridres
+fia.to.psscss <- function(settings, 
+                      	  lat = as.numeric(settings$run$site$lat),
+                          lon = as.numeric(settings$run$site$lon),
+                          year = lubridate::year(settings$run$start.date),
+                          gridres=0.075, 
+                          min.year = year - 5,
+                          max.year = year + 5,
+                          overwrite=FALSE) {
+
+  mimetype   <- 'text/plain'
+  startdate  <- as_date(paste0(year, '-01-01'))
+  enddate    <- as_date(paste0(year, '-12-31'))
+  formatnames <- c("ED2.cohort", "ED2.patch", "ED2.site")
+
+  latmax = lat + gridres
   latmin = lat - gridres
   lonmax = lon + gridres
   lonmin = lon - gridres	
-	year <- as.numeric(format(as.Date(settings$run$start.date), '%Y'))
-
-
+  
+  
 	## connect to database
 	con <-  db.open(settings$database$bety)
 	on.exit(db.close(con))
+
+  # Check whether inputs exist already
+  if(!overwrite) {
+    existing.files <- list()
+    for(format in formatnames) {
+      existing.files[[format]] <- dbfile.input.check(
+        siteid     = settings$run$site$id,
+        startdate  = startdate,
+        enddate    = enddate,
+        mimetype   = mimetype,
+        formatname = format,
+        parentid   = NA,
+        con        = con,
+        hostname   = settings$host$name
+      )
+    }
+  
+    if(all(sapply(existing.files, function(x) nrow(x)>0))) {
+      file.paths <- lapply(existing.files, function(x) file.path(x$file_path, x$file_name))
+    
+      settings <- .add.ed2.file.paths.to.settings(settings,
+        css.path=file.paths$ED2.cohort, 
+        pss.path=file.paths$ED2.patch, 
+        site.path=file.paths$ED2.site)
+        
+      logger.info("Using existing pss, css, and site files.")
+      return(invisible(settings))
+    } else {
+      logger.info("No existing pss, css, and site files.")
+    }
+  }
+
 	
 	### collect mapping from spcd to pftid
 	query <- NULL
@@ -54,8 +96,7 @@ fia.to.psscss <- function(settings, gridres=0.075) {
       pft.number <- pftmapping$ED[which(pftmapping == pft.i$name)]
     }
     if(is.null(pft.number)) {
-      logger.error(paste0("Couldn't find an ED2 PFT number for ", pft.i$name))
-      stop()
+      logger.severe(paste0("Couldn't find an ED2 PFT number for ", pft.i$name))
     }
 		pfts$pft[pfts$pft == pft.i$name] <- pft.number
 	}
@@ -80,118 +121,52 @@ fia.to.psscss <- function(settings, gridres=0.075) {
 		# grab the names where we have bad spcds in the symbol.table, exclude NAs
 		name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% bad]) 		
 							
-		logger.error(paste0("\nThe following species are found in multiple PFTs: \n",   
+		logger.severe(paste0("\nThe following species are found in multiple PFTs: \n",   
 		  paste(name.list[1:min(10,length(name.list))], collapse=", "), over.ten, 
 		  "\n\tPlease remove overlapping PFTs."))
-		
-		# Using stop naturally causes an error with the tests - comment stops out for testing.
-		stop("Execution stopped due to duplicate species.")			
 	}
 
 	## connect to database
 	fia.con <- db.open(settings$database$fia)
 	on.exit(db.close(fia.con), add=T)
-
-
-	### select just most current
-	query <- paste('SELECT invyr, statecd, stateab, statenm, cycle, subcycle from survey', sep="")
-	surv <- db.query(query, con=fia.con)
-	names(surv) = tolower(names(surv))
   
-	states <- sort(unique(surv$statecd))
-	states <- states[states < 72]
-	cycle  <- as.list(rep(NA,max(states)))
-	old    <- rep(FALSE,max(states))
-	
-	## choose the cycle closest to the specified year
-	## note:	does not check for COMPLETE cycles
-	for(s in states){
-	  surv.s <- surv[which(surv$statecd == s), ]
-	  ranked.cycles.s <- numeric(0)
-	  while(nrow(surv.s) > 0) {
-	    next.closest.cycle <- surv.s$cycle[which.min(abs(surv.s$invyr - year))]
-	    ranked.cycles.s <- c(ranked.cycles.s, next.closest.cycle)
-	    surv.s <- surv.s[surv.s$cycle != next.closest.cycle, ]
-	  }
-		cycle[[s]] <- ranked.cycles.s
-	}
-	
-	
-
+  
   ##################
   ##              ##
   ##     PSS      ##
   ##              ##
   ##################
   ## query to get PSS info
-  query <- paste('SELECT p.cycle,p.statecd,p.measyear as time,p.cn as patch,MIN(2-c.stdorgcd) ',
-                 'as trk,AVG(c.stdage) as age, p.lat,p.lon, p.prev_plt_cn FROM plot as p LEFT JOIN cond as c on p.cn=c.plt_cn ',
-                 'WHERE p.lon >= ', lonmin, ' and p.lon < ', lonmax,
-                 ' and p.lat >= ', latmin, ' and p.lat < ', latmax, ' GROUP BY p.cn')
+  query <- paste('SELECT p.cycle, p.statecd, p.measyear as time, p.cn as patch, ', 
+                 'MIN(2-c.stdorgcd) as trk, AVG(c.stdage) as age, p.lat, p.lon, p.prev_plt_cn ',
+                 'FROM plot as p LEFT JOIN cond as c on p.cn=c.plt_cn ',
+                 'WHERE p.lon >= ', lonmin, ' AND p.lon <= ', lonmax,
+                 ' AND p.lat >= ', latmin, ' AND p.lat <= ', latmax, 
+                 ' AND p.measyear >= ', min.year, ' AND p.measyear <= ', max.year, 
+                 ' GROUP BY p.cn')
 
   pss <- db.query(query, con=fia.con)
-  names(pss) = tolower(names(pss))
-  if(nrow(pss) == 0) logger.error("Couldn't find pss data.")
+  if(nrow(pss) == 0) logger.severe("No pss data found.")
   
-  pss$prev_plt_cn[pss$prev_plt_cn==""] = NA
-  pss$unique.plot.id = NA
-  for(i in 1:nrow(pss)) {
-    if(!is.na(pss$unique.plot.id[i])) {
-      # already been assigned
-      next
-    } else {
-      pss$unique.plot.id[i] <- i
-    }
-    
-    if(!is.na(pss$prev_plt_cn[i])) {
-      # This record is a remeasure of another plot
-      parent.ind = which(pss$patch == pss$prev_plt_cn[i])
-      if(length(parent.ind) > 0) {
-        if(!is.na(pss$unique.plot.id[parent.ind])) {
-          pss$unique.plot.id[i] = pss$unique.plot.id[parent.ind]
-        } else {
-          pss$unique.plot.id[parent.ind] = pss$unique.plot.id[i]
-        }
-        next
-      }
-    }
+  for(statecd in unique(pss$statecd)) {
+    # Count up occurrences of each cycle
+    cycle.count <- table(pss$cycle[pss$statecd == statecd])
 
-    child.ind = which(pss$prev_plt_cn == pss$patch[i])
-    if(length(child.ind) > 0) {
-      # This record is the parent of another plot
-      if(!is.na(pss$unique.plot.id[child.ind])) {
-        pss$unique.plot.id[i] = pss$unique.plot.id[child.ind]
-      } else {
-        pss$unique.plot.id[child.ind] = pss$unique.plot.id[i]
-      }
-    }
+    # Find the best valid cycle, in terms of providing the most records. In case of ties,
+    # which.max will return the first one, which will be the earliest
+    best.cycle <- as.numeric(names(cycle.count)[which.max(cycle.count)])
+    
+    row.keep.ind <- (pss$statecd != statecd) | (pss$cycle == best.cycle)
+
+    pss <- pss[ row.keep.ind,  ]
   }
   
-  unique.id=2
-  for(unique.id in unique(pss$unique.plot.id)) {
-    ind.i <- which(pss$unique.plot.id == unique.id)
-    if(length(ind.i) > 1) {
-      ind.keep <- ind.i[which.min(abs(pss$time[ind.i] - year))]
-      if(length(ind.keep) > 1) {
-        ind.keep <- ind.keep[1]
-      }
-      ind.remove <- ind.i[ind.i != ind.keep]
-      pss <- pss[-ind.remove,]
-    }
-  }
+  # as an extra precaution, remove any records that are explicitly remeasurments of the
+  # same plot
+  pss <- pss[.select.unique.fia.plot.records(pss$patch, pss$prev_plt_cn, pss$time, year), ]
   
+  if(nrow(pss) == 0) logger.severe("All pss data were invalid.")
   
-  
-  
-  
-  
-  
-  pss <- pss[pss$cycle == cycle[pss$statecd],]
-  
-  
-  
-  
-  if(nrow(pss) == 0) logger.error("Couldn't find pss data.")
 
   pss$trk[which(is.na(pss$trk))] <- 1
   pss$age[which(is.na(pss$age))] <- 0
@@ -212,7 +187,7 @@ fia.to.psscss <- function(settings, gridres=0.075) {
   names(soil.dat) <- c('fsc', 'stsc', 'stsl', 'ssc', 'psc', 'msn', 'fsn')
   pss <- cbind(pss, soil.dat)
   
-
+  logger.debug(paste0("Found ", nrow(pss), " patches for site ", settings$run$site$id))
 
   ##################
   ##              ##
@@ -226,8 +201,11 @@ fia.to.psscss <- function(settings, gridres=0.075) {
                  ' and p.lat >= ', latmin, ' and p.lat < ', latmax)
   css <- db.query(query, con=fia.con)
   names(css) = tolower(names(css))
-  css <- css[css$cycle == cycle[css$statecd],]
-
+  if(nrow(css) == 0) logger.severe("No css data found.")
+  
+  # Remove rows that don't map to any retained patch
+  css <- css[ which(css$patch %in% pss$patch), ]
+  
   ## Remove rows with no dbh, spcd, or n
   notree <- which(is.na(css$dbh) & is.na(css$spcd) & is.na(css$n))
   if (length(notree) > 0){
@@ -277,10 +255,6 @@ fia.to.psscss <- function(settings, gridres=0.075) {
 
   # --- Continue work formatting css now that we've checked for species problems
   n.cohort = nrow(css)
-  if(n.cohort == 0) {
-    logger.warn("No trees found while trying to generate .css from FIA data!")
-  }
-  
   css$time[is.na(css$time)] <- 1
   css$cohort[is.na(css$cohort)] <- 1:sum(is.na(css$cohort))
   css$dbh[is.na(css$dbh)] <- 1	# assign nominal small dbh to missing
@@ -289,7 +263,7 @@ fia.to.psscss <- function(settings, gridres=0.075) {
   css$hite <- css$bdead <- css$balive <- css$lai <- rep(0, n.cohort)
  
   ## map spcd to pft
-  css <- merge(css,pfts,by="spcd")
+  css <- merge(css, pfts, by="spcd")
   css <- css[, c('time', 'patch', 'cohort', 'dbh', 'hite', 'pft', 'n', 'bdead', 'balive', 'lai')]
 
   pfts.represented <- sapply(settings$pfts, function(x) x$constants$num) %in% css$pft
@@ -297,7 +271,8 @@ fia.to.psscss <- function(settings, gridres=0.075) {
     logger.warn(paste0("\nThe following PFTs listed in settings are not represented in the FIA data: ", 
        paste(sapply(settings$pfts, function(x) x$name)[!pfts.represented], collapse=", ")))	
 
-
+  if(nrow(css) == 0) logger.severe("No valid css data found.")
+  logger.debug(paste0("Found ", nrow(css), " cohorts for site ", settings$run$site$id))
 
   ##################
   ##              ##
@@ -315,11 +290,19 @@ fia.to.psscss <- function(settings, gridres=0.075) {
 
   # ----- Write files
   # Write files locally
-  out.dir.local <- file.path(settings$database$dbfiles, "fia")
-  prefix.psscss <- paste0("siteid", settings$run$site$id, ".radius", gridres, 
-                          get.ed.file.latlon.text(lat, lon, site.style=FALSE))
-  prefix.site   <- paste0("siteid", settings$run$site$id, ".radius", gridres, 
-                          get.ed.file.latlon.text(lat, lon, site.style=TRUE))
+  site.string <- paste0(as.numeric(settings$run$site$id) %/% 1000000000, "-",
+                        as.numeric(settings$run$site$id) %% 1000000000)
+  if(settings$host$name == "localhost") {
+    out.dir.local <- file.path(settings$database$dbfiles, paste0("FIA_ED2_site_", site.string))
+  } else {
+    out.dir.local <- '/tmp'
+  }
+  prefix.psscss <- paste0(
+    "siteid", settings$run$site$id, ".fia", year, ".radius", gridres, 
+    get.ed.file.latlon.text(lat, lon, site.style=FALSE))
+  prefix.site   <- paste0(
+    "siteid", settings$run$site$id, ".fia", year, ".radius", gridres, 
+    get.ed.file.latlon.text(lat, lon, site.style=TRUE))
   pss.file.local <- file.path(out.dir.local, paste0(prefix.psscss, ".pss"))
   css.file.local <- file.path(out.dir.local, paste0(prefix.psscss, ".css"))
   site.file.local <- file.path(out.dir.local, paste0(prefix.site, ".site"))
@@ -334,8 +317,10 @@ fia.to.psscss <- function(settings, gridres=0.075) {
 
   
   # Copy to remote if needed
-  if(settings$host$name != "localhost") {
-    out.dir.remote <- file.path(settings$host$dbfiles, "fia")
+  if(settings$host$name == "localhost") {
+    files <- c(pss.file.local, css.file.local, site.file.local)
+  } else {
+    out.dir.remote <- file.path(settings$host$dbfiles, paste0("FIA_ED2_site_", site.string))
     pss.file.remote <- file.path(out.dir.remote, paste0(prefix.psscss, ".pss"))
     css.file.remote <- file.path(out.dir.remote, paste0(prefix.psscss, ".css"))
     site.file.remote <- file.path(out.dir.remote, paste0(prefix.site, ".site"))
@@ -344,39 +329,45 @@ fia.to.psscss <- function(settings, gridres=0.075) {
     remote.copy.to(settings$host, pss.file.local, pss.file.remote)
     remote.copy.to(settings$host, css.file.local, css.file.remote)
     remote.copy.to(settings$host, site.file.local, site.file.remote)
+    files <- c(pss.file.remote, css.file.remote, site.file.remote)
   }
 
   # Insert into DB  
-  files <- c(pss.file.local, css.file.local, site.file.local)
-  formatnames <- c("ED2.patch", "ED2.cohort", "ED2.site")
   for(i in seq_along(files)) {
     dbfile.input.insert(
       in.path    = dirname(files[i]),
       in.prefix  = basename(files[i]),
       siteid     = settings$run$site$id,
-      startdate  = format(as.Date(settings$run$start.date), "%Y-%m-%d %H:%M:%S"),
-      enddate    = format(as.Date(settings$run$end.date), "%Y-%m-%d %H:%M:%S"),
-      mimetype   = 'text/plain',
+      startdate  = startdate,
+      enddate    = enddate,
+      mimetype   = mimetype,
       formatname = formatnames[i],
       parentid   = NA,
       con        = con,
-      hostname   = fqdn()
+      hostname   = settings$host$name,
+      allow.conflicting.dates = TRUE
     )
   }
 
 
+
   # Add file paths to settings
   if(settings$host$name == "localhost") {
-  	settings$run$inputs$pss$path <- pss.file.local
-  	settings$run$inputs$css$path <- css.file.local
-  	settings$run$inputs$site$path <- site.file.local
+    settings <- .add.ed2.file.paths.to.settings(settings, 
+      css.path=css.file.local, pss.path=pss.file.local, site.path=site.file.local)
   } else {
-  	settings$run$inputs$pss$path <- pss.file.remote
-  	settings$run$inputs$css$path <- css.file.remote
-  	settings$run$inputs$site$path <- site.file.remote
+    settings <- .add.ed2.file.paths.to.settings(settings, 
+      css.path=css.file.remote, pss.path=pss.file.remote, site.path=site.file.remote)
   }
 
-	return(settings)
+	return(invisible(settings))
+}
+
+.add.ed2.file.paths.to.settings <- function(settings, css.path, pss.path, site.path) {
+  settings$run$inputs$css$path <- css.path
+ 	settings$run$inputs$pss$path <- pss.path
+  settings$run$inputs$site$path <- site.path
+  return(settings)
 }
 
 # See ed_read_ed10_20_history...
@@ -388,4 +379,71 @@ get.ed.file.latlon.text <- function(lat, lon, site.style=FALSE, ed.res=1) {
   } else {
     return(paste0(".lat", round(lat, 4), "lon", round(lon, 4)))  
   }
+}
+
+
+
+# A function for identifying fia plot records that are remeasurements of one another,
+# and upon finding them retaining only the one that is closest to some target year. 
+# Since fia.to.psscss currently selects plots from only a single cycle (for a given state)
+# it shouldn't be getting remeasurements, and this probably isn't doing anything in the 
+# current code. But it could be useful for future updates. 
+.select.unique.fia.plot.records <- function(plt_cn, prev_plt_cn, measyear, target.year) {
+  if(length(plt_cn) != length(prev_plt_cn)) {
+    logger.error("Inputs must have same length!")
+    return(NULL)
+  }
+
+  # Identify records that are part of the same remeasurement sequence
+  prev_plt_cn[prev_plt_cn==""] <- NA
+  unique.plot.id = rep(NA, length(plt_cn))
+  for(i in seq_along(plt_cn)) {
+    if(!is.na(unique.plot.id[i])) {
+      # already been assigned
+      next
+    } else {
+      # assign a new plot id
+      unique.plot.id[i] <- i
+    }
+    
+    # Check whether this record is a remeasurement of another one in the list
+    if(!is.na(prev_plt_cn[i])) {
+      parent.ind = which(plt_cn == prev_plt_cn[i])
+      if(length(parent.ind) > 0) {
+        if(!is.na(unique.plot.id[parent.ind])) {
+          # if the parent record has already been given an id, assign it to this plot too
+          unique.plot.id[i] = unique.plot.id[parent.ind]
+        } else {
+          # Otherwise, use this plot's new id
+          unique.plot.id[parent.ind] = unique.plot.id[i]
+        }
+        next
+      }
+    }
+    
+    # Check whether any other record is a remeasurement of this one
+    child.ind = which(prev_plt_cn == plt_cn[i])
+    if(length(child.ind) > 0) {
+      # As above, ensure both records have the same plot id
+      if(!is.na(unique.plot.id[child.ind])) {
+        unique.plot.id[i] = unique.plot.id[child.ind]
+      } else {
+        unique.plot.id[child.ind] = unique.plot.id[i]
+      }
+    }
+  }
+  
+  
+  # For any identified remeasurement sequences, choose to keep the record that is closest 
+  # to the target year
+  ind.keep <- numeric(0)
+  for(unique.id in unique(unique.plot.id)) {
+    ind.keep.i <- which(unique.plot.id == unique.id)
+    if(length(ind.keep.i) > 1) {
+      ind.keep.i <- ind.keep.i[which.min(abs(measyear[ind.keep.i] - target.year))]
+    } 
+    ind.keep <- c(ind.keep, ind.keep.i)
+  }
+  
+  return(sort(ind.keep))
 }
