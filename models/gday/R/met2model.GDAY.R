@@ -52,8 +52,8 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
   
   library(PEcAn.utils)
   
-  start_date <- as.POSIXlt(start_date, tz = "GMT")
-  end_date <- as.POSIXlt(end_date, tz = "GMT")
+  start_date <- as.POSIXlt(start_date, tz = "UTC")
+  end_date <- as.POSIXlt(end_date, tz = "UTC")
   out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"), 
                     strptime(end_date, "%Y-%m-%d"), 
                     "dat", sep = ".")

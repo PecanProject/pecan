@@ -40,8 +40,8 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   library(PEcAn.utils)
   
   # results are stored in folder prefix.start.end
-  start_date <- as.POSIXlt(start_date, tz = "GMT")
-  end_date   <- as.POSIXlt(end_date, tz = "GMT")
+  start_date <- as.POSIXlt(start_date, tz = "UTC")
+  end_date   <- as.POSIXlt(end_date, tz = "UTC")
   met_folder <- outfolder
   met_header <- file.path(met_folder, "ED_MET_DRIVER_HEADER")
   
