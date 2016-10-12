@@ -57,7 +57,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method="uniform
   get.parameter.samples(settings, posterior.files, ens.sample.method)
   load(file.path(settings$outdir, "samples.Rdata"))
 
-  require(coda)
+  library(coda)
   ## remove previous runs.txt
   if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {
     logger.warn("Existing runs.txt file will be removed.")

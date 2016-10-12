@@ -33,7 +33,11 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
     spinup <- FALSE # why not have spinup default to FALSE above?
   }
   
+<<<<<<< HEAD
   library(linkages)
+=======
+  library(linkages) 
+>>>>>>> PecanProject/master
   
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
