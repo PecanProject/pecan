@@ -4,7 +4,8 @@
 \alias{align.data}
 \title{Align timeseries data}
 \usage{
-align.data(model_full, obvs_full, dat_vars, start_year, end_year)
+align.data(model_full, obvs_full, dat_vars, start_year, end_year,
+  align_method = "match.timestep")
 }
 \arguments{
 \item{model_full}{data.frame}

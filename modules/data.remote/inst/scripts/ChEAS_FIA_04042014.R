@@ -8,19 +8,19 @@
 ################################
 ## Load Required Packages
 ################################
-# require(sp)
+# library(sp)
 # require(rgdal)
-# require(raster)
-# require(chron)
-# require(RgoogleMaps)
-# require(maptools)
-# require(ggplot2)
-# require(car)
-# require(spatstat)
-# require(fields)
-# require(reshape)
-# require(rjags)
-# require(R2HTML)
+# library(raster)
+# library(chron)
+# library(RgoogleMaps)
+# library(maptools)
+# library(ggplot2)
+# library(car)
+# library(spatstat)
+# library(fields)
+# library(reshape)
+# library(rjags)
+# library(R2HTML)
 
 ################################
 ## OPTIONS
