@@ -52,35 +52,47 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   
   ## Convert data to format expected by pecan.ma
   jagged.data <- lapply(trait.data, jagify)
+
+  check_consistent <- function(data.median, prior, trait, msg_var,
+                               perr = 5e-04, pwarn = 0.025) {
+
+    p.data <- p.point.in.prior(point = data.median, prior = prior)
+
+    if (p.data <= 1 - perr & p.data >= perr) {
+      if (p.data <= 1 - pwarn & p.data >= pwarn) {
+        logger.info("OK! ", trait, " ", msg_var, " and prior are consistent:")
+      } else {
+        logger.warn("CHECK THIS: ", trait, " ", msg_var, " and prior are inconsistent:")
+      }
+    } else {
+      logger.debug("NOT OK! ", trait, " ", msg_var, " and prior are probably not the same:")
+      return(NA)
+    }
+    logger.info(trait, "P[X<x] =", p.data)
+    return(1)
+  }
+
   
   ## Check that data is consistent with prior
   for (trait in names(jagged.data)) {
     data.median <- median(jagged.data[[trait]]$Y)
     prior       <- prior.distns[trait, ]
-    p.data      <- p.point.in.prior(point = data.median, prior = prior)
-    
-    if (p.data <= 0.9995 & p.data >= 5e-04) {
-      if (p.data <= 0.975 & p.data >= 0.025) {
-        logger.info("OK! ", trait, " data and prior are consistent:")
-      } else {
-        logger.warn("CHECK THIS: ", trait, " data and prior are inconsistent:")
-      }
-    } else if (p.data > 0.9995 | p.data < 5e-04) {
-      logger.debug("NOT OK! ", trait, " data and prior are probably not the same:")
+    check       <- check_consistent(data.median, prior, trait, "data")
+    if (is.na(check)) {
       return(NA)
     }
-    logger.info(trait, "P[X<x] =", p.data)
   }
   
   ## Average trait data
   trait.average <- sapply(jagged.data, function(x) mean(x$Y, na.rm = TRUE) )
   
   ## Set gamma distribution prior
+  tau_value <- 0.01
   prior.variances <- as.data.frame(rep(1, nrow(prior.distns)))
   row.names(prior.variances) <- row.names(prior.distns)
   prior.variances[names(trait.average), ] <- 0.001 * trait.average ^ 2
   prior.variances["seedling_mortality", 1] <- 1
-  taupriors <- list(tauA = 0.01, tauB = apply(prior.variances, 1, function(x) min(0.01, x)))
+  taupriors <- list(tauA = tau_value, tauB = apply(prior.variances, 1, function(x) min(tau_value, x)))
   
   ### Run the meta-analysis
   trait.mcmc <- pecan.ma(jagged.data,
@@ -94,20 +106,10 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   for (trait in names(trait.mcmc)) {
     post.median <- median(as.matrix(trait.mcmc[[trait]][, "beta.o"]))
     prior       <- prior.distns[trait, ]
-    p.ma.post   <- p.point.in.prior(point = post.median, prior = prior)
-    
-    ## if inside 95%CI, ok.
-    if (p.ma.post <= 0.9995 & p.ma.post >= 5e-04) {
-      if (p.ma.post <= 0.975 & p.ma.post >= 0.025) {
-        logger.info("OK! ", trait, " posterior and prior are consistent:")
-      } else {
-        logger.warn("CHECK THIS: ", trait, " posterior and prior are inconsistent:")
-      }
-    } else if (p.ma.post > 0.9995 | p.ma.post < 5e-04) {
-      logger.severe("NOT OK! ", trait, " posterior and prior are probably not the same:")
+    check <- check_consistent(post.median, prior, trait, "data")
+    if (is.na(check)) {
       return(NA)
     }
-    logger.info(trait, "P[X<x] =", p.ma.post)
   }
   
   ### Generate summaries and diagnostics
@@ -117,13 +119,16 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   save(trait.mcmc, file = file.path(pft$outdir, "trait.mcmc.Rdata"))
   
   post.distns <- approx.posterior(trait.mcmc, prior.distns, jagged.data, pft$outdir)
-  save(post.distns, file = file.path(pft$outdir, "post.distns.MA.Rdata"))
+  dist_MA_path <- file.path(pft$outdir, "post.distns.MA.Rdata")
+  save(post.distns, file = dist_MA_path)
+
+  dist_path <- file.path(pft$outdir, "post.distns.Rdata")
   
   # Symlink to post.distns.Rdata (no 'MA' identifier)
-  if (file.exists(file.path(pft$outdir, "post.distns.Rdata"))) {
-    file.remove(file.path(pft$outdir, "post.distns.Rdata"))
+  if (file.exists(dist_path)) {
+    file.remove(dist_path)
   }
-  file.symlink(file.path(pft$outdir, "post.distns.MA.Rdata"), file.path(pft$outdir, "post.distns.Rdata"))
+  file.symlink(dist_MA_path), dist_path)
   
   ### save and store in database all results except those that were there already
   for (file in list.files(path = pft$outdir)) {
@@ -216,6 +221,7 @@ p.point.in.prior <- function(point, prior) {
   # Why is this (below) called, and then never used?
   prior.median <- do.call(paste0("q", prior$distn),
                           list(0.5, prior$parama, prior$paramb))
-  do.call(paste0("p", prior$distn), 
-          list(point, prior$parama, prior$paramb))
+  out <- do.call(paste0("p", prior$distn), 
+                 list(point, prior$parama, prior$paramb))
+  return(out)
 } # p.point.in.prior
