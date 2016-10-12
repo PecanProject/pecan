@@ -15,7 +15,11 @@ run.biocro <- function(lat, lon,
                        config = config,
                        coppice.interval = 1,
                        met.uncertainty = FALSE,
+<<<<<<< HEAD
                        irrigation = FALSE) {
+=======
+		       irrigation = FALSE){
+>>>>>>> PecanProject/master
   library(data.table)
   library(lubridate)
   start.date <- ceiling_date(as.POSIXct(config$simulationPeriod$dateofplanting), "day")

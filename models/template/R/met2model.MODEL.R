@@ -20,6 +20,6 @@
 ##' @export
 ##' @author Rob Kooper
 ##-------------------------------------------------------------------------------------------------#
-met2model.MODEL <- function(in.path, in.prefix, outfolder, overwrite=FALSE) {
+met2model.MODEL <- function(in.path, in.prefix, outfolder, overwrite = FALSE) {
   logger.severe("NOT IMPLEMENTED")
-}
+} # met2model.MODEL

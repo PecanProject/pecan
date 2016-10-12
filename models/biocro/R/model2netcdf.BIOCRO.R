@@ -21,6 +21,10 @@
 ##' @author David LeBauer, Deepak Jaiswal, Rob Kooper
 model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon = -9999) {
   
+<<<<<<< HEAD
+=======
+
+>>>>>>> PecanProject/master
   library(data.table)
   library(lubridate)
   library(ncdf4)

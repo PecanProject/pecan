@@ -12,7 +12,7 @@
 #--------------------------------------------------------------------------------------------------#
 
 ResidSpectra <- function(data,model=NULL,obsPerDay=1,case=3){
-  require(dplR)
+  library(dplR)
   
   ##make sure everything's the right type
   data <- as.vector(data)

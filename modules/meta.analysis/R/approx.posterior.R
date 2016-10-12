@@ -31,7 +31,7 @@
 approx.posterior <- function(trait.mcmc, priors, trait.data=NULL, outdir=NULL, filename.flag=""){
 
   ##initialization
-  require(coda)
+  library(coda)
   posteriors <- priors
   do.plot <- exists("outdir")
   if(do.plot == TRUE){
