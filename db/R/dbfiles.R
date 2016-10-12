@@ -23,6 +23,7 @@
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
 ##' @param params database connection information
+##' @param allow.conflicting.dates Whether to allow a new input record with same siteid, name, and format but different start/end dates
 ##' @return data.frame with the id, filename and pathname of the input that is requested
 ##' @export
 ##' @author Rob Kooper, Betsy Cowdery
@@ -30,7 +31,7 @@
 ##' \dontrun{
 ##'   dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
-dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn()) {
+dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, mimetype, formatname, parentid=NA, con, hostname=fqdn(), allow.conflicting.dates=FALSE) {
   name <- basename(in.path)
   filename <- file.path(in.path, in.prefix)
   
@@ -40,7 +41,8 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   mimetypeid <- get.id("mimetypes", "type_string", mimetype, con, create=TRUE)
  
   # find appropriate format, create if it does not exist
-  formatid <- get.id("formats", colname = c('mimetype_id', 'name'), value = c(mimetypeid, formatname), con, create=TRUE, dates=TRUE)
+  formatid <- get.id("formats", colname = c('mimetype_id', 'name'), 
+                     value = c(mimetypeid, formatname), con, create=TRUE, dates=TRUE)
 
   # setup parent part of query if specified
   if (is.na(parentid)) {
@@ -50,48 +52,58 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   }
 
   # find appropriate input, if not in database, insert new input
-  existing.input <- db.query(paste0("SELECT * FROM inputs WHERE site_id=", siteid, " AND name= '", name, 
+  existing.input <- db.query(paste0(
+    "SELECT * FROM inputs WHERE site_id=", siteid, " AND name= '", name, 
     "' AND format_id=", formatid, parent), con)
 
-  
-  if (nrow(existing.input) == 0) {
-    # insert input
-    if(parent == ""){
-      cmd <- paste0("INSERT INTO inputs (site_id, format_id, created_at, updated_at, start_date, end_date, name) VALUES (",
-                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate,"','", name, "')")
-    }else{
-      cmd <- paste0("INSERT INTO inputs (site_id, format_id, created_at, updated_at, start_date, end_date, name, parent_id) VALUES (",
-                    siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate,"','", name, "',",parentid,")")
-    }
-    db.query(cmd, con)
-    # return input id
-    inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, " AND start_date='", startdate, "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
-  } else {
-    if(nrow(existing.input) > 1) {
-      print(existing.input)
-      logger.warn("Multiple existing inputs found. Using last.")
-      existing.input <- existing.input[nrow(existing.input),]
-    }
-    
+  inputid <- NULL
+  if (nrow(existing.input) > 0) {
     # Convert dates to Date objects and strip all time zones (DB values are timezone-free)
     startdate <- force_tz(as_date(startdate), 'GMT')
     enddate <- force_tz(as_date(enddate), 'GMT')
     existing.input$start_date <- force_tz(as_date(existing.input$start_date), 'GMT')
     existing.input$end_date <- force_tz(as_date(existing.input$end_date), 'GMT')
+  
+    for(i in 1:nrow(existing.input)) {
+      existing.input.i <- existing.input[i,]
+      if(existing.input.i$start_date == startdate && existing.input.i$end_date == enddate) {
+        inputid <- existing.input.i[['id']]
+        break
+      }
+    }
     
-    if(existing.input$start_date != startdate || existing.input$end_date != enddate) {
+    if(is.null(inputid) && !allow.conflicting.dates) {
       print(existing.input, digits=10)
       logger.error(paste0(
-        "Duplicate inputs (in terms of site_id, name, and format_id) with differing start/end dates ",
-        "are not allowed. The existing input record printed above would conflict with the one ",
-        "to be inserted, which has requested start/end dates of ", startdate, "/", enddate,
-        "Please resolve this conflict."
+        "Duplicate inputs (in terms of site_id, name, and format_id) with differing ",
+        "start/end dates are not allowed. The existing input record printed above would ",
+        " conflict with the one to be inserted, which has requested start/end dates of ", 
+        startdate, "/", enddate, "Please resolve this conflict or set", 
+        "allow.conflicting.dates=TRUE if you want to allow multiple input records ",
+        " with different dates."
       ))
       return(NULL)
     }
-    
-    inputid <- existing.input[['id']]
-  }
+  } 
+  
+  if(is.null(inputid)) {
+    # Either there was no existing input, or there was but the dates don't match and 
+    # allow.conflicting.dates==TRUE. So, insert new input record. 
+    if(parent == ""){
+      cmd <- paste0("INSERT INTO inputs ",
+        "(site_id, format_id, created_at, updated_at, start_date, end_date, name) VALUES (",
+        siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate,"','", name, "')")
+    } else {
+      cmd <- paste0("INSERT INTO inputs ",
+        "(site_id, format_id, created_at, updated_at, start_date, end_date, name, parent_id) VALUES (",
+        siteid, ", ", formatid, ", NOW(), NOW(), '", startdate, "', '", enddate,"','", name, "',",parentid,")")
+    }
+    db.query(cmd, con)
+
+    inputid <- db.query(paste0("SELECT id FROM inputs WHERE site_id=", siteid, 
+      " AND format_id=", formatid, " AND start_date='", startdate, 
+      "' AND end_date='", enddate, "'" , parent, ";"), con)[['id']]
+  } 
   
   # find appropriate dbfile, if not in database, insert new dbfile
   dbfile <- dbfile.check('Input', inputid, con, hostname)
