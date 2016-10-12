@@ -11,7 +11,7 @@
 `minimize.GP` <-
 function(gp,rng,x0,splinefuns = NULL){
   
-  require("coda")
+  library(coda)
   isotropic <- gp$isotropic
   x.id <- gp$x.id
   ey = 0
@@ -178,7 +178,7 @@ is.accepted <- function(ycurr, ynew, format='lin'){
 mcmc.GP <- function(gp, pckg, x0, nmcmc, rng, format="lin", mix="joint", splinefcns=NULL, 
     jmp0=0.35*(rng[,2]-rng[,1]), ar.target=0.5, priors=NA, settings, run.block = TRUE, resume.list = NULL){
   
-  haveTime <- FALSE #require("time")
+  haveTime <- FALSE #library("time")
 
   ## storage
   ycurr <- get.y(gp, pckg, x0, priors)

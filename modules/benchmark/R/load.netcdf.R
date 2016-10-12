@@ -54,7 +54,7 @@ load.x_netcdf <- function(data.path, format, site, vars=NULL){
     t.units <- gsub(paste0(" since ", time.stamp.match, ".*"), "", ncatt_get(nc[[i]], dims[time.var])$units)
     
     
-    foo <- as.POSIXlt(date.origin, tz="GMT") + ud.convert(time.col[[i]], t.units ,"seconds")
+    foo <- as.POSIXlt(date.origin, tz="UTC") + ud.convert(time.col[[i]], t.units ,"seconds")
     time.col[[i]] <- foo
     
   }
@@ -62,7 +62,7 @@ load.x_netcdf <- function(data.path, format, site, vars=NULL){
   # needed to use 'round' to 'mins' here, otherwise I end up with values like "2006-12-31 23:29:59" while reading Ameriflux for example
   # however the model timesteps are more regular and the last value can be "2006-12-31 23:30:00"..
   # this will result in cutting the last value in the align.data step
-  dat$posix <- round(as.POSIXlt(do.call("c", time.col), tz="GMT"), "mins")
+  dat$posix <- round(as.POSIXlt(do.call("c", time.col), tz="UTC"), "mins")
   
   
   lapply(nc, nc_close)

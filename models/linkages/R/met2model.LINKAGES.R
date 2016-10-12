@@ -20,6 +20,7 @@
 ##' @export
 ##' @author Ann Raiho, Betsy Cowdery
 ##-------------------------------------------------------------------------------------------------#
+<<<<<<< HEAD
 met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_date, 
                                overwrite = FALSE, verbose = FALSE, ...) {
   library(PEcAn.utils)
@@ -29,6 +30,18 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   out.file <- file.path(outfolder, "climate.Rdata")
   # out.file <- file.path(outfolder, paste(in.prefix, strptime(start_date, '%Y-%m-%d'),
   # strptime(end_date, '%Y-%m-%d'), 'dat', sep='.'))
+=======
+met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite=FALSE,verbose=FALSE) {
+  library(PEcAn.utils)
+  
+  start_date <- as.POSIXlt(start_date, tz = "UTC")
+  end_date<- as.POSIXlt(end_date, tz = "UTC")
+  out.file <- file.path(outfolder,"climate.Rdata")
+  #   out.file <- file.path(outfolder, paste(in.prefix,
+  #                                          strptime(start_date, "%Y-%m-%d"),
+  #                                          strptime(end_date, "%Y-%m-%d"),
+  #                                          "dat", sep="."))
+>>>>>>> PecanProject/master
   
   results <- data.frame(file = c(out.file),
                         host = c(fqdn()), 
@@ -49,7 +62,11 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   library(ncdf4)
   library(lubridate)
   library(PEcAn.data.atmosphere)
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> PecanProject/master
   ## check to see if the outfolder is defined, if not create directory for output
   if (!file.exists(outfolder)) {
     dir.create(outfolder)
