@@ -122,12 +122,10 @@ logger.severe <- function(msg, ...) {
 ##' @param level the level of the message (DEBUG, INFO, WARN, ERROR)
 ##' @param msg the message that should be printed.
 ##' @param ... any additional text that should be printed.
-##' @return The msg, invisibly
-##' @author Rob Kooper, Ryan Kelly
+##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
 ##' logger.message("DEBUG", "variable", 5)
-##' stop(logger.message("ERROR", "This not only logs the error, but halts execution too."))
 ##' }
 logger.message <- function(level, msg, ...) {
 	if (logger.getLevelNumber(level) >= .utils.logger$level) {
@@ -159,7 +157,6 @@ logger.message <- function(level, msg, ...) {
 			cat(text, file=.utils.logger$filename, append=TRUE)
 		}
 	}
-	return(invisible(msg))
 }
 
 ##' Configure logging level.

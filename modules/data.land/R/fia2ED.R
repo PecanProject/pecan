@@ -96,8 +96,7 @@ fia.to.psscss <- function(settings,
       pft.number <- pftmapping$ED[which(pftmapping == pft.i$name)]
     }
     if(is.null(pft.number)) {
-      logger.error(paste0("Couldn't find an ED2 PFT number for ", pft.i$name))
-      stop()
+      logger.severe(paste0("Couldn't find an ED2 PFT number for ", pft.i$name))
     }
 		pfts$pft[pfts$pft == pft.i$name] <- pft.number
 	}
@@ -122,12 +121,9 @@ fia.to.psscss <- function(settings,
 		# grab the names where we have bad spcds in the symbol.table, exclude NAs
 		name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% bad]) 		
 							
-		logger.error(paste0("\nThe following species are found in multiple PFTs: \n",   
+		logger.severe(paste0("\nThe following species are found in multiple PFTs: \n",   
 		  paste(name.list[1:min(10,length(name.list))], collapse=", "), over.ten, 
 		  "\n\tPlease remove overlapping PFTs."))
-		
-		# Using stop naturally causes an error with the tests - comment stops out for testing.
-		stop("Execution stopped due to duplicate species.")			
 	}
 
 	## connect to database
@@ -150,7 +146,7 @@ fia.to.psscss <- function(settings,
                  ' GROUP BY p.cn')
 
   pss <- db.query(query, con=fia.con)
-  if(nrow(pss) == 0) stop(logger.error("No pss data found."))
+  if(nrow(pss) == 0) logger.severe("No pss data found.")
   
   for(statecd in unique(pss$statecd)) {
     # Count up occurrences of each cycle
@@ -169,7 +165,7 @@ fia.to.psscss <- function(settings,
   # same plot
   pss <- pss[.select.unique.fia.plot.records(pss$patch, pss$prev_plt_cn, pss$time, year), ]
   
-  if(nrow(pss) == 0) stop(logger.error("All pss data were invalid."))
+  if(nrow(pss) == 0) logger.severe("All pss data were invalid.")
   
 
   pss$trk[which(is.na(pss$trk))] <- 1
@@ -205,7 +201,7 @@ fia.to.psscss <- function(settings,
                  ' and p.lat >= ', latmin, ' and p.lat < ', latmax)
   css <- db.query(query, con=fia.con)
   names(css) = tolower(names(css))
-  if(nrow(css) == 0) stop(logger.error("No css data found."))
+  if(nrow(css) == 0) logger.severe("No css data found.")
   
   # Remove rows that don't map to any retained patch
   css <- css[ which(css$patch %in% pss$patch), ]
@@ -275,7 +271,7 @@ fia.to.psscss <- function(settings,
     logger.warn(paste0("\nThe following PFTs listed in settings are not represented in the FIA data: ", 
        paste(sapply(settings$pfts, function(x) x$name)[!pfts.represented], collapse=", ")))	
 
-  if(nrow(css) == 0) stop(logger.error("No valid css data found."))
+  if(nrow(css) == 0) logger.severe("No valid css data found.")
   logger.debug(paste0("Found ", nrow(css), " cohorts for site ", settings$run$site$id))
 
   ##################
