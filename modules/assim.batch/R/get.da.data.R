@@ -114,8 +114,10 @@ get.da.data <- function(out.dir, ameriflux.dir, years, be, bu, ensemble.size=199
 
   points.per.day <- 48
   dtime <- do.call(c, lapply(years,
-          function(year) year + 
-                seq(1, (366 + lubridate::leap_year(year)), by=1/points.per.day)[-1] / 366))
+          function(year) {
+            nodays <- 365 + lubridate::leap_year(year)
+            year + seq(1, nodays, by = 1 / points.per.day)[-1] / nodays))
+          }
   
   #run.ids<-ensemble.run.ids
   #x <- ensemble.x
