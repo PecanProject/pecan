@@ -21,21 +21,12 @@
 ##' @export
 ##'
 ##' @author Ann Raiho, Betsy Cowdery
-<<<<<<< HEAD
 model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, end_date = NULL, force = FALSE) {
   # , PFTs) { logger.severe('NOT IMPLEMENTED')
   
   library(PEcAn.utils)
   library(ncdf4)
   
-=======
-model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end_date=NULL,force=FALSE){ #, PFTs) {
-#  logger.severe("NOT IMPLEMENTED")
-
-  library(PEcAn.utils)
-  library(ncdf4)
-
->>>>>>> PecanProject/master
   ### Read in model output in linkages format
   load(file.path(outdir, "linkages.out.Rdata"))
   # linkages.output.dims <- dim(linkages.output)
