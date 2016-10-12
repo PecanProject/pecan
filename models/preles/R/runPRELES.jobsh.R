@@ -21,10 +21,7 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
   library(PEcAn.data.atmosphere)
   library(PEcAn.utils)
   library(ncdf4)
-  if (!require(Rpreles)) {
-    print("install Rpreles")
-    
-  }
+  library(Rpreles)
   library(udunits2)
   
   # Process start and end dates

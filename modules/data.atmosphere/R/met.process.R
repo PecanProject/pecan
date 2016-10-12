@@ -22,8 +22,8 @@
 met.process <- function(
   site, input_met, start_date, end_date, model, host="localhost", dbparms, dir, browndog=NULL, 
   overwrite=list(download=FALSE, met2cf=FALSE, standardize=FALSE, met2model=FALSE)){
-  require(RPostgreSQL)
-  require(XML)
+  library(RPostgreSQL)
+  library(XML)
   
   # If overwrite is a plain boolean, fill in defaults for each stage
   if(!is.list(overwrite)) {
