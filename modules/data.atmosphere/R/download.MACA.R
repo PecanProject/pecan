@@ -95,10 +95,10 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     }
     
     dat.list = as.data.frame(dat.list)
-    colnames(dat.list) = c("air_temperature_max","air_temperature_min","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux")
-    for (n in 1:1825){
-      dat.list[n,"air_pressure"] = 1
-      dat.list[n,"surface_downwelling_longwave_flux_in_air"] = 1}
+    colnames(dat.list) = c("air_temperature_max","air_temperature_min","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux","air_pressure", "surface_downwelling_longwave_flux_in_air","air_temperature")
+    #for (n in 1:1825){
+     # dat.list[n,"air_pressure"] = 1
+      #dat.list[n,"surface_downwelling_longwave_flux_in_air"] = 1}
     #take average of temperature min and max
     dat.list[["air_temperature"]] = (dat.list[["air_temperature_max"]]+dat.list[["air_temperature_min"]])/2
     #convert mm precipitation to precipitation flux
