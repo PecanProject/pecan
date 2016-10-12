@@ -28,13 +28,9 @@ graphics.off()  # close any open graphics
 #--------------------------------------------------------------------------------------------------#
 
 
-#---------------- Load required libraries ---------------------------------------------------------#
-# Info: Loads required R libraries and warns if package is not availible.
-ok = require(chron); if (! ok) stop("Package chron is not available...")
-ok = require(hdf5) ; if (! ok) stop("Package hdf5 is not available...")
-ok = require(XML) ; if (! ok) stop("Package XML is not available...")
-#--------------------------------------------------------------------------------------------------#
-
+library(chron)
+library(hdf5)
+library(XML)
 
 #---------------- Import command arguments from shell ---------------------------------------------#
 args = commandArgs(trailingOnly = TRUE) # import any needed arguments for the terminal

@@ -24,8 +24,8 @@
 model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end_date=NULL,force=FALSE){ #, PFTs) {
 #  logger.severe("NOT IMPLEMENTED")
 
-  require(PEcAn.utils)
-  require(ncdf4)
+  library(PEcAn.utils)
+  library(ncdf4)
 
   ### Read in model output in linkages format
   load(file.path(outdir,"linkages.out.Rdata"))
