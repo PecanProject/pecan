@@ -52,24 +52,35 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   
   ## Convert data to format expected by pecan.ma
   jagged.data <- lapply(trait.data, jagify)
+
+  check_consistent <- function(data.median, prior, trait, msg_var,
+                               perr = 5e-04, pwarn = 0.025) {
+
+    p.data <- p.point.in.prior(point = data.median, prior = prior)
+
+    if (p.data <= 1 - perr & p.data >= perr) {
+      if (p.data <= 1 - pwarn & p.data >= pwarn) {
+        logger.info("OK! ", trait, " ", msg_var, " and prior are consistent:")
+      } else {
+        logger.warn("CHECK THIS: ", trait, " ", msg_var, " and prior are inconsistent:")
+      }
+    } else {
+      logger.debug("NOT OK! ", trait, " ", msg_var, " and prior are probably not the same:")
+      return(NA)
+    }
+    logger.info(trait, "P[X<x] =", p.data)
+    return(1)
+  }
+
   
   ## Check that data is consistent with prior
   for (trait in names(jagged.data)) {
     data.median <- median(jagged.data[[trait]]$Y)
     prior       <- prior.distns[trait, ]
-    p.data      <- p.point.in.prior(point = data.median, prior = prior)
-    
-    if (p.data <= 0.9995 & p.data >= 5e-04) {
-      if (p.data <= 0.975 & p.data >= 0.025) {
-        logger.info("OK! ", trait, " data and prior are consistent:")
-      } else {
-        logger.warn("CHECK THIS: ", trait, " data and prior are inconsistent:")
-      }
-    } else if (p.data > 0.9995 | p.data < 5e-04) {
-      logger.debug("NOT OK! ", trait, " data and prior are probably not the same:")
+    check       <- check_consistent(data.median, prior, trait, "data")
+    if (is.na(check)) {
       return(NA)
     }
-    logger.info(trait, "P[X<x] =", p.data)
   }
   
   ## Average trait data
@@ -95,20 +106,10 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   for (trait in names(trait.mcmc)) {
     post.median <- median(as.matrix(trait.mcmc[[trait]][, "beta.o"]))
     prior       <- prior.distns[trait, ]
-    p.ma.post   <- p.point.in.prior(point = post.median, prior = prior)
-    
-    ## if inside 95%CI, ok.
-    if (p.ma.post <= 0.9995 & p.ma.post >= 5e-04) {
-      if (p.ma.post <= 0.975 & p.ma.post >= 0.025) {
-        logger.info("OK! ", trait, " posterior and prior are consistent:")
-      } else {
-        logger.warn("CHECK THIS: ", trait, " posterior and prior are inconsistent:")
-      }
-    } else if (p.ma.post > 0.9995 | p.ma.post < 5e-04) {
-      logger.severe("NOT OK! ", trait, " posterior and prior are probably not the same:")
+    check <- check_consistent(post.median, prior, trait, "data")
+    if (is.na(check)) {
       return(NA)
     }
-    logger.info(trait, "P[X<x] =", p.ma.post)
   }
   
   ### Generate summaries and diagnostics

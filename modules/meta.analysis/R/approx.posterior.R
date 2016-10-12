@@ -112,7 +112,10 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
         posteriors[ptrait, "paramb"] <- fit[[bestfit]]$estimate[2]
       }
       
-      if (do.plot) {
+
+      dens_plot <- function(posteriors, priors, dat, trait, trait.data,
+                            plot_quantiles = c(0.01, 0.99)) {
+
         f <- function(x) {
           cl <- call(paste0("d", posteriors[ptrait, "distn"]),
                      x,
@@ -120,7 +123,7 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
                      posteriors[ptrait, "paramb"])
           eval(cl)
         } # f
-        
+
         fq <- function(x) {
           cl <- call(paste0("q", priors[ptrait, "distn"]),
                      x, 
@@ -128,14 +131,14 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
                      priors[ptrait, "paramb"])
           eval(cl)
         } # fq
-        
-        qbounds <- fq(c(0.01, 0.99))
+
+        qbounds <- fq(plot_quantiles)
         x <- seq(qbounds[1], qbounds[2], length = 1000)
         rng <- range(dat)
         if (!is.null(trait.data)) {
           rng <- range(trait.data[[trait]]$Y)
         }
-        
+
         plot(density(dat), col = 2, lwd = 2, main = trait, xlim = rng)
         if (!is.null(trait.data)) {
           rug(trait.data[[trait]]$Y, lwd = 2, col = "purple")
@@ -146,23 +149,17 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
                legend = c("data", "prior", "post", "approx"), 
                col = c("purple", 3, 2, 1), lwd = 2)
       }
+
+      if (do.plot) {
+        dens_plot(posteriors, priors, dat, trait, trait.data)
+      }
     } else {
       ## default: NORMAL
       posteriors[trait, "distn"] <- "norm"
       posteriors[trait, "parama"] <- mean(dat)
       posteriors[trait, "paramb"] <- sd(dat)
       if (do.plot) {
-        rng <- quantile(dat, c(0.01, 0.99))
-        x <- seq(rng[1], rng[2], length = 1000)
-        plot(density(dat), col = 2, lwd = 2, main = trait, xlim = rng)
-        if (!is.null(trait.data)) {
-          rug(trait.data[[trait]]$Y, lwd = 2, col = "purple")
-        }
-        lines(x, dnorm(x, mean(dat), sd(dat)), lwd = 2, type = "l")
-        lines(x, fp(x), lwd = 3, type = "l", col = 3)
-        legend("topleft", 
-               legend = c("data", "prior", "post", "approx"), 
-               col = c("purple", 3, 2, 1), lwd = 2)
+        dens_plot(posteriors, priors, dat, trait, trait.data)
       }
     }
   }  ## end trait loop
