@@ -84,7 +84,7 @@ model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, 
     var[[5]] <- ncvar_def("Qle", units = ("W m-2"), dim = list(lat, lon, t), missval = -999, longname = "latent Heat Flux")
     
     ### Output netCDF data
-    nc      <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
       # print(i)
@@ -94,4 +94,5 @@ model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, 
     close(varfile)
     nc_close(nc)
   }  ### End of year loop
-} # model2netcdf.MAESPA
+  
+}  ### End of function  

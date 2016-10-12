@@ -26,10 +26,8 @@
 #' @details database is assumed to conform to the PEcAn Schema
 query.allom.data <- function(pft_name, variable, con, nsim = 10000) {
   
-  if (!require(PEcAn.DB)) {
-    print("PEcAn.DB module not installed")
-  }
-  
+  library(PEcAn.DB)
+
   ## check validity of inputs
   if (is.null(pft_name) | is.na(pft_name)) {
     print(c("invalid PFT_NAME in QUERY.ALLOM.DATA", pft_name))

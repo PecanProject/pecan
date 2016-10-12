@@ -92,7 +92,7 @@ bugs.rdist <- function(prior = data.frame(
                          paramb = 1),
                        n.iter = 100000,
                        n = NULL) {
-  require(rjags)
+  library(rjags)
   if(!grepl("chisq", prior$distn)){
     model.string <- paste("model{Y ~ d", prior$distn, "(",
                           prior$parama, ", ", prior$paramb,

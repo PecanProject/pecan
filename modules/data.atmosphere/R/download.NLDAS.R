@@ -12,7 +12,7 @@
 ##' @author Christy Rollinson (with help from Ankur Desai)
 
 download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, overwrite=FALSE, verbose=FALSE, ...){  
-  require(PEcAn.utils)
+  library(PEcAn.utils)
   library(RCurl)
   library(lubridate)
   library(ncdf4)

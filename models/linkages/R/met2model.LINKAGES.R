@@ -21,7 +21,7 @@
 ##' @author Ann Raiho, Betsy Cowdery
 ##-------------------------------------------------------------------------------------------------#
 met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_date, ..., overwrite=FALSE,verbose=FALSE) {
-  require(PEcAn.utils)
+  library(PEcAn.utils)
   
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date<- as.POSIXlt(end_date, tz = "UTC")
@@ -47,11 +47,10 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
     return(invisible(results))
   }
   
-  require(ncdf4)
-  require(lubridate)
-  require(PEcAn.data.atmosphere)
-  #  require(ncdf)
-  
+  library(ncdf4)
+  library(lubridate)
+  library(PEcAn.data.atmosphere)
+
   ## check to see if the outfolder is defined, if not create directory for output
   if(!file.exists(outfolder)){
     dir.create(outfolder)
