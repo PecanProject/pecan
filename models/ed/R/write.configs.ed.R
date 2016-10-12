@@ -173,7 +173,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     ed2in.text <- gsub("@INIT_MODEL@", 0, ed2in.text)
     ed2in.text <- gsub("@SITE_PSSCSS@", "", ed2in.text)
   } else {
-    lat_rxp <- "(\\.lat\\.*)?\\.(css|pss|site)"
+    lat_rxp <- "\\.lat.*lon.*\\.(css|pss|site)"
     prefix.pss <- sub(lat_rxp, "", settings$run$inputs$css$path)
     prefix.css <- sub(lat_rxp, "", settings$run$inputs$pss$path)
     # pss and css prefix is not the same, kill
