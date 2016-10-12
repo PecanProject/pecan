@@ -34,6 +34,10 @@
 #'   pritn(remote.execute.cmd(host, "ls", c("-l", "/"), stderr=TRUE))
 #' }
 remote.execute.cmd <- function(host, cmd, args=character(), stderr=FALSE) {
+  if(is.character(host)) {
+    host <- list(name=host)
+  }
+
   if ((host$name == "localhost") || (host$name == fqdn())) {
     logger.debug(paste(cmd, args))
     system2(cmd, args, stdout=TRUE, stderr=as.logical(stderr))
