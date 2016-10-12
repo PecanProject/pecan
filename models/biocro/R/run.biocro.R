@@ -15,8 +15,8 @@ run.biocro <- function(lat, lon, met.nc = met.nc,
                        coppice.interval = 1,
                        met.uncertainty = FALSE,
 		       irrigation = FALSE){
-  require(data.table)
-  require(lubridate)
+  library(data.table)
+  library(lubridate)
   start.date <- ceiling_date(as.POSIXct(config$simulationPeriod$dateofplanting), "day")
   end.date <- floor_date(as.POSIXct(config$simulationPeriod$dateofharvest), "day")
   genus <- config$pft$type$genus
