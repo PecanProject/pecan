@@ -8,13 +8,13 @@
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion <- function(data,n.iter,random=TRUE,burnin_plot=FALSE){
+InventoryGrowthFusion <- function(data, n.iter, random = TRUE, burnin_plot = FALSE) {
   library(rjags)
   
-  burnin.variables = c("tau_add","tau_dbh","tau_inc","mu")
-  out.variables = c("x","tau_add","tau_dbh","tau_inc","mu")
+  burnin.variables <- c("tau_add", "tau_dbh", "tau_inc", "mu")
+  out.variables <- c("x", "tau_add", "tau_dbh", "tau_inc", "mu")
   
-  TreeDataFusionMV = "
+  TreeDataFusionMV <- "
 model{
 
   ### Loop over all individuals
@@ -57,45 +57,50 @@ model{
 #RANDOM tau_yr  ~ dgamma(1,0.1)
   mu ~ dnorm(0.5,0.5)
  }"
-
-  Pformula = NULL
+  
+  Pformula <- NULL
   ## RANDOM EFFECTS
-  if(random == TRUE){
-    TreeDataFusionMV = gsub(pattern="#RANDOM"," ",TreeDataFusionMV)
-    Pformula = "+ ind[i] + year[t]"
-    burnin.variables = c(burnin.variables,"tau_ind","tau_yr")
-    out.variables = c(out.variables,"tau_ind","tau_yr","ind","year")
+  if (random) {
+    TreeDataFusionMV <- gsub(pattern = "#RANDOM", " ", TreeDataFusionMV)
+    Pformula <- "+ ind[i] + year[t]"
+    burnin.variables <- c(burnin.variables, "tau_ind", "tau_yr")
+    out.variables <- c(out.variables, "tau_ind", "tau_yr", "ind", "year")
   }
-
-  if(!is.null(Pformula)) TreeDataFusionMV = sub(pattern="##PROCESS",Pformula,TreeDataFusionMV)
-    
+  
+  if (!is.null(Pformula)) {
+    TreeDataFusionMV <- sub(pattern = "##PROCESS", Pformula, TreeDataFusionMV)
+  }
+  
   ## state variable initial condition
-  z0 = t(apply(data$y,1,function(y){-rev(cumsum(rev(y)))})) + data$z[,ncol(data$z)] 
+  z0 <- t(apply(data$y, 1, function(y) {
+    -rev(cumsum(rev(y)))
+  })) + data$z[, ncol(data$z)]
   
   ## JAGS initial conditions
-  nchain = 3
-  init <- list()
-  for(i in 1:nchain){
-    y.samp = sample(data$y,length(data$y),replace=TRUE)
-    init[[i]] <- list(x = z0,tau_add=runif(1,1,5)/var(diff(y.samp),na.rm=TRUE),
-                      tau_dbh=1,tau_inc=1500,tau_ind=50,tau_yr=100,ind=rep(0,data$ni),year=rep(0,data$nt))
+  nchain <- 3
+  init   <- list()
+  for (i in seq_len(nchain)) {
+    y.samp <- sample(data$y, length(data$y), replace = TRUE)
+    init[[i]] <- list(x = z0, 
+                      tau_add = runif(1, 1, 5) / var(diff(y.samp), na.rm = TRUE),
+                      tau_dbh = 1, 
+                      tau_inc = 1500,
+                      tau_ind = 50, 
+                      tau_yr = 100, 
+                      ind = rep(0, data$ni),  
+                      year = rep(0, data$nt))
   }
   
   ## compile JAGS model
-  j.model   <- jags.model (file = textConnection(TreeDataFusionMV),
-                           data = data,
-                           inits = init,
-                           n.chains = 3)
+  j.model <- jags.model(file = textConnection(TreeDataFusionMV), data = data, inits = init, n.chains = 3)
   ## burn-in
-  jags.out   <- coda.samples (model = j.model,
-                              variable.names = burnin.variables,
-                              n.iter = min(n.iter,2000))
-  if(burnin_plot) plot(jags.out)
+  jags.out <- coda.samples(model = j.model, 
+                           variable.names = burnin.variables, 
+                           n.iter = min(n.iter, 2000))
+  if (burnin_plot) {
+    plot(jags.out)
+  }
   
   ## run MCMC
-  jags.out   <- coda.samples (model = j.model,
-                              variable.names = out.variables,
-                              n.iter = n.iter)
-  
-  return(jags.out)
-}
+  coda.samples(model = j.model, variable.names = out.variables, n.iter = n.iter)
+} # InventoryGrowthFusion
