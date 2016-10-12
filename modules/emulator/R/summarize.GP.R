@@ -9,7 +9,7 @@
 ##' @author Michael Dietze
 `summarize.GP` <-
 function(gp,pdf_file=NULL,txt_file=NULL){
-  require("coda")
+  library(coda)
   nugget <- gp$nugget
   isotropic <- gp$isotropic
   d <- gp$d

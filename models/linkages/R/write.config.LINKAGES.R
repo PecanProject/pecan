@@ -29,7 +29,7 @@ write.config.LINKAGES <- function(defaults=NULL, trait.values, settings, run.id,
   if(is.null(restart)) restart = FALSE
   if(is.null(spinup)) spinup = FALSE
   
-  require(linkages) 
+  library(linkages) 
   
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)

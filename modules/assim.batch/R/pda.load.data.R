@@ -12,7 +12,7 @@
 ##' @export
 load.pda.data <- function(settings, con) {
   
-  require(PEcAn.benchmark)
+  library(PEcAn.benchmark)
 
   # Outlining setup for multiple datasets
 

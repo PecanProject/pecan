@@ -3,7 +3,7 @@ library(taxize)
 library(data.table)
 
 get.plants.sources <- function(){
-    require(taxize)
+  library(taxize)
     common.plants <- c("acer rubrum", "zea mays", "tsuga canadensis")
     dat <- gnr_resolve(common.plants)
     plants.sources <- unique(dat$data_source_title)
@@ -15,8 +15,8 @@ get.plants.sources <- function(){
 all.sources <- get.plants.sources()
 
 fix.species <- function(dat){
-    require(taxize)
-    require(data.table)
+  library(taxize)
+  library(data.table)
     species.old <- tolower(dat[,unique(species_scientific)])
     usda <- 150
     all.sources <- all.sources

@@ -32,7 +32,7 @@ invert.options$model <- function(params) {
                         paths = paths,
                         par.wl = 400:2499, # Wavelengths for PAR vector
                         nir.wl = 2500,  # Wavelengths for NIR vector
-                        datetime = ISOdate(2004, 07, 01, 12, 0, 0, tz="GMT"),  # Datetime at which EDR will run
+                        datetime = ISOdate(2004, 07, 01, 12, 0, 0, tz="UTC"),  # Datetime at which EDR will run
                         edr.exe.name = 'ed_2.1-opt', # Name of the EDR executable. 
                         # It must be located in `output.path`.
                         # I recommend using a symlink.
