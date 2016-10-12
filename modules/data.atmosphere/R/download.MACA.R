@@ -51,10 +51,10 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
                         stringsAsFactors = FALSE)
   
   
-  var = data.frame(DAP.name = c("tasmax","tasmin","rsds","uas","vas","huss","pr","none","none"), 
-                  long_DAP.name = c("air_temperature","air_temperature","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation","air_pressure", "surface_downwelling_longwave_flux_in_air"),
-                  CF.name = c("air_temperature_max","air_temperature_min","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux","air_pressure", "surface_downwelling_longwave_flux_in_air"),
-                  units = c('Kelvin','Kelvin',"W/m2","m/s","m/s","g/g","kg/m2/s", "Pascal", "W/m2")
+  var = data.frame(DAP.name = c("tasmax","tasmin","rsds","uas","vas","huss","pr","none","none","none"), 
+                  long_DAP.name = c("air_temperature","air_temperature","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation","air_pressure", "surface_downwelling_longwave_flux_in_air","air_temp"),
+                  CF.name = c("air_temperature_max","air_temperature_min","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux","air_pressure", "surface_downwelling_longwave_flux_in_air","air_temperature"),
+                  units = c('Kelvin','Kelvin',"W/m2","m/s","m/s","g/g","kg/m2/s", "Pascal", "W/m2","Kelvin")
                       )
   
   
@@ -100,7 +100,7 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
       dat.list[n,"air_pressure"] = 1
       dat.list[n,"surface_downwelling_longwave_flux_in_air"] = 1}
     #take average of temperature min and max
-    #dat.list[[1]] = (dat.list[[1]]+dat.list[[2]])/2
+    dat.list[["air_temperature"]] = (dat.list[["air_temperature_max"]]+dat.list[["air_temperature_min"]])/2
     #convert mm precipitation to precipitation flux
     dat.list[["precipitation_flux"]] = (dat.list[["precipitation_flux"]]/(24*3600))
 
@@ -110,16 +110,16 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
       dat.list = dat.list[1:365,]
     }
     if (year%%5 == 2){
-      dat.list = dat.list[365:730,]
+      dat.list = dat.list[366:730,]
     }
     if (year%%5 == 3){
-      dat.list = dat.list[730:1095,]
+      dat.list = dat.list[731:1095,]
     }
     if (year%%5 == 4){
-      dat.list = dat.list[1095:1460,]
+      dat.list = dat.list[1096:1460,]
     }
     if (year%%5 == 0){
-      dat.list = dat.list[1460:1824,]
+      dat.list = dat.list[1461:1825,]
     }
     
     ## put data in new file
