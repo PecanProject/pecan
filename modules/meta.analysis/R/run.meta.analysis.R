@@ -128,7 +128,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   if (file.exists(dist_path)) {
     file.remove(dist_path)
   }
-  file.symlink(dist_MA_path), dist_path)
+  file.symlink(dist_MA_path, dist_path)
   
   ### save and store in database all results except those that were there already
   for (file in list.files(path = pft$outdir)) {
