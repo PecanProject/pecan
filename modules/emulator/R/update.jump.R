@@ -10,8 +10,9 @@
 ##' @author Michael Dietze
 update.jump <- function(jmp, chain) {
   ## check for valid typing
-  if (is.null(jmp)) 
+  if (is.null(jmp)) {
     stop("jump is NULL")
+  }
   
   ## update counter
   cnt <- attr(jmp, "count") + 1
@@ -20,10 +21,10 @@ update.jump <- function(jmp, chain) {
   
   ## update jump parm
   if (cnt%%clen == 0) {
-    a <- max(arate(chain[(cnt - clen + 1):cnt, ]), 1/clen)
+    a <- max(arate(chain[(cnt - clen + 1):cnt, ]), 1 / clen)
     l <- length(attr(jmp, "history"))
     j <- attr(jmp, "history")[l]
-    attr(jmp, "history")[l + 1] <- j * a/attr(jmp, "target")
+    attr(jmp, "history")[l + 1] <- j * a / attr(jmp, "target")
     attr(jmp, "arate")[l + 1] <- a
   }
   jmp
