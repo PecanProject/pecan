@@ -16,33 +16,31 @@
 #'      diagnostic: Numerical value of the Gelman-Rubin multivariate diagnostic
 #'
 #'      error: Logical. Whether or not an error occured in the Gelman-Rubin calculation.  
-check.convergence <- function(mcmc.samples.list, 
-                              threshold = 1.1,
-                              verbose = TRUE,
-                              autoburnin = FALSE,
-                              ...){
-    library(coda)
-    if(class(mcmc.samples.list) != "mcmc.list") stop("Input needs to be of class 'mcmc.list'")
-    gd <- try(gelman.diag(mcmc.samples.list, autoburnin = autoburnin, ...))
-    if(class(gd) == "try-error"){
-        warning("Could not calculate Gelman diag. Returning NULL")
-        converged <- NULL
-        diagnostic <- NULL
-        error <- TRUE
+check.convergence <- function(mcmc.samples.list, threshold = 1.1, verbose = TRUE, 
+                              autoburnin = FALSE, ...) {
+  library(coda)
+  if (class(mcmc.samples.list) != "mcmc.list") {
+    stop("Input needs to be of class 'mcmc.list'")
+  }
+  gd <- try(gelman.diag(mcmc.samples.list, autoburnin = autoburnin, ...))
+  if (class(gd) == "try-error") {
+    warning("Could not calculate Gelman diag. Returning NULL")
+    converged <- NULL
+    diagnostic <- NULL
+    error <- TRUE
+  } else {
+    error <- FALSE
+    diagnostic <- gd$mpsrf
+    if (diagnostic < threshold) {
+      converged <- TRUE
+      msg <- sprintf("Converged with Gelman diag = %.3f", diagnostic)
     } else {
-        error <- FALSE
-        diagnostic <- gd$mpsrf
-        if(diagnostic < threshold){
-            converged <- TRUE
-            msg <- sprintf("Converged with Gelman diag = %.3f", diagnostic)
-        } else {
-            converged <- FALSE
-            msg <- sprintf("Did not converge (Gelman Diag = %.3f). Trying again.",
-                           diagnostic)
-        }
-        if(verbose) print(msg)
+      converged <- FALSE
+      msg <- sprintf("Did not converge (Gelman Diag = %.3f). Trying again.", 
+                     diagnostic)
     }
-    return(list(converged = converged,
-                diagnostic = diagnostic,
-                error = error))
-}
+    if (verbose) 
+      print(msg)
+  }
+  return(list(converged = converged, diagnostic = diagnostic, error = error))
+} # check.convergence
