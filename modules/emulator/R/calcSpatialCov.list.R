@@ -19,8 +19,16 @@ calcSpatialCov.list <- function(d, psi, tau) {
     ## apply same psi to all directions
     psi <- rep(psi, m)
   }
-  # for(i in 1:nl){ for(j in i:nl){ tmp <- 0 for(k in 1:m){tmp <- tmp -
-  # psi[k]*d[[k]][i,j]} H[i,j] <- tau*exp(tmp) H[j,i] <- H[i,j] } }
+  
+  #for(i in 1:nl){
+  #  for(j in i:nl){
+  #    tmp <- 0
+  #    for(k in 1:m){tmp <- tmp - psi[k]*d[[k]][i,j]}
+  #    H[i,j] <- tau*exp(tmp)
+  #    H[j,i] <- H[i,j]
+  #  }
+  #}  
+  
   for (k in seq_len(m)) {
     H <- H - psi[k] * d[[k]]
   }
