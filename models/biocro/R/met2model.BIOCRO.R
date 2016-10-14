@@ -1,9 +1,8 @@
 ##-------------------------------------------------------------------------------
-## Copyright (c) 2012 University of Illinois, NCSA.
-## All rights reserved. This program and the accompanying materials
-## are made available under the terms of the 
-## University of Illinois/NCSA Open Source License
-## which accompanies this distribution, and is available at
+## Copyright (c) 2012 University of Illinois, NCSA.  All rights reserved. This
+## program and the accompanying materials are made available under the terms of
+## the University of Illinois/NCSA Open Source License which accompanies this
+## distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-------------------------------------------------------------------------------
 
@@ -24,15 +23,16 @@
 ##-------------------------------------------------------------------------------------------------#
 met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE, ...) {
   ncfiles <- dir(in.path, full.names = TRUE, pattern = paste0(in.prefix, "*.nc$"), 
-                 all.files = FALSE, recursive = FALSE)
+    all.files = FALSE, recursive = FALSE)
   metlist <- list()
   for (file in ncfiles) {
     met.nc <- nc_open(file)
-    tmp.met <- load.cfmet(met.nc, lat = lat, lon = lon, start.date = start.date, end.date = end.date)
+    tmp.met <- load.cfmet(met.nc, lat = lat, lon = lon, start.date = start.date, 
+      end.date = end.date)
     metlist[[file]] <- cf2biocro(tmp.met)
   }
   rbindlist(metlist)
-} # met2model.BIOCRO
+}  # met2model.BIOCRO
 
 
 ##-------------------------------------------------------------------------------------------------#
@@ -74,18 +74,17 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE, .
 cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
   
   if ((!is.null(longitude)) & zulu2solarnoon) {
-    solarnoon_offset <- ud.convert(longitude / 360, "day", "minute")
+    solarnoon_offset <- ud.convert(longitude/360, "day", "minute")
     met[, `:=`(solardate = date + minutes(solarnoon_offset))]
   }
   if (!"relative_humidity" %in% colnames(met)) {
     if (all(c("air_temperature", "air_pressure", "specific_humidity") %in% colnames(met))) {
-      rh <- qair2rh(qair = met$specific_humidity, 
-                    temp = ud.convert(met$air_temperature, "Kelvin", "Celsius"), 
-                    pres = ud.convert(met$air_pressure, "Pa", "hPa"))
+      rh <- qair2rh(qair = met$specific_humidity, temp = ud.convert(met$air_temperature, 
+        "Kelvin", "Celsius"), pres = ud.convert(met$air_pressure, "Pa", "hPa"))
       met <- cbind(met, relative_humidity = rh * 100)
     } else {
       logger.error("neither relative_humidity nor [air_temperature, air_pressure, and specific_humidity]", 
-                   "are in met data")
+        "are in met data")
     }
   }
   if (!"ppfd" %in% colnames(met)) {
@@ -98,7 +97,7 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
   }
   if (!"wind_speed" %in% colnames(met)) {
     if (all(c("northward_wind", "eastward_wind") %in% colnames(met))) {
-      wind_speed <- sqrt(met$northward_wind ^ 2 + met$eastward_wind ^ 2)
+      wind_speed <- sqrt(met$northward_wind^2 + met$eastward_wind^2)
     } else {
       logger.error("neither wind_speed nor both eastward_wind and northward_wind are present in met data")
     }
@@ -108,12 +107,9 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
   if (met[, max(relative_humidity) > 1]) {
     met[, `:=`(relative_humidity = relative_humidity/100)]
   }
-  newmet <- met[, list(year = year(date), 
-                       doy = yday(date), 
-                       hour = round(hour(date) + minute(date) / 60, 1),
-                       SolarR = ppfd, Temp = ud.convert(air_temperature, "Kelvin", "Celsius"),
-                       RH = relative_humidity, 
-                       WS = wind_speed, 
-                       precip = ud.convert(precipitation_flux, "s-1", "h-1"))][hour <= 23]
+  newmet <- met[, list(year = year(date), doy = yday(date), hour = round(hour(date) + 
+    minute(date)/60, 1), SolarR = ppfd, Temp = ud.convert(air_temperature, "Kelvin", 
+    "Celsius"), RH = relative_humidity, WS = wind_speed, precip = ud.convert(precipitation_flux, 
+    "s-1", "h-1"))][hour <= 23]
   return(as.data.frame(newmet))
-} # cf2biocro
+}  # cf2biocro
