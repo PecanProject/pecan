@@ -14,14 +14,12 @@
 ##' @param verbose should the function be very verbose
 ##' @param lst is timezone offset from UTC, if timezone is available in time:units atribute in file, it will use that, default is to assume UTC
 ##' @author Ankur Desai
-##'
 metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
                        overwrite = FALSE, verbose = FALSE, ...) {
   
   library(REddyProc)
-  # REddyProc installed to ~/R/library by install.packages('REddyProc',
-  # repos='http://R-Forge.R-project.org', type='source') dependency minpack.lm may not install
-  # automatically, so install it first
+  #REddyProc installed to ~/R/library by install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
+  #dependency minpack.lm may not install automatically, so install it first
   library(ncdf4)
   library(udunits2)
   library(PEcAn.utils)
@@ -51,8 +49,8 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     
     # check if input exists
     if (!file.exists(old.file)) {
-      logger.warn("Missing input file ", old.file, " for year", sprintf("%04d", year), "in folder", 
-                  in.path)
+      logger.warn("Missing input file ", old.file, " for year", sprintf("%04d", year), 
+                  "in folder", in.path)
       next
     }
     
