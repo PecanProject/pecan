@@ -119,7 +119,7 @@ pda.bayesian.tools <- function(settings, params.id=NULL, param.names=NULL, prior
     start.model.runs(settings,settings$database$bety$write)
     
     ## Read model outputs
-    model.out <- pda.get.model.output(settings, run.id, inputs)
+    model.out <- pda.get.model.output(settings, run.id, con, inputs)
     
     ## calculate likelihood
     LL <- pda.calc.llik(settings, con, model.out, run.id, inputs, llik.fn)

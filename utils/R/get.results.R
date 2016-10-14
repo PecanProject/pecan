@@ -69,6 +69,13 @@ get.results <- function(settings, sa.ensemble.id=NULL, ens.ensemble.id=NULL,
       variable.sa <- variable.sa[1]
       logger.warn(paste0("Currently performs sensitivity analysis on only one variable at a time. Using first (", variable.sa, ")"))
     }
+    
+    # if an expression is provided, convert.expr returns names of the variables accordingly
+    # if a derivation is not requested it returns the variable name as is
+    variables <- convert.expr(unlist(variable.sa))
+    variable.sa <- variables$variable.eqn
+    variable.fn <- variables$variable.drv
+    
 
     for(pft.name in pft.names){
       quantiles <- rownames(sa.samples[[pft.name]])    
@@ -86,12 +93,10 @@ get.results <- function(settings, sa.ensemble.id=NULL, ens.ensemble.id=NULL,
     }
 
     # Save sensitivity output
-    var_names <- convert.expr(unlist(variable.sa))
-    var_name <- paste0(var_names, collapse = "_")
-    
+ 
     fname <- sensitivity.filename(
       settings, "sensitivity.output", "Rdata", all.var.yr=FALSE, pft=NULL,
-      ensemble.id=sa.ensemble.id, variable=var_name, start.year=start.year.sa, end.year=end.year.sa)
+      ensemble.id=sa.ensemble.id, variable=variable.fn, start.year=start.year.sa, end.year=end.year.sa)
     save(sensitivity.output, file = fname)
     
   }

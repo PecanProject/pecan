@@ -27,7 +27,6 @@
 read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='', 
                            start.year, end.year, variable, sa.run.ids=NULL){
   
-  library(stringi)
   
   if (is.null(sa.run.ids)) {
     samples.file <- file.path(pecandir, 'samples.Rdata')
@@ -42,20 +41,21 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name='',
   sa.output <- matrix(nrow = length(quantiles),
                       ncol = length(traits),
                       dimnames = list(quantiles, traits))
+  
+  expr <- variable$expression
+  variables <- variable$variables
+  
   for(trait in traits){
     for(quantile in quantiles){
       run.id <- sa.run.ids[[pft.name]][quantile, trait]
       
-      variable <- unlist(variable)
-      variables <- convert.expr(variable)
-
       for(var in seq_along(variables)){
         out.tmp <- read.output(run.id, file.path(outdir, run.id), start.year, end.year, variables[var])
         assign(variables[var], out.tmp[[variables[var]]])
       }
       
       # derivation
-      out <- eval(parse(text = variable))
+      out <- eval(parse(text = expr))
       
       sa.output[quantile, trait] <- mean(out, na.rm=TRUE)
 
