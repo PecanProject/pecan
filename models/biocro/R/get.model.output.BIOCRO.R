@@ -1,9 +1,8 @@
 ##-------------------------------------------------------------------------------
-## Copyright (c) 2012 University of Illinois, NCSA.
-## All rights reserved. This program and the accompanying materials
-## are made available under the terms of the 
-## University of Illinois/NCSA Open Source License
-## which accompanies this distribution, and is available at
+## Copyright (c) 2012 University of Illinois, NCSA.  All rights reserved. This
+## program and the accompanying materials are made available under the terms of
+## the University of Illinois/NCSA Open Source License which accompanies this
+## distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-------------------------------------------------------------------------------
 
@@ -22,9 +21,10 @@ get.model.output.BIOCRO <- function(settings) {
   if (settings$host$name == "localhost") {
     get.results(settings = settings)
   } else {
-    print(paste("biocro model specific get.model.output not implemented for\n", "use on remote host; generic get.model.output under development"))
+    print(paste("biocro model specific get.model.output not implemented for\n", 
+      "use on remote host; generic get.model.output under development"))
     return(NULL)
   }  ### End of if/else
   
-} # get.model.output.BIOCRO
+}  # get.model.output.BIOCRO
 # ==================================================================================================#
