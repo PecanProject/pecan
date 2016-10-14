@@ -1,10 +1,11 @@
-##-------------------------------------------------------------------------------
-## Copyright (c) 2012 University of Illinois, NCSA.  All rights reserved. This
-## program and the accompanying materials are made available under the terms of
-## the University of Illinois/NCSA Open Source License which accompanies this
-## distribution, and is available at
-## http://opensource.ncsa.illinois.edu/license.html
-##-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
+#-------------------------------------------------------------------------------
 
 PREFIX_XML <- "<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"biocro.dtd\">\n"
 
@@ -21,8 +22,9 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"biocro.dtd\">\
 ##' @author David LeBauer
 convert.samples.BIOCRO <- function(trait.samples) {
   
-  if (is.list(trait.samples)) 
+  if (is.list(trait.samples)) {
     trait.samples <- as.data.frame(trait.samples)
+  }
   ## first rename variables
   trait.names <- colnames(trait.samples)
   trait.names[trait.names == "Vcmax"] <- "vmax"
@@ -63,7 +65,7 @@ convert.samples.BIOCRO <- function(trait.samples) {
   # clumping = NULL) }
   return(trait.samples)
 }  # convert.samples.BIOCRO
-## ==================================================================================================#
+
 
 ##' Writes a configuration files for the biocro model
 ##' 
@@ -89,11 +91,13 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   }
   
   ## create launch script (which will create symlink)
-  writeLines(c("#!/bin/bash", paste(settings$model$job.sh), paste("mkdir -p", outdir), 
-    paste("cd", rundir), paste(settings$model$binary, normalizePath(rundir, mustWork = FALSE), 
-      normalizePath(outdir, mustWork = FALSE)), paste("cp ", file.path(rundir, 
-      "README.txt"), file.path(outdir, "README.txt"))), con = file.path(settings$rundir, 
-    run.id, "job.sh"))
+  writeLines(c("#!/bin/bash", 
+               paste(settings$model$job.sh),
+               paste("mkdir -p", outdir), 
+               paste("cd", rundir), 
+               paste(settings$model$binary, normalizePath(rundir, mustWork = FALSE), normalizePath(outdir, mustWork = FALSE)),
+               paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
+             con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
   
   ## write configuraiton file
@@ -118,8 +122,8 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
       defaults.file <- NULL
     }
   } else if (is.null(defaults.file)) {
-    defaults.file <- system.file(file.path("extdata/defaults", paste0(tolower(genus), 
-      ".xml")), package = "PEcAn.BIOCRO")
+    defaults.file <- system.file(file.path("extdata/defaults", paste0(tolower(genus), ".xml")), 
+                                 package = "PEcAn.BIOCRO")
   }
   if (file.exists(defaults.file)) {
     defaults <- xmlToList(xmlParse(defaults.file))
@@ -127,8 +131,9 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
     logger.severe("no defaults file given and ", genus, "not supported in BioCro")
   }
   
-  if (is.null(defaults)) 
+  if (is.null(defaults)) {
     logger.error("No defaults values set")
+  }
   
   traits.used <- sapply(defaults, is.null)
   for (parm.type in names(defaults)) {
@@ -146,10 +151,12 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   unused.traits <- !traits.used
   ## a clunky way to only use logger for MEDIAN rather than all runs
   if (any(grepl("MEDIAN", scan(file = file.path(settings$rundir, run.id, "README.txt"), 
-    character(0), sep = ":", strip.white = TRUE)))) {
+                               character(0), 
+                               sep = ":", 
+                               strip.white = TRUE)))) {
     if (sum(unused.traits) > 0) {
       logger.warn("the following traits parameters are not added to config file:", 
-        vecpaste(names(unused.traits)[unused.traits == TRUE]))
+                  vecpaste(names(unused.traits)[unused.traits == TRUE]))
     }
   }
   
@@ -157,15 +164,19 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   
   ### Put defaults and other parts of config file together
   parms.xml <- listToXml(defaults, "pft")
-  location.xml <- listToXml(list(latitude = settings$run$site$lat, longitude = settings$run$site$lon), 
-    "location")
-  run.xml <- listToXml(list(start.date = settings$run$start.date, end.date = settings$run$end.date, 
-    met.file = settings$run$inputs$met$path, soil.file = settings$run$inputs$soil$path), 
-    "run")
+  location.xml <- listToXml(list(latitude = settings$run$site$lat, 
+                                 longitude = settings$run$site$lon), 
+                            "location")
+  run.xml <- listToXml(list(start.date = settings$run$start.date, 
+                            end.date = settings$run$end.date, 
+                            met.file = settings$run$inputs$met$path, 
+                            soil.file = settings$run$inputs$soil$path), 
+                       "run")
   
   slashdate <- function(x) substr(gsub("-", "/", x), 1, 10)
   simulationPeriod.xml <- listToXml(list(dateofplanting = slashdate(settings$run$start.date), 
-    dateofharvest = slashdate(settings$run$end.date)), "simulationPeriod")
+                                         dateofharvest = slashdate(settings$run$end.date)),
+                                    "simulationPeriod")
   
   config.xml <- xmlNode("config")
   config.xml <- append.xmlNode(config.xml, run.xml)
@@ -174,9 +185,9 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   config.xml <- append.xmlNode(config.xml, parms.xml)
   
   saveXML(config.xml, file = file.path(settings$rundir, run.id, "config.xml"), 
-    indent = TRUE)
+          indent = TRUE)
 }  # write.config.BIOCRO
-## ==================================================================================================#
+
 
 ##--------------------------------------------------------------------------------------------------#
 ##' Clear out previous config and parameter files.
@@ -192,10 +203,10 @@ remove.config.BIOCRO <- function(main.outdir, settings) {
   
   ### Remove files on localhost
   if (settings$host$name == "localhost") {
-    files <- paste0(settings$outdir, list.files(path = settings$outdir, recursive = FALSE))  # Need to change this to the run folder when implemented
-    files <- files[-grep("*.xml", files)]  # Keep pecan.xml file
+    files   <- paste0(settings$outdir, list.files(path = settings$outdir, recursive = FALSE))  # Need to change this to the run folder when implemented
+    files   <- files[-grep("*.xml", files)]  # Keep pecan.xml file
     pft.dir <- strsplit(settings$pfts$pft$outdir, "/")[[1]]
-    ln <- length(pft.dir)
+    ln      <- length(pft.dir)
     pft.dir <- pft.dir[ln]
     files <- files[-grep(pft.dir, files)]  # Keep pft folder
     # file.remove(files,recursive=TRUE)
@@ -206,4 +217,3 @@ remove.config.BIOCRO <- function(main.outdir, settings) {
     print("*** WARNING: Removal of files on remote host not yet implemented ***")
   }
 }  # remove.config.BIOCRO
-## ==================================================================================================#
