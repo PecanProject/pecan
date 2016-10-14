@@ -1,6 +1,10 @@
-## Code to analyse the spectral signal of model error between models and fluxtowers Analysis part
-## of the NACP site-level intercomparison Michael Dietze, University of Illinois
-
+## Code to analyse the spectral signal of model error
+## between models and fluxtowers
+##
+## Analysis part of the NACP site-level intercomparison
+##
+## Michael Dietze, University of Illinois
+##
 
 ### Specify required functions
 library(dplR, lib.loc = "~/lib/R")  ## Andy Bunn's Dendrochronology package
@@ -40,15 +44,18 @@ for (i in seq_along(site.files)) {
   ## load site data table
   dat <- read.table(paste(model.dir, site.files[i], sep = "/"), header = TRUE, na.string = "-999.000")
   
-  # dat <- dat[dat$X.YEAR %in% 1999:2003,] ## UMB dat <- dat[dat$X.YEAR %in% 2002:2004,] ## NE1 dat
-  # <- dat[dat$X.YEAR %in% 1999:2007,] ## LET dat <- dat[dat$X.YEAR %in% 1992:2006,] ## Ha1
+  #  dat <- dat[dat$X.YEAR %in% 1999:2003,] ## UMB
+  #  dat <- dat[dat$X.YEAR %in% 2002:2004,] ## NE1
+  #  dat <- dat[dat$X.YEAR %in% 1999:2007,] ## LET
+  #  dat <- dat[dat$X.YEAR %in% 1992:2006,] ## Ha1
   
   m2c <- match(model.set, names(dat))  ## match model names to data table columns
   day <- 1 / diff(dat$FDOY[1:2])  ## number of observations per day
   Nperiod <- 1 + 4 * log2(nrow(dat))
   
-  ## POWER <- array(NA,c(Nmodel,Nperiod,nrow(dat))) SIGNIF <- matrix(NA,Nmodel,Nperiod) LOOP OVER
-  ## MODELS ##########
+  ##POWER <- array(NA,c(Nmodel,Nperiod,nrow(dat)))
+  ##SIGNIF <- matrix(NA,Nmodel,Nperiod)
+  #########  LOOP OVER MODELS ##########
   for (j in seq_len(Nmodel)) {
     
     k <- m2c[j]  ## desired column in data table for specified model
@@ -71,7 +78,8 @@ for (i in seq_along(site.files)) {
       y <- (y - ybar) / ysd  ## normalize error
     }
     
-    ## option 3 - normalized residuals (pre) subscripts: t = tower, m = model
+    ## option 3 - normalized residuals (pre)
+    ## subscripts: t = tower, m = model
     
     ## normalize tower
     NEEt.bar <- mean(dat$NEE_FILLED, na.rm = TRUE)
@@ -105,7 +113,9 @@ for (i in seq_along(site.files)) {
       Power[t, sel] <- NA
     }
     
-    ## update storage POWER[j,,] <- Power SIGNIF[j,] <- wv$Signif
+    ## update storage
+    ##  POWER[j,,] <- Power
+    ##  SIGNIF[j,] <- wv$Signif
     
     save(wv, Power, day, file = paste0("NACPspecNORMpre2.clip.", i, ".", j, ".Rdata"))
     

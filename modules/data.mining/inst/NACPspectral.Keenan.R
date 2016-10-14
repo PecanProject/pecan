@@ -1,6 +1,10 @@
-## Code to analyse the spectral signal of model error between models and fluxtowers Analysis part
-## of the NACP site-level intercomparison Michael Dietze, University of Illinois
-
+## Code to analyse the spectral signal of model error
+## between models and fluxtowers
+##
+## Analysis part of the NACP site-level intercomparison
+##
+## Michael Dietze, University of Illinois
+##
 
 ### Specify required functions
 library(dplR, lib.loc = "~/lib/R")  ## Andy Bunn's Dendrochronology package
@@ -23,8 +27,8 @@ if (FALSE) {
   
   ## set of models to analyze
   model.set <- c(sort(c("BEPS", "CNCLASS", "ISOLSM", "TECO", "ecosys", "SiBCASA", "SiB", "DLEM", 
-                        "ED2", "LoTEC_DA", "AgroIBIS", "DNDC", "SiBcrop", "can.ibis", "EDCM", "ORCHIDEE", "LPJ", "BIOME_BGC", 
-                        "SSiB2", "TRIPLEX", "EPIC")), "MEAN")
+                        "ED2", "LoTEC_DA", "AgroIBIS", "DNDC", "SiBcrop", "can.ibis", "EDCM", "ORCHIDEE", 
+                        "LPJ", "BIOME_BGC", "SSiB2", "TRIPLEX", "EPIC")), "MEAN")
   
   Nmodel <- length(model.set)  ## number of models
   

@@ -1,5 +1,10 @@
-## Code to analyse the spectral signal of model error between models and fluxtowers Analysis part
-## of the NACP site-level intercomparison Michael Dietze, University of Illinois
+## Code to analyse the spectral signal of model error
+## between models and fluxtowers
+##
+## Analysis part of the NACP site-level intercomparison
+##
+## Michael Dietze, University of Illinois
+##
 
 
 ### Specify required functions
@@ -35,7 +40,9 @@ Nmodel <- length(model.set)  ## number of models
 site.files <- dir(model.dir, "txt")
 
 
-######### LOOP OVER SITES ########## for(i in seq_along(site.files)){ for(i in c(5,25,38,45)){
+#########  LOOP OVER SITES ##########
+#for(i in 1:length(site.files)){
+#for(i in c(5,25,38,45)){
 for (i in c(1, 5, 7, 8, 9, 25, 26, 30, 38, 45)) {
 
   yset <- 1990:2010
@@ -58,8 +65,9 @@ for (i in c(1, 5, 7, 8, 9, 25, 26, 30, 38, 45)) {
     day <- 1 / diff(dat$FDOY[1:2])  ## number of observations per day
     Nperiod <- 1 + 4 * log2(nrow(dat))
     
-    ## POWER <- array(NA,c(Nmodel,Nperiod,nrow(dat))) SIGNIF <- matrix(NA,Nmodel,Nperiod) LOOP OVER
-    ## MODELS ########## for(j in 1:Nmodel){
+    ##POWER <- array(NA,c(Nmodel,Nperiod,nrow(dat)))
+    ##SIGNIF <- matrix(NA,Nmodel,Nperiod)
+    #########  LOOP OVER MODELS ##########
     j <- 22
     k <- m2c[j]  ## desired column in data table for specified model
     
@@ -119,7 +127,9 @@ for (i in c(1, 5, 7, 8, 9, 25, 26, 30, 38, 45)) {
         Power[t, sel] <- NA
     }
     
-    ## update storage POWER[j,,] <- Power SIGNIF[j,] <- wv$Signif
+    ## update storage
+    ##  POWER[j,,] <- Power
+    ##  SIGNIF[j,] <- wv$Signif
     
     ## save(wv,Power,day,file=paste('NACPspecNORMpre2v2_17.',i,'.',j,'.Rdata',sep=''))
     save(wv, Power, day, file = paste0("NACPspecNORMpre2.clip.", i, ".", j, ".Rdata"))
@@ -258,8 +268,17 @@ if (FALSE) {
     i
     ## analysis of spectra - mixed model
     
-    ## TODO: - define model set - define time-step - define sites - incorporation of uncertainty - gaps
-    ## or gap-filled - alternative visualizations - identification of whether model failures are
-    ## consistent in time - separation of pattern from accuracy - look at cross-spectra?  - absolute vs
-    ## normalised residuals
+    ##
+    ## TODO:
+    ##  - define model set
+    ##  - define time-step
+    ##  - define sites
+    ##  - incorporation of uncertainty
+    ##  - gaps or gap-filled
+    ##  - alternative visualizations
+    ##  - identification of whether model failures are consistent in time
+    ##  - separation of pattern from accuracy
+    ##     - look at cross-spectra?
+    ##     - absolute vs normalised residuals
+    ##
 }

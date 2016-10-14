@@ -1,8 +1,9 @@
+### generate wavelet spectra of the flux data that incorporates
+### random and gap-filling uncertainty based on the Barr et al
+### NACP data product
 
-### generate wavelet spectra of the flux data that incorporates random and gap-filling uncertainty
-### based on the Barr et al NACP data product
-
-### inputs: annual NEE matrices of [time x ensemble member] outputs: mean and quantile spectra
+### inputs: annual NEE matrices of [time x ensemble member] 
+### outputs: mean and quantile spectra
 
 ## Get site sel'n from cmd line
 sitenum <- as.numeric(system("echo $SITENUM", intern = TRUE))

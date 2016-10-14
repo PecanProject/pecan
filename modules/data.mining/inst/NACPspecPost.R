@@ -1,6 +1,10 @@
-## Code to post-process (summarize and graph) the spectral signal of model error between models and
-## fluxtowers Analysis part of the NACP site-level intercomparison Michael Dietze, University of
-## Illinois
+## Code to post-process (summarize and graph) the spectral
+## signal of model error between models and fluxtowers
+##
+## Analysis part of the NACP site-level intercomparison
+##
+## Michael Dietze, University of Illinois
+##
 
 ## libraries and functions
 library(dplR, lib.loc = "~/lib/R")  ## Andy Bunn's Dendrochronology package
