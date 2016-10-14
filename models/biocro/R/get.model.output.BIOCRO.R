@@ -22,9 +22,8 @@ get.model.output.BIOCRO <- function(settings) {
     get.results(settings = settings)
   } else {
     print(paste("biocro model specific get.model.output not implemented for\n", 
-      "use on remote host; generic get.model.output under development"))
+                "use on remote host; generic get.model.output under development"))
     return(NULL)
   }  ### End of if/else
   
 }  # get.model.output.BIOCRO
-# ==================================================================================================#

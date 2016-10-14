@@ -11,12 +11,12 @@
 #' @export
 #' @author David LeBauer
 run.biocro <- function(lat, lon, metfile, soil.nc = NULL, config = config, coppice.interval = 1, 
-  met.uncertainty = FALSE, irrigation = FALSE) {
-  require(data.table)
-  require(lubridate)
+                       met.uncertainty = FALSE, irrigation = FALSE) {
+  library(data.table)
+  library(lubridate)
   l2n <- function(x) lapply(x, as.numeric)
   start.date <- ceiling_date(as.POSIXct(config$run$start.date), "day")
-  end.date <- floor_date(as.POSIXct(config$run$end.date), "day")
+  end.date   <- floor_date(as.POSIXct(config$run$end.date), "day")
   genus <- config$pft$type$genus
   years <- year(start.date):year(end.date)
   ## Meteorology
@@ -25,13 +25,11 @@ run.biocro <- function(lat, lon, metfile, soil.nc = NULL, config = config, coppi
       start.date <- "1979-01-01"
       end.date <- "2010-12-31"
       years <- sample(year(start.date):year(end.date), size = 15, replace = TRUE)
-      
-      
     }
     
     met.nc <- nc_open(metfile)
-    met <- load.cfmet(met.nc, lat = lat, lon = lon, start.date = start.date, 
-      end.date = end.date)
+    met <- load.cfmet(met.nc, lat = lat, lon = lon, 
+                      start.date = start.date, end.date = end.date)
     if (met.uncertainty == TRUE) {
       met <- met[year %in% years]
     }
@@ -46,7 +44,7 @@ run.biocro <- function(lat, lon, metfile, soil.nc = NULL, config = config, coppi
     if (irrigation) {
       # 1 mm / hr = 24 mm / d every seven days
       met[, `:=`(precipitation_flux = ifelse(doy %in% seq(7, 364, by = 7), 
-        precipitation_flux + 1/3600, precipitation_flux))]
+                                             precipitation_flux + 1/3600, precipitation_flux))]
     }
     
     biocro.met <- cf2biocro(met)
@@ -54,11 +52,11 @@ run.biocro <- function(lat, lon, metfile, soil.nc = NULL, config = config, coppi
     biocro.met <- fread(metfile)
   }
   
-  
   if (!is.null(soil.nc)) {
     soil <- get.soil(lat = lat, lon = lon, soil.nc = soil.nc)
-    config$pft$soilControl$soilType <- ifelse(soil$usda_class %in% 1:10, soil$usda_class, 
-      10)
+    config$pft$soilControl$soilType <- ifelse(soil$usda_class %in% 1:10, 
+                                              soil$usda_class, 
+                                              10)
     config$pft$soilControl$soilDepth <- soil$ref_depth
   }
   
@@ -66,7 +64,6 @@ run.biocro <- function(lat, lon, metfile, soil.nc = NULL, config = config, coppi
     yeari <- years[i]
     yearindex <- i * 10000 + yeari  ## for use with met uncertainty
     WetDat <- biocro.met[biocro.met$year == yeari, ]
-    
     
     if (!is.null(config$simulationPeriod)) {
       day1 <- yday(config$simulationPeriod$dateofplanting)
@@ -98,18 +95,23 @@ run.biocro <- function(lat, lon, metfile, soil.nc = NULL, config = config, coppi
           # coppice when remainder = 0
           HarvestedYield <- round(last(tmp.result$Stem) * 0.95, 2)
         } else if ((i - 1)%%coppice.interval == 1) 
-          {
+        {
           # year after coppice
           iplant$iStem <- iplant$iStem * 0.05
-          }  # else { # do nothing if neither coppice year nor year following
+        }  # else { # do nothing if neither coppice year nor year following
       }
       ## run willowGro
       
-      tmp.result <- willowGro(WetDat = WetDat, iRhizome = as.numeric(iplant$iRhizome), 
-        iRoot = as.numeric(iplant$iRoot), iStem = as.numeric(iplant$iStem), 
-        day1 = day1, dayn = dayn, soilControl = l2n(config$pft$soilControl), 
-        canopyControl = l2n(config$pft$canopyControl), willowphenoControl = l2n(config$pft$phenoParms), 
-        seneControl = l2n(config$pft$seneControl), photoControl = l2n(config$pft$photoParms))
+      tmp.result <- willowGro(WetDat = WetDat, 
+                              iRhizome = as.numeric(iplant$iRhizome), 
+                              iRoot = as.numeric(iplant$iRoot),
+                              iStem = as.numeric(iplant$iStem), 
+                              day1 = day1, dayn = dayn, 
+                              soilControl = l2n(config$pft$soilControl), 
+                              canopyControl = l2n(config$pft$canopyControl), 
+                              willowphenoControl = l2n(config$pft$phenoParms), 
+                              seneControl = l2n(config$pft$seneControl), 
+                              photoControl = l2n(config$pft$photoParms))
       
     } else if (genus == "Miscanthus") {
       if (yeari == years[1]) {
@@ -119,22 +121,36 @@ run.biocro <- function(lat, lon, metfile, soil.nc = NULL, config = config, coppi
         HarvestedYield <- round(last(tmp.result$Stem) * 0.95, 2)
       }
       ## run BioGro
-      tmp.result <- BioGro(WetDat = WetDat, day1 = day1, dayn = dayn, soilControl = l2n(config$pft$soilControl), 
-        canopyControl = l2n(config$pft$canopyControl), phenoControl = l2n(config$pft$phenoParms), 
-        seneControl = l2n(config$pft$seneControl), iRhizome = as.numeric(iRhizome), 
-        photoControl = config$pft$photoParms)
+      tmp.result <- BioGro(WetDat = WetDat,
+                           day1 = day1, 
+                           dayn = dayn, soilControl = l2n(config$pft$soilControl), 
+                           canopyControl = l2n(config$pft$canopyControl), 
+                           phenoControl = l2n(config$pft$phenoParms), 
+                           seneControl = l2n(config$pft$seneControl),
+                           iRhizome = as.numeric(iRhizome), 
+                           photoControl = config$pft$photoParms)
       
     } else if (genus == "Sorghum") {
       ## run BioGro
-      tmp.result <- BioGro(WetDat = WetDat, day1 = day1, dayn = dayn, soilControl = l2n(config$pft$soilControl), 
-        canopyControl = l2n(config$pft$canopyControl), phenoControl = l2n(config$pft$phenoParms), 
-        seneControl = l2n(config$pft$seneControl), photoControl = l2n(config$pft$photoParms))
+      tmp.result <- BioGro(WetDat = WetDat, 
+                           day1 = day1, 
+                           dayn = dayn, 
+                           soilControl = l2n(config$pft$soilControl), 
+                           canopyControl = l2n(config$pft$canopyControl),
+                           phenoControl = l2n(config$pft$phenoParms), 
+                           seneControl = l2n(config$pft$seneControl),
+                           photoControl = l2n(config$pft$photoParms))
       
     }
     result.yeari.hourly <- with(tmp.result, data.table(yearindex = yearindex, 
-      year = yeari, doy = DayofYear, hour = Hour, ThermalT, Stem, Leaf, Root, 
-      Rhizome, Grain, LAI, SoilEvaporation, CanopyTrans, key = c("year", "doy", 
-        "hour")))
+                                                       year = yeari,
+                                                       doy = DayofYear,
+                                                       hour = Hour, ThermalT,
+                                                       Stem, Leaf, Root, 
+                                                       Rhizome, Grain, 
+                                                       LAI, SoilEvaporation, 
+                                                       CanopyTrans,
+                                                       key = c("year", "doy", "hour")))
     if (i == 1) {
       hourly.results <- result.yeari.hourly
     } else if (i > 1) {
@@ -148,15 +164,27 @@ run.biocro <- function(lat, lon, metfile, soil.nc = NULL, config = config, coppi
   hourly.results <- merge(biocro.met.dt, hourly.results)  ## right join
   hourly.results <- hourly.results[order(yearindex, doy, hour)]
   
-  daily.results <- hourly.results[, list(Stem = max(Stem), Leaf = max(Leaf), Root = max(Root), 
-    Rhizome = max(Rhizome), SoilEvaporation = sum(SoilEvaporation), CanopyTrans = sum(CanopyTrans), 
-    Grain = max(Grain), LAI = max(LAI), tmax = max(Temp), tmin = min(Temp), tavg = mean(Temp), 
-    precip = sum(precip)), by = "yearindex,doy"]
+  daily.results <- hourly.results[, list(Stem = max(Stem), 
+                                         Leaf = max(Leaf),
+                                         Root = max(Root), 
+                                         Rhizome = max(Rhizome),
+                                         SoilEvaporation = sum(SoilEvaporation), 
+                                         CanopyTrans = sum(CanopyTrans), 
+                                         Grain = max(Grain), 
+                                         LAI = max(LAI), 
+                                         tmax = max(Temp), tmin = min(Temp), tavg = mean(Temp), 
+                                         precip = sum(precip)), by = "yearindex,doy"]
   
-  annual.results <- hourly.results[, list(Stem = max(Stem), Leaf = max(Leaf), Root = max(Root), 
-    Rhizome = max(Rhizome), Grain = max(Grain), SoilEvaporation = sum(SoilEvaporation), 
-    CanopyTrans = sum(CanopyTrans), map = sum(precip), mat = mean(Temp)), by = "yearindex"]
-  return(list(hourly = hourly.results, daily = daily.results, annually = data.table(lat = lat, 
-    lon = lon, annual.results)))
-}
-
+  annual.results <- hourly.results[, list(Stem = max(Stem),
+                                          Leaf = max(Leaf), 
+                                          Root = max(Root), 
+                                          Rhizome = max(Rhizome), 
+                                          Grain = max(Grain), 
+                                          SoilEvaporation = sum(SoilEvaporation), 
+                                          CanopyTrans = sum(CanopyTrans), 
+                                          map = sum(precip), mat = mean(Temp)),
+                                   by = "yearindex"]
+  return(list(hourly = hourly.results, 
+              daily = daily.results, 
+              annually = data.table(lat = lat, lon = lon, annual.results)))
+} # run.biocro
