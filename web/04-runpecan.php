@@ -126,7 +126,7 @@ if (!$userok && ($startdate < $metstart2 || $enddate > $metend2)) {
 		  }
 		}
 	}
-	$params .= "&msg=WARNING : Selected dates are not within the bounds of the weather data file you selected. \n START: ${startdate} ${metstart2}  \n END: ${enddate} ${metend2}";
+	$params .= "&msg=WARNING : Selected dates are not within the bounds of the weather data file you selected.  START: ${startdate} ${metstart2}   END: ${enddate} ${metend2}";
 	header("Location: checkfailed.php?${params}");
 	exit();
 }
@@ -155,7 +155,7 @@ $q->bindParam(':notes', $notes_db, PDO::PARAM_STR);
 $q->bindParam(':hostname', $hostname, PDO::PARAM_STR);
 $q->bindParam(':startdate', $startdate, PDO::PARAM_STR);
 $q->bindParam(':enddate', $enddate, PDO::PARAM_STR);
-$q->bindParam(':params', $params, PDO::PARAM_STR);
+$q->bindParam(':params', trim($params), PDO::PARAM_STR);
 if ($userid != -1) {
   $q->bindParam(':userid', $userid, PDO::PARAM_INT);
 }
