@@ -24,12 +24,12 @@
 ##' @author Ann Raiho, Betsy Cowdery
 ##-------------------------------------------------------------------------------------------------#
 write.config.LINKAGES <- function(defaults=NULL, trait.values, settings, run.id,
-                                  restart=NULL, spinup=NULL){
+                                  restart=NULL, spinup=NULL, inputs=NULL, IC = NULL){
   #850-869 repeated to fill 1000 years
   if(is.null(restart)) restart = FALSE
   if(is.null(spinup)) spinup = FALSE
   
-  require(linkages) 
+  library(linkages) 
   
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)

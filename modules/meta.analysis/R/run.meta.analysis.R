@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.2, dbfiles, dbcon) {
-    require(coda)
+  library(coda)
   # check to see if get.trait was executed
   if (!file.exists(file.path(pft$outdir, 'trait.data.Rdata')) || !file.exists(file.path(pft$outdir, 'prior.distns.Rdata'))) {
     logger.severe("Could not find output from get.trait for", pft$name)
@@ -163,7 +163,7 @@ run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, 
 
 ##' @export
 runModule.run.meta.analysis <- function(settings) {
-  if(is.SettingsList(settings)) {
+  if(is.MultiSettings(settings)) {
     pfts <- list()
     pft.names <- character(0)
     for(i in seq_along(settings)) {
@@ -192,7 +192,7 @@ runModule.run.meta.analysis <- function(settings) {
     database <- settings$database$bety
     run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database) 
   } else {
-    stop("runModule.run.meta.analysis only works with Settings or SettingsList")
+    stop("runModule.run.meta.analysis only works with Settings or MultiSettings")
   }
 }
 
