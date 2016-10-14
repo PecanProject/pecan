@@ -142,7 +142,7 @@ plot.trait <- function(trait,
   ## get units for plot title
   units <- trait.lookup(trait)$units
   
-  trait.df <- jagify(trait.df)
+  if(plot.data)  trait.df <- jagify(trait.df)
   
   if(plot.prior){
     prior.color = ifelse(plot.posterior, 'grey', 'black')
@@ -215,7 +215,7 @@ plot.trait <- function(trait,
 ##' @name plot.densities
 ##' @title Plot Trait Probability Densities
 ##' @param sensitivity.results list containing sa.samples and sa.splines 
-##' @param outdir
+##' @param outdir directory in which to generate figure as pdf 
 ##' @author David LeBauer
 ##' @return outputs plots in outdir/sensitivity.analysis.pdf file 
 plot.densities <- function(density.plot.inputs, outdir, ...){
