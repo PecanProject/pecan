@@ -1,0 +1,38 @@
+      <dataSource>
+         GENERIC
+      </dataSource>
+      <domainInfo>
+         <variableNames>
+            time    time
+            xc      lon
+            yc      lat
+            area    area
+            mask    mask
+         </variableNames>
+         <filePath>
+            @INDIR@/atm/datm7
+         </filePath>
+         <fileNames>
+            domain.T62.050609.nc
+         </fileNames>
+      </domainInfo>
+      <fieldInfo>
+         <variableNames>
+            FLDS     FLDS
+            FSDS     FSDS
+            PRECTmms     PRECTmms
+            PSRF     PSRF
+            SHUM     SHUM
+            TBOT     TBOT
+            WIND     WIND
+         </variableNames>
+         <filePath>
+            @MET_PATH@
+         </filePath>
+         <fileNames>
+            @MET_FILES@
+         </fileNames>
+         <offset>
+            0
+         </offset>
+      </fieldInfo>
