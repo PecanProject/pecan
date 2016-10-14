@@ -1,4 +1,7 @@
-## Script to analyse the spectral signal of model error Michael Dietze, Boston University
+## Script to analyse the spectral signal of model error
+##
+## Michael Dietze, Boston University 
+##
 
 ## read functions
 source("ResidSpectra.R")
@@ -8,8 +11,8 @@ model.dir <- "NEEm"
 
 ## set of models to analyze
 model.set <- c(sort(c("BEPS", "CNCLASS", "ISOLSM", "TECO", "ecosys", "SiBCASA", "SiB", "DLEM", "ED2", 
-                      "LoTEC_DA", "AgroIBIS", "DNDC", "SiBcrop", "can.ibis", "EDCM", "ORCHIDEE", "LPJ", "BIOME_BGC", 
-                      "SSiB2", "TRIPLEX", "EPIC")), "MEAN")
+                      "LoTEC_DA", "AgroIBIS", "DNDC", "SiBcrop", "can.ibis", "EDCM", "ORCHIDEE", "LPJ", 
+                      "BIOME_BGC", "SSiB2", "TRIPLEX", "EPIC")), "MEAN")
 Nmodel <- length(model.set)  ## number of models
 
 ## listing of available 'site' files Files should contain a time column,

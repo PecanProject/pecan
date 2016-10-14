@@ -1,8 +1,13 @@
-### generate wavelet spectra of eddy flux data that incorporates uncertainty This code is
-### computationally intensive so it is set up to be submitted to a cluster queue assumes that it is
-### passed an ID for which site is being analyzed and a number range of Monte Carlo iterations to
-### process Michael Dietze inputs: annual NEE matrices of [time x ensemble member] outputs: mean and
-### quantile spectra
+### generate wavelet spectra of eddy flux data that incorporates uncertainty 
+###
+### This code is computationally intensive so it is set up to be submitted to a cluster queue
+### assumes that it is passed an ID for which site is being analyzed and a number range of
+### Monte Carlo iterations to process
+###
+### Michael Dietze
+###
+### inputs: annual NEE matrices of [time x ensemble member] 
+### outputs: mean and quantile spectra
 
 source("ResidSpectra.R")
 
