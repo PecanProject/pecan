@@ -14,8 +14,9 @@
 ##'
 met2CF.NARR <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, ...){
 
-  require(ncdf4)
-  require(lubridate)
+  library(ncdf4)
+  library(lubridate)
+  library(PEcAn.utils)
 
   dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
 
@@ -50,6 +51,8 @@ met2CF.NARR <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
     if (file.exists(newfile) && !overwrite) {
       PEcAn.utils::logger.debug("File '", newfile, "' already exists, skipping to next file.")
       next
+    } else {
+      PEcAn.utils::logger.info("Preparing file '", newfile, "'. ")
     }
 
     # use tempfile

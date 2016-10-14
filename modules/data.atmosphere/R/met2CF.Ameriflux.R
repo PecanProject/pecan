@@ -73,10 +73,10 @@ getLatLon <- function(nc1) {
 met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE,...){
 
   #---------------- Load libraries. -----------------------------------------------------------------#
-  require(ncdf4)
-  require(PEcAn.utils)
-  require(geonames)
-  require(lubridate)
+  library(ncdf4)
+  library(PEcAn.utils)
+  library(geonames)
+  library(lubridate)
   #--------------------------------------------------------------------------------------------------#  
 
   # get start/end year code works on whole years only

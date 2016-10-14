@@ -15,7 +15,7 @@
 ##' @export
 ##' @author David LeBauer, Shawn Serbin, Ryan Kelly
 ##'
-run.ensemble.analysis <- function(settings,plot.timeseries=NA, ensemble.id=NULL,
+run.ensemble.analysis <- function(settings, plot.timeseries=NA, ensemble.id=NULL,
                            variable=NULL, start.year=NULL, end.year=NULL, ...) {
   
   # Set variable and years. Use args first, then settings, then defaults/error
@@ -107,7 +107,7 @@ run.ensemble.analysis <- function(settings,plot.timeseries=NA, ensemble.id=NULL,
       ensemble.id=ensemble.id, variable=variable, start.year=start.year, end.year=end.year)
 
     pdf(fname,width=12,height=9)    
-      ensemble.ts.analysis <- ensemble.ts(read.ensemble.ts(settings$model$type), ...)
+      ensemble.ts.analysis <- ensemble.ts(read.ensemble.ts(settings), ...)
     dev.off()
     
     fname <- ensemble.filename(settings, "ensemble.ts.analysis", "Rdata", all.var.yr=FALSE,
@@ -117,6 +117,17 @@ run.ensemble.analysis <- function(settings,plot.timeseries=NA, ensemble.id=NULL,
 
 } ### End of function
 #==================================================================================================#
+
+##' @export
+runModule.run.ensemble.analysis <- function(settings, ...) {
+  if(is.MultiSettings(settings)) {
+    return(papply(settings, runModule.run.ensemble.analysis, ...))
+  } else if (is.Settings(settings)) {
+    run.ensemble.analysis(settings, ...) 
+  } else {
+    stop("runModule.run.ensemble.analysis only works with Settings or MultiSettings")
+  }
+}
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -131,8 +142,9 @@ run.ensemble.analysis <- function(settings,plot.timeseries=NA, ensemble.id=NULL,
 ##'
 ##' @author Michael Dietze, Ryan Kelly
 ##'
-read.ensemble.ts <- function(model, ensemble.id=NULL, variable=NULL, start.year=NULL, end.year=NULL) {
+read.ensemble.ts <- function(settings, ensemble.id=NULL, variable=NULL, start.year=NULL, end.year=NULL) {
 
+  model <- settings$model$type
   # Set variable and years. Use args first, then settings, then defaults/error
   if(is.null(start.year)) start.year <- settings$ensemble$start.year
   if(is.null(end.year)) end.year <- settings$ensemble$end.year

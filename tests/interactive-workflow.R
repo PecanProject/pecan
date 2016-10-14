@@ -6,7 +6,7 @@ library(RDataTracker)
 #settings.file = args[1]
 settings.file <- "tests/ebi-forecast.igb.illinois.edu.biocro.xml"
 ## See README in tests/ folder for details
-require("PEcAn.all")
+library(PEcAn.all)
 
 #--------------------------------------------------------------------------------#
 # functions used to write STATUS used by history
