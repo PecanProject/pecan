@@ -649,20 +649,24 @@ misc.are.convertible <- function(u1, u2){
 
 ##' Convert expression to variable names
 ##' @title convert.expr
-##' @param expr expression string
-##' @return variables variable names
+##' @param expression expression string
+##' @return list
 ##' @export
 ##' @author Istem Fer
-convert.expr <- function(expr){
+convert.expr <- function(expression){
   
   library(stringi)
   
-  non.match <- gregexpr('[^a-zA-Z_.]', expr) # match characters that are not "a-zA-Z_."
-  split.chars <- unlist(regmatches(expr, non.match)) # where to split at
+  # split equation to LHS and RHS
+  deri.var <- gsub("=.*$", "", expression) # name of the derived variable
+  deri.eqn <- gsub(".*=", "", expression) # derivation eqn
+    
+  non.match <- gregexpr('[^a-zA-Z_.]', deri.eqn) # match characters that are not "a-zA-Z_."
+  split.chars <- unlist(regmatches(deri.eqn, non.match)) # where to split at
   # split the expression to retrieve variable names to be used in read.output
-  variables <- unlist(stri_split_charclass(expr, paste0("[",noquote(paste0(split.chars, collapse="")),"]"), omit_empty = TRUE))
+  variables <- unlist(stri_split_charclass(deri.eqn, paste0("[",noquote(paste0(split.chars, collapse="")),"]"), omit_empty = TRUE))
   
-  return(variables)
+  return(list(variable.drv = deri.var, variable.eqn = list(variables = variables, expression = deri.eqn)))
 }
 
 ####################################################################################################

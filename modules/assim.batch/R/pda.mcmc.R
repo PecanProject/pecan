@@ -173,7 +173,7 @@ pda.mcmc <- function(settings, params.id=NULL, param.names=NULL, prior.id=NULL, 
           start.model.runs(settings,settings$database$bety$write)
           
           ## Read model outputs
-          model.out <- pda.get.model.output(settings, run.id, inputs)
+          model.out <- pda.get.model.output(settings, run.id, con, inputs)
           
           ## Calculate likelihood (and store in database)
           LL.new <- pda.calc.llik(settings, con, model.out, run.id, inputs, llik.fn)

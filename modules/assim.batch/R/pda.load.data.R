@@ -22,7 +22,10 @@ load.pda.data <- function(settings, con) {
   
   for(i in 1:n.input) {
     inputs[[i]] <- list()
-    inputs[[i]]$variable.name <- input.settings[[i]]$variable.name$data.var
+    
+    inputs[[i]]$variable.name <- lapply(input.settings[[i]]$variable.name, convert.expr)
+    data.var <-  sapply(inputs[[i]]$variable.name, `[[`, "variable.drv")
+
     data.path <- input.settings[[i]]$path
 
     inputs[[i]]$variable.id <- input.settings[[i]]$variable.id
@@ -38,7 +41,7 @@ load.pda.data <- function(settings, con) {
     
     format <- query.format.vars(inputs[[i]]$input.id, con) 
     
-    vars.used.index <- which(format$vars$bety_name %in% c(inputs[[i]]$variable.name))
+    vars.used.index <- which(format$vars$bety_name %in% data.var)
     
     inputs[[i]]$data <- load.data(data.path, format, start_year = year(settings$run$start.date), 
                                   end_year = year(settings$run$end.date), site = settings$run$site, 
@@ -47,7 +50,7 @@ load.pda.data <- function(settings, con) {
     ## Preprocess data
     # TODO: Generalize
     # TODO: Soil Respiration uncertainty calculation
-    if(all(inputs[[i]]$variable.name %in% c("NEE", "FC", "LE", "UST"))) {    
+    if(all(data.var %in% c("NEE", "FC", "LE", "UST"))) {    
     
 
       # # TODO: Put Ameriflux L4 compatibility back
@@ -84,7 +87,7 @@ load.pda.data <- function(settings, con) {
       inputs[[i]]$obs <- AMFo
       inputs[[i]]$par <- c(AMF.params$intercept, AMF.params$slopeP, AMF.params$slopeN)
     }else{
-      inputs[[i]]$obs <- inputs[[i]]$data[colnames(inputs[[i]]$data) %in% inputs[[i]]$variable.name]
+      inputs[[i]]$obs <- inputs[[i]]$data[colnames(inputs[[i]]$data) %in% data.var]
       inputs[[i]]$par <- sd(unlist(inputs[[i]]$obs), na.rm = TRUE) # testing
     }
   } # end loop over files
