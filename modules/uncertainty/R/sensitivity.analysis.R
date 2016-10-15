@@ -5,6 +5,7 @@
 # distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
+
 #--------------------------------------------------------------------------------------------------#
 ##' Spline estimate of univariate relationship between parameter value and model output
 ##'
@@ -32,7 +33,7 @@ sa.splinefun <- function(quantiles.input, quantiles.output) {
 ##' @author David LeBauer
 ##' @references  Mood, Graybill, Boes 1974 'Introduction to the Theory of Statistics' 3rd ed. p 229; Casella and Berger 'Statistical Inference' p 364 ex. 7.45; 'Reference for Var(s^2)' CrossValidated \url{http://stats.stackexchange.com/q/29905/1381}, 'Calculating required sample size, precision of variance estimate' CrossValidated \url{http://stats.stackexchange.com/q/7004/1381}, 'Variance of Sample Variance?' Mathematics - Stack Exchange \url{http://math.stackexchange.com/q/72975/3733}
 sd.var <- function(x) {
-  var(x, na.rm = TRUE)^2 * (2 / (sum(!is.na(x)) - 1) + kurtosis(x) / sum(!is.na(x)))
+  return(var(x, na.rm = TRUE)^2 * (2 / (sum(!is.na(x)) - 1) + kurtosis(x) / sum(!is.na(x))))
 } # sd.var
 
 
@@ -84,7 +85,7 @@ get.sensitivity <- function(trait.samples, sa.splinefun) {
 ##' @export
 ##' @return coeficient of variance
 get.coef.var <- function(set) {
-  sqrt(var(set)) / median(set)
+  return(sqrt(var(set)) / median(set))
 } # get.coef.var
 
 
