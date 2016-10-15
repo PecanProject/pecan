@@ -4,11 +4,8 @@
 ##' @param dat dataframe
 ##' 
 ##' @author Betsy Cowdery
-
-metric.RAE <- function(dat, ...){
+metric.RAE <- function(dat, ...) {
   numer <- mean(abs(dat$obvs - dat$model))
   denom <- mean(abs(dat$obvs - mean(dat$obvs)))
-  score <- numer/denom
-  return(score)
-}
-
+  numer/denom
+} # metric.RAE
