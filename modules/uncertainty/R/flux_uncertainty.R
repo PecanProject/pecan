@@ -221,8 +221,8 @@ tundra.flux.uncertainty <- function() {
   })
   oechel.barrow <- do.call(rbind, oechel.barrow)
   plot.oechel.flux(oechel.barrow, "Barrow")
-  plot.flux.uncertainty(itex.climate$wfv[itex.climate$site %in% c("BD")],
-                        main = "Barrow", 
-                        xlab = "Soil Moisture bin (%vol)", 
-                        ylab = "Soil Moisture random error (%vol)")
+  return(plot.flux.uncertainty(itex.climate$wfv[itex.climate$site %in% c("BD")],
+                               main = "Barrow", 
+                               xlab = "Soil Moisture bin (%vol)", 
+                               ylab = "Soil Moisture random error (%vol)"))
 } # tundra.flux.uncertainty

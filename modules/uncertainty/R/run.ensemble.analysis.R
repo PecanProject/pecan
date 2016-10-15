@@ -150,7 +150,7 @@ runModule.run.ensemble.analysis <- function(settings, ...) {
   if (is.MultiSettings(settings)) {
     return(papply(settings, runModule.run.ensemble.analysis, ...))
   } else if (is.Settings(settings)) {
-    run.ensemble.analysis(settings, ...)
+    return(run.ensemble.analysis(settings, ...))
   } else {
     stop("runModule.run.ensemble.analysis only works with Settings or MultiSettings")
   }
@@ -357,5 +357,5 @@ ensemble.ts <- function(ensemble.ts, observations = NULL, window = 1) {
   ensemble.analysis.results$mean <- ens.mean
   ensemble.analysis.results$CI <- CI
   
-  invisible(ensemble.analysis.results)
+  return(invisible(ensemble.analysis.results))
 } # ensemble.ts

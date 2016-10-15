@@ -15,7 +15,7 @@
 ##' @return list with variance and sd of variance
 ##' @author David LeBauer
 variance.stats <- function(x) {
-  list(var = var(x), sd = sd.var(x))
+  return(list(var = var(x), sd = sd.var(x)))
 } # variance.stats
 
 
