@@ -56,7 +56,7 @@ sensitivity.filename <- function(settings,
                               variable    = settings$sensitivity.analysis$variable,
                               start.year  = settings$sensitivity.analysis$start.year,
                               end.year    = settings$sensitivity.analysis$end.year) {
-
+  
   if(is.null(ensemble.id) || is.na(ensemble.id)) {
     # This shouldn't generally arise, as run.write.configs() appends ensemble.id to settings. However,it will come up if running run.write.configs(..., write=F), because then no ensemble ID is created in the database. A simple workflow will still work in that case, but provenance will be lost if multiple ensembles are run.
     ensemble.id <- "NOENSEMBLEID"

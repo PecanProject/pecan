@@ -149,6 +149,13 @@ get.results <- function(settings, sa.ensemble.id=NULL, ens.ensemble.id=NULL,
       variable.ens <- variable.ens[1]
       logger.warn(paste0("Currently performs ensemble analysis on only one variable at a time. Using first (", variable.ens, ")"))
     }
+    
+    # if an expression is provided, convert.expr returns names of the variables accordingly
+    # if a derivation is not requested it returns the variable name as is
+    variables <- convert.expr(variable.ens)
+    variable.ens <- variables$variable.eqn
+    variable.fn <- variables$variable.drv
+    
 
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
                                             pecandir    = outdir,
@@ -161,7 +168,7 @@ get.results <- function(settings, sa.ensemble.id=NULL, ens.ensemble.id=NULL,
 
     # Save ensemble output
     fname <- ensemble.filename(settings, "ensemble.output", "Rdata", all.var.yr=FALSE,
-      ensemble.id=ens.ensemble.id, variable=variable.ens, 
+      ensemble.id=ens.ensemble.id, variable=variable.fn, 
       start.year=start.year.ens, end.year=end.year.ens)
     save(ensemble.output, file = fname)
   }

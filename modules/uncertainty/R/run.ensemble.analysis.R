@@ -59,14 +59,19 @@ run.ensemble.analysis <- function(settings, plot.timeseries=NA, ensemble.id=NULL
   cflux <- c("GPP","NPP","NEE","TotalResp","AutoResp","HeteroResp","DOC_flux","Fire_flux") #converted to gC/m2/s
   wflux <- c("Evap","TVeg","Qs","Qsb","Rainf") #kgH20 m-2 s-1
 
-  print(paste("----- Variable: ",variable,sep=""))
+  
+  variables <- convert.expr(variable)
+  variable.ens <- variables$variable.eqn
+  variable.fn <- variables$variable.drv
+  
+  print(paste("----- Variable: ",variable.fn,sep=""))
 
   #units <- lapply(variable, function(x) { paste0(x, " (", mstmipvar(x, silent=TRUE)$units, ")") })
-  units <- paste0(variable[1], " (", mstmipvar(variable[1], silent=TRUE)$units, ")")
+  units <- paste0(variable.fn, " (", mstmipvar(variable.fn, silent=TRUE)$units, ")")
 
   ### Load parsed model results
   fname <- ensemble.filename(settings, "ensemble.output", "Rdata", all.var.yr=FALSE,
-    ensemble.id=ensemble.id, variable=variable, start.year=start.year, end.year=end.year)
+    ensemble.id=ensemble.id, variable=variable.fn, start.year=start.year, end.year=end.year)
   load(fname)
 
   
@@ -80,7 +85,7 @@ run.ensemble.analysis <- function(settings, plot.timeseries=NA, ensemble.id=NULL
   
   ## Generate ensemble figure
   fname <- ensemble.filename(settings, "ensemble.analysis", "pdf", all.var.yr=FALSE,
-    ensemble.id=ensemble.id, variable=variable, start.year=start.year, end.year=end.year)
+    ensemble.id=ensemble.id, variable=variable.fn, start.year=start.year, end.year=end.year)
   
   pdf(file=fname,width=13,height=6)
   par(mfrow=c(1,2),mar=c(4,4.8,1,2.0)) # B, L, T, R
@@ -104,14 +109,14 @@ run.ensemble.analysis <- function(settings, plot.timeseries=NA, ensemble.id=NULL
   ### Plot ensemble time-series
   if (!is.na(plot.timeseries)){
     fname <- ensemble.filename(settings, "ensemble.ts", "pdf", all.var.yr=FALSE,
-      ensemble.id=ensemble.id, variable=variable, start.year=start.year, end.year=end.year)
+      ensemble.id=ensemble.id, variable=variable.fn, start.year=start.year, end.year=end.year)
 
     pdf(fname,width=12,height=9)    
       ensemble.ts.analysis <- ensemble.ts(read.ensemble.ts(settings), ...)
     dev.off()
     
     fname <- ensemble.filename(settings, "ensemble.ts.analysis", "Rdata", all.var.yr=FALSE,
-      ensemble.id=ensemble.id, variable=variable, start.year=start.year, end.year=end.year)
+      ensemble.id=ensemble.id, variable=variable.fn, start.year=start.year, end.year=end.year)
     save(ensemble.ts.analysis, file=fname)
   }
 
@@ -165,8 +170,12 @@ read.ensemble.ts <- function(settings, ensemble.id=NULL, variable=NULL, start.ye
     variable <- variable[1]
     logger.warn(paste0("Currently performs ensemble analysis on only one variable at a time. Using first (", variable, ")"))
   }
+  
+  variables <- convert.expr(variable)
+  variable.ens <- variables$variable.eqn
+  variable.fn <- variables$variable.drv
 
-  print(paste("----- Variable: ",variable,sep=""))
+  print(paste("----- Variable: ",variable.fn,sep=""))
   print("----- Reading ensemble output ------")
 
   ### Load ensemble run IDs
@@ -188,6 +197,9 @@ read.ensemble.ts <- function(settings, ensemble.id=NULL, variable=NULL, start.ye
   if(!exists("ens.run.ids"))   ens.run.ids <- runs.samples$ens
 
   ensemble.size <- nrow(ens.run.ids)
+  
+  expr <- variable.ens$expression
+  variables <- variable.ens$variables
 
   ## read ensemble output
   # Leaving list output even though only one variable allowed for now. Will improve backwards compatibility and maybe help in the future.
@@ -195,21 +207,27 @@ read.ensemble.ts <- function(settings, ensemble.id=NULL, variable=NULL, start.ye
   for(row in rownames(ens.run.ids)) {
     run.id <- ens.run.ids[row, 'id']
     print(run.id)
-    newrun <- read.output(run.id, file.path(settings$outdir, "out", run.id), 
-                           start.year, end.year, variable)
+    
+    for(var in seq_along(variables)){
+      out.tmp <- read.output(run.id, file.path(settings$outdir, "out", run.id), start.year, end.year, variables[var])
+      assign(variables[var], out.tmp[[variables[var]]])
+    }
+    
+    # derivation
+    newrun <- eval(parse(text = expr))
 
-    for(j in 1:length(variable)){
+    for(j in 1:length(variable.fn)){
       if(as.numeric(row) == 1){
-        ensemble.ts[[j]] <- matrix(NA,ensemble.size,length(newrun[[j]]))
+        ensemble.ts[[j]] <- matrix(NA,ensemble.size,length(newrun))
       }
-      ensemble.ts[[j]][as.numeric(row),] <- newrun[[j]]
+      ensemble.ts[[j]][as.numeric(row),] <- newrun
     }    
   }
 
-  names(ensemble.ts) <- variable
+  names(ensemble.ts) <- variable.fn
   # BMR 10/16/13 Save this variable now to operate later on
   fname <- ensemble.filename(settings, "ensemble.ts", "Rdata", all.var.yr=FALSE,
-    ensemble.id=ensemble.id, variable=variable, start.year=start.year, end.year=end.year)
+    ensemble.id=ensemble.id, variable=variable.fn, start.year=start.year, end.year=end.year)
   
   save(ensemble.ts, file=fname)
   return(ensemble.ts)
@@ -236,7 +254,7 @@ filterNA <- function(x,w){
 ##'
 ##' @author Michael Dietze, Ryan Kelly
 ##'
-ensemble.ts <- function(ensemble.ts,observations=NULL,window=1){
+ensemble.ts <- function(ensemble.ts,observations=NULL,window=1, ...){
   print("------ Generating ensemble time-series plot ------")
   variable = names(ensemble.ts)
 
