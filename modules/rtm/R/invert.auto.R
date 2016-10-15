@@ -138,7 +138,9 @@ invert.auto <- function(observed, invert.options, return.samples = TRUE, save.sa
     }
   }
   if (return.samples) {
-    samples <- as.mcmc.list(lapply(samps.list, as.mcmc)) else samples <- NA
+    samples <- as.mcmc.list(lapply(samps.list, as.mcmc))
+  } else {
+    samples <- NA
   }
   if ((i.try >= n.tries) & try.again) {
     warning("Convergence was not achieved. Returning results as 'NA'.")
