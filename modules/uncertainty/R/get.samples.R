@@ -67,8 +67,8 @@ get.parameter.samples <- function(settings,
     
     pft.name <- unlist(pft.names[i])
     
-    ### When no ma for a trait, sample from prior Trim all chains to 
-    ### shortest mcmc chain, else 20000 samples
+    ### When no ma for a trait, sample from prior
+    ### Trim all chains to shortest mcmc chain, else 20000 samples
     priors <- rownames(prior.distns)
     if (exists("trait.mcmc")) {
       ma.traits <- names(trait.mcmc)

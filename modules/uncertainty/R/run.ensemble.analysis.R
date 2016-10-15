@@ -53,8 +53,9 @@ run.ensemble.analysis <- function(settings, plot.timeseries = NA, ensemble.id = 
       }
     }
   }
-  if (is.null(variable)) 
+  if (is.null(variable)) {
     logger.severe("No variables for ensemble analysis!")
+  }
   
   # Only handling one variable at a time for now
   if (length(variable) > 1) {
@@ -173,12 +174,15 @@ read.ensemble.ts <- function(settings, ensemble.id = NULL, variable = NULL,
   
   model <- settings$model$type
   # Set variable and years. Use args first, then settings, then defaults/error
-  if (is.null(start.year)) 
+  if (is.null(start.year)) {
     start.year <- settings$ensemble$start.year
-  if (is.null(end.year)) 
+  }
+  if (is.null(end.year)) {
     end.year <- settings$ensemble$end.year
-  if (is.null(start.year) | is.null(end.year)) 
+  }
+  if (is.null(start.year) | is.null(end.year)) {
     logger.severe("No years given for ensemble analysis!")
+  }
   
   if (is.null(variable)) {
     if ("variable" %in% names(settings$ensemble)) {

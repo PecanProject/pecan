@@ -35,7 +35,7 @@ get.gi.phii <- function(splinefuns, trait.samples, maxn = NULL) {
     trait.samples <- matrix(unlist(trait.samples), ncol = length(names(trait.samples)))
     colnames(trait.samples) <- names(splinefuns)
     if (!is.null(maxn) & maxn < nrow(trait.samples)) {
-      j <- sample(seq_len(nrow(trait.samples), maxn))
+      j <- sample(1:nrow(trait.samples), maxn)
       trait.samples <- trait.samples[j, ]
     }
   }
