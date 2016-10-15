@@ -119,8 +119,15 @@ priorfig <- function(priordata = NA, priordensity = NA, trait = "", xlim = "auto
 ##'           prior = prior1,
 ##'           trait.df = data1)
 ##' }
-plot.trait <- function(trait, prior = NULL, posterior.sample = NULL, trait.df = NULL, fontsize = list(title = 18, 
-                                                                                                      axis = 14), x.lim = NULL, y.lim = NULL, logx = FALSE) {
+plot.trait <- function(trait,
+                       prior = NULL,
+                       posterior.sample = NULL,
+                       trait.df = NULL,
+                       fontsize = list(title = 18, axis = 14),
+                       x.lim = NULL,
+                       y.lim = NULL,
+                       logx = FALSE) {
+  
   ## Determine plot components
   plot.posterior <- !is.null(posterior.sample)
   plot.prior     <- !is.null(prior)
@@ -199,8 +206,8 @@ plot.trait <- function(trait, prior = NULL, posterior.sample = NULL, trait.df = 
 ##' @author David LeBauer
 ##' @return outputs plots in outdir/sensitivity.analysis.pdf file 
 plot.densities <- function(density.plot.inputs, outdir, ...) {
-  trait.samples <- density.plot.inputs$trait.samples
-  trait.df <- density.plot.inputs$trait.df
+  trait.samples       <- density.plot.inputs$trait.samples
+  trait.df            <- density.plot.inputs$trait.df
   prior.trait.samples <- density.plot.inputs$trait.df
   
   traits <- names(trait.samples)
@@ -208,8 +215,7 @@ plot.densities <- function(density.plot.inputs, outdir, ...) {
   
   for (trait in traits) {
     density.plot <- plot.density(trait.sample = trait.samples[, trait], 
-                                 trait.df = trait.df[[trait]], 
-                                 ...)
+                                 trait.df = trait.df[[trait]], ...)
     print(sensitivity.plot)
   }
   dev.off()
@@ -232,7 +238,7 @@ plot.densities <- function(density.plot.inputs, outdir, ...) {
 ##' get.quantiles.from.density(samp.df)
 get.quantiles.from.density <- function(density.df, quantiles = c(0.025, 0.5, 0.975)) {
   colnames(density.df) <- c("prior.x", "dens.x")
-  density.df$prob.x <- density.df$dens.x / sum(density.df$dens.x)
+  density.df$prob.x    <- density.df$dens.x / sum(density.df$dens.x)
   qi <- sapply(quantiles, function(x) which.min(abs(cumsum(density.df$prob.x) - x)))
   qs <- density.df[qi, c("prior.x", "dens.x")]
   colnames(qs) <- c("x", "y")
