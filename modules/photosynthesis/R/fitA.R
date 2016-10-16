@@ -12,9 +12,13 @@
 ##' 
 fitA <- function(flux.data, cov.data = NULL, model = NULL) {
   
-  ## TO-DO: Random effects using design matrix Model selection output variable selection:
-  ## Pred Loss, WAIC?  function to do: multiple response curves specify priors in model
-  ## object integrate with meta-analysis
+  ##  TO-DO: 
+  ##  Random effects using design matrix
+  ##  Model selection
+  ##  output variable selection: Pred Loss, WAIC?
+  ##  function to do: multiple response curves
+  ##  specify priors in model object
+  ##  integrate with meta-analysis
   
   library(rjags)
   
@@ -134,7 +138,7 @@ To <- 35    ## Representative value, would benifit from spp calibration!
 #RLEAF.A   Aleaf[i]~dnorm(0,tau.Aleaf)
 #RLEAF.A  }
 
-  for(i in seq_len(n)) {
+  for(i in 1:n) {
 
      r[i]  <- r0 ##B01* exp(r.c - r.H/R/T[i])
      cp[i] <- cp0 ##B01* exp(cp.c - cp.H/R/T[i])/cp.ref
@@ -175,8 +179,9 @@ mydat <- list(an = dat$Photo[sel],
               po = 21000, 
               rep = curve.id, 
               nrep = n.curves)
-# Kc<-46 ## Michaelis constant CO2 (Pa) Ko<-33000 ## Michaelis constant O2 (Pa)
-# po<-21000 ## partial pressure of O2 (Pa)
+#  Kc<-46                          ## Michaelis constant CO2 (Pa)
+#  Ko<-33000                       ## Michaelis constant O2  (Pa)
+#  po<-21000                       ## partial pressure of O2  (Pa)
 
 ## TPU Limitation
 if ("TPU" %in% names(model)) {
