@@ -134,7 +134,7 @@ read.output <- function(runid, outdir, start.year=NA,
 #            if(v %in% c(cflux, wflux)){
 #              newresult <- ud.convert(newresult, "kg m-2 s-1", "kg ha-1 yr-1")
 #            }
-            result[[v]] <- abind(result[[v]], newresult)
+            result[[v]] <- abind::abind(result[[v]], newresult)
           } else if (!(v %in% names(nc$var))){
             logger.warn(paste(v, "missing in", ncfile))
           }

@@ -69,7 +69,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
             logger.warn("start date is not 0 this year, but data already exists in this col", 
                         col, "how is this possible?")
           }
-          out[[col]] <- abind(out[[col]], array(dat, dim = (end - start)), along = 1)
+          out[[col]] <- abind::abind(out[[col]], array(dat, dim = (end - start)), along = 1)
         }
       } else {
         logger.warn("expected a single value")
@@ -83,7 +83,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
           logger.warn("start date is not 0 this year, but data already exists in this col", 
                       col, "how is this possible?")
         }
-        out[[col]] <- abind(out[[col]], dat, along = 1)
+        out[[col]] <- abind::abind(out[[col]], dat, along = 1)
       }
     } else if (length(dims) == 2) {
       dat <- t(dat)
@@ -96,7 +96,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
           logger.warn("start date is not 0 this year, but data already exists in this col", 
                       col, "how is this possible?")
         }
-        out[[col]] <- abind(out[[col]], dat, along = 1)
+        out[[col]] <- abind::abind(out[[col]], dat, along = 1)
       }
     } else {
       logger.debug("-------------------------------------------------------------")
