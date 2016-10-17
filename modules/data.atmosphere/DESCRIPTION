@@ -20,7 +20,7 @@ Depends:
     lubridate,
     REddyProc
 Remotes:
-    bioc::release/REddyProc
+    github::rforge/REddyProc
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
