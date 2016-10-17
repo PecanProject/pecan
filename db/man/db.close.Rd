@@ -4,7 +4,7 @@
 \alias{db.close}
 \title{Close database connection}
 \usage{
-db.close(con)
+db.close(con, showWarnings = TRUE)
 }
 \arguments{
 \item{con}{database connection to be closed}

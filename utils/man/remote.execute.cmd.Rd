@@ -28,8 +28,8 @@ machine it will execute the command locally without ssh.
 }
 \examples{
 \dontrun{
-  host <- list(name="geo.bu.edu", user="kooper", tunnel="/tmp/geo.tunnel")
-  pritn(remote.execute.cmd(host, "ls", c("-l", "/"), stderr=TRUE))
+  host <- list(name='geo.bu.edu', user='kooper', tunnel='/tmp/geo.tunnel')
+  pritn(remote.execute.cmd(host, 'ls', c('-l', '/'), stderr=TRUE))
 }
 }
 \author{

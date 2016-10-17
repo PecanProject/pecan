@@ -9,7 +9,6 @@
 context("test MultiSettings class")
 
 if(FALSE) {
-  library(testthat)
   library(devtools)
   rm(list=ls())
   load_all()

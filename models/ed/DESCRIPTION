@@ -21,7 +21,7 @@ Imports:
     abind (>= 1.4.5),
     XML (>= 3.98-1.4)
 Suggests:
-    testthat,
+    testthat (>= 1.0.2),
     udunits2
 License: FreeBSD + file LICENSE
 Copyright: Authors
