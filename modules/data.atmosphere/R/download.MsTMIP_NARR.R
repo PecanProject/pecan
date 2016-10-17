@@ -3,10 +3,10 @@
 ##' @title download.MsTMIP_NARR
 ##' @export
 ##' @param outfolder
-##' @param start_date
-##' @param end_date
-##' @param lat
-##' @param lon
+##' @param start_date YYYY-MM-DD
+##' @param end_date YYYY-MM-DD
+##' @param lat decimal degrees [-90, 90]
+##' @param lon decimal degrees [-180, 180]
 ##'
 ##' @author James Simkins
 download.MsTMIP_NARR <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
