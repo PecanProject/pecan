@@ -23,7 +23,7 @@ Sends email. This assumes the program sendmail is installed.
 }
 \examples{
 \dontrun{
-sendmail("bob@example.com", "joe@example.com", "Hi", "This is R.")
+sendmail('bob@example.com', 'joe@example.com', 'Hi', 'This is R.')
 }
 }
 \author{
