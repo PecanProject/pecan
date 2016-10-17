@@ -50,7 +50,7 @@ get.gi.phii <- function(splinefuns, trait.samples, maxn = NULL) {
   traits <- names(splinefuns)
   
   ## g_i(phi_i) the spline estimate of model output for value of trait i
-  gi.phii <- t(laply(traits, function(x) splinefuns[[x]](trait.samples[, x])))
+  gi.phii <- t(plyr::laply(traits, function(x) splinefuns[[x]](trait.samples[, x])))
   colnames(gi.phii) <- traits
   return(gi.phii)
 } # get.gi.phii

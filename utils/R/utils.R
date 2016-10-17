@@ -261,7 +261,7 @@ zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
 ##' @export
 ##' @author David LeBauer
 summarize.result <- function(result) {
-  ans1 <- ddply(result[result$n == 1, ], 
+  ans1 <- plyr::ddply(result[result$n == 1, ], 
                 .(citation_id, site_id, trt_id, control, greenhouse, 
                   date, time, cultivar_id, specie_id), 
                 summarise, n = length(n), 
