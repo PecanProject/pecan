@@ -31,7 +31,6 @@
 approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NULL, filename.flag = "") {
   
   ## initialization
-  library(coda)
   posteriors <- priors
   do.plot <- exists("outdir")
   if (do.plot == TRUE) {
@@ -65,7 +64,7 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
       m   <- mean(dat)
       v   <- var(dat)
       k   <- (1 - m)/m
-      a   <- (k/((1 + k)^2 * v) - 1)/(1 + k)
+      a   <- (k / ((1 + k) ^ 2 * v) - 1) / (1 + k)
       b   <- a * k
       fit <- try(fitdistr(dat, "beta", list(shape1 = a, shape2 = b)))
       

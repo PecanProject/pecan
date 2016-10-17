@@ -57,7 +57,7 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FAL
       box(lwd = 2)
       plot(mcmc.object[[trait]][, i], density = FALSE)
       box(lwd = 2)
-      autocorr.plot(mcmc.object[[trait]][, i][1], xlim = c(1, 50))
+      coda::autocorr.plot(mcmc.object[[trait]][, i][1], xlim = c(1, 50))
       box(lwd = 2)
     }
     xyplot(mcmc.object[[trait]])
@@ -66,7 +66,7 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FAL
     dev.off()
     
     ## G-R diagnostics to ensure convergence
-    gd            <- gelman.diag(mcmc.object[[trait]])
+    gd            <- coda::gelman.diag(mcmc.object[[trait]])
     mpsrf         <- round(gd$mpsrf, digits = 3)
     not.converged <- data.frame()
     if (mpsrf < threshold) {

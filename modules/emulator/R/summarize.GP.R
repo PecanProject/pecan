@@ -8,7 +8,6 @@
 ##' 
 ##' @author Michael Dietze
 summarize.GP <- function(gp, pdf_file = NULL, txt_file = NULL) {
-  library(coda)
   nugget    <- gp$nugget
   isotropic <- gp$isotropic
   d         <- gp$d
@@ -28,15 +27,15 @@ summarize.GP <- function(gp, pdf_file = NULL, txt_file = NULL) {
   plot(gp$psijump)
   # title('JUMP: PSI')
   
-  tauw <- mcmc(gp$tauw[samp, ])
-  psi <- mcmc(gp$psi[samp, ])
-  mu <- mcmc(gp$mu)
+  tauw <- coda::mcmc(gp$tauw[samp, ])
+  psi <- coda::mcmc(gp$psi[samp, ])
+  mu <- coda::mcmc(gp$mu)
   if (nugget) {
-    tauv <- mcmc(gp$tauv)
+    tauv <- coda::mcmc(gp$tauv)
     print("**** TAUV ****")
     summary(tauv)
     plot(tauv, main = "TAUV")
-    W <- mcmc(gp$W)
+    W <- coda::mcmc(gp$W)
     print("**** W ****")
     summary(W)
     plot(W, main = "W")
