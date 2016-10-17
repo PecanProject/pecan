@@ -208,9 +208,9 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, forceupdate = TRU
   ## traits = variables with prior distributions for this pft
   trait.data.file <- file.path(pft$outdir, "trait.data.Rdata")
   save(trait.data, file = trait.data.file)
-  write.csv(ldply(trait.data), file = file.path(pft$outdir, "trait.data.csv"), 
-            row.names = FALSE)
-  
+  write.csv(plyr::ldply(trait.data),
+            file = file.path(pft$outdir, "trait.data.csv"), row.names = FALSE)
+
   logger.info("number of observations per trait for", pft$name)
   for (t in names(trait.data)) {
     logger.info(nrow(trait.data[[t]]), "observations of", t)

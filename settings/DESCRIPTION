@@ -8,7 +8,9 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-Require: hdf5, plyr
+Require: hdf5
+Imports:
+    plyr (>= 1.8.4)
 Description: Contains functions to read PEcAn settings files
 Depends:
     PEcAn.utils,
