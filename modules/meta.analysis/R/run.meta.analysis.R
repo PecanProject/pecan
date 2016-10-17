@@ -6,129 +6,141 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
+
 run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.2, dbfiles, dbcon) {
-    require(coda)
+  library(coda)
   # check to see if get.trait was executed
-  if (!file.exists(file.path(pft$outdir, 'trait.data.Rdata')) || !file.exists(file.path(pft$outdir, 'prior.distns.Rdata'))) {
+  if (!file.exists(file.path(pft$outdir, "trait.data.Rdata")) || 
+      !file.exists(file.path(pft$outdir, "prior.distns.Rdata"))) {
     logger.severe("Could not find output from get.trait for", pft$name)
     return(NA)
   }
-
+  
   # check to see if run.meta.analysis can be skipped
-  if (file.exists(file.path(pft$outdir, 'trait.mcmc.Rdata')) && 
-      file.exists(file.path(pft$outdir, 'post.distns.Rdata')) &&
-      settings$meta.analysis$update != TRUE ) {
+  if (file.exists(file.path(pft$outdir, "trait.mcmc.Rdata")) && 
+      file.exists(file.path(pft$outdir, "post.distns.Rdata")) && 
+      settings$meta.analysis$update != TRUE) {
     logger.info("Assuming get.trait copied results already")
     return(pft)
   }
-
+  
   # make sure there is a posteriorid
   if (is.null(pft$posteriorid)) {
     logger.severe("Make sure to pass in pft list from get.trait. Missing posteriorid for", pft$name)
     return(NA)
   }
-
+  
   # get list of existing files so they get ignored saving
-  old.files <- list.files(path=pft$outdir)
-
+  old.files <- list.files(path = pft$outdir)
+  
   logger.info("-------------------------------------------------------------------")
   logger.info(" Running meta.analysis for PFT:", pft$name)
   logger.info("-------------------------------------------------------------------")
   
   ## Load trait data for PFT
-  load(file.path(pft$outdir, 'trait.data.Rdata'))
-  load(file.path(pft$outdir, 'prior.distns.Rdata'))
-
-  if(length(trait.data) == 0) {
+  load(file.path(pft$outdir, "trait.data.Rdata"))
+  load(file.path(pft$outdir, "prior.distns.Rdata"))
+  
+  if (length(trait.data) == 0) {
     logger.info("no trait data for PFT", pft$name, "\n so no meta-analysis will be performed")
     return(NA)
   }
-
+  
   # create path where to store files
   pathname <- file.path(dbfiles, "posterior", pft$posteriorid)
   dir.create(pathname, showWarnings = FALSE, recursive = TRUE)
-
+  
   ## Convert data to format expected by pecan.ma
   jagged.data <- lapply(trait.data, jagify)
 
-  ## Check that data is consistent with prior
-  for(trait in names(jagged.data)){
-    data.median    <- median(jagged.data[[trait]]$Y)
-    prior          <- prior.distns[trait, ]
-    p.data         <- p.point.in.prior(point = data.median, prior = prior)
-    if(p.data <= 0.9995 & p.data >= 0.0005){
-      if (p.data <= 0.975 & p.data >= 0.025) {
-        logger.info("OK! ", trait, " data and prior are consistent:")
+  check_consistent <- function(data.median, prior, trait, msg_var,
+                               perr = 5e-04, pwarn = 0.025) {
+
+    p.data <- p.point.in.prior(point = data.median, prior = prior)
+
+    if (p.data <= 1 - perr & p.data >= perr) {
+      if (p.data <= 1 - pwarn & p.data >= pwarn) {
+        logger.info("OK! ", trait, " ", msg_var, " and prior are consistent:")
       } else {
-        logger.warn("CHECK THIS: ", trait, " data and prior are inconsistent:")
+        logger.warn("CHECK THIS: ", trait, " ", msg_var, " and prior are inconsistent:")
       }
-    } else if (p.data > 0.9995 | p.data < 0.0005) {
-      logger.debug("NOT OK! ", trait," data and prior are probably not the same:")
+    } else {
+      logger.debug("NOT OK! ", trait, " ", msg_var, " and prior are probably not the same:")
       return(NA)
     }
     logger.info(trait, "P[X<x] =", p.data)
+    return(1)
+  }
+
+  
+  ## Check that data is consistent with prior
+  for (trait in names(jagged.data)) {
+    data.median <- median(jagged.data[[trait]]$Y)
+    prior       <- prior.distns[trait, ]
+    check       <- check_consistent(data.median, prior, trait, "data")
+    if (is.na(check)) {
+      return(NA)
+    }
   }
   
   ## Average trait data
-  trait.average <- sapply(jagged.data,
-                          function(x){mean(x$Y, na.rm = TRUE)})
+  trait.average <- sapply(jagged.data, function(x) mean(x$Y, na.rm = TRUE) )
   
   ## Set gamma distribution prior
-  prior.variances = as.data.frame(rep(1, nrow(prior.distns)))
-  row.names(prior.variances) = row.names(prior.distns)
-  prior.variances[names(trait.average), ] = 0.001 * trait.average^2 
-  prior.variances["seedling_mortality", 1] = 1.0
-  taupriors <- list(tauA = 0.01,
-                    tauB = apply(prior.variances, 1, function(x) min(0.01, x)))
+  tau_value <- 0.01
+  prior.variances <- as.data.frame(rep(1, nrow(prior.distns)))
+  row.names(prior.variances) <- row.names(prior.distns)
+  prior.variances[names(trait.average), ] <- 0.001 * trait.average ^ 2
+  prior.variances["seedling_mortality", 1] <- 1
+  taupriors <- list(tauA = tau_value, tauB = apply(prior.variances, 1, function(x) min(tau_value, x)))
   
   ### Run the meta-analysis
-  trait.mcmc  <- pecan.ma(jagged.data, prior.distns, taupriors, j.iter = iterations, 
-                          outdir = pft$outdir, random = random)
+  trait.mcmc <- pecan.ma(jagged.data,
+                         prior.distns,
+                         taupriors, 
+                         j.iter = iterations, 
+                         outdir = pft$outdir, 
+                         random = random)
+  
   ### Check that meta-analysis posteriors are consistent with priors
-  for(trait in names(trait.mcmc)){
-    post.median    <- median(as.matrix(trait.mcmc[[trait]][,'beta.o']))
-    prior          <- prior.distns[trait, ]
-    p.ma.post      <- p.point.in.prior(point = post.median, prior = prior)
-    ## if inside 95%CI, ok.
-    if(p.ma.post <= 0.9995 & p.ma.post >= 0.0005){
-      if (p.ma.post <= 0.975 & p.ma.post >= 0.025) {
-        logger.info("OK! ", trait, " posterior and prior are consistent:")
-      } else {
-        logger.warn("CHECK THIS: ", trait, " posterior and prior are inconsistent:")
-      }
-    } else if (p.ma.post > 0.9995 | p.ma.post < 0.0005) {
-      logger.severe("NOT OK! ", trait," posterior and prior are probably not the same:")
+  for (trait in names(trait.mcmc)) {
+    post.median <- median(as.matrix(trait.mcmc[[trait]][, "beta.o"]))
+    prior       <- prior.distns[trait, ]
+    check <- check_consistent(post.median, prior, trait, "data")
+    if (is.na(check)) {
       return(NA)
     }
-    logger.info(trait, "P[X<x] =", p.ma.post)
   }
-   
+  
   ### Generate summaries and diagnostics
   pecan.ma.summary(trait.mcmc, pft$name, pft$outdir, threshold)
   
   ### Save the meta.analysis output
-  save(trait.mcmc, file = file.path(pft$outdir, 'trait.mcmc.Rdata'))
+  save(trait.mcmc, file = file.path(pft$outdir, "trait.mcmc.Rdata"))
   
   post.distns <- approx.posterior(trait.mcmc, prior.distns, jagged.data, pft$outdir)
-  save(post.distns, file = file.path(pft$outdir, 'post.distns.MA.Rdata'))
-  
-  # Symlink to post.distns.Rdata (no "MA" identifier)
-  if(file.exists(file.path(pft$outdir, 'post.distns.Rdata'))) {
-    file.remove(file.path(pft$outdir, 'post.distns.Rdata'))
-  }
-  file.symlink(file.path(pft$outdir, 'post.distns.MA.Rdata'), file.path(pft$outdir, 'post.distns.Rdata'))
+  dist_MA_path <- file.path(pft$outdir, "post.distns.MA.Rdata")
+  save(post.distns, file = dist_MA_path)
 
+  dist_path <- file.path(pft$outdir, "post.distns.Rdata")
+  
+  # Symlink to post.distns.Rdata (no 'MA' identifier)
+  if (file.exists(dist_path)) {
+    file.remove(dist_path)
+  }
+  file.symlink(dist_MA_path, dist_path)
+  
   ### save and store in database all results except those that were there already
-  for(file in list.files(path=pft$outdir)) {
+  for (file in list.files(path = pft$outdir)) {
     # Skip file if it was there already, or if it's a symlink (like the post.distns.Rdata link above)
     if (file %in% old.files || nchar(Sys.readlink(file.path(pft$outdir, file))) > 0) {
       next
     }
     filename <- file.path(pathname, file)
     file.copy(file.path(pft$outdir, file), filename)
-    dbfile.insert(pathname,file, 'Posterior', pft$posteriorid, dbcon)
+    dbfile.insert(pathname, file, "Posterior", pft$posteriorid, dbcon)
   }
-}
+} # run.meta.analysis.pft
 
 ##--------------------------------------------------------------------------------------------------##
 ##' Run meta analysis
@@ -157,44 +169,43 @@ run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, 
   dbcon <- db.open(database)
   result <- lapply(pfts, run.meta.analysis.pft, iterations, random, threshold, dbfiles, dbcon)
   db.close(dbcon)
-
-} ### End of function: run.meta.analysis.R
-##==================================================================================================#
+} # run.meta.analysis.R
+## ==================================================================================================#
 
 ##' @export
 runModule.run.meta.analysis <- function(settings) {
-  if(is.MultiSettings(settings)) {
+  if (is.MultiSettings(settings)) {
     pfts <- list()
     pft.names <- character(0)
-    for(i in seq_along(settings)) {
-      pfts.i <- settings[[i]]$pfts
+    for (i in seq_along(settings)) {
+      pfts.i      <- settings[[i]]$pfts
       pft.names.i <- sapply(pfts.i, function(x) x$name)
-      ind <- which(pft.names.i %in% setdiff(pft.names.i, pft.names))
-      pfts <- c(pfts, pfts.i[ind])
-      pft.names <- sapply(pfts, function(x) x$name)
+      ind         <- which(pft.names.i %in% setdiff(pft.names.i, pft.names))
+      pfts        <- c(pfts, pfts.i[ind])
+      pft.names   <- sapply(pfts, function(x) x$name)
     }
     
-    logger.info(paste0("Running meta-analysis on all PFTs listed by any Settings object in the list: ",
-                paste(pft.names, collapse=", ")))
-
+    logger.info(paste0("Running meta-analysis on all PFTs listed by any Settings object in the list: ", 
+                       paste(pft.names, collapse = ", ")))
+    
     iterations <- settings$meta.analysis$iter
-    random <- settings$meta.analysis$random.effects
-    threshold <- settings$meta.analysis$threshold
-    dbfiles <- settings$database$dbfiles
-    database <- settings$database$bety
-    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database) 
+    random     <- settings$meta.analysis$random.effects
+    threshold  <- settings$meta.analysis$threshold
+    dbfiles    <- settings$database$dbfiles
+    database   <- settings$database$bety
+    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database)
   } else if (is.Settings(settings)) {
-    pfts <- settings$pfts
+    pfts       <- settings$pfts
     iterations <- settings$meta.analysis$iter
-    random <- settings$meta.analysis$random.effects
-    threshold <- settings$meta.analysis$threshold
-    dbfiles <- settings$database$dbfiles
-    database <- settings$database$bety
-    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database) 
+    random     <- settings$meta.analysis$random.effects
+    threshold  <- settings$meta.analysis$threshold
+    dbfiles    <- settings$database$dbfiles
+    database   <- settings$database$bety
+    run.meta.analysis(pfts, iterations, random, threshold, dbfiles, database)
   } else {
     stop("runModule.run.meta.analysis only works with Settings or MultiSettings")
   }
-}
+} # runModule.run.meta.analysis
 
 ##--------------------------------------------------------------------------------------------------#
 ##' compare point to prior distribution
@@ -206,16 +217,11 @@ runModule.run.meta.analysis <- function(settings) {
 ##' @return result of p<distn>(point, parama, paramb)
 ##' @export p.point.in.prior
 ##' @author David LeBauer
-p.point.in.prior <- function(point, prior){
-  prior.median <- do.call(paste('q', prior$distn, sep = ""),
+p.point.in.prior <- function(point, prior) {
+  # Why is this (below) called, and then never used?
+  prior.median <- do.call(paste0("q", prior$distn),
                           list(0.5, prior$parama, prior$paramb))
-  p.point <- do.call(paste('p', prior$distn, sep = ""),
-                     list(point, prior$parama, prior$paramb))
-  return(p.point)
-}
-#==================================================================================================#
-
-
-####################################################################################################
-### EOF.  End of R script file.      				
-####################################################################################################
+  out <- do.call(paste0("p", prior$distn), 
+                 list(point, prior$parama, prior$paramb))
+  return(out)
+} # p.point.in.prior

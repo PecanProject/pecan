@@ -1,6 +1,6 @@
 extract.success <- function(in.path,in.prefix,outfolder){
   
-  require("PEcAn.utils")
+  library(PEcAn.utils)
   
   in.path <- as.character(in.path)
   in.prefix <- as.character(in.prefix)

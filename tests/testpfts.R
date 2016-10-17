@@ -1,7 +1,7 @@
-require(PEcAn.utils)
-require(PEcAn.DB)
-require(PEcAn.MA)
-require(RPostgreSQL)
+library(PEcAn.utils)
+library(PEcAn.DB)
+library(PEcAn.MA)
+library(RPostgreSQL)
 
 runmeta <- function(pftid, pftname, model, dbparam) {
   folder <- file.path(dbparam$dbfiles, "pfts", model, pftname)

@@ -1,11 +1,12 @@
-##------------------------------------------------------------------------------
-##Copyright (c) 2016 NCSA
-##All rights reserved. This program and the accompanying materials
-##are made available under the terms of the 
-##University of Illinois/NCSA Open Source License
-##which accompanies this distribution, and is available at
-##http://opensource.ncsa.illinois.edu/license.html
-##------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+# Copyright (c) 2016 NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
+#-------------------------------------------------------------------------------
+
 ##-------------------------------------------------------------------------------------------------#
 ##' Writes config files for use with FATES.
 ##'
@@ -19,7 +20,7 @@
 ##' @export
 ##' @author Mike Dietze
 ##-------------------------------------------------------------------------------------------------#
- write.config.FATES <- function(defaults, trait.values, settings, run.id){
+write.config.FATES <- function(defaults, trait.values, settings, run.id){
    library(PEcAn.utils)
 #  
 # #OUTLINE OF MODULES
@@ -163,3 +164,4 @@
 #   ## Write SETTINGS file
 #     
  }
+
