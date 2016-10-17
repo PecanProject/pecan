@@ -24,7 +24,7 @@ if (!("Rgraphviz" %in% installed.packages()[, "Package"])) {
 list.of.packages <- c("coda", "data.table", "doSNOW", "dplR", "earth", 
                       "emulator", "ggmap", "ggplot2", "gridExtra", "Hmisc", "httr", "kernlab", 
                       "GPfit", "knitr", "lubridate", "Maeswrap", "MASS", "MCMCpack", "mvtnorm", "ncdf4", 
-                      "plotrix", "plyr", "raster", "randtoolbox", "rjags", "rgdal", "tgp", "DBI", 
+                      "plotrix", "raster", "randtoolbox", "rjags", "rgdal", "tgp", "DBI", 
                       "roxygen2", "stringr", "testthat", "boot", "XML", "RNCEP", "foreign", 
                       "RCurl", "udunits2", "RPostgreSQL", "rPython", "minpack.lm", "mclust", 
                       "geonames", "Rcpp", "devtools", "inline", "segmented", "msm", "dplyr", 
