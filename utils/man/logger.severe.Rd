@@ -22,7 +22,7 @@ inside Rstudio.
 }
 \examples{
 \dontrun{
-logger.severe("missing parameters")
+logger.severe('missing parameters')
 }
 }
 \author{

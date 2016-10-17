@@ -18,7 +18,7 @@ will normalize the path and prepend it with the current working folder
 if needed to get an absolute path name.
 }
 \examples{
-full.path("pecan")
+full.path('pecan')
 }
 \author{
 Rob Kooper
