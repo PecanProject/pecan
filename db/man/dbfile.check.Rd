@@ -6,8 +6,8 @@
 \alias{dbfile.posterior.check}
 \title{Check for a file in the input/dbfiles tables}
 \usage{
-dbfile.input.check(siteid, startdate, enddate, mimetype, formatname,
-  parentid = NA, con, hostname = fqdn())
+dbfile.input.check(siteid, startdate = NULL, enddate = NULL, mimetype,
+  formatname, parentid = NA, con, hostname = fqdn(), ignore.dates = FALSE)
 
 dbfile.posterior.check(pft, mimetype, formatname, con, hostname = fqdn())
 
