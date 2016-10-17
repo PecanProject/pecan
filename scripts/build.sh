@@ -233,7 +233,8 @@ for p in ${PACKAGES}; do
 
   if [ "$CHECK" == "yes" ]; then
     ACTION="CHECK"
-    Rscript -e "install.packages(${p}, lib = \"${R_LIBS_USER}\", dependencies = TRUE)" &> out.log
+    #    R CMD check ${R_LIB_INC} ${MANUAL} $p &> out.log
+    Rscript -e "install.packages(${p}, repos = NULL, type = \"source\", lib = \"${R_LIBS_USER}\", dependencies = TRUE)" &> out.log
     if [ $? -ne 0 ]; then
       STATUS="BROKEN"
       PACKAGE="BROKEN"
