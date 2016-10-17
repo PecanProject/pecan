@@ -1,5 +1,6 @@
 ##' @name query.file.path
-##' @title Get file path given id and machine
+##' @title query.file.path
+##' @description Get file path given id and machine
 ##' @param input_id
 ##' @param host_name
 ##' @param con : database connection

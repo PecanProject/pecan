@@ -1,5 +1,6 @@
 ##' @name query.format.vars
-##' @title Given input_id, return formats table and table of variables and units
+##' @title query.format.vars
+##' @description Given input_id, return formats table and table of variables and units
 ##' @param input_id
 ##' @param con : database connection
 ##' @export 

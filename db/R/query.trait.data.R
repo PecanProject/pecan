@@ -110,7 +110,7 @@ query.yields <- function(trait = "yield", spstr, extra.columns = "", con = NULL,
 ##'
 ##' @name append.covariate
 ##' @title Append covariate data as a column within a table
-##' \code{append.covariate} appends a data frame of covariates as a new column in a data frame 
+##' @description \code{append.covariate} appends a data frame of covariates as a new column in a data frame 
 ##'   of trait data.
 ##' In the event a trait has several covariates available, the first one found 
 ##'   (i.e. lowest row number) will take precedence
@@ -141,12 +141,11 @@ append.covariate <- function(data, column.name, covariates.data) {
 ##--------------------------------------------------------------------------------------------------#
 ##'
 ##' @name query.covariates
-##' @title Queries covariates from database for a given vector of trait id's
-##'
+##' @title query.covariates
+##' @description  Queries covariates from database for a given vector of trait id's
 ##' @param trait.ids list of trait ids
 ##' @param con database connection
 ##' @param ... extra arguments
-##'
 ##' @author <unknown>
 query.covariates <- function(trait.ids, con = NULL, ...) {
   covariate.query <- paste("select covariates.trait_id, covariates.level,variables.name", 
@@ -160,7 +159,8 @@ query.covariates <- function(trait.ids, con = NULL, ...) {
 ##--------------------------------------------------------------------------------------------------#
 ##'
 ##' @name arrhenius.scaling.traits
-##' @title Function to apply Arrhenius scaling to 25 degC for temperature-dependent traits
+##' @title arrhenius.scaling.traits
+##' @description Function to apply Arrhenius scaling to 25 degC for temperature-dependent traits
 ##' @param data data frame of data to scale, as returned by query.data()
 ##' @param covariates data frame of covariates, as returned by query.covariates().
 ##'   Note that data with no matching covariates will be unchanged. 
@@ -200,10 +200,10 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
 ##--------------------------------------------------------------------------------------------------#
 ##'
 ##' @name filter.sunleaf.traits
-##' @title Function to filter out upper canopy leaves
+##' @title filter.sunleaf.traits
+##' @description Function to filter out upper canopy leaves
 ##' @param data input data
 ##' @param covariates covariate data
-##'
 ##' @author <unknown>
 filter.sunleaf.traits <- function(data, covariates) {
   if (length(covariates) > 0) {
@@ -223,11 +223,9 @@ filter.sunleaf.traits <- function(data, covariates) {
 ##--------------------------------------------------------------------------------------------------#
 ##'
 ##' @name rename.jags.columns
-##'
-##' @title \code{rename.jags.columns} renames the variables within output data frame trait.data
-##'
+##' @title rename.jags.columns
+##' @description \code{rename.jags.columns} renames the variables within output data frame trait.data
 ##' @param data data frame to with variables to rename
-##'
 ##' @seealso used with \code{\link{jagify}};
 ##' @export
 rename.jags.columns <- function(data) {

@@ -46,7 +46,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   
   # find appropriate format, create if it does not exist
   formatid <- get.id("formats", 
-                     colname = c("mimetype_id", "name"),
+                     colnames = c("mimetype_id", "name"),
                      value = c(mimetypeid, formatname), 
                      con, 
                      create = TRUE,
@@ -245,7 +245,7 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
   
   # find appropriate format
   formatid <- get.id("formats", 
-                     colname = c("mimetype_id", "name"), 
+                     colnames = c("mimetype_id", "name"), 
                      value = c(mimetypeid, formatname), 
                      con,
                      create = TRUE, 
@@ -347,7 +347,7 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
   
   # find appropriate host
   hostid <- get.id("machines", 
-                   colname = "hostname",
+                   colnames = "hostname",
                    value = hostname, 
                    con, 
                    create = TRUE, 

@@ -1,5 +1,6 @@
 ##' @name query.site
-##' @title Given site_id, return site table
+##' @title query.site
+##' @description Given site_id, return site table
 ##' @param site_id
 ##' @param con : database connection
 ##' @export 
