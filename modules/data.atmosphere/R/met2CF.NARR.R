@@ -14,9 +14,9 @@
 ##'
 met2CF.NARR <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, ...){
 
-  require(ncdf4)
-  require(lubridate)
-  require(PEcAn.utils)
+  library(ncdf4)
+  library(lubridate)
+  library(PEcAn.utils)
 
   dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
 
@@ -63,15 +63,18 @@ met2CF.NARR <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
     renamevars <- list("-v", "lat,latitude", "-v", "lon,longitude")
     for(i in 1:length(vars)) {
       file <- file.path(in.path, paste0(vars[i],".",y,".nc"))
-      if (verbose)
+      if (verbose){
         print(paste(c("ncpdq", list("-A", "-U", "-4", "--no_tmp_fl", file, tmpfile)), collapse=" "))
+      }
       system2("ncpdq", list("-A", "-U", "-4", "--no_tmp_fl", file, tmpfile))
       renamevars <- c(renamevars, c("-v", paste0(svars[i], ",", cfvars[i])))
     }
 
     # rename all variables
-    if (verbose)
-      print(paste(c("ncrename", c(renamevars, tmpfile)), collapse=" "))
+    if (verbose){
+      print(paste(c("ncrename", c(renamevars, tmpfile)), collapse=" "))      
+    }
+
     system2("ncrename", c(renamevars, tmpfile))
 
     # finally rename file

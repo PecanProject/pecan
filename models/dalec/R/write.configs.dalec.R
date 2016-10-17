@@ -134,7 +134,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
                   outdir, "/out.txt\n", 
                   # 'echo ".libPaths(',"'~/R/library');",
                   "echo \"", 
-                  " require(PEcAn.DALEC); model2netcdf.DALEC(", "'", 
+                  " library(PEcAn.DALEC); model2netcdf.DALEC(", "'", 
                   outdir, "',", 
                   settings$run$site$lat, ",", 
                   settings$run$site$lon, ", '", 
