@@ -291,11 +291,11 @@ dev.off()
 
 ## autocorrelation plots of each leaf
 pdf(paste(SaveLeafDir, runName, "_Autocorr_Vcmax.pdf",sep=""))
-autocorr.plot(mcmc.Vcmax, main="Vcmax Autocorrelation")
+coda::autocorr.plot(mcmc.Vcmax, main="Vcmax Autocorrelation")
 dev.off()
 
 pdf(paste(SaveLeafDir, runName, "_Autocorr_Jmax.pdf",sep=""))
-autocorr.plot(mcmc.Jmax, main="Jmax Autocorrelation")
+coda::autocorr.plot(mcmc.Jmax, main="Jmax Autocorrelation")
 dev.off()
 
 

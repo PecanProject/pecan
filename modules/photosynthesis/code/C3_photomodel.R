@@ -237,11 +237,11 @@ for(s in leaf.list){
 	
 	## autocorrelation plots of each leaf
 	pdf(paste("Leaf_",s,"_FvCB_Vcmax_Autocorr.pdf",sep=""))
-	autocorr.plot(V)
+	coda::autocorr.plot(V)
 	dev.off()
 
 	pdf(paste("Leaf_",s,"_FvCB_Jmax_Autocorr.pdf",sep=""))
-	autocorr.plot(J)
+	coda::autocorr.plot(J)
 	dev.off()
 
 	## parameter correlation plots of each leaf
