@@ -85,14 +85,14 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
           met[[v]] = ncvar_get(nc=nc1, varid=v)
         } else{
           tmp = ncvar_get(nc=nc1, varid=v)
-          met[[v]] = abind(met[[v]],tmp)
+          met[[v]] = abind::abind(met[[v]],tmp)
         }
         if(v == by.folder[1]){
           if(length(met[['time']])<=1){
             met[['time']] = nc1$dim[['time']]$vals
           }else{
             tmp = nc1$dim[['time']]$vals
-            met[['time']] = abind(met[['time']],tmp)
+            met[['time']] = abind::abind(met[['time']],tmp)
           }
         }
         nc_close(nc1)
@@ -276,14 +276,14 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
             met[[v]] = ncvar_get(nc=nc1, varid=v)
           } else{
             tmp = ncvar_get(nc=nc1, varid=v)
-            met[[v]] = abind(met[[v]],tmp)
+            met[[v]] = abind::abind(met[[v]],tmp)
           }
           if(v == by.folder[1]){
             if(length(met[['time']])<=1){
               met[['time']] = nc1$dim[['time']]$vals
             }else{
               tmp = nc1$dim[['time']]$vals
-              met[['time']] = abind(met[['time']],tmp)
+              met[['time']] = abind::abind(met[['time']],tmp)
             }
           }
           nc_close(nc1)
