@@ -10,16 +10,15 @@
 ##' @author Michael Dietze
 minimize.GP <- function(gp, rng, x0, splinefuns = NULL) {
   
-  library(coda)
   isotropic <- gp$isotropic
   x.id      <- gp$x.id
   ey        <- 0
   
   if (gp$method == "bayes") {
     samp <- gp$samp
-    tauw <- mcmc(gp$tauw[samp, ])
-    psi  <- mcmc(gp$psi[samp, ])
-    mu   <- mcmc(gp$mu)
+    tauw <- coda::mcmc(gp$tauw[samp, ])
+    psi  <- coda::mcmc(gp$psi[samp, ])
+    mu   <- coda::mcmc(gp$mu)
     tauv <- W <- NULL
   } else {
     ## MLE

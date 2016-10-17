@@ -16,7 +16,6 @@
 #' @export
 getBurnin <- function(jags_out, threshold = 1.1, use.confidence = TRUE, 
                       autoburnin = FALSE, plotfile = "/dev/null", ...) {
-  library(coda)
   if (length(find("logger.info")) == 0) {
     msg <- message
   } else {
@@ -26,7 +25,7 @@ getBurnin <- function(jags_out, threshold = 1.1, use.confidence = TRUE,
     jags_out <- makeMCMCList(jags_out)
   }
   png(plotfile)
-  GBR <- try(gelman.plot(jags_out, autoburnin = autoburnin, ...))
+  GBR <- try(coda::gelman.plot(jags_out, autoburnin = autoburnin, ...))
   dev.off()
   if (class(GBR) == "try-error") {
     msg("Unable to calculate Gelman diagnostic. Assuming no convergence.")
