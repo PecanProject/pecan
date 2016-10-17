@@ -21,7 +21,8 @@ Depends:
     randtoolbox,
     RCurl
 Imports:
-    abind (>= 1.4.5)
+    abind (>= 1.4.5),
+    coda (>= 0.18)
 Suggests:
     coda,
     MASS,
