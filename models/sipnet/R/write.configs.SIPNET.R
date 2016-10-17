@@ -365,32 +365,6 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
 
 #--------------------------------------------------------------------------------------------------#
 ##'
-##' @name write.run.generic
-##' @title Function to generate generic model run script files
-##' @author <unknown>
-##' @import PEcAn.utils
-write.run.generic <- function(settings) {
-  run.script.template <- system.file("data", "run.template.generic", package = "PEcAn.generic")
-  run.text <- scan(file = run.script.template, 
-                   what = "character", 
-                   sep = "@", 
-                   quote = NULL,
-                   quiet = TRUE)
-  run.text <- gsub("TMP", paste0("/scratch/", Sys.getenv("USER")), run.text)
-  run.text <- gsub("BINARY", settings$host$ed$binary, run.text)
-  run.text <- gsub("OUTDIR", settings$host$outdir, run.text)
-  runfile <- paste0(settings$outdir, "run")
-  writeLines(run.text, con = runfile)
-  if (settings$host$name == "localhost") {
-    system(paste("cp ", runfile, settings$host$rundir))
-  } else {
-    system(paste0("rsync -outi ", runfile, " ", settings$host$name, ":", settings$host$rundir))
-  }
-} # write.run.generic
-
-
-#--------------------------------------------------------------------------------------------------#
-##'
 ##' Clear out previous SIPNET config and parameter files.
 ##'
 ##' @name remove.config.SIPNET
