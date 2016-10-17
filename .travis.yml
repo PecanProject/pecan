@@ -9,6 +9,9 @@ sudo: false
 # R packages
 r_packages: devtools
 
+install:
+  - make -j4
+
 ## install R: use r-packages-precise (https://cran.r-project.org/bin/linux/ubuntu/precise/) 
 ## as source which is white listed (https://github.com/travis-ci/apt-source-whitelist/)
 #addons:
