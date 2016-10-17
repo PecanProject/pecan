@@ -7,7 +7,7 @@ Author: Mike Dietze, Tristain Quaife
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: This module provides functions to link DALEC to PEcAn.
 Suggests:
-    testthat
+    testthat (>= 1.0.2)
 SystemRequirements: dalec
 OS_type: unix
 License: FreeBSD + file LICENSE

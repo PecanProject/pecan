@@ -14,12 +14,10 @@ load.L2Ameriflux.cf <- function(file.in) {
   nc <- nc_open(file.in)
   
   vars <- list()
-  for(varname in names(nc$var)) {
+  for (varname in names(nc$var)) {
     vars[[varname]] <- ncvar_get(nc, varname)
   }
-  
-  vars <- as.data.frame(do.call(cbind, vars))
-  
   nc_close(nc)
-  return(vars)
-}
+  
+  as.data.frame(do.call(cbind, vars))
+} # load.L2Ameriflux.cf

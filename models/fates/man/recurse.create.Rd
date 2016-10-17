@@ -6,6 +6,11 @@
 \usage{
 recurse.create(path, ins)
 }
+\arguments{
+\item{path}{new location to create folders and links}
+
+\item{ins}{reference location of inputs}
+}
 \description{
 recursively follow the file structure in 'ins' and create all the same folders in 'path' as well as symbolic links to all the file. This is done, rather than creating a symbolic link to the whole structure, so individual files can later be unlinked and replaced with different files/links.
 }

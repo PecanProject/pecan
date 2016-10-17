@@ -5,8 +5,6 @@
 ##' 
 ##' @author Betsy Cowdery
 
-metric.AME <- function(dat, ...){
-  score <- max(abs(dat$model - dat$obvs))
-  return(score)
-}
-
+metric.AME <- function(dat, ...) {
+  max(abs(dat$model - dat$obvs))
+} # metric.AME
