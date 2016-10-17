@@ -369,8 +369,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         
         for (i in 2) {
           t1 <- 1
-          Xbar <- laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
-          Xci <- laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
+          Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
+          Xci <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
           
           plot(as.Date(obs.times[t1:t]), 
                Xbar, 
@@ -565,11 +565,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       par(mfrow = c(2, 1))
       for (i in 1:2) {
         t1 <- 1
-        Xbar <- laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
-        Xci  <- laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
+        Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
+        Xci  <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
         
-        Xa <- laply(ANALYSIS[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
-        XaCI <- laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
+        Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
+        XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
         
         ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                                     function(x) { x })[2, ], use.names = FALSE)
@@ -690,11 +690,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   
   for (i in seq_along(X)) {
     t1 <- 1
-    Xbar <- laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
-    Xci <- laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
+    Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
+    Xci <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
     
-    Xa <- laply(ANALYSIS[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
-    XaCI <- laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
+    Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
+    XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
     
     plot(as.Date(obs.times[t1:t]),
          Xbar, 
@@ -730,11 +730,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   # legend('topleft',c('Data','Forecast','Analysis'),col=c(4,2,3),lty=1,cex=1) Forecast minus data =
   # error
   for (i in seq_along(obs.mean[[1]])) {
-    Xbar <- laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
-    Xci <- laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
+    Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
+    Xci <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
     
-    Xa <- laply(ANALYSIS[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
-    XaCI <- laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
+    Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
+    XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
     
     reg <- lm(Xbar[t1:t] - unlist(Ybar[t1:t, i]) ~ c(t1:t))
     plot(t1:t, 

@@ -15,14 +15,17 @@ Description: The Predictive Ecosystem Carbon Analyzer
     models, and to improve the efficacy of scientific
     investigation.
 Depends:
-    plyr,
     XML,
     ggplot2,
     randtoolbox,
     RCurl
 Imports:
     abind (>= 1.4.5),
+<<<<<<< HEAD
     coda (>= 0.18)
+=======
+    plyr (>= 1.8.4)
+>>>>>>> PecanProject/master
 Suggests:
     coda,
     MASS,
