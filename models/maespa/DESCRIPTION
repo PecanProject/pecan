@@ -20,7 +20,7 @@ Suggests:
     coda,
     PEcAn.data.atmosphere,
     udunits2,
-    testthat
+    testthat (>= 1.0.2)
 SystemRequirements: MAESPA ecosystem model
 OS_type: unix
 License: FreeBSD + file LICENSE

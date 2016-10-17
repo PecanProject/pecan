@@ -7,14 +7,6 @@
 get.ncvector(var, lati = lati, loni = loni, run.dates = run.dates, met.nc)
 }
 \arguments{
-\item{var}{}
-
-\item{lati}{}
-
-\item{loni}{}
-
-\item{run.dates}{}
-
 \item{met.nc}{netcdf file with CF variable names}
 }
 \value{
