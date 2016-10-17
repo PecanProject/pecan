@@ -47,8 +47,8 @@ db.query <- function(query, con = NULL, params = NULL) {
   data <- dbGetQuery(con, query)
   res <- dbGetException(con)
   if (res$errorNum != 0 || (res$errorMsg != "OK" && res$errorMsg != "")) {
-    logger.severe(paste("Error executing db query '", query, "' errorcode=", 
-                        res$errorNum, " message='", res$errorMsg, "'", sep = ""))
+    logger.severe(paste0("Error executing db query '", query, "' errorcode=", 
+                        res$errorNum, " message='", res$errorMsg, "'"))
   }
   .db.utils$queries <- .db.utils$queries + 1
   if (iopened == 1) {
