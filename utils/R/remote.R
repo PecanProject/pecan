@@ -8,9 +8,10 @@
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-# Remote utilities. Allows for the following functionality - execute system call
-# on remote machine - execute R call on remote machine, returns result - copy
-# files to/from remote machines
+# Remote utilities. Allows for the following functionality
+# - execute system call on remote machine
+# - execute R call on remote machine, returns result
+# - copy files to/from remote machines
 #-------------------------------------------------------------------------------
 
 #' Execute command remotely
