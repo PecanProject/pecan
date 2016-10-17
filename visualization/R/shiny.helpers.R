@@ -178,7 +178,7 @@ get_var_names <- function(bety, workflow_id, run_id, remove_pool = TRUE) {
         files <- list.files(outputfolder, "*.nc$", full.names = TRUE)
         for (file in files) {
           nc <- nc_open(file)
-          lapply(nc$var, function(x) { if (x$name != "") var_names[[x$longname]] <<- x$name) }
+          lapply(nc$var, function(x) { if (x$name != "") var_names[[x$longname]] <<- x$name })
           nc_close(nc)
         }
       }
