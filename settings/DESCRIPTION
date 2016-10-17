@@ -15,8 +15,9 @@ Description: Contains functions to read PEcAn settings files
 Depends:
     PEcAn.utils,
     PEcAn.DB,
-    lubridate,
-    XML
+    lubridate
+Imports:
+    XML (>= 3.98-1.4)
 Suggests:
     testthat
 RoxygenNote: 5.0.1

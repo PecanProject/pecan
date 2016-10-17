@@ -11,7 +11,8 @@ Depends:
     mvtnorm,
     tools
 Imports:
-    coda (>= 0.18)
+    coda (>= 0.18),
+    XML (>= 3.98-1.4)
 Suggests:
     testthat,
     PEcAn.DB,
