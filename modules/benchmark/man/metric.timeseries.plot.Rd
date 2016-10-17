@@ -4,7 +4,7 @@
 \alias{metric.timeseries.plot}
 \title{metric.timeseries.plot}
 \usage{
-metric.timeseries.plot(dat, var)
+metric.timeseries.plot(dat, var, filename = NA, draw.plot = FALSE)
 }
 \arguments{
 \item{dat}{dataframe}

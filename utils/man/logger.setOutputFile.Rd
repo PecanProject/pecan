@@ -14,7 +14,7 @@ The name of the file where the logging information should be written to.
 }
 \examples{
 \dontrun{
-logger.setOutputFile("pecan.log")
+logger.setOutputFile('pecan.log')
 }
 }
 \author{
