@@ -12,7 +12,8 @@
 ##' @param ensemble_member , r1i1p1 is the only ensemble member available for this dataset, CCSM4 uses r6i1p1 instead
 ##'
 ##' @author James Simkins
-download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, overwrite=FALSE, verbose=FALSE, model='IPSL-CM5A-LR', scenario='rcp85', ensemble_member='r1i1p1', ...){  
+download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, model='IPSL-CM5A-LR', scenario='rcp85', ensemble_member='r1i1p1', 
+                          overwrite=FALSE, verbose=FALSE, ...){  
   require(PEcAn.utils)
   require(lubridate)
   require(ncdf4)
@@ -20,30 +21,30 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   end_date <- as.POSIXlt(end_date, tz = "GMT")
   start_year <- year(start_date)
   end_year   <- year(end_date)
-  site_id = as.numeric(site_id)
-  model = paste0(model)
-  scenario = paste0(scenario)
-  ensemble_member = paste0(ensemble_member)
-  outfolder = paste0(outfolder,"_site_",paste0(site_id %/% 1000000000, "-", site_id %% 1000000000))
+  site_id <- as.numeric(site_id)
+  model <- paste0(model)
+  scenario <- paste0(scenario)
+  ensemble_member <- paste0(ensemble_member)
+  outfolder <- paste0(outfolder,"_site_",paste0(site_id %/% 1000000000, "-", site_id %% 1000000000))
   
   if (model == 'CCSM4'){
-    ensemble_member = 'r6i1p1'
+    ensemble_member <- 'r6i1p1'
   }
   
-  lat.in = as.numeric(lat.in)
-  lat = lat.in - 25.063077926635742
-  lat_MACA = round(lat*24)
-  lon.in = as.numeric(lon.in)
+  lat.in <- as.numeric(lat.in)
+  lat <- lat.in - 25.063077926635742
+  lat_MACA <- round(lat*24)
+  lon.in <- as.numeric(lon.in)
   if (lon.in < 0){
-    lon.in = 180 - lon.in}
-  lon = lon.in - 235.22784423828125
-  lon_MACA = round(lon*24)
+    lon.in <- 180 - lon.in}
+  lon <- lon.in - 235.22784423828125
+  lon_MACA <- round(lon*24)
   
 
-  dap_base ='http://thredds.northwestknowledge.net:8080/thredds/dodsC/MACAV2'
+  dap_base <-'http://thredds.northwestknowledge.net:8080/thredds/dodsC/MACAV2'
 
   ylist <- seq(start_year,end_year,by=1)
-  rows = length(ylist)
+  rows <- length(ylist)
   results <- data.frame(file=character(rows), host=character(rows),
                         mimetype=character(rows), formatname=character(rows),
                         startdate=character(rows), enddate=character(rows),
@@ -51,58 +52,69 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
                         stringsAsFactors = FALSE)
   
   
-  var = data.frame(DAP.name = c("tasmax","tasmin","rsds","uas","vas","huss","pr","none","none","none"), 
-                  long_DAP.name = c("air_temperature","air_temperature","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation","air_pressure", "surface_downwelling_longwave_flux_in_air","air_temp"),
-                  CF.name = c("air_temperature_max","air_temperature_min","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux","air_pressure", "surface_downwelling_longwave_flux_in_air","air_temperature"),
-                  units = c('Kelvin','Kelvin',"W/m2","m/s","m/s","g/g","kg/m2/s", "Pascal", "W/m2","Kelvin")
+  var <- data.frame(DAP.name <- c("tasmax","tasmin","rsds","uas","vas","huss","pr","none","none","none"), 
+                  long_DAP.name <- c("air_temperature","air_temperature","surface_downwelling_shortwave_flux_in_air",
+                                    "eastward_wind","northward_wind","specific_humidity","precipitation","air_pressure", 
+                                    "surface_downwelling_longwave_flux_in_air","air_temp"),
+                  CF.name <- c("air_temperature_max","air_temperature_min","surface_downwelling_shortwave_flux_in_air",
+                              "eastward_wind","northward_wind","specific_humidity","precipitation_flux","air_pressure", 
+                              "surface_downwelling_longwave_flux_in_air","air_temperature"),
+                  units <- c('Kelvin','Kelvin',"W/m2","m/s","m/s","g/g","kg/m2/s", "Pascal", "W/m2","Kelvin")
                       )
   
   
   for (i in 1:rows){
-    year = ylist[i]    
-    ntime = (1825)
+    year <- ylist[i]    
+    ntime <- (1825)
     
-    met_start = 2006
-    met_block = 5
-    url_year = met_start + floor((year-met_start)/met_block)*met_block
-    start_url = paste0(url_year)
-    end_url = paste0(url_year+met_block-1)
+    met_start <- 2006
+    met_block <- 5
+    url_year <- met_start + floor((year-met_start)/met_block)*met_block
+    start_url <- paste0(url_year)
+    end_url <- paste0(url_year+met_block-1)
     dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
     
-    loc.file = file.path(outfolder,paste("MACA",model,scenario,ensemble_member,year,"nc",sep="."))
+    loc.file <- file.path(outfolder,paste("MACA",model,scenario,ensemble_member,year,"nc",sep="."))
     
     ## Create dimensions
     lat <- ncdim_def(name='latitude', units='degree_north', vals=lat.in, create_dimvar=TRUE)
     lon <- ncdim_def(name='longitude', units='degree_east', vals=lon.in, create_dimvar=TRUE)
     time <- ncdim_def(name='time', units="sec", vals=(1:365)*86400, create_dimvar=TRUE, unlim=TRUE)
-    dim=list(lat,lon,time)
+    dim<-list(lat,lon,time)
     
-    var.list = list()
-    dat.list = list()
+    var.list <- list()
+    dat.list <- list()
     
     ## get data off OpenDAP
     for(j in 1:length(var$CF.name)){
-      dap_end = paste0('/',model,'/macav2metdata_',var$DAP.name[j],'_',model,'_',ensemble_member,'_',scenario,'_',start_url,'_',end_url,'_CONUS_daily.nc')
-      dap_file = paste0(dap_base,dap_end)
+      dap_end <- paste0('/',
+                        model,'/macav2metdata_',
+                        var$DAP.name[j],'_',
+                        model,'_',
+                        ensemble_member,'_',
+                        scenario,'_',
+                        start_url,'_',
+                        end_url,'_CONUS_daily.nc')
+      dap_file <- paste0(dap_base,dap_end)
       if(j < 8){
-      dap = nc_open(dap_file)
-      dat.list[[j]] = ncvar_get(dap,as.character(var$long_DAP.name[j]),c(lon_MACA,lat_MACA,1),c(1,1,ntime))
-      var.list[[j]] = ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=dim, missval=-9999.0, verbose=verbose)
+      dap <- nc_open(dap_file)
+      dat.list[[j]] <- ncvar_get(dap,as.character(var$long_DAP.name[j]),c(lon_MACA,lat_MACA,1),c(1,1,ntime))
+      var.list[[j]] <- ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=dim, missval=-9999.0, verbose=verbose)
       nc_close(dap)
       } else {
-        dat.list[[j]] = NA
-        var.list[[j]] = ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=dim, missval=-9999.0, verbose=verbose)}
+        dat.list[[j]] <- NA
+        var.list[[j]] <- ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=dim, missval=-9999.0, verbose=verbose)}
     }
     
-    dat.list = as.data.frame(dat.list)
-    colnames(dat.list) = c("air_temperature_max","air_temperature_min","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux","air_pressure", "surface_downwelling_longwave_flux_in_air","air_temperature")
+    dat.list <- as.data.frame(dat.list)
+    colnames(dat.list) <- c("air_temperature_max","air_temperature_min","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux","air_pressure", "surface_downwelling_longwave_flux_in_air","air_temperature")
     #for (n in 1:1825){
      # dat.list[n,"air_pressure"] = 1
       #dat.list[n,"surface_downwelling_longwave_flux_in_air"] = 1}
     #take average of temperature min and max
-    dat.list[["air_temperature"]] = (dat.list[["air_temperature_max"]]+dat.list[["air_temperature_min"]])/2
+    dat.list[["air_temperature"]] <- (dat.list[["air_temperature_max"]]+dat.list[["air_temperature_min"]])/2
     #convert mm precipitation to precipitation flux
-    dat.list[["precipitation_flux"]] = (dat.list[["precipitation_flux"]]/(24*3600))
+    dat.list[["precipitation_flux"]] <- (dat.list[["precipitation_flux"]]/(24*3600))
 
     
     #read in a 5 year file, but only storing 1 year at a time, so this selects the particular year of the 5 year span that you want
