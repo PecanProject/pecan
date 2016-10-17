@@ -355,9 +355,13 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
   
   # Query for existing dbfile record with same file_name, file_path, machine_id,
   # container_type, and container_id.
-  dbfile <- invisible(db.query(paste0("SELECT * FROM dbfiles WHERE ", "file_name='", 
-                                      basename(in.prefix), "' AND ", "file_path='", in.path, "' AND ", "machine_id='", 
-                                      hostid, "'"), con))
+  dbfile <- invisible(db.query(
+    paste0(
+      "SELECT * FROM dbfiles WHERE ",
+      "file_name='", basename(in.prefix), "' AND ", 
+      "file_path='", in.path, "' AND ", 
+      "machine_id='", hostid, "'"
+    ), con))
   
   if (nrow(dbfile) == 0) {
     # If no exsting record, insert one
@@ -420,7 +424,7 @@ dbfile.check <- function(type, id, con, hostname = fqdn()) {
     return(invisible(data.frame()))
   } else {
     return(invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", 
-                              type, "' AND container_id=", id, " AND machine_id=", hostid), 
+                                     type, "' AND container_id=", id, " AND machine_id=", hostid), 
                               con)))
   }
 } # dbfile.check
