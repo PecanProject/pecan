@@ -18,5 +18,5 @@ Depends:
     lubridate,
     XML
 Suggests:
-    testthat
+    testthat (>= 1.0.2)
 RoxygenNote: 5.0.1

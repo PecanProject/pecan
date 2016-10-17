@@ -20,7 +20,7 @@ Depends:
     PEcAn.DB
 Suggests:
     rjags,
-    testthat,
+    testthat (>= 1.0.2),
     PEcAn.priors
 SystemRequirements: JAGS
 License: FreeBSD + file LICENSE
