@@ -6,7 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------#
+
 ##' Query available trait data associated with a given pft and a list of traits
 ##' 
 ##' @name query.traits
@@ -25,35 +25,32 @@
 ##' trait.data <- query.traits(spstr, trvec)
 ##' }
 ##' @author David LeBauer, Carl Davidson, Shawn Serbin
-query.traits <- function(spstr, priors, con = NULL, update.check.only=FALSE){
-
-  if(is.null(con)){
+query.traits <- function(spstr, priors, con = NULL, update.check.only = FALSE) {
+  
+  if (is.null(con)) {
     con <- db.open(settings$database$bety)
   }
-  if(is.list(con)){
+  if (is.list(con)) {
     print("query.traits")
     print("WEB QUERY OF DATABASE NOT IMPLEMENTED")
     return(NULL)
   }
   
-  if(!spstr == "''"){
-    query <- paste("select distinct variables.name from traits join variables 
-                 on (traits.variable_id = variables.id) where specie_id in (", spstr,");", sep = "")
+  if (!spstr == "''") {
+    query <- paste0("select distinct variables.name from traits join variables 
+                 on (traits.variable_id = variables.id) where specie_id in (", 
+                   spstr, ");")
     traits <- db.query(query, con)$name
     traits <- unique(traits[traits %in% priors])
-  
+    
     ### Grab trait data
-    trait.data <- lapply(traits, function(trait) query.trait.data(trait, spstr, con=con, update.check.only=update.check.only))
+    trait.data <- lapply(traits, function(trait) {
+      query.trait.data(trait, spstr, con = con, update.check.only = update.check.only)
+    })
     names(trait.data) <- traits
   } else {
     trait.data <- list()
   }
   
   return(trait.data)
-}
-#==================================================================================================#
-
-
-####################################################################################################
-### EOF.  End of R script file.          		
-####################################################################################################
+} # query.traits
