@@ -31,19 +31,19 @@ utils: .install.utils
 	Rscript -e "devtools::install('utils')"
 	echo `date` > .install.utils
 
-db: .install.db utils
+db: utils .install.db
 
 .install.db: $(wildcard db/**/*)
 	Rscript -e "devtools::install('db')"
 	echo `date` > .install.db
 
-settings: .install.settings utils db
+settings: utils db .install.settings
 
 .install.settings: $(wildcard settings/**/*)
 	Rscript -e "devtools::install('settings')"
 	echo `date` > .install.settings
 
-visualization: .install.visualization db
+visualization: db .install.visualization
 
 .install.visualization: $(wildcard visualization/**/*)
 	Rscript -e "devtools::install('visualization')"
@@ -75,9 +75,10 @@ benchmark: .install.benchmark
 	Rscript -e "devtools::install('modules/benchmark')"
 	echo `date` > .install.benchmark
 
-data.atmosphere: .install.data.atmosphere utils
+data.atmosphere: utils .install.data.atmosphere
 
 .install.data.atmosphere: $(wildcard modules/data.atmosphere/**/*)
+	Rscript -e "test <- require('REddyProc'); if (!test) install.packages('REddyProc', repos = 'http://r-forge.r-project.org/')"
 	Rscript -e "devtools::install('modules/data.atmosphere')"
 	echo `date` > .install.data.atmosphere
 
@@ -87,7 +88,7 @@ data.hydrology: .install.data.hydrology
 	Rscript -e "devtools::install('modules/data.hydrology')"
 	echo `date` > .install.data.hydrology
 
-data.land: .install.data.land db utils
+data.land: db utils .install.data.land
 
 .install.data.land: $(wildcard modules/data.land/**/*)
 	Rscript -e "devtools::install('modules/data.land')"
@@ -111,7 +112,7 @@ emulator: .install.emulator
 	Rscript -e "devtools::install('modules/emulator')"
 	echo `date` > .install.emulator
 
-meta.analysis: .install.meta.analysis utils db
+meta.analysis: utils db .install.meta.analysis
 
 .install.meta.analysis: $(wildcard modules/meta.analysis/**/*)
 	Rscript -e "devtools::install('modules/meta.analysis')"
@@ -123,7 +124,7 @@ photosynthesis: .install.photosynthesis
 	Rscript -e "devtools::install('modules/photosynthesis')"
 	echo `date` > .install.photosynthesis
 
-priors: .install.priors utils
+priors: utils .install.priors
 
 .install.priors: $(wildcard modules/priors/**/*)
 	Rscript -e "devtools::install('modules/priors')"
@@ -135,7 +136,7 @@ rtm: .install.rtm
 	Rscript -e "devtools::install('modules/rtm')"
 	echo `date` > .install.rtm
 
-uncertainty: .install.uncertainty utils priors
+uncertainty: utils priors .install.uncertainty
 
 .install.uncertainty: $(wildcard modules/uncertainty/**/*)
 	Rscript -e "devtools::install('modules/uncertainty')"
