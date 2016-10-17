@@ -1,11 +1,12 @@
-#----------------------------------------------------------------------------
-## Copyright (c) 2012 University of Illinois, NCSA.
-## All rights reserved. This program and the accompanying materials
-## are made available under the terms of the 
-## University of Illinois/NCSA Open Source License
-## which accompanies this distribution, and is available at
-## http://opensource.ncsa.illinois.edu/license.html
-## #-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
+#-------------------------------------------------------------------------------
+
 ##' Create a SafeList object
 ##'
 ##' SafeList is a wrapper class for the normal R list. It should behave identically, except for 
@@ -14,7 +15,7 @@
 ##' The constructor works identical to list(...) unless:
 ##' 
 ##' 1) The only argument is a list, in which case the result is the same list, with its class
-##' attribute updated to include "SafeList", or
+##' attribute updated to include 'SafeList', or
 ##' 2) The only argument is a SafeList, in which case that argument is returned unchanged
 ##' 
 ##' @title Constrct SafeList Object
@@ -24,8 +25,8 @@
 ##' @author Ryan Kelly
 SafeList <- function(...) {
   result <- list(...)
-  if(length(result)==1) {
-    if(is(result[[1]], "SafeList")) {
+  if (length(result) == 1) {
+    if (is(result[[1]], "SafeList")) {
       return(result[[1]])
     } else if (is.list(result[[1]])) {
       result <- result[[1]]
@@ -33,18 +34,20 @@ SafeList <- function(...) {
   }
   class(result) <- c("SafeList", class(result))
   return(result)
-}
+} # SafeList
+
 
 ##' @export
 ##' @describeIn SafeList Coerce an object to SafeList. 
 as.SafeList <- function(x) {
   return(SafeList(x))
-}
+} # as.SafeList
+
 
 ##' @export
 is.SafeList <- function(x) {
   return(is(x, "SafeList"))
-}
+} # is.SafeList
 
 
 ##' Extract SafeList component by name
@@ -59,7 +62,5 @@ is.SafeList <- function(x) {
 ##' @export
 ##' @author Ryan Kelly
 "$.SafeList" <- function(x, name) {
-  return(x[[name, exact=TRUE]])
-}
-
-
+  return(x[[name, exact = TRUE]])
+} # "$.SafeList"
