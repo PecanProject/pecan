@@ -20,6 +20,7 @@ Depends:
     ggplot2,
     gridExtra
 Imports:
+    coda (>= 0.18),
     plyr (>= 1.8.4)
 Suggests:
     testthat
