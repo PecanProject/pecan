@@ -15,7 +15,7 @@ all: ${BASE_PACKAGES} ${MODELS} ${MODULES}
 
 #### DEPENDENCY MAPPING ####
 
-${MODELS}: utils data.atmosphere
+${MODELS}: ${BASE_PACKAGES} ${MODULES}
 
 ${BASE_PACKAGES} ${MODELS} ${MODULES}: .install.devtools
 
