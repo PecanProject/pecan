@@ -21,15 +21,12 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
   library(PEcAn.data.atmosphere)
   library(PEcAn.utils)
   library(ncdf4)
-  if (!require(Rpreles)) {
-    print("install Rpreles")
-    
-  }
+  library(Rpreles)
   library(udunits2)
   
   # Process start and end dates
-  start_date <- as.POSIXlt(start.date, tz = "GMT")
-  end_date <- as.POSIXlt(end.date, tz = "GMT")
+  start_date <- as.POSIXlt(start.date, tz = "UTC")
+  end_date <- as.POSIXlt(end.date, tz = "UTC")
   
   start_year <- year(start_date)
   end_year <- year(end_date)

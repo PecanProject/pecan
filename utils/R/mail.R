@@ -7,7 +7,6 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-#--------------------------------------------------------------------------------------------------#
 ##' Sends email. This assumes the program sendmail is installed. 
 ##'
 ##' @title Clear EBI-CLUSTER worker node local scratch directories of old PEcAn output
@@ -21,7 +20,7 @@
 ##' @export
 ##' @examples
 ##' \dontrun{
-##' sendmail("bob@@example.com", "joe@@example.com", "Hi", "This is R.")
+##' sendmail('bob@@example.com', 'joe@@example.com', 'Hi', 'This is R.')
 ##' }
 sendmail <- function(from, to, subject, body) {
   if (is.null(to)) {
@@ -30,18 +29,15 @@ sendmail <- function(from, to, subject, body) {
     if (is.null(from)) {
       from <- to
     }
-    sendmail <- "sendmail"
-    if (file.exists("/usr/sbin/sendmail")) {
-      sendmail <- "/usr/sbin/sendmail"
-    }
+    sendmail <- Sys.which("sendmail")
     mailfile <- tempfile("mail")
-    cat(paste0("From: ", from, "\n",
-               "Subject: ", subject, "\n",
-               "To: ", to, "\n",
-               "\n",
-               body), file=mailfile)
-    system2(sendmail, c("-f", paste0('"', from, '"'), paste0('"', to, '"'), "<", mailfile))
+    cat(paste0("From: ", from, "\n", 
+               "Subject: ", subject, "\n", 
+               "To: ", to, "\n", "\n", 
+               body), file = mailfile)
+    system2(sendmail, c("-f", paste0("\"", from, "\""), 
+                        paste0("\"", to, "\""), "<", mailfile))
     unlink(mailfile)
   }
-}
+} # sendmail
 

@@ -7,13 +7,15 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-.utils.logger <- new.env() 
+.utils.logger <- new.env()
 .utils.logger$filename <- NA
-.utils.logger$console  <- TRUE
-.utils.logger$stderr   <- TRUE
-.utils.logger$quit     <- FALSE
-.utils.logger$level    <- 0
-.utils.logger$width    <- ifelse(getOption("width")<10, getOption("width"), getOption("width")-5)
+.utils.logger$console <- TRUE
+.utils.logger$stderr <- TRUE
+.utils.logger$quit <- FALSE
+.utils.logger$level <- 0
+.utils.logger$width <- ifelse(getOption("width") < 10, 
+                              getOption("width"), 
+                              getOption("width") - 5)
 
 ##' Prints a debug message.
 ##' 
@@ -25,11 +27,12 @@
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' logger.debug("variable", 5)
+##' logger.debug('variable', 5)
 ##' }
 logger.debug <- function(msg, ...) {
-	logger.message("DEBUG", msg, ...)
-}
+  logger.message("DEBUG", msg, ...)
+} # logger.debug
+
 
 ##' Prints an informational message.
 ##' 
@@ -41,11 +44,12 @@ logger.debug <- function(msg, ...) {
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' logger.info("PEcAn version 1.2")
+##' logger.info('PEcAn version 1.2')
 ##' }
 logger.info <- function(msg, ...) {
-	logger.message("INFO", msg, ...)
-}
+  logger.message("INFO", msg, ...)
+} # logger.info
+
 
 ##' Prints a warning message.
 ##' 
@@ -57,11 +61,12 @@ logger.info <- function(msg, ...) {
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' logger.warn("detected NA values")
+##' logger.warn('detected NA values')
 ##' }
 logger.warn <- function(msg, ...) {
-	logger.message("WARN", msg, ...)
-}
+  logger.message("WARN", msg, ...)
+} # logger.warn
+
 
 ##' Prints an error message.
 ##' 
@@ -73,11 +78,12 @@ logger.warn <- function(msg, ...) {
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' logger.error("system did not converge")
+##' logger.error('system did not converge')
 ##' }
 logger.error <- function(msg, ...) {
-	logger.message("ERROR", msg, ...)
-}
+  logger.message("ERROR", msg, ...)
+} # logger.error
+
 
 ##' Prints an severe message and stops execution.
 ##' 
@@ -94,24 +100,25 @@ logger.error <- function(msg, ...) {
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' logger.severe("missing parameters")
+##' logger.severe('missing parameters')
 ##' }
 logger.severe <- function(msg, ...) {
-	logger.message("SEVERE", msg, ...)
+  logger.message("SEVERE", msg, ...)
+  
+  # run option
+  error <- getOption("error")
+  if (!is.null(error)) {
+    eval(error)
+  }
+  
+  # quit if not interactive, otherwise use stop
+  if (.utils.logger$quit) {
+    quit(save = "no", status = 1)
+  } else {
+    stop(paste(msg, ...))
+  }
+} # logger.severe
 
-	# run option
-	error <- getOption("error")
-	if (!is.null(error)) {
-		eval(error)
-	}
-
-	# quit if not interactive, otherwise use stop
-	if (.utils.logger$quit) {
-     	quit(save="no", status=1)
-    } else {
-		stop(paste(msg, ...))
-    }
-}
 
 ##' Prints a message at a certain log level.
 ##' 
@@ -125,39 +132,41 @@ logger.severe <- function(msg, ...) {
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' logger.message("DEBUG", "variable", 5)
+##' logger.message('DEBUG', 'variable', 5)
 ##' }
 logger.message <- function(level, msg, ...) {
-	if (logger.getLevelNumber(level) >= .utils.logger$level) {
-		dump.frames(dumpto="dump.log")
-		calls <- names(dump.log)
-	    func <- sub("\\(.*", "", tail(calls[-(which(substr(calls, 0, 3) == "log"))], 1))
-	    if (length(func) == 0) {
-	    	func <- "console"
-	    }
-                
-                stamp.text <- sprintf("%s %-6s [%s] :", Sys.time(), level, func)
-                long.msg <- paste(c(msg, ...), collapse=" ")
-                if(nchar(long.msg) > 20){
-                    new.msg <- paste("\n", strwrap(long.msg, width=.utils.logger$width, indent=2, exdent=2), collapse = " ")
-                } else {
-                    new.msg <- long.msg
-                }
-                text <- paste(stamp.text, new.msg, "\n")
+  if (logger.getLevelNumber(level) >= .utils.logger$level) {
+    dump.frames(dumpto = "dump.log")
+    calls <- names(dump.log)
+    func <- sub("\\(.*", "", tail(calls[-(which(substr(calls, 0, 3) == "log"))], 1))
+    if (length(func) == 0) {
+      func <- "console"
+    }
+    
+    stamp.text <- sprintf("%s %-6s [%s] :", Sys.time(), level, func)
+    long.msg <- paste(c(msg, ...), collapse = " ")
+    if (nchar(long.msg) > 20) {
+      new.msg <- paste("\n", strwrap(long.msg, width = .utils.logger$width, 
+                                     indent = 2, exdent = 2), collapse = " ")
+    } else {
+      new.msg <- long.msg
+    }
+    text <- paste(stamp.text, new.msg, "\n")
+    
+    if (.utils.logger$console) {
+      if (.utils.logger$stderr) {
+        cat(text, file = stderr())
+      } else {
+        cat(text, file = stdout())
+      }
+      
+    }
+    if (!is.na(.utils.logger$filename)) {
+      cat(text, file = .utils.logger$filename, append = TRUE)
+    }
+  }
+} # logger.message
 
-		if (.utils.logger$console) {
-			if (.utils.logger$stderr) {
-				cat(text, file=stderr())
-			} else {
-				cat(text, file=stdout())
-			}
-
-		}
-		if (!is.na(.utils.logger$filename)) {
-			cat(text, file=.utils.logger$filename, append=TRUE)
-		}
-	}
-}
 
 ##' Configure logging level.
 ##' 
@@ -169,11 +178,12 @@ logger.message <- function(level, msg, ...) {
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' logger.setLevel("DEBUG")
+##' logger.setLevel('DEBUG')
 ##' }
 logger.setLevel <- function(level) {
-	.utils.logger$level = logger.getLevelNumber(level)
-}
+  .utils.logger$level <- logger.getLevelNumber(level)
+} # logger.setLevel
+
 
 ##' Returns numeric value for string
 ##'
@@ -188,25 +198,26 @@ logger.setLevel <- function(level) {
 ##' @return level the level of the message
 ##' @author Rob Kooper
 logger.getLevelNumber <- function(level) {
-	if (toupper(level) == "ALL") {
-		return(0)
-	} else if (toupper(level) == "DEBUG") {
-		return(10)
-	} else if (toupper(level) == "INFO") {
-		return(20)
-	} else if (toupper(level) == "WARN") {
-		return(30)
-	} else if (toupper(level) == "ERROR") {
-		return(40)
-	} else if (toupper(level) == "SEVERE") {
-		return(40)
-	} else if (toupper(level) == "OFF") {
-		return(60)
-	} else {
-		logger.warn(level, " is not a valid value, setting level to INFO")
-		return(logger.getLevelNumber("INFO"))
-	}	
-}
+  if (toupper(level) == "ALL") {
+    return(0)
+  } else if (toupper(level) == "DEBUG") {
+    return(10)
+  } else if (toupper(level) == "INFO") {
+    return(20)
+  } else if (toupper(level) == "WARN") {
+    return(30)
+  } else if (toupper(level) == "ERROR") {
+    return(40)
+  } else if (toupper(level) == "SEVERE") {
+    return(40)
+  } else if (toupper(level) == "OFF") {
+    return(60)
+  } else {
+    logger.warn(level, " is not a valid value, setting level to INFO")
+    return(logger.getLevelNumber("INFO"))
+  }
+} # logger.getLevelNumber
+
 
 ##' Get configured logging level.
 ##' 
@@ -220,22 +231,23 @@ logger.getLevelNumber <- function(level) {
 ##' logger.getLevel()
 ##' }
 logger.getLevel <- function() {
-	if (.utils.logger$level < 10) {
-		return("ALL")
-	} else if (.utils.logger$level < 20) {
-		return("DEBUG")
-	} else if (.utils.logger$level < 30) {
-		return("INFO")
-	} else if (.utils.logger$level < 40) {
-		return("WARN")
-	} else if (.utils.logger$level < 50) {
-		return("ERROR")
-	} else if (.utils.logger$level < 60) {
-		return("SEVERE")
-	} else {
-		return("OFF")
-	}
-}
+  if (.utils.logger$level < 10) {
+    return("ALL")
+  } else if (.utils.logger$level < 20) {
+    return("DEBUG")
+  } else if (.utils.logger$level < 30) {
+    return("INFO")
+  } else if (.utils.logger$level < 40) {
+    return("WARN")
+  } else if (.utils.logger$level < 50) {
+    return("ERROR")
+  } else if (.utils.logger$level < 60) {
+    return("SEVERE")
+  } else {
+    return("OFF")
+  }
+} # logger.getLevel
+
 
 ##' Configure logging to console.
 ##' 
@@ -249,10 +261,11 @@ logger.getLevel <- function() {
 ##' \dontrun{
 ##' logger.setUseConsole(TRUE)
 ##' }
-logger.setUseConsole <- function(console, stderr=TRUE) {
-	.utils.logger$console <- console
-	.utils.logger$stderr <- stderr
-}
+logger.setUseConsole <- function(console, stderr = TRUE) {
+  .utils.logger$console <- console
+  .utils.logger$stderr <- stderr
+} # logger.setUseConsole
+
 
 ##' Configure logging output filename.
 ##' 
@@ -263,11 +276,12 @@ logger.setUseConsole <- function(console, stderr=TRUE) {
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
-##' logger.setOutputFile("pecan.log")
+##' logger.setOutputFile('pecan.log')
 ##' }
 logger.setOutputFile <- function(filename) {
-	.utils.logger$filename <- filename
-}
+  .utils.logger$filename <- filename
+} # logger.setOutputFile
+
 
 ##' Configure whether severe should quit.
 ##' 
@@ -283,8 +297,9 @@ logger.setOutputFile <- function(filename) {
 ##' logger.setQuitOnSevere(FALSE)
 ##' }
 logger.setQuitOnSevere <- function(severeQuits) {
-	.utils.logger$quit = severeQuits
-}
+  .utils.logger$quit <- severeQuits
+} # logger.setQuitOnSevere
+
 
 ##' Configure the number of chars per line
 ##' 
@@ -299,5 +314,5 @@ logger.setQuitOnSevere <- function(severeQuits) {
 ##' logger.setWidth(70)
 ##' }
 logger.setWidth <- function(width) {
-  .utils.logger$width = width
-}
+  .utils.logger$width <- width
+} # logger.setWidth
