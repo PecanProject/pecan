@@ -22,6 +22,8 @@ Suggests:
     testthat,
     RPostgreSQL,
     RNCEP
+Remotes:
+    github::ebimodeling/biocro
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes
