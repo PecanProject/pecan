@@ -14,16 +14,13 @@
 ##' \dontrun{
 ##' plot.prior.density(pr.dens('norm', 0, 1))
 ##' }
-
-plot.prior.density <- function(prior.density, base.plot = NULL, prior.color = 'black' ) {
-  if(is.null(base.plot)) base.plot <- create.base.plot()
-  new.plot <- base.plot +  geom_line(data = prior.density,
-                                     aes(x = x, y = y),
-                                     color = prior.color)
+plot.prior.density <- function(prior.density, base.plot = NULL, prior.color = "black") {
+  if (is.null(base.plot)) {
+    base.plot <- create.base.plot()
+  }
+  new.plot <- base.plot + geom_line(data = prior.density, aes(x = x, y = y), color = prior.color)
   return(new.plot)
-}
-
-##==================================================================================================#
+} # plot.prior.density
 
 
 ##--------------------------------------------------------------------------------------------------#
@@ -37,12 +34,13 @@ plot.prior.density <- function(prior.density, base.plot = NULL, prior.color = 'b
 ##' @export
 ##' @author David LeBauer
 plot.posterior.density <- function(posterior.density, base.plot = NULL) {
-  if(is.null(base.plot)) base.plot <- create.base.plot()
-  new.plot <- base.plot +  geom_line(data = posterior.density,
-                                     aes(x = x, y = y))
-  return(new.plot)  
-}
-##==================================================================================================#
+  if (is.null(base.plot)) {
+    base.plot <- create.base.plot()
+  }
+  new.plot <- base.plot + geom_line(data = posterior.density, aes(x = x, y = y))
+  return(new.plot)
+} # plot.posterior.density
+
 
 ##--------------------------------------------------------------------------------------------------#
 ##' Plot prior density and data
@@ -55,53 +53,48 @@ plot.posterior.density <- function(posterior.density, base.plot = NULL) {
 ##' @param xlim limits for x axis
 ##' @author David LeBauer
 ##' @return plot / grob of prior distribution with data used to inform the distribution 
-priorfig <- function(priordata = NA, priordensity = NA,
-                     trait = '', xlim = 'auto', fontsize = 18){
-  if(is.data.frame(priordata)){
-    colnames(priordata) <- 'x'
+priorfig <- function(priordata = NA, priordensity = NA, trait = "", xlim = "auto", fontsize = 18) {
+  if (is.data.frame(priordata)) {
+    colnames(priordata) <- "x"
   }
   
-  if(isTRUE(xlim == 'auto')) {
+  if (isTRUE(xlim == "auto")) {
     x.breaks <- pretty(c(signif(priordensity$x, 2)), 4)
-    xlim <- range(x.breaks)
+    xlim     <- range(x.breaks)
   } else {
     x.breaks <- pretty(signif(xlim, 2), 4)
-    xlim <- range(c(x.breaks, xlim))
+    xlim     <- range(c(x.breaks, xlim))
   }
   
   priorfigure <- ggplot() + theme_bw() + 
-    scale_x_continuous(limits = xlim, breaks = x.breaks, name = trait.lookup(trait)$units) +
-    scale_y_continuous(breaks = NULL) +
-    labs(title = trait.lookup(trait)$figid) +
-    theme(panel.grid.major = element_blank(),    
-         panel.grid.minor = element_blank(),
-         axis.text.y = element_blank(),
-         axis.text.x = element_text(size= fontsize),
-         axis.title.y = element_blank(), ## hide y axis label
-         axis.title.x = element_text(size = fontsize * 0.9), ## hide y axis label
-         plot.title = element_text(size = fontsize*1.1)
-    ) 
+    scale_x_continuous(limits = xlim, breaks = x.breaks, name = trait.lookup(trait)$units) + 
+    scale_y_continuous(breaks = NULL) + 
+    labs(title = trait.lookup(trait)$figid) + 
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text.y = element_blank(),    ## hide y axis label
+          axis.text.x = element_text(size = fontsize),
+          axis.title.y = element_blank(),   ## hide y axis label
+          axis.title.x = element_text(size = fontsize * 0.9), 
+          plot.title = element_text(size = fontsize * 1.1))
   
-  
-  if(is.data.frame(priordata)){
-    priordata <- subset(priordata, subset = !is.na(x))
-    dx <- with(priordata,
-               min(abs(diff(x)[diff(x)!=0])))
-    priordata <- transform(priordata,
-                           ## add jitter to separate equal values 
-                           x = x + runif(length(x), -dx/2, dx/2))
-    rug <- geom_rug(data = priordata, aes(x))
+  if (is.data.frame(priordata)) {
+    priordata   <- subset(priordata, subset = !is.na(x))
+    dx          <- with(priordata, min(abs(diff(x)[diff(x) != 0])))
+    ## add jitter to separate equal values 
+    priordata   <- transform(priordata, x = x + runif(length(x), -dx / 2, dx / 2))
+    rug         <- geom_rug(data = priordata, aes(x))
     priorfigure <- priorfigure + rug
-  } 
-  if(is.data.frame(priordensity[1])){
-    dens.line <- geom_line(data=priordensity, aes(x, y))
-    qpts <- get.quantiles.from.density(priordensity)
-    dens.ci <- geom_point(data = qpts, aes(x,y))
+  }  
+  if (is.data.frame(priordensity[1])) {
+    dens.line   <- geom_line(data = priordensity, aes(x, y))
+    qpts        <- get.quantiles.from.density(priordensity)
+    dens.ci     <- geom_point(data = qpts, aes(x, y))
     priorfigure <- priorfigure + dens.line + dens.ci
   }
   return(priorfigure)
-} 
-##==================================================================================================#
+} # priorfig
+
 
 ##--------------------------------------------------------------------------------------------------#
 ##' Plot trait density and data
@@ -134,6 +127,7 @@ plot.trait <- function(trait,
                        x.lim = NULL,
                        y.lim = NULL,
                        logx = FALSE) {
+  
   ## Determine plot components
   plot.posterior <- !is.null(posterior.sample)
   plot.prior     <- !is.null(prior)
@@ -144,69 +138,62 @@ plot.trait <- function(trait,
   
   if(plot.data)  trait.df <- jagify(trait.df)
   
-  if(plot.prior){
-    prior.color = ifelse(plot.posterior, 'grey', 'black')
-    prior.density   <- create.density.df(distribution = prior)
+  if (plot.prior) {
+    prior.color   <- ifelse(plot.posterior, "grey", "black")
+    prior.density <- create.density.df(distribution = prior)
     prior.density <- prior.density[prior.density$x > 0, ]
   } else {
-    prior.density <- data.frame(x=NA, y=NA)
+    prior.density <- data.frame(x = NA, y = NA)
   }
-  if(plot.posterior){
+  if (plot.posterior) {
     posterior.density <- create.density.df(samps = posterior.sample)
     posterior.density <- posterior.density[posterior.density$x > 0, ]
-  } else { 
-    posterior.density <- data.frame(x=NA, y=NA)
+  } else {
+    posterior.density <- data.frame(x = NA, y = NA)
   }
   
-  if(is.null(x.lim)){
-    if(!is.null(trait.df)){
+  if (is.null(x.lim)) {
+    if (!is.null(trait.df)) {
       data.range <- max(c(trait.df$Y, trait.df$Y + trait.df$se), na.rm = TRUE)
     } else {
       data.range <- NA
     }
     x.lim <- range(c(prior.density$x, data.range), na.rm = TRUE)
   }
-  if(is.null(y.lim)){
+  if (is.null(y.lim)) {
     y.lim <- range(posterior.density$y, prior.density$y, na.rm = TRUE)
   }
   
-  x.ticks        <<- pretty(c(0, x.lim[2]))
+  x.ticks <<- pretty(c(0, x.lim[2]))
   
-  base.plot <- create.base.plot() + theme_bw() 
-  if(plot.prior){
-    base.plot <- plot.prior.density(prior.density,
-                                    base.plot = base.plot,
-                                    prior.color = prior.color) 
+  base.plot <- create.base.plot() + theme_bw()
+  if (plot.prior) {
+    base.plot <- plot.prior.density(prior.density, base.plot = base.plot, prior.color = prior.color)
   }
-  if(plot.posterior){
-    base.plot <- plot.posterior.density(posterior.density,
-                                        base.plot = base.plot)
+  if (plot.posterior) {
+    base.plot <- plot.posterior.density(posterior.density, base.plot = base.plot)
   }
-  if(plot.data){
-    base.plot <- plot.data(trait.df,
-                           base.plot = base.plot,
-                           ymax = y.lim[2])
+  if (plot.data) {
+    base.plot <- plot.data(trait.df, base.plot = base.plot, ymax = y.lim[2])
   }
   
-  trait.plot <- base.plot +
+  trait.plot <- base.plot + 
     geom_segment(aes(x = min(x.ticks), xend = last(x.ticks), y = 0, yend = 0)) + 
-    scale_x_continuous(limits = range(x.ticks), breaks = x.ticks, 
-                       name = trait.lookup(trait)$units) +
-    labs(title = trait.lookup(trait)$figid) +
-    theme(axis.text.x = element_text(size = fontsize$axis),
-          axis.text.y = element_blank(),
-          axis.title.x = element_text(size = fontsize$axis),
-          axis.title.y = element_blank(),
-          axis.ticks.y = element_blank(),
-          axis.line.y = element_blank(),
-          legend.position = "none",
-          plot.title = element_text(size = fontsize$title),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.border = element_blank()) 
+    scale_x_continuous(limits = range(x.ticks), breaks = x.ticks, name = trait.lookup(trait)$units) + 
+    labs(title = trait.lookup(trait)$figid) + 
+    theme(axis.text.x = element_text(size = fontsize$axis), 
+          axis.text.y = element_blank(), 
+          axis.title.x = element_text(size = fontsize$axis), 
+          axis.title.y = element_blank(), 
+          axis.ticks.y = element_blank(), 
+          axis.line.y = element_blank(), 
+          legend.position = "none", 
+          plot.title = element_text(size = fontsize$title), 
+          panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(), 
+          panel.border = element_blank())
   return(trait.plot)
-}
-##==================================================================================================#
+} # plot.trait
 
 
 ##--------------------------------------------------------------------------------------------------#
@@ -218,24 +205,21 @@ plot.trait <- function(trait,
 ##' @param outdir directory in which to generate figure as pdf 
 ##' @author David LeBauer
 ##' @return outputs plots in outdir/sensitivity.analysis.pdf file 
-plot.densities <- function(density.plot.inputs, outdir, ...){
-  trait.samples          <- density.plot.inputs$trait.samples
-  trait.df               <- density.plot.inputs$trait.df
-  prior.trait.samples    <- density.plot.inputs$trait.df
+plot.densities <- function(density.plot.inputs, outdir, ...) {
+  trait.samples       <- density.plot.inputs$trait.samples
+  trait.df            <- density.plot.inputs$trait.df
+  prior.trait.samples <- density.plot.inputs$trait.df
   
   traits <- names(trait.samples)
-  pdf(paste(outdir, 'trait.densities.pdf', sep=''), height = 12, width = 20)
+  pdf(paste0(outdir, "trait.densities.pdf"), height = 12, width = 20)
   
-  for(trait in traits) {
-    density.plot <- plot.density(trait.sample =  trait.samples[,trait],
-                                 trait.df     = trait.df[[trait]],
-                                 ...)
+  for (trait in traits) {
+    density.plot <- plot.density(trait.sample = trait.samples[, trait], 
+                                 trait.df = trait.df[[trait]], ...)
     print(sensitivity.plot)
   }
   dev.off()
-}
-##==================================================================================================#
-
+} # plot.densities
 
 
 ##--------------------------------------------------------------------------------------------------#
@@ -252,12 +236,11 @@ plot.densities <- function(density.plot.inputs, outdir, ...){
 ##' get.quantiles.from.density(prior.df)
 ##' samp.df <- create.density.df(samps = rnorm(100))
 ##' get.quantiles.from.density(samp.df)
-get.quantiles.from.density <- function(density.df, quantiles = c(0.025, 0.5, 0.975)){
-  colnames(density.df) <- c('prior.x', 'dens.x')
-  density.df$prob.x <- density.df$dens.x/sum(density.df$dens.x)
-  qi <- sapply(quantiles, function(x) which.min(abs(cumsum(density.df$prob.x)- x)))
-  qs <- density.df[qi,c('prior.x', 'dens.x')]
-  colnames(qs) <- c('x', 'y')
+get.quantiles.from.density <- function(density.df, quantiles = c(0.025, 0.5, 0.975)) {
+  colnames(density.df) <- c("prior.x", "dens.x")
+  density.df$prob.x    <- density.df$dens.x / sum(density.df$dens.x)
+  qi <- sapply(quantiles, function(x) which.min(abs(cumsum(density.df$prob.x) - x)))
+  qs <- density.df[qi, c("prior.x", "dens.x")]
+  colnames(qs) <- c("x", "y")
   return(qs)
-}
-##==================================================================================================#
+} # get.quantiles.from.density
