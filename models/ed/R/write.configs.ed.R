@@ -247,33 +247,6 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
 } # write.config.ED2
 # ==================================================================================================#
 
-
-##-------------------------------------------------------------------------------------------------#
-##'
-##' @name write.run.ED
-##' @title Function to generate ED2.2 model run script files
-##' @export
-##' @author David LeBauer, Shawn Serbin, Rob Kooper, Mike Dietze
-##' @import PEcAn.utils
-##-------------------------------------------------------------------------------------------------#
-write.run.ED <- function(settings) {
-  scratch <- paste0(Sys.getenv("USER"), "/", settings$run$scratch)
-  run.script.template <- system.file("run.template.ED2", package = "PEcAn.ED2")
-  run.text <- scan(file = run.script.template, what = "character", sep = "@", quote = NULL, quiet = TRUE)
-  run.text <- gsub("TMP", paste("/scratch/", scratch, sep = ""), run.text)
-  run.text <- gsub("BINARY", settings$model$binary, run.text)
-  run.text <- gsub("OUTDIR", settings$host$outdir, run.text)
-  runfile <- paste0(settings$outdir, "run")
-  writeLines(run.text, con = runfile)
-  if (settings$host$name == "localhost") {
-    system(paste("cp ", runfile, settings$host$rundir))
-  } else {
-    system(paste0("rsync -outi ", runfile, " ", settings$host$name, ":", settings$host$rundir))
-  }
-} # write.run.ED
-# ==================================================================================================#
-
-
 ##-------------------------------------------------------------------------------------------------#
 ##' Clear out old config and ED model run files.
 ##'
