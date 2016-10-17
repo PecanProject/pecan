@@ -179,10 +179,10 @@ for(s in leaf.list){
 	gs = dat$Cond[sel2]					## define stomatal conductance
 
 	## convert output chains to mcmc objects
-	M <- mcmc(BBmcmc[[s]]$sims.list$m)
-	G0 <- mcmc(BBmcmc[[s]]$sims.list$g0)
-	T <- mcmc(BBmcmc[[s]]$sims.list$tau.BB)
-	n <- length(BBmcmc[[s]]$sims.list$g0)
+	M <- coda::mcmc(BBmcmc[[s]]$sims.list$m)
+	G0 <- coda::mcmc(BBmcmc[[s]]$sims.list$g0)
+	T <- coda::mcmc(BBmcmc[[s]]$sims.list$tau.BB)
+	n <- coda::length(BBmcmc[[s]]$sims.list$g0)
 	
 	## autocorrelation plots of each leaf
 	pdf(paste("Leaf_",s,"_BB_m_Autocorr.pdf",sep=""))

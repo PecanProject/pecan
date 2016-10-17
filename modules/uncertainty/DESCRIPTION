@@ -19,6 +19,8 @@ Depends:
     PEcAn.priors,
     ggplot2,
     gridExtra
+Imports:
+    coda (>= 0.18)
 Suggests:
     testthat
 License: FreeBSD + file LICENSE

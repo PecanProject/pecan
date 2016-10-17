@@ -46,7 +46,6 @@
 # 'prediction',single.tree=TRUE)
 allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, use = "Bg", 
                           interval = "prediction", single.tree = FALSE) {
-  library(coda)
   library(tools)
   
   if (class(object) == "character") {

@@ -6,7 +6,6 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
   
   # source('code/R/approx.posterior.R') source('code/R/utils.R')
   library(MASS)
-  library(coda)
   
   # prior.dir <- './pecan/Toolik/growth/' prior.file<-'/post.distns.Rdata' in.dir <-
   # './pecan/Toolik/growth/' out.dir <- './pecan/Toolik/growth/' next.run.dir <-

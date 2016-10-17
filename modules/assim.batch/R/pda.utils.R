@@ -13,8 +13,6 @@ assim.batch <- function(settings) {
     return(settings)
   }
   
-  library(coda)
-  
   if (is.null(settings$assim.batch$method)) {
     settings$assim.batch$method <- "bruteforce.bs"
   }
