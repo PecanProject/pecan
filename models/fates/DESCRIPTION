@@ -15,7 +15,7 @@ Depends:
     PEcAn.utils,
     ncdf4
 Suggests:
-    testthat,
+    testthat (>= 1.0.2),
     lubridate
 License: FreeBSD + file LICENSE
 Copyright: Authors

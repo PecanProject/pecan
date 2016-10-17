@@ -7,7 +7,8 @@ Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: 
 Depends: dplR
-Suggests: testthat
+Suggests:
+    testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
