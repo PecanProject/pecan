@@ -10,8 +10,9 @@ Description: This package contains functions for performing forward runs and
     using maximum likelihood, or more complex hierarchical Bayesian methods.
     Underlying numerical analyses are optimized for speed using Fortran code.
 Depends:
-    MASS,
-    coda
+    MASS
+Imports:
+    coda (>= 0.18)
 Suggests:
     minpack.lm,
     mclust,

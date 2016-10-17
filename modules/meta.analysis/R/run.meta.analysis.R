@@ -8,7 +8,6 @@
 #-------------------------------------------------------------------------------
 
 run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.2, dbfiles, dbcon) {
-  library(coda)
   # check to see if get.trait was executed
   if (!file.exists(file.path(pft$outdir, "trait.data.Rdata")) || 
       !file.exists(file.path(pft$outdir, "prior.distns.Rdata"))) {
