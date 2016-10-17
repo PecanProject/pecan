@@ -122,24 +122,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
   }
   
   result <- list()
-<<<<<<< HEAD
 
-  if(!nofiles){
-    for(ncfile in ncfiles) {
-        nc <- nc_open(ncfile)
-        for(v in variables){
-          if(v %in% c(names(nc$var),names(nc$dim))){
-            newresult <- ncvar_get(nc, v)
-#  Dropping attempt to provide more sensible units because of graph unit errors, issue #792            
-#            if(v %in% c(cflux, wflux)){
-#              newresult <- ud.convert(newresult, "kg m-2 s-1", "kg ha-1 yr-1")
-#            }
-            result[[v]] <- abind::abind(result[[v]], newresult)
-          } else if (!(v %in% names(nc$var))){
-            logger.warn(paste(v, "missing in", ncfile))
-          }
-=======
-  
   if (!nofiles) {
     for (ncfile in ncfiles) {
       nc <- nc_open(ncfile)
@@ -152,7 +135,6 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
           result[[v]] <- abind(result[[v]], newresult)
         } else if (!(v %in% names(nc$var))) {
           logger.warn(paste(v, "missing in", ncfile))
->>>>>>> PecanProject/master
         }
       }
       nc_close(nc)
