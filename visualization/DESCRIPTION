@@ -32,6 +32,8 @@ Depends:
     udunits2,
     lubridate,
     dplyr
+Imports:
+    plyr (>= 1.8.4)
 Suggests:
     testthat,
     png,
