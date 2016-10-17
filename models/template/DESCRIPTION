@@ -9,7 +9,7 @@ Description: This module provides functions to link the (ModelName) to PEcAn.
 Depends:
     PEcAn.utils
 Suggests:
-    testthat
+    testthat (>= 1.0.2)
 SystemRequirements: ModelName
 OS_type: unix
 License: FreeBSD + file LICENSE

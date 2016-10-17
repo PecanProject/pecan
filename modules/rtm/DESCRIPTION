@@ -17,7 +17,7 @@ Suggests:
     mclust,
     PEcAn.utils,
     PEcAn.ED2,
-    testthat,
+    testthat (>= 1.0.2),
     knitr
 OS_type: unix
 License: FreeBSD + file LICENSE

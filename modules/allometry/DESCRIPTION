@@ -12,7 +12,7 @@ Depends:
     mvtnorm,
     tools
 Suggests:
-    testthat,
+    testthat (>= 1.0.2)
     PEcAn.DB,
     RMySQL
 License: FreeBSD + file LICENSE

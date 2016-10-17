@@ -1,6 +1,5 @@
 #' Tests of radiative transfer models
 library(PEcAnRTM)
-library(testthat)
 context("SAIL models")
 
 p <- defparam("pro4sail")
