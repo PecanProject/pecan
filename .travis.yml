@@ -21,14 +21,14 @@ addons:
       - jags
       - libudunits2-dev
       - python-dev 
-      #- postgresql-9.4-postgis-2.1
-      #- postgresql-9.4-postgis-2.1-scripts
-      #- netcdf-bin
-      #- bc
-      #- curl
-      #- udunits-bin 
-      #- libgmp-dev
-      #- libproj-dev
+      - postgresql-9.4-postgis-2.1
+      - postgresql-9.4-postgis-2.1-scripts
+      - netcdf-bin
+      - bc
+      - curl
+      - udunits-bin 
+      - libgmp-dev
+      - libproj-dev
       # need to compile documentation
       # BROKEN MISSING FONT
       #- texinfo
