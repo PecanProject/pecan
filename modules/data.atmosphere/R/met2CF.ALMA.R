@@ -93,6 +93,7 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
           logger.severe("missing file", v, stub)
         }
         old.file <- fnames[sel]
+<<<<<<< HEAD
         nc1      <- nc_open(old.file, write = FALSE)
         if (length(met[[v]]) <= 1) {
           met[[v]] <- ncvar_get(nc = nc1, varid = v)
@@ -106,6 +107,21 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
           } else {
             tmp <- nc1$dim[["time"]]$vals
             met[["time"]] <- abind(met[["time"]], tmp)
+=======
+        nc1 <- nc_open(old.file,write=FALSE)
+        if(length(met[[v]])<=1){
+          met[[v]] = ncvar_get(nc=nc1, varid=v)
+        } else{
+          tmp = ncvar_get(nc=nc1, varid=v)
+          met[[v]] = abind::abind(met[[v]],tmp)
+        }
+        if(v == by.folder[1]){
+          if(length(met[['time']])<=1){
+            met[['time']] = nc1$dim[['time']]$vals
+          }else{
+            tmp = nc1$dim[['time']]$vals
+            met[['time']] = abind::abind(met[['time']],tmp)
+>>>>>>> PecanProject/master
           }
         }
         nc_close(nc1)
@@ -279,6 +295,7 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
         for (m in 1:12) {
           sel      <- grep(paste0(year, "_", formatC(m, width = 2, format = "d", flag = "0")), fnames)
           old.file <- fnames[sel]
+<<<<<<< HEAD
           nc1      <- nc_open(old.file, write = FALSE)
           if (length(met[[v]]) <= 1) {
             met[[v]] <- ncvar_get(nc = nc1, varid = v)
@@ -292,6 +309,21 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
             } else {
               tmp           <- nc1$dim[["time"]]$vals
               met[["time"]] <- abind(met[["time"]], tmp)
+=======
+          nc1 <- nc_open(old.file,write=FALSE)
+          if(length(met[[v]])<=1){
+            met[[v]] = ncvar_get(nc=nc1, varid=v)
+          } else{
+            tmp = ncvar_get(nc=nc1, varid=v)
+            met[[v]] = abind::abind(met[[v]],tmp)
+          }
+          if(v == by.folder[1]){
+            if(length(met[['time']])<=1){
+              met[['time']] = nc1$dim[['time']]$vals
+            }else{
+              tmp = nc1$dim[['time']]$vals
+              met[['time']] = abind::abind(met[['time']],tmp)
+>>>>>>> PecanProject/master
             }
           }
           nc_close(nc1)
