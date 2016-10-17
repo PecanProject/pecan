@@ -9,7 +9,10 @@ sudo: false
 install:
   - make
 
-cache: packages
+cache: 
+  - directories:
+    - $HOME/R/Library
+  - packages
 
 addons:
   #postgresql: 9.4
