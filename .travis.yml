@@ -6,10 +6,8 @@ language: r
 # use containers
 sudo: false
 
-# R packages
-r_packages: devtools
-
 install:
+  - Rscript -e "install.packages('devtools')"
   - make -j4
 
 ## install R: use r-packages-precise (https://cran.r-project.org/bin/linux/ubuntu/precise/) 
