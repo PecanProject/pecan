@@ -21,6 +21,7 @@ Depends:
     RCurl
 Imports:
     abind (>= 1.4.5),
+    coda (>= 0.18),
     plyr (>= 1.8.4)
 Suggests:
     coda,
