@@ -7,8 +7,7 @@ language: r
 sudo: false
 
 install:
-  - Rscript -e "install.packages('devtools')"
-  - make -j4
+  - make
 
 ## install R: use r-packages-precise (https://cran.r-project.org/bin/linux/ubuntu/precise/) 
 ## as source which is white listed (https://github.com/travis-ci/apt-source-whitelist/)

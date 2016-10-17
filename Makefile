@@ -17,6 +17,12 @@ all: ${BASE_PACKAGES} ${MODELS} ${MODULES}
 
 ${MODELS}: utils data.atmosphere
 
+${BASE_PACKAGES} ${MODELS} ${MODULES}: .install.devtools
+
+.install.devtools:
+	Rscript -e "req <- require('devtools'); if(!req) install.packages('devtools')"
+	echo `date` > .install.devtools
+
 #### BASE PACKAGES ####
 
 utils: .install.utils
