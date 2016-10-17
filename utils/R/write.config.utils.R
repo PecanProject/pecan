@@ -6,11 +6,10 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
+
 #--------------------------------------------------------------------------------------------------#
 ### TODO: Generalize this code for all ecosystem models (e.g. ED2.2, SiPNET, etc).
-
 #--------------------------------------------------------------------------------------------------#
-
 
 #--------------------------------------------------------------------------------------------------#
 ##' Returns a vector of quantiles specified by a given <quantiles> xml tag
@@ -21,23 +20,23 @@
 ##' @export
 ##' @author David LeBauer
 get.quantiles <- function(quantiles.tag) {
-  quantiles<-vector()
+  quantiles <- vector()
   if (!is.null(quantiles.tag$quantile)) {
-    quantiles <- as.numeric(quantiles.tag[names(quantiles.tag)=='quantile'])
+    quantiles <- as.numeric(quantiles.tag[names(quantiles.tag) == "quantile"])
   }
-  if (!is.null(quantiles.tag$sigma)){
-    sigmas <- as.numeric(quantiles.tag[names(quantiles.tag)=='sigma'])
+  if (!is.null(quantiles.tag$sigma)) {
+    sigmas <- as.numeric(quantiles.tag[names(quantiles.tag) == "sigma"])
     quantiles <- append(quantiles, 1 - pnorm(sigmas))
   }
   if (length(quantiles) == 0) {
-    quantiles <- 1-pnorm(-3:3) #default
+    quantiles <- 1 - pnorm(-3:3)  #default
   }
   if (!0.5 %in% quantiles) {
     quantiles <- append(quantiles, 0.5)
   }
   return(sort(quantiles))
-}
-##==================================================================================================#
+} # get.quantiles
+
 
 ##' get sensitivity samples as a list
 ##'
@@ -48,16 +47,15 @@ get.quantiles <- function(quantiles.tag) {
 ##' sensitivity analysis
 ##' @export
 ##' @return sa.sample.list
-get.sa.sample.list <- function(pft, env, quantiles){
+get.sa.sample.list <- function(pft, env, quantiles) {
   sa.sample.list <- list()
-  for(i in 1:length(pft)){
-    sa.sample.list[[i]] = get.sa.samples(pft[[i]], quantiles)
+  for (i in seq_along(pft)) {
+    sa.sample.list[[i]] <- get.sa.samples(pft[[i]], quantiles)
   }
-  sa.sample.list[[length(pft)+1]] <- get.sa.samples(env, quantiles)
+  sa.sample.list[[length(pft) + 1]] <- get.sa.samples(env, quantiles)
   names(sa.sample.list) <- c(names(pft), "env")
   return(sa.sample.list)
-}
-#==================================================================================================#
+} # get.sa.sample.list
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -73,19 +71,16 @@ get.sa.sample.list <- function(pft, env, quantiles){
 ##' @return a list of lists representing quantile values of trait distributions
 ##' @export
 ##' @author David LeBauer
-get.sa.samples <- function(samples, quantiles){
+get.sa.samples <- function(samples, quantiles) {
   sa.samples <- data.frame()
-  for(trait in names(samples)){
-    for(quantile in quantiles){
-      sa.samples[as.character(round(quantile*100,3)), trait] <- quantile(samples[[trait]], quantile)
+  for (trait in names(samples)) {
+    for (quantile in quantiles) {
+      sa.samples[as.character(round(quantile * 100, 3)), trait] <- 
+        quantile(samples[[trait]], quantile)
     }
   }
   return(sa.samples)
-}
-#==================================================================================================#
-
-
-#--------------------------------------------------------------------------------------------------#
+} # get.sa.samples
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -95,12 +90,12 @@ get.sa.samples <- function(samples, quantiles){
 ##' @param cnt 
 ##' @return updated value of cnt to global environment
 ##' @export
-counter <- function(cnt){
-  cnt = cnt + 1
-  #return(cnt)
-  assign("cnt",cnt,.GlobalEnv) # Assign count to the environment
-}
-#==================================================================================================#
+counter <- function(cnt) {
+  cnt <- cnt + 1
+  # return(cnt)
+  assign("cnt", cnt, .GlobalEnv)  # Assign count to the environment
+} # counter
+
 
 ##' checks that met2model function exists
 ##'
@@ -109,11 +104,7 @@ counter <- function(cnt){
 ##' @title met2model.exists
 ##' @param model model package name
 ##' @return logical
-met2model.exists <- function(model){
+met2model.exists <- function(model) {
   load.modelpkg(model)
-  exists(paste0("met2model.",model))  
-}
-
-####################################################################################################
-### EOF.  End of R script file.          		
-####################################################################################################
+  exists(paste0("met2model.", model))
+} # met2model.exists
