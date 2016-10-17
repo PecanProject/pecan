@@ -11,34 +11,32 @@ install:
 
 cache: packages
 
-## install R: use r-packages-precise (https://cran.r-project.org/bin/linux/ubuntu/precise/) 
-## as source which is white listed (https://github.com/travis-ci/apt-source-whitelist/)
-#addons:
+addons:
   #postgresql: 9.4
-  #apt:
-    #packages:
+  apt:
+    packages:
+      - libnetcdf-dev
+      - liblapack-dev
+      - libcurl4-gnutls-dev
+      - jags
+      - libudunits2-dev
+      - python-dev 
       #- postgresql-9.4-postgis-2.1
       #- postgresql-9.4-postgis-2.1-scripts
-      #- jags
-      #- liblapack-dev
-      #- libnetcdf-dev
       #- netcdf-bin
       #- bc
-      #- libcurl4-gnutls-dev
       #- curl
       #- udunits-bin 
-      #- libudunits2-dev
       #- libgmp-dev
-      #- python-dev 
       #- libproj-dev
-      ## need to compile documentation
-      ## BROKEN MISSING FONT
-      ##- texinfo
-      ##- texlive-latex-base
-      ##- texlive-latex-recommended
-      ##- texlive-latex-extra
-      ##- texlive-fonts-recommended
-      ##- texlive-fonts-extra
+      # need to compile documentation
+      # BROKEN MISSING FONT
+      #- texinfo
+      #- texlive-latex-base
+      #- texlive-latex-recommended
+      #- texlive-latex-extra
+      #- texlive-fonts-recommended
+      #- texlive-fonts-extra
 
   
 ## notifications should go to gitter
@@ -53,19 +51,9 @@ cache: packages
     #on_success: always
     #on_failure: always
 
-## cache local R libraries directory:
-#cache:
-  #- directories:
-    #- $HOME/R/Library
-  #- packages
-
 ## list of services to be running
 #services:
   #- postgresql
-
-## environment variables
-#env:
-  #- R_LIBS_USER=$HOME/R/Library
 
 ## install sipnet and clim file
 #install:
