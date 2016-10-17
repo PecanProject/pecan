@@ -17,7 +17,7 @@ Depends:
 Suggests:
     fields,
     rgdal,
-    testthat,
+    testthat (>= 1.0.2),
     XML
 License: FreeBSD + file LICENSE
 Copyright: Authors
