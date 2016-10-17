@@ -18,6 +18,8 @@ Depends:
     MASS,
     PEcAn.utils,
     PEcAn.DB
+Imports:
+    coda (>= 0.18)
 Suggests:
     rjags,
     testthat (>= 1.0.2),

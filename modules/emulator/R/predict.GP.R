@@ -10,7 +10,6 @@
 ##' @author Michael Dietze
 predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
   
-  library(coda)
   npred <- length(xpred)
   if (is.matrix(xpred)) {
     npred <- nrow(xpred)
@@ -38,13 +37,13 @@ predict.GP <- function(gp, xpred, cI = NULL, pI = NULL, splinefcns = NULL) {
   
   if (gp$method == "bayes") {
     samp <- gp$samp
-    tauw <- mcmc(gp$tauw[samp, ])
-    psi  <- mcmc(gp$psi[samp, ])
-    mu   <- mcmc(gp$mu)
+    tauw <- coda::mcmc(gp$tauw[samp, ])
+    psi  <- coda::mcmc(gp$psi[samp, ])
+    mu   <- coda::mcmc(gp$mu)
     tauv <- W <- NULL
     if (nugget) {
-      tauv <- mcmc(gp$tauv)
-      W <- mcmc(gp$W)
+      tauv <- coda::mcmc(gp$tauv)
+      W <- coda::mcmc(gp$W)
     }
   } else {
     ## MLE
