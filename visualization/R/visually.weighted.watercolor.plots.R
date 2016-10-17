@@ -116,9 +116,8 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
   }
   
   # compute median and CI limits of bootstrap
-  library(plyr)
   library(reshape2)
-  CI.boot <- adply(l0.boot, 1, function(x) {
+  CI.boot <- plyr::adply(l0.boot, 1, function(x) {
     quantile(x, prob = c(0.025, 0.5, 0.975, pnorm(c(-3, -2, -1, 0, 1, 2, 3))), na.rm = TRUE) 
   })[, -1]
   colnames(CI.boot)[1:10] <- c("LL", "M", "UL", paste0("SD", 1:7))
@@ -161,7 +160,7 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
       }
       
       # vertical cross-sectional density estimate
-      d2 <- ddply(b2[, c("x", "value")], .(x), function(df) {
+      d2 <- plyr::ddply(b2[, c("x", "value")], .(x), function(df) {
         res <- data.frame(density(df$value, 
                                   na.rm = TRUE, 
                                   n = slices, 
