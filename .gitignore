@@ -68,3 +68,5 @@ tests/RyK*
 compile_on_geo.sh
 documentation/tutorials/*/*.html
 pecan.Rproj
+# Installation files form make
+.install.*

@@ -1,25 +1,17 @@
-# .travis.yml using container-based infrastructure
-# travis configuration file courtesy of Jan Tilly:
-# https://github.com/jtilly/R-travis-container-example
+# Follow instructions on:
+# https://blog.rstudio.org/2016/03/09/r-on-travis-ci/
 
-# use c as catch-all language
-language: c
+language: r
 
 # use containers
 sudo: false
-
-# only run for pushes to master branch
-#branches:
-#  only:
-#   - master
+cache: packages
 
 # install R: use r-packages-precise (https://cran.r-project.org/bin/linux/ubuntu/precise/) 
 # as source which is white listed (https://github.com/travis-ci/apt-source-whitelist/)
 addons:
   postgresql: 9.4
   apt:
-    sources:
-      - r-packages-precise
     packages:
       - postgresql-9.4-postgis-2.1
       - postgresql-9.4-postgis-2.1-scripts
@@ -35,7 +27,6 @@ addons:
       - libgmp-dev
       - python-dev 
       - libproj-dev
-      - r-base-dev
       # need to compile documentation
       # BROKEN MISSING FONT
       #- texinfo
@@ -86,5 +77,5 @@ before_script:
   - psql -U postgres -c "CREATE DATABASE bety OWNER bety;"
   - scripts/load.bety.sh -a postgres -c -u
 
-script:
-  - scripts/build.sh --dependencies --no-git --check --no-manual --tests --name travis
+install: make -j4
+
