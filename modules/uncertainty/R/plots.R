@@ -136,14 +136,15 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait, y.range = c(0, 50), me
                size = dotsize) + # indicate median with larger point
     geom_point(aes(x, y), data = data.frame(x = sa.sample[median.i], y = sa.spline(sa.sample[median.i])), 
                size = dotsize * 1.3) + 
-    scale_y_continuous(limits = range(pretty(y.range)), 
-                       breaks = pretty(y.range, n = 3)[1:3]) + theme_bw() + ggtitle(trait.lookup(trait)$figid)
-  theme(axis.text.x = element_text(size = fontsize$axis),
-        axis.text.y = element_text(size = fontsize$axis), 
-        axis.title.x = element_text(size = fontsize$axis),
-        axis.title.y = element_blank(), 
-        plot.title = element_text(size = fontsize$title), 
-        panel.border = element_blank())
+    scale_y_continuous(limits = range(pretty(y.range)), breaks = pretty(y.range, n = 3)[1:3]) +
+    theme_bw() + 
+    ggtitle(trait.lookup(trait)$figid) +
+    theme(axis.text.x = element_text(size = fontsize$axis),
+          axis.text.y = element_text(size = fontsize$axis), 
+          axis.title.x = element_text(size = fontsize$axis),
+          axis.title.y = element_blank(), 
+          plot.title = element_text(size = fontsize$title), 
+          panel.border = element_blank())
   
   ## Following conditional can be removed to only plot posterior sa
   prior.x <- post.x
