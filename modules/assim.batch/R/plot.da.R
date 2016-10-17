@@ -116,8 +116,8 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
     
     # Autocorrelation plots
     samp.mcmc <- as.mcmc.list(lapply(samp, function(chain) as.mcmc(chain[thin, i])))
-    gelman.plot(samp.mcmc, auto.layout = FALSE, ylab = "")
-    autocorr.plot(samp.mcmc[[1]], auto.layout = FALSE)
+    coda::gelman.plot(samp.mcmc, auto.layout = FALSE, ylab = "")
+    coda::autocorr.plot(samp.mcmc[[1]], auto.layout = FALSE)
   }
   
   par(mfrow = c(3, 5))

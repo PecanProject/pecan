@@ -732,7 +732,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
     }
     
     if (length(params.subset[[i]]) > 1 & enough.iter) {
-      gelman.plot(params.subset[[i]], auto.layout = FALSE, autoburnin = FALSE)
+      coda::gelman.plot(params.subset[[i]], auto.layout = FALSE, autoburnin = FALSE)
     }
     
     layout(1)
@@ -763,7 +763,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
     
     if (length(params.subset[[i]]) > 1) {
       cat("Gelman and Rubin convergence diagnostics\n", file = filename.mcmc.temp, append = TRUE)
-      capture.output(gelman.diag(params.subset[[i]], autoburnin = FALSE), file = filename.mcmc.temp, 
+      capture.output(coda::gelman.diag(params.subset[[i]], autoburnin = FALSE), file = filename.mcmc.temp, 
                      append = TRUE)
     }
     
