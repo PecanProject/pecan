@@ -9,5 +9,6 @@ read.settings.db <- function(ids,bety){
   settings.multi <- MultiSettings(settings.list)
   # This may not be the best way to add database information back into the xml, but it's a start
   settings.multi$database[[bety$info$dbname]] <- bety$info[c("host","user","dbname")]
+  # Should I be getting the settings straight from config.php? That's where these settings are taken from anyway.
   return(settings.multi)
 }
