@@ -12,7 +12,7 @@ GaussProcess(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes",
 \arguments{
 \item{nugget}{allows additional error in Y rather than fix interpolation to go through points}
 
-\item{prior}{"unif", "IG"}
+\item{prior}{'unif', 'IG'}
 
 \item{mix}{joint=mix over psi simultanously, each=mix over psi individually}
 
