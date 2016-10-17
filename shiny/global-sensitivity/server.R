@@ -52,7 +52,7 @@ server <- shinyServer(function(input, output, session) {
         if(nrow(workflow) > 0) {
             workflow_dir <- workflow$folder
             output_dir <- file.path(workflow_dir, "out")
-            settings <- xmlToList(xmlParse(file.path(workflow_dir, "pecan.xml")))
+            settings <- XML::xmlToList(XML::xmlParse(file.path(workflow_dir, "pecan.xml")))
             # Load ensemble samples
             ensemble.out <- load_ensemble(workflow_dir = workflow_dir, settings = settings, variable = var_names())
             return(ensemble.out)

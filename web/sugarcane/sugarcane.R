@@ -1,8 +1,8 @@
 library(BioCro)
 library(XML)
 #############Reading from the fXML file generated via web-interface######
-settings.xml<-xmlParse('./config.xml')
-settings <- xmlToList(settings.xml)
+settings.xml <- XML::xmlParse('./config.xml')
+settings <- XML::xmlToList(settings.xml)
 
 ################ Read  Year and Location Details and derive model input############
 lat<-as.numeric(settings$location$latitude)
