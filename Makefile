@@ -78,7 +78,7 @@ benchmark: .install.benchmark
 data.atmosphere: utils .install.data.atmosphere
 
 .install.data.atmosphere: $(wildcard modules/data.atmosphere/**/*)
-	Rscript -e "test <- require('REddyProc'); if (!test) install.packages('REddyProc', repos = 'http://r-forge.r-project.org/')"
+	Rscript -e "test <- require('REddyProc'); if (!test) devtools::install_github('rforge/reddyproc', subdir = 'pkg/REddyProc')"
 	Rscript -e "devtools::install('modules/data.atmosphere')"
 	echo `date` > .install.data.atmosphere
 
