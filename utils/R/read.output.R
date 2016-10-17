@@ -122,7 +122,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
   }
   
   result <- list()
-  
+
   if (!nofiles) {
     for (ncfile in ncfiles) {
       nc <- nc_open(ncfile)
