@@ -8,9 +8,8 @@
 ##' @author Rob Kooper
 status.start <- function(name) {
   if (exists("settings")) {
-    cat(paste(name,
-              format(Sys.time(), "%F %T"), sep="\t"),
-        file=file.path(settings$outdir, "STATUS"), append=TRUE)
+    cat(paste(name, format(Sys.time(), "%F %T"), sep = "\t"), file = file.path(settings$outdir, 
+                                                                               "STATUS"), append = TRUE)
   }
 }
 
@@ -19,13 +18,10 @@ status.start <- function(name) {
 ##' @description PEcAn workflow status tracking: end module
 ##' @author Rob Kooper
 ##' @export
-status.end <- function(status="DONE") {
+status.end <- function(status = "DONE") {
   if (exists("settings")) {
-    cat(paste("",
-              format(Sys.time(), "%F %T"),
-              status,
-              "\n", sep="\t"),
-        file=file.path(settings$outdir, "STATUS"), append=TRUE)
+    cat(paste("", format(Sys.time(), "%F %T"), status, "\n", sep = "\t"), file = file.path(settings$outdir, 
+                                                                                           "STATUS"), append = TRUE)
   }
 }
 
@@ -36,15 +32,14 @@ status.end <- function(status="DONE") {
 ##' @export
 status.skip <- function(name) {
   if (exists("settings")) {
-    cat(paste(name,
-              format(Sys.time(), "%F %T"),
-              "",
-              format(Sys.time(), "%F %T"),
-              "SKIPPED",
-              "\n", sep="\t"),
-        file=file.path(settings$outdir, "STATUS"), append=TRUE)
+    cat(paste(name, 
+              format(Sys.time(), "%F %T"), "", 
+              format(Sys.time(), "%F %T"), 
+              "SKIPPED", "\n", sep = "\t"), 
+        file = file.path(settings$outdir, "STATUS"), 
+        append = TRUE)
   }
-}
+} # status.skip
 
 ##' @name status.check
 ##' @title status.check
@@ -52,25 +47,27 @@ status.skip <- function(name) {
 ##' @author Rob Kooper
 ##' @export
 status.check <- function(name) {
-  if (!exists("settings")) return (0)
-  status.file=file.path(settings$outdir, "STATUS")
-  if (!file.exists(status.file)){
-    return (0)
+  if (!exists("settings")) 
+    return(0)
+  status.file <- file.path(settings$outdir, "STATUS")
+  if (!file.exists(status.file)) {
+    return(0)
   }
-  status.data <- read.table(status.file, row.names=1, header=FALSE, sep="\t", quote="", fill=TRUE)
-  if (! name %in% row.names(status.data)) {
-    return (0)
+  status.data <- read.table(status.file, row.names = 1, header = FALSE, sep = "\t", 
+                            quote = "", fill = TRUE)
+  if (!name %in% row.names(status.data)) {
+    return(0)
   }
-  status.data[name,]
+  status.data[name, ]
   if (is.na(status.data[name, 3])) {
     logger.warn("UNKNOWN STATUS FOR", name)
-    return (0)
+    return(0)
   }
   if (status.data[name, 3] == "DONE") {
-    return (1)
+    return(1)
   }
   if (status.data[name, 3] == "ERROR") {
-    return (-1)
+    return(-1)
   }
-  return (0)
-}
+  return(0)
+} # status.check
