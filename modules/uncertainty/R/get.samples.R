@@ -11,7 +11,6 @@
 get.parameter.samples <- function(settings, 
                                   posterior.files = rep(NA, length(settings$pfts)), 
                                   ens.sample.method = "uniform") {
-  library(coda)
   library(PEcAn.priors)
   pfts      <- settings$pfts
   num.pfts  <- length(settings$pfts)
