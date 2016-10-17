@@ -102,7 +102,7 @@ invert.custom <- function(observed, invert.options, quiet = FALSE) {
         rescale <- diag(stdev * adj)
         cormat  <- cor(results[region, 1:npars])
         if (any(is.na(cormat))) {
-          cormat <- diag(rep(1, 4))
+          cormat <- diag(rep(1, npars))
         }
         Jump <- rescale %*% cormat %*% rescale
       }
