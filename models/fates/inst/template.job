@@ -82,6 +82,10 @@ mkdir case/run/timing
   rm @INDIR@/share/domains/domain.clm/*
   ln -s @RUNDIR@/domain.*.nc @INDIR@/share/domains/domain.clm/
     
+  ## SURFDATA
+  rm @INDIR@/lnd/clm2/surfdata_map/surfdata*
+  ln -s @RUNDIR@/surfdata.*.nc @INDIR@/lnd/clm2/surfdata_map/
+    
   ## MET --> DATM
   
   ## APPLY CONFIG CHANGES

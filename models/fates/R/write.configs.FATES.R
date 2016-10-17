@@ -69,6 +69,16 @@
    ncvar_put(nc=domain.nc, varid='area', vals=(2*gridres*pi/180)^2)   
    nc_close(domain.nc)
    
+   ## SURF
+   surf.default <- "/home/carya/FATESinput/lnd/clm2/surfdata_map/surfdata_1x1_brazil_16pfts_simyr2000_c160127.nc"
+   file.copy(surf.default,local.rundir)
+   surf.new <- file.path(local.rundir,basename(surf.default))
+   Sys.chmod(surf.new)
+   surf.nc <- nc_open(surf.new,write=TRUE)
+   ncvar_put(nc=surf.nc, varid='LONGXY', vals=lon)
+   ncvar_put(nc=surf.nc, varid='LATIXY', vals=lat)
+   nc_close(surf.nc)   
+   
    ## MET HEADERS
    if(!is.null(settings$run$inputs$met)){
 
