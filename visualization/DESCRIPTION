@@ -35,7 +35,7 @@ Depends:
 Imports:
     plyr (>= 1.8.4)
 Suggests:
-    testthat,
+    testthat (>= 1.0.2),
     png,
     grid
 License: FreeBSD + file LICENSE

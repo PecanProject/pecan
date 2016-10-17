@@ -9,7 +9,7 @@ Description: This module provides functions to link the GDAY model to PEcAn.
 Depends:
     PEcAn.utils
 Suggests:
-    testthat
+    testthat (>= 1.0.2)
 SystemRequirements: GDAY
 OS_type: unix
 License: FreeBSD + file LICENSE
