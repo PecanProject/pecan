@@ -67,34 +67,19 @@ met2CF.NARR <- function(in.path, in.prefix, outfolder, start_date, end_date,
     
     # keep track of variables to rename
     renamevars <- list("-v", "lat,latitude", "-v", "lon,longitude")
-<<<<<<< HEAD
     for (i in seq_along(vars)) {
       file <- file.path(in.path, paste0(vars[i], ".", y, ".nc"))
       if (verbose) {
         print(paste(c("ncpdq", list("-A", "-U", "-4", "--no_tmp_fl", file, tmpfile)), collapse = " "))
       } 
-=======
-    for(i in 1:length(vars)) {
-      file <- file.path(in.path, paste0(vars[i],".",y,".nc"))
-      if (verbose){
-        print(paste(c("ncpdq", list("-A", "-U", "-4", "--no_tmp_fl", file, tmpfile)), collapse=" "))
-      }
->>>>>>> PecanProject/master
       system2("ncpdq", list("-A", "-U", "-4", "--no_tmp_fl", file, tmpfile))
       renamevars <- c(renamevars, c("-v", paste0(svars[i], ",", cfvars[i])))
     }
     
     # rename all variables
-<<<<<<< HEAD
     if (verbose) {
       print(paste(c("ncrename", c(renamevars, tmpfile)), collapse = " "))
     }
-=======
-    if (verbose){
-      print(paste(c("ncrename", c(renamevars, tmpfile)), collapse=" "))      
-    }
-
->>>>>>> PecanProject/master
     system2("ncrename", c(renamevars, tmpfile))
     
     # finally rename file
