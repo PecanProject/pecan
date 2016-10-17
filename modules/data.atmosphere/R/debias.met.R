@@ -8,14 +8,13 @@
 ##' @param de_method - select which debias method you would like to use, options are 'normal', 'linear regression'
 ##' @param site.id
 ##' @author James Simkins
-debias.met <- function(outfolder, source_met, train_met, site_id, de_method='mean', overwrite=FALSE, verbose=FALSE, ...){  
+debias.met <- function(outfolder, source_met, train_met, site_id, de_method='linear', overwrite=FALSE, verbose=FALSE, ...){  
   require(PEcAn.utils)
   require(lubridate)
   require(ncdf4)
   outfolder = paste0(outfolder,"_site_",paste0(site_id %/% 1000000000, "-", site_id %% 1000000000))
   
-  var = data.frame(DAP.name = c("tas","rlds","ps","rsds","uas","vas","huss","pr"),
-                   CF.name = c("air_temperature","surface_downwelling_longwave_flux_in_air","air_pressure","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux"),
+  var = data.frame(CF.name = c("air_temperature","surface_downwelling_longwave_flux_in_air","air_pressure","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux"),
                    units = c('Kelvin',"W/m2","Pascal","W/m2","m/s","m/s","g/g","kg/m2/s")
   )
 
@@ -66,12 +65,12 @@ debias.met <- function(outfolder, source_met, train_met, site_id, de_method='mea
   # These are for the linear regression argument, the for loop upscales the training dataset to match the length of the source dataset because they must be equal lengths
   reso = nrow(sou)
   step = floor(nrow(train)/nrow(sou))
-  daily.met = data.frame()
-  for (n in 1:length(var$DAP.name)){
+  lin_train = data.frame()
+  for (n in 1:length(var$CF.name)){
     for (x in 1:reso){
-      daily.met[x,n] <- mean(sou[(x*step-step+1):(x*step),n])}
+      lin_train[x,n] <- mean(train[(x*step-step+1):(x*step),n])}
   }
-  colnames(daily.met) = c("air_temperature","surface_downwelling_longwave_flux_in_air","air_pressure","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux")
+  colnames(lin_train) = c("air_temperature","surface_downwelling_longwave_flux_in_air","air_pressure","surface_downwelling_shortwave_flux_in_air","eastward_wind","northward_wind","specific_humidity","precipitation_flux")
   
   ### De_method routines!!!!! ###
   for (n in 1:length(var$DAP.name)){
@@ -116,15 +115,16 @@ debias.met <- function(outfolder, source_met, train_met, site_id, de_method='mea
       if(de_method == 'linear'){
         debi = list()
         for(i in 1:length(var$CF.name)){
-          if(all(is.na(sou[[i]]))== FALSE & all(is.na(daily.met[[i]])) == FALSE){
-            lin = lm(sou[[i]] ~ daily.met[[i]])
+          if(all(is.na(sou[[i]]))== FALSE & all(is.na(lin_train[[i]])) == FALSE){
+            lin = lm(lin_train[[i]] ~ sou[[i]])
             x = as.numeric(lin$coefficients[2])
             b = as.numeric(lin$coefficients[1])
             m = sou[[i]]
           if (var$CF.name[[i]] == 'precipitation_flux'){b = 0}
+            if (var$CF.name[[i]] == 'specific_humidity'){b = 0}
           debi[[i]] = (m*x + b)}
           else {
-            if(all(is.na(sou[[i]])) == TRUE | all(is.na(daily.met[[i]])) == TRUE){
+            if(all(is.na(sou[[i]])) == TRUE | all(is.na(lin_train[[i]])) == TRUE){
               debi[[i]] = NA}}}
         debi = data.frame(debi)
         colnames(debi) = var$CF.name}
