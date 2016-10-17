@@ -19,6 +19,8 @@ Depends:
     PEcAn.priors,
     ggplot2,
     gridExtra
+Imports:
+    plyr (>= 1.8.4)
 Suggests:
     testthat
 License: FreeBSD + file LICENSE
