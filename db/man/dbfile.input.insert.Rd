@@ -5,7 +5,8 @@
 \title{Insert file into tables}
 \usage{
 dbfile.input.insert(in.path, in.prefix, siteid, startdate, enddate, mimetype,
-  formatname, parentid = NA, con, hostname = fqdn())
+  formatname, parentid = NA, con, hostname = fqdn(),
+  allow.conflicting.dates = FALSE)
 }
 \arguments{
 \item{siteid}{the id of the site that this data is applicable to}
@@ -21,6 +22,8 @@ dbfile.input.insert(in.path, in.prefix, siteid, startdate, enddate, mimetype,
 \item{con}{database connection object}
 
 \item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
+
+\item{allow.conflicting.dates}{Whether to allow a new input record with same siteid, name, and format but different start/end dates}
 
 \item{filename}{the name of the file to be inserted}
 
