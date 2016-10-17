@@ -4,8 +4,8 @@
 \alias{met2model.MAAT}
 \title{Create MAAT met driver files}
 \usage{
-met2model.MAAT(in.path, in.prefix, outfolder, start_date, end_date, ...,
-  overwrite = FALSE, verbose = FALSE)
+met2model.MAAT(in.path, in.prefix, outfolder, start_date, end_date,
+  overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{in.path}{location on disk where inputs (CF met drivers) are stored}

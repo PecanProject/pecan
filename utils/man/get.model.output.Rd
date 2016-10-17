@@ -15,7 +15,7 @@ This function retrieves model output for further analyses
 \examples{
 \dontrun{
 get.model.output(model)
-get.model.output("ED2")
+get.model.output('ED2')
 }
 
 }

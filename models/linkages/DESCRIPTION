@@ -9,7 +9,7 @@ Description: This module provides functions to link the (LINKAGES) to PEcAn.
 Depends:
     PEcAn.utils
 Suggests:
-    testthat,
+    testthat (>= 1.0.2),
     linkages
 SystemRequirements: LINKAGES
 OS_type: unix

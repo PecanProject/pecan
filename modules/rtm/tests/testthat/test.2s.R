@@ -1,5 +1,4 @@
 library(PEcAnRTM)
-library(testthat)
 context("Two stream model")
 
 p4.pars <- defparam("prospect_4")
