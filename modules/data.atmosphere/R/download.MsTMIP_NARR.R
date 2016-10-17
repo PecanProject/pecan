@@ -3,18 +3,18 @@
 ##' @title download.MsTMIP_NARR
 ##' @export
 ##' @param outfolder
-##' @param start_date
-##' @param end_date
-##' @param lat
-##' @param lon
+##' @param start_date YYYY-MM-DD
+##' @param end_date YYYY-MM-DD
+##' @param lat decimal degrees [-90, 90]
+##' @param lon decimal degrees [-180, 180]
 ##'
 ##' @author James Simkins
 download.MsTMIP_NARR <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, overwrite=FALSE, verbose=FALSE, ...){  
-  require(PEcAn.utils)
-  require(lubridate)
-  require(ncdf4)
-  start_date <- as.POSIXlt(start_date, tz = "GMT")
-  end_date <- as.POSIXlt(end_date, tz = "GMT")
+  library(PEcAn.utils)
+  library(lubridate)
+  library(ncdf4)
+  start_date <- as.POSIXlt(start_date, tz = "UTC")
+  end_date <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- year(start_date)
   end_year   <- year(end_date)
   site_id = as.numeric(site_id)
