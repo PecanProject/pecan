@@ -19,7 +19,7 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   ## Seem to be stuck having to build a new case. Will try and avoid this in the future
   ## HACK: hard coding path
   cd /home/carya/ed-clm/cime/scripts
-  ./create_newcase -case @CASEDIR@ -res 1x1_brazil -compset ICLM45ED -mach eddi -compiler gnu
+  ./create_newcase -case @CASEDIR@ -res CLM_USRDAT -compset ICLM45ED -mach eddi -compiler gnu
 
   cd "@RUNDIR@"
   
@@ -60,6 +60,11 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
 ./xmlchange -file env_run.xml -id BATCHQUERY -val ''
 ./xmlchange -file env_run.xml -id BATCHSUBMIT -val ''
 ./xmlchange -file env_run.xml -id PIO_DEBUG_LEVEL -val 0
+./xmlchange -file env_run.xml -id ATM_DOMAIN_FILE -val 'domain.lnd.@SITE_NAME@.nc'
+./xmlchange -file env_run.xml -id ATM_DOMAIN_PATH -val '@INDIR@/share/domains/domain.clm/'
+./xmlchange -file env_run.xml -id LND_DOMAIN_FILE -val 'domain.lnd.@SITE_NAME@.nc'
+./xmlchange -file env_run.xml -id LND_DOMAIN_PATH -val '@INDIR@/share/domains/domain.clm/'
+./xmlchange -file env_run.xml -id CLM_USRDAT_NAME -val '@SITE_NAME@'
 mkdir case/run/timing
 ## END REFCASE  
   
@@ -80,11 +85,11 @@ mkdir case/run/timing
   
   ## SITE INFO --> DOMAIN FILE
   rm @INDIR@/share/domains/domain.clm/*
-  ln -s @RUNDIR@/domain.*.nc @INDIR@/share/domains/domain.clm/
+  ln -s @RUNDIR@/domain.lnd.@SITE_NAME@.nc @INDIR@/share/domains/domain.clm/
     
   ## SURFDATA
   rm @INDIR@/lnd/clm2/surfdata_map/surfdata*
-  ln -s @RUNDIR@/surfdata.*.nc @INDIR@/lnd/clm2/surfdata_map/
+  ln -s @RUNDIR@/surfdata_@SITE_NAME@_simyr2000.nc @INDIR@/lnd/clm2/surfdata_map/
     
   ## MET --> DATM
   

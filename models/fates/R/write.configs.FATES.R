@@ -31,6 +31,8 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
 #   # call met2model and add to namelists
 #   #
 
+   site <- settings$run$site
+  
    # find out where things are
    local.rundir <- file.path(settings$rundir, run.id) ## this is on local machine for staging
    rundir <- file.path(settings$host$rundir, run.id)  ## this is on remote machine for execution
@@ -41,6 +43,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    binary <- file.path(bld,"cesm.exe")
    indir  <- file.path(rundir,"input") ## input directory
    default <- settings$run$inputs$default$path ## reference inputs file structure
+   site_name <- paste0(site$id %/% 1000000000, "-", site$id %% 1000000000)
    
    ## DATES
    ## CLM is a bit odd and takes a start date and length, so we need to precompute
@@ -58,11 +61,12 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
 
    ## SITE INFO --> DOMAIN FILE (lat/lon)
    gridres = 0.125  ## ultimately this should be a variable
-   lat = settings$run$site$lat
-   lon = (settings$run$site$lon + 360) %% 360 ## make sure coords in 0-360 range, not negative
+   lat = site$lat
+   lon = (site$lon + 360) %% 360 ## make sure coords in 0-360 range, not negative
    domain.default <- system.file("domain.lnd.1x1pt-brazil_navy.090715.nc",package="PEcAn.FATES")
-   file.copy(domain.default,local.rundir)
-   domain.nc <- nc_open(file.path(local.rundir,basename(domain.default)),write=TRUE)
+   domain.file <- file.path(local.rundir,paste0("domain.lnd.",site_name,".nc"))
+   file.copy(domain.default,domain.file)
+   domain.nc <- nc_open(domain.file,write=TRUE)
    ncvar_put(nc=domain.nc, varid='xc', vals=lon)
    ncvar_put(nc=domain.nc, varid='yc', vals=lat)
    ncvar_put(nc=domain.nc, varid='xv', vals=lon+c(-1,1,1,-1)*gridres)
@@ -72,10 +76,10 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    
    ## SURF
    surf.default <- "/home/carya/FATESinput/lnd/clm2/surfdata_map/surfdata_1x1_brazil_16pfts_simyr2000_c160127.nc"
-   file.copy(surf.default,local.rundir)
-   surf.new <- file.path(local.rundir,basename(surf.default))
-   Sys.chmod(surf.new)
-   surf.nc <- nc_open(surf.new,write=TRUE)
+   surf.file    <- file.path(local.rundir,paste0("surfdata_",site_name,"simyr2000.nc"))
+   file.copy(surf.default,surf.file)
+   Sys.chmod(surf.file)
+   surf.nc <- nc_open(surf.file,write=TRUE)
    ncvar_put(nc=surf.nc, varid='LONGXY', vals=lon)
    ncvar_put(nc=surf.nc, varid='LATIXY', vals=lat)
    nc_close(surf.nc)   
@@ -85,7 +89,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
 
      ## DATM HEADER: datm_atm_in
      datm <- readLines(con=system.file("datm_atm_in.template",package = "PEcAn.FATES"),n=-1)
-     datm <- gsub('@DOMAIN@', file.path(indir,"share/domains/domain.clm",basename(domain.default)), datm)
+     datm <- gsub('@DOMAIN@', file.path(indir,"share/domains/domain.clm",basename(domain.file)), datm)
      datm <- gsub('@START_YEAR@',lubridate::year(start_date), datm)
      datm <- gsub('@END_YEAR@',lubridate::year(end_date), datm)
      writeLines(datm, con=file.path(local.rundir, "datm_atm_in"))
@@ -147,7 +151,8 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    jobsh <- gsub('@BINARY@', binary, jobsh)
    jobsh <- gsub('@INDIR@', indir, jobsh)
    jobsh <- gsub('@DEFAULT@', default, jobsh)
- 
+   jobsh <- gsub('@SITE_NAME@', site_name, jobsh) 
+  
    ## DATES -> ENV_RUN
    jobsh <- gsub('@START_DATE@', start_date, jobsh)
    jobsh <- gsub('@STOP_N@', stop_n, jobsh)
