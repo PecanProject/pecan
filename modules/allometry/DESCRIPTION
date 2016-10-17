@@ -13,7 +13,7 @@ Depends:
 Imports:
     coda (>= 0.18)
 Suggests:
-    testthat,
+    testthat (>= 1.0.2),
     PEcAn.DB,
     RMySQL
 License: FreeBSD + file LICENSE
