@@ -6,16 +6,13 @@ language: r
 # use containers
 sudo: false
 
-install:
-  - make
-
 cache: 
   - directories:
     - $HOME/R/Library
   - packages
 
 addons:
-  #postgresql: 9.4
+  postgresql: 9.4
   apt:
     packages:
       - libnetcdf-dev
@@ -43,33 +40,36 @@ addons:
 
   
 ## notifications should go to gitter
-#notifications:
-  #webhooks:
-    #urls:
-      #- secure: "gL81TwDOcK/32Hxxl2BcY7pioyrtyV4y1f+D/vGEpQz8mYL+M+55tUkhHJF53779XSUdQdML/gsr8JZVtApJdLIBysFU67GVYXm1s7x/b8J61CkMfDgsmposEWK4NFYHfeIRj32ioeajrQ+RKi1I6chjzYT7gLyl70gtPelRJ4s="
-    #on_success: always
-    #on_failure: always
-    #on_start: always
+notifications:
+  webhooks:
+    urls:
+      - secure: "gL81TwDOcK/32Hxxl2BcY7pioyrtyV4y1f+D/vGEpQz8mYL+M+55tUkhHJF53779XSUdQdML/gsr8JZVtApJdLIBysFU67GVYXm1s7x/b8J61CkMfDgsmposEWK4NFYHfeIRj32ioeajrQ+RKi1I6chjzYT7gLyl70gtPelRJ4s="
+    on_success: always
+    on_failure: always
+    on_start: always
   #email:
     #on_success: always
     #on_failure: always
 
 ## list of services to be running
-#services:
-  #- postgresql
+services:
+  - postgresql
 
 ## install sipnet and clim file
-#install:
-  #- pushd .
-  #- cd $HOME
-  #- curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_unk.tar.gz
-  #- tar zxf sipnet_unk.tar.gz
-  #- cd sipnet_unk
-  #- make
-  #- popd
-  #- make -j4
+install:
+  - pushd .
+  - cd $HOME
+  - curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_unk.tar.gz
+  - tar zxf sipnet_unk.tar.gz
+  - cd sipnet_unk
+  - make
+  - popd
 
-#before_script:
-  #- psql -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
-  #- psql -U postgres -c "CREATE DATABASE bety OWNER bety;"
-  #- scripts/load.bety.sh -a postgres -c -u
+before_script:
+  - psql -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
+  - psql -U postgres -c "CREATE DATABASE bety OWNER bety;"
+  - scripts/load.bety.sh -a postgres -c -u
+
+script:
+  - make
+

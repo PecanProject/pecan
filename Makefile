@@ -9,7 +9,7 @@ MODULES := allometry assim.batch assim.sequential benchmark \
 	       data.mining data.remote emulator meta.analysis \
 	       photosynthesis priors rtm uncertainty
 
-.PHONY = all
+.PHONY: all ${BASE_PACKAGES} ${MODELS} ${MODULES}
 
 all: ${BASE_PACKAGES} ${MODELS} ${MODULES}
 
