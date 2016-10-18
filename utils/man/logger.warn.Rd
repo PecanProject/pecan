@@ -16,7 +16,7 @@ This function will print a warning message.
 }
 \examples{
 \dontrun{
-logger.warn("detected NA values")
+logger.warn('detected NA values')
 }
 }
 \author{

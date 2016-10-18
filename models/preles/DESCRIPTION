@@ -18,7 +18,7 @@ Depends:
     ncdf4,
     udunits2
 Suggests:
-    testthat
+    testthat (>= 1.0.2)
 SystemRequirements: preles
 OS_type: unix
 License: FreeBSD + file LICENSE
