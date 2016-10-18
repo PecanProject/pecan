@@ -31,7 +31,6 @@ met2model.CLM45 <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
   
 #   library("PEcAn.data.atmosphere")
 #   library("PEcAn.utils")
-#   library("ncdf4")
 #   
 #   #Process start and end dates
 #   start_date<-as.POSIXlt(start.date,tz="UTC")
@@ -75,8 +74,8 @@ met2model.CLM45 <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
   
   ## extract variables. These need to be read in and converted to CLM standards
   
-#   ncvar_rename(ncfile,varid="LONGXY")
-#   ncvar_rename(ncfile,varid="LATIXY")
+#   ncdf4::ncvar_rename(ncfile,varid="LONGXY")
+#   ncdf4::ncvar_rename(ncfile,varid="LATIXY")
 #   #     double ZBOT(time, lat, lon) ;
 #   #     ZBOT:long_name = "observational height" ;
 #   #     ZBOT:units = "m" ;

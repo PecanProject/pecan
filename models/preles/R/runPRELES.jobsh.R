@@ -20,7 +20,6 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
   
   library(PEcAn.data.atmosphere)
   library(PEcAn.utils)
-  library(ncdf4)
   library(Rpreles)
   
   # Process start and end dates
@@ -60,6 +59,7 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
         doy <- rep(1:366, each = tstep)[1:length(sec)]
       }
       
+      ncvar_get <- ncdf4::ncvar_get
       ## Get variables from netcdf file
       SW     <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  # SW in W/m2
       Tair   <- ncvar_get(nc, "air_temperature")  # air temperature in K
@@ -165,14 +165,14 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
     output[[6]] <- (sub.PRELES.output[, 6])/timestep.s  #Evaporation - mm = kg/m2 
     output[[7]] <- (sub.PRELES.output[, 7])/timestep.s  #transpiration - mm = kg/m2
     
-    t <- ncdim_def(name = "time",
+    t <- ncdf4::ncdim_def(name = "time",
                    units = paste0("days since", y, "-01-01 00:00:00"), 
                    vals = 1:nrow(sub.PRELES.output), 
                    calendar = "standard", 
                    unlim = TRUE)
     
-    lat <- ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_longitude")
-    lon <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdf4::ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_longitude")
+    lon <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
     
     for (i in seq_along(output)) {
       if (length(output[[i]]) == 0) 
@@ -180,6 +180,7 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
     }
     
     var      <- list()
+    ncvar_def <- ncdf4::ncvar_def
     var[[1]] <- mstmipvar("GPP", lat, lon, t, NA)
     var[[2]] <- ncvar_def("Evapotranspiration", "kg/m2s1", list(lon, lat, t), -999)
     var[[3]] <- ncvar_def("SoilMoist", "kg/m2s1", list(lat, lon, t), NA)
@@ -188,13 +189,13 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
     var[[6]] <- ncvar_def("Evap", "kg/m2/s", list(lon, lat, t), -999)
     var[[7]] <- ncvar_def("TVeg", "kg/m2/s", list(lat, lon, t), NA)
     
-    nc <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
-      ncvar_put(nc, var[[i]], output[[i]])
+      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
       cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
-    nc_close(nc)
+    ncdf4::nc_close(nc)
   }
 } # runPRELES.jobsh

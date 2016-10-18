@@ -31,12 +31,17 @@ met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date,
   # defining temporal dimension needs to be figured out. If we configure FATES to use same tstep then we may not need to change dimensions  
   
   library(PEcAn.utils)
-  library(ncdf4)
+
+  ncvar_get <- ncdf4::ncvar_get
+  ncdim_def <- ncdf4::ncdim_def
+  ncatt_get <- ncdf4::ncatt_get
+  ncvar_add <- ncdf4::ncvar_add
+  ncvar_put <- ncdf4::ncvar_put
   
   insert <- function(ncout, name, unit, data) {
-    var   <- ncvar_def(name = name, units = unit, dim = dim, missval = -6999, verbose = verbose)
-    ncout <- ncvar_add(nc = ncout, v = var, verbose = verbose)
-    ncvar_put(nc = ncout, varid = name, vals = data)
+    var   <- ncdf4::ncvar_def(name = name, units = unit, dim = dim, missval = -6999, verbose = verbose)
+    ncout <- ncdf4::ncvar_add(nc = ncout, v = var, verbose = verbose)
+    ncdf4::ncvar_put(nc = ncout, varid = name, vals = data)
     invisible(ncout)
   }
   sm <- c(0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365) * 86400  ## day of year thresholds
@@ -58,7 +63,7 @@ met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date,
     if (file.exists(in.file)) {
       
       ## Open netcdf file
-      nc <- nc_open(in.file)
+      nc <- ncdf4::nc_open(in.file)
       
       ## extract variables. These need to be read in and converted to CLM names (all units are correct)
       time      <- ncvar_get(nc, "time")
@@ -121,7 +126,7 @@ met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date,
         ## eastward_wind & northward_wind
         ncout <- insert(ncout, "WIND", "m/s", WIND)
         
-        nc_close(ncout)
+        ncdf4::nc_close(ncout)
         
         #   ncvar_rename(ncfile,varid="LONGXY")
         #   ncvar_rename(ncfile,varid="LATIXY")

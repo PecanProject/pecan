@@ -6,7 +6,6 @@
 ##' @export
 ##' @author Betsy Cowdery
 closest_xy <- function(slat, slon, infolder, infile) {
-  # library(ncdf4)
   
   test.file <- dir(infolder, infile, full.names = TRUE)
   test.file <- test.file[grep("*.nc", test.file)]
@@ -15,9 +14,10 @@ closest_xy <- function(slat, slon, infolder, infile) {
   }
   test.file <- test.file[1]
   
-  nc <- nc_open(test.file)
-  lat <- ncvar_get(nc, "latitude")
-  lon <- ncvar_get(nc, "longitude")
+  nc <- ncdf4::nc_open(test.file)
+  lat <- ncdf4::ncvar_get(nc, "latitude")
+  lon <- ncdf4::ncvar_get(nc, "longitude")
+  ncdf4::nc_close(test_file)
   
   if (all(dim(lat) == dim(lon))) {
     rows <- nrow(lat)

@@ -1,6 +1,13 @@
 # helper function to copy variables and attributes from one nc file to another. This will do
 # conversion of the variables as well as on the min/max values
 copyvals <- function(nc1, var1, nc2, var2, dim2, units2 = NA, conv = NULL, missval = -6999, verbose = FALSE) {
+  
+  ncvar_get <- ncdf4::ncvar_get
+  ncdim_def <- ncdf4::ncdim_def
+  ncatt_get <- ncdf4::ncatt_get
+  ncvar_add <- ncdf4::ncvar_add
+  ncvar_put <- ncdf4::ncvar_put
+  
   vals <- ncvar_get(nc = nc1, varid = var1)
   vals[vals == -6999 | vals == -9999] <- NA
   if (!is.null(conv)) {
@@ -55,6 +62,7 @@ getLatLon <- function(nc1) {
   logger.severe("Could not get site location for file.")
 } # getLatLon
 
+
 ##' Get meteorology variables from Ameriflux L2 netCDF files and convert to netCDF CF format
 ##'
 ##' @name met2CF.Ameriflux
@@ -73,10 +81,15 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
                              overwrite = FALSE, verbose = FALSE, ...) {
   
   #---------------- Load libraries. -----------------------------------------------------------------#
-  library(ncdf4)
   library(PEcAn.utils)
   library(geonames)
   #--------------------------------------------------------------------------------------------------#  
+  
+  ncvar_get <- ncdf4::ncvar_get
+  ncdim_def <- ncdf4::ncdim_def
+  ncatt_get <- ncdf4::ncatt_get
+  ncvar_add <- ncdf4::ncvar_add
+  ncvar_put <- ncdf4::ncvar_put
   
   # get start/end year code works on whole years only
   start_year <- lubridate::year(start_date)
@@ -114,7 +127,7 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     }
     
     # open raw ameriflux
-    nc1 <- nc_open(old.file, write = TRUE)
+    nc1 <- ncdf4::nc_open(old.file, write = TRUE)
     
     # get dimension and site info
     tdim <- nc1$dim[["DTIME"]]
@@ -147,7 +160,7 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     
     # copy lat attribute to latitude
     var <- ncvar_def(name = "latitude", units = "degree_north", dim = list(lat, lon), missval = as.numeric(-9999))
-    nc2 <- nc_create(filename = new.file, vars = var, verbose = verbose)
+    nc2 <- ncdf4::nc_create(filename = new.file, vars = var, verbose = verbose)
     ncvar_put(nc = nc2, varid = "latitude", vals = latlon[1])
     
     # copy lon attribute to longitude
@@ -284,8 +297,8 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     }
     
     # done, close both files
-    nc_close(nc1)
-    nc_close(nc2)
+    ncdf4::nc_close(nc1)
+    ncdf4::nc_close(nc2)
   }  ## end loop over years
   
   invisible(results)

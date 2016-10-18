@@ -4,9 +4,9 @@ insertPmet <- function(vals, nc2, var2, dim2, units2 = NA, conv = NULL,
   if (!is.null(conv)) {
     vals <- lapply(vals, conv)
   }
-  var <- ncvar_def(name = var2, units = units2, dim = dim2, missval = missval, verbose = verbose)
-  nc2 <- ncvar_add(nc = nc2, v = var, verbose = verbose)
-  ncvar_put(nc = nc2, varid = var2, vals = vals)
+  var <- ncdf4::ncvar_def(name = var2, units = units2, dim = dim2, missval = missval, verbose = verbose)
+  nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = verbose)
+  ncdf4::ncvar_put(nc = nc2, varid = var2, vals = vals)
 } # insertPmet
 
 ##' Get meteorology variables from PalEON netCDF files and convert to netCDF CF format
@@ -26,9 +26,14 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
                           verbose = FALSE, ...) {
   
   #---------------- Load libraries. -----------------------------------------------------------------#
-  library(ncdf4)
   library(PEcAn.utils)
   #--------------------------------------------------------------------------------------------------#  
+  
+  ncvar_get <- ncdf4::ncvar_get
+  ncdim_def <- ncdf4::ncdim_def
+  ncatt_get <- ncdf4::ncatt_get
+  ncvar_add <- ncdf4::ncvar_add
+  ncvar_put <- ncdf4::ncvar_put
   
   # get start/end year code works on whole years only
   start_year <- lubridate::year(start_date)
@@ -92,7 +97,7 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
           logger.severe("missing file", v, stub)
         }
         old.file <- fnames[sel]
-        nc1      <- nc_open(old.file, write = FALSE)
+        nc1      <- ncdf4::nc_open(old.file, write = FALSE)
         if (length(met[[v]]) <= 1) {
           met[[v]] <- ncvar_get(nc = nc1, varid = v)
         } else {
@@ -107,12 +112,12 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
             met[["time"]] <- abind::abind(met[["time"]], tmp)
           }
         }
-        nc_close(nc1)
+        ncdf4::nc_close(nc1)
       }  ## end loop over months
     }  ## end loop over variables
     
     # create new coordinate dimensions based on site location lat/lon
-    nc1           <- nc_open(old.file)
+    nc1           <- ncdf4::nc_open(old.file)
     tdim          <- nc1$dim[["time"]]
     met[["time"]] <- met[["time"]] + (850 - 1700)
     tdim$units    <- "days since 1700-01-01 00:00:00"
@@ -126,13 +131,13 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
                       create_dimvar = TRUE, unlim = TRUE)
     dim <- list(lat, lon, time)
     cp.global.atts <- ncatt_get(nc = nc1, varid = 0)
-    nc_close(nc1)
+    ncdf4::nc_close(nc1)
     
     # Open new file and copy lat attribute to latitude
     print(c(latlon, year))
     var <- ncvar_def(name = "latitude", units = "degree_north", dim = (list(lat, lon, time)), 
                      missval = as.numeric(-9999))
-    nc2 <- nc_create(filename = new.file, vars = var, verbose = verbose)
+    nc2 <- ncdf4::nc_create(filename = new.file, vars = var, verbose = verbose)
     ncvar_put(nc = nc2, varid = "latitude", vals = rep(latlon[1], tdim$len))
     
     # copy lon attribute to longitude
@@ -178,7 +183,7 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     }
     
     # done, close file
-    nc_close(nc2)
+    ncdf4::nc_close(nc2)
   }  ## end loop over years
   
   invisible(results)
@@ -202,10 +207,6 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
   # get start/end year code works on whole years only
   start_year <- year(start_date)
   end_year <- year(end_date)
-  
-  #---------------- Load libraries. -----------------------------------------------------------------#
-  library(ncdf4)
-  #--------------------------------------------------------------------------------------------------#  
   
   if (!file.exists(outfolder)) {
     dir.create(outfolder)
@@ -253,7 +254,7 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
       old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
       
       # open original annual file
-      nc1 <- nc_open(old.file, write = TRUE)
+      nc1 <- ncdf4::nc_open(old.file, write = TRUE)
       
       # get dimension and site info
       tdim <- nc1$dim[["DTIME"]]
@@ -313,7 +314,7 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
     print(latlon)
     var <- ncvar_def(name = "latitude", units = "degree_north", dim = (list(lat, lon, time)), 
                      missval = as.numeric(-9999))
-    nc2 <- nc_create(filename = new.file, vars = var, verbose = verbose)
+    nc2 <- ncdf4::nc_create(filename = new.file, vars = var, verbose = verbose)
     ncvar_put(nc = nc2, varid = "latitude", vals = rep(latlon[1], tdim$len))
     
     # copy lon attribute to longitude
@@ -472,8 +473,8 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
     }
     
     # done, close both files
-    nc_close(nc1)
-    nc_close(nc2)
+    ncdf4::nc_close(nc1)
+    ncdf4::nc_close(nc2)
   }  ## end loop over years
   
   invisible(results)

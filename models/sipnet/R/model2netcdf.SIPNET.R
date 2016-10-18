@@ -23,13 +23,10 @@
 ##' @author Shawn Serbin, Michael Dietze
 model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw, revision) {
   
-  library(ncdf4)
-  
   ### Read in model output in SIPNET format
   sipnet.out.file <- file.path(outdir, "sipnet.out")
   sipnet.output <- read.table(sipnet.out.file, header = T, skip = 1, sep = "")
   sipnet.output.dims <- dim(sipnet.output)
-  
   
   ### Determine number of years and output timestep
   num.years <- length(unique(sipnet.output$year))
@@ -89,13 +86,13 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     
     
     # ******************** Declare netCDF variables ********************#
-    t <- ncdim_def(name = "time", 
+    t <- ncdf4::ncdim_def(name = "time", 
                    units = paste0("days since ", y, "-01-01 00:00:00"), 
                    vals = sub.sipnet.output$day - 1 + (sub.sipnet.output$time/24),
                    calendar = "standard", 
                    unlim = TRUE)
-    lat <- ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdf4::ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdf4::ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
     
     ## ***** Need to dynamically update the UTC offset here *****
     
@@ -131,15 +128,15 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     # ******************** Declare netCDF variables ********************#
     
     ### Output netCDF data
-    nc      <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
       # print(i)
-      ncvar_put(nc, var[[i]], output[[i]])
+      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
       cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
-    nc_close(nc)
+    ncdf4::nc_close(nc)
     
   }  ### End of year loop
   

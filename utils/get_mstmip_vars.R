@@ -8,7 +8,6 @@ ncvar_def.pecan <- function(name, units, longname,
 
 make.ncdf_vars <- function(vars = c("LAI")){
   library(data.table)
-  library(ncdf4)
   data(mstmip_vars, package = "PEcAn.utils")
   mstmip <- data.table(mstmip_vars)
   mstmip[Variable.Name %in% vars,
