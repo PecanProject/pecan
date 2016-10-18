@@ -63,13 +63,9 @@ run.ensemble.analysis <- function(settings, plot.timeseries = NA, ensemble.id = 
     logger.warn(paste0("Currently performs ensemble analysis on only one variable at a time. Using first (", 
                        variable, ")"))
   }
-  
-  cflux <- c("GPP", "NPP", "NEE", "TotalResp", "AutoResp", "HeteroResp", 
-             "DOC_flux", "Fire_flux")  # converted to gC/m2/s
-  wflux <- c("Evap", "TVeg", "Qs", "Qsb", "Rainf")  # kgH20 m-2 s-1
-  
+
   print(paste0("----- Variable: ", variable))
-  
+
   #units <- lapply(variable, function(x) { paste0(x, " (", mstmipvar(x, silent=TRUE)$units, ")") })
   units <- paste0(variable[1], " (", mstmipvar(variable[1], silent = TRUE)$units, ")")
   
@@ -81,7 +77,12 @@ run.ensemble.analysis <- function(settings, plot.timeseries = NA, ensemble.id = 
                              start.year = start.year, 
                              end.year = end.year)
   load(fname)
-  
+
+  my.dat = unlist(ensemble.output)
+  if(is.null(my.dat)){
+    logger.warn("no data in ensemble.output")
+    return()
+  }
   
   ### ------------------- Start ensemble analysis -------------------
   ensemble.results <- list()
@@ -102,17 +103,14 @@ run.ensemble.analysis <- function(settings, plot.timeseries = NA, ensemble.id = 
   pdf(file = fname, width = 13, height = 6)
   par(mfrow = c(1, 2), mar = c(4, 4.8, 1, 2))  # B, L, T, R
   
-  hist(unlist(ensemble.output), 
-       xlab = units, main = "", 
-       cex.axis = 1.1, cex.lab = 1.4, 
-       col = "grey85")
+  hist(my.dat,xlab=units,
+       main="",cex.axis=1.1,cex.lab=1.4,col="grey85")
   box(lwd = 2.2)
   
-  boxplot(unlist(ensemble.output), ylab = units,
-          boxwex = 0.6, col = "grey85", 
-          cex.axis = 1.1, range = 2, 
-          pch = 21, cex = 1.4, bg = "black", cex.lab = 1.5)
-  box(lwd = 2.2)
+  boxplot(my.dat,ylab=units,
+          boxwex=0.6,col="grey85", cex.axis=1.1,range=2,
+          pch=21,cex=1.4, bg="black",cex.lab=1.5)
+  box(lwd=2.2)
   
   dev.off()
   
