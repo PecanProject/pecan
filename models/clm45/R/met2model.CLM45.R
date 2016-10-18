@@ -32,7 +32,6 @@ met2model.CLM45 <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
 #   library("PEcAn.data.atmosphere")
 #   library("PEcAn.utils")
 #   library("ncdf4")
-#   library("udunits2")
 #   
 #   #Process start and end dates
 #   start_date<-as.POSIXlt(start.date,tz="UTC")
