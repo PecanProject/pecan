@@ -7,15 +7,15 @@
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-------------------------------------------------------------------------------
 
-library(PEcAn.DB)
-library(PEcAn.utils)
-
 ##--------------------------------------------------------------------------------------------------#
 ## INTERNAL FUNCTIONS
 ##--------------------------------------------------------------------------------------------------#
 
 # check to see if inputs are specified
 # this should be part of the model code
+
+#' @import PEcAn.DB
+#' @import PEcAn.utils
 check.inputs <- function(settings) {
   if (is.null(settings$model$type)) {
     return(settings)
