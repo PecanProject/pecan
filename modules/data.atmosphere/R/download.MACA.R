@@ -136,7 +136,7 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     
     ## put data in new file
     loc <- nc_create(filename=loc.file, vars=var.list, verbose=verbose)
-    for(j in 1:length(var$CF.name)){
+    for(j in seq_along(var$CF.name)){
       ncvar_put(nc=loc, varid=as.character(var$CF.name[j]), vals=dat.list[[j]])
     }
     nc_close(loc)
