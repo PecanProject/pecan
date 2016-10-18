@@ -25,7 +25,6 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
   # , PFTs) { logger.severe('NOT IMPLEMENTED')
   
   library(PEcAn.utils)
-  library(ncdf4)
   
   ### Read in model output in linkages format
   load(file.path(outdir, "linkages.out.Rdata"))
@@ -69,16 +68,16 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
     output[[14]] <- water[y, ]  #soil moisture
     
     # ******************** Declare netCDF variables ********************#
-    dim.t <- ncdim_def(name = "time", 
+    dim.t <- ncdf4::ncdim_def(name = "time", 
                        units = paste0("days since ", years[y], "-01-01 00:00:00"), 
                        vals = as.numeric(years[y]), calendar = "standard", 
                        unlim = TRUE)
-    dim.lat <- ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
-    dim.lon <- ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
-    dim.string <- ncdim_def("names", "", 1:24, create_dimvar = FALSE)
-    dim.cpools <- ncdim_def("cpools", "", vals = 1:4, longname = "Carbon Pools")
-    dim.cpools1 <- ncdim_def("cpools", "", vals = 1:4, longname = "Carbon Pools", create_dimvar = FALSE)
-    dim.pfts <- ncdim_def("pfts", "", vals = 1:nrow(agb.pft), longname = "PFTs", create_dimvar = FALSE)
+    dim.lat <- ncdf4::ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
+    dim.lon <- ncdf4::ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
+    dim.string <- ncdf4::ncdim_def("names", "", 1:24, create_dimvar = FALSE)
+    dim.cpools <- ncdf4::ncdim_def("cpools", "", vals = 1:4, longname = "Carbon Pools")
+    dim.cpools1 <- ncdf4::ncdim_def("cpools", "", vals = 1:4, longname = "Carbon Pools", create_dimvar = FALSE)
+    dim.pfts <- ncdf4::ncdim_def("pfts", "", vals = 1:nrow(agb.pft), longname = "PFTs", create_dimvar = FALSE)
     
     for (i in seq_along(output)) {
       if (length(output[[i]]) == 0) 
@@ -86,6 +85,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
     }
     
     var <- list()
+    ncvar_def <- ncdf4::ncvar_def
     var[[1]]  <- ncvar_def("AGB", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
     var[[2]]  <- ncvar_def("TotLivBiomass", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
     var[[3]]  <- ncvar_def("TotSoilCarb", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
@@ -105,15 +105,15 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
     # ******************** Declare netCDF variables ********************#
     
     ### Output netCDF data
-    nc <- nc_create(file.path(outdir, paste(years[y], "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(years[y], "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(years[y], "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
       print(i)
-      ncvar_put(nc, var[[i]], output[[i]])
+      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
       cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
-    nc_close(nc)
+    ncdf4::nc_close(nc)
     
   }  ### End of year loop
 } # model2netcdf.LINKAGES

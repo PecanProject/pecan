@@ -62,6 +62,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id) {
   domain.default <- system.file("domain.lnd.1x1pt-brazil_navy.090715.nc", package = "PEcAn.FATES")
   file.copy(domain.default, local.rundir)
   domain.nc <- nc_open(file.path(local.rundir, basename(domain.default)), write = TRUE)
+  ncvar_put <- ncdf4::ncvar_put
   ncvar_put(nc = domain.nc, varid = "xc", vals = lon)
   ncvar_put(nc = domain.nc, varid = "yc", vals = lat)
   ncvar_put(nc = domain.nc, varid = "xv", vals = lon + c(-1, 1, 1, -1) * gridres)
