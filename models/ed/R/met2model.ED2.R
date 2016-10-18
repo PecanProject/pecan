@@ -62,7 +62,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   month <- c("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
   mon_num <- c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
   day2mo <- function(year, day) {
-    leap      <- (year%%4 == 0)
+    leap      <- lubridate::leap_year(year)
     mo        <- rep(NA, length(day))
     mo[leap]  <- findInterval(day[leap], dl)
     mo[!leap] <- findInterval(day[!leap], dm)
@@ -156,7 +156,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     for (y in (year + 1):(nyr - 1)) {
       ytmp <- rep(y, 365 * 86400 / dt)
       dtmp <- rep(1:365, each = 86400 / dt)
-      if (y%%4 == 0) {
+      if (lubridate::leap_year(y)) {
         ## is leap
         ytmp <- rep(y, 366 * 86400 / dt)
         dtmp <- rep(1:366, each = 86400 / dt)

@@ -132,7 +132,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
     
     if (sub_daily) {
       
-      if (year%%4 == 0) {
+      if (lubridate::leap_year(year)) {
         ndays <- 366
       } else {
         ndays <- 365
@@ -189,7 +189,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
     } else {
       
-      if (year%%4 == 0) {
+      if (lubridate::leap_year(year)) {
         ndays <- 366
       } else {
         ndays <- 365

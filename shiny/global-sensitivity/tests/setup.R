@@ -16,4 +16,4 @@ param_names <- paste0(pft.names, ".", colnames(ensemble.samples[[1]]))
 workflow <- current_workflow
 workflow_dir <- workflow$folder
 output_dir <- file.path(workflow_dir, "out")
-settings <- xmlToList(xmlParse(file.path(workflow_dir, "pecan.xml")))
+settings <- XML::xmlToList(XML::xmlParse(file.path(workflow_dir, "pecan.xml")))

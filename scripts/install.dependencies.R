@@ -25,7 +25,7 @@ list.of.packages <- c("data.table", "doSNOW", "dplR", "earth",
                       "emulator", "ggmap", "ggplot2", "gridExtra", "Hmisc", "httr", "kernlab", 
                       "GPfit", "knitr", "Maeswrap", "MASS", "MCMCpack", "mvtnorm", "ncdf4", 
                       "plotrix", "raster", "randtoolbox", "rjags", "rgdal", "tgp", "DBI", 
-                      "roxygen2", "stringr", "boot", "XML", "RNCEP", "foreign", 
+                      "roxygen2", "stringr", "testthat", "boot", "RNCEP", "foreign", 
                       "RCurl", "udunits2", "RPostgreSQL", "rPython", "minpack.lm", "mclust", 
                       "geonames", "Rcpp", "devtools", "inline", "segmented", "msm", "dplyr", 
                       "shiny", "scales", "maps", "sp")
