@@ -52,7 +52,7 @@ dplyr.count <- function(df) {
 #' Convert netcdf number of days to date
 #' @export
 ncdays2date <- function(time, unit) {
-  date <- parse_date_time(unit, c("ymd_hms", "ymd_h", "ymd"))
+  date <- lubridate::parse_date_time(unit, c("ymd_hms", "ymd_h", "ymd"))
   days <- udunits2::ud.convert(time, unit, paste("days since ", date))
   seconds <- udunits2::ud.convert(days, "days", "seconds")
   return(as.POSIXct.numeric(seconds, origin = date, tz = "UTC"))
