@@ -7,8 +7,6 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-library(XML)
-
 ##' This will generate the CSV file needed by write configs to write the
 ##' config.xml. This is a hack right now, all this information should be
 ##' in the PEcAn DB.
@@ -22,7 +20,7 @@ library(XML)
 ##'
 ##' @author Rob Kooper
 parse.history <- function(historyfile, outfile = "") {
-    hist <- xmlToList(xmlParse(historyfile))
+    hist <- XML::xmlToList(XML::xmlParse(historyfile))
     keys <- names(hist$pft)
     
     cat(paste(keys, collapse = ";"), sep = "\n", file = outfile, append = FALSE)

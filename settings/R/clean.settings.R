@@ -27,7 +27,7 @@ clean.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml") {
   if (is.null(inputfile) || !file.exists(inputfile)) {
     logger.severe("Could not find input file.")
   }
-  settings <- xmlToList(xmlParse(inputfile))
+  settings <- XML::xmlToList(XML::xmlParse(inputfile))
   
   # 1) change outdir
   settings$outdir <- "pecan"

@@ -22,7 +22,9 @@ Depends:
     REddyProc
 Imports:
     abind (>= 1.4.5),
-    stringr(>= 1.1.0)
+    stringr(>= 1.1.0),
+    XML (>= 3.98-1.4)
+>>>>>>> PecanProject/master
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
