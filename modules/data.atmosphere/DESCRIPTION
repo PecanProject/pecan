@@ -17,10 +17,10 @@ Depends:
     ncdf4,
     ggplot2,
     data.table,
-    lubridate,
     REddyProc
 Imports:
     abind (>= 1.4.5),
+    lubridate (>= 1.6.0),
     udunits2 (>= 0.11),
     XML (>= 3.98-1.4)
 License: FreeBSD + file LICENSE

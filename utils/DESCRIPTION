@@ -22,6 +22,7 @@ Depends:
 Imports:
     abind (>= 1.4.5),
     coda (>= 0.18),
+    lubridate (>= 1.6.0),
     plyr (>= 1.8.4),
     udunits2 (>= 0.11)
 Suggests:

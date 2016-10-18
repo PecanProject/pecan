@@ -22,11 +22,10 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
   #dependency minpack.lm may not install automatically, so install it first
   library(ncdf4)
   library(PEcAn.utils)
-  library(lubridate)
   
   # get start/end year code works on whole years only
-  start_year <- year(start_date)
-  end_year  <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year  <- lubridate::year(end_date)
   
   if (!file.exists(outfolder)) {
     dir.create(outfolder)

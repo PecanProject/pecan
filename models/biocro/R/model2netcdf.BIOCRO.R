@@ -22,7 +22,6 @@
 model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon = -9999) {
   
   library(data.table)
-  library(lubridate)
   library(ncdf4)
   library(PEcAn.utils)
   
@@ -46,9 +45,9 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
   
   for (yeari in unique(result$Year)) {
     R <- result[Year == yeari]
-    dates <- ymd(paste0(R$Year, "-01-01")) + days(as.numeric(R$DayofYear - 1)) + 
-      hours(R$Hour)
-    days_since_origin <- dates - ymd_hms("1700-01-01 00:00:00")
+    dates <- lubridate::ymd(paste0(R$Year, "-01-01")) + lubridate::days(as.numeric(R$DayofYear - 1)) + 
+      lubridate::hours(R$Hour)
+    days_since_origin <- dates - lubridate::ymd_hms("1700-01-01 00:00:00")
     if (!units(days_since_origin) == "days") {
       stop("check time units")
     }

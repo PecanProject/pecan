@@ -14,19 +14,17 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
                            overwrite = FALSE, verbose = FALSE, ...) {
   library(PEcAn.utils)
   library(RCurl)
-  library(lubridate)
   library(ncdf4)
   library(stringr)
   library(RCurl)
-  library(lubridate)
   library(ncdf4)
   library(stringr)
   
   # Date stuff
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
-  start_year <- year(start_date)
-  end_year   <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year   <- lubridate::year(end_date)
   site_id    <- as.numeric(site_id)
   outfolder  <- paste0(outfolder, "_site_", paste0(site_id%/%1e+09, "-", site_id%%1e+09))
   
