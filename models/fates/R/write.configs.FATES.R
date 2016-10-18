@@ -22,9 +22,14 @@
 ##-------------------------------------------------------------------------------------------------#
 write.config.FATES <- function(defaults, trait.values, settings, run.id) {
   library(PEcAn.utils)
-  # #OUTLINE OF MODULES # Copy Case and Build # -symbolic link to refernce case that is already
-  # completed # Edit user_nl_* files to add site info # make Jobs.sh -case_submit # call met2model
-  # and add to namelists #
+  #  
+  # #OUTLINE OF MODULES
+  #   # Copy Case and Build
+  #   #  -symbolic link to refernce case that is already completed
+  #   # Edit user_nl_* files to add site info
+  #   # make Jobs.sh -case_submit
+  #   # call met2model and add to namelists
+  #   #
   
   # find out where things are
   local.rundir <- file.path(settings$rundir, run.id)  ## this is on local machine for staging
@@ -37,15 +42,17 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id) {
   indir        <- file.path(rundir, "input")  ## input directory
   default      <- settings$run$inputs$default$path  ## reference inputs file structure
   
-  ## DATES CLM is a bit odd and takes a start date and length, so we need to precompute this needs
-  ## to be generalized to fractional years, but accounting for 365 day year
-  start_date <- as.Date(settings$run$start.date)
+  ## DATES
+  ## CLM is a bit odd and takes a start date and length, so we need to precompute
+  ## this needs to be generalized to fractional years, but accounting for 365 day year  start_date <- as.Date(settings$run$start.date)
   end_date   <- as.Date(settings$run$end.date)
   stop_n     <- as.numeric(end_date - start_date, units = "days") - 
     n_leap_day(start_date, end_date) + 1
   
   ##-----------------------------------------------------------------------##
-  ## ## INPUTS ## ##
+  ##                                                                       ##
+  ##                             INPUTS                                    ##
+  ##                                                                       ##
   ##-----------------------------------------------------------------------##
   
   ## SITE INFO --> DOMAIN FILE (lat/lon)
@@ -83,11 +90,14 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id) {
     writeLines(met, con = file.path(local.rundir, "datm.streams.txt.PEcAn_met"))
   }
   
-  # ... fill in this template, the met template, and then have jobs.sh put them in the right place.
-  # ... Test, then adjust DB to have met required
+  #   ... fill in this template, the met template, and then have jobs.sh put them in the right place. 
+  #   ... Test, then adjust DB to have met required
+  
   
   ##-----------------------------------------------------------------------##
-  ## ## JOB.SH ## ##
+  ##                                                                       ##
+  ##                             JOB.SH                                    ##
+  ##                                                                       ##
   ##-----------------------------------------------------------------------##
   
   # create launch script (which will create symlink)
@@ -132,8 +142,9 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id) {
   jobsh <- gsub("@START_DATE@", start_date, jobsh)
   jobsh <- gsub("@STOP_N@", stop_n, jobsh)
   
-  ## MET --> DATM jobsh <- gsub('@SITE_MET@', settings$run$inputs$met$path, jobsh) FOR FIRST STEP,
-  ## CAN USE DEFAULT
+  ## MET --> DATM
+  #   jobsh <- gsub('@SITE_MET@', settings$run$inputs$met$path, jobsh)
+  ## FOR FIRST STEP, CAN USE DEFAULT
   
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
