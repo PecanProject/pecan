@@ -13,6 +13,9 @@ MODULES := allometry assim.batch assim.sequential benchmark \
 
 all: .install PEcAn.all ${BASE_PACKAGES} ${MODELS} ${MODULES}
 
+clean:
+	rm -rf .install
+
 .install:
 	mkdir -p $@
 
