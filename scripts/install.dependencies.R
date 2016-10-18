@@ -26,7 +26,7 @@ list.of.packages <- c("data.table", "doSNOW", "dplR", "earth",
                       "GPfit", "knitr", "Maeswrap", "MASS", "MCMCpack", "mvtnorm", "ncdf4", 
                       "plotrix", "raster", "randtoolbox", "rjags", "rgdal", "tgp", "DBI", 
                       "roxygen2", "boot", "RNCEP", "foreign", 
-                      "RCurl", "udunits2", "RPostgreSQL", "rPython", "minpack.lm", "mclust", 
+                      "RCurl", "RPostgreSQL", "rPython", "minpack.lm", "mclust", 
                       "geonames", "Rcpp", "devtools", "inline", "segmented", "msm", "dplyr", 
                       "shiny", "scales", "maps", "sp")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
