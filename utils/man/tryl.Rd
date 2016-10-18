@@ -21,7 +21,7 @@ adaptation of try that returns a logical value (FALSE if error)
 \examples{
 tryl(1+1)
 # TRUE
-tryl(sum("a"))
+tryl(sum('a'))
 # FALSE
 }
 \author{

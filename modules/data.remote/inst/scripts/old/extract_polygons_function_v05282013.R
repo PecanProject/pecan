@@ -10,10 +10,7 @@
 
 ##load required pkgs and libraries
 require(rgdal)
-library(rgdal)
-require(raster)
 library(raster)
-require(sp)
 library(sp)
 
 scn_metadata <- read.table(file="/home/bhardima/pecan/modules/data.remote/output/metadata/output_metadata.csv", header=T, sep="\t")

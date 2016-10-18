@@ -29,7 +29,7 @@
 ##' library(PEcAn.DB)
 ##' library(lubridate)
 ##' library(RPostgreSQL)
-##' bety = list(user="bety", password="bety", host="localhost", dbname="bety", driver="PostgreSQL", write=TRUE)
+##' bety = list(user='bety', password='bety', host='localhost', dbname='bety', driver='PostgreSQL', write=TRUE)
 ##' con <- db.open(bety)
 ##' in.path <- '/home/carya/sites/willow/'
 ##' in.prefix <- 'FLX_US-WCr_FLUXNET2015_SUBSET_HH_1999-2014_1-1'
@@ -40,475 +40,537 @@
 ##' end_date <- ymd_hm('200412312330')
 ##' PEcAn.data.atmosphere::met2CF.csv(in.path,in.prefix,outfolder,start_date,end_date,format,overwrite=TRUE)
 ##' }
-met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, format, lat=NULL, lon=NULL, nc_verbose = FALSE, overwrite=FALSE, ...){
+met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, format, lat = NULL, lon = NULL, 
+                       nc_verbose = FALSE, overwrite = FALSE, ...) {
   library(PEcAn.utils)
-  library(lubridate)
-  library(udunits2)  
+  library(udunits2)
   library(ncdf4)
   
-  start_year <- year(start_date)
-  end_year <- year(end_date)
-  if(!file.exists(outfolder)){
+  start_year <- lubridate::year(start_date)
+  end_year   <- lubridate::year(end_date)
+  if (!file.exists(outfolder)) {
     dir.create(outfolder)
   }
   
   ## set up results output to return
   rows <- end_year - start_year + 1
-  results <- data.frame(file=character(rows), host=character(rows),
-                        mimetype=character(rows), formatname=character(rows),
-                        startdate=character(rows), enddate=character(rows),
-                        dbfile.name = in.prefix,
+  results <- data.frame(file = character(rows), 
+                        host = character(rows), 
+                        mimetype = character(rows), 
+                        formatname = character(rows),
+                        startdate = character(rows),
+                        enddate = character(rows),
+                        dbfile.name = in.prefix, 
                         stringsAsFactors = FALSE)
   
   files <- dir(in.path, in.prefix, full.names = TRUE)
-  files <- files[grep("*.csv",files)]
-  if(length(files)==0){
+  files <- files[grep("*.csv", files)]
+  if (length(files) == 0) {
     return(NULL)
     logger.warn("No met files named ", in.prefix, "found in ", in.path)
   }
   files <- files[1]
   
   # get lat/lon from format.vars if not passed directly
-  if (missing(lat) || is.null(lat)) { lat <- format$lat }
-  if (missing(lon) || is.null(lon)) { lon <- format$lon }
+  if (missing(lat) || is.null(lat)) {
+    lat <- format$lat
+  }
+  if (missing(lon) || is.null(lon)) {
+    lon <- format$lon
+  }
   
-  #create new filename by swapping .csv with .nc, and adding year strings from start to end year
-  #year(start_date)
+  # create new filename by swapping .csv with .nc, and adding year strings from start to end year
+  # year(start_date)
   all_years <- start_year:end_year
-  all_files <- paste0(file.path(outfolder,gsub(".csv","",basename(files))),".",as.character(all_years),".nc")
+  all_files <- paste0(file.path(outfolder, gsub(".csv", "", basename(files))), ".", as.character(all_years), 
+                      ".nc")
   
   results$file <- all_files
   results$host <- fqdn()
-  #The For below loop updates the start/end date once file is read in
-  results$startdate <- paste0(all_years,"-01-01 00:00:00")
-  results$enddate <- paste0(all_years,"-12-31 23:59:59")
-  results$mimetype <- 'application/x-netcdf'
-  results$formatname <- 'CF'
   
-  #If all the files already exist, then skip the conversion unless overwrite=TRUE
+  # The For below loop updates the start/end date once file is read in
+  results$startdate  <- paste0(all_years, "-01-01 00:00:00")
+  results$enddate    <- paste0(all_years, "-12-31 23:59:59")
+  results$mimetype   <- "application/x-netcdf"
+  results$formatname <- "CF"
+  
+  # If all the files already exist, then skip the conversion unless overwrite=TRUE
   if (!overwrite && all(file.exists(all_files))) {
     logger.debug("File '", all_files, "' already exist, skipping.")
   } else {
-    #If some of the files already exist, skip those, but still need to read file
+    # If some of the files already exist, skip those, but still need to read file
     if (!overwrite && any(file.exists(all_files))) {
-      logger.debug("Files ",all_files[which(file.exists(all_files))]," already exist, skipping those")
+      logger.debug("Files ", all_files[which(file.exists(all_files))], " already exist, skipping those")
       all_years <- all_years[which(!file.exists(all_files))]
       all_files <- all_files[which(!file.exists(all_files))]
     }
     
-    ## Read the CSV file
-    ## some files have a line under the header that lists variable units
+    ## Read the CSV file some files have a line under the header that lists variable units
     ## search for NA's after conversion to numeric
-    if(is.null(format$header)){
+    if (is.null(format$header)) {
       logger.warn("please specify number of header rows in file")
-      alldat <- read.csv(files, skip = format$skip, na.strings = format$na.strings, as.is=TRUE, 
+      alldat <- read.csv(files, 
+                         skip = format$skip, 
+                         na.strings = format$na.strings,
+                         as.is = TRUE, 
                          check.names = FALSE)
-    } else if (format$header == 0 | format$header == 1){
-      alldat <- read.csv(files, skip = format$skip, na.strings = format$na.strings, as.is=TRUE,
-                         check.names = FALSE, header = as.logical(format$header))
-    }else if (format$header > 1) {
-      alldat <- read.csv(files, skip = format$skip, na.strings = format$na.strings, as.is=TRUE, 
-                         check.names = FALSE, header = TRUE)
-      alldat <- alldat[-c(1:header-1),]
+    } else if (format$header == 0 | format$header == 1) {
+      alldat <- read.csv(files, 
+                         skip = format$skip, 
+                         na.strings = format$na.strings,
+                         as.is = TRUE, 
+                         check.names = FALSE, 
+                         header = as.logical(format$header))
+    } else if (format$header > 1) {
+      alldat <- read.csv(files, 
+                         skip = format$skip,
+                         na.strings = format$na.strings, 
+                         as.is = TRUE, 
+                         check.names = FALSE,
+                         header = TRUE)
+      alldat <- alldat[-c(1:header - 1), ]
     }
     
-    ##skip reading columns that are defined in format but not found in CSV header 
-    ##
-   if (format$header >= 1) {
-     csv_colnames <- names(alldat)
-      missing_col <- which(!(format$vars$input_name %in% csv_colnames))
-     format$vars$bety_name[missing_col] = paste0(format$vars$bety_name[missing_col],"(missing)") 
+    ## skip reading columns that are defined in format but not found in CSV header
+    if (format$header >= 1) {
+      csv_colnames <- names(alldat)
+      missing_col  <- which(!(format$vars$input_name %in% csv_colnames))
+      format$vars$bety_name[missing_col] <- paste0(format$vars$bety_name[missing_col], "(missing)")
     }
-     
+    
     ## Get datetime vector - requires one column be connected to bety variable datetime or 3  columns year,day,hour
     ## FUTURE: Also consider year,month,day_of_month,hour or year,MMDD or fjday or other combinations
-   
-   datetime_index <- which(format$vars$bety_name == "datetime")
-    if (length(datetime_index)==0) { 
-      if (all(any(format$vars$bety_name == "year"),any(format$vars$bety_name == "day"),any(format$vars$bety_name == "hour"))) {
-        year_index = which(format$vars$bety_name == "year")
-        DOY_index = which(format$vars$bety_name == "day")
-        hour_index = which(format$vars$bety_name == "hour")
-        yearday <- format(strptime(paste0(alldat[,format$vars$input_name[year_index]],"-",alldat[,format$vars$input_name[DOY_index]]),format="%Y-%j"),format="%Y-%m-%d")
-        hh <- floor(alldat[,format$vars$input_name[hour_index]])
-        mm <- (alldat[,format$vars$input_name[hour_index]]-hh)*60
-        yyddhhmm <- strptime(paste0(yearday," ",hh,":",mm),format="%Y-%m-%d %H:%M")
-        alldatetime <- as.POSIXct(yyddhhmm)          
+    
+    datetime_index <- which(format$vars$bety_name == "datetime")
+    if (length(datetime_index) == 0) {
+      if (all(any(format$vars$bety_name == "year"), 
+              any(format$vars$bety_name == "day"),
+              any(format$vars$bety_name == "hour"))) {
+        year_index <- which(format$vars$bety_name == "year")
+        DOY_index  <- which(format$vars$bety_name == "day")
+        hour_index <- which(format$vars$bety_name == "hour")
+        yearday <- format(strptime(paste0(alldat[, format$vars$input_name[year_index]], "-", 
+                                          alldat[, format$vars$input_name[DOY_index]]), format = "%Y-%j"), format = "%Y-%m-%d")
+        hh          <- floor(alldat[, format$vars$input_name[hour_index]])
+        mm          <- (alldat[, format$vars$input_name[hour_index]] - hh) * 60
+        yyddhhmm    <- strptime(paste0(yearday, " ", hh, ":", mm), format = "%Y-%m-%d %H:%M")
+        alldatetime <- as.POSIXct(yyddhhmm)
       } else {
         ## Does not match any of the known date formats, add new ones here!
-        logger.error("datetime column is not specified in format") 
+        logger.error("datetime column is not specified in format")
       }
     } else {
-    datetime_units <- format$vars$input_units[datetime_index] #lubridate function to call such as ymd_hms
-    if (datetime_units=="") { datetime_units <- "ymd_hm" }
-    datetime_raw <- alldat[, format$vars$input_name[datetime_index]]
-    alldatetime <- do.call(datetime_units, list(datetime_raw))  #convert to POSIXct convention
+      datetime_units <- format$vars$input_units[datetime_index]  #lubridate function to call such as ymd_hms
+      if (datetime_units == "") {
+        datetime_units <- "ymd_hm"
+      }
+      datetime_raw <- alldat[, format$vars$input_name[datetime_index]]
+      alldatetime <- do.call(datetime_units, list(datetime_raw))  #convert to POSIXct convention
     }
-    ## and remove datetime from 'dat' dataframe
-    ##dat[, datetime_index] <- format$na.strings    
+    ## and remove datetime from 'dat' dataframe dat[, datetime_index] <- format$na.strings
     
-    ## Only run if years > start_date < end_date,  if both are provided, clip data to those dates
+    ## Only run if years > start_date < end_date
+    ## if both are provided, clip data to those dates
     ## Otherwise set start/end to first/last datetime of file
-    years = year(alldatetime)  
+    years <- year(alldatetime)
     if (!missing(start_date) && !missing(end_date)) {
       availdat <- which(years >= year(start_date) & years <= year(end_date))
-      if (length(availdat)==0) { logger.error("data does not contain output after start_date or before end_date")}
+      if (length(availdat) == 0) {
+        logger.error("data does not contain output after start_date or before end_date")
+      }
       alldat <- alldat[availdat, ]
       alldatetime <- alldatetime[availdat]
       years <- years[availdat]
     } else {
-      start_date = alldatetime[1]
-      end_date = alldatetime[length(alldatetime)]
+      start_date <- alldatetime[1]
+      end_date <- alldatetime[length(alldatetime)]
     }
     ## convert data to numeric - not needed and is slow
-    #dat <- as.data.frame(datetime = datetime, sapply(dat[,-datetime_index], as.numeric))
+    ## dat <- as.data.frame(datetime = datetime, sapply(dat[,-datetime_index], as.numeric))
     
     ## loop over years that need to be read
     
-    for (i in 1:length(all_years)) {
+    for (i in seq_along(all_years)) {
       
       ## Test that file has data for year being processed, else move on
       this.year <- all_years[i]
-      availdat.year <- which(years==this.year)
-      if (length(availdat.year)==0) {
-        logger.debug("File ",all_files," has no data for year ",this.year)
+      availdat.year <- which(years == this.year)
+      if (length(availdat.year) == 0) {
+        logger.debug("File ", all_files, " has no data for year ", this.year)
         next
       }
       new.file <- all_files[i]
       
       ## Extract that year's data from large file
-      dat <- alldat[availdat.year,]
+      dat      <- alldat[availdat.year, ]
       datetime <- alldatetime[availdat.year]
       
-      results$startdate[this.year-start_year+1] <- as.character(datetime[1])
-      results$enddate[this.year-start_year+1] <- as.character(datetime[length(datetime)])
+      results$startdate[this.year - start_year + 1] <- as.character(datetime[1])
+      results$enddate[this.year - start_year + 1]   <- as.character(datetime[length(datetime)])
       
-      ### create time dimension 
+      ### create time dimension
       days_since_1700 <- datetime - ymd_hm("1700-01-01 00:00")
-      t <- ncdim_def("time", "days since 1700-01-01", as.numeric(days_since_1700)) #define netCDF dimensions for variables
+      t <- ncdim_def("time", "days since 1700-01-01", as.numeric(days_since_1700))  #define netCDF dimensions for variables
       timestep <- as.numeric(mean(ud.convert(diff(days_since_1700), "d", "s")))
       
       ## create lat lon dimensions
-      x <- ncdim_def("longitude", "degrees_east", lon) #define netCDF dimensions for variables
+      x <- ncdim_def("longitude", "degrees_east", lon)  # define netCDF dimensions for variables
       y <- ncdim_def("latitude", "degrees_north", lat)
-      xytdim <- list(x,y,t)
+      xytdim <- list(x, y, t)
       
       ## airT (celsius) => air_temperature (K) - REQUIRED for all met files
       locs <- which(format$vars$bety_name %in% "airT")
-      if (length(locs)>0) {
+      if (length(locs) > 0) {
         k <- locs[1]
-        airT.var <- ncvar_def(name="air_temperature",units = "K",dim = xytdim)
-        nc <- nc_create(new.file, vars = airT.var) #create netCDF file
+        airT.var <- ncvar_def(name = "air_temperature", units = "K", dim = xytdim)
+        nc <- nc_create(new.file, vars = airT.var)  #create netCDF file
         arrloc <- as.character(format$vars$input_name[k])
-        if (arrloc=="") {
-          if (any(colnames(format$vars)=="column_number")) { 
+        if (arrloc == "") {
+          if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
             logger.error("Cannot find column location for airT by name or column number")
           }
         }
-        ncvar_put(nc, varid = airT.var,
-                  vals=met.conv(dat[,arrloc],format$vars$input_units[k],"celsius","K"))  
-      } else { logger.error("No air temperature found in met file") }
+        ncvar_put(nc, varid = airT.var, 
+                  vals = met.conv(dat[, arrloc], format$vars$input_units[k], "celsius", "K"))
+      } else {
+        logger.error("No air temperature found in met file")
+      }
       
       ## air_pressure (Pa) => air_pressure (Pa)
       locs <- which(format$vars$bety_name %in% "air_pressure")
-      if (length(locs)>0) {
+      if (length(locs) > 0) {
         k <- locs[1]
-        Psurf.var <- ncvar_def(name="air_pressure",units = "Pa",dim = xytdim)
+        Psurf.var <- ncvar_def(name = "air_pressure", units = "Pa", dim = xytdim)
         nc <- ncvar_add(nc = nc, v = Psurf.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
-        if (arrloc=="") {
-          if (any(colnames(format$vars)=="column_number")) { 
+        if (arrloc == "") {
+          if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
             logger.error("Cannot find column location for air_pressure by name or column number")
           }
         }
-        ncvar_put(nc, varid = Psurf.var,
-                  vals=met.conv(dat[,arrloc],format$vars$input_units[k],"Pa","Pa"))  
+        ncvar_put(nc, varid = Psurf.var, 
+                  vals = met.conv(dat[, arrloc], format$vars$input_units[k], "Pa", "Pa"))
       }
       
-      ## co2atm (umol/mol) => mole_fraction_of_carbon_dioxide_in_air (mol/mol) 
+      ## co2atm (umol/mol) => mole_fraction_of_carbon_dioxide_in_air (mol/mol)
       locs <- which(format$vars$bety_name %in% "co2atm")
-      if (length(locs)>0) {
+      if (length(locs) > 0) {
         k <- locs[1]
-        CO2.var <- ncvar_def(name="mole_fraction_of_carbon_dioxide_in_air",units = "mol mol-1",dim = xytdim)
+        CO2.var <- ncvar_def(name = "mole_fraction_of_carbon_dioxide_in_air", 
+                             units = "mol mol-1", 
+                             dim = xytdim)
         nc <- ncvar_add(nc = nc, v = CO2.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
-        if (arrloc=="") {
-          if (any(colnames(format$vars)=="column_number")) { 
+        if (arrloc == "") {
+          if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
             logger.error("Cannot find column location for co2atm by name or column number")
           }
         }
-        ncvar_put(nc, varid = CO2.var,
-                  vals=met.conv(dat[,arrloc],format$vars$input_units[k],"umol mol-1","mol mol-1"))  
-      }    
+        ncvar_put(nc, 
+                  varid = CO2.var,
+                  vals = met.conv(dat[, arrloc], format$vars$input_units[k], "umol mol-1", "mol mol-1"))
+      }
       
       ## soilM (%) => volume_fraction_of_condensed_water_in_soil (%)
       locs <- which(format$vars$bety_name %in% "soilM")
-      if (length(locs)>0) {
+      if (length(locs) > 0) {
         k <- locs[1]
-        soilM.var <- ncvar_def(name="volume_fraction_of_condensed_water_in_soil",units = "1",dim = xytdim)
+        soilM.var <- ncvar_def(name = "volume_fraction_of_condensed_water_in_soil", 
+                               units = "1", 
+                               dim = xytdim)
         nc <- ncvar_add(nc = nc, v = soilM.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
-        if (arrloc=="") {
-          if (any(colnames(format$vars)=="column_number")) { 
+        if (arrloc == "") {
+          if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
             logger.error("Cannot find column location for soilM by name or column number")
           }
         }
-        ncvar_put(nc, varid = soilM.var,
-                  vals=met.conv(dat[,arrloc],format$vars$input_units[k],"1","1"))  
+        ncvar_put(nc, 
+                  varid = soilM.var,
+                  vals = met.conv(dat[, arrloc], format$vars$input_units[k], "1", "1"))
       }
       
       ## soilT (celsius) => soil_temperature (K)
       locs <- which(format$vars$bety_name %in% "soilT")
-      if (length(locs)>0) {
+      if (length(locs) > 0) {
         k <- locs[1]
-        soilT.var <- ncvar_def(name="soil_temperature",units = "K",dim = xytdim)
+        soilT.var <- ncvar_def(name = "soil_temperature", units = "K", dim = xytdim)
         nc <- ncvar_add(nc = nc, v = soilT.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
-        if (arrloc=="") {
-          if (any(colnames(format$vars)=="column_number")) { 
+        if (arrloc == "") {
+          if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
             logger.error("Cannot find column location for soilT by name or column number")
           }
         }
-        ncvar_put(nc, varid = soilT.var,
-                  vals=met.conv(dat[,arrloc],format$vars$input_units[k],"celsius","K"))  
+        ncvar_put(nc, 
+                  varid = soilT.var, 
+                  vals = met.conv(dat[, arrloc], format$vars$input_units[k], "celsius", "K"))
       }
       
       ## relative_humidity (%) => relative_humidity (%)
       locs <- which(format$vars$bety_name %in% "relative_humidity")
-      if (length(locs)>0) {
+      if (length(locs) > 0) {
         k <- locs[1]
-        RH.var <- ncvar_def(name="relative_humidity",units = "%",dim = xytdim)
+        RH.var <- ncvar_def(name = "relative_humidity", units = "%", dim = xytdim)
         nc <- ncvar_add(nc = nc, v = RH.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
-        if (arrloc=="") {
-          if (any(colnames(format$vars)=="column_number")) { 
+        if (arrloc == "") {
+          if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
             logger.error("Cannot find column location for relative_humidity by name or column number")
           }
         }
-        ncvar_put(nc, varid = RH.var,
-                  vals=met.conv(dat[,arrloc],format$vars$input_units[k],"%","%"))  
+        ncvar_put(nc, 
+                  varid = RH.var,
+                  vals = met.conv(dat[, arrloc], format$vars$input_units[k], "%", "%"))
       }
       
       ## specific_humidity (g g-1) => specific_humidity (kg kg-1)
       locs <- which(format$vars$bety_name %in% "specific_humidity")
-      if (length(locs)>0) {
+      if (length(locs) > 0) {
         k <- locs[1]
-        qair.var <- ncvar_def(name="specific_humidity",units = "kg kg-1",dim = xytdim)
+        qair.var <- ncvar_def(name = "specific_humidity", units = "kg kg-1", dim = xytdim)
         nc <- ncvar_add(nc = nc, v = qair.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
-        if (arrloc=="") {
-          if (any(colnames(format$vars)=="column_number")) { 
+        if (arrloc == "") {
+          if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
             logger.error("Cannot find column location for specific_humidity by name or column number")
           }
         }
-        ncvar_put(nc, varid = qair.var,
-                  vals=met.conv(dat[,arrloc],format$vars$input_units[k],"g g-1","kg kg-1"))  
+        ncvar_put(nc, 
+                  varid = qair.var, 
+                  vals = met.conv(dat[, arrloc], format$vars$input_units[k], "g g-1", "kg kg-1"))
       } else {
         ## file needs to be closed and re-opened to access added variables
         nc_close(nc)
-        nc = nc_open(new.file,write=TRUE,readunlim=FALSE)
-        if("relative_humidity" %in% names(nc$var) & "air_temperature" %in% names(nc$var)){
+        nc <- nc_open(new.file, write = TRUE, readunlim = FALSE)
+        if ("relative_humidity" %in% names(nc$var) & "air_temperature" %in% names(nc$var)) {
           ## Convert RH to SH
-          qair = rh2qair(rh=ncvar_get(nc,"relative_humidity")/100,T=ncvar_get(nc,"air_temperature"))
-          qair.var = ncvar_def(name="specific_humidity",units="kg kg-1",dim=xytdim)
-          nc = ncvar_add(nc = nc, v = qair.var, verbose = nc_verbose) #add variable to existing netCDF file
-          ncvar_put(nc, varid = 'specific_humidity',vals=qair)
+          qair <- rh2qair(rh = ncvar_get(nc, "relative_humidity")/100, T = ncvar_get(nc, "air_temperature"))
+          qair.var <- ncvar_def(name = "specific_humidity", units = "kg kg-1", dim = xytdim)
+          nc <- ncvar_add(nc = nc, v = qair.var, verbose = nc_verbose)  #add variable to existing netCDF file
+          ncvar_put(nc, varid = "specific_humidity", vals = qair)
         }
       }
       
       ## VPD (Pa) => water_vapor_saturation_deficit (Pa)
       locs <- which(format$vars$bety_name %in% "VPD")
-      if (length(locs)>0) {
+      if (length(locs) > 0) {
         k <- locs[1]
-        VPD.var <- ncvar_def(name="water_vapor_saturation_deficit",units = "Pa",dim = xytdim)
+        VPD.var <- ncvar_def(name = "water_vapor_saturation_deficit", units = "Pa", dim = xytdim)
         nc <- ncvar_add(nc = nc, v = VPD.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
-        if (arrloc=="") {
-          if (any(colnames(format$vars)=="column_number")) { 
+        if (arrloc == "") {
+          if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
             logger.error("Cannot find column location for VPD by name or column number")
           }
         }
-        ncvar_put(nc, varid = VPD.var,
-                  vals=met.conv(dat[,arrloc],format$vars$input_units[k],"Pa","Pa"))  
+        ncvar_put(nc, 
+                  varid = VPD.var,
+                  vals = met.conv(dat[, arrloc], format$vars$input_units[k], "Pa", "Pa"))
       }
       
-      ## surface_downwelling_longwave_flux_in_air (W m-2) => surface_downwelling_longwave_flux_in_air (W m-2)
+      ## surface_downwelling_longwave_flux_in_air (W m-2) => surface_downwelling_longwave_flux_in_air (W
+      ## m-2)
       locs <- which(format$vars$bety_name %in% "surface_downwelling_longwave_flux_in_air")
-      if (length(locs)>0) {
+      if (length(locs) > 0) {
         k <- locs[1]
-        LW.var <- ncvar_def(name="surface_downwelling_longwave_flux_in_air",units = "W m-2",dim = xytdim)
+        LW.var <- ncvar_def(name = "surface_downwelling_longwave_flux_in_air",
+                            units = "W m-2", 
+                            dim = xytdim)
         nc <- ncvar_add(nc = nc, v = LW.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
-        if (arrloc=="") {
-          if (any(colnames(format$vars)=="column_number")) { 
+        if (arrloc == "") {
+          if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
             logger.error("Cannot find column location for surface_downwelling_longwave_flux_in_air by name or column number")
           }
         }
-        ncvar_put(nc, varid = LW.var,
-                  vals=met.conv(dat[,arrloc],format$vars$input_units[k],"W m-2","W m-2"))  
+        ncvar_put(nc, 
+                  varid = LW.var, 
+                  vals = met.conv(dat[, arrloc], format$vars$input_units[k], "W m-2", "W m-2"))
       }
       
       ## solar_radiation (W m-2) => surface_downwelling_shortwave_flux_in_air (W m-2)
       locs <- which(format$vars$bety_name %in% "solar_radiation")
-      if (length(locs)>0) {
+      if (length(locs) > 0) {
         k <- locs[1]
-        SW.var <- ncvar_def(name="surface_downwelling_shortwave_flux_in_air",units = "W m-2",dim = xytdim)
+        SW.var <- ncvar_def(name = "surface_downwelling_shortwave_flux_in_air", 
+                            units = "W m-2", 
+                            dim = xytdim)
         nc <- ncvar_add(nc = nc, v = SW.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
-        if (arrloc=="") {
-          if (any(colnames(format$vars)=="column_number")) { 
+        if (arrloc == "") {
+          if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
             logger.error("Cannot find column location for solar_radiation by name or column number")
           }
         }
-        ncvar_put(nc, varid = SW.var,
-                  vals=met.conv(dat[,arrloc],format$vars$input_units[k],"W m-2","W m-2"))  
+        ncvar_put(nc, 
+                  varid = SW.var, 
+                  vals = met.conv(dat[, arrloc], format$vars$input_units[k], "W m-2", "W m-2"))
       }
       
       ## PAR (umol m-2 s-1) => surface_downwelling_photosynthetic_photon_flux_in_air (mol m-2 s-1)
       locs <- which(format$vars$bety_name %in% "PAR")
-      if (length(locs)>0) {
+      if (length(locs) > 0) {
         k <- locs[1]
-        PAR.var <- ncvar_def(name="surface_downwelling_photosynthetic_photon_flux_in_air",units = "mol m-2 s-1",dim = xytdim)
+        PAR.var <- ncvar_def(name = "surface_downwelling_photosynthetic_photon_flux_in_air", 
+                             units = "mol m-2 s-1", 
+                             dim = xytdim)
         nc <- ncvar_add(nc = nc, v = PAR.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
-        if (arrloc=="") {
-          if (any(colnames(format$vars)=="column_number")) { 
+        if (arrloc == "") {
+          if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
             logger.error("Cannot find column location for PAR by name or column number")
           }
         }
-        ncvar_put(nc, varid = PAR.var,
-                  vals=met.conv(dat[,arrloc],format$vars$input_units[k],"umol m-2 s-1","mol m-2 s-1"))  
+        ncvar_put(nc, 
+                  varid = PAR.var,
+                  vals = met.conv(dat[, arrloc], format$vars$input_units[k], "umol m-2 s-1", "mol m-2 s-1"))
       }
       
       ## precipitation_flux (kg m-2 s-1) => precipitation_flux (kg m-2 s-1)
       locs <- which(format$vars$bety_name %in% "precipitation_flux")
-      if (length(locs)>0) {
+      if (length(locs) > 0) {
         k <- locs[1]
-        precip.var <- ncvar_def(name="precipitation_flux",units = "kg m-2 s-1",dim = xytdim)
+        precip.var <- ncvar_def(name = "precipitation_flux",
+                                units = "kg m-2 s-1", 
+                                dim = xytdim)
         nc <- ncvar_add(nc = nc, v = precip.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
-        if (arrloc=="") {
-          if (any(colnames(format$vars)=="column_number")) { 
+        if (arrloc == "") {
+          if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
             logger.error("Cannot find column location for precipitation_flux by name or column number")
           }
         }
-        rain <- dat[,arrloc]
+        rain <- dat[, arrloc]
         rain.units <- as.character(format$vars$input_units[k])
-        rain.units <- switch(rain.units,
-                             mm = {rain = rain / timestep; "kg m-2 s-1"},
-                             m  = {rain = rain / timestep; "Mg m-2 s-1"},
-                             'in' = {rain=ud.convert(rain / timestep, "in", "mm"); "kg m-2 s-1"},
-                             'mm h-1' = {rain = ud.convert(rain / timestep, "h", "s"); "kg m-2 s-1"})        
-        ncvar_put(nc, varid = precip.var,
-                  vals = met.conv(rain, rain.units, "kg m-2 s-1", "kg m-2 s-1"))  
+        rain.units <- switch(rain.units, mm = {
+          rain <- rain / timestep
+          "kg m-2 s-1"
+        }, m = {
+          rain <- rain / timestep
+          "Mg m-2 s-1"
+        }, `in` = {
+          rain <- ud.convert(rain / timestep, "in", "mm")
+          "kg m-2 s-1"
+        }, `mm h-1` = {
+          rain <- ud.convert(rain / timestep, "h", "s")
+          "kg m-2 s-1"
+        })
+        ncvar_put(nc, varid = precip.var, 
+                  vals = met.conv(rain, rain.units, "kg m-2 s-1", "kg m-2 s-1"))
       }
       
-      ## eastward_wind (m s-1) => eastward_wind (m s-1)
+      ## eastward_wind (m s-1) => eastward_wind (m s-1) 
       ## northward_wind (m s-1) => northward_wind (m s-1)
       if (("eastward_wind" %in% format$vars$bety_name) & ("northward_wind" %in% format$vars$bety_name)) {
         locs <- which(format$vars$bety_name %in% "northward_wind")
         k <- locs[1]
-        Nwind.var <- ncvar_def(name="northward_wind",units = "m s-1",dim = xytdim)
+        Nwind.var <- ncvar_def(name = "northward_wind", units = "m s-1", dim = xytdim)
         nc <- ncvar_add(nc = nc, v = Nwind.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
-        if (arrloc=="") {
-          if (any(colnames(format$vars)=="column_number")) { 
+        if (arrloc == "") {
+          if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
             logger.error("Cannot find column location for eastward_wind by name or column number")
           }
         }
-        ncvar_put(nc, varid = Nwind.var,
-                  vals=met.conv(dat[,arrloc],format$vars$input_units[k],"m s-1","m s-1"))  
+        ncvar_put(nc, 
+                  varid = Nwind.var, 
+                  vals = met.conv(dat[, arrloc], format$vars$input_units[k], "m s-1", "m s-1"))
+        
         locs <- which(format$vars$bety_name %in% "eastward_wind")
         k <- locs[1]
-        Ewind.var <- ncvar_def(name="eastward_wind",units = "m s-1",dim = xytdim)
+        Ewind.var <- ncvar_def(name = "eastward_wind", units = "m s-1", dim = xytdim)
         nc <- ncvar_add(nc = nc, v = Ewind.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
-        if (arrloc=="") {
-          if (any(colnames(format$vars)=="column_number")) { 
+        if (arrloc == "") {
+          if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
             logger.error("Cannot find column location for northward_wind by name or column number")
           }
-          ncvar_put(nc, varid = Ewind.var,
-                    vals=met.conv(dat[,arrloc],format$vars$input_units[k],"m s-1","m s-1"))  
-        }      
+          ncvar_put(nc, 
+                    varid = Ewind.var, 
+                    vals = met.conv(dat[, arrloc], format$vars$input_units[k], "m s-1", "m s-1"))
+        }
       } else {
         locs_wd <- which(format$vars$bety_name %in% "wind_direction")
         locs_ws <- which(format$vars$bety_name %in% "Wspd")
-        if (length(locs_wd)>0 & length(locs_ws)>0) {
-          #wind speed and direction available, convert to northward and eastward
-          k_wd = locs_wd[1]
-          k_ws = locs_ws[1]
+        if (length(locs_wd) > 0 & length(locs_ws) > 0) {
+          # wind speed and direction available, convert to northward and eastward
+          k_wd <- locs_wd[1]
+          k_ws <- locs_ws[1]
           arrloc_wd <- as.character(format$vars$input_name[k_wd])
-          if (arrloc_wd=="") {
-            if (any(colnames(format$vars)=="column_number")) { 
+          if (arrloc_wd == "") {
+            if (any(colnames(format$vars) == "column_number")) {
               arrloc_wd <- format$vars$column_number[k_wd]
             } else {
               logger.error("Cannot find column location for wind_direction by name or column number")
             }
           }
           arrloc_ws <- as.character(format$vars$input_name[k_ws])
-          if (arrloc_ws=="") {
-            if (any(colnames(format$vars)=="column_number")) { 
+          if (arrloc_ws == "") {
+            if (any(colnames(format$vars) == "column_number")) {
               arrloc_ws <- format$vars$column_number[k_ws]
             } else {
               logger.error("Cannot find column location for wind_speed by name or column number")
             }
-          }        
-          wind <- met.conv(dat[,arrloc_ws],format$vars$input_units[k_ws],"m s-1","m s-1")
-          wind_direction <- met.conv(dat[,arrloc_wd],format$vars$input_units[k_wd],"radians","radians")
-          uwind <- wind*cos(wind_direction)
-          vwind <- wind*sin(wind_direction)
-          Ewind.var <- ncvar_def(name="eastward_wind",units = "m s-1",dim = xytdim)
+          }
+          wind <- met.conv(dat[, arrloc_ws], format$vars$input_units[k_ws], "m s-1", "m s-1")
+          wind_direction <- met.conv(dat[, arrloc_wd], 
+                                     format$vars$input_units[k_wd], "radians", 
+                                     "radians")
+          uwind <- wind * cos(wind_direction)
+          vwind <- wind * sin(wind_direction)
+          Ewind.var <- ncvar_def(name = "eastward_wind", units = "m s-1", dim = xytdim)
           nc <- ncvar_add(nc = nc, v = Ewind.var, verbose = nc_verbose)
-          Nwind.var <- ncvar_def(name="northward_wind",units = "m s-1",dim = xytdim)
+          Nwind.var <- ncvar_def(name = "northward_wind", units = "m s-1", dim = xytdim)
           nc <- ncvar_add(nc = nc, v = Nwind.var, verbose = nc_verbose)
-          ncvar_put(nc, varid = Ewind.var,vals=uwind)  
-          ncvar_put(nc, varid = Nwind.var,vals=vwind)  
+          ncvar_put(nc, varid = Ewind.var, vals = uwind)
+          ncvar_put(nc, varid = Nwind.var, vals = vwind)
         } else {
-          #no wind direction is present, just insert wind_speed
-          ## Wspd (m s-1) => wind_speed (m s-1)
+          # no wind direction is present, just insert wind_speed Wspd (m s-1) => wind_speed (m s-1)
           locs <- which(format$vars$bety_name %in% "Wspd")
-          if (length(locs)>0) {
+          if (length(locs) > 0) {
             k <- locs[1]
-            Wspd.var <- ncvar_def(name="wind_speed",units = "m s-1",dim = xytdim)
+            Wspd.var <- ncvar_def(name = "wind_speed", units = "m s-1", dim = xytdim)
             nc <- ncvar_add(nc = nc, v = Wspd.var, verbose = nc_verbose)
             arrloc <- as.character(format$vars$input_name[k])
-            if (arrloc=="") {
-              if (any(colnames(format$vars)=="column_number")) { 
+            if (arrloc == "") {
+              if (any(colnames(format$vars) == "column_number")) {
                 arrloc <- format$vars$column_number[k]
               } else {
                 logger.error("Cannot find column location for Wspd by name or column number")
               }
             }
-            ncvar_put(nc, varid = Wspd.var,
-                      vals=met.conv(dat[,arrloc],format$vars$input_units[k],"m s-1","m s-1"))  
+            ncvar_put(nc, 
+                      varid = Wspd.var, 
+                      vals = met.conv(dat[, arrloc], format$vars$input_units[k], "m s-1", "m s-1"))
           }
         }
       }  ## end wind 
@@ -532,32 +594,33 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       #       } 
       
       nc_close(nc)
-    } ## end loop over years
-  } ## end else file found
+    }  ## end loop over years
+  }  ## end else file found
   invisible(results)
-} ## end function met2CF.csv
+} # met2CF.csv
 
 
-datetime <- function(list){
-  date_string <- sapply(list,as.character)
-  datetime = paste(list,"00")
-  datetime = ymd_hms(datetime)
-  return(datetime)
+datetime <- function(list) {
+  date_string <- sapply(list, as.character)
+  datetime <- paste(list, "00")
+  ymd_hms(datetime)
+} # datetime
+
+met.conv <- function(x, orig, bety, CF) {
+  orig <- as.character(orig)
+  bety <- as.character(bety)
+  CF <- as.character(CF)
   
-}
-
-met.conv <- function(x,orig,bety,CF){
-  orig = as.character(orig)
-  bety = as.character(bety)
-  CF   = as.character(CF)
-  if(nchar(orig) == 0) orig = bety; ## if units not provided, default is that they were the same units as bety
-  if(ud.is.parseable(orig)){
-    if(ud.are.convertible(orig,bety)){
-      return(ud.convert(ud.convert(x,orig,bety),bety,CF))
+  if (nchar(orig) == 0) {
+    orig <- bety  ## if units not provided, default is that they were the same units as bety
+  }
+  if (ud.is.parseable(orig)) {
+    if (ud.are.convertible(orig, bety)) {
+      return(ud.convert(ud.convert(x, orig, bety), bety, CF))
     } else {
-      logger.error(paste("met.conv could not convert",orig,bety,CF))
+      logger.error(paste("met.conv could not convert", orig, bety, CF))
     }
   } else {
-    logger.error(paste("met.conv could not parse units:",orig),"Please check if these units conform to udunits")
+    logger.error(paste("met.conv could not parse units:", orig), "Please check if these units conform to udunits")
   }
-}
+} # met.conv

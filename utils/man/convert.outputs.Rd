@@ -7,7 +7,7 @@
 convert.outputs(model, settings, ...)
 }
 \arguments{
-\item{model}{name of simulation model currently accepts ("ED", "SIPNET", "BIOCRO")}
+\item{model}{name of simulation model currently accepts ('ED', 'SIPNET', 'BIOCRO')}
 
 \item{settings}{settings loaded from pecan.xml}
 

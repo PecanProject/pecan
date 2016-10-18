@@ -5,8 +5,8 @@
 \title{convert.input}
 \usage{
 convert.input(input.id, outfolder, formatname, mimetype, site.id, start_date,
-  end_date, pkg, fcn, username, con = con, hostname = "localhost", browndog,
-  write = TRUE, format.vars = format.vars, ...)
+  end_date, pkg, fcn, con = con, host, browndog, write = TRUE, format.vars,
+  overwrite = FALSE, ...)
 }
 \description{
 Convert input by applying fcn and insert new record into database

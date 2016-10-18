@@ -30,10 +30,12 @@ Depends:
     PEcAn.DB,
     RPostgreSQL,
     udunits2,
-    lubridate,
     dplyr
+Imports:
+    plyr (>= 1.8.4),
+    lubridate (>= 1.6.0)
 Suggests:
-    testthat,
+    testthat (>= 1.0.2),
     png,
     grid
 License: FreeBSD + file LICENSE

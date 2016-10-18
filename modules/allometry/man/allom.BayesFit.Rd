@@ -32,7 +32,7 @@ allom.BayesFit(allom, nrep = 10000, form = "power", dmin = 0.1,
 
 \item{nrep}{- number of MCMC replicates}
 
-\item{form}{functional form of the allometry: "power" vs "exp"}
+\item{form}{functional form of the allometry: 'power' vs 'exp'}
 
 \item{dmin}{minimum dbh of interest}
 
