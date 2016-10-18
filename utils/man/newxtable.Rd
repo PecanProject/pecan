@@ -29,7 +29,7 @@ Latex version of table, with percentages properly formatted
 New xtable
 }
 \details{
-utility to properly escape the "%" sign for latex
+utility to properly escape the '%' sign for latex
 }
 \author{
 David LeBauer
