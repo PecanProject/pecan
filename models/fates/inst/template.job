@@ -87,7 +87,8 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   ln -s @RUNDIR@/surfdata_@SITE_NAME@_simyr2000.nc @INDIR@/lnd/clm2/surfdata_map/
   SURFMAP=@INDIR@/lnd/clm2/surfdata_map/surfdata_@SITE_NAME@_simyr2000.nc
 cat >> user_nl_clm << EOF
-fsurdat=@INDIR@/lnd/clm2/surfdata_map/surfdata_@SITE_NAME@_simyr2000.nc
+fsurdat = '@INDIR@/lnd/clm2/surfdata_map/surfdata_@SITE_NAME@_simyr2000.nc'
+finidat = ' '
 EOF
     
   ## MET --> DATM
