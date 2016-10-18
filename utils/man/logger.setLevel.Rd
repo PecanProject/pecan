@@ -15,7 +15,7 @@ WARN and ERROR messages on and off.
 }
 \examples{
 \dontrun{
-logger.setLevel("DEBUG")
+logger.setLevel('DEBUG')
 }
 }
 \author{

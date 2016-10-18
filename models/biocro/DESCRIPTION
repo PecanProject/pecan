@@ -19,7 +19,7 @@ Imports:
     XML
 Suggests:
     BioCro,
-    testthat,
+    testthat (>= 1.0.2),
     RPostgreSQL,
     RNCEP
 License: FreeBSD + file LICENSE
