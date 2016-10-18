@@ -21,7 +21,6 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
   #REddyProc installed to ~/R/library by install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
   #dependency minpack.lm may not install automatically, so install it first
   library(ncdf4)
-  library(udunits2)
   library(PEcAn.utils)
   
   # get start/end year code works on whole years only
@@ -366,7 +365,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     nelem <- length(time)
     tunit <- ncatt_get(nc = nc, varid = "time", attname = "units", verbose = verbose)
     origin <- "1900-01-01 00:00:00"
-    time <- round(as.POSIXlt(ud.convert(time, tunit$value, paste("seconds since", origin)),
+    time <- round(as.POSIXlt(udunits2::ud.convert(time, tunit$value, paste("seconds since", origin)),
                              origin = origin, tz = "UTC"), units = "mins")
     dtime <- diff(time)
     if (dtime[1] == 30) {
