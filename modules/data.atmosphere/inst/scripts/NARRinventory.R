@@ -5,11 +5,9 @@ num <- function(x){as.numeric(as.character(x))}
 mchar <- c("01","02","03","04","05","06","07","08","09","10","11","12")
 mlennorm <- c(31,28,31,30,31,30,31,31,30,31,30,31)
 mlenleap <- c(31,29,31,30,31,30,31,31,30,31,30,31)
-mlen <- function(m,y){
-  if(y%%4 == 0){ ##leap year
-    return(mlenleap[m])
-  }
-  return(mlennorm[m])  
+
+mlen <- function(m, y) {
+  ifelse(lubridate::leap_year(y), mlenleap[m], mlennorm[m])
 }
 
 files    <- dir(pattern="tar")
