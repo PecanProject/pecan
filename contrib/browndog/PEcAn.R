@@ -35,7 +35,7 @@ library(PEcAn.data.atmosphere)
 library(PEcAn.DB)
 
 # 1st argument is the input xml file
-input <- xmlToList(xmlParse(args[1]))
+input <- XML::xmlToList(xmlParse(args[1]))
 
 # 2nd argument is the output file
 outputfile <- args[2]

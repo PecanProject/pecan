@@ -25,8 +25,8 @@ png    <- args[5]
 # SETUP
 # ----------------------------------------------------------------------
 settings.file <- Sys.getenv('PECANSETTINGS')
-settings.xml <- xmlParse(settings.file)
-settings <- xmlToList(settings.xml)
+settings.xml <- XML::xmlParse(settings.file)
+settings <- XML::xmlToList(settings.xml)
 
 plot.hdf5(year, yvar, xvar, width, height, filename, settings) ;
 
