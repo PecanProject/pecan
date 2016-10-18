@@ -17,7 +17,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
   site_id <- as.numeric(site_id)
-  outfolder <- paste0(outfolder, "_site_", paste0(site_id%/%1e+09, "-", site_id %% 1e+09))
+#  outfolder <- paste0(outfolder, "_site_", paste0(site_id%/%1e+09, "-", site_id %% 1e+09))
   
   lat.in <- as.numeric(lat.in)
   lon.in <- as.numeric(lon.in)
@@ -49,7 +49,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     ntime <- ifelse(lubridate::leap_year(year), 366 * 4, 365 * 4)
 
     loc.file <- file.path(outfolder, paste("CRUNCEP", year, "nc", sep = "."))
-    
+    logger.info(paste("Downloading",loc.file))
     ## Create dimensions
     lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
     lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
@@ -63,11 +63,13 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     ## get data off OpenDAP
     for (j in seq_len(nrow(var))) {
       dap_file <- paste0(dap_base, var$DAP.name[j], "_", year, "_v1.nc4")
-      dap <- ncdf4::nc_open(dap_file)
+      logger.info(dap_file)
+      dap <- nc_open(dap_file)
       dat.list[[j]] <- ncdf4::ncvar_get(dap, 
                                  as.character(var$DAP.name[j]), 
                                  c(lon_trunc, lat_trunc, 1), 
                                  c(1, 1, ntime))
+      
       var.list[[j]] <- ncdf4::ncvar_def(name = as.character(var$CF.name[j]), 
                                  units = as.character(var$units[j]), 
                                  dim = dim, 
