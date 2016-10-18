@@ -25,7 +25,6 @@
 model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, stem_density) {
   
   library(ncdf4)
-  library(lubridate)
   library(Maeswrap)
   
   ### Read in model output using Maeswrap. Dayflx.dat, watbalday.dat
@@ -40,8 +39,8 @@ model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, 
   ### Determine number of years and output timestep
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date <- as.POSIXlt(end_date, tz = "GMT")
-  start_year <- year(start_date)
-  end_year <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
   years <- start_year:end_year
   
   for (y in years) {
