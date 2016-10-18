@@ -587,8 +587,7 @@ pda.adjust.jumps.bs <- function(settings, jcov, accept.count, params.recent) {
 pda.get.model.output <- function(settings, run.id, inputs) {
   
   library(PEcAn.benchmark)
-  library(lubridate)
-
+  
   input.info <- settings$assim.batch$inputs
   
   start.year <- strftime(settings$run$start.date, "%Y")
@@ -634,7 +633,7 @@ pda.get.model.output <- function(settings, run.id, inputs) {
   
     ## Handle model time
     # the model output time is in days since the beginning of the year
-    model.secs <- ud.convert(model$time, "days" ,"seconds")
+    model.secs <- udunits2::ud.convert(model$time, "days" ,"seconds")
   
     # seq.POSIXt returns class "POSIXct"
     # the model output is since the beginning of the year but 'settings$run$start.date' may not be the first day of the year, using lubridate::floor_date

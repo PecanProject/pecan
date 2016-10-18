@@ -43,12 +43,10 @@
 met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, format, lat = NULL, lon = NULL, 
                        nc_verbose = FALSE, overwrite = FALSE, ...) {
   library(PEcAn.utils)
-  library(lubridate)
-  library(udunits2)
   library(ncdf4)
   
-  start_year <- year(start_date)
-  end_year   <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year   <- lubridate::year(end_date)
   if (!file.exists(outfolder)) {
     dir.create(outfolder)
   }
@@ -212,7 +210,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       ### create time dimension
       days_since_1700 <- datetime - ymd_hm("1700-01-01 00:00")
       t <- ncdim_def("time", "days since 1700-01-01", as.numeric(days_since_1700))  #define netCDF dimensions for variables
-      timestep <- as.numeric(mean(ud.convert(diff(days_since_1700), "d", "s")))
+      timestep <- as.numeric(mean(udunits2::ud.convert(diff(days_since_1700), "d", "s")))
       
       ## create lat lon dimensions
       x <- ncdim_def("longitude", "degrees_east", lon)  # define netCDF dimensions for variables
@@ -475,10 +473,10 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           rain <- rain / timestep
           "Mg m-2 s-1"
         }, `in` = {
-          rain <- ud.convert(rain / timestep, "in", "mm")
+          rain <- udunits2::ud.convert(rain / timestep, "in", "mm")
           "kg m-2 s-1"
         }, `mm h-1` = {
-          rain <- ud.convert(rain / timestep, "h", "s")
+          rain <- udunits2::ud.convert(rain / timestep, "h", "s")
           "kg m-2 s-1"
         })
         ncvar_put(nc, varid = precip.var, 
@@ -617,7 +615,7 @@ met.conv <- function(x, orig, bety, CF) {
   }
   if (ud.is.parseable(orig)) {
     if (ud.are.convertible(orig, bety)) {
-      return(ud.convert(ud.convert(x, orig, bety), bety, CF))
+      return(udunits2::ud.convert(udunits2::ud.convert(x, orig, bety), bety, CF))
     } else {
       logger.error(paste("met.conv could not convert", orig, bety, CF))
     }

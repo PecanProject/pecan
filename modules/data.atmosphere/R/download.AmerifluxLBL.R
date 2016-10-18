@@ -16,7 +16,6 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
                                   overwrite = FALSE, verbose = FALSE, username = "pecan", ...) {
   # get start/end year code works on whole years only
   
-  library(lubridate)
   library(PEcAn.utils)
   library(data.table)
   library(httr)
@@ -26,8 +25,8 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
   
-  start_year <- year(start_date)
-  end_year <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
   
   # make sure output folder exists
   if (!file.exists(outfolder)) {

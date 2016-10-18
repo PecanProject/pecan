@@ -14,15 +14,13 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
                            overwrite = FALSE, verbose = FALSE, ...) {
   library(PEcAn.utils)
   library(RCurl)
-  library(lubridate)
   library(ncdf4)
-  library(stringr)
   
   # Date stuff
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
-  start_year <- year(start_date)
-  end_year   <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year   <- lubridate::year(end_date)
   site_id    <- as.numeric(site_id)
   outfolder  <- paste0(outfolder, "_site_", paste0(site_id %/% 1e+09, "-", site_id %% 1e+09))
   
@@ -107,11 +105,11 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
     ## get data off OpenDAP
     for (j in seq_along(days.use)) {
       date.now <- as.Date(days.use[j], origin = as.Date(paste0(year - 1, "-12-31")))
-      mo.now <- str_pad(month(date.now), 2, pad = "0")
-      day.mo <- str_pad(day(date.now), 2, pad = "0")
-      doy <- str_pad(days.use[j], 3, pad = "0")
+      mo.now <- stringr::str_pad(month(date.now), 2, pad = "0")
+      day.mo <- stringr::str_pad(day(date.now), 2, pad = "0")
+      doy <- stringr::str_pad(days.use[j], 3, pad = "0")
       for (h in seq_along(time.stamps)) {
-        hr <- str_pad(time.stamps[h], 4, pad = "0")
+        hr <- stringr::str_pad(time.stamps[h], 4, pad = "0")
         dap_file <- paste0(dap_base, "/", year, "/", doy, "/", "NLDAS_FORA0125_H.A", year, 
                            mo.now, day.mo, ".", hr, ".002.grb.ascii?")
         
