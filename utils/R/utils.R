@@ -6,6 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
+
 #--------------------------------------------------------------------------------------------------#
 # Small, miscellaneous functions for use throughout PECAn
 #--------------------------------------------------------------------------------------------------#
@@ -25,36 +26,37 @@
 ##' @param nsoil nsoil if dimension requests it
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
-mstmipvar <- function(name, lat=NA, lon=NA, time=NA, nsoil=NA, silent=FALSE) {
-  data(mstmip_vars, package="PEcAn.utils")
-  var <- mstmip_vars[mstmip_vars$Variable.Name==name,]
+mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE) {
+  data(mstmip_vars, package = "PEcAn.utils")
+  var <- mstmip_vars[mstmip_vars$Variable.Name == name, ]
   dims <- list()
-
+  
   if (nrow(var) == 0) {
-    data(mstmip_local, package="PEcAn.utils")
-    var <- mstmip_local[mstmip_local$Variable.Name==name,]
+    data(mstmip_local, package = "PEcAn.utils")
+    var <- mstmip_local[mstmip_local$Variable.Name == name, ]
     if (nrow(var) == 0) {
       if (!silent) {
         logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
       }
       if (is.na(time)) {
-        time <- ncdim_def(name="time", units="days since 1900-01-01 00:00:00", vals=1:365, calendar="standard", unlim=TRUE)
+        time <- ncdim_def(name = "time", units = "days since 1900-01-01 00:00:00", 
+                          vals = 1:365, calendar = "standard", unlim = TRUE)
       }
       return(ncvar_def(name, "", list(time), -999, name))
     }
   }
-
-  for(i in 1:4) {
-    vd <- var[[paste0('dim', i)]]
-    if (vd == 'lon' && !is.na(lon)) {
-      dims[[length(dims)+1]] <- lon
-    } else if (vd == 'lat' && !is.na(lat)) {
-      dims[[length(dims)+1]] <- lat
-    } else if (vd == 'time' && !is.na(time)) {
-      dims[[length(dims)+1]] <- time
-    } else if (vd == 'nsoil' && !is.na(nsoil)) {
-      dims[[length(dims)+1]] <- nsoil
-    } else if (vd == 'na') {
+  
+  for (i in 1:4) {
+    vd <- var[[paste0("dim", i)]]
+    if (vd == "lon" && !is.na(lon)) {
+      dims[[length(dims) + 1]] <- lon
+    } else if (vd == "lat" && !is.na(lat)) {
+      dims[[length(dims) + 1]] <- lat
+    } else if (vd == "time" && !is.na(time)) {
+      dims[[length(dims) + 1]] <- time
+    } else if (vd == "nsoil" && !is.na(nsoil)) {
+      dims[[length(dims) + 1]] <- nsoil
+    } else if (vd == "na") {
       # skip
     } else {
       if (!silent) {
@@ -63,11 +65,11 @@ mstmipvar <- function(name, lat=NA, lon=NA, time=NA, nsoil=NA, silent=FALSE) {
     }
   }
   ncvar <- ncvar_def(name, as.character(var$Units), dims, -999)
-  if (var$Long.name != 'na') {
+  if (var$Long.name != "na") {
     ncvar$longname <- as.character(var$Long.name)
   }
   return(ncvar)
-}
+} # mstimipvar
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -81,11 +83,11 @@ mstmipvar <- function(name, lat=NA, lon=NA, time=NA, nsoil=NA, silent=FALSE) {
 ##' @return num with zeros to the left
 ##' @export
 ##' @author Carl Davidson
-left.pad.zeros <- function(num, digits = 5){
-  format_string <- paste('%',sprintf('0%.0f.0f',digits),sep='')
+left.pad.zeros <- function(num, digits = 5) {
+  format_string <- paste0("%", sprintf("0%.0f.0f", digits))
   return(sprintf(format_string, num))
-}
-#==================================================================================================#
+} # left.pad.zeros
+
 
 ##' Truncates vector at 0
 ##' @name zero.truncate
@@ -95,11 +97,9 @@ left.pad.zeros <- function(num, digits = 5){
 ##' @export
 ##' @author <unknown>
 zero.truncate <- function(y) {
-  y[y<0 | 
-          is.na(y)] <- 0
+  y[y < 0 | is.na(y)] <- 0
   return(y)
-}
-#==================================================================================================#
+} # zero.truncate
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -116,11 +116,10 @@ zero.truncate <- function(y) {
 ##' @author David LeBauer
 ##' @author Shawn Serbin
 #--------------------------------------------------------------------------------------------------#
-rsync <- function(args, from, to, pattern='') {
+rsync <- function(args, from, to, pattern = "") {
   logger.warn("NEED TO USE TUNNEL")
-  system(paste0('rsync',' ', args,' ', from, pattern, ' ', to), intern=TRUE )
-}
-#==================================================================================================#
+  system(paste0("rsync", " ", args, " ", from, pattern, " ", to), intern = TRUE)
+} # rsync
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -132,16 +131,15 @@ rsync <- function(args, from, to, pattern='') {
 ##' @param args 
 ##' @export
 #--------------------------------------------------------------------------------------------------#
-ssh <- function(host, ..., args=''){
+ssh <- function(host, ..., args = "") {
   logger.warn("NEED TO USE TUNNEL")
-  if(host == 'localhost'){
-    command <- paste(..., args, sep='')
+  if (host == "localhost") {
+    command <- paste(..., args, sep = "")
   } else {
-    command <- paste('ssh -T ', host, ' "', ..., '" ', args, sep='')
+    command <- paste("ssh -T ", host, " \"", ..., "\" ", args, sep = "")
   }
   system(command)
-}
-#==================================================================================================#
+} # ssh
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -152,8 +150,7 @@ ssh <- function(host, ..., args=''){
 ##' @param x vector
 ##' @return comma delimited string
 ##' @export
-vecpaste <- function(x) paste(paste("'", x, "'", sep=''), collapse=',')
-#==================================================================================================#
+vecpaste <- function(x) paste(paste0("'", x, "'"), collapse = ",")
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -161,7 +158,7 @@ vecpaste <- function(x) paste(paste("'", x, "'", sep=''), collapse=',')
 ##'
 ##' Provides a consistent method of naming runs; for use in model input files and indices
 ##' @title Get Run ID
-##' @param run.type character, can be any character; currently "SA" is used for sensitivity analysis, "ENS" for ensemble run.
+##' @param run.type character, can be any character; currently 'SA' is used for sensitivity analysis, 'ENS' for ensemble run.
 ##' @param index unique index for different runs, e.g. integer counting members of an 
 ##' ensemble or a quantile used to which a trait has been perturbed for sensitivity analysis   
 ##' @param trait name of trait being sampled (for sensitivity analysis)
@@ -169,20 +166,21 @@ vecpaste <- function(x) paste(paste("'", x, "'", sep=''), collapse=',')
 ##' @return id representing a model run
 ##' @export
 ##' @examples
-##' get.run.id("ENS", left.pad.zeros(1, 5))
-##' get.run.id("SA", round(qnorm(-3),3), trait = "Vcmax")
+##' get.run.id('ENS', left.pad.zeros(1, 5))
+##' get.run.id('SA', round(qnorm(-3),3), trait = 'Vcmax')
 ##' @author Carl Davidson, David LeBauer
 #--------------------------------------------------------------------------------------------------#
-get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL){
+get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL) {
   result <- paste(c(run.type, pft.name, trait, index), collapse = "-")
   return(result)
-}
-#==================================================================================================#
+} # get.run.id
+
 
 ##' @export
-listToXml <- function (x, ...) {
+listToXml <- function(x, ...) {
   UseMethod("listToXml")
-}
+} # listToXml
+
 
 #--------------------------------------------------------------------------------------------------#
 ##' Convert List to XML
@@ -196,9 +194,9 @@ listToXml <- function (x, ...) {
 ##' @author David LeBauer, Carl Davidson, Rob Kooper
 #--------------------------------------------------------------------------------------------------#
 listToXml.default <- function(item, tag) {
-
+  
   # just a textnode, or empty node with attributes
-  if(typeof(item) != 'list') {
+  if (typeof(item) != "list") {
     if (length(item) > 1) {
       xml <- xmlNode(tag)
       for (name in names(item)) {
@@ -209,31 +207,28 @@ listToXml.default <- function(item, tag) {
       return(xmlNode(tag, item))
     }
   }
-
+  
   # create the node
   if (identical(names(item), c("text", ".attrs"))) {
     # special case a node with text and attributes
-    xml <- xmlNode(tag, item[['text']])
+    xml <- xmlNode(tag, item[["text"]])
   } else {
     # node with child nodes
     xml <- xmlNode(tag)
-    for(i in 1:length(item)) {
+    for (i in seq_along(item)) {
       if (is.null(names(item)) || names(item)[i] != ".attrs") {
-        xml <- append.xmlNode(xml, listToXml(item[[i]], names(item)[i]))
+        xml <- XML::append.xmlNode(xml, listToXml(item[[i]], names(item)[i]))
       }
-    }    
+    }
   }
   
   # add attributes to node
-  attrs <- item[['.attrs']]
+  attrs <- item[[".attrs"]]
   for (name in names(attrs)) {
     xmlAttrs(xml)[[name]] <- attrs[[name]]
   }
   return(xml)
-}
-#==================================================================================================#
-
-
+} # listToXml.default
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -247,15 +242,14 @@ listToXml.default <- function(item, tag) {
 ##' @return data frame with back-transformed log density estimate 
 ##' @author \href{http://stats.stackexchange.com/q/6588/2750}{Rob Hyndman}
 ##' @references M. P. Wand, J. S. Marron and D. Ruppert, 1991. Transformations in Density Estimation. Journal of the American Statistical Association. 86(414):343-353 \url{http://www.jstor.org/stable/2290569}
-zero.bounded.density <- function (x, bw = "SJ", n = 1001) {
-  y <- log(x)
-  g <- density(y, bw = bw, n = n)
+zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
+  y     <- log(x)
+  g     <- density(y, bw = bw, n = n)
   xgrid <- exp(g$x)
-  g$y <- c(0, g$y/xgrid)
-  g$x <- c(0, xgrid)
+  g$y   <- c(0, g$y / xgrid)
+  g$x   <- c(0, xgrid)
   return(g)
-}
-#==================================================================================================#
+} # zero.bounded.density
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -267,17 +261,16 @@ zero.bounded.density <- function (x, bw = "SJ", n = 1001) {
 ##' @export
 ##' @author David LeBauer
 summarize.result <- function(result) {
-  ans1 <- ddply(result[result$n==1,],
-                .(citation_id, site_id, trt_id, control, greenhouse, date, time, cultivar_id, specie_id),
-                summarise,
-                n = length(n),
-                mean = mean(mean),
-                statname = ifelse(length(n)==1,'none','SE'),
-                stat = sd(mean)/sqrt(length(n)))
-  ans2 <- result[result$n!=1, colnames(ans1)]
+  ans1 <- plyr::ddply(result[result$n == 1, ], 
+                .(citation_id, site_id, trt_id, control, greenhouse, 
+                  date, time, cultivar_id, specie_id), 
+                summarise, n = length(n), 
+                mean = mean(mean), 
+                statname = ifelse(length(n) == 1, "none", "SE"), 
+                stat = sd(mean) / sqrt(length(n)))
+  ans2 <- result[result$n != 1, colnames(ans1)]
   return(rbind(ans1, ans2))
-}
-#==================================================================================================#
+} # summarize.result
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -288,19 +281,18 @@ summarize.result <- function(result) {
 ##' @param sample.size 
 ##' @return list with summary statistics for parameters in an MCMC chain
 ##' @author David LeBauer
-get.stats.mcmc <- function(mcmc.summary, sample.size){
+get.stats.mcmc <- function(mcmc.summary, sample.size) {
   a <- list(n = sample.size)
-  for (parm in c('beta.o','sd.y', 'sd.site','sd.trt','beta.ghs[2]')){
-    parm.name <- ifelse(parm == 'beta.ghs[2]', 'beta.ghs', parm)
-    if(parm %in% rownames(mcmc.summary$statistics)){
-      a[[parm.name]] <-  get.parameter.stat(mcmc.summary, parameter = parm)
+  for (parm in c("beta.o", "sd.y", "sd.site", "sd.trt", "beta.ghs[2]")) {
+    parm.name <- ifelse(parm == "beta.ghs[2]", "beta.ghs", parm)
+    if (parm %in% rownames(mcmc.summary$statistics)) {
+      a[[parm.name]] <- get.parameter.stat(mcmc.summary, parameter = parm)
     } else {
       a[[parm.name]] <- NA
     }
   }
   return(unlist(a))
-}
-#==================================================================================================#
+} # get.stats.mcmc
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -316,10 +308,11 @@ get.stats.mcmc <- function(mcmc.summary, sample.size){
 ##' @param n
 ##' @export
 ##' @author David LeBauer
-paste.stats <- function(mcmc.summary, median, lcl, ucl, n = 2) {  
-  paste("$", tabnum(median, n),  "(", tabnum(lcl, n), ",", tabnum(ucl,n), ")", "$", sep = '')
-}
-#==================================================================================================#
+paste.stats <- function(mcmc.summary, median, lcl, ucl, n = 2) {
+  paste0("$", tabnum(median, n), 
+         "(", tabnum(lcl, n), ",", tabnum(ucl, n), ")", 
+         "$")
+} # paste.stats
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -333,13 +326,12 @@ paste.stats <- function(mcmc.summary, median, lcl, ucl, n = 2) {
 ##' @export
 ##' @examples
 ##' \dontrun{get.parameter.stat(mcmc.summaries[[1]], 'beta.o')}
-get.parameter.stat <- function(mcmc.summary, parameter){
+get.parameter.stat <- function(mcmc.summary, parameter) {
   paste.stats(median = mcmc.summary$quantiles[parameter, "50%"],
-              lcl   = mcmc.summary$quantiles[parameter, c("2.5%")],
-              ucl   = mcmc.summary$quantiles[parameter, c("97.5%")],
-              n     = 2)
-}
-#==================================================================================================#
+              lcl = mcmc.summary$quantiles[parameter, c("2.5%")], 
+              ucl = mcmc.summary$quantiles[parameter, c("97.5%")], 
+              n = 2)
+} # get.parameter.stat
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -351,35 +343,27 @@ get.parameter.stat <- function(mcmc.summary, parameter){
 ##' @param B second parameter
 ##' @return list with mean, variance, and 95 CI
 ##' @author David LeBauer
-## in future, perhaps create S3 functions:
-## get.stats.pdf <- pdf.stats
-#--------------------------------------------------------------------------------------------------#
+## in future, perhaps create S3 functions: get.stats.pdf <- pdf.stats
 pdf.stats <- function(distn, A, B) {
   distn <- as.character(distn)
-  mean <- switch(distn,
-                 gamma   = A/B,
-                 lnorm   = exp(A + 1/2 * B^2),
-                 beta    = A/(A+B),
-                 weibull = B * gamma(1 + 1/A),
-                 norm    = A,
-                 f       = ifelse(B>2, B/(B - 2), mean(rf(10000, A, B)))
-                 )
-  var <- switch(distn,
-                gamma   = A/B^2,
-                lnorm   = exp(2*A + B^2) * (exp(B^2) - 1),
-                beta    =  A*B/((A+B)^2 * (A + B + 1)),
-                weibull = B^2 * (gamma(1 + 2 / A) - gamma(1 + 1/A)^2),
-                norm    = B^2,
-                f       = ifelse(B>4, 2*B^2*(A+B-2) / (A*(B-2)^2*(B-4)), var(rf(100000, A, B)))
-                )
-  qci  <- get(paste("q", distn, sep = ""))
+  mean <- switch(distn, gamma = A/B, lnorm = exp(A + 1/2 * B^2), beta = A/(A + 
+                                                                             B), weibull = B * gamma(1 + 1/A), norm = A, f = ifelse(B > 2, B/(B - 2), 
+                                                                                                                                    mean(rf(10000, A, B))))
+  var <- switch(distn, gamma = A/B^2, 
+                lnorm = exp(2 * A + B ^ 2) * (exp(B ^ 2) - 1), 
+                beta = A * B/((A + B) ^ 2 * (A + B + 1)), 
+                weibull = B ^ 2 * (gamma(1 + 2 / A) - 
+                                     gamma(1 + 1 / A) ^ 2), 
+                norm = B ^ 2, f = ifelse(B > 4, 
+                                         2 * B^2 * (A + B - 2) / (A * (B - 2) ^ 2 * (B - 4)), 
+                                         var(rf(1e+05, A, B))))
+  qci <- get(paste0("q", distn))
   ci <- qci(c(0.025, 0.975), A, B)
   lcl <- ci[1]
   ucl <- ci[2]
-  out  <- unlist(list(mean = mean, var = var, lcl = lcl, ucl = ucl)) 
+  out <- unlist(list(mean = mean, var = var, lcl = lcl, ucl = ucl))
   return(out)
-}
-#==================================================================================================#
+} # pdf.stats
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -401,20 +385,18 @@ pdf.stats <- function(distn, A, B) {
 ##' trait.lookup()[,c('figid', 'units')]
 ##' }
 trait.lookup <- function(traits = NULL) {
-  #HACK: shameless hack
-  #Ultimately we'll want this to be read once at the start of run time
-  #This could also be represented in the database, 
-  #but because it is used to determine which parameters to feed to the model,
-  #it could be argued that it's conceptually model specific
+  # HACK: shameless hack Ultimately we'll want this to be read once at the start of
+  # run time This could also be represented in the database, but because it is used
+  # to determine which parameters to feed to the model, it could be argued that
+  # it's conceptually model specific
   data(trait.dictionary)
-  if(is.null(traits)) {
+  if (is.null(traits)) {
     trait.defs <- trait.dictionary
   } else {
-    trait.defs <- trait.dictionary[match(traits, trait.dictionary$id),]
+    trait.defs <- trait.dictionary[match(traits, trait.dictionary$id), ]
   }
   return(trait.defs)
-}
-#==================================================================================================#
+} # trait.lookup
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -429,12 +411,11 @@ trait.lookup <- function(traits = NULL) {
 ##' @examples
 ##' tabnum(1.2345)
 ##' tabnum(1.2345, n = 4)
-tabnum <- function(x, n=3) {
-  ans <- as.numeric(signif(x,n))
+tabnum <- function(x, n = 3) {
+  ans <- as.numeric(signif(x, n))
   names(ans) <- names(x)
   return(ans)
-}
-#==================================================================================================#
+} # tabnum
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -447,11 +428,9 @@ tabnum <- function(x, n=3) {
 ##' @return numeric value at reference temperature
 ##' @export
 ##' @author unknown
-#--------------------------------------------------------------------------------------------------#
-arrhenius.scaling <- function(observed.value, old.temp, new.temp = 25){
-  return(observed.value / exp (3000 * ( 1 / (273.15 + new.temp) - 1 / (273.15 + old.temp))))
-}
-#==================================================================================================#
+arrhenius.scaling <- function(observed.value, old.temp, new.temp = 25) {
+  return(observed.value / exp(3000 * (1 / (273.15 + new.temp) - 1 / (273.15 + old.temp))))
+} # arrhenius.scaling
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -465,23 +444,16 @@ arrhenius.scaling <- function(observed.value, old.temp, new.temp = 25){
 capitalize <- function(x) {
   x <- as.character(x)
   s <- strsplit(x, " ")[[1]]
-  paste(toupper(substring(s, 1,1)), substring(s, 2),
-        sep="", collapse=" ")
-}
-#==================================================================================================#
-
-#--------------------------------------------------------------------------------------------------#
+  return(paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "", collapse = " "))
+} # capitalize
 
 isFALSE <- function(x) !isTRUE(x)
-#==================================================================================================#
-
-
 
 
 #--------------------------------------------------------------------------------------------------#
 ##' New xtable
 ##'
-##' utility to properly escape the "%" sign for latex
+##' utility to properly escape the '%' sign for latex
 ##' @title newxtable
 ##' @param x data.frame to be converted to latex table
 ##' @param environment can be 'table'; 'sidewaystable' if using latex rotating package
@@ -492,16 +464,15 @@ isFALSE <- function(x) !isTRUE(x)
 ##' @param align 
 ##' @return Latex version of table, with percentages properly formatted 
 ##' @author David LeBauer
-newxtable <- function(x, environment = 'table', table.placement = 'ht',
-                      label = NULL, caption = NULL, caption.placement = NULL, align = NULL) {
+newxtable <- function(x, environment = "table", table.placement = "ht", label = NULL, 
+                      caption = NULL, caption.placement = NULL, align = NULL) {
   print(xtable(x, label = label, caption = caption, align = align),
         floating.environment = environment,
         table.placement = table.placement,
         caption.placement = caption.placement,
-#        sanitize.text.function = function(x) gsub("%", "\\\\%", x),
+        #        sanitize.text.function = function(x) gsub("%", "\\\\%", x),
         sanitize.rownames.function = function(x) paste(''))
-}
-#==================================================================================================#
+} # newxtable
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -514,11 +485,10 @@ newxtable <- function(x, environment = 'table', table.placement = 'ht',
 ##' @param title manuscript title
 ##' @return bibtex citation
 #--------------------------------------------------------------------------------------------------#
-bibtexify <- function (author, year, title) {
-  acronym <- abbreviate(title, minlength = 3, strict=TRUE)
-  paste(author, year, acronym, sep='')
-}
-#==================================================================================================#
+bibtexify <- function(author, year, title) {
+  acronym <- abbreviate(title, minlength = 3, strict = TRUE)
+  return(paste0(author, year, acronym))
+} # bibtexify
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -532,16 +502,17 @@ bibtexify <- function (author, year, title) {
 ##' @return sequence from 1:length(unique(x))
 ##' @export
 ##' @author David LeBauer
-as.sequence <- function(x, na.rm = TRUE){
+as.sequence <- function(x, na.rm = TRUE) {
   x2 <- as.integer(factor(x, unique(x)))
-  if(all(is.na(x2))){
+  if (all(is.na(x2))) {
     x2 <- rep(1, length(x2))
   }
-  if(na.rm == TRUE){
+  if (na.rm == TRUE) {
     x2[is.na(x2)] <- max(x2, na.rm = TRUE) + 1
   }
   return(x2)
-}
+} # as.sequence
+
 
 #--------------------------------------------------------------------------------------------------#
 ##' Test ssh access
@@ -552,9 +523,10 @@ as.sequence <- function(x, na.rm = TRUE){
 ##' @param host 
 ##' @return logical - TRUE if remote connection is available 
 ##' @author Rob Kooper
-test.remote <- function(host){
-  return(try(system(paste("ssh", host, "/bin/true"))) == 0)
-}
+test.remote <- function(host) {
+  return(try(remote.execute.cmd(host, "/bin/true")) == 0)
+} # test.remote
+
 
 ##' Create a temporary settings file
 ##'
@@ -566,13 +538,13 @@ test.remote <- function(host){
 ##' @return character vector written to and read from a temporary file
 ##' @export
 ##' @author David LeBauer
-temp.settings <- function(settings.txt){
+temp.settings <- function(settings.txt) {
   temp <- tempfile()
   on.exit(unlink(temp))
   writeLines(settings.txt, con = temp)
   settings <- readLines(temp)
   return(settings)
-}
+} # temp.settings
 
 
 ##' Test if function gives an error
@@ -585,14 +557,15 @@ temp.settings <- function(settings.txt){
 ##' @examples
 ##' tryl(1+1)
 ##' # TRUE
-##' tryl(sum("a"))
+##' tryl(sum('a'))
 ##' # FALSE
 ##' @author David LeBauer
-tryl <- function(FUN){
+tryl <- function(FUN) {
   out <- tryCatch(FUN, error = function(e) e)
   ans <- !any(class(out) == "error")
   return(ans)
-}
+} # tryl
+
 
 ##' load model package
 ##' @title Load model package
@@ -602,16 +575,17 @@ tryl <- function(FUN){
 ##' @examples
 ##' \dontrun{require.modelpkg(BioCro)}
 ##' @author David LeBauer
-load.modelpkg <- function(model){
+load.modelpkg <- function(model) {
   pecan.modelpkg <- paste0("PEcAn.", model)
-  if(!pecan.modelpkg  %in% names(sessionInfo()$otherPkgs)){
-    if(pecan.modelpkg  %in% rownames(installed.packages())) {
+  if (!pecan.modelpkg %in% names(sessionInfo()$otherPkgs)) {
+    if (pecan.modelpkg %in% rownames(installed.packages())) {
       do.call(require, args = list(pecan.modelpkg))
     } else {
-      logger.error("I can't find a package for the ", model, "model; I expect it to be named ", pecan.modelpkg)
+      logger.error("I can't find a package for the ", model,
+                   "model; I expect it to be named ", pecan.modelpkg)
     }
   }
-}
+} # load.modelpkg
 
 ##' conversion function for the unit conversions that udunits cannot handle but often needed in PEcAn calculations
 ##' @title misc.convert
@@ -621,14 +595,16 @@ load.modelpkg <- function(model){
 ##' @return val converted values
 ##' @export
 ##' @author Istem Fer
-misc.convert <- function(x, u1, u2){
-  if(u1 == "umol C m-2 s-1" & u2 == "kg C m-2 s-1"){
-    val <- ud.convert(x, "ug", "kg") * 12    # atomic mass of carbon
-  }else if(u1 == "kg C m-2 s-1" &  u2 == "umol C m-2 s-1"){
-    val <- ud.convert(x, "kg", "ug") / 12    # atomic mass of carbon
+misc.convert <- function(x, u1, u2) {
+  if (u1 == "umol C m-2 s-1" & u2 == "kg C m-2 s-1") {
+    val <- udunits2::ud.convert(x, "ug", "kg") * 12  # atomic mass of carbon
+  } else if (u1 == "kg C m-2 s-1" & u2 == "umol C m-2 s-1") {
+    val <- udunits2::ud.convert(x, "kg", "ug")/12  # atomic mass of carbon
+  } else {
+    logger.severe(paste("Unknown units", u1, u2))
   }
   return(val)
-}
+} # misc.convert
 
 
 ##' function to check whether units are convertible by misc.convert function
@@ -638,14 +614,11 @@ misc.convert <- function(x, u1, u2){
 ##' @return logical
 ##' @export
 ##' @author Istem Fer
-misc.are.convertible <- function(u1, u2){
-  if(match(u1, c("umol C m-2 s-1", "kg C m-2 s-1")) ==  match(u2, c("kg C m-2 s-1", "umol C m-2 s-1"))){
+misc.are.convertible <- function(u1, u2) {
+  if (match(u1, c("umol C m-2 s-1", "kg C m-2 s-1")) ==
+      match(u2, c("kg C m-2 s-1", "umol C m-2 s-1"))) {
     return(TRUE)
   } else {
     return(FALSE)
   }
-}
-
-####################################################################################################
-### EOF.  End of R script file.              
-####################################################################################################
+} # misc.are.convertible

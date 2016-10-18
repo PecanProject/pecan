@@ -12,8 +12,8 @@ AllomAve(pfts, components = 6, outdir = NULL, con = NULL, field = NULL,
 \item{pfts}{pft list from PEcAn settings (if con) OR list of pft spcd's
 If the latter, the names within the list are used to identify PFTs
 \itemize{
-  \item{"acronym"}{ - USDA species acronyms (see plants.usda.gov), used with FIELD data (vector)}
-  \item{"spcd"}{ - USFS species codes, use with PARM data (vector)}
+  \item{'acronym'}{ - USDA species acronyms (see plants.usda.gov), used with FIELD data (vector)}
+  \item{'spcd'}{ - USFS species codes, use with PARM data (vector)}
 }}
 
 \item{components}{IDs for allometry components from Jenkins et al 2004 Table 5. Default is stem biomass (6). See data(allom.components)}
@@ -45,18 +45,18 @@ allometery wrapper function that handles loading and subsetting the data,
 }
 \details{
 There are two usages of this function. 
-When running "online" (connected to the PEcAn database), pass the database connection, con, and the pfts subsection of the PEcAn settings.
-When running "stand alone" pass the pft list mapping species to species codes and the file paths to the allometry table and field data (optional)
+When running 'online' (connected to the PEcAn database), pass the database connection, con, and the pfts subsection of the PEcAn settings.
+When running 'stand alone' pass the pft list mapping species to species codes and the file paths to the allometry table and field data (optional)
 }
 \examples{
 
 if(FALSE){
-  pfts = list(FAGR = data.frame(spcd=531,acronym="FAGR"))
+  pfts = list(FAGR = data.frame(spcd=531,acronym='FAGR'))
   allom.stats = AllomAve(pfts,ngibbs=500)
 
   ## example of a PFT with multiple species (late hardwood)
   ## note that if you're just using Jenkins the acronym column is optional
-  pfts = list(LH = data.frame(spcd = c(531,318),acronym=c("FAGR","ACSA3")))
+  pfts = list(LH = data.frame(spcd = c(531,318),acronym=c('FAGR','ACSA3')))
 }
 
 }
