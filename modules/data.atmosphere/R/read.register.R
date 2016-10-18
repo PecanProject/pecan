@@ -7,11 +7,6 @@
 ##' @author Betsy Cowdery
 read.register <- function(register.xml, con) {
   
-<<<<<<< HEAD
-  library(XML)
-=======
-  library(lubridate)
->>>>>>> PecanProject/master
   library(PEcAn.DB)
   library(PEcAn.utils)
   
