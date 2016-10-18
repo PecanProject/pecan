@@ -154,15 +154,15 @@ debias.met <- function(outfolder, source_met, train_met, site_id, de_method='lin
   loc.file = file.path(outfolder,paste("debias",year,"nc",sep="."))
   
   loc <- nc_create(filename=loc.file, vars=sou.list, verbose=verbose)
-  for(j in seq_len(var)){
+  for(j in 1:length(var)){
     ncvar_put(nc=loc, varid=as.character(var$CF.name[j]), vals=debi[[j]])
   }
   nc_close(loc)
   
   results$file <- loc.file
   results$host <- fqdn()
-  results$startdate <- paste0(year,"-01-01 00:00:00")
-  results$enddate <- paste0(year,"-12-31 23:59:59")
+  results$startdate <- paste0(year,"-01-01 00:00:00", tz = "GMT")
+  results$enddate <- paste0(year,"-12-31 23:59:59", tz = "GMT")
   results$mimetype <- 'application/x-netcdf'
   results$formatname <- 'CF Meteorology'
   
