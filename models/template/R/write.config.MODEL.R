@@ -24,6 +24,16 @@
 ##' @author Rob Kooper
 ##-------------------------------------------------------------------------------------------------#
 write.config.MODEL <- function(defaults, trait.values, settings, run.id) {
+
+  # Please follow the PEcAn style guide:
+  # https://pecan.gitbooks.io/pecan-documentation/content/developers_guide/Coding_style.html
+  
+  # Note that `library()` calls should _never_ appear here; instead, put
+  # packages dependencies in the DESCRIPTION file, under "Imports:".
+  # Calls to dependent packages should use a double colon, e.g.
+  #    `packageName::functionName()`.
+  # Also, `require()` should be used only when a package dependency is truly
+  # optional. In this case, put the package name under "Suggests:" in DESCRIPTION. 
   
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
