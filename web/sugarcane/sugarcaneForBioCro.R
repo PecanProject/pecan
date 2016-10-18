@@ -164,16 +164,13 @@ library(RNCEP)
 
       day<-numeric(0)
      year<-numeric(0)
-for (i in year1:year2)
-  {
-     if((i%%400)==0 || (i%%100!=0 && i%%4==0))
-     {
+     
+for (i in year1:year2) {
+     if(lubridate::leap_year(i)) {
        indx<-as.integer(length(day))
        day[as.integer(indx+1):as.integer(indx+366)]=seq(1:366)
        year[as.integer(indx+1):as.integer(indx+366)]=rep(i,366)
-     }
-      if(!((i%%400)==0 || (i%%100!=0 && i%%4==0)))
-        {
+     } else {
        indx<-as.integer(length(day))
        day[as.integer(indx+1):as.integer(indx+365)]=seq(1:365)
        year[as.integer(indx+1):as.integer(indx+365)]=rep(i,365)
