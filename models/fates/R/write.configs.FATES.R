@@ -45,7 +45,6 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    binary <- file.path(bld,"cesm.exe")
    indir  <- file.path(rundir,"input") ## input directory
    default <- settings$run$inputs$default$path ## reference inputs file structure
-   site.id
    site_name <- paste0(site.id %/% 1000000000, "-", site.id %% 1000000000)
    
    ## DATES
