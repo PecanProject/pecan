@@ -23,7 +23,7 @@
 # } 
 # 
 # settings.xml <- xmlParse(settings.file)
-# settings <- xmlToList(settings.xml)
+# settings <- XML::xmlToList(settings.xml)
 
 ### TODO:  Update this code to work within new PEcAn organization.  Remove hard coded paths to source. Fix ensemble.Rdata and sensitivity.Rdata filenames to include ensemble id.
 

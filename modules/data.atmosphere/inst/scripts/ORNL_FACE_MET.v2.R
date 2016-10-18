@@ -7,7 +7,7 @@ dl <- c(0,32,61,92,122,153,183,214,245,275,306,336,367)
 month <- c("JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC")
 mon_num <- c("01","02","03","04","05","06","07","08","09","10","11","12")
 day2mo <- function(year,day){
-  leap <- (year %% 4 == 0)
+  leap <- lubridate::leap_year(year)
   mo <- rep(NA,length(day))
   mo[leap] <- findInterval(day[leap],dl)
   mo[!leap] <- findInterval(day[!leap],dm)

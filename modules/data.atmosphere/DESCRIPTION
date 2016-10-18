@@ -21,7 +21,8 @@ Depends:
     lubridate,
     REddyProc
 Imports:
-    abind (>= 1.4.5)
+    abind (>= 1.4.5),
+    XML (>= 3.98-1.4)
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
