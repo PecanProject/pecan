@@ -35,7 +35,6 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
                            overwrite = FALSE, verbose = FALSE, ...) {
   library(PEcAn.utils)
   library(ncdf4)
-  library(lubridate)
   library(PEcAn.data.atmosphere)
   
   ## MAAT driver format (.csv):
@@ -77,8 +76,8 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
   out <- NULL
   
   # get start/end year since inputs are specified on year basis
-  start_year <- year(start_date)
-  end_year <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
   
   ## loop over files 
   ## TODO need to filter out the data that is not inside start_date, end_date
