@@ -217,7 +217,7 @@ listToXml.default <- function(item, tag) {
     xml <- xmlNode(tag)
     for (i in seq_along(item)) {
       if (is.null(names(item)) || names(item)[i] != ".attrs") {
-        xml <- append.xmlNode(xml, listToXml(item[[i]], names(item)[i]))
+        xml <- XML::append.xmlNode(xml, listToXml(item[[i]], names(item)[i]))
       }
     }
   }
@@ -597,9 +597,9 @@ load.modelpkg <- function(model) {
 ##' @author Istem Fer
 misc.convert <- function(x, u1, u2) {
   if (u1 == "umol C m-2 s-1" & u2 == "kg C m-2 s-1") {
-    val <- ud.convert(x, "ug", "kg") * 12  # atomic mass of carbon
+    val <- udunits2::ud.convert(x, "ug", "kg") * 12  # atomic mass of carbon
   } else if (u1 == "kg C m-2 s-1" & u2 == "umol C m-2 s-1") {
-    val <- ud.convert(x, "kg", "ug")/12  # atomic mass of carbon
+    val <- udunits2::ud.convert(x, "kg", "ug")/12  # atomic mass of carbon
   } else {
     logger.severe(paste("Unknown units", u1, u2))
   }

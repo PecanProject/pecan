@@ -23,7 +23,6 @@
 model2netcdf.LPJGUESS <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
   library(ncdf4)
-  library(lubridate)
   
   ### Read in model output in LPJ-GUESS format
   lpjguess.out.files <- list.files(outdir, pattern = "\\.out$")
@@ -36,7 +35,7 @@ model2netcdf.LPJGUESS <- function(outdir, sitelat, sitelon, start_date, end_date
   # n.outputs <- length(lpjguess.output)
   m.to.s <- 2592000
   
-  years <- seq(year(start_date), year(end_date))
+  years <- seq(lubridate::year(start_date), lubridate::year(end_date))
   
   ### Unit conversions
   

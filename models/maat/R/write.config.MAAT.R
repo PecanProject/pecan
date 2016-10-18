@@ -51,15 +51,15 @@ convert.samples.MAAT <- function(trait.samples) {
   }
   if ("Ha.vcmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Ha.vcmax = ud.convert(Ha.vcmax, "kJ", "J"))
+    trait.samples <- transform(trait.samples, Ha.vcmax = udunits2::ud.convert(Ha.vcmax, "kJ", "J"))
   }
   if ("Ha.jmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Ha.jmax = ud.convert(Ha.jmax, "kJ", "J"))
+    trait.samples <- transform(trait.samples, Ha.jmax = udunits2::ud.convert(Ha.jmax, "kJ", "J"))
   }
   if ("Hd.jmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Hd.jmax = ud.convert(Hd.jmax, "kJ", "J"))
+    trait.samples <- transform(trait.samples, Hd.jmax = udunits2::ud.convert(Hd.jmax, "kJ", "J"))
   }
   
   ### Return trait.samples as modified by function
@@ -106,7 +106,7 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   traits.xml <- listToXml(traits.list, "pars")
   
   ### Finalize XML
-  xml[[1]] <- addChildren(xml[[1]], traits.xml)
+  xml[[1]] <- XML::addChildren(xml[[1]], traits.xml)
   
   ### Write out new XML _ NEED TO FIX THIS BIT. NEED TO CONVERT WHOLE LIST TO XML saveXML(xml, file =
   ### file.path(settings$rundir, run.id, 'leaf_default.xml'), indent=TRUE, prefix = PREFIX_XML)

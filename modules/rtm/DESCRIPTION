@@ -12,7 +12,8 @@ Description: This package contains functions for performing forward runs and
 Depends:
     MASS
 Imports:
-    coda (>= 0.18)
+    coda (>= 0.18),
+    lubridate (>= 1.6.0)
 Suggests:
     minpack.lm,
     mclust,

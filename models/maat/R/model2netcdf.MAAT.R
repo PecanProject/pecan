@@ -27,8 +27,6 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
   
   ### Load required libraries
   library(PEcAn.utils)
-  library(lubridate)
-  library(udunits2)
   library(ncdf4)
   
   ### Read in model output in SIPNET format
@@ -56,7 +54,7 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     ## Subset data for processing
     sub.maat.output <- subset(maat.output, format(maat.dates, "%Y") == y)
     sub.maat.dates <- as.Date(sub.maat.output$time, format = "%m/%d/%y")
-    sub.maat.doy <- yday(sub.maat.dates)
+    sub.maat.doy <- lubridate::yday(sub.maat.dates)
     sub.maat.output.dims <- dim(sub.maat.output)
     dayfrac <- 1 / dims[1]
     day.steps <- seq(0, 0.99, 1 / dims[1])
@@ -94,11 +92,11 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     ############ Variable Conversions 
     ### Conversion factor for umol C -> kg C
     Mc <- 12.017  # molar mass of C, g/mol
-    umol2kg_C <- Mc * ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
+    umol2kg_C <- Mc * udunits2::ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
     
     ### Conversion factor for mol H2O -> kg H2O
     Mw <- 18.01528  # molar mass of H2O, g/mol
-    mol2kg_H2O <- Mw * ud.convert(1, "g", "kg")
+    mol2kg_H2O <- Mw * udunits2::ud.convert(1, "g", "kg")
     ############ 
     
     ### Find/replace missing and convert outputs to standardized BETYdb units

@@ -46,10 +46,10 @@ convert.samples.BIOCRO <- function(trait.samples) {
   ## transform values with different units cuticular conductance - BETY default is
   ## umol; BioCro uses mol
   if ("b0" %in% trait.names) {
-    trait.samples <- transform(trait.samples, b0 = ud.convert(b0, "umol", "mol"))
+    trait.samples <- transform(trait.samples, b0 = udunits2::ud.convert(b0, "umol", "mol"))
   }
   if ("Sp" %in% trait.names) {
-    trait.samples <- transform(trait.samples, Sp = ud.convert(Sp, "kg/m2", "g/cm2"))
+    trait.samples <- transform(trait.samples, Sp = udunits2::ud.convert(Sp, "kg/m2", "g/cm2"))
   }
   if ("vmax" %in% trait.names) {
     ## HAAAACK
@@ -114,7 +114,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   if (!is.null(defaults.file)) {
     if (grepl("xml", defaults.file)) {
       defaults.xml <- defaults.file
-      defaults <- xmlToList(xmlParse(defaults.xml))
+      defaults <- XML::xmlToList(XML::xmlParse(defaults.xml))
     } else if (grepl("RData", defaults.file)) {
       load(defaults.file)
     } else {
@@ -126,7 +126,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
                                  package = "PEcAn.BIOCRO")
   }
   if (file.exists(defaults.file)) {
-    defaults <- xmlToList(xmlParse(defaults.file))
+    defaults <- XML::xmlToList(XML::xmlParse(defaults.file))
   } else {
     logger.severe("no defaults file given and ", genus, "not supported in BioCro")
   }
@@ -178,11 +178,11 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
                                          dateofharvest = slashdate(settings$run$end.date)),
                                     "simulationPeriod")
   
-  config.xml <- xmlNode("config")
-  config.xml <- append.xmlNode(config.xml, run.xml)
-  config.xml <- append.xmlNode(config.xml, location.xml)
-  config.xml <- append.xmlNode(config.xml, simulationPeriod.xml)
-  config.xml <- append.xmlNode(config.xml, parms.xml)
+  config.xml <- XML::xmlNode("config")
+  config.xml <- XML::append.xmlNode(config.xml, run.xml)
+  config.xml <- XML::append.xmlNode(config.xml, location.xml)
+  config.xml <- XML::append.xmlNode(config.xml, simulationPeriod.xml)
+  config.xml <- XML::append.xmlNode(config.xml, parms.xml)
   
   saveXML(config.xml, file = file.path(settings$rundir, run.id, "config.xml"), 
           indent = TRUE)

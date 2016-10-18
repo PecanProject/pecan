@@ -42,7 +42,7 @@ read.restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   
   #### PEcAn Standard Outputs
   if ("NPP" %in% var.names) {
-    forecast[[1]] <- ud.convert(mean(ens$NPP), "kg/m^2/s", "Mg/ha/yr")  #* unit.conv 
+    forecast[[1]] <- udunits2::ud.convert(mean(ens$NPP), "kg/m^2/s", "Mg/ha/yr")  #* unit.conv 
     names(forecast[[1]]) <- c("NPP")
   }
   

@@ -207,7 +207,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   ed2in.text <- gsub("@ED_VEG@", settings$run$inputs$veg$path, ed2in.text)
   ed2in.text <- gsub("@ED_SOIL@", settings$run$inputs$soil$path, ed2in.text)
   ed2in.text <- gsub("@ED_LU@", settings$run$inputs$lu$path, ed2in.text)
-  ed2in.text <- gsub("@ED_THSUM@", ifelse(str_sub(settings$run$inputs$thsum$path, -1) == "/", settings$run$inputs$thsum$path, 
+  ed2in.text <- gsub("@ED_THSUM@", ifelse(stringr::str_sub(settings$run$inputs$thsum$path, -1) == "/", settings$run$inputs$thsum$path, 
                                           paste0(settings$run$inputs$thsum$path, "/")), ed2in.text)
   
   ##----------------------------------------------------------------------
@@ -374,7 +374,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
         vals <- modifyList(vals, converted.defaults)
       
       pft.xml <- listToXml(vals, "pft")
-      xml <- append.xmlNode(xml, pft.xml)
+      xml <- XML::append.xmlNode(xml, pft.xml)
     }
   }
   return(xml)
