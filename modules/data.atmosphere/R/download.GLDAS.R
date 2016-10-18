@@ -17,7 +17,6 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
   library(lubridate)
   library(ncdf4)
   library(RCurl)
-  library(XML)
   library(lubridate)
   library(ncdf4)
 

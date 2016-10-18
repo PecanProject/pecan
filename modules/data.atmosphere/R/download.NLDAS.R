@@ -84,7 +84,7 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
     lat <- ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
     lon <- ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
     time <- ncdim_def(name = "time", units = "sec", 
-                      vals = seq((min(days.use) + 1 - 1/24) * 24 * 360, (max(days.use) + 1 - 1/24) * 24 * 360, length.out = ntime), 
+                      vals = seq((min(days.use) + 1 - 1 / 24) * 24 * 360, (max(days.use) + 1 - 1/24) * 24 * 360, length.out = ntime), 
                       create_dimvar = TRUE, 
                       unlim = TRUE)
     dim <- list(lat, lon, time)

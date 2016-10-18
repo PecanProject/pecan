@@ -18,7 +18,8 @@ Depends:
     ncdf4
 Imports:
     abind (>= 1.4.5),
-    stringr(>= 1.1.0)
+    stringr(>= 1.1.0),
+    XML (>= 3.98-1.4)
 Suggests:
     testthat (>= 1.0.2),
     udunits2
