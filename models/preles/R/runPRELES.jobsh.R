@@ -49,7 +49,7 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
       
       ## build day and year
       
-      dt <- ifelse(leap_year(year) == TRUE, 
+      dt <- ifelse(lubridate::leap_year(year) == TRUE, 
                    366 * 24 * 60 * 60 / length(sec), # leap year
                    365 * 24 * 60 * 60 / length(sec)) # non-leap year
       tstep <- round(timestep.s / dt)  #time steps per day

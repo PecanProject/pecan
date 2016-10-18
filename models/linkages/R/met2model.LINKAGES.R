@@ -74,7 +74,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
     ## convert time to seconds
     sec <- ncin$dim$time$vals
     sec <- udunits2::ud.convert(sec, unlist(strsplit(ncin$dim$time$units, " "))[1], "seconds")
-    dt <- ifelse(leap_year(as.numeric(year[i])) == TRUE, 
+    dt <- ifelse(lubridate::leap_year(as.numeric(year[i])) == TRUE, 
                  366 * 24 * 60 * 60 / length(sec), # leap year
                  365 * 24 * 60 * 60 / length(sec)) # non-leap year
     tstep <- 86400 / dt
