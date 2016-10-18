@@ -11,9 +11,11 @@ MODULES := allometry assim.batch assim.sequential benchmark \
 
 .PHONY: all ${BASE_PACKAGES} ${MODELS} ${MODULES}
 
-all: ${BASE_PACKAGES} ${MODELS} ${MODULES}
+all: PEcAn.all ${BASE_PACKAGES} ${MODELS} ${MODULES}
 
 #### DEPENDENCY MAPPING ####
+
+PEcAn.all: ${BASE_PACKAGES} ${MODULES} ${MODELS}
 
 ${MODELS}: ${BASE_PACKAGES} ${MODULES}
 
@@ -24,6 +26,8 @@ ${BASE_PACKAGES} ${MODELS} ${MODULES}: .install.devtools
 	echo `date` > .install.devtools
 
 #### BASE PACKAGES ####
+
+PEcan.all: .install.all
 
 utils: .install.utils
 
