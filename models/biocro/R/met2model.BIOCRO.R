@@ -75,13 +75,13 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE, .
 cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
   
   if ((!is.null(longitude)) & zulu2solarnoon) {
-    solarnoon_offset <- ud.convert(longitude/360, "day", "minute")
+    solarnoon_offset <- udunits2::ud.convert(longitude/360, "day", "minute")
     met[, `:=`(solardate = date + minutes(solarnoon_offset))]
   }
   if (!"relative_humidity" %in% colnames(met)) {
     if (all(c("air_temperature", "air_pressure", "specific_humidity") %in% colnames(met))) {
-      rh <- qair2rh(qair = met$specific_humidity, temp = ud.convert(met$air_temperature, 
-                                                                    "Kelvin", "Celsius"), pres = ud.convert(met$air_pressure, "Pa", "hPa"))
+      rh <- qair2rh(qair = met$specific_humidity, temp = udunits2::ud.convert(met$air_temperature, 
+                                                                    "Kelvin", "Celsius"), pres = udunits2::ud.convert(met$air_pressure, "Pa", "hPa"))
       met <- cbind(met, relative_humidity = rh * 100)
     } else {
       logger.error("neither relative_humidity nor [air_temperature, air_pressure, and specific_humidity]", 
@@ -112,9 +112,9 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
                        doy = yday(date), 
                        hour = round(hour(date) + minute(date) / 60, 1), 
                        SolarR = ppfd, 
-                       Temp = ud.convert(air_temperature, "Kelvin", "Celsius"), 
+                       Temp = udunits2::ud.convert(air_temperature, "Kelvin", "Celsius"), 
                        RH = relative_humidity, 
                        WS = wind_speed,
-                       precip = ud.convert(precipitation_flux, "s-1", "h-1"))][hour <= 23]
+                       precip = udunits2::ud.convert(precipitation_flux, "s-1", "h-1"))][hour <= 23]
   return(as.data.frame(newmet))
 }  # cf2biocro
