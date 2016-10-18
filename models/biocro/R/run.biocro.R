@@ -13,18 +13,18 @@
 run.biocro <- function(lat, lon, metfile, soil.nc = NULL, config = config, coppice.interval = 1, 
                        met.uncertainty = FALSE, irrigation = FALSE) {
   library(data.table)
-  library(lubridate)
   l2n <- function(x) lapply(x, as.numeric)
   start.date <- ceiling_date(as.POSIXct(config$run$start.date), "day")
   end.date   <- floor_date(as.POSIXct(config$run$end.date), "day")
   genus <- config$pft$type$genus
-  years <- year(start.date):year(end.date)
+  years <- lubridate::year(start.date):lubridate::year(end.date)
   ## Meteorology
   if (grepl(".nc$", basename(metfile))) {
     if (met.uncertainty == TRUE) {
       start.date <- "1979-01-01"
       end.date <- "2010-12-31"
-      years <- sample(year(start.date):year(end.date), size = 15, replace = TRUE)
+      years <- sample(lubridate::year(start.date):lubridate::year(end.date), 
+                      size = 15, replace = TRUE)
     }
     
     met.nc <- nc_open(metfile)
@@ -44,7 +44,7 @@ run.biocro <- function(lat, lon, metfile, soil.nc = NULL, config = config, coppi
     if (irrigation) {
       # 1 mm / hr = 24 mm / d every seven days
       met[, `:=`(precipitation_flux = ifelse(doy %in% seq(7, 364, by = 7), 
-                                             precipitation_flux + 1/3600, precipitation_flux))]
+                                             precipitation_flux + 1 / 3600, precipitation_flux))]
     }
     
     biocro.met <- cf2biocro(met)

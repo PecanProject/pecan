@@ -6,8 +6,8 @@ Date: 2016-08-09
 Author: John Doe, Jane Doe
 Maintainer: John Doe <jdoe@illinois.edu>
 Description: This module provides functions to link the (ModelName) to PEcAn.
-Depends:
-    PEcAn.utils
+Imports:
+    PEcAn.utils (>= 1.4.8)
 Suggests:
     testthat (>= 1.0.2)
 SystemRequirements: ModelName

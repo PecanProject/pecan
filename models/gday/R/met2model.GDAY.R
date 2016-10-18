@@ -74,7 +74,6 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
   }
   
   library(ncdf4)
-  library(lubridate)
   library(PEcAn.data.atmosphere)
   
   ## check to see if the outfolder is defined, if not create directory for output
@@ -88,8 +87,8 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
   # Create an empty holder for each (hour)days translated met file
   out <- NULL
   
-  start_year <- year(start_date)
-  end_year <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
   
   for (year in start_year:end_year) {
     old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
@@ -133,13 +132,13 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
     
     if (sub_daily) {
       
-      if (year%%4 == 0) {
+      if (lubridate::leap_year(year)) {
         ndays <- 366
       } else {
         ndays <- 365
       }
       
-      for (doy in 1:ndays) {
+      for (doy in seq_len(ndays)) {
         
         day_idx <- idx:((idx - 1) + 48)
         
@@ -190,7 +189,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
     } else {
       
-      if (year%%4 == 0) {
+      if (lubridate::leap_year(year)) {
         ndays <- 366
       } else {
         ndays <- 365

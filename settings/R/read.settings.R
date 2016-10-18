@@ -6,8 +6,7 @@
 ## which accompanies this distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-------------------------------------------------------------------------------
-library(XML)
-library(lubridate)
+
 library(PEcAn.DB)
 library(PEcAn.utils)
 
@@ -581,11 +580,11 @@ check.run.settings <- function(settings, dbcon = NULL) {
     
     # check start and end dates
     if (exists("startdate") && !is.null(settings$sensitivity.analysis$start.year) &&
-        year(startdate) > settings$sensitivity.analysis$start.year) {
+        lubridate::year(startdate) > settings$sensitivity.analysis$start.year) {
       logger.severe("Start year of SA should come after the start.date of the run")
     }
     if (exists("enddate") && !is.null(settings$sensitivity.analysis$end.year) &&
-        year(enddate) < settings$sensitivity.analysis$end.year) {
+        lubridate::year(enddate) < settings$sensitivity.analysis$end.year) {
       logger.severe("End year of SA should come before the end.date of the run")
     }
     if (!is.null(settings$sensitivity.analysis$start.year) && 
@@ -1110,7 +1109,7 @@ addSecrets <- function(settings) {
   if (!file.exists("~/.pecan.xml")) {
     return(settings)
   }
-  pecan <- xmlToList(xmlParse("~/.pecan.xml"))
+  pecan <- XML::xmlToList(XML::xmlParse("~/.pecan.xml"))
   
   # always copy following sections
   for(key in c('database')) {
@@ -1195,7 +1194,7 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.CHECKED.x
     for(idx in loc) {
       if (!is.null(commandArgs()[idx+1]) && file.exists(commandArgs()[idx+1])) {
         logger.info("Loading --settings=", commandArgs()[idx+1])
-        xml <- xmlParse(commandArgs()[idx+1])
+        xml <- XML::xmlParse(commandArgs()[idx+1])
         break
       }
     }
@@ -1203,24 +1202,24 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.CHECKED.x
   } else if (file.exists(Sys.getenv("PECAN_SETTINGS"))) { 
     # 2 load from PECAN_SETTINGS
     logger.info("Loading PECAN_SETTINGS=", Sys.getenv("PECAN_SETTINGS"))
-    xml <- xmlParse(Sys.getenv("PECAN_SETTINGS"))
+    xml <- XML::xmlParse(Sys.getenv("PECAN_SETTINGS"))
     ## if settings file passed to read.settings function
   } else if(!is.null(inputfile) && file.exists(inputfile)) {
     # 3 filename passed into function
     logger.info("Loading inpufile=", inputfile)
-    xml <- xmlParse(inputfile)
+    xml <- XML::xmlParse(inputfile)
     ## use pecan.xml in cwd only if none exists
   } else if (file.exists("pecan.xml")) {
     # 4 load ./pecan.xml
     logger.info("Loading ./pecan.xml")
-    xml <- xmlParse("pecan.xml")
+    xml <- XML::xmlParse("pecan.xml")
   } else {
     # file not found
     logger.severe("Could not find a pecan.xml file")
   }
   
   ## convert the xml to a list
-  settings <- xmlToList(xml)
+  settings <- XML::xmlToList(xml)
   settings <- expandMultiSettings(settings)
   
   settings <- papply(settings, fix.deprecated.settings)
