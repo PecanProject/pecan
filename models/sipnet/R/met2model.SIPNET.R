@@ -144,7 +144,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     for (y in year + 1:nyr - 1) {
       ytmp <- rep(y, 365 * 86400 / dt)
       dtmp <- rep(1:365, each = 86400 / dt)
-      if (y%%4 == 0) {
+      if (lubridate::leap_year(y)) {
         ## is leap
         ytmp <- rep(y, 366 * 86400 / dt)
         dtmp <- rep(1:366, each = 86400 / dt)

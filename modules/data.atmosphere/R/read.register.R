@@ -7,11 +7,15 @@
 ##' @author Betsy Cowdery
 read.register <- function(register.xml, con) {
   
+<<<<<<< HEAD
   library(XML)
+=======
+  library(lubridate)
+>>>>>>> PecanProject/master
   library(PEcAn.DB)
   library(PEcAn.utils)
   
-  register <- xmlToList(xmlParse(register.xml))
+  register <- XML::xmlToList(XML::xmlParse(register.xml))
   print(as.data.frame(register))
   
   # check scale

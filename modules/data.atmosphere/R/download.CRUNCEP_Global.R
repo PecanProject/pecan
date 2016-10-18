@@ -48,7 +48,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
   for (i in seq_len(rows)) {
     year <- ylist[i]
     ntime <- ifelse(lubridate::leap_year(year), 366 * 4, 365 * 4)
-    
+
     loc.file <- file.path(outfolder, paste("CRUNCEP", year, "nc", sep = "."))
     
     ## Create dimensions
