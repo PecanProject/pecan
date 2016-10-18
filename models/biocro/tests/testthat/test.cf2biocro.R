@@ -2,7 +2,6 @@ context("check output from cf2biocro")
 
 library(data.table)
 library(PEcAn.data.atmosphere)
-library(lubridate)
 library(udunits2)
 library(ncdf4)
 test.nc <- nc_open("data/urbana_subdaily_test.nc")

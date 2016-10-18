@@ -17,7 +17,6 @@ extract.nc <- function(in.path, in.prefix, outfolder, start_date, end_date, slat
                        overwrite = FALSE, verbose = FALSE, ...) {
   
   library(PEcAn.utils)
-  library(lubridate)
   library(ncdf4)
   
   in.path   <- as.character(in.path)
@@ -35,8 +34,8 @@ extract.nc <- function(in.path, in.prefix, outfolder, start_date, end_date, slat
   x <- close$x
   y <- close$y
   
-  start_year <- year(start_date)
-  end_year   <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year   <- lubridate::year(end_date)
   rows       <- end_year - start_year + 1
   results    <- data.frame(file = character(rows), 
                            host = character(rows), 

@@ -1,7 +1,6 @@
 get.elevation <- function(lat, lon) {
   # http://stackoverflow.com/a/8974308/199217
   library(RCurl)
-  library(XML)
   
   url  <- paste("http://www.earthtools.org/height", lat, lon, sep = "/")
   
