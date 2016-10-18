@@ -208,6 +208,9 @@ START=`date +'%s'`
 REVNO=$( git show -s --pretty=format:%T master )
 
 # check/install packages
+if [ "$CHECK" == "yes" ]; then
+  make check
+fi
 make
 #for p in ${PACKAGES}; do
   #PACKAGE="OK"
