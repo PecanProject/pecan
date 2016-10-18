@@ -10,9 +10,9 @@
 ##' @author James Simkins
 debias.met <- function(outfolder, source_met, train_met, site_id, de_method='linear',
                        overwrite=FALSE, verbose=FALSE, ...){  
-  require(PEcAn.utils)
-  require(lubridate)
-  require(ncdf4)
+  library(PEcAn.utils)
+  library(lubridate)
+  library(ncdf4)
   outfolder = paste0(outfolder,"_site_",paste0(site_id %/% 1000000000, "-", site_id %% 1000000000))
   
   var = data.frame(CF.name = c("air_temperature","surface_downwelling_longwave_flux_in_air","air_pressure",
@@ -161,8 +161,8 @@ debias.met <- function(outfolder, source_met, train_met, site_id, de_method='lin
   
   results$file <- loc.file
   results$host <- fqdn()
-  results$startdate <- paste0(year,"-01-01 00:00:00", tz = "GMT")
-  results$enddate <- paste0(year,"-12-31 23:59:59", tz = "GMT")
+  results$startdate <- paste0(year,"-01-01 00:00:00", tz = "UTC")
+  results$enddate <- paste0(year,"-12-31 23:59:59", tz = "UTC")
   results$mimetype <- 'application/x-netcdf'
   results$formatname <- 'CF Meteorology'
   
