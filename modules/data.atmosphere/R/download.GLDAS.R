@@ -17,11 +17,6 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
   library(ncdf4)
   library(stringr)
   library(RCurl)
-<<<<<<< HEAD
-  library(XML)
-=======
-  library(lubridate)
->>>>>>> PecanProject/master
   library(ncdf4)
   library(stringr)
   
