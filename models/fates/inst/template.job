@@ -65,12 +65,7 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
 ./xmlchange -file env_run.xml -id LND_DOMAIN_FILE -val 'domain.lnd.@SITE_NAME@.nc'
 ./xmlchange -file env_run.xml -id LND_DOMAIN_PATH -val '@INDIR@/share/domains/domain.clm/'
 ./xmlchange -file env_run.xml -id CLM_USRDAT_NAME -val '@SITE_NAME@'
-mkdir case/run/timing
 ## END REFCASE  
-  
-  ## FATES seems to need a timing folder, but doesn't create it itself
-  mkdir run/timing
-  mkdir timing
   
   ## ENV_BUILD update configurations
   ./xmlchange -file env_build.xml -id CESMSCRATCHROOT -val @CASEDIR@
@@ -90,6 +85,10 @@ mkdir case/run/timing
   ## SURFDATA
   rm @INDIR@/lnd/clm2/surfdata_map/surfdata*
   ln -s @RUNDIR@/surfdata_@SITE_NAME@_simyr2000.nc @INDIR@/lnd/clm2/surfdata_map/
+  SURFMAP=@INDIR@/lnd/clm2/surfdata_map/surfdata_@SITE_NAME@_simyr2000.nc
+cat >> user_nl_clm << EOF
+fsurdat=@INDIR@/lnd/clm2/surfdata_map/surfdata_@SITE_NAME@_simyr2000.nc
+EOF
     
   ## MET --> DATM
   
