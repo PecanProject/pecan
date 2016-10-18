@@ -28,7 +28,7 @@ ${MODELS}: ${BASE_PACKAGES} ${MODULES}
 ${BASE_PACKAGES} ${MODELS} ${MODULES}: .install/devtools
 
 .install/devtools:
-	Rscript -e "req <- require('devtools'); if(!req) install.packages('devtools')"
+	Rscript -e "req <- require('devtools'); if(!req) install.packages('devtools', repos = 'http://cran.rstudio.com')"
 	echo `date` > .install/devtools
 
 #### BASE PACKAGES ####
