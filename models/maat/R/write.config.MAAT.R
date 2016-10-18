@@ -51,15 +51,15 @@ convert.samples.MAAT <- function(trait.samples) {
   }
   if ("Ha.vcmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Ha.vcmax = ud.convert(Ha.vcmax, "kJ", "J"))
+    trait.samples <- transform(trait.samples, Ha.vcmax = udunits2::ud.convert(Ha.vcmax, "kJ", "J"))
   }
   if ("Ha.jmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Ha.jmax = ud.convert(Ha.jmax, "kJ", "J"))
+    trait.samples <- transform(trait.samples, Ha.jmax = udunits2::ud.convert(Ha.jmax, "kJ", "J"))
   }
   if ("Hd.jmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Hd.jmax = ud.convert(Hd.jmax, "kJ", "J"))
+    trait.samples <- transform(trait.samples, Hd.jmax = udunits2::ud.convert(Hd.jmax, "kJ", "J"))
   }
   
   ### Return trait.samples as modified by function

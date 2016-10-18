@@ -22,7 +22,6 @@
 ##' @author Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari
 ## modified M. Dietze 07/08/12 modified S. Serbin 05/06/13
 model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
-  library(udunits2)
   
   flist <- dir(outdir, "-T-")
   if (length(flist) == 0) {
@@ -498,10 +497,10 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     
     ## Conversion factor for umol C -> kg C
     Mc <- 12.017  #molar mass of C, g/mol
-    umol2kg_C <- Mc * ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
+    umol2kg_C <- Mc * udunits2::ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
     
     var <- list()
-    out <- conversion(1, ud.convert(1, "t ha-1", "kg m-2"))  ## tC/ha -> kg/m2
+    out <- conversion(1, udunits2::ud.convert(1, "t ha-1", "kg m-2"))  ## tC/ha -> kg/m2
     var[[1]] <- mstmipvar("AbvGrndWood", lat, lon, t, zg)
     out <- conversion(2, umol2kg_C)  ## umol/m2 s-1 -> kg/m2 s-1
     var[[2]] <- mstmipvar("AutoResp", lat, lon, t, zg)
