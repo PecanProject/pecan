@@ -16,7 +16,7 @@ This function will print a debug message.
 }
 \examples{
 \dontrun{
-logger.debug("variable", 5)
+logger.debug('variable', 5)
 }
 }
 \author{

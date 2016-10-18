@@ -1,6 +1,5 @@
 # Test slow inversion
 library(PEcAnRTM)
-library(testthat)
 context("PROSPECT R inversion")
 data(sensor.rsr)
 params <- c(1.4, 40, 8, 0.01, 0.01)
