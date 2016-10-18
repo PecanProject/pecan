@@ -24,7 +24,6 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
   library(data.table)
   library(lubridate)
   library(ncdf4)
-  library(udunits2)
   library(PEcAn.utils)
   
   if (!("hour" %in% colnames(result))) {
@@ -72,14 +71,14 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
                  TVeg = mstmipvar("TVeg", x, y, t), 
                  LAI = mstmipvar("LAI", x, y, t))
     
-    k <- ud.convert(1, "Mg/ha", "kg/m2") / c2biomass
+    k <- udunits2::ud.convert(1, "Mg/ha", "kg/m2") / c2biomass
     
     RR <- with(R, list(TotLivBiom = k * (Leaf + Root + Stem + Rhizome + Grain), 
                        RootBiom = k * Root, 
                        StemBiom = k * Stem, 
                        Yield = Stem,
-                       Evap = ud.convert(SoilEvaporation + CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
-                       TVeg = ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
+                       Evap = udunits2::ud.convert(SoilEvaporation + CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
+                       TVeg = udunits2::ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
                        LAI = LAI))
     
     ncfile <- file.path(outdir, paste0(yeari, ".nc"))

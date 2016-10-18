@@ -22,7 +22,6 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
   library(PEcAn.utils)
   library(ncdf4)
   library(Rpreles)
-  library(udunits2)
   
   # Process start and end dates
   start_date <- as.POSIXlt(start.date, tz = "UTC")
@@ -90,8 +89,8 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
       
       ## Format/convert inputs
       ppfd   <- tapply(PPFD, doy, mean, na.rm = TRUE)  # Find the mean for the day
-      tair   <- ud.convert(tapply(Tair, doy, mean, na.rm = TRUE), "kelvin", "celsius")  # Convert Kelvin to Celcius
-      vpd    <- ud.convert(tapply(VPD, doy, mean, na.rm = TRUE), "Pa", "kPa")  # pascal to kila pascal
+      tair   <- udunits2::ud.convert(tapply(Tair, doy, mean, na.rm = TRUE), "kelvin", "celsius")  # Convert Kelvin to Celcius
+      vpd    <- udunits2::ud.convert(tapply(VPD, doy, mean, na.rm = TRUE), "Pa", "kPa")  # pascal to kila pascal
       precip <- tapply(Precip, doy, sum, na.rm = TRUE)  # Sum to daily precipitation
       co2    <- tapply(CO2, doy, mean)  # need daily average, so sum up day
       co2    <- co2 / 1e+06  # convert to ppm

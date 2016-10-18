@@ -18,10 +18,10 @@ Depends:
     ncdf4,
     stringr
 Imports:
-    abind (>= 1.4.5)
+    abind (>= 1.4.5),
+    udunits2 (>= 0.11)
 Suggests:
     testthat (>= 1.0.2),
-    udunits2
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes

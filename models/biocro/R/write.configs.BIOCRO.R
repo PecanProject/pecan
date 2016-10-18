@@ -46,10 +46,10 @@ convert.samples.BIOCRO <- function(trait.samples) {
   ## transform values with different units cuticular conductance - BETY default is
   ## umol; BioCro uses mol
   if ("b0" %in% trait.names) {
-    trait.samples <- transform(trait.samples, b0 = ud.convert(b0, "umol", "mol"))
+    trait.samples <- transform(trait.samples, b0 = udunits2::ud.convert(b0, "umol", "mol"))
   }
   if ("Sp" %in% trait.names) {
-    trait.samples <- transform(trait.samples, Sp = ud.convert(Sp, "kg/m2", "g/cm2"))
+    trait.samples <- transform(trait.samples, Sp = udunits2::ud.convert(Sp, "kg/m2", "g/cm2"))
   }
   if ("vmax" %in% trait.names) {
     ## HAAAACK

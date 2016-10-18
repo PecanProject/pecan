@@ -122,13 +122,13 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
         soilT <- soilT - 273.15
       }
       
-      SVP <- ud.convert(get.es(Tair - 273.15), "millibar", "Pa")  ## Saturation vapor pressure
+      SVP <- udunits2::ud.convert(get.es(Tair - 273.15), "millibar", "Pa")  ## Saturation vapor pressure
       VPD <- try(ncvar_get(nc, "water_vapor_saturation_deficit"))  ## in Pa
       if (!is.numeric(VPD)) {
         VPD <- SVP * (1 - qair2rh(Qair, Tair - 273.15))
       }
       e_a <- SVP - VPD
-      VPDsoil <- ud.convert(get.es(soilT), "millibar", "Pa") * (1 - qair2rh(Qair, soilT))
+      VPDsoil <- udunits2::ud.convert(get.es(soilT), "millibar", "Pa") * (1 - qair2rh(Qair, soilT))
       
       nc_close(nc)
     } else {
