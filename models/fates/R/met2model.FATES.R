@@ -24,11 +24,11 @@
 met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat, lon, 
                             overwrite = FALSE, verbose = FALSE, ...) {
   
-  # General Structure- FATES Uses Netcdf so we need to rename vars, split files from years into
-  # months, and generate the header file Get Met file from inpath. Loop over years (Open
-  # nc.file,rename vars,change dimensions as needed,close/save .nc file) close defining temporal
-  # dimension needs to be figured out. If we configure FATES to use same tstep then we may not need
-  # to change dimensions
+  # General Structure- FATES Uses Netcdf so we need to rename vars, split files from years into months, and generate the header file
+  # Get Met file from inpath.
+  # Loop over years (Open nc.file,rename vars,change dimensions as needed,close/save .nc file)
+  # close
+  # defining temporal dimension needs to be figured out. If we configure FATES to use same tstep then we may not need to change dimensions  
   
   library(PEcAn.utils)
   library(ncdf4)
@@ -123,15 +123,28 @@ met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date,
         
         nc_close(ncout)
         
-        # ncvar_rename(ncfile,varid='LONGXY') ncvar_rename(ncfile,varid='LATIXY') # # double
-        # EDGEW(scalar) ; # EDGEW:long_name = 'western edge in atmospheric data' ; # EDGEW:units =
-        # 'degrees E' ; EDGEW = ncvar_rename(ncfile,'EDGEW','EDGEW') # double EDGEE(scalar) ; #
-        # EDGEE:long_name = 'eastern edge in atmospheric data' ; # EDGEE:units = 'degrees E' ; EDGEE =
-        # ncvar_rename(ncfile,'EDGEE','EDGEE') # double EDGES(scalar) ; # EDGES:long_name = 'southern
-        # edge in atmospheric data' ; # EDGES:units = 'degrees N' ; EDGES =
-        # ncvar_rename(ncfile,'EDGES','EDGES') # # double EDGEN(scalar) ; # EDGEN:long_name = 'northern
-        # edge in atmospheric data' ; # EDGEN:units = 'degrees N' ; EDGEN =
-        # ncvar_rename(ncfile,'EDGEN','EDGEN')
+        #   ncvar_rename(ncfile,varid="LONGXY")
+        #   ncvar_rename(ncfile,varid="LATIXY")
+        #   #     
+        #   #     double EDGEW(scalar) ;
+        #   #     EDGEW:long_name = "western edge in atmospheric data" ;
+        #   #     EDGEW:units = "degrees E" ;
+        #   EDGEW = ncvar_rename(ncfile,"EDGEW","EDGEW")
+        #   
+        #   #     double EDGEE(scalar) ;
+        #   #     EDGEE:long_name = "eastern edge in atmospheric data" ;
+        #   #     EDGEE:units = "degrees E" ;
+        #   EDGEE = ncvar_rename(ncfile,"EDGEE","EDGEE")
+        #   
+        #   #     double EDGES(scalar) ;
+        #   #     EDGES:long_name = "southern edge in atmospheric data" ;
+        #   #     EDGES:units = "degrees N" ;
+        #   EDGES = ncvar_rename(ncfile,"EDGES","EDGES") 
+        #   #     
+        #   #     double EDGEN(scalar) ;
+        #   #     EDGEN:long_name = "northern edge in atmospheric data" ;
+        #   #     EDGEN:units = "degrees N" ;
+        #   EDGEN = ncvar_rename(ncfile,"EDGEN","EDGEN")
       }
       
       nc_close(nc)
