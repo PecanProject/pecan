@@ -217,7 +217,7 @@ listToXml.default <- function(item, tag) {
     xml <- xmlNode(tag)
     for (i in seq_along(item)) {
       if (is.null(names(item)) || names(item)[i] != ".attrs") {
-        xml <- append.xmlNode(xml, listToXml(item[[i]], names(item)[i]))
+        xml <- XML::append.xmlNode(xml, listToXml(item[[i]], names(item)[i]))
       }
     }
   }

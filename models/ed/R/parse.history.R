@@ -7,7 +7,6 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-library(XML)
 library(stringr)
 
 ##' This will generate the CSV file needed by write configs to write the
@@ -23,7 +22,7 @@ library(stringr)
 ##'
 ##' @author Rob Kooper
 parse.history <- function(historyfile, outfile = "") {
-    hist <- xmlToList(xmlParse(historyfile))
+    hist <- XML::xmlToList(XML::xmlParse(historyfile))
     keys <- names(hist$pft)
     
     cat(paste(keys, collapse = ";"), sep = "\n", file = outfile, append = FALSE)
