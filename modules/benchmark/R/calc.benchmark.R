@@ -12,7 +12,6 @@
 calc.benchmark <- function(bm.ensemble, con) {
   
   library(RPostgreSQL)
-  library(XML)
   library(data.table)
   
   ens <- db.query(paste("SELECT * FROM ensembles where id = ", bm.ensemble$ensemble_id, ";"), con)

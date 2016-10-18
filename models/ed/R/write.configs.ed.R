@@ -374,7 +374,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
         vals <- modifyList(vals, converted.defaults)
       
       pft.xml <- listToXml(vals, "pft")
-      xml <- append.xmlNode(xml, pft.xml)
+      xml <- XML::append.xmlNode(xml, pft.xml)
     }
   }
   return(xml)
