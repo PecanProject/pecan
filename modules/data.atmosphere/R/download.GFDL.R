@@ -16,13 +16,12 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
                           overwrite = FALSE, verbose = FALSE, 
                           model = "CM3", scenario = "rcp45", ensemble_member = "r1i1p1", ...) {
   library(PEcAn.utils)
-  library(lubridate)
   library(ncdf4)
   
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
-  start_year <- year(start_date)
-  end_year   <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year   <- lubridate::year(end_date)
   site_id    <- as.numeric(site_id)
   model      <- paste0(model)
   scenario   <- paste0(scenario)
