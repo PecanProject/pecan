@@ -138,7 +138,7 @@ done
 
 # packages that are to be compiled
 PACKAGES="utils db settings visualization"
-PACKAGES="${PACKAGES} models/jules models/clm45 models/maat"
+PACKAGES="${PACKAGES} models/jules models/clm45 models/fates models/maat"
 PACKAGES="${PACKAGES} models/preles models/gday models/lpjguess models/maespa"
 PACKAGES="${PACKAGES} modules/priors modules/meta.analysis modules/uncertainty"
 PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere modules/data.remote"
@@ -233,7 +233,8 @@ for p in ${PACKAGES}; do
 
   if [ "$CHECK" == "yes" ]; then
     ACTION="CHECK"
-    R CMD check ${R_LIB_INC} ${MANUAL} $p &> out.log
+    #    R CMD check ${R_LIB_INC} ${MANUAL} $p &> out.log
+    Rscript -e "install.packages(\"${p}\", repos = NULL, type = 'source', lib = \"${R_LIBS_USER}\", dependencies = TRUE)" &> out.log
     if [ $? -ne 0 ]; then
       STATUS="BROKEN"
       PACKAGE="BROKEN"

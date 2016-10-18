@@ -34,11 +34,8 @@ if (args[1]=="pwd"){
 #--------------------------------------------------------------------------------------------------#
 
 
-#---------------- Load required libraries ---------------------------------------------------------#
-# Info: Loads required R libraries and warns if package is not availible.
-ok = require(hdf5) ; if (! ok) stop("Package hdf5 is not available...")
-ok = require(XML) ; if (! ok) stop("Package XML is not available...")
-#--------------------------------------------------------------------------------------------------#
+library(hdf5)
+library(XML)
 
 
 ####################################################################################################
