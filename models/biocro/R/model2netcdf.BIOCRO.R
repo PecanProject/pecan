@@ -22,9 +22,7 @@
 model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon = -9999) {
   
   library(data.table)
-  library(lubridate)
   library(ncdf4)
-  library(udunits2)
   library(PEcAn.utils)
   
   if (!("hour" %in% colnames(result))) {
@@ -47,9 +45,9 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
   
   for (yeari in unique(result$Year)) {
     R <- result[Year == yeari]
-    dates <- ymd(paste0(R$Year, "-01-01")) + days(as.numeric(R$DayofYear - 1)) + 
-      hours(R$Hour)
-    days_since_origin <- dates - ymd_hms("1700-01-01 00:00:00")
+    dates <- lubridate::ymd(paste0(R$Year, "-01-01")) + lubridate::days(as.numeric(R$DayofYear - 1)) + 
+      lubridate::hours(R$Hour)
+    days_since_origin <- dates - lubridate::ymd_hms("1700-01-01 00:00:00")
     if (!units(days_since_origin) == "days") {
       stop("check time units")
     }
@@ -72,14 +70,14 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
                  TVeg = mstmipvar("TVeg", x, y, t), 
                  LAI = mstmipvar("LAI", x, y, t))
     
-    k <- ud.convert(1, "Mg/ha", "kg/m2") / c2biomass
+    k <- udunits2::ud.convert(1, "Mg/ha", "kg/m2") / c2biomass
     
     RR <- with(R, list(TotLivBiom = k * (Leaf + Root + Stem + Rhizome + Grain), 
                        RootBiom = k * Root, 
                        StemBiom = k * Stem, 
                        Yield = Stem,
-                       Evap = ud.convert(SoilEvaporation + CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
-                       TVeg = ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
+                       Evap = udunits2::ud.convert(SoilEvaporation + CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
+                       TVeg = udunits2::ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
                        LAI = LAI))
     
     ncfile <- file.path(outdir, paste0(yeari, ".nc"))

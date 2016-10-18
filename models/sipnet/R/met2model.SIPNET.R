@@ -54,7 +54,6 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   }
   
   library(ncdf4)
-  library(lubridate)
   library(PEcAn.data.atmosphere)
   
   ## check to see if the outfolder is defined, if not create directory for output
@@ -65,8 +64,8 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   out <- NULL
   
   # get start/end year since inputs are specified on year basis
-  start_year <- year(start_date)
-  end_year <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
   
   ## loop over files TODO need to filter out the data that is not inside start_date, end_date
   for (year in start_year:end_year) {
@@ -122,13 +121,13 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
         soilT <- soilT - 273.15
       }
       
-      SVP <- ud.convert(get.es(Tair - 273.15), "millibar", "Pa")  ## Saturation vapor pressure
+      SVP <- udunits2::ud.convert(get.es(Tair - 273.15), "millibar", "Pa")  ## Saturation vapor pressure
       VPD <- try(ncvar_get(nc, "water_vapor_saturation_deficit"))  ## in Pa
       if (!is.numeric(VPD)) {
         VPD <- SVP * (1 - qair2rh(Qair, Tair - 273.15))
       }
       e_a <- SVP - VPD
-      VPDsoil <- ud.convert(get.es(soilT), "millibar", "Pa") * (1 - qair2rh(Qair, soilT))
+      VPDsoil <- udunits2::ud.convert(get.es(soilT), "millibar", "Pa") * (1 - qair2rh(Qair, soilT))
       
       nc_close(nc)
     } else {

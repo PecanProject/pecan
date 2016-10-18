@@ -145,7 +145,7 @@ wide2long <- function(data.wide, lat, lon, var) {
 ##' @author David LeBauer
 par2ppfd <- function(watts) {
   ppfd <- watts/(2.35 * 10^5)
-  ud.convert(ppfd, "mol ", "umol")
+  udunits2::ud.convert(ppfd, "mol ", "umol")
 } # par2ppfd
 
 

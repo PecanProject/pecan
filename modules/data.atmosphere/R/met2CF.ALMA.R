@@ -27,13 +27,12 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   
   #---------------- Load libraries. -----------------------------------------------------------------#
   library(ncdf4)
-  library(lubridate)
   library(PEcAn.utils)
   #--------------------------------------------------------------------------------------------------#  
   
   # get start/end year code works on whole years only
-  start_year <- year(start_date)
-  end_year   <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year   <- lubridate::year(end_date)
   
   if (!file.exists(outfolder)) {
     dir.create(outfolder)
