@@ -15,8 +15,8 @@ Description: Contains functions to read PEcAn settings files
 Depends:
     PEcAn.utils,
     PEcAn.DB,
-    lubridate
 Imports:
+    lubridate (>= 1.6.0),
     XML (>= 3.98-1.3)
 Suggests:
     testthat (>= 1.0.2)

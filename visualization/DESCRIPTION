@@ -29,9 +29,9 @@ Depends:
     PEcAn.DB,
     RPostgreSQL,
     udunits2,
-    lubridate,
     dplyr
 Imports:
+    lubridate (>= 1.6.0),
     plyr (>= 1.8.4),
     stringr(>= 1.1.0)
 Suggests:

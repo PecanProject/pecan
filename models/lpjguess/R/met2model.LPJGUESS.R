@@ -30,13 +30,12 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   
   library(PEcAn.utils)
   library(ncdf4)
-  library(lubridate)
   
   print("START met2model.LPJGUESS")
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
-  start_year <- year(start_date)
-  end_year <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
   
   year <- sprintf("%04d", seq(start_year, end_year, 1))
   nyear <- length(year)  #number of years to simulate

@@ -47,7 +47,6 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   }
   
   library(ncdf4)
-  library(lubridate)
   library(PEcAn.data.atmosphere)
   
   ## check to see if the outfolder is defined, if not create directory for output
@@ -58,8 +57,8 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   out <- NULL
   
   # get start/end year since inputs are specified on year basis
-  start_year <- year(start_date)
-  end_year <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
   
   year <- sprintf("%04d", seq(start_year, end_year, 1))
   month <- sprintf("%02d", seq(1, 12, 1))

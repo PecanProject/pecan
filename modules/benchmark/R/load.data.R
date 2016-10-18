@@ -14,7 +14,6 @@ load.data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   
   library(PEcAn.utils)
   library(PEcAn.benchmark)
-  library(lubridate)
   library(udunits2)
   library(dplyr)
   
