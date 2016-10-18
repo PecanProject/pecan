@@ -14,15 +14,14 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
                            overwrite = FALSE, verbose = FALSE, ...) {
   library(PEcAn.utils)
   library(RCurl)
-  library(lubridate)
   library(ncdf4)
   library(stringr)
   
   # Date stuff
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
-  start_year <- year(start_date)
-  end_year   <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year   <- lubridate::year(end_date)
   site_id    <- as.numeric(site_id)
   outfolder  <- paste0(outfolder, "_site_", paste0(site_id %/% 1e+09, "-", site_id %% 1e+09))
   
@@ -85,7 +84,7 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
     lat <- ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
     lon <- ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
     time <- ncdim_def(name = "time", units = "sec", 
-                      vals = seq((min(days.use) + 1 - 1/24) * 24 * 360, (max(days.use) + 1 - 1/24) * 24 * 360, length.out = ntime), 
+                      vals = seq((min(days.use) + 1 - 1 / 24) * 24 * 360, (max(days.use) + 1 - 1/24) * 24 * 360, length.out = ntime), 
                       create_dimvar = TRUE, 
                       unlim = TRUE)
     dim <- list(lat, lon, time)

@@ -1,5 +1,4 @@
 library(PEcAnRTM)
-library(lubridate)
 
 # Set paths and get files
 # pecan.workflow.id <- "1000001494"
@@ -25,7 +24,9 @@ paths <- list(ed2in.path = ed2in.path, history.path = history.path)
 history.file <- tail(list.files(history.path, "history-S-.*"), 1)
 date.raw <- gsub("history-S-(.*)-g01.h5", "\\1", history.file)
 datetime <- strptime(date.raw, "%Y-%m-%d-%H%M%S", tz = "UTC")
-if(hour(datetime) < 8 | hour(datetime) > 6) hour(datetime) <- 12
+if(lubridate::hour(datetime) < 8 | lubridate::hour(datetime) > 6) {
+  lubridate::hour(datetime) <- 12
+}
 
 # Set sensitivity parameters
 arg <- commandArgs(trailingOnly=TRUE)

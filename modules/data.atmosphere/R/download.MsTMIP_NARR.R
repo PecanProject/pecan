@@ -12,13 +12,12 @@
 download.MsTMIP_NARR <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
                                  overwrite = FALSE, verbose = FALSE, ...) {
   library(PEcAn.utils)
-  library(lubridate)
   library(ncdf4)
   
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
-  start_year <- year(start_date)
-  end_year   <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year   <- lubridate::year(end_date)
   site_id    <- as.numeric(site_id)
   outfolder  <- paste0(outfolder, "_site_", paste0(site_id%/%1e+09, "-", site_id%%1e+09))
   
@@ -52,7 +51,7 @@ download.MsTMIP_NARR <- function(outfolder, start_date, end_date, site_id, lat.i
     year <- ylist[i]
     
     ntime <- ifelse(year %% 4 == 0, 2923, 2919) # should use lubridate::leap_year?
-    
+
     loc.file <- file.path(outfolder, paste("MsTMIP_NARR", year, "nc", sep = "."))
     
     ## Create dimensions

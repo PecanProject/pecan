@@ -12,12 +12,11 @@
 download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, 
                              overwrite = FALSE, verbose = FALSE, ...) {
   library(PEcAn.utils)
-  library(lubridate)
   library(ncdf4)
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
-  start_year <- year(start_date)
-  end_year <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
   site_id <- as.numeric(site_id)
 #  outfolder <- paste0(outfolder, "_site_", paste0(site_id%/%1e+09, "-", site_id %% 1e+09))
   
@@ -49,7 +48,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
   for (i in seq_len(rows)) {
     year <- ylist[i]
     ntime <- ifelse(lubridate::leap_year(year), 366 * 4, 365 * 4)
-    
+
     loc.file <- file.path(outfolder, paste("CRUNCEP", year, "nc", sep = "."))
     logger.info(paste("Downloading",loc.file))
     ## Create dimensions

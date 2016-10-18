@@ -61,7 +61,6 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   }
   
   library(ncdf4)
-  library(lubridate)
   library(PEcAn.data.atmosphere)
   library(Maeswrap)
   
@@ -73,8 +72,8 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   out <- NULL
   
   # get start/end year since inputs are specified on year basis
-  start_year <- year(start.date)
-  end_year <- year(end.date)
+  start_year <- lubridate::year(start.date)
+  end_year <- lubridate::year(end.date)
   
   ## loop over files
   for (year in start_year:end_year) {

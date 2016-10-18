@@ -43,12 +43,11 @@
 met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, format, lat = NULL, lon = NULL, 
                        nc_verbose = FALSE, overwrite = FALSE, ...) {
   library(PEcAn.utils)
-  library(lubridate)
   library(udunits2)
   library(ncdf4)
   
-  start_year <- year(start_date)
-  end_year   <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year   <- lubridate::year(end_date)
   if (!file.exists(outfolder)) {
     dir.create(outfolder)
   }
