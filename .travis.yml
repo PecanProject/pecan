@@ -71,5 +71,5 @@ before_script:
   - scripts/load.bety.sh -a postgres -c -u
 
 script:
-  - make
+  - scripts/build.sh --no-git --tests --name travis
 

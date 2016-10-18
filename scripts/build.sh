@@ -16,7 +16,6 @@ export _R_CHECK_FORCE_SUGGESTS_="FALSE"
 
 # these variables are set using the command line arguments below
 CHECK="no"
-DEPENDENCIES="no"
 DOCUMENTATION="no"
 FORCE="no"
 GIT="no"
@@ -39,7 +38,6 @@ while true; do
     --help|-h)
       echo "$0 <options>"
       echo " --check         : check the R packages before install"
-      echo " --dependencies  : install any dependencies"
       echo " --documentation : (re)generates all Rd files"
       echo " --force         : force a build"
       echo " --git           : do a git pull"
@@ -64,14 +62,6 @@ while true; do
 
     --no-check)
       CHECK="no"
-      ;;
-
-    --dependencies)
-      DEPENDENCIES="yes"
-      ;;
-
-    --no-dependencies)
-      DEPENDENCIES="no"
       ;;
 
     --documentation)
@@ -193,14 +183,6 @@ mv newlog git.log
 
 STATUS="OK"
 
-# install all dependencies
-if [ "$DEPENDENCIES" == "yes" ]; then
-  echo "----------------------------------------------------------------------"
-  echo "DEPENDENCIES"
-  echo "----------------------------------------------------------------------"
-  ./scripts/install.dependencies.R 2>&1
-fi
-
 # generate documentation
 if [ "$DOCUMENTATION" == "yes" ]; then
   for p in ${PACKAGES}; do
@@ -226,62 +208,63 @@ START=`date +'%s'`
 REVNO=$( git show -s --pretty=format:%T master )
 
 # check/install packages
-for p in ${PACKAGES}; do
-  PACKAGE="OK"
-  ACTION=""
-  BASENAME=$(basename "$p")
+make
+#for p in ${PACKAGES}; do
+  #PACKAGE="OK"
+  #ACTION=""
+  #BASENAME=$(basename "$p")
 
-  if [ "$CHECK" == "yes" ]; then
-    ACTION="CHECK"
-    R CMD check ${R_LIB_INC} ${MANUAL} $p &> out.log
-    if [ $? -ne 0 ]; then
-      STATUS="BROKEN"
-      PACKAGE="BROKEN"
-      echo "----------------------------------------------------------------------"
-      echo "CHECK $p BROKEN"
-      echo "----------------------------------------------------------------------"
-      cat out.log
-      if [ -e "${BASENAME}.Rcheck/00install.out" ]; then
-        echo "--- ${BASENAME}.Rcheck/00install.out"
-        cat "${BASENAME}.Rcheck/00install.out"
-      fi
-      if [ -e "${BASENAME}.Rcheck/tests/testthat.Rout.fail" ]; then
-        echo "--- ${BASENAME}.Rcheck/tests/testthat.Rout.fail"
-        cat "${BASENAME}.Rcheck/tests/testthat.Rout.fail"
-      fi
-    fi
-  fi
+  #if [ "$CHECK" == "yes" ]; then
+    #ACTION="CHECK"
+    #R CMD check ${R_LIB_INC} ${MANUAL} $p &> out.log
+    #if [ $? -ne 0 ]; then
+      #STATUS="BROKEN"
+      #PACKAGE="BROKEN"
+      #echo "----------------------------------------------------------------------"
+      #echo "CHECK $p BROKEN"
+      #echo "----------------------------------------------------------------------"
+      #cat out.log
+      #if [ -e "${BASENAME}.Rcheck/00install.out" ]; then
+        #echo "--- ${BASENAME}.Rcheck/00install.out"
+        #cat "${BASENAME}.Rcheck/00install.out"
+      #fi
+      #if [ -e "${BASENAME}.Rcheck/tests/testthat.Rout.fail" ]; then
+        #echo "--- ${BASENAME}.Rcheck/tests/testthat.Rout.fail"
+        #cat "${BASENAME}.Rcheck/tests/testthat.Rout.fail"
+      #fi
+    #fi
+  #fi
 
-  if [ "$PACKAGE" == "OK" -a "$INSTALL" == "yes" ]; then
-    if [ "$ACTION" == "" ]; then
-      ACTION="INSTALL"
-    else
-      ACTION="$ACTION/INSTALL"
-    fi
-    R CMD INSTALL --build ${R_LIB_INC} $p &> out.log
-    if [ $? -ne 0 ]; then
-      STATUS="BROKEN"
-      PACKAGE="BROKEN"
-      echo "----------------------------------------------------------------------"
-      echo "INSTALL $p BROKEN"
-      echo "----------------------------------------------------------------------"
-      cat out.log
-      if [ -e "${BASENAME}.Rcheck/00install.out" ]; then
-        echo "--- ${BASENAME}.Rcheck/00install.out"
-        cat "${BASENAME}.Rcheck/00install.out"
-      fi
-    fi
-  fi
+  #if [ "$PACKAGE" == "OK" -a "$INSTALL" == "yes" ]; then
+    #if [ "$ACTION" == "" ]; then
+      #ACTION="INSTALL"
+    #else
+      #ACTION="$ACTION/INSTALL"
+    #fi
+    #R CMD INSTALL --build ${R_LIB_INC} $p &> out.log
+    #if [ $? -ne 0 ]; then
+      #STATUS="BROKEN"
+      #PACKAGE="BROKEN"
+      #echo "----------------------------------------------------------------------"
+      #echo "INSTALL $p BROKEN"
+      #echo "----------------------------------------------------------------------"
+      #cat out.log
+      #if [ -e "${BASENAME}.Rcheck/00install.out" ]; then
+        #echo "--- ${BASENAME}.Rcheck/00install.out"
+        #cat "${BASENAME}.Rcheck/00install.out"
+      #fi
+    #fi
+  #fi
   
-  if [ "$PACKAGE" == "OK" ]; then
-    if [ "$ACTION" == "" ]; then
-      ACTION="DID NOTHING"
-    fi
-    echo "----------------------------------------------------------------------"
-    echo "$ACTION $p OK"
-    echo "----------------------------------------------------------------------"
-  fi
-done
+  #if [ "$PACKAGE" == "OK" ]; then
+    #if [ "$ACTION" == "" ]; then
+      #ACTION="DID NOTHING"
+    #fi
+    #echo "----------------------------------------------------------------------"
+    #echo "$ACTION $p OK"
+    #echo "----------------------------------------------------------------------"
+  #fi
+#done
 
 # all done
 TIME=$(echo "`date +'%s'` - $START" |bc -l)
