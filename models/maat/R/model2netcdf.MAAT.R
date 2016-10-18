@@ -27,7 +27,6 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
   
   ### Load required libraries
   library(PEcAn.utils)
-  library(udunits2)
   library(ncdf4)
   
   ### Read in model output in SIPNET format
@@ -93,11 +92,11 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     ############ Variable Conversions 
     ### Conversion factor for umol C -> kg C
     Mc <- 12.017  # molar mass of C, g/mol
-    umol2kg_C <- Mc * ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
+    umol2kg_C <- Mc * udunits2::ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
     
     ### Conversion factor for mol H2O -> kg H2O
     Mw <- 18.01528  # molar mass of H2O, g/mol
-    mol2kg_H2O <- Mw * ud.convert(1, "g", "kg")
+    mol2kg_H2O <- Mw * udunits2::ud.convert(1, "g", "kg")
     ############ 
     
     ### Find/replace missing and convert outputs to standardized BETYdb units
