@@ -14,6 +14,6 @@ dbparms <- list(driver="PostgreSQL" , user = "ashiklom", dbname = "bety_ashiklom
 con <- db.open(dbparms)
 
 fixquote <- function(x){
-  x <- str_trim(gsub("'", "''", x))
+  x <- stringr::str_trim(gsub("'", "''", x))
   return(x)
 }

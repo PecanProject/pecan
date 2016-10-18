@@ -8,7 +8,6 @@
 #-------------------------------------------------------------------------------
 
 library(XML)
-library(stringr)
 
 ##' This will generate the CSV file needed by write configs to write the
 ##' config.xml. This is a hack right now, all this information should be
@@ -28,6 +27,6 @@ parse.history <- function(historyfile, outfile = "") {
     
     cat(paste(keys, collapse = ";"), sep = "\n", file = outfile, append = FALSE)
     for (pft in hist) {
-        cat(paste(lapply(pft[keys], str_trim), collapse = ";"), sep = "\n", file = outfile, append = TRUE)
+        cat(paste(lapply(pft[keys], stringr::str_trim), collapse = ";"), sep = "\n", file = outfile, append = TRUE)
     }
 } # parse.history
