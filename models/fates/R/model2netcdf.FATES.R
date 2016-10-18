@@ -17,13 +17,12 @@
 model2netcdf.FATES <- function(outdir) {
     
     library(ncdf4)
-    library(lubridate)
     library(PEcAn.utils)
     
     ## Get files and years
     files <- dir(outdir, "*clm2.h0.*.nc", full.names = TRUE)
     file.dates <- as.Date(sub(".nc", "", sub(".*clm2.h0.", "", files)))
-    years <- year(file.dates)
+    years <- lubridate::year(file.dates)
     
     for (year in unique(years)) {
         ysel <- which(years == year)  ## subselect files for selected year

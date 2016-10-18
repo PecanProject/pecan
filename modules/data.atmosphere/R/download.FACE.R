@@ -13,7 +13,6 @@ download.FACE <- function(sitename, outfolder, start_date, end_date, overwrite =
   # download.FACE <-
   # function(data.set,outfolder,pkg,raw.host,start_year,end_year,site.id,dbparams,con){
   
-  library(lubridate)
   library(PEcAn.utils)
   library(data.table)
   
