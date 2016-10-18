@@ -474,8 +474,8 @@ check.run.settings <- function(settings, dbcon = NULL) {
   } else if (is.null(settings$run$end.date)) {
     logger.warn("No end.date specified in run section.")
   } else {
-    startdate <- parse_date_time(settings$run$start.date, "ymd_hms", truncated = 3)
-    enddate <- parse_date_time(settings$run$end.date, "ymd_hms", truncated = 3)
+    startdate <- lubridate::parse_date_time(settings$run$start.date, "ymd_hms", truncated = 3)
+    enddate <- lubridate::parse_date_time(settings$run$end.date, "ymd_hms", truncated = 3)
     if (startdate >= enddate) {
       logger.severe("Start date should come before the end date.")
     }
