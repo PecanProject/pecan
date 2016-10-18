@@ -7,7 +7,6 @@
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-------------------------------------------------------------------------------
 library(XML)
-library(lubridate)
 library(PEcAn.DB)
 library(PEcAn.utils)
 
@@ -581,11 +580,11 @@ check.run.settings <- function(settings, dbcon = NULL) {
     
     # check start and end dates
     if (exists("startdate") && !is.null(settings$sensitivity.analysis$start.year) &&
-        year(startdate) > settings$sensitivity.analysis$start.year) {
+        lubridate::year(startdate) > settings$sensitivity.analysis$start.year) {
       logger.severe("Start year of SA should come after the start.date of the run")
     }
     if (exists("enddate") && !is.null(settings$sensitivity.analysis$end.year) &&
-        year(enddate) < settings$sensitivity.analysis$end.year) {
+        lubridate::year(enddate) < settings$sensitivity.analysis$end.year) {
       logger.severe("End year of SA should come before the end.date of the run")
     }
     if (!is.null(settings$sensitivity.analysis$start.year) && 

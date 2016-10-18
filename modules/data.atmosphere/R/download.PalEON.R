@@ -11,7 +11,6 @@
 download.PalEON <- function(sitename, outfolder, start_date, end_date, overwrite = FALSE, ...) {
   
   library(PEcAn.utils)
-  library(lubridate)
   
   if (sitename == "Harvard Forest - Lyford Plots (PalEON PHA)") {
     site <- "PHA"
@@ -37,8 +36,8 @@ download.PalEON <- function(sitename, outfolder, start_date, end_date, overwrite
   
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
-  start_year <- year(start_date)
-  end_year   <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year   <- lubridate::year(end_date)
   ylist      <- start_year:end_year
   mlist      <- 1:12
   vlist      <- c("lwdown", "precipf", "psurf", "qair", "swdown", "tair", "wind")
