@@ -15,7 +15,6 @@ met2CF.NARR <- function(in.path, in.prefix, outfolder, start_date, end_date,
                         overwrite = FALSE, verbose = FALSE, ...) {
   
   library(ncdf4)
-  library(lubridate)
   library(PEcAn.utils)
   
   dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
@@ -28,8 +27,8 @@ met2CF.NARR <- function(in.path, in.prefix, outfolder, start_date, end_date,
               "eastward_wind", "northward_wind")
   
   # get start/end year code works on whole years only
-  start_year <- year(start_date)
-  end_year   <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year   <- lubridate::year(end_date)
   years      <- start_year:end_year
   
   rows <- end_year - start_year + 1
