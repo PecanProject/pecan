@@ -69,7 +69,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   
   ## Check for model-specific write configs
   
-  my.write.config <- paste0("write.config.")
+  my.write.config <- paste0("write.config.",model)
   if (!exists(my.write.config)) {
     logger.error(my.write.config, 
                  "does not exist, please make sure that the model package contains a function called", 
