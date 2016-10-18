@@ -25,7 +25,6 @@ Depends:
     earth,
     XML,
     ncdf4,
-    stringr,
     shiny,
     PEcAn.DB,
     RPostgreSQL,
@@ -33,6 +32,7 @@ Depends:
 Imports:
     lubridate (>= 1.6.0),
     plyr (>= 1.8.4),
+    stringr(>= 1.1.0),
     udunits2 (>= 0.11)
 Suggests:
     testthat (>= 1.0.2),
