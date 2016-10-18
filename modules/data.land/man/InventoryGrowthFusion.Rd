@@ -4,7 +4,7 @@
 \alias{InventoryGrowthFusion}
 \title{InventoryGrowthFusion}
 \usage{
-InventoryGrowthFusion(data, n.iter, random = TRUE)
+InventoryGrowthFusion(data, n.iter, random = TRUE, burnin_plot = FALSE)
 }
 \arguments{
 \item{data}{list of data inputs}

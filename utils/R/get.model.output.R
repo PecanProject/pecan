@@ -6,7 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------#
+
 ##'
 ##' This function retrieves model output for further analyses
 ##' @name get.model.output
@@ -19,13 +19,10 @@
 ##' @examples
 ##' \dontrun{
 ##' get.model.output(model)
-##' get.model.output("ED2")
+##' get.model.output('ED2')
 ##' }
 ##'
 ##' @author Michael Dietze, Shawn Serbin, David LeBauer
-get.model.output <- function(model, settings){
+get.model.output <- function(model, settings) {
   logger.severe("Same as get.results(settings), please update your workflow")
-}
-####################################################################################################
-### EOF.  End of R script file.            	
-####################################################################################################
+} # get.model.output

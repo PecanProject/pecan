@@ -14,11 +14,12 @@ Description: This module provides functions to run the PREdict Light use
     efficacy of scientific investigation.
 Depends:
     PEcAn.utils,
-    lubridate,
     ncdf4,
     udunits2
+Imports:
+    lubridate (>= 1.6.0)
 Suggests:
-    testthat
+    testthat (>= 1.0.2)
 SystemRequirements: preles
 OS_type: unix
 License: FreeBSD + file LICENSE

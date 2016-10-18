@@ -1,8 +1,8 @@
 met2CF <- function(...dbfiles, dbcon){
   #---------------- Load libraries. -----------------------------------------------------------------#
-  require(PEcAn.all)
-  require(RPostgreSQL)
-  require(ncdf4)
+  library(PEcAn.all)
+  library(RPostgreSQL)
+  library(ncdf4)
   
   #--------------------------------------------------------------------------------------------------#
 
