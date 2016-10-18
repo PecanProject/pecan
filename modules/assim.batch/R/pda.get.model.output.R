@@ -38,15 +38,19 @@ pda.get.model.output <- function(settings, run.id, con, inputs) {
     
     for(l in seq_along(model.var)){
       
-      # convert names for model outputs
-      expr[[l]] <- gsub(model.var[[l]][model.var[[l]] %in% format$vars$bety_name],
-                        format$vars$pecan_name[format$vars$bety_name %in% model.var[[l]][model.var[[l]] %in% format$vars$bety_name]],
-                        expr[[l]]) 
-      
-      model.var[[l]][model.var[[l]] %in% format$vars$bety_name] <- 
-        format$vars$pecan_name[format$vars$bety_name %in% model.var[[l]][model.var[[l]] %in% format$vars$bety_name]]
-      
-      
+      if(length(model.var[[l]][model.var[[l]] %in% format$vars$bety_name]) != 0){
+        
+        # convert names for model outputs
+        expr[[l]] <- gsub(model.var[[l]][model.var[[l]] %in% format$vars$bety_name],
+                          format$vars$pecan_name[format$vars$bety_name %in% model.var[[l]][model.var[[l]] %in% format$vars$bety_name]],
+                          expr[[l]]) 
+        
+        model.var[[l]][model.var[[l]] %in% format$vars$bety_name] <- 
+          format$vars$pecan_name[format$vars$bety_name %in% model.var[[l]][model.var[[l]] %in% format$vars$bety_name]]
+        
+        
+      }
+
       # this is only for FC-NEE as we are using them interchangably when NEE isn't present, e.g. Ameriflux data  
       # FC - NEE specific hack
       if(any(model.var[[l]] %in% c("FC"))){
