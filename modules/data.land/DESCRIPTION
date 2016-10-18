@@ -14,6 +14,8 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
 Depends:
     PEcAn.DB,
     PEcAn.utils
+Imports:
+    udunits2 (>= 0.11)
 Suggests:
     fields,
     rgdal,
