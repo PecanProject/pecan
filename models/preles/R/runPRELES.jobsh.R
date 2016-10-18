@@ -27,10 +27,10 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
   start_date <- as.POSIXlt(start.date, tz = "UTC")
   end_date <- as.POSIXlt(end.date, tz = "UTC")
   
-  start_year <- year(start_date)
-  end_year <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
   
-  timestep.s <- 86400  #Number of seconds in a day
+  timestep.s <- 86400  # Number of seconds in a day
   
   ## Build met
   met <- NULL

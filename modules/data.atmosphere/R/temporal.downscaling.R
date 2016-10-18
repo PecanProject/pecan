@@ -12,7 +12,6 @@
 cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, lat = lat, ...) {
   library(data.table)
   library(ncdf4)
-  library(lubridate)
   ## time step
   dt_hr <- as.numeric(round(difftime(cfmet$date[2], cfmet$date[1],  units = "hours")))
 

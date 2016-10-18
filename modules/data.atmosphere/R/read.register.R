@@ -7,7 +7,6 @@
 ##' @author Betsy Cowdery
 read.register <- function(register.xml, con) {
   
-  library(lubridate)
   library(PEcAn.DB)
   library(PEcAn.utils)
   

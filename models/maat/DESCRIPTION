@@ -10,6 +10,7 @@ Depends:
     PEcAn.utils,
     ncdf4
 Imports:
+    lubridate (>= 1.6.0),
     udunits2 (>= 0.11)
 Suggests:
     testthat (>= 1.0.2)

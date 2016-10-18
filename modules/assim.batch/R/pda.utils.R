@@ -587,8 +587,7 @@ pda.adjust.jumps.bs <- function(settings, jcov, accept.count, params.recent) {
 pda.get.model.output <- function(settings, run.id, inputs) {
   
   library(PEcAn.benchmark)
-  library(lubridate)
-
+  
   input.info <- settings$assim.batch$inputs
   
   start.year <- strftime(settings$run$start.date, "%Y")

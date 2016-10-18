@@ -27,7 +27,6 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
   
   ### Load required libraries
   library(PEcAn.utils)
-  library(lubridate)
   library(ncdf4)
   
   ### Read in model output in SIPNET format
@@ -55,7 +54,7 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     ## Subset data for processing
     sub.maat.output <- subset(maat.output, format(maat.dates, "%Y") == y)
     sub.maat.dates <- as.Date(sub.maat.output$time, format = "%m/%d/%y")
-    sub.maat.doy <- yday(sub.maat.dates)
+    sub.maat.doy <- lubridate::yday(sub.maat.dates)
     sub.maat.output.dims <- dim(sub.maat.output)
     dayfrac <- 1 / dims[1]
     day.steps <- seq(0, 0.99, 1 / dims[1])
