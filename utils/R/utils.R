@@ -262,9 +262,9 @@ zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
 ##' @author David LeBauer
 summarize.result <- function(result) {
   ans1 <- plyr::ddply(result[result$n == 1, ], 
-                .(citation_id, site_id, trt_id, control, greenhouse, 
+                plyr::.(citation_id, site_id, trt_id, control, greenhouse, 
                   date, time, cultivar_id, specie_id), 
-                summarise, n = length(n), 
+                plyr::summarise, n = length(n), 
                 mean = mean(mean), 
                 statname = ifelse(length(n) == 1, "none", "SE"), 
                 stat = sd(mean) / sqrt(length(n)))
