@@ -154,7 +154,7 @@ debias.met <- function(outfolder, source_met, train_met, site_id, de_method='lin
   loc.file = file.path(outfolder,paste("debias",year,"nc",sep="."))
   
   loc <- nc_create(filename=loc.file, vars=sou.list, verbose=verbose)
-  for(j in 1:length(var$CF.name)){
+  for(j in seq_along(var$CF.name)){
     ncvar_put(nc=loc, varid=as.character(var$CF.name[j]), vals=debi[[j]])
   }
   nc_close(loc)
