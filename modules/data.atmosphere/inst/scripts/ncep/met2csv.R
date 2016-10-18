@@ -1,7 +1,5 @@
 library(BioCro, lib.loc = "/home/dlebauer/library/R")
 library(data.table, lib.loc = "/home/dlebauer/library/R")
-isleapyear<-function(year) (year%%400 == 0) | (year%%4==0 & !year%%100 == 0)
-paste0 <- function(...) paste(..., sep = "")
 
 args <- commandArgs(TRUE)
 lati <- as.numeric(args[1])

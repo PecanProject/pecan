@@ -106,7 +106,7 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   traits.xml <- listToXml(traits.list, "pars")
   
   ### Finalize XML
-  xml[[1]] <- addChildren(xml[[1]], traits.xml)
+  xml[[1]] <- XML::addChildren(xml[[1]], traits.xml)
   
   ### Write out new XML _ NEED TO FIX THIS BIT. NEED TO CONVERT WHOLE LIST TO XML saveXML(xml, file =
   ### file.path(settings$rundir, run.id, 'leaf_default.xml'), indent=TRUE, prefix = PREFIX_XML)

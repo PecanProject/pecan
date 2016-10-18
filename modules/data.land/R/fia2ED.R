@@ -7,7 +7,6 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-library(XML)
 library(PEcAn.utils)
 library(PEcAn.DB)
 
