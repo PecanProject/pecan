@@ -16,6 +16,19 @@ all: .install PEcAn.all ${BASE_PACKAGES} ${MODELS} ${MODULES}
 clean:
 	rm -rf .install
 
+check: 
+	Rscript -e "library(devtools); \
+	pkgs <- c('utils', 'db', 'settings', 'visualization'); \
+	models <- file.path('models', c('biocro', 'clm45', 'dalec', \
+	                    'ed', 'gday', 'jules', 'linkages', 'lpjguess', \
+	                    'maat', 'maespa', 'preles', 'sipnet')); \
+	modules <- file.path('modules', c('allometry', 'assim.batch', 'assim.sequential', 'benchmark', \
+	                     'data.atmosphere', 'data.hydrology', 'data.land', \
+	                     'data.mining', 'data.remote', 'emulator', 'meta.analysis', \
+	                     'photosynthesis', 'priors', 'rtm', 'uncertainty')); \
+	all_pkgs <- c(pkgs, models, modules); \
+	for (p in all_pkgs) check(p);"
+
 .install:
 	mkdir -p $@
 
