@@ -24,7 +24,7 @@ lat / lon range of the data set
 \examples{
 \dontrun{
 data(ozone)
-colnames(ozone) <- c("lon", "lat", "ozone")
+colnames(ozone) <- c('lon', 'lat', 'ozone')
 }
 }
 \author{

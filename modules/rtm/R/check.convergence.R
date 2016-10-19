@@ -21,9 +21,8 @@ check.convergence <- function(mcmc.samples.list,
                               verbose = TRUE,
                               autoburnin = FALSE,
                               ...){
-    library(coda)
     if(class(mcmc.samples.list) != "mcmc.list") stop("Input needs to be of class 'mcmc.list'")
-    gd <- try(gelman.diag(mcmc.samples.list, autoburnin = autoburnin, ...))
+    gd <- try(coda::gelman.diag(mcmc.samples.list, autoburnin = autoburnin, ...))
     if(class(gd) == "try-error"){
         warning("Could not calculate Gelman diag. Returning NULL")
         converged <- NULL

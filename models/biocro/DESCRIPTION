@@ -12,16 +12,18 @@ Imports:
     PEcAn.data.atmosphere,
     PEcAn.data.land,
     PEcAn.DB,
-    udunits2,
+    udunits2 (>= 0.11),
     ncdf4,
-    lubridate,
+    lubridate (>= 1.6.0),
     data.table,
     XML
 Suggests:
     BioCro,
-    testthat,
+    testthat (>= 1.0.2),
     RPostgreSQL,
     RNCEP
+Remotes:
+    github::ebimodeling/biocro
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes

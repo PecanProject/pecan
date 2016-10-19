@@ -6,7 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------#
+
 ##' Removes previous model run output from worker node local scratch directories on EBI-CLUSTER 
 ##'
 ##' @title Clear EBI-CLUSTER worker node local scratch directories of old PEcAn output
@@ -18,31 +18,22 @@
 ##' \dontrun{
 ##' clear.scratch(settings)
 ##' }
-clear.scratch <- function(settings){
+clear.scratch <- function(settings) {
   
   ### Setup script
-  clear.scratch <- system.file("clear.scratch.sh", package="PEcAn.utils")
-  host <-  settings$host
-  nodes <- paste("all.q@compute-0-",seq(0,24,1),".local",sep="")
+  clear.scratch <- system.file("clear.scratch.sh", package = "PEcAn.utils")
+  host  <- settings$host
+  nodes <- paste0("all.q@compute-0-", seq(0, 24, 1), ".local")
   
-  if(any(grep('cluster',host$name))) {
-    for (i in nodes){
+  if (any(grep("cluster", host$name))) {
+    for (i in nodes) {
       print(" ")
-      print(paste("----- Removing output on node: ",i,sep=""))
-      system(paste("ssh -T ", settings$host$name," qlogin -q ",
-                   i," < ",clear.scratch,sep=""))
+      print(paste("----- Removing output on node: ", i, sep = ""))
+      system(paste0("ssh -T ", settings$host$name, " qlogin -q ", i, " < ", clear.scratch))
       print(" ")
-    } ### End of for loop
+    }  ### End of for loop
     
   } else {
     print("---- No output to delete.  Output host is not EBI-CLUSTER ----")
-    
-  } ### End of if/else
-  
-} ### End of function
-#==================================================================================================#
-
-
-####################################################################################################
-### EOF.  End of R script file.          		
-####################################################################################################
+  }  ### End of if/else
+} # clear.scratch

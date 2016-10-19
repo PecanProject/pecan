@@ -32,9 +32,9 @@ NOTE: this function is similar to PEcAn.priors::fit.dist
 }
 \examples{
 \dontrun{
-data("trait.mcmc", package = "PEcAn.utils")
-data("prior.distns", package = "PEcAn.utils")
-approx.posterior(trait.mcmc, priors = prior.distns)
+  data('trait.mcmc', package = 'PEcAn.utils')
+  data('prior.distns', package = 'PEcAn.utils')
+  approx.posterior(trait.mcmc, priors = prior.distns)
 }
 }
 \author{

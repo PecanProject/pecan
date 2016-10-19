@@ -4,9 +4,9 @@
 #--------------------------------------------------------------------------------------------------#
 # Load libraries
 
-require(PEcAn.all)
-require(PEcAn.data.atmosphere)
-require(RPostgreSQL)
+library(PEcAn.all)
+library(PEcAn.data.atmosphere)
+library(RPostgreSQL)
 
 #--------------------------------------------------------------------------------------------------#
 # Setup database connection
