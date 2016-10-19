@@ -39,6 +39,14 @@ if (is.na(args[1])){
   settings <- read.settings(settings.file)
 }
 
+# Check for additional modules that will require adding settings
+if("benchmark" %in% names(settings)){
+  settings <- papply(settings, read.settings.RR)
+}
+
+# Write pecan.CHECKED.xml
+settings <- write.settings(settings, outputfile = "pecan.CHECKED.xml")
+
 # start from scratch if no continue is passed in
 if (length(which(commandArgs() == "--continue")) == 0) {
   file.remove(file.path(settings$outdir, "STATUS"))
