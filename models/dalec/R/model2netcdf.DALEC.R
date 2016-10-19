@@ -75,11 +75,11 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     output[[16]] <- output[[12]] + output[[13]]  ## TotSoilCarb
     
     # ******************** Declare netCDF variables ********************#
-    t   <- ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
+    t   <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
                      vals = 1:nrow(sub.DALEC.output), 
                      calendar = "standard", unlim = TRUE)
-    lat <- ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
     
     ## ***** Need to dynamically update the UTC offset here *****
     
@@ -95,14 +95,14 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     var[[4]]  <- mstmipvar("NEE", lat, lon, t, NA)
     var[[5]]  <- mstmipvar("NPP", lat, lon, t, NA)
     
-    var[[6]]  <- ncvar_def("LeafLitter", "kgC/m2/s", list(lon, lat, t), -999)
-    var[[7]]  <- ncvar_def("WoodyLitter", "kgC/m2/s", list(lon, lat, t), -999)
-    var[[8]]  <- ncvar_def("RootLitter", "kgC/m2/s", list(lon, lat, t), -999)
-    var[[9]]  <- ncvar_def("LeafBiomass", "kgC/m2", list(lon, lat, t), -999)
-    var[[10]] <- ncvar_def("WoodBiomass", "kgC/m2", list(lon, lat, t), -999)
-    var[[11]] <- ncvar_def("RootBiomass", "kgC/m2", list(lon, lat, t), -999)
-    var[[12]] <- ncvar_def("LitterBiomass", "kgC/m2", list(lon, lat, t), -999)
-    var[[13]] <- ncvar_def("SoilC", "kgC/m2", list(lon, lat, t), -999)
+    var[[6]]  <- ncdf4::ncvar_def("LeafLitter", "kgC/m2/s", list(lon, lat, t), -999)
+    var[[7]]  <- ncdf4::ncvar_def("WoodyLitter", "kgC/m2/s", list(lon, lat, t), -999)
+    var[[8]]  <- ncdf4::ncvar_def("RootLitter", "kgC/m2/s", list(lon, lat, t), -999)
+    var[[9]]  <- ncdf4::ncvar_def("LeafBiomass", "kgC/m2", list(lon, lat, t), -999)
+    var[[10]] <- ncdf4::ncvar_def("WoodBiomass", "kgC/m2", list(lon, lat, t), -999)
+    var[[11]] <- ncdf4::ncvar_def("RootBiomass", "kgC/m2", list(lon, lat, t), -999)
+    var[[12]] <- ncdf4::ncvar_def("LitterBiomass", "kgC/m2", list(lon, lat, t), -999)
+    var[[13]] <- ncdf4::ncvar_def("SoilC", "kgC/m2", list(lon, lat, t), -999)
     
     var[[14]] <- mstmipvar("TotalResp", lat, lon, t, NA)
     var[[15]] <- mstmipvar("TotLivBiom", lat, lon, t, NA)
@@ -111,7 +111,7 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     # ******************** Declar netCDF variables ********************#
     
     ### Output netCDF data
-    nc <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
       # print(i)
@@ -119,7 +119,7 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
       cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
-    nc_close(nc)
+    ncdf4::nc_close(nc)
     
   }  ### End of year loop
   

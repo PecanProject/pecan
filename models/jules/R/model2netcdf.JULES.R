@@ -22,7 +22,7 @@ model2netcdf.JULES <- function(outdir) {
   print(files)
   for (fname in files) {
     print(fname)
-    nc <- nc_open(fname, write = TRUE)
+    nc <- ncdf4::nc_open(fname, write = TRUE)
     ## extract variable and long names
     write.table(sapply(nc$var, function(x) { x$longname }), 
                 file = paste0(fname, ".var"), 
@@ -32,6 +32,6 @@ model2netcdf.JULES <- function(outdir) {
     ## JULES time is in seconds; convert to DOY
     time <- ncvar_get(nc, "time") / 86400
     ncvar_put(nc, "time", time)
-    nc_close(nc)
+    ncdf4::nc_close(nc)
   }
 } # model2netcdf.JULES

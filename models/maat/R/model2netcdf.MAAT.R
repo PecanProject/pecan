@@ -75,19 +75,19 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
     #******************** Declare netCDF variables ********************#
     ## This version doesn't provide enough output timesteps when running with met data that has
     ## a step greater than 1 per day
-    #t <- ncdim_def(name = "time",
+    #t <- ncdf4::ncdim_def(name = "time",
     #               units = paste0("days since ", y, "-01-01 00:00:00"),
     #               vals = as.numeric(strptime(end_date, "%Y-%m-%d %H:%M:%S")-strptime(start_date, "%Y-%m-%d %H:%M:%S"),units="days"),
     #               calendar = "standard", unlim = TRUE) # is this correct? fraction of days or whole days
    
     ## Something like this works for mult timesteps per day
-    t <- ncdim_def(name = "time",
+    t <- ncdf4::ncdim_def(name = "time",
                    units = paste0("days since ", y, "-01-01 00:00:00"),
                    vals = sub.maat.doy+day.steps,
                    calendar = "standard", unlim = TRUE)
-    lat <- ncdim_def("lat", "degrees_east",vals =  as.numeric(sitelat),
+    lat <- ncdf4::ncdim_def("lat", "degrees_north",vals =  as.numeric(sitelat),
                    longname = "station_latitude") 
-    lon <- ncdim_def("lon", "degrees_north",vals = as.numeric(sitelon),
+    lon <- ncdf4::ncdim_def("lon", "degrees_east",vals = as.numeric(sitelon),
                    longname = "station_longitude")
     
     for(i in 1:length(output)){
@@ -118,7 +118,7 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
     var[[4]]  <- mstmipvar("stomatal_conductance", lat, lon, t, NA)
     
     ### Output netCDF data
-    nc <- nc_create(file.path(outdir, paste(y,"nc", sep=".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y,"nc", sep=".")), var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep=".")), "w")
     for(i in 1:length(var)){
       print(i) # just on for debugging
@@ -126,7 +126,7 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
       cat(paste(var[[i]]$name, var[[i]]$longname), file=varfile, sep="\n")
     } ## netCDF loop
     close(varfile)
-    nc_close(nc)
+    ncdf4::nc_close(nc)
     
   } ## Year loop
 } ## Main loop

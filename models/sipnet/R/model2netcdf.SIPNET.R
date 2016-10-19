@@ -22,9 +22,7 @@
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
 model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw, revision) {
-  
-  library(ncdf4)
-  
+   
   ### Read in model output in SIPNET format
   sipnet.out.file <- file.path(outdir, "sipnet.out")
   sipnet.output <- read.table(sipnet.out.file, header = T, skip = 1, sep = "")
@@ -89,13 +87,13 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     
     
     # ******************** Declare netCDF variables ********************#
-    t <- ncdim_def(name = "time", 
+    t <- ncdf4::ncdim_def(name = "time", 
                    units = paste0("days since ", y, "-01-01 00:00:00"), 
                    vals = sub.sipnet.output$day - 1 + (sub.sipnet.output$time/24),
                    calendar = "standard", 
                    unlim = TRUE)
-    lat <- ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
     
     ## ***** Need to dynamically update the UTC offset here *****
     
@@ -113,7 +111,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     var[[5]]  <- mstmipvar("TotalResp", lat, lon, t, NA)
     var[[6]]  <- mstmipvar("AutoResp", lat, lon, t, NA)
     var[[7]]  <- mstmipvar("HeteroResp", lat, lon, t, NA)
-    var[[8]]  <- ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
+    var[[8]]  <- ncdf4::ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
                           longname = "Soil Respiration")
     var[[9]]  <- mstmipvar("NEE", lat, lon, t, NA)
     # var[[9]] <- mstmipvar('CarbPools', lat, lon, t, NA)
@@ -131,15 +129,15 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     # ******************** Declare netCDF variables ********************#
     
     ### Output netCDF data
-    nc      <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
       # print(i)
-      ncvar_put(nc, var[[i]], output[[i]])
+      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
       cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
-    nc_close(nc)
+    ncdf4::nc_close(nc)
     
   }  ### End of year loop
   
