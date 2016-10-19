@@ -62,8 +62,8 @@ model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, 
                    vals = (dayflx.dataframe$DOY), 
                    calendar = "standard", 
                    unlim = TRUE)
-    lat <- ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
     
     for (i in seq_along(output)) {
       if (length(output[[i]]) == 0) 
