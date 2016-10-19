@@ -18,8 +18,8 @@ calc.benchmark <- function(bm.ensemble, con) {
   wf <- db.query(paste("SELECT w.* FROM workflows as w join ensembles as e on w.id = e.workflow_id", 
                        "WHERE e.id = ", bm.ensemble$ensemble_id, ";"), con)
   site <- query.site(wf$site_id, con)
-  start_year <- year(wf$start_date)
-  end_year <- year(wf$end_date)
+  start_year <- lubridate::year(wf$start_date)
+  end_year <- lubridate::year(wf$end_date)
   model_run <- dir(file.path(wf$folder, "out"), full.names = TRUE, include.dirs = TRUE)[1]
   # How are we dealing with ensemble runs? Right now I've hardcoded to select the first run.
   

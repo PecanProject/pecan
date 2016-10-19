@@ -200,8 +200,8 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
 ##' @author Mike Dietze
 met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite = FALSE, verbose = FALSE) {
   # get start/end year code works on whole years only
-  start_year <- year(start_date)
-  end_year <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
   
   #---------------- Load libraries. -----------------------------------------------------------------#
   library(ncdf4)
