@@ -6,11 +6,6 @@
 ## which accompanies this distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-------------------------------------------------------------------------------
-library(XML)
-library(lubridate)
-library(PEcAn.DB)
-library(PEcAn.utils)
-
 ##' Loads PEcAn settings file
 ##' 
 ##' This will try and find the PEcAn settings file in the following order:
@@ -34,6 +29,7 @@ library(PEcAn.utils)
 ##' @author Rob Kooper
 ##' @author David LeBauer
 ##' @author Ryan Kelly
+##' @author Betsy Cowdery
 ##' @examples
 ##' \dontrun{
 ##' ## bash shell:
@@ -47,52 +43,51 @@ library(PEcAn.utils)
 ##' test.settings.file <- system.file("tests/test.xml", package = "PEcAn.all")
 ##' settings <- read.settings(test.settings.file)
 ##' }
-##' 
-##' 
-##' Read settings now needs to take in three different things:
-##' 1) the settings type: XML, RR
-##' 2) the argument needed for loading: inputfile, list of RR id's 
-##' 3) Additional settings XML that needs to be added in, such as benchmarking settings
-##' HOW to do all of this cleanly with a function that is called from the command line?
-
-read.settings <- function(type = "XML", input = "pecan.xml", supplementXML= "moresettings.xml",
-                          outputfile = "pecan.CHECKED.xml"){
+read.settings <- function(inputfile = "pecan.xml"){
+  
+  library(XML)
+  library(lubridate)
+  library(PEcAn.DB)
+  library(PEcAn.utils)
+  
   if(inputfile == ""){
     logger.warn("settings files specified as empty string; \n\t\tthis may be caused by an incorrect argument to system.file.")
   }
-  
-  fcn <- match.fun(sprintf("read.settings.%s",type))
-  settings <- do.call(fcn,list(input))
-  
-  settings <- expandMultiSettings(settings)
-  
-  settings <- papply(settings, fix.deprecated.settings)
-  settings <- papply(settings, addSecrets)
-  settings <- papply(settings, update.settings)
-  
-  #still not sure where this should go. Will a multi run involve different benchmarks for each run?
-  if(!is.null(supplementXML)){ 
-    settings <- papply(settings, function(x) supplement.settings(x,supplementXML))
-  }
-  
-  settings <- check.settings(settings)
-  
-  
-  
-  ## save the checked/fixed pecan.xml
-  if (!is.null(outputfile)) {
-    pecanfile <- file.path(settings$outdir, outputfile)
-    if (file.exists(pecanfile)) {
-      logger.warn(paste("File already exists [", pecanfile, "] file will be overwritten"))
+
+  loc <- which(commandArgs() == "--settings")
+  ## If settings file passed at cmd line
+  if (length(loc) != 0) {  
+    # 1 filename is passed as argument to R
+    for(idx in loc) {
+      if (!is.null(commandArgs()[idx+1]) && file.exists(commandArgs()[idx+1])) {
+        logger.info("Loading --settings=", commandArgs()[idx+1])
+        xml <- xmlParse(commandArgs()[idx+1])
+        break
+      }
     }
-    saveXML(listToXml(settings, "pecan"), file=pecanfile)
+    ## if settings file on $PATH
+  } else if (file.exists(Sys.getenv("PECAN_SETTINGS"))) { 
+    # 2 load from PECAN_SETTINGS
+    logger.info("Loading PECAN_SETTINGS=", Sys.getenv("PECAN_SETTINGS"))
+    xml <- xmlParse(Sys.getenv("PECAN_SETTINGS"))
+    ## if settings file passed to read.settings function
+  } else if(!is.null(inputfile) && file.exists(inputfile)) {
+    # 3 filename passed into function
+    logger.info("Loading inpufile=", inputfile)
+    xml <- xmlParse(inputfile)
+    ## use pecan.xml in cwd only if none exists
+  } else if (file.exists("pecan.xml")) {
+    # 4 load ./pecan.xml
+    logger.info("Loading ./pecan.xml")
+    xml <- xmlParse("pecan.xml")
+  } else {
+    # file not found
+    logger.severe("Could not find a pecan.xml file")
   }
-  
-  ## setup Rlib from settings
-  if(!is.null(settings$Rlib)){
-    .libPaths(settings$Rlib)
-  }
-  
+
+  ## convert the xml to a list
+  settings <- xmlToList(xml)
+  settings <- expandMultiSettings(settings)
   invisible(settings)
 }
 ##=================================================================================================#
