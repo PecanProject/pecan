@@ -565,7 +565,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     nc <- ncdf4::nc_create(file.path(outdir, paste(yrs[y], "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(yrs[y], "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
-      ncvar_put(nc, var[[i]], out[[i]])
+      ncdf4::ncvar_put(nc, var[[i]], out[[i]])
       cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)

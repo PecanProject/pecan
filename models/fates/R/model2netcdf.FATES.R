@@ -38,12 +38,12 @@ model2netcdf.FATES <- function(outdir) {
         nc <- ncdf4::nc_open(oname, write = TRUE)
         
         ## FATES time is in multiple columns, create 'time'
-        day  <- ncvar_get(nc, "mdcur")  #current day (from base day)
-        sec  <- ncvar_get(nc, "mscur")  #current seconds of current day
+        day  <- ncdf4::ncvar_get(nc, "mdcur")  #current day (from base day)
+        sec  <- ncdf4::ncvar_get(nc, "mscur")  #current seconds of current day
         time <- day + sec / 86400
         var  <- ncdf4::ncvar_def(name = "time", units = "days", dim = nc$dim[["time"]])
         # These lines throw an error saying time already exists, but not showing up in VAR file nc <-
-        # ncvar_add(nc=nc, v=var) ncvar_put(nc,'time',time) ncvar_get(nc,'time')
+        # ncdf4::ncvar_add(nc=nc, v=var) ncdf4::ncvar_put(nc,'time',time) ncdf4::ncvar_get(nc,'time')
         
         ## extract variable and long names to VAR file for PEcAn vis
         write.table(sapply(nc$var, function(x) { x$longname }), 

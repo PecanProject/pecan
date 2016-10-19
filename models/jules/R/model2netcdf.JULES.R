@@ -30,8 +30,8 @@ model2netcdf.JULES <- function(outdir) {
                 row.names = TRUE,
                 quote = FALSE)
     ## JULES time is in seconds; convert to DOY
-    time <- ncvar_get(nc, "time") / 86400
-    ncvar_put(nc, "time", time)
+    time <- ncdf4::ncvar_get(nc, "time") / 86400
+    ncdf4::ncvar_put(nc, "time", time)
     ncdf4::nc_close(nc)
   }
 } # model2netcdf.JULES

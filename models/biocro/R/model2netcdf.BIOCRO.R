@@ -97,7 +97,7 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
     
     ## Output netCDF data
     for(.vname in names(vars)) {
-      ncvar_put(nc, varid = vars[[.vname]], vals = RR[[.vname]])
+      ncdf4::ncvar_put(nc, varid = vars[[.vname]], vals = RR[[.vname]])
       cat(paste(vars[[.vname]]$name, vars[[.vname]]$longname), file=varfile, sep="\n")
     }
     

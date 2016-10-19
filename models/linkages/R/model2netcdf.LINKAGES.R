@@ -122,7 +122,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date=NULL, end
     varfile <- file(file.path(outdir, paste(years[y], "nc", "var", sep=".")), "w")
     for(i in 1:length(var)){
       print(i)
-      ncvar_put(nc,var[[i]],output[[i]])
+      ncdf4::ncvar_put(nc,var[[i]],output[[i]])
       cat(paste(var[[i]]$name, var[[i]]$longname), file=varfile, sep="\n")
     }
     close(varfile)

@@ -122,7 +122,7 @@ model2netcdf.MAAT <- function(outdir, sitelat=-999, sitelon=-999, start_date=NUL
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep=".")), "w")
     for(i in 1:length(var)){
       print(i) # just on for debugging
-      ncvar_put(nc,var[[i]],output[[i]])  
+      ncdf4::ncvar_put(nc,var[[i]],output[[i]])  
       cat(paste(var[[i]]$name, var[[i]]$longname), file=varfile, sep="\n")
     } ## netCDF loop
     close(varfile)
