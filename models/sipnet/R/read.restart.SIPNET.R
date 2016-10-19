@@ -30,8 +30,8 @@ read.restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   # Read ensemble output
   ens <- read.output(runid = runid, 
                      outdir = file.path(outdir, runid), 
-                     start.year = year(stop.time), 
-                     end.year = year(stop.time),
+                     start.year = lubridate::year(stop.time), 
+                     end.year = lubridate::year(stop.time),
                      variables = var.names)
   
   last <- length(ens$NPP)

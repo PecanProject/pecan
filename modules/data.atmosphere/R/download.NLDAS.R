@@ -14,7 +14,6 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
                            overwrite = FALSE, verbose = FALSE, ...) {
   library(PEcAn.utils)
   library(RCurl)
-  library(ncdf4)
   
   # Date stuff
   start_date <- as.POSIXlt(start_date, tz = "UTC")
@@ -80,9 +79,9 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
     loc.file <- file.path(outfolder, paste("NLDAS", year, "nc", sep = "."))
     
     ## Create dimensions
-    lat <- ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
-    lon <- ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
-    time <- ncdim_def(name = "time", units = "sec", 
+    lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
+    lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
+    time <- ncdf4::ncdim_def(name = "time", units = "sec", 
                       vals = seq((min(days.use) + 1 - 1 / 24) * 24 * 360, (max(days.use) + 1 - 1/24) * 24 * 360, length.out = ntime), 
                       create_dimvar = TRUE, 
                       unlim = TRUE)
@@ -152,11 +151,11 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
     dat.list[["precipitation_flux"]] <- dat.list[["precipitation_flux"]] / 3600
     
     ## put data in new file
-    loc <- nc_create(filename = loc.file, vars = var.list, verbose = verbose)
+    loc <- ncdf4::nc_create(filename = loc.file, vars = var.list, verbose = verbose)
     for (j in seq_len(nrow(var))) {
-      ncvar_put(nc = loc, varid = as.character(var$CF.name[j]), vals = dat.list[[j]])
+      ncdf4::ncvar_put(nc = loc, varid = as.character(var$CF.name[j]), vals = dat.list[[j]])
     }
-    nc_close(loc)
+    ncdf4::nc_close(loc)
     
     results$file[i] <- loc.file
     results$host[i] <- fqdn()
