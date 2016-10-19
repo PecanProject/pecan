@@ -58,7 +58,6 @@
 #' "samples"(mcmc.list object, or "NA" if return.samples=FALSE)
 
 invert.auto <- function(observed, invert.options, return.samples=TRUE, save.samples=NULL, quiet=FALSE, parallel=FALSE, parallel.cores=NULL, ...){
-    library(coda)
     n.tries <- invert.options$n.tries
     nchains <- invert.options$nchains
     inits.function <- invert.options$inits.function

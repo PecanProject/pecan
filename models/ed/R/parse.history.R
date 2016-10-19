@@ -1,13 +1,11 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# All rights reserved. This program and the accompanying materials 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-require(XML)
-require(stringr)
 
 ##' This will generate the CSV file needed by write configs to write the
 ##' config.xml. This is a hack right now, all this information should be
@@ -21,13 +19,12 @@ require(stringr)
 ##' @export
 ##'
 ##' @author Rob Kooper
-parse.history <- function(historyfile, outfile="") {
-	hist <- xmlToList(xmlParse(historyfile))
-	keys <- names(hist$pft)
-	
-	cat(paste(keys, collapse = ";"), sep="\n", file=outfile, append=FALSE)
-	for(pft in hist) {
-		cat(paste(lapply(pft[keys], str_trim), collapse = ";"), sep="\n", file=outfile, append=TRUE)
-	}
-}
-
+parse.history <- function(historyfile, outfile = "") {
+    hist <- XML::xmlToList(XML::xmlParse(historyfile))
+    keys <- names(hist$pft)
+    
+    cat(paste(keys, collapse = ";"), sep = "\n", file = outfile, append = FALSE)
+    for (pft in hist) {
+        cat(paste(lapply(pft[keys], stringr::str_trim), collapse = ";"), sep = "\n", file = outfile, append = TRUE)
+    }
+} # parse.history

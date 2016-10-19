@@ -10,27 +10,37 @@
 pda.define.llik.fn <- function(settings) {
   # Currently just returns a single likelihood, assuming the data are flux NEE/FC or LE.
   llik.fn <- list()
-  for(i in 1:length(settings$assim.batch$inputs)) {
+  for (i in seq_along(settings$assim.batch$inputs)) {
     # NEE + heteroskedastic Laplace likelihood
-    if(settings$assim.batch$inputs[[i]]$likelihood == "Laplace") {
-        llik.fn[[i]] <- function(model.out, obs.data, llik.par) {
-          resid <- abs(model.out - obs.data)
-          pos <- (model.out >= 0)
-          LL <- c(dexp(resid[pos], 1/(llik.par[1] + llik.par[2]*model.out[pos]), log=TRUE), 
-                  dexp(resid[!pos],1/(llik.par[1] + llik.par[3]*model.out[!pos]),log=TRUE))
-          return(list(LL=sum(LL,na.rm=TRUE), n=sum(!is.na(LL))))
-        }
+    if (settings$assim.batch$inputs[[i]]$likelihood == "Laplace") {
+      llik.fn[[i]] <- function(model.out, obs.data, llik.par) {
+        resid <- abs(model.out - obs.data)
+        pos <- (model.out >= 0)
+        LL <- c(dexp(resid[pos], 
+                     1 / (llik.par[1] + llik.par[2] * model.out[pos]), 
+                     log = TRUE), 
+                dexp(resid[!pos],
+                     1 / (llik.par[1] + llik.par[3] * model.out[!pos]), 
+                     log = TRUE))
+        return(list(LL = sum(LL, na.rm = TRUE), n = sum(!is.na(LL))))
+      }
     } else {
       # Default to Normal(0,1)
-        llik.fn[[i]] <- function(model.out, obs.data, llik.par=1) {
-          LL <- dnorm(x= obs.data, mean=model.out, sd=llik.par, log=TRUE)
-          return(list(LL=sum(LL,na.rm=TRUE), n=sum(!is.na(LL))))
+      llik.fn[[i]] <- function(model.out, obs.data, llik.par = 1) {
+        if (is.list(model.out)) {
+          model.out <- unlist(model.out)
         }
+        if (is.list(obs.data)) {
+          obs.data <- unlist(obs.data)
+        }
+        LL <- dnorm(x = obs.data, mean = model.out, sd = llik.par, log = TRUE)
+        return(list(LL = sum(LL, na.rm = TRUE), n = sum(!is.na(LL))))
+      }
     }
   }
   
   return(llik.fn)
-}
+} # pda.define.llik.fn
 
 
 ##' Calculate Likelihoods for PDA
@@ -43,25 +53,26 @@ pda.define.llik.fn <- function(settings) {
 ##' @author Ryan Kelly
 ##' @export
 pda.calc.llik <- function(settings, con, model.out, run.id, inputs, llik.fn) {
-
+  
   n.input <- length(inputs)
   
   LL.vec <- n.vec <- numeric(n.input)
   
-  for(k in 1:n.input) {
+  for (k in seq_len(n.input)) {
     
-    if(all(is.na(model.out))) { # Probably indicates model failed entirely
+    if (all(is.na(model.out))) {
+      # Probably indicates model failed entirely
       return(-Inf)
     }
     
     llik <- llik.fn[[k]](model.out[[k]], inputs[[k]]$obs, inputs[[k]]$par)
     LL.vec[k] <- llik$LL
-    n.vec[k]  <- llik$n
+    n.vec[k] <- llik$n
   }
-  weights <- rep(1/n.input, n.input) # TODO: Implement user-defined weights
+  
+  weights <- rep(1 / n.input, n.input)  # TODO: Implement user-defined weights
   LL.total <- sum(LL.vec * weights)
   neff <- n.vec * weights
-  
   
   ## insert Likelihood records in database
   if (!is.null(con)) {
@@ -71,8 +82,8 @@ pda.calc.llik <- function(settings, con, model.out, run.id, inputs, llik.fn) {
     # for inputs with valid input ID (i.e., not the -1 dummy id). 
     # Note that analyses requiring likelihoods to be stored therefore require 
     # inputs to be registered in BETY first.
-    db.input.ind <- which( sapply(inputs, function(x) x$input.id) != -1 )
-    for(k in db.input.ind) {
+    db.input.ind <- which(sapply(inputs, function(x) x$input.id) != -1)
+    for (k in db.input.ind) {
       db.query(
         paste0("INSERT INTO likelihoods ", 
                "(run_id,            variable_id,                     input_id, ",
@@ -88,4 +99,4 @@ pda.calc.llik <- function(settings, con, model.out, run.id, inputs, llik.fn) {
   }
   
   return(LL.total)
-}
+} # pda.calc.llik

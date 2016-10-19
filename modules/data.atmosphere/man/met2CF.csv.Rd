@@ -15,8 +15,8 @@ format is output from db/R/query.format.vars, and should have:
   format$lon = longitude of site (unless passed by lon)
   format$header = number of lines of header
   format$vars is a data.frame with lists of information for each variable to read, at least airT is required
-    format$vars$orig_name = Name in CSV file
-    format$vars$orig_units = Units in CSV file
+    format$vars$input_name = Name in CSV file
+    format$vars$input_units = Units in CSV file
     format$vars$bety_name = Name in BETY - see https://pecan.gitbooks.io/pecan-documentation/content/developers_guide/Adding-an-Input-Converter.html for allowable ones
   OPTIONAL:
   format$na.strings = list of missing values to convert to NA, such as -9999
@@ -32,7 +32,7 @@ Units for datetime field are the lubridate function that will be used to parse t
 library(PEcAn.DB)
 library(lubridate)
 library(RPostgreSQL)
-bety = list(user="bety", password="bety", host="localhost", dbname="bety", driver="PostgreSQL", write=TRUE)
+bety = list(user='bety', password='bety', host='localhost', dbname='bety', driver='PostgreSQL', write=TRUE)
 con <- db.open(bety)
 in.path <- '/home/carya/sites/willow/'
 in.prefix <- 'FLX_US-WCr_FLUXNET2015_SUBSET_HH_1999-2014_1-1'

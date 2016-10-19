@@ -6,10 +6,6 @@
 ## which accompanies this distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-------------------------------------------------------------------------------
-library(XML)
-library(lubridate)
-library(PEcAn.DB)
-library(PEcAn.utils)
 
 ##--------------------------------------------------------------------------------------------------#
 ## INTERNAL FUNCTIONS
@@ -17,72 +13,75 @@ library(PEcAn.utils)
 
 # check to see if inputs are specified
 # this should be part of the model code
-check.inputs <- function(settings) {
-  if (is.null(settings$model$type)) return(settings)
 
+#' @import PEcAn.DB
+#' @import PEcAn.utils
+check.inputs <- function(settings) {
+  if (is.null(settings$model$type)) {
+    return(settings)
+  }
+  
   # don't know how to check inputs
   if (is.null(settings$database$bety)) {
     logger.info("No databasse connection, can't check inputs.")
-    return (settings)
+    return(settings)
   }
-
+  
   # get list of inputs associated with model type
   dbcon <- db.open(settings$database$bety)
   inputs <- db.query(paste0("SELECT tag, format_id, required FROM modeltypes, modeltypes_formats WHERE modeltypes_formats.modeltype_id = modeltypes.id and modeltypes.name='", settings$model$type, "' AND modeltypes_formats.input;"), con=dbcon)
-
+  
   # check list of inputs  
   allinputs <- names(settings$run$inputs)
-  if (nrow(inputs) > 0) {
-    for(i in 1:nrow(inputs)) {
-      tag <- inputs$tag[i]
-      hostname <- settings$host$name
-      allinputs <- allinputs[allinputs != tag]
-
-      # check if tag exists
-      if (is.null(settings$run$inputs[[tag]])) {
-        if (inputs$required[i]) {
-          logger.warn("Missing required input :", tag)
-        } else {
-          logger.info("Missing optional input :", tag)
-        }
-        next
+  for(i in seq_len(nrow(inputs))) {
+    tag <- inputs$tag[i]
+    hostname <- settings$host$name
+    allinputs <- allinputs[allinputs != tag]
+    
+    # check if tag exists
+    if (is.null(settings$run$inputs[[tag]])) {
+      if (inputs$required[i]) {
+        logger.warn("Missing required input :", tag)
+      } else {
+        logger.info("Missing optional input :", tag)
       }
-      
-      # check if <id> exists
-      if ("id" %in% names(settings$run$inputs[[tag]])) {
-        id <- settings$run$inputs[[tag]][['id']]
-        file <- dbfile.file("Input", id, dbcon, hostname)
-        if (is.na(file)) {
-          logger.error("No file found for", tag, " and id", id, "on host", hostname)
-        } else {
-          if (is.null(settings$run$inputs[[tag]][['path']])) {
-            settings$run$inputs[[tag]]['path'] <- file
-          } else if (file != settings$run$inputs[[tag]][['path']]) {
-            logger.warn("Input file and id do not match for ", tag)
-          }
-        }
-      } else if ("path" %in% names(settings$run$inputs[[tag]])) {
-        # can we find the file so we can set the tag.id
-        id <- dbfile.id('Input', settings$run$inputs[[tag]][['path']], dbcon, hostname)
-        if (!is.na(id)) {
-          settings$run$inputs[[tag]][['id']] <- id
+      next
+    }
+    
+    # check if <id> exists
+    if ("id" %in% names(settings$run$inputs[[tag]])) {
+      id <- settings$run$inputs[[tag]][['id']]
+      file <- dbfile.file("Input", id, dbcon, hostname)
+      if (is.na(file)) {
+        logger.error("No file found for", tag, " and id", id, "on host", hostname)
+      } else {
+        if (is.null(settings$run$inputs[[tag]][['path']])) {
+          settings$run$inputs[[tag]]['path'] <- file
+        } else if (file != settings$run$inputs[[tag]][['path']]) {
+          logger.warn("Input file and id do not match for ", tag)
         }
       }
-      
-      # check to see if format is right type
-      if ("id" %in% names(settings$run$inputs[[tag]])) {
-        formats <- db.query(paste0("SELECT format_id FROM inputs WHERE id=", settings$run$inputs[[tag]][['id']]), con=dbcon)
-        if (nrow(formats) > 1) {
-          if (formats[1, 'format_id'] != inputs$format_id[i]) {
-            logger.error("Format of input", tag, "does not match specified input.")
-          }
-        } else if (nrow(formats) == 1) {
-          if (formats[1, 'format_id'] != inputs$format_id[i]) {
-            logger.error("Format of input", tag, "does not match specified input.")
-          }
-        } else {
-          logger.error("Could not check format of", tag, ".")
+    } else if ("path" %in% names(settings$run$inputs[[tag]])) {
+      # can we find the file so we can set the tag.id
+      id <- dbfile.id('Input', settings$run$inputs[[tag]][['path']], dbcon, hostname)
+      if (!is.na(id)) {
+        settings$run$inputs[[tag]][['id']] <- id
+      }
+    }
+    
+    # check to see if format is right type
+    if ("id" %in% names(settings$run$inputs[[tag]])) {
+      formats <- db.query(paste0("SELECT format_id FROM inputs WHERE id=", settings$run$inputs[[tag]][['id']]), con=dbcon)
+      if (nrow(formats) > 1) {
+        if (formats[1, 'format_id'] != inputs$format_id[i]) {
+          logger.error("Format of input", tag, "does not match specified input.")
         }
+      } else if (nrow(formats) == 1) {
+        if (formats[1, 'format_id'] != inputs$format_id[i]) {
+          logger.error("Format of input", tag, "does not match specified input.")
+        }
+      } else {
+        logger.error("Could not check format of", tag, ".")
       }
     }
   }
@@ -92,22 +91,24 @@ check.inputs <- function(settings) {
   }
   
   db.close(dbcon)
-
+  
   return(settings)
-}
+} # check.inputs
 
 # check database section
 check.database <- function(database) {
-  if (is.null(database)) return(NULL);
-
+  if (is.null(database)) {
+    return(NULL)
+  }
+  
   ## check database settings
   if (is.null(database$driver)) {
     database$driver <- "PostgreSQL"
     logger.warn("Please specify a database driver; using default 'PostgreSQL'")
   }
-      
+  
   # Attempt to load the driver
-  if (!require(paste0("R", database$driver), character.only=TRUE)) {
+  if (!require(paste0("R", database$driver), character.only = TRUE)) {
     logger.warn("Could not load the database driver", paste0("R", database$driver))
   }
   
@@ -124,7 +125,7 @@ check.database <- function(database) {
       database$name <- NULL
     }
   }
-
+  
   # PostgreSQL specific checks
   if (database$driver == "PostgreSQL") {
     if (!is.null(database$passwd)) {
@@ -138,21 +139,21 @@ check.database <- function(database) {
       database$name <- NULL
     }
   }
-
+  
   ## The following hack handles *.illinois.* to *.uiuc.* aliases of ebi-forecast
-  if(!is.null(database$host)){
-      forcastnames <- c("ebi-forecast.igb.uiuc.edu",
-                        "ebi-forecast.igb.illinois.edu") 
-      if((database$host %in% forcastnames) &
-         (Sys.info()['nodename'] %in% forcastnames)){
-          database$host <- "localhost"
-      }
-  } else if(is.null(database$host)){
+  if(!is.null(database$host)) {
+    forcastnames <- c("ebi-forecast.igb.uiuc.edu",
+                      "ebi-forecast.igb.illinois.edu") 
+    if((database$host %in% forcastnames) &
+       (Sys.info()['nodename'] %in% forcastnames)) {
       database$host <- "localhost"
+    }
+  } else if(is.null(database$host)) {
+    database$host <- "localhost"
   }
-
+  
   ## convert strings around from old format to new format
-  if(is.null(database[["user"]])){
+  if(is.null(database[["user"]])) {
     if (!is.null(database$userid)) {
       logger.info("'userid' in database section should be 'user'")
       database$user <- database$userid
@@ -160,14 +161,14 @@ check.database <- function(database) {
     } else if (!is.null(database$username)) {
       logger.info("'username' in database section should be 'user'")
       database$user <- database$username
-  
+      
     } else {
       logger.info("no database user specified, using 'bety'")
       database$user <- "bety"
     }
   } 
   database$userid <- database$username <- NULL
-
+  
   # fill in defaults for the database
   if(is.null(database$password)) {
     database$password <- "bety"
@@ -175,23 +176,23 @@ check.database <- function(database) {
   if(is.null(database$dbname)) {
     database$dbname <- "bety"
   }
-
-  if (!db.exists(params=database, FALSE, table=NA)) {
+  
+  if (!db.exists(params = database, FALSE, table = NA)) {
     logger.severe("Invalid Database Settings : ", unlist(database))
   }
-
+  
   # connected
   logger.info("Successfully connected to database : ", unlist(database))
-
+  
   # return fixed up database
   return(database)
-} 
+} # check.database
 
 # check to make sure BETY is up to date
 check.bety.version <- function(dbcon) {
   versions <- db.query("SELECT version FROM schema_migrations;", con=dbcon)[['version']]
   
-  # there should always be a versin 1
+  # there should always be a version 1
   if (! ("1" %in% versions)) {
     logger.severe("No version 1, how did this database get created?")
   }
@@ -212,10 +213,10 @@ check.bety.version <- function(dbcon) {
   
   # check if database is newer
   if (tail(versions, n=1) > "20141009160121") {
-    logger.warn("Last migration", tail(versions, n=1), "is more recent than expected 20141009160121.",
+    logger.warn("Last migration", tail(versions, n = 1), "is more recent than expected 20141009160121.",
                 "This could result in PEcAn not working as expected.")
   }
-}
+} # check.bety.version
 
 ##' Sanity checks. Checks the settings file to make sure expected fields exist. It will try to use
 ##' default values for any missing values, or stop the exection if no defaults are possible.
@@ -232,8 +233,8 @@ check.settings <- function(settings) {
     return(settings)
   }
   scipen = getOption("scipen")
-  options(scipen=12)
-
+  options(scipen = 12)
+  
   settings <- check.database.settings(settings)
   
   if(!is.null(settings$database$bety)) {
@@ -246,7 +247,7 @@ check.settings <- function(settings) {
   if (is.null(settings$pfts) || (length(settings$pfts) == 0)) {
     logger.warn("No PFTS specified.")
   }
-
+  
   # check to make sure a host is given
   if (is.null(settings$host$name)) {
     logger.info("Setting localhost for execution host.")
@@ -257,42 +258,42 @@ check.settings <- function(settings) {
   if (is.null(settings$ensemble) && is.null(settings$sensitivity.analysis)) {
     logger.warn("No ensemble or sensitivity analysis specified, no models will be executed!")
   }
-
-  settings <- papply(settings, check.run.settings, dbcon=dbcon)
+  
+  settings <- papply(settings, check.run.settings, dbcon = dbcon)
   
   # check meta-analysis
-if(!is.null(settings$meta.analysis)){  
-  if (is.null(settings$meta.analysis$iter)) {
-    settings$meta.analysis$iter <- 3000
-    logger.info("Setting meta.analysis iterations to ", settings$meta.analysis$iter)
+  if(!is.null(settings$meta.analysis)) {  
+    if (is.null(settings$meta.analysis$iter)) {
+      settings$meta.analysis$iter <- 3000
+      logger.info("Setting meta.analysis iterations to ", settings$meta.analysis$iter)
+    }
+    if (is.null(settings$meta.analysis$random.effects)) {
+      settings$meta.analysis$random.effects <- FALSE
+      logger.info("Setting meta.analysis random effects to ", settings$meta.analysis$random.effects)
+    } else {
+      settings$meta.analysis$random.effects <- as.logical(settings$meta.analysis$random.effects)
+    }
+    if (is.null(settings$meta.analysis$threshold)) {
+      settings$meta.analysis$threshold <- 1.2
+      logger.info("Setting meta.analysis threshold to ", settings$meta.analysis$threshold)
+    }
+    if (is.null(settings$meta.analysis$update)) {
+      settings$meta.analysis$update <- 'AUTO'
+      logger.info("Setting meta.analysis update to only update if no previous meta analysis was found")
+    }
+    if ((settings$meta.analysis$update != 'AUTO') && is.na(as.logical(settings$meta.analysis$update))) {
+      logger.info("meta.analysis update can only be AUTO/TRUE/FALSE, defaulting to FALSE")
+      settings$meta.analysis$update <- FALSE
+    }
   }
-  if (is.null(settings$meta.analysis$random.effects)) {
-    settings$meta.analysis$random.effects <- FALSE
-    logger.info("Setting meta.analysis random effects to ", settings$meta.analysis$random.effects)
-  } else {
-    settings$meta.analysis$random.effects <- as.logical(settings$meta.analysis$random.effects)
-  }
-  if (is.null(settings$meta.analysis$threshold)) {
-    settings$meta.analysis$threshold <- 1.2
-    logger.info("Setting meta.analysis threshold to ", settings$meta.analysis$threshold)
-  }
-  if (is.null(settings$meta.analysis$update)) {
-    settings$meta.analysis$update <- 'AUTO'
-    logger.info("Setting meta.analysis update to only update if no previous meta analysis was found")
-  }
-  if ((settings$meta.analysis$update != 'AUTO') && is.na(as.logical(settings$meta.analysis$update))) {
-    logger.info("meta.analysis update can only be AUTO/TRUE/FALSE, defaulting to FALSE")
-    settings$meta.analysis$update <- FALSE
-  }
-}
   
   settings <- check.model.settings(settings, dbcon)
-
+  
   ## if run$host is localhost, set to "localhost
   if (any(settings$host %in% c(Sys.info()['nodename'], gsub("illinois", "uiuc", Sys.info()['nodename'])))){
     settings$host$name <- "localhost"
   }
-
+  
   # check if we need to use qsub
   if ("qsub" %in% names(settings$host)) {
     if (is.null(settings$host$qsub)) {
@@ -308,7 +309,7 @@ if(!is.null(settings$meta.analysis)){
       logger.info("qstat not specified using default value :", settings$host$qstat)
     }
   }
-
+  
   # modellauncher to launch on multiple nodes/cores
   if ("modellauncher" %in% names(settings$host)) {
     if (is.null(settings$host$modellauncher$binary)) {
@@ -323,7 +324,7 @@ if(!is.null(settings$meta.analysis)){
       logger.info("mpirun not specified using default value :", settings$host$modellauncher$mpirun)
     }
   }
-
+  
   # some warnings for deprecated job.sh
   if ("job.sh" %in% names(settings$model)) {
     if ("prerun" %in% names(settings$model)) {
@@ -341,46 +342,46 @@ if(!is.null(settings$meta.analysis)){
     settings$host$prerun <- settings$host$job.sh
     settings$host$job.sh <- NULL
   }
-
+  
   # Check folder where outputs are written before adding to dbfiles
   if(is.null(settings$database$dbfiles)) {
     settings$database$dbfiles <- full.path("~/.pecan/dbfiles")
   } else {
-      if (substr(settings$database$dbfiles, 1, 1) != '/'){
-          logger.warn("settings$database$dbfiles pathname", settings$database$dbfiles, " is invalid\n
+    if (substr(settings$database$dbfiles, 1, 1) != '/') {
+      logger.warn("settings$database$dbfiles pathname", settings$database$dbfiles, " is invalid\n
                   placing it in the home directory ", Sys.getenv("HOME"))
-          settings$database$dbfiles <- file.path(Sys.getenv("HOME"), settings$database$dbfiles)
-      } 
-      
-      settings$database$dbfiles <- normalizePath(settings$database$dbfiles, mustWork=FALSE)
+      settings$database$dbfiles <- file.path(Sys.getenv("HOME"), settings$database$dbfiles)
+    } 
+    
+    settings$database$dbfiles <- normalizePath(settings$database$dbfiles, mustWork = FALSE)
   }
   dir.create(settings$database$dbfiles, showWarnings = FALSE, recursive = TRUE)
-
+  
   # check all inputs exist
   settings <- papply(settings, check.inputs)
-
+  
   settings <- check.workflow.settings(settings, dbcon)
-
+  
   # check/create the local run folder
   if (is.null(settings$rundir)) {
     settings$rundir <- file.path(settings$outdir, "run")
   }
-  if (!file.exists(settings$rundir) && !dir.create(settings$rundir, recursive=TRUE)) {
+  if (!file.exists(settings$rundir) && !dir.create(settings$rundir, recursive = TRUE)) {
     logger.severe("Could not create run folder", settings$rundir)
   }
-
+  
   # check/create the local model out folder
   if (is.null(settings$modeloutdir)) {
     settings$modeloutdir <- file.path(settings$outdir, "out")
   }
-  if (!file.exists(settings$modeloutdir) && !dir.create(settings$modeloutdir, recursive=TRUE)) {
+  if (!file.exists(settings$modeloutdir) && !dir.create(settings$modeloutdir, recursive = TRUE)) {
     logger.severe("Could not create model out folder", settings$modeloutdir)
   }
   
   # make sure remote folders are specified if need be
   if (!is.localhost(settings$host)) {
     if (is.null(settings$host$folder)) {
-      settings$host$folder <- paste0(remote.execute.cmd("pwd", host=settings$host), "/pecan_remote")
+      settings$host$folder <- paste0(remote.execute.cmd("pwd", host = settings$host), "/pecan_remote")
       logger.info("Using ", settings$host$folder, "to store output on remote machine")      
     }
     if (is.null(settings$host$rundir)) {
@@ -397,10 +398,10 @@ if(!is.null(settings$meta.analysis)){
     settings$host$rundir <- settings$rundir
     settings$host$outdir <- settings$modeloutdir
   }
-
+  
   # check/create the pft folders
   if (!is.null(settings$pfts) && (length(settings$pfts) > 0)) {
-    for (i in 1:length(settings$pfts)) {
+    for (i in seq_along(settings$pfts)) {
       #check if name tag within pft
       if (!"name" %in% names(settings$pfts[i]$pft)) {
         logger.severe("No name specified for pft of index: ", i, ", please specify name")
@@ -410,15 +411,15 @@ if(!is.null(settings$meta.analysis)){
       }
       
       #check to see if name of each pft in xml file is actually a name of a pft already in database
-      if (!is.null(dbcon)) {# change to if(class(dbcon) == "PostgreSQLConnection")??
+      if (!is.null(dbcon)) { # change to if(class(dbcon) == "PostgreSQLConnection")??
         if (is.null(settings$model$type)) {
-          x <- db.query(paste0("SELECT pfts.id FROM pfts",
-                               " WHERE pfts.name = '",  settings$pfts[i]$pft$name, "'"), con=dbcon)
+          x <- db.query(paste0("SELECT pfts.id FROM pfts", " WHERE pfts.name = '",  
+                               settings$pfts[i]$pft$name, "'"), con = dbcon)
         } else {
           x <- db.query(paste0("SELECT pfts.id FROM pfts, modeltypes",
-                               " WHERE pfts.name = '",  settings$pfts[i]$pft$name, "'",
+                               " WHERE pfts.name = '", settings$pfts[i]$pft$name, "'",
                                " AND modeltypes.name='", settings$model$type, "'",
-                               " AND modeltypes.id=pfts.modeltype_id;"), con=dbcon)
+                               " AND modeltypes.id=pfts.modeltype_id;"), con = dbcon)
         }
         if (nrow(x) == 0) {
           logger.severe("Did not find a pft with name ", settings$pfts[i]$pft$name,
@@ -429,7 +430,7 @@ if(!is.null(settings$meta.analysis)){
                       "\nfor model type", settings$model$type)
         }
       }
-  
+      
       if (is.null(settings$pfts[i]$pft$outdir)) {
         settings$pfts[i]$pft$outdir <- file.path(settings$outdir, "pft", settings$pfts[i]$pft$name)
         logger.info("Storing pft", settings$pfts[i]$pft$name, "in", settings$pfts[i]$pft$outdir)      
@@ -437,7 +438,7 @@ if(!is.null(settings$meta.analysis)){
         logger.debug("Storing pft", settings$pfts[i]$pft$name, "in", settings$pfts[i]$pft$outdir)      
       }
       out.dir <- settings$pfts[i]$pft$outdir
-      if (!file.exists(out.dir) && !dir.create(out.dir, recursive=TRUE)) {
+      if (!file.exists(out.dir) && !dir.create(out.dir, recursive = TRUE)) {
         if(identical(dir(out.dir), character(0))){
           logger.warn(out.dir, "exists but is empty")
         } else {
@@ -446,21 +447,21 @@ if(!is.null(settings$meta.analysis)){
       }
     }
   }
-
+  
   if (!is.null(dbcon)) {
     db.close(dbcon)
   }
-  options(scipen=scipen)
+  options(scipen = scipen)
   
   # all done return cleaned up settings
   invisible(settings)
-}
+} # check.settings
 
 
-check.run.settings <- function(settings, dbcon=NULL) {
-  scipen = getOption("scipen")
-  options(scipen=12)
-
+check.run.settings <- function(settings, dbcon = NULL) {
+  scipen <- getOption("scipen")
+  options(scipen = 12)
+  
   # check for a run settings
   if (is.null(settings[['run']])) {
     logger.warn("No Run Settings specified")
@@ -473,8 +474,8 @@ check.run.settings <- function(settings, dbcon=NULL) {
   } else if (is.null(settings$run$end.date)) {
     logger.warn("No end.date specified in run section.")
   } else {
-    startdate <- parse_date_time(settings$run$start.date, "ymd_hms", truncated=3)
-    enddate <- parse_date_time(settings$run$end.date, "ymd_hms", truncated=3)
+    startdate <- lubridate::parse_date_time(settings$run$start.date, "ymd_hms", truncated = 3)
+    enddate <- lubridate::parse_date_time(settings$run$end.date, "ymd_hms", truncated = 3)
     if (startdate >= enddate) {
       logger.severe("Start date should come before the end date.")
     }
@@ -496,33 +497,44 @@ check.run.settings <- function(settings, dbcon=NULL) {
     }
     
     if(is.null(settings$ensemble$start.year)) {
-      if(is.null(settings$sensitivity.analysis$start.year)) {
+      if(!is.null(settings$run$start.date)) {
         settings$ensemble$start.year <- year(settings$run$start.date) 
-        logger.info("No start date passed to ensemble - using the run date (", settings$ensemble$start.date, ").")
-      } else { 
+        logger.info("No start date passed to ensemble - using the run date (", 
+                    settings$ensemble$start.year, ").")
+      } else if(!is.null(settings$sensitivity.analysis$start.year)) {
         settings$ensemble$start.year <- settings$sensitivity.analysis$start.year 
-        logger.info("No start date passed to ensemble - using the sensitivity.analysis date (", settings$ensemble$start.date, ").")
+        logger.info("No start date passed to ensemble - using the sensitivity.analysis date (",
+                    settings$ensemble$start.year, ").")
+      } else {
+        logger.info("No start date passed to ensemble, and no default available.")
       }
     }
     
     if(is.null(settings$ensemble$end.year)) {
-      if(is.null(settings$sensitivity.analysis$end.year)) {
+      if(!is.null(settings$run$end.date)) {
         settings$ensemble$end.year <- year(settings$run$end.date) 
-        logger.info("No end date passed to ensemble - using the run date (", settings$ensemble$end.date, ").")
-      } else { 
+        logger.info("No end date passed to ensemble - using the run date (", 
+                    settings$ensemble$end.year, ").")
+      } else if(!is.null(settings$sensitivity.analysis$end.year)) { 
         settings$ensemble$end.year <- settings$sensitivity.analysis$end.year 
-        logger.info("No end date passed to ensemble - using the sensitivity.analysis date (", settings$ensemble$end.date, ").")
+        logger.info("No end date passed to ensemble - using the sensitivity.analysis date (",  
+                    settings$ensemble$end.year, ").")
+      } else {
+        logger.info("No end date passed to ensemble, and no default available.")
       }
     }
     
     # check start and end dates
-    if (year(startdate) > settings$ensemble$start.year) {
+    if (exists("startdate") && !is.null(settings$ensemble$start.year) &&
+        year(startdate) > settings$ensemble$start.year) {
       logger.severe("Start year of ensemble should come after the start.date of the run")
     }
-    if (year(enddate) < settings$ensemble$end.year) {
+    if (exists("enddate") && !is.null(settings$ensemble$end.year) &&
+        year(enddate) < settings$ensemble$end.year) {
       logger.severe("End year of ensemble should come before the end.date of the run")
     }
-    if (settings$ensemble$start.year > settings$ensemble$end.year) {
+    if (!is.null(settings$ensemble$start.year) && !is.null(settings$ensemble$end.year) &&
+        settings$ensemble$start.year > settings$ensemble$end.year) {
       logger.severe("Start year of ensemble should come before the end year of the ensemble")
     }
   }
@@ -533,63 +545,77 @@ check.run.settings <- function(settings, dbcon=NULL) {
       if (is.null(settings$ensemble$variable)) {
         logger.severe("No variable specified to compute sensitivity.analysis for.")
       }
-      logger.info("Setting sensitivity.analysis variable to the same as ensemble variable [", settings$ensemble$variable, "]")
+      logger.info("Setting sensitivity.analysis variable to the same as ensemble variable [", 
+                  settings$ensemble$variable, "]")
       settings$sensitivity.analysis$variable <- settings$ensemble$variable
     }
     
     if(is.null(settings$sensitivity.analysis$start.year)) {
-      if(is.null(settings$ensemble$start.year)) {
+      if(!is.null(settings$run$start.date)) {
         settings$sensitivity.analysis$start.year <- year(settings$run$start.date) 
-        logger.info("No start date passed to sensitivity.analysis - using the run date (", settings$sensitivity.analysis$start.date, ").")
-      } else { 
+        logger.info("No start date passed to sensitivity.analysis - using the run date (",
+                    settings$sensitivity.analysis$start.year, ").")
+      } else if(!is.null(settings$ensemble$start.year)) {
         settings$sensitivity.analysis$start.year <- settings$ensemble$start.year 
-        logger.info("No start date passed to sensitivity.analysis - using the ensemble date (", settings$sensitivity.analysis$start.date, ").")
+        logger.info("No start date passed to sensitivity.analysis - using the ensemble date (", 
+                    settings$sensitivity.analysis$start.year, ").")
+      } else {
+        logger.info("No start date passed to sensitivity.analysis, and no default available.")
       }
     }
     
     if(is.null(settings$sensitivity.analysis$end.year)) {
-      if(is.null(settings$ensemble$end.year)) {
+      if(!is.null(settings$run$end.date)) {
         settings$sensitivity.analysis$end.year <- year(settings$run$end.date) 
-        logger.info("No end date passed to sensitivity.analysis - using the run date (", settings$sensitivity.analysis$end.date, ").")
-      } else { 
+        logger.info("No end date passed to sensitivity.analysis - using the run date (", 
+                    settings$sensitivity.analysis$end.year, ").")
+      } else if(!is.null(settings$ensemble$end.year)){ 
         settings$sensitivity.analysis$end.year <- settings$ensemble$end.year 
-        logger.info("No end date passed to sensitivity.analysis - using the ensemble date (", settings$sensitivity.analysis$end.date, ").")
+        logger.info("No end date passed to sensitivity.analysis - using the ensemble date (", 
+                    settings$sensitivity.analysis$end.year, ").")
+      } else {
+        logger.info("No end date passed to sensitivity.analysis, and no default available.")
       }
     }
     
     # check start and end dates
-    if (year(startdate) > settings$sensitivity.analysis$start.year) {
-      logger.severe("Start year of sensitivity.analysis should come after the start.date of the run")
+    if (exists("startdate") && !is.null(settings$sensitivity.analysis$start.year) &&
+        lubridate::year(startdate) > settings$sensitivity.analysis$start.year) {
+      logger.severe("Start year of SA should come after the start.date of the run")
     }
-    if (year(enddate) < settings$sensitivity.analysis$end.year) {
-      logger.severe("End year of sensitivity.analysis should come before the end.date of the run")
+    if (exists("enddate") && !is.null(settings$sensitivity.analysis$end.year) &&
+        lubridate::year(enddate) < settings$sensitivity.analysis$end.year) {
+      logger.severe("End year of SA should come before the end.date of the run")
     }
-    if (settings$sensitivity.analysis$start.year > settings$sensitivity.analysis$end.year) {
-      logger.severe("Start year of sensitivity.analysis should come before the end year of the ensemble")
+    if (!is.null(settings$sensitivity.analysis$start.year) && 
+        !is.null(settings$sensitivity.analysis$end.year) &&
+        settings$sensitivity.analysis$start.year > settings$sensitivity.analysis$end.year) {
+      logger.severe("Start year of SA should come before the end year of the SA")
     }
   }
   
-  
   # check siteid with values
-  if(!is.null(settings$run$site)){
+  if(!is.null(settings$run$site)) {
     if (is.null(settings$run$site$id)) {
       settings$run$site$id <- -1
     } else if (settings$run$site$id >= 0) {
       if (!is.null(dbcon)) {
         site <- db.query(paste("SELECT sitename, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =", settings$run$site$id), con=dbcon)
       } else {
-        site <- data.frame(id=settings$run$site$id)
+        site <- data.frame(id = settings$run$site$id)
         if (!is.null(settings$run$site$name)) {
-          site$sitename=settings$run$site$name
+          site$sitename <- settings$run$site$name
         }
         if (!is.null(settings$run$site$lat)) {
-          site$lat=settings$run$site$lat
+          site$lat <- settings$run$site$lat
         }
         if (!is.null(settings$run$site$lon)) {
-          site$lon=settings$run$site$lon
+          site$lon <- settings$run$site$lon
         }
       }
-      if((!is.null(settings$run$site$met)) && settings$run$site$met == "NULL") settings$run$site$met <- NULL
+      if((!is.null(settings$run$site$met)) && settings$run$site$met == "NULL") {
+        settings$run$site$met <- NULL
+      }
       if (is.null(settings$run$site$name)) {
         if ((is.null(site$sitename) || site$sitename == "")) {
           logger.info("No site name specified.")
@@ -628,19 +654,19 @@ check.run.settings <- function(settings, dbcon=NULL) {
     settings$run$site$id <- -1
   }
   # end site check code
-
-  options(scipen=scipen)
+  
+  options(scipen = scipen)
   
   # all done return cleaned up settings
   invisible(settings)
-}
+} # check.run.settings
 
-check.model.settings <- function(settings, dbcon=NULL) {
+check.model.settings <- function(settings, dbcon = NULL) {
   # check modelid with values
-  if(!is.null(settings$model)){
-    if(!is.null(dbcon)){
-      if(!is.null(settings$model$id)){
-        if(as.numeric(settings$model$id) >= 0){
+  if(!is.null(settings$model)) {
+    if(!is.null(dbcon)) {
+      if(!is.null(settings$model$id)) {
+        if(as.numeric(settings$model$id) >= 0) {
           model <- db.query(paste0("SELECT models.id AS id, models.revision AS revision, modeltypes.name AS type FROM models, modeltypes WHERE models.id=", settings$model$id, " AND models.modeltype_id=modeltypes.id;"), con=dbcon)
           if(nrow(model) == 0) {
             logger.error("There is no record of model_id = ", settings$model$id, "in database")
@@ -655,10 +681,12 @@ check.model.settings <- function(settings, dbcon=NULL) {
                                  ifelse(is.null(settings$model$revision), "", 
                                         paste0("AND revision like '%", settings$model$revision, "%' ")),
                                  "ORDER BY models.updated_at"), con=dbcon)
-        if(nrow(model) > 1){
+        if(nrow(model) > 1) {
           logger.warn("multiple records for", settings$model$name, "returned; using the latest")
           row <- which.max(model$updated_at)
-          if (length(row) == 0) row <- nrow(model)
+          if (length(row) == 0) {
+            row <- nrow(model)
+          }
           model <- model[row, ]
         } else if (nrow(model) == 0) {
           logger.warn("Model type", settings$model$type, "not in database")
@@ -710,7 +738,7 @@ check.model.settings <- function(settings, dbcon=NULL) {
     # Set model$delete.raw to FALSE by default
     if (is.null(settings$model$delete.raw) || !is.logical(as.logical(settings$model$delete.raw))) {
       logger.info("Option to delete raw model output not set or not logical. Will keep all model output.")
-      settings$model$delete.raw = FALSE
+      settings$model$delete.raw <- FALSE
     }
     
     # check on binary for given host
@@ -728,54 +756,56 @@ check.model.settings <- function(settings, dbcon=NULL) {
       logger.warn("No model binary sepcified in database for model ", settings$model$type)      
     }
   }
-
+  
   return(settings)
-}
+} # check.model.settings
 
-check.workflow.settings <- function(settings, dbcon=NULL) {
+check.workflow.settings <- function(settings, dbcon = NULL) {
   # check for workflow defaults
   fixoutdir <- FALSE
   if(!is.null(dbcon) && settings$database$bety$write && ("model" %in% names(settings))) {
     if (!'workflow' %in% names(settings)) {
       now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-      if(is.SettingsList(settings)) {
+      if(is.MultiSettings(settings)) {
         db.query(paste0("INSERT INTO workflows (folder, model_id, hostname, started_at, created_at) values ('",
-                      settings$outdir, "','" , settings$model$id, "', '", settings$host$name, "', '",
-                      now, "', '", now, "')"), con=dbcon)
+                        settings$outdir, "','" , settings$model$id, "', '", settings$host$name, "', '",
+                        now, "', '", now, "')"), con=dbcon)
       } else {      
         db.query(paste0("INSERT INTO workflows (folder, site_id, model_id, hostname, start_date, end_date, started_at, created_at) values ('",
-                      settings$outdir, "','" , settings$run$site$id, "','", settings$model$id, "', '", settings$host$name, "', '",
-                      settings$run$start.date, "', '", settings$run$end.date, "', '", now, "', '", now, "')"), con=dbcon)
+                        settings$outdir, "','" , settings$run$site$id, "','", settings$model$id, "', '", settings$host$name, "', '",
+                        settings$run$start.date, "', '", settings$run$end.date, "', '", now, "', '", now, "')"), con=dbcon)
       }
-      settings$workflow$id <- db.query(paste0("SELECT id FROM workflows WHERE created_at='", now, "' ORDER BY id DESC LIMIT 1;"), con=dbcon)[['id']]
+      settings$workflow$id <- db.query(paste0("SELECT id FROM workflows WHERE created_at='", now,
+                                              "' ORDER BY id DESC LIMIT 1;"), con=dbcon)[['id']]
       fixoutdir <- TRUE
     }
   } else {
     settings$workflow$id  <- format(Sys.time(), "%Y-%m-%d-%H-%M-%S")
   }
-
+  
   # check/create the pecan folder
   if (is.null(settings$outdir)) {
     settings$outdir <- "PEcAn_@WORKFLOW@"
   }
   # replace @WORKFLOW@ with the id of the workflow
-  settings$outdir <- gsub("@WORKFLOW@", format(settings$workflow$id,scientific=FALSE), settings$outdir)
+  settings$outdir <- gsub("@WORKFLOW@", format(settings$workflow$id, scientific = FALSE), settings$outdir)
   # create fully qualified pathname
   if (substr(settings$outdir, 1, 1) != '/') {
     settings$outdir <- file.path(getwd(), settings$outdir)
   }
   logger.info("output folder =", settings$outdir)
-  if (!file.exists(settings$outdir) && !dir.create(settings$outdir, recursive=TRUE)) {
+  if (!file.exists(settings$outdir) && !dir.create(settings$outdir, recursive = TRUE)) {
     logger.severe("Could not create folder", settings$outdir)
   }
-
+  
   #update workflow
   if (fixoutdir) {
-      db.query(paste0("UPDATE workflows SET folder='", full.path(settings$outdir), "' WHERE id=", settings$workflow$id), con=dbcon)
+    db.query(paste0("UPDATE workflows SET folder='", full.path(settings$outdir), "' WHERE id=", 
+                    settings$workflow$id), con = dbcon)
   }
-
+  
   return(settings)
-}
+} # check.workflow.settings
 
 
 
@@ -786,7 +816,7 @@ check.database.settings <- function(settings) {
       if(name != "dbfiles") # 'dbfiles' is kept in <database>, but isn't actually a db settings block
         settings$database[[name]] <- check.database(settings$database[[name]])
     }
-
+    
     # check bety database
     if (!is.null(settings$database$bety)) {
       # should runs be written to database
@@ -801,20 +831,21 @@ check.database.settings <- function(settings) {
           logger.warn("Will not write runs/configurations to database.")
         }
       }
-
+      
       # check if we can connect to the database with write permissions
-      if (settings$database$bety$write && !db.exists(params=settings$database$bety, TRUE, table='users')) {
+      if (settings$database$bety$write &&
+          !db.exists(params = settings$database$bety, TRUE, table = 'users')) {
         logger.severe("Invalid Database Settings : ", unlist(settings$database))
       }
-
+      
       # TODO check userid and userpassword
-
+      
       # Connect to database
       dbcon <- db.open(settings$database$bety)
-
+      
       # check database version
       check.bety.version(dbcon)
-
+      
       db.close(dbcon)
     } else {
       logger.warn("No BETY database information specified; not using database.")
@@ -823,7 +854,7 @@ check.database.settings <- function(settings) {
     logger.warn("No BETY database information specified; not using database.")
   }
   return(settings)
-}
+} # check.database.settings
 
 
 ##' Checks for and attempts to fix deprecated settings structure
@@ -842,7 +873,7 @@ fix.deprecated.settings <- function(settings) {
     settings$model$jobtemplate <- settings$run$jobtemplate
     settings$run$jobtemplate <- NULL
   }
-
+  
   # settings$database$dbfiles
   if(!is.null(settings$run$dbfiles)) {
     if(!is.null(settings$database$dbfiles)) {
@@ -852,7 +883,7 @@ fix.deprecated.settings <- function(settings) {
     settings$database$dbfiles <- settings$run$dbfiles
     settings$run$dbfiles <- NULL
   }
-
+  
   # settings$host
   if(!is.null(settings$run$host)) {
     if(!is.null(settings$host)) {
@@ -864,7 +895,7 @@ fix.deprecated.settings <- function(settings) {
   }
   
   return(settings)
-}
+} # fix.deprecated.settings
 
 
 ##' Updates a pecan.xml file to match new layout. This will take care of the
@@ -883,18 +914,18 @@ update.settings <- function(settings) {
       if (!is.null(settings$database$bety)) {
         logger.severe("Please remove dbname etc from database configuration.")
       }
-
+      
       logger.info("Database tag has changed, please use <database><bety> to store",
-                 "information about accessing the BETY database. See also",
-                 "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access.")
-
+                  "information about accessing the BETY database. See also",
+                  "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#database-access.")
+      
       bety <- list()
       for(name in names(settings$database)) {
         bety[[name]] <- settings$database[[name]]
       }
-      settings$database <- list(bety=bety)
+      settings$database <- list(bety = bety)
     }
-
+    
     # warn user about change and update settings
     if (!is.null(settings$bety$write)) {
       logger.warn("<bety><write> is now part of the database settings. For more",
@@ -903,11 +934,13 @@ update.settings <- function(settings) {
       if (is.null(settings$database$bety$write)) {
         settings$database$bety$write <- settings$bety$write
         settings$bety$write <- NULL
-        if (length(settings$bety) == 0) settings$bety <- NULL
+        if (length(settings$bety) == 0) {
+          settings$bety <- NULL
+        }
       }
     }
   }
-
+  
   # model$model_type is now simply model$type and model$name is no longer used
   if (!is.null(settings$model$model_type)) {
     if (!is.null(settings$model$type)) {
@@ -917,10 +950,10 @@ update.settings <- function(settings) {
         logger.info("Please remove model_type from model configuration.")
       }
     }
-
+    
     logger.info("Model tag has changed, please use <model><type> to specify",
-                 "type of model. See also",
-                 "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#model_setup.")
+                "type of model. See also",
+                "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#model_setup.")
     settings$model$type <- settings$model$model_type
     settings$model$model_type <- NULL
   }
@@ -932,14 +965,14 @@ update.settings <- function(settings) {
         logger.info("Please remove name from model configuration.")
       }
     }
-
+    
     logger.info("Model tag has changed, please use <model><type> to specify",
-                 "type of model. See also",
-                 "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#model_setup.")
+                "type of model. See also",
+                "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#model_setup.")
     settings$model$type <- settings$model$name
     settings$model$name <- NULL
   }
-
+  
   # run$site$met is now run$inputs$met$path
   if (!is.null(settings$run$site$met)) {
     if (!is.null(settings$run$inputs$met)) {
@@ -953,8 +986,8 @@ update.settings <- function(settings) {
       settings$run$inputs <- list()
     }
     logger.info("Model tag has changed, please use <inputs><met> to specify",
-                 "met file for a run. See also",
-                 "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+                "met file for a run. See also",
+                "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
     settings$run$inputs$met$path <- settings$run$site$met
     settings$run$site$met <- NULL
   }
@@ -963,19 +996,19 @@ update.settings <- function(settings) {
   for(tag in names(settings$run$inputs)) {
     if (grepl(".id$", tag)) {
       tagid <- tag
-      tag <- substr(tagid, 1, nchar(tagid)-3)
+      tag <- substr(tagid, 1, nchar(tagid) - 3)
       if (tag %in% names(settings$run$inputs)) {
         next
       } else {
         settings$run$inputs[[tag]]['id'] <- settings$run$inputs[[tagid]]
-        settings$run$inputs[[tagid]] <- null
+        settings$run$inputs[[tagid]] <- NULL
       }
     } else {
       if (!is.list(settings$run$inputs[[tag]])) {
         path <- settings$run$inputs[[tag]]
-        settings$run$inputs[[tag]] <- list("path"=path)
+        settings$run$inputs[[tag]] <- list("path" = path)
       }
-
+      
       tagid <- paste0(tag, ".id")
       if (tagid %in% names(settings$run$inputs)) {
         if ('id' %in% names(settings$run$inputs[[tag]])) {
@@ -992,7 +1025,7 @@ update.settings <- function(settings) {
       }
     }
   }
-
+  
   # some specific ED changes
   if (!is.null(settings$model$veg)) {
     if (!is.null(settings$run$inputs$veg)) {
@@ -1006,8 +1039,8 @@ update.settings <- function(settings) {
       settings$run$inputs <- list()
     }
     logger.info("Model tag has changed, please use <inputs><veg> to specify",
-                 "veg file for a run. See also",
-                 "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+                "veg file for a run. See also",
+                "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
     settings$run$inputs$veg <- settings$model$veg
     settings$model$veg <- NULL
   }
@@ -1023,8 +1056,8 @@ update.settings <- function(settings) {
       settings$run$inputs <- list()
     }
     logger.info("Model tag has changed, please use <inputs><soil> to specify",
-                 "soil file for a run. See also",
-                 "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+                "soil file for a run. See also",
+                "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
     settings$run$inputs$soil <- settings$model$soil
     settings$model$soil <- NULL
   }
@@ -1036,8 +1069,8 @@ update.settings <- function(settings) {
       settings$run$inputs <- list()
     }
     logger.info("Model tag has changed, please use <inputs><pss/css/site> to specify",
-                 "pss/css/site file for a run. See also",
-                 "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+                "pss/css/site file for a run. See also",
+                "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
     settings$run$inputs$pss <- file.path(settings$model$psscss, "foo.pss")
     settings$run$inputs$css <- file.path(settings$model$psscss, "foo.css")
     settings$run$inputs$site <- file.path(settings$model$psscss, "foo.site")
@@ -1051,15 +1084,15 @@ update.settings <- function(settings) {
       settings$run$inputs <- list()
     }
     logger.info("Model tag has changed, please use <inputs><lu/thsums> to specify",
-                 "lu/thsums file for a run. See also",
-                 "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
+                "lu/thsums file for a run. See also",
+                "https://github.com/PecanProject/pecan/wiki/PEcAn-Configuration#run_setup.")
     settings$run$inputs$lu <- file.path(settings$model$inputs, "glu")
     settings$run$inputs$thsums <- settings$model$inputs
     settings$model$soil <- NULL
   }
-
+  
   invisible(settings)
-}
+} # update.settings
 
 ##' Add secret information from ~/.pecan.xml
 ##'
@@ -1076,7 +1109,7 @@ addSecrets <- function(settings) {
   if (!file.exists("~/.pecan.xml")) {
     return(settings)
   }
-  pecan <- xmlToList(xmlParse("~/.pecan.xml"))
+  pecan <- XML::xmlToList(XML::xmlParse("~/.pecan.xml"))
   
   # always copy following sections
   for(key in c('database')) {
@@ -1092,7 +1125,9 @@ addSecrets <- function(settings) {
   
   # only copy these sections if tag exists
   for(key in c('browndog')) {
-    if (! key %in% names(settings)) next
+    if (! key %in% names(settings)) {
+      next
+    }
     
     for(section in names(pecan[[key]])) {
       if (section %in% names(settings[section])) {
@@ -1103,9 +1138,9 @@ addSecrets <- function(settings) {
       }
     }
   }  
-
+  
   invisible(settings)
-}
+} # addSecrets
 
 ##--------------------------------------------------------------------------------------------------#
 ## EXTERNAL FUNCTIONS
@@ -1147,11 +1182,11 @@ addSecrets <- function(settings) {
 ##' test.settings.file <- system.file("tests/test.xml", package = "PEcAn.all")
 ##' settings <- read.settings(test.settings.file)
 ##' }
-read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.CHECKED.xml"){
-  if(inputfile == ""){
+read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.CHECKED.xml") {
+  if(inputfile == "") {
     logger.warn("settings files specified as empty string; \n\t\tthis may be caused by an incorrect argument to system.file.")
   }
-
+  
   loc <- which(commandArgs() == "--settings")
   ## If settings file passed at cmd line
   if (length(loc) != 0) {  
@@ -1159,7 +1194,7 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.CHECKED.x
     for(idx in loc) {
       if (!is.null(commandArgs()[idx+1]) && file.exists(commandArgs()[idx+1])) {
         logger.info("Loading --settings=", commandArgs()[idx+1])
-        xml <- xmlParse(commandArgs()[idx+1])
+        xml <- XML::xmlParse(commandArgs()[idx+1])
         break
       }
     }
@@ -1167,48 +1202,47 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.CHECKED.x
   } else if (file.exists(Sys.getenv("PECAN_SETTINGS"))) { 
     # 2 load from PECAN_SETTINGS
     logger.info("Loading PECAN_SETTINGS=", Sys.getenv("PECAN_SETTINGS"))
-    xml <- xmlParse(Sys.getenv("PECAN_SETTINGS"))
+    xml <- XML::xmlParse(Sys.getenv("PECAN_SETTINGS"))
     ## if settings file passed to read.settings function
   } else if(!is.null(inputfile) && file.exists(inputfile)) {
     # 3 filename passed into function
     logger.info("Loading inpufile=", inputfile)
-    xml <- xmlParse(inputfile)
+    xml <- XML::xmlParse(inputfile)
     ## use pecan.xml in cwd only if none exists
   } else if (file.exists("pecan.xml")) {
     # 4 load ./pecan.xml
     logger.info("Loading ./pecan.xml")
-    xml <- xmlParse("pecan.xml")
+    xml <- XML::xmlParse("pecan.xml")
   } else {
     # file not found
     logger.severe("Could not find a pecan.xml file")
   }
-
+  
   ## convert the xml to a list
-  global.settings <- xmlToList(xml)
-  settings <- parse.global.settings(global.settings)
+  settings <- XML::xmlToList(xml)
+  settings <- expandMultiSettings(settings)
   
   settings <- papply(settings, fix.deprecated.settings)
   settings <- papply(settings, addSecrets)
   settings <- papply(settings, update.settings)
   settings <- check.settings(settings)
-
-
+  
   ## save the checked/fixed pecan.xml
   if (!is.null(outputfile)) {
     pecanfile <- file.path(settings$outdir, outputfile)
     if (file.exists(pecanfile)) {
       logger.warn(paste("File already exists [", pecanfile, "] file will be overwritten"))
     }
-    saveXML(listToXml(settings, "pecan"), file=pecanfile)
+    saveXML(listToXml(settings, "pecan"), file =pecanfile)
   }
-
+  
   ## setup Rlib from settings
   if(!is.null(settings$Rlib)){
     .libPaths(settings$Rlib)
   }
-
+  
   invisible(settings)
-}
+} # read.settings
 ##=================================================================================================#
 
 ####################################################################################################
