@@ -5,7 +5,7 @@
 \title{run sensitivity.analysis}
 \usage{
 run.sensitivity.analysis(settings, plot = TRUE, ensemble.id = NULL,
-  variable = NULL, start.year = NULL, end.year = NULL)
+  variable = NULL, start.year = NULL, end.year = NULL, ...)
 }
 \arguments{
 \item{plot}{logical. Option to generate sensitivity analysis and variance 

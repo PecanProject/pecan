@@ -77,9 +77,9 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     loc.file <- file.path(outfolder,paste("MACA",model,scenario,ensemble_member,year,"nc",sep="."))
     
     ## Create dimensions
-    lat <- ncdim_def(name='latitude', units='degree_north', vals=lat.in, create_dimvar=TRUE)
-    lon <- ncdim_def(name='longitude', units='degree_east', vals=lon.in, create_dimvar=TRUE)
-    time <- ncdim_def(name='time', units="sec", vals=(1:365)*86400, create_dimvar=TRUE, unlim=TRUE)
+    lat <- ncdf4::ncdim_def(name='latitude', units='degree_north', vals=lat.in, create_dimvar=TRUE)
+    lon <- ncdf4::ncdim_def(name='longitude', units='degree_east', vals=lon.in, create_dimvar=TRUE)
+    time <- ncdf4::ncdim_def(name='time', units="sec", vals=(1:365)*86400, create_dimvar=TRUE, unlim=TRUE)
     dim<-list(lat,lon,time)
     
     var.list <- list()
@@ -97,10 +97,10 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
                         end_url,'_CONUS_daily.nc')
       dap_file <- paste0(dap_base,dap_end)
       if(j < 8){
-      dap <- nc_open(dap_file)
-      dat.list[[j]] <- ncvar_get(dap,as.character(var$long_DAP.name[j]),c(lon_MACA,lat_MACA,1),c(1,1,ntime))
-      var.list[[j]] <- ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=dim, missval=-9999.0, verbose=verbose)
-      nc_close(dap)
+      dap <- ncdf4::nc_open(dap_file)
+      dat.list[[j]] <- ncdf4::ncvar_get(dap,as.character(var$long_DAP.name[j]),c(lon_MACA,lat_MACA,1),c(1,1,ntime))
+      var.list[[j]] <- ncdf4::ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=dim, missval=-9999.0, verbose=verbose)
+      ncdf4::nc_close(dap)
       } else {
         dat.list[[j]] <- NA
         var.list[[j]] <- ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=dim, missval=-9999.0, verbose=verbose)}
@@ -137,9 +137,9 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     ## put data in new file
     loc <- nc_create(filename=loc.file, vars=var.list, verbose=verbose)
     for(j in seq_along(var$CF.name)){
-      ncvar_put(nc=loc, varid=as.character(var$CF.name[j]), vals=dat.list[[j]])
+      ncdf4::ncvar_put(nc=loc, varid=as.character(var$CF.name[j]), vals=dat.list[[j]])
     }
-    nc_close(loc)
+    ncdf4::nc_close(loc)
     
     results$file[i] <- loc.file
     results$host[i] <- fqdn()
