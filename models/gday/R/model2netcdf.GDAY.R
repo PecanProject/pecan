@@ -103,13 +103,14 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
     var[[10]] <- mstmipvar("Evap", lat, lon, t, NA)
     var[[11]] <- mstmipvar("TVeg", lat, lon, t, NA)
     
-    # var[[6]] <- ncvar_def('LeafLitter', 'kgC/m2/s', list(lon,lat,t), -999) var[[7]] <-
-    # ncvar_def('WoodyLitter', 'kgC/m2/s', list(lon,lat,t), -999) var[[8]] <- ncvar_def('RootLitter',
-    # 'kgC/m2/s', list(lon,lat,t), -999) var[[9]] <- ncvar_def('LeafBiomass', 'kgC/m2',
-    # list(lon,lat,t), -999) var[[10]] <- ncvar_def('WoodBiomass', 'kgC/m2', list(lon,lat,t), -999)
-    # var[[11]] <- ncvar_def('RootBiomass', 'kgC/m2', list(lon,lat,t), -999) var[[12]] <-
-    # ncvar_def('LitterBiomass', 'kgC/m2', list(lon,lat,t), -999) var[[13]] <- ncvar_def('SoilC',
-    # 'kgC/m2', list(lon,lat,t), -999)
+    #var[[6]]  <- ncvar_def("LeafLitter", "kgC/m2/s", list(lon,lat,t), -999)
+    #var[[7]]  <- ncvar_def("WoodyLitter", "kgC/m2/s", list(lon,lat,t), -999)
+    #var[[8]]  <- ncvar_def("RootLitter", "kgC/m2/s", list(lon,lat,t), -999)
+    #var[[9]]  <- ncvar_def("LeafBiomass", "kgC/m2", list(lon,lat,t), -999)
+    #var[[10]]  <- ncvar_def("WoodBiomass", "kgC/m2", list(lon,lat,t), -999)
+    #var[[11]]  <- ncvar_def("RootBiomass", "kgC/m2", list(lon,lat,t), -999)
+    #var[[12]]  <- ncvar_def("LitterBiomass", "kgC/m2", list(lon,lat,t), -999)
+    #var[[13]]  <- ncvar_def("SoilC", "kgC/m2", list(lon,lat,t), -999)
     
     # ******************** Declare netCDF variables ********************#
     
