@@ -1,3 +1,15 @@
+##-------------------------------------------------------------------------------------------------#
+##' For each benchmark entry in a (multi)settings object, get run settings using reference run id 
+##' and add to the settings object
+##'  
+##' @name read.settings.RR
+##' @title Read settings from database using reference run id
+##' @param settings settings or multisettings object
+##' @export 
+##' 
+##' @author Betsy Cowdery 
+
+
 read.settings.RR <- function(settings){
   library(PEcAn.DB)
   library(dplyr)
