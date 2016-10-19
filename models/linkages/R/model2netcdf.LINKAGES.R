@@ -73,8 +73,8 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
                        units = paste0("days since ", years[y], "-01-01 00:00:00"), 
                        vals = as.numeric(years[y]), calendar = "standard", 
                        unlim = TRUE)
-    dim.lat <- ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
-    dim.lon <- ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
+    dim.lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    dim.lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
     dim.string <- ncdim_def("names", "", 1:24, create_dimvar = FALSE)
     dim.cpools <- ncdim_def("cpools", "", vals = 1:4, longname = "Carbon Pools")
     dim.cpools1 <- ncdim_def("cpools", "", vals = 1:4, longname = "Carbon Pools", create_dimvar = FALSE)
