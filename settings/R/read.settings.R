@@ -44,12 +44,6 @@
 ##' settings <- read.settings(test.settings.file)
 ##' }
 read.settings <- function(inputfile = "pecan.xml"){
-  
-  library(XML)
-  library(lubridate)
-  library(PEcAn.DB)
-  library(PEcAn.utils)
-  
   if(inputfile == "") {
     logger.warn("settings files specified as empty string; \n\t\tthis may be caused by an incorrect argument to system.file.")
   }
