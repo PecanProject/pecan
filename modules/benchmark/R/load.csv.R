@@ -24,5 +24,10 @@ load.csv <- function(data.path, format, site, vars = NULL) {
                     as.is = TRUE, check.names = FALSE)
   }
   
-  ifelse(is.null(vars), dat, dplyr::select(dat, one_of(vars)))
+  if(!is.null(vars)){
+    return(dplyr::select(dat, one_of(vars)))
+  }else{
+    return(dat)
+  }
+
 } # load.csv

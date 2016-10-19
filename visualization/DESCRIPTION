@@ -24,13 +24,13 @@ Depends:
     data.table,
     earth,
     XML,
-    ncdf4,
     shiny,
     PEcAn.DB,
     RPostgreSQL,
     dplyr
 Imports:
     lubridate (>= 1.6.0),
+    ncdf4 (>= 1.15),
     plyr (>= 1.8.4),
     stringr(>= 1.1.0),
     udunits2 (>= 0.11)
