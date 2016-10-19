@@ -1,41 +1,35 @@
-# .travis.yml using container-based infrastructure
-# travis configuration file courtesy of Jan Tilly:
-# https://github.com/jtilly/R-travis-container-example
+# Follow instructions on:
+# https://blog.rstudio.org/2016/03/09/r-on-travis-ci/
 
-# use c as catch-all language
-language: c
+language: r
 
 # use containers
 sudo: false
 
-# only run for pushes to master branch
-#branches:
-#  only:
-#   - master
+cache: 
+  - directories:
+    - $HOME/R/Library
+    - .install
+  - packages
 
-# install R: use r-packages-precise (https://cran.r-project.org/bin/linux/ubuntu/precise/) 
-# as source which is white listed (https://github.com/travis-ci/apt-source-whitelist/)
 addons:
   postgresql: 9.4
   apt:
-    sources:
-      - r-packages-precise
     packages:
+      - libnetcdf-dev
+      - liblapack-dev
+      - libcurl4-gnutls-dev
+      - jags
+      - libudunits2-dev
+      - python-dev 
       - postgresql-9.4-postgis-2.1
       - postgresql-9.4-postgis-2.1-scripts
-      - jags
-      - liblapack-dev
-      - libnetcdf-dev
       - netcdf-bin
       - bc
-      - libcurl4-gnutls-dev
       - curl
       - udunits-bin 
-      - libudunits2-dev
       - libgmp-dev
-      - python-dev 
       - libproj-dev
-      - r-base-dev
       # need to compile documentation
       # BROKEN MISSING FONT
       #- texinfo
@@ -44,8 +38,9 @@ addons:
       #- texlive-latex-extra
       #- texlive-fonts-recommended
       #- texlive-fonts-extra
+
   
-# notifications should go to gitter
+## notifications should go to gitter
 notifications:
   webhooks:
     urls:
@@ -57,21 +52,11 @@ notifications:
     on_success: always
     on_failure: always
 
-# cache local R libraries directory:
-cache:
-  - directories:
-    - $HOME/R/Library
-  - packages
-
-# list of services to be running
+## list of services to be running
 services:
   - postgresql
 
-# environment variables
-env:
-  - R_LIBS_USER=$HOME/R/Library
-
-# install sipnet and clim file
+## install sipnet and clim file
 install:
   - pushd .
   - cd $HOME
@@ -87,4 +72,5 @@ before_script:
   - scripts/load.bety.sh -a postgres -c -u
 
 script:
-  - scripts/build.sh --dependencies --no-git --check --no-manual --tests --name travis
+  - scripts/build.sh --no-git --tests --name travis
+
