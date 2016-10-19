@@ -27,7 +27,7 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE, .
                  all.files = FALSE, recursive = FALSE)
   metlist <- list()
   for (file in ncfiles) {
-    met.nc <- nc_open(file)
+    met.nc <- ncdf4::nc_open(file)
     tmp.met <- load.cfmet(met.nc, lat = lat, lon = lon, start.date = start.date, 
                           end.date = end.date)
     metlist[[file]] <- cf2biocro(tmp.met)
