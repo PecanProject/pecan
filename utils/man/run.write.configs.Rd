@@ -10,7 +10,7 @@ run.write.configs(settings, write = TRUE, ens.sample.method = "uniform",
 \arguments{
 \item{write}{should the runs be written to the database}
 
-\item{ens.sample.method}{how to sample the ensemble members("halton" sequence or "uniform" random)}
+\item{ens.sample.method}{how to sample the ensemble members('halton' sequence or 'uniform' random)}
 
 \item{posterior.files}{Filenames for posteriors for drawing samples for ensemble and sensitivity
 analysis (e.g. post.distns.Rdata, or prior.distns.Rdata). Defaults to NA, in which case the 
@@ -28,6 +28,6 @@ Main driver function to call the ecosystem model specific (e.g. ED, SiPNET)
 run and configuration file scripts
 }
 \author{
-David LeBauer, Shawn Serbin, Ryan Kelly
+David LeBauer, Shawn Serbin, Ryan Kelly, Mike Dietze
 }
 
