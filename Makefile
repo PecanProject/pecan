@@ -1,6 +1,6 @@
 BASE_PACKAGES := utils db settings visualization
 
-MODELS := biocro clm45 dalec ed gday jules linkages \
+MODELS := biocro clm45 dalec ed fates gday jules linkages \
 	      lpjguess maat maespa preles sipnet
 
 
@@ -194,6 +194,12 @@ ed: .install/ed
 .install/ed: $(wildcard models/ed/**/*)
 	Rscript -e "devtools::install('models/ed')"
 	echo `date` > .install/ed
+
+fates: .install/fates
+
+.install/fates: $(wildcard models/fates/**/*)
+	Rscript -e "devtools::install('models/fates')"
+	echo `date` > .install/fates
 
 gday: .install/gday
 

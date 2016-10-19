@@ -11,7 +11,6 @@
 ##' @author David LeBauer
 cfmet.downscale.time <- cruncep_hourly <- function(cfmet, output.dt = 1, lat = lat, ...) {
   library(data.table)
-  library(ncdf4)
   ## time step
   dt_hr <- as.numeric(round(difftime(cfmet$date[2], cfmet$date[1],  units = "hours")))
 
@@ -205,7 +204,7 @@ get.ncvector <- function(var, lati = lati, loni = loni, run.dates = run.dates, m
   count.idx <- c(latitude = 1, longitude = 1, time = nrow(run.dates))
   dim.order <- sapply(met.nc$var$air_temperature$dim, function(x) x$name)
   ncvar_get2 <- function(var) {
-    ans <- ncvar_get(nc = met.nc, varid = var, start = start.idx[dim.order], count = count.idx[dim.order])
+    ans <- ncdf4::ncvar_get(nc = met.nc, varid = var, start = start.idx[dim.order], count = count.idx[dim.order])
     return(as.numeric(ans))
   } # ncvar_get2
   

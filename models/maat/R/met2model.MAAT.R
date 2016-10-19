@@ -34,7 +34,6 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
 met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
                            overwrite = FALSE, verbose = FALSE, ...) {
   library(PEcAn.utils)
-  library(ncdf4)
   library(PEcAn.data.atmosphere)
   
   ## MAAT driver format (.csv):
@@ -90,14 +89,14 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
     
     if (file.exists(ncdf.file)) {
       ## open netcdf
-      nc <- nc_open(ncdf.file)
+      nc <- ncdf4::nc_open(ncdf.file)
       
       ## convert time to seconds
       sec <- nc$dim$time$vals
       frac.day <- nc$dim$time$vals
       sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
       
-      dt <- ifelse(leap_year(year) == TRUE, 
+      dt <- ifelse(lubridate::leap_year(year) == TRUE, 
                    366 * 24 * 60 * 60 / length(sec), # leap year
                    365 * 24 * 60 * 60 / length(sec)) # non-leap year
       
@@ -106,6 +105,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
       ## extract required MAAT driver variables names(nc$var)
       # what is in the nc file?
+      ncvar_get <- ncdf4::ncvar_get
       lat  <- ncvar_get(nc, "latitude")
       lon  <- ncvar_get(nc, "longitude")
       Tair <- ncvar_get(nc, "air_temperature")  ## in Kelvin
@@ -128,7 +128,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
         CO2 <- CO2 * 1e+06  ## convert from mole fraction (kg/kg) to ppm
       }
       
-      nc_close(nc)
+      ncdf4::nc_close(nc)
     } else {
       print("Skipping to next year")
       next
