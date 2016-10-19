@@ -1,4 +1,15 @@
+##' Takes in a settings object, performs a series of checks, fixes & updates settings and produces pecan.CHECKED.xml
+##'
+##' @title Fix Deprecated Settings
+##' @param settings settings list
+##' @return updated settings list
+##' @author Ryan Kelly
+
+
 write.settings <- function(settings, outputfile = "pecan.CHECKED.xml"){
+  library(XML)
+  library(PEcAn.DB)
+  library(PEcAn.utils)
   
   settings <- papply(settings, fix.deprecated.settings)
   settings <- papply(settings, addSecrets)
@@ -18,5 +29,4 @@ write.settings <- function(settings, outputfile = "pecan.CHECKED.xml"){
   if(!is.null(settings$Rlib)){
     .libPaths(settings$Rlib)
   }
-  
 }
