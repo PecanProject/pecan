@@ -55,8 +55,7 @@ test_that("get.run.id works",{
 })
 
 test_that("summarize.result works appropriately", {
-  require(plyr)
-  ## generate testdata  
+  ## generate test data  
   testresult <- data.frame(citation_id = 1,
                            site_id = 1:10,
                            trt_id = rep(c('control', 'fert'),5),

@@ -7,12 +7,14 @@ Author: Mike Dietze <dietze@bu.edu>
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: Synthesize allometric equations or fit allometries to data
 Depends:
-    coda,
     MCMCpack,
     mvtnorm,
     tools
+Imports:
+    coda (>= 0.18),
+    XML (>= 3.98-1.4)
 Suggests:
-    testthat,
+    testthat (>= 1.0.2),
     PEcAn.DB,
     RMySQL
 License: FreeBSD + file LICENSE

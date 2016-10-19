@@ -20,8 +20,8 @@ if(interactive()){
 } else {
   settings.file <- Sys.getenv("PECANSETTINGS")
 }
-settings.xml <- xmlParse(settings.file)
-settings <- xmlToList(settings.xml)
+settings.xml <- XML::xmlParse(settings.file)
+settings <- XML::xmlToList(settings.xml)
 outdir   <- settings$outdir
 host <- settings$host
 

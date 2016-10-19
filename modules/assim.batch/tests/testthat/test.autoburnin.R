@@ -1,5 +1,4 @@
 library(PEcAn.assim.batch)
-library(testthat)
 context("Autoburnin functions")
 
 # Simple test with `line` data from `coda`

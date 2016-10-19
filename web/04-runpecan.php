@@ -155,7 +155,7 @@ $q->bindParam(':notes', $notes_db, PDO::PARAM_STR);
 $q->bindParam(':hostname', $hostname, PDO::PARAM_STR);
 $q->bindParam(':startdate', $startdate, PDO::PARAM_STR);
 $q->bindParam(':enddate', $enddate, PDO::PARAM_STR);
-$q->bindParam(':params', $params, PDO::PARAM_STR);
+$q->bindParam(':params', trim($params), PDO::PARAM_STR);
 if ($userid != -1) {
   $q->bindParam(':userid', $userid, PDO::PARAM_INT);
 }

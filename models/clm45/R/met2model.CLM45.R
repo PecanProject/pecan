@@ -29,14 +29,13 @@ met2model.CLM45 <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
   #close
   #defining temporal dimension needs to be figured out. If we configure clm to use same tstep then we may not need to change dimensions
   
-#   require("PEcAn.data.atmosphere")
-#   require("PEcAn.utils")
-#   require("ncdf4")
-#   require("udunits2")
+#   library("PEcAn.data.atmosphere")
+#   library("PEcAn.utils")
+#   library("ncdf4")
 #   
 #   #Process start and end dates
-#   start_date<-as.POSIXlt(start.date,tz="GMT")
-#   end_date<-as.POSIXlt(end.date,tz="GMT")
+#   start_date<-as.POSIXlt(start.date,tz="UTC")
+#   end_date<-as.POSIXlt(end.date,tz="UTC")
 #   
 #   start_year <- year(start_date)
 #   end_year <- year(end_date)

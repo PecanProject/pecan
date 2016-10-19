@@ -70,3 +70,5 @@ compile_on_geo.sh
 documentation/tutorials/*/*.html
 pecan.Rproj
 shiny/BenchmarkReport/*
+# Installation files form make
+.install/

@@ -25,15 +25,17 @@ Depends:
     earth,
     XML,
     ncdf4,
-    stringr,
     shiny,
     PEcAn.DB,
     RPostgreSQL,
-    udunits2,
-    lubridate,
     dplyr
+Imports:
+    lubridate (>= 1.6.0),
+    plyr (>= 1.8.4),
+    stringr(>= 1.1.0),
+    udunits2 (>= 0.11)
 Suggests:
-    testthat,
+    testthat (>= 1.0.2),
     png,
     grid
 License: FreeBSD + file LICENSE

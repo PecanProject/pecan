@@ -66,7 +66,7 @@ EDR <- function(paths,
 # This ensures that all PFTs and previous default trait values that were in the
 # run are loaded.
 # Pseudocode:
-# xml.old <- xmlToList(xmlParse(old.config.path))
+# xml.old <- XML::xmlToList(XML::xmlParse(old.config.path))
 # defaults.old <- xml.old$defaults
 # settings.old <- xml.old$settings
 # trait.values.old <- xml.old$trait.values
