@@ -167,7 +167,17 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
 #   
 #   ## Write PARAMETER file
-# 
+   param.default <- system.file("clm_params_ed.c160808.nc",package="PEcAn.FATES")
+   param.file <- file.path(local.rundir,paste0("clm_params_ed.",run.id,".nc"))
+   file.copy(param.default,param.file)
+   param.nc <- nc_open(param.file,write=TRUE)
+   ncvar_put(nc=param.nc, varid='xc', vals=lon)
+   nc_close(param.nc)
+   
+   
+
+  
+   
 #   ## Write SETTINGS file
 #     
  }
