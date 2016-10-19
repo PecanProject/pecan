@@ -20,14 +20,17 @@ load.pda.data <- function(settings, con) {
   input.settings <- settings$assim.batch$inputs
   n.input        <- length(input.settings)
   
-  for (i in seq_len(n.input)) {
+  for(i in seq_len(n.input)) {
     inputs[[i]]               <- list()
-    inputs[[i]]$variable.name <- input.settings[[i]]$variable.name
-    data.path                 <- input.settings[[i]]$path
     
+    inputs[[i]]$variable.name <- lapply(input.settings[[i]]$variable.name, convert.expr)
+    data.var                  <-  sapply(inputs[[i]]$variable.name, `[[`, "variable.drv")
+
+    data.path                 <- input.settings[[i]]$path
+
     inputs[[i]]$variable.id   <- input.settings[[i]]$variable.id
     inputs[[i]]$input.id      <- input.settings[[i]]$input.id
-    inputs[[i]]$align.method  <- input.settings[[i]]$align.method
+    inputs[[i]]$align.method  <- ifelse(!is.null(input.settings[[i]]$align.method), input.settings[[i]]$align.method, "match.timestep")
     
     # I require that the user defines data.path in the settings as well, instead of using query.file.path
     # because 'data.path <- query.file.path(obvs.id, con)' might return an incomplete path 
@@ -38,7 +41,7 @@ load.pda.data <- function(settings, con) {
     
     format <- query.format.vars(inputs[[i]]$input.id, con)
     
-    vars.used.index <- which(format$vars$bety_name %in% c(inputs[[i]]$variable.name))
+    vars.used.index <- which(format$vars$bety_name %in% data.var)
     
     inputs[[i]]$data <- load.data(data.path, 
                                   format, 
@@ -51,8 +54,8 @@ load.pda.data <- function(settings, con) {
     ## Preprocess data
     # TODO: Generalize
     # TODO: Soil Respiration uncertainty calculation
-    if (all(inputs[[i]]$variable.name %in% c("NEE", "FC", "LE", "UST"))) {
-      
+    if(all(data.var %in% c("NEE", "FC", "LE", "UST"))) {    
+    
       # # TODO: Put Ameriflux L4 compatibility back
       # if(format$file_name == 'AmeriFlux.level4.h') {
       #   # Load L4 from a csv
@@ -86,9 +89,9 @@ load.pda.data <- function(settings, con) {
       
       inputs[[i]]$obs <- AMFo
       inputs[[i]]$par <- c(AMF.params$intercept, AMF.params$slopeP, AMF.params$slopeN)
-    } else {
-      inputs[[i]]$obs <- inputs[[i]]$data[colnames(inputs[[i]]$data) %in% inputs[[i]]$variable.name]
-      inputs[[i]]$par <- sd(unlist(inputs[[i]]$obs), na.rm = TRUE)  # testing
+    }else{
+      inputs[[i]]$obs <- inputs[[i]]$data[colnames(inputs[[i]]$data) %in% data.var]
+      inputs[[i]]$par <- sd(unlist(inputs[[i]]$obs), na.rm = TRUE) # testing
     }
   }  # end loop over files
   

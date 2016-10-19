@@ -18,6 +18,8 @@ Depends:
     XML,
     ggplot2,
     randtoolbox,
+    stringi,
+    abind,
     RCurl
 Imports:
     abind (>= 1.4.5),
