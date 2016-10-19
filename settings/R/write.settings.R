@@ -29,4 +29,5 @@ write.settings <- function(settings, outputfile = "pecan.CHECKED.xml"){
   if(!is.null(settings$Rlib)){
     .libPaths(settings$Rlib)
   }
+  invisible(settings)
 }
