@@ -4,8 +4,7 @@
 #' @param quiet If TRUE, don't show status messages from `read.ensemble.output`
 load_ensemble <- function(workflow_dir, settings, variable){
     library(PEcAn.all)
-    library(ncdf4)
-    
+
     # Load the model output
     ## ANS -- NOTE: There may be a faster/better way to do this using built-in PEcAn functions
     ## ANS -- or...should these be automatically stored somewhere?

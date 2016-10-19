@@ -32,7 +32,7 @@ data.fetch <- function(var, nc, fun = mean) {
   aggrlist <- list(floor(nc$dim[["time"]]$vals))
   
   # aggregate the data
-  data <- ncvar_get(nc, var)
+  data <- ncdf4::ncvar_get(nc, var)
   val <- aggregate(data[indices], by = aggrlist, FUN = fun)$x
   
   # get the label
@@ -78,10 +78,8 @@ data.fetch <- function(var, nc, fun = mean) {
 ##' @author Rob Kooper
 plot.netcdf <- function(datafile, yvar, xvar = "time", width = 800, height = 600, 
                         filename = NULL, year = NULL) {
-  library(ncdf4)
-  
   # open netcdf file
-  nc <- nc_open(datafile)
+  nc <- ncdf4::nc_open(datafile)
   
   # compute variables
   xval_mean <- data.fetch(xvar, nc, mean)
@@ -123,7 +121,7 @@ plot.netcdf <- function(datafile, yvar, xvar = "time", width = 800, height = 600
     }
   }
   # done with netcdf file
-  nc_close(nc)
+  ncdf4::nc_close(nc)
   
   # remove all NA's
   removeme <- unique(c(which(is.na(yval_min)), 

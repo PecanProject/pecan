@@ -11,6 +11,7 @@ get.elevation <- function(lat, lon) {
 } # get.elevation
 
 is.land <- function(lat, lon) {
+  ncvar_get <- ncdf4::ncvar_get
   Lat  <- ncvar_get(nc = met.nc, varid = "lat")
   Lon  <- ncvar_get(nc = met.nc, varid = "lon")
   lati <- which.min(abs(Lat - lat))
