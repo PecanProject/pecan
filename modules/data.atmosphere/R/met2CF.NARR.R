@@ -14,7 +14,6 @@
 met2CF.NARR <- function(in.path, in.prefix, outfolder, start_date, end_date, 
                         overwrite = FALSE, verbose = FALSE, ...) {
   
-  library(ncdf4)
   library(PEcAn.utils)
   
   dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
