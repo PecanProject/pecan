@@ -50,7 +50,7 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
     if (!units(days_since_origin) == "days") {
       stop("check time units")
     }
-    t <- ncdim_def("time", "days since 1700-01-01", as.numeric(days_since_origin))  # define netCDF dimensions for variables
+    t <- ncdf4::ncdim_def("time", "days since 1700-01-01", as.numeric(days_since_origin))  # define netCDF dimensions for variables
     if (exists("genus") & (genus == "Saccharum")) {
       for (variable in c("Leaf", "Root", "Stem", "LAI", "DayofYear")) {
         v <- R[[variable]]

@@ -71,7 +71,7 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     #******************** Declare netCDF variables ********************#
     ## This version doesn't provide enough output timesteps when running with met data that has
     ## a step greater than 1 per day
-    #t <- ncdim_def(name = "time",
+    #t <- ncdf4::ncdim_def(name = "time",
     #               units = paste0("days since ", y, "-01-01 00:00:00"),
     #               vals = as.numeric(strptime(end_date, "%Y-%m-%d %H:%M:%S")-strptime(start_date, "%Y-%m-%d %H:%M:%S"),units="days"),
     #               calendar = "standard", unlim = TRUE) # is this correct? fraction of days or whole days

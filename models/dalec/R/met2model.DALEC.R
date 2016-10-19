@@ -99,11 +99,12 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     dt    <- timestep.s / tstep  #dt is now an integer
     
     ## extract variables
-    lat  <- ncdf4::ncvar_get(nc, "latitude")
-    lon  <- ncdf4::ncvar_get(nc, "longitude")
-    Tair <- ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
-    SW   <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  ## in W/m2
-    CO2  <- try(ncdf4::ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
+    ncvar_get <- ncdf4::ncvar_get
+    lat  <- ncvar_get(nc, "latitude")
+    lon  <- ncvar_get(nc, "longitude")
+    Tair <- ncvar_get(nc, "air_temperature")  ## in Kelvin
+    SW   <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  ## in W/m2
+    CO2  <- try(ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
     ncdf4::nc_close(nc)
     
     useCO2 <- is.numeric(CO2)

@@ -33,7 +33,7 @@ load.x_netcdf <- function(data.path, format, site, vars = NULL) {
   for (i in seq_along(nc)) {
     dims <- names(nc[[i]]$dim)
     time.var <- grep(pattern = "time", dims, ignore.case = TRUE)
-    time.col[[i]] <- ncvar_get(nc[[i]], dims[time.var])
+    time.col[[i]] <- ncdf4::ncvar_get(nc[[i]], dims[time.var])
 
     # for heterogenous formats try parsing ymd_hms
     date.origin <- suppressWarnings(try(ymd_hms(ncdf4::ncatt_get(nc[[i]], dims[time.var])$units)))

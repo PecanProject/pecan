@@ -3,10 +3,8 @@
 copyvals <- function(nc1, var1, nc2, var2, dim2, units2 = NA, conv = NULL, missval = -6999, verbose = FALSE) {
   
   ncvar_get <- ncdf4::ncvar_get
-  ncdim_def <- ncdf4::ncdim_def
   ncatt_get <- ncdf4::ncatt_get
   ncvar_add <- ncdf4::ncvar_add
-  ncvar_put <- ncdf4::ncvar_put
   
   vals <- ncvar_get(nc = nc1, varid = var1)
   vals[vals == -6999 | vals == -9999] <- NA
@@ -18,7 +16,7 @@ copyvals <- function(nc1, var1, nc2, var2, dim2, units2 = NA, conv = NULL, missv
   }
   var <- ncvar_def(name = var2, units = units2, dim = dim2, missval = missval, verbose = verbose)
   nc2 <- ncvar_add(nc = nc2, v = var, verbose = verbose)
-  ncvar_put(nc = nc2, varid = var2, vals = vals)
+  ncdf4::ncvar_put(nc = nc2, varid = var2, vals = vals)
   
   # copy and convert attributes
   att <- ncatt_get(nc1, var1, "long_name")

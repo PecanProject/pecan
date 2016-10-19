@@ -204,6 +204,13 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
 ##' 
 ##' @author Mike Dietze
 met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite = FALSE, verbose = FALSE) {
+
+  ncvar_get <- ncdf4::ncvar_get
+  ncdim_def <- ncdf4::ncdim_def
+  ncatt_get <- ncdf4::ncatt_get
+  ncvar_add <- ncdf4::ncvar_add
+  ncvar_put <- ncdf4::ncvar_put
+  
   # get start/end year code works on whole years only
   start_year <- year(start_date)
   end_year <- year(end_date)
@@ -261,7 +268,7 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
       
       ### LOTS MORE TO DO TO IMPLEMENT
       
-      nc_close(nc1)
+      ncdf4::nc_close(nc1)
     } else {
       
       ### ASSUMING PALEON ORGANIZATION ONE FILE PER VARIABLE PER MONTH EACH VARIABLE 
@@ -279,12 +286,12 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
         for (m in 1:12) {
           sel      <- grep(paste0(year, "_", formatC(m, width = 2, format = "d", flag = "0")), fnames)
           old.file <- fnames[sel]
-          nc1      <- nc_open(old.file, write = FALSE)
+          nc1      <- ncdf4::nc_open(old.file, write = FALSE)
           if (length(met[[v]]) <= 1) {
             met[[v]] <- ncvar_get(nc = nc1, varid = v)
           } else {
             tmp      <- ncvar_get(nc = nc1, varid = v)
-            met[[v]] <- abind(met[[v]], tmp)
+            met[[v]] <- abind::abind(met[[v]], tmp)
           }
           if (v == by.folder[1]) {
             if (length(met[["time"]]) <= 1) {
@@ -294,13 +301,13 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
               met[["time"]] <- abind::abind(met[["time"]], tmp)
             }
           }
-          nc_close(nc1)
+          ncdf4::nc_close(nc1)
         }
       }
     }
     
     # create new coordinate dimensions based on site location lat/lon
-    nc1       <- nc_open(old.file)
+    nc1       <- ncdf4::nc_open(old.file)
     tdim      <- nc1$dim[["time"]]
     latlon    <- nc1$dim$lat$vals
     latlon[2] <- nc1$dim$lon$vals
@@ -314,7 +321,7 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
     print(latlon)
     var <- ncvar_def(name = "latitude", units = "degree_north", dim = (list(lat, lon, time)), 
                      missval = as.numeric(-9999))
-    nc2 <- ncdf4::nc_create(filename = new.file, vars = var, verbose = verbose)
+    nc2 <- nc_create(filename = new.file, vars = var, verbose = verbose)
     ncvar_put(nc = nc2, varid = "latitude", vals = rep(latlon[1], tdim$len))
     
     # copy lon attribute to longitude

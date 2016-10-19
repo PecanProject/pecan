@@ -40,7 +40,7 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
     if (file.exists(met.file.y)) {
       
       ## Open netcdf file
-      nc <- nc_open(met.file.y)
+      nc <- ncdf4::nc_open(met.file.y)
       
       ## convert time to seconds
       sec <- nc$dim$time$vals
@@ -69,7 +69,7 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
       lat    <- ncvar_get(nc, "latitude")
       lon    <- ncvar_get(nc, "longitude")
       
-      nc_close(nc)
+      ncdf4::nc_close(nc)
       
       ## Check for CO2 and PAR
       if (!is.numeric(CO2)) {

@@ -80,10 +80,10 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    surf.file    <- file.path(local.rundir,paste0("surfdata_",site_name,"_simyr2000.nc"))
    file.copy(surf.default,surf.file)
    Sys.chmod(surf.file)
-   surf.nc <- nc_open(surf.file,write=TRUE)
-   ncvar_put(nc=surf.nc, varid='LONGXY', vals=lon)
-   ncvar_put(nc=surf.nc, varid='LATIXY', vals=lat)
-   nc_close(surf.nc)   
+   surf.nc <- ncdf4::nc_open(surf.file,write=TRUE)
+   ncdf4::ncvar_put(nc=surf.nc, varid='LONGXY', vals=lon)
+   ncdf4::ncvar_put(nc=surf.nc, varid='LATIXY', vals=lat)
+   ncdf4::nc_close(surf.nc)   
    
    ## MET HEADERS
    if(!is.null(settings$run$inputs$met)){

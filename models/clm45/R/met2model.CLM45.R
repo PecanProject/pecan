@@ -50,7 +50,7 @@ met2model.CLM45 <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
 #     if(file.exists(met.file.y)){
 #       
 #       ## Open netcdf file
-#       nc=nc_open(met.file.y)
+#       nc=ncdf4::nc_open(met.file.y)
 #       
 #       
 #       ## convert time to seconds
