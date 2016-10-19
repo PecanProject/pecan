@@ -89,8 +89,6 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
   ncvar_get <- ncdf4::ncvar_get
   ncdim_def <- ncdf4::ncdim_def
   ncatt_get <- ncdf4::ncatt_get
-  ncvar_add <- ncdf4::ncvar_add
-  ncvar_put <- ncdf4::ncvar_put
   
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)

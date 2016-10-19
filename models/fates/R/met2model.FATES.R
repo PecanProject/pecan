@@ -35,13 +35,12 @@ met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date,
   ncvar_get <- ncdf4::ncvar_get
   ncdim_def <- ncdf4::ncdim_def
   ncatt_get <- ncdf4::ncatt_get
-  ncvar_add <- ncdf4::ncvar_add
   ncvar_put <- ncdf4::ncvar_put
   
   insert <- function(ncout, name, unit, data) {
     var   <- ncdf4::ncvar_def(name = name, units = unit, dim = dim, missval = -6999, verbose = verbose)
     ncout <- ncdf4::ncvar_add(nc = ncout, v = var, verbose = verbose)
-    ncdf4::ncvar_put(nc = ncout, varid = name, vals = data)
+    ncvar_put(nc = ncout, varid = name, vals = data)
     invisible(ncout)
   }
   sm <- c(0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365) * 86400  ## day of year thresholds
@@ -152,7 +151,7 @@ met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date,
         #   EDGEN = ncvar_rename(ncfile,"EDGEN","EDGEN")
       }
       
-      nc_close(nc)
+      ncdf4::nc_close(nc)
     }  ## end file exists
   }  ### end loop over met files
   

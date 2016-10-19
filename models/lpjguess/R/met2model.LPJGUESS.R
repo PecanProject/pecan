@@ -76,9 +76,7 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   ncvar_get <- ncdf4::ncvar_get
   ncdim_def <- ncdf4::ncdim_def
   ncatt_get <- ncdf4::ncatt_get
-  ncvar_add <- ncdf4::ncvar_add
-  ncvar_put <- ncdf4::ncvar_put
-  
+
   ## retrieve lat/lon
   lon <- ncvar_get(ncin[[1]], "longitude")
   lat <- ncvar_get(ncin[[1]], "latitude")
@@ -136,7 +134,7 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
     
     # put variable, rep(...,each=4) is a hack to write the same data for all grids (which all are the
     # same)
-    ncvar_put(ncfile, var.def, rep(var.list[[n]], each = 4))
+    ncdf4::ncvar_put(ncfile, var.def, rep(var.list[[n]], each = 4))
     
     # additional attributes for LPJ-GUESS
     ncatt_put(nc = ncfile, varid = var.names[n], attname = "standard_name", long.names[n])

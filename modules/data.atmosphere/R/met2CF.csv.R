@@ -46,7 +46,6 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
   
   ncvar_get <- ncdf4::ncvar_get
   ncdim_def <- ncdf4::ncdim_def
-  ncatt_get <- ncdf4::ncatt_get
   ncvar_add <- ncdf4::ncvar_add
   ncvar_put <- ncdf4::ncvar_put
   

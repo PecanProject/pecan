@@ -41,7 +41,6 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   ncdim_def <- ncdf4::ncdim_def
   ncatt_get <- ncdf4::ncatt_get
   ncvar_add <- ncdf4::ncvar_add
-  ncvar_put <- ncdf4::ncvar_put
   
   # results are stored in folder prefix.start.end
   start_date <- as.POSIXlt(start_date, tz = "UTC")

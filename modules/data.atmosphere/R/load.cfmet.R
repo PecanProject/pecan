@@ -19,8 +19,8 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date) 
   library(PEcAn.utils)
   
   ## Lat and Lon
-  Lat <- ncvar_get(met.nc, "latitude")
-  Lon <- ncvar_get(met.nc, "longitude")
+  ncdf4::Lat <- ncvar_get(met.nc, "latitude")
+  ncdf4::Lon <- ncvar_get(met.nc, "longitude")
 
   if(min(abs(Lat-lat)) > 2.5 | min(abs(Lon-lon)) > 2.5){
     logger.error("lat / lon (", lat, ",", lon, ") outside range of met file (", range(Lat), ",", range(Lon))
@@ -28,7 +28,7 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date) 
   lati <- which.min(abs(Lat - lat))
   loni <- which.min(abs(Lon - lon))
 
-  time.idx <- ncvar_get(met.nc, "time")
+  time.idx <- ncdf4::ncvar_get(met.nc, "time")
 
   ## confirm that time units are PEcAn standard
   basetime.string <- ncdf4::ncatt_get(met.nc, "time", "units")$value
