@@ -9,6 +9,7 @@
 ##' @author David LeBauer
 get.soil <- function(lat, lon, soil.nc = soil.nc) {
   ## Lat and Lon
+  ncvar_get <- ncdf4::ncvar_get
   Lat <- ncvar_get(soil.nc, "latitude")
   Lon <- ncvar_get(soil.nc, "longitude")
   
