@@ -60,7 +60,6 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
     return(invisible(results))
   }
   
-  library(ncdf4)
   library(PEcAn.data.atmosphere)
   library(Maeswrap)
   
@@ -83,7 +82,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
     
     if (file.exists(old.file)) {
       ## open netcdf
-      nc <- nc_open(old.file)
+      nc <- ncdf4::nc_open(old.file)
       ## convert time to seconds
       sec <- nc$dim$time$vals
       sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
@@ -95,6 +94,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
       dt <- 86400 / tstep
       
       # Check wich variables are available and which are not
+      ncvar_get <- ncdf4::ncvar_get
       
       ## extract variables
       lat   <- ncvar_get(nc, "latitude")
@@ -132,7 +132,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
         CA <- CA * 1e+06
       }
       
-      nc_close(nc)
+      ncdf4::nc_close(nc)
     } else {
       print("Skipping to next year")
       next

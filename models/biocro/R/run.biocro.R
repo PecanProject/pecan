@@ -27,7 +27,7 @@ run.biocro <- function(lat, lon, metfile, soil.nc = NULL, config = config, coppi
                       size = 15, replace = TRUE)
     }
     
-    met.nc <- nc_open(metfile)
+    met.nc <- ncdf4::nc_open(metfile)
     met <- load.cfmet(met.nc, lat = lat, lon = lon, 
                       start.date = start.date, end.date = end.date)
     if (met.uncertainty == TRUE) {
