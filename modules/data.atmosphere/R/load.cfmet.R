@@ -56,11 +56,11 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date) 
   run.dates <- all.dates[date > ymd(as.Date(start.date)) & date < ymd(as.Date(end.date)),
                          list(index, 
                               date = date, 
-                              doy = yday(date),
-                              year = year(date),
-                              month = month(date),
-                              day  = day(date), 
-                              hour = hour(date) + minute(date) / 60)]
+                              doy = lubridate::yday(date),
+                              year = lubridate::year(date),
+                              month = lubridate::month(date),
+                              day  = lubridate::day(date), 
+                              hour = lubridate::hour(date) + lubridate::minute(date) / 60)]
   
   results <- list()
 

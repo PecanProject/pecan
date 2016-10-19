@@ -92,7 +92,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     sec <- nc$dim$time$vals
     sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
     timestep.s <- 86400  # seconds in a day
-    ifelse(leap_year(year) == TRUE, 
+    ifelse(lubridate::leap_year(year) == TRUE, 
            dt <- (366 * 24 * 60 * 60) / length(sec), # leap year 
            dt <- (365 * 24 * 60 * 60) / length(sec)) # non-leap year
     tstep <- round(timestep.s / dt)

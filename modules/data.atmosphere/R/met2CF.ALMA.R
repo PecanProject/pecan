@@ -102,7 +102,7 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
           met[[v]] <- ncvar_get(nc = nc1, varid = v)
         } else {
           tmp      <- ncvar_get(nc = nc1, varid = v)
-          met[[v]] <- abind(met[[v]], tmp)
+          met[[v]] <- abind::abind(met[[v]], tmp)
         }
         if (v == by.folder[1]) {
           if (length(met[["time"]]) <= 1) {
@@ -212,8 +212,8 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
   ncvar_put <- ncdf4::ncvar_put
   
   # get start/end year code works on whole years only
-  start_year <- year(start_date)
-  end_year <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
   
   if (!file.exists(outfolder)) {
     dir.create(outfolder)

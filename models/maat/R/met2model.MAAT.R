@@ -96,7 +96,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
       frac.day <- nc$dim$time$vals
       sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
       
-      dt <- ifelse(leap_year(year) == TRUE, 
+      dt <- ifelse(lubridate::leap_year(year) == TRUE, 
                    366 * 24 * 60 * 60 / length(sec), # leap year
                    365 * 24 * 60 * 60 / length(sec)) # non-leap year
       
