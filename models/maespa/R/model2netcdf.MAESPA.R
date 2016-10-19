@@ -24,7 +24,6 @@
 ##' @author Tony Gardella
 model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, stem_density) {
   
-  library(ncdf4)
   library(Maeswrap)
   
   ### Read in model output using Maeswrap. Dayflx.dat, watbalday.dat
@@ -73,6 +72,7 @@ model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, 
     
     mstmipvar <- PEcAn.utils::mstmipvar
     var      <- list()
+    ncvar_def <- ncdf4::ncvar_def
     var[[1]] <- ncvar_def("GPP", units = ("kg C m-2 s-1"), dim = list(lat, lon, t), missval = -999, 
                           longname = "Gross Primary Production")
     var[[2]] <- ncvar_def("NPP", units = ("kg C m-2 s-1"), dim = list(lat, lon, t), missval = -999, 
@@ -83,15 +83,15 @@ model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, 
     var[[5]] <- ncvar_def("Qle", units = ("W m-2"), dim = list(lat, lon, t), missval = -999, longname = "latent Heat Flux")
     
     ### Output netCDF data
-    nc <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
       # print(i)
-      ncvar_put(nc, var[[i]], output[[i]])
+      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
       cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
-    nc_close(nc)
+    ncdf4::nc_close(nc)
   }  ### End of year loop
   
 }  ### End of function  
