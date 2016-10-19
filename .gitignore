@@ -69,3 +69,4 @@ tests/BC*
 compile_on_geo.sh
 documentation/tutorials/*/*.html
 pecan.Rproj
+shiny/BenchmarkReport/*
