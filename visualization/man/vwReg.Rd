@@ -45,11 +45,11 @@ vwReg(formula, data, title = "", B = 1000, shade = TRUE,
 
 \item{ylim:}{restrict range of the watercoloring}
 
-\item{quantize:}{either "continuous", or "SD". In the latter case, we get three color regions for 1, 2, and 3 SD (an idea of John Mashey)}
+\item{quantize:}{either 'continuous', or 'SD'. In the latter case, we get three color regions for 1, 2, and 3 SD (an idea of John Mashey)}
 
 \item{add:}{if add == FALSE, a new ggplot is returned. If add == TRUE, only the elements are returned, which can be added to an existing ggplot (with the '+' operator)}
 
-\item{...:}{further parameters passed to the fitting function, in the case of loess, for example, "span = .9", or "family = 'symmetric'"}
+\item{...:}{further parameters passed to the fitting function, in the case of loess, for example, 'span = .9', or 'family = 'symmetric''}
 }
 \value{
 NULL plot as side effect
@@ -72,7 +72,7 @@ y <- 8*x - x^3 + e
 y2 <- 20 + 3*x + 0.6*x^3 + e2
 df <- data.frame(x, y, y2)
 p1 <- vwReg(y~x, df, spag=TRUE, shade=FALSE)
-p2 <- vwReg(y2~x, df, add=TRUE, spag=TRUE, shade=FALSE, spag.color="red", shape=3)
+p2 <- vwReg(y2~x, df, add=TRUE, spag=TRUE, shade=FALSE, spag.color='red', shape=3)
 p3 <- p1 + p2
 p3
 

@@ -19,4 +19,7 @@ load.x_netcdf(data.path, format, site, vars = NULL)
 
 \item{end_year}{numeric}
 }
+\author{
+Istem Fer
+}
 
