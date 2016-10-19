@@ -5,7 +5,7 @@
 \title{write.restart.LINKAGES}
 \usage{
 write.restart.LINKAGES(outdir, runid, start.time, stop.time, settings,
-  new.state, RENAME = TRUE, new.params = FALSE, inputs)
+  new.state, RENAME = TRUE, new.params, inputs)
 }
 \arguments{
 \item{outdir}{output directory}

@@ -10,7 +10,7 @@ model2netcdf.JULES(outdir)
 \item{outdir}{Location of model output}
 }
 \description{
-Convert MODEL output into the PEcAn standar
+Convert MODEL output into the PEcAn standard
 }
 \author{
 Michael Dietze

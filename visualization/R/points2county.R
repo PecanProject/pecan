@@ -12,34 +12,34 @@
 ##' @examples
 ##' \dontrun{
 ##' data(ozone)
-##' colnames(ozone) <- c("lon", "lat", "ozone")
+##' colnames(ozone) <- c('lon', 'lat', 'ozone')
 ##' }
-points2county <- function(griddata){
+points2county <- function(griddata) {
   data(counties)
   X <- data.table(griddata)
-#   setnames(X, c("lat", "lon", "" X)[colnames(X) %in% "x"] <- "lon"
-#   colnames(X)[colnames(X) %in% "y"] <- "lat"
-
-  stop(  "points2county not currently working")
+  # setnames(X, c('lat', 'lon', '' X)[colnames(X) %in% 'x'] <- 'lon'
+  # colnames(X)[colnames(X) %in% 'y'] <- 'lat'
+  
+  stop("points2county not currently working")
   var <- colnames(X)[!colnames(X) %in% c("lat", "lon")]
-#  if((length(var) > 1)) logger.error("too many columns")
-#  if((length(var) < 1)) logger.error("no data in griddata, only ", colnames(griddata), "provided" )
-     
-#   if(X[,min(lat) < 19 | max(lat) > 68 | min(lon) < -174 | max(lon) > -67]) {
-#     logger.warn("griddata includes points outside continental US; these will be removed")
-#     X <- X[lat > 19 & lat < 68 & lon > -174 & lon < -67]
-#   }
+  #  if((length(var) > 1)) logger.error("too many columns")
+  #  if((length(var) < 1)) logger.error("no data in griddata, only ", colnames(griddata), "provided" )
+  
+  #   if(X[,min(lat) < 19 | max(lat) > 68 | min(lon) < -174 | max(lon) > -67]) {
+  #     logger.warn("griddata includes points outside continental US; these will be removed")
+  #     X <- X[lat > 19 & lat < 68 & lon > -174 & lon < -67]
+  #   }
   
   setnames(X, old = var, new = "z")
   print(class(counties))
   print(colnames(X))
-  cty.idx <- with(counties, lat < max(X$lat) & lat > min(X$lat) & 
-                                lon < max(X$lon) & lon > min(X$lon))
-  counties.subset <- counties[cty.idx,]
-  xy <- data.frame(counties.subset[,list(lon, lat)])
+  cty.idx <- with(counties, lat < max(X$lat) & lat > min(X$lat) & lon < max(X$lon) & 
+                    lon > min(X$lon))
+  counties.subset <- counties[cty.idx, ]
+  xy <- data.frame(counties.subset[, list(lon, lat)])
   earth.model <- earth(z ~ lon * lat, data = X)
-  pred  <- predict(earth.model, newdata = xy)
+  pred <- predict(earth.model, newdata = xy)
   result <- cbind(counties.subset, pred)
-  setnames(result, old="z", new = var)
+  setnames(result, old = "z", new = var)
   return(result)
-}
+} # points2county

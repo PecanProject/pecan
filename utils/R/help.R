@@ -6,6 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
+
 ##' R package to support PEcAn, the Predictive Ecosystem Analyzer
 ##'
 ##' Instructions for the use of this package are provided in the project documentation \url{https://pecan.gitbooks.io/pecan-documentation/content/}.

@@ -8,8 +8,10 @@ Maintainer: Istem Fer <fer.istem@gmail.com>
 Description: This module provides functions to link LPJ-GUESS to PEcAn.
 Depends:
     PEcAn.utils
+Imports:
+    lubridate (>= 1.6.0)
 Suggests:
-    testthat
+    testthat (>= 1.0.2)
 SystemRequirements: LPJ-GUESS model
 OS_type: unix
 License: FreeBSD + file LICENSE

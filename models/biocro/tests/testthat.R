@@ -1,9 +1,8 @@
 #-------------------------------------------------------------------------------
-# Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
-# University of Illinois/NCSA Open Source License
-# which accompanies this distribution, and is available at
+# Copyright (c) 2012 University of Illinois, NCSA.  All rights reserved. This
+# program and the accompanying materials are made available under the terms of
+# the University of Illinois/NCSA Open Source License which accompanies this
+# distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 library(PEcAn.utils)
@@ -11,4 +10,4 @@ library(PEcAn.settings)
 library(testthat)
 
 logger.setQuitOnSevere(FALSE)
-#test_check("PEcAn.BIOCRO")
+# test_check('PEcAn.BIOCRO')
