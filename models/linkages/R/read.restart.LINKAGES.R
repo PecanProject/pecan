@@ -27,8 +27,8 @@ read.restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
   # Read ensemble output
   ens <- read.output(runid = runid, 
                      outdir = file.path(outdir, runid), 
-                     start.year = year(stop.time), 
-                     end.year = year(stop.time), 
+                     start.year = lubridate::year(stop.time), 
+                     end.year = lubridate::year(stop.time), 
                      variables = var.names)  # change to just 'AGB' for plot level biomass
   
   # Add PFT name to variable if applicable

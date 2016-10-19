@@ -37,11 +37,11 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                con)
     # Convert dates to Date objects and strip all time zones 
     # (DB values are timezone-free)
-    start_date <- force_tz(as_date(start_date), "UTC")
-    end_date   <- force_tz(as_date(end_date), "UTC")
-    existing.input$start_date <- force_tz(as_date(existing.input$start_date), 
+    start_date <- lubridate::force_tz(lubridate::as_date(start_date), "UTC")
+    end_date   <- lubridate::force_tz(lubridate::as_date(end_date), "UTC")
+    existing.input$start_date <- lubridate::force_tz(lubridate::as_date(existing.input$start_date), 
                                           "UTC")
-    existing.input$end_date <- force_tz(as_date(existing.input$end_date), "UTC")
+    existing.input$end_date <- lubridate::force_tz(lubridate::as_date(existing.input$end_date), "UTC")
     
     if (overwrite) {
       # collect files to flag for deletion

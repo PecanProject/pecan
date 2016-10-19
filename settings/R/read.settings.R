@@ -6,10 +6,6 @@
 ## which accompanies this distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-------------------------------------------------------------------------------
-library(XML)
-library(lubridate)
-library(PEcAn.DB)
-library(PEcAn.utils)
 
 ##--------------------------------------------------------------------------------------------------#
 ## INTERNAL FUNCTIONS
@@ -17,6 +13,9 @@ library(PEcAn.utils)
 
 # check to see if inputs are specified
 # this should be part of the model code
+
+#' @import PEcAn.DB
+#' @import PEcAn.utils
 check.inputs <- function(settings) {
   if (is.null(settings$model$type)) {
     return(settings)
@@ -475,8 +474,8 @@ check.run.settings <- function(settings, dbcon = NULL) {
   } else if (is.null(settings$run$end.date)) {
     logger.warn("No end.date specified in run section.")
   } else {
-    startdate <- parse_date_time(settings$run$start.date, "ymd_hms", truncated = 3)
-    enddate <- parse_date_time(settings$run$end.date, "ymd_hms", truncated = 3)
+    startdate <- lubridate::parse_date_time(settings$run$start.date, "ymd_hms", truncated = 3)
+    enddate <- lubridate::parse_date_time(settings$run$end.date, "ymd_hms", truncated = 3)
     if (startdate >= enddate) {
       logger.severe("Start date should come before the end date.")
     }
@@ -499,7 +498,7 @@ check.run.settings <- function(settings, dbcon = NULL) {
     
     if(is.null(settings$ensemble$start.year)) {
       if(!is.null(settings$run$start.date)) {
-        settings$ensemble$start.year <- year(settings$run$start.date) 
+        settings$ensemble$start.year <- lubridate::year(settings$run$start.date) 
         logger.info("No start date passed to ensemble - using the run date (", 
                     settings$ensemble$start.year, ").")
       } else if(!is.null(settings$sensitivity.analysis$start.year)) {
@@ -513,7 +512,7 @@ check.run.settings <- function(settings, dbcon = NULL) {
     
     if(is.null(settings$ensemble$end.year)) {
       if(!is.null(settings$run$end.date)) {
-        settings$ensemble$end.year <- year(settings$run$end.date) 
+        settings$ensemble$end.year <- lubridate::year(settings$run$end.date) 
         logger.info("No end date passed to ensemble - using the run date (", 
                     settings$ensemble$end.year, ").")
       } else if(!is.null(settings$sensitivity.analysis$end.year)) { 
@@ -527,11 +526,11 @@ check.run.settings <- function(settings, dbcon = NULL) {
     
     # check start and end dates
     if (exists("startdate") && !is.null(settings$ensemble$start.year) &&
-        year(startdate) > settings$ensemble$start.year) {
+        lubridate::year(startdate) > settings$ensemble$start.year) {
       logger.severe("Start year of ensemble should come after the start.date of the run")
     }
     if (exists("enddate") && !is.null(settings$ensemble$end.year) &&
-        year(enddate) < settings$ensemble$end.year) {
+        lubridate::year(enddate) < settings$ensemble$end.year) {
       logger.severe("End year of ensemble should come before the end.date of the run")
     }
     if (!is.null(settings$ensemble$start.year) && !is.null(settings$ensemble$end.year) &&
@@ -553,7 +552,7 @@ check.run.settings <- function(settings, dbcon = NULL) {
     
     if(is.null(settings$sensitivity.analysis$start.year)) {
       if(!is.null(settings$run$start.date)) {
-        settings$sensitivity.analysis$start.year <- year(settings$run$start.date) 
+        settings$sensitivity.analysis$start.year <- lubridate::year(settings$run$start.date) 
         logger.info("No start date passed to sensitivity.analysis - using the run date (",
                     settings$sensitivity.analysis$start.year, ").")
       } else if(!is.null(settings$ensemble$start.year)) {
@@ -567,7 +566,7 @@ check.run.settings <- function(settings, dbcon = NULL) {
     
     if(is.null(settings$sensitivity.analysis$end.year)) {
       if(!is.null(settings$run$end.date)) {
-        settings$sensitivity.analysis$end.year <- year(settings$run$end.date) 
+        settings$sensitivity.analysis$end.year <- lubridate::year(settings$run$end.date) 
         logger.info("No end date passed to sensitivity.analysis - using the run date (", 
                     settings$sensitivity.analysis$end.year, ").")
       } else if(!is.null(settings$ensemble$end.year)){ 
@@ -581,11 +580,11 @@ check.run.settings <- function(settings, dbcon = NULL) {
     
     # check start and end dates
     if (exists("startdate") && !is.null(settings$sensitivity.analysis$start.year) &&
-        year(startdate) > settings$sensitivity.analysis$start.year) {
+        lubridate::year(startdate) > settings$sensitivity.analysis$start.year) {
       logger.severe("Start year of SA should come after the start.date of the run")
     }
     if (exists("enddate") && !is.null(settings$sensitivity.analysis$end.year) &&
-        year(enddate) < settings$sensitivity.analysis$end.year) {
+        lubridate::year(enddate) < settings$sensitivity.analysis$end.year) {
       logger.severe("End year of SA should come before the end.date of the run")
     }
     if (!is.null(settings$sensitivity.analysis$start.year) && 
@@ -1110,7 +1109,7 @@ addSecrets <- function(settings) {
   if (!file.exists("~/.pecan.xml")) {
     return(settings)
   }
-  pecan <- xmlToList(xmlParse("~/.pecan.xml"))
+  pecan <- XML::xmlToList(XML::xmlParse("~/.pecan.xml"))
   
   # always copy following sections
   for(key in c('database')) {
@@ -1195,7 +1194,7 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.CHECKED.x
     for(idx in loc) {
       if (!is.null(commandArgs()[idx+1]) && file.exists(commandArgs()[idx+1])) {
         logger.info("Loading --settings=", commandArgs()[idx+1])
-        xml <- xmlParse(commandArgs()[idx+1])
+        xml <- XML::xmlParse(commandArgs()[idx+1])
         break
       }
     }
@@ -1203,24 +1202,24 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.CHECKED.x
   } else if (file.exists(Sys.getenv("PECAN_SETTINGS"))) { 
     # 2 load from PECAN_SETTINGS
     logger.info("Loading PECAN_SETTINGS=", Sys.getenv("PECAN_SETTINGS"))
-    xml <- xmlParse(Sys.getenv("PECAN_SETTINGS"))
+    xml <- XML::xmlParse(Sys.getenv("PECAN_SETTINGS"))
     ## if settings file passed to read.settings function
   } else if(!is.null(inputfile) && file.exists(inputfile)) {
     # 3 filename passed into function
     logger.info("Loading inpufile=", inputfile)
-    xml <- xmlParse(inputfile)
+    xml <- XML::xmlParse(inputfile)
     ## use pecan.xml in cwd only if none exists
   } else if (file.exists("pecan.xml")) {
     # 4 load ./pecan.xml
     logger.info("Loading ./pecan.xml")
-    xml <- xmlParse("pecan.xml")
+    xml <- XML::xmlParse("pecan.xml")
   } else {
     # file not found
     logger.severe("Could not find a pecan.xml file")
   }
   
   ## convert the xml to a list
-  settings <- xmlToList(xml)
+  settings <- XML::xmlToList(xml)
   settings <- expandMultiSettings(settings)
   
   settings <- papply(settings, fix.deprecated.settings)

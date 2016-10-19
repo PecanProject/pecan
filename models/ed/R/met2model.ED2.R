@@ -35,9 +35,12 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   overwrite <- as.logical(overwrite)
   
   library(rhdf5)
-  library(ncdf4)
-  library(lubridate)
   library(PEcAn.utils)
+
+  ncvar_get <- ncdf4::ncvar_get
+  ncdim_def <- ncdf4::ncdim_def
+  ncatt_get <- ncdf4::ncatt_get
+  ncvar_add <- ncdf4::ncvar_add
   
   # results are stored in folder prefix.start.end
   start_date <- as.POSIXlt(start_date, tz = "UTC")
@@ -63,7 +66,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   month <- c("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
   mon_num <- c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
   day2mo <- function(year, day) {
-    leap      <- (year%%4 == 0)
+    leap      <- lubridate::leap_year(year)
     mo        <- rep(NA, length(day))
     mo[leap]  <- findInterval(day[leap], dl)
     mo[!leap] <- findInterval(day[!leap], dm)
@@ -71,8 +74,8 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   }
   
   # get start/end year since inputs are specified on year basis
-  start_year <- year(start_date)
-  end_year <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
   
   ## loop over files
   for (year in start_year:end_year) {
@@ -81,12 +84,13 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     ## extract file root name froot <- substr(files[i],1,28) print(c(i,froot))
     
     ## open netcdf
-    nc <- nc_open(ncfile)
+    nc <- ncdf4::nc_open(ncfile)
     
     # check lat/lon
     flat <- try(ncvar_get(nc, "latitude"), silent = TRUE)
-    if (!is.numeric(flat)) 
+    if (!is.numeric(flat)) {
       flat <- nc$dim[[1]]$vals[1]
+    }
     if (is.na(lat)) {
       lat <- flat
     } else if (lat != flat) {
@@ -94,8 +98,9 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     }
     
     flon <- try(ncvar_get(nc, "longitude"), silent = TRUE)
-    if (!is.numeric(flon)) 
+    if (!is.numeric(flon)) {
       flat <- nc$dim[[2]]$vals[1]
+    }
     if (is.na(lon)) {
       lon <- flon
     } else if (lon != flon) {
@@ -123,9 +128,9 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     ## convert time to seconds
     sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
     
-    nc_close(nc)
+    ncdf4::nc_close(nc)
     
-    dt <- ifelse(leap_year(year) == TRUE, 
+    dt <- ifelse(lubridate::leap_year(year) == TRUE, 
                  366 * 24 * 60 * 60 / length(sec), # leap year
                  365 * 24 * 60 * 60 / length(sec)) # non-leap year
     
@@ -155,7 +160,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     for (y in (year + 1):(nyr - 1)) {
       ytmp <- rep(y, 365 * 86400 / dt)
       dtmp <- rep(1:365, each = 86400 / dt)
-      if (y%%4 == 0) {
+      if (lubridate::leap_year(y)) {
         ## is leap
         ytmp <- rep(y, 366 * 86400 / dt)
         dtmp <- rep(1:366, each = 86400 / dt)

@@ -20,9 +20,10 @@ Depends:
     ggplot2,
     gridExtra
 Imports:
+    coda (>= 0.18),
     plyr (>= 1.8.4)
 Suggests:
-    testthat
+    testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes

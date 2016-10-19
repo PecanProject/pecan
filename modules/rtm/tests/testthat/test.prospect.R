@@ -1,6 +1,5 @@
 #' Tests of radiative transfer models
 library(PEcAnRTM)
-library(testthat)
 context("PROSPECT models")
 
 p4 <- c("N"=1.4, "Cab"=30, "Cw"=0.004, "Cm"=0.003)
