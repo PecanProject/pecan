@@ -33,7 +33,7 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
   
   ## longname prefix station_* used for a point
   ## http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.4/cf-conventions.html#scalar-coordinate-variables
-  x <- ncdf4::ncdim_def("latitude", "degrees_east", 
+  x <- ncdf4::ncdim_def("latitude", "degrees_north", 
                  vals = as.numeric(lat),
                  longname = "station_latitude", 
                  unlim = TRUE)

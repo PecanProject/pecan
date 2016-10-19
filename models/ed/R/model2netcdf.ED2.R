@@ -494,8 +494,8 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     
     t <- ncdim_def(name = "time", units = paste0("days since ", yrs[y], "-01-01 00:00:00"), vals = start:end/block, 
                    calendar = "standard", unlim = TRUE)
-    lat <- ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
     
     zg <- ncdim_def("SoilLayerMidpoint", "meters", c(slzdata[1:length(dz)] + dz/2, 0))
     

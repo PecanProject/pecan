@@ -91,8 +91,8 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
                    vals = sub.sipnet.output$day - 1 + (sub.sipnet.output$time/24),
                    calendar = "standard", 
                    unlim = TRUE)
-    lat <- ncdf4::ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdf4::ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
     
     ## ***** Need to dynamically update the UTC offset here *****
     
