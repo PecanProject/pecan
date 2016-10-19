@@ -20,7 +20,6 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
   library(REddyProc)
   #REddyProc installed to ~/R/library by install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
   #dependency minpack.lm may not install automatically, so install it first
-  library(ncdf4)
   library(PEcAn.utils)
   
   # get start/end year code works on whole years only
@@ -70,9 +69,15 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     file.copy(old.file, new.file, overwrite = TRUE)
     
     ## Let's start with reading a few variables
-    nc <- nc_open(new.file, write = TRUE)
+    nc <- ncdf4::nc_open(new.file, write = TRUE)
     
     ## Should probably check for variable names (need to install ncdf4-helpers package)
+    
+    ncvar_get <- ncdf4::ncvar_get
+    ncdim_def <- ncdf4::ncdim_def
+    ncatt_get <- ncdf4::ncatt_get
+    ncvar_add <- ncdf4::ncvar_add
+    ncvar_put <- ncdf4::ncvar_put
     
     # extract time, lat, lon
     time <- ncvar_get(nc = nc, varid = "time")
@@ -156,13 +161,13 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     ## make night dark - based on met2model.ED2.R in models/ed/R First: calculate potential radiation
     sec <- nc$dim$time$vals
     sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
-    dt <- ifelse(leap_year(year), 
+    dt <- ifelse(lubridate::leap_year(year), 
                  (366 * 24 * 60 * 60) / length(sec), 
                  (365 * 24 * 60 * 60) / length(sec))
-    doy <- ifelse(leap_year(year) == TRUE,
+    doy <- ifelse(lubridate::leap_year(year) == TRUE,
                   rep(1:366, each = 86400 / dt), 
                   rep(1:365, each = 86400 / dt))
-    hr <- ifelse(leap_year(year) == TRUE,
+    hr <- ifelse(lubridate::leap_year(year) == TRUE,
                  rep(seq(0, length = 86400 / dt, by = dt / 86400 * 24), 366), 
                  rep(seq(0, length = 86400 / dt, by = dt / 86400 * 24), 365))
     
@@ -610,7 +615,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     }
     ncvar_put(nc, varid = "wind_speed", vals = ws_f)
     
-    nc_close(nc)
+    ncdf4::nc_close(nc)
     
     if (length(error) > 0) {
       fail.file <- file.path(outfolder, 

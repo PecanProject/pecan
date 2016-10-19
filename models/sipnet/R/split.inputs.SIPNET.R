@@ -22,10 +22,10 @@
 split.inputs.SIPNET <- function(settings, start.time, stop.time) {
   
   start.day <- day(start.time)
-  start.year <- year(start.time)
+  start.year <- lubridate::year(start.time)
   
   end.day <- day(stop.time)
-  end.year <- year(stop.time)
+  end.year <- lubridate::year(stop.time)
   
   met <- c(settings$run$inputs$met$path)
   

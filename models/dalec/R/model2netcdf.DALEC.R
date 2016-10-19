@@ -23,7 +23,6 @@
 model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
   library(PEcAn.utils)
-  library(ncdf4)
   
   ### Read in model output in DALEC format
   DALEC.output      <- read.table(file.path(outdir, "out.txt"), header = FALSE, sep = "")
@@ -75,11 +74,11 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     output[[16]] <- output[[12]] + output[[13]]  ## TotSoilCarb
     
     # ******************** Declare netCDF variables ********************#
-    t   <- ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
+    t   <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
                      vals = 1:nrow(sub.DALEC.output), 
                      calendar = "standard", unlim = TRUE)
-    lat <- ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
     
     ## ***** Need to dynamically update the UTC offset here *****
     
@@ -95,6 +94,7 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     var[[4]]  <- mstmipvar("NEE", lat, lon, t, NA)
     var[[5]]  <- mstmipvar("NPP", lat, lon, t, NA)
     
+    ncvar_def <- ncdf4::ncvar_def
     var[[6]]  <- ncvar_def("LeafLitter", "kgC/m2/s", list(lon, lat, t), -999)
     var[[7]]  <- ncvar_def("WoodyLitter", "kgC/m2/s", list(lon, lat, t), -999)
     var[[8]]  <- ncvar_def("RootLitter", "kgC/m2/s", list(lon, lat, t), -999)
@@ -111,15 +111,15 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     # ******************** Declar netCDF variables ********************#
     
     ### Output netCDF data
-    nc <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
       # print(i)
-      ncvar_put(nc, var[[i]], output[[i]])
+      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
       cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
-    nc_close(nc)
+    ncdf4::nc_close(nc)
     
   }  ### End of year loop
   

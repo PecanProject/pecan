@@ -12,7 +12,6 @@
 download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, 
                              overwrite = FALSE, verbose = FALSE, ...) {
   library(PEcAn.utils)
-  library(ncdf4)
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- lubridate::year(start_date)
@@ -52,9 +51,9 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     loc.file <- file.path(outfolder, paste("CRUNCEP", year, "nc", sep = "."))
     logger.info(paste("Downloading",loc.file))
     ## Create dimensions
-    lat <- ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
-    lon <- ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
-    time <- ncdim_def(name = "time", units = "sec", vals = (1:ntime) * 21600, 
+    lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
+    lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
+    time <- ncdf4::ncdim_def(name = "time", units = "sec", vals = (1:ntime) * 21600, 
                       create_dimvar = TRUE, unlim = TRUE)
     dim <- list(lat, lon, time)
     
@@ -66,27 +65,27 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
       dap_file <- paste0(dap_base, var$DAP.name[j], "_", year, "_v1.nc4")
       logger.info(dap_file)
       dap <- nc_open(dap_file)
-      dat.list[[j]] <- ncvar_get(dap, 
+      dat.list[[j]] <- ncdf4::ncvar_get(dap, 
                                  as.character(var$DAP.name[j]), 
                                  c(lon_trunc, lat_trunc, 1), 
                                  c(1, 1, ntime))
       
-      var.list[[j]] <- ncvar_def(name = as.character(var$CF.name[j]), 
+      var.list[[j]] <- ncdf4::ncvar_def(name = as.character(var$CF.name[j]), 
                                  units = as.character(var$units[j]), 
                                  dim = dim, 
                                  missval = -999, 
                                  verbose = verbose)
-      nc_close(dap)
+      ncdf4::nc_close(dap)
     }
     ## change units of precip to kg/m2/s instead of 6 hour accumulated precip
     dat.list[[8]] <- dat.list[[8]] / 21600
     
     ## put data in new file
-    loc <- nc_create(filename = loc.file, vars = var.list, verbose = verbose)
+    loc <- ncdf4::nc_create(filename = loc.file, vars = var.list, verbose = verbose)
     for (j in seq_len(nrow(var))) {
-      ncvar_put(nc = loc, varid = as.character(var$CF.name[j]), vals = dat.list[[j]])
+      ncdf4::ncvar_put(nc = loc, varid = as.character(var$CF.name[j]), vals = dat.list[[j]])
     }
-    nc_close(loc)
+    ncdf4::nc_close(loc)
     
     results$file[i] <- loc.file
     results$host[i] <- fqdn()
