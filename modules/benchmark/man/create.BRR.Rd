@@ -4,12 +4,12 @@
 \alias{create.BRR}
 \title{Create benchmark reference run and ensemble}
 \usage{
-create.BRR(ensemble.id, workflow, con)
+create.BRR(ens_wf, con)
 }
 \arguments{
-\item{ensemble.id}{id of ensemble run that will be used for benchmarking}
-
 \item{con}{database connection}
+
+\item{ensemble.id}{id of ensemble run that will be used for benchmarking}
 }
 \description{
 For each benchmark id, calculate metrics and update benchmarks_ensemble_scores
