@@ -498,7 +498,7 @@ check.run.settings <- function(settings, dbcon = NULL) {
     
     if(is.null(settings$ensemble$start.year)) {
       if(!is.null(settings$run$start.date)) {
-        settings$ensemble$start.year <- year(settings$run$start.date) 
+        settings$ensemble$start.year <- lubridate::year(settings$run$start.date) 
         logger.info("No start date passed to ensemble - using the run date (", 
                     settings$ensemble$start.year, ").")
       } else if(!is.null(settings$sensitivity.analysis$start.year)) {
@@ -512,7 +512,7 @@ check.run.settings <- function(settings, dbcon = NULL) {
     
     if(is.null(settings$ensemble$end.year)) {
       if(!is.null(settings$run$end.date)) {
-        settings$ensemble$end.year <- year(settings$run$end.date) 
+        settings$ensemble$end.year <- lubridate::year(settings$run$end.date) 
         logger.info("No end date passed to ensemble - using the run date (", 
                     settings$ensemble$end.year, ").")
       } else if(!is.null(settings$sensitivity.analysis$end.year)) { 
@@ -526,11 +526,11 @@ check.run.settings <- function(settings, dbcon = NULL) {
     
     # check start and end dates
     if (exists("startdate") && !is.null(settings$ensemble$start.year) &&
-        year(startdate) > settings$ensemble$start.year) {
+        lubridate::year(startdate) > settings$ensemble$start.year) {
       logger.severe("Start year of ensemble should come after the start.date of the run")
     }
     if (exists("enddate") && !is.null(settings$ensemble$end.year) &&
-        year(enddate) < settings$ensemble$end.year) {
+        lubridate::year(enddate) < settings$ensemble$end.year) {
       logger.severe("End year of ensemble should come before the end.date of the run")
     }
     if (!is.null(settings$ensemble$start.year) && !is.null(settings$ensemble$end.year) &&
@@ -552,7 +552,7 @@ check.run.settings <- function(settings, dbcon = NULL) {
     
     if(is.null(settings$sensitivity.analysis$start.year)) {
       if(!is.null(settings$run$start.date)) {
-        settings$sensitivity.analysis$start.year <- year(settings$run$start.date) 
+        settings$sensitivity.analysis$start.year <- lubridate::year(settings$run$start.date) 
         logger.info("No start date passed to sensitivity.analysis - using the run date (",
                     settings$sensitivity.analysis$start.year, ").")
       } else if(!is.null(settings$ensemble$start.year)) {
@@ -566,7 +566,7 @@ check.run.settings <- function(settings, dbcon = NULL) {
     
     if(is.null(settings$sensitivity.analysis$end.year)) {
       if(!is.null(settings$run$end.date)) {
-        settings$sensitivity.analysis$end.year <- year(settings$run$end.date) 
+        settings$sensitivity.analysis$end.year <- lubridate::year(settings$run$end.date) 
         logger.info("No end date passed to sensitivity.analysis - using the run date (", 
                     settings$sensitivity.analysis$end.year, ").")
       } else if(!is.null(settings$ensemble$end.year)){ 

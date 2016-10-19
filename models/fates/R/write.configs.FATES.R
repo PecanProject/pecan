@@ -20,7 +20,6 @@
 ##' @export
 ##' @author Mike Dietze
 ##-------------------------------------------------------------------------------------------------#
-
 write.config.FATES <- function(defaults, trait.values, settings, run.id){
    library(PEcAn.utils)
 #  
@@ -54,7 +53,6 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    end_date   <- as.Date(settings$run$end.date)
    stop_n     <- as.numeric(end_date - start_date, units="days") - n_leap_day(start_date,end_date) + 1  
    
-   
    ##-----------------------------------------------------------------------##
    ##                                                                       ##
    ##                             INPUTS                                    ##
@@ -68,23 +66,24 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    domain.default <- system.file("domain.lnd.1x1pt-brazil_navy.090715.nc",package="PEcAn.FATES")
    domain.file <- file.path(local.rundir,paste0("domain.lnd.",site_name,".nc"))
    file.copy(domain.default,domain.file)
-   domain.nc <- nc_open(domain.file,write=TRUE)
+   domain.nc <- ncdf4::nc_open(domain.file,write=TRUE)
+   ncvar_put <- ncdf4::ncvar_put
    ncvar_put(nc=domain.nc, varid='xc', vals=lon)
    ncvar_put(nc=domain.nc, varid='yc', vals=lat)
    ncvar_put(nc=domain.nc, varid='xv', vals=lon+c(-1,1,1,-1)*gridres)
    ncvar_put(nc=domain.nc, varid='yv', vals=lat+c(-1,-1,1,1)*gridres)
    ncvar_put(nc=domain.nc, varid='area', vals=(2*gridres*pi/180)^2)   
-   nc_close(domain.nc)
+   ncdf4::nc_close(domain.nc)
    
    ## SURF
    surf.default <- "/home/carya/FATESinput/lnd/clm2/surfdata_map/surfdata_1x1_brazil_16pfts_simyr2000_c160127.nc"
    surf.file    <- file.path(local.rundir,paste0("surfdata_",site_name,"_simyr2000.nc"))
    file.copy(surf.default,surf.file)
    Sys.chmod(surf.file)
-   surf.nc <- nc_open(surf.file,write=TRUE)
-   ncvar_put(nc=surf.nc, varid='LONGXY', vals=lon)
-   ncvar_put(nc=surf.nc, varid='LATIXY', vals=lat)
-   nc_close(surf.nc)   
+   surf.nc <- ncdf4::nc_open(surf.file,write=TRUE)
+   ncdf4::ncvar_put(nc=surf.nc, varid='LONGXY', vals=lon)
+   ncdf4::ncvar_put(nc=surf.nc, varid='LATIXY', vals=lat)
+   ncdf4::nc_close(surf.nc)   
    
    ## MET HEADERS
    if(!is.null(settings$run$inputs$met)){
@@ -167,8 +166,51 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
 #   
 #   ## Write PARAMETER file
-# 
+   
+   ## COPY AND OPEN DEFAULT PARAMETER FILE
+   param.default <- system.file("clm_params_ed.c160808.nc",package="PEcAn.FATES")
+   param.file <- file.path(local.rundir,paste0("clm_params_ed.",run.id,".nc"))
+   file.copy(param.default,param.file)
+   param.nc <- nc_open(param.file,write=TRUE)
+   
+   ## Loop over PFTS
+   pftnames <- stringr::str_trim(tolower(ncvar_get(param.nc,"pftname")))
+   for (i in seq_len(npft)) {
+     pft <- trait.values[[i]]
+     pft.name <- names(trait.values)[i]
+     
+     ## Match PFT name to COLUMN
+     ipft <- match(tolower(pft.name),pftnames)
+     if(is.na(ipft)){
+       PEcAn.utils::logger.severe(paste("Unmatched PFT",pft.name,
+                          "in FATES. PEcAn does not yet support non-default PFTs for this model"))
+     }
+     
+     ## Special variables used in conversions
+     leafC <- pft['leafC']/100  ## percent to proportion
+     if(is.na(leafC)) leafC <- 0.48
+     
+     ## Loop over VARIABLES
+     for (v in seq_along(pft)) {
+       var <- names(pft)[v]
+       
+       if(var == "SLA"){
+         ncvar_put(nc=param.nc, varid='slatop', start = ipft, count = 1,
+                   vals=udunits2::ud.convert(pft[v],"m2 kg-1","m2 g-1")/leafC)
+       }
+       if(var == "leaf_turnover_rate"){
+         ncvar_put(nc=param.nc, varid='leaf_long', start = ipft, count = 1,
+                   vals=1/pft[v]) ## leaf_long = 1/leaf_turnover_rate, 1/years -> years
+       }
+       if(var == "c2n_leaf"){
+         ncvar_put(nc=param.nc, varid='leafcn', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       
+     } ## end loop over VARIABLES
+   } ## end loop over PFTs
+   nc_close(param.nc)
+   
 #   ## Write SETTINGS file
 #     
  }
-

@@ -23,6 +23,10 @@
 ## modified M. Dietze 07/08/12 modified S. Serbin 05/06/13
 model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
+  ncdim_def <- ncdf4::ncdim_def
+  ncatt_get <- ncdf4::ncatt_get
+  ncvar_add <- ncdf4::ncvar_add
+
   flist <- dir(outdir, "-T-")
   if (length(flist) == 0) {
     print(paste("*** WARNING: No tower output for :", outdir))
@@ -116,7 +120,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
   getHdf5Data <- function(nc, var) {
     if (var %in% names(nc$var)) {
-      return(ncvar_get(nc, var))
+      return(ncdf4::ncvar_get(nc, var))
     } else {
       logger.warn("Could not find", var, "in ed hdf5 output.")
       return(-999)
@@ -160,11 +164,11 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     ## if(haveTime) prevTime <- progressBar()
     row <- 1
     for (i in ysel) {
-      ncT <- nc_open(file.path(outdir, flist[i]))
+      ncT <- ncdf4::nc_open(file.path(outdir, flist[i]))
       if (file.exists(file.path(outdir, sub("-T-", "-Y-", flist[i])))) {
-        ncY <- nc_open(file.path(outdir, sub("-T-", "-Y-", flist[i])))
+        ncY <- ncdf4::nc_open(file.path(outdir, sub("-T-", "-Y-", flist[i])))
         slzdata <- getHdf5Data(ncY, "SLZ")
-        nc_close(ncY)
+        ncdf4::nc_close(ncY)
       } else {
         logger.warn("Could not find SLZ in Y file, making a crude assumpution.")
         slzdata <- array(c(-2, -1.5, -1, -0.8, -0.6, -0.4, -0.2, -0.1, -0.05))
@@ -465,7 +469,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
         out <- add(getHdf5Data(ncT, "BASEFLOW"), 46, row, yrs[y])  ## Qsb      
       }
       
-      nc_close(ncT)
+      ncdf4::nc_close(ncT)
       ## prevTime <- progressBar(i/n,prevTime)
       row <- row + block
       
@@ -490,8 +494,8 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     
     t <- ncdim_def(name = "time", units = paste0("days since ", yrs[y], "-01-01 00:00:00"), vals = start:end/block, 
                    calendar = "standard", unlim = TRUE)
-    lat <- ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
     
     zg <- ncdim_def("SoilLayerMidpoint", "meters", c(slzdata[1:length(dz)] + dz/2, 0))
     
@@ -564,11 +568,11 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     nc <- nc_create(file.path(outdir, paste(yrs[y], "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(yrs[y], "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
-      ncvar_put(nc, var[[i]], out[[i]])
+      ncdf4::ncvar_put(nc, var[[i]], out[[i]])
       cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
-    nc_close(nc)
+    ncdf4::nc_close(nc)
   }  ## end year loop
 }  # model2netcdf.ED2
 ## ==================================================================================================#

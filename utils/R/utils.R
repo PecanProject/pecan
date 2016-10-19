@@ -39,10 +39,10 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
         logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
       }
       if (is.na(time)) {
-        time <- ncdim_def(name = "time", units = "days since 1900-01-01 00:00:00", 
+        time <- ncdf4::ncdim_def(name = "time", units = "days since 1900-01-01 00:00:00", 
                           vals = 1:365, calendar = "standard", unlim = TRUE)
       }
-      return(ncvar_def(name, "", list(time), -999, name))
+      return(ncdf4::ncvar_def(name, "", list(time), -999, name))
     }
   }
   
@@ -64,7 +64,7 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
       }
     }
   }
-  ncvar <- ncvar_def(name, as.character(var$Units), dims, -999)
+  ncvar <- ncdf4::ncvar_def(name, as.character(var$Units), dims, -999)
   if (var$Long.name != "na") {
     ncvar$longname <- as.character(var$Long.name)
   }
@@ -262,9 +262,9 @@ zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
 ##' @author David LeBauer
 summarize.result <- function(result) {
   ans1 <- plyr::ddply(result[result$n == 1, ], 
-                .(citation_id, site_id, trt_id, control, greenhouse, 
+                plyr::.(citation_id, site_id, trt_id, control, greenhouse, 
                   date, time, cultivar_id, specie_id), 
-                summarise, n = length(n), 
+                plyr::summarise, n = length(n), 
                 mean = mean(mean), 
                 statname = ifelse(length(n) == 1, "none", "SE"), 
                 stat = sd(mean) / sqrt(length(n)))
@@ -621,4 +621,31 @@ misc.are.convertible <- function(u1, u2) {
   } else {
     return(FALSE)
   }
-} # misc.are.convertible
+}
+
+
+##' Convert expression to variable names
+##' @title convert.expr
+##' @param expression expression string
+##' @return list
+##' @export
+##' @author Istem Fer
+convert.expr <- function(expression) {
+  
+  library(stringi)
+  
+  # split equation to LHS and RHS
+  deri.var <- gsub("=.*$", "", expression) # name of the derived variable
+  deri.eqn <- gsub(".*=", "", expression) # derivation eqn
+    
+  non.match <- gregexpr('[^a-zA-Z_.]', deri.eqn) # match characters that are not "a-zA-Z_."
+  split.chars <- unlist(regmatches(deri.eqn, non.match)) # where to split at
+  # split the expression to retrieve variable names to be used in read.output
+  variables <- unlist(stri_split_charclass(deri.eqn, paste0("[",noquote(paste0(split.chars, collapse="")),"]"), omit_empty = TRUE))
+  
+  return(list(variable.drv = deri.var, variable.eqn = list(variables = variables, expression = deri.eqn)))
+}
+
+####################################################################################################
+### EOF.  End of R script file.              
+####################################################################################################

@@ -43,7 +43,11 @@
 met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, format, lat = NULL, lon = NULL, 
                        nc_verbose = FALSE, overwrite = FALSE, ...) {
   library(PEcAn.utils)
-  library(ncdf4)
+  
+  ncvar_get <- ncdf4::ncvar_get
+  ncdim_def <- ncdf4::ncdim_def
+  ncvar_add <- ncdf4::ncvar_add
+  ncvar_put <- ncdf4::ncvar_put
   
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
@@ -171,9 +175,9 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
     ## Only run if years > start_date < end_date
     ## if both are provided, clip data to those dates
     ## Otherwise set start/end to first/last datetime of file
-    years <- year(alldatetime)
+    years <- lubridate::year(alldatetime)
     if (!missing(start_date) && !missing(end_date)) {
-      availdat <- which(years >= year(start_date) & years <= year(end_date))
+      availdat <- which(years >= lubridate::year(start_date) & years <= lubridate::year(end_date))
       if (length(availdat) == 0) {
         logger.error("data does not contain output after start_date or before end_date")
       }
@@ -222,7 +226,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       if (length(locs) > 0) {
         k <- locs[1]
         airT.var <- ncvar_def(name = "air_temperature", units = "K", dim = xytdim)
-        nc <- nc_create(new.file, vars = airT.var)  #create netCDF file
+        nc <- ncdf4::nc_create(new.file, vars = airT.var)  #create netCDF file
         arrloc <- as.character(format$vars$input_name[k])
         if (arrloc == "") {
           if (any(colnames(format$vars) == "column_number")) {
@@ -354,8 +358,8 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
                   vals = met.conv(dat[, arrloc], format$vars$input_units[k], "g g-1", "kg kg-1"))
       } else {
         ## file needs to be closed and re-opened to access added variables
-        nc_close(nc)
-        nc <- nc_open(new.file, write = TRUE, readunlim = FALSE)
+        ncdf4::nc_close(nc)
+        nc <- ncdf4::nc_open(new.file, write = TRUE, readunlim = FALSE)
         if ("relative_humidity" %in% names(nc$var) & "air_temperature" %in% names(nc$var)) {
           ## Convert RH to SH
           qair <- rh2qair(rh = ncvar_get(nc, "relative_humidity")/100, T = ncvar_get(nc, "air_temperature"))
@@ -592,7 +596,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       #                   vals=met.conv(dat[,arrloc],format$vars$input_units[k],"degrees","degrees"))  
       #       } 
       
-      nc_close(nc)
+      ncdf4::nc_close(nc)
     }  ## end loop over years
   }  ## end else file found
   invisible(results)

@@ -17,7 +17,6 @@ extract.nc <- function(in.path, in.prefix, outfolder, start_date, end_date, slat
                        overwrite = FALSE, verbose = FALSE, ...) {
   
   library(PEcAn.utils)
-  library(ncdf4)
   
   in.path   <- as.character(in.path)
   in.prefix <- as.character(in.prefix)
@@ -74,10 +73,10 @@ extract.nc <- function(in.path, in.prefix, outfolder, start_date, end_date, slat
                          paste0("y,", y, ",", y), infile, outfile))
     
     ## Hack to ensure lat and lon are consistant
-    nc <- nc_open(outfile, write = TRUE)
-    ncvar_put(nc, "latitude", vals = slat)
-    ncvar_put(nc, "longitude", vals = slon)
-    nc_close(nc)
+    nc <- ncdf4::nc_open(outfile, write = TRUE)
+    ncdf4::ncvar_put(nc, "latitude", vals = slat)
+    ncdf4::ncvar_put(nc, "longitude", vals = slon)
+    ncdf4::nc_close(nc)
   }
   return(invisible(results))
 } # extract.nc
