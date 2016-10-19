@@ -10,9 +10,14 @@
 ##' 
 met2CF.FACE <- function(in.path, in.prefix, outfolder, start_date, end_date, ...) {
   
-  library(ncdf4)
   library(ncdf4.helpers)
   library(PEcAn.utils)
+  
+  ncvar_get <- ncdf4::ncvar_get
+  ncdim_def <- ncdf4::ncdim_def
+  ncatt_get <- ncdf4::ncatt_get
+  ncvar_add <- ncdf4::ncvar_add
+  ncvar_put <- ncdf4::ncvar_put
   
   files <- dir(in.path, in.prefix)
   file <- files[grep(pattern = "*.nc", files)]
@@ -35,7 +40,7 @@ met2CF.FACE <- function(in.path, in.prefix, outfolder, start_date, end_date, ...
       
       # Change to CF variable names
       
-      nc1 <- nc_open(f, write = TRUE)
+      nc1 <- ncdf4::nc_open(f, write = TRUE)
       nc.vars <- nc.get.variable.list(nc1)
       
       lat <- ncdim_def(name = "latitude", units = "", vals = 1:1, create_dimvar = FALSE)
@@ -47,7 +52,7 @@ met2CF.FACE <- function(in.path, in.prefix, outfolder, start_date, end_date, ...
       
       var <- ncvar_def(name = "latitude", units = "degree_north", dim = list(lat, lon), missval = as.numeric(-9999))
       
-      nc2 <- nc_create(filename = f.cf, vars = var, verbose = TRUE)
+      nc2 <- ncdf4::nc_create(filename = f.cf, vars = var, verbose = TRUE)
       
       ncvar_put(nc = nc2, varid = "latitude", vals = ncvar_get(nc1, "nav_lat"))
       
@@ -119,7 +124,7 @@ met2CF.FACE <- function(in.path, in.prefix, outfolder, start_date, end_date, ...
         }
       }
       
-      nc_close(nc2)
+      ncdf4::nc_close(nc2)
       
       # Split into annual files
       
@@ -141,7 +146,7 @@ met2CF.FACE <- function(in.path, in.prefix, outfolder, start_date, end_date, ...
         t <- e
       }
       print(paste("Treatment ", treatment, " done"))
-      nc_close(nc2)
+      ncdf4::nc_close(nc2)
       
     } else {
       print(paste("Treatment ", treatment, " aleady done"))
