@@ -17,7 +17,6 @@
 ##'        written inside the outputdir.
 ##' @return list of all settings as saved to the XML file(s)
 ##' @export
-##' @import XML
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{
@@ -27,7 +26,7 @@ clean.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml") {
   if (is.null(inputfile) || !file.exists(inputfile)) {
     logger.severe("Could not find input file.")
   }
-  settings <- xmlToList(xmlParse(inputfile))
+  settings <- XML::xmlToList(XML::xmlParse(inputfile))
   
   # 1) change outdir
   settings$outdir <- "pecan"
@@ -59,7 +58,7 @@ clean.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml") {
   settings$workflow <- NULL
   
   # save and done
-  saveXML(listToXml(settings, "pecan"), file = outputfile)
+  XML::saveXML(listToXml(settings, "pecan"), file = outputfile)
   
   ## Return settings file as a list
   invisible(settings)

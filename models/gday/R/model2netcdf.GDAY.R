@@ -23,7 +23,6 @@
 model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
   library(PEcAn.utils)
-  library(ncdf4)
   
   G_2_KG <- 0.001
   TONNES_PER_HA_TO_G_M2 <- 100
@@ -72,11 +71,11 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
     output[[11]] <- (sub.GDAY.output[, "transpiration"]) / timestep.s
     
     # ******************** Declare netCDF variables ********************#
-    t <- ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
+    t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
                    vals = 1:nrow(sub.GDAY.output), 
                    calendar = "standard", unlim = TRUE)
-    lat <- ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdf4::ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdf4::ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
     
     ## ***** Need to dynamically update the UTC offset here *****
     
@@ -103,25 +102,25 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
     var[[10]] <- mstmipvar("Evap", lat, lon, t, NA)
     var[[11]] <- mstmipvar("TVeg", lat, lon, t, NA)
     
-    # var[[6]] <- ncvar_def('LeafLitter', 'kgC/m2/s', list(lon,lat,t), -999) var[[7]] <-
-    # ncvar_def('WoodyLitter', 'kgC/m2/s', list(lon,lat,t), -999) var[[8]] <- ncvar_def('RootLitter',
-    # 'kgC/m2/s', list(lon,lat,t), -999) var[[9]] <- ncvar_def('LeafBiomass', 'kgC/m2',
-    # list(lon,lat,t), -999) var[[10]] <- ncvar_def('WoodBiomass', 'kgC/m2', list(lon,lat,t), -999)
-    # var[[11]] <- ncvar_def('RootBiomass', 'kgC/m2', list(lon,lat,t), -999) var[[12]] <-
-    # ncvar_def('LitterBiomass', 'kgC/m2', list(lon,lat,t), -999) var[[13]] <- ncvar_def('SoilC',
-    # 'kgC/m2', list(lon,lat,t), -999)
+    #var[[6]]  <- ncvar_def("LeafLitter", "kgC/m2/s", list(lon,lat,t), -999)
+    #var[[7]]  <- ncvar_def("WoodyLitter", "kgC/m2/s", list(lon,lat,t), -999)
+    #var[[8]]  <- ncvar_def("RootLitter", "kgC/m2/s", list(lon,lat,t), -999)
+    #var[[9]]  <- ncvar_def("LeafBiomass", "kgC/m2", list(lon,lat,t), -999)
+    #var[[10]]  <- ncvar_def("WoodBiomass", "kgC/m2", list(lon,lat,t), -999)
+    #var[[11]]  <- ncvar_def("RootBiomass", "kgC/m2", list(lon,lat,t), -999)
+    #var[[12]]  <- ncvar_def("LitterBiomass", "kgC/m2", list(lon,lat,t), -999)
+    #var[[13]]  <- ncvar_def("SoilC", "kgC/m2", list(lon,lat,t), -999)
     
     # ******************** Declare netCDF variables ********************#
     
     ### Output netCDF data
-    nc <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
-      ncvar_put(nc, var[[i]], output[[i]])
+      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
       cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
-    nc_close(nc)
+    ncdf4::nc_close(nc)
   }  ### End of year loop
 } # model2netcdf.GDAY
-# ==============================================================================#

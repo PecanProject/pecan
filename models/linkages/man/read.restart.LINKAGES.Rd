@@ -4,7 +4,7 @@
 \alias{read.restart.LINKAGES}
 \title{read.restart.LINKAGES}
 \usage{
-read.restart.LINKAGES(outdir, runid, stop.time, multi.settings, var.names,
+read.restart.LINKAGES(outdir, runid, stop.time, settings, var.names = NULL,
   params = NULL)
 }
 \arguments{
@@ -14,9 +14,9 @@ read.restart.LINKAGES(outdir, runid, stop.time, multi.settings, var.names,
 
 \item{stop.time}{year that is being read}
 
-\item{multi.settings}{PEcAn settings object}
-
 \item{var.names}{var.names to be extracted}
+
+\item{multi.settings}{PEcAn settings object}
 }
 \value{
 X.vec      vector of forecasts

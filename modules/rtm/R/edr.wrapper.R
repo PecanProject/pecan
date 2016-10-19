@@ -108,8 +108,65 @@ EDR <- function(paths, RT.matrix, par.wl, nir.wl, datetime, trait.values = list(
       warning("Error in deleting files.")
     }
   }
+  # TODO: Read old config file as template
+  # This ensures that all PFTs and previous default trait values that were in the
+  # run are loaded.
+  # Pseudocode:
+  # xml.old <- XML::xmlToList(XML::xmlParse(old.config.path))
+  # defaults.old <- xml.old$defaults
+  # settings.old <- xml.old$settings
+  # trait.values.old <- xml.old$trait.values
+  
+  # Write ED2 config.xml file
+  defaults <- list() 
+  xml <- write.config.xml.ED2(defaults = defaults,
+                              settings = settings,
+                              trait.values = trait.values)
+  
+  new.config.path <- file.path(output.path, "config.xml")
+  PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
+  saveXML(xml, file = new.config.path, indent=TRUE, prefix = PREFIX_XML)
+  
+  # Preprocess ED2IN
+  if(!is.na(ed2in.path)){     # Otherwise, skip this step
+    EDR.preprocess.ed2in(ed2in.path, output.path, new.config.path, 
+                         datetime, history.full.prefix)
+  }
+  
+  # Generate input files
+  par.nir.lengths <- c(length(par.wl), length(nir.wl))
+  cat(par.nir.lengths, file=file.path(output.path, "lengths.dat"), sep = ' ')
+  par.ind <- which(RT.matrix[,"wl"] %in% par.wl)    # PAR indices
+  nir.ind <- which(RT.matrix[,"wl"] %in% nir.wl)    # NIR indices 
+  cat(RT.matrix[par.ind,1], file = file.path(output.path, "reflect_par.dat"), sep=" ")
+  cat(RT.matrix[nir.ind,1], file = file.path(output.path, "reflect_nir.dat"), sep=" ")
+  cat(RT.matrix[par.ind,2], file = file.path(output.path, "trans_par.dat"), sep=" ")
+  cat(RT.matrix[nir.ind,2], file = file.path(output.path, "trans_nir.dat"), sep=" ")
+  # Call EDR -- NOTE that this requires that the ED2IN 
+  exec.command <- sprintf("(cd %s; ./%s)", output.path, edr.exe.name)
+  ex <- system(exec.command, intern=TRUE)
+  if(any(grepl("fatal error", ex, ignore.case=TRUE))){
+    print(ex)
+    stop("Error executing EDR")
+  }
+  # Analyze output
+  albedo <- get.EDR.output(output.path)
+  # Optionally, clean up all generated files
+  if(clean) {
+    delete.files <- file.remove(file.path(output.path,
+                                          c('lengths.dat',
+                                            'reflect_par.dat',
+                                            'reflect_nir.dat',
+                                            'trans_par.dat',
+                                            'trans_nir.dat')))
+    # NOTE that currently, not all files are deleted (e.g. history file, copied ED2IN)
+    if(!delete.files) {
+      warning('Error in deleting files.')
+    }
+  }
   return(albedo)
 } # EDR
+
 
 #' @name EDR.prospect
 #' @title ED RTM coupled to PROSPECT leaf RTM

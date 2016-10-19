@@ -53,8 +53,6 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     return(invisible(results))
   }
   
-  library(ncdf4)
-  library(lubridate)
   library(PEcAn.data.atmosphere)
   
   ## check to see if the outfolder is defined, if not create directory for output
@@ -65,8 +63,8 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   out <- NULL
   
   # get start/end year since inputs are specified on year basis
-  start_year <- year(start_date)
-  end_year <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
   
   ## loop over files TODO need to filter out the data that is not inside start_date, end_date
   for (year in start_year:end_year) {
@@ -78,19 +76,20 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     
     if (file.exists(old.file)) {
       ## open netcdf
-      nc <- nc_open(old.file)
+      nc <- ncdf4::nc_open(old.file)
       
       ## convert time to seconds
       sec <- nc$dim$time$vals
       sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
       
-      dt <- ifelse(leap_year(year) == TRUE, 
+      dt <- ifelse(lubridate::leap_year(year) == TRUE, 
                    366 * 24 * 60 * 60 / length(sec), # leap year
                    365 * 24 * 60 * 60 / length(sec)) # non-leap year
       tstep <- round(86400 / dt)
       dt <- 86400 / tstep
       
       ## extract variables
+      ncvar_get <- ncdf4::ncvar_get
       lat <- ncvar_get(nc, "latitude")
       lon <- ncvar_get(nc, "longitude")
       Tair <- ncvar_get(nc, "air_temperature")  ## in Kelvin
@@ -122,15 +121,15 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
         soilT <- soilT - 273.15
       }
       
-      SVP <- ud.convert(get.es(Tair - 273.15), "millibar", "Pa")  ## Saturation vapor pressure
+      SVP <- udunits2::ud.convert(get.es(Tair - 273.15), "millibar", "Pa")  ## Saturation vapor pressure
       VPD <- try(ncvar_get(nc, "water_vapor_saturation_deficit"))  ## in Pa
       if (!is.numeric(VPD)) {
         VPD <- SVP * (1 - qair2rh(Qair, Tair - 273.15))
       }
       e_a <- SVP - VPD
-      VPDsoil <- ud.convert(get.es(soilT), "millibar", "Pa") * (1 - qair2rh(Qair, soilT))
+      VPDsoil <- udunits2::ud.convert(get.es(soilT), "millibar", "Pa") * (1 - qair2rh(Qair, soilT))
       
-      nc_close(nc)
+      ncdf4::nc_close(nc)
     } else {
       print("Skipping to next year")
       next
@@ -145,7 +144,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     for (y in year + 1:nyr - 1) {
       ytmp <- rep(y, 365 * 86400 / dt)
       dtmp <- rep(1:365, each = 86400 / dt)
-      if (y%%4 == 0) {
+      if (lubridate::leap_year(y)) {
         ## is leap
         ytmp <- rep(y, 366 * 86400 / dt)
         dtmp <- rep(1:366, each = 86400 / dt)

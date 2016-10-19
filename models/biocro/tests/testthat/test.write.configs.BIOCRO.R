@@ -47,8 +47,8 @@ test_that("write.configs.BIOCRO produces expected output", {
     config <- file.path(rundir, "config.xml")
     expect_true(file.exists(config))
     
-    config.xml <- xmlParse(config)
-    config.list <- xmlToList(config.xml)
+    config.xml <- XML::xmlParse(config)
+    config.list <- XML::xmlToList(config.xml)
     biocro.trait.values <- convert.samples.BIOCRO(trait.values[[settings$pfts$pft$name]])
     expect_equal(biocro.trait.values[["vmax"]], as.numeric(config.list$pft$photoParms[["vmax"]]))
     expect_equal(biocro.trait.values[["b0"]], as.numeric(config.list$pft$photoParms[["b0"]]))

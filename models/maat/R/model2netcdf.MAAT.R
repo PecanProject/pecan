@@ -27,9 +27,6 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
   
   ### Load required libraries
   library(PEcAn.utils)
-  library(lubridate)
-  library(udunits2)
-  library(ncdf4)
   
   ### Read in model output in SIPNET format
   maat.out.file <- file.path(outdir, "out.csv")
@@ -56,7 +53,7 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     ## Subset data for processing
     sub.maat.output <- subset(maat.output, format(maat.dates, "%Y") == y)
     sub.maat.dates <- as.Date(sub.maat.output$time, format = "%m/%d/%y")
-    sub.maat.doy <- yday(sub.maat.dates)
+    sub.maat.doy <- lubridate::yday(sub.maat.dates)
     sub.maat.output.dims <- dim(sub.maat.output)
     dayfrac <- 1 / dims[1]
     day.steps <- seq(0, 0.99, 1 / dims[1])
@@ -74,17 +71,17 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     #******************** Declare netCDF variables ********************#
     ## This version doesn't provide enough output timesteps when running with met data that has
     ## a step greater than 1 per day
-    #t <- ncdim_def(name = "time",
+    #t <- ncdf4::ncdim_def(name = "time",
     #               units = paste0("days since ", y, "-01-01 00:00:00"),
     #               vals = as.numeric(strptime(end_date, "%Y-%m-%d %H:%M:%S")-strptime(start_date, "%Y-%m-%d %H:%M:%S"),units="days"),
     #               calendar = "standard", unlim = TRUE) # is this correct? fraction of days or whole days
     
     ## Something like this works for mult timesteps per day
-    t <- ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"),
+    t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"),
                    vals = sub.maat.doy + day.steps, calendar = "standard", 
                    unlim = TRUE)
-    lat <- ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdf4::ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdf4::ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
     
     for (i in seq_along(output)) {
       if (length(output[[i]]) == 0) 
@@ -94,11 +91,11 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     ############ Variable Conversions 
     ### Conversion factor for umol C -> kg C
     Mc <- 12.017  # molar mass of C, g/mol
-    umol2kg_C <- Mc * ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
+    umol2kg_C <- Mc * udunits2::ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
     
     ### Conversion factor for mol H2O -> kg H2O
     Mw <- 18.01528  # molar mass of H2O, g/mol
-    mol2kg_H2O <- Mw * ud.convert(1, "g", "kg")
+    mol2kg_H2O <- Mw * udunits2::ud.convert(1, "g", "kg")
     ############ 
     
     ### Find/replace missing and convert outputs to standardized BETYdb units
@@ -115,15 +112,15 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     var[[4]]  <- mstmipvar("stomatal_conductance", lat, lon, t, NA)
     
     ### Output netCDF data
-    nc <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
       print(i)  # just on for debugging
-      ncvar_put(nc, var[[i]], output[[i]])
+      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
       cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
     }  ## netCDF loop
     close(varfile)
-    nc_close(nc)
+    ncdf4::nc_close(nc)
     
   }  ## Year loop
 } # model2netcdf.MAAT

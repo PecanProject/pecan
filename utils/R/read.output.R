@@ -92,9 +92,6 @@ model2netcdf <- function(runid, outdir, model, lat, lon, start_date, end_date) {
 ##' @author Michael Dietze, David LeBauer
 read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables = "GPP") {
   
-  library(ncdf4)
-  library(udunits2)
-  
   ## vars in units s-1 to be converted to y-1 cflux = c('GPP', 'NPP', 'NEE',
   ## 'TotalResp', 'AutoResp', 'HeteroResp', 'DOC_flux', 'Fire_flux') # kgC m-2 s-1
   ## wflux = c('Evap', 'TVeg', 'Qs', 'Qsb', 'Rainf') # kgH20 m-2 d-1
@@ -125,19 +122,19 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
 
   if (!nofiles) {
     for (ncfile in ncfiles) {
-      nc <- nc_open(ncfile)
+      nc <- ncdf4::nc_open(ncfile)
       for (v in variables) {
         if (v %in% c(names(nc$var), names(nc$dim))) {
-          newresult <- ncvar_get(nc, v)
+          newresult <- ncdf4::ncvar_get(nc, v)
           # Dropping attempt to provide more sensible units because of graph unit errors,
-          # issue #792 if(v %in% c(cflux, wflux)){ newresult <- ud.convert(newresult, 'kg
+          # issue #792 if(v %in% c(cflux, wflux)){ newresult <- udunits2::ud.convert(newresult, 'kg
           # m-2 s-1', 'kg ha-1 yr-1') }
-          result[[v]] <- abind(result[[v]], newresult)
+          result[[v]] <- abind::abind(result[[v]], newresult)
         } else if (!(v %in% names(nc$var))) {
           logger.warn(paste(v, "missing in", ncfile))
         }
       }
-      nc_close(nc)
+      ncdf4::nc_close(nc)
     }
   } else if (nofiles) {
     result <- lapply(variables, function(x) NA)
