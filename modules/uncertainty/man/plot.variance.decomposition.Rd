@@ -4,8 +4,8 @@
 \alias{plot.variance.decomposition}
 \title{Variance Decomposition Plots}
 \usage{
-\method{plot}{variance.decomposition}(plot.inputs, fontsize = list(title = 18,
-  axis = 14))
+plot.variance.decomposition(plot.inputs, fontsize = list(title = 18, axis =
+  14))
 }
 \arguments{
 \item{fontsize}{list specifying the font size of the titles and axes of the graph}
@@ -40,7 +40,7 @@ Plot results of variance decomposition
 Plots variance decomposition tryptich
 }
 \examples{
-x <- list(trait.labels = c("a", "b", "c"),
+x <- list(trait.labels = c('a', 'b', 'c'),
           coef.vars = c(a=1,b=0.5, c=0.1),
           elasticities = c(a=1,b=2,c=0.5),
           variances    = c(a = 20, b=30, c = 10))

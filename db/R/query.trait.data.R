@@ -481,7 +481,7 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only = FALSE
     if (nrow(canopy.layer.covs) > 0) {
       data <- filter.sunleaf.traits(data, canopy.layer.covs)
     }
-    
+
     ## select only summer data for Panicum virgatum TODO fix following hack to select
     ## only summer data
     if (spstr == "'938'") {
@@ -500,6 +500,7 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only = FALSE
     
   } else if (trait == "root_respiration_rate") {
     #########################  ROOT RESPIRATION   ############################
+
     ## Apply Arrhenius scaling to convert root respiration at measurement temp
     ## to that at 25 degC (ref temp).
     data <- arrhenius.scaling.traits(data, covariates, c("rootT", "airT", "soilT"))

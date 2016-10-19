@@ -16,7 +16,7 @@ This function will print an error message.
 }
 \examples{
 \dontrun{
-logger.error("system did not converge")
+logger.error('system did not converge')
 }
 }
 \author{

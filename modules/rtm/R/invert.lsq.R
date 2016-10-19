@@ -12,15 +12,14 @@
 #'minimized. Be sure to include constants here.
 #'@param lower Lower bounds on parameters (default=NULL, which means -Inf).
 #'@param uppper Upper bounds on parameters (default=NULL, which means +Inf).
-
-invert.lsq <- function(observed, inits, model, lower=NULL, upper=NULL){
-    library(minpack.lm)
-    observed <- as.matrix(observed)
-    merit <- function(params){
-        spec <- model(params)
-        error <- spec - observed
-        return(error)
-    }
-    fit <- nls.lm(par=inits, lower=lower, upper=upper, fn=merit)
-    return(fit)
-}
+invert.lsq <- function(observed, inits, model, lower = NULL, upper = NULL) {
+  library(minpack.lm)
+  observed <- as.matrix(observed)
+  merit <- function(params) {
+    spec <- model(params)
+    error <- spec - observed
+    return(error)
+  }
+  fit <- nls.lm(par = inits, lower = lower, upper = upper, fn = merit)
+  return(fit)
+} # invert.lsq

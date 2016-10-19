@@ -59,7 +59,6 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   get.parameter.samples(settings, posterior.files, ens.sample.method)
   load(file.path(settings$outdir, "samples.Rdata"))
   
-  library(coda)
   ## remove previous runs.txt
   if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {
     logger.warn("Existing runs.txt file will be removed.")
@@ -70,7 +69,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   
   ## Check for model-specific write configs
   
-  my.write.config <- paste0("write.config.")
+  my.write.config <- paste0("write.config.",model)
   if (!exists(my.write.config)) {
     logger.error(my.write.config, 
                  "does not exist, please make sure that the model package contains a function called", 

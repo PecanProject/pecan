@@ -89,12 +89,12 @@ query.format.vars <- function(input.id, con, format.id) {
     # empty unless it's a time variable.  This is because I haven't come up for a
     # good way to test that a character string is a date format
     
-    st <- fv$storage_type
+    st <- vars_full$storage_type
     time.row <- which(nchar(st) > 1 & substr(st, 1, 1) == "%")
     if (length(time.row) == 0) {
       time.row <- NULL
     }
-    
+
     # Final format list
     format <- list(file_name = f$name, 
                    mimetype = f$mimetype, 

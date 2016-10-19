@@ -13,8 +13,6 @@ assim.batch <- function(settings) {
     return(settings)
   }
   
-  library(coda)
-  
   if (is.null(settings$assim.batch$method)) {
     settings$assim.batch$method <- "bruteforce.bs"
   }
@@ -576,83 +574,6 @@ pda.adjust.jumps.bs <- function(settings, jcov, accept.count, params.recent) {
 } # pda.adjust.jumps.bs
 
 
-##' Get Model Output for PDA
-##'
-##' @title Get Model Output for PDA
-##' @param all params are the identically named variables in pda.mcmc / pda.emulator
-##'
-##' @return A list containing model outputs extracted to correspond to each observational
-##'         dataset being used for PDA. 
-##'
-##' @author Ryan Kelly, Istem Fer
-##' @export
-pda.get.model.output <- function(settings, run.id, inputs) {
-  
-  library(PEcAn.benchmark)
-  library(lubridate)
-
-  input.info <- settings$assim.batch$inputs
-  
-  start.year <- strftime(settings$run$start.date, "%Y")
-  end.year <- strftime(settings$run$end.date, "%Y")
-  
-  model.out <- list()
-  n.input <- length(inputs)
-  
-  for (k in seq_len(n.input)) {
-    
-    vars.used <- unlist(input.info[[k]]$variable.name)
-    
-    # change input variable names (e.g. 'LE') to model output variable names (e.g. 'Qle')
-    match.table <- read.csv(system.file("bety_mstmip_lookup.csv", package = "PEcAn.DB"), 
-                            header = TRUE, 
-                            stringsAsFactors = FALSE)
-    vars.used[vars.used %in% match.table$bety_name] <- 
-      match.table$mstmip_name[match.table$bety_name %in% vars.used[vars.used %in% match.table$bety_name]]
-    
-    # UST is never in the model outputs
-    vars.used <- vars.used[!vars.used %in% c("UST")]
-    
-    # We also want 'time' from model outputs for aligning step
-    vars <- c("time", vars.used)
-    
-    # this is only for FC-NEE as we are using them interchangably when NEE isn't present
-    # E.g. Ameriflux data
-    vars[vars %in% c("FC")] <- "NEE"  # FC - NEE specific hack 1
-    
-    model <- as.data.frame(read.output(run.id, outdir = file.path(settings$host$outdir, run.id), 
-                                       start.year, 
-                                       end.year, 
-                                       variables = vars))
-    
-    if (length(model) == 0) {
-      # Probably indicates model failed entirely
-      return(NA)
-    }
-    
-    # FC - NEE specific hack 2: change NEE back to FC only if "FC" was specified in the first place
-    if(any(vars.used %in% c("FC"))) colnames(model)[colnames(model) %in% "NEE"] <- "FC"
-  
-  
-    ## Handle model time
-    # the model output time is in days since the beginning of the year
-    model.secs <- ud.convert(model$time, "days" ,"seconds")
-  
-    # seq.POSIXt returns class "POSIXct"
-    # the model output is since the beginning of the year but 'settings$run$start.date' may not be the first day of the year, using lubridate::floor_date
-    model$posix <- seq.POSIXt(from = lubridate::floor_date(as.POSIXlt(settings$run$start.date, tz="UTC"), "year"), 
-                              by = diff(model.secs)[1], 
-                              length.out = length(model$time))
-  
-    dat <- align.data(model_full = model, obvs_full = inputs[[k]]$data, dat_vars = vars.used, 
-                      start_year = start.year, end_year = end.year, align_method = inputs[[k]]$align.method)
-  
-    model.out[[k]] <- dat[,colnames(dat) %in% paste0(vars.used,".m"), drop = FALSE]
-    colnames(model.out[[k]]) <- vars.used
-  }
-  
-  return(model.out)
-} # pda.get.model.output
 
 
 ##' Generate Parameter Knots for PDA Emulator
@@ -734,7 +655,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
     }
     
     if (length(params.subset[[i]]) > 1 & enough.iter) {
-      gelman.plot(params.subset[[i]], auto.layout = FALSE, autoburnin = FALSE)
+      coda::gelman.plot(params.subset[[i]], auto.layout = FALSE, autoburnin = FALSE)
     }
     
     layout(1)
@@ -765,7 +686,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
     
     if (length(params.subset[[i]]) > 1) {
       cat("Gelman and Rubin convergence diagnostics\n", file = filename.mcmc.temp, append = TRUE)
-      capture.output(gelman.diag(params.subset[[i]], autoburnin = FALSE), file = filename.mcmc.temp, 
+      capture.output(coda::gelman.diag(params.subset[[i]], autoburnin = FALSE), file = filename.mcmc.temp, 
                      append = TRUE)
     }
     

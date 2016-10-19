@@ -64,13 +64,13 @@ test_that("variables have MsTMIP standard units", {
 })
 
 test_that("model2netcdf.BIOCRO will add a second site to an existing file", {
-  nc_close(biocro.nc)
+  ncdf4::nc_close(biocro.nc)
   file.remove(biocro.ncfile)
   model2netcdf.BIOCRO(resultDT, genus = "foo", outdir = outdir, lat = 44.6, lon = -88.1)
   model2netcdf.BIOCRO(resultDT, genus = "foo", outdir = outdir, lat = 44.7, lon = -88.2)
-  biocro.nc <- nc_open(biocro.ncfile)
+  biocro.nc <- ncdf4::nc_open(biocro.ncfile)
   vars <- biocro.nc$var
   dims <- biocro.nc$dim
   
-  ncvar_get(biocro.nc, "latitude")
+  ncdf4::ncvar_get(biocro.nc, "latitude")
 })

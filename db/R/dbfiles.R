@@ -68,10 +68,10 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   if (nrow(existing.input) > 0) {
     # Convert dates to Date objects and strip all time zones (DB values are
     # timezone-free)
-    startdate <- force_tz(as_date(startdate), "UTC")
-    enddate <- force_tz(as_date(enddate), "UTC")
-    existing.input$start_date <- force_tz(as_date(existing.input$start_date), "UTC")
-    existing.input$end_date <- force_tz(as_date(existing.input$end_date), "UTC")
+    startdate <- lubridate::force_tz(as_date(startdate), "UTC")
+    enddate   <- lubridate::force_tz(as_date(enddate), "UTC")
+    existing.input$start_date <- lubridate::force_tz(as_date(existing.input$start_date), "UTC")
+    existing.input$end_date <- lubridate::force_tz(as_date(existing.input$end_date), "UTC")
     
     for (i in seq_len(nrow(existing.input))) {
       existing.input.i <- existing.input[i, ]
