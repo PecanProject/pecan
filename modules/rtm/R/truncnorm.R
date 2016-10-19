@@ -14,12 +14,14 @@
 #'      tht this is not the SD of the distribution.
 #' @param MIN The minimum value, which defines the truncation.
 #' @return Numeric length one.
-rtnorm <- function(mu, sd, MIN){
-    x <- rnorm(1, mu, sd)
-    if(x < MIN)
-        x <- qnorm(runif(1, pnorm(MIN, mu, sd, 1, 0), 1), mu, sd, 1, 0)
-    return(x)
-}
+rtnorm <- function(mu, sd, MIN) {
+  x <- rnorm(1, mu, sd)
+  if (x < MIN) {
+    x <- qnorm(runif(1, pnorm(MIN, mu, sd, 1, 0), 1), mu, sd, 1, 0)
+  }
+  return(x)
+} # rtnorm
+
 
 #' @name dtnorm
 #' @title Truncated normal distribution density
@@ -30,10 +32,10 @@ rtnorm <- function(mu, sd, MIN){
 #' @param sd The standard deviation parameter of the distribution
 #' @param MIN Value at which the truncation takes place
 #' @return Numeric; log density of the distribution, or -1e15 if the x < MIN
-dtnorm <- function(x, mu, sd, MIN){
-    if(x < MIN)
-        return(-1e15)
-    else
-        return(dnorm(x, mu, sd, 1) - log(1-pnorm(MIN, mu, sd, 1, 0)))
-}
-
+dtnorm <- function(x, mu, sd, MIN) {
+  if (x < MIN) {
+    return(-1e+15) 
+  } else {
+    return(dnorm(x, mu, sd, 1) - log(1 - pnorm(MIN, mu, sd, 1, 0)))
+  } 
+} # dtnorm
