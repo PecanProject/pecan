@@ -161,13 +161,13 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     ## make night dark - based on met2model.ED2.R in models/ed/R First: calculate potential radiation
     sec <- nc$dim$time$vals
     sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
-    dt <- ifelse(leap_year(year), 
+    dt <- ifelse(lubridate::leap_year(year), 
                  (366 * 24 * 60 * 60) / length(sec), 
                  (365 * 24 * 60 * 60) / length(sec))
-    doy <- ifelse(leap_year(year) == TRUE,
+    doy <- ifelse(lubridate::leap_year(year) == TRUE,
                   rep(1:366, each = 86400 / dt), 
                   rep(1:365, each = 86400 / dt))
-    hr <- ifelse(leap_year(year) == TRUE,
+    hr <- ifelse(lubridate::leap_year(year) == TRUE,
                  rep(seq(0, length = 86400 / dt, by = dt / 86400 * 24), 366), 
                  rep(seq(0, length = 86400 / dt, by = dt / 86400 * 24), 365))
     

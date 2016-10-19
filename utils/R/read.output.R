@@ -129,7 +129,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
           # Dropping attempt to provide more sensible units because of graph unit errors,
           # issue #792 if(v %in% c(cflux, wflux)){ newresult <- udunits2::ud.convert(newresult, 'kg
           # m-2 s-1', 'kg ha-1 yr-1') }
-          result[[v]] <- abind(result[[v]], newresult)
+          result[[v]] <- abind::abind(result[[v]], newresult)
         } else if (!(v %in% names(nc$var))) {
           logger.warn(paste(v, "missing in", ncfile))
         }

@@ -45,8 +45,8 @@ load.pda.data <- function(settings, con) {
     
     inputs[[i]]$data <- load.data(data.path, 
                                   format, 
-                                  start_year = year(settings$run$start.date), 
-                                  end_year = year(settings$run$end.date), 
+                                  start_year = lubridate::year(settings$run$start.date), 
+                                  end_year = lubridate::year(settings$run$end.date), 
                                   site = settings$run$site, 
                                   vars.used.index,
                                   time.row = format$time.row)

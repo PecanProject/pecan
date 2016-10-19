@@ -133,8 +133,8 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
                         substr(lastline, 11, 12))
   lastdate <- as.POSIXlt(lastdate_st)
   
-  syear <- year(firstdate)
-  eyear <- year(lastdate)
+  syear <- lubridate::year(firstdate)
+  eyear <- lubridate::year(lastdate)
   
   if (start_year > eyear) {
     logger.severe("Start_Year", start_year, "exceeds end of record ", eyear, " for ", site)

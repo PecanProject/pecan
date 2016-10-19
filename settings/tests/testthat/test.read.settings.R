@@ -98,8 +98,8 @@ test_that("check.settings uses run dates if dates not given in ensemble or sensi
     s1 <- list(pfts = s$pfts, database = list(bety = s$database$bety), run = s$run, model=s$model)
     s1[[node]] <- list(variable = "FOO")
     s2 <- check.settings(update.settings(s1))
-    expect_equivalent(s2[[node]]$start.year, year(s2$run$start.date))
-    expect_equivalent(s2[[node]]$end.year, year(s2$run$end.date))
+    expect_equivalent(s2[[node]]$start.year, lubridate::year(s2$run$start.date))
+    expect_equivalent(s2[[node]]$end.year, lubridate::year(s2$run$end.date))
     
     s1 <- list(pfts = s$pfts, database = list(bety = s$database$bety), run = NA, model=s$model)
     s1[[node]] <- list(variable = "FOO", start.year = 1000, end.year = 1000)

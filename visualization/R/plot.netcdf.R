@@ -91,13 +91,13 @@ plot.netcdf <- function(datafile, yvar, xvar = "time", width = 800, height = 600
   if (!is.null(filename)) {
     if (tolower(filename) == "x11") {
       x11(width = width/96, height = height/96)
-    } else if (tolower(str_sub(filename, -4)) == ".png") {
+    } else if (tolower(stringr::str_sub(filename, -4)) == ".png") {
       png(filename = filename, width = width, height = height)
-    } else if (tolower(str_sub(filename, -4)) == ".pdf") {
+    } else if (tolower(stringr::str_sub(filename, -4)) == ".pdf") {
       pdf(filename = filename, width = width, height = height)
-    } else if (tolower(str_sub(filename, -4)) == ".jpg") {
+    } else if (tolower(stringr::str_sub(filename, -4)) == ".jpg") {
       jpg(filename = filename, width = width, height = height)
-    } else if (tolower(str_sub(filename, -5)) == ".tiff") {
+    } else if (tolower(stringr::str_sub(filename, -5)) == ".tiff") {
       tiff(filename = filename, width = width, height = height)
     }
   }

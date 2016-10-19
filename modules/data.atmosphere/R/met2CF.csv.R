@@ -175,9 +175,9 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
     ## Only run if years > start_date < end_date
     ## if both are provided, clip data to those dates
     ## Otherwise set start/end to first/last datetime of file
-    years <- year(alldatetime)
+    years <- lubridate::year(alldatetime)
     if (!missing(start_date) && !missing(end_date)) {
-      availdat <- which(years >= year(start_date) & years <= year(end_date))
+      availdat <- which(years >= lubridate::year(start_date) & years <= lubridate::year(end_date))
       if (length(availdat) == 0) {
         logger.error("data does not contain output after start_date or before end_date")
       }
