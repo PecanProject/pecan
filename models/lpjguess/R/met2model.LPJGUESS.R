@@ -153,5 +153,5 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   ## close netcdf files
   sapply(ncin, nc_close)
   
-  invisible(results)
+  return(invisible(results))
 } # met2model.LPJGUESS
