@@ -25,6 +25,9 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
 ##' @author Shawn Serbin, Anthony Walker
 convert.samples.MAAT <- function(trait.samples) {
   
+  #Import functions
+  ud.convert <- udunits2::ud.convert
+  
   ### Convert object
   if (is.list(trait.samples)) 
     trait.samples <- as.data.frame(trait.samples)
@@ -51,15 +54,15 @@ convert.samples.MAAT <- function(trait.samples) {
   }
   if ("Ha.vcmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Ha.vcmax = udunits2::ud.convert(Ha.vcmax, "kJ", "J"))
+    trait.samples <- transform(trait.samples, Ha.vcmax = ud.convert(Ha.vcmax, "kJ", "J"))
   }
   if ("Ha.jmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Ha.jmax = udunits2::ud.convert(Ha.jmax, "kJ", "J"))
+    trait.samples <- transform(trait.samples, Ha.jmax = ud.convert(Ha.jmax, "kJ", "J"))
   }
   if ("Hd.jmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Hd.jmax = udunits2::ud.convert(Hd.jmax, "kJ", "J"))
+    trait.samples <- transform(trait.samples, Hd.jmax = ud.convert(Hd.jmax, "kJ", "J"))
   }
   
   ### Return trait.samples as modified by function
@@ -82,8 +85,14 @@ convert.samples.MAAT <- function(trait.samples) {
 ##' @param run.id id of run
 ##' @return configuration file for MAAT for given run
 ##' @export
-##' @author Shawn Serbin, Anthony Walker
+##' @author Shawn Serbin, Anthony Walker, Rob Kooper
 write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
+  
+  # Import needed functions
+  listToXml <- PEcAn.utils::listToXml
+  saveXML <- XML::saveXML
+  addChildren <- XML::addChildren
+  logger.info <- PEcAn.utils::logger.info
   
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
@@ -106,7 +115,7 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   traits.xml <- listToXml(traits.list, "pars")
   
   ### Finalize XML
-  xml[[1]] <- XML::addChildren(xml[[1]], traits.xml)
+  xml[[1]] <- addChildren(xml[[1]], traits.xml)
   
   ### Write out new XML _ NEED TO FIX THIS BIT. NEED TO CONVERT WHOLE LIST TO XML saveXML(xml, file =
   ### file.path(settings$rundir, run.id, 'leaf_default.xml'), indent=TRUE, prefix = PREFIX_XML)
@@ -134,14 +143,12 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   } else if (!is.null(settings$run$inputs$met)) {
     met.dir <- dirname(settings$run$inputs$met$path)
     met.file <- basename(settings$run$inputs$met$path)
-    # logger.info('-- Copy leaf_user_met.xml to rundirs --')
     file.copy(file.path(met.dir, list.files(met.dir, "*.xml")), 
               rundir, 
               overwrite = TRUE, 
               recursive = FALSE, 
               copy.mode = TRUE, 
               copy.date = TRUE)
-    # logger.info('-- Create job.sh scripts and place in rundirs --')
     jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ",
                     "\"odir <- ","'",outdir,"'","\""," ","\"mdir <- ","'",met.dir,"'",
                     "\""," ","\"metdata <- ","'",met.file,"'","\""," > ",rundir,
@@ -158,5 +165,7 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   # Write the job.sh script
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
-  # print(warnings())
 } # write.config.MAAT
+
+##-------------------------------------------------------------------------------------------------#
+## EOF

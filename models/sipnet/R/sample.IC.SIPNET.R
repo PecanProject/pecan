@@ -66,5 +66,6 @@ sample.IC.SIPNET <- function(ne, state, year = 1) {
                     state$microbe[1, sample.int(ncol(state$microbe), ne), year], 
                     runif(ne, 0, 1))  ## prior 
   
-  data.frame(NPP, plantWood, lai, litter, soil, litterWFrac, soilWFrac, snow, microbe)
+  return(data.frame(NPP, plantWood, lai, litter,
+                    soil, litterWFrac, soilWFrac, snow, microbe))
 } # sample.IC.SIPNET

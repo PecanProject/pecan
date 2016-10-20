@@ -18,5 +18,5 @@ load.L2Ameriflux.cf <- function(file.in) {
   }
   ncdf4::nc_close(nc)
   
-  as.data.frame(do.call(cbind, vars))
+  return(as.data.frame(do.call(cbind, vars)))
 } # load.L2Ameriflux.cf

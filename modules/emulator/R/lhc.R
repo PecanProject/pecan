@@ -20,6 +20,6 @@ lhc <- function(x, n.samp) {
         myseq <- seq(x[i, 1], x[i, 2], length = n.samp + 1)
         samp[i, ] <- runif(n.samp, myseq[permute[i, ]], myseq[permute[i, ] + 1])
     }
-    t(samp)
+    return(t(samp))
 } # lhc
 

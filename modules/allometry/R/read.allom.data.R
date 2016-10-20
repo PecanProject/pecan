@@ -249,5 +249,5 @@ read.allom.data <- function(pft.data, component, field, parm, nsim = 10000) {
     
   }  ## end HAVE ALLOM TALLY DATA
   
-  list(parm = allomParms, field = allom$field)
+  return(list(parm = allomParms, field = allom$field))
 } # read.allom.data
