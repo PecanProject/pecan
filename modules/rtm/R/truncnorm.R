@@ -14,6 +14,7 @@
 #'      tht this is not the SD of the distribution.
 #' @param MIN The minimum value, which defines the truncation.
 #' @return Numeric length one.
+#' @export
 rtnorm <- function(mu, sd, MIN) {
   x <- rnorm(1, mu, sd)
   if (x < MIN) {
@@ -24,6 +25,7 @@ rtnorm <- function(mu, sd, MIN) {
 
 
 #' @name dtnorm
+#' 
 #' @title Truncated normal distribution density
 #' @author Alexey Shiklomanov
 #' @details Calculates the log density of a univariate truncated normal variable
@@ -32,6 +34,7 @@ rtnorm <- function(mu, sd, MIN) {
 #' @param sd The standard deviation parameter of the distribution
 #' @param MIN Value at which the truncation takes place
 #' @return Numeric; log density of the distribution, or -1e15 if the x < MIN
+#' @export
 dtnorm <- function(x, mu, sd, MIN) {
   if (x < MIN) {
     return(-1e+15) 
