@@ -227,10 +227,10 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
             indent = TRUE, 
             prefix = PREFIX_XML)
     
-    invisible(results)
+    return(invisible(results))
     
   } else {
     print("NO MET TO OUTPUT")
-    invisible(NULL)
+    return(invisible(NULL))
   }
 } # met2model.MAAT

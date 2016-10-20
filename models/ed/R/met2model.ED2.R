@@ -331,5 +331,5 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   }  ### end loop over met files
   
   print("Done with met2model.ED2")
-  invisible(results)
+  return(invisible(results))
 } # met2model.ED2
