@@ -62,5 +62,5 @@ permute.nc <- function(in.path, in.prefix, outfolder, start_date, end_date,
     unlink(tmp.file)
   }
   
-  invisible(results)
+  return(invisible(results))
 } # permute.nc
