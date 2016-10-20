@@ -1,5 +1,6 @@
-#' @name invert.fast.re
 #' @title Bayesian inversion with random effects
+#' 
+#' @name invert.fast.re
 #' @author Alexey Shiklomanov
 #' @details Performs a Bayesian inversion of a Radiative
 #' Transfer model with individual random effects. Sampling

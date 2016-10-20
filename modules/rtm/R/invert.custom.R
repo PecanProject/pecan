@@ -117,7 +117,7 @@ invert.custom <- function(observed, invert.options, quiet = FALSE, return.resume
   if (!quiet) {
     pb <- txtProgressBar(min = 0, max = ngibbs, style = 3)
   }
-  for (ng in 1:ngibbs) {
+  for (ng in seq_len(ngibbs)) {
     if (!quiet) { 
       setTxtProgressBar(pb, ng)
     }

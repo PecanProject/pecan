@@ -5,8 +5,8 @@
 \title{Calculate burnin value}
 \usage{
 getBurnin(jags_out, method = "rmw", threshold = 1.1,
-  use.confidence = TRUE, width = ceiling(niter(jags_out)/2), njump = 50,
-  autoburnin = FALSE, plotfile = "/dev/null", ...)
+  use.confidence = TRUE, width = ceiling(coda::niter(jags_out)/2),
+  njump = 50, autoburnin = FALSE, plotfile = "/dev/null", ...)
 }
 \arguments{
 \item{jags_out}{List of MCMC sample matrices or `mcmc.list` object}

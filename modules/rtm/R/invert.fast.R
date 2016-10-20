@@ -1,5 +1,6 @@
-#' @name invert.fast
 #' @title Bayesian RTM inversion: Fortran implementation
+#' 
+#' @name invert.fast
 #' @author Alexey Shiklomanov
 #' @details Performs a Bayesian inversion of a Radiative 
 #'          Transfer Model. Sampling is performed using an 
