@@ -26,7 +26,7 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
   ## TODO !!UPDATE SO IT WILL WORK WITH NO MET AND WITH MET DRIVER!!
   
   ### Load required libraries
-  library(PEcAn.utils)
+  #library(PEcAn.utils)
   
   ### Read in model output in SIPNET format
   maat.out.file <- file.path(outdir, "out.csv")
@@ -91,7 +91,7 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     ############ Variable Conversions 
     ### Conversion factor for umol C -> kg C
     Mc <- 12.017  # molar mass of C, g/mol
-    umol2kg_C <- Mc * udunits2::ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
+    umol2kg_C <- Mc * udunits2::ud.convert(1, "umol", "mol") * udunits2::ud.convert(1, "g", "kg")
     
     ### Conversion factor for mol H2O -> kg H2O
     Mw <- 18.01528  # molar mass of H2O, g/mol
