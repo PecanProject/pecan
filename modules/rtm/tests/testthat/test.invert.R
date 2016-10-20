@@ -9,9 +9,9 @@ params <- c('N' = 1.4,
 sensor <- "identity"
 data(sensor.rsr)
 generate_obs <- function(i){
-    obs.raw <- prospect(params, 5)[,1] + generate.noise()
-    obs <- spectral.response(obs.raw, sensor)
-    return(obs)
+  obs.raw <- prospect(params, 5)[,1] + generate.noise()
+  obs <- spectral.response(obs.raw, sensor)
+  return(obs)
 }
 
 n_obs <- 3
@@ -26,32 +26,32 @@ invert.options$do.lsq <- FALSE
 invert.options$nchains <- 3
 
 save.samples <- "samps.rds"
-output_tests <- function(output){
-    test_that("Parallel inversion output is list of length 2", {
-                  expect_is(output, "list")
-                  expect_equal(length(output), 2)
-                             })
+output_tests <- function(output) {
+  test_that("Parallel inversion output is list of length 2", {
+              expect_is(output, "list")
+              expect_equal(length(output), 2)
+            })
 
-    test_that("Parallel inversion output produces distinct chains", {
-                  expect_false(identical(output$samples[[1]],
-                                         output$samples[[2]]))
-                             })
+  test_that("Parallel inversion output produces distinct chains", {
+              expect_false(identical(output$samples[[1]],
+                                     output$samples[[2]]))
+            })
 
-    test_that("Saving samples is successful", {
-                  expect_true(file.exists(save.samples))
-                             })
+  test_that("Saving samples is successful", {
+              expect_true(file.exists(save.samples))
+            })
 }
 
 diag_table <- function(output, params){
-    mus <- unlist(output$results[1:length(params)])
-    diag_table <- rbind(params, mus, mus - params)
-    rownames(diag_table) <- c("True", "Inversion", "Inv. - True")
-    colnames(diag_table) <- names(params)
-    print(diag_table)
+  mus <- unlist(output$results[1:length(params)])
+  diag_table <- rbind(params, mus, mus - params)
+  rownames(diag_table) <- c("True", "Inversion", "Inv. - True")
+  colnames(diag_table) <- names(params)
+  print(diag_table)
 }
 
 diag_plot <- function(output, ...) {
-    samps <- makeMCMCList(output$samples)
+    samps <- PEcAn.assim.batch::makeMCMCList(output$samples)
     plot(samps, ...)
 }
 
