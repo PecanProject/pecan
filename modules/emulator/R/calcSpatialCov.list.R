@@ -32,5 +32,5 @@ calcSpatialCov.list <- function(d, psi, tau) {
   for (k in seq_len(m)) {
     H <- H - psi[k] * d[[k]]
   }
-  tau * exp(H)
+  return(tau * exp(H))
 } # calcSpatialCov.list

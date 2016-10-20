@@ -62,12 +62,12 @@ buildJAGSdata_InventoryRings <- function(combined, inc.unit.conv = 0.1) {
   
   ## build data object for JAGS
   n <- nrow(y)
-  list(y = y[1:n, ], 
-       z = z[1:n, ],
-       ni = n, nt = ncol(y), 
-       x_ic = 1, tau_ic = 1e-04,
-       a_dbh = 16, r_dbh = 8, 
-       a_inc = 0.001, r_inc = 1, 
-       a_add = 1, r_add = 1, 
-       time = time)
+  return(list(y = y[1:n, ], 
+              z = z[1:n, ],
+              ni = n, nt = ncol(y), 
+              x_ic = 1, tau_ic = 1e-04,
+              a_dbh = 16, r_dbh = 8, 
+              a_inc = 0.001, r_inc = 1, 
+              a_add = 1, r_add = 1, 
+              time = time))
 } # buildJAGSdata_InventoryRings
