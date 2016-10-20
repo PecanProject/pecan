@@ -44,10 +44,11 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     ## yr[i] <- as.numeric(substr(tmp,1,4)) # Edited by SPS
   }
   
-  ## set up storage
-  block <- 4  # assumes 6-hourly
+  ## set up storage - !!THIS NEEDS GENERALIZATION TO DETERMINE OUTPUT FREQ ON-THE-FLY!!
+  ## functions exist for this, need to create a general framework within the utils package for all similar cases
+  ##block <- 4  # assumes 6-hourly  -  most run ED2 at 30 min. Setting to 6 will cause errors for most runs
   ##block <- 24 # assumes hourly  
-  ##block <- 48 # assumes half-hourly  # Need to generalize (SPS)  
+  block <- 48 # assumes half-hourly 
   
   add <- function(dat, col, row, year) {
     ## data is always given for whole year, except it will start always at 0
@@ -521,7 +522,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     
     ## Conversion factor for umol C -> kg C
     Mc <- 12.017  #molar mass of C, g/mol
-    umol2kg_C <- Mc * udunits2::ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
+    umol2kg_C <- Mc * udunits2::ud.convert(1, "umol", "mol") * udunits2::ud.convert(1, "g", "kg")
     
     var <- list()
     out <- conversion(1, udunits2::ud.convert(1, "t ha-1", "kg m-2"))  ## tC/ha -> kg/m2
@@ -585,7 +586,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     var[[46]] <- mstmipvar("Qsb", lat, lon, t, zg)
     
     ## write ALMA
-    nc <- nc_create(file.path(outdir, paste(yrs[y], "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(yrs[y], "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(yrs[y], "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
       ncdf4::ncvar_put(nc, var[[i]], out[[i]])
