@@ -20,17 +20,19 @@ check.convergence <- function(jags_out,
                               threshold = 1.1,
                               verbose = TRUE,
                               ...){
-  if(!coda::is.mcmc.list(jags_out)) stop("Input needs to be of class 'mcmc.list'")
+  if (!coda::is.mcmc.list(jags_out)) {
+    stop("Input needs to be of class 'mcmc.list'")
+  }
   gd <- try(coda::gelman.diag(jags_out, ...))
-  if(class(gd) == "try-error"){
+  if (class(gd) == "try-error") {
     warning("Could not calculate Gelman diag. Assuming no convergence.")
     converged <- FALSE
     diagnostics <- NULL
     error <- TRUE
   } else {
     error <- FALSE
-    diagnostics <- c(gd$psrf[,2], "mpsrf" = gd$mpsrf)
-    if(all(diagnostics < threshold)){
+    diagnostics <- c(gd$psrf[, 2], mpsrf = gd$mpsrf)
+    if (all(diagnostics < threshold)) {
       converged <- TRUE
       msg <- sprintf("Converged with all Gelman diag <= %.3f", min(diagnostics))
     } else {
@@ -40,7 +42,9 @@ check.convergence <- function(jags_out,
                      paste(sprintf("%s (%.3f)", names(too_large), too_large),
                            collapse = ", "))
     }
-    if(verbose) print(msg)
+    if (verbose) {
+      print(msg)
+    }
   }
   return(list(converged = converged,
               diagnostics = diagnostics,

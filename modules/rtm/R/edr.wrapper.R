@@ -53,12 +53,14 @@ EDR <- function(paths,
   ed2in.path <- ifelse(is.na(paths$ed2in), NA, normalizePath(paths$ed2in))
   history.path <- normalizePath(paths$history)
   output.path <- normalizePath(output.path)
-
+  
   # Process datetime
-  if(!any(grepl("POSIX", class(datetime)))) stop("datetime is not POSIX")
-
+  if (!any(grepl("POSIX", class(datetime)))) {
+    stop("datetime is not POSIX")
+  }
+  
   # Preprocess history file
-  if(change.history.time){
+  if (change.history.time) {
     history.full.prefix <- EDR.preprocess.history(history.path, output.path, datetime, history.prefix)
   } else {
     history.full.prefix <- file.path(history.path, history.prefix)
@@ -82,26 +84,25 @@ EDR <- function(paths,
   PREFIX_XML <- '<?xml version="1.0"?>\n<!DOCTYPE config SYSTEM "ed.dtd">\n'
   XML::saveXML(xml, file = new.config.path, indent=TRUE, prefix = PREFIX_XML)
   
-  # Preprocess ED2IN
-  if(!is.na(ed2in.path)){     # Otherwise, skip this step
-    EDR.preprocess.ed2in(ed2in.path, output.path, new.config.path, 
-                         datetime, history.full.prefix)
+  # Preprocess ED2IN Otherwise, skip this step
+  if (!is.na(ed2in.path)) {
+    EDR.preprocess.ed2in(ed2in.path, output.path, new.config.path, datetime, history.full.prefix)
   }
   
   # Generate input files
   par.nir.lengths <- c(length(par.wl), length(nir.wl))
-  cat(par.nir.lengths, file=file.path(output.path, "lengths.dat"), sep = ' ')
-  par.ind <- which(RT.matrix[,"wl"] %in% par.wl)    # PAR indices
-  nir.ind <- which(RT.matrix[,"wl"] %in% nir.wl)    # NIR indices 
-  cat(RT.matrix[par.ind,1], file = file.path(output.path, "reflect_par.dat"), sep=" ")
-  cat(RT.matrix[nir.ind,1], file = file.path(output.path, "reflect_nir.dat"), sep=" ")
-  cat(RT.matrix[par.ind,2], file = file.path(output.path, "trans_par.dat"), sep=" ")
-  cat(RT.matrix[nir.ind,2], file = file.path(output.path, "trans_nir.dat"), sep=" ")
-
-  # Call EDR -- NOTE that this requires that the ED2IN 
+  cat(par.nir.lengths, file = file.path(output.path, "lengths.dat"), sep = " ")
+  par.ind <- which(RT.matrix[, "wl"] %in% par.wl)  # PAR indices
+  nir.ind <- which(RT.matrix[, "wl"] %in% nir.wl)  # NIR indices 
+  cat(RT.matrix[par.ind, 1], file = file.path(output.path, "reflect_par.dat"), sep = " ")
+  cat(RT.matrix[nir.ind, 1], file = file.path(output.path, "reflect_nir.dat"), sep = " ")
+  cat(RT.matrix[par.ind, 2], file = file.path(output.path, "trans_par.dat"), sep = " ")
+  cat(RT.matrix[nir.ind, 2], file = file.path(output.path, "trans_nir.dat"), sep = " ")
+  
+  # Call EDR -- NOTE that this requires that the ED2IN
   exec.command <- sprintf("(cd %s; ./%s)", output.path, edr.exe.name)
-  ex <- system(exec.command, intern=TRUE)
-  if(any(grepl("fatal error", ex, ignore.case=TRUE))){
+  ex <- system(exec.command, intern = TRUE)
+  if (any(grepl("fatal error", ex, ignore.case = TRUE))) {
     print(ex)
     stop("Error executing EDR")
   }
@@ -116,8 +117,8 @@ EDR <- function(paths,
                                             'trans_par.dat',
                                             'trans_nir.dat')))
     # NOTE that currently, not all files are deleted (e.g. history file, copied ED2IN)
-    if(!delete.files) {
-      warning('Error in deleting files.')
+    if (!delete.files) {
+      warning("Error in deleting files.")
     }
   }
   return(albedo)
@@ -154,20 +155,20 @@ EDR <- function(paths,
 #'   plot(albedo, type='l')
 #' }
 #' @export
-EDR.prospect <- function(prospect.param, prospect.version=5, paths, par.wl, nir.wl, datetime, ...){
-  RT.matrix <- prospect(prospect.param, prospect.version, include.wl=TRUE)
+EDR.prospect <- function(prospect.param, prospect.version = 5, paths, par.wl, nir.wl, datetime, ...) {
+  RT.matrix <- prospect(prospect.param, prospect.version, include.wl = TRUE)
   albedo <- EDR(paths, RT.matrix, par.wl, nir.wl, datetime, ...)
   return(albedo)
-} # EDR.prospect
+}  # EDR.prospect
 
 #' @title Read EDR output
 #' 
 #' @name get.EDR.output
 #' @param path Path to directory containing `albedo_par/nir.dat` files
 #' @export
-get.EDR.output <- function(path=getwd()){
-  alb.par <- as.matrix(read.table(file.path(path, "albedo_par.dat")))[1,]
-  alb.nir <- as.matrix(read.table(file.path(path, "albedo_nir.dat")))[1,]
+get.EDR.output <- function(path = getwd()) {
+  alb.par <- as.matrix(read.table(file.path(path, "albedo_par.dat")))[1, ]
+  alb.nir <- as.matrix(read.table(file.path(path, "albedo_nir.dat")))[1, ]
   albedo <- c(alb.par, alb.nir)
   return(albedo)
 }
@@ -182,8 +183,8 @@ get.EDR.output <- function(path=getwd()){
 #' `history.path`. Default = 'history'
 #' @param datetime POSIX date and time for run
 #' @export
-EDR.preprocess.history <- function(history.path, output.path, datetime, history.prefix='history'){
-# Check inputs
+EDR.preprocess.history <- function(history.path, output.path, datetime, history.prefix = "history") {
+  # Check inputs
   stopifnot(is.character(history.path))
   stopifnot(is.character(history.prefix))
   if (!any(grepl("POSIX", class(datetime)))) {
@@ -208,8 +209,8 @@ EDR.preprocess.history <- function(history.path, output.path, datetime, history.
   # Copy and rename history file
   history.new.name <- gsub('([[:digit:]]{6})', time.history, history.name)
   history.new.path <- file.path(output.path, history.new.name)
-  history.copy <- file.copy(history.full.path, history.new.path, overwrite=FALSE)
-  if(!history.copy){
+  history.copy <- file.copy(history.full.path, history.new.path, overwrite = FALSE)
+  if (!history.copy) {
     warning("Could not copy history with overwrite=FALSE. Attempting with overwrite=TRUE")
     if (!history.copy) {
       stop("Unable to copy history file, even with overwrite=TRUE. Check permissions on both input and output directories.")

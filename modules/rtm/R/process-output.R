@@ -25,17 +25,17 @@ burnin.thin <- function(samples, target = 5000, burnin.ratio = 2,
       thin <- 1
     }
   }
-  bt <- seq(burnin, ngibbs, by=thin)
-  samples.bt <- samples[bt,]
+  bt <- seq(burnin, ngibbs, by = thin)
+  samples.bt <- samples[bt, ]
   return(samples.bt)
 }
 
 #' @name load.from.name
 #' @title Load object from an RData file
 #' @param filename Full name (without path!) of RData file
-#' @param filepath Path of RData file (default=".")
+#' @param filepath Path of RData file (default='.')
 #' @export
-load.from.name <- function(filename, filepath="."){
+load.from.name <- function(filename, filepath = ".") {
   f.path <- file.path(filepath, filename)
   load(f.path)
   f.name <- gsub("(.*)[.]RData", "\\1", filename)
@@ -50,7 +50,7 @@ load.from.name <- function(filename, filepath="."){
 #' matrix as a long list (for easy construction of data.tables)
 #' @param samples Matrix of MCMC samples.
 #' @export
-summary_mvnorm <- function(samples){
+summary_mvnorm <- function(samples) {
   testForPackage("mclust")
   stopifnot(colnames(samples) != NULL)
   parnames <- colnames(samples)
@@ -72,18 +72,18 @@ summary_mvnorm <- function(samples){
 #' named list
 #' @param samples Matrix of MCMC samples
 #' @export
-summary_simple <- function(samples){
+summary_simple <- function(samples) {
   stopifnot(colnames(samples) != NULL)
   parnames <- colnames(samples)
-  mu <- colMeans(samples, na.rm=TRUE)
+  mu <- colMeans(samples, na.rm = TRUE)
   names(mu) <- sprintf("%s.mu", parnames)
-  sigma <- apply(samples, 2, sd, na.rm=TRUE)
+  sigma <- apply(samples, 2, sd, na.rm = TRUE)
   names(sigma) <- sprintf("%s.sigma", parnames)
-  q25 <- apply(samples, 2, quantile, 0.025, na.rm=TRUE)
+  q25 <- apply(samples, 2, quantile, 0.025, na.rm = TRUE)
   names(q25) <- sprintf("%s.q25", parnames)
-  med <- apply(samples, 2, median, na.rm=TRUE)
+  med <- apply(samples, 2, median, na.rm = TRUE)
   names(med) <- sprintf("%s.med", parnames)
-  q975 <- apply(samples, 2, quantile, 0.975, na.rm=TRUE)
+  q975 <- apply(samples, 2, quantile, 0.975, na.rm = TRUE)
   names(q975) <- sprintf("%s.q975", parnames)
   out.list <- c(as.list(mu), as.list(sigma), as.list(q25),
                 as.list(med), as.list(q975))
