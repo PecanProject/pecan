@@ -191,7 +191,7 @@ postProcess <- function(i.ngibbs, samps.list) {
   print(sprintf("Converged after %d iterations", i.ngibbs))
   samps.out <- PEcAn.assim.batch::makeMCMCList(samps.list)
   # Calculate summary statistics
-  samps.bt.out <- autoburnin(samps.out, return.burnin = TRUE)
+  samps.bt.out <- PEcAn.assim.batch::autoburnin(samps.out, return.burnin = TRUE)
   samps.bt <- samps.bt.out$samples
   print(paste("Burnin =", samps.bt.out$burnin))
   samps.combined <- do.call(rbind, samps.bt)
