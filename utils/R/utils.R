@@ -618,21 +618,21 @@ misc.convert <- function(x, u1, u2) {
 ##' @param u2 unit to be converted to, character
 ##' @return logical
 ##' @author Istem Fer, Shawn Serbin
-#misc.are.convertible <- function(u1, u2) {
-#  if (match(u1, c("umol C m-2 s-1", "kg C m-2 s-1")) ==
-#      match(u2, c("kg C m-2 s-1", "umol C m-2 s-1"))) {
-#    return(TRUE)
-#  } else {
-#    return(FALSE)
-#  }
-#}
 misc.are.convertible <- function(u1, u2) {
-  ifelse(match(u1, c("umol C m-2 s-1", "kg C m-2 s-1")) ==
-         match(u2, c("kg C m-2 s-1", "umol C m-2 s-1")),
-       return(TRUE),return(FALSE)) # umols C  m-2 s-1 to kg C  m-2 s-1 flux
-  ifelse(match(u1, c("mol H2O m-2 s-1", "kg H2O m-2 s-1")) ==
-           match(u2, c("kg H2O m-2 s-1", "mol H2O m-2 s-1")),
-         return(TRUE),return(FALSE)) # mol H2O  m-2 s-1 to kg H2O  m-2 s-1 flux
+  
+  # make sure the order of vectors match
+  units.from <- c("umol C m-2 s-1", "kg C m-2 s-1", "mol H2O m-2 s-1", "kg H2O m-2 s-1")
+  units.to <- c("kg C m-2 s-1", "umol C m-2 s-1", "kg H2O m-2 s-1", "mol H2O m-2 s-1")
+  
+  if(u1 %in% units.from & u2 %in% units.to) {
+    if (which(units.from == u1) == which(units.to == u2)) {
+      return(TRUE)
+    } else {
+      return(FALSE)
+    }
+  } else {
+    return(FALSE)
+  }
 }
 
 

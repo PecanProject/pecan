@@ -39,6 +39,9 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
   ## MAAT driver format (.csv):
   ## Time (POSIX),  Air Temp (°C), PAR (umols m-2 s-1), Precipitation( ??), Atmospheric CO2 (μmol mol-1) ... # STILL IN DEVELOPMENT
   
+  # Import functions
+  logger.debug <- PEcAn.utils::logger.debug
+  
   print("START met2model.MAAT")
   
   start_date <- as.POSIXlt(start_date, tz = "GMT")
