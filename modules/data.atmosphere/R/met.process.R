@@ -82,7 +82,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                           formatname = result$formatname, 
                           parentid = NA, 
                           con = con, hostname = result$host)
-      invisible(return(result$file))
+      return(invisible(result$file))
     }
   }
   
@@ -273,7 +273,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
     sitename <- gsub("[\\s/()]", "-", site$name, perl = TRUE)
   } else {
     logger.warn("Could not process source", source)
-    invisible(return(NA))
+    return(invisible(NA))
   }
   
   # this logic should live somewhere else, maybe the registry?
@@ -319,7 +319,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
                           stringsAsFactors = FALSE)
   } else {
     logger.warn("Could not process model", model)
-    invisible(return(NA))
+    return(invisible(NA))
   }
   
   xmldata <- paste0("<input>", 
