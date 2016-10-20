@@ -45,5 +45,5 @@ split.inputs.SIPNET <- function(settings, start.time, stop.time) {
   write.table(dat[sel1:sel2, ], file, row.names = FALSE, col.names = FALSE)
   
   settings$run$inputs$met$path <- file
-  settings$run$inputs
+  return(settings$run$inputs)
 } # split.inputs.SIPNET

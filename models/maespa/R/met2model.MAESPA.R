@@ -198,5 +198,5 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   replacePAR(out.file.full, "enddate", "metformat", newval = enddate, noquotes = TRUE)
   replacePAR(out.file.full, "columns", "metformat", newval = columnnames, noquotes = TRUE)
   
-  invisible(results)
+  return(invisible(results))
 } # met2model.MAESPA
