@@ -586,7 +586,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     var[[46]] <- mstmipvar("Qsb", lat, lon, t, zg)
     
     ## write ALMA
-    nc <- nc_create(file.path(outdir, paste(yrs[y], "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(yrs[y], "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(yrs[y], "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
       ncdf4::ncvar_put(nc, var[[i]], out[[i]])

@@ -33,9 +33,11 @@
 met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat = NA, 
                           lon = NA, overwrite = FALSE, verbose = FALSE, ...) {
   overwrite <- as.logical(overwrite)
-  
+
+  # deprecated?  
   library(rhdf5)
   library(PEcAn.utils)
+  #
 
   ncvar_get <- ncdf4::ncvar_get
   ncdim_def <- ncdf4::ncdim_def
@@ -85,6 +87,9 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     
     ## open netcdf
     nc <- ncdf4::nc_open(ncfile)
+    
+    # Import ncvar_get
+    ncvar_get <- ncdf4::ncvar_get    
     
     # check lat/lon
     flat <- try(ncvar_get(nc, "latitude"), silent = TRUE)
