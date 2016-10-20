@@ -85,5 +85,6 @@ lightME <- function(lat = 40, DOY = 190, t.d = 12, t.sn = 12, atm.P = 1e+05, alp
   propIdir <- I.dir / (I.dir + I.diff)
   propIdiff <- I.diff / (I.dir + I.diff)
   
-  list(I.dir = I.dir, I.diff = I.diff, cos.th = CosZenithAngle, propIdir = propIdir, propIdiff = propIdiff)
+  return(list(I.dir = I.dir, I.diff = I.diff, cos.th = CosZenithAngle,
+              propIdir = propIdir, propIdiff = propIdiff))
 } # lightME

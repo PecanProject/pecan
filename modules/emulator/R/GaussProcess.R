@@ -308,8 +308,8 @@ GaussProcess <- function(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes"
     progressBar(1.1, prevTime)
   }
   
-  list(method = method, tauwjump = tauwjump, tauw = tauwgibbs, 
-       psijump = psijump, psi = psigibbs, mu = mugibbs, tauv = tauvgibbs,
-       W = Wgibbs, nugget = nugget, isotropic = isotropic, d = d, samp = samp, 
-       x.id = x.id, x.compact = x.compact, y = y, zeroMean = zeroMean)
+  return(list(method = method, tauwjump = tauwjump, tauw = tauwgibbs, 
+              psijump = psijump, psi = psigibbs, mu = mugibbs, tauv = tauvgibbs,
+              W = Wgibbs, nugget = nugget, isotropic = isotropic, d = d, samp = samp, 
+              x.id = x.id, x.compact = x.compact, y = y, zeroMean = zeroMean))
 } # GaussProcess

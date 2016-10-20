@@ -599,14 +599,14 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       ncdf4::nc_close(nc)
     }  ## end loop over years
   }  ## end else file found
-  invisible(results)
+  return(invisible(results))
 } # met2CF.csv
 
 
 datetime <- function(list) {
   date_string <- sapply(list, as.character)
   datetime <- paste(list, "00")
-  ymd_hms(datetime)
+  return(ymd_hms(datetime))
 } # datetime
 
 met.conv <- function(x, orig, bety, CF) {
