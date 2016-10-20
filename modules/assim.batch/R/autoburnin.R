@@ -36,7 +36,9 @@ getBurnin <- function(jags_out,
                       plotfile = "/dev/null",
                       ...) {
   if (!coda::is.mcmc.list(jags_out)) jags_out <- makeMCMCList(jags_out)
-  stopifnot(coda::niter(jags_out) > 50)
+  if(coda::niter(jags_out) < 50) {
+    stop("Fewer than 50 iterations. Burnin will not be calculated")
+  }
   if (method == "rmw"){
     burnin <- getBurnin.rmw(jags_out, 
                             width = width,
@@ -69,6 +71,15 @@ getBurnin.rmw <- function(x, width = ceiling(coda::niter(x)/2), njump = 50,
   gdcol <- ifelse(use.confidence, 2, 1)
   a <- floor(seq(endx - width + 1, startx, length.out = njump))
   b <- ceiling(seq(endx, startx + width - 1, length.out = njump))
+  if (length(a) < 1) {
+    stop("Error calculating burnin: Start index vector has length 0")
+  }
+  if (length(b) < 1) {
+    stop("Error calculating burnin: End index vector has length 0")
+  }
+  # Default condition -- burnin == 1 means no convergence
+  burnin <- 1
+  # Now loop and see if a better burnin value can be determined
   i <- 1
   while(converged & i <= length(a)) {
     xsub <- window(x, start=a[i], end=b[i])
@@ -77,7 +88,7 @@ getBurnin.rmw <- function(x, width = ceiling(coda::niter(x)/2), njump = 50,
     if (any(gd > threshold)) {
       converged <- FALSE
       burnin <- max(a[i-1], 2)
-      # This allows convergence checking with `burnin == 1`
+      # Above allows convergence checking with `burnin == 1`
       # Burnin will only be 1 here if the chains converge instantly, which is highly unlikely
       if (i <= 1) {
         burnin <- 1
