@@ -212,6 +212,7 @@ EDR.preprocess.history <- function(history.path, output.path, datetime, history.
   history.copy <- file.copy(history.full.path, history.new.path, overwrite = FALSE)
   if (!history.copy) {
     warning("Could not copy history with overwrite=FALSE. Attempting with overwrite=TRUE")
+    history.copy <- file.copy(history.full.path, history.new.path, overwrite = TRUE)
     if (!history.copy) {
       stop("Unable to copy history file, even with overwrite=TRUE. Check permissions on both input and output directories.")
     }
