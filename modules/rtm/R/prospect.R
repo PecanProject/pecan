@@ -52,8 +52,6 @@ prospect <- function(param, version, include.wl = FALSE) {
   }
 } # prospect
 
-
-<<<<<<< HEAD
 #' Shortcut lists for PROSPECT parameter names
 
 #' @name params.prospect4

@@ -12,7 +12,7 @@ Description: This package contains functions for performing forward runs and
 Depends:
     MASS,
     coda,
-    lubrdiate (>- 1.6.0),
+    lubridate (>= 1.6.0),
     PEcAn.assim.batch
 Suggests:
     minpack.lm,

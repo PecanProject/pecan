@@ -32,15 +32,15 @@ For models with large constants (e.g. absorption features in the
       y <- 6:15
       z <- seq(exp(1), pi, length.out=42)
       l <- list(x=x, y=y, z=z) ## NOTE that names must be explicitly declared
-      l.types <- c("real","integer", "real*4", "real*8")
-      f.data.module(l, l.types, "testmod")
+      l.types <- c('real','integer', 'real*4', 'real*8')
+      f.data.module(l, l.types, 'testmod')
  
       x <- runif(10)
       y <- rnorm(10)
       z <- rgamma(10, 3)
       d <- data.frame(x,y,z) ## NOTE that data.frames are just named lists
-      d.types <- rep("real*8", ncol(d))
-      f.data.module(d, d.types, "random") 
+      d.types <- rep('real*8', ncol(d))
+      f.data.module(d, d.types, 'random') 
 }
 \author{
 Alexey Shiklomanov
