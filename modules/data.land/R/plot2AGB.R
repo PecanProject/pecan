@@ -121,7 +121,7 @@ plot2AGB <- function(combined, out, outfolder, allom.stats, unit.conv = 0.02) {
        mbiomass_tsca, sbiomass_tsca, mbiomass_acsa3, sbiomass_acsa3, 
        mbiomass_beal2, sbiomass_beal2, mbiomass_thoc2, sbiomass_thoc2, 
        file = file.path(outfolder, "plot2AGB.Rdata"))
-  list(AGB = AGB, NPP = NPP, 
-       biomass_tsca = biomass_tsca, biomass_acsa3 = biomass_acsa3, 
-       biomass_beal2 = biomass_beal2, biomass_thoc2 = biomass_thoc2)
+  return(list(AGB = AGB, NPP = NPP, 
+              biomass_tsca = biomass_tsca, biomass_acsa3 = biomass_acsa3, 
+              biomass_beal2 = biomass_beal2, biomass_thoc2 = biomass_thoc2))
 } # plot2AGB
