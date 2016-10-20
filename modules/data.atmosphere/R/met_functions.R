@@ -8,11 +8,11 @@ get.weather <- function(lat, lon, met.nc = met.nc, start.date, end.date, output.
 
 
 is.land <- function(lat, lon) {
-  Lat <- ncvar_get(nc = met.nc, varid = "lat")
-  Lon <- ncvar_get(nc = met.nc, varid = "lon")
+  Lat <- ncdf4::ncvar_get(nc = met.nc, varid = "lat")
+  Lon <- ncdf4::ncvar_get(nc = met.nc, varid = "lon")
   lati <- which.min(abs(Lat - lat))
   loni <- which.min(abs(Lon - lon))
-  mask <- ncvar_get(nc = met.nc, varid = "mask", start = c(loni, lati), count = c(1, 1))
+  mask <- ncdf4::ncvar_get(nc = met.nc, varid = "mask", start = c(loni, lati), count = c(1, 1))
   return(mask >= 0)
 } # is.land
 
@@ -85,5 +85,6 @@ lightME <- function(lat = 40, DOY = 190, t.d = 12, t.sn = 12, atm.P = 1e+05, alp
   propIdir <- I.dir / (I.dir + I.diff)
   propIdiff <- I.diff / (I.dir + I.diff)
   
-  list(I.dir = I.dir, I.diff = I.diff, cos.th = CosZenithAngle, propIdir = propIdir, propIdiff = propIdiff)
+  return(list(I.dir = I.dir, I.diff = I.diff, cos.th = CosZenithAngle,
+              propIdir = propIdir, propIdiff = propIdiff))
 } # lightME

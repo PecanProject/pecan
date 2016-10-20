@@ -12,13 +12,11 @@ load.x_netcdf <- function(data.path, format, site, vars = NULL) {
   
   data.path <- sapply(data.path, function(x) dir(dirname(x), basename(x), full.names = TRUE))
   
-  library(ncdf4)
-  
-  nc <- lapply(data.path, nc_open)
+  nc <- lapply(data.path, ncdf4::nc_open)
   
   dat <- list()
   for (ind in seq_along(vars)) {
-    nc.dat <- lapply(nc, ncvar_get, vars[ind])
+    nc.dat <- lapply(nc, ncdf4::ncvar_get, vars[ind])
     dat[vars[ind]] <- as.data.frame(unlist(nc.dat))
   }
   
@@ -35,14 +33,14 @@ load.x_netcdf <- function(data.path, format, site, vars = NULL) {
   for (i in seq_along(nc)) {
     dims <- names(nc[[i]]$dim)
     time.var <- grep(pattern = "time", dims, ignore.case = TRUE)
-    time.col[[i]] <- ncvar_get(nc[[i]], dims[time.var])
+    time.col[[i]] <- ncdf4::ncvar_get(nc[[i]], dims[time.var])
 
     # for heterogenous formats try parsing ymd_hms
-    date.origin <- suppressWarnings(try(ymd_hms(ncatt_get(nc[[i]], dims[time.var])$units)))
+    date.origin <- suppressWarnings(try(ymd_hms(ncdf4::ncatt_get(nc[[i]], dims[time.var])$units)))
     
     # parsing ymd
     if (is.na(date.origin)) {
-      date.origin <- ymd(ncatt_get(nc[[i]], dims[time.var])$units)
+      date.origin <- ymd(ncdf4::ncatt_get(nc[[i]], dims[time.var])$units)
     }
     # throw error if can't parse time format
     if (is.na(date.origin)) {
@@ -51,7 +49,7 @@ load.x_netcdf <- function(data.path, format, site, vars = NULL) {
     
     time.stamp.match <- gsub("UTC", "", date.origin)
     t.units <- gsub(paste0(" since ", time.stamp.match, ".*"), "", 
-                    ncatt_get(nc[[i]], dims[time.var])$units)
+                    ncdf4::ncatt_get(nc[[i]], dims[time.var])$units)
     
     foo <- as.POSIXlt(date.origin, tz = "UTC") + udunits2::ud.convert(time.col[[i]], t.units, "seconds")
     time.col[[i]] <- foo
@@ -63,7 +61,7 @@ load.x_netcdf <- function(data.path, format, site, vars = NULL) {
   # align.data step
   dat$posix <- round(as.POSIXlt(do.call("c", time.col), tz = "UTC"), "mins")
 
-  lapply(nc, nc_close)
+  lapply(nc, ncdf4::nc_close)
   
   return(dat)
 } # load.x_netcdf

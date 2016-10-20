@@ -16,7 +16,6 @@
 ##' @author Michael Dietze
 model2netcdf.FATES <- function(outdir) {
     
-    library(ncdf4)
     library(PEcAn.utils)
     
     ## Get files and years
@@ -34,13 +33,13 @@ model2netcdf.FATES <- function(outdir) {
         oname <- file.path(dirname(fname), paste0(year, ".nc"))
         logger.info(paste("model2netcdf.FATES:", fname, "to", oname))
         file.copy(fname, oname)
-        nc <- nc_open(oname, write = TRUE)
+        nc <- ncdf4::nc_open(oname, write = TRUE)
         
         ## FATES time is in multiple columns, create 'time'
-        day  <- ncvar_get(nc, "mdcur")  #current day (from base day)
-        sec  <- ncvar_get(nc, "mscur")  #current seconds of current day
+        day  <- ncdf4::ncvar_get(nc, "mdcur")  #current day (from base day)
+        sec  <- ncdf4::ncvar_get(nc, "mscur")  #current seconds of current day
         time <- day + sec / 86400
-        var  <- ncvar_def(name = "time", units = "days", dim = nc$dim[["time"]])
+        var  <- ncdf4::ncvar_def(name = "time", units = "days", dim = nc$dim[["time"]])
         # These lines throw an error saying time already exists, but not showing up in VAR file
         #     nc  <- ncvar_add(nc=nc, v=var)
         #     ncvar_put(nc,"time",time)
@@ -53,7 +52,7 @@ model2netcdf.FATES <- function(outdir) {
                     row.names = TRUE, 
                     quote = FALSE)
         
-        nc_close(nc)
+        ncdf4::nc_close(nc)
         #   
         ### extract variables. These need to be read in and converted to PEcAN standard
         

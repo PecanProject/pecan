@@ -26,5 +26,5 @@ groupid <- function(x) {
       j <- j + 1
     }
   }
-  v
+  return(v)
 } # groupid

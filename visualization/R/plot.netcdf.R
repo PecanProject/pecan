@@ -32,7 +32,7 @@ data.fetch <- function(var, nc, fun = mean) {
   aggrlist <- list(floor(nc$dim[["time"]]$vals))
   
   # aggregate the data
-  data <- ncvar_get(nc, var)
+  data <- ncdf4::ncvar_get(nc, var)
   val <- aggregate(data[indices], by = aggrlist, FUN = fun)$x
   
   # get the label
@@ -78,10 +78,8 @@ data.fetch <- function(var, nc, fun = mean) {
 ##' @author Rob Kooper
 plot.netcdf <- function(datafile, yvar, xvar = "time", width = 800, height = 600, 
                         filename = NULL, year = NULL) {
-  library(ncdf4)
-  
   # open netcdf file
-  nc <- nc_open(datafile)
+  nc <- ncdf4::nc_open(datafile)
   
   # compute variables
   xval_mean <- data.fetch(xvar, nc, mean)
@@ -93,13 +91,13 @@ plot.netcdf <- function(datafile, yvar, xvar = "time", width = 800, height = 600
   if (!is.null(filename)) {
     if (tolower(filename) == "x11") {
       x11(width = width/96, height = height/96)
-    } else if (tolower(str_sub(filename, -4)) == ".png") {
+    } else if (tolower(stringr::str_sub(filename, -4)) == ".png") {
       png(filename = filename, width = width, height = height)
-    } else if (tolower(str_sub(filename, -4)) == ".pdf") {
+    } else if (tolower(stringr::str_sub(filename, -4)) == ".pdf") {
       pdf(filename = filename, width = width, height = height)
-    } else if (tolower(str_sub(filename, -4)) == ".jpg") {
+    } else if (tolower(stringr::str_sub(filename, -4)) == ".jpg") {
       jpg(filename = filename, width = width, height = height)
-    } else if (tolower(str_sub(filename, -5)) == ".tiff") {
+    } else if (tolower(stringr::str_sub(filename, -5)) == ".tiff") {
       tiff(filename = filename, width = width, height = height)
     }
   }
@@ -123,7 +121,7 @@ plot.netcdf <- function(datafile, yvar, xvar = "time", width = 800, height = 600
     }
   }
   # done with netcdf file
-  nc_close(nc)
+  ncdf4::nc_close(nc)
   
   # remove all NA's
   removeme <- unique(c(which(is.na(yval_min)), 

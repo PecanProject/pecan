@@ -19,8 +19,8 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date) 
   library(PEcAn.utils)
   
   ## Lat and Lon
-  Lat <- ncvar_get(met.nc, "latitude")
-  Lon <- ncvar_get(met.nc, "longitude")
+  ncdf4::Lat <- ncvar_get(met.nc, "latitude")
+  ncdf4::Lon <- ncvar_get(met.nc, "longitude")
 
   if(min(abs(Lat-lat)) > 2.5 | min(abs(Lon-lon)) > 2.5){
     logger.error("lat / lon (", lat, ",", lon, ") outside range of met file (", range(Lat), ",", range(Lon))
@@ -28,11 +28,11 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date) 
   lati <- which.min(abs(Lat - lat))
   loni <- which.min(abs(Lon - lon))
 
-  time.idx <- ncvar_get(met.nc, "time")
+  time.idx <- ncdf4::ncvar_get(met.nc, "time")
 
   ## confirm that time units are PEcAn standard
-  basetime.string <- ncatt_get(met.nc, "time", "units")$value
-  base.date       <- parse_date_time(basetime.string, c("ymd_hms", "ymd_h", "ymd"))
+  basetime.string <- ncdf4::ncatt_get(met.nc, "time", "units")$value
+  base.date       <- lubridate::parse_date_time(basetime.string, c("ymd_hms", "ymd_h", "ymd"))
   base.units      <- strsplit(basetime.string, " since ")[[1]][1]
 
   ## convert to days
@@ -56,11 +56,11 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date) 
   run.dates <- all.dates[date > ymd(as.Date(start.date)) & date < ymd(as.Date(end.date)),
                          list(index, 
                               date = date, 
-                              doy = yday(date),
-                              year = year(date),
-                              month = month(date),
-                              day  = day(date), 
-                              hour = hour(date) + minute(date) / 60)]
+                              doy = lubridate::yday(date),
+                              year = lubridate::year(date),
+                              month = lubridate::month(date),
+                              day  = lubridate::day(date), 
+                              hour = lubridate::hour(date) + lubridate::minute(date) / 60)]
   
   results <- list()
 

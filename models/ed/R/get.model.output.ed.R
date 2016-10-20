@@ -19,15 +19,15 @@
 read.output.file.ed <- function(filename, variables = c("AGB_CO", "NPLANT")) {
   if (filename %in% dir(pattern = "h5")) {
     Carbon2Yield <- 20
-    nc <- nc_open(filename)
+    nc <- ncdf4::nc_open(filename)
     if (all(c("AGB_CO", "NPLANT") %in% variables)) {
-      result <- (sum(ncvar_get(nc, "AGB_CO") * ncvar_get(nc, "NPLANT"), na.rm = TRUE) * Carbon2Yield)
+      result <- (sum(ncdf4::ncvar_get(nc, "AGB_CO") * ncdf4::ncvar_get(nc, "NPLANT"), na.rm = TRUE) * Carbon2Yield)
     } else {
       result <- sum(sapply(variables, function(x) {
-        sum(ncvar_get(nc, x))
+        sum(ncdf4::ncvar_get(nc, x))
       }))
     }
-    nc_close(nc)
+    ncdf4::nc_close(nc)
     return(result)
   } else {
     return(NA)

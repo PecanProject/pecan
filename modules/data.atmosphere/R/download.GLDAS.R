@@ -14,9 +14,6 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
                            overwrite = FALSE, verbose = FALSE, ...) {
   library(PEcAn.utils)
   library(RCurl)
-  library(ncdf4)
-  library(RCurl)
-  library(ncdf4)
 
   # Date stuff
   start_date <- as.POSIXlt(start_date, tz = "UTC")
@@ -83,9 +80,9 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
     loc.file <- file.path(outfolder, paste("GLDAS", year, "nc", sep = "."))
     
     ## Create dimensions
-    lat <- ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
-    lon <- ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
-    time <- ncdim_def(name = "time", 
+    lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
+    lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
+    time <- ncdf4::ncdim_def(name = "time", 
                       units = "sec", 
                       vals = seq((min(days.use + 1 - 1/8) * 24 * 360), (max(days.use) + 1 - 1/8) * 24 * 360, length.out = ntime), 
                       create_dimvar = TRUE, 
@@ -97,7 +94,7 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
     
     # Defining our dimensions up front
     for (j in seq_len(nrow(var))) {
-      var.list[[j]] <- ncvar_def(name = as.character(var$CF.name[j]), 
+      var.list[[j]] <- ncdf4::ncvar_def(name = as.character(var$CF.name[j]), 
                                  units = as.character(var$units[j]), 
                                  dim = dim, 
                                  missval = -999, 
@@ -153,11 +150,11 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
     }  # end day
     
     ## put data in new file
-    loc <- nc_create(filename = loc.file, vars = var.list, verbose = verbose)
+    loc <- ncdf4::nc_create(filename = loc.file, vars = var.list, verbose = verbose)
     for (j in seq_len(nrow(var))) {
-      ncvar_put(nc = loc, varid = as.character(var$CF.name[j]), vals = dat.list[[j]])
+      ncdf4::ncvar_put(nc = loc, varid = as.character(var$CF.name[j]), vals = dat.list[[j]])
     }
-    nc_close(loc)
+    ncdf4::nc_close(loc)
     
     results$file[i]       <- loc.file
     results$host[i]       <- fqdn()
@@ -167,5 +164,5 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
     results$formatname[i] <- "CF Meteorology"
   }
   
-  invisible(results)
+  return(invisible(results))
 } # download.GLDAS

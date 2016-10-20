@@ -234,7 +234,7 @@ remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FA
   result <- unserialize(fp)
   close(fp)
   unlink(tmpfile)
-  invisible(result)
+  return(invisible(result))
 } # remote.execute.R
 
 # remote.execute.cmd <- function(host, cmd, args=character(), stderr=FALSE) {

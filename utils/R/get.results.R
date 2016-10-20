@@ -92,8 +92,15 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
                          variable.sa, ")"))
     }
     
-    for (pft.name in pft.names) {
-      quantiles <- rownames(sa.samples[[pft.name]])
+    # if an expression is provided, convert.expr returns names of the variables accordingly
+    # if a derivation is not requested it returns the variable name as is
+    variables <- convert.expr(unlist(variable.sa))
+    variable.sa <- variables$variable.eqn
+    variable.fn <- variables$variable.drv
+    
+
+    for(pft.name in pft.names){
+      quantiles <- rownames(sa.samples[[pft.name]])    
       traits <- trait.names[[pft.name]]
       
       sensitivity.output[[pft.name]] <- read.sa.output(traits = traits, 
@@ -107,11 +114,12 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
     }
     
     # Save sensitivity output
+ 
     fname <- sensitivity.filename(settings, "sensitivity.output", "Rdata", 
                                   all.var.yr = FALSE, 
                                   pft = NULL, 
                                   ensemble.id = sa.ensemble.id, 
-                                  variable = variable.sa, 
+                                  variable = variable.fn, 
                                   start.year = start.year.sa, 
                                   end.year = end.year.sa)
     save(sensitivity.output, file = fname)
@@ -189,6 +197,12 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
                          variable.ens, ")"))
     }
     
+    # if an expression is provided, convert.expr returns names of the variables accordingly
+    # if a derivation is not requested it returns the variable name as is
+    variables <- convert.expr(variable.ens)
+    variable.ens <- variables$variable.eqn
+    variable.fn <- variables$variable.drv
+    
     ensemble.output <- read.ensemble.output(settings$ensemble$size,
                                             pecandir = outdir, 
                                             outdir = settings$modeloutdir,
@@ -201,7 +215,7 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
     fname <- ensemble.filename(settings, "ensemble.output", "Rdata", 
                                all.var.yr = FALSE, 
                                ensemble.id = ens.ensemble.id, 
-                               variable = variable.ens, 
+                               variable = variable.fn, 
                                start.year = start.year.ens, 
                                end.year = end.year.ens)
     save(ensemble.output, file = fname)
@@ -214,7 +228,7 @@ runModule.get.results <- function(settings) {
   if (is.MultiSettings(settings)) {
     return(papply(settings, runModule.get.results))
   } else if (is.Settings(settings)) {
-    get.results(settings)
+    return(get.results(settings))
   } else {
     stop("runModule.get.results only works with Settings or MultiSettings")
   }
