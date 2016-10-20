@@ -82,7 +82,7 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 <link rel="stylesheet" type="text/css" href="sites.css" />
 <style>
 	body {font-size: 62.5%;}
-	label, input {display:block}
+	label, input {display:block; padding-top: 10px;}
 	input.text { margin-bottom:12px; width:95%; padding:10px;}
 	fieldset { padding:0; border:0; margin-top:25px; }
 	h1 { font-size: 1.2em; margin: .6em 0; }
@@ -90,7 +90,7 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 	.validateTips { border: 1px solid transparent; padding: 0.3em; } 
 	#container { display: table; }
 	#row { display: table-row; }
-	#left, #right, #middle { display: table-cell; }
+	#left, #right, #middle { display: table-cell; padding-left: 10px; }
 </style>
 <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 <?php if (!$offline) {?>
@@ -167,6 +167,7 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 			
 			//Serialize the data in the form
 			var serializedData = $form.serialize();
+			alert(serializedData);
 
 			//Let's disable the inputs for the duration of the ajax request
 			// Note: we disable elements AFTER the form data has been serialized.
@@ -177,7 +178,10 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 			request = $.ajax({
 				url: "/pecan/insert-site.php",
 				type: "post",
-				data: serializedData
+				data: serializedData,
+				success: function(output){
+					console.log(output);
+				}
 			
 			});
 
@@ -185,6 +189,9 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 			request.done(function( response, textStatus, jqXHR) {
 				// Log a message to the console
 				console.log("It worked.");
+				console.log(response);
+				console.log(textStatus);
+				console.log(jqXHR);
 			
 			});
 
@@ -623,22 +630,38 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 						</div>
 						<div id="row">
 						<!-- Column 1 -->
-							<label id="lbllat">Lat</label>
-							<input id="txtlat" size="30" type="text"></input>
-							<label id="lbllong">Long</label>
-							<input id="txtlong" size="30" type="text"></input>
-							<label id="lblpctsoil">% Soil</label>
-							<input id="txtpctsoil" size="30" type="text"></input>
-							<label id="lblpctclay">% Clay</label>
-							<input id="txtpctclay" size="30" type="text"></input>
-							<label id="lblpctsand">% Sand</label>
-							<input id="txtpctsand" size="30" type="text"></input>
-							<label id="lblsom">SOM</label>
-							<input id="txtsom" size="30" type="text"></input>
-							<label id="lblgreenhouse">Greenhouse</label>
-							<input id="txtgreenhouse" size="30" type="text"></input>
-							<!-- Column 2 -->
-							<!-- MAP HERE -->
+							<div id="left">
+								<label id="lbllat">Lat</label>
+								<input id="txtlat" size="30" type="text"></input>
+							</div>
+							<div id="middle">
+								<label id="lbllong">Long</label>
+								<input id="txtlong" size="30" type="text"></input>
+							</div>
+						</div>
+						<div id="row">
+						<!--	<div id="left">
+								<label id="lblpctsoil">% Soil</label>
+								<input id="txtpctsoil" size="30" type="text"></input>
+							</div> -->
+							<div id="left">
+								<label id="lblpctclay">% Clay</label>
+								<input id="txtpctclay" size="30" type="text"></input>
+							</div>
+							<div id="middle">
+								<label id="lblpctsand">% Sand</label>
+								<input id="txtpctsand" size="30" type="text"></input>
+							</div>
+						</div>
+						<div id="row">
+							<!--<div id="left">
+								<label id="lblsom">SOM</label>
+								<input id="txtsom" size="30" type="text"></input>
+							</div> -->
+							<div id="left">
+								<label id="lblgreenhouse">Greenhouse</label>
+								<input id="txtgreenhouse" size="30" type="text"></input>
+							</div>
 						</div>
 						<div id="row">
 							<div id="left">
