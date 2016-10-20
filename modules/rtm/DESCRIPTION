@@ -12,13 +12,14 @@ Description: This package contains functions for performing forward runs and
 Depends:
     MASS,
     coda,
+    lubrdiate (>- 1.6.0),
     PEcAn.assim.batch
 Suggests:
     minpack.lm,
     mclust,
     PEcAn.utils,
     PEcAn.ED2,
-    testthat,
+    testthat (>= 1.0.2),
     knitr
 OS_type: unix
 License: FreeBSD + file LICENSE

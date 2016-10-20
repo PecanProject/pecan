@@ -35,103 +35,90 @@ getBurnin <- function(jags_out,
                       autoburnin = FALSE,
                       plotfile = "/dev/null",
                       ...) {
-    library(coda)
-    if (length(find("logger.info")) == 0) {
-        msg <- message
-        err <- stop
-    } else {
-        msg <- logger.info
-        err <- logger.error
-    }
-    if (!is.mcmc.list(jags_out)) jags_out <- makeMCMCList(jags_out)
-    stopifnot(niter(jags_out) > 50)
-    if (method == "rmw"){
-        burnin <- getBurnin.rmw(jags_out, 
-                                width = width,
-                                njump = njump,
-                                threshold = threshold,
-                                use.confidence = use.confidence,
-                                ...)
-    } else if (method == "gelman.plot") {
-        burnin <- getBurnin.gelman.plot(jags_out, 
-                                        threshold = threshold,
-                                        use.confidence = use.confidence,
-                                        autoburnin = autoburnin,
-                                        plotfile = plotfile,
-                                        ...)
-    } else {
-        err(sprintf("Method '%s' not valid. Only 'rmw' and 'gelman.plot' currently supported.", 
-                    method))
-    }
-    if (burnin == 1) msg("*** Chains have not converged yet ***")
-    return(burnin)
+  if (!coda::is.mcmc.list(jags_out)) jags_out <- makeMCMCList(jags_out)
+  stopifnot(niter(jags_out) > 50)
+  if (method == "rmw"){
+    burnin <- getBurnin.rmw(jags_out, 
+                            width = width,
+                            njump = njump,
+                            threshold = threshold,
+                            use.confidence = use.confidence,
+                            ...)
+  } else if (method == "gelman.plot") {
+    burnin <- getBurnin.gelman.plot(jags_out, 
+                                    threshold = threshold,
+                                    use.confidence = use.confidence,
+                                    autoburnin = autoburnin,
+                                    plotfile = plotfile,
+                                    ...)
+  } else {
+    stop(sprintf("Method '%s' not valid. Only 'rmw' and 'gelman.plot' currently supported.", 
+                method))
+  }
+  if (burnin == 1) message("*** Chains have not converged yet ***")
+  return(burnin)
 }
 
-getBurnin.rmw <- 
-    function(x, 
-             width = ceiling(niter(x)/2), 
-             njump = 50,
-             threshold = 1.1,
-             use.confidence = TRUE,
-             ...) {
-    stopifnot(width %% 1 == 0)
-    stopifnot(njump %% 1 == 0)
-    startx <- start(x)
-    endx <- end(x)
-    converged <- TRUE
-    gdcol <- ifelse(use.confidence, 2, 1)
-    a <- floor(seq(endx - width + 1, startx, length.out = njump))
-    b <- ceiling(seq(endx, startx + width - 1, length.out = njump))
-    i <- 1
-    while(converged & i <= length(a)) {
-        xsub <- window(x, start=a[i], end=b[i])
-        gd_raw <- gelman.diag(xsub, autoburnin=FALSE)
-        gd <- c(gd_raw$psrf[,gdcol], gd_raw$mpsrf)
-        if (any(gd > threshold)) {
-            converged <- FALSE
-            burnin <- max(a[i-1], 2)
-            # This allows convergence checking with `burnin == 1`
-            # Burnin will only be 1 here if the chains converge instantly, which is highly unlikely
-            if (i <= 1) {
-                burnin <- 1
-            }
-        }
-        i <- i + 1
+getBurnin.rmw <- function(x, width = ceiling(niter(x)/2), njump = 50,
+                          threshold = 1.1, use.confidence = TRUE, ...) {
+  stopifnot(width %% 1 == 0)
+  stopifnot(njump %% 1 == 0)
+  startx <- start(x)
+  endx <- end(x)
+  converged <- TRUE
+  gdcol <- ifelse(use.confidence, 2, 1)
+  a <- floor(seq(endx - width + 1, startx, length.out = njump))
+  b <- ceiling(seq(endx, startx + width - 1, length.out = njump))
+  i <- 1
+  while(converged & i <= length(a)) {
+    xsub <- window(x, start=a[i], end=b[i])
+    gd_raw <- coda::gelman.diag(xsub, autoburnin=FALSE)
+    gd <- c(gd_raw$psrf[,gdcol], gd_raw$mpsrf)
+    if (any(gd > threshold)) {
+      converged <- FALSE
+      burnin <- max(a[i-1], 2)
+      # This allows convergence checking with `burnin == 1`
+      # Burnin will only be 1 here if the chains converge instantly, which is highly unlikely
+      if (i <= 1) {
+        burnin <- 1
+      }
     }
-    return (burnin)
-}
+    i <- i + 1
+  }
+  return (burnin)
+} 
 
 
 getBurnin.gelman.plot <- function(jags_out, threshold = 1.1, 
                                   use.confidence = TRUE, autoburnin = FALSE,
-                      plotfile = "/dev/null", ...) {
-    png(plotfile)
-    GBR <- try(gelman.plot(jags_out, autoburnin = autoburnin, ...))
-    dev.off()
-    if (class(GBR) == "try-error") {
-        msg("Unable to calculate Gelman diagnostic. Assuming no convergence.")
-        return(1)
-    }
-    column <- ifelse(use.confidence, 2, 1)
-    gbr_values <- GBR$shrink[,, column, drop = FALSE]
-    gbr_exceed <- gbr_values > threshold
-    if (all(!gbr_exceed)) {
-        # Chains converged instantly -- no burnin required
-        burnin <- 2     # This isn't 1 to allow testing for convergence with `burnin == 1`
-    } else {
-        burnin <- GBR$last.iter[tail(which(rowSums(gbr_exceed) > 0), 1) + 1]
-    }
-    if (is.na(burnin)) {
-        msg("*** Chains have not converged yet ***")
-        mvals <- as.data.frame(matrix(gbr_values, nrow(gbr_values), ncol(gbr_values)))
-        colnames(mvals) <- colnames(gbr_values)
-        mex <- as.data.frame(matrix(gbr_exceed, nrow(gbr_exceed), ncol(gbr_exceed)))
-        colnames(mex) <- sprintf("PSRF %s > %.2f", colnames(gbr_exceed), threshold)
-        print(cbind(tail(mvals), tail(mex)))
-        burnin <- 1
-    }
-    return(burnin)
-}
+                                  plotfile = "/dev/null", ...) {
+  png(plotfile)
+  GBR <- try(coda::gelman.plot(jags_out, autoburnin = autoburnin, ...))
+  dev.off()
+  if (class(GBR) == "try-error") {
+    message("Unable to calculate Gelman diagnostic. Assuming no convergence.")
+    return(1)
+  }
+  column <- ifelse(use.confidence, 2, 1)
+  gbr_values <- GBR$shrink[,, column, drop = FALSE]
+  gbr_exceed <- gbr_values > threshold
+  if (all(!gbr_exceed)) {
+    # Chains converged instantly -- no burnin required
+    burnin <- 2     # This isn't 1 to allow testing for convergence with `burnin == 1`
+  } else {
+    burnin <- GBR$last.iter[tail(which(rowSums(gbr_exceed) > 0), 1) + 1]
+  }
+  if (is.na(burnin)) {
+    message("*** Chains have not converged yet ***")
+    mvals <- as.data.frame(matrix(gbr_values, nrow(gbr_values), ncol(gbr_values)))
+    colnames(mvals) <- colnames(gbr_values)
+    mex <- as.data.frame(matrix(gbr_exceed, nrow(gbr_exceed), ncol(gbr_exceed)))
+    colnames(mex) <- sprintf("PSRF %s > %.2f", colnames(gbr_exceed), threshold)
+    print(cbind(tail(mvals), tail(mex)))
+    burnin <- 1
+  }
+  return(burnin)
+} # getBurnin.gelman.plot
 
 #' @name autoburnin
 #' @title Automatically calculate and apply burnin value
@@ -145,25 +132,26 @@ getBurnin.gelman.plot <- function(jags_out, threshold = 1.1,
 #'      data(line)
 #'      line_burned <- autoburnin(line, threshold = 1.05, return.burnin=FALSE)
 #' @export
-autoburnin <- function(jags_out, return.burnin = FALSE, ...){
-    burnin <- getBurnin(jags_out, ...)
-    if (burnin == 1) return(jags_out)
-    out <- window(jags_out, start = burnin)
-    if (return.burnin) {
-        out <- list(samples = out, burnin = burnin)
-    }
-    return(out)
-}
+autoburnin <- function(jags_out, return.burnin = FALSE, ...) {
+  burnin <- getBurnin(jags_out, ...)
+  if (burnin == 1) {
+    return(jags_out)
+  }
+  out <- window(jags_out, start = burnin)
+  if (return.burnin) {
+    out <- list(samples = out, burnin = burnin)
+  }
+  return(out)
+} # autoburnin
 
 #' @name makeMCMCList
 #' @title Make MCMC list from samples list
 #' @param samps samples list (output from invert.custom)
 #' @export
 makeMCMCList <- function(samps) {
-    samps.mcmc <- lapply(samps, mcmc)
-    stopifnot(all(sapply(samps.mcmc, is.mcmc)))
-    samps.mcmc.list <- mcmc.list(samps.mcmc)
-    stopifnot(is.mcmc.list(samps.mcmc.list))
-    return(samps.mcmc.list)
-}
-
+  samps.mcmc <- lapply(samps, mcmc)
+  stopifnot(all(sapply(samps.mcmc, coda::is.mcmc)))
+  samps.mcmc.list <- coda::mcmc.list(samps.mcmc)
+  stopifnot(coda::is.mcmc.list(samps.mcmc.list))
+  return(samps.mcmc.list)
+} # makeMCMCList

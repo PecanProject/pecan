@@ -6,7 +6,6 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-#-------------------------------------------------------------------------------
 
 ##' Reads output from model ensemble
 ##'
@@ -23,29 +22,41 @@
 ##' @export
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper
 #--------------------------------------------------------------------------------------------------#
-read.ensemble.output <- function(ensemble.size, pecandir, outdir, 
-                                 start.year, end.year, variable, ens.run.ids=NULL){
+read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, end.year, 
+                                 variable, ens.run.ids = NULL) {
   if (is.null(ens.run.ids)) {
-    samples.file <- file.path(pecandir, 'samples.Rdata')
-    if(file.exists(samples.file)){
+    samples.file <- file.path(pecandir, "samples.Rdata")
+    if (file.exists(samples.file)) {
       load(samples.file)
       ens.run.ids <- runs.samples$ensemble
     } else {
-      stop(samples.file, "not found required by read.ensemble.output")      
+      stop(samples.file, "not found required by read.ensemble.output")
     }
   }
 
+  expr <- variable$expression
+  variables <- variable$variables
+  
   ensemble.output <- list()
-  for(row in rownames(ens.run.ids)) {
-    run.id <- ens.run.ids[row, 'id']
+  for (row in rownames(ens.run.ids)) {
+    run.id <- ens.run.ids[row, "id"]
     logger.info("reading ensemble output from run id: ", run.id)
-    ensemble.output[[row]] <- sapply(read.output(run.id, file.path(outdir, run.id),
-                                                 start.year, end.year, variable),
-                                     mean,na.rm=TRUE)
+    
+    for(var in seq_along(variables)){
+      out.tmp <- read.output(run.id, file.path(outdir, run.id), start.year, end.year, variables[var])
+      assign(variables[var], out.tmp[[variables[var]]])
+    }
+    
+    # derivation
+    out <- eval(parse(text = expr))
+    
+    ensemble.output[[row]] <- mean(out, na.rm= TRUE) 
+    
   }
   return(ensemble.output)
-}
-#==================================================================================================#
+} # read.ensemble.output
+
+
 ##' Get parameter values used in ensemble
 ##'
 ##' Returns a matrix of randomly or quasi-randomly sampled trait values 
@@ -63,80 +74,83 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir,
 ##' @export
 ##' @import randtoolbox
 ##' @author David LeBauer
-get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples, method="uniform", ...) {
+get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples, 
+                                 method = "uniform", ...) {
   
-  if(is.null(method)) {
+  if (is.null(method)) {
     logger.info("No sampling method supplied, defaulting to uniform random sampling")
-    method="uniform"
+    method <- "uniform"
   }
   
-  ##force as numeric for compatibility with Fortran code in halton()
+  ## force as numeric for compatibility with Fortran code in halton()
   ensemble.size <- as.numeric(ensemble.size)
-  if(ensemble.size <= 0){
+  if (ensemble.size <= 0) {
     ans <- NULL
   } else if (ensemble.size == 1) {
-    ans <- get.sa.sample.list(pft.samples,env.samples,0.50)
+    ans <- get.sa.sample.list(pft.samples, env.samples, 0.5)
   } else {
-    pft.samples[[length(pft.samples)+1]] = env.samples
-    names(pft.samples)[length(pft.samples)] <- 'env'
+    pft.samples[[length(pft.samples) + 1]] <- env.samples
+    names(pft.samples)[length(pft.samples)] <- "env"
     pft2col <- NULL
-    for(i in 1:length(pft.samples)){
-      pft2col <- c(pft2col,rep(i,length(pft.samples[[i]])))
+    for (i in seq_along(pft.samples)) {
+      pft2col <- c(pft2col, rep(i, length(pft.samples[[i]])))
     }
-        
+    
     total.sample.num <- sum(sapply(pft.samples, length))
     random.samples <- NULL
-
-      if(method == "halton"){
-        logger.info("Using ", method, "method for sampling")
-        random.samples <- halton(n = ensemble.size, dim=total.sample.num, ...)
-        ##force as a matrix in case length(samples)=1
-        random.samples <- as.matrix(random.samples)
-      } else if(method == "sobol"){
-        logger.info("Using ", method, "method for sampling")
-        random.samples <- sobol(n = ensemble.size, dim=total.sample.num, ...)
-        ##force as a matrix in case length(samples)=1
-        random.samples <- as.matrix(random.samples)
-      } else if(method == "torus"){
-        logger.info("Using ", method, "method for sampling")
-        random.samples <- torus(n = ensemble.size, dim=total.sample.num, ...)
-        ##force as a matrix in case length(samples)=1
-        random.samples <- as.matrix(random.samples)
-      } else if(method == "lhc"){
-        logger.info("Using ", method, "method for sampling")
-        random.samples <- lhc(t(matrix(0:1, ncol=total.sample.num, nrow=2)),ensemble.size)
-      } else if(method == "uniform"){
-        logger.info("Using ", method, "random sampling")
-        #uniform random
-        random.samples <- matrix(runif(ensemble.size*total.sample.num), ensemble.size, total.sample.num)
-      } else {
-        logger.info("Method ", method, " has not been implemented yet, using uniform random sampling")
-        #uniform random
-        random.samples <- matrix(runif(ensemble.size*total.sample.num), ensemble.size, total.sample.num)
-      }
     
+    if (method == "halton") {
+      logger.info("Using ", method, "method for sampling")
+      random.samples <- halton(n = ensemble.size, dim = total.sample.num, ...)
+      ## force as a matrix in case length(samples)=1
+      random.samples <- as.matrix(random.samples)
+    } else if (method == "sobol") {
+      logger.info("Using ", method, "method for sampling")
+      random.samples <- sobol(n = ensemble.size, dim = total.sample.num, ...)
+      ## force as a matrix in case length(samples)=1
+      random.samples <- as.matrix(random.samples)
+    } else if (method == "torus") {
+      logger.info("Using ", method, "method for sampling")
+      random.samples <- torus(n = ensemble.size, dim = total.sample.num, ...)
+      ## force as a matrix in case length(samples)=1
+      random.samples <- as.matrix(random.samples)
+    } else if (method == "lhc") {
+      logger.info("Using ", method, "method for sampling")
+      random.samples <- lhc(t(matrix(0:1, ncol = total.sample.num, nrow = 2)), ensemble.size)
+    } else if (method == "uniform") {
+      logger.info("Using ", method, "random sampling")
+      # uniform random
+      random.samples <- matrix(runif(ensemble.size * total.sample.num),
+                               ensemble.size, 
+                               total.sample.num)
+    } else {
+      logger.info("Method ", method, " has not been implemented yet, using uniform random sampling")
+      # uniform random
+      random.samples <- matrix(runif(ensemble.size * total.sample.num), 
+                               ensemble.size, 
+                               total.sample.num)
+    }
     
     ensemble.samples <- list()
     
     col.i <- 0
-    for(pft.i in seq(pft.samples)){
-      ensemble.samples[[pft.i]] <-
-        matrix(nrow=ensemble.size,ncol=length(pft.samples[[pft.i]]))
-      for(trait.i in seq(pft.samples[[pft.i]])) {
-        col.i<-col.i+1
-        ensemble.samples[[pft.i]][, trait.i] <- 
-          quantile(pft.samples[[pft.i]][[trait.i]],
-                   random.samples[, col.i])
-      } # end trait
+    for (pft.i in seq(pft.samples)) {
+      ensemble.samples[[pft.i]] <- matrix(nrow = ensemble.size, ncol = length(pft.samples[[pft.i]]))
+      for (trait.i in seq(pft.samples[[pft.i]])) {
+        col.i <- col.i + 1
+        ensemble.samples[[pft.i]][, trait.i] <- quantile(pft.samples[[pft.i]][[trait.i]], 
+                                                         random.samples[, col.i])
+      }  # end trait
       ensemble.samples[[pft.i]] <- as.data.frame(ensemble.samples[[pft.i]])
       colnames(ensemble.samples[[pft.i]]) <- names(pft.samples[[pft.i]])
-    } #end pft
+    }  #end pft
     names(ensemble.samples) <- names(pft.samples)
     ans <- ensemble.samples
   }
   return(ans)
-}  ### End of function: get.ensemble.samples
-#==================================================================================================#
+} # get.ensemble.samples
+
+
 ##' Write ensemble config files
 ##'
 ##' Writes config files for use in meta-analysis and returns a list of run ids.
@@ -151,17 +165,19 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples, method
 ##' @return list, containing $runs = data frame of runids, and $ensemble.id = the ensemble ID for these runs. Also writes sensitivity analysis configuration files as a side effect
 ##' @export
 ##' @author David LeBauer, Carl Davidson
-write.ensemble.configs <- function(defaults, ensemble.samples, settings,
-                                   model, clean=FALSE, write.to.db = TRUE){
+write.ensemble.configs <- function(defaults, ensemble.samples, settings, model, 
+                                   clean = FALSE, write.to.db = TRUE) {
   
-  my.write.config <- paste("write.config.", model, sep="")
-
-  if(is.null(ensemble.samples)) return(list(runs=NULL, ensemble.id=NULL))
+  my.write.config <- paste("write.config.", model, sep = "")
+  
+  if (is.null(ensemble.samples)) {
+    return(list(runs = NULL, ensemble.id = NULL))
+  }
   
   # Open connection to database so we can store all run/ensemble information
-  if(write.to.db){
-    con <- try(db.open(settings$database$bety), silent=TRUE)
-    if(is.character(con)){
+  if (write.to.db) {
+    con <- try(db.open(settings$database$bety), silent = TRUE)
+    if (is.character(con)) {
       con <- NULL
     }
   } else {
@@ -177,56 +193,66 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
   
   # create an ensemble id
   if (!is.null(con)) {
-    # write enseblem first
+    # write ensemble first
     now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
     db.query(paste0("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", 
-                     now, "', 'ensemble', ", workflow.id, ")"), con=con)
-    ensemble.id <- db.query(paste0("SELECT id FROM ensembles WHERE created_at='", now, "' AND runtype='ensemble'"), con=con)[['id']]
+                    now, "', 'ensemble', ", workflow.id, ")"), con = con)
+    ensemble.id <- db.query(paste0("SELECT id FROM ensembles WHERE created_at='", 
+                                   now, "' AND runtype='ensemble'"), con = con)[["id"]]
     for (pft in defaults) {
-      db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id, created_at, updated_at) values (",
-                      pft$posteriorid, ", ", ensemble.id, ", '", now, "', '", now, "');"), con=con)
+      db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id, created_at, updated_at) values (", 
+                      pft$posteriorid, ", ", 
+                      ensemble.id, ", '", now, "', '", now, "');"), 
+               con = con)
     }
   } else {
     ensemble.id <- NA
   }
-
+  
   # find all inputs that have an id
   inputs <- names(settings$run$inputs)
-  inputs <- inputs[grepl('.id$', inputs)]
+  inputs <- inputs[grepl(".id$", inputs)]
   
   # write configuration for each run of the ensemble
   runs <- data.frame()
-  for(counter in 1:settings$ensemble$size) {
+  for (counter in seq_len(settings$ensemble$size)) {
     if (!is.null(con)) {
       now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-      paramlist <- paste("ensemble=", counter, sep='')
-      db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id,",
-                       " parameter_list) values ('", 
-                       settings$model$id, "', '", settings$run$site$id, "', '", settings$run$start.date, "', '", 
-                       settings$run$end.date, "', '", settings$run$outdir , "', '", now, "', ", ensemble.id, ", '", 
-                       paramlist, "')"), con=con)
-      run.id <- db.query(paste0("SELECT id FROM runs WHERE created_at='", now, "' AND parameter_list='", paramlist, "'"), con=con)[['id']]
-
+      paramlist <- paste("ensemble=", counter, sep = "")
+      db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id,", 
+                      " parameter_list) values ('", settings$model$id,
+                      "', '", settings$run$site$id, 
+                      "', '", settings$run$start.date, 
+                      "', '", settings$run$end.date,
+                      "', '", settings$run$outdir,
+                      "', '", now, 
+                      "', ", ensemble.id, 
+                      ", '", paramlist, 
+                      "')"), con = con)
+      run.id <- db.query(paste0("SELECT id FROM runs WHERE created_at='", now, 
+                                "' AND parameter_list='", paramlist, "'"), con = con)[["id"]]
+      
       # associate inputs with runs
       if (!is.null(inputs)) {
-        for(x in inputs) {
-          db.query(paste0("INSERT INTO inputs_runs (input_id, run_id, created_at) ",
-                          "values (", settings$run$inputs[[x]], ", ", run.id, ", NOW());"), con=con)
+        for (x in inputs) {
+          db.query(paste0("INSERT INTO inputs_runs (input_id, run_id, created_at) ", 
+                          "values (", settings$run$inputs[[x]], ", ", run.id, ", NOW());"), 
+                   con = con)
         }
       }
-
+      
     } else {
-      run.id <- get.run.id('ENS', left.pad.zeros(counter, 5))
+      run.id <- get.run.id("ENS", left.pad.zeros(counter, 5))
     }
-    runs[counter, 'id'] <- run.id
+    runs[counter, "id"] <- run.id
     
     # create folders (cleaning up old ones if needed)
-    if(clean) {
+    if (clean) {
       unlink(file.path(settings$rundir, run.id))
       unlink(file.path(settings$modeloutdir, run.id))
     }
-    dir.create(file.path(settings$rundir, run.id), recursive=TRUE)
-    dir.create(file.path(settings$modeloutdir, run.id), recursive=TRUE)
+    dir.create(file.path(settings$rundir, run.id), recursive = TRUE)
+    dir.create(file.path(settings$modeloutdir, run.id), recursive = TRUE)
     
     # write run information to disk
     cat("runtype     : ensemble\n",
@@ -245,17 +271,18 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings,
         "hostname    : ", settings$host$name, "\n",
         "rundir      : ", file.path(settings$host$rundir, run.id), "\n",
         "outdir      : ", file.path(settings$host$outdir, run.id), "\n",
-        file=file.path(settings$rundir, run.id, "README.txt"), sep='')
+        file = file.path(settings$rundir, run.id, "README.txt"))
     
-    do.call(my.write.config, args = list(defaults = defaults,
-                                         trait.values = lapply(ensemble.samples, function(x, n){x[n, ]},n = counter),
+    do.call(my.write.config, args = list(defaults = defaults, 
+                                         trait.values = lapply(ensemble.samples, 
+                                                               function(x, n) { x[n, ] },
+                                                               n = counter), 
                                          settings = settings, run.id = run.id))
-    cat(run.id, file=file.path(settings$rundir, "runs.txt"), sep="\n", append=TRUE)
+    cat(run.id, file = file.path(settings$rundir, "runs.txt"), sep = "\n", append = TRUE)
   }
   if (!is.null(con)) {
     db.close(con)
   }
   
-  invisible(list(runs=runs, ensemble.id=ensemble.id))
-} ### End of function: write.ensemble.configs
-#==================================================================================================#
+  invisible(list(runs = runs, ensemble.id = ensemble.id))
+} # write.ensemble.configs

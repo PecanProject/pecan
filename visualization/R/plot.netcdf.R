@@ -1,16 +1,16 @@
-##-------------------------------------------------------------------------------
-## Copyright (c) 2012 University of Illinois, NCSA.
-## All rights reserved. This program and the accompanying materials
-## are made available under the terms of the 
-## University of Illinois/NCSA Open Source License
-## which accompanies this distribution, and is available at
-## http://opensource.ncsa.illinois.edu/license.html
-##-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
+#-------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------
 # PRIVATE FUNCTIONS
 # ----------------------------------------------------------------------
-data.fetch <- function(var, nc, fun=mean) {
+data.fetch <- function(var, nc, fun = mean) {
   # get a specific set of values from the HDF data
   #
   # Args:
@@ -22,18 +22,18 @@ data.fetch <- function(var, nc, fun=mean) {
   # Returns:
   #   values extracted from the nc data
   if (var == "time") {
-    val <- unique(floor(nc$dim[['time']]$vals))
+    val <- unique(floor(nc$dim[["time"]]$vals))
     attr(val, "lbl") <- "Day of the year"
     return(val)
   }
   
   # some precomputations
-  indices  <- 0:length(nc$dim[['time']]$vals)
-  aggrlist <- list(floor(nc$dim[['time']]$vals))
+  indices <- 0:length(nc$dim[["time"]]$vals)
+  aggrlist <- list(floor(nc$dim[["time"]]$vals))
   
   # aggregate the data
-  data <- ncvar_get(nc, var)
-  val <- aggregate(data[indices], by=aggrlist, FUN=fun)$x
+  data <- ncdf4::ncvar_get(nc, var)
+  val <- aggregate(data[indices], by = aggrlist, FUN = fun)$x
   
   # get the label
   title <- nc$var[[var]]$longname
@@ -50,7 +50,7 @@ data.fetch <- function(var, nc, fun=mean) {
   
   # done
   return(val)
-}
+} # data.fetch
 
 # ----------------------------------------------------------------------
 # MAIN FUNCTIONS
@@ -72,66 +72,67 @@ data.fetch <- function(var, nc, fun=mean) {
 ##' @param the height of the image generated, default is 600 pixels.
 ##' @param filename is the name of the file name that is geneated, this
 ##'        can be null to use existing device, otherwise it will try and
-#@'        create an image based on filename, or display if x11.
+# @' create an image based on filename, or display if x11.
 ##' @param year the year this data is for (only used in the title).
 ##' @export
 ##' @author Rob Kooper
-plot.netcdf <- function(datafile, yvar, xvar='time', width=800, height=600, filename=NULL, year=NULL) {  
-  require(ncdf4)
-  require(stringr)
-
+plot.netcdf <- function(datafile, yvar, xvar = "time", width = 800, height = 600, 
+                        filename = NULL, year = NULL) {
   # open netcdf file
-  nc <- nc_open(datafile)
+  nc <- ncdf4::nc_open(datafile)
   
   # compute variables
   xval_mean <- data.fetch(xvar, nc, mean)
   yval_mean <- data.fetch(yvar, nc, mean)
-  yval_max  <- data.fetch(yvar, nc, max)
-  yval_min  <- data.fetch(yvar, nc, min)
+  yval_max <- data.fetch(yvar, nc, max)
+  yval_min <- data.fetch(yvar, nc, min)
   
   # setup output
   if (!is.null(filename)) {
-    if (tolower(filename) == 'x11') {
-      x11(width=width/96, height=height/96)
-    } else if (tolower(str_sub(filename, -4)) == ".png") {
-      png(filename=filename, width=width, height=height)
-    } else if (tolower(str_sub(filename, -4)) == ".pdf") {
-      pdf(filename=filename, width=width, height=height)
-    } else if (tolower(str_sub(filename, -4)) == ".jpg") {
-      jpg(filename=filename, width=width, height=height)
-    } else if (tolower(str_sub(filename, -5)) == ".tiff") {
-      tiff(filename=filename, width=width, height=height)
+    if (tolower(filename) == "x11") {
+      x11(width = width/96, height = height/96)
+    } else if (tolower(stringr::str_sub(filename, -4)) == ".png") {
+      png(filename = filename, width = width, height = height)
+    } else if (tolower(stringr::str_sub(filename, -4)) == ".pdf") {
+      pdf(filename = filename, width = width, height = height)
+    } else if (tolower(stringr::str_sub(filename, -4)) == ".jpg") {
+      jpg(filename = filename, width = width, height = height)
+    } else if (tolower(stringr::str_sub(filename, -5)) == ".tiff") {
+      tiff(filename = filename, width = width, height = height)
     }
   }
-
-  # setup plot (needs to be done before removing of NA since that removes attr as well).
+  
+  # setup plot (needs to be done before removing of NA since that removes attr as
+  # well).
   plot.new()
-  title(xlab=attr(xval_mean, "lbl"))
-  title(ylab=attr(yval_mean, "lbl"))
+  title(xlab = attr(xval_mean, "lbl"))
+  title(ylab = attr(yval_mean, "lbl"))
   if (xvar == "time") {
     if (is.null(year)) {
-      title(main=nc$var[[yvar]]$longname)
+      title(main = nc$var[[yvar]]$longname)
     } else {
-      title(main=paste(nc$var[[yvar]]$longname, "for", year))
+      title(main = paste(nc$var[[yvar]]$longname, "for", year))
     }
   } else {
     if (is.null(year)) {
-      title(main=paste(xvar, "VS", yvar))
+      title(main = paste(xvar, "VS", yvar))
     } else {
-      title(main=paste(xvar, "VS", yvar, "for", year))
+      title(main = paste(xvar, "VS", yvar, "for", year))
     }
   }
   # done with netcdf file
-  nc_close(nc)
-  
+  ncdf4::nc_close(nc)
   
   # remove all NA's
-  removeme <- unique(c(which(is.na(yval_min)), which(is.na(xval_mean)), which(is.na(yval_mean)), which(is.na(yval_max))))
+  removeme <- unique(c(which(is.na(yval_min)), 
+                       which(is.na(xval_mean)), 
+                       which(is.na(yval_mean)), 
+                       which(is.na(yval_max))))
   if (length(removeme) > 0) {
     xval_mean <- xval_mean[-removeme]
     yval_mean <- yval_mean[-removeme]
-    yval_max  <- yval_max[-removeme]
-    yval_min  <- yval_min[-removeme]
+    yval_max <- yval_max[-removeme]
+    yval_min <- yval_min[-removeme]
   }
   yvals <- c(yval_max, yval_min)
   
@@ -139,13 +140,17 @@ plot.netcdf <- function(datafile, yvar, xvar='time', width=800, height=600, file
   o <- order(xval_mean, yval_mean)
   
   # plot actual data
-  plot.window(xlim=c(min(xval_mean), max(xval_mean)), ylim=c(min(yvals), max(yvals)))
-  polygon(c(xval_mean[o], rev(xval_mean[o])), c(yval_max[o], rev(yval_min[o])), col="gray", border="black")
-  lines(x=xval_mean[o], y=yval_mean[o], col="red")
-  points(x=xval_mean[o], y=yval_mean[o], col="black", pch=".", cex=5)
+  plot.window(xlim = c(min(xval_mean), max(xval_mean)), 
+              ylim = c(min(yvals), max(yvals)))
+  polygon(c(xval_mean[o], rev(xval_mean[o])), 
+          c(yval_max[o], rev(yval_min[o])), 
+          col = "gray", border = "black")
+  lines(x = xval_mean[o], y = yval_mean[o], col = "red")
+  points(x = xval_mean[o], y = yval_mean[o], col = "black", pch = ".", cex = 5)
   
   # legend
-  legend("bottomright",col=c(1,"gray"),lwd=c(3,6),legend=c("mean","min/max"),cex=1.5)
+  legend("bottomright", col = c(1, "gray"), lwd = c(3, 6), legend = c("mean", "min/max"), 
+         cex = 1.5)
   
   # draw axis and box
   axis(1)
@@ -155,7 +160,7 @@ plot.netcdf <- function(datafile, yvar, xvar='time', width=800, height=600, file
   ## add PEcAn icon
   add_icon()
   
-  if (!is.null(filename) && (tolower(filename) != 'x11')) {
+  if (!is.null(filename) && (tolower(filename) != "x11")) {
     dev.off()
   }
-}
+} # plot.netcdf

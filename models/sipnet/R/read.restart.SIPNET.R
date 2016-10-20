@@ -1,80 +1,81 @@
+#-------------------------------------------------------------------------------
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
+#-------------------------------------------------------------------------------
+
 ##' @title read.restart.SIPNET
 ##' @name  read.restart.SIPNET
 ##' @author Ann Raiho \email{araiho@@nd.edu}
 ##' 
 ##' @param outdir      output directory
 ##' @param runid       run ID
-##' @param time        year that is being read
+##' @param stop.time        year that is being read
 ##' @param settings    PEcAn settings object
-##' @param variables   variables to be extracted
+##' @param var.names   var.names to be extracted
 ##' 
 ##' @description Read Restart for SIPNET
 ##' 
 ##' @return X.vec      vector of forecasts
 ##' @export
-##' 
-read.restart.SIPNET <- function(outdir,runid,time,settings,variables,sample_parameters=NULL){
-
-  if(sample_parameters == TRUE){
-    load(file.path(settings$outdir, "samples.Rdata"))
-    prior.sla <- mean(ensemble.samples[[which(names(ensemble.samples)!='soil')[1]]]$SLA) #HACK
-  }else{
-    load(file.path(settings$outdir, paste0("ensemble.samples.",settings$state.data.assimilation$prior,".Rdata")))
-    prior.sla <- ens.samples[[which(names(ensemble.samples)!='soil')[1]]]$SLA
-  }
+read.restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, params) {
+  
+  prior.sla <- params[[which(names(params) != "soil")[1]]]$SLA
   
   forecast <- list()
   
-  #Read ensemble output
-  ens <- read.output(runid = runid,outdir = file.path(outdir, runid),
-                     start.year = time, end.year=time,
-                     variables=variables)
-    
-    last = length(ens$NPP)
-    
-    forecast<-list()
-    
-    unit.conv <- (10000/1)*(1/10000)*(365.25*24*60*60)
+  # Read ensemble output
+  ens <- read.output(runid = runid, 
+                     outdir = file.path(outdir, runid), 
+                     start.year = lubridate::year(stop.time), 
+                     end.year = lubridate::year(stop.time),
+                     variables = var.names)
   
-    #### PEcAn Standard Outputs
-    if("NPP" %in% variables){
-      forecast[[1]] <- mean(ens$NPP) * unit.conv ## kgC m-2 s-1 -> MgC/ha/yr
-      names(forecast[[1]])<-c("NPP")
-    }
-    
-    if("AbvGrndWood" %in% variables){
-      forecast[[2]] = ens$AbvGrndWood[last] / (1 - .2 - .2) ## kgC/m2
-      names(forecast[[2]])<-c("AbvGrndWood")
-    }
-    
-    if("LeafC" %in% variables){
-      forecast[[3]] = ens$LeafC[last]## kgC/m2*m2/kg*2kg/kgC
-      names(forecast[[3]])<-c("LeafC")
-    }
-    
-    if("Litter" %in% variables){
-      forecast[[4]] = ens$Litter[last]##kgC/m2
-      names(forecast[[4]])<-c("Litter")
-    }
-    
-    if("TotSoilCarb" %in% variables){
-      forecast[[5]] = ens$TotSoilCarb[last]## kgC/m2
-      names(forecast[[5]])<-c("TotSoilCarb")
-    }
-    
-    if("SoilMoistFrac" %in% variables){
-      forecast[[6]] = ens$SoilMoistFrac[last]## kgC/m2
-      names(forecast[[6]])<-c("SoilMoistFrac")
-    }
-    
-    if("SWE" %in% variables){
-      forecast[[7]] = ens$SWE[last]## kgC/m2
-      names(forecast[[7]])<-c("SWE")
-    }
+  last <- length(ens$NPP)
   
-  X.vec = unlist(forecast)
+  forecast <- list()
+  
+  # unit.conv <- (10000/1)*(1/1000)*(365.25*24*60*60) ## kgC m-2 s-1 -> MgC/ha/yr
+  
+  #### PEcAn Standard Outputs
+  if ("NPP" %in% var.names) {
+    forecast[[1]] <- udunits2::ud.convert(mean(ens$NPP), "kg/m^2/s", "Mg/ha/yr")  #* unit.conv 
+    names(forecast[[1]]) <- c("NPP")
+  }
+  
+  if ("AbvGrndWood" %in% var.names) {
+    forecast[[2]] <- ens$AbvGrndWood[last] / (1 - 0.2 - 0.2)  ## kgC/m2
+    names(forecast[[2]]) <- c("AbvGrndWood")
+  }
+  
+  if ("LeafC" %in% var.names) {
+    forecast[[3]] <- ens$LeafC[last]  ## kgC/m2*m2/kg*2kg/kgC
+    names(forecast[[3]]) <- c("LeafC")
+  }
+  
+  if ("Litter" %in% var.names) {
+    forecast[[4]] <- ens$Litter[last]  ##kgC/m2
+    names(forecast[[4]]) <- c("Litter")
+  }
+  
+  if ("TotSoilCarb" %in% var.names) {
+    forecast[[5]] <- ens$TotSoilCarb[last]  ## kgC/m2
+    names(forecast[[5]]) <- c("TotSoilCarb")
+  }
+  
+  if ("SoilMoistFrac" %in% var.names) {
+    forecast[[6]] <- ens$SoilMoistFrac[last]  ## kgC/m2
+    names(forecast[[6]]) <- c("SoilMoistFrac")
+  }
+  
+  if ("SWE" %in% var.names) {
+    forecast[[7]] <- ens$SWE[last]  ## kgC/m2
+    names(forecast[[7]]) <- c("SWE")
+  }
   
   print(runid)
-
-  return(X.vec)
-}
+  unlist(forecast)
+} # read.restart.SIPNET
