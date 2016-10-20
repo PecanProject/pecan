@@ -126,7 +126,7 @@ allom.BayesFit <- function(allom, nrep = 10000, form = "power", dmin = 0.1, dmax
   }
   
   ## define priors
-  (s1    <- s2) <- 0.1  # IG prior on the within-study variance
+  s1     <- s2 <- 0.1  # IG prior on the within-study variance
   mu0    <- c(0.2, 8 / 3)  # normal prior mean on global mean
   V0     <- matrix(c(100, 0, 0, 100), 2, 2)  # normal prior variance on global mean
   V0I    <- solve(V0)
