@@ -69,5 +69,5 @@ call_MODIS <- function(outfolder = ".", fname = "m_data.nc", start, end, lat, lo
   }
   date <- python.get("date")
   
-  invisible(list(m = m, k = k, date = date))
+  return(invisible(list(m = m, k = k, date = date)))
 } # call_MODIS

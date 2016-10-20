@@ -5,5 +5,5 @@
 ##' 
 ##' @author Betsy Cowdery
 metric.RMSE <- function(dat, ...) {
-  sqrt(mean((dat$model - dat$obvs) ^ 2))
+  return(sqrt(mean((dat$model - dat$obvs) ^ 2)))
 } # metric.RMSE
