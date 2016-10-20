@@ -218,6 +218,7 @@ check.bety.version <- function(dbcon) {
   }
 } # check.bety.version
 
+
 ##' Sanity checks. Checks the settings file to make sure expected fields exist. It will try to use
 ##' default values for any missing values, or stop the exection if no defaults are possible.
 ##'
@@ -1091,7 +1092,7 @@ update.settings <- function(settings) {
     settings$model$soil <- NULL
   }
   
-  invisible(settings)
+  return(invisible(settings))
 } # update.settings
 
 ##' Add secret information from ~/.pecan.xml
@@ -1139,7 +1140,7 @@ addSecrets <- function(settings) {
     }
   }  
   
-  invisible(settings)
+  return(invisible(settings))
 } # addSecrets
 
 ##--------------------------------------------------------------------------------------------------#
@@ -1241,10 +1242,5 @@ read.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.CHECKED.x
     .libPaths(settings$Rlib)
   }
   
-  invisible(settings)
+  return(invisible(settings))
 } # read.settings
-##=================================================================================================#
-
-####################################################################################################
-### EOF.  End of R script file.              
-####################################################################################################
