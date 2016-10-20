@@ -106,5 +106,5 @@ counter <- function(cnt) {
 ##' @return logical
 met2model.exists <- function(model) {
   load.modelpkg(model)
-  exists(paste0("met2model.", model))
+  return(exists(paste0("met2model.", model)))
 } # met2model.exists

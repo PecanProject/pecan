@@ -31,10 +31,10 @@ listToArgString <- function(l) {
 
 .parseArg <- function(x) {
   if (is.character(x) || lubridate::is.POSIXt(x) || lubridate::is.Date(x)) {
-    paste0("'", x, "'")
+    return(paste0("'", x, "'"))
   } else if (is.null(x)) {
-    "NULL"
+    return("NULL")
   } else {
-    x
+    return(x)
   }
 } # .parseArg
