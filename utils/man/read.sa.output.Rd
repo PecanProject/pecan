@@ -33,5 +33,7 @@ Reads output of sensitivity analysis runs
 }
 \author{
 Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze, Istem Fer
+
+Ryan Kelly, David LeBauer, Rob Kooper, Mike Dietze
 }
 
