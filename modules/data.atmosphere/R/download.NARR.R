@@ -59,5 +59,5 @@ download.NARR <- function(outfolder, start_date, end_date, overwrite = FALSE, ve
     }
   }
   
-  invisible(results)
+  return(invisible(results))
 } # download.NARR

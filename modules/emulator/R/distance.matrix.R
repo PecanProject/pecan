@@ -18,5 +18,5 @@ distance.matrix <- function(x, power = 1, dim = 2) {
       # d[i,j] <- 0 for(k in 1:dim){ d[i,j] <- d[i,j] + (x[i,k]-x[j,k])^power }
     }
   }
-  d
+  return(d)
 } # distance.matrix

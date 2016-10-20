@@ -228,7 +228,7 @@ runModule.get.results <- function(settings) {
   if (is.MultiSettings(settings)) {
     return(papply(settings, runModule.get.results))
   } else if (is.Settings(settings)) {
-    get.results(settings)
+    return(get.results(settings))
   } else {
     stop("runModule.get.results only works with Settings or MultiSettings")
   }
