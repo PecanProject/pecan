@@ -198,23 +198,23 @@ listToXml.default <- function(item, tag) {
   # just a textnode, or empty node with attributes
   if (typeof(item) != "list") {
     if (length(item) > 1) {
-      xml <- xmlNode(tag)
+      xml <- XML::xmlNode(tag)
       for (name in names(item)) {
-        xmlAttrs(xml)[[name]] <- item[[name]]
+        XML::xmlAttrs(xml)[[name]] <- item[[name]]
       }
       return(xml)
     } else {
-      return(xmlNode(tag, item))
+      return(XML::xmlNode(tag, item))
     }
   }
   
   # create the node
   if (identical(names(item), c("text", ".attrs"))) {
     # special case a node with text and attributes
-    xml <- xmlNode(tag, item[["text"]])
+    xml <- XML::xmlNode(tag, item[["text"]])
   } else {
     # node with child nodes
-    xml <- xmlNode(tag)
+    xml <- XML::xmlNode(tag)
     for (i in seq_along(item)) {
       if (is.null(names(item)) || names(item)[i] != ".attrs") {
         xml <- XML::append.xmlNode(xml, listToXml(item[[i]], names(item)[i]))
@@ -225,7 +225,7 @@ listToXml.default <- function(item, tag) {
   # add attributes to node
   attrs <- item[[".attrs"]]
   for (name in names(attrs)) {
-    xmlAttrs(xml)[[name]] <- attrs[[name]]
+    XML::xmlAttrs(xml)[[name]] <- attrs[[name]]
   }
   return(xml)
 } # listToXml.default
