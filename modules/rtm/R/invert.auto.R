@@ -87,7 +87,7 @@ invert.auto <- function(observed, invert.options, return.samples = TRUE, save.sa
   
   seeds <- 1e+08 * runif(nchains)
   inputs <- list()
-  for (i in 1:nchains) { 
+  for (i in seq_len(nchains)) { 
     inputs[[i]] <- list(seed = seeds[i],
                         inits = inits.function(),
                         resume = NULL)
@@ -119,6 +119,7 @@ invert.auto <- function(observed, invert.options, return.samples = TRUE, save.sa
   }
   if (conv.check$converged) {
     # Done
+    message("Post-process")
     out <- postProcess(i.ngibbs, samps.list)
   } else {
     # Loop until convergence
@@ -129,7 +130,9 @@ invert.auto <- function(observed, invert.options, return.samples = TRUE, save.sa
       seeds <- 1e+08 * runif(nchains)
       inits <- lapply(samps.list, getLastRow)
       inputs <- list()
-      for (i in 1:nchains) inputs[[i]] <- list(seed = seeds[i], inits = inits[[i]], resume = resume[[i]])
+      for (i in seq_len(nchains)) {
+        inputs[[i]] <- list(seed = seeds[i], inits = inits[[i]], resume = resume[[i]])
+      }
       invert.options$ngibbs <- ngibbs.step
       if (parallel) {
         output.list <- parallel::parLapply(cl, inputs, invert.function)
@@ -177,7 +180,7 @@ invert.auto <- function(observed, invert.options, return.samples = TRUE, save.sa
 }
 
 getLastRow <- function(samps, exclude.cols = ncol(samps)) {
-  cols <- 1:ncol(samps)
+  cols <- seq_len(ncol(samps))
   cols <- cols[-exclude.cols]
   last_row <- samps[nrow(samps), cols]
   return(last_row)
@@ -187,7 +190,9 @@ combineChains <- function(samps1, samps2) {
   stopifnot(length(samps1) == length(samps2))
   nchains <- length(samps1)
   sampsfinal <- list()
-  for (i in 1:nchains) sampsfinal[[i]] <- rbind(samps1[[i]], samps2[[i]])
+  for (i in seq_len(nchains)) {
+    sampsfinal[[i]] <- rbind(samps1[[i]], samps2[[i]])
+  }
   stopifnot(length(sampsfinal) == length(samps1))
   return(sampsfinal)
 } # combineChains

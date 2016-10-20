@@ -30,13 +30,13 @@ getBurnin <- function(jags_out,
                       method = "rmw", 
                       threshold = 1.1,
                       use.confidence = TRUE,
-                      width = ceiling(niter(jags_out)/2), 
+                      width = ceiling(coda::niter(jags_out)/2), 
                       njump = 50,
                       autoburnin = FALSE,
                       plotfile = "/dev/null",
                       ...) {
   if (!coda::is.mcmc.list(jags_out)) jags_out <- makeMCMCList(jags_out)
-  stopifnot(niter(jags_out) > 50)
+  stopifnot(coda::niter(jags_out) > 50)
   if (method == "rmw"){
     burnin <- getBurnin.rmw(jags_out, 
                             width = width,
@@ -59,7 +59,7 @@ getBurnin <- function(jags_out,
   return(burnin)
 }
 
-getBurnin.rmw <- function(x, width = ceiling(niter(x)/2), njump = 50,
+getBurnin.rmw <- function(x, width = ceiling(coda::niter(x)/2), njump = 50,
                           threshold = 1.1, use.confidence = TRUE, ...) {
   stopifnot(width %% 1 == 0)
   stopifnot(njump %% 1 == 0)
@@ -149,7 +149,7 @@ autoburnin <- function(jags_out, return.burnin = FALSE, ...) {
 #' @param samps samples list (output from invert.custom)
 #' @export
 makeMCMCList <- function(samps) {
-  samps.mcmc <- lapply(samps, mcmc)
+  samps.mcmc <- lapply(samps, coda::mcmc)
   stopifnot(all(sapply(samps.mcmc, coda::is.mcmc)))
   samps.mcmc.list <- coda::mcmc.list(samps.mcmc)
   stopifnot(coda::is.mcmc.list(samps.mcmc.list))
