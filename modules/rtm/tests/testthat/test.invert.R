@@ -1,6 +1,5 @@
 # Test slow inversion
 library(PEcAnRTM)
-library(testthat)
 context("PROSPECT R inversion")
 params <- c('N' = 1.4, 
             'Cab' = 40,

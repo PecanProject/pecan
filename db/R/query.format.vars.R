@@ -76,7 +76,16 @@ query.format.vars <- function(input.id,con,format.id){
   
     header <- as.numeric(f$header)
     skip <- ifelse(is.na(as.numeric(f$skip)),0,as.numeric(f$skip))
-  
+    
+    
+    # Right now I'm making the inappropriate assumption that storage type will be 
+    # empty unless it's a time variable. 
+    # This is because I haven't come up for a good way to test that a character string is a date format
+    
+    st <- vars_full$storage_type
+    time.row <- which(nchar(st)>1 & substr(st, 1,1) == "%")
+    if(length(time.row) == 0) time.row <- NULL
+    
     # Final format list
     format <- list(file_name = f$name,
                    mimetype = f$mimetype,
@@ -84,6 +93,7 @@ query.format.vars <- function(input.id,con,format.id){
                    skip = skip, 
                    header = header,
                    na.strings=c("-9999","-6999","9999"), # This shouldn't be hardcoded in, but not specified in format table ?
+                   time.row = time.row,
                    site = site.id,
                    lat = site.lat,
                    lon = site.lon
@@ -92,6 +102,7 @@ query.format.vars <- function(input.id,con,format.id){
     format <- list(file_name = f$name,
                    mimetype = f$mimetype,
                    na.strings=c("-9999","-6999","9999"), # This shouldn't be hardcoded in, but not specified in format table ?
+                   time.row = NULL,
                    site = site.id,
                    lat = site.lat,
                    lon = site.lon

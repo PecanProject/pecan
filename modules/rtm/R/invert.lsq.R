@@ -1,5 +1,6 @@
-#' @name invert.lsq
 #' @title Least squares model inversion
+#' 
+#' @name invert.lsq
 #' @author Alexey Shiklomanov
 #' @details Performs a least-squares inversion of an arbitrary radiative 
 #' transfer model (passed as an R function). The inversion attempts to minimize 
@@ -15,13 +16,13 @@
 #' @export
 
 invert.lsq <- function(observed, inits, model, lower=NULL, upper=NULL){
-    library(minpack.lm)
-    observed <- as.matrix(observed)
-    merit <- function(params){
-        spec <- model(params)
-        error <- spec - observed
-        return(error)
-    }
-    fit <- nls.lm(par=inits, lower=lower, upper=upper, fn=merit)
-    return(fit)
-}
+  testForPackage("minpack.lm")
+  observed <- as.matrix(observed)
+  merit <- function(params){
+    spec <- model(params)
+    error <- spec - observed
+    return(error)
+  }
+  fit <- minpack.lm::nls.lm(par=inits, lower=lower, upper=upper, fn=merit)
+  return(fit)
+} # invert.lsq

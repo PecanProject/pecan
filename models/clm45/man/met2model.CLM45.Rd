@@ -22,7 +22,7 @@ met2model.CLM45(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
 
 \item{overwrite}{should existing files be overwritten}
 
-\item{verbose}{should the function be very verbose}
+\item{verbose}{should the function be very verbosefor(year in start_year:end_year)}
 }
 \description{
 met2model wrapper for CLM45

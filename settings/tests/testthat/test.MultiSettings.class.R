@@ -9,7 +9,6 @@
 context("test MultiSettings class")
 
 if(FALSE) {
-  library(testthat)
   library(devtools)
   rm(list=ls())
   load_all()
@@ -291,7 +290,7 @@ test_that("multiSettings write to and read from xml as expcted (i.e., with colla
   msOrig <- multiSettingsTemplate
   
   msXML <- listToXml(msOrig, "pecan.multi")
-  listNew <- xmlToList(msXML)
+  listNew <- XML::xmlToList(msXML)
   msNew <- expandMultiSettings(listNew)
   
   expect_true(are.equal.possiblyNumericToCharacter(msNew, msOrig))
