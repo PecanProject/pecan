@@ -455,7 +455,7 @@ check.settings <- function(settings) {
   options(scipen = scipen)
   
   # all done return cleaned up settings
-  invisible(settings)
+  return(invisible(settings))
 } # check.settings
 
 
@@ -659,7 +659,7 @@ check.run.settings <- function(settings, dbcon = NULL) {
   options(scipen = scipen)
   
   # all done return cleaned up settings
-  invisible(settings)
+  return(invisible(settings))
 } # check.run.settings
 
 check.model.settings <- function(settings, dbcon = NULL) {
