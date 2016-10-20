@@ -7,5 +7,5 @@
 ##' 
 ##' @author Betsy Cowdery, Michael Dietze
 mean.over.larger.timestep <- function(date.coarse, date.fine, data.fine) {
-  tapply(X = data.fine, INDEX = findInterval(date.fine, date.coarse), FUN = mean)
+  return(tapply(X = data.fine, INDEX = findInterval(date.fine, date.coarse), FUN = mean))
 } # mean.over.larger.timestep

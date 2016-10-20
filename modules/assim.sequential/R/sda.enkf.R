@@ -819,4 +819,3 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   dev.off()
   
 } # sda.enkf
-

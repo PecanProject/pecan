@@ -105,5 +105,5 @@ download.MsTMIP_NARR <- function(outfolder, start_date, end_date, site_id, lat.i
     results$formatname[i] <- "CF Meteorology"
   }
   
-  invisible(results)
+  return(invisible(results))
 } # download.MsTMIP_NARR

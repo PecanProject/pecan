@@ -7,5 +7,5 @@
 metric.PPMC <- function(dat, ...) {
   numer <- sum((dat$obvs - mean(dat$obvs)) * (dat$model - mean(dat$model)))
   denom <- sqrt(sum((dat$obvs - mean(dat$obvs)) ^ 2)) * sqrt(sum((dat$model - mean(dat$model)) ^ 2))
-  numer / denom
+  return(numer / denom)
 } # metric.PPMC

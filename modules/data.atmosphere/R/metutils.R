@@ -4,12 +4,12 @@ qcsolar <- function(x) ifelse(x < 0, 0, ifelse(abs(x) > 1300, mean(x[x < 1300]),
 qcwind <- function(x) ifelse(abs(x) > 102, mean(abs(x[x < 102])), x)
 qcprecip <- function(x) ifelse(x > 0.005 | x < 0, mean(x[x < 0.005 & x > 0]), x)
 qcrh <- function(x) {
-  ifelse(x > 100 | x < 0, mean(x[x < 100 & x > 0]), x)  #using logical range (0-100) rather than 'valid range (-25-125)'
+  return(ifelse(x > 100 | x < 0, mean(x[x < 100 & x > 0]), x))  # using logical range (0-100) rather than 'valid range (-25-125)'
 } # qcrh
 
 qcshum <- function(x) {
   x <- ifelse(x > 100 | x < 0, mean(x[x < 0.6553 & x > 0]), x)
-  x[is.na(x)] <- mean(x, na.rm = TRUE)
+  return(x[is.na(x)] <- mean(x, na.rm = TRUE))
 } # qcshum
 
 ##' Convert specific humidity to relative humidity
@@ -67,7 +67,7 @@ get.vpd <- function(rh, temp) {
   ## calculate saturation vapor pressure
   es <- get.es(temp)
   ## calculate vapor pressure deficit
-  ((100 - rh)/100) * es
+  return(((100 - rh)/100) * es)
 } # get.vpd
 
 ##' Calculate saturation vapor pressure
@@ -81,7 +81,7 @@ get.vpd <- function(rh, temp) {
 ##' temp <- -30:30
 ##' plot(temp, get.es(temp))
 get.es <- function(temp) {
-  6.11 * exp((2500000/461) * (1/273 - 1/(273 + temp)))
+  return(6.11 * exp((2500000/461) * (1/273 - 1/(273 + temp))))
 } # get.es
 
 ## TODO: merge SatVapPress with get.es; add option to choose method
@@ -89,8 +89,8 @@ SatVapPres <- function(T) {
   # /estimates saturation vapor pressure (kPa) Goff-Gratch 1946 /input: T = absolute temperature
   T_st <- 373.15  ##steam temperature (K)
   e_st <- 1013.25  ##/saturation vapor pressure at steam temp (hPa)
-  0.1 * exp(-7.90298 * (T_st/T - 1) + 5.02808 * log(T_st/T) - 1.3816e-07 * (10^(11.344 * (1 - T/T_st)) - 
-    1) + 0.0081328 * (10^(-3.49149 * (T_st/T - 1)) - 1) + log(e_st))
+  return(0.1 * exp(-7.90298 * (T_st/T - 1) + 5.02808 * log(T_st/T) - 1.3816e-07 * (10^(11.344 * (1 - T/T_st)) - 
+    1) + 0.0081328 * (10^(-3.49149 * (T_st/T - 1)) - 1) + log(e_st)))
 } # SatVapPres
 
 
@@ -107,7 +107,7 @@ SatVapPres <- function(T) {
 ##' @author David LeBauer
 get.rh <- function(T, Td) {
   arg <- -L / (Rw * T * Td) * (T - Td)
-  100 * exp(-L / (Rw * T * Td) * (T - Td))
+  return(100 * exp(-L / (Rw * T * Td) * (T - Td)))
 } # get.rh
 
 ##' Convert raster to lat, lon, var
@@ -145,7 +145,7 @@ wide2long <- function(data.wide, lat, lon, var) {
 ##' @author David LeBauer
 par2ppfd <- function(watts) {
   ppfd <- watts/(2.35 * 10^5)
-  udunits2::ud.convert(ppfd, "mol ", "umol")
+  return(udunits2::ud.convert(ppfd, "mol ", "umol"))
 } # par2ppfd
 
 
@@ -161,7 +161,7 @@ par2ppfd <- function(watts) {
 ##' @export
 ##' @return PAR W/m2
 sw2par <- function(sw) {
-  sw * 0.486
+  return(sw * 0.486)
 } # sw2par
 
 ##' CF Shortwave to PPFD
@@ -174,7 +174,7 @@ sw2par <- function(sw) {
 ##' @return PPFD umol /m2 / s
 sw2ppfd <- function(sw) {
   par <- sw2par(sw)
-  par2ppfd(par)
+  return(par2ppfd(par))
 } # sw2ppfd
 
 
@@ -200,7 +200,7 @@ sw2ppfd <- function(sw) {
 ##' @export
 ##' @return PPFD umol /m2 / s
 solarMJ2ppfd <- function(solarMJ) {
-  (0.12 * solarMJ) * 2.07 * 1e+06 / 3600
+  return((0.12 * solarMJ) * 2.07 * 1e+06 / 3600)
 } # solarMJ2ppfd
 
 ##' estimated exner function
@@ -209,7 +209,7 @@ solarMJ2ppfd <- function(solarMJ) {
 ##' @export
 ##' @author Mike Dietze
 exner <- function(pres) {
-  1004 * pres ^ (287 / 1004)
+  return(1004 * pres ^ (287 / 1004))
 } # exner
 
 ##' estimate air density from pressure, temperature, and humidity
@@ -220,7 +220,7 @@ exner <- function(pres) {
 ##' @export
 ##' @author Mike Dietze
 AirDens <- function(pres, T, rv) {
-  pres/(287 * T * (1 + 0.61 * rv))
+  return(pres / (287 * T * (1 + 0.61 * rv)))
 } # AirDens
 
 ##' calculate latent heat of vaporization for water 
@@ -231,5 +231,5 @@ AirDens <- function(pres, T, rv) {
 ##' @author Istem Fer
 ##' @return lV   latent heat of vaporization (J kg-1)
 get.lv <- function(airtemp = 268.6465) {
-  (94.21 * (365 - (airtemp - 273.15)) ^ 0.31249) * 4.183 * 1000
+  return((94.21 * (365 - (airtemp - 273.15)) ^ 0.31249) * 4.183 * 1000)
 } # get.lv
