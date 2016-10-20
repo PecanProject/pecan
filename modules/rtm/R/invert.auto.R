@@ -49,17 +49,17 @@ invert.auto <- function(observed, invert.options, return.samples = TRUE, save.sa
     testForPackage("minpack.lm")
   }
   invert.options$ngibbs <- invert.options$ngibbs.min
-
+  
   convergenceCheck <- function(smcmc) {
     out <- check.convergence(smcmc, autoburnin = TRUE, verbose = !quiet)
     return(out)
   }
-
+  
   # Begin first set of runs
   if (parallel) {
     ## Create cluster
     maxcores <- parallel::detectCores()
-    if (is.null(parallel.cores)){
+    if (is.null(parallel.cores)) {
       parallel.cores <- maxcores - 1
     } else {
       if (!is.numeric(parallel.cores) | parallel.cores %% 1 != 0) {
@@ -70,13 +70,13 @@ invert.auto <- function(observed, invert.options, return.samples = TRUE, save.sa
         parallel.cores <- maxcores
       }
     }
-    cl <- parallel::makeCluster(parallel.cores, "FORK", outfile=parallel.output)
+    cl <- parallel::makeCluster(parallel.cores, "FORK", outfile = parallel.output)
     on.exit(parallel::stopCluster(cl))
     print(sprintf("Running %d chains in parallel. Progress bar unavailable", nchains))
   }
-
+  
   # Create inversion function
-  invert.function <- function(x){
+  invert.function <- function(x) {
     set.seed(x$seed)
     invert.options$inits <- x$inits
     invert.options$resume <- x$resume
@@ -84,12 +84,14 @@ invert.auto <- function(observed, invert.options, return.samples = TRUE, save.sa
                            quiet=quiet, return.resume=TRUE, seed = x$seed)
     return(samps)
   }
-
-  seeds <- 1e8 * runif(nchains)
+  
+  seeds <- 1e+08 * runif(nchains)
   inputs <- list()
-  for (i in 1:nchains) inputs[[i]] <- list(seed = seeds[i], 
-                                           inits = inits.function(), 
-                                           resume = NULL)
+  for (i in 1:nchains) { 
+    inputs[[i]] <- list(seed = seeds[i],
+                        inits = inits.function(),
+                        resume = NULL)
+  }
   # Begin inversion
   invert.options$ngibbs <- invert.options$ngibbs.min
   if (parallel) {
@@ -102,11 +104,12 @@ invert.auto <- function(observed, invert.options, return.samples = TRUE, save.sa
     }
   }
   i.ngibbs <- invert.options$ngibbs.min
-  samps.list <- lapply(output.list, "[[", 'results')
-  resume <- lapply(output.list, "[[", 'resume')
-  if (!is.null(save.samples)) saveRDS(list(resume = resume, samps.list = samps.list),
-                                      file = save.samples)
-
+  samps.list <- lapply(output.list, "[[", "results")
+  resume <- lapply(output.list, "[[", "resume")
+  if (!is.null(save.samples)) {
+    saveRDS(list(resume = resume, samps.list = samps.list),
+            file = save.samples)
+  }
   # Check for convergence
   smcmc <- PEcAn.assim.batch::makeMCMCList(samps.list)
   conv.check <- convergenceCheck(smcmc)
@@ -121,13 +124,12 @@ invert.auto <- function(observed, invert.options, return.samples = TRUE, save.sa
     # Loop until convergence
     continue <- TRUE
     while (continue & i.ngibbs < ngibbs.max) {
-      if (!quiet) print(sprintf("Running iterations %d to %d", i.ngibbs, i.ngibbs + ngibbs.step))
-      seeds <- 1e8 * runif(nchains)
+      if (!quiet) 
+        print(sprintf("Running iterations %d to %d", i.ngibbs, i.ngibbs + ngibbs.step))
+      seeds <- 1e+08 * runif(nchains)
       inits <- lapply(samps.list, getLastRow)
       inputs <- list()
-      for (i in 1:nchains) inputs[[i]] <- list(seed = seeds[i],
-                                               inits = inits[[i]],
-                                               resume = resume[[i]])
+      for (i in 1:nchains) inputs[[i]] <- list(seed = seeds[i], inits = inits[[i]], resume = resume[[i]])
       invert.options$ngibbs <- ngibbs.step
       if (parallel) {
         output.list <- parallel::parLapply(cl, inputs, invert.function)
@@ -143,11 +145,12 @@ invert.auto <- function(observed, invert.options, return.samples = TRUE, save.sa
       resume <- lapply(output.list, "[[", 'resume')
 
       samps.list <- combineChains(samps.list, samps.list.current)
-      if (!is.null(save.samples)) saveRDS(list(resume = resume, samps.list = samps.list), 
-                                          file = save.samples)
+      if (!is.null(save.samples)) {
+        saveRDS(list(resume = resume, samps.list = samps.list), file = save.samples)
+      }
       smcmc <- PEcAn.assim.batch::makeMCMCList(samps.list)
       conv.check <- convergenceCheck(smcmc)
-
+      
       # Check for convergence
       if (conv.check$error) {
         warning("Could not calculate Gelman diag. Assuming no convergence.")
@@ -167,18 +170,20 @@ invert.auto <- function(observed, invert.options, return.samples = TRUE, save.sa
                   samples = PEcAn.assim.batch::makeMCMCList(samps.list))
     }
   }
-  if (!return.samples) out$samples <- c("Samples not returned" = NA)
+  if (!return.samples) {
+    out$samples <- c(`Samples not returned` = NA)
+  }
   return(out)
 }
 
-getLastRow <- function(samps, exclude.cols = ncol(samps)){
+getLastRow <- function(samps, exclude.cols = ncol(samps)) {
   cols <- 1:ncol(samps)
   cols <- cols[-exclude.cols]
   last_row <- samps[nrow(samps), cols]
   return(last_row)
 } # getLastRow
 
-combineChains <- function(samps1, samps2){
+combineChains <- function(samps1, samps2) {
   stopifnot(length(samps1) == length(samps2))
   nchains <- length(samps1)
   sampsfinal <- list()

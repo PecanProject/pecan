@@ -15,14 +15,14 @@
 #' @param uppper Upper bounds on parameters (default=NULL, which means +Inf).
 #' @export
 
-invert.lsq <- function(observed, inits, model, lower=NULL, upper=NULL){
+invert.lsq <- function(observed, inits, model, lower = NULL, upper = NULL) {
   testForPackage("minpack.lm")
   observed <- as.matrix(observed)
-  merit <- function(params){
+  merit <- function(params) {
     spec <- model(params)
     error <- spec - observed
     return(error)
   }
-  fit <- minpack.lm::nls.lm(par=inits, lower=lower, upper=upper, fn=merit)
+  fit <- minpack.lm::nls.lm(par = inits, lower = lower, upper = upper, fn = merit)
   return(fit)
 } # invert.lsq

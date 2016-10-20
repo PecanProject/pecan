@@ -40,7 +40,7 @@
 #' @param return.resume If TRUE, return results as list that includes current Jump distribution (useful for continuing an ongoing run) and acceptance rate. Default = FALSE.
 #' @param seed Run-unique ID. Useful for parallel runs. Default=NULL
 #' @export
-invert.custom <- function(observed, invert.options, quiet=FALSE, return.resume=FALSE, seed=NULL){
+invert.custom <- function(observed, invert.options, quiet = FALSE, return.resume = FALSE, seed = NULL) {
   testForPackage("MASS")
   observed <- as.matrix(observed)
   nspec <- ncol(observed)
@@ -57,7 +57,7 @@ invert.custom <- function(observed, invert.options, quiet=FALSE, return.resume=F
                        sep = "\n")
     stop(error.msg)
   }
-
+  
   # Unpack invert.options list
   model <- invert.options$model
   inits <- invert.options$inits
@@ -74,14 +74,14 @@ invert.custom <- function(observed, invert.options, quiet=FALSE, return.resume=F
   resume <- invert.options$resume
   init.Jump <- resume$jump
   init.ar <- resume$ar
-
+  
   # If `model` doesn't have a seed argument (second argument), add it.
   model.args <- names(formals(model))
   if (length(model.args) != 2) {
     warning("Model was missing 'seed' argument. Adding as empty argument.")
-    model <- function(params, seed=NULL) invert.options$model(params)
+    model <- function(params, seed = NULL) invert.options$model(params)
   }
-
+  
   # Set constants for inversion
   tau_0 <- 0.001
   init_rsd <- 0.5
@@ -89,10 +89,10 @@ invert.custom <- function(observed, invert.options, quiet=FALSE, return.resume=F
   # Set up inversion
   npars <- length(inits)
   if (do.lsq) {
-    fit <- invert.lsq(observed, inits, model, lower=param.mins)
+    fit <- invert.lsq(observed, inits, model, lower = param.mins)
     inits <- fit$par
   }
-  rp1 <- tau_0 + nspec*nwl/2
+  rp1 <- tau_0 + nspec * nwl/2
   rsd <- 0.5
   PrevSpec <- model(inits, seed)
   PrevError <- PrevSpec - observed
@@ -102,11 +102,10 @@ invert.custom <- function(observed, invert.options, quiet=FALSE, return.resume=F
   } else {
     Jump <- init.Jump
   }
-  results <- matrix(NA, nrow=ngibbs, ncol=npars+1)
+  results <- matrix(NA, nrow = ngibbs, ncol = npars + 1)
   if (!is.null(names(inits))) {
     cnames <- names(inits)
-  }
-  else {
+  } else {
     cnames <- sprintf("par%d", seq_along(inits))
   }
   colnames(results) <- c(cnames, "residual")
@@ -116,7 +115,7 @@ invert.custom <- function(observed, invert.options, quiet=FALSE, return.resume=F
     ar <- init.ar
   }
   if (!quiet) {
-    pb <- txtProgressBar(min=0, max=ngibbs, style=3)
+    pb <- txtProgressBar(min = 0, max = ngibbs, style = 3)
   }
   for (ng in 1:ngibbs) {
     if (!quiet) { 
@@ -124,16 +123,16 @@ invert.custom <- function(observed, invert.options, quiet=FALSE, return.resume=F
     }
     if (ng %% adapt < 1) {
       if (ar < 2) {
-        rescale <- diag(rep(adj_min,npars))
+        rescale <- diag(rep(adj_min, npars))
         Jump <- rescale %*% Jump %*% rescale
       } else {
         adj <- max(ar / adapt / target, adj_min)
-        region <- seq(ng-adapt, ng-1)
-        stdev <- apply(results[region,1:npars], 2, sd)
+        region <- seq(ng - adapt, ng - 1)
+        stdev <- apply(results[region, 1:npars], 2, sd)
         rescale <- diag(stdev * adj)
-        cormat <- cor(results[region,1:npars])
+        cormat <- cor(results[region, 1:npars])
         if (any(is.na(cormat))) {
-          cormat <- diag(rep(1,npars))
+          cormat <- diag(rep(1, npars))
         }
         Jump <- rescale %*% cormat %*% rescale
       }
@@ -143,8 +142,8 @@ invert.custom <- function(observed, invert.options, quiet=FALSE, return.resume=F
     if (all(tvec > param.mins)) {
       TrySpec <- model(tvec, seed)
       TryError <- TrySpec - observed
-      TryPost <- sum(dnorm(TryError,0,rsd,1)) + prior.function(tvec)
-      PrevPost <- sum(dnorm(PrevError,0,rsd,1)) + prior.function(inits)
+      TryPost <- sum(dnorm(TryError, 0, rsd, 1)) + prior.function(tvec)
+      PrevPost <- sum(dnorm(PrevError, 0, rsd, 1)) + prior.function(inits)
       a <- exp(TryPost - PrevPost)
       if (is.na(a)) {
         a <- -1
@@ -155,11 +154,11 @@ invert.custom <- function(observed, invert.options, quiet=FALSE, return.resume=F
         ar <- ar + 1
       }
     }
-    results[ng,1:npars] <- inits
+    results[ng, 1:npars] <- inits
     rp2 <- tau_0 + sum(PrevError * PrevError)/2
     rinv <- rgamma(1, rp1, rp2)
     rsd <- 1/sqrt(rinv)
-    results[ng,npars+1] <- rsd
+    results[ng, npars + 1] <- rsd
   }
   if (!quiet) {
     close(pb)
