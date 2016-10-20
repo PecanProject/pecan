@@ -20,5 +20,5 @@ calcSpatialCov.matrix <- function(d, psi, tau) {
       H[i, ] <- tau * exp(-psi * d[i, ])
     }
   }
-  H
+  return(H)
 }

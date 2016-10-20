@@ -165,5 +165,5 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
     results$formatname[i] <- "CF Meteorology"
   }
   
-  invisible(results)
+  return(invisible(results))
 } # download.NLDAS

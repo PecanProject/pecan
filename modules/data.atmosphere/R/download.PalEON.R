@@ -83,5 +83,5 @@ download.PalEON <- function(sitename, outfolder, start_date, end_date, overwrite
     }
   }
   
-  invisible(results)
+  return(invisible(results))
 } # download.PalEON

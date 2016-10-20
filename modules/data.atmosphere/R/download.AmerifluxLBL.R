@@ -161,5 +161,5 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   results$formatname[row] <- "AMERIFLUX_BASE_HH"
   
   # return list of files downloaded
-  invisible(results)
+  return(invisible(results))
 } # download.AmerifluxLBL

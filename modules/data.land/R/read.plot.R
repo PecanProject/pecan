@@ -14,5 +14,5 @@ read.plot <- function(file) {
   spp  <- as.character(dat[, which(toupper(names(dat)) == "SPECIES")])
   dbh  <- dat[, which(toupper(names(dat)) == "DBH")]
   
-  data.frame(plot = plot, tree = tree, spp = spp, dbh = dbh)
+  return(data.frame(plot = plot, tree = tree, spp = spp, dbh = dbh))
 } # read.plot

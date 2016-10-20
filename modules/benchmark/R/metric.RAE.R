@@ -7,5 +7,5 @@
 metric.RAE <- function(dat, ...) {
   numer <- mean(abs(dat$obvs - dat$model))
   denom <- mean(abs(dat$obvs - mean(dat$obvs)))
-  numer/denom
+  return(numer/denom)
 } # metric.RAE
