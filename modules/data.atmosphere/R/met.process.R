@@ -351,7 +351,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
     results$dbfile.name <- basename(downloadedfile)
   }
   
-  invisible(return(results))
+  return(invisible(results))
 } # browndog.met
 
 ################################################################################################################################# 
@@ -372,5 +372,5 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
 site_from_tag <- function(sitename, tag) {
   temp <- regmatches(sitename, gregexpr("(?<=\\().*?(?=\\))", sitename, perl = TRUE))[[1]]
   pref <- paste0(tag, "-")
-  unlist(strsplit(temp[grepl(pref, temp)], pref))[2]
+  return(unlist(strsplit(temp[grepl(pref, temp)], pref))[2])
 } # site_from_tag

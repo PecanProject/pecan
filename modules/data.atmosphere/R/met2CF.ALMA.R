@@ -484,5 +484,5 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
     ncdf4::nc_close(nc2)
   }  ## end loop over years
   
-  invisible(results)
+  return(invisible(results))
 } # met2CF.ALMA
