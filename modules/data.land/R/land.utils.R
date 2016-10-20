@@ -7,8 +7,9 @@ get.elevation <- function(lat, lon) {
   page <- getURL(url)
   ans  <- xmlTreeParse(page, useInternalNodes = TRUE)
   heightNode <- xpathApply(ans, "//meters")[[1]]
-  as.numeric(xmlValue(heightNode))
+  return(as.numeric(xmlValue(heightNode)))
 } # get.elevation
+
 
 is.land <- function(lat, lon) {
   ncvar_get <- ncdf4::ncvar_get
@@ -17,11 +18,11 @@ is.land <- function(lat, lon) {
   lati <- which.min(abs(Lat - lat))
   loni <- which.min(abs(Lon - lon))
   mask <- ncvar_get(nc = met.nc, varid = "mask", start = c(loni, lati), count = c(1, 1))
-  mask >= 0
+  return(mask >= 0)
 } # is.land
 
 get.latlonbox <- function(lati, loni, Lat = Lat, Lon = Lon) {
   lat <- c(mean(Lat[lati:(lati - 1)]), mean(Lat[lati:(lati + 1)]))
   lon <- c(mean(Lon[loni:(loni - 1)]), mean(Lon[loni:(loni + 1)]))
-  c(sort(lat), sort(lon))
+  return(c(sort(lat), sort(lon)))
 } # get.latlonbox

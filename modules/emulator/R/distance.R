@@ -27,5 +27,5 @@ distance <- function(x, power = 1) {
       }
     }
   }
-  dst
+  return(dst)
 } # distance

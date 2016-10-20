@@ -153,5 +153,5 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date,
   results$formatname[row] <- "FLUXNET2015_SUBSET_HH"
   
   # return list of files downloaded
-  invisible(results)
+  return(invisible(results))
 } # download.Fluxnet2015

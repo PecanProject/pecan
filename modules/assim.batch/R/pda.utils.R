@@ -372,8 +372,8 @@ pda.define.prior.fn <- function(prior) {
     p
   }
   
-  return(list(dprior = dprior, rprior = rprior, qprior = qprior, pprior = pprior, dmvprior = dmvprior, 
-              rmvprior = rmvprior))
+  return(list(dprior = dprior, rprior = rprior, qprior = qprior,
+              pprior = pprior, dmvprior = dmvprior, rmvprior = rmvprior))
 } # pda.define.prior.fn
 
 
@@ -698,7 +698,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
     params.subset.list[[i]] <- do.call("rbind", params.subset[[i]])
   } 
   # reformat each sublist such that params have their own list and return
-  lapply(1:length(params.subset.list), function(x) as.list(data.frame(params.subset.list[[x]])))
+  return(lapply(1:length(params.subset.list), function(x) as.list(data.frame(params.subset.list[[x]]))))
   
 } # pda.plot.params
 

@@ -16,5 +16,5 @@ distance12.matrix <- function(x, n1, power = 1) {
   for (i in seq_len(n)) {
     d[i, ] <- (x[i, 1] - x[sel, 1]) ^ power + (x[i, 2] - x[sel, 2]) ^ power
   }
-  d
+  return(d)
 } # distance12.matrix
