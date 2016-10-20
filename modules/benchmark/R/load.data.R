@@ -67,7 +67,6 @@ load.data <- function(data.path, format, start_year = NA, end_year = NA, site = 
      out$posix <- strptime(apply(y, 1, function(x) paste(x, collapse = " ")), format=paste(format$vars$storage_type[time.row], collapse = " "), tz = "UTC")
   }
 
-  
   return(out)
 } # load.data
 

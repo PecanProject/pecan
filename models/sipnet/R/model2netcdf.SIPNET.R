@@ -110,7 +110,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     var[[5]]  <- mstmipvar("TotalResp", lat, lon, t, NA)
     var[[6]]  <- mstmipvar("AutoResp", lat, lon, t, NA)
     var[[7]]  <- mstmipvar("HeteroResp", lat, lon, t, NA)
-    var[[8]]  <- ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
+    var[[8]]  <- ncdf4::ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
                           longname = "Soil Respiration")
     var[[9]]  <- mstmipvar("NEE", lat, lon, t, NA)
     # var[[9]] <- mstmipvar('CarbPools', lat, lon, t, NA)

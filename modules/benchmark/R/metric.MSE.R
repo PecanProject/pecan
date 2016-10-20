@@ -5,5 +5,5 @@
 ##' 
 ##' @author Betsy Cowdery
 metric.MSE <- function(dat, ...) {
-  mean((dat$model - dat$obvs)^2)
+  return(mean((dat$model - dat$obvs) ^ 2))
 } # metric.MSE
