@@ -97,10 +97,15 @@ invert.custom <- function(observed, invert.options, quiet = FALSE, return.resume
   PrevSpec <- model(inits, seed)
   PrevError <- PrevSpec - observed
   if (is.null(init.Jump)) {
-    initsd <- inits * init_jump_diag_factor
+    # Set initial standard deviation to small fraction of initial
+    # values (absolute value because SD can't be negative)
+    initsd <- abs(inits) * init_jump_diag_factor
     Jump <- diag(initsd)
   } else {
     Jump <- init.Jump
+  }
+  if (!all(diag(Jump) > 0)) {
+    stop("Negative values in diagonal of Jump covariance matrix")
   }
   results <- matrix(NA, nrow = ngibbs, ncol = npars + 1)
   if (!is.null(names(inits))) {
