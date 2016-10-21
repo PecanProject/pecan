@@ -82,7 +82,7 @@
 ##' vwReg(y ~ x, df, method=lm)
 ##' vwReg(y ~ x + I(x^2), df, method=lm)
 vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha = 0.1, 
-                  spag = FALSE, spag.color = "darkblue", mweight = TRUE, show.lm = FALSE, 
+                  spag = FALSE, spag.color = "darkblue", mweight = TRUE, show.lm = FALSE,
                   show.median = TRUE, median.col = "white", shape = 21, show.CI = FALSE, 
                   method = loess, bw = FALSE, slices = 200, 
                   palette = colorRampPalette(c("#FFEDA0", "#DD0000"), bias = 2)(20), 
@@ -105,10 +105,9 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
     data2 <- data[sample(nrow(data), replace = TRUE), ]
     data2 <- data2[order(data2[, IV]), ]
     if (class(l0) == "loess") {
-      m1 <- method(formula, 
-                   data2, 
-                   control = loess.control(surface = "i", statistics = "a", trace.hat = "a"), 
-                   ...)
+      m1 <- method(formula, data2, control = loess.control(surface = "i", 
+                                                           statistics = "a", 
+                                                           trace.hat = "a"), ...)
     } else {
       m1 <- method(formula, data2, ...)
     }
@@ -118,14 +117,15 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
   # compute median and CI limits of bootstrap
   library(reshape2)
   CI.boot <- plyr::adply(l0.boot, 1, function(x) {
-    quantile(x, prob = c(0.025, 0.5, 0.975, pnorm(c(-3, -2, -1, 0, 1, 2, 3))), na.rm = TRUE) 
+    quantile(x, prob = c(0.025, 0.5, 0.975,
+                         pnorm(c(-3, -2, -1, 0, 1, 2, 3))), 
+             na.rm = TRUE)
   })[, -1]
   colnames(CI.boot)[1:10] <- c("LL", "M", "UL", paste0("SD", 1:7))
   CI.boot$x <- newx[, 1]
   CI.boot$width <- CI.boot$UL - CI.boot$LL
   
-  # scale the CI width to the range 0 to 1 and flip it (bigger numbers = narrower
-  # CI)
+  # scale the CI width to the range 0 to 1 and flip it (bigger numbers = narrower CI)
   CI.boot$w2 <- (CI.boot$width - min(CI.boot$width))
   CI.boot$w3 <- 1 - (CI.boot$w2 / max(CI.boot$w2))
   
@@ -137,14 +137,14 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
   library(ggplot2)
   library(RColorBrewer)
   
-  # Construct ggplot All plot elements are constructed as a list, so they can be
-  # added to an existing ggplot
+  # Construct ggplot All plot elements are constructed as a list, so they can be added to
+  # an existing ggplot
   
   # if add == FALSE: provide the basic ggplot object
   p0 <- ggplot(data, aes_string(x = IV, y = DV)) + theme_bw()
   
-  # initialize elements with NULL (if they are defined, they are overwritten with
-  # something meaningful)
+  # initialize elements with NULL (if they are defined, they are overwritten with something
+  # meaningful)
   gg.tiles <- gg.poly <- gg.spag <- gg.median <- gg.CI1 <- gg.CI2 <- gg.lm <- gg.points <- gg.title <- NULL
   
   if (shade) {
@@ -162,7 +162,7 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
       # vertical cross-sectional density estimate
       d2 <- plyr::ddply(b2[, c("x", "value")], .(x), function(df) {
         res <- data.frame(density(df$value, 
-                                  na.rm = TRUE, 
+                                  na.rm = TRUE,
                                   n = slices, 
                                   from = ylim[1], 
                                   to = ylim[2])[c("x", "y")])
@@ -177,8 +177,7 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
       
       ## Tile approach
       d2$alpha.factor <- d2$dens.scaled^shade.alpha
-      gg.tiles <- list(geom_tile(data = d2, aes(x = x, y = y, fill = dens.scaled, 
-                                                alpha = alpha.factor)), 
+      gg.tiles <- list(geom_tile(data = d2, aes(x = x, y = y, fill = dens.scaled, alpha = alpha.factor)), 
                        scale_fill_gradientn("dens.scaled", colours = palette), 
                        scale_alpha_continuous(range = c(0.001, 1)))
     }
@@ -192,11 +191,11 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
       for (i in 1:6) {
         seg1 <- SDs[SDs$variable == paste0("SD", i), ]
         seg2 <- SDs[SDs$variable == paste0("SD", i + 1), ]
-        seg  <- rbind(seg1, seg2[nrow(seg2):1, ])
+        seg <- rbind(seg1, seg2[nrow(seg2):1, ])
         seg$group <- count
-        seg$col   <- col[i]
-        count     <- count + 1
-        d3        <- rbind(d3, seg)
+        seg$col <- col[i]
+        count <- count + 1
+        d3 <- rbind(d3, seg)
       }
       
       gg.poly <- list(geom_polygon(data = d3, 
@@ -209,17 +208,26 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
   flush.console()
   
   if (spag) {
-    gg.spag <- geom_path(data = b2, aes(x = x, y = value, group = B), size = 0.7, 
-                         alpha = 10 / B, color = spag.color)
+    gg.spag <- geom_path(data = b2, 
+                         aes(x = x, y = value, group = B), 
+                         size = 0.7, 
+                         alpha = 10 / B, 
+                         color = spag.color)
   }
   
   if (show.median) {
     if (mweight) {
-      gg.median <- geom_path(data = CI.boot, aes(x = x, y = M, alpha = w3 ^ 3), 
-                             size = 0.6, linejoin = "mitre", color = median.col)
+      gg.median <- geom_path(data = CI.boot, 
+                             aes(x = x, y = M, alpha = w3 ^ 3), 
+                             size = 0.6, 
+                             linejoin = "mitre", 
+                             color = median.col)
     } else {
-      gg.median <- geom_path(data = CI.boot, aes(x = x, y = M), size = 0.6, 
-                             linejoin = "mitre", color = median.col)
+      gg.median <- geom_path(data = CI.boot, 
+                             aes(x = x, y = M),
+                             size = 0.6,
+                             linejoin = "mitre", 
+                             color = median.col)
     }
   }
   
@@ -234,19 +242,23 @@ vwReg <- function(formula, data, title = "", B = 1000, shade = TRUE, shade.alpha
     gg.lm <- geom_smooth(method = "lm", color = "darkgreen", se = FALSE)
   }
   
-  gg.points <- geom_point(data = data, aes_string(x = IV, y = DV), size = 1, shape = shape, 
-                          fill = "white", color = "black")
+  gg.points <- geom_point(data = data, 
+                          aes_string(x = IV, y = DV), 
+                          size = 1, 
+                          shape = shape, 
+                          fill = "white",
+                          color = "black")
   
   if (title != "") {
     gg.title <- theme(title = title)
   }
   
-  gg.elements <- list(gg.tiles, gg.poly, gg.spag, gg.median, gg.CI1, gg.CI2, gg.lm, 
-                      gg.points, gg.title, theme(legend.position = "none"))
+  gg.elements <- list(gg.tiles, gg.poly, gg.spag, gg.median, gg.CI1, gg.CI2, 
+                      gg.lm, gg.points, gg.title, theme(legend.position = "none"))
   
   if (!add) {
     return(p0 + gg.elements)
   } else {
     return(gg.elements)
   }
-} # vwReg
+}  # vwReg
