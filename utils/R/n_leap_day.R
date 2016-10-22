@@ -18,7 +18,7 @@ n_leap_day <- function(start_date, end_date) {
   if (start_date >= as.Date(paste0(lubridate::year(start_date), "-03-01"))) {
     l_years[1] <- FALSE
   }
-  if (end_date <= as.Date(paste0(year(end_date), "-02-28"))) {
+  if (end_date <= as.Date(paste0(lubridate::year(end_date), "-02-28"))) {
     l_years[length(l_years)] <- FALSE
   }
   
