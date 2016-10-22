@@ -71,7 +71,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    ncdf4::nc_close(domain.nc)
    
    ## SURF
-   surf.default <- "/home/carya/FATESinput/lnd/clm2/surfdata_map/surfdata_1x1_brazil_16pfts_simyr2000_c160127.nc"
+   surf.default <- system.file("surfdata_ref.nc",package = "PEcAn.FATES")
    surf.file    <- file.path(local.rundir,paste0("surfdata_",site_name,"_simyr2000.nc"))
    file.copy(surf.default,surf.file)
    Sys.chmod(surf.file)

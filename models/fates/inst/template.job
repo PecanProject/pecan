@@ -22,7 +22,6 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   echo ${SCRIPTROOT[1]}
 
   ## Seem to be stuck having to build a new case. Will try and avoid this in the future
-  ## HACK: hard coding path
   cd ${SCRIPTROOT[1]}
   ./create_newcase -case @CASEDIR@ -res CLM_USRDAT -compset ICLM45ED -mach eddi -compiler gnu
 
