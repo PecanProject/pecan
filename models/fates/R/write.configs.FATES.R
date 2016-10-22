@@ -21,19 +21,12 @@
 ##' @author Mike Dietze
 ##-------------------------------------------------------------------------------------------------#
 write.config.FATES <- function(defaults, trait.values, settings, run.id){
-#   library(PEcAn.utils)
-  ncvar_put <- ncdf4::ncvar_put
-  ncvar_get <- ncdf4::ncvar_get
-  
-#  
-# #OUTLINE OF MODULES
-#   # Copy Case and Build
-#   #  -symbolic link to refernce case that is already completed
-#   # Edit user_nl_* files to add site info
-#   # make Jobs.sh -case_submit
-#   # call met2model and add to namelists
-#   #
 
+   ## function references
+   ncvar_put <- ncdf4::ncvar_put
+   ncvar_get <- ncdf4::ncvar_get
+
+   ## site information
    site <- settings$run$site
    site.id <- as.numeric(site$id)
   
