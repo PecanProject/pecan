@@ -14,17 +14,19 @@ mkdir -p "@OUTDIR@"
 export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
 
 # see if application needs running
-#if [ ! -e "@OUTDIR@/history.xml" ]; then
+#if [ ! -e "@OUTDIR@/pecan.done" ]; then
+
+  ## Figure out where CIME SCRIPTS are installed
+  cd @REFCASE@
+  IFS=' ' read -ra SCRIPTROOT <<< `./xmlquery SCRIPTSROOT -valonly`
+  echo ${SCRIPTROOT[1]}
 
   ## Seem to be stuck having to build a new case. Will try and avoid this in the future
   ## HACK: hard coding path
-  cd /home/carya/ed-clm/cime/scripts
+  cd ${SCRIPTROOT[1]}
   ./create_newcase -case @CASEDIR@ -res CLM_USRDAT -compset ICLM45ED -mach eddi -compiler gnu
 
   cd "@RUNDIR@"
-  
-  ## copy required files from default case
-  ## cp -rf @REFCASE@/* .
   
   ## RECURSIVELY COPY/SYMLINK REFERENCE INPUTS DIRECTORY (DIN_LOC_ROOT)
   ## create folders and symbolic links. Links will later be deleted when non-default files are specified
@@ -148,10 +150,12 @@ EOF
   echo "library(PEcAn.FATES); model2netcdf.FATES('@OUTDIR@')" | R --vanilla
   
 
-# copy readme with specs to output
-cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
+  # copy readme with specs to output
+  cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 
-# run getdata to extract right variables
+  # write tag so future execution knows run finished
+  echo $(date) >> "@OUTDIR@/pecan.done"
+
 
 # host specific teardown
 @HOST_TEARDOWN@
