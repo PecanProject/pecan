@@ -159,6 +159,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    ## DATES -> ENV_RUN
    jobsh <- gsub('@START_DATE@', start_date, jobsh)
    jobsh <- gsub('@STOP_N@', stop_n, jobsh)
+   jobsh <- gsub('@RUN_ID@', run.id, jobsh)
    
    ## MET --> DATM
 #   jobsh <- gsub('@SITE_MET@', settings$run$inputs$met$path, jobsh)
