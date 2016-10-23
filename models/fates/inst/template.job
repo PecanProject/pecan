@@ -96,7 +96,7 @@ EOF
   rm @INDIR@/lnd/clm2/paramdata/*
   ln -s @RUNDIR@/clm_params_ed.@RUN_ID@.nc @INDIR@/lnd/clm2/paramdata/
 cat >> user_nl_clm << EOF
-paramfile = '@INDIR@/lnd/clm2/paramdata/clm_params_ed.@RUN_ID@.nc
+paramfile = '@INDIR@/lnd/clm2/paramdata/clm_params_ed.@RUN_ID@.nc'
 EOF
 
   ## APPLY CONFIG CHANGES
