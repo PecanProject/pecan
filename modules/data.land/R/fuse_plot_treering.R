@@ -135,6 +135,6 @@ fuse_plot_treering <- function(plot.data, inc.data, tuscon.data, inc.unit.conv =
     row.names(diameters[[i]]) <- dnames
   }
   
-  list(diameters = diameters, increments = increments, survival = survival,
-       species = spp, depth = depth)
+  return(list(diameters = diameters, increments = increments, survival = survival,
+              species = spp, depth = depth))
 } # fuse_plot_treering

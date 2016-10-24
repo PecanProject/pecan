@@ -1,3 +1,12 @@
+#-------------------------------------------------------------------------------
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
+#-------------------------------------------------------------------------------
+
 ##' @title read.restart.LINKAGES
 ##' @name  read.restart.LINKAGES
 ##' @author Ann Raiho \email{araiho@@nd.edu}
@@ -13,26 +22,25 @@
 ##' @return X.vec      vector of forecasts
 ##' @export
 ##' 
-read.restart.LINKAGES <- function(outdir,runid,stop.time,settings,var.names=NULL,params=NULL){
- 
-  #Read ensemble output
-  ens <- read.output(runid = runid,outdir = file.path(outdir, runid),
-         start.year = year(stop.time),
-         end.year=year(stop.time),
-         variables = var.names) #change to just "AGB" for plot level biomass
+read.restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names = NULL, params = NULL) {
   
-  #Add PFT name to variable if applicable
+  # Read ensemble output
+  ens <- read.output(runid = runid, 
+                     outdir = file.path(outdir, runid), 
+                     start.year = lubridate::year(stop.time), 
+                     end.year = lubridate::year(stop.time), 
+                     variables = var.names)  # change to just 'AGB' for plot level biomass
+  
+  # Add PFT name to variable if applicable
   pft.names <- numeric(length(settings$pfts))
-  for(i in 1:length(settings$pfts)){
+  for (i in seq_along(settings$pfts)) {
     pft.names[i] <- settings$pfts[i]$pft$name
   }
-  ens.pft.names <- grep("pft",names(ens))
-  names(ens[[grep("pft",names(ens))]]) <- pft.names
-  
-  #Put forecast into vector
-  X.vec <- t(unlist(ens))
+  ens.pft.names <- grep("pft", names(ens))
+  names(ens[[grep("pft", names(ens))]]) <- pft.names
   
   print(runid)
-
-  return(X.vec)
-}
+  
+  # Put forecast into vector
+  return(t(unlist(ens)))
+} # read.restart.LINKAGES

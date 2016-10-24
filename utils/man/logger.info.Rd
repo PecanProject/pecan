@@ -16,7 +16,7 @@ This function will print an informational message.
 }
 \examples{
 \dontrun{
-logger.info("PEcAn version 1.2")
+logger.info('PEcAn version 1.2')
 }
 }
 \author{

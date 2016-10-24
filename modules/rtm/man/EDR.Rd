@@ -18,8 +18,8 @@ and skips the analysis step.
 `edr.exe` -- Path to EDR executable}
 
 \item{RT.matrix}{Matrix of wavelengths, reflectance, and transmittance 
-values. Matrix must have column names "wl" (wavelength), "R" (reflectance), 
-and "T" (transmittance). Such a matrix is returned by default by all 
+values. Matrix must have column names 'wl' (wavelength), 'R' (reflectance), 
+and 'T' (transmittance). Such a matrix is returned by default by all 
 versions of PROSPECT in this package.}
 
 \item{par.wl}{Vector of wavelengths defining PAR region}
@@ -33,7 +33,7 @@ results.}
 
 \item{trait.values}{Named, hierarchical list of trait values for generating config.xml file.}
 
-\item{settings}{PEcAn settings list. Default is model$revision = "git", model$config.header = NULL.}
+\item{settings}{PEcAn settings list. Default is model$revision = 'git', model$config.header = NULL.}
 
 \item{history.prefix}{Prefix in histroy file name. Will be appended to 
 history path.}

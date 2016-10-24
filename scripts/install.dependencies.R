@@ -21,12 +21,12 @@ if (!("Rgraphviz" %in% installed.packages()[, "Package"])) {
 }
 
 # install packages needed from CRAN
-list.of.packages <- c("abind", "car", "chron", "coda", "data.table", "doSNOW", "dplR", "earth", 
+list.of.packages <- c("data.table", "doSNOW", "dplR", "earth", 
                       "emulator", "ggmap", "ggplot2", "gridExtra", "Hmisc", "httr", "kernlab", 
-                      "GPfit", "knitr", "lubridate", "Maeswrap", "MASS", "MCMCpack", "mvtnorm", "ncdf4", 
-                      "plotrix", "plyr", "raster", "randtoolbox", "rjags", "rgdal", "tgp", "DBI", 
-                      "roxygen2", "stringr", "testthat", "boot", "XML", "RNCEP", "foreign", 
-                      "RCurl", "udunits2", "RPostgreSQL", "rPython", "minpack.lm", "mclust", 
+                      "GPfit", "knitr", "Maeswrap", "MASS", "MCMCpack", "mvtnorm",
+                      "plotrix", "raster", "randtoolbox", "rjags", "rgdal", "tgp", "DBI", 
+                      "roxygen2", "boot", "RNCEP", "foreign", 
+                      "RCurl", "RPostgreSQL", "rPython", "minpack.lm", "mclust", 
                       "geonames", "Rcpp", "devtools", "inline", "segmented", "msm", "dplyr", 
                       "shiny", "scales", "maps", "sp")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]

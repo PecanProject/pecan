@@ -24,20 +24,24 @@
 met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat, lon, 
                             overwrite = FALSE, verbose = FALSE, ...) {
   
-  # General Structure- FATES Uses Netcdf so we need to rename vars, split files from years into
-  # months, and generate the header file Get Met file from inpath. Loop over years (Open
-  # nc.file,rename vars,change dimensions as needed,close/save .nc file) close defining temporal
-  # dimension needs to be figured out. If we configure FATES to use same tstep then we may not need
-  # to change dimensions
+  # General Structure- FATES Uses Netcdf so we need to rename vars, split files from years into months, and generate the header file
+  # Get Met file from inpath.
+  # Loop over years (Open nc.file,rename vars,change dimensions as needed,close/save .nc file)
+  # close
+  # defining temporal dimension needs to be figured out. If we configure FATES to use same tstep then we may not need to change dimensions  
   
   library(PEcAn.utils)
-  library(ncdf4)
+  
+  ncvar_get <- ncdf4::ncvar_get
+  ncdim_def <- ncdf4::ncdim_def
+  ncatt_get <- ncdf4::ncatt_get
+  ncvar_put <- ncdf4::ncvar_put
   
   insert <- function(ncout, name, unit, data) {
-    var   <- ncvar_def(name = name, units = unit, dim = dim, missval = -6999, verbose = verbose)
-    ncout <- ncvar_add(nc = ncout, v = var, verbose = verbose)
+    var   <- ncdf4::ncvar_def(name = name, units = unit, dim = dim, missval = -6999, verbose = verbose)
+    ncout <- ncdf4::ncvar_add(nc = ncout, v = var, verbose = verbose)
     ncvar_put(nc = ncout, varid = name, vals = data)
-    invisible(ncout)
+    return(invisible(ncout))
   }
   sm <- c(0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365) * 86400  ## day of year thresholds
   
@@ -58,7 +62,7 @@ met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date,
     if (file.exists(in.file)) {
       
       ## Open netcdf file
-      nc <- nc_open(in.file)
+      nc <- ncdf4::nc_open(in.file)
       
       ## extract variables. These need to be read in and converted to CLM names (all units are correct)
       time      <- ncvar_get(nc, "time")
@@ -121,31 +125,44 @@ met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date,
         ## eastward_wind & northward_wind
         ncout <- insert(ncout, "WIND", "m/s", WIND)
         
-        nc_close(ncout)
+        ncdf4::nc_close(ncout)
         
-        # ncvar_rename(ncfile,varid='LONGXY') ncvar_rename(ncfile,varid='LATIXY') # # double
-        # EDGEW(scalar) ; # EDGEW:long_name = 'western edge in atmospheric data' ; # EDGEW:units =
-        # 'degrees E' ; EDGEW = ncvar_rename(ncfile,'EDGEW','EDGEW') # double EDGEE(scalar) ; #
-        # EDGEE:long_name = 'eastern edge in atmospheric data' ; # EDGEE:units = 'degrees E' ; EDGEE =
-        # ncvar_rename(ncfile,'EDGEE','EDGEE') # double EDGES(scalar) ; # EDGES:long_name = 'southern
-        # edge in atmospheric data' ; # EDGES:units = 'degrees N' ; EDGES =
-        # ncvar_rename(ncfile,'EDGES','EDGES') # # double EDGEN(scalar) ; # EDGEN:long_name = 'northern
-        # edge in atmospheric data' ; # EDGEN:units = 'degrees N' ; EDGEN =
-        # ncvar_rename(ncfile,'EDGEN','EDGEN')
+        #   ncvar_rename(ncfile,varid="LONGXY")
+        #   ncvar_rename(ncfile,varid="LATIXY")
+        #   #     
+        #   #     double EDGEW(scalar) ;
+        #   #     EDGEW:long_name = "western edge in atmospheric data" ;
+        #   #     EDGEW:units = "degrees E" ;
+        #   EDGEW = ncvar_rename(ncfile,"EDGEW","EDGEW")
+        #   
+        #   #     double EDGEE(scalar) ;
+        #   #     EDGEE:long_name = "eastern edge in atmospheric data" ;
+        #   #     EDGEE:units = "degrees E" ;
+        #   EDGEE = ncvar_rename(ncfile,"EDGEE","EDGEE")
+        #   
+        #   #     double EDGES(scalar) ;
+        #   #     EDGES:long_name = "southern edge in atmospheric data" ;
+        #   #     EDGES:units = "degrees N" ;
+        #   EDGES = ncvar_rename(ncfile,"EDGES","EDGES") 
+        #   #     
+        #   #     double EDGEN(scalar) ;
+        #   #     EDGEN:long_name = "northern edge in atmospheric data" ;
+        #   #     EDGEN:units = "degrees N" ;
+        #   EDGEN = ncvar_rename(ncfile,"EDGEN","EDGEN")
       }
       
-      nc_close(nc)
+      ncdf4::nc_close(nc)
     }  ## end file exists
   }  ### end loop over met files
   
   logger.info("Done with met2model.FATES")
   
-  data.frame(file = paste0(outfolder, "/"), 
-             host = c(fqdn()), 
-             mimetype = c("application/x-netcdf"), 
-             formatname = c("CLM met"), 
-             startdate = c(start_date), 
-             enddate = c(end_date), 
-             dbfile.name = "", 
-             stringsAsFactors = FALSE)
+  return(data.frame(file = paste0(outfolder, "/"), 
+                    host = c(fqdn()), 
+                    mimetype = c("application/x-netcdf"), 
+                    formatname = c("CLM met"), 
+                    startdate = c(start_date), 
+                    enddate = c(end_date), 
+                    dbfile.name = "", 
+                    stringsAsFactors = FALSE))
 } # met2model.FATES

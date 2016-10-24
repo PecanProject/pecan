@@ -7,7 +7,7 @@
 metric.scatter.plot(dat, var)
 }
 \arguments{
-\item{dat}{}
+\item{var}{}
 }
 \author{
 Betsy Cowdery
