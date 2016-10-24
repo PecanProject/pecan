@@ -12,7 +12,7 @@
 ##' @param settings settings list
 ##' @return updated settings list
 ##' @author Ryan Kelly
-##' @export
+##' @export fix.deprecated.settings
 fix.deprecated.settings <- function(settings) {
   library(XML)
   library(lubridate)

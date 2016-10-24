@@ -4,7 +4,7 @@
 ##' @param settings settings list
 ##' @return updated settings list
 ##' @author Ryan Kelly
-##' @export
+##' @export write.settings
 
 
 write.settings <- function(settings, outputfile = "pecan.CHECKED.xml"){
