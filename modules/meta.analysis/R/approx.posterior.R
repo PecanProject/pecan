@@ -50,14 +50,7 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
     pparm <- as.numeric(priors[trait, 2:3])
     ptrait <- trait
     
-    fp <- function(x) {
-      cl <- call(paste0("d", priors[ptrait, "distn"]), 
-                 x, 
-                 priors[ptrait, "parama"], 
-                 priors[ptrait, "paramb"])
-      eval(cl)
-    } # fp
-    
+
     ## first determine the candidate set of models based on any range restrictions
     zerobound <- c("exp", "gamma", "lnorm", "weibull")
     if (pdist %in% "beta") {
@@ -111,46 +104,8 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
         posteriors[ptrait, "paramb"] <- fit[[bestfit]]$estimate[2]
       }
       
-
-      dens_plot <- function(posteriors, priors, dat, trait, trait.data,
-                            plot_quantiles = c(0.01, 0.99)) {
-
-        f <- function(x) {
-          cl <- call(paste0("d", posteriors[ptrait, "distn"]),
-                     x,
-                     posteriors[ptrait, "parama"], 
-                     posteriors[ptrait, "paramb"])
-          eval(cl)
-        } # f
-
-        fq <- function(x) {
-          cl <- call(paste0("q", priors[ptrait, "distn"]),
-                     x, 
-                     priors[ptrait, "parama"], 
-                     priors[ptrait, "paramb"])
-          eval(cl)
-        } # fq
-
-        qbounds <- fq(plot_quantiles)
-        x <- seq(qbounds[1], qbounds[2], length = 1000)
-        rng <- range(dat)
-        if (!is.null(trait.data)) {
-          rng <- range(trait.data[[trait]]$Y)
-        }
-
-        plot(density(dat), col = 2, lwd = 2, main = trait, xlim = rng)
-        if (!is.null(trait.data)) {
-          rug(trait.data[[trait]]$Y, lwd = 2, col = "purple")
-        }
-        lines(x, f(x), lwd = 2, type = "l")
-        lines(x, fp(x), lwd = 3, type = "l", col = 3)
-        legend("topleft", 
-               legend = c("data", "prior", "post", "approx"), 
-               col = c("purple", 3, 2, 1), lwd = 2)
-      }
-
       if (do.plot) {
-        dens_plot(posteriors, priors, dat, trait, trait.data)
+        .dens_plot(posteriors, priors, ptrait, dat, trait, trait.data)
       }
     } else {
       ## default: NORMAL
@@ -158,7 +113,7 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
       posteriors[trait, "parama"] <- mean(dat)
       posteriors[trait, "paramb"] <- sd(dat)
       if (do.plot) {
-        dens_plot(posteriors, priors, dat, trait, trait.data)
+        .dens_plot(posteriors, priors, ptrait, dat, trait, trait.data)
       }
     }
   }  ## end trait loop
@@ -169,3 +124,49 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
   
   return(posteriors)
 } # approx.posterior
+
+
+.dens_plot <- function(posteriors, priors, ptrait, dat, trait, trait.data,
+                      plot_quantiles = c(0.01, 0.99)) {
+
+  f <- function(x) {
+    cl <- call(paste0("d", posteriors[ptrait, "distn"]),
+               x,
+               posteriors[ptrait, "parama"], 
+               posteriors[ptrait, "paramb"])
+    eval(cl)
+  } # f
+
+  fq <- function(x) {
+    cl <- call(paste0("q", priors[ptrait, "distn"]),
+               x, 
+               priors[ptrait, "parama"], 
+               priors[ptrait, "paramb"])
+    eval(cl)
+  } # fq
+
+  fp <- function(x) {
+    cl <- call(paste0("d", priors[ptrait, "distn"]), 
+               x, 
+               priors[ptrait, "parama"], 
+               priors[ptrait, "paramb"])
+    eval(cl)
+  } # fp
+  
+  qbounds <- fq(plot_quantiles)
+  x <- seq(qbounds[1], qbounds[2], length = 1000)
+  rng <- range(dat)
+  if (!is.null(trait.data)) {
+    rng <- range(trait.data[[trait]]$Y)
+  }
+
+  plot(density(dat), col = 2, lwd = 2, main = trait, xlim = rng)
+  if (!is.null(trait.data)) {
+    rug(trait.data[[trait]]$Y, lwd = 2, col = "purple")
+  }
+  lines(x, f(x), lwd = 2, type = "l")
+  lines(x, fp(x), lwd = 3, type = "l", col = 3)
+  legend("topleft", 
+         legend = c("data", "prior", "post", "approx"), 
+         col = c("purple", 3, 2, 1), lwd = 2)
+}
