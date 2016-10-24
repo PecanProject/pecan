@@ -1,9 +1,7 @@
-##' check to see if inputs are specified - this should be part of the model code
-##'
-##' @title Update Settings
-##' @param settings settings list
-##' @return updated settings list
-##' @export
+#' check to see if inputs are specified - this should be part of the model code
+#'
+#' @import PEcAn.DB
+#' @import PEcAn.utils
 ##-------------------------------------------------------------------------------
 ## Copyright (c) 2012 University of Illinois, NCSA.
 ## All rights reserved. This program and the accompanying materials
