@@ -82,10 +82,12 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   trait.data.check <- query.traits(spstr, traits, con = dbcon, update.check.only=TRUE)
   traits <- names(trait.data.check)
 
-  # check to see if we need to update
+  # Set forceupdate FALSE if it's a string (backwards compatible with 'AUTO' flag used in the past)
   if(!is.logical(forceupdate)) {
     forceupdate <- FALSE
   }
+  
+  # check to see if we need to update
   if (!forceupdate) {
     if (is.null(pft$posteriorid)) {
       pft$posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " ORDER BY created_at DESC LIMIT 1"), dbcon)[['id']]  
