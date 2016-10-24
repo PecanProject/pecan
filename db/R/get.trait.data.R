@@ -83,7 +83,10 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   traits <- names(trait.data.check)
 
   # check to see if we need to update
-  if (forceupdate || !as.logical(forceupdate)) {
+  if(!is.logical(forceupdate)) {
+    forceupdate <- FALSE
+  }
+  if (!forceupdate) {
     if (is.null(pft$posteriorid)) {
       pft$posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " ORDER BY created_at DESC LIMIT 1"), dbcon)[['id']]  
     }
@@ -97,7 +100,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
           if (!file.exists(file.path(files$file_path[[id]], files$file_name[[id]]))) {
             foundallfiles <- FALSE
             logger.error("can not find posterior file: ", file.path(files$file_path[[id]], files$file_name[[id]]))
-          } else if (forceupdate && (files$file_name[[id]] == "species.csv")) {
+          } else if (files$file_name[[id]] == "species.csv") {
             logger.debug("Checking if species have changed")
             testme <- read.csv(file.path(files$file_path[[id]], files$file_name[[id]]))
             if (!check.lists(species, testme)) {
@@ -105,7 +108,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
               logger.error("species have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
             }
             remove(testme)
-          } else if (forceupdate && (files$file_name[[id]] == "prior.distns.Rdata")) {
+          } else if (files$file_name[[id]] == "prior.distns.Rdata") {
             logger.debug("Checking if priors have changed")
             prior.distns.tmp <- prior.distns
             load(file.path(files$file_path[[id]], files$file_name[[id]]))
@@ -116,7 +119,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
               logger.error("priors have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
             }
             remove(testme)
-          } else if (forceupdate && (files$file_name[[id]] == "trait.data.Rdata")) {
+          } else if (files$file_name[[id]] == "trait.data.Rdata") {
             logger.debug("Checking if trait data has changed")
             load(file.path(files$file_path[[id]], files$file_name[[id]]))
 
@@ -228,7 +231,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
 ##' @param modeltype type of model that is used, this is is used to distinguis between different pfts with the same name.
 ##' @param dbfiles location where previous results are found
 ##' @param database database connection parameters
-##' @param forceupdate set this to true to force an update, auto will check to see if an update is needed.
+##' @param forceupdate set this to true to force an update, false to check to see if an update is needed.
 ##' @param trait.names list of traits to query. If TRUE, uses trait.dictionary
 ##' @return list of pfts with update posteriorids
 ##' @author David LeBauer, Shawn Serbin
@@ -272,7 +275,7 @@ runModule.get.trait.data <- function(settings) {
     modeltype <- settings$model$type
     dbfiles <- settings$database$dbfiles
     database <- settings$database$bety
-    forceupdate <- !is.null(settings$meta.analysis) && (as.logical(settings$meta.analysis$update) || (settings$meta.analysis$update == 'AUTO'))
+    forceupdate <- ifelse(is.null(settings$meta.analysis$update), FALSE, settings$meta.analysis$update)
     settings$pfts <- get.trait.data(pfts, modeltype, dbfiles, database, forceupdate)
     return(settings)
   } else if(is.Settings(settings)) {
@@ -280,7 +283,7 @@ runModule.get.trait.data <- function(settings) {
     modeltype <- settings$model$type
     dbfiles <- settings$database$dbfiles
     database <- settings$database$bety
-    forceupdate <- !is.null(settings$meta.analysis) && (as.logical(settings$meta.analysis$update) || (settings$meta.analysis$update == 'AUTO'))
+    forceupdate <- ifelse(is.null(settings$meta.analysis$update), FALSE, settings$meta.analysis$update)
     settings$pfts <- get.trait.data(pfts, modeltype, dbfiles, database, forceupdate)
     return(settings)
   } else {
