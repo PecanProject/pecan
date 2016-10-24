@@ -80,6 +80,7 @@ default.settings.prospect <- list(
            rlnorm(5, mu, sigma) + c("N"=1,"Cab"=0,"Car"=0,"Cw"=0,"Cm"=0)),
   prior.function = with(prior.defaultvals.prospect(sd.inflate=3), priorfunc.prospect(mu,sigma)),
   param.mins = c(1, 0, 0, 0, 0),
+  param.maxs = c(Inf, Inf, Inf, Inf, Inf),
   ngibbs = 10000,
   nchains = 5,
   burnin = 8000,
