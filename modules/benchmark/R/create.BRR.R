@@ -18,7 +18,7 @@ create.BRR <- function(ens_wf, con){
   
   if(cnd1|cnd2|cnd3){  # If the ensemble run was done on localhost, turn into a BRR
     
-    settingsXML <- file.path(ens_wf$folder,"pecan.xml")
+    settingsXML <- file.path(ens_wf$folder,"pecan.CHECKED.xml")
     
     # Automatically creates a new pecan.xml I think. Need to fix this. 
     clean <- clean.settings(settingsXML, "findme.xml")
