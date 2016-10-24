@@ -11,9 +11,16 @@
 # PRIVATE FUNCTIONS
 # ----------------------------------------------------------------------
 data.fetch <- function(var, nc, fun = mean) {
-  # get a specific set of values from the HDF data Args: var: the variable to extract from
-  # the hdf data nc: time: fun: the function to apply to the data at the same time Returns:
-  # values extracted from the nc data
+  # get a specific set of values from the HDF data
+  #
+  # Args:
+  #   var:    the variable to extract from the hdf data
+  #   nc:
+  #   time:
+  #   fun:    the function to apply to the data at the same time
+  #
+  # Returns:
+  #   values extracted from the nc data
   if (var == "time") {
     val <- unique(floor(nc$dim[["time"]]$vals))
     attr(val, "lbl") <- "Day of the year"
