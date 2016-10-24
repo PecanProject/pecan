@@ -73,8 +73,6 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
     return(invisible(results))
   }
   
-  library(ncdf4)
-  library(lubridate)
   library(PEcAn.data.atmosphere)
   
   ## check to see if the outfolder is defined, if not create directory for output
@@ -87,14 +85,18 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
   
   # Create an empty holder for each (hour)days translated met file
   out <- NULL
+
+  ncvar_get <- ncdf4::ncvar_get
+  ncdim_def <- ncdf4::ncdim_def
+  ncatt_get <- ncdf4::ncatt_get
   
-  start_year <- year(start_date)
-  end_year <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year <- lubridate::year(end_date)
   
   for (year in start_year:end_year) {
     old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
     
-    nc <- nc_open(old.file)
+    nc <- ncdf4::nc_open(old.file)
     
     ## extract variables
     lat  <- ncvar_get(nc, "latitude")
@@ -121,7 +123,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
     air_pressure <- try(ncvar_get(nc, "air_pressure"))  ## Pa
     ppt <- try(ncvar_get(nc, "precipitation_flux"))  ## kg/m2/s
     
-    nc_close(nc)
+    ncdf4::nc_close(nc)
     
     ## is CO2 present?
     if (!is.numeric(CO2)) {
@@ -133,13 +135,13 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
     
     if (sub_daily) {
       
-      if (year%%4 == 0) {
+      if (lubridate::leap_year(year)) {
         ndays <- 366
       } else {
         ndays <- 365
       }
       
-      for (doy in 1:ndays) {
+      for (doy in seq_len(ndays)) {
         
         day_idx <- idx:((idx - 1) + 48)
         
@@ -190,7 +192,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
       
     } else {
       
-      if (year%%4 == 0) {
+      if (lubridate::leap_year(year)) {
         ndays <- 366
       } else {
         ndays <- 365
@@ -267,5 +269,5 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
   ## write output
   write.table(out, out.file.full, quote = FALSE, sep = ",", row.names = FALSE, col.names = FALSE)
   
-  invisible(results)
+  return(invisible(results))
 } # met2model.GDAY

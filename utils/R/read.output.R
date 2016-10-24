@@ -1,12 +1,11 @@
-##-------------------------------------------------------------------------------
-## Copyright (c) 2012 University of Illinois, NCSA.
-## All rights reserved. This program and the accompanying materials
-## are made available under the terms of the 
-## University of Illinois/NCSA Open Source License
-## which accompanies this distribution, and is available at
-## http://opensource.ncsa.illinois.edu/license.html
-
-##---------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
+#-------------------------------------------------------------------------------
 
 ##' Convert output for a single model run to NetCDF
 ##'
@@ -18,33 +17,33 @@
 ##' @title Convert model output to NetCDF 
 ##' @param runid 
 ##' @param outdir
-##' @param model name of simulation model currently accepts ("ED2", "SIPNET", "BIOCRO")
+##' @param model name of simulation model currently accepts ('ED2', 'SIPNET', 'BIOCRO')
 ##' @param lat Latitude of the site
 ##' @param lon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
 ##' @return vector of filenames created, converts model output to netcdf as a side effect
 ##' @author Mike Dietze, David LeBauer
-model2netcdfdep <- function(runid, outdir, model, lat, lon, start_date, end_date){
+model2netcdfdep <- function(runid, outdir, model, lat, lon, start_date, end_date) {
   ## load model-specific PEcAn module
-  do.call(require, list(paste0("PEcAn.", model)))    
-
-
-  model2nc <- paste("model2netcdf", model, sep=".")
-  if(!exists(model2nc)){
+  do.call(require, list(paste0("PEcAn.", model)))
+  
+  model2nc <- paste("model2netcdf", model, sep = ".")
+  if (!exists(model2nc)) {
     logger.warn("File conversion function model2netcdf does not exist for", model)
     return(NA)
   }
   
-  do.call(model2nc, list(outdir, lat, lon, start_date, end_date))    
+  do.call(model2nc, list(outdir, lat, lon, start_date, end_date))
   
   print(paste("Output from run", runid, "has been converted to netCDF"))
-  ncfiles <- list.files(path = outdir, pattern="\\.nc$", full.names=TRUE)
-  if(length(ncfiles) == 0){
+  ncfiles <- list.files(path = outdir, pattern = "\\.nc$", full.names = TRUE)
+  if (length(ncfiles) == 0) {
     logger.severe("Conversion of model files to netCDF unsuccessful")
   }
   return(ncfiles)
-}
+} # model2netcdfdep
+
 
 ##' Convert output for a single model run to NetCDF
 ##'
@@ -56,7 +55,7 @@ model2netcdfdep <- function(runid, outdir, model, lat, lon, start_date, end_date
 ##' @title Convert model output to NetCDF 
 ##' @param runid 
 ##' @param outdir
-##' @param model name of simulation model currently accepts ("ED2", "SIPNET", "BIOCRO")
+##' @param model name of simulation model currently accepts ('ED2', 'SIPNET', 'BIOCRO')
 ##' @param lat Latitude of the site
 ##' @param lon Longitude of the site
 ##' @param start_date Start time of the simulation
@@ -64,9 +63,9 @@ model2netcdfdep <- function(runid, outdir, model, lat, lon, start_date, end_date
 ##' @export
 ##' @return vector of filenames created, converts model output to netcdf as a side effect
 ##' @author Mike Dietze, David LeBauer
-model2netcdf <- function(runid, outdir, model, lat, lon, start_date, end_date){
+model2netcdf <- function(runid, outdir, model, lat, lon, start_date, end_date) {
   logger.severe("model2netcdf will be removed in future versions, plase update your worklow")
-}
+} # model2netcdf
 
 
 ##' Reads the output of a single model run
@@ -91,76 +90,72 @@ model2netcdf <- function(runid, outdir, model, lat, lon, start_date, end_date){
 ##' @return vector of output variable
 ##' @export
 ##' @author Michael Dietze, David LeBauer
-read.output <- function(runid, outdir, start.year=NA,
-                        end.year=NA, variables = "GPP") {
-
-  library(ncdf4)
-  library(udunits2)
-
-  ## vars in units s-1 to be converted to y-1
-  #cflux = c("GPP", "NPP", "NEE", "TotalResp", "AutoResp", "HeteroResp",
-  #  "DOC_flux", "Fire_flux") # kgC m-2 s-1
-  #wflux = c("Evap", "TVeg", "Qs", "Qsb", "Rainf") # kgH20 m-2 d-1
+read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables = "GPP") {
+  
+  ## vars in units s-1 to be converted to y-1 cflux = c('GPP', 'NPP', 'NEE',
+  ## 'TotalResp', 'AutoResp', 'HeteroResp', 'DOC_flux', 'Fire_flux') # kgC m-2 s-1
+  ## wflux = c('Evap', 'TVeg', 'Qs', 'Qsb', 'Rainf') # kgH20 m-2 d-1
   
   # create list of *.nc years
-  nc.years <- as.vector(unlist(strsplit(list.files(path = outdir, pattern="\\.nc$", full.names=FALSE),".nc")))
+  nc.years <- as.vector(unlist(strsplit(list.files(path = outdir, pattern = "\\.nc$", 
+                                                   full.names = FALSE), ".nc")))
   # select only those *.nc years requested by user
   keep <- which(nc.years >= as.numeric(start.year) & nc.years <= as.numeric(end.year))
-  ncfiles <- list.files(path = outdir, pattern="\\.nc$", full.names=TRUE)
+  ncfiles <- list.files(path = outdir, pattern = "\\.nc$", full.names = TRUE)
   ncfiles <- ncfiles[keep]
   # throw error if no *.nc files selected/availible
   nofiles <- FALSE
-  if(length(ncfiles) == 0) {
-    logger.warn("read.output: no netCDF files of model output present for runid = ", runid, " in ", outdir, 
-                "will return NA")
-    if(length(nc.years)>0) {
-      logger.info("netCDF files for other years present",nc.years)
+  if (length(ncfiles) == 0) {
+    logger.warn("read.output: no netCDF files of model output present for runid = ", 
+                runid, " in ", outdir, "will return NA")
+    if (length(nc.years) > 0) {
+      logger.info("netCDF files for other years present", nc.years)
     }
     nofiles <- TRUE
   } else {
-    logger.info("Reading output for Years: ",start.year," - ", end.year,
-                "in directory:", outdir, "including files", dir(outdir, pattern = "\\.nc$"))
+    logger.info("Reading output for Years: ", start.year, " - ", end.year, 
+                "in directory:", outdir,
+                "including files", dir(outdir, pattern = "\\.nc$"))
   }
   
   result <- list()
 
-  if(!nofiles){
-    for(ncfile in ncfiles) {
-        nc <- nc_open(ncfile)
-        for(v in variables){
-          if(v %in% c(names(nc$var),names(nc$dim))){
-            newresult <- ncvar_get(nc, v)
-#  Dropping attempt to provide more sensible units because of graph unit errors, issue #792            
-#            if(v %in% c(cflux, wflux)){
-#              newresult <- ud.convert(newresult, "kg m-2 s-1", "kg ha-1 yr-1")
-#            }
-            result[[v]] <- abind(result[[v]], newresult)
-          } else if (!(v %in% names(nc$var))){
-            logger.warn(paste(v, "missing in", ncfile))
-          }
+  if (!nofiles) {
+    for (ncfile in ncfiles) {
+      nc <- ncdf4::nc_open(ncfile)
+      for (v in variables) {
+        if (v %in% c(names(nc$var), names(nc$dim))) {
+          newresult <- ncdf4::ncvar_get(nc, v)
+          # Dropping attempt to provide more sensible units because of graph unit errors,
+          # issue #792 if(v %in% c(cflux, wflux)){ newresult <- udunits2::ud.convert(newresult, 'kg
+          # m-2 s-1', 'kg ha-1 yr-1') }
+          result[[v]] <- abind::abind(result[[v]], newresult)
+        } else if (!(v %in% names(nc$var))) {
+          logger.warn(paste(v, "missing in", ncfile))
         }
-        nc_close(nc)
       }
+      ncdf4::nc_close(nc)
+    }
   } else if (nofiles) {
     result <- lapply(variables, function(x) NA)
   }
-  logger.info(variables, 
-              "Mean:", lapply(result, function(x) signif(mean(x, na.rm = TRUE), 3)),
-              "Median:", lapply(result, function(x) signif(median(x, na.rm = TRUE), 3)))
+  logger.info(variables, "Mean:", 
+              lapply(result, function(x) signif(mean(x, na.rm = TRUE), 3)), "Median:", 
+              lapply(result, function(x) signif(median(x, na.rm = TRUE), 3)))
   return(result)
-}
+} # read.output
+
 
 ##'--------------------------------------------------------------------------------------------------#
 ##' Converts the output of all model runs
 ##'
 ##' @title convert outputs from model specific code to 
 ##' @name convert.outputs
-##' @param model name of simulation model currently accepts ("ED", "SIPNET", "BIOCRO")
+##' @param model name of simulation model currently accepts ('ED', 'SIPNET', 'BIOCRO')
 ##' @param settings settings loaded from pecan.xml
 ##' @param ... arguments passed to \code{\link{read.output}}, e.g. \code{variables}, \code{start.year}, \code{end.year}
 ##' @export
 ##' @author Rob Kooper
 convert.outputs <- function(model, settings, ...) {
   logger.severe("This function is not longer used and will be removed in the future.")
-}
-####################################################################################################
+} # convert.outputs

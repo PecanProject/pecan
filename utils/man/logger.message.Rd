@@ -22,7 +22,7 @@ This is a place holder and will be later filled in with a more complex logging s
 }
 \examples{
 \dontrun{
-logger.message("DEBUG", "variable", 5)
+logger.message('DEBUG', 'variable', 5)
 }
 }
 \author{

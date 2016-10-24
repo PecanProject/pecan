@@ -7,7 +7,6 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-library(XML)
 library(PEcAn.utils)
 library(PEcAn.DB)
 
@@ -28,8 +27,8 @@ fia.to.psscss <- function(settings,
                           overwrite=FALSE) {
 
   mimetype    <- "text/plain"
-  startdate   <- as_date(paste0(year, "-01-01"))
-  enddate     <- as_date(paste0(year, "-12-31"))
+  startdate   <- lubridate::as_date(paste0(year, "-01-01"))
+  enddate     <- lubridate::as_date(paste0(year, "-12-31"))
   formatnames <- c("ED2.cohort", "ED2.patch", "ED2.site")
   
   latmax <- lat + gridres

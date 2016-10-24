@@ -35,7 +35,7 @@ library(PEcAn.data.atmosphere)
 library(PEcAn.DB)
 
 # 1st argument is the input xml file
-input <- xmlToList(xmlParse(args[1]))
+input <- XML::xmlToList(xmlParse(args[1]))
 
 # 2nd argument is the output file
 outputfile <- args[2]
@@ -93,8 +93,8 @@ print("Using met.process to download files")
 outfile_met <- met.process(site, input_met, start_date, end_date, model, host, dbparams, cacheDir)
 
 # get start/end year code works on whole years only
-start_year <- year(start_date)
-end_year <- year(end_date)
+start_year <- lubridate::year(start_date)
+end_year <- lubridate::year(end_date)
 
 # if more than 1 year, or zip specified, zip result
 if (grepl("\\.zip$", outputfile) || (end_year - start_year > 1) && grepl("\\.pecan.nc$", outputfile)) {

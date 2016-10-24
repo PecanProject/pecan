@@ -5,7 +5,7 @@
 \title{met2model for FATES}
 \usage{
 met2model.FATES(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
-  lat, lon, ..., overwrite = FALSE, verbose = FALSE)
+  lat, lon, overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{in.path}{location on disk where inputs are stored}
