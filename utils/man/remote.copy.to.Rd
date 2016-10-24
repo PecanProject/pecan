@@ -29,8 +29,8 @@ is a folder it will copy the file into that folder.
 }
 \examples{
 \dontrun{
-  host <- list(name="geo.bu.edu", user="kooper", tunnel="/tmp/geo.tunnel")
-  remote.copy.to(host, "/tmp/kooper", "/tmp/kooper", delete=TRUE)
+  host <- list(name='geo.bu.edu', user='kooper', tunnel='/tmp/geo.tunnel')
+  remote.copy.to(host, '/tmp/kooper', '/tmp/kooper', delete=TRUE)
 }
 }
 \author{

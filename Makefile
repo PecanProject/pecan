@@ -1,9 +1,7 @@
 BASE_PACKAGES := utils db settings visualization
 
-MODELS := biocro clm45 dalec ed gday jules linkages \
+MODELS := biocro clm45 dalec ed fates gday jules linkages \
 	      lpjguess maat maespa preles sipnet
-
-MODELS_BUILD := $(MODELS:%=models/%)
 
 
 MODULES := allometry assim.batch assim.sequential benchmark \
@@ -11,234 +9,243 @@ MODULES := allometry assim.batch assim.sequential benchmark \
 	       data.mining data.remote emulator meta.analysis \
 	       photosynthesis priors rtm uncertainty
 
-MODULES_BUILD := $(MODULES:%=modules/%)
+.PHONY: all ${BASE_PACKAGES} ${MODELS} ${MODULES}
 
-.PHONY: all ${BASE_PACKAGES} ${MODELS_BUILD} ${MODULES_BUILD}
+all: .install PEcAn.all ${BASE_PACKAGES} ${MODELS} ${MODULES}
 
-all: ${BASE_PACKAGES} ${MODELS_BUILD} ${MODULES_BUILD}
+clean:
+	rm -rf .install
+
+check: 
+	Rscript -e "library(devtools); \
+	pkgs <- c('utils', 'db', 'settings', 'visualization'); \
+	models <- file.path('models', c('biocro', 'clm45', 'dalec', \
+	                    'ed', 'gday', 'jules', 'linkages', 'lpjguess', \
+	                    'maat', 'maespa', 'preles', 'sipnet')); \
+	modules <- file.path('modules', c('allometry', 'assim.batch', 'assim.sequential', 'benchmark', \
+	                     'data.atmosphere', 'data.hydrology', 'data.land', \
+	                     'data.mining', 'data.remote', 'emulator', 'meta.analysis', \
+	                     'photosynthesis', 'priors', 'rtm', 'uncertainty')); \
+	all_pkgs <- c(pkgs, models, modules); \
+	for (p in all_pkgs) check(p);"
+
+.install:
+	mkdir -p $@
 
 #### DEPENDENCY MAPPING ####
 
-${MODELS_BUILD}: ${BASE_PACKAGES} ${MODULES_BUILD}
+PEcAn.all: ${BASE_PACKAGES} ${MODULES} ${MODELS}
 
-${BASE_PACKAGES} ${MODELS_BUILD} ${MODULES_BUILD}: .install.devtools
+${MODELS}: ${BASE_PACKAGES} ${MODULES}
 
-.install.devtools:
-	Rscript -e "req <- require('devtools'); if(!req) install.packages('devtools')"
-	echo `date` > .install.devtools
+${BASE_PACKAGES} ${MODELS} ${MODULES}: .install/devtools
 
-#.install.reddyproc:
-	#Rscript -e '
-	#test <- require("REddyProc"); 
-	#if (!test) devtools::install_github("rforge/reddyproc", subdir = "pkg/REddyProc");
-	#'
-	#echo `date` > .install.reddyproc
-
-#### Global rules ####
-
-%: %/.install
-
-%/.install: $(wildcard %/**/*)
-	Rscript -e '
-	pkg <- "'$(@D)'";
-	library(devtools);
-	install("pkg");
-	'
-
-#### Dependencies ####
-
-#data.land: .install.reddyproc
+.install/devtools:
+	Rscript -e "req <- require('devtools'); if(!req) install.packages('devtools', repos = 'http://cran.rstudio.com')"
+	echo `date` > .install/devtools
 
 #### BASE PACKAGES ####
 
-#utils: .install.utils
+PEcAn.all: .install/all
 
-#.install.utils: $(wildcard utils/**/*)
-	#Rscript -e "devtools::install('utils')"
-	#echo `date` > .install.utils
+.install/all: $(wildcard all/**/*)
+	Rscript -e "devtools::install('all')"
+	echo `date` > .install/all
 
-#db: utils .install.db
+utils: .install/utils
 
-#.install.db: $(wildcard db/**/*)
-	#Rscript -e "devtools::install('db')"
-	#echo `date` > .install.db
+.install/utils: $(wildcard utils/**/*)
+	Rscript -e "devtools::install('utils')"
+	echo `date` > .install/utils
 
-#settings: utils db .install.settings
+db: utils .install/db
 
-#.install.settings: $(wildcard settings/**/*)
-	#Rscript -e "devtools::install('settings')"
-	#echo `date` > .install.settings
+.install/db: $(wildcard db/**/*)
+	Rscript -e "devtools::install('db')"
+	echo `date` > .install/db
 
-#visualization: db .install.visualization
+settings: utils db .install/settings
 
-#.install.visualization: $(wildcard visualization/**/*)
-	#Rscript -e "devtools::install('visualization')"
-	#echo `date` > .install.visualization
+.install/settings: $(wildcard settings/**/*)
+	Rscript -e "devtools::install('settings')"
+	echo `date` > .install/settings
 
-##### MODULES ####
+visualization: db .install/visualization
 
-#allometry: .install.allometry
+.install/visualization: $(wildcard visualization/**/*)
+	Rscript -e "devtools::install('visualization')"
+	echo `date` > .install/visualization
 
-#.install.allometry: $(wildcard modules/allometry/**/*)
-	#Rscript -e "devtools::install('modules/allometry')"
-	#echo `date` > .install.allometry
+#### MODULES ####
 
-#assim.batch: .install.assim.batch
+allometry: .install/allometry
 
-#.install.assim.batch: $(wildcard modules/assim.batch/**/*)
-	#Rscript -e "devtools::install('modules/assim.batch')"
-	#echo `date` > .install.assim.batch
+.install/allometry: $(wildcard modules/allometry/**/*)
+	Rscript -e "devtools::install('modules/allometry')"
+	echo `date` > .install/allometry
 
-#assim.sequential: .install.assim.sequential
+assim.batch: .install/assim.batch
 
-#.install.assim.sequential: $(wildcard modules/assim.sequential/**/*)
-	#Rscript -e "devtools::install('modules/assim.sequential')"
-	#echo `date` > .install.assim.sequential
+.install/assim.batch: $(wildcard modules/assim.batch/**/*)
+	Rscript -e "devtools::install('modules/assim.batch')"
+	echo `date` > .install/assim.batch
 
-#benchmark: .install.benchmark
+assim.sequential: .install/assim.sequential
 
-#.install.benchmark: $(wildcard modules/benchmark/**/*)
-	#Rscript -e "devtools::install('modules/benchmark')"
-	#echo `date` > .install.benchmark
+.install/assim.sequential: $(wildcard modules/assim.sequential/**/*)
+	Rscript -e "devtools::install('modules/assim.sequential')"
+	echo `date` > .install/assim.sequential
 
-#data.atmosphere: utils .install.data.atmosphere
+benchmark: .install/benchmark
 
-#.install.data.atmosphere: $(wildcard modules/data.atmosphere/**/*)
-	#Rscript -e "test <- require('REddyProc'); if (!test) devtools::install_github('rforge/reddyproc', subdir = 'pkg/REddyProc')"
-	#Rscript -e "devtools::install('modules/data.atmosphere')"
-	#echo `date` > .install.data.atmosphere
+.install/benchmark: $(wildcard modules/benchmark/**/*)
+	Rscript -e "devtools::install('modules/benchmark')"
+	echo `date` > .install/benchmark
 
-#data.hydrology: .install.data.hydrology
+data.atmosphere: utils .install/data.atmosphere
 
-#.install.data.hydrology: $(wildcard modules/data.hydrology/**/*)
-	#Rscript -e "devtools::install('modules/data.hydrology')"
-	#echo `date` > .install.data.hydrology
+.install/data.atmosphere: $(wildcard modules/data.atmosphere/**/*)
+	Rscript -e "test <- require('REddyProc'); if (!test) devtools::install_github('rforge/reddyproc', subdir = 'pkg/REddyProc')"
+	Rscript -e "devtools::install('modules/data.atmosphere')"
+	echo `date` > .install/data.atmosphere
 
-#data.land: db utils .install.data.land
+data.hydrology: .install/data.hydrology
 
-#.install.data.land: $(wildcard modules/data.land/**/*)
-	#Rscript -e "devtools::install('modules/data.land')"
-	#echo `date` > .install.data.land
+.install/data.hydrology: $(wildcard modules/data.hydrology/**/*)
+	Rscript -e "devtools::install('modules/data.hydrology')"
+	echo `date` > .install/data.hydrology
 
-#data.mining: .install.data.mining
+data.land: db utils .install/data.land
 
-#.install.data.mining: $(wildcard modules/data.mining/**/*)
-	#Rscript -e "devtools::install('modules/data.mining')"
-	#echo `date` > .install.data.mining
+.install/data.land: $(wildcard modules/data.land/**/*)
+	Rscript -e "devtools::install('modules/data.land')"
+	echo `date` > .install/data.land
 
-#data.remote: .install.data.remote
+data.mining: .install/data.mining
 
-#.install.data.remote: $(wildcard modules/data.remote/**/*)
-	#Rscript -e "devtools::install('modules/data.remote')"
-	#echo `date` > .install.data.remote
+.install/data.mining: $(wildcard modules/data.mining/**/*)
+	Rscript -e "devtools::install('modules/data.mining')"
+	echo `date` > .install/data.mining
 
-#emulator: .install.emulator
+data.remote: .install/data.remote
 
-#.install.emulator: $(wildcard modules/emulator/**/*)
-	#Rscript -e "devtools::install('modules/emulator')"
-	#echo `date` > .install.emulator
+.install/data.remote: $(wildcard modules/data.remote/**/*)
+	Rscript -e "devtools::install('modules/data.remote')"
+	echo `date` > .install/data.remote
 
-#meta.analysis: utils db .install.meta.analysis
+emulator: .install/emulator
 
-#.install.meta.analysis: $(wildcard modules/meta.analysis/**/*)
-	#Rscript -e "devtools::install('modules/meta.analysis')"
-	#echo `date` > .install.meta.analysis
+.install/emulator: $(wildcard modules/emulator/**/*)
+	Rscript -e "devtools::install('modules/emulator')"
+	echo `date` > .install/emulator
 
-#photosynthesis: .install.photosynthesis
+meta.analysis: utils db .install/meta.analysis
 
-#.install.photosynthesis: $(wildcard modules/photosynthesis/**/*)
-	#Rscript -e "devtools::install('modules/photosynthesis')"
-	#echo `date` > .install.photosynthesis
+.install/meta.analysis: $(wildcard modules/meta.analysis/**/*)
+	Rscript -e "devtools::install('modules/meta.analysis')"
+	echo `date` > .install/meta.analysis
 
-#priors: utils .install.priors
+photosynthesis: .install/photosynthesis
 
-#.install.priors: $(wildcard modules/priors/**/*)
-	#Rscript -e "devtools::install('modules/priors')"
-	#echo `date` > .install.priors
+.install/photosynthesis: $(wildcard modules/photosynthesis/**/*)
+	Rscript -e "devtools::install('modules/photosynthesis')"
+	echo `date` > .install/photosynthesis
 
-#rtm: .install.rtm
+priors: utils .install/priors
 
-#.install.rtm: $(wildcard modules/rtm/**/*)
-	#Rscript -e "devtools::install('modules/rtm')"
-	#echo `date` > .install.rtm
+.install/priors: $(wildcard modules/priors/**/*)
+	Rscript -e "devtools::install('modules/priors')"
+	echo `date` > .install/priors
 
-#uncertainty: utils priors .install.uncertainty
+rtm: .install/rtm
 
-#.install.uncertainty: $(wildcard modules/uncertainty/**/*)
-	#Rscript -e "devtools::install('modules/uncertainty')"
-	#echo `date` > .install.uncertainty
+.install/rtm: $(wildcard modules/rtm/**/*)
+	Rscript -e "devtools::install('modules/rtm')"
+	echo `date` > .install/rtm
 
-##### MODELS ####
+uncertainty: utils priors .install/uncertainty
 
-#biocro: .install.biocro
+.install/uncertainty: $(wildcard modules/uncertainty/**/*)
+	Rscript -e "devtools::install('modules/uncertainty')"
+	echo `date` > .install/uncertainty
 
-#.install.biocro: $(wildcard models/biocro/**/*)
-	#Rscript -e "devtools::install('models/biocro')"
-	#echo `date` > .install.biocro
+#### MODELS ####
 
-#clm45: .install.biocro
+biocro: .install/biocro
 
-#.install.clm45: $(wildcard models/biocro/**/*)
-	#Rscript -e "devtools::install('models/clm45')"
-	#echo `date` > .install.clm45
+.install/biocro: $(wildcard models/biocro/**/*)
+	Rscript -e "devtools::install('models/biocro')"
+	echo `date` > .install/biocro
 
-#dalec: .install.dalec
+clm45: .install/biocro
 
-#.install.dalec: $(wildcard models/dalec/**/*)
-	#Rscript -e "devtools::install('models/dalec')"
-	#echo `date` > .install.dalec
+.install/clm45: $(wildcard models/biocro/**/*)
+	Rscript -e "devtools::install('models/clm45')"
+	echo `date` > .install/clm45
 
-#ed: .install.ed
+dalec: .install/dalec
 
-#.install.ed: $(wildcard models/ed/**/*)
-	#Rscript -e "devtools::install('models/ed')"
-	#echo `date` > .install.ed
+.install/dalec: $(wildcard models/dalec/**/*)
+	Rscript -e "devtools::install('models/dalec')"
+	echo `date` > .install/dalec
 
-#gday: .install.gday
+ed: .install/ed
 
-#.install.gday: $(wildcard models/gday/**/*)
-	#Rscript -e "devtools::install('models/gday')"
-	#echo `date` > .install.gday
+.install/ed: $(wildcard models/ed/**/*)
+	Rscript -e "devtools::install('models/ed')"
+	echo `date` > .install/ed
 
-#jules: .install.jules
+fates: .install/fates
 
-#.install.jules: $(wildcard models/jules/**/*)
-	#Rscript -e "devtools::install('models/jules')"
-	#echo `date` > .install.jules
+.install/fates: $(wildcard models/fates/**/*)
+	Rscript -e "devtools::install('models/fates')"
+	echo `date` > .install/fates
 
-#linkages: .install.linkages
+gday: .install/gday
 
-#.install.linkages: $(wildcard models/linkages/**/*)
-	#Rscript -e "devtools::install('models/linkages')"
-	#echo `date` > .install.linkages
+.install/gday: $(wildcard models/gday/**/*)
+	Rscript -e "devtools::install('models/gday')"
+	echo `date` > .install/gday
 
-#lpjguess: .install.lpjguess
+jules: .install/jules
 
-#.install.lpjguess: $(wildcard models/lpjguess/**/*)
-	#Rscript -e "devtools::install('models/lpjguess')"
-	#echo `date` > .install.lpjguess
+.install/jules: $(wildcard models/jules/**/*)
+	Rscript -e "devtools::install('models/jules')"
+	echo `date` > .install/jules
 
-#maat: .install.biocro
+linkages: .install/linkages
 
-#.install.maat: $(wildcard models/biocro/**/*)
-	#Rscript -e "devtools::install('models/maat')"
-	#echo `date` > .install.maat
+.install/linkages: $(wildcard models/linkages/**/*)
+	Rscript -e "devtools::install('models/linkages')"
+	echo `date` > .install/linkages
 
-#maespa: .install.biocro
+lpjguess: .install/lpjguess
 
-#.install.maespa: $(wildcard models/biocro/**/*)
-	#Rscript -e "devtools::install('models/maespa')"
-	#echo `date` > .install.maespa
+.install/lpjguess: $(wildcard models/lpjguess/**/*)
+	Rscript -e "devtools::install('models/lpjguess')"
+	echo `date` > .install/lpjguess
 
-#preles: .install.preles
+maat: .install/maat
 
-#.install.preles: $(wildcard models/preles/**/*)
-	#Rscript -e "devtools::install('models/preles')"
-	#echo `date` > .install.preles
+.install/maat: $(wildcard models/maat/**/*)
+	Rscript -e "devtools::install('models/maat')"
+	echo `date` > .install/maat
 
-#sipnet: .install.sipnet
+maespa: .install/biocro
 
-#.install.sipnet: $(wildcard models/sipnet/**/*)
-	#Rscript -e "devtools::install('models/sipnet')"
-	#echo `date` > .install.sipnet
+.install/maespa: $(wildcard models/biocro/**/*)
+	Rscript -e "devtools::install('models/maespa')"
+	echo `date` > .install/maespa
+
+preles: .install/preles
+
+.install/preles: $(wildcard models/preles/**/*)
+	Rscript -e "devtools::install('models/preles')"
+	echo `date` > .install/preles
+
+sipnet: .install/sipnet
+
+.install/sipnet: $(wildcard models/sipnet/**/*)
+	Rscript -e "devtools::install('models/sipnet')"
+	echo `date` > .install/sipnet
 
