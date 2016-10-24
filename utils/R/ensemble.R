@@ -284,5 +284,5 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     db.close(con)
   }
   
-  invisible(list(runs = runs, ensemble.id = ensemble.id))
+  return(invisible(list(runs = runs, ensemble.id = ensemble.id)))
 } # write.ensemble.configs

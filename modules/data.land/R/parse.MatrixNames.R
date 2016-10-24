@@ -15,5 +15,5 @@ parse.MatrixNames <- function(w, pre = "x", numeric = FALSE) {
     class(w) <- "numeric"
   }
   colnames(w) <- c("row", "col")
-  as.data.frame(w)
+  return(as.data.frame(w))
 } # parse.MatrixNames
