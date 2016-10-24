@@ -23,17 +23,17 @@
 #'      rsdt: hemispherical directional
 #'      rdot: directional hemispherical
 #'      rsot: bi-directional
-pro4sail <- function(param){
+#' @export
+pro4sail <- function(param) {
     plist <- as.list(param)
-    nw <- 2101
+    nw    <- 2101
     plist$rddt <- numeric(nw)
     plist$rsdt <- numeric(nw)
     plist$rdot <- numeric(nw)
     plist$rsot <- numeric(nw)
-    inlist <- c("pro4sail", plist)
+    inlist     <- c("pro4sail", plist)
     outlist <- do.call(.Fortran, inlist)
-    lo <- length(outlist)
-    refl <- do.call(cbind, outlist[(lo-3):lo])
+    lo      <- length(outlist)
+    refl    <- do.call(cbind, outlist[(lo - 3):lo])
     return(refl)
-}
-
+} # pro4sail

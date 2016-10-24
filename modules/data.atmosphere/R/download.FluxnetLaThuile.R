@@ -1,9 +1,9 @@
 # lookup the site based on the site_id
 download.FluxnetLaThuile.site <- function(site_id) {
-  sites <- read.csv(system.file("data/FLUXNET.sitemap.csv",package="PEcAn.data.atmosphere"),
-                    stringsAsFactors=FALSE)
+  sites <- read.csv(system.file("data/FLUXNET.sitemap.csv", package = "PEcAn.data.atmosphere"), 
+                    stringsAsFactors = FALSE)
   sites$FLUX.id[which(sites$site.id == site_id)]
-}
+} # download.FluxnetLaThuile.site
 
 ##' Download Flxunet LaThuile CSV files
 ##'
@@ -11,7 +11,7 @@ download.FluxnetLaThuile.site <- function(site_id) {
 ##' @title download.FluxnetLaThuile
 ##' @export
 ##' @param site the FLUXNET ID of the site to be downloaded, used as file name prefix. 
-##' The "SITE_ID" field in \href{http://www.fluxdata.org/DataInfo/Dataset%20Doc%20Lib/SynthDataSummary.aspx}{list of Fluxnet LaThuile sites}
+##' The 'SITE_ID' field in \href{http://www.fluxdata.org/DataInfo/Dataset%20Doc%20Lib/SynthDataSummary.aspx}{list of Fluxnet LaThuile sites}
 ##' @param outfolder location on disk where outputs will be stored
 ##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
 ##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
@@ -20,49 +20,56 @@ download.FluxnetLaThuile.site <- function(site_id) {
 ##' @param username should be the registered Fluxnet username, else defaults to pecan
 ##' 
 ##' @author Ankur Desai
-download.FluxnetLaThuile <- function(sitename, outfolder, start_date, end_date, overwrite=FALSE, verbose=FALSE, username="pecan", ...) {
+download.FluxnetLaThuile <- function(sitename, outfolder, start_date, end_date, 
+                                     overwrite = FALSE, verbose = FALSE, username = "pecan", ...) {
   # get start/end year code works on whole years only
   
-  library(lubridate) #is this necessary?
   library(PEcAn.utils)
   library(data.table)
   
-  site = sub(".* \\((.*)\\)", "\\1", sitename)
+  site <- sub(".* \\((.*)\\)", "\\1", sitename)
   
-  start_date <- as.POSIXlt(start_date, tz = "GMT")
-  end_date <- as.POSIXlt(end_date, tz = "GMT")
+  start_date <- as.POSIXlt(start_date, tz = "UTC")
+  end_date   <- as.POSIXlt(end_date, tz = "UTC")
   
-  start_year <- year(start_date)
-  end_year <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year   <- lubridate::year(end_date)
   
   # make sure output folder exists
-  if(!file.exists(outfolder)){
-    dir.create(outfolder, showWarnings=FALSE, recursive=TRUE)
+  if (!file.exists(outfolder)) {
+    dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
   }
   
   # url where Ameriflux data is stored
-#ftp://ftp:ankurdesai@ftp.fluxdata.org/.fluxnet_30284/.coreplusquality_4036/US-WCr.2004.synth.hourly.coreplusquality.csv
-#change from here
-  baseurl <- paste0("ftp://ftp:",username,"@ftp.fluxdata.org/.fluxnet_30284/.coreplusquality_4036/",site)
-    
+  # ftp://ftp:ankurdesai@ftp.fluxdata.org/.fluxnet_30284/.coreplusquality_4036/US-WCr.2004.synth.hourly.coreplusquality.csv
+  # change from here
+  baseurl <- paste0("ftp://ftp:", 
+                    username, 
+                    "@ftp.fluxdata.org/.fluxnet_30284/.coreplusquality_4036/", 
+                    site)
+  
   # find all links we need based on the years and download them
   rows <- end_year - start_year + 1
-  results <- data.frame(file=character(rows), host=character(rows),
-                        mimetype=character(rows), formatname=character(rows),
-                        startdate=character(rows), enddate=character(rows),
-                        dbfile.name = site,
+  results <- data.frame(file = character(rows), 
+                        host = character(rows), 
+                        mimetype = character(rows), 
+                        formatname = character(rows), 
+                        startdate = character(rows), 
+                        enddate = character(rows), 
+                        dbfile.name = site, 
                         stringsAsFactors = FALSE)
-  for(year in start_year:end_year) {
-      outputfile <- file.path(outfolder, paste(site, "FluxnetLaThuile.hourly.coreplusquality", year, "csv", sep=".")) 
+  for (year in start_year:end_year) {
+    outputfile <- file.path(outfolder, 
+                            paste(site, "FluxnetLaThuile.hourly.coreplusquality", year, "csv", sep = "."))
     
     # create array with results
-    row <- year - start_year + 1
-    results$file[row] <- outputfile
-    results$host[row] <- fqdn()
-    results$startdate[row] <- paste0(year,"-01-01 00:00:00")
-    results$enddate[row] <- paste0(year,"-12-31 23:59:59")
-    results$mimetype[row] <- 'text/csv'
-    results$formatname[row] <- 'FluxnetLaThuile.hourly.coreplusquality'
+    row                     <- year - start_year + 1
+    results$file[row]       <- outputfile
+    results$host[row]       <- fqdn()
+    results$startdate[row]  <- paste0(year, "-01-01 00:00:00")
+    results$enddate[row]    <- paste0(year, "-12-31 23:59:59")
+    results$mimetype[row]   <- "text/csv"
+    results$formatname[row] <- "FluxnetLaThuile.hourly.coreplusquality"
     
     # see if file exists
     if (file.exists(outputfile) && !overwrite) {
@@ -70,11 +77,10 @@ download.FluxnetLaThuile <- function(sitename, outfolder, start_date, end_date, 
       next
     }
     
-    file <- paste(baseurl,year,"synth.hourly.coreplusquality.csv",sep=".")
-    download.file(file, outputfile) 
+    file <- paste(baseurl, year, "synth.hourly.coreplusquality.csv", sep = ".")
+    download.file(file, outputfile)
   }
   
   # return list of files downloaded
-  invisible(results)
-}
-
+  return(invisible(results))
+} # download.FluxnetLaThuile

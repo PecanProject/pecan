@@ -22,8 +22,8 @@ Plot map of world with model output
 This is just a first draft
 }
 \examples{
-miscanthusyield <- read.csv(system.file("extdata/miscanthusyield.csv",
-                                     package = "PEcAn.visualization"))
+miscanthusyield <- read.csv(system.file('extdata/miscanthusyield.csv',
+                                     package = 'PEcAn.visualization'))
 pecan.worldmap(df.in = miscanthusyield,
                outfile = file.path(tempdir(), 'worldmap.png'))
 }

@@ -35,8 +35,6 @@ end.year <- 2012
 years <- seq(start.year, end.year)
 dimyr <- length(years)
 
-isleapyear<-function(year) (year%%400 == 0) | (year%%4==0 & !year%%100 == 0)
-paste0 <- function(...) paste(..., sep = "")
 ##declare arrays for each of the five variables needed (ignore 366 days of leap year)
 
 ## To get lat:
@@ -67,7 +65,7 @@ for(loni in 1:192){
     print(currentlon)
     for (i in seq(years)){
       year <- years[i]
-      ndays <- ifelse(isleapyear(year), 366, 365)
+      ndays <- ifelse(lubridate::leap_year(year), 366, 365)
       days <- 1:ndays
       
       shum.nc <- open.ncdf(paste("/home/djaiswal/database/NCEP/SpecificHumidity/shum.2m.gauss.",year,".nc",sep=""))

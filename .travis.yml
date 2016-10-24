@@ -9,6 +9,7 @@ sudo: false
 cache: 
   - directories:
     - $HOME/R/Library
+    - .install
   - packages
 
 addons:
@@ -47,9 +48,9 @@ notifications:
     on_success: always
     on_failure: always
     on_start: always
-  #email:
-    #on_success: always
-    #on_failure: always
+  email:
+    on_success: always
+    on_failure: always
 
 ## list of services to be running
 services:
@@ -71,5 +72,5 @@ before_script:
   - scripts/load.bety.sh -a postgres -c -u
 
 script:
-  - make
+  - scripts/build.sh --no-git --tests --name travis
 

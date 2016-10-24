@@ -1,32 +1,78 @@
 # Test slow inversion
 library(PEcAnRTM)
-library(testthat)
 context("PROSPECT R inversion")
+params <- c('N' = 1.4, 
+            'Cab' = 40,
+            'Car' = 8,
+            'Cw' = 0.01,
+            'Cm' = 0.01)
+sensor <- "identity"
 data(sensor.rsr)
-params <- c(1.4, 40, 8, 0.01, 0.01)
-obs.raw <- prospect(params, 5)[,1] + generate.noise()
-sensor <- "chris.proba"
-obs <- spectral.response(obs.raw, sensor)
-settings <- default.settings.prospect
-settings$model <- function(params) spectral.response(prospect(params,5)[,1], sensor)
-settings$ngibbs <- 5000
-settings$burnin <- 4000
-settings$do.lsq.first <- TRUE
-settings$n.tries <- 1
-settings$nchains <- 3
-#test <- invert.auto(obs, settings, return.samples=TRUE, save.samples=NULL, quiet=FALSE)
-#test_that("Inversion output is list of length 2", {
-              #expect_is(test, "list")
-              #expect_equal(length(test), 2)
-#})
+generate_obs <- function(i){
+  obs.raw <- prospect(params, 5)[,1] + generate.noise()
+  obs <- spectral.response(obs.raw, sensor)
+  return(obs)
+}
 
-test.parallel <- invert.auto(obs, settings, return.samples=TRUE, save.samples=NULL, quiet=TRUE, parallel=TRUE)
-test_that("Parallel inversion output is list of length 2", {
-              expect_is(test.parallel, "list")
-              expect_equal(length(test.parallel), 2)
-})
+n_obs <- 3
+obs <- do.call(cbind, lapply(1:n_obs, generate_obs))
 
-test_that("Parallel inversion output produces distinct chains", {
-              expect_false(identical(test.parallel$samples[[1]],
-                                     test.parallel$samples[[2]]))
-})
+invert.options <- default.settings.prospect
+invert.options$model <- function(params) spectral.response(prospect(params,5)[,1], sensor)
+invert.options$ngibbs.min <- 5000
+invert.options$ngibbs.step <- 2000
+invert.options$ngibbs.max <- 100000
+invert.options$do.lsq <- FALSE
+invert.options$nchains <- 3
+
+save.samples <- "samps.rds"
+output_tests <- function(output) {
+  test_that("Parallel inversion output is list of length 2", {
+              expect_is(output, "list")
+              expect_equal(length(output), 2)
+            })
+
+  test_that("Parallel inversion output produces distinct chains", {
+              expect_false(identical(output$samples[[1]],
+                                     output$samples[[2]]))
+            })
+
+  test_that("Saving samples is successful", {
+              expect_true(file.exists(save.samples))
+            })
+}
+
+diag_table <- function(output, params){
+  mus <- unlist(output$results[1:length(params)])
+  diag_table <- rbind(params, mus, mus - params)
+  rownames(diag_table) <- c("True", "Inversion", "Inv. - True")
+  colnames(diag_table) <- names(params)
+  print(diag_table)
+}
+
+diag_plot <- function(output, ...) {
+    samps <- PEcAn.assim.batch::makeMCMCList(output$samples)
+    plot(samps, ...)
+}
+
+test.parallel <- invert.auto(obs, invert.options, return.samples = TRUE,
+                             save.samples = save.samples, quiet=FALSE)
+output_tests(test.parallel)
+diag_table(test.parallel, params)
+
+
+# Run in series, with settings that facilitate convergence
+obs <- prospect(params, 5)[,1]
+invert.options$nchains <- 3
+invert.options$do.lsq <- TRUE
+test.serial <- invert.auto(obs, invert.options, return.samples = TRUE,
+                           save.samples = save.samples, parallel = FALSE,
+                           quiet = FALSE)
+
+output_tests(test.serial)
+diag_table(test.serial, params)
+
+pdf("diag_plots.pdf")
+diag_plot(test.parallel)
+diag_plot(test.serial)
+dev.off()
