@@ -18,6 +18,8 @@
 #' Should take a vector of parameters as input and return a single value -- the sum of their log-densities -- as output.
 #'
 #' param.mins Vector of minimum values for inversion parameters
+#' 
+#' param.maxs Vector of minimum values for inversion parameters
 #'
 #' model The model to be inverted.
 #' This should be an R function that takes `params` and `seed` as input and returns one column of `observed` (nrows should be the same).
@@ -46,8 +48,8 @@ invert.custom <- function(observed, invert.options, quiet = FALSE, return.resume
   nspec <- ncol(observed)
   nwl <- nrow(observed)
 
-  need.invert.options <- c("inits", "ngibbs", "prior.function", "param.mins", "adapt", 
-                           "adj_min", "target", "do.lsq", "model")
+  need.invert.options <- c("inits", "ngibbs", "prior.function", "param.mins", "param.maxs",
+                           "adapt", "adj_min", "target", "do.lsq", "model")
   have.invert.options <- names(invert.options)
   overlap.invert.options <- need.invert.options %in% have.invert.options
   if (any(!overlap.invert.options)) {
@@ -66,6 +68,10 @@ invert.custom <- function(observed, invert.options, quiet = FALSE, return.resume
   param.mins <- invert.options$param.mins
   if (length(inits) != length(param.mins)) {
     stop(sprintf("Length mismatch between inits (%d) and param.mins (%d)", length(inits), length(param.mins)))
+  }
+  param.maxs <- invert.options$param.maxs
+  if (length(inits) != length(param.maxs)) {
+    stop(sprintf("Length mismatch between inits (%d) and param.maxs (%d)", length(inits), length(param.maxs)))
   }
   adapt <- invert.options$adapt
   adj_min <- invert.options$adj_min
@@ -89,7 +95,8 @@ invert.custom <- function(observed, invert.options, quiet = FALSE, return.resume
   # Set up inversion
   npars <- length(inits)
   if (do.lsq) {
-    fit <- invert.lsq(observed, inits, model, lower = param.mins)
+    fit <- invert.lsq(observed, inits, model, 
+                      lower = param.mins, upper = param.maxs)
     inits <- fit$par
   }
   rp1 <- tau_0 + nspec * nwl/2
@@ -100,12 +107,13 @@ invert.custom <- function(observed, invert.options, quiet = FALSE, return.resume
     # Set initial standard deviation to small fraction of initial
     # values (absolute value because SD can't be negative)
     initsd <- abs(inits) * init_jump_diag_factor
+    initsd[initsd == 0] <- 1e-5
     Jump <- diag(initsd)
   } else {
     Jump <- init.Jump
   }
   if (!all(diag(Jump) > 0)) {
-    stop("Negative values in diagonal of Jump covariance matrix")
+    stop("Negative or zero values in diagonal of Jump covariance matrix")
   }
   results <- matrix(NA, nrow = ngibbs, ncol = npars + 1)
   if (!is.null(names(inits))) {
@@ -144,7 +152,7 @@ invert.custom <- function(observed, invert.options, quiet = FALSE, return.resume
       ar <- 0
     }
     tvec <- MASS::mvrnorm(1, inits, Jump)
-    if (all(tvec > param.mins)) {
+    if (all(tvec > param.mins & tvec < param.maxs)) {
       TrySpec <- model(tvec, seed)
       TryError <- TrySpec - observed
       TryPost <- sum(dnorm(TryError, 0, rsd, 1)) + prior.function(tvec)
