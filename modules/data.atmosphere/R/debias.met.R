@@ -166,7 +166,7 @@ debias.met <- function(outfolder, source_met, train_met, site_id, de_method='lin
   results$mimetype <- 'application/x-netcdf'
   results$formatname <- 'CF Meteorology'
   
-  invisible(results)
+  return(invisible(results))
 }
 
 #debias.met('debi','GFDL.CM3.rcp45.r1i1p1.2006.nc', 'US-WCr.2006.nc', 4, de_method = 'linear')

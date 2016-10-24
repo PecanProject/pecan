@@ -9,6 +9,6 @@ load.from.name(filename, filepath = ".")
 \arguments{
 \item{filename}{Full name (without path!) of RData file}
 
-\item{filepath}{Path of RData file (default=".")}
+\item{filepath}{Path of RData file (default='.')}
 }
 

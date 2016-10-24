@@ -225,9 +225,9 @@ lpjguess: .install/lpjguess
 	Rscript -e "devtools::install('models/lpjguess')"
 	echo `date` > .install/lpjguess
 
-maat: .install/biocro
+maat: .install/maat
 
-.install/maat: $(wildcard models/biocro/**/*)
+.install/maat: $(wildcard models/maat/**/*)
 	Rscript -e "devtools::install('models/maat')"
 	echo `date` > .install/maat
 

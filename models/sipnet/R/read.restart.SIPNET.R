@@ -77,5 +77,5 @@ read.restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   }
   
   print(runid)
-  unlist(forecast)
+  return(unlist(forecast))
 } # read.restart.SIPNET

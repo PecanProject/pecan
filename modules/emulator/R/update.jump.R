@@ -60,5 +60,5 @@ update.mvjump <- function(jmp, chain) {
     attr(jmp, "history") <- rbind(attr(jmp, "history"), hnew)
     attr(jmp, "arate")[l + 1] <- a
   }
-  jmp
+  return(jmp)
 } # update.jump

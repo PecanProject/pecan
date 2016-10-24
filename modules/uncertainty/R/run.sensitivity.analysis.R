@@ -164,8 +164,3 @@ runModule.run.sensitivity.analysis <- function(settings, ...) {
     stop("runModule.run.sensitivity.analysis only works with Settings or MultiSettings")
   }
 }
-
-
-####################################################################################################
-### EOF.  End of R script file.        			
-####################################################################################################
