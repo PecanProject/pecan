@@ -10,15 +10,14 @@
 ##' conversion to the latest pecan.xml file.
 ##'
 ##' @title Update Settings
+##' @name update.settings
 ##' @param settings settings file
 ##' @return will return the updated settings values
+##' @export update.settings
 ##' @author Rob Kooper
+
 update.settings <- function(settings) {
-  library(XML)
-  library(lubridate)
-  library(PEcAn.DB)
-  library(PEcAn.utils)
-  
+
   # update database section, now have different database definitions
   # under database section, e.g. fia and bety
   if (!is.null(settings$database)) {

@@ -2,9 +2,12 @@
 % Please edit documentation in R/check.all.settings.R
 \name{check.inputs}
 \alias{check.inputs}
-\title{check to see if inputs are specified - this should be part of the model code}
+\title{Check Inputs}
 \usage{
 check.inputs(settings)
+}
+\arguments{
+\item{settings}{settings file}
 }
 \description{
 check to see if inputs are specified - this should be part of the model code

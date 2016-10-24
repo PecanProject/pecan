@@ -16,7 +16,7 @@
 ##' @param outputfile the name of file to which the settings will be
 ##'        written inside the outputdir.
 ##' @return list of all settings as saved to the XML file(s)
-##' @export
+##' @export clean.settings
 ##' @author Rob Kooper
 ##' @examples
 ##' \dontrun{

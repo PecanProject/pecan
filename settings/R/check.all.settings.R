@@ -1,7 +1,3 @@
-#' check to see if inputs are specified - this should be part of the model code
-#'
-#' @import PEcAn.DB
-#' @import PEcAn.utils
 ##-------------------------------------------------------------------------------
 ## Copyright (c) 2012 University of Illinois, NCSA.
 ## All rights reserved. This program and the accompanying materials
@@ -10,7 +6,10 @@
 ## which accompanies this distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-------------------------------------------------------------------------------
-
+##' check to see if inputs are specified - this should be part of the model code
+##' @title Check Inputs
+##' @param settings settings file
+##' @export check.inputs
 check.inputs <- function(settings) {
   library(XML)
   library(lubridate)
@@ -96,6 +95,9 @@ check.inputs <- function(settings) {
 }
 
 # check database section
+##' @title Check Database
+##' @param settings settings file
+##' @export check.database
 check.database <- function(database) {
   if (is.null(database)) return(NULL);
   
@@ -187,6 +189,9 @@ check.database <- function(database) {
 } 
 
 # check to make sure BETY is up to date
+##' @title Check BETY Version
+##' @param settings settings file
+##' @export check.bety.version
 check.bety.version <- function(dbcon) {
   versions <- db.query("SELECT version FROM schema_migrations;", con=dbcon)[['version']]
   
@@ -225,6 +230,7 @@ check.bety.version <- function(dbcon) {
 ##' @param settings settings file
 ##' @return will return the updated settings values with defaults set.
 ##' @author Rob Kooper, David LeBauer
+##' @export check.settings
 check.settings <- function(settings) {
   if (!is.null(settings$nocheck)) {
     logger.info("Not doing sanity checks of pecan.xml")
@@ -455,7 +461,9 @@ check.settings <- function(settings) {
   invisible(settings)
   }
 
-
+##' @title Check Run Settings
+##' @param settings settings file
+##' @export check.run.settings
 check.run.settings <- function(settings, dbcon=NULL) {
   scipen = getOption("scipen")
   options(scipen=12)
@@ -659,6 +667,9 @@ check.run.settings <- function(settings, dbcon=NULL) {
   invisible(settings)
 }
 
+##' @title Check Model Settings
+##' @param settings settings file
+##' @export check.model.settings
 check.model.settings <- function(settings, dbcon=NULL) {
   # check modelid with values
   if(!is.null(settings$model)){
@@ -756,6 +767,9 @@ check.model.settings <- function(settings, dbcon=NULL) {
   return(settings)
 }
 
+##' @title Check Workflow Settings
+##' @param settings settings file
+##' @export check.workflow.settings
 check.workflow.settings <- function(settings, dbcon=NULL) {
   # check for workflow defaults
   fixoutdir <- FALSE
@@ -802,7 +816,9 @@ check.workflow.settings <- function(settings, dbcon=NULL) {
 }
 
 
-
+##' @title Check Database Settings
+##' @param settings settings file
+##' @export check.database.settings
 check.database.settings <- function(settings) {
   if (!is.null(settings$database)) {
     # check all databases

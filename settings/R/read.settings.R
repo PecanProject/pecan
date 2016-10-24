@@ -23,7 +23,7 @@
 ##' @param outputfile the name of file to which the settings will be
 ##'        written inside the outputdir. If set to null nothing is saved.
 ##' @return list of all settings as loaded from the XML file(s)
-##' @export
+##' @export read.settings
 ##' @import XML
 ##' @author Shawn Serbin
 ##' @author Rob Kooper
@@ -81,6 +81,7 @@ read.settings <- function(inputfile = "pecan.xml"){
   
   ## convert the xml to a list
   settings <- XML::xmlToList(xml)
+  settings <- as.Settings(settings)
   settings <- expandMultiSettings(settings)
   invisible(settings)
 } # read.settings
