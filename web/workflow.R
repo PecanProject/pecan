@@ -41,6 +41,7 @@ if (is.na(args[1])){
 
 # Check for additional modules that will require adding settings
 if("benchmark" %in% names(settings)){
+  library(PEcAn.benchmark)
   settings <- papply(settings, read.settings.RR)
 }
 
