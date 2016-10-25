@@ -25,7 +25,7 @@ fia.to.psscss <- function(settings,
                           min.year = year - 5,
                           max.year = year + 5,
                           overwrite=FALSE) {
-  
+
   mimetype    <- "text/plain"
   startdate   <- lubridate::as_date(paste0(year, "-01-01"))
   enddate     <- lubridate::as_date(paste0(year, "-12-31"))
@@ -75,8 +75,9 @@ fia.to.psscss <- function(settings,
   query <- NULL
   for (pft in settings$pfts) {
     if (is.null(query)) {
-      query <- paste0("SELECT bp.name as pft, bs.spcd FROM pfts as bp INNER JOIN ", "pfts_species AS bps ON bps.pft_id = bp.id INNER JOIN species AS bs ON bs.id = bps.specie_id WHERE ", 
-                      "bp.name = '", pft$name, "'")
+      query <- paste0("SELECT bp.name as pft, bs.spcd FROM pfts as bp INNER JOIN ", 
+      "pfts_species AS bps ON bps.pft_id = bp.id INNER JOIN species AS bs ON bs.id = bps.specie_id WHERE ", 
+      "bp.name = '", pft$name, "'")
     } else {
       query <- paste0(query, " OR bp.name = '", pft$name, "'")
     }
@@ -107,9 +108,6 @@ fia.to.psscss <- function(settings,
   
   bad <- pfts$spcd[duplicated(pfts$spcd)]
   if (length(bad) > 0) {
-    # format the 'and x more.' bit if >10 bad species
-    over.ten <- ifelse(length(bad) > 10, paste0(", and ", length(bad) - 10, " more."), ".")
-    
     # Coerce spcds back into species names using data from FIA manual. Makes a more readable warning.
     symbol.table <- db.query("SELECT spcd, \"Symbol\" FROM species where spcd IS NOT NULL", con = con)
     names(symbol.table) <- tolower(names(symbol.table))
@@ -117,9 +115,9 @@ fia.to.psscss <- function(settings,
     # grab the names where we have bad spcds in the symbol.table, exclude NAs
     name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% bad])
     
-    logger.severe(paste0("\nThe following species are found in multiple PFTs: \n", 
+    logger.severe(paste0("The following species are found in multiple PFTs: ", 
                          paste(name.list[1:min(10, length(name.list))], collapse = ", "), 
-                         over.ten, "\n\tPlease remove overlapping PFTs."))
+                         ". Please remove overlapping PFTs."))
   }
   
   ## connect to database
@@ -160,8 +158,9 @@ fia.to.psscss <- function(settings,
   # as an extra precaution, remove any records that are explicitly remeasurments of the same plot
   pss <- pss[.select.unique.fia.plot.records(pss$patch, pss$prev_plt_cn, pss$time, year), ]
   
-  if (nrow(pss) == 0) 
+  if (nrow(pss) == 0) {
     logger.severe("All pss data were invalid.")
+  }
   
   pss$trk[which(is.na(pss$trk))] <- 1
   pss$age[which(is.na(pss$age))] <- 0
@@ -199,39 +198,47 @@ fia.to.psscss <- function(settings,
   css <- db.query(query, con = fia.con)
   names(css) <- tolower(names(css))
   if (nrow(css) == 0) {
-    logger.severe("No css data found.")
+    logger.severe("No FIA data found.")
+  } else {
+    logger.debug(paste0(nrow(css), " trees found initially"))
   }
   
   # Remove rows that don't map to any retained patch
   css <- css[which(css$patch %in% pss$patch), ]
+  if (nrow(css) == 0) {
+    logger.severe("No trees map to previously selected patches.")
+  } else {
+    logger.debug(paste0(nrow(css), " trees that map to previously selected patches."))
+  }
+  
   
   ## Remove rows with no dbh, spcd, or n
   notree <- which(is.na(css$dbh) & is.na(css$spcd) & is.na(css$n))
   if (length(notree) > 0) {
     css <- css[-notree, ]
   }
+  if (nrow(css) == 0) {
+    logger.severe("No trees remain after removing entries with no dbh, spcd, and/or n.")
+  } else {
+    logger.debug(paste0(nrow(css), " trees remain after removing entries with no dbh, spcd, and/or n."))
+  }
   
   # --- Consistency tests between PFTs and FIA
   fia.species <- unique(css$spcd)
   
   # check for species in PFTs which the FIA db doesn't expect
-  pft.ind <- which(!pfts$spcd %in% fia.species)  #vect shows pft's spcds that are confirmed by fia
+  pft.ind <- which(!(pfts$spcd %in% fia.species))  #vect shows pft's spcds that are confirmed by fia
   pft.only <- pfts$spcd[pft.ind]  #what were the spcds at those indices? 
   
   if (length(pft.only) > 0) {
-    over.ten <- ifelse(length(pft.only) > 10, 
-                       paste0(", and ", length(pft.only) - 10, " more."),
-                       ".")
-    
     if (!exists("symbol.table")) {
       symbol.table <- db.query("SELECT spcd, \"Symbol\" FROM species where spcd IS NOT NULL", con = con)
       names(symbol.table) <- tolower(names(symbol.table))
     }
     name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% pft.only])
-    logger.warn(paste0("\nThe selected PFTs contain the following species for which the FIA database ",
-                       "contains no data at ", lat, 
-                       " and ", lon, "\n", 
-                       paste(name.list[1:min(10, length(name.list))], collapse = ", "), over.ten))
+    logger.warn(paste0("The selected PFTs contain the following species for which the FIA database ",
+                       "contains no data at ", lat, " and ", lon, ": ", 
+                       paste(name.list[1:min(10, length(name.list))], collapse = ", "), "."))
   }
   
   # check for species expected by FIA which the PFTs don't cover
@@ -246,12 +253,23 @@ fia.to.psscss <- function(settings,
     name.list <- na.omit(symbol.table$symbol[symbol.table$spcd %in% fia.only])
     name.list <- name.list[name.list != "DEAD"]
     if (length(name.list) > 0) {
-      logger.warn(paste0("\nThe FIA database expects the following species at ", lat, " and ", lon, 
-                         " but they are not described by the selected PFTs: \n", 
+      logger.warn(paste0("The FIA database expects the following species at ", lat, " and ", lon, 
+                         " but they are not described by the selected PFTs: ", 
                          paste(name.list, collapse = ", "), 
-                         "\nYou should select additional pfts if you want to include these. ."))
+                         ". You should select additional pfts if you want to include these. "))
     }
   }
+  
+  css <- css[!(css$spcd %in% fia.only), ]
+  if (nrow(css) == 0) {
+    logger.severe(paste0("No trees remain for selected PFTs. ",
+      "Species that were in FIA data but didn't map to a selected PFT are: ", 
+      paste(name.list, collapse = ", "), "."))
+  } else {
+    logger.debug(paste0(nrow(css), " trees remain for selected PFTs."))
+  }
+
+
   
   # --- Continue work formatting css now that we've checked for species problems
   n.cohort                      <- nrow(css)
@@ -268,13 +286,10 @@ fia.to.psscss <- function(settings,
   
   pfts.represented <- sapply(settings$pfts, function(x) x$constants$num) %in% css$pft
   if (!all(pfts.represented)) 
-    logger.warn(paste0("\nThe following PFTs listed in settings are not represented in the FIA data: ",
-                       paste(sapply(settings$pfts, 
-                                    function(x) x$name)[!pfts.represented], collapse = ", ")))
+    logger.warn(paste0(
+      "The following PFTs listed in settings are not represented in the FIA data: ",
+      paste(sapply(settings$pfts, function(x) x$name)[!pfts.represented], collapse = ", ")))
   
-  if (nrow(css) == 0) {
-    logger.severe("No valid css data found.")
-  }
   logger.debug(paste0("Found ", nrow(css), " cohorts for site ", settings$run$site$id))
   
   ##################
