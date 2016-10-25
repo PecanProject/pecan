@@ -23,8 +23,7 @@ pecan.worldmap <- function(df.in, outfile = NULL, xlim = c(-130, -30), ylim = c(
   colnames(rawdf)[!colnames(rawdf) %in% c("X", "lat", "lon")] <- "var"
   
   ## from http://stackoverflow.com/a/15351169/513006
-  spdf <- SpatialPointsDataFrame(data.frame(x = rawdf$lon, y = rawdf$lat), 
-                                 data = data.frame(z = rawdf$var))
+  spdf <- SpatialPointsDataFrame(data.frame(x = rawdf$lon, y = rawdf$lat), data = data.frame(z = rawdf$var))
   
   e <- extent(spdf)
   # Determine ratio between x and y dimensions
@@ -41,34 +40,35 @@ pecan.worldmap <- function(df.in, outfile = NULL, xlim = c(-130, -30), ylim = c(
   rdf <- data.frame(rasterToPoints(rf))
   
   if (!var == "aet") {
-    p <- ggplot() +
-      #    geom_polygon(data = world, 
-      #                 aes(x=long, y=lat, group = group), 
-      #                 colour="grey", fill="white") +
-      geom_raster(data = rdf, aes(x, y, fill = layer)) + xlim(xlim) + ylim(ylim) + 
-      #    geom_point(aes(x = c(-180, -180, 180, 180), y = c(-90, 90, -90, 90), size = 0.1)) +
-      #    xlab("Longitude") + ylab("Latitude") + ggtitle(var) +
+    p <- ggplot() + # geom_polygon(data = world, aes(x=long, y=lat, group = group), colour='grey',
+      # fill='white') +
+      geom_raster(data = rdf, aes(x, y, fill = layer)) + xlim(xlim) + ylim(ylim) + # geom_point(aes(x = c(-180, -180, 180, 180), y = c(-90, 90, -90, 90), size = 0.1)) +
+      # xlab('Longitude') + ylab('Latitude') + ggtitle(var) +
       theme_nothing() + 
       scale_fill_gradientn(colours = colorRampPalette(c("darkblue", "wheat", "darkred"))(20), 
-                           name = legend.title, limits = range, trans = "sqrt") +
+                           name = legend.title,
+                           limits = range,
+                           trans = "sqrt") +
       ggtitle(fig.title)
   } else {
-    p <- ggplot() + 
-      #    geom_polygon(data = world, 
-      #                 aes(x=long, y=lat, group = group), 
-      #                 colour="grey", fill="white") +
-      geom_point(data = df.in, aes(lat, lon, color = aet)) + 
+    p <- ggplot() + # geom_polygon(data = world, aes(x=long, y=lat, group = group), colour='grey',
+      # fill='white') +
+      geom_point(data = df.in, aes(lat, lon, color = aet)) +
       xlim(-130, -30) + 
-      ylim(-40, 60) + 
-      #    geom_point(aes(x = c(-180, -180, 180, 180), y = c(-90, 90, -90, 90), size = 0.1)) +
-      #    xlab("Longitude") + ylab("Latitude") + ggtitle(var) +
+      ylim(-40, 60) + # geom_point(aes(x = c(-180, -180, 180, 180), y = c(-90, 90, -90, 90), size = 0.1)) +
+      # xlab('Longitude') + ylab('Latitude') + ggtitle(var) +
       theme_nothing() + 
       scale_fill_gradientn(colours = colorRampPalette(c("darkblue", "wheat", "darkred"))(20))
   }
   
   if (!is.null(outfile)) {
-    ggsave(filename = outfile, plot = p, width = 44 * diff(xlim) / 360, height = 34 * 
-             diff(ylim) / 180, units = "in", dpi = 100, bg = "transparent")
+    ggsave(filename = outfile, 
+           plot = p, 
+           width = 44 * diff(xlim) / 360, 
+           height = 34 * diff(ylim) / 180, 
+           units = "in", 
+           dpi = 100, 
+           bg = "transparent")
     
     library(grid)
     
@@ -76,12 +76,12 @@ pecan.worldmap <- function(df.in, outfile = NULL, xlim = c(-130, -30), ylim = c(
       tmp <- ggplot_gtable(ggplot_build(a.gplot))
       leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
       legend <- tmp$grobs[[leg]]
-      legend
-    }
+      return(legend)
+    } # g_legend
     
     l <- ggplot(data = rdf, aes(x, y, fill = layer)) + 
       geom_point(aes(0, 0)) + 
-      theme(legend.position = "right") +
+      theme(legend.position = "right") + 
       scale_fill_gradientn(name = "Yield (Mg/ha)", colours = colorRampPalette(c("darkblue", "wheat", "darkred"))(20))
     l2 <- g_legend(l)
     png(paste0(outfile, "-legend.png"), units = "px", bg = "transparent")
@@ -90,10 +90,11 @@ pecan.worldmap <- function(df.in, outfile = NULL, xlim = c(-130, -30), ylim = c(
   } else {
     return(p + theme_bw())
   }
-} # pecan.worldmap
+}  # pecan.worldmap
+
 
 ## see ?toupper
 .simpleCap <- function(x) {
   s <- strsplit(x, " ")[[1]]
   return(paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "", collapse = " "))
-} # .simpleCap
+}  # .simpleCap
