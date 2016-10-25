@@ -5,7 +5,7 @@
 \title{Bayesian inversion of a model}
 \usage{
 invert.custom(observed, invert.options, quiet = FALSE,
-  return.resume = FALSE, seed = NULL)
+  return.resume = FALSE, runID = NULL)
 }
 \arguments{
 \item{observed}{Vector, matrix, or data frame (coerced to matrix) of 
@@ -23,8 +23,10 @@ Should take a vector of parameters as input and return a single value -- the sum
 
 param.mins Vector of minimum values for inversion parameters
 
+param.maxs Vector of minimum values for inversion parameters
+
 model The model to be inverted.
-This should be an R function that takes `params` and `seed` as input and returns one column of `observed` (nrows should be the same).
+This should be an R function that takes `params` and `runID` as input and returns one column of `observed` (nrows should be the same).
 Constants should be implicitly included here.
 
 adapt Number of steps for adapting covariance matrix (i.e. adapt every 'n' steps).
@@ -38,13 +40,15 @@ Default=0.234, based on recommendation for multivariate block sampling in Haario
 
 do.lsq Perform least squares optimization first (see `invert.lsq`), and use outputs to initialize Metropolis Hastings.
 This may improve mixing time, but risks getting caught in a local minimum.
-Default=FALSE}
+Default=FALSE
+
+catch_error If TRUE (default), wrap model in \code{tryCatch} to prevent sampling termination on model execution error.}
 
 \item{quiet}{Suppress progress bar and status messages. Default=FALSE}
 
 \item{return.resume}{If TRUE, return results as list that includes current Jump distribution (useful for continuing an ongoing run) and acceptance rate. Default = FALSE.}
 
-\item{seed}{Run-unique ID. Useful for parallel runs. Default=NULL}
+\item{runID}{Run-unique ID. Useful for parallel runs. Default=NULL}
 }
 \details{
 Performs an inversion of an arbitrary model using a modified 
