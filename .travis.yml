@@ -10,6 +10,8 @@ cache:
   - directories:
     - $HOME/R/Library
     - .install
+    - .check
+    - .test
   - packages
 
 addons:
