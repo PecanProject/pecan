@@ -25,10 +25,10 @@ read.settings.RR <- function(settings){
                        user     = settings$database$bety$user,
                        password = settings$database$bety$password)
   
-  settings[["run"]] <- tbl(bety,"reference_runs") %>% 
+  settings <- tbl(bety,"reference_runs") %>% 
     filter(id == settings$benchmark$reference_run_id) %>% 
       dplyr::select(settings) %>% collect() %>% unlist() %>%
-      xmlToList(.,"pecan") %>% Settings()
+      xmlToList(.,"pecan") %>% append(settings,.) %>% Settings()
   invisible(settings)
 }
 
