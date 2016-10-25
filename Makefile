@@ -59,7 +59,7 @@ $(MODELS_I): $(MODULES_I)
 .install/modules/rtm: .install/modules/assim.batch
 
 clean:
-	rm -rf .install .check .test
+	rm -rf .install .check .test .doc
 
 .install/devtools:
 	Rscript -e "req <- require('devtools'); if(!req) install.packages('devtools', repos = 'http://cran.rstudio.com')"
