@@ -33,13 +33,25 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
       stop(samples.file, "not found required by read.ensemble.output")
     }
   }
+
+  expr <- variable$expression
+  variables <- variable$variables
   
   ensemble.output <- list()
   for (row in rownames(ens.run.ids)) {
     run.id <- ens.run.ids[row, "id"]
     logger.info("reading ensemble output from run id: ", run.id)
-    ensemble.output[[row]] <- sapply(read.output(run.id, file.path(outdir, run.id), 
-                                                 start.year, end.year, variable), mean, na.rm = TRUE)
+    
+    for(var in seq_along(variables)){
+      out.tmp <- read.output(run.id, file.path(outdir, run.id), start.year, end.year, variables[var])
+      assign(variables[var], out.tmp[[variables[var]]])
+    }
+    
+    # derivation
+    out <- eval(parse(text = expr))
+    
+    ensemble.output[[row]] <- mean(out, na.rm= TRUE) 
+    
   }
   return(ensemble.output)
 } # read.ensemble.output
@@ -272,5 +284,5 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     db.close(con)
   }
   
-  invisible(list(runs = runs, ensemble.id = ensemble.id))
+  return(invisible(list(runs = runs, ensemble.id = ensemble.id)))
 } # write.ensemble.configs

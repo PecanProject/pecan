@@ -16,7 +16,6 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
                           overwrite = FALSE, verbose = FALSE, 
                           model = "CM3", scenario = "rcp45", ensemble_member = "r1i1p1", ...) {
   library(PEcAn.utils)
-  library(ncdf4)
   
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
@@ -78,9 +77,9 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     end_url   <- paste0(url_year + met_block - 1, "1231")
     
     ## Create dimensions
-    lat <- ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
-    lon <- ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
-    time <- ncdim_def(name = "time", units = "sec", vals = (1:2920) * 10800, 
+    lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
+    lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
+    time <- ncdf4::ncdim_def(name = "time", units = "sec", vals = (1:2920) * 10800, 
                       create_dimvar = TRUE, unlim = TRUE)
     dim <- list(lat, lon, time)
     
@@ -99,16 +98,16 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
                         ensemble_member, "_", 
                         start_url, "00-", end_url, "23.nc")
       dap_file <- paste0(dap_base, dap_end)
-      dap <- nc_open(dap_file)
-      dat.list[[j]] <- ncvar_get(dap, as.character(var$DAP.name[j]), 
+      dap <- ncdf4::nc_open(dap_file)
+      dat.list[[j]] <- ncdf4::ncvar_get(dap, as.character(var$DAP.name[j]), 
                                  c(lon_GFDL, lat_GFDL, 1), 
                                  c(1, 1, ntime))
-      var.list[[j]] <- ncvar_def(name = as.character(var$CF.name[j]), 
+      var.list[[j]] <- ncdf4::ncvar_def(name = as.character(var$CF.name[j]), 
                                  units = as.character(var$units[j]), 
                                  dim = dim,
                                  missval = -999, 
                                  verbose = verbose)
-      nc_close(dap)
+      ncdf4::nc_close(dap)
       
     }
     dat.list <- as.data.frame(dat.list)
@@ -129,11 +128,11 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     }
     
     ## put data in new file
-    loc <- nc_create(filename = loc.file, vars = var.list, verbose = verbose)
+    loc <- ncdf4::nc_create(filename = loc.file, vars = var.list, verbose = verbose)
     for (j in seq_len(nrow(var))) {
-      ncvar_put(nc = loc, varid = as.character(var$CF.name[j]), vals = dat.list[[j]])
+      ncdf4::ncvar_put(nc = loc, varid = as.character(var$CF.name[j]), vals = dat.list[[j]])
     }
-    nc_close(loc)
+    ncdf4::nc_close(loc)
     
     results$file[i]       <- loc.file
     results$host[i]       <- fqdn()
@@ -143,5 +142,5 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     results$formatname[i] <- "CF Meteorology"
   }
   
-  invisible(results)
+  return(invisible(results))
 } # download.GFDL

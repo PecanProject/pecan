@@ -49,19 +49,17 @@ ensemble.filename <- function(settings, prefix = "ensemble.samples", suffix = "R
 ##'
 ##' @details  Generally uses values in settings, but can be overwritten for manual uses
 ##' @author Ryan Kelly
-sensitivity.filename <- function(settings, prefix = "sensitivity.samples", suffix = "Rdata", 
-                                 all.var.yr = TRUE, pft = NULL, 
-                                 ensemble.id = settings$sensitivity.analysis$ensemble.id, 
-                                 variable = settings$sensitivity.analysis$variable, 
-                                 start.year = settings$sensitivity.analysis$start.year, 
-                                 end.year = settings$sensitivity.analysis$end.year) {
+sensitivity.filename <- function(settings, 
+                              prefix = "sensitivity.samples", suffix = "Rdata", 
+                              all.var.yr = TRUE,
+                              pft        = NULL,
+                              ensemble.id = settings$sensitivity.analysis$ensemble.id,
+                              variable    = settings$sensitivity.analysis$variable,
+                              start.year  = settings$sensitivity.analysis$start.year,
+                              end.year    = settings$sensitivity.analysis$end.year) {
   
-  if (is.null(ensemble.id) || is.na(ensemble.id)) {
-    # This shouldn't generally arise, as run.write.configs() appends ensemble.id to
-    # settings. However,it will come up if running run.write.configs(..., write=F),
-    # because then no ensemble ID is created in the database. A simple workflow will
-    # still work in that case, but provenance will be lost if multiple ensembles are
-    # run.
+  if(is.null(ensemble.id) || is.na(ensemble.id)) {
+    # This shouldn't generally arise, as run.write.configs() appends ensemble.id to settings. However,it will come up if running run.write.configs(..., write=F), because then no ensemble ID is created in the database. A simple workflow will still work in that case, but provenance will be lost if multiple ensembles are run.
     ensemble.id <- "NOENSEMBLEID"
   }
   ## for other variables, these are just included in the filename so just need to

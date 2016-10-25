@@ -5,5 +5,5 @@
 ##' 
 ##' @author Betsy Cowdery
 metric.MAE <- function(dat, ...) {
-  mean(abs(dat$model - dat$obvs))
+  return(mean(abs(dat$model - dat$obvs)))
 } # metric.MAE

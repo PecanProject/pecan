@@ -46,7 +46,6 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
     return(invisible(results))
   }
   
-  library(ncdf4)
   library(PEcAn.data.atmosphere)
   
   ## check to see if the outfolder is defined, if not create directory for output
@@ -69,35 +68,35 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   DOY_vec_hr <- c(1, c(32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365) * 4)
   
   for (i in seq_len(nyear)) {
-    ncin <- nc_open(file.path(in.path, paste(in.prefix, year[i], "nc", sep = ".")))
+    ncin <- ncdf4::nc_open(file.path(in.path, paste(in.prefix, year[i], "nc", sep = ".")))
     
     ## convert time to seconds
     sec <- ncin$dim$time$vals
     sec <- udunits2::ud.convert(sec, unlist(strsplit(ncin$dim$time$units, " "))[1], "seconds")
-    dt <- ifelse(leap_year(as.numeric(year[i])) == TRUE, 
+    dt <- ifelse(lubridate::leap_year(as.numeric(year[i])) == TRUE, 
                  366 * 24 * 60 * 60 / length(sec), # leap year
                  365 * 24 * 60 * 60 / length(sec)) # non-leap year
     tstep <- 86400 / dt
     
-    ncprecipf <- ncvar_get(ncin, "precipitation_flux")  # units are kg m-2 s-1    
+    ncprecipf <- ncdf4::ncvar_get(ncin, "precipitation_flux")  # units are kg m-2 s-1    
     for (m in 1:12) {
       month_matrix_precip[i, m] <- (sum(ncprecipf[DOY_vec_hr[m]:(DOY_vec_hr[m + 1] - 1)]) * dt / 10)
     }
-    nc_close(ncin)
+    ncdf4::nc_close(ncin)
     # if(i%%100==0) cat(i,' '); flush.console()
   }
   
   month_matrix_temp_mean <- matrix(NA, nyear, 12)
   
   for (i in seq_len(nyear)) {
-    ncin <- nc_open(file.path(in.path, paste0(in.prefix, ".", year[i], ".nc")))
+    ncin <- ncdf4::nc_open(file.path(in.path, paste0(in.prefix, ".", year[i], ".nc")))
     # print(ncin)
-    nctemp <- ncvar_get(ncin, "air_temperature")  #units are kg m-2 s-1    
+    nctemp <- ncdf4::ncvar_get(ncin, "air_temperature")  #units are kg m-2 s-1    
     for (m in 1:12) {
       month_matrix_temp_mean[i, m] <- (mean(nctemp[DOY_vec_hr[m]:(DOY_vec_hr[m + 1] - 1)]) - 
                                          273.15)  #sub daily to monthly
     }
-    nc_close(ncin)
+    ncdf4::nc_close(ncin)
     if (i %% 100 == 0) {
       cat(i, " ")
     }
@@ -107,5 +106,5 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   precip.mat <- month_matrix_precip
   temp.mat <- month_matrix_temp_mean
   save(precip.mat, temp.mat, file = out.file)
-  invisible(results)
+  return(invisible(results))
 } # met2model.LINKAGES

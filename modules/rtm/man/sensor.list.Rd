@@ -3,7 +3,7 @@
 \docType{data}
 \name{sensor.list}
 \alias{sensor.list}
-\title{Sensor spectral response functions}
+\title{Sensor list with short names}
 \format{An object of class \code{character} of length 12.}
 \usage{
 sensor.list

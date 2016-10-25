@@ -46,8 +46,8 @@ test_that("nc files have correct attributes",{
 
 test_that("dimenstions have MsTMIP standard units",{
   
-  expect_equal(dims$lat$units, "degrees_east")
-  expect_equal(dims$lon$units, "degrees_north")
+  expect_equal(dims$lat$units, "degrees_north")
+  expect_equal(dims$lon$units, "degrees_east")
   expect_true(grepl("days since", dims$time$units))
 })
 

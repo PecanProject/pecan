@@ -32,11 +32,11 @@ debias.met <- function(outfolder, source_met, train_met, site_id, de_method='lin
   #Read in the two datasets, with the dimensions of the source dataset being named sou.list
   sou <- list()
   sou.list <- list()
-  tem <- nc_open(source_met)
+  tem <- ncdf4::nc_open(source_met)
   dim <- tem$dim
   for (j in 1:length(var$CF.name)){
-    sou[[j]] <- ncvar_get(tem,as.character(var$CF.name[j]))
-    sou.list[[j]] <- ncvar_def(name=as.character(var$CF.name[j]), 
+    sou[[j]] <- ncdf4::ncvar_get(tem,as.character(var$CF.name[j]))
+    sou.list[[j]] <- ncdf4::ncvar_def(name=as.character(var$CF.name[j]), 
                                units=as.character(var$units[j]), 
                                dim=dim, 
                                missval=-999, 
@@ -45,15 +45,15 @@ debias.met <- function(outfolder, source_met, train_met, site_id, de_method='lin
   lat_sou <- as.numeric(ncvar_get(tem,"latitude"))
   lon_sou <- as.numeric(ncvar_get(tem,"longitude"))
   year <- as.numeric(year)
-  nc_close(tem)
+  ncdf4::nc_close(tem)
   
 # Load in the 'better' data that will be used to train the source. Most of the time this will be observed data. 
   train <- list()
-  tow <- nc_open(train_met)
+  tow <- ncdf4::nc_open(train_met)
   for (j in 1:length(var$CF.name)){
-    train[[j]] <- ncvar_get(tow,as.character(var$CF.name[j]))
+    train[[j]] <- ncdf4::ncvar_get(tow,as.character(var$CF.name[j]))
   }
-  nc_close(tow)
+  ncdf4::nc_close(tow)
   
   #Create dataframes from the lists of data pulled from the source/train and give them column names 
   sou <- data.frame(sou)
@@ -155,9 +155,9 @@ debias.met <- function(outfolder, source_met, train_met, site_id, de_method='lin
   
   loc <- nc_create(filename=loc.file, vars=sou.list, verbose=verbose)
   for(j in seq_along(var$CF.name)){
-    ncvar_put(nc=loc, varid=as.character(var$CF.name[j]), vals=debi[[j]])
+    ncdf4::ncvar_put(nc=loc, varid=as.character(var$CF.name[j]), vals=debi[[j]])
   }
-  nc_close(loc)
+  ncdf4::nc_close(loc)
   
   results$file <- loc.file
   results$host <- fqdn()
@@ -166,7 +166,7 @@ debias.met <- function(outfolder, source_met, train_met, site_id, de_method='lin
   results$mimetype <- 'application/x-netcdf'
   results$formatname <- 'CF Meteorology'
   
-  invisible(results)
+  return(invisible(results))
 }
 
 #debias.met('debi','GFDL.CM3.rcp45.r1i1p1.2006.nc', 'US-WCr.2006.nc', 4, de_method = 'linear')

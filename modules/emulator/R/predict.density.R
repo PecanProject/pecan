@@ -24,5 +24,5 @@ predict.density <- function(den, xnew) {
         (xnew[i] - den$x[j])
     }
   }
-  ynew
+  return(ynew)
 } # predict.density

@@ -29,7 +29,6 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
                                overwrite = FALSE, verbose = FALSE, ...) {
   
   library(PEcAn.utils)
-  library(ncdf4)
   
   print("START met2model.LPJGUESS")
   start_date <- as.POSIXlt(start_date, tz = "UTC")
@@ -72,8 +71,12 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   }
   
   ## open netcdf files
-  ncin <- lapply(file.path(in.path, paste(in.prefix, year, "nc", sep = ".")), nc_open)
+  ncin <- lapply(file.path(in.path, paste(in.prefix, year, "nc", sep = ".")), ncdf4::nc_open)
   
+  ncvar_get <- ncdf4::ncvar_get
+  ncdim_def <- ncdf4::ncdim_def
+  ncatt_get <- ncdf4::ncatt_get
+
   ## retrieve lat/lon
   lon <- ncvar_get(ncin[[1]], "longitude")
   lat <- ncvar_get(ncin[[1]], "latitude")
@@ -95,7 +98,7 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   ## aggregate to daily time steps, LPJ-GUESS reads daily climate data
   tmp.list <- pre.list <- cld.list <- list()
   for (y in seq_len(nyear)) {
-    if (leap_year(as.numeric(year[y]))) { 
+    if (lubridate::leap_year(as.numeric(year[y]))) { 
       ind.vec <- rep(1:366, each = tstep)
     } else {
       ind.vec <- rep(1:365, each = tstep)
@@ -127,11 +130,11 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
                          prec = "float")
     
     # create netCD file for LPJ-GUESS
-    ncfile <- nc_create(out.files.full[[n]], vars = var.def, force_v4 = TRUE)
+    ncfile <- ncdf4::nc_create(out.files.full[[n]], vars = var.def, force_v4 = TRUE)
     
     # put variable, rep(...,each=4) is a hack to write the same data for all grids (which all are the
     # same)
-    ncvar_put(ncfile, var.def, rep(var.list[[n]], each = 4))
+    ncdf4::ncvar_put(ncfile, var.def, rep(var.list[[n]], each = 4))
     
     # additional attributes for LPJ-GUESS
     ncatt_put(nc = ncfile, varid = var.names[n], attname = "standard_name", long.names[n])
@@ -144,11 +147,11 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
     
     ncatt_put(nc = ncfile, varid = "time", attname = "calendar", "gregorian")
     
-    nc_close(ncfile)
+    ncdf4::nc_close(ncfile)
   }
   
   ## close netcdf files
   sapply(ncin, nc_close)
   
-  invisible(results)
+  return(invisible(results))
 } # met2model.LPJGUESS

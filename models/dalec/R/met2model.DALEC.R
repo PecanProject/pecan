@@ -62,7 +62,6 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     return(invisible(results))
   }
   
-  library(ncdf4)
   library(PEcAn.data.atmosphere)
 
   ## check to see if the outfolder is defined, if not create directory for output
@@ -87,25 +86,26 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
     
     ## open netcdf
-    nc <- nc_open(old.file)
+    nc <- ncdf4::nc_open(old.file)
     
     ## convert time to seconds
     sec <- nc$dim$time$vals
     sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
     timestep.s <- 86400  # seconds in a day
-    ifelse(leap_year(year) == TRUE, 
+    ifelse(lubridate::leap_year(year) == TRUE, 
            dt <- (366 * 24 * 60 * 60) / length(sec), # leap year 
            dt <- (365 * 24 * 60 * 60) / length(sec)) # non-leap year
     tstep <- round(timestep.s / dt)
     dt    <- timestep.s / tstep  #dt is now an integer
     
     ## extract variables
+    ncvar_get <- ncdf4::ncvar_get
     lat  <- ncvar_get(nc, "latitude")
     lon  <- ncvar_get(nc, "longitude")
     Tair <- ncvar_get(nc, "air_temperature")  ## in Kelvin
     SW   <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  ## in W/m2
     CO2  <- try(ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
-    nc_close(nc)
+    ncdf4::nc_close(nc)
     
     useCO2 <- is.numeric(CO2)
     if (useCO2) 
@@ -169,6 +169,6 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
   ## write output
   write.table(out, out.file.full, quote = FALSE, sep = " ", row.names = FALSE, col.names = FALSE)
   
-  invisible(results)
+  return(invisible(results))
   
 } # met2model.DALEC
