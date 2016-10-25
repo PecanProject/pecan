@@ -4,7 +4,7 @@
 \alias{plot.flux.uncertainty}
 \title{Plot fit for heteroskedastic flux uncertainty}
 \usage{
-plot.flux.uncertainty(f, ...)
+\method{plot}{flux.uncertainty}(f, ...)
 }
 \arguments{
 \item{f}{output of flux.uncertainty functions}
