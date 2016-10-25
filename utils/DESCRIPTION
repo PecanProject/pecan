@@ -18,7 +18,6 @@ Depends:
     XML,
     ggplot2,
     randtoolbox,
-    stringi,
     abind,
     RCurl
 Imports:
