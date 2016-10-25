@@ -103,7 +103,7 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
       } else {
         posteriors[ptrait, "paramb"] <- fit[[bestfit]]$estimate[2]
       }
-      
+
       if (do.plot) {
         .dens_plot(posteriors, priors, ptrait, dat, trait, trait.data)
       }
@@ -128,7 +128,6 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
 
 .dens_plot <- function(posteriors, priors, ptrait, dat, trait, trait.data,
                       plot_quantiles = c(0.01, 0.99)) {
-
   f <- function(x) {
     cl <- call(paste0("d", posteriors[ptrait, "distn"]),
                x,
