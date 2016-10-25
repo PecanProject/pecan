@@ -30,8 +30,7 @@ Imports:
 Suggests:
     coda,
     MASS,
-    ncdf4,
-    stringi
+    ncdf4
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes

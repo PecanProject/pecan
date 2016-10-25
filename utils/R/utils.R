@@ -643,10 +643,6 @@ misc.are.convertible <- function(u1, u2) {
 ##' @export
 ##' @author Istem Fer
 convert.expr <- function(expression) {
-  if (!requireNamespace("stringi", quietly = TRUE)) {
-    logger.error("Package 'stringi' is needed for this function to work. Please install it.")
-  }
-
   # split equation to LHS and RHS
   deri.var <- gsub("=.*$", "", expression) # name of the derived variable
   deri.eqn <- gsub(".*=", "", expression) # derivation eqn
@@ -654,7 +650,8 @@ convert.expr <- function(expression) {
   non.match <- gregexpr('[^a-zA-Z_.]', deri.eqn) # match characters that are not "a-zA-Z_."
   split.chars <- unlist(regmatches(deri.eqn, non.match)) # where to split at
   # split the expression to retrieve variable names to be used in read.output
-  variables <- unlist(stringi::stri_split_charclass(deri.eqn, paste0("[",noquote(paste0(split.chars, collapse="")),"]"), omit_empty = TRUE))
+  variables <- unlist(strsplit(deri.eqn, paste0("[",noquote(paste0(split.chars, collapse="")),"]")))
+  variables[variables != ""] # Remove empty entries
   
   return(list(variable.drv = deri.var, variable.eqn = list(variables = variables, expression = deri.eqn)))
 }
