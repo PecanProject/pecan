@@ -12,6 +12,7 @@ cache:
     - .install
     - .check
     - .test
+    - .doc
   - packages
 
 addons:
