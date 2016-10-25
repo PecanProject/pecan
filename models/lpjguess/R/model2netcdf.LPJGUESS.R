@@ -22,8 +22,6 @@
 ##' @author Istem Fer
 model2netcdf.LPJGUESS <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
-  library(ncdf4)
-  
   ### Read in model output in LPJ-GUESS format
   lpjguess.out.files <- list.files(outdir, pattern = "\\.out$")
   
@@ -91,13 +89,13 @@ model2netcdf.LPJGUESS <- function(outdir, sitelat, sitelon, start_date, end_date
     output[[6]] <- lai[which(years == y), ]  # LAI in m2/m2
     
     # ******************** Declare netCDF dimensions and variables ********************#
-    t <- ncdim_def(name = "time", 
+    t <- ncdf4::ncdim_def(name = "time", 
                    units = paste0("days since ", y, "-01-01 00:00:00"), 
                    vals = 1:12, 
                    calendar = "standard", 
                    unlim = TRUE)
-    lat <- ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
     
     mstmipvar <- PEcAn.utils::mstmipvar
     
@@ -112,15 +110,14 @@ model2netcdf.LPJGUESS <- function(outdir, sitelat, sitelon, start_date, end_date
     # ******************** Declare netCDF variables ********************#
     
     ### Output netCDF data
-    nc <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
       # print(i)
-      ncvar_put(nc, var[[i]], output[[i]])
+      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
       cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
-    nc_close(nc)
+    ncdf4::nc_close(nc)
   }  ### End of year loop
 } # model2netcdf.LPJGUESS
-# ==================================================================================================#

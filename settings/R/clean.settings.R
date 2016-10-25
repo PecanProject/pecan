@@ -61,5 +61,5 @@ clean.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml") {
   XML::saveXML(listToXml(settings, "pecan"), file = outputfile)
   
   ## Return settings file as a list
-  invisible(settings)
+  return(invisible(settings))
 } # clean.settings

@@ -83,10 +83,6 @@ read.settings <- function(inputfile = "pecan.xml"){
   settings <- XML::xmlToList(xml)
   settings <- as.Settings(settings)
   settings <- expandMultiSettings(settings)
-  invisible(settings)
+  return(invisible(settings))
+  
 } # read.settings
-##=================================================================================================#
-
-####################################################################################################
-### EOF.  End of R script file.              
-####################################################################################################

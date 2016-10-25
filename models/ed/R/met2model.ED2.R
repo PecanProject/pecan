@@ -33,10 +33,16 @@
 met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat = NA, 
                           lon = NA, overwrite = FALSE, verbose = FALSE, ...) {
   overwrite <- as.logical(overwrite)
-  
+
+  # deprecated?  
   library(rhdf5)
-  library(ncdf4)
   library(PEcAn.utils)
+  #
+
+  ncvar_get <- ncdf4::ncvar_get
+  ncdim_def <- ncdf4::ncdim_def
+  ncatt_get <- ncdf4::ncatt_get
+  ncvar_add <- ncdf4::ncvar_add
   
   # results are stored in folder prefix.start.end
   start_date <- as.POSIXlt(start_date, tz = "UTC")
@@ -80,7 +86,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     ## extract file root name froot <- substr(files[i],1,28) print(c(i,froot))
     
     ## open netcdf
-    nc <- nc_open(ncfile)
+    nc <- ncdf4::nc_open(ncfile)
     
     # check lat/lon
     flat <- try(ncvar_get(nc, "latitude"), silent = TRUE)
@@ -124,7 +130,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     ## convert time to seconds
     sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
     
-    nc_close(nc)
+    ncdf4::nc_close(nc)
     
     dt <- ifelse(lubridate::leap_year(year) == TRUE, 
                  366 * 24 * 60 * 60 / length(sec), # leap year
@@ -325,5 +331,5 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   }  ### end loop over met files
   
   print("Done with met2model.ED2")
-  invisible(results)
+  return(invisible(results))
 } # met2model.ED2

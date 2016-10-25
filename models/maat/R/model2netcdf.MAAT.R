@@ -21,13 +21,13 @@
 ##' @export
 ##' @author Shawn Serbin, Anthony Walker
 model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date = NULL, end_date = NULL) {
-  
-  ## TODO is it OK to give site lat/long -999 if not running at a 'site'? 
+
   ## TODO !!UPDATE SO IT WILL WORK WITH NO MET AND WITH MET DRIVER!!
-  
-  ### Load required libraries
-  library(PEcAn.utils)
-  library(ncdf4)
+
+  ## Import functions that are used frequently
+  misc.convert <- PEcAn.utils::misc.convert
+  ncdim_def <- ncdf4::ncdim_def
+  mstmipvar <- PEcAn.utils::mstmipvar
   
   ### Read in model output in SIPNET format
   maat.out.file <- file.path(outdir, "out.csv")
@@ -59,12 +59,12 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     dayfrac <- 1 / dims[1]
     day.steps <- seq(0, 0.99, 1 / dims[1])
     
-    ### standard variables: Carbon Pools [not currently relevant to MAAT]
+    ### Parse MAAT output
     output      <- list()  # create empty output
     out.year    <- as.numeric(rep(y, sub.maat.output.dims[1]))
     output[[1]] <- out.year  # Simulation year
-    output[[2]] <- sub.maat.doy + day.steps  # Fractional day - NEED TO IMPLEMENT  
-    output[[3]] <- (sub.maat.output$A)  # assimilation in umolsC/m2/s
+    output[[2]] <- sub.maat.doy + day.steps  # Fractional day
+    output[[3]] <- (sub.maat.output$A)  # assimilation in umols C/m2/s
     output[[4]] <- (sub.maat.output$gs)  # stomatal conductance in mol H2O m-2 s-1
     
     ## !!TODO: ADD MORE MAAT OUTPUTS HERE!! ##
@@ -72,7 +72,7 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     #******************** Declare netCDF variables ********************#
     ## This version doesn't provide enough output timesteps when running with met data that has
     ## a step greater than 1 per day
-    #t <- ncdim_def(name = "time",
+    #t <- ncdf4::ncdim_def(name = "time",
     #               units = paste0("days since ", y, "-01-01 00:00:00"),
     #               vals = as.numeric(strptime(end_date, "%Y-%m-%d %H:%M:%S")-strptime(start_date, "%Y-%m-%d %H:%M:%S"),units="days"),
     #               calendar = "standard", unlim = TRUE) # is this correct? fraction of days or whole days
@@ -81,31 +81,25 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     t <- ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"),
                    vals = sub.maat.doy + day.steps, calendar = "standard", 
                    unlim = TRUE)
-    lat <- ncdim_def("lat", "degrees_east", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdim_def("lon", "degrees_north", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
     
     for (i in seq_along(output)) {
       if (length(output[[i]]) == 0) 
         output[[i]] <- rep(-999, length(t$vals))
     }
     
-    ############ Variable Conversions 
-    ### Conversion factor for umol C -> kg C
-    Mc <- 12.017  # molar mass of C, g/mol
-    umol2kg_C <- Mc * udunits2::ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
-    
-    ### Conversion factor for mol H2O -> kg H2O
-    Mw <- 18.01528  # molar mass of H2O, g/mol
-    mol2kg_H2O <- Mw * udunits2::ud.convert(1, "g", "kg")
-    ############ 
-    
     ### Find/replace missing and convert outputs to standardized BETYdb units
-    output[[3]] <- ifelse(output[[3]] == -999, -999, output[[3]] * umol2kg_C)  # convert A/GPP to kgC/m2/s
-    # output[[4]] <- ifelse(output[[4]]=='Inf',-999,output[[4]]) # gs in mol H2O m-2 s-1
-    output[[4]] <- ifelse(output[[4]] == "Inf", -999, output[[4]] * mol2kg_H2O)  # stomatal_conductance in kg H2O m2 s1
+    output[[3]] <- ifelse(output[[3]] == -999, -999, 
+                          misc.convert(output[[3]],
+                                              "umol C m-2 s-1",
+                                              "kg C m-2 s-1"))  # convert A/GPP to kgC/m2/s
+    output[[4]] <- ifelse(output[[4]] == "Inf", -999, 
+                          misc.convert(output[[4]], 
+                                              "mol H2O m-2 s-1",
+                                              "kg H2O m-2 s-1"))  # stomatal_conductance in kg H2O m2 s1
     
     ### Put output into netCDF format
-    mstmipvar <- PEcAn.utils::mstmipvar
     var       <- list()
     var[[1]]  <- mstmipvar("Year", lat, lon, t, NA)
     var[[2]]  <- mstmipvar("FracJulianDay", lat, lon, t, NA)
@@ -113,15 +107,15 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     var[[4]]  <- mstmipvar("stomatal_conductance", lat, lon, t, NA)
     
     ### Output netCDF data
-    nc <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
       print(i)  # just on for debugging
-      ncvar_put(nc, var[[i]], output[[i]])
+      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
       cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
     }  ## netCDF loop
     close(varfile)
-    nc_close(nc)
+    ncdf4::nc_close(nc)
     
   }  ## Year loop
 } # model2netcdf.MAAT
