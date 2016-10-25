@@ -13,8 +13,7 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
 Depends:
     PEcAn.utils,
     ellipse,
-    IDPmisc,
-    coda
+    IDPmisc
 Imports:
     coda (>= 0.18),
     lubridate (>= 1.6.0),

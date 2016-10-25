@@ -73,12 +73,18 @@ db.query <- function(query, con=NULL, params=NULL) {
 db.open <- function(params) {
   params$dbfiles <- NULL
   params$write <- NULL
+  
+  if(is.null(params$driver) || params$driver == "PostgreSQL") {
+    requireNamespace("RPostgreSQL")
+  }
+  
   if (is.null(params$driver)) {
     args <- c(drv=dbDriver("PostgreSQL"), params, recursive=TRUE)
   } else {
     args <- c(drv=dbDriver(params$driver), params, recursive=TRUE)
     args[['driver']] <- NULL
   }
+
   c <- do.call(dbConnect, as.list(args))
   id <- sample(1000, size=1)
   while(length(which(.db.utils$connections$id==id)) != 0) {

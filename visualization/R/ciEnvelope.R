@@ -6,7 +6,7 @@
 #' @export 
 #' @author Michael Dietze, David LeBauer
 ciEnvelope <- function(x, ylo, yhi, ...) {
-  m <- rbind(x, ylo, yhi)
+  m   <- rbind(x, ylo, yhi)
   nas <- which(apply(is.na(m), 2, sum) > 0)
   if (length(nas) > 0) {
     ## break overall dataset into complete blocks
