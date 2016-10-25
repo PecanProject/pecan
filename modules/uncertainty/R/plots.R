@@ -11,9 +11,9 @@
 ##'  Plot results of variance decomposition
 ##'
 ##' Plots variance decomposition tryptich
-##' @name plot.variance.decomposition
+##' @name plot_variance_decomposition
 ##' @title Variance Decomposition Plots
-##' @export plot.variance.decomposition
+##' @export plot_variance_decomposition
 ##' @author David LeBauer, Carl Davidson
 ##' @param ... Output from any number of sensitivity analyses. Output must be of the form 
 ##'          given by sensitivity.results$variance.decomposition.output in model output
@@ -34,8 +34,8 @@
 ##'           coef.vars = c(a=1,b=0.5, c=0.1),
 ##'           elasticities = c(a=1,b=2,c=0.5),
 ##'           variances    = c(a = 20, b=30, c = 10))
-##' do.call(grid.arrange, c(plot.variance.decomposition(x), ncol = 4))
-plot.variance.decomposition <- function(plot.inputs, 
+##' do.call(grid.arrange, c(plot_variance_decomposition(x), ncol = 4))
+plot_variance_decomposition <- function(plot.inputs, 
                                         fontsize = list(title = 18, axis = 14)) {
   library(ggmap)
   theme_set(theme_classic() + theme(axis.text.x = element_text(size = fontsize$axis, vjust = -1),
@@ -79,7 +79,7 @@ plot.variance.decomposition <- function(plot.inputs,
     geom_pointrange(aes(x = points, sqrt(variances), ymin = 0, ymax = sqrt(variances)), size = 1.25)
   
   return(list(trait.plot = trait.plot, cv.plot = cv.plot, el.plot = el.plot, pv.plot = pv.plot))
-} # plot.variance.decomposition
+} # plot_variance_decomposition
 
 
 format.plot.input <- function(plot.inputs, convert.var, trait.order = c()) {
@@ -104,9 +104,9 @@ format.plot.input <- function(plot.inputs, convert.var, trait.order = c()) {
 ##--------------------------------------------------------------------------------------------------#
 ##' Plot univariate response of model output to a trait parameter.
 ##'
-##' Plots for a single trait; called by \code{\link{plot.sensitivities}}
+##' Plots for a single trait; called by \code{\link{plot_sensitivities}}
 ##' to plot sensitivity plots for multiple traits.
-##' @name plot.sensitivity
+##' @name plot_sensitivity
 ##' @title Sensitivity plot 
 ##' @param sa.sample trait quantiles used in sensitivity analysis 
 ##' @param sa.spline spline function estimated from sensitivity analysis
@@ -118,7 +118,7 @@ format.plot.input <- function(plot.inputs, convert.var, trait.order = c()) {
 ##' @param fontsize (optional) list with three arguments that can be set to vary the fontsize of the title, axis labels, and axis title in the sensitivity plots
 ##' @export
 ##' @return object of class ggplot
-plot.sensitivity <- function(sa.sample, sa.spline, trait, y.range = c(0, 50), median.i = 4, 
+plot_sensitivity <- function(sa.sample, sa.spline, trait, y.range = c(0, 50), median.i = 4, 
                              prior.sa.sample = NULL, prior.sa.spline = NULL, 
                              fontsize = list(title = 12, axis = 8), 
                              linesize = 1, dotsize = 2) {
@@ -164,22 +164,22 @@ plot.sensitivity <- function(sa.sample, sa.spline, trait, y.range = c(0, 50), me
   saplot <- saplot + scale_x_continuous(units, limits = range(x.breaks), breaks = x.breaks)
   # print(saplot)
   return(saplot)
-} # plot.sensitivity
+} # plot_sensitivity
 
 
 ##--------------------------------------------------------------------------------------------------#
 ##' Plot functions and quantiles used in sensitivity analysis
 ##'
-##' Generates a plot using \code{\link{plot.sensitivity}} for multiple traits.
-##' @name plot.sensitivities 
+##' Generates a plot using \code{\link{plot_sensitivity}} for multiple traits.
+##' @name plot_sensitivities 
 ##' @title Plot Sensitivities
 ##' @param sensitivity.plot.inputs inputs
 ##' @param prior.sensitivity.plot.inputs priors
-##' @param ... arguments passed to \code{\link{plot.sensitivity}}
+##' @param ... arguments passed to \code{\link{plot_sensitivity}}
 ##' @param sensitivity.results list containing sa.samples and sa.splines
 ##' @export
 ##' @return list of plots, one per trait
-plot.sensitivities <- function(sensitivity.plot.inputs, 
+plot_sensitivities <- function(sensitivity.plot.inputs, 
                                prior.sensitivity.plot.inputs = NULL, ...) {
   sa.samples <- sensitivity.plot.inputs$sa.samples
   sa.splines <- sensitivity.plot.inputs$sa.splines
@@ -202,7 +202,7 @@ plot.sensitivities <- function(sensitivity.plot.inputs,
       prior.sa.sample <- NULL
       prior.sa.spline <- NULL
     }
-    sensitivity.plots[[trait]] <- plot.sensitivity(sa.sample = sa.samples[, trait], 
+    sensitivity.plots[[trait]] <- plot_sensitivity(sa.sample = sa.samples[, trait], 
                                                    sa.spline = sa.splines[[trait]], 
                                                    trait <- trait, 
                                                    y.range = y.range, 
@@ -212,4 +212,4 @@ plot.sensitivities <- function(sensitivity.plot.inputs,
                                                    ...)
   }
   return(sensitivity.plots)
-} # plot.sensitivities
+} # plot_sensitivities
