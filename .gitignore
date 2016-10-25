@@ -71,3 +71,6 @@ documentation/tutorials/*/*.html
 pecan.Rproj
 # Installation files form make
 .install/
+.check/
+.test/
+.doc/
