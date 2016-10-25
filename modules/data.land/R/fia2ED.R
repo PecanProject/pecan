@@ -158,8 +158,9 @@ fia.to.psscss <- function(settings,
   # as an extra precaution, remove any records that are explicitly remeasurments of the same plot
   pss <- pss[.select.unique.fia.plot.records(pss$patch, pss$prev_plt_cn, pss$time, year), ]
   
-  if (nrow(pss) == 0) 
+  if (nrow(pss) == 0) {
     logger.severe("All pss data were invalid.")
+  }
   
   pss$trk[which(is.na(pss$trk))] <- 1
   pss$age[which(is.na(pss$age))] <- 0
