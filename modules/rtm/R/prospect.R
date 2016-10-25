@@ -93,4 +93,4 @@ default.settings.prospect <- list(
   save.samples = NULL,
   quiet = FALSE,
   adapt = 100,
-  adj_min=0.1)
+  adj_min = 0.1)

@@ -21,6 +21,9 @@
 #'
 #' ngibbs.step Number of iterations between convergence checks. Default = 1000.
 #'
+#' run_first Function to run before running sampling. Takes parallel inputs 
+#' list containing runID, initial values, and resume (NULL) as an argument.
+#'
 #' @param return.samples Include full samples list in output. Default = TRUE.
 #' @param save.samples Save samples to file as the inversion proceeds (useful for debugging).
 #' If NULL, do not save samples. Default = NULL.
@@ -31,8 +34,13 @@
 #' @return List of "results" (summary statistics) and "samples" (mcmc.list object, or "NA" if return.samples=FALSE)
 #' @export
 
-invert.auto <- function(observed, invert.options, return.samples = TRUE, save.samples = NULL, 
-                        quiet=FALSE, parallel=TRUE, parallel.cores=NULL, parallel.output = '/dev/null'){
+invert.auto <- function(observed, invert.options,
+                        return.samples = TRUE,
+                        save.samples = NULL, 
+                        quiet=FALSE,
+                        parallel=TRUE,
+                        parallel.cores=NULL,
+                        parallel.output = '/dev/null') {
   if (parallel == TRUE) {
     testForPackage("parallel")
   } else {
@@ -55,7 +63,7 @@ invert.auto <- function(observed, invert.options, return.samples = TRUE, save.sa
     return(out)
   }
   
-  # Begin first set of runs
+  # Set up cluster for parallel execution
   if (parallel) {
     ## Create cluster
     maxcores <- parallel::detectCores()
@@ -75,23 +83,38 @@ invert.auto <- function(observed, invert.options, return.samples = TRUE, save.sa
     print(sprintf("Running %d chains in parallel. Progress bar unavailable", nchains))
   }
   
-  # Create inversion function
+  # Create inversion function to be passed to parLapply
   invert.function <- function(x) {
-    set.seed(x$seed)
     invert.options$inits <- x$inits
     invert.options$resume <- x$resume
-    samps <- invert.custom(observed=observed, invert.options=invert.options, 
-                           quiet=quiet, return.resume=TRUE, seed = x$seed)
+    samps <- invert.custom(observed = observed,
+                           invert.options = invert.options, 
+                           quiet = quiet,
+                           return.resume = TRUE,
+                           runID = x$runID)
     return(samps)
   }
   
-  seeds <- 1e+08 * runif(nchains)
+  runID_list <- seq_len(nchains)
   inputs <- list()
   for (i in seq_len(nchains)) { 
-    inputs[[i]] <- list(seed = seeds[i],
+    inputs[[i]] <- list(runID = runID_list[i],
                         inits = inits.function(),
                         resume = NULL)
   }
+
+  # Do initialization step if provided
+  if (!is.null(invert.options$run_first)) {
+    if (parallel) {
+      first <- parallel::parLapply(cl, inputs, invert.options$run_first)
+    } else {
+      first <- list()
+      for (i in seq_len(nchains)) {
+        first[[i]] <- invert.options$run_first(inputs[[i]])
+      }
+    } 
+  }
+
   # Begin inversion
   invert.options$ngibbs <- invert.options$ngibbs.min
   if (parallel) {
@@ -127,11 +150,12 @@ invert.auto <- function(observed, invert.options, return.samples = TRUE, save.sa
     while (continue & i.ngibbs < ngibbs.max) {
       if (!quiet) 
         print(sprintf("Running iterations %d to %d", i.ngibbs, i.ngibbs + ngibbs.step))
-      seeds <- 1e+08 * runif(nchains)
       inits <- lapply(samps.list, getLastRow)
       inputs <- list()
       for (i in seq_len(nchains)) {
-        inputs[[i]] <- list(seed = seeds[i], inits = inits[[i]], resume = resume[[i]])
+        inputs[[i]] <- list(runID = runID_list[i],
+                            inits = inits[[i]],
+                            resume = resume[[i]])
       }
       invert.options$ngibbs <- ngibbs.step
       if (parallel) {
@@ -177,7 +201,7 @@ invert.auto <- function(observed, invert.options, return.samples = TRUE, save.sa
     out$samples <- c(`Samples not returned` = NA)
   }
   return(out)
-}
+} # invert.auto
 
 getLastRow <- function(samps, exclude.cols = ncol(samps)) {
   cols <- seq_len(ncol(samps))
