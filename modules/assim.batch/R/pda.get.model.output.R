@@ -12,7 +12,6 @@ pda.get.model.output <- function(settings, run.id, con, inputs) {
   
   library(PEcAn.benchmark)
   library(PEcAn.utils)
-  library(lubridate)
   
   input.info <- settings$assim.batch$inputs
   

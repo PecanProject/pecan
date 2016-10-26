@@ -72,3 +72,6 @@ pecan.Rproj
 shiny/BenchmarkReport/*
 # Installation files form make
 .install/
+.check/
+.test/
+.doc/
