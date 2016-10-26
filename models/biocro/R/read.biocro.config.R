@@ -5,16 +5,10 @@
 ##' @return list of run configuration parameters for PEcAn
 ##' @export
 ##' @author David LeBauer
-read.biocro.config <- function(config.file = "config.xml"){
-    config <- xmlToList(
-        xmlTreeParse(
-            file = config.file,
-            handlers = list("comment" = function(x){NULL}),
-            asTree = TRUE)
-        )
-    config$pft$canopyControl$mResp <- ## hacky way of importing a vector from xml to a list
-        unlist(
-            strsplit(
-                config$pft$canopyControl$mResp, split = ","))
-    return(config)
-}
+read.biocro.config <- function(config.file = "config.xml") {
+  config <- XML::xmlToList(XML::xmlTreeParse(file = config.file, 
+                                   handlers = list(comment = function(x) { NULL }),
+                                   asTree = TRUE))
+  config$pft$canopyControl$mResp <- unlist(strsplit(config$pft$canopyControl$mResp, split = ","))
+  return(config)
+}  # read.biocro.config

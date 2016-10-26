@@ -4,11 +4,11 @@
 \alias{calc.metrics}
 \title{calc.metrics}
 \usage{
-calc.metrics(data.path, format, vars_used, model_run, metrics, start_year,
-  end_year, site)
+calc.metrics(model.bm, obvs.bm, var, metrics, start_year, end_year, bm, ens,
+  model_run)
 }
 \arguments{
-\item{end_year}{}
+\item{model_run}{}
 }
 \author{
 Betsy Cowdery

@@ -20,8 +20,6 @@
 ##' @author Michael Dietze
  model2netcdf.CLM45 <- function(outdir, sitelat, sitelon, start_date, end_date) {
 #   
-#   require("ncdf4")
-#   
 # for (year in start_year:end_year){
 #   
   ### extract variables. These need to be read in and converted to CLM standards

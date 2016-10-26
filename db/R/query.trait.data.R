@@ -193,6 +193,8 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
 
     #remove temporary covariate column.
     data<-data[,colnames(data)!='temp']
+  } else {
+    data <- NULL
   }
   return(data)
 }
@@ -215,6 +217,8 @@ filter.sunleaf.traits <- function(data, covariates){
     
     # remove temporary covariate column
     data<-data[,colnames(data)!='canopy_layer']
+  } else {
+    data <- NULL
   }
   return(data)
 }
@@ -489,7 +493,7 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only=FALSE, 
 
   } else if (trait == 'leaf_turnover_rate'){
 #########################    LEAF TURNOVER    ############################
-    ## convert LMA to SLA
+    ## convert Longevity to Turnover
     data <- rbind(data,
                   derive.traits(function(leaf.longevity){1/leaf.longevity},
                                 query.data('Leaf Longevity', spstr, con=con, store.unconverted=TRUE),

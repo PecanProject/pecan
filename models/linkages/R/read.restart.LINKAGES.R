@@ -1,20 +1,46 @@
-read.restart.LINKAGES <- function(outdir,run.id,time,spin.up,X.vec){
-  
-  ncfiles <- list.files(path = file.path(outdir,run.id), pattern="\\.nc$", full.names=TRUE)
-  
-  # skip ensemble member if no *.nc files selected/availible  
-  if(length(ncfiles) < spin.up-1) forecast = X.vec
-  
-  forecast = X.vec  
-  ens <- read.output(runid = run.id,outdir = file.path(outdir, run.id),
-         start.year = time,end.year=time,
-         variables=c("AGB.pft")) #change to just "AGB" for plot level biomass
-  
-  forecast$biomass_tsca = ens$AGB.pft[1]
-  forecast$biomass_acsa3 = ens$AGB.pft[2]
-  forecast$biomass_beal2 = ens$AGB.pft[4]
-  forecast$biomass_thoc2 = ens$AGB.pft[3]
-  print(run.id)
+#-------------------------------------------------------------------------------
+# Copyright (c) 2012 University of Illinois, NCSA.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the 
+# University of Illinois/NCSA Open Source License
+# which accompanies this distribution, and is available at
+# http://opensource.ncsa.illinois.edu/license.html
+#-------------------------------------------------------------------------------
 
-  return(forecast)
-}
+##' @title read.restart.LINKAGES
+##' @name  read.restart.LINKAGES
+##' @author Ann Raiho \email{araiho@@nd.edu}
+##' 
+##' @param outdir      output directory
+##' @param runid       run ID
+##' @param stop.time   year that is being read
+##' @param multi.settings    PEcAn settings object
+##' @param var.names   var.names to be extracted
+##' 
+##' @description Read Restart for LINKAGES
+##' 
+##' @return X.vec      vector of forecasts
+##' @export
+##' 
+read.restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names = NULL, params = NULL) {
+  
+  # Read ensemble output
+  ens <- read.output(runid = runid, 
+                     outdir = file.path(outdir, runid), 
+                     start.year = lubridate::year(stop.time), 
+                     end.year = lubridate::year(stop.time), 
+                     variables = var.names)  # change to just 'AGB' for plot level biomass
+  
+  # Add PFT name to variable if applicable
+  pft.names <- numeric(length(settings$pfts))
+  for (i in seq_along(settings$pfts)) {
+    pft.names[i] <- settings$pfts[i]$pft$name
+  }
+  ens.pft.names <- grep("pft", names(ens))
+  names(ens[[grep("pft", names(ens))]]) <- pft.names
+  
+  print(runid)
+  
+  # Put forecast into vector
+  return(t(unlist(ens)))
+} # read.restart.LINKAGES

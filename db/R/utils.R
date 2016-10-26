@@ -73,12 +73,18 @@ db.query <- function(query, con=NULL, params=NULL) {
 db.open <- function(params) {
   params$dbfiles <- NULL
   params$write <- NULL
+  
+  if(is.null(params$driver) || params$driver == "PostgreSQL") {
+    requireNamespace("RPostgreSQL")
+  }
+  
   if (is.null(params$driver)) {
     args <- c(drv=dbDriver("PostgreSQL"), params, recursive=TRUE)
   } else {
     args <- c(drv=dbDriver(params$driver), params, recursive=TRUE)
     args[['driver']] <- NULL
   }
+
   c <- do.call(dbConnect, as.list(args))
   id <- sample(1000, size=1)
   while(length(which(.db.utils$connections$id==id)) != 0) {
@@ -107,17 +113,17 @@ db.open <- function(params) {
 ##' \dontrun{
 ##' db.close(con)
 ##' }
-db.close <- function(con) {
+db.close <- function(con, showWarnings=TRUE) {
   if (is.null(con)) {
-    return
+    return()
   }
   
   id <- attr(con, "pecanid")
-  if (is.null(id)) {
+  if (showWarnings && is.null(id)) {
     logger.warn("Connection created outside of PEcAn.db package")
   } else {
     deleteme <- which(.db.utils$connections$id==id)
-    if (length(deleteme) == 0) {
+    if (showWarnings && length(deleteme) == 0) {
       logger.warn("Connection might have been closed already.");
     } else {
       .db.utils$connections$id <- .db.utils$connections$id[-deleteme]

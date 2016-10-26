@@ -18,6 +18,6 @@ logical
 function to check whether units are convertible by misc.convert function
 }
 \author{
-Istem Fer
+Istem Fer, Shawn Serbin
 }
 
