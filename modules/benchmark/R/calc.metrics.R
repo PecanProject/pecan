@@ -1,8 +1,8 @@
 ##' @name calc.metrics
 ##' @title calc.metrics
 ##' @export
-##' @param model.bm
-##' @param obvs.bm
+##' @param model.calc
+##' @param obvs.calc
 ##' @param var
 ##' @param metrics
 ##' @param start_year
@@ -13,9 +13,10 @@
 ##' 
 ##' 
 ##' @author Betsy Cowdery
-calc.metrics <- function(model.bm, obvs.bm, var, metrics, start_year, end_year, bm, ensemble.id, model_run) {
+calc.metrics <- function(model.calc, obvs.calc, var, metrics, start_year, end_year, bm, ensemble.id, model_run) {
   
-  dat <- align.data(model.bm, obvs.bm, var, start_year, end_year)
+  dat <- align.data(model.calc, obvs.calc, var, start_year, end_year, 
+                    align_method = "mean.over.larger.timestep")
   
   results <- as.data.frame(matrix(NA, nrow = length(metrics$name), ncol = length(var) + 1))
   colnames(results) <- c("metric", var)
