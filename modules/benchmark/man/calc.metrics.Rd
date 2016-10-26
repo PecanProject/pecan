@@ -4,8 +4,8 @@
 \alias{calc.metrics}
 \title{calc.metrics}
 \usage{
-calc.metrics(model.bm, obvs.bm, var, metrics, start_year, end_year, bm, ens,
-  model_run)
+calc.metrics(model.bm, obvs.bm, var, metrics, start_year, end_year, bm,
+  ensemble.id, model_run)
 }
 \arguments{
 \item{model_run}{}

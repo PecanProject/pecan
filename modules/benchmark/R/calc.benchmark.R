@@ -4,43 +4,41 @@
 ##' @name calc.benchmark 
 ##' @title Calculate benchmarking statistics
 ##' @param bm.ensemble object, either from create.BRR or start.bm.ensemle
-##' @param con database connection
+##' @param bety database connection
 ##' @export 
 ##' 
 ##' @author Betsy Cowdery 
 
-calc.benchmark <- function(bm.ensemble, con) {
+calc.benchmark <- function(settings, bety) {
   
   library(RPostgreSQL)
   library(data.table)
   
-  ens <- db.query(paste("SELECT * FROM ensembles where id = ", bm.ensemble$ensemble_id, ";"), con)
-  wf <- db.query(paste("SELECT w.* FROM workflows as w join ensembles as e on w.id = e.workflow_id", 
-                       "WHERE e.id = ", bm.ensemble$ensemble_id, ";"), con)
-  site <- query.site(wf$site_id, con)
-  start_year <- lubridate::year(wf$start_date)
-  end_year <- lubridate::year(wf$end_date)
-  model_run <- dir(file.path(wf$folder, "out"), full.names = TRUE, include.dirs = TRUE)[1]
+  site <- query.site(settings$run$site$id, bety$con)
+  start_year <- lubridate::year(settings$run$start.date)
+  end_year <- lubridate::year(settings$run$end.date)
+  model_run <- dir(  settings$modeloutdir, full.names = TRUE, include.dirs = TRUE)[1]
   # How are we dealing with ensemble runs? Right now I've hardcoded to select the first run.
   
   # All benchmarking records for the given benchmarking ensemble id
-  bms <- db.query(paste("SELECT * FROM benchmarks as b", "JOIN benchmarks_benchmarks_reference_runs as r on b.id=r.benchmark_id", 
-                        "JOIN benchmarks_ensembles as be on r.reference_run_id = be.reference_run_id", "WHERE be.ensemble_id = ", 
-                        bm.ensemble$ensemble_id, ";"), con)
+  bms <- tbl(bety,'benchmarks') %>% rename(benchmark_id = id) %>%  
+    left_join(.,tbl(bety, "benchmarks_benchmarks_reference_runs"), by="benchmark_id") %>% 
+    filter(reference_run_id == settings$benchmark$reference_run_id) %>% 
+    dplyr::select(one_of("benchmark_id", "input_id", "site_id", "variable_id", "reference_run_id")) %>%
+    collect()
   
   
   # Determine how many data sets inputs are associated with the benchmark id's
-  inputs <- unique(bms$input_id)
   # bm.ids are split up in to groups according to their input data. 
   # So that the input data is only loaded once. 
   
   results <- list()
   
-  for (obvs.id in inputs) {
+  for (input.id in unique(bms$input_id)) {
     
-    bm.ids <- bms$id[which(bms$input_id == obvs.id)]
-    data.path <- query.file.path(obvs.id, wf$hostname, con)
-    format_full <- format <- query.format.vars(obvs.id, con)
+    bm.ids <- bms$benchmark_id[which(bms$input_id == input.id)]
+    data.path <- query.file.path(input.id, settings$host$name, bety$con)
+    format_full <- format <- query.format.vars(input.id, bety$con)
     
     # ---- LOAD INPUT DATA ---- #
     
@@ -86,14 +84,14 @@ calc.benchmark <- function(bm.ensemble, con) {
     
     # Loop over benchmark ids
     for (i in seq_along(bm.ids)) {
-      bm <- db.query(paste("SELECT * from benchmarks where id =", bm.ids[i]), con)
+      bm <- db.query(paste("SELECT * from benchmarks where id =", bm.ids[i]), bety$con)
       metrics <- db.query(paste("SELECT m.name, m.id from metrics as m", "JOIN benchmarks_metrics as b ON m.id = b.metric_id", 
-                                "WHERE b.benchmark_id = ", bm.ids[i]), con)
+                                "WHERE b.benchmark_id = ", bm.ids[i]), bety$con)
       var <- filter(format$vars, variable_id == bm$variable_id)[, "pecan_name"]
       var.list <- c(var.list, var)
       
-      obvs.bm <- obvs_full %>% select(., one_of(c("posix", var)))
-      model.bm <- model_full %>% select(., one_of(c("posix", var)))
+      obvs.bm <- obvs_full %>% dplyr::select(., one_of(c("posix", var)))
+      model.bm <- model_full %>% dplyr::select(., one_of(c("posix", var)))
       
       out.calc.metrics <- calc.metrics(model.bm, 
                                        obvs.bm, 
@@ -101,17 +99,17 @@ calc.benchmark <- function(bm.ensemble, con) {
                                        metrics,
                                        start_year, end_year, 
                                        bm,
-                                       ens,
+                                       ensemble.id = settings$benchmark$ensemble_id,
                                        model_run)
       
       benchmarks_ensemble_id <- db.query(
         paste("SELECT id FROM benchmarks_ensembles where ensemble_id = ", ens$id),
-        con)[[1]]
+        bety$con)[[1]]
       # for(j in 1:out.calc.metrics[["r"]]){
       # db.query(paste0(
       #   "INSERT INTO benchmarks_ensembles_scores",
       #   "(score, benchmarks_ensemble_id, benchmark_id, metric_id, created_at, updated_at) VALUES ",
-      #   "('",score[j],"',",benchmarks_ensemble_id,", ",bm$id,",",metrics$id[j],", NOW(), NOW())"),con)
+      #   "('",score[j],"',",benchmarks_ensemble_id,", ",bm$id,",",metrics$id[j],", NOW(), NOW())"),bety$con)
       # }
       
       results.list <- append(results.list, list(out.calc.metrics[["r"]]))

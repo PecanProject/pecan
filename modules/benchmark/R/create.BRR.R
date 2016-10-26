@@ -21,7 +21,7 @@ create.BRR <- function(ens_wf, con){
     settingsXML <- file.path(ens_wf$folder,"pecan.CHECKED.xml")
     
     # Automatically creates a new pecan.xml I think. Need to fix this. 
-    clean <- clean.settings(settingsXML, "findme.xml")
+    clean <- clean.settings(inputfile = settingsXML,write=FALSE)
     # Remove database & host information
     clean$database <- NULL 
     clean$host <- NULL
@@ -41,17 +41,18 @@ create.BRR <- function(ens_wf, con){
     }else if(dim(ref_run)[1] > 1){# There shouldn't be more than one reference run with the same settings
       logger.error("There is more than one reference run in the database with these settings. Review for duplicates. ")
     }
-    
-    bm.ensemble <- db.query(paste0("INSERT INTO benchmarks_ensembles",
-                                   "(reference_run_id, ensemble_id, model_id, ",
-                                   "user_id, created_at, updated_at, citation_id)",
-                                   "VALUES(",ref_run$id,",",ens_wf$ensemble_id,",", ref_run$model_id,", ",user_id,
-                                   ", NOW() , NOW(), 1000000001 ) RETURNING *;"),con)
-
-    bm.ensemble <- rename(bm.ensemble, bm_ensemble_id = id)
-    BRR <- ref_run %>% rename(.,reference_run_id = id) %>% left_join(.,bm.ensemble) 
-    
+    BRR <- ref_run %>% rename(.,reference_run_id = id)
     return(BRR)
   }else{logger.error(sprintf("Cannot create a benchmark reference run for a run on hostname: %s", 
                              ens_wf$hostname))}
 } #create.BRR
+
+
+# bm.ensemble <- db.query(paste0("INSERT INTO benchmarks_ensembles",
+#                                "(reference_run_id, ensemble_id, model_id, ",
+#                                "user_id, created_at, updated_at, citation_id)",
+#                                "VALUES(",ref_run$id,",",ens_wf$ensemble_id,",", ref_run$model_id,", ",user_id,
+#                                ", NOW() , NOW(), 1000000001 ) RETURNING *;"),con)
+# 
+# bm.ensemble <- rename(bm.ensemble, bm_ensemble_id = id)
+# BRR <- ref_run %>% rename(.,reference_run_id = id) %>% left_join(.,bm.ensemble) 
