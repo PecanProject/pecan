@@ -17,7 +17,7 @@ calc.benchmark <- function(settings, bety) {
   site <- query.site(settings$run$site$id, bety$con)
   start_year <- lubridate::year(settings$run$start.date)
   end_year <- lubridate::year(settings$run$end.date)
-  model_run <- dir(  settings$modeloutdir, full.names = TRUE, include.dirs = TRUE)[1]
+  model_run <- dir(settings$modeloutdir, full.names = TRUE, include.dirs = TRUE)[1]
   # How are we dealing with ensemble runs? Right now I've hardcoded to select the first run.
   
   # All benchmarking records for the given benchmarking ensemble id
@@ -90,11 +90,11 @@ calc.benchmark <- function(settings, bety) {
       var <- filter(format$vars, variable_id == bm$variable_id)[, "pecan_name"]
       var.list <- c(var.list, var)
       
-      obvs.bm <- obvs_full %>% dplyr::select(., one_of(c("posix", var)))
-      model.bm <- model_full %>% dplyr::select(., one_of(c("posix", var)))
+      obvs.calc <- obvs_full %>% dplyr::select(., one_of(c("posix", var)))
+      model.calc <- model_full %>% dplyr::select(., one_of(c("posix", var)))
       
-      out.calc.metrics <- calc.metrics(model.bm, 
-                                       obvs.bm, 
+      out.calc.metrics <- calc.metrics(model.calc, 
+                                       obvs.calc, 
                                        var, 
                                        metrics,
                                        start_year, end_year, 
