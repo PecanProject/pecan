@@ -178,7 +178,12 @@ invert.custom <- function(observed, invert.options,
   # Precalculate quantities for first inversion step
   rp1 <- tau_0 + nspec * nwl/2
   rsd <- 0.5
-  PrevSpec <- model(inits, runID)
+  PrevSpec <- tryCatch({
+      model(inits, runID)
+  }, error = function(e) {
+      print(e)
+      stop("Initial model execution hit an error")
+  })
   PrevError <- PrevSpec - observed
   PrevPrior <- prior.function(inits)
 
@@ -214,14 +219,16 @@ invert.custom <- function(observed, invert.options,
     }
 
     # Run model. Sample only if no error
-    if (samp & catch_error) {
-      TrySpec <- try(model(tvec, runID))
-      if (class(TrySpec) == "try-error") {
-        warning("Model hit an error. Skipping to next iteration")
-        samp <- FALSE
+    if (samp) {
+      if (catch_error) {
+        TrySpec <- try(model(tvec, runID))
+          if (class(TrySpec) == "try-error") {
+              warning("Model hit an error. Skipping to next iteration")
+                samp <- FALSE
+            }
+      } else {
+        TrySpec <- model(tvec, runID)
       }
-    } else {
-      TrySpec <- model(tvec, runID)
     }
 
     # Calculate prior and reject if infinite (value outside prior)
