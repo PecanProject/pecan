@@ -22,7 +22,7 @@
 ##' \dontrun{
 ##' clean.settings('output/PEcAn_1/pecan.xml', 'pecan.xml')
 ##' }
-clean.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml") {
+clean.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml", write=TRUE) {
   if (is.null(inputfile) || !file.exists(inputfile)) {
     logger.severe("Could not find input file.")
   }
@@ -58,7 +58,7 @@ clean.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml") {
   settings$workflow <- NULL
   
   # save and done
-  XML::saveXML(listToXml(settings, "pecan"), file = outputfile)
+  if(write) XML::saveXML(listToXml(settings, "pecan"), file = outputfile)
   
   ## Return settings file as a list
   return(invisible(settings))
