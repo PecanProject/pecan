@@ -1,23 +1,25 @@
 Package: PEcAnRTM
 Type: Package
 Title: PEcAn functions used for radiative transfer modeling
-Version: 1.4.6
-Date: 2016-05-05
+Version: 1.4.8
+Date: 2016-08-09
 Author: Alexey Shiklomanov, Shawn Serbin, Mike Dietze
 Maintainer: Alexey Shiklomanov <ashiklom@bu.edu>
 Description: This package contains functions for performing forward runs and
     inversions of radiative transfer models (RTMs). Inversions can be performed
     using maximum likelihood, or more complex hierarchical Bayesian methods.
     Underlying numerical analyses are optimized for speed using Fortran code.
-Depends:
+Imports:
     MASS,
-    coda
+    coda,
+    lubridate (>= 1.6.0),
+    PEcAn.assim.batch
 Suggests:
     minpack.lm,
     mclust,
     PEcAn.utils,
     PEcAn.ED2,
-    testthat,
+    testthat (>= 1.0.2),
     knitr
 OS_type: unix
 License: FreeBSD + file LICENSE

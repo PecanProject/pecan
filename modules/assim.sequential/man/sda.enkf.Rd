@@ -4,16 +4,18 @@
 \alias{sda.enkf}
 \title{sda.enkf}
 \usage{
-sda.enkf(settings, IC, prior, obs)
+sda.enkf(settings, obs.mean, obs.cov, IC = NULL, Q = NULL)
 }
 \arguments{
 \item{settings}{PEcAn settings object}
 
-\item{IC}{data.frame of initial condition sample (nens X nstate)}
+\item{obs.mean}{list of observations of the means of state variable (time X nstate)}
 
-\item{prior}{data.frame of model parameter sample (nense X nstate)}
+\item{obs.cov}{list of observations of covariance matrices of state variables (time X nstate X nstate)}
 
-\item{obs}{data.frame of observations with columns: mean, sd}
+\item{IC}{initial conditions}
+
+\item{Q}{process covariance matrix given if there is no data to estimate it}
 }
 \value{
 NONE
@@ -22,6 +24,6 @@ NONE
 State Variable Data Assimilation: Ensemble Kalman Filter
 }
 \author{
-Michael Dietze \email{dietze@bu.edu}
+Michael Dietze and Ann Raiho \email{dietze@bu.edu}
 }
 

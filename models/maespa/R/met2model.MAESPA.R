@@ -1,17 +1,17 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the
+# are made available under the terms of the 
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-#
-## R Code to convert NetCDF CF met files into MAESPA met files
 
-##If files already exist in "Outfolder", the default function is NOT to overwrite them and
-##only gives user the notice that file already exists. If user wants to overwrite the existing files, just change
-##overwrite statement below to TRUE.
+# R Code to convert NetCDF CF met files into MAESPA met files
+
+## If files already exist in 'Outfolder', the default function is NOT to overwrite them and only
+## gives user the notice that file already exists. If user wants to overwrite the existing files,
+## just change overwrite statement below to TRUE.
 
 ##' met2model wrapper for MAESPA
 ##'
@@ -26,180 +26,177 @@
 ##' @param verbose should the function be very verbose
 ##'
 ##' @author Tony Gardella
-
-met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date,
-                             end_date, ..., overwrite=FALSE,verbose=FALSE) {
-                             
+met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date, 
+                             overwrite = FALSE, verbose = FALSE, ...) {
+  
   library(PEcAn.utils)
-                
+  
   print("START met2model.MAESPA")
   start.date <- as.POSIXlt(start_date, tz = "GMT")
-  end.date <-as.POSIXlt(end_date, tz = "GMT")
+  end.date <- as.POSIXlt(end_date, tz = "GMT")
   
-  out.file <-paste(in.prefix, 
-                   strptime(start.date, "%Y-%m-%d"),
-                   strptime(end.date, "%Y-%m-%d"),
-                   "dat", 
-                   sep =".")
+  out.file <- paste(in.prefix, 
+                    strptime(start.date, "%Y-%m-%d"), 
+                    strptime(end.date, "%Y-%m-%d"), 
+                    "dat", 
+                    sep = ".")
   
-  out.file.full <-file.path(outfolder, out.file)
-                             
+  out.file.full <- file.path(outfolder, out.file)
+  
   results <- data.frame(file = out.file.full,
                         host = fqdn(),
-                        mimetype = 'text/plain',
-                        formatname = 'maespa.met' ,
-                        startdate = start_date ,
+                        mimetype = "text/plain", 
+                        formatname = "maespa.met", 
+                        startdate = start_date,
                         enddate = end_date,
-                        dbfile.name = out.file,
+                        dbfile.name = out.file, 
                         stringsAsFactors = FALSE)
   
- print("internal results")
- print(results)
-                             
- if (file.exists(out.file.full) && !overwrite) {
-                               logger.debug("File '", out.file.full,
-                                            "' already exists, skipping to next file.")
-                               return(invisible(results))
-                             }
-                             
-                             
- library(ncdf4)
- library(lubridate)
- library(PEcAn.data.atmosphere)
- library(Maeswrap)
- 
- ## check to see if the outfolder is defined, if not create directory for output
- if (!file.exists(outfolder)) {
-   dir.create(outfolder)
- }
- 
- out <- NULL
- 
- # get start/end year since inputs are specified on year basis
- start_year <- year(start.date)
- end_year <- year(end.date)
- 
- ## loop over files
- for (year in start_year:end_year) {
-   print(year)
-   
-   old.file <-
-     file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
-   
-   if (file.exists(old.file)) {
-     ## open netcdf
-     nc <- nc_open(old.file)
-     ## convert time to seconds
-     sec   <- nc$dim$time$vals
-     sec <- udunits2::ud.convert(sec,unlist(strsplit(nc$dim$time$units," "))[1],"seconds")
-     
-     ifelse(
-       leap_year(year),
-       dt <-(366 * 24 * 60 * 60) / length(sec), #leap year
-       dt <-(365 * 24 * 60 * 60) / length(sec)
-     ) #non-leap year
-     tstep <- round(86400 / dt)
-     dt <- 86400 / tstep
-     
-     #Check wich variabales are available and which are not
-     
-     ## extract variables
-     lat <- ncvar_get(nc,"latitude")
-     lon <- ncvar_get(nc,"longitude")
-     RAD <- ncvar_get(nc,"surface_downwelling_shortwave_flux_in_air") #W m-2
-     PAR <- try(ncvar_get(nc,"surface_downwelling_photosynthetic_photon_flux_in_air")) #mol m-2 s-1
-     TAIR <- ncvar_get(nc,"air_temperature") # K
-     QAIR <- ncvar_get(nc,"specific_humidity")# 1
-     PPT <- ncvar_get(nc,"precipitation_flux") #kg m-2 s-1
-     CA <- try(ncvar_get(nc,"mole_fraction_of_carbon_dioxide_in_air")) #mol/mol
-     PRESS <- ncvar_get(nc,"air_pressure")# Pa
-     
-     ##Convert specific humidity to fractional relative humidity
-     RH <- qair2rh(QAIR,TAIR,PRESS)
- 
-     ## Process PAR
-     if (!is.numeric(PAR)) {
-       #Function from data.atmosphere will convert SW to par in W/m2
-       PAR <- sw2par(RAD)
-     }else{
-       #convert
-       PAR <- udunits2::ud.convert(PAR,"mol","umol")
-     }
-
-     # Convert air temperature to Celsius 
-     TAIR <- udunits2::ud.convert(TAIR,"kelvin","celsius")
-     
-     ####ppm. atmospheric CO2 concentration. Constant from Enviiron namelist used instead
-     if (!is.numeric(CA)) {
-       print(
-         "Atmospheric CO2 concentration will be set to constant value set in ENVIRON namelist "
-       )
-       rm(CA)
-       defaultCO2 = 400 #400 is estimation of atmospheric CO2 in ppm)
-     } else {
-       CA <- CA*1e6
-     } 
-     
-     nc_close(nc)
-   } else {
-     print("Skipping to next year")
-     next
-   }
-   tmp <- cbind(TAIR,PPT,RAD,PRESS,PAR,RH,CA)
-   
-   if (is.null(out)) {
-     out = tmp
-   } else {
-     out = rbind(out,tmp)
-   }
-   
- }### end loop over years
- 
- if(!is.numeric(out[,"CA"])){
-   out[,"CA"] <- NULL
- }
- 
- columnnames <- colnames(out)
-
- #Set number of timesteps in a day(timetsep of input data)
- timesteps <- tstep
- # Set distribution of diffuse radiation incident from the sky.(0.0) is default.
- difsky <- 0.5
- #Change format of date to DD/MM/YY
- startdate <- paste0(format(as.Date(start_date),"%d/%m/%y"))
- enddate <- paste0(format(as.Date(end_date),"%d/%m/%y"))
- 
- ## Units of Latitude and longitude
- if (nc$dim$latitude$units == "degree_north") {
-   latunits = "N"
- }else{
-   latunits = "S"
- }
- 
- if (nc$dim$longitude$units == "degree_east") {
-   lonunits = "E"
- }else{
-   lonunits = "W"
- }
- 
- ##Write output met.dat file
- metfile <- system.file("met.dat",
-                        package = "PEcAn.MAESPA")
- 
- met.dat <- replacemetdata(out,
-                           oldmetfile = metfile,
-                           newmetfile = out.file.full)
- 
- 
- replacePAR(out.file.full, "difsky","environ", newval = difsky, noquotes = TRUE)
- replacePAR(out.file.full, "ca","environ", newval = defaultCO2, noquotes = TRUE)
- replacePAR(out.file.full, "lat","latlong", newval = lat, noquotes = TRUE)
- replacePAR(out.file.full, "long","latlong", newval = lon, noquotes = TRUE)
- replacePAR(out.file.full, "lonhem","latlong", newval = lonunits, noquotes = TRUE)
- replacePAR(out.file.full, "lathem","latlong", newval = latunits, noquotes = TRUE)
- replacePAR(out.file.full, "startdate","metformat", newval = startdate, noquotes = TRUE)
- replacePAR(out.file.full, "enddate","metformat", newval = enddate, noquotes = TRUE)
- replacePAR(out.file.full, "columns","metformat", newval = columnnames, noquotes = TRUE)
- 
- invisible(results)
- }  ### End of function
+  print("internal results")
+  print(results)
+  
+  if (file.exists(out.file.full) && !overwrite) {
+    logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
+    return(invisible(results))
+  }
+  
+  library(PEcAn.data.atmosphere)
+  library(Maeswrap)
+  
+  ## check to see if the outfolder is defined, if not create directory for output
+  if (!file.exists(outfolder)) {
+    dir.create(outfolder)
+  }
+  
+  out <- NULL
+  
+  # get start/end year since inputs are specified on year basis
+  start_year <- lubridate::year(start.date)
+  end_year <- lubridate::year(end.date)
+  
+  ## loop over files
+  for (year in start_year:end_year) {
+    print(year)
+    
+    old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
+    
+    if (file.exists(old.file)) {
+      ## open netcdf
+      nc <- ncdf4::nc_open(old.file)
+      ## convert time to seconds
+      sec <- nc$dim$time$vals
+      sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+      
+      dt <- ifelse(lubridate::leap_year(year) == TRUE, 
+                   366 * 24 * 60 * 60 / length(sec), # leap year
+                   365 * 24 * 60 * 60 / length(sec)) # non-leap year
+      tstep <- round(86400 / dt)
+      dt <- 86400 / tstep
+      
+      # Check wich variables are available and which are not
+      ncvar_get <- ncdf4::ncvar_get
+      
+      ## extract variables
+      lat   <- ncvar_get(nc, "latitude")
+      lon   <- ncvar_get(nc, "longitude")
+      RAD   <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  #W m-2
+      PAR   <- try(ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air"))  #mol m-2 s-1
+      TAIR  <- ncvar_get(nc, "air_temperature")  # K
+      QAIR  <- ncvar_get(nc, "specific_humidity")  # 1
+      PPT   <- ncvar_get(nc, "precipitation_flux")  #kg m-2 s-1
+      CA    <- try(ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))  #mol/mol
+      PRESS <- ncvar_get(nc, "air_pressure")  # Pa
+      
+      ## Convert specific humidity to fractional relative humidity
+      RH <- qair2rh(QAIR, TAIR, PRESS)
+      
+      ## Process PAR
+      if (!is.numeric(PAR)) {
+        # Function from data.atmosphere will convert SW to par in W/m2
+        PAR <- sw2par(RAD)
+      } else {
+        # convert
+        PAR <- udunits2::ud.convert(PAR, "mol", "umol")
+      }
+      
+      # Convert air temperature to Celsius
+      TAIR <- udunits2::ud.convert(TAIR, "kelvin", "celsius")
+      
+      #### ppm. atmospheric CO2 concentration. 
+      ### Constant from Environ namelist used instead if CA is nonexistent
+      defaultCO2 <- 400
+      if (!is.numeric(CA)) {
+        print("Atmospheric CO2 concentration will be set to constant value set in ENVIRON namelist ")
+        rm(CA)
+      } else {
+        CA <- CA * 1e+06
+      }
+      
+      ncdf4::nc_close(nc)
+    } else {
+      print("Skipping to next year")
+      next
+    }
+    
+    if (exists("CA")) {
+      tmp <- cbind(TAIR, PPT, RAD, PRESS, PAR, RH, CA)
+    } else {
+      tmp <- cbind(TAIR, PPT, RAD, PRESS, PAR, RH)
+    }
+    
+    if (is.null(out)) {
+      out <- tmp
+    } else {
+      out <- rbind(out, tmp)
+    }
+    
+  }  ### end loop over years
+  
+  ### Check for NA
+  if (anyNA(out)) {
+    logger.debug("NA introduced in met data. Maespa will not be able to run properly. Please change Met Data Source or Site")
+  } else {
+    logger.debug("No NA values contained in data")
+  }
+  
+  ## Set Variable names
+  columnnames <- colnames(out)
+  
+  # Set number of timesteps in a day(timetsep of input data)
+  timesteps <- tstep
+  # Set distribution of diffuse radiation incident from the sky.(0.0) is default.
+  difsky <- 0.5
+  # Change format of date to DD/MM/YY
+  startdate <- paste0(format(as.Date(start_date), "%d/%m/%y"))
+  enddate <- paste0(format(as.Date(end_date), "%d/%m/%y"))
+  
+  ## Units of Latitude and longitude
+  if (nc$dim$latitude$units == "degree_north") {
+    latunits <- "N"
+  } else {
+    latunits <- "S"
+  }
+  
+  if (nc$dim$longitude$units == "degree_east") {
+    lonunits <- "E"
+  } else {
+    lonunits <- "W"
+  }
+  
+  ## Write output met.dat file
+  metfile <- system.file("met.dat", package = "PEcAn.MAESPA")
+  
+  met.dat <- replacemetdata(out, oldmetfile = metfile, newmetfile = out.file.full)
+  
+  replacePAR(out.file.full, "difsky", "environ", newval = difsky, noquotes = TRUE)
+  replacePAR(out.file.full, "ca", "environ", newval = defaultCO2, noquotes = TRUE)
+  replacePAR(out.file.full, "lat", "latlong", newval = lat, noquotes = TRUE)
+  replacePAR(out.file.full, "long", "latlong", newval = lon, noquotes = TRUE)
+  replacePAR(out.file.full, "lonhem", "latlong", newval = lonunits, noquotes = TRUE)
+  replacePAR(out.file.full, "lathem", "latlong", newval = latunits, noquotes = TRUE)
+  replacePAR(out.file.full, "startdate", "metformat", newval = startdate, noquotes = TRUE)
+  replacePAR(out.file.full, "enddate", "metformat", newval = enddate, noquotes = TRUE)
+  replacePAR(out.file.full, "columns", "metformat", newval = columnnames, noquotes = TRUE)
+  
+  return(invisible(results))
+} # met2model.MAESPA

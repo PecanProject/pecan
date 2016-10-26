@@ -142,9 +142,14 @@ if (isset($modelinfo['revision'])) {
   $(document).ready(function () {
     validate();
   });
-<?php } else { ?>
-    google.load("maps", "3",  {other_params:"sensor=false"});
-    google.setOnLoadCallback(mapsLoaded);
+<?php
+} else {
+  $other_params = "sensor=false";
+  if (isset($googleMapKey) && $googleMapKey != "") {
+    $other_params .= "&key=$googleMapKey";
+  }
+  echo "  google.load('maps', '3', { other_params : '$other_params', callback: 'mapsLoaded'});"
+?>
     
     function mapsLoaded() {
     var latlng = new google.maps.LatLng(<?php echo $siteinfo['lat']; ?>, <?php echo $siteinfo['lon']; ?>);
@@ -222,10 +227,12 @@ if (isset($modelinfo['revision'])) {
       }
 ?>
       <div class="spacer"></div>
-      <label>Runs<sup>*</sup></label>
+      <span title="Number of runs in the Ensemble Analysis">
+      <label>Runs<sup>*</sup></label></span>
       <input type="text" name="runs" id="runs" value="<?php echo 1; ?>" onChange="validate();"/>
       <div class="spacer"></div>
-      <label>Variables<sup>*</sup></label>
+      <a href="https://pecan.gitbooks.io/pecan-documentation/content/models/variables.md" title="Model output variables to run analyses on. Link opens variable name table">
+      <label>Variables<sup>*</sup></label></a>
       <input type="text" name="variables" id="variables" value="<?php echo "NPP"; ?>" onChange="validate();"/>
       <div class="spacer"></div>
 
@@ -243,7 +250,14 @@ if (isset($modelinfo['revision'])) {
       <input id="next" type="button" value="Next" onclick="nextStep();" <?php if (!$userok) echo "disabled" ?>/>    
       <div class="spacer"></div>
     </form>
-<?php whoami(); ?>    
+<?php whoami(); ?>  
+<p>
+  <a href="https://pecan.gitbooks.io/pecan-documentation/content/" target="_blank">Documentation</a>
+  <br>
+  <a href="https://gitter.im/PecanProject/pecan" target="_blank">Chat Room</a>
+  <br>
+  <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
+</p>
   </div>
   <div id="output">
     Name : <b><?php echo $siteinfo["sitename"]; ?></b><br/>

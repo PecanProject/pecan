@@ -1,8 +1,8 @@
 Package: PEcAn.benchmark
 Type: Package
 Title: PEcAn functions used for benchmarking
-Version: 1.4.6
-Date: 2016-05-05
+Version: 1.4.8
+Date: 2016-08-09
 Author: Michael Dietze, David LeBauer, Rob Kooper, Toni Viskari
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
@@ -10,8 +10,13 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     model parameterization, execution, and analysis. The goal of PEcAn is to
     streamline the interaction between data and models, and to improve the
     efficacy of scientific investigation.
+Imports:
+    lubridate (>= 1.6.0),
+    ncdf4 (>= 1.15),
+    udunits2 (>= 0.11),
+    XML (>= 3.98-1.4)
 Suggests:
-    testthat
+    testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
