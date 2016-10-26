@@ -113,6 +113,18 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 	var dialog, form,
 		sitename = $( "#txtsitename" ),
 		elevation =$( "#txtelevation" ),
+		map =$( "#txtmap" ),
+		mat =$( "#txtmat" ),
+		city =$( "#txtcity" ),
+		state =$( "#txtstate" ),
+		county =$( "#txtcountry" ),
+		lat =$( "#txtlat" ),
+		lng =$( "#txtlong" ),
+		pctclay =$( "#txtpctclay" ),
+		pctsand =$( "#txtpctsand" ),
+		greehouse =$( "#txtgreenhouse" ),
+		notes =$( "#txtnotes" ),
+		soilnotes =$( "#txtsoilnotes" ),
 		allFields = $( [] ).add( sitename ).add( elevation ),
 		tips = $( ".validateTips" ),
 		request;
@@ -151,69 +163,35 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 		var valid = true;
 		allFields.removeClass( "ui-state-error" );
 
-		//valid = valid && checkLength ( sitename, "sitename", 3, 16);
-		//valid = valid && checkLength ( email, "email", 6, 80);
+		valid = valid && checkLength ( sitename, "sitename", 3, 30);
 
-		//valid = valid && checkRegexp ( sitename, /^[a-z]([0-9a-z_\s])+$/i, "Site name may consist of a-z, 0-9, underscores, spaces and must begin with a letter.");
+		//valid = valid && checkRegexp ( lat, /^[-]?(([0-8]?[0-9])\.(\d+))|(90(\.0+)?)$/ , "You must enter a valid longitude value.");
+		//valid = valid && checkRegexp ( lng, /^[-]?((((1[0-7][0-9])|([0-9]?[0-9]))\.(\d+))|180(\.0+)?)$/ , "You must enter a valid longitude value.");
 		
+
+
+
 		if ( valid ) {
 			if (request) {
 				request.abort();;
 			}
-			var $form = $(this);
+			var serializedData = $('#dialog-form :input').serialize();
 			
-			//Let's select and cache all the fields
-			var $inputs = $form.find("input, select, button, textarea");
-			
-			//Serialize the data in the form
-			var serializedData = $form.serialize();
-			alert(serializedData);
-
-			//Let's disable the inputs for the duration of the ajax request
-			// Note: we disable elements AFTER the form data has been serialized.
-			// Disabled form elements will not be serialized.
-			$inputs.prop("disabled", true);
-
-			// Fire off the request to /input-site.php
-			request = $.ajax({
-				url: "/pecan/insert-site.php",
-				type: "post",
-				data: serializedData,
-				success: function(output){
-					console.log(output);
-				}
-			
+    			jQuery.post("insert-site.php", serializedData , function(data) {
+      				var jdata = jQuery(data);
+      				// fill in site list      
+      				jdata.find("marker").each(function() {
+        			var marker = jQuery(this);
+        			if (marker.attr("lat") == "" || marker.attr("lon") == "") {
+          				//console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
+        			} else {
+          				showSite(marker, marker.attr("siteid"));
+        			}
+      				});
 			});
-
-
-			request.done(function( response, textStatus, jqXHR) {
-				// Log a message to the console
-				console.log("It worked.");
-				console.log(response);
-				console.log(textStatus);
-				console.log(jqXHR);
-			
-			});
-
-			request.fail(function(jqXHR, textStatus, errorThrow) {
-				// Log the error to the console
-				console.error(
-					"The following error occurred. " +
-					textStatus, errorThown
-					);
-			});
-
-			// Callback handler that will be called regardless
-			// if the request failed or succeeded
-			request.always(function(){
-				// Reenable the inputs
-				$inputs.prop("disabled", false);
-			});
-
-			// Prevent default posting of form
-			event.preventDefault();
-
-			dialog.dialog( "close" );
+		// Prevent default posting of form
+		event.preventDefault();
+		dialog.dialog( "close" );
 		}
 		return valid;
 
@@ -246,24 +224,9 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 	});
 
 });
-////////Additional Function and Variables for modals//////////////////////
 
   var markersArray = [];
 
-//    map.addListener('dblclick', function(event) {
-//      addMarker(event.latLng);
-//      console.log("dialog should fire");
-//      dialog.dialog("open");
-//   });
-
-
-//  function addMarker(location) {
-//    var marker = new google.maps.Marker({
-//      position: location,
-//      map: map
-//    });
-//    markersArray.push(marker);
-//  }
 
   function validate() {
     $("#next").removeAttr("disabled");       
@@ -468,8 +431,8 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
       addMarker(event.latLng);
       console.log("dialog should fire");
       $("#dialog-form").dialog("open");
-      $("#txtlong").val(event.latLng.lat());
-      $("#txtlat").val(event.latLng.lng());
+      $("#txtlat").val(event.latLng.lat());
+      $("#txtlong").val(event.latLng.lng());
     });
   }
 
@@ -509,6 +472,9 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
     }
   }
 
+  function renderSites(selected) {
+  }
+
   function goHome() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(position) {
@@ -523,8 +489,6 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
     }  
   }
 <?php } ?>
-////////Additional Function and Variables for modals//////////////////////
-//});
 </script>
 </head>
 <body>
@@ -571,7 +535,7 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
       <input name="siteid" id="siteid" type="hidden" value="<?php echo $siteid; ?>"/>
       <input name="sitename" id="sitename" type="text" />
 <?php if ($betydb != "") { ?>
-      <span class="small">Add a new site, double click map.</span>
+      <span class="small">Add new site, double click map</span>
       <span class="small"><a href="<?php echo $betydb; ?>/sites/new" target="BETY">Remove Pins</a></span>
 <?php } ?>
       <div class="spacer"></div>
@@ -586,7 +550,7 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 
 
 
-      <input id="create-site" type="button" value="Add Site"/>
+     <!-- <input id="create-site" type="button" value="Add Site"/> -->
 	
 	<div id="divAddSite">
 		<div id="dialog-form" class="ui-widget" title="Create new site">
@@ -597,46 +561,46 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 						<div id="row">
 							<div id="left">
 								<label for="sitename" id="lblsitename">Site name</label>
-								<input id="txtsitename" size="30" type="text"></input>
+								<input id="txtsitename" size="30" type="text" name="sitename"></input>
 							</div>
 						</div>
 						<div id="row">
 							<div id="left">
 								<label id="lblelevation">Elevation (m)</label>
-								<input id="txtelevation" size="30" type="text"></input>
+								<input id="txtelevation" size="30" type="text" name="elevation"></input>
 							</div>
 							<div id="middle">
 								<label id="lblmap">Mean Annual Precipitation (mm/yr)</label>
-								<input id="txtmap" size="30" type="text"></input>
+								<input id="txtmap" size="30" type="text" name="map"></input>
 							</div>
 							<div id="right">
 								<label id="lblmat">Mean Annual Temperature (C)</label>
-								<input id="txtmat" size="30" type="text"></input>
+								<input id="txtmat" size="30" type="text" name="mat"></input>
 							</div>
 						</div>
 						<div id="row">
 							<div id="left">
 								<label id="lblcity">City</label>
-								<input id="txtcity" size="30" type="text"></input>
+								<input id="txtcity" size="30" type="text" name="city"></input>
 							</div>
 							<div id="middle">
 								<label id="lblstate">State</label>
-								<input id="txtstate" size="30" type="text"></input>
+								<input id="txtstate" size="30" type="text" name="state"></input>
 							</div>
 							<div id="right">
 								<label id="lblcountry">Country</label>
-								<input id="txtcountry" size="30" type="text"></input>
+								<input id="txtcountry" size="30" type="text" name="country"></input>
 							</div>
 						</div>
 						<div id="row">
 						<!-- Column 1 -->
 							<div id="left">
 								<label id="lbllat">Lat</label>
-								<input id="txtlat" size="30" type="text"></input>
+								<input id="txtlat" size="30" type="text" name="lat"></input>
 							</div>
 							<div id="middle">
 								<label id="lbllong">Long</label>
-								<input id="txtlong" size="30" type="text"></input>
+								<input id="txtlong" size="30" type="text" name="long"></input>
 							</div>
 						</div>
 						<div id="row">
@@ -646,11 +610,11 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 							</div> -->
 							<div id="left">
 								<label id="lblpctclay">% Clay</label>
-								<input id="txtpctclay" size="30" type="text"></input>
+								<input id="txtpctclay" size="30" type="text" name="pctclay"></input>
 							</div>
 							<div id="middle">
 								<label id="lblpctsand">% Sand</label>
-								<input id="txtpctsand" size="30" type="text"></input>
+								<input id="txtpctsand" size="30" type="text" name="pctsand"></input>
 							</div>
 						</div>
 						<div id="row">
@@ -660,17 +624,17 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 							</div> -->
 							<div id="left">
 								<label id="lblgreenhouse">Greenhouse</label>
-								<input id="txtgreenhouse" size="30" type="text"></input>
+								<input id="txtgreenhouse" size="30" type="text" name="greenhouse"></input>
 							</div>
 						</div>
 						<div id="row">
 							<div id="left">
 								<label id="lblnotes">Notes</label>
-								<textarea id="txtnotes" cols="40" rows="10" type="text"></textarea>
+								<textarea id="txtnotes" cols="40" rows="10" type="text" name="notes"></textarea>
 							</div>
 							<div id="middle">
 								<label id="lblsoilnotes">Soil Notes</label>
-								<textarea id="txtsoilnotes" cols="40" rows="10" type="text"></textarea>
+								<textarea id="txtsoilnotes" cols="40" rows="10" type="text" name="soilnotes"></textarea>
 							</div>
 						</div>
 					</div>					
