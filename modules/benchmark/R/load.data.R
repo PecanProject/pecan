@@ -54,7 +54,7 @@ load.data <- function(data.path, format, start_year = NA, end_year = NA, site = 
       } else if (misc.are.convertible(u1, u2)) {
         print(sprintf("convert %s %s to %s %s", 
                       vars_used$input_name[i], u1, 
-                      vars_used$pecan_name[i], 2))
+                      vars_used$pecan_name[i], u2))
         out[col] <- misc.convert(x, u1, u2)
         colnames(out)[col] <- vars_used$pecan_name[i]
       } else {
