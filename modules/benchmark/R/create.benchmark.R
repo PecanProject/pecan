@@ -22,8 +22,15 @@ create.benchmark <- function(settings, bety){
                                    ", ",settings$model$id,", ",settings$info$userid,
                                    ", NOW() , NOW(), 1000000001 ) RETURNING *;"), bety$con)
     bm.ensemble <- rename(bm.ensemble, bm_ensemble_id = id)
+    
   }else{
     bm.ensemble <- tbl(bety,'ensembles') %>% filter(id == settings$benchmark$ensemble_id) %>% rename(bm_ensemble_id = id) %>% collect()
+    wf <- tbl(bety, 'workflows') %>% filter(id == bm.ensemble$workflow_id) %>% collect()
+  
+    settings$rundir <- file.path(wf$folder, "run")
+    settings$modeloutdir <- file.path(wf$folder, "out")
+    settings$outdir <- wf$folder
+    
   }
   
   # create benchmark entries
@@ -77,5 +84,5 @@ create.benchmark <- function(settings, bety){
       }
     }
   }
-  return(bm.ids)
+  invisible(return(settings))
 } # create.benchmark
