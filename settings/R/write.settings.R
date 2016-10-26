@@ -4,6 +4,7 @@
 ##' @param settings settings list
 ##' @return updated settings list
 ##' @author Ryan Kelly
+##' @author Betsy Cowdery
 ##' @export write.settings
 
 

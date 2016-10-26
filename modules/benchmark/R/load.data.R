@@ -65,7 +65,7 @@ load.data <- function(data.path, format, start_year = NA, end_year = NA, site = 
 
   if(!is.null(time.row)){  
      # Need a much more spohisticated approach to converting into time format. 
-     y <- select(out, one_of(format$vars$input_name[time.row]))
+     y <- dplyr::select(out, one_of(format$vars$input_name[time.row]))
      out$posix <- strptime(apply(y, 1, function(x) paste(x, collapse = " ")), format=paste(format$vars$storage_type[time.row], collapse = " "), tz = "UTC")
   }
 

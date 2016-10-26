@@ -8,12 +8,12 @@
 ##' @param start_year
 ##' @param end_year
 ##' @param bm
-##' @param ens
+##' @param ensemble.id
 ##' @param model_run
 ##' 
 ##' 
 ##' @author Betsy Cowdery
-calc.metrics <- function(model.bm, obvs.bm, var, metrics, start_year, end_year, bm, ens, model_run) {
+calc.metrics <- function(model.bm, obvs.bm, var, metrics, start_year, end_year, bm, ensemble.id, model_run) {
   
   dat <- align.data(model.bm, obvs.bm, var, start_year, end_year)
   
@@ -31,7 +31,7 @@ calc.metrics <- function(model.bm, obvs.bm, var, metrics, start_year, end_year, 
     
     if (tail(unlist(strsplit(fcn, "[.]")), 1) == "plot") {
       filename <- file.path(dirname(dirname(model_run)), 
-                            paste("benchmark", metrics$name[m], var, ens$id, "pdf", sep = "."))
+                            paste("benchmark", metrics$name[m], var, ensemble.id, "pdf", sep = "."))
       do.call(fcn, args <- list(metric_dat, var, filename))
       score <- filename
       results[metrics$name[m], var] <- score
