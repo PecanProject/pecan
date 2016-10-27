@@ -8,12 +8,30 @@
 
 create.benchmark <- function(settings, bety){
   
-  # Get benchmark ensemble information
-  
+  # Updates to settings dependent on settings$new_run
   if(as.logical(settings$benchmark$new_run)){
-    # If new run, need a new emsemble id so that we can load output
+    # If new run, need to get the new emsemble id so that we can load output
     # For now, just choosing the first in case ensemble size > 1
-    settings$benchmark$ensemble_id <- tbl(bety, 'ensembles') %>% filter(workflow_id == settings$workflow$id) %>% dplyr::select(id) %>% collect() %>% .[[1]] 
+    settings$benchmark$ensemble_id <- tbl(bety, 'ensembles') %>% 
+      filter(workflow_id == settings$workflow$id) %>% dplyr::select(id) %>% collect() %>% .[[1]] 
+  }else{
+    # Need to find where the output is located
+    # Right now ASSUMING LOCALHOST
+    ensemble <- tbl(bety,'ensembles') %>% filter(id == settings$benchmark$ensemble_id) %>% collect()
+    wf <- tbl(bety, 'workflows') %>% filter(id == ensemble$workflow_id) %>% collect()
+    settings$rundir <- file.path(wf$folder, "run")
+    settings$modeloutdir <- file.path(wf$folder, "out")
+    settings$outdir <- wf$folder
+  }
+  
+  # Retrieve/create benchmark ensemble database record
+  bm.ensemble <- tbl(bety,'benchmarks_ensembles') %>% 
+    filter(reference_run_id == settings$benchmark$reference_run_id) %>% 
+    filter(ensemble_id == settings$benchmark$ensemble_id) %>% 
+    filter(model_id == settings$model$id) %>%
+    collect()
+  
+  if(dim(bm.ensemble)[1] == 0){
     bm.ensemble <- db.query(paste0("INSERT INTO benchmarks_ensembles",
                                    "(reference_run_id, ensemble_id, model_id, ",
                                    "user_id, created_at, updated_at, citation_id)",
@@ -21,19 +39,11 @@ create.benchmark <- function(settings, bety){
                                    ", ",settings$benchmark$ensemble_id,
                                    ", ",settings$model$id,", ",settings$info$userid,
                                    ", NOW() , NOW(), 1000000001 ) RETURNING *;"), bety$con)
-    bm.ensemble <- rename(bm.ensemble, bm_ensemble_id = id)
-    
-  }else{
-    bm.ensemble <- tbl(bety,'ensembles') %>% filter(id == settings$benchmark$ensemble_id) %>% rename(bm_ensemble_id = id) %>% collect()
-    wf <- tbl(bety, 'workflows') %>% filter(id == bm.ensemble$workflow_id) %>% collect()
-  
-    settings$rundir <- file.path(wf$folder, "run")
-    settings$modeloutdir <- file.path(wf$folder, "out")
-    settings$outdir <- wf$folder
-    
+  }else if(dim(bm.ensemble)[1] >1){
+    logger.error("Duplicate record entries in benchmarks_ensembles")
   }
-  
-  # create benchmark entries
+
+  # Retrieve/create benchmark entries
   bm.ids <- c()
   
   for(i in seq_along(settings$benchmark$variables)){
@@ -43,8 +53,7 @@ create.benchmark <- function(settings, bety){
       filter(variable_id == settings$benchmark$variables[[i]]) %>%
       filter(site_id == settings$run$site$id) %>% collect()
     
-    
-    # create benchmark record
+    # Retrieve/create benchmark record
     if(dim(bm)[1] == 0){
       cmd <- sprintf("INSERT INTO benchmarks (input_id, variable_id, site_id, user_id, created_at, updated_at) VALUES ( %s, %s, %s, %s, NOW(), NOW()) RETURNING * ", 
                      settings$benchmark$input_id, settings$benchmark$variables[[i]],
@@ -55,7 +64,7 @@ create.benchmark <- function(settings, bety){
     }
     bm.ids <- c(bm.ids, bm$id)
     
-    # create benchmarks_benchmarks_reference_runs record
+    # Retrieve/create benchmarks_benchmarks_reference_runs record
     bmBRR <- tbl(bety, 'benchmarks_benchmarks_reference_runs') %>% 
       filter(benchmark_id == bm$id) %>%
       filter(reference_run_id == settings$benchmark$reference_run_id)  %>% collect()
@@ -69,7 +78,7 @@ create.benchmark <- function(settings, bety){
       logger.error("Duplicate record entries in benchmarks_benchmarks_reference_runs")
     }
     
-    # create benchmarks_metrics record
+    # Retrieve/create benchmarks_metrics record
     for(j in seq_along(settings$benchmark$metrics)){
       bmmetric <- tbl(bety, 'benchmarks_metrics') %>% 
         filter(benchmark_id == bm$id) %>%
