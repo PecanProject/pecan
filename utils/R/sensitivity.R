@@ -121,13 +121,10 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   names(median.samples) <- names(quantile.samples)
   
   if (!is.null(con)) {
-    now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    db.query(paste0("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", 
-                    now, "', 'sensitivity analysis', ", 
-                    format(workflow.id, scientific = FALSE), ")"), 
-             con = con)
-    ensemble.id <- db.query(paste0("SELECT id FROM ensembles WHERE created_at='", 
-                                   now, "' AND runtype='sensitivity analysis'"), con = con)[["id"]]
+    ensemble.id <- db.query(paste0("INSERT INTO ensembles (runtype, workflow_id) values ",
+      "(sensitivity analysis', ", format(workflow.id, scientific = FALSE), ") ",
+      "RETURNING id"), con = con)[['id']]
+      
     paramlist <- paste0("quantile=MEDIAN,trait=all,pft=",
                         paste(lapply(settings$pfts, function(x) x[["name"]]), sep = ","))
     db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", 
@@ -144,11 +141,8 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
     
     # associate posteriors with ensembles
     for (pft in defaults) {
-      db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id, created_at, updated_at) values (", 
-                      pft$posteriorid, ", ", 
-                      ensemble.id, ", '", 
-                      now, "', '", 
-                      now, "');"), 
+      db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id) values (", 
+                      pft$posteriorid, ", ", ensemble.id, ")"), 
                con = con)
     }
     

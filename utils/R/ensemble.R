@@ -196,15 +196,13 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
   # create an ensemble id
   if (!is.null(con)) {
     # write ensemble first
-    now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    db.query(paste0("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", 
-                    now, "', 'ensemble', ", workflow.id, ")"), con = con)
-    ensemble.id <- db.query(paste0("SELECT id FROM ensembles WHERE created_at='", 
-                                   now, "' AND runtype='ensemble'"), con = con)[["id"]]
+    ensemble.id <- db.query(paste0("INSERT INTO ensembles (runtype, workflow_id) values ", 
+       "('ensemble', ", format(workflow.id, scientific = FALSE), ")",
+       "RETURNING id"), con = con)[['id']]
+
     for (pft in defaults) {
-      db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id, created_at, updated_at) values (", 
-                      pft$posteriorid, ", ", 
-                      ensemble.id, ", '", now, "', '", now, "');"), 
+      db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id) values (", 
+                      pft$posteriorid, ", ", ensemble.id, ");"), 
                con = con)
     }
   } else {
@@ -219,20 +217,16 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
   runs <- data.frame()
   for (counter in seq_len(settings$ensemble$size)) {
     if (!is.null(con)) {
-      now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
       paramlist <- paste("ensemble=", counter, sep = "")
-      db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id,", 
+      run.id <- db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, ensemble_id,", 
                       " parameter_list) values ('", settings$model$id,
                       "', '", settings$run$site$id, 
                       "', '", settings$run$start.date, 
                       "', '", settings$run$end.date,
                       "', '", settings$run$outdir,
-                      "', '", now, 
                       "', ", ensemble.id, 
                       ", '", paramlist, 
-                      "')"), con = con)
-      run.id <- db.query(paste0("SELECT id FROM runs WHERE created_at='", now, 
-                                "' AND parameter_list='", paramlist, "'"), con = con)[["id"]]
+                      "') RETURNING id"), con = con)[['id']]
       
       # associate inputs with runs
       if (!is.null(inputs)) {
