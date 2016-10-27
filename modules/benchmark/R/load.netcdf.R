@@ -36,11 +36,11 @@ load.x_netcdf <- function(data.path, format, site, vars = NULL) {
     time.col[[i]] <- ncdf4::ncvar_get(nc[[i]], dims[time.var])
 
     # for heterogenous formats try parsing ymd_hms
-    date.origin <- suppressWarnings(try(ymd_hms(ncdf4::ncatt_get(nc[[i]], dims[time.var])$units)))
+    date.origin <- suppressWarnings(try(lubridate::ymd_hms(ncdf4::ncatt_get(nc[[i]], dims[time.var])$units)))
     
     # parsing ymd
     if (is.na(date.origin)) {
-      date.origin <- ymd(ncdf4::ncatt_get(nc[[i]], dims[time.var])$units)
+      date.origin <- lubridate::ymd(ncdf4::ncatt_get(nc[[i]], dims[time.var])$units)
     }
     # throw error if can't parse time format
     if (is.na(date.origin)) {
