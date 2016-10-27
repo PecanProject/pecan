@@ -29,7 +29,10 @@ ngibbs.max Maximum number of total iterations (per chain). DEFAULT = 5e6
 
 ngibbs.min Minimum number of total iterations (per chain). DEFAULT = 5000.
 
-ngibbs.step Number of iterations between convergence checks. Default = 1000.}
+ngibbs.step Number of iterations between convergence checks. Default = 1000.
+
+run_first Function to run before running sampling. Takes parallel inputs 
+list containing runID, initial values, and resume (NULL) as an argument.}
 
 \item{return.samples}{Include full samples list in output. Default = TRUE.}
 
