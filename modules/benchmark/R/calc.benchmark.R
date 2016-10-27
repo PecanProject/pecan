@@ -143,5 +143,6 @@ calc.benchmark <- function(settings, bety) {
   }
   
   names(results) <- sprintf("input.%0.f", unique(bms$input_id))
+  save(results, file = file.path(settings$outdir,"benchmarking.output.Rdata"))
   return(results)
 } # calc.benchmark
