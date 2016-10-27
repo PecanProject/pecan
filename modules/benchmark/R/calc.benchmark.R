@@ -106,10 +106,10 @@ calc.benchmark <- function(settings, bety) {
         metric <- filter(metrics,id == metric.id)[["name"]]
         score <- out.calc.metrics[["benchmarks"]] %>% filter(.,metric == metric) %>% dplyr::select(score)
         
-      db.query(paste0(
-        "INSERT INTO benchmarks_ensembles_scores",
-        "(score, benchmarks_ensemble_id, benchmark_id, metric_id, created_at, updated_at) VALUES ",
-        "('",score,"',",settings$benchmark$ensemble_id,", ",bm$id,",",metric.id,", NOW(), NOW())"),bety$con)
+      # db.query(paste0(
+      #   "INSERT INTO benchmarks_ensembles_scores",
+      #   "(score, benchmarks_ensemble_id, benchmark_id, metric_id, created_at, updated_at) VALUES ",
+      #   "('",score,"',",settings$benchmark$ensemble_id,", ",bm$id,",",metric.id,", NOW(), NOW())"),bety$con)
       }
       
       results.list <- append(results.list, list(out.calc.metrics[["benchmarks"]]))
@@ -127,6 +127,6 @@ calc.benchmark <- function(settings, bety) {
                                 aligned.dat = dat.list)))
   }
   
-  names(results) <- sprintf("input.%0.f", inputs)
+  names(results) <- sprintf("input.%0.f", bms$input_id)
   return(results)
 } # calc.benchmark
