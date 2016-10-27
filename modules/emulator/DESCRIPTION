@@ -9,7 +9,8 @@ Depends:
     mvtnorm,
     MCMCpack
 Imports:
-    coda (>= 0.18)
+    coda (>= 0.18),
+    methods
 Description: Implementation of a Gaussian Process model (both likelihood and
     bayesian approaches) for kriging and model emulation.  Includes functions
     for sampling design and prediction.

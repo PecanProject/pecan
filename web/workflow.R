@@ -39,6 +39,15 @@ if (is.na(args[1])){
   settings <- read.settings(settings.file)
 }
 
+# Check for additional modules that will require adding settings
+if("benchmark" %in% names(settings)){
+  library(PEcAn.benchmark)
+  settings <- papply(settings, read.settings.RR)
+}
+
+# Write pecan.CHECKED.xml
+settings <- write.settings(settings, outputfile = "pecan.CHECKED.xml")
+
 # start from scratch if no continue is passed in
 if (length(which(commandArgs() == "--continue")) == 0) {
   file.remove(file.path(settings$outdir, "STATUS"))
@@ -127,6 +136,14 @@ if ('state.data.assimilation' %in% names(settings)) {
     settings <- sda.enfk(settings)
     status.end()
   }
+}
+
+# Run benchmarking
+if("benchmark" %in% names(settings)){
+  status.start("BENCHMARKING")
+  settings <- papply(settings, function(x) create.benchmark(x, bety))
+  results <- papply(settings, function(x) calc.benchmark(x, bety))
+  status.end()
 }
   
 # Pecan workflow complete
