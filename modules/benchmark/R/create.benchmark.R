@@ -34,11 +34,11 @@ create.benchmark <- function(settings, bety){
   if(dim(bm.ensemble)[1] == 0){
     bm.ensemble <- db.query(paste0("INSERT INTO benchmarks_ensembles",
                                    "(reference_run_id, ensemble_id, model_id, ",
-                                   "user_id, created_at, updated_at, citation_id)",
+                                   "user_id, citation_id)",
                                    "VALUES(",settings$benchmark$reference_run_id,
                                    ", ",settings$benchmark$ensemble_id,
                                    ", ",settings$model$id,", ",settings$info$userid,
-                                   ", NOW() , NOW(), 1000000001 ) RETURNING *;"), bety$con)
+                                   ", 1000000001 ) RETURNING *;"), bety$con)
   }else if(dim(bm.ensemble)[1] >1){
     logger.error("Duplicate record entries in benchmarks_ensembles")
   }
@@ -55,7 +55,8 @@ create.benchmark <- function(settings, bety){
     
     # Retrieve/create benchmark record
     if(dim(bm)[1] == 0){
-      cmd <- sprintf("INSERT INTO benchmarks (input_id, variable_id, site_id, user_id, created_at, updated_at) VALUES ( %s, %s, %s, %s, NOW(), NOW()) RETURNING * ", 
+      cmd <- sprintf("INSERT INTO benchmarks (input_id, variable_id, site_id, user_id)",
+                     " VALUES ( %s, %s, %s, %s) RETURNING * ", 
                      settings$benchmark$input_id, settings$benchmark$variables[[i]],
                      settings$run$site$id, settings$info$userid)
       bm <- db.query(cmd, bety$con)
