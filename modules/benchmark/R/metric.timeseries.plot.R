@@ -10,7 +10,14 @@ metric.timeseries.plot <- function(metric_dat, var, filename = NA, draw.plot = F
   library(ggplot2)
   
   localenv <- environment()
-  metric_dat$time <- as.Date(metric_dat$time)
+  
+  # Attempt at getting around the fact that time can be annual and thus as.Date won't work
+  date.time <- try(as.Date(metric_dat$time))
+  if (class(date.time) == "try-error"){
+    logger.warn("Can't coerce time column to Date format, attempting plot anyway")
+  }else{
+    metric_dat$time <- date.time
+  }
   
   # p <- ggplot(data = metric_dat, aes(x=time)) + 
   #   geom_path(aes(y=model),colour = "#666666", size=2) +

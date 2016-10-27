@@ -25,7 +25,7 @@
      </variables>
      <metrics>
        <metric_id>1000000003</metric_id> 
-       <metric_id>1000000004</metric_id> 
+       <metric_id>1000000001</metric_id> 
      </metrics>
      <new_run>TRUE</new_run>
  </benchmark>
