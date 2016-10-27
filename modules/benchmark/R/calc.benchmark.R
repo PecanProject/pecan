@@ -93,6 +93,8 @@ calc.benchmark <- function(settings, bety) {
       obvs.calc <- obvs_full %>% dplyr::select(., one_of(c("posix", var)))
       model.calc <- model_full %>% dplyr::select(., one_of(c("posix", var)))
       
+      # TODO: If the scores have already been calculated, don't redo
+      
       out.calc.metrics <- calc.metrics(model.calc, 
                                        obvs.calc, 
                                        var, 
@@ -105,11 +107,24 @@ calc.benchmark <- function(settings, bety) {
       for(metric.id in metrics$id){
         metric <- filter(metrics,id == metric.id)[["name"]]
         score <- out.calc.metrics[["benchmarks"]] %>% filter(.,metric == metric) %>% dplyr::select(score)
+      #   score.entry <- tbl(bety, "benchmarks_ensembles_scores") %>% 
+      #     filter(score == score) %>% 
+      #     filter(bechmarks_ensemble_id == settings$benchmark$ensemble_id)
+      #     
+      # }else if(dim(bm)[1] >1){
+      #   logger.error("Duplicate record entries in benchmarks")
+      # }
         
-      # db.query(paste0(
-      #   "INSERT INTO benchmarks_ensembles_scores",
-      #   "(score, benchmarks_ensemble_id, benchmark_id, metric_id, created_at, updated_at) VALUES ",
-      #   "('",score,"',",settings$benchmark$ensemble_id,", ",bm$id,",",metric.id,", NOW(), NOW())"),bety$con)
+        bm_ens_id <- tbl(bety, "benchmarks_ensembles") %>%
+          filter(ensemble_id == settings$benchmark$ensemble_id) %>%
+          filter(reference_run_id == settings$benchmark$reference_run_id) %>%
+          filter(model_id == settings$model$id) %>%
+          dplyr::select(id) %>% collect %>% .[[1]]
+        
+      db.query(paste0(
+        "INSERT INTO benchmarks_ensembles_scores",
+        "(score, benchmarks_ensemble_id, benchmark_id, metric_id, created_at, updated_at) VALUES ",
+        "('",score,"',",bm_ens_id,", ",bm$id,",",metric.id,", NOW(), NOW())"),bety$con)
       }
       
       results.list <- append(results.list, list(out.calc.metrics[["benchmarks"]]))
@@ -119,7 +134,7 @@ calc.benchmark <- function(settings, bety) {
     
     names(dat.list) <- var.list
     results <- append(results, 
-                      list(list(bench.results = Reduce(function(...) merge(..., by = "metric", all = TRUE), results.list),
+                      list(list(bench.results = do.call(rbind, results.list),
                                 data.path = data.path, 
                                 format = format_full$vars, 
                                 model = model_full, 
@@ -127,6 +142,6 @@ calc.benchmark <- function(settings, bety) {
                                 aligned.dat = dat.list)))
   }
   
-  names(results) <- sprintf("input.%0.f", bms$input_id)
+  names(results) <- sprintf("input.%0.f", unique(bms$input_id))
   return(results)
 } # calc.benchmark
