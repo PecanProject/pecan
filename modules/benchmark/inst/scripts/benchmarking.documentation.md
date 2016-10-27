@@ -109,7 +109,8 @@ Example:
   
 ## Example Ensemble IDs
 
-1000004796
+**1000004796**
+
 - DALEC
 - ORNL
 - Ambient (met = 1000000645) 
@@ -120,7 +121,8 @@ Example:
 
 
 
-1000004806
+**1000004806**
+
 - DALEC
 - DUKE
 - Ambient (met = 1000000649) 
