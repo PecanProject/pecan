@@ -4,7 +4,7 @@
 \alias{metric.scatter.plot}
 \title{metric.scatter.plot}
 \usage{
-metric.scatter.plot(dat, var)
+metric.scatter.plot(metric_dat, var, filename = NA, draw.plot = FALSE)
 }
 \arguments{
 \item{var}{}

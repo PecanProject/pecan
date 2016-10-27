@@ -24,7 +24,7 @@ jagify <- function(result) {
   colnames(r)[colnames(r) == "name"] <- "trt_id"
   r <- transform.nas(r)
   r <- assign.treatments(r)
-  r <- summarize.result(r)
+  r <- PEcAn.utils::summarize.result(r)
   r$greenhouse[is.na(r$greenhouse)] <- 0
   r <- subset(transform(r, 
                         stat = as.numeric(stat), 
