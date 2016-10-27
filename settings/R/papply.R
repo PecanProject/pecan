@@ -75,8 +75,8 @@ papply <- function(settings, fn, stop.on.error = FALSE, ...) {
     }
     
     if (length(errors) > 0) {
-      PEcAn.utils::logger.warn(paste0("papply encountered the following errors, ", "but continued since stop.on.error=FALSE. ", 
-                                      paste(errors, collapse = "; ")))
+      PEcAn.utils::logger.warn(paste0("papply encountered errors for ", length(errors), " elements, ", 
+        "but continued since stop.on.error=FALSE. ", paste(errors, collapse = "; ")))
     }
     
     return(invisible(result))
