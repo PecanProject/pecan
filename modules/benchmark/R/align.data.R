@@ -28,16 +28,18 @@ align.data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
   rng_obvs <- range(obvs.calc$posix)
   rng_dat <- sort(c(rng_obvs, rng_model))[c(2, 3)]
   if(setequal(c(365,366), max.diff)){ # Special case for annual timestep
-    rng_dat <- year(rng_dat)
-    model <- model.calc[year(model.calc$posix) >= rng_dat[1] & year(model.calc$posix) <= rng_dat[2], ]
-    obvs <- obvs.calc[year(obvs.calc$posix) >= rng_dat[1] & year(obvs.calc$posix) <= rng_dat[2], ]
+    rng_dat_yr <- year(rng_dat)
+    model <- model.calc[year(model.calc$posix) >= rng_dat_yr[1] & 
+                          year(model.calc$posix) <= rng_dat_yr[2], ]
+    obvs <- obvs.calc[year(obvs.calc$posix) >= rng_dat_yr[1] & 
+                        year(obvs.calc$posix) <= rng_dat_yr[2], ]
+    model$posix <- year(model$posix)
+    obvs$posix <- year(obvs$posix)
   }else{
     model <- model.calc[model.calc$posix >= rng_dat[1] & model.calc$posix <= rng_dat[2], ]
     obvs <- obvs.calc[obvs.calc$posix >= rng_dat[1] & obvs.calc$posix <= rng_dat[2], ]
-    
   }
 
-  
   # units(diff.m) <- units(diff.o) <- "secs"
   
   if (mode.m > mode.o) {
@@ -56,6 +58,7 @@ align.data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
     colnames(out1) <- paste0(colnames(out1), ".o")
   }
   
+  args <- list()
   if (mode.o != mode.m) {
     # There will be other functions eventually
     out2 <- apply(data.fine, 2, 
