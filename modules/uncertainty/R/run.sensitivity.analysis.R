@@ -121,7 +121,7 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
                                       start.year=start.year, end.year=end.year)
         
         ### Generate SA diagnostic plots
-        sensitivity.plots <- plot.sensitivities(sensitivity.results[[pft$name]]$sensitivity.output,
+        sensitivity.plots <- plot_sensitivities(sensitivity.results[[pft$name]]$sensitivity.output,
                                                 linesize = 1,
                                                 dotsize = 3)
         pdf(fname, height = 12, width = 9)
