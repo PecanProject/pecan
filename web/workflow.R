@@ -137,6 +137,14 @@ if ('state.data.assimilation' %in% names(settings)) {
     status.end()
   }
 }
+
+# Run benchmarking
+if("benchmark" %in% names(settings)){
+  status.start("BENCHMARKING")
+  settings <- papply(settings, function(x) create.benchmark(x, bety))
+  results <- papply(settings, function(x) calc.benchmark(x, bety))
+  status.end()
+}
   
 # Pecan workflow complete
 if (status.check("FINISHED") == 0) {
