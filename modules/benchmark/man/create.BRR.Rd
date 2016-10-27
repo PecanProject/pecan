@@ -7,9 +7,9 @@
 create.BRR(ens_wf, con)
 }
 \arguments{
-\item{con}{database connection}
+\item{ens_wf}{table made from joining ensemble and workflow tables}
 
-\item{ensemble.id}{id of ensemble run that will be used for benchmarking}
+\item{con}{database connection}
 }
 \description{
 For each benchmark id, calculate metrics and update benchmarks_ensemble_scores
