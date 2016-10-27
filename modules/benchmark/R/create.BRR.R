@@ -3,7 +3,7 @@
 ##'  
 ##' @name create.BRR
 ##' @title Create benchmark reference run and ensemble
-##' @param ensemble.id id of ensemble run that will be used for benchmarking
+##' @param ens_wf table made from joining ensemble and workflow tables 
 ##' @param con database connection
 ##' @export 
 ##' 
@@ -34,10 +34,9 @@ create.BRR <- function(ens_wf, con){
     ref_run <- db.query(paste0(" SELECT * from reference_runs where settings = '", settings_xml,"'"),con)
     
     if(length(ref_run) == 0){ # Make new reference run entry
-      ref_run <- db.query(paste0("INSERT INTO reference_runs",
-                                 "(model_id, settings, user_id, created_at, updated_at)",
+      ref_run <- db.query(paste0("INSERT INTO reference_runs (model_id, settings, user_id)",
                                  "VALUES(",ens_wf$model_id,", '",settings_xml,"' , ",user_id,
-                                 ", NOW() , NOW()) RETURNING *;"),con)
+                                 ") RETURNING *;"),con)
     }else if(dim(ref_run)[1] > 1){# There shouldn't be more than one reference run with the same settings
       logger.error("There is more than one reference run in the database with these settings. Review for duplicates. ")
     }
@@ -46,13 +45,3 @@ create.BRR <- function(ens_wf, con){
   }else{logger.error(sprintf("Cannot create a benchmark reference run for a run on hostname: %s", 
                              ens_wf$hostname))}
 } #create.BRR
-
-
-# bm.ensemble <- db.query(paste0("INSERT INTO benchmarks_ensembles",
-#                                "(reference_run_id, ensemble_id, model_id, ",
-#                                "user_id, created_at, updated_at, citation_id)",
-#                                "VALUES(",ref_run$id,",",ens_wf$ensemble_id,",", ref_run$model_id,", ",user_id,
-#                                ", NOW() , NOW(), 1000000001 ) RETURNING *;"),con)
-# 
-# bm.ensemble <- rename(bm.ensemble, bm_ensemble_id = id)
-# BRR <- ref_run %>% rename(.,reference_run_id = id) %>% left_join(.,bm.ensemble) 

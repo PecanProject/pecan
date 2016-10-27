@@ -123,8 +123,8 @@ calc.benchmark <- function(settings, bety) {
         
       db.query(paste0(
         "INSERT INTO benchmarks_ensembles_scores",
-        "(score, benchmarks_ensemble_id, benchmark_id, metric_id, created_at, updated_at) VALUES ",
-        "('",score,"',",bm_ens_id,", ",bm$id,",",metric.id,", NOW(), NOW())"),bety$con)
+        "(score, benchmarks_ensemble_id, benchmark_id, metric_id) VALUES ",
+        "('",score,"',",bm_ens_id,", ",bm$id,",",metric.id,")"),bety$con)
       }
       
       results.list <- append(results.list, list(out.calc.metrics[["benchmarks"]]))
