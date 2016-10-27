@@ -4,7 +4,7 @@
 \alias{metric.lmDiag.plot}
 \title{metric.lmDiag.plot}
 \usage{
-metric.lmDiag.plot(metric_dat, ...)
+metric.lmDiag.plot(metric_dat, var, filename = NA, draw.plot = FALSE)
 }
 \arguments{
 \item{metric_dat}{data.frame}

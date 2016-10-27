@@ -17,5 +17,7 @@ Takes in a settings object, performs a series of checks, fixes & updates setting
 }
 \author{
 Ryan Kelly
+
+Betsy Cowdery
 }
 
