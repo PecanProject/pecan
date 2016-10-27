@@ -37,6 +37,8 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
     con <- try(db.open(settings$database$bety), silent = TRUE)
     if (is.character(con)) {
       con <- NULL
+    } else {
+      on.exit(db.close(con))
     }
   } else {
     con <- NULL

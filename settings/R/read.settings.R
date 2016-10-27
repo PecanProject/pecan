@@ -29,6 +29,8 @@ check.inputs <- function(settings) {
   
   # get list of inputs associated with model type
   dbcon <- db.open(settings$database$bety)
+  on.exit(db.close(dbcon))
+  
   inputs <- db.query(paste0("SELECT tag, format_id, required FROM modeltypes, modeltypes_formats WHERE modeltypes_formats.modeltype_id = modeltypes.id and modeltypes.name='", settings$model$type, "' AND modeltypes_formats.input;"), con=dbcon)
   
   # check list of inputs  
@@ -89,8 +91,6 @@ check.inputs <- function(settings) {
   if (length(allinputs) > 0) {
     logger.info("Unused inputs found :", paste(allinputs, collapse=" "))
   }
-  
-  db.close(dbcon)
   
   return(settings)
 } # check.inputs
@@ -240,6 +240,7 @@ check.settings <- function(settings) {
   
   if(!is.null(settings$database$bety)) {
     dbcon <- db.open(settings$database$bety)
+    on.exit(db.close(dbcon))
   } else {
     dbcon <- NULL
   }
@@ -449,9 +450,6 @@ check.settings <- function(settings) {
     }
   }
   
-  if (!is.null(dbcon)) {
-    db.close(dbcon)
-  }
   options(scipen = scipen)
   
   # all done return cleaned up settings
@@ -843,11 +841,10 @@ check.database.settings <- function(settings) {
       
       # Connect to database
       dbcon <- db.open(settings$database$bety)
+      on.exit(db.close(dbcon))
       
       # check database version
       check.bety.version(dbcon)
-      
-      db.close(dbcon)
     } else {
       logger.warn("No BETY database information specified; not using database.")
     }

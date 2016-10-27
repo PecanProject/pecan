@@ -179,6 +179,8 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
     con <- try(db.open(settings$database$bety), silent = TRUE)
     if (is.character(con)) {
       con <- NULL
+    } else {
+      on.exit(db.close(con))
     }
   } else {
     con <- NULL
@@ -280,9 +282,6 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
                                          settings = settings, run.id = run.id))
     cat(run.id, file = file.path(settings$rundir, "runs.txt"), sep = "\n", append = TRUE)
   }
-  if (!is.null(con)) {
-    db.close(con)
-  }
-  
+
   return(invisible(list(runs = runs, ensemble.id = ensemble.id)))
 } # write.ensemble.configs
