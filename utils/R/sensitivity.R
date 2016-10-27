@@ -92,6 +92,8 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
     con <- try(db.open(settings$database$bety), silent = TRUE)
     if (is.character(con)) {
       con <- NULL
+    } else {
+      on.exit(db.close(con))
     }
   } else {
     con <- NULL
@@ -304,9 +306,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
       }
     }
   }
-  if (!is.null(con)) {
-    db.close(con)
-  }
+
   options(scipen = scipen)
   return(invisible(list(runs = runs, ensemble.id = ensemble.id)))
 } # write.sa.configs

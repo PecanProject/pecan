@@ -255,8 +255,8 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,trait
 
   # process all pfts
   dbcon <- db.open(database)
+  on.exit(db.close(dbcon))
   result <- lapply(pfts, get.trait.data.pft, modeltype, dbfiles, dbcon, forceupdate, trait.names)
-  db.close(dbcon)
 
   invisible(result)
 }
