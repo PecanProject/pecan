@@ -50,7 +50,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   dir.create(pathname, showWarnings = FALSE, recursive = TRUE)
   
   ## Convert data to format expected by pecan.ma
-  jagged.data <- lapply(trait.data, jagify)
+  jagged.data <- lapply(trait.data, PEcAn.MA::jagify)
 
   check_consistent <- function(data.median, prior, trait, msg_var,
                                perr = 5e-04, pwarn = 0.025) {
