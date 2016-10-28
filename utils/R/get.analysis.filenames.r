@@ -23,7 +23,7 @@ ensemble.filename <- function(settings, prefix = "ensemble.samples", suffix = "R
     ensemble.id <- "NOENSEMBLEID"
   }
   
-  ensemble.dir <- settings$outdir
+  ensemble.dir <- file.path(settings$outdir, 'ensemble.samples')
   
   dir.create(ensemble.dir, showWarnings = FALSE, recursive = TRUE)
   
@@ -76,14 +76,14 @@ sensitivity.filename <- function(settings,
   
   if (is.null(pft)) {
     # Goes in main output directory.
-    sensitivity.dir <- settings$outdir
+    sensitivity.dir <- file.path(settings$outdir, 'sensitivity.samples')
   } else {
     ind <- which(sapply(settings$pfts, function(x) x$name) == pft)
     if (length(ind) == 0) {
       ## no match
       logger.warn("sensitivity.filename: unmatched PFT = ", pft, " not among ", 
                   sapply(settings$pfts, function(x) x$name))
-      sensitivity.dir <- file.path(settings$outdir, "pfts", pft)
+      sensitivity.dir <- file.path(settings$outdir, "pfts", pft, "sensitivity.samples")
     } else {
       if (length(ind) > 1) {
         ## multiple matches
@@ -95,7 +95,7 @@ sensitivity.filename <- function(settings,
         ## no outdir
         settings$pfts[[ind]]$outdir <- file.path(settings$outdir, "pfts", pft)
       }
-      sensitivity.dir <- settings$pfts[[ind]]$outdir
+      sensitivity.dir <- file.path(settings$pfts[[ind]]$outdir, "sensitivity.samples")
     }
   }
   
