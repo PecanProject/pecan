@@ -90,7 +90,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   
   if (write.to.db) {
     con <- try(db.open(settings$database$bety), silent = TRUE)
-    if (is.character(con)) {
+    if (is(con, "try-error")) {
       con <- NULL
     } else {
       on.exit(db.close(con))
