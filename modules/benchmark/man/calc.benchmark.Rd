@@ -4,12 +4,12 @@
 \alias{calc.benchmark}
 \title{Calculate benchmarking statistics}
 \usage{
-calc.benchmark(bm.ensemble, con)
+calc.benchmark(settings, bety)
 }
 \arguments{
-\item{bm.ensemble}{object, either from create.BRR or start.bm.ensemle}
+\item{bety}{database connection}
 
-\item{con}{database connection}
+\item{bm.ensemble}{object, either from create.BRR or start.bm.ensemle}
 }
 \description{
 For each benchmark id, calculate metrics and update benchmarks_ensemble_scores

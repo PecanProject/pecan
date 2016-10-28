@@ -1,25 +1,25 @@
 ##' @name calc.metrics
 ##' @title calc.metrics
 ##' @export
-##' @param model.bm
-##' @param obvs.bm
+##' @param model.calc
+##' @param obvs.calc
 ##' @param var
 ##' @param metrics
 ##' @param start_year
 ##' @param end_year
 ##' @param bm
-##' @param ens
+##' @param ensemble.id
 ##' @param model_run
 ##' 
 ##' 
 ##' @author Betsy Cowdery
-calc.metrics <- function(model.bm, obvs.bm, var, metrics, start_year, end_year, bm, ens, model_run) {
+calc.metrics <- function(model.calc, obvs.calc, var, metrics, start_year, end_year, bm, ensemble.id, model_run) {
   
-  dat <- align.data(model.bm, obvs.bm, var, start_year, end_year)
+  dat <- align.data(model.calc, obvs.calc, var, start_year, end_year, 
+                    align_method = "mean.over.larger.timestep")
   
-  results <- as.data.frame(matrix(NA, nrow = length(metrics$name), ncol = length(var) + 1))
-  colnames(results) <- c("metric", var)
-  rownames(results) <- metrics$name
+  results <- as.data.frame(matrix(NA, nrow = length(metrics$name), ncol = 3))
+  colnames(results) <- c("metric", "variable", "score")
   results$metric <- metrics$name
   
   metric_dat <- dat[, c(paste(var, c("m", "o"), sep = "."), "posix")]
@@ -28,19 +28,19 @@ calc.metrics <- function(model.bm, obvs.bm, var, metrics, start_year, end_year, 
   for (m in seq_along(metrics$name)) {
     
     fcn <- paste0("metric.", metrics$name[m])
+    results[m,"metric"] <- metrics$name[m]
+    results[m,"variable"] <- var
     
     if (tail(unlist(strsplit(fcn, "[.]")), 1) == "plot") {
       filename <- file.path(dirname(dirname(model_run)), 
-                            paste("benchmark", metrics$name[m], var, ens$id, "pdf", sep = "."))
+                            paste("benchmark", metrics$name[m], var, ensemble.id, "pdf", sep = "."))
       do.call(fcn, args <- list(metric_dat, var, filename))
-      score <- filename
-      results[metrics$name[m], var] <- score
+      results[m,"score"] <- filename
     } else {
-      score <- as.character(do.call(fcn, args <- list(metric_dat, var)))
-      results[metrics$name[m], var] <- score
+      results[m,"score"] <- as.character(do.call(fcn, args <- list(metric_dat, var)))
     }
     
   }  #end loop over metrics
 
-  return(list(r = results, dat = dat))
+  return(list(benchmarks = results, dat = dat))
 } # calc.metrics

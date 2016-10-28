@@ -4,13 +4,13 @@
 ##' @param metric_dat data.frame
 ##' 
 ##' @author Betsy Cowdery
-metric.lmDiag.plot <- function(metric_dat, ...) {
-  
-  fit <- lm(metric_dat[, 1] ~ metric_dat[, 2])
+metric.lmDiag.plot <- function(metric_dat, var, filename = NA, draw.plot = FALSE) {
   
   library(ggplot2)
   library(gridExtra)
   
+  fit <- lm(metric_dat[, 1] ~ metric_dat[, 2])
+
   p1 <- ggplot(fit, aes(.fitted, .resid)) + geom_point()
   p1 <- p1 + stat_smooth(method = "loess") + geom_hline(yintercept = 0, col = "red", linetype = "dashed")
   p1 <- p1 + xlab("Fitted values") + ylab("Residuals")
@@ -44,8 +44,16 @@ metric.lmDiag.plot <- function(metric_dat, ...) {
   p6 <- p6 + geom_abline(slope = seq(0, 3, 0.5), color = "gray", linetype = "dashed")
   p6 <- p6 + theme_bw()
   
-  grid.arrange(p1, p2, p3, p4, p5, p6, nrow = 3)
+  p <- grid.arrange(p1, p2, p3, p4, p5, p6, nrow = 3)
   
-  # return(list(rvfPlot=p1, qqPlot=p2, sclLocPlot=p3, cdPlot=p4, rvlevPlot=p5, cvlPlot=p6))
-  return(NA)
+    if (!is.na(filename)) {
+      pdf(filename, width = 10, height = 6)
+      plot(p)
+      dev.off()
+    }
+  
+  if (draw.plot) {
+    plot(p)
+  }
+  
 } # metric.lmDiag.plot

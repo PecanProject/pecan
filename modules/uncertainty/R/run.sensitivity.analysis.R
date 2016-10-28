@@ -121,7 +121,7 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
                                       start.year=start.year, end.year=end.year)
         
         ### Generate SA diagnostic plots
-        sensitivity.plots <- plot.sensitivities(sensitivity.results[[pft$name]]$sensitivity.output,
+        sensitivity.plots <- plot_sensitivities(sensitivity.results[[pft$name]]$sensitivity.output,
                                                 linesize = 1,
                                                 dotsize = 3)
         pdf(fname, height = 12, width = 9)
@@ -132,7 +132,7 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
         dev.off()
         
         ### Generate VD diagnostic plots
-        vd.plots <- plot.variance.decomposition(sensitivity.results[[pft$name]]$variance.decomposition.output)
+        vd.plots <- plot_variance_decomposition(sensitivity.results[[pft$name]]$variance.decomposition.output)
         #variance.scale = log, variance.prefix='Log')
         fname <- sensitivity.filename(settings, "variance.decomposition", "pdf", 
                                       all.var.yr=FALSE, pft=pft$name, ensemble.id=ensemble.id, variable=variable.fn,

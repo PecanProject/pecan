@@ -134,13 +134,13 @@ flux.uncertainty <- function(measurement, QC = 0, flags = TRUE, bin.num = 10,
 #--------------------------------------------------------------------------------------------------#
 ##' Plot fit for heteroskedastic flux uncertainty
 ##' 
-##' @name plot.flux.uncertainty
+##' @name plot_flux_uncertainty
 ##' @title Plot fit for heteroskedastic flux uncertainty
 ##' @param f  output of flux.uncertainty functions
 ##' @param ...  optional graphical paramters
 ##' @export
 ##' @author Mike Dietze, Carl Davidson
-plot.flux.uncertainty <- function(f, ...) {
+plot_flux_uncertainty <- function(f, ...) {
   plot(f$mag, f$err, ...)
   big <- 10000
   lines(c(0, big), c(f$intercept, f$slopeP * big))
@@ -148,7 +148,7 @@ plot.flux.uncertainty <- function(f, ...) {
   legend("bottomleft", legend = c("intercept", f$intercept,
                                   "slopeP", f$slopeP, 
                                   "slopeN", f$slopeN))
-} # plot.flux.uncertainty
+} # plot_flux_uncertainty
 
 
 plot.oechel.flux <- function(observations, site) {
@@ -162,22 +162,22 @@ plot.oechel.flux <- function(observations, site) {
   flags <- abs(dTa) < 3
   
   print("NEE+")
-  plot.flux.uncertainty((observations$FC[observations$FC >= 0]), flags = flags, 
+  plot_flux_uncertainty((observations$FC[observations$FC >= 0]), flags = flags, 
                         main = site, xlab = "NEE bin (+)", ylab = "NEE random error", 
                         bin.num = 80)
   print("NEE-")
-  plot.flux.uncertainty((observations$FC[observations$FC <= 0]), flags = flags, 
+  plot_flux_uncertainty((observations$FC[observations$FC <= 0]), flags = flags, 
                         main = site, xlab = "NEE bin (-)", ylab = "NEE random error", 
                         bin.num = 80)
   print("LE")
-  plot.flux.uncertainty((observations$LE[observations$LE >= 0]), flags = flags, 
+  plot_flux_uncertainty((observations$LE[observations$LE >= 0]), flags = flags, 
                         main = site, xlab = "LE bin (+)", ylab = "LE random error")
-  plot.flux.uncertainty((observations$LE[observations$LE <= 0]), flags = flags, 
+  plot_flux_uncertainty((observations$LE[observations$LE <= 0]), flags = flags, 
                         main = site, xlab = "LE bin (-)", ylab = "LE random error")
   print("Soil Temperature")
-  plot.flux.uncertainty(observations$TS1[observations$TS1 >= 0], flags = flags, 
+  plot_flux_uncertainty(observations$TS1[observations$TS1 >= 0], flags = flags, 
                         main = site, xlab = "Soil Temp bin (+)", ylab = "Soil Temp random error")
-  plot.flux.uncertainty(observations$TS1[observations$TS1 <= 0], flags = flags, 
+  plot_flux_uncertainty(observations$TS1[observations$TS1 <= 0], flags = flags, 
                         main = site, xlab = "Soil Temp bin (-)", ylab = "Soil Temp random error")
 } # plot.oechel.flux
 
@@ -209,7 +209,7 @@ tundra.flux.uncertainty <- function() {
   })
   oechel.atqasuk <- do.call(rbind, oechel.atqasuk)
   plot.oechel.flux(oechel.atqasuk, "Atqasuk")
-  plot.flux.uncertainty(itex.climate$wfv[itex.climate$site %in% c("AD")], 
+  plot_flux_uncertainty(itex.climate$wfv[itex.climate$site %in% c("AD")], 
                         main = "Atqasuk", 
                         xlab = "Soil Moisture bin (%vol)", 
                         ylab = "Soil Moisture random error (%vol)")
@@ -221,7 +221,7 @@ tundra.flux.uncertainty <- function() {
   })
   oechel.barrow <- do.call(rbind, oechel.barrow)
   plot.oechel.flux(oechel.barrow, "Barrow")
-  return(plot.flux.uncertainty(itex.climate$wfv[itex.climate$site %in% c("BD")],
+  return(plot_flux_uncertainty(itex.climate$wfv[itex.climate$site %in% c("BD")],
                                main = "Barrow", 
                                xlab = "Soil Moisture bin (%vol)", 
                                ylab = "Soil Moisture random error (%vol)"))

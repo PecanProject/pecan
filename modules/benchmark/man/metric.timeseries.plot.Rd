@@ -4,10 +4,10 @@
 \alias{metric.timeseries.plot}
 \title{metric.timeseries.plot}
 \usage{
-metric.timeseries.plot(dat, var, filename = NA, draw.plot = FALSE)
+metric.timeseries.plot(metric_dat, var, filename = NA, draw.plot = FALSE)
 }
 \arguments{
-\item{dat}{dataframe}
+\item{metric_dat}{dataframe}
 
 \item{var}{character}
 }

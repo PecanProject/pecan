@@ -126,9 +126,9 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
       filename <- system.file(paste0("ED2IN.r", rev), package = "PEcAn.ED2")
     }
     if (filename == "") {
-      logger.severe("Could not find ED template")
+      PEcAn.utils::logger.severe("Could not find ED template")
     }
-    logger.info("Using", filename, "as template")
+    PEcAn.utils::logger.info("Using", filename, "as template")
     ed2in.text <- readLines(con = filename, n = -1)
   }
   
@@ -178,9 +178,9 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     prefix.css <- sub(lat_rxp, "", settings$run$inputs$pss$path)
     # pss and css prefix is not the same, kill
     if (!identical(prefix.pss, prefix.css)) {
-      logger.info(paste("pss prefix:", prefix.pss))
-      logger.info(paste("css prefix:", prefix.css))
-      logger.severe("ED2 css/pss/ files have different prefix")
+      PEcAn.utils::logger.info(paste("pss prefix:", prefix.pss))
+      PEcAn.utils::logger.info(paste("css prefix:", prefix.css))
+      PEcAn.utils::logger.severe("ED2 css/pss/ files have different prefix")
     } else {
       # pss and css are both present
       value <- 2
@@ -189,9 +189,9 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
         prefix.site <- sub(lat_rxp, "", settings$run$inputs$site$path)
         # sites and pss have different prefix name, kill
         if (!identical(prefix.site, prefix.pss)) {
-          logger.info(paste("site prefix:", prefix.site))
-          logger.info(paste("pss prefix:", prefix.pss))
-          logger.severe("ED2 sites/pss/ files have different prefix")
+          PEcAn.utils::logger.info(paste("site prefix:", prefix.site))
+          PEcAn.utils::logger.info(paste("pss prefix:", prefix.pss))
+          PEcAn.utils::logger.severe("ED2 sites/pss/ files have different prefix")
         } else {
           # sites and pass same prefix name, case 3
           value <- 3
@@ -301,11 +301,11 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
   ## Find history file TODO this should come from the database
   histfile <- paste0("data/history.r", settings$model$revision, ".csv")
   if (file.exists(system.file(histfile, package = "PEcAn.ED2"))) {
-    print(paste0("--- Using ED2 History File: ", "data/history.r", settings$model$revision, ".csv"))
+    PEcAn.utils::logger.info(paste0("--- Using ED2 History File: ", "data/history.r", settings$model$revision, ".csv"))
     edhistory <- read.csv2(system.file(histfile, package = "PEcAn.ED2"), sep = ";", 
                            stringsAsFactors = FALSE, dec = ".")
   } else {
-    print("--- Using Generic ED2 History File: data/history.csv")
+    PEcAn.utils::logger.info("--- Using Generic ED2 History File: data/history.csv")
     edhistory <- read.csv2(system.file("data/history.csv", package = "PEcAn.ED2"), sep = ";", 
                            stringsAsFactors = FALSE, dec = ".")
   }
@@ -314,7 +314,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
   data(pftmapping)
   
   ## Get ED2 specific model settings and put into output config xml file
-  xml <- listToXml(settings$model$config.header, "config")
+  xml <- PEcAn.utils::listToXml(settings$model$config.header, "config")
   
   ## Process the names in defaults. Runs only if names(defaults) are null or have at least one
   ## instance of name attribute 'pft'. Otherwise, AS assumes that names in defaults are already set
@@ -352,7 +352,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
       # ED, and the 'defaults.PFT' (name or number) to use for pulling default parameter values.
       pft.number <- pftmapping$ED[which(pftmapping == pft)]
       if (length(pft.number) == 0) {
-        logger.error(pft, "was not matched with a number in settings$constants or pftmapping data. Consult the PEcAn instructions on defining new PFTs.")
+        PEcAn.utils::logger.error(pft, "was not matched with a number in settings$constants or pftmapping data. Consult the PEcAn instructions on defining new PFTs.")
         stop("Unable to set PFT number")
       }
       # TODO: Also modify web app to not default to 1
@@ -373,7 +373,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
       if (!is.null(converted.defaults)) 
         vals <- modifyList(vals, converted.defaults)
       
-      pft.xml <- listToXml(vals, "pft")
+      pft.xml <- PEcAn.utils::listToXml(vals, "pft")
       xml <- XML::append.xmlNode(xml, pft.xml)
     }
   }
