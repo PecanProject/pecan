@@ -122,7 +122,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   
   if (!is.null(con)) {
     ensemble.id <- db.query(paste0("INSERT INTO ensembles (runtype, workflow_id) values ",
-      "(sensitivity analysis', ", format(workflow.id, scientific = FALSE), ") ",
+      "('sensitivity analysis', ", format(workflow.id, scientific = FALSE), ") ",
       "RETURNING id"), con = con)[['id']]
       
     paramlist <- paste0("quantile=MEDIAN,trait=all,pft=",
