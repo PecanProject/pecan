@@ -121,37 +121,38 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   names(median.samples) <- names(quantile.samples)
   
   if (!is.null(con)) {
-    ensemble.id <- db.query(paste0("INSERT INTO ensembles (runtype, workflow_id) values ",
-      "('sensitivity analysis', ", format(workflow.id, scientific = FALSE), ") ",
+    ensemble.id <- db.query(paste0(
+      "INSERT INTO ensembles (runtype, workflow_id) ",
+      "VALUES ('sensitivity analysis', ", format(workflow.id, scientific = FALSE), ") ",
       "RETURNING id"), con = con)[['id']]
       
     paramlist <- paste0("quantile=MEDIAN,trait=all,pft=",
                         paste(lapply(settings$pfts, function(x) x[["name"]]), sep = ","))
-    db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", 
-                    settings$model$id, "', '", 
-                    settings$run$site$id, "', '", 
-                    settings$run$start.date, "', '", 
-                    settings$run$end.date, "', '", 
-                    settings$run$outdir, "', '", 
-                    now, "', ", 
-                    ensemble.id, ", '", 
-                    paramlist, "')"), con = con)
-    run.id <- db.query(paste0("SELECT id FROM runs WHERE created_at='", now, 
-                              "' AND parameter_list='", paramlist, "'"), con = con)[["id"]]
+    run.id <- db.query(paste0("INSERT INTO runs ",
+      "(model_id, site_id, start_time, finish_time, outdir, ensemble_id, parameter_list) ",
+      "values ('", 
+        settings$model$id, "', '", 
+        settings$run$site$id, "', '", 
+        settings$run$start.date, "', '", 
+        settings$run$end.date, "', '", 
+        settings$run$outdir, "', ", 
+        ensemble.id, ", '", 
+        paramlist, "') ",
+      "RETURNING id"), con = con)[['id']]
     
     # associate posteriors with ensembles
     for (pft in defaults) {
-      db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id) values (", 
-                      pft$posteriorid, ", ", ensemble.id, ")"), 
-               con = con)
+      db.query(paste0(
+        "INSERT INTO posteriors_ensembles (posterior_id, ensemble_id) ",
+        "values (", pft$posteriorid, ", ", ensemble.id, ")"), con = con)
     }
     
     # associate inputs with runs
     if (!is.null(inputs)) {
       for (x in inputs) {
-        db.query(paste0("INSERT INTO inputs_runs (input_id, run_id, created_at) ", 
-                        "values (", settings$run$inputs[[x]], ", ", run.id, ", NOW());"), 
-                 con = con)
+        db.query(paste0(
+          "INSERT INTO inputs_runs (input_id, run_id) ", 
+          "values (", settings$run$inputs[[x]], ", ", run.id, ")"), con = con)
       }
     }
   } else {
