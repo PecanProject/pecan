@@ -20,8 +20,8 @@ start.bm.ensemble <- function(BRR, con) {
   ensemble.id <- db.query(sprintf("SELECT id from ensembles as e join workflows as w on e.workflow_id = w.id where w.id = ", 
                                   settings$workflow$id))
   
-  db.query(paste0("INSERT INTO benchmarks_ensembles (reference_run_id, ensemble_id, model_id, user_id, created_at, updated_at, citation_id) VALUES(", 
-                  BRR$id, ",", ensemble.id, ",", BRR$model_id, ", ", user_id, ", NOW() , NOW(), 1000000001 ) RETURNING *;"), 
+  db.query(paste0("INSERT INTO benchmarks_ensembles (reference_run_id, ensemble_id, model_id, user_id,  citation_id) VALUES(", 
+                  BRR$id, ",", ensemble.id, ",", BRR$model_id, ", ", user_id, ", 1000000001 ) RETURNING *;"), 
            con)
 } # start.bm.ensemble
 

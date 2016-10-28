@@ -24,6 +24,11 @@ invert.options$ngibbs.step <- 2000
 invert.options$ngibbs.max <- 100000
 invert.options$do.lsq <- FALSE
 invert.options$nchains <- 3
+invert.options$run_first <- function(inputs) {
+  fname <- paste0("testfile_", inputs$runID)
+  file.create(fname, showWarnings = FALSE)
+}
+fname_expect <- paste0("testfile_", 1:3)
 
 save.samples <- "samps.rds"
 output_tests <- function(output) {
@@ -40,6 +45,10 @@ output_tests <- function(output) {
   test_that("Saving samples is successful", {
               expect_true(file.exists(save.samples))
             })
+
+  test_that("run_first function creates three testfiles", {
+              expect_true(all(file.exists(fname_expect)))
+            })
 }
 
 diag_table <- function(output, params){
@@ -55,8 +64,10 @@ diag_plot <- function(output, ...) {
     plot(samps, ...)
 }
 
-test.parallel <- invert.auto(obs, invert.options, return.samples = TRUE,
-                             save.samples = save.samples, quiet=FALSE)
+test.parallel <- invert.auto(obs, invert.options,
+                             return.samples = TRUE,
+                             save.samples = save.samples,
+                             quiet = FALSE)
 output_tests(test.parallel)
 diag_table(test.parallel, params)
 
@@ -65,8 +76,10 @@ diag_table(test.parallel, params)
 obs <- prospect(params, 5)[,1]
 invert.options$nchains <- 3
 invert.options$do.lsq <- TRUE
-test.serial <- invert.auto(obs, invert.options, return.samples = TRUE,
-                           save.samples = save.samples, parallel = FALSE,
+test.serial <- invert.auto(obs, invert.options,
+                           return.samples = TRUE,
+                           save.samples = save.samples,
+                           parallel = FALSE,
                            quiet = FALSE)
 
 output_tests(test.serial)
