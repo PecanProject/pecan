@@ -13,33 +13,157 @@
 ##' @param outdir Location of FATES model output
 ##' @export
 ##'
-##' @author Michael Dietze
-model2netcdf.FATES <- function(outdir) {
+##' @author Michael Dietze, Shawn Serbin
+#model2netcdf.FATES <- function(outdir) {
+model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date) {
     
-    library(PEcAn.utils)
+    ## Load functions
+    mstmipvar <- PEcAn.utils::mstmipvar
+    ncdim_def <- ncdf4::ncdim_def
+    ncatt_get <- ncdf4::ncatt_get
+    ncvar_add <- ncdf4::ncvar_add
+    logger.info <- PEcAn.utils::logger.info
+    logger.severe <- PEcAn.utils::logger.severe
+    
+    ## needs to be a generic function placed in utils, same goes for ED2 version of this function    !! IS THIS NEEDED 
+    add <- function(dat, col, row, year) {
+      ## data is always given for whole year, except it will start always at 0
+      ## the left over data is filled with 0's
+      if (year == strftime(start_date, "%Y")) {
+        start <- (as.numeric(strftime(start_date, "%j")) - 1) * steps.per.day
+      } else {
+        start <- 0
+      }
+      if (year == strftime(end_date, "%Y")) {
+        end <- as.numeric(strftime(end_date, "%j")) * steps.per.day
+      } else {
+        end <- as.numeric(strftime(paste0(year, "-12-31"), "%j")) * steps.per.day
+      }
+      
+      dims <- dim(dat)
+      if (is.null(dims)) {
+        if (length(dat) == 1) {
+          if (length(out) < col) {
+            out[[col]] <- array(dat, dim = (end - start))
+          } else {
+            if (start != 0) {
+              logger.warn("start date is not 0 this year, but data already exists in this col", 
+                          col, "how is this possible?")
+            }
+            out[[col]] <- abind::abind(out[[col]], array(dat, dim = (end - start)), along = 1)
+          }
+        } else {
+          logger.warn("expected a single value")
+        }
+      } else if (length(dims) == 1) {
+        dat <- dat[1:(end - start)]
+        if (length(out) < col) {
+          out[[col]] <- dat
+        } else {
+          if (start != 0) {
+            logger.warn("start date is not 0 this year, but data already exists in this col", 
+                        col, "how is this possible?")
+          }
+          out[[col]] <- abind::abind(out[[col]], dat, along = 1)
+        }
+      } else if (length(dims) == 2) {
+        dat <- t(dat)
+        dims <- dim(dat)
+        dat <- dat[1:(end - start), ]
+        if (length(out) < col) {
+          out[[col]] <- dat
+        } else {
+          if (start != 0) {
+            logger.warn("start date is not 0 this year, but data already exists in this col", 
+                        col, "how is this possible?")
+          }
+          out[[col]] <- abind::abind(out[[col]], dat, along = 1)
+        }
+      } else {
+        logger.debug("-------------------------------------------------------------")
+        logger.debug("col=", col)
+        logger.debug("length=", length(dat))
+        logger.debug("start=", start)
+        logger.debug("end=", end)
+        logger.debug("dims=", dims)
+        logger.warn("Don't know how to handle larger arrays yet.")
+      }
+      
+      ## finally make sure we use -999 for invalid values
+      out[[col]][is.null(out[[col]])] <- -999
+      out[[col]][is.na(out[[col]])] <- -999
+      
+      return(out)
+    }
+    
+    ## needs to be a generic function placed in utils, same goes for ED2 version of this function
+    getnetCDF <- function(nc, var) {
+      if (var %in% names(nc$var)) {
+        return(ncdf4::ncvar_get(nc, var))
+      } else {
+        logger.warn("Could not find", var, "in FATES output.")
+        return(-999)
+      }
+    }
     
     ## Get files and years
     files <- dir(outdir, "*clm2.h0.*.nc", full.names = TRUE)
     file.dates <- as.Date(sub(".nc", "", sub(".*clm2.h0.", "", files)))
-    years <- lubridate::year(file.dates)
+    file.years <- lubridate::year(file.dates)
+    num.years <- length(unique(file.years))
+    simulation.days <- as.Date(start_date):as.Date(end_date)
+    simulation.years <- as.numeric(unique(strftime(as.Date(simulation.days, origin = "1970-01-01"), "%Y")))
     
-    for (year in unique(years)) {
-        ysel <- which(years == year)  ## subselect files for selected year
+    # nescessary?  A check that output years and selected run years match
+    if (!all(file.years==simulation.years)) {
+      logger.severe("FATES output file years and simulation years don't match")
+    }
+    
+    ## Loop over years
+    for (year in unique(file.years)) {
+        ysel <- which(file.years == year)  ## subselect files for selected year
 #        ysel <- sort(file.dates[ysel])  ## double check dates are in order
         if (length(ysel) > 1) {
             logger.warn("PEcAn.FATES::model2netcdf.FATES does not currently support multiple files per year")
         }
+        
+        # !!useful or do we not want this behavior? !!
+        if (file.exists(file.path(outdir, paste(year, "nc", sep = ".")))) {
+          logger.info(paste("model2netcdf.FATES output for",  year, "already converted, starting on the next year"))
+          next  ## skip, model output already present.
+        }
+        
         fname <- files[ysel[1]]
         oname <- file.path(dirname(fname), paste0(year, ".nc"))
-        logger.info(paste("model2netcdf.FATES:", fname, "to", oname))
-        file.copy(fname, oname)
-        nc <- ncdf4::nc_open(oname, write = TRUE)
+        logger.info(paste("model2netcdf.FATES - Converting:",  fname, "to", oname))
+        #file.copy(fname, oname)
+        #nc <- ncdf4::nc_open(oname, write = TRUE)
+        nc <- ncdf4::nc_open(fname, write = TRUE)
         
         ## FATES time is in multiple columns, create 'time'
         day  <- ncdf4::ncvar_get(nc, "mdcur")  #current day (from base day)
         sec  <- ncdf4::ncvar_get(nc, "mscur")  #current seconds of current day
         time <- day + sec / 86400
+        steps.per.day <- length(time)/length(unique(day))
+
+        
+        ## Parse the rest of FATES output
+        
+        ## !! TO DO.  Do we want an "add" function like that with ED2?  If so we
+        ## we should port that to utils, same with the getnetCDF/getHDF5 functions (see above and in model2netCDF.ED2)
+        out <- list()  # create empty output
+        output <- list()  # create empty output
+        #output[[1]] <- out.year  # Simulation year
+        output[[10]] <- getnetCDF(nc, "GPP")
+        #out <- add(getHdf5Data(ncT, "FMEAN_BDEAD_PY"), 1, row, yrs[y])  ## AbvGrndWood
+        
+        #out <- add(getnetCDF(nc, "GPP"), 1, row, file.years[ysel])  ## GPP
+        
+        
+        
+        var  <- list()
         var  <- ncdf4::ncvar_def(name = "time", units = "days", dim = nc$dim[["time"]])
+        var[[4]]  <- mstmipvar("stomatal_conductance", lat, lon, t, NA)
         # These lines throw an error saying time already exists, but not showing up in VAR file
         #     nc  <- ncvar_add(nc=nc, v=var)
         #     ncvar_put(nc,"time",time)
