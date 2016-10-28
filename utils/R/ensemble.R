@@ -196,14 +196,15 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
   # create an ensemble id
   if (!is.null(con)) {
     # write ensemble first
-    ensemble.id <- db.query(paste0("INSERT INTO ensembles (runtype, workflow_id) values ", 
-       "('ensemble', ", format(workflow.id, scientific = FALSE), ")",
-       "RETURNING id"), con = con)[['id']]
+    ensemble.id <- db.query(paste0(
+      "INSERT INTO ensembles (runtype, workflow_id) ",
+      "VALUES ('ensemble', ", format(workflow.id, scientific = FALSE), ")",
+      "RETURNING id"), con = con)[['id']]
 
     for (pft in defaults) {
-      db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id) values (", 
-                      pft$posteriorid, ", ", ensemble.id, ");"), 
-               con = con)
+      db.query(paste0(
+        "INSERT INTO posteriors_ensembles (posterior_id, ensemble_id) ",
+        "values (", pft$posteriorid, ", ", ensemble.id, ")"), con = con)
     }
   } else {
     ensemble.id <- NA
@@ -218,21 +219,23 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
   for (counter in seq_len(settings$ensemble$size)) {
     if (!is.null(con)) {
       paramlist <- paste("ensemble=", counter, sep = "")
-      run.id <- db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, ensemble_id,", 
-                      " parameter_list) values ('", settings$model$id,
-                      "', '", settings$run$site$id, 
-                      "', '", settings$run$start.date, 
-                      "', '", settings$run$end.date,
-                      "', '", settings$run$outdir,
-                      "', ", ensemble.id, 
-                      ", '", paramlist, 
-                      "') RETURNING id"), con = con)[['id']]
+      run.id <- db.query(paste0(
+        "INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, ensemble_id, parameter_list) ",
+        "values ('", 
+          settings$model$id, "', '", 
+          settings$run$site$id, "', '", 
+          settings$run$start.date, "', '", 
+          settings$run$end.date, "', '", 
+          settings$run$outdir, "', ", 
+          ensemble.id, ", '", 
+          paramlist, "') ",
+        "RETURNING id"), con = con)[['id']]
       
       # associate inputs with runs
       if (!is.null(inputs)) {
         for (x in inputs) {
-          db.query(paste0("INSERT INTO inputs_runs (input_id, run_id, created_at) ", 
-                          "values (", settings$run$inputs[[x]], ", ", run.id, ", NOW());"), 
+          db.query(paste0("INSERT INTO inputs_runs (input_id, run_id) ", 
+                          "values (", settings$run$inputs[[x]], ", ", run.id, ")"), 
                    con = con)
         }
       }
