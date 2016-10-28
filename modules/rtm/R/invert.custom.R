@@ -142,6 +142,11 @@ invert.custom <- function(observed, invert.options,
                       lower = param.mins, upper = param.maxs)
     inits <- fit$par
   }
+  if (!all(diag(init.Jump) > 0)) {
+    warning("Passed init.Jump matrix with zero values on diagonals. ", 
+            "Reverting to default initial Jump matrix")
+    init.Jump <- NULL
+  }
   if (is.null(init.Jump)) {
     # Set initial standard deviation to small fraction of initial
     # values (absolute value because SD can't be negative)
