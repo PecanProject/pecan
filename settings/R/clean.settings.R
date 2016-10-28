@@ -62,4 +62,4 @@ clean.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml") {
   
   ## Return settings file as a list
   return(invisible(settings))
-} # clean.settings
+}

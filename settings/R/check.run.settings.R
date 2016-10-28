@@ -199,5 +199,4 @@
   
   # all done return cleaned up settings
   return(invisible(settings))
-} # .check.run.settings
-
+}

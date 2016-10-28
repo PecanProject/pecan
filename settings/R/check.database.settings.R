@@ -168,5 +168,4 @@
     logger.warn("Last migration", tail(versions, n = 1), "is more recent than expected 20141009160121.",
                 "This could result in PEcAn not working as expected.")
   }
-} # .check.bety.version
-
+}
