@@ -153,25 +153,32 @@ model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date) {
         
         # 
         z <- z+1
-        output[[z]] <- getnetCDF(nc, "area")               # grid cell areas, [lngrid]
+        output[[z]] <- getnetCDF(nc, "area")                # grid cell areas, [lngrid]
         # #ncatt_get(nc, "area")
         z <- z+1
-        output[[z]] <- getnetCDF(nc, "landfrac")           # land fraction, landfrac[lndgrid]
+        output[[z]] <- getnetCDF(nc, "landfrac")            # land fraction, landfrac[lndgrid]
         # #ncatt_get(nc, "landfrac")
-        # z <- z+1
-        # output[[z]] <- getnetCDF(nc, "landmask")           # land/ocean mask (0.=ocean and 1.=land), landmask[lndgrid]
-        # #output[[16]] <- NA 
-        # #output[[17]] <- NA
-        # #output[[18]] <- NA
-        # #output[[19]] <- NA
+        z <- z+1
+        output[[z]] <- getnetCDF(nc, "landmask")            # land/ocean mask (0.=ocean and 1.=land), landmask[lndgrid]
+        z <- z+1
+        output[[z]] <- getnetCDF(nc, "pftmask")             # pft real/fake mask (0.=fake and 1.=real)
+        z <- z+1
+        output[[z]] <- getnetCDF(nc, "nbedrock")            # index of shallowest bedrock layer
+        #z <- z+1
+        #output[[z]] <- getnetCDF(nc, "ZSOI")                # soil depth, in meters
+        
+        # output[[16]] <- NA 
+        # output[[17]] <- NA
+        # output[[18]] <- NA
+        # output[[19]] <- NA
         # # ... many more here still to fill in but now on to something more interesting
         z <- z+1
-        output[[z]] <- getnetCDF(nc, "AR")                 # autotrophic respiration, [lndgrid,time]
+        output[[z]] <- getnetCDF(nc, "AR")                  # autotrophic respiration, [lndgrid,time]
         # #ncatt_get(nc, "AR")
         output[[z]] <- ifelse(output[[z]] == 1e+36, miss.val, 
                              misc.convert(output[[z]],"umol C m-2 s-1","kg C m-2 s-1"))
         z <- z+1
-        output[[z]] <- getnetCDF(nc, "GPP")
+        output[[z]] <- getnetCDF(nc, "GPP")                 #
         # #ncatt_get(nc, "GPP") # units of GPP
         output[[z]] <- ifelse(output[[z]] == 1e+36, miss.val, 
                               misc.convert(output[[z]],"umol C m-2 s-1","kg C m-2 s-1"))
@@ -242,9 +249,16 @@ model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date) {
         z <- z+1
         var[[z]] <- ncvar_def(name = "landfrac", units=nc$var[["landfrac"]]$units, nc$dim[["lndgrid"]], 
                                missval=miss.val,longname=nc$var[["landfrac"]]$longname)
-        # z <- z+1
-        # var[[z]] <- ncvar_def(name = "landmask", units=nc$var[["landmask"]]$units, nc$dim[["lndgrid"]], 
-        #                        missval=miss.val,longname=nc$var[["landmask"]]$longname)
+        z <- z+1
+        var[[z]] <- ncvar_def(name = "landmask", units=nc$var[["landmask"]]$units, nc$dim[["lndgrid"]], 
+                               missval=miss.val,longname=nc$var[["landmask"]]$longname)
+        z <- z+1
+        var[[z]] <- ncvar_def(name = "pftmask", units=nc$var[["pftmask"]]$units, nc$dim[["lndgrid"]], 
+                              missval=miss.val,longname=nc$var[["pftmask"]]$longname)
+        z <- z+1
+        var[[z]] <- ncvar_def(name = "nbedrock", units=nc$var[["nbedrock"]]$units, nc$dim[["lndgrid"]], 
+                              missval=miss.val,longname=nc$var[["nbedrock"]]$longname)
+        
         # ## !! Fluxes. first default FATES but after unit conversion
         # #var[[16]] <- ncvar_def(name = "AR", units="kg C m-2 s-1", missval=miss.val
         # #                      dim=list(nc$dim[["lndgrid"]],nc$dim[["time"]]))
