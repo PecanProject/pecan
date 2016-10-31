@@ -16,20 +16,21 @@
 ##'        `download`, `met2cf`, `standardize`, and `met2model`. If it is instead a simple boolean,
 ##'        the default behavior for `overwrite=FALSE` is to overwrite nothing, as you might expect.
 ##'        Note however that the default behavior for `overwrite=TRUE` is to overwrite everything
-##'        *except* raw met downloads (i.e., it corresponds to the same )
+##'        *except* raw met downloads. I.e., it corresponds to:
+##'
+##'        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
 ##'
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, 
-                        overwrite = list(download = FALSE, met2cf = FALSE, 
-                                         standardize = FALSE, met2model = FALSE)) {
+                        overwrite = FALSE) {
   library(RPostgreSQL)
   
   # If overwrite is a plain boolean, fill in defaults for each stage
   if (!is.list(overwrite)) {
     if (overwrite) {
       # Default for overwrite==TRUE is to overwrite everything but download
-      (overwrite <- overwrite) <- list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
+      overwrite <- list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
     } else {
       overwrite <- list(download = FALSE, met2cf = FALSE, standardize = FALSE, met2model = FALSE)
     }
