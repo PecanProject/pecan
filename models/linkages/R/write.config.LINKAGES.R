@@ -61,9 +61,9 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   texture <- read.csv(system.file("texture.csv", package = "PEcAn.LINKAGES"))
   
   dbcon <- db.open(settings$database$bety)
+  on.exit(db.close(dbcon))
   soils <- db.query(paste("SELECT soil,som,sand_pct,clay_pct,soilnotes FROM sites WHERE id =", settings$run$site$id), 
                     con = dbcon)
-  db.close(dbcon)
   
   sand <- as.numeric(soils[3]) / 100
   clay <- as.numeric(soils[4]) / 100

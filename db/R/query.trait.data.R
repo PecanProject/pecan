@@ -42,6 +42,7 @@ query.data <- function(trait, spstr, extra.columns='ST_X(ST_CENTROID(sites.geome
   if (is.null(con)) {
     logger.error("No open database connection passed in.")
     con <- db.open(settings$database$bety)
+    on.exit(db.close(con))
   }
   query <- paste("select
               traits.id, traits.citation_id, traits.site_id, traits.treatment_id,
@@ -64,7 +65,6 @@ query.data <- function(trait, spstr, extra.columns='ST_X(ST_CENTROID(sites.geome
   }
   
   return(result)
-  db.close(con)
 }
 ##==================================================================================================#
 
