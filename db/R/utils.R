@@ -32,14 +32,13 @@
 ##' db.query('select count(id) from traits;', params=settings$database$bety)
 ##' }
 db.query <- function(query, con=NULL, params=NULL) {
-  iopened <- 0
   if(is.null(con)){
     if (is.null(params)) {
       logger.error("No parameters or connection specified")
       stop()
     }
     con <- db.open(params)
-    iopened <- 1
+    on.exit(db.close(con))
   }
   if (.db.utils$showquery) {
     logger.debug(query)
@@ -50,9 +49,6 @@ db.query <- function(query, con=NULL, params=NULL) {
     logger.severe(paste("Error executing db query '", query, "' errorcode=", res$errorNum, " message='", res$errorMsg, "'", sep=''))
   }
   .db.utils$queries <- .db.utils$queries+1
-  if(iopened==1) {
-    db.close(con)
-  }
   invisible(data)
 }
 
@@ -182,6 +178,8 @@ db.exists <- function(params, write=TRUE, table=NA) {
   })
   if (is.null(con)) {
     return(invisible(FALSE))
+  } else {
+    on.exit(db.close(con))
   }
   
   #check table's privilege about read and write permission
@@ -279,14 +277,6 @@ db.exists <- function(params, write=TRUE, table=NA) {
   else{
     result <- TRUE
   }
-  
-  
-  # close database, all done
-  tryCatch({
-    db.close(con)
-  }, error = function(e) {
-    logger.warn("Could not close database.\n\t", e)
-  })
   
   invisible(result)
 }
