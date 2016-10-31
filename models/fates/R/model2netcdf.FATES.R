@@ -25,7 +25,7 @@ model2netcdf.FATES <- function(outdir) {
     
     for (year in unique(years)) {
         ysel <- which(years == year)  ## subselect files for selected year
-        ysel <- order(file.dates[ysel])  ## double check dates are in order
+#        ysel <- sort(file.dates[ysel])  ## double check dates are in order
         if (length(ysel) > 1) {
             logger.warn("PEcAn.FATES::model2netcdf.FATES does not currently support multiple files per year")
         }
