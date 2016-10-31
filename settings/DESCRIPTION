@@ -12,7 +12,7 @@ Require: hdf5
 Description: Contains functions to read PEcAn settings files
 Depends:
     PEcAn.utils,
-    PEcAn.DB,
+    PEcAn.DB
 Imports:
     plyr (>= 1.8.4),
     lubridate (>= 1.6.0),
