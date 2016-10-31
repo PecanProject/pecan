@@ -6,6 +6,7 @@
 ## which accompanies this distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
 ##-------------------------------------------------------------------------------
+
 ##' Loads PEcAn settings file
 ##' 
 ##' This will try and find the PEcAn settings file in the following order:

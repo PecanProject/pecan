@@ -52,8 +52,14 @@ check.lists <- function(x, y) {
 ##' @export
 ##'
 get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
-                               forceupdate = TRUE,
+                               forceupdate = FALSE,
                                trait.names = traitdictionary$id) {
+
+  # Create directory if necessary
+  if(!file.exists(pft$outdir) && !dir.create(pft$outdir, recursive=TRUE)) {
+    logger.error(paste0("Couldn't create PFT output directory: ", pft$outdir))
+  }
+
   ## Remove old files.  Clean up.
   old.files <- list.files(path=pft$outdir, full.names=TRUE, include.dirs=FALSE)
   file.remove(old.files)
@@ -250,8 +256,8 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,trait
 
   # process all pfts
   dbcon <- db.open(database)
+  on.exit(db.close(dbcon))
   result <- lapply(pfts, get.trait.data.pft, modeltype, dbfiles, dbcon, forceupdate, trait.names)
-  db.close(dbcon)
 
   invisible(result)
 }
