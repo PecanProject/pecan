@@ -56,7 +56,7 @@ $(MODELS_I): $(MODULES_I)
 
 .install/db: .install/utils
 .install/settings: .install/utils .install/db
-.install/visualization: .install/db
+.install/visualization: .install/db .install/shiny
 .install/modules/data.atmosphere: .install/utils .install/reddyproc
 .install/modules/data.land: .install/db .install/utils
 .install/modules/meta.analysis: .install/utils .install/db
@@ -76,7 +76,12 @@ clean:
 	rm -rf .install .check .test .doc
 
 .install/devtools:
-	Rscript -e "req <- require('devtools'); if(!req) install.packages('devtools', repos = 'http://cran.rstudio.com')"
+	Rscript -e "if(!require('devtools')) install.packages('devtools', repos = 'http://cran.rstudio.com')"
+	mkdir -p $(@D)
+	echo `date` > $@
+
+.install/shiny:
+	Rscript -e "if(!require('shiny')) install.packages('shiny', repos = 'http://cran.rstudio.com')"
 	mkdir -p $(@D)
 	echo `date` > $@
 
