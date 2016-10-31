@@ -38,8 +38,8 @@ all: document install
 
 document: .doc/all
 install: .install/all 
-check: install .check/all
-test: install .test/all 
+check: .check/all
+test: .test/all 
 
 ### Dependencies
 .doc/all: $(ALL_PKGS_D)
@@ -47,22 +47,30 @@ test: install .test/all
 .check/all: $(ALL_PKGS_C)
 .test/all: $(ALL_PKGS_T)
 
+depends = .install/$(1) .doc/$(1) .check/$(1) .test/$(1)
+
+$(call depends,db): .install/utils
+$(call depends,settings): .install/utils .install/db
+$(call depends,visualization): .install/db .install/shiny
+$(call depends,modules/data.atmosphere): .install/utils .install/reddyproc
+$(call depends,modules/data.land): .install/db .install/utils
+$(call depends,modules/meta.analysis): .install/utils .install/db
+$(call depends,modules/priors): .install/utils
+$(call depends,modules/rtm): .install/modules/assim.batch
+
 $(MODELS_I): $(MODULES_I)
 
-.install/db: .install/utils
-.install/settings: .install/utils .install/db
-.install/visualization: .install/db
-.install/modules/data.atmosphere: .install/utils .install/reddyproc
-.install/modules/data.land: .install/db .install/utils
-.install/modules/meta.analysis: .install/utils .install/db
-.install/modules/priors: .install/utils
-.install/modules/rtm: .install/modules/assim.batch
 
 clean:
 	rm -rf .install .check .test .doc
 
 .install/devtools:
-	Rscript -e "req <- require('devtools'); if(!req) install.packages('devtools', repos = 'http://cran.rstudio.com')"
+	Rscript -e "if(!require('devtools')) install.packages('devtools', repos = 'http://cran.rstudio.com')"
+	mkdir -p $(@D)
+	echo `date` > $@
+
+.install/shiny:
+	Rscript -e "if(!require('shiny')) install.packages('shiny', repos = 'http://cran.rstudio.com')"
 	mkdir -p $(@D)
 	echo `date` > $@
 
@@ -79,22 +87,22 @@ doc_R_pkg = Rscript -e "devtools::document('"$(strip $(1))"')"
 $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): .install/devtools
 
 .SECONDEXPANSION:
-.doc/%: $$(wildcard %/**/*)
+.doc/%: $$(wildcard %/**/*) $$(wildcard %/*)
 	$(call doc_R_pkg, $(subst .doc/,,$@))
 	mkdir -p $(@D)
 	echo `date` > $@
 
-.install/%: $$(wildcard %/**/*)
+.install/%: $$(wildcard %/**/*) $$(wildcard %/*)
 	$(call install_R_pkg, $(subst .install/,,$@))
 	mkdir -p $(@D)
 	echo `date` > $@
 
-.check/%: $$(wildcard %/**/*)
+.check/%: $$(wildcard %/**/*) $$(wildcard %/*)
 	$(call check_R_pkg, $(subst .check/,,$@))
 	mkdir -p $(@D)
 	echo `date` > $@
 
-.test/%: $$(wildcard %/**/*)
+.test/%: $$(wildcard %/**/*) $$(wildcard %/*)
 	$(call test_R_pkg, $(subst .test/,,$@))
 	mkdir -p $(@D)
 	echo `date` > $@
