@@ -37,7 +37,7 @@ ALL_PKGS_D := $(BASE_D) $(MODELS_D) $(MODULES_D)
 all: document install
 
 document: .doc/all
-install: .install/all 
+install: document .install/all 
 check: install .check/all
 test: install .test/all 
 
@@ -49,6 +49,11 @@ test: install .test/all
 
 $(MODELS_I): $(MODULES_I)
 
+# These two blocks are redunant for now because dependencies need to be 
+# specified separately for installation and documentation. I have some ideas 
+# about how to fix this, but it's not a priority. For now, just make sure to 
+# add dependencies for any new package into here.
+
 .install/db: .install/utils
 .install/settings: .install/utils .install/db
 .install/visualization: .install/db
@@ -57,6 +62,15 @@ $(MODELS_I): $(MODULES_I)
 .install/modules/meta.analysis: .install/utils .install/db
 .install/modules/priors: .install/utils
 .install/modules/rtm: .install/modules/assim.batch
+
+.doc/db: .doc/utils
+.doc/settings: .doc/utils .doc/db
+.doc/visualization: .doc/db
+.doc/modules/data.atmosphere: .doc/utils
+.doc/modules/data.land: .doc/db .doc/utils
+.doc/modules/meta.analysis: .doc/utils .doc/db
+.doc/modules/priors: .doc/utils
+.doc/modules/rtm: .doc/modules/assim.batch
 
 clean:
 	rm -rf .install .check .test .doc
@@ -79,22 +93,22 @@ doc_R_pkg = Rscript -e "devtools::document('"$(strip $(1))"')"
 $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): .install/devtools
 
 .SECONDEXPANSION:
-.doc/%: $$(wildcard %/**/*)
+.doc/%: $$(wildcard %/**/*) $$(wildcard %/*)
 	$(call doc_R_pkg, $(subst .doc/,,$@))
 	mkdir -p $(@D)
 	echo `date` > $@
 
-.install/%: $$(wildcard %/**/*)
+.install/%: $$(wildcard %/**/*) $$(wildcard %/*)
 	$(call install_R_pkg, $(subst .install/,,$@))
 	mkdir -p $(@D)
 	echo `date` > $@
 
-.check/%: $$(wildcard %/**/*)
+.check/%: $$(wildcard %/**/*) $$(wildcard %/*)
 	$(call check_R_pkg, $(subst .check/,,$@))
 	mkdir -p $(@D)
 	echo `date` > $@
 
-.test/%: $$(wildcard %/**/*)
+.test/%: $$(wildcard %/**/*) $$(wildcard %/*)
 	$(call test_R_pkg, $(subst .test/,,$@))
 	mkdir -p $(@D)
 	echo `date` > $@
