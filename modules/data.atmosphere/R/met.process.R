@@ -162,7 +162,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                             site.id = new.site.id, 
                             lat = site$lat, lon = site$lon, 
                             start_date = start_date, end_date = end_date, 
-                            con = con, host = host, 
+                            str_ns,con = con, host = host, 
                             overwrite = overwrite$met2cf, 
                             format.vars = format.vars)
   }
@@ -200,6 +200,11 @@ met.process <- function(site, input_met, start_date, end_date, model,
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
   if (stage$met2model) {
+    
+    ## Get Model Registration
+    reg.model.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.",model))
+    reg.model <- XML:xmlToList(XML::xmlParse(reg.model.xml))
+    
     met2model.result <- .met2model.module(ready.id = ready.id, 
                                           model = model, 
                                           con = con,
@@ -211,7 +216,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                           start_date = start_date, end_date = end_date, 
                                           browndog = browndog, 
                                           new.site = new.site, 
-                                          overwrite = overwrite$met2model)
+                                          overwrite = overwrite$met2model,
+                                          allow.conflict = reg.model$update)
     model.id  <- met2model.result$model.id
     outfolder <- met2model.result$outfolder
   } else {
