@@ -4,7 +4,7 @@
 \alias{get.trait.data.pft}
 \title{Gets trait data from the database}
 \usage{
-get.trait.data.pft(pft, modeltype, dbfiles, dbcon, forceupdate = TRUE,
+get.trait.data.pft(pft, modeltype, dbfiles, dbcon, forceupdate = FALSE,
   trait.names = traitdictionary$id)
 }
 \arguments{
