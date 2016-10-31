@@ -187,7 +187,7 @@ model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date) {
         
         #******************** Declare netCDF variables ********************#
         rm(z)
-        var  <- list()
+        nc_var  <- list()
         ## time variable based on internal calc, nc$dim$time is the FATES output time
         t <- ncdim_def(name = "time", units = paste0("days since ", year, "-01-01 00:00:00"),
                        vals = time, calendar = "standard", 
@@ -198,75 +198,75 @@ model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date) {
         lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "coordinate_longitude")
         
         z <- 1
-        var[[z]] <- ncvar_def(name = "pft_levscpf", units="", nc$dim[["levscpf"]],
+        nc_var[[z]] <- ncvar_def(name = "pft_levscpf", units="", nc$dim[["levscpf"]],
                                      missval=miss.val,longname=nc$var[["pft_levscpf"]]$longname)
         z <- z+1
-        var[[z]] <- ncvar_def(name = "scls_levscpf", units="", nc$dim[["levscpf"]],
+        nc_var[[z]] <- ncvar_def(name = "scls_levscpf", units="", nc$dim[["levscpf"]],
                                      missval=miss.val,longname=nc$var[["scls_levscpf"]]$longname)
         ## !! convert output[[3]] to MSTMIP cal_dat_beg?
         ## !! use time or nc.time here?
         z <- z+1
-        var[[z]] <- ncvar_def(name = "mcdate", units="", nc$dim[["time"]],missval=miss.val,
+        nc_var[[z]] <- ncvar_def(name = "mcdate", units="", nc$dim[["time"]],missval=miss.val,
                                      longname=nc$var[["mcdate"]]$longname)
         ## !! use FATES time or PEcAn calculated time, which uses FATES vars?  Shouldn't
         ## make any difference
         z <- z+1
-        var[[z]] <- ncvar_def(name = "mcsec", units="", nc$dim[["time"]],missval=miss.val,
+        nc_var[[z]] <- ncvar_def(name = "mcsec", units="", nc$dim[["time"]],missval=miss.val,
                               longname=nc$var[["mcsec"]]$longname)
         z <- z+1
-        var[[z]] <- ncvar_def(name = "mdcur", units="", nc$dim[["time"]],missval=miss.val,
+        nc_var[[z]] <- ncvar_def(name = "mdcur", units="", nc$dim[["time"]],missval=miss.val,
                               longname=nc$var[["mdcur"]]$longname)
         z <- z+1
-        var[[z]] <- ncvar_def(name = "mscur", units="", nc$dim[["time"]],missval=miss.val,
+        nc_var[[z]] <- ncvar_def(name = "mscur", units="", nc$dim[["time"]],missval=miss.val,
                               longname=nc$var[["mscur"]]$longname)
         z <- z+1
-        var[[z]] <- ncvar_def(name = "nstep", units="", nc$dim[["time"]],missval=miss.val,
+        nc_var[[z]] <- ncvar_def(name = "nstep", units="", nc$dim[["time"]],missval=miss.val,
                               longname=nc$var[["nstep"]]$longname)
         #z <- z+1
-        #var[[z]] <- ncvar_def(name = "time_bounds", units="", missval=miss.val,
+        #nc_var[[z]] <- ncvar_def(name = "time_bounds", units="", missval=miss.val,
         #                      dim=list(nc$dim[["hist_interval"]],nc$dim[["time"]]))
         
         ### !!! Remove?
         #z <- z+1
-        #var[[9]] <- ncvar_def(name = "date_written", units="", missval=miss.val,
+        #nc_var[[9]] <- ncvar_def(name = "date_written", units="", missval=miss.val,
         #                      dim=list(nc$dim[["string_length"]],nc$dim[["time"]]))
         #z <- z+1
-        #var[[10]] <- ncvar_def(name = "time_written", units="", missval=miss.val,
+        #nc_var[[10]] <- ncvar_def(name = "time_written", units="", missval=miss.val,
         #                      dim=list(nc$dim[["string_length"]],nc$dim[["time"]]))
         
         #z <- z+1
-        #var[[z]] <- ncvar_def(name = "lon", units=nc$var[["lon"]]$units, nc$dim[["lndgrid"]], 
+        #nc_var[[z]] <- ncvar_def(name = "lon", units=nc$var[["lon"]]$units, nc$dim[["lndgrid"]], 
         #                       missval=miss.val,longname=nc$var[["lon"]]$longname)
         #z <- z+1
-        #var[[z]] <- ncvar_def(name = "lat", units=nc$var[["lat"]]$units, nc$dim[["lndgrid"]], 
+        #nc_var[[z]] <- ncvar_def(name = "lat", units=nc$var[["lat"]]$units, nc$dim[["lndgrid"]], 
         #                       missval=miss.val,longname=nc$var[["lat"]]$longname)
         ### !!!
          
         # ## !! turn below into a MSTMiP var (area) in km^2
         z <- z+1
-        var[[z]] <- ncvar_def(name = "area", units=nc$var[["area"]]$units, nc$dim[["lndgrid"]], 
+        nc_var[[z]] <- ncvar_def(name = "area", units=nc$var[["area"]]$units, nc$dim[["lndgrid"]], 
                                missval=miss.val,longname=nc$var[["area"]]$longname)
         z <- z+1
-        var[[z]] <- ncvar_def(name = "landfrac", units=nc$var[["landfrac"]]$units, nc$dim[["lndgrid"]], 
+        nc_var[[z]] <- ncvar_def(name = "landfrac", units=nc$var[["landfrac"]]$units, nc$dim[["lndgrid"]], 
                                missval=miss.val,longname=nc$var[["landfrac"]]$longname)
         z <- z+1
-        var[[z]] <- ncvar_def(name = "landmask", units=nc$var[["landmask"]]$units, nc$dim[["lndgrid"]], 
+        nc_var[[z]] <- ncvar_def(name = "landmask", units=nc$var[["landmask"]]$units, nc$dim[["lndgrid"]], 
                                missval=miss.val,longname=nc$var[["landmask"]]$longname)
         z <- z+1
-        var[[z]] <- ncvar_def(name = "pftmask", units=nc$var[["pftmask"]]$units, nc$dim[["lndgrid"]], 
+        nc_var[[z]] <- ncvar_def(name = "pftmask", units=nc$var[["pftmask"]]$units, nc$dim[["lndgrid"]], 
                               missval=miss.val,longname=nc$var[["pftmask"]]$longname)
         z <- z+1
-        var[[z]] <- ncvar_def(name = "nbedrock", units=nc$var[["nbedrock"]]$units, nc$dim[["lndgrid"]], 
+        nc_var[[z]] <- ncvar_def(name = "nbedrock", units=nc$var[["nbedrock"]]$units, nc$dim[["lndgrid"]], 
                               missval=miss.val,longname=nc$var[["nbedrock"]]$longname)
         
         # ## !! Fluxes. first default FATES but after unit conversion
-        # #var[[16]] <- ncvar_def(name = "AR", units="kg C m-2 s-1", missval=miss.val
+        # #nc_var[[16]] <- ncvar_def(name = "AR", units="kg C m-2 s-1", missval=miss.val
         # #                      dim=list(nc$dim[["lndgrid"]],nc$dim[["time"]]))
         # ## Using PEcAn and mstmipvar. Units have already been converted
         z <- z+1
-        var[[z]] <- mstmipvar("AutoResp", lat, lon, t, NA)
+        nc_var[[z]] <- mstmipvar("AutoResp", lat, lon, t, NA)
         z <- z+1
-        var[[z]] <- mstmipvar("GPP", lat, lon, t, NA)
+        nc_var[[z]] <- mstmipvar("GPP", lat, lon, t, NA)
         # 
         ### !! TO BE REMOVED
         #var  <- ncdf4::ncvar_def(name = "time", units = "days", dim = nc$dim[["time"]])
@@ -287,12 +287,12 @@ model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date) {
         ## !!
         
         ### Output netCDF data
-        nc <- ncdf4::nc_create(file.path(outdir, paste(year, "nc", sep = ".")), var)
+        nc <- ncdf4::nc_create(file.path(outdir, paste(year, "nc", sep = ".")), nc_var)
         varfile <- file(file.path(outdir, paste(year, "nc", "var", sep = ".")), "w")
-        for (i in seq_along(var)) {
+        for (i in seq_along(nc_var)) {
           print(i)  # just on for debugging
-          ncdf4::ncvar_put(nc, var[[i]], output[[i]])
-          cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
+          ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
+          cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
         }  ## netCDF loop
         close(varfile)
         ncdf4::nc_close(nc)
