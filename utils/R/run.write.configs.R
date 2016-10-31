@@ -29,13 +29,15 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
                               posterior.files = rep(NA, length(settings$pfts)), 
                               overwrite = TRUE) {
   
+  con <- db.open(settings$database$bety)
+  on.exit(db.close(con))
+  
   ## Which posterior to use?
   for (i in seq_along(settings$pfts)) {
     ## if posterior.files is specified us that
     if (is.na(posterior.files[i])) {
       ## otherwise, check to see if posteriorid exists
       if (!is.null(settings$pfts[[i]]$posteriorid)) {
-        con <- db.open(settings$database$bety)
         files <- dbfile.check("Posterior",
                               settings$pfts[[i]]$posteriorid, 
                               con, settings$host$name)
@@ -46,7 +48,6 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
         if (length(pid) > 0) {
           posterior.files[i] <- file.path(files$file_path[pid], files$file_name[pid])
         }  ## otherwise leave posteriors as NA
-        db.close(con)
       }
       ## otherwise leave NA and get.parameter.samples will look for local
     }

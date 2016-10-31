@@ -36,6 +36,7 @@ start.model.runs <- function(settings, write = TRUE) {
   # create database connection
   if (write) {
     dbcon <- db.open(settings$database$bety)
+    on.exit(db.close(dbcon))
   } else {
     dbcon <- NULL
   }
@@ -269,12 +270,6 @@ start.model.runs <- function(settings, write = TRUE) {
     }  # end while loop
   }
   
-  # copy all data back
-  
-  # close database connection
-  if (!is.null(dbcon)) {
-    db.close(dbcon)
-  }
 } # start.model.runs
 
 
