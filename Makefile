@@ -37,9 +37,9 @@ ALL_PKGS_D := $(BASE_D) $(MODELS_D) $(MODULES_D)
 all: document install
 
 document: .doc/all
-install: document .install/all 
-check: install .check/all
-test: install .test/all 
+install: .install/all 
+check: .check/all
+test: .test/all 
 
 ### Dependencies
 .doc/all: $(ALL_PKGS_D)
@@ -47,30 +47,19 @@ test: install .test/all
 .check/all: $(ALL_PKGS_C)
 .test/all: $(ALL_PKGS_T)
 
+depends = .install/$(1) .doc/$(1) .check/$(1) .test/$(1)
+
+$(call depends,db): .install/utils
+$(call depends,settings): .install/utils .install/db
+$(call depends,visualization): .install/db .install/shiny
+$(call depends,modules/data.atmosphere): .install/utils .install/reddyproc
+$(call depends,modules/data.land): .install/db .install/utils
+$(call depends,modules/meta.analysis): .install/utils .install/db
+$(call depends,modules/priors): .install/utils
+$(call depends,modules/rtm): .install/modules/assim.batch
+
 $(MODELS_I): $(MODULES_I)
 
-# These two blocks are redunant for now because dependencies need to be 
-# specified separately for installation and documentation. I have some ideas 
-# about how to fix this, but it's not a priority. For now, just make sure to 
-# add dependencies for any new package into here.
-
-.install/db: .install/utils
-.install/settings: .install/utils .install/db
-.install/visualization: .install/db .install/shiny
-.install/modules/data.atmosphere: .install/utils .install/reddyproc
-.install/modules/data.land: .install/db .install/utils
-.install/modules/meta.analysis: .install/utils .install/db
-.install/modules/priors: .install/utils
-.install/modules/rtm: .install/modules/assim.batch
-
-.doc/db: .doc/utils
-.doc/settings: .doc/utils .doc/db
-.doc/visualization: .doc/db
-.doc/modules/data.atmosphere: .doc/utils
-.doc/modules/data.land: .doc/db .doc/utils
-.doc/modules/meta.analysis: .doc/utils .doc/db
-.doc/modules/priors: .doc/utils
-.doc/modules/rtm: .doc/modules/assim.batch
 
 clean:
 	rm -rf .install .check .test .doc
