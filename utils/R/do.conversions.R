@@ -31,8 +31,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     # met conversion
     if (input.tag == "met") {
       name <- ifelse(is.null(settings$browndog), "MET Process", "BrownDog")
-      if (is.null(input$path)) {
-
+      if (is.null(input$path) && (status.check(name) == 0)) {
         settings$run$inputs[[i]][['path']] <- 
           PEcAn.data.atmosphere::met.process(
             site       = settings$run$site, 
