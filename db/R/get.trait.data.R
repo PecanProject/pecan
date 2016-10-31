@@ -54,14 +54,15 @@ check.lists <- function(x, y) {
 get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
                                forceupdate = FALSE,
                                trait.names = traitdictionary$id) {
-  ## Remove old files.  Clean up.
-  old.files <- list.files(path=pft$outdir, full.names=TRUE, include.dirs=FALSE)
-  file.remove(old.files)
 
   # Create directory if necessary
   if(!file.exists(pft$outdir) && !dir.create(pft$outdir, recursive=TRUE)) {
     logger.error(paste0("Couldn't create PFT output directory: ", pft$outdir))
   }
+
+  ## Remove old files.  Clean up.
+  old.files <- list.files(path=pft$outdir, full.names=TRUE, include.dirs=FALSE)
+  file.remove(old.files)
 
   # find appropriate pft
   if (is.null(modeltype)) {
