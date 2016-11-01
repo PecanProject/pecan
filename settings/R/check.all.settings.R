@@ -11,11 +11,6 @@
 ##' @param settings settings file
 ##' @export check.inputs
 check.inputs <- function(settings) {
-  library(XML)
-  library(lubridate)
-  library(PEcAn.DB)
-  library(PEcAn.utils)
-  
   if (is.null(settings$model$type)) return(settings)
   
   # don't know how to check inputs
