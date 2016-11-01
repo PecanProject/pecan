@@ -15,6 +15,10 @@
 ##' 
 sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   
+  ymd_hms <- lubridate::ymd_hms
+  hms     <- lubridate::hms
+  second  <- lubridate::second
+  
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
   ###-------------------------------------------------------------------### 
@@ -618,7 +622,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       
       inputs <- do.call(my.split.inputs, 
                         args = list(settings = settings, 
-                                    start.time = (ymd_hms(obs.times[t]) + second(hms("00:00:01"))), 
+                                    start.time = (ymd_hms(obs.times[t],truncated=3) + second(hms("00:00:01"))), 
                                     stop.time = obs.times[t + 1]))
       
       ###-------------------------------------------------------------------###
@@ -629,8 +633,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         do.call(my.write.restart, 
                 args = list(outdir = outdir, 
                             runid = run.id[[i]], 
-                            start.time = (ymd_hms(obs.times[t]) + second(hms("00:00:01"))),
-                            stop.time = obs.times[t + 1], 
+                            start.time = (ymd_hms(obs.times[t],truncated=3) + second(hms("00:00:01"))),
+                            stop.time = ymd_hms(obs.times[t + 1],truncated=3) 
                             settings = settings,
                             new.state = new.state[i, ], 
                             new.params = new.params[[i]], 
@@ -690,7 +694,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   })))  #need to make this from quantiles for lyford plot data
   # YCI = YCI[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
   
-  for (i in seq_along(X)) {
+  for (i in seq_len(ncol(X))) {
     t1 <- 1
     Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
     Xci <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
