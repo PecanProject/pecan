@@ -52,7 +52,7 @@ if("benchmark" %in% names(settings)){
 }
 
 # Write pecan.CHECKED.xml
-settings <- write.settings(settings, outputfile = "pecan.CHECKED.xml")
+write.settings(settings, outputfile = "pecan.CHECKED.xml")
 
 # start from scratch if no continue is passed in
 statusFile <- file.path(settings$outdir, "STATUS")
@@ -68,7 +68,7 @@ settings <- do.conversions(settings, overwrite.met=FALSE, overwrite.fia=FALSE)
 if (status.check("TRAIT") == 0){
   status.start("TRAIT")
   settings <- runModule.get.trait.data(settings)
-  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.TRAIT.xml'))
+  write.settings(settings, outputfile='pecan.TRAIT.xml')
   status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.TRAIT.xml'))) {
   settings <- read.settings(file.path(settings$outdir, 'pecan.TRAIT.xml'))
@@ -88,7 +88,7 @@ if(!is.null(settings$meta.analysis)) {
 if (status.check("CONFIG") == 0){
   status.start("CONFIG")
   settings <- runModule.run.write.configs(settings)
-  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.CONFIGS.xml'))
+  write.settings(settings, outputfile='pecan.CONFIGS.xml')
   status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
   settings <- read.settings(file.path(settings$outdir, 'pecan.CONFIGS.xml'))
