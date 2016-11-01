@@ -18,6 +18,14 @@
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
+##' 
+##' @examples
+##' \dontrun{
+##' example.output <- system.file("out.csv",package="PEcAn.MAAT")
+##' model2netcdf.MAAT(outdir="~/",sitelat=9.154,sitelon=-79.848,start_date="2014-01-01 00:00:00",
+##' end_date="2014-12-31 00:00:00")
+##' }
+##' 
 ##' @export
 ##' @author Shawn Serbin, Anthony Walker
 model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date = NULL, end_date = NULL) {
