@@ -206,3 +206,66 @@ test_that("invalid pathname is placed in home directory",{
   s1 <- check.settings(update.settings(s))
   expect_equal(s1$database$dbfiles, file.path(Sys.getenv("HOME"), s$database$dbfiles))
 })
+
+test_that("update.settings only runs once unless forced",{
+  s <- .get.test.settings()
+  expect_null(s$model$type)
+  
+  s <- update.settings(s)
+  expect_equal(s$model$type, "BIOCRO")
+  expect_true(s$settings.info$settings.updated)
+  
+  # Won't run a second time...
+  s$model$name <- s$model$type
+  s$model$type <- NULL
+  s <- update.settings(s)
+  expect_null(s$model$type)
+  
+  # ...unless forced
+  s <- update.settings(s, force=TRUE)
+  expect_equal(s$model$type, "BIOCRO")
+})
+
+
+test_that("check.settings only runs once unless forced",{
+  s <- .get.test.settings()
+  s$database$bety$driver <- NULL
+  s <- check.settings(update.settings(s))
+  
+  expect_equal(s$database$bety$driver, "PostgreSQL")
+  expect_true(s$settings.info$checked)
+  
+  
+  # Won't run a second time...
+  s$database$bety$driver <- NULL
+  s <- check.settings(s)
+  expect_null(s$database$bety$driver)
+  
+  # ...unless forced
+  s <- check.settings(s, force=TRUE)
+  expect_equal(s$database$bety$driver, "PostgreSQL")
+})
+
+
+test_that("fix.deprecated.settings only runs once unless forced",{
+  s <- .get.test.settings()
+  expected <- s$database$dbfiles
+  s$run$dbfiles <- s$database$dbfiles
+  s$database$dbfiles <- NULL
+  
+  s <- fix.deprecated.settings(s)
+  expect_identical(s$database$dbfiles, expected)
+  expect_null(s$run$dbfiles)
+  
+  # Won't run a second time...
+  s$run$dbfiles <- s$database$dbfiles
+  s$database$dbfiles <- NULL
+  s <- fix.deprecated.settings(s)
+  expect_identical(s$run$dbfiles, expected)
+  expect_null(s$database$dbfiles)
+  
+  # ...unless forced
+  s <- fix.deprecated.settings(s, force=TRUE)
+  expect_identical(s$database$dbfiles, expected)
+  expect_null(s$run$dbfiles)
+})
