@@ -41,6 +41,7 @@ if (is.na(args[1])){
 
 # Update/fix/check settings. Will only run the first time it's called, unless force=TRUE
 settings <- fix.deprecated.settings(settings, force=FALSE)
+settings <- addSecrets(settings, force=FALSE)
 settings <- update.settings(settings, force=FALSE)
 settings <- check.settings(settings, force=FALSE)
 
