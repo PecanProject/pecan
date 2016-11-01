@@ -22,7 +22,7 @@ invert.options$model <- function(params) spectral.response(prospect(params,5)[,1
 invert.options$ngibbs.min <- 5000
 invert.options$ngibbs.step <- 2000
 invert.options$ngibbs.max <- 100000
-invert.options$do.lsq <- FALSE
+invert.options$do.lsq <- TRUE
 invert.options$nchains <- 3
 invert.options$run_first <- function(inputs) {
   fname <- paste0("testfile_", inputs$runID)
