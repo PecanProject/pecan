@@ -57,10 +57,9 @@ invert.auto <- function(observed, invert.options,
     testForPackage("minpack.lm")
   }
   invert.options$ngibbs <- invert.options$ngibbs.min
-  
-  convergenceCheck <- function(smcmc) {
-    out <- check.convergence(smcmc, autoburnin = TRUE, verbose = !quiet)
-    return(out)
+  max_iter_converge_check <- invert.options$max_iter_converge_check
+  if (is.null(max_iter_converge_check)) {
+    max_iter_converge_check <- 15000
   }
   
   # Set up cluster for parallel execution
@@ -73,14 +72,16 @@ invert.auto <- function(observed, invert.options,
       if (!is.numeric(parallel.cores) | parallel.cores %% 1 != 0) {
         stop("Invalid argument to 'parallel.cores'. Must be integer or NULL")
       } else if (parallel.cores > maxcores) {
-        warning(sprintf("Requested %1$d cores but only %2$d cores available. Using only %2$d cores.", 
-                        parallel.cores, maxcores))
+        warning(sprintf("Requested %1$d cores but only %2$d cores available. ", 
+                        parallel.cores, maxcores), 
+                "Using only available cores.")
         parallel.cores <- maxcores
       }
     }
     cl <- parallel::makeCluster(parallel.cores, "FORK", outfile = parallel.output)
     on.exit(parallel::stopCluster(cl))
-    print(sprintf("Running %d chains in parallel. Progress bar unavailable", nchains))
+    message(sprintf("Running %d chains in parallel. ", nchains), 
+            "Progress bar unavailable")
   }
   
   # Create inversion function to be passed to parLapply
@@ -126,6 +127,7 @@ invert.auto <- function(observed, invert.options,
       output.list[[i]] <- invert.function(inputs[[i]])
     }
   }
+
   i.ngibbs <- invert.options$ngibbs.min
   samps.list <- lapply(output.list, "[[", "results")
   resume <- lapply(output.list, "[[", "resume")
@@ -133,69 +135,58 @@ invert.auto <- function(observed, invert.options,
     saveRDS(list(resume = resume, samps.list = samps.list),
             file = save.samples)
   }
-  # Check for convergence
-  smcmc <- PEcAn.assim.batch::makeMCMCList(samps.list)
-  conv.check <- convergenceCheck(smcmc)
-  if (conv.check$error) {
-    warning("Could not calculate Gelman diag. Assuming no convergence.")
-    conv.check$converged <- FALSE
-  }
-  if (conv.check$converged) {
-    # Done
-    message("Post-process")
-    out <- postProcess(i.ngibbs, samps.list)
-  } else {
-    # Loop until convergence
-    continue <- TRUE
-    while (continue & i.ngibbs < ngibbs.max) {
-      if (!quiet) 
-        print(sprintf("Running iterations %d to %d", i.ngibbs, i.ngibbs + ngibbs.step))
-      inits <- lapply(samps.list, getLastRow)
-      inputs <- list()
-      for (i in seq_len(nchains)) {
-        inputs[[i]] <- list(runID = runID_list[i],
-                            inits = inits[[i]],
-                            resume = resume[[i]])
-      }
-      invert.options$ngibbs <- ngibbs.step
-      if (parallel) {
-        output.list <- parallel::parLapply(cl, inputs, invert.function)
-      } else {
-        output.list <- list()
-        for (i in seq_along(inputs)) {
-          print(sprintf("Running chain %d of %d", i, nchains))
-          output.list[[i]] <- invert.function(inputs[[i]])
-        }
-      }
-      i.ngibbs <- i.ngibbs + ngibbs.step
-      samps.list.current <- lapply(output.list, "[[", 'results')
-      resume <- lapply(output.list, "[[", 'resume')
+  process <- process_samples(samps.list, max_iter_converge_check)
+  finished <- process$finished
 
-      samps.list <- combineChains(samps.list, samps.list.current)
-      if (!is.null(save.samples)) {
-        saveRDS(list(resume = resume, samps.list = samps.list), file = save.samples)
-      }
-      smcmc <- PEcAn.assim.batch::makeMCMCList(samps.list)
-      conv.check <- convergenceCheck(smcmc)
-      
-      # Check for convergence
-      if (conv.check$error) {
-        warning("Could not calculate Gelman diag. Assuming no convergence.")
-        conv.check$converged <- FALSE
-      }
-      if (conv.check$converged) {
-        # Done
-        out <- postProcess(i.ngibbs, samps.list)
-        continue <- FALSE
-      } else {
-        continue <- TRUE
+  if (finished) {
+    out <- process[c('results', 'samples')]
+  }
+
+  # Loop until convergence (skipped if finished == TRUE)
+  while (!finished & i.ngibbs < ngibbs.max) {
+    if (!quiet) {
+      message(sprintf("Running iterations %d to %d", i.ngibbs,
+                      i.ngibbs + ngibbs.step))
+    }
+    inits <- lapply(samps.list, getLastRow)
+    inputs <- list()
+    for (i in seq_len(nchains)) {
+      inputs[[i]] <- list(runID = runID_list[i],
+                          inits = inits[[i]],
+                          resume = resume[[i]])
+    }
+    invert.options$ngibbs <- ngibbs.step
+    if (parallel) {
+      output.list <- parallel::parLapply(cl, inputs, invert.function)
+    } else {
+      output.list <- list()
+      for (i in seq_along(inputs)) {
+        message(sprintf('Running chain %d of %d', i, nchains))
+        output.list[[i]] <- invert.function(inputs[[i]])
       }
     }
-    if (i.ngibbs > ngibbs.max & continue) {
-      warning("Convergence was not achieved, and max iterations exceeded. Returning results as 'NA'.")
-      out <- list(results = NA, 
-                  samples = PEcAn.assim.batch::makeMCMCList(samps.list))
+    i.ngibbs <- i.ngibbs + ngibbs.step
+    samps.list.current <- lapply(output.list, '[[', 'results')
+    resume <- lapply(output.list, '[[', 'resume')
+
+    samps.list <- combineChains(samps.list, samps.list.current)
+    if (!is.null(save.samples)) {
+      saveRDS(list(resume = resume, samps.list = samps.list),
+              file = save.samples)
     }
+    process <- process_samples(samps.list, max_iter_converge_check)
+    finished <- process$finished
+
+    if (finished) {
+      out <- process[c('results', 'samples')]
+    }
+
+  }
+  if (i.ngibbs > ngibbs.max & !finished) {
+    warning("Convergence was not achieved, and max iterations exceeded. ",
+            "Returning results as 'NA'.")
+    out <- list(results = NA, 
+                samples = PEcAn.assim.batch::makeMCMCList(samps.list))
   }
   if (!return.samples) {
     out$samples <- c(`Samples not returned` = NA)
@@ -221,14 +212,33 @@ combineChains <- function(samps1, samps2) {
   return(sampsfinal)
 } # combineChains
 
-postProcess <- function(i.ngibbs, samps.list) {
-  print(sprintf("Converged after %d iterations", i.ngibbs))
-  samps.out <- PEcAn.assim.batch::makeMCMCList(samps.list)
-  # Calculate summary statistics
-  samps.bt.out <- PEcAn.assim.batch::autoburnin(samps.out, return.burnin = TRUE)
-  samps.bt <- samps.bt.out$samples
-  print(paste("Burnin =", samps.bt.out$burnin))
-  samps.combined <- do.call(rbind, samps.bt)
-  results <- summary_simple(samps.combined)
-  return(list(results = results, samples = samps.out))
-} # postProcess
+process_samples <- function(samps.list, max_iter_converge_check) {
+  smcmc <- PEcAn.assim.batch::makeMCMCList(samps.list)
+  nsamp <- coda::niter(smcmc)
+  nburn <- min(floor(nsamp/2), max_iter_converge_check)
+  smcmc_sub <- window(smcmc, start = nburn)
+  check_initial <- check.convergence(smcmc_sub, autoburnin = FALSE)
+  if (check_initial$error) {
+    warning("Could not calculate Gelman diag. Assuming no convergence.")
+    return(list(finished = FALSE))
+  }
+  if (!check_initial$converged) {
+    message("Convergence was not achieved. Continuing sampling.")
+    return(list(finished = FALSE))
+  } else {
+    message("Passed initial convergence check. ",
+            "Attempting automatic burnin.")
+  }
+  burn <- PEcAn.assim.batch::autoburnin(smcmc, return.burnin = TRUE)
+  if (burn$burnin == 1) {
+    message("Robust convergence check in autoburnin failed. ",
+            "Resuming sampling.")
+    return(list(finished = FALSE))
+  } else {
+    message("Converged after ", coda::niter(smcmc), "iterations.\n",
+            "Burnin = ", burn$burnin)
+  }
+  results <- summary_simple(do.call(rbind, burn$samples))
+  return(list(results = results, samples = smcmc, finished = TRUE))
+}
+
