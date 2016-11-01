@@ -66,9 +66,8 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     output[[2]] <- sub.maat.doy + day.steps  # Fractional day
     output[[3]] <- (sub.maat.output$A)  # assimilation in umols C/m2/s
     output[[4]] <- (sub.maat.output$gs)  # stomatal conductance in mol H2O m-2 s-1
-    
     ## !!TODO: ADD MORE MAAT OUTPUTS HERE!! ##
-    
+
     #******************** Declare netCDF variables ********************#
     ## This version doesn't provide enough output timesteps when running with met data that has
     ## a step greater than 1 per day
@@ -100,19 +99,19 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
                                               "kg H2O m-2 s-1"))  # stomatal_conductance in kg H2O m2 s1
     
     ### Put output into netCDF format
-    var       <- list()
-    var[[1]]  <- mstmipvar("Year", lat, lon, t, NA)
-    var[[2]]  <- mstmipvar("FracJulianDay", lat, lon, t, NA)
-    var[[3]]  <- mstmipvar("GPP", lat, lon, t, NA)
-    var[[4]]  <- mstmipvar("stomatal_conductance", lat, lon, t, NA)
+    nc_var       <- list()
+    nc_var[[1]]  <- mstmipvar("Year", lat, lon, t, NA)
+    nc_var[[2]]  <- mstmipvar("FracJulianDay", lat, lon, t, NA)
+    nc_var[[3]]  <- mstmipvar("GPP", lat, lon, t, NA)
+    nc_var[[4]]  <- mstmipvar("stomatal_conductance", lat, lon, t, NA)
     
     ### Output netCDF data
-    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
-    for (i in seq_along(var)) {
+    for (i in seq_along(nc_var)) {
       print(i)  # just on for debugging
-      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
-      cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
+      ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
+      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }  ## netCDF loop
     close(varfile)
     ncdf4::nc_close(nc)
