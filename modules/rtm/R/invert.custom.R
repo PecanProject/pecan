@@ -43,6 +43,7 @@
 #' @param quiet Suppress progress bar and status messages. Default=FALSE
 #' @param return.resume If TRUE, return results as list that includes current Jump distribution (useful for continuing an ongoing run) and acceptance rate. Default = FALSE.
 #' @param runID Run-unique ID. Useful for parallel runs. Default=NULL
+#' @importFrom Rcpp evalCpp
 #' @export
 invert.custom <- function(observed, invert.options,
                           quiet = FALSE,
@@ -191,6 +192,7 @@ invert.custom <- function(observed, invert.options,
   })
   PrevError <- PrevSpec - observed
   PrevPrior <- prior.function(inits)
+  PrevScale <- neff(PrevError)/nwl
 
   # Sampling loop
   for (ng in seq_len(ngibbs)) {
@@ -247,8 +249,11 @@ invert.custom <- function(observed, invert.options,
     # Metropolis sampling step if all conditions have been met
     if (samp) {
       TryError <- TrySpec - observed
-      TryPost <- sum(dnorm(TryError, 0, rsd, 1)) + TryPrior
-      PrevPost <- sum(dnorm(PrevError, 0, rsd, 1)) + PrevPrior
+      TryScale <- neff(TryError)/nwl
+      TryPost <- sum(dnormC(TryError, 0, rsd)) * TryScale +
+        TryPrior
+      PrevPost <- sum(dnormC(PrevError, 0, rsd)) * PrevScale + 
+        PrevPrior
       a <- exp(TryPost - PrevPost)
       if (is.na(a)) {
         a <- -1
