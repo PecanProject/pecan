@@ -633,7 +633,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         do.call(my.write.restart, 
                 args = list(outdir = outdir, 
                             runid = run.id[[i]], 
-                            start.time = (ymd_hms(obs.times[t],truncated=3) + second(hms("00:00:01"))),
+                            start.time = (ymd_hms(obs.times[t],truncated=3) + second(hms("00:00:01")))
                             stop.time = ymd_hms(obs.times[t + 1],truncated=3) 
                             settings = settings,
                             new.state = new.state[i, ], 
