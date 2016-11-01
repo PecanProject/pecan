@@ -21,7 +21,13 @@ check.inputs <- function(settings) {
   
   # get list of inputs associated with model type
   dbcon <- db.open(settings$database$bety)
-  inputs <- db.query(paste0("SELECT tag, format_id, required FROM modeltypes, modeltypes_formats WHERE modeltypes_formats.modeltype_id = modeltypes.id and modeltypes.name='", settings$model$type, "' AND modeltypes_formats.input;"), con=dbcon)
+  on.exit(db.close(dbcon))
+  
+  inputs <- db.query(paste0(
+    "SELECT tag, format_id, required FROM modeltypes, modeltypes_formats ",
+    "WHERE modeltypes_formats.modeltype_id = modeltypes.id ",
+      "AND modeltypes.name='", settings$model$type, "' ",
+      "AND modeltypes_formats.input"), con=dbcon)
   
   # check list of inputs  
   allinputs <- names(settings$run$inputs)
@@ -846,11 +852,10 @@ check.database.settings <- function(settings) {
       
       # Connect to database
       dbcon <- db.open(settings$database$bety)
+      on.exit(db.close(dbcon))
       
       # check database version
       check.bety.version(dbcon)
-      
-      db.close(dbcon)
     } else {
       logger.warn("No BETY database information specified; not using database.")
     }
