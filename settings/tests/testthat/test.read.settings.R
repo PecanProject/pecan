@@ -269,3 +269,22 @@ test_that("fix.deprecated.settings only runs once unless forced",{
   expect_identical(s$database$dbfiles, expected)
   expect_null(s$run$dbfiles)
 })
+
+
+test_that("check.settings works for a MultiSettings",{
+  s1 <- .get.test.settings()
+  s1 <- check.settings(update.settings(s1)) # Make sure all other settings are fine
+  s1$database$bety$driver <- NULL
+  s2 <- s1
+
+  # Change a setting to ensure that there will be a difference between the two Settings
+  s2$database$dbfiles <- file.path(s2$database$dbfiles, "dummy")
+  
+  ms <- MultiSettings(s1, s2)
+  ms <- check.settings(ms, force=TRUE)
+  
+  expect_equal(length(ms$database), 2)
+  expect_false(identical(ms[[1]]$database, ms[[2]]$database))
+  expect_equal(ms[[1]]$database$bety$driver, "PostgreSQL")
+  expect_equal(ms[[2]]$database$bety$driver, "PostgreSQL")
+})
