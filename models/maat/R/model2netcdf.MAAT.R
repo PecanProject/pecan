@@ -118,3 +118,5 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     
   }  ## Year loop
 } # model2netcdf.MAAT
+##-------------------------------------------------------------------------------------------------#
+## EOF
