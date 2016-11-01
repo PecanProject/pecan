@@ -39,6 +39,11 @@ if (is.na(args[1])){
   settings <- read.settings(settings.file)
 }
 
+# Update/fix/check settings. Will only run the first time it's called, unless force=TRUE
+settings <- fix.deprecated.settings(settings, force=FALSE)
+settings <- update.settings(settings, force=FALSE)
+settings <- check.settings(settings, force=FALSE)
+
 # Check for additional modules that will require adding settings
 if("benchmark" %in% names(settings)){
   library(PEcAn.benchmark)
@@ -49,12 +54,13 @@ if("benchmark" %in% names(settings)){
 settings <- write.settings(settings, outputfile = "pecan.CHECKED.xml")
 
 # start from scratch if no continue is passed in
-if (length(which(commandArgs() == "--continue")) == 0) {
-  file.remove(file.path(settings$outdir, "STATUS"))
+statusFile <- file.path(settings$outdir, "STATUS")
+if (length(which(commandArgs() == "--continue")) == 0 && file.exists(statusFile)) {
+  file.remove(statusFile)
 }
   
 # Do conversions
-settings <- do.conversions(settings)
+settings <- do.conversions(settings, overwrite.met=FALSE, overwrite.fia=FALSE)
 
 
 # Query the trait database for data and priors
@@ -109,14 +115,14 @@ if (status.check("OUTPUT") == 0) {
 # Run ensemble analysis on model output. 
 if (status.check("ENSEMBLE") == 0) {
   status.start("ENSEMBLE")
-  run.ensemble.analysis(settings,TRUE)    
+  runModule.run.ensemble.analysis(settings, TRUE)    
   status.end()
 }
 
 # Run sensitivity analysis and variance decomposition on model output
 if (status.check("SENSITIVITY") == 0) {
   status.start("SENSITIVITY")
-  run.sensitivity.analysis(settings)
+  runModule.run.sensitivity.analysis(settings)
   status.end()
 }
 
@@ -124,7 +130,7 @@ if (status.check("SENSITIVITY") == 0) {
 if ('assim.batch' %in% names(settings)) {
   if (status.check("PDA") == 0) {
     status.start("PDA")
-    settings <- assim.batch(settings)
+    settings <- runModule.assim.batch(settings)
     status.end()
   }
 }
