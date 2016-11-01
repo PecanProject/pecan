@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-sample.IC.LINKAGES <- function(ne, state) {
+sample.IC.LINKAGES <- function(ne, state, year = NULL) {
   ## g C * m-2 ground area in wood (above-ground + roots)
   biomass_tsca = ifelse(rep("biomass_tsca" %in% names(state), ne),
                         state$biomass_tsca[1, sample.int(ncol(state$biomass_tsca),ne), 1] * 0.1, ## unit Mg/ha ->kg/m2

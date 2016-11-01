@@ -39,8 +39,19 @@ read.restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
   ens.pft.names <- grep("pft", names(ens))
   names(ens[[grep("pft", names(ens))]]) <- pft.names
   
-  print(runid)
+  forecast <- list()
+
+  if ("AGB.pft" %in% var.names) {
+    forecast[[1]] <- udunits2::ud.convert(ens$AGB.pft, "kg/m^2", "Mg/ha") * .48  #* unit.conv 
+    names(forecast[[1]]) <- paste0('AGB.pft.',pft.names)
+  }
+    
+  if ("TotSoilCarb" %in% var.names) {
+    forecast[[2]] <- udunits2::ud.convert(ens$TotSoilCarb, "kg/m^2", "Mg/ha") * .48  #* unit.conv 
+    names(forecast[[2]]) <- c("TotSoilCarb")
+  }
   
   # Put forecast into vector
-  t(unlist(ens))
+  print(runid)
+  unlist(forecast)
 } # read.restart.LINKAGES
