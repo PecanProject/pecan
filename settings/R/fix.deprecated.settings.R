@@ -14,11 +14,6 @@
 ##' @author Ryan Kelly
 ##' @export fix.deprecated.settings
 fix.deprecated.settings <- function(settings) {
-  library(XML)
-  library(lubridate)
-  library(PEcAn.DB)
-  library(PEcAn.utils)
-  
   # settings$model$jobtemplate
   if(!is.null(settings$run$jobtemplate)) {
     if(!is.null(settings$model$jobtemplate)) {

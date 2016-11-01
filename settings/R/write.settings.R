@@ -9,10 +9,6 @@
 
 
 write.settings <- function(settings, outputfile = "pecan.CHECKED.xml"){
-  library(XML)
-  library(PEcAn.DB)
-  library(PEcAn.utils)
-  
   settings <- papply(settings, fix.deprecated.settings)
   settings <- papply(settings, addSecrets)
   settings <- papply(settings, update.settings)
