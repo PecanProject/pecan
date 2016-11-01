@@ -90,8 +90,6 @@ check.inputs <- function(settings) {
     logger.info("Unused inputs found :", paste(allinputs, collapse=" "))
   }
   
-  db.close(dbcon)
-  
   return(settings)
 }
 
@@ -232,18 +230,27 @@ check.bety.version <- function(dbcon) {
 ##' @return will return the updated settings values with defaults set.
 ##' @author Rob Kooper, David LeBauer
 ##' @export check.settings
-check.settings <- function(settings) {
-  if (!is.null(settings$nocheck)) {
-    logger.info("Not doing sanity checks of pecan.xml")
-    return(settings)
+check.settings <- function(settings, force=FALSE) {
+  if(!force && !is.null(settings$settings.info$checked) && settings$settings.info$checked==TRUE) {
+    logger.info("Settings have been checked already. Skipping.")
+    return(invisible(settings))
+  } else {
+    logger.info("Checking settings...")
   }
+  
+  if(is.MultiSettings(settings)) {
+    return(invisible(papply(settings, check.settings, force=force)))
+  }
+  
   scipen = getOption("scipen")
+  on.exit(options(scipen=scipen))
   options(scipen=12)
   
   settings <- check.database.settings(settings)
   
   if(!is.null(settings$database$bety)) {
     dbcon <- db.open(settings$database$bety)
+    on.exit(db.close(dbcon), add=TRUE)
   } else {
     dbcon <- NULL
   }
@@ -453,14 +460,12 @@ check.settings <- function(settings) {
     }
   }
   
-  if (!is.null(dbcon)) {
-    db.close(dbcon)
-  }
-  options(scipen=scipen)
+  # Set 'checked' flag so check.settings will be skipped in the future (unless force=TRUE)
+  settings$settings.info$checked <- TRUE
   
   # all done return cleaned up settings
-  invisible(settings)
-  }
+  return(invisible(settings))
+}
 
 ##' @title Check Run Settings
 ##' @param settings settings file
