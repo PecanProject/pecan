@@ -6,8 +6,10 @@
 ##' 
 ##' @author Betsy Cowdery , Ankur Desai
 ##' 
-query.format.vars <- function(input.id,con,format.id){
+query.format.vars <- function(input.id,bety,format.id=NA,var.ids=NA){
 
+  con <- bety$con
+  
   # get input info either form input.id or format.id, depending which is provided
   # defaults to format.id if both provided
   # also query site information (id/lat/lon) if an input.id
@@ -16,7 +18,7 @@ query.format.vars <- function(input.id,con,format.id){
   site.lat <- NULL
   site.lon <- NULL
   
-  if (missing(format.id)) {
+  if (is.na(format.id)) {
     f <- db.query(paste("SELECT * from formats as f join inputs as i on f.id = i.format_id where i.id = ", input.id),con)
     site.id <- db.query(paste("SELECT site_id from inputs where id =",input.id),con)
     if (is.data.frame(site.id) && nrow(site.id)>0) {
@@ -35,6 +37,11 @@ query.format.vars <- function(input.id,con,format.id){
   
   # get variable names and units of input data
   fv <- db.query(paste("SELECT variable_id,name,unit,storage_type,column_number from formats_variables where format_id = ", f$id),con)
+  
+  if(!is.na(var.ids)){
+    # Need to subset the formats table
+    fv <- fv %>% dplyr::filter(variable_id %in% var.ids | storage_type != "") 
+  }
   
   if (nrow(fv)>0) {
     colnames(fv) <- c("variable_id", "input_name", "input_units", "storage_type", "column_number")
@@ -76,7 +83,6 @@ query.format.vars <- function(input.id,con,format.id){
   
     header <- as.numeric(f$header)
     skip <- ifelse(is.na(as.numeric(f$skip)),0,as.numeric(f$skip))
-    
     
     # Right now I'm making the inappropriate assumption that storage type will be 
     # empty unless it's a time variable. 
