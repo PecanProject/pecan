@@ -23,6 +23,6 @@ neff.default <- function(x) {
 
 neff.matrix <- function(x) {
   col_neff <- apply(x, 2, neff.default)
-  return(mean(col_neff))
+  return(sum(col_neff))
 }
 
