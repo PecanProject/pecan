@@ -46,14 +46,6 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     ## yr[i] <- as.numeric(substr(tmp,1,4)) # Edited by SPS
   }
   
-  ## !!!! Remove when satisfied
-  ## set up storage - !!THIS NEEDS GENERALIZATION TO DETERMINE OUTPUT FREQ ON-THE-FLY!!
-  ## functions exist for this, need to create a general framework within the utils package for all similar cases
-  ##block <- 4  # assumes 6-hourly  -  most run ED2 at 30 min. Setting to 6 will cause errors for most runs
-  ##block <- 24 # assumes hourly  
-  #block <- 48 # assumes half-hourly 
-  ### !!!
-  
   add <- function(dat, col, row, year) {
     ## data is always given for whole year, except it will start always at 0
     ## the left over data is filled with 0's
