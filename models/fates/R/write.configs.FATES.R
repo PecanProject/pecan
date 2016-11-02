@@ -164,7 +164,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
 #   ## Write PARAMETER file
    
    ## COPY AND OPEN DEFAULT PARAMETER FILE
-   param.default <- system.file("clm_params_ed.c160808.nc",package="PEcAn.FATES")
+   param.default <- system.file("clm_params_ed_l2f0.5_tropid2.c161020.nc",package="PEcAn.FATES")
    param.file <- file.path(local.rundir,paste0("clm_params_ed.",run.id,".nc"))
    file.copy(param.default,param.file)
    param.nc <- ncdf4::nc_open(param.file,write=TRUE)
