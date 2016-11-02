@@ -27,7 +27,8 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
   ncdim_def <- ncdf4::ncdim_def
   ncatt_get <- ncdf4::ncatt_get
   ncvar_add <- ncdf4::ncvar_add
-
+  logger.info <- PEcAn.utils::logger.info
+  
   flist <- dir(outdir, "-T-")
   if (length(flist) == 0) {
     print(paste("*** WARNING: No tower output for :", outdir))
@@ -165,7 +166,8 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     n <- length(ysel)
     out <- list()
     ## prevTime <- NULL print(y)
-    print(paste("----- Processing year: ", yrs[y]))
+    #print(paste("----- Processing year: ", yrs[y]))
+    logger.info(paste0("----- Processing year: ",yrs[y]))
     ## if(haveTime) prevTime <- progressBar()
     row <- 1
     for (i in ysel) {
@@ -533,75 +535,78 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     Mc <- 12.017  #molar mass of C, g/mol
     umol2kg_C <- Mc * udunits2::ud.convert(1, "umol", "mol") * udunits2::ud.convert(1, "g", "kg")
     
-    var <- list()
+    nc_var <- list()
     out <- conversion(1, udunits2::ud.convert(1, "t ha-1", "kg m-2"))  ## tC/ha -> kg/m2
-    var[[1]] <- mstmipvar("AbvGrndWood", lat, lon, t, zg)
+    nc_var[[1]] <- mstmipvar("AbvGrndWood", lat, lon, t, zg)
     out <- conversion(2, umol2kg_C)  ## umol/m2 s-1 -> kg/m2 s-1
-    var[[2]] <- mstmipvar("AutoResp", lat, lon, t, zg)
-    var[[3]] <- mstmipvar("CarbPools", lat, lon, t, zg)
-    var[[4]] <- mstmipvar("CO2CAS", lat, lon, t, zg)
-    var[[5]] <- mstmipvar("CropYield", lat, lon, t, zg)
+    nc_var[[2]] <- mstmipvar("AutoResp", lat, lon, t, zg)
+    nc_var[[3]] <- mstmipvar("CarbPools", lat, lon, t, zg)
+    nc_var[[4]] <- mstmipvar("CO2CAS", lat, lon, t, zg)
+    nc_var[[5]] <- mstmipvar("CropYield", lat, lon, t, zg)
     out <- conversion(6, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
-    var[[6]] <- mstmipvar("GPP", lat, lon, t, zg)
+    nc_var[[6]] <- mstmipvar("GPP", lat, lon, t, zg)
     out <- conversion(7, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
-    var[[7]] <- mstmipvar("HeteroResp", lat, lon, t, zg)
+    nc_var[[7]] <- mstmipvar("HeteroResp", lat, lon, t, zg)
     out <- conversion(8, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
-    var[[8]] <- mstmipvar("NEE", lat, lon, t, zg)
+    nc_var[[8]] <- mstmipvar("NEE", lat, lon, t, zg)
     out <- conversion(9, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
-    var[[9]] <- mstmipvar("NPP", lat, lon, t, zg)
+    nc_var[[9]] <- mstmipvar("NPP", lat, lon, t, zg)
     out <- conversion(10, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
-    var[[10]] <- mstmipvar("TotalResp", lat, lon, t, zg)
-    var[[11]] <- mstmipvar("TotLivBiom", lat, lon, t, zg)
-    var[[12]] <- mstmipvar("TotSoilCarb", lat, lon, t, zg)
-    var[[13]] <- mstmipvar("Fdepth", lat, lon, t, zg)
-    var[[14]] <- mstmipvar("SnowDepth", lat, lon, t, zg)
-    var[[15]] <- mstmipvar("SnowFrac", lat, lon, t, zg)
-    var[[16]] <- mstmipvar("Tdepth", lat, lon, t, zg)
-    var[[17]] <- mstmipvar("CO2air", lat, lon, t, zg)
-    var[[18]] <- mstmipvar("Lwdown", lat, lon, t, zg)
-    var[[19]] <- mstmipvar("Psurf", lat, lon, t, zg)
-    var[[20]] <- mstmipvar("Qair", lat, lon, t, zg)
-    var[[21]] <- mstmipvar("Rainf", lat, lon, t, zg)
-    var[[22]] <- mstmipvar("Swdown", lat, lon, t, zg)
+    nc_var[[10]] <- mstmipvar("TotalResp", lat, lon, t, zg)
+    nc_var[[11]] <- mstmipvar("TotLivBiom", lat, lon, t, zg)
+    nc_var[[12]] <- mstmipvar("TotSoilCarb", lat, lon, t, zg)
+    nc_var[[13]] <- mstmipvar("Fdepth", lat, lon, t, zg)
+    nc_var[[14]] <- mstmipvar("SnowDepth", lat, lon, t, zg)
+    nc_var[[15]] <- mstmipvar("SnowFrac", lat, lon, t, zg)
+    nc_var[[16]] <- mstmipvar("Tdepth", lat, lon, t, zg)
+    nc_var[[17]] <- mstmipvar("CO2air", lat, lon, t, zg)
+    nc_var[[18]] <- mstmipvar("Lwdown", lat, lon, t, zg)
+    nc_var[[19]] <- mstmipvar("Psurf", lat, lon, t, zg)
+    nc_var[[20]] <- mstmipvar("Qair", lat, lon, t, zg)
+    nc_var[[21]] <- mstmipvar("Rainf", lat, lon, t, zg)
+    nc_var[[22]] <- mstmipvar("Swdown", lat, lon, t, zg)
     out <- checkTemp(23)
-    var[[23]] <- mstmipvar("Tair", lat, lon, t, zg)
-    var[[24]] <- mstmipvar("Wind", lat, lon, t, zg)
-    var[[25]] <- mstmipvar("Lwnet", lat, lon, t, zg)
-    var[[26]] <- mstmipvar("Qg", lat, lon, t, zg)
-    var[[27]] <- mstmipvar("Qh", lat, lon, t, zg)
-    var[[28]] <- mstmipvar("Qle", lat, lon, t, zg)
-    var[[29]] <- mstmipvar("Swnet", lat, lon, t, zg)
-    var[[30]] <- mstmipvar("RootMoist", lat, lon, t, zg)
-    var[[31]] <- mstmipvar("Tveg", lat, lon, t, zg)
-    var[[32]] <- mstmipvar("WaterTableD", lat, lon, t, zg)
-    var[[33]] <- mstmipvar("fPAR", lat, lon, t, zg)
-    var[[34]] <- mstmipvar("LAI", lat, lon, t, zg)
-    ##var[[35]] <- mstmipvar("SMFrozFrac", lat, lon, t, zg)
-    ##var[[36]] <- mstmipvar("SMLiqFrac", lat, lon, t, zg)
-    var[[35]] <- mstmipvar("SMFrozFrac", lat, lon, t, zg)
-    var[[36]] <- mstmipvar("SMLiqFrac", lat, lon, t, zg)
-    var[[37]] <- mstmipvar("SoilMoist", lat, lon, t, zg)
+    nc_var[[23]] <- mstmipvar("Tair", lat, lon, t, zg)
+    nc_var[[24]] <- mstmipvar("Wind", lat, lon, t, zg)
+    nc_var[[25]] <- mstmipvar("Lwnet", lat, lon, t, zg)
+    nc_var[[26]] <- mstmipvar("Qg", lat, lon, t, zg)
+    nc_var[[27]] <- mstmipvar("Qh", lat, lon, t, zg)
+    nc_var[[28]] <- mstmipvar("Qle", lat, lon, t, zg)
+    nc_var[[29]] <- mstmipvar("Swnet", lat, lon, t, zg)
+    nc_var[[30]] <- mstmipvar("RootMoist", lat, lon, t, zg)
+    nc_var[[31]] <- mstmipvar("Tveg", lat, lon, t, zg)
+    nc_var[[32]] <- mstmipvar("WaterTableD", lat, lon, t, zg)
+    nc_var[[33]] <- mstmipvar("fPAR", lat, lon, t, zg)
+    nc_var[[34]] <- mstmipvar("LAI", lat, lon, t, zg)
+    ##nc_var[[35]] <- mstmipvar("SMFrozFrac", lat, lon, t, zg)
+    ##nc_var[[36]] <- mstmipvar("SMLiqFrac", lat, lon, t, zg)
+    nc_var[[35]] <- mstmipvar("SMFrozFrac", lat, lon, t, zg)
+    nc_var[[36]] <- mstmipvar("SMLiqFrac", lat, lon, t, zg)
+    nc_var[[37]] <- mstmipvar("SoilMoist", lat, lon, t, zg)
     out <- checkTemp(38)
-    var[[38]] <- mstmipvar("SoilTemp", lat, lon, t, zg)
-    var[[39]] <- mstmipvar("SoilWet", lat, lon, t, zg)
-    var[[40]] <- mstmipvar("Albedo", lat, lon, t, zg)
+    nc_var[[38]] <- mstmipvar("SoilTemp", lat, lon, t, zg)
+    nc_var[[39]] <- mstmipvar("SoilWet", lat, lon, t, zg)
+    nc_var[[40]] <- mstmipvar("Albedo", lat, lon, t, zg)
     out <- checkTemp(41)
-    var[[41]] <- mstmipvar("SnowT", lat, lon, t, zg)
-    var[[42]] <- mstmipvar("SWE", lat, lon, t, zg)
+    nc_var[[41]] <- mstmipvar("SnowT", lat, lon, t, zg)
+    nc_var[[42]] <- mstmipvar("SWE", lat, lon, t, zg)
     out <- checkTemp(43)
-    var[[43]] <- mstmipvar("VegT", lat, lon, t, zg)
-    var[[44]] <- mstmipvar("Evap", lat, lon, t, zg)
-    var[[45]] <- mstmipvar("Qs", lat, lon, t, zg)
-    var[[46]] <- mstmipvar("Qsb", lat, lon, t, zg)
+    nc_var[[43]] <- mstmipvar("VegT", lat, lon, t, zg)
+    nc_var[[44]] <- mstmipvar("Evap", lat, lon, t, zg)
+    nc_var[[45]] <- mstmipvar("Qs", lat, lon, t, zg)
+    nc_var[[46]] <- mstmipvar("Qsb", lat, lon, t, zg)
     
     ## write ALMA
-    nc <- ncdf4::nc_create(file.path(outdir, paste(yrs[y], "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(yrs[y], "nc", sep = ".")), nc_var)
     varfile <- file(file.path(outdir, paste(yrs[y], "nc", "var", sep = ".")), "w")
-    for (i in seq_along(var)) {
-      ncdf4::ncvar_put(nc, var[[i]], out[[i]])
-      cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
+    for (i in seq_along(nc_var)) {
+      ncdf4::ncvar_put(nc, nc_var[[i]], out[[i]])
+      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
     ncdf4::nc_close(nc)
+    
   }  ## end year loop
+  
 } # model2netcdf.ED2
+##-------------------------------------------------------------------------------------------------#
