@@ -9,7 +9,12 @@ neff <- function(x) {
 }
 
 neff.default <- function(x) {
-    arout <- ar.yw(x, na.action = na.omit)
+    xna <- is.na(x)
+    if (any(xna)) {
+        warning("NA in neff input. Omitting.")
+        x <- x[!xna]
+    }
+    arout <- ar.yw(x)
     spec <- arout$var.pred/(1 - sum(arout$ar))^2
     out <- length(x) * var(x) / spec
     stopifnot(length(out) == 1)
