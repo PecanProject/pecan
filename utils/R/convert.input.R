@@ -7,7 +7,7 @@
 ##' @author Betsy Cowdery, Michael Dietze, Ankur Desai
 convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, start_date, 
                           end_date, pkg, fcn, con = con, host, browndog, write = TRUE, 
-                          format.vars, overwrite = FALSE, ...) {
+                          format.vars, overwrite = FALSE,exact.dates = FALSE, ...) {
   input.args <- list(...)
   
   logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
@@ -22,13 +22,17 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   
   print(paste("start CHECK Convert.Inputs", fcn, input.id, host$name, outfolder, 
               formatname, mimetype, site.id, start_date, end_date))
+  
   existing.dbfile <- dbfile.input.check(siteid = site.id,
                                         mimetype = mimetype, 
                                         formatname = formatname, 
                                         parentid = input.id, 
+                                        startdate = start_date,
+                                        enddate = end_date, 
                                         con = con, 
                                         hostname = host$name, 
                                         ignore.dates = TRUE)
+  
   print(existing.dbfile, digits = 10)
   print("end CHECK")
   
@@ -39,6 +43,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     # (DB values are timezone-free)
     start_date <- lubridate::force_tz(lubridate::as_date(start_date), "UTC")
     end_date   <- lubridate::force_tz(lubridate::as_date(end_date), "UTC")
+    
     existing.input$start_date <- lubridate::force_tz(lubridate::as_date(existing.input$start_date), 
                                           "UTC")
     existing.input$end_date <- lubridate::force_tz(lubridate::as_date(existing.input$end_date), "UTC")
@@ -56,20 +61,34 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                        verbose = TRUE, R = "R")
       
       # Schedule files to be replaced or deleted on exiting the function
-      succesful <- FALSE
+      successful <- FALSE
+      
       on.exit(if (exists("successful") && successful) {
+        
         logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
         remote.execute.R(file.deletion.commands$delete.tmp, host, user = NA, 
                          verbose = TRUE, R = "R")
+        
       } else {
         logger.info("Conversion failed. Replacing old files.")
         remote.execute.R(file.deletion.commands$replace.from.tmp, host, user = NA, 
                          verbose = TRUE, R = "R")
       })
     } else if ((start_date >= existing.input$start_date) && (end_date <= existing.input$end_date)) {
+      
+      if (exact.dates && (start_date == existing.input$start_date) & (end_date == existing.input$end_date)) {
+        
+        ## Model Needs exact dates and files already exist. Good to Go.
+        logger.info("Skipping this input conversion because files are already available.")
+        return(list(
+          input.id  <- existing.input$id,
+          dbfile.id <- existing.dbfile$id
+        ))
+      
       # There's an existing input that spans desired start/end dates. Use that one.
       logger.info("Skipping this input conversion because files are already available.")
       return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
+      
     } else {
       # Start/end dates need to be updated so that the input spans a continuous
       # timeframe
