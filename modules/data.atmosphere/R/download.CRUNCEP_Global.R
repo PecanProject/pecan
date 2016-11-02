@@ -8,7 +8,7 @@
 ##' @param lat
 ##' @param lon
 ##'
-##' @author James Simkins, Mike Dietze, Shawn Serbin
+##' @author James Simkins, Mike Dietze
 download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, 
                              overwrite = FALSE, verbose = FALSE, ...) {
   
