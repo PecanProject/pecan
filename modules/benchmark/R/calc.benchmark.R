@@ -11,8 +11,12 @@
 
 calc.benchmark <- function(settings, bety) {
   
-  library(RPostgreSQL)
-  library(data.table)
+  # dplyr functions
+  tbl     <- dplyr::tbl
+  filter  <- dplyr::filter
+  rename  <- dplyr::rename
+  collect <- dplyr::collect
+  select  <- dplyr::select
   
   site <- query.site(settings$run$site$id, bety$con)
   start_year <- lubridate::year(settings$run$start.date)
@@ -24,7 +28,7 @@ calc.benchmark <- function(settings, bety) {
   bms <- tbl(bety,'benchmarks') %>% rename(benchmark_id = id) %>%  
     left_join(.,tbl(bety, "benchmarks_benchmarks_reference_runs"), by="benchmark_id") %>% 
     filter(reference_run_id == settings$benchmark$reference_run_id) %>% 
-    dplyr::select(one_of("benchmark_id", "input_id", "site_id", "variable_id", "reference_run_id")) %>%
+    select(one_of("benchmark_id", "input_id", "site_id", "variable_id", "reference_run_id")) %>%
     collect()
   
   
@@ -90,8 +94,8 @@ calc.benchmark <- function(settings, bety) {
       var <- filter(format$vars, variable_id == bm$variable_id)[, "pecan_name"]
       var.list <- c(var.list, var)
       
-      obvs.calc <- obvs_full %>% dplyr::select(., one_of(c("posix", var)))
-      model.calc <- model_full %>% dplyr::select(., one_of(c("posix", var)))
+      obvs.calc <- obvs_full %>% select(., one_of(c("posix", var)))
+      model.calc <- model_full %>% select(., one_of(c("posix", var)))
       
       # TODO: If the scores have already been calculated, don't redo
       
@@ -106,7 +110,7 @@ calc.benchmark <- function(settings, bety) {
       
       for(metric.id in metrics$id){
         metric <- filter(metrics,id == metric.id)[["name"]]
-        score <- out.calc.metrics[["benchmarks"]] %>% filter(.,metric == metric) %>% dplyr::select(score)
+        score <- out.calc.metrics[["benchmarks"]] %>% filter(.,metric == metric) %>% select(score)
       #   score.entry <- tbl(bety, "benchmarks_ensembles_scores") %>% 
       #     filter(score == score) %>% 
       #     filter(bechmarks_ensemble_id == settings$benchmark$ensemble_id)
@@ -119,7 +123,7 @@ calc.benchmark <- function(settings, bety) {
           filter(ensemble_id == settings$benchmark$ensemble_id) %>%
           filter(reference_run_id == settings$benchmark$reference_run_id) %>%
           filter(model_id == settings$model$id) %>%
-          dplyr::select(id) %>% collect %>% .[[1]]
+          select(id) %>% collect %>% .[[1]]
         
       db.query(paste0(
         "INSERT INTO benchmarks_ensembles_scores",
