@@ -64,7 +64,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     for (j in seq_len(nrow(var))) {
       dap_file <- paste0(dap_base, var$DAP.name[j], "_", year, "_v1.nc4")
       logger.info(dap_file)
-      dap <- nc_open(dap_file)
+      dap <- ncdf4::nc_open(dap_file)
       dat.list[[j]] <- ncdf4::ncvar_get(dap, 
                                  as.character(var$DAP.name[j]), 
                                  c(lon_trunc, lat_trunc, 1), 
