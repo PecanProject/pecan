@@ -23,6 +23,7 @@
 ## modified M. Dietze 07/08/12 modified S. Serbin 05/06/13
 model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
+  # Load functions
   ncdim_def <- ncdf4::ncdim_def
   ncatt_get <- ncdf4::ncatt_get
   ncvar_add <- ncdf4::ncvar_add
@@ -44,11 +45,13 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     ## yr[i] <- as.numeric(substr(tmp,1,4)) # Edited by SPS
   }
   
+  ## !!!! Remove when satisfied
   ## set up storage - !!THIS NEEDS GENERALIZATION TO DETERMINE OUTPUT FREQ ON-THE-FLY!!
   ## functions exist for this, need to create a general framework within the utils package for all similar cases
   ##block <- 4  # assumes 6-hourly  -  most run ED2 at 30 min. Setting to 6 will cause errors for most runs
   ##block <- 24 # assumes hourly  
-  block <- 48 # assumes half-hourly 
+  #block <- 48 # assumes half-hourly 
+  ### !!!
   
   add <- function(dat, col, row, year) {
     ## data is always given for whole year, except it will start always at 0
@@ -167,6 +170,12 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     row <- 1
     for (i in ysel) {
       ncT <- ncdf4::nc_open(file.path(outdir, flist[i]))
+      ## determine timestep from HDF5 file
+      block <- ifelse(lubridate::leap_year(yrs[y]) == TRUE,
+                      ncT$dim$phony_dim_0$len/366, # a leaper 
+                      ncT$dim$phony_dim_0$len/365) # non leap
+      logger.info(paste0("Output interval: ",86400/block," sec"))
+      ##
       if (file.exists(file.path(outdir, sub("-T-", "-Y-", flist[i])))) {
         ncY <- ncdf4::nc_open(file.path(outdir, sub("-T-", "-Y-", flist[i])))
         slzdata <- getHdf5Data(ncY, "SLZ")
