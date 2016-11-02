@@ -218,7 +218,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                           browndog = browndog, 
                                           new.site = new.site, 
                                           overwrite = overwrite$met2model,
-                                          allow.conflict = reg.model$update)
+                                          exact.dates = reg.model$exact.dates)
+    
     model.id  <- met2model.result$model.id
     outfolder <- met2model.result$outfolder
   } else {
