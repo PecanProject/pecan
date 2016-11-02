@@ -39,17 +39,14 @@ if (is.na(args[1])){
   settings <- read.settings(settings.file)
 }
 
-# Update/fix/check settings. Will only run the first time it's called, unless force=TRUE
-settings <- fix.deprecated.settings(settings, force=FALSE)
-settings <- addSecrets(settings, force=FALSE)
-settings <- update.settings(settings, force=FALSE)
-settings <- check.settings(settings, force=FALSE)
-
 # Check for additional modules that will require adding settings
 if("benchmark" %in% names(settings)){
   library(PEcAn.benchmark)
   settings <- papply(settings, read.settings.RR)
 }
+
+# Update/fix/check settings. Will only run the first time it's called, unless force=TRUE
+settings <- prepare.settings(settings, force=FALSE)
 
 # Write pecan.CHECKED.xml
 write.settings(settings, outputfile = "pecan.CHECKED.xml")
@@ -61,7 +58,7 @@ if (length(which(commandArgs() == "--continue")) == 0 && file.exists(statusFile)
 }
   
 # Do conversions
-settings <- do.conversions(settings, overwrite.met=FALSE, overwrite.fia=FALSE)
+settings <- do.conversions(settings)
 
 
 # Query the trait database for data and priors
