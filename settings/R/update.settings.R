@@ -16,8 +16,19 @@
 ##' @export update.settings
 ##' @author Rob Kooper
 
-update.settings <- function(settings) {
-
+update.settings <- function(settings, force=FALSE) {
+  if(!force && !is.null(settings$settings.info$settings.updated) && 
+     settings$settings.info$settings.updated==TRUE) {
+    logger.info("Deprecated settings have been fixed already. Skipping.")
+    return(invisible(settings))
+  } else {
+    logger.info("Fixing deprecated settings...")
+  }
+  
+  if(is.MultiSettings(settings)) {
+    return(invisible(papply(settings, update.settings, force=force)))
+  }
+  
   # update database section, now have different database definitions
   # under database section, e.g. fia and bety
   if (!is.null(settings$database)) {
@@ -201,5 +212,8 @@ update.settings <- function(settings) {
     settings$model$soil <- NULL
   }
   
-  invisible(settings)
+  # Set 'checked' flag so update.settings will be skipped in the future (unless force=TRUE)
+  settings$settings.info$settings.updated <- TRUE
+  
+  return(invisible(settings))
 }
