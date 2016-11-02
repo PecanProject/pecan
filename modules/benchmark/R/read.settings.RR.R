@@ -11,8 +11,13 @@
 
 
 read.settings.RR <- function(settings){
-  library(PEcAn.DB)
-  library(dplyr)
+  
+  # dplyr functions
+  tbl     <- dplyr::tbl
+  filter  <- dplyr::filter
+  rename  <- dplyr::rename
+  collect <- dplyr::collect
+  select  <- dplyr::select
   
   # don't know how to check inputs
   if (is.null(settings$database$bety)) {
@@ -20,7 +25,7 @@ read.settings.RR <- function(settings){
     return (settings)
   }
   
-  bety <- src_postgres(dbname   = settings$database$bety$dbname,
+  bety <- dplyr::src_postgres(dbname   = settings$database$bety$dbname,
                        host     = settings$database$bety$host,
                        user     = settings$database$bety$user,
                        password = settings$database$bety$password)
@@ -39,7 +44,7 @@ read.settings.RR <- function(settings){
         ens_wf <- tbl(bety, 'ensembles') %>% filter(id == settings$benchmark$ensemble_id) %>% 
           rename(ensemble_id = id) %>% 
           left_join(.,tbl(bety, "workflows") %>% rename(workflow_id = id), by="workflow_id") %>% collect()
-        BRR <- create.BRR(ens_wf, con = bety$con)
+        BRR <- create.BRR(ens_wf, con = bety$con, user_id = settings$info$userid)
       }else if(dim(bm_ens)[1] == 1){
         BRR <- tbl(bety,"reference_runs") %>% filter(id == bm_ens$reference_run_id) %>% 
           rename(reference_run_id = id) %>% collect()
@@ -54,26 +59,14 @@ read.settings.RR <- function(settings){
     }else{logger.error("Cannot find or create BRR")}
   } 
 
-  settings <- BRR %>% dplyr::select(settings) %>% collect() %>% unlist() %>%
-    xmlToList(.,"pecan") %>% append(settings,.) %>% Settings()
+  names(BRR$settings)
+  
+  BRR.settings <- BRR %>% select(settings) %>% collect() %>% unlist() %>%
+    xmlToList(.,"pecan") 
+  names(BRR.settings)
+  
+    
+  settings <- BRR.settings %>% append(settings,.) %>% Settings()
   invisible(settings)
 }
 
-
-
-# OLD Version where the function takes in a vector of id's
-
-# read.settings.RR <- function(ids,bety){
-#   settings.list <- list()
-#   for(i in seq_along(ids)){
-#     settings.list[[i]] <- tbl(bety,"reference_runs") %>% filter(id == ids[i]) %>% 
-#       dplyr::select(settings) %>% collect() %>% unlist() %>%
-#       xmlToList(.,"pecan") %>% Settings()
-#     settings.list[[i]]$info <- list(reference_run_id = ids[i])
-#   }
-#   settings.multi <- MultiSettings(settings.list)
-#   # This may not be the best way to add database information back into the xml, but it's a start
-#   settings.multi$database[[bety$info$dbname]] <- bety$info[c("host","user","dbname")]
-#   # Should I be getting the settings straight from config.php? That's where these settings are taken from anyway.
-#   return(settings.multi)
-# }
