@@ -4,7 +4,7 @@
 \alias{create.BRR}
 \title{Create benchmark reference run and ensemble}
 \usage{
-create.BRR(ens_wf, con)
+create.BRR(ens_wf, con, user_id = "")
 }
 \arguments{
 \item{ens_wf}{table made from joining ensemble and workflow tables}
