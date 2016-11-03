@@ -4,7 +4,7 @@
 \alias{papply}
 \title{Apply functions to PEcAn MultiSettings}
 \usage{
-papply(settings, fn, stop.on.error = FALSE, ...)
+papply(settings, fn, ..., stop.on.error = FALSE)
 }
 \arguments{
 \item{settings}{A \code{\link{MultiSettings}}, \code{\link{Settings}}, or \code{\link[base]{list}}
