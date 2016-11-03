@@ -2,7 +2,7 @@
 % Please edit documentation in R/metric.lmDiag.plot.R
 \name{metric.lmDiag.plot}
 \alias{metric.lmDiag.plot}
-\title{metric.lmDiag.plot}
+\title{Linear Regression Diagnostic Plot}
 \usage{
 metric.lmDiag.plot(metric_dat, var, filename = NA, draw.plot = FALSE)
 }
