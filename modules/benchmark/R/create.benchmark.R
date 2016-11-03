@@ -55,8 +55,8 @@ create.benchmark <- function(settings, bety){
     
     # Retrieve/create benchmark record
     if(dim(bm)[1] == 0){
-      cmd <- sprintf("INSERT INTO benchmarks (input_id, variable_id, site_id, user_id)",
-                     " VALUES ( %s, %s, %s, %s) RETURNING * ", 
+      cmd <- sprintf(paste0("INSERT INTO benchmarks (input_id, variable_id, site_id, user_id)",
+                            "VALUES ( %s, %s, %s, %s) RETURNING * ;"), 
                      settings$benchmark$input_id, settings$benchmark$variables[[i]],
                      settings$run$site$id, settings$info$userid)
       bm <- db.query(cmd, bety$con)
@@ -72,7 +72,8 @@ create.benchmark <- function(settings, bety){
     
     
     if(dim(bmBRR)[1] == 0){
-      cmd <- sprintf("INSERT INTO benchmarks_benchmarks_reference_runs (benchmark_id, reference_run_id) VALUES (%s, %s)",
+      cmd <- sprintf(paste0("INSERT INTO benchmarks_benchmarks_reference_runs",
+                            " (benchmark_id, reference_run_id) VALUES (%s, %s)"),
                      bm$id, settings$benchmark$reference_run_id)
       db.query(cmd, bety$con)
     }else if(dim(bmBRR)[1] > 1){
@@ -86,7 +87,7 @@ create.benchmark <- function(settings, bety){
         filter(metric_id == settings$benchmark$metrics[[j]])  %>% collect()
       
       if(dim(bmmetric)[1] == 0){
-        cmd <- sprintf("INSERT INTO benchmarks_metrics (benchmark_id, metric_id) VALUES (%s, %s)",
+        cmd <- sprintf(paste0("INSERT INTO benchmarks_metrics (benchmark_id, metric_id) VALUES (%s, %s)"),
                        bm$id, settings$benchmark$metrics[[j]])
         db.query(cmd, bety$con)
       }else if(dim(bmmetric)[1] > 1){
