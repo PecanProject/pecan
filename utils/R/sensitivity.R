@@ -116,10 +116,10 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   MEDIAN <- "50"
   median.samples <- list()
   for (i in seq_along(quantile.samples)) {
-    median.samples[[i]] <- quantile.samples[[i]][MEDIAN, ]
+    median.samples[[i]] <- quantile.samples[[i]][MEDIAN, , drop=FALSE]
   }
   names(median.samples) <- names(quantile.samples)
-  
+
   if (!is.null(con)) {
     ensemble.id <- db.query(paste0(
       "INSERT INTO ensembles (runtype, workflow_id) ",
@@ -200,7 +200,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   
   ## loop over pfts
   runs <- list()
-  for (i in seq(names(quantile.samples))) {
+  for (i in seq_along(names(quantile.samples))) {
     pftname <- names(quantile.samples)[i]
     if (pftname == "env") {
       next
@@ -217,7 +217,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
         if (quantile.str != MEDIAN) {
           quantile <- as.numeric(quantile.str) / 100
           trait.samples <- median.samples
-          trait.samples[[i]][trait] <- quantile.samples[[i]][quantile.str, trait]
+          trait.samples[[i]][trait] <- quantile.samples[[i]][quantile.str, trait, drop=FALSE]
           
           if (!is.null(con)) {
             now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
