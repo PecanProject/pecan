@@ -2,15 +2,16 @@
 % Please edit documentation in R/write.settings.R
 \name{write.settings}
 \alias{write.settings}
-\title{Fix Deprecated Settings}
+\title{Write settings}
 \usage{
-write.settings(settings, outputfile = "pecan.CHECKED.xml")
+write.settings(settings, outputfile, outputdir = settings$outdir)
 }
 \arguments{
 \item{settings}{settings list}
-}
-\value{
-updated settings list
+
+\item{outputfile}{the file name to write to}
+
+\item{outputdir}{the directory to write to}
 }
 \description{
 Takes in a settings object, performs a series of checks, fixes & updates settings and produces pecan.CHECKED.xml
