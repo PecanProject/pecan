@@ -22,7 +22,11 @@
 ##' @author Shawn Serbin, Michael Dietze
 model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
-  library(PEcAn.utils)
+  ## load functions
+  #library(PEcAn.utils) # !!phase out the loading of this lib !!
+  ncvar_def <- ncdf4::ncvar_def
+  ncdim_def <- ncdf4::ncdim_def
+  mstmipvar <- PEcAn.utils::mstmipvar
   
   ### Read in model output in DALEC format
   DALEC.output      <- read.table(file.path(outdir, "out.txt"), header = FALSE, sep = "")
@@ -74,11 +78,11 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     output[[16]] <- output[[12]] + output[[13]]  ## TotSoilCarb
     
     # ******************** Declare netCDF variables ********************#
-    t   <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
+    t   <- ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
                      vals = 1:nrow(sub.DALEC.output), 
                      calendar = "standard", unlim = TRUE)
-    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
     
     ## ***** Need to dynamically update the UTC offset here *****
     
@@ -87,36 +91,34 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
         output[[i]] <- rep(-999, length(t$vals))
     }
     
-    var <- list()
-    var[[1]]  <- mstmipvar("AutoResp", lat, lon, t, NA)
-    var[[2]]  <- mstmipvar("HeteroResp", lat, lon, t, NA)
-    var[[3]]  <- mstmipvar("GPP", lat, lon, t, NA)
-    var[[4]]  <- mstmipvar("NEE", lat, lon, t, NA)
-    var[[5]]  <- mstmipvar("NPP", lat, lon, t, NA)
+    nc_var <- list()
+    nc_var[[1]]  <- mstmipvar("AutoResp", lat, lon, t, NA)
+    nc_var[[2]]  <- mstmipvar("HeteroResp", lat, lon, t, NA)
+    nc_var[[3]]  <- mstmipvar("GPP", lat, lon, t, NA)
+    nc_var[[4]]  <- mstmipvar("NEE", lat, lon, t, NA)
+    nc_var[[5]]  <- mstmipvar("NPP", lat, lon, t, NA)
+    nc_var[[6]]  <- ncvar_def("LeafLitter", "kgC/m2/s", list(lon, lat, t), -999)
+    nc_var[[7]]  <- ncvar_def("WoodyLitter", "kgC/m2/s", list(lon, lat, t), -999)
+    nc_var[[8]]  <- ncvar_def("RootLitter", "kgC/m2/s", list(lon, lat, t), -999)
+    nc_var[[9]]  <- ncvar_def("LeafBiomass", "kgC/m2", list(lon, lat, t), -999)
+    nc_var[[10]] <- ncvar_def("WoodBiomass", "kgC/m2", list(lon, lat, t), -999)
+    nc_var[[11]] <- ncvar_def("RootBiomass", "kgC/m2", list(lon, lat, t), -999)
+    nc_var[[12]] <- ncvar_def("LitterBiomass", "kgC/m2", list(lon, lat, t), -999)
+    nc_var[[13]] <- ncvar_def("SoilC", "kgC/m2", list(lon, lat, t), -999)
     
-    ncvar_def <- ncdf4::ncvar_def
-    var[[6]]  <- ncvar_def("LeafLitter", "kgC/m2/s", list(lon, lat, t), -999)
-    var[[7]]  <- ncvar_def("WoodyLitter", "kgC/m2/s", list(lon, lat, t), -999)
-    var[[8]]  <- ncvar_def("RootLitter", "kgC/m2/s", list(lon, lat, t), -999)
-    var[[9]]  <- ncvar_def("LeafBiomass", "kgC/m2", list(lon, lat, t), -999)
-    var[[10]] <- ncvar_def("WoodBiomass", "kgC/m2", list(lon, lat, t), -999)
-    var[[11]] <- ncvar_def("RootBiomass", "kgC/m2", list(lon, lat, t), -999)
-    var[[12]] <- ncvar_def("LitterBiomass", "kgC/m2", list(lon, lat, t), -999)
-    var[[13]] <- ncvar_def("SoilC", "kgC/m2", list(lon, lat, t), -999)
-    
-    var[[14]] <- mstmipvar("TotalResp", lat, lon, t, NA)
-    var[[15]] <- mstmipvar("TotLivBiom", lat, lon, t, NA)
-    var[[16]] <- mstmipvar("TotSoilCarb", lat, lon, t, NA)
+    nc_var[[14]] <- mstmipvar("TotalResp", lat, lon, t, NA)
+    nc_var[[15]] <- mstmipvar("TotLivBiom", lat, lon, t, NA)
+    nc_var[[16]] <- mstmipvar("TotSoilCarb", lat, lon, t, NA)
     
     # ******************** Declar netCDF variables ********************#
     
     ### Output netCDF data
-    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
-    for (i in seq_along(var)) {
+    for (i in seq_along(nc_var)) {
       # print(i)
-      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
-      cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
+      ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
+      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
     ncdf4::nc_close(nc)
@@ -125,3 +127,4 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
 } # model2netcdf.DALEC
 # ==================================================================================================#
+## EOF
