@@ -25,7 +25,8 @@ Depends:
     PEcAn.data.remote,
     PEcAn.assim.batch,
     PEcAn.emulator,
-    PEcAn.priors
+    PEcAn.priors,
+    PEcAn.benchmark
 Suggests:
     PEcAn.ed,
     PEcAn.sipnet,
