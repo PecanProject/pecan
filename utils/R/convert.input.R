@@ -36,45 +36,48 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   print(existing.dbfile, digits = 10)
   print("end CHECK")
   
+  
+      
+        
+        
   if (nrow(existing.dbfile) > 0) {
-    existing.input <- db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]), 
-                               con)
-    # Convert dates to Date objects and strip all time zones 
+    
+    existing.input <- db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
+    
+    # Convert dates to Date objects and strip all time zones
     # (DB values are timezone-free)
     start_date <- lubridate::force_tz(lubridate::as_date(start_date), "UTC")
     end_date   <- lubridate::force_tz(lubridate::as_date(end_date), "UTC")
     
-    existing.input$start_date <- lubridate::force_tz(lubridate::as_date(existing.input$start_date), 
-                                          "UTC")
-    existing.input$end_date <- lubridate::force_tz(lubridate::as_date(existing.input$end_date), "UTC")
+    existing.input$start_date <- lubridate::force_tz(lubridate::as_date(existing.input$start_date), "UTC")
+    existing.input$end_date   <- lubridate::force_tz(lubridate::as_date(existing.input$end_date), "UTC")
     
     if (overwrite) {
       # collect files to flag for deletion
-      files.to.delete <- remote.execute.R(paste0("list.files('", 
-                                                 existing.dbfile[["file_path"]], 
-                                                 "', full.names=TRUE)"), 
-                                          host, user = NA, verbose = TRUE, R = "R")
+      files.to.delete <- remote.execute.R( paste0("list.files('",
+                                                  existing.dbfile[["file_path"]],
+                                                  "', full.names=TRUE)"),
+                                           host, user = NA, verbose = TRUE,R = "R")
       
       file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
       
-      remote.execute.R(file.deletion.commands$move.to.tmp, host, user = NA, 
-                       verbose = TRUE, R = "R")
+      remote.execute.R( file.deletion.commands$move.to.tmp,host, user = NA, 
+                        verbose = TRUE,R = "R")
       
       # Schedule files to be replaced or deleted on exiting the function
       successful <- FALSE
-      
       on.exit(if (exists("successful") && successful) {
         
         logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-        remote.execute.R(file.deletion.commands$delete.tmp, host, user = NA, 
-                         verbose = TRUE, R = "R")
+        remote.execute.R( file.deletion.commands$delete.tmp, host, user = NA, verbose = TRUE,  R = "R" )
         
       } else {
         logger.info("Conversion failed. Replacing old files.")
-        remote.execute.R(file.deletion.commands$replace.from.tmp, host, user = NA, 
-                         verbose = TRUE, R = "R")
+        remote.execute.R(file.deletion.commands$replace.from.tmp, host, user = NA, verbose = TRUE, R = "R" )
       })
-    } else if ((start_date >= existing.input$start_date) && (end_date <= existing.input$end_date)) {
+      
+    } else if ((start_date >= existing.input$start_date) &&
+                 (end_date <= existing.input$end_date)) {
       
       if (exact.dates && (start_date == existing.input$start_date) & (end_date == existing.input$end_date)) {
         
@@ -84,19 +87,39 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
           input.id  <- existing.input$id,
           dbfile.id <- existing.dbfile$id
         ))
+        
+      } else if (exact.dates && (start_date >= existing.input$start_date) && (end_date <= existing.input$end_date) ||
+                   exact.dates && (start_date == existing.input$start_date) && (end_date <= existing.input$end_date) ||
+                   exact.dates && (start_date >= existing.input$start_date) && (end_date == existing.input$end_date)) {
+        
+        ##dates are within existing input record, but model needs specific dates.
+        ## Keep Input record. Not File Record. File Record will be created and inserted later
+        
+        inputid = existing.input$id
+        
+      } else {
+        # There's an existing input that spans desired start/end dates. Use that one.
+        logger.info("Skipping this input conversion because files are already available.")
+        return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
+      }
       
-      # There's an existing input that spans desired start/end dates. Use that one.
-      logger.info("Skipping this input conversion because files are already available.")
-      return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
+      
       
     } else {
       # Start/end dates need to be updated so that the input spans a continuous
       # timeframe
       start_date <- min(start_date, existing.input$start_date)
       end_date <- max(end_date, existing.input$end_date)
-      logger.info(paste0("Changed start/end dates to '", 
-                         start_date, "'/'", end_date, "' ", 
-                         "so that existing input can be updated while maintaining continuous time span."))
+      logger.info(
+        paste0(
+          "Changed start/end dates to '",
+          start_date,
+          "'/'",
+          end_date,
+          "' ",
+          "so that existing input can be updated while maintaining continuous time span."
+        )
+      )
       
       # There might be existing files for some years (but not all; checked that above)
       # fcn should be smart enough not overwrite the existing ones, and hopefully won't
@@ -104,7 +127,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       # we'll need to update its start/end dates We don't know the dbfile path/prefix
       # until after fcn runs, so unfortunately can't check that the new dbfile record
       # won't conflict with existing ones.
-    }
+    } 
   } else {
     # No existing record found. Should be good to go.
   }
