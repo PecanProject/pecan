@@ -272,11 +272,14 @@ write.ensemble.configs <- function(defaults, ensemble.samples, settings, model,
         "outdir      : ", file.path(settings$host$outdir, run.id), "\n",
         file = file.path(settings$rundir, run.id, "README.txt"))
     
-    do.call(my.write.config, args = list(defaults = defaults, 
-                                         trait.values = lapply(ensemble.samples, 
-                                                               function(x, n) { x[n, ] },
-                                                               n = counter), 
-                                         settings = settings, run.id = run.id))
+    do.call(my.write.config, args = list(
+      defaults = defaults, 
+      trait.values = lapply(
+        ensemble.samples, function(x, n) { x[n, , drop=FALSE] }, n=counter
+      ), 
+      settings = settings, 
+      run.id = run.id)
+    )
     cat(run.id, file = file.path(settings$rundir, "runs.txt"), sep = "\n", append = TRUE)
   }
 
