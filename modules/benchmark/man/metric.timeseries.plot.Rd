@@ -2,7 +2,7 @@
 % Please edit documentation in R/metric.timeseries.plot.R
 \name{metric.timeseries.plot}
 \alias{metric.timeseries.plot}
-\title{metric.timeseries.plot}
+\title{Timeseries Plot}
 \usage{
 metric.timeseries.plot(metric_dat, var, filename = NA, draw.plot = FALSE)
 }
