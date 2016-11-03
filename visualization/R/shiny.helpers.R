@@ -146,6 +146,18 @@ get_workflow_ids <- function(bety, session) {
   return(ids)
 }  # get_workflow_ids
 
+#' Get data frame of users and IDs
+#' @inheritParams dbHostInfo
+#' @param session Session object passed through Shiny
+#' @export
+get_users <- function(bety, session) {
+  hostinfo <- dbHostInfo(bety)
+  query <- "SELECT id, login FROM users"
+  out <- tbl(bety, sql(query)) %>% 
+    filter(id >= hostinfo$start & id <= hostinfo$end)
+  return(out)
+}  # get_workflow_ids
+
 
 #' Get vector of run IDs for a given workflow ID
 #' @inheritParams dbHostInfo
