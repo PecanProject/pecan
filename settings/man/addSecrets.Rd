@@ -4,7 +4,7 @@
 \alias{addSecrets}
 \title{Add Users secrets}
 \usage{
-addSecrets(settings)
+addSecrets(settings, force = FALSE)
 }
 \arguments{
 \item{settings}{settings file}

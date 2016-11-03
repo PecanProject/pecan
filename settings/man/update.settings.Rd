@@ -4,7 +4,7 @@
 \alias{update.settings}
 \title{Update Settings}
 \usage{
-\method{update}{settings}(settings)
+\method{update}{settings}(settings, force = FALSE)
 }
 \arguments{
 \item{settings}{settings file}
