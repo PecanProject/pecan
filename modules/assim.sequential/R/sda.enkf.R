@@ -236,58 +236,35 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   nt          <- length(obs.times)
   FORECAST    <- ANALYSIS <- list()
   enkf.params <- list()
-  aqq         <- array(0, dim = c(nt, length(var.names), length(var.names)))
+  aqq         <- NULL
   bqq         <- numeric(nt + 1)
   CI.X1       <- matrix(0, 3, nt)
   CI.X2       <- CI.X1
   
+  interval    <- NULL
   wish.df <- function(Om, X, i, j, col) {
     (Om[i, j]^2 + Om[i, i] * Om[j, j]) / var(X[, col])
   } # wish.df
   
   ## JAGS models for numerical update of state and process error
-  AnalysisFilterQ <- "
-  model{
+  #### Tobit Model
+  tobit.model <- "
+  model{ 
+  
+  ## Analysis
+  y.censored  ~ dmnorm(X[choose],r) ##cannot be partially observed -- JAGS Manual
+  
+  for(i in 1:N){
+  y.ind[i] ~ dinterval(y.censored[i], interval[i,])
+  }
+  
   X.mod ~ dmnorm(muf,pf) ## Model Forecast
-  
-  for(i in seq_along(X.mod)){
-  X.mod.not.zero[F2M[i]] <- X.mod[i]
-  }
-  
-  for(i in seq_along(E)){
-  X.mod.not.zero[E[i]]<-0
-  }
   
   ## add process error
   q  ~ dwish(aq,bq)
-  Q <- inverse(q) 
-  X  ~ dmnorm(X.mod.not.zero,q)
+  X  ~ dmnorm(X.mod,q)
+  Q <- inverse(q)
   
-  ## Analysis
-  for(i in seq_along(X.keep)){
-  X.keep[i] <- X[X2Y[i]]
-  }
-  Y  ~ dmnorm(X.keep,r)
-  }"
-  
-  AnalysisFilterQ1 <- "
-  model{
-  X.mod ~ dmnorm(muf,pf) ## Model Forecast
-  
-  for(i in seq_along(X.mod)){
-  X.mod.not.zero[F2M[i]] <- X.mod[i]
-  }
-  
-  ## add process error
-  q  ~ dwish(aq,bq)
-  Q <- inverse(q) 
-  X  ~ dmnorm(X.mod.not.zero,q)
-  
-  ## Analysis
-  for(i in seq_along(X.keep)){
-  X.keep[i] <- X[X2Y[i]]
-  }
-  Y  ~ dmnorm(X.keep,r)
   }"
   
   t1         <- 1
@@ -325,12 +302,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
     Pf <- cov(X)
     
+    
     ###-------------------------------------------------------------------###
     ### analysis                                                          ###
     ###-------------------------------------------------------------------###  
     if (any(obs)) {
       # if no observations skip analysis
       Y <- obs.mean[[t]][pmatch(names(obs.mean[[t]]), colnames(X))]
+      choose <- na.omit(pmatch(colnames(X), names(obs.mean[[t]]))) #matches y to model
       
       R <- as.matrix(obs.cov[[t]])
       
@@ -401,10 +380,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       ###-------------------------------------------------------------------###
       if (processvar == FALSE) {
         ## design matrix
-        H <- matrix(0, length(Y), ncol(X))
-        choose <- na.omit(pmatch(colnames(X), names(obs.mean[[t]])))
+        H <- matrix(0, length(Y), ncol(X)) #H maps true state to observed state
         for (i in choose) {
-          H[i, i] <- 1
+          H[i, i] <- 1 
         }
         ## process error
         if (exists("Q")) {
@@ -424,20 +402,36 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         
         #### initial conditions
         bqq[1]     <- length(mu.f)
+        if(is.null(aqq)){
+          aqq      <- array(0, dim = c(nt,ncol(X),ncol(X)))
+        }else{
+          if(ncol(X)!=dim(aqq)[2]|ncol(X)!=dim(aqq)[3]){
+            print('error: X has changed dimensions')
+          }else{
+           aqq      <- aqq #can this mess things up?
+          }
+        }
         aqq[1, , ] <- diag(length(mu.f)) * bqq[1]
         
-        #### marks zeros from the forecast ensembles
-        E <- which(colSums(Pf) == 0)
-        
-        #### forcast to modeled vector ## remove states that don't show up in forecast
-        F2M    <- seq(1, length(mu.f), 1)
-        F2M[E] <- NA
-        F2M    <- na.omit(F2M)
-        
-        #### translating x to y ## remove X that you don't have data for
-        X2Y <- seq(1, length(Y), 1)
-        X2Y <- X2Y[which(!is.na(Y))]
-        
+        ### interval
+        if(is.null(interval)){
+          interval <- matrix(NA, length(obs.mean[[t]]), 2)
+          rownames(interval) <- names(obs.mean[[t]])
+          for(i in 1:length(var.names)){
+            interval[which(startsWith(rownames(interval),
+                                      var.names[i])), ] <- matrix(c(as.numeric(settings$state.data.assimilation$state.variables[[i]]$min_value),
+                                                            as.numeric(settings$state.data.assimilation$state.variables[[i]]$max_value)),
+                                                            length(which(startsWith(rownames(interval),
+                                                                                    var.names[i]))),2,byrow = TRUE)
+          }
+        }else{
+          if(nrow(interval)!=length(obs.mean[[t]])){
+            print('error Y dimensions have changed')
+          }else{
+            interval <- interval #can this mess things up?
+          }
+        }
+
         #### changing diagonal if the covariance is too small for the matrix to be inverted 
         #### This problem is different than R problem because diag(Pf) can be so small it can't be inverted 
         #### Need a different fix here someday
@@ -446,40 +440,26 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
             diag(Pf)[i] <- min(diag(Pf)[which(diag(Pf) != 0)])/2  #HACK
           }
         }
+
+        y.ind <- as.numeric(Y > interval[,1])
+        y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
         
-        ### analysis of model and data if all ensemble members
-        if (length(E) > 0) {
-          update <- list(Y = Y, 
-                         r = solve(R[X2Y, X2Y]), 
-                         muf = mu.f[-E], 
-                         pf = solve(Pf[-E, -E]), 
-                         aq = aqq[t, , ], 
-                         bq = bqq[t], 
-                         F2M = F2M, 
-                         X2Y = X2Y, 
-                         X.mod = rep(NA, length(mu.f[-E])), 
-                         X = rep(NA, length(mu.f)), 
-                         X.keep = rep(NA, length(X2Y)), 
-                         E = E)
-          mod <- jags.model(file = textConnection(AnalysisFilterQ), data = update, n.adapt = 1000, 
-                            n.chains = 3, init = list(X.mod = as.vector(mu.f[-c(E)])))  #inits for q?
-        } else {
-          update <- list(Y = Y, 
-                         r = solve(R[X2Y, X2Y]),
-                         muf = mu.f, 
-                         pf = solve(Pf),
-                         aq = aqq[t, , ], 
-                         bq = bqq[t], 
-                         F2M = F2M, 
-                         X2Y = X2Y, 
-                         X.mod = rep(NA, length(mu.f)), 
-                         X = rep(NA, length(mu.f)), 
-                         X.keep = rep(NA, length(na.omit(Y))))
-          mod <- jags.model(file = textConnection(AnalysisFilterQ1), data = update, n.adapt = 1000, 
-                            n.chains = 3, init = list(X.mod = as.vector(mu.f)))  #inits for q?
-        }
+        update <- list(interval = interval,
+                       N = length(y.ind),
+                       y.ind = y.ind,
+                       y.censored = y.censored, 
+                       r = solve(R),
+                       muf = mu.f, 
+                       pf = solve(Pf),
+                       aq = aqq[t,,], 
+                       bq = bqq[t],
+                       choose = choose)
         
-        
+        mod <- jags.model(file = textConnection(tobit.model),
+                          data = update,
+                          n.adapt = 1000, 
+                          n.chains = 3)  #inits for q?
+
         jdat <- coda.samples(mod, variable.names = c("X", "q"), n.iter = 10000)
         
         ## update parameters
@@ -523,13 +503,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       ###-------------------------------------------------------------------### 
       
       ### no process variance -- forecast is the same as the analysis ###
-      if (!processvar) {
+      if (processvar==FALSE) {
         mu.a <- mu.f
-        Pa   <- Pf + Q
+        Pa   <- Pf + Q #Where are we getting Q here? Shouldn't it be just Pf?
         ### yes process variance -- no data
       } else {
         mu.a <- mu.f
-        Pa   <- Pf + solve(q.bar)
+        Pa   <- Pf + solve(q.bar)#Where are we getting q.bar here?
       }
       enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
     }
@@ -611,12 +591,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     if (t < nt) {
       
       ###-------------------------------------------------------------------###
-      ### load model specific inputs for initial runs                       ###
+      ### load model specific inputs for current runs                       ###
       ###-------------------------------------------------------------------### 
       
       inputs <- do.call(my.split.inputs, 
                         args = list(settings = settings, 
-                                    start.time = (ymd_hms(obs.times[t]) + second(hms("00:00:01"))), 
+                                    start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))), 
                                     stop.time = obs.times[t + 1]))
       
       ###-------------------------------------------------------------------###
@@ -627,13 +607,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         do.call(my.write.restart, 
                 args = list(outdir = outdir, 
                             runid = run.id[[i]], 
-                            start.time = (ymd_hms(obs.times[t]) + second(hms("00:00:01"))),
-                            stop.time = obs.times[t + 1], 
+                            start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))),
+                            stop.time = ymd_hms(obs.times[t + 1],truncated = 3), 
                             settings = settings,
                             new.state = new.state[i, ], 
                             new.params = new.params[[i]], 
                             inputs = inputs, 
-                            RENAME = FALSE))
+                            RENAME = TRUE))
       }
       ###-------------------------------------------------------------------###
       ### Run model                                                         ###
@@ -658,8 +638,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   if (model == "LINKAGES") {
     climate_file <- settings$run$inputs$met$path
     load(climate_file)
-    temp.mat     <- temp.mat[obs.times - 853, ]
-    precip.mat   <- precip.mat[obs.times - 853, ]
+    temp.mat     <- temp.mat[year(obs.times) - 853, ]
+    precip.mat   <- precip.mat[year(obs.times) - 853, ]
   } else {
     print("climate diagnostics under development")
   }
@@ -688,7 +668,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   })))  #need to make this from quantiles for lyford plot data
   # YCI = YCI[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
   
-  for (i in seq_along(X)) {
+  for (i in 1:ncol(X)) {
     t1 <- 1
     Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
     Xci <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
