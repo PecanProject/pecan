@@ -4,7 +4,7 @@
 \alias{fix.deprecated.settings}
 \title{Fix Deprecated Settings}
 \usage{
-fix.deprecated.settings(settings)
+fix.deprecated.settings(settings, force = FALSE)
 }
 \arguments{
 \item{settings}{settings list}

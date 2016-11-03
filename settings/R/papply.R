@@ -34,7 +34,7 @@
 #' @export
 #' 
 #' @example examples/examples.papply.R
-papply <- function(settings, fn, stop.on.error = FALSE, ...) {
+papply <- function(settings, fn, ..., stop.on.error = FALSE) {
   if (is.MultiSettings(settings)) {
     result <- list()
     errors <- character(0)
