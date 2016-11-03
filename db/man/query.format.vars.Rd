@@ -4,7 +4,7 @@
 \alias{query.format.vars}
 \title{Given input_id, return formats table and table of variables and units}
 \usage{
-query.format.vars(input.id, con, format.id)
+query.format.vars(input.id, bety, format.id = NA, var.ids = NA)
 }
 \arguments{
 \item{con}{: database connection}
