@@ -54,4 +54,4 @@ read.restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
   # Put forecast into vector
   print(runid)
   unlist(forecast)
-} # read.restart.LINKAGES
+}

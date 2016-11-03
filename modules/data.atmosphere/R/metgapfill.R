@@ -667,5 +667,5 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
   ## Step 6.Replace gaps with debiased time series (perhaps store statistics of fit somewhere as a measure of uncertainty?)
   ## Step 7. Write to outfolder the new NetCDF file
   
-  invisible(results)
+  return(invisible(results))
 } # metgapfill

@@ -21,16 +21,12 @@
 ##' @author Mike Dietze
 ##-------------------------------------------------------------------------------------------------#
 write.config.FATES <- function(defaults, trait.values, settings, run.id){
-   library(PEcAn.utils)
-#  
-# #OUTLINE OF MODULES
-#   # Copy Case and Build
-#   #  -symbolic link to refernce case that is already completed
-#   # Edit user_nl_* files to add site info
-#   # make Jobs.sh -case_submit
-#   # call met2model and add to namelists
-#   #
 
+   ## function references
+   ncvar_put <- ncdf4::ncvar_put
+   ncvar_get <- ncdf4::ncvar_get
+
+   ## site information
    site <- settings$run$site
    site.id <- as.numeric(site$id)
   
@@ -51,7 +47,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    ## this needs to be generalized to fractional years, but accounting for 365 day year
    start_date <- as.Date(settings$run$start.date)
    end_date   <- as.Date(settings$run$end.date)
-   stop_n     <- as.numeric(end_date - start_date, units="days") - n_leap_day(start_date,end_date) + 1  
+   stop_n     <- as.numeric(end_date - start_date, units="days") - PEcAn.utils::n_leap_day(start_date,end_date) + 1  
    
    ##-----------------------------------------------------------------------##
    ##                                                                       ##
@@ -67,7 +63,6 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    domain.file <- file.path(local.rundir,paste0("domain.lnd.",site_name,".nc"))
    file.copy(domain.default,domain.file)
    domain.nc <- ncdf4::nc_open(domain.file,write=TRUE)
-   ncvar_put <- ncdf4::ncvar_put
    ncvar_put(nc=domain.nc, varid='xc', vals=lon)
    ncvar_put(nc=domain.nc, varid='yc', vals=lat)
    ncvar_put(nc=domain.nc, varid='xv', vals=lon+c(-1,1,1,-1)*gridres)
@@ -76,7 +71,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    ncdf4::nc_close(domain.nc)
    
    ## SURF
-   surf.default <- "/home/carya/FATESinput/lnd/clm2/surfdata_map/surfdata_1x1_brazil_16pfts_simyr2000_c160127.nc"
+   surf.default <- system.file("surfdata_ref.nc",package = "PEcAn.FATES")
    surf.file    <- file.path(local.rundir,paste0("surfdata_",site_name,"_simyr2000.nc"))
    file.copy(surf.default,surf.file)
    Sys.chmod(surf.file)
@@ -157,6 +152,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    ## DATES -> ENV_RUN
    jobsh <- gsub('@START_DATE@', start_date, jobsh)
    jobsh <- gsub('@STOP_N@', stop_n, jobsh)
+   jobsh <- gsub('@RUN_ID@', run.id, jobsh)
    
    ## MET --> DATM
 #   jobsh <- gsub('@SITE_MET@', settings$run$inputs$met$path, jobsh)
@@ -171,13 +167,17 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    param.default <- system.file("clm_params_ed.c160808.nc",package="PEcAn.FATES")
    param.file <- file.path(local.rundir,paste0("clm_params_ed.",run.id,".nc"))
    file.copy(param.default,param.file)
-   param.nc <- nc_open(param.file,write=TRUE)
-   
+   param.nc <- ncdf4::nc_open(param.file,write=TRUE)
+    
    ## Loop over PFTS
+   npft <- length(trait.values)
+   print(npft)
+   print(dim(trait.values))
    pftnames <- stringr::str_trim(tolower(ncvar_get(param.nc,"pftname")))
    for (i in seq_len(npft)) {
      pft <- trait.values[[i]]
      pft.name <- names(trait.values)[i]
+     if(pft.name == 'env') next   ## HACK, need to remove env from default
      
      ## Match PFT name to COLUMN
      ipft <- match(tolower(pft.name),pftnames)
@@ -187,7 +187,8 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
      }
      
      ## Special variables used in conversions
-     leafC <- pft['leafC']/100  ## percent to proportion
+#     leafC <- pft['leafC']/100  ## percent to proportion
+     leafC <- NA
      if(is.na(leafC)) leafC <- 0.48
      
      ## Loop over VARIABLES
@@ -209,7 +210,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        
      } ## end loop over VARIABLES
    } ## end loop over PFTs
-   nc_close(param.nc)
+   ncdf4::nc_close(param.nc)
    
 #   ## Write SETTINGS file
 #     

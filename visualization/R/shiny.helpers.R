@@ -11,16 +11,14 @@ betyConnect <- function(php.config = "../../web/config.php") {
   config <- sub("true", "TRUE", config, fixed = TRUE)  ##  Boolean capitalization
   config <- config[-grep("$", config, fixed = TRUE)]  ## lines with variable references fail
   config <- config[-grep("exec", config, fixed = TRUE)]  ## lines 'exec' fail
-  config.list <- eval(parse(text = paste("list(", 
-                                         paste0(config[1:14], collapse = ","), 
-                                         ")")))
+  config.list <- eval(parse(text = paste("list(", paste0(config[1:14], collapse = ","), ")")))
   
   ## Database connection
   src_postgres(dbname = config.list$db_bety_database, 
                host = config.list$db_bety_hostname, 
                user = config.list$db_bety_username, 
                password = config.list$db_bety_password)
-} # betyConnect
+}  # betyConnect
 
 
 #' Convert number to scientific notation pretty expression
@@ -38,7 +36,7 @@ fancy_scientific <- function(l) {
   l <- gsub("0e\\+00", "0", l)
   # return this as an expression
   return(parse(text = l))
-} # fancy_scientific
+}  # fancy_scientific
 
 
 #' Count rows of a data frame
@@ -46,17 +44,17 @@ fancy_scientific <- function(l) {
 #' @export
 dplyr.count <- function(df) {
   return(collect(tally(df))[["n"]])
-} # dplyr.count
+}  # dplyr.count
 
 
 #' Convert netcdf number of days to date
 #' @export
 ncdays2date <- function(time, unit) {
-  date <- lubridate::parse_date_time(unit, c("ymd_hms", "ymd_h", "ymd"))
-  days <- udunits2::ud.convert(time, unit, paste("days since ", date))
+  date    <- lubridate::parse_date_time(unit, c("ymd_hms", "ymd_h", "ymd"))
+  days    <- udunits2::ud.convert(time, unit, paste("days since ", date))
   seconds <- udunits2::ud.convert(days, "days", "seconds")
   return(as.POSIXct.numeric(seconds, origin = date, tz = "UTC"))
-} # ncdays2date
+}  # ncdays2date
 
 
 #' @name dbHostInfo
@@ -65,21 +63,24 @@ ncdays2date <- function(time, unit) {
 #' @export
 dbHostInfo <- function(bety) {
   # get host id
-  result <- db.query("select cast(floor(nextval('users_id_seq') / 1e9) as bigint);", 
-                     bety$con)
+  result <- db.query("select cast(floor(nextval('users_id_seq') / 1e9) as bigint);", bety$con)
   hostid <- result[["floor"]]
   
   # get machine start and end based on hostid
   machine <- tbl(bety, "machines") %>% 
-    filter(sync_host_id == hostid) %>%
+    filter(sync_host_id == hostid) %>% 
     dplyr::select(sync_start, sync_end)
   
   if (is.na(nrow(machine)) || nrow(machine) == 0) {
-    return(list(hostid = hostid, start = 1e+09 * hostid, end = 1e+09 * (hostid + 1) - 1))
+    return(list(hostid = hostid, 
+                start = 1e+09 * hostid, 
+                end = 1e+09 * (hostid + 1) - 1))
   } else {
-    return(list(hostid = hostid, start = machine$sync_start, end = machine$sync_end))
+    return(list(hostid = hostid, 
+                start = machine$sync_start,
+                end = machine$sync_end))
   }
-} # dbHostInfo
+}  # dbHostInfo
 
 
 #' list of workflows that exist
@@ -97,7 +98,7 @@ workflows <- function(bety, ensemble = FALSE) {
   out <- tbl(bety, sql(query)) %>% 
     filter(workflow_id >= hostinfo$start & workflow_id <= hostinfo$end)
   return(out)
-} # workflows
+}  # workflows
 
 
 #' Get single workflow by workflow_id
@@ -106,9 +107,9 @@ workflows <- function(bety, ensemble = FALSE) {
 #' @export
 workflow <- function(bety, workflow_id) {
   workflows(bety) %>% 
-    filter_(paste("workflow_id ==", workflow_id)) %>%
+    filter_(paste("workflow_id ==", workflow_id)) %>% 
     return
-} # workflow
+}  # workflow
 
 
 #' Get table of runs corresponding to a workflow
@@ -118,15 +119,15 @@ workflow <- function(bety, workflow_id) {
 runs <- function(bety, workflow_id) {
   Workflows <- workflow(bety, workflow_id) %>% 
     dplyr::select(workflow_id, folder)
-  Ensembles <- tbl(bety, "ensembles") %>%
+  Ensembles <- tbl(bety, "ensembles") %>% 
     dplyr::select(ensemble_id = id, workflow_id) %>% 
     inner_join(Workflows, by = "workflow_id")
   Runs <- tbl(bety, "runs") %>% 
     dplyr::select(run_id = id, ensemble_id) %>% 
     inner_join(Ensembles, by = "ensemble_id")
-  dplyr::select(Runs, -workflow_id, -ensemble_id) %>%
+  dplyr::select(Runs, -workflow_id, -ensemble_id) %>% 
     return
-} # runs
+}  # runs
 
 
 #' Get vector of workflow IDs
@@ -139,12 +140,23 @@ get_workflow_ids <- function(bety, session) {
     ids <- unlist(query[names(query) == "workflow_id"], use.names = FALSE)
   } else {
     # Get all workflow IDs
-    ids <- workflows(bety, ensemble = TRUE) %>%
-      distinct(workflow_id) %>% collect %>% 
+    ids <- workflows(bety, ensemble = TRUE) %>% distinct(workflow_id) %>% collect %>% 
       .[["workflow_id"]] %>% sort(decreasing = TRUE)
   }
   return(ids)
-} # get_workflow_ids
+}  # get_workflow_ids
+
+#' Get data frame of users and IDs
+#' @inheritParams dbHostInfo
+#' @param session Session object passed through Shiny
+#' @export
+get_users <- function(bety, session) {
+  hostinfo <- dbHostInfo(bety)
+  query <- "SELECT id, login FROM users"
+  out <- tbl(bety, sql(query)) %>% 
+    filter(id >= hostinfo$start & id <= hostinfo$end)
+  return(out)
+}  # get_workflow_ids
 
 
 #' Get vector of run IDs for a given workflow ID
@@ -160,7 +172,7 @@ get_run_ids <- function(bety, workflow_id) {
     }
   }
   return(run_ids)
-} # get_run_ids
+}  # get_run_ids
 
 
 #' Get vector of variable names for a particular workflow and run ID
@@ -178,7 +190,11 @@ get_var_names <- function(bety, workflow_id, run_id, remove_pool = TRUE) {
         files <- list.files(outputfolder, "*.nc$", full.names = TRUE)
         for (file in files) {
           nc <- nc_open(file)
-          lapply(nc$var, function(x) { if (x$name != "") var_names[[x$longname]] <<- x$name })
+          lapply(nc$var, function(x) {
+            if (x$name != "") {
+              var_names[[x$longname]] <<- x$name
+            }
+          })
           nc_close(nc)
         }
       }
@@ -191,4 +207,4 @@ get_var_names <- function(bety, workflow_id, run_id, remove_pool = TRUE) {
     }
   }
   return(var_names)
-} # get_var_names
+}  # get_var_names

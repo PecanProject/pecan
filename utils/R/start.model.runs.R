@@ -36,6 +36,7 @@ start.model.runs <- function(settings, write = TRUE) {
   # create database connection
   if (write) {
     dbcon <- db.open(settings$database$bety)
+    on.exit(db.close(dbcon))
   } else {
     dbcon <- NULL
   }
@@ -269,12 +270,6 @@ start.model.runs <- function(settings, write = TRUE) {
     }  # end while loop
   }
   
-  # copy all data back
-  
-  # close database connection
-  if (!is.null(dbcon)) {
-    db.close(dbcon)
-  }
 } # start.model.runs
 
 
@@ -284,7 +279,7 @@ runModule.start.model.runs <- function(settings) {
     return(papply(settings, runModule.start.model.runs))
   } else if (is.Settings(settings)) {
     write <- settings$database$bety$write
-    start.model.runs(settings, write)
+    return(start.model.runs(settings, write))
   } else {
     stop("runModule.start.model.runs only works with Settings or MultiSettings")
   }

@@ -17,6 +17,6 @@ ldinvgamma <- function(x, shape, scale = 1) {
     }
     alpha <- shape
     beta <- scale
-    alpha * log(beta) - lgamma(alpha) - (alpha + 1) * log(x) - (beta / x)
+    return(alpha * log(beta) - lgamma(alpha) - (alpha + 1) * log(x) - (beta / x))
 } # ldinvgamma
 

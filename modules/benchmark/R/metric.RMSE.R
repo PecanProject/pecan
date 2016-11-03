@@ -4,6 +4,8 @@
 ##' @param dat dataframe
 ##' 
 ##' @author Betsy Cowdery
+
 metric.RMSE <- function(dat, ...) {
-  sqrt(mean((dat$model - dat$obvs) ^ 2))
+  logger.info("Metric: Root Mean Square Error")
+  return(sqrt(mean((dat$model - dat$obvs) ^ 2)))
 } # metric.RMSE
