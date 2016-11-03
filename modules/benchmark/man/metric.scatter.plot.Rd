@@ -2,7 +2,7 @@
 % Please edit documentation in R/metric.scatter.R
 \name{metric.scatter.plot}
 \alias{metric.scatter.plot}
-\title{metric.scatter.plot}
+\title{Scatter Plot}
 \usage{
 metric.scatter.plot(metric_dat, var, filename = NA, draw.plot = FALSE)
 }
