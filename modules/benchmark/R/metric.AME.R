@@ -6,5 +6,6 @@
 ##' @author Betsy Cowdery
 
 metric.AME <- function(dat, ...) {
-  max(abs(dat$model - dat$obvs))
+  logger.info("Metric: Absolute Maximum Error")
+  return(max(abs(dat$model - dat$obvs)))
 } # metric.AME

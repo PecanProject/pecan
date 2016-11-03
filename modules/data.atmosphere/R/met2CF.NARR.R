@@ -84,5 +84,5 @@ met2CF.NARR <- function(in.path, in.prefix, outfolder, start_date, end_date,
     file.rename(tmpfile, newfile)
   }
   
-  invisible(results)
+  return(invisible(results))
 } # met2CF.NARR

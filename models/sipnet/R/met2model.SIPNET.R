@@ -219,9 +219,9 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     
     ## write output
     write.table(out, out.file.full, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
-    invisible(results)
+    return(invisible(results))
   } else {
     print("NO MET TO OUTPUT")
-    invisible(NULL)
+    return(invisible(NULL))
   }
 } # met2model.SIPNET

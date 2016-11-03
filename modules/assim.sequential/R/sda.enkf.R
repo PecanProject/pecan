@@ -15,6 +15,10 @@
 ##' 
 sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   
+  ymd_hms <- lubridate::ymd_hms
+  hms     <- lubridate::hms
+  second  <- lubridate::second
+  
   ###-------------------------------------------------------------------###
   ### read settings                                                     ###
   ###-------------------------------------------------------------------### 
@@ -86,8 +90,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   ###-------------------------------------------------------------------### 
   if (write) {
     con <- try(db.open(settings$database$bety), silent = TRUE)
-    if (is.character(con)) {
+    if (is(con, "try-error")) {
       con <- NULL
+    } else {
+      on.exit(db.close(con))
     }
   } else {
     con <- NULL
@@ -679,7 +685,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   })))  #need to make this from quantiles for lyford plot data
   # YCI = YCI[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
   
-  for (i in 1:ncol(X)) {
+
+  for (i in seq_len(ncol(X))) {
     t1 <- 1
     Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
     Xci <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
@@ -810,4 +817,3 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   dev.off()
   
 } # sda.enkf
-

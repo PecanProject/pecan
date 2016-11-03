@@ -21,5 +21,5 @@ sample.IC.LINKAGES <- function(ne, state, year = NULL) {
   biomass_thoc2 = ifelse(rep("biomass_thoc2" %in% names(state),ne),
                          state$biomass_thoc2[1, sample.int(ncol(state$biomass_thoc2), ne), 1] * 0.1, ## unit Mg/ha ->kg/m2
                          runif(ne, 0, 14000)) ## prior  
-  data.frame(biomass_tsca, biomass_acsa3, biomass_beal2, biomass_thoc2)
+  return(data.frame(biomass_tsca, biomass_acsa3, biomass_beal2, biomass_thoc2))
 } # sample.IC.LINKAGES

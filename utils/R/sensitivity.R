@@ -90,8 +90,10 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   
   if (write.to.db) {
     con <- try(db.open(settings$database$bety), silent = TRUE)
-    if (is.character(con)) {
+    if (is(con, "try-error")) {
       con <- NULL
+    } else {
+      on.exit(db.close(con))
     }
   } else {
     con <- NULL
@@ -114,48 +116,43 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   MEDIAN <- "50"
   median.samples <- list()
   for (i in seq_along(quantile.samples)) {
-    median.samples[[i]] <- quantile.samples[[i]][MEDIAN, ]
+    median.samples[[i]] <- quantile.samples[[i]][MEDIAN, , drop=FALSE]
   }
   names(median.samples) <- names(quantile.samples)
-  
+
   if (!is.null(con)) {
-    now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    db.query(paste0("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", 
-                    now, "', 'sensitivity analysis', ", 
-                    format(workflow.id, scientific = FALSE), ")"), 
-             con = con)
-    ensemble.id <- db.query(paste0("SELECT id FROM ensembles WHERE created_at='", 
-                                   now, "' AND runtype='sensitivity analysis'"), con = con)[["id"]]
+    ensemble.id <- db.query(paste0(
+      "INSERT INTO ensembles (runtype, workflow_id) ",
+      "VALUES ('sensitivity analysis', ", format(workflow.id, scientific = FALSE), ") ",
+      "RETURNING id"), con = con)[['id']]
+      
     paramlist <- paste0("quantile=MEDIAN,trait=all,pft=",
                         paste(lapply(settings$pfts, function(x) x[["name"]]), sep = ","))
-    db.query(paste0("INSERT INTO runs (model_id, site_id, start_time, finish_time, outdir, created_at, ensemble_id, parameter_list) values ('", 
-                    settings$model$id, "', '", 
-                    settings$run$site$id, "', '", 
-                    settings$run$start.date, "', '", 
-                    settings$run$end.date, "', '", 
-                    settings$run$outdir, "', '", 
-                    now, "', ", 
-                    ensemble.id, ", '", 
-                    paramlist, "')"), con = con)
-    run.id <- db.query(paste0("SELECT id FROM runs WHERE created_at='", now, 
-                              "' AND parameter_list='", paramlist, "'"), con = con)[["id"]]
+    run.id <- db.query(paste0("INSERT INTO runs ",
+      "(model_id, site_id, start_time, finish_time, outdir, ensemble_id, parameter_list) ",
+      "values ('", 
+        settings$model$id, "', '", 
+        settings$run$site$id, "', '", 
+        settings$run$start.date, "', '", 
+        settings$run$end.date, "', '", 
+        settings$run$outdir, "', ", 
+        ensemble.id, ", '", 
+        paramlist, "') ",
+      "RETURNING id"), con = con)[['id']]
     
     # associate posteriors with ensembles
     for (pft in defaults) {
-      db.query(paste0("INSERT INTO posteriors_ensembles (posterior_id, ensemble_id, created_at, updated_at) values (", 
-                      pft$posteriorid, ", ", 
-                      ensemble.id, ", '", 
-                      now, "', '", 
-                      now, "');"), 
-               con = con)
+      db.query(paste0(
+        "INSERT INTO posteriors_ensembles (posterior_id, ensemble_id) ",
+        "values (", pft$posteriorid, ", ", ensemble.id, ")"), con = con)
     }
     
     # associate inputs with runs
     if (!is.null(inputs)) {
       for (x in inputs) {
-        db.query(paste0("INSERT INTO inputs_runs (input_id, run_id, created_at) ", 
-                        "values (", settings$run$inputs[[x]], ", ", run.id, ", NOW());"), 
-                 con = con)
+        db.query(paste0(
+          "INSERT INTO inputs_runs (input_id, run_id) ", 
+          "values (", settings$run$inputs[[x]], ", ", run.id, ")"), con = con)
       }
     }
   } else {
@@ -203,7 +200,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   
   ## loop over pfts
   runs <- list()
-  for (i in seq(names(quantile.samples))) {
+  for (i in seq_along(names(quantile.samples))) {
     pftname <- names(quantile.samples)[i]
     if (pftname == "env") {
       next
@@ -220,7 +217,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
         if (quantile.str != MEDIAN) {
           quantile <- as.numeric(quantile.str) / 100
           trait.samples <- median.samples
-          trait.samples[[i]][trait] <- quantile.samples[[i]][quantile.str, trait]
+          trait.samples[[i]][trait] <- quantile.samples[[i]][quantile.str, trait, drop=FALSE]
           
           if (!is.null(con)) {
             now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
@@ -304,9 +301,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
       }
     }
   }
-  if (!is.null(con)) {
-    db.close(con)
-  }
+
   options(scipen = scipen)
   return(invisible(list(runs = runs, ensemble.id = ensemble.id)))
 } # write.sa.configs

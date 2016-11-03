@@ -14,6 +14,8 @@ load.data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   
   library(PEcAn.utils)
   library(PEcAn.benchmark)
+  library(lubridate)
+  library(udunits2)
   library(dplyr)
   
   # Determine the function that should be used to load the data
@@ -52,7 +54,7 @@ load.data <- function(data.path, format, start_year = NA, end_year = NA, site = 
       } else if (misc.are.convertible(u1, u2)) {
         print(sprintf("convert %s %s to %s %s", 
                       vars_used$input_name[i], u1, 
-                      vars_used$pecan_name[i], 2))
+                      vars_used$pecan_name[i], u2))
         out[col] <- misc.convert(x, u1, u2)
         colnames(out)[col] <- vars_used$pecan_name[i]
       } else {
@@ -60,13 +62,21 @@ load.data <- function(data.path, format, start_year = NA, end_year = NA, site = 
       }  # This error should probably be thrown much earlier, like in query.format.vars - will move it eventually
     }
   }
-
+  
   if(!is.null(time.row)){  
-     # Need a much more spohisticated approach to converting into time format. 
-     y <- select(out, one_of(format$vars$input_name[time.row]))
-     out$posix <- strptime(apply(y, 1, function(x) paste(x, collapse = " ")), format=paste(format$vars$storage_type[time.row], collapse = " "), tz = "UTC")
+    # Need a much more spohisticated approach to converting into time format. 
+    y <- dplyr::select(out, one_of(format$vars$input_name[time.row]))
+    
+    if(!is.null(site$time_zone)){
+      tz = site$time_zone
+    }else{
+      tz = "UTC"
+      logger.warn("No site timezone. Assuming input time zone is UTC. This may be incorrect.")
+    }
+    
+    out$posix <- strptime(apply(y, 1, function(x) paste(x, collapse = " ")), 
+                          format=paste(format$vars$storage_type[time.row], collapse = " "), tz = tz)
   }
-
   
   return(out)
 } # load.data
