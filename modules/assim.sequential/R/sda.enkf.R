@@ -242,6 +242,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   CI.X2       <- CI.X1
   
   interval    <- NULL
+  state.interval <- cbind(as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','min_value')),
+          as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','max_value')))
+  rownames(state.interval) <- var.names
+  
   wish.df <- function(Om, X, i, j, col) {
     (Om[i, j]^2 + Om[i, i] * Om[j, j]) / var(X[, col])
   } # wish.df
@@ -517,6 +521,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     ## update state matrix
     analysis <- as.data.frame(rmvnorm(as.numeric(nens), mu.a, Pa, method = "svd"))
     colnames(analysis) <- colnames(X)
+    
+    for(i in 1:ncol(analysis)){
+      int.save <- state.interval[which(startsWith(colnames(analysis)[i],
+                      var.names)),]
+      analysis[analysis[,i] < int.save[1],i] <- int.save[1]
+      analysis[analysis[,i] > int.save[2],i] <- int.save[2]
+    }
     
     ## in the future will have to be separated from analysis
     new.state  <- analysis

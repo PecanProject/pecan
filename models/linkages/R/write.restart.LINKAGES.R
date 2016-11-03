@@ -76,7 +76,6 @@ write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   }
   
   spp.params <- spp.params.default[spp.params.save, ]
-  
   biomass_spp_params <- function(new.params, default.params, pft) {
     if ("SLTA" %in% names(new.params)) {
       slta <- new.params$pft$SLTA
@@ -180,7 +179,7 @@ write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   
   data2 <- data.frame(ind.biomass = ind.biomass,
                       n.index = n.index)
-  mean.biomass.spp <- aggregate(ind.biomass ~ n.index, mean, data = data2)  # calculate mean individual biomass for each species
+  mean.biomass.spp <- aggregate(ind.biomass ~ n.index, mean, data = data2)   # calculate mean individual biomass for each species
   
   # calculate number of individuals needed to match new.state
   for (s in seq_along(settings$pfts)) {
@@ -260,7 +259,7 @@ write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     b_calc[s] <- sum(biomass_function(dbh.temp[nl:nu], 
                                       spp.biomass.params = spp.biomass.params)) * (1 / 833) * 0.48  # changing units to be kgC/m^2
     
-    bcorr[s] <- new.state[s] / b_calc[s]
+    bcorr[s] <- new.state[s] / b_calc[s] #calculate biomass correction
     
     if (length(pft) > 1) {
       stop("error too many pfts assigned")
