@@ -15,11 +15,12 @@
 ##' @param multi.settings
 ##' @param start.time
 ##' @param stop.time
+##' @param ens                ensemble number. default = 1
 ##' @description Splits climate met for SIPNET
 ##' 
 ##' @return file split up climate file
 ##' @export
-split.inputs.SIPNET <- function(settings, start.time, stop.time) {
+split.inputs.SIPNET <- function(settings, start.time, stop.time, ens = 1) {
   
   start.day <- day(start.time)
   start.year <- lubridate::year(start.time)
@@ -27,7 +28,7 @@ split.inputs.SIPNET <- function(settings, start.time, stop.time) {
   end.day <- day(stop.time)
   end.year <- lubridate::year(stop.time)
   
-  met <- c(settings$run$inputs$met$path)
+  met <- c(settings$run$inputs$met[[ens]]$path)
   
   path <- dirname(met)
   prefix <- sub(".clim", "", basename(met), fixed = TRUE)

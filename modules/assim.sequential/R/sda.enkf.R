@@ -65,12 +65,22 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   ###-------------------------------------------------------------------###
   ### load model specific inputs for initial runs                       ###
   ###-------------------------------------------------------------------### 
+  inputs.table <- table(names(settings$run$inputs))
+  if(max(inputs.table) > nens){
+    sampleIDs <- sample(x = 1:max(inputs.table), size = nens)
+  }else{
+    sampleIDs <- sample(x = 1:max(inputs.table), size = nens, replace = TRUE)
+  }
   
-  inputs <- do.call(my.split.inputs, 
-                    args = list(settings = settings, 
-                                start.time = settings$run$start.date, 
-                                stop.time = settings$run$end.date))
-  
+  inputs <- list()
+  for(i in seq_len(nens)){
+    inputs[[i]] <- do.call(my.split.inputs, 
+                      args = list(settings = settings, 
+                                  start.time = settings$run$start.date, 
+                                  stop.time = settings$run$end.date,
+                                  ens = i))
+  }
+
   #### replaces stuff below
   
   # if(model == "LINKAGES"){
@@ -173,7 +183,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
                                          trait.values = params[[i]], 
                                          settings = settings, 
                                          run.id = run.id[[i]], 
-                                         inputs = inputs, 
+                                         inputs = inputs[[i]], 
                                          IC = IC[i, ]))
     
     ## write a README for the run
@@ -610,11 +620,16 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       ###-------------------------------------------------------------------###
       ### load model specific inputs for current runs                       ###
       ###-------------------------------------------------------------------### 
+ 
+      inputs <- list()
+      for(i in sampleIDs){
+        inputs[[i]] <- do.call(my.split.inputs, 
+                          args = list(settings = settings, 
+                                      start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))), 
+                                      stop.time = obs.times[t + 1],
+                                      ens = i)) 
+      }
       
-      inputs <- do.call(my.split.inputs, 
-                        args = list(settings = settings, 
-                                    start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))), 
-                                    stop.time = obs.times[t + 1]))
       
       ###-------------------------------------------------------------------###
       ### write restart by ensemble                                         ###
