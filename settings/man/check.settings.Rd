@@ -4,7 +4,7 @@
 \alias{check.settings}
 \title{Check Settings}
 \usage{
-check.settings(settings)
+check.settings(settings, force = FALSE)
 }
 \arguments{
 \item{settings}{settings file}

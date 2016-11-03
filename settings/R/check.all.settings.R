@@ -11,11 +11,6 @@
 ##' @param settings settings file
 ##' @export check.inputs
 check.inputs <- function(settings) {
-  library(XML)
-  library(lubridate)
-  library(PEcAn.DB)
-  library(PEcAn.utils)
-  
   if (is.null(settings$model$type)) return(settings)
   
   # don't know how to check inputs
@@ -26,7 +21,13 @@ check.inputs <- function(settings) {
   
   # get list of inputs associated with model type
   dbcon <- db.open(settings$database$bety)
-  inputs <- db.query(paste0("SELECT tag, format_id, required FROM modeltypes, modeltypes_formats WHERE modeltypes_formats.modeltype_id = modeltypes.id and modeltypes.name='", settings$model$type, "' AND modeltypes_formats.input;"), con=dbcon)
+  on.exit(db.close(dbcon))
+  
+  inputs <- db.query(paste0(
+    "SELECT tag, format_id, required FROM modeltypes, modeltypes_formats ",
+    "WHERE modeltypes_formats.modeltype_id = modeltypes.id ",
+      "AND modeltypes.name='", settings$model$type, "' ",
+      "AND modeltypes_formats.input"), con=dbcon)
   
   # check list of inputs  
   allinputs <- names(settings$run$inputs)
@@ -88,8 +89,6 @@ check.inputs <- function(settings) {
   if (length(allinputs) > 0) {
     logger.info("Unused inputs found :", paste(allinputs, collapse=" "))
   }
-  
-  db.close(dbcon)
   
   return(settings)
 }
@@ -231,18 +230,27 @@ check.bety.version <- function(dbcon) {
 ##' @return will return the updated settings values with defaults set.
 ##' @author Rob Kooper, David LeBauer
 ##' @export check.settings
-check.settings <- function(settings) {
-  if (!is.null(settings$nocheck)) {
-    logger.info("Not doing sanity checks of pecan.xml")
-    return(settings)
+check.settings <- function(settings, force=FALSE) {
+  if(!force && !is.null(settings$settings.info$checked) && settings$settings.info$checked==TRUE) {
+    logger.info("Settings have been checked already. Skipping.")
+    return(invisible(settings))
+  } else {
+    logger.info("Checking settings...")
   }
+  
+  if(is.MultiSettings(settings)) {
+    return(invisible(papply(settings, check.settings, force=force)))
+  }
+  
   scipen = getOption("scipen")
+  on.exit(options(scipen=scipen))
   options(scipen=12)
   
   settings <- check.database.settings(settings)
   
   if(!is.null(settings$database$bety)) {
     dbcon <- db.open(settings$database$bety)
+    on.exit(db.close(dbcon), add=TRUE)
   } else {
     dbcon <- NULL
   }
@@ -452,14 +460,12 @@ check.settings <- function(settings) {
     }
   }
   
-  if (!is.null(dbcon)) {
-    db.close(dbcon)
-  }
-  options(scipen=scipen)
+  # Set 'checked' flag so check.settings will be skipped in the future (unless force=TRUE)
+  settings$settings.info$checked <- TRUE
   
   # all done return cleaned up settings
-  invisible(settings)
-  }
+  return(invisible(settings))
+}
 
 ##' @title Check Run Settings
 ##' @param settings settings file
@@ -480,8 +486,8 @@ check.run.settings <- function(settings, dbcon=NULL) {
   } else if (is.null(settings$run$end.date)) {
     logger.warn("No end.date specified in run section.")
   } else {
-    startdate <- parse_date_time(settings$run$start.date, "ymd_hms", truncated=3)
-    enddate <- parse_date_time(settings$run$end.date, "ymd_hms", truncated=3)
+    startdate <- lubridate::parse_date_time(settings$run$start.date, "ymd_HMS", truncated=3)
+    enddate <- lubridate::parse_date_time(settings$run$end.date, "ymd_HMS", truncated=3)
     if (startdate >= enddate) {
       logger.severe("Start date should come before the end date.")
     }
@@ -504,7 +510,7 @@ check.run.settings <- function(settings, dbcon=NULL) {
     
     if(is.null(settings$ensemble$start.year)) {
       if(!is.null(settings$run$start.date)) {
-        settings$ensemble$start.year <- year(settings$run$start.date) 
+        settings$ensemble$start.year <- lubridate::year(settings$run$start.date) 
         logger.info("No start date passed to ensemble - using the run date (", 
                     settings$ensemble$start.year, ").")
       } else if(!is.null(settings$sensitivity.analysis$start.year)) {
@@ -518,7 +524,7 @@ check.run.settings <- function(settings, dbcon=NULL) {
     
     if(is.null(settings$ensemble$end.year)) {
       if(!is.null(settings$run$end.date)) {
-        settings$ensemble$end.year <- year(settings$run$end.date) 
+        settings$ensemble$end.year <- lubridate::year(settings$run$end.date) 
         logger.info("No end date passed to ensemble - using the run date (", 
                     settings$ensemble$end.year, ").")
       } else if(!is.null(settings$sensitivity.analysis$end.year)){ 
@@ -532,11 +538,11 @@ check.run.settings <- function(settings, dbcon=NULL) {
     
     # check start and end dates
     if (exists("startdate") && !is.null(settings$ensemble$start.year) &&
-        year(startdate) > settings$ensemble$start.year) {
+        lubridate::year(startdate) > settings$ensemble$start.year) {
       logger.severe("Start year of ensemble should come after the start.date of the run")
     }
     if (exists("enddate") && !is.null(settings$ensemble$end.year) &&
-        year(enddate) < settings$ensemble$end.year) {
+        lubridate::year(enddate) < settings$ensemble$end.year) {
       logger.severe("End year of ensemble should come before the end.date of the run")
     }
     if (!is.null(settings$ensemble$start.year) && !is.null(settings$ensemble$end.year) &&
@@ -558,7 +564,7 @@ check.run.settings <- function(settings, dbcon=NULL) {
     
     if(is.null(settings$sensitivity.analysis$start.year)) {
       if(!is.null(settings$run$start.date)) {
-        settings$sensitivity.analysis$start.year <- year(settings$run$start.date) 
+        settings$sensitivity.analysis$start.year <- lubridate::year(settings$run$start.date) 
         logger.info("No start date passed to sensitivity.analysis - using the run date (",
                     settings$sensitivity.analysis$start.year, ").")
       } else if(!is.null(settings$ensemble$start.year)) {
@@ -572,7 +578,7 @@ check.run.settings <- function(settings, dbcon=NULL) {
     
     if(is.null(settings$sensitivity.analysis$end.year)) {
       if(!is.null(settings$run$end.date)) {
-        settings$sensitivity.analysis$end.year <- year(settings$run$end.date) 
+        settings$sensitivity.analysis$end.year <- lubridate::year(settings$run$end.date) 
         logger.info("No end date passed to sensitivity.analysis - using the run date (", 
                     settings$sensitivity.analysis$end.year, ").")
       } else if(!is.null(settings$ensemble$end.year)){ 
@@ -587,11 +593,11 @@ check.run.settings <- function(settings, dbcon=NULL) {
     
     # check start and end dates
     if (exists("startdate") && !is.null(settings$sensitivity.analysis$start.year) &&
-        year(startdate) > settings$sensitivity.analysis$start.year) {
+        lubridate::year(startdate) > settings$sensitivity.analysis$start.year) {
       logger.severe("Start year of SA should come after the start.date of the run")
     }
     if (exists("enddate") && !is.null(settings$sensitivity.analysis$end.year) &&
-        year(enddate) < settings$sensitivity.analysis$end.year) {
+        lubridate::year(enddate) < settings$sensitivity.analysis$end.year) {
       logger.severe("End year of SA should come before the end.date of the run")
     }
     if (!is.null(settings$sensitivity.analysis$start.year) && 
@@ -851,11 +857,10 @@ check.database.settings <- function(settings) {
       
       # Connect to database
       dbcon <- db.open(settings$database$bety)
+      on.exit(db.close(dbcon))
       
       # check database version
       check.bety.version(dbcon)
-      
-      db.close(dbcon)
     } else {
       logger.warn("No BETY database information specified; not using database.")
     }

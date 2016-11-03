@@ -22,25 +22,24 @@
 ##' @author David LeBauer, Shawn Serbin, Ryan Kelly
 ##'
 run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, variable=NULL, start.year=NULL, end.year=NULL, ...){
-  
-  if(FALSE) {
-    plot=TRUE
-    ensemble.id=variable=start.year=end.year=NULL
-  }
-  if(!exists("settings")){
-    logger.severe("no settings file found")
-  }
-  
   if ('sensitivity.analysis' %in% names(settings)) {
     # Set variable and years. Use args first, then settings, then defaults/error
-    if(is.null(start.year)) start.year <- settings$sensitivity.analysis$start.year
-    if(is.null(end.year)) end.year <- settings$sensitivity.analysis$end.year
-    if(is.null(start.year) | is.null(end.year)) logger.severe("No years given for sensitivity analysis!")
+    if(is.null(start.year)) {
+      start.year <- settings$sensitivity.analysis$start.year
+    }
+    if(is.null(end.year)) {
+      end.year <- settings$sensitivity.analysis$end.year
+    }
+    if(is.null(start.year) | is.null(end.year)) {
+      logger.severe("No years given for sensitivity analysis!")
+    }
     
     if(is.null(variable)) {
       variable = settings$sensitivity.analysis$variable
     }
-    if(is.null(variable)) logger.severe("No variables for ensemble analysis!")
+    if(is.null(variable)) {
+      logger.severe("No variables for ensemble analysis!")
+    }
     
     # Only handling one variable at a time for now
     if(length(variable) > 1) {
@@ -76,8 +75,10 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
     variables <- convert.expr(variable)
     variable.fn <- variables$variable.drv
     
-    fname <- sensitivity.filename(settings, "sensitivity.output", "Rdata", all.var.yr = FALSE,
-                                  ensemble.id = ensemble.id, variable = variable.fn, start.year = start.year, end.year = end.year)
+    fname <- sensitivity.filename(
+      settings, "sensitivity.output", "Rdata", all.var.yr = FALSE,
+      ensemble.id = ensemble.id, variable = variable.fn, 
+      start.year = start.year, end.year = end.year)
     load(fname)
     
     ### Generate SA output and diagnostic plots
@@ -87,7 +88,6 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
       quantiles.str <- rownames(sa.samples[[pft$name]])
       quantiles.str <- quantiles.str[which(quantiles.str != '50')]
       quantiles <- as.numeric(quantiles.str)/100
-      ## ensemble.output <- read.ensemble.output(settings$ensemble$size, settings$outdir, pft.name=pft$name)
       
       C.units <- grepl('^Celsius$', trait.lookup(traits)$units, ignore.case = TRUE)
       if(any(C.units)){
@@ -116,14 +116,15 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
       
       ### Plotting - Optional
       if(plot){
-        fname <- sensitivity.filename(settings, "sensitivity.analysis", "pdf", 
-                                      all.var.yr=FALSE, pft=pft$name, ensemble.id=ensemble.id, variable=variable.fn,
-                                      start.year=start.year, end.year=end.year)
+        fname <- sensitivity.filename(
+          settings, "sensitivity.analysis", "pdf", 
+          all.var.yr=FALSE, pft=pft$name, ensemble.id=ensemble.id, variable=variable.fn,
+          start.year=start.year, end.year=end.year)
         
         ### Generate SA diagnostic plots
-        sensitivity.plots <- plot_sensitivities(sensitivity.results[[pft$name]]$sensitivity.output,
-                                                linesize = 1,
-                                                dotsize = 3)
+        sensitivity.plots <- plot_sensitivities(
+          sensitivity.results[[pft$name]]$sensitivity.output, linesize = 1, dotsize = 3)
+
         pdf(fname, height = 12, width = 9)
         ## arrange plots  http://stackoverflow.com/q/10706753/199217
         ncol <- floor(sqrt(length(sensitivity.plots)))
