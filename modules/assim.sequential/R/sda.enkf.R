@@ -256,7 +256,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   bqq         <- numeric(nt + 1)
   CI.X1       <- matrix(0, 3, nt)
   CI.X2       <- CI.X1
+  q.bar        <- NULL #default process covariance matrix
   
+  ##### Creating matrices that describe the bounds of the state variables
+  ##### interval is remade everytime depending on the data at time t
+  ##### state.interval stays constant and converts new.analysis to be within the correct bounds
   interval    <- NULL
   state.interval <- cbind(as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','min_value')),
           as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','max_value')))
@@ -427,29 +431,19 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         }else{
           if(ncol(X)!=dim(aqq)[2]|ncol(X)!=dim(aqq)[3]){
             print('error: X has changed dimensions')
-          }else{
-           aqq      <- aqq #can this mess things up?
           }
         }
         aqq[1, , ] <- diag(length(mu.f)) * bqq[1]
         
-        ### interval
-        if(is.null(interval)){
-          interval <- matrix(NA, length(obs.mean[[t]]), 2)
-          rownames(interval) <- names(obs.mean[[t]])
-          for(i in 1:length(var.names)){
+        ### create matrix the describes the support for each observed state variable at time t
+        interval <- matrix(NA, length(obs.mean[[t]]), 2)
+        rownames(interval) <- names(obs.mean[[t]])
+        for(i in 1:length(var.names)){
             interval[which(startsWith(rownames(interval),
                                       var.names[i])), ] <- matrix(c(as.numeric(settings$state.data.assimilation$state.variables[[i]]$min_value),
                                                             as.numeric(settings$state.data.assimilation$state.variables[[i]]$max_value)),
                                                             length(which(startsWith(rownames(interval),
                                                                                     var.names[i]))),2,byrow = TRUE)
-          }
-        }else{
-          if(nrow(interval)!=length(obs.mean[[t]])){
-            print('error Y dimensions have changed')
-          }else{
-            interval <- interval #can this mess things up?
-          }
         }
 
         #### changing diagonal if the covariance is too small for the matrix to be inverted 
@@ -460,10 +454,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
             diag(Pf)[i] <- min(diag(Pf)[which(diag(Pf) != 0)])/2  #HACK
           }
         }
-
+        
+        #### These vectors are used to categorize data based on censoring from the interval matrix
         y.ind <- as.numeric(Y > interval[,1])
         y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
         
+        #### JAGS update list
         update <- list(interval = interval,
                        N = length(y.ind),
                        y.ind = y.ind,
@@ -475,6 +471,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
                        bq = bqq[t],
                        choose = choose)
         
+        #### Run JAGS Tobit Model
         mod <- jags.model(file = textConnection(tobit.model),
                           data = update,
                           n.adapt = 1000, 
@@ -525,11 +522,15 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       ### no process variance -- forecast is the same as the analysis ###
       if (processvar==FALSE) {
         mu.a <- mu.f
-        Pa   <- Pf + Q #Where are we getting Q here? Shouldn't it be just Pf?
+        Pa   <- Pf + Q
         ### yes process variance -- no data
       } else {
         mu.a <- mu.f
-        Pa   <- Pf + solve(q.bar)#Where are we getting q.bar here?
+        if(is.null(q.bar)){
+          q.bar <- diag(ncol(X))
+          print('Process variance not estimated. Analysis has been given uninformative process variance')
+        } 
+        Pa   <- Pf + solve(q.bar)
       }
       enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
     }
@@ -538,6 +539,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     analysis <- as.data.frame(rmvnorm(as.numeric(nens), mu.a, Pa, method = "svd"))
     colnames(analysis) <- colnames(X)
     
+    ##### Mapping analysis vectors to be in bounds of state variables
     for(i in 1:ncol(analysis)){
       int.save <- state.interval[which(startsWith(colnames(analysis)[i],
                       var.names)),]
