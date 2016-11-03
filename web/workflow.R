@@ -45,12 +45,16 @@ if("benchmark" %in% names(settings)){
   settings <- papply(settings, read.settings.RR)
 }
 
+# Update/fix/check settings. Will only run the first time it's called, unless force=TRUE
+settings <- prepare.settings(settings, force=FALSE)
+
 # Write pecan.CHECKED.xml
-settings <- write.settings(settings, outputfile = "pecan.CHECKED.xml")
+write.settings(settings, outputfile = "pecan.CHECKED.xml")
 
 # start from scratch if no continue is passed in
-if (length(which(commandArgs() == "--continue")) == 0) {
-  file.remove(file.path(settings$outdir, "STATUS"))
+statusFile <- file.path(settings$outdir, "STATUS")
+if (length(which(commandArgs() == "--continue")) == 0 && file.exists(statusFile)) {
+  file.remove(statusFile)
 }
   
 # Do conversions
@@ -61,7 +65,7 @@ settings <- do.conversions(settings)
 if (status.check("TRAIT") == 0){
   status.start("TRAIT")
   settings <- runModule.get.trait.data(settings)
-  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.TRAIT.xml'))
+  write.settings(settings, outputfile='pecan.TRAIT.xml')
   status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.TRAIT.xml'))) {
   settings <- read.settings(file.path(settings$outdir, 'pecan.TRAIT.xml'))
@@ -81,7 +85,7 @@ if(!is.null(settings$meta.analysis)) {
 if (status.check("CONFIG") == 0){
   status.start("CONFIG")
   settings <- runModule.run.write.configs(settings)
-  saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.CONFIGS.xml'))
+  write.settings(settings, outputfile='pecan.CONFIGS.xml')
   status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
   settings <- read.settings(file.path(settings$outdir, 'pecan.CONFIGS.xml'))
@@ -109,14 +113,14 @@ if (status.check("OUTPUT") == 0) {
 # Run ensemble analysis on model output. 
 if (status.check("ENSEMBLE") == 0) {
   status.start("ENSEMBLE")
-  run.ensemble.analysis(settings,TRUE)    
+  runModule.run.ensemble.analysis(settings, TRUE)    
   status.end()
 }
 
 # Run sensitivity analysis and variance decomposition on model output
 if (status.check("SENSITIVITY") == 0) {
   status.start("SENSITIVITY")
-  run.sensitivity.analysis(settings)
+  runModule.run.sensitivity.analysis(settings)
   status.end()
 }
 
@@ -124,7 +128,7 @@ if (status.check("SENSITIVITY") == 0) {
 if ('assim.batch' %in% names(settings)) {
   if (status.check("PDA") == 0) {
     status.start("PDA")
-    settings <- assim.batch(settings)
+    settings <- runModule.assim.batch(settings)
     status.end()
   }
 }
