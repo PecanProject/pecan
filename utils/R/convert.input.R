@@ -343,6 +343,13 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     }
     
     successful <- TRUE
+
+    if (exact.dates){
+	newinput <- list()
+	newinput$input.id <- inputid
+	newinput$dbfile.id <- dbfileid
+	}
+
     return(newinput)
   } else {
     logger.warn("Input was not added to the database")
