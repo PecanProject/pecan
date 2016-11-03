@@ -7,7 +7,7 @@
 ##' @author Betsy Cowdery, Michael Dietze, Ankur Desai
 convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, start_date, 
                           end_date, pkg, fcn, con = con, host, browndog, write = TRUE, 
-                          format.vars, overwrite = FALSE,exact.dates = FALSE, ...) {
+                          format.vars, overwrite = FALSE, exact.dates = FALSE, ...) {
   input.args <- list(...)
   
   logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
@@ -36,10 +36,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   print(existing.dbfile, digits = 10)
   print("end CHECK")
   
-  
-      
-        
-        
   if (nrow(existing.dbfile) > 0) {
     
     existing.input <- db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
@@ -77,7 +73,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       })
       
     } else if ((start_date >= existing.input$start_date) &&
-                 (end_date <= existing.input$end_date)) {
+               (end_date <= existing.input$end_date)) {
       
       if (exact.dates && (start_date == existing.input$start_date) & (end_date == existing.input$end_date)) {
         
@@ -89,8 +85,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         ))
         
       } else if (exact.dates && (start_date >= existing.input$start_date) && (end_date <= existing.input$end_date) ||
-                   exact.dates && (start_date == existing.input$start_date) && (end_date <= existing.input$end_date) ||
-                   exact.dates && (start_date >= existing.input$start_date) && (end_date == existing.input$end_date)) {
+                 exact.dates && (start_date == existing.input$start_date) && (end_date <= existing.input$end_date) ||
+                 exact.dates && (start_date >= existing.input$start_date) && (end_date == existing.input$end_date)) {
         
         ##dates are within existing input record, but model needs specific dates.
         ## Keep Input record. Not File Record. File Record will be created and inserted later
@@ -131,6 +127,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   } else {
     # No existing record found. Should be good to go.
   }
+  
+  
   
   machine.host <- ifelse(host$name == "localhost", fqdn(), host$name)
   machine <- db.query(paste0("SELECT * from machines where hostname = '", 
@@ -325,6 +323,13 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       site.id <- input.args$newsite
     }
     
+    if (exact.dates && exists("inputid")){
+      
+      # New file creates but inew Input unecessary. Associate file with that Input record.
+      dbfileid <- dbfile.insert(in.path, in.prefix, 'Input', inputid, con, reuse=TRUE, hostname = machine$hostname)
+      
+    }else{
+    
     newinput <- dbfile.input.insert(in.path = dirname(result$file[1]), 
                                     in.prefix = result$dbfile.name[1], 
                                     siteid = site.id, 
@@ -335,6 +340,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                     parentid = parent.id,
                                     con = con, 
                                     hostname = machine$hostname)
+    }
     
     successful <- TRUE
     return(newinput)
