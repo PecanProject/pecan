@@ -84,6 +84,11 @@ read.settings <- function(inputfile = "pecan.xml"){
   settings <- XML::xmlToList(xml)
   settings <- as.Settings(settings)
   settings <- expandMultiSettings(settings)
-  return(invisible(settings))
   
-} # read.settings
+  ## setup Rlib from settings
+  if(!is.null(settings$Rlib)) {
+    .libPaths(settings$Rlib)
+  }
+  
+  return(invisible(settings))
+}
