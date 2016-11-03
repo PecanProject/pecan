@@ -1,10 +1,11 @@
-<?xml version="1.0"?><pecan>
+<?xml version="1.0"?>
+<pecan.multi>
  <info>
   <notes/>
   <userid>1000000003</userid>
   <username>Elizabeth Cowdery</username>
  </info>
-  <multisettings>
+ <multisettings>
   <multisettings>benchmark</multisettings>
  </multisettings>
  <outdir>/fs/data3/ecowdery/benchmarking_tests</outdir>
@@ -31,7 +32,7 @@
        <metric_id>1000000003</metric_id> 
        <metric_id>1000000004</metric_id> 
      </metrics>
-     <new_run>TRUE</new_run>
+     <new_run>FALSE</new_run>
    </settings.1>
    <settings.2>
      <ensemble_id>1000004806</ensemble_id>
@@ -44,7 +45,7 @@
        <metric_id>1000000003</metric_id> 
        <metric_id>1000000005</metric_id>
      </metrics>
-     <new_run>TRUE</new_run>
+     <new_run>FALSE</new_run>
    </settings.2>
  </benchmark>
  <host>
@@ -54,4 +55,4 @@
  </host>
  <rundir>/fs/data3/ecowdery/benchmarking_tests/run</rundir>
  <modeloutdir>/fs/data3/ecowdery/benchmarking_tests/out</modeloutdir>
-</pecan>
+</pecan.multi>
