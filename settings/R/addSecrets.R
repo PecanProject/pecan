@@ -18,10 +18,23 @@
 ##' @return will return the updated settings values
 ##' @author Rob Kooper
 ##' @export addSecrets
-addSecrets <- function(settings) {
+addSecrets <- function(settings, force=FALSE) {
   if (!file.exists("~/.pecan.xml")) {
-    return(settings)
+    return(invisible(settings))
   }
+  
+  if(!force && !is.null(settings$settings.info$secrets.added) && 
+     settings$settings.info$secrets.added==TRUE) {
+    logger.info("Secret settings have been added already. Skipping.")
+    return(invisible(settings))
+  } else {
+    logger.info("Adding secret settings...")
+  }
+  
+  if(is.MultiSettings(settings)) {
+    return(invisible(papply(settings, addSecrets, force=force)))
+  }
+  
   pecan <- xmlToList(xmlParse("~/.pecan.xml"))
   
   # always copy following sections
@@ -50,5 +63,5 @@ addSecrets <- function(settings) {
     }
   }  
   
-  invisible(settings)
+  return(invisible(settings))
 }
