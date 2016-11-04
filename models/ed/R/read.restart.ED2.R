@@ -46,7 +46,7 @@ read.restart.ED2 <- function(outdir,
 
     forecast <- list()
 
-    for (var_name %in% var.names) {
+    for (var_name in var.names) {
 
         pft_full_names <- paste(var_name, "pft", pftnames,
                                 sep = name_separator)
