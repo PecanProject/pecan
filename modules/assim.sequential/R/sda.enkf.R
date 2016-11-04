@@ -46,9 +46,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   ###-------------------------------------------------------------------### 
   do.call("require", list(paste0("PEcAn.", model)))
   my.write.config  <- paste0("write.config.", model)
-  my.read.restart  <- paste0("read.restart.", model)
-  my.write.restart <- paste0("write.restart.", model)
-  my.split.inputs  <- paste0("split.inputs.", model)
+  my.read_restart  <- paste0("read_restart.", model)
+  my.write_restart <- paste0("write_restart.", model)
+  my.split_inputs  <- paste0("split_inputs.", model)
   
   if (!exists(my.write.config)) {
     print(paste(my.write.config, "does not exist"))
@@ -56,8 +56,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     stop()
   }
   
-  if (!exists(my.split.inputs)) {
-    print(paste(my.split.inputs, "does not exist"))
+  if (!exists(my.split_inputs)) {
+    print(paste(my.split_inputs, "does not exist"))
     print(paste("please make sure that the PEcAn interface is loaded for", model))
     stop()
   }
@@ -79,7 +79,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
     
     ### model specific split inputs
-    inputs[[i]] <- do.call(my.split.inputs, 
+    inputs[[i]] <- do.call(my.split_inputs, 
                       args = list(settings = settings, 
                                   start.time = settings$run$start.date, 
                                   stop.time = settings$run$end.date,
@@ -228,7 +228,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   
   # at some point add a lot of error checking 
   # read time from data if data is missing you still need
-  # to have NAs or NULL with date name vector to read the correct netcdfs by read.restart
+  # to have NAs or NULL with date name vector to read the correct netcdfs by read_restart
   
   obs.times <- names(obs.mean)
   obs.times.POSIX <- ymd_hms(obs.times)
@@ -314,7 +314,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     ###-------------------------------------------------------------------###  
     X <- list()
     for (i in seq_len(nens)) {
-      X[[i]] <- do.call(my.read.restart, args = list(outdir = outdir, 
+      X[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
                                                      runid = run.id[[i]], 
                                                      stop.time = obs.times[t], 
                                                      settings = settings, 
@@ -630,7 +630,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
  
       inputs <- list()
       for(i in seq_len(nens)){
-        inputs[[i]] <- do.call(my.split.inputs, 
+        inputs[[i]] <- do.call(my.split_inputs, 
                           args = list(settings = settings, 
                                       start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))), 
                                       stop.time = obs.times[t + 1],
@@ -643,7 +643,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       ###-------------------------------------------------------------------### 
       
       for (i in seq_len(nens)) {
-        do.call(my.write.restart, 
+        do.call(my.write_restart, 
                 args = list(outdir = outdir, 
                             runid = run.id[[i]], 
                             start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))),
