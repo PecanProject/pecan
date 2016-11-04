@@ -2,6 +2,7 @@
 
 #' @title State data assimilation read-restart for ED2
 #'
+#' @author Alexey Shiklomanov
 #' @inheritParams PEcAn.SIPNET::read.restart.SIPNET
 #' @examples
 #' \dontrun{
