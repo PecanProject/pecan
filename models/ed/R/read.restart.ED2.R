@@ -5,12 +5,11 @@
 #' @inheritParams PEcAn.SIPNET::read.restart.SIPNET
 #' @examples
 #' \dontrun{
-#' outdir <- "~/sda-hackathon/outputs"
-#' runid <- "99000000020"
-#' 
-#' settings_file <- "outputs/pecan.CONFIGS.xml"
-#' settings <- PEcAn.settings::read.settings(settings_file)
-#' forecast <- read.restart.ED2
+#'   outdir <- "~/sda-hackathon/outputs"
+#'   runid <- "99000000020"
+#'   settings_file <- "outputs/pecan.CONFIGS.xml"
+#'   settings <- PEcAn.settings::read.settings(settings_file)
+#'   forecast <- read.restart.ED2
 #' }
 #' 
 #' @export
@@ -23,7 +22,9 @@ read.restart.ED2 <- function(outdir,
 
     name_separator <- "."
 
-    confxml_path <- file.path(outdir, "run", runid, "config.xml")
+    runid <- as.character(runid)
+    rundir <- settings$host$rundir
+    confxml_path <- file.path(rundir, runid, "config.xml")
     confxml <- XML::xmlToList(XML::xmlParse(confxml_path))
 
     histfile_path <- file.path(outdir, "out", runid)
@@ -33,7 +34,7 @@ read.restart.ED2 <- function(outdir,
     # TODO: This needs to access the target date
     histfile <- tail(histfile, 1)
     nc <- ncdf4::nc_open(histfile)
-
+    on.exit(ncdf4::nc_close(nc))
 
     # Identify PFTs
     # This assumes that PFT order is the same between pecan.xml and ED's 
@@ -43,6 +44,20 @@ read.restart.ED2 <- function(outdir,
     pftnums <- sapply(confxml, '[[', 'num')
     pftnames <- sapply(settings$pfts, '[[', 'name')
     names(pftnames) <- pftnums
+
+    # Common variables
+
+    # PFT by cohort
+    pft_co <- ncdf4::ncvar_get(nc, "PFT")
+
+    # Patch length
+    paco_N <- ncdf4::ncvar_get(nc, "PACO_N")
+
+    # Patch area
+    patch_area <- ncdf4::ncvar_get(nc, "AREA")
+
+    # Create a patch index indicator vector
+    patch_index <- do.call(c, mapply(rep, seq_along(paco_N), paco_N))
 
     forecast <- list()
 
@@ -57,18 +72,6 @@ read.restart.ED2 <- function(outdir,
 
             # AGB by cohort -- long vector
             agb_co <- ncdf4::ncvar_get(nc, "AGB_CO")
-
-            # PFT by cohort
-            pft_co <- ncdf4::ncvar_get(nc, "PFT")
-
-            # Patch length
-            paco_N <- ncdf4::ncvar_get(nc, "PACO_N")
-
-            # Patch area
-            patch_area <- ncdf4::ncvar_get(nc, "AREA")
-
-            # Create a patch index indicator vector
-            patch_index <- do.call(c, mapply(rep, seq_along(paco_N), paco_N))
 
             agb_patch_pft <- tapply(agb_co, 
                                     list("PFT" = pft_co, "patch" = patch_index), 
