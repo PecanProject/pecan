@@ -19,25 +19,6 @@
 ##' 
 split.inputs.LINKAGES <- function(settings, start.time, stop.time, inputs) {
   
-  #### Load all temp and precip met for site
-  met <- inputs$met$path
-  load(met)
-  
-  #### Add years for indexing
-  temp.mat.years <- cbind(temp.mat,seq(850,2010,1))
-  precip.mat.years <- cbind(precip.mat,seq(850,2010,1))
-  
-  #### Grab needed years
-  temp.mat <- temp.mat.years[temp.mat.years[,13]==year(start.time):year(stop.time),1:12]
-  precip.mat <- precip.mat.years[precip.mat.years[,13]==year(start.time):year(stop.time),1:12]
-  
-  #### Save to climate file
-  save(temp.mat, precip.mat, file = paste0(settings$rundir, "/climate.Rdata"))
-  
-  new.met <- paste0('',settings$rundir, "/climate.Rdata")
-  settings$run$inputs$met$path <- new.met #Do I need to change the ID too? Idk what I would change it to. 
-  
-  inputs <- settings$run$inputs["met"]
-  
   return(inputs)
+  
 } # split.inputs.LINKAGES
