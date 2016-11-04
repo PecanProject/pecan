@@ -7,8 +7,8 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##' @title write.restart.LINKAGES
-##' @name  write.restart.LINKAGES
+##' @title write_restart.LINKAGES
+##' @name  write_restart.LINKAGES
 ##' @author Ann Raiho \email{araiho@@nd.edu}
 ##' 
 ##' @param outdir      output directory
@@ -30,7 +30,7 @@
 # outdir, runid, time, settings, new.state, variables, sample_parameters = FALSE, trait.values =
 # NA,met=NULL,RENAME = TRUE
 
-write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time, settings, new.state, 
+write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, settings, new.state, 
                                    RENAME = TRUE, new.params, inputs) {
   
   ### Removing negative numbers because biomass can't be negative ###
@@ -330,4 +330,4 @@ write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     file.rename(file.path(outdir, runid, "linkages.out.Rdata"), 
                 file.path(outdir, runid, paste0(start.time, "linkages.out.Rdata")))
   }
-} # write.restart.LINKAGES
+} # write_restart.LINKAGES
