@@ -8,8 +8,8 @@
 #-------------------------------------------------------------------------------
 
 ## split clim file into smaller time units to use in KF
-##' @title split.inputs.SIPNET
-##' @name  split.inputs.SIPNET
+##' @title split_inputs.SIPNET
+##' @name  split_inputs.SIPNET
 ##' @author Mike Dietze and Ann Raiho
 ##' 
 ##' @param multi.settings
@@ -20,7 +20,7 @@
 ##' 
 ##' @return file split up climate file
 ##' @export
-split.inputs.SIPNET <- function(settings, start.time, stop.time, inputs) {
+split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs) {
   
   #### Lubridate start and end times
   start.day <- day(start.time)
@@ -50,4 +50,4 @@ split.inputs.SIPNET <- function(settings, start.time, stop.time, inputs) {
   ###### Output input path to inputs
   settings$run$inputs$met$path <- file
   return(settings$run$inputs)
-} # split.inputs.SIPNET
+} # split_inputs.SIPNET
