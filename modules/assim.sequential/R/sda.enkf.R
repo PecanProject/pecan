@@ -30,7 +30,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   rundir     <- settings$host$rundir
   host       <- settings$host
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step  #idea for later generalizing
-  nens       <- settings$state.data.assimilation$n.ensemble
+  nens       <- as.numeric(settings$state.data.assimilation$n.ensemble)
   processvar <- settings$state.data.assimilation$process.variance
   sample_parameters <- settings$state.data.assimilation$sample.parameters
   var.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
@@ -69,7 +69,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   if(n.inputs > nens){
     sampleIDs <- 1:nens
   }else{
-    sampleIDs <- c(1:n.input,sample.int(n.inputs, nens-n.inputs, replace = TRUE)
+    sampleIDs <- c(1:n.inputs,sample.int(n.inputs, (nens - n.inputs), replace = TRUE))
   }
   
   ens.inputs <- list()
