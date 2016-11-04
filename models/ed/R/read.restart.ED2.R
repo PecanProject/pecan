@@ -30,10 +30,30 @@ read.restart.ED2 <- function(outdir,
 
     histfile_path <- file.path(outdir, "out", runid)
 
-    histfile <- list.files(histfile_path, "history-S-.*\\.h5", 
+    stop_year <- lubridate::year(stop.time)
+    stop_month <- lubridate::month(stop.time)
+    stop_day <- lubridate::day(stop.time)
+    datetime_string <- sprintf("%04d-%02d-%02d-000000", 
+                               stop_year, 
+                               stop_month,
+                               stop_day)
+    histfile_string <- paste0("history-S-",
+                              datetime_string,
+                              ".*\\.h5")
+
+
+    histfile <- list.files(histfile_path, 
+                           histfile_string, 
                            full.names = TRUE)
-    # TODO: This needs to access the target date
-    histfile <- tail(histfile, 1)
+    if (length(histfile) > 1) {
+        PEcAn.utils::logger.error("Multiple history files found.")
+    } else if (length(histfile) < 1) {
+        PEcAn.utils::logger.error("No history files found.")
+    } else {
+        PEcAn.utils::logger.info("Using history file: ",
+                                  histfile)
+    }
+
     nc <- ncdf4::nc_open(histfile)
     on.exit(ncdf4::nc_close(nc))
 
@@ -64,22 +84,31 @@ read.restart.ED2 <- function(outdir,
 
     for (var_name in var.names) {
 
-        pft_full_names <- paste(var_name, "pft", pftnames,
+        pft_full_names <- paste("pft", pftnames,
                                 sep = name_separator)
         names(pft_full_names) <- pftnums
 
         ## TODO: Convert to PEcAn standard names
         if (var_name == "AGB") {
 
-            # AGB by cohort -- long vector
-            agb_co <- ncdf4::ncvar_get(nc, "AGB_CO")
+            # Cohort AGB -- kgC plant-1
+            agb_co_plant <- ncdf4::ncvar_get(nc, "AGB_CO")
 
+            # Cohort stem density -- Plant m-2
+            co_plant <- ncdf4::ncvar_get(nc, "NPLANT")
+
+            # Cohort AGB -- kgC m-2
+            agb_co <- agb_co_plant * co_plant
+
+            # Aggregate AGB by patch and PFT
             agb_patch_pft <- tapply(agb_co, 
                                     list("PFT" = pft_co, "patch" = patch_index), 
                                     sum)
 
+            # AGB by PFT and area
             agb_pft_x_area <- apply(agb_patch_pft, 1, "*", patch_area)
             agb_pft <- colSums(agb_pft_x_area, na.rm = TRUE)
+            
             names(agb_pft) <- pft_full_names[names(agb_pft)]
             forecast[[var_name]] <- agb_pft
         } else {
@@ -89,7 +118,7 @@ read.restart.ED2 <- function(outdir,
         }
     }
 
-    return(forecast)
+    return(unlist(forecast))
 }
 
 
