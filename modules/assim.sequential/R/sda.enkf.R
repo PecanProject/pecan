@@ -63,22 +63,27 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   }
   
   ###-------------------------------------------------------------------###
-  ### load model specific inputs for initial runs                       ###
+  ### load model specific input ensembles for initial runs              ###
   ###-------------------------------------------------------------------### 
-  inputs.table <- table(names(settings$run$inputs))
-  if(max(inputs.table) > nens){
-    sampleIDs <- sample(x = 1:max(inputs.table), size = nens)
+  n.inputs <- max(table(names(settings$run$inputs)))
+  if(n.inputs > nens){
+    sampleIDs <- 1:nens
   }else{
-    sampleIDs <- sample(x = 1:max(inputs.table), size = nens, replace = TRUE)
+    sampleIDs <- c(1:n.input,sample.int(n.inputs, nens-n.inputs, replace = TRUE)
   }
   
+  ens.inputs <- list()
   inputs <- list()
   for(i in seq_len(nens)){
+    ### get only nessecary ensemble inputs. Do not change in anaylysis
+    ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
+    
+    ### model specific split inputs
     inputs[[i]] <- do.call(my.split.inputs, 
                       args = list(settings = settings, 
                                   start.time = settings$run$start.date, 
                                   stop.time = settings$run$end.date,
-                                  ens = i))
+                                  inputs = ens.inputs[[i]]))
   }
 
   #### replaces stuff below
@@ -302,7 +307,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for (t in seq_len(nt)) {
+  for (t in 6:15) {
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -370,7 +375,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           return(sqrt(diag(x)))
         })))
         
-        for (i in 2) {
+        for (i in sample(x = 1:ncol(X), size = 2)) {
           t1 <- 1
           Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
           Xci <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
@@ -620,16 +625,16 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     if (t < nt) {
       
       ###-------------------------------------------------------------------###
-      ### load model specific inputs for current runs                       ###
+      ### split model specific inputs for current runs                      ###
       ###-------------------------------------------------------------------### 
  
       inputs <- list()
-      for(i in sampleIDs){
+      for(i in seq_len(nens)){
         inputs[[i]] <- do.call(my.split.inputs, 
                           args = list(settings = settings, 
                                       start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))), 
                                       stop.time = obs.times[t + 1],
-                                      ens = i)) 
+                                      inputs = ens.inputs[[i]])) 
       }
       
       
