@@ -7,8 +7,8 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##' @title read.restart.LINKAGES
-##' @name  read.restart.LINKAGES
+##' @title read_restart.LINKAGES
+##' @name  read_restart.LINKAGES
 ##' @author Ann Raiho \email{araiho@@nd.edu}
 ##' 
 ##' @param outdir      output directory
@@ -22,7 +22,7 @@
 ##' @return X.vec      vector of forecasts
 ##' @export
 ##' 
-read.restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names = NULL, params = NULL) {
+read_restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names = NULL, params = NULL) {
   
   # Read ensemble output
   ens <- read.output(runid = runid, 
