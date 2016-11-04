@@ -5,7 +5,7 @@
 #' @inheritParams PEcAn.SIPNET::read.restart.SIPNET
 #' @examples
 #' \dontrun{
-#' outdir <- "outputs"
+#' outdir <- "~/sda-hackathon/outputs"
 #' runid <- "99000000020"
 #' 
 #' settings_file <- "outputs/pecan.CONFIGS.xml"
@@ -26,7 +26,12 @@ read.restart.ED2 <- function(outdir,
     confxml_path <- file.path(outdir, "run", runid, "config.xml")
     confxml <- XML::xmlToList(XML::xmlParse(confxml_path))
 
-    histfile <- "outputs/out/99000000020/history-S-2004-06-01-000000-g01.h5"
+    histfile_path <- file.path(outdir, "out", runid)
+
+    histfile <- list.files(histfile_path, "history-S-.*\\.h5", 
+                           full.names = TRUE)
+    # TODO: This needs to access the target date
+    histfile <- tail(histfile, 1)
     nc <- ncdf4::nc_open(histfile)
 
 
