@@ -30,7 +30,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   rundir     <- settings$host$rundir
   host       <- settings$host
   forecast.time.step <- settings$state.data.assimilation$forecast.time.step  #idea for later generalizing
-  nens       <- settings$state.data.assimilation$n.ensemble
+  nens       <- as.numeric(settings$state.data.assimilation$n.ensemble)
   processvar <- settings$state.data.assimilation$process.variance
   sample_parameters <- settings$state.data.assimilation$sample.parameters
   var.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
@@ -63,14 +63,29 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   }
   
   ###-------------------------------------------------------------------###
-  ### load model specific inputs for initial runs                       ###
+  ### load model specific input ensembles for initial runs              ###
   ###-------------------------------------------------------------------### 
+  n.inputs <- max(table(names(settings$run$inputs)))
+  if(n.inputs > nens){
+    sampleIDs <- 1:nens
+  }else{
+    sampleIDs <- c(1:n.inputs,sample.int(n.inputs, (nens - n.inputs), replace = TRUE))
+  }
   
-  inputs <- do.call(my.split.inputs, 
-                    args = list(settings = settings, 
-                                start.time = settings$run$start.date, 
-                                stop.time = settings$run$end.date))
-  
+  ens.inputs <- list()
+  inputs <- list()
+  for(i in seq_len(nens)){
+    ### get only nessecary ensemble inputs. Do not change in anaylysis
+    ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
+    
+    ### model specific split inputs
+    inputs[[i]] <- do.call(my.split.inputs, 
+                      args = list(settings = settings, 
+                                  start.time = settings$run$start.date, 
+                                  stop.time = settings$run$end.date,
+                                  inputs = ens.inputs[[i]]))
+  }
+
   #### replaces stuff below
   
   # if(model == "LINKAGES"){
@@ -173,7 +188,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
                                          trait.values = params[[i]], 
                                          settings = settings, 
                                          run.id = run.id[[i]], 
-                                         inputs = inputs, 
+                                         inputs = inputs[[i]], 
                                          IC = IC[i, ]))
     
     ## write a README for the run
@@ -360,7 +375,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           return(sqrt(diag(x)))
         })))
         
-        for (i in 2) {
+        for (i in sample(x = 1:ncol(X), size = 2)) {
           t1 <- 1
           Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
           Xci <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
@@ -610,13 +625,18 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     if (t < nt) {
       
       ###-------------------------------------------------------------------###
-      ### load model specific inputs for current runs                       ###
+      ### split model specific inputs for current runs                      ###
       ###-------------------------------------------------------------------### 
+ 
+      inputs <- list()
+      for(i in seq_len(nens)){
+        inputs[[i]] <- do.call(my.split.inputs, 
+                          args = list(settings = settings, 
+                                      start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))), 
+                                      stop.time = obs.times[t + 1],
+                                      inputs = ens.inputs[[i]])) 
+      }
       
-      inputs <- do.call(my.split.inputs, 
-                        args = list(settings = settings, 
-                                    start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))), 
-                                    stop.time = obs.times[t + 1]))
       
       ###-------------------------------------------------------------------###
       ### write restart by ensemble                                         ###

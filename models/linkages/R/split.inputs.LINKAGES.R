@@ -17,10 +17,8 @@
 ##' @return files split up climate files
 ##' @export
 ##' 
-split.inputs.LINKAGES <- function(settings, start.time, stop.time) {
+split.inputs.LINKAGES <- function(settings, start.time, stop.time, inputs) {
   
-  new.met <- paste0(settings$rundir, "/climate.Rdata")  # doesn't do anything but write stuff to README
-  settings$run$inputs$met$path <- new.met  #HACK
+  return(inputs)
   
-  return(settings$run$inputs)
 } # split.inputs.LINKAGES
