@@ -4,7 +4,7 @@
 \alias{split.inputs.LINKAGES}
 \title{split.inputs.LINKAGES}
 \usage{
-\method{split}{inputs.LINKAGES}(settings, start.time, stop.time)
+split.inputs.LINKAGES(settings, start.time, stop.time)
 }
 \value{
 files split up climate files

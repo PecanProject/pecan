@@ -21,6 +21,7 @@ library(PEcAn.allometry)
 library(mvtnorm)
 library(rjags)
 library(reshape2)
+library(PEcAn.LINKAGES)
 #--------------------------------------------------------------------------------------------------#
 #
 
@@ -69,8 +70,10 @@ library(reshape2)
 #--------------------------------------------------------------------------------------------------#
 
 #---------------- Load data. -------------------------------------------------------#
-load('~/linkages_lyford_summary.Rdata')
+load('~/linkages_lyford_summary_v6.Rdata')
 row.keep <- list()
+spp.params.default <- read.csv(system.file("spp_matrix.csv", package = "linkages")) #default spp.params #this doesn't work unless linkages is in my home directory
+
 for(i in 1:15){
   row.keep[[i]]<-grep(rownames(ab_mat)[i],spp.params.default[,2])[1]
 }
@@ -102,6 +105,14 @@ for(i in 1:dim(cov_array)[3]){
 }
 years<-1960:2014
 names(obs.mean) <- paste0(years,'/12/31')
+
+for(i in 1:14){
+  plot(ab_mat[i,],typ='l',main=new.names[i])
+  lines(ab_mat[i,]*cov_array[i,i,])
+  lines(ab_mat[i,]*cov_array[i,i,])
+  lines(ab_mat[i,]*(cov_array[i,i,]+1))
+}
+
 
 #---------------- Build Initial Conditions ----------------------------------------------------------------------#
 status.start("IC")
