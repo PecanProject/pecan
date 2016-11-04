@@ -34,7 +34,7 @@ write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
                                    RENAME = TRUE, new.params, inputs) {
   
   ### Removing negative numbers because biomass can't be negative ###
-  new.state[newstate < 0] <- 0
+  new.state[new.state < 0] <- 0
   
   new.state.save <- new.state
   new.state <- new.state.save[grep("pft", names(new.state.save))]
@@ -76,7 +76,6 @@ write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   }
   
   spp.params <- spp.params.default[spp.params.save, ]
-  
   biomass_spp_params <- function(new.params, default.params, pft) {
     if ("SLTA" %in% names(new.params)) {
       slta <- new.params$pft$SLTA
@@ -141,7 +140,12 @@ write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     n.index <- c(n.index, rep(i, ntrees[i]))
   }
   
-  large.trees <- which(dbh >= (max(dbh) / 1.05))
+  if(max(dbh) < 15){ # if all trees are small than large trees are 95th percentile otherwise trees bigger than 5 cm
+    large.trees <- which(dbh >= (max(dbh) / 1.05))
+  }else{
+    large.trees <- which(dbh >= 15)
+  }
+  
   for (s in seq_along(settings$pfts)) {
     ntrees[s] <- length(which(n.index[large.trees] == s))
   }
@@ -168,14 +172,14 @@ write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     # spp.params$FWT[n.index[j]] frt <- spp.params$FRT[n.index[j]]
     pft <- spp.params$Spp_Name[n.index[j]]
     spp.biomass.params <- biomass_spp_params(new.params = new.params, 
-                                             default.params = default.params, 
+                                             default.params = spp.params.default, 
                                              pft = pft)
     ind.biomass[j] <- biomass_function(dbh[j], spp.biomass.params) * (1 / 833) * 0.48  # changing units to be kgC/m^2
   }
   
   data2 <- data.frame(ind.biomass = ind.biomass,
                       n.index = n.index)
-  mean.biomass.spp <- aggregate(ind.biomass ~ n.index, mean, data = data2)  # calculate mean individual biomass for each species
+  mean.biomass.spp <- aggregate(ind.biomass ~ n.index, mean, data = data2)   # calculate mean individual biomass for each species
   
   # calculate number of individuals needed to match new.state
   for (s in seq_along(settings$pfts)) {
@@ -250,12 +254,12 @@ write.restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     nu <- nl + new.ntrees[s] - 1
     pft <- unique(spp.params$Spp_Name[new.n.index[nl:nu]])
     spp.biomass.params <- biomass_spp_params(new.params = new.params, 
-                                             default.params = default.params, 
+                                             default.params = spp.params.default, 
                                              pft = pft)
     b_calc[s] <- sum(biomass_function(dbh.temp[nl:nu], 
                                       spp.biomass.params = spp.biomass.params)) * (1 / 833) * 0.48  # changing units to be kgC/m^2
     
-    bcorr[s] <- new.state[s] / b_calc[s]
+    bcorr[s] <- new.state[s] / b_calc[s] #calculate biomass correction
     
     if (length(pft) > 1) {
       stop("error too many pfts assigned")
