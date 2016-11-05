@@ -128,19 +128,20 @@ write.restart.ED2 <- function(outdir,
   ed2in_new <- ed2in_orig
 
   ## IED_INIT_MODE = 5 --> Run from history.h5 file
-  ed2in_new <- ed2in_sub("NL%IED_INIT_MODE", 5, ed2in_new)
-  ed2in_new <- ed2in_sub("NL%SFILIN", file.path(mod_outdir, runid, "history"),
-                         ed2in_new)
+  tag_val_list <- list("RUNTYPE" = "history",
+                       "IED_INIT_MODE" = 5,
+                       "SFILIN" = file.path(mod_outdir, runid, "history"),
+                       "IMONTHA" = strftime(start.time, "%m"), 
+                       "IDATEA" = strftime(start.time, "%d"),
+                       "IYEARA" = strftime(start.time, "%Y"),
+                       "ITIMEA" = strftime(start.time, "%H%M"),
+                       "IMONTHZ" = strftime(stop.time, "%m"),
+                       "IDATEZ" = strftime(stop.time, "%d"),
+                       "IYEARZ" = strftime(stop.time, "%Y"),
+                       "ITIMEZ" = strftime(stop.time, "%H%M"))
 
-  # Set start and end date
-  ed2in_new <- ed2in_sub("NL%IMONTHA", strftime(start.time, "%m"), ed2in_new)
-  ed2in_new <- ed2in_sub("NL%IDATEA", strftime(start.time, "%d"), ed2in_new)
-  ed2in_new <- ed2in_sub("NL%IYEARA", strftime(start.time, "%Y"), ed2in_new)
-  ed2in_new <- ed2in_sub("NL%ITIMEA", strftime(start.time, "%H%M"), ed2in_new)
-  ed2in_new <- ed2in_sub("NL%IMONTHZ", strftime(stop.time, "%m"), ed2in_new)
-  ed2in_new <- ed2in_sub("NL%IDATEZ", strftime(stop.time, "%d"), ed2in_new)
-  ed2in_new <- ed2in_sub("NL%IYEARZ", strftime(stop.time, "%Y"), ed2in_new)
-  ed2in_new <- ed2in_sub("NL%ITIMEZ", strftime(stop.time, "%H%M"), ed2in_new)
+  modstr <- 'Modified by write.restart.ED2'
+  ed2in_new <- ed2in_set_value_list(tag_val_list, ed2in_orig, modstr)
 
   writeLines(ed2in_new, file.path(ed2in_path))
 
