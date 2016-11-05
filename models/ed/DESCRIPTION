@@ -20,7 +20,8 @@ Imports:
     ncdf4 (>= 1.15),
     stringr(>= 1.1.0),
     udunits2 (>= 0.11),
-    XML (>= 3.98-1.4)
+    XML (>= 3.98-1.4),
+    rhdf5
 Suggests:
     testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE

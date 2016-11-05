@@ -19,13 +19,15 @@ read.restart.ED2(outdir, runid, stop.time, settings, var.names, params)
 }
 \examples{
 \dontrun{
-outdir <- "~/sda-hackathon/outputs"
-runid <- "99000000020"
-
-settings_file <- "outputs/pecan.CONFIGS.xml"
-settings <- PEcAn.settings::read.settings(settings_file)
-forecast <- read.restart.ED2
+  outdir <- "~/sda-hackathon/outputs"
+  runid <- "99000000020"
+  settings_file <- "outputs/pecan.CONFIGS.xml"
+  settings <- PEcAn.settings::read.settings(settings_file)
+  forecast <- read.restart.ED2(...)
 }
 
+}
+\author{
+Alexey Shiklomanov
 }
 

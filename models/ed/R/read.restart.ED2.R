@@ -28,7 +28,7 @@ read.restart.ED2 <- function(outdir,
 
     confxml <- get_configxml.ED2(rundir, runid)
 
-    histfile <- get_restartfile.ED2(mod_outdir, runid, file.time)
+    histfile <- get_restartfile.ED2(mod_outdir, runid, stop.time)
     if (is.null(histfile)) {
         PEcAn.utils::logger.severe("SDA failed.")
     }
