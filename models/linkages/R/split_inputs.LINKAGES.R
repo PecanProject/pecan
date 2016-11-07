@@ -5,11 +5,11 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##' @title split.inputs.LINKAGES
-##' @name  split.inputs.LINKAGES
+##' @title split_inputs.LINKAGES
+##' @name  split_inputs.LINKAGES
 ##' @author Ann Raiho
 ##' 
-##' @param multi.settings
+##' @param settings
 ##' @param start.time
 ##' @param stop.time
 ##' @description Splits climate met for LINKAGES
@@ -17,10 +17,8 @@
 ##' @return files split up climate files
 ##' @export
 ##' 
-split.inputs.LINKAGES <- function(settings, start.time, stop.time) {
+split_inputs.LINKAGES <- function(settings, start.time, stop.time, inputs) {
   
-  new.met <- paste0(settings$rundir, "/climate.Rdata")  # doesn't do anything but write stuff to README
-  settings$run$inputs$met$path <- new.met  #HACK
+  return(inputs)
   
-  return(settings$run$inputs)
-} # split.inputs.LINKAGES
+} # split_inputs.LINKAGES
