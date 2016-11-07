@@ -1,37 +1,53 @@
 #' @name invert.auto 
 #' 
 #' @title Inversion with automatic convergence checking
-#' @details Performs an inversion via the `invert.custom` function with multiple chains and automatic convergence checking. 
-#' Convergence checks are performed using the multivariate Gelman-Rubin diagnostic.
+#' @details Performs an inversion via the \code{invert.custom} function with 
+#' multiple chains and automatic convergence checking.  Convergence checks are 
+#' performed using the multivariate Gelman-Rubin diagnostic.
 #' @param invert.options Parameters related to inversion.
-#' Parameters specific to `invert.auto` are described here.
-#' For the remaining parameters, see \code{\link{invert.custom}}.
-#' 
-#' model The model to be inverted. This should be an R function that takes 
-#' `params` as input and returns one column of `observed` (nrows should be the 
-#' same). Constants should be implicitly included here.
-#'
-#' nchains Number of independent chains.
-#' 
-#' inits.function Function for randomly generating initial conditions.
-#' 
-#' ngibbs.max Maximum number of total iterations (per chain). DEFAULT = 5e6
-#'
-#' ngibbs.min Minimum number of total iterations (per chain). DEFAULT = 5000.
-#'
-#' ngibbs.step Number of iterations between convergence checks. Default = 1000.
-#'
-#' run_first Function to run before running sampling. Takes parallel inputs 
-#' list containing runID, initial values, and resume (NULL) as an argument.
-#'
-#' @param return.samples Include full samples list in output. Default = TRUE.
-#' @param save.samples Save samples to file as the inversion proceeds (useful for debugging).
-#' If NULL, do not save samples. Default = NULL.
-#' @param parallel Logical. Whether or not to run multiple chains in parallel on multiple cores (default = TRUE).
-#' @param parallel.cores Number of cores to use for parallelization. If NULL (default), allocate one fewer than detected number of cores.
-#' @param parallel.output Filename (or '' for stdout) for printing parallel outputs. Use with caution. Default = '/dev/null'.
+#' @param return.samples Include full samples list in output. Default = 
+#' \code{TRUE}.
+#' @param save.samples Save samples to file as the inversion proceeds (useful 
+#' for debugging). If \code{NULL}, do not save samples. Default = \code{NULL}.
+#' @param parallel Logical. Whether or not to run multiple chains in parallel 
+#' on multiple cores (default = \code{TRUE}).
+#' @param parallel.cores Number of cores to use for parallelization. If 
+#' \code{NULL}
+#' (default), allocate one fewer than detected number of cores.
+#' @param parallel.output Filename (or '' for stdout) for printing parallel 
+#' outputs. Use with caution. Default = \code{'/dev/null'}.
 #' @inheritParams invert.custom
-#' @return List of "results" (summary statistics) and "samples" (mcmc.list object, or "NA" if return.samples=FALSE)
+#' 
+#' @details
+#' Parameters specific to \code{invert.auto} are described here.
+#' For the remaining parameters, see \code{\link{invert.custom}}.
+#' \itemize{
+#' 
+#' \item{model}{The model to be inverted. This should be an R function that 
+#' takes \code{params} as input and returns one column of \code{observed} 
+#' (nrows should be the same). Constants should be implicitly included here. }
+#'
+#' \item{nchains}{Number of independent chains.}
+#' 
+#' \item{inits.function}{Function for generating initial conditions.}
+#' 
+#' \item{ngibbs.max}{Maximum number of total iterations (per chain). DEFAULT 
+#' = 5e6}
+#'
+#' \item{ngibbs.min}{Minimum number of total iterations (per chain). DEFAULT = 
+#' 5000.}
+#'
+#' \item{ngibbs.step}{Number of iterations between convergence checks. Default 
+#' = 1000.}
+#'
+#' \item{run_first}{Function to run before running sampling. Takes parallel 
+#' inputs list containing runID, initial values, and resume (NULL) as an 
+#' argument.}
+#' }
+#'
+#' @return List including \code{results} (summary statistics), \code{samples} 
+#' (\code{mcmc.list} object, or \code{NA} if \code{return.samples=FALSE}), and 
+#' other information.
 #' @export
 
 invert.auto <- function(observed, invert.options,
@@ -41,13 +57,25 @@ invert.auto <- function(observed, invert.options,
                         parallel=TRUE,
                         parallel.cores=NULL,
                         parallel.output = '/dev/null') {
+
   if (parallel == TRUE) {
     testForPackage("parallel")
   } else {
     message("Running in serial mode. Better performance can be achived with `parallel=TRUE`.")
   }
+
   ngibbs.max <- invert.options$ngibbs.max
+  if (is.null(ngibbs.max)) {
+    ngibbs.max <- 1e6
+  }
+  ngibbs.min <- invert.options$ngibbs.min
+  if (is.null(ngibbs.min)) {
+    ngibbs.min <- 5000
+  }
   ngibbs.step <- invert.options$ngibbs.step
+  if (is.null(ngibbs.step)) {
+    ngibbs.step <- 1000
+  }
   nchains <- invert.options$nchains
   inits.function <- invert.options$inits.function
   if (is.null(invert.options$do.lsq)) { 
@@ -56,10 +84,9 @@ invert.auto <- function(observed, invert.options,
   if (invert.options$do.lsq) {
     testForPackage("minpack.lm")
   }
-  invert.options$ngibbs <- invert.options$ngibbs.min
-  max_iter_converge_check <- invert.options$max_iter_converge_check
-  if (is.null(max_iter_converge_check)) {
-    max_iter_converge_check <- 15000
+  iter_conv_check <- invert.options$iter_conv_check
+  if (is.null(iter_conv_check)) {
+    iter_conv_check <- 15000
   }
   
   # Set up cluster for parallel execution
@@ -117,7 +144,8 @@ invert.auto <- function(observed, invert.options,
   }
 
   # Begin inversion
-  invert.options$ngibbs <- invert.options$ngibbs.min
+  invert.options$ngibbs <- ngibbs.min
+  i.ngibbs <- ngibbs.min
   if (parallel) {
     output.list <- parallel::parLapply(cl, inputs, invert.function)
   } else {
@@ -128,27 +156,18 @@ invert.auto <- function(observed, invert.options,
     }
   }
 
-  i.ngibbs <- invert.options$ngibbs.min
-  samps.list <- lapply(output.list, "[[", "results")
-  resume <- lapply(output.list, "[[", "resume")
-  if (!is.null(save.samples)) {
-    saveRDS(list(resume = resume, samps.list = samps.list),
-            file = save.samples)
-  }
-  process <- process_samples(samps.list, max_iter_converge_check)
-  finished <- process$finished
-
-  if (finished) {
-    out <- process[c('results', 'samples')]
-  }
+  resume <- lapply(output.list, '[[', 'resume')
+  out <- process_output(output.list = output.list, 
+                        iter_conv_check = iter_conv_check,
+                        save.samples = save.samples)
 
   # Loop until convergence (skipped if finished == TRUE)
-  while (!finished & i.ngibbs < ngibbs.max) {
+  while (!out$finished & i.ngibbs < ngibbs.max) {
     if (!quiet) {
       message(sprintf("Running iterations %d to %d", i.ngibbs,
                       i.ngibbs + ngibbs.step))
     }
-    inits <- lapply(samps.list, getLastRow)
+    inits <- lapply(out$samples, getLastRow)
     inputs <- list()
     for (i in seq_len(nchains)) {
       inputs[[i]] <- list(runID = runID_list[i],
@@ -166,30 +185,19 @@ invert.auto <- function(observed, invert.options,
       }
     }
     i.ngibbs <- i.ngibbs + ngibbs.step
-    samps.list.current <- lapply(output.list, '[[', 'results')
     resume <- lapply(output.list, '[[', 'resume')
-
-    samps.list <- combineChains(samps.list, samps.list.current)
-    if (!is.null(save.samples)) {
-      saveRDS(list(resume = resume, samps.list = samps.list),
-              file = save.samples)
-    }
-    process <- process_samples(samps.list, max_iter_converge_check)
-    finished <- process$finished
-
-    if (finished) {
-      out <- process[c('results', 'samples')]
-    }
-
+    out <- process_output(output.list = output.list,
+                          prev_out = out,
+                          iter_conv_check = iter_conv_check, 
+                          save.samples = save.samples)
   }
-  if (i.ngibbs > ngibbs.max & !finished) {
+
+  if (i.ngibbs > ngibbs.max & !out$finished) {
     warning("Convergence was not achieved, and max iterations exceeded. ",
             "Returning results as 'NA'.")
-    out <- list(results = NA, 
-                samples = PEcAn.assim.batch::makeMCMCList(samps.list))
   }
   if (!return.samples) {
-    out$samples <- c(`Samples not returned` = NA)
+    out$samples <- c('Samples not returned' = NA)
   }
   return(out)
 } # invert.auto
@@ -209,36 +217,68 @@ combineChains <- function(samps1, samps2) {
     sampsfinal[[i]] <- rbind(samps1[[i]], samps2[[i]])
   }
   stopifnot(length(sampsfinal) == length(samps1))
-  return(sampsfinal)
+  out <- PEcAn.assim.batch::makeMCMCList(sampsfinal)
+  return(out)
 } # combineChains
 
-process_samples <- function(samps.list, max_iter_converge_check) {
-  smcmc <- PEcAn.assim.batch::makeMCMCList(samps.list)
-  nsamp <- coda::niter(smcmc)
-  nburn <- min(floor(nsamp/2), max_iter_converge_check)
+process_output <- function(output.list,
+                           prev_out = NULL,
+                           iter_conv_check,
+                           save.samples) {
+
+  samples.current <- lapply(output.list, "[[", "results")
+  deviance_list.current <- lapply(output.list, "[[", "deviance")
+  n_eff_list.current <- lapply(output.list, "[[", "n_eff_list")
+
+  out <- list()
+
+  if (is.null(prev_out)) {
+    out$samples <- PEcAn.assim.batch::makeMCMCList(samples.current)
+    out$deviance_list <- deviance_list.current
+    out$n_eff_list <- n_eff_list.current
+  } else {
+    out$samples <- combineChains(prev_out$samples, samples.current)
+    out$deviance_list <- mapply(c, prev_out$deviance_list, 
+                                deviance_list.current, SIMPLIFY = F)
+    out$n_eff_list <- mapply(c, prev_out$n_eff_list, n_eff_list.current,
+                             SIMPLIFY = F)
+  }
+
+  if (!is.null(save.samples)) {
+    saveRDS(out, file = save.samples)
+  }
+
+  smcmc <- out$samples
+  out$nsamp <- coda::niter(smcmc)
+  nburn <- min(floor(out$nsamp/2), iter_conv_check)
   smcmc_sub <- window(smcmc, start = nburn)
   check_initial <- check.convergence(smcmc_sub, autoburnin = FALSE)
   if (check_initial$error) {
     warning("Could not calculate Gelman diag. Assuming no convergence.")
-    return(list(finished = FALSE))
+    out$finished <- FALSE
+    return(out)
   }
   if (!check_initial$converged) {
     message("Convergence was not achieved. Continuing sampling.")
-    return(list(finished = FALSE))
+    out$finished <- FALSE
+    return(out)
   } else {
     message("Passed initial convergence check. ",
             "Attempting automatic burnin.")
   }
   burn <- PEcAn.assim.batch::autoburnin(smcmc, return.burnin = TRUE)
-  if (burn$burnin == 1) {
+  out$burnin <- burn$burnin
+  if (out$burnin == 1) {
     message("Robust convergence check in autoburnin failed. ",
             "Resuming sampling.")
-    return(list(finished = FALSE))
+    out$finished <- FALSE
+    return(out)
   } else {
-    message("Converged after ", coda::niter(smcmc), "iterations.\n",
-            "Burnin = ", burn$burnin)
+    message("Converged after ", out$nsamp, "iterations.\n",
+            "Burnin = ", out$burnin)
   }
-  results <- summary_simple(do.call(rbind, burn$samples))
-  return(list(results = results, samples = smcmc, finished = TRUE))
+  out$finished <- TRUE
+  out$results <- summary_simple(do.call(rbind, burn$samples))
+  return(out)
 }
 
