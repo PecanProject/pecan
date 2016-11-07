@@ -8,21 +8,22 @@ neff <- function(x) {
   UseMethod("neff")
 }
 
-neff.default <- function(x) {
+#' @export
+neff.default <- function(x, ...) {
     xna <- is.na(x)
     if (any(xna)) {
         warning("NA in neff input. Omitting.")
         x <- x[!xna]
     }
-    arout <- ar.yw(x)
+    arout <- ar.yw(x, ...)
     spec <- arout$var.pred/(1 - sum(arout$ar))^2
     out <- length(x) * var(x) / spec
     stopifnot(length(out) == 1)
     return(out)
 }
 
-neff.matrix <- function(x) {
-  col_neff <- apply(x, 2, neff.default)
+#' @export
+neff.matrix <- function(x, ...) {
+  col_neff <- apply(x, 2, neff.default, ...)
   return(sum(col_neff))
 }
-

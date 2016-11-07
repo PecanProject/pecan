@@ -12,37 +12,7 @@ invert.custom(observed, invert.options, quiet = FALSE,
 observed values. For spectral data, wavelengths are rows and spectra are 
 columns. Dimensions must align with the output of `model`.}
 
-\item{invert.options}{R list object containing the following elements:
-
-inits Vector of initial values of model parameters to be inverted.
-
-ngibbs Number of MCMC iterations
-
-prior.function Function for use as prior.
-Should take a vector of parameters as input and return a single value -- the sum of their log-densities -- as output.
-
-param.mins Vector of minimum values for inversion parameters
-
-param.maxs Vector of minimum values for inversion parameters
-
-model The model to be inverted.
-This should be an R function that takes `params` and `runID` as input and returns one column of `observed` (nrows should be the same).
-Constants should be implicitly included here.
-
-adapt Number of steps for adapting covariance matrix (i.e. adapt every 'n' steps).
-Default=100
-
-adj_min Minimum threshold for rescaling Jump standard deviation.
-Default = 0.1.
-
-target Target acceptance rate.
-Default=0.234, based on recommendation for multivariate block sampling in Haario et al. 2001
-
-do.lsq Perform least squares optimization first (see `invert.lsq`), and use outputs to initialize Metropolis Hastings.
-This may improve mixing time, but risks getting caught in a local minimum.
-Default=FALSE
-
-catch_error If TRUE (default), wrap model in \code{tryCatch} to prevent sampling termination on model execution error.}
+\item{invert.options}{R list object containing inversion settings. See details.}
 
 \item{quiet}{Suppress progress bar and status messages. Default=FALSE}
 
@@ -55,5 +25,42 @@ Performs an inversion of an arbitrary model using a modified
 Metropolis Hastings algorithm with block sampling. This may be slightly 
 slower than the implementation in Fortran, but is much more customizable, as 
 the model can be any R function.
+
+\code{inversion.options} contains the following:
+\itemize{
+\item{inits}{Vector of initial values of model parameters to be inverted.}
+
+\item{ngibbs}{Number of MCMC iterations}
+
+\item{prior.function}{Function for use as prior.
+Should take a vector of parameters as input and return a single value -- the 
+sum of their log-densities -- as output.}
+
+\item{param.mins}{Vector of minimum values for inversion parameters}
+
+\item{param.maxs}{Vector of minimum values for inversion parameters}
+
+\item{model}{The model to be inverted.
+This should be an R function that takes `params` and `runID` as input and 
+returns one column of `observed` (nrows should be the same).
+Constants should be implicitly included here.}
+
+\item{adapt}{Number of steps for adapting covariance matrix (i.e. adapt 
+every 'n' steps). Default=100}
+
+\item{adj_min}{Minimum threshold for rescaling Jump standard deviation.
+Default = 0.1.}
+
+\item{target}{Target acceptance rate.
+Default=0.234, based on recommendation for multivariate block sampling in 
+Haario et al. 2001}
+
+\item{do.lsq}{Perform least squares optimization first (see `invert.lsq`), 
+and use outputs to initialize Metropolis Hastings.
+This may improve mixing time, but risks getting caught in a local minimum.
+Default=FALSE}
+
+\item{catch_error}{If TRUE (default), wrap model in \code{tryCatch} to prevent sampling termination on model execution error.}
+}
 }
 
