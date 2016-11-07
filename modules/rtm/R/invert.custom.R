@@ -53,6 +53,7 @@ invert.custom <- function(observed, invert.options,
   observed <- as.matrix(observed)
   nspec <- ncol(observed)
   nwl <- nrow(observed)
+  n_obs <- nspec * nwl
 
   need_opts <- c("inits", "prior.function", "model")
   available_defaults <- c("param.mins", "param.maxs", "adapt",
@@ -92,7 +93,7 @@ invert.custom <- function(observed, invert.options,
   if (!is.null(invert.options$param.maxs)) {
     param.maxs <- invert.options$param.maxs
   } else {
-    param.maxs <- rep(-Inf, length(inits))
+    param.maxs <- rep(Inf, length(inits))
   }
   adapt <- invert.options$adapt
   adapt <- ifelse(is.null(adapt), 100, adapt)
@@ -182,7 +183,6 @@ invert.custom <- function(observed, invert.options,
   }
 
   # Precalculate quantities for first inversion step
-  rp1 <- tau_0 + nspec * nwl/2
   rsd <- 0.5
   PrevSpec <- tryCatch({
       model(inits, runID)
@@ -192,7 +192,8 @@ invert.custom <- function(observed, invert.options,
   })
   PrevError <- PrevSpec - observed
   PrevPrior <- prior.function(inits)
-  PrevScale <- neff(PrevError)/nwl
+  n_eff <- neff(PrevError)
+  logLL_scale <- n_eff/n_obs
 
   # Sampling loop
   for (ng in seq_len(ngibbs)) {
@@ -249,10 +250,9 @@ invert.custom <- function(observed, invert.options,
     # Metropolis sampling step if all conditions have been met
     if (samp) {
       TryError <- TrySpec - observed
-      TryScale <- neff(TryError)/nwl
-      TryPost <- sum(dnormC(TryError, 0, rsd)) * TryScale +
+      TryPost <- sum(dnormC(TryError, 0, rsd)) * logLL_scale +
         TryPrior
-      PrevPost <- sum(dnormC(PrevError, 0, rsd)) * PrevScale + 
+      PrevPost <- sum(dnormC(PrevError, 0, rsd)) * logLL_scale + 
         PrevPrior
       a <- exp(TryPost - PrevPost)
       if (is.na(a)) {
@@ -261,11 +261,15 @@ invert.custom <- function(observed, invert.options,
       if (a > runif(1)) {
         inits <- tvec
         PrevError <- TryError
+        PrevPrior <- TryPrior
+        n_eff <- neff(PrevError)
+        logLL_scale <- n_eff/n_obs
         ar <- ar + 1
       }
     }
     results[ng, 1:npars] <- inits
-    rp2 <- tau_0 + sum(PrevError * PrevError)/2
+    rp1 <- tau_0 + n_eff/2
+    rp2 <- tau_0 + sum(PrevError * PrevError) * logLL_scale/2
     rinv <- rgamma(1, rp1, rp2)
     rsd <- 1/sqrt(rinv)
     results[ng, npars + 1] <- rsd
