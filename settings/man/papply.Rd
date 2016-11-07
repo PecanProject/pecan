@@ -4,7 +4,7 @@
 \alias{papply}
 \title{Apply functions to PEcAn MultiSettings}
 \usage{
-papply(settings, fn, stop.on.error = FALSE, ...)
+papply(settings, fn, ..., stop.on.error = FALSE)
 }
 \arguments{
 \item{settings}{A \code{\link{MultiSettings}}, \code{\link{Settings}}, or \code{\link[base]{list}}
@@ -69,6 +69,7 @@ multiSettings <- MultiSettings(settings1, settings2)
 # The fucntion should add element $d = D to either a Settings, or each entry in a MultiSettings
 f(settings1, d="D")
 print(f(multiSettings, d="D"), TRUE)
+
 }
 \author{
 Ryan Kelly

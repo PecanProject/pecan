@@ -24,6 +24,14 @@ Convert MAAT output to netCDF
 \details{
 Converts all output contained in a folder to netCDF.
 }
+\examples{
+\dontrun{
+example.output <- system.file("out.csv",package="PEcAn.MAAT")
+model2netcdf.MAAT(outdir="~/",sitelat=9.154,sitelon=-79.848,start_date="2014-01-01 00:00:00",
+end_date="2014-12-31 00:00:00")
+}
+
+}
 \author{
 Shawn Serbin, Anthony Walker
 }

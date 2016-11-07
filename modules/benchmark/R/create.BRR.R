@@ -9,7 +9,7 @@
 ##' 
 ##' @author Betsy Cowdery 
 
-create.BRR <- function(ens_wf, con){
+create.BRR <- function(ens_wf, con, user_id = ""){
   
   cnd1 <- ens_wf$hostname == fqdn() 
   cnd2 <- ens_wf$hostname == 'test-pecan.bu.edu' & fqdn() == 'pecan2.bu.edu'
