@@ -31,6 +31,8 @@ getBurnin <- function(jags_out,
                       ...) {
   if (method == "moving.window") {
     GBR <- try(gelman_diag_mw(jags_out, ...))
+  } else if (method == "gelman.plot") {
+    GBR <- try(gelman_diag_gelmanPlot(jags_out, ...))
   } else {
     stop("Unknown method: ", method)
   }
