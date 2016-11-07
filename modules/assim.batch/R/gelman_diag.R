@@ -62,3 +62,22 @@ gelman_diag_mw <- function(x,
   return (gdmat)
 } # gelman_diag_mw
 
+#' @title Calculate Gelman Diagnostic using coda::gelman.plot
+#' 
+#' @author Alexey Shiklomanov
+#' @inheritParams x
+#' @description Calculates Gelman diagnostic cumulatively. This is a much 
+#' more conservative approach than the moving-window method.
+#' @export
+gelman_diag_gelmanPlot <- function(x, ...) {
+  png("/dev/null")
+  GBR_raw <- coda::gelman.plot(x)
+  dev.off()
+  GBR <- array(numeric(), dim(GBR_raw$shrink) + c(0, 2, 0))
+  dimnames(GBR)[[2]] <- c("Start", "End", dimnames(GBR_raw$shrink)[[2]])
+  GBR[,-(1:2),] <- GBR_raw$shrink
+  GBR[, 2, ] <- GBR_raw$last.iter
+  GBR[, 1, 1] <- GBR[, 1, 2] <- c(1, GBR[-nrow(GBR), 2, 1] + 1)
+  return(GBR)
+}
+
