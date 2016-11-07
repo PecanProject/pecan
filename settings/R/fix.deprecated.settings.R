@@ -13,11 +13,18 @@
 ##' @return updated settings list
 ##' @author Ryan Kelly
 ##' @export fix.deprecated.settings
-fix.deprecated.settings <- function(settings) {
-  library(XML)
-  library(lubridate)
-  library(PEcAn.DB)
-  library(PEcAn.utils)
+fix.deprecated.settings <- function(settings, force=FALSE) {
+  if(!force && !is.null(settings$settings.info$deprecated.settings.fixed) && 
+     settings$settings.info$deprecated.settings.fixed==TRUE) {
+    logger.info("Deprecated settings have been fixed already. Skipping.")
+    return(invisible(settings))
+  } else {
+    logger.info("Fixing deprecated settings...")
+  }
+  
+  if(is.MultiSettings(settings)) {
+    return(invisible(papply(settings, fix.deprecated.settings, force=force)))
+  }
   
   # settings$model$jobtemplate
   if(!is.null(settings$run$jobtemplate)) {
@@ -48,6 +55,9 @@ fix.deprecated.settings <- function(settings) {
     settings$host <- settings$run$host
     settings$run$host <- NULL
   }
+  
+  # Set 'checked' flag so fix.deprecated.settings will be skipped in the future (unless force=TRUE)
+  settings$settings.info$deprecated.settings.fixed <- TRUE
   
   return(settings)
 }

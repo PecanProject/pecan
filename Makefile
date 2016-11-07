@@ -34,7 +34,7 @@ ALL_PKGS_D := $(BASE_D) $(MODELS_D) $(MODULES_D)
 
 .PHONY: all install check test document
 
-all: document install
+all: install
 
 document: .doc/all
 install: .install/all 

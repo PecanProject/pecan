@@ -11,8 +11,12 @@
 
 calc.benchmark <- function(settings, bety) {
   
-  library(RPostgreSQL)
-  library(data.table)
+  # dplyr functions
+  tbl     <- dplyr::tbl
+  filter  <- dplyr::filter
+  rename  <- dplyr::rename
+  collect <- dplyr::collect
+  select  <- dplyr::select
   
   site <- query.site(settings$run$site$id, bety$con)
   start_year <- lubridate::year(settings$run$start.date)
@@ -20,12 +24,16 @@ calc.benchmark <- function(settings, bety) {
   model_run <- dir(settings$modeloutdir, full.names = TRUE, include.dirs = TRUE)[1]
   # How are we dealing with ensemble runs? Right now I've hardcoded to select the first run.
   
+  var.ids <- as.numeric(unname(unlist(settings$benchmark$variables)))
+  metric.ids <- as.numeric(unname(unlist(settings$benchmark$metrics)))
+  
   # All benchmarking records for the given benchmarking ensemble id
   bms <- tbl(bety,'benchmarks') %>% rename(benchmark_id = id) %>%  
     left_join(.,tbl(bety, "benchmarks_benchmarks_reference_runs"), by="benchmark_id") %>% 
     filter(reference_run_id == settings$benchmark$reference_run_id) %>% 
-    dplyr::select(one_of("benchmark_id", "input_id", "site_id", "variable_id", "reference_run_id")) %>%
-    collect()
+    select(one_of("benchmark_id", "input_id", "site_id", "variable_id", "reference_run_id")) %>%
+    collect() %>%
+    filter(variable_id %in% var.ids)
   
   
   # Determine how many data sets inputs are associated with the benchmark id's
@@ -38,13 +46,12 @@ calc.benchmark <- function(settings, bety) {
     
     bm.ids <- bms$benchmark_id[which(bms$input_id == input.id)]
     data.path <- query.file.path(input.id, settings$host$name, bety$con)
-    format_full <- format <- query.format.vars(input.id, bety$con)
+    format_full <- format <- query.format.vars(input.id, bety, format.id = NA, var.ids=var.ids)
     
     # ---- LOAD INPUT DATA ---- #
     
     time.row <- format$time.row
-    # vars.used.index is redundant and will be removed when I'm sure it won't break the PDA code.
-    vars.used.index <- which(nchar(format$vars$storage_type) == 0)
+    vars.used.index <- setdiff(seq_along(format$vars$variable_id), format$time.row)
     
     obvs <- load.data(data.path, format, start_year, end_year, site, vars.used.index, time.row)
     dat_vars <- format$vars$pecan_name  # IF : is this line redundant?
@@ -85,13 +92,15 @@ calc.benchmark <- function(settings, bety) {
     # Loop over benchmark ids
     for (i in seq_along(bm.ids)) {
       bm <- db.query(paste("SELECT * from benchmarks where id =", bm.ids[i]), bety$con)
-      metrics <- db.query(paste("SELECT m.name, m.id from metrics as m", "JOIN benchmarks_metrics as b ON m.id = b.metric_id", 
-                                "WHERE b.benchmark_id = ", bm.ids[i]), bety$con)
+      metrics <- db.query(paste("SELECT m.name, m.id from metrics as m", 
+                                "JOIN benchmarks_metrics as b ON m.id = b.metric_id", 
+                                "WHERE b.benchmark_id = ", bm.ids[i]), bety$con) %>%
+        filter(id %in% metric.ids)
       var <- filter(format$vars, variable_id == bm$variable_id)[, "pecan_name"]
       var.list <- c(var.list, var)
       
-      obvs.calc <- obvs_full %>% dplyr::select(., one_of(c("posix", var)))
-      model.calc <- model_full %>% dplyr::select(., one_of(c("posix", var)))
+      obvs.calc <- obvs_full %>% select(., one_of(c("posix", var)))
+      model.calc <- model_full %>% select(., one_of(c("posix", var)))
       
       # TODO: If the scores have already been calculated, don't redo
       
@@ -106,7 +115,7 @@ calc.benchmark <- function(settings, bety) {
       
       for(metric.id in metrics$id){
         metric <- filter(metrics,id == metric.id)[["name"]]
-        score <- out.calc.metrics[["benchmarks"]] %>% filter(.,metric == metric) %>% dplyr::select(score)
+        score <- out.calc.metrics[["benchmarks"]] %>% filter(.,metric == metric) %>% select(score)
       #   score.entry <- tbl(bety, "benchmarks_ensembles_scores") %>% 
       #     filter(score == score) %>% 
       #     filter(bechmarks_ensemble_id == settings$benchmark$ensemble_id)
@@ -119,7 +128,7 @@ calc.benchmark <- function(settings, bety) {
           filter(ensemble_id == settings$benchmark$ensemble_id) %>%
           filter(reference_run_id == settings$benchmark$reference_run_id) %>%
           filter(model_id == settings$model$id) %>%
-          dplyr::select(id) %>% collect %>% .[[1]]
+          select(id) %>% collect %>% .[[1]]
         
       db.query(paste0(
         "INSERT INTO benchmarks_ensembles_scores",
@@ -144,5 +153,6 @@ calc.benchmark <- function(settings, bety) {
   
   names(results) <- sprintf("input.%0.f", unique(bms$input_id))
   save(results, file = file.path(settings$outdir,"benchmarking.output.Rdata"))
-  return(results)
+  
+  return(invisible(results))
 } # calc.benchmark

@@ -7,8 +7,8 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##' @title read.restart.SIPNET
-##' @name  read.restart.SIPNET
+##' @title read_restart.SIPNET
+##' @name  read_restart.SIPNET
 ##' @author Ann Raiho \email{araiho@@nd.edu}
 ##' 
 ##' @param outdir      output directory
@@ -21,7 +21,7 @@
 ##' 
 ##' @return X.vec      vector of forecasts
 ##' @export
-read.restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, params) {
+read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, params) {
   
   prior.sla <- params[[which(names(params) != "soil")[1]]]$SLA
   
@@ -78,4 +78,4 @@ read.restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   
   print(runid)
   return(unlist(forecast))
-} # read.restart.SIPNET
+} # read_restart.SIPNET

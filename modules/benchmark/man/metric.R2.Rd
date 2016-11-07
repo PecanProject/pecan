@@ -2,7 +2,7 @@
 % Please edit documentation in R/metric.R2.R
 \name{metric.R2}
 \alias{metric.R2}
-\title{Coefficient of Determination}
+\title{Coefficient of Determination (R2)}
 \usage{
 metric.R2(dat, ...)
 }
