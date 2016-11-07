@@ -2,13 +2,15 @@
 #'
 #' @author Alexey Shiklomanov
 #' @param x MCMC samples, of class \code{mcmc} or \code{mcmc.list}
-#' @param width Width of moving window. Default is niter(x)/5
+#' @param width_fraction Fractional width of moving window. Default=0.1.
+#' @param width Width of moving window. Default is niter(x)*width_fraction
 #' @param njump Number of windows to calculate over
 #' @param include.mpsrf Whether to calculate multivariate PSRF and include in output (default = FALSE).
 #' @return Gelman Diagnostic 3D array. First dim -- mean (1) and 95% confidence (2). Second dim -- iteration
 #' @export
 gelman_diag_mw <- function(x,
-                           width = ceiling(coda::niter(x)/5),
+                           width_fraction = 0.1,
+                           width = ceiling(coda::niter(x)*width_fraction),
                            njump = 50,
                            include.mpsrf = TRUE,
                            ...) {

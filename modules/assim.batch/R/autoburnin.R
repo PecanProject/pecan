@@ -47,11 +47,11 @@ getBurnin <- function(jags_out,
   } else {
     index <- tail(which(rowSums(gbr_exceed) > 0), 1) + 1
     stopifnot(length(index) == 1,
-              class(index) == "numeric")
+              class(index) %in% c("numeric", "integer"))
     if (index > dim(GBR)[1]) {
       burnin <- NA
     } else {
-      burnin <- GBR[index, "End", column]
+      burnin <- GBR[index, "Start", column]
     }
   }
   if (is.na(burnin)) {
