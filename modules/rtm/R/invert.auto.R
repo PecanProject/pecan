@@ -67,19 +67,35 @@ invert.auto <- function(observed, invert.options,
   ngibbs.max <- invert.options$ngibbs.max
   if (is.null(ngibbs.max)) {
     ngibbs.max <- 1e6
+    message("ngibbs.max not provided. ",
+            "Setting default to ", ngibbs.max)
   }
   ngibbs.min <- invert.options$ngibbs.min
   if (is.null(ngibbs.min)) {
     ngibbs.min <- 5000
+    message("ngibbs.min not provided. ",
+            "Setting default to ", ngibbs.min)
   }
   ngibbs.step <- invert.options$ngibbs.step
   if (is.null(ngibbs.step)) {
     ngibbs.step <- 1000
+    message("ngibbs.step not provided. ",
+            "Setting default to ", ngibbs.step)
   }
   nchains <- invert.options$nchains
+  if (is.null(nchains)) {
+    nchains <- 3
+    message("nchains not provided. ",
+            "Setting default to ", nchains)
+  }
   inits.function <- invert.options$inits.function
+  if (is.null(inits.function)) {
+    stop("invert.options$inits.function is required but missing.")
+  }
   if (is.null(invert.options$do.lsq)) { 
     invert.options$do.lsq <- FALSE 
+    message("do.lsq not provided. ",
+            "Setting default to ", invert.options$do.lsq)
   }
   if (invert.options$do.lsq) {
     testForPackage("minpack.lm")
@@ -87,6 +103,8 @@ invert.auto <- function(observed, invert.options,
   iter_conv_check <- invert.options$iter_conv_check
   if (is.null(iter_conv_check)) {
     iter_conv_check <- 15000
+    message("iter_conv_check not provided. ",
+            "Setting default to ", iter_conv_check)
   }
   
   # Set up cluster for parallel execution
@@ -162,6 +180,7 @@ invert.auto <- function(observed, invert.options,
                         save.samples = save.samples)
 
   # Loop until convergence (skipped if finished == TRUE)
+  invert.options$ngibbs <- ngibbs.step
   while (!out$finished & i.ngibbs < ngibbs.max) {
     if (!quiet) {
       message(sprintf("Running iterations %d to %d", i.ngibbs,
@@ -174,7 +193,6 @@ invert.auto <- function(observed, invert.options,
                           inits = inits[[i]],
                           resume = resume[[i]])
     }
-    invert.options$ngibbs <- ngibbs.step
     if (parallel) {
       output.list <- parallel::parLapply(cl, inputs, invert.function)
     } else {
