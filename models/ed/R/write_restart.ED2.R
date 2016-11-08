@@ -1,16 +1,15 @@
 #' @title Write ED2 restart file from SDA results
 #' 
 #' @author Alexey Shiklomanov
-#' @inheritParams PEcAn.SIPNET::write.restart.SIPNET
+#' @inheritParams PEcAn.ModelName::write_restart.ModelName
+#' @return TRUE if successful
 #' @export
-write.restart.ED2 <- function(outdir,
+write_restart.ED2 <- function(outdir,
                               runid,
                               start.time,
                               stop.time,
                               settings,
-                              new.state, 
-                              new.params = NULL,
-                              inputs) {
+                              new.state) {
 
   rundir <- settings$host$rundir
   mod_outdir <- settings$host$outdir
@@ -149,7 +148,7 @@ write.restart.ED2 <- function(outdir,
   file.remove(file.path(mod_outdir, runid, "history.xml"))
 
   return(TRUE)
-}
+} # write_restart.ED2
 
 # Phony dims:
 #   0 - All cohorts

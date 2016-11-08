@@ -10,7 +10,7 @@ settings <- PEcAn.settings::read.settings(settings_file)
 start.time <- as.POSIXlt("2004-06-07", tz = "UTC")
 stop.time <- as.POSIXlt("2004-06-10", tz = "UTC")
 
-forecast <- read.restart.ED2(outdir = outdir,
+forecast <- read_restart.ED2(outdir = outdir,
                              runid = runid, 
                              stop.time = stop.time,
                              settings = settings,
@@ -23,7 +23,7 @@ set.seed(666)
 new.state <- rnorm(npft, forecast, 0.001)
 names(new.state) <- names(forecast)
 
-write_restart <- write.restart.ED2(outdir = outdir,
+write_restart <- write_restart.ED2(outdir = outdir,
                                    runid = runid,
                                    start.time = start.time,
                                    stop.time = stop.time,
