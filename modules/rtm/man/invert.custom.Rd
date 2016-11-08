@@ -16,7 +16,9 @@ columns. Dimensions must align with the output of `model`.}
 
 \item{quiet}{Suppress progress bar and status messages. Default=FALSE}
 
-\item{return.resume}{If TRUE, return results as list that includes current Jump distribution (useful for continuing an ongoing run) and acceptance rate. Default = FALSE.}
+\item{return.resume}{If TRUE, return results as list that includes current 
+Jump distribution (useful for continuing an ongoing run) and acceptance 
+rate. Default = FALSE.}
 
 \item{runID}{Run-unique ID. Useful for parallel runs. Default=NULL}
 }
@@ -51,9 +53,8 @@ every 'n' steps). Default=100}
 \item{adj_min}{Minimum threshold for rescaling Jump standard deviation.
 Default = 0.1.}
 
-\item{target}{Target acceptance rate.
-Default=0.234, based on recommendation for multivariate block sampling in 
-Haario et al. 2001}
+\item{target}{Target acceptance rate. Default=0.234, based on recommendation 
+for multivariate block sampling in Haario et al. 2001}
 
 \item{do.lsq}{Perform least squares optimization first (see `invert.lsq`), 
 and use outputs to initialize Metropolis Hastings.
@@ -61,6 +62,13 @@ This may improve mixing time, but risks getting caught in a local minimum.
 Default=FALSE}
 
 \item{catch_error}{If TRUE (default), wrap model in \code{tryCatch} to prevent sampling termination on model execution error.}
+}
+}
+\references{
+\itemize{
+\item{Haario, Heikki; Saksman, Eero; Tamminen, Johanna.  An adaptive 
+   Metropolis algorithm. Bernoulli 7 (2001), no. 2, 223--242.
+   http://projecteuclid.org/euclid.bj/1080222083.}
 }
 }
 
