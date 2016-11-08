@@ -13,23 +13,18 @@ getBurnin(jags_out, threshold = 1.1, use.confidence = TRUE,
 \item{threshold}{Maximum value of Gelman diagnostic}
 
 \item{use.confidence}{Logical. If TRUE (default), use 95% confidence 
-interval for Gelman Diagnostic.
-If FALSE, use the point estimate.}
+interval for Gelman Diagnostic. If FALSE, use the point estimate.}
 
-\item{method}{Character string indicating method (default="moving.window". 
-No other options are currently implemented.)}
+\item{method}{Character string indicating method. Options are 
+"moving.window" (default) or "gelman.plot".}
 
 \item{...}{Other parameters to methods}
-
-\item{width}{Width of window for "moving.window" method. Default = niter / 2}
-
-\item{njump}{Number of steps for "moving.window" method. Default = 50}
 }
 \description{
 Automatically detect burnin based on one of several methods.
 }
 \details{
-See "gelman_diag_mw".
+See "gelman_diag_mw" and "gelman_diag_gelmanPlot"
 }
 \examples{
      z1 <- coda::mcmc(c(rnorm(2500, 5), rnorm(2500, 0)))
