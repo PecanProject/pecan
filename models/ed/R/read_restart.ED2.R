@@ -1,20 +1,18 @@
-# TODO: Change inheritParams to template (also need to create template)
-
 #' @title State data assimilation read-restart for ED2
 #'
 #' @author Alexey Shiklomanov
-#' @inheritParams PEcAn.SIPNET::read.restart.SIPNET
+#' @inheritParams PEcAn.ModelName::read_restart.ModelName
 #' @examples
 #' \dontrun{
 #'   outdir <- "~/sda-hackathon/outputs"
 #'   runid <- "99000000020"
 #'   settings_file <- "outputs/pecan.CONFIGS.xml"
 #'   settings <- PEcAn.settings::read.settings(settings_file)
-#'   forecast <- read.restart.ED2(...)
+#'   forecast <- read_restart.ED2(...)
 #' }
 #' 
 #' @export
-read.restart.ED2 <- function(outdir, 
+read_restart.ED2 <- function(outdir, 
                              runid,
                              stop.time,
                              settings, 
@@ -30,7 +28,7 @@ read.restart.ED2 <- function(outdir,
 
     histfile <- get_restartfile.ED2(mod_outdir, runid, stop.time)
     if (is.null(histfile)) {
-        PEcAn.utils::logger.severe("SDA failed.")
+      PEcAn.utils::logger.severe("Failed to find ED2 history restart file.")
     }
 
     nc <- ncdf4::nc_open(histfile)
@@ -95,6 +93,6 @@ read.restart.ED2 <- function(outdir,
     }
 
     return(unlist(forecast))
-}
+} # read_restart.ED2
 
 

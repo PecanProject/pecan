@@ -27,7 +27,7 @@ Suggests:
     testthat (>= 1.0.2)
 Remotes:
     github::bioconductor-mirror/biocinstaller@release-3.4,
-    github::bioconductor-mirror/rhdf5
+    github::bioconductor-mirror/rhdf5@release-3.4
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes

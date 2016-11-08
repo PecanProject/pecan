@@ -169,9 +169,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   ## -------------
   # Special parameters for SDA
   # 
-  # TODO: This needs to be whatver line in pecan.xml that indicates that SDA 
-  # will be run.
-  if (!is.null(settings$sda)) {
+  if (!is.null(settings$state.data.assimilation)) {
     # Default values
     sda_tags <- list(isoutput = 3,    # Save history state file
                      unitstate = 1,   # History state frequency is days
