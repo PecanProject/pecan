@@ -3,17 +3,14 @@
 #' @description Automatically detect burnin based on one of several methods.
 #' @param jags_out List of MCMC sample matrices or `mcmc.list` object
 #' @param threshold Maximum value of Gelman diagnostic
-#' @param method Character string indicating method (default="moving.window". 
-#' No other options are currently implemented.)
+#' @param method Character string indicating method. Options are 
+#' "moving.window" (default) or "gelman.plot".
 #' @param use.confidence Logical. If TRUE (default), use 95% confidence 
-#' interval for Gelman Diagnostic.
-#' If FALSE, use the point estimate.
-#' @param width Width of window for "moving.window" method. Default = niter / 2
-#' @param njump Number of steps for "moving.window" method. Default = 50
+#' interval for Gelman Diagnostic. If FALSE, use the point estimate.
 #' @param ... Other parameters to methods
 #' 
 #' @details 
-#' See "gelman_diag_mw".
+#' See "gelman_diag_mw" and "gelman_diag_gelmanPlot"
 #' 
 #' @examples
 #'      z1 <- coda::mcmc(c(rnorm(2500, 5), rnorm(2500, 0)))
@@ -80,6 +77,7 @@ getBurnin <- function(jags_out,
 #'      z1 <- coda::mcmc(c(rnorm(2500, 5), rnorm(2500, 0)))
 #'      z2 <- coda::mcmc(c(rnorm(2500, -5), rnorm(2500, 0)))
 #'      z <- coda::mcmc.list(z1, z2)
+#'      z_burned <- autoburnin(z)
 #' @export
 autoburnin <- function(jags_out, return.burnin = FALSE, ...) {
   burnin <- getBurnin(jags_out, ...)

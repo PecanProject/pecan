@@ -19,6 +19,7 @@ and \code{gelman.diag}.}
      z1 <- coda::mcmc(c(rnorm(2500, 5), rnorm(2500, 0)))
      z2 <- coda::mcmc(c(rnorm(2500, -5), rnorm(2500, 0)))
      z <- coda::mcmc.list(z1, z2)
+     z_burned <- autoburnin(z)
 }
 \author{
 Michael Dietze, Alexey Shiklomanov
