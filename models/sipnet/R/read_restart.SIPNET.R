@@ -7,15 +7,11 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##' @title read_restart.SIPNET
-##' @name  read_restart.SIPNET
+##' @title Read restart function for SDA with SIPNET
+##' 
 ##' @author Ann Raiho \email{araiho@@nd.edu}
 ##' 
-##' @param outdir      output directory
-##' @param runid       run ID
-##' @param stop.time        year that is being read
-##' @param settings    PEcAn settings object
-##' @param var.names   var.names to be extracted
+##' @inheritParams PEcAn.ModelName::read
 ##' 
 ##' @description Read Restart for SIPNET
 ##' 
