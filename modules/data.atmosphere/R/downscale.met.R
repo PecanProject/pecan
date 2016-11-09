@@ -418,8 +418,3 @@ downscale.met <- function(outfolder, modelfile, fluxfile, site_id, method='norma
   
   }
 }
-
-# downscale.met('trial', 'MACA.IPSL-CM5A-LR.rcp85.r1i1p1.2006.nc', 'US-WCr.2006.nc')
-# downscale.met('trial', 'GFDL.CM3.rcp45.r1i1p1.2006.nc', 'US-WCr.2006.nc', reso = 1)
-
-  
