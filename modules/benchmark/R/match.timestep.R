@@ -10,5 +10,5 @@ match.timestep <- function(date.coarse, date.fine, data.fine) {
   
   midpoints <- c(-Inf, head(as.numeric(date.fine), -1)) + c(0, diff(as.numeric(date.fine)) / 2)
   
-  return(data.fine[unique(findInterval(date.coarse, midpoints))])
+  return(data.fine[findInterval(date.coarse, midpoints)])
 } # match.timestep
