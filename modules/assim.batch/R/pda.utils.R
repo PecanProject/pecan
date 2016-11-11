@@ -623,7 +623,7 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
   for (i in seq_along(settings$pfts)) {
     params.subset[[i]] <- as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
     
-    burnin <- getBurnin(params.subset[[i]])
+    burnin <- getBurnin(params.subset[[i]], method = "gelman.plot")
     
     # rare, but this can happen; better to throw an error than continue, as it might lead
     # mis-interpretation of posteriors otherwise

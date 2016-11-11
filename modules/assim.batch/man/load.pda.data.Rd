@@ -7,7 +7,7 @@
 \usage{
 load.L2Ameriflux.cf(file.in)
 
-load.pda.data(settings, con)
+load.pda.data(settings, bety)
 }
 \arguments{
 \item{file.in}{= the netcdf file of L2 data}

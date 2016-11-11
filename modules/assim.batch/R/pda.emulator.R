@@ -54,16 +54,18 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   } else {
     con <- NULL
   }
+
+  bety <- PEcAn.visualization::betyConnect("~/pecan/web/config.php")
   
   ## Load priors
-  temp        <- pda.load.priors(settings, con, path.flag)
+  temp        <- pda.load.priors(settings, bety$con, path.flag)
   prior.list  <- temp$prior
   settings    <- temp$settings
   pname       <- lapply(prior.list, rownames)
   n.param.all <- sapply(prior.list, nrow)
   
   ## Load data to assimilate against
-  inputs      <- load.pda.data(settings, con)
+  inputs      <- load.pda.data(settings, bety)
   n.input     <- length(inputs)
   
   ## Set model-specific functions
@@ -185,7 +187,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     
     for (i in seq_len(settings$assim.batch$n.knot)) {
       ## read model outputs
-      model.out[[i]] <- pda.get.model.output(settings, run.ids[i], con, inputs)
+      model.out[[i]] <- pda.get.model.output(settings, run.ids[i], bety, inputs)
       
       ## calculate likelihood
       LL.0[i] <- pda.calc.llik(settings, con, model.out = model.out[[i]], 
