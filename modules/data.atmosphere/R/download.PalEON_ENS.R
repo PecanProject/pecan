@@ -12,76 +12,51 @@ download.PalEON_ENS <- function(sitename, outfolder, start_date, end_date, overw
   
   library(PEcAn.utils)
   
-  if (sitename == "Harvard Forest - Lyford Plots (PalEON PHA)") {
-    site <- "PHA"
-  }  # 1-650 done
-  else if (sitename == "Howland Forest- main tower (US-Ho1) (PalEON PHO)") {
-    site <- "PHO"
-  }  # 0-759
-  else if (sitename == "Billy’s Lake (PalEON PBL)") {
-    site <- "PBL"
-  }  # 1-672 done
-  else if (sitename == "Deming Lake (PalEON PDL)") {
-    site <- "PDL"
-  }  # 1-673 done
-  else if (sitename == "Minden Bog (PalEON PMB)") {
-    site <- "PMB"
-  }  # 1-674 done
-  else if (sitename == "University of Notre Dame Environmental Research Center (PalEON UNDERC)") {
-    site <- "PUN"
-  }  # 1-675 done
-  else {
-    logger.severe("Unknown site name")
-  }
-  
+  ## parse dates
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
   ylist      <- start_year:end_year
-  mlist      <- 1:12
-  vlist      <- c("lwdown", "precipf", "psurf", "qair", "swdown", "tair", "wind")
   
-  system(paste0("mkdir -p ", outfolder))
+  ## install iCommands: 
+  ##  wget ftp://ftp.renci.org/pub/irods/releases/4.1.9/ubuntu14/irods-icommands-4.1.9-ubuntu14-x86_64.deb
+  ##  sudo dpkg -i irods-icommands-4.1.9-ubuntu14-x86_64.deb
+  ##  iinit
+  ## then follow https://pods.iplantcollaborative.org/wiki/display/DS/Setting+Up+iCommands to connect
   
-  V <- length(vlist)
-  Y <- length(ylist)
-  M <- length(mlist)
-  rows <- V * Y * M
-  results <- data.frame(file = character(rows), 
-                        host = character(rows), 
-                        mimetype = character(rows), 
-                        formatname = character(rows), 
-                        startdate = character(rows), 
-                        enddate = character(rows), 
-                        dbfile.name = "PalEON_ENS", 
-                        stringsAsFactors = FALSE)
+  ## Get the data from iPlant
+  ##   iget /iplant/home/crollinson/paleon/phase3_met_drivers/test_ensemble -r -T -P
+  ##
+  ###### NEED TO AUTOMATE !!!!
   
-  files <- dir(outfolder)
-  if (sum(!(vlist %in% files)) > 0) {
-    logger.error("Don't have all variables downloaded")
-  } else {
-    for (v in vlist) {
-      print(sprintf("Checking %s", v))
-      for (y in ylist) {
-        for (m in mlist) {
-          file <- file.path(outfolder, v, sprintf("%s_%s_%04d_%02d.nc", site, v, y, m))
-          if (!(file.exists(file))) {
-            logger.error("Missing met file")
-          }
-          row <- (which(vlist == v) - 1) * Y * M + (which(ylist == y) - 1) * M + m
-          # print(row)
-          results$file[row] <- dirname(file)
-          results$host[row] <- fqdn()
-          results$startdate[row] <- paste0(y, "-01-01 00:00:00")
-          results$enddate[row] <- paste0(y, "-12-31 23:59:59")
-          results$mimetype[row] <- "application/x-netcdf"
-          results$formatname[row] <- "ALMA"
-        }
-      }
-      print(sprintf("Finished %s", v))
-    }
+  
+  ## extract the data and loop over ensemble members
+  dlpath <- "/home/carya/test_ensemble/"  ## download path
+  setwd(dlpath)
+  ens_zip <- dir(dlpath,pattern="tar.bz2",)
+  results <- list()
+  for(i in seq_along(ens_zip)){
+    system(paste("tar -xvjf",ens_zip[i]))  ## unzip file
+    ens_folder <- strsplit(basename(ens_zip[i]),"\\.")[[1]][1]
+    
+    ens_files <- dir(ens_folder)
+    rows <- length(ens_files)
+    ens_years <- sapply(strsplit(ens_files,"_",fixed=TRUE),function(n){
+                  as.numeric(sub(".nc","",n[length(n)]))
+                 })
+    
+    results[[i]] <- data.frame(file = ens_files, 
+                          host = rep(fqdn(),rows), 
+                          mimetype = rep("application/x-netcdf",rows), 
+                          formatname = rep("ALMA",rows),  ## would really like to switch to CF
+                          startdate = paste0(ens_years, "-01-01 00:00:00"), 
+                          enddate = paste0(ens_years, "-12-31 23:59:59"), 
+                          dbfile.name = "PalEON_ENS", 
+                          stringsAsFactors = FALSE)
   }
   
+  if(length(results) == 1) results <- results[[1]] ## flatten to single met rather than ensemble
+  
   return(invisible(results))
-} # download.PalEON
+} # download.PalEON_ENS
