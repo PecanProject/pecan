@@ -2,20 +2,9 @@
 % Please edit documentation in R/read_restart.SIPNET.R
 \name{read_restart.SIPNET}
 \alias{read_restart.SIPNET}
-\title{read_restart.SIPNET}
+\title{Read restart function for SDA with SIPNET}
 \usage{
 read_restart.SIPNET(outdir, runid, stop.time, settings, var.names, params)
-}
-\arguments{
-\item{outdir}{output directory}
-
-\item{runid}{run ID}
-
-\item{stop.time}{year that is being read}
-
-\item{settings}{PEcAn settings object}
-
-\item{var.names}{var.names to be extracted}
 }
 \value{
 X.vec      vector of forecasts
