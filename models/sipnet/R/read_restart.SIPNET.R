@@ -7,21 +7,17 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##' @title read.restart.SIPNET
-##' @name  read.restart.SIPNET
+##' @title Read restart function for SDA with SIPNET
+##' 
 ##' @author Ann Raiho \email{araiho@@nd.edu}
 ##' 
-##' @param outdir      output directory
-##' @param runid       run ID
-##' @param stop.time        year that is being read
-##' @param settings    PEcAn settings object
-##' @param var.names   var.names to be extracted
+##' @inheritParams PEcAn.ModelName::read
 ##' 
 ##' @description Read Restart for SIPNET
 ##' 
 ##' @return X.vec      vector of forecasts
 ##' @export
-read.restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, params) {
+read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, params) {
   
   prior.sla <- params[[which(names(params) != "soil")[1]]]$SLA
   
@@ -78,4 +74,4 @@ read.restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   
   print(runid)
   return(unlist(forecast))
-} # read.restart.SIPNET
+} # read_restart.SIPNET
