@@ -137,6 +137,10 @@ invert.custom <- function(observed, invert.options,
   resume <- invert.options$resume
   init.Jump <- resume$jump
   init.ar <- resume$ar
+  init_sigma <- resume$sigma
+  if (is.null(init_sigma)) {
+    init_sigma <- 0.5
+  }
 
   # If `model` doesn't have a runID argument (second argument), add it.
   model.args <- names(formals(model))
@@ -146,7 +150,6 @@ invert.custom <- function(observed, invert.options,
 
   # Set constants for inversion
   tau_0 <- 0.001
-  init_rsd <- 0.5
   init_jump_diag_factor <- 0.05
 
   # Set up inversion
@@ -199,7 +202,8 @@ invert.custom <- function(observed, invert.options,
   }
 
   # Precalculate quantities for first inversion step
-  rsd <- 0.5
+  sigma2 <- init_sigma ^ 2
+  tau <- 1/sigma2
   PrevSpec <- tryCatch({
       model(inits, runID)
   }, error = function(e) {
@@ -207,10 +211,12 @@ invert.custom <- function(observed, invert.options,
       stop("Initial model execution hit an error")
   })
   PrevError <- PrevSpec - observed
+  PrevSS <- sum(PrevError * PrevError)
   PrevPrior <- prior.function(inits)
   n_eff <- neff(PrevError)
-  logLL_scale <- n_eff/n_obs
-  PrevLL <- sum(dnormC(PrevError, 0, rsd)) * logLL_scale
+  logLL_term1 <- -0.5 * n_obs * log(sigma2 * n_obs/n_eff)
+  Prev_logLL_term2 <- -0.5 * tau * n_eff/n_obs * PrevSS
+  PrevLL <- logLL_term1 + Prev_logLL_term2
 
   # Sampling loop
   for (ng in seq_len(ngibbs)) {
@@ -267,9 +273,12 @@ invert.custom <- function(observed, invert.options,
     # Metropolis sampling step if all conditions have been met
     if (samp) {
       TryError <- TrySpec - observed
-      TryLL <- sum(dnormC(TryError, 0, rsd)) * logLL_scale
+      TrySS <- sum(TryError * TryError)
+      Try_logLL_term2 <- -0.5 * tau * n_eff/n_obs * TrySS
+      TryLL <- logLL_term1 + Try_logLL_term2
       TryPost <- TryLL + TryPrior
-      PrevLL <- sum(dnormC(PrevError, 0, rsd)) * logLL_scale
+      Prev_logLL_term2 <- -0.5 * tau * n_eff/n_obs * PrevSS
+      PrevLL <- logLL_term1 + Prev_logLL_term2
       PrevPost <- PrevLL + PrevPrior
       a <- exp(TryPost - PrevPost)
       if (is.na(a)) {
@@ -278,6 +287,7 @@ invert.custom <- function(observed, invert.options,
       if (a > runif(1)) {
         inits <- tvec
         PrevError <- TryError
+        PrevSS <- TrySS
         PrevPrior <- TryPrior
         n_eff <- neff(PrevError)
         logLL_scale <- n_eff/n_obs
@@ -287,11 +297,13 @@ invert.custom <- function(observed, invert.options,
     results[ng, 1:npars] <- inits
     deviance_store[ng] <- -2 * PrevLL
     n_eff_store[ng] <- n_eff
-    rp1 <- tau_0 + n_eff/2
-    rp2 <- tau_0 + sum(PrevError * PrevError) * logLL_scale/2
-    rinv <- rgamma(1, rp1, rp2)
-    rsd <- 1/sqrt(rinv)
-    results[ng, npars + 1] <- rsd
+    rp1 <- tau_0 + n_obs/2
+    rp2 <- tau_0 + PrevSS/2
+    tau <- rgamma(1, rp1, rp2)
+    sigma2 <- 1/tau
+    sigma <- sqrt(sigma2)
+    results[ng, npars + 1] <- sigma
+    logLL_term1 <- -0.5 * n_obs * log(sigma2 * n_obs/n_eff)
   }
   if (!quiet) {
     close(pb)
@@ -300,7 +312,9 @@ invert.custom <- function(observed, invert.options,
               deviance = deviance_store,
               n_eff = n_eff_store)
   if (return.resume) {
-    out <- append(out, list(resume = list(jump = Jump, ar = ar)))
+    out <- append(out, list(resume = list(jump = Jump, 
+                                          ar = ar,
+                                          sigma = sigma)))
   }
   return(out)
 }

@@ -21,20 +21,25 @@ obs <- do.call(cbind, lapply(seq_len(n_obs), generate_obs))
 
 invert.options <- default.settings.prospect
 invert.options$inits <- invert.options$inits.function()
-invert.options$model <- function(params) spectral.response(prospect(params,5)[,1], sensor)
+invert.options$model <- function(params) {
+  spectral.response(prospect(params,5)[,1], sensor)
+}
 invert.options$ngibbs.min <- 5000
 invert.options$ngibbs.step <- 2000
 invert.options$ngibbs.max <- 100000
 invert.options$do.lsq <- TRUE
 invert.options$nchains <- 3
 
-
 options(warn=1)
 
-Rprof()
-test.serial <- invert.custom(obs, invert.options)
-Rprof(NULL)
+test.parallel <- invert.auto(obs, invert.options, parallel = TRUE)
+print_results_summary(test.parallel)
 
-sp <- summaryRprof()
-head(sp$by.self, 15)
-head(sp$by.total, 20)
+plot(PEcAn.assim.batch::makeMCMCList(test.parallel$n_eff_list))
+plot(PEcAn.assim.batch::makeMCMCList(test.parallel$deviance_list))
+
+#test.serial <- invert.custom(obs, invert.options)
+
+#sp <- summaryRprof()
+#head(sp$by.self, 15)
+#head(sp$by.total, 20)
