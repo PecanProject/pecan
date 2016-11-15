@@ -1,7 +1,5 @@
-##' Download PalEON files
+##' @title Download PalEON met ensemble files
 ##'
-##' @name download.PalEON
-##' @title download.PalEON
 ##' @export
 ##' @param outfolder
 ##' @param start_year
