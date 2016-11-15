@@ -59,7 +59,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
   }
   
   # set up connection and host information
-  bety <- src_postgres(dbname   = dbparms$dbname, 
+  bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
                        host     = dbparms$host, 
                        user     = dbparms$user, 
                        password = dbparms$password)
