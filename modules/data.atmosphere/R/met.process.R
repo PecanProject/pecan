@@ -3,7 +3,7 @@
 ##' @export
 ##'
 ##' @param site Site info from settings file
-##' @param input currently 'NARR' or 'Ameriflux'
+##' @param input_met Which data source to process. 
 ##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param model model_type name
