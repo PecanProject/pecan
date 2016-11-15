@@ -1,2 +1,1 @@
-This code requires you to pass in the workflow id as a parameter to
-the url, for example with the [workflow_id](?workflow_id=99000000001)
+This shiny app is an reactive web for use to generate xml. A user can select site on the map and input the start and end year. Xml downloaded as a file is also provided. 
