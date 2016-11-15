@@ -189,6 +189,8 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       ## read model outputs
       model.out[[i]] <- pda.get.model.output(settings, run.ids[i], bety, inputs)
       
+      inputs <- pda.calc.error(settings, model_out = model.out[[i]], inputs)
+      
       ## calculate likelihood
       LL.0[i] <- pda.calc.llik(settings, con, model.out = model.out[[i]], 
                                run.id = run.ids[i], inputs, llik.fn)
