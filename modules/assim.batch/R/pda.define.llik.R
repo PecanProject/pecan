@@ -13,31 +13,33 @@ pda.define.llik.fn <- function(settings) {
   for (i in seq_along(settings$assim.batch$inputs)) {
     # NEE + heteroskedastic Laplace likelihood
     if (settings$assim.batch$inputs[[i]]$likelihood == "Laplace") {
-      llik.fn[[i]] <- function(model.out, obs.data, llik.par) {
-        resid <- abs(model.out - obs.data)
-        pos <- (model.out >= 0)
-        LL <- c(dexp(resid[pos], 
-                     1 / (llik.par[1] + llik.par[2] * model.out[pos]), 
-                     log = TRUE), 
-                dexp(resid[!pos],
-                     1 / (llik.par[1] + llik.par[3] * model.out[!pos]), 
-                     log = TRUE))
-        return(list(LL = sum(LL, na.rm = TRUE), n = sum(!is.na(LL))))
+      
+      llik.fn[[i]] <- function(pda.errors) {
+        LL <- (-pda.errors$n/2) * log(pda.errors$par) - (1/pda.errors$par) * pda.errors$statistics
+        return(list(LL = LL, n = pda.errors$n))
       }
-    } else {
-      llik.fn[[i]] <- function(model.out, obs.data, llik.par) {
-        if (is.list(model.out)) {
-          model.out <- unlist(model.out)
-        }
-        if (is.list(obs.data)) {
-          obs.data <- unlist(obs.data)
-        }
+      
+      # llik.fn[[i]] <- function(model.out, obs.data, llik.par) {
+      #   resid <- abs(model.out - obs.data)
+      #   pos <- (model.out >= 0)
+      #   LL <- c(dexp(resid[pos], 
+      #                1 / (llik.par[1] + llik.par[2] * model.out[pos]), 
+      #                log = TRUE), 
+      #           dexp(resid[!pos],
+      #                1 / (llik.par[1] + llik.par[3] * model.out[!pos]), 
+      #                log = TRUE))
+      #   return(list(LL = sum(LL, na.rm = TRUE), n = sum(!is.na(LL))))
+      # }
+    } else { # Gaussian or multiplicative Gaussian
+      
+      llik.fn[[i]] <- function(pda.errors) {
         # lnL = (n/2) * log(tau) - (tau/2) * SS
-        LL <- (llik.par[1]/2) * log(llik.par[2]) - (llik.par[2]/2) * sum((model.out - obs.data)^2, na.rm = TRUE)
-        return(list(LL = LL, n = llik.par[1]))
+        LL <- (pda.errors$n/2) * log(pda.errors$par) - (pda.errors$par/2) * pda.errors$statistics
+        return(list(LL = LL, n = pda.errors$n))
       }
-    }
-  }
+      
+    } # if-block
+  } # for-loop
   
   return(llik.fn)
 } # pda.define.llik.fn
@@ -50,53 +52,48 @@ pda.define.llik.fn <- function(settings) {
 ##'
 ##' @return Total log likelihood (i.e., sum of log likelihoods for each dataset)
 ##'
-##' @author Ryan Kelly
+##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.calc.llik <- function(settings, con, model.out, run.id, inputs, llik.fn) {
+pda.calc.llik <- function(pda.errors) {
   
-  n.input <- length(inputs)
+  n.var <- length(pda.errors)
   
-  LL.vec <- n.vec <- numeric(n.input)
+  LL.vec <- n.vec <- numeric(n.var)
   
-  for (k in seq_len(n.input)) {
+  for (k in seq_len(n.var)) {
     
-    if (all(is.na(model.out))) {
-      # Probably indicates model failed entirely
-      return(-Inf)
-    }
-    
-    llik <- llik.fn[[k]](model.out[[k]], inputs[[k]]$obs, inputs[[k]]$par)
+    llik <- llik.fn[[k]](pda.errors[[k]])
     LL.vec[k] <- llik$LL
     n.vec[k] <- llik$n
   }
   
-  weights <- rep(1 / n.input, n.input)  # TODO: Implement user-defined weights
+  weights <- rep(1 / n.var, n.var)  # TODO: Implement user-defined weights
   LL.total <- sum(LL.vec * weights)
   neff <- n.vec * weights
   
-  ## insert Likelihood records in database
-  if (!is.null(con)) {
-    now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    
-    # BETY requires likelihoods to be associated with inputs, so only proceed 
-    # for inputs with valid input ID (i.e., not the -1 dummy id). 
-    # Note that analyses requiring likelihoods to be stored therefore require 
-    # inputs to be registered in BETY first.
-    db.input.ind <- which(sapply(inputs, function(x) x$input.id) != -1)
-    for (k in db.input.ind) {
-      db.query(
-        paste0("INSERT INTO likelihoods ", 
-               "(run_id,            variable_id,                     input_id, ",
-               " loglikelihood,     n_eff,                           weight,   ",
-               " created_at) ",
-               "values ('", 
-               run.id, "', '",    inputs[[k]]$variable.id, "', '", inputs[[k]]$input.id, "', '", 
-               LL.vec[k], "', '", floor(neff[k]), "', '",          weights[k] , "', '", 
-               now,"')"
-        ), 
-        con)
-    }
-  }
+  # ## insert Likelihood records in database
+  # if (!is.null(con)) {
+  #   now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+  #   
+  #   # BETY requires likelihoods to be associated with inputs, so only proceed 
+  #   # for inputs with valid input ID (i.e., not the -1 dummy id). 
+  #   # Note that analyses requiring likelihoods to be stored therefore require 
+  #   # inputs to be registered in BETY first.
+  #   db.input.ind <- which(sapply(inputs, function(x) x$input.id) != -1)
+  #   for (k in db.input.ind) {
+  #     db.query(
+  #       paste0("INSERT INTO likelihoods ", 
+  #              "(run_id,            variable_id,                     input_id, ",
+  #              " loglikelihood,     n_eff,                           weight,   ",
+  #              " created_at) ",
+  #              "values ('", 
+  #              run.id, "', '",    inputs[[k]]$variable.id, "', '", inputs[[k]]$input.id, "', '", 
+  #              LL.vec[k], "', '", floor(neff[k]), "', '",          weights[k] , "', '", 
+  #              now,"')"
+  #       ), 
+  #       con)
+  #   }
+  # }
   
   return(LL.total)
 } # pda.calc.llik
@@ -113,24 +110,70 @@ pda.calc.llik <- function(settings, con, model.out, run.id, inputs, llik.fn) {
 ##'
 ##' @author Istem Fer
 ##' @export
-pda.calc.error <-function(settings, model_out, inputs){
+pda.calc.error <-function(settings, con, model_out, run.id, inputs){
+  
+  # checks on validity of the inputs
+  n.input <- length(inputs)
+  pda.errors <- list()
   
   # llik.priors <- read.csv("~/pecan/modules/assim.batch/inst/llik.params.csv")
-  llik.priors <- read.csv(system.file("inst/llik.params.csv", package = "PEcAn.assim.batch"))
+  # llik.priors <- read.csv(system.file("inst/llik.params.csv", package = "PEcAn.assim.batch"))
   
   for (k in seq_len(n.input)) {
+    pda.errors[[k]] <- list()
+    if(settings$assim.batch$inputs[[k]]$likelihood == "Gaussian") {
+      
+      n <- sum(!is.na(inputs[[k]]$obs))
+      SS <- sum((model_out[[k]] - inputs[[k]]$obs)^2, na.rm = TRUE)
+      tau <- rgamma(1, 0.001 + n/2, 0.001 + SS/2) # build priors into the PDA code for now
+      
+      pda.errors[[k]]$n <- n
+      pda.errors[[k]]$statistics <- SS 
+      pda.errors[[k]]$par <- tau
+      
+      # (n/2) * log(tau) - (tau/2) * SS
+      
+    } else if (settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") {
+      
     
-    if(settings$assim.batch$inputs[[k]]$likelihood == "Gaussian"){
-      gauss.priors <- llik.priors[llik.priors$likelihood == "Gaussian",]
-      SS <- sum((inputs[[k]]$obs - model_out[[k]])^2, na.rm = TRUE)
-      tau <- rgamma(1, gauss.priors$parama + nrow(inputs[[k]]$obs)/2, gauss.priors$paramb+SS/2)
-      inputs[[k]]$par <- c(nrow(inputs[[k]]$obs), tau)
+      # calculate an initial bias parameter
+      regdf <- data.frame(inputs[[k]]$obs, model_out[[k]])
+      colnames(regdf) <- c("data","model")
+      fit <- lm( regdf$data ~ regdf$model)
+      bias.par <- fit$coefficients[2]
+      bias.par <- rnorm(1, bias.par, bias.par*0.01) # build priors into the PDA code for now
+      
+      n <- sum(!is.na(inputs[[k]]$obs))
+      SS <- sum((bias.par * model_out[[k]] - inputs[[k]]$obs)^2, na.rm = TRUE)
+      tau <- rgamma(1, 0.001 + n/2, 0.001 + SS/2)
+ 
+      pda.errors[[k]]$n <- n     
+      pda.errors[[k]]$statistics <- SS 
+      pda.errors[[k]]$par <- tau
+      
+      # (n/2) * log(tau) - (tau/2) * SS
+      
+    } else if (settings$assim.batch$inputs[[k]]$likelihood == "Laplace") {
+      
+      n <- sum(!is.na(inputs[[k]]$obs))
+      SS <- sum(abs(model_out[[k]] - inputs[[k]]$obs), na.rm = TRUE)
+      beta <- 1/rgamma(1, 1+n/2, 0.001+ SS/2)
+
+      pda.errors[[k]]$n <- n     
+      pda.errors[[k]]$statistics <- SS 
+      pda.errors[[k]]$par <- beta
+
+      # (-n/2) * log(beta) - (1/beta) * SS
     }
     
   }
   
-  return(inputs)
+  ## TODO: insert error records in database
   
-} # pda.calc.llikpar
+  return(pda.errors)
+  
+} # pda.calc.error
+
+
 
 
