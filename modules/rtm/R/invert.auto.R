@@ -246,7 +246,7 @@ process_output <- function(output.list,
 
   samples.current <- lapply(output.list, "[[", "results")
   deviance_list.current <- lapply(output.list, "[[", "deviance")
-  n_eff_list.current <- lapply(output.list, "[[", "n_eff_list")
+  n_eff_list.current <- lapply(output.list, "[[", "n_eff")
 
   out <- list()
 
