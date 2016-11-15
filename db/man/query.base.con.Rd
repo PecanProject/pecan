@@ -4,7 +4,7 @@
 \alias{query.base.con}
 \title{Query database connection}
 \usage{
-query.base.con(settings, ...)
+\method{query}{base.con}(settings, ...)
 }
 \arguments{
 \item{...}{optional arguments for connecting to database (e.g. password, user name, database)}
