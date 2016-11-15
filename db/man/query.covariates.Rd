@@ -4,7 +4,7 @@
 \alias{query.covariates}
 \title{Queries covariates from database for a given vector of trait id's}
 \usage{
-query.covariates(trait.ids, con = NULL, ...)
+\method{query}{covariates}(trait.ids, con = NULL, ...)
 }
 \arguments{
 \item{trait.ids}{list of trait ids}
