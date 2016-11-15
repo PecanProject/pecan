@@ -33,9 +33,13 @@ for(i in seq_len(nrow(spp))){
     ## generate binomial
     binom <- strsplit(spp$Species[i]," ",fixed=TRUE)[[1]]
     genus <- binom[1]
+    cross <- which(tolower(binom)=="x")
+    if(length(cross)>0){
+      binom <- binom[-cross]  ## remove cross from name because violates constraint
+    }
     species <- paste(binom[-1],collapse = " ")
     authority <- stringi::stri_trans_general(spp$Authority[i], "latin-ascii")
-    authority <- sub("'","`",authority)
+    authority <- gsub("'","`",authority)
     note <- paste(base.note,"\nTaxanomic Authority:",authority)
     ## insert record
     query <- paste0("INSERT INTO species (genus, species, scientificname, \"Family\", \"GrowthForm\", notes) SELECT '",
