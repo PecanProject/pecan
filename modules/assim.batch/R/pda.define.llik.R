@@ -5,7 +5,7 @@
 ##'
 ##' @return List of likelihood functions, one for each dataset to be assimilated against.
 ##'
-##' @author Ryan Kelly
+##' @author Ryan Kelly, Istem Fer
 ##' @export
 pda.define.llik.fn <- function(settings) {
   # Currently just returns a single likelihood, assuming the data are flux NEE/FC or LE.
@@ -25,16 +25,16 @@ pda.define.llik.fn <- function(settings) {
         return(list(LL = sum(LL, na.rm = TRUE), n = sum(!is.na(LL))))
       }
     } else {
-      # Default to Normal(0,1)
-      llik.fn[[i]] <- function(model.out, obs.data, llik.par = 1) {
+      llik.fn[[i]] <- function(model.out, obs.data, llik.par) {
         if (is.list(model.out)) {
           model.out <- unlist(model.out)
         }
         if (is.list(obs.data)) {
           obs.data <- unlist(obs.data)
         }
-        LL <- dnorm(x = obs.data, mean = model.out, sd = llik.par, log = TRUE)
-        return(list(LL = sum(LL, na.rm = TRUE), n = sum(!is.na(LL))))
+        # lnL = (n/2) * log(tau) - (tau/2) * SS
+        LL <- (llik.par[1]/2) * log(llik.par[2]) - (llik.par[2]/2) * sum((model.out - obs.data)^2, na.rm = TRUE)
+        return(list(LL = LL, n = llik.par[1]))
       }
     }
   }
@@ -100,3 +100,37 @@ pda.calc.llik <- function(settings, con, model.out, run.id, inputs, llik.fn) {
   
   return(LL.total)
 } # pda.calc.llik
+
+
+##' Calculate Likelihood parameters
+##'
+##' @title Calculate Likelihood parameters
+##' @param settings list
+##' @param model.out list
+##' @param inputs list
+##'
+##' @return inputs updated inputs list with likelihood parameters
+##'
+##' @author Istem Fer
+##' @export
+pda.calc.error <-function(settings, model_out, inputs){
+  
+  # llik.priors <- read.csv("~/pecan/modules/assim.batch/inst/llik.params.csv")
+  llik.priors <- read.csv(system.file("inst/llik.params.csv", package = "PEcAn.assim.batch"))
+  
+  for (k in seq_len(n.input)) {
+    
+    if(settings$assim.batch$inputs[[k]]$likelihood == "Gaussian"){
+      gauss.priors <- llik.priors[llik.priors$likelihood == "Gaussian",]
+      SS <- sum((inputs[[k]]$obs - model_out[[k]])^2, na.rm = TRUE)
+      tau <- rgamma(1, gauss.priors$parama + nrow(inputs[[k]]$obs)/2, gauss.priors$paramb+SS/2)
+      inputs[[k]]$par <- c(nrow(inputs[[k]]$obs), tau)
+    }
+    
+  }
+  
+  return(inputs)
+  
+} # pda.calc.llikpar
+
+
