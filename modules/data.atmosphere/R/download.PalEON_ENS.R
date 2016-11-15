@@ -10,8 +10,6 @@
 ##' @author Betsy Cowdery, Mike Dietze
 download.PalEON_ENS <- function(sitename, outfolder, start_date, end_date, overwrite = FALSE, ...) {
   
-  library(PEcAn.utils)
-  
   ## parse dates
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
@@ -37,7 +35,7 @@ download.PalEON_ENS <- function(sitename, outfolder, start_date, end_date, overw
   ens_zip <- dir(dlpath,pattern="tar.bz2",)
   results <- list()
   for(i in seq_along(ens_zip)){
-    system(paste("tar -xvjf",ens_zip[i]))  ## unzip file
+    system2("tar",paste("-xvjf",ens_zip[i]))  ## unzip file
     ens_folder <- strsplit(basename(ens_zip[i]),"\\.")[[1]][1]
     
     ens_files <- dir(ens_folder)
