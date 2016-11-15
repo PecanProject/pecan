@@ -4,8 +4,9 @@
 
 PKG_LIBS = $(FLIBS)
 
-SOURCES = $(wildcard RTM/*/*.f90 RTM/*/*/*.f90)
-OBJECTS = $(SOURCES:.f90=.o)
+SOURCES_F = $(wildcard RTM/*/*.f90 RTM/*/*/*.f90)
+SOURCES_C = $(wildcard *.cpp)
+OBJECTS = $(SOURCES_F:.f90=.o) $(SOURCES_C:.cpp=.o)
 
 all : modules $(SHLIB)
 
