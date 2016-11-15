@@ -16,14 +16,8 @@ longitude<-sites$lon
 # Define server logic
 server <- shinyServer(function(input, output, session) {
 
-#  start <- reactive(input$start_date)
-#  end <- reactive(input$end_date)
-#  gsub("", "2001", input$start_date)
-#  gsub(input$end_date, "", "2001")
-#  start_date <- input$start_date
-#  if (input$start_date == "") start_date <- "2001"
   map = createLeafletMap(session, 'map')
-  session$onFlushed(once=T, function(){
+  session$onFlushed(once=TRUE, function(){
     
     map$addMarker(lat = latitude, lng = longitude, 
                         layerId=ids)
@@ -31,10 +25,10 @@ server <- shinyServer(function(input, output, session) {
   
   observe({
     click<-input$map_marker_click
-    if(is.null(click))
+    if(is.null(click)) {
       return()
+    }
     text<-paste(click$id)
-    text2<-paste("You've selected point ", click$id)
     map$clearPopups()
     map$showPopup( click$lat, click$lng, text)
     output$xmlexample <- renderText({
@@ -87,4 +81,3 @@ server <- shinyServer(function(input, output, session) {
   )
 })
 
-# runApp(port=????, launch.browser=FALSE)
