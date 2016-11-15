@@ -2,7 +2,7 @@
 ##' @title Given input_id, return formats table and table of variables and units
 ##' @param input_id
 ##' @param con : database connection
-##' @export 
+##' @export query.format.vars
 ##' 
 ##' @author Betsy Cowdery , Ankur Desai
 ##' 
