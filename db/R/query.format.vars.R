@@ -8,7 +8,7 @@
 ##' 
 query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
 
-  if(is.na(input.id) & is.na(format.id)){logger.error("Must specify input id or format id")}
+  if(is.na(input.id) & is.na(format.id)){PEcAn.utils::logger.error("Must specify input id or format id")}
   
   con <- bety$con
   
