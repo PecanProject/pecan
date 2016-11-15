@@ -1,10 +1,17 @@
 library(shiny)
 library(leaflet)
+library(RPostgreSQL)
+library(PEcAn.DB)
 
-latitude<-c(35.94077, 35.83770, 35.84545, 35.81584, 35.79387, 36.05600)
-longitude<-c(-78.58010, -78.78084, -78.72444, -78.62568, -78.64262, -78.67600)
-
-ids<-c("a", "b", "c", "d", "e", "f")
+#get all sites name, lat and lon
+dbparams <- list(user = "bety", dbname = "bety", password = "bety", host = "localhost")
+con <- db.open(dbparams)
+on.exit(db.close(con))
+sites <- db.query(paste("SELECT sitename, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry))
+                         AS lat FROM sites"),con)
+ids<-sites$sitename
+latitude<-sites$lat
+longitude<-sites$lon
 
 # Define server logic
 server <- shinyServer(function(input, output, session) {
