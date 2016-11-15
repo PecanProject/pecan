@@ -55,7 +55,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     con <- NULL
   }
 
-  bety <- PEcAn.visualization::betyConnect("~/pecan/web/config.php")
+  bety <- betyConnect("~/pecan/web/config.php")
   
   ## Load priors
   temp        <- pda.load.priors(settings, bety$con, path.flag)
