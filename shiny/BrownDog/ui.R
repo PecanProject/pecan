@@ -25,7 +25,6 @@ ui <- shinyUI(fluidPage(
       verbatimTextOutput("xmlexample"),
       downloadButton('downloadData', 'Download')
     )
-
   )
-  
-))
+ )
+)
