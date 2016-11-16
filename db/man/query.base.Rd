@@ -4,7 +4,7 @@
 \alias{query.base}
 \title{Query database}
 \usage{
-query.base(query, con = NULL, ...)
+\method{query}{base}(query, con = NULL, ...)
 }
 \arguments{
 \item{query}{SQL query string}

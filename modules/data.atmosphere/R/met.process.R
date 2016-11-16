@@ -3,7 +3,7 @@
 ##' @export
 ##'
 ##' @param site Site info from settings file
-##' @param input currently 'NARR' or 'Ameriflux'
+##' @param input_met Which data source to process. 
 ##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param model model_type name
@@ -59,7 +59,12 @@ met.process <- function(site, input_met, start_date, end_date, model,
   }
   
   # set up connection and host information
-  con <- db.open(dbparms)
+  bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
+                       host     = dbparms$host, 
+                       user     = dbparms$user, 
+                       password = dbparms$password)
+  
+  con <- bety$con
   on.exit(db.close(con))
   username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
   machine.host <- ifelse(host == "localhost" || host$name == "localhost", fqdn(), host$name)
@@ -94,10 +99,10 @@ met.process <- function(site, input_met, start_date, end_date, model,
   # first attempt at function that designates where to start met.process
   if (is.null(input_met$id)) {
     stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
-    format.vars <- query.format.vars(con = con, format.id = register$format$id)  # query variable info from format id
+    format.vars <- query.format.vars(bety = bety, format.id = register$format$id)  # query variable info from format id
   } else {
     stage <- met.process.stage(input_met$id, register$format$id, con)
-    format.vars <- query.format.vars(input.id = input_met$id, con = con)  # query DB to get format variable information if available
+    format.vars <- query.format.vars(bety = bety, input.id = input_met$id)  # query DB to get format variable information if available
     # Is there a situation in which the input ID could be given but not the file path? 
     # I'm assuming not right now
     assign(stage$id.name, list(inputid = input_met$id,
