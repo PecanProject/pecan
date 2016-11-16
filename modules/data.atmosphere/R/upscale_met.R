@@ -5,7 +5,7 @@
 ##' @param outfolder
 ##' @param input_met - met dataset
 ##' @param site.id
-##' @param reso - desired resolution you wish the dataset to be upscaled to
+##' @param reso - numeric value in HOURS that is the desired resolution you wish the dataset to be upscaled to
 ##' @param overwrite
 ##' @param verbose
 ##' @author James Simkins
