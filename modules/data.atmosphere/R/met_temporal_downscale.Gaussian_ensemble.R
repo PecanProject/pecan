@@ -396,4 +396,3 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
 
 # met_temporal_downscale.Gaussian_ensemble( '~', '~',
 # 'dwnsc','MACA.IPSL-CM5A-LR.rcp85.r1i1p1.2006.nc', 'US-WCr.2006.nc')
-# met_temporal_downscale.Gaussian_ensemble( '~', '~', 'dwnsc','MACA.IPSL-CM5A-LR.rcp85.r1i1p1.2006.nc', 'US-WCr.2006.nc')
