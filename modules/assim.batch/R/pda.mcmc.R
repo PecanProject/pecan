@@ -32,22 +32,26 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
   ## Open database connection
   if (settings$database$bety$write) {
     con <- try(db.open(settings$database$bety), silent = TRUE)
-    if (is.character(con)) {
+    if (is(con, "try-error")) {
       con <- NULL
+    } else {
+      on.exit(db.close(con))
     }
   } else {
     con <- NULL
   }
   
+  bety <- PEcAn.visualization::betyConnect("~/pecan/web/config.php")
+  
   ## Load priors
-  temp        <- pda.load.priors(settings, con)
+  temp        <- pda.load.priors(settings, bety$con)
   prior.list  <- temp$prior
   settings    <- temp$settings
   pname       <- lapply(prior.list, rownames)
   n.param.all <- sapply(prior.list, nrow)
   
   ## Load data to assimilate against
-  inputs  <- load.pda.data(settings, con)
+  inputs  <- load.pda.data(settings, bety)
   n.input <- length(inputs)
   
   ## Set model-specific functions
@@ -181,7 +185,7 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
           start.model.runs(settings, settings$database$bety$write)
           
           ## Read model outputs
-          model.out <- pda.get.model.output(settings, run.id, con, inputs)
+          model.out <- pda.get.model.output(settings, run.id, bety, inputs)
           
           ## Calculate likelihood (and store in database)
           LL.new <- pda.calc.llik(settings, con, model.out, run.id, inputs, llik.fn)

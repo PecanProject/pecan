@@ -13,42 +13,60 @@ invert.auto(observed, invert.options, return.samples = TRUE,
 observed values. For spectral data, wavelengths are rows and spectra are 
 columns. Dimensions must align with the output of `model`.}
 
-\item{invert.options}{Parameters related to inversion.
-Parameters specific to `invert.auto` are described here.
-For the remaining parameters, see \code{\link{invert.custom}}.
+\item{invert.options}{Parameters related to inversion.}
 
-model The model to be inverted. This should be an R function that takes 
-`params` as input and returns one column of `observed` (nrows should be the 
-same). Constants should be implicitly included here.
+\item{return.samples}{Include full samples list in output. Default = 
+\code{TRUE}.}
 
-nchains Number of independent chains.
-
-inits.function Function for randomly generating initial conditions.
-
-ngibbs.max Maximum number of total iterations (per chain). DEFAULT = 5e6
-
-ngibbs.min Minimum number of total iterations (per chain). DEFAULT = 5000.
-
-ngibbs.step Number of iterations between convergence checks. Default = 1000.}
-
-\item{return.samples}{Include full samples list in output. Default = TRUE.}
-
-\item{save.samples}{Save samples to file as the inversion proceeds (useful for debugging).
-If NULL, do not save samples. Default = NULL.}
+\item{save.samples}{Save samples to file as the inversion proceeds (useful 
+for debugging). If \code{NULL}, do not save samples. Default = \code{NULL}.}
 
 \item{quiet}{Suppress progress bar and status messages. Default=FALSE}
 
-\item{parallel}{Logical. Whether or not to run multiple chains in parallel on multiple cores (default = TRUE).}
+\item{parallel}{Logical. Whether or not to run multiple chains in parallel 
+on multiple cores (default = \code{TRUE}).}
 
-\item{parallel.cores}{Number of cores to use for parallelization. If NULL (default), allocate one fewer than detected number of cores.}
+\item{parallel.cores}{Number of cores to use for parallelization. If 
+\code{NULL}
+(default), allocate one fewer than detected number of cores.}
 
-\item{parallel.output}{Filename (or '' for stdout) for printing parallel outputs. Use with caution. Default = '/dev/null'.}
+\item{parallel.output}{Filename (or '' for stdout) for printing parallel 
+outputs. Use with caution. Default = \code{'/dev/null'}.}
 }
 \value{
-List of "results" (summary statistics) and "samples" (mcmc.list object, or "NA" if return.samples=FALSE)
+List including \code{results} (summary statistics), \code{samples} 
+(\code{mcmc.list} object, or \code{NA} if \code{return.samples=FALSE}), and 
+other information.
 }
 \details{
-Performs an inversion via the `invert.custom` function with multiple chains and automatic convergence checking. 
-Convergence checks are performed using the multivariate Gelman-Rubin diagnostic.
+Performs an inversion via the \code{invert.custom} function with 
+multiple chains and automatic convergence checking.  Convergence checks are 
+performed using the multivariate Gelman-Rubin diagnostic.
+
+Parameters specific to \code{invert.auto} are described here.
+For the remaining parameters, see \code{\link{invert.custom}}.
+\itemize{
+
+\item{model}{The model to be inverted. This should be an R function that 
+takes \code{params} as input and returns one column of \code{observed} 
+(nrows should be the same). Constants should be implicitly included here. }
+
+\item{nchains}{Number of independent chains.}
+
+\item{inits.function}{Function for generating initial conditions.}
+
+\item{ngibbs.max}{Maximum number of total iterations (per chain). DEFAULT 
+= 5e6}
+
+\item{ngibbs.min}{Minimum number of total iterations (per chain). DEFAULT = 
+5000.}
+
+\item{ngibbs.step}{Number of iterations between convergence checks. Default 
+= 1000.}
+
+\item{run_first}{Function to run before running sampling. Takes parallel 
+inputs list containing runID, initial values, and resume (NULL) as an 
+argument.}
+}
 }
 

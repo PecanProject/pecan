@@ -4,7 +4,8 @@
 \alias{query.yields}
 \title{Query yield data and transform stats to SE by calling \code{\link{fetch.stats2se}};}
 \usage{
-query.yields(trait = "yield", spstr, extra.columns = "", con = NULL, ...)
+\method{query}{yields}(trait = "yield", spstr, extra.columns = "",
+  con = NULL, ...)
 }
 \arguments{
 \item{trait}{yield trait to query}

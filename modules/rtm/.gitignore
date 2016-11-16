@@ -14,3 +14,6 @@ tests/testthat/*.png
 check
 .tar.gz
 
+# R profile output
+*/Rprof.out
+**/Rprof.out
