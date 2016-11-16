@@ -4,7 +4,7 @@
 \alias{query.traits}
 \title{Query trait data}
 \usage{
-query.traits(spstr, priors, con = NULL, update.check.only = FALSE)
+\method{query}{traits}(spstr, priors, con = NULL, update.check.only = FALSE)
 }
 \arguments{
 \item{spstr}{string of species id's from trait database}
