@@ -2,7 +2,7 @@
 ##' @title Given site_id, return site table
 ##' @param site_id
 ##' @param con : database connection
-##' @export 
+##' @export query.site
 ##' 
 ##' @author Betsy Cowdery 
 ##' 

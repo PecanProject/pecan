@@ -10,27 +10,27 @@ MODULES := allometry assim.batch assim.sequential benchmark \
 
 MODELS := $(MODELS:%=models/%)
 MODULES := $(MODULES:%=modules/%)
-ALL_PKGS := $(BASE) $(MODELS) $(MODULES)
+ALL_PKGS := $(BASE) $(MODELS) $(MODULES) models/template
 
 BASE_I := $(BASE:%=.install/%)
 MODELS_I := $(MODELS:%=.install/%)
 MODULES_I := $(MODULES:%=.install/%)
-ALL_PKGS_I := $(BASE_I) $(MODELS_I) $(MODULES_I)
+ALL_PKGS_I := $(BASE_I) $(MODELS_I) $(MODULES_I) .install/models/template
 
 BASE_C := $(BASE:%=.check/%)
 MODELS_C := $(MODELS:%=.check/%)
 MODULES_C := $(MODULES:%=.check/%)
-ALL_PKGS_C := $(BASE_C) $(MODELS_C) $(MODULES_C)
+ALL_PKGS_C := $(BASE_C) $(MODELS_C) $(MODULES_C) .check/models/template
 
 BASE_T := $(BASE:%=.test/%)
 MODELS_T := $(MODELS:%=.test/%)
 MODULES_T := $(MODULES:%=.test/%)
-ALL_PKGS_T := $(BASE_T) $(MODELS_T) $(MODULES_T)
+ALL_PKGS_T := $(BASE_T) $(MODELS_T) $(MODULES_T) .test/models/template
 
 BASE_D := $(BASE:%=.doc/%)
 MODELS_D := $(MODELS:%=.doc/%)
 MODULES_D := $(MODULES:%=.doc/%)
-ALL_PKGS_D := $(BASE_D) $(MODELS_D) $(MODULES_D)
+ALL_PKGS_D := $(BASE_D) $(MODELS_D) $(MODULES_D) .doc/models/template
 
 .PHONY: all install check test document
 
@@ -58,7 +58,7 @@ $(call depends,modules/meta.analysis): .install/utils .install/db
 $(call depends,modules/priors): .install/utils
 $(call depends,modules/rtm): .install/modules/assim.batch
 
-$(MODELS_I): $(MODULES_I)
+$(MODELS_I): .install/models/template $(MODULES_I)
 
 
 clean:
