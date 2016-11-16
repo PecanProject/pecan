@@ -7,6 +7,8 @@
 ##' @param train_met - the observed dataset that will be used to train the modeled dataset in NC format
 ##' @param de_method - select which debias method you would like to use, options are 'normal', 'linear regression'
 ##' @param site.id
+##' @param overwrite
+##' @param verbose
 ##' @author James Simkins
 debias_met <- function(outfolder, input_met, train_met, site_id, de_method = "linear", 
                        overwrite = FALSE, verbose = FALSE, ...) {
