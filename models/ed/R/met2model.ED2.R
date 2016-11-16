@@ -159,7 +159,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     doy  <- NULL
     hr   <- NULL
     asec <- sec
-    for (y in (year + 1):(nyr - 1)) {
+    for (y in seq(year, year + nyr - 1)) {
       ytmp <- rep(y, 365 * 86400 / dt)
       dtmp <- rep(1:365, each = 86400 / dt)
       if (lubridate::leap_year(y)) {

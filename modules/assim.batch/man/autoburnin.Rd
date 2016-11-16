@@ -9,15 +9,17 @@ autoburnin(jags_out, return.burnin = FALSE, ...)
 \arguments{
 \item{jags_out}{List of MCMC sample matrices or `mcmc.list` object}
 
-\item{return.burnin}{Logical. If `TRUE`, return burnin value in addition to samples (as list).}
+\item{return.burnin}{Logical. If `TRUE`, return burnin value in addition to 
+samples (as list). Default = FALSE.}
 
-\item{...}{Additional arguments for `getBurnin`, `gelman.plot`, and `gelman.diag`
-Default = FALSE.}
+\item{...}{Additional arguments for \code{getBurnin}, \code{gelman_diag_mw}, 
+and \code{gelman.diag}.}
 }
 \examples{
-     library(coda)
-     data(line)
-     line_burned <- autoburnin(line, threshold = 1.05, return.burnin=FALSE)
+     z1 <- coda::mcmc(c(rnorm(2500, 5), rnorm(2500, 0)))
+     z2 <- coda::mcmc(c(rnorm(2500, -5), rnorm(2500, 0)))
+     z <- coda::mcmc.list(z1, z2)
+     z_burned <- autoburnin(z)
 }
 \author{
 Michael Dietze, Alexey Shiklomanov

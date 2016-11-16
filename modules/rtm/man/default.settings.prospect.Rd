@@ -4,7 +4,7 @@
 \name{default.settings.prospect}
 \alias{default.settings.prospect}
 \title{Defult inversion settings for PROSPECT 5 models}
-\format{An object of class \code{list} of length 17.}
+\format{An object of class \code{list} of length 18.}
 \usage{
 default.settings.prospect
 }

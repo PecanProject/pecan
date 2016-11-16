@@ -4,14 +4,14 @@
 \alias{match.timestep}
 \title{Match time step}
 \usage{
-match.timestep(date_coarse, date_fine, data_fine)
+match.timestep(date.coarse, date.fine, data.fine)
 }
 \arguments{
+\item{date.coarse}{numeric}
+
 \item{date.fine}{numeric}
 
 \item{data.fine}{matrix}
-
-\item{date.coarse}{numeric}
 }
 \author{
 Istem Fer
