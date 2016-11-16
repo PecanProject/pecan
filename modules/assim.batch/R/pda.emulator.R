@@ -27,6 +27,11 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
     adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot)
   
+  ## if which package to use for creating the Gaussian Process is not specified, default to GPfit
+  if (is.null(settings$assim.batch$GPpckg)) {
+    settings$assim.batch$GPpckg <- "GPfit"
+  }
+  
   extension.check <- settings$assim.batch$extension == "longer"
   
   if (length(extension.check) == 0) {
@@ -194,15 +199,10 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       pda.errors[[i]] <- pda.calc.error(settings, con, model_out = model.out[[i]], run.id = run.ids[i], inputs)
       
       # ## calculate likelihood
-      LL.0[i] <- pda.calc.llik(pda.errors[[i]])
+      LL.0[i] <- pda.calc.llik(pda.errors[[i]]$pda.error)
     }
   }
   
-  
-  ## if which package to use for creating the Gaussian Process is not specified, default to GPfit
-  if (is.null(settings$assim.batch$GPpckg)) {
-    settings$assim.batch$GPpckg <- "GPfit"
-  }
   
   init.list <- list()
   jmp.list <- list()
@@ -219,7 +219,12 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       
       X <- knots.probs.all[, prior.ind.all, drop = FALSE]
       
-      LL.X <- cbind(X, LL.0)
+      # likelihood params
+      pars <- lapply(pda.errors, `[[`, "ll.par")
+      pars <- lapply(pars, unlist)
+      pars <- do.call("rbind", pars)
+      
+      LL.X <- cbind(X, pars, LL.0)
       
       if (!is.null(settings$assim.batch$extension)) {
         # check whether another 'round' of emulator requested
@@ -259,6 +264,13 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     prior.all <- do.call("rbind", prior.list)
     
     prior.all[prior.ind.all, ] <- rep(c("unif", 0, 1, "NA"), each = sum(n.param))
+    names.all <- rownames(prior.all)
+    for(name in 1:ncol(pars)){
+      prior.all <- rbind(prior.all, c("unif", 0, 1, "NA"))
+    }
+    rownames(prior.all) <- c(names.all, colnames(pars))
+    prior.ind.all <- c(prior.ind.all, prior.ind.all[length(prior.ind.all)] + seq_len(ncol(pars)))
+
     ## Set up prior functions accordingly
     prior.fn.all <- pda.define.prior.fn(prior.all)
     pckg <- 1
@@ -302,7 +314,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                          list(p = 0)), 
                   sapply(prior.fn.all$qprior[prior.ind.all], 
                          eval, 
-                         list(p = 1))), nrow = sum(n.param))
+                         list(p = 1))), nrow = sum(n.param)+ncol(pars))
   
   if (run.block) {
     
@@ -314,7 +326,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       jmp.list[[c]] <- sqrt(jmp.list[[c]])
       
       init.x <- lapply(prior.ind.all, function(v) eval(prior.fn.all$rprior[[v]], list(n = 1)))
-      names(init.x) <- unlist(pname)[prior.ind.all]
+      names(init.x) <- rownames(prior.all)[prior.ind.all]
       init.list[[c]] <- init.x
       resume.list[[c]] <- NA
     }
