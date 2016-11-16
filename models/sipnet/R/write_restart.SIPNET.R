@@ -7,8 +7,8 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-##' @title write.restart.SIPNET
-##' @name  write.restart.SIPNET
+##' @title write_restart.SIPNET
+##' @name  write_restart.SIPNET
 ##' @author Ann Raiho \email{araiho@@nd.edu}
 ##' 
 ##' @param outdir         output directory
@@ -26,7 +26,7 @@
 ##' 
 ##' @return NONE
 ##' @export
-write.restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings, new.state, 
+write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings, new.state, 
                                  RENAME = TRUE, new.params = FALSE, inputs) {
   
   rundir <- settings$host$rundir
@@ -107,4 +107,4 @@ write.restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
                                            inputs = inputs,
                                            IC = analysis.save.mat))
   print(runid)
-} # write.restart.SIPNET
+} # write_restart.SIPNET
