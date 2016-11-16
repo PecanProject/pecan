@@ -7,14 +7,15 @@ library(PEcAn.DB)
 # Define server logic
 server <- shinyServer(function(input, output, session) {
   output$agreementUI <- renderUI({
-    if (is.null(input$type))
+    if (is.null(input$type)){
       return()
+    }
     
     # Depending on input$type, we'll generate a different lincense agreement
     switch(input$type,
-           "AmeriFlux" =  checkboxInput("agreement", paste0("I am agree to AmeriFlux license."), value = FALSE, width = NULL),
-           "NARR" =  checkboxInput("agreement", paste0("I am agree to NARR license."), value = FALSE, width = NULL),
-           "FLUXNET" =  checkboxInput("agreement", paste0("I am agree to FLUXNET license."), value = FALSE, width = NULL)
+           "AmeriFlux" =  checkboxInput("agreement", paste0("I agree to AmeriFlux license."), value = FALSE, width = NULL),
+           "NARR" =  checkboxInput("agreement", paste0("I agree to NARR license."), value = FALSE, width = NULL),
+           "FLUXNET" =  checkboxInput("agreement", paste0("I agree to FLUXNET license."), value = FALSE, width = NULL)
     )
   })
   
