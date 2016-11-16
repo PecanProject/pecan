@@ -41,11 +41,9 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                           hostname = host$name, 
                                           match.dates = TRUE)
     
-    
+
     print(existing.dbfile, digits = 10)
     print("end CHECK")
-    
-    
     
     
     if (nrow(existing.dbfile) > 0){
@@ -62,157 +60,157 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       
       ## Do overwrite if set to TRUE
       
-      if(overwrite){
-        # collect files to flag for deletion
-        files.to.delete <- remote.execute.R( paste0("list.files('",
-                                                    existing.dbfile[["file_path"]],
-                                                    "', full.names=TRUE)"),
-                                             host, user = NA, verbose = TRUE,R = "R")
-        
-        file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
-        
-        remote.execute.R( file.deletion.commands$move.to.tmp,
-                          host, user = NA, 
-                          verbose = TRUE,R = "R")
-        
-        # Schedule files to be replaced or deleted on exiting the function
-        successful <- FALSE
-        # collect files to flag for deletion
-        
-        files.to.delete <- remote.execute.R( paste0("list.files('",
-                                                    existing.dbfile[["file_path"]],
-                                                    "', full.names=TRUE)"),
-                                             host, user = NA, verbose = TRUE,R = "R")
-        
-        file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
-        
-        remote.execute.R( file.deletion.commands$move.to.tmp,
-                          host, user = NA, 
-                          verbose = TRUE,R = "R")
-        
-        # Schedule files to be replaced or deleted on exiting the function
-        successful <- FALSE
-        on.exit(if (exists("successful") && successful) {
-          
-          logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-          remote.execute.R( file.deletion.commands$delete.tmp, host, user = NA, verbose = TRUE,  R = "R" )
-          
-        } else {
-          logger.info("Conversion failed. Replacing old files.")
-          remote.execute.R(file.deletion.commands$replace.from.tmp, host, user = NA, verbose = TRUE, R = "R" )
-        })
-      }
+
+          if(overwrite){
+                         # collect files to flag for deletion
+                        files.to.delete <- remote.execute.R( paste0("list.files('",
+                                                             existing.dbfile[["file_path"]],
+                                                             "', full.names=TRUE)"),
+                                                             host, user = NA, verbose = TRUE,R = "R")
       
+                        file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
       
+                        remote.execute.R( file.deletion.commands$move.to.tmp,
+                                          host, user = NA, 
+                                          verbose = TRUE,R = "R")
+      
+                        # Schedule files to be replaced or deleted on exiting the function
+                        successful <- FALSE
+                        # collect files to flag for deletion
+                        
+                        files.to.delete <- remote.execute.R( paste0("list.files('",
+                                                                    existing.dbfile[["file_path"]],
+                                                                    "', full.names=TRUE)"),
+                                                             host, user = NA, verbose = TRUE,R = "R")
+                        
+                        file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
+                        
+                        remote.execute.R( file.deletion.commands$move.to.tmp,
+                                          host, user = NA, 
+                                          verbose = TRUE,R = "R")
+                        
+                        # Schedule files to be replaced or deleted on exiting the function
+                        successful <- FALSE
+                        on.exit(if (exists("successful") && successful) {
+                          
+                          logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
+                          remote.execute.R( file.deletion.commands$delete.tmp, host, user = NA, verbose = TRUE,  R = "R" )
+                          
+                        } else {
+                          logger.info("Conversion failed. Replacing old files.")
+                          remote.execute.R(file.deletion.commands$replace.from.tmp, host, user = NA, verbose = TRUE, R = "R" )
+                        })
+          }
+      
+    
+
       # There's an existing input that matches desired start/end dates. Use that one.
       logger.info("Skipping this input conversion because files are already available.")
       return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
       
       
-    } else{
+      } else{
       # No existing record found. Should be good to go with regular conversion.
-    }
+     }
     
     ##-------------------------end of exact.dates chunk------------------------------------#
+  
+    }else{
     
-  }else{
-    
-    ## Either Running met2model for models that do not need exact dates
-    ## Or running non met2model conversion scripts (download.raw, met2cf, etc.)
-    
-    existing.dbfile <- dbfile.input.check(siteid = site.id,
-                                          mimetype = mimetype, 
-                                          formatname = formatname, 
-                                          parentid = input.id, 
-                                          startdate = start_date,
-                                          enddate = end_date, 
-                                          con = con, 
-                                          hostname = host$name, 
-                                          contains.dates = TRUE)
-    
-    
-    print(existing.dbfile, digits = 10)
-    print("end CHECK")
-    
-    
-    if (nrow(existing.dbfile) > 0) {
+      ## Either Running met2model for models that do not need exact dates
+      ## Or running non met2model conversion scripts (download.raw, met2cf, etc.)
       
-      existing.input <- db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
+      existing.dbfile <- dbfile.input.check(siteid = site.id,
+                                            mimetype = mimetype, 
+                                            formatname = formatname, 
+                                            parentid = input.id, 
+                                            startdate = start_date,
+                                            enddate = end_date, 
+                                            con = con, 
+                                            hostname = host$name, 
+                                            contains.dates = TRUE)
       
-      # Convert dates to Date objects and strip all time zones
-      # (DB values are timezone-free)
-      start_date <- lubridate::force_tz(lubridate::as_date(start_date), "UTC")
-      end_date   <- lubridate::force_tz(lubridate::as_date(end_date), "UTC")
       
-      existing.input$start_date <- lubridate::force_tz(lubridate::as_date(existing.input$start_date), "UTC")
-      existing.input$end_date   <- lubridate::force_tz(lubridate::as_date(existing.input$end_date), "UTC")
+      print(existing.dbfile, digits = 10)
+      print("end CHECK")
       
-      if (overwrite) {
-        # collect files to flag for deletion
+      
+      if (nrow(existing.dbfile) > 0) {
         
-        files.to.delete <- remote.execute.R( paste0("list.files('",
-                                                    existing.dbfile[["file_path"]],
-                                                    "', full.names=TRUE)"),
-                                             host, user = NA, verbose = TRUE,R = "R")
+        existing.input <- db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
         
-        file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
+        # Convert dates to Date objects and strip all time zones
+        # (DB values are timezone-free)
+        start_date <- lubridate::force_tz(lubridate::as_date(start_date), "UTC")
+        end_date   <- lubridate::force_tz(lubridate::as_date(end_date), "UTC")
         
-        remote.execute.R( file.deletion.commands$move.to.tmp,
-                          host, user = NA, 
-                          verbose = TRUE,R = "R")
+        existing.input$start_date <- lubridate::force_tz(lubridate::as_date(existing.input$start_date), "UTC")
+        existing.input$end_date   <- lubridate::force_tz(lubridate::as_date(existing.input$end_date), "UTC")
         
-        # Schedule files to be replaced or deleted on exiting the function
-        successful <- FALSE
-        on.exit(if (exists("successful") && successful) {
+        if (overwrite) {
+                        # collect files to flag for deletion
           
-          logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-          remote.execute.R( file.deletion.commands$delete.tmp, host, user = NA, verbose = TRUE,  R = "R" )
+                        files.to.delete <- remote.execute.R( paste0("list.files('",
+                                                                    existing.dbfile[["file_path"]],
+                                                                    "', full.names=TRUE)"),
+                                                                     host, user = NA, verbose = TRUE,R = "R")
           
-        } else {
-          logger.info("Conversion failed. Replacing old files.")
-          remote.execute.R(file.deletion.commands$replace.from.tmp, host, user = NA, verbose = TRUE, R = "R" )
-        })
+                        file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
+          
+                        remote.execute.R( file.deletion.commands$move.to.tmp,
+                                          host, user = NA, 
+                                          verbose = TRUE,R = "R")
+          
+                        # Schedule files to be replaced or deleted on exiting the function
+                        successful <- FALSE
+                        on.exit(if (exists("successful") && successful) {
+            
+                        logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
+                        remote.execute.R( file.deletion.commands$delete.tmp, host, user = NA, verbose = TRUE,  R = "R" )
+            
+                      } else {
+                          logger.info("Conversion failed. Replacing old files.")
+                          remote.execute.R(file.deletion.commands$replace.from.tmp, host, user = NA, verbose = TRUE, R = "R" )
+          })
+          
+        } else if ((start_date >= existing.input$start_date) &&
+                   (end_date <= existing.input$end_date)) {
+          
         
-      } else if ((start_date >= existing.input$start_date) &&
-                 (end_date <= existing.input$end_date)) {
-        
-        
-        # There's an existing input that spans desired start/end dates. Use that one.
-        logger.info("Skipping this input conversion because files are already available.")
-        return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
-        
-        
-      } else {
-        # Start/end dates need to be updated so that the input spans a continuous
-        # timeframe
-        start_date <- min(start_date, existing.input$start_date)
-        end_date <- max(end_date, existing.input$end_date)
-        logger.info(
-          paste0(
-            "Changed start/end dates to '",
-            start_date,
-            "'/'",
-            end_date,
-            "' ",
-            "so that existing input can be updated while maintaining continuous time span."
+            # There's an existing input that spans desired start/end dates. Use that one.
+            logger.info("Skipping this input conversion because files are already available.")
+            return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
+          
+          
+         } else {
+          # Start/end dates need to be updated so that the input spans a continuous
+          # timeframe
+          start_date <- min(start_date, existing.input$start_date)
+          end_date <- max(end_date, existing.input$end_date)
+          logger.info(
+            paste0(
+              "Changed start/end dates to '",
+              start_date,
+              "'/'",
+              end_date,
+              "' ",
+              "so that existing input can be updated while maintaining continuous time span."
+            )
           )
-        )
-        
-        # There might be existing files for some years (but not all; checked that above)
-        # fcn should be smart enough not overwrite the existing ones, and hopefully won't
-        # waste time working on them either At the end, if convert.inputs was successful
-        # we'll need to update its start/end dates We don't know the dbfile path/prefix
-        # until after fcn runs, so unfortunately can't check that the new dbfile record
-        # won't conflict with existing ones.
-      } 
-    } else {
-      # No existing record found. Should be good to go.
-    }
-  }
-  
-  
-  
-  
+          
+          # There might be existing files for some years (but not all; checked that above)
+          # fcn should be smart enough not overwrite the existing ones, and hopefully won't
+          # waste time working on them either At the end, if convert.inputs was successful
+          # we'll need to update its start/end dates We don't know the dbfile path/prefix
+          # until after fcn runs, so unfortunately can't check that the new dbfile record
+          # won't conflict with existing ones.
+        } 
+      } else {
+        # No existing record found. Should be good to go.
+      }
+}
+    
+
   machine.host <- ifelse(host$name == "localhost", fqdn(), host$name)
   machine <- db.query(paste0("SELECT * from machines where hostname = '", 
                              machine.host, "'"), con)
@@ -418,11 +416,11 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                     parentid = parent.id,
                                     con = con, 
                                     hostname = machine$hostname)
-    
+
     
     successful <- TRUE
-    
-    
+
+
     return(newinput)
   } else {
     logger.warn("Input was not added to the database")

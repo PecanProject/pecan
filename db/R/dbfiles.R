@@ -191,7 +191,7 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
     inputid <- db.query(paste0(
       "SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, parent), con)[['id']]
   }
-  
+
   if (is.null(inputid)) {
     invisible(data.frame())
   } else {
