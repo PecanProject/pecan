@@ -20,6 +20,8 @@ align.data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
   diff.m <- diff(model.calc$posix)
   diff.o <- diff(obvs.calc$posix)
   
+  units(diff.m) <- units(diff.o) <- max(units(diff.m),units(diff.o))
+  
   mode.m <- as.numeric(diff.m[which.max(tabulate(match(unique(diff.m), diff.m)))])
   mode.o <- as.numeric(diff.o[which.max(tabulate(match(unique(diff.o), diff.o)))])
   max.diff <- if(mode.m > mode.o) diff.m else diff.o
@@ -40,7 +42,6 @@ align.data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
     obvs <- obvs.calc[obvs.calc$posix >= rng_dat[1] & obvs.calc$posix <= rng_dat[2], ]
   }
 
-  # units(diff.m) <- units(diff.o) <- "secs"
   
   if (mode.m > mode.o) {
     date.coarse <- model$posix
