@@ -17,7 +17,7 @@
 ##' @param con database connection, can be list of arguments for connecting to database
 ##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
 ##' @return priors for a given pft
-##' @export
+##' @export query.priors
 ##' @author David LeBauer
 ##' @examples
 ##' \dontrun{
