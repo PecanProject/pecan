@@ -163,7 +163,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                             site.id = new.site.id, 
                             lat = site$lat, lon = site$lon, 
                             start_date = start_date, end_date = end_date, 
-                            str_ns,con = con, host = host, 
+                            str_ns = str_ns, con = con, host = host, 
                             overwrite = overwrite$met2cf, 
                             format.vars = format.vars)
   }
