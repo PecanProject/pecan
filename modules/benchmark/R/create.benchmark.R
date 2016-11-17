@@ -1,99 +1,108 @@
-##' Creates records for benchmarks_ensembles, benchmarks, benchmarks_benchmarks_reference_runs, benchmarks_metrics
+##' Creates records for benchmarks, benchmarks_benchmarks_reference_runs, benchmarks_metrics
 ##'
-##' @title Create Bety Benchmarking Records
-##' @param settings settings list
+##' @title Benchmark Definition: Retrieve or Create Bety Benchmarking Records
+##' @param bm.settings settings list
 ##' @return updated settings list
 ##' @author Betsy Cowdery
-##' @export create.benchmark
+##' @export 
 
-create.benchmark <- function(settings, bety){
+define_benchmark <- function(bm.settings, bety){
   
-  # Updates to settings dependent on settings$new_run
-  if(as.logical(settings$benchmark$new_run)){
-    # If new run, need to get the new emsemble id so that we can load output
-    # For now, just choosing the first in case ensemble size > 1
-    settings$benchmark$ensemble_id <- tbl(bety, 'ensembles') %>% 
-      filter(workflow_id == settings$workflow$id) %>% dplyr::select(id) %>% collect() %>% .[[1]] 
-  }else{
-    # Need to find where the output is located
-    # Right now ASSUMING LOCALHOST
-    ensemble <- tbl(bety,'ensembles') %>% filter(id == settings$benchmark$ensemble_id) %>% collect()
-    wf <- tbl(bety, 'workflows') %>% filter(id == ensemble$workflow_id) %>% collect()
-    settings$rundir <- file.path(wf$folder, "run")
-    settings$modeloutdir <- file.path(wf$folder, "out")
-    settings$outdir <- wf$folder
+  if (is.MultiSettings(bm.settings)) {
+    return(papply(bm.settings, function(x) define_benchmark(x, bety)))
   }
   
-  # Retrieve/create benchmark ensemble database record
-  bm.ensemble <- tbl(bety,'benchmarks_ensembles') %>% 
-    filter(reference_run_id == settings$benchmark$reference_run_id) %>% 
-    filter(ensemble_id == settings$benchmark$ensemble_id) %>% 
-    filter(model_id == settings$model$id) %>%
-    collect()
+  # dplyr functions
+  tbl     <- dplyr::tbl
+  filter  <- dplyr::filter
+  rename  <- dplyr::rename
+  collect <- dplyr::collect
+  select  <- dplyr::select
   
-  if(dim(bm.ensemble)[1] == 0){
-    bm.ensemble <- db.query(paste0("INSERT INTO benchmarks_ensembles",
-                                   "(reference_run_id, ensemble_id, model_id, ",
-                                   "user_id, citation_id)",
-                                   "VALUES(",settings$benchmark$reference_run_id,
-                                   ", ",settings$benchmark$ensemble_id,
-                                   ", ",settings$model$id,", ",settings$info$userid,
-                                   ", 1000000001 ) RETURNING *;"), bety$con)
-  }else if(dim(bm.ensemble)[1] >1){
-    logger.error("Duplicate record entries in benchmarks_ensembles")
-  }
-
+  
   # Retrieve/create benchmark entries
-  bm.ids <- c()
   
-  for(i in seq_along(settings$benchmark$variables)){
+  if(is.null(bm.settings$reference_run_id)){
+    if(!is.null(bm.settings$ensemble_id)){
+
+      # check if there is already a BRR for ensemble.id, otherwise make one
+      bm_ens <- tbl(bety,"benchmarks_ensembles") %>% rename(bm_ensemble_id = id) %>% 
+        filter(ensemble_id == bm.settings$ensemble_id) %>% collect()
+      
+      if(length(bm_ens) == 0){
+        # Get workflow id from ensemble id
+        ens_wf <- tbl(bety, 'ensembles') %>% filter(id == bm.settings$ensemble_id) %>% 
+          rename(ensemble_id = id) %>% 
+          left_join(.,tbl(bety, "workflows") %>% rename(workflow_id = id), by="workflow_id") %>% collect()
+        BRR <- create.BRR(ens_wf, con = bety$con, user_id = bm.settings$info$userid)
+      }else if(dim(bm_ens)[1] == 1){
+        BRR <- tbl(bety,"reference_runs") %>% filter(id == bm_ens$reference_run_id) %>% 
+          rename(reference_run_id = id) %>% collect()
+      }else if(dim(bm_ens)[1] > 1){ # There shouldn't be more than one reference run per run
+        logger.error("There is more than one reference run in the database for this ensemble id. Review for duplicates. ")}
+      # add the ref_run id, remove the ensemble_id
+      bm.settings$reference_run_id <- BRR$reference_run_id
+      # bm.settings$ensemble_id <- NULL
+      
+    }else{logger.error("Cannot find or create BRR")}
+  } 
+  
+  
+  # Retrieve/create benchmark entries
+  
+  for(i in which(names(bm.settings) == "benchmark")){
+    
+    benchmark <- bm.settings[[i]]
     
     bm <- tbl(bety, 'benchmarks') %>% 
-      filter(input_id == settings$benchmark$input_id) %>%
-      filter(variable_id == settings$benchmark$variables[[i]]) %>%
-      filter(site_id == settings$run$site$id) %>% collect()
+      filter(input_id == benchmark$input_id) %>%
+      filter(variable_id == benchmark$variable_id) %>%
+      filter(site_id == benchmark$site_id) %>% collect()
     
     # Retrieve/create benchmark record
     if(dim(bm)[1] == 0){
       cmd <- sprintf(paste0("INSERT INTO benchmarks (input_id, variable_id, site_id, user_id)",
                             "VALUES ( %s, %s, %s, %s) RETURNING * ;"), 
-                     settings$benchmark$input_id, settings$benchmark$variables[[i]],
-                     settings$run$site$id, settings$info$userid)
+                     benchmark$input_id, benchmark$variable_id,
+                     benchmark$site_id, bm.settings$info$userid)
       bm <- db.query(cmd, bety$con)
     }else if(dim(bm)[1] >1){
       logger.error("Duplicate record entries in benchmarks")
     }
-    bm.ids <- c(bm.ids, bm$id)
     
     # Retrieve/create benchmarks_benchmarks_reference_runs record
     bmBRR <- tbl(bety, 'benchmarks_benchmarks_reference_runs') %>% 
       filter(benchmark_id == bm$id) %>%
-      filter(reference_run_id == settings$benchmark$reference_run_id)  %>% collect()
-    
+      filter(reference_run_id == bm.settings$reference_run_id)  %>% collect()
     
     if(dim(bmBRR)[1] == 0){
       cmd <- sprintf(paste0("INSERT INTO benchmarks_benchmarks_reference_runs",
                             " (benchmark_id, reference_run_id) VALUES (%s, %s)"),
-                     bm$id, settings$benchmark$reference_run_id)
+                     bm$id, benchmark$reference_run_id)
       db.query(cmd, bety$con)
     }else if(dim(bmBRR)[1] > 1){
       logger.error("Duplicate record entries in benchmarks_benchmarks_reference_runs")
     }
     
     # Retrieve/create benchmarks_metrics record
-    for(j in seq_along(settings$benchmark$metrics)){
+    for(j in seq_along(benchmark$metrics)){
       bmmetric <- tbl(bety, 'benchmarks_metrics') %>% 
         filter(benchmark_id == bm$id) %>%
-        filter(metric_id == settings$benchmark$metrics[[j]])  %>% collect()
+        filter(metric_id == benchmark$metrics[[j]])  %>% collect()
       
       if(dim(bmmetric)[1] == 0){
         cmd <- sprintf(paste0("INSERT INTO benchmarks_metrics (benchmark_id, metric_id) VALUES (%s, %s)"),
-                       bm$id, settings$benchmark$metrics[[j]])
+                       bm$id, benchmark$metrics[[j]])
         db.query(cmd, bety$con)
       }else if(dim(bmmetric)[1] > 1){
         logger.error("Duplicate record entries in benchmarks_metrics")
       }
     }
-  }
-  invisible(return(settings))
+    
+    benchmark$benchmark_id <- bm$id
+    bm.settings[[i]] <- benchmark
+    
+  } # End loop over benchmark
+  
+  invisible(return(bm.settings))
 } # create.benchmark
