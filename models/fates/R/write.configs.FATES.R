@@ -227,7 +227,6 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncvar_put(nc=param.nc, varid='seed_dispersal_x', start = ipft, count = 1,
                    vals=pft[v])
        }
-
        if(var == "hgt_min"){               # The height of a new recruit
          ncvar_put(nc=param.nc, varid='hgt_min', start = ipft, count = 1,
                    vals=pft[v])
@@ -475,39 +474,118 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncvar_put(nc=param.nc, varid='cwd_flig', start = 1, count = 1,
                    vals=pft[v])
        }
-       # cn_s1_bgc	C:N for SOM pool 1	allpfts	
-       # cn_s2_bgc	C:N for SOM pool 2	allpfts	
-       # cn_s3_bgc	C:N for SOM pool 3	allpfts	
-       # cnscalefactor	Scale factor on CN decomposition for assigning methane flux	allpfts	
-       # decomp_depth_efolding	e-folding depth for reduction in decomposition. Sset to large number for depth-independance	allpfts	
-       # k_frag	Fragmentation rate for CWD	allpfts
-       # rf_cwdl2_bgc	respiration fraction from CWD to litter 2	allpfts	
-       # rf_cwdl3_bgc	respiration fraction from CWD to litter 3	allpfts	
-       # rf_l1s1_bgc	Respiration fraction for litter 1 -> SOM 1	allpfts	
-       # rf_l2s1_bgc	respiration fraction litter 2 to SOM 1	allpfts	
-       # rf_l3s2_bgc	respiration fraction from litter 3 to SOM 2	allpfts	
-       # rf_s2s1_bgc	respiration fraction SOM 2 to SOM 1	allpfts	
-       # rf_s2s3_bgc	Respiration fraction for SOM 2 -> SOM 3	allpfts	
-       # rf_s3s1_bgc	respiration fraction SOM 3 to SOM 1	allpfts	
-       #   froz_q10	Separate q10 for frozen soil respiration rates	allpfts	
+       if(var == "c2n_som1"){            ## C:N for SOM pool 1
+         ncvar_put(nc=param.nc, varid='cn_s1_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "c2n_som2"){            ## C:N for SOM pool 2
+         ncvar_put(nc=param.nc, varid='cn_s2_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "c2n_som3"){            ## C:N for SOM pool 3
+         ncvar_put(nc=param.nc, varid='cn_s3_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "cnscalefactor"){            ## Scale factor on CN decomposition for assigning methane flux
+         ncvar_put(nc=param.nc, varid='cnscalefactor', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "decomp_depth_efolding"){            ## e-folding depth for reduction in decomposition. Set to large number for depth-independance
+         ncvar_put(nc=param.nc, varid='decomp_depth_efolding', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "CWD_fragmentation_rate"){            ## Fragmentation rate for CWD
+         ncvar_put(nc=param.nc, varid='k_frag', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "rf_cwdl2_bgc"){            ## respiration fraction from CWD to litter 2
+         ncvar_put(nc=param.nc, varid='rf_cwdl2_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "rf_cwdl3_bgc"){            ## respiration fraction from CWD to litter 3
+         ncvar_put(nc=param.nc, varid='rf_cwdl3_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "rf_l1s1_bgc"){            ## Respiration fraction for litter 1 -> SOM 1
+         ncvar_put(nc=param.nc, varid='rf_l1s1_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "rf_l2s1_bgc"){            ## respiration fraction litter 2 to SOM 1
+         ncvar_put(nc=param.nc, varid='rf_l2s1_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "rf_l3s2_bgc"){            ## respiration fraction from litter 3 to SOM 2
+         ncvar_put(nc=param.nc, varid='rf_l3s2_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "rf_s2s1_bgc"){            ## respiration fraction SOM 2 to SOM 1
+         ncvar_put(nc=param.nc, varid='rf_s2s1_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "rf_s2s3_bgc"){            ## Respiration fraction for SOM 2 -> SOM 3
+         ncvar_put(nc=param.nc, varid='rf_s2s3_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "rf_s3s1_bgc"){            ## respiration fraction SOM 3 to SOM 1
+         ncvar_put(nc=param.nc, varid='rf_s3s1_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "Q10_frozen_soil"){            ## Separate q10 for frozen soil respiration rates
+         ncvar_put(nc=param.nc, varid='froz_q10', start = 1, count = 1,
+                   vals=pft[v])
+       }
        
        ## NONE indexed
-       # max_durat	maximum duration of fire	none	hours
-       # maxspread	Maximum allowable "dynamic ratio of dbh to canopy area" for cohorts in closed canopies.	-	[cm/m2]
-       # minspread	Minimum allowable "dynamic ratio of dbh to canopy area" for cohorts in closed canopies.	-	[cm/m2]
-       # nfires	The number of fires initiated per m2 per year, from lightning and humans.	-	[/m2/yr]
-       # fuel_energy	energy content of fuel	none	kj kg-1
-       # part_dens	particle density of fuel	none	kg m-3
-       # fdi_a	Constant in calculation of dewpoint	none	-
-       #   fdi_b	Constant in calculation of dewpoint	none	-
-       # durat_slope	change in fire duration with fire danger index. from Canadian Forest Service. 	none	-
-       # miner_damp		none	
-       # miner_total	mineral content of fuel	none	fraction
-       # alpha_SH		none	
-       # fdi_alpha		none	
-       
+       ##   -- FIRE
+       if(var == "max_fire_duration"){            ## maximum duration of fire	none	hours
+         ncvar_put(nc=param.nc, varid='max_durat',vals=pft[v])
+       }
+       if(var == "nfires"){            ## The number of fires initiated per m2 per year, from lightning and humans
+         ncvar_put(nc=param.nc, varid='nfires',vals=pft[v])
+       }
+       if(var == "fuel_energy"){            ## energy content of fuel [kj kg-1]
+         ncvar_put(nc=param.nc, varid='fuel_energy',vals=pft[v])
+       }
+       if(var == "fuel_particle_density"){            ## particle density of fuel [kg m-3]
+         ncvar_put(nc=param.nc, varid='part_dens',vals=pft[v])
+       }
+       if(var == "durat_slope"){            ## SPITFIRE: change in fire duration with fire danger index. from Canadian Forest Service	
+         ncvar_put(nc=param.nc, varid='durat_slope',vals=pft[v])
+       }
+       if(var == "miner_damp"){            ## SPITFIRE mineral dampening coefficient
+         ncvar_put(nc=param.nc, varid='miner_damp',vals=pft[v])
+       }
+       if(var == "fuel_minerals"){            ## mineral content of fuel
+         ncvar_put(nc=param.nc, varid='miner_total',vals=pft[v])
+       }
+       if(var == "alpha_scorch_height"){            ## SPITFIRE scorch height parameter
+         ncvar_put(nc=param.nc, varid='alpha_SH',vals=pft[v])
+       }
+       if(var == "fdi_a"){            ## SPITFIRE Constant in calculation of dewpoint for Fire Danger Index (FDI)
+         ncvar_put(nc=param.nc, varid='fdi_a',vals=pft[v])
+       }
+       if(var == "fdi_b"){            ## SPITFIRE Constant in calculation of dewpoint for Fire Danger Index (FDI)
+         ncvar_put(nc=param.nc, varid='fdi_b',vals=pft[v])
+       }
+       # fdi_alpha	SPITFIRE fire danger index (FDI) coefficient	
+       if(var == ""){            ## 
+         ncvar_put(nc=param.nc, varid='',vals=pft[v])
+       }
+       ##   -- CANOPY
+       if(var == "canopy_max_spread"){            ## Maximum allowable "dynamic ratio of dbh to canopy area" for cohorts in closed canopies.	-	[cm/m2]
+         ncvar_put(nc=param.nc, varid='maxspread',vals=pft[v])
+       }
+       # 	
+       if(var == "canopy_min_spread"){            ## Minimum allowable "dynamic ratio of dbh to canopy area" for cohorts in closed canopies.	-	[cm/m2]
+         ncvar_put(nc=param.nc, varid='minspread',vals=pft[v])
+       }
+
        ## LITTERCLASS indexed (Size:6)
        # low_moisture_C	Intercept (constant) of fuel moisture to burned fraction term for drier fuel	litterclass	
+       if(var == ""){            ##
+         ncvar_put(nc=param.nc, varid='f', start = 1, count = 1,
+                   vals=pft[v])
+       }
        # low_moisture_S	Slope of fuel moisture to burned fraction term for drier fuel	litterclass	
        # max_decomp	Maximum decomposition rate of litter in the absence of moisture or temperature stress, per fuel class	litterclass	y-1
        # mid_moisture	Parameter of burned fraction term. Below this 'low' constants apply, above this, 'mid' constants apply, 	litterclass	
