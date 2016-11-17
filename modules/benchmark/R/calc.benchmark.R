@@ -18,24 +18,52 @@ calc.benchmark <- function(settings, bety) {
   collect <- dplyr::collect
   select  <- dplyr::select
   
+  # --------------------------------------------------------------------------------------------- #
+  # Update benchmarks_ensembles and benchmarks_ensembles_scores tables
+
+  ensemble <- tbl(bety,'ensembles') %>% filter(workflow_id == settings$workflow$id) %>% collect()
+
+  # Retrieve/create benchmark ensemble database record
+  bm.ensemble <- tbl(bety,'benchmarks_ensembles') %>% 
+    filter(reference_run_id == settings$benchmarking$reference_run_id) %>% 
+    filter(ensemble_id == ensemble$id) %>% 
+    filter(model_id == settings$model$id) %>%
+    collect()
+  
+  if(dim(bm.ensemble)[1] == 0){
+    bm.ensemble <- db.query(paste0("INSERT INTO benchmarks_ensembles",
+                                   "(reference_run_id, ensemble_id, model_id, ",
+                                   "user_id, citation_id)",
+                                   "VALUES(",settings$benchmarking$reference_run_id,
+                                   ", ",ensemble$id,
+                                   ", ",settings$model$id,", ",settings$info$userid,
+                                   ", 1000000001 ) RETURNING *;"), bety$con)
+  }else if(dim(bm.ensemble)[1] >1){
+    logger.error("Duplicate record entries in benchmarks_ensembles")
+  }
+  
+  # --------------------------------------------------------------------------------------------- #
+  # Setup
+  
   site <- query.site(settings$run$site$id, bety$con)
   start_year <- lubridate::year(settings$run$start.date)
   end_year <- lubridate::year(settings$run$end.date)
   model_run <- dir(settings$modeloutdir, full.names = TRUE, include.dirs = TRUE)[1]
   # How are we dealing with ensemble runs? Right now I've hardcoded to select the first run.
   
-  var.ids <- as.numeric(unname(unlist(settings$benchmark$variables)))
-  metric.ids <- as.numeric(unname(unlist(settings$benchmark$metrics)))
+  ## NEED TO LOOK THESE UP
   
   # All benchmarking records for the given benchmarking ensemble id
   bms <- tbl(bety,'benchmarks') %>% rename(benchmark_id = id) %>%  
     left_join(.,tbl(bety, "benchmarks_benchmarks_reference_runs"), by="benchmark_id") %>% 
-    filter(reference_run_id == settings$benchmark$reference_run_id) %>% 
+    filter(reference_run_id == settings$benchmarking$reference_run_id) %>% 
     select(one_of("benchmark_id", "input_id", "site_id", "variable_id", "reference_run_id")) %>%
     collect() %>%
-    filter(variable_id %in% var.ids)
+    filter(benchmark_id %in%  unlist(test[which(names(settings$benchmarking) == "benchmark_id")]))
   
+  var.ids <- bms$variable_id
   
+  # --------------------------------------------------------------------------------------------- #
   # Determine how many data sets inputs are associated with the benchmark id's
   # bm.ids are split up in to groups according to their input data. 
   # So that the input data is only loaded once. 
@@ -46,7 +74,7 @@ calc.benchmark <- function(settings, bety) {
     
     bm.ids <- bms$benchmark_id[which(bms$input_id == input.id)]
     data.path <- query.file.path(input.id, settings$host$name, bety$con)
-    format_full <- format <- query.format.vars(input.id, bety, format.id = NA, var.ids=var.ids)
+    format_full <- format <- query.format.vars(input.id = input.id, bety, format.id = NA, var.ids=var.ids)
     
     # ---- LOAD INPUT DATA ---- #
     
@@ -84,7 +112,8 @@ calc.benchmark <- function(settings, bety) {
     model$posix <- strptime(paste(model$time, model$year), format = "%j %Y")
     model_full <- model
     
-    #################################################### 
+    # ---- CALCULATE BENCHMARK SCORES ---- #
+    
     results.list <- list()
     dat.list <- list()
     var.list <- c()
@@ -94,8 +123,7 @@ calc.benchmark <- function(settings, bety) {
       bm <- db.query(paste("SELECT * from benchmarks where id =", bm.ids[i]), bety$con)
       metrics <- db.query(paste("SELECT m.name, m.id from metrics as m", 
                                 "JOIN benchmarks_metrics as b ON m.id = b.metric_id", 
-                                "WHERE b.benchmark_id = ", bm.ids[i]), bety$con) %>%
-        filter(id %in% metric.ids)
+                                "WHERE b.benchmark_id = ", bm.ids[i]), bety$con) # %>% filter(id %in% metric.ids)
       var <- filter(format$vars, variable_id == bm$variable_id)[, "pecan_name"]
       var.list <- c(var.list, var)
       
@@ -110,36 +138,37 @@ calc.benchmark <- function(settings, bety) {
                                        metrics,
                                        start_year, end_year, 
                                        bm,
-                                       ensemble.id = settings$benchmark$ensemble_id,
+                                       ensemble.id = bm.ensemble$ensemble_id,
                                        model_run)
       
       for(metric.id in metrics$id){
         metric <- filter(metrics,id == metric.id)[["name"]]
         score <- out.calc.metrics[["benchmarks"]] %>% filter(.,metric == metric) %>% select(score)
-      #   score.entry <- tbl(bety, "benchmarks_ensembles_scores") %>% 
-      #     filter(score == score) %>% 
-      #     filter(bechmarks_ensemble_id == settings$benchmark$ensemble_id)
-      #     
-      # }else if(dim(bm)[1] >1){
-      #   logger.error("Duplicate record entries in benchmarks")
-      # }
         
-        bm_ens_id <- tbl(bety, "benchmarks_ensembles") %>%
-          filter(ensemble_id == settings$benchmark$ensemble_id) %>%
-          filter(reference_run_id == settings$benchmark$reference_run_id) %>%
-          filter(model_id == settings$model$id) %>%
-          select(id) %>% collect %>% .[[1]]
+        #   score.entry <- tbl(bety, "benchmarks_ensembles_scores") %>% 
+        #     filter(score == score) %>% 
+        #     filter(bechmarks_ensemble_id == settings$benchmark$ensemble_id)
+        #     
+        # }else if(dim(bm)[1] >1){
+        #   logger.error("Duplicate record entries in benchmarks")
+        # }
         
-      db.query(paste0(
-        "INSERT INTO benchmarks_ensembles_scores",
-        "(score, benchmarks_ensemble_id, benchmark_id, metric_id) VALUES ",
-        "('",score,"',",bm_ens_id,", ",bm$id,",",metric.id,")"),bety$con)
+        db.query(paste0(
+          "INSERT INTO benchmarks_ensembles_scores",
+          "(score, benchmarks_ensemble_id, benchmark_id, metric_id) VALUES ",
+          "('",score,"',",bm.ensemble$id,", ",bm$id,",",metric.id,")"),bety$con)
       }
       
       results.list <- append(results.list, list(out.calc.metrics[["benchmarks"]]))
       dat.list <- append(dat.list, list(out.calc.metrics[["dat"]]))
       
     }  #end loop over benchmark ids
+    
+    table.filename <- file.path(dirname(dirname(model_run)), 
+                          paste("benchmark.scores", var, bm.ensemble$ensemble_id, "pdf", sep = "."))
+    pdf(file = table.filename)
+    gridExtra::grid.table(do.call(rbind, results.list))
+    dev.off()
     
     names(dat.list) <- var.list
     results <- append(results, 
