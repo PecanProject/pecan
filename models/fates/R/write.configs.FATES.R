@@ -582,10 +582,6 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
 
        ## LITTERCLASS indexed (Size:6)
        # low_moisture_C	Intercept (constant) of fuel moisture to burned fraction term for drier fuel	litterclass	
-       if(var == ""){            ##
-         ncvar_put(nc=param.nc, varid='f', start = 1, count = 1,
-                   vals=pft[v])
-       }
        # low_moisture_S	Slope of fuel moisture to burned fraction term for drier fuel	litterclass	
        # max_decomp	Maximum decomposition rate of litter in the absence of moisture or temperature stress, per fuel class	litterclass	y-1
        # mid_moisture	Parameter of burned fraction term. Below this 'low' constants apply, above this, 'mid' constants apply, 	litterclass	
@@ -596,8 +592,22 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        # SAV	Surface Area to Volume Ratio of fuel class 	litterclass	cm-1
        
        ## NCWD dimensioned       Size:4
-       # CWD_frac	Fraction of coarse woody debris (CWD) that is moved into each of the four woody fuel classes	NCWD	fraction
-       
+       if(var == "CWD_frac1"){            ##Fraction of coarse woody debris (CWD) that is moved into each of the four woody fuel classes
+         ncvar_put(nc=param.nc, varid='CWD_frac', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "CWD_frac2"){
+         ncvar_put(nc=param.nc, varid='CWD_frac', start = 2, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "CWD_frac3"){
+         ncvar_put(nc=param.nc, varid='CWD_frac', start = 3, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "CWD_frac4"){
+         ncvar_put(nc=param.nc, varid='CWD_frac', start = 4, count = 1,
+                   vals=pft[v])
+       }
        
        
      } ## end loop over VARIABLES
