@@ -5,6 +5,7 @@
 ##' @title convert.input
 ##' @export
 ##' @author Betsy Cowdery, Michael Dietze, Ankur Desai, Tony Gardella
+
 convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, start_date, 
                           end_date, pkg, fcn, con = con, host, browndog, write = TRUE, 
                           format.vars, overwrite = FALSE, exact.dates = FALSE, ...) {
@@ -127,8 +128,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                             startdate = start_date,
                                             enddate = end_date, 
                                             con = con, 
-                                            hostname = host$name, 
-                                            contains.dates = TRUE)
+                                            hostname = host$name)
       
       
       print(existing.dbfile, digits = 10)
@@ -201,16 +201,16 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
           # There might be existing files for some years (but not all; checked that above)
           # fcn should be smart enough not overwrite the existing ones, and hopefully won't
           # waste time working on them either At the end, if convert.inputs was successful
-          # we'll need to update its start/end dates We don't know the dbfile path/prefix
-          # until after fcn runs, so unfortunately can't check that the new dbfile record
-          # won't conflict with existing ones.
+          # we'll need to update its start/end dates .
         } 
       } else {
         # No existing record found. Should be good to go.
       }
 }
     
-
+#---------------------------------------------------------------------------------------------------------------#
+# Get machine information
+  
   machine.host <- ifelse(host$name == "localhost", fqdn(), host$name)
   machine <- db.query(paste0("SELECT * from machines where hostname = '", 
                              machine.host, "'"), con)
@@ -376,9 +376,10 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   outlist <- unlist(strsplit(outname, "_"))
   
   ## insert new record into database
-  if (write == TRUE) {
+  if (write) {
     if (exists("existing.input") && nrow(existing.input) > 0 && 
         (existing.input$start_date != start_date || existing.input$end_date != end_date)) {
+      
       db.query(paste0("UPDATE inputs SET start_date='", start_date, "', end_date='", 
                       end_date, "', ", "updated_at=NOW() WHERE id=", existing.input$id), 
                con)
