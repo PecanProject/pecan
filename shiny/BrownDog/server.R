@@ -13,14 +13,14 @@ server <- shinyServer(function(input, output, session) {
     
     # Depending on input$type, we'll generate a different lincense agreement
     switch(input$type,
-           "AmeriFlux" =  checkboxInput("agreement", paste0("I agree to AmeriFlux license."), value = FALSE, width = NULL),
-           "NARR" =  checkboxInput("agreement", paste0("I agree to NARR license."), value = FALSE, width = NULL),
-           "FLUXNET" =  checkboxInput("agreement", paste0("I agree to FLUXNET license."), value = FALSE, width = NULL)
+           "AmeriFlux" =  checkboxInput("agreement", HTML("I agree to <a href='http://ameriflux.lbl.gov/data/data-policy/'>AmeriFlux license</a>."), value = FALSE, width = NULL),
+           "NARR" =  checkboxInput("agreement", HTML("I agree to <a href='http://www.esrl.noaa.gov/psd/data/gridded/data.narr.html'>NARR license</a>."), value = FALSE, width = NULL),
+           "FLUXNET" =  checkboxInput("agreement", HTML("I agree to FLUXNET license."), value = FALSE, width = NULL)
     )
   })
   
   observeEvent(input$type, {
-    #get all sites name, lat and lon by sitegroups
+    # get all sites name, lat and lon by sitegroups
     dbparams <- list(user = "bety", dbname = "bety", password = "bety", host = "localhost")
     con <- db.open(dbparams)
     on.exit(db.close(con))
@@ -28,7 +28,7 @@ server <- shinyServer(function(input, output, session) {
                             AS lat FROM sites, sitegroups_sites where sites.id = sitegroups_sites.site_id
                             and sitegroups_sites.sitegroup_id in ( select id from sitegroups  where
                             sitegroups.name like '", input$type, "');"),con)
-    
+
     ids<-sites$sitename
     latitude<-sites$lat
     longitude<-sites$lon
@@ -44,96 +44,82 @@ server <- shinyServer(function(input, output, session) {
       
       map$addMarker(lat = latitude, lng = longitude, 
                     layerId=ids)
-    })   
-  })
-  
-  defaultsite <- reactive({
-    if(!is.null(input$agreement) && input$agreement){
-      paste(c("<input>", paste0("  <type>", input$type, "</type>"), 
-              "  <site>US-Dk3</site>",
-              "  <lat>35.9782</lat>",
-              "  <lon>-79.0942</lon>",
-              paste0("  <start_date>", if (input$start_date != "") input$start_date else "2001", "-01-01 00:00:00</start_date>"),
-              paste0("  <end_date>", if (input$end_date != "") input$end_date else "2001", "-12-31 23:59:59</end_date>"),
-              "</input>"), collapse="\n")
-    }
-    else{ "Please check the agreement. "}
-  })
-  
-  
-  
-  observe({
-    click<-input$map_marker_click
-    #default site is US-Dk3
-    if(is.null(click)) {
-      click <- list(id = "US-Dk3", lat = 35.9782, lng = -79.0942)
-    }
-    else{
+    }) 
+    
+    observe({
+      click<-input$map_marker_click
+      #default site is US-Dk3
+      if(is.null(click)) {
+        click <- list(id = "US-Dk3", lat = 35.9782, lng = -79.0942)
+      } else{
       text<-paste(click$id)
       map$clearPopups()
       map$showPopup( click$lat, click$lng, text)
-    }
-    
-    selectedsite <- reactive({
-      if(!is.null(input$agreement) && input$agreement){
-        paste(c("<input>", paste0("  <type>", input$type, "</type>"), 
-                paste0("  <site>", click$id, "</site>"),
-                paste0("  <lat>", click$lat, "</lat>"),
-                paste0("  <lon>", click$lng, "</lon>"),
-                paste0("  <start_date>", if (input$start_date != "") input$start_date else "2001", "-01-01 00:00:00</start_date>"),
-                paste0("  <end_date>", if (input$end_date != "") input$end_date else "2001", "-12-31 23:59:59</end_date>"),
-                "</input>"), collapse="\n")
       }
-      else{ "Please check the agreement. "}
-    })
-    
-    output$xmltext <- renderText({
-      selectedsite()
-    })
-    
-    output$downloadXML <- downloadHandler(
-      filename = function() { "example.xml" },
-      content = function(file) {
+      selectedsite <- reactive({
         if(!is.null(input$agreement) && input$agreement){
-          writeLines(c("<input>", paste0("  <type>", input$type, "</type>"), 
-                       paste0("  <site>", click$id, "</site>"),
-                       paste0("  <lat>", click$lat, "</lat>"),
-                       paste0("  <lon>", click$lng, "</lon>"),
-                       paste0("  <start_date>", if (input$start_date != "") input$start_date else "2001", "-01-01 00:00:00</start_date>"),
-                       paste0("  <end_date>", if (input$end_date != "") input$end_date else "2001", "-12-31 23:59:59</end_date>"),
-                       "</input>"), file)
+          paste(c("<input>", paste0("  <type>", input$type, "</type>"), 
+                  paste0("  <site>", click$id, "</site>"),
+                  paste0("  <lat>", click$lat, "</lat>"),
+                  paste0("  <lon>", click$lng, "</lon>"),
+                  paste0("  <start_date>", if (input$start_date != "") input$start_date else "2001", "-01-01 00:00:00</start_date>"),
+                  paste0("  <end_date>", if (input$end_date != "") input$end_date else "2001", "-12-31 23:59:59</end_date>"),
+                  "</input>"), collapse="\n")
         }
-      }
-    )
-    
-    output$downloadData <- downloadHandler(
-      filename = function() { 
-        switch(input$model,
-               "pecan.zip" =  "example.pecan.zip",
-               "clim" =  "example.clim"
-        )
-      },
+        else{ "Please check the agreement. "}
+      })
       
-      content = function(file) {
-        input_filename<-"/tmp/example.xml"
-        fileConn<-file(input_filename)
-        writeLines(selectedsite(), fileConn)
-        
-        # download the converted file from bdapi
-        # TODO:use browndog.convert in bd.r after we have the library. 
-        library(RCurl)
-        url <- "https://bd-api.ncsa.illinois.edu"
-        output<- input$model
-        convert_api <- paste0(url,"/dap/convert/", output, "/") 
-        httpheader <- c(Accept="text/plain", Authorization = input$token)
-        curloptions <- list(httpheader = httpheader)
-        result_bds <- postForm(convert_api,"file"= fileUpload(input_filename),.opts = curloptions)
-        print(result_bds)
-        url <- gsub('.*<a.*>(.*)</a>.*', '\\1', result_bds)
-        wait <- 800
-        browndog.download(url[1], file, token, wait)
-      }
-    )
+      output$xmltext <- renderText({
+        selectedsite()
+      })
+      
+      output$downloadXML <- downloadHandler(
+        filename = function() { "example.xml" },
+        content = function(file) {
+          if(!is.null(input$agreement) && input$agreement){
+            writeLines(c("<input>", paste0("  <type>", input$type, "</type>"),
+                         paste0("  <site>", click$id, "</site>"),
+                         paste0("  <lat>", click$lat, "</lat>"),
+                         paste0("  <lon>", click$lng, "</lon>"),
+                         paste0("  <start_date>", if (input$start_date != "") input$start_date else "2001", "-01-01 00:00:00</start_date>"),
+                         paste0("  <end_date>", if (input$end_date != "") input$end_date else "2001", "-12-31 23:59:59</end_date>"),
+                         "</input>"), file)
+          }
+        }
+      )
+      
+      output$downloadData <- downloadHandler(
+        filename = function() {
+          switch(input$model,
+                 "pecan.zip" =  "example.pecan.zip",
+                 "clim" =  "example.clim"
+          )
+        },
+
+        content = function(file) {
+          xml_filename<-tempfile("pecan",fileext=".xml")
+          fileConn<-file(xml_filename)
+          writeLines(selectedsite(), fileConn)
+
+          # download the converted file from bdapi
+          # TODO:use browndog.convert in bd.r after we have the library.
+          library(RCurl)
+          url <- "https://bd-api.ncsa.illinois.edu"
+          output<- input$model
+          convert_api <- paste0(url,"/dap/convert/", output, "/")
+          httpheader <- c(Accept="text/plain", Authorization = input$token)
+          curloptions <- list(httpheader = httpheader)
+          result_bds <- postForm(convert_api,"file"= fileUpload(xml_filename),.opts = curloptions)
+          print(result_bds)
+          url <- gsub('.*<a.*>(.*)</a>.*', '\\1', result_bds)
+          wait <- 300
+          #delet xml file
+          unlink(xml_filename)
+          browndog.download(url[1], file, token, wait)
+        }
+      )
+    })
+    
   })
   
 })
