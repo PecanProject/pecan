@@ -15,21 +15,11 @@ pda.define.llik.fn <- function(settings) {
     if (settings$assim.batch$inputs[[i]]$likelihood == "Laplace") {
       
       llik.fn[[i]] <- function(pda.errors) {
-        LL <- (-pda.errors$n/2) * log(pda.errors$par) - (1/pda.errors$par) * pda.errors$statistics
+        LL <- pda.errors$statistics
         return(list(LL = LL, n = pda.errors$n))
       }
       
-      # llik.fn[[i]] <- function(model.out, obs.data, llik.par) {
-      #   resid <- abs(model.out - obs.data)
-      #   pos <- (model.out >= 0)
-      #   LL <- c(dexp(resid[pos], 
-      #                1 / (llik.par[1] + llik.par[2] * model.out[pos]), 
-      #                log = TRUE), 
-      #           dexp(resid[!pos],
-      #                1 / (llik.par[1] + llik.par[3] * model.out[!pos]), 
-      #                log = TRUE))
-      #   return(list(LL = sum(LL, na.rm = TRUE), n = sum(!is.na(LL))))
-      # }
+
     } else { # Gaussian or multiplicative Gaussian
       
       llik.fn[[i]] <- function(pda.errors) {
@@ -62,12 +52,7 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs){
   # checks on validity of the inputs
   n.input <- length(inputs)
   pda.errors <- list()
-  ll.par <- list()
   
-  prob <- ifelse(settings$assim.batch$GPpckg == "GPfit", TRUE, FALSE)
-  
-  # llik.priors <- read.csv("~/pecan/modules/assim.batch/inst/llik.params.csv")
-  # llik.priors <- read.csv(system.file("inst/llik.params.csv", package = "PEcAn.assim.batch"))
   
   for (k in seq_len(n.input)) {
     
@@ -77,57 +62,57 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs){
       
       n <- sum(!is.na(inputs[[k]]$obs))
       SS <- sum((model_out[[k]] - inputs[[k]]$obs)^2, na.rm = TRUE)
-      tau <- rgamma(1, 0.001 + n/2, 0.001 + SS/2) # build priors into the PDA code for now
-      
+
       pda.errors[[k]]$n <- n
       pda.errors[[k]]$statistics <- SS 
-      pda.errors[[k]]$par <- tau
-      ll.par$tau.g <- ifelse(prob, pgamma(tau, 0.001 + n/2, 0.001 + SS/2), tau)
-      
-      # (n/2) * log(tau) - (tau/2) * SS
+
       
     } else if (settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") {
       
     
+      n <- sum(!is.na(inputs[[k]]$obs))
+      
       # calculate an initial bias parameter
       regdf <- data.frame(inputs[[k]]$obs, model_out[[k]])
       colnames(regdf) <- c("data","model")
-      fit <- lm( regdf$data ~ regdf$model)
-      bias <- fit$coefficients[2]
-      bias.par <- rnorm(1, bias, bias*0.01) # build priors into the PDA code for now
+      fit <- lm( regdf$data ~ regdf$model - 1)
+      bias <- fit$coefficients[1]
       
-      n <- sum(!is.na(inputs[[k]]$obs))
-      SS <- sum((bias.par * model_out[[k]] - inputs[[k]]$obs)^2, na.rm = TRUE)
-      tau <- rgamma(1, 0.001 + n/2, 0.001 + SS/2)
- 
+      # propose 2 more bias parameter, hard-coded for now
+      bias.par <- c(bias, rnorm(2, bias, bias*0.1)) 
+      
+      SS <- rep(NA, length(bias.par))
+      for(b in seq_along(SS)){
+        SS[b] <- sum((bias.par[b] * model_out[[k]] - inputs[[k]]$obs)^2, na.rm = TRUE)
+      }
+
       pda.errors[[k]]$n <- n     
       pda.errors[[k]]$statistics <- SS 
-      pda.errors[[k]]$par <- tau
-      ll.par$tau.mg <- ifelse(prob, pgamma(tau, 0.001 + n/2, 0.001 + SS/2), tau)
-      ll.par$bias.mg <- ifelse(prob, pnorm(bias.par, bias, bias*0.01), bias.par)
-      
-      # (n/2) * log(tau) - (tau/2) * SS
+      pda.errors[[k]]$bias <- bias.par 
+
       
     } else if (settings$assim.batch$inputs[[k]]$likelihood == "Laplace") {
       
       n <- sum(!is.na(inputs[[k]]$obs))
-      SS <- sum(abs(model_out[[k]] - inputs[[k]]$obs), na.rm = TRUE)
-      beta <- 1/rgamma(1, 1+n/2, 0.001+ SS/2)
+      resid <- abs(model_out[[k]] - inputs[[k]]$obs)
+      pos <- (model_out[[k]] >= 0)
+      SS <- c(dexp(resid[pos],
+                  1 / (inputs[[k]]$par[1] + inputs[[k]]$par[2] * model_out[[k]][pos]),
+                  log = TRUE),
+              dexp(resid[!pos],
+                  1 / (inputs[[k]]$par[1] + inputs[[k]]$par[3] * model_out[[k]][!pos]),
+                  log = TRUE))
 
-      pda.errors[[k]]$n <- n     
-      pda.errors[[k]]$statistics <- SS 
-      pda.errors[[k]]$par <- beta
-      ll.par$beta <- ifelse(prob, pgamma(1/beta,1+n/2, 0.001+ SS/2), beta)
+      pda.errors[[k]]$n <- n
+      pda.errors[[k]]$statistics <- sum(SS, na.rm = TRUE) 
 
-
-      # (-n/2) * log(beta) - (1/beta) * SS
     }
     
-  }
+  } # end for-loop
   
   ## TODO: insert error records in database
-  
-  return(list(pda.error = pda.errors, ll.par = ll.par))
+
+  return(pda.errors)
   
 } # pda.calc.error
 
@@ -184,4 +169,27 @@ pda.calc.llik <- function(pda.errors) {
   
   return(LL.total)
 } # pda.calc.llik
+
+
+pda.calc.llik.par <-function(settings, con, model_out, run.id, inputs){
+  
+  # llik.priors <- read.csv("~/pecan/modules/assim.batch/inst/llik.params.csv")
+  # llik.priors <- read.csv(system.file("inst/llik.params.csv", package = "PEcAn.assim.batch"))
+  
+  tau <- rgamma(1, 0.001 + n/2, 0.001 + SS/2)
+  
+  pda.errors[[k]]$par <- tau
+  ll.par$tau.mg <- ifelse(prob, pgamma(tau, 0.001 + n/2, 0.001 + SS/2), tau)
+  ll.par$bias.mg <- ifelse(prob, pnorm(bias.par, bias, bias*0.01), bias.par)
+
+  pda.errors[[k]]$par <- tau
+  ll.par$tau.g <- ifelse(prob, pgamma(tau, 0.001 + n/2, 0.001 + SS/2), tau)
+  
+  # (n/2) * log(tau) - (tau/2) * SS
+  
+  tau <- rgamma(1, 0.001 + n/2, 0.001 + SS/2) # build priors into the PDA code for now
+  
+  
+} # pda.calc.llik.par
+
 
