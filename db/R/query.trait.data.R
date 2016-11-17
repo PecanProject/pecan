@@ -425,7 +425,7 @@ derive.traits <- function(FUN, ..., input=list(...),
 ##' @param spstr is the species.id integer or string of integers associated with the species
 ##'
 ##' @return dataframe ready for use in meta-analysis
-##' @export
+##' @export query.trait.data
 ##' @examples
 ##' \dontrun{
 ##' settings <- read.settings()
