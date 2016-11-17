@@ -186,8 +186,8 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     ## start model runs
     start.model.runs(settings, settings$database$bety$write)
     
-    ## Retrieve model outputs, calculate likelihoods (and store them in database)
-    LL.0 <- rep(NA, settings$assim.batch$n.knot)
+    # ## Retrieve model outputs, calculate likelihoods (and store them in database)
+    # LL.0 <- rep(NA, settings$assim.batch$n.knot)
     model.out <- list()
     pda.errors <- list()
     
@@ -203,6 +203,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     }
   }
   
+
   
   init.list <- list()
   jmp.list <- list()
@@ -219,11 +220,37 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       
       X <- knots.probs.all[, prior.ind.all, drop = FALSE]
       
-      # likelihood params
-      pars <- lapply(pda.errors, `[[`, "ll.par")
-      pars <- lapply(pars, unlist)
-      pars <- do.call("rbind", pars)
+      # prepare knots and statistics for emulator per input variable
+      emulator.prep <- list()
       
+      # retrieve SS
+      estats <-lapply(pda.errors, function(x) sapply(x,`[[`, "statistics"))
+      error.statistics <- lapply(estats, function(x) do.call("cbind", x))
+      error.statistics <- do.call("rbind", error.statistics)
+      
+      for(iem in seq_along(inputs)) {
+        do.call("cbind", estats[[1]])
+      }
+      
+      # check if multiplicative Gaussian was in the likelihoods
+      any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
+      if(any(unlist(any.mgauss) == "multipGauss")){
+        # if yes, then we need to include bias term in the emulator
+        
+        # where to look for retrieving bias terms and SS
+        isbias <- which(unlist(any.mgauss) == "multipGauss")
+        bias.terms <- list()
+        mgauSS <- list()
+
+        for(ibias in seq_len(settings$assim.batch$n.knot)){
+          bias.terms[[ibias]] <- pda.errors[[ibias]][[isbias]]$bias
+          mgauSS[[ibias]] <- pda.errors[[ibias]][[isbias]]$statistics
+        }
+        
+        bias.terms <- unlist(bias.terms)
+        mgauSS <- unlist(mgauSS)
+      } 
+
       LL.X <- cbind(X, pars, LL.0)
       
       if (!is.null(settings$assim.batch$extension)) {
