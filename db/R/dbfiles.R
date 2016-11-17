@@ -186,7 +186,7 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
   } else if (contains.dates){
     inputid <- db.query(paste0(
       "SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid,
-      " AND start_date>='", startdate, "' AND end_date<='", enddate, "'", parent), con)[['id']]
+      " AND start_date>='", startdate, "' AND end_date>='", enddate, "'", parent), con)[['id']]
   } else {
     inputid <- db.query(paste0(
       "SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, parent), con)[['id']]
