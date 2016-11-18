@@ -1,7 +1,7 @@
 ##-------------------------------------------------------------------------------------------------#
 ##' For each benchmark id, calculate metrics and update benchmarks_ensemble_scores
 ##'  
-##' @name calc.benchmark 
+##' @name calc_benchmark 
 ##' @title Calculate benchmarking statistics
 ##' @param bm.ensemble object, either from create.BRR or start.bm.ensemle
 ##' @param bety database connection
@@ -9,7 +9,7 @@
 ##' 
 ##' @author Betsy Cowdery 
 
-calc.benchmark <- function(settings, bety) {
+calc_benchmark <- function(settings, bety) {
   
   # dplyr functions
   tbl     <- dplyr::tbl
@@ -187,4 +187,4 @@ calc.benchmark <- function(settings, bety) {
   save(results, file = file.path(settings$outdir,"benchmarking.output.Rdata"))
   
   return(invisible(results))
-} # calc.benchmark
+} # calc_benchmark

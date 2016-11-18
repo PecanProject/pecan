@@ -77,9 +77,9 @@ if(bm.settings$new_run){
   
 }else{
   
-  settings <- read.settings.RR(settings)
-  settings <- prepare.settings(settings)
-  results <- papply(settings, function(x) calc.benchmark(x, bety))
+  settings <- read_settings_RR(settings)
+  settings <- prepare_settings(settings)
+  results <- papply(settings, function(x) calc_benchmark(x, bety))
 }
   
 # 
