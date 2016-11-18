@@ -30,7 +30,7 @@ load.pda.data <- function(settings, bety) {
 
     inputs[[i]]$variable.id   <- input.settings[[i]]$variable.id
     inputs[[i]]$input.id      <- input.settings[[i]]$input.id
-    inputs[[i]]$align.method  <- ifelse(!is.null(input.settings[[i]]$align.method), input.settings[[i]]$align.method, "match.timestep")
+    inputs[[i]]$align.method  <- ifelse(!is.null(input.settings[[i]]$align.method), input.settings[[i]]$align.method, "match_timestep")
     
     # I require that the user defines data.path in the settings as well, instead of using query.file.path
     # because 'data.path <- query.file.path(obvs.id, con)' might return an incomplete path 

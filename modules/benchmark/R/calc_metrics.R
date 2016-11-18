@@ -16,7 +16,7 @@
 calc_metrics <- function(model.calc, obvs.calc, var, metrics, start_year, end_year, bm, ensemble.id, model_run) {
   
   dat <- align_data(model.calc, obvs.calc, var, start_year, end_year, 
-                    align_method = "mean.over.larger.timestep")
+                    align_method = "mean_over_larger_timestep")
   
   results <- as.data.frame(matrix(NA, nrow = length(metrics$name), ncol = 3))
   colnames(results) <- c("metric", "variable", "score")

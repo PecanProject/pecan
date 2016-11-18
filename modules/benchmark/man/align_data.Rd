@@ -5,7 +5,7 @@
 \title{Align timeseries data}
 \usage{
 align_data(model.calc, obvs.calc, var, start_year, end_year,
-  align_method = "match.timestep")
+  align_method = "match_timestep")
 }
 \arguments{
 \item{model.calc}{data.frame}
