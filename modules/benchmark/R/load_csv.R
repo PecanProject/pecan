@@ -1,5 +1,5 @@
-##' @name load.csv
-##' @title load.csv
+##' @name load_csv
+##' @title load_csv
 ##' @export
 ##' @param data.path character
 ##' @param format list
@@ -8,7 +8,7 @@
 ##' @param site list
 ##' 
 ##' @author Betsy Cowdery
-load.csv <- function(data.path, format, site, vars = NULL) {
+load_csv <- function(data.path, format, site, vars = NULL) {
   
   data.path <- sapply(data.path, function(x) dir(dirname(x), basename(x), full.names = TRUE))
   
@@ -30,4 +30,4 @@ load.csv <- function(data.path, format, site, vars = NULL) {
     return(dat)
   }
 
-} # load.csv
+} # load_csv

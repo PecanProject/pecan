@@ -79,7 +79,7 @@ calc_benchmark <- function(settings, bety) {
     time.row <- format$time.row
     vars.used.index <- setdiff(seq_along(format$vars$variable_id), format$time.row)
     
-    obvs <- load.data(data.path, format, start_year, end_year, site, vars.used.index, time.row)
+    obvs <- load_data(data.path, format, start_year, end_year, site, vars.used.index, time.row)
     dat_vars <- format$vars$pecan_name  # IF : is this line redundant?
     obvs_full <- obvs
     
@@ -87,9 +87,9 @@ calc_benchmark <- function(settings, bety) {
     
     model_vars <- format$vars$pecan_name[-time.row]  # IF : what will happen when time.row is NULL? 
     # For example 'AmeriFlux.level2.h.nc' format (38) has time vars year-day-hour listed, 
-    # but storage type column is empty and it should be because in load.netcdf we extract
+    # but storage type column is empty and it should be because in load_netcdf we extract
     # the time from netcdf files using the time dimension we can remove time variables from
-    # this format's related variables list or can hardcode 'time.row=NULL' in load.x_netcdf function
+    # this format's related variables list or can hardcode 'time.row=NULL' in load_x_netcdf function
     model <- as.data.frame(read.output(runid = basename(model_run), 
                                        outdir = model_run, 
                                        start.year = start_year, 
