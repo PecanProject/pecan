@@ -996,3 +996,31 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
   
   # The if block above is generating return values
 } # correlationPlot
+
+
+return.bias <- function(isbias, model.out, inputs, prior.list){
+  
+  optimum.biases <- matrix(NA, nrow = length(model.out), ncol = 3) # hard-coded for now, 2 extra proposal per optimum bias
+  
+  for(iknot in seq_along(model.out)){
+    # calculate optimum bias parameter
+    regdf <- data.frame(inputs[[isbias]]$obs, model.out[[iknot]][[isbias]])
+    colnames(regdf) <- c("data","model")
+    fit <- lm( regdf$data ~ regdf$model - 1)
+    optimum.biases[iknot,1] <- fit$coefficients[[1]]
+    optimum.biases[iknot,2:3] <- rnorm(2, optimum.biases[iknot,1], optimum.biases[iknot,1]*0.1)
+  }
+
+  # propose 2 more bias parameter, hard-coded for now
+  bias.par <- c(bias, rnorm(2, bias, bias*0.1)) 
+  noy <- rnorm(2,optimum.biases, optimum.biases*0.1)
+  
+  bias.prior <- data.frame(matrix(c("unif", , , NA), nrow = 1))
+  colnames(bias.prior) <- c(distn, parama, paramb, n)
+  rownames(bias.prior) <- "bias"
+  prior.list[[(length(prior.list)+1)]] <- bias.prior
+  
+  
+  return(bias.prior)
+  
+}

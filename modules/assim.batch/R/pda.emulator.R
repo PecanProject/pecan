@@ -191,10 +191,17 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     model.out <- list()
     pda.errors <- list()
     
+    
+    
     for (i in seq_len(settings$assim.batch$n.knot)) {
       ## read model outputs
       model.out[[i]] <- pda.get.model.output(settings, run.ids[i], bety, inputs)
 
+      if(any(unlist(any.mgauss) == "multipGauss")) {
+        isbias <- which(unlist(any.mgauss) == "multipGauss")
+        prior.list <- return.bias.prior(isbias, model.out, inputs, prior.list)
+        prior.fn <- lapply(prior.list, pda.define.prior.fn)
+      }
       ## calculate error statistics      
       pda.errors[[i]] <- pda.calc.error(settings, con, model_out = model.out[[i]], run.id = run.ids[i], inputs)
       
@@ -226,48 +233,47 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       # retrieve SS
       estats <-lapply(pda.errors, function(x) sapply(x,`[[`, "statistics"))
       error.statistics <- lapply(estats, function(x) do.call("cbind", x))
-      error.statistics <- do.call("rbind", error.statistics)
+      SS.0 <- data.frame(do.call("rbind", error.statistics))
       
-      for(iem in seq_along(inputs)) {
-        do.call("cbind", estats[[1]])
-      }
       
       # check if multiplicative Gaussian was in the likelihoods
-      any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
       if(any(unlist(any.mgauss) == "multipGauss")){
         # if yes, then we need to include bias term in the emulator
-        
-        # where to look for retrieving bias terms and SS
-        isbias <- which(unlist(any.mgauss) == "multipGauss")
+
         bias.terms <- list()
-        mgauSS <- list()
 
         for(ibias in seq_len(settings$assim.batch$n.knot)){
-          bias.terms[[ibias]] <- pda.errors[[ibias]][[isbias]]$bias
-          mgauSS[[ibias]] <- pda.errors[[ibias]][[isbias]]$statistics
+          bias.terms[[ibias]] <- list()
+          bias.terms[[ibias]]$probs <- pda.errors[[ibias]][[isbias]]$bias.probs
+          bias.terms[[ibias]]$params <- pda.errors[[ibias]][[isbias]]$bias.params
         }
         
-        bias.terms <- unlist(bias.terms)
-        mgauSS <- unlist(mgauSS)
+        bias.probs <- lapply(bias.terms,`[[`, "probs")
+        bias.probs <- unlist(bias.probs)
+        
+        rep.rows <- rep(1:nrow(X), each = 3) # three for 3 bias params, also length(bias.probs)/nrow(X) but leaving hard-coded for now
+        X.rep <- X[rep.rows,]
+        X <- cbind(X.rep, bias.probs)
+        
       } 
 
-      LL.X <- cbind(X, pars, LL.0)
+      SS.list <- lapply(SS.0, function(x) cbind(X, x))
       
       if (!is.null(settings$assim.batch$extension)) {
         # check whether another 'round' of emulator requested
         
         # load original knots
         load(settings$assim.batch$llik.path)
-        LL <- rbind(LL.X, LL)
+        SS <- rbind(SS.X, SS)
         
       } else {
-        LL <- LL.X
+        SS <- SS.X
       }
       
       logger.info(paste0("Using 'GPfit' package for Gaussian Process Model fitting."))
       library(GPfit)
-      ## Generate emulator on LL-probs
-      GPmodel <- GP_fit(X = LL[, -ncol(LL), drop = FALSE], Y = LL[, ncol(LL), drop = FALSE])
+      ## Generate emulator on SS, return a list
+      GPmodel <- lapply(SS.list, function(x) GP_fit(X = x[, -ncol(x), drop = FALSE], Y = x[, ncol(x), drop = FALSE]))
       gp <- GPmodel
       
     } else {

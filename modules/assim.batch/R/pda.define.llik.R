@@ -47,7 +47,7 @@ pda.define.llik.fn <- function(settings) {
 ##'
 ##' @author Istem Fer
 ##' @export
-pda.calc.error <-function(settings, con, model_out, run.id, inputs){
+pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias=1){
   
   # checks on validity of the inputs
   n.input <- length(inputs)
@@ -72,15 +72,7 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs){
     
       n <- sum(!is.na(inputs[[k]]$obs))
       
-      # calculate an initial bias parameter
-      regdf <- data.frame(inputs[[k]]$obs, model_out[[k]])
-      colnames(regdf) <- c("data","model")
-      fit <- lm( regdf$data ~ regdf$model - 1)
-      bias <- fit$coefficients[1]
-      
-      # propose 2 more bias parameter, hard-coded for now
-      bias.par <- c(bias, rnorm(2, bias, bias*0.1)) 
-      
+
       SS <- rep(NA, length(bias.par))
       for(b in seq_along(SS)){
         SS[b] <- sum((bias.par[b] * model_out[[k]] - inputs[[k]]$obs)^2, na.rm = TRUE)
@@ -88,7 +80,10 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs){
 
       pda.errors[[k]]$n <- n     
       pda.errors[[k]]$statistics <- SS 
-      pda.errors[[k]]$bias <- bias.par 
+      
+      # convert params to probs for GPfit
+      pda.errors[[k]]$bias.probs <- pnorm(bias.par, bias, bias*0.1)
+      pda.errors[[k]]$bias.params <- bias.par
 
       
     } else if (settings$assim.batch$inputs[[k]]$likelihood == "Laplace") {
