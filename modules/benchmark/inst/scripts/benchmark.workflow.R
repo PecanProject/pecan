@@ -41,7 +41,7 @@ bm.settings <- define_benchmark(settings$benchmarking,bety)
 str(bm.settings)
 
 # This is a quick fix - can be solved with longer db query that I don't want to write now
-add_workflow_id <- function(settings){
+add_workflow_info <- function(settings){
   if (is.MultiSettings(settings)) {
     return(papply(settings, add_workflow_id))
   }
@@ -49,11 +49,15 @@ add_workflow_id <- function(settings){
     settings$workflow$id <- tbl(bety,"ensembles") %>% 
       filter(id == settings$benchmarking$ensemble_id) %>% 
       select(workflow_id) %>% collect %>% .[[1]]
+    wf <- tbl(bety, 'workflows') %>% filter(id == settings$workflow$id) %>% collect()
+    settings$rundir <- file.path(wf$folder, "run")
+    settings$modeloutdir <- file.path(wf$folder, "out")
+    settings$outdir <- wf$folder
   }
   return(settings)
 }
 
-settings <- add_workflow_id(settings)
+settings <- add_workflow_info(settings)
 
 bm_settings2pecan_settings <- function(bm.settings){
   if (is.MultiSettings(bm.settings)) {
@@ -84,7 +88,7 @@ if(bm.settings$new_run){
 #                   params = list(file.path = file.path(settings$outdir,"benchmarking.output.Rdata")),
 #                   output_dir = settings$outdir)
 
-gridExtra::grid.table(results$input.1000008121$bench.results)
+
 
 
 str(results)
