@@ -4,7 +4,7 @@
 \alias{mean.over.larger.timestep}
 \title{Calculate benchmarking statistics}
 \usage{
-\method{mean}{over.larger.timestep}(date.coarse, date.fine, data.fine)
+mean.over.larger.timestep(date.coarse, date.fine, data.fine)
 }
 \arguments{
 \item{date.coarse}{numeric}
