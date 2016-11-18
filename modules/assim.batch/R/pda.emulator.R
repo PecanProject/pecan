@@ -387,7 +387,9 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
             ar.target   = settings$assim.batch$jump$ar.target,   ## Target acceptance rate
             priors      = prior.fn.all$dprior[prior.ind.all], ## priors
             settings    = settings,
-            run.block   = run.block,
+            run.block   = run.block,  
+            n.of.obs    = n.of.obs,
+            llik.fn     = llik.fn,
             resume.list = resume.list[[chain]]
     )
   })
