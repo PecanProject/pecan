@@ -20,9 +20,9 @@ calc.benchmark <- function(settings, bety) {
   
   # --------------------------------------------------------------------------------------------- #
   # Update benchmarks_ensembles and benchmarks_ensembles_scores tables
-
+  
   ensemble <- tbl(bety,'ensembles') %>% filter(workflow_id == settings$workflow$id) %>% collect()
-
+  
   # Retrieve/create benchmark ensemble database record
   bm.ensemble <- tbl(bety,'benchmarks_ensembles') %>% 
     filter(reference_run_id == settings$benchmarking$reference_run_id) %>% 
@@ -51,15 +51,13 @@ calc.benchmark <- function(settings, bety) {
   model_run <- dir(settings$modeloutdir, full.names = TRUE, include.dirs = TRUE)[1]
   # How are we dealing with ensemble runs? Right now I've hardcoded to select the first run.
   
-  ## NEED TO LOOK THESE UP
-  
   # All benchmarking records for the given benchmarking ensemble id
   bms <- tbl(bety,'benchmarks') %>% rename(benchmark_id = id) %>%  
     left_join(.,tbl(bety, "benchmarks_benchmarks_reference_runs"), by="benchmark_id") %>% 
     filter(reference_run_id == settings$benchmarking$reference_run_id) %>% 
     select(one_of("benchmark_id", "input_id", "site_id", "variable_id", "reference_run_id")) %>%
     collect() %>%
-    filter(benchmark_id %in%  unlist(test[which(names(settings$benchmarking) == "benchmark_id")]))
+    filter(benchmark_id %in% unlist(settings$benchmarking[which(names(settings$benchmarking) == "benchmark_id")]))
   
   var.ids <- bms$variable_id
   
@@ -142,30 +140,35 @@ calc.benchmark <- function(settings, bety) {
                                        model_run)
       
       for(metric.id in metrics$id){
-        metric <- filter(metrics,id == metric.id)[["name"]]
-        score <- out.calc.metrics[["benchmarks"]] %>% filter(.,metric == metric) %>% select(score)
+        metric.name <- filter(metrics,id == metric.id)[["name"]]
+        score <- out.calc.metrics[["benchmarks"]] %>% filter(metric == metric.name) %>% select(score)
         
-        #   score.entry <- tbl(bety, "benchmarks_ensembles_scores") %>% 
-        #     filter(score == score) %>% 
-        #     filter(bechmarks_ensemble_id == settings$benchmark$ensemble_id)
-        #     
-        # }else if(dim(bm)[1] >1){
-        #   logger.error("Duplicate record entries in benchmarks")
-        # }
+        # Update scores in the database
         
-        db.query(paste0(
-          "INSERT INTO benchmarks_ensembles_scores",
-          "(score, benchmarks_ensemble_id, benchmark_id, metric_id) VALUES ",
-          "('",score,"',",bm.ensemble$id,", ",bm$id,",",metric.id,")"),bety$con)
+        score.entry <- tbl(bety, "benchmarks_ensembles_scores") %>%
+          filter(benchmark_id == bm.ids[i]) %>%
+          filter(benchmarks_ensemble_id == bm.ensemble$id) %>%
+          filter(metric_id == metric.id) %>% 
+          collect()
+        
+        # If the score is already in the database, should check if it is the same as the calculated 
+        # score. But this requires a well written regular expression since it can be matching text. 
+        
+        if(dim(score.entry)[1] == 0){
+          db.query(paste0(
+            "INSERT INTO benchmarks_ensembles_scores",
+            "(score, benchmarks_ensemble_id, benchmark_id, metric_id) VALUES ",
+            "('",score,"',",bm.ensemble$id,", ",bm$id,",",metric.id,")"),bety$con)
+        }else if(dim(score.entry)[1] >1){
+          logger.error("Duplicate record entries in scores")
+        }
       }
-      
       results.list <- append(results.list, list(out.calc.metrics[["benchmarks"]]))
       dat.list <- append(dat.list, list(out.calc.metrics[["dat"]]))
-      
     }  #end loop over benchmark ids
     
     table.filename <- file.path(dirname(dirname(model_run)), 
-                          paste("benchmark.scores", var, bm.ensemble$ensemble_id, "pdf", sep = "."))
+                                paste("benchmark.scores", var, bm.ensemble$ensemble_id, "pdf", sep = "."))
     pdf(file = table.filename)
     gridExtra::grid.table(do.call(rbind, results.list))
     dev.off()
