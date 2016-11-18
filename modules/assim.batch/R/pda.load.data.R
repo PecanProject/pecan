@@ -93,6 +93,7 @@ load.pda.data <- function(settings, bety) {
       inputs[[i]]$obs <- inputs[[i]]$data[colnames(inputs[[i]]$data) %in% data.var]
       inputs[[i]]$par <- sd(unlist(inputs[[i]]$obs), na.rm = TRUE) # testing
     }
+    inputs[[i]]$n <- sum(!is.na(inputs[[i]]$obs))
   }  # end loop over files
   
   return(inputs)
