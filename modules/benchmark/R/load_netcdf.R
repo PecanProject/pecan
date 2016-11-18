@@ -1,5 +1,5 @@
-##' @name load.x_netcdf
-##' @title load.x_netcdf
+##' @name load_x_netcdf
+##' @title load_x_netcdf
 ##' @export
 ##' @param data.path character vector or list
 ##' @param format list
@@ -8,7 +8,7 @@
 ##' @param site list
 ##' @param vars character
 ##' @author Istem Fer
-load.x_netcdf <- function(data.path, format, site, vars = NULL) {
+load_x_netcdf <- function(data.path, format, site, vars = NULL) {
   
   data.path <- sapply(data.path, function(x) dir(dirname(x), basename(x), full.names = TRUE))
   
@@ -64,4 +64,4 @@ load.x_netcdf <- function(data.path, format, site, vars = NULL) {
   lapply(nc, ncdf4::nc_close)
   
   return(dat)
-} # load.x_netcdf
+} # load_x_netcdf

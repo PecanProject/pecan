@@ -1,5 +1,5 @@
-##' @name load.data
-##' @title load.data
+##' @name load_data
+##' @title load_data
 ##' @export
 ##' @param data.path character
 ##' @param format list
@@ -9,7 +9,7 @@
 ##' @author Betsy Cowdery
 ##' Generic function to convert input files containing observational data to 
 ##' a common PEcAn format. 
-load.data <- function(data.path, format, start_year = NA, end_year = NA, site = NA, 
+load_data <- function(data.path, format, start_year = NA, end_year = NA, site = NA, 
                       vars.used.index, time.row = NULL) {
   
   library(PEcAn.utils)
@@ -20,14 +20,14 @@ load.data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   
   # Determine the function that should be used to load the data
   mimetype <- sub("-", "_", format$mimetype)
-  fcn1 <- paste0("load.", format$file_name)
-  fcn2 <- paste0("load.", mimetype)
+  fcn1 <- paste0("load_", format$file_name)
+  fcn2 <- paste0("load_", mimetype)
   if (exists(fcn1)) {
     fcn <- match.fun(fcn1)
   } else if (exists(fcn2)) {
     fcn <- match.fun(fcn2)
   } else {
-    logger.warn("no load data for current mimetype - converting using browndog")
+    logger.warn("no load_data for current mimetype - converting using browndog")
   }
   
   out <- fcn(data.path, format, site, format$vars$input_name[c(vars.used.index, time.row)])
@@ -79,7 +79,7 @@ load.data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   }
   
   return(out)
-} # load.data
+} # load_data
 
 ##' Future things to think about
 ##'   - error estimates
