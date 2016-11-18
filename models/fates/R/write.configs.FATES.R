@@ -194,7 +194,46 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
      ## Loop over VARIABLES
      for (v in seq_along(pft)) {
        var <- names(pft)[v]
+
+       ## THESE NEED SOME FOLLOW UP       
+       if(var == "Vcmax"){                    ## fnitr is currently a HACK; *** need to know units ***
+         ncvar_put(nc=param.nc, varid='fnitr', start = ipft, count = 1,
+                   vals=pft[v])  ## (umol CO2 m-2 s-1) -> ??
+       }
        
+       
+       ### These variable names (from ED2) should updated in BETY to be more generic
+       if(var == "mort3"){
+         ncvar_put(nc=param.nc, varid='background_mort_rate', start = ipft, count = 1,
+                   vals=pft[v])  
+       }
+       if(var == "r_fract"){                    ## Fraction of carbon balance remaining after maintenance costs have been met that is dedicated to seed production.	[0-1]
+         ncvar_put(nc=param.nc, varid='seed_alloc', start = ipft, count = 1,
+                   vals=pft[v])  
+       }
+       if(var == "agf_bs"){                    ## The fraction of sapwood and structural biomass that is above ground [0-1]
+         ncvar_put(nc=param.nc, varid='ag_biomass', start = ipft, count = 1,
+                   vals=pft[v])  
+       }
+       
+       ## PFT-level variables
+       if(var == "seed_rain_kgC"){                    ## Seed rain input from outside the patch.[kgC/m2/year]
+         ncvar_put(nc=param.nc, varid='seed_rain', start = ipft, count = 1,
+                   vals=pft[v])  
+       }
+       if(var == "cuticular_cond"){
+         gH2O_per_mol <- 18.01528
+         ncvar_put(nc=param.nc, varid='gsmin', start = ipft, count = 1,
+                   vals=pft[v]*gH2O_per_mol*1e-12)   ### umol H2O m-2 s-1 ->  [m s-1]
+       }
+       if(var == "DBH_at_HTMAX"){                    ## note in FATES parameter list about switching to HTMAX
+         ncvar_put(nc=param.nc, varid='max_dbh', start = ipft, count = 1,
+                   vals=pft[v])  ## [cm]
+       }
+       if(var == "growth_resp_factor"){                    ## r_growth = grperc * (gpp+r_maint)
+         ncvar_put(nc=param.nc, varid='grperc', start = ipft, count = 1,
+                   vals=pft[v])  
+       }
        if(var == "SLA"){
          ncvar_put(nc=param.nc, varid='slatop', start = ipft, count = 1,
                    vals=udunits2::ud.convert(pft[v],"m2 kg-1","m2 g-1")/leafC)
@@ -408,6 +447,11 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncvar_put(nc=param.nc, varid='bark_scaler', start = ipft, count = 1,
                    vals=pft[v])
        }
+       if(var == "crown_kill"){                    ## SPITFIRE: Mortality from fire scorching susceptibility parameter
+         ncvar_put(nc=param.nc, varid='crown_kill', start = ipft, count = 1,
+                   vals=pft[v])  
+       }
+       
 
        ## BINARY FLAGS: These should be set-able by PEcAn but not sampled
        if(var == "photosynthetic_pathway"){         # 
@@ -446,20 +490,6 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncvar_put(nc=param.nc, varid='season_decid', start = ipft, count = 1,
                    vals=0)
        }
-       
-       ## NEED TO INQUIRE ABOUT UNITS / MEANING
-       # Vcmax (umol CO2 m-2 s-1) -> fnitr -- need to know units
-       # growth_resp_factor or growth_respiration_coefficient -> grperc r_growth = grperc * (gpp+r_maint)
-       # HTMAX -> max_dbh
-       # cuticular_cond	umol H2O m-2 s-1 -> gsmin [m s-1]
-       # seed_rain [seed m-2 yr-1] -> seed_rain	Seed rain input from outside the patch.	pft	[kgC/m2/year]
-       # crown_kill	Mortality from fire scorching susceptibility parameter.	pft	[?]
-
-       ### NEED TO CHANGE BETY
-       # mort3 -> background_mort_rate
-       # r_fract -> seed_alloc	Fraction of carbon balance remaining after maintenance costs have been met that is dedicated to seed production.	pft	[0-1]
-       # agf_bs -> ag_biomass	The fraction of sapwood and structural biomass that is above ground.	-	[0-1]
-       
        
        ## ALLPFT indexed (size = 1)
        if(var == "veg_respiration_Q10"){            ## Q10 for maintenance respiration
@@ -581,6 +611,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        }
 
        ## LITTERCLASS indexed (Size:6)
+       ## MCD: skipping for now until there's demonstrated demand because it requires expanding every variable out into VARNAME_[1..n]
        # low_moisture_C	Intercept (constant) of fuel moisture to burned fraction term for drier fuel	litterclass	
        # low_moisture_S	Slope of fuel moisture to burned fraction term for drier fuel	litterclass	
        # max_decomp	Maximum decomposition rate of litter in the absence of moisture or temperature stress, per fuel class	litterclass	y-1
