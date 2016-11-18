@@ -118,19 +118,29 @@ calculate.prior <- function(samples, priors) {
 ##' @export
 get.y <- function(gp, pckg, xnew, ...) {
   
+  SS <- numeric(length(gp))
+  
   if (pckg == 1) {
+    
     X <- matrix(unlist(xnew), nrow = 1, byrow = TRUE)
-    Y <- GPfit::predict.GP(gp, X)
-    # likelihood <- Y$Y_hat
-    # likelihood <- rnorm(1, Y$Y_hat, sqrt(Y$MSE))
-    SS <- rnorm(1, Y$Y_hat, sqrt(Y$MSE))
-  } else if (pckg == 2) {
+    
+    for(igp in seq_along(gp)){
+      Y <- GPfit::predict.GP(gp[[igp]], X)
+      # likelihood <- Y$Y_hat
+      # likelihood <- rnorm(1, Y$Y_hat, sqrt(Y$MSE))
+      SS[igp] <- rnorm(1, Y$Y_hat, sqrt(Y$MSE))
+    }
+
+  } else if (pckg == 2) { # TODO
     likelihood <- predict(gp, xnew)
   }
   
-  # prior.prob <- calculate.prior(xnew, priors)
-  # return(likelihood + prior.prob)
-  return(SS)
+  llik.par <- pda.calc.llik.par(settings, n.of.obs, SS)
+  likelihood <- pda.calc.llik(SS, llik.fn, llik.par)
+  
+  prior.prob <- calculate.prior(xnew, priors)
+  return(likelihood + prior.prob)
+
 } # get.y
 
 # is.accepted <- function(ycurr, ynew, format='lin'){ z <- exp(ycurr-ynew) acceptance <-
@@ -166,17 +176,13 @@ is.accepted <- function(ycurr, ynew, format = "lin") {
 ##' @author Michael Dietze
 mcmc.GP <- function(gp, pckg, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcns = NULL, 
                     jmp0 = 0.35 * (rng[, 2] - rng[, 1]), ar.target = 0.5, priors = NA, settings, 
-                    run.block = TRUE, resume.list = NULL) {
+                    run.block = TRUE, n.of.obs, llik.fn, resume.list = NULL) {
   
   haveTime <- FALSE  #library('time')
   
-  # get error statistics from emulator(s)
-  SScurr <- sapply(gp, function(x) get.y(x, pckg, x0))
-  
-  # calculate LL
-  pda.calc.llik.par
-  pda.calc.llik
-  
+  # get Y
+  Ycurr <- get.y(gp, pckg, x0, n.of.obs, llik.fn, priors, settings)
+
   xcurr <- x0
   dim <- length(x0)
   samp <- matrix(NA, nmcmc, dim)

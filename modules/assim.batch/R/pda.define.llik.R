@@ -16,18 +16,18 @@ pda.define.llik.fn <- function(settings) {
     # heteroskedastic Laplace likelihood, error stats is the likelihood
     if (settings$assim.batch$inputs[[i]]$likelihood == "Laplace") {
       
-      llik.fn[[i]] <- function(pda.errors) {
-        LL <- pda.errors$statistics
-        return(list(LL = LL, n = pda.errors$n))
+      llik.fn[[i]] <- function(pda.errors, ...) {
+        LL <- pda.errors
+        return(LL)
       }
       
 
     } else { # Gaussian or multiplicative Gaussian
       
-      llik.fn[[i]] <- function(pda.errors) {
+      llik.fn[[i]] <- function(pda.errors, llik.par) {
         # lnL = (n/2) * log(tau) - (tau/2) * SS
-        LL <- (pda.errors$n/2) * log(pda.errors$par) - (pda.errors$par/2) * pda.errors$statistics
-        return(list(LL = LL, n = pda.errors$n))
+        LL <- (llik.par$n/2) * log(llik.par$par) - (llik.par$par/2) * pda.errors
+        return(LL)
       }
       
     } # if-block
@@ -102,17 +102,17 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
 ##'
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.calc.llik <- function(pda.errors) {
+pda.calc.llik <- function(pda.errors, llik.fn, llik.par) {
   
   n.var <- length(pda.errors)
   
-  LL.vec <- n.vec <- numeric(n.var)
+  LL.vec <- numeric(n.var)
+  n.vec <- sapply(llik.par, `[[`, "n")
   
   for (k in seq_len(n.var)) {
     
-    llik <- llik.fn[[k]](pda.errors[[k]])
+    llik <- llik.fn[[k]](pda.errors[k], llik.par[[k]])
     LL.vec[k] <- llik$LL
-    n.vec[k] <- llik$n
   }
   
   weights <- rep(1 / n.var, n.var)  # TODO: Implement user-defined weights
@@ -147,33 +147,25 @@ pda.calc.llik <- function(pda.errors) {
 } # pda.calc.llik
 
 
-pda.calc.llik.par <-function(settings, error.stats){
+pda.calc.llik.par <-function(settings, n, error.stats){
   
+  llik.par <- list()
   # llik.priors <- read.csv("~/pecan/modules/assim.batch/inst/llik.params.csv")
   # llik.priors <- read.csv(system.file("inst/llik.params.csv", package = "PEcAn.assim.batch"))
   for(k in seq_along(error.stats)){
     
+    llik.par[[k]] <- list()
+    
     if (settings$assim.batch$inputs[[k]]$likelihood == "Gaussian" |
         settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") {
       
-      tau <- rgamma(1, 0.001 + n/2, 0.001 + error.stats/2)
-        
+      llik.par[[k]]$par <- rgamma(1, 0.001 + n[k]/2, 0.001 + error.stats[k]/2)
     }
+    
+    llik.par[[k]]$n <- n[k]
   }
 
-
-  
-  pda.errors[[k]]$par <- tau
-  ll.par$tau.mg <- ifelse(prob, pgamma(tau, 0.001 + n/2, 0.001 + SS/2), tau)
-
-
-  pda.errors[[k]]$par <- tau
-  ll.par$tau.g <- ifelse(prob, pgamma(tau, 0.001 + n/2, 0.001 + SS/2), tau)
-  
-  # (n/2) * log(tau) - (tau/2) * SS
-  
-  tau <- rgamma(1, 0.001 + n/2, 0.001 + SS/2) # build priors into the PDA code for now
-  
+  return(llik.par)
   
 } # pda.calc.llik.par
 
