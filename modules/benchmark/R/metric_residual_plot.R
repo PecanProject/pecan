@@ -1,10 +1,10 @@
-##' @name metric.residual.plot
+##' @name metric_residual_plot
 ##' @title Residual Plot
 ##' @export
 ##' @param dat
 ##' 
 ##' @author Betsy Cowdery
-metric.residual.plot <- function(dat, var, filename = NA, draw.plot = FALSE) {
+metric_residual_plot <- function(dat, var, filename = NA, draw.plot = FALSE) {
   logger.info("Metric: Residual Plot")
   
   dat$time <- lubridate::year(as.Date(as.character(dat$time), format = "%Y"))
@@ -25,4 +25,4 @@ metric.residual.plot <- function(dat, var, filename = NA, draw.plot = FALSE) {
   if (draw.plot) {
     plot(p)
   }
-} # metric.residual.plot
+} # metric_residual_plot

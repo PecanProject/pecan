@@ -34,7 +34,7 @@ define_benchmark <- function(bm.settings, bety){
         ens_wf <- tbl(bety, 'ensembles') %>% filter(id == bm.settings$ensemble_id) %>% 
           rename(ensemble_id = id) %>% 
           left_join(.,tbl(bety, "workflows") %>% rename(workflow_id = id), by="workflow_id") %>% collect()
-        BRR <- create.BRR(ens_wf, con = bety$con, user_id = bm.settings$info$userid)
+        BRR <- create_BRR(ens_wf, con = bety$con, user_id = bm.settings$info$userid)
       }else if(dim(bm_ens)[1] == 1){
         BRR <- tbl(bety,"reference_runs") %>% filter(id == bm_ens$reference_run_id) %>% 
           rename(reference_run_id = id) %>% collect()
@@ -44,7 +44,7 @@ define_benchmark <- function(bm.settings, bety){
       bm.settings$reference_run_id <- BRR$reference_run_id
       # bm.settings$ensemble_id <- NULL
       
-    }else{logger.error("Cannot find or create BRR")}
+    }else{logger.error("Cannot find or create_BRR")}
   } 
   
   

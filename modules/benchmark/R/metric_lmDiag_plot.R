@@ -1,10 +1,10 @@
-##' @name metric.lmDiag.plot
+##' @name metric_lmDiag_plot
 ##' @title Linear Regression Diagnostic Plot
 ##' @export
 ##' @param metric_dat data.frame
 ##' 
 ##' @author Betsy Cowdery
-metric.lmDiag.plot <- function(metric_dat, var, filename = NA, draw.plot = FALSE) {
+metric_lmDiag_plot <- function(metric_dat, var, filename = NA, draw.plot = FALSE) {
   logger.info("Metric: Linear Regression Diagnostic Plot")
   
   fit <- lm(metric_dat[, 1] ~ metric_dat[, 2])
@@ -72,4 +72,4 @@ metric.lmDiag.plot <- function(metric_dat, var, filename = NA, draw.plot = FALSE
     plot(p)
   }
   
-} # metric.lmDiag.plot
+} # metric_lmDiag_plot

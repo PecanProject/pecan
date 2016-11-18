@@ -1,4 +1,4 @@
-##' @name metric.scatter.plot
+##' @name metric_scatter_plot
 ##' @title Scatter Plot
 ##' @export
 ##' @param metric_dat
@@ -6,7 +6,7 @@
 ##' 
 ##' @author Betsy Cowdery
 
-metric.scatter.plot <- function(metric_dat, var, filename = NA, draw.plot = FALSE) {
+metric_scatter_plot <- function(metric_dat, var, filename = NA, draw.plot = FALSE) {
   logger.info("Metric: Scatter Plot")
   
   p <- ggplot2::ggplot(data = metric_dat) 
@@ -24,4 +24,4 @@ metric.scatter.plot <- function(metric_dat, var, filename = NA, draw.plot = FALS
     plot(p)
   }
 
-} # metric.scatter.plot
+} # metric_scatter_plot
