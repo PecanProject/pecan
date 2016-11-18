@@ -241,7 +241,9 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       
       # retrieve SS
       estats <-lapply(pda.errors, function(x) sapply(x,`[[`, "statistics"))
-      # format 
+      # retrieve n
+      n.of.obs <- sapply(inputs,`[[`, "n")
+      # retrieve and format SS
       error.statistics <- lapply(estats, function(x) do.call("cbind", x))
       SS.0 <- data.frame(do.call("rbind", error.statistics))
       

@@ -59,11 +59,8 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
   
   for (k in seq_len(n.input)) {
     
-    pda.errors[[k]] <- list()
-    
     if (settings$assim.batch$inputs[[k]]$likelihood == "Laplace") {
       
-      n <- sum(!is.na(inputs[[k]]$obs))
       resid <- abs(model_out[[k]] - inputs[[k]]$obs)
       pos <- (model_out[[k]] >= 0)
       SS <- c(dexp(resid[pos],
@@ -73,12 +70,9 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
                    1 / (inputs[[k]]$par[1] + inputs[[k]]$par[3] * model_out[[k]][!pos]),
                    log = TRUE))
       
-      pda.errors[[k]]$n <- n
-      pda.errors[[k]]$statistics <- sum(SS, na.rm = TRUE) 
+      pda.errors[[k]] <- sum(SS, na.rm = TRUE) 
       
     } else { # Gaussian(s)
-      
-      n <- sum(!is.na(inputs[[k]]$obs))
       
       
       SS <- rep(NA, length(bias.terms))
@@ -86,8 +80,7 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
         SS[b] <- sum((bias.terms[b] * model_out[[k]] - inputs[[k]]$obs)^2, na.rm = TRUE)
       }
       
-      pda.errors[[k]]$n <- n     
-      pda.errors[[k]]$statistics <- SS 
+      pda.errors[[k]] <- SS 
       
     }
     
@@ -163,7 +156,7 @@ pda.calc.llik.par <-function(settings, error.stats){
     if (settings$assim.batch$inputs[[k]]$likelihood == "Gaussian" |
         settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") {
       
-      tau <- rgamma(1, 0.001 + n/2, 0.001 + SS/2)
+      tau <- rgamma(1, 0.001 + n/2, 0.001 + error.stats/2)
         
     }
   }
