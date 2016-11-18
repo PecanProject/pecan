@@ -1,11 +1,11 @@
-##' @name mean.over.larger.timestep 
+##' @name mean_over_larger_timestep 
 ##' @title Calculate benchmarking statistics
 ##' @param date.fine numeric
 ##' @param data.fine data.frame
 ##' @param date.coarse numeric
-##' @export mean.over.larger.timestep
+##' @export mean_over_larger_timestep
 ##' 
 ##' @author Betsy Cowdery, Michael Dietze
-mean.over.larger.timestep <- function(date.coarse, date.fine, data.fine) {
+mean_over_larger_timestep <- function(date.coarse, date.fine, data.fine) {
   return(tapply(X = data.fine, INDEX = findInterval(date.fine, date.coarse), FUN = mean))
-} # mean.over.larger.timestep
+} # mean_over_larger_timestep
