@@ -1,4 +1,4 @@
-##' @name align.data
+##' @name align_data
 ##' @title Align timeseries data
 ##' @export
 ##' @param model.calc data.frame
@@ -13,7 +13,7 @@
 
 ## Align timeseries data using different functions
 
-align.data <- function(model.calc, obvs.calc, var, start_year, end_year, align_method = "match.timestep") {
+align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_method = "match.timestep") {
   
   fcn <- match.fun(align_method)
   
@@ -81,44 +81,4 @@ align.data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
   }
   
   return(dat)
-} # align.data
-
-# # Compare timestep sizes,
-# # choose the smaller of the two
-# # then choose the appropriate conversion function
-# 
-# which.min(c(mode_model,mode_obvs))
-# 
-# date.coarse <- obvs$time
-# date.fine <- strptime(paste(model$time, model$year), format = "%j %Y")
-# data.fine <- model$NPP
-# mean.over.larger.timestep(date.coarse, date.fine, data.fine)
-# 
-# ###################################################
-# 
-# # Then big theoretical leap to get me here O.o
-# 
-# out_model <- as.data.frame(matrix(NA, ncol = length(vars_used$pecan_name), nrow = length(unique(model$year))))
-# colnames(out_model) <- paste(vars_used$pecan_name, "model", sep = "_")
-# out_model$years <- sort(unique(model$year))
-# for(i in 1:nrow(vars_used)){
-#   v <- vars_used$pecan_name[i]
-#   out_model[,paste(v,"model",sep="_")] <- aggregate(model[,v], by=list(model$year), FUN=mean, na.rm=TRUE)[,2]
-# }
-# 
-# colnames(obvs)[which(names(obvs)=="YEAR")] <- "time"
-# out_obvs <- as.data.frame(matrix(NA, ncol = length(vars_used$pecan_name), nrow = length(unique(obvs$time))))
-# colnames(out_obvs) <- paste(vars_used$pecan_name, "obvs", sep = "_")
-# out_obvs$years <- sort(unique(obvs$time))
-# for(i in 1:nrow(vars_used)){
-#   v <- vars_used$pecan_name[i]
-#   print(v)
-#   print(paste(v,"obvs",sep="_"))
-#   out_obvs[,paste(v,"obvs",sep="_")] <- aggregate(obvs[,v], by=list(obvs$time), FUN=mean, na.rm=TRUE)[,2]
-# }
-# 
-# 
-# out <- merge(out_model, out_obvs, by = "years", all = TRUE)
-# colnames(out)[which(names(out)=="years")] <- "time"
-# out$time_model  <- NULL
-# out$time_obvs  <- NULL
+} # align_data

@@ -15,7 +15,7 @@
 ##' @author Betsy Cowdery
 calc.metrics <- function(model.calc, obvs.calc, var, metrics, start_year, end_year, bm, ensemble.id, model_run) {
   
-  dat <- align.data(model.calc, obvs.calc, var, start_year, end_year, 
+  dat <- align_data(model.calc, obvs.calc, var, start_year, end_year, 
                     align_method = "mean.over.larger.timestep")
   
   results <- as.data.frame(matrix(NA, nrow = length(metrics$name), ncol = 3))
