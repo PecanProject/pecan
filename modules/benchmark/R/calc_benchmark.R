@@ -3,7 +3,7 @@
 ##'  
 ##' @name calc_benchmark 
 ##' @title Calculate benchmarking statistics
-##' @param bm.ensemble object, either from create.BRR or start.bm.ensemle
+##' @param bm.ensemble object, either from create_BRR or start.bm.ensemle
 ##' @param bety database connection
 ##' @export 
 ##' 
@@ -130,7 +130,7 @@ calc_benchmark <- function(settings, bety) {
       
       # TODO: If the scores have already been calculated, don't redo
       
-      out.calc.metrics <- calc.metrics(model.calc, 
+      out.calc_metrics <- calc_metrics(model.calc, 
                                        obvs.calc, 
                                        var, 
                                        metrics,
@@ -141,7 +141,7 @@ calc_benchmark <- function(settings, bety) {
       
       for(metric.id in metrics$id){
         metric.name <- filter(metrics,id == metric.id)[["name"]]
-        score <- out.calc.metrics[["benchmarks"]] %>% filter(metric == metric.name) %>% select(score)
+        score <- out.calc_metrics[["benchmarks"]] %>% filter(metric == metric.name) %>% select(score)
         
         # Update scores in the database
         
@@ -163,8 +163,8 @@ calc_benchmark <- function(settings, bety) {
           logger.error("Duplicate record entries in scores")
         }
       }
-      results.list <- append(results.list, list(out.calc.metrics[["benchmarks"]]))
-      dat.list <- append(dat.list, list(out.calc.metrics[["dat"]]))
+      results.list <- append(results.list, list(out.calc_metrics[["benchmarks"]]))
+      dat.list <- append(dat.list, list(out.calc_metrics[["dat"]]))
     }  #end loop over benchmark ids
     
     table.filename <- file.path(dirname(dirname(model_run)), 

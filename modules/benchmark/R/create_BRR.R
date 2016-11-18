@@ -1,7 +1,7 @@
 ##-------------------------------------------------------------------------------------------------#
 ##' For each benchmark id, calculate metrics and update benchmarks_ensemble_scores
 ##'  
-##' @name create.BRR
+##' @name create_BRR
 ##' @title Create benchmark reference run and ensemble
 ##' @param ens_wf table made from joining ensemble and workflow tables 
 ##' @param con database connection
@@ -9,7 +9,7 @@
 ##' 
 ##' @author Betsy Cowdery 
 
-create.BRR <- function(ens_wf, con, user_id = ""){
+create_BRR <- function(ens_wf, con, user_id = ""){
   
   cnd1 <- ens_wf$hostname == fqdn() 
   cnd2 <- ens_wf$hostname == 'test-pecan.bu.edu' & fqdn() == 'pecan2.bu.edu'
@@ -44,4 +44,4 @@ create.BRR <- function(ens_wf, con, user_id = ""){
     return(BRR)
   }else{logger.error(sprintf("Cannot create a benchmark reference run for a run on hostname: %s", 
                              ens_wf$hostname))}
-} #create.BRR
+} #create_BRR

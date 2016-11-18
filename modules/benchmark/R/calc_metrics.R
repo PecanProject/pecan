@@ -1,5 +1,5 @@
-##' @name calc.metrics
-##' @title calc.metrics
+##' @name calc_metrics
+##' @title calc_metrics
 ##' @export
 ##' @param model.calc
 ##' @param obvs.calc
@@ -13,7 +13,7 @@
 ##' 
 ##' 
 ##' @author Betsy Cowdery
-calc.metrics <- function(model.calc, obvs.calc, var, metrics, start_year, end_year, bm, ensemble.id, model_run) {
+calc_metrics <- function(model.calc, obvs.calc, var, metrics, start_year, end_year, bm, ensemble.id, model_run) {
   
   dat <- align_data(model.calc, obvs.calc, var, start_year, end_year, 
                     align_method = "mean.over.larger.timestep")
@@ -27,11 +27,11 @@ calc.metrics <- function(model.calc, obvs.calc, var, metrics, start_year, end_ye
   
   for (m in seq_along(metrics$name)) {
     
-    fcn <- paste0("metric.", metrics$name[m])
+    fcn <- paste0("metric_", metrics$name[m])
     results[m,"metric"] <- metrics$name[m]
     results[m,"variable"] <- var
     
-    if (tail(unlist(strsplit(fcn, "[.]")), 1) == "plot") {
+    if (tail(unlist(strsplit(fcn, "_")), 1) == "plot") {
       filename <- file.path(dirname(dirname(model_run)), 
                             paste("benchmark", metrics$name[m], var, ensemble.id, "pdf", sep = "."))
       do.call(fcn, args <- list(metric_dat, var, filename))
@@ -43,4 +43,4 @@ calc.metrics <- function(model.calc, obvs.calc, var, metrics, start_year, end_ye
   }  #end loop over metrics
 
   return(list(benchmarks = results, dat = dat))
-} # calc.metrics
+} # calc_metrics

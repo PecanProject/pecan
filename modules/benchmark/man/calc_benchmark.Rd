@@ -9,7 +9,7 @@ calc_benchmark(settings, bety)
 \arguments{
 \item{bety}{database connection}
 
-\item{bm.ensemble}{object, either from create.BRR or start.bm.ensemle}
+\item{bm.ensemble}{object, either from create_BRR or start.bm.ensemle}
 }
 \description{
 For each benchmark id, calculate metrics and update benchmarks_ensemble_scores

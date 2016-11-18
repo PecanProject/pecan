@@ -1,4 +1,4 @@
-##' @name metric.timeseries.plot
+##' @name metric_timeseries_plot
 ##' @title Timeseries Plot
 ##' @export
 ##' @param metric_dat dataframe
@@ -6,7 +6,7 @@
 ##' 
 ##' @author Betsy Cowdery
 
-metric.timeseries.plot <- function(metric_dat, var, filename = NA, draw.plot = FALSE) {
+metric_timeseries_plot <- function(metric_dat, var, filename = NA, draw.plot = FALSE) {
   logger.info("Metric: Timeseries Plot")
   
   # Attempt at getting around the fact that time can be annual and thus as.Date won't work
@@ -33,4 +33,4 @@ metric.timeseries.plot <- function(metric_dat, var, filename = NA, draw.plot = F
   if (draw.plot) {
     plot(p)
   }
-} # metric.timeseries.plot
+} # metric_timeseries_plot
