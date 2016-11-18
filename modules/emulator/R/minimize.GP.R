@@ -116,19 +116,21 @@ calculate.prior <- function(samples, priors) {
 ##' @name get.y
 ##' @title get.y
 ##' @export
-get.y <- function(gp, pckg, xnew, priors, ...) {
+get.y <- function(gp, pckg, xnew, ...) {
   
   if (pckg == 1) {
     X <- matrix(unlist(xnew), nrow = 1, byrow = TRUE)
     Y <- GPfit::predict.GP(gp, X)
     # likelihood <- Y$Y_hat
-    likelihood <- rnorm(1, Y$Y_hat, sqrt(Y$MSE))
+    # likelihood <- rnorm(1, Y$Y_hat, sqrt(Y$MSE))
+    SS <- rnorm(1, Y$Y_hat, sqrt(Y$MSE))
   } else if (pckg == 2) {
     likelihood <- predict(gp, xnew)
   }
   
-  prior.prob <- calculate.prior(xnew, priors)
-  return(likelihood + prior.prob)
+  # prior.prob <- calculate.prior(xnew, priors)
+  # return(likelihood + prior.prob)
+  return(SS)
 } # get.y
 
 # is.accepted <- function(ycurr, ynew, format='lin'){ z <- exp(ycurr-ynew) acceptance <-
@@ -168,8 +170,13 @@ mcmc.GP <- function(gp, pckg, x0, nmcmc, rng, format = "lin", mix = "joint", spl
   
   haveTime <- FALSE  #library('time')
   
-  ## storage
-  ycurr <- get.y(gp, pckg, x0, priors)
+  # get error statistics from emulator(s)
+  SScurr <- sapply(gp, function(x) get.y(x, pckg, x0))
+  
+  # calculate LL
+  pda.calc.llik.par
+  pda.calc.llik
+  
   xcurr <- x0
   dim <- length(x0)
   samp <- matrix(NA, nmcmc, dim)

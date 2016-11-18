@@ -203,6 +203,9 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       bias.terms <- bias.list$bias.params
       prior.list <- bias.list$prior.list
       prior.fn <- lapply(prior.list, pda.define.prior.fn)
+      # add indice and increase n.param for bias
+      prior.ind.all <- c(prior.ind.all, prior.ind.all[length(prior.ind.all)]+1)
+      n.param <- c(n.param, 1)
     } else {
       bias.terms <- matrix(1, nrow = settings$assim.batch$n.knot, ncol = 1) # just 1 for Gaussian
     }
@@ -238,31 +241,26 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       
       # retrieve SS
       estats <-lapply(pda.errors, function(x) sapply(x,`[[`, "statistics"))
+      # format 
       error.statistics <- lapply(estats, function(x) do.call("cbind", x))
       SS.0 <- data.frame(do.call("rbind", error.statistics))
       
       
       # check if multiplicative Gaussian was in the likelihoods
       if(any(unlist(any.mgauss) == "multipGauss")){
+        
         # if yes, then we need to include bias term in the emulator
-
-        bias.terms <- list()
-
-        for(ibias in seq_len(settings$assim.batch$n.knot)){
-          bias.terms[[ibias]] <- list()
-          bias.terms[[ibias]]$probs <- pda.errors[[ibias]][[isbias]]$bias.probs
-          bias.terms[[ibias]]$params <- pda.errors[[ibias]][[isbias]]$bias.params
-        }
+        bias.probs <- bias.list$bias.probs
+        biases <- c(t(bias.probs))
         
-        bias.probs <- lapply(bias.terms,`[[`, "probs")
-        bias.probs <- unlist(bias.probs)
-        
-        rep.rows <- rep(1:nrow(X), each = 3) # three for 3 bias params, also length(bias.probs)/nrow(X) but leaving hard-coded for now
+        # replicate model parameter set per bias parameter
+        rep.rows <- rep(1:nrow(X), each = 3) # three for 3 bias params, leaving hard-coded for now
         X.rep <- X[rep.rows,]
-        X <- cbind(X.rep, bias.probs)
+        X <- cbind(X.rep, biases)
         
       } 
 
+      # each sublist becomes model params + bias + SS per data
       SS.list <- lapply(SS.0, function(x) cbind(X, x))
       
       if (!is.null(settings$assim.batch$extension)) {
@@ -270,16 +268,18 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
         
         # load original knots
         load(settings$assim.batch$llik.path)
+        # TODO: loop over SS.list
+        # add on
         SS <- rbind(SS.X, SS)
         
       } else {
-        SS <- SS.X
+        SS <- SS.list
       }
       
       logger.info(paste0("Using 'GPfit' package for Gaussian Process Model fitting."))
       library(GPfit)
       ## Generate emulator on SS, return a list
-      GPmodel <- lapply(SS.list, function(x) GP_fit(X = x[, -ncol(x), drop = FALSE], Y = x[, ncol(x), drop = FALSE]))
+      GPmodel <- lapply(SS, function(x) GP_fit(X = x[, -ncol(x), drop = FALSE], Y = x[, ncol(x), drop = FALSE]))
       gp <- GPmodel
       
     } else {
@@ -301,14 +301,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     
     ## Change the priors to unif(0,1) for mcmc.GP
     prior.all <- do.call("rbind", prior.list)
-    
     prior.all[prior.ind.all, ] <- rep(c("unif", 0, 1, "NA"), each = sum(n.param))
-    names.all <- rownames(prior.all)
-    for(name in 1:ncol(pars)){
-      prior.all <- rbind(prior.all, c("unif", 0, 1, "NA"))
-    }
-    rownames(prior.all) <- c(names.all, colnames(pars))
-    prior.ind.all <- c(prior.ind.all, prior.ind.all[length(prior.ind.all)] + seq_len(ncol(pars)))
 
     ## Set up prior functions accordingly
     prior.fn.all <- pda.define.prior.fn(prior.all)
@@ -353,7 +346,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                          list(p = 0)), 
                   sapply(prior.fn.all$qprior[prior.ind.all], 
                          eval, 
-                         list(p = 1))), nrow = sum(n.param)+ncol(pars))
+                         list(p = 1))), nrow = sum(n.param))
   
   if (run.block) {
     
@@ -381,7 +374,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   
   ## Sample posterior from emulator
   mcmc.out <- lapply(1:settings$assim.batch$chain, function(chain) {
-    mcmc.GP(gp          = gp, ## Emulator
+    mcmc.GP(gp          = gp, ## Emulator(s)
             pckg        = pckg, ## flag to determine which predict method to use
             x0          = init.list[[chain]],     ## Initial conditions
             nmcmc       = settings$assim.batch$iter,       ## Number of reps

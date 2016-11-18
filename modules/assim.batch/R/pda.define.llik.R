@@ -8,10 +8,12 @@
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
 pda.define.llik.fn <- function(settings) {
-  # Currently just returns a single likelihood, assuming the data are flux NEE/FC or LE.
+ 
   llik.fn <- list()
+  
   for (i in seq_along(settings$assim.batch$inputs)) {
-    # NEE + heteroskedastic Laplace likelihood
+    
+    # heteroskedastic Laplace likelihood, error stats is the likelihood
     if (settings$assim.batch$inputs[[i]]$likelihood == "Laplace") {
       
       llik.fn[[i]] <- function(pda.errors) {
@@ -40,10 +42,11 @@ pda.define.llik.fn <- function(settings) {
 ##'
 ##' @title Calculate Likelihood parameters
 ##' @param settings list
-##' @param model.out list
+##' @param model_out list
 ##' @param inputs list
+##' @param bias.terms matrix
 ##'
-##' @return inputs updated inputs list with likelihood parameters
+##' @return pda.errors 
 ##'
 ##' @author Istem Fer
 ##' @export
@@ -88,7 +91,7 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
       
     }
     
-  } # end for-loop
+  } # for-loop
   
   ## TODO: insert error records in database
 
@@ -151,16 +154,25 @@ pda.calc.llik <- function(pda.errors) {
 } # pda.calc.llik
 
 
-pda.calc.llik.par <-function(settings, con, model_out, run.id, inputs){
+pda.calc.llik.par <-function(settings, error.stats){
   
   # llik.priors <- read.csv("~/pecan/modules/assim.batch/inst/llik.params.csv")
   # llik.priors <- read.csv(system.file("inst/llik.params.csv", package = "PEcAn.assim.batch"))
-  
-  tau <- rgamma(1, 0.001 + n/2, 0.001 + SS/2)
+  for(k in seq_along(error.stats)){
+    
+    if (settings$assim.batch$inputs[[k]]$likelihood == "Gaussian" |
+        settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") {
+      
+      tau <- rgamma(1, 0.001 + n/2, 0.001 + SS/2)
+        
+    }
+  }
+
+
   
   pda.errors[[k]]$par <- tau
   ll.par$tau.mg <- ifelse(prob, pgamma(tau, 0.001 + n/2, 0.001 + SS/2), tau)
-  ll.par$bias.mg <- ifelse(prob, pnorm(bias.par, bias, bias*0.01), bias.par)
+
 
   pda.errors[[k]]$par <- tau
   ll.par$tau.g <- ifelse(prob, pgamma(tau, 0.001 + n/2, 0.001 + SS/2), tau)

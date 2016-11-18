@@ -1008,7 +1008,7 @@ return.bias <- function(isbias, model.out, inputs, prior.list){
     colnames(regdf) <- c("data","model")
     fit <- lm( regdf$data ~ regdf$model - 1)
     bias.params[iknot,1] <- fit$coefficients[[1]]
-    bias.params[iknot,2:3] <- rnorm(2, bias.params[iknot,1], bias.params[iknot,1]*0.1)
+    bias.params[iknot,2:ncol(bias.params)] <- rnorm(2, bias.params[iknot,1], bias.params[iknot,1]*0.1)
   }
 
   prior.min <- min(bias.params) - sd(bias.params)
