@@ -210,7 +210,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
     
     ## Get Model Registration
     reg.model.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.",model))
-    reg.model <- XML:xmlToList(XML::xmlParse(reg.model.xml))
+    reg.model <- XML::xmlToList(XML::xmlParse(reg.model.xml))
     
     met2model.result <- .met2model.module(ready.id = ready.id, 
                                           model = model, 
