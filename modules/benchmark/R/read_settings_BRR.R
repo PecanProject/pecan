@@ -2,7 +2,7 @@
 ##' For each benchmark entry in a (multi)settings object, get run settings using reference run id 
 ##' and add to the settings object
 ##'  
-##' @name read.settings.RR
+##' @name read_settings_BRR
 ##' @title Read settings from database using reference run id
 ##' @param settings settings or multisettings object
 ##' @export 
@@ -10,7 +10,7 @@
 ##' @author Betsy Cowdery 
 
 
-read.settings.RR <- function(settings){
+read_settings_BRR <- function(settings){
   
   # dplyr functions
   tbl     <- dplyr::tbl
