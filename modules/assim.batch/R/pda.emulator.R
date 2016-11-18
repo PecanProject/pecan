@@ -192,22 +192,28 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     pda.errors <- list()
     
     
+    ## read model outputs    
+    for (i in seq_len(settings$assim.batch$n.knot)) {
+      model.out[[i]] <- pda.get.model.output(settings, run.ids[i], bety, inputs)
+    }
+    
+    if(any(unlist(any.mgauss) == "multipGauss")) {
+      isbias <- which(unlist(any.mgauss) == "multipGauss")
+      bias.list <- return.bias(isbias, model.out, inputs, prior.list)
+      bias.terms <- bias.list$bias.params
+      prior.list <- bias.list$prior.list
+      prior.fn <- lapply(prior.list, pda.define.prior.fn)
+    } else {
+      bias.terms <- matrix(1, nrow = settings$assim.batch$n.knot, ncol = 1) # just 1 for Gaussian
+    }
     
     for (i in seq_len(settings$assim.batch$n.knot)) {
-      ## read model outputs
-      model.out[[i]] <- pda.get.model.output(settings, run.ids[i], bety, inputs)
-
-      if(any(unlist(any.mgauss) == "multipGauss")) {
-        isbias <- which(unlist(any.mgauss) == "multipGauss")
-        prior.list <- return.bias.prior(isbias, model.out, inputs, prior.list)
-        prior.fn <- lapply(prior.list, pda.define.prior.fn)
-      }
       ## calculate error statistics      
-      pda.errors[[i]] <- pda.calc.error(settings, con, model_out = model.out[[i]], run.id = run.ids[i], inputs)
-      
-      # ## calculate likelihood
-      LL.0[i] <- pda.calc.llik(pda.errors[[i]]$pda.error)
-    }
+      pda.errors[[i]] <- pda.calc.error(settings, con, model_out = model.out[[i]], run.id = run.ids[i], inputs, bias.terms[i,])
+    } 
+      # # ## calculate likelihood
+      # LL.0[i] <- pda.calc.llik(pda.errors[[i]]$pda.error)
+      # 
   }
   
 
