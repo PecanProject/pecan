@@ -47,9 +47,9 @@ pda.define.llik.fn <- function(settings) {
 ##'
 ##' @author Istem Fer
 ##' @export
-pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias=1){
+pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
   
-  # checks on validity of the inputs
+
   n.input <- length(inputs)
   pda.errors <- list()
   
@@ -58,49 +58,34 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias=1){
     
     pda.errors[[k]] <- list()
     
-    if(settings$assim.batch$inputs[[k]]$likelihood == "Gaussian") {
-      
-      n <- sum(!is.na(inputs[[k]]$obs))
-      SS <- sum((model_out[[k]] - inputs[[k]]$obs)^2, na.rm = TRUE)
-
-      pda.errors[[k]]$n <- n
-      pda.errors[[k]]$statistics <- SS 
-
-      
-    } else if (settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") {
-      
-    
-      n <- sum(!is.na(inputs[[k]]$obs))
-      
-
-      SS <- rep(NA, length(bias.par))
-      for(b in seq_along(SS)){
-        SS[b] <- sum((bias.par[b] * model_out[[k]] - inputs[[k]]$obs)^2, na.rm = TRUE)
-      }
-
-      pda.errors[[k]]$n <- n     
-      pda.errors[[k]]$statistics <- SS 
-      
-      # convert params to probs for GPfit
-      pda.errors[[k]]$bias.probs <- pnorm(bias.par, bias, bias*0.1)
-      pda.errors[[k]]$bias.params <- bias.par
-
-      
-    } else if (settings$assim.batch$inputs[[k]]$likelihood == "Laplace") {
+    if (settings$assim.batch$inputs[[k]]$likelihood == "Laplace") {
       
       n <- sum(!is.na(inputs[[k]]$obs))
       resid <- abs(model_out[[k]] - inputs[[k]]$obs)
       pos <- (model_out[[k]] >= 0)
       SS <- c(dexp(resid[pos],
-                  1 / (inputs[[k]]$par[1] + inputs[[k]]$par[2] * model_out[[k]][pos]),
-                  log = TRUE),
+                   1 / (inputs[[k]]$par[1] + inputs[[k]]$par[2] * model_out[[k]][pos]),
+                   log = TRUE),
               dexp(resid[!pos],
-                  1 / (inputs[[k]]$par[1] + inputs[[k]]$par[3] * model_out[[k]][!pos]),
-                  log = TRUE))
-
+                   1 / (inputs[[k]]$par[1] + inputs[[k]]$par[3] * model_out[[k]][!pos]),
+                   log = TRUE))
+      
       pda.errors[[k]]$n <- n
       pda.errors[[k]]$statistics <- sum(SS, na.rm = TRUE) 
-
+      
+    } else { # Gaussian(s)
+      
+      n <- sum(!is.na(inputs[[k]]$obs))
+      
+      
+      SS <- rep(NA, length(bias.terms))
+      for(b in seq_along(SS)){
+        SS[b] <- sum((bias.terms[b] * model_out[[k]] - inputs[[k]]$obs)^2, na.rm = TRUE)
+      }
+      
+      pda.errors[[k]]$n <- n     
+      pda.errors[[k]]$statistics <- SS 
+      
     }
     
   } # end for-loop

@@ -1000,27 +1000,29 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
 
 return.bias <- function(isbias, model.out, inputs, prior.list){
   
-  optimum.biases <- matrix(NA, nrow = length(model.out), ncol = 3) # hard-coded for now, 2 extra proposal per optimum bias
+  bias.params <- matrix(NA, nrow = length(model.out), ncol = 3) # hard-coded for now, 2 extra proposal per optimum bias
   
   for(iknot in seq_along(model.out)){
     # calculate optimum bias parameter
     regdf <- data.frame(inputs[[isbias]]$obs, model.out[[iknot]][[isbias]])
     colnames(regdf) <- c("data","model")
     fit <- lm( regdf$data ~ regdf$model - 1)
-    optimum.biases[iknot,1] <- fit$coefficients[[1]]
-    optimum.biases[iknot,2:3] <- rnorm(2, optimum.biases[iknot,1], optimum.biases[iknot,1]*0.1)
+    bias.params[iknot,1] <- fit$coefficients[[1]]
+    bias.params[iknot,2:3] <- rnorm(2, bias.params[iknot,1], bias.params[iknot,1]*0.1)
   }
 
-  # propose 2 more bias parameter, hard-coded for now
-  bias.par <- c(bias, rnorm(2, bias, bias*0.1)) 
-  noy <- rnorm(2,optimum.biases, optimum.biases*0.1)
+  prior.min <- min(bias.params) - sd(bias.params)
+  prior.max <- max(bias.params) + sd(bias.params)
   
-  bias.prior <- data.frame(matrix(c("unif", , , NA), nrow = 1))
-  colnames(bias.prior) <- c(distn, parama, paramb, n)
+  bias.prior <- data.frame(matrix(c("unif", paste0(prior.min), paste0(prior.max), NA), nrow = 1))
+  colnames(bias.prior) <- c("distn", "parama", "paramb", "n")
   rownames(bias.prior) <- "bias"
   prior.list[[(length(prior.list)+1)]] <- bias.prior
   
+  # convert params to probs for GPfit
+  bias.probs <- punif(bias.params, prior.min, prior.max)
+
   
-  return(bias.prior)
+  return(list(bias.params = bias.params, bias.probs = bias.probs, prior.list = prior.list))
   
 }
