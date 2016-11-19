@@ -232,37 +232,33 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       prior.ind.all <- which(unlist(pname) %in% unlist(settings$assim.batch$param.names))
       
       X <- knots.probs.all[, prior.ind.all, drop = FALSE]
-    
-     
-      # retrieve n
-      n.of.obs <- sapply(inputs,`[[`, "n") 
       
       # retrieve SS
       error.statistics <- list()
       SS.list <- list()
       
-      for(iknot in seq_len(n.input)){
-        error.statistics[[iknot]] <- sapply(pda.errors,`[[`, iknot)
+      for(inputi in seq_len(n.input)){
+        error.statistics[[inputi]] <- sapply(pda.errors,`[[`, inputi)
         
-        if(iknot == isbias){
+        if(unlist(any.mgauss)[inputi] == "multipGauss") {
           
-          # if yes, then we need to include bias term in the emulator
-          bias.probs <- bias.list$bias.probs
-          biases <- c(t(bias.probs))
-          
-          # replicate model parameter set per bias parameter
-          rep.rows <- rep(1:nrow(X), each = 3) # three for 3 bias params, leaving hard-coded for now
-          X.rep <- X[rep.rows,]
-          X <- cbind(X.rep, biases)
-          
-          SS.list[[iknot]] <- cbind(X, c(error.statistics[[iknot]]))
-          
-          # add indice and increase n.param for bias
-          prior.ind.all <- c(prior.ind.all, prior.ind.all[length(prior.ind.all)]+1)
-          n.param <- c(n.param, 1)
-          
-        } else{
-          SS.list[[iknot]] <- cbind(X, error.statistics[[iknot]])
+            # if yes, then we need to include bias term in the emulator
+            bias.probs <- bias.list$bias.probs
+            biases <- c(t(bias.probs))
+            
+            # replicate model parameter set per bias parameter
+            rep.rows <- rep(1:nrow(X), each = 3) # three for 3 bias params, leaving hard-coded for now
+            X.rep <- X[rep.rows,]
+            X <- cbind(X.rep, biases)
+            
+            SS.list[[inputi]] <- cbind(X, c(error.statistics[[inputi]]))
+            
+            # add indice and increase n.param for bias
+            prior.ind.all <- c(prior.ind.all, prior.ind.all[length(prior.ind.all)]+1)
+            n.param <- c(n.param, 1)
+
+        } else {
+          SS.list[[inputi]] <- cbind(X, error.statistics[[inputi]])
         } # if-block
         
       } # for-loop
@@ -345,8 +341,10 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     pckg <- 2
   }
   
-  # define range to make sure mcmc.GP doesn't propose new values outside
+  # retrieve n
+  n.of.obs <- sapply(inputs,`[[`, "n") 
   
+  # define range to make sure mcmc.GP doesn't propose new values outside
   rng <- matrix(c(sapply(prior.fn.all$qprior[prior.ind.all],
                          eval,
                          list(p = 0)), 
