@@ -203,9 +203,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       bias.terms <- bias.list$bias.params
       prior.list <- bias.list$prior.list
       prior.fn <- lapply(prior.list, pda.define.prior.fn)
-      # add indice and increase n.param for bias
-      prior.ind.all <- c(prior.ind.all, prior.ind.all[length(prior.ind.all)]+1)
-      n.param <- c(n.param, 1)
     } else {
       bias.terms <- matrix(1, nrow = settings$assim.batch$n.knot, ncol = 1) # just 1 for Gaussian
     }
@@ -235,35 +232,44 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       prior.ind.all <- which(unlist(pname) %in% unlist(settings$assim.batch$param.names))
       
       X <- knots.probs.all[, prior.ind.all, drop = FALSE]
-      
-      # prepare knots and statistics for emulator per input variable
-      emulator.prep <- list()
-      
+    
+     
+      # retrieve n
+      n.of.obs <- sapply(inputs,`[[`, "n") 
       # retrieve SS
       estats <-lapply(pda.errors, function(x) sapply(x,`[[`, "statistics"))
-      # retrieve n
-      n.of.obs <- sapply(inputs,`[[`, "n")
-      # retrieve and format SS
-      error.statistics <- lapply(estats, function(x) do.call("cbind", x))
-      SS.0 <- data.frame(do.call("rbind", error.statistics))
-      
-      
-      # check if multiplicative Gaussian was in the likelihoods
-      if(any(unlist(any.mgauss) == "multipGauss")){
-        
-        # if yes, then we need to include bias term in the emulator
-        bias.probs <- bias.list$bias.probs
-        biases <- c(t(bias.probs))
-        
-        # replicate model parameter set per bias parameter
-        rep.rows <- rep(1:nrow(X), each = 3) # three for 3 bias params, leaving hard-coded for now
-        X.rep <- X[rep.rows,]
-        X <- cbind(X.rep, biases)
-        
-      } 
 
-      # each sublist becomes model params + bias + SS per data
-      SS.list <- lapply(SS.0, function(x) cbind(X, x))
+      # retrieve SS
+      error.statistics <- list()
+      SS.list <- list()
+      
+      for(iknot in seq_len(n.input)){
+        error.statistics[[iknot]] <- sapply(estats,`[[`, iknot)
+        
+        if(iknot == isbias){
+          
+          # if yes, then we need to include bias term in the emulator
+          bias.probs <- bias.list$bias.probs
+          biases <- c(t(bias.probs))
+          
+          # replicate model parameter set per bias parameter
+          rep.rows <- rep(1:nrow(X), each = 3) # three for 3 bias params, leaving hard-coded for now
+          X.rep <- X[rep.rows,]
+          X <- cbind(X.rep, biases)
+          
+          SS.list[[iknot]] <- cbind(X, c(error.statistics[[iknot]]))
+          
+          # add indice and increase n.param for bias
+          prior.ind.all <- c(prior.ind.all, prior.ind.all[length(prior.ind.all)]+1)
+          n.param <- c(n.param, 1)
+          
+        } else{
+          SS.list[[iknot]] <- cbind(X, error.statistics[[iknot]])
+        } # if-block
+        
+      } # for-loop
+
+
       
       if (!is.null(settings$assim.batch$extension)) {
         # check whether another 'round' of emulator requested
