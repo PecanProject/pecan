@@ -6,7 +6,7 @@
 PFT_name <- "broadleaf_evergreen_tropical_tree"
 
 ## Get PFT id
-dbparms.psql <- list(driver="PostgreSQL" , user = "bety", dbname = "bety", password='bety')
+dbparms.psql <- list(driver="PostgreSQL" , user = "bety", dbname = "bety", password='bety',host='128.197.230.32')
 con <- db.open(dbparms.psql)
 PFT <- data.table(db.query(paste0("SELECT * from pfts where name = '",PFT_name,"'"), con))
 
@@ -15,6 +15,13 @@ PFT_species <- data.table(db.query(paste0("SELECT * from pfts_species where pft_
 
 ## Get new species list
 species <- data.table(db.query("SELECT * from species where notes LIKE '%tropical%'", con))
+## note: this won't match all the species that were ALREADY in BETY when ForestGEO was added
+sppFile <- "ForestGEO_spp_website.csv"
+spp <- read.csv(sppFile,stringsAsFactors=FALSE,strip.white = TRUE)
+spp <- spp[-duplicated(spp$Species),]
+species <- data.table(db.query("SELECT * from species", con))
+sel <- which(tolower(species$scientificname) %in% tolower(spp$Species))
+species <- species[sel,]
 
 ## Associate species with PFT
 for(i in seq_len(nrow(species))){
