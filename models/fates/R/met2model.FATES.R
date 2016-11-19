@@ -93,13 +93,13 @@ met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date,
         ## http://www.cesm.ucar.edu/models/cesm1.2/clm/models/lnd/clm/doc/UsersGuide/x12979.html
         
         # LATITUDE
-        var <- ncvar_def(name = "latitude", units = "degree_north", 
+        var <- ncdf4::ncvar_def(name = "latitude", units = "degree_north", 
                          dim = list(lat.dim, lon.dim), missval = as.numeric(-9999))
         ncout <- nc_create(outfile, vars = var, verbose = verbose)
         ncvar_put(nc = ncout, varid = "latitude", vals = latitude)
         
         # LONGITUDE
-        var <- ncvar_def(name = "longitude", units = "degree_east", 
+        var <- ncdf4::ncvar_def(name = "longitude", units = "degree_east", 
                          dim = list(lat.dim, lon.dim), missval = as.numeric(-9999))
         ncout <- ncvar_add(nc = ncout, v = var, verbose = verbose)
         ncvar_put(nc = ncout, varid = "longitude", vals = longitude)
