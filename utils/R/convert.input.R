@@ -49,7 +49,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     
     if (nrow(existing.dbfile) > 0){
       
-      existing.input <- db.query(past0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
+      existing.input <- db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
       
       # Convert dates to Date objects and strip all time zones
       # (DB values are timezone-free)
