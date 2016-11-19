@@ -1002,10 +1002,11 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
 ##' @export
 return.bias <- function(isbias, model.out, inputs, prior.list){
   
+  # store bias parameters
   bias.params <- matrix(NA, nrow = length(model.out), ncol = 3) # hard-coded for now, 2 extra proposal per optimum bias
   
   for(iknot in seq_along(model.out)){
-    # calculate optimum bias parameter
+    # calculate optimum bias parameter for the model output that has bias
     regdf <- data.frame(inputs[[isbias]]$obs, model.out[[iknot]][[isbias]])
     colnames(regdf) <- c("data","model")
     fit <- lm( regdf$data ~ regdf$model - 1)
