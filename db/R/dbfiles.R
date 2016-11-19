@@ -193,13 +193,13 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
   }
 
   if (is.null(inputid)) {
-    invisible(data.frame())
+    return(data.frame())
   } else {
     if(length(inputid) > 1) {
-      logger.warn("Found multiple matching inputs. Using last.")
-      inputid <- inputid[length(inputid)]
+      logger.warn("Found multiple matching inputs. Checking for one with file associated with it")
+      file.check <- dbfile.check('Input', inputid, con, hostname)
     }
-    invisible(dbfile.check('Input', inputid, con, hostname))
+    return(file.check)
   }
 }
 

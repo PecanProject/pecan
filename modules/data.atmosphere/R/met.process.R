@@ -137,7 +137,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
   if (stage$download.raw) {
     raw.data.site.id <- ifelse(is.null(register$siteid), new.site$id, register$siteid)
     
-    raw.id <- .download.raw.met.module(dir = dir,
+    raw.id <- PEcAn.data.atmosphere:::.download.raw.met.module(dir = dir,
                                        met = met, 
                                        register = register, 
                                        machine = machine, 
@@ -169,7 +169,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                             site.id = new.site.id, 
                             lat = site$lat, lon = site$lon, 
                             start_date = start_date, end_date = end_date, 
-                            str_ns = str_ns, con = con, host = host, 
+                            con = con, host = host, 
                             overwrite = overwrite$met2cf, 
                             format.vars = format.vars)
   }
