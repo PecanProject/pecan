@@ -80,7 +80,6 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
   
   #---------------- Load libraries. -----------------------------------------------------------------#
   library(PEcAn.utils)
-  library(geonames)
   #--------------------------------------------------------------------------------------------------#  
   
   ncvar_get <- ncdf4::ncvar_get
@@ -141,7 +140,7 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
       lst <- tdimunit[length(tdimunit)]  #already in definition, leave it alone
     } else {
       options(geonamesUsername = "carya")  #login to geoname server
-      lst <- GNtimezone(latlon[1], latlon[2], radius = 0)$gmtOffset
+      lst <- geonames::GNtimezone(latlon[1], latlon[2], radius = 0)$gmtOffset
       if (lst >= 0) {
         lststr <- paste("+", lst, sep = "")
       } else {
