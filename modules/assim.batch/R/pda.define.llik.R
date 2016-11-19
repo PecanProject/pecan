@@ -110,9 +110,7 @@ pda.calc.llik <- function(pda.errors, llik.fn, llik.par) {
   n.vec <- sapply(llik.par, `[[`, "n")
   
   for (k in seq_len(n.var)) {
-    
-    llik <- llik.fn[[k]](pda.errors[k], llik.par[[k]])
-    LL.vec[k] <- llik$LL
+    LL.vec[k] <- llik.fn[[k]](pda.errors[k], llik.par[[k]])
   }
   
   weights <- rep(1 / n.var, n.var)  # TODO: Implement user-defined weights

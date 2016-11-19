@@ -125,7 +125,7 @@ get.y <- function(gp, pckg, xnew, ...) {
     X <- matrix(unlist(xnew), nrow = 1, byrow = TRUE)
     
     for(igp in seq_along(gp)){
-      Y <- GPfit::predict.GP(gp[[igp]], X)
+      Y <- GPfit::predict.GP(gp[[igp]], X[, 1:ncol(gp[[igp]]$X), drop=FALSE])
       # likelihood <- Y$Y_hat
       # likelihood <- rnorm(1, Y$Y_hat, sqrt(Y$MSE))
       SS[igp] <- rnorm(1, Y$Y_hat, sqrt(Y$MSE))
