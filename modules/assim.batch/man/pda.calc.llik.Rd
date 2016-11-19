@@ -4,7 +4,7 @@
 \alias{pda.calc.llik}
 \title{Calculate Likelihoods for PDA}
 \usage{
-pda.calc.llik(pda.errors)
+pda.calc.llik(pda.errors, llik.fn, llik.par)
 }
 \arguments{
 \item{all}{params are the identically named variables in pda.mcmc / pda.emulator}

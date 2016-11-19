@@ -186,8 +186,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     ## start model runs
     start.model.runs(settings, settings$database$bety$write)
     
-    # ## Retrieve model outputs, calculate likelihoods (and store them in database)
-    # LL.0 <- rep(NA, settings$assim.batch$n.knot)
+    # ## Retrieve model outputs and error statistics
     model.out <- list()
     pda.errors <- list()
     
@@ -197,6 +196,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       model.out[[i]] <- pda.get.model.output(settings, run.ids[i], bety, inputs)
     }
     
+    any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
     if(any(unlist(any.mgauss) == "multipGauss")) {
       isbias <- which(unlist(any.mgauss) == "multipGauss")
       bias.list <- return.bias(isbias, model.out, inputs, prior.list)
@@ -236,15 +236,13 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
      
       # retrieve n
       n.of.obs <- sapply(inputs,`[[`, "n") 
-      # retrieve SS
-      estats <-lapply(pda.errors, function(x) sapply(x,`[[`, "statistics"))
-
+      
       # retrieve SS
       error.statistics <- list()
       SS.list <- list()
       
       for(iknot in seq_len(n.input)){
-        error.statistics[[iknot]] <- sapply(estats,`[[`, iknot)
+        error.statistics[[iknot]] <- sapply(pda.errors,`[[`, iknot)
         
         if(iknot == isbias){
           
@@ -380,8 +378,13 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     mix <- "each"
   }
   
+  # prepare for parallelization
+  dcores <- parallel::detectCores() - 1
+  ncores <- min(dcores, settings$assim.batch$chain)
+  cl <- parallel::makeCluster(ncores, type="FORK")
+  
   ## Sample posterior from emulator
-  mcmc.out <- lapply(1:settings$assim.batch$chain, function(chain) {
+  mcmc.out <- parallel::parLapply(cl, 1:settings$assim.batch$chain, function(chain) {
     mcmc.GP(gp          = gp, ## Emulator(s)
             pckg        = pckg, ## flag to determine which predict method to use
             x0          = init.list[[chain]],     ## Initial conditions
@@ -399,6 +402,8 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
             resume.list = resume.list[[chain]]
     )
   })
+  
+  parallel::stopCluster(cl)
   
   mcmc.list <- list()
   
@@ -418,7 +423,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                        list(p = mcmc.out[[c]]$mcmc[, i]))
       }
     }
-    colnames(m) <- unlist(pname)[prior.ind.all]
+    colnames(m) <- rownames(prior.all)[prior.ind.all]
     mcmc.list[[c]] <- m
     
     # jmp.list[[c]] <- mcmc.out[[c]]$jump
