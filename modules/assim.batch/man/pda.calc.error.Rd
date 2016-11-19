@@ -4,17 +4,19 @@
 \alias{pda.calc.error}
 \title{Calculate Likelihood parameters}
 \usage{
-pda.calc.error(settings, con, model_out, run.id, inputs)
+pda.calc.error(settings, con, model_out, run.id, inputs, bias.terms)
 }
 \arguments{
 \item{settings}{list}
 
+\item{model_out}{list}
+
 \item{inputs}{list}
 
-\item{model.out}{list}
+\item{bias.terms}{matrix}
 }
 \value{
-inputs updated inputs list with likelihood parameters
+pda.errors
 }
 \description{
 Calculate Likelihood parameters

@@ -145,6 +145,11 @@ pda.calc.llik <- function(pda.errors, llik.fn, llik.par) {
 } # pda.calc.llik
 
 
+
+##' @title pda.calc.llik.par
+##' @author Istem Fer
+##' @export
+
 pda.calc.llik.par <-function(settings, n, error.stats){
   
   llik.par <- list()

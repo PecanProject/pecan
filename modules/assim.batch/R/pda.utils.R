@@ -997,7 +997,9 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
   # The if block above is generating return values
 } # correlationPlot
 
-
+##' @title return.bias
+##' @author Istem Fer
+##' @export
 return.bias <- function(isbias, model.out, inputs, prior.list){
   
   bias.params <- matrix(NA, nrow = length(model.out), ncol = 3) # hard-coded for now, 2 extra proposal per optimum bias

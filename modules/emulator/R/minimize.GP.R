@@ -116,7 +116,7 @@ calculate.prior <- function(samples, priors) {
 ##' @name get.y
 ##' @title get.y
 ##' @export
-get.y <- function(gp, pckg, xnew, ...) {
+get.y <- function(gp, pckg, xnew, n.of.obs, llik.fn, priors, settings) {
   
   SS <- numeric(length(gp))
   
@@ -227,8 +227,8 @@ mcmc.GP <- function(gp, pckg, x0, nmcmc, rng, format = "lin", mix = "joint", spl
         }
       }
       # if(bounded(xnew,rng)){
-      ycurr <- get.y(gp, pckg, xcurr, priors)
-      ynew  <- get.y(gp, pckg, xnew, priors)
+      ycurr <- get.y(gp, pckg, xcurr, n.of.obs, llik.fn, priors, settings)
+      ynew  <- get.y(gp, pckg, xnew, n.of.obs, llik.fn, priors, settings)
       if (is.accepted(ycurr, ynew)) {
         xcurr <- xnew
         # ycurr <- ynew
@@ -246,8 +246,8 @@ mcmc.GP <- function(gp, pckg, x0, nmcmc, rng, format = "lin", mix = "joint", spl
           }
         }
         # if(bounded(xnew,rng)){
-        ycurr <- get.y(gp, pckg, xcurr, priors)
-        ynew  <- get.y(gp, pckg, xnew, priors)
+        ycurr <- get.y(gp, pckg, xcurr, n.of.obs, llik.fn, priors, settings)
+        ynew  <- get.y(gp, pckg, xnew, n.of.obs, llik.fn, priors, settings)
         if (is.accepted(ycurr, ynew)) {
           xcurr <- xnew
           # ycurr <- ynew
