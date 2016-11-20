@@ -101,7 +101,7 @@ met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date,
         # LONGITUDE
         var <- ncdf4::ncvar_def(name = "longitude", units = "degree_east", 
                          dim = list(lat.dim, lon.dim), missval = as.numeric(-9999))
-        ncout <- ncvar_add(nc = ncout, v = var, verbose = verbose)
+        ncout <- ncdf4::ncvar_add(nc = ncout, v = var, verbose = verbose)
         ncvar_put(nc = ncout, varid = "longitude", vals = longitude)
         
         ## surface_downwelling_longwave_flux_in_air
