@@ -21,16 +21,15 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   
   outname <- tail(unlist(strsplit(outfolder, "/")), n = 1)
   
-  print(paste("start CHECK Convert.Inputs", fcn, input.id, host$name, outfolder, 
+  logger.info(paste("start CHECK Convert.Inputs", fcn, input.id, host$name, outfolder, 
               formatname, mimetype, site.id, start_date, end_date))
   
   
   ##----------------------------------------------------------------------------------------------------------------##  
   
   if (exact.dates){
-    ## If Model Needs exact dates for run then this section will handle it. 
     
-    # Find Existing input with correct dates. Note: math.dates = TRUE
+    # Find Existing input with exact dates.
     
     existing.dbfile <- dbfile.input.check(siteid = site.id,
                                           mimetype = mimetype, 
@@ -40,11 +39,11 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                           enddate = end_date, 
                                           con = con, 
                                           hostname = host$name, 
-                                          match.dates = TRUE)
+                                          exact.dates = TRUE)
     
 
-    print(existing.dbfile, digits = 10)
-    print("end CHECK")
+    logger.info(existing.dbfile, digits = 10)
+    logger.info("end CHECK for existing input record")
     
     
     if (nrow(existing.dbfile) > 0){
@@ -75,32 +74,24 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                           host, user = NA, 
                                           verbose = TRUE,R = "R")
       
-                        # Schedule files to be replaced or deleted on exiting the function
-                        successful <- FALSE
-                        # collect files to flag for deletion
-                        
-                        files.to.delete <- remote.execute.R( paste0("list.files('",
-                                                                    existing.dbfile[["file_path"]],
-                                                                    "', full.names=TRUE)"),
-                                                             host, user = NA, verbose = TRUE,R = "R")
-                        
-                        file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
-                        
-                        remote.execute.R( file.deletion.commands$move.to.tmp,
-                                          host, user = NA, 
-                                          verbose = TRUE,R = "R")
-                        
+                       
                         # Schedule files to be replaced or deleted on exiting the function
                         successful <- FALSE
                         on.exit(if (exists("successful") && successful) {
                           
-                          logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-                          remote.execute.R( file.deletion.commands$delete.tmp, host, user = NA, verbose = TRUE,  R = "R" )
+                                    logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
+                                    remote.execute.R( file.deletion.commands$delete.tmp, 
+                                                      host, user = NA, 
+                                                      verbose = TRUE,  R = "R" )
                           
-                        } else {
-                          logger.info("Conversion failed. Replacing old files.")
-                          remote.execute.R(file.deletion.commands$replace.from.tmp, host, user = NA, verbose = TRUE, R = "R" )
-                        })
+                                } else {
+                                    logger.info("Conversion failed. Replacing old files.")
+                                    remote.execute.R( file.deletion.commands$replace.from.tmp, 
+                                                      host, user = NA, 
+                                                      verbose = TRUE, R = "R" )
+                                }
+                        )#Close on.exit
+                        
           }
       
     
@@ -118,8 +109,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   
     }else{
     
-      ## Either Running met2model for models that do not need exact dates
-      ## Or running non met2model conversion scripts (download.raw, met2cf, etc.)
+      
       
       existing.dbfile <- dbfile.input.check(siteid = site.id,
                                             mimetype = mimetype, 
@@ -131,8 +121,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                             hostname = host$name)
       
       
-      print(existing.dbfile, digits = 10)
-      print("end CHECK")
+      logger.info(existing.dbfile, digits = 10)
+      logger.info("end CHECK for existing input record")
       
       
       if (nrow(existing.dbfile) > 0) {
@@ -165,13 +155,19 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                         successful <- FALSE
                         on.exit(if (exists("successful") && successful) {
             
-                        logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-                        remote.execute.R( file.deletion.commands$delete.tmp, host, user = NA, verbose = TRUE,  R = "R" )
+                                    logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
+                                    remote.execute.R( file.deletion.commands$delete.tmp,
+                                                      host, user = NA, 
+                                                      verbose = TRUE,  R = "R" )
             
-                      } else {
-                          logger.info("Conversion failed. Replacing old files.")
-                          remote.execute.R(file.deletion.commands$replace.from.tmp, host, user = NA, verbose = TRUE, R = "R" )
-          })
+                                    } else {
+                                      
+                                    logger.info("Conversion failed. Replacing old files.")
+                                    remote.execute.R( file.deletion.commands$replace.from.tmp,
+                                                      host, user = NA,
+                                                      verbose = TRUE, R = "R" )
+                                    } 
+                        )#close on on.exit
           
         } else if ((start_date >= existing.input$start_date) &&
                    (end_date <= existing.input$end_date)) {
@@ -367,9 +363,9 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     result <- remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = "R")
   }
   
-  print("RESULTS: Convert.Input")
-  print(result)
-  print(names(result))
+  logger.info("RESULTS: Convert.Input")
+  logger.info(result)
+  logger.info(names(result))
   
   #--------------------------------------------------------------------------------------------------#
   # Insert into Database
