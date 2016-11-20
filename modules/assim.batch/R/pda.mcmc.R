@@ -29,6 +29,9 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
                            jvar = jvar, n.knot = n.knot)
   
   
+  ## will be used to check if multiplicative Gaussian is requested
+  any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
+  
   ## Open database connection
   if (settings$database$bety$write) {
     con <- try(db.open(settings$database$bety), silent = TRUE)
@@ -41,7 +44,7 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
     con <- NULL
   }
   
-  bety <- PEcAn.visualization::betyConnect("~/pecan/web/config.php")
+  bety <- betyConnect("~/pecan/web/config.php")
   
   ## Load priors
   temp        <- pda.load.priors(settings, bety$con)
@@ -187,9 +190,25 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
           ## Read model outputs
           model.out <- pda.get.model.output(settings, run.id, bety, inputs)
           
-          ## Calculate likelihood (and store in database)
-          LL.new <- pda.calc.llik(settings, con, model.out, run.id, inputs, llik.fn)
+          # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
+          if(any(unlist(any.mgauss) == "multipGauss")) {
+            isbias <- which(unlist(any.mgauss) == "multipGauss")
+            # testing now
+            nbias <- 1
+            bias.list <- return.bias(isbias, list(model.out), inputs, prior.list, nbias)
+            bias.terms <- bias.list$bias.params
+          } else {
+            bias.terms <- matrix(1, nrow = 1, ncol = 1) # just 1 for Gaussian
+          }
           
+          ## calculate error statistics      
+          pda.errors <- pda.calc.error(settings, con, model_out = model.out, run.id, inputs, bias.terms)
+          llik.par <- pda.calc.llik.par(settings, 
+                                        n = sapply(inputs,`[[`, "n"), 
+                                        error.stats = unlist(pda.errors))
+          ## Calculate likelihood 
+          LL.new <- pda.calc.llik(pda.errors = unlist(pda.errors), llik.fn, llik.par)
+
           ## Accept or reject step
           a <- LL.new - LL.old + prior.star - prior.old
           if (is.na(a)) {

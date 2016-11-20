@@ -828,6 +828,7 @@ return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias, run.r
 
   prior.min <- min(bias.params) - sd(bias.params)
   prior.max <- max(bias.params) + sd(bias.params)
+  
   bias.prior <- data.frame(matrix(c("unif", paste0(prior.min), paste0(prior.max), NA), nrow = 1))
   
   colnames(bias.prior) <- c("distn", "parama", "paramb", "n")
