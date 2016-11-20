@@ -5,8 +5,7 @@
 ##' 
 ##' @author Betsy Cowdery
 
-metric.MSE <- function(dat, ...){
-  score <- mean((dat$model - dat$obvs)^2)
-  return(score)
-}
-
+metric.MSE <- function(dat, ...) {
+  logger.info("Metric: Mean Square Error")
+  return(mean((dat$model - dat$obvs) ^ 2))
+} # metric.MSE

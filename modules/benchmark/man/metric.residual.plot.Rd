@@ -2,9 +2,9 @@
 % Please edit documentation in R/metric.residual.plot.R
 \name{metric.residual.plot}
 \alias{metric.residual.plot}
-\title{metric.residual.plot}
+\title{Residual Plot}
 \usage{
-metric.residual.plot(dat, var)
+metric.residual.plot(dat, var, filename = NA, draw.plot = FALSE)
 }
 \arguments{
 \item{dat}{}

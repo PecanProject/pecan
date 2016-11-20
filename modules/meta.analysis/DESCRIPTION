@@ -18,9 +18,11 @@ Depends:
     MASS,
     PEcAn.utils,
     PEcAn.DB
+Imports:
+    coda (>= 0.18)
 Suggests:
     rjags,
-    testthat,
+    testthat (>= 1.0.2),
     PEcAn.priors
 SystemRequirements: JAGS
 License: FreeBSD + file LICENSE

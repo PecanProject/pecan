@@ -18,8 +18,10 @@ priordupe <- function(parent.pft.name = NULL,
                       new.pft.definition =  NULL,
                       settings = NULL){
                       
-  require(PEcAn.DB)
+  library(PEcAn.DB)
   con <- db.open(settings$database$bety)
+  on.exit(db.close(con))
+  
   parent.pft.id <- db.query(paste("select id from pfts where name = ",
                                     parent.pft.name, ";"), con=con)
 
@@ -47,5 +49,4 @@ priordupe <- function(parent.pft.name = NULL,
                    new.pfts_priors$pft_id,
                    "specie_id = ",
                    new.pfts_priors$priors_id, ";"), con=con)
-  db.close(con)
 }

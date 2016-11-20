@@ -3,47 +3,45 @@
 ##'  
 ##' @name create.BRR
 ##' @title Create benchmark reference run and ensemble
-##' @param ensemble.id id of ensemble run that will be used for benchmarking
+##' @param ens_wf table made from joining ensemble and workflow tables 
 ##' @param con database connection
 ##' @export 
 ##' 
 ##' @author Betsy Cowdery 
 
-create.BRR <- function(ensemble.id, workflow, con){
+create.BRR <- function(ens_wf, con, user_id = ""){
   
-  cnd1 <- workflow$hostname == fqdn() 
-  cnd2 <- workflow$hostname == 'test-pecan.bu.edu' & fqdn() == 'pecan2.bu.edu'
-  cnd3 <- workflow$hostname == 'pecan2.bu.edu' & fqdn() == 'test-pecan.bu.edu'
+  cnd1 <- ens_wf$hostname == fqdn() 
+  cnd2 <- ens_wf$hostname == 'test-pecan.bu.edu' & fqdn() == 'pecan2.bu.edu'
+  cnd3 <- ens_wf$hostname == 'pecan2.bu.edu' & fqdn() == 'test-pecan.bu.edu'
   
   
   if(cnd1|cnd2|cnd3){  # If the ensemble run was done on localhost, turn into a BRR
     
-    BRR <- db.query(paste0("INSERT INTO reference_runs (model_id, settings, user_id, created_at, updated_at) VALUES(",workflow$model_id,", '",workflow$folder,"' , ",user_id,", NOW() , NOW()) RETURNING *;"),con)
+    settingsXML <- file.path(ens_wf$folder,"pecan.CHECKED.xml")
     
-    bm.ensemble <- db.query(paste0("INSERT INTO benchmarks_ensembles (reference_run_id, ensemble_id, model_id, user_id, created_at, updated_at, citation_id) VALUES(",BRR$id,",",ensemble.id,",", BRR$model_id,", ",user_id,", NOW() , NOW(), 1000000001 ) RETURNING *;"),con)
-
+    # Automatically creates a new pecan.xml I think. Need to fix this. 
+    clean <- clean.settings(inputfile = settingsXML,write=FALSE)
+    # Remove database & host information
+    clean$database <- NULL 
+    clean$host <- NULL
+    clean$info <- NULL
+    clean$outdir <- NULL
+    str(clean)
+    
+    settings_xml <- toString(listToXml(clean, "pecan"))
+    
+    ref_run <- db.query(paste0(" SELECT * from reference_runs where settings = '", settings_xml,"'"),con)
+    
+    if(length(ref_run) == 0){ # Make new reference run entry
+      ref_run <- db.query(paste0("INSERT INTO reference_runs (model_id, settings, user_id)",
+                                 "VALUES(",ens_wf$model_id,", '",settings_xml,"' , ",user_id,
+                                 ") RETURNING *;"),con)
+    }else if(dim(ref_run)[1] > 1){# There shouldn't be more than one reference run with the same settings
+      logger.error("There is more than one reference run in the database with these settings. Review for duplicates. ")
+    }
+    BRR <- ref_run %>% rename(.,reference_run_id = id)
     return(BRR)
-  }else{logger.error(sprintf("Cannot create a benchmark reference run for a run on hostname: %s",  workflow$hostname))}
-}
-  
-  
-  # Case in which we would need a remote connection to get the pecan.xml file - not functional
-  
-  # else if(workflow$hostname != fqdn()){
-  #   
-  #   old.settings <- file.path(workflow$folder, "pecan.xml") 
-  #   # some sort of remote call to copy over the contents of old.settings into new.settings 
-  #   new.settings <- sprintf("pecan/%s.pecan.xml", basename(workflow$folder))
-  #   
-  #   cmdFcn <- sprintf("system('cat %s', intern=TRUE)",old.settings)
-  #   result <- remote.execute.R(script=cmdFcn,workflow$hostname,user=,verbose=TRUE,R="R")
-  #   writeLines(result, new.settings)
-  #   clean.settings(new.settings,new.settings)
-  #   
-  #   system(sprintf("Rscript web/workflow.R %s", new.settings))
-  #   return(settings)
-  #   
-  #   BRR <- db.query(paste0("INSERT INTO reference_runs (model_id, settings, user_id, created_at, updated_at) VALUES(",settings$model$id,", '",settings$outdir,"' , ",user_id,", NOW() , NOW()) RETURNING *;"),con)
-  #   
-  #   bm.ensemble <- db.query(paste0("INSERT INTO benchmarks_ensembles (reference_run_id, ensemble_id, model_id, user_id, created_at, updated_at, citation_id) VALUES(",BRR$id,",",ensemble$id,",", BRR$model_id,", ",user_id,", NOW() , NOW(), 1000000001 ) RETURNING *;"),con)
-  #   }
+  }else{logger.error(sprintf("Cannot create a benchmark reference run for a run on hostname: %s", 
+                             ens_wf$hostname))}
+} #create.BRR
