@@ -1,12 +1,12 @@
 ##Author: Brady S. Hardiman 04/30/2013
 require(rgdal)
-require(raster)
-require(sp)
-require(RgoogleMaps)
-require(maptools)
-require(ggplot2)
-require(car)
-require(spatsta)
+library(raster)
+library(sp)
+library(RgoogleMaps)
+library(maptools)
+library(ggplot2)
+library(car)
+library(spatsta)
 
 
 #####################################################################

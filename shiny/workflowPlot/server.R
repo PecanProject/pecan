@@ -1,4 +1,5 @@
 library(PEcAn.visualization)
+library(PEcAn.DB)
 library(shiny)
 library(ncdf4)
 library(ggplot2)
@@ -67,17 +68,17 @@ server <- shinyServer(function(input, output, session) {
         ylab <- ""
         for(file in files) {
           nc <- nc_open(file)
-          var <- ncatt_get(nc, var_name)
-          #sw <- if ('Swdown' %in% names(nc$var)) ncvar_get(nc, 'Swdown') else TRUE
+          var <- ncdf4::ncatt_get(nc, var_name)
+          #sw <- if ('Swdown' %in% names(nc$var)) ncdf4::ncvar_get(nc, 'Swdown') else TRUE
           sw <- TRUE
           title <- var$long_name
           ylab <- var$units
-          x <- ncdays2date(ncvar_get(nc, 'time'), ncatt_get(nc, 'time'))
-          y <- ncvar_get(nc, var_name)
+          x <- ncdays2date(ncdf4::ncvar_get(nc, 'time'), ncdf4::ncatt_get(nc, 'time'))
+          y <- ncdf4::ncvar_get(nc, var_name)
           b <- !is.na(x) & !is.na(y) & sw != 0
           dates <- if(is.na(dates)) x[b] else c(dates, x[b])
           vals <- if(is.na(vals)) y[b] else c(vals, y[b])
-          nc_close(nc)
+          ncdf4::nc_close(nc)
         }
         xlab <- if (is.null(ranges$x)) "Time" else paste(ranges$x, collapse=" - ")
         # plot result

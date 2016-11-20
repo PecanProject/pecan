@@ -1,87 +1,110 @@
-#' @name getBurnin
 #' @title Calculate burnin value
-#' @description Use `coda::gelman_plot` to calculate first iteration number where Gelman diagnostic never exceeds the specified threshold.
+#' 
+#' @description Automatically detect burnin based on one of several methods.
 #' @param jags_out List of MCMC sample matrices or `mcmc.list` object
 #' @param threshold Maximum value of Gelman diagnostic
-#' @param use.confidence Logical. If TRUE (default), use 95% confidence interval for Gelman Diagnostic.
-#' @param plotfile Filename for a PNG of the Gelman plot. Default = '/dev/null'
-#' If FALSE, use the point estimate.
-#' @inheritParams coda::gelman.diag
-#' @param ... Other parameters to `gelman.plot`
+#' @param method Character string indicating method. Options are 
+#' "moving.window" (default) or "gelman.plot".
+#' @param use.confidence Logical. If TRUE (default), use 95% confidence 
+#' interval for Gelman Diagnostic. If FALSE, use the point estimate.
+#' @param ... Other parameters to methods
+#' 
+#' @details 
+#' See "gelman_diag_mw" and "gelman_diag_gelmanPlot"
+#' 
 #' @examples
-#'      library(coda)
-#'      data(line)
-#'      burnin <- getBurnin(line, threshold = 1.05)
-#' @author Michael Dietze, Alexey Shiklomanov
+#'      z1 <- coda::mcmc(c(rnorm(2500, 5), rnorm(2500, 0)))
+#'      z2 <- coda::mcmc(c(rnorm(2500, -5), rnorm(2500, 0)))
+#'      z <- coda::mcmc.list(z1, z2)
+#'      burnin <- getBurnin(z, threshold = 1.05)
+#' @author Alexey Shiklomanov, Michael Dietze
 #' @export
-getBurnin <- function(jags_out, threshold = 1.1, use.confidence = TRUE, autoburnin = FALSE,
-                      plotfile = "/dev/null", ...) {
-    library(coda)
-    if (length(find("logger.info")) == 0) {
-        msg <- message
-    } else {
-        msg <- logger.info
-    }
-    if (!is.mcmc.list(jags_out)) jags_out <- makeMCMCList(jags_out)
-    png(plotfile)
-    GBR <- try(gelman.plot(jags_out, autoburnin = autoburnin, ...))
-    dev.off()
-    if (class(GBR) == "try-error") {
-        msg("Unable to calculate Gelman diagnostic. Assuming no convergence.")
-        return(1)
-    }
-    column <- ifelse(use.confidence, 2, 1)
-    gbr_values <- GBR$shrink[,, column, drop = FALSE]
-    gbr_exceed <- gbr_values > threshold
-    if (all(!gbr_exceed)) {
-        # Chains converged instantly -- no burnin required
-        burnin <- 2     # This isn't 1 to allow testing for convergence with `burnin == 1`
-    } else {
-        burnin <- GBR$last.iter[tail(which(rowSums(gbr_exceed) > 0), 1) + 1]
-    }
-    if (is.na(burnin)) {
-        msg("*** Chains have not converged yet ***")
-        mvals <- as.data.frame(matrix(gbr_values, nrow(gbr_values), ncol(gbr_values)))
-        colnames(mvals) <- colnames(gbr_values)
-        mex <- as.data.frame(matrix(gbr_exceed, nrow(gbr_exceed), ncol(gbr_exceed)))
-        colnames(mex) <- sprintf("PSRF %s > %.2f", colnames(gbr_exceed), threshold)
-        print(cbind(tail(mvals), tail(mex)))
-        burnin <- 1
-    }
-    return(burnin)
-}
 
-#' @name autoburnin
+getBurnin <- function(jags_out,
+                      threshold = 1.1, 
+                      use.confidence = TRUE,
+                      method = "moving.window",
+                      plotfile = "/dev/null",
+                      ...) {
+  if (method == "moving.window") {
+    GBR <- try(gelman_diag_mw(jags_out, ...))
+  } else if (method == "gelman.plot") {
+    GBR <- try(gelman_diag_gelmanPlot(jags_out, ...))
+  } else {
+    stop("Unknown method: ", method)
+  }
+  if (class(GBR) == "try-error") {
+    message("Unable to calculate Gelman diagnostic. Assuming no convergence.")
+    return(1)
+  }
+  column <- ifelse(use.confidence, 2, 1)
+  gbr_values <- GBR[, -(1:2), column, drop = FALSE]
+  gbr_exceed <- gbr_values > threshold
+  if (all(!gbr_exceed)) {
+    # Chains converged instantly -- no burnin required
+    burnin <- 2     # This isn't 1 to allow testing for convergence with `burnin == 1`
+  } else {
+    index <- tail(which(rowSums(gbr_exceed) > 0), 1) + 1
+    stopifnot(length(index) == 1,
+              class(index) %in% c("numeric", "integer"))
+    if (index > dim(GBR)[1]) {
+      burnin <- NA
+    } else {
+      burnin <- GBR[index, "Start", column]
+    }
+  }
+  if (is.na(burnin)) {
+    message("*** Chains have not converged yet ***")
+    mvals <- as.data.frame(matrix(gbr_values, nrow(gbr_values), ncol(gbr_values)))
+    colnames(mvals) <- colnames(gbr_values)
+    mex <- as.data.frame(matrix(gbr_exceed, nrow(gbr_exceed), ncol(gbr_exceed)))
+    colnames(mex) <- sprintf("PSRF %s > %.2f", colnames(gbr_exceed), threshold)
+    print(cbind(tail(mvals), tail(mex)))
+    burnin <- 1
+  }
+  return(burnin)
+} # getBurnin
+
 #' @title Automatically calculate and apply burnin value
+#'
 #' @author Michael Dietze, Alexey Shiklomanov
-#' @param return.burnin Logical. If `TRUE`, return burnin value in addition to samples (as list). 
-#' @param ... Additional arguments for `getBurnin`, `gelman.plot`, and `gelman.diag`
-#' Default = FALSE.
+#' @param return.burnin Logical. If `TRUE`, return burnin value in addition to 
+#' samples (as list). Default = FALSE.
+#' @param ... Additional arguments for \code{getBurnin}, \code{gelman_diag_mw}, 
+#' and \code{gelman.diag}.
 #' @inheritParams getBurnin
 #' @examples
-#'      library(coda)
-#'      data(line)
-#'      line_burned <- autoburnin(line, threshold = 1.05, return.burnin=FALSE)
+#'      z1 <- coda::mcmc(c(rnorm(2500, 5), rnorm(2500, 0)))
+#'      z2 <- coda::mcmc(c(rnorm(2500, -5), rnorm(2500, 0)))
+#'      z <- coda::mcmc.list(z1, z2)
+#'      z_burned <- autoburnin(z)
 #' @export
-autoburnin <- function(jags_out, return.burnin = FALSE, ...){
-    burnin <- getBurnin(jags_out, ...)
-    if (burnin == 1) return(jags_out)
-    out <- window(jags_out, start = burnin)
-    if (return.burnin) {
-        out <- list(samples = out, burnin = burnin)
-    }
-    return(out)
-}
+autoburnin <- function(jags_out, return.burnin = FALSE, ...) {
+  burnin <- getBurnin(jags_out, ...)
+  if (burnin == 1) {
+    samples <- jags_out
+  } else if (burnin > 1) {
+    samples <- window(jags_out, start = burnin)
+  } else {
+    stop("Bad return value for burnin: \n",
+         burnin)
+  }
+  if (return.burnin) {
+    out <- list(samples = samples, burnin = burnin)
+  } else {
+    out <- samples
+  }
+  return(out)
+} # autoburnin
 
-#' @name makeMCMCList
 #' @title Make MCMC list from samples list
+#'
 #' @param samps samples list (output from invert.custom)
 #' @export
 makeMCMCList <- function(samps) {
-    samps.mcmc <- lapply(samps, mcmc)
-    stopifnot(all(sapply(samps.mcmc, is.mcmc)))
-    samps.mcmc.list <- mcmc.list(samps.mcmc)
-    stopifnot(is.mcmc.list(samps.mcmc.list))
-    return(samps.mcmc.list)
-}
-
+  samps.mcmc <- lapply(samps, coda::mcmc)
+  stopifnot(all(sapply(samps.mcmc, coda::is.mcmc)))
+  samps.mcmc.list <- coda::mcmc.list(samps.mcmc)
+  stopifnot(coda::is.mcmc.list(samps.mcmc.list))
+  return(samps.mcmc.list)
+} # makeMCMCList

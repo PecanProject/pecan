@@ -16,7 +16,6 @@ export _R_CHECK_FORCE_SUGGESTS_="FALSE"
 
 # these variables are set using the command line arguments below
 CHECK="no"
-DEPENDENCIES="no"
 DOCUMENTATION="no"
 FORCE="no"
 GIT="no"
@@ -39,7 +38,6 @@ while true; do
     --help|-h)
       echo "$0 <options>"
       echo " --check         : check the R packages before install"
-      echo " --dependencies  : install any dependencies"
       echo " --documentation : (re)generates all Rd files"
       echo " --force         : force a build"
       echo " --git           : do a git pull"
@@ -64,14 +62,6 @@ while true; do
 
     --no-check)
       CHECK="no"
-      ;;
-
-    --dependencies)
-      DEPENDENCIES="yes"
-      ;;
-
-    --no-dependencies)
-      DEPENDENCIES="no"
       ;;
 
     --documentation)
@@ -136,18 +126,6 @@ while true; do
   shift
 done
 
-# packages that are to be compiled
-PACKAGES="utils db settings visualization"
-PACKAGES="${PACKAGES} models/jules models/clm45 models/maat"
-PACKAGES="${PACKAGES} models/preles models/gday models/lpjguess models/maespa"
-PACKAGES="${PACKAGES} modules/priors modules/meta.analysis modules/uncertainty"
-PACKAGES="${PACKAGES} modules/data.land modules/data.atmosphere modules/data.remote"
-PACKAGES="${PACKAGES} modules/assim.batch modules/benchmark modules/assim.sequential modules/emulator"
-PACKAGES="${PACKAGES} modules/allometry modules/photosynthesis"
-PACKAGES="${PACKAGES} models/ed models/sipnet models/biocro models/dalec models/linkages"
-PACKAGES="${PACKAGES} modules/rtm"
-PACKAGES="${PACKAGES} all"
-
 # location where to install packages
 if [ -z $R_LIBS_USER ]; then
   echo "R_LIBS_USER not set, this could prevent the script from running correctly."
@@ -193,21 +171,13 @@ mv newlog git.log
 
 STATUS="OK"
 
-# install all dependencies
-if [ "$DEPENDENCIES" == "yes" ]; then
-  echo "----------------------------------------------------------------------"
-  echo "DEPENDENCIES"
-  echo "----------------------------------------------------------------------"
-  ./scripts/install.dependencies.R 2>&1
-fi
-
 # generate documentation
 if [ "$DOCUMENTATION" == "yes" ]; then
   for p in ${PACKAGES}; do
     echo "----------------------------------------------------------------------"
     echo "DOCUMENTATION $p"
     echo "----------------------------------------------------------------------"
-    echo "if (require(roxygen2)) roxygenise('$p')" | R --vanilla 2>&1
+    make document
   done
 fi
 
@@ -225,63 +195,12 @@ START=`date +'%s'`
 # get version number
 REVNO=$( git show -s --pretty=format:%T master )
 
+make install
+
 # check/install packages
-for p in ${PACKAGES}; do
-  PACKAGE="OK"
-  ACTION=""
-  BASENAME=$(basename "$p")
-
-  if [ "$CHECK" == "yes" ]; then
-    ACTION="CHECK"
-    R CMD check ${R_LIB_INC} ${MANUAL} $p &> out.log
-    if [ $? -ne 0 ]; then
-      STATUS="BROKEN"
-      PACKAGE="BROKEN"
-      echo "----------------------------------------------------------------------"
-      echo "CHECK $p BROKEN"
-      echo "----------------------------------------------------------------------"
-      cat out.log
-      if [ -e "${BASENAME}.Rcheck/00install.out" ]; then
-        echo "--- ${BASENAME}.Rcheck/00install.out"
-        cat "${BASENAME}.Rcheck/00install.out"
-      fi
-      if [ -e "${BASENAME}.Rcheck/tests/testthat.Rout.fail" ]; then
-        echo "--- ${BASENAME}.Rcheck/tests/testthat.Rout.fail"
-        cat "${BASENAME}.Rcheck/tests/testthat.Rout.fail"
-      fi
-    fi
-  fi
-
-  if [ "$PACKAGE" == "OK" -a "$INSTALL" == "yes" ]; then
-    if [ "$ACTION" == "" ]; then
-      ACTION="INSTALL"
-    else
-      ACTION="$ACTION/INSTALL"
-    fi
-    R CMD INSTALL --build ${R_LIB_INC} $p &> out.log
-    if [ $? -ne 0 ]; then
-      STATUS="BROKEN"
-      PACKAGE="BROKEN"
-      echo "----------------------------------------------------------------------"
-      echo "INSTALL $p BROKEN"
-      echo "----------------------------------------------------------------------"
-      cat out.log
-      if [ -e "${BASENAME}.Rcheck/00install.out" ]; then
-        echo "--- ${BASENAME}.Rcheck/00install.out"
-        cat "${BASENAME}.Rcheck/00install.out"
-      fi
-    fi
-  fi
-  
-  if [ "$PACKAGE" == "OK" ]; then
-    if [ "$ACTION" == "" ]; then
-      ACTION="DID NOTHING"
-    fi
-    echo "----------------------------------------------------------------------"
-    echo "$ACTION $p OK"
-    echo "----------------------------------------------------------------------"
-  fi
-done
+if [ "$CHECK" == "yes" ]; then
+  make check
+fi
 
 # all done
 TIME=$(echo "`date +'%s'` - $START" |bc -l)
@@ -295,6 +214,7 @@ rm -rf out.log *.Rcheck PEcAn.*.tar.gz PEcAnRTM*.tar.gz PEcAn.*.tgz
 # run tests
 if [ "$TESTS" == "yes" ]; then
   START=`date +'%s'`
+  make test
   cd tests
   for f in ${NAME}.*.xml; do
     rm -rf pecan

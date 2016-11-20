@@ -29,14 +29,12 @@ met2model.CLM45 <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
   #close
   #defining temporal dimension needs to be figured out. If we configure clm to use same tstep then we may not need to change dimensions
   
-#   require("PEcAn.data.atmosphere")
-#   require("PEcAn.utils")
-#   require("ncdf4")
-#   require("udunits2")
+#   library("PEcAn.data.atmosphere")
+#   library("PEcAn.utils")
 #   
 #   #Process start and end dates
-#   start_date<-as.POSIXlt(start.date,tz="GMT")
-#   end_date<-as.POSIXlt(end.date,tz="GMT")
+#   start_date<-as.POSIXlt(start.date,tz="UTC")
+#   end_date<-as.POSIXlt(end.date,tz="UTC")
 #   
 #   start_year <- year(start_date)
 #   end_year <- year(end_date)
@@ -52,7 +50,7 @@ met2model.CLM45 <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
 #     if(file.exists(met.file.y)){
 #       
 #       ## Open netcdf file
-#       nc=nc_open(met.file.y)
+#       nc=ncdf4::nc_open(met.file.y)
 #       
 #       
 #       ## convert time to seconds
@@ -76,8 +74,8 @@ met2model.CLM45 <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
   
   ## extract variables. These need to be read in and converted to CLM standards
   
-#   ncvar_rename(ncfile,varid="LONGXY")
-#   ncvar_rename(ncfile,varid="LATIXY")
+#   ncdf4::ncvar_rename(ncfile,varid="LONGXY")
+#   ncdf4::ncvar_rename(ncfile,varid="LATIXY")
 #   #     double ZBOT(time, lat, lon) ;
 #   #     ZBOT:long_name = "observational height" ;
 #   #     ZBOT:units = "m" ;

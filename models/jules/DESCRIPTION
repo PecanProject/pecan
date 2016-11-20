@@ -8,8 +8,11 @@ Maintainer: Mike Dietze <dietze@bu.edu>
 Description: This module provides functions to link the (JULES) to PEcAn.
 Depends:
     PEcAn.utils
+Imports:
+    lubridate (>= 1.6.0),
+    ncdf4 (>= 1.15)
 Suggests:
-    testthat
+    testthat (>= 1.0.2)
 SystemRequirements: JULES
 OS_type: unix
 License: FreeBSD + file LICENSE

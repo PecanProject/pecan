@@ -3,29 +3,28 @@
 ##' @export
 ##' 
 ##' @author Michael Dietze
-`groupid` <-
-function(x){
-
-  if(is.null(ncol(x))){## | ncol(x) == 1){
-    return(1:length(x))
+groupid <- function(x) {
+  
+  if (is.null(ncol(x))) {
+    ## | ncol(x) == 1){
+    return(seq_along(x))
   }
   
   n <- nrow(x)
-  v <- rep(NA,n)
+  v <- rep(NA, n)
   j <- 1
-  for(i in 1:n){
-    if(is.na(v[i])){
+  for (i in seq_len(n)) {
+    if (is.na(v[i])) {
       v[i] <- j
-      if(i < n){
-        for(k in (i+1):n){
-          if(!any(x[i,] != x[k,])){
+      if (i < n) {
+        for (k in (i + 1):n) {
+          if (!any(x[i, ] != x[k, ])) {
             v[k] <- j
           }
         }
       }
-      j <- j+1
+      j <- j + 1
     }
   }
-  v
-}
-
+  return(v)
+} # groupid

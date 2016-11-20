@@ -1,18 +1,27 @@
 ##' @name metric.scatter.plot
-##' @title metric.scatter.plot
+##' @title Scatter Plot
 ##' @export
-##' @param dat
+##' @param metric_dat
+##' @param var
 ##' 
 ##' @author Betsy Cowdery
 
-metric.scatter.plot <- function(dat, var){
+metric.scatter.plot <- function(metric_dat, var, filename = NA, draw.plot = FALSE) {
+  logger.info("Metric: Scatter Plot")
   
-  library(ggplot2)
+  p <- ggplot2::ggplot(data = metric_dat) 
+  p <- p + ggplot2::geom_point(aes(x = model, y = obvs), size = 4) 
+  p <- p + ggplot2::geom_abline(slope = 1, intercept = 0, colour = "#666666", 
+                       size = 2, linetype = 2)
   
-  ggplot(data = dat) + 
-    geom_point(aes(x=model,y=obvs), size=4) + 
-    geom_abline(slope=1,intercept=0, colour = "#666666", size=2, linetype = 2, lineend = "round")  
+  if (!is.na(filename)) {
+    pdf(filename, width = 10, height = 6)
+    plot(p)
+    dev.off()
+  }
   
-  return(NA)
-}
+  if (draw.plot) {
+    plot(p)
+  }
 
+} # metric.scatter.plot
