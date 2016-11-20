@@ -211,8 +211,9 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncvar_put(nc=param.nc, varid='seed_alloc', start = ipft, count = 1,
                    vals=pft[v])  
        }
+       ## This one is currently allpft level but should be pft level
        if(var == "agf_bs"){                    ## The fraction of sapwood and structural biomass that is above ground [0-1]
-         ncvar_put(nc=param.nc, varid='ag_biomass', start = ipft, count = 1,
+         ncvar_put(nc=param.nc, varid='ag_biomass', start = 1, count = 1,
                    vals=pft[v])  
        }
        
