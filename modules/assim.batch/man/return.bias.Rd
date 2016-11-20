@@ -4,7 +4,8 @@
 \alias{return.bias}
 \title{return.bias}
 \usage{
-return.bias(isbias, model.out, inputs, prior.list, nbias)
+return.bias(isbias, model.out, inputs, prior.list.bias, nbias,
+  run.round = FALSE, prev.bias = NULL)
 }
 \author{
 Istem Fer

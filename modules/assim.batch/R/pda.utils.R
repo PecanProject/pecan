@@ -810,7 +810,7 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
 ##' @title return.bias
 ##' @author Istem Fer
 ##' @export
-return.bias <- function(isbias, model.out, inputs, prior.list, nbias){
+return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias, run.round = FALSE, prev.bias = NULL){
   
   # store bias parameters
   bias.params <- matrix(NA, nrow = length(model.out), ncol = nbias) 
@@ -828,16 +828,23 @@ return.bias <- function(isbias, model.out, inputs, prior.list, nbias){
 
   prior.min <- min(bias.params) - sd(bias.params)
   prior.max <- max(bias.params) + sd(bias.params)
-  
   bias.prior <- data.frame(matrix(c("unif", paste0(prior.min), paste0(prior.max), NA), nrow = 1))
+  
   colnames(bias.prior) <- c("distn", "parama", "paramb", "n")
   rownames(bias.prior) <- "bias"
-  prior.list[[(length(prior.list)+1)]] <- bias.prior
+  prior.list.bias[[(length(prior.list.bias)+1)]] <- bias.prior
   
-  # convert params to probs for GPfit
+  # if this is another round, use the first prior
+  if(run.round){
+    load(prev.bias)
+    prior.list.bias[[length(prior.list.bias)]] <- prior.list[[length(prior.list)]]
+  }
+  
+  # convert params to probs for GPfit 
+  # note: there can be new parameters out of previous min/max if this is a round extension
   bias.probs <- punif(bias.params, prior.min, prior.max)
 
   
-  return(list(bias.params = bias.params, bias.probs = bias.probs, prior.list = prior.list))
+  return(list(bias.params = bias.params, bias.probs = bias.probs, prior.list.bias = prior.list.bias))
   
 }

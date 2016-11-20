@@ -35,20 +35,25 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   ## will be used to check if multiplicative Gaussian is requested
   any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
   
-  extension.check <- settings$assim.batch$extension == "longer"
+  # handle extention flags
+  # is this an extension run
+  extension.check <- is.null(settings$assim.batch$extension) 
   
-  if (length(extension.check) == 0) {
+  if (extension.check) {
     # not an extension run
-    run.block <- TRUE
-    path.flag <- TRUE
-  } else if (length(extension.check) == 1 & extension.check == FALSE) {
+    run.normal <- TRUE
+    run.round <- FALSE
+    run.longer <- FALSE
+  } else if (!extension.check & settings$assim.batch$extension == "round") {
     # 'round' extension
-    run.block <- TRUE
-    path.flag <- FALSE
-  } else {
+    run.normal <- FALSE
+    run.round <- TRUE
+    run.longer <- FALSE
+  } else if (!extension.check & settings$assim.batch$extension == "longer") {
     # 'longer' extension
-    run.block <- FALSE
-    path.flag <- FALSE
+    run.normal <- FALSE
+    run.round <- FALSE
+    run.longer <- TRUE
   }
   
   ## Open database connection
@@ -66,7 +71,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   bety <- betyConnect("~/pecan/web/config.php")
   
   ## Load priors
-  temp        <- pda.load.priors(settings, bety$con, path.flag)
+  temp        <- pda.load.priors(settings, bety$con, run.normal)
   prior.list  <- temp$prior
   settings    <- temp$settings
   pname       <- lapply(prior.list, rownames)
@@ -118,10 +123,8 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   knots.params <- lapply(knots.list, `[[`, "params")
   knots.probs <- lapply(knots.list, `[[`, "probs")
   
-  ## Check which emulator extension type requested if any
-  if (!is.null(settings$assim.batch$extension)) {
-    
-    if (settings$assim.batch$extension == "round") {
+  ## Run this block if this is a "round" extension
+  if (run.round) {
       
       # save the original prior path
       temp.path <- settings$assim.batch$prior$path
@@ -175,48 +178,50 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       
       knots.params <- lapply(knots.list, `[[`, "params")
       knots.probs  <- lapply(knots.list, `[[`, "probs")
-      
-    }  # end of round-if
-  }  # end of extension-if
+  } # end round-if block
   
-  if (run.block) {
-    ## Set up runs and write run configs for all proposed knots
-    run.ids <- pda.init.run(settings, con, my.write.config, workflow.id, knots.params, 
+  ## Run this block if this is normal run or a "round" extension
+  if(run.normal | run.round){
+      
+      ## Set up runs and write run configs for all proposed knots
+      run.ids <- pda.init.run(settings, con, my.write.config, workflow.id, knots.params, 
                             n = settings$assim.batch$n.knot, 
                             run.names = paste0(settings$assim.batch$ensemble.id, 
                                                ".knot.",
                                                1:settings$assim.batch$n.knot))    
-    ## start model runs
-    start.model.runs(settings, settings$database$bety$write)
+      ## start model runs
+      start.model.runs(settings, settings$database$bety$write)
     
-    # ## Retrieve model outputs and error statistics
-    model.out <- list()
-    pda.errors <- list()
+      ## Retrieve model outputs and error statistics
+      model.out <- list()
+      pda.errors <- list()
     
     
-    ## read model outputs    
-    for (i in seq_len(settings$assim.batch$n.knot)) {
-      model.out[[i]] <- pda.get.model.output(settings, run.ids[i], bety, inputs)
-    }
+      ## read model outputs    
+      for (i in seq_len(settings$assim.batch$n.knot)) {
+        model.out[[i]] <- pda.get.model.output(settings, run.ids[i], bety, inputs)
+      }
     
-    if(any(unlist(any.mgauss) == "multipGauss")) {
-      isbias <- which(unlist(any.mgauss) == "multipGauss")
-      # how many bias parameters per dataset requested
-      nbias <- ifelse(is.null(settings$assim.batch$inputs[[isbias]]$nbias), 1,
+      # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
+      if(any(unlist(any.mgauss) == "multipGauss")) {
+        isbias <- which(unlist(any.mgauss) == "multipGauss")
+        # how many bias parameters per dataset requested
+        nbias <- ifelse(is.null(settings$assim.batch$inputs[[isbias]]$nbias), 1,
                       as.numeric(settings$assim.batch$inputs[[isbias]]$nbias))
-      bias.list <- return.bias(isbias, model.out, inputs, prior.list, nbias)
-      bias.terms <- bias.list$bias.params
-      prior.list <- bias.list$prior.list
-      prior.fn <- lapply(prior.list, pda.define.prior.fn)
-    } else {
-      bias.terms <- matrix(1, nrow = settings$assim.batch$n.knot, ncol = 1) # just 1 for Gaussian
-    }
+        bias.list <- return.bias(isbias, model.out, inputs, prior.list, nbias, run.round, settings$assim.batch$bias.path)
+        bias.terms <- bias.list$bias.params
+        prior.list <- bias.list$prior.list.bias
+        prior.fn <- lapply(prior.list, pda.define.prior.fn)
+      } else {
+        bias.terms <- matrix(1, nrow = settings$assim.batch$n.knot, ncol = 1) # just 1 for Gaussian
+      }
     
-    for (i in seq_len(settings$assim.batch$n.knot)) {
-      ## calculate error statistics      
-      pda.errors[[i]] <- pda.calc.error(settings, con, model_out = model.out[[i]], run.id = run.ids[i], inputs, bias.terms[i,])
-    } 
-  } # end run.block-if
+      for (i in seq_len(settings$assim.batch$n.knot)) {
+        ## calculate error statistics      
+        pda.errors[[i]] <- pda.calc.error(settings, con, model_out = model.out[[i]], run.id = run.ids[i], inputs, bias.terms[i,])
+      } 
+    
+  } # end if-block
   
 
   
@@ -224,12 +229,13 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   jmp.list <- list()
   
   prior.all <- do.call("rbind", prior.list)
+  # keep this ind.all w/o bias until extracting prob values below 
   prior.ind.all <- which(unlist(pname) %in% unlist(settings$assim.batch$param.names))
   
   if (settings$assim.batch$GPpckg == "GPfit") {
     # GPfit-if
     
-    if (run.block) {
+    if (run.normal | run.round) {
       
       ## GPfit optimization routine assumes that inputs are in [0,1] Instead of drawing from parameters,
       ## we draw from probabilities
@@ -269,14 +275,13 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
 
 
       
-      if (!is.null(settings$assim.batch$extension)) {
-        # check whether another 'round' of emulator requested
+      if (run.round) {
+        # check if this is another 'round' of emulator 
         
         # load original knots
-        load(settings$assim.batch$llik.path)
-        # TODO: loop over SS.list
+        load(settings$assim.batch$ss.path)
         # add on
-        SS <- rbind(SS.X, SS)
+        SS <- lapply(seq_along(SS), function(iss) rbind(SS.list[[iss]], SS[[iss]]))
         
       } else {
         SS <- SS.list
@@ -288,7 +293,8 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       GPmodel <- lapply(SS, function(x) GP_fit(X = x[, -ncol(x), drop = FALSE], Y = x[, ncol(x), drop = FALSE]))
       gp <- GPmodel
       
-    } else { # run.block-if
+    } else { # is this a "longer" type of extension run
+      
       load(settings$assim.batch$emulator.path)  # load previously built emulator(s) to run a longer mcmc
       load(settings$assim.batch$ss.path)
       load(settings$assim.batch$resume.path)
@@ -360,7 +366,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                          eval, 
                          list(p = 1))), nrow = sum(n.param))
   
-  if (run.block) {
+  if (run.normal | run.round) {
     
     resume.list <- list()
     
@@ -402,7 +408,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
             ar.target   = settings$assim.batch$jump$ar.target,   ## Target acceptance rate
             priors      = prior.fn.all$dprior[prior.ind.all], ## priors
             settings    = settings,
-            run.block   = run.block,  
+            run.block   = (run.normal | run.round),  
             n.of.obs    = n.of.obs,
             llik.fn     = llik.fn,
             resume.list = resume.list[[chain]]
