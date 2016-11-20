@@ -262,10 +262,11 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncvar_put(nc=param.nc, varid='dleaf', start = ipft, count = 1,
                    vals=udunits2::ud.convert(pft[v],"mm","m"))
        }
-       if(var == "nonlocal_dispersal"){    # Place-holder parameter for important seed dispersal parameters
-         ncvar_put(nc=param.nc, varid='seed_dispersal_x', start = ipft, count = 1,
-                   vals=pft[v])
-       }
+       ## Currently not in param.nc file despite being on NGEE-T parameter list       
+       #       if(var == "nonlocal_dispersal"){    # Place-holder parameter for important seed dispersal parameters
+       #         ncvar_put(nc=param.nc, varid='seed_dispersal_x', start = ipft, count = 1,
+       #                   vals=pft[v])
+       #       }
        if(var == "hgt_min"){               # The height of a new recruit
          ncvar_put(nc=param.nc, varid='hgt_min', start = ipft, count = 1,
                    vals=pft[v])
