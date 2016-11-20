@@ -1000,18 +1000,20 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
 ##' @title return.bias
 ##' @author Istem Fer
 ##' @export
-return.bias <- function(isbias, model.out, inputs, prior.list){
+return.bias <- function(isbias, model.out, inputs, prior.list, nbias){
   
   # store bias parameters
-  bias.params <- matrix(NA, nrow = length(model.out), ncol = 3) # hard-coded for now, 2 extra proposal per optimum bias
+  bias.params <- matrix(NA, nrow = length(model.out), ncol = nbias) 
   
   for(iknot in seq_along(model.out)){
     # calculate optimum bias parameter for the model output that has bias
     regdf <- data.frame(inputs[[isbias]]$obs, model.out[[iknot]][[isbias]])
     colnames(regdf) <- c("data","model")
-    fit <- lm( regdf$data ~ regdf$model - 1)
+    fit <- lm( regdf$data ~ (regdf$model - 1))
     bias.params[iknot,1] <- fit$coefficients[[1]]
-    bias.params[iknot,2:ncol(bias.params)] <- rnorm(2, bias.params[iknot,1], bias.params[iknot,1]*0.1)
+    if(ncol(bias.params) > 1){
+      bias.params[iknot,  2:ncol(bias.params)] <- rnorm(ncol(bias.params)-1, bias.params[iknot,1], bias.params[iknot,1]*0.1)
+    }
   }
 
   prior.min <- min(bias.params) - sd(bias.params)

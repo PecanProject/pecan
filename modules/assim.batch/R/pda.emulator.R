@@ -199,7 +199,10 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
     if(any(unlist(any.mgauss) == "multipGauss")) {
       isbias <- which(unlist(any.mgauss) == "multipGauss")
-      bias.list <- return.bias(isbias, model.out, inputs, prior.list)
+      # how many bias parameters per dataset requested
+      nbias <- ifelse(is.null(settings$assim.batch$inputs[[isbias]]$nbias), 1,
+                      as.numeric(settings$assim.batch$inputs[[isbias]]$nbias))
+      bias.list <- return.bias(isbias, model.out, inputs, prior.list, nbias)
       bias.terms <- bias.list$bias.params
       prior.list <- bias.list$prior.list
       prior.fn <- lapply(prior.list, pda.define.prior.fn)
@@ -211,10 +214,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       ## calculate error statistics      
       pda.errors[[i]] <- pda.calc.error(settings, con, model_out = model.out[[i]], run.id = run.ids[i], inputs, bias.terms[i,])
     } 
-      # # ## calculate likelihood
-      # LL.0[i] <- pda.calc.llik(pda.errors[[i]]$pda.error)
-      # 
-  }
+  } # end run.block-if
   
 
   
@@ -247,7 +247,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
             biases <- c(t(bias.probs))
             
             # replicate model parameter set per bias parameter
-            rep.rows <- rep(1:nrow(X), each = 3) # three for 3 bias params, leaving hard-coded for now
+            rep.rows <- rep(1:nrow(X), each = nbias)
             X.rep <- X[rep.rows,]
             X <- cbind(X.rep, biases)
             
@@ -284,7 +284,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       GPmodel <- lapply(SS, function(x) GP_fit(X = x[, -ncol(x), drop = FALSE], Y = x[, ncol(x), drop = FALSE]))
       gp <- GPmodel
       
-    } else {
+    } else { # run.block-if
       load(settings$assim.batch$emulator.path)  # load previously built emulator to run a longer mcmc
       load(settings$assim.batch$llik.path)
       load(settings$assim.batch$resume.path)
