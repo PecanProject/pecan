@@ -12,18 +12,21 @@
 ##' @param site.id
 ##' @param overwrite 
 ##' @param verbose
+##' @param swdn_method - Downwelling shortwave flux in air downscaling method (options are "sine", "spline", and "Waichler")
+##' @param n_ens - numeric value with the number of ensembles to run
+##' @param w_len - numeric value that is the window length in days  
 ##' @author James Simkins
+
+# substr function from right side 
+substrRight <- function(x, n) {
+  substr(x, nchar(x) - n + 1, nchar(x))
+}
+
 met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfolder, 
-                                                     input_met, train_met, site_id, overwrite = FALSE, verbose = FALSE, ...) {
+                                                     input_met, train_met, site_id, overwrite = FALSE, verbose = FALSE, 
+                                                     swdn_method = "sine", n_ens = 10, w_len = 20, ... ) {
   # arguments
-  swdn_method <- "sine"
-  ensemble_members <- 10
-  wd <- 20
-  utc_diff <- -6
   
-  substrRight <- function(x, n) {
-    substr(x, nchar(x) - n + 1, nchar(x))
-  }
   sub_str <- substrRight(input_met, 7)
   year <- substr(sub_str, 1, 4)
   year <- as.numeric(year)
@@ -85,13 +88,12 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
       if (length(train$air_temperature)%%366 == 0) {
         train <- train[1:365 * (nrow(train)/366)]
       }
-      eph_year <- 2006
+      eph_year <- year - 1
     }
   }  #chose a non-leap year to use for daylength calculations if we don't have the 
   if (lubridate::leap_year(eph_year) == TRUE) {
     sp <- 366
-  }
-  if (lubridate::leap_year(eph_year) == FALSE) {
+  } else {
     sp <- 365
   }
   
@@ -99,7 +101,7 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
   # random normal distribution is used to downscale as so;
   # (mean <- value of source data) (sd <- +/- window_days of train data at the
   # same time intervals) 
-  for (e in seq_along(1:ensemble_members)) {
+  for (e in seq_len(n_ens)) {
     
     div <- nrow(train)/nrow(source)  #tells us how many values need to be generated (via downscaling) from each source value
     sd_step <- nrow(train)/sp  #allows us to step through each window at specific times
@@ -112,33 +114,30 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
     temp <- c("air_temperature", "air_temperature_max", "air_temperature_min")
     df <- data.frame()
     for (u in temp) {
-      woo <- vector()
-      a <- as.numeric(train[[u]])
+      train_vec <- as.numeric(train[[u]])
       sour <- as.numeric(source[[u]])
       if (all(is.na(sour)) == TRUE) {
-        woo <- rep(NA, reso_len)
-      }
-      if (all(is.na(sour)) == FALSE) {
+        train_vec <- rep(NA, reso_len)
+      } else {
         for (x in seq_along(sour)) {
-          four <- vector()
-          for (n in seq_along(1:div)) {
-            lowday <- x * div - wd * sd_step + n
-            highday <- x * div + wd * sd_step + n
+          for (n in seq_len(div)) {
+            lowday <- x * div - w_len * sd_step + n
+            highday <- x * div + w_len * sd_step + n
             if (lowday < 0) {
               lowday <- x + n
-              highday <- x + n + wd * sd_step + n
+              highday <- x + n + w_len * sd_step + n
             }
             if (highday > reso_len) {
               highday <- reso_len
-              lowday <- x * div - wd * sd_step + n
+              lowday <- x * div - w_len * sd_step + n
             }
-            four[n] <- rnorm(1, mean = sour[x], sd = sd(a[seq(from = lowday, 
-                                                              to = highday, by = sd_step)]))
+            dwnsc_day[n] <- rnorm(1, mean = sour[x], sd = sd(a[seq(from = lowday, 
+                                                                   to = highday, by = sd_step)]))
           }
-          woo <- append(woo, four)
+          train_vec <- append(train_vec, dwnsc_day)
         }
       }
-      df[1:length(woo), u] <- woo
+      df[1:length(train_vec), u] <- train_vec
     }
     
     # Makes sure that max temps >= avg temp and min temps <= avg temp
@@ -147,16 +146,14 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
         if (df$air_temperature_max[x] < df$air_temperature[x]) {
           df$air_temperature_max[x] <- df$air_temperature[x]
         }
-      }
-      if (all(is.na(df$air_temperature_max)) == TRUE) {
+      } else {
         df$air_temperature_max <- rep(NA, reso_len)
       }
       if (all(is.na(df$air_temperature_min)) == FALSE) {
         if (df$air_temperature_min[x] > df$air_temperature[x]) {
           df$air_temperature_min[x] <- df$air_temperature[x]
         }
-      }
-      if (all(is.na(df$air_temperature_min)) == TRUE) {
+      } else {
         df$air_temperature_min <- rep(NA, reso_len)
       }
     }
@@ -165,23 +162,21 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
     # a total possible amount of precip.  It randomly distributes the values of
     # precipitation
     rand_vect_cont <- function(N, M, sd = 1) {
-      vec <- rnorm(N, M/N, sd)
+      vec <- rtruncnorm(N, a = 0, b = Inf,M/N, sd)
       vec/sum(vec) * M
     }
     precip <- vector()
     for (x in seq_along(source$precipitation_flux)) {
-      lowday <- (x - wd) * div
-      highday <- (x + wd) * div
+      lowday <- (x - w_len) * div
+      highday <- (x + w_len) * div
       if (lowday < 0) {
         lowday <- 0
       }
       if (highday > reso_len) {
         highday <- reso_len
       }
-      four <- vector()
-      four <- rand_vect_cont(div, source$precipitation_flux[x], sd = sd(train$precipitation_flux[lowday:highday]))
-      four[four < 0] <- 0
-      precip <- append(precip, four)
+      dwnsc_day <- rand_vect_cont(div, source$precipitation_flux[x], sd = sd(train$precipitation_flux[lowday:highday]))
+      precip <- append(precip, dwnsc_day)
     }
     df$precipitation_flux <- precip
     
@@ -189,30 +184,30 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
     wnd <- c("specific_humidity", "eastward_wind", "northward_wind", "surface_downwelling_longwave_flux_in_air", 
              "air_pressure")
     for (u in wnd) {
-      woo <- vector()
+      train_vec <- vector()
       a <- as.numeric(train[[u]])
       sour <- as.numeric(source[[u]])
       if (all(is.na(sour)) == TRUE) {
-        woo <- rep(NA, reso_len)
+        train_vec <- rep(NA, reso_len)
       }
       if (all(is.na(sour)) == FALSE) {
         for (x in seq_along(sour)) {
-          lowday <- (x - wd) * div
-          highday <- (x + wd) * div
+          lowday <- (x - w_len) * div
+          highday <- (x + w_len) * div
           if (lowday < 0) {
             lowday <- 0
           }
           if (highday > reso_len) {
             highday <- reso_len
           }
-          four <- vector()
-          for (n in seq_along(1:div)) {
-            four[n] <- rnorm(1, mean = sour[x], sd = sd(a[lowday:highday]))
+          dwnsc_day <- vector()
+          for (n in seq_len(div)) {
+            dwnsc_day[n] <- rnorm(1, mean = sour[x], sd = sd(a[lowday:highday]))
           }
-          woo <- append(woo, four)
+          train_vec <- append(train_vec, dwnsc_day)
         }
       }
-      df[1:length(woo), u] <- woo
+      df[1:length(train_vec), u] <- train_vec
     }
     
     df$specific_humidity[df$specific_humidity < 0] <- 0
@@ -245,8 +240,8 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
     # The sine swdn_method produces an hourly sine wave of
     if (swdn_method == "sine") {
       
-      eph <- ephemeris(lat_train, lon_train, date = paste0(eph_year, "-01-01 00:00:00"), 
-                       span = sp, tz = "UTC")
+      eph <- ephemeris(lat_train, lon_train, date = paste0(eph_year, "-01-01", tz = "UTC"), 
+                       span = sp)
       day_len <- eph$day_length
       
       # Need to have average daily values for this swdn_method, so this upscales the
@@ -254,7 +249,7 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
       daily_row <- nrow(source)
       daily_step <- daily_row/sp
       daily.swdn <- vector()
-      for (x in 1:sp) {
+      for (x in seq_len(sp)) {
         daily.swdn[x] <- mean(swsource[(x * daily_step - daily_step + 1):(x * daily_step)])
       }
       
@@ -267,16 +262,15 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
         srs <- eph$sunrise
         hr <- substr(srs[i], 1, 2)
         hr <- as.numeric(hr)
-        hr <- hr + utc_diff
         
         l <- vector()
-        for (n in seq_along(1:hr)) {
+        for (n in seq_len(hr)) {
           l[n] <- 0
         }
         for (n in seq_along(wav)) {
           l[n + hr] <- wav[n]
         }
-        for (n in seq_along(1:(24 - (length(wav) + hr)))) {
+        for (n in seq_len(24 - (length(wav) + hr))) {
           l[n + hr + length(wav)] <- 0
         }
         
@@ -285,7 +279,7 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
       
       swflux <- vector()
       sw_step <- length(swdn)/reso_len
-      for (x in 1:reso_len) {
+      for (x in seq_len(reso_len)) {
         swflux[x] <- mean(swdn[(x * sw_step - sw_step + 1):(x * sw_step)])
       }
       swflux[swflux < 0] <- 0
@@ -306,18 +300,18 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
     
     # The Waichler swdn_method doesn't need averaged SW train values, it sources SW
     # downwelling flux based on Tmax-Tmin and Precipitation Reference is Waichler and
-    # Wigtosa 2003. Our no-precip coefficient is 2 instead of 1 (fits the data
-    # better)
+    # Wigtosa 2003. Our no-precip coefficient is 2 instead of 1 becuase this better
+    # matches our observations (1 significantly undervalues SW downwelling flux)
     if (swdn_method == "Waichler") {
       inter <- paste0(reso, " hour")
-      days <- seq(as.POSIXct(paste0(eph_year, "-01-01 00:00:00", tz = "US/Central")), 
-                  as.POSIXct(paste0(eph_year, "-12-31 18:00:00", tz = "US/Central")), 
+      days <- seq(as.POSIXct(paste0(eph_year, "-01-01 00:00:00")), 
+                  as.POSIXct(paste0(eph_year, "-12-31 18:00:00")), 
                   by = inter)
       
       Z <- RAtmosphere::SZA(days, lat_train, lon_train)
       I <- 1000 * aspace::cos_d(Z)
       m <- vector()
-      for (i in seq_along(1:12)) {
+      for (i in seq_len(12)) {
         m[i] <- Hmisc::monthDays(as.Date(paste0(year, "-", i, "-01")))
       }
       bmlist <- vector()
@@ -356,8 +350,8 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
                             create_dimvar = TRUE)
     lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon_train, 
                             create_dimvar = TRUE)
-    time <- ncdf4::ncdim_def(name = "time", units = "sec", vals = (1:reso_len) * 
-                             reso * 3600, create_dimvar = TRUE, unlim = TRUE)
+    time <- ncdf4::ncdim_def(name = "time", units = "sec", vals = seq_len(reso_len) * 
+                               reso * 3600, create_dimvar = TRUE, unlim = TRUE)
     dim <- list(lat, lon, time)
     
     for (j in seq_along(var$CF.name)) {
@@ -396,3 +390,4 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
 
 # met_temporal_downscale.Gaussian_ensemble( '~', '~',
 # 'dwnsc','MACA.IPSL-CM5A-LR.rcp85.r1i1p1.2006.nc', 'US-WCr.2006.nc')
+# met_temporal_downscale.Gaussian_ensemble( '~', '~', 'dwnsc','MACA.IPSL-CM5A-LR.rcp85.r1i1p1.2006.nc', 'US-WCr.2006.nc')
