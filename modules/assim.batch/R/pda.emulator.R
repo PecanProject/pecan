@@ -32,6 +32,9 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     settings$assim.batch$GPpckg <- "GPfit"
   }
   
+  ## will be used to check if multiplicative Gaussian is requested
+  any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
+  
   extension.check <- settings$assim.batch$extension == "longer"
   
   if (length(extension.check) == 0) {
@@ -196,7 +199,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       model.out[[i]] <- pda.get.model.output(settings, run.ids[i], bety, inputs)
     }
     
-    any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
     if(any(unlist(any.mgauss) == "multipGauss")) {
       isbias <- which(unlist(any.mgauss) == "multipGauss")
       # how many bias parameters per dataset requested
@@ -221,6 +223,9 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   init.list <- list()
   jmp.list <- list()
   
+  prior.all <- do.call("rbind", prior.list)
+  prior.ind.all <- which(unlist(pname) %in% unlist(settings$assim.batch$param.names))
+  
   if (settings$assim.batch$GPpckg == "GPfit") {
     # GPfit-if
     
@@ -229,8 +234,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       ## GPfit optimization routine assumes that inputs are in [0,1] Instead of drawing from parameters,
       ## we draw from probabilities
       knots.probs.all <- do.call("cbind", knots.probs)
-      prior.ind.all <- which(unlist(pname) %in% unlist(settings$assim.batch$param.names))
-      
+
       X <- knots.probs.all[, prior.ind.all, drop = FALSE]
       
       # retrieve SS
@@ -285,16 +289,21 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       gp <- GPmodel
       
     } else { # run.block-if
-      load(settings$assim.batch$emulator.path)  # load previously built emulator to run a longer mcmc
-      load(settings$assim.batch$llik.path)
+      load(settings$assim.batch$emulator.path)  # load previously built emulator(s) to run a longer mcmc
+      load(settings$assim.batch$ss.path)
       load(settings$assim.batch$resume.path)
-      # load(settings$assim.batch$mcmc.path)
       
-      prior.all <- do.call("rbind", prior.list)
-      prior.ind.all <- which(unlist(pname) %in% unlist(settings$assim.batch$param.names))
-      prior.fn.all <- pda.define.prior.fn(prior.all)
-      
-      
+
+      if(any(unlist(any.mgauss) == "multipGauss")){
+        load(settings$assim.batch$bias.path) # load prior.list with bias term from previous run
+        prior.all <- do.call("rbind", prior.list)
+        
+        # add indice and increase n.param for bias
+        prior.ind.all <- c(prior.ind.all, prior.ind.all[length(prior.ind.all)]+1)
+        n.param <- c(n.param, 1)
+      }
+
+  
       for (c in seq_len(settings$assim.batch$chain)) {
         init.list[[c]] <- resume.list[[c]]$prev.samp[nrow(resume.list[[c]]$prev.samp), ]
         jmp.list[[c]] <- resume.list[[c]]$jump
@@ -302,7 +311,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     }
     
     ## Change the priors to unif(0,1) for mcmc.GP
-    prior.all <- do.call("rbind", prior.list)
     prior.all[prior.ind.all, ] <- rep(c("unif", 0, 1, "NA"), each = sum(n.param))
 
     ## Set up prior functions accordingly
@@ -466,6 +474,16 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                                                        settings$assim.batch$ensemble.id, 
                                                        ".Rdata"))
   save(resume.list, file = settings$assim.batch$resume.path)
+  
+  # save prior.list with bias term
+  if(any(unlist(any.mgauss) == "multipGauss")){
+    settings$assim.batch$bias.path <- file.path(settings$outdir, 
+                                                  paste0("bias.pda", 
+                                                         settings$assim.batch$ensemble.id, 
+                                                         ".Rdata"))
+    save(prior.list, file = settings$assim.batch$bias.path)
+  }
+
   
   # Separate each PFT's parameter samples (and bias term) to their own list
   mcmc.param.list <- list()
