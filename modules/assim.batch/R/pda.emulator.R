@@ -449,11 +449,11 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                                                          ".Rdata"))
   save(gp, file = settings$assim.batch$emulator.path)
   
-  settings$assim.batch$llik.path <- file.path(settings$outdir, 
-                                              paste0("llik.pda", 
+  settings$assim.batch$ss.path <- file.path(settings$outdir, 
+                                              paste0("ss.pda", 
                                                      settings$assim.batch$ensemble.id, 
                                                      ".Rdata"))
-  save(LL, file = settings$assim.batch$llik.path)
+  save(SS, file = settings$assim.batch$ss.path)
   
   settings$assim.batch$mcmc.path <- file.path(settings$outdir, 
                                               paste0("mcmc.list.pda", 
@@ -467,10 +467,10 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                                                        ".Rdata"))
   save(resume.list, file = settings$assim.batch$resume.path)
   
-  # Separate each PFT's parameter samples to their own list
+  # Separate each PFT's parameter samples (and bias term) to their own list
   mcmc.param.list <- list()
   ind <- 0
-  for (i in seq_along(settings$pfts)) {
+  for (i in seq_along(n.param)) {
     mcmc.param.list[[i]] <- lapply(mcmc.list, function(x) x[, (ind + 1):(ind + n.param[i]), drop = FALSE])
     ind <- ind + n.param[i]
   }
