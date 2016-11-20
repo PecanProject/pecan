@@ -95,7 +95,7 @@ met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date,
         # LATITUDE
         var <- ncdf4::ncvar_def(name = "latitude", units = "degree_north", 
                          dim = list(lat.dim, lon.dim), missval = as.numeric(-9999))
-        ncout <- nc_create(outfile, vars = var, verbose = verbose)
+        ncout <- ncdf4::nc_create(outfile, vars = var, verbose = verbose)
         ncvar_put(nc = ncout, varid = "latitude", vals = latitude)
         
         # LONGITUDE
