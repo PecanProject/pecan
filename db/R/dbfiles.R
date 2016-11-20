@@ -147,17 +147,16 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
 ##' @param params database connection information
-##' @param match.dates setting to check if argument dates match input record dates
-##' @param contains.dates setting to check if argument dates are between input dates record dates.
+##' @param exact.dates setting to include start and end date in input query
 ##' @return data.frame with the id, filename and pathname of the input that is requested
 ##' @export
-##' @author Rob Kooper
+##' @author Rob Kooper, Tony Gardella
 ##' @examples
 ##' \dontrun{
 ##'   dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, formatname, parentid=NA, 
-                               con, hostname=fqdn(),match.dates=FALSE, contains.dates= FALSE) {
+                               con, hostname=fqdn(), exact.dates=FALSE) {
   if (hostname == "localhost") hostname <- fqdn();
   
   mimetypeid <- get.id('mimetypes', 'type_string', mimetype, con = con)
@@ -179,14 +178,10 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
   }
   
   # find appropriate input
-  if(match.dates) {
+  if(exact.dates) {
     inputid <- db.query(paste0(
       "SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid,
       " AND start_date='", startdate, "' AND end_date='", enddate, "'", parent), con)[['id']]
-  } else if (contains.dates){
-    inputid <- db.query(paste0(
-      "SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid,
-      " AND start_date>='", startdate, "' AND end_date>='", enddate, "'", parent), con)[['id']]
   } else {
     inputid <- db.query(paste0(
       "SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, parent), con)[['id']]
