@@ -1,5 +1,6 @@
 .met2cf.module <- function(raw.id, register, met, str_ns, dir, machine, site.id, lat, lon, start_date, end_date, 
                            con, host, overwrite = FALSE, format.vars) {
+  
   logger.info("Begin change to CF Standards")
   
   input.id   <- raw.id$input.id[1]
