@@ -25,9 +25,9 @@ calc_benchmark <- function(settings, bety) {
   
   # Retrieve/create benchmark ensemble database record
   bm.ensemble <- tbl(bety,'benchmarks_ensembles') %>% 
-    filter(reference_run_id == settings$benchmarking$reference_run_id) %>% 
-    filter(ensemble_id == ensemble$id) %>% 
-    filter(model_id == settings$model$id) %>%
+    filter(reference_run_id == settings$benchmarking$reference_run_id,
+           ensemble_id == ensemble$id,
+           model_id == settings$model$id) %>%
     collect()
   
   if(dim(bm.ensemble)[1] == 0){
@@ -53,7 +53,7 @@ calc_benchmark <- function(settings, bety) {
   
   # All benchmarking records for the given benchmarking ensemble id
   bms <- tbl(bety,'benchmarks') %>% rename(benchmark_id = id) %>%  
-    left_join(.,tbl(bety, "benchmarks_benchmarks_reference_runs"), by="benchmark_id") %>% 
+    left_join(tbl(bety, "benchmarks_benchmarks_reference_runs"), by="benchmark_id") %>% 
     filter(reference_run_id == settings$benchmarking$reference_run_id) %>% 
     select(one_of("benchmark_id", "input_id", "site_id", "variable_id", "reference_run_id")) %>%
     collect() %>%
