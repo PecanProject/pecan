@@ -27,10 +27,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
     adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot)
   
-  ## if which package to use for creating the Gaussian Process is not specified, default to GPfit
-  if (is.null(settings$assim.batch$GPpckg)) {
-    settings$assim.batch$GPpckg <- "GPfit"
-  }
   
   ## will be used to check if multiplicative Gaussian is requested
   any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
@@ -232,8 +228,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   # keep this ind.all w/o bias until extracting prob values below 
   prior.ind.all <- which(unlist(pname) %in% unlist(settings$assim.batch$param.names))
   
-  if (settings$assim.batch$GPpckg == "GPfit") {
-    # GPfit-if
     
     if (run.normal | run.round) {
       
@@ -321,39 +315,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
 
     ## Set up prior functions accordingly
     prior.fn.all <- pda.define.prior.fn(prior.all)
-    pckg <- 1
-    
-  } else {
-    # GPfit-else
-    
-    if (run.block) {
-      X <- data.frame(knots.params[, prior.ind])
-      names(X) <- pname[prior.ind]
-      
-      LL.X <- data.frame(LLik = LL.0, X)
-      
-      if (!is.null(settings$assim.batch$extension)) {
-        # check whether another 'round' of emulator requested
-        
-        # load original knots
-        load(settings$assim.batch$llik.path)
-        LL <- rbind(LL.X, LL)
-        
-      } else {
-        LL <- LL.X
-      }
-      
-      logger.info(paste0("Using 'kernlab' package for Gaussian Process Model fitting."))
-      library(kernlab)
-      ## Generate emulator on LL-params
-      kernlab.gp <- gausspr(LLik ~ ., data = LL)
-      gp <- kernlab.gp
-    } else {
-      load(settings$assim.batch$emulator.path)
-    }
-    
-    pckg <- 2
-  }
+  
   
   # retrieve n
   n.of.obs <- sapply(inputs,`[[`, "n") 
@@ -398,7 +360,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   ## Sample posterior from emulator
   mcmc.out <- parallel::parLapply(cl, 1:settings$assim.batch$chain, function(chain) {
     mcmc.GP(gp          = gp, ## Emulator(s)
-            pckg        = pckg, ## flag to determine which predict method to use
             x0          = init.list[[chain]],     ## Initial conditions
             nmcmc       = settings$assim.batch$iter,       ## Number of reps
             rng         = rng,       ## range
@@ -423,7 +384,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     
     m <- mcmc.out[[c]]$mcmc
     
-    if (settings$assim.batch$GPpckg == "GPfit") {
+
       ## Set the prior functions back to work with actual parameter range
       
       prior.all <- do.call("rbind", prior.list)
@@ -434,7 +395,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
         m[, i] <- eval(prior.fn.all$qprior[prior.ind.all][[i]], 
                        list(p = mcmc.out[[c]]$mcmc[, i]))
       }
-    }
+    
     colnames(m) <- rownames(prior.all)[prior.ind.all]
     mcmc.list[[c]] <- m
     
