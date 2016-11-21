@@ -6,6 +6,6 @@
 ##' @author Betsy Cowdery
 
 metric_AME <- function(dat, ...) {
-  logger.info("Metric: Absolute Maximum Error")
+  PEcAn.utils::logger.info("Metric: Absolute Maximum Error")
   return(max(abs(dat$model - dat$obvs)))
 } # metric_AME

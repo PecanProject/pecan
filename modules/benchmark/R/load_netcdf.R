@@ -44,7 +44,7 @@ load_x_netcdf <- function(data.path, format, site, vars = NULL) {
     }
     # throw error if can't parse time format
     if (is.na(date.origin)) {
-      logger.error("All time formats failed to parse. No formats found.")
+      PEcAn.utils::logger.error("All time formats failed to parse. No formats found.")
     }
     
     time.stamp.match <- gsub("UTC", "", date.origin)
