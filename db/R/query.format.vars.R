@@ -40,7 +40,7 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
   # get variable names and units of input data
   fv <- db.query(paste("SELECT variable_id,name,unit,storage_type,column_number from formats_variables where format_id = ", f$id),con)
   
-  if(!is.na(var.ids)){
+  if(all(!is.na(var.ids))){
     # Need to subset the formats table
     fv <- fv %>% dplyr::filter(variable_id %in% var.ids | storage_type != "") 
   }
