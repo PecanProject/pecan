@@ -10,7 +10,6 @@ options(digits = 10) # just to make things easier to read
 ## ----- setup: these are not necessary but make testing easier ----- ##
 
 library(PEcAn.all)
-library(PEcAn.visualization) # Really shouldn't need this but I haven't reconsiled this and PEcAn.DB
 
 bety <- betyConnect("web/config.php")
 
@@ -77,8 +76,8 @@ if(bm.settings$new_run){
   
 }else{
   
-  settings <- read_settings_RR(settings)
-  settings <- prepare_settings(settings)
+  settings <- read_settings_BRR(settings)
+  settings <- prepare.settings(settings)
   results <- papply(settings, function(x) calc_benchmark(x, bety))
 }
   
