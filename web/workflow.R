@@ -40,7 +40,7 @@ if (is.na(args[1])){
 }
 
 # Check for additional modules that will require adding settings
-if("benchmark" %in% names(settings)){
+if("benchmarking" %in% names(settings)){
   library(PEcAn.benchmark)
   settings <- papply(settings, read_settings_RR)
 }
@@ -143,9 +143,8 @@ if ('state.data.assimilation' %in% names(settings)) {
 }
 
 # Run benchmarking
-if("benchmark" %in% names(settings)){
+if("benchmarking" %in% names(settings)){
   status.start("BENCHMARKING")
-  settings <- papply(settings, function(x) create_benchmark(x, bety))
   results <- papply(settings, function(x) calc_benchmark(x, bety))
   status.end()
 }
