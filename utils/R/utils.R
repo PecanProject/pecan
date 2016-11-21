@@ -605,7 +605,12 @@ misc.convert <- function(x, u1, u2) {
   } else if (u1 == "kg H2O m-2 s-1" & u2 == "mol H2O m-2 s-1") {
     val <- udunits2::ud.convert(x, "kg", "g")/18.01528 # molar mass of H2O, g/mol
   }else {
-    logger.severe(paste("Unknown units", u1, u2))
+    u1 <- gsub("gC","g*12",u1)
+    u2 <- gsub("gC","g*12",u2)
+    val <- udunits2::ud.convert(x,u1,u2)
+    
+    
+#    logger.severe(paste("Unknown units", u1, u2))
   }
   return(val)
 } # misc.convert

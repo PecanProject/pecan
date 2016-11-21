@@ -85,7 +85,7 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
   
   #---------------- Load libraries. -----------------------------------------------------------------#
   library(PEcAn.utils)
-  library(geonames)
+  library(geonames)  ## has to be loaded as a library
   #--------------------------------------------------------------------------------------------------#  
   
   ncvar_get <- ncdf4::ncvar_get
