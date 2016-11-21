@@ -116,11 +116,11 @@ calculate.prior <- function(samples, priors) {
 ##' @name get.y
 ##' @title get.y
 ##' @export
-get.y <- function(gp, pckg, xnew, n.of.obs, llik.fn, priors, settings) {
+get.y <- function(gp, xnew, n.of.obs, llik.fn, priors, settings) {
   
   SS <- numeric(length(gp))
   
-  if (pckg == 1) {
+
     
     X <- matrix(unlist(xnew), nrow = 1, byrow = TRUE)
     
@@ -131,9 +131,6 @@ get.y <- function(gp, pckg, xnew, n.of.obs, llik.fn, priors, settings) {
       SS[igp] <- rnorm(1, Y$Y_hat, sqrt(Y$MSE))
     }
 
-  } else if (pckg == 2) { # TODO
-    likelihood <- predict(gp, xnew)
-  }
   
   llik.par <- pda.calc.llik.par(settings, n.of.obs, SS)
   likelihood <- pda.calc.llik(SS, llik.fn, llik.par)
@@ -174,14 +171,14 @@ is.accepted <- function(ycurr, ynew, format = "lin") {
 ##' @param priors
 ##' 
 ##' @author Michael Dietze
-mcmc.GP <- function(gp, pckg, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcns = NULL, 
+mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcns = NULL, 
                     jmp0 = 0.35 * (rng[, 2] - rng[, 1]), ar.target = 0.5, priors = NA, settings, 
                     run.block = TRUE, n.of.obs, llik.fn, resume.list = NULL) {
   
   haveTime <- FALSE  #library('time')
   
   # get Y
-  Ycurr <- get.y(gp, pckg, x0, n.of.obs, llik.fn, priors, settings)
+  Ycurr <- get.y(gp, x0, n.of.obs, llik.fn, priors, settings)
 
   xcurr <- x0
   dim <- length(x0)
@@ -227,8 +224,8 @@ mcmc.GP <- function(gp, pckg, x0, nmcmc, rng, format = "lin", mix = "joint", spl
         }
       }
       # if(bounded(xnew,rng)){
-      ycurr <- get.y(gp, pckg, xcurr, n.of.obs, llik.fn, priors, settings)
-      ynew  <- get.y(gp, pckg, xnew, n.of.obs, llik.fn, priors, settings)
+      ycurr <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings)
+      ynew  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
       if (is.accepted(ycurr, ynew)) {
         xcurr <- xnew
         # ycurr <- ynew
@@ -246,8 +243,8 @@ mcmc.GP <- function(gp, pckg, x0, nmcmc, rng, format = "lin", mix = "joint", spl
           }
         }
         # if(bounded(xnew,rng)){
-        ycurr <- get.y(gp, pckg, xcurr, n.of.obs, llik.fn, priors, settings)
-        ynew  <- get.y(gp, pckg, xnew, n.of.obs, llik.fn, priors, settings)
+        ycurr <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings)
+        ynew  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
         if (is.accepted(ycurr, ynew)) {
           xcurr <- xnew
           # ycurr <- ynew
