@@ -2,7 +2,7 @@
 ##'
 ##' @title Load Dataset for Paramater Data Assimilation
 ##' ##' This function is used to load and preprocess data for PDA. It is expected to be moved / merged 
-##' with a more general PEcAn 'load.data' function eventually.
+##' with a more general PEcAn 'load_data' function eventually.
 ##' 
 ##' @param settings = PEcAn settings list
 ##'
@@ -30,11 +30,11 @@ load.pda.data <- function(settings, bety) {
 
     inputs[[i]]$variable.id   <- input.settings[[i]]$variable.id
     inputs[[i]]$input.id      <- input.settings[[i]]$input.id
-    inputs[[i]]$align.method  <- ifelse(!is.null(input.settings[[i]]$align.method), input.settings[[i]]$align.method, "match.timestep")
+    inputs[[i]]$align.method  <- ifelse(!is.null(input.settings[[i]]$align.method), input.settings[[i]]$align.method, "match_timestep")
     
     # I require that the user defines data.path in the settings as well, instead of using query.file.path
     # because 'data.path <- query.file.path(obvs.id, con)' might return an incomplete path 
-    # which results in reading all the files in that particular directory in the load.x_netcdf step
+    # which results in reading all the files in that particular directory in the load_x_netcdf step
     if (is.null(inputs[[i]]$input.id) | is.null(data.path)) {
       logger.error("Must provide both ID and PATH for all data assimilation inputs.")
     }
@@ -43,7 +43,7 @@ load.pda.data <- function(settings, bety) {
     
     vars.used.index <- which(format$vars$bety_name %in% data.var)
     
-    inputs[[i]]$data <- load.data(data.path, 
+    inputs[[i]]$data <- load_data(data.path, 
                                   format, 
                                   start_year = lubridate::year(settings$run$start.date), 
                                   end_year = lubridate::year(settings$run$end.date), 
