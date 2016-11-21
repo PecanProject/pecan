@@ -26,11 +26,10 @@
 ##' @export
 ##'
 ##' @author Michael Dietze, Shawn Serbin
-#model2netcdf.FATES <- function(outdir) {
-model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date) {
+model2netcdf.FATES <- function(outdir) {
+#model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date) {
     
     ## Load functions
-    mstmipvar <- PEcAn.utils::mstmipvar
     ncdim_def <- ncdf4::ncdim_def
     ncvar_def <- ncdf4::ncvar_def
     ncatt_get <- ncdf4::ncatt_get
@@ -54,48 +53,73 @@ model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date) {
     ## Get files and years
     files <- dir(outdir, "*clm2.h0.*.nc", full.names = TRUE)
     file.dates <- as.Date(sub(".nc", "", sub(".*clm2.h0.", "", files)))
-    file.years <- lubridate::year(file.dates)
-    num.years <- length(unique(file.years))
-    simulation.days <- as.Date(start_date):as.Date(end_date)
-    simulation.years <- as.numeric(unique(strftime(as.Date(simulation.days, origin = "1970-01-01"), "%Y")))
-    
-    # nescessary?  A check that output years and selected run years match
-    if (!all(file.years==simulation.years)) {
-      logger.severe("FATES output file years and simulation years don't match")
-    }
-    
+    years <- lubridate::year(file.dates)
+
     ## Loop over years
-    for (year in unique(file.years)) {
-        ysel <- which(file.years == year)  ## subselect files for selected year
-#        ysel <- sort(file.dates[ysel])  ## double check dates are in order
+    for (year in unique(years)) {
+        ysel <- which(years == year)  ## subselect files for selected year
         if (length(ysel) > 1) {
             logger.warn("PEcAn.FATES::model2netcdf.FATES does not currently support multiple files per year")
-        }
-        
-        # !!useful or do we not want this behavior? !!  Or some sort of clobber flag?
-        if (file.exists(file.path(outdir, paste(year, "nc", sep = ".")))) {
-          logger.info(paste("model2netcdf.FATES output for",  year, "already converted, starting on the next year"))
-          next  ## skip, model output already present.
         }
         
         fname <- files[ysel[1]]
         oname <- file.path(dirname(fname), paste0(year, ".nc"))
         logger.info(paste("model2netcdf.FATES - Converting:",  fname, "to", oname))
-        nc <- ncdf4::nc_open(fname, write = TRUE)
+        ncin <- ncdf4::nc_open(fname, write = TRUE)
         
         ## FATES time is in multiple columns, create 'time'
-        day  <- ncdf4::ncvar_get(nc, "mdcur")   #current day (from base day)
-        sec  <- ncdf4::ncvar_get(nc, "mscur")   #current seconds of current day
+        day  <- ncdf4::ncvar_get(ncin, "mdcur")   #current day (from base day)
+        sec  <- ncdf4::ncvar_get(ncin, "mscur")   #current seconds of current day
         time <- day + sec / 86400
-        nc.time <- nc$dim$time$vals             # days since "start_date"
+        nt <- length(time)
+        nc.time <- ncin$dim$time$vals             # days since "start_date"
         # round(time,3)==round(nc.time,3)       # quick check, do the time vars match
         # !! Is this a useful/reasonable check? That is that our calculated time
         # matches FATES internal time var.
         if (length(time)!=length(nc.time)) {
           logger.severe("Time dimension mismatch in output, simulation error?")
         }
-        steps.per.day <- length(time)/length(unique(day))
-        nstep <- ncdf4::ncvar_get(nc,"nstep") 
+
+        #******************** Declare netCDF dimensions ********************#
+        nc_var  <- list()
+        sitelat <- ncvar_get(ncin,"lat")
+        sitelon <- ncvar_get(ncin,"lon")
+        ## time variable based on internal calc, nc$dim$time is the FATES output time
+        t <- ncdim_def(name = "time", units = paste0("days since ", year, "-01-01 00:00:00"),
+                       vals = as.vector(time), calendar = "standard", 
+                       unlim = TRUE)  # a direct analog of internal FATES output dim "time"
+        lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "coordinate_latitude")
+        lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "coordinate_longitude")
+        xyt <- list(lon, lat, t)
+        
+        ### Output netCDF data
+        ncout <- NULL
+        var_update <- function(oldname,newname,newunits=NULL){
+          oldunits <- ncdf4::ncatt_get(ncin,oldname,"units")$value
+          if(is.null(newunits)) newunits = oldunits
+          newvar <- ncdf4::ncvar_def(name = newname, units = newunits, dim = xyt)
+
+          if(is.null(ncout)) {
+            ncout <- ncdf4::nc_create(oname, newvar)
+          } else {
+            ncdf4::ncvar_add(nc = ncout, v = newvar)
+          }
+          dat <- ncvar_get(ncin,oldname)
+          ncdf4::ncvar_put(ncout,oldname,
+                    array(
+                      misc.convert(dat,oldunits,newunits),
+                      c(1,1,nt)
+                    )
+          )
+        }
+        var_update("AR","AutoResp","kgC m-2 s-1")
+        
+        
+        
+        
+        
+
+        
         
         ## Parse the rest of FATES output
         output <- list()  # create empty output
@@ -185,18 +209,10 @@ model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date) {
         
         # ... still more here to go!
         
-        #******************** Declare netCDF variables ********************#
-        rm(z)
-        nc_var  <- list()
-        ## time variable based on internal calc, nc$dim$time is the FATES output time
-        t <- ncdim_def(name = "time", units = paste0("days since ", year, "-01-01 00:00:00"),
-                       vals = time, calendar = "standard", 
-                       unlim = TRUE)  # a direct analog of internal FATES output dim "time"
-        lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "coordinate_latitude")
-        ##!! default is degrees east except we always input as degrees west, need to make sure this is sorted for all
-        ## pecan functions!!
-        lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "coordinate_longitude")
+
         
+        
+                
         z <- 1
         nc_var[[z]] <- ncvar_def(name = "pft_levscpf", units="", nc$dim[["levscpf"]],
                                      missval=miss.val,longname=nc$var[["pft_levscpf"]]$longname)
@@ -275,26 +291,21 @@ model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date) {
         #     ncvar_put(nc,"time",time)
         #     ncvar_get(nc,"time")
         
-        ## extract variable and long names to VAR file for PEcAn vis
-        #write.table(sapply(nc$var, function(x) { x$longname }), 
-        #            file = paste0(oname, ".var"), 
-        #            col.names = FALSE, 
-        #            row.names = TRUE, 
-        #            quote = FALSE)
+
         #
         #ncdf4::nc_close(nc)
         #
         ## !!
         
-        ### Output netCDF data
-        nc <- ncdf4::nc_create(file.path(outdir, paste(year, "nc", sep = ".")), nc_var)
-        varfile <- file(file.path(outdir, paste(year, "nc", "var", sep = ".")), "w")
-        for (i in seq_along(nc_var)) {
-          print(i)  # just on for debugging
-          ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
-          cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
-        }  ## netCDF loop
-        close(varfile)
+
+        ## extract variable and long names to VAR file for PEcAn vis
+        write.table(sapply(nc$var, function(x) { x$longname }), 
+                    file = paste0(oname, ".var"), 
+                    col.names = FALSE, 
+                    row.names = TRUE, 
+                    quote = FALSE)
+        
+        
         ncdf4::nc_close(nc)
     } # end of year for loop
 } # model2netcdf.FATES
