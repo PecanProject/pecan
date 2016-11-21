@@ -26,13 +26,27 @@ load.data <- function(data.path, format, start_year = NA, end_year = NA, site = 
     fcn <- match.fun(fcn1)
   } else if (exists(fcn2)) {
     fcn <- match.fun(fcn2)
+  } else if (!exists(fcn1) & !exists(fcn2)) { 
+    #To Do: call to DAP to see if conversion to csv is possible
+    #Brown Dog API call from BDFiddle
+    #source("bd.r")
+    #output_file <- browndog.convert("https://bd-api.ncsa.illinois.edu", data.path, "csv", "./")
+    #data.path <- output_file
+    #for test token: 3c351518-668d-4007-96a8-f5574f00171a
+    token = "3c351518-668d-4007-96a8-f5574f00171a"
+    data.path = "/fs/data3/jam2767/veg_test/H_2015_Adult_Field_Data.xlsx"
+    output_path = "/fs/data3/jam2767/veg_test"
+    convert_file("https://bd-api.ncsa.illinois.edu", "H_2015_Adult_Field_Data.xlsx", output_path, "csv", token)
+    #had paste0(data.path, format$file_name) instead of filename from example "H_2015_Adult_Field_Data.xlsx"
+    #not doing anything about mimetypes not convertable by BD right now
+    fcn <- match.fun(fcn2)
   } else {
-    logger.warn("no load data for current mimetype - converting using browndog")
+    logger.warn("Brown Dog is currently unable to perform this conversion")
   }
   
   out <- fcn(data.path, format, site, format$vars$input_name[c(vars.used.index, time.row)])
   
-  # Convert loaded data to the same standard varialbe names and units
+  # Convert loaded data to the same standard variable names and units
   
   vars_used <- format$vars[vars.used.index, ]
   
