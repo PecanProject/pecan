@@ -7,7 +7,7 @@
 ##' @author Betsy Cowdery
 
 metric_scatter_plot <- function(metric_dat, var, filename = NA, draw.plot = FALSE) {
-  logger.info("Metric: Scatter Plot")
+  PEcAn.utils::logger.info("Metric: Scatter Plot")
   
   p <- ggplot2::ggplot(data = metric_dat) 
   p <- p + ggplot2::geom_point(aes(x = model, y = obvs), size = 4) 

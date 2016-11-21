@@ -38,7 +38,7 @@ create_BRR <- function(ens_wf, con, user_id = ""){
                                  "VALUES(",ens_wf$model_id,", '",settings_xml,"' , ",user_id,
                                  ") RETURNING *;"),con)
     }else if(dim(ref_run)[1] > 1){# There shouldn't be more than one reference run with the same settings
-      logger.error("There is more than one reference run in the database with these settings. Review for duplicates. ")
+      PEcAn.utils::logger.error("There is more than one reference run in the database with these settings. Review for duplicates. ")
     }
     BRR <- ref_run %>% rename(.,reference_run_id = id)
     return(BRR)

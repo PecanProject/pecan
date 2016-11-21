@@ -7,12 +7,12 @@
 ##' @author Betsy Cowdery
 
 metric_timeseries_plot <- function(metric_dat, var, filename = NA, draw.plot = FALSE) {
-  logger.info("Metric: Timeseries Plot")
+  PEcAn.utils::logger.info("Metric: Timeseries Plot")
   
   # Attempt at getting around the fact that time can be annual and thus as.Date won't work
   date.time <- try(as.Date(metric_dat$time), silent = TRUE)
   if (class(date.time) == "try-error"){
-    logger.warn("Can't coerce time column to Date format, attempting plot anyway")
+    PEcAn.utils::logger.warn("Can't coerce time column to Date format, attempting plot anyway")
   }else{
     metric_dat$time <- date.time
   }

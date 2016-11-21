@@ -6,6 +6,6 @@
 ##' @author Betsy Cowdery
 
 metric_RMSE <- function(dat, ...) {
-  logger.info("Metric: Root Mean Square Error")
+  PEcAn.utils::logger.info("Metric: Root Mean Square Error")
   return(sqrt(mean((dat$model - dat$obvs) ^ 2)))
 } # metric_RMSE

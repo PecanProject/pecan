@@ -5,7 +5,7 @@
 ##' 
 ##' @author Betsy Cowdery
 metric_residual_plot <- function(dat, var, filename = NA, draw.plot = FALSE) {
-  logger.info("Metric: Residual Plot")
+  PEcAn.utils::logger.info("Metric: Residual Plot")
   
   dat$time <- lubridate::year(as.Date(as.character(dat$time), format = "%Y"))
   dat$diff <- abs(dat$model - dat$obvs)

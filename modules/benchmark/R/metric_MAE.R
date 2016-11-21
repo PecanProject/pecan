@@ -6,6 +6,6 @@
 ##' @author Betsy Cowdery
 ##' 
 metric_MAE <- function(dat, ...) {
-  logger.info("Metric: Mean Absolute Error")
+  PEcAn.utils::logger.info("Metric: Mean Absolute Error")
   return(mean(abs(dat$model - dat$obvs)))
 } # metric_MAE

@@ -27,7 +27,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   } else if (exists(fcn2)) {
     fcn <- match.fun(fcn2)
   } else {
-    logger.warn("no load_data for current mimetype - converting using browndog")
+    PEcAn.utils::logger.warn("no load_data for current mimetype - converting using browndog")
   }
   
   out <- fcn(data.path, format, site, format$vars$input_name[c(vars.used.index, time.row)])
@@ -58,7 +58,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
         out[col] <- misc.convert(x, u1, u2)
         colnames(out)[col] <- vars_used$pecan_name[i]
       } else {
-        logger.error("Units cannot be converted")
+        PEcAn.utils::logger.error("Units cannot be converted")
       }  # This error should probably be thrown much earlier, like in query.format.vars - will move it eventually
     }
   }
@@ -71,7 +71,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
       tz = site$time_zone
     }else{
       tz = "UTC"
-      logger.warn("No site timezone. Assuming input time zone is UTC. This may be incorrect.")
+      PEcAn.utils::logger.warn("No site timezone. Assuming input time zone is UTC. This may be incorrect.")
     }
     
     out$posix <- strptime(apply(y, 1, function(x) paste(x, collapse = " ")), 

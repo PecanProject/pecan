@@ -39,7 +39,7 @@ calc_benchmark <- function(settings, bety) {
                                    ", ",settings$model$id,", ",settings$info$userid,
                                    ", 1000000001 ) RETURNING *;"), bety$con)
   }else if(dim(bm.ensemble)[1] >1){
-    logger.error("Duplicate record entries in benchmarks_ensembles")
+    PEcAn.utils::logger.error("Duplicate record entries in benchmarks_ensembles")
   }
   
   # --------------------------------------------------------------------------------------------- #
@@ -160,7 +160,7 @@ calc_benchmark <- function(settings, bety) {
             "(score, benchmarks_ensemble_id, benchmark_id, metric_id) VALUES ",
             "('",score,"',",bm.ensemble$id,", ",bm$id,",",metric.id,")"),bety$con)
         }else if(dim(score.entry)[1] >1){
-          logger.error("Duplicate record entries in scores")
+          PEcAn.utils::logger.error("Duplicate record entries in scores")
         }
       }
       results.list <- append(results.list, list(out.calc_metrics[["benchmarks"]]))
