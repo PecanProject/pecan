@@ -34,22 +34,28 @@ model2netcdf.FATES <- function(outdir) {
     logger.warn <- PEcAn.utils::logger.warn
     
     #        var_update("AR","AutoResp","kgC m-2 s-1")
-    var_update <- function(ncout,oldname,newname,newunits=NULL){
+    var_update <- function(out,oldname,newname,newunits=NULL){
+      
+      ## define variable
       oldunits <- ncdf4::ncatt_get(ncin,oldname,"units")$value
       if(is.null(newunits)) newunits = oldunits
       newvar <- ncdf4::ncvar_def(name = newname, units = newunits, dim = xyt)
       
-      if(is.null(ncout)) {
-        ncout <- ncdf4::nc_create(oname, newvar)
-      } else {
-        ncdf4::ncvar_add(nc = ncout, v = newvar)
-      }
-      try(ncdf4::nc_close(ncout))
-      ncout <- ncdf4::nc_open(oname,write=TRUE)
+      ## convert data
       dat <- ncvar_get(ncin,oldname)
       dat.new <- misc.convert(dat,oldunits,newunits)
-      ncdf4::ncvar_put(ncout,newname,array(dat.new,c(1,1,nt)))
-      return(ncout)
+      
+      ## prep for writing
+      if(is.null(out)) {
+        out <- list(var <- list(),dat <- list())
+        out$var[[1]] <- newvar
+        out$dat[[1]] <- dat.new
+      } else {
+        i <- length(out$var) + 1
+        out$var[[i]] <- newvar
+        out$dat[[i]] <- dat.new
+      }
+      return(out)
     }
     
     
@@ -95,10 +101,17 @@ model2netcdf.FATES <- function(outdir) {
         lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "coordinate_longitude")
         xyt <- list(lon, lat, t)
         
-        ### Output netCDF data
-        ncout <- NULL
-        ncout <- var_update(ncout,"AR","AutoResp","kgC m-2 s-1")
-        ncout <- var_update(ncout,"GPP","GPP","kgC m-2 s-1")
+        ### build netCDF data
+        out <- NULL
+        out <- var_update(out,"AR","AutoResp","kgC m-2 s-1")
+        out <- var_update(out,"GPP","GPP","kgC m-2 s-1")
+        ncdf4::nc_close(ncin)
+        
+        ## write netCDF data
+        ncout <- ncdf4::nc_create(oname,out$var)
+        for (i in seq_along(out$var)) {
+          ncdf4::ncvar_put(ncout, out$var[[i]], out$dat[[i]])
+        }
 
         ## extract variable and long names to VAR file for PEcAn vis
         write.table(sapply(ncout$var, function(x) { x$longname }), 
@@ -109,7 +122,7 @@ model2netcdf.FATES <- function(outdir) {
         
         
         try(ncdf4::nc_close(ncout))
-        ncdf4::nc_close(ncin)
+
     } # end of year for loop
 } # model2netcdf.FATES
 
