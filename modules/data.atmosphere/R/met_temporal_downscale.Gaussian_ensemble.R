@@ -1,3 +1,8 @@
+# substr function from right side 
+substrRight <- function(x, n) {
+  substr(x, nchar(x) - n + 1, nchar(x))
+}
+
 ##' met_temporal_downscale.Gaussian_ensemble takes source data and a training dataset from the same site and temporally 
 ##'    downscales the source dataset to the resolution of the training dataset based on statistics of the training dataset.
 ##' @name met_temporal_downscale.Gaussian_ensemble
@@ -15,18 +20,14 @@
 ##' @param swdn_method - Downwelling shortwave flux in air downscaling method (options are "sine", "spline", and "Waichler")
 ##' @param n_ens - numeric value with the number of ensembles to run
 ##' @param w_len - numeric value that is the window length in days  
+##' @param utc_diff - numeric value in HOURS that is local standard time difference from UTC time. CST is -6
 ##' @author James Simkins
 
-# substr function from right side 
-substrRight <- function(x, n) {
-  substr(x, nchar(x) - n + 1, nchar(x))
-}
 
 met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfolder, 
                                                      input_met, train_met, site_id, overwrite = FALSE, verbose = FALSE, 
-                                                     swdn_method = "sine", n_ens = 10, w_len = 20, ... ) {
-  # arguments
-  
+                                                     swdn_method = "sine", n_ens = 10, w_len = 20, utc_diff = -6, ... ) {
+
   sub_str <- substrRight(input_met, 7)
   year <- substr(sub_str, 1, 4)
   year <- as.numeric(year)
@@ -105,64 +106,54 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
     
     div <- nrow(train)/nrow(source)  #tells us how many values need to be generated (via downscaling) from each source value
     sd_step <- nrow(train)/sp  #allows us to step through each window at specific times
-    
-    # Temperature For temperature, we create a random normal distribution with the
-    # mean of the source value and the standard deviation of the training value
-    # within the window, and step through that window sequentially so that we are
-    # only using the standard devaition of values recorded at the same time as the
-    # value we are generating.
-    temp <- c("air_temperature", "air_temperature_max", "air_temperature_min")
     df <- data.frame()
-    for (u in temp) {
-      train_vec <- as.numeric(train[[u]])
-      sour <- as.numeric(source[[u]])
-      if (all(is.na(sour)) == TRUE) {
-        train_vec <- rep(NA, reso_len)
-      } else {
-        for (x in seq_along(sour)) {
-          for (n in seq_len(div)) {
-            lowday <- x * div - w_len * sd_step + n
-            highday <- x * div + w_len * sd_step + n
-            if (lowday < 0) {
-              lowday <- x + n
-              highday <- x + n + w_len * sd_step + n
-            }
-            if (highday > reso_len) {
-              highday <- reso_len
-              lowday <- x * div - w_len * sd_step + n
-            }
-            dwnsc_day[n] <- rnorm(1, mean = sour[x], sd = sd(a[seq(from = lowday, 
-                                                                   to = highday, by = sd_step)]))
-          }
-          train_vec <- append(train_vec, dwnsc_day)
-        }
+    # Temperature - use spline interpolation 
+    sourtemp <- source$air_temperature
+    temper <- vector()
+    tem.met <- vector()
+    mean_val <- vector()
+    
+    # since we begin our temper vec to min temperature, we want this to coincide with the normal
+    # low value
+    for (l in seq_len(30)){
+      mean_val[l] <- which.min(train$air_temperature[1*l:sd_step*l])
+    }
+    mean_val <- floor(mean(mean_val))
+    
+    # Daily products typically have tmin and tmax, probably need to make version in case it doesn't
+    if (length(sourtemp) <= 366){
+      for (i in seq_along(sourtemp)){
+        a <- source$air_temperature_min[i]
+        b <- source$air_temperature[i]
+        c <- source$air_temperature_max[i]
+        d <- source$air_temperature[i]
+        vec <- c(a,b,c,d)
+        temper <- append(temper,vec)
       }
-      df[1:length(train_vec), u] <- train_vec
+      seq_by = 24/reso/length(vec)
+      sourtemp <- temper 
+      for (x in seq(from=mean_val, to=reso_len, by=seq_by)){
+        tem.met[x] <- sourtemp[x / seq_by]
+      }
+      len_diff <- reso_len - length(tem.met)
+      tem.met <- append(tem.met,values = rep(NA,len_diff)) 
+    } else {
+        for (x in seq(from=0, to=reso_len, by=div)){
+          tem.met[x] <- sourtemp[x / div]
+        }
     }
     
-    # Makes sure that max temps >= avg temp and min temps <= avg temp
-    for (x in seq_along(df$air_temperature)) {
-      if (all(is.na(df$air_temperature_max)) == FALSE) {
-        if (df$air_temperature_max[x] < df$air_temperature[x]) {
-          df$air_temperature_max[x] <- df$air_temperature[x]
-        }
-      } else {
-        df$air_temperature_max <- rep(NA, reso_len)
-      }
-      if (all(is.na(df$air_temperature_min)) == FALSE) {
-        if (df$air_temperature_min[x] > df$air_temperature[x]) {
-          df$air_temperature_min[x] <- df$air_temperature[x]
-        }
-      } else {
-        df$air_temperature_min <- rep(NA, reso_len)
-      }
-    }
+    spline.temp = zoo::na.spline(tem.met)
+    df[1:reso_len, "air_temperature"] <- spline.temp
+    
+    # after this maybe we can run it through the random norm to add variation
+    # but not sure how models will react 
     
     # Precipitation_flux this takes the daily total of precipitation and uses that as
     # a total possible amount of precip.  It randomly distributes the values of
     # precipitation
     rand_vect_cont <- function(N, M, sd = 1) {
-      vec <- rtruncnorm(N, a = 0, b = Inf,M/N, sd)
+      vec <- truncnorm::rtruncnorm(N, a = 0, b = Inf,M/N, sd)
       vec/sum(vec) * M
     }
     precip <- vector()
@@ -262,6 +253,8 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
         srs <- eph$sunrise
         hr <- substr(srs[i], 1, 2)
         hr <- as.numeric(hr)
+        # utc_diff must be used so we can begin the sine wave at local sunrise
+        hr <- hr + utc_diff
         
         l <- vector()
         for (n in seq_len(hr)) {
@@ -340,9 +333,13 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
       swflux[swflux < 0] <- 0
     }
     
+    df$surface_downwelling_shortwave_flux_in_air <- swflux
+    # Will need to change below if we figure out how to downscale this
+    df$air_temperature_max <- rep(NA, reso_len)
+    df$air_temperature_min <- rep(NA, reso_len)
+    
     
     # Putting all the variables together in a data frame
-    df$surface_downwelling_shortwave_flux_in_air <- swflux
     downscaled.met <- data.frame(df)
     
     train.list <- list()
