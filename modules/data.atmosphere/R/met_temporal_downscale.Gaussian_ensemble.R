@@ -102,6 +102,7 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
   # random normal distribution is used to downscale as so;
   # (mean <- value of source data) (sd <- +/- window_days of train data at the
   # same time intervals) 
+  results <- list()
   for (e in seq_len(n_ens)) {
     
     div <- nrow(train)/nrow(source)  #tells us how many values need to be generated (via downscaling) from each source value
@@ -358,12 +359,7 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
     
     rows <- 1
     dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
-    results <- data.frame(file = character(rows), host = character(rows), mimetype = character(rows), 
-                          formatname = character(rows), startdate = character(rows), enddate = character(rows), 
-                          dbfile.name = paste0(source_name, ".dwnsc.ens", e, ".", year, sep = "."), 
-                          stringsAsFactors = FALSE)
-    
-    
+
     loc.file <- file.path(outfolder, paste0(source_name, ".dwnsc.gauss.ens", 
                                             e, ".", year, ".nc"))
     
@@ -373,16 +369,18 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
     }
     ncdf4::nc_close(loc)
     
-    results$file <- loc.file
-    results$host <- PEcAn.utils::fqdn()
-    results$startdate <- paste0(year, "-01-01 00:00:00", tz = "UTC")
-    results$enddate <- paste0(year, "-12-31 23:59:59", tz = "UTC")
-    results$mimetype <- "application/x-netcdf"
-    results$formatname <- "CF Meteorology"
-    
-    invisible(results)
+    results[[e]] <- data.frame(file = loc.file, 
+                               host = rep(PEcAn.utils::fqdn(),rows), 
+                               mimetype = rep("application/x-netcdf",rows), 
+                               formatname = rep("CF Meteorology",rows),
+                               startdate = paste0(year, "-01-01 00:00:00", tz = "UTC"), 
+                               enddate = paste0(year, "-12-31 23:59:59", tz = "UTC"),
+                               dbfile.name = paste0(source_name, ".dwnsc.ens"),
+                               stringsAsFactors = FALSE)
     
   }
+  
+  return(invisible(results))    
 }
 
 # met_temporal_downscale.Gaussian_ensemble( '~', '~',
