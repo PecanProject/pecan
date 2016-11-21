@@ -1,5 +1,5 @@
 .met2model.module <- function(ready.id, model, con, host, dir, met, str_ns, site, start_date, end_date, 
-                              browndog, new.site, overwrite = FALSE) {
+                              browndog, new.site, overwrite = FALSE, exact.dates) {
   
   # Determine output format name and mimetype
   model_info <- db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", " join modeltypes_formats as mf on m.id = mf.modeltype_id", 
@@ -35,7 +35,8 @@
                               write = TRUE,
                               lst = lst, 
                               lat = new.site$lat, lon = new.site$lon, 
-                              overwrite = overwrite)
+                              overwrite = overwrite,
+                              exact.dates = exact.dates)
   }
   
   logger.info(paste("Finished Model Specific Conversion", model.id[1]))
