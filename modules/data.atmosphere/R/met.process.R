@@ -137,7 +137,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
   if (stage$download.raw) {
     raw.data.site.id <- ifelse(is.null(register$siteid), new.site$id, register$siteid)
     
-    raw.id <- .download.raw.met.module(dir = dir,
+    raw.id <- PEcAn.data.atmosphere:::.download.raw.met.module(dir = dir,
                                        met = met, 
                                        register = register, 
                                        machine = machine, 
@@ -207,6 +207,11 @@ met.process <- function(site, input_met, start_date, end_date, model,
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
   if (stage$met2model) {
+    
+    ## Get Model Registration
+    reg.model.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.",model))
+    reg.model <- XML::xmlToList(XML::xmlParse(reg.model.xml))
+    
     met2model.result <- .met2model.module(ready.id = ready.id, 
                                           model = model, 
                                           con = con,
@@ -218,7 +223,9 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                           start_date = start_date, end_date = end_date, 
                                           browndog = browndog, 
                                           new.site = new.site, 
-                                          overwrite = overwrite$met2model)
+                                          overwrite = overwrite$met2model,
+                                          exact.dates = reg.model$exact.dates)
+    
     model.id  <- met2model.result$model.id
     outfolder <- met2model.result$outfolder
   } else {
