@@ -55,6 +55,7 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
 
   n.input <- length(inputs)
   pda.errors <- list()
+  SSdb <- list()
   
   
   for (k in seq_len(n.input)) {
@@ -71,7 +72,8 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
                    log = TRUE))
       
       pda.errors[[k]] <- sum(SS, na.rm = TRUE) 
-      
+      SSdb[[k]] <- sum(SS, na.rm = TRUE) 
+        
     } else { # Gaussian(s)
       
       
@@ -81,12 +83,33 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
       }
       
       pda.errors[[k]] <- SS 
+      SSdb[[k]] <- log(SS)
       
     }
     
   } # for-loop
   
-  ## TODO: insert error records in database
+  ## insert sufficient statistics in database
+  if (!is.null(con)) {
+
+    # BETY requires sufficient statistics to be associated with inputs, so only proceed
+    # for inputs with valid input ID (i.e., not the -1 dummy id).
+    # Note that analyses requiring sufficient statistics to be stored therefore require
+    # inputs to be registered in BETY first.
+    db.input.ind <- which(sapply(inputs, function(x) x$input.id) != -1)
+    for (k in db.input.ind) {
+      
+      db.query(
+        paste0("INSERT INTO likelihoods ",
+               "(run_id,            variable_id,                     input_id, ",
+               " loglikelihood,     n_eff)",
+               "values ('",
+               run.id, "', '",    inputs[[k]]$variable.id, "', '", inputs[[k]]$input.id, "', '",
+               SSdb[[k]], "', '", inputs[[k]]$n, "')"
+        ),
+        con)
+    }
+  }
 
   return(pda.errors)
   
@@ -117,30 +140,6 @@ pda.calc.llik <- function(pda.errors, llik.fn, llik.par) {
   LL.total <- sum(LL.vec * weights)
   neff <- n.vec * weights
   
-  # ## insert Likelihood records in database
-  # if (!is.null(con)) {
-  #   now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-  #   
-  #   # BETY requires likelihoods to be associated with inputs, so only proceed 
-  #   # for inputs with valid input ID (i.e., not the -1 dummy id). 
-  #   # Note that analyses requiring likelihoods to be stored therefore require 
-  #   # inputs to be registered in BETY first.
-  #   db.input.ind <- which(sapply(inputs, function(x) x$input.id) != -1)
-  #   for (k in db.input.ind) {
-  #     db.query(
-  #       paste0("INSERT INTO likelihoods ", 
-  #              "(run_id,            variable_id,                     input_id, ",
-  #              " loglikelihood,     n_eff,                           weight,   ",
-  #              " created_at) ",
-  #              "values ('", 
-  #              run.id, "', '",    inputs[[k]]$variable.id, "', '", inputs[[k]]$input.id, "', '", 
-  #              LL.vec[k], "', '", floor(neff[k]), "', '",          weights[k] , "', '", 
-  #              now,"')"
-  #       ), 
-  #       con)
-  #   }
-  # }
-  
   return(LL.total)
 } # pda.calc.llik
 
@@ -153,8 +152,7 @@ pda.calc.llik <- function(pda.errors, llik.fn, llik.par) {
 pda.calc.llik.par <-function(settings, n, error.stats){
   
   llik.par <- list()
-  # llik.priors <- read.csv("~/pecan/modules/assim.batch/inst/llik.params.csv")
-  # llik.priors <- read.csv(system.file("inst/llik.params.csv", package = "PEcAn.assim.batch"))
+  
   for(k in seq_along(error.stats)){
     
     llik.par[[k]] <- list()
