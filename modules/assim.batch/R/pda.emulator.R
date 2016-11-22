@@ -182,8 +182,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       ## Set up runs and write run configs for all proposed knots
       run.ids <- pda.init.run(settings, con, my.write.config, workflow.id, knots.params, 
                             n = settings$assim.batch$n.knot, 
-                            run.names = paste0(settings$assim.batch$ensemble.id, 
-                                               ".knot.",
+                            run.names = paste0(settings$assim.batch$ensemble.id, ".knot.",
                                                1:settings$assim.batch$n.knot))    
       ## start model runs
       start.model.runs(settings, settings$database$bety$write)
@@ -213,7 +212,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       }
     
       for (i in seq_len(settings$assim.batch$n.knot)) {
-        ## calculate error statistics      
+        ## calculate error statistics and save in the DB      
         pda.errors[[i]] <- pda.calc.error(settings, con, model_out = model.out[[i]], run.id = run.ids[i], inputs, bias.terms[i,])
       } 
     
@@ -229,92 +228,92 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   prior.ind.all <- which(unlist(pname) %in% unlist(settings$assim.batch$param.names))
   
     
-    if (run.normal | run.round) {
+  if (run.normal | run.round) {
       
-      ## GPfit optimization routine assumes that inputs are in [0,1] Instead of drawing from parameters,
-      ## we draw from probabilities
-      knots.probs.all <- do.call("cbind", knots.probs)
+    ## GPfit optimization routine assumes that inputs are in [0,1] Instead of drawing from parameters,
+    ## we draw from probabilities
+    knots.probs.all <- do.call("cbind", knots.probs)
 
-      X <- knots.probs.all[, prior.ind.all, drop = FALSE]
+    X <- knots.probs.all[, prior.ind.all, drop = FALSE]
       
-      # retrieve SS
-      error.statistics <- list()
-      SS.list <- list()
+    # retrieve SS
+    error.statistics <- list()
+    SS.list <- list()
       
-      for(inputi in seq_len(n.input)){
-        error.statistics[[inputi]] <- sapply(pda.errors,`[[`, inputi)
+    for(inputi in seq_len(n.input)){
+      error.statistics[[inputi]] <- sapply(pda.errors,`[[`, inputi)
         
-        if(unlist(any.mgauss)[inputi] == "multipGauss") {
+      if(unlist(any.mgauss)[inputi] == "multipGauss") {
           
-            # if yes, then we need to include bias term in the emulator
-            bias.probs <- bias.list$bias.probs
-            biases <- c(t(bias.probs))
+          # if yes, then we need to include bias term in the emulator
+          bias.probs <- bias.list$bias.probs
+          biases <- c(t(bias.probs))
             
-            # replicate model parameter set per bias parameter
-            rep.rows <- rep(1:nrow(X), each = nbias)
-            X.rep <- X[rep.rows,]
-            X <- cbind(X.rep, biases)
+          # replicate model parameter set per bias parameter
+          rep.rows <- rep(1:nrow(X), each = nbias)
+          X.rep <- X[rep.rows,]
+          X <- cbind(X.rep, biases)
             
-            SS.list[[inputi]] <- cbind(X, c(error.statistics[[inputi]]))
+          SS.list[[inputi]] <- cbind(X, c(error.statistics[[inputi]]))
             
-            # add indice and increase n.param for bias
-            prior.ind.all <- c(prior.ind.all, prior.ind.all[length(prior.ind.all)]+1)
-            n.param <- c(n.param, 1)
+          # add indice and increase n.param for bias
+          prior.ind.all <- c(prior.ind.all, prior.ind.all[length(prior.ind.all)]+1)
+          n.param <- c(n.param, 1)
 
-        } else {
-          SS.list[[inputi]] <- cbind(X, error.statistics[[inputi]])
-        } # if-block
-        
-      } # for-loop
-
-
-      
-      if (run.round) {
-        # check if this is another 'round' of emulator 
-        
-        # load original knots
-        load(settings$assim.batch$ss.path)
-        # add on
-        SS <- lapply(seq_along(SS), function(iss) rbind(SS.list[[iss]], SS[[iss]]))
-        
       } else {
-        SS <- SS.list
-      }
+          SS.list[[inputi]] <- cbind(X, error.statistics[[inputi]])
+      } # if-block
+        
+    } # for-loop
+
+
       
-      logger.info(paste0("Using 'GPfit' package for Gaussian Process Model fitting."))
-      library(GPfit)
-      ## Generate emulator on SS, return a list
-      GPmodel <- lapply(SS, function(x) GP_fit(X = x[, -ncol(x), drop = FALSE], Y = x[, ncol(x), drop = FALSE]))
-      gp <- GPmodel
-      
-    } else { # is this a "longer" type of extension run
-      
-      load(settings$assim.batch$emulator.path)  # load previously built emulator(s) to run a longer mcmc
+    if (run.round) {
+      # check if this is another 'round' of emulator 
+        
+      # load original knots
       load(settings$assim.batch$ss.path)
-      load(settings$assim.batch$resume.path)
+      # add on
+      SS <- lapply(seq_along(SS), function(iss) rbind(SS.list[[iss]], SS[[iss]]))
+        
+    } else {
+      SS <- SS.list
+    }
+      
+    logger.info(paste0("Using 'GPfit' package for Gaussian Process Model fitting."))
+    library(GPfit)
+    ## Generate emulator on SS, return a list
+    GPmodel <- lapply(SS, function(x) GP_fit(X = x[, -ncol(x), drop = FALSE], Y = x[, ncol(x), drop = FALSE]))
+    gp <- GPmodel
+      
+  } else { # is this a "longer" type of extension run
+      
+    load(settings$assim.batch$emulator.path)  # load previously built emulator(s) to run a longer mcmc
+    load(settings$assim.batch$ss.path)
+    load(settings$assim.batch$resume.path)
       
 
-      if(any(unlist(any.mgauss) == "multipGauss")){
-        load(settings$assim.batch$bias.path) # load prior.list with bias term from previous run
-        prior.all <- do.call("rbind", prior.list)
+    if(any(unlist(any.mgauss) == "multipGauss")){
+      load(settings$assim.batch$bias.path) # load prior.list with bias term from previous run
+      prior.all <- do.call("rbind", prior.list)
         
-        # add indice and increase n.param for bias
-        prior.ind.all <- c(prior.ind.all, prior.ind.all[length(prior.ind.all)]+1)
-        n.param <- c(n.param, 1)
-      }
+      # add indice and increase n.param for bias
+      prior.ind.all <- c(prior.ind.all, prior.ind.all[length(prior.ind.all)]+1)
+      n.param <- c(n.param, 1)
+    }
 
   
-      for (c in seq_len(settings$assim.batch$chain)) {
-        init.list[[c]] <- resume.list[[c]]$prev.samp[nrow(resume.list[[c]]$prev.samp), ]
-        jmp.list[[c]] <- resume.list[[c]]$jump
-      }
+    for (c in seq_len(settings$assim.batch$chain)) {
+      init.list[[c]] <- resume.list[[c]]$prev.samp[nrow(resume.list[[c]]$prev.samp), ]
+      jmp.list[[c]] <- resume.list[[c]]$jump
     }
+  }
     
-    ## Change the priors to unif(0,1) for mcmc.GP
-    prior.all[prior.ind.all, ] <- rep(c("unif", 0, 1, "NA"), each = sum(n.param))
+  ## Change the priors to unif(0,1) for mcmc.GP
+  prior.all[prior.ind.all, ] <- rep(c("unif", 0, 1, "NA"), each = sum(n.param))
 
-    ## Set up prior functions accordingly
-    prior.fn.all <- pda.define.prior.fn(prior.all)
+  ## Set up prior functions accordingly
+  prior.fn.all <- pda.define.prior.fn(prior.all)
   
   
   # retrieve n
