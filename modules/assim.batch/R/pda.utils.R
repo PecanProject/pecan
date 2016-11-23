@@ -812,39 +812,63 @@ correlationPlot <- function(mat, density = "smooth", thin = "auto", method = "pe
 ##' @export
 return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias, run.round = FALSE, prev.bias = NULL){
   
-  # store bias parameters
-  bias.params <- matrix(NA, nrow = length(model.out), ncol = nbias) 
+  # there can be more than one multiplicative Gaussian requested
+  ibias <- length(isbias)
   
-  for(iknot in seq_along(model.out)){
-    # calculate optimum bias parameter for the model output that has bias
-    regdf <- data.frame(inputs[[isbias]]$obs, model.out[[iknot]][[isbias]])
-    colnames(regdf) <- c("data","model")
-    fit <- lm( regdf$data ~ (regdf$model - 1))
-    bias.params[iknot,1] <- fit$coefficients[[1]]
-    if(ncol(bias.params) > 1){
-      bias.params[iknot,  2:ncol(bias.params)] <- rnorm(ncol(bias.params)-1, bias.params[iknot,1], bias.params[iknot,1]*0.1)
+  # to store bias parameters and probabilitied
+  bias.params <- bias.probs <- list()
+  # to store priors
+  bias.prior <- data.frame(distn = rep("unif", ibias), 
+                           parama = rep(NA, ibias), 
+                           paramb = rep(NA, ibias),  
+                           n =rep(NA, ibias), stringsAsFactors=FALSE)
+  prior.names <- rep(NA, ibias)
+  
+  for(i in seq_along(isbias)){
+    bias.params[[i]] <- matrix(NA, nrow = length(model.out), ncol = nbias)
+    
+    for(iknot in seq_along(model.out)){
+      # calculate optimum bias parameter for the model output that has bias
+      regdf <- data.frame(inputs[[isbias[i]]]$obs, model.out[[iknot]][[isbias[i]]])
+      colnames(regdf) <- c("data","model")
+      fit <- lm( regdf$data ~ (regdf$model - 1))
+      bias.params[[i]][iknot,1] <- fit$coefficients[[1]]
+      if(ncol(bias.params[[i]]) > 1){
+        bias.params[[i]][iknot,  2:ncol(bias.params[[i]])] <- rnorm(ncol(bias.params[[i]])-1, bias.params[[i]][iknot,1], bias.params[[i]][iknot,1]*0.1)
+      }
     }
+    
+    bias.prior$parama[i] <- min(bias.params[[i]]) - sd(bias.params[[i]])
+    bias.prior$paramb[i] <- max(bias.params[[i]]) + sd(bias.params[[i]])
+    
+    prior.names[i] <- paste0("bias.", inputs[[isbias[i]]]$variable.name$variable.name$variable.drv)
+    
   }
 
-  prior.min <- min(bias.params) - sd(bias.params)
-  prior.max <- max(bias.params) + sd(bias.params)
-  
-  bias.prior <- data.frame(matrix(c("unif", paste0(prior.min), paste0(prior.max), NA), nrow = 1))
-  
-  colnames(bias.prior) <- c("distn", "parama", "paramb", "n")
-  rownames(bias.prior) <- "bias"
+  rownames(bias.prior) <- prior.names
   prior.list.bias[[(length(prior.list.bias)+1)]] <- bias.prior
-  
-  # if this is another round, use the first prior
-  if(run.round){
-    load(prev.bias)
-    prior.list.bias[[length(prior.list.bias)]] <- prior.list[[length(prior.list)]]
-  }
   
   # convert params to probs for GPfit 
   # note: there can be new parameters out of previous min/max if this is a round extension
-  bias.probs <- punif(bias.params, prior.min, prior.max)
+  bias.probs <- lapply(seq_along(isbias), 
+                       function(b) punif(bias.params[[b]], 
+                                         prior.list.bias[[length(prior.list.bias)]]$parama[b], 
+                                         prior.list.bias[[length(prior.list.bias)]]$paramb[b]))
 
+  
+  # if this is another round, use the first priors
+  if(run.round){
+    load(prev.bias)
+    prior.list.bias <- prior.list
+    
+    # convert params to probs for GPfit 
+    # note: there can be new parameters out of previous min/max if this is a round extension
+    bias.probs <- lapply(seq_along(isbias), 
+                         function(b) punif(bias.params[[b]], 
+                                           prior.list.bias[[length(prior.list.bias)]]$parama[b], 
+                                           prior.list.bias[[length(prior.list.bias)]]$paramb[b]))
+    
+  }
   
   return(list(bias.params = bias.params, bias.probs = bias.probs, prior.list.bias = prior.list.bias))
   

@@ -119,24 +119,26 @@ calculate.prior <- function(samples, priors) {
 get.y <- function(gp, xnew, n.of.obs, llik.fn, priors, settings) {
   
   SS <- numeric(length(gp))
-  
-
     
-    X <- matrix(unlist(xnew), nrow = 1, byrow = TRUE)
+  X <- matrix(unlist(xnew), nrow = 1, byrow = TRUE)
     
-    for(igp in seq_along(gp)){
-      Y <- GPfit::predict.GP(gp[[igp]], X[, 1:ncol(gp[[igp]]$X), drop=FALSE])
-      # likelihood <- Y$Y_hat
-      # likelihood <- rnorm(1, Y$Y_hat, sqrt(Y$MSE))
-      SS[igp] <- rnorm(1, Y$Y_hat, sqrt(Y$MSE))
-    }
+  for(igp in seq_along(gp)){
+    Y <- GPfit::predict.GP(gp[[igp]], X[, 1:ncol(gp[[igp]]$X), drop=FALSE])
+    # likelihood <- Y$Y_hat
+    # likelihood <- rnorm(1, Y$Y_hat, sqrt(Y$MSE))
+    SS[igp] <- rnorm(1, Y$Y_hat, sqrt(Y$MSE))
+  }
 
-  
   llik.par <- pda.calc.llik.par(settings, n.of.obs, SS)
   likelihood <- pda.calc.llik(SS, llik.fn, llik.par)
   
   prior.prob <- calculate.prior(xnew, priors)
-  return(likelihood + prior.prob)
+  posterior.prob <- likelihood + prior.prob
+  
+  # return likelihood parameters
+  par <- unlist(sapply(llik.par, `[[` , "par"))
+
+  return(list(posterior.prob = posterior.prob, par = par))
 
 } # get.y
 
@@ -178,11 +180,14 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
   haveTime <- FALSE  #library('time')
   
   # get Y
-  Ycurr <- get.y(gp, x0, n.of.obs, llik.fn, priors, settings)
+  predY <- get.y(gp, x0, n.of.obs, llik.fn, priors, settings)
+  Ycurr <- predY$posterior.prob
+  LLpar <- predY$par
 
   xcurr <- x0
-  dim <- length(x0)
-  samp <- matrix(NA, nmcmc, dim)
+  dim   <- length(x0)
+  samp  <- matrix(NA, nmcmc, dim)
+  par   <- matrix(NA, nmcmc, length(LLpar)) # note: length(LLpar) can be 0
   
   if (run.block) {
     jcov <- diag((jmp0)^2)
@@ -224,11 +229,15 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
         }
       }
       # if(bounded(xnew,rng)){
-      ycurr <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings)
-      ynew  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
+      currY <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings)
+      ycurr <- currY$posterior.prob
+      pcurr <- currY$par
+      newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
+      ynew  <- newY$posterior.prob
       if (is.accepted(ycurr, ynew)) {
         xcurr <- xnew
-        # ycurr <- ynew
+        pcurr <- newY$par
+
         accept.count <- accept.count + 1
       }
       # } mix = each
@@ -243,16 +252,20 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
           }
         }
         # if(bounded(xnew,rng)){
-        ycurr <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings)
-        ynew  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
+        currY <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings)
+        ycurr <- currY$posterior.prob
+        pcurr <- currY$par
+        newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
+        ynew  <- newY$posterior.prob
         if (is.accepted(ycurr, ynew)) {
           xcurr <- xnew
-          # ycurr <- ynew
+          pcurr <- newY$par
         }
         # }
       }
     }
     samp[g, ] <- unlist(xcurr)
+    par[g, ]  <- pcurr
     
     # print(p(jmp)) jmp <- update(jmp,samp)
     
@@ -264,9 +277,9 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
     progressBar(1.1, prevTime)
   }
   
-  chain.res <- list(jump = jcov, ac = accept.count, prev.samp = samp)
+  chain.res <- list(jump = jcov, ac = accept.count, prev.samp = samp, par = par)
   
-  return(list(mcmc = samp, chain.res = chain.res))
+  return(list(mcmc.samp = samp, mcmc.par = par, chain.res = chain.res))
   ## xnew <- gpeval,x0,k=k,mu=ey,tau=tauwbar,psi=psibar,x=gp$x.compact,rng=rng)
   
   ################### IN PROGRESS ##############
