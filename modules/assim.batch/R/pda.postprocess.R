@@ -11,39 +11,53 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
   
   # prepare for non-model params
   if(length(mcmc.param.list) > length(settings$pfts)){  
-    # parameters are in the last list and all will be plotted
-    # increase prior.ind accordingly
-    prior.ind[[length(prior.ind)+1]] <- seq_len(ncol(mcmc.param.list[[length(mcmc.param.list)]][[1]]))
+    # create a subfolder under pft folder for non-model parameters
+    par.file.name <- file.path(settings$outdir, paste0("pft/parameters"))
+    dir.create(par.file.name)
+    
+    # parameters are in the last list, increase length(prior.ind) accordingly
+    # only bias params will be thrown into emulator though
+    # TODO: save posteriors for likelihood parameters in the database?
+    par.names <- colnames(mcmc.param.list[[length(mcmc.param.list)]][[1]])
+    extr.bias <- sapply(strsplit(par.names, "\\."), `[[`, 1)
+    bias.ind <- which(extr.bias == "bias")
+    
+    prior.ind[[length(prior.ind)+1]] <- bias.ind
+    pname[[length(pname)+1]] <- par.names[bias.ind]
+  } else{
+    par.file.name <- NULL
   }
 
-  params.subset <- pda.plot.params(settings, mcmc.param.list, prior.ind)
+  params.subset <- pda.plot.params(settings, mcmc.param.list, prior.ind, par.file.name)
   
   for (i in seq_along(settings$pfts)) {
     
     ## Save params
     filename.mcmc <- file.path(settings$pfts[[i]]$outdir, 
-                               paste0("mcmc.pda.", 
+                                paste0("mcmc.pda.", 
                                       settings$pfts[[i]]$name, 
                                       "_", 
                                       settings$assim.batch$ensemble.id, 
                                       ".Rdata"))
+
     params.pft <- params.subset[[i]]
     save(params.pft, file = filename.mcmc)
     
+
     ## create a new Posteriors DB entry
-    now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    
     pft.id <- db.query(paste0("SELECT pfts.id FROM pfts, modeltypes WHERE pfts.name='",
                               settings$pfts[[i]]$name, 
                               "' and pfts.modeltype_id=modeltypes.id and modeltypes.name='", 
                               settings$model$type, "'"), 
-                       con)[["id"]]
+                         con)[["id"]]
+
+
+    db.query(paste0("INSERT INTO posteriors (pft_id) VALUES (",
+                    pft.id, ")"), con)
     
-    db.query(paste0("INSERT INTO posteriors (pft_id, created_at, updated_at) VALUES (",
-                    pft.id, ", '", now, "', '", now, "')"), con)
-    
-    posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pft.id, " AND created_at='", 
-                                   now, "'"), con)[["id"]]
+    posteriors <- db.query(paste0("SELECT * from posteriors where pft_id = ", pft.id), con)
+    # get the most recent
+    posteriorid <- posteriors$id[which.max(posteriors$created_at)]
     
     logger.info(paste0("--- Posteriorid for ", settings$pfts[[i]]$name, " is ", posteriorid, " ---"))
     settings$pfts[[i]]$posteriorid <- posteriorid
@@ -107,13 +121,7 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
 ##'
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
-  
-  # create a subfolder under pft folder for non-model parameters
-  if(length(mcmc.param.list) > length(settings$pfts)){
-    par.file <- file.path(settings$outdir, paste0("pft/parameters"))
-    dir.create(par.file)
-  }
+pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name = NULL) {
   
   params.subset <- list()
   
@@ -146,9 +154,9 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
                            "_", settings$assim.batch$ensemble.id,
                            ".pdf")))
     } else {
-      pdf(file.path(par.file, 
-                    paste0("mcmc.diagnostics.pda.par", 
-                           "_", settings$assim.batch$ensemble.id,
+      pdf(file.path(par.file.name, 
+                    paste0("mcmc.diagnostics.pda.par_", 
+                           settings$assim.batch$ensemble.id,
                            ".pdf")))
     }
 
@@ -177,9 +185,9 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
                                              settings$assim.batch$ensemble.id, 
                                              ".txt"))
     } else {
-      filename.mcmc.temp <- file.path(par.file, 
-                                      paste0("mcmc.diagnostics.pda.par", 
-                                             "_", settings$assim.batch$ensemble.id,".txt"))
+      filename.mcmc.temp <- file.path(par.file.name, 
+                                      paste0("mcmc.diagnostics.pda.par_", 
+                                             settings$assim.batch$ensemble.id,".txt"))
     }
 
     
