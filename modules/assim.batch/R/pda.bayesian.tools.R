@@ -47,7 +47,10 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
     con <- NULL
   }
   
-  bety <- betyConnect("~/pecan/web/config.php")
+  bety <- src_postgres(dbname = settings$database$bety$dbname, 
+                       host = settings$database$bety$host, 
+                       user = settings$database$bety$user, 
+                       password = settings$database$bety$password)
   
   ## Load priors
   temp        <- pda.load.priors(settings, bety$con)
