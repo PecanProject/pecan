@@ -113,7 +113,7 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
     
     iter.flag <- 1
     
-    if(!is.null(settings$assim.batch$extension)){
+    if(!is.null(settings$assim.batch$extension) & !is.null(params.list$llpars)){
       llpars     <- params.list$llpars
       llparnames <- sapply(strsplit(colnames(llpars), "\\."), `[[`, 1)
       bias       <- llpars[ ,llparnames == "bias"]
@@ -122,6 +122,7 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
       parl       <- nobias[length(nobias)]
       LLpar      <- matrix(NA, ncol= ncol(llpars), nrow = (finish-start)+1,
                            dimnames = list(NULL, colnames(llpars)))
+      LLpar <- rbind(llpars, LLpar)
       par.flag   <- TRUE
       iter.flag  <- 0
     }
@@ -298,9 +299,6 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
     mcmc.list[[chain]] <- params
     jcov.list[[chain]] <- jcov
     if(par.flag){
-      if(!is.null(settings$assim.batch$extension)){
-        LLpar <- rbind(llpars, LLpar)
-      } 
       llpar.list[[chain]] <- LLpar
     }
     
