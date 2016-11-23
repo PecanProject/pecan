@@ -37,7 +37,7 @@ spp <- read.csv(sppFile,stringsAsFactors=FALSE,strip.white = TRUE)
 spp <- spp[-duplicated(spp$Species),]
 
 ## open database connection & grab current species list
-dbparms.psql <- list(driver="PostgreSQL" , user = "bety", dbname = "bety", password='bety')
+dbparms.psql <- list(driver="PostgreSQL" , user = "bety", dbname = "bety", password='bety',host='128.197.230.32')
 con <- db.open(dbparms.psql)
 bety.species <- data.table(db.query("SELECT * FROM species", con))
 bety.species.dt <- data.table(db.query("SELECT DISTINCT id as bety_species_id, scientificname as bety_species, species, genus FROM species", con))

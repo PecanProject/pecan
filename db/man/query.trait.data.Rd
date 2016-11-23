@@ -9,8 +9,7 @@ For Vcmax and SLA data, only data collected between  April and July are queried,
 For Vcmax and root_respiration_rate, data are scaled
 converted from measurement temperature to \eqn{25^oC} via the arrhenius equation.}
 \usage{
-\method{query}{trait.data}(trait, spstr, con = NULL,
-  update.check.only = FALSE, ...)
+query.trait.data(trait, spstr, con = NULL, update.check.only = FALSE, ...)
 }
 \arguments{
 \item{trait}{is the trait name used in the database, stored in variables.name}
