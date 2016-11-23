@@ -188,7 +188,7 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
   }
 
   if (is.null(inputid)) {
-     file <- data.frame()
+    return(data.frame())
   } else {
     if(length(inputid) > 1) {
       logger.warn("Found multiple matching inputs. Checking for one with associate files are on host machine")
