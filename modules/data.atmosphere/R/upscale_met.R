@@ -1,6 +1,10 @@
 ##' upscale_met upscales the temporal resolution of a dataset
 ##' @name upscale_met
 ##' @title upscale_met
+substrRight <- function(x, n) {
+  substr(x, nchar(x) - n + 1, nchar(x))
+}
+
 ##' @export
 ##' @param outfolder
 ##' @param input_met - met dataset
@@ -13,9 +17,7 @@
 upscale_met <- function(outfolder, input_met, site.id, reso = 6, overwrite = FALSE, 
                         verbose = FALSE, ...) {
   
-  substrRight <- function(x, n) {
-    substr(x, nchar(x) - n + 1, nchar(x))
-  }
+  
   sub_str <- substrRight(input_met, 7)
   year <- substr(sub_str, 1, 4)
   year <- as.numeric(year)
@@ -27,14 +29,14 @@ upscale_met <- function(outfolder, input_met, site.id, reso = 6, overwrite = FAL
                     units <- c("Kelvin", "Kelvin", "Kelvin", "W/m2", "Pascal", "W/m2", "m/s", 
                                "m/s", "g/g", "kg/m2/s"))
   # Reading in the data
-  data <- list()
+  met_data <- list()
   tem <- ncdf4::nc_open(input_met)
   dim <- tem$dim
   for (j in seq_along(var$CF.name)) {
     if (exists(as.character(var$CF.name[j]), tem$var) == FALSE) {
-      data[[j]] <- NA
+      met_data[[j]] <- NA
     } else {
-      data[[j]] <- ncdf4::ncvar_get(tem, as.character(var$CF.name[j]))
+      met_data[[j]] <- ncdf4::ncvar_get(tem, as.character(var$CF.name[j]))
     }
   }
   
@@ -42,8 +44,8 @@ upscale_met <- function(outfolder, input_met, site.id, reso = 6, overwrite = FAL
   lon_data <- as.numeric(ncdf4::ncvar_get(tem, "longitude"))
   ncdf4::nc_close(tem)
   
-  data <- data.frame(data)
-  colnames(data) <- var$CF.name
+  met_data <- data.frame(met_data)
+  colnames(met_data) <- var$CF.name
   
   if (lubridate::leap_year(year) == TRUE) {
     sp <- 366
@@ -53,19 +55,18 @@ upscale_met <- function(outfolder, input_met, site.id, reso = 6, overwrite = FAL
   }
   reso_len <- sp * 24/reso
   
-  step <- length(data$air_temperature)/reso_len
+  step <- nrow(met_data)/reso_len
   upscale_data <- data.frame()
-  for (n in 1:length(var$CF.name)) {
-    for (x in 1:reso_len) {
-      upscale_data[x, n] <- mean(data[(x * step - step + 1):(x * step), n])
-    }
+  for (n in seq_along(var$CF.name)) {
+    upscale_data[1:reso_len,n] <- colMeans(matrix(met_data[[n]], nrow=step))
   }
+  
   colnames(upscale_data) <- var$CF.name
   for (x in 1:reso_len) {
-    upscale_data$air_temperature_max[x] <- max(data$air_temperature[(x * step - 
-                                                                       step + 1):(x * step)])
-    upscale_data$air_temperature_min[x] <- min(data$air_temperature[(x * step - 
-                                                                       step + 1):(x * step)])
+    upscale_data$air_temperature_max[x] <- max(met_data$air_temperature[(x * step - 
+                                                                           step + 1):(x * step)])
+    upscale_data$air_temperature_min[x] <- min(met_data$air_temperature[(x * step - 
+                                                                           step + 1):(x * step)])
   }
   
   upscale.list <- list()
@@ -79,7 +80,8 @@ upscale_met <- function(outfolder, input_met, site.id, reso = 6, overwrite = FAL
   
   for (j in seq_along(var$CF.name)) {
     upscale.list[[j]] <- ncdf4::ncvar_def(name = as.character(var$CF.name[j]), 
-                                          units = as.character(var$units[j]), dim = dim, missval = -999, verbose = verbose)
+                                          units = as.character(var$units[j]), 
+                                          dim = dim, missval = -999, verbose = verbose)
   }
   
   rows <- 1
@@ -89,7 +91,7 @@ upscale_met <- function(outfolder, input_met, site.id, reso = 6, overwrite = FAL
                         dbfile.name = paste("upscaled", sep = "."), stringsAsFactors = FALSE)
   
   loc.file = file.path(outfolder, paste("upscaled", year, "nc", sep = "."))
-  loc <- nc_create(filename = loc.file, vars = upscale.list, verbose = verbose)
+  loc <- ncdf4::nc_create(filename = loc.file, vars = upscale.list, verbose = verbose)
   
   for (j in seq_along(var$CF.name)) {
     ncdf4::ncvar_put(nc = loc, varid = as.character(var$CF.name[j]), vals = upscale_data[[j]])
@@ -97,7 +99,7 @@ upscale_met <- function(outfolder, input_met, site.id, reso = 6, overwrite = FAL
   ncdf4::nc_close(loc)
   
   results$file <- loc.file
-  results$host <- fqdn()
+  results$host <- PEcAn.utils::fqdn()
   results$startdate <- paste0(year, "-01-01 00:00:00", tz = "UTC")
   results$enddate <- paste0(year, "-12-31 23:59:59", tz = "UTC")
   results$mimetype <- "application/x-netcdf"
