@@ -119,9 +119,9 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                             enddate = end_date, 
                                             con = con, 
                                             hostname = host$name)
+    
       
-      
-      logger.info(existing.dbfile, digits = 10)
+      logger.info(existing.dbfile)
       logger.info("end CHECK for existing input record")
       
       
