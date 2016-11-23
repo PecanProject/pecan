@@ -38,9 +38,9 @@ pda.define.llik.fn <- function(settings) {
 
 
 
-##' Calculate Likelihood parameters
+##' Calculate sufficient statistics
 ##'
-##' @title Calculate Likelihood parameters
+##' @title Calculate sufficient statistics
 ##' @param settings list
 ##' @param model_out list
 ##' @param inputs list
@@ -155,8 +155,14 @@ pda.calc.llik <- function(pda.errors, llik.fn, llik.par) {
 } # pda.calc.llik
 
 
-
+##' Calculate likelihood parameters
+##'
 ##' @title pda.calc.llik.par
+##' 
+##' @param settings list
+##' @param n named vector
+##' @param error.stats list
+##' 
 ##' @author Istem Fer
 ##' @export
 
