@@ -841,7 +841,7 @@ return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias, run.r
     bias.prior$parama[i] <- min(bias.params[[i]]) - sd(bias.params[[i]])
     bias.prior$paramb[i] <- max(bias.params[[i]]) + sd(bias.params[[i]])
     
-    prior.names[i] <- paste0("bias.", inputs[[isbias[i]]]$variable.name$variable.name$variable.drv)
+    prior.names[i] <- paste0("bias.", sapply(model.out[[1]],names)[isbias[i]])
     
   }
 

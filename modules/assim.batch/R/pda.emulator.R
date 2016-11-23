@@ -208,17 +208,20 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
         prior.list <- bias.list$prior.list.bias
         prior.fn <- lapply(prior.list, pda.define.prior.fn)
       } else {
-        bias.terms <- matrix(1, nrow = settings$assim.batch$n.knot, ncol = 1) # just 1 for Gaussian
+        all.bias <- NULL
       }
     
       for (i in seq_len(settings$assim.batch$n.knot)) {
+        if(!is.null(bias.terms)){
+          all.bias <- lapply(bias.terms, function(n) n[i,])
+          all.bias <- do.call("rbind", all.bias)
+        }
         ## calculate error statistics and save in the DB      
-        pda.errors[[i]] <- pda.calc.error(settings, con, model_out = model.out[[i]], run.id = run.ids[i], inputs, bias.terms[i,])
+        pda.errors[[i]] <- pda.calc.error(settings, con, model_out = model.out[[i]], run.id = run.ids[i], inputs, bias.terms = all.bias)
       } 
     
   } # end if-block
   
-
   
   init.list <- list()
   jmp.list <- list()
@@ -229,6 +232,10 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   
     
   if (run.normal | run.round) {
+    
+    # retrieve n
+    n.of.obs <- sapply(inputs,`[[`, "n") 
+    names(n.of.obs) <- sapply(model.out[[1]],names)
       
     ## GPfit optimization routine assumes that inputs are in [0,1] Instead of drawing from parameters,
     ## we draw from probabilities
@@ -239,7 +246,8 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     # retrieve SS
     error.statistics <- list()
     SS.list <- list()
-      
+    bc <- 1
+    
     for(inputi in seq_len(n.input)){
       error.statistics[[inputi]] <- sapply(pda.errors,`[[`, inputi)
         
@@ -247,18 +255,15 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
           
           # if yes, then we need to include bias term in the emulator
           bias.probs <- bias.list$bias.probs
-          biases <- c(t(bias.probs))
+          biases <- c(t(bias.probs[[bc]]))
+          bc <- bc + 1
             
           # replicate model parameter set per bias parameter
           rep.rows <- rep(1:nrow(X), each = nbias)
           X.rep <- X[rep.rows,]
           X <- cbind(X.rep, biases)
-            
+          colnames(X) <- c(colnames(X.rep), paste0("bias.", names(n.of.obs)[inputi]))
           SS.list[[inputi]] <- cbind(X, c(error.statistics[[inputi]]))
-            
-          # add indice and increase n.param for bias
-          prior.ind.all <- c(prior.ind.all, prior.ind.all[length(prior.ind.all)]+1)
-          n.param <- c(n.param, 1)
 
       } else {
           SS.list[[inputi]] <- cbind(X, error.statistics[[inputi]])
@@ -296,10 +301,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     if(any(unlist(any.mgauss) == "multipGauss")){
       load(settings$assim.batch$bias.path) # load prior.list with bias term from previous run
       prior.all <- do.call("rbind", prior.list)
-        
-      # add indice and increase n.param for bias
-      prior.ind.all <- c(prior.ind.all, prior.ind.all[length(prior.ind.all)]+1)
-      n.param <- c(n.param, 1)
     }
 
   
@@ -309,15 +310,19 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     }
   }
     
+  # add indice and increase n.param for bias
+  if(any(unlist(any.mgauss) == "multipGauss")){
+    prior.ind.all <- c(prior.ind.all, 
+                       (prior.ind.all[length(prior.ind.all)]+1):(prior.ind.all[length(prior.ind.all)] + length(isbias)))
+    n.param <- c(n.param, length(isbias))
+  }
+
+  
   ## Change the priors to unif(0,1) for mcmc.GP
   prior.all[prior.ind.all, ] <- rep(c("unif", 0, 1, "NA"), each = sum(n.param))
 
   ## Set up prior functions accordingly
   prior.fn.all <- pda.define.prior.fn(prior.all)
-  
-  
-  # retrieve n
-  n.of.obs <- sapply(inputs,`[[`, "n") 
   
   # define range to make sure mcmc.GP doesn't propose new values outside
   rng <- matrix(c(sapply(prior.fn.all$qprior[prior.ind.all],
@@ -377,12 +382,11 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   
   parallel::stopCluster(cl)
   
-  mcmc.samp.list <- mcmc.par.list <- list()
+  mcmc.samp.list <- list()
   
   for (c in seq_len(settings$assim.batch$chain)) {
     
     m <- mcmc.out[[c]]$mcmc.samp
-    p <- mcmc.out[[c]]$mcmc.par
     
       ## Set the prior functions back to work with actual parameter range
       
@@ -433,7 +437,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                                               paste0("mcmc.list.pda", 
                                                      settings$assim.batch$ensemble.id, 
                                                      ".Rdata"))
-  save(mcmc.list, file = settings$assim.batch$mcmc.path)
+  save(mcmc.samp.list, file = settings$assim.batch$mcmc.path)
   
   settings$assim.batch$resume.path <- file.path(settings$outdir, 
                                                 paste0("resume.pda", 
@@ -455,9 +459,24 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   mcmc.param.list <- list()
   ind <- 0
   for (i in seq_along(n.param)) {
-    mcmc.param.list[[i]] <- lapply(mcmc.list, function(x) x[, (ind + 1):(ind + n.param[i]), drop = FALSE])
+    mcmc.param.list[[i]] <- lapply(mcmc.samp.list, function(x) x[, (ind + 1):(ind + n.param[i]), drop = FALSE])
     ind <- ind + n.param[i]
   }
+  
+  # Collect non-model parameters in their own list
+  if(length(mcmc.param.list) > length(settings$pfts)) { 
+    # means bias parameter was at least one bias param in the emulator
+    # it will be the last list in mcmc.param.list
+    # there will always be at least one tau for bias
+    for(c in seq_len(settings$assim.batch$chain)){
+      mcmc.param.list[[length(mcmc.param.list)]][[c]] <- cbind( mcmc.param.list[[length(mcmc.param.list)]][[c]],
+                                                                mcmc.out[[c]]$mcmc.par)
+    }
+
+  } 
+  #else if () {
+    # means no bias param but there are still other params, e.g. Gaussian
+  #}
   
   settings <- pda.postprocess(settings, con, mcmc.param.list, pname, prior.list, prior.ind)
   

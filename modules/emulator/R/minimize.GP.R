@@ -187,7 +187,8 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
   xcurr <- x0
   dim   <- length(x0)
   samp  <- matrix(NA, nmcmc, dim)
-  par   <- matrix(NA, nmcmc, length(LLpar)) # note: length(LLpar) can be 0
+  par   <- matrix(NA, nmcmc, length(LLpar), dimnames = list(NULL, names(LLpar))) # note: length(LLpar) can be 0
+  
   
   if (run.block) {
     jcov <- diag((jmp0)^2)
