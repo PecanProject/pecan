@@ -134,6 +134,10 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
     ## Read model outputs
     model.out <- pda.get.model.output(settings, run.id, bety, inputs)
     
+    # retrieve n
+    n.of.obs <- sapply(inputs,`[[`, "n") 
+    names(n.of.obs) <- sapply(model.out,names)
+    
     # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
     if(any(unlist(any.mgauss) == "multipGauss")) {
       isbias <- which(unlist(any.mgauss) == "multipGauss")
@@ -142,15 +146,21 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
       bias.list <- return.bias(isbias, list(model.out), inputs, prior.list, nbias)
       bias.terms <- bias.list$bias.params
     } else {
-      bias.terms <- matrix(1, nrow = 1, ncol = 1) # just 1 for Gaussian
+      bias.terms <- NULL
+    }
+    
+    if(!is.null(bias.terms)){
+      all.bias <- lapply(bias.terms, function(n) n[1,])
+      all.bias <- do.call("rbind", all.bias)
+    } else {
+      all.bias <- NULL
     }
     
     ## calculate error statistics      
-    pda.errors <- pda.calc.error(settings, con, model_out = model.out, run.id, inputs, bias.terms)
-    llik.par <- pda.calc.llik.par(settings, 
-                                  n = sapply(inputs,`[[`, "n"), 
+    pda.errors <- pda.calc.error(settings, con, model_out = model.out, run.id, inputs, all.bias)
+    llik.par <- pda.calc.llik.par(settings, n = n.of.obs, 
                                   error.stats = unlist(pda.errors))
-    ## Calculate likelihood 
+    ## Calculate likelihood
     LL.new <- pda.calc.llik(pda.errors = unlist(pda.errors), llik.fn, llik.par)
     
     return(LL.new)

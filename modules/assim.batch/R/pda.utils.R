@@ -685,9 +685,9 @@ pda.settings.bt <- function(settings) {
   adapt <- ifelse(!is.null(settings$assim.batch$bt.settings$adapt), 
                   settings$assim.batch$bt.settings$adapt, 
                   TRUE)
-  # adaptationInverval = ifelse(!is.null(settings$assim.batch$bt.settings$adaptationInverval),
-  # as.numeric(settings$assim.batch$bt.settings$adaptationInverval),
-  # max(round(iterations/100*5),100))
+  adaptationInverval = ifelse(!is.null(settings$assim.batch$bt.settings$adaptationInverval),
+                              as.numeric(settings$assim.batch$bt.settings$adaptationInverval),
+                              max(round(iterations/100*5),100))
   adaptationNotBefore <- ifelse(!is.null(settings$assim.batch$bt.settings$adaptationNotBefore), 
                                 as.numeric(settings$assim.batch$bt.settings$adaptationNotBefore), 
                                 adaptationInverval)
