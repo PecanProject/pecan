@@ -1,3 +1,7 @@
+substrRight <- function(x, n) {
+  substr(x, nchar(x) - n + 1, nchar(x))
+}
+
 ##' debias.met takes input_met and debiases it based on statistics from a train_met dataset
 ##' @name debias_met
 ##' @title debias_met
@@ -21,11 +25,6 @@ debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "li
                     units = c("Kelvin", "Kelvin", "Kelvin", "W/m2", "Pascal", "W/m2", "m/s", 
                               "m/s", "g/g", "kg/m2/s"))
   
-  # Need to pull the year from the string filename, this assumes that the year is
-  # always placed right before '.nc'
-  substrRight <- function(x, n) {
-    substr(x, nchar(x) - n + 1, nchar(x))
-  }
   sub_str <- substrRight(input_met, 7)
   year <- substr(sub_str, 1, 4)
   
