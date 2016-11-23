@@ -208,13 +208,15 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
         prior.list <- bias.list$prior.list.bias
         prior.fn <- lapply(prior.list, pda.define.prior.fn)
       } else {
-        all.bias <- NULL
+        bias.terms <- NULL
       }
     
       for (i in seq_len(settings$assim.batch$n.knot)) {
         if(!is.null(bias.terms)){
           all.bias <- lapply(bias.terms, function(n) n[i,])
           all.bias <- do.call("rbind", all.bias)
+        } else {
+          all.bias <- NULL
         }
         ## calculate error statistics and save in the DB      
         pda.errors[[i]] <- pda.calc.error(settings, con, model_out = model.out[[i]], run.id = run.ids[i], inputs, bias.terms = all.bias)
@@ -297,7 +299,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     load(settings$assim.batch$ss.path)
     load(settings$assim.batch$resume.path)
     
-    n.of.obs <- resume.list$n.of.obs
+    n.of.obs <- resume.list[[1]]$n.of.obs
       
     if(any(unlist(any.mgauss) == "multipGauss")){
       load(settings$assim.batch$bias.path) # load prior.list with bias term from previous run
@@ -474,10 +476,13 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                                                                 mcmc.out[[c]]$mcmc.par)
     }
 
-  } 
-  #else if () {
+  } else if (ncol(mcmc.out[[1]]$mcmc.par) != 0){
     # means no bias param but there are still other params, e.g. Gaussian
-  #}
+    mcmc.param.list[[length(mcmc.param.list)+1]] <- list()
+    for(c in seq_len(settings$assim.batch$chain)){
+      mcmc.param.list[[length(mcmc.param.list)]][[c]] <- mcmc.out[[c]]$mcmc.par
+    }
+  }
   
   settings <- pda.postprocess(settings, con, mcmc.param.list, pname, prior.list, prior.ind)
   
