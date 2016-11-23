@@ -377,13 +377,13 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   
   parallel::stopCluster(cl)
   
-  mcmc.list <- list()
+  mcmc.samp.list <- mcmc.par.list <- list()
   
   for (c in seq_len(settings$assim.batch$chain)) {
     
-    m <- mcmc.out[[c]]$mcmc
+    m <- mcmc.out[[c]]$mcmc.samp
+    p <- mcmc.out[[c]]$mcmc.par
     
-
       ## Set the prior functions back to work with actual parameter range
       
       prior.all <- do.call("rbind", prior.list)
@@ -392,11 +392,11 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       ## Convert probabilities back to parameter values
       for (i in seq_len(sum(n.param))) {
         m[, i] <- eval(prior.fn.all$qprior[prior.ind.all][[i]], 
-                       list(p = mcmc.out[[c]]$mcmc[, i]))
+                       list(p = mcmc.out[[c]]$mcmc.samp[, i]))
       }
     
     colnames(m) <- rownames(prior.all)[prior.ind.all]
-    mcmc.list[[c]] <- m
+    mcmc.samp.list[[c]] <- m
     
     # jmp.list[[c]] <- mcmc.out[[c]]$jump
     resume.list[[c]] <- mcmc.out[[c]]$chain.res

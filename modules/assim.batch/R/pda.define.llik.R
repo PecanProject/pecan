@@ -96,13 +96,15 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
     # for inputs with valid input ID (i.e., not the -1 dummy id).
     # Note that analyses requiring sufficient statistics to be stored therefore require
     # inputs to be registered in BETY first.
+    
+    # TODO : insert multiple SS per unique run, input when it is allowed on DB
     db.input.ind <- which(sapply(inputs, function(x) x$input.id) != -1)
     for (k in db.input.ind) {
       
       db.query(
         paste0("INSERT INTO likelihoods ",
-               "(run_id,            variable_id,                     input_id, ",
-               " loglikelihood,     n_eff)",
+               "(run_id, variable_id, input_id, ",
+               " loglikelihood, n_eff)",
                "values ('",
                run.id, "', '",    inputs[[k]]$variable.id, "', '", inputs[[k]]$input.id, "', '",
                SSdb[[k]], "', '", inputs[[k]]$n, "')"
