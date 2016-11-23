@@ -396,15 +396,22 @@ pda.init.params <- function(settings, chain, pname, n.param.all) {
     start  <- nrow(params) + 1
     finish <- nrow(params) + as.numeric(settings$assim.batch$iter)
     params <- rbind(params, matrix(NA, finish - start + 1, n.param.all))
+    if(!is.null(settings$assim.batch$llpar.path)){ # load llik params
+      load(settings$assim.batch$llpar.path)
+      llpars <- llpar.list[[chain]]
+    } else {
+      llpars <- NULL
+    }
   } else {
     # No input given, starting fresh
     start  <- 1
     finish <- as.numeric(settings$assim.batch$iter)
     params <- matrix(NA, finish, n.param.all)
+    llpars <- NULL
   }
   colnames(params) <- pname
   
-  return(list(start = start, finish = finish, params = params))
+  return(list(start = start, finish = finish, params = params, llpars = llpars))
 } # pda.init.params
 
 
@@ -842,7 +849,7 @@ return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias, run.r
     bias.prior$paramb[i] <- max(bias.params[[i]]) + sd(bias.params[[i]])
     
     prior.names[i] <- paste0("bias.", sapply(model.out[[1]],names)[isbias[i]])
-    
+    names(bias.params)[i] <- paste0("bias.", sapply(model.out[[1]],names)[isbias[i]])
   }
 
   rownames(bias.prior) <- prior.names

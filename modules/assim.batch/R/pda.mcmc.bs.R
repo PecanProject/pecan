@@ -111,6 +111,21 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
     finish      <- params.list$finish
     params      <- params.list$params
     
+    iter.flag <- 1
+    
+    if(!is.null(settings$assim.batch$extension)){
+      llpars     <- params.list$llpars
+      llparnames <- sapply(strsplit(colnames(llpars), "\\."), `[[`, 1)
+      bias       <- llpars[ ,llparnames == "bias"]
+      nobias     <- llpars[ ,llparnames != "bias"]
+      all.bias   <- bias[length(bias)]
+      parl       <- nobias[length(nobias)]
+      LLpar      <- matrix(NA, ncol= ncol(llpars), nrow = (finish-start)+1,
+                           dimnames = list(NULL, colnames(llpars)))
+      par.flag   <- TRUE
+      iter.flag  <- 0
+    }
+  
     ## Set initial conditions
     if (start == 1) {
       parm <- sapply(prior.fn.all$qprior, eval, list(p = 0.5))
@@ -139,7 +154,6 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
                            paste0("diag.pda", settings$assim.batch$ensemble.id)), 
                  showWarnings = F, recursive = T)
     }
-    
     
     ## --------------------------------- Main MCMC loop --------------------------------- ##
     for (i in start:finish) {
@@ -222,11 +236,18 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
                                       error.stats = unlist(pda.errors))
         # store llik-par
         parl <- unlist(sapply(llik.par, `[[` , "par"))
-        if(!is.null(parl) & i == 1 & is.null(all.bias)) {
+        if(!is.null(parl) & iter.flag == 1 & is.null(all.bias)) {
           LLpar <- matrix(NA, ncol= length(parl), nrow = finish, dimnames = list(NULL, names(parl)))
-        } else if(!is.null(parl) & i == 1 & !is.null(all.bias)) {
+          par.flag <- TRUE
+          iter.flag <- 0
+        } else if(!is.null(parl) & iter.flag == 1 & !is.null(all.bias)) {
           LLpar <- matrix(NA, ncol= length(parl) + nrow(all.bias), nrow = finish, 
                           dimnames = list(NULL, c(rownames(all.bias), names(parl))))
+          par.flag <- TRUE
+          iter.flag <- 0
+        } else if(iter.flag == 1){
+          par.flag <- FALSE
+          iter.flag <- 0
         }
         
         ## Calculate likelihood
@@ -276,7 +297,12 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
     
     mcmc.list[[chain]] <- params
     jcov.list[[chain]] <- jcov
-    if(!is.null(par)) llpar.list[[chain]] <- LLpar
+    if(par.flag){
+      if(!is.null(settings$assim.batch$extension)){
+        LLpar <- rbind(llpars, LLpar)
+      } 
+      llpar.list[[chain]] <- LLpar
+    }
     
   }  #end of chain-loop
   
@@ -297,6 +323,20 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
     mcmc.param.list[[i]] <- lapply(mcmc.list, 
                                    function(x) x[, (ind + 1):(ind + n.param[i]), drop = FALSE])
     ind <- ind + n.param[i]
+  }
+  
+  if (par.flag){
+    mcmc.param.list[[length(mcmc.param.list)+1]] <- list()
+    prior.list[[length(prior.list)+1]] <- list()
+    for(c in seq_len(settings$assim.batch$chain)){
+      mcmc.param.list[[length(mcmc.param.list)]][[c]] <- llpar.list[[c]]
+    }
+    
+    settings$assim.batch$llpar.path <- file.path(settings$outdir, 
+                                                paste0("llpar.pda",
+                                                       settings$assim.batch$ensemble.id, 
+                                                       ".Rdata"))
+    save(llpar.list, file = settings$assim.batch$llpar.path)
   }
   
   ## ------------------------------------ Clean up ------------------------------------ 
