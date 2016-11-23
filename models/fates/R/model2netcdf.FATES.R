@@ -11,291 +11,118 @@
 ##' @title Code to convert FATES netcdf output into into CF standard
 ##'
 ##' @param outdir Location of FATES model output
-##' @param sitelat Latitude of the site
-##' @param sitelon Longitude of the site
-##' @param start_date Start time of the simulation
-##' @param end_date End time of the simulation
 ##' 
 ##' @examples  
 ##' \dontrun{
 ##' example.output <- system.file("case.clm2.h0.2004-01-01-00000.nc",package="PEcAn.FATES")
-##' model2netcdf.FATES(outdir="~/",sitelat=42.56341,sitelon=289.1853,start_date="2004-01-01 00:00:00",
-##' end_date="2005-12-31 00:00:00")
+##' model2netcdf.FATES(outdir="~/")
 ##' }
 ##' 
 ##' @export
 ##'
 ##' @author Michael Dietze, Shawn Serbin
-#model2netcdf.FATES <- function(outdir) {
-model2netcdf.FATES <- function(outdir, sitelat, sitelon, start_date, end_date) {
-    
+model2netcdf.FATES <- function(outdir) {
+
     ## Load functions
-    mstmipvar <- PEcAn.utils::mstmipvar
     ncdim_def <- ncdf4::ncdim_def
     ncvar_def <- ncdf4::ncvar_def
     ncatt_get <- ncdf4::ncatt_get
     ncvar_add <- ncdf4::ncvar_add
-    misc.convert <- PEcAn.utils::misc.convert # unit conversions
+#    misc.convert <- PEcAn.utils::misc.convert # unit conversions
     logger.info <- PEcAn.utils::logger.info
     logger.severe <- PEcAn.utils::logger.severe
     logger.warn <- PEcAn.utils::logger.warn
+    
+    #        var_update("AR","AutoResp","kgC m-2 s-1")
+    var_update <- function(out,oldname,newname,newunits=NULL){
       
-    ## needs to be a generic function placed in utils, same goes for ED2 version of this function
-    ## also not all vars will be in every FATES run
-    getnetCDF <- function(nc, var) {
-      if (var %in% names(nc$var)) {
-        return(ncdf4::ncvar_get(nc, var))
+      ## define variable
+      oldunits <- ncdf4::ncatt_get(ncin,oldname,"units")$value
+      if(is.null(newunits)) newunits = oldunits
+      newvar <- ncdf4::ncvar_def(name = newname, units = newunits, dim = xyt)
+      
+      ## convert data
+      dat <- ncvar_get(ncin,oldname)
+      dat.new <- misc.convert(dat,oldunits,newunits)
+      
+      ## prep for writing
+      if(is.null(out)) {
+        out <- list(var <- list(),dat <- list())
+        out$var[[1]] <- newvar
+        out$dat[[1]] <- dat.new
       } else {
-        logger.warn("Could not find", var, "in FATES output.")
-        return(-999)
+        i <- length(out$var) + 1
+        out$var[[i]] <- newvar
+        out$dat[[i]] <- dat.new
       }
+      return(out)
     }
-
+    
+    
     ## Get files and years
     files <- dir(outdir, "*clm2.h0.*.nc", full.names = TRUE)
     file.dates <- as.Date(sub(".nc", "", sub(".*clm2.h0.", "", files)))
-    file.years <- lubridate::year(file.dates)
-    num.years <- length(unique(file.years))
-    simulation.days <- as.Date(start_date):as.Date(end_date)
-    simulation.years <- as.numeric(unique(strftime(as.Date(simulation.days, origin = "1970-01-01"), "%Y")))
-    
-    # nescessary?  A check that output years and selected run years match
-    if (!all(file.years==simulation.years)) {
-      logger.severe("FATES output file years and simulation years don't match")
-    }
-    
+    years <- lubridate::year(file.dates)
+
     ## Loop over years
-    for (year in unique(file.years)) {
-        ysel <- which(file.years == year)  ## subselect files for selected year
-#        ysel <- sort(file.dates[ysel])  ## double check dates are in order
+    for (year in unique(years)) {
+        ysel <- which(years == year)  ## subselect files for selected year
         if (length(ysel) > 1) {
             logger.warn("PEcAn.FATES::model2netcdf.FATES does not currently support multiple files per year")
-        }
-        
-        # !!useful or do we not want this behavior? !!  Or some sort of clobber flag?
-        if (file.exists(file.path(outdir, paste(year, "nc", sep = ".")))) {
-          logger.info(paste("model2netcdf.FATES output for",  year, "already converted, starting on the next year"))
-          next  ## skip, model output already present.
         }
         
         fname <- files[ysel[1]]
         oname <- file.path(dirname(fname), paste0(year, ".nc"))
         logger.info(paste("model2netcdf.FATES - Converting:",  fname, "to", oname))
-        nc <- ncdf4::nc_open(fname, write = TRUE)
+        ncin <- ncdf4::nc_open(fname, write = TRUE)
         
         ## FATES time is in multiple columns, create 'time'
-        day  <- ncdf4::ncvar_get(nc, "mdcur")   #current day (from base day)
-        sec  <- ncdf4::ncvar_get(nc, "mscur")   #current seconds of current day
+        day  <- ncdf4::ncvar_get(ncin, "mdcur")   #current day (from base day)
+        sec  <- ncdf4::ncvar_get(ncin, "mscur")   #current seconds of current day
         time <- day + sec / 86400
-        nc.time <- nc$dim$time$vals             # days since "start_date"
+        nt <- length(time)
+        nc.time <- ncin$dim$time$vals             # days since "start_date"
         # round(time,3)==round(nc.time,3)       # quick check, do the time vars match
         # !! Is this a useful/reasonable check? That is that our calculated time
         # matches FATES internal time var.
         if (length(time)!=length(nc.time)) {
           logger.severe("Time dimension mismatch in output, simulation error?")
         }
-        steps.per.day <- length(time)/length(unique(day))
-        nstep <- ncdf4::ncvar_get(nc,"nstep") 
-        
-        ## Parse the rest of FATES output
-        output <- list()  # create empty output
-        miss.val <- -999  # !!what missing?  FATES default (1e+36) or PEcAn (-999)
-        ## if pulling out as a dim def
-        #pfts <- ncdim_def(name = "pft", units = "",
-        #                            vals = nc$dim$pft$vals, 
-        #                            unlim = FALSE)
-        ##
-        ## Dims as output vars
-        #output[[1]] <- nc$dim$levgrnd$vals   # meters
-        #ncatt_get(nc,"levgrnd")
-        #output[[1]] <- nc$dim$pft$vals       # PFT numbers
-        ## !! should these instead be used to define var dims? 
-        ## as in the CLM(ED) output
-        z <- 1
-        output[[z]] <- getnetCDF(nc, "pft_levscpf")         # no units
-        #ncatt_get(nc,"pft_levscpf")
-        z <- z+1
-        output[[z]] <- getnetCDF(nc, "scls_levscpf")        # no units
-        #ncatt_get(nc,"scls_levscpf")
-        z <- z+1
-        output[[z]] <- getnetCDF(nc, "mcdate")              # current date (YYYYMMDD)
-        #ncatt_get(nc,"mcdate")
-        z <- z+1
-        output[[z]] <- getnetCDF(nc, "mcsec")               # current seconds of current date, s
-        #ncatt_get(nc,"mcsec")        
-        z <- z+1
-        output[[z]] <- day                                  # current day (from base day)                         
-        #ncatt_get(nc, "mdcur") 
-        z <- z+1
-        output[[z]] <- sec                                  # current seconds of current day
-        #ncatt_get(nc, "mscur") 
-        z <- z+1
-        output[[z]] <- nstep                                # time step
-        
-        #z <- z+1
-        #output[[z]] <- list(getnetCDF(nc, "time_bounds"))   # history time interval endpoints
-        #ncatt_get(nc, "time_bounds")  
-        
-        #### !!! DO WE NEED THESE?
-        #z <- z+1
-        #output[[9]] <- getnetCDF(nc, "date_written")        # date file was written mm/dd/yy
-        # ncatt_get(nc, "date_written")
-        #z <- z+1
-        #output[[10]] <- getnetCDF(nc, "time_written")       # time output was written, hh:mm:ss
-        #### !!!
-        
-        ## !! trouble with lat/lon, need to fix
-        #z <- z+1
-        #output[[z]] <- getnetCDF(nc, "lon")                # longitude, degrees east
-        #z <- z+1
-        #output[[z]] <- getnetCDF(nc, "lat")                # latitude, degrees north
-        ## !!
-        
-        # 
-        z <- z+1
-        output[[z]] <- getnetCDF(nc, "area")                # grid cell areas, [lngrid]
-        # #ncatt_get(nc, "area")
-        z <- z+1
-        output[[z]] <- getnetCDF(nc, "landfrac")            # land fraction, landfrac[lndgrid]
-        # #ncatt_get(nc, "landfrac")
-        z <- z+1
-        output[[z]] <- getnetCDF(nc, "landmask")            # land/ocean mask (0.=ocean and 1.=land), landmask[lndgrid]
-        z <- z+1
-        output[[z]] <- getnetCDF(nc, "pftmask")             # pft real/fake mask (0.=fake and 1.=real)
-        z <- z+1
-        output[[z]] <- getnetCDF(nc, "nbedrock")            # index of shallowest bedrock layer
-        #z <- z+1
-        #output[[z]] <- getnetCDF(nc, "ZSOI")                # soil depth, in meters
-        
-        # output[[16]] <- NA 
-        # output[[17]] <- NA
-        # output[[18]] <- NA
-        # output[[19]] <- NA
-        # # ... many more here still to fill in but now on to something more interesting
-        z <- z+1
-        output[[z]] <- getnetCDF(nc, "AR")                  # autotrophic respiration, [lndgrid,time]
-        # #ncatt_get(nc, "AR")
-        output[[z]] <- ifelse(output[[z]] == 1e+36, miss.val, 
-                             misc.convert(output[[z]],"umol C m-2 s-1","kg C m-2 s-1"))
-        z <- z+1
-        output[[z]] <- getnetCDF(nc, "GPP")                 #
-        # #ncatt_get(nc, "GPP") # units of GPP
-        output[[z]] <- ifelse(output[[z]] == 1e+36, miss.val, 
-                              misc.convert(output[[z]],"umol C m-2 s-1","kg C m-2 s-1"))
-        
-        # ... still more here to go!
-        
-        #******************** Declare netCDF variables ********************#
-        rm(z)
+
+        #******************** Declare netCDF dimensions ********************#
         nc_var  <- list()
+        sitelat <- ncvar_get(ncin,"lat")
+        sitelon <- ncvar_get(ncin,"lon")
         ## time variable based on internal calc, nc$dim$time is the FATES output time
         t <- ncdim_def(name = "time", units = paste0("days since ", year, "-01-01 00:00:00"),
-                       vals = time, calendar = "standard", 
+                       vals = as.vector(time), calendar = "standard", 
                        unlim = TRUE)  # a direct analog of internal FATES output dim "time"
         lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "coordinate_latitude")
-        ##!! default is degrees east except we always input as degrees west, need to make sure this is sorted for all
-        ## pecan functions!!
         lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "coordinate_longitude")
+        xyt <- list(lon, lat, t)
         
-        z <- 1
-        nc_var[[z]] <- ncvar_def(name = "pft_levscpf", units="", nc$dim[["levscpf"]],
-                                     missval=miss.val,longname=nc$var[["pft_levscpf"]]$longname)
-        z <- z+1
-        nc_var[[z]] <- ncvar_def(name = "scls_levscpf", units="", nc$dim[["levscpf"]],
-                                     missval=miss.val,longname=nc$var[["scls_levscpf"]]$longname)
-        ## !! convert output[[3]] to MSTMIP cal_dat_beg?
-        ## !! use time or nc.time here?
-        z <- z+1
-        nc_var[[z]] <- ncvar_def(name = "mcdate", units="", nc$dim[["time"]],missval=miss.val,
-                                     longname=nc$var[["mcdate"]]$longname)
-        ## !! use FATES time or PEcAn calculated time, which uses FATES vars?  Shouldn't
-        ## make any difference
-        z <- z+1
-        nc_var[[z]] <- ncvar_def(name = "mcsec", units="", nc$dim[["time"]],missval=miss.val,
-                              longname=nc$var[["mcsec"]]$longname)
-        z <- z+1
-        nc_var[[z]] <- ncvar_def(name = "mdcur", units="", nc$dim[["time"]],missval=miss.val,
-                              longname=nc$var[["mdcur"]]$longname)
-        z <- z+1
-        nc_var[[z]] <- ncvar_def(name = "mscur", units="", nc$dim[["time"]],missval=miss.val,
-                              longname=nc$var[["mscur"]]$longname)
-        z <- z+1
-        nc_var[[z]] <- ncvar_def(name = "nstep", units="", nc$dim[["time"]],missval=miss.val,
-                              longname=nc$var[["nstep"]]$longname)
-        #z <- z+1
-        #nc_var[[z]] <- ncvar_def(name = "time_bounds", units="", missval=miss.val,
-        #                      dim=list(nc$dim[["hist_interval"]],nc$dim[["time"]]))
+        ### build netCDF data
+        out <- NULL
+        out <- var_update(out,"AR","AutoResp","kgC m-2 s-1")
+        out <- var_update(out,"GPP","GPP","kgC m-2 s-1")
+        ncdf4::nc_close(ncin)
         
-        ### !!! Remove?
-        #z <- z+1
-        #nc_var[[9]] <- ncvar_def(name = "date_written", units="", missval=miss.val,
-        #                      dim=list(nc$dim[["string_length"]],nc$dim[["time"]]))
-        #z <- z+1
-        #nc_var[[10]] <- ncvar_def(name = "time_written", units="", missval=miss.val,
-        #                      dim=list(nc$dim[["string_length"]],nc$dim[["time"]]))
-        
-        #z <- z+1
-        #nc_var[[z]] <- ncvar_def(name = "lon", units=nc$var[["lon"]]$units, nc$dim[["lndgrid"]], 
-        #                       missval=miss.val,longname=nc$var[["lon"]]$longname)
-        #z <- z+1
-        #nc_var[[z]] <- ncvar_def(name = "lat", units=nc$var[["lat"]]$units, nc$dim[["lndgrid"]], 
-        #                       missval=miss.val,longname=nc$var[["lat"]]$longname)
-        ### !!!
-         
-        # ## !! turn below into a MSTMiP var (area) in km^2
-        z <- z+1
-        nc_var[[z]] <- ncvar_def(name = "area", units=nc$var[["area"]]$units, nc$dim[["lndgrid"]], 
-                               missval=miss.val,longname=nc$var[["area"]]$longname)
-        z <- z+1
-        nc_var[[z]] <- ncvar_def(name = "landfrac", units=nc$var[["landfrac"]]$units, nc$dim[["lndgrid"]], 
-                               missval=miss.val,longname=nc$var[["landfrac"]]$longname)
-        z <- z+1
-        nc_var[[z]] <- ncvar_def(name = "landmask", units=nc$var[["landmask"]]$units, nc$dim[["lndgrid"]], 
-                               missval=miss.val,longname=nc$var[["landmask"]]$longname)
-        z <- z+1
-        nc_var[[z]] <- ncvar_def(name = "pftmask", units=nc$var[["pftmask"]]$units, nc$dim[["lndgrid"]], 
-                              missval=miss.val,longname=nc$var[["pftmask"]]$longname)
-        z <- z+1
-        nc_var[[z]] <- ncvar_def(name = "nbedrock", units=nc$var[["nbedrock"]]$units, nc$dim[["lndgrid"]], 
-                              missval=miss.val,longname=nc$var[["nbedrock"]]$longname)
-        
-        # ## !! Fluxes. first default FATES but after unit conversion
-        # #nc_var[[16]] <- ncvar_def(name = "AR", units="kg C m-2 s-1", missval=miss.val
-        # #                      dim=list(nc$dim[["lndgrid"]],nc$dim[["time"]]))
-        # ## Using PEcAn and mstmipvar. Units have already been converted
-        z <- z+1
-        nc_var[[z]] <- mstmipvar("AutoResp", lat, lon, t, NA)
-        z <- z+1
-        nc_var[[z]] <- mstmipvar("GPP", lat, lon, t, NA)
-        # 
-        ### !! TO BE REMOVED
-        #var  <- ncdf4::ncvar_def(name = "time", units = "days", dim = nc$dim[["time"]])
-        # These lines throw an error saying time already exists, but not showing up in VAR file
-        #     nc  <- ncvar_add(nc=nc, v=var)
-        #     ncvar_put(nc,"time",time)
-        #     ncvar_get(nc,"time")
-        
+        ## write netCDF data
+        ncout <- ncdf4::nc_create(oname,out$var)
+        for (i in seq_along(out$var)) {
+          ncdf4::ncvar_put(ncout, out$var[[i]], out$dat[[i]])
+        }
+
         ## extract variable and long names to VAR file for PEcAn vis
-        #write.table(sapply(nc$var, function(x) { x$longname }), 
-        #            file = paste0(oname, ".var"), 
-        #            col.names = FALSE, 
-        #            row.names = TRUE, 
-        #            quote = FALSE)
-        #
-        #ncdf4::nc_close(nc)
-        #
-        ## !!
+        write.table(sapply(ncout$var, function(x) { x$longname }), 
+                    file = paste0(oname, ".var"), 
+                    col.names = FALSE, 
+                    row.names = TRUE, 
+                    quote = FALSE)
         
-        ### Output netCDF data
-        nc <- ncdf4::nc_create(file.path(outdir, paste(year, "nc", sep = ".")), nc_var)
-        varfile <- file(file.path(outdir, paste(year, "nc", "var", sep = ".")), "w")
-        for (i in seq_along(nc_var)) {
-          print(i)  # just on for debugging
-          ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
-          cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
-        }  ## netCDF loop
-        close(varfile)
-        ncdf4::nc_close(nc)
+        
+        try(ncdf4::nc_close(ncout))
+
     } # end of year for loop
 } # model2netcdf.FATES
 

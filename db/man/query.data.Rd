@@ -4,7 +4,7 @@
 \alias{query.data}
 \title{Query data and transform stats to SE by calling \code{\link{fetch.stats2se}};}
 \usage{
-\method{query}{data}(trait, spstr,
+query.data(trait, spstr,
   extra.columns = "ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat, ",
   con = NULL, store.unconverted = FALSE, ...)
 }
