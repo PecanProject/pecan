@@ -147,7 +147,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        site.id = raw.data.site.id, 
                                        lat.in = new.site$lat, lon.in = new.site$lon, 
                                        host = host, 
-                                       overwrite = overwrite$download)
+                                       overwrite = overwrite$download,
+                                       site = site, username = username)
     if (met %in% c("CRUNCEP", "GFDL")) {
       ready.id <- raw.id
       stage$met2cf <- FALSE
