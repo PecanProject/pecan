@@ -30,6 +30,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   
   ## will be used to check if multiplicative Gaussian is requested
   any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
+  isbias <- which(unlist(any.mgauss) == "multipGauss")
   
   # handle extention flags
   # is this an extension run
@@ -199,7 +200,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     
       # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
       if(any(unlist(any.mgauss) == "multipGauss")) {
-        isbias <- which(unlist(any.mgauss) == "multipGauss")
         # how many bias parameters per dataset requested
         nbias <- ifelse(is.null(settings$assim.batch$inputs[[isbias]]$nbias), 1,
                       as.numeric(settings$assim.batch$inputs[[isbias]]$nbias))
@@ -296,8 +296,9 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     load(settings$assim.batch$emulator.path)  # load previously built emulator(s) to run a longer mcmc
     load(settings$assim.batch$ss.path)
     load(settings$assim.batch$resume.path)
+    
+    n.of.obs <- resume.list$n.of.obs
       
-
     if(any(unlist(any.mgauss) == "multipGauss")){
       load(settings$assim.batch$bias.path) # load prior.list with bias term from previous run
       prior.all <- do.call("rbind", prior.list)

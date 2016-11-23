@@ -177,8 +177,6 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
                     jmp0 = 0.35 * (rng[, 2] - rng[, 1]), ar.target = 0.5, priors = NA, settings, 
                     run.block = TRUE, n.of.obs, llik.fn, resume.list = NULL) {
   
-  haveTime <- FALSE  #library('time')
-  
   # get Y
   predY <- get.y(gp, x0, n.of.obs, llik.fn, priors, settings)
   Ycurr <- predY$posterior.prob
@@ -199,18 +197,16 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
     jcov <- jmp0
     accept.count <- resume.list$ac
     prev.samp    <- resume.list$prev.samp
+    prev.par     <- resume.list$par
     colnames(prev.samp) <- names(x0)
     samp  <- rbind(prev.samp, samp)
+    par   <- rbind(prev.par, par)
     start <- dim(prev.samp)[1] + 1
     nmcmc <- dim(samp)[1]
     # jmp <- mvjump(ic=diag(jmp0),rate=ar.target, nc=dim)
   }
   
-  ## loop
-  prevTime <- NULL
-  if (haveTime) {
-    prevTime <- progressBar()
-  }
+
   for (g in start:nmcmc) {
     
     if (mix == "joint") {
@@ -269,16 +265,10 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
     par[g, ]  <- pcurr
     
     # print(p(jmp)) jmp <- update(jmp,samp)
-    
-    if (haveTime) {
-      prevTime <- progressBar(g/nmcmc, prevTime)
-    }
   }
-  if (haveTime) {
-    progressBar(1.1, prevTime)
-  }
+
   
-  chain.res <- list(jump = jcov, ac = accept.count, prev.samp = samp, par = par)
+  chain.res <- list(jump = jcov, ac = accept.count, prev.samp = samp, par = par, n.of.obs = n.of.obs)
   
   return(list(mcmc.samp = samp, mcmc.par = par, chain.res = chain.res))
   ## xnew <- gpeval,x0,k=k,mu=ey,tau=tauwbar,psi=psibar,x=gp$x.compact,rng=rng)
