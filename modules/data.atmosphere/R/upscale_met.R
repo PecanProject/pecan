@@ -1,10 +1,10 @@
-##' upscale_met upscales the temporal resolution of a dataset
-##' @name upscale_met
-##' @title upscale_met
 substrRight <- function(x, n) {
   substr(x, nchar(x) - n + 1, nchar(x))
 }
 
+##' upscale_met upscales the temporal resolution of a dataset
+##' @name upscale_met
+##' @title upscale_met
 ##' @export
 ##' @param outfolder
 ##' @param input_met - met dataset
