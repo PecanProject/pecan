@@ -17,6 +17,10 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
                           model = "CM3", scenario = "rcp45", ensemble_member = "r1i1p1", ...) {
   library(PEcAn.utils)
   
+  if(is.null(model))           model <- "CM3"
+  if(is.null(scenario))        scenario <- "rcp45"
+  if(is.null(ensemble_member)) ensemble_member <- "r1i1p1"
+  
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- lubridate::year(start_date)
