@@ -51,7 +51,10 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
     con <- NULL
   }
   
-  bety <- betyConnect("~/pecan/web/config.php")
+  bety <- src_postgres(dbname = settings$database$bety$dbname, 
+                       host = settings$database$bety$host, 
+                       user = settings$database$bety$user, 
+                       password = settings$database$bety$password)
   
   ## Load priors
   temp        <- pda.load.priors(settings, bety$con)
@@ -99,7 +102,7 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
   
   ## ----------------------------------- MCMC Setup ----------------------------------- ##
   
-  mcmc.list <- jcov.list <- list()
+  mcmc.list <- jcov.list <- llpar.list <- list()
   
   for (chain in seq_len(settings$assim.batch$chain)) {
     ## Initialize empty params matrix (concatenated to params from a previous PDA, if provided)
@@ -191,6 +194,10 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
         ## Read model outputs
         model.out <- pda.get.model.output(settings, run.id, bety, inputs)
         
+        # retrieve n
+        n.of.obs <- sapply(inputs,`[[`, "n") 
+        names(n.of.obs) <- sapply(model.out,names)
+        
         # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
         if(any(unlist(any.mgauss) == "multipGauss")) {
           isbias <- which(unlist(any.mgauss) == "multipGauss")
@@ -199,14 +206,29 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
           bias.list <- return.bias(isbias, list(model.out), inputs, prior.list, nbias)
           bias.terms <- bias.list$bias.params
         } else {
-          bias.terms <- matrix(1, nrow = 1, ncol = 1) # just 1 for Gaussian
+          bias.terms <- NULL
+        }
+        
+        if(!is.null(bias.terms)){
+          all.bias <- lapply(bias.terms, function(n) n[1,])
+          all.bias <- do.call("rbind", all.bias)
+        } else {
+          all.bias <- NULL
         }
         
         ## calculate error statistics      
-        pda.errors <- pda.calc.error(settings, con, model_out = model.out, run.id, inputs, bias.terms)
-        llik.par <- pda.calc.llik.par(settings, 
-                                      n = sapply(inputs,`[[`, "n"), 
+        pda.errors <- pda.calc.error(settings, con, model_out = model.out, run.id, inputs, all.bias)
+        llik.par <- pda.calc.llik.par(settings, n = n.of.obs, 
                                       error.stats = unlist(pda.errors))
+        # store llik-par
+        parl <- unlist(sapply(llik.par, `[[` , "par"))
+        if(!is.null(parl) & i == 1 & is.null(all.bias)) {
+          LLpar <- matrix(NA, ncol= length(parl), nrow = finish, dimnames = list(NULL, names(parl)))
+        } else if(!is.null(parl) & i == 1 & !is.null(all.bias)) {
+          LLpar <- matrix(NA, ncol= length(parl) + nrow(all.bias), nrow = finish, 
+                          dimnames = list(NULL, c(rownames(all.bias), names(parl))))
+        }
+        
         ## Calculate likelihood
         LL.new <- pda.calc.llik(pda.errors = unlist(pda.errors), llik.fn, llik.par)
 
@@ -244,11 +266,17 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
       
       ## Store output
       params[i, ] <- parm
+      if(!is.null(parl) & is.null(all.bias)){
+        LLpar[i, ]  <- parl
+      } else if (!is.null(parl) & !is.null(all.bias)){
+        LLpar[i, ]  <- c(all.bias, parl)
+      }
       
     }  #end of mcmc-loop
     
     mcmc.list[[chain]] <- params
     jcov.list[[chain]] <- jcov
+    if(!is.null(par)) llpar.list[[chain]] <- LLpar
     
   }  #end of chain-loop
   

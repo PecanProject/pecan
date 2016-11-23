@@ -228,7 +228,7 @@ pda.load.priors <- function(settings, con, path.flag = TRUE) {
       priorids <- list()
       for (i in seq_along(settings$pfts)) {
         
-        pft.id <- pft.id <- db.query(paste0("SELECT pfts.id FROM pfts, modeltypes WHERE pfts.name='", 
+        pft.id <- db.query(paste0("SELECT pfts.id FROM pfts, modeltypes WHERE pfts.name='", 
                                             settings$pfts[[i]]$name, 
                                             "' and pfts.modeltype_id=modeltypes.id and modeltypes.name='", 
                                             settings$model$type, "'"), 
