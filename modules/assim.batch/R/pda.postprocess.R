@@ -9,6 +9,13 @@
 ##' @export
 pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.ind) {
   
+  # prepare for non-model params
+  if(length(mcmc.param.list) > length(settings$pfts)){  
+    # parameters are in the last list and all will be plotted
+    # increase prior.ind accordingly
+    prior.ind[[length(prior.ind)+1]] <- seq_len(ncol(mcmc.param.list[[length(mcmc.param.list)]][[1]]))
+  }
+
   params.subset <- pda.plot.params(settings, mcmc.param.list, prior.ind)
   
   for (i in seq_along(settings$pfts)) {
@@ -102,12 +109,18 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
 ##' @export
 pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
   
+  # create a subfolder under pft folder for non-model parameters
+  if(length(mcmc.param.list) > length(settings$pfts)){
+    par.file <- file.path(settings$outdir, paste0("pft/parameters"))
+    dir.create(par.file)
+  }
+  
   params.subset <- list()
   
   # flag for gelman.plot
   enough.iter <- TRUE
   
-  for (i in seq_along(settings$pfts)) {
+  for (i in seq_along(prior.ind)) {
     params.subset[[i]] <- as.mcmc.list(lapply(mcmc.param.list[[i]], mcmc))
     
     burnin <- getBurnin(params.subset[[i]], method = "gelman.plot")
@@ -126,11 +139,19 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
       enough.iter <- FALSE
     }
     
-    pdf(file.path(settings$pfts[[i]]$outdir, 
-                  paste0("mcmc.diagnostics.pda.", 
-                         settings$pfts[[i]]$name, 
-                         "_", settings$assim.batch$ensemble.id,
-                         ".pdf")))
+    if(i <= length(settings$pfts)){
+      pdf(file.path(settings$pfts[[i]]$outdir, 
+                    paste0("mcmc.diagnostics.pda.", 
+                           settings$pfts[[i]]$name, 
+                           "_", settings$assim.batch$ensemble.id,
+                           ".pdf")))
+    } else {
+      pdf(file.path(par.file, 
+                    paste0("mcmc.diagnostics.pda.par", 
+                           "_", settings$assim.batch$ensemble.id,
+                           ".pdf")))
+    }
+
     layout(matrix(c(1, 2, 3, 4, 5, 6), ncol = 2, byrow = TRUE))
     
     plot(params.subset[[i]], auto.layout = FALSE)
@@ -149,11 +170,18 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
     dev.off()
     
     # Write out convergence diagnostics to a txt file
-    filename.mcmc.temp <- file.path(settings$pfts[[i]]$outdir,
-                                    paste0("mcmc.diagnostics.pda.", 
-                                           settings$pfts[[i]]$name, "_", 
-                                           settings$assim.batch$ensemble.id, 
-                                           ".txt"))
+    if(i <= length(settings$pfts)){
+      filename.mcmc.temp <- file.path(settings$pfts[[i]]$outdir,
+                                      paste0("mcmc.diagnostics.pda.", 
+                                             settings$pfts[[i]]$name, "_", 
+                                             settings$assim.batch$ensemble.id, 
+                                             ".txt"))
+    } else {
+      filename.mcmc.temp <- file.path(par.file, 
+                                      paste0("mcmc.diagnostics.pda.par", 
+                                             "_", settings$assim.batch$ensemble.id,".txt"))
+    }
+
     
     cat("Summary statistics\n", file = filename.mcmc.temp)
     capture.output(summary(params.subset[[i]]), file = filename.mcmc.temp, append = TRUE)
@@ -177,15 +205,15 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind) {
                      append = TRUE)
     }
     
-  }  # end of for-loop over PFTs
+  }  # end of for-loop over prior.ind
   
-  # conver mcmc.list to list of matrices
+  # convert mcmc.list to list of matrices
   params.subset.list <- list()
   for (i in seq_along(params.subset)) {
     params.subset.list[[i]] <- do.call("rbind", params.subset[[i]])
   } 
   # reformat each sublist such that params have their own list and return
-  return(lapply(1:length(params.subset.list), function(x) as.list(data.frame(params.subset.list[[x]]))))
+  return(lapply(seq_along(params.subset.list), function(x) as.list(data.frame(params.subset.list[[x]]))))
   
 } # pda.plot.params
 

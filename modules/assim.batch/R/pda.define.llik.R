@@ -56,6 +56,8 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
   n.input <- length(inputs)
   pda.errors <- list()
   SSdb <- list()
+  # multiplicative Gaussian counter
+  bc <- 1
   
   
   for (k in seq_len(n.input)) {
@@ -72,19 +74,26 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
                    log = TRUE))
       
       pda.errors[[k]] <- sum(SS, na.rm = TRUE) 
-      SSdb[[k]] <- sum(SS, na.rm = TRUE) 
+      SSdb[[k]]       <- sum(SS, na.rm = TRUE) 
         
-    } else { # Gaussian(s)
-      
+    } else if (settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") { 
+      # multiplicative Gaussian
       
       SS <- rep(NA, length(bias.terms))
       for(b in seq_along(SS)){
-        SS[b] <- sum((bias.terms[b] * model_out[[k]] - inputs[[k]]$obs)^2, na.rm = TRUE)
+        SS[b] <- sum((bias.terms[bc,][b] * model_out[[k]] - inputs[[k]]$obs)^2, na.rm = TRUE)
       }
       
+      bc              <- bc + 1
       pda.errors[[k]] <- SS 
-      SSdb[[k]] <- log(SS)
+      SSdb[[k]]       <- log(SS)
       
+    } else { # Gaussian
+      
+      SS <- sum((model_out[[k]] - inputs[[k]]$obs)^2, na.rm = TRUE)
+      
+      pda.errors[[k]] <- SS 
+      SSdb[[k]]       <- log(SS)
     }
     
   } # for-loop
@@ -163,6 +172,7 @@ pda.calc.llik.par <-function(settings, n, error.stats){
         settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") {
       
       llik.par[[k]]$par <- rgamma(1, 0.001 + n[k]/2, 0.001 + error.stats[k]/2)
+      names(llik.par[[k]]$par) <- paste0("tau.", names(n)[k])
     }
     
     llik.par[[k]]$n <- n[k]
