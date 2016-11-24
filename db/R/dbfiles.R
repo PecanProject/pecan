@@ -191,11 +191,13 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
     return(data.frame())
   } else {
     if(length(inputid) > 1) {
-      logger.warn("Found multiple matching inputs. Checking for one with file associated with it")
-      file.check <- dbfile.check('Input', inputid, con, hostname)
+      logger.warn("Found multiple matching inputs. Checking for one with associate files are on host machine")
+      return(as.data.frame(dbfile.check('Input', inputid, con, hostname)))
+      }
+      logger.warn("Found possible matching input. Checking if its associate files are on host machine")
+      return(as.data.frame(dbfile.check('Input', inputid, con, hostname)))
     }
-    return(file.check)
-  }
+  
 }
 
 ##' Function to insert a file into the dbfiles table as a posterior
