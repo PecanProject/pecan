@@ -314,11 +314,9 @@ pda.create.ensemble <- function(settings, con, workflow.id) {
       ensemble.type <- "pda.emulator"
     }
     
-    now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-    db.query(paste("INSERT INTO ensembles (created_at, runtype, workflow_id) values ('", now, 
-                   "', '", ensemble.type, "', ", workflow.id, ")", sep = ""), con)
-    ensemble.id <- db.query(paste("SELECT id FROM ensembles WHERE created_at='", now, "'", sep = ""), 
-                            con)[["id"]]
+    ensemble.id <- db.query(paste("INSERT INTO ensembles (runtype, workflow_id) values ('", 
+                                  ensemble.type, "', ", workflow.id, ") RETURNING id", sep = ""), con)
+
   } else {
     ensemble.id <- NA
   }
@@ -432,25 +430,19 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
   for (i in seq_len(n)) {
     ## set RUN.ID
     if (!is.null(con)) {
-      now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
       paramlist <- run.names[i]
-      db.query(
-        paste(
+      run.ids[i] <- db.query(
+        paste0(
           "INSERT INTO runs", 
           "(model_id, site_id, start_time, finish_time, outdir,",
-          "created_at, ensemble_id, parameter_list)",
+          "ensemble_id, parameter_list) ",
           "values ('", 
           settings$model$id, "','", settings$run$site$id, "','", settings$run$start.date, "','", 
-          settings$run$end.date, "','", settings$run$outdir , "','", now, "',",
-          settings$assim.batch$ensemble.id, ",'", paramlist, 
-          "')", 
-          sep=''), 
+          settings$run$end.date, "','", settings$modeloutdir , "','", 
+          settings$assim.batch$ensemble.id, "','", paramlist, 
+          "') RETURNING id"), 
         con)
       
-      run.ids[i] <- db.query(paste0("SELECT id FROM runs WHERE created_at='", 
-                                    now, "' AND parameter_list='", 
-                                    paramlist, "'"), 
-                             con)[["id"]]
     } else {
       run.ids[i] <- run.names[i]
     }
@@ -506,7 +498,7 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
         append = append)
   }  # end for
   
-  return(run.ids)
+  return(unlist(run.ids))
 } # pda.init.run
 
 

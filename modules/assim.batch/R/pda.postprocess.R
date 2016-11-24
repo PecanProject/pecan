@@ -52,12 +52,9 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
                          con)[["id"]]
 
 
-    db.query(paste0("INSERT INTO posteriors (pft_id) VALUES (",
-                    pft.id, ")"), con)
+    posteriorid <-  db.query(paste0("INSERT INTO posteriors (pft_id) VALUES (",
+                    pft.id, ") RETURNING id"), con)
     
-    posteriors <- db.query(paste0("SELECT * from posteriors where pft_id = ", pft.id), con)
-    # get the most recent
-    posteriorid <- posteriors$id[which.max(posteriors$created_at)]
     
     logger.info(paste0("--- Posteriorid for ", settings$pfts[[i]]$name, " is ", posteriorid, " ---"))
     settings$pfts[[i]]$posteriorid <- posteriorid
