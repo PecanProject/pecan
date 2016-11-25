@@ -78,7 +78,7 @@ define_benchmark <- function(bm.settings, bety){
     if(dim(bmBRR)[1] == 0){
       cmd <- sprintf(paste0("INSERT INTO benchmarks_benchmarks_reference_runs",
                             " (benchmark_id, reference_run_id) VALUES (%s, %s)"),
-                     bm$id, benchmark$reference_run_id)
+                     bm$id, bm.settings$reference_run_id)
       db.query(cmd, bety$con)
     }else if(dim(bmBRR)[1] > 1){
       PEcAn.utils::logger.error("Duplicate record entries in benchmarks_benchmarks_reference_runs")
