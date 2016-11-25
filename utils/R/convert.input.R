@@ -8,7 +8,7 @@
 
 convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, start_date, 
                           end_date, pkg, fcn, con = con, host, browndog, write = TRUE, 
-                          format.vars, overwrite = FALSE, exact.dates = FALSE, ...) {
+                          format.vars, overwrite = FALSE, exact.dates = FALSE, allow.conflicting.dates = TRUE, ...) {
   input.args <- list(...)
   
   logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
@@ -401,7 +401,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       site.id <- input.args$newsite
     }
     
-    
+    if(exact.dates){allow.conflicting.dates = FALSE}
     
     newinput <- dbfile.input.insert(in.path = dirname(result$file[1]), 
                                     in.prefix = result$dbfile.name[1], 
@@ -412,7 +412,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                     formatname, 
                                     parentid = parent.id,
                                     con = con, 
-                                    hostname = machine$hostname)
+                                    hostname = machine$hostname,
+                                    allow.conflicting.dates = allow.conflicting.dates)
 
     
     successful <- TRUE
