@@ -41,7 +41,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
             model      = settings$model$type,
             host       = settings$host,
             dbparms    = settings$database$bety, 
-            dir        = settings$host$dbfiles,
+            dir        = settings$database$dbfiles,
             browndog   = settings$browndog,
             overwrite  = overwrite.met)
 
