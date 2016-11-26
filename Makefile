@@ -57,8 +57,9 @@ $(call depends,modules/data.land): .install/db .install/utils
 $(call depends,modules/meta.analysis): .install/utils .install/db
 $(call depends,modules/priors): .install/utils
 $(call depends,modules/rtm): .install/modules/assim.batch
+$(call depends,models/template): .install/utils
 
-$(MODELS_I): .install/models/template $(MODULES_I)
+$(MODELS_I): .install/models/template
 
 
 clean:
