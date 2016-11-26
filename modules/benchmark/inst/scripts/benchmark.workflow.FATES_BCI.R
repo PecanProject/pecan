@@ -55,59 +55,30 @@ token <- BrownDog::get_token("https://bd-api.ncsa.illinois.edu",key)
 foo <- BrownDog::convert_file("https://bd-api.ncsa.illinois.edu", input, output_path, "csv", token,wait=900)
 
 bm.settings <- define_benchmark(bm.settings = settings$benchmarking,bety)
+bm.settings$new_run=FALSE
 
-# For testing (make sure new_run is FALSE)
-str(bm.settings)
-
-# This is a quick fix - can be solved with longer db query that I don't want to write now
-add_workflow_info <- function(settings){
-  if (is.MultiSettings(settings)) {
-    return(papply(settings, add_workflow_id))
-  }
-  if(!as.logical(settings$benchmarking$new_run)){
-    settings$workflow$id <- tbl(bety,"ensembles") %>% 
-      filter(id == settings$benchmarking$ensemble_id) %>% 
-      select(workflow_id) %>% collect %>% .[[1]]
-    wf <- tbl(bety, 'workflows') %>% filter(id == settings$workflow$id) %>% collect()
-    settings$rundir <- file.path(wf$folder, "run")
-    settings$modeloutdir <- file.path(wf$folder, "out")
-    settings$outdir <- wf$folder
-  }
-  return(settings)
-}
-
-settings <- add_workflow_info(settings)
-
+## Now that the Benchmark is setup, verify that benchmark metrics can be calculated
 bm_settings2pecan_settings <- function(bm.settings){
-  if (is.MultiSettings(bm.settings)) {
+  if (PEcAn.settings::is.MultiSettings(bm.settings)) {
     return(papply(bm.settings, bm_settings2pecan_settings))
   }
   return(append(bm.settings["reference_run_id"],
                 bm.settings$benchmark[which(names(bm.settings$benchmark) == "benchmark_id")]))
 } 
 
-settings$benchmarking <- bm_settings2pecan_settings(bm.settings)
+new.settings <- settings
+new.settings$benchmarking <- bm_settings2pecan_settings(bm.settings)
 
 if(bm.settings$new_run){
-  write.settings(settings,pecan.xml,outputdir = settings$outdir)
+  write.settings(new.settings,pecan.xml,outputdir = settings$outdir)
   # Run the workflow! YAY
-  settings <- read.settings(file.path(settings$outdir,"pecan.CHECKED.xml"))
-  results <- load(file.path(settings$outdir,"benchmarking.output.Rdata"))
+  settings <- read.settings(file.path(new.settings$outdir,"pecan.CHECKED.xml"))
+  results <- load(file.path(new.settings$outdir,"benchmarking.output.Rdata"))
   
 }else{
   
-  settings <- read_settings_BRR(settings)
-  settings <- prepare.settings(settings)
-  results <- papply(settings, function(x) calc_benchmark(x, bety))
+  new.settings <- read_settings_BRR(new.settings)
+  new.settings <- PEcAn.settings::prepare.settings(new.settings)
+  results <- papply(new.settings, function(x) calc_benchmark(x, bety))
 }
-  
-# 
-# # This may just be for testing or something that will ultimately be used with Shiny
-# rmarkdown::render(system.file("scripts/Benchmarking.Report.Rmd", package = "PEcAn.benchmark"), 
-#                   params = list(file.path = file.path(settings$outdir,"benchmarking.output.Rdata")),
-#                   output_dir = settings$outdir)
-
-
-
-
 str(results)
