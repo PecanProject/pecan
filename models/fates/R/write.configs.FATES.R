@@ -203,16 +203,18 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        
        
        ### These variable names (from ED2) should updated in BETY to be more generic
-       if(var == "mort3"){
-         ncvar_put(nc=param.nc, varid='background_mort_rate', start = ipft, count = 1,
-                   vals=pft[v])  
-       }
+## missing from params.nc       
+#       if(var == "mort3"){
+#         ncvar_put(nc=param.nc, varid='background_mort_rate', start = ipft, count = 1,
+#                   vals=pft[v])  
+#       }
        if(var == "r_fract"){                    ## Fraction of carbon balance remaining after maintenance costs have been met that is dedicated to seed production.	[0-1]
          ncvar_put(nc=param.nc, varid='seed_alloc', start = ipft, count = 1,
                    vals=pft[v])  
        }
+       ## This one is currently allpft level but should be pft level
        if(var == "agf_bs"){                    ## The fraction of sapwood and structural biomass that is above ground [0-1]
-         ncvar_put(nc=param.nc, varid='ag_biomass', start = ipft, count = 1,
+         ncvar_put(nc=param.nc, varid='ag_biomass', start = 1, count = 1,
                    vals=pft[v])  
        }
        
@@ -221,11 +223,12 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncvar_put(nc=param.nc, varid='seed_rain', start = ipft, count = 1,
                    vals=pft[v])  
        }
-       if(var == "cuticular_cond"){
-         gH2O_per_mol <- 18.01528
-         ncvar_put(nc=param.nc, varid='gsmin', start = ipft, count = 1,
-                   vals=pft[v]*gH2O_per_mol*1e-12)   ### umol H2O m-2 s-1 ->  [m s-1]
-       }
+## missing from params.nc 
+#       if(var == "cuticular_cond"){
+#         gH2O_per_mol <- 18.01528
+#         ncvar_put(nc=param.nc, varid='gsmin', start = ipft, count = 1,
+#                   vals=pft[v]*gH2O_per_mol*1e-12)   ### umol H2O m-2 s-1 ->  [m s-1]
+#       }
        if(var == "DBH_at_HTMAX"){                    ## note in FATES parameter list about switching to HTMAX
          ncvar_put(nc=param.nc, varid='max_dbh', start = ipft, count = 1,
                    vals=pft[v])  ## [cm]
@@ -262,10 +265,11 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncvar_put(nc=param.nc, varid='dleaf', start = ipft, count = 1,
                    vals=udunits2::ud.convert(pft[v],"mm","m"))
        }
-       if(var == "nonlocal_dispersal"){    # Place-holder parameter for important seed dispersal parameters
-         ncvar_put(nc=param.nc, varid='seed_dispersal_x', start = ipft, count = 1,
-                   vals=pft[v])
-       }
+       ## Currently not in param.nc file despite being on NGEE-T parameter list       
+       #       if(var == "nonlocal_dispersal"){    # Place-holder parameter for important seed dispersal parameters
+       #         ncvar_put(nc=param.nc, varid='seed_dispersal_x', start = ipft, count = 1,
+       #                   vals=pft[v])
+       #       }
        if(var == "hgt_min"){               # The height of a new recruit
          ncvar_put(nc=param.nc, varid='hgt_min', start = ipft, count = 1,
                    vals=pft[v])

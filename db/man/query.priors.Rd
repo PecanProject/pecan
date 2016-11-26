@@ -4,7 +4,7 @@
 \alias{query.priors}
 \title{Query Priors}
 \usage{
-\method{query}{priors}(pft, trstr = NULL, out = NULL, con = NULL, ...)
+query.priors(pft, trstr = NULL, out = NULL, con = NULL, ...)
 }
 \arguments{
 \item{pft}{ID number of the PFT in the database}
