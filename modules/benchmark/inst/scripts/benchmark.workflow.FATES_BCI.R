@@ -25,7 +25,7 @@ settings <- PEcAn.settings::read.settings(settings.file)
 ## 1) Load data onto server
 ## 2) Create Files record for data (machine, path, filename)
 ## 3) Create Inputs record for data (name, format, site), save ID
-input_id <- 1000011170
+input_id <- 1000011171
 ## 4) Edit Input to associate File
 ## 5) Verify that PEcAn is able to find and load file
 input <- PEcAn.DB::query.file.path(input_id,host_name = "localhost",con = bety$con)
@@ -39,9 +39,9 @@ View(metrics)
 settings$benchmarking <- list(
   benchmark=list(                            
   input_id = input_id,
-  variable_id = 419,
+  variable_id = 1000000132,
   site_id = as.numeric(settings$run$site$id),
-  metrics = 1000000004
+  metrics = c(1000000004,1000000001,1000000009,1000000010,1000000011)
   ),
   ensemble_id = as.numeric(settings$ensemble$ensemble.id),
   info = settings$info
