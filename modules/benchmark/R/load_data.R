@@ -39,6 +39,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
       }
     #not doing anything about mimetypes not convertible by BD right now
     fcn <- match.fun(fcn2)
+    data.path <- converted.data.path
   } else {
     PEcAn.utils::logger.warn("Brown Dog is currently unable to perform this conversion")
   }
