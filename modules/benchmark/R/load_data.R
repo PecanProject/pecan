@@ -17,6 +17,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   library(lubridate)
   library(udunits2)
   library(dplyr)
+  library(devtools)
   
   # Determine the function that should be used to load the data
   mimetype <- sub("-", "_", format$mimetype)
@@ -28,24 +29,20 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
     fcn <- match.fun(fcn2)
   } else if (!exists(fcn1) & !exists(fcn2)) { 
     #To Do: call to DAP to see if conversion to csv is possible
-    #Brown Dog API call from BDFiddle
-    #source("bd.r")
-    #output_file <- browndog.convert("https://bd-api.ncsa.illinois.edu", data.path, "csv", "./")
-    #data.path <- output_file
-    #for test token: 3c351518-668d-4007-96a8-f5574f00171a
-    token = "3c351518-668d-4007-96a8-f5574f00171a"
-    data.path = "/fs/data3/jam2767/veg_test/H_2015_Adult_Field_Data.xlsx"
-    output_path = "/fs/data3/jam2767/veg_test"
-    convert_file("https://bd-api.ncsa.illinois.edu", "H_2015_Adult_Field_Data.xlsx", output_path, "csv", token)
-    #had paste0(data.path, format$file_name) instead of filename from example "H_2015_Adult_Field_Data.xlsx"
-    #not doing anything about mimetypes not convertable by BD right now
+    #Brown Dog API call through BDFiddle, requires username and password
+    #will be made into R package
+    install_github("yan130/bd.r")
+    
+    key   = get_key("https://bd-api.ncsa.illinois.edu",username,password) #generic
+    token = get_token("https://bd-api.ncsa.illinois.edu",key)
+    #output_path = "/fs/data3/jam2767/veg_test" where are we putting converted file?
+    convert_file(url = "https://bd-api.ncsa.illinois.edu", 
+                 input_filename = paste0(data.path, format$file_name), 
+                 output = "csv", output_path, token)
+    #not doing anything about mimetypes not convertible by BD right now
     fcn <- match.fun(fcn2)
   } else {
-<<<<<<< HEAD:modules/benchmark/R/load.data.R
-    logger.warn("Brown Dog is currently unable to perform this conversion")
-=======
-    PEcAn.utils::logger.warn("no load_data for current mimetype - converting using browndog")
->>>>>>> dbe5564971e57447860d4931629037ac64a03558:modules/benchmark/R/load_data.R
+    PEcAn.utils::logger.warn("Brown Dog is currently unable to perform this conversion")
   }
   
   out <- fcn(data.path, format, site, format$vars$input_name[c(vars.used.index, time.row)])
