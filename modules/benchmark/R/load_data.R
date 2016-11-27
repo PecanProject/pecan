@@ -36,8 +36,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
     key   = get_key("https://bd-api.ncsa.illinois.edu",username,password) #generic
     token = get_token("https://bd-api.ncsa.illinois.edu",key)
     #output_path = "/fs/data3/jam2767/veg_test" where are we putting converted file?
-    convert_file(url = "https://bd-api.ncsa.illinois.edu", 
-                 input_filename = paste0(data.path, format$file_name), 
+    convert_file(url = "https://bd-api.ncsa.illinois.edu", input_filename = data.path, 
                  output = "csv", output_path, token)
     #not doing anything about mimetypes not convertible by BD right now
     fcn <- match.fun(fcn2)
