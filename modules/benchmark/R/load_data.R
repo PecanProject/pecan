@@ -17,7 +17,6 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   library(lubridate)
   library(udunits2)
   library(dplyr)
-  library(devtools)
   
   # Determine the function that should be used to load the data
   mimetype <- sub("-", "_", format$mimetype)
@@ -30,11 +29,8 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   } else if (!exists(fcn1) & !exists(fcn2)) { 
     #To Do: call to DAP to see if conversion to csv is possible
     #Brown Dog API call through BDFiddle, requires username and password
-    #will be made into R package
-    install_github("yan130/bd.r")
-    
-    key   = get_key("https://bd-api.ncsa.illinois.edu",username,password) #generic
-    token = get_token("https://bd-api.ncsa.illinois.edu",key)
+    key   <- get_key("https://bd-api.ncsa.illinois.edu",username,password)
+    token <- get_token("https://bd-api.ncsa.illinois.edu",key)
     #output_path = "/fs/data3/jam2767/veg_test" where are we putting converted file?
     convert_file(url = "https://bd-api.ncsa.illinois.edu", input_filename = data.path, 
                  output = "csv", output_path, token)
