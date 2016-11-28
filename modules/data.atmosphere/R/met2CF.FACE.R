@@ -14,16 +14,19 @@ met2CF.FACE <- function(in.path, in.prefix, outfolder, start_date, end_date, bet
   library(PEcAn.utils)
   
   ncvar_get <- ncdf4::ncvar_get
+  ncvar_def <- ncdf4::ncvar_def
   ncdim_def <- ncdf4::ncdim_def
   ncatt_get <- ncdf4::ncatt_get
+  ncatt_put <- ncdf4::ncatt_put
   ncvar_add <- ncdf4::ncvar_add
   ncvar_put <- ncdf4::ncvar_put
   nc_open   <- ncdf4::nc_open
+  nc_close   <- ncdf4::nc_close
   nc_create <- ncdf4::nc_create
   
   nc.get.variable.list <- ncdf4.helpers::nc.get.variable.list
   
-  files <- dir(in.path, in.prefix)
+  files <- dir(in.path)
   file <- files[grep(pattern = "*.nc", files)]
   if (!(length(file) == 1)) {
     return(NULL)
@@ -47,25 +50,21 @@ met2CF.FACE <- function(in.path, in.prefix, outfolder, start_date, end_date, bet
       # Latitude and Longitude
       
       nc1 <- nc_open(f, write = TRUE)
-
-      lat <- ncdim_def(name = "latitude", units = "", vals = 1:1, create_dimvar = FALSE)
-      lon <- ncdim_def(name = "longitude", units = "", vals = 1:1, create_dimvar = FALSE)
+      
+      localhost <- fqdn()
+      machineid <- dplyr::tbl(bety, "machines") %>% 
+        filter(hostname == localhost) %>% 
+        dplyr::select(id) %>% collect() %>% .[[1]]
+      input.id <- dplyr::tbl(bety, "dbfiles") %>% filter(file_path == in.path) %>%
+        filter(machine_id == machineid) %>% select(container_id) %>% collect() %>% .[[1]]
+      site <- query.site(dplyr::tbl(bety, "inputs") %>% filter(id == input.id) %>% 
+                           select(site_id) %>% collect() %>% .[[1]], bety$con)
+      
       time_units <- paste0("hours/2", unlist(strsplit(nc1$var$TIMEstp$units, "timesteps"))[2])
-      time <- ncdim_def(name = "time", units = time_units, vals = nc1$dim$tstep$vals,
-                        create_dimvar = TRUE, unlim = TRUE)
+      time <- ncdim_def(name = "time", units = time_units, vals = nc1$dim$tstep$vals)
+      lon <- ncdim_def("longitude", "degrees_east", site$lon)  # define netCDF dimensions for variables
+      lat <- ncdim_def("latitude", "degrees_north", site$lat)
       dim <- list(lat, lon, time)
-      
-      # copy lat attribute to latitude
-      var <- ncvar_def(name = "latitude", units = "degree_north", 
-                       dim = list(lat, lon), missval = as.numeric(-9999))
-      nc2 <- nc_create(filename = f.cf, vars = var, verbose = TRUE)
-      ncvar_put(nc = nc2, varid = "latitude", vals = ncvar_get(nc1, "nav_lat"))
-      
-      # copy lon attribute to longitude
-      var <- ncvar_def(name = "longitude", units = "degree_east", 
-                       dim = list(lat, lon), missval = as.numeric(-9999))
-      nc2 <- ncvar_add(nc = nc2, v = var, verbose = TRUE)
-      ncvar_put(nc = nc2, varid = "longitude", vals = ncvar_get(nc1, "nav_lon"))
       
       # convert wind speed and wind direction to eastward_wind and northward_wind
       wd <- 0  # wind direction - not specified so I set to 0???
@@ -74,7 +73,7 @@ met2CF.FACE <- function(in.path, in.prefix, outfolder, start_date, end_date, bet
       nw <- ws * sin(wd * (pi / 180))
       
       var <- ncvar_def(name = "eastward_wind", units = "m/s", dim = dim, missval = -6999, verbose = FALSE)
-      nc2 <- ncvar_add(nc = nc2, v = var, verbose = FALSE)
+      nc2 <- nc_create(filename = f.cf, vars = var, verbose = FALSE)
       ncvar_put(nc = nc2, varid = "eastward_wind", vals = ew)
       
       var <- ncvar_def(name = "northward_wind", units = "m/s", dim = dim, missval = -6999, verbose = FALSE)
@@ -84,12 +83,8 @@ met2CF.FACE <- function(in.path, in.prefix, outfolder, start_date, end_date, bet
       #---------------------------------------------------------------------#
       # Loop through variables and convert 
       
-      localhost <- fqdn()
-      machineid <- dplyr::tbl(bety, "machines") %>% 
-        filter(hostname == localhost) %>% 
-        dplyr::select(id) %>% collect() %>% .[[1]]
-      input.id <- dplyr::tbl(bety, "dbfiles") %>% filter(file_path == in.path) %>% filter(machine_id == machineid) %>% select(container_id) %>% collect() %>% .[[1]]
-      format.id <- dplyr::tbl(bety, "inputs") %>% filter(id == input.id) %>% select(format_id) %>% collect() %>% .[[1]]
+      format.id <- dplyr::tbl(bety, "inputs") %>% filter(id == input.id) %>%
+        select(format_id) %>% collect() %>% .[[1]]
       
       format <- query.format.vars(bety,input.id, format.id)
       
@@ -139,7 +134,7 @@ met2CF.FACE <- function(in.path, in.prefix, outfolder, start_date, end_date, bet
         var <- ncvar_def(name = vars_used$pecan_name[i], 
                          units = vars_used$pecan_units[i], 
                          dim = dim, verbose = FALSE)
-        nc2 <- ncvar_add(nc = nc2, v = var, verbose = TRUE)
+        nc2 <- ncvar_add(nc = nc2, v = var, verbose = FALSE)
         ncvar_put(nc = nc2, varid = vars_used$pecan_name[i], vals = vals)
         
         att <- ncatt_get(nc1,vars_used$input_name[i], "long_name")
@@ -175,7 +170,7 @@ met2CF.FACE <- function(in.path, in.prefix, outfolder, start_date, end_date, bet
     } else {
       print(paste("Treatment ", treatment, " aleady done"))
     }  # end make new file
-    
+    file.remove(f.cf)
   }  # end loop over treatments
 } # met2CF.FACE
 
