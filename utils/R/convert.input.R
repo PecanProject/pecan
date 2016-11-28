@@ -118,7 +118,10 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                             startdate = start_date,
                                             enddate = end_date, 
                                             con = con, 
-                                            hostname = host$name)
+                                            hostname = host$name,
+                                            machine.check = machine.check
+                                            )
+      
     
       
       logger.info(existing.dbfile)
@@ -128,6 +131,17 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       if (nrow(existing.dbfile) > 0) {
         
         existing.input <- db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
+        
+        # Check Machine ID of file 
+        
+        existing.machine <- db.query(paste0("SELECT * from machines where id  = '", 
+                                   existing.dbfile$machine_id, "'"), con)
+        
+        if(existing.machine$hostname != host$name){
+          logger.error("Valid ID does not have valid file associated with it. Will download all dates of valid Input and insert file record into existing input")
+      
+          insert.new.file <- TRUE
+        }
         
         # Convert dates to Date objects and strip all time zones
         # (DB values are timezone-free)
@@ -173,10 +187,10 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                    (end_date <= existing.input$end_date)) {
           
         
-            # There's an existing input that spans desired start/end dates. Use that one.
+         if (insert.new.file <- FALSE){ # There's an existing input that spans desired start/end dates. Use that one.
             logger.info("Skipping this input conversion because files are already available.")
             return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
-          
+           }
           
          } else {
           # Start/end dates need to be updated so that the input spans a continuous
