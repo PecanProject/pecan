@@ -2,6 +2,7 @@ library(shiny)
 library(leaflet)
 library(RPostgreSQL)
 library(PEcAn.DB)
+library(PEcAn.visualization)
 
 
 # Define server logic
@@ -13,16 +14,16 @@ server <- shinyServer(function(input, output, session) {
     
     # Depending on input$type, we'll generate a different lincense agreement
     switch(input$type,
-           "AmeriFlux" =  checkboxInput("agreement", HTML("I agree to <a href='http://ameriflux.lbl.gov/data/data-policy/'>AmeriFlux license</a>."), value = FALSE, width = NULL),
-           "NARR" =  checkboxInput("agreement", HTML("I agree to <a href='http://www.esrl.noaa.gov/psd/data/gridded/data.narr.html'>NARR license</a>."), value = FALSE, width = NULL),
-           "FLUXNET" =  checkboxInput("agreement", HTML("I agree to FLUXNET license."), value = FALSE, width = NULL)
+           "AmeriFlux" = checkboxInput("agreement", HTML("I agree to <a href='http://ameriflux.lbl.gov/data/data-policy/'>AmeriFlux license</a>."), value = FALSE, width = NULL),
+           "NARR" = checkboxInput("agreement", HTML("I agree to <a href='http://www.esrl.noaa.gov/psd/data/gridded/data.narr.html'>NARR license</a>."), value = FALSE, width = NULL),
+           "FLUXNET" = checkboxInput("agreement", HTML("I agree to FLUXNET license."), value = FALSE, width = NULL)
     )
   })
   
   observeEvent(input$type, {
     # get all sites name, lat and lon by sitegroups
-    dbparams <- list(user = "bety", dbname = "bety", password = "bety", host = "localhost")
-    con <- db.open(dbparams)
+    bety <- betyConnect("../../web/config.php")
+    con <- bety$con
     on.exit(db.close(con))
     sites <- db.query(paste0("SELECT sitename, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry))
                             AS lat FROM sites, sitegroups_sites where sites.id = sitegroups_sites.site_id
