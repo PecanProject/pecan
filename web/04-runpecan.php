@@ -200,6 +200,14 @@ if ($hostname != $fqdn) {
     if (!mkdir($tunnel_folder)) {
         die("Can't create output folder [${tunnel_folder}]");
     }
+    
+    ## data tunnel
+    if(isset($hostoptions['data_hostname'])){
+        $data_tunnel_folder = $tunnel_folder . DIRECTORY_SEPARATOR . "data" 
+        if (!mkdir($tunnel_folder)) {
+            die("Can't create output folder [${data_tunnel_folder}]");
+        }
+    }
 }
 
 # create pecan.xml
@@ -395,6 +403,9 @@ if (isset($hostoptions['job.sh'])) {
 }
 if ($hostname != $fqdn) {
   fwrite($fh, "    <tunnel>" . $tunnel_folder . DIRECTORY_SEPARATOR . "tunnel" . "</tunnel>" . PHP_EOL);
+  if(isset($hostoptions['data_hostname'])){
+    fwrite($fh, "    <data_tunnel>" . $data_tunnel_folder . DIRECTORY_SEPARATOR . "tunnel" . "</data_tunnel>" . PHP_EOL);
+  }
 }
 fwrite($fh, "  </host>" . PHP_EOL);
 
@@ -427,6 +438,18 @@ if ($hostname != $fqdn) {
 
     # start tunnel
     pclose(popen("${SSHtunnel} ${hostname} ${_REQUEST['username']} ${tunnel_folder} > ${tunnel_folder}/log &", 'r'));
+    
+    ## data tunnel
+    if(isset($hostoptions['data_hostname'])){
+        # write password
+        $fh = fopen($data_tunnel_folder . DIRECTORY_SEPARATOR . "password", 'w');
+        fwrite($fh, $_REQUEST['password'] . PHP_EOL);
+        fclose($fh);
+
+        # start tunnel
+        pclose(popen("${SSHtunnel} ${hostoptions['data_hostname']} ${_REQUEST['username']} ${data_tunnel_folder} > ${data_tunnel_folder}/log &", 'r'));
+    
+    }
 }
 
 # redirect to the right location
