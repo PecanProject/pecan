@@ -9,7 +9,8 @@ substrRight <- function(x, n) {
 ##' @param outfolder
 ##' @param input_met - met dataset
 ##' @param site.id
-##' @param reso - numeric value in HOURS that is the desired resolution you wish the dataset to be upscaled to
+##' @param reso - numeric value in HOURS that is the desired resolution for the dataset to be upscaled to
+##'               # might need to change this for monthly/yearly option later
 ##' @param overwrite
 ##' @param verbose
 ##' @author James Simkins
