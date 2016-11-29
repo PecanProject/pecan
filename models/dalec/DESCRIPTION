@@ -9,7 +9,8 @@ Description: This module provides functions to link DALEC to PEcAn.
 Imports:
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
-    udunits2 (>= 0.11)
+    udunits2 (>= 0.11),
+    PEcAn.utils
 Suggests:
     testthat (>= 1.0.2)
 SystemRequirements: dalec
