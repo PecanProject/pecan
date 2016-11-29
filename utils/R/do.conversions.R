@@ -13,6 +13,9 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
   if (is.character(settings$run$inputs)) {
     settings$run$inputs <- NULL  ## check for empty set
   }
+  
+  dbfiles <- ifelse(!is.localhost(settings$host) & !is.null(settings$host$folder),settings$host$folder,settings$database$dbfiles)
+
   for (i in seq_along(settings$run$inputs)) {
     input <- settings$run$inputs[[i]]
     if (is.null(input)) {
@@ -41,7 +44,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
             model      = settings$model$type,
             host       = settings$host,
             dbparms    = settings$database$bety, 
-            dir        = settings$database$dbfiles,
+            dir        = dbfiles,
             browndog   = settings$browndog,
             overwrite  = overwrite.met)
 
