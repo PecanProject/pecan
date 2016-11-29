@@ -67,13 +67,13 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                         files.to.delete <- remote.execute.R( paste0("list.files('",
                                                              existing.dbfile[["file_path"]],
                                                              "', full.names=TRUE)"),
-                                                             host, user = NA, verbose = TRUE,R = Rbinary)
+                                                             host, user = NA, verbose = TRUE,R = Rbinary, scratchdir = outfolder)
       
                         file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
       
                         remote.execute.R( file.deletion.commands$move.to.tmp,
                                           host, user = NA, 
-                                          verbose = TRUE,R = Rbinary)
+                                          verbose = TRUE,R = Rbinary, scratchdir = outfolder)
       
                        
                         # Schedule files to be replaced or deleted on exiting the function
@@ -83,13 +83,13 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                     logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
                                     remote.execute.R( file.deletion.commands$delete.tmp, 
                                                       host, user = NA, 
-                                                      verbose = TRUE,  R = Rbinary )
+                                                      verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
                           
                                 } else {
                                     logger.info("Conversion failed. Replacing old files.")
                                     remote.execute.R( file.deletion.commands$replace.from.tmp, 
                                                       host, user = NA, 
-                                                      verbose = TRUE, R = Rbinary )
+                                                      verbose = TRUE, R = Rbinary, scratchdir = outfolder )
                                 }
                         )#Close on.exit
                         
@@ -144,13 +144,13 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                         files.to.delete <- remote.execute.R( paste0("list.files('",
                                                                     existing.dbfile[["file_path"]],
                                                                     "', full.names=TRUE)"),
-                                                                     host, user = NA, verbose = TRUE,R = Rbinary)
+                                                                     host, user = NA, verbose = TRUE,R = Rbinary, scratchdir = outfolder)
           
                         file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
           
                         remote.execute.R( file.deletion.commands$move.to.tmp,
                                           host, user = NA, 
-                                          verbose = TRUE,R = Rbinary)
+                                          verbose = TRUE,R = Rbinary, scratchdir = outfolder)
           
                         # Schedule files to be replaced or deleted on exiting the function
                         successful <- FALSE
@@ -159,14 +159,14 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                     logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
                                     remote.execute.R( file.deletion.commands$delete.tmp,
                                                       host, user = NA, 
-                                                      verbose = TRUE,  R = Rbinary )
+                                                      verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
             
                                     } else {
                                       
                                     logger.info("Conversion failed. Replacing old files.")
                                     remote.execute.R( file.deletion.commands$replace.from.tmp,
                                                       host, user = NA,
-                                                      verbose = TRUE, R = Rbinary )
+                                                      verbose = TRUE, R = Rbinary, scratchdir = outfolder )
                                     } 
                         )#close on on.exit
           
@@ -361,7 +361,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     cmdFcn <- paste0(pkg, "::", fcn, "(", arg.string, ")")
     logger.debug(paste0("convert.input executing the following function:\n", cmdFcn))
     
-    result <- remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary)
+    result <- remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
   }
   
   logger.info("RESULTS: Convert.Input")

@@ -85,8 +85,10 @@ remote.copy.from <- function(host, src, dst, delete = FALSE, stderr = FALSE) {
   if (is.localhost(host)) {
     args <- c(args, src, dst)
   } else {
-    tunnel <- ifelse(is.null(host$data_tunnel),host$tunnel,host$data_tunnel)
-    hostname <- ifelse(is.null(host$data_hostname),host$name,host$data_hostname)
+    tunnel <- host$tunnel
+    if(!is.null(host$data_tunnel)) tunnel <- host$data_tunnel
+    hostname <- host$name
+    if(!is.null(host$data_hostname)) hostname <- host$data_hostname
     if (!is.null(tunnel)) {
       if (!file.exists(tunnel)) {
         logger.severe("Could not find tunnel", tunnel)
@@ -133,8 +135,10 @@ remote.copy.to <- function(host, src, dst, delete = FALSE, stderr = FALSE) {
   if (is.localhost(host)) {
     args <- c(args, src, dst)
   } else {
-    tunnel <- ifelse(is.null(host$data_tunnel),host$tunnel,host$data_tunnel)
-    hostname <- ifelse(is.null(host$data_hostname),host$name,host$data_hostname)
+    tunnel <- host$tunnel
+    if(!is.null(host$data_tunnel)) tunnel <- host$data_tunnel
+    hostname <- host$name
+    if(!is.null(host$data_hostname)) hostname <- host$data_hostname
     if (!is.null(tunnel)) {
       if (!file.exists(tunnel)) {
         logger.severe("Could not find tunnel", tunnel)
@@ -229,6 +233,13 @@ remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FA
       serialize(result, fp)
       close(fp)
     }
+    ## get result
+    fp <- file(tmpfile, "r")
+    result <- unserialize(fp)
+    close(fp)
+    file.remove(tmpfile)
+    return(invisible(result))
+    
   } else {
     remote <- c(host$name)
     if (!is.null(host$tunnel)) {
@@ -240,18 +251,19 @@ remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FA
       remote <- c("-l", host$user, remote)
     }
     logger.debug(paste(c("ssh", "-T", remote, R), collapse = " "))
-    result <- system2("ssh", c("-T", remote, R, "--vanilla"), stdout = verbose, 
+    result <- system2("ssh", c("-T", remote, R, "--no-save","--no-restore"), stdout = verbose,  
                       stderr = verbose, input = input)
     remote.copy.from(host, tmpfile, uuid)
     remote.execute.cmd(host, "rm", c("-f", tmpfile))
+    # load result
+    fp <- file(uuid, "r")
+    result <- unserialize(fp)
+    close(fp)
+    file.remove(uuid)
+    return(invisible(result))
   }
   
-  # load result
-  fp <- file(uuid, "r")
-  result <- unserialize(fp)
-  close(fp)
-  file.remove(uuid)
-  return(invisible(result))
+ 
 } # remote.execute.R
 
 # remote.execute.cmd <- function(host, cmd, args=character(), stderr=FALSE) {
