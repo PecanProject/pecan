@@ -398,6 +398,9 @@ if (isset($hostoptions['jobid'])) {
 if (isset($hostoptions['qstat'])) {
   fwrite($fh, "    <qstat>" . toXML($hostoptions['qstat']) . "</qstat>" . PHP_EOL);
 }
+if (isset($hostoptions['rbinary'])) {
+  fwrite($fh, "    <Rbinary>" . toXML($hostoptions['Rbinary']) . "</Rbinary>" . PHP_EOL);
+}
 if (isset($hostoptions['job.sh'])) {
   fwrite($fh, "    <job.sh>" . toXML($hostoptions['job.sh']) . "</job.sh>" . PHP_EOL);
 }
