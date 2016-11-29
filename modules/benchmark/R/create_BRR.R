@@ -14,14 +14,14 @@ create_BRR <- function(ens_wf, con, user_id = ""){
   cnd1 <- ens_wf$hostname == fqdn() 
   cnd2 <- ens_wf$hostname == 'test-pecan.bu.edu' & fqdn() == 'pecan2.bu.edu'
   cnd3 <- ens_wf$hostname == 'pecan2.bu.edu' & fqdn() == 'test-pecan.bu.edu'
-  
+  db.query <- PEcAn.DB::db.query
   
   if(cnd1|cnd2|cnd3){  # If the ensemble run was done on localhost, turn into a BRR
     
     settingsXML <- file.path(ens_wf$folder,"pecan.CHECKED.xml")
     
     # Automatically creates a new pecan.xml I think. Need to fix this. 
-    clean <- clean.settings(inputfile = settingsXML,write=FALSE)
+    clean <- PEcAn.settings::clean.settings(inputfile = settingsXML,write=FALSE)
     # Remove database & host information
     clean$database <- NULL 
     clean$host <- NULL
