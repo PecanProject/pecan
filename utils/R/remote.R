@@ -244,9 +244,6 @@ remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FA
       remote <- c("-l", host$user, remote)
     }
     logger.debug(paste(c("ssh", "-T", remote, R), collapse = " "))
-#    result <- system2("ssh", c("-T", remote, R, "--vanilla"), stdout = verbose, 
-#    result <- system2("ssh", c("-T", remote, paste0(R, "script")), stdout = verbose, 
-#                                            stderr = verbose, input = input)
     result <- system2("ssh", c("-T", remote, R, "--no-save","--no-restore"), stdout = verbose,  
                       stderr = verbose, input = input)
     remote.copy.from(host, tmpfile, uuid)
