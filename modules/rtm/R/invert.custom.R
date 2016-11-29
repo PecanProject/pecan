@@ -94,18 +94,19 @@ invert.custom <- function(observed, invert.options,
   # Unpack invert.options list and set defaults if missing
   model <- invert.options$model
   inits <- invert.options$inits
+  npars <- length(inits)
   prior.function <- invert.options$prior.function
   ngibbs <- invert.options$ngibbs
   ngibbs <- ifelse(is.null(ngibbs), 10000, ngibbs)
   if (!is.null(invert.options$param.mins)) {
     param.mins <- invert.options$param.mins
   } else {
-    param.mins <- rep(-Inf, length(inits))
+    param.mins <- rep(-Inf, npars)
   }
   if (!is.null(invert.options$param.maxs)) {
     param.maxs <- invert.options$param.maxs
   } else {
-    param.maxs <- rep(Inf, length(inits))
+    param.maxs <- rep(Inf, npars)
   }
   adapt <- invert.options$adapt
   adapt <- ifelse(is.null(adapt), 100, adapt)
@@ -119,19 +120,19 @@ invert.custom <- function(observed, invert.options,
   catch_error <- ifelse(is.null(catch_error), TRUE, catch_error)
 
   # Check parameter validity
-  if (length(inits) != length(param.mins)) {
+  if (npars != length(param.mins)) {
     print("Inits:")
     print(inits)
     print("param.mins:")
     print(param.mins)
-    stop(sprintf("Length mismatch between inits (%d) and param.mins (%d)", length(inits), length(param.mins)))
+    stop(sprintf("Length mismatch between inits (%d) and param.mins (%d)", npars, length(param.mins)))
   }
-  if (length(inits) != length(param.maxs)) {
+  if (npars != length(param.maxs)) {
     print("Inits:")
     print(inits)
     print("param.maxs:")
     print(param.maxs)
-    stop(sprintf("Length mismatch between inits (%d) and param.maxs (%d)", length(inits), length(param.maxs)))
+    stop(sprintf("Length mismatch between inits (%d) and param.maxs (%d)", npars, length(param.maxs)))
   }
 
   resume <- invert.options$resume
@@ -153,7 +154,6 @@ invert.custom <- function(observed, invert.options,
   init_jump_diag_factor <- 0.05
 
   # Set up inversion
-  npars <- length(inits)
   if (do.lsq) {
     fit <- invert.lsq(observed, inits, model, 
                       lower = param.mins, upper = param.maxs)
@@ -232,7 +232,11 @@ invert.custom <- function(observed, invert.options,
         region <- seq(ng - adapt, ng - 1)
         stdev <- apply(results[region, 1:npars], 2, sd)
         rescale <- diag(stdev * adj)
-        cormat <- cor(results[region, 1:npars])
+        if (npars > 1) {
+          cormat <- cor(results[region, 1:npars])
+        } else {
+          cormat <- matrix(1)
+        }
         if (any(is.na(cormat))) {
           cormat <- diag(rep(1, npars))
         }

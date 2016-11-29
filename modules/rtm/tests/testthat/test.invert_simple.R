@@ -60,7 +60,8 @@ samp_parallel <- invert.auto(observed = y,
 output_tests(samp_parallel)
 
 samp_series <- invert.auto(observed = y,
-                             invert.options = invert.options, 
-                             save.samples = save.samples, 
-                             parallel = FALSE)
+                           invert.options = invert.options, 
+                           save.samples = save.samples, 
+                           parallel = FALSE, 
+                           calculate.burnin = FALSE)
 output_tests(samp_series)
