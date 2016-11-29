@@ -405,6 +405,7 @@ if ($hostname != $fqdn) {
   fwrite($fh, "    <tunnel>" . $tunnel_folder . DIRECTORY_SEPARATOR . "tunnel" . "</tunnel>" . PHP_EOL);
   if(isset($hostoptions['data_hostname'])){
     fwrite($fh, "    <data_tunnel>" . $data_tunnel_folder . DIRECTORY_SEPARATOR . "tunnel" . "</data_tunnel>" . PHP_EOL);
+    fwrite($fh, "    <data_hostname>" . $hostoptions['data_hostname'] . "</data_hostname>" . PHP_EOL);
   }
 }
 fwrite($fh, "  </host>" . PHP_EOL);

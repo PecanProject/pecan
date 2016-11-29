@@ -47,6 +47,7 @@ expect {
     }
     "*?assword" {
         puts "got password prompt"
+        sleep .5
         send "${sshPassword}\r"
         exp_continue
     }
