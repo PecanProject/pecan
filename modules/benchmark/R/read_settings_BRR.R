@@ -38,7 +38,7 @@ read_settings_BRR <- function(settings){
     xmlToList(.,"pecan") 
   names(BRR.settings)
   
-  settings <- BRR.settings %>% append(settings,.) %>% Settings()
+  settings <- BRR.settings %>% append(settings,.) %>% PEcAn.settings::Settings()
   invisible(settings)
 }
 

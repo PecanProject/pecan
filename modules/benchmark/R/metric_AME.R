@@ -7,5 +7,5 @@
 
 metric_AME <- function(dat, ...) {
   PEcAn.utils::logger.info("Metric: Absolute Maximum Error")
-  return(max(abs(dat$model - dat$obvs)))
+  return(max(abs(dat$model - dat$obvs),na.rm = TRUE))
 } # metric_AME
