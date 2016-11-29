@@ -6,7 +6,8 @@
 \usage{
 invert.auto(observed, invert.options, return.samples = TRUE,
   save.samples = NULL, quiet = FALSE, parallel = TRUE,
-  parallel.cores = NULL, parallel.output = "/dev/null")
+  parallel.cores = NULL, parallel.output = "/dev/null",
+  calculate.burnin = TRUE)
 }
 \arguments{
 \item{observed}{Vector, matrix, or data frame (coerced to matrix) of 
@@ -32,6 +33,10 @@ on multiple cores (default = \code{TRUE}).}
 
 \item{parallel.output}{Filename (or '' for stdout) for printing parallel 
 outputs. Use with caution. Default = \code{'/dev/null'}.}
+
+\item{calculate.burnin}{If \code{TRUE}, use 
+\code{PEcAn.assim.batch::autoburin} function to calculate burnin. Otherwise, 
+assume burnin is \code{min(niter/2, iter_conv_check)}.}
 }
 \value{
 List including \code{results} (summary statistics), \code{samples} 
