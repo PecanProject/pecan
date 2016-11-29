@@ -8,9 +8,8 @@
 ##' @param convert FACE files to CF files
 ##' @author Elizabeth Cowdery
 ##' 
-met2CF.FACE <- function(in.path, in.prefix, outfolder, start_date, end_date, bety, ...) {
+met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,input.id,site,format, ...) {
   
-  library(ncdf4.helpers)
   library(PEcAn.utils)
   
   ncvar_get <- ncdf4::ncvar_get
@@ -51,15 +50,6 @@ met2CF.FACE <- function(in.path, in.prefix, outfolder, start_date, end_date, bet
       
       nc1 <- nc_open(f, write = TRUE)
       
-      localhost <- fqdn()
-      machineid <- dplyr::tbl(bety, "machines") %>% 
-        filter(hostname == localhost) %>% 
-        dplyr::select(id) %>% collect() %>% .[[1]]
-      input.id <- dplyr::tbl(bety, "dbfiles") %>% filter(file_path == in.path) %>%
-        filter(machine_id == machineid) %>% select(container_id) %>% collect() %>% .[[1]]
-      site <- query.site(dplyr::tbl(bety, "inputs") %>% filter(id == input.id) %>% 
-                           select(site_id) %>% collect() %>% .[[1]], bety$con)
-      
       time_units <- paste0("hours/2", unlist(strsplit(nc1$var$TIMEstp$units, "timesteps"))[2])
       time <- ncdim_def(name = "time", units = time_units, vals = nc1$dim$tstep$vals)
       lon <- ncdim_def("longitude", "degrees_east", site$lon)  # define netCDF dimensions for variables
@@ -82,11 +72,6 @@ met2CF.FACE <- function(in.path, in.prefix, outfolder, start_date, end_date, bet
       
       #---------------------------------------------------------------------#
       # Loop through variables and convert 
-      
-      format.id <- dplyr::tbl(bety, "inputs") %>% filter(id == input.id) %>%
-        select(format_id) %>% collect() %>% .[[1]]
-      
-      format <- query.format.vars(bety,input.id, format.id)
       
       vars.used.index.all <- setdiff(seq_along(format$vars$variable_id), format$time.row)
       nt <- setdiff(c("a","e"), treatment) 
