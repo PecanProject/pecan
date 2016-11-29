@@ -331,8 +331,9 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
       }
       hdry[hdry < 0] <- 0
       swflux <- hdry * I
-      swflux[swflux < 0] <- 0
+      swflux[swflux < 0] <- 0  
     }
+    # Waichler method is the only method with ensembles for downwelling shortwave flux
     
     df$surface_downwelling_shortwave_flux_in_air <- swflux
     # Will need to change below if we figure out how to downscale this
