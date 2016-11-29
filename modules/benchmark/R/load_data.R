@@ -10,7 +10,15 @@
 ##' Generic function to convert input files containing observational data to 
 ##' a common PEcAn format. 
 load_data <- function(data.path, format, start_year = NA, end_year = NA, site = NA, 
-                      vars.used.index, time.row = NULL) {
+                      vars.used.index=NULL, time.row = NULL) {
+
+  ## load everything in format by default
+  if(is.null(time.row)){
+    time.row <- format$time.row 
+  }
+  if(is.null(vars.used.index)){
+    vars.used.index <- setdiff(seq_along(format$vars$variable_id), format$time.row)
+  }
   
   library(PEcAn.utils)
   library(PEcAn.benchmark)
@@ -19,7 +27,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   library(dplyr)
   
   # Determine the function that should be used to load the data
-  mimetype <- sub("-", "_", format$mimetype)
+  mimetype <- gsub("-", "_", format$mimetype)
   fcn1 <- paste0("load_", format$file_name)
   fcn2 <- paste0("load_", mimetype)
   if (exists(fcn1)) {
@@ -27,7 +35,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   } else if (exists(fcn2)) {
     fcn <- match.fun(fcn2)
   } else {
-    PEcAn.utils::logger.warn("no load_data for current mimetype - converting using browndog")
+    PEcAn.utils::logger.warn(paste0("no load_data for current mimetype ",mimetype," - converting using browndog"))
   }
   
   out <- fcn(data.path, format, site, format$vars$input_name[c(vars.used.index, time.row)])
