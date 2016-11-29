@@ -136,7 +136,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##'
 ##' This will check the dbfiles, inputs, machines and formats tables to see if the
 ##' file exists
-##' @name dbfile.check
+##' @name dbfile.input.check
 ##' @title Check for a file in the input/dbfiles tables
 ##' @param siteid the id of the site that this data is applicable to
 ##' @param startdate the start date of the data stored in the file
@@ -148,7 +148,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
 ##' @param params database connection information
 ##' @param exact.dates setting to include start and end date in input query
-##' @param machine.checl setting to have dbfile.check include machine in query
+##' @param machine.check setting to have dbfile.check include machine in query
 ##' @return data.frame with the id, filename and pathname of the input that is requested
 ##' @export
 ##' @author Rob Kooper, Tony Gardella

@@ -187,7 +187,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                    (end_date <= existing.input$end_date)) {
           
         
-         if (insert.new.file <- FALSE){ # There's an existing input that spans desired start/end dates. Use that one.
+         if (insert.new.file == FALSE){ # There's an existing input that spans desired start/end dates. Use that one.
             logger.info("Skipping this input conversion because files are already available.")
             return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
            }
@@ -415,7 +415,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       site.id <- input.args$newsite
     }
     
-    if(exact.dates){allow.conflicting.dates = FALSE}
+    if(exact.dates){allow.conflicting.dates <- FALSE}
     
     newinput <- dbfile.input.insert(in.path = dirname(result$file[1]), 
                                     in.prefix = result$dbfile.name[1], 
