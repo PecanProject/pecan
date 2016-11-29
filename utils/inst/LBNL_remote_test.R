@@ -46,5 +46,10 @@ PEcAn.utils::remote.copy.from(host,"~/favicon.jpg","favicon.jpg")
 ## test remote.execute.R
 b <- PEcAn.utils::remote.execute.R(script = "return(1)",host = host,R=R,verbose=TRUE,scratchdir="/global/scratch/dietze/")
 
+c <- PEcAn.utils::remote.execute.R(script = "return(require(PEcAn.data.atmosphere))",host = host,R=R,verbose=TRUE,scratchdir="/global/scratch/dietze/")
+
+d <- PEcAn.utils::remote.execute.R(script = "return(.libPaths())",host = host,R=R,verbose=TRUE,scratchdir="/global/scratch/dietze/")
+
+
 ## kill tunnels
 PEcAn.utils::kill.tunnel(settings)
