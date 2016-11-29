@@ -85,8 +85,10 @@ remote.copy.from <- function(host, src, dst, delete = FALSE, stderr = FALSE) {
   if (is.localhost(host)) {
     args <- c(args, src, dst)
   } else {
-    tunnel <- ifelse(is.null(host$data_tunnel),host$tunnel,host$data_tunnel)
-    hostname <- ifelse(is.null(host$data_hostname),host$name,host$data_hostname)
+    tunnel <- host$tunnel
+    if(!is.null(host$data_tunnel)) tunnel <- host$data_tunnel
+    hostname <- host$name
+    if(!is.null(host$data_hostname)) hostname <- host$data_hostname
     if (!is.null(tunnel)) {
       if (!file.exists(tunnel)) {
         logger.severe("Could not find tunnel", tunnel)
@@ -133,8 +135,10 @@ remote.copy.to <- function(host, src, dst, delete = FALSE, stderr = FALSE) {
   if (is.localhost(host)) {
     args <- c(args, src, dst)
   } else {
-    tunnel <- ifelse(is.null(host$data_tunnel),host$tunnel,host$data_tunnel)
-    hostname <- ifelse(is.null(host$data_hostname),host$name,host$data_hostname)
+    tunnel <- host$tunnel
+    if(!is.null(host$data_tunnel)) tunnel <- host$data_tunnel
+    hostname <- host$name
+    if(!is.null(host$data_hostname)) hostname <- host$data_hostname
     if (!is.null(tunnel)) {
       if (!file.exists(tunnel)) {
         logger.severe("Could not find tunnel", tunnel)
