@@ -18,7 +18,7 @@ library(RCurl)
 options(warn=1)
 options(error=quote({
   status.end("ERROR")
-  kill.tunnel()
+  kill.tunnel(settings)
   if (!interactive()) {
     q()
   }
@@ -152,7 +152,7 @@ if("benchmarking" %in% names(settings)){
 # Pecan workflow complete
 if (status.check("FINISHED") == 0) {
   status.start("FINISHED")
-  kill.tunnel()
+  kill.tunnel(settings)
   db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"), params=settings$database$bety)
 
   # Send email if configured
