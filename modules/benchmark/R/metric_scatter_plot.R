@@ -6,7 +6,7 @@
 ##' 
 ##' @author Betsy Cowdery
 
-metric_scatter_plot <- function(metric_dat, var, filename = NA, draw.plot = FALSE) {
+metric_scatter_plot <- function(metric_dat, var, filename = NA, draw.plot = is.na(filename)) {
   PEcAn.utils::logger.info("Metric: Scatter Plot")
   
   p <- ggplot2::ggplot(data = metric_dat) 
