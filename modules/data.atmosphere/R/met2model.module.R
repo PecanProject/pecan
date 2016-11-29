@@ -20,7 +20,7 @@
     input.id <- ready.id$input.id[1]
     outfolder <- ifelse(host$name == "localhost", 
                         file.path(dir, paste0(met, "_", model, "_site_", str_ns)), 
-                        file.path(host$dbfiles, paste0(met, "_", model, "_site_", str_ns)))
+                        file.path(host$folder, paste0(met, "_", model, "_site_", str_ns)))
     
     pkg <- paste0("PEcAn.", model)
     fcn <- paste0("met2model.", model)
