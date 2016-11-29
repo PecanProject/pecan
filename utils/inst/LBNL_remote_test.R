@@ -10,6 +10,7 @@ user <- 'dietze'
 tunnelDir <- "/tmp/LBNL"
 exeDir <- file.path(tunnelDir,"exe")
 dataDir <- file.path(tunnelDir,"data")
+dir.create(tunnelDir)
 dir.create(exeDir)
 dir.create(dataDir)
 R <- "/global/software/sl-6.x86_64/modules/langs/r/3.2.5/bin/R"
