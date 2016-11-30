@@ -18,16 +18,12 @@
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
+##' @importFrom ncdf4 ncvar_def ncdim_def
+##' @importFrom PEcAn.utils mstmipvar
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
 model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
-  
-  ## load functions
-  #library(PEcAn.utils) # !!phase out the loading of this lib !!
-  ncvar_def <- ncdf4::ncvar_def
-  ncdim_def <- ncdf4::ncdim_def
-  mstmipvar <- PEcAn.utils::mstmipvar
-  
+
   ### Read in model output in DALEC format
   DALEC.output      <- read.table(file.path(outdir, "out.txt"), header = FALSE, sep = "")
   DALEC.output.dims <- dim(DALEC.output)
