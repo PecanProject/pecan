@@ -54,14 +54,16 @@ output_tests <- function(output) {
             })
 }
 
+invert.options$threshold <- 1.2
 samp_parallel <- invert.auto(observed = y,
                              invert.options = invert.options, 
                              save.samples = save.samples)
 output_tests(samp_parallel)
 
+invert.options$calculate.burnin <- FALSE
+invert.options$threshold <- NULL
 samp_series <- invert.auto(observed = y,
                            invert.options = invert.options, 
                            save.samples = save.samples, 
-                           parallel = FALSE, 
-                           calculate.burnin = FALSE)
+                           parallel = FALSE)
 output_tests(samp_series)

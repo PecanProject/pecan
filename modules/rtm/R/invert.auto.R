@@ -16,9 +16,6 @@
 #' (default), allocate one fewer than detected number of cores.
 #' @param parallel.output Filename (or '' for stdout) for printing parallel 
 #' outputs. Use with caution. Default = \code{'/dev/null'}.
-#' @param calculate.burnin If \code{TRUE}, use 
-#' \code{PEcAn.assim.batch::autoburin} function to calculate burnin. Otherwise, 
-#' assume burnin is \code{min(niter/2, iter_conv_check)}.
 #' @inheritParams invert.custom
 #' 
 #' @details
@@ -46,7 +43,15 @@
 #' \item{run_first}{Function to run before running sampling. Takes parallel 
 #' inputs list containing runID, initial values, and resume (NULL) as an 
 #' argument.}
+#'
+#' \item{calculate.burnin}{If \code{TRUE}, use 
+#' \code{PEcAn.assim.batch::autoburin} function to calculate burnin. Otherwise, 
+#' assume burnin is \code{min(niter/2, iter_conv_check)}.}
+#'
+#' \item{threshold}{Maximum value of the Gelman-Rubin diagnostic for 
+#' determining convergence. Default = 1.1}
 #' }
+#' 
 #'
 #' @return List including \code{results} (summary statistics), \code{samples} 
 #' (\code{mcmc.list} object, or \code{NA} if \code{return.samples=FALSE}), and 
@@ -59,8 +64,7 @@ invert.auto <- function(observed, invert.options,
                         quiet=FALSE,
                         parallel=TRUE,
                         parallel.cores=NULL,
-                        parallel.output = '/dev/null',
-                        calculate.burnin = TRUE) {
+                        parallel.output = '/dev/null') {
 
   if (parallel == TRUE) {
     testForPackage("parallel")
@@ -109,6 +113,18 @@ invert.auto <- function(observed, invert.options,
     iter_conv_check <- 15000
     message("iter_conv_check not provided. ",
             "Setting default to ", iter_conv_check)
+  }
+  threshold <- invert.options$threshold
+  if (is.null(threshold)) {
+    threshold <- 1.1
+    message("threshold not provided. ",
+            "Setting default to ", threshold)
+  }
+  calculate.burnin <- invert.options$calculate.burnin
+  if (is.null(calculate.burnin)) {
+    calculate.burnin <- TRUE
+    message("calculate.burnin not provided. ",
+            "Setting default to ", calculate.burnin)
   }
   
   # Set up cluster for parallel execution
@@ -182,6 +198,7 @@ invert.auto <- function(observed, invert.options,
   out <- process_output(output.list = output.list, 
                         iter_conv_check = iter_conv_check,
                         save.samples = save.samples,
+                        threshold = threshold,
                         calculate.burnin = calculate.burnin)
 
   # Loop until convergence (skipped if finished == TRUE)
@@ -213,6 +230,7 @@ invert.auto <- function(observed, invert.options,
                           prev_out = out,
                           iter_conv_check = iter_conv_check, 
                           save.samples = save.samples,
+                          threshold = threshold,
                           calculate.burnin = calculate.burnin)
   }
 
@@ -249,6 +267,7 @@ process_output <- function(output.list,
                            prev_out = NULL,
                            iter_conv_check,
                            save.samples, 
+                           threshold,
                            calculate.burnin) {
 
   samples.current <- lapply(output.list, "[[", "results")
@@ -278,7 +297,9 @@ process_output <- function(output.list,
   out$nsamp <- coda::niter(out$samples)
   nburn <- min(floor(out$nsamp/2), iter_conv_check)
   burned_samples <- window(out$samples, start = nburn)
-  check_initial <- check.convergence(burned_samples, autoburnin = FALSE)
+  check_initial <- check.convergence(burned_samples, 
+                                     threshold = threshold,
+                                     autoburnin = FALSE)
   if (check_initial$error) {
     warning("Could not calculate Gelman diag. Assuming no convergence.")
     out$finished <- FALSE
