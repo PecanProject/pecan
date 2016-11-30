@@ -14,17 +14,8 @@
 ##' @param verbose should the function be very verbose
 ##' @param lst is timezone offset from UTC, if timezone is available in time:units atribute in file, it will use that, default is to assume UTC
 ##' @author Ankur Desai
-##' @importFrom PEcAn.utils fqdn
-##' @importFrom PEcAn.utils logger.debug
-##' @importFrom PEcAn.utils logger.error
-##' @importFrom PEcAn.utils logger.warn
-##' @importFrom PEcAn.utils logger.severe
-##' @importFrom ncdf4 ncvar_get
-##' @importFrom ncdf4 ncatt_get
-##' @importFrom ncdf4 ncdim_def
-##' @importFrom ncdf4 ncvar_def
-##' @importFrom ncdf4 ncvar_add
-##' @importFrom ncdf4 ncvar_put
+##' @importFrom PEcAn.utils fqdn logger.debug logger.error logger.warn logger.severe
+##' @importFrom ncdf4 ncvar_get ncatt_get ncdim_def ncvar_def ncvar_add ncvar_put
 metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
                        overwrite = FALSE, verbose = FALSE, ...) {
   

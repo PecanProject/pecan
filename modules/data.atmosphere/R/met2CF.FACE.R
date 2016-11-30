@@ -7,12 +7,7 @@
 ##' @param outfolder
 ##' @param convert FACE files to CF files
 ##' @author Elizabeth Cowdery
-##' 
-##' @importFrom ncdf4 ncvar_get
-##' @importFrom ncdf4 ncdim_def
-##' @importFrom ncdf4 ncatt_get
-##' @importFrom ncdf4 ncvar_add
-##' @importFrom ncdf4 ncvar_put
+##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_add ncvar_put
 met2CF.FACE <- function(in.path, in.prefix, outfolder, start_date, end_date, ...) {
   
   library(ncdf4.helpers)

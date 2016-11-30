@@ -18,8 +18,7 @@
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
-##' @importFrom ncdf4 ncvar_def
-##' @importFrom ncdf4 ncdim_def
+##' @importFrom ncdf4 ncvar_def ncdim_def
 ##' @importFrom PEcAn.utils mstmipvar
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze

@@ -30,11 +30,9 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
 ##' @param verbose should the function be very verbose
 ##' @export
 ##' @author Shawn P. Serbin
-##' @importFrom PEcAn.utils logger.debug
-##' @importFrom PEcAn.utils logger.warn
+##' @importFrom PEcAn.utils logger.debug logger.warn listToXml
 ##' @importFrom udunits2 ud.convert
 ##' @importFrom ncdf4 ncvar_get
-##' @importFrom PEcAn.utils listToXml
 ##' @importFrom XML saveXML
 met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
                            overwrite = FALSE, verbose = FALSE, ...) {

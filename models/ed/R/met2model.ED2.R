@@ -30,10 +30,7 @@
 ##' @param lst timezone offset to GMT in hours
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
-##' @importFrom ncdf4 ncvar_get
-##' @importFrom ncdf4 ncdim_def
-##' @importFrom ncdf4 ncatt_get
-##' @importFrom ncdf4 ncvar_add
+##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_add
 met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat = NA, 
                           lon = NA, overwrite = FALSE, verbose = FALSE, ...) {
   overwrite <- as.logical(overwrite)
