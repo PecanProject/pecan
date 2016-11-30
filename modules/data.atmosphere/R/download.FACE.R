@@ -35,14 +35,14 @@ download.FACE <- function(sitename, outfolder, start_date, end_date, overwrite =
   system(paste("wget -c ", url, " -O ", out.file))
   
   # return file info
-  invisible(data.frame(file = out.file, 
-                       host = fqdn(), 
-                       mimetype = "application/x-netcdf", 
-                       formatname = "FACE", 
-                       startdate = start_date, 
-                       enddate = end_date,
-                       dbfile.name = "FACE", 
-                       stringsAsFactors = FALSE))
+  return(invisible(data.frame(file = out.file, 
+                              host = fqdn(), 
+                              mimetype = "application/x-netcdf", 
+                              formatname = "FACE", 
+                              startdate = start_date, 
+                              enddate = end_date,
+                              dbfile.name = "FACE", 
+                              stringsAsFactors = FALSE)))
   
   ######################
   

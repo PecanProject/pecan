@@ -24,5 +24,5 @@ met.process.stage <- function(input.id, raw.id, con) {
     stage <- list(download.raw = FALSE, met2cf = FALSE, standardize = FALSE, 
                   met2model = FALSE, id.name = "model.id")
   }
-  invisible(stage)
+  return(invisible(stage))
 } # met.process.stage

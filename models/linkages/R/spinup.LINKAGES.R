@@ -31,8 +31,8 @@ spinup.LINKAGES <- function(start.year, end.year, temp.mat, precip.mat, paleon =
   
   ### Add some sort of test for steady state or not
   
-  list(start.year = start.year, 
-       nyear = nyear,
-       temp.mat = temp.mat, 
-       precip.mat = precip.mat)
+  return(list(start.year = start.year, 
+              nyear = nyear,
+              temp.mat = temp.mat, 
+              precip.mat = precip.mat))
 } # spinup.LINKAGES

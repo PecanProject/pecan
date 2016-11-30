@@ -23,6 +23,7 @@
 #'      rsdt: hemispherical directional
 #'      rdot: directional hemispherical
 #'      rsot: bi-directional
+#' @export
 pro4sail <- function(param) {
     plist <- as.list(param)
     nw    <- 2101

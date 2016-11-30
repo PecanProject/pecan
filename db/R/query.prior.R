@@ -17,7 +17,7 @@
 ##' @param con database connection, can be list of arguments for connecting to database
 ##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
 ##' @return priors for a given pft
-##' @export
+##' @export query.priors
 ##' @author David LeBauer
 ##' @examples
 ##' \dontrun{
@@ -26,6 +26,7 @@
 query.priors <- function(pft, trstr=NULL, out=NULL, con=NULL,...){
   if(is.null(con)){
     con <- db.open(settings$database$bety)
+    on.exit(db.close(con))
   }
   if(is.list(con)){
     print("query.priors")

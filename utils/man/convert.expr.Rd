@@ -4,13 +4,13 @@
 \alias{convert.expr}
 \title{convert.expr}
 \usage{
-convert.expr(expr)
+convert.expr(expression)
 }
 \arguments{
-\item{expr}{expression string}
+\item{expression}{expression string}
 }
 \value{
-variables variable names
+list
 }
 \description{
 Convert expression to variable names

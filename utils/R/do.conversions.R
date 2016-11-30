@@ -3,7 +3,8 @@
 ##' @title do.conversions
 ##' @description Input conversion workflow
 ##' @author Ryan Kelly, Rob Kooper, Betsy Cowdery
-do.conversions <- function(settings) {
+##' @export
+do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE) {
   if (is.MultiSettings(settings)) {
     return(papply(settings, do.conversions))
   }
@@ -12,6 +13,9 @@ do.conversions <- function(settings) {
   if (is.character(settings$run$inputs)) {
     settings$run$inputs <- NULL  ## check for empty set
   }
+  
+  dbfiles <- ifelse(!is.localhost(settings$host) & !is.null(settings$host$folder),settings$host$folder,settings$database$dbfiles)
+
   for (i in seq_along(settings$run$inputs)) {
     input <- settings$run$inputs[[i]]
     if (is.null(input)) {
@@ -21,10 +25,9 @@ do.conversions <- function(settings) {
     input.tag <- names(settings$run$input)[i]
     
     # fia database
-    if ((input["input"] == "fia") && (status.check("FIA2ED") == 0)) {
-      status.start("FIA2ED")
-      fia.to.psscss(settings)
-      status.end()
+    if ((input.tag %in% c("css", "pss", "site")) &&
+        is.null(input$path) && !is.null(input$source) && (input$source == "FIA")) {
+      settings <- fia.to.psscss(settings, overwrite=overwrite.fia)
       needsave <- TRUE
     }
     
@@ -32,18 +35,19 @@ do.conversions <- function(settings) {
     if (input.tag == "met") {
       name <- ifelse(is.null(settings$browndog), "MET Process", "BrownDog")
       if (is.null(input$path) && (status.check(name) == 0)) {
-        status.start(name)
-        result <- PEcAn.data.atmosphere::met.process(site = settings$run$site, 
-                                                     input_met = settings$run$inputs$met, 
-                                                     start_date = settings$run$start.date, 
-                                                     end_date = settings$run$end.date, 
-                                                     model = settings$model$type, 
-                                                     host = settings$host, 
-                                                     dbparms = settings$database$bety,
-                                                     dir = settings$database$dbfiles, 
-                                                     browndog = settings$browndog)
-        settings$run$inputs[[i]][["path"]] <- result
-        status.end()
+        settings$run$inputs[[i]][['path']] <- 
+          PEcAn.data.atmosphere::met.process(
+            site       = settings$run$site, 
+            input_met  = settings$run$inputs$met,
+            start_date = settings$run$start.date,
+            end_date   = settings$run$end.date,
+            model      = settings$model$type,
+            host       = settings$host,
+            dbparms    = settings$database$bety, 
+            dir        = dbfiles,
+            browndog   = settings$browndog,
+            overwrite  = overwrite.met)
+
         needsave <- TRUE
       }
     }
@@ -54,4 +58,4 @@ do.conversions <- function(settings) {
     settings <- read.settings(file.path(settings$outdir, "pecan.METProcess.xml"))
   }
   return(settings)
-} # do.conversions
+}

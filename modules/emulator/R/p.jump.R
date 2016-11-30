@@ -18,5 +18,5 @@ p.jump <- function(jmp) {
 ##' 
 p.mvjump <- function(jmp) {
   n <- nrow(attr(jmp, "history"))
-  attr(jmp, "history")[n, ]
+  return(attr(jmp, "history")[n, ])
 } # p.jump

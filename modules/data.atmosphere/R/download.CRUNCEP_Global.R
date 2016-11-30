@@ -11,7 +11,9 @@
 ##' @author James Simkins, Mike Dietze
 download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, 
                              overwrite = FALSE, verbose = FALSE, ...) {
-  library(PEcAn.utils)
+  
+  #library(PEcAn.utils) # phase this out
+  
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- lubridate::year(start_date)
@@ -49,7 +51,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     ntime <- ifelse(lubridate::leap_year(year), 366 * 4, 365 * 4)
 
     loc.file <- file.path(outfolder, paste("CRUNCEP", year, "nc", sep = "."))
-    logger.info(paste("Downloading",loc.file))
+    PEcAn.utils::logger.info(paste("Downloading",loc.file))
     ## Create dimensions
     lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
     lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
@@ -63,8 +65,8 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     ## get data off OpenDAP
     for (j in seq_len(nrow(var))) {
       dap_file <- paste0(dap_base, var$DAP.name[j], "_", year, "_v1.nc4")
-      logger.info(dap_file)
-      dap <- nc_open(dap_file)
+      PEcAn.utils::logger.info(dap_file)
+      dap <- ncdf4::nc_open(dap_file)
       dat.list[[j]] <- ncdf4::ncvar_get(dap, 
                                  as.character(var$DAP.name[j]), 
                                  c(lon_trunc, lat_trunc, 1), 
@@ -88,12 +90,12 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     ncdf4::nc_close(loc)
     
     results$file[i] <- loc.file
-    results$host[i] <- fqdn()
+    results$host[i] <- PEcAn.utils::fqdn()
     results$startdate[i] <- paste0(year, "-01-01 00:00:00")
     results$enddate[i] <- paste0(year, "-12-31 23:59:59")
     results$mimetype[i] <- "application/x-netcdf"
     results$formatname[i] <- "CF Meteorology"
   }
   
-  invisible(results)
+  return(invisible(results))
 } # download.CRUNCEP

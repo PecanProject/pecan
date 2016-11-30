@@ -16,7 +16,7 @@ get.trait.data(pfts, modeltype, dbfiles, database, forceupdate,
 
 \item{database}{database connection parameters}
 
-\item{forceupdate}{set this to true to force an update, auto will check to see if an update is needed.}
+\item{forceupdate}{set this to true to force an update, false to check to see if an update is needed.}
 
 \item{trait.names}{list of traits to query. If TRUE, uses trait.dictionary}
 }

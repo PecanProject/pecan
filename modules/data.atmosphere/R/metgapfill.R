@@ -17,10 +17,15 @@
 metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
                        overwrite = FALSE, verbose = FALSE, ...) {
   
-  library(REddyProc)
+
   #REddyProc installed to ~/R/library by install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
   #dependency minpack.lm may not install automatically, so install it first
-  library(PEcAn.utils)
+
+  fqdn <- PEcAn.utils::fqdn
+  logger.debug  <- PEcAn.utils::logger.debug 
+  logger.error  <- PEcAn.utils::logger.error
+  logger.warn   <- PEcAn.utils::logger.warn
+  logger.severe <- PEcAn.utils::logger.severe
   
   # get start/end year code works on whole years only
   start_year <- lubridate::year(start_date)
@@ -74,8 +79,9 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     ## Should probably check for variable names (need to install ncdf4-helpers package)
     
     ncvar_get <- ncdf4::ncvar_get
-    ncdim_def <- ncdf4::ncdim_def
     ncatt_get <- ncdf4::ncatt_get
+    ncdim_def <- ncdf4::ncdim_def
+    ncvar_def <- ncdf4::ncvar_def
     ncvar_add <- ncdf4::ncvar_add
     ncvar_put <- ncdf4::ncvar_put
     
@@ -667,5 +673,5 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
   ## Step 6.Replace gaps with debiased time series (perhaps store statistics of fit somewhere as a measure of uncertainty?)
   ## Step 7. Write to outfolder the new NetCDF file
   
-  invisible(results)
+  return(invisible(results))
 } # metgapfill

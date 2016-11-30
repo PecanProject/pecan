@@ -5,34 +5,34 @@
 \title{Calculate burnin value}
 \usage{
 getBurnin(jags_out, threshold = 1.1, use.confidence = TRUE,
-  autoburnin = FALSE, plotfile = "/dev/null", ...)
+  method = "moving.window", plotfile = "/dev/null", ...)
 }
 \arguments{
 \item{jags_out}{List of MCMC sample matrices or `mcmc.list` object}
 
 \item{threshold}{Maximum value of Gelman diagnostic}
 
-\item{use.confidence}{Logical. If TRUE (default), use 95% confidence interval for Gelman Diagnostic.}
+\item{use.confidence}{Logical. If TRUE (default), use 95% confidence 
+interval for Gelman Diagnostic. If FALSE, use the point estimate.}
 
-\item{autoburnin}{a logical flag indicating whether only the second half
-  of the series should be used in the computation.  If set to TRUE
-  (default) and \code{start(x)} is less than \code{end(x)/2} then start
-  of series will be adjusted so that only second half of series is used.}
+\item{method}{Character string indicating method. Options are 
+"moving.window" (default) or "gelman.plot".}
 
-\item{plotfile}{Filename for a PNG of the Gelman plot. Default = '/dev/null'
-If FALSE, use the point estimate.}
-
-\item{...}{Other parameters to `gelman.plot`}
+\item{...}{Other parameters to methods}
 }
 \description{
-Use `coda::gelman_plot` to calculate first iteration number where Gelman diagnostic never exceeds the specified threshold.
+Automatically detect burnin based on one of several methods.
+}
+\details{
+See "gelman_diag_mw" and "gelman_diag_gelmanPlot"
 }
 \examples{
-     library(coda)
-     data(line)
-     burnin <- getBurnin(line, threshold = 1.05)
+     z1 <- coda::mcmc(c(rnorm(2500, 5), rnorm(2500, 0)))
+     z2 <- coda::mcmc(c(rnorm(2500, -5), rnorm(2500, 0)))
+     z <- coda::mcmc.list(z1, z2)
+     burnin <- getBurnin(z, threshold = 1.05)
 }
 \author{
-Michael Dietze, Alexey Shiklomanov
+Alexey Shiklomanov, Michael Dietze
 }
 
