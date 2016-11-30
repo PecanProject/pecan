@@ -233,6 +233,13 @@ remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FA
       serialize(result, fp)
       close(fp)
     }
+    ## get result
+    fp <- file(tmpfile, "r")
+    result <- unserialize(fp)
+    close(fp)
+    file.remove(tmpfile)
+    return(invisible(result))
+    
   } else {
     remote <- c(host$name)
     if (!is.null(host$tunnel)) {
@@ -248,14 +255,15 @@ remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FA
                       stderr = verbose, input = input)
     remote.copy.from(host, tmpfile, uuid)
     remote.execute.cmd(host, "rm", c("-f", tmpfile))
+    # load result
+    fp <- file(uuid, "r")
+    result <- unserialize(fp)
+    close(fp)
+    file.remove(uuid)
+    return(invisible(result))
   }
   
-  # load result
-  fp <- file(uuid, "r")
-  result <- unserialize(fp)
-  close(fp)
-  file.remove(uuid)
-  return(invisible(result))
+ 
 } # remote.execute.R
 
 # remote.execute.cmd <- function(host, cmd, args=character(), stderr=FALSE) {
