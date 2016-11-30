@@ -111,14 +111,14 @@ if (status.check("OUTPUT") == 0) {
 }
 
 # Run ensemble analysis on model output. 
-if (status.check("ENSEMBLE") == 0) {
+if ('ensemble' %in% names(settings) & status.check("ENSEMBLE") == 0) {
   status.start("ENSEMBLE")
   runModule.run.ensemble.analysis(settings, TRUE)    
   status.end()
 }
 
 # Run sensitivity analysis and variance decomposition on model output
-if (status.check("SENSITIVITY") == 0) {
+if ('sensitivity' %in% names(settings) & status.check("SENSITIVITY") == 0) {
   status.start("SENSITIVITY")
   runModule.run.sensitivity.analysis(settings)
   status.end()
