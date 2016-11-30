@@ -42,7 +42,7 @@ model2netcdf.FATES <- function(outdir) {
       newvar <- ncdf4::ncvar_def(name = newname, units = newunits, dim = xyt)
       
       ## convert data
-      dat <- ncvar_get(ncin,oldname)
+      dat <- ncdf4::ncvar_get(ncin,oldname)
       dat.new <- misc.convert(dat,oldunits,newunits)
       
       ## prep for writing
@@ -91,8 +91,8 @@ model2netcdf.FATES <- function(outdir) {
 
         #******************** Declare netCDF dimensions ********************#
         nc_var  <- list()
-        sitelat <- ncvar_get(ncin,"lat")
-        sitelon <- ncvar_get(ncin,"lon")
+        sitelat <- ncdf4::ncvar_get(ncin,"lat")
+        sitelon <- ncdf4::ncvar_get(ncin,"lon")
         ## time variable based on internal calc, nc$dim$time is the FATES output time
         t <- ncdim_def(name = "time", units = paste0("days since ", year, "-01-01 00:00:00"),
                        vals = as.vector(time), calendar = "standard", 
