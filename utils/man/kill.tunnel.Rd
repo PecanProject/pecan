@@ -4,7 +4,7 @@
 \alias{kill.tunnel}
 \title{kill.tunnel}
 \usage{
-kill.tunnel()
+kill.tunnel(settings, exe = TRUE, data = TRUE)
 }
 \description{
 kill tunnel to remote machine
