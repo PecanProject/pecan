@@ -120,7 +120,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                             enddate = end_date, 
                                             con = con, 
                                             hostname = host$name,
-                                            machine.check = machine.check
+                                            machine.check = FALSE
                                             )
       
     
@@ -133,16 +133,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         
         existing.input <- db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
         
-        # Check Machine ID of file 
+  
         
-        existing.machine <- db.query(paste0("SELECT * from machines where id  = '", 
-                                   existing.dbfile$machine_id, "'"), con)
-        
-        if(existing.machine$hostname != host$name){
-          logger.error("Valid ID does not have valid file associated with it. Will download all dates of valid Input and insert file record into existing input")
-      
-          insert.new.file <- TRUE
-        }
         
         # Convert dates to Date objects and strip all time zones
         # (DB values are timezone-free)
@@ -187,11 +179,31 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         } else if ((start_date >= existing.input$start_date) &&
                    (end_date <= existing.input$end_date)) {
           
-        
-         if (insert.new.file == FALSE){ # There's an existing input that spans desired start/end dates. Use that one.
-            logger.info("Skipping this input conversion because files are already available.")
-            return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
-           }
+                
+            
+                  #Grab machine info of file that exists
+                  existing.machine <- db.query(paste0("SELECT * from machines where id  = '", 
+                                              existing.dbfile$machine_id, "'"), con)
+          
+                  #Grab machine info of 
+                  machine.host <- ifelse(host$name == "localhost", fqdn(), host$name)
+                  machine <- db.query(paste0("SELECT * from machines where hostname = '", 
+                                      machine.host, "'"), con)
+          
+                   if(existing.machine$id != machine$id){
+                     
+                      logger.info("Valid Input record found that spans desired dates, but valid files do not exist on this machine.")
+                      logger.info("Downloading all years of Valid input to ensure consistency")
+                      insert.new.file <- TRUE
+                      start_date <- existing.input$start_date
+                      end_date   <- existing.input$end_date
+                      
+                      }else{
+                      
+                         # There's an existing input that spans desired start/end dates with files on this machine
+                          logger.info("Skipping this input conversion because files are already available.")
+                          return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
+                    }
           
          } else {
           # Start/end dates need to be updated so that the input spans a continuous
@@ -390,7 +402,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   if (write) {
     if (exists("existing.input") && nrow(existing.input) > 0 && 
         (existing.input$start_date != start_date || existing.input$end_date != end_date)) {
-      
+      # Updating record with new dates
       db.query(paste0("UPDATE inputs SET start_date='", start_date, "', end_date='", 
                       end_date, "', ", "updated_at=NOW() WHERE id=", existing.input$id), 
                con)
@@ -418,17 +430,31 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     
     if(exact.dates){allow.conflicting.dates <- FALSE}
     
-    newinput <- dbfile.input.insert(in.path = dirname(result$file[1]), 
-                                    in.prefix = result$dbfile.name[1], 
-                                    siteid = site.id, 
-                                    startdate = start_date,
-                                    enddate = end_date, 
-                                    mimetype, 
-                                    formatname, 
-                                    parentid = parent.id,
-                                    con = con, 
-                                    hostname = machine$hostname,
-                                    allow.conflicting.dates = allow.conflicting.dates)
+    
+    if(insert.new.file){
+      
+      dbfile.id <- dbfile.insert(in.path, in.prefix, 
+                                 'Input', existing.input$id, 
+                                 con, reuse=TRUE, hostname)
+      
+      newinput <- list()
+      newinput$input.id  <- existing.input$id
+      newinput$dbfile.id <- dbfile.id
+      
+    }else{
+      newinput <- dbfile.input.insert(in.path = dirname(result$file[1]), 
+                                      in.prefix = result$dbfile.name[1], 
+                                      siteid = site.id, 
+                                      startdate = start_date,
+                                      nddate = end_date, 
+                                      mimetype, 
+                                      formatname, 
+                                      parentid = parent.id,
+                                      con = con, 
+                                      hostname = machine$hostname,
+                                      allow.conflicting.dates = allow.conflicting.dates)
+      
+    }
 
     
     successful <- TRUE
