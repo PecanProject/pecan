@@ -1,0 +1,35 @@
+###  FATES BCI PDA
+
+```
+<assim.batch>
+  <method>emulator</method>
+  <n.knot>30</n.knot>
+  <iter>10000</iter>
+  <chain>3</chain>
+  <param.names>
+    <broadleaf_evergreen_tropical_tree>                                      
+      <param>growth_resp_factor</param>
+      <param>agf_bs</param>
+    </broadleaf_evergreen_tropical_tree> 
+  </param.names>
+  <jump>
+    <adapt>100</adapt>
+    <adj.min>0.1</adj.min>
+    <ar.target>0.3</ar.target>
+  </jump>
+  <inputs>
+    <file>
+      <path>
+        <path>/fs/data1/pecan.data/input/ForestGEO_BCI_summary/BCI_AGB.csv</path>
+      </path>
+      <format>ForestGEO_timeseries</format>
+      <input.id>1000011171</input.id>
+      <likelihood>Gaussian</likelihood>
+      <variable.name>
+        <variable.name>AbvGrndWood</variable.name>
+      </variable.name>
+      <variable.id>1000000132</variable.id>
+    </file>
+  </inputs>
+</assim.batch>
+```
