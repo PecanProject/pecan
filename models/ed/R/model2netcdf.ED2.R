@@ -17,17 +17,15 @@
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
+##' @importFrom ncdf4 ncdim_def
+##' @importFrom ncdf4 ncatt_get
+##' @importFrom ncdf4 ncvar_add
+##' @importFrom PEcAn.utils logger.info
 ##' @export
 ##'
 ##' @author Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari
 ## modified M. Dietze 07/08/12 modified S. Serbin 05/06/13
 model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
-  
-  # Load functions
-  ncdim_def <- ncdf4::ncdim_def
-  ncatt_get <- ncdf4::ncatt_get
-  ncvar_add <- ncdf4::ncvar_add
-  logger.info <- PEcAn.utils::logger.info
   
   flist <- dir(outdir, "-T-")
   if (length(flist) == 0) {

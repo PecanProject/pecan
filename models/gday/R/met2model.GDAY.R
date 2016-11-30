@@ -28,6 +28,9 @@
 ##' @param verbose should the function be very verbose
 ##'
 ##' @author Martin De Kauwe
+##' @importFrom ncdf4 ncvar_get
+##' @importFrom ncdf4 ncdim_def
+##' @importFrom ncdf4 ncatt_get
 met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date, 
                            overwrite = FALSE, verbose = FALSE, ...) {
   
@@ -86,10 +89,6 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
   # Create an empty holder for each (hour)days translated met file
   out <- NULL
 
-  ncvar_get <- ncdf4::ncvar_get
-  ncdim_def <- ncdf4::ncdim_def
-  ncatt_get <- ncdf4::ncatt_get
-  
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
   

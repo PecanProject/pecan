@@ -8,17 +8,13 @@
 ##' @export 
 ##' 
 ##' @author Betsy Cowdery 
-
-
+##' @importFrom dplyr tbl
+##' @importFrom dplyr filter
+##' @importFrom dplyr rename
+##' @importFrom dplyr collect
+##' @importFrom dplyr select
 read_settings_BRR <- function(settings){
-  
-  # dplyr functions
-  tbl     <- dplyr::tbl
-  filter  <- dplyr::filter
-  rename  <- dplyr::rename
-  collect <- dplyr::collect
-  select  <- dplyr::select
-  
+
   # Check database connection
   if (is.null(settings$database$bety)) {
     PEcAn.utils::logger.info("No databasse connection, can't get run information.")

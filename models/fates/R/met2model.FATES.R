@@ -21,6 +21,10 @@
 ##' @param lst timezone offset to GMT in hours
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbosefor(year in start_year:end_year)
+##' @importFrom ncdf4 ncvar_get
+##' @importFrom ncdf4 ncdim_def
+##' @importFrom ncdf4 ncatt_get
+##' @importFrom ncdf4 ncvar_put
 met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat, lon, 
                             overwrite = FALSE, verbose = FALSE, ...) {
   
@@ -31,11 +35,6 @@ met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date,
   # defining temporal dimension needs to be figured out. If we configure FATES to use same tstep then we may not need to change dimensions  
   
   library(PEcAn.utils)
-  
-  ncvar_get <- ncdf4::ncvar_get
-  ncdim_def <- ncdf4::ncdim_def
-  ncatt_get <- ncdf4::ncatt_get
-  ncvar_put <- ncdf4::ncvar_put
   
   insert <- function(ncout, name, unit, data) {
     var   <- ncdf4::ncvar_def(name = name, units = unit, dim = dim, missval = -6999, verbose = verbose)

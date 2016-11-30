@@ -30,6 +30,10 @@
 ##' @param lst timezone offset to GMT in hours
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
+##' @importFrom ncdf4 ncvar_get
+##' @importFrom ncdf4 ncdim_def
+##' @importFrom ncdf4 ncatt_get
+##' @importFrom ncdf4 ncvar_add
 met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat = NA, 
                           lon = NA, overwrite = FALSE, verbose = FALSE, ...) {
   overwrite <- as.logical(overwrite)
@@ -37,13 +41,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   # deprecated?  
   library(rhdf5)
   library(PEcAn.utils)
-  #
 
-  ncvar_get <- ncdf4::ncvar_get
-  ncdim_def <- ncdf4::ncdim_def
-  ncatt_get <- ncdf4::ncatt_get
-  ncvar_add <- ncdf4::ncvar_add
-  
   # results are stored in folder prefix.start.end
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")

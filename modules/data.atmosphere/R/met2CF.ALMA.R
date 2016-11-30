@@ -22,18 +22,17 @@ insertPmet <- function(vals, nc2, var2, dim2, units2 = NA, conv = NULL,
 ##' @param overwrite should existing files be overwritten
 ##' 
 ##' @author Mike Dietze
+##' @importFrom ncdf4 ncvar_get
+##' @importFrom ncdf4 ncdim_def
+##' @importFrom ncdf4 ncatt_get
+##' @importFrom ncdf4 ncvar_add
+##' @importFrom ncdf4 ncvar_put
 met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, lat, lon, overwrite = FALSE, 
                           verbose = FALSE, ...) {
   
   #---------------- Load libraries. -----------------------------------------------------------------#
   library(PEcAn.utils)
   #--------------------------------------------------------------------------------------------------#  
-  
-  ncvar_get <- ncdf4::ncvar_get
-  ncdim_def <- ncdf4::ncdim_def
-  ncatt_get <- ncdf4::ncatt_get
-  ncvar_add <- ncdf4::ncvar_add
-  ncvar_put <- ncdf4::ncvar_put
   
   # get start/end year code works on whole years only
   start_year <- lubridate::year(start_date)
@@ -203,14 +202,13 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
 ##' @param overwrite should existing files be overwritten
 ##' 
 ##' @author Mike Dietze
+##' @importFrom ncdf4 ncvar_get
+##' @importFrom ncdf4 ncdim_def
+##' @importFrom ncdf4 ncatt_get
+##' @importFrom ncdf4 ncvar_add
+##' @importFrom ncdf4 ncvar_put
 met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite = FALSE, verbose = FALSE) {
 
-  ncvar_get <- ncdf4::ncvar_get
-  ncdim_def <- ncdf4::ncdim_def
-  ncatt_get <- ncdf4::ncatt_get
-  ncvar_add <- ncdf4::ncvar_add
-  ncvar_put <- ncdf4::ncvar_put
-  
   # get start/end year code works on whole years only
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)

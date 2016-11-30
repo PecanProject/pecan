@@ -21,6 +21,8 @@
 ##' @export
 ##'
 ##' @author Ann Raiho, Betsy Cowdery
+##' @importFrom ncdf4 ncdim_def
+##' @importFrom ncdf4 ncvar_def
 model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, end_date = NULL, force = FALSE) {
   # , PFTs) { logger.severe('NOT IMPLEMENTED')
   
@@ -68,7 +70,6 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
     output[[14]] <- water[y, ]  #soil moisture
     
     # ******************** Declare netCDF variables ********************#
-    ncdim_def <- ncdf4::ncdim_def
     dim.t <- ncdim_def(name = "time", 
                        units = paste0("days since ", years[y], "-01-01 00:00:00"), 
                        vals = as.numeric(years[y]), calendar = "standard", 
@@ -86,7 +87,6 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
     }
     
     var <- list()
-    ncvar_def <- ncdf4::ncvar_def
     var[[1]]  <- ncvar_def("AGB", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
     var[[2]]  <- ncvar_def("TotLivBiomass", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
     var[[3]]  <- ncvar_def("TotSoilCarb", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
