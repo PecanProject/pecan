@@ -25,6 +25,7 @@
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 ##' @author Istem Fer
+##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get
 met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_date, 
                                overwrite = FALSE, verbose = FALSE, ...) {
   
@@ -73,10 +74,6 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   ## open netcdf files
   ncin <- lapply(file.path(in.path, paste(in.prefix, year, "nc", sep = ".")), ncdf4::nc_open)
   
-  ncvar_get <- ncdf4::ncvar_get
-  ncdim_def <- ncdf4::ncdim_def
-  ncatt_get <- ncdf4::ncatt_get
-
   ## retrieve lat/lon
   lon <- ncvar_get(ncin[[1]], "longitude")
   lat <- ncvar_get(ncin[[1]], "latitude")

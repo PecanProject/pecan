@@ -5,12 +5,12 @@
 \title{Execute command remotely}
 \usage{
 remote.execute.R(script, host = "localhost", user = NA, verbose = FALSE,
-  R = "R")
+  R = "R", scratchdir = "/tmp")
 }
 \arguments{
 \item{script}{the script to be invoked, as a list of commands.}
 
-\item{host}{host to execute command on}
+\item{host}{settings host list}
 
 \item{user}{the username to use for remote login}
 

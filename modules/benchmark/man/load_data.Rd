@@ -5,7 +5,7 @@
 \title{load_data}
 \usage{
 load_data(data.path, format, start_year = NA, end_year = NA, site = NA,
-  vars.used.index, time.row = NULL)
+  vars.used.index = NULL, time.row = NULL)
 }
 \arguments{
 \item{data.path}{character}
