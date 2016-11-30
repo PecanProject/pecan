@@ -21,9 +21,9 @@
 ##'
 start.model.runs <- function(settings, write = TRUE) {
   model <- settings$model$type
-  logger.info("-------------------------------------------------------------------")
-  logger.info(paste(" Starting model runs", model))
-  logger.info("-------------------------------------------------------------------")
+  PEcAn.utils::logger.info("-------------------------------------------------------------------")
+  PEcAn.utils::logger.info(paste(" Starting model runs", model))
+  PEcAn.utils::logger.info("-------------------------------------------------------------------")
   
   # loop through runs and either call start run, or launch job on remote machine
   jobids <- list()
@@ -45,6 +45,12 @@ start.model.runs <- function(settings, write = TRUE) {
   launcherfile <- NULL
   jobfile <- NULL
   firstrun <- NULL
+  
+  # check if runs need to be done
+  if(!file.exists(file.path(settings$rundir, "runs.txt"))){
+    PEcAn.utils::logger.warn("runs.txt not found, assuming no runs need to be done")
+    return()
+  }
   
   # launch each of the jobs
   for (run in readLines(con = file.path(settings$rundir, "runs.txt"))) {
@@ -123,7 +129,7 @@ start.model.runs <- function(settings, write = TRUE) {
         
         # check output to see if an error occurred during the model run
         if ("ERROR IN MODEL RUN" %in% out) {
-          logger.severe("Model run aborted, with error.\n", out)
+          PEcAn.utils::logger.severe("Model run aborted, with error.\n", out)
         }
         
         # copy data back to local
@@ -196,7 +202,7 @@ start.model.runs <- function(settings, write = TRUE) {
       
       # check output to see if an error occurred during the model run
       if ("ERROR IN MODEL RUN" %in% out) {
-        logger.severe("Model run aborted, with error.\n", out)
+        PEcAn.utils::logger.severe("Model run aborted, with error.\n", out)
       }
       
       # write finished time to database
@@ -214,7 +220,7 @@ start.model.runs <- function(settings, write = TRUE) {
   
   # wait for all qsub jobs to finish
   if (length(jobids) > 0) {
-    logger.debug("Waiting for the following jobs:", unlist(jobids, use.names = FALSE))
+    PEcAn.utils::logger.debug("Waiting for the following jobs:", unlist(jobids, use.names = FALSE))
     while (length(jobids) > 0) {
       Sys.sleep(10)
       for (run in names(jobids)) {
@@ -234,7 +240,7 @@ start.model.runs <- function(settings, write = TRUE) {
         
         if ((length(out) > 0) && (substring(out, nchar(out) - 3) == "DONE")) 
         {
-          logger.debug("Job", jobids[run], "for run", format(run, scientific = FALSE), 
+          PEcAn.utils::logger.debug("Job", jobids[run], "for run", format(run, scientific = FALSE), 
                        "finished")
           jobids[run] <- NULL
           
