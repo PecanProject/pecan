@@ -21,10 +21,7 @@
 ##' @param lst timezone offset to GMT in hours
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbosefor(year in start_year:end_year)
-##' @importFrom ncdf4 ncvar_get
-##' @importFrom ncdf4 ncdim_def
-##' @importFrom ncdf4 ncatt_get
-##' @importFrom ncdf4 ncvar_put
+##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_put
 met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat, lon, 
                             overwrite = FALSE, verbose = FALSE, ...) {
   

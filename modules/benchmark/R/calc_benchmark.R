@@ -8,11 +8,7 @@
 ##' @export 
 ##' 
 ##' @author Betsy Cowdery 
-##' @importFrom dplyr tbl
-##' @importFrom dplyr filter
-##' @importFrom dplyr rename
-##' @importFrom dplyr collect
-##' @importFrom dplyr select
+##' @importFrom dplyr tbl filter rename collect select
 calc_benchmark <- function(settings, bety) {
   
   # Update benchmarks_ensembles and benchmarks_ensembles_scores tables

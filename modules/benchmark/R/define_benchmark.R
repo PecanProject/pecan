@@ -5,11 +5,7 @@
 ##' @return updated settings list
 ##' @author Betsy Cowdery
 ##' @export 
-##' @importFrom dplyr tbl
-##' @importFrom dplyr filter
-##' @importFrom dplyr rename
-##' @importFrom dplyr collect
-##' @importFrom dplyr select
+##' @importFrom dplyr tbl filter rename collect select
 define_benchmark <- function(bm.settings, bety){
   
   if (is.MultiSettings(bm.settings)) {

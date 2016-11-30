@@ -85,10 +85,8 @@ convert.samples.MAAT <- function(trait.samples) {
 ##' @return configuration file for MAAT for given run
 ##' @export
 ##' @author Shawn Serbin, Anthony Walker, Rob Kooper
-##' @importFrom PEcAn.utils listToXml
-##' @importFrom XML saveXML
-##' @importFrom XML addChildren
-##' @importFrom PEcAn.utils logger.info
+##' @importFrom PEcAn.utils listToXml logger.info
+##' @importFrom XML saveXML addChildren
 write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   
   # find out where to write run/ouput

@@ -21,10 +21,7 @@
 ##' @export
 ##'
 ##' @author Michael Dietze, Shawn Serbin
-##' @importFrom ncdf4 ncdim_def
-##' @importFrom ncdf4 ncvar_def
-##' @importFrom ncdf4 ncatt_get
-##' @importFrom ncdf4 ncvar_add
+##' @importFrom ncdf4 ncdim_def ncvar_def ncatt_get ncvar_add
 model2netcdf.FATES <- function(outdir) {
 
 #    misc.convert <- PEcAn.utils::misc.convert # unit conversions

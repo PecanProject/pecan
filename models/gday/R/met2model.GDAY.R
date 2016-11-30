@@ -28,9 +28,7 @@
 ##' @param verbose should the function be very verbose
 ##'
 ##' @author Martin De Kauwe
-##' @importFrom ncdf4 ncvar_get
-##' @importFrom ncdf4 ncdim_def
-##' @importFrom ncdf4 ncatt_get
+##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get
 met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date, 
                            overwrite = FALSE, verbose = FALSE, ...) {
   

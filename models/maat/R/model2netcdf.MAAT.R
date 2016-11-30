@@ -28,9 +28,8 @@
 ##' 
 ##' @export
 ##' @author Shawn Serbin, Anthony Walker
-##' @importFrom PEcAn.utils misc.convert
+##' @importFrom PEcAn.utils misc.convert mstmipvar
 ##' @importFrom ncdf4 ncdim_def
-##' @importFrom PEcAn.utils mstmipvar
 model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date = NULL, end_date = NULL) {
 
   ## TODO !!UPDATE SO IT WILL WORK WITH NO MET AND WITH MET DRIVER!!

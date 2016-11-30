@@ -21,8 +21,7 @@
 ##' @export
 ##'
 ##' @author Ann Raiho, Betsy Cowdery
-##' @importFrom ncdf4 ncdim_def
-##' @importFrom ncdf4 ncvar_def
+##' @importFrom ncdf4 ncdim_def ncvar_def
 model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, end_date = NULL, force = FALSE) {
   # , PFTs) { logger.severe('NOT IMPLEMENTED')
   

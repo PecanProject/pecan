@@ -17,9 +17,7 @@
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
-##' @importFrom ncdf4 ncdim_def
-##' @importFrom ncdf4 ncatt_get
-##' @importFrom ncdf4 ncvar_add
+##' @importFrom ncdf4 ncdim_def ncatt_get ncvar_add
 ##' @importFrom PEcAn.utils logger.info
 ##' @export
 ##'

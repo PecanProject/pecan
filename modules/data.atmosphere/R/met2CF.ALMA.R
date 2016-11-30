@@ -22,11 +22,7 @@ insertPmet <- function(vals, nc2, var2, dim2, units2 = NA, conv = NULL,
 ##' @param overwrite should existing files be overwritten
 ##' 
 ##' @author Mike Dietze
-##' @importFrom ncdf4 ncvar_get
-##' @importFrom ncdf4 ncdim_def
-##' @importFrom ncdf4 ncatt_get
-##' @importFrom ncdf4 ncvar_add
-##' @importFrom ncdf4 ncvar_put
+##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_add ncvar_put
 met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, lat, lon, overwrite = FALSE, 
                           verbose = FALSE, ...) {
   
@@ -202,11 +198,7 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
 ##' @param overwrite should existing files be overwritten
 ##' 
 ##' @author Mike Dietze
-##' @importFrom ncdf4 ncvar_get
-##' @importFrom ncdf4 ncdim_def
-##' @importFrom ncdf4 ncatt_get
-##' @importFrom ncdf4 ncvar_add
-##' @importFrom ncdf4 ncvar_put
+##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_add ncvar_put
 met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite = FALSE, verbose = FALSE) {
 
   # get start/end year code works on whole years only

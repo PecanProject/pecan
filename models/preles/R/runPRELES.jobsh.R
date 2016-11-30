@@ -16,8 +16,7 @@
 ##' @param end_date End time of the simulation
 ##' @export 
 ##' @author Tony Gardella, Michael Dietze
-##' @importFrom ncdf4 ncvar_get
-##' @importFrom ncdf4 ncvar_def
+##' @importFrom ncdf4 ncvar_get ncvar_def
 runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, start.date, end.date) {
   
   library(PEcAn.data.atmosphere)

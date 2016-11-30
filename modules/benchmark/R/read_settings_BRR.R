@@ -8,11 +8,7 @@
 ##' @export 
 ##' 
 ##' @author Betsy Cowdery 
-##' @importFrom dplyr tbl
-##' @importFrom dplyr filter
-##' @importFrom dplyr rename
-##' @importFrom dplyr collect
-##' @importFrom dplyr select
+##' @importFrom dplyr tbl filter rename collect select
 read_settings_BRR <- function(settings){
 
   # Check database connection
