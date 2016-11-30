@@ -80,6 +80,13 @@ getLatLon <- function(nc1) {
 ##' @param verbose should ouput of function be extra verbose
 ##' 
 ##' @author Josh Mantooth, Mike Dietze, Elizabeth Cowdery, Ankur Desai
+##' @importFrom ncdf4 ncvar_get
+##' @importFrom ncdf4 ncatt_get
+##' @importFrom ncdf4 ncdim_def
+##' @importFrom ncdf4 ncvar_def
+##' @importFrom ncdf4 ncvar_add
+##' @importFrom ncdf4 ncvar_put
+##' @importFrom ncdf4 ncatt_put
 met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date,
                              overwrite = FALSE, verbose = FALSE, ...) {
   
@@ -87,14 +94,6 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
   library(PEcAn.utils)
   library(geonames)  ## has to be loaded as a library
   #--------------------------------------------------------------------------------------------------#  
-  
-  ncvar_get <- ncdf4::ncvar_get
-  ncatt_get <- ncdf4::ncatt_get
-  ncdim_def <- ncdf4::ncdim_def
-  ncvar_def <- ncdf4::ncvar_def
-  ncvar_add <- ncdf4::ncvar_add
-  ncvar_put <- ncdf4::ncvar_put
-  ncatt_put <- ncdf4::ncatt_put
   
   # get start/end year code works on whole years only
   start_year <- lubridate::year(start_date)

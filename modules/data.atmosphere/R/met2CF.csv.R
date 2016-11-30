@@ -40,14 +40,13 @@
 ##' end_date <- ymd_hm('200412312330')
 ##' PEcAn.data.atmosphere::met2CF.csv(in.path,in.prefix,outfolder,start_date,end_date,format,overwrite=TRUE)
 ##' }
+##' @importFrom ncdf4 ncvar_get
+##' @importFrom ncdf4 ncdim_def
+##' @importFrom ncdf4 ncvar_add
+##' @importFrom ncdf4 ncvar_put
 met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, format, lat = NULL, lon = NULL, 
                        nc_verbose = FALSE, overwrite = FALSE, ...) {
   library(PEcAn.utils)
-  
-  ncvar_get <- ncdf4::ncvar_get
-  ncdim_def <- ncdf4::ncdim_def
-  ncvar_add <- ncdf4::ncvar_add
-  ncvar_put <- ncdf4::ncvar_put
   
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)

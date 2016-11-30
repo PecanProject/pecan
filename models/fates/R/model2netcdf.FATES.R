@@ -21,13 +21,12 @@
 ##' @export
 ##'
 ##' @author Michael Dietze, Shawn Serbin
+##' @importFrom ncdf4 ncdim_def
+##' @importFrom ncdf4 ncvar_def
+##' @importFrom ncdf4 ncatt_get
+##' @importFrom ncdf4 ncvar_add
 model2netcdf.FATES <- function(outdir) {
 
-    ## Load functions
-    ncdim_def <- ncdf4::ncdim_def
-    ncvar_def <- ncdf4::ncvar_def
-    ncatt_get <- ncdf4::ncatt_get
-    ncvar_add <- ncdf4::ncvar_add
 #    misc.convert <- PEcAn.utils::misc.convert # unit conversions
     logger.info <- PEcAn.utils::logger.info
     logger.severe <- PEcAn.utils::logger.severe
