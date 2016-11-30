@@ -8,17 +8,9 @@
 ##' @export 
 ##' 
 ##' @author Betsy Cowdery 
-
+##' @importFrom dplyr tbl filter rename collect select
 calc_benchmark <- function(settings, bety) {
   
-  # dplyr functions
-  tbl     <- dplyr::tbl
-  filter  <- dplyr::filter
-  rename  <- dplyr::rename
-  collect <- dplyr::collect
-  select  <- dplyr::select
-  
-  # --------------------------------------------------------------------------------------------- #
   # Update benchmarks_ensembles and benchmarks_ensembles_scores tables
   
   ensemble <- tbl(bety,'ensembles') %>% filter(workflow_id == settings$workflow$id) %>% collect()
@@ -45,7 +37,7 @@ calc_benchmark <- function(settings, bety) {
   # --------------------------------------------------------------------------------------------- #
   # Setup
   
-  site <- query.site(settings$run$site$id, bety$con)
+  site <- PEcAn.DB::query.site(settings$run$site$id, bety$con)
   start_year <- lubridate::year(settings$run$start.date)
   end_year <- lubridate::year(settings$run$end.date)
   model_run <- dir(settings$modeloutdir, full.names = TRUE, include.dirs = TRUE)[1]
@@ -71,8 +63,8 @@ calc_benchmark <- function(settings, bety) {
   for (input.id in unique(bms$input_id)) {
     
     bm.ids <- bms$benchmark_id[which(bms$input_id == input.id)]
-    data.path <- query.file.path(input.id, settings$host$name, bety$con)
-    format_full <- format <- query.format.vars(input.id = input.id, bety, format.id = NA, var.ids=var.ids)
+    data.path <- PEcAn.DB::query.file.path(input.id, settings$host$name, bety$con)
+    format_full <- format <- PEcAn.DB::query.format.vars(input.id = input.id, bety, format.id = NA, var.ids=var.ids)
     
     # ---- LOAD INPUT DATA ---- #
     
@@ -101,13 +93,19 @@ calc_benchmark <- function(settings, bety) {
     # Make a column of years to supplement the column of days of the year.
     years <- start_year:end_year
     Diff <- diff(model$time)
-    n <- model$time[c(which(Diff < 0), length(model$time))]
-    y <- c()
-    for (i in seq_along(n)) {
-      y <- c(y, rep(years[i], n[i]))
-    }
-    model$year <- y
-    model$posix <- strptime(paste(model$time, model$year), format = "%j %Y")
+    time_breaks = which(Diff < 0)
+    if(length(time_breaks) == 0 & length(years)>1){
+      ## continuous time
+      model$year <- rep(years,each=round(365/median(Diff)))
+      model$posix <- as.POSIXct(model$time*86400,origin=settings$run$start.date,tz="UTC")
+    } else {
+      n <- model$time[c(time_breaks, length(model$time))]
+      y <- c()
+      for (i in seq_along(n)) {
+        y <- c(y, rep(years[i], n[i]))
+      }
+      model$year <- y
+    } 
     model_full <- model
     
     # ---- CALCULATE BENCHMARK SCORES ---- #
@@ -126,6 +124,7 @@ calc_benchmark <- function(settings, bety) {
       var.list <- c(var.list, var)
       
       obvs.calc <- obvs_full %>% select(., one_of(c("posix", var)))
+      obvs.calc[,var] <- as.numeric(obvs.calc[,var])
       model.calc <- model_full %>% select(., one_of(c("posix", var)))
       
       # TODO: If the scores have already been calculated, don't redo
