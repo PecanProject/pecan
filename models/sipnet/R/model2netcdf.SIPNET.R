@@ -102,38 +102,38 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     }
     
     mstmipvar <- PEcAn.utils::mstmipvar
-    var <- list()
-    var[[1]]  <- mstmipvar("Year", lat, lon, t, NA)
-    var[[2]]  <- mstmipvar("FracJulianDay", lat, lon, t, NA)
-    var[[3]]  <- mstmipvar("GPP", lat, lon, t, NA)
-    var[[4]]  <- mstmipvar("NPP", lat, lon, t, NA)
-    var[[5]]  <- mstmipvar("TotalResp", lat, lon, t, NA)
-    var[[6]]  <- mstmipvar("AutoResp", lat, lon, t, NA)
-    var[[7]]  <- mstmipvar("HeteroResp", lat, lon, t, NA)
-    var[[8]]  <- ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
+    nc_var <- list()
+    nc_var[[1]]  <- mstmipvar("Year", lat, lon, t, NA)
+    nc_var[[2]]  <- mstmipvar("FracJulianDay", lat, lon, t, NA)
+    nc_var[[3]]  <- mstmipvar("GPP", lat, lon, t, NA)
+    nc_var[[4]]  <- mstmipvar("NPP", lat, lon, t, NA)
+    nc_var[[5]]  <- mstmipvar("TotalResp", lat, lon, t, NA)
+    nc_var[[6]]  <- mstmipvar("AutoResp", lat, lon, t, NA)
+    nc_var[[7]]  <- mstmipvar("HeteroResp", lat, lon, t, NA)
+    nc_var[[8]]  <- ncdf4::ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
                           longname = "Soil Respiration")
-    var[[9]]  <- mstmipvar("NEE", lat, lon, t, NA)
-    # var[[9]] <- mstmipvar('CarbPools', lat, lon, t, NA)
-    var[[10]] <- mstmipvar("AbvGrndWood", lat, lon, t, NA)
-    var[[11]] <- mstmipvar("LeafC", lat, lon, t, NA)
-    var[[12]] <- mstmipvar("TotLivBiom", lat, lon, t, NA)
-    var[[13]] <- mstmipvar("TotSoilCarb", lat, lon, t, NA)
-    var[[14]] <- mstmipvar("Qle", lat, lon, t, NA)
-    var[[15]] <- mstmipvar("TVeg", lat, lon, t, NA)
-    var[[16]] <- mstmipvar("SoilMoist", lat, lon, t, NA)
-    var[[17]] <- mstmipvar("SoilMoistFrac", lat, lon, t, NA)
-    var[[18]] <- mstmipvar("SWE", lat, lon, t, NA)
-    var[[19]] <- mstmipvar("Litter", lat, lon, t, NA)
+    nc_var[[9]]  <- mstmipvar("NEE", lat, lon, t, NA)
+    # nc_var[[9]] <- mstmipvar('CarbPools', lat, lon, t, NA)
+    nc_var[[10]] <- mstmipvar("AbvGrndWood", lat, lon, t, NA)
+    nc_var[[11]] <- mstmipvar("LeafC", lat, lon, t, NA)
+    nc_var[[12]] <- mstmipvar("TotLivBiom", lat, lon, t, NA)
+    nc_var[[13]] <- mstmipvar("TotSoilCarb", lat, lon, t, NA)
+    nc_var[[14]] <- mstmipvar("Qle", lat, lon, t, NA)
+    nc_var[[15]] <- mstmipvar("TVeg", lat, lon, t, NA)
+    nc_var[[16]] <- mstmipvar("SoilMoist", lat, lon, t, NA)
+    nc_var[[17]] <- mstmipvar("SoilMoistFrac", lat, lon, t, NA)
+    nc_var[[18]] <- mstmipvar("SWE", lat, lon, t, NA)
+    nc_var[[19]] <- mstmipvar("Litter", lat, lon, t, NA)
     
     # ******************** Declare netCDF variables ********************#
     
     ### Output netCDF data
-    nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc      <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
-    for (i in seq_along(var)) {
+    for (i in seq_along(nc_var)) {
       # print(i)
-      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
-      cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
+      ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
+      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
     ncdf4::nc_close(nc)

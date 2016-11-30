@@ -169,6 +169,6 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
   ## write output
   write.table(out, out.file.full, quote = FALSE, sep = " ", row.names = FALSE, col.names = FALSE)
   
-  invisible(results)
+  return(invisible(results))
   
 } # met2model.DALEC

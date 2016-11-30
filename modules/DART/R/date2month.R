@@ -10,5 +10,5 @@ days2month <- function(days) {
   }
   
   day <- days - ec[month]
-  c(day, month)
+  return(c(day, month))
 } # days2month

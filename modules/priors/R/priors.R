@@ -172,7 +172,7 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
 ##' @export
 ##' @seealso \{code{\link{get.sample}}
 pr.samp <- function(distn, parama, paramb, n) {
-  do.call(paste0("r", distn), list(n, parama, paramb))
+  return(do.call(paste0("r", distn), list(n, parama, paramb)))
 } # pr.samp
 
 
@@ -187,13 +187,12 @@ pr.samp <- function(distn, parama, paramb, n) {
 ##' @seealso \link{pr.samp}
 ##' @export
 get.sample <- function(prior, n) {
-  print(paste("get.sample", prior$distn))
   if (as.character(prior$distn) %in% c("exp", "pois", "geom")) {
     ## one parameter distributions
-    do.call(paste0("r", prior$distn), list(n, prior$parama))
+    return(do.call(paste0("r", prior$distn), list(n, prior$parama)))
   } else {
     ## two parameter distributions
-    do.call(paste0("r", prior$distn), list(n, prior$parama, prior$paramb))
+    return(do.call(paste0("r", prior$distn), list(n, prior$parama, prior$paramb)))
   }
 } # get.sample
 

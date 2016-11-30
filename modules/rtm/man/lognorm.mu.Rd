@@ -2,9 +2,14 @@
 % Please edit documentation in R/prior.R
 \name{lognorm.mu}
 \alias{lognorm.mu}
-\title{Functions for default priors}
+\title{Lognormal mean parameters}
 \usage{
 lognorm.mu(mean, sd)
+}
+\arguments{
+\item{mean}{Sample mean}
+
+\item{sd}{Sample standard deviation}
 }
 \description{
 Functions for default priors

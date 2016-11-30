@@ -9,11 +9,12 @@ Description: This package contains functions for performing forward runs and
     inversions of radiative transfer models (RTMs). Inversions can be performed
     using maximum likelihood, or more complex hierarchical Bayesian methods.
     Underlying numerical analyses are optimized for speed using Fortran code.
-Depends:
-    MASS
 Imports:
-    coda (>= 0.18),
-    lubridate (>= 1.6.0)
+    MASS,
+    coda,
+    lubridate (>= 1.6.0),
+    PEcAn.assim.batch,
+    Rcpp
 Suggests:
     minpack.lm,
     mclust,
@@ -26,5 +27,6 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
+LinkingTo: Rcpp
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1

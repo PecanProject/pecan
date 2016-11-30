@@ -33,9 +33,11 @@
 met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat = NA, 
                           lon = NA, overwrite = FALSE, verbose = FALSE, ...) {
   overwrite <- as.logical(overwrite)
-  
+
+  # deprecated?  
   library(rhdf5)
   library(PEcAn.utils)
+  #
 
   ncvar_get <- ncdf4::ncvar_get
   ncdim_def <- ncdf4::ncdim_def
@@ -157,7 +159,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     doy  <- NULL
     hr   <- NULL
     asec <- sec
-    for (y in (year + 1):(nyr - 1)) {
+    for (y in seq(year, year + nyr - 1)) {
       ytmp <- rep(y, 365 * 86400 / dt)
       dtmp <- rep(1:365, each = 86400 / dt)
       if (lubridate::leap_year(y)) {
@@ -329,5 +331,5 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   }  ### end loop over met files
   
   print("Done with met2model.ED2")
-  invisible(results)
+  return(invisible(results))
 } # met2model.ED2
