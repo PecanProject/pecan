@@ -21,13 +21,9 @@
 ##' @export
 ##'
 ##' @author Michael Dietze, Shawn Serbin
+##' @importFrom ncdf4 ncdim_def ncvar_def ncatt_get ncvar_add
 model2netcdf.FATES <- function(outdir) {
 
-    ## Load functions
-    ncdim_def <- ncdf4::ncdim_def
-    ncvar_def <- ncdf4::ncvar_def
-    ncatt_get <- ncdf4::ncatt_get
-    ncvar_add <- ncdf4::ncvar_add
 #    misc.convert <- PEcAn.utils::misc.convert # unit conversions
     logger.info <- PEcAn.utils::logger.info
     logger.severe <- PEcAn.utils::logger.severe
@@ -105,6 +101,14 @@ model2netcdf.FATES <- function(outdir) {
         out <- NULL
         out <- var_update(out,"AR","AutoResp","kgC m-2 s-1")
         out <- var_update(out,"GPP","GPP","kgC m-2 s-1")
+        out <- var_update(out,"NPP_column","NPP","kgC m-2 s-1")
+        out <- var_update(out,"NEP","NEE","kgC m-2 s-1")
+        out <- var_update(out,"EFLX_LH_TOT","Qle","W m-2")
+        out <- var_update(out,"QVEGT","TVeg","mm s-1") ## equiv to std of kg m-2 s but don't trust udunits to get right
+        out <- var_update(out,"ED_biomass","AbvGrndWood","kgC m-2")
+        out <- var_update(out,"ED_bleaf","CarbPools","kgC m-2")
+        out <- var_update(out,"TSOI_10CM","SoilTemp","K")
+        
         ncdf4::nc_close(ncin)
         
         ## write netCDF data
