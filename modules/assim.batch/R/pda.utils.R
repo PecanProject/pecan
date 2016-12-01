@@ -256,12 +256,23 @@ pda.load.priors <- function(settings, con, path.flag = TRUE) {
     for (i in seq_along(settings$pfts)) {
       
       files <- dbfile.check("Posterior", settings$pfts[[i]]$posteriorid, con, settings$host$name)
+      
       pid <- grep("post.distns.*Rdata", files$file_name)  ## is there a posterior file?
       if (length(pid) == 0) {
         pid <- grep("prior.distns.Rdata", files$file_name)  ## is there a prior file?
       }
       if (length(pid) > 0) {
         prior.paths[[i]] <- file.path(files$file_path[pid], files$file_name[pid])
+      } else {
+        ## is there a posterior in the current workflow's PFT directory?
+        pft <- settings$pfts[[i]]
+        fname <- file.path(pft$outdir, "post.distns.Rdata")
+        if (file.exists(fname)) {
+          prior.paths[[i]] <- fname
+        } else {
+          ## if no posterior can be found, skip to the next PFT
+          next
+        }
       }
       load(prior.paths[[i]])
       if (!exists("post.distns")) {
@@ -589,7 +600,7 @@ pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn, pname) 
   probs <- matrix(0.5, nrow = n.knot, ncol = n.param.all)
   
   # Fill in parameters to be sampled with probabilities sampled in a LHC design
-  probs[, prior.ind] <- lhc(t(matrix(0:1, ncol = length(prior.ind), nrow = 2)), n.knot)
+  probs[, prior.ind] <- PEcAn.emulator::lhc(t(matrix(0:1, ncol = length(prior.ind), nrow = 2)), n.knot)
   
   # Convert probabilities to parameter values
   params <- NA * probs

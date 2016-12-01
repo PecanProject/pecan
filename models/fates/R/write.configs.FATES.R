@@ -19,12 +19,9 @@
 ##' @return none
 ##' @export
 ##' @author Mike Dietze
+##' @importFrom ncdf4 ncvar_put ncvar_get
 ##-------------------------------------------------------------------------------------------------#
 write.config.FATES <- function(defaults, trait.values, settings, run.id){
-
-   ## function references
-   ncvar_put <- ncdf4::ncvar_put
-   ncvar_get <- ncdf4::ncvar_get
 
    ## site information
    site <- settings$run$site
@@ -57,8 +54,8 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
 
    ## SITE INFO --> DOMAIN FILE (lat/lon)
    gridres = 0.125  ## ultimately this should be a variable
-   lat = site$lat
-   lon = (site$lon + 360) %% 360 ## make sure coords in 0-360 range, not negative
+   lat = as.numeric(site$lat)
+   lon = (as.numeric(site$lon) + 360) %% 360 ## make sure coords in 0-360 range, not negative
    domain.default <- system.file("domain.lnd.1x1pt-brazil_navy.090715.nc",package="PEcAn.FATES")
    domain.file <- file.path(local.rundir,paste0("domain.lnd.",site_name,".nc"))
    file.copy(domain.default,domain.file)
@@ -173,10 +170,18 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    npft <- length(trait.values)
    print(npft)
    print(dim(trait.values))
+   print(names(trait.values))
    pftnames <- stringr::str_trim(tolower(ncvar_get(param.nc,"pftname")))
    for (i in seq_len(npft)) {
      pft <- trait.values[[i]]
+     print(c("PFT",i))
+     PEcAn.utils::logger.info(pft)
      pft.name <- names(trait.values)[i]
+     if(is.null(pft.name) | is.na(pft.name)){
+       PEcAn.utils::logger.error("pft.name missing")
+     } else {
+       PEcAn.utils::logger.info(paste("PFT =",pft.name))
+     }
      if(pft.name == 'env') next   ## HACK, need to remove env from default
      
      ## Match PFT name to COLUMN
