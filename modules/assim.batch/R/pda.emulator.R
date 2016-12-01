@@ -128,11 +128,11 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   ## Run this block if this is a "round" extension
   if (run.round) {
       
-      # loads the priors used in the previous emulator run
+      # loads the posteriors of the the previous emulator run
       temp <- pda.load.priors(settings, con, extension.check = TRUE) 
       prior.list <- temp$prior
       
-      ## set prior distribution functions for prior of the previous emulator run
+      ## set prior distribution functions for posterior of the previous emulator run
       prior.fn <- lapply(prior.list, pda.define.prior.fn)
       
       ## Propose a percentage (if not specified 75%) of the new parameter knots from the posterior of the previous run
