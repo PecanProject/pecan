@@ -54,8 +54,8 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
 
    ## SITE INFO --> DOMAIN FILE (lat/lon)
    gridres = 0.125  ## ultimately this should be a variable
-   lat = site$lat
-   lon = (site$lon + 360) %% 360 ## make sure coords in 0-360 range, not negative
+   lat = as.numeric(site$lat)
+   lon = (as.numeric(site$lon) + 360) %% 360 ## make sure coords in 0-360 range, not negative
    domain.default <- system.file("domain.lnd.1x1pt-brazil_navy.090715.nc",package="PEcAn.FATES")
    domain.file <- file.path(local.rundir,paste0("domain.lnd.",site_name,".nc"))
    file.copy(domain.default,domain.file)
