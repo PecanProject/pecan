@@ -144,6 +144,9 @@ EOF
   	exit $STATUS
   fi
 
+# host specific post-run
+@HOST_TEARDOWN@
+
   #  convert output
   cp *clm2.h0.*.nc @OUTDIR@
   echo "library(PEcAn.FATES); model2netcdf.FATES('@OUTDIR@')" | R --vanilla
@@ -155,9 +158,6 @@ EOF
   # write tag so future execution knows run finished
   echo $(date) >> "@OUTDIR@/pecan.done"
 
-
-# host specific teardown
-@HOST_TEARDOWN@
 
 # all done
 echo -e "MODEL FINISHED\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3

@@ -30,21 +30,15 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
 ##' @param verbose should the function be very verbose
 ##' @export
 ##' @author Shawn P. Serbin
-##'
+##' @importFrom PEcAn.utils logger.debug logger.warn listToXml
+##' @importFrom udunits2 ud.convert
+##' @importFrom ncdf4 ncvar_get
+##' @importFrom XML saveXML
 met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
                            overwrite = FALSE, verbose = FALSE, ...) {
 
   ## MAAT driver format (.csv):
   ## Time (POSIX),  Air Temp (°C), PAR (umols m-2 s-1), Precipitation( ??), Atmospheric CO2 (μmol mol-1) ... # STILL IN DEVELOPMENT
-  
-  # Import functions
-  logger.debug <- PEcAn.utils::logger.debug
-  logger.warn <- PEcAn.utils::logger.warn
-  ud.convert <- udunits2::ud.convert
-  ncvar_get <- ncdf4::ncvar_get
-  listToXml <- PEcAn.utils::listToXml
-  saveXML <- XML::saveXML
-  
   
   print("START met2model.MAAT")
   
