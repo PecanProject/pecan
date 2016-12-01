@@ -267,14 +267,12 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     SS.list <- list()
     bc <- 1
     
-    # check failed runs and remove them if you'll have a reasonable amount of param sets after removal
     # what percentage of runs is allowed to fail?
     if(!is.null(settings$assim.batch$allow.fail)){
       allow.fail <- as.numeric(settings$assim.batch$allow.fail)
     } else {
       allow.fail <- 0.5
     }
-    
     # what is it in number of runs?
     no.of.allowed <- floor(settings$assim.batch$n.knot * allow.fail)
     
@@ -299,6 +297,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
           SS.list[[inputi]] <- cbind(X, error.statistics[[inputi]])
       } # if-block
         
+      # check failed runs and remove them if you'll have a reasonable amount of param sets after removal
       # how many runs failed?
       no.of.failed <- sum(is.na(SS.list[[inputi]][, ncol(SS.list[[inputi]])]))
       
