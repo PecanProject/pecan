@@ -15,7 +15,7 @@
 ##' @param pft string pft name
 ##' @param con database connection
 ##' @return string of species.id for species associated with pft
-##' @export
+##' @export query.pft_species
 ##' @author David LeBauer
 ##' @examples
 ##' \dontrun{

@@ -45,10 +45,10 @@ get.gi.phii <- function(splinefuns, trait.samples, maxn = NULL){
     stop('mismatch between splinefuns and samples')
   }
   traits <- names(splinefuns)
-     
+  
   ## g_i(phi_i) the spline estimate of model output for value of trait i
   gi.phii <- t(laply(traits, 
-                    function(x) splinefuns[[x]](trait.samples[,x])))
+                     function(x) splinefuns[[x]](trait.samples[,x])))
   colnames(gi.phii) <- traits
   return(gi.phii)
 }
@@ -79,5 +79,5 @@ vd.variance <- function(gi.phii){
   var.phii    <- apply(gi.phii, 2, var)
   sd.var.phii <- apply(gi.phii, 2, sd.var)
   return(list(var = sum(var.phii),
-         sd  = sqrt(sum(sd.var.phii^2))))
+              sd  = sqrt(sum(sd.var.phii^2))))
 }

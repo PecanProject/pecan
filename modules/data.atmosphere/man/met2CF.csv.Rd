@@ -4,36 +4,47 @@
 \alias{met2CF.csv}
 \title{met2CF.csv}
 \usage{
-met2CF.csv(in.path, in.file, outfolder, format, lat = NULL, lon = NULL,
-  nc_verbose = FALSE, ...)
+met2CF.csv(in.path, in.prefix, outfolder, start_date, end_date, format,
+  lat = NULL, lon = NULL, nc_verbose = FALSE, overwrite = FALSE, ...)
 }
 \arguments{
-\item{format}{data frame or list with elements orig, bety, units for the original variable name, bety variable name, 
-and original units. Columns with NA for bety variable name are dropped. Units for datetime field are the lubridate function 
-that will be used to parse the date (e.g. \code{ymd_hms} or \code{mdy_hm}).}
+\item{format}{data frame or list with elements as described below
+format is output from db/R/query.format.vars, and should have:
+  REQUIRED:
+  format$lat = latitude of site (unless passed by lat)
+  format$lon = longitude of site (unless passed by lon)
+  format$header = number of lines of header
+  format$vars is a data.frame with lists of information for each variable to read, at least airT is required
+    format$vars$input_name = Name in CSV file
+    format$vars$input_units = Units in CSV file
+    format$vars$bety_name = Name in BETY - see https://pecan.gitbooks.io/pecan-documentation/content/developers_guide/Adding-an-Input-Converter.html for allowable ones
+  OPTIONAL:
+  format$na.strings = list of missing values to convert to NA, such as -9999
+  format$skip = lines to skip excluding header
+  format$vars$column_number = Column number in CSV file (optional, will use header name first)
+Columns with NA for bety variable name are dropped. 
+Units for datetime field are the lubridate function that will be used to parse the date (e.g. \code{ymd_hms} or \code{mdy_hm}).}
 
 \item{nc_verbose}{logical: run ncvar_add in verbose mode?}
 }
 \examples{
 \dontrun{
-  in.path = "~/Downloads/"
-  in.file = "WR_E"
-  outfolder = "/tmp/"
-  format = list(
-                orig_name = c("TA","PRECIP","RH","WS","WD","SW","PAR_in"),
-                orig_units =  c("celsius","mm","\%","m/s","degrees","W m-2","umol m-2 s-1"),
-                bety_name = c("airT","precipitation_flux","relative_humidity","Wspd","wind_direction","solar_radiation","PAR"),
-                CF_name = df$CF_name, 
-                CF_units = df$CF_units,
-                skip=7,
-                header=1,
-                na.strings=c("-9999","-6999","9999"))  
-  lat = 40
-  lon = -80
-  met2CF.csv(in.path,in.file,outfolder,format,lat,lon)
+library(PEcAn.DB)
+library(lubridate)
+library(RPostgreSQL)
+bety = list(user='bety', password='bety', host='localhost', dbname='bety', driver='PostgreSQL', write=TRUE)
+con <- db.open(bety)
+in.path <- '/home/carya/sites/willow/'
+in.prefix <- 'FLX_US-WCr_FLUXNET2015_SUBSET_HH_1999-2014_1-1'
+outfolder <- '~/'
+input.id <- 5000000005
+format <- query.format.vars(input.id=input.id,con)
+start_date <- ymd_hm('200401010000')
+end_date <- ymd_hm('200412312330')
+PEcAn.data.atmosphere::met2CF.csv(in.path,in.prefix,outfolder,start_date,end_date,format,overwrite=TRUE)
 }
 }
 \author{
-Mike Dietze, David LeBauer
+Mike Dietze, David LeBauer, Ankur Desai
 }
 

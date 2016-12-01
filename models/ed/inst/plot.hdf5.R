@@ -25,8 +25,8 @@ png    <- args[5]
 # SETUP
 # ----------------------------------------------------------------------
 settings.file <- Sys.getenv('PECANSETTINGS')
-settings.xml <- xmlParse(settings.file)
-settings <- xmlToList(settings.xml)
+settings.xml <- XML::xmlParse(settings.file)
+settings <- XML::xmlToList(settings.xml)
 
 plot.hdf5(year, yvar, xvar, width, height, filename, settings) ;
 
@@ -175,7 +175,7 @@ plot.hdf5 <- function(year, yvar, xvar='time', width=800, height=600, filename, 
 	}
 
 	# find the Tower file
-	filename <- list.files(settings$run$host$outdir, full.names=TRUE,pattern=paste('.*-T-', year, '-.*.h5', sep=''))[1]
+	filename <- list.files(settings$host$outdir, full.names=TRUE,pattern=paste('.*-T-', year, '-.*.h5', sep=''))[1]
 	data <- hdf5load(filename, load = FALSE)
 
 	# compute variables

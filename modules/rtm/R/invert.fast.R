@@ -1,5 +1,6 @@
-#' @name invert.fast
 #' @title Bayesian RTM inversion: Fortran implementation
+#' 
+#' @name invert.fast
 #' @author Alexey Shiklomanov
 #' @details Performs a Bayesian inversion of a Radiative 
 #'          Transfer Model. Sampling is performed using an 
@@ -16,7 +17,7 @@
 #' @param modname Name of the model to invert (character). 
 #'          Refer to `data/model.list.csv`
 #' @param observed Observed reflectance. Can be a vector, matrix, 
-#'          or data.frame; BUT NOTE: all are coerced via "as.matrix"
+#'          or data.frame; BUT NOTE: all are coerced via 'as.matrix'
 #' @param inits Named vector of parameters to invert. Names are required!
 #' @param cons Named vector of constants. Names are required!
 #' @param pmu Numeric vector of prior means for inversion parameters. 
@@ -31,50 +32,48 @@
 #' @param ngibbs Number of iterations for MCMC 
 #' @return Matrix (ngibbs x (length(inits) + 1)) of MCMC samples 
 #'          of parameters.
-
-invert.fast <- function(modname, observed, inits, cons, 
-                   pmu, psd, plog, minp, ngibbs){
-    data(model.list)
-    model.set <- model.list[model.list$modname == modname,]
-    if(nrow(model.set) < 1){
-        stop(sprintf("Error: Model '%s' not found", modname))
-    }
-    modcode <- as.integer(model.set$modcode)
-    print(sprintf("Model: %s; Code: %d", model.set$fullname, modcode))
-    names.all <- unlist(strsplit(model.set$par.names, " "))
-    names.inits <- names(inits)
-    stopifnot(!is.null(names.inits))
-    npars <- length(inits)
-    ipars <- match(names.inits, names.all)
-    if(length(cons) > 0){
-        names.cons <- names(cons)
-        stopifnot(!is.null(names.cons))
-        ncons <- length(cons)
-        icons <- match(names.cons, names.all)
-    } else {
-        cons <- numeric(0)
-        ncons <- as.integer(0)
-        icons <- numeric(0)
-    }
-
-    observed <- as.matrix(observed)
-    nspec <- ncol(observed)
-
-    ngibbs <- as.integer(ngibbs)
-    results <- matrix(0, ngibbs, npars+1)
-    seed <- round(1e8 * runif(100))
-    seed <- as.integer(seed)
-
-    in.list <- list("invert_basic", observed, nspec, modcode,
-                    inits, npars, ipars, cons, ncons, icons,
-                    pmu, psd, plog, minp, ngibbs, results, seed)
-
-    t1 <- proc.time()
-    out.list <- do.call(.Fortran, in.list)
-    t2 <- proc.time()
-    print(t2 - t1)
-    outmat <- out.list[[length(out.list)-1]]
-    colnames(outmat) <- c(names.inits, "rsd")
-    return(outmat)
-}
-
+invert.fast <- function(modname, observed, inits, cons, pmu, psd, plog, minp, ngibbs) {
+  data(model.list)
+  model.set <- model.list[model.list$modname == modname, ]
+  if (nrow(model.set) < 1) {
+    stop(sprintf("Error: Model '%s' not found", modname))
+  }
+  modcode <- as.integer(model.set$modcode)
+  print(sprintf("Model: %s; Code: %d", model.set$fullname, modcode))
+  
+  names.all <- unlist(strsplit(model.set$par.names, " "))
+  names.inits <- names(inits)
+  stopifnot(!is.null(names.inits))
+  npars <- length(inits)
+  ipars <- match(names.inits, names.all)
+  
+  if (length(cons) > 0) {
+    names.cons <- names(cons)
+    stopifnot(!is.null(names.cons))
+    ncons <- length(cons)
+    icons <- match(names.cons, names.all)
+  } else {
+    cons <- numeric(0)
+    ncons <- as.integer(0)
+    icons <- numeric(0)
+  }
+  
+  observed <- as.matrix(observed)
+  nspec <- ncol(observed)
+  
+  ngibbs  <- as.integer(ngibbs)
+  results <- matrix(0, ngibbs, npars + 1)
+  seed    <- round(1e+08 * runif(100))
+  seed    <- as.integer(seed)
+  
+  in.list <- list("invert_basic", observed, nspec, modcode, inits, npars, ipars, 
+                  cons, ncons, icons, pmu, psd, plog, minp, ngibbs, results, seed)
+  
+  t1 <- proc.time()
+  out.list <- do.call(.Fortran, in.list)
+  t2 <- proc.time()
+  print(t2 - t1)
+  outmat <- out.list[[length(out.list) - 1]]
+  colnames(outmat) <- c(names.inits, "rsd")
+  return(outmat)
+} # invert.fast

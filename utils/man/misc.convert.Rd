@@ -20,6 +20,6 @@ val converted values
 conversion function for the unit conversions that udunits cannot handle but often needed in PEcAn calculations
 }
 \author{
-Istem Fer
+Istem Fer, Shawn Serbin
 }
 
