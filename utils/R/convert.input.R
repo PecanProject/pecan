@@ -435,7 +435,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       
       dbfile.id <- dbfile.insert(in.path, in.prefix, 
                                  'Input', existing.input$id, 
-                                 con, reuse=TRUE, hostname)
+                                 con, reuse=TRUE, hostname = machine$hostname)
       
       newinput <- list()
       newinput$input.id  <- existing.input$id
@@ -446,7 +446,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                       in.prefix = result$dbfile.name[1], 
                                       siteid = site.id, 
                                       startdate = start_date,
-                                      nddate = end_date, 
+                                      enddate = end_date, 
                                       mimetype, 
                                       formatname, 
                                       parentid = parent.id,
