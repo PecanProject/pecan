@@ -394,7 +394,7 @@ dbfile.check <- function(type, id, con, hostname=fqdn(), machine.check = TRUE) {
                            "' AND container_id=", id, " AND machine_id=", hostid), con))
   }else{
     db.file <- list()
-    for(i in seq_along(inputid)){
+    for(i in seq_along(id)){
       db.file <- db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, 
                                  "' AND container_id=", id[i]), con)
     }
