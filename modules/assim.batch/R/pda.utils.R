@@ -256,12 +256,21 @@ pda.load.priors <- function(settings, con, path.flag = TRUE) {
     for (i in seq_along(settings$pfts)) {
       
       files <- dbfile.check("Posterior", settings$pfts[[i]]$posteriorid, con, settings$host$name)
+      
       pid <- grep("post.distns.*Rdata", files$file_name)  ## is there a posterior file?
       if (length(pid) == 0) {
         pid <- grep("prior.distns.Rdata", files$file_name)  ## is there a prior file?
       }
       if (length(pid) > 0) {
         prior.paths[[i]] <- file.path(files$file_path[pid], files$file_name[pid])
+      } else {
+        pft <- settings$pfts[[i]]
+        fname <- file.path(pft$outdir, "post.distns.Rdata")
+        if (file.exists(fname)) {
+          prior.paths[[i]] <- fname
+        } else {
+          next
+        }
       }
       load(prior.paths[[i]])
       if (!exists("post.distns")) {
