@@ -38,3 +38,42 @@
 workflow.id <- 1000003054
 settings <- PEcAn.settings::read.settings(file.path("/fs/data2/output/",paste0("PEcAn_",workflow.id),"pecan.CONFIGS.xml"))
 ```
+
+
+Code snippet to reopen tunnels if loose the connection and/or have to restart from PDA history
+```{r}
+## connection settings
+## define 'pass' as Google Authenticator current password (string)
+pecan     <- "/home/dietze/pecan"
+sshtunnel <- file.path(pecan,"web","sshtunnel.sh")
+exe_host  <- settings$host$name
+data_host <- settings$host$data_hostname
+user      <- settings$host$user
+exeDir    <- dirname(settings$host$tunnel)
+dataDir   <- dirname(settings$host$data_tunnel)
+
+##open connections
+if(!is.null(exe_host)){
+  write(pass,file.path(exeDir,"password"))
+  Sys.sleep(3)
+  con1 <- system2(sshtunnel,c(exe_host,user,exeDir,">",file.path(exeDir,"log"),"&"))
+  file.remove(file.path(exeDir,"password"))
+}
+
+if(!is.null(data_host)){
+  write(pass,file.path(dataDir,"password"))
+  Sys.sleep(3)
+  con2 <- system2(sshtunnel,c(data_host,user,dataDir,">",file.path(dataDir,"log"),"&"))
+  file.remove(file.path(dataDir,"password"))
+}
+
+## check connections
+if(!file.exists(settings$host$tunnel)){
+  system2("more",file.path(exeDir,"log"))
+}
+if(!file.exists(settings$host$data_tunnel)){
+  system2("more",file.path(dataDir,"log"))
+}
+
+```
+

@@ -134,7 +134,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   print(names(knots.params))
   print(names(knots.probs))
   current.step <- "GENERATE KNOTS"
-  save.image(pda.restart.file)
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
   ## Run this block if this is a "round" extension
   if (run.round) {
@@ -193,7 +193,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       knots.params <- lapply(knots.list, `[[`, "params")
       knots.probs  <- lapply(knots.list, `[[`, "probs")
       current.step <- "Generate Knots: round-if block"
-      save.image(pda.restart.file)
+      save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   } # end round-if block
   
   ## Run this block if this is normal run or a "round" extension
@@ -205,7 +205,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                             run.names = paste0(settings$assim.batch$ensemble.id, ".knot.",
                                                1:settings$assim.batch$n.knot))   
       current.step <- "pda.init.run"
-      save.image(pda.restart.file)
+      save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
       
       ## start model runs
       start.model.runs(settings, settings$database$bety$write)
@@ -220,7 +220,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
         model.out[[i]] <- pda.get.model.output(settings, run.ids[i], bety, inputs)
       }
       current.step <- "pda.get.model.output"
-      save.image(pda.restart.file)
+      save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
       
       # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
       if(any(unlist(any.mgauss) == "multipGauss")) {
@@ -248,7 +248,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     
   } # end if-block
   current.step <- "pda.calc.error"
-  save.image(pda.restart.file)
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
   init.list <- list()
   jmp.list <- list()
@@ -388,7 +388,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   ncores <- min(max(dcores, 1), settings$assim.batch$chain)
   cl <- parallel::makeCluster(ncores, type="FORK")
   current.step <- "pre-MCMC"
-  save.image(pda.restart.file)
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
   ## Sample posterior from emulator
   mcmc.out <- parallel::parLapply(cl, 1:settings$assim.batch$chain, function(chain) {
@@ -411,7 +411,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   
   parallel::stopCluster(cl)
   current.step <- "post-MCMC"
-  save.image(pda.restart.file)
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
   mcmc.samp.list <- list()
   
@@ -453,7 +453,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   
   ## ------------------------------------ Clean up ------------------------------------ 
   current.step <- "clean up"
-  save.image(pda.restart.file)
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
   ## Save emulator, outputs files
   settings$assim.batch$emulator.path <- file.path(settings$outdir,
@@ -525,7 +525,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   
   ## Output an updated settings list
   current.step <- "pda.finish"
-  save.image(pda.restart.file)
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   return(settings)
   
 }  ## end pda.emulator
