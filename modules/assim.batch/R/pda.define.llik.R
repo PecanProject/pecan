@@ -52,6 +52,10 @@ pda.define.llik.fn <- function(settings) {
 ##' @export
 pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
   
+  if(anyNA(model_out, recursive = TRUE)) {   # Probably indicates model failed entirely
+    NA.list <- as.list(rep(NA, length(inputs)))
+    return(list(NA.list))
+  }
 
   n.input <- length(inputs)
   pda.errors <- list()

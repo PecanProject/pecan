@@ -272,6 +272,8 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
           SS.list[[inputi]] <- cbind(X, error.statistics[[inputi]])
       } # if-block
         
+      # remove failed runs
+      SS.list[[inputi]] <- SS.list[[inputi]][!rowSums(is.na(SS.list[[inputi]])), ]
     } # for-loop
 
 
@@ -390,7 +392,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   
   # Stop the clock
   ptm.finish <- proc.time() - ptm.start
-  logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds."))
+  logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(settings$assim.batch$iter), " iterations."))
   
   
   mcmc.samp.list <- list()

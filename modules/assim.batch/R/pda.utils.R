@@ -851,18 +851,22 @@ return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias, run.r
     bias.params[[i]] <- matrix(NA, nrow = length(model.out), ncol = nbias)
     
     for(iknot in seq_along(model.out)){
-      # calculate optimum bias parameter for the model output that has bias
-      regdf <- data.frame(inputs[[isbias[i]]]$obs, model.out[[iknot]][[isbias[i]]])
-      colnames(regdf) <- c("data","model")
-      fit <- lm( regdf$data ~ (regdf$model - 1))
-      bias.params[[i]][iknot,1] <- fit$coefficients[[1]]
-      if(ncol(bias.params[[i]]) > 1){
-        bias.params[[i]][iknot,  2:ncol(bias.params[[i]])] <- rnorm(ncol(bias.params[[i]])-1, bias.params[[i]][iknot,1], bias.params[[i]][iknot,1]*0.1)
+      if(anyNA(model.out[[iknot]], recursive = TRUE)){
+        bias.params[[i]][iknot, ] <- NA
+      }else {
+        # calculate optimum bias parameter for the model output that has bias
+        regdf <- data.frame(inputs[[isbias[i]]]$obs, model.out[[iknot]][[isbias[i]]])
+        colnames(regdf) <- c("data","model")
+        fit <- lm( regdf$data ~ (regdf$model - 1))
+        bias.params[[i]][iknot,1] <- fit$coefficients[[1]]
+        if(ncol(bias.params[[i]]) > 1){
+          bias.params[[i]][iknot,  2:ncol(bias.params[[i]])] <- rnorm(ncol(bias.params[[i]])-1, bias.params[[i]][iknot,1], bias.params[[i]][iknot,1]*0.1)
+        }
       }
     }
     
-    bias.prior$parama[i] <- min(bias.params[[i]]) - sd(bias.params[[i]])
-    bias.prior$paramb[i] <- max(bias.params[[i]]) + sd(bias.params[[i]])
+    bias.prior$parama[i] <- min(bias.params[[i]], na.rm = TRUE) - sd(bias.params[[i]], na.rm = TRUE)
+    bias.prior$paramb[i] <- max(bias.params[[i]], na.rm = TRUE) + sd(bias.params[[i]], na.rm = TRUE)
     
     prior.names[i] <- paste0("bias.", sapply(model.out[[1]],names)[isbias[i]])
     names(bias.params)[i] <- paste0("bias.", sapply(model.out[[1]],names)[isbias[i]])
