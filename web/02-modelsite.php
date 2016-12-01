@@ -92,127 +92,109 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 	#row { display: table-row; }
 	#left, #right, #middle { display: table-cell; padding-left: 10px; }
 </style>
-<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="jquery-1.10.2.js"></script>
 <?php if (!$offline) {?>
-<script type="text/javascript" src="//www.google.com/jsapi"></script>
-<?php }?>
-<?php if (!$offline) {?>
-<script type="text/javascript" src="//code.jquery.com/jquery-1.10.2.js"></script>
-<?php }?>
-<?php if (!$offline) {?>
-<script type="text/javascript" src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-<?php }?>
-<?php if (!$offline) {?>
-<link rel="stylesheet" type="text/css" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css"/>
+  <script type="text/javascript" src="//www.google.com/jsapi"></script>
+  <script type="text/javascript" src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script type="text/javascript" src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <link rel="stylesheet" type="text/css" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css"/>
 <?php }?>
 <script type="text/javascript">
-
-  //$(function()  {
   $(window).load(function() {
+    var dialog, form,
+    sitename = $( "#txtsitename" ),
+    elevation =$( "#txtelevation" ),
+    map =$( "#txtmap" ),
+    mat =$( "#txtmat" ),
+    city =$( "#txtcity" ),
+    state =$( "#txtstate" ),
+    county =$( "#txtcountry" ),
+    lat =$( "#txtlat" ),
+    lng =$( "#txtlong" ),
+    pctclay =$( "#txtpctclay" ),
+    pctsand =$( "#txtpctsand" ),
+    greehouse =$( "#txtgreenhouse" ),
+    notes =$( "#txtnotes" ),
+    soilnotes =$( "#txtsoilnotes" ),
+    allFields = $( [] ).add( sitename ).add( elevation ),
+    tips = $( ".validateTips" ),
+    request;
 
-	var dialog, form,
-		sitename = $( "#txtsitename" ),
-		elevation =$( "#txtelevation" ),
-		map =$( "#txtmap" ),
-		mat =$( "#txtmat" ),
-		city =$( "#txtcity" ),
-		state =$( "#txtstate" ),
-		county =$( "#txtcountry" ),
-		lat =$( "#txtlat" ),
-		lng =$( "#txtlong" ),
-		pctclay =$( "#txtpctclay" ),
-		pctsand =$( "#txtpctsand" ),
-		greehouse =$( "#txtgreenhouse" ),
-		notes =$( "#txtnotes" ),
-		soilnotes =$( "#txtsoilnotes" ),
-		allFields = $( [] ).add( sitename ).add( elevation ),
-		tips = $( ".validateTips" ),
-		request;
+function updateTips( t ) {
+  tips
+  .text( t )
+  .addClass( "ui-state-highlight" );
+  setTimeout( function() {
+    tips.removeClass( "ui-state-highlight", 1500 );
+  }, 500 );
+}
 
-	function updateTips( t ) {
-		tips
-			.text( t )
-			.addClass( "ui-state-highlight" );
-		setTimeout( function() {
-			tips.removeClass( "ui-state-highlight", 1500 );
-		}, 500 );
-	}
+function checkLength( o, n, min, max ) {
+  if (o.val().length > max || o.val().length < min ) {
+    o.addClass( "ui-state-error" );
+    updateTipes ( "Length of " + n + " must be between " + min + " and " + max + "." );
+    return false; 
+  } else { 
+    return true;
+  }
+}
 
-	function checkLength( o, n, min, max ) {
-		if (o.val().length > max || o.val().length < min ) {
-			o.addClass( "ui-state-error" );
-			updateTipes ( "Length of " + n + " must be between " + min + " and " + max + "." );
-			return false; 
-		} else { 
-			return true;
-		}
+function checkRegexp ( o, regexp, n ) {
+  if ( !(regexp.text( o.val() ) ) ) {
+    o.addClass( "ui-state-error" );
+    updateTips( n );
+    return false;
+  } else { 
+    return true;
+  }
+}
 
-	}
+function addSite() {
+  var valid = true;
+  allFields.removeClass( "ui-state-error" );
+  valid = valid && checkLength ( sitename, "sitename", 3, 30);
+  //valid = valid && checkRegexp ( lat, '/^[-]?(([0-8]?[0-9])\.(\d+))|(90(\.0+)?)$/' , "You must enter a valid longitude value.");
+  //valid = valid && checkRegexp ( lng, '/^[-]?((((1[0-7][0-9])|([0-9]?[0-9]))\.(\d+))|180(\.0+)?)$/' , "You must enter a valid longitude value.");
+  if ( valid ) {
+    if (request) {
+      request.abort();;
+    }
+    var serializedData = $('#dialog-form :input').serialize();
+    jQuery.post("insert-site.php", serializedData , function(data) {
+      var jdata = jQuery(data);
+      // fill in site list      
+      jdata.find("marker").each(function() {
+        var marker = jQuery(this);
+        if (marker.attr("lat") == "" || marker.attr("lon") == "") {
+          //console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
+        } else {
+          showSite(marker, marker.attr("siteid"));
+        }
+      });
+    });
+  // Prevent default posting of form
+  event.preventDefault();
+  dialog.dialog( "close" );
+  }
+  return valid;
+}
 
- 	function checkRegexp ( o, regexp, n ) {
-		if ( !(regexp.text( o.val() ) ) ) {
-			o.addClass( "ui-state-error" );
-			updateTips( n );
-			return false;
-		} else { 
-			return true;
-		}
-	}
-
-	function addSite() {
-		var valid = true;
-		allFields.removeClass( "ui-state-error" );
-
-		valid = valid && checkLength ( sitename, "sitename", 3, 30);
-
-		//valid = valid && checkRegexp ( lat, /^[-]?(([0-8]?[0-9])\.(\d+))|(90(\.0+)?)$/ , "You must enter a valid longitude value.");
-		//valid = valid && checkRegexp ( lng, /^[-]?((((1[0-7][0-9])|([0-9]?[0-9]))\.(\d+))|180(\.0+)?)$/ , "You must enter a valid longitude value.");
-		
-
-
-
-		if ( valid ) {
-			if (request) {
-				request.abort();;
-			}
-			var serializedData = $('#dialog-form :input').serialize();
-			
-    			jQuery.post("insert-site.php", serializedData , function(data) {
-      				var jdata = jQuery(data);
-      				// fill in site list      
-      				jdata.find("marker").each(function() {
-        			var marker = jQuery(this);
-        			if (marker.attr("lat") == "" || marker.attr("lon") == "") {
-          				//console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
-        			} else {
-          				showSite(marker, marker.attr("siteid"));
-        			}
-      				});
-			});
-		// Prevent default posting of form
-		event.preventDefault();
-		dialog.dialog( "close" );
-		}
-		return valid;
-
-	}
-
-	dialog = $( "#dialog-form" ).dialog({
-		autoOpen: false,
-		height: 630,
-		width: 750,
-		modal: true,
-		buttons: {
-			"Create a site": addSite,
-		Cancel: function() {
-				dialog.dialog( "close" );
-			}
-		},
-		close: function () {
-			form[0].reset();
-			allFields.removeClass( "ui-state-error" );
-		}
-	});
+dialog = $( "#dialog-form" ).dialog({
+  autoOpen: false,
+  height: 630,
+  width: 750,
+  modal: true,
+  buttons: {
+    "Create a site": addSite,
+    Cancel: function() {
+      dialog.dialog( "close" );
+    }
+  },
+  close: function () {
+    form[0].reset();
+    allFields.removeClass( "ui-state-error" );
+  }
+});
 
 	form = dialog.find( "form" ).on( "submit", function( event ) {
 		event.preventDefault();
@@ -228,266 +210,261 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
   var markersArray = [];
 
 
-  function validate() {
-    $("#next").removeAttr("disabled");       
-    $("#error").html("&nbsp;");
-
-    if ($("#hostname").val() == "") {
-      $("#next").attr("disabled", "disabled");
-      $("#error").html("Select a host to continue");
-      $("#hostlabel").html("Host:")
+function validate() {
+  $("#next").removeAttr("disabled");       
+  $("#error").html("&nbsp;");
+  if ($("#hostname").val() == "") {
+    $("#next").attr("disabled", "disabled");
+    $("#error").html("Select a host to continue");
+    $("#hostlabel").html("Host:")
 <?php if ($betydb != "") { ?>
-    } else {
-      $("#hostlabel").html("Host: (Show in <a href=\"<?php echo $betydb; ?>/machines/" + $("#hostname option:selected")[0].getAttribute("data-id") + "\" target=\"BETY\">BETY</a>)");
+  } else {
+    $("#hostlabel").html("Host: (Show in <a href=\"<?php echo $betydb; ?>/machines/" + $("#hostname option:selected")[0].getAttribute("data-id") + "\" target=\"BETY\">BETY</a>)");
 <?php } ?>
-    }
-    if ($("#modelid").val() == null || $("#modelid").val() == "") {
-      $("#next").attr("disabled", "disabled");
-      $("#error").html("Select a model to continue");
-      $("#modellabel").html("Model:");
-<?php if ($betydb != "") { ?>
-    } else {
-      $("#modellabel").html("Model: (Show in <a href=\"<?php echo $betydb; ?>/models/" + $("#modelid").val() + "\" target=\"BETY\">BETY</a>)");
-<?php } ?>
-    }
-<?php if ($betydb != "") { ?>
-    if ($("#sitegroupid").val() == null || $("#sitegroupid").val() == "") {
-      $("#sitegrouplabel").html("Site Group:");
-    } else {
-      $("#sitegrouplabel").html("Site Group: (Show in <a href=\"<?php echo $betydb; ?>/sitegroups/" + $("#sitegroupid").val() + "\" target=\"BETY\">BETY</a>)");
-    }
-<?php } ?>
-    if ($("#siteid").val() == "") {
-      $("#next").attr("disabled", "disabled");
-      $("#error").html("Select a site to continue");
-      $("#sitelabel").html("Site:");
-<?php if ($betydb != "") { ?>
-    } else {
-      $("#sitelabel").html("Site: (Show in <a href=\"<?php echo $betydb; ?>/sites/" + $("#siteid").val() + "\" target=\"BETY\">BETY</a>)");
-<?php } ?>
-    }
   }
-
-  function switchUI(busy) {
-    var option = busy ? 'disabled' : false;
-
-    $("#hostname").prop('disabled', option);
-    $("#modelid").prop('disabled', option);
-    $("#sitegroupid").prop('disabled', option);
-    $("#conversion").prop('disabled', option);
-    $("#siteid").prop('disabled', option);
+  if ($("#modelid").val() == null || $("#modelid").val() == "") {
+    $("#next").attr("disabled", "disabled");
+    $("#error").html("Select a model to continue");
+    $("#modellabel").html("Model:");
+<?php if ($betydb != "") { ?>
+  } else {
+    $("#modellabel").html("Model: (Show in <a href=\"<?php echo $betydb; ?>/models/" + $("#modelid").val() + "\" target=\"BETY\">BETY</a>)");
+<?php } ?>
   }
+<?php if ($betydb != "") { ?>
+  if ($("#sitegroupid").val() == null || $("#sitegroupid").val() == "") {
+    $("#sitegrouplabel").html("Site Group:");
+  } else {
+    $("#sitegrouplabel").html("Site Group: (Show in <a href=\"<?php echo $betydb; ?>/sitegroups/" + $("#sitegroupid").val() + "\" target=\"BETY\">BETY</a>)");
+  }
+<?php } ?>
+  if ($("#siteid").val() == "") {
+    $("#next").attr("disabled", "disabled");
+    $("#error").html("Select a site to continue");
+    $("#sitelabel").html("Site:");
+<?php if ($betydb != "") { ?>
+  } else {
+    $("#sitelabel").html("Site: (Show in <a href=\"<?php echo $betydb; ?>/sites/" + $("#siteid").val() + "\" target=\"BETY\">BETY</a>)");
+<?php } ?>
+  }
+}
+
+function switchUI(busy) {
+  var option = busy ? 'disabled' : false;
+  $("#hostname").prop('disabled', option);
+  $("#modelid").prop('disabled', option);
+  $("#sitegroupid").prop('disabled', option);
+  $("#conversion").prop('disabled', option);
+  $("#siteid").prop('disabled', option);
+}
         
-  function prevStep() {
-    $("#formprev").submit();
+function prevStep() {
+  $("#formprev").submit();
+}
+
+function nextStep() {
+  $("#formnext").submit();
+}
+
+function updateData() {
+  if ($("#hostname").is(':disabled')) {
+    return;
   }
+  switchUI(true);
+  var curHost = $("#hostname").val();
+  var curModel = $("#modelid").val();
+  var curSitegroup = $("#sitegroupid").val();
+  var curSite = $("#siteid").val();
 
-  function nextStep() {
-    $("#formnext").submit();
+  // remove everything
+  if (markersArray) {
+    clearSites();
+    markersArray.length = 0;
   }
+  $('#hostname').find('option').remove();
+  $('#hostname').append('<option value="">Any Host</option>');
+  $('#modelid').find('option').remove();
+  $('#modelid').append('<option value="">All Models</option>');
+  $("#siteid").val("");
+  $("#sitename").val("");
+  validate();
 
-  function updateData() {
-    if ($("#hostname").is(':disabled')) {
-      return;
-    }
-    switchUI(true);
-
-    var curHost = $("#hostname").val();
-    var curModel = $("#modelid").val();
-    var curSitegroup = $("#sitegroupid").val();
-    var curSite = $("#siteid").val();
-
-    // remove everything
-    if (markersArray) {
-      clearSites();
-      markersArray.length = 0;
-    }
-    $('#hostname').find('option').remove();
-    $('#hostname').append('<option value="">Any Host</option>');
-    $('#modelid').find('option').remove();
-    $('#modelid').append('<option value="">All Models</option>');
-    $("#siteid").val("");
-    $("#sitename").val("");
-    validate();
-
-    // get all sites
-    //console.log($('#modelid option:selected'))
-    var url = "hostmodelinfo.php?host=" + curHost + "&model=" + curModel + "&sitegroup=" + curSitegroup;
-    if ($('#conversion').is(':checked')) {
-      url = url + "&conversion=1";
-    }
+  // get all sites
+  //console.log($('#modelid option:selected'))
+  var url = "hostmodelinfo.php?host=" + curHost + "&model=" + curModel + "&sitegroup=" + curSitegroup;
+  if ($('#conversion').is(':checked')) {
+    url = url + "&conversion=1";
+  }
  
-    jQuery.get(url, {}, function(data) {
-      var jdata = jQuery(data);
-      //console.log(data);
-      // fill in host list
-      jdata.find("host").each(function() {
-        var host = jQuery(this);
-        var hostname = host.attr("hostname");
-        var option = "<option data-id='" + host.attr("id") + "'";
-        if(hostname == curHost) {
-          option = option + " selected";
-        }
-        option = option + ">" + hostname + "</option>";
-        $('#hostname').append(option);
-      });
-
-      // fill in model list
-      jdata.find("model").each(function() {
-        var model = jQuery(this);
-        var name = model.attr("name");
-        if (model.attr("revision") != "") {
-          name += " (" + model.attr("revision") + ")";
-        }
-        if(model.attr("id") == curModel) {
-          $('#modelid').append('<option value="' + model.attr("id") + '" selected>' + name + '</option>');
-        } else {
-          $('#modelid').append('<option value="' + model.attr("id") + '">' + name + '</option>');
-        }
-      });
-
-      // fill in site list      
-      jdata.find("marker").each(function() {
-        var marker = jQuery(this);
-        if (marker.attr("lat") == "" || marker.attr("lon") == "") {
-          //console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
-        } else {
-          showSite(marker, curSite);
-        }
-      });
-      renderSites(curSite);
-
-      switchUI(false);
+  jQuery.get(url, {}, function(data) {
+    var jdata = jQuery(data);
+    //console.log(data);
+    // fill in host list
+    jdata.find("host").each(function() {
+      var host = jQuery(this);
+      var hostname = host.attr("hostname");
+      var option = "<option data-id='" + host.attr("id") + "'";
+      if(hostname == curHost) {
+        option = option + " selected";
+      }
+      option = option + ">" + hostname + "</option>";
+      $('#hostname').append(option);
     });
-  }
 
-  function siteSelected(siteid, sitename) {
-    $("#siteid").val(siteid);
-    $("#sitename").val(sitename);
-    validate();
-  }
+    // fill in model list
+    jdata.find("model").each(function() {
+      var model = jQuery(this);
+      var name = model.attr("name");
+      if (model.attr("revision") != "") {
+        name += " (" + model.attr("revision") + ")";
+      }
+      if(model.attr("id") == curModel) {
+        $('#modelid').append('<option value="' + model.attr("id") + '" selected>' + name + '</option>');
+      } else {
+        $('#modelid').append('<option value="' + model.attr("id") + '">' + name + '</option>');
+      }
+    });
+
+    // fill in site list      
+    jdata.find("marker").each(function() {
+      var marker = jQuery(this);
+      if (marker.attr("lat") == "" || marker.attr("lon") == "") {
+        //console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
+      } else {
+        showSite(marker, curSite);
+      }
+    });
+    renderSites(curSite);
+
+    switchUI(false);
+  });
+}
+
+function siteSelected(siteid, sitename) {
+  $("#siteid").val(siteid);
+  $("#sitename").val(sitename);
+  validate();
+}
   
 <?php if ($offline) { ?>
-  $(document).ready(function () {
-    updateData();
-  });
+$(document).ready(function () {
+  updateData();
+});
 
-  function clearSites() {
-    $("#output").html("");
-  }
+function clearSites() {
+  $("#output").html("");
+}
   
-  function showSite(marker, selected) {
-    markersArray.push(marker);
-  }
+function showSite(marker, selected) {
+  markersArray.push(marker);
+}
 
-  function renderSites(selected) {
-    var sites="<form>";
-    for (var i in markersArray) {
-      var site = markersArray[i];
-      sites = sites + "<div><input type=\"radio\" name=\"site\" value=\"" + site.attr("siteid") + "\"" + " onClick=\"siteSelected(" + site.attr("siteid") + ",'" + site.attr("sitename") + "');\"";
-      if (selected == site.attr("siteid")) {
-        sites = sites + " checked";
-        siteSelected(site.attr("siteid"), site.attr("sitename"));
-      }
-      sites = sites + ">" + site.attr("sitename") + "</div>";
+function renderSites(selected) {
+  var sites="<form>";
+  for (var i in markersArray) {
+    var site = markersArray[i];
+    sites = sites + "<div><input type=\"radio\" name=\"site\" value=\"" + site.attr("siteid") + "\"" + " onClick=\"siteSelected(" + site.attr("siteid") + ",'" + site.attr("sitename") + "');\"";
+    if (selected == site.attr("siteid")) {
+      sites = sites + " checked";
+      siteSelected(site.attr("siteid"), site.attr("sitename"));
     }
-    sites = sites + "</form>";
-    $("#output").html(sites);
+    sites = sites + ">" + site.attr("sitename") + "</div>";
   }
+  sites = sites + "</form>";
+  $("#output").html(sites);
+}
 
 <?php } else { ?>
-  google.load("maps", "3");
-  google.setOnLoadCallback(mapsLoaded);
+google.load("maps", "3");
+google.setOnLoadCallback(mapsLoaded);
 
-  var map = null;
-  var infowindow = null;
+var map = null;
+var infowindow = null;
 
-  function clearSites() {
-    for (var i in markersArray) {
-      markersArray[i].setMap(null);
-    }
+function clearSites() {
+  for (var i in markersArray) {
+    markersArray[i].setMap(null);
+  }
+}
+
+function mapsLoaded() {
+  var myLatlng = new google.maps.LatLng(40.11642, -88.243382);
+  var myOptions = {
+    zoom: 5,
+    center: myLatlng,
+    mapTypeId: google.maps.MapTypeId.ROADMAP
   }
 
-  function mapsLoaded() {
-    var myLatlng = new google.maps.LatLng(40.11642, -88.243382);
-    var myOptions = {
-      zoom: 5,
-      center: myLatlng,
-      mapTypeId: google.maps.MapTypeId.ROADMAP
-    }
+  map = new google.maps.Map(document.getElementById("output"), myOptions);
+  infowindow = new google.maps.InfoWindow({content: ""});
+  updateData();
 
-    map = new google.maps.Map(document.getElementById("output"), myOptions);
-    infowindow = new google.maps.InfoWindow({content: ""});
-    updateData();
-
-    $("#sitename").keyup(function( event ) {
-      var search = $("#sitename").val().toLowerCase();
-      markersArray.forEach(function(m) {
-        m.setVisible(m.sitename.toLowerCase().indexOf(search) > -1);
-      });
+  $("#sitename").keyup(function( event ) {
+    var search = $("#sitename").val().toLowerCase();
+    markersArray.forEach(function(m) {
+      m.setVisible(m.sitename.toLowerCase().indexOf(search) > -1);
     });
+  });
 
-    map.addListener('dblclick', function(event) {
-      addMarker(event.latLng);
-      console.log("dialog should fire");
-      $("#dialog-form").dialog("open");
-      $("#txtlat").val(event.latLng.lat());
-      $("#txtlong").val(event.latLng.lng());
-    });
+  map.addListener('dblclick', function(event) {
+    addMarker(event.latLng);
+    $("#dialog-form").dialog("open");
+    $("#txtlat").val(event.latLng.lat());
+    $("#txtlong").val(event.latLng.lng());
+  });
+}
+
+
+function addMarker(location) {
+  var marker = new google.maps.Marker({
+    position: location,
+    map: map
+  });
+  markersArray.push(marker);
+}
+
+function showSite(marker, selected) {
+  var latlng;
+  latlng = new google.maps.LatLng(parseFloat(marker.attr("lat")), parseFloat(marker.attr("lon")));
+  var gmarker = new google.maps.Marker({position: latlng, map: map});
+  markersArray.push(gmarker);
+
+  // create the tooltip and its text
+  gmarker.sitename = marker.attr("sitename");
+  gmarker.siteid   = marker.attr("siteid");
+  gmarker.html  = '<b>' + marker.attr("sitename") + '</b><br />'
+  gmarker.html += marker.attr("city") + ', ' + marker.attr("country") + '<br />';
+
+  // add a listener to open the tooltip when a user clicks on one of the markers
+  google.maps.event.addListener(gmarker, 'click', function() {
+    siteSelected(this.siteid, this.sitename);
+    infowindow.setContent(this.html);
+    infowindow.open(map, this);
+  });
+
+  if (marker.attr("siteid") == selected) {
+    siteSelected(gmarker.siteid, gmarker.sitename);
+    infowindow.setContent(gmarker.html);
+    infowindow.open(map, gmarker);
   }
+}
 
+function renderSites(selected) {
+}
 
-  function addMarker(location) {
-    var marker = new google.maps.Marker({
-      position: location,
-      map: map
-    });
-    markersArray.push(marker);
-  }
-////////////////////New Functions//////////////////////////
-
-  function showSite(marker, selected) {
-    var latlng;
-    latlng = new google.maps.LatLng(parseFloat(marker.attr("lat")), parseFloat(marker.attr("lon")));
-    var gmarker = new google.maps.Marker({position: latlng, map: map});
-    markersArray.push(gmarker);
-
-    // create the tooltip and its text
-    gmarker.sitename = marker.attr("sitename");
-    gmarker.siteid   = marker.attr("siteid");
-    gmarker.html  = '<b>' + marker.attr("sitename") + '</b><br />'
-    gmarker.html += marker.attr("city") + ', ' + marker.attr("country") + '<br />';
-
-    // add a listener to open the tooltip when a user clicks on one of the markers
-    google.maps.event.addListener(gmarker, 'click', function() {
-      siteSelected(this.siteid, this.sitename);
-      infowindow.setContent(this.html);
-      infowindow.open(map, this);
-    });
-
-    if (marker.attr("siteid") == selected) {
-      siteSelected(gmarker.siteid, gmarker.sitename);
-      infowindow.setContent(gmarker.html);
-      infowindow.open(map, gmarker);
-    }
-  }
-
-  function renderSites(selected) {
-  }
-
-  function goHome() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(position) {
-        var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-        map.panTo(latlng);
-        map.setZoom(12);
-      }, function() {
-        alert("Could not get your location, please make sure you enabled location for safari if you use an iPAD.");
-      }, {maximumAge:60000, timeout: 20000});
-    } else {  
-      alert("I'm sorry, but geolocation services are not supported by your browser.");  
-    }  
-  }
+function goHome() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(position) {
+      var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+      map.panTo(latlng);
+      map.setZoom(12);
+    }, function() {
+      alert("Could not get your location, please make sure you enabled location for safari if you use an iPAD.");
+    }, {maximumAge:60000, timeout: 20000});
+  } else {  
+    alert("I'm sorry, but geolocation services are not supported by your browser.");  
+  }  
+}
 <?php } ?>
 </script>
 </head>
