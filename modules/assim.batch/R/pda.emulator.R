@@ -129,16 +129,16 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   if (run.round) {
       
       # loads the priors used in the previous emulator run
-      temp.ext <- pda.load.priors(settings, con, run.normal) 
-      prior.ext.list <- temp.ext$prior
+      temp <- pda.load.priors(settings, con, extension.check = TRUE) 
+      prior.list <- temp$prior
       
       ## set prior distribution functions for prior of the previous emulator run
-      prior.ext.fn <- lapply(prior.ext.list, pda.define.prior.fn)
+      prior.fn <- lapply(prior.list, pda.define.prior.fn)
       
-      ## Propose a percentage (if not specified 25%) of the new parameter knots from the prior of previous run
+      ## Propose a percentage (if not specified 75%) of the new parameter knots from the posterior of the previous run
       knot.par        <- ifelse(!is.null(settings$assim.batch$knot.par), 
                                 as.numeric(settings$assim.batch$knot.par), 
-                                0.25)
+                                0.75)
       
       n.post.knots    <- floor(knot.par * settings$assim.batch$n.knot)
       
@@ -146,7 +146,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                                 function(x) pda.generate.knots(n.post.knots, 
                                                                n.param.all[x], 
                                                                prior.ind[[x]],
-                                                               prior.ext.fn[[x]],
+                                                               prior.fn[[x]],
                                                                pname[[x]]))
       knots.params.temp <- lapply(knots.list.temp, `[[`, "params")
       
@@ -163,7 +163,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       knots.list$probs <- knots.list$params
       for (pft in seq_along(settings$pfts)) {
         for (i in seq_len(n.param.all[[pft]])) {
-          knots.list[[pft]]$probs[, i] <- eval(prior.ext.fn[[pft]]$pprior[[i]], 
+          knots.list[[pft]]$probs[, i] <- eval(prior.fn[[pft]]$pprior[[i]], 
                                                list(q = knots.list[[pft]]$params[, i]))
         }
       }
