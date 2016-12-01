@@ -4,9 +4,38 @@
 \alias{dbfile.check}
 \title{Check for a file in the dbfiles tables}
 \usage{
+<<<<<<< HEAD
 dbfile.check(type, id, con, hostname = fqdn(), machine.check = TRUE)
 }
 \arguments{
+=======
+dbfile.input.check(siteid, startdate = NULL, enddate = NULL, mimetype,
+  formatname, parentid = NA, con, hostname = fqdn(), exact.dates = FALSE)
+
+dbfile.posterior.check(pft, mimetype, formatname, con, hostname = fqdn())
+
+dbfile.check(type, id, con, hostname = fqdn())
+}
+\arguments{
+\item{siteid}{the id of the site that this data is applicable to}
+
+\item{startdate}{the start date of the data stored in the file}
+
+\item{enddate}{the end date of the data stored in the file}
+
+\item{mimetype}{the mime-type of the file}
+
+\item{formatname}{the name of the format to distinguish between simmilair mime-types}
+
+\item{con}{database connection object}
+
+\item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
+
+\item{exact.dates}{setting to include start and end date in input query}
+
+\item{pft}{the name of the pft that this data is applicable to}
+
+>>>>>>> dacd76a384839ef9b7c0f2ecf88b3bdd18651e28
 \item{type}{the type of dbfile (Input, Posterior)}
 
 \item{id}{the id of container type}
@@ -32,6 +61,13 @@ This will check the dbfiles and machines to see if the file exists
 }
 }
 \author{
+<<<<<<< HEAD
+=======
+Rob Kooper, Tony Gardella
+
+Rob Kooper
+
+>>>>>>> dacd76a384839ef9b7c0f2ecf88b3bdd18651e28
 Rob Kooper
 }
 

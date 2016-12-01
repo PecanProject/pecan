@@ -7,9 +7,9 @@
 ##' @return usda soil class 
 ##' @export
 ##' @author David LeBauer
+##' @importFrom ncdf4 ncvar_get
 get.soil <- function(lat, lon, soil.nc = soil.nc) {
   ## Lat and Lon
-  ncvar_get <- ncdf4::ncvar_get
   Lat <- ncvar_get(soil.nc, "latitude")
   Lon <- ncvar_get(soil.nc, "longitude")
   
