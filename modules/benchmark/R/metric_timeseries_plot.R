@@ -6,7 +6,7 @@
 ##' 
 ##' @author Betsy Cowdery
 
-metric_timeseries_plot <- function(metric_dat, var, filename = NA, draw.plot = FALSE) {
+metric_timeseries_plot <- function(metric_dat, var, filename = NA, draw.plot = is.na(filename)) {
   PEcAn.utils::logger.info("Metric: Timeseries Plot")
   
   # Attempt at getting around the fact that time can be annual and thus as.Date won't work
