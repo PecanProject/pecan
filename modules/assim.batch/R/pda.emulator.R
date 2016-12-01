@@ -119,6 +119,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                                                       prior.ind[[x]], 
                                                       prior.fn[[x]], 
                                                       pname[[x]]))
+  names(knots.list) <- sapply(settings$pfts,"[[",'name')
   
   knots.params <- lapply(knots.list, `[[`, "params")
   knots.probs <- lapply(knots.list, `[[`, "probs")
