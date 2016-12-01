@@ -56,7 +56,7 @@ runModule.assim.batch <- function(settings) {
 ##' @export
 pda.settings <- function(settings, params.id = NULL, param.names = NULL, prior.id = NULL, 
                          chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL,
-                         ar.target = NULL, jvar = NULL, n.knot = NULL) {
+                         ar.target = NULL, jvar = NULL, n.knot = NULL, run.round = FALSE) {
   # Some settings can be supplied via settings (for automation) or explicitly (interactive). 
   # An explicit argument overrides whatever is in settings, if anything.
   # If neither an argument or a setting is provided, set a default value in settings. 
@@ -90,6 +90,14 @@ pda.settings <- function(settings, params.id = NULL, param.names = NULL, prior.i
     logger.severe(paste0("PDA requested for parameter(s) [", 
                          paste(unlist(settings$assim.batch$param.names)[params.in.constants], collapse = ", "), 
                          "] but these parameters are specified as constants in pecan.xml!"))
+  }
+
+  # if settings$assim.batch$prior$prev.prior.id is not null, it means an extension run was already done
+  # store it to prior.id so that it's not overwritten for 3rd or more "longer" extension
+  # if it's 3rd or more "round" of emulator extension then we do want to overwrite it 
+  # Revisit this if you want to change knot proposal design 
+  if (!is.null(settings$assim.batch$prior$prev.prior.id) & !run.round) {
+    settings$assim.batch$prior$prior.id <- settings$assim.batch$prior$prev.prior.id
   }
   
   # if settings$assim.batch$prior$prior.id is not null, it means a PDA run was already done
@@ -246,6 +254,8 @@ pda.load.priors <- function(settings, con, extension.check = TRUE) {
   # extension.check == FALSE an extension run
   if(!extension.check){
     priorids <- settings$assim.batch$prior$prev.prior.id
+  } else{
+    priorids <- settings$assim.batch$prior$prior.id
   }
 
   prior.out <- list()
@@ -258,9 +268,11 @@ pda.load.priors <- function(settings, con, extension.check = TRUE) {
     files <- dbfile.check("Posterior", priorids[[i]], con, settings$host$name)
       
     pid <- grep("post.distns.*Rdata", files$file_name)  ## is there a posterior file?
+    
     if (length(pid) == 0) {
       pid <- grep("prior.distns.Rdata", files$file_name)  ## is there a prior file?
     }
+    
     if (length(pid) > 0) {
       prior.paths[[i]] <- file.path(files$file_path[pid], files$file_name[pid])
     } else {

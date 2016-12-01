@@ -20,18 +20,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
   }
   
-  ## -------------------------------------- Setup ------------------------------------- 
-  ## Handle settings
-  settings <- pda.settings(
-    settings=settings, params.id=params.id, param.names=param.names, 
-    prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
-    adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot)
-  
-  
-  ## will be used to check if multiplicative Gaussian is requested
-  any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
-  isbias <- which(unlist(any.mgauss) == "multipGauss")
-  
   # handle extention flags
   # is this an extension run
   extension.check <- is.null(settings$assim.batch$extension) 
@@ -52,6 +40,19 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     run.round <- FALSE
     run.longer <- TRUE
   }
+  
+  ## -------------------------------------- Setup ------------------------------------- 
+  ## Handle settings
+  settings <- pda.settings(
+    settings=settings, params.id=params.id, param.names=param.names, 
+    prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
+    adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot, run.round)
+  
+  
+  ## will be used to check if multiplicative Gaussian is requested
+  any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
+  isbias <- which(unlist(any.mgauss) == "multipGauss")
+  
   
   ## Open database connection
   if (settings$database$bety$write) {
