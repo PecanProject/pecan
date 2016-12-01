@@ -82,7 +82,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   n.input     <- length(inputs)
   
   ## Set model-specific functions
-  do.call("require", list(paste0("PEcAn.", settings$model$type)))
+  do.call("library", list(paste0("PEcAn.", settings$model$type)))
   my.write.config <- paste("write.config.", settings$model$type, sep = "")
   if (!exists(my.write.config)) {
     logger.severe(paste(my.write.config, 
@@ -119,9 +119,15 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                                                       prior.ind[[x]], 
                                                       prior.fn[[x]], 
                                                       pname[[x]]))
+  names(knots.list) <- sapply(settings$pfts,"[[",'name')
   
   knots.params <- lapply(knots.list, `[[`, "params")
   knots.probs <- lapply(knots.list, `[[`, "probs")
+  print("emulator names")
+  print(sapply(settings$pfts,"[[",'name'))
+  print(names(knots.list))
+  print(names(knots.params))
+  print(names(knots.probs))
   
   ## Run this block if this is a "round" extension
   if (run.round) {
@@ -160,6 +166,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
         knots.list[[i]]$params <- rbind(knots.params[[i]][sample(nrow(knots.params[[i]]), 
                                                                  (settings$assim.batch$n.knot - n.post.knots)), ], 
                                         knots.list.temp[[i]]$params)
+        names(knots.list)[i] <- settings$pfts[[i]]['name']
       }
       
       # Return to original prior distribution

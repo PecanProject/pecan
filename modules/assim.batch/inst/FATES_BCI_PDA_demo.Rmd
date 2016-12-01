@@ -33,3 +33,18 @@
   </inputs>
 </assim.batch>
 ```
+
+```{r}
+workflow.id <- 1000003049
+settings <- PEcAn.settings::read.settings(file.path("/fs/data2/output/",paste0("PEcAn_",workflow.id),"pecan.xml"))
+params.id = NULL
+param.names = NULL
+prior.id = NULL
+chain = NULL
+iter = NULL
+adapt = NULL
+adj.min = NULL
+ar.target = NULL
+jvar = NULL
+n.knot = NULL
+```
