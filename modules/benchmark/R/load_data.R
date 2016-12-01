@@ -39,7 +39,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
     #Brown Dog API call through BDFiddle, requires username and password
     key   <- get_key("https://bd-api.ncsa.illinois.edu",username,password)
     token <- get_token("https://bd-api.ncsa.illinois.edu",key)
-    #output_path = "/fs/data3/jam2767/veg_test" where are we putting converted file?
+    #output_path = where are we putting converted file?
     converted.data.path <- convert_file(url = "https://bd-api.ncsa.illinois.edu", input_filename = data.path, 
                                         output = "csv", output_path, token)
     if (is.na(converted.data.path)){
