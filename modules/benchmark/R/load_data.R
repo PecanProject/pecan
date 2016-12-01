@@ -54,7 +54,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   
   out <- fcn(data.path, format, site, format$vars$input_name[c(vars.used.index, time.row)])
   
-  # Convert loaded data to the same standard varialbe names and units
+  # Convert loaded data to the same standard variable names and units
   
   vars_used <- format$vars[vars.used.index, ]
   
