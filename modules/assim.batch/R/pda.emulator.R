@@ -126,6 +126,9 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                                                       pname[[x]]))
   names(knots.list) <- sapply(settings$pfts,"[[",'name')
   
+  knots.params <- lapply(knots.list, `[[`, "params")
+  knots.probs <- lapply(knots.list, `[[`, "probs")
+  
   current.step <- "GENERATE KNOTS"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
