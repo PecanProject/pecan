@@ -57,7 +57,7 @@ for(i in 1:nrow(try.entities)){
       site_id = try.sub[j, bety.site.id],
       specie_id = try.sub[j, bety.species.id],
       citation_id = try.sub[j, bety.citation.id],
-      mean = try.sub[j, ud.convert(StdValue, UnitName, units)],
+      mean = try.sub[j, udunits2::ud.convert(StdValue, UnitName, units)],
       n = try.sub[j, Replicates],
       user_id = user_id,
       entity_id = entity,

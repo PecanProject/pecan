@@ -5,7 +5,7 @@
 \title{download.Ameriflux}
 \usage{
 download.Ameriflux(sitename, outfolder, start_date, end_date,
-  overwrite = FALSE, verbose = FALSE)
+  overwrite = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{outfolder}{location on disk where outputs will be stored}
@@ -19,7 +19,7 @@ download.Ameriflux(sitename, outfolder, start_date, end_date,
 \item{verbose}{should the function be very verbose}
 
 \item{site}{the FLUXNET ID of the site to be downloaded, used as file name prefix. 
-The "SITE_ID" field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}}
+The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}}
 }
 \description{
 Download Ameriflux L2 netCDF files

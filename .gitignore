@@ -48,6 +48,7 @@ all/inst/tests/$HOME
 #backup files
 *~
 # system setup files
+scripts/install_pecan.config
 web/config.php
 web/db/config.php
 DUKE_forcing_h.nc
@@ -57,9 +58,20 @@ online.pecan.test.xml
 test.zip
 afshin.pecan.xml
 pecan
-scripts/workflow_RK*
 pecan_ED_online.xml
 pecan.xml
 pecan.sublime-workspace
 FACE.sublime-workspace
 pecan.sublime-project
+sync2pecan
+tests/RyK*
+tests/BC*
+compile_on_geo.sh
+documentation/tutorials/*/*.html
+pecan.Rproj
+shiny/BenchmarkReport/*
+# Installation files form make
+.install/
+.check/
+.test/
+.doc/

@@ -2,8 +2,8 @@ Package: PEcAn.utils
 Type: Package
 Title: PEcAn functions used for ecological forecasts and
     reanalysis
-Version: 1.4.6
-Date: 2016-05-05
+Version: 1.4.8
+Date: 2016-08-09
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang,
     Mike Dietze, Carl Davidson, Rob Kooper, Shawn Serbin
 Maintainer: David LeBauer <dlebauer@illinois.edu>
@@ -15,17 +15,22 @@ Description: The Predictive Ecosystem Carbon Analyzer
     models, and to improve the efficacy of scientific
     investigation.
 Depends:
-    abind,
-    plyr,
     XML,
     ggplot2,
     randtoolbox,
+    abind,
     RCurl
+Imports:
+    abind (>= 1.4.5),
+    coda (>= 0.18),
+    lubridate (>= 1.6.0),
+    ncdf4 (>= 1.15),
+    plyr (>= 1.8.4),
+    udunits2 (>= 0.11)
 Suggests:
     coda,
     MASS,
-    ncdf4,
-    udunits2,
+    ncdf4
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes

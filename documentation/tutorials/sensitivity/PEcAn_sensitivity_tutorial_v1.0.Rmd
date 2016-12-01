@@ -54,7 +54,7 @@ names(sa.samples$temperate.coniferous)
 
 *R hint:* you can use the $ syntax or double bracket, so 
 ```{r,eval=FALSE}
-names(sa.samples[[“temperate.coniferous”]])
+names(sa.samples[["temperate.coniferous"]])
 ```
 
 is equivalent to the above.
@@ -166,7 +166,7 @@ Now that you have the hang of it, here are a few more things to try:
 1. Try a different error functions, given actual NEE uncertainty. You learned earlier that uncertainty in half-hourly observed NEE is not Gaussian. This makes RMSE not the correct measure for goodness-of-fit. Go to *~/pecan/modules/uncertainty/R*, open *flux_uncertainty.R*, and click on the *source* button in the program editing pane. Then you can run:
 ```{r,eval=FALSE}
 unc <- flux.uncertainty(niwotnee,QC=rep(0,17520))
-plot.flux.uncertainty(unc)
+plot_flux_uncertainty(unc)
 ```
 The figure shows you uncertainty (err) as a function of NEE magnitude (mag). How might you use this information to change the RMSE calculation?
 2. Try a few others parameters. Repeat the above steps but with a different parameter. You might want to select one from the sensitivity PDF that has a large sensitivity or from the variance decomposition that is also poorly constrained. 

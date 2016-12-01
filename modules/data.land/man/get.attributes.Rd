@@ -16,7 +16,7 @@ Function to extract attribute information from vector or raster data layer.
 }
 \examples{
 \dontrun{
-file <- Sys.glob(file.path(R.home(), "library", "PEcAn.data.land","data","*.kml"))
+file <- Sys.glob(file.path(R.home(), 'library', 'PEcAn.data.land','data','*.kml'))
 out <- get.attributes(file=file,coords=c(-95,42,-84,47))
 print(out)
 }

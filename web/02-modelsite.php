@@ -81,16 +81,16 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="sites.css" />
 <style>
-	body {font-size: 62.5%;}
-	label, input {display:block; padding-top: 10px;}
-	input.text { margin-bottom:12px; width:95%; padding:10px;}
-	fieldset { padding:0; border:0; margin-top:25px; }
-	h1 { font-size: 1.2em; margin: .6em 0; }
-	.ui-dialog .ui-state-error { padding: .3em; } 
-	.validateTips { border: 1px solid transparent; padding: 0.3em; } 
-	#container { display: table; }
-	#row { display: table-row; }
-	#left, #right, #middle { display: table-cell; padding-left: 10px; }
+  body {font-size: 62.5%;}
+  label, input {display:block; padding-top: 10px;}
+  input.text { margin-bottom:12px; width:95%; padding:10px;}
+  fieldset { padding:0; border:0; margin-top:25px; }
+  h1 { font-size: 1.2em; margin: .6em 0; }
+  .ui-dialog .ui-state-error { padding: .3em; } 
+  .validateTips { border: 1px solid transparent; padding: 0.3em; } 
+  #container { display: table; }
+  #row { display: table-row; }
+  #left, #right, #middle { display: table-cell; padding-left: 10px; }
 </style>
 <script type="text/javascript" src="jquery-1.10.2.js"></script>
 <?php if (!$offline) {?>
@@ -374,12 +374,16 @@ function renderSites(selected) {
   $("#output").html(sites);
 }
 
-<?php } else { ?>
-google.load("maps", "3");
-google.setOnLoadCallback(mapsLoaded);
-
-var map = null;
-var infowindow = null;
+<?php
+} else {
+  $other_params = "";
+  if (isset($googleMapKey) && $googleMapKey != "") {
+    $other_params .= "key=$googleMapKey";
+  }
+  echo "  google.load('maps', '3', { other_params : '$other_params', callback: 'mapsLoaded'});"
+?>
+  var map = null;
+  var infowindow = null;
 
 function clearSites() {
   for (var i in markersArray) {
@@ -388,9 +392,9 @@ function clearSites() {
 }
 
 function mapsLoaded() {
-  var myLatlng = new google.maps.LatLng(40.11642, -88.243382);
+  var myLatlng = new google.maps.LatLng(0, 0);
   var myOptions = {
-    zoom: 5,
+    zoom: 2,
     center: myLatlng,
     mapTypeId: google.maps.MapTypeId.ROADMAP
   }
@@ -481,34 +485,42 @@ function goHome() {
 <?php if ($offline) { ?>
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
-      <h1>Select host</h1>
+      <h1>Select host, model, site</h1>
       <p>Based on the host selected certain sites and models will be
       available.</p>
+      
+      <p>Mouse over menu headers for additional info</p>
 
-      <label id="hostlabel">Host:</label>
+      <span title="Server that models will be run on">
+      <label id="hostlabel">Host:</label></span>
       <select name="hostname" id="hostname" onChange="updateData();">
         <option selected><?php echo $hostname; ?></option>
       </select>
       <div class="spacer"></div>
 
-      <label id="modellabel">Model:</label>
+      <a href="https://pecan.gitbooks.io/pecan-documentation/content/models/" target="_blank" 
+      title="Link opens model descriptions in another window">
+      <label id="modellabel">Model:</label></a>
       <select name="modelid" id="modelid" onChange="updateData();">
         <option selected value="<?php echo $modelid; ?>"><?php echo $modelid; ?></option>
       </select>
       <div class="spacer"></div>
 
-      <label id="sitegrouplabel">Site Group:</label>
+      <span title="Filter map by networks of sites">
+      <label id="sitegrouplabel">Site Group:</label></span>
       <select name="sitegroupid" id="sitegroupid" onChange="updateData();">
         <option value="">All Sites</option>
         <?php echo $sitegroups; ?>
       </select>
       <div class="spacer"></div>
 
-      <label id="conversionlabel">Conversion:</label>
+      <span title="Click to add sites to the map that PEcAn can automatically process model inputs for. Default is to show just sites where a model already has all required inputs installed">
+      <label id="conversionlabel">Conversion:</label></span>
       <input type="checkbox" id="conversion" name="conversion" onChange="updateData();" <?php echo $conversion; ?>  /> 
       <div class="spacer"></div>
 
-      <label id="sitelabel">Site:</label>
+      <span title="Type here to search for sites by name. Click on map to select site">
+      <label id="sitelabel">Site:</label></span>
       <input name="siteid" id="siteid" type="hidden" value="<?php echo $siteid; ?>"/>
       <input name="sitename" id="sitename" type="text" />
 <?php if ($betydb != "") { ?>
@@ -523,109 +535,99 @@ function goHome() {
       <input id="prev" type="button" value="Prev" onclick="prevStep();" />
       <input id="next" type="button" value="Next" onclick="nextStep();" />    
       <div class="spacer"></div>
-
-
-
-
-     <!-- <input id="create-site" type="button" value="Add Site"/> -->
 	
-	<div id="divAddSite">
-		<div id="dialog-form" class="ui-widget" title="Create new site">
-			<p class="validateTips">All form fields are required.</p>
-			<form>
-				<fieldset>
-					<div id="container">
-						<div id="row">
-							<div id="left">
-								<label for="sitename" id="lblsitename">Site name</label>
-								<input id="txtsitename" size="30" type="text" name="sitename"></input>
-							</div>
-						</div>
-						<div id="row">
-							<div id="left">
-								<label id="lblelevation">Elevation (m)</label>
-								<input id="txtelevation" size="30" type="text" name="elevation"></input>
-							</div>
-							<div id="middle">
-								<label id="lblmap">Mean Annual Precipitation (mm/yr)</label>
-								<input id="txtmap" size="30" type="text" name="map"></input>
-							</div>
-							<div id="right">
-								<label id="lblmat">Mean Annual Temperature (C)</label>
-								<input id="txtmat" size="30" type="text" name="mat"></input>
-							</div>
-						</div>
-						<div id="row">
-							<div id="left">
-								<label id="lblcity">City</label>
-								<input id="txtcity" size="30" type="text" name="city"></input>
-							</div>
-							<div id="middle">
-								<label id="lblstate">State</label>
-								<input id="txtstate" size="30" type="text" name="state"></input>
-							</div>
-							<div id="right">
-								<label id="lblcountry">Country</label>
-								<input id="txtcountry" size="30" type="text" name="country"></input>
-							</div>
-						</div>
-						<div id="row">
-						<!-- Column 1 -->
-							<div id="left">
-								<label id="lbllat">Lat</label>
-								<input id="txtlat" size="30" type="text" name="lat"></input>
-							</div>
-							<div id="middle">
-								<label id="lbllong">Long</label>
-								<input id="txtlong" size="30" type="text" name="long"></input>
-							</div>
-						</div>
-						<div id="row">
-						<!--	<div id="left">
-								<label id="lblpctsoil">% Soil</label>
-								<input id="txtpctsoil" size="30" type="text"></input>
-							</div> -->
-							<div id="left">
-								<label id="lblpctclay">% Clay</label>
-								<input id="txtpctclay" size="30" type="text" name="pctclay"></input>
-							</div>
-							<div id="middle">
-								<label id="lblpctsand">% Sand</label>
-								<input id="txtpctsand" size="30" type="text" name="pctsand"></input>
-							</div>
-						</div>
-						<div id="row">
-							<!--<div id="left">
-								<label id="lblsom">SOM</label>
-								<input id="txtsom" size="30" type="text"></input>
-							</div> -->
-							<div id="left">
-								<label id="lblgreenhouse">Greenhouse</label>
-								<input id="txtgreenhouse" size="30" type="text" name="greenhouse"></input>
-							</div>
-						</div>
-						<div id="row">
-							<div id="left">
-								<label id="lblnotes">Notes</label>
-								<textarea id="txtnotes" cols="40" rows="10" type="text" name="notes"></textarea>
-							</div>
-							<div id="middle">
-								<label id="lblsoilnotes">Soil Notes</label>
-								<textarea id="txtsoilnotes" cols="40" rows="10" type="text" name="soilnotes"></textarea>
-							</div>
-						</div>
-					</div>					
-					<!-- Allow form submission with keyboard without duplicating the dialog button -->
-					<input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
-				</fieldset>
-			</form>
-		</div>
-
-	<!--	<button id="create-site">Create new site</button> -->
-	</div>
-      <div class="spacer"></div>
+      <div id="divAddSite">
+        <div id="dialog-form" class="ui-widget" title="Create new site">
+        <p class="validateTips">All form fields are required.</p>
+        <form>
+          <fieldset>
+            <div id="container">
+              <div id="row">
+                <div id="left">
+                  <label for="sitename" id="lblsitename">Site name</label>
+                  <input id="txtsitename" size="30" type="text" name="sitename"></input>
+                </div>
+              </div>
+              <div id="row">
+                <div id="left">
+                  <label id="lblelevation">Elevation (m)</label>
+                  <input id="txtelevation" size="30" type="text" name="elevation"></input>
+                </div>
+                <div id="middle">
+                  <label id="lblmap">Mean Annual Precipitation (mm/yr)</label>
+                  <input id="txtmap" size="30" type="text" name="map"></input>
+                </div>
+                <div id="right">
+                  <label id="lblmat">Mean Annual Temperature (C)</label>
+                  <input id="txtmat" size="30" type="text" name="mat"></input>
+                </div>
+              </div>
+              <div id="row">
+                <div id="left">
+                  <label id="lblcity">City</label>
+                  <input id="txtcity" size="30" type="text" name="city"></input>
+                </div>
+                <div id="middle">
+                  <label id="lblstate">State</label>
+                  <input id="txtstate" size="30" type="text" name="state"></input>
+                </div>
+                <div id="right">
+                  <label id="lblcountry">Country</label>
+                  <input id="txtcountry" size="30" type="text" name="country"></input>
+                </div>
+              </div>
+              <div id="row">
+                <div id="left">
+                  <label id="lbllat">Lat</label>
+                  <input id="txtlat" size="30" type="text" name="lat"></input>
+                </div>
+                <div id="middle">
+                  <label id="lbllong">Long</label>
+                  <input id="txtlong" size="30" type="text" name="long"></input>
+                </div>
+              </div>
+              <div id="row">
+                <div id="left">
+                  <label id="lblpctclay">% Clay</label>
+                  <input id="txtpctclay" size="30" type="text" name="pctclay"></input>
+                </div>
+                <div id="middle">
+                  <label id="lblpctsand">% Sand</label>
+                  <input id="txtpctsand" size="30" type="text" name="pctsand"></input>
+                </div>
+              </div>
+              <div id="row">
+                <div id="left">
+                  <label id="lblgreenhouse">Greenhouse</label>
+                  <input id="txtgreenhouse" size="30" type="text" name="greenhouse"></input>
+                </div>
+              </div>
+              <div id="row">
+                <div id="left">
+                  <label id="lblnotes">Notes</label>
+                  <textarea id="txtnotes" cols="40" rows="10" type="text" name="notes"></textarea>
+                </div>
+                <div id="middle">
+                  <label id="lblsoilnotes">Soil Notes</label>
+                  <textarea id="txtsoilnotes" cols="40" rows="10" type="text" name="soilnotes"></textarea>
+                </div>
+              </div>
+            </div>					
+          <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+          </fieldset>
+        </form>
+      </div>
+    </div>
+    <div class="spacer"></div>
     </form>
-<?php whoami(); ?>    
+<?php whoami(); ?>  
+<p>
+  <a href="https://pecan.gitbooks.io/pecan-documentation/content/" target="_blank">Documentation</a>
+  <br>
+  <a href="https://gitter.im/PecanProject/pecan" target="_blank">Chat Room</a>
+  <br>
+  <a href="https://github.com/PecanProject/pecan/issues/new" target="_blank">Bug Report</a>
+</p>
   </div>
   <div id="output"></div>
   <div id="footer"><?php echo get_footer(); ?></div>

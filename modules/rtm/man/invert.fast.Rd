@@ -11,7 +11,7 @@ invert.fast(modname, observed, inits, cons, pmu, psd, plog, minp, ngibbs)
 Refer to `data/model.list.csv`}
 
 \item{observed}{Observed reflectance. Can be a vector, matrix, 
-or data.frame; BUT NOTE: all are coerced via "as.matrix"}
+or data.frame; BUT NOTE: all are coerced via 'as.matrix'}
 
 \item{inits}{Named vector of parameters to invert. Names are required!}
 

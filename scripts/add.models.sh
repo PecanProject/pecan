@@ -4,13 +4,14 @@
 . $( dirname $0 )/add.util.sh
 
 # Add models (all these are assumed to be local or $FQDN)
-addLocalModel "ED2.2" "ED2" "46" "ed2.r46"
-addLocalModel "ED2.2" "ED2" "82" "ed2.r82"
-addLocalModel "ED2.2" "ED2" "git" "ed2.git"
-addLocalModel "SIPNET" "SIPNET" "unk" "sipnet.runk"
-addLocalModel "DALEC" "DALEC" "" "dalec_seqMH"
-addLocalModel "Linkages" "LINKAGES" "git" "linkages.git"
-addLocalModel "MAESPA" "MAESPA" "git" "maespa.git"
+addLocalModel "ED2.2"     "ED2"      "46"  "ed2.r46"
+addLocalModel "ED2.2"     "ED2"      "82"  "ed2.r82"
+addLocalModel "ED2.2"     "ED2"      "git" "ed2.git"
+addLocalModel "SIPNET"    "SIPNET"   "unk" "sipnet.runk"
+addLocalModel "SIPNET"    "SIPNET"   "136" "sipnet.r136"
+addLocalModel "DALEC"     "DALEC"    ""    "dalec_seqMH"
+addLocalModel "Linkages"  "LINKAGES" "git" "linkages.git"
+addLocalModel "MAESPA"    "MAESPA"   "git" "maespa.git"
 addLocalModel "LPJ-GUESS" "LPJGUESS" "3.1" "guess.3.1"
 
 # special case for PRELES

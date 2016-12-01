@@ -4,7 +4,7 @@
 \alias{read.settings}
 \title{Loads PEcAn settings file}
 \usage{
-read.settings(inputfile = "pecan.xml", outputfile = "pecan.xml")
+read.settings(inputfile = "pecan.xml")
 }
 \arguments{
 \item{inputfile}{the PEcAn settings file to be used.}
@@ -48,5 +48,9 @@ Shawn Serbin
 Rob Kooper
 
 David LeBauer
+
+Ryan Kelly
+
+Betsy Cowdery
 }
 

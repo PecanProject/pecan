@@ -9,17 +9,14 @@
 ##' @author Ryan Kelly
 ##' @export
 load.L2Ameriflux.cf <- function(file.in) {
-  require(ncdf4)
-
-  nc <- nc_open(file.in)
+  
+  nc <- ncdf4::nc_open(file.in)
   
   vars <- list()
-  for(varname in names(nc$var)) {
-    vars[[varname]] <- ncvar_get(nc, varname)
+  for (varname in names(nc$var)) {
+    vars[[varname]] <- ncdf4::ncvar_get(nc, varname)
   }
+  ncdf4::nc_close(nc)
   
-  vars <- as.data.frame(do.call(cbind, vars))
-  
-  nc_close(nc)
-  return(vars)
-}
+  return(as.data.frame(do.call(cbind, vars)))
+} # load.L2Ameriflux.cf
