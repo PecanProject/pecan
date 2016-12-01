@@ -359,6 +359,9 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     mix <- "each"
   }
   
+  # start the clock
+  ptm.start <- proc.time()
+  
   # prepare for parallelization
   dcores <- parallel::detectCores() - 1
   ncores <- min(max(dcores, 1), settings$assim.batch$chain)
@@ -384,6 +387,11 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   })
   
   parallel::stopCluster(cl)
+  
+  # Stop the clock
+  ptm.finish <- proc.time() - ptm.start
+  logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds."))
+  
   
   mcmc.samp.list <- list()
   

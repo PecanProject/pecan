@@ -246,8 +246,6 @@ pda.load.priors <- function(settings, con, extension.check = TRUE) {
     }
     settings$assim.batch$prior$prior.id <- priorids
   }
-  logger.info(paste0("Using posterior ID(s) ", paste(unlist(settings$assim.batch$prior$prior.id), 
-                                                       collapse = ", "), " as PDA prior(s)."))
 
   # if this is an extension run you want to use priors of the previous round
   # extension.check == TRUE not an extension run
@@ -257,6 +255,9 @@ pda.load.priors <- function(settings, con, extension.check = TRUE) {
   } else{
     priorids <- settings$assim.batch$prior$prior.id
   }
+  
+  logger.info(paste0("Using posterior ID(s) ", paste(unlist(priorids), collapse = ", "), " as PDA prior(s)."))
+  
 
   prior.out <- list()
   prior.paths <- list()
