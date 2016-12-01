@@ -177,6 +177,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       
       knots.params <- lapply(knots.list, `[[`, "params")
       knots.probs  <- lapply(knots.list, `[[`, "probs")
+      
       current.step <- "Generate Knots: round-if block"
       save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   } # end round-if block
@@ -266,6 +267,17 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     SS.list <- list()
     bc <- 1
     
+    # check failed runs and remove them if you'll have a reasonable amount of param sets after removal
+    # what percentage of runs is allowed to fail?
+    if(!is.null(settings$assim.batch$allow.fail)){
+      allow.fail <- as.numeric(settings$assim.batch$allow.fail)
+    } else {
+      allow.fail <- 0.5
+    }
+    
+    # what is it in number of runs?
+    no.of.allowed <- floor(settings$assim.batch$n.knot * allow.fail)
+    
     for(inputi in seq_len(n.input)){
       error.statistics[[inputi]] <- sapply(pda.errors,`[[`, inputi)
         
@@ -287,8 +299,19 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
           SS.list[[inputi]] <- cbind(X, error.statistics[[inputi]])
       } # if-block
         
-      # remove failed runs
-      SS.list[[inputi]] <- SS.list[[inputi]][!rowSums(is.na(SS.list[[inputi]])), ]
+      # how many runs failed?
+      no.of.failed <- sum(is.na(SS.list[[inputi]][, ncol(SS.list[[inputi]])]))
+      
+      # check if you're left with enough sets
+      if(no.of.failed < no.of.allowed & (settings$assim.batch$n.knot - no.of.failed) > 1){
+        SS.list[[inputi]] <- SS.list[[inputi]][!rowSums(is.na(SS.list[[inputi]])), ]
+        if( no.of.failed  > 0){
+          logger.info(paste0(no.of.failed, " runs failed. Emulator for ", names(n.of.obs)[inputi], " will be built with ", settings$assim.batch$n.knot - no.of.failed, " knots."))
+        } 
+      } else{
+        logger.error(paste0("Too many runs failed, not enough parameter set to build emulator for ", names(n.of.obs)[inputi], "."))
+      }
+      
     } # for-loop
 
 
