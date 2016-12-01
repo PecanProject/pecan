@@ -170,15 +170,18 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    npft <- length(trait.values)
    print(npft)
    print(dim(trait.values))
+   print(names(trait.values))
    pftnames <- stringr::str_trim(tolower(ncvar_get(param.nc,"pftname")))
    for (i in seq_len(npft)) {
      pft <- trait.values[[i]]
-     print(i)
+     print(c("PFT",i))
      PEcAn.utils::logger.info(pft)
      pft.name <- names(trait.values)[i]
-     if(is.null(pft.name) | !is.na(pft.name)){
+     if(is.null(pft.name) | is.na(pft.name)){
        PEcAn.utils::logger.error("pft.name missing")
-     } 
+     } else {
+       PEcAn.utils::logger.info(paste("PFT =",pft.name))
+     }
      if(pft.name == 'env') next   ## HACK, need to remove env from default
      
      ## Match PFT name to COLUMN

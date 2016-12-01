@@ -123,6 +123,11 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   
   knots.params <- lapply(knots.list, `[[`, "params")
   knots.probs <- lapply(knots.list, `[[`, "probs")
+  print("emulator names")
+  print(sapply(settings$pfts,"[[",'name'))
+  print(names(knots.list))
+  print(names(knots.params))
+  print(names(knots.probs))
   
   ## Run this block if this is a "round" extension
   if (run.round) {
