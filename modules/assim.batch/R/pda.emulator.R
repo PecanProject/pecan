@@ -123,33 +123,21 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   
   knots.params <- lapply(knots.list, `[[`, "params")
   knots.probs <- lapply(knots.list, `[[`, "probs")
-  print("emulator names")
-  print(sapply(settings$pfts,"[[",'name'))
-  print(names(knots.list))
-  print(names(knots.params))
-  print(names(knots.probs))
   
   ## Run this block if this is a "round" extension
   if (run.round) {
       
-      # save the original prior path
-      temp.path <- settings$assim.batch$prior$path
+      # loads the priors used in the previous emulator run
+      temp.ext <- pda.load.priors(settings, con, run.normal) 
+      prior.ext.list <- temp.ext$prior
       
-      # set prior path to NULL to use the previous PDA's posterior densities as new priors this time
-      settings$assim.batch$prior$path <- NULL
+      ## set prior distribution functions for prior of the previous emulator run
+      prior.ext.fn <- lapply(prior.ext.list, pda.define.prior.fn)
       
-      ## Re-load priors
-      temp <- pda.load.priors(settings, con)  # loads the posterior dist. from previous emulator run
-      prior.list <- temp$prior
-      settings$assim.batch$prior$path <- temp.path
-      
-      ## Re-set prior distribution functions
-      prior.fn <- lapply(prior.list, pda.define.prior.fn)
-      
-      ## Propose a percentage of the new parameter knots from the posterior of previous run
+      ## Propose a percentage (if not specified 25%) of the new parameter knots from the prior of previous run
       knot.par        <- ifelse(!is.null(settings$assim.batch$knot.par), 
                                 as.numeric(settings$assim.batch$knot.par), 
-                                0.75)
+                                0.25)
       
       n.post.knots    <- floor(knot.par * settings$assim.batch$n.knot)
       
@@ -157,7 +145,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                                 function(x) pda.generate.knots(n.post.knots, 
                                                                n.param.all[x], 
                                                                prior.ind[[x]],
-                                                               prior.fn[[x]],
+                                                               prior.ext.fn[[x]],
                                                                pname[[x]]))
       knots.params.temp <- lapply(knots.list.temp, `[[`, "params")
       
@@ -169,16 +157,12 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
         names(knots.list)[i] <- settings$pfts[[i]]['name']
       }
       
-      # Return to original prior distribution
-      temp       <- pda.load.priors(settings, con)
-      prior.list <- temp$prior
-      prior.fn   <- lapply(prior.list, pda.define.prior.fn)
-      
-      # Convert parameter values to probabilities according to previous prior distribution
+
+      # Convert parameter values to probabilities according to current PDA prior distribution
       knots.list$probs <- knots.list$params
       for (pft in seq_along(settings$pfts)) {
         for (i in seq_len(n.param.all[[pft]])) {
-          knots.list[[pft]]$probs[, i] <- eval(prior.fn[[pft]]$pprior[[i]], 
+          knots.list[[pft]]$probs[, i] <- eval(prior.ext.fn[[pft]]$pprior[[i]], 
                                                list(q = knots.list[[pft]]$params[, i]))
         }
       }
@@ -186,6 +170,12 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       knots.params <- lapply(knots.list, `[[`, "params")
       knots.probs  <- lapply(knots.list, `[[`, "probs")
   } # end round-if block
+  
+  print("emulator names")
+  print(sapply(settings$pfts,"[[",'name'))
+  print(names(knots.list))
+  print(names(knots.params))
+  print(names(knots.probs))
   
   ## Run this block if this is normal run or a "round" extension
   if(run.normal | run.round){
