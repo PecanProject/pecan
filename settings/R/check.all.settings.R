@@ -20,10 +20,10 @@ check.inputs <- function(settings) {
   }
   
   # get list of inputs associated with model type
-  dbcon <- db.open(settings$database$bety)
-  on.exit(db.close(dbcon))
+  dbcon <- PEcAn.DB::db.open(settings$database$bety)
+  on.exit(PEcAn.DB::db.close(dbcon))
   
-  inputs <- db.query(paste0(
+  inputs <- PEcAn.DB::db.query(paste0(
     "SELECT tag, format_id, required FROM modeltypes, modeltypes_formats ",
     "WHERE modeltypes_formats.modeltype_id = modeltypes.id ",
       "AND modeltypes.name='", settings$model$type, "' ",
@@ -50,7 +50,7 @@ check.inputs <- function(settings) {
       # check if <id> exists
       if ("id" %in% names(settings$run$inputs[[tag]])) {
         id <- settings$run$inputs[[tag]][['id']]
-        file <- dbfile.file("Input", id, dbcon, hostname)
+        file <- PEcAn.DB::dbfile.file("Input", id, dbcon, hostname)
         if (is.na(file)) {
           logger.error("No file found for", tag, " and id", id, "on host", hostname)
         } else {
@@ -62,7 +62,7 @@ check.inputs <- function(settings) {
         }
       } else if ("path" %in% names(settings$run$inputs[[tag]])) {
         # can we find the file so we can set the tag.id
-        id <- dbfile.id('Input', settings$run$inputs[[tag]][['path']], dbcon, hostname)
+        id <- PEcAn.DB::dbfile.id('Input', settings$run$inputs[[tag]][['path']], dbcon, hostname)
         if (!is.na(id)) {
           settings$run$inputs[[tag]][['id']] <- id
         }
@@ -70,7 +70,7 @@ check.inputs <- function(settings) {
       
       # check to see if format is right type
       if ("id" %in% names(settings$run$inputs[[tag]])) {
-        formats <- db.query(paste0("SELECT format_id FROM inputs WHERE id=", settings$run$inputs[[tag]][['id']]), con=dbcon)
+        formats <- PEcAn.DB::db.query(paste0("SELECT format_id FROM inputs WHERE id=", settings$run$inputs[[tag]][['id']]), con=dbcon)
         if (nrow(formats) > 1) {
           if (formats[1, 'format_id'] != inputs$format_id[i]) {
             logger.error("Format of input", tag, "does not match specified input.")
@@ -176,7 +176,7 @@ check.database <- function(database) {
     database$dbname <- "bety"
   }
   
-  if (!db.exists(params=database, FALSE, table=NA)) {
+  if (!PEcAn.DB::db.exists(params=database, FALSE, table=NA)) {
     logger.severe("Invalid Database Settings : ", unlist(database))
   }
   
@@ -192,7 +192,7 @@ check.database <- function(database) {
 ##' @param settings settings file
 ##' @export check.bety.version
 check.bety.version <- function(dbcon) {
-  versions <- db.query("SELECT version FROM schema_migrations;", con=dbcon)[['version']]
+  versions <- PEcAn.DB::db.query("SELECT version FROM schema_migrations;", con=dbcon)[['version']]
   
   # there should always be a versin 1
   if (! ("1" %in% versions)) {
@@ -249,8 +249,8 @@ check.settings <- function(settings, force=FALSE) {
   settings <- check.database.settings(settings)
   
   if(!is.null(settings$database$bety)) {
-    dbcon <- db.open(settings$database$bety)
-    on.exit(db.close(dbcon), add=TRUE)
+    dbcon <- PEcAn.DB::db.open(settings$database$bety)
+    on.exit(PEcAn.DB::db.close(dbcon), add=TRUE)
   } else {
     dbcon <- NULL
   }
@@ -425,10 +425,10 @@ check.settings <- function(settings, force=FALSE) {
       #check to see if name of each pft in xml file is actually a name of a pft already in database
       if (!is.null(dbcon)) {# change to if(class(dbcon) == "PostgreSQLConnection")??
         if (is.null(settings$model$type)) {
-          x <- db.query(paste0("SELECT pfts.id FROM pfts",
+          x <- PEcAn.DB::db.query(paste0("SELECT pfts.id FROM pfts",
                                " WHERE pfts.name = '",  settings$pfts[i]$pft$name, "'"), con=dbcon)
         } else {
-          x <- db.query(paste0("SELECT pfts.id FROM pfts, modeltypes",
+          x <- PEcAn.DB::db.query(paste0("SELECT pfts.id FROM pfts, modeltypes",
                                " WHERE pfts.name = '",  settings$pfts[i]$pft$name, "'",
                                " AND modeltypes.name='", settings$model$type, "'",
                                " AND modeltypes.id=pfts.modeltype_id;"), con=dbcon)
@@ -614,7 +614,7 @@ check.run.settings <- function(settings, dbcon=NULL) {
       settings$run$site$id <- -1
     } else if (settings$run$site$id >= 0) {
       if (!is.null(dbcon)) {
-        site <- db.query(paste("SELECT sitename, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =", settings$run$site$id), con=dbcon)
+        site <- PEcAn.DB::db.query(paste("SELECT sitename, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =", settings$run$site$id), con=dbcon)
       } else {
         site <- data.frame(id=settings$run$site$id)
         if (!is.null(settings$run$site$name)) {
@@ -682,7 +682,7 @@ check.model.settings <- function(settings, dbcon=NULL) {
     if(!is.null(dbcon)){
       if(!is.null(settings$model$id)){
         if(as.numeric(settings$model$id) >= 0){
-          model <- db.query(paste0("SELECT models.id AS id, models.revision AS revision, modeltypes.name AS type FROM models, modeltypes WHERE models.id=", settings$model$id, " AND models.modeltype_id=modeltypes.id;"), con=dbcon)
+          model <- PEcAn.DB::db.query(paste0("SELECT models.id AS id, models.revision AS revision, modeltypes.name AS type FROM models, modeltypes WHERE models.id=", settings$model$id, " AND models.modeltype_id=modeltypes.id;"), con=dbcon)
           if(nrow(model) == 0) {
             logger.error("There is no record of model_id = ", settings$model$id, "in database")
           }
@@ -690,7 +690,7 @@ check.model.settings <- function(settings, dbcon=NULL) {
           model <- list()
         }
       } else if (!is.null(settings$model$type)) {
-        model <- db.query(paste0("SELECT models.id AS id, models.revision AS revision, modeltypes.name AS type FROM models, modeltypes ",
+        model <- PEcAn.DB::db.query(paste0("SELECT models.id AS id, models.revision AS revision, modeltypes.name AS type FROM models, modeltypes ",
                                  "WHERE modeltypes.name = '", toupper(settings$model$type), "' ",
                                  "AND models.modeltype_id=modeltypes.id ",
                                  ifelse(is.null(settings$model$revision), "", 
@@ -756,7 +756,7 @@ check.model.settings <- function(settings, dbcon=NULL) {
     
     # check on binary for given host
     if (!is.null(settings$model$id) && (settings$model$id >= 0)) {
-      binary <- dbfile.file("Model", settings$model$id, dbcon, settings$host$name)
+      binary <- PEcAn.DB::dbfile.file("Model", settings$model$id, dbcon, settings$host$name)
       if (!is.na(binary)) {
         if (is.null(settings$model$binary)) {
           settings$model$binary <- binary
@@ -783,15 +783,15 @@ check.workflow.settings <- function(settings, dbcon=NULL) {
     if (!'workflow' %in% names(settings)) {
       now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
       if(is.MultiSettings(settings)) {
-        db.query(paste0("INSERT INTO workflows (folder, model_id, hostname, started_at, created_at) values ('",
+        PEcAn.DB::db.query(paste0("INSERT INTO workflows (folder, model_id, hostname, started_at, created_at) values ('",
                         settings$outdir, "','" , settings$model$id, "', '", settings$host$name, "', '",
                         now, "', '", now, "')"), con=dbcon)
       } else {      
-        db.query(paste0("INSERT INTO workflows (folder, site_id, model_id, hostname, start_date, end_date, started_at, created_at) values ('",
+        PEcAn.DB::db.query(paste0("INSERT INTO workflows (folder, site_id, model_id, hostname, start_date, end_date, started_at, created_at) values ('",
                         settings$outdir, "','" , settings$run$site$id, "','", settings$model$id, "', '", settings$host$name, "', '",
                         settings$run$start.date, "', '", settings$run$end.date, "', '", now, "', '", now, "')"), con=dbcon)
       }
-      settings$workflow$id <- db.query(paste0("SELECT id FROM workflows WHERE created_at='", now, "' ORDER BY id DESC LIMIT 1;"), con=dbcon)[['id']]
+      settings$workflow$id <- PEcAn.DB::db.query(paste0("SELECT id FROM workflows WHERE created_at='", now, "' ORDER BY id DESC LIMIT 1;"), con=dbcon)[['id']]
       fixoutdir <- TRUE
     }
   } else {
@@ -815,7 +815,7 @@ check.workflow.settings <- function(settings, dbcon=NULL) {
   
   #update workflow
   if (fixoutdir) {
-    db.query(paste0("UPDATE workflows SET folder='", full.path(settings$outdir), "' WHERE id=", settings$workflow$id), con=dbcon)
+    PEcAn.DB::db.query(paste0("UPDATE workflows SET folder='", full.path(settings$outdir), "' WHERE id=", settings$workflow$id), con=dbcon)
   }
   
   return(settings)
@@ -849,15 +849,15 @@ check.database.settings <- function(settings) {
       }
       
       # check if we can connect to the database with write permissions
-      if (settings$database$bety$write && !db.exists(params=settings$database$bety, TRUE, table='users')) {
+      if (settings$database$bety$write && !PEcAn.DB::db.exists(params=settings$database$bety, TRUE, table='users')) {
         logger.severe("Invalid Database Settings : ", unlist(settings$database))
       }
       
       # TODO check userid and userpassword
       
       # Connect to database
-      dbcon <- db.open(settings$database$bety)
-      on.exit(db.close(dbcon))
+      dbcon <- PEcAn.DB::db.open(settings$database$bety)
+      on.exit(PEcAn.DB::db.close(dbcon))
       
       # check database version
       check.bety.version(dbcon)

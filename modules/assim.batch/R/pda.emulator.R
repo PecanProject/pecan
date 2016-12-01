@@ -82,7 +82,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   n.input     <- length(inputs)
   
   ## Set model-specific functions
-  do.call("require", list(paste0("PEcAn.", settings$model$type)))
+  do.call("library", list(paste0("PEcAn.", settings$model$type)))
   my.write.config <- paste("write.config.", settings$model$type, sep = "")
   if (!exists(my.write.config)) {
     logger.severe(paste(my.write.config, 
@@ -160,6 +160,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
         knots.list[[i]]$params <- rbind(knots.params[[i]][sample(nrow(knots.params[[i]]), 
                                                                  (settings$assim.batch$n.knot - n.post.knots)), ], 
                                         knots.list.temp[[i]]$params)
+        names(knots.list)[i] <- settings$pfts[[i]]['name']
       }
       
       # Return to original prior distribution

@@ -5,8 +5,8 @@
 ##' @author Ryan Kelly, Rob Kooper, Betsy Cowdery
 ##' @export
 do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE) {
-  if (is.MultiSettings(settings)) {
-    return(papply(settings, do.conversions))
+  if (PEcAn.settings::is.MultiSettings(settings)) {
+    return(PEcAn.settings::papply(settings, do.conversions))
   }
   
   needsave <- FALSE
@@ -27,7 +27,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     # fia database
     if ((input.tag %in% c("css", "pss", "site")) &&
         is.null(input$path) && !is.null(input$source) && (input$source == "FIA")) {
-      settings <- fia.to.psscss(settings, overwrite=overwrite.fia)
+      settings <- PEcAn.data.land::fia.to.psscss(settings, overwrite=overwrite.fia)
       needsave <- TRUE
     }
     
@@ -55,7 +55,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
   if (needsave) {
     saveXML(listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.METProcess.xml"))
   } else if (file.exists(file.path(settings$outdir, "pecan.METProcess.xml"))) {
-    settings <- read.settings(file.path(settings$outdir, "pecan.METProcess.xml"))
+    settings <- PEcAn.settings::read.settings(file.path(settings$outdir, "pecan.METProcess.xml"))
   }
   return(settings)
 }
