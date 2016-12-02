@@ -25,6 +25,7 @@ debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "li
                     units = c("Kelvin", "Kelvin", "Kelvin", "W/m2", "Pascal", "W/m2", "m/s", 
                               "m/s", "g/g", "kg/m2/s"))
   
+
   sub_str <- substrRight(input_met, 7)
   year <- substr(sub_str, 1, 4)
   
@@ -73,18 +74,12 @@ debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "li
   # Grab the means/medians of the source and train, find the difference, and
   # correct the source dataset accordingly The following separate variables based
   # on properties so we can appropriately debias based on means/medians
-  source_add <- data.frame(source$air_temperature, source$air_temperature_max, 
-                           source$air_temperature_min, source$air_pressure, source$eastward_wind, source$northward_wind)
-  source_mult <- data.frame(source$surface_downwelling_longwave_flux_in_air, source$surface_downwelling_shortwave_flux_in_air, 
-                            source$specific_humidity, source$precipitation_flux)
-  train_add <- data.frame(train$air_temperature, train$air_temperature_max, train$air_temperature_min, 
-                          train$air_pressure, train$eastward_wind, train$northward_wind)
-  train_mult <- data.frame(train$surface_downwelling_longwave_flux_in_air, train$surface_downwelling_shortwave_flux_in_air, 
-                           train$specific_humidity, train$precipitation_flux)
   add_var <- c("air_temperature", "air_temperature_max", "air_temperature_min", 
                "air_pressure", "eastward_wind", "northward_wind")
+
   mult_var <- c("surface_downwelling_longwave_flux_in_air", "surface_downwelling_shortwave_flux_in_air", 
                 "specific_humidity", "precipitation_flux")
+
   # These are for the linear regression argument, the for loop upscales the
   # training dataset to match the length of the source dataset because they must be
   # equal lengths
@@ -96,72 +91,82 @@ debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "li
     }
   }
   colnames(lin_train) <- var$CF.name
-  
+  debi <- data.frame()
   ### De_method routines!!!!! ###
-  for (n in 1:length(var$DAP.name)) {
-    if (de_method == "mean") {
-      mean_source <- apply(source, 2, mean)
-      mean_train <- apply(train, 2, mean)
-      mean_diff <- mean_train - mean_source
-      mean_ratio <- mean_train/mean_source
-      debi_add <- list()
-      debi_mult <- list()
-      for (k in 1:length(add_var)) {
-        debi_add[[k]] <- (source_add[[k]] + mean_diff[[k]])
-      }
-      for (k in 1:length(mult_var)) {
-        debi_mult[[k]] <- (source_mult[[k]] * mean_ratio[[k]])
-      }
-      debi_add <- data.frame(debi_add)
-      colnames(debi_add) <- add_var
-      debi_mult <- data.frame(debi_mult)
-      colnames(debi_mult) <- mult_var
-      debi <- data.frame(debi_add, debi_mult)
-    } else {
-      if (de_method == "median") {
-        med_source <- apply(source_add, 2, median)
-        med_train <- apply(train_add, 2, median)
-        med_diff <- med_train - med_source
-        med_ratio <- med_train/med_source
-        debi_add <- list()
-        debi_mult <- list()
-        for (k in 1:length(add_var)) {
-          debi_add[[k]] <- (source_add[[k]] + med_diff[[k]])
-        }
-        for (k in 1:length(mult_var)) {
-          debi_mult[[k]] <- (source_mult[[k]] * med_ratio[[k]])
-        }
-        debi_add <- data.frame(debi_add)
-        colnames(debi_add) <- add_var
-        debi_mult <- data.frame(debi_mult)
-        colnames(debi_mult) <- mult_var
-        debi <- data.frame(debi_add, debi_mult)
+  if (de_method == "mean") {
+    for (u in add_var){
+      if (all(is.na(source[[u]])) == FALSE) {
+        mean_source <- mean(source[[u]])
+        mean_train <- mean(train[[u]])
+        mean_diff <- mean_train - mean_source
+        debi[1:reso_len, u] <- source[[u]] + mean_diff
       } else {
-        if (de_method == "linear") {
-          debi <- list()
-          for (i in 1:length(var$CF.name)) {
-            if (all(is.na(source[[i]])) == FALSE & all(is.na(lin_train[[i]])) == 
-                FALSE) {
-              lin <- lm(lin_train[[i]] ~ source[[i]])
-              x <- as.numeric(lin$coefficients[2])
-              b <- as.numeric(lin$coefficients[1])
-              m <- source[[i]]
-              if (var$CF.name[[i]] == "precipitation_flux") {
-                b <- 0
-              }
-              if (var$CF.name[[i]] == "specific_humidity") {
-                b <- 0
-              }
-              debi[[i]] <- (m * x + b)
-            } else {
-              if (all(is.na(source[[i]])) == TRUE | all(is.na(lin_train[[i]])) == 
-                  TRUE) {
-                debi[[i]] <- NA
-              }
+        debi[1:reso_len,u] <- NA
+      }
+    }
+    for (u in mult_var){
+      if (all(is.na(source[[u]])) == FALSE) {
+        mean_source <- mean(source[[u]])
+        mean_train <- mean(train[[u]])
+        mean_ratio <- mean_train/mean_source
+        debi[1:reso_len, u] <- source[[u]] * mean_ratio
+      } else {
+        debi[1:reso_len,u] <- NA
+      }
+    }
+
+  } else {
+    if (de_method == "median") {
+      for (u in add_var){
+        if (all(is.na(source[[u]])) == FALSE) {
+          med_source <- median(source[[u]])
+          med_train <- median(train[[u]])
+          med_diff <- med_train - med_source
+          debi[1:reso_len, u] <- source[[u]] + med_diff
+        } else {
+          debi[1:reso_len,u] <- NA
+        }
+      }
+      for (u in mult_var){
+        if (all(is.na(source[[u]])) == FALSE) {
+          med_source <- median(source[[u]][source[[u]]>0])
+          med_train <- median(train[[u]][train[[u]]>0])
+          med_ratio <- med_train/med_source
+          debi[1:reso_len, u] <- source[[u]] * med_ratio
+        } else {
+          debi[1:reso_len,u] <- NA
+        }
+      }
+    } else {
+      if (de_method == "linear") {
+        debi <- data.frame()
+        for (i in add_var) {
+          if (all(is.na(source[[i]])) == FALSE & all(is.na(lin_train[[i]])) == 
+              FALSE) {
+            lin <- lm(lin_train[[i]] ~ source[[i]])
+            x <- as.numeric(lin$coefficients[2])
+            b <- as.numeric(lin$coefficients[1])
+            debi[1:reso_len,i] <- (source[[i]] * x + b)
+          } else {
+            if (all(is.na(source[[i]])) == TRUE | all(is.na(lin_train[[i]])) == 
+                TRUE) {
+              debi[1:reso_len,i] <- NA
             }
           }
-          debi <- data.frame(debi)
-          colnames(debi) <- var$CF.name
+        }
+        for (i in mult_var) {
+          if (all(is.na(source[[i]])) == FALSE & all(is.na(lin_train[[i]])) == 
+              FALSE) {
+            lin <- lm(lin_train[[i]] ~ source[[i]])
+            x <- as.numeric(lin$coefficients[2])
+            b <- 0
+            debi[1:reso_len,i] <- (source[[i]] * x + b)
+          } else {
+            if (all(is.na(source[[i]])) == TRUE | all(is.na(lin_train[[i]])) == 
+                TRUE) {
+              debi[1:reso_len,i] <- NA
+            }
+          }
         }
       }
     }
@@ -193,15 +198,15 @@ debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "li
                         dbfile.name = paste("debias_met", sep = "."), stringsAsFactors = FALSE)
   
   loc.file = file.path(outfolder, paste("debias", year, "nc", sep = "."))
-  loc <- nc_create(filename = loc.file, vars = train.list, verbose = verbose)
+  loc <- ncdf4::nc_create(filename = loc.file, vars = train.list, verbose = verbose)
   
   for (j in seq_along(var$CF.name)) {
-    ncdf4::ncvar_put(nc = loc, varid = as.character(var$CF.name[j]), vals = debi[[j]])
+    ncdf4::ncvar_put(nc = loc, varid = as.character(colnames(debi[j])), vals = debi[[j]])
   }
   ncdf4::nc_close(loc)
   
   results$file <- loc.file
-  results$host <- fqdn()
+  results$host <- PEcAn.utils::fqdn()
   results$startdate <- paste0(year, "-01-01 00:00:00", tz = "UTC")
   results$enddate <- paste0(year, "-12-31 23:59:59", tz = "UTC")
   results$mimetype <- "application/x-netcdf"
@@ -211,3 +216,5 @@ debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "li
 }
 # debias_met('debi','GFDL.CM3.rcp45.r1i1p1.2006.nc', 'US-WCr.2006.nc', 4,
 # de_method = 'linear')
+
+#debias.met(outfolder = "~",input_met = "GFDL.CM3.rcp45.r1i1p1.2006.nc", train_met = "US-WCr.2006.nc",site_id = 676, de_method = "median")
