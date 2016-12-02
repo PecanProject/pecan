@@ -56,7 +56,7 @@ $(call depends,modules/data.atmosphere): .install/utils .install/reddyproc
 $(call depends,modules/data.land): .install/db .install/utils
 $(call depends,modules/meta.analysis): .install/utils .install/db
 $(call depends,modules/priors): .install/utils
-$(call depends,modules/assim.batch): .install/utils .install/db .install/meta.analysis 
+$(call depends,modules/assim.batch): .install/utils .install/db .install/modules/meta.analysis 
 $(call depends,modules/rtm): .install/modules/assim.batch
 $(call depends,models/template): .install/utils
 $(call depends,models/biocro): .install/utils .install/modules/data.atmosphere .install/modules/data.land
