@@ -17,14 +17,14 @@ bety <- betyConnect("web/config.php")
 
 # ----- Pick a settings file -----#
 # WORKING: 1 variable, 1 metric, 1 site, 1 model 
-settings.file <- "modules/benchmark/inst/scripts/bm.1var.1metric.1site.1model.xml"
+# settings.file <- "modules/benchmark/inst/scripts/bm.1var.1metric.1site.1model.xml"
 
 # Test all the metrics
 # settings.file <- "modules/benchmark/inst/scripts/bm.1var.ALLmetric.1site.1model.xml"
 
 
-# WORKING: 2 variables, 2 metric, 1 site, 1 model 
-# settings.file <- "modules/benchmark/inst/scripts/bm.2var.2metric.1site.1model.xml"
+# WORKING: 2 variables, 1 site, 1 model 
+ settings.file <- "modules/benchmark/inst/scripts/bm.2var.1site.1model.xml"
 
 # NOT WORKING: 2 variables, 2 metric, 2 site, 1 model (multisettings object)
 # settings.file <- "modules/benchmark/inst/scripts/bm.2var.2metric.2site.1model.xml"
@@ -62,8 +62,12 @@ bm_settings2pecan_settings <- function(bm.settings){
   if (is.MultiSettings(bm.settings)) {
     return(papply(bm.settings, bm_settings2pecan_settings))
   }
-  return(append(bm.settings["reference_run_id"],
-                bm.settings$benchmark[which(names(bm.settings$benchmark) == "benchmark_id")]))
+  out <- bm.settings["reference_run_id"]
+  for(i in grep("benchmark", names(bm.settings))){
+    print(bm.settings[i]$benchmark$benchmark_id)
+    out <- append(out, list(benchmark_id = bm.settings[i]$benchmark$benchmark_id))
+  }
+  return(out)
 } 
 
 settings$benchmarking <- bm_settings2pecan_settings(bm.settings)
