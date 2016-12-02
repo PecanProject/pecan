@@ -6,6 +6,13 @@
 \usage{
 write_restart.ED2(outdir, runid, start.time, stop.time, settings, new.state)
 }
+\arguments{
+\item{start.time}{Time of current assimilation step}
+
+\item{stop.time}{Time of next assimilation step}
+
+\item{new.state}{Analysis state matrix returned by \code{sda.enkf}}
+}
 \value{
 TRUE if successful
 }

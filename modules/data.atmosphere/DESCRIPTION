@@ -17,8 +17,9 @@ Imports:
     PEcAn.DB,
     ggplot2,
     data.table,
-    REddyProc
-Imports:
+    REddyProc,
+    dplyr,
+    geonames,
     abind (>= 1.4.5),
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),

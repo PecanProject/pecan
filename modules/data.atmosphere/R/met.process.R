@@ -59,7 +59,12 @@ met.process <- function(site, input_met, start_date, end_date, model,
   }
   
   # set up connection and host information
-  con <- db.open(dbparms)
+  bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
+                       host     = dbparms$host, 
+                       user     = dbparms$user, 
+                       password = dbparms$password)
+  
+  con <- bety$con
   on.exit(db.close(con))
   username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
   machine.host <- ifelse(host == "localhost" || host$name == "localhost", fqdn(), host$name)
@@ -94,10 +99,10 @@ met.process <- function(site, input_met, start_date, end_date, model,
   # first attempt at function that designates where to start met.process
   if (is.null(input_met$id)) {
     stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
-    format.vars <- query.format.vars(con = con, format.id = register$format$id)  # query variable info from format id
+    format.vars <- query.format.vars(bety = bety, format.id = register$format$id)  # query variable info from format id
   } else {
     stage <- met.process.stage(input_met$id, register$format$id, con)
-    format.vars <- query.format.vars(input.id = input_met$id, con = con)  # query DB to get format variable information if available
+    format.vars <- query.format.vars(bety = bety, input.id = input_met$id)  # query DB to get format variable information if available
     # Is there a situation in which the input ID could be given but not the file path? 
     # I'm assuming not right now
     assign(stage$id.name, list(inputid = input_met$id,
@@ -132,7 +137,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
   if (stage$download.raw) {
     raw.data.site.id <- ifelse(is.null(register$siteid), new.site$id, register$siteid)
     
-    raw.id <- .download.raw.met.module(dir = dir,
+    raw.id <- PEcAn.data.atmosphere:::.download.raw.met.module(dir = dir,
                                        met = met, 
                                        register = register, 
                                        machine = machine, 
@@ -142,7 +147,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        site.id = raw.data.site.id, 
                                        lat.in = new.site$lat, lon.in = new.site$lon, 
                                        host = host, 
-                                       overwrite = overwrite$download)
+                                       overwrite = overwrite$download,
+                                       site = site, username = username)
     if (met %in% c("CRUNCEP", "GFDL")) {
       ready.id <- raw.id
       stage$met2cf <- FALSE
@@ -158,6 +164,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
     cf.id <- .met2cf.module(raw.id = raw.id, 
                             register = register,
                             met = met, 
+                            str_ns = str_ns, 
                             dir = dir, 
                             machine = machine, 
                             site.id = new.site.id, 
@@ -201,6 +208,11 @@ met.process <- function(site, input_met, start_date, end_date, model,
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
   if (stage$met2model) {
+    
+    ## Get Model Registration
+    reg.model.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.",model))
+    reg.model <- XML::xmlToList(XML::xmlParse(reg.model.xml))
+    
     met2model.result <- .met2model.module(ready.id = ready.id, 
                                           model = model, 
                                           con = con,
@@ -212,7 +224,9 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                           start_date = start_date, end_date = end_date, 
                                           browndog = browndog, 
                                           new.site = new.site, 
-                                          overwrite = overwrite$met2model)
+                                          overwrite = overwrite$met2model,
+                                          exact.dates = reg.model$exact.dates)
+    
     model.id  <- met2model.result$model.id
     outfolder <- met2model.result$outfolder
   } else {

@@ -33,7 +33,9 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
     # if no derivation is requested expr will be the same as variable name
     expr <- lapply(variable.name, `[[`, "expression")
     
-    format <- query.format.vars(settings$assim.batch$inputs[[k]]$input.id, bety)
+    format <- query.format.vars(bety = bety,
+                                input.id = settings$assim.batch$inputs[[k]]$input.id)
+
     
     for(l in seq_along(model.var)){
       
@@ -88,7 +90,7 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
     out <- eval(parse(text = expr[[vars.used.ind]]))
     
     
-    # prepare for the variables that is going to be used in align.data
+    # prepare for the variables that is going to be used in align_data
     # change data variable names (e.g. "LE") to model output variable names (e.g. "Qle")
     data.var <- sapply(inputs[[k]]$variable.name, `[[`, "variable.drv")
     
@@ -109,7 +111,7 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
     # the model output is since the beginning of the year but 'settings$run$start.date' may not be the first day of the year, using lubridate::floor_date
     model$posix <- seq.POSIXt(from = lubridate::floor_date(as.POSIXlt(settings$run$start.date, tz="GMT"), "year"), by = diff(model.secs)[1], length.out = length(model$time))
     
-    dat <- PEcAn.benchmark::align.data(model.calc = model, obvs.calc = inputs[[k]]$data, var = data.var, 
+    dat <- PEcAn.benchmark::align_data(model.calc = model, obvs.calc = inputs[[k]]$data, var = data.var, 
                       start_year = start.year, end_year = end.year, align_method = inputs[[k]]$align.method)
 
     model.out[[k]] <- dat[,colnames(dat) %in% paste0(data.var,".m"), drop = FALSE]

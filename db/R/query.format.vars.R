@@ -2,12 +2,14 @@
 ##' @title Given input_id, return formats table and table of variables and units
 ##' @param input_id
 ##' @param con : database connection
-##' @export 
+##' @export query.format.vars
 ##' 
 ##' @author Betsy Cowdery , Ankur Desai
 ##' 
-query.format.vars <- function(input.id,bety,format.id=NA,var.ids=NA){
+query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
 
+  if(is.na(input.id) & is.na(format.id)){PEcAn.utils::logger.error("Must specify input id or format id")}
+  
   con <- bety$con
   
   # get input info either form input.id or format.id, depending which is provided
@@ -38,7 +40,7 @@ query.format.vars <- function(input.id,bety,format.id=NA,var.ids=NA){
   # get variable names and units of input data
   fv <- db.query(paste("SELECT variable_id,name,unit,storage_type,column_number from formats_variables where format_id = ", f$id),con)
   
-  if(!is.na(var.ids)){
+  if(all(!is.na(var.ids))){
     # Need to subset the formats table
     fv <- fv %>% dplyr::filter(variable_id %in% var.ids | storage_type != "") 
   }

@@ -6,12 +6,12 @@
 \usage{
 convert.input(input.id, outfolder, formatname, mimetype, site.id, start_date,
   end_date, pkg, fcn, con = con, host, browndog, write = TRUE, format.vars,
-  overwrite = FALSE, ...)
+  overwrite = FALSE, exact.dates = FALSE, ...)
 }
 \description{
 Convert input by applying fcn and insert new record into database
 }
 \author{
-Betsy Cowdery, Michael Dietze, Ankur Desai
+Betsy Cowdery, Michael Dietze, Ankur Desai, Tony Gardella
 }
 
