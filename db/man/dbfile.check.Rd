@@ -7,7 +7,7 @@
 \title{Check for a file in the input/dbfiles tables}
 \usage{
 dbfile.input.check(siteid, startdate = NULL, enddate = NULL, mimetype,
-  formatname, parentid = NA, con, hostname = fqdn(), ignore.dates = FALSE)
+  formatname, parentid = NA, con, hostname = fqdn(), exact.dates = FALSE)
 
 dbfile.posterior.check(pft, mimetype, formatname, con, hostname = fqdn())
 
@@ -27,6 +27,8 @@ dbfile.check(type, id, con, hostname = fqdn())
 \item{con}{database connection object}
 
 \item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
+
+\item{exact.dates}{setting to include start and end date in input query}
 
 \item{pft}{the name of the pft that this data is applicable to}
 
@@ -87,7 +89,7 @@ This will check the dbfiles and machines to see if the file exists
 }
 }
 \author{
-Rob Kooper
+Rob Kooper, Tony Gardella
 
 Rob Kooper
 
