@@ -68,7 +68,7 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
     
     if (settings$assim.batch$inputs[[k]]$likelihood == "Laplace") {
       
-      resid <- abs(model_out[[k]] - inputs[[k]]$obs)
+      resid <- abs(model_out[[k]][[1]] - inputs[[k]]$obs)
       pos <- (model_out[[k]] >= 0)
       SS <- c(dexp(resid[pos],
                    1 / (inputs[[k]]$par[1] + inputs[[k]]$par[2] * model_out[[k]][pos]),
