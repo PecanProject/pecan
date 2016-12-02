@@ -5,20 +5,12 @@
 ##' @return updated settings list
 ##' @author Betsy Cowdery
 ##' @export 
-
+##' @importFrom dplyr tbl filter rename collect select
 define_benchmark <- function(bm.settings, bety){
   
   if (is.MultiSettings(bm.settings)) {
     return(papply(bm.settings, function(x) define_benchmark(x, bety)))
   }
-  
-  # dplyr functions
-  tbl     <- dplyr::tbl
-  filter  <- dplyr::filter
-  rename  <- dplyr::rename
-  collect <- dplyr::collect
-  select  <- dplyr::select
-  
   
   # Retrieve/create benchmark entries
   
