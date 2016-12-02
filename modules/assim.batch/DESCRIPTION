@@ -17,7 +17,8 @@ Depends:
     dplyr,
     parallel,
     GPfit,
-    IDPmisc
+    IDPmisc,
+    PEcAn.MA
 Imports:
     coda (>= 0.18),
     lubridate (>= 1.6.0),

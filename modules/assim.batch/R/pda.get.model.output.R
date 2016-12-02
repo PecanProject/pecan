@@ -74,7 +74,7 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
     model.raw <- as.data.frame(read.output(run.id, outdir = file.path(settings$host$outdir, run.id),
                                            start.year, end.year, variables = vars))
     
-    if(length(model.raw) == 0) {   # Probably indicates model failed entirely
+    if(length(model.raw) == 0 | all(is.na(model.raw))) {   # Probably indicates model failed entirely
       return(NA)
     }
     
