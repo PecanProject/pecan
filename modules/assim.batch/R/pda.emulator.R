@@ -408,12 +408,12 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   dcores <- parallel::detectCores() - 1
   ncores <- min(max(dcores, 1), settings$assim.batch$chain)
   
-  logger.setOutputFile(paste0(settings$outdir, "/pda.log"))
+  logger.setOutputFile(file.path(settings$outdir, "pda.log"))
   
   current.step <- "pre-MCMC"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
-  cl <- parallel::makeCluster(ncores, type="FORK", outfile = "pda.log")
+  cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(settings$outdir, "pda.log"))
   
   ## Sample posterior from emulator
   mcmc.out <- parallel::parLapply(cl, 1:settings$assim.batch$chain, function(chain) {
