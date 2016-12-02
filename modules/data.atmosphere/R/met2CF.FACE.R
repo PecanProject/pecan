@@ -7,25 +7,14 @@
 ##' @param outfolder
 ##' @param convert FACE files to CF files
 ##' @author Elizabeth Cowdery
-##' 
+
+##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_add ncvar_put
 met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,input.id,site,format, ...) {
+
   
   library(PEcAn.utils)
   
-  ncvar_get <- ncdf4::ncvar_get
-  ncvar_def <- ncdf4::ncvar_def
-  ncdim_def <- ncdf4::ncdim_def
-  ncatt_get <- ncdf4::ncatt_get
-  ncatt_put <- ncdf4::ncatt_put
-  ncvar_add <- ncdf4::ncvar_add
-  ncvar_put <- ncdf4::ncvar_put
-  nc_open   <- ncdf4::nc_open
-  nc_close   <- ncdf4::nc_close
-  nc_create <- ncdf4::nc_create
-  
-  nc.get.variable.list <- ncdf4.helpers::nc.get.variable.list
-  
-  files <- dir(in.path)
+  files <- dir(in.path, in.prefix)
   file <- files[grep(pattern = "*.nc", files)]
   if (!(length(file) == 1)) {
     return(NULL)
