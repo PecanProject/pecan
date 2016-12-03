@@ -25,7 +25,7 @@
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 ##' @author Istem Fer
-##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get
+##' @importFrom ncdf4 ncvar_get ncvar_def ncdim_def ncatt_get ncatt_put nc_close
 met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_date, 
                                overwrite = FALSE, verbose = FALSE, ...) {
   

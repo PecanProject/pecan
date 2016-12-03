@@ -136,7 +136,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##'
 ##' This will check the dbfiles, inputs, machines and formats tables to see if the
 ##' file exists
-##' @name dbfile.check
+##' @name dbfile.input.check
 ##' @title Check for a file in the input/dbfiles tables
 ##' @param siteid the id of the site that this data is applicable to
 ##' @param startdate the start date of the data stored in the file
@@ -148,6 +148,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
 ##' @param params database connection information
 ##' @param exact.dates setting to include start and end date in input query
+##' @param machine.check setting to have dbfile.check include machine in query
 ##' @return data.frame with the id, filename and pathname of the input that is requested
 ##' @export
 ##' @author Rob Kooper, Tony Gardella
@@ -156,7 +157,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##'   dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, formatname, parentid=NA, 
-                               con, hostname=fqdn(), exact.dates=FALSE) {
+                               con, hostname=fqdn(), exact.dates=FALSE, machine.check = FALSE) {
   if (hostname == "localhost") hostname <- fqdn();
   
   mimetypeid <- get.id('mimetypes', 'type_string', mimetype, con = con)
@@ -192,10 +193,10 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
   } else {
     if(length(inputid) > 1) {
       logger.warn("Found multiple matching inputs. Checking for one with associate files are on host machine")
-      return(as.data.frame(dbfile.check('Input', inputid, con, hostname)))
+      return(as.data.frame(dbfile.check('Input', inputid, con, hostname, machine.check)))
       }
       logger.warn("Found possible matching input. Checking if its associate files are on host machine")
-      return(as.data.frame(dbfile.check('Input', inputid, con, hostname)))
+      return(as.data.frame(dbfile.check('Input', inputid, con, hostname, machine.check)))
     }
   
 }
@@ -253,7 +254,7 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
 ##'
 ##' This will check the dbfiles, inputs, machines and formats tables to see if the
 ##' file exists
-##' @name dbfile.check
+##' @name dbfile.posterior.check
 ##' @title Check for a file in the input/dbfiles tables
 ##' @param pft the name of the pft that this data is applicable to
 ##' @param mimetype the mime-type of the file
@@ -371,6 +372,7 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
 ##' @param id the id of container type
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
+##' @param machine.check setting to check for file on named host, otherwise will check for any file given container id
 ##' @return data.frame with the id, filename and pathname of all the files that are associated
 ##' @author Rob Kooper
 ##' @export
@@ -378,19 +380,28 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
 ##' \dontrun{
 ##'   dbfile.check('Input', 7, dbcon)
 ##' }
-dbfile.check <- function(type, id, con, hostname=fqdn()) {
+dbfile.check <- function(type, id, con, hostname=fqdn(), machine.check = TRUE) {
   if (hostname == "localhost") hostname <- fqdn()
   
   # find appropriate host
   hostid <- get.id("machines", "hostname", hostname, con) 
   # hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
   if (is.null(hostid)) {
-    invisible(data.frame())
-  } else {
-    invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, 
-                              "' AND container_id=", id, " AND machine_id=", hostid), con))
+    return(data.frame())
+  } else if (machine.check){
+    
+    return(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, 
+                           "' AND container_id=", id, " AND machine_id=", hostid), con))
+  }else{
+    db.file <- list()
+    for(i in seq_along(id)){
+      db.file <- db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, 
+                                 "' AND container_id=", id[i]), con)
+    }
+    return(db.file)
   }
 }
+
 
 
 ##' Function to return full path to a file using dbfiles table
