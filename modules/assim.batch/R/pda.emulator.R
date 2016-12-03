@@ -20,18 +20,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
   }
   
-  ## -------------------------------------- Setup ------------------------------------- 
-  ## Handle settings
-  settings <- pda.settings(
-    settings=settings, params.id=params.id, param.names=param.names, 
-    prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
-    adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot)
-  
-  
-  ## will be used to check if multiplicative Gaussian is requested
-  any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
-  isbias <- which(unlist(any.mgauss) == "multipGauss")
-  
   # handle extention flags
   # is this an extension run
   extension.check <- is.null(settings$assim.batch$extension) 
@@ -52,6 +40,23 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     run.round <- FALSE
     run.longer <- TRUE
   }
+  
+  ## -------------------------------------- Setup ------------------------------------- 
+  ## Handle settings
+  settings <- pda.settings(
+    settings=settings, params.id=params.id, param.names=param.names, 
+    prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
+    adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot, run.round)
+ 
+  ## history restart
+  pda.restart.file <- file.path(settings$outdir,paste0("history.pda",
+                                                       settings$assim.batch$ensemble.id, ".Rdata"))
+  current.step <- "START" 
+  
+  ## will be used to check if multiplicative Gaussian is requested
+  any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
+  isbias <- which(unlist(any.mgauss) == "multipGauss")
+  
   
   ## Open database connection
   if (settings$database$bety$write) {
@@ -123,30 +128,21 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   
   knots.params <- lapply(knots.list, `[[`, "params")
   knots.probs <- lapply(knots.list, `[[`, "probs")
-  print("emulator names")
-  print(sapply(settings$pfts,"[[",'name'))
-  print(names(knots.list))
-  print(names(knots.params))
-  print(names(knots.probs))
+  
+  current.step <- "GENERATE KNOTS"
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
   ## Run this block if this is a "round" extension
   if (run.round) {
       
-      # save the original prior path
-      temp.path <- settings$assim.batch$prior$path
-      
-      # set prior path to NULL to use the previous PDA's posterior densities as new priors this time
-      settings$assim.batch$prior$path <- NULL
-      
-      ## Re-load priors
-      temp <- pda.load.priors(settings, con)  # loads the posterior dist. from previous emulator run
+      # loads the posteriors of the the previous emulator run
+      temp <- pda.load.priors(settings, con, extension.check = TRUE) 
       prior.list <- temp$prior
-      settings$assim.batch$prior$path <- temp.path
       
-      ## Re-set prior distribution functions
+      ## set prior distribution functions for posterior of the previous emulator run
       prior.fn <- lapply(prior.list, pda.define.prior.fn)
       
-      ## Propose a percentage of the new parameter knots from the posterior of previous run
+      ## Propose a percentage (if not specified 75%) of the new parameter knots from the posterior of the previous run
       knot.par        <- ifelse(!is.null(settings$assim.batch$knot.par), 
                                 as.numeric(settings$assim.batch$knot.par), 
                                 0.75)
@@ -169,12 +165,8 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
         names(knots.list)[i] <- settings$pfts[[i]]['name']
       }
       
-      # Return to original prior distribution
-      temp       <- pda.load.priors(settings, con)
-      prior.list <- temp$prior
-      prior.fn   <- lapply(prior.list, pda.define.prior.fn)
-      
-      # Convert parameter values to probabilities according to previous prior distribution
+
+      # Convert parameter values to probabilities according to current PDA prior distribution
       knots.list$probs <- knots.list$params
       for (pft in seq_along(settings$pfts)) {
         for (i in seq_len(n.param.all[[pft]])) {
@@ -185,7 +177,16 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       
       knots.params <- lapply(knots.list, `[[`, "params")
       knots.probs  <- lapply(knots.list, `[[`, "probs")
+      
+      current.step <- "Generate Knots: round-if block"
+      save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   } # end round-if block
+  
+  print("emulator names")
+  print(sapply(settings$pfts,"[[",'name'))
+  print(names(knots.list))
+  print(names(knots.params))
+  print(names(knots.probs))
   
   ## Run this block if this is normal run or a "round" extension
   if(run.normal | run.round){
@@ -194,7 +195,10 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       run.ids <- pda.init.run(settings, con, my.write.config, workflow.id, knots.params, 
                             n = settings$assim.batch$n.knot, 
                             run.names = paste0(settings$assim.batch$ensemble.id, ".knot.",
-                                               1:settings$assim.batch$n.knot))    
+                                               1:settings$assim.batch$n.knot))   
+      current.step <- "pda.init.run"
+      save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+      
       ## start model runs
       start.model.runs(settings, settings$database$bety$write)
     
@@ -207,7 +211,9 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       for (i in seq_len(settings$assim.batch$n.knot)) {
         model.out[[i]] <- pda.get.model.output(settings, run.ids[i], bety, inputs)
       }
-    
+      current.step <- "pda.get.model.output"
+      save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+      
       # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
       if(any(unlist(any.mgauss) == "multipGauss")) {
         # how many bias parameters per dataset requested
@@ -233,7 +239,8 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       } 
     
   } # end if-block
-  
+  current.step <- "pda.calc.error"
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
   init.list <- list()
   jmp.list <- list()
@@ -260,6 +267,15 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     SS.list <- list()
     bc <- 1
     
+    # what percentage of runs is allowed to fail?
+    if(!is.null(settings$assim.batch$allow.fail)){
+      allow.fail <- as.numeric(settings$assim.batch$allow.fail)
+    } else {
+      allow.fail <- 0.5
+    }
+    # what is it in number of runs?
+    no.of.allowed <- floor(settings$assim.batch$n.knot * allow.fail)
+    
     for(inputi in seq_len(n.input)){
       error.statistics[[inputi]] <- sapply(pda.errors,`[[`, inputi)
         
@@ -281,6 +297,20 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
           SS.list[[inputi]] <- cbind(X, error.statistics[[inputi]])
       } # if-block
         
+      # check failed runs and remove them if you'll have a reasonable amount of param sets after removal
+      # how many runs failed?
+      no.of.failed <- sum(is.na(SS.list[[inputi]][, ncol(SS.list[[inputi]])]))
+      
+      # check if you're left with enough sets
+      if(no.of.failed < no.of.allowed & (settings$assim.batch$n.knot - no.of.failed) > 1){
+        SS.list[[inputi]] <- SS.list[[inputi]][!rowSums(is.na(SS.list[[inputi]])), ]
+        if( no.of.failed  > 0){
+          logger.info(paste0(no.of.failed, " runs failed. Emulator for ", names(n.of.obs)[inputi], " will be built with ", settings$assim.batch$n.knot - no.of.failed, " knots."))
+        } 
+      } else{
+        logger.error(paste0("Too many runs failed, not enough parameter set to build emulator for ", names(n.of.obs)[inputi], "."))
+      }
+      
     } # for-loop
 
 
@@ -321,7 +351,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       jmp.list[[c]] <- resume.list[[c]]$jump
     }
   }
-    
+  
   # add indice and increase n.param for bias
   if(any(unlist(any.mgauss) == "multipGauss")){
     prior.ind.all <- c(prior.ind.all, 
@@ -368,10 +398,15 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     mix <- "each"
   }
   
+  # start the clock
+  ptm.start <- proc.time()
+  
   # prepare for parallelization
   dcores <- parallel::detectCores() - 1
   ncores <- min(max(dcores, 1), settings$assim.batch$chain)
   cl <- parallel::makeCluster(ncores, type="FORK")
+  current.step <- "pre-MCMC"
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
   ## Sample posterior from emulator
   mcmc.out <- parallel::parLapply(cl, 1:settings$assim.batch$chain, function(chain) {
@@ -393,6 +428,13 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   })
   
   parallel::stopCluster(cl)
+  current.step <- "post-MCMC"
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+  
+  # Stop the clock
+  ptm.finish <- proc.time() - ptm.start
+  logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(settings$assim.batch$iter), " iterations."))
+  
   
   mcmc.samp.list <- list()
   
@@ -418,6 +460,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     resume.list[[c]] <- mcmc.out[[c]]$chain.res
   }
   
+  
   if (FALSE) {
     gp     <- kernlab.gp
     x0     <- init.x
@@ -432,6 +475,9 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   }
   
   ## ------------------------------------ Clean up ------------------------------------ 
+  current.step <- "clean up"
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+  
   ## Save emulator, outputs files
   settings$assim.batch$emulator.path <- file.path(settings$outdir,
                                                   paste0("emulator.pda", 
@@ -501,6 +547,8 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   }
   
   ## Output an updated settings list
+  current.step <- "pda.finish"
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   return(settings)
   
 }  ## end pda.emulator

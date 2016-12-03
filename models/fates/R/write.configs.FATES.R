@@ -168,9 +168,9 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
     
    ## Loop over PFTS
    npft <- length(trait.values)
-   print(npft)
-   print(dim(trait.values))
-   print(names(trait.values))
+   PEcAn.utils::logger.debug(npft)
+   PEcAn.utils::logger.debug(dim(trait.values))
+   PEcAn.utils::logger.debug(names(trait.values))
    pftnames <- stringr::str_trim(tolower(ncvar_get(param.nc,"pftname")))
    for (i in seq_len(npft)) {
      pft <- trait.values[[i]]
