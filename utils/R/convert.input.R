@@ -14,6 +14,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   
   logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
                      mimetype, site.id, start_date, end_date))
+  
   Rbinary <- ifelse(is.null(settings$host$Rbinary),"R",settings$host$Rbinary)
   
   n <- nchar(outfolder)
@@ -41,10 +42,13 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                           enddate = end_date, 
                                           con = con, 
                                           hostname = host$name, 
-                                          exact.dates = TRUE)
+                                          exact.dates = TRUE,
+                                          machine.check = TRUE
+                                          )
     
 
     logger.info(existing.dbfile, digits = 10)
+    
     logger.info("end CHECK for existing input record")
     
     
@@ -100,6 +104,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
 
       # There's an existing input that matches desired start/end dates. Use that one.
       logger.info("Skipping this input conversion because files are already available.")
+      
       return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
       
       
@@ -127,14 +132,15 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     
       
       logger.info(existing.dbfile)
-      logger.info("end CHECK for existing input record")
+      
+     
+      logger.info("end CHECK for existing input record. May be on wrong machine. Checking now... ")
       
       
       if (nrow(existing.dbfile) > 0) {
         
-        existing.input <- db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
         
-  
+        existing.input <- db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
         
         
         # Convert dates to Date objects and strip all time zones
@@ -180,8 +186,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         } else if ((start_date >= existing.input$start_date) &&
                    (end_date <= existing.input$end_date)) {
           
-                
-            
+
                   #Grab machine info of file that exists
                   existing.machine <- db.query(paste0("SELECT * from machines where id  = '", 
                                               existing.dbfile$machine_id, "'"), con)
@@ -193,6 +198,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
           
                    if(existing.machine$id != machine$id){
                      
+ 
                       logger.info("Valid Input record found that spans desired dates, but valid files do not exist on this machine.")
                       logger.info("Downloading all years of Valid input to ensure consistency")
                       insert.new.file <- TRUE
@@ -202,6 +208,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                       }else{
                       
                          # There's an existing input that spans desired start/end dates with files on this machine
+                       
                           logger.info("Skipping this input conversion because files are already available.")
                           return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
                     }
@@ -434,7 +441,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     
     if(insert.new.file){
       
-      dbfile.id <- dbfile.insert(in.path, in.prefix, 
+      dbfile.id <- dbfile.insert(in.path = dirname(result$file[1]), 
+                                 in.prefix = result$dbfile.name[1], 
                                  'Input', existing.input$id, 
                                  con, reuse=TRUE, hostname = machine$hostname)
       
