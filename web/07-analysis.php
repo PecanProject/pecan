@@ -231,7 +231,7 @@ if (isset($modelinfo['revision'])) {
       <label>Runs<sup>*</sup></label></span>
       <input type="text" name="runs" id="runs" value="<?php echo 1; ?>" onChange="validate();"/>
       <div class="spacer"></div>
-      <a href="https://pecan.gitbooks.io/pecan-documentation/content/models/variables.md" title="Model output variables to run analyses on. Link opens variable name table">
+      <a href="https://pecan.gitbooks.io/pecan-documentation/content/models/variables.html" title="Model output variables to run analyses on. Link opens variable name table">
       <label>Variables<sup>*</sup></label></a>
       <input type="text" name="variables" id="variables" value="<?php echo "NPP"; ?>" onChange="validate();"/>
       <div class="spacer"></div>
