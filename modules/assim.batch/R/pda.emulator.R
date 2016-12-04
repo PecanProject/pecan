@@ -211,8 +211,11 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       for (i in seq_len(settings$assim.batch$n.knot)) {
         align.return <- pda.get.model.output(settings, run.ids[i], bety, inputs)
         model.out[[i]] <- align.return$model.out
+        if(!is.na(model.out[[i]])){
+          inputs <- align.return$inputs
+        } 
       }
-      inputs <- align.return$inputs
+      
       
       current.step <- "pda.get.model.output"
       save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
