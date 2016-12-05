@@ -209,8 +209,14 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     
       ## read model outputs    
       for (i in seq_len(settings$assim.batch$n.knot)) {
-        model.out[[i]] <- pda.get.model.output(settings, run.ids[i], bety, inputs)
+        align.return <- pda.get.model.output(settings, run.ids[i], bety, inputs)
+        model.out[[i]] <- align.return$model.out
+        if(!is.na(model.out[[i]])){
+          inputs <- align.return$inputs
+        } 
       }
+      
+      
       current.step <- "pda.get.model.output"
       save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
       
@@ -404,9 +410,13 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   # prepare for parallelization
   dcores <- parallel::detectCores() - 1
   ncores <- min(max(dcores, 1), settings$assim.batch$chain)
-  cl <- parallel::makeCluster(ncores, type="FORK")
+  
+  logger.setOutputFile(file.path(settings$outdir, "pda.log"))
+  
   current.step <- "pre-MCMC"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+  
+  cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(settings$outdir, "pda.log"))
   
   ## Sample posterior from emulator
   mcmc.out <- parallel::parLapply(cl, 1:settings$assim.batch$chain, function(chain) {
