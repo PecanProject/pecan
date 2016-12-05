@@ -6,7 +6,7 @@
 ##' @param start_year numeric
 ##' @param end_year numeric
 ##' @param site list
-##' @author Betsy Cowdery
+##' @author Betsy Cowdery, Joshua Mantooth
 ##' Generic function to convert input files containing observational data to 
 ##' a common PEcAn format. 
 load_data <- function(data.path, format, start_year = NA, end_year = NA, site = NA, 
@@ -34,13 +34,27 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
     fcn <- match.fun(fcn1)
   } else if (exists(fcn2)) {
     fcn <- match.fun(fcn2)
+  } else if (!exists(fcn1) & !exists(fcn2) & require(bd)) { 
+    #To Do: call to DAP to see if conversion to csv is possible
+    #Brown Dog API call through BDFiddle, requires username and password
+    key   <- get_key("https://bd-api.ncsa.illinois.edu",username,password)
+    token <- get_token("https://bd-api.ncsa.illinois.edu",key)
+    #output_path = where are we putting converted file?
+    converted.data.path <- convert_file(url = "https://bd-api.ncsa.illinois.edu", input_filename = data.path, 
+                                        output = "csv", output_path = output_path, token = token)
+    if (is.na(converted.data.path)){
+      PEcAn.utils::logger.error("Converted file was not returned from Brown Dog")
+    }
+    #not doing anything about mimetypes not convertible by BD right now
+    fcn <- match.fun("load_csv")
+    data.path <- converted.data.path
   } else {
-    PEcAn.utils::logger.warn(paste0("no load_data for current mimetype ",mimetype," - converting using browndog"))
+    PEcAn.utils::logger.warn("Brown Dog is currently unable to perform conversion from ",mimetype," to a PEcAn usable format")
   }
   
   out <- fcn(data.path, format, site, format$vars$input_name[c(vars.used.index, time.row)])
   
-  # Convert loaded data to the same standard varialbe names and units
+  # Convert loaded data to the same standard variable names and units
   
   vars_used <- format$vars[vars.used.index, ]
   
