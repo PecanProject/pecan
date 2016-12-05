@@ -92,7 +92,7 @@ while ($row = @$stmt->fetch(PDO::FETCH_ASSOC)) {
   #row { display: table-row; }
   #left, #right, #middle { display: table-cell; padding-left: 10px; }
 </style>
-<script type="text/javascript" src="jquery-1.10.2.js"></script>
+<script type="text/javascript" src="jquery-1.10.2.min.js"></script>
 <?php if (!$offline) {?>
   <script type="text/javascript" src="//www.google.com/jsapi"></script>
   <script type="text/javascript" src="//code.jquery.com/jquery-1.10.2.js"></script>
