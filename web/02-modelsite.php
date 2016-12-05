@@ -410,7 +410,7 @@ function mapsLoaded() {
     });
   });
 
-  map.addListener('dblclick', function(event) {
+  map.addListener('rightclick', function(event) {
     addMarker(event.latLng);
     $("#dialog-form").dialog("open");
     $("#txtlat").val(event.latLng.lat());
@@ -524,7 +524,7 @@ function goHome() {
       <input name="siteid" id="siteid" type="hidden" value="<?php echo $siteid; ?>"/>
       <input name="sitename" id="sitename" type="text" />
 <?php if ($betydb != "") { ?>
-      <span class="small">Add new site, double click map</span>
+      <span class="small">Add new site, right click map</span>
       <span class="small"><a href="<?php echo $betydb; ?>/sites/new" target="BETY">Remove Pins</a></span>
 <?php } ?>
       <div class="spacer"></div>
