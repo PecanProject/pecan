@@ -4,13 +4,12 @@
 \alias{dbfile.check}
 \title{Check for a file in the dbfiles tables}
 \usage{
-dbfile.check(type, container.id, con, hostname = fqdn(),
-  machine.check = TRUE)
+dbfile.check(type, id, con, hostname = fqdn(), machine.check = TRUE)
 }
 \arguments{
 \item{type}{the type of dbfile (Input, Posterior)}
 
-\item{container.id}{the id of container type}
+\item{id}{the id of container type}
 
 \item{con}{database connection object}
 
