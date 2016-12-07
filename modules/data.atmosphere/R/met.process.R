@@ -147,8 +147,9 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        site.id = raw.data.site.id, 
                                        lat.in = new.site$lat, lon.in = new.site$lon, 
                                        host = host, 
-                                       overwrite = overwrite$download,
+                                       overwrite = FALSE,
                                        site = site, username = username)
+    
     if (met %in% c("CRUNCEP", "GFDL")) {
       ready.id <- raw.id
       stage$met2cf <- FALSE
@@ -168,10 +169,10 @@ met.process <- function(site, input_met, start_date, end_date, model,
                             dir = dir, 
                             machine = machine, 
                             site.id = new.site.id, 
-                            lat = site$lat, lon = site$lon, 
+                            lat = new.site$lat, lon = new.site$lon, 
                             start_date = start_date, end_date = end_date, 
                             con = con, host = host, 
-                            overwrite = overwrite$met2cf, 
+                            overwrite = FALSE, 
                             format.vars = format.vars)
   }
   
@@ -192,7 +193,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                      overwrite = overwrite$standardize)
     } else if (register$scale == "site") {
       ##### Site Level Processing
-      ready.id <- .metgapfill.module(cf.id = cf.id, 
+      ready.id <- PEcAn.data.atmosphere:::.metgapfill.module(cf.id = cf.id, 
                                      register = register,
                                      dir = dir,
                                      met = met, 
