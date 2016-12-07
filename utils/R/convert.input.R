@@ -405,7 +405,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     fcn.args$outfolder  <- outfolder
     fcn.args$start_date <- start_date
     fcn.args$end_date   <- end_date
-    # sitename='Niwot Ridge Forest/LTER NWT1 (US-NR1)', username='pecan', overwrite=FALSE, outfolder='/home/carya/output/dbfiles/Ameriflux_site_0-772/', start_date='2001-01-01', end_date='2012-12-31')
+    
     arg.string <- listToArgString(fcn.args)
     
     if (!missing(format.vars)) {
