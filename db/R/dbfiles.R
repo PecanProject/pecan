@@ -149,7 +149,6 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
 ##' @param params database connection information
 ##' @param exact.dates setting to include start and end date in input query
-##' @param machine.check setting to have dbfile.check include machine in query
 ##' @return data.frame with the id, filename and pathname of the input that is requested
 ##' @export
 ##' @author Rob Kooper, Tony Gardella
@@ -158,7 +157,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##'   dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, formatname, parentid=NA, 
-                               con, hostname=fqdn(), exact.dates=FALSE, machine.check = FALSE) {
+                               con, hostname=fqdn(), exact.dates=FALSE) {
   if (hostname == "localhost") hostname <- fqdn();
   
   mimetypeid <- get.id('mimetypes', 'type_string', mimetype, con = con)
@@ -192,14 +191,39 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
   if (is.null(inputid)) {
     return(data.frame())
   } else {
-    if(length(inputid) > 1) {
-      logger.warn("Found multiple matching inputs. Checking for one with associate files are on host machine")
-      return(as.data.frame(dbfile.check('Input', inputid, con, hostname, machine.check)))
-      }
+    
+    if(length(inputid) > 1){
+       logger.warn("Found multiple matching inputs. Checking for one with associate files on host machine")
+        
+       dbfile <- dbfile.check(type = 'Input', container.id = inputid, con = con, hostname = hostname, machine.check = TRUE)
+            
+      if(nrow(dbfile) == 0){
+         ## With the possibility of dbfile.check returning nothing,
+         ## as.data.frame ensures a empty data.frame is returned 
+         ## rather than an empty list.
+         logger.info("File not found on host machine. Returning Valid input with file associated on different machine if possible")
+         return(as.data.frame(dbfile.check('Input', inputid, con, hostname, machine.check = FALSE)))
+        }
+         
+      return(dbfile)
+    }else{
+      
       logger.warn("Found possible matching input. Checking if its associate files are on host machine")
-      return(as.data.frame(dbfile.check('Input', inputid, con, hostname, machine.check)))
+      
+      dbfile <- dbfile.check(type = 'Input', container.id = inputid, con = con, hostname = hostname, machine.check = TRUE)
+          
+      if(nrow(dbfile) == 0){
+         ## With the possibility of dbfile.check returning nothing,
+         ## as.data.frame ensures an empty data.frame is returned 
+         ## rather than an empty list.
+         logger.info("File not found on host machine. Returning Valid input with file associated on different machine if possible")
+         return(as.data.frame(dbfile.check(type = 'Input', container.id = inputid, con = con, hostname = hostname, machine.check = FALSE)))
+      }
+      
+      return(dbfile)
+      
     }
-  
+  }
 }
 
 ##' Function to insert a file into the dbfiles table as a posterior
@@ -370,7 +394,7 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
 ##' @name dbfile.check
 ##' @title Check for a file in the dbfiles tables
 ##' @param type the type of dbfile (Input, Posterior)
-##' @param id the id of container type
+##' @param container.id the id of container type
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
 ##' @param machine.check setting to check for file on named host, otherwise will check for any file given container id
