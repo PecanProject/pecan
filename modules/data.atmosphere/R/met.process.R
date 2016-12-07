@@ -149,6 +149,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        host = host, 
                                        overwrite = overwrite$download,
                                        site = site, username = username)
+    
     if (met %in% c("CRUNCEP", "GFDL")) {
       ready.id <- raw.id
       stage$met2cf <- FALSE
@@ -168,7 +169,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                             dir = dir, 
                             machine = machine, 
                             site.id = new.site.id, 
-                            lat = site$lat, lon = site$lon, 
+                            lat = new.site$lat, lon = new.site$lon, 
                             start_date = start_date, end_date = end_date, 
                             con = con, host = host, 
                             overwrite = overwrite$met2cf, 
