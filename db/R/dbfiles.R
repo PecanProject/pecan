@@ -107,6 +107,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   
   # find appropriate dbfile, if not in database, insert new dbfile
   dbfile <- dbfile.check('Input', inputid, con, hostname)
+  
   if(nrow(dbfile) > 0) {
     if(nrow(dbfile) > 1) {
       print(dbfile)
@@ -407,6 +408,7 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
 ##'   dbfile.check('Input', 7, dbcon)
 ##' }
 dbfile.check <- function(type, container.id, con, hostname=fqdn(), machine.check = TRUE) {
+  
   if (hostname == "localhost") hostname <- fqdn()
   
   # find appropriate host
@@ -415,46 +417,37 @@ dbfile.check <- function(type, container.id, con, hostname=fqdn(), machine.check
   if (is.null(hostid)) {
     return(data.frame())
   } else if (machine.check){
+  
     
-    #Query has to change slightly because container.id may be a vecoter or value.
-    if(length(container.id) == 1){
+      dbfiles <- db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, 
+                                 "' AND container_id IN (", paste(container.id, collapse = ", "), 
+                                 ") AND machine_id=", hostid), con)
       
-       dbfiles <- tbl(bety,"dbfiles") %>% filter(container_id == container.id) %>% 
-                  filter(container_type == type) %>% filter(machine_id == hostid) %>% collect()
-       
-    }else{
+      if(nrow(dbfiles) > 1){
       
-      dbfiles <- tbl(bety,"dbfiles") %>% filter(container_id %in% container.id) %>% 
-                 filter(container_type == type) %>% filter(machine_id == hostid) %>% collect()
-    }
-    
-    if(nrow(dbfiles) > 1){
+         logger.warn("Multiple Valid Files found on host machine. Returning last updated record")
+         return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
       
-      logger.warn("Multiple Valid Files found on host machine. Returning last updated record")
-      return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
+          }else{
       
-    }else{
-      return(dbfiles)
-    }
+            return(dbfiles)
+      
+          }
 
   }else{
-    
-    #Query has to change slightly because container.id may be a vecoter or value.
-    
-    if(length(container.id) == 1){
+
+      dbfiles <- db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, 
+                               "' AND container_id IN (", paste(container.id, collapse = ", ")), con)
       
-      dbfiles <- tbl(bety,"dbfiles") %>% filter(container_id == container.id) %>% 
-        filter(container_type == type) %>% collect()
+      if(nrow(dbfiles) > 1){
       
-    }else{
+         logger.warn("Multiple Valid Files found on host machine. Returning last updated record")
+         return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
+       
+        }else{
       
-      dbfiles <- tbl(bety,"dbfiles") %>% filter(container_id %in% container.id) %>% 
-        filter(container_type == type) %>% collect()
-    }
-    
-    
-    return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
-    
+          return(dbfiles)
+        }
   }
 }
 
