@@ -157,7 +157,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##'   dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, formatname, parentid=NA, 
-                               con, hostname=fqdn(), exact.dates=FALSE) {
+                               con, hostname=fqdn(), exact.dates=FALSE,...) {
   if (hostname == "localhost") hostname <- fqdn();
   
   mimetypeid <- get.id('mimetypes', 'type_string', mimetype, con = con)
@@ -435,7 +435,7 @@ dbfile.check <- function(type, container.id, con, hostname=fqdn(), machine.check
   }else{
 
       dbfiles <- db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, 
-                               "' AND container_id IN (", paste(container.id, collapse = ", ")), con)
+                               "' AND container_id IN (", paste(container.id, collapse = ", "),")"), con)
       
       if(nrow(dbfiles) > 1){
       
