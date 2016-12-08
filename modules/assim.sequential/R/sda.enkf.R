@@ -302,6 +302,25 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   
   }"
   
+  tobit2space <- "
+  model{ 
+
+  ## Analysis
+  y.censored  ~ dmnorm(y_star,r) ##cannot be partially observed -- JAGS Manual
+  
+  for(i in 1:N){
+  y.ind[i] ~ dinterval(y.censored[i], interval[i,])
+  }
+  
+  X.mod ~ dmnorm(muf,pf) ## Model Forecast
+  
+  ## add process error
+  q  ~ dwish(aq,bq)
+  X  ~ dmnorm(X.mod,q)
+  Q <- inverse(q)
+  
+}"
+  
   t1         <- 1
   pink       <- col2rgb("deeppink")
   alphapink  <- rgb(pink[1], pink[2], pink[3], 180, max = 255)
