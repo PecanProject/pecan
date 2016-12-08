@@ -282,10 +282,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   
   #agb linear
   #y_star <- X[choose]
-
+  
   #f.comp non linear
   y_star <- X[choose]/sum(X[choose])
-
+  
   ## Analysis
   y.censored  ~ dmnorm(y_star,r) ##cannot be partially observed -- JAGS Manual
   
@@ -300,23 +300,22 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   X  ~ dmnorm(X.mod,q)
   Q <- inverse(q)
   
-  }"
+}"
   
   tobit2space <- "
   model{ 
 
-  ## Analysis
   for(n in 1:nens){
-      y.censored[n,]  ~ dmnorm(muf,pf) ##cannot be partially observed -- JAGS Manual
+      y.censored[n,] ~ dmnorm(muf,pf) ##cannot be partially observed -- JAGS Manual
   
       for(i in 1:N){
           y.ind[n,i] ~ dinterval(y.censored[n,i], interval[i,])
       }
   }
 
-  ## add process error
+  #Priors
   pf  ~ dwish(aq,bq)
-  muf  ~ dmnorm(mu1,cov1)
+  muf  ~ dmnorm(mu.prior,cov.prior)
   
 }"
   
@@ -356,48 +355,67 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     #Pf <- cov(X)
     
     ### create matrix the describes the support for each observed state variable at time t
-    interval <- matrix(NA, length(obs.mean[[t]]), 2)
-    rownames(interval) <- names(obs.mean[[t]])
+    intervalX <- matrix(NA, ncol(X), 2)
+    rownames(intervalX) <- colnames(X)
     for(i in 1:length(var.names)){
-      interval[which(startsWith(rownames(interval),
+      intervalX[which(startsWith(rownames(intervalX),
                                 var.names[i])), ] <- matrix(c(as.numeric(settings$state.data.assimilation$state.variables[[i]]$min_value),
                                                               as.numeric(settings$state.data.assimilation$state.variables[[i]]$max_value)),
-                                                            length(which(startsWith(rownames(interval),
+                                                            length(which(startsWith(rownames(intervalX),
                                                                                     var.names[i]))),2,byrow = TRUE)
     }
     
     #### These vectors are used to categorize data based on censoring from the interval matrix
-    x.ind[n,] <- as.numeric(X[n,] > interval[,1])
-    x.censored <- as.numeric(ifelse(X[n,] > interval[,1], X[n,], 0))
-    
+    x.ind <- matrix(NA, nens, ncol(X)) ; x.censored <- x.ind
+    for(n in 1:nens){
+      x.ind[n,] <- as.numeric(X[n,] > intervalX[,1])
+      x.censored[n,] <- as.numeric(ifelse(X[n,] > intervalX[,1], X[n,], 0))
+    }
+
     #### JAGS update list
-    update <- list(interval = interval,
-                   N = length(y.ind),
-                   y.ind = y.ind,
-                   y.censored = y.censored, 
-                   r = solve(R),
-                   muf = mu.f, 
-                   pf = solve(Pf),
-                   aq = aqq[t,,], 
-                   bq = bqq[t],
-                   choose = choose)
+    update.tobit2space <- list(interval = intervalX,
+                   N = ncol(X),
+                   y.ind = x.ind,
+                   y.censored = x.censored,
+                   aq = diag(ncol(X))*ncol(X), 
+                   bq = ncol(X),
+                   nens = nens,
+                   mu.prior = colMeans(X), #cheating? basically gives us back means
+                   cov.prior = diag(ncol(X)))
     
     #### Run JAGS Tobit Model
-    mod <- jags.model(file = textConnection(tobit.model),
-                      data = update,
+    mod.tobit2space <- jags.model(file = textConnection(tobit2space),
+                      data = update.tobit2space,
                       n.adapt = 1000, 
                       n.chains = 3)  #inits for q?
     
-    jdat <- coda.samples(mod, variable.names = c("X", "q"), n.iter = 10000)
+    jdat.tobit2space <- coda.samples(mod.tobit2space, variable.names = c("pf", "muf"), n.iter = 10000)
     
+    ## update parameters
+    dat.tobit2space  <- as.matrix(jdat.tobit2space)
+    dat.tobit2space  <- dat.tobit2space[3000:10000, ]
+    iPf   <- grep("pf", colnames(dat.tobit2space))
+    imuf   <- grep("muf[", colnames(dat.tobit2space), fixed = TRUE)
+    mu.f <- colMeans(dat.tobit2space[, imuf])
+    mPf <- dat.tobit2space[, iPf]  # Omega, Precision
+    Pf <- matrix(apply(mPf, 2, mean), length(mu.f), length(mu.f))  # Mean Omega, Precision
     
     ###-------------------------------------------------------------------###
     ### analysis                                                          ###
     ###-------------------------------------------------------------------###  
     if (any(obs)) {
       # if no observations skip analysis
-      Y <- obs.mean[[t]][pmatch(names(obs.mean[[t]]), colnames(X))]
-      choose <- na.omit(pmatch(colnames(X), names(obs.mean[[t]]))) #matches y to model
+      
+      
+      choose <- na.omit(charmatch(
+        na.omit(unlist(lapply(strsplit(colnames(X),
+                                       split = paste('AGB.pft.')),
+                              function(x) x[2]))),
+        na.omit(unlist(lapply(strsplit(names(obs.mean[[t]]),
+                                       split = paste('Fcomp.')),
+                              function(x) x[2]))))) #matches y to model
+      
+      Y <- unlist(obs.mean[[t]][choose])
       
       R <- as.matrix(obs.cov[[t]])
       
@@ -469,8 +487,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       if (processvar == FALSE) {
         ## design matrix
         H <- matrix(0, length(Y), ncol(X)) #H maps true state to observed state
+        #linear
         for (i in choose) {
           H[i, i] <- 1 
+        }
+        #non-linear fcomp
+        for (i in choose) {
+          H[i, i] <- 1/sum(mu.f) #? this seems to get us on the right track. mu.f[i]/sum(mu.f) doesn't work. 
         }
         ## process error
         if (exists("Q")) {
@@ -508,6 +531,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           }
         }
         
+        ### create matrix the describes the support for each observed state variable at time t
+        interval <- matrix(NA, length(obs.mean[[t]]), 2)
+        rownames(interval) <- names(obs.mean[[t]])
+        for(i in 1:length(var.names)){
+          interval[which(startsWith(rownames(interval),
+                                    var.names[i])), ] <- matrix(c(as.numeric(settings$state.data.assimilation$state.variables[[i]]$min_value),
+                                                                  as.numeric(settings$state.data.assimilation$state.variables[[i]]$max_value)),
+                                                                length(which(startsWith(rownames(interval),
+                                                                                        var.names[i]))),2,byrow = TRUE)
+        }
+        
         #### These vectors are used to categorize data based on censoring from the interval matrix
         y.ind <- as.numeric(Y > interval[,1])
         y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
@@ -523,7 +557,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
                        aq = aqq[t,,], 
                        bq = bqq[t],
                        choose = choose)
-        
+   
         #### Run JAGS Tobit Model
         mod <- jags.model(file = textConnection(tobit.model),
                           data = update,
