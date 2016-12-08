@@ -102,7 +102,7 @@ model2netcdf.FATES <- function(outdir) {
         out <- var_update(out,"AR","AutoResp","kgC m-2 s-1")
         out <- var_update(out,"GPP","GPP","kgC m-2 s-1")
         out <- var_update(out,"NPP_column","NPP","kgC m-2 s-1")
-        out <- var_update(out,"NEP","NEE","kgC m-2 s-1")
+        #out <- var_update(out,"NEP","NEE","kgC m-2 s-1") # !!temporarily disabling NEE. See https://github.com/NGEET/ed-clm/issues/154
         out <- var_update(out,"EFLX_LH_TOT","Qle","W m-2")
         out <- var_update(out,"QVEGT","TVeg","mm s-1") ## equiv to std of kg m-2 s but don't trust udunits to get right
         out <- var_update(out,"ED_biomass","AbvGrndWood","kgC m-2")
