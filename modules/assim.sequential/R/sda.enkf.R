@@ -231,7 +231,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   # to have NAs or NULL with date name vector to read the correct netcdfs by read_restart
   
   obs.times <- names(obs.mean)
-  obs.times.POSIX <- ymd_hms(obs.times)
+  obs.times.POSIX <- ymd_hms(obs.times,truncated = 3)
   
   for (i in seq_along(obs.times)) {
     if (is.na(obs.times.POSIX[i])) {
@@ -280,8 +280,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   tobit.model <- "
   model{ 
   
+  #agb linear
+  #y_star <- X[choose]
+
+  #f.comp non linear
+  y_star <- X[choose]/sum(X[choose])
+
   ## Analysis
-  y.censored  ~ dmnorm(X[choose],r) ##cannot be partially observed -- JAGS Manual
+  y.censored  ~ dmnorm(y_star,r) ##cannot be partially observed -- JAGS Manual
   
   for(i in 1:N){
   y.ind[i] ~ dinterval(y.censored[i], interval[i,])
@@ -328,6 +334,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     
     obs <- which(!is.na(obs.mean[[t]]))
     
+    
+    ### need on tobit scale
     mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
     Pf <- cov(X)
     
