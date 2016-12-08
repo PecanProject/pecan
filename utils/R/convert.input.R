@@ -43,7 +43,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                           con = con, 
                                           hostname = host$name, 
                                           exact.dates = TRUE,
-                                          machine.check = TRUE
                                           )
     
 
@@ -102,11 +101,31 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       
     
 
-      # There's an existing input that matches desired start/end dates. Use that one.
-      logger.info("Skipping this input conversion because files are already available.")
-      
-      return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
-      
+      #Grab machine info of file that exists
+      existing.machine <- db.query(paste0("SELECT * from machines where id  = '", 
+                                   existing.dbfile$machine_id, "'"), con)
+           
+      #Grab machine info of host machine
+      machine.host <- ifelse(host$name == "localhost", fqdn(), host$name)
+      machine <- db.query(paste0("SELECT * from machines where hostname = '", 
+                          machine.host, "'"), con)
+           
+      if(existing.machine$id != machine$id){
+        
+        logger.info("Valid Input record found that spans desired dates, but valid files do not exist on this machine.")
+        logger.info("Downloading all years of Valid input to ensure consistency")
+        insert.new.file <- TRUE
+        start_date <- existing.input$start_date
+        end_date   <- existing.input$end_date
+    
+        }else{
+             
+         # There's an existing input that spans desired start/end dates with files on this machine
+         
+        logger.info("Skipping this input conversion because files are already available.")
+        return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
+       }
+    
       
       } else{
       # No existing record found. Should be good to go with regular conversion.
@@ -125,8 +144,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                             startdate = start_date,
                                             enddate = end_date, 
                                             con = con, 
-                                            hostname = host$name,
-                                            machine.check = FALSE
+                                            hostname = host$name
                                             )
       
     
@@ -134,7 +152,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       logger.info(existing.dbfile)
       
      
-      logger.info("end CHECK for existing input record. May be on wrong machine. Checking now... ")
+      logger.info("end CHECK for existing input record.")
       
       
       if (nrow(existing.dbfile) > 0) {
@@ -225,7 +243,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
               "'/'",
               end_date,
               "' ",
-              "so that existing input can be updated while maintaining continuous time span."
+              " so that existing input can be updated while maintaining continuous time span."
             )
           )
           
@@ -408,12 +426,15 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   
   ## insert new record into database
   if (write) {
+    
     if (exists("existing.input") && nrow(existing.input) > 0 && 
         (existing.input$start_date != start_date || existing.input$end_date != end_date)) {
       # Updating record with new dates
       db.query(paste0("UPDATE inputs SET start_date='", start_date, "', end_date='", 
                       end_date, "', ", "updated_at=NOW() WHERE id=", existing.input$id), 
                con)
+      #Record has been updated and file downloaded so just return existing dbfile and input pair
+      return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
     }
     
     if (overwrite) {
@@ -435,8 +456,6 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     if ("newsite" %in% names(input.args) && !is.null(input.args[["newsite"]])) {
       site.id <- input.args$newsite
     }
-    
-    if(exact.dates){allow.conflicting.dates <- FALSE}
     
     
     if(insert.new.file){
