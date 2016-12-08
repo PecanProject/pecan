@@ -302,6 +302,24 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   
   }"
   
+  tobit2space <- "
+  model{ 
+
+  ## Analysis
+  for(n in 1:nens){
+      y.censored[n,]  ~ dmnorm(muf,pf) ##cannot be partially observed -- JAGS Manual
+  
+      for(i in 1:N){
+          y.ind[n,i] ~ dinterval(y.censored[n,i], interval[i,])
+      }
+  }
+
+  ## add process error
+  pf  ~ dwish(aq,bq)
+  muf  ~ dmnorm(mu1,cov1)
+  
+}"
+  
   t1         <- 1
   pink       <- col2rgb("deeppink")
   alphapink  <- rgb(pink[1], pink[2], pink[3], 180, max = 255)
@@ -334,10 +352,43 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     
     obs <- which(!is.na(obs.mean[[t]]))
     
+    #mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
+    #Pf <- cov(X)
     
-    ### need on tobit scale
-    mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
-    Pf <- cov(X)
+    ### create matrix the describes the support for each observed state variable at time t
+    interval <- matrix(NA, length(obs.mean[[t]]), 2)
+    rownames(interval) <- names(obs.mean[[t]])
+    for(i in 1:length(var.names)){
+      interval[which(startsWith(rownames(interval),
+                                var.names[i])), ] <- matrix(c(as.numeric(settings$state.data.assimilation$state.variables[[i]]$min_value),
+                                                              as.numeric(settings$state.data.assimilation$state.variables[[i]]$max_value)),
+                                                            length(which(startsWith(rownames(interval),
+                                                                                    var.names[i]))),2,byrow = TRUE)
+    }
+    
+    #### These vectors are used to categorize data based on censoring from the interval matrix
+    x.ind[n,] <- as.numeric(X[n,] > interval[,1])
+    x.censored <- as.numeric(ifelse(X[n,] > interval[,1], X[n,], 0))
+    
+    #### JAGS update list
+    update <- list(interval = interval,
+                   N = length(y.ind),
+                   y.ind = y.ind,
+                   y.censored = y.censored, 
+                   r = solve(R),
+                   muf = mu.f, 
+                   pf = solve(Pf),
+                   aq = aqq[t,,], 
+                   bq = bqq[t],
+                   choose = choose)
+    
+    #### Run JAGS Tobit Model
+    mod <- jags.model(file = textConnection(tobit.model),
+                      data = update,
+                      n.adapt = 1000, 
+                      n.chains = 3)  #inits for q?
+    
+    jdat <- coda.samples(mod, variable.names = c("X", "q"), n.iter = 10000)
     
     
     ###-------------------------------------------------------------------###
@@ -447,17 +498,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           }
         }
         aqq[1, , ] <- diag(length(mu.f)) * bqq[1]
-        
-        ### create matrix the describes the support for each observed state variable at time t
-        interval <- matrix(NA, length(obs.mean[[t]]), 2)
-        rownames(interval) <- names(obs.mean[[t]])
-        for(i in 1:length(var.names)){
-            interval[which(startsWith(rownames(interval),
-                                      var.names[i])), ] <- matrix(c(as.numeric(settings$state.data.assimilation$state.variables[[i]]$min_value),
-                                                            as.numeric(settings$state.data.assimilation$state.variables[[i]]$max_value)),
-                                                            length(which(startsWith(rownames(interval),
-                                                                                    var.names[i]))),2,byrow = TRUE)
-        }
 
         #### changing diagonal if the covariance is too small for the matrix to be inverted 
         #### This problem is different than R problem because diag(Pf) can be so small it can't be inverted 
