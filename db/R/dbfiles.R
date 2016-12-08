@@ -157,7 +157,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##'   dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, formatname, parentid=NA, 
-                               con, hostname=fqdn(), exact.dates=FALSE,...) {
+                               con, hostname=fqdn(), exact.dates=FALSE) {
   if (hostname == "localhost") hostname <- fqdn();
   
   mimetypeid <- get.id('mimetypes', 'type_string', mimetype, con = con)
