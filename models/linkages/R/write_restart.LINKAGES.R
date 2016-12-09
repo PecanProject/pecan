@@ -174,7 +174,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     spp.biomass.params <- biomass_spp_params(new.params = new.params, 
                                              default.params = spp.params.default, 
                                              pft = pft)
-    ind.biomass[j] <- biomass_function(dbh[j], spp.biomass.params) * (1 / 833) * 0.48  # changing units to be kgC/m^2
+    ind.biomass[j] <- biomass_function(dbh[j], spp.biomass.params) * (1 / 833) * 0.48  # changing units to be kgC/m^2 #Is this right?? This drives me crazy
   }
   
   data2 <- data.frame(ind.biomass = ind.biomass,
