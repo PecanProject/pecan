@@ -280,11 +280,18 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   tobit.model <- "
   model{ 
   
+  q  ~ dwish(aq,bq) ## aq and bq are estimated over time
+  Q <- inverse(q)
+  X.mod ~ dmnorm(muf,pf) ## Model Forecast ##muf and pf are assigned from ensembles
+
+  ## add process error
+  X  ~ dmnorm(X.mod,q)
+ 
   #agb linear
   #y_star <- X[choose]
   
   #f.comp non linear
-  y_star <- X[choose]/sum(X[choose])
+  y_star <- X[1:9] / sum(X[1:9])
   
   ## Analysis
   y.censored  ~ dmnorm(y_star,r) ##cannot be partially observed -- JAGS Manual
@@ -292,13 +299,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   for(i in 1:N){
   y.ind[i] ~ dinterval(y.censored[i], interval[i,])
   }
-  
-  X.mod ~ dmnorm(muf,pf) ## Model Forecast
-  
-  ## add process error
-  q  ~ dwish(aq,bq)
-  X  ~ dmnorm(X.mod,q)
-  Q <- inverse(q)
   
 }"
   
@@ -405,8 +405,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     ###-------------------------------------------------------------------###  
     if (any(obs)) {
       # if no observations skip analysis
-      
-      
       choose <- na.omit(charmatch(
         na.omit(unlist(lapply(strsplit(colnames(X),
                                        split = paste('AGB.pft.')),
@@ -432,8 +430,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         }
       }
       
+      ### TO DO: plotting not going to work because of observation operator i.e. y and x are on different scales
+      
       #### Plot Data and Forecast
-      if (interactive() & t > 1) {
+      if (FALSE) {#interactive() & t > 1
         t1 <- 1
         names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
         Ybar <- t(sapply(obs.mean[t1:t], function(x) {
@@ -533,6 +533,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         
         ### create matrix the describes the support for each observed state variable at time t
         interval <- matrix(NA, length(obs.mean[[t]]), 2)
+        
+        ### TO DO interval not working
         rownames(interval) <- names(obs.mean[[t]])
         for(i in 1:length(var.names)){
           interval[which(startsWith(rownames(interval),
@@ -541,8 +543,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
                                                                 length(which(startsWith(rownames(interval),
                                                                                         var.names[i]))),2,byrow = TRUE)
         }
+        interval[,1]<-0
+        interval[,2]<-1
         
-        #### These vectors are used to categorize data based on censoring from the interval matrix
+        #### These vectors are used to categorize data based on censoring 
+        #### from the interval matrix
         y.ind <- as.numeric(Y > interval[,1])
         y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
         
@@ -553,7 +558,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
                        y.censored = y.censored, 
                        r = solve(R),
                        muf = mu.f, 
-                       pf = solve(Pf),
+                       pf =  Pf, #check
                        aq = aqq[t,,], 
                        bq = bqq[t],
                        choose = choose)
@@ -564,7 +569,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
                           n.adapt = 1000, 
                           n.chains = 3)  #inits for q?
 
-        jdat <- coda.samples(mod, variable.names = c("X", "q"), n.iter = 10000)
+        jdat <- coda.samples(mod, variable.names = c("X", "q"), 
+                             n.iter = 10000)
+        
+        gelman.diag(jdat[,1:10])
         
         ## update parameters
         dat  <- as.matrix(jdat)
@@ -640,7 +648,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     
     ANALYSIS[[t]] <- analysis
     
-    if (interactive() & t > 1) {
+    if (FALSE) { #interactive() & t > 1
       t1 <- 1
       names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
       Ybar <- t(sapply(obs.mean[t1:t], function(x) {
@@ -780,7 +788,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     tmp[mch] <- x[mch]
     return(tmp)
   }))
-  Ybar <- Ybar[, na.omit(pmatch(colnames(X), colnames(Ybar)))]
+  Ybar <- Ybar[, choose]
   YCI <- t(as.matrix(sapply(obs.cov[t1:t], function(x) {
     if (is.null(x)) {
       rep(NA, length(names.y))

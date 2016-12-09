@@ -135,9 +135,9 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
             spp.params[spp.params$Spp_Name == group, ]$RTST <- vals$root2shoot
           }
           
-          if ("leaf_longevity" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$FRT <- vals$leaf_longevity
-          }
+          # if ("leaf_longevity" %in% names(vals)) {
+          #   spp.params[spp.params$Spp_Name == group, ]$FRT <- vals$leaf_longevity
+          # }
           
           if ("TL" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$TL <- ceiling(vals$TL)
