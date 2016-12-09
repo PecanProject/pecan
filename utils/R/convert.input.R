@@ -42,7 +42,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                           enddate = end_date, 
                                           con = con, 
                                           hostname = host$name, 
-                                          exact.dates = TRUE,
+                                          exact.dates = TRUE
                                           )
     
 
@@ -139,8 +139,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       
       existing.dbfile <- dbfile.input.check(siteid = site.id,
                                             mimetype = mimetype, 
-                                            formatname = formatname, 
-                                            parentid = input.id, 
+                                            formatname = formatname,
+                                            parentid = input.id,
                                             startdate = start_date,
                                             enddate = end_date, 
                                             con = con, 
