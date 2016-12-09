@@ -132,7 +132,11 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
     start.model.runs(settings, settings$database$bety$write)
     
     ## Read model outputs
-    model.out <- pda.get.model.output(settings, run.id, bety, inputs)
+    align.return <- pda.get.model.output(settings, run.id, bety, inputs)
+    model.out <- align.return$model.out
+    if(!is.na(model.out)){
+      inputs <- align.return$inputs
+    } 
     
     # retrieve n
     n.of.obs <- sapply(inputs,`[[`, "n") 
