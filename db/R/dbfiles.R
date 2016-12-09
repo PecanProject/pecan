@@ -435,7 +435,7 @@ dbfile.check <- function(type, container.id, con, hostname=fqdn(), machine.check
   }else{
 
       dbfiles <- db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, 
-                               "' AND container_id IN (", paste(container.id, collapse = ", ")), con)
+                               "' AND container_id IN (", paste(container.id, collapse = ", "),")"), con)
       
       if(nrow(dbfiles) > 1){
       
