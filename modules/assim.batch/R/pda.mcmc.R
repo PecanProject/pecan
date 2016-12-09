@@ -207,7 +207,14 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
           start.model.runs(settings, settings$database$bety$write)
           
           ## Read model outputs
-          model.out <- pda.get.model.output(settings, run.id, bety, inputs)
+          model.out <- align.return$model.out
+          if(!is.na(model.out)){
+            inputs <- align.return$inputs
+          }  <- pda.get.model.output(settings, run.id, bety, inputs)
+          model.out <- align.return$model.out
+          if(!is.na(model.out)){
+            inputs <- align.return$inputs
+          } 
           
           # retrieve n
           n.of.obs <- sapply(inputs,`[[`, "n") 
