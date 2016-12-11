@@ -61,7 +61,7 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
     
     ## save named distributions
     ## *** TODO: Generalize for multiple PFTS
-    post.distns <- approx.posterior(params.subset[[i]], prior[[i]], 
+    post.distns <- PEcAn.MA::approx.posterior(params.subset[[i]], prior[[i]], 
                                     outdir = settings$pfts[[i]]$outdir, 
                                     filename.flag = paste0(".pda.", settings$pfts[[i]]$name, "_", settings$assim.batch$ensemble.id))
     filename <- file.path(settings$pfts[[i]]$outdir, 
