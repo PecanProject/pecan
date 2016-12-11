@@ -26,12 +26,12 @@
     fcn <- paste0("met2model.", model)
     lst <- site.lst(site, con)
     
-    model.id <- convert.input(input.id, 
-                              outfolder,
-                              formatname, mimetype, 
+    model.id <- convert.input(input.id = input.id, 
+                              outfolder = outfolder,
+                              formatname = formatname, mimetype = mimetype, 
                               site.id = site$id, 
-                              start_date, end_date, 
-                              pkg, fcn, con = con, host = host, browndog,
+                              start_date = start_date, end_date = end_date, 
+                              pkg = pkg, fcn = fcn, con = con, host = host, browndog = browndog,
                               write = TRUE,
                               lst = lst, 
                               lat = new.site$lat, lon = new.site$lon, 
