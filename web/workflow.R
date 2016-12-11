@@ -119,7 +119,7 @@ if ('ensemble' %in% names(settings) & status.check("ENSEMBLE") == 0) {
 }
 
 # Run sensitivity analysis and variance decomposition on model output
-if ('sensitivity' %in% names(settings) & status.check("SENSITIVITY") == 0) {
+if ('sensitivity.analysis' %in% names(settings) & status.check("SENSITIVITY") == 0) {
   status.start("SENSITIVITY")
   runModule.run.sensitivity.analysis(settings)
   status.end()
