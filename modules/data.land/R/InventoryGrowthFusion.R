@@ -56,7 +56,8 @@ model{
 #RANDOM tau_ind ~ dgamma(1,0.1)
 #RANDOM tau_yr  ~ dgamma(1,0.1)
   mu ~ dnorm(0.5,0.5)
-  ## FIXED EFFECTS BETAS
+## FIXED EFFECTS BETAS
+## TIME VARYING BETAS
  }"
   
   Pformula <- NULL
@@ -104,6 +105,12 @@ model{
     out.variables <- c(out.variables, paste0("beta", Xf.names))
   }
  
+  if(FALSE){
+    ## DEVEL TESTING FOR TIME VARYING
+    time_varying <- "TminJuly + PrecipDec"
+    time_data <- list(TminJuly = matrix(0,4,4),PrecipDec = matrix(1,4,4))
+  }
+  
   ## Time-varying covariates
   if(!is.null(time_varying)){
     if (is.null(time_data)) {
@@ -111,23 +118,34 @@ model{
     }
     
     ## parse equation into variable names
+    t_vars <- gsub(" ","",unlist(strsplit(time_varying,"+",fixed=TRUE))) ## split on +, remove whitespace
       ## need to deal with interactions with fixed variables
       ## will get really nasty if interactions are with catagorical variables
       ## need to create new data matrices on the fly
     
     ## loop over variables
+    for(j in seq_along(t_vars)){
+      tvar <- t_vars[j]
+      
+      ## grab from the list of data matrices
+      dtmp <- time_data[[tvar]]
+      
+      ## insert data into JAGS inputs
+      data[[length(data)+1]] <- dtmp
+      names(data)[length(data)] <- tvar
     
-    ## grab from the list of data matrices
+      ## append to process model formula
+      Pformula <- paste(Pformula,
+                        paste0("+ beta", tvar, "*",tvar,"[i,t]"))
     
-    ## insert data into JAGS inputs
-    
-    ## build formula
-    
+      ## add to list of varibles JAGS is tracking
+      out.variables <- c(out.variables, paste0("beta", tvar))
+    }
     ## build prior
+    Xt.priors <- paste0("     beta", t_vars, "~dnorm(0,0.001)", collapse = "\n")
+    TreeDataFusionMV <- sub(pattern = "## TIME VARYING BETAS", Xt.priors, TreeDataFusionMV)
     
-    ## add to list of varibles JAGS is tracking
-  
-  }
+  } ## END time varying covariates
    
   
   ## insert process model into JAGS template
