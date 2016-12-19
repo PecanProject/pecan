@@ -8,7 +8,7 @@
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion <- function(data, cov.data=NULL,n.iter=5000, random = TRUE, fixed = NULL, burnin_plot = FALSE) {
+InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=5000, random = TRUE, fixed = NULL,time_varying=NULL, burnin_plot = FALSE) {
   library(rjags)
   
   burnin.variables <- c("tau_add", "tau_dbh", "tau_inc", "mu")
@@ -85,20 +85,50 @@ model{
     Xf.cols <- Xf.cols[Xf.cols != "(Intercept)"]
     Xf      <- as.matrix(Xf[, Xf.cols])
     colnames(Xf) <- Xf.cols
+    ##Center the covariate data
     Xf.center <- apply(Xf, 2, mean, na.rm = TRUE)
     Xf      <- t(t(Xf) - Xf.center)
   }
   
+  ## build formula in JAGS syntax
   if (!is.null(Xf)) {
-    Xf.names <- gsub(" ", "_", colnames(Xf))
+    Xf.names <- gsub(" ", "_", colnames(Xf))  ## JAGS doesn't like spaces in variable names
+    ## append to process model formula
     Pformula <- paste(Pformula,
                       paste0("+ beta", Xf.names, "*Xf[rep[i],", seq_along(Xf), "]", collapse = " "))
+    ## create priors
     Xf.priors <- paste0("     beta", Xf.names, "~dnorm(0,0.001)", collapse = "\n")
     TreeDataFusionMV <- sub(pattern = "## FIXED EFFECTS BETAS", Xf.priors, TreeDataFusionMV)
-    mydat[["Xf"]] <- Xf
+    ## update variables for JAGS to track
+    data[["Xf"]] <- Xf
     out.variables <- c(out.variables, paste0("beta", Xf.names))
   }
+ 
+  ## Time-varying covariates
+  if(!is.null(time_varying)){
+    if (is.null(time_data)) {
+      print("time_varying formula provided but time_data is absent:", time_varying)
+    }
+    
+    ## parse equation into variable names
+      ## need to deal with interactions with fixed variables
+      ## will get really nasty if interactions are with catagorical variables
+      ## need to create new data matrices on the fly
+    
+    ## loop over variables
+    
+    ## grab from the list of data matrices
+    
+    ## insert data into JAGS inputs
+    
+    ## build formula
+    
+    ## build prior
+    
+    ## add to list of varibles JAGS is tracking
   
+  }
+   
   
   ## insert process model into JAGS template
   if (!is.null(Pformula)) {
