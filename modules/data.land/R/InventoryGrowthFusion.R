@@ -8,7 +8,7 @@
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion <- function(data, n.iter, random = TRUE, burnin_plot = FALSE) {
+InventoryGrowthFusion <- function(data, cov.data=NULL,n.iter=5000, random = TRUE, fixed = NULL, burnin_plot = FALSE) {
   library(rjags)
   
   burnin.variables <- c("tau_add", "tau_dbh", "tau_inc", "mu")
@@ -56,6 +56,7 @@ model{
 #RANDOM tau_ind ~ dgamma(1,0.1)
 #RANDOM tau_yr  ~ dgamma(1,0.1)
   mu ~ dnorm(0.5,0.5)
+  ## FIXED EFFECTS BETAS
  }"
   
   Pformula <- NULL
@@ -66,7 +67,40 @@ model{
     burnin.variables <- c(burnin.variables, "tau_ind", "tau_yr")
     out.variables <- c(out.variables, "tau_ind", "tau_yr", "ind", "year")
   }
+
+  ## Design matrix
+  if (is.null(fixed)) {
+    Xf <- NULL
+  } else {
+    if (is.null(cov.data)) {
+      print("formula provided but covariate data is absent:", fixed)
+    }
+    ## check if there's a tilda in the formula
+    if (length(grep("~", fixed)) == 0) {
+      fixed <- paste("~", fixed)
+    }
+    ## build design matrix from formula
+    Xf      <- with(cov.data, model.matrix(formula(fixed)))
+    Xf.cols <- colnames(Xf)
+    Xf.cols <- Xf.cols[Xf.cols != "(Intercept)"]
+    Xf      <- as.matrix(Xf[, Xf.cols])
+    colnames(Xf) <- Xf.cols
+    Xf.center <- apply(Xf, 2, mean, na.rm = TRUE)
+    Xf      <- t(t(Xf) - Xf.center)
+  }
   
+  if (!is.null(Xf)) {
+    Xf.names <- gsub(" ", "_", colnames(Xf))
+    Pformula <- paste(Pformula,
+                      paste0("+ beta", Xf.names, "*Xf[rep[i],", seq_along(Xf), "]", collapse = " "))
+    Xf.priors <- paste0("     beta", Xf.names, "~dnorm(0,0.001)", collapse = "\n")
+    TreeDataFusionMV <- sub(pattern = "## FIXED EFFECTS BETAS", Xf.priors, TreeDataFusionMV)
+    mydat[["Xf"]] <- Xf
+    out.variables <- c(out.variables, paste0("beta", Xf.names))
+  }
+  
+  
+  ## insert process model into JAGS template
   if (!is.null(Pformula)) {
     TreeDataFusionMV <- sub(pattern = "##PROCESS", Pformula, TreeDataFusionMV)
   }
