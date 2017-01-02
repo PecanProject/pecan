@@ -107,7 +107,7 @@ model{
  
   if(FALSE){
     ## DEVEL TESTING FOR TIME VARYING
-    time_varying <- "TminJuly + PrecipDec"
+    time_varying <- "TminJuly + PrecipDec + TminJuly*PrecipDec"
     time_data <- list(TminJuly = matrix(0,4,4),PrecipDec = matrix(1,4,4))
   }
   
@@ -119,6 +119,8 @@ model{
     
     ## parse equation into variable names
     t_vars <- gsub(" ","",unlist(strsplit(time_varying,"+",fixed=TRUE))) ## split on +, remove whitespace
+    ## check for interaction terms
+    it_vars <- grep(pattern = "*",x=t_vars,fixed = TRUE)
       ## need to deal with interactions with fixed variables
       ## will get really nasty if interactions are with catagorical variables
       ## need to create new data matrices on the fly
