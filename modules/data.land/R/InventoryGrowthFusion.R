@@ -75,6 +75,8 @@ model{
   } else {
     if (is.null(cov.data)) {
       print("formula provided but covariate data is absent:", fixed)
+    } else {
+      cov.data <- as.data.frame(cov.data)
     }
     ## check if there's a tilda in the formula
     if (length(grep("~", fixed)) == 0) {
@@ -96,7 +98,11 @@ model{
     Xf.names <- gsub(" ", "_", colnames(Xf))  ## JAGS doesn't like spaces in variable names
     ## append to process model formula
     Pformula <- paste(Pformula,
-                      paste0("+ beta", Xf.names, "*Xf[rep[i],", seq_along(Xf), "]", collapse = " "))
+                      paste0("+ beta", Xf.names, "*Xf[rep[i],", seq_along(Xf.names), "]", collapse = " "))
+    ## create 'rep' variable if not defined
+    if(is.null(data$rep)){
+      data$rep <- seq_len(nrow(Xf))
+    }
     ## create priors
     Xf.priors <- paste0("     beta", Xf.names, "~dnorm(0,0.001)", collapse = "\n")
     TreeDataFusionMV <- sub(pattern = "## FIXED EFFECTS BETAS", Xf.priors, TreeDataFusionMV)
