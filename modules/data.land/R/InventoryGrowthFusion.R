@@ -8,7 +8,7 @@
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=5000, random = TRUE, fixed = NULL,time_varying=NULL, burnin_plot = FALSE) {
+InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=5000, random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE) {
   library(rjags)
   
   burnin.variables <- c("tau_add", "tau_dbh", "tau_inc", "mu")
@@ -37,36 +37,80 @@ model{
   x[i,t]~dnorm(Dnew[i,t],tau_add)
   }
   
-#RANDOM ## individual effects
-#RANDOM ind[i] ~ dnorm(0,tau_ind)  
-
   ## initial condition
   x[i,1] ~ dnorm(x_ic,tau_ic)
   }  ## end loop over individuals
 
-#RANDOM ## year effects
-#RANDOM for(t in 1:nt){
-#RANDOM year[t] ~ dnorm(0,tau_yr)
-#RANDOM }
+## RANDOM_EFFECTS
   
   #### Priors
   tau_dbh ~ dgamma(a_dbh,r_dbh)
   tau_inc ~ dgamma(a_inc,r_inc)
   tau_add ~ dgamma(a_add,r_add)
-#RANDOM tau_ind ~ dgamma(1,0.1)
-#RANDOM tau_yr  ~ dgamma(1,0.1)
   mu ~ dnorm(0.5,0.5)
 ## FIXED EFFECTS BETAS
 ## TIME VARYING BETAS
+## RANDOM EFFECT ALPHAS
  }"
   
   Pformula <- NULL
   ## RANDOM EFFECTS
-  if (random) {
-    TreeDataFusionMV <- gsub(pattern = "#RANDOM", " ", TreeDataFusionMV)
-    Pformula <- "+ ind[i] + year[t]"
-    burnin.variables <- c(burnin.variables, "tau_ind", "tau_yr")
-    out.variables <- c(out.variables, "tau_ind", "tau_yr", "ind", "year")
+  if (!is.null(random)) {
+    Rpriors <- NULL
+    Reffects <- NULL
+    ## parse random effects
+    r_vars <- gsub(" ","",unlist(strsplit(random,"+",fixed=TRUE))) ## split on +, remove whitespace
+    for(i in seq_along(r_vars)){
+      ## special case: individidual
+      if(r_vars[i] == "i"){
+        r_var   <- "i"
+        counter <- ""
+        index   <- "i"
+      } else if(r_vars[i] == "i"){
+        r_var   <- "t"
+        counter <- ""
+        index   <- "t"
+      } else {
+        index <- counter <- nr <- NA
+        r_var <- gsub("(","",gsub(")","",r_vars[i],fixed = TRUE),fixed="TRUE")
+        r_var <- strsplit(r_var,"|",fixed=TRUE)[[1]]
+        fix   <- r_var[1]
+        ## check for nested effects
+        r_var <- strsplit(gsub("\\",":",r_var[2],fixed=TRUE),":",fixed = TRUE)[[1]]
+        for(j in seq_along(length(r_var))){
+          if(j>1)print("WARNING: not actually nesting random effects at this time")            ## HACK: to get started, not actually nesting
+          ## parse
+          j_var      <- strsplit(r_var[j],"[",fixed = TRUE)[[1]]
+          index[j]   <- gsub("]","",j_var[2],fixed=TRUE)
+          counter[j] <- j_var[1]
+          r_var[j]   <- j_var[1]
+          ## add variable to data
+          if(!(r_var[j] %in% names(data))){
+            data[[length(data)+1]] <- cov.data[,r_var[j]]
+            names(data)[length(data)] <- r_var[j]
+          }
+          nr[j] <- length(data[[r_var[j]]])
+        }
+        index <- paste0("[",index,"]")
+      }
+      ## create formula
+      Pformula <- paste(Pformula,
+                        paste0("+ alpha_", r_var,"[",counter,index,"]"))
+      ## create random effect
+      for(j in seq_along(nr)){
+        Reffects <- paste(Reffects,paste0("for(k in 1:",nr[j],"){\n"),
+                                 paste0("   alpha_",r_var[j]," ~ dnorm(0,tau_",r_var[j],")\n}\n"))
+      }
+      ## create priors
+      Rpriors <- paste(Rpriors,paste0("tau_",r_var," ~ dgamma(1,0.1)\n",collapse = " "))
+      ## track
+      burnin.variables <- c(burnin.variables, paste0("tau_", r_var))
+      out.variables <- c(out.variables, paste0("tau_", r_var), paste0("alpha_",r_var))
+      
+    }
+    ## Substitute into code
+    TreeDataFusionMV <- sub(pattern = "## RANDOM EFFECTS ALPHAS", Rpriors, TreeDataFusionMV)
+    TreeDataFusionMV <- gsub(pattern = "## RANDOM_EFFECTS", Reffects, TreeDataFusionMV)
   }
 
   ## Design matrix
