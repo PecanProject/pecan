@@ -89,7 +89,7 @@ model{
             data[[length(data)+1]] <- cov.data[,r_var[j]]
             names(data)[length(data)] <- r_var[j]
           }
-          nr[j] <- length(data[[r_var[j]]])
+          nr[j] <- max(as.numeric(data[[r_var[j]]]))
         }
         index <- paste0("[",index,"]")
       }
