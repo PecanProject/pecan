@@ -88,7 +88,7 @@ model{
           r_var[j]   <- j_var[1]
           ## add variable to data
           if(!(r_var[j] %in% names(data))){
-            data[[length(data)+1]] <- cov.data[,r_var[j]]
+            data[[length(data)+1]] <- as.numeric(as.factor(as.character(cov.data[,r_var[j]]))) ## multiple conversions to eliminate gaps
             names(data)[length(data)] <- r_var[j]
           }
           nr[j] <- max(as.numeric(data[[r_var[j]]]))
