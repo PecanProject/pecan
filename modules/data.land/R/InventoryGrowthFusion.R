@@ -66,10 +66,12 @@ model{
         r_var   <- "i"
         counter <- ""
         index   <- "i"
+        nr <- nrow(cov.data)
       } else if(r_vars[i] == "i"){
         r_var   <- "t"
         counter <- ""
         index   <- "t"
+        nr <- ncol(cov.data)
       } else {
         index <- counter <- nr <- NA
         r_var <- gsub("(","",gsub(")","",r_vars[i],fixed = TRUE),fixed="TRUE")
