@@ -14,19 +14,20 @@
 ##' @param verbose should the function be very verbose
 ##' @param lst is timezone offset from UTC, if timezone is available in time:units atribute in file, it will use that, default is to assume UTC
 ##' @author Ankur Desai
+##' @importFrom PEcAn.utils fqdn logger.debug logger.error logger.warn logger.severe
+##' @importFrom ncdf4 ncvar_get ncatt_get ncdim_def ncvar_def ncvar_add ncvar_put
 metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
                        overwrite = FALSE, verbose = FALSE, ...) {
   
-
   #REddyProc installed to ~/R/library by install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
   #dependency minpack.lm may not install automatically, so install it first
 
-  fqdn <- PEcAn.utils::fqdn
-  logger.debug  <- PEcAn.utils::logger.debug 
-  logger.error  <- PEcAn.utils::logger.error
-  logger.warn   <- PEcAn.utils::logger.warn
-  logger.severe <- PEcAn.utils::logger.severe
+
   
+  sEddyProc             <- REddyProc::sEddyProc
+  fCalcVPDfromRHandTair <- REddyProc::fCalcVPDfromRHandTair
+  
+
   # get start/end year code works on whole years only
   start_year <- lubridate::year(start_date)
   end_year  <- lubridate::year(end_date)
@@ -77,13 +78,6 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     nc <- ncdf4::nc_open(new.file, write = TRUE)
     
     ## Should probably check for variable names (need to install ncdf4-helpers package)
-    
-    ncvar_get <- ncdf4::ncvar_get
-    ncatt_get <- ncdf4::ncatt_get
-    ncdim_def <- ncdf4::ncdim_def
-    ncvar_def <- ncdf4::ncvar_def
-    ncvar_add <- ncdf4::ncvar_add
-    ncvar_put <- ncdf4::ncvar_put
     
     # extract time, lat, lon
     time <- ncvar_get(nc = nc, varid = "time")

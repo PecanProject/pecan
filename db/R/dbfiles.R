@@ -107,6 +107,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   
   # find appropriate dbfile, if not in database, insert new dbfile
   dbfile <- dbfile.check('Input', inputid, con, hostname)
+  
   if(nrow(dbfile) > 0) {
     if(nrow(dbfile) > 1) {
       print(dbfile)
@@ -136,7 +137,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##'
 ##' This will check the dbfiles, inputs, machines and formats tables to see if the
 ##' file exists
-##' @name dbfile.check
+##' @name dbfile.input.check
 ##' @title Check for a file in the input/dbfiles tables
 ##' @param siteid the id of the site that this data is applicable to
 ##' @param startdate the start date of the data stored in the file
@@ -190,14 +191,39 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
   if (is.null(inputid)) {
     return(data.frame())
   } else {
-    if(length(inputid) > 1) {
-      logger.warn("Found multiple matching inputs. Checking for one with associate files are on host machine")
-      return(as.data.frame(dbfile.check('Input', inputid, con, hostname)))
-      }
+    
+    if(length(inputid) > 1){
+       logger.warn("Found multiple matching inputs. Checking for one with associate files on host machine")
+        
+       dbfile <- dbfile.check(type = 'Input', container.id = inputid, con = con, hostname = hostname, machine.check = TRUE)
+            
+      if(nrow(dbfile) == 0){
+         ## With the possibility of dbfile.check returning nothing,
+         ## as.data.frame ensures a empty data.frame is returned 
+         ## rather than an empty list.
+         logger.info("File not found on host machine. Returning Valid input with file associated on different machine if possible")
+         return(as.data.frame(dbfile.check('Input', inputid, con, hostname, machine.check = FALSE)))
+        }
+         
+      return(dbfile)
+    }else{
+      
       logger.warn("Found possible matching input. Checking if its associate files are on host machine")
-      return(as.data.frame(dbfile.check('Input', inputid, con, hostname)))
+      
+      dbfile <- dbfile.check(type = 'Input', container.id = inputid, con = con, hostname = hostname, machine.check = TRUE)
+          
+      if(nrow(dbfile) == 0){
+         ## With the possibility of dbfile.check returning nothing,
+         ## as.data.frame ensures an empty data.frame is returned 
+         ## rather than an empty list.
+         logger.info("File not found on host machine. Returning Valid input with file associated on different machine if possible")
+         return(as.data.frame(dbfile.check(type = 'Input', container.id = inputid, con = con, hostname = hostname, machine.check = FALSE)))
+      }
+      
+      return(dbfile)
+      
     }
-  
+  }
 }
 
 ##' Function to insert a file into the dbfiles table as a posterior
@@ -253,7 +279,7 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
 ##'
 ##' This will check the dbfiles, inputs, machines and formats tables to see if the
 ##' file exists
-##' @name dbfile.check
+##' @name dbfile.posterior.check
 ##' @title Check for a file in the input/dbfiles tables
 ##' @param pft the name of the pft that this data is applicable to
 ##' @param mimetype the mime-type of the file
@@ -368,9 +394,10 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
 ##' @name dbfile.check
 ##' @title Check for a file in the dbfiles tables
 ##' @param type the type of dbfile (Input, Posterior)
-##' @param id the id of container type
+##' @param container.id the id of container type
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
+##' @param machine.check setting to check for file on named host, otherwise will check for any file given container id
 ##' @return data.frame with the id, filename and pathname of all the files that are associated
 ##' @author Rob Kooper
 ##' @export
@@ -378,19 +405,50 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
 ##' \dontrun{
 ##'   dbfile.check('Input', 7, dbcon)
 ##' }
-dbfile.check <- function(type, id, con, hostname=fqdn()) {
+
+dbfile.check <- function(type, container.id, con, hostname=fqdn(), machine.check = TRUE) {
+  
   if (hostname == "localhost") hostname <- fqdn()
   
   # find appropriate host
   hostid <- get.id("machines", "hostname", hostname, con) 
   # hostid <- db.query(paste0("SELECT id FROM machines WHERE hostname='", hostname, "'"), con)[['id']]
   if (is.null(hostid)) {
-    invisible(data.frame())
-  } else {
-    invisible(db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, 
-                              "' AND container_id=", id, " AND machine_id=", hostid), con))
+    return(data.frame())
+  } else if (machine.check){
+  
+      dbfiles <- db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, 
+                                 "' AND container_id IN (", paste(container.id, collapse = ", "), 
+                                 ") AND machine_id=", hostid), con)
+      
+      if(nrow(dbfiles) > 1){
+      
+         logger.warn("Multiple Valid Files found on host machine. Returning last updated record")
+         return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
+      
+          }else{
+      
+            return(dbfiles)
+      
+          }
+
+  }else{
+
+      dbfiles <- db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, 
+                               "' AND container_id IN (", paste(container.id, collapse = ", "),")"), con)
+      
+      if(nrow(dbfiles) > 1){
+      
+         logger.warn("Multiple Valid Files found on host machine. Returning last updated record")
+         return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
+       
+        }else{
+      
+          return(dbfiles)
+        }
   }
 }
+
 
 
 ##' Function to return full path to a file using dbfiles table

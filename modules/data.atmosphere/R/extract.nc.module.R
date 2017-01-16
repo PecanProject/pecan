@@ -11,19 +11,20 @@
   formatname <- "CF Meteorology"
   mimetype   <- "application/x-netcdf"
   
-  ready.id <- convert.input(input.id, 
-                            outfolder, 
-                            formatname, 
-                            mimetype, 
+  ready.id <- convert.input(input.id = input.id, 
+                            outfolder = outfolder, 
+                            formatname = formatname, 
+                            mimetype = mimetype, 
                             site.id = site$id, 
-                            start_date, end_date,
-                            pkg, 
-                            fcn, 
+                            start_date = start_date, end_date = end_date,
+                            pkg = pkg, 
+                            fcn = fcn, 
                             con = con, host = host, browndog = NULL, 
                             write = TRUE, 
                             slat = new.site$lat, slon = new.site$lon,
                             newsite = new.site$id, 
-                            overwrite = overwrite)
+                            overwrite = overwrite,
+                            exact.dates = FALSE)
   
   logger.info("Finished Extracting Met")
   

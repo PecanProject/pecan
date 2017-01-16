@@ -2,100 +2,37 @@
 % Please edit documentation in R/dbfiles.R
 \name{dbfile.check}
 \alias{dbfile.check}
-\alias{dbfile.input.check}
-\alias{dbfile.posterior.check}
-\title{Check for a file in the input/dbfiles tables}
+\title{Check for a file in the dbfiles tables}
 \usage{
-dbfile.input.check(siteid, startdate = NULL, enddate = NULL, mimetype,
-  formatname, parentid = NA, con, hostname = fqdn(), match.dates = FALSE,
-  contains.dates = FALSE)
-
-dbfile.posterior.check(pft, mimetype, formatname, con, hostname = fqdn())
-
-dbfile.check(type, id, con, hostname = fqdn())
+dbfile.check(type, container.id, con, hostname = fqdn(),
+  machine.check = TRUE)
 }
 \arguments{
-\item{siteid}{the id of the site that this data is applicable to}
-
-\item{startdate}{the start date of the data stored in the file}
-
-\item{enddate}{the end date of the data stored in the file}
-
-\item{mimetype}{the mime-type of the file}
-
-\item{formatname}{the name of the format to distinguish between simmilair mime-types}
-
-\item{con}{database connection object}
-
-\item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
-
-\item{match.dates}{setting to check if argument dates match input record dates}
-
-\item{contains.dates}{setting to check if argument dates are between input dates record dates.}
-
-\item{pft}{the name of the pft that this data is applicable to}
-
 \item{type}{the type of dbfile (Input, Posterior)}
 
-\item{id}{the id of container type}
-
-\item{parent}{the id of the parent of the input}
-
-\item{params}{database connection information}
-
-\item{mimetype}{the mime-type of the file}
-
-\item{formatname}{the name of the format to distinguish between simmilair mime-types}
+\item{container.id}{the id of container type}
 
 \item{con}{database connection object}
 
 \item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
 
-\item{params}{database connection information}
-
-\item{con}{database connection object}
-
-\item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
+\item{machine.check}{setting to check for file on named host, otherwise will check for any file given container id}
 }
 \value{
-data.frame with the id, filename and pathname of the input that is requested
-
-data.frame with the id, filename and pathname of the posterior that is requested
-
 data.frame with the id, filename and pathname of all the files that are associated
 }
 \description{
-Function to check to see if a file exists in the dbfiles table as an input
-
-Function to check to see if a file exists in the dbfiles table as an input
-
 Function to check to see if a file exists in the dbfiles table
 }
 \details{
-This will check the dbfiles, inputs, machines and formats tables to see if the
-file exists
-
-This will check the dbfiles, inputs, machines and formats tables to see if the
-file exists
-
 This will check the dbfiles and machines to see if the file exists
 }
 \examples{
-\dontrun{
-  dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
-}
-\dontrun{
-  dbfile.posterior.check(pft, 'application/x-RData', 'traits', dbcon)
-}
 \dontrun{
   dbfile.check('Input', 7, dbcon)
 }
 }
 \author{
-Rob Kooper
-
-Rob Kooper
-
 Rob Kooper
 }
 

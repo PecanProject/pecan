@@ -2,7 +2,7 @@
 % Please edit documentation in R/pda.define.llik.R
 \name{pda.calc.error}
 \alias{pda.calc.error}
-\title{Calculate Likelihood parameters}
+\title{Calculate sufficient statistics}
 \usage{
 pda.calc.error(settings, con, model_out, run.id, inputs, bias.terms)
 }
@@ -19,7 +19,7 @@ pda.calc.error(settings, con, model_out, run.id, inputs, bias.terms)
 pda.errors
 }
 \description{
-Calculate Likelihood parameters
+Calculate sufficient statistics
 }
 \author{
 Istem Fer
