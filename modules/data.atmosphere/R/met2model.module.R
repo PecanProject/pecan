@@ -20,18 +20,18 @@
     input.id <- ready.id$input.id[1]
     outfolder <- ifelse(host$name == "localhost", 
                         file.path(dir, paste0(met, "_", model, "_site_", str_ns)), 
-                        file.path(host$dbfiles, paste0(met, "_", model, "_site_", str_ns)))
+                        file.path(host$folder, paste0(met, "_", model, "_site_", str_ns)))
     
     pkg <- paste0("PEcAn.", model)
     fcn <- paste0("met2model.", model)
     lst <- site.lst(site, con)
     
-    model.id <- convert.input(input.id, 
-                              outfolder,
-                              formatname, mimetype, 
+    model.id <- convert.input(input.id = input.id, 
+                              outfolder = outfolder,
+                              formatname = formatname, mimetype = mimetype, 
                               site.id = site$id, 
-                              start_date, end_date, 
-                              pkg, fcn, con = con, host = host, browndog,
+                              start_date = start_date, end_date = end_date, 
+                              pkg = pkg, fcn = fcn, con = con, host = host, browndog = browndog,
                               write = TRUE,
                               lst = lst, 
                               lat = new.site$lat, lon = new.site$lon, 

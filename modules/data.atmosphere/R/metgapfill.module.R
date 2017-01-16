@@ -11,16 +11,17 @@
   mimetype   <- "application/x-netcdf"
   lst        <- site.lst(site, con)
   
-  ready.id <- convert.input(input.id, 
-                            outfolder, 
-                            formatname, 
-                            mimetype, 
+  ready.id <- convert.input(input.id = input.id, 
+                            outfolder = outfolder, 
+                            formatname = formatname, 
+                            mimetype =  mimetype, 
                             site.id = site$id, 
-                            start_date, end_date, 
-                            pkg, fcn, con = con, host = host, browndog = NULL,
+                            start_date = start_date, end_date = end_date, 
+                            pkg = pkg, fcn = fcn, con = con, host = host, browndog = NULL,
                             write = TRUE, 
                             lst = lst, 
-                            overwrite = overwrite)
+                            overwrite = overwrite,
+                            exact.dates = FALSE)
   
   print(ready.id)
   

@@ -23,14 +23,13 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
 ##' @return matrix or dataframe with values transformed
 ##' @export
 ##' @author Shawn Serbin, Anthony Walker
+##' @importFrom udunits2 ud.convert
 convert.samples.MAAT <- function(trait.samples) {
   
-  #Import functions
-  ud.convert <- udunits2::ud.convert
-  
   ### Convert object
-  if (is.list(trait.samples)) 
+  if (is.list(trait.samples)) {
     trait.samples <- as.data.frame(trait.samples)
+  }
   
   ### first rename variables
   trait.names <- colnames(trait.samples)
@@ -86,13 +85,9 @@ convert.samples.MAAT <- function(trait.samples) {
 ##' @return configuration file for MAAT for given run
 ##' @export
 ##' @author Shawn Serbin, Anthony Walker, Rob Kooper
+##' @importFrom PEcAn.utils listToXml logger.info
+##' @importFrom XML saveXML addChildren
 write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
-  
-  # Import needed functions
-  listToXml <- PEcAn.utils::listToXml
-  saveXML <- XML::saveXML
-  addChildren <- XML::addChildren
-  logger.info <- PEcAn.utils::logger.info
   
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)

@@ -6,6 +6,16 @@
 \usage{
 pda.calc.llik.par(settings, n, error.stats)
 }
+\arguments{
+\item{settings}{list}
+
+\item{n}{named vector}
+
+\item{error.stats}{list}
+}
+\description{
+Calculate likelihood parameters
+}
 \author{
 Istem Fer
 }
