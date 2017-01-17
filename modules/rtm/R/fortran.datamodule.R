@@ -1,6 +1,5 @@
 #' @title List to FORTRAN data module
 #' 
-#' @name f.data.module
 #' @author Alexey Shiklomanov
 #' @details For models with large constants (e.g. absorption features in the
 #'       PROSPECT model), it may be preferable to store these in FORTRAN90
@@ -29,8 +28,9 @@
 #'       z <- rgamma(10, 3)
 #'       d <- data.frame(x,y,z) ## NOTE that data.frames are just named lists
 #'       d.types <- rep('real*8', ncol(d))
-#'       f.data.module(d, d.types, 'random') 
-f.data.module <- function(dat, types, modname, fname = paste0(modname, ".f90")) {
+#'       fortran_data_module(d, d.types, 'random') 
+#' @export
+fortran_data_module <- function(dat, types, modname, fname = paste0(modname, ".f90")) {
   if (!is.list(dat)) {
     dat <- as.list(dat)
   }
@@ -79,4 +79,4 @@ f.data.module <- function(dat, types, modname, fname = paste0(modname, ".f90")) 
   for (s in write.strings) {
     write(s, fname, append = TRUE)
   }
-} # f.data.module
+} # fortran_data_module
