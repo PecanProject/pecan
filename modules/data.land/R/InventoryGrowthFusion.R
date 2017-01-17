@@ -8,7 +8,7 @@
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=5000, random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE) {
+InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=5000, random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE,save.jags="IGF.txt") {
   library(rjags)
   
   burnin.variables <- c("tau_add", "tau_dbh", "tau_inc", "mu")
@@ -50,7 +50,7 @@ model{
   mu ~ dnorm(0.5,0.5)
 ## FIXED EFFECTS BETAS
 ## TIME VARYING BETAS
-## RANDOM EFFECT ALPHAS
+## RANDOM EFFECT TAUS
  }"
   
   Pformula <- NULL
@@ -101,7 +101,7 @@ model{
       ## create random effect
       for(j in seq_along(nr)){
         Reffects <- paste(Reffects,paste0("for(k in 1:",nr[j],"){\n"),
-                                 paste0("   alpha_",r_var[j]," ~ dnorm(0,tau_",r_var[j],")\n}\n"))
+                                 paste0("   alpha_",r_var[j],"[k] ~ dnorm(0,tau_",r_var[j],")\n}\n"))
       }
       ## create priors
       Rpriors <- paste(Rpriors,paste0("tau_",r_var," ~ dgamma(1,0.1)\n",collapse = " "))
@@ -111,7 +111,7 @@ model{
       
     }
     ## Substitute into code
-    TreeDataFusionMV <- sub(pattern = "## RANDOM EFFECTS ALPHAS", Rpriors, TreeDataFusionMV)
+    TreeDataFusionMV <- sub(pattern = "## RANDOM EFFECT TAUS", Rpriors, TreeDataFusionMV)
     TreeDataFusionMV <- gsub(pattern = "## RANDOM_EFFECTS", Reffects, TreeDataFusionMV)
   }
 
@@ -205,6 +205,11 @@ model{
   ## insert process model into JAGS template
   if (!is.null(Pformula)) {
     TreeDataFusionMV <- sub(pattern = "##PROCESS", Pformula, TreeDataFusionMV)
+  }
+  
+  ## Save script
+  if(!is.null(save.jags)){
+    cat(TreeDataFusionMV,file=save.jags)
   }
   
   ## state variable initial condition
