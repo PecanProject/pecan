@@ -4,7 +4,7 @@
 \alias{EDR}
 \title{ED radiative transfer module (EDR) wrapper function}
 \usage{
-EDR(paths, RT.matrix, par.wl, nir.wl, datetime, trait.values = list(),
+EDR(paths, spectra_list, par.wl, nir.wl, datetime, trait.values,
   settings = list(model = list(revision = "git", config.header = NULL)),
   history.prefix = "history", edr.exe.name = "ed_2.1-opt",
   change.history.time = TRUE, output.path = getwd(), clean = FALSE)
@@ -17,10 +17,11 @@ and skips the analysis step.
 `history` -- Path and prefix for history file for the run of interest;
 `edr.exe` -- Path to EDR executable}
 
-\item{RT.matrix}{Matrix of wavelengths, reflectance, and transmittance 
-values. Matrix must have column names 'wl' (wavelength), 'R' (reflectance), 
-and 'T' (transmittance). Such a matrix is returned by default by all 
-versions of PROSPECT in this package.}
+\item{spectra_list}{List of spectral data matrices. Names must exactly match 
+the PFTs given in `trait.values`. Each item must be a matrix of wavelengths, 
+reflectance, and transmittance values. Matrix must have column names 'wl' 
+(wavelength), 'R' (reflectance), and 'T' (transmittance). Such a matrix is 
+returned by default by all versions of PROSPECT in this package.}
 
 \item{par.wl}{Vector of wavelengths defining PAR region}
 
@@ -31,7 +32,9 @@ take place. N datetime POSIXlt object defining the date and at which the run
 will take place. Note that runs at night and during the winter can give poor 
 results.}
 
-\item{trait.values}{Named, hierarchical list of trait values for generating config.xml file.}
+\item{trait.values}{Named, hierarchical list of trait values for generating 
+config.xml file. Names must be PFTs, and must exactly match names of 
+`spectra_list`.}
 
 \item{settings}{PEcAn settings list. Default is model$revision = 'git', model$config.header = NULL.}
 
