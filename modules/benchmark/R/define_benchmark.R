@@ -6,11 +6,12 @@
 ##' @author Betsy Cowdery
 ##' @export 
 ##' @importFrom dplyr tbl filter rename collect select
-define_benchmark <- function(bm.settings, bety){
+define_benchmark <- function(settings, bety){
   
-  if (is.MultiSettings(bm.settings)) {
-    return(papply(bm.settings, function(x) define_benchmark(x, bety)))
+  if (is.MultiSettings(settings)) {
+    return(papply(settings, function(x) define_benchmark(x, bety)))
   }
+  bm.settings <- settings$benchmarking
   
   # Retrieve/create benchmark entries
   
@@ -26,12 +27,13 @@ define_benchmark <- function(bm.settings, bety){
         ens_wf <- tbl(bety, 'ensembles') %>% filter(id == bm.settings$ensemble_id) %>% 
           rename(ensemble_id = id) %>% 
           left_join(.,tbl(bety, "workflows") %>% rename(workflow_id = id), by="workflow_id") %>% collect()
-        BRR <- create_BRR(ens_wf, con = bety$con, user_id = bm.settings$info$userid)
+        BRR <- create_BRR(ens_wf, con = bety$con, user_id = settings$info$userid)
       }else if(dim(bm_ens)[1] == 1){
         BRR <- tbl(bety,"reference_runs") %>% filter(id == bm_ens$reference_run_id) %>% 
           rename(reference_run_id = id) %>% collect()
       }else if(dim(bm_ens)[1] > 1){ # There shouldn't be more than one reference run per run
-        PEcAn.utils::logger.error("There is more than one reference run in the database for this ensemble id. Review for duplicates. ")}
+        PEcAn.utils::logger.error("There is more than one reference run in the database for this ensemble id. Review for duplicates. ")
+        }
       # add the ref_run id, remove the ensemble_id
       bm.settings$reference_run_id <- BRR$reference_run_id
       # bm.settings$ensemble_id <- NULL
@@ -56,11 +58,18 @@ define_benchmark <- function(bm.settings, bety){
       cmd <- sprintf(paste0("INSERT INTO benchmarks (input_id, variable_id, site_id, user_id)",
                             "VALUES ( %s, %s, %s, %s) RETURNING * ;"), 
                      benchmark$input_id, benchmark$variable_id,
-                     benchmark$site_id, bm.settings$info$userid)
+                     benchmark$site_id, settings$info$userid)
       bm <- db.query(cmd, bety$con)
     }else if(dim(bm)[1] >1){
       PEcAn.utils::logger.error("Duplicate record entries in benchmarks")
     }
+    
+    
+    
+    sprintf(" ( %s, %s, %s, %s)", benchmark$input_id, benchmark$variable_id,
+            benchmark$site_id, bm.settings$info$userid)
+    
+    
     
     # Retrieve/create benchmarks_benchmarks_reference_runs record
     bmBRR <- tbl(bety, 'benchmarks_benchmarks_reference_runs') %>% 
