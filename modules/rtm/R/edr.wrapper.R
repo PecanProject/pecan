@@ -112,6 +112,10 @@ EDR <- function(paths,
   par.ind <- which(wavelengths %in% par.wl)
   nir.ind <- which(wavelengths %in% nir.wl)
 
+  #-- Place the default full-spectrum soil and wood reflectance/albedo in the run dir(s)
+  file.copy(system.file("extdata", "soil_reflect_par.dat", package = "PEcAnRTM"), output.path, overwrite = TRUE, recursive = TRUE)
+  file.copy(system.file("extdata", "wood_reflect_par.dat", package = "PEcAnRTM"), output.path, overwrite = TRUE, recursive = TRUE)
+  
   # Multi-PFT settings
   if (length(trait.values) > 0) {
     if (length(spectra_list) != length(trait.values)) {
