@@ -35,7 +35,26 @@
          <metric_id>1000000010</metric_id> 
        </metrics>
      </benchmark>
-</benchmarking>
+     <benchmark>
+       <input_id>1000008121</input_id>
+       <variable_id>1000000046</variable_id>
+       <site_id>666</site_id>
+       <metrics>
+         <metric_id>1000000001</metric_id> 
+         <metric_id>1000000002</metric_id> 
+         <metric_id>1000000003</metric_id> 
+         <metric_id>1000000004</metric_id> 
+         <metric_id>1000000005</metric_id> 
+         <metric_id>1000000006</metric_id>
+         <metric_id>1000000007</metric_id> 
+         <metric_id>1000000008</metric_id> 
+         <metric_id>1000000009</metric_id> 
+         <metric_id>1000000010</metric_id>  
+       </metrics>
+     </benchmark>
+ </benchmarking>
 </pecan>
-
+<!-- <reference_run_id>1000000017</reference_run_id> --> <!-- DALEC, ORNL, AMBIENT, 2004 -->
+<!--NPP--> 
+<!--MSE--> 
 
