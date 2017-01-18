@@ -29,7 +29,8 @@ align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
   rng_model <- range(model.calc$posix)
   rng_obvs <- range(obvs.calc$posix)
   rng_dat <- sort(c(rng_obvs, rng_model))[c(2, 3)]
-  if(setequal(c(365,366), max.diff)){ # Special case for annual timestep
+  max.diff.day <- max.diff; units(max.diff.day) <- "days"
+  if(setequal(c(365,366), max.diff.day)){ # Special case for annual timestep
     rng_dat_yr <- year(rng_dat)
     model <- model.calc[year(model.calc$posix) >= rng_dat_yr[1] & 
                           year(model.calc$posix) <= rng_dat_yr[2], ]
