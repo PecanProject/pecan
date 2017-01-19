@@ -333,7 +333,7 @@ fia.to.psscss <- function(settings,
   if (settings$host$name == "localhost") {
     files <- c(pss.file.local, css.file.local, site.file.local)
   } else {
-    out.dir.remote   <- file.path(settings$host$dbfiles, paste0("FIA_ED2_site_", site.string))
+    out.dir.remote   <- file.path(settings$host$folder, paste0("FIA_ED2_site_", site.string))
     pss.file.remote  <- file.path(out.dir.remote, paste0(prefix.psscss, ".pss"))
     css.file.remote  <- file.path(out.dir.remote, paste0(prefix.psscss, ".css"))
     site.file.remote <- file.path(out.dir.remote, paste0(prefix.site, ".site"))

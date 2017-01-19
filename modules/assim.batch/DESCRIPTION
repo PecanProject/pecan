@@ -16,6 +16,7 @@ Depends:
     ellipse,
     dplyr,
     parallel,
+    GPfit,
     IDPmisc
 Imports:
     coda (>= 0.18),

@@ -12,6 +12,6 @@ convert.input(input.id, outfolder, formatname, mimetype, site.id, start_date,
 Convert input by applying fcn and insert new record into database
 }
 \author{
-Betsy Cowdery, Michael Dietze, Ankur Desai
+Betsy Cowdery, Michael Dietze, Ankur Desai, Tony Gardella
 }
 

@@ -22,6 +22,7 @@
 ##' @export
 ##'
 ##' @author Tony Gardella
+##' @importFrom ncdf4 ncvar_def
 model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, stem_density) {
   
   library(Maeswrap)
@@ -72,7 +73,6 @@ model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, 
     
     mstmipvar <- PEcAn.utils::mstmipvar
     var      <- list()
-    ncvar_def <- ncdf4::ncvar_def
     var[[1]] <- ncvar_def("GPP", units = ("kg C m-2 s-1"), dim = list(lat, lon, t), missval = -999, 
                           longname = "Gross Primary Production")
     var[[2]] <- ncvar_def("NPP", units = ("kg C m-2 s-1"), dim = list(lat, lon, t), missval = -999, 
