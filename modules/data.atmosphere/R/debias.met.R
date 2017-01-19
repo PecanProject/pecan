@@ -214,7 +214,5 @@ debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "li
   
   return(invisible(results))
 }
-# debias_met('debi','GFDL.CM3.rcp45.r1i1p1.2006.nc', 'US-WCr.2006.nc', 4,
-# de_method = 'linear')
 
-#debias.met(outfolder = "~",input_met = "GFDL.CM3.rcp45.r1i1p1.2006.nc", train_met = "US-WCr.2006.nc",site_id = 676, de_method = "median")
+
