@@ -8,17 +8,9 @@
 ##' @export 
 ##' 
 ##' @author Betsy Cowdery 
-
+##' @importFrom dplyr tbl filter rename collect select
 calc_benchmark <- function(settings, bety) {
   
-  # dplyr functions
-  tbl     <- dplyr::tbl
-  filter  <- dplyr::filter
-  rename  <- dplyr::rename
-  collect <- dplyr::collect
-  select  <- dplyr::select
-  
-  # --------------------------------------------------------------------------------------------- #
   # Update benchmarks_ensembles and benchmarks_ensembles_scores tables
   
   ensemble <- tbl(bety,'ensembles') %>% filter(workflow_id == settings$workflow$id) %>% collect()

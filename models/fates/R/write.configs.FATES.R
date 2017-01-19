@@ -19,12 +19,9 @@
 ##' @return none
 ##' @export
 ##' @author Mike Dietze
+##' @importFrom ncdf4 ncvar_put ncvar_get
 ##-------------------------------------------------------------------------------------------------#
 write.config.FATES <- function(defaults, trait.values, settings, run.id){
-
-   ## function references
-   ncvar_put <- ncdf4::ncvar_put
-   ncvar_get <- ncdf4::ncvar_get
 
    ## site information
    site <- settings$run$site
