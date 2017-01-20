@@ -381,26 +381,42 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
         PEcAn.utils::logger.error(pft, "was not matched with a number in settings$constants or pftmapping data. Consult the PEcAn instructions on defining new PFTs.")
         stop("Unable to set PFT number")
       }
-      # TODO: Also modify web app to not default to 1
       
-      ## Get default trait values from ED history
-      vals <- as.list(edhistory[edhistory$num == pft.number, ])
       
-      ## Convert trait values to ED units
-      converted.trait.values <- convert.samples.ED(trait.values[[i]])
-      
-      ## Selectively replace defaults with trait values
-      vals <- modifyList(vals, converted.trait.values)
-      
-      ## Convert settings constants to ED units
-      converted.defaults <- convert.samples.ED(defaults[[pft]]$constants)
-      
-      ## Selectively replace defaults and trait values with constants from settings
-      if (!is.null(converted.defaults)) 
-        vals <- modifyList(vals, converted.defaults)
-      
-      pft.xml <- PEcAn.utils::listToXml(vals, "pft")
-      xml <- XML::append.xmlNode(xml, pft.xml)
+      if(pft=="soil"){
+        data(soil)
+        vals <- as.list(soil)
+        names(vals) <- colnames(soil)
+        
+        converted.trait.values <- convert.samples.ED(trait.values[[i]])
+        vals <- modifyList(vals, converted.trait.values)
+        
+        decompositon.xml <- PEcAn.utils::listToXml(vals, "decomposition")
+        xml <- XML::append.xmlNode(xml, decompositon.xml)
+      }else{
+        # TODO: Also modify web app to not default to 1
+        
+        ## Get default trait values from ED history
+        vals <- as.list(edhistory[edhistory$num == pft.number, ])
+        
+        ## Convert trait values to ED units
+        converted.trait.values <- convert.samples.ED(trait.values[[i]])
+        
+        ## Selectively replace defaults with trait values
+        vals <- modifyList(vals, converted.trait.values)
+        
+        ## Convert settings constants to ED units
+        converted.defaults <- convert.samples.ED(defaults[[pft]]$constants)
+        
+        ## Selectively replace defaults and trait values with constants from settings
+        if (!is.null(converted.defaults)){
+          vals <- modifyList(vals, converted.defaults)
+        } 
+        
+        pft.xml <- PEcAn.utils::listToXml(vals, "pft")
+        xml <- XML::append.xmlNode(xml, pft.xml)
+      }
+
     }
   }
   return(xml)
