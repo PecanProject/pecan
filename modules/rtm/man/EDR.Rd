@@ -15,7 +15,11 @@ EDR(paths, spectra_list, par.wl, nir.wl, datetime, trait.values,
 function assumes that the ED2IN file in `output.path` is already up-to-date 
 and skips the analysis step.
 `history` -- Path and prefix for history file for the run of interest;
-`edr.exe` -- Path to EDR executable}
+`edr.exe` -- Path to EDR executable
+`soil_reflect` -- Path to soil reflectance. If NULL or unset, use 
+reflectance in package. If NA, skip (assume data already in directory).
+`wood_reflect` -- Path to wood reflectance. If NULL or unset, use 
+reflectance in package. If NA, skip (assume data already in directory).}
 
 \item{spectra_list}{List of spectral data matrices. Names must exactly match 
 the PFTs given in `trait.values`. Each item must be a matrix of wavelengths, 
