@@ -68,17 +68,9 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
     
     if (settings$assim.batch$inputs[[k]]$likelihood == "Laplace") {
       
-      resid <- abs(model_out[[k]] - inputs[[k]]$obs)
-      pos <- (model_out[[k]] >= 0)
-      SS <- c(dexp(resid[pos],
-                   1 / (inputs[[k]]$par[1] + inputs[[k]]$par[2] * model_out[[k]][pos]),
-                   log = TRUE),
-              dexp(resid[!pos],
-                   1 / (inputs[[k]]$par[1] + inputs[[k]]$par[3] * model_out[[k]][!pos]),
-                   log = TRUE))
+
+      SS <- sum(abs(model_out[[k]] - inputs[[k]]$obs), na.rm=TRUE)
       
-      pda.errors[[k]] <- sum(SS, na.rm = TRUE) 
-      SSdb[[k]]       <- sum(SS, na.rm = TRUE) 
         
     } else if (settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") { 
       # multiplicative Gaussian
@@ -88,17 +80,16 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
         SS[b] <- sum((bias.terms[bc,][b] * model_out[[k]] - inputs[[k]]$obs)^2, na.rm = TRUE)
       }
       
-      bc              <- bc + 1
-      pda.errors[[k]] <- SS 
-      SSdb[[k]]       <- log(SS)
+      bc <- bc + 1
       
     } else { # Gaussian
       
       SS <- sum((model_out[[k]] - inputs[[k]]$obs)^2, na.rm = TRUE)
       
-      pda.errors[[k]] <- SS 
-      SSdb[[k]]       <- log(SS)
     }
+    
+    pda.errors[[k]] <- SS 
+    SSdb[[k]]       <- log(SS)
     
   } # for-loop
   
