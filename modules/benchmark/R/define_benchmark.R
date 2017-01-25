@@ -1,5 +1,6 @@
 ##' Creates records for benchmarks, benchmarks_benchmarks_reference_runs, benchmarks_metrics
 ##'
+##' @name define_benchmark
 ##' @title Benchmark Definition: Retrieve or Create Bety Benchmarking Records
 ##' @param bm.settings settings list
 ##' @return updated settings list
@@ -13,6 +14,8 @@ define_benchmark <- function(settings, bety){
   }
   bm.settings <- settings$benchmarking
   
+  logger.info(paste("Ensemble id:", bm.settings$ensemble_id))
+  logger.info(paste(!is.null(bm.settings$ensemble_id)))
   # Retrieve/create benchmark entries
   
   if(is.null(bm.settings$reference_run_id)){
@@ -45,7 +48,6 @@ define_benchmark <- function(settings, bety){
   # Retrieve/create benchmark entries
   
   for(i in which(names(bm.settings) == "benchmark")){
-    
     benchmark <- bm.settings[[i]]
     
     bm <- tbl(bety, 'benchmarks') %>% 
