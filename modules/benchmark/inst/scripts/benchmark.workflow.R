@@ -1,5 +1,5 @@
 
-settings <- read.settings("modules/benchmark/inst/scripts/tess.xml")
+settings <- read.settings("/fs/data3/ecowdery/FACE/DUKE_AMB_ED.xml")
 
 d <- settings$database$bety[c("dbname", "password", "host", "user")]
 bety <- src_postgres(host = d$host, user = d$user, password = d$password, dbname = d$dbname)
@@ -11,7 +11,7 @@ bm.settings <- define_benchmark(settings,bety)
 str(bm.settings)
 
 # This is a quick fix - can be solved with longer db query that I don't want to write now
-add_workflow_info <- function(settings){
+add_workflow_info <- funct3ion(settings){
   if (is.MultiSettings(settings)) {
     return(papply(settings, add_workflow_id))
   }
