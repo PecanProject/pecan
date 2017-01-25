@@ -4,6 +4,8 @@
 #' @param pdfs Display probability density functions outside plots. Default=TRUE.
 #' @param fit.method Method for regression fit. Either "lm" for linear OLS regression (default) or "spline" for `smooth.spline` fit.
 plotEnsemble <- function(ensemble.out, x, y, pdfs=TRUE, fit.method="lm", ...){
+  message('plotEnsemble x: ', x)
+  message('plotEnsemble y: ', y)
   error_plot <- function(err){
     plot.new()
     text(0.5, 0.5, err[1])
@@ -69,6 +71,9 @@ plotAllVars <- function(ensemble.out, param, var_names, plot_cols = 3){
 }
 
 fitSummary <- function(ensemble.out, x, y) {
+  message('Ensemble out names: ', paste(names(ensemble.out), collapse = ', '))
+  message('fitSummary x: ', x)
+  message('fitSummary y: ', y)
   form <- formula(sprintf("%s ~ %s", y, x))
   fitline <- lm(form, data=ensemble.out)
   fit_summary <- summary(fitline)
