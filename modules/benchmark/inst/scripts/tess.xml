@@ -16,7 +16,7 @@
   <dbfiles>/fs/data2/output/fs/data1/pecan.data/dbfiles</dbfiles>
  </database>
  <benchmarking>
-     <ensemble_id>1000473576</ensemble_id>
+     <ensemble_id>1000010823</ensemble_id>
      <new_run>FALSE</new_run>
      <benchmark>
        <input_id>1000011181</input_id>
