@@ -33,9 +33,16 @@
 write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, settings, new.state, 
                                    RENAME = TRUE, new.params, inputs) {
   
+  ### TO DO : needs to be vectorized to improve SDA speed for runs that are longer than 50 years
+  ### TO DO : distance matrix needs fixing
+  
   ### Removing negative numbers because biomass can't be negative ###
   new.state[new.state < 0] <- 0
   
+  if(sum(new.state)>1000) {
+    prop.stop <- new.state/sum(new.state)
+    new.state <- 1000 * prop.stop
+  }
   new.state.save <- new.state
   new.state <- new.state.save[grep("pft", names(new.state.save))]
   new.state.other <- new.state.save[grep("pft", names(new.state.save), invert = TRUE)]
@@ -140,12 +147,12 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     n.index <- c(n.index, rep(i, ntrees[i]))
   }
   
-  if(max(dbh) < 15){ # if all trees are small than large trees are 95th percentile otherwise trees bigger than 5 cm
+  if(max(dbh) < 50){ # if all trees are small than large trees are 95th percentile otherwise trees bigger than 5 cm
     large.trees <- which(dbh >= (max(dbh) / 1.05))
   }else{
-    large.trees <- which(dbh >= 15)
+    large.trees <- which(dbh >= 50)
   }
-  
+
   for (s in seq_along(settings$pfts)) {
     ntrees[s] <- length(which(n.index[large.trees] == s))
   }

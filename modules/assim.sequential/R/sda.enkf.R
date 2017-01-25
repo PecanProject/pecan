@@ -572,7 +572,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         jdat <- coda.samples(mod, variable.names = c("X", "q"), 
                              n.iter = 10000)
         
-        gelman.diag(jdat[,1:10])
+        #gelman.diag(jdat[,1:10])
+        #is it reasonable to expect convergence every year of every parameter?
+        #should we put a stop in if params don't converge?
         
         ## update parameters
         dat  <- as.matrix(jdat)
@@ -648,7 +650,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     
     ANALYSIS[[t]] <- analysis
     
-    if (FALSE) { #interactive() & t > 1
+    if (interactive() & t > 1) { #
       t1 <- 1
       names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
       Ybar <- t(sapply(obs.mean[t1:t], function(x) {
@@ -667,7 +669,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       })))
       
       par(mfrow = c(2, 1))
-      for (i in 1:2) {
+      for (i in sample(size = 2,x = 1:9)) {
         t1 <- 1
         Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
         Xci  <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
@@ -796,19 +798,21 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     sqrt(diag(x))
   })))  #need to make this from quantiles for lyford plot data
   # YCI = YCI[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
-  
+  Xsum <- plyr::laply(FORECAST, function(x) { mean(rowSums(x[,1:9], na.rm = TRUE)) })
 
+  pdf('fcomp.kalman.filter.pdf')
   for (i in seq_len(ncol(X))) {
     t1 <- 1
     Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
     Xci <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
+    Xci[is.na(Xci)]<-0
     
     Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
     XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
     
     plot(as.Date(obs.times[t1:t]),
-         Xbar, 
-         ylim = range(c(XaCI, Xci), na.rm = TRUE), 
+         Xbar/Xsum, 
+         ylim = c(0,1), #range(c(XaCI/Xsum, Xci/Xsum), na.rm = TRUE)
          type = "n", 
          xlab = "Year", 
          ylab = ylab.names[grep(colnames(X)[i], var.names)],
@@ -826,12 +830,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     }
     
     # forecast
-    ciEnvelope(as.Date(obs.times[t1:t]), Xci[, 1], Xci[, 2], col = alphablue)  #col='lightblue')
-    lines(as.Date(obs.times[t1:t]), Xbar, col = "darkblue", type = "l", lwd = 2)
+    ciEnvelope(as.Date(obs.times[t1:t]), Xci[, 1]/Xsum, Xci[, 2]/Xsum, col = alphablue)  #col='lightblue')
+    lines(as.Date(obs.times[t1:t]), Xbar/Xsum, col = "darkblue", type = "l", lwd = 2)
     
     # analysis
-    ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink)
-    lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2)
+    ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1]/Xsum, XaCI[, 2]/Xsum, col = alphapink)
+    lines(as.Date(obs.times[t1:t]), Xa/Xsum, col = "black", lty = 2, lwd = 2)
   }
   
   ###-------------------------------------------------------------------###
@@ -846,17 +850,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
     XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
     
-    reg <- lm(Xbar[t1:t] - unlist(Ybar[t1:t, i]) ~ c(t1:t))
+    reg <- lm(Xbar[t1:t]/Xsum - unlist(Ybar[t1:t, i]) ~ c(t1:t))
     plot(t1:t, 
-         Xbar[t1:t] - unlist(Ybar[t1:t, i]),
+         Xbar[t1:t]/Xsum - unlist(Ybar[t1:t, i]),
          pch = 16, cex = 1, 
-         ylim = c(min(Xci[t1:t, 1] - unlist(Ybar[t1:t, i])), max(Xci[t1:t, 2] - unlist(Ybar[t1:t, i]))), 
+         ylim = c(min(Xci[t1:t, 1]/Xsum - unlist(Ybar[t1:t, i])), max(Xci[t1:t, 2]/Xsum - unlist(Ybar[t1:t, i]))), 
          xlab = "Time", 
          ylab = "Error", 
          main = paste(colnames(X)[i], " Error = Forecast - Data"))
     ciEnvelope(rev(t1:t), 
-               rev(Xci[t1:t, 1] - unlist(Ybar[t1:t, i])), 
-               rev(Xci[t1:t, 2] - unlist(Ybar[t1:t, i])),
+               rev(Xci[t1:t, 1]/Xsum - unlist(Ybar[t1:t, i])), 
+               rev(Xci[t1:t, 2]/Xsum - unlist(Ybar[t1:t, i])),
                col = alphapink)
     abline(h = 0, lty = 2, lwd = 2)
     abline(reg)
@@ -865,17 +869,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     # d<-density(c(Xbar[t1:t] - unlist(Ybar[t1:t,i]))) lines(d$y+1,d$x)
     
     # forecast minus analysis = update
-    reg1 <- lm(Xbar[t1:t] - Xa[t1:t] ~ c(t1:t))
+    reg1 <- lm(Xbar[t1:t]/Xsum - Xa[t1:t]/Xsum ~ c(t1:t))
     plot(t1:t, 
-         Xbar[t1:t] - Xa[t1:t], 
+         Xbar[t1:t]/Xsum - Xa[t1:t]/Xsum, 
          pch = 16, cex = 1, 
-         ylim = c(min(Xbar[t1:t] - XaCI[t1:t, 2]), max(Xbar[t1:t] - XaCI[t1:t, 1])), 
+         ylim = c(min(Xbar[t1:t]/Xsum - XaCI[t1:t, 2]/Xsum), max(Xbar[t1:t]/Xsum - XaCI[t1:t, 1]/Xsum)), 
          xlab = "Time", ylab = "Update", 
          main = paste(colnames(X)[i], 
                       "Update = Forecast - Analysis"))
     ciEnvelope(rev(t1:t), 
-               rev(Xbar[t1:t] - XaCI[t1:t, 1]), 
-               rev(Xbar[t1:t] - XaCI[t1:t, 2]), 
+               rev(Xbar[t1:t]/Xsum - XaCI[t1:t, 1]/Xsum), 
+               rev(Xbar[t1:t]/Xsum - XaCI[t1:t, 2]/Xsum), 
                col = alphagreen)
     abline(h = 0, lty = 2, lwd = 2)
     abline(reg1)
