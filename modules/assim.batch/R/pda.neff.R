@@ -91,7 +91,7 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
 
     
     
-  }else(
+  }else{
     # Gaussian
     
     GaussianModel = "
@@ -134,7 +134,7 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
                             inits    = init,
                             n.chains = 3)
     
-  )
+  }
   
   jags.out   <- coda.samples (model = j.model,
                               variable.names = c("x"),
