@@ -509,8 +509,13 @@ function goHome() {
       <span title="Filter map by networks of sites">
       <label id="sitegrouplabel">Site Group:</label></span>
       <select name="sitegroupid" id="sitegroupid" onChange="updateData();">
+<<<<<<< HEAD
        	<?php echo $sitegroups; ?>
 	<option value="">All Sites</option>
+=======
+        <?php echo $sitegroups; ?>
+        <option value="">All Sites</option>
+>>>>>>> 9c00933c53bbdd27291adcaa4ed27ebafb73765f
       </select>
       <div class="spacer"></div>
 
