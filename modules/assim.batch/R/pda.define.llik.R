@@ -16,8 +16,8 @@ pda.define.llik.fn <- function(settings) {
     # heteroskedastic Laplace likelihood, error stats is the likelihood
     if (settings$assim.batch$inputs[[i]]$likelihood == "Laplace") {
       
-      llik.fn[[i]] <- function(pda.errors, ...) {
-        LL <- pda.errors
+      llik.fn[[i]] <- function(pda.errors, llik.par) {
+        LL <- -llik.par$n * log(llik.par$par * llik.par$n_eff) - pda.errors
         return(LL)
       }
       
@@ -67,10 +67,13 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
   for (k in seq_len(n.input)) {
     
     if (settings$assim.batch$inputs[[k]]$likelihood == "Laplace") {
-      
+      # heteroskedastic laplacian
 
-      SS <- sum(abs(model_out[[k]] - inputs[[k]]$obs), na.rm=TRUE)
-      
+
+      pos   <- (model_out[[k]] >= inputs[[k]]$obs)
+      resid <- abs(model_out[[k]] - inputs[[k]]$obs)
+      SS    <- sum(resid[pos],  na.rm = TRUE)/(inputs[[k]]$par[[2]]*inputs[[k]]$n_eff) + 
+               sum(resid[!pos], na.rm = TRUE)/(inputs[[k]]$par[[3]]*inputs[[k]]$n_eff)
         
     } else if (settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") { 
       # multiplicative Gaussian
@@ -111,7 +114,7 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
                " loglikelihood, n_eff)",
                "values ('",
                run.id, "', '",    inputs[[k]]$variable.id, "', '", inputs[[k]]$input.id, "', '",
-               SSdb[[k]], "', '", inputs[[k]]$n, "')"
+               SSdb[[k]], "', '", inputs[[k]]$n_eff, "')"
         ),
         con)
     }
@@ -136,16 +139,13 @@ pda.calc.llik <- function(pda.errors, llik.fn, llik.par) {
   n.var <- length(pda.errors)
   
   LL.vec <- numeric(n.var)
-  n.vec <- sapply(llik.par, `[[`, "n")
   
   for (k in seq_len(n.var)) {
     LL.vec[k] <- llik.fn[[k]](pda.errors[k], llik.par[[k]])
   }
   
-  weights <- rep(1 / n.var, n.var)  # TODO: Implement user-defined weights
-  LL.total <- sum(LL.vec * weights)
-  neff <- n.vec * weights
-  
+  LL.total <- sum(LL.vec)
+
   return(LL.total)
 } # pda.calc.llik
 
@@ -161,7 +161,7 @@ pda.calc.llik <- function(pda.errors, llik.fn, llik.par) {
 ##' @author Istem Fer
 ##' @export
 
-pda.calc.llik.par <-function(settings, n, error.stats){
+pda.calc.llik.par <-function(settings, n, neff, error.stats){
   
   llik.par <- list()
   
@@ -174,9 +174,17 @@ pda.calc.llik.par <-function(settings, n, error.stats){
       
       llik.par[[k]]$par <- rgamma(1, 0.001 + n[k]/2, 0.001 + error.stats[k]/2)
       names(llik.par[[k]]$par) <- paste0("tau.", names(n)[k])
+      
+    } else if(settings$assim.batch$inputs[[k]]$likelihood == "Laplace"){
+      
+      llik.par[[k]]$par <- rgamma(1, 0.001 + n[k]/2, 0.001 + abs(error.stats[k])/2)
+      names(llik.par[[k]]$par) <- paste0("beta.", names(n)[k])
+      
     }
     
-    llik.par[[k]]$n <- n[k]
+    llik.par[[k]]$n     <- n[k]
+    llik.par[[k]]$n_eff <- neff[k]
+    
   }
 
   return(llik.par)

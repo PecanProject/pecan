@@ -82,9 +82,12 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   pname       <- lapply(prior.list, rownames)
   n.param.all <- sapply(prior.list, nrow)
   
-  ## Load data to assimilate against
+
   inputs      <- load.pda.data(settings, bety)
   n.input     <- length(inputs)
+  
+
+  
   
   ## Set model-specific functions
   do.call("library", list(paste0("PEcAn.", settings$model$type)))
@@ -211,14 +214,16 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       for (i in seq_len(settings$assim.batch$n.knot)) {
         align.return <- pda.get.model.output(settings, run.ids[i], bety, inputs)
         model.out[[i]] <- align.return$model.out
-        if(!is.na(model.out[[i]])){
+        suppressWarnings(if(!is.na(model.out[[i]])){
           inputs <- align.return$inputs
-        } 
+        })
       }
-      
+
       
       current.step <- "pda.get.model.output"
       save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+      
+      inputs <- pda.neff.calc(inputs)
       
       # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
       if(any(unlist(any.mgauss) == "multipGauss")) {
@@ -260,7 +265,9 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     
     # retrieve n
     n.of.obs <- sapply(inputs,`[[`, "n") 
+    neffs    <- sapply(inputs,`[[`, "n_eff") 
     names(n.of.obs) <- sapply(model.out[[1]],names)
+    names(neffs)    <- sapply(model.out[[1]],names)
       
     ## GPfit optimization routine assumes that inputs are in [0,1] Instead of drawing from parameters,
     ## we draw from probabilities
@@ -345,6 +352,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     load(settings$assim.batch$resume.path)
     
     n.of.obs <- resume.list[[1]]$n.of.obs
+    neffs    <- resume.list[[1]]$neffs
       
     if(any(unlist(any.mgauss) == "multipGauss")){
       load(settings$assim.batch$bias.path) # load prior.list with bias term from previous run
@@ -432,6 +440,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
             settings    = settings,
             run.block   = (run.normal | run.round),  
             n.of.obs    = n.of.obs,
+            neffs       = neffs,
             llik.fn     = llik.fn,
             resume.list = resume.list[[chain]]
     )
