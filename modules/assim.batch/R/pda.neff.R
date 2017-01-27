@@ -136,9 +136,10 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
     
   }
   
-  jags.out   <- coda.samples (model = j.model,
+  jags.out   <- coda.samples (model          = j.model,
                               variable.names = c("x"),
-                              n.iter = 2000)
+                              n.iter         = 5000,
+                              thin           = 50)
   
   
   out <- as.matrix(jags.out)

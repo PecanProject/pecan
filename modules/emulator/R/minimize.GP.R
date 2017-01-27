@@ -116,7 +116,7 @@ calculate.prior <- function(samples, priors) {
 ##' @name get.y
 ##' @title get.y
 ##' @export
-get.y <- function(gp, xnew, n.of.obs, llik.fn, priors, settings) {
+get.y <- function(gp, xnew, n.of.obs, neffs, llik.fn, priors, settings) {
   
   SS <- numeric(length(gp))
     
@@ -129,7 +129,7 @@ get.y <- function(gp, xnew, n.of.obs, llik.fn, priors, settings) {
     SS[igp] <- rnorm(1, Y$Y_hat, sqrt(Y$MSE))
   }
 
-  llik.par <- pda.calc.llik.par(settings, n.of.obs, SS)
+  llik.par <- pda.calc.llik.par(settings, n.of.obs, neffs, SS)
   likelihood <- pda.calc.llik(SS, llik.fn, llik.par)
   
   prior.prob <- calculate.prior(xnew, priors)
@@ -175,10 +175,10 @@ is.accepted <- function(ycurr, ynew, format = "lin") {
 ##' @author Michael Dietze
 mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcns = NULL, 
                     jmp0 = 0.35 * (rng[, 2] - rng[, 1]), ar.target = 0.5, priors = NA, settings, 
-                    run.block = TRUE, n.of.obs, llik.fn, resume.list = NULL) {
+                    run.block = TRUE, n.of.obs, neffs, llik.fn, resume.list = NULL) {
   
   # get Y
-  predY <- get.y(gp, x0, n.of.obs, llik.fn, priors, settings)
+  predY <- get.y(gp, x0, n.of.obs, neffs, llik.fn, priors, settings)
   Ycurr <- predY$posterior.prob
   LLpar <- predY$par
 
@@ -226,10 +226,10 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
         }
       }
       # if(bounded(xnew,rng)){
-      currY <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings)
+      currY <- get.y(gp, xcurr, n.of.obs, neffs, llik.fn, priors, settings)
       ycurr <- currY$posterior.prob
       pcurr <- currY$par
-      newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
+      newY  <- get.y(gp, xnew, n.of.obs, neffs, llik.fn, priors, settings)
       ynew  <- newY$posterior.prob
       if (is.accepted(ycurr, ynew)) {
         xcurr <- xnew
@@ -249,10 +249,10 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
           }
         }
         # if(bounded(xnew,rng)){
-        currY <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings)
+        currY <- get.y(gp, xcurr, n.of.obs, neffs, llik.fn, priors, settings)
         ycurr <- currY$posterior.prob
         pcurr <- currY$par
-        newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
+        newY  <- get.y(gp, xnew, n.of.obs, neffs, llik.fn, priors, settings)
         ynew  <- newY$posterior.prob
         if (is.accepted(ycurr, ynew)) {
           xcurr <- xnew
@@ -269,7 +269,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
   }
 
   
-  chain.res <- list(jump = jcov, ac = accept.count, prev.samp = samp, par = par, n.of.obs = n.of.obs)
+  chain.res <- list(jump = jcov, ac = accept.count, prev.samp = samp, par = par, n.of.obs = n.of.obs, neffs = neffs)
   
   return(list(mcmc.samp = samp, mcmc.par = par, chain.res = chain.res))
   ## xnew <- gpeval,x0,k=k,mu=ey,tau=tauwbar,psi=psibar,x=gp$x.compact,rng=rng)
