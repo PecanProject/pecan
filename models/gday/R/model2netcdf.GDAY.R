@@ -20,10 +20,11 @@
 ##' @param end_date End time of the simulation
 ##' @export
 ##' @author Martin De Kauwe
+##' @importFrom ncdf4 ncvar_def ncdim_def nc_create ncvar_put nc_close
+##' @importFrom PEcAn.utils 
 model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
-  library(PEcAn.utils)
-  
+
   G_2_KG <- 0.001
   TONNES_PER_HA_TO_G_M2 <- 100
   THA_2_KG_M2 <- TONNES_PER_HA_TO_G_M2 * 0.001
@@ -71,11 +72,11 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
     output[[11]] <- (sub.GDAY.output[, "transpiration"]) / timestep.s
     
     # ******************** Declare netCDF variables ********************#
-    t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
+    t <- ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
                    vals = 1:nrow(sub.GDAY.output), 
                    calendar = "standard", unlim = TRUE)
-    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
     
     ## ***** Need to dynamically update the UTC offset here *****
     
@@ -86,21 +87,21 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
     
     var <- list()
     ## C-Fluxes
-    var[[1]] <- mstmipvar("AutoResp", lat, lon, t, NA)
-    var[[2]] <- mstmipvar("HeteroResp", lat, lon, t, NA)
-    var[[3]] <- mstmipvar("TotalResp", lat, lon, t, NA)
-    var[[4]] <- mstmipvar("GPP", lat, lon, t, NA)
-    var[[5]] <- mstmipvar("NEE", lat, lon, t, NA)
-    var[[6]] <- mstmipvar("NPP", lat, lon, t, NA)
+    var[[1]] <- ncvar_def("AutoResp","kgC/m2/s", list(lon,lat,t), -999)
+    var[[2]] <- ncvar_def("HeteroResp", "kgC/m2/s", list(lon,lat,t), -999)
+    var[[3]] <- ncvar_def("TotalResp","kgC/m2/s", list(lon,lat,t), -999)
+    var[[4]] <- ncvar_def("GPP", "kgC/m2/s", list(lon,lat,t), -999)
+    var[[5]] <- ncvar_def("NEE", "kgC/m2/s", list(lon,lat,t), -999)
+    var[[6]] <- ncvar_def("NPP", "kgC/m2/s", list(lon,lat,t), -999)
     
     ## C-State
-    var[[7]] <- mstmipvar("AbvGrndWood", lat, lon, t, NA)
-    var[[8]] <- mstmipvar("TotSoilCarb", lat, lon, t, NA)
-    var[[9]] <- mstmipvar("LAI", lat, lon, t, NA)
+    var[[7]] <- ncvar_def("AbvGrndWood", "kgC/m2" list(lon,lat,t), -999)
+    var[[8]] <- ncvar_def("TotSoilCarb","kgC/m2" list(lon,lat,t), -999)
+    var[[9]] <- ncvar_def("LAI","m2/m2" list(lon,lat,t), -999)
     
     ## Water fluxes
-    var[[10]] <- mstmipvar("Evap", lat, lon, t, NA)
-    var[[11]] <- mstmipvar("TVeg", lat, lon, t, NA)
+    var[[10]] <- ncvar_def("Evap", list(lon,lat,t), -999)
+    var[[11]] <- ncvar_def("TVeg", list(lon,lat,t), -999)
     
     #var[[6]]  <- ncvar_def("LeafLitter", "kgC/m2/s", list(lon,lat,t), -999)
     #var[[7]]  <- ncvar_def("WoodyLitter", "kgC/m2/s", list(lon,lat,t), -999)
@@ -114,13 +115,13 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
     # ******************** Declare netCDF variables ********************#
     
     ### Output netCDF data
-    nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
+    nc <- nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
-      ncdf4::ncvar_put(nc, var[[i]], output[[i]])
+      ncvar_put(nc, var[[i]], output[[i]])
       cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
-    ncdf4::nc_close(nc)
+    nc_close(nc)
   }  ### End of year loop
 } # model2netcdf.GDAY
