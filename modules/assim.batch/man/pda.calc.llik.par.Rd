@@ -4,7 +4,7 @@
 \alias{pda.calc.llik.par}
 \title{pda.calc.llik.par}
 \usage{
-pda.calc.llik.par(settings, n, error.stats)
+pda.calc.llik.par(settings, n, neff, error.stats)
 }
 \arguments{
 \item{settings}{list}

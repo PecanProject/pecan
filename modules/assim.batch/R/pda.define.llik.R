@@ -17,7 +17,7 @@ pda.define.llik.fn <- function(settings) {
     if (settings$assim.batch$inputs[[i]]$likelihood == "Laplace") {
       
       llik.fn[[i]] <- function(pda.errors, llik.par) {
-        LL <- -llik.par$n * log(llik.par$par * llik.par$n_eff) - pda.errors
+        LL <- -llik.par$n * log(llik.par$par * sqrt(llik.par$n/llik.par$n_eff)) - pda.errors
         return(LL)
       }
       
@@ -70,11 +70,15 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
       # heteroskedastic laplacian
 
 
-      pos   <- (model_out[[k]] >= inputs[[k]]$obs)
-      resid <- abs(model_out[[k]] - inputs[[k]]$obs)
-      SS    <- sum(resid[pos],  na.rm = TRUE)/(inputs[[k]]$par[[2]]*inputs[[k]]$n_eff) + 
-               sum(resid[!pos], na.rm = TRUE)/(inputs[[k]]$par[[3]]*inputs[[k]]$n_eff)
-        
+      pos   <- model_out[[k]] >= inputs[[k]]$obs
+      resid <- model_out[[k]] - inputs[[k]]$obs
+      if(inputs[[k]]$variable.id %in% c(297, 1000000042)){
+        resid <- misc.convert(unlist(resid), "kg C m-2 s-1", "umol C m-2 s-1")
+      }
+      SS    <- sum(resid[!pos], na.rm = TRUE)/(inputs[[k]]$par[[3]]*sqrt(inputs[[k]]$n/inputs[[k]]$n_eff))+
+               sum(resid[pos],  na.rm = TRUE)/(inputs[[k]]$par[[2]]*sqrt(inputs[[k]]$n/inputs[[k]]$n_eff))
+      
+      
     } else if (settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") { 
       # multiplicative Gaussian
       

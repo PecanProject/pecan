@@ -115,7 +115,7 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
                       start_year = start.year, end_year = end.year, align_method = inputs[[k]]$align.method)
 
     model.out[[k]]  <- dat[,colnames(dat) %in% paste0(data.var,".m"), drop = FALSE]
-    inputs[[k]]$obs <- dat[,colnames(dat) %in% paste0(data.var,".o"), drop = FALSE]
+    inputs[[k]]$obs <- dat[,colnames(dat) %in% paste0(data.var,".o"), drop = FALSE][[1]]
     inputs[[k]]$n   <- length(inputs[[k]]$obs)
     colnames(model.out[[k]]) <- data.var
   }

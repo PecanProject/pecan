@@ -63,19 +63,29 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
     tau_add ~ dgamma(a_add,r_add)
     }
     "
-    obs  <- unlist(input$obs)
+    
+    obs     <- c(input$obs)
+    alpha_0 <- input$par[[1]] 
+    alpha_p <- input$par[[2]] 
+    alpha_n <- input$par[[3]]
     
     # converting back C fluxes from  kg C m-2 s-1 to umol C m-2 s-1 
     # reduces the code and makes model fitting easier
     if(input$variable.id %in% c(297, 1000000042)){
       obs <- misc.convert(obs, "kg C m-2 s-1", "umol C m-2 s-1")
+      AMFq  <- rep(0, length(obs))
+      flags <- TRUE
+      AMF.params <- flux.uncertainty(obs, AMFq, flags, bin.num = 20)
+      alpha_0 <- AMF.params$intercept[[1]]
+      alpha_p <- AMF.params$slopeP[[1]]
+      alpha_n <- AMF.params$slopeN[[1]]
     }
     
     data <- list(y = obs, n = length(obs), 
                  x_ic = 1, tau_ic = 1e-2, a_add = 1, r_add = 1, 
-                 alpha_0 = input$par[[1]], 
-                 alpha_p = input$par[[2]], 
-                 alpha_n = input$par[[3]]) 
+                 alpha_0 = alpha_0, 
+                 alpha_p = alpha_p, 
+                 alpha_n = alpha_n) 
     
     nchain = 3
     init <- list()
@@ -139,7 +149,7 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
   jags.out   <- coda.samples (model          = j.model,
                               variable.names = c("x"),
                               n.iter         = 5000,
-                              thin           = 50)
+                              thin           = 100)
   
   
   out <- as.matrix(jags.out)
