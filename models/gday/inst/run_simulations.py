@@ -21,22 +21,23 @@ __version__ = "1.0 (03.08.2016)"
 __email__   = "mdekauwe@gmail.com"
 
 USER = os.getlogin()
-sys.path.append('/Users/%s/src/c/gday/scripts' % (USER))
+sys.path.append(@PATH_SCRIPTS@)
 import adjust_gday_param_file as ad
 
 def main(experiment_id, latitude, albedo, topsoil_type,
          rootsoil_type, finesoil, SPIN_UP=False, RUN_SIM=False):
-
-    GDAY_SPIN = "gday -s -p "
-    GDAY = "gday -p "
+    
+    gday_exe = @PATHTOGDAY@
+    GDAY_SPIN = os.path.join(gday_exe," -s -p ")
+    GDAY = os.path.join(gday_exe," -p ")
 
     # dir names
     base_param_name = "base_start"
     base_dir = os.getcwd()
-    base_param_dir = "/Users/%s/src/c/gday/example/params" % (USER)
-    param_dir = os.path.join(base_dir, "params")
-    met_dir = os.path.join(base_dir, "gday_met_files")
-    run_dir = os.path.join(base_dir, "outputs")
+    base_param_dir = (@PATH_PARAMS@)
+    param_dir = os.path.join(@RUNDIR@)
+    met_dir = os.path.join(@SITE_MET@)
+    run_dir = os.path.join(@RUNDIR@)
 
     if SPIN_UP == True:
 
