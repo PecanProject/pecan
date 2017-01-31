@@ -57,6 +57,12 @@ write.config.GDAY <- function(defaults, trait.values, settings, run.id) {
         hostteardown <- paste(hostteardown, sep = "\n", paste(settings$host$postrun, collapse = "\n"))
     }
     
+    # Create Python Run script
+    runpy<- readLines(con = system.file("run_simulations.py", package = "PEcAn.GDAY"), n = -1)
+    
+    runpy <- gsub("@PATH_SCRIPTS@",settings$model$binary
+    runpy <- gsub("@PATHTOGDAY@",
+    runpy <- gsub("@PATH_PARAMS@",
     # create job.sh
     jobsh <- gsub("@HOST_SETUP@", hostsetup, jobsh)
     jobsh <- gsub("@HOST_TEARDOWN@", hostteardown, jobsh)
