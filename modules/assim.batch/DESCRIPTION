@@ -18,6 +18,7 @@ Depends:
     parallel,
     GPfit,
     IDPmisc,
+    rjags,
     PEcAn.MA
 Imports:
     coda (>= 0.18),
