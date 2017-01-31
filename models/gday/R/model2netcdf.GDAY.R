@@ -95,8 +95,8 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
     var[[6]] <- ncvar_def("NPP", "kgC/m2/s", list(lon,lat,t), -999)
     
     ## C-State
-    var[[7]] <- ncvar_def("AbvGrndWood", "kgC/m2" list(lon,lat,t), -999)
-    var[[8]] <- ncvar_def("TotSoilCarb","kgC/m2" list(lon,lat,t), -999)
+    var[[7]] <- ncvar_def("AbvGrndWood", "kgC/m2", list(lon,lat,t), -999)
+    var[[8]] <- ncvar_def("TotSoilCarb","kgC/m2", list(lon,lat,t), -999)
     var[[9]] <- ncvar_def("LAI","m2/m2" list(lon,lat,t), -999)
     
     ## Water fluxes
