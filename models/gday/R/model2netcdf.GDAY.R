@@ -21,7 +21,7 @@
 ##' @export
 ##' @author Martin De Kauwe
 ##' @importFrom ncdf4 ncvar_def ncdim_def nc_create ncvar_put nc_close
-##' @importFrom PEcAn.utils 
+
 model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
 
@@ -97,7 +97,7 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
     ## C-State
     var[[7]] <- ncvar_def("AbvGrndWood", "kgC/m2", list(lon,lat,t), -999)
     var[[8]] <- ncvar_def("TotSoilCarb","kgC/m2", list(lon,lat,t), -999)
-    var[[9]] <- ncvar_def("LAI","m2/m2" list(lon,lat,t), -999)
+    var[[9]] <- ncvar_def("LAI","m2/m2", list(lon,lat,t), -999)
     
     ## Water fluxes
     var[[10]] <- ncvar_def("Evap", list(lon,lat,t), -999)
