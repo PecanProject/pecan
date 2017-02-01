@@ -120,6 +120,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
             logger.debug("Checking if priors have changed")
             prior.distns.tmp <- prior.distns
             load(file.path(files$file_path[[id]], files$file_name[[id]]))
+            logger.debug("If empty (zero-byte) input file error is recived, set forceupdate to TRUE for one run.")
             testme <- prior.distns
             prior.distns <- prior.distns.tmp
             if (!identical(prior.distns, testme)) {
