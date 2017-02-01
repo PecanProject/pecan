@@ -28,6 +28,6 @@ the year part of the date)}
 met2model for GDAY
 }
 \author{
-Martin De Kauwe
+Martin De Kauwe, Tony Gardella
 }
 

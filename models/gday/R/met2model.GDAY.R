@@ -74,14 +74,14 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
     dir.create(outfolder)
   }
   
-  site = "US-NR1"
-  fpath = "met_data"
+  site = in.prefix
+  fpath = in.path
   outfile_tag = out.file.full
   sub_daily = "false"      # Make 30-min file vs. Day, stick with day for now
   tsoil_run_mean = "false"  # Generate Tsoil from 7-day running mean or not
   
   command = "python3"
-  path2script = "generate_forcing_data.py"
+  path2script = system.file("generate_forcing_data.py",package = "PEcAn.GDAY")
   
   all_args = paste(command, path2script, site, fpath, outfile_tag, sub_daily,
                    tsoil_run_mean)
