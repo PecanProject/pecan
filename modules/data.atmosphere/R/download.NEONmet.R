@@ -54,15 +54,10 @@ download.NEONmet <- function(sitename, outfolder, start_date, end_date,
   end_ym = substr(end_ymd,1,7)
   if (start_ym<minDate) { start_ym <- minDate }
   if (end_ym>maxDate) { end_ym <- maxDate }    
-  days_in_last_month <- as.character(lubridate::days_in_month(lubridate::ymd(paste0(end_ym,"-01"))))
-  start_ymd = lubridate::ymd(paste0(start_ym,"-01"))
-  end_ymd = lubridate::ymd(paste0(end_ym,days_in_last_month))
-
-  #NEW CODE HERE
-  #CREATE RESULTS DATA FRAME
-  start_year <- year(start_ymd)
-  end_year <- year(end_ymd)
-
+  start_year <- as.numeric(substr(start_ym,1,4))
+  end_year <- as.numeric(substr(end_ym,1,4))
+  
+  #create results data frame
   rows <- end_year - start_year + 1
   results <- data.frame(file = character(rows), 
                         host = character(rows), 
@@ -70,109 +65,123 @@ download.NEONmet <- function(sitename, outfolder, start_date, end_date,
                         formatname = character(rows), 
                         startdate = character(rows), 
                         enddate = character(rows), 
-                        dbfile.name = character(rows), 
+                        dbfile.name = paste0("NEONmet.",site), 
                         stringsAsFactors = FALSE)
   
-  #SUBSET THE DATES BY YEAR
-  #FOR LOOP FOR EACH YEAR CREATE ONE FILE, DOWNLOAD THOSE FILES, WRITE
-  #UPDATE RESULTS ARRAY
+
   
-  #Current code just reads all
-  #CHANGE start_ymd and end_ymd to subset in a year
-  start_date <- as.POSIXlt(paste0(start_ymd," 00:00:00 UTC"), tz = "UTC")
-  end_date <- as.POSIXlt(paste0(end_ymd," 23:30:00 UTC"), tz = "UTC")
+  all_years <- start_year:end_year
+  all_files <- file.path(outfolder, paste0("NEONmet.", site, ".", as.character(all_years), ".nc"))
+  results$file <- all_files
+  results$host <- fqdn()
+  results$mimetype   <- "application/x-netcdf"
+  results$formatname <- "CF"
+  results$startdate  <- paste0(all_years, "-01-01 00:00:00")
+  results$enddate    <- paste0(all_years, "-12-31 23:59:59")
   
-  #Throw error is no data is available for any months
-  monthsNeeded = substr(seq(start_ymd,end_ymd,by='month'),1,7)
-  if (length(intersect(unlist(availDates),monthsNeeded))==0) {
-    logger.severe("No data available in selected date range")
-#FUTURE: JUST LEAVE LOOP (next)
-    }
-  startMon <- min(monthsNeeded)
-  endMon <- max(monthsNeeded)
+  for (current_year in all_years) {
+    
+    #Figure out start and end time for this year
+      y_idx <- current_year - start_year + 1
+      if (current_year==start_year) { start_m <- substr(start_ym,6,7) } else { start_m <- "01" }
+      if (current_year==end_year) { end_m <- substr(end_ym,6,7) } else { end_m <- "12" } 
+      days_in_last_month <- as.character(lubridate::days_in_month(lubridate::ymd(paste0(current_year,end_m,"-01"))))
+      start_ymd = (paste0(current_year,"-",start_m,"-01"))
+      end_ymd = (paste0(current_year,"-",end_m,"-",days_in_last_month))
+      start_date <- as.POSIXlt(paste0(start_ymd," 00:00:00 UTC"), tz = "UTC")
+      end_date <- as.POSIXlt(paste0(end_ymd," 23:30:00 UTC"), tz = "UTC")
+
+  #Warn if no data is available for any months in given year
+      monthsNeeded = substr(seq(as.Date(start_ymd),as.Date(end_ymd),by='month'),1,7)
+      if (length(intersect(unlist(availDates),monthsNeeded))==0) {
+        logger.warn("No data available in year ",current_year)
+        next()
+      }
+      startMon <- min(monthsNeeded)
+      endMon <- max(monthsNeeded)
   
   #Set up netcdf file, dimensions, and sequence of dates
-  new.file <- paste0(outfolder,"/NEONmet.",site,".",startMon,".",endMon,".CF.nc")
-  if (file.exists(new.file) && !overwrite) {
-    logger.debug("File '", new.file, "' already exists, skipping.")
-    return(results)
-  }
-  
-  seqTime <- seq(start_date,end_date,by=1800) 
-  datetime <- as.POSIXct(seqTime)
-  days_since_1700 <- datetime - lubridate::ymd_hm("1700-01-01 00:00 UTC")
-  t <- ncdf4::ncdim_def("time", "days since 1700-01-01", as.numeric(days_since_1700))  #define netCDF dimensions for variables
-  timestep <- 1800
+    new.file <- all_files[y_idx]
+    if (file.exists(new.file) && !overwrite) {
+      logger.debug("File '", new.file, "' already exists, skipping.")
+      next()
+    }
+    
+    seqTime <- seq(start_date,end_date,by=1800) 
+    datetime <- as.POSIXct(seqTime)
+    results$startdate[y_idx] <- as.character(datetime[1])
+    results$enddate[y_idx] <- as.character(datetime[length(datetime)])
+    
+    days_since_1700 <- datetime - lubridate::ymd_hm("1700-01-01 00:00 UTC")
+    t <- ncdf4::ncdim_def("time", "days since 1700-01-01", as.numeric(days_since_1700))  #define netCDF dimensions for variables
+    timestep <- 1800
   
   ## create lat lon dimensions
-  x <- ncdf4::ncdim_def("longitude", "degrees_east", lon)  # define netCDF dimensions for variables
-  y <- ncdf4::ncdim_def("latitude", "degrees_north", lat)
-  xytdim <- list(x, y, t)
-  FillValue = NA
+    x <- ncdf4::ncdim_def("longitude", "degrees_east", lon)  # define netCDF dimensions for variables
+    y <- ncdf4::ncdim_def("latitude", "degrees_north", lat)
+    xytdim <- list(x, y, t)
+    FillValue = NA
   
-  #STEPS
-  #DOWNLOAD ALL MONTHS GE STARTDATE AND LE ENDDATE FOR GIVEN VARIABLE
-  #READ EACH CSV FILE, EXTRACT COL AND DATE, ADD TO DATA STREAM
-  #WRITE VARIABLE DATE
+  #STEPS: Download all months in startdate to enddate for given variable
+  # Read CSV, copy to array, add to NetCDF file
 
   #TEMPERATURE NEON.DP1.00002 Air Temp profile or NEON.DP1.00003 Triple-aspirated T (preferred)
-  airTempLoc = grep("DP1.00002",availProducts)
-  airTemp3Loc = grep("DP1.00003",availProducts)
-  if (length(airTempLoc)!=0) { 
-    airTempDates = unlist(availDates[airTempLoc[1]])
-    airTempGoodDates = which((airTempDates >= startMon) & (airTempDates <= endMon))
-    nairTemp = length(airTempGoodDates)
-  } else { nairTemp = 0 }
-  if (length(airTemp3Loc)!=0) { 
-    airTemp3Dates = unlist(availDates[airTemp3Loc[1]])
-    airTemp3GoodDates = which((airTemp3Dates >= startMon) & (airTempDates <= endMon))
-    nairTemp3 = length(airTemp3GoodDates)
-  } else { nairTemp3 = 0 }
-  if ((length(airTempLoc)==0) && (length(airTemp3Loc)==0)) {
-    PEcAn.utils::logger.error("Air temperature DP1.00002 or DP1.00003 not available") }
-  if ((nairTemp==0) && (nairTemp3==0)) {
-    PEcAn.utils::logger.error("Air temperature DP1.00002 or DP1.00003 not available in date range ",startmon," ",endmon)
-  }
+    airTempLoc = grep("DP1.00002",availProducts)
+    airTemp3Loc = grep("DP1.00003",availProducts)
+    if (length(airTempLoc)!=0) { 
+      airTempDates = unlist(availDates[airTempLoc[1]])
+      airTempGoodDates = which((airTempDates >= startMon) & (airTempDates <= endMon))
+      nairTemp = length(airTempGoodDates)
+      } else { nairTemp = 0 }
+    if (length(airTemp3Loc)!=0) { 
+      airTemp3Dates = unlist(availDates[airTemp3Loc[1]])
+      airTemp3GoodDates = which((airTemp3Dates >= startMon) & (airTempDates <= endMon))
+      nairTemp3 = length(airTemp3GoodDates)
+      } else { nairTemp3 = 0 }
+    if ((length(airTempLoc)==0) && (length(airTemp3Loc)==0)) {
+      PEcAn.utils::logger.error("Air temperature DP1.00002 or DP1.00003 not available") }
+    if ((nairTemp==0) && (nairTemp3==0)) {
+      PEcAn.utils::logger.error("Air temperature DP1.00002 or DP1.00003 not available in date range ",startMon," ",endMon)
+    }
   
   #define NetCDF variable and create NetCDF file
-  airT.var <- ncvar_def(name = "air_temperature", units = "K", dim = xytdim)
-  nc <- ncdf4::nc_create(new.file, vars = airT.var)  #create netCDF file
-  ncdata <- rep(FillValue,length(datetime))
-  
-  if (nairTemp3>=nairTemp) {
-    for (mon in airTemp3Dates[airTemp3GoodDates]) {
-      neonData <- nneo::nneo_data(product_code = availProducts[airTemp3Loc[1]], site_code = site, year_month = mon)
-      if (length(neonData$data$urls)>0) {
-        #Extract and read 30 minute data from the highest vertical level among files returned
-        url30 <- tail(sort(neonData$data$urls[grep("*.00000.000.*_30min",neonData$data$urls)]),1)
-        csvData <- read.csv(url30,stringsAsFactors=FALSE,header=TRUE)
-        #Retreive time dimension and figure out where in array to put it
-        csvDateTime <- as.POSIXct(gsub("T"," ",csvData$startDateTime),tz="UTC")
-        arrLoc <- floor(as.numeric(difftime(csvDateTime,datetime[1],tz="UTC",units="hours"))*2)
-        csvVar <- csvData$tempTripleMean
-        csvQF <- csvData$finalQF
-        csvVar[which(csvQF!=1)]=NA
-        ncdata[arrLoc] <- udunits2::ud.convert(csvVar,"celsius", "K")
+    airT.var <- ncvar_def(name = "air_temperature", units = "K", dim = xytdim)
+    nc <- ncdf4::nc_create(new.file, vars = airT.var)  #create netCDF file
+    ncdata <- rep(FillValue,length(datetime))
+    if (nairTemp3>=nairTemp) {
+      for (mon in airTemp3Dates[airTemp3GoodDates]) {
+        neonData <- nneo::nneo_data(product_code = availProducts[airTemp3Loc[1]], site_code = site, year_month = mon)
+        if (length(neonData$data$urls)>0) {
+          #Extract and read 30 minute data from the highest vertical level among files returned
+          url30 <- tail(sort(neonData$data$urls[grep("*.00000.000.*_30min",neonData$data$urls)]),1)
+          csvData <- read.csv(url30,stringsAsFactors=FALSE,header=TRUE)
+          #Retreive time dimension and figure out where in array to put it
+          csvDateTime <- as.POSIXct(gsub("T"," ",csvData$startDateTime),tz="UTC")
+          arrLoc <- floor(as.numeric(difftime(csvDateTime,datetime[1],tz="UTC",units="hours"))*2)+1
+          csvVar <- csvData$tempTripleMean
+          csvQF <- csvData$finalQF
+          csvVar[which(csvQF!=1)]=NA
+          ncdata[arrLoc] <- udunits2::ud.convert(csvVar,"celsius", "K")
+        }
+      }
+    } else {
+      for (mon in airTempDates[airTempGoodDates]) {
+        neonData <- nneo::nneo_data(product_code = availProducts[airTempLoc[1]], site_code = site, year_month = mon)
+        if (length(neonData$data$urls)>0) {
+          #Extract and read 30 minute data from the highest vertical level among files returned
+          url30 <- tail(sort(neonData$data$urls[grep("*.00000.000.*_30min",neonData$data$urls)]),1)
+          csvData <- read.csv(url30,stringsAsFactors=FALSE,header=TRUE)
+          #Retreive time dimension and figure out where in array to put it
+          csvDateTime <- as.POSIXct(gsub("T"," ",csvData$startDateTime),tz="UTC")
+          arrLoc <- floor(as.numeric(difftime(csvDateTime,datetime[1],tz="UTC",units="hours"))*2)
+          csvVar <- csvData$tempSingleMean
+          csvQF <- csvData$finalQF
+          csvVar[which(csvQF!=1)]=NA
+          ncdata[arrLoc] <- udunits2::ud.convert(csvVar,"celsius", "K")
+        }
       }
     }
-  } else {
-    for (mon in airTempDates[airTempGoodDates]) {
-      neonData <- nneo::nneo_data(product_code = availProducts[airTempLoc[1]], site_code = site, year_month = mon)
-      if (length(neonData$data$urls)>0) {
-        #Extract and read 30 minute data from the highest vertical level among files returned
-        url30 <- tail(sort(neonData$data$urls[grep("*.00000.000.*_30min",neonData$data$urls)]),1)
-        csvData <- read.csv(url30,stringsAsFactors=FALSE,header=TRUE)
-        #Retreive time dimension and figure out where in array to put it
-        csvDateTime <- as.POSIXct(gsub("T"," ",csvData$startDateTime),tz="UTC")
-        arrLoc <- floor(as.numeric(difftime(csvDateTime,datetime[1],tz="UTC",units="hours"))*2)
-        csvVar <- csvData$tempSingleMean
-        csvQF <- csvData$finalQF
-        csvVar[which(csvQF!=1)]=NA
-        ncdata[arrLoc] <- udunits2::ud.convert(csvVar,"celsius", "K")
-      }
-    }
-  }
-  ncdf4::ncvar_put(nc, varid = airT.var, vals = ncdata)
+    ncdf4::ncvar_put(nc, varid = airT.var, vals = ncdata)
 
     # NEON.DP1.00001 2D wind speed/direction
     # NEON.DP1.00004 Pressure
@@ -186,6 +195,10 @@ download.NEONmet <- function(sitename, outfolder, start_date, end_date,
     #   NEON.DP1.00035 H2O tower top (alt NEON.DP3.00010 H2O profile)
     
   ncdf4::nc_close(nc)
+
+  #UPDATE RESULTS
+    
+  }
   
   #CONTINUE LOOP
   
