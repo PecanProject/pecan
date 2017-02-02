@@ -16,7 +16,7 @@ import shutil
 import sys
 import subprocess
 
-__author__  = "Martin De Kauwe"
+__author__  = "Martin De Kauwe, Tony Gardella"
 __version__ = "1.0 (03.08.2016)"
 __email__   = "mdekauwe@gmail.com"
 
