@@ -28,7 +28,7 @@
 ##' @param verbose should the function be very verbose
 ##'
 ##' @author Martin De Kauwe, Tony Gardella
-##' @importFrom PEcAn.utils logger.debug
+##' @importFrom PEcAn.utils logger.debug fqdn
 met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date, 
                            overwrite = FALSE, verbose = FALSE, ...) {
   
@@ -45,18 +45,20 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
   ##        press (kPa), wind_am (m-2 s-1), wind_pm (m-2 s-1),
   ##        par_am (umol m-2 s-1), par_pm (umol m-2 s-1)
   
-  
+  logger.debug("Check 1")
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
   out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"), 
-                    strptime(end_date, "%Y-%m-%d"), 
-                    "dat", sep = ".")
+                    strptime(end_date, "%Y-%m-%d"),
+                    "daily_run",
+                    "csv",
+                    sep = ".")
   out.file.full <- file.path(outfolder, out.file)
   
   results <- data.frame(file = c(out.file.full), 
-                        host = c(fqdn()), 
-                        mimetype = c("text/plain"), 
-                        formatname = c("GDAY meteorology"), 
+                        host = fqdn(), 
+                        mimetype = c("text/csv"), 
+                        formatname = c("GDAY-met"), 
                         startdate = c(start_date), 
                         enddate = c(end_date), 
                         dbfile.name = out.file, 
@@ -66,27 +68,26 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
     logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
     return(invisible(results))
   }
-  
-  library(PEcAn.data.atmosphere)
-  
+
   ## check to see if the outfolder is defined, if not create directory for output
   if (!file.exists(outfolder)) {
     dir.create(outfolder)
   }
+   
   
-  site = in.prefix
-  fpath = in.path
-  outfile_tag = out.file.full
-  sub_daily = "false"      # Make 30-min file vs. Day, stick with day for now
-  tsoil_run_mean = "false"  # Generate Tsoil from 7-day running mean or not
+  site <- in.prefix
+  fpath <- in.path
+  outfile_tag <- out.file.full
+  sub_daily <- "false"      # Make 30-min file vs. Day, stick with day for now
+  tsoil_run_mean <- "false"  # Generate Tsoil from 7-day running mean or not
   
-  command = "python3"
-  path2script = system.file("generate_forcing_data.py",package = "PEcAn.GDAY")
+  command <- "python3"
+  path2script <- system.file("generate_forcing_data.py",package = "PEcAn.GDAY")
   
-  all_args = paste(command, path2script, site, fpath, outfile_tag, sub_daily,
+  all_args <- paste(command, path2script, site, fpath, outfile_tag, sub_daily,
                    tsoil_run_mean)
 
-  system(all_args)
+  system(all_args, ignore.stdout = FALSE ,ignore.stderr = TRUE)
   
   return(invisible(results))
 } # met2model.GDAY
