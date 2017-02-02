@@ -155,7 +155,6 @@ download.NEONmet <- function(sitename, outfolder, start_date, end_date,
         ncdata[arrLoc] <- udunits2::ud.convert(csvVar,"celsius", "K")
       }
     }
-    ncdf4::ncvar_put(nc, varid = airT.var, vals = ncdata)
   } else {
     for (mon in airTempDates[airTempGoodDates]) {
       neonData <- nneo::nneo_data(product_code = availProducts[airTempLoc[1]], site_code = site, year_month = mon)
@@ -173,7 +172,7 @@ download.NEONmet <- function(sitename, outfolder, start_date, end_date,
       }
     }
   }
-
+  ncdf4::ncvar_put(nc, varid = airT.var, vals = ncdata)
 
     # NEON.DP1.00001 2D wind speed/direction
     # NEON.DP1.00004 Pressure
