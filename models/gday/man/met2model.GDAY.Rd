@@ -30,4 +30,3 @@ met2model for GDAY
 \author{
 Martin De Kauwe, Tony Gardella
 }
-
