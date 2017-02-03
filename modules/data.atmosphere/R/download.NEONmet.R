@@ -6,8 +6,8 @@
 ##' @param site the NEON ID of the site to be downloaded, used as file name prefix. 
 ##' The 4-letter SITE code  in \href{http://www.neonscience.org/science-design/field-sites/list}{list of NEON sites}
 ##' @param outfolder location on disk where outputs will be stored
-##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
-##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
+##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year and month of the date)
+##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year and month part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 ##' 
@@ -67,8 +67,6 @@ download.NEONmet <- function(sitename, outfolder, start_date, end_date,
                         enddate = character(rows), 
                         dbfile.name = paste0("NEONmet.",site), 
                         stringsAsFactors = FALSE)
-  
-
   
   all_years <- start_year:end_year
   all_files <- file.path(outfolder, paste0("NEONmet.", site, ".", as.character(all_years), ".nc"))
@@ -135,7 +133,7 @@ download.NEONmet <- function(sitename, outfolder, start_date, end_date,
       } else { nairTemp = 0 }
     if (length(airTemp3Loc)!=0) { 
       airTemp3Dates = unlist(availDates[airTemp3Loc[1]])
-      airTemp3GoodDates = which((airTemp3Dates >= startMon) & (airTempDates <= endMon))
+      airTemp3GoodDates = which((airTemp3Dates >= startMon) & (airTemp3Dates <= endMon))
       nairTemp3 = length(airTemp3GoodDates)
       } else { nairTemp3 = 0 }
     if ((length(airTempLoc)==0) && (length(airTemp3Loc)==0)) {
@@ -148,7 +146,7 @@ download.NEONmet <- function(sitename, outfolder, start_date, end_date,
     airT.var <- ncvar_def(name = "air_temperature", units = "K", dim = xytdim)
     nc <- ncdf4::nc_create(new.file, vars = airT.var)  #create netCDF file
     ncdata <- rep(FillValue,length(datetime))
-    if (nairTemp3>=nairTemp) {
+    if (nairTemp3>nairTemp) {
       for (mon in airTemp3Dates[airTemp3GoodDates]) {
         neonData <- nneo::nneo_data(product_code = availProducts[airTemp3Loc[1]], site_code = site, year_month = mon)
         if (length(neonData$data$urls)>0) {
@@ -160,7 +158,7 @@ download.NEONmet <- function(sitename, outfolder, start_date, end_date,
           arrLoc <- floor(as.numeric(difftime(csvDateTime,datetime[1],tz="UTC",units="hours"))*2)+1
           csvVar <- csvData$tempTripleMean
           csvQF <- csvData$finalQF
-          csvVar[which(csvQF!=1)]=NA
+          csvVar[which(csvQF!=1)]=NA  #triple-asp temp always has QF of 1
           ncdata[arrLoc] <- udunits2::ud.convert(csvVar,"celsius", "K")
         }
       }
@@ -173,37 +171,219 @@ download.NEONmet <- function(sitename, outfolder, start_date, end_date,
           csvData <- read.csv(url30,stringsAsFactors=FALSE,header=TRUE)
           #Retreive time dimension and figure out where in array to put it
           csvDateTime <- as.POSIXct(gsub("T"," ",csvData$startDateTime),tz="UTC")
-          arrLoc <- floor(as.numeric(difftime(csvDateTime,datetime[1],tz="UTC",units="hours"))*2)
+          arrLoc <- floor(as.numeric(difftime(csvDateTime,datetime[1],tz="UTC",units="hours"))*2)+1
           csvVar <- csvData$tempSingleMean
           csvQF <- csvData$finalQF
-          csvVar[which(csvQF!=1)]=NA
+          csvVar[which(csvQF!=0)]=NA
           ncdata[arrLoc] <- udunits2::ud.convert(csvVar,"celsius", "K")
         }
       }
     }
     ncdf4::ncvar_put(nc, varid = airT.var, vals = ncdata)
 
-    # NEON.DP1.00001 2D wind speed/direction
     # NEON.DP1.00004 Pressure
+    pSurfLoc = grep("DP1.00004",availProducts)
+    if (length(pSurfLoc)!=0) { 
+      pSurfDates = unlist(availDates[pSurfLoc[1]])
+      pSurfGoodDates = which((pSurfDates >= startMon) & (pSurfDates <= endMon))
+      npSurf = length(pSurfGoodDates)
+    } else {npSurf=0}
+    if (npSurf>0) {
+      Psurf.var <- ncdf4::ncvar_def(name = "air_pressure", units = "Pa", dim = xytdim)
+      nc <- ncdf4::ncvar_add(nc = nc, v = Psurf.var, verbose = verbose)
+      ncdata <- rep(FillValue,length(datetime))
+      for (mon in pSurfDates[pSurfGoodDates]) {
+          neonData <- nneo::nneo_data(product_code = availProducts[pSurfLoc[1]], site_code = site, year_month = mon)
+          if (length(neonData$data$urls)>0) {
+            #Extract and read 30 minute data from the highest vertical level among files returned
+            url30 <- tail(sort(neonData$data$urls[grep("*.00000.000.*_30min",neonData$data$urls)]),1)
+            csvData <- read.csv(url30,stringsAsFactors=FALSE,header=TRUE)
+            #Retreive time dimension and figure out where in array to put it
+            csvDateTime <- as.POSIXct(gsub("T"," ",csvData$startDateTime),tz="UTC")
+            arrLoc <- floor(as.numeric(difftime(csvDateTime,datetime[1],tz="UTC",units="hours"))*2)+1
+            csvVar <- csvData$staPresMean
+            csvQF <- csvData$staPresFinalQF
+            csvVar[which(csvQF!=0)]=NA
+            ncdata[arrLoc] <- udunits2::ud.convert(csvVar,"kPa", "Pa")
+          }
+      }
+      ncdf4::ncvar_put(nc, varid = Psurf.var, vals = ncdata)
+    }
+      
     # NEON.DP1.00024 PAR
-    # NEON.DP1.00006 Precip
-    # NEON.DP1.00098 RH
-    # NEON.DP1.00023 SW/LW   (alt NEON.NP1.00022 SW) or 00014 for Direct/Diffuse SW)
-    # NEON.DP1.00041 Soil temp    
+    PARLoc = grep("DP1.00024",availProducts)
+    if (length(PARLoc)!=0) { 
+      PARDates = unlist(availDates[PARLoc[1]])
+      PARGoodDates = which((PARDates >= startMon) & (PARDates <= endMon))
+      nPAR = length(PARGoodDates)
+    } else {nPAR=0}
+    if (nPAR>0) {
+      PAR.var <- ncdf4::ncvar_def(name = "surface_downwelling_photosynthetic_photon_flux_in_air", 
+                                  units = "mol m-2 s-1", 
+                                  dim = xytdim)
+      nc <- ncdf4::ncvar_add(nc = nc, v = PAR.var, verbose = verbose)
+      ncdata <- rep(FillValue,length(datetime))
+      for (mon in PARDates[PARGoodDates]) {
+        neonData <- nneo::nneo_data(product_code = availProducts[PARLoc[1]], site_code = site, year_month = mon)
+        if (length(neonData$data$urls)>0) {
+          #Extract and read 30 minute data from the highest vertical level among files returned
+          url30 <- tail(sort(neonData$data$urls[grep("*.00000.000.*_30min",neonData$data$urls)]),1)
+          csvData <- read.csv(url30,stringsAsFactors=FALSE,header=TRUE)
+          #Retreive time dimension and figure out where in array to put it
+          csvDateTime <- as.POSIXct(gsub("T"," ",csvData$startDateTime),tz="UTC")
+          arrLoc <- floor(as.numeric(difftime(csvDateTime,datetime[1],tz="UTC",units="hours"))*2)+1
+          csvVar <- csvData$PARMean
+          csvQF <- csvData$PARFinalQF
+          csvVar[which(csvQF!=0)]=NA
+          ncdata[arrLoc] <- udunits2::ud.convert(csvVar,"umol m-2 s-1", "mol m-2 s-1")
+        }
+      }
+      ncdf4::ncvar_put(nc, varid = PAR.var, vals = ncdata)
+    }
     
-    #   NEON.DP1.00034 CO2 at tower top (alt NEON.DP3.00009 CO2 profile) - not yet avail
-    #   NEON.DP1.00035 H2O tower top (alt NEON.DP3.00010 H2O profile)
+    # NEON.DP1.00006 Precip (missing uncertainty information)
+    precipLoc = grep("DP1.00006",availProducts)
+    if (length(precipLoc)!=0) { 
+      precipDates = unlist(availDates[precipLoc[1]])
+      precipGoodDates = which((precipDates >= startMon) & (precipDates <= endMon))
+      nprecip = length(precipGoodDates)
+    } else {nprecip=0}
+    if (nprecip>0) {
+      precip.var <- ncdf4::ncvar_def(name = "precipitation_flux",
+                                     units = "kg m-2 s-1", 
+                                     dim = xytdim)
+      nc <- ncdf4::ncvar_add(nc = nc, v = precip.var, verbose = verbose)
+      ncdata <- rep(FillValue,length(datetime))
+      for (mon in precipDates[precipGoodDates]) {
+        neonData <- nneo::nneo_data(product_code = availProducts[precipLoc[1]], site_code = site, year_month = mon)
+        if (length(neonData$data$urls)>0) {
+          #Extract and read 30 minute data from the highest vertical level among files returned
+          url30 <- tail(sort(neonData$data$urls[grep("*.00000.000.*_30min",neonData$data$urls)]),1)
+          csvData <- read.csv(url30,stringsAsFactors=FALSE,header=TRUE)
+          #Retreive time dimension and figure out where in array to put it
+          csvDateTime <- as.POSIXct(gsub("T"," ",csvData$startDateTime),tz="UTC")
+          arrLoc <- floor(as.numeric(difftime(csvDateTime,datetime[1],tz="UTC",units="hours"))*2)+1
+          csvVar <- csvData$secPrecipBulk #in mm per half hour
+          ncdata[arrLoc] <- udunits2::ud.convert(csvVar/1800,"kg m-2 s-1", "kg m-2 s-1")
+        }
+      }
+      ncdf4::ncvar_put(nc, varid = precip.var, vals = ncdata)
+    }
+    
+    # NEON.DP1.00098 RH
+    RHLoc = grep("DP1.00098",availProducts)
+    if (length(RHLoc)!=0) { 
+      RHDates = unlist(availDates[RHLoc[1]])
+      RHGoodDates = which((RHDates >= startMon) & (RHDates <= endMon))
+      nRH = length(RHGoodDates)
+    } else {nRH=0}
+    if (nRH>0) {
+      RH.var <- ncdf4::ncvar_def(name = "relative_humidity", 
+                                  units = "%", 
+                                  dim = xytdim)
+      nc <- ncdf4::ncvar_add(nc = nc, v = RH.var, verbose = verbose)
+      ncdata <- rep(FillValue,length(datetime))
+      for (mon in RHDates[RHGoodDates]) {
+        neonData <- nneo::nneo_data(product_code = availProducts[RHLoc[1]], site_code = site, year_month = mon)
+        if (length(neonData$data$urls)>0) {
+          #Extract and read 30 minute data from the highest vertical level among files returned
+          url30 <- tail(sort(neonData$data$urls[grep("*.00000.000.*_30min",neonData$data$urls)]),1)
+          csvData <- read.csv(url30,stringsAsFactors=FALSE,header=TRUE)
+          #Retreive time dimension and figure out where in array to put it
+          csvDateTime <- as.POSIXct(gsub("T"," ",csvData$startDateTime),tz="UTC")
+          arrLoc <- floor(as.numeric(difftime(csvDateTime,datetime[1],tz="UTC",units="hours"))*2)+1
+          csvVar <- csvData$RHMean
+          csvQF <- csvData$RHFinalQF
+          csvVar[which(csvQF!=0)]=NA
+          ncdata[arrLoc] <- udunits2::ud.convert(csvVar,"%", "%")
+        }
+      }
+      ncdf4::ncvar_put(nc, varid = RH.var, vals = ncdata)
+    }
+    
+    # NEON.DP1.00022 SW or DP1.00023 SW/LW (or DP1.00014 for Direct/Diffuse SW)
+    SWLoc = grep("DP1.00022",availProducts)
+    SWLWLoc = grep("DP1.00023",availProducts)
+    if (length(SWLoc)!=0) { 
+      SWDates = unlist(availDates[SWLoc[1]])
+      SWGoodDates = which((SWDates >= startMon) & (SWDates <= endMon))
+      nSW = length(SWGoodDates)
+    } else { nSW = 0 }
+    if (length(SWLWLoc)!=0) { 
+      SWLWDates = unlist(availDates[SWLWLoc[1]])
+      SWLWGoodDates = which((SWLWDates >= startMon) & (SWDates <= endMon))
+      nSWLW = length(SWLWGoodDates)
+    } else { nSWLW = 0 }
+
+    if (nSWLW!=0) {
+      SW.var <- ncvar_def(name = "surface_downwelling_shortwave_flux_in_air", 
+                          units = "W m-2", 
+                          dim = xytdim)
+      nc <- ncdf4::ncvar_add(nc = nc, v = SW.var, verbose = verbose)
+      LW.var <- ncvar_def(name = "surface_downwelling_longwave_flux_in_air",
+                          units = "W m-2", 
+                          dim = xytdim)
+      nc <- ncvar_add(nc = nc, v = LW.var, verbose = verbose)
+      ncdata <- rep(FillValue,length(datetime))
+      ncdata2 <- rep(FillValue,length(datetime))
+      for (mon in SWLWDates[SWLWGoodDates]) {
+        neonData <- nneo::nneo_data(product_code = availProducts[SWLWLoc[1]], site_code = site, year_month = mon)
+        if (length(neonData$data$urls)>0) {
+           #Extract and read 30 minute data from the highest vertical level among files returned
+          url30 <- tail(sort(neonData$data$urls[grep("*.00000.000.*_30min",neonData$data$urls)]),1)
+          csvData <- read.csv(url30,stringsAsFactors=FALSE,header=TRUE)
+          #Retreive time dimension and figure out where in array to put it
+          csvDateTime <- as.POSIXct(gsub("T"," ",csvData$startDateTime),tz="UTC")
+          arrLoc <- floor(as.numeric(difftime(csvDateTime,datetime[1],tz="UTC",units="hours"))*2)+1
+          csvVar <- csvData$inSWMean
+          csvQF <- csvData$inSWFinalQF
+          csvVar[which(csvQF!=0)]=NA  
+          ncdata[arrLoc] <- udunits2::ud.convert(csvVar,"W m-2", "W m-2")
+          csvVar <- csvData$inLWMean
+          csvQF <- csvData$inLWFinalQF
+          csvVar[which(csvQF!=0)]=NA  
+          ncdata2[arrLoc] <- udunits2::ud.convert(csvVar,"W m-2", "W m-2")
+        }
+      }
+      ncdf4::ncvar_put(nc, varid = SW.var, vals = ncdata)
+      ncdf4::ncvar_put(nc, varid = LW.var, vals = ncdata2)
+    } else {
+      if (nSW!=0) {
+        SW.var <- ncvar_def(name = "surface_downwelling_shortwave_flux_in_air", 
+                            units = "W m-2", 
+                            dim = xytdim)
+        nc <- ncdf4::ncvar_add(nc = nc, v = SW.var, verbose = verbose)
+        ncdata <- rep(FillValue,length(datetime))
+        for (mon in SWDates[SWGoodDates]) {
+          neonData <- nneo::nneo_data(product_code = availProducts[SWLoc[1]], site_code = site, year_month = mon)
+          if (length(neonData$data$urls)>0) {
+            #Extract and read 30 minute data from the highest vertical level among files returned
+            url30 <- tail(sort(neonData$data$urls[grep("*.00000.000.*_30min",neonData$data$urls)]),1)
+            csvData <- read.csv(url30,stringsAsFactors=FALSE,header=TRUE)
+            #Retreive time dimension and figure out where in array to put it
+            csvDateTime <- as.POSIXct(gsub("T"," ",csvData$startDateTime),tz="UTC")
+            arrLoc <- floor(as.numeric(difftime(csvDateTime,datetime[1],tz="UTC",units="hours"))*2)+1
+            csvVar <- csvData$shortRadMean
+            csvQF <- csvData$finalQF
+            csvVar[which(csvQF!=0)]=NA
+            ncdata[arrLoc] <- udunits2::ud.convert(csvVar,"W m-2", "W m-2")
+          }
+        }
+        ncdf4::ncvar_put(nc, varid = SW.var, vals = ncdata)
+      }
+    }
+  
+    # NEON.DP1.00001 2D wind speed/direction - have to do northward/eastward math
+    
+    # NEON.DP1.00041 Soil temp    (take 2cm level which is level 501)
+    
+    # NEON.DP1.00034 CO2 at tower top (alt NEON.DP3.00009 CO2 profile) - not yet avail
     
   ncdf4::nc_close(nc)
-
-  #UPDATE RESULTS
-    
-  }
-  
-  #CONTINUE LOOP
-  
+  } #For loop
   return(invisible(results))
-}
+} #function
+
 #Description of file name convention
   # http://data.neonscience.org:80/api/v0/data/DP1.00098.001/HEAL/2016-05/NEON.D19.HEAL.DP1.00098.001.00000.003.000.030.RH_30min.csv?package=basic
   #NEON denotes the organizational origin of the data product and identifies the product as operational; data collected as part of a special data collection exercise are designated by a separate, unique alphanumeric code created by the PI
@@ -221,16 +401,7 @@ download.NEONmet <- function(sitename, outfolder, start_date, end_date,
   #VER - highest number = highest level
   #Default take HOR 001 VER (max)
 
-  #Check exists
-  #Create NetCDF file (see met2CFCSV)  
-
-  #Loop through each variables, in case of multiple, use hierarchy
-  #If at least one file exists, read all, concatenate, clip to start/end, add variable
-  # Close NetCDF file, call metgapfill to infer the rest
-# one problem: gaps in time series
-  # second problem: applying quality flag
- 
-  # FUTURE VARIABLES THAT WILL MAKE IT EASIER
+  # FUTURE VARIABLES THAT WILL MAKE IT EASIER/ALLOW FOR GAP FILLING
   #   NEON.DP4.00001 summary weather stats (days/months/years)
   #   NEON.DP2.00023 gap-filled air T, NEON.DP2.00007 air T profile gap filled
   #   NEON.DP2.00008 gap=filled CO2 conc
