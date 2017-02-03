@@ -13,10 +13,7 @@ mkdir -p "@OUTDIR@"
 # see if application needs running
 if [ ! -e "@OUTDIR@/.dat" ]; then
   cd "@RUNDIR@"
-  # For now, pecan doesn't handle inputs for G'day, so specific run input files will need to be fed to G'day.
-  #Point to example input files through symbolic link or copy the actual input files to run directory.
-   #this "cp" would copy example input files to the rundirectory where model will be executed.
-  cp -r  path/to/where/example/input/files/are  "@RUNDIR@"
+  
 
   # This will execute the model
   "@BINARY@" 
