@@ -1,0 +1,366 @@
+
+<!--chapter:end:appendix.Rmd-->
+
+BioCro uses a config.xml file similar to ED2. At this time, no other template files are required.
+
+<!--chapter:end:BioCro-configuration.Rmd-->
+
+#Contributor Covenant Code of Conduct
+
+##Our Pledge
+
+In the interest of fostering an open and welcoming environment, we as contributors and maintainers pledge to making participation in our project and our community a harassment-free experience for everyone, regardless of age, body size, disability, ethnicity, gender identity and expression, level of experience, nationality, personal appearance, race, religion, or sexual identity and orientation.
+
+##Our Standards
+
+Examples of behavior that contributes to creating a positive environment include:
+
+   * Using welcoming and inclusive language
+   * Being respectful of differing viewpoints and experiences
+   * Gracefully accepting constructive criticism
+   * Focusing on what is best for the community
+   * Showing empathy towards other community members
+
+Examples of unacceptable behavior by participants include:
+
+* The use of sexualized language or imagery and unwelcome sexual attention or advances
+* Trolling, insulting/derogatory comments, and personal or political attacks
+* Public or private harassment
+* Publishing others' private information, such as a physical or electronic address, without explicit permission
+* Other conduct which could reasonably be considered inappropriate in a professional setting
+
+
+
+##Our Responsibilities
+
+Project maintainers are responsible for clarifying the standards of acceptable behavior and are expected to take appropriate and fair corrective action in response to any instances of unacceptable behavior.
+
+Project maintainers have the right and responsibility to remove, edit, or reject comments, commits, code, wiki edits, issues, and other contributions that are not aligned to this Code of Conduct, or to ban temporarily or permanently any contributor for other behaviors that they deem inappropriate, threatening, offensive, or harmful.
+
+##Scope
+
+This Code of Conduct applies both within project spaces and in public spaces when an individual is representing the project or its community. Examples of representing a project or community include using an official project e-mail address, posting via an official social media account, or acting as an appointed representative at an online or offline event. Representation of a project may be further defined and clarified by project maintainers.
+
+##Enforcement
+
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting the project team at pecanproj@gmail.com. All complaints will be reviewed and investigated and will result in a response that is deemed necessary and appropriate to the circumstances. The project team is obligated to maintain confidentiality with regard to the reporter of an incident. Further details of specific enforcement policies may be posted separately.
+
+Project maintainers who do not follow or enforce the Code of Conduct in good faith may face temporary or permanent repercussions as determined by other members of the project's leadership.
+
+##Attribution
+
+This Code of Conduct is adapted from the [Contributor Covenant](http://contributor-covenant.org/)  version 1.4, available at [http://contributor-covenant.org/version/1/4](http://contributor-covenant.org/version/1/4/).
+
+<!--chapter:end:Code-of-Conduct.Rmd-->
+
+## Remote execution
+
+PEcAn can be configured to run workflows on remote machines (with or without qsub). This does assume PEcAn is installed on the remote machine. To execute the workflows PEcAn will use SSH to connect to the remote machine. To allow for password less connections you can either setup a ssh keypair, or setup a shared tunnel.
+
+The easiest way to create the keypair is to use `ssh-key-gen` and `ssh-key-copy`. The first command will create the key, and the second will copy it to the remote host. `ssh-key-gen` will ask for a password, leaving this blank will allow you to connect to the remote host without using a password. Once done, you should be able to login without typing your password.
+
+The shared tunnel requires you to login once to the remote host and keep this ssh connection alive. This works well in case of an additional security request (such as a one time password), or if you have do not want to store your password less key on the machine. To setup the shared tunnel you will need to add the following to your ~/.ssh/config
+
+```
+Host *
+  ControlMaster auto
+  ControlPath /tmp/%r@%h:%p
+```
+
+You can add the following to your .ssh/config as well, which will make it so when you login to the remote machine it will use XYZ as your login name.
+
+```
+Host remotehost
+  User XYZ
+```
+
+For example the following will set this up for you with the right permissions.
+
+```bash
+mkdir ~/.ssh
+chmod 700 ~/.ssh
+cat > ~/.ssh/config << EOF
+Host *
+  ControlMaster auto
+  ControlPath /tmp/%r@%h:%p
+EOF
+chmod 600 ~/.ssh/config
+```
+
+## Running PEcAn remotely
+
+Initial option is for the user to open a SSH tunnel and use this tunnel in the pecan.xml file.
+
+Create the tunnel:
+```
+ssh -nN -o ControlMaster=yes -o ControlPath="/tmp/geo.kooper.tunnel" -l kooper geo.bu.edu
+```
+
+Test the tunnel:
+```
+ssh -o ControlPath=/tmp/geo.kooper.tunnel geo.bu.edu pwd
+```
+
+Add following to pecan.xml:
+```
+  <host>
+    <name>geo.bu.edu</name>
+    <user>kooper</user>
+    <tunnel>/tmp/geo.kooper.tunnel</tunnel>
+  </host>
+```
+
+now as long as the tunnel is active, pecan will use the tunnel to connect.
+
+<!--chapter:end:Enabling-Remote-Execution.Rmd-->
+
+
+<!--chapter:end:faq.Rmd-->
+
+
+<!--chapter:end:how_pecan_works.Rmd-->
+
+To upload model driver data [or any other model input data or data used for model calibration/validation]...
+
+From your BETY interface:
+
+* Create a DBFILES entry for the path to the file
+ * From the menu click RUNS then FILES
+ * Click “New File”
+ * Select the machine your file is located at
+ * Fill in the File Path where your file is located (aka folder or directory) NOT including the name of the file itself
+ * Fill in the File Name with the name of the file itself. Note that some types of input records will refer to be ALL the files in a directory and thus File Name can be blank
+ * Click Update
+* Create an INPUT entry for your data
+ * From the menu click RUNS then INPUTS
+ * Click “New Input”
+ * Select the SITE that this data is associated with the input data set
+ * Other required fields are a unique name for the input, the start and end dates of the data set, and the format of the data. If the data is not in a currently known format you will need to create a NEW FORMAT and possibly a [[new Input Converter| Adding-an-Input-Converter]]
+ * Parent ID is an optional variable to indicated that one dataset was derived from another.
+ * Click “Create”
+* Associate the DBFILE with the INPUT
+ * In the RUNS -> INPUTS table, search and find the input record you just created
+ * Click on the EDIT icon
+ * Select “View related Files”
+ * In the Search window, search for the DBFILE you just created
+ * Once you have found the DBFILE, click on the “+” icon to add the file
+ * Click on “Update” at the bottom when you are done.
+
+<!--chapter:end:How-to-insert-new-Input-data.Rmd-->
+
+## The PEcAn Gitbook
+
+This book serves as documentation for the PEcAn Project. It contains descriptions of topics necessary to inform a beginner and advanced user as well as requisite materials for developers. It does not contain low-level descriptions of functions within PEcAn. Our aim for this documentation is to educate you about the PEcAn software, the possibilities of its usage, and the standards,expectations, and core workflows for developers.
+
+
+### How to Contribute
+If you wish to contribute to this book, we greatly welcome it! The same general steps to contributing PEcAn code to the main line can be used to contribute to this book.
+
+### For large edits
+1. Navigate to the book's [github repository: https://github.com/PecanProject/pecan.book](https://github.com/PecanProject/pecan.book) and fork the repository to your github account.
+
+2. Use ``` git clone ``` on the machine your are using to create a local copy of the repository. General instructions can be found [here](https://help.github.com/articles/cloning-a-repository/)
+
+3. Edit/add your content to the book using any text editor. Save your files in the markdown format (.md).
+  * If you are adding a new page, you must edit the ```SUMMARY.md``` file also and list your page in order for it to be properly indexed by gitbook.
+
+3. Commit ``` git commit -m "your message"``` your changes and push ```git push``` them to your fork.
+
+4. [Create a pull request](https://help.github.com/articles/creating-a-pull-request/), using github,  with a description of the changes you have made.
+
+### For minor edits
+
+1. Move your cursor next to the paragraph you would like to suggest changes and press the ```+``` button. 
+
+2. Leave a comment with your changes and we will see to it that those changes are made.
+
+
+###Feedback/Comments/Suggestions
+We want your ideas, thoughts, comments, and suggestions! This is an open-sourced project so please feel free to reach out
+to us in the following ways:
+
+Github: [https://github.com/PecanProject/pecan](https://github.com/PecanProject/pecan)
+	Serving as the main hub of communication surrounding PEcAn development, check out the issues section to see what
+is coming down the pipeline. If there is anything you feel you can contribute to, leave a comment.
+	
+Gitter: [http://pecanproject.github.io](http://pecanproject.github.io/)
+	Gitter serves as our day to day mode of communication. Go to our homepage, linked above, and open the "OPEN CHAT"
+tab at the bottom to see what we are up to. All you need is a github account and you can chat with us about anything project related.
+
+Gitbook: [https://pecan.gitbooks.io/pecan-documentation/content/](https://pecan.gitbooks.io/pecan-documentation/content/)
+	As stated above, this is a book with all of the documentation for the PEcAn Project. If you use the gitbook 
+interface, next to each paragraph there is a "+" that will allow you to start a discussion. Please use this utility to ask for 
+clarification about any documentation or direct any question/comment to the team.
+
+Email: pecanproj[at]gmail.com
+	If you do not wish your communication with the team to be public, send us an email at the 
+address above and we will get back to you as soon as possible.
+
+
+<!--chapter:end:how_to_use_book.Rmd-->
+
+
+<!--chapter:end:pecan_with_bety.Rmd-->
+
+### Project Overview 
+The Predictive Ecosystem Analyzer (PEcAn) is an integrated informatics toolbox for ecosystem modeling (Dietze et al. 2013, LeBauer et al. 2013). PEcAn consists of: 
+
+1) An application program interface (API) that encapsulates an ecosystem model, providing a common interface, inputs, and output.
+
+2) Core utilities for handling and tracking model runs and the flows of information and uncertainties into and out of models and analyses
+
+3) An accessible web-based user interface and visualization tools
+
+4) An extensible collection of modules to handle specific types of analyses (sensitivity, uncertainty, ensemble), model-data syntheses (benchmarking, parameter data assimilation, state data assimilation), and data processing (model inputs and data constraints)
+
+![](/assets/PEcAn_Components.jpeg)
+
+This project is motivated by the fact that many of the most pressing questions about global change are limited by our ability to synthesize existing data and strategically prioritize the collection of new data. This project seeks to improve this ability by developing a framework for integrating multiple data sources in a sensible manner.
+
+The workflow system allows ecosystem modeling to be more reproducible, automated, and transparent in terms of operations applied to data, and thus ultimately more comprehensible to both peers and the public. It reduces the redundancy of effort among modeling groups, facilitate collaboration, and make models more accessible the rest of the research community.
+
+PEcAn is not itself an ecosystem model, and it can be used to with a variety of different ecosystem models; integrating a model involves writing a wrapper to convert inputs and outputs to and from the standards used by PEcAn. Currently, PEcAn supports multiple models listed [here](models/index.md).
+
+
+
+
+### Acknowledgements
+
+This material is based upon work supported by the National Science Foundation under Grant No. 1062547, 1062204, 1241894, 1261582, 1318164, 1346748, 1458021, 1638577, the National Aeronautics and Space Administration (NASA) Grant No. 13-TE13-0060, and the Energy Biosciences Institute. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation or NASA. PEcAn is a collaboration among research groups at the Department of Earth And Environment at Boston University, the Energy Biosciences Institute at the University of Illinois, the Image Spatial Data Analysis group at NCSA, the Department of Atmospheric & Oceanic Sciences at the University Wisconsin-Madison, and the Terrestrial Ecosystem Science & Technology (TEST) Group at Brookhaven National Lab.
+
+BETY-db is a product of the Energy Biosciences Institute at the University of Illinois at Urbana-Champaign. We gratefully acknowledge the great effort of other researchers who generously made their own data available for further study.
+
+### PEcAn Publications 
+
+* Shiklomanov. A, MC Dietze, T Viskari, PA Townsend, SP Serbin. 2016 "Quantifying the influences of spectral resolution on uncertainty in leaf trait estimates through a Bayesian approach to RTM inversion" Remote Sensing of the Environment 183: 226-238
+* Viskari et al. 2015 Model-data assimilation of multiple phenological observations to constrain and forecast leaf area index. Ecological Applications 25(2): 546-558
+* Dietze, M. C., S. P. Serbin, C. Davidson, A. R. Desai, X. Feng, R. Kelly, R. Kooper, D. LeBauer, J. Mantooth, K. McHenry, and D. Wang (2014) A quantitative assessment of a terrestrial biosphere model's data needs across North American biomes. Journal of Geophysical Research-Biogeosciences [doi:10.1002/2013jg002392](http://dx.doi.org/10.1002/2013jg002392)
+* LeBauer, D.S., D. Wang, K. Richter, C. Davidson, & M.C. Dietze. (2013). Facilitating feedbacks between field measurements and ecosystem models. Ecological Monographs. [doi:10.1890/12-0137.1](http://dx.doi.org/10.1890/12-0137.1)
+* Wang, D, D.S. LeBauer, and M.C. Dietze(2013) Predicting yields of short-rotation hybrid poplar (Populus spp.) for the contiguous US through model-data synthesis. Ecological Applications [doi:10.1890/12-0854.1](http://dx.doi.org/10.1890/12-0854.1)
+* Dietze, M.C., D.S LeBauer, R. Kooper (2013) On improving the communication between models and data. Plant, Cell, & Environment [doi:10.1111/pce.12043](http://dx.doi.org/10.1111/pce.12043)
+
+
+ [Longer / auto-updated list of publications that mention PEcAn's full name in Google Scholar](https://scholar.google.com/scholar?start=0&q="predictive+ecosystem+analyzer+PEcAn")
+
+<!--chapter:end:project_overview.Rmd-->
+
+ 
+
+![](PecanLogo.png)
+<br>
+</br>
+
+# <center>The Predictive Ecosystem Analyzer (PEcAn) 
+
+
+
+## <center>*Ecosystem science, policy, and management informed by the best available data and models*
+
+
+<br>
+</br>
+# <center> Our Mission:
+##<center>*Develop and promote accessible tools for reproducible ecosystem modeling and forecasting*
+<br>
+</br>
+
+
+<center> [PEcAn Website](http://pecanproject.github.io/)
+
+<center> [Public Chat Room](https://gitter.im/PecanProject/pecan)
+
+<center> [Github Repository](https://github.com/PecanProject/pecan)
+
+
+<!--chapter:end:README.Rmd-->
+
+# Summary
+
+* [Front Cover](README.md)
+* [Project Overview](project_overview.md)
+* [Code of Conduct](Code-of-Conduct.md)
+* [About this Book](how_to_use_book.md)
+* [Basic User Guide](users_guide/basic_users_guide/Basic_Users_Guide.md)
+    * [Downloading and setting up Your VM](users_guide/basic_users_guide/obtaining_your_VM.md)
+* [Advanced: Web Interface](users_guide/adv_users_guide/Advanced_Users_Guide.md)
+    * [When to Use Browndog](users_guide/adv_users_guide/using_browndog.md)
+    * [Editing Your PEcAn.xml](users_guide/adv_users_guide/PEcAn-Configuration.md)
+    * [Editing Your Model Configuration](users_guide/adv_users_guide/editing_model_config.md)
+    * [Advanced Setup](users_guide/adv_users_guide/advanced_setup.md)
+    * [State Data Assimilation](users_guide/adv_users_guide/sda.documentation.md)
+    * [Parameter Data Assimilation](users_guide/adv_users_guide/pda.documentation.md)
+* [Advanced: Command Line](users_guide/adv_user_guide_cmd/adv_users_guide_cmd.md)
+    * [Replicating a a basic run without touching the web interface](users_guide/adv_user_guide_cmd/replicate_run.md)
+    * [Working with the VM](users_guide/adv_user_guide_cmd/working_with_vm.md)
+    * [Replicating ensemble and sensitivity analysis](users_guide/adv_user_guide_cmd/replicate_ens_sens_cmd.md)
+    * [Extra Tools within PEcAn](users_guide/adv_user_guide_cmd/extra_tools.md)
+* [Maintaining PEcAn](users_guide/maintaining_pecan/maintaining_pecan.md)
+    * [Updating your code](users_guide/maintaining_pecan/update_pecan_code.md)
+    * [Updating BETY database](users_guide/maintaining_pecan/Updating-BETY.md)
+    * [Database Synchronization](users_guide/adv_users_guide/Database-Synchronization.md)
+    * [Troubleshooting PEcAn](users_guide/adv_users_guide/Troubleshooting-pecan.md)
+* [User Appendix](user_appendix.md)
+    * [Models](models/index.md)
+        * [BioCro](models/biocro.md)
+            * [BioCro-configuration](BioCro-configuration.md)
+        * [CLM](models/clm.md)
+        * [Dalec](models/dalec.md)
+        * [ED](models/ed.md)
+            * [ED2 Configuration](users_guide/advanced_users_guide/ED2-configuration.md)
+        * [G'DAY](models/gday.md)
+        * [linkages](models/linkages.md)
+        * [LPJ-GUESS](models/lpj-guess.md)
+        * [MAESPA](models/maespa.md)
+        * [PRELES](models/preles.md)
+        * [Sipnet](models/sipnet.md)
+            * [SIPNET-configuration](users_guide/advanced_users_guide/SIPNET-configuration.md)
+        * [Output Variable Standards](models/variables.md)
+        * [Data](data/index.md)
+            * [Meteorology](data/meteorology.md)
+
+-----
+* [How PEcAn Works](how_pecan_works.md)
+    * [Workflow.R](workflow/workflow_r.md)
+        * [Reading in Settings](workflow/read_in_settings.md)
+        * [Inputs\/Converions](workflow/inputs_conversions.md)
+        * [Traits](workflow/traits.md)
+        * [Meta Analysis](workflow/meta_analysis.md)
+        * [Model Configuration](workflow/model_config.md)
+        * [Execution](workflow/execution.md)
+        * [Analysis](workflow/analysis.md)
+        * [Advanced Execution and Analyses](workflow/adv_exec_analysis.md)
+    * [Demystifying BETY](pecan_with_bety.md)
+* [Developer's Guide](developers_guide/Developers_guide.md)
+    * [Reporting Bugs and Requesting Features](developers_guide/Github-issues.md)
+    * [Using Github and Git](developers_guide/Using-Git.md)
+    * [PEcAn Directory Structure](developers_guide/Directory-structure.md)
+    * [Adding Ecosystem Model](developers_guide/Adding-an-Ecosystem-Model.md)
+    * [Adding An Input Converter](developers_guide/Adding-an-Input-Converter.md)
+    * [DART data assimilation](users_guide/advanced_users_guide/DART_state_data_assimilation.md)
+    * [PEcAn Configuration and Settings Files](developers_guide/Configuration-Files.md)
+    * [Coding Style](developers_guide/Coding_style.md)
+    * [Documentation](developers_guide/Roxygen2.md)
+    * [Testing](developers_guide/Testing.md)
+    * [Package Data](developers_guide/Package-data.md)
+    * [Logging, Warnings, and Error Messages](developers_guide/Logging.md)
+    * [Installing Data](developers_guide/Installing-PEcAn-Data.md)
+    * [Development](developers_guide/Development.md)
+    * [Inputs](developers_guide/Data-Formats.md)
+* [Appendix](appendix.md)
+    * [Installing PEcAn](installation/Installing-PEcAn.md)
+    * [VM Creation](installation/VM-Creation.md)
+    * [Installing PEcAn CentOS](installation/Installing-PEcAn-CentOS.md)
+    * [Installing PEcAn RedHat](installation/Installing-PEcAn-RedHat.md)
+    * [Installing PEcAn OSX](installation/Installing-PEcAn-OSX.md)
+    * [Installing PEcAn Ubuntu](installation/Installing-PEcAn-Ubuntu.md)
+    * [Installing Pecan Models](installation/Installing-PEcAn-models.md)
+    * [PEcAn in the Cloud](installation/PEcAn-in-the-Cloud.md)
+    * [Shiny-CentOS](installation/centos.shiny.md)
+* [FAQ Known Issues](faq.md)
+
+
+<!--chapter:end:SUMMARY.Rmd-->
+
+
+<!--chapter:end:user_appendix.Rmd-->
+

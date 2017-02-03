@@ -1,0 +1,10 @@
+{
+    "plugins": [
+        "heading-anchors",
+        "splitter",
+        "anchorjs",
+        "back-to-top-button",
+        "expandable-chapters-small"
+    ],
+    "pluginsConfig": {}
+}
