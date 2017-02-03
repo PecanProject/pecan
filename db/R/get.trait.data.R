@@ -119,8 +119,11 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
           } else if (files$file_name[[id]] == "prior.distns.Rdata") {
             logger.debug("Checking if priors have changed")
             prior.distns.tmp <- prior.distns
-            load(file.path(files$file_path[[id]], files$file_name[[id]]))
-            logger.debug("If empty (zero-byte) input file error is received, set forceupdate to TRUE for one run.")
+            if(file.exists(files$file_path[[id]], files$file_name[[id]])){
+              load(file.path(files$file_path[[id]], files$file_name[[id]]))#HERE IS THE PROBLEM
+            }else{
+              logger.debug("Prior file does not exist.")
+            }
             testme <- prior.distns
             prior.distns <- prior.distns.tmp
             if (!identical(prior.distns, testme)) {
