@@ -1,0 +1,26 @@
+#Models
+
+This section will contain information about all models and output variables that are supported by PEcAn.
+
+| Model Name | Available in the VM | Prescribed Inputs | Input Functions/Values | Restart Function |
+| -- | -- | -- | -- | -- |
+| [BioCro](biocro.md) | Yes | Yes | Yes| No |
+| [CLM](clm.md) | No | No | No| No |
+| [Dalec](dalec.md) | Yes | Yes | Yes| No |
+| [ED](ed.md) | Yes | Yes | Yes| No |
+| FATES | No | Yes | | No|
+| [G'DAY](gday.md) | No | No | No| No |
+| [linkages](linkages.md) | Yes | Yes | Yes| Yes |
+| [LPJ-GUESS](lpj-guess.md) | Yes | Yes | No | No |
+| [MAESPA](maespa.md) | Yes | Yes | No | No |
+| [PRELES](preles.md) | Yes | Yes | Partially | No |
+| [Sipnet](sipnet.md) | Yes | Yes | Yes| No |
+
+A [template](template.md) is provided to help you fill in information about your model.
+
+##Output Variables
+
+PEcAn converts all model outputs to a single [standard](variables.md). This standard evolved out of MsTMIP project, which is itself based on NACP, LBA, and other model-intercomparison projects. This standard was expanded for the PalEON MIP and the needs of the PEcAn modeling community to support variables not in these standards.
+
+_Model developers_: do not add variables to your PEcAn output without first adding them to the PEcAn standard table! Also, do not create new variables equivalent to existing variables but just with different names or units. 
+

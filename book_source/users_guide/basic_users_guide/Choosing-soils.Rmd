@@ -1,0 +1,5 @@
+Many models have requirements for soils information, which may include: site-specific soil texture and depth information; soil biogeochemical initial conditions (e.g. soil carbon and nitrogen pools); soil moisture initial conditions; and soil thermal initial conditions.
+
+As with [[Choosing initial vegetation]], we eventually hope to develop data standards, soils workflows, and spin-up tools, but at the moment model requirements need to be met by [[inserting Input data|How to insert new Input data]] into the database or using files that have already been uploaded.
+
+Finally, any other model-specific inputs (e.g. N deposition, land use history, etc), should be met by [[inserting Input data|How to insert new Input data]] into the database or using files that have already been uploaded.
