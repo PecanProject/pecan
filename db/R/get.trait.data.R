@@ -122,7 +122,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
             if(file.exists(files$file_path[[id]], files$file_name[[id]])){
               load(file.path(files$file_path[[id]], files$file_name[[id]]))#HERE IS THE PROBLEM
             }else{
-              logger.debug("Prior file does not exist.")
+              logger.debug("Prior file does not exist. If empty (zero-byte) input file error is recived, set forceupdate to TRUE for one run.")
             }
             testme <- prior.distns
             prior.distns <- prior.distns.tmp
