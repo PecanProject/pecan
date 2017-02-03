@@ -14,15 +14,8 @@
 ##' @author Ankur Desai, based on download.AmerifluxLBL.R
 
 download.NEONmet <- function(sitename, outfolder, start_date, end_date, 
-                                  overwrite = FALSE, verbose = FALSE, username = "pecan", ...) {
+                                  overwrite = FALSE, verbose = FALSE,  ...) {
 
-  #devtools::install_github("ropenscilabs/nneo")
-  library(nneo)
-  library(lubridate)
-  library(ncdf4)
-  library(udunits2)
-  library(PEcAn.utils)
-  
   if (!file.exists(outfolder)) {
     dir.create(outfolder)
   }
