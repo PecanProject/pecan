@@ -24,6 +24,12 @@
 ##' query.priors('ebifarm.pavi', vecpaste('SLA', 'Vcmax', 'leaf_width'))
 ##' }
 query.priors <- function(pft, trstr=NULL, out=NULL, con=NULL,...){
+  
+  out <-pft$outdir
+  pfd<-16
+  trstr<-vecpaste(trait.names)
+  con<-dbcon
+  
   if(is.null(con)){
     con <- db.open(settings$database$bety)
     on.exit(db.close(con))
@@ -40,13 +46,16 @@ query.priors <- function(pft, trstr=NULL, out=NULL, con=NULL,...){
       "join pfts_priors on pfts_priors.prior_id = priors.id",
       "join pfts on pfts.id = pfts_priors.pft_id",
       "where pfts.id = ", pft)
+  
   if(is.null(trstr) || trstr == "''"){
     query.text = paste(query.text,";",sep="")
   } else {
     query.text = paste(query.text,"and variables.name in (", trstr, ");")
   }
   
+  
   priors <- db.query(query.text, con)
+  
   
   if(nrow(priors) <= 0){
     warning(paste("No priors found for pft(s): ", pft))

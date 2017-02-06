@@ -75,3 +75,8 @@ shiny/BenchmarkReport/*
 .check/
 .test/
 .doc/
+
+# Things Tess is Tweaking
+dummy.settings.xml
+
+ 
