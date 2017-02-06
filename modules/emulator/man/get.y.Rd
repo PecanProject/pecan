@@ -4,6 +4,6 @@
 \alias{get.y}
 \title{get.y}
 \usage{
-get.y(gp, xnew, n.of.obs, neffs, llik.fn, priors, settings)
+get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
 }
 
