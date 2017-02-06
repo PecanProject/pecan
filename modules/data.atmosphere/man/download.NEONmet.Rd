@@ -24,7 +24,4 @@ The 4-letter SITE code  in \href{http://www.neonscience.org/science-design/field
 \description{
 Download NEON Site Met CSV files
 }
-\author{
-Ankur Desai, based on download.AmerifluxLBL.R
-}
 
