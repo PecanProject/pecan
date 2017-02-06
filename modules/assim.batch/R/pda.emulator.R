@@ -352,7 +352,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     load(settings$assim.batch$resume.path)
     
     n.of.obs <- resume.list[[1]]$n.of.obs
-    neffs    <- resume.list[[1]]$neffs
       
     if(any(unlist(any.mgauss) == "multipGauss")){
       load(settings$assim.batch$bias.path) # load prior.list with bias term from previous run
@@ -440,7 +439,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
             settings    = settings,
             run.block   = (run.normal | run.round),  
             n.of.obs    = n.of.obs,
-            neffs       = neffs,
             llik.fn     = llik.fn,
             resume.list = resume.list[[chain]]
     )
@@ -481,16 +479,20 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   
   
   if (FALSE) {
-    gp     <- kernlab.gp
-    x0     <- init.x
-    nmcmc  <- settings$assim.batch$iter
-    rng    <- NULL
-    format <- "lin"
-    mix    <- "each"
-    jmp0   <- apply(X, 2, function(x) 0.3 * diff(range(x)))
-    jmp0   <- sqrt(unlist(settings$assim.batch$jump$jvar))
-    ar.target <- settings$assim.batch$jump$ar.target
-    priors <- prior.fn$dprior[prior.ind]
+     gp          = gp
+     x0          = init.list[[chain]]
+     nmcmc       = settings$assim.batch$iter
+     rng         = rng
+     format      = "lin"
+     mix         = mix
+     jmp0        = jmp.list[[chain]]
+     ar.target   = settings$assim.batch$jump$ar.target
+     priors      = prior.fn.all$dprior[prior.ind.all]
+     settings    = settings
+     run.block   = (run.normal | run.round)  
+     n.of.obs    = n.of.obs
+     llik.fn     = llik.fn
+     resume.list = resume.list[[chain]]
   }
   
   ## ------------------------------------ Clean up ------------------------------------ 

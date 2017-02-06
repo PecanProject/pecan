@@ -17,7 +17,7 @@ pda.define.llik.fn <- function(settings) {
     if (settings$assim.batch$inputs[[i]]$likelihood == "Laplace") {
       
       llik.fn[[i]] <- function(pda.errors, llik.par) {
-        LL <- -llik.par$n * log(llik.par$par * sqrt(llik.par$n/llik.par$n_eff)) - pda.errors
+        LL <- pda.errors
         return(LL)
       }
       
@@ -68,17 +68,21 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
     
     if (settings$assim.batch$inputs[[k]]$likelihood == "Laplace") {
       # heteroskedastic laplacian
-
-
-      pos   <- model_out[[k]] >= inputs[[k]]$obs
-      resid <- model_out[[k]] - inputs[[k]]$obs
-      if(inputs[[k]]$variable.id %in% c(297, 1000000042)){
-        resid <- misc.convert(unlist(resid), "kg C m-2 s-1", "umol C m-2 s-1")
-      }
-      SS    <- sum(resid[!pos], na.rm = TRUE)/(inputs[[k]]$par[[3]]*sqrt(inputs[[k]]$n/inputs[[k]]$n_eff))+
-               sum(resid[pos],  na.rm = TRUE)/(inputs[[k]]$par[[2]]*sqrt(inputs[[k]]$n/inputs[[k]]$n_eff))
-      
-      
+        
+        resid <- abs(model_out[[k]] - inputs[[k]]$obs)
+        pos <- (model_out[[k]] >= 0)
+        SS <- c(dexp(resid[pos],
+                     1 / (inputs[[k]]$par[1] + (inputs[[k]]$par[2] * 
+                                                  sqrt(inputs[[k]]$n/inputs[[k]]$n_eff) * 
+                                                  model_out[[k]][pos])), log = TRUE),
+                dexp(resid[!pos],
+                     1 / (inputs[[k]]$par[1] + (inputs[[k]]$par[3] * 
+                            sqrt(inputs[[k]]$n/inputs[[k]]$n_eff) * 
+                            model_out[[k]][!pos])), log = TRUE))
+        
+        pda.errors[[k]] <- sum(SS, na.rm = TRUE) 
+        SSdb[[k]] <- sum(SS, na.rm = TRUE) 
+        
     } else if (settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") { 
       # multiplicative Gaussian
       
@@ -88,15 +92,15 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
       }
       
       bc <- bc + 1
+      pda.errors[[k]] <- SS 
+      SSdb[[k]]       <- log(SS)
       
     } else { # Gaussian
       
       SS <- sum((model_out[[k]] - inputs[[k]]$obs)^2, na.rm = TRUE)
       
     }
-    
-    pda.errors[[k]] <- SS 
-    SSdb[[k]]       <- log(SS)
+  
     
   } # for-loop
   
@@ -165,7 +169,7 @@ pda.calc.llik <- function(pda.errors, llik.fn, llik.par) {
 ##' @author Istem Fer
 ##' @export
 
-pda.calc.llik.par <-function(settings, n, neff, error.stats){
+pda.calc.llik.par <-function(settings, n, error.stats){
   
   llik.par <- list()
   
@@ -179,15 +183,8 @@ pda.calc.llik.par <-function(settings, n, neff, error.stats){
       llik.par[[k]]$par <- rgamma(1, 0.001 + n[k]/2, 0.001 + error.stats[k]/2)
       names(llik.par[[k]]$par) <- paste0("tau.", names(n)[k])
       
-    } else if(settings$assim.batch$inputs[[k]]$likelihood == "Laplace"){
-      
-      llik.par[[k]]$par <- rgamma(1, 0.001 + n[k]/2, 0.001 + abs(error.stats[k])/2)
-      names(llik.par[[k]]$par) <- paste0("beta.", names(n)[k])
-      
     }
-    
     llik.par[[k]]$n     <- n[k]
-    llik.par[[k]]$n_eff <- neff[k]
     
   }
 
