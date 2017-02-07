@@ -76,7 +76,7 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
             dplyr::filter_(filter_cri) %>%
             dplyr::select_('bety_species_id' = 'id', 'genus', 'species',
                            'input_code' = column) %>%
-            dplyr::collect(translation)
+            dplyr::collect()
     }
     input_table <- data.frame(input_code = input_codes, stringsAsFactors = FALSE)
     merge_table <- dplyr::left_join(input_table, translation)
