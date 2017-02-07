@@ -232,10 +232,10 @@ def main(experiment_id, latitude, albedo, topsoil_type,
     if RUN_SIM == True:
 
         # dir names
-        param_dir = os.path.join(base_dir, "params")
-        met_dir = os.path.join(base_dir, "gday_met_files")
-        run_dir = os.path.join(base_dir, "outputs")
-
+        param_dir = os.path.join(@RUNDIR@)
+        met_dir = os.path.join(@SITE_MET@)
+        run_dir = os.path.join(@RUNDIR@)
+        
         if SPIN_UP == True:
             shutil.copy(os.path.join(param_dir, "%s_model_spunup.cfg" % (experiment_id)),
                         os.path.join(param_dir, "%s_model_spunup_adj.cfg" % (experiment_id)))
@@ -268,9 +268,9 @@ def main(experiment_id, latitude, albedo, topsoil_type,
 
 if __name__ == "__main__":
 
-    experiment_id = "US-NR1"
+    experiment_id = @SITE@
 
-    latitude=40.0329
+    latitude=@LATITUDE@
     main(experiment_id, latitude=latitude, albedo=0.2,
          topsoil_type="silty_clay_loam", rootsoil_type="silty_clay_loam",
          finesoil=0.5, SPIN_UP=True, RUN_SIM=True)

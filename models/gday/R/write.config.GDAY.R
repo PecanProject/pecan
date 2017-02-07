@@ -57,12 +57,30 @@ write.config.GDAY <- function(defaults, trait.values, settings, run.id) {
         hostteardown <- paste(hostteardown, sep = "\n", paste(settings$host$postrun, collapse = "\n"))
     }
     
+    
+    # Write out base param file to run directory
+    params <- readLines(con = system.file("base", package = "PEcAn.GDAY"), n = -1)
+    writeLines(params, con = file.path(settings$rundir, run.id, "base_start.cfg"))
+    
+    
     # Create Python Run script
     runpy<- readLines(con = system.file("run_simulations.py", package = "PEcAn.GDAY"), n = -1)
+      
+    executable <- settings$model$binary
+    scripts <- gsub("src//gday","scripts",executable)
     
-    runpy <- gsub("@PATH_SCRIPTS@",settings$model$binary)
-    runpy <- gsub("@PATHTOGDAY@")
-    runpy <- gsub("@PATH_PARAMS@")
+    runpy <- gsub("@PATH_SCRIPTS@",scripts,runpy)
+    runpy <- gsub("@PATHTOGDAY@",executable,runpy)
+    runpy <- gsub("@PATH_PARAMS@",)
+    runpy <- gsub("@SITE_MET@", settings$run$input$met$path, runpy)
+    runpy <- gsub("@RUNDIR@", rundir, runpy)
+    runpy <- gsub("@SITE_LAT@", settings$run$site$lat,runpy)
+    runpy <- gsub("@SITE@",settings$run$site$name,runpy)
+    
+    writeLines(jobsh, con = file.path(settings$rundir, run.id, "run_simulations.py"))
+    Sys.chmod(file.path(settings$rundir, run.id, "run_simulations.py"))
+    
+    
     # create job.sh
     jobsh <- gsub("@HOST_SETUP@", hostsetup, jobsh)
     jobsh <- gsub("@HOST_TEARDOWN@", hostteardown, jobsh)
