@@ -4,17 +4,17 @@
 \alias{match_species_id}
 \title{Match BETY species ID.}
 \usage{
-match_species_id(input_codes, format_name, betydb = NULL,
-  custom_translation_path = NULL, ...)
+match_species_id(input_codes, format_name = "custom", bety = NULL,
+  translation_table = NULL, ...)
 }
 \arguments{
 \item{input_codes}{Character vector of species codes}
 
-\item{format_name}{Species code format name (character, length 1)}
+\item{format_name}{Species code format name (see details)}
 
-\item{betydb}{\code{dplyr} \code{src} object containing BETY connection}
+\item{bety}{\code{dplyr} \code{src} object containing BETY connection}
 
-\item{custom_translation_path}{File path to translation}
+\item{translation_table}{Data frame with custom translation table (see details).}
 }
 \value{
 \code{data.frame} containing the following columns:
@@ -28,8 +28,17 @@ match_species_id(input_codes, format_name, betydb = NULL,
 \description{
 Parses species codes in input data and matches them with the BETY species ID.
 }
+\details{
+\code{format_name} can be one of the following:
+\describe{
+ \item{\code{usda}}{USDA Plants database symbol (e.g. QURU, TSCA)}
+ \item{\code{fia}}{FIA species code}
+ \item{\code{latin_name}}{Scientific name, as "Genus species"; must match exactly and unambiguously to \code{scientificname} field in BETY}
+ \item{\code{custom}}{A data frame matching BETY IDs (column name \code{bety_species_id}) to input codes (column name \code{input_code}). This data frame must be passed via the \code{translation_table} argument.}
+}
+}
 \examples{
-betydb <- dplyr::src_postgres(dbname = 'bety',
+bety <- dplyr::src_postgres(dbname = 'bety',
                        user = 'bety',
                        password = 'bety',
                        host = 'localhost')
@@ -37,10 +46,9 @@ input_codes <- c('ACRU', 'PIMA', 'TSCA')
 format_name <- 'usda'
 match_species_id(input_codes = input_codes,
                  format_name = format_name,
-                 betydb = betydb)
+                 bety = bety)
                  
 }
 \author{
 Alexey Shiklomanov <ashiklom@bu.edu>
 }
-

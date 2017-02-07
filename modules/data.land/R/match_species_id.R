@@ -2,10 +2,18 @@
 #'
 #' Parses species codes in input data and matches them with the BETY species ID.
 #' 
+#' \code{format_name} can be one of the following:
+#' \describe{
+#'  \item{\code{usda}}{USDA Plants database symbol (e.g. QURU, TSCA)}
+#'  \item{\code{fia}}{FIA species code}
+#'  \item{\code{latin_name}}{Scientific name, as "Genus species"; must match exactly and unambiguously to \code{scientificname} field in BETY}
+#'  \item{\code{custom}}{A data frame matching BETY IDs (column name \code{bety_species_id}) to input codes (column name \code{input_code}). This data frame must be passed via the \code{translation_table} argument.}
+#' }
+#' 
 #' @param input_codes Character vector of species codes
-#' @param format_name Species code format name (character, length 1)
-#' @param betydb \code{dplyr} \code{src} object containing BETY connection 
-#' @param custom_translation_path File path to translation
+#' @param format_name Species code format name (see details)
+#' @param bety \code{dplyr} \code{src} object containing BETY connection 
+#' @param translation_table Data frame with custom translation table (see details).
 #' @return \code{data.frame} containing the following columns:
 #' \describe{
 #'  \item{\code{input_code}}{Character provided as input}
@@ -15,7 +23,7 @@
 #' }
 #' @author Alexey Shiklomanov <ashiklom@bu.edu>
 #' @examples
-#' betydb <- dplyr::src_postgres(dbname = 'bety',
+#' bety <- dplyr::src_postgres(dbname = 'bety',
 #'                        user = 'bety',
 #'                        password = 'bety',
 #'                        host = 'localhost')
@@ -23,33 +31,47 @@
 #' format_name <- 'usda'
 #' match_species_id(input_codes = input_codes,
 #'                  format_name = format_name,
-#'                  betydb = betydb)
+#'                  bety = bety)
 #'                  
 #' @export
-match_species_id <- function(input_codes, format_name, betydb = NULL, custom_translation_path = NULL, ...) {
+match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, translation_table = NULL, ...) {
     # Relate format names to BETY columns
     formats_dict <- c('usda' = 'Symbol',
                       'fia' = 'spcd',
                       'latin_name' = 'scientificname', 
                       'custom' = 'custom')
     if (!format_name %in% names(formats_dict)) {
-        stop('format_name "', format_name, '" not found. ',
-             'Please use one of the following: ',
-             paste(names(formats_dict), collapse = ', '))
+        PEcAn.utils::logger.severe('format_name "', format_name, '" not found. ',
+                                   'Please use one of the following: ',
+                                   paste(names(formats_dict), collapse = ', '))
     }
-    if (!is.null(custom_translation_path)) {
-        if (!file.exists(custom_translation_path)) {
-            stop('No file found for path: ', custom_translation_path,
-                 ' Make sure this file is present on this machine')
-        }
-        # TODO: Fill in with correct load_data arguments
-        #translation <- PEcAn.utils::load_data(file = custom_translation_path, ...)
-        if (!'input_code' %in% colnames(translation)) {
-            stop('Translation table missing "input_code" column.')
+    if (!is.null(translation_table)) {
+        msg2 <- c('Found the following columns: ', 
+                  paste(colnames(translation_table), collapse = ', '))
+        if (!'input_code' %in% colnames(translation_table)) {
+            PEcAn.utils::logger.severe('Custom translation table must have column "input_code". ', msg2)
+        } else if (!'bety_species_id' %in% colnames(translation_table)) {
+            PEcAn.utils::logger.severe('Custom translation table must have column "bety_species_id". ', msg2)
+        } else {
+            if (any(grepl('^(genus|species)$', colnames(translation_table)))) {
+                PEcAn.utils::logger.warn('"genus" or "species" columns found in translation table. ',
+                                         'Because these also match the BETY table, ',
+                                         'they will be ignored by the merge, but their names will ',
+                                         'be appended with ".translation_table" for disambiguation')
+            }
+            bety_species <- dplyr::tbl(bety, 'species')
+            bety_species <- dplyr::filter_(bety_species, 
+                                           ~id %in% translation_table[['bety_species_id']])
+            bety_species <- dplyr::select_(bety_species, 'bety_species_id' = 'id',
+                                           'genus', 'species')
+            bety_species <- dplyr::collect(bety_species)
+            translation <- dplyr::left_join(translation_table, bety_species, 
+                                            by = 'bety_species_id',
+                                            suffix = c('.translation_table', ''))
         }
     } else {
         column <- formats_dict[format_name]
-        translation <- dplyr::tbl(betydb, 'species')
+        translation <- dplyr::tbl(bety, 'species')
         filter_cri <- lazyeval::interp(~ col %in% codes, 
                                        col = as.name(column),
                                        codes = input_codes)
