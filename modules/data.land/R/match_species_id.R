@@ -59,26 +59,24 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
                                          'they will be ignored by the merge, but their names will ',
                                          'be appended with ".translation_table" for disambiguation')
             }
-            bety_species <- dplyr::tbl(bety, 'species')
-            bety_species <- dplyr::filter_(bety_species, 
-                                           ~id %in% translation_table[['bety_species_id']])
-            bety_species <- dplyr::select_(bety_species, 'bety_species_id' = 'id',
-                                           'genus', 'species')
-            bety_species <- dplyr::collect(bety_species)
+            bety_species <- dplyr::tbl(bety, 'species') %>%
+                dplyr::filter_(~id %in% translation_table[['bety_species_id']]) %>%
+                dplyr::select_('bety_species_id' = 'id', 'genus', 'species') %>%
+                dplyr::collect()
             translation <- dplyr::left_join(translation_table, bety_species, 
                                             by = 'bety_species_id',
                                             suffix = c('.translation_table', ''))
         }
     } else {
         column <- formats_dict[format_name]
-        translation <- dplyr::tbl(bety, 'species')
         filter_cri <- lazyeval::interp(~ col %in% codes, 
                                        col = as.name(column),
                                        codes = input_codes)
-        translation <- dplyr::filter_(translation, filter_cri)
-        translation <- dplyr::select_(translation, 'bety_species_id' = 'id', 
-                                      'genus', 'species', 'input_code' = column)
-        translation <- dplyr::collect(translation)
+        translation <- dplyr::tbl(bety, 'species') %>%
+            dplyr::filter_(filter_cri) %>%
+            dplyr::select_('bety_species_id' = 'id', 'genus', 'species',
+                           'input_code' = column) %>%
+            dplyr::collect(translation)
     }
     input_table <- data.frame(input_code = input_codes, stringsAsFactors = FALSE)
     merge_table <- dplyr::left_join(input_table, translation)
