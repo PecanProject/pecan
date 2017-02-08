@@ -20,7 +20,7 @@ __author__  = "Martin De Kauwe, Tony Gardella"
 __version__ = "1.0 (03.08.2016)"
 __email__   = "mdekauwe@gmail.com"
 
-USER = os.getlogin()
+
 sys.path.append("@PATH_SCRIPTS@")
 import adjust_gday_param_file as ad
 
