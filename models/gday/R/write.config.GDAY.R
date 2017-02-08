@@ -59,7 +59,7 @@ write.config.GDAY <- function(defaults, trait.values, settings, run.id) {
     
     
     # Write out base param file to run directory
-    params <- readLines(con = system.file("base", package = "PEcAn.GDAY"), n = -1)
+    params <- readLines(con = system.file("base_start.cfg", package = "PEcAn.GDAY"), n = -1)
     writeLines(params, con = file.path(settings$rundir, run.id, "base_start.cfg"))
     
     
@@ -67,17 +67,25 @@ write.config.GDAY <- function(defaults, trait.values, settings, run.id) {
     runpy<- readLines(con = system.file("run_simulations.py", package = "PEcAn.GDAY"), n = -1)
       
     executable <- settings$model$binary
-    scripts <- gsub("src//gday","scripts",executable)
+    gday_path <- strsplit(executable, "src")[[1]]
+    scripts <- paste(gday_path[1],"scripts",sep = "")
     
     runpy <- gsub("@PATH_SCRIPTS@",scripts,runpy)
     runpy <- gsub("@PATHTOGDAY@",executable,runpy)
-    runpy <- gsub("@PATH_PARAMS@",)
-    runpy <- gsub("@SITE_MET@", settings$run$input$met$path, runpy)
-    runpy <- gsub("@RUNDIR@", rundir, runpy)
-    runpy <- gsub("@SITE_LAT@", settings$run$site$lat,runpy)
-    runpy <- gsub("@SITE@",settings$run$site$name,runpy)
+    runpy <- gsub("@PATH_PARAMS@",rundir, runpy)
     
-    writeLines(jobsh, con = file.path(settings$rundir, run.id, "run_simulations.py"))
+    exp <- strsplit(settings$run$input$met$path, split = "/")[[1]]
+    exp_tag <- experiment[length(experiment)]
+    met_path <- strsplit(settings$run$input$met$path,exp_tag)[[1]]
+      
+    runpy <- gsub("@SITE_MET@", met_path , runpy)
+    runpy <- gsub("@RUNDIR@", rundir, runpy)
+    runpy <- gsub("@LATITUDE@", settings$run$site$lat,runpy)
+    
+    
+    runpy <- gsub("@SITE@",exp_tag,runpy)
+    
+    writeLines(runpy, con = file.path(settings$rundir, run.id, "run_simulations.py"))
     Sys.chmod(file.path(settings$rundir, run.id, "run_simulations.py"))
     
     

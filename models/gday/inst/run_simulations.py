@@ -21,23 +21,23 @@ __version__ = "1.0 (03.08.2016)"
 __email__   = "mdekauwe@gmail.com"
 
 USER = os.getlogin()
-sys.path.append(@PATH_SCRIPTS@)
+sys.path.append("@PATH_SCRIPTS@")
 import adjust_gday_param_file as ad
 
 def main(experiment_id, latitude, albedo, topsoil_type,
          rootsoil_type, finesoil, SPIN_UP=False, RUN_SIM=False):
     
-    gday_exe = @PATHTOGDAY@
-    GDAY_SPIN = os.path.join(gday_exe," -s -p ")
-    GDAY = os.path.join(gday_exe," -p ")
+    gday_exe = "@PATHTOGDAY@"
+    GDAY_SPIN = gday_exe + " -s -p "
+    GDAY = gday_exe + " -p "
 
     # dir names
     base_param_name = "base_start"
     base_dir = os.getcwd()
-    base_param_dir = (@PATH_PARAMS@)
-    param_dir = os.path.join(@RUNDIR@)
-    met_dir = os.path.join(@SITE_MET@)
-    run_dir = os.path.join(@RUNDIR@)
+    base_param_dir = "@PATH_PARAMS@"
+    param_dir = "@RUNDIR@"
+    met_dir = "@SITE_MET@"
+    run_dir = "@RUNDIR@"
 
     if SPIN_UP == True:
 
@@ -232,9 +232,9 @@ def main(experiment_id, latitude, albedo, topsoil_type,
     if RUN_SIM == True:
 
         # dir names
-        param_dir = os.path.join(@RUNDIR@)
-        met_dir = os.path.join(@SITE_MET@)
-        run_dir = os.path.join(@RUNDIR@)
+        param_dir = os.path.join("@RUNDIR@")
+        met_dir = os.path.join("@SITE_MET@")
+        run_dir = os.path.join("@RUNDIR@")
         
         if SPIN_UP == True:
             shutil.copy(os.path.join(param_dir, "%s_model_spunup.cfg" % (experiment_id)),
@@ -268,7 +268,7 @@ def main(experiment_id, latitude, albedo, topsoil_type,
 
 if __name__ == "__main__":
 
-    experiment_id = @SITE@
+    experiment_id = "@SITE@"
 
     latitude=@LATITUDE@
     main(experiment_id, latitude=latitude, albedo=0.2,
