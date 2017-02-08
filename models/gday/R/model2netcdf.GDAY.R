@@ -100,8 +100,8 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
     var[[9]] <- ncvar_def("LAI","m2/m2", list(lon,lat,t), -999)
     
     ## Water fluxes
-    var[[10]] <- ncvar_def("Evap", list(lon,lat,t), -999)
-    var[[11]] <- ncvar_def("TVeg", list(lon,lat,t), -999)
+    var[[10]] <- ncvar_def("Evap", "kg/m2/s", list(lon,lat,t), -999)
+    var[[11]] <- ncvar_def("TVeg", "kg/m2/s",list(lon,lat,t), -999)
     
     #var[[6]]  <- ncvar_def("LeafLitter", "kgC/m2/s", list(lon,lat,t), -999)
     #var[[7]]  <- ncvar_def("WoodyLitter", "kgC/m2/s", list(lon,lat,t), -999)
