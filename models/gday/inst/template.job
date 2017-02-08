@@ -15,7 +15,7 @@ if [ ! -e "@OUTDIR@/.csv" ]; then
   cd "@RUNDIR@"
   
   # This will execute the model
-  ./run_simulations.py
+  python3 run_simulations.py
   
   # Move ouput files to output folder.
   mv *.csv "@OUTDIR@"
