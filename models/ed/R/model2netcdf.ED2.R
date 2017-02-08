@@ -191,7 +191,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
         out <- add(-999, 5, row, yrs[y])  ## CropYield
         out <- add(getHdf5Data(ncT, "FMEAN_GPP_PY"), 6, row, yrs[y])  ## GPP
         out <- add(getHdf5Data(ncT, "FMEAN_RH_PY"), 7, row, yrs[y])  ## HeteroResp
-        out <- add(getHdf5Data(ncT, "FMEAN_GPP_PY") - getHdf5Data(ncT, "FMEAN_PLRESP_PY") - 
+        out <- add(-getHdf5Data(ncT, "FMEAN_GPP_PY") + getHdf5Data(ncT, "FMEAN_PLRESP_PY") + 
                      getHdf5Data(ncT, "FMEAN_RH_PY"), 8, row, yrs[y])  ## NEE
         out <- add(getHdf5Data(ncT, "FMEAN_GPP_PY") - getHdf5Data(ncT, "FMEAN_PLRESP_PY"), 
                    9, row, yrs[y])  ## NPP
@@ -356,7 +356,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
         out <- add(-999, 5, row, yrs[y])  ## CropYield
         out <- add(getHdf5Data(ncT, "AVG_GPP"), 6, row, yrs[y])  ## GPP
         out <- add(getHdf5Data(ncT, "AVG_HTROPH_RESP"), 7, row, yrs[y])  ## HeteroResp
-        out <- add(getHdf5Data(ncT, "AVG_GPP") - getHdf5Data(ncT, "AVG_PLANT_RESP") - getHdf5Data(ncT, 
+        out <- add(-getHdf5Data(ncT, "AVG_GPP") + getHdf5Data(ncT, "AVG_PLANT_RESP") + getHdf5Data(ncT, 
                                                                                                   "AVG_HTROPH_RESP"), 8, row, yrs[y])  ## NEE
         out <- add(getHdf5Data(ncT, "AVG_GPP") - getHdf5Data(ncT, "AVG_PLANT_RESP"), 9, row, 
                    yrs[y])  ## NPP
@@ -486,8 +486,8 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
                    yrs[y])  ## Evap
         out <- add(getHdf5Data(ncT, "AVG_RUNOFF"), 45, row, yrs[y])  ## Qs
         out <- add(getHdf5Data(ncT, "BASEFLOW"), 46, row, yrs[y])  ## Qsb     
-        out <- add(getHdf5Data(ncT, "FMEAN_ROOT_RESP_PY") + getHdf5Data(ncT, "FMEAN_ROOT_GROWTH_RESP_PY") + 
-                     getHdf5Data(ncT, "FMEAN_RH_PY"), 47, row, yrs[y])  ## SoilResp
+        out <- add(getHdf5Data(ncT, "AVG_ROOT_RESP") + getHdf5Data(ncT, "AVG_ROOT_MAINTENANCE") + 
+                     getHdf5Data(ncT, "AVG_HTROPH_RESP"), 47, row, yrs[y])  ## SoilResp
       }
       
       ncdf4::nc_close(ncT)
