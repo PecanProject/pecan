@@ -30,7 +30,7 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
   THA_2_KG_M2 <- TONNES_PER_HA_TO_G_M2 * 0.001
   
   ### Read in model output in GDAY format
-  GDAY.output <- read.csv(file.path(outdir, " gday_out.csv"), header = TRUE, sep = ",", skip = 1)
+  GDAY.output <- read.csv(file.path(outdir, "gday_out.csv"), header = TRUE, sep = ",", skip = 1)
   GDAY.output.dims <- dim(GDAY.output)
   
   ### Determine number of years and output timestep
