@@ -247,7 +247,7 @@ def main(experiment_id, latitude, albedo, topsoil_type,
         out_param_fname = os.path.join(param_dir, otag + ".cfg")
         cfg_fname = os.path.join(param_dir, itag + ".cfg")
         met_fname = os.path.join(met_dir, mtag)
-        out_fname = os.path.join(run_dir, out_fn)
+        out_fname = os.path.join(run_dir, "gday_out.csv")
         replace_dict = {
 
                          # files
