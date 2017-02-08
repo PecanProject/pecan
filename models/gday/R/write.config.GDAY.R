@@ -75,7 +75,7 @@ write.config.GDAY <- function(defaults, trait.values, settings, run.id) {
     runpy <- gsub("@PATH_PARAMS@",rundir, runpy)
     
     exp <- strsplit(settings$run$input$met$path, split = "/")[[1]]
-    exp_tag <- experiment[length(experiment)]
+    exp_tag <- exp[length(exp)]
     met_path <- strsplit(settings$run$input$met$path,exp_tag)[[1]]
       
     runpy <- gsub("@SITE_MET@", met_path , runpy)
