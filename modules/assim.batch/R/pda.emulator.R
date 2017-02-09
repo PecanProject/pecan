@@ -265,9 +265,8 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     
     # retrieve n
     n.of.obs <- sapply(inputs,`[[`, "n") 
-    neffs    <- sapply(inputs,`[[`, "n_eff") 
     names(n.of.obs) <- sapply(model.out[[1]],names)
-    names(neffs)    <- sapply(model.out[[1]],names)
+
       
     ## GPfit optimization routine assumes that inputs are in [0,1] Instead of drawing from parameters,
     ## we draw from probabilities
