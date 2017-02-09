@@ -326,16 +326,56 @@ function updateData() {
     });
 
     // fill in site list      
+    var sites="<form>";
     jdata.find("marker").each(function() {
       var marker = jQuery(this);
       if (marker.attr("lat") == "" || marker.attr("lon") == "") {
         //console.log("Bad marker (siteid=" + marker.attr("siteid") + " site=" + marker.attr("sitename") + " lat=" + marker.attr("lat") + " lon=" + marker.attr("lon") + ")");
       } else {
-        showSite(marker, curSite);
+	<?php if ($offline) { ?>
+	  //Begin offline code
+	  sites = sites + "<div><input type=\"radio\" name=\"site\" value=\"" + marker.attr("siteid") + "\"" + " onClick=\"siteSelected(" + marker.attr("siteid") + ",'" + marker.attr("sitename") + "');\"";
+	  if (curSite == marker.attr("siteid")) {
+	    sites = sites + " checked";
+	    siteSelected(marker.attr("siteid"), marker.attr("sitename"));
+	  }
+	  sites = sites + ">" + marker.attr("sitename") + "</div>";
+  	  markersArray.push(marker);
+
+	  //End offline code
+    	<?php } else { ?>
+	  //Begin offline code
+  	  var latlng;
+	  latlng = new google.maps.LatLng(parseFloat(marker.attr("lat")), parseFloat(marker.attr("lon")));
+	  var gmarker = new google.maps.Marker({position: latlng, map: map});
+	  markersArray.push(gmarker);
+
+	  // create the tooltip and its text
+	  gmarker.sitename = marker.attr("sitename");
+	  gmarker.siteid   = marker.attr("siteid");
+	  gmarker.html  = '<b>' + marker.attr("sitename") + '</b><br />'
+	  gmarker.html += marker.attr("city") + ', ' + marker.attr("country") + '<br />';
+
+	  // add a listener to open the tooltip when a user clicks on one of the markers
+	  google.maps.event.addListener(gmarker, 'click', function() {
+	    siteSelected(this.siteid, this.sitename);
+	    infowindow.setContent(this.html);
+	    infowindow.open(map, this);
+	  });
+
+	  if (marker.attr("siteid") == curSite) {
+	    siteSelected(gmarker.siteid, gmarker.sitename);
+	    infowindow.setContent(gmarker.html);
+	    infowindow.open(map, gmarker);
+	  }
+	  //End offline code
+    	<?php } ?>
       }
     });
-    renderSites(curSite);
-
+    <?php if ($offline) { ?>
+      sites = sites + "</form>";
+      $("#output").html(sites);
+    <?php } ?>
     switchUI(false);
   });
 }
@@ -451,9 +491,6 @@ function showSite(marker, selected) {
     infowindow.setContent(gmarker.html);
     infowindow.open(map, gmarker);
   }
-}
-
-function renderSites(selected) {
 }
 
 function goHome() {
