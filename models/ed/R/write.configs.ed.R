@@ -377,11 +377,6 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
       # happen is for there to be two settings for each PFT: the 'num' to use to represent the PFT to
       # ED, and the 'defaults.PFT' (name or number) to use for pulling default parameter values.
       pft.number <- pftmapping$ED[which(pftmapping == pft)]
-      if (length(pft.number) == 0) {
-        PEcAn.utils::logger.error(pft, "was not matched with a number in settings$constants or pftmapping data. Consult the PEcAn instructions on defining new PFTs.")
-        stop("Unable to set PFT number")
-      }
-      
       
       if(pft=="soil"){
         data(soil)
@@ -393,6 +388,9 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
         
         decompositon.xml <- PEcAn.utils::listToXml(vals, "decomposition")
         xml <- XML::append.xmlNode(xml, decompositon.xml)
+      } else if(length(pft.number) == 0) {
+        PEcAn.utils::logger.error(pft, "was not matched with a number in settings$constants or pftmapping data. Consult the PEcAn instructions on defining new PFTs.")
+        stop("Unable to set PFT number")
       }else{
         # TODO: Also modify web app to not default to 1
         
