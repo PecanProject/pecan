@@ -32,6 +32,12 @@ convert.samples.ED <- function(trait.samples) {
   DEFAULT.MAINTENANCE.RESPIRATION <- 1 / 2
   ## convert SLA from m2 / kg leaf to m2 / kg C
   
+  # IF: I don't know why we're removing leaf_respiration_rate from trait samples below
+  # but if the trait samples doesn't have leaf_respiration_rate
+  # it's not being set to NULL and trait samples is not coherced to a list
+  # trait.samples not being a list throws an error later in the write.config.xml.ED2, L:407
+  trait.samples <- as.list(trait.samples)
+  
   if ("SLA" %in% names(trait.samples)) {
     sla <- as.numeric(trait.samples[["SLA"]])
     trait.samples[["SLA"]] <- sla/DEFAULT.LEAF.C
