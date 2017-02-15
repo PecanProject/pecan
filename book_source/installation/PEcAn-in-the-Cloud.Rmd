@@ -11,9 +11,9 @@ AWS allows upload of files as VMDK but the default PEcAn VM is in OVA format
 
 2. Split the OVA file into OVF and VMDK files
 
-`
+```
 tar xf <ovafile>
-` 
+```
 
 ### Set up an account on [AWS](http://aws.amazon.com/)
 

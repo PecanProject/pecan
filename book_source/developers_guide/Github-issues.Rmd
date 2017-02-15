@@ -1,5 +1,5 @@
-Overview
-=========
+# Overview
+
 
 We use GitHub to track development. 
 
@@ -8,11 +8,10 @@ To learn about GitHub, it is worth taking some time to read through the [FAQ](ht
 * **To address specific people**, use a github feature called "@mentions" e.g. write @dlebauer, @robkooper, @mdietze, or @serbinsh ... in the issue to alert the user as described in the [GitHub documentation on notifications](https://help.github.com/articles/notifications)
 
 
-Bugs, Issues, Features, etc.
-============================
+## Bugs, Issues, Features, etc.
 
-Reporting a bug
----------------
+
+### Reporting a bug
 
 1. (For developers) work through debugging (see [debugging](debugging.md) wiki). 
 2. Once you have identified a problem, that you can not resolve, you can write a bug report
@@ -40,8 +39,8 @@ Note:
  * specific code and data / settings / configuration files required to reproduce the bug
  * environment (operating system, browser, hardware)
 
-Requesting a feature
---------------------
+## Requesting a feature
+
 
 (from The Pragmatic Programmer, available as
 [ebook](http://proquestcombo.safaribooksonline.com/0-201-61622-X/223)
@@ -64,8 +63,7 @@ through UI libraries, hardcopy on David’s bookshelf)\
         day, hour, minute. Time is recorded in UTC not local time, this
         should be indicated
 
-Closing an issue
-----------------
+## Closing an issue
 
 1. Definition of “Done”
  * test
@@ -77,8 +75,8 @@ Closing an issue
  * original author changes status to “closed”
 4.  except for trivial issues, issues are only closed by the author 
 
-When to submit an issue?
------------------------
+## When to submit an issue?
+
 
 ### Ideally, non-trivial code changes will be linked to an issue and a commit.
 
@@ -86,8 +84,8 @@ This requires creating issues for each task, making small commits, and referenci
 
 Rationale: This workflow is a small upfront investment that reduces error and time spent re-creating and debugging errors. Associating issues and commits, makes it easier to identify why a change was made, and potential bugs that could arise when the code is changed. In addition, knowing which issue you are working on clarifies the scope and objectives of your current task. 
 
-Label Categories
-----------------
+## Label Categories
+
 
 <table border="1">
   <tr>

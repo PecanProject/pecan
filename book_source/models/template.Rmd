@@ -1,4 +1,4 @@
-# MODEL
+# Template MODEL page
 
 | Model Information ||
 | -- | -- |

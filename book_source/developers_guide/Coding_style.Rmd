@@ -1,5 +1,5 @@
-Coding Style
-------------
+# Coding Style
+
 
 Consistent coding style improves readability and reduces errors in
 shared code.

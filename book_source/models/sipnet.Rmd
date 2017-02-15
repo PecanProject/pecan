@@ -33,7 +33,8 @@ SIPNET is configured using 3 files which are placed in the run folder, as well a
 This section contains notes on how to compile the model. The notes for the VM might work on other machines or configurations as well.
 
 SIPNET version unk:
-```
+
+```{bash}
 if [ ! -e ${HOME}/sipnet_unk ]; then
   cd
   curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/models/sipnet_unk.tar.gz

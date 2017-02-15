@@ -1,9 +1,10 @@
+# Testing
+
 PEcAn uses the testthat package developed by Hadley Wickham. Hadley has
 written instructions for using this pakcage in his
 [Testing](http://adv-r.had.co.nz/Testing.html) chapter.
 
-Rationale
----------
+# Rationale
 
 *  makes development easier
 *  provides working documentation of expected functionality
@@ -13,8 +14,7 @@ Rationale
 *  Further reading: [Aruliah et al 2012 Best Practices for Scientific
     Computing](http://arxiv.org/pdf/1210.0530v3.pdf)
 
-Tests makes development easier and less error prone
----------------------------------------------------
+## Tests makes development easier and less error prone
 
 Testing makes it easier to develop by organizing everything you are
 already doing anyway - but integrating it into the testing and
@@ -29,8 +29,7 @@ started. You have to figure out
 *  what packages are affected
 *  where is a logical place to put files used in testing
 
-Quick Start:
-------------
+## Quick Start:
 
 * decide what you want to do today
 * identify the issue in redmine or github (if none exists, create one)
