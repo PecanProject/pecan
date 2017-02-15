@@ -41,9 +41,9 @@ make clean
 make
 ```
 
-```maespa.out``` is your executable. Example input files can be found in the inputfiles directory. Executing measpa.out from within one of the example directories will produce output.
+`maespa.out` is your executable. Example input files can be found in the inputfiles directory. Executing measpa.out from within one of the example directories will produce output.
 
-MAESPA developers have also developed a wrapper package called ```Maeswrap```. The usual R package installation method ```install.packages``` may present issues with downloading an unpacking a dependency package called ```rgl```. Here are a couple of solutions:
+MAESPA developers have also developed a wrapper package called `Maeswrap`. The usual R package installation method `install.packages` may present issues with downloading an unpacking a dependency package called `rgl`. Here are a couple of solutions:
 
 Solution 1
 

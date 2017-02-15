@@ -1,28 +1,25 @@
-## The PEcAn Gitbook
+# The PEcAn Bookdown
 
 This book serves as documentation for the PEcAn Project. It contains descriptions of topics necessary to inform a beginner and advanced user as well as requisite materials for developers. It does not contain low-level descriptions of functions within PEcAn. Our aim for this documentation is to educate you about the PEcAn software, the possibilities of its usage, and the standards,expectations, and core workflows for developers.
 
 
-### How to Contribute
+## How to Contribute
 If you wish to contribute to this book, we greatly welcome it! The same general steps to contributing PEcAn code to the main line can be used to contribute to this book.
 
-### For large edits
-1. Navigate to the book's [github repository: https://github.com/PecanProject/pecan.book](https://github.com/PecanProject/pecan.book) and fork the repository to your github account.
+## Editing the book yourself
+1. Navigate to the main [ PEcAn github repository: https://github.com/PecanProject/pecan](https://github.com/PecanProject/pecan) and fork the repository to your github account.
 
-2. Use ``` git clone ``` on the machine your are using to create a local copy of the repository. General instructions can be found [here](https://help.github.com/articles/cloning-a-repository/)
+2. Use `git clone` on the machine your are using to create a local copy of the repository. General instructions can be found [here](https://help.github.com/articles/cloning-a-repository/)
 
-3. Edit/add your content to the book using any text editor. Save your files in the markdown format (.md).
-  * If you are adding a new page, you must edit the ```SUMMARY.md``` file also and list your page in order for it to be properly indexed by gitbook.
+3. Navigate to the `book_source` directory and edit the page you would like to chang using any text editor. Save your files in the  R markdown format (.Rmd).
+  * If you are adding a new page, you must edit the `_bookdown.yml` file also and list your page in order for it to be properly indexed by gitbook.
 
-3. Commit ``` git commit -m "your message"``` your changes and push ```git push``` them to your fork.
+4. Within the directory `book_source` diectory, execute `make`
 
-4. [Create a pull request](https://help.github.com/articles/creating-a-pull-request/), using github,  with a description of the changes you have made.
+5. Use `git add changedfile.Rmd` to stage your changes and then commit ` git commit -m "your message"` your changes and push `git push` them to your fork.
 
-### For minor edits
+6. [Create a pull request](https://help.github.com/articles/creating-a-pull-request/), using github,  with a description of the changes you have made.
 
-1. Move your cursor next to the paragraph you would like to suggest changes and press the ```+``` button. 
-
-2. Leave a comment with your changes and we will see to it that those changes are made.
 
 
 ###Feedback/Comments/Suggestions

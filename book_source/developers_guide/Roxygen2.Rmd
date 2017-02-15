@@ -84,7 +84,6 @@ Here is an example documented function, myfun
 ##' My function adds three numbers
 ##'
 ##' A great function for demonstrating Roxygen documentation
-##' @title My function
 ##' @param a numeric
 ##' @param b numeric
 ##' @param c numeric
