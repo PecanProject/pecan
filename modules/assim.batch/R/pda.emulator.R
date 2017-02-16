@@ -57,6 +57,9 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
   isbias <- which(unlist(any.mgauss) == "multipGauss")
   
+  ## check if scaling factors are gonna be used
+  any.scaling <- sapply(settings$assim.batch$param.names, `[[`, "scaling")
+  sf <- unique(unlist(any.scaling))
   
   ## Open database connection
   if (settings$database$bety$write) {
@@ -113,16 +116,29 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   ## Create an ensemble id
   settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
   
-  ## Set prior distribution functions (d___, q___, r___, and multivariate versions)
-  prior.fn <- lapply(prior.list, pda.define.prior.fn)
   
   ## Set up likelihood functions
   llik.fn <- pda.define.llik.fn(settings)
   
   ## ------------------------------------ Emulator ------------------------------------ 
+  # if we are going to throw scaling factor(s) instead of parameters
+  # 1. append scaling factor priors to prior.list
+  # 2. use the same probs for all pft params to be scaled
+  if(!is.null(sf)){
+    sf.list <- pda.generate.sf(settings$assim.batch$n.knot, sf, prior.list)
+    probs.sf <- sf.list$probs
+    prior.list <- sf.list$priors
+  }else {
+    probs.sf <- NULL
+  }
+  
+  ## Set prior distribution functions (d___, q___, r___, and multivariate versions)
+  prior.fn <- lapply(prior.list, pda.define.prior.fn)
+  
+  
   ## Propose parameter knots (X) for emulator design
   knots.list <- lapply(seq_along(settings$pfts), 
-                       function(x) pda.generate.knots(settings$assim.batch$n.knot, 
+                       function(x) pda.generate.knots(settings$assim.batch$n.knot, sf, probs.sf,
                                                       n.param.all[x], 
                                                       prior.ind[[x]], 
                                                       prior.fn[[x]], 
@@ -257,9 +273,20 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   jmp.list <- list()
   
   prior.all <- do.call("rbind", prior.list)
-  # keep this ind.all w/o bias until extracting prob values below 
-  prior.ind.all <- which(unlist(pname) %in% unlist(settings$assim.batch$param.names))
-  
+  length.pars <- 0
+  prior.ind.list <- prior.ind.list.ns <- list()
+  # now I need to go through all parameters for each pft, but leave out the ones that scaling factor is requested
+  for(p in seq_along(settings$assim.batch$param.names)){
+    param.names <- settings$assim.batch$param.names[[p]]
+    prior.ind.list[[p]] <- length.pars + which(pname[[p]] %in% unlist(param.names) &
+                                                 !(pname[[p]] %in% sf))
+    prior.ind.list.ns[[p]] <- length.pars + which(pname[[p]] %in% unlist(param.names))
+    length.pars <- length.pars + length(pname[[p]])
+  }
+  prior.ind.all    <- unlist(prior.ind.list)
+  prior.ind.all.ns <- unlist(prior.ind.list.ns)
+  # if no scaling is requested prior.ind.all == prior.ind.all.ns
+  # keep this ind.all w/o bias until extracting prob values below
     
   if (run.normal | run.round) {
     
@@ -274,6 +301,10 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
 
     X <- knots.probs.all[, prior.ind.all, drop = FALSE]
       
+    if(!is.null(sf)){
+      X <- cbind(X, probs.sf)
+    }
+    
     # retrieve SS
     error.statistics <- list()
     SS.list <- list()
@@ -373,7 +404,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
 
   
   ## Change the priors to unif(0,1) for mcmc.GP
-  prior.all[prior.ind.all, ] <- rep(c("unif", 0, 1, "NA"), each = sum(n.param))
+  prior.all[prior.ind.all, ] <- rep(c("unif", 0, 1, "NA"), each = length(prior.ind.all))
 
   ## Set up prior functions accordingly
   prior.fn.all <- pda.define.prior.fn(prior.all)
@@ -384,7 +415,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                          list(p = 0)), 
                   sapply(prior.fn.all$qprior[prior.ind.all], 
                          eval, 
-                         list(p = 1))), nrow = sum(n.param))
+                         list(p = 1))), nrow = length(prior.ind.all))
   
   if (run.normal | run.round) {
     
@@ -456,7 +487,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   
   for (c in seq_len(settings$assim.batch$chain)) {
     
-    m <- mcmc.out[[c]]$mcmc.samp
+    m <- matrix(NA, nrow =  nrow(mcmc.out[[c]]$mcmc.samp), ncol = length(prior.ind.all.ns))
     
       ## Set the prior functions back to work with actual parameter range
       
@@ -464,11 +495,19 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       prior.fn.all <- pda.define.prior.fn(prior.all)
       
       ## Convert probabilities back to parameter values
-      for (i in seq_len(sum(n.param))) {
-        m[, i] <- eval(prior.fn.all$qprior[prior.ind.all][[i]], 
-                       list(p = mcmc.out[[c]]$mcmc.samp[, i]))
+      cc  <- 1
+      for (i in seq_along(prior.ind.all.ns)) {
+        # be careful that agrep(l) is working for now but it won't work for very similar parameter names
+        if(any(agrepl(rownames(prior.all)[prior.ind.all.ns][i], sf))){
+          idx <- agrep(rownames(prior.all)[prior.ind.all.ns][i], rownames(prior.all)[prior.ind.all])
+        }else {
+          idx <- cc
+        }
+        m[, i] <- eval(prior.fn.all$qprior[prior.ind.all.ns][[i]], 
+                       list(p = mcmc.out[[c]]$mcmc.samp[, idx]))
+        cc <- ifelse(any(agrepl(rownames(prior.all)[prior.ind.all.ns][i], sf)), cc, cc + 1) 
       }
-    
+      
     colnames(m) <- rownames(prior.all)[prior.ind.all]
     mcmc.samp.list[[c]] <- m
     
@@ -536,7 +575,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   # Separate each PFT's parameter samples (and bias term) to their own list
   mcmc.param.list <- list()
   ind <- 0
-  for (i in seq_along(n.param)) {
+  for (i in seq_along(prior.ind.all)) {
     mcmc.param.list[[i]] <- lapply(mcmc.samp.list, function(x) x[, (ind + 1):(ind + n.param[i]), drop = FALSE])
     ind <- ind + n.param[i]
   }
