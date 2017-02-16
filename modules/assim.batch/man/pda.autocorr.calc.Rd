@@ -17,4 +17,3 @@ rho AR(1)
 \author{
 Istem Fer
 }
-

@@ -18,4 +18,3 @@ Autocorelation correction and efficient sample size calculation on latent proces
 \author{
 Istem Fer
 }
-
