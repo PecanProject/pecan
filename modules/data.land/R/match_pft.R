@@ -24,7 +24,7 @@ match_pft <- function(bety_species_id, pfts, con){
   translation <- db.query(query, con = con)
   
   ## Check for duplicate bety_species_ids in PFTs
-  bad <- translation[duplicated(pfts$bety_species_id),]
+  bad <- translation[duplicated(translation$bety_species_id),]
   if (length(bad) > 0) {
     for(i in seq_along(bad)){
       PEcAn.utils::logger.warning(paste0("Duplicated species: ",paste(bad[i,], collapse = ", "), latin))
