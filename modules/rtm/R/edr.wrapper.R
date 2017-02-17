@@ -10,6 +10,10 @@
 #' and skips the analysis step.
 #' `history` -- Path and prefix for history file for the run of interest;
 #' `edr.exe` -- Path to EDR executable
+#' `soil_reflect` -- Path to soil reflectance. If NULL or unset, use 
+#' reflectance in package. If NA, skip (assume data already in directory).
+#' `wood_reflect` -- Path to wood reflectance. If NULL or unset, use 
+#' reflectance in package. If NA, skip (assume data already in directory).
 #' @param spectra_list List of spectral data matrices. Names must exactly match 
 #' the PFTs given in `trait.values`. Each item must be a matrix of wavelengths, 
 #' reflectance, and transmittance values. Matrix must have column names 'wl' 
@@ -111,6 +115,25 @@ EDR <- function(paths,
   wavelengths <- spectra_list[[1]][,'wl']
   par.ind <- which(wavelengths %in% par.wl)
   nir.ind <- which(wavelengths %in% nir.wl)
+
+  # Set up soil and wood reflectance files
+  soil_reflect_path <- paths$soil_reflect
+  if (is.null(soil_reflect_path)) {
+    soil_reflect_path <- system.file('extdata', 'soil_reflect_par.dat', package = 'PEcAnRTM')
+  }
+
+  if (!is.na(soil_reflect_path)) {
+    file.copy(soil_reflect_path, output.path, overwrite = TRUE, recursive = TRUE)
+  }
+
+  wood_reflect_path <- paths$wood_reflect
+  if (is.null(wood_reflect_path)) {
+    wood_reflect_path <- system.file('extdata', 'wood_reflect_par.dat', package = 'PEcAnRTM')
+  }
+
+  if (!is.na(wood_reflect_path)) {
+    file.copy(wood_reflect_path, output.path, overwrite = TRUE, recursive = TRUE)
+  }
 
   # Multi-PFT settings
   if (length(trait.values) > 0) {
