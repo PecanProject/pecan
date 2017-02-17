@@ -245,3 +245,4 @@ model{
   ## run MCMC
   coda.samples(model = j.model, variable.names = out.variables, n.iter = n.iter)
 } # InventoryGrowthFusion
+
