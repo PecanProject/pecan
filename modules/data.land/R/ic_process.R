@@ -2,6 +2,7 @@
 ##' @title ic_process
 ##' @export
 ##'
+##' @param pfts settings pft list
 ##' @param runinfo run info from settings file
 ##' @param inputinfo which data source to use (FIA, GapMacro, FFT etc.) and username, 
 ##' this is a subset of runinfo and can be extracted from runinfo for now as this is only functional for css/pss/site, 
@@ -12,7 +13,7 @@
 ##' @param dir  directory to write outputs to
 ##' @param overwrite Whether to force met.process to proceed.
 ##' @author Istem Fer
-ic_process <- function(runinfo, inputinfo, model, host = "localhost", dbparms, dir, overwrite = FALSE){
+ic_process <- function(pfts, runinfo, inputinfo, model, host = "localhost", dbparms, dir, overwrite = FALSE){
   
   # If overwrite is a plain boolean, fill in defaults for each stage
   # which stages are going to be in IC Workflow?
@@ -83,6 +84,7 @@ ic_process <- function(runinfo, inputinfo, model, host = "localhost", dbparms, d
     
     ########
     
+    stage$download <- FALSE
   }
   
   #--------------------------------------------------------------------------------------------------#
@@ -102,6 +104,8 @@ ic_process <- function(runinfo, inputinfo, model, host = "localhost", dbparms, d
     
     # load data
     obs <- load_data(data.path, format, site = runinfo$site)
+    
+    stage$loaddata <- FALSE
   }
   
   #--------------------------------------------------------------------------------------------------#
@@ -110,27 +114,40 @@ ic_process <- function(runinfo, inputinfo, model, host = "localhost", dbparms, d
     
     # decide which code format to use while matching species
     # should we retrieve it from settings or assign a code format per source type?
-    # or both?
+    # or allow both?
     if(inputinfo$source %in% c("NASA_TE_FIA")){
       format.name = 'usda'
     }else if(!is.null(inputinfo$match.format)){
       format.name = inputinfo$match.format
+    }else{
+      logger.error("Can't match code to species. No valid format found.")
     }
     
     # decide which column has the codes
-    if(format.name = 'usda'){
+    if(format.name == 'usda'){
       code.col = "species_USDA_symbol"
-    }else if(format.name = 'latin_name'){
+    }else if(format.name == 'latin_name'){
       code.col = "latin_name"
     }
     
+    # match code to species ID
     spp.info <- match_species_id(input_codes = obs[[code.col]], format_name = format.name, bety = bety)
+    
+    if(sum(is.na(spp.info$bety_species_id)) > 0){
+      bad <- unique(spp.info$input_code[is.na(spp.info$bety_species_id)])
+      PEcAn.utils::logger.error(paste0("Species for the following code(s) not found : ", paste(bad, collapse = ", ")))
+    }
+    
+    stage$sppmatch <- FALSE
   }
   
   #--------------------------------------------------------------------------------------------------#
   # Match species to PFTs
   if (stage$pftmatch) {
     
+    pft.info <- match_pft(spp.info$bety_species_id, pfts, con)
+    
+    stage$pftmatch <- FALSE
   }
   
   #--------------------------------------------------------------------------------------------------#
