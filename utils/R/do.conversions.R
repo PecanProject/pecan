@@ -29,6 +29,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.ic = FALSE
         is.null(input$path) && !is.null(input$source)) {
       settings$run$inputs[[i]][['path']] <- 
         PEcAn.data.land::ic_process(
+          pfts       = settings$pfts,
           runinfo    = settings$run, 
           inputinfo  = input,
           model      = settings$model$type,
