@@ -108,6 +108,23 @@ ic_process <- function(runinfo, inputinfo, model, host = "localhost", dbparms, d
   # Match code to species
   if (stage$sppmatch) {
     
+    # decide which code format to use while matching species
+    # should we retrieve it from settings or assign a code format per source type?
+    # or both?
+    if(inputinfo$source %in% c("NASA_TE_FIA")){
+      format.name = 'usda'
+    }else if(!is.null(inputinfo$match.format)){
+      format.name = inputinfo$match.format
+    }
+    
+    # decide which column has the codes
+    if(format.name = 'usda'){
+      code.col = "species_USDA_symbol"
+    }else if(format.name = 'latin_name'){
+      code.col = "latin_name"
+    }
+    
+    spp.info <- match_species_id(input_codes = obs[[code.col]], format_name = format.name, bety = bety)
   }
   
   #--------------------------------------------------------------------------------------------------#
