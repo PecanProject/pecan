@@ -4,10 +4,10 @@
 ##' @param con : database connection
 ##' @export query.format.vars
 ##' 
-##' @author Betsy Cowdery , Ankur Desai
+##' @author Betsy Cowdery , Ankur Desai, Istem Fer
 ##' 
 query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
-
+  
   if(is.na(input.id) & is.na(format.id)){PEcAn.utils::logger.error("Must specify input id or format id")}
   
   con <- bety$con
@@ -49,40 +49,42 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
     colnames(fv) <- c("variable_id", "input_name", "input_units", "storage_type", "column_number")
     fv$variable_id <- as.numeric(fv$variable_id)
     n <- dim(fv)[1]
-  
+    
     # get bety names and units 
-    vars <- as.data.frame(matrix(NA, ncol=3, nrow=n))
+    vars <- as.data.frame(matrix(NA, ncol=2, nrow=n))
+    colnames(vars) <- c("bety_name", "bety_units")
+    
+    # fv and vars need to go together from now on, 
+    # otherwise when there are more than one of the same variable_id it confuses merge 
+    vars_bety <- cbind(fv, vars)
     for(i in 1:n){
-      vars[i,] <- as.matrix(db.query(paste("SELECT id, name, units from variables where id = ",
-                                 fv$variable_id[i]),con))
+      vars_bety[i, (ncol(vars_bety)-1):ncol(vars_bety)] <- as.matrix(db.query(paste("SELECT name, units from variables where id = ",
+                                                                                    fv$variable_id[i]),con))
     }
-    colnames(vars) <- c("variable_id", "bety_name", "bety_units")
-    vars$variable_id <- as.numeric(fv$variable_id)
     
     # Fill in input names and units with bety names and units if they are missing
     
     ind1 <- fv$input_name == ""
-    fv$input_name[ind1] <- vars$bety_name[ind1]
+    vars_bety$input_name[ind1] <- vars_bety$bety_name[ind1]
     ind2 <- fv$input_units == ""
-    fv$input_units[ind2] <- vars$bety_units[ind2]
-      
+    vars_bety$input_units[ind2] <- vars_bety$bety_units[ind2]
+    
     # Fill in CF vars
     # This will ultimately be useful when looking at met variables where CF != Bety
     # met <- read.csv(system.file("/data/met.lookup.csv", package= "PEcAn.data.atmosphere"), header = T, stringsAsFactors=FALSE)
-  
+    
     #Fill in MstMIP vars 
     #All pecan output is in MstMIP variables 
-  
+    
     bety_mstmip <- read.csv(system.file("bety_mstmip_lookup.csv", package= "PEcAn.DB"), header = T, stringsAsFactors=FALSE)
-  
-    vars_full <- merge(fv, merge(vars, bety_mstmip, by = "bety_name", all.x = TRUE), by="variable_id", all=TRUE) # not sure if all=TRUE is appropriate here or not.
-  
+    vars_full <- merge(vars_bety, bety_mstmip, by = "bety_name", all.x = TRUE)
+    
     vars_full$pecan_name <- vars_full$mstmip_name
     vars_full$pecan_units <- vars_full$mstmip_units
     ind <- is.na(vars_full$pecan_name)
     vars_full$pecan_name[ind] <- vars_full$bety_name[ind]
     vars_full$pecan_units[ind] <- vars_full$bety_units[ind]
-  
+    
     header <- as.numeric(f$header)
     skip <- ifelse(is.na(as.numeric(f$skip)),0,as.numeric(f$skip))
     
@@ -105,7 +107,7 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
                    site = site.id,
                    lat = site.lat,
                    lon = site.lon
-                   )
+    )
   } else {
     format <- list(file_name = f$name,
                    mimetype = f$mimetype,
