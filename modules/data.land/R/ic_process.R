@@ -15,6 +15,9 @@
 ##' @author Istem Fer
 ic_process <- function(pfts, runinfo, inputinfo, model, host = "localhost", dbparms, dir, overwrite = FALSE){
   
+  
+  year <- lubridate::year(runinfo$start.date)
+  
   # If overwrite is a plain boolean, fill in defaults for each stage
   # which stages are going to be in IC Workflow?
   # download, at least for FIA data
@@ -138,6 +141,12 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host = "localhost", dbpa
       PEcAn.utils::logger.error(paste0("Species for the following code(s) not found : ", paste(bad, collapse = ", ")))
     }
     
+    # merge with data
+    colnames(spp.info)[colnames(spp.info) == "input_code"] <- code.col
+    sppmatched <- merge(obs, spp.info, by.x = code.col)
+    
+    ### write
+    
     stage$sppmatch <- FALSE
   }
   
@@ -148,12 +157,46 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host = "localhost", dbpa
     pft.info <- match_pft(spp.info$bety_species_id, pfts, con)
     
     stage$pftmatch <- FALSE
+    
+    ### write
+    
+    file_name <- paste0("pftmatch_site_", runinfo$site$id, ".", inputinfo$source, ".", year, ".txt")
+    
+    # Insert into DB
+    dbfile.input.insert(
+        in.path    = dir,
+        in.prefix  = file_name,
+        siteid     = settings$run$site$id,
+        startdate  = startdate,
+        enddate    = enddate,
+        mimetype   = mimetype,
+        formatname = formatnames[i],
+        parentid   = NA,
+        con        = con,
+        hostname   = settings$host$name,
+        allow.conflicting.dates = TRUE
+    )
+
+    inputinfo$id <-  db.query(paste0("INSERT INTO posteriors (pft_id) VALUES (",
+                                    pft.id, ") RETURNING id"), con)
   }
   
   #--------------------------------------------------------------------------------------------------#
   # Write model specific IC files
   if (stage$veg2model) {
     
+    ## Set model-specific functions
+    do.call("library", list(paste0("PEcAn.", model)))
+    veg2model.fcn <- paste("veg2model.", model, sep = "")
+    if (!exists(veg2model.fcn)) {
+      logger.severe(paste(veg2model.fcn, "does not exist."))
+    }
+    
+    # call veg2model.[model]
+    fcn    <- match.fun(veg2model.fcn)
+    ic.id  <- fcn(inputinfo = inputinfo, runinfo = runinfo, outfolder = dir)
+    
   }
   
+  return(ic.id)
 } # ic_process
