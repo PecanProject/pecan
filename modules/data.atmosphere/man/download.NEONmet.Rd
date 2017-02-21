@@ -2,7 +2,7 @@
 % Please edit documentation in R/download.NEONmet.R
 \name{download.NEONmet}
 \alias{download.NEONmet}
-\title{download.NEONmet}
+\title{Download NEON Site Met CSV files}
 \usage{
 download.NEONmet(sitename, outfolder, start_date, end_date, overwrite = FALSE,
   verbose = FALSE, ...)
@@ -16,12 +16,15 @@ download.NEONmet(sitename, outfolder, start_date, end_date, overwrite = FALSE,
 
 \item{overwrite}{should existing files be overwritten}
 
-\item{verbose}{should the function be very verbose}
+\item{verbose}{makes the function output more text}
 
 \item{site}{the NEON ID of the site to be downloaded, used as file name prefix. 
 The 4-letter SITE code  in \href{http://www.neonscience.org/science-design/field-sites/list}{list of NEON sites}}
 }
 \description{
-Download NEON Site Met CSV files
+download.NEONmet
+}
+\details{
+Uses NEON v0 API to download met data from NEON towers and convert to CF NetCDF
 }
 
