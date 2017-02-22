@@ -225,7 +225,7 @@ remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FA
         R <- Rbinary
       }
     }
-    result <- try(system2(R, "--vanilla", stdout = verbose, stderr = verbose, 
+    result <- try(system2(R, "--no-save","--no-restore", stdout = verbose, stderr = verbose, 
                           input = input))
     print(result)
     if (!file.exists(tmpfile)) {

@@ -178,7 +178,7 @@ plot.da <- function(prior.dir, prior.file, in.dir, out.dir, next.run.dir) {
                             (cv.prior1 - cv.prior2) / cv.prior1, 
                             (cv.prior2 - cv.post)/cv.prior2, 
                             (cv.prior1 - cv.post)/cv.prior1)
-      post.distns[i, ] <- approx.posterior(samp.i, post.distns[i, ])
+      post.distns[i, ] <- PEcAn.MA::approx.posterior(samp.i, post.distns[i, ])
       da.post.i <- da.post.i + 1
     }
     print(post.distns)

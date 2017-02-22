@@ -52,7 +52,7 @@ settings$benchmarking <- list(
 output_path <- getwd()
 key <- BrownDog::get_key("https://bd-api.ncsa.illinois.edu",username,password)
 token <- BrownDog::get_token("https://bd-api.ncsa.illinois.edu",key)
-foo <- BrownDog::convert_file("https://bd-api.ncsa.illinois.edu", input, output_path, "csv", token,wait=900)
+foo <- BrownDog::convert_file("https://bd-api.ncsa.illinois.edu", input,"csv", output_path, token,wait=900)
 
 bm.settings <- define_benchmark(bm.settings = settings$benchmarking,bety)
 bm.settings$new_run=FALSE
