@@ -119,86 +119,378 @@ $(document).ready(function () {
 </div>
 
 
-<div id="creating-a-virtual-machine" class="section level2">
-<h2>Creating a Virtual Machine</h2>
-<p>First create virtual machine</p>
+<p>We recommend that new users download the <a href="http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN">PEcAn VM</a> instead of creating from one from scratch. These instructions are provided to document how to install PEcAn on different Operating Systems.</p>
+<div id="installing-prerequisites" class="section level2">
+<h2>Installing Prerequisites</h2>
+<p>Check specific notes in:</p>
+<ul>
+<li><a href="VM-Creation.md">VM Creation</a></li>
+<li><a href="Installing-PEcAn-Data.md">Installing PEcAn Data</a></li>
+<li><a href="../users_guide/advanced_users_guide/Enabling-Remote-Execution.md">Enabling Remote Execution</a></li>
+</ul>
+<p>OS specific installation instructions:</p>
+<ul>
+<li><a href="Installing-PEcAn-Ubuntu.md">Installing PEcAn Ubuntu</a></li>
+<li><a href="Installing-PEcAn-OSX.md">Installing PEcAn OSX</a></li>
+<li><a href="Installing-PEcAn-CentOS.md">Installing PEcAn CentOS</a></li>
+<li><a href="Installing-PEcAn-RedHat.md">Installing PEcAn RedHat</a> <strong>deprecated</strong> <!--[[Installing PEcAn HPC]]--></li>
+</ul>
+<p>To update PEcAn see:</p>
+<ul>
+<li><a href="../users_guide/basic_users_guide/Updating-PEcAn.md">Updating PEcAn</a></li>
+<li><a href="https://github.com/PecanProject/bety/wiki/Updating-BETY">Updating BETY</a></li>
+</ul>
+<p>The rest of the instructions assumes you have done the appropriate steps in each of the above guides.</p>
+<div id="set-r_libs_user" class="section level3">
+<h3>Set <code>R_LIBS_USER</code></h3>
+<p><a href="http://cran.r-project.org/doc/manuals/r-devel/R-admin.html#Managing-libraries">CRAN Reference</a></p>
+<pre class="bash"><code># point R to personal lib folder
+echo 'export R_LIBS_USER=${HOME}/R/library' &gt;&gt; ~/.profile
+source ~/.profile
+mkdir -p ${R_LIBS_USER}</code></pre>
+</div>
+</div>
+<div id="install-models" class="section level2">
+<h2>Install models</h2>
+<div id="ed2" class="section level3">
+<h3>ED2</h3>
+<div id="ed2.2-r46-used-in-pecan-manuscript" class="section level4">
+<h4>ED2.2 r46 (used in PEcAn manuscript)</h4>
 <pre class="bash"><code># ----------------------------------------------------------------------
-# CREATE VM USING FOLLOWING:
-# - VM NAME  = PEcAn 32bit | PEcAn 64bit
-# - CPU      = 1
-# - MEMORY   = 2GB 
-# - DISK     = 100GB
-# - HOSTNAME = pecan32/64
-# - FULLNAME = PEcAn Demo User
-# - USERNAME = xxxxxxx
-# - PASSWORD = yyyyyyy
-# - PACKAGE  = openssh
-# ----------------------------------------------------------------------</code></pre>
-<p>To enable tunnels run the following on the host machine, I used xx=64 for the 64 bit version of the VM and xx=32 for the 32 bit version of the VM:</p>
-<pre class="bash"><code>VBoxManage modifyvm &quot;&lt;virtual machine name&gt;&quot; --natpf1 &quot;ssh,tcp,,xx22,,22&quot;
-VBoxManage modifyvm &quot;&lt;virtual machine name&gt;&quot; --natpf1 &quot;www,tcp,,xx80,,80&quot;</code></pre>
-<p>For the virtual machines created the following routes are created:</p>
-<pre class="bash"><code>VBoxManage modifyvm &quot;PEcAn 32bit&quot; --natpf1 &quot;ssh,tcp,,3222,,22&quot;
-VBoxManage modifyvm &quot;PEcAn 32bit&quot; --natpf1 &quot;www,tcp,,3280,,80&quot;
-VBoxManage modifyvm &quot;PEcAn 64bit&quot; --natpf1 &quot;ssh,tcp,,6422,,22&quot;
-VBoxManage modifyvm &quot;PEcAn 64bit&quot; --natpf1 &quot;www,tcp,,6480,,80&quot;</code></pre>
-<p>Make sure machine is up to date.</p>
-<p>UBUNTU</p>
-<pre class="bash"><code>sudo apt-get update
-sudo apt-get -y dist-upgrade
-sudo reboot</code></pre>
-<p>CENTOS/REDHAT</p>
-<pre class="bash"><code>sudo yum -y update
-sudo reboot</code></pre>
-<p>Install compiler and other packages needed and install the tools.</p>
-<p>UBUNTU</p>
-<pre class="bash"><code>sudo apt-get -y install build-essential linux-headers-server dkms</code></pre>
-<p>CENTOS/REDHAT</p>
-<pre class="bash"><code>sudo yum -y groupinstall &quot;Development Tools&quot;
-sudo yum -y install wget</code></pre>
-<p>Install Virtual Box additions for better integration</p>
-<pre class="bash"><code>sudo mount /dev/cdrom /mnt
-sudo /mnt/VBoxLinuxAdditions.run
-sudo umount /mnt
-sudo usermod -a -G vboxsf carya</code></pre>
+# Get version r46 with a few patches for ubuntu
+cd
+curl -o ED.r46.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/ED.r46.tgz
+tar zxf ED.r46.tgz
+rm ED.r46.tgz
+# ----------------------------------------------------------------------
+# configure and compile ed
+cd ~/ED.r46/ED/build/bin
+curl -o include.mk.VM http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk.opt.`uname -s`
+make OPT=VM
+sudo cp ../ed_2.1-VM /usr/local/bin/ed2.r46</code></pre>
+<p>Perform a test run using pre configured ED settings for ED2.2 r46</p>
+<pre class="bash"><code># ----------------------------------------------------------------------
+# Create sample run
+cd
+mkdir testrun.ed.r46
+cd testrun.ed.r46
+curl -o ED2IN http://isda.ncsa.illinois.edu/~kooper/EBI/ED2IN.r46
+sed -i -e &quot;s#\$HOME#$HOME#&quot; ED2IN
+curl -o config.xml  http://isda.ncsa.illinois.edu/~kooper/EBI/config.r46.xml
+# execute test run
+time ed2.r46</code></pre>
 </div>
-<div id="finishing-up-the-machine" class="section level2">
-<h2>Finishing up the machine</h2>
-<div id="add-a-message-to-the-login" class="section level3">
-<h3>Add a message to the login:</h3>
-<pre class="bash"><code>sudo -s
-export PORT=$( hostname | sed 's/pecan//' )
-cat &gt; /etc/motd &lt;&lt; EOF
-PEcAn version 1.4.3
+<div id="ed-2.2-r82" class="section level4">
+<h4>ED 2.2 r82</h4>
+<pre class="bash"><code>cd
+curl -o ED.r82.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/ED.r82.tgz
+tar zxf ED.r82.tgz
+rm ED.r82.tgz
 
-For more information about:
-Pecan    - http://pecanproject.org
-BETY     - http://www.betydb.org
+cd ED.r82
+curl -o ED.r82.patch http://isda.ncsa.illinois.edu/~kooper/EBI/ED.r82.patch
+patch -p1 &lt; ED.r82.patch
+cd ED/build/bin
+curl -o include.mk.VM http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk.opt.`uname -s`
+make OPT=VM
+sudo cp ../ed_2.1-VM /usr/local/bin/ed2.r82</code></pre>
+<p>Perform a test run using pre configured ED settings for ED2.2 r82</p>
+<pre class="bash"><code>cd
+mkdir testrun.ed.r82
+cd testrun.ed.r82
+curl -o ED2IN http://isda.ncsa.illinois.edu/~kooper/EBI/ED2IN.r82
+sed -i -e &quot;s#\$HOME#$HOME#&quot; ED2IN
+curl -o config.xml  http://isda.ncsa.illinois.edu/~kooper/EBI/config.r82.xml
+# execute test run
+time ed2.r82</code></pre>
+</div>
+<div id="ed-2.2-bleeding-edge" class="section level4">
+<h4>ED 2.2 bleeding edge</h4>
+<pre class="bash"><code>cd
+git clone https://github.com/EDmodel/ED2.git
 
-For a list of all models currently navigate [here](../users_guide/basic_users_guide/models_table.md)
+cd ED2/ED/build/bin
+curl -o include.mk.VM http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk.opt.`uname -s`
+./generate_deps.sh
+make OPT=VM
+sudo cp ../ed_2.1-VM /usr/local/bin/ed2.git</code></pre>
+</div>
+</div>
+<div id="sipnet" class="section level3">
+<h3>SIPNET</h3>
+<div id="sipnet-installation" class="section level4">
+<h4>Sipnet Installation</h4>
+<pre class="bash"><code>cd
+curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_unk.tar.gz
+tar zxf sipnet_unk.tar.gz
+rm sipnet_unk.tar.gz
 
+cd sipnet_unk
+make
+sudo cp sipnet /usr/local/bin/sipnet.runk</code></pre>
+</div>
+<div id="sipnet-testrun" class="section level4">
+<h4>SIPNET testrun</h4>
+<pre class="bash"><code>cd
+curl -o testrun.sipnet.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/testrun.sipnet.tar.gz
+tar zxf testrun.sipnet.tar.gz
+rm testrun.sipnet.tar.gz
+cd testrun.sipnet
+sipnet.runk</code></pre>
+</div>
+</div>
+<div id="biocro" class="section level3">
+<h3>BioCro</h3>
+<div id="installation" class="section level4">
+<h4>Installation</h4>
+<pre class="r"><code># Public
+echo 'devtools::install_github(&quot;ebimodeling/biocro&quot;)' | R --vanilla
+# Development:
+echo 'devtools::install_github(&quot;ebimodeling/biocro-dev&quot;)' | R --vanilla</code></pre>
+<p><em>BioCro Developers:</em> request from <span class="citation">[@dlebauer on GitHub]</span>(<a href="https://github.com/dlebauer" class="uri">https://github.com/dlebauer</a>)</p>
+</div>
+</div>
+<div id="linkages" class="section level3">
+<h3>Linkages</h3>
+<div id="installation-1" class="section level4">
+<h4>Installation</h4>
+<pre class="r"><code># Public
+echo 'devtools::install_github(&quot;araiho/linkages_package&quot;)' | R --vanilla</code></pre>
+</div>
+</div>
+<div id="dalec" class="section level3">
+<h3>DALEC</h3>
+<div id="installation-2" class="section level4">
+<h4>Installation</h4>
+<pre class="bash"><code>cd
+curl -o dalec_EnKF_pub.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/dalec_EnKF_pub.tgz
+tar zxf dalec_EnKF_pub.tgz
+rm dalec_EnKF_pub.tgz
 
-You can access this system using a webbrowser at
- http://&lt;hosting machine&gt;:${PORT}80/
-or using SSH at
- ssh -l carya -p ${PORT}22 &lt;hosting machine&gt;
-where &lt;hosting machine&gt; is the machine where the VM runs on.
+cd dalec_EnKF_pub
+make dalec_EnKF
+make dalec_seqMH
+sudo cp dalec_EnKF dalec_seqMH /usr/local/bin</code></pre>
+</div>
+</div>
+<div id="linkages-1" class="section level3">
+<h3>LINKAGES</h3>
+<div id="installation-3" class="section level4">
+<h4>Installation</h4>
+<pre><code>#FORTRAN VERSION
+cd
+git clone https://github.com/araiho/Linkages.git
+cd Linkages
+gfortran -o linkages linkages.f
+sudo cp linkages /usr/local/bin/linkages.git
+
+#R Version
+git clone https://github.com/araiho/linkages_package.git
+R CMD INSTALL --no-multiarch --with-keep.source linkages_package</code></pre>
+</div>
+</div>
+<div id="clm-4.5" class="section level3">
+<h3>CLM 4.5</h3>
+<p>The version of CLM installed on PEcAn is the ORNL branch provided by Dan Ricciuto. This version includes Dan’s point-level CLM processing scripts</p>
+<p>Download the code (~300M compressed), input data (1.7GB compressed and expands to 14 GB), and a few misc inputs.</p>
+<pre><code>mkdir models
+cd models
+wget ftp://nacp.ornl.gov/synthesis/2008/firenze/site/clm4_5_1_r085.tar.gz
+wget ftp://nacp.ornl.gov/synthesis/2008/firenze/site/clm/ccsm_inputdata.tar.gz
+tar -xvzf clm4_5*
+tar -xvzf ccsm_inputdata.tar.gz
+
+#Parameter file:
+mkdir /home/carya/models/ccsm_inputdata/lnd/clm2/paramdata
+cd  /home/carya/models/ccsm_inputdata/lnd/clm2/paramdata
+wget ftp://nacp.ornl.gov/synthesis/2008/firenze/site/clm_params.c130821.nc
+wget ftp://nacp.ornl.gov/synthesis/2008/firenze/site/clm_params.c140423.nc
+
+#Domain file:
+cd /home/carya/models/ccsm_inputdata/share/domains/domain.clm/
+wget ftp://nacp.ornl.gov/synthesis/2008/firenze/site/domain.lnd.1x1pt_US-UMB_navy.nc
+
+#Aggregated met data file:
+cd /home/carya/models/ccsm_inputdata/atm/datm7/CLM1PT_data/1x1pt_US-UMB
+wget ftp://nacp.ornl.gov/synthesis/2008/firenze/site/all_hourly.nc 
+
+## lightning database
+cd /home/carya/models/ccsm_inputdata/atm/datm7/NASA_LIS/
+wget ftp://nacp.ornl.gov/synthesis/2008/firenze/site/clmforc.Li_2012_climo1995-2011.T62.lnfm_Total_c140423.nc
+
+## surface data
+cd /home/carya/models/ccsm_inputdata/lnd/clm2/surfdata
+wget ftp://nacp.ornl.gov/synthesis/2008/firenze/site/clm/surfdata_360x720cru_simyr1850_c130927.nc
+cd /home/carya/models/ccsm_inputdata/lnd/clm2/surfdata_map
+wget ftp://nacp.ornl.gov/synthesis/2008/firenze/site/clm/surfdata_1x1pt_US-UMB_I1850CLM45CN_simyr1850.nc_new
+mv surfdata_1x1pt_US-UMB_I1850CLM45CN_simyr1850.nc_new surfdata_1x1pt_US-UMB_I1850CLM45CN_simyr1850.nc</code></pre>
+<p>Required libraries</p>
+<pre><code>sudo apt-get install mercurial csh tcsh subversion cmake
+
+sudo ln -s /usr/bin/make /usr/bin/gmake</code></pre>
+<p>Compile and build default inputs</p>
+<pre><code>cd ~/carya/models/clm4_5_1_r085/scripts
+python runCLM.py --site US-UMB ––compset I1850CLM45CN --mach ubuntu --ccsm_input /home/carya/models/ccsm_inputdata --tstep 1 --nopointdata --coldstart --cpl_bypass --clean_build</code></pre>
+<div id="clm-test-run" class="section level4">
+<h4>CLM Test Run</h4>
+<p>You will see a new directory in scripts: US-UMB_I1850CLM45CN Enter this directory and run (you shouldn’t have to do this normally, but there is a bug with the python script and doing this ensures all files get to the right place):</p>
+<pre><code>./US-UMB_I1850CLM45CN.build</code></pre>
+<p>Next you are ready to go to the run directory:</p>
+<pre><code>/home/carya/models/clm4_5_1_r085/run/US-UMB_I1850CLM45CN/run</code></pre>
+<p>Open to edit file: datm.streams.txt.CLM1PT.CLM_USRDAT and check file paths such that all paths start with /home/carya/models/ccsm_inputdata</p>
+<p>From this directory, launch the executable that resides in the bld directory:</p>
+<pre><code>/home/carya/clm4_5_1_r085/run/US-UMB_I1850CLM45CN/bld/cesm.exe</code></pre>
+<p>not sure this was the right location, but wherever the executable is</p>
+<p>You should begin to see output files that look like this: US-UMB_I1850CLM45CN.clm2.h0.yyyy-mm.nc (yyyy is year, mm is month) These are netcdf files containing monthly averages of lots of variables.</p>
+<p>The lnd_in file in the run directory can be modified to change the output file frequency and variables.</p>
+</div>
+</div>
+</div>
+<div id="clm-fates" class="section level2">
+<h2>CLM-FATES</h2>
+<p>Prerequisites</p>
+<pre><code>sudo apt-get upgrade libnetcdf-dev
+sudo apt-get install subversion
+sudo apt-get install csh
+sudo apt-get install cmake
+sudo ln -s /usr/bin/make /usr/bin/gmake
+sudo rm /bin/sh
+sudo ln -s /bin/bash /bin/sh
+
+wget https://github.com/Unidata/netcdf-fortran/archive/v4.4.4.tar.gz
+cd netcdf-4.4.4
+./configure
+make
+sudo make install</code></pre>
+<p>you might need to mess around with installing netcdf and netcdf-fortran to get a version FATES likes…</p>
+<p>Get code from Github (currently private) and go to cime/scripts directory</p>
+<pre><code>git clone git@github.com:NGEET/ed-clm.git
+cd ed-clm/cime/scripts/</code></pre>
+<p>Within CLM-FATES, to be able to build an executable we need to create a reference run. We’ll also use this reference run to grab defaults from, so we’ll be registering the location of both the reference <strong>case</strong> (location of executable, scripts, etc) and the reference <strong>inputs</strong> with the PEcAn database. To begin, copy reference run script from pecan</p>
+<pre><code>cp ~/pecan/models/fates/inst/create_1x1_ref_case.sh .</code></pre>
+<p>Edit reference case script to set NETCDF_HOME, CROOT (reference run case), DIN_LOC_ROOT (reference run inputs). Also, make sure DIN_LOC_ROOT exists as FATES will not create it itself. Then run the script</p>
+<pre><code>./create_1x1_ref_case.sh</code></pre>
+<p>Be aware that this script WILL ask you for your password on the NCAR server to download the reference case input data (the guest password may work, haven’t tried this). If it gives an error at the pio stage check the log, but the most likely error is it being unable to find a version of netcdf it likes.</p>
+<p>Once FATES is installed, set the whole reference case directory as the Model path (leave filename blank) and set the whole inputs directory as an Input with format clm_defaults.</p>
+</div>
+<div id="pecan-installation" class="section level2">
+<h2>PEcAn Installation</h2>
+<p>PEcAn is the software package that ties all the pieces together.</p>
+</div>
+<div id="installing-pecan" class="section level2">
+<h2>Installing PEcAn</h2>
+<p>Download, compile and install PEcAn</p>
+<pre class="bash"><code># download pecan
+cd
+git clone https://github.com/PecanProject/pecan.git
+
+# compile pecan
+cd pecan
+./scripts/build.sh --dependencies</code></pre>
+<p>Following will run a small script to setup some hooks to prevent people from using the pecan demo user account to check in any code.</p>
+<pre class="bash"><code># prevent pecan user from checking in code
+./scripts/create-hooks.sh</code></pre>
+</div>
+<div id="installing-bety" class="section level2">
+<h2>Installing BETY</h2>
+<div id="install-postgres" class="section level3">
+<h3>Install Postgres</h3>
+<p>See OS-specific instructions for installing Postgres + PostGIS * <a href="Installing-PEcAn-Ubuntu.md#install-postgres">Ubuntu</a> * <a href="Installing-PEcAn-OSX#install-postgres">OSX</a> * <a href="https://github.com/PecanProject/bety/wiki/Installing-Postgresql">RedHat / CentOS</a></p>
+</div>
+<div id="install-database-data" class="section level3">
+<h3>Install Database + Data</h3>
+<ul>
+<li><em>note</em> To install BETYdb without PEcAn, first download the <a href="https://raw.githubusercontent.com/PecanProject/pecan/master/scripts/load.bety.sh"><code>load.bety.sh</code> script</a></li>
+</ul>
+<pre class="sh"><code># install database (code assumes password is bety)
+sudo -u postgres createuser -d -l -P -R -S bety
+sudo -u postgres createdb -O bety bety
+sudo -u postgres ./scripts/load.bety.sh -c YES -u YES -r 0
+sudo -u postgres ./scripts/load.bety.sh -r 1
+sudo -u postgres ./scripts/load.bety.sh -r 2
+
+# configure for PEcAn web app (change password if needed)
+cp web/config.example.php web/config.php 
+
+# add models to database (VM only)
+./scripts/add.models.sh
+
+# add data to database
+./scripts/add.data.sh
+
+# create outputs folder
+mkdir ~/output
+chmod 777 ~/output</code></pre>
+</div>
+<div id="installing-betydb-web-application" class="section level3">
+<h3>Installing BETYdb Web Application</h3>
+<p>There are two flavors of BETY, PHP and RUBY. The PHP version allows for a minimal interaction with the database while the RUBY version allows for full interaction with the database.</p>
+<div id="php-version" class="section level4">
+<h4>PHP version</h4>
+<p>The php version comes with PEcAn and is already configured.</p>
+</div>
+<div id="ruby-version" class="section level4">
+<h4>RUBY version</h4>
+<p>The RUBY version requires a few extra packages to be installed first.</p>
+<p>Next we install the web app.</p>
+<pre class="bash"><code># install bety
+cd
+git clone https://github.com/PecanProject/bety.git
+
+# install gems
+cd bety
+sudo gem2.0 install bundler
+bundle install --without development:test:javascript_testing:debug</code></pre>
+<p>and configure BETY</p>
+<pre class="bash"><code># create folders for upload folders
+mkdir paperclip/files paperclip/file_names
+chmod 777 paperclip/files paperclip/file_names
+
+# create folder for log files
+mkdir log
+touch log/production.log
+chmod 0666 log/production.log
+
+# fix configuration for vm
+cp config/additional_environment_vm.rb config/additional_environment.rb
+chmod go+w public/javascripts/cache/
+
+# setup bety database configuration
+cat &gt; config/database.yml &lt;&lt; EOF
+production:
+  adapter: postgis
+  encoding: utf-8
+  reconnect: false
+  database: bety
+  pool: 5
+  username: bety
+  password: bety
 EOF
-exit</code></pre>
+
+# setup login tokens
+cat &gt; config/initializers/site_keys.rb &lt;&lt; EOF
+REST_AUTH_SITE_KEY         = 'thisisnotasecret'
+REST_AUTH_DIGEST_STRETCHES = 10
+EOF</code></pre>
 </div>
 </div>
-<div id="finishing-up" class="section level2">
-<h2>Finishing up</h2>
-<p>Script to clean the VM and remove as much as possible history <a href="http://isda.ncsa.uiuc.edu/~kooper/EBI/cleanvm.sh">cleanvm.sh</a></p>
-<pre class="bash"><code>wget -O ~/cleanvm.sh http://isda.ncsa.uiuc.edu/~kooper/EBI/cleanvm.sh
-chmod 755 ~/cleanvm.sh</code></pre>
-<p>Make sure machine has SSH keys <a href="http://isda.ncsa.illinois.edu/~kooper/EBI/rc.local">rc.local</a></p>
-<pre class="bash"><code>sudo wget -O /etc/rc.local http://isda.ncsa.illinois.edu/~kooper/EBI/rc.local</code></pre>
-<p>Change the resolution of the console</p>
-<pre class="bash"><code>sudo sed -i -e 's/#GRUB_GFXMODE=640x480/GRUB_GFXMODE=1024x768/' /etc/default/grub
-sudo update-grub</code></pre>
-<p>Once all done, stop the virtual machine</p>
-<pre class="bash"><code>history -c &amp;&amp; ${HOME}/cleanvm.sh</code></pre>
+<div id="pecan-testrun" class="section level3">
+<h3>PEcAn Testrun</h3>
+<p>Do the run, this assumes you have installed the BETY database, sites tar file and sipnet.</p>
+<pre class="bash"><code># create folder
+cd
+mkdir testrun.pecan
+cd testrun.pecan
+
+# copy example of pecan workflow and configuration file
+cp ../pecan/tests/pecan32.sipnet.xml pecan.xml
+cp ../pecan/scripts/workflow.R workflow.R
+
+# exectute workflow
+rm -rf pecan
+./workflow.R pecan.xml</code></pre>
+<p>NB: pecan.xml is configured for the virtual machine, you will need to change the <met> field from ‘/home/carya/’ to wherever you installed your ‘sites’, usually $HOME</p>
+</div>
 </div>
 
 

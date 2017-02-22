@@ -52,7 +52,7 @@ The second logging package is http://cran.r-project.org/web/packages/futile.logg
 
 To be able to use the loggers there needs to be some initialization done. Neither package allows to read it from a configuration file, so we might want to use the pecan.xml file to set it up. The setup will always be somewhat the same:
 
-```{r loggingexample1, echo=TRUE}
+```{r loggingexample1, echo=TRUE, eval = FALSE}
 # load library
 library(logging)
 logReset()
@@ -72,14 +72,14 @@ setLevel('INFO', getLogger('PEcAn.SQL'))
 ```
 
 To now use logging in the code you can use the following code:
-```{r loggingexample1, echo=TRUE}
+```{r loggingexample2, echo=TRUE,eval = FALSE}
 pl <- getLogger('PEcAn.MetaAnalysis.function1')
 pl$info("This is an INFO message.")
 pl$debug("The value for x=%d", x)
 pl$error("Something bad happened and I am scared now.")
 ```
 or
-```{r loggingexample1, echo=TRUE}
+```{r loggingexample3, echo=TRUE, eval = FALSE}
 loginfo("This is an INFO message.", logger="PEcAn.MetaAnalysis.function1")
 logdebug("The value for x=%d", x, logger="PEcAn.MetaAnalysis.function1")
 logerror("Something bad happened and I am scared now.", logger="PEcAn.MetaAnalysis.function1")
