@@ -26,29 +26,30 @@
       logger.error("met2CF function ", fcn1, " or ", fcn2, " don't exist")
     }
     
-    cf0.id <- convert.input(input.id, 
-                            outfolder, 
-                            formatname,
-                            mimetype, 
-                            site.id = site.id, start_date, end_date, 
-                            pkg, fcn, con = con, host = host, browndog = NULL, 
+    cf0.id <- convert.input(input.id = input.id, 
+                            outfolder = outfolder, 
+                            formatname = formatname,
+                            mimetype = mimetype, 
+                            site.id = site.id, start_date = start_date, end_date = end_date, 
+                            pkg = pkg, fcn = fcn, con = con, host = host, browndog = NULL, 
                             write = TRUE, 
                             format.vars = format.vars, 
-                            overwrite = overwrite)
+                            overwrite = overwrite,
+                            exact.dates = FALSE)
     
     input_name <- paste0(met, "_CF_Permute")
     fcn <- "permute.nc"
     outfolder <- file.path(dir, input_name)
     
-    cf.id <- convert.input(cf0.id$input.id, 
-                           outfolder, 
-                           formatname, 
-                           mimetype, 
+    cf.id <- convert.input(input.id = cf0.id$input.id, 
+                           outfolder = outfolder, 
+                           formatname = formatname, 
+                           mimetype = mimetype, 
                            site.id = site.id, 
-                           start_date, end_date, 
-                           pkg, fcn, con = con, host = host, browndog = NULL,
+                           start_date = start_date, end_date =  end_date, 
+                           pkg = pkg, fcn = fcn, con = con, host = host, browndog = NULL,
                            write = TRUE, 
-                           overwrite = overwrite)
+                           overwrite = overwrite, exact.dates = FALSE)
     
   } else if (register$scale == "site") {
     input_name <- paste0(met, "_CF_site_", str_ns)
@@ -61,30 +62,31 @@
     fcn2 <- paste0("met2CF.", mimename)
     if (exists(fcn1)) {
       fcn <- fcn1
-      cf.id <- convert.input(input.id,
-                             outfolder,
-                             formatname,
-                             mimetype, 
+      cf.id <- convert.input(input.id = input.id,
+                             outfolder = outfolder,
+                             formatname = formatname,
+                             mimetype = mimetype, 
                              site.id = site.id,
-                             start_date, end_date, 
-                             pkg, fcn, con = con, host = host, browndog = NULL,
+                             start_date = start_date, end_date = end_date, 
+                             pkg = pkg, fcn = fcn, con = con, host = host, browndog = NULL,
                              write = TRUE,
-                             lat, lon, 
-                             overwrite = overwrite)
+                             lat = lat, lon = lon, 
+                             overwrite = overwrite,
+                             exact.dates = FALSE)
     } else if (exists(fcn2)) {
       fcn <- fcn2
       format <- query.format.vars(input.id, con)
-      cf.id <- convert.input(input.id,
-                             outfolder,
-                             formatname,
-                             mimetype, 
+      cf.id <- convert.input(input.id = input.id,
+                             outfolder = outfolder,
+                             formatname = formatname,
+                             mimetype = mimetype, 
                              site.id = site.id, 
-                             start_date, end_date,
-                             pkg, fcn, con = con, host = host, browndog = NULL, 
+                             start_date = start_date, end_date = end_date,
+                             pkg = pkg, fcn = fcn, con = con, host = host, browndog = NULL, 
                              write = TRUE, 
-                             lat, lon, 
+                             lat = lat, lon = lon, 
                              format.vars = format.vars, 
-                             overwrite = overwrite)
+                             overwrite = overwrite, exact.dates = FALSE)
     } else {
       logger.error("met2CF function ", fcn1, " or ", fcn2, " doesn't exists")
     }

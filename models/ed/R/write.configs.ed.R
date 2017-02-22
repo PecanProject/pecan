@@ -337,7 +337,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
   }
   
   edtraits <- names(edhistory)
-  data(pftmapping)
+  data(pftmapping, package = 'PEcAn.ED2')
   
   ## Get ED2 specific model settings and put into output config xml file
   xml <- PEcAn.utils::listToXml(settings$model$config.header, "config")

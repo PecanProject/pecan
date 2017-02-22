@@ -43,7 +43,15 @@
 #' \item{run_first}{Function to run before running sampling. Takes parallel 
 #' inputs list containing runID, initial values, and resume (NULL) as an 
 #' argument.}
+#'
+#' \item{calculate.burnin}{If \code{TRUE}, use 
+#' \code{PEcAn.assim.batch::autoburin} function to calculate burnin. Otherwise, 
+#' assume burnin is \code{min(niter/2, iter_conv_check)}.}
+#'
+#' \item{threshold}{Maximum value of the Gelman-Rubin diagnostic for 
+#' determining convergence. Default = 1.1}
 #' }
+#' 
 #'
 #' @return List including \code{results} (summary statistics), \code{samples} 
 #' (\code{mcmc.list} object, or \code{NA} if \code{return.samples=FALSE}), and 
@@ -105,6 +113,18 @@ invert.auto <- function(observed, invert.options,
     iter_conv_check <- 15000
     message("iter_conv_check not provided. ",
             "Setting default to ", iter_conv_check)
+  }
+  threshold <- invert.options$threshold
+  if (is.null(threshold)) {
+    threshold <- 1.1
+    message("threshold not provided. ",
+            "Setting default to ", threshold)
+  }
+  calculate.burnin <- invert.options$calculate.burnin
+  if (is.null(calculate.burnin)) {
+    calculate.burnin <- TRUE
+    message("calculate.burnin not provided. ",
+            "Setting default to ", calculate.burnin)
   }
   
   # Set up cluster for parallel execution
@@ -177,7 +197,9 @@ invert.auto <- function(observed, invert.options,
   resume <- lapply(output.list, '[[', 'resume')
   out <- process_output(output.list = output.list, 
                         iter_conv_check = iter_conv_check,
-                        save.samples = save.samples)
+                        save.samples = save.samples,
+                        threshold = threshold,
+                        calculate.burnin = calculate.burnin)
 
   # Loop until convergence (skipped if finished == TRUE)
   invert.options$ngibbs <- ngibbs.step
@@ -207,7 +229,9 @@ invert.auto <- function(observed, invert.options,
     out <- process_output(output.list = output.list,
                           prev_out = out,
                           iter_conv_check = iter_conv_check, 
-                          save.samples = save.samples)
+                          save.samples = save.samples,
+                          threshold = threshold,
+                          calculate.burnin = calculate.burnin)
   }
 
   if (i.ngibbs > ngibbs.max & !out$finished) {
@@ -242,11 +266,14 @@ combineChains <- function(samps1, samps2) {
 process_output <- function(output.list,
                            prev_out = NULL,
                            iter_conv_check,
-                           save.samples) {
+                           save.samples, 
+                           threshold,
+                           calculate.burnin) {
 
   samples.current <- lapply(output.list, "[[", "results")
   deviance_list.current <- lapply(output.list, "[[", "deviance")
-  n_eff_list.current <- lapply(output.list, "[[", "n_eff_list")
+  n_eff_list.current <- lapply(output.list, "[[", "n_eff")
+  rm(output.list)
 
   out <- list()
 
@@ -261,16 +288,18 @@ process_output <- function(output.list,
     out$n_eff_list <- mapply(c, prev_out$n_eff_list, n_eff_list.current,
                              SIMPLIFY = F)
   }
+  rm(prev_out)
 
   if (!is.null(save.samples)) {
     saveRDS(out, file = save.samples)
   }
 
-  smcmc <- out$samples
-  out$nsamp <- coda::niter(smcmc)
+  out$nsamp <- coda::niter(out$samples)
   nburn <- min(floor(out$nsamp/2), iter_conv_check)
-  smcmc_sub <- window(smcmc, start = nburn)
-  check_initial <- check.convergence(smcmc_sub, autoburnin = FALSE)
+  burned_samples <- window(out$samples, start = nburn)
+  check_initial <- check.convergence(burned_samples, 
+                                     threshold = threshold,
+                                     autoburnin = FALSE)
   if (check_initial$error) {
     warning("Could not calculate Gelman diag. Assuming no convergence.")
     out$finished <- FALSE
@@ -281,22 +310,28 @@ process_output <- function(output.list,
     out$finished <- FALSE
     return(out)
   } else {
-    message("Passed initial convergence check. ",
-            "Attempting automatic burnin.")
+    message("Passed initial convergence check.")
   }
-  burn <- PEcAn.assim.batch::autoburnin(smcmc, return.burnin = TRUE)
-  out$burnin <- burn$burnin
-  if (out$burnin == 1) {
-    message("Robust convergence check in autoburnin failed. ",
-            "Resuming sampling.")
-    out$finished <- FALSE
-    return(out)
+  if (calculate.burnin) {
+    burn <- PEcAn.assim.batch::autoburnin(out$samples, return.burnin = TRUE)
+    out$burnin <- burn$burnin
+    if (out$burnin == 1) {
+      message("Robust convergence check in autoburnin failed. ",
+              "Resuming sampling.")
+      out$finished <- FALSE
+      return(out)
+    } else {
+      message("Converged after ", out$nsamp, "iterations.")
+      out$results <- summary_simple(do.call(rbind, burn$samples))
+    }
   } else {
-    message("Converged after ", out$nsamp, "iterations.\n",
-            "Burnin = ", out$burnin)
+    message("Skipping robust convergece check (autoburnin) because ",
+            "calculate.burnin == FALSE.")
+    out$burnin <- nburn
+    out$results <- summary_simple(do.call(rbind, burned_samples))
   }
+  message("Burnin = ", out$burnin)
   out$finished <- TRUE
-  out$results <- summary_simple(do.call(rbind, burn$samples))
   return(out)
 }
 
