@@ -394,7 +394,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for (t in seq_len(nt)) {
+  for (t in seq_len(nt))) {
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -436,7 +436,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       x.censored[n,] <- as.numeric(ifelse(X[n,] > intervalX[,1], X[n,], 0))
     }
 
-    if(t == 1 ){ #| length(x.ind[1,]) > mu.f
+    if(t == 1){ #| length(x.ind[1,]) > mu.f
       #y.obs = Y.dat[1,]
       constants.tobit2space = list(N = ncol(X), nens = nens)
       data.tobit2space = list(interval = intervalX,
@@ -458,7 +458,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       ## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
       ## important!
       ## this is needed for correct indexing later
-      samplerNumberOffset <- length(conf_tobit2space$getSamplers())
+      samplerNumberOffset_tobit2space <- length(conf_tobit2space$getSamplers())
       
       for(n in 1:nens){
         for(i in 1:length(x.ind)) {
@@ -473,7 +473,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       conf_tobit2space$printSamplers()
       
       ## can monitor y.censored, if you wish, to verify correct behaviour
-      conf_tobit2space$addMonitors('y.censored')
+      #conf_tobit2space$addMonitors('y.censored')
       
       Rmcmc_tobit2space <- buildMCMC(conf_tobit2space)
       
@@ -483,20 +483,23 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     }else{
       Cmodel_tobit2space$y.ind <- x.ind
       Cmodel_tobit2space$y.censored <- x.censored
-      Cmodel_tobit2space$mu.prior <- colMeans(X)
+      #Cmodel_tobit2space$mu.prior <- as.vector(colMeans(X)) #doesn't work
+      #Error in envRefSetField(x, what, refObjectClass(x), selfEnv, value) : 
+      #‘mu.prior’ is not a field in class “Ccode”
       
       for(n in 1:nens){
-        for(i in 1:length(x.ind)) {
+        for(i in 1:ncol(x.ind)) {
           ## ironically, here we have to "toggle" the value of y.ind[i]
           ## this specifies that when y.ind[i] = 1,
           ## indicator variable is set to 0, which specifies *not* to sample
-          valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-x.ind[n,i])
+          valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space+i]], 'toggle', 1-x.ind[n,i])
         }
       }
-      set.seed(0)
-      dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = 10000, progressBar=FALSE)
-      
     }
+    
+    set.seed(0)
+    dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = 10000, progressBar=FALSE)
+    
     
     # #### JAGS update list
     # update.tobit2space <- list(interval = intervalX,
@@ -537,7 +540,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
                                        split = paste('AGB.pft.')),
                               function(x) x[2]))),
         na.omit(unlist(lapply(strsplit(names(obs.mean[[t]]),
-                                       split = paste('Fcomp.')),
+                                       split = paste('AGB.pft.')), #TO DO don't hardcode this
                               function(x) x[2]))))) #matches y to model
       
       Y <- unlist(obs.mean[[t]][choose])
@@ -671,22 +674,22 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
                                                                                         var.names[i]))),2,byrow = TRUE)
         }
         interval[,1]<-0
-        interval[,2]<-1
+        interval[,2]<-10000000 #TO DO need to make more general
         
         #### These vectors are used to categorize data based on censoring 
         #### from the interval matrix
         y.ind <- as.numeric(Y > interval[,1])
         y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
         
-        if(t > 1 & length(y.ind[t,]) > length(y.ind[t-1,])){
+        if(t==1){ #TO need to make something that works to pick weather to compile or not
           #y.obs = Y.dat[1,]
           constants.tobit = list(N = ncol(X), YN = length(y.ind)) #, nc = 1
           dimensions.tobit = list(X = ncol(X), X.mod = ncol(X), Q = c(ncol(X),ncol(X))) #  b = dim(inits.pred$b),
           
-          data.tobit = list(muf = as.vector(mu.f), pf = Pf, aq = aqq[,,t], bq = bqq[t],
-                            y.ind = y.ind[t,],
-                            y.censored = y.censored[t,],
-                            r = solve(r))
+          data.tobit = list(muf = as.vector(mu.f), pf = Pf, aq = aqq[t,,], bq = bqq[t],
+                            y.ind = y.ind,
+                            y.censored = y.censored,
+                            r = solve(R))
           inits.pred = list(q = diag(ncol(X)), X.mod = as.vector(mu.f), X = rnorm(ncol(X),0,1)) #
           #set.seed(0)
           #ptm <- proc.time()
@@ -700,7 +703,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           ## this is needed for correct indexing later
           samplerNumberOffset <- length(conf$getSamplers())
           
-          for(i in 1:length(y.ind[t,])) {
+          for(i in 1:length(y.ind)) {
             node <- paste0('y.censored[',i,']')
             conf$addSampler(node, 'toggle', control=list(type='RW'))
             ## could instead use slice samplers, or any combination thereof, e.g.:
@@ -710,7 +713,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           conf$printSamplers()
           
           ## can monitor y.censored, if you wish, to verify correct behaviour
-          conf$addMonitors('y.censored')
+          #conf$addMonitors('y.censored')
           
           Rmcmc <- buildMCMC(conf)
           
@@ -718,26 +721,25 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           Cmcmc <- compileNimble(Rmcmc, project = model_pred)
           
         }else{
-          Cmodel$y.ind <- y.ind[t,]
-          Cmodel$y.censored <- y.censored[t,]
-          Cmodel$aq <- aqq[,,t]
+          Cmodel$y.ind <- y.ind
+          Cmodel$y.censored <- y.censored
+          Cmodel$aq <- aqq[t,,]
           Cmodel$bq <- bqq[t]
           Cmodel$muf <- mu.f
           Cmodel$pf <- Pf
           Cmodel$r <- solve(R)
           
-          for(i in 1:length(y.ind[t,])) {
+          for(i in 1:length(y.ind)) {
             ## ironically, here we have to "toggle" the value of y.ind[i]
             ## this specifies that when y.ind[i] = 1,
             ## indicator variable is set to 0, which specifies *not* to sample
-            valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[t,i])
+            valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
           }
-          
-          set.seed(0)
-          dat <- runMCMC(Cmcmc, niter = 10000, progressBar=FALSE)
-          
+      
         }
         
+        set.seed(0)
+        dat <- runMCMC(Cmcmc, niter = 10000, progressBar=FALSE)
         
         # #### JAGS update list
         # update <- list(interval = interval,
@@ -938,7 +940,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       ###-------------------------------------------------------------------### 
       print(paste("Running Model for Year", as.Date(obs.times[t]) + 1))
       start.model.runs(settings, settings$database$bety$write)
-    }
+    #?}
     
     ###-------------------------------------------------------------------###
     ### save outputs                                                      ###
