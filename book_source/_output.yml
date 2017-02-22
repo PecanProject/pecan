@@ -1,0 +1,9 @@
+bookdown::gitbook:
+  config:
+    toc:
+      collapse: section
+      before: |
+        <li><strong><a href="./"></a></strong></li>
+
+bookdown::pdf_book:
+latex_engine: "xelatex"

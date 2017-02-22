@@ -1,3 +1,5 @@
+# Porting VM to AWS
+
 The following are Mike's rough notes from a first attempt to port the PEcAn VM to the AWS. This was done on a Mac
 
 These notes are based on following the instructions [here](http://www.rittmanmead.com/2014/09/obiee-sampleapp-in-the-cloud-importing-virtualbox-machines-to-aws-ec2/)
@@ -25,19 +27,23 @@ Note: the key that ended up working had to be made at [https://console.aws.amazo
 
 ### Install [EC2 command line tools](http://docs.aws.amazon.com/AWSEC2/latest/CommandLineReference/set-up-ec2-cli-linux.html)
 
-`wget http://s3.amazonaws.com/ec2-downloads/ec2-api-tools.zip`
+```
+wget http://s3.amazonaws.com/ec2-downloads/ec2-api-tools.zip
 
-`sudo mkdir /usr/local/ec2`
+sudo mkdir /usr/local/ec2
 
-`sudo unzip ec2-api-tools.zip -d /usr/local/ec2`
+sudo unzip ec2-api-tools.zip -d /usr/local/ec2
+```
 
 If need be, download and install [JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 
-`export JAVA_HOME=$(/usr/libexec/java_home)`
+```
+export JAVA_HOME=$(/usr/libexec/java_home)
 
-`export EC2_HOME=/usr/local/ec2/ec2-api-tools-<version>`
+export EC2_HOME=/usr/local/ec2/ec2-api-tools-<version>
 
-`export PATH=$PATH:$EC2_HOME/bin`
+export PATH=$PATH:$EC2_HOME/bin
+```
 
 
 Then set your user credentials as environment variables:
@@ -61,15 +67,15 @@ In the code below, make sure to change the PEcAn version, the name of the bucket
 
 Also, you may want to choose a considerably larger instance type. The one chosen below is that corresponding to the AWS Free Tier
 
-`
+```
 ec2-import-instance PEcAn32bit_1.2.6-disk1.vmdk --instance-type t2.micro --format VMDK --architecture i386 --platform Linux --bucket pecan --region us-east-1 --owner-akid $AWS_ACCESS_KEY --owner-sak $AWS_SECRET_KEY
-`
+```
 
 Make sure to note the ID of the image since you'll need it to check the VM status.  Once the image is uploaded it will take a while (typically about an hour) for Amazon to convert the image to one it can run. You can check on this progress by running
 
-`
+```
 ec2-describe-conversion-tasks <image.ID>
-`
+```
 
 ### Configuring the VM
 

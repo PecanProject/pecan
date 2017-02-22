@@ -1,40 +1,40 @@
+## PEcAn XML Configuration
 The PEcAn system is configured using a xml file, often called settings.xml. The configuration file can be split in X seperate pieces:
 
-1. [PEcAn Folders](PEcAn-Configuration.md#pecan-folders)
-2. [Database Access](PEcAn-Configuration.md#database-access)
-3. [BETY Configuration](PEcAn-Configuration.md#bety-database-configuration)
-4. [Brown Dog](PEcAn-Configuration.md#brown-dog-configuration)
-5. [PFT Selection](PEcAn-Configuration.md#pft-selection)
-6. [Meta Analysis](PEcAn-Configuration.md#meta-analysis)
-7. [Ensemble Runs](PEcAn-Configuration.md#ensemble-runs)
-8. [Sensitivity Runs](PEcAn-Configuration.md#sensitivity-runs)
-9. [Model Setup](PEcAn-Configuration.md#model_setup)
-10. [Run Setup](PEcAn-Configuration.md#run-setup)
-11. [State Data Assimilation](PEcAn-Configuration.md#state-data-assimilation-tags)
+1. [PEcAn Folders](#pecan-folders)
+2. [Database Access](#database-access)
+3. [BETY Configuration](#bety-database-configuration)
+4. [Brown Dog](#brown-dog-configuration)
+5. [PFT Selection](#pft-selection)
+6. [Meta Analysis](#meta-analysis)
+7. [Ensemble Runs](#ensemble-runs)
+8. [Sensitivity Runs](#sensitivity-runs)
+9. [Model Setup](#model_setup)
+10. [Run Setup](#run-setup)
+11. [State Data Assimilation](#state-data-assimilation-tags)
 
-<a name="pecan_folders" />
 
-## PEcAn folders
+### PEcAn folders
 
 The following are the tags that can be used to configure the folders used by PEcAn. All of these are optional.
 
-```{xml}
+```xml
 <outdir>/home/carya/testrun.pecan</outdir>
 ```
 
 * **outdir** : [optional] specifies where PEcAn will write all outputs and create folders. If this is not specified the folder pecan in the current folder will be used.
 
-<a name="database_access" />
-## Database Access
+
+### Database Access
 
 The connection to the BETY database is configured using this section. In this section you will specify what driver to use to connect to the database (PostgreSQL by default) and the connection parameters to connect to the database. This section is very picky and will only accept parameters that are passed into the connection function for each database driver, any other entries will result in an error by the database driver.
 
-### functions: 
+#### functions: 
 
 `db.open()`, and thus by `db.query()` and `db.check()`.
 
 New format (starting with PEcAn 1.3.6)
-```
+```xml
 <database>
 	<bety>
 		<dbname>bety</dbname>
@@ -63,16 +63,16 @@ The connection information under bety will be used by most of the PEcAn system, 
 
 For other database drivers these parameters will change. See the driver documentation in R for the right parameters.
 
-<a name="bety_database" />
-## BETY Database Configuration
+
+### BETY Database Configuration
 
 This section describes how to connect to the BETY Database. This section is used for versions of PEcAn prior to version 1.3.6, starting at 1.3.6 this parameter is part of &lt;database&gt;&lt;bety&gt; and defaults to TRUE.
 
-### functions: 
+#### functions: 
 
 `db.check()`, `write.configs()`, `run.models()`
 
-```
+```xml
 <bety>
 	<write>TRUE</write>
 </bety>
@@ -80,16 +80,16 @@ This section describes how to connect to the BETY Database. This section is used
 
 * **write** : [optional] this can be TRUE/FALSE (the default is TRUE). If set to TRUE, runs, ensembles and workflows are written to the database.
 
-<a name="brown_dog" />
-## Brown Dog Configuration
+
+### Brown Dog Configuration
 
 This section describes how to connect to [Brown Dog](http://browndog.ncsa.illinois.edu). This will allow for conversions of data (currently only met data).
 
-### functions: 
+#### functions: 
 
 `met.process()`
 
-```
+```xml
 <browndog>
 	<url>...</url>
 	<username>...</username>
@@ -101,12 +101,12 @@ This section describes how to connect to [Brown Dog](http://browndog.ncsa.illino
 * **username** : [optional] username to be used with the endpoint for Brown Dog.
 * **password** : [optional] password to be used with the endpoint for Brown Dog.
 
-<a name="pft_selection" />
-## PFT Selection
+
+### PFT Selection
 
 The PEcAn system requires at least 1 PFT (Plant Functional Type) to be specified inside the `<pfts>` section. 
 
-### functions:  
+#### functions:  
 
 `get.traits()`
 
@@ -114,7 +114,7 @@ The PEcAn system requires at least 1 PFT (Plant Functional Type) to be specified
 ### PFT tags
 
 
-```
+```xml
 <pfts>
 	<pft>
 		<name>sipnet.temperate.coniferous</name>
@@ -130,16 +130,16 @@ The PEcAn system requires at least 1 PFT (Plant Functional Type) to be specified
 * **outdir**: [optional] path in which pft-specific output will be placed during meta-analysis and sensitivity analysis. If not specified it will be written into `<outdir>/<pftname>`.  
 * **contants**: [optional] this section contains information that will be written directly into the model specific configuration files. PEcAn does not look at the information in this section.  
 
-<a name="meta_analysis" />
-## Meta Analysis
 
-### meta analysis functions:
+### Meta Analysis
+
+#### meta analysis functions:
 
 `run.meta.analysis()`
 
-### meta analysis tags
+#### meta analysis tags
 
-```
+```xml
 <meta.analysis>
 	<iter>1000</iter>
 	<random.effects>FALSE</random.effects>
@@ -156,17 +156,17 @@ The section meta.analysis needs to exists for a meta.analysis to be executed, ev
 * **threshold** threshold for Gelman-Rubin convergence diagnostic (MGPRF); default is 1.2
 
 
-## Ensemble Runs
+### Ensemble Runs
 
 Only if this section is defined an ensemble analysis is done.
 
-### ensemble functions: 
+#### ensemble functions: 
 
 `write.configs()`, `run.ensemble.analysis()`
 
-### ensemble tags
+#### ensemble tags
 
-```
+```xml
 <ensemble>
 	<size>5</size>
   <variable>GPP</variable>
@@ -179,18 +179,18 @@ Only if this section is defined an ensemble analysis is done.
 
 Note: if the ensemble size is set to 1, PEcAn will select the **posterior median** parameter values rather than taking a single random draw from the posterior
 
-<a name="sensitivity_runs" />
-## Sensitivity Runs
+
+### Sensitivity Runs
 
 Only if this section is defined a sensitivity analysis is done. This section will have `<quantile>` or `<sigma>` nodes. If neither are given, the default is to use the median +/- [1 2 3] x sigma (e.g. the 0.00135 0.0228 0.159 0.5 0.841 0.977 0.999 quantiles); If the 0.5 (median) quantile is omitted, it will be added in the code.
 
-### functions: 
+#### functions: 
 
 `write.configs()`, `run.sensitivity.analysis()`
 
-### sensitivity analysis tags
+#### sensitivity analysis tags
 
-```
+```xml
 <sensitivity.analysis>
 	<quantiles>
 		<quantile></quantile>
@@ -215,8 +215,8 @@ Only if this section is defined a sensitivity analysis is done. This section wil
 * **_NOTE:_** start.date and end.date are distinct from values set in the run tag because this analysis can be done over a subset of the run.
 * ** variable** : [optional] name of one (or more) variables the analysis should be run for. If not specified, sensitivity.analysis variable is used, otherwise default is GPP.
 
-<a name="model_setup" />
-## Model Setup
+
+### Model Setup
 
 This section is required and tells PEcAn what model to run. This section should either specify `<id>` or both `<name>` and `<binary>`  of the model. If both id and name and/or binary are specified the id is used to check the specified name and/or binary.
 
@@ -224,13 +224,13 @@ As of version 1.3.7 the `<name>` tag has been renamed `<type>`. The `<type>` tag
 
 To ensure compatability, the code will automatically convert from `<name>` to `<type>`.
 
-### functions: 
+#### functions: 
 
 `write.configs()`, `run.models()`
 
-### model tags
+#### model tags
 
-```
+```xml
 <model>
 	<id>7</id>
 	<type>ED2</type>
@@ -255,7 +255,7 @@ Following variables are ED specific and are used in the [ED2 Configuration](ED2-
 
 Starting at 1.3.7 the tags for inputs have moved to `<run><inputs>`. This includes, veg, soil, psscss, inputs.
 
-```
+```xml
 	<edin>/home/carya/runs/PEcAn_4/ED2IN.template</edin>
 	<config.header>
 		<radiation>
@@ -275,12 +275,12 @@ Starting at 1.3.7 the tags for inputs have moved to `<run><inputs>`. This includ
 * **psscss** : **OBSOLETE** [required] location of site inforation, now part of `<run><inputs>`. Should be specified as `<pss>`, `<css>` and `<site>`.
 * **inputs** : **OBSOLETE** [required] location of additional input files (e.g. data assimilation data), now part of `<run><inputs>`. Should be specified as `<lu>' and `<thsums>`.
 
-<a name="run_setup" />
-## Run Setup
 
-### tags
+### Run Setup
 
-```
+#### tags
+
+```xml
 <run>
 	<jobtemplate>/home/carya/path/to/template</jobtemplate>
 	<start.date>2002-01-01 00:00:00</start.date>
@@ -362,13 +362,12 @@ Host on which the simulation will run is specified in the `<host>` subsection. I
 * **qstat** : [optional] the command to execute to check if a job is finished, this should return DONE if the job is finished. There is one parameter this command should take @JOBID@ which is the id of the job as returned by qsub.jobid. If not specified (and qsub is) it will use the default value is "qstat -j @JOBID@ || echo DONE"
 * **job.sh** : [optional] additional options to add to the job.sh at the top  
 
-<a name="sda_setup" />
 
 ### State Data Assimilation Tags
 
 The following tags can be used for state data assimilation. More detailed information can be found here: [State Data Assimilation Documentation](sda.documentation.md)
 
-```
+```xml
 <state.data.assimilation>
 	<process.variance>FALSE</process.variance>
   <sample.parameters>FALSE</sample.parameters>

@@ -1,15 +1,11 @@
----
-title: "Installing and configuring Shiny for PEcAn"
-author: 
-    - Alexey Shiklomanov
-    - Rob Kooper
-toc: true
----
+# Installing and configuring Shiny for PEcAn
+authors - Alexey Shiklomanov
+        - Rob Kooper
 
 **NOTE: Instructions are only tested for CentOS 6.5.**
 **NOTE: Pretty much every step here requires root access.**
 
-# Install the Shiny R package and Shiny server
+## Install the Shiny R package and Shiny server
 
 The `shiny` R package can be installed directly in R via `install.packages("shiny")`.
 
@@ -32,7 +28,7 @@ $ wget https://download3.rstudio.org/ubuntu-12.04/x86_64/shiny-server-1.4.2.786-
 $ sudo gdebi shiny-server-1.4.2.786-amd64.deb
 ```
 
-# Modify the shiny configuration file
+## Modify the shiny configuration file
 
 The Shiny configuration file is located in `/etc/shiny-server/shiny-server.conf`. Comment out the entire file and add the following, replacing `<username>` with your user name and `<location>` with the URL location you want for your app. This will allow you to run Shiny apps from your web browser at https://your.server.edu/shiny/your-location
 
@@ -81,7 +77,7 @@ server {
 }
 ```
 
-# Set the httpd proxy
+## Set the httpd proxy
 
 Create a file `/etc/httpd/conf.d/shiny.conf` containing the following proxy settings:
 
@@ -91,13 +87,13 @@ ProxyPassReverse    /shiny/ http://localhost:3838/
 RedirectMatch permanent ^/shiny$ /shiny/
 ```
 
-# Create a symbolic link to the shiny server service
+## Create a symbolic link to the shiny server service
 
 ```
 sudo ln -s /opt/shiny-server/config/init.d/redhat/shiny-server /etc/init.d
 ```
 
-# Start the shiny server and restart httpd
+## Start the shiny server and restart httpd
 
 ```
 sudo service shiny-server stop
@@ -107,13 +103,13 @@ sudo service httpd restart
 
 You can check that Shiny is running with `service shiny-server status`.
 
-# Troubleshooting
+## Troubleshooting
 
 Refer to the log files for shiny (`/var/log/shiny-server.log`) and httpd (`/var/log/httpd/error-log`).
 
 
 
-# Further reading
+## Further reading
 
 * [Shiny server configuration reference](http://docs.rstudio.com/shiny-server/)
 
