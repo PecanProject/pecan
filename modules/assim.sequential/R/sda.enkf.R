@@ -235,7 +235,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   
   for (i in seq_along(obs.times)) {
     if (is.na(obs.times.POSIX[i])) {
-      if (is.na(ymd(obs.times[i]))) {
+      if (is.na(ymd(obs.times[i]))) { #TO DO can't find function ymd(). fix it.
         print("Error: no dates associated with observations")
       } else {
         ### Data does not have time associated with dates 
@@ -275,49 +275,113 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     (Om[i, j]^2 + Om[i, i] * Om[j, j]) / var(X[, col])
   } # wish.df
   
-  ## JAGS models for numerical update of state and process error
-  #### Tobit Model
-  tobit.model <- "
-  model{ 
+#   ## JAGS models for numerical update of state and process error
+#   #### Tobit Model
+#   tobit.model <- "
+#   model{ 
+#   
+#   q  ~ dwish(aq,bq) ## aq and bq are estimated over time
+#   Q <- inverse(q)
+#   X.mod ~ dmnorm(muf,pf) ## Model Forecast ##muf and pf are assigned from ensembles
+# 
+#   ## add process error
+#   X  ~ dmnorm(X.mod,q)
+#  
+#   #agb linear
+#   #y_star <- X[choose]
+#   
+#   #f.comp non linear
+#   y_star <- X[1:9] / sum(X[1:9])
+#   
+#   ## Analysis
+#   y.censored  ~ dmnorm(y_star,r) ##cannot be partially observed -- JAGS Manual
+#   
+#   for(i in 1:N){
+#   y.ind[i] ~ dinterval(y.censored[i], interval[i,])
+#   }
+#   
+# }"
+#   
+#   tobit2space <- "
+#   model{ 
+# 
+#   for(n in 1:nens){
+#       y.censored[n,] ~ dmnorm(muf,pf) ##cannot be partially observed -- JAGS Manual
+#   
+#       for(i in 1:N){
+#           y.ind[n,i] ~ dinterval(y.censored[n,i], interval[i,])
+#       }
+#   }
+# 
+#   #Priors
+#   pf  ~ dwish(aq,bq)
+#   muf  ~ dmnorm(mu.prior,cov.prior)
+#   
+# }"
+#   
+  sampler_toggle <- nimbleFunction(
+    contains = sampler_BASE,
+    setup = function(model, mvSaved, target, control) {
+      type <- control$type
+      nested_sampler_name <- paste0('sampler_', type)
+      control_new <- nimbleOptions('MCMCcontrolDefaultList')
+      control_new[[names(control)]] <- control
+      nested_sampler_list <- nimbleFunctionList(sampler_BASE)
+      nested_sampler_list[[1]] <- do.call(nested_sampler_name, list(model, mvSaved, target, control_new))
+      toggle <- 1
+    },
+    run = function() {
+      if(toggle == 1)
+        nested_sampler_list[[1]]$run()
+    },
+    methods = list(
+      reset = function()
+        nested_sampler_list[[1]]$reset()
+    )
+  )
   
-  q  ~ dwish(aq,bq) ## aq and bq are estimated over time
-  Q <- inverse(q)
-  X.mod ~ dmnorm(muf,pf) ## Model Forecast ##muf and pf are assigned from ensembles
+  tobit.model <- nimbleCode({ 
+    
+    q[1:N,1:N]  ~ dwish(R = aq[1:N,1:N], df = bq) ## aq and bq are estimated over time
+    Q[1:N,1:N] <- inverse(q[1:N,1:N])
+    X.mod[1:N] ~ dmnorm(muf[1:N], prec = pf[1:N,1:N]) ## Model Forecast ##muf and pf are assigned from ensembles
+    
+    ## add process error
+    X[1:N]  ~ dmnorm(X.mod[1:N], prec = q[1:N,1:N])
+    
+    #agb linear
+    #y_star[1:N,1:N] <- X[1:N,1:N] #[choose]
+    
+    #f.comp non linear
+    #y_star <- X[1:9] / sum(X[1:9])
+    
+    ## Analysis
+    y.censored[1:YN] ~ dmnorm(X[1:YN], prec = r[1:YN,1:YN]) #is it an okay assumpution to just have X and Y in the same order?
+    
+    #don't flag y.censored as data, y.censored in inits
+    #remove y.censored samplers and only assign univariate samplers on NAs
+    
+    for(i in 1:YN){
+      y.ind[i] ~ dconstraint(y.censored[i] > 0)
+    }
+    
+  })
+  
+    tobit2space.model <- nimbleCode({
 
-  ## add process error
-  X  ~ dmnorm(X.mod,q)
- 
-  #agb linear
-  #y_star <- X[choose]
-  
-  #f.comp non linear
-  y_star <- X[1:9] / sum(X[1:9])
-  
-  ## Analysis
-  y.censored  ~ dmnorm(y_star,r) ##cannot be partially observed -- JAGS Manual
-  
-  for(i in 1:N){
-  y.ind[i] ~ dinterval(y.censored[i], interval[i,])
-  }
-  
-}"
-  
-  tobit2space <- "
-  model{ 
+    for(n in 1:nens){
+        y.censored[n,1:N] ~ dmnorm(muf[1:N],pf[1:N,1:N])
 
-  for(n in 1:nens){
-      y.censored[n,] ~ dmnorm(muf,pf) ##cannot be partially observed -- JAGS Manual
-  
-      for(i in 1:N){
-          y.ind[n,i] ~ dinterval(y.censored[n,i], interval[i,])
-      }
-  }
+        for(i in 1:N){
+            y.ind[n,i] ~ dinterval(y.censored[n,i], interval[i,1:2])
+        }
+    }
 
-  #Priors
-  pf  ~ dwish(aq,bq)
-  muf  ~ dmnorm(mu.prior,cov.prior)
-  
-}"
+    #Priors
+    pf[1:N,1:N]  ~ dwish(aq[1:N,1:N],bq)
+    muf[1:N]  ~ dmnorm(mu.prior[1:N],cov.prior[1:N,1:N])
+
+  })
   
   t1         <- 1
   pink       <- col2rgb("deeppink")
@@ -372,27 +436,90 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       x.censored[n,] <- as.numeric(ifelse(X[n,] > intervalX[,1], X[n,], 0))
     }
 
-    #### JAGS update list
-    update.tobit2space <- list(interval = intervalX,
-                   N = ncol(X),
-                   y.ind = x.ind,
-                   y.censored = x.censored,
-                   aq = diag(ncol(X))*ncol(X), 
-                   bq = ncol(X),
-                   nens = nens,
-                   mu.prior = colMeans(X), #cheating? basically gives us back means
-                   cov.prior = diag(ncol(X)))
+    if(t == 1 ){ #| length(x.ind[1,]) > mu.f
+      #y.obs = Y.dat[1,]
+      constants.tobit2space = list(N = ncol(X), nens = nens)
+      data.tobit2space = list(interval = intervalX,
+                        y.ind = x.ind,
+                        y.censored = x.censored,
+                        aq = diag(ncol(X))*ncol(X), 
+                        bq = ncol(X),
+                        mu.prior = colMeans(X), #cheating? basically gives us back means
+                        cov.prior = diag(ncol(X)))
+      
+      inits.tobit2space = list(pf = diag(ncol(X)), muf = rep(0,ncol(X))) #
+      #set.seed(0)
+      #ptm <- proc.time()
+      tobit2space_pred <- nimbleModel(tobit2space.model, data = data.tobit2space,
+                                constants = constants.tobit2space, inits = inits.tobit2space)
+      ## Adding X.mod,q,r as data for building model.
+      conf_tobit2space <- configureMCMC(tobit2space_pred, print=TRUE)
+      conf_tobit2space$addMonitors(c("pf", "muf")) 
+      ## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
+      ## important!
+      ## this is needed for correct indexing later
+      samplerNumberOffset <- length(conf_tobit2space$getSamplers())
+      
+      for(n in 1:nens){
+        for(i in 1:length(x.ind)) {
+          node <- paste0('y.censored[',n,',',i,']')
+          conf_tobit2space$addSampler(node, 'toggle', control=list(type='RW'))
+          ## could instead use slice samplers, or any combination thereof, e.g.:
+          ##conf$addSampler(node, 'toggle', control=list(type='slice'))
+        }
+      }
+      
+      
+      conf_tobit2space$printSamplers()
+      
+      ## can monitor y.censored, if you wish, to verify correct behaviour
+      conf_tobit2space$addMonitors('y.censored')
+      
+      Rmcmc_tobit2space <- buildMCMC(conf_tobit2space)
+      
+      Cmodel_tobit2space <- compileNimble(tobit2space_pred)
+      Cmcmc_tobit2space <- compileNimble(Rmcmc_tobit2space, project = tobit2space_pred)
+      
+    }else{
+      Cmodel_tobit2space$y.ind <- x.ind
+      Cmodel_tobit2space$y.censored <- x.censored
+      Cmodel_tobit2space$mu.prior <- colMeans(X)
+      
+      for(n in 1:nens){
+        for(i in 1:length(x.ind)) {
+          ## ironically, here we have to "toggle" the value of y.ind[i]
+          ## this specifies that when y.ind[i] = 1,
+          ## indicator variable is set to 0, which specifies *not* to sample
+          valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-x.ind[n,i])
+        }
+      }
+      set.seed(0)
+      dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = 10000, progressBar=FALSE)
+      
+    }
     
-    #### Run JAGS Tobit Model
-    mod.tobit2space <- jags.model(file = textConnection(tobit2space),
-                      data = update.tobit2space,
-                      n.adapt = 1000, 
-                      n.chains = 3)  #inits for q?
+    # #### JAGS update list
+    # update.tobit2space <- list(interval = intervalX,
+    #                N = ncol(X),
+    #                y.ind = x.ind,
+    #                y.censored = x.censored,
+    #                aq = diag(ncol(X))*ncol(X), 
+    #                bq = ncol(X),
+    #                nens = nens,
+    #                mu.prior = colMeans(X), #cheating? basically gives us back means
+    #                cov.prior = diag(ncol(X)))
+    # 
+    # #### Run JAGS Tobit Model
+    # mod.tobit2space <- jags.model(file = textConnection(tobit2space),
+    #                   data = update.tobit2space,
+    #                   n.adapt = 1000, 
+    #                   n.chains = 3)  #inits for q?
+    # 
+    # jdat.tobit2space <- coda.samples(mod.tobit2space, variable.names = c("pf", "muf"), n.iter = 10000)
+    # dat.tobit2space  <- as.matrix(jdat.tobit2space)
     
-    jdat.tobit2space <- coda.samples(mod.tobit2space, variable.names = c("pf", "muf"), n.iter = 10000)
     
     ## update parameters
-    dat.tobit2space  <- as.matrix(jdat.tobit2space)
     dat.tobit2space  <- dat.tobit2space[3000:10000, ]
     iPf   <- grep("pf", colnames(dat.tobit2space))
     imuf   <- grep("muf[", colnames(dat.tobit2space), fixed = TRUE)
@@ -415,7 +542,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       
       Y <- unlist(obs.mean[[t]][choose])
       
-      R <- as.matrix(obs.cov[[t]])
+      R <- as.matrix(obs.cov[[t]]) #TO DO: R probably needs to be organized like Y too?
       
       if (length(obs.mean[[t]]) > 1) {
         for (s in seq_along(obs.mean[[t]])) {
@@ -551,33 +678,93 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         y.ind <- as.numeric(Y > interval[,1])
         y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
         
-        #### JAGS update list
-        update <- list(interval = interval,
-                       N = length(y.ind),
-                       y.ind = y.ind,
-                       y.censored = y.censored, 
-                       r = solve(R),
-                       muf = mu.f, 
-                       pf =  Pf, #check
-                       aq = aqq[t,,], 
-                       bq = bqq[t],
-                       choose = choose)
-   
-        #### Run JAGS Tobit Model
-        mod <- jags.model(file = textConnection(tobit.model),
-                          data = update,
-                          n.adapt = 1000, 
-                          n.chains = 3)  #inits for q?
-
-        jdat <- coda.samples(mod, variable.names = c("X", "q"), 
-                             n.iter = 10000)
+        if(t > 1 & length(y.ind[t,]) > length(y.ind[t-1,])){
+          #y.obs = Y.dat[1,]
+          constants.tobit = list(N = ncol(X), YN = length(y.ind)) #, nc = 1
+          dimensions.tobit = list(X = ncol(X), X.mod = ncol(X), Q = c(ncol(X),ncol(X))) #  b = dim(inits.pred$b),
+          
+          data.tobit = list(muf = as.vector(mu.f), pf = Pf, aq = aqq[,,t], bq = bqq[t],
+                            y.ind = y.ind[t,],
+                            y.censored = y.censored[t,],
+                            r = solve(r))
+          inits.pred = list(q = diag(ncol(X)), X.mod = as.vector(mu.f), X = rnorm(ncol(X),0,1)) #
+          #set.seed(0)
+          #ptm <- proc.time()
+          model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
+                                    constants = constants.tobit, inits = inits.pred)
+          ## Adding X.mod,q,r as data for building model.
+          conf <- configureMCMC(model_pred, print=TRUE)
+          conf$addMonitors(c("X","q","Q")) 
+          ## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
+          ## important!
+          ## this is needed for correct indexing later
+          samplerNumberOffset <- length(conf$getSamplers())
+          
+          for(i in 1:length(y.ind[t,])) {
+            node <- paste0('y.censored[',i,']')
+            conf$addSampler(node, 'toggle', control=list(type='RW'))
+            ## could instead use slice samplers, or any combination thereof, e.g.:
+            ##conf$addSampler(node, 'toggle', control=list(type='slice'))
+          }
+          
+          conf$printSamplers()
+          
+          ## can monitor y.censored, if you wish, to verify correct behaviour
+          conf$addMonitors('y.censored')
+          
+          Rmcmc <- buildMCMC(conf)
+          
+          Cmodel <- compileNimble(model_pred)
+          Cmcmc <- compileNimble(Rmcmc, project = model_pred)
+          
+        }else{
+          Cmodel$y.ind <- y.ind[t,]
+          Cmodel$y.censored <- y.censored[t,]
+          Cmodel$aq <- aqq[,,t]
+          Cmodel$bq <- bqq[t]
+          Cmodel$muf <- mu.f
+          Cmodel$pf <- Pf
+          Cmodel$r <- solve(R)
+          
+          for(i in 1:length(y.ind[t,])) {
+            ## ironically, here we have to "toggle" the value of y.ind[i]
+            ## this specifies that when y.ind[i] = 1,
+            ## indicator variable is set to 0, which specifies *not* to sample
+            valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[t,i])
+          }
+          
+          set.seed(0)
+          dat <- runMCMC(Cmcmc, niter = 10000, progressBar=FALSE)
+          
+        }
         
-        #gelman.diag(jdat[,1:10])
-        #is it reasonable to expect convergence every year of every parameter?
-        #should we put a stop in if params don't converge?
+        
+        # #### JAGS update list
+        # update <- list(interval = interval,
+        #                N = length(y.ind),
+        #                y.ind = y.ind,
+        #                y.censored = y.censored, 
+        #                r = solve(R),
+        #                muf = mu.f, 
+        #                pf =  Pf, #check
+        #                aq = aqq[t,,], 
+        #                bq = bqq[t],
+        #                choose = choose)
+        # 
+        # #### Run JAGS Tobit Model
+        # mod <- jags.model(file = textConnection(tobit.model),
+        #                   data = update,
+        #                   n.adapt = 1000, 
+        #                   n.chains = 3)  #inits for q?
+        # 
+        # jdat <- coda.samples(mod, variable.names = c("X", "q"), 
+        #                      n.iter = 10000)
+        # 
+        # #gelman.diag(jdat[,1:10])
+        # #is it reasonable to expect convergence every year of every parameter?
+        # #should we put a stop in if params don't converge?
         
         ## update parameters
-        dat  <- as.matrix(jdat)
         dat  <- dat[3000:10000, ]
         iq   <- grep("q", colnames(dat))
         iX   <- grep("X[", colnames(dat), fixed = TRUE)
