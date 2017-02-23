@@ -14,7 +14,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.ic = FALSE
     settings$run$inputs <- NULL  ## check for empty set
   }
   
-  dbfiles <- ifelse(!is.localhost(settings$host) & !is.null(settings$host$folder),settings$host$folder,settings$database$dbfiles)
+  dbfiles <- ifelse(!is.localhost(settings$host) & !is.null(settings$host$folder), settings$host$folder, settings$database$dbfiles)
   
   for (i in seq_along(settings$run$inputs)) {
     input <- settings$run$inputs[[i]]

@@ -155,7 +155,7 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host = "localhost", dbpa
     
     # merge with data
     colnames(spp.info)[colnames(spp.info) == "input_code"] <- code.col
-    sppmatched <- merge(obs, spp.info, by.x = code.col)
+    sppmatched <- merge(obs, spp.info, by = code.col)
     
     ### write
     
@@ -172,7 +172,7 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host = "localhost", dbpa
     
     ### write
     
-    file_name <- paste0("pftmatch_site_", runinfo$site$id, ".", inputinfo$source, ".", year, ".txt")
+    file_name <- paste0("pftmatch_site_", runinfo$site$id, ".", inputinfo$source, ".", start_year, ".", end_year, ".txt")
     
     # Insert into DB
     dbfile.input.insert(
