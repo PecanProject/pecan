@@ -1,5 +1,5 @@
 rmd_files: [ 
-  "book_intro/index.Rmd",
+  "index.Rmd",
   "book_intro/project_overview.Rmd",
   "book_intro/Code-of-Conduct.Rmd",
   "book_intro/how_to_use_book.Rmd"
