@@ -118,7 +118,7 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host = "localhost", dbpa
     # decide which code format to use while matching species
     # should we retrieve it from settings or assign a code format per source type?
     # or allow both?
-    if(inputinfo$source %in% c("NASA_TE_FIA")){
+    if(inputinfo$source %in% c("GapMacro", "NASA_TE_FIA")){
       format.name = 'usda'
     }else if(!is.null(inputinfo$match.format)){
       format.name = inputinfo$match.format
