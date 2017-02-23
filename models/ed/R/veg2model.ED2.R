@@ -5,6 +5,7 @@
 #' @param start_date
 #' @param end_date
 #' @return results dataframe
+#' @author Istem Fer
 #'  We need the in.path, the out folder, the start and endates and the lat/long. All of these are in setting$run. 
 veg2model.ED2 <- function(inputinfo, runinfo, outfolder, overwrite = FALSE){
   

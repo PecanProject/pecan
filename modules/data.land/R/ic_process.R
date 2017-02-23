@@ -17,6 +17,10 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host = "localhost", dbpa
   
   
   start_year <- lubridate::year(runinfo$start.date)
+  end_year   <- lubridate::year(runinfo$end.date)
+  lat <- as.numeric(runinfo$site$lat)
+  lon <- as.numeric(runinfo$site$lon)
+
   
   # If overwrite is a plain boolean, fill in defaults for each stage
   # which stages are going to be in IC Workflow?
@@ -70,6 +74,7 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host = "localhost", dbpa
     stage <- list(download = FALSE, loaddata = TRUE, sppmatch = TRUE, pftmatch = TRUE,  veg2model = TRUE)
     if(inputinfo$source == "FIA"){
       stage$download <- TRUE
+      stage$loaddata <- FALSE
     }
   } else {
     
@@ -85,8 +90,15 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host = "localhost", dbpa
   # Download FIA
   if (stage$download) {
     
-    ########
+      
+    ## connect to database
+    fia.con <- db.open(dbparms$fia)
+    on.exit(db.close(fia.con), add = T)
     
+    fia.info <- download.FIA(lat, lon, start_year, con = fia.con)
+    
+    ## format it somehow to have something similar as "obs"
+ 
     stage$download <- FALSE
   }
   
