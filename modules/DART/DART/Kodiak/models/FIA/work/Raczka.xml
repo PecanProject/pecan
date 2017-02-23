@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<!DOCTYPE config SYSTEM "ed.dtd">
+<config>
+ <comment></comment>
+ <comment></comment>
+
+ <pft>
+  <num>9</num>
+  <storage_turnover_rate>0</storage_turnover_rate>
+  <plant_min_temp>-80</plant_min_temp>
+ </pft>
+
+ <pft>
+  <num>10</num>
+  <storage_turnover_rate>0</storage_turnover_rate>
+  <plant_min_temp>-80</plant_min_temp>
+ </pft>
+
+ <pft>
+  <num>11</num>
+  <storage_turnover_rate>0</storage_turnover_rate>
+  <plant_min_temp>-80</plant_min_temp>
+ </pft>
+
+ <hydro>
+  <useTOPMODEL>0</useTOPMODEL>
+  <useRUNOFF>0</useRUNOFF>
+  <outputPeriod>96</outputPeriod>
+  <MoistdWT>100000000.0</MoistdWT>
+  <MoistRateTuning>0.4</MoistRateTuning>
+  <FracLiqRunoff>0.00001</FracLiqRunoff>
+  <dewmax>1.0e-8</dewmax>
+ </hydro>
+
+ <radiation>
+  <rlong_min>50</rlong_min>
+  <veg_temp_min>193</veg_temp_min>
+ </radiation>
+
+ <ed_misc>
+  <outputMonth>6</outputMonth>
+  <burnin>2</burnin>
+ </ed_misc>
+
+ <pft>
+  <num>11</num>
+  <name>temperate.Late_Hardwood_bmr2</name>
+  <mort2>19.7858429457185</mort2>
+  <root_turnover_rate>0.672821855556289</root_turnover_rate>
+  <growth_resp_factor>0.350752925815654</growth_resp_factor>
+  <stomatal_slope>5.83922241620131</stomatal_slope>
+  <q>0.996918525568307</q>
+  <r_fract>0.311904433978706</r_fract>
+  <water_conductance>0.0047390493748248</water_conductance>
+  <SLA>39.5191085921959</SLA>
+  <quantum_efficiency>0.06</quantum_efficiency>
+  <Vm0>55.9772014903699</Vm0>
+  <root_respiration_factor>2.92649153488262</root_respiration_factor>
+  <dark_respiration_factor>0.036</dark_respiration_factor>
+</pft>
+
+ <pft>
+  <num>10</num>
+  <name>temperate.North_Mid_Hardwood_bmr2</name>
+  <mort2>7</mort2>
+  <root_turnover_rate>0.681272891632452</root_turnover_rate>
+  <growth_resp_factor>0.350895513550826</growth_resp_factor>
+  <stomatal_slope>5.72517569431067</stomatal_slope>
+  <q>0.995569665136573</q>
+  <r_fract>0.31579851322008</r_fract>
+  <water_conductance>0.00467345860502987</water_conductance>
+  <SLA>29.8367132934298</SLA>
+  <quantum_efficiency>0.0395868455487074</quantum_efficiency>
+  <Vm0>29.3721162022863</Vm0>
+  <root_respiration_factor>2.94189739074827</root_respiration_factor>
+  <dark_respiration_factor>0.0120350657590034</dark_respiration_factor>
+</pft>
+
+ <pft>
+  <num>9</num>
+  <name>temperate.Early_Hardwood_bmr2</name>
+  <mort2>3.5</mort2>
+  <root_turnover_rate>0.691493081550267</root_turnover_rate>
+  <growth_resp_factor>0.351284005424265</growth_resp_factor>
+  <stomatal_slope>5.87483303044465</stomatal_slope>
+  <q>0.63578678943004</q>
+  <r_fract>0.318077268126368</r_fract>
+  <water_conductance>0.00496516691604303</water_conductance>
+  <SLA>28.4607544476031</SLA>
+  <quantum_efficiency>0.05777591421918</quantum_efficiency>
+  <Vm0>27.9608887381234</Vm0>
+  <root_respiration_factor>2.94543859694168</root_respiration_factor>
+  <dark_respiration_factor>0.0339853068703957</dark_respiration_factor>
+ </pft>
+
+</config>

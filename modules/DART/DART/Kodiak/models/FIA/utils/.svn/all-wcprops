@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/DAReS/!svn/ver/5020/DART/releases/Kodiak/models/template/utils
+END
+mkmf_trans_time
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/DAReS/!svn/ver/5020/DART/releases/Kodiak/models/template/utils/mkmf_trans_time
+END
+temp_ic
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/DAReS/!svn/ver/5020/DART/releases/Kodiak/models/template/utils/temp_ic
+END
+trans_time.f90
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/DAReS/!svn/ver/5020/DART/releases/Kodiak/models/template/utils/trans_time.f90
+END
+input.nml
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/DAReS/!svn/ver/5020/DART/releases/Kodiak/models/template/utils/input.nml
+END
+path_names_trans_time
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/DAReS/!svn/ver/5020/DART/releases/Kodiak/models/template/utils/path_names_trans_time
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/DAReS/!svn/ver/5020/DART/releases/Kodiak/models/template/utils/README
+END

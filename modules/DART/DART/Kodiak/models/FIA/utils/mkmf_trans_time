@@ -1,0 +1,18 @@
+#!/bin/csh
+#
+# DART software - Copyright 2004 - 2011 UCAR. This open source software is
+# provided by UCAR, "as is", without charge, subject to all terms of use at
+# http://www.image.ucar.edu/DAReS/DART/DART_download
+#
+# $Id: mkmf_trans_time 4918 2011-05-25 22:57:43Z thoar $
+
+../../../mkmf/mkmf -p trans_time -t ../../../mkmf/mkmf.template -c"-Duse_netCDF" \
+ -a "../../.." path_names_trans_time
+
+exit $status
+
+# <next few lines under version control, do not edit>
+# $URL: https://proxy.subversion.ucar.edu/DAReS/DART/releases/Kodiak/models/template/utils/mkmf_trans_time $
+# $Revision: 4918 $
+# $Date: 2011-05-25 18:57:43 -0400 (Wed, 25 May 2011) $
+
