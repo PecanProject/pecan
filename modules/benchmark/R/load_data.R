@@ -6,7 +6,7 @@
 ##' @param start_year numeric
 ##' @param end_year numeric
 ##' @param site list
-##' @author Betsy Cowdery, Joshua Mantooth
+##' @author Betsy Cowdery, Istem Fer, Joshua Mantooth
 ##' Generic function to convert input files containing observational data to 
 ##' a common PEcAn format. 
 load_data <- function(data.path, format, start_year = NA, end_year = NA, site = NA, 
@@ -60,11 +60,12 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   
   # check wide format and transform to long
   if(any(duplicated(vars_used$bety_name))){
-    # which observations to
-    wide.vars <- vars_used$input_name[vars_used$bety_name == unique(vars_used$bety_name[duplicated(vars_used$bety_name)])]
-    long.vars <- colnames(out)[!(colnames(out) %in% wide.vars)]
-    mout      <- reshape2::melt(out, id = long.vars) 
-  }
+    w2l       <- wide2long(out, format, vars_used, time.row)
+    out       <- w2l$mout
+    format    <- w2l$format
+    vars_used <- w2l$format
+    time_row  <- w2l$format
+   }
 
   
   for (i in seq_len(nrow(vars_used))) {

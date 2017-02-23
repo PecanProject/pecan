@@ -16,7 +16,7 @@
 ic_process <- function(pfts, runinfo, inputinfo, model, host = "localhost", dbparms, dir, overwrite = FALSE){
   
   
-  year <- lubridate::year(runinfo$start.date)
+  start_year <- lubridate::year(runinfo$start.date)
   
   # If overwrite is a plain boolean, fill in defaults for each stage
   # which stages are going to be in IC Workflow?
