@@ -53,6 +53,8 @@ match_pft <- function(bety_species_id, pfts, con){
   }  
 
   ## Match
-  return(merge(translation, as.data.frame(bety_species_id), by = "bety_species_id"))
+  matchedpft <- dplyr::right_join(translation,  as.data.frame(bety_species_id), type="right")
+
+  return(matchedpft)
   
 }
