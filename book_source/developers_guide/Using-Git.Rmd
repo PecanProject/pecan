@@ -1,11 +1,10 @@
-Summary:
--------------------
+# Using Git
 
 
 This document describes the steps required to download PEcAn, make changes to code, and submit your changes.
 
-* For asking questions, reporting bugs, and requesting features, see our documentation for [reporting issues on Redmine and GitHub](Github-issues.md) 
-* If you are new to GitHub or to PEcAn, start with the one-time set-up instructions under [Before any work is done](Using-Git.md#before-any-work-is-done). Also see the excellent tutorials and references in the [References](Using-Git.md#references) section at the the bottom of this page.
+* For asking questions, reporting bugs, and requesting features, see our documentation for [reporting issues on Redmine and GitHub](#github-issue) 
+* If you are new to GitHub or to PEcAn, start with the one-time set-up instructions under [Before any work is done](#before-any-work-is-done). Also see the excellent tutorials and references in the [References](Using-Git.md#references) section at the the bottom of this page.
 * To make trivial changes, see [Quick and Easy](Using-Git.md#quick-and-easy)
 * To make changes to the code, start with the [basic workflow](Using-Git.md#basic-workflow). 
 * If you want to submit changes that you've made to be part of PEcAn you'll want to follow [Committing Changes Using Pull Requests](Using-Git.md#committing-changes-using-pull-requests)
@@ -16,10 +15,6 @@ cd pecan
 git pull upstream master
 ./scripts/build.sh
  ```
-
-GIT and GitHub Overview
-============
-
 
 ## Git
 
@@ -74,8 +69,8 @@ The Milestones, issues, and tasks can be used to organize specific features or r
 The **easiest** approach is to use GitHub's browser based workflow. This is useful when your change is a few lines, if you are editing a wiki, or if the edit is trivial (and won't break the code). The [GitHub documentation is here](https://help.github.com/articles/github-flow-in-the-browser) but it is simple: finding the page or file you want to edit, click "edit" and then the GitHub web application will automatically forking and branch, then allow you to submit a pull request. However, it should be noted that unless you are a member of the PEcAn project that the "edit" button will not be active and you'll want to follow the workflow described below for forking and then submitting a pull request.
 
 
-Recommended Git Workflow
-------------------------
+## Recommended Git Workflow
+
 
 **Each feature should be in it’s own branch** (for example each redmine
 issue is a branch, names of branches are often the issue in a bug
