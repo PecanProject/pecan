@@ -16,20 +16,19 @@
 ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, overwrite = FALSE){
   
   mimetype    <- "text/plain"
+  file_path <- file.path(dir, paste0(inputinfo$source, "_site_", runinfo$site$id))
+  ### check if file_path exists, create otherwise
+  dir.create(file_path, showWarnings = F, recursive = T)
+  
   start_year <- lubridate::year(runinfo$start.date)
   end_year   <- lubridate::year(runinfo$end.date)
   startdate   <- lubridate::as_date(paste0(start_year, "-01-01"))
   enddate <- lubridate::as_date(paste0(end_year, "-12-31"))
+  
   lat <- as.numeric(runinfo$site$lat)
   lon <- as.numeric(runinfo$site$lon)
-
   
-  # If overwrite is a plain boolean, fill in defaults for each stage
-  # which stages are going to be in IC Workflow?
-  # download, at least for FIA data
-  # sppmatch, spp code - species id match
-  # pftmatch, species id - model pft match
-  # veg2model, final IC product
+  # these are not actually doing anything now, just as a reminder
   if (!is.list(overwrite)) {
     if (overwrite) {
       # Default for overwrite==TRUE is to overwrite everything but download
@@ -75,8 +74,10 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
   if (is.null(inputinfo$id)) {
     stage <- list(download = FALSE, loaddata = TRUE, sppmatch = TRUE, pftmatch = TRUE,  veg2model = TRUE)
     if(inputinfo$source == "FIA"){
-      stage$download <- TRUE
+      stage$download <- ifelse(inputinfo$output == "site", FALSE, TRUE)
       stage$loaddata <- FALSE
+      stage$sppmatch <- ifelse(inputinfo$output == "css", TRUE, FALSE)
+      stage$pftmatch <- ifelse(inputinfo$output == "css", TRUE, FALSE)
     }
   } else {
     
@@ -99,11 +100,31 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
     
     fia.info <- download.FIA(inputinfo, lat, lon, year = start_year, con = fia.con)
     
-    inputinfo <- fia.info$inputinfo
-    obs       <- fia.info$obs
-    pss.info  <- fia.info$pss.info
+    inputinfo      <- fia.info$inputinfo
+    data.list$obs  <- fia.info$obs
+    data.list$meta <- fia.info$pss.info
     
-    #we can already write pss file and fill
+
+    ### saving intermediate steps as .Rdata
+    file_name <- paste0("fia.", inputinfo$output, ".", start_year, "_", end_year, ".txt")
+    save(data.list, file = file.path(file_path, file_name))
+    
+    dbfile.insert(data_dir, in.prefix = prefix, type = "Input", input.id, con, 
+                  reuse = TRUE)
+    # Insert into dbfiles
+    inputinfo$id <- dbfile.input.insert(
+      in.path    = file_path,
+      in.prefix  = file_name,
+      siteid     = runinfo$site$id,
+      startdate  = startdate,
+      enddate    = enddate,
+      mimetype   = mimetype,
+      formatname = paste0("fia.", inputinfo$output),
+      parentid   = NA,
+      con        = con,
+      hostname   = fqdn(),
+      allow.conflicting.dates = TRUE
+    )$input.id
     
     ## format it somehow to have something similar as "obs"
  
@@ -180,11 +201,8 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
     
     
     ### write
-    file_path <- file.path(dir, paste0(inputinfo$source, "_site_", runinfo$site$id))
     file_name <- paste0("pftmatch.", start_year, "_", end_year, ".txt")
     
-    ### check if file_path exists, create otherwise
-    #  dir.create(out.dir.local, showWarnings = F, recursive = T)
     
     # where to read file from in veg2model
     inputinfo$path <- file.path(file_path, file_name)
@@ -223,9 +241,11 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
     
     # call veg2model.[model]
     fcn    <- match.fun(veg2model.fcn)
-    ic.id  <- fcn(inputinfo = inputinfo, runinfo = runinfo, outfolder = file_path)
+    ic.id  <- fcn(inputinfo = inputinfo, runinfo = runinfo, con, outfolder = file_path)
     
   }
   
-  return(ic.id)
+  model.file <- db.query(paste("SELECT * from dbfiles where container_id =", ic.id), con)
+  
+  return(file.path(model.file$file_path, model.file$file_name))
 } # ic_process
