@@ -1,7 +1,7 @@
 ##' @name download.FIA
 ##' @title download.FIA
 ##' @export
-download.FIA <- function(lat, lon, year, gridres = 0.075, con){
+download.FIA <- function(inputinfo, lat, lon, year, gridres = 0.075, con){
   
   gridres  <- 0.075
   lonmin   <- lon - gridres
@@ -60,13 +60,16 @@ download.FIA <- function(lat, lon, year, gridres = 0.075, con){
   pss.info$area  <- rep(1 / n.patch, n.patch)
   pss.info$water <- rep(0, n.patch)
   
+  # Reorder columns, dropping unneeded ones
+  pss.info <- pss.info[, c("site", "time", "patch", "trk", "age", "area", "water")]
+  
   # Add soil data
   soil            <- c(1, 5, 5, 0.01, 0, 1, 1)  #soil C & N pools (biogeochem) defaults (fsc,stsc,stsl,ssc,psc,msn,fsn)\t
   soil.dat        <- as.data.frame(matrix(soil, n.patch, 7, byrow = TRUE))
   names(soil.dat) <- c("fsc", "stsc", "stsl", "ssc", "psc", "msn", "fsn")
   pss.info       <- cbind(pss.info, soil.dat)
   
-  logger.debug(paste0("Found ", nrow(pss), " patches for site ", settings$run$site$id))
+  logger.debug(paste0("Found ", nrow(pss.info), " patches for coordinates lat:", lat, " lon:", lon))
   
   ##################
   ##              ##
@@ -81,8 +84,8 @@ download.FIA <- function(lat, lon, year, gridres = 0.075, con){
                   " and p.lat >= ", latmin,
                   " and p.lat < ", latmax)
   css.info <- db.query(query, con = fia.con)
-  
   names(css.info) <- tolower(names(css.info))
+  
   if (nrow(css.info) == 0) {
     logger.severe("No FIA data found.")
   } else {
@@ -90,7 +93,7 @@ download.FIA <- function(lat, lon, year, gridres = 0.075, con){
   }
   
   # Remove rows that don't map to any retained patch
-  css.info <- css.info[which(css.info$patch %in% pss$patch), ]
+  css.info <- css.info[which(css.info$patch %in% pss.info$patch), ]
   if (nrow(css.info) == 0) {
     logger.severe("No trees map to previously selected patches.")
   } else {
@@ -109,12 +112,15 @@ download.FIA <- function(lat, lon, year, gridres = 0.075, con){
   }
   
 
-  prefix.psscss <- paste0("siteid", runinfo$site$id, ".", inputinfo$source, year, ".radius", gridres, 
+  prefix.psscss <- paste0("siteid", runinfo$site$id, ".fia", inputinfo$source, year, ".radius", gridres, 
                           get.ed.file.latlon.text(lat, lon, site.style = FALSE))
-  prefix.site <- paste0("siteid", settings$run$site$id, ".fia", year, ".radius", gridres, 
+  prefix.site   <- paste0("siteid", settings$run$site$id, ".fia", year, ".radius", gridres, 
                         get.ed.file.latlon.text(lat, lon, site.style = TRUE))
   
-  return(list(pss = pss.info, css = css.info, prefix.psscss = prefix.psscss, prefix.site = prefix.site))
+  inputinfo$prefix.psscss <- prefix.psscss
+  inputinfo$prefix.site   <- prefix.site
+  
+  return(list(inputinfo = inputinfo, obs = css.info, pss.info = pss.info))
 } # download.FIA
 
 
