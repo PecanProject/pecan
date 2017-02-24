@@ -26,7 +26,8 @@ Imports:
     stringr (>= 1.1.0),
     udunits2 (>= 0.11),
     XML (>= 3.98-1.4),
-    nneo
+    nneo,
+    httr
 Remotes:
     github::ropenscilabs/nneo
 License: FreeBSD + file LICENSE

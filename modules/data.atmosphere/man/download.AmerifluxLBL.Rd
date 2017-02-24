@@ -2,7 +2,7 @@
 % Please edit documentation in R/download.AmerifluxLBL.R
 \name{download.AmerifluxLBL}
 \alias{download.AmerifluxLBL}
-\title{download.AmerifluxLBL}
+\title{Download Ameriflux LBL CSV files}
 \usage{
 download.AmerifluxLBL(sitename, outfolder, start_date, end_date,
   overwrite = FALSE, verbose = FALSE, username = "pecan", ...)
@@ -22,7 +22,14 @@ download.AmerifluxLBL(sitename, outfolder, start_date, end_date,
 The 'SITE_ID' field in \href{http://ameriflux.lbl.gov/sites/site-list-and-pages/}{list of Ameriflux sites}}
 }
 \description{
-Download Ameriflux LBL CSV files
+download.AmerifluxLBL
+}
+\details{
+Uses Ameirflux LBL JSON API to download met data from Ameriflux towers in CSV format
+}
+\examples{
+result <- download.AmerifluxLBL("US-Akn","~/","2011-01-01","2011-12-31",overwrite=TRUE)
+
 }
 \author{
 Ankur Desai, based on download.Ameriflux.R by Josh Mantooth, Rob Kooper
