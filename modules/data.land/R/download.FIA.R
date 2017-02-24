@@ -109,8 +109,25 @@ download.FIA <- function(lat, lon, year, gridres = 0.075, con){
   }
   
 
-  return(list(pss = pss.info, css = css.info))
+  prefix.psscss <- paste0("siteid", runinfo$site$id, ".", inputinfo$source, year, ".radius", gridres, 
+                          get.ed.file.latlon.text(lat, lon, site.style = FALSE))
+  prefix.site <- paste0("siteid", settings$run$site$id, ".fia", year, ".radius", gridres, 
+                        get.ed.file.latlon.text(lat, lon, site.style = TRUE))
+  
+  return(list(pss = pss.info, css = css.info, prefix.psscss = prefix.psscss, prefix.site = prefix.site))
 } # download.FIA
+
+
+# See ed_read_ed10_20_history...
+get.ed.file.latlon.text <- function(lat, lon, site.style = FALSE, ed.res = 1) {
+  if (site.style) {
+    lat <- ifelse(lat >= 0, ed.res * floor(lat / ed.res) + 0.5 * ed.res, -ed.res * floor(-lat / ed.res) - 0.5 * ed.res)
+    lon <- ifelse(lon >= 0, ed.res * floor(lon / ed.res) + 0.5 * ed.res, -ed.res * floor(-lon / ed.res) - 0.5 * ed.res)
+    return(paste0(".lat", round(lat, 1), "lon", round(lon, 1)))
+  } else {
+    return(paste0(".lat", round(lat, 4), "lon", round(lon, 4)))
+  }
+} # get.ed.file.latlon.text
 
 
 # A function for identifying fia plot records that are remeasurements of one another,

@@ -13,11 +13,13 @@
 ##' @param dir  directory to write outputs to
 ##' @param overwrite Whether to force met.process to proceed.
 ##' @author Istem Fer
-ic_process <- function(pfts, runinfo, inputinfo, model, host = "localhost", dbparms, dir, overwrite = FALSE){
+ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, overwrite = FALSE){
   
-  
+  mimetype    <- "text/plain"
   start_year <- lubridate::year(runinfo$start.date)
   end_year   <- lubridate::year(runinfo$end.date)
+  startdate   <- lubridate::as_date(paste0(start_year, "-01-01"))
+  enddate <- lubridate::as_date(paste0(end_year, "-12-31"))
   lat <- as.numeric(runinfo$site$lat)
   lon <- as.numeric(runinfo$site$lon)
 
@@ -97,6 +99,10 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host = "localhost", dbpa
     
     fia.info <- download.FIA(lat, lon, start_year, con = fia.con)
     
+    inputinfo$prefix.psscss <- fia.info$prefix.psscss
+    inputinfo$prefix.site   <- fia.info$prefix.site
+    
+    
     ## format it somehow to have something similar as "obs"
  
     stage$download <- FALSE
@@ -168,29 +174,34 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host = "localhost", dbpa
     
     pft.info <- match_pft(spp.info$bety_species_id, pfts, con)
     
-    stage$pftmatch <- FALSE
+    ### merge with other stuff
+    
     
     ### write
+    file_path <- file.path(dir, paste0(inputinfo$source, "_site_", runinfo$site$id))
+    file_name <- paste0("pftmatch.", start_year, "_", end_year, ".txt")
     
-    file_name <- paste0("pftmatch_site_", runinfo$site$id, ".", inputinfo$source, ".", start_year, ".", end_year, ".txt")
+    ### check if file_path exists, create otherwise
+    
+    ### obsspppft is the combined thing, testing
+    write.table(obsspppft, file.path(file_path, file_name), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
     
     # Insert into DB
-    dbfile.input.insert(
-        in.path    = dir,
-        in.prefix  = file_name,
-        siteid     = settings$run$site$id,
-        startdate  = startdate,
-        enddate    = enddate,
-        mimetype   = mimetype,
-        formatname = formatnames[i],
-        parentid   = NA,
-        con        = con,
-        hostname   = settings$host$name,
-        allow.conflicting.dates = TRUE
-    )
-
-    inputinfo$id <-  db.query(paste0("INSERT INTO posteriors (pft_id) VALUES (",
-                                    pft.id, ") RETURNING id"), con)
+    inputinfo$id <- dbfile.input.insert(
+      in.path    = file_path,
+      in.prefix  = file_name,
+      siteid     = runinfo$site$id,
+      startdate  = startdate,
+      enddate    = enddate,
+      mimetype   = mimetype,
+      formatname = "pft.info",
+      parentid   = NA,
+      con        = con,
+      hostname   = host$name,
+      allow.conflicting.dates = TRUE
+    )$input.id
+    
+    stage$pftmatch <- FALSE
   }
   
   #--------------------------------------------------------------------------------------------------#
@@ -206,7 +217,7 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host = "localhost", dbpa
     
     # call veg2model.[model]
     fcn    <- match.fun(veg2model.fcn)
-    ic.id  <- fcn(inputinfo = inputinfo, runinfo = runinfo, outfolder = dir)
+    ic.id  <- fcn(inputinfo = inputinfo, runinfo = runinfo, outfolder = file_path)
     
   }
   
