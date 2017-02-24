@@ -97,11 +97,13 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
     fia.con <- db.open(dbparms$fia)
     on.exit(db.close(fia.con), add = T)
     
-    fia.info <- download.FIA(lat, lon, start_year, con = fia.con)
+    fia.info <- download.FIA(inputinfo, lat, lon, year = start_year, con = fia.con)
     
-    inputinfo$prefix.psscss <- fia.info$prefix.psscss
-    inputinfo$prefix.site   <- fia.info$prefix.site
+    inputinfo <- fia.info$inputinfo
+    obs       <- fia.info$obs
+    pss.info  <- fia.info$pss.info
     
+    #we can already write pss file and fill
     
     ## format it somehow to have something similar as "obs"
  

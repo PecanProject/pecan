@@ -27,15 +27,14 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.ic = FALSE
     # IC conversion
     if ((input.tag %in% c("css", "pss", "site")) &&
         is.null(input$path) && !is.null(input$source)) {
-      settings$run$inputs[[i]][['path']] <- 
-        PEcAn.data.land::ic_process(
+      settings$run <- PEcAn.data.land::ic_process(
           pfts       = settings$pfts,
           runinfo    = settings$run, 
           inputinfo  = input,
           model      = settings$model$type,
           host       = settings$host,
           dbparms    = settings$database, 
-          dir        = dbfiles,
+          dir        = settings$database$dbfiles,
           overwrite  = overwrite.ic)
       
       needsave <- TRUE
