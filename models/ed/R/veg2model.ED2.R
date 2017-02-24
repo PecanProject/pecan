@@ -49,26 +49,37 @@ veg2model.ED2 <- function(inputinfo, runinfo, outfolder, overwrite = FALSE){
                         dbfile.name = dbfilenames, 
                         stringsAsFactors = FALSE)
   
+  # get data that was processed in the upstream
+  obs <- read.table(inputinfo$path, header = TRUE, sep = "\t")
+  
+  ##################
+  ##              ##
+  ##     SITE     ##
+  ##              ##
+  ##################
+  # Obviously, this is just a placeholder for now...
+  site <- c(
+    "nsite 1 file_format 1", 
+    "sitenum area TCI elev slope aspect soil",
+    "1 1.0 -7 100.0 0.0 0.0 3"
+  )
+  
+  # if source == "FIA" we still want some more checks
+  #  # --- Consistency tests between PFTs and FIA
+  
   # Read templates of IC files or placeholders
-  
-  
-  # Convert PFT names to ED2 Numbers
-  
-  data(pftmapping)
-  for (pft.i in settings$pfts) {
-    pft.number <- NULL
-    pft.number <- pft.i$constants$num
-    if (is.null(pft.number)) {
-      pft.number <- pftmapping$ED[which(pftmapping == pft.i$name)]
-    }
-    if (is.null(pft.number)) {
-      logger.severe(paste0("Couldn't find an ED2 PFT number for ", pft.i$name))
-    }
-    pfts$pft[pfts$pft == pft.i$name] <- pft.number
-  }
   
   # Loop over years
   # Format IC files
+  
+  
+  # Locally write files
+  write.table(pss, pss.file.local, quote = FALSE, row.names = FALSE)
+  write.table(css, css.file.local, quote = FALSE, row.names = FALSE)
+  
+  site.file.con <- file(site.file.local)
+  writeLines(site, site.file.con)
+  close(site.file.con)
   
   
   

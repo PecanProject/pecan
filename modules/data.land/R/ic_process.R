@@ -182,7 +182,11 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
     file_name <- paste0("pftmatch.", start_year, "_", end_year, ".txt")
     
     ### check if file_path exists, create otherwise
+    #  dir.create(out.dir.local, showWarnings = F, recursive = T)
     
+    # where to read file from in veg2model
+    inputinfo$path <- file.path(file_path, file_name)
+      
     ### obsspppft is the combined thing, testing
     write.table(obsspppft, file.path(file_path, file_name), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
     
