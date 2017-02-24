@@ -27,4 +27,7 @@ download.NEONmet
 \details{
 Uses NEON v0 API to download met data from NEON towers and convert to CF NetCDF
 }
+\examples{
+result <- download.NEONmet('HARV','~/','2017-01-01','2017-01-31',overwrite=TRUE)
+}
 
