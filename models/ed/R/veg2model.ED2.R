@@ -33,15 +33,14 @@ veg2model.ED2 <- function(inputinfo, runinfo, outfolder, overwrite = FALSE){
   
 
   # all the file names
-
-  pss.file.local <- file.path(out.dir.local, paste0(prefix.psscss, ".pss"))
-  css.file.local <- file.path(out.dir.local, paste0(prefix.psscss, ".css"))
-  site.file.local <- file.path(out.dir.local, paste0(prefix.site, ".site"))
+  pss.file.local  <- file.path(outfolder, paste0(prefix.psscss, ".pss"))
+  css.file.local  <- file.path(outfolder, paste0(prefix.psscss, ".css"))
+  site.file.local <- file.path(outfolder, paste0(prefix.site, ".site"))
   
-  file_name <- paste0("pftmatch.", start_year, "_", end_year, ".txt")
-  ic_files <- 
+  filenames <- c(pss.file.local, css.file.local, site.file.local)
+
   # Build results dataframe for convert.input
-  results <- data.frame(file = c(ic_files), 
+  results <- data.frame(file = filenames, 
                         host = c(fqdn()), 
                         mimetype = c("text/plain"), 
                         formatname = formatnames, 
