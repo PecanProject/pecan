@@ -24,17 +24,18 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.ic = FALSE
     
     input.tag <- names(settings$run$input)[i]
     
-    # IC conversion
+    # IC conversion : for now for ED only, hence the css/pss/site check
     if ((input.tag %in% c("css", "pss", "site")) &&
         is.null(input$path) && !is.null(input$source)) {
-      settings$run <- PEcAn.data.land::ic_process(
+      settings$run$inputs[[i]][['path']] <- 
+        PEcAn.data.land::ic_process(
           pfts       = settings$pfts,
           runinfo    = settings$run, 
           inputinfo  = input,
           model      = settings$model$type,
-          host       = settings$host,
+          host       = "localhost", # for now it's not settings$host
           dbparms    = settings$database, 
-          dir        = settings$database$dbfiles,
+          dir        = settings$database$dbfiles, # we're handling files locally for now, copying to remote by hand
           overwrite  = overwrite.ic)
       
       needsave <- TRUE
