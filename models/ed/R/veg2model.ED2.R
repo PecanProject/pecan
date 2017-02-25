@@ -7,7 +7,7 @@
 #' @return results dataframe
 #' @author Istem Fer
 #'  We need the in.path, the out folder, the start and endates and the lat/long. All of these are in setting$run. 
-veg2model.ED2 <- function(inputinfo, runinfo, outfolder, con, overwrite = FALSE){
+veg2model.ED2 <- function(obs = NULL, inputinfo, runinfo, outfolder, host, con, overwrite = FALSE){
   
   start_year <- lubridate::year(runinfo$start.date)
   end_year   <- lubridate::year(runinfo$end.date)
@@ -27,6 +27,7 @@ veg2model.ED2 <- function(inputinfo, runinfo, outfolder, con, overwrite = FALSE)
     
   }else if(inputinfo$output == "pss"){
     
+    n.patch    <- NULL
     formatname <- "ED2.patch"
     dbfilename <- "pss.file"
     # IF : previously there was also "gridres" in the file name after FIA download
@@ -72,25 +73,51 @@ veg2model.ED2 <- function(inputinfo, runinfo, outfolder, con, overwrite = FALSE)
     close(site.file.con)
 
     
-  }else{
+  }else if(inputinfo$output == "pss"){
+    
+    if(!is.null(inputinfo$id)){
 
-    obs <- read.table(inputinfo$path, header = TRUE, sep = "\t")
+      # if id is in inputinfo it probably should take precedence 
+      # but this is not going to be used yet
+      ########
+      
+      
+    }else if(is.null(obs)){ # if obs is not NULL (e.g. FIA case), we can continue
+      
+
+      # other cases for now,
+      # create pss file from scratch by using values passed from settings or using some defaults  
+    }
     
-    # if source == "FIA" we still want some more checks
-    #  # --- Consistency tests between PFTs and FIA
+  
+    n.patch   <- ifelse(is.null(n.patch), nrow(obs), n.patch)
+      
+    ## fill missing data w/ defaults
+    obs$site  <- 1
+    obs$area  <- 1 / n.patch
+    obs$water <- 0
     
-    # Read templates of IC files or placeholders
+    # Reorder columns
+    obs <- obs[, c("site", "time", "patch", "trk", "age", "area", "water")]
     
-    # Loop over years
-    # Format IC files
-    
+    # Add soil data
+    soil            <- c(1, 5, 5, 0.01, 0, 1, 1)  #soil C & N pools (biogeochem) defaults (fsc,stsc,stsl,ssc,psc,msn,fsn)\t
+    soil.dat        <- as.data.frame(matrix(soil, n.patch, 7, byrow = TRUE))
+    names(soil.dat) <- c("fsc", "stsc", "stsl", "ssc", "psc", "msn", "fsn")
+    obs             <- cbind(obs, soil.dat)
     
     # Locally write files
-    write.table(pss, pss.file.local, quote = FALSE, row.names = FALSE)
-    write.table(css, css.file.local, quote = FALSE, row.names = FALSE)
+    write.table(obs, localfile, quote = FALSE, col.names = TRUE, row.names = FALSE)
+
     
+  }else if(inputinfo$output == "css"){
     
+    obs <- read.table(inputinfo$path, header = TRUE, sep = "\t")
     
+    # we still need more checks from pss
+    
+    # Locally write files
+    write.table(obs, localfile, quote = FALSE, col.names = TRUE, row.names = FALSE)
   }
 
 

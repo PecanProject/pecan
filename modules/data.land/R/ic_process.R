@@ -3,7 +3,7 @@
 ##' @export
 ##'
 ##' @param pfts settings pft list
-##' @param runinfo run info from settings file
+##' @param runinfo run from settings list
 ##' @param inputinfo which data source to use (FIA, GapMacro, FFT etc.) and username, 
 ##' this is a subset of runinfo and can be extracted from runinfo for now as this is only functional for css/pss/site, 
 ##' but might need this info separately when handling different IC types of IC data in the future
@@ -11,7 +11,7 @@
 ##' @param host Host info from settings file
 ##' @param dbparms  database settings from settings file
 ##' @param dir  directory to write outputs to
-##' @param overwrite Whether to force met.process to proceed.
+##' @param overwrite whether to force ic_process to proceed
 ##' @author Istem Fer
 ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, overwrite = FALSE){
   
@@ -98,35 +98,32 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
     fia.con <- db.open(dbparms$fia)
     on.exit(db.close(fia.con), add = T)
     
-    fia.info <- download.FIA(inputinfo, lat, lon, year = start_year, con = fia.con)
+    obs <- download.FIA(inputinfo, lat, lon, year = start_year, con = fia.con)
     
-    inputinfo      <- fia.info$inputinfo
-    data.list$obs  <- fia.info$obs
-    data.list$meta <- fia.info$pss.info
+    #############################################################################
+    ### Do we want to save the intermediate step here for pss?                ###
+    ### If not, veg2model.[model] function should take "obs" as an argument   ###
+    ### because pss will skip the next two stage and go right into veg2model  ###
+    #############################################################################
     
-
-    ### saving intermediate steps as .Rdata
-    file_name <- paste0("fia.", inputinfo$output, ".", start_year, "_", end_year, ".txt")
-    save(data.list, file = file.path(file_path, file_name))
-    
-    dbfile.insert(data_dir, in.prefix = prefix, type = "Input", input.id, con, 
-                  reuse = TRUE)
-    # Insert into dbfiles
-    inputinfo$id <- dbfile.input.insert(
-      in.path    = file_path,
-      in.prefix  = file_name,
-      siteid     = runinfo$site$id,
-      startdate  = startdate,
-      enddate    = enddate,
-      mimetype   = mimetype,
-      formatname = paste0("fia.", inputinfo$output),
-      parentid   = NA,
-      con        = con,
-      hostname   = fqdn(),
-      allow.conflicting.dates = TRUE
-    )$input.id
-    
-    ## format it somehow to have something similar as "obs"
+    # ### saving the intermediate step
+    # file_name <- paste0("fia.", inputinfo$output, ".", start_year, "_", end_year, ".txt")
+    # write.table(obs, file = file.path(file_path, file_name), col.names = TRUE, row.names = FALSE, sep = "\t")
+    # 
+    # # Insert into dbfiles
+    # inputinfo$id <- dbfile.input.insert(
+    #   in.path    = file_path,
+    #   in.prefix  = file_name,
+    #   siteid     = runinfo$site$id,
+    #   startdate  = startdate,
+    #   enddate    = enddate,
+    #   mimetype   = mimetype,
+    #   formatname = paste0("fia.", inputinfo$output),
+    #   parentid   = NA,
+    #   con        = con,
+    #   hostname   = host,
+    #   allow.conflicting.dates = TRUE
+    # )$input.id
  
     stage$download <- FALSE
   }
@@ -184,7 +181,7 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
     
     # merge with data
     colnames(spp.info)[colnames(spp.info) == "input_code"] <- code.col
-    sppmatched <- merge(obs, spp.info, by = code.col)
+    obs <- merge(obs, spp.info, by = code.col)
     
     ### write
     
@@ -195,20 +192,20 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
   # Match species to PFTs
   if (stage$pftmatch) {
     
+    # can there be a sace that will skip the match species step above?
     pft.info <- match_pft(spp.info$bety_species_id, pfts, con)
     
     ### merge with other stuff
-    
+    obs <- 
     
     ### write
     file_name <- paste0("pftmatch.", start_year, "_", end_year, ".txt")
-    
     
     # where to read file from in veg2model
     inputinfo$path <- file.path(file_path, file_name)
       
     ### obsspppft is the combined thing, testing
-    write.table(obsspppft, file.path(file_path, file_name), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
+    write.table(obs, file.path(file_path, file_name), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
     
     # Insert into DB
     inputinfo$id <- dbfile.input.insert(
@@ -221,7 +218,7 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
       formatname = "pft.info",
       parentid   = NA,
       con        = con,
-      hostname   = host$name,
+      hostname   = host,
       allow.conflicting.dates = TRUE
     )$input.id
     
@@ -241,7 +238,7 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
     
     # call veg2model.[model]
     fcn    <- match.fun(veg2model.fcn)
-    ic.id  <- fcn(inputinfo = inputinfo, runinfo = runinfo, con, outfolder = file_path)
+    ic.id  <- fcn(obs, inputinfo = inputinfo, runinfo = runinfo, host, con, outfolder = file_path)
     
   }
   
