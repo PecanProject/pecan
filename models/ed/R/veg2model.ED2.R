@@ -48,7 +48,7 @@ veg2model.ED2 <- function(obs = NULL, inputinfo, runinfo, outfolder, host, con, 
   
   localfile  <- file.path(outfolder, filename)
 
-  # Build results dataframe for convert.input, not used currently but maybe later
+  # Build results dataframe for convert.input, not used currently
   results <- data.frame(file = filename, 
                         host = c(fqdn()), 
                         mimetype = c("text/plain"), 
@@ -112,9 +112,35 @@ veg2model.ED2 <- function(obs = NULL, inputinfo, runinfo, outfolder, host, con, 
     
   }else if(inputinfo$output == "css"){
     
-    obs <- read.table(inputinfo$path, header = TRUE, sep = "\t")
+    if(!is.null(inputinfo$path)){
+      obs <- read.table(inputinfo$path, header = TRUE)
+    }else if(is.null(obs)){
+      logger.severe("No css data found.")
+    }
     
-    # we still need more checks from pss
+    if(inputinfo$source == "FIA"){ # we still need more checks from pss
+      
+      pss <- read.table(runinfo$inputs$pss$path, header = TRUE)
+      
+      # Remove rows that don't map to any patch
+      obs <- obs[which(obs$patch %in% pss$patch), ]
+      if (nrow(obs) == 0) {
+        logger.severe("No trees map to previously selected patches.")
+      } else {
+        logger.debug(paste0(nrow(obs), " trees that map to previously selected patches."))
+      }
+    }
+
+    # --- Continue work formatting css 
+    n.cohort                      <- nrow(obs)
+    obs$time[is.na(obs$time)]     <- 1
+    obs$cohort[is.na(obs$cohort)] <- 1:sum(is.na(obs$cohort))
+    obs$dbh[is.na(obs$dbh)]       <- 1  # assign nominal small dbh to missing
+    density.median                <- median(obs$n[which(obs$n > 0)])
+    obs$n[is.na(obs$n) | obs$n == 0]    <- density.median
+    obs$hite <- obs$bdead <- obs$balive <- obs$lai <- 0
+    
+    obs <- obs[, c("time", "patch", "cohort", "dbh", "hite", "pft", "n", "bdead", "balive", "lai")]
     
     # Locally write files
     write.table(obs, localfile, quote = FALSE, col.names = TRUE, row.names = FALSE)
