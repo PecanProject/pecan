@@ -8,6 +8,7 @@
 #' @param con bety$con
 #' @param overwrite
 #' @return ic.id initial conditions file input id
+#' @export
 #' @author Istem Fer
 #'  We need the in.path, the out folder, the start and endates and the lat/long. All of these are in setting$run. 
 veg2model.ED2 <- function(obs = NULL, inputinfo, runinfo, outfolder, host, con, overwrite = FALSE){

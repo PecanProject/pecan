@@ -27,7 +27,7 @@ download.FIA <- function(inputinfo, lat, lon, year, gridres = 0.075, con){
                    " AND p.lat <= ", latmax, " AND p.measyear >= ", min.year, 
                    " AND p.measyear <= ", max.year, " GROUP BY p.cn")
     
-    pss.info <- db.query(query, con = fia.con)
+    pss.info <- db.query(query, con = con)
     if (nrow(pss.info) == 0) {
       logger.severe("No plot data found on FIA.")
     }
@@ -86,13 +86,6 @@ download.FIA <- function(inputinfo, lat, lon, year, gridres = 0.075, con){
       logger.debug(paste0(nrow(css.info), " trees found initially"))
     }
     
-    # Remove rows that don't map to any retained patch
-    css.info <- css.info[which(css.info$patch %in% pss.info$patch), ]
-    if (nrow(css.info) == 0) {
-      logger.severe("No trees map to previously selected patches.")
-    } else {
-      logger.debug(paste0(nrow(css.info), " trees that map to previously selected patches."))
-    }
     
     ## Remove rows with no dbh, spcd, or n
     notree <- which(is.na(css.info$dbh) & is.na(css.info$spcd) & is.na(css.info$n))
