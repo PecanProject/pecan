@@ -56,8 +56,7 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
     
     stage$sppmatch <- ifelse(inputinfo$output == "css", TRUE, FALSE)
     stage$pftmatch <- ifelse(inputinfo$output == "css", TRUE, FALSE)
-    stage$loaddata <- ifelse(inputinfo$output == "css", TRUE, FALSE)
-    stage$loaddata <- ifelse(inputinfo$source == "FIA", FALSE, TRUE)
+    stage$loaddata <- ifelse(inputinfo$output == "css" & inputinfo$source != "FIA", TRUE, FALSE)
     stage$download <- ifelse(inputinfo$source == "FIA" & inputinfo$output != "site", TRUE, FALSE)
   } 
   
@@ -71,7 +70,7 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
     
       
     ## connect to database
-    fia.con <- db.open(dbparms$fia)
+    fia.con <- PEcAn.DB::db.open(dbparms$fia)
     on.exit(db.close(fia.con), add = T)
     
     obs <- download.FIA(inputinfo, lat, lon, year = start_year, con = fia.con)
