@@ -1,5 +1,5 @@
-##' @name wide2long
-##' @title wide2long
+##' @name format_wide2long
+##' @title format_wide2long
 ##' 
 ##' @param out wide format data
 ##' @param format as returned by query.format.vars
@@ -10,7 +10,7 @@
 ##' @export
 ##' @author Istem Fer
 ##' Function to convert wide format to long format
-wide2long <- function(out, format, vars_used, time.row, vars.used.index){
+format_wide2long <- function(out, format, vars_used, time.row, vars.used.index){
   
   # which cols are "wide"
   dindx <- vars_used$bety_name == unique(vars_used$bety_name[duplicated(vars_used$bety_name)])
