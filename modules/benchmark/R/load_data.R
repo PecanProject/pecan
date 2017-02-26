@@ -60,7 +60,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   
   # check wide format and transform to long
   if(any(duplicated(vars_used$bety_name))){
-    w2l       <- wide2long(out, format, vars_used, time.row)
+    w2l       <- format_wide2long(out, format, vars_used, time.row)
     out       <- w2l$mout
     format    <- w2l$format
     vars_used <- w2l$vars_used
