@@ -32,4 +32,3 @@ get.run.id('SA', round(qnorm(-3),3), trait = 'Vcmax')
 \author{
 Carl Davidson, David LeBauer
 }
-

@@ -39,4 +39,3 @@ system(paste('rm -r ',out.dir))
 \author{
 Shawn P. Serbin
 }
-

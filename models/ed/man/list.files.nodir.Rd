@@ -15,4 +15,3 @@ list.files.nodir(path, ...)
 \author{
 Alexey Shiklomanov
 }
-

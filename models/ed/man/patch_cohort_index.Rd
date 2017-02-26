@@ -16,4 +16,3 @@ cohort vectors onto patches, for instance for use with \code{tapply}.
 \author{
 Alexey Shiklomanov
 }
-

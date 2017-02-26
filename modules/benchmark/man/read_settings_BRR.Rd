@@ -16,4 +16,3 @@ and add to the settings object
 \author{
 Betsy Cowdery
 }
-

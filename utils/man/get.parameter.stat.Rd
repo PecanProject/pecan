@@ -23,4 +23,3 @@ Gets statistics for LaTeX - formatted table
 \author{
 David LeBauer
 }
-

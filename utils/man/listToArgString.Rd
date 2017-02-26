@@ -15,4 +15,3 @@ A string containing named argument/value pairs separated by commas
 \author{
 Ryan Kelly
 }
-

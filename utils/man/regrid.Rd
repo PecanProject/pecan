@@ -18,4 +18,3 @@ Regrid dataset to even grid
 \author{
 David LeBauer
 }
-

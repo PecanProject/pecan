@@ -19,4 +19,3 @@ TRUE if successful
 \author{
 Alexey Shiklomanov
 }
-

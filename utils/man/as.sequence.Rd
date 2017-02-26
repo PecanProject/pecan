@@ -24,4 +24,3 @@ This transformation is required for using data in BUGS/JAGS
 \author{
 David LeBauer
 }
-

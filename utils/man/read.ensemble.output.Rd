@@ -33,4 +33,3 @@ and \code{end.year}
 \author{
 Ryan Kelly, David LeBauer, Rob Kooper
 }
-

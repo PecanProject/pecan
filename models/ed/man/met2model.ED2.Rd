@@ -27,4 +27,3 @@ met2model.ED2(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
 \description{
 met2model wrapper for ED2
 }
-

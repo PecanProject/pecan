@@ -18,4 +18,3 @@ ed2in tags.}
 \author{
 Alexey Shiklomanov
 }
-

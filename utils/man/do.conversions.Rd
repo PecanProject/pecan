@@ -4,12 +4,11 @@
 \alias{do.conversions}
 \title{do.conversions}
 \usage{
-do.conversions(settings, overwrite.met = FALSE, overwrite.fia = FALSE)
+do.conversions(settings, overwrite.met = FALSE, overwrite.ic = FALSE)
 }
 \description{
 Input conversion workflow
 }
 \author{
-Ryan Kelly, Rob Kooper, Betsy Cowdery
+Ryan Kelly, Rob Kooper, Betsy Cowdery, Istem Fer
 }
-

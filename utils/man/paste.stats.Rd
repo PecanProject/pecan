@@ -24,4 +24,3 @@ Used by \code{\link{get.parameter.stat}}.
 \author{
 David LeBauer
 }
-

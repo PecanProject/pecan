@@ -18,4 +18,3 @@ Calculate interquartile range
 \details{
 Calculates the 25th and 75th quantiles given a vector x; used in function \link{dhist}.
 }
-

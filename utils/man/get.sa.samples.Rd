@@ -26,4 +26,3 @@ The list is indexed first by trait, then by quantile.
 \author{
 David LeBauer
 }
-

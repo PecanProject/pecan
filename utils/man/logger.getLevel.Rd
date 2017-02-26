@@ -20,4 +20,3 @@ logger.getLevel()
 \author{
 Rob Kooper
 }
-

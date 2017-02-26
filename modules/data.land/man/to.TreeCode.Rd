@@ -6,4 +6,3 @@
 \usage{
 to.TreeCode(SITE, PLOT, SUBPLOT, TAG = NULL)
 }
-

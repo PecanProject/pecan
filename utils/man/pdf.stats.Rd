@@ -22,4 +22,3 @@ Calculate mean, variance statistics, and CI from a known distribution
 \author{
 David LeBauer
 }
-

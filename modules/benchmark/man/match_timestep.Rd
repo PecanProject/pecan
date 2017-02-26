@@ -16,4 +16,3 @@ match_timestep(date.coarse, date.fine, data.fine)
 \author{
 Istem Fer
 }
-

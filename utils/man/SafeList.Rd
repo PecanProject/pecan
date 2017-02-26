@@ -32,7 +32,7 @@ attribute updated to include 'SafeList', or
 \itemize{
 \item \code{as.SafeList}: Coerce an object to SafeList.
 }}
+
 \author{
 Ryan Kelly
 }
-

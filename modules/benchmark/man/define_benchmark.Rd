@@ -18,4 +18,3 @@ Creates records for benchmarks, benchmarks_benchmarks_reference_runs, benchmarks
 \author{
 Betsy Cowdery
 }
-
