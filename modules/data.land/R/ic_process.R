@@ -28,30 +28,9 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
   lat <- as.numeric(runinfo$site$lat)
   lon <- as.numeric(runinfo$site$lon)
   
-  # these are not actually doing anything now, just as a reminder
-  if (!is.list(overwrite)) {
-    if (overwrite) {
-      # Default for overwrite==TRUE is to overwrite everything but download
-      overwrite <- list(download = FALSE, sppmatch = TRUE, pftmatch = TRUE,  veg2model = TRUE)
-    } else {
-      overwrite <- list(download = FALSE, sppmatch = FALSE, pftmatch = FALSE, veg2model = FALSE)
-    }
-  } else {
-    if (is.null(overwrite$download)) {
-      overwrite$download <- FALSE
-    }
-    if (is.null(overwrite$sppmatch)) {
-      overwrite$sppmatch <- FALSE
-    }
-    if (is.null(overwrite$pftmatch)) {
-      overwrite$pftmatch <- FALSE
-    }
-    if (is.null(overwrite$veg2model)) {
-      overwrite$veg2model <- FALSE
-    }
-  }
-
-  # might want to do overwrite.check
+  obs <- NULL
+ 
+  # handle overwrites
   
   # set up connection
   bety <- dplyr::src_postgres(dbname   = dbparms$bety$dbname, 
@@ -72,19 +51,15 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
   
   # where to start IC process
   if (is.null(inputinfo$id)) {
-    stage <- list(download = FALSE, loaddata = TRUE, sppmatch = TRUE, pftmatch = TRUE,  veg2model = TRUE)
-    if(inputinfo$source == "FIA"){
-      # other pss/site will also need not other stages, refactor here
-      stage$download <- ifelse(inputinfo$output == "site", FALSE, TRUE)
-      stage$loaddata <- FALSE
-      stage$sppmatch <- ifelse(inputinfo$output == "css", TRUE, FALSE)
-      stage$pftmatch <- ifelse(inputinfo$output == "css", TRUE, FALSE)
-    }
-  } else {
     
-    ######
+    stage <- list(download = FALSE, loaddata = FALSE, sppmatch = TRUE, pftmatch = TRUE,  veg2model = TRUE)
     
-  }
+    stage$sppmatch <- ifelse(inputinfo$output == "css", TRUE, FALSE)
+    stage$pftmatch <- ifelse(inputinfo$output == "css", TRUE, FALSE)
+    stage$loaddata <- ifelse(inputinfo$output == "css", TRUE, FALSE)
+    stage$loaddata <- ifelse(inputinfo$source == "FIA", FALSE, TRUE)
+    stage$download <- ifelse(inputinfo$source == "FIA" & inputinfo$output != "site", TRUE, FALSE)
+  } 
   
   
 

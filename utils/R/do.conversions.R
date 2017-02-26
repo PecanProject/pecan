@@ -33,7 +33,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.ic = FALSE
           runinfo    = settings$run, 
           inputinfo  = input,
           model      = settings$model$type,
-          host       = fqdn(), # for now it's not settings$host
+          host       = "localhost", # for now it's not settings$host
           dbparms    = settings$database, 
           dir        = settings$database$dbfiles, # we're handling files locally for now, copying to remote by hand
           overwrite  = overwrite.ic)
