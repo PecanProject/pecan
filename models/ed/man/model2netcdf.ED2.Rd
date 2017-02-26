@@ -23,4 +23,3 @@ Modified from Code to convert ED2.1's HDF5 output into the NACP Intercomparison 
 \author{
 Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari
 }
-

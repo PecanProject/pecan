@@ -28,4 +28,3 @@ This function applies \link{read.output.file.ed} to a list of files from a singl
 \author{
 David LeBauer, Carl Davidson
 }
-

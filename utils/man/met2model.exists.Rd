@@ -19,4 +19,3 @@ checks that met2model function exists
 Checks if met2model.<model> exists for a particular
 model
 }
-

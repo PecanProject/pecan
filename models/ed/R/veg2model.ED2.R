@@ -1,10 +1,13 @@
 #' Writes ED specific IC files
 #'
-#' @param in.path
-#' @param outfolder
-#' @param start_date
-#' @param end_date
-#' @return results dataframe
+#' @param obs data either passed from upstram or NULL
+#' @param inputinfo
+#' @param runinfo run from settings
+#' @param outfolder where to write files
+#' @param host 
+#' @param con bety$con
+#' @param overwrite
+#' @return ic.id initial conditions file input id
 #' @author Istem Fer
 #'  We need the in.path, the out folder, the start and endates and the lat/long. All of these are in setting$run. 
 veg2model.ED2 <- function(obs = NULL, inputinfo, runinfo, outfolder, host, con, overwrite = FALSE){

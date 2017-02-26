@@ -27,4 +27,3 @@ Refactored by Alexey Shiklomanov to allow use in PEcAn RTM module.
 \author{
 David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
 }
-

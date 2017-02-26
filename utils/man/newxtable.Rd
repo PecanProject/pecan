@@ -34,4 +34,3 @@ utility to properly escape the '%' sign for latex
 \author{
 David LeBauer
 }
-

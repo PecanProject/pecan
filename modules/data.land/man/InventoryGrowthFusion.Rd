@@ -21,4 +21,3 @@ for the same plots. Code is a rewrite of Clark et al 2007 Ecol Appl into JAGS
 \note{
 Requires JAGS
 }
-

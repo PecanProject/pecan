@@ -6,4 +6,3 @@
 \usage{
 extract.stringCode(x, extractor = from.TreeCode)
 }
-

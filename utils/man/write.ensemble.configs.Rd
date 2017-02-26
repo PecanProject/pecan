@@ -32,4 +32,3 @@ a name to distinguish the output files, and the directory to place the files.
 \author{
 David LeBauer, Carl Davidson
 }
-

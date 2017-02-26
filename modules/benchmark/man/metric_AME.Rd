@@ -12,4 +12,3 @@ metric_AME(dat, ...)
 \author{
 Betsy Cowdery
 }
-

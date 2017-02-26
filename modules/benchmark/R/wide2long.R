@@ -1,5 +1,12 @@
 ##' @name wide2long
 ##' @title wide2long
+##' 
+##' @param out wide format data
+##' @param format as returned by query.format.vars
+##' @param vars_used 
+##' @param time.row
+##' @param vars.used.index
+##' @return list of updated values
 ##' @export
 ##' @author Istem Fer
 ##' Function to convert wide format to long format

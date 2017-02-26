@@ -23,4 +23,3 @@ extract terrestrial lat and lon coordinates from a grid
 \author{
 David LeBauer
 }
-

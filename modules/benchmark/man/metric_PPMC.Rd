@@ -12,4 +12,3 @@ metric_PPMC(dat, ...)
 \author{
 Betsy Cowdery
 }
-
