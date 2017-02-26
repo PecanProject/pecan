@@ -82,14 +82,28 @@ veg2model.ED2 <- function(obs = NULL, inputinfo, runinfo, outfolder, host, con, 
       ########
       
       
-    }else if(is.null(obs)){ # if obs is not NULL (e.g. FIA case), we can continue
+    }else if(is.null(obs)){ # if obs is NOT NULL (e.g. FIA case), we can skip this and continue
       
-
       # other cases for now,
       # create pss file from scratch by using values passed from settings or using some defaults  
+      
+      # a series of checks to get pss info from settings if it exists
+      ### assuming one patch for now, otherwise these lines might change ###
+      time    <- ifelse(!is.null(inputinfo$time), inputinfo$time, start_year-1)
+      n.patch   <- ifelse(!is.null(inputinfo$patch), inputinfo$patch, 1)
+      trk     <- ifelse(!is.null(inputinfo$trk), inputinfo$trk, 1)
+      age     <- ifelse(!is.null(inputinfo$age), inputinfo$age, 100)
+      
+      obs <- data.frame(time = time, patch = n.patch, trk = trk, age = age)
+      
+      PEcAn.utils::logger.info(paste0("Values used in the patch file - time:", 
+                                      obs$time, ", patch:", obs$patch, ", trk:", 
+                                      obs$trk, ", age:", obs$age))
+     
     }
     
-  
+    # this check might be redundant, direct nrows(obs) assignment could work 
+    # but leaving it for now
     n.patch   <- ifelse(is.null(n.patch), nrow(obs), n.patch)
       
     ## fill missing data w/ defaults
@@ -118,7 +132,7 @@ veg2model.ED2 <- function(obs = NULL, inputinfo, runinfo, outfolder, host, con, 
       logger.severe("No css data found.")
     }
     
-    if(inputinfo$source == "FIA"){ # we still need more checks from pss
+    if(inputinfo$source == "FIA"){ # we still need one more check from pss
       
       pss <- read.table(runinfo$inputs$pss$path, header = TRUE)
       
@@ -130,7 +144,41 @@ veg2model.ED2 <- function(obs = NULL, inputinfo, runinfo, outfolder, host, con, 
         logger.debug(paste0(nrow(obs), " trees that map to previously selected patches."))
       }
     }
+    
+    if(is.null(obs$n)){
+      # is this how n is calculated?
+      obs$n <- ifelse(!is.null(inputinfo$area), nrow(obs)/inputinfo$area, 0.001)
+    }
+    
+    if(inputinfo$source == "GapMacro"){
+      inv.years <- as.numeric(unique(obs$year))
+      # suitable years
+      av.years <- inv.years[inv.years < start_year]
+      if(length(av.years) == 0){
+        logger.severe("No available years found in the data.")
+      }
+      obs$time <- max(av.years)
+      # filter out other years
+      obs <- obs[obs$year == obs$time, ]
+      colnames(obs)[colnames(obs) == "DBH"] <- "dbh"
+      
+      obs$patch  <- 1
+      obs$cohort <- 1:nrow(obs)
+      obs$hite   <- 0
+    
+    }
 
+    # Convert PFT names to ED2 Numbers
+    data(pftmapping)
+    obs$pft.number <- NA
+    for (p in seq_along(obs$pft)) {
+      obs$pft.number[p] <- pftmapping$ED[pftmapping$PEcAn == as.character(obs$pft[p])]
+      if (is.null(obs$pft.number[p])) {
+        logger.severe(paste0("Couldn't find an ED2 PFT number for ", as.character(obs$pft[p])))
+      }
+    }
+  
+    
     # --- Continue work formatting css 
     n.cohort                      <- nrow(obs)
     obs$time[is.na(obs$time)]     <- 1
@@ -139,6 +187,10 @@ veg2model.ED2 <- function(obs = NULL, inputinfo, runinfo, outfolder, host, con, 
     density.median                <- median(obs$n[which(obs$n > 0)])
     obs$n[is.na(obs$n) | obs$n == 0]    <- density.median
     obs$hite <- obs$bdead <- obs$balive <- obs$lai <- 0
+    
+    # pft.number col needs to be pft 
+    obs <- obs[ , colnames(obs) != "pft"]
+    colnames(obs)[colnames(obs) == "pft.number"] <- "pft"
     
     obs <- obs[, c("time", "patch", "cohort", "dbh", "hite", "pft", "n", "bdead", "balive", "lai")]
     
@@ -158,7 +210,7 @@ veg2model.ED2 <- function(obs = NULL, inputinfo, runinfo, outfolder, host, con, 
     formatname = formatname,
     parentid   = NA,
     con        = con,
-    hostname   = fqdn(),
+    hostname   = host,
     allow.conflicting.dates = TRUE
   )$input.id
   
