@@ -79,6 +79,7 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
             dplyr::collect()
     }
     input_table <- data.frame(input_code = input_codes, stringsAsFactors = FALSE)
+    # preserving the order is important for downstream
     merge_table <- dplyr::left_join(input_table, translation)
     return(merge_table)
 } # match_species_id

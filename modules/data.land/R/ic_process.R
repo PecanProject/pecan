@@ -74,6 +74,7 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
   if (is.null(inputinfo$id)) {
     stage <- list(download = FALSE, loaddata = TRUE, sppmatch = TRUE, pftmatch = TRUE,  veg2model = TRUE)
     if(inputinfo$source == "FIA"){
+      # other pss/site will also need not other stages, refactor here
       stage$download <- ifelse(inputinfo$output == "site", FALSE, TRUE)
       stage$loaddata <- FALSE
       stage$sppmatch <- ifelse(inputinfo$output == "css", TRUE, FALSE)
@@ -158,6 +159,8 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
     # or allow both?
     if(inputinfo$source %in% c("GapMacro", "NASA_TE_FIA")){
       format.name = 'usda'
+    }else if(inputinfo$source %in% c("FIA")){
+      format.name = 'fia'      
     }else if(!is.null(inputinfo$match.format)){
       format.name = inputinfo$match.format
     }else{
@@ -165,8 +168,11 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
     }
     
     # decide which column has the codes
+    # this block may or may not be merged with the block above
     if(format.name == 'usda'){
       code.col = "species_USDA_symbol"
+    }else if(format.name == 'fia'){
+      code.col = "spcd"
     }else if(format.name == 'latin_name'){
       code.col = "latin_name"
     }
@@ -180,10 +186,32 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
     }
     
     # merge with data
-    colnames(spp.info)[colnames(spp.info) == "input_code"] <- code.col
-    obs <- merge(obs, spp.info, by = code.col)
+    tmp <- spp.info[ , colnames(spp.info) != "input_code"]
+    obs <- cbind(obs, tmp)
     
     ### write
+    file_name <- paste0("sppmatch.", start_year, "_", end_year, ".txt")
+    
+    # where to read file from in veg2model
+    inputinfo$path <- file.path(file_path, file_name)
+    
+    ### obsspppft is the combined thing, testing
+    write.table(obs, file.path(file_path, file_name), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
+    
+    # Insert into DB
+    inputinfo$id <- dbfile.input.insert(
+      in.path    = file_path,
+      in.prefix  = file_name,
+      siteid     = runinfo$site$id,
+      startdate  = startdate,
+      enddate    = enddate,
+      mimetype   = mimetype,
+      formatname = "spp.info",
+      parentid   = NA,
+      con        = con,
+      hostname   = host,
+      allow.conflicting.dates = TRUE
+    )$input.id
     
     stage$sppmatch <- FALSE
   }
@@ -192,11 +220,17 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
   # Match species to PFTs
   if (stage$pftmatch) {
     
-    # can there be a sace that will skip the match species step above?
-    pft.info <- match_pft(spp.info$bety_species_id, pfts, con)
+    # can there be a stage that will skip the match species step above?
+    # you can continue from above or read from previously processed data
+    # anything in the DB takes precedence
+    if(!is.null(inputinfo$path)){
+      obs <- read.table(inputinfo$path, header = TRUE)
+    }
+    
+    pft.info <- match_pft(obs$bety_species_id, pfts, con)
     
     ### merge with other stuff
-    obs <- 
+    obs <- cbind(obs, pft.info[c("bety_pft_id", "pft")])
     
     ### write
     file_name <- paste0("pftmatch.", start_year, "_", end_year, ".txt")
