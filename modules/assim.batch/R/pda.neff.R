@@ -15,7 +15,8 @@ pda.neff.calc <- function(inputs){
     n   <- inputs[[i]]$n
     # for now we're doing autocorrelation correction on flux data only
     # NEE, LE, FC
-    if(inputs[[i]]$variable.id %in% c(297, 298, 1000000042)){
+    flux.vars <- c(297, 298, 1000000042)
+    if(inputs[[i]]$variable.id %in% flux.vars){
       
       rho      <- pda.autocorr.calc(inputs[[i]], "heteroskedastic.laplacian")
       n_eff    <- n*(1-rho)/(1+rho)
@@ -40,7 +41,6 @@ pda.neff.calc <- function(inputs){
 ##' @export
 pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
   
-  library(rjags)
   
   if(model == "heteroskedastic.laplacian"){
     
@@ -101,7 +101,7 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
 
     
     
-  }else{
+  }else if(model == "gaussian"){
     # Gaussian
     
     GaussianModel = "
@@ -144,6 +144,8 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
                             inits    = init,
                             n.chains = 3)
     
+  }else{
+    logger.error(model, "is not data available as data model.")
   }
   
   jags.out   <- coda.samples (model          = j.model,
