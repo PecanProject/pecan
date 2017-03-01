@@ -1,3 +1,5 @@
+# PEcAn and Remote Machines
+
 This section will describe how to use PEcAn with remote machines. This
 will be split into three pieces. The first section will describe how to
 setup your system to allow you to execute remotely without any password
