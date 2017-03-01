@@ -6,9 +6,10 @@ output:
   bookdown::gitbook: default
 documentclass: book
 biblio-style: apalike
-link-citations: yes
+link-citations: yesmake 
 ---
 
+# Welcome {-}
 
 **Ecosystem science, policy, and management informed by the best available data and models**
 
