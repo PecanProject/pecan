@@ -230,9 +230,9 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       for (i in seq_len(settings$assim.batch$n.knot)) {
         align.return <- pda.get.model.output(settings, run.ids[i], bety, inputs)
         model.out[[i]] <- align.return$model.out
-        suppressWarnings(if(!is.na(model.out[[i]])){
+        if(all(!is.na(model.out[[i]]))){
           inputs <- align.return$inputs
-        })
+        }
       }
 
       
