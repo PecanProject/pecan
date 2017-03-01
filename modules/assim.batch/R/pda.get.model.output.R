@@ -71,7 +71,7 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
     
     
     # read model output
-    model.raw <- as.data.frame(read.output(run.id, outdir = file.path(settings$host$outdir, run.id),
+    model.raw <- as.data.frame(read.output(run.id, outdir = file.path(settings$modeloutdir, run.id),
                                            start.year, end.year, variables = vars))
     
     if(length(model.raw) == 0 | all(is.na(model.raw))) {   # Probably indicates model failed entirely
@@ -109,7 +109,7 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
     
     # seq.POSIXt returns class "POSIXct"
     # the model output is since the beginning of the year but 'settings$run$start.date' may not be the first day of the year, using lubridate::floor_date
-    model$posix <- seq.POSIXt(from = lubridate::floor_date(as.POSIXlt(settings$run$start.date, tz="GMT"), "year"), by = diff(model.secs)[1], length.out = length(model$time))
+    model$posix <- seq.POSIXt(from = as.POSIXlt(settings$run$start.date, tz="GMT"), by = diff(model.secs)[1], length.out = length(model$time))
     
     dat <- PEcAn.benchmark::align_data(model.calc = model, obvs.calc = inputs[[k]]$data, var = data.var, 
                       start_year = start.year, end_year = end.year, align_method = inputs[[k]]$align.method)
