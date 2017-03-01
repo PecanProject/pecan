@@ -105,6 +105,10 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   prior.ind <- lapply(seq_along(settings$pfts), 
                       function(x) which(pname[[x]] %in% settings$assim.batch$param.names[[x]]))
   n.param <- sapply(prior.ind, length)
+  prior.ind.orig <- lapply(seq_along(settings$pfts), 
+                      function(x) which(pname[[x]] %in% settings$assim.batch$param.names[[x]] |
+                                          pname[[x]] %in% any.scaling[[x]]))
+  n.param.orig <- sapply(prior.ind.orig, length)
   
   ## Get the workflow id
   if ("workflow" %in% names(settings)) {
@@ -395,11 +399,23 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     }
   }
   
+  # add indice and increase n.param for scaling factor
+  if(!is.null(sf)){
+    prior.ind.all <- c(prior.ind.all, 
+                       ((length.pars + 1): (length.pars + length(sf))))
+    n.param       <- c(n.param, length(sf))
+    length.pars   <- length.pars + length(sf)
+  }
+  
   # add indice and increase n.param for bias
   if(any(unlist(any.mgauss) == "multipGauss")){
     prior.ind.all <- c(prior.ind.all, 
-                       (prior.ind.all[length(prior.ind.all)]+1):(prior.ind.all[length(prior.ind.all)] + length(isbias)))
+                       ((length.pars + 1) : (length.pars + length(isbias))))
+    prior.ind.all.ns <- c(prior.ind.all.ns, 
+                       ((length.pars + 1) : (length.pars + length(isbias))))
     n.param <- c(n.param, length(isbias))
+    n.param.orig <- c(n.param.orig, length(isbias))
+    length.pars   <- length.pars + length(isbias)
   }
 
   
@@ -494,21 +510,24 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       prior.all <- do.call("rbind", prior.list)
       prior.fn.all <- pda.define.prior.fn(prior.all)
       
+      # retrieve rownames separately to get rid of var_name* structures
+      prior.all.rownames <- unlist(sapply(prior.list, rownames))
+      
       ## Convert probabilities back to parameter values
       cc  <- 1
       for (i in seq_along(prior.ind.all.ns)) {
-        # be careful that agrep(l) is working for now but it won't work for very similar parameter names
-        if(any(agrepl(rownames(prior.all)[prior.ind.all.ns][i], sf))){
-          idx <- agrep(rownames(prior.all)[prior.ind.all.ns][i], rownames(prior.all)[prior.ind.all])
+        sf.check <- prior.all.rownames[prior.ind.all.ns][i]
+        if(any(grepl(sf.check, sf))){
+          idx <- grep(sf.check, rownames(prior.all)[prior.ind.all])
         }else {
           idx <- cc
         }
         m[, i] <- eval(prior.fn.all$qprior[prior.ind.all.ns][[i]], 
                        list(p = mcmc.out[[c]]$mcmc.samp[, idx]))
-        cc <- ifelse(any(agrepl(rownames(prior.all)[prior.ind.all.ns][i], sf)), cc, cc + 1) 
+        cc <- ifelse(any(grepl(sf.check, sf)), cc, cc + 1) 
       }
       
-    colnames(m) <- rownames(prior.all)[prior.ind.all]
+    colnames(m) <- rownames(prior.all)[prior.ind.all.ns]
     mcmc.samp.list[[c]] <- m
     
     # jmp.list[[c]] <- mcmc.out[[c]]$jump
@@ -569,15 +588,16 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                                                          settings$assim.batch$ensemble.id, 
                                                          ".Rdata"))
     save(prior.list, file = settings$assim.batch$bias.path)
+    prior.ind.all.ns
   }
 
   
   # Separate each PFT's parameter samples (and bias term) to their own list
   mcmc.param.list <- list()
   ind <- 0
-  for (i in seq_along(prior.ind.all)) {
-    mcmc.param.list[[i]] <- lapply(mcmc.samp.list, function(x) x[, (ind + 1):(ind + n.param[i]), drop = FALSE])
-    ind <- ind + n.param[i]
+  for (i in seq_along(n.param.orig)) {
+    mcmc.param.list[[i]] <- lapply(mcmc.samp.list, function(x) x[, (ind + 1):(ind + n.param.orig[i]), drop = FALSE])
+    ind <- ind + n.param.orig[i]
   }
   
   # Collect non-model parameters in their own list
@@ -598,7 +618,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     }
   }
   
-  settings <- pda.postprocess(settings, con, mcmc.param.list, pname, prior.list, prior.ind)
+  settings <- pda.postprocess(settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig)
   
   ## close database connection
   if (!is.null(con)) {
