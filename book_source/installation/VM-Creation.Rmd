@@ -1,8 +1,8 @@
-## Creating a Virtual Machine
+# Creating a Virtual Machine
 
 First create  virtual machine
 
-```bash
+```
 # ----------------------------------------------------------------------
 # CREATE VM USING FOLLOWING:
 # - VM NAME  = PEcAn 32bit | PEcAn 64bit
@@ -70,9 +70,9 @@ sudo umount /mnt
 sudo usermod -a -G vboxsf carya
 ```
 
-## Finishing up the machine
+**Finishing up the machine**
 
-### Add a message to the login:
+**Add a message to the login:**
 
 ```bash
 sudo -s
@@ -96,7 +96,7 @@ EOF
 exit
 ```
 
-## Finishing up
+**Finishing up**
 
 Script to clean the VM and remove as much as possible history [cleanvm.sh](http://isda.ncsa.uiuc.edu/~kooper/EBI/cleanvm.sh)
 
