@@ -144,7 +144,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   knots.list <- lapply(seq_along(settings$pfts), 
                        function(x) pda.generate.knots(settings$assim.batch$n.knot, sf, probs.sf,
                                                       n.param.all[x], 
-                                                      prior.ind[[x]], 
+                                                      prior.ind.orig[[x]], 
                                                       prior.fn[[x]], 
                                                       pname[[x]]))
   names(knots.list) <- sapply(settings$pfts,"[[",'name')
@@ -162,8 +162,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       temp <- pda.load.priors(settings, con, extension.check = TRUE) 
       prior.list <- temp$prior
       
-      ## set prior distribution functions for posterior of the previous emulator run
-      prior.fn <- lapply(prior.list, pda.define.prior.fn)
       
       ## Propose a percentage (if not specified 75%) of the new parameter knots from the posterior of the previous run
       knot.par        <- ifelse(!is.null(settings$assim.batch$knot.par), 
@@ -172,10 +170,22 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       
       n.post.knots    <- floor(knot.par * settings$assim.batch$n.knot)
       
+      if(!is.null(sf)){
+        sf.list <- pda.generate.sf(n.post.knots, sf, prior.list)
+        probs.sf <- sf.list$probs
+        prior.list <- sf.list$priors
+      }else {
+        probs.sf <- NULL
+      }
+      
+      ## set prior distribution functions for posterior of the previous emulator run
+      prior.fn <- lapply(prior.list, pda.define.prior.fn)
+      
       knots.list.temp <- lapply(seq_along(settings$pfts),
                                 function(x) pda.generate.knots(n.post.knots, 
+                                                               sf, probs.sf,
                                                                n.param.all[x], 
-                                                               prior.ind[[x]],
+                                                               prior.ind.orig[[x]],
                                                                prior.fn[[x]],
                                                                pname[[x]]))
       knots.params.temp <- lapply(knots.list.temp, `[[`, "params")
