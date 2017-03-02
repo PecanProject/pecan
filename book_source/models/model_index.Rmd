@@ -15,7 +15,7 @@ This section will contain information about all models and output variables that
 | [MAESPA](#MAESPA) | Yes | Yes | No | No |
 | [PRELES](#PRELES) | Yes | Yes | Partially | No |
 | [Sipnet](#Sipnet) | Yes | Yes | Yes| No |
-s
+
 
 **Output Variables**
 
