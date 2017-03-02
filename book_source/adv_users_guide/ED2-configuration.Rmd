@@ -1,3 +1,5 @@
+### ED Configuration
+
 ED2 is configured using 2 files which are placed in the run folder.
 
 * **ED2IN** : template for this file is located at models/ed/inst/ED2IN.\<revision\>. The values in this template that need to be modified are described below and are surrounded with @ symbols.
@@ -41,9 +43,9 @@ An example of the template can be found in [ED2IN.r82](https://github.com/PecanP
 **@OUTDIR@** :  location where output files are written (**without the runid**), from \<run\>\<host\>\<outdir\>, should not be used.  
 **@SCRATCH@** : local scratch space for outputs, generated /scratch/\<username\>/run$scratch, should not be used right now since it only works on ebi-cluster  
 
-# ED Computation HPC
+**ED Computation HPC**
 
-## TACC lonestar
+**TACC lonestar**
 
 ```bash
 module load hdf5
@@ -55,7 +57,7 @@ curl -o include.mk.lonestar http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk
 make OPT=lonestar
 ```
 
-## TACC stampede
+**TACC stampede**
 
 ```bash
 module load hdf5

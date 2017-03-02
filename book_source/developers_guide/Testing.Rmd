@@ -38,25 +38,25 @@ started. You have to figure out
 existing function, `make.cheas` to make `goat.cheddar`. We will know
 that we are done by the color and taste.
 
-    ```{bash}
+```
     git branch goat-cheddar
     git checkout goat-cheddar
-    ```
+```
     * open existing (or create new) file in `inst/tests/`. If working on code in "myfunction" or a set of functions in "R/myfile.R", the file should be named accordingly, e.g. "inst/tests/test.myfile.R"
     * if you are lucky, the function has already been tested and has some examples.
     * if not, you may need to create a minimal example, often requiring a settings file. The default settings file can be obtained in this way:
-      ```{r, eval = FALSE}
-      settings <- read.settings(system.file("extdata/test.settings.xml", package = "PEcAn.utils"))
-      ```
+```r
+  settings <- read.settings(system.file("extdata/test.settings.xml", package = "PEcAn.utils"))
+```
     * write what you want to do
-      ```{r, eval = FALSE}
+```
       test_that("make.cheas can make cheese",{
         goat.cheddar <- make.cheas(source = 'goat', style = 'cheddar')
         expect_equal(color(goat.cheddar), "orange")
         expect_is(object = goat.cheddar, class = "cheese")
         expect_true(all(c("sharp", "creamy") %in% taste(goat.cheddar)))
       } 
-      ```
+```
     * now edit the goat.cheddar function until it makes savory, creamy, orange cheese.
     * commit often
     * update documentation and test
@@ -119,7 +119,7 @@ settings <- read.settings(settings.xml)
 * test-specific settings:
  * settings text can be specified inline:
  
-  ```r
+```
   settings.text <- "
   <pecan>
   <nocheck>nope</nocheck> ## allows bypass of checks in the read.settings functions 
@@ -138,7 +138,7 @@ settings <- read.settings(settings.xml)
   </database>
 </pecan>"
 settings <- read.settings(settings.text)
- ```
+```
  * values in settings can be updated:
 ```r
 settings <- read.settings(settings.text)
