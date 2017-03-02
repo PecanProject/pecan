@@ -385,7 +385,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
       pft.number <- pftmapping$ED[which(pftmapping == pft)]
       
       if(pft=="soil"){
-        data(soil)
+        data(soil, package = "PEcAn.ED2")
         vals <- as.list(soil)
         names(vals) <- colnames(soil)
         
