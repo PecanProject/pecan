@@ -77,3 +77,7 @@ before_script:
 script:
   - scripts/build.sh --no-git --tests --name travis
 
+## Render Book
+script:
+  - cd book_source
+  - make
