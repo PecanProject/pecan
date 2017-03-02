@@ -72,7 +72,7 @@ Resolution: 3hr, 1 degree
 
 Availability: 1948-2010
 
-# PalEON
+## PalEON
 
 Scale: -100 to -60 W Lon, 35 to 50 N Latitude \(US northern hardwoods + buffer\)
 

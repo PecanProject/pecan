@@ -1,4 +1,4 @@
-# BioCro
+## BioCro
 
 | Model Information ||
 | -- | -- |
@@ -8,24 +8,24 @@
 | Authors | |
 | PEcAn Integration | |
 
-## Introduction
+**Introduction**
 
 Introduction about model
 
-## PEcAn configuration file additions
+**PEcAn configuration file additions**
 
 Should list the model specific additions to the PEcAn file here
 
-## Model specific input files
+**Model specific input files**
 
 List of inputs required by model, such as met, etc.
 
-## Model configuration files
+**Model configuration files**
 
 BioCro uses a config.xml file similar to ED2. At this time, no other template files are required.
 
-## Installation notes
+**Installation notes**
 
 This section contains notes on how to compile the model. The notes for the VM might work on other machines or configurations as well.
 
-### VM
+**VM**

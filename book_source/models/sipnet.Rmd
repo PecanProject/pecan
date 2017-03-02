@@ -1,4 +1,4 @@
-# Sipnet
+## Sipnet
 
 | Model Information ||
 | -- | -- |
@@ -8,19 +8,19 @@
 | Authors | |
 | PEcAn Integration | Michael Dietze, Rob Kooper |
 
-## Introduction
+**Introduction**
 
 Introduction about model
 
-## PEcAn configuration file additions
+**PEcAn configuration file additions**
 
 Should list the model specific additions to the PEcAn file here
 
-## Model specific input files
+**Model specific input files**
 
 List of inputs required by model, such as met, etc.
 
-## Model configuration files
+**Model configuration files**
 
 SIPNET is configured using 3 files which are placed in the run folder, as well as a symbolic link to the met file.
 
@@ -28,13 +28,13 @@ SIPNET is configured using 3 files which are placed in the run folder, as well a
 * **sipnet.param-spatial** : template for this file is located at models/sipnet/inst/template.param-spatial and is not modified.  
 * **sipnet.param** : template for this file is in models/sipnet/inst/template.param or it is specified in the \<model\> section as \<default.param\>. The values in this template are replaced by those computed in the earlier stages of PEcAN.
 
-## Installation notes
+**Installation notes**
 
 This section contains notes on how to compile the model. The notes for the VM might work on other machines or configurations as well.
 
 SIPNET version unk:
 
-```{bash, eval = FALSE}
+```
 if [ ! -e ${HOME}/sipnet_unk ]; then
   cd
   curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/models/sipnet_unk.tar.gz
@@ -50,7 +50,7 @@ make clean
 
 SIPNET version 136:
 
-```{bash, eval = FALSE}
+```
 if [ ! -e ${HOME}/sipnet_r136 ]; then
   cd
   curl -o sipnet_r136.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_r136.tar.gz
@@ -65,4 +65,4 @@ sudo cp sipnet /usr/local/bin/sipnet.r136
 make clean
 ```
 
-### VM
+**VM**

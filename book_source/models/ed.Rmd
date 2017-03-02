@@ -1,4 +1,4 @@
-# ED
+## ED
 
 | Model Information ||
 | -- | -- |
@@ -8,19 +8,19 @@
 | Authors | Paul Moorcroft, ... |
 | PEcAn Integration | Michael Dietze, Rob Kooper |
 
-## Introduction
+**Introduction**
 
 Introduction about ED model
 
-## PEcAn configuration file additions
+**PEcAn configuration file additions**
 
 Should list the model specific additions to the PEcAn file here
 
-## Model specific input files
+**Model specific input files**
 
 List of inputs required by model, such as met, etc.
 
-## Model configuration files
+**Model configuration files**
 
 ED2 is configured using 2 files which are placed in the run folder.
 
@@ -65,15 +65,15 @@ The ED2IN template can contain the following variables. These will be replaced w
 * **@OUTDIR@** :  location where output files are written (**without the runid**), from \<run\>\<host\>\<outdir\>, should not be used.  
 * **@SCRATCH@** : local scratch space for outputs, generated /scratch/\<username\>/run$scratch, should not be used right now since it only works on ebi-cluster  
 
-## Installation notes
+**Installation notes**
 
 This section contains notes on how to compile the model. The notes for the VM might work on other machines or configurations as well.
 
-### VM
+**VM**
 
-### BU geo
+** BU geo**
 
-### TACC lonestar
+**TACC lonestar**
 
 ```bash
 module load hdf5
@@ -85,7 +85,7 @@ curl -o include.mk.lonestar http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk
 make OPT=lonestar
 ```
 
-### TACC stampede
+**TACC stampede**
 
 ```bash
 module load hdf5
