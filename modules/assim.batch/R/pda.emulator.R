@@ -527,7 +527,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
         cc <- ifelse(any(grepl(sf.check, sf)), cc, cc + 1) 
       }
       
-    colnames(m) <- rownames(prior.all)[prior.ind.all.ns]
+    colnames(m) <- prior.all.rownames[prior.ind.all.ns]
     mcmc.samp.list[[c]] <- m
     
     # jmp.list[[c]] <- mcmc.out[[c]]$jump
@@ -588,7 +588,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                                                          settings$assim.batch$ensemble.id, 
                                                          ".Rdata"))
     save(prior.list, file = settings$assim.batch$bias.path)
-    prior.ind.all.ns
   }
 
   
