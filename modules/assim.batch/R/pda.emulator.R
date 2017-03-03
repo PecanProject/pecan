@@ -171,11 +171,12 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       n.post.knots    <- floor(knot.par * settings$assim.batch$n.knot)
       
       if(!is.null(sf)){
-        sf.list <- pda.generate.sf(n.post.knots, sf, prior.list)
-        probs.sf <- sf.list$probs
-        prior.list <- sf.list$priors
+        n.post.knots <- settings$assim.batch$n.knot
+        sf.list      <- pda.generate.sf(n.post.knots, sf, prior.list)
+        probs.sf     <- sf.list$probs
+        prior.list   <- sf.list$priors
       }else {
-        probs.sf <- NULL
+        probs.sf     <- NULL
       }
       
       ## set prior distribution functions for posterior of the previous emulator run
@@ -190,10 +191,11 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                                                                pname[[x]]))
       knots.params.temp <- lapply(knots.list.temp, `[[`, "params")
       
+      
       for (i in seq_along(settings$pfts)) {
         # mixture of knots
-        knots.list[[i]]$params <- rbind(knots.params[[i]][sample(nrow(knots.params[[i]]), 
-                                                                 (settings$assim.batch$n.knot - n.post.knots)), ], 
+        mix.knots <- sample(nrow(knots.params[[i]]), (settings$assim.batch$n.knot - n.post.knots))
+        knots.list[[i]]$params <- rbind(knots.params[[i]][mix.knots, ], 
                                         knots.list.temp[[i]]$params)
         names(knots.list)[i] <- settings$pfts[[i]]['name']
       }
