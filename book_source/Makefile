@@ -1,4 +1,7 @@
-all: build deploy 
+all: bkdcheck build deploy 
+
+bkdcheck:
+	./check_bkd_pkg.R
 
 build: 
 	Rscript -e 'bookdown::render_book("index.Rmd","bookdown::gitbook", output_dir = "../book")'
