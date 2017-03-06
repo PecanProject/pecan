@@ -1,7 +1,11 @@
-##' @name download.FIA
-##' @title download.FIA
+##' @name extract_FIA
+##' @title extract_FIA
 ##' @export
-download.FIA <- function(inputinfo, lat, lon, year, gridres = 0.075, con){
+extract_FIA <- function(inputinfo, lat, lon, year, gridres = 0.075, dbparms){
+  
+  ## connect to database
+  fia.con <- PEcAn.DB::db.open(dbparms$fia)
+  on.exit(db.close(fia.con), add = T)
   
   gridres  <- 0.075
   lonmin   <- lon - gridres

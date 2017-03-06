@@ -3,28 +3,40 @@
 ##' @export
 ##'
 ##' @param settings pecan settings list
+##' @param dbfiles where to write files
 ##' @param overwrite whether to force ic_process to proceed
 ##' @author Istem Fer
-ic_process <- function(settings, overwrite = FALSE){
+ic_process <- function(settings, input, dir, overwrite = FALSE){
   
-  mimetype    <- "text/plain"
-  file_path <- file.path(dir, paste0(inputinfo$source, "_site_", runinfo$site$id))
-  ### check if file_path exists, create otherwise
-  dir.create(file_path, showWarnings = F, recursive = T)
   
-  start_year <- lubridate::year(runinfo$start.date)
-  end_year   <- lubridate::year(runinfo$end.date)
-  startdate   <- lubridate::as_date(paste0(start_year, "-01-01"))
-  enddate <- lubridate::as_date(paste0(end_year, "-12-31"))
+  #--------------------------------------------------------------------------------------------------#
+  # Extract info from settings and setup
+  site       <- settings$run$site
+  start_date <- settings$run$start.date
+  end_date   <- settings$run$end.date
+  model      <- settings$model$type
+  host       <- settings$host
+  dbparms    <- settings$database
+
+
   
-  lat <- as.numeric(runinfo$site$lat)
-  lon <- as.numeric(runinfo$site$lon)
+  # file_path <- file.path(dir, paste0(inputinfo$source, "_site_", runinfo$site$id))
+  # ### check if file_path exists, create otherwise
+  # dir.create(file_path, showWarnings = F, recursive = T)
+  # 
+  # start_year <- lubridate::year(runinfo$start.date)
+  # end_year   <- lubridate::year(runinfo$end.date)
+  # startdate   <- lubridate::as_date(paste0(start_year, "-01-01"))
+  # enddate <- lubridate::as_date(paste0(end_year, "-12-31"))
+  # 
+  # lat <- as.numeric(runinfo$site$lat)
+  # lon <- as.numeric(runinfo$site$lon)
   
-  obs <- NULL
+  # obs <- NULL
  
   # handle overwrites
   
-  # set up connection
+  # set up bety connection
   bety <- dplyr::src_postgres(dbname   = dbparms$bety$dbname, 
                               host     = dbparms$bety$host, 
                               user     = dbparms$bety$user, 
@@ -33,39 +45,17 @@ ic_process <- function(settings, overwrite = FALSE){
   con <- bety$con
   on.exit(db.close(con))
   
-  # might want to set up host information
+  # set up host information
+  machine.host <- ifelse(host == "localhost" || host$name == "localhost", fqdn(), host$name)
+  machine <- db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
   
-  # get source and potentially determine where to start in the process
-  source <- ifelse(is.null(inputinfo$source), 
-                logger.error("Must specify input source"), 
-                inputinfo$source)
-  
-  
-  # where to start IC process
-  if (is.null(inputinfo$id)) {
-    
-    stage <- list(download = FALSE, loaddata = FALSE, sppmatch = TRUE, pftmatch = TRUE,  veg2model = TRUE)
-    
-    stage$sppmatch <- ifelse(inputinfo$output == "css", TRUE, FALSE)
-    stage$pftmatch <- ifelse(inputinfo$output == "css", TRUE, FALSE)
-    stage$loaddata <- ifelse(inputinfo$output == "css" & inputinfo$source != "FIA", TRUE, FALSE)
-    stage$download <- ifelse(inputinfo$source == "FIA" & inputinfo$output != "site", TRUE, FALSE)
-  } 
-  
-  
-
   
   
   #--------------------------------------------------------------------------------------------------#
-  # Download FIA
-  if (stage$download) {
+  # Extract FIA
+  if (input$source == "FIA") {
     
-      
-    ## connect to database
-    fia.con <- PEcAn.DB::db.open(dbparms$fia)
-    on.exit(db.close(fia.con), add = T)
-    
-    obs <- download.FIA(inputinfo, lat, lon, year = start_year, con = fia.con)
+    obs <- extract.FIA(inputinfo, lat, lon, year = start_year, dbparms)
     
     #############################################################################
     ### Do we want to save the intermediate step here for pss?                ###
