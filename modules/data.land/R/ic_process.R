@@ -2,18 +2,10 @@
 ##' @title ic_process
 ##' @export
 ##'
-##' @param pfts settings pft list
-##' @param runinfo run from settings list
-##' @param inputinfo which data source to use (FIA, GapMacro, FFT etc.) and username, 
-##' this is a subset of runinfo and can be extracted from runinfo for now as this is only functional for css/pss/site, 
-##' but might need this info separately when handling different IC types of IC data in the future
-##' @param model model_type name
-##' @param host Host info from settings file
-##' @param dbparms  database settings from settings file
-##' @param dir  directory to write outputs to
+##' @param settings pecan settings list
 ##' @param overwrite whether to force ic_process to proceed
 ##' @author Istem Fer
-ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, overwrite = FALSE){
+ic_process <- function(settings, overwrite = FALSE){
   
   mimetype    <- "text/plain"
   file_path <- file.path(dir, paste0(inputinfo$source, "_site_", runinfo$site$id))
