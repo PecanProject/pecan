@@ -10,7 +10,8 @@ git config --global user.name "Your Name"
 if [ ! -d "../book_output" ]; then 
 git clone -b gh-pages \
 #git@github.com:$USER/pecan \
-https://${GITHUB_PAT}@github.com/${TRAVIS_REPO_SLUG}.git \
+#https://${GITHUB_PAT}@github.com/${TRAVIS_REPO_SLUG}.git \
+git@github.com:${GITHUB_PAT}/${TRAVIS_REPO_SLUG}.git \
 ../book_output
 fi
 
