@@ -4,7 +4,7 @@
 ##' @description Input conversion workflow
 ##' @author Ryan Kelly, Rob Kooper, Betsy Cowdery, Istem Fer
 ##' @export
-do.conversions <- function(settings, overwrite.met = FALSE, overwrite.ic = FALSE) {
+do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE, overwrite.ic = FALSE) {
   if (PEcAn.settings::is.MultiSettings(settings)) {
     return(PEcAn.settings::papply(settings, do.conversions))
   }
@@ -24,20 +24,30 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.ic = FALSE
     
     input.tag <- names(settings$run$input)[i]
     
-    # IC conversion : for now for ED only, hence the css/pss/site check
-    if ((input.tag %in% c("css", "pss", "site")) &&
+    if ((input.tag %in% c("css", "pss", "site")) && 
         is.null(input$path) && !is.null(input$source)) {
-      settings$run$inputs[[i]][['path']] <- 
-        PEcAn.data.land::ic_process(
-          pfts       = settings$pfts,
-          runinfo    = settings$run, 
-          inputinfo  = input,
-          model      = settings$model$type,
-          host       = "localhost", # for now it's not settings$host
-          dbparms    = settings$database, 
-          dir        = settings$database$dbfiles, # we're handling files locally for now, copying to remote by hand
-          overwrite  = overwrite.ic)
-      
+      if(!is.null(input$useic)){ # set <useic>TRUE</useic> if IC Workflow, leave empty if not
+        ic.flag  <- input$useic
+        fia.flag <- FALSE
+      }else if(input$source == "FIA"){
+        ic.flag  <- FALSE
+        fia.flag <- TRUE
+        # possibly a warning for deprecation in the future
+      }
+    }else{
+      ic.flag <- fia.flag <- FALSE
+    }
+    
+    # IC conversion : for now for ED only, hence the css/pss/site check
+    # <useic>TRUE</useic>
+    if (ic.flag) {
+      settings <- PEcAn.data.land::ic_process(settings, overwrite  = overwrite.ic)
+      needsave <- TRUE
+    }
+    
+    # keep fia.to.psscss
+    if (fia.flag) {
+      settings <- PEcAn.data.land::fia.to.psscss(settings, overwrite = overwrite.fia)
       needsave <- TRUE
     }
     
