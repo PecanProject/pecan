@@ -12,7 +12,7 @@ git clone -b gh-pages \
 #git@github.com:$USER/pecan \
 #https://${GITHUB_PAT}@github.com/${TRAVIS_REPO_SLUG}.git \
 #git@github.com:${GITHUB_PAT}/pecan_bookdown.git \
-https://${GITHUB_PAT}@github.com/pecan_bookdown.git 
+https://PecanProject@github.com/pecan_bookdown.git 
 ../book_output
 fi
 
