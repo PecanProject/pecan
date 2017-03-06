@@ -202,25 +202,10 @@ veg2model.ED2 <- function(obs = NULL, inputinfo, runinfo, outfolder, host, con, 
     write.table(obs, localfile, quote = FALSE, col.names = TRUE, row.names = FALSE)
   }
 
-
-  # Insert into DB
-  ic.id <- dbfile.input.insert(
-    in.path    = outfolder,
-    in.prefix  = filename,
-    siteid     = runinfo$site$id,
-    startdate  = startdate,
-    enddate    = enddate,
-    mimetype   = "text/plain",
-    formatname = formatname,
-    parentid   = NA,
-    con        = con,
-    hostname   = host,
-    allow.conflicting.dates = TRUE
-  )$input.id
   
-  ### if things were modularized and convert input was used:
-  # return(invisible(results))  
-  return(ic.id)
+  ### return for convert.inputs
+  return(invisible(results))  
+
 }
 
 get.ed.file.latlon.text <- function(lat, lon, site.style = FALSE, ed.res = 1) {

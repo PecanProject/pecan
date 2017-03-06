@@ -85,21 +85,7 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
     # file_name <- paste0("fia.", inputinfo$output, ".", start_year, "_", end_year, ".txt")
     # write.table(obs, file = file.path(file_path, file_name), col.names = TRUE, row.names = FALSE, sep = "\t")
     # 
-    # # Insert into dbfiles
-    # inputinfo$id <- dbfile.input.insert(
-    #   in.path    = file_path,
-    #   in.prefix  = file_name,
-    #   siteid     = runinfo$site$id,
-    #   startdate  = startdate,
-    #   enddate    = enddate,
-    #   mimetype   = mimetype,
-    #   formatname = paste0("fia.", inputinfo$output),
-    #   parentid   = NA,
-    #   con        = con,
-    #   hostname   = host,
-    #   allow.conflicting.dates = TRUE
-    # )$input.id
- 
+  
     stage$download <- FALSE
   }
   
@@ -172,20 +158,7 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
     ### obsspppft is the combined thing, testing
     write.table(obs, file.path(file_path, file_name), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
     
-    # Insert into DB
-    inputinfo$id <- dbfile.input.insert(
-      in.path    = file_path,
-      in.prefix  = file_name,
-      siteid     = runinfo$site$id,
-      startdate  = startdate,
-      enddate    = enddate,
-      mimetype   = mimetype,
-      formatname = "spp.info",
-      parentid   = NA,
-      con        = con,
-      hostname   = host,
-      allow.conflicting.dates = TRUE
-    )$input.id
+  
     
     stage$sppmatch <- FALSE
   }
@@ -214,21 +187,6 @@ ic_process <- function(pfts, runinfo, inputinfo, model, host, dbparms, dir, over
       
     ### obsspppft is the combined thing, testing
     write.table(obs, file.path(file_path, file_name), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
-    
-    # Insert into DB
-    inputinfo$id <- dbfile.input.insert(
-      in.path    = file_path,
-      in.prefix  = file_name,
-      siteid     = runinfo$site$id,
-      startdate  = startdate,
-      enddate    = enddate,
-      mimetype   = mimetype,
-      formatname = "pft.info",
-      parentid   = NA,
-      con        = con,
-      hostname   = host,
-      allow.conflicting.dates = TRUE
-    )$input.id
     
     stage$pftmatch <- FALSE
   }
