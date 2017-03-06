@@ -2,6 +2,8 @@
 
 USER=$(git remote show origin | grep -Po '[^:/]+(?=/pecan)' | head -n1)
 
+./check_bkd_pkg.R
+
 if [ ! -d "../book_output" ]; then 
 git clone -b gh-pages \
 git@github.com:$USER/pecan \
