@@ -74,16 +74,13 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   if (is.null(input$id) {
     
     raw.id <- .get.veg.module(dir = dir,
-                              met = met, 
+                              input_veg = input, 
                               machine = machine, 
                               start_date = start_date, end_date = end_date,
-                              str_ns = str_ns, con = con, 
-                              input_veg = input, 
-                              site.id = new.site$id, 
-                              lat.in = new.site$lat, lon.in = new.site$lon, 
+                              str_ns = str_ns, con = con, dbparms = dbparms,
+                              lat = new.site$lat, lon = new.site$lon,
                               host = host, 
-                              overwrite = overwrite$getveg,
-                              site = site)
+                              overwrite = overwrite$getveg)
 
     
     #############################################################################
