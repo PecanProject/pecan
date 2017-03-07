@@ -1,21 +1,25 @@
-##' @name extract_FIA
-##' @title extract_FIA
+##' @name get_FIA
+##' @title get_FIA
 ##' @export
-extract_FIA <- function(inputinfo, lat, lon, start_date, end_date, 
-                        gridres = 0.075, dbparms, ...){
+get_FIA <- function(outfolder, lon, lat, start_date, gridres = 0.075, 
+                    bety_usr, bety_pwd, bety_hst, bety_dbn, 
+                    fia_usr, fia_pwd, fia_hst, fia_dbn, ...){
   
   ## connect to database
-  fia.con <- PEcAn.DB::db.open(dbparms$fia)
+  fia.list <- list(dbname = fia_dbn, password = fia_pwd, host = fia_hst, driver = "PostgreSQL", user = fia_usr)
+  fia.con <- PEcAn.DB::db.open(fia.list)
   on.exit(db.close(fia.con), add = T)
   
   lonmin   <- lon - gridres
   lonmax   <- lon + gridres
   latmin   <- lat - gridres
   latmax   <- lat + gridres
+  
+  year <- lubridate::year(start_date)
   min.year <- year - 5
   max.year <- year + 5
   
-  if(inputinfo$output == "pss"){
+
     
     ##################
     ##              ##
@@ -31,7 +35,7 @@ extract_FIA <- function(inputinfo, lat, lon, start_date, end_date,
                    " AND p.lat <= ", latmax, " AND p.measyear >= ", min.year, 
                    " AND p.measyear <= ", max.year, " GROUP BY p.cn")
     
-    pss.info <- db.query(query, con = con)
+    pss.info <- db.query(query, con = fia.con)
     if (nrow(pss.info) == 0) {
       logger.severe("No plot data found on FIA.")
     }
@@ -66,7 +70,6 @@ extract_FIA <- function(inputinfo, lat, lon, start_date, end_date,
     
     fia.info <- pss.info
     
-  }else if(inputinfo$output == "css"){
     
     ##################
     ##              ##
@@ -104,8 +107,16 @@ extract_FIA <- function(inputinfo, lat, lon, start_date, end_date,
     
     fia.info <- css.info
     
-  }
   
+  
+ 
+  # # set up bety connection
+  # bety.spp <- dplyr::src_postgres(dbname   = bety_dbn, 
+  #                                 host     = bety_hst, 
+  #                                 user     = bety_usr, 
+  #                                 password = bety_pwd)
+  # spp.info <- match_species_id(input_codes = obs[[code.col]], format_name = format.name, bety = bety.spp)
+  # 
   return(fia.info)
 } # download.FIA
 
