@@ -17,8 +17,6 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   model      <- settings$model$type
   host       <- settings$host
   dbparms    <- settings$database
-
-
   
   # file_path <- file.path(dir, paste0(inputinfo$source, "_site_", runinfo$site$id))
   # ### check if file_path exists, create otherwise
@@ -34,7 +32,21 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   
   # obs <- NULL
  
-  # handle overwrites
+  # If overwrite is a plain boolean, fill in defaults for each stage
+  if (!is.list(overwrite)) {
+    if (overwrite) {
+      overwrite <- list(getveg = TRUE,  writeveg = TRUE)
+    } else {
+      overwrite <- list(getveg = FALSE, writeveg = FALSE)
+    }
+  } else {
+    if (is.null(overwrite$getveg)) {
+      overwrite$getveg <- FALSE
+    }
+    if (is.null(overwrite$writeveg)) {
+      overwrite$writeveg <- FALSE
+    }
+  }
   
   # set up bety connection
   bety <- dplyr::src_postgres(dbname   = dbparms$bety$dbname, 
@@ -50,12 +62,29 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   machine <- db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
   
   
+  # setup site database number, lat, lon and name and copy for format.vars if new input
+  new.site <- data.frame(id = as.numeric(site$id), 
+                         lat = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lat, 
+                         lon = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lon)
+  str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   
   #--------------------------------------------------------------------------------------------------#
-  # Extract FIA
-  if (input$source == "FIA") {
+  # Load/extract + match species module
+  
+  if (is.null(input$id) {
     
-    obs <- extract.FIA(inputinfo, lat, lon, year = start_year, dbparms)
+    raw.id <- .get.veg.module(dir = dir,
+                              met = met, 
+                              machine = machine, 
+                              start_date = start_date, end_date = end_date,
+                              str_ns = str_ns, con = con, 
+                              input_veg = input, 
+                              site.id = new.site$id, 
+                              lat.in = new.site$lat, lon.in = new.site$lon, 
+                              host = host, 
+                              overwrite = overwrite$getveg,
+                              site = site)
+
     
     #############################################################################
     ### Do we want to save the intermediate step here for pss?                ###
@@ -68,12 +97,15 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     # write.table(obs, file = file.path(file_path, file_name), col.names = TRUE, row.names = FALSE, sep = "\t")
     # 
   
-    stage$download <- FALSE
+
   }
   
   #--------------------------------------------------------------------------------------------------#
+  # Spp match module
+  
+  #--------------------------------------------------------------------------------------------------#
   # Load data
-  if (stage$loaddata) {
+  if (input$source %in% load.sources) {
     
     source.id <- ifelse(is.null(inputinfo$source.id), 
                      logger.error("Must specify input source.id"), 
