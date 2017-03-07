@@ -10,7 +10,7 @@
 ##' Generic function to convert input files containing observational data to 
 ##' a common PEcAn format. 
 load_data <- function(data.path, format, start_year = NA, end_year = NA, site = NA, 
-                      vars.used.index=NULL, time.row = NULL) {
+                      vars.used.index=NULL, time.row = NULL, ...) {
 
   ## load everything in format by default
   if(is.null(time.row)){
