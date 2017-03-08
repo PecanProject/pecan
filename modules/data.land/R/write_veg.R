@@ -1,19 +1,21 @@
 ##' @name extract_FIA
 ##' @title extract_FIA
 ##' @export
-write_veg <- function(outfolder, start_year, end_year, temp_file, ...){
+write_veg <- function(outfolder, start_date, end_date, temp_file, ...){
   
   #--------------------------------------------------------------------------------------------------#
   # Load and delete file
   load(temp_file)
   file.remove(temp_file)
   
+  # convert to matrix !JUST FOR NOW, THIS IS WRONG!
+  veg_info <- sapply(seq_along(veg_info), function(x) apply(veg_info[[x]], 2, as.numeric))
+  
   #--------------------------------------------------------------------------------------------------#
   # Write ncdf files and return results data frame
   
-  # check if file path exists & create 
-  dir.create(outfolder, showWarnings = F, recursive = T)
-  
+  start_year    <- lubridate::year(start_date)
+  end_year      <- lubridate::year(end_date)
   out_file      <- paste("FIA", start_year, end_year, "veg", "nc", sep = ".")
   out_file_full <- file.path(outfolder, out_file)
   
