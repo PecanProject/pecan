@@ -79,7 +79,6 @@
   # IF: A hack to be able to use convert.input
   tmpfolder <- file.path(localdb, paste0(input_veg$source, "_site_", str_ns))
   dir.create(tmpfolder, showWarnings = F, recursive = T)
-  
   now <- format(Sys.time(), "%Y%m%d%H%M%OS3")
   temp_file <- file.path(tmpfolder, paste0(now,".Rdata")) # to be deleted
   save(veg_info, file = temp_file)
