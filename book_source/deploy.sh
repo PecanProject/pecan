@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+#set -e
 
 #USER=$(git remote show origin | grep -Po '[^:/]+(?=/pecan)' | head -n1)
 [ -z "${GITHUB_PAT}" ] && exit 0
