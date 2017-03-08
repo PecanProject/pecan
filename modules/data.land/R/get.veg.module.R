@@ -1,12 +1,9 @@
-.get.veg.module <- function(dir = dir,
-                            input_veg = input,
-                            machine = machine, 
-                            start_date = start_date, end_date = end_date,
-                            str_ns = str_ns, bety = bety, dbparms = dbparms,
+.get.veg.module <- function(dir, input_veg, machine, 
+                            start_date, end_date,
+                            str_ns, bety, dbparms,
                             lat, lon,
-                            host = host, localdb,
-                            overwrite = overwrite$getveg,
-                            site = site){
+                            host, localdb,
+                            overwrite, site){
   
   outfolder <- file.path(dir, paste0(input_veg$source, "_site_", str_ns))
 

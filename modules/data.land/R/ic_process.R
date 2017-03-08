@@ -22,16 +22,16 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   # If overwrite is a plain boolean, fill in defaults for each module
   if (!is.list(overwrite)) {
     if (overwrite) {
-      overwrite <- list(getveg = TRUE,  writeveg = TRUE)
+      overwrite <- list(getveg = TRUE,  putveg = TRUE)
     } else {
-      overwrite <- list(getveg = FALSE, writeveg = FALSE)
+      overwrite <- list(getveg = FALSE, putveg = FALSE)
     }
   } else {
     if (is.null(overwrite$getveg)) {
       overwrite$getveg <- FALSE
     }
-    if (is.null(overwrite$writeveg)) {
-      overwrite$writeveg <- FALSE
+    if (is.null(overwrite$putveg)) {
+      overwrite$putveg <- FALSE
     }
   }
   
@@ -84,8 +84,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                                 start_date = start_date, end_date = end_date,
                                 str_ns = str_ns, bety = bety, 
                                 lat = new.site$lat, lon = new.site$lon,
-                                host = host, localdb = settings$database$dbfiles,
-                                overwrite = overwrite$getveg)
+                                host = host, overwrite = overwrite$putveg)
     
   }
 
