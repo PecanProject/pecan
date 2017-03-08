@@ -55,6 +55,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                          lon = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lon)
   str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   
+  raw.id <- NULL
   #--------------------------------------------------------------------------------------------------#
   # Load/extract + match species module
   
@@ -68,132 +69,32 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                               lat = new.site$lat, lon = new.site$lon,
                               host = host, localdb = settings$database$dbfiles,
                               overwrite = overwrite$getveg)
-  
 
   }
   
 
-  
   #--------------------------------------------------------------------------------------------------#
-  # Load data
-  if (input$source %in% load.sources) {
+  # Match species to PFTs + veg2model module
+  if (!is.null(raw.id)) {
     
-    source.id <- ifelse(is.null(inputinfo$source.id), 
-                     logger.error("Must specify input source.id"), 
-                     inputinfo$source.id)
+    ready.id <- .put.veg.module(raw.id = raw.id,
+                                dir = dir,
+                                input_veg = input, 
+                                machine = machine, 
+                                start_date = start_date, end_date = end_date,
+                                str_ns = str_ns, bety = bety, 
+                                lat = new.site$lat, lon = new.site$lon,
+                                host = host, localdb = settings$database$dbfiles,
+                                overwrite = overwrite$getveg)
+    
+  }
 
-    # query data.path from source id [input id in BETY]
-    query <- paste0("SELECT * FROM dbfiles where container_id = ", source.id)
-    data.path <- file.path(db.query(query, con = con)[["file_path"]], db.query(query, con = con)[["file_name"]])
-      
-    # query format info
-    format <- query.format.vars(bety = bety, input.id = source.id)
-    
-    # load data
-    obs <- load_data(data.path, format, site = runinfo$site)
-    
-    stage$loaddata <- FALSE
-  }
-  
   #--------------------------------------------------------------------------------------------------#
-  # Match code to species
-  if (stage$sppmatch) {
-    
-    # decide which code format to use while matching species
-    # should we retrieve it from settings or assign a code format per source type?
-    # or allow both?
-    if(inputinfo$source %in% c("GapMacro", "NASA_TE_FIA")){
-      format.name = 'usda'
-    }else if(inputinfo$source %in% c("FIA")){
-      format.name = 'fia'      
-    }else if(!is.null(inputinfo$match.format)){
-      format.name = inputinfo$match.format
-    }else{
-      logger.error("Can't match code to species. No valid format found.")
-    }
-    
-    # decide which column has the codes
-    # this block may or may not be merged with the block above
-    if(format.name == 'usda'){
-      code.col = "species_USDA_symbol"
-    }else if(format.name == 'fia'){
-      code.col = "spcd"
-    }else if(format.name == 'latin_name'){
-      code.col = "latin_name"
-    }
-    
-    # match code to species ID
-    spp.info <- match_species_id(input_codes = obs[[code.col]], format_name = format.name, bety = bety)
-    
-    if(sum(is.na(spp.info$bety_species_id)) > 0){
-      bad <- unique(spp.info$input_code[is.na(spp.info$bety_species_id)])
-      PEcAn.utils::logger.error(paste0("Species for the following code(s) not found : ", paste(bad, collapse = ", ")))
-    }
-    
-    # merge with data
-    tmp <- spp.info[ , colnames(spp.info) != "input_code"]
-    obs <- cbind(obs, tmp)
-    
-    ### write
-    file_name <- paste0("sppmatch.", start_year, "_", end_year, ".txt")
-    
-    # where to read file from in veg2model
-    inputinfo$path <- file.path(file_path, file_name)
-    
-    ### obsspppft is the combined thing, testing
-    write.table(obs, file.path(file_path, file_name), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
-    
+  # Fill settings
   
-    
-    stage$sppmatch <- FALSE
-  }
+  # use ready.id
+  # model.file <- db.query(paste("SELECT * from dbfiles where container_id =", ic.id), con)
+  # fill settings
   
-  #--------------------------------------------------------------------------------------------------#
-  # Match species to PFTs
-  if (stage$pftmatch) {
-    
-    # can there be a stage that will skip the match species step above?
-    # you can continue from above or read from previously processed data
-    # anything in the DB takes precedence
-    if(!is.null(inputinfo$path)){
-      obs <- read.table(inputinfo$path, header = TRUE)
-    }
-    
-    pft.info <- match_pft(obs$bety_species_id, pfts, con)
-    
-    ### merge with other stuff
-    obs <- cbind(obs, pft.info[c("bety_pft_id", "pft")])
-    
-    ### write
-    file_name <- paste0("pftmatch.", start_year, "_", end_year, ".txt")
-    
-    # where to read file from in veg2model
-    inputinfo$path <- file.path(file_path, file_name)
-      
-    ### obsspppft is the combined thing, testing
-    write.table(obs, file.path(file_path, file_name), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = "\t")
-    
-    stage$pftmatch <- FALSE
-  }
-  
-  #--------------------------------------------------------------------------------------------------#
-  # Write model specific IC files
-  if (stage$veg2model) {
-    
-    ## Set model-specific functions
-    do.call("library", list(paste0("PEcAn.", model)))
-    veg2model.fcn <- paste("veg2model.", model, sep = "")
-    if (!exists(veg2model.fcn)) {
-      logger.severe(paste(veg2model.fcn, "does not exist."))
-    }
-    
-    # call veg2model.[model]
-    fcn    <- match.fun(veg2model.fcn)
-    ic.id  <- fcn(obs, inputinfo = inputinfo, runinfo = runinfo, host, con, outfolder = file_path)
-    
-  }
-  
-  model.file <- db.query(paste("SELECT * from dbfiles where container_id =", ic.id), con)
-  
-  return(file.path(model.file$file_path, model.file$file_name))
+  return(settings)
 } # ic_process
