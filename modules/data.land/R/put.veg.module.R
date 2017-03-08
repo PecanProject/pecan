@@ -1,12 +1,9 @@
-.put.veg.module <- function(raw.id = raw.id,
-                           dir = dir,
-                           input_veg = input, 
-                           machine = machine, 
-                           start_date = start_date, end_date = end_date,
-                           str_ns = str_ns, bety = bety, 
-                           lat = new.site$lat, lon = new.site$lon,
-                           host = host, localdb = settings$database$dbfiles,
-                           overwrite = overwrite$getveg){
+.put.veg.module <- function(raw.id, dir,
+                            input_veg, machine, 
+                            start_date, end_date,
+                            str_ns, bety, 
+                            lat, lon,
+                            host, overwrite){
   
   #--------------------------------------------------------------------------------------------------#
   # Read
@@ -39,7 +36,7 @@
   
   con <- bety$con
   
-  raw.id <- convert.input(input.id = NA,
+  ready.id <- convert.input(input.id = NA,
                           outfolder = outfolder, 
                           formatname = "spp.info", 
                           mimetype = "text/plain",
@@ -51,5 +48,7 @@
                           overwrite = overwrite, 
                           # fcn specific args 
                           temp_file)
+  
+  return(ready.id)
   
 }
