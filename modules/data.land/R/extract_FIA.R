@@ -1,13 +1,13 @@
-##' @name get_FIA
-##' @title get_FIA
+##' @name extract_FIA
+##' @title extract_FIA
 ##' @export
-get_FIA <- function(outfolder, lon, lat, start_date, gridres = 0.075, 
-                    bety_usr, bety_pwd, bety_hst, bety_dbn, 
-                    fia_usr, fia_pwd, fia_hst, fia_dbn, ...){
+extract_FIA <- function(lon, lat, start_date, gridres = 0.075, dbparms){
   
-  ## connect to database
-  fia.list <- list(dbname = fia_dbn, password = fia_pwd, host = fia_hst, driver = "PostgreSQL", user = fia_usr)
-  fia.con <- PEcAn.DB::db.open(fia.list)
+  #--------------------------------------------------------------------------------------------------#
+  # Extract FIA
+  fia.info <- list()
+  
+  fia.con <- PEcAn.DB::db.open(dbparms$fia)
   on.exit(db.close(fia.con), add = T)
   
   lonmin   <- lon - gridres
@@ -15,110 +15,108 @@ get_FIA <- function(outfolder, lon, lat, start_date, gridres = 0.075,
   latmin   <- lat - gridres
   latmax   <- lat + gridres
   
-  year <- lubridate::year(start_date)
-  min.year <- year - 5
-  max.year <- year + 5
+  start_year <- lubridate::year(start_date)
+  end_year   <- lubridate::year(end_date)
+  
+  min.year <-  start_year - 5
+  max.year <-  start_year + 5
   
 
     
-    ##################
-    ##              ##
-    ##     PSS      ##
-    ##              ##
-    ##################
+  ##################
+  ##              ##
+  ##     PSS      ##
+  ##              ##
+  ##################
     
-    ## query to get plot info
-    query <- paste("SELECT p.cycle, p.statecd, p.measyear as time, p.cn as patch, ", 
+  ## query to get plot info
+  query <- paste("SELECT p.cycle, p.statecd, p.measyear as time, p.cn as patch, ", 
                    "MIN(2-c.stdorgcd) as trk, AVG(c.stdage) as age, p.lat, p.lon, p.prev_plt_cn ", 
                    "FROM plot as p LEFT JOIN cond as c on p.cn=c.plt_cn ", 
                    "WHERE p.lon >= ", lonmin, " AND p.lon <= ", lonmax, " AND p.lat >= ", latmin, 
                    " AND p.lat <= ", latmax, " AND p.measyear >= ", min.year, 
                    " AND p.measyear <= ", max.year, " GROUP BY p.cn")
     
-    pss.info <- db.query(query, con = fia.con)
-    if (nrow(pss.info) == 0) {
-      logger.severe("No plot data found on FIA.")
-    }
+  pss.info <- db.query(query, con = fia.con)
+  if (nrow(pss.info) == 0) {
+    logger.severe("No plot data found on FIA.")
+  }
     
-    for (statecd in unique(pss.info$statecd)) {
-      # Count up occurrences of each cycle
-      cycle.count <- table(pss.info$cycle[pss.info$statecd == statecd])
+  for (statecd in unique(pss.info$statecd)) {
+    # Count up occurrences of each cycle
+    cycle.count <- table(pss.info$cycle[pss.info$statecd == statecd])
       
-      # Find the best valid cycle, in terms of providing the most records. 
-      # In case of ties, which.max will return the first one, which will be the earliest
-      best.cycle <- as.numeric(names(cycle.count)[which.max(cycle.count)])
+    # Find the best valid cycle, in terms of providing the most records. 
+    # In case of ties, which.max will return the first one, which will be the earliest
+    best.cycle <- as.numeric(names(cycle.count)[which.max(cycle.count)])
       
-      row.keep.ind <- (pss.info$statecd != statecd) | (pss.info$cycle == best.cycle)
-      
-      pss.info <- pss.info[row.keep.ind, ]
-    }
+    row.keep.ind <- (pss.info$statecd != statecd) | (pss.info$cycle == best.cycle)
     
-    # as an extra precaution, remove any records that are explicitly remeasurments of the same plot
-    pss.info <- pss.info[.select.unique.fia.plot.records(pss.info$patch, pss.info$prev_plt_cn, pss.info$time, year), ]
+    pss.info <- pss.info[row.keep.ind, ]
+  }
     
-    if (nrow(pss.info) == 0) {
-      logger.severe("All plot data were invalid.")
-    }
+  # as an extra precaution, remove any records that are explicitly remeasurments of the same plot
+  pss.info <- pss.info[.select.unique.fia.plot.records(pss.info$patch, pss.info$prev_plt_cn, pss.info$time, start_year), ]
     
-    pss.info$trk[is.na(pss.info$trk)] <- 1
-    pss.info$age[is.na(pss.info$age)] <- 0
+  if (nrow(pss.info) == 0) {
+    logger.severe("All plot data were invalid.")
+  }
     
-    # Dropping unneeded columns
-    pss.info <- pss.info[, c("time", "patch", "trk", "age")]
+  pss.info$trk[is.na(pss.info$trk)] <- 1
+  pss.info$age[is.na(pss.info$age)] <- 0
     
-    logger.debug(paste0("Found ", nrow(pss.info), " patches for coordinates lat:", lat, " lon:", lon))
+  # Dropping unneeded columns
+  pss.info <- pss.info[, c("time", "patch", "trk", "age")]
     
-    fia.info <- pss.info
+  logger.debug(paste0("Found ", nrow(pss.info), " patches for coordinates lat:", lat, " lon:", lon))
     
+  fia.info[[1]] <- as.matrix(pss.info)
     
-    ##################
-    ##              ##
-    ##     CSS      ##
-    ##              ##
-    ##################
+  ##################
+  ##              ##
+  ##     CSS      ##
+  ##              ##
+  ##################
     
-    query <- paste0("SELECT p.measyear as time,p.cycle,p.statecd,p.cn as patch, 
+  query <- paste0("SELECT p.measyear as time,p.cycle,p.statecd,p.cn as patch, 
                   ", "CONCAT(CAST(t.subp AS CHAR),CAST(t.tree AS CHAR)) as cohort,t.dia*2.54 as dbh, ", 
                     "t.spcd as spcd, t.tpa_unadj*0.0002471 as n FROM plot as p LEFT JOIN tree as t on p.cn=t.plt_cn ",
                     "WHERE p.lon >= ", lonmin, 
                     " and p.lon < ", lonmax, 
                     " and p.lat >= ", latmin,
                     " and p.lat < ", latmax)
-    css.info <- db.query(query, con = fia.con)
-    names(css.info) <- tolower(names(css.info))
+  css.info <- db.query(query, con = fia.con)
+  names(css.info) <- tolower(names(css.info))
     
-    if (nrow(css.info) == 0) {
-      logger.severe("No FIA data found.")
-    } else {
-      logger.debug(paste0(nrow(css.info), " trees found initially"))
-    }
+  if (nrow(css.info) == 0) {
+    logger.severe("No FIA data found.")
+  } else {
+    logger.debug(paste0(nrow(css.info), " trees found initially"))
+  }
     
+  # Remove rows that don't map to any retained patch
+  css.info <- css.info[which(css.info$patch %in% pss.info$patch), ]
+  if (nrow(css.info) == 0) {
+    logger.severe("No trees map to previously selected patches.")
+  } else {
+    logger.debug(paste0(nrow(css.info), " trees that map to previously selected patches."))
+  }
     
-    ## Remove rows with no dbh, spcd, or n
-    notree <- which(is.na(css.info$dbh) & is.na(css.info$spcd) & is.na(css.info$n))
-    if (length(notree) > 0) {
-      css.info <- css.info[-notree, ]
-    }
-    if (nrow(css.info) == 0) {
-      logger.severe("No trees remain after removing entries with no dbh, spcd, and/or n.")
-    } else {
-      logger.debug(paste0(nrow(css.info), " trees remain after removing entries with no dbh, spcd, and/or n."))
-    }
+  ## Remove rows with no dbh, spcd, or n
+  notree <- which(is.na(css.info$dbh) & is.na(css.info$spcd) & is.na(css.info$n))
+  if (length(notree) > 0) {
+    css.info <- css.info[-notree, ]
+  }
+  if (nrow(css.info) == 0) {
+    logger.severe("No trees remain after removing entries with no dbh, spcd, and/or n.")
+  } else {
+    logger.debug(paste0(nrow(css.info), " trees remain after removing entries with no dbh, spcd, and/or n."))
+  }
     
-    fia.info <- css.info
-    
-  
-  
- 
-  # # set up bety connection
-  # bety.spp <- dplyr::src_postgres(dbname   = bety_dbn, 
-  #                                 host     = bety_hst, 
-  #                                 user     = bety_usr, 
-  #                                 password = bety_pwd)
-  # spp.info <- match_species_id(input_codes = obs[[code.col]], format_name = format.name, bety = bety.spp)
-  # 
+  fia.info[[2]] <- as.matrix(css.info)
+
   return(fia.info)
-} # download.FIA
+} # extract_FIA
 
 
 # A function for identifying fia plot records that are remeasurements of one another,

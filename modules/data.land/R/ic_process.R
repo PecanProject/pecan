@@ -18,21 +18,8 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   host       <- settings$host
   dbparms    <- settings$database
   
-  # file_path <- file.path(dir, paste0(inputinfo$source, "_site_", runinfo$site$id))
-  # ### check if file_path exists, create otherwise
-  # dir.create(file_path, showWarnings = F, recursive = T)
-  # 
-  # start_year <- lubridate::year(runinfo$start.date)
-  # end_year   <- lubridate::year(runinfo$end.date)
-  # startdate   <- lubridate::as_date(paste0(start_year, "-01-01"))
-  # enddate <- lubridate::as_date(paste0(end_year, "-12-31"))
-  # 
-  # lat <- as.numeric(runinfo$site$lat)
-  # lon <- as.numeric(runinfo$site$lon)
   
-  # obs <- NULL
- 
-  # If overwrite is a plain boolean, fill in defaults for each stage
+  # If overwrite is a plain boolean, fill in defaults for each module
   if (!is.list(overwrite)) {
     if (overwrite) {
       overwrite <- list(getveg = TRUE,  writeveg = TRUE)
@@ -77,28 +64,15 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                               input_veg = input, 
                               machine = machine, 
                               start_date = start_date, end_date = end_date,
-                              str_ns = str_ns, con = con, dbparms = dbparms,
+                              str_ns = str_ns, bety = bety, dbparms = dbparms,
                               lat = new.site$lat, lon = new.site$lon,
-                              host = host, 
+                              host = host, localdb = settings$database$dbfiles,
                               overwrite = overwrite$getveg)
-
-    
-    #############################################################################
-    ### Do we want to save the intermediate step here for pss?                ###
-    ### If not, veg2model.[model] function should take "obs" as an argument   ###
-    ### because pss will skip the next two stage and go right into veg2model  ###
-    #############################################################################
-    
-    # ### saving the intermediate step
-    # file_name <- paste0("fia.", inputinfo$output, ".", start_year, "_", end_year, ".txt")
-    # write.table(obs, file = file.path(file_path, file_name), col.names = TRUE, row.names = FALSE, sep = "\t")
-    # 
   
 
   }
   
-  #--------------------------------------------------------------------------------------------------#
-  # Spp match module
+
   
   #--------------------------------------------------------------------------------------------------#
   # Load data

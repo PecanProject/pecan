@@ -2,26 +2,25 @@
                             input_veg = input,
                             machine = machine, 
                             start_date = start_date, end_date = end_date,
-                            str_ns = str_ns, con = con, dbparms = dbparms,
+                            str_ns = str_ns, bety = bety, dbparms = dbparms,
                             lat, lon,
-                            host = host, 
+                            host = host, localdb,
                             overwrite = overwrite$getveg,
                             site = site){
   
   outfolder <- file.path(dir, paste0(input_veg$source, "_site_", str_ns))
+
+  #--------------------------------------------------------------------------------------------------#
+  # Extract/load data : this step requires DB connections can't be handled by convert.inputs
   
   # which sources require load_data
   load_sources <- c("GapMacro", "NASA_FFT_Plot_Inventory", "NASA_TE_FIA")
   
-
-  # determine function and function arguments
   if(input_veg$source == "FIA"){
-    fcn <- "get_FIA"
-    source.id <- NULL
-
+    
+    veg_info <- extract_FIA(lon, lat, start_date, gridres = 0.075, dbparms)
     
   }else if(input_veg$source %in% load_sources){
-    fcn <- "get_data"
     
     if(!is.null(input_veg$source.id){
       source.id <- input_veg$source.id
@@ -35,18 +34,63 @@
     
     # query format info
     format.vars <- query.format.vars(bety = bety, input.id = source.id)
-
-
+    
+    veg_info <- load_data(data.path, format, site = runinfo$site)
                      
   }
+  
+  #--------------------------------------------------------------------------------------------------#
+  # Match species : this step requires DB connections can't be handled by convert.inputs
+  
+  usda_sources <- c("GapMacro", "NASA_FFT_Plot_Inventory", "NASA_TE_FIA")
+  
+  # decide which code format to use while matching species
+  # should we retrieve it from settings or assign a code format per source type?
+  # or allow both?
+  if(input_veg$source %in% usda_sources){
+    format.name = 'usda'
+  }else if(input_veg$source %in% c("FIA")){
+    format.name = 'fia'      
+  }else if(!is.null(input_veg$match.format)){
+    format.name = input_veg$match.format
+  }else{
+    logger.error("Can't match code to species. No valid format found.")
+  }
+  
+  # decide which column has the codes
+  # this block may or may not be merged with the block above
+  if(format.name == 'usda'){
+    code.col = "species_USDA_symbol"
+  }else if(format.name == 'fia'){
+    code.col = "spcd"
+  }else if(format.name == 'latin_name'){
+    code.col = "latin_name"
+  }
+  
+  obs <- veg_info[[2]]
+  
+  # match code to species ID
+  spp.info <- match_species_id(input_codes = obs[[code.col]], format_name = format.name, bety = bety)
+  
+  # merge with data
+  tmp <- spp.info[ , colnames(spp.info) != "input_code"]
+  veg_info[[2]] <- cbind(obs, tmp)
+  
+  # IF: A hack to be able to use convert.input
+  tmpfolder <- file.path(localdb, paste0(input_veg$source, "_site_", str_ns))
+  dir.create(tmpfolder, showWarnings = F, recursive = T)
+  
+  now <- format(Sys.time(), "%Y%m%d%H%M%OS3")
+  temp_file <- file.path(tmpfolder, paste0(now,".Rdata")) # to be deleted
+  save(veg_info, file = temp_file)
+
+
+  #--------------------------------------------------------------------------------------------------#
+  # convert.inputs
+  
   pkg <- "PEcAn.data.land"
-
-  
-  
-  obs <- extract.FIA(inputinfo, lat, lon, year = start_year, dbparms)
-  obs <- load_data(data.path, format, site = runinfo$site)
-
-  get_data(input_veg, outfolder, ....)
+  fcn <- "write_veg"
+  con <- bety$con
   
   raw.id <- convert.input(input.id = NA,
                           outfolder = outfolder, 
@@ -58,14 +102,8 @@
                           con = con, host = host, browndog = NULL, 
                           write = TRUE, 
                           overwrite = overwrite, 
-                          # convert.input args end, fcn args begin
-                          # I can't pass list as extra fcn arguments to convert.input
-                          # need break and rebuild dbparms
-                          lat = lat, lon = lon, source.id = source.id,
-                          bety_usr = dbparms$bety$user, bety_pwd = dbparms$bety$password, 
-                          bety_hst = dbparms$bety$host, bety_dbn = dbparms$bety$dbname, 
-                          fia_usr = dbparms$fia$user, fia_pwd = dbparms$fia$password, 
-                          fia_hst = dbparms$fia$host, fia_dbn = dbparms$fia$dbname)
+                          # fcn specific args 
+                          temp_file)
   
   
   return(raw.id)
