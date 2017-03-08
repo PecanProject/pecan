@@ -59,7 +59,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   #--------------------------------------------------------------------------------------------------#
   # Load/extract + match species module
   
-  if (is.null(input$id) {
+  if (is.null(input$id)) {
     
     raw.id <- .get.veg.module(dir = dir,
                               input_veg = input, 
