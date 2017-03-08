@@ -22,7 +22,7 @@
     
   }else if(input_veg$source %in% load_sources){
     
-    if(!is.null(input_veg$source.id){
+    if(!is.null(input_veg$source.id)){
       source.id <- input_veg$source.id
     }else{
       logger.error("Must specify input source.id")
