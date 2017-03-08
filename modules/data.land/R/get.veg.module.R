@@ -71,14 +71,21 @@
   
   # merge with data
   tmp <- spp.info[ , colnames(spp.info) != "input_code"]
-  veg_info[[2]] <- cbind(obs, tmp)
   
-  # IF: A hack to be able to use convert.input
-  tmpfolder <- file.path(localdb, paste0(input_veg$source, "_site_", str_ns))
-  dir.create(tmpfolder, showWarnings = F, recursive = T)
-  now <- format(Sys.time(), "%Y%m%d%H%M%OS3")
-  temp_file <- file.path(tmpfolder, paste0(now,".Rdata")) # to be deleted
-  save(veg_info, file = temp_file)
+  veg_info[[2]] <- cbind(obs, tmp)
+
+  
+  ### IF: A hack to be able to use convert.input ###
+    tmpfolder <- file.path(localdb, paste0(input_veg$source, "_site_", str_ns))
+    dir.create(tmpfolder, showWarnings = F, recursive = T)
+    now       <- format(Sys.time(), "%Y%m%d%H%M%OS3")
+    temp_file_local <- file.path(tmpfolder, paste0(now,".Rdata")) # to be deleted below
+    temp_file       <- file.path(outfolder, paste0(now,".Rdata")) # to be deleted in write_veg
+    save(veg_info, file = temp_file_local)
+    remote.execute.cmd(host, "mkdir", c("-p", outfolder))
+    remote.copy.to(settings$host, temp_file_local, temp_file)
+    file.remove(temp_file_local)
+  ### IF: A hack to be able to use convert.input ###
 
 
   #--------------------------------------------------------------------------------------------------#

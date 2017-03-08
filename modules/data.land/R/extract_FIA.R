@@ -69,8 +69,8 @@ extract_FIA <- function(lon, lat, start_date, gridres = 0.075, dbparms){
   pss.info <- pss.info[, c("time", "patch", "trk", "age")]
     
   logger.debug(paste0("Found ", nrow(pss.info), " patches for coordinates lat:", lat, " lon:", lon))
-    
-  fia.info[[1]] <- as.matrix(pss.info)
+  
+  fia.info[[1]] <- pss.info
     
   ##################
   ##              ##
@@ -113,8 +113,8 @@ extract_FIA <- function(lon, lat, start_date, gridres = 0.075, dbparms){
     logger.debug(paste0(nrow(css.info), " trees remain after removing entries with no dbh, spcd, and/or n."))
   }
     
-  fia.info[[2]] <- as.matrix(css.info)
-
+  fia.info[[2]] <- css.info
+  
   return(fia.info)
 } # extract_FIA
 
