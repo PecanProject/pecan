@@ -55,20 +55,24 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                          lon = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lon)
   str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   
+  outfolder <- file.path(dir, paste0(input_veg$source, "_site_", str_ns))
+  # hack
+  remote.execute.cmd(host, "mkdir", c("-p", outfolder))
+  tmpfolder <- file.path(localdb, paste0(input_veg$source, "_site_", str_ns)) 
+  dir.create(tmpfolder, showWarnings = F, recursive = T)
+  
   raw.id <- NULL
   #--------------------------------------------------------------------------------------------------#
   # Load/extract + match species module
   
   if (is.null(input$id)) {
-    
-    raw.id <- .get.veg.module(dir = dir,
-                              input_veg = input, 
-                              machine = machine, 
+
+    raw.id <- .get.veg.module(input_veg = input, 
+                              outfolder = outfolder, tmpfolder = tmpfolder,
                               start_date = start_date, end_date = end_date,
-                              str_ns = str_ns, bety = bety, dbparms = dbparms,
-                              lat = new.site$lat, lon = new.site$lon,
-                              host = host, localdb = settings$database$dbfiles,
-                              overwrite = overwrite$getveg)
+                              bety = bety, dbparms = dbparms,
+                              lat = new.site$lat, lon = new.site$lon, site = site,
+                              host = host, overwrite = overwrite$getveg, machine = machine)
 
   }
   
@@ -77,13 +81,12 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   # Match species to PFTs + veg2model module
   if (!is.null(raw.id)) {
     
-    ready.id <- .put.veg.module(raw.id = raw.id,
-                                dir = dir,
-                                input_veg = input, 
-                                machine = machine, 
+    ready.id <- .put.veg.module(raw.id = raw.id, bety = bety, 
+                                input_veg = input, pfts = settings$pfts,
+                                outfolder = outfolder, tmpfolder = tmpfolder,
+                                dir = dir, machine = machine, model = model,
                                 start_date = start_date, end_date = end_date,
-                                str_ns = str_ns, bety = bety, 
-                                lat = new.site$lat, lon = new.site$lon,
+                                lat = new.site$lat, lon = new.site$lon, site_id = new.site$id,
                                 host = host, overwrite = overwrite$putveg)
     
   }

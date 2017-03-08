@@ -1,11 +1,9 @@
-.get.veg.module <- function(dir, input_veg, machine, 
+.get.veg.module <- function(input_veg, 
+                            outfolder, tmpfolder,
                             start_date, end_date,
-                            str_ns, bety, dbparms,
-                            lat, lon,
-                            host, localdb,
-                            overwrite, site){
-  
-  outfolder <- file.path(dir, paste0(input_veg$source, "_site_", str_ns))
+                            bety, dbparms,
+                            lat, lon, site,
+                            host, overwrite, machine){
 
   #--------------------------------------------------------------------------------------------------#
   # Extract/load data : this step requires DB connections can't be handled by convert.inputs
@@ -32,7 +30,7 @@
     # query format info
     format.vars <- query.format.vars(bety = bety, input.id = source.id)
     
-    veg_info <- load_data(data.path, format, site = runinfo$site)
+    veg_info <- load_data(data.path, format, site = site)
                      
   }
   
@@ -76,14 +74,11 @@
 
   
   ### IF: A hack to be able to use convert.input ###
-    tmpfolder <- file.path(localdb, paste0(input_veg$source, "_site_", str_ns))
-    dir.create(tmpfolder, showWarnings = F, recursive = T)
     now       <- format(Sys.time(), "%Y%m%d%H%M%OS3")
     temp_file_local <- file.path(tmpfolder, paste0(now,".Rdata")) # to be deleted below
     temp_file       <- file.path(outfolder, paste0(now,".Rdata")) # to be deleted in write_veg
     save(veg_info, file = temp_file_local)
-    remote.execute.cmd(host, "mkdir", c("-p", outfolder))
-    remote.copy.to(settings$host, temp_file_local, temp_file)
+    remote.copy.to(host, temp_file_local, temp_file)
     file.remove(temp_file_local)
   ### IF: A hack to be able to use convert.input ###
 
@@ -99,14 +94,14 @@
                           outfolder = outfolder, 
                           formatname = "spp.info", 
                           mimetype = "text/plain",
-                          site.id = site.id, 
+                          site.id = site$id, 
                           start_date = start_date, end_date = end_date, 
                           pkg = pkg, fcn = fcn, 
                           con = con, host = host, browndog = NULL, 
                           write = TRUE, 
                           overwrite = overwrite, 
                           # fcn specific args 
-                          temp_file)
+                          temp_file = temp_file)
   
   
   return(raw.id)
