@@ -4,27 +4,14 @@
 \alias{ic_process}
 \title{ic_process}
 \usage{
-ic_process(pfts, runinfo, inputinfo, model, host, dbparms, dir,
-  overwrite = FALSE)
+ic_process(settings, input, dir, overwrite = FALSE)
 }
 \arguments{
-\item{pfts}{settings pft list}
-
-\item{runinfo}{run from settings list}
-
-\item{inputinfo}{which data source to use (FIA, GapMacro, FFT etc.) and username, 
-this is a subset of runinfo and can be extracted from runinfo for now as this is only functional for css/pss/site, 
-but might need this info separately when handling different IC types of IC data in the future}
-
-\item{model}{model_type name}
-
-\item{host}{Host info from settings file}
-
-\item{dbparms}{database settings from settings file}
-
-\item{dir}{directory to write outputs to}
+\item{settings}{pecan settings list}
 
 \item{overwrite}{whether to force ic_process to proceed}
+
+\item{dbfiles}{where to write files}
 }
 \author{
 Istem Fer

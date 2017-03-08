@@ -4,27 +4,18 @@
 \alias{veg2model.ED2}
 \title{Writes ED specific IC files}
 \usage{
-veg2model.ED2(obs = NULL, inputinfo, runinfo, outfolder, host, con,
-  overwrite = FALSE)
+veg2model.ED2(outfolder, start_date, end_date, lat, lon, site_id, source,
+  temp_file, overwrite = FALSE, ...)
 }
 \arguments{
-\item{obs}{data either passed from upstram or NULL}
-
-\item{runinfo}{run from settings}
-
 \item{outfolder}{where to write files}
-
-\item{host}{}
-
-\item{con}{bety$con}
 }
 \value{
-ic.id initial conditions file input id
+results data frame
 }
 \description{
 Writes ED specific IC files
 }
 \author{
 Istem Fer
- We need the in.path, the out folder, the start and endates and the lat/long. All of these are in setting$run.
 }
