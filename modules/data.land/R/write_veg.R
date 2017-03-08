@@ -1,10 +1,10 @@
 ##' @name extract_FIA
 ##' @title extract_FIA
 ##' @export
-write_veg <- function(outfolder, start_date, end_date, temp_file, ...){
+write_veg <- function(outfolder, start_date, end_date, temp_file, overwrite = FALSE, ...){
   
   #--------------------------------------------------------------------------------------------------#
-  # Load and delete file
+  # Load and delete file : hack
   load(temp_file)
   file.remove(temp_file)
   
