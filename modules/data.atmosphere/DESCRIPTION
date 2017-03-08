@@ -25,7 +25,11 @@ Imports:
     ncdf4 (>= 1.15),
     stringr (>= 1.1.0),
     udunits2 (>= 0.11),
-    XML (>= 3.98-1.4)
+    XML (>= 3.98-1.4),
+    nneo,
+    httr
+Remotes:
+    github::ropenscilabs/nneo
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
