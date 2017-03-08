@@ -24,7 +24,7 @@ git clone https://${GITHUB_PAT}@github.com/pecan_bookdown.git book_output
 cd ../book_output
 
 
-cp -r ../_book/* ./
+cp -r ../book/* ./
 git add --all *
 git commit -m"Update the book `date`" || true
 git push -q origin master
