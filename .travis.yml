@@ -78,6 +78,10 @@ script:
   - scripts/build.sh --no-git --tests --name travis
 
 ## Render Book
+before_script:
+  - chmod +x book_source/Makefile
+  - chmod +x book_source/deploy.sh
+
 script:
   - cd book_source
   - make
