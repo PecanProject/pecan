@@ -61,8 +61,8 @@
   
   ready.id <- convert.input(input.id = raw.id,
                           outfolder = outfolder, 
-                          formatname = "spp.info", 
-                          mimetype = "text/plain",
+                          formatname = formatname, 
+                          mimetype = mimetype,
                           site.id = site_id, 
                           start_date = start_date, end_date = end_date, 
                           pkg = pkg, fcn = fcn, 
