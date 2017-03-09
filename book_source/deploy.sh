@@ -23,7 +23,7 @@ git config --global user.name "Tony Gardella"
 
 git clone https://${GITHUB_PAT}@github.com/pecanproject/pecan_bookdown.git book_output
 
-cd ../book_output
+cd book_output
 
 
 cp -r ../book/* ./
