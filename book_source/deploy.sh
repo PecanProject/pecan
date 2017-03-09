@@ -3,7 +3,7 @@
 set -e
 
 #USER=$(git remote show origin | grep -Po '[^:/]+(?=/pecan)' | head -n1)
-#[ -z "${GITHUB_PAT}" ] && exit 0
+[ -z "${GITHUB_PAT}" ] && exit 0
 [ "${TRAVIS_BRANCH}" != "master" ] && exit 0
 
 # configure your name and email if you have not done so
@@ -19,7 +19,7 @@ git config --global user.name "Tony Gardella"
 #https://github.com/PecanProject/pecan_bookdown.git 
 #fi
 
-git clone https://${GITHUB_PAT}@github.com/pecan_bookdown.git book_output
+git clone https://${GITHUB_PAT}@github.com/pecanproject/pecan_bookdown.git book_output
 
 cd ../book_output
 
