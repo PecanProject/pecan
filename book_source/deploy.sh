@@ -3,8 +3,11 @@
 set -e
 echo TONY1
 echo ${TEST_VARIABLE}
-echo $TEST_VARIABLE
+echo ${TEST_SECRET_VARIABLE}
+echo "${TEST_SECRET_VARIABLE}"
+
 #USER=$(git remote show origin | grep -Po '[^:/]+(?=/pecan)' | head -n1)
+
 [ -z "${GITHUB_PAT}" ] && exit 0
 echo TONY2
 [ "${TRAVIS_BRANCH}" != "master" ] && exit 0
