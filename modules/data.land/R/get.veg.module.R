@@ -24,13 +24,14 @@
     }
     
     # query data.path from source id [input id in BETY]
-    query <- paste0("SELECT * FROM dbfiles where container_id = ", source.id)
-    data.path <- file.path(db.query(query, con = con)[["file_path"]], db.query(query, con = con)[["file_name"]])
+    query      <- paste0("SELECT * FROM dbfiles where container_id = ", source.id)
+    input_file <- db.query(query, con = con)
+    data_path  <- file.path(input_file[["file_path"]], input_file[["file_name"]])
     
     # query format info
-    format.vars <- query.format.vars(bety = bety, input.id = source.id)
+    format <- query.format.vars(bety = bety, input.id = source.id)
     
-    veg_info <- load_data(data.path, format, site = site)
+    veg_info <- load_data(data.path = data_path, format, site)
                      
   }
   

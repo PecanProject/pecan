@@ -55,10 +55,10 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                          lon = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lon)
   str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   
-  outfolder <- file.path(dir, paste0(input_veg$source, "_site_", str_ns))
+  outfolder <- file.path(dir, paste0(input$source, "_site_", str_ns))
   # hack
   remote.execute.cmd(host, "mkdir", c("-p", outfolder))
-  tmpfolder <- file.path(localdb, paste0(input_veg$source, "_site_", str_ns)) 
+  tmpfolder <- file.path(settings$database$dbfiles, paste0(input$source, "_site_", str_ns)) 
   dir.create(tmpfolder, showWarnings = F, recursive = T)
   
   raw.id <- NULL
@@ -79,7 +79,8 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
 
   #--------------------------------------------------------------------------------------------------#
   # Match species to PFTs + veg2model module
-  if (!is.null(raw.id)) {
+  
+  if (!is.null(raw.id)) { # probably need a more sophisticated check here
     
     ready.id <- .put.veg.module(raw.id = raw.id, bety = bety, 
                                 input_veg = input, pfts = settings$pfts,
