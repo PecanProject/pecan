@@ -5,7 +5,7 @@
 ##' @param bm.settings settings list
 ##' @return updated settings list
 ##' @author Betsy Cowdery
-##' @export 
+##' @export define_benchmark
 ##' @importFrom dplyr tbl filter rename collect select
 define_benchmark <- function(settings, bety){
   
