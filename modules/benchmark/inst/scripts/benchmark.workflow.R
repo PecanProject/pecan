@@ -1,3 +1,4 @@
+devtools::load_all('modules/benchmark')
 
 settings <- read.settings("modules/benchmark/inst/scripts/tess.xml")
 
