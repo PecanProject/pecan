@@ -1,27 +1,21 @@
 #!/bin/bash
 
+#exit on error
 set -e
-echo TONY1
 
-#USER=$(git remote show origin | grep -Po '[^:/]+(?=/pecan)' | head -n1)
+#check for environment variable
+[ -z "${GITHUB_PAT}" ] && exit 0
 
-#[ -z "${GITHUB_PAT}" ] && exit 0
-#[ "${TRAVIS_BRANCH}" != "master" ] && exit 0
+#set USER 
+USER=${TRAVIS_REPO_SLUG%/*}
+
 
 # configure your name and email if you have not done so
-git config --global user.email "tonygard@bu.edu"
-git config --global user.name "Tony Gardella"
+git config --global user.email "pecanproj@gmail.com"
+git config --global user.name "TRAVIS-DOC-BUILD"
 
-# clone the repository to the book-output directory
-#if [ ! -d "../book_output" ]; then 
-#git clone -b gh-pages \
-#git@github.com:$USER/pecan \
-#https://${GITHUB_PAT}@github.com/${TRAVIS_REPO_SLUG}.git \
-#git@github.com:${GITHUB_PAT}/pecan_bookdown.git \
-#https://github.com/PecanProject/pecan_bookdown.git 
-#fi
 
-git clone https://${GITHUB_PAT}@github.com/pecanproject/pecan_bookdown.git book_hosted
+git clone https://${GITHUB_PAT}/${USER}/pecan_bookdown.git book_hosted
 
 cp -r _book/* book_hosted
 
