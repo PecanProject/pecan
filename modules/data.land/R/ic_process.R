@@ -71,7 +71,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                               outfolder = outfolder, tmpfolder = tmpfolder,
                               start_date = start_date, end_date = end_date,
                               bety = bety, dbparms = dbparms,
-                              lat = new.site$lat, lon = new.site$lon, site = site,
+                              lat = new.site$lat, lon = new.site$lon, site_id = new.site$id,
                               host = host, overwrite = overwrite$getveg, machine = machine)
 
   }
