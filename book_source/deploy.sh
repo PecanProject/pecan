@@ -2,9 +2,6 @@
 
 set -e
 echo TONY1
-echo ${TEST_VARIABLE}
-echo ${TEST_SECRET_VARIABLE}
-echo "${TEST_SECRET_VARIABLE}"
 
 #USER=$(git remote show origin | grep -Po '[^:/]+(?=/pecan)' | head -n1)
 
