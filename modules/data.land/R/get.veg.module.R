@@ -2,7 +2,7 @@
                             outfolder, tmpfolder,
                             start_date, end_date,
                             bety, dbparms,
-                            lat, lon, site,
+                            lat, lon, site_id, 
                             host, overwrite, machine){
 
   #--------------------------------------------------------------------------------------------------#
@@ -31,7 +31,7 @@
     # query format info
     format <- query.format.vars(bety = bety, input.id = source.id)
     
-    veg_info <- load_data(data.path = data_path, format, site)
+    veg_info <- load_data(data.path = data_path, format)
                      
   }
   
@@ -95,7 +95,7 @@
                           outfolder = outfolder, 
                           formatname = "spp.info", 
                           mimetype = "text/plain",
-                          site.id = site$id, 
+                          site.id = site_id, 
                           start_date = start_date, end_date = end_date, 
                           pkg = pkg, fcn = fcn, 
                           con = con, host = host, browndog = NULL, 
