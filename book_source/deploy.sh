@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-
+echo TONY1
 #USER=$(git remote show origin | grep -Po '[^:/]+(?=/pecan)' | head -n1)
 [ -z "${GITHUB_PAT}" ] && exit 0
 [ "${TRAVIS_BRANCH}" != "master" ] && exit 0
