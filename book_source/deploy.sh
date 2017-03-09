@@ -21,12 +21,12 @@ git config --global user.name "Tony Gardella"
 #https://github.com/PecanProject/pecan_bookdown.git 
 #fi
 
-git clone https://${GITHUB_PAT}@github.com/pecanproject/pecan_bookdown.git book_output
+git clone https://${GITHUB_PAT}@github.com/pecanproject/pecan_bookdown.git book_hosted
 
-cd book_output
+cp -r _book/* book_hosted
 
 
-cp -r ../book/* ./
+cd book_hosted
 git add --all *
 git commit -m"Update the book `date`" || true
 git push -q origin master
