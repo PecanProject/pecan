@@ -1,5 +1,5 @@
 .get.veg.module <- function(input_veg, 
-                            outfolder, tmpfolder,
+                            outfolder,
                             start_date, end_date,
                             bety, dbparms,
                             lat, lon, site_id, 
@@ -76,16 +76,6 @@
   
   veg_info[[2]] <- cbind(obs, tmp)
 
-  
-  ### IF: A hack to be able to use convert.input ###
-    now       <- format(Sys.time(), "%Y%m%d%H%M%OS3")
-    temp_file_local <- file.path(tmpfolder, paste0(now,".Rdata")) # to be deleted below
-    temp_file       <- file.path(outfolder, paste0(now,".Rdata")) # to be deleted in write_veg
-    save(veg_info, file = temp_file_local)
-    remote.copy.to(host, temp_file_local, temp_file)
-    file.remove(temp_file_local)
-  ### IF: A hack to be able to use convert.input ###
-
 
   #--------------------------------------------------------------------------------------------------#
   # convert.inputs
@@ -105,7 +95,7 @@
                           write = TRUE, 
                           overwrite = overwrite, 
                           # fcn specific args 
-                          temp_file = temp_file)
+                          veg_info = veg_info)
   
   
   return(raw.id)
