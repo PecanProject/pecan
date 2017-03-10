@@ -43,21 +43,21 @@ veg2model.ED2 <- function(outfolder, start_date, end_date,
   } else{
     
     # other cases for now,
-    # create pss file from scratch by using values passed from settings or using some defaults  
+    # create pss file from scratch by using values passed from using defaults 
+    # if you don't want to pass these from settings make sure you pass them to convert.inputs in put.veg.module
+    # wait until we solve metadata problem?
     
-    # a series of checks to get pss info from settings if it exists
-    # these all will need to change and be passed from put.veg
     ### assuming one patch for now, otherwise these lines might change ###
-    # time    <- ifelse(!is.null(inputinfo$time), inputinfo$time, start_year-1)
-    # n.patch <- ifelse(!is.null(inputinfo$patch), inputinfo$patch, 1)
-    # trk     <- ifelse(!is.null(inputinfo$trk), inputinfo$trk, 1)
-    # age     <- ifelse(!is.null(inputinfo$age), inputinfo$age, 100)
-    # 
-    # pss <- data.frame(time = time, patch = n.patch, trk = trk, age = age)
-    # 
-    # PEcAn.utils::logger.info(paste0("Values used in the patch file - time:", 
-    #                                 pss$time, ", patch:", pss$patch, ", trk:", 
-    #                                 pss$trk, ", age:", pss$age))
+    time    <- start_year-1
+    n.patch <- 1
+    trk     <- 1
+    age     <- 100
+    
+    pss <- data.frame(time = time, patch = n.patch, trk = trk, age = age)
+    
+    PEcAn.utils::logger.info(paste0("Values used in the patch file - time:", 
+                                    pss$time, ", patch:", pss$patch, ", trk:", 
+                                    pss$trk, ", age:", pss$age))
     
   }
   
@@ -83,6 +83,11 @@ veg2model.ED2 <- function(outfolder, start_date, end_date,
   # this might change depending on how I process data in put.veg  
   css <- veg_info[[2]]
     
+
+  if(is.null(css$patch)){
+    css$patch  <- 1
+  }
+
   # Remove rows that don't map to any patch
   css <- css[which(css$patch %in% pss$patch), ]
   if (nrow(css) == 0) {
@@ -92,29 +97,31 @@ veg2model.ED2 <- function(outfolder, start_date, end_date,
   }
 
     
-  # if(is.null(css$n)){
-  #   # is this how n is calculated?
-  #   obs$n <- ifelse(!is.null(inputinfo$area), nrow(obs)/inputinfo$area, 0.001)
-  # }
-    
-    # if(inputinfo$source == "GapMacro"){
-    #   inv.years <- as.numeric(unique(obs$year))
-    #   # suitable years
-    #   av.years <- inv.years[inv.years < start_year]
-    #   if(length(av.years) == 0){
-    #     logger.severe("No available years found in the data.")
-    #   }
-    #   obs$time <- max(av.years)
-    #   # filter out other years
-    #   obs <- obs[obs$year == obs$time, ]
-    #   colnames(obs)[colnames(obs) == "DBH"] <- "dbh"
-    #   
-    #   obs$patch  <- 1
-    #   obs$cohort <- 1:nrow(obs)
-    #   obs$hite   <- 0
-    # 
-    # }
-
+  if(is.null(css$n)){ 
+    # will get back to giving sensical values
+    css$n <- 0.001
+  }
+  
+  if(is.null(css$cohort)){ 
+    # will get back to giving sensical values
+    css$cohort <- 1:nrow(css)
+  }
+  
+  inv.years <- as.numeric(unique(css$year))
+  # suitable years
+  av.years <- inv.years[inv.years < start_year]
+  if(length(av.years) == 0){
+    logger.severe("No available years found in the data.")
+  }
+  css$time <- max(av.years)
+  # filter out other years
+  css <- css[css$year == css$time, ]
+  
+  if("DBH" %in% colnames(css)){
+    colnames(css)[colnames(css) == "DBH"] <- "dbh"
+  }
+  
+  
   # Convert PFT names to ED2 Numbers
   data(pftmapping, package = "PEcAn.ED2")
   css$pft.number <- NA
