@@ -31,7 +31,10 @@
     # query format info
     format <- query.format.vars(bety = bety, input.id = source.id)
     
-    veg_info <- load_data(data.path = data_path, format)
+    # a hack for now to have a similar structure as the FIA case
+    veg_info      <- list() 
+    veg_info[[1]] <- NULL   # the first sublist can be for the metadata maybe?
+    veg_info[[2]] <- load_data(data.path = data_path, format)
                      
   }
   

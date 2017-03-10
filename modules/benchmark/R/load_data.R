@@ -9,7 +9,7 @@
 ##' @author Betsy Cowdery, Istem Fer, Joshua Mantooth
 ##' Generic function to convert input files containing observational data to 
 ##' a common PEcAn format. 
-load_data <- function(data.path, format, start_year = NA, end_year = NA, site = NA, 
+load_data <- function(data.path, format, start_year = NA, end_year = NA, site = NULL, 
                       vars.used.index=NULL, time.row = NULL, ...) {
 
   ## load everything in format by default
@@ -61,7 +61,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   # check wide format and transform to long
   if(any(duplicated(vars_used$bety_name))){
     w2l       <- format_wide2long(out, format, vars_used, time.row)
-    out       <- w2l$mout
+    out       <- w2l$long_data
     format    <- w2l$format
     vars_used <- w2l$vars_used
     time.row  <- w2l$time.row
