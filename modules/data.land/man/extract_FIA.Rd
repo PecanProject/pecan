@@ -8,5 +8,5 @@
 \usage{
 extract_FIA(lon, lat, start_date, gridres = 0.075, dbparms)
 
-write_veg(outfolder, start_date, end_date, temp_file, overwrite = FALSE, ...)
+write_veg(outfolder, start_date, end_date, veg_info, overwrite = FALSE, ...)
 }

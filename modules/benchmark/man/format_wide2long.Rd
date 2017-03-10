@@ -4,7 +4,7 @@
 \alias{format_wide2long}
 \title{format_wide2long}
 \usage{
-format_wide2long(out, format, vars_used, time.row, vars.used.index)
+format_wide2long(out, format, vars_used, time.row)
 }
 \arguments{
 \item{out}{wide format data}
