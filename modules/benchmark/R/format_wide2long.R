@@ -85,43 +85,38 @@ format_wide2long <- function(out, format, vars_used, time.row){
   }
   # join sublists
   temp_data <- do.call(cbind, melt_list)
-  long_data <- tmp[, !duplicated(colnames(temp_data))]
+  long_data <- temp_data[, !duplicated(colnames(temp_data))]
 
 
-  time.check <- unique(gsub(" .*", "", vars_used$storage_type[dindx]))
+  #time.check <- unique(gsub(" .*", "", vars_used$storage_type[dindx]))
   
 
   # finally, you need to inform "format" about the new structure, vars_used index and update time.row if necessary
 
-    # remove wide rows from format$vars altogether
-  format$vars <- format$vars[!(format$vars$input_name %in% wide.vars), ]
-  # just use one of the wide var rows
-  wide_row <- vars_used[dindx,][1,]
+  # remove wide rows from format$vars altogether
+  format$vars <- format$vars[!(format$vars$input_name %in% wide_input), ]
+  # just use one of the wide var row(s)
+  wide_rows <- vars_used[dindx,]
+  wide_rows <- wide_row[!duplicated(wide_row$bety_name),]
   # just for the sake of unit conversion printf in load_data change the input name, not sure if this is necessary
-  wide_row$input_name <- paste(vars_used$input_name[dindx], collapse = ",")
+  wide_rows$input_name <- tapply(wide_input, rep(1:nrow(wide_rows), each=nrow(wide_rows)), paste, collapse = ",")
   # empty the storage type and column_number so that it won't break anything downstream, probably it won't anyway
-  wide_row$storage_type  <- ""
-  wide_row$column_number <- ""
-  format$vars <- rbind(format$vars, wide_row)
+  wide_rows$storage_type  <- ""
+  wide_rows$column_number <- ""
+  format$vars <- rbind(format$vars, wide_rows)
   
-  # finally if you add a new time column now, add it to format$vars
-  # probably could have been handled in a more sophisticated way
-  # this is to remind us that time.row needs to be handled
-  if(time.check %in% c("year")){
-    
-    # just declaring
-    time_row <- vars_used[dindx,][1,]
-    
-    if(time.check == "year"){
-      time_row[1, ] <- ""
-      time_row$bety_name <- time_row$input_name <- time_row$pecan_name <- "year"
-      time_row$variable_id <- 382
-      time_row$storage_type <- "%Y"
+  # finally add the newly created variable(s), only "year" in this case
+  new_var <- data.frame(bety_name = "", variable_id = "", input_name = "", input_units = "",
+                        storage_type = "", column_number = "", bety_units = "",
+                        mstmip_name = "", mstmip_units = "", pecan_name = "", pecan_units = "")
+  for(i in 1:nrow(long_var)){
+     if(!long_var[i, 1] %in% format$vars$bety_name){ # avoid duplicating
+       new_var$bety_name <- new_var$input_name <- new_var$pecan_name <- long_var[i, 1]
+       new_var$storage_type <- long_var[i, 2]
+       # do we also nee variable_id downstream?
+       format$vars <- rbind(format$vars, new_var)
     }
-    
-    format$vars <- rbind(format$vars, time_row)
   }
-   
   
   # update time.row
   st <- format$vars$storage_type
