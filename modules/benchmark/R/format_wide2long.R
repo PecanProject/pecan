@@ -133,7 +133,7 @@ format_wide2long <- function(out, format, vars_used, time.row){
   vars_used <- format$vars[vars.used.index, ]
   
   
-  return(list(mout = mout, format = format, vars_used = vars_used, time.row = time.row))
+  return(list(long_data = long_data, format = format, vars_used = vars_used, time.row = time.row))
   
 } # wide2long
 
