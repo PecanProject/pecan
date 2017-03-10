@@ -10,14 +10,13 @@
   # Read
   con <- bety$con
   spp.file <- db.query(paste("SELECT * from dbfiles where container_id =", raw.id), con)
-  nc_file <- file.path(spp.file$file_path, spp.file$file_name)
-  nc <- ncdf4::nc_open(nc_file)
-  # get vars
-  # more formatting
-  # obs <- veg_info[[2]]
+  rds_file <- file.path(spp.file$file_path, spp.file$file_name)
+  veg_info <- readRDS(rds_file) 
   
   #--------------------------------------------------------------------------------------------------#
   # Match PFTs
+  
+  obs <- veg_info[[2]]
   
   pft.info <- match_pft(obs$bety_species_id, pfts, con)
   

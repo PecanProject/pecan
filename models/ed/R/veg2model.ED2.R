@@ -7,12 +7,8 @@
 #' @author Istem Fer
 veg2model.ED2 <- function(outfolder, start_date, end_date, 
                           lat, lon, site_id, source,
-                          temp_file, overwrite = FALSE, ...){
+                          veg_info, overwrite = FALSE, ...){
   
-  #--------------------------------------------------------------------------------------------------#
-  # Load and delete file : hack
-  load(temp_file)
-  file.remove(temp_file)
 
   #--------------------------------------------------------------------------------------------------#
   # Handle file names
