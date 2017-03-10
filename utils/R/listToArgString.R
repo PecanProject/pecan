@@ -34,7 +34,20 @@ listToArgString <- function(l) {
     return(paste0("'", x, "'"))
   } else if (is.null(x)) {
     return("NULL")
-  } else {
+  } else if(is.data.frame(x)){
+    # note that this will treat everything as characters
+    foo <- sapply(1:ncol(x), function(v) paste(colnames(x)[v],
+                                               "=c('" ,
+                                               paste(x[,v], collapse = "','"),
+                                               "')"))
+    foobar <- paste0("data.frame(", paste(foo, collapse = ","), ")")
+    return(foobar)
+  }else if(is.list(x)){ 
+    # note that this will not handle sublist names
+    foo <- toString(x)
+    foobar <- paste0("list(", foo, ")")
+    return(foobar)
+  }else {
     return(x)
   }
 } # .parseArg

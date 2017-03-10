@@ -48,7 +48,7 @@ format_wide2long <- function(out, format, vars_used, time.row){
   for(i in seq_along(wide_bety)){
      wide_var  <- wide_bety[i]
      wide_cols <- out[ ,vars_used$bety_name %in% c(wide_var, long_bety)]
-     melt_cols <- reshape2::melt(wide_cols, id = long_input) 
+     melt_cols <- reshape2::melt(wide_cols, id = long_input, value.name = wide_var) 
      #
      # a sample melt_cols for a wide variable, in this case for DBH, looks like this:
      #
@@ -60,9 +60,6 @@ format_wide2long <- function(out, format, vars_used, time.row){
      #  FAGR   diam16    13   #
      #                        #
      ##########################
-     #
-     # you probably want to rename "value" column as "DBH" here
-     colnames(melt_cols)[colnames(melt_cols) == "value"] <- wide_var
      #
      # now we need to replace diam12/14/16 values with 2012, 2014, 2016 respectively
      # and "variable" to some pecan variable name, "year" in this case
@@ -97,7 +94,7 @@ format_wide2long <- function(out, format, vars_used, time.row){
   format$vars <- format$vars[!(format$vars$input_name %in% wide_input), ]
   # just use one of the wide var row(s)
   wide_rows <- vars_used[dindx,]
-  wide_rows <- wide_row[!duplicated(wide_row$bety_name),]
+  wide_rows <- wide_rows[!duplicated(wide_rows$bety_name),]
   # just for the sake of unit conversion printf in load_data change the input name, not sure if this is necessary
   wide_rows$input_name <- tapply(wide_input, rep(1:nrow(wide_rows), each=nrow(wide_rows)), paste, collapse = ",")
   # empty the storage type and column_number so that it won't break anything downstream, probably it won't anyway

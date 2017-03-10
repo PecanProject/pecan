@@ -1,6 +1,6 @@
 .put.veg.module <- function(raw.id, bety, 
                             input_veg, pfts,
-                            outfolder, tmpfolder,
+                            outfolder, 
                             dir, machine, model,
                             start_date, end_date,
                             lat, lon, site_id, 
@@ -25,15 +25,6 @@
   obs <- cbind(obs, pft.info[c("bety_pft_id", "pft")])
   
   veg_info[[2]] <- obs 
-  
-  ### IF: A hack to be able to use convert.input ###
-  now       <- format(Sys.time(), "%Y%m%d%H%M%OS3")
-  temp_file_local <- file.path(tmpfolder, paste0(now,".Rdata")) # to be deleted below
-  temp_file       <- file.path(outfolder, paste0(now,".Rdata")) # to be deleted in veg2model 
-  save(veg_info, file = temp_file_local)
-  remote.copy.to(host, temp_file_local, temp_file)
-  file.remove(temp_file_local)
-  ### IF: A hack to be able to use convert.input ###
   
   #--------------------------------------------------------------------------------------------------#
   # convert.inputs : write model specific IC files
@@ -75,7 +66,7 @@
                           # fcn.args within convert.inputs, where to fix it?
                           site_id = site_id, 
                           source = input_veg$source,
-                          temp_file = temp_file)
+                          veg_info = veg_info)
   
   return(ready.id)
   

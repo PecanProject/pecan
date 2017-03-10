@@ -56,19 +56,17 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   
   outfolder <- file.path(dir, paste0(input$source, "_site_", str_ns))
-  # hack
-  remote.execute.cmd(host, "mkdir", c("-p", outfolder))
-  tmpfolder <- file.path(settings$database$dbfiles, paste0(input$source, "_site_", str_ns)) 
-  dir.create(tmpfolder, showWarnings = F, recursive = T)
-  
+
+  # veg or some other IC?
+  vegIC <- c("css", "pss", "site")
   raw.id <- NULL
   #--------------------------------------------------------------------------------------------------#
   # Load/extract + match species module
   
-  if (is.null(input$id)) {
+  if (is.null(input$id) & input$output %in% vegIC) {
 
     raw.id <- .get.veg.module(input_veg = input, 
-                              outfolder = outfolder, tmpfolder = tmpfolder,
+                              outfolder = outfolder, 
                               start_date = start_date, end_date = end_date,
                               bety = bety, dbparms = dbparms,
                               lat = new.site$lat, lon = new.site$lon, site_id = new.site$id,
@@ -80,11 +78,11 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   #--------------------------------------------------------------------------------------------------#
   # Match species to PFTs + veg2model module
   
-  if (!is.null(raw.id)) { # probably need a more sophisticated check here
+  if (!is.null(raw.id) & input$output %in% vegIC) { # probably need a more sophisticated check here
     
     ready.id <- .put.veg.module(raw.id = raw.id, bety = bety, 
                                 input_veg = input, pfts = settings$pfts,
-                                outfolder = outfolder, tmpfolder = tmpfolder,
+                                outfolder = outfolder, 
                                 dir = dir, machine = machine, model = model,
                                 start_date = start_date, end_date = end_date,
                                 lat = new.site$lat, lon = new.site$lon, site_id = new.site$id,
