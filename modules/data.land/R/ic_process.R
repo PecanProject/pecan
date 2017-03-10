@@ -92,10 +92,23 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
 
   #--------------------------------------------------------------------------------------------------#
   # Fill settings
-  
-  # use ready.id
-  # model.file <- db.query(paste("SELECT * from dbfiles where container_id =", ic.id), con)
-  # fill settings
+  if (!is.null(ready.id) & input$output %in% vegIC) {
+    
+    model_file <- db.query(paste("SELECT * from dbfiles where container_id =", ready.id), con)
+    
+    # now that we don't have multipasses, convert.input only inserts 1st filename
+    # do we want to change it in convert.inputs such that it loops over the dbfile.insert?
+    path_to_settings <- file.path(model_file[["file_path"]], model_file[["file_name"]])
+    settings$run$inputs[[input$output]][['path']] <- path_to_settings
+    
+    # this took care of "css" only, others have the same prefix
+    if(input$output == "css"){
+      settings$run$inputs[["pss"]][['path']]  <- gsub("css","pss", path_to_settings)
+      settings$run$inputs[["site"]][['path']] <- gsub("css","site", path_to_settings)
+    }
+    
+  }
+
   
   return(settings)
 } # ic_process

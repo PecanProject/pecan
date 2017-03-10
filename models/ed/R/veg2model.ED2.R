@@ -18,14 +18,14 @@ veg2model.ED2 <- function(outfolder, start_date, end_date,
   formatnames <- c("ED2.cohort", "ED2.patch", "ED2.site")
   dbfilenames <- c("css.file", "pss.file", "site.file")
   
-  csspss.prefix <- paste("siteid", site_id, source, start_year, end_year,
+  file.prefix <- paste("siteid", site_id, source, start_year, end_year,
                       get.ed.file.latlon.text(lat, lon, site.style = FALSE), sep = ".")
-  site.prefix  <- paste("siteid", site_id, source, start_year, end_year,
-                         get.ed.file.latlon.text(lat, lon, site.style = TRUE), sep = ".")
+  #site.prefix  <- paste("siteid", site_id, source, start_year, end_year,
+  #                       get.ed.file.latlon.text(lat, lon, site.style = TRUE), sep = ".")
   
-  filenames   <- c(paste0(csspss.prefix, ".css"),
-                   paste0(csspss.prefix, ".pss"),
-                   paste0(site.prefix, ".site"))
+  filenames   <- c(paste0(file.prefix, ".css"),
+                   paste0(file.prefix, ".pss"),
+                   paste0(file.prefix, ".site"))
   
   filenames_full  <- file.path(outfolder, filenames)
 
