@@ -99,6 +99,9 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
       
       SS <- sum((model_out[[k]] - inputs[[k]]$obs)^2, na.rm = TRUE)
       
+      pda.errors[[k]] <- SS 
+      SSdb[[k]]       <- log(SS)
+      
     }
   
     
