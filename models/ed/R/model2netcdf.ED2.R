@@ -191,7 +191,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
         out <- add(-999, 5, row, yrs[y])  ## CropYield
         out <- add(getHdf5Data(ncT, "FMEAN_GPP_PY"), 6, row, yrs[y])  ## GPP
         out <- add(getHdf5Data(ncT, "FMEAN_RH_PY"), 7, row, yrs[y])  ## HeteroResp
-        out <- add(getHdf5Data(ncT, "FMEAN_GPP_PY") - getHdf5Data(ncT, "FMEAN_PLRESP_PY") - 
+        out <- add(-getHdf5Data(ncT, "FMEAN_GPP_PY") + getHdf5Data(ncT, "FMEAN_PLRESP_PY") + 
                      getHdf5Data(ncT, "FMEAN_RH_PY"), 8, row, yrs[y])  ## NEE
         out <- add(getHdf5Data(ncT, "FMEAN_GPP_PY") - getHdf5Data(ncT, "FMEAN_PLRESP_PY"), 
                    9, row, yrs[y])  ## NPP
@@ -343,6 +343,10 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
                    row, yrs[y])  ## Evap
         out <- add(getHdf5Data(ncT, "FMEAN_QRUNOFF_PY"), 45, row, yrs[y])  ## Qs
         out <- add(getHdf5Data(ncT, "BASEFLOW"), 46, row, yrs[y])  ## Qsb
+        
+        out <- add(getHdf5Data(ncT, "FMEAN_ROOT_RESP_PY") + getHdf5Data(ncT, "FMEAN_ROOT_GROWTH_RESP_PY") + 
+                     getHdf5Data(ncT, "FMEAN_RH_PY"), 47, row, yrs[y])  ## SoilResp
+        
       } else {
         ## out <- add(getHdf5Data(ncT, 'TOTAL_AGB,1,row, yrs[y]) ## AbvGrndWood
         out <- add(getHdf5Data(ncT, "AVG_BDEAD"), 1, row, yrs[y])  ## AbvGrndWood
@@ -352,7 +356,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
         out <- add(-999, 5, row, yrs[y])  ## CropYield
         out <- add(getHdf5Data(ncT, "AVG_GPP"), 6, row, yrs[y])  ## GPP
         out <- add(getHdf5Data(ncT, "AVG_HTROPH_RESP"), 7, row, yrs[y])  ## HeteroResp
-        out <- add(getHdf5Data(ncT, "AVG_GPP") - getHdf5Data(ncT, "AVG_PLANT_RESP") - getHdf5Data(ncT, 
+        out <- add(-getHdf5Data(ncT, "AVG_GPP") + getHdf5Data(ncT, "AVG_PLANT_RESP") + getHdf5Data(ncT, 
                                                                                                   "AVG_HTROPH_RESP"), 8, row, yrs[y])  ## NEE
         out <- add(getHdf5Data(ncT, "AVG_GPP") - getHdf5Data(ncT, "AVG_PLANT_RESP"), 9, row, 
                    yrs[y])  ## NPP
@@ -481,7 +485,9 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
         out <- add(getHdf5Data(ncT, "AVG_EVAP") + getHdf5Data(ncT, "AVG_TRANSP"), 44, row, 
                    yrs[y])  ## Evap
         out <- add(getHdf5Data(ncT, "AVG_RUNOFF"), 45, row, yrs[y])  ## Qs
-        out <- add(getHdf5Data(ncT, "BASEFLOW"), 46, row, yrs[y])  ## Qsb      
+        out <- add(getHdf5Data(ncT, "BASEFLOW"), 46, row, yrs[y])  ## Qsb     
+        out <- add(getHdf5Data(ncT, "AVG_ROOT_RESP") + getHdf5Data(ncT, "AVG_ROOT_MAINTENANCE") + 
+                     getHdf5Data(ncT, "AVG_HTROPH_RESP"), 47, row, yrs[y])  ## SoilResp
       }
       
       ncdf4::nc_close(ncT)
@@ -522,6 +528,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     ## Conversion factor for umol C -> kg C
     Mc <- 12.017  #molar mass of C, g/mol
     umol2kg_C <- Mc * udunits2::ud.convert(1, "umol", "mol") * udunits2::ud.convert(1, "g", "kg")
+    yr2s      <- udunits2::ud.convert(1, "s", "yr")
     
     nc_var <- list()
     out <- conversion(1, udunits2::ud.convert(1, "t ha-1", "kg m-2"))  ## tC/ha -> kg/m2
@@ -583,6 +590,9 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     nc_var[[44]] <- mstmipvar("Evap", lat, lon, t, zg)
     nc_var[[45]] <- mstmipvar("Qs", lat, lon, t, zg)
     nc_var[[46]] <- mstmipvar("Qsb", lat, lon, t, zg)
+    out <- conversion(47, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+    nc_var[[47]]<- ncdf4::ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
+                                     longname = "Soil Respiration")
     
     ## write ALMA
     nc <- ncdf4::nc_create(file.path(outdir, paste(yrs[y], "nc", sep = ".")), nc_var)
