@@ -1,5 +1,8 @@
 ##' Autocorelation correction and efficient sample size calculation on latent process
 ##'
+##' What we're trying to do is to calculate the autocorrelation of the latent state, after attempting to "remove" the observation error. 
+##' The first step is thus to estimate the latent state using a simple 'process free' state-space model (e.g. random walk).
+##'
 ##' @title Calculate N_eff 
 ##' @param inputs list
 ##'
