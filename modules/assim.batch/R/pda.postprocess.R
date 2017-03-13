@@ -13,7 +13,7 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
   if(length(mcmc.param.list) > length(settings$pfts)){  
     # create a subfolder under pft folder for non-model parameters
     par.file.name <- file.path(settings$outdir, paste0("pft/parameters"))
-    dir.create(par.file.name)
+    dir.create(par.file.name, showWarnings = FALSE, recursive = TRUE)
     
     # parameters are in the last list, increase length(prior.ind) accordingly
     # only bias params will be thrown into emulator though
@@ -61,7 +61,8 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
     
     ## save named distributions
     ## *** TODO: Generalize for multiple PFTS
-    post.distns <- PEcAn.MA::approx.posterior(params.subset[[i]], prior[[i]], 
+    post.distns <- PEcAn.MA::approx.posterior(trait.mcmc = params.subset[[i]], 
+                                    priors = prior[[i]], 
                                     outdir = settings$pfts[[i]]$outdir, 
                                     filename.flag = paste0(".pda.", settings$pfts[[i]]$name, "_", settings$assim.batch$ensemble.id))
     filename <- file.path(settings$pfts[[i]]$outdir, 
