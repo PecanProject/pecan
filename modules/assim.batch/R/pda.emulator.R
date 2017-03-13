@@ -255,6 +255,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       current.step <- "pda.get.model.output"
       save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
       
+      # efficient sample size calculation
       inputs <- pda.neff.calc(inputs)
       
       # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
