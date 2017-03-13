@@ -388,7 +388,18 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       
     logger.info(paste0("Using 'GPfit' package for Gaussian Process Model fitting."))
     ## Generate emulator on SS, return a list
-    GPmodel <- lapply(SS, function(x) GPfit::GP_fit(X = x[, -ncol(x), drop = FALSE], Y = x[, ncol(x), drop = FALSE]))
+    
+    # prepare for parallelization
+    dcores <- parallel::detectCores() - 1
+    ncores <- min(max(dcores, 1), length(SS))
+    
+    cl <- parallel::makeCluster(ncores, type="FORK")
+    
+    ## Parallel fit for GPs
+    GPmodel <- parallel::parLapply(cl, SS, function(x) GPfit::GP_fit(X = x[, -ncol(x), drop = FALSE], Y = x[, ncol(x), drop = FALSE]))
+    #GPmodel <- lapply(SS, function(x) GPfit::GP_fit(X = x[, -ncol(x), drop = FALSE], Y = x[, ncol(x), drop = FALSE]))
+    parallel::stopCluster(cl)
+    
     gp <- GPmodel
       
   } else { # is this a "longer" type of extension run
