@@ -19,4 +19,4 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: TRUE
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.0
