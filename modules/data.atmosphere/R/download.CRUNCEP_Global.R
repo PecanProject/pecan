@@ -1,18 +1,16 @@
-##' Download and conver to CF CRUNCEP single grid point from MSTIMIP server using OPENDAP interface
-##' @name download.CRUNCEP
-##' @title download.CRUNCEP
-##' @export
+##' Download CRUNCEP data
+##' 
+##' Download and convert to CF CRUNCEP single grid point from MSTIMIP server using OPENDAP interface
 ##' @param outfolder
 ##' @param start_date
 ##' @param end_date
 ##' @param lat
 ##' @param lon
+##' @export
 ##'
 ##' @author James Simkins, Mike Dietze
 download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, 
                              overwrite = FALSE, verbose = FALSE, ...) {
-  
-  #library(PEcAn.utils) # phase this out
   
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
