@@ -21,8 +21,9 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
   
   lat.in <- as.numeric(lat.in)
   lon.in <- as.numeric(lon.in)
-  lat_trunc <- floor(2 * (90 - as.numeric(lat.in))) + 1
-  lon_trunc <- floor(2 * (as.numeric(lon.in) + 180)) + 1
+  # Convert lat-lon to grid row and column
+  lat_grid <- floor(2 * (90 - lat.in)) + 1
+  lon_grid <- floor(2 * (lon.in + 180)) + 1
   dap_base <- "http://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_"
   
   dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
@@ -67,7 +68,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
       dap <- ncdf4::nc_open(dap_file)
       dat.list[[j]] <- ncdf4::ncvar_get(dap, 
                                  as.character(var$DAP.name[j]), 
-                                 c(lon_trunc, lat_trunc, 1), 
+                                 c(lon_grid, lat_grid, 1), 
                                  c(1, 1, ntime))
       
       var.list[[j]] <- ncdf4::ncvar_def(name = as.character(var$CF.name[j]), 
