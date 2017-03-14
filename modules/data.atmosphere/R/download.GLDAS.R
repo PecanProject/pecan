@@ -1,6 +1,7 @@
+##' Download GLDAS data
+##' 
 ##' Download and convert single grid point GLDAS to CF single grid point from hydro1.sci.gsfc.nasa.gov using OPENDAP interface
-##' @name download.GLDAS
-##' @title download.GLDAS
+##' 
 ##' @export
 ##' @param outfolder
 ##' @param start_date
@@ -12,8 +13,6 @@
 ##' @author Christy Rollinson
 download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, 
                            overwrite = FALSE, verbose = FALSE, ...) {
-  library(PEcAn.utils)
-  library(RCurl)
 
   # Date stuff
   start_date <- as.POSIXlt(start_date, tz = "UTC")
@@ -21,7 +20,16 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
   site_id    <- as.numeric(site_id)
+  # NOTE: This is commented out in other functions. Should we ditch it here as well??
   outfolder  <- paste0(outfolder, "_site_", paste0(site_id%/%1e+09, "-", site_id%%1e+09))
+
+  GLDAS_start <- 1948
+  GLDAS_end <- 2010
+  if (start_year < GLDAS_end) {
+    PEcAn.utils::logger.severe(sprintf('Input year range (%d:%d) exceeds the GLDAS range (%d:%d)',
+                                       start_year, end_year,
+                                       GLDAS_start, GLDAS_end))
+  }
   
   lat.in   <- as.numeric(lat.in)
   lon.in   <- as.numeric(lon.in)
@@ -49,7 +57,8 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
   for (i in seq_len(rows)) {
     year <- ylist[i]
     
-    # figure out how many days we're working with If we have multiple years and we're not in the first
+    # Figure out how many days we're working with.
+    # If we have multiple years and we're not in the first
     # or last year, we're taking a whole year
     if (rows > 1 & i != 1 & i != rows) {
       nday <- ifelse(lubridate::leap_year(year), 366, 365)  # leap year or not; days per year
@@ -57,21 +66,21 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
     } else if (rows == 1) {
       # if we're working with only 1 year, lets only pull what we need to
       nday <- ifelse(lubridate::leap_year(year), 366, 365)  # leap year or not; days per year
-      day1 <- yday(start_date)
+      day1 <- lubridate::yday(start_date)
       # Now we need to check whether we're ending on the right day
-      day2 <- yday(end_date)
+      day2 <- lubridate::yday(end_date)
       days.use <- day1:day2
       nday <- length(days.use)  # Update nday
     } else if (i == 1) {
       # If this is the first of many years, we only need to worry about the start date
       nday <- ifelse(lubridate::leap_year(year), 366, 365)  # leap year or not; days per year
-      day1 <- yday(start_date)
+      day1 <- lubridate::yday(start_date)
       days.use <- day1:nday
       nday <- length(days.use)  # Update nday
     } else if (i == rows) {
       # If this is the last of many years, we only need to worry about the start date
       nday <- ifelse(lubridate::leap_year(year), 366, 365)  # leap year or not; days per year
-      day2 <- yday(end_date)
+      day2 <- lubridate::yday(end_date)
       days.use <- 1:day2
       nday <- length(days.use)  # Update nday
     }
@@ -106,20 +115,20 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
     ## get data off OpenDAP
     for (j in seq_along(days.use)) {
       date.now <- as.Date(days.use[j], origin = as.Date(paste0(year - 1, "-12-31")))
-      mo.now   <- stringr::str_pad(month(date.now), 2, pad = "0")
-      day.mo   <- stringr::str_pad(day(date.now), 2, pad = "0")
+      mo.now   <- stringr::str_pad(lubridate::month(date.now), 2, pad = "0")
+      day.mo   <- stringr::str_pad(lubridate::day(date.now), 2, pad = "0")
       doy      <- stringr::str_pad(days.use[j], 3, pad = "0")
       
       # Because the suffixes are really different for these files,
       # get a list and go through each day
-      dap.log <- data.frame(readHTMLTable(paste0(dap_base, "/", year, "/", doy, "/catalog.html")))
+      dap.log <- data.frame(XML::readHTMLTable(paste0(dap_base, "/", year, "/", doy, "/catalog.html")))
       dap.log <- dap.log[order(dap.log[, 1], decreasing = F), ]  # Sort them so that we go from 0 to 21
       
       for (h in seq_len(nrow(dap.log))[-1]) {
         dap_file <- paste0(dap_base, "/", year, "/", doy, "/", dap.log[h, 1], ".ascii?")
         
         # Query lat/lon
-        latlon <- getURL(paste0(dap_file, "lat[0:1:599],lon[0:1:1439]"))
+        latlon <- RCurl::getURL(paste0(dap_file, "lat[0:1:599],lon[0:1:1439]"))
         lat.ind <- gregexpr("lat", latlon)
         lon.ind <- gregexpr("lon", latlon)
         lats <- as.vector(read.table(con = textConnection(substr(latlon, lat.ind[[1]][3], 
@@ -138,7 +147,7 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
         }
         dap_query <- substr(dap_query, 2, nchar(dap_query))
         
-        dap.out <- getURL(paste0(dap_file, dap_query))
+        dap.out <- RCurl::getURL(paste0(dap_file, dap_query))
         for (v in seq_len(nrow(var))) {
           var.now <- var$DAP.name[v]
           ind.1 <- gregexpr(paste(var.now, var.now, sep = "."), dap.out)
