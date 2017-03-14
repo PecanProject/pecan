@@ -43,7 +43,7 @@ def met2cf_geostreams(jsondata, outfile):
 
         timeVar = netCDFHandler.createVariable("time", "f8", ("time",))
         timeVar[:] = [translateTime(d) for d in time['start_time']]
-        print timeVar[:]
+        
         latitudeVar = netCDFHandler.createVariable("latitude", 'f8', ("latitude",))
         latitudeVar[:] = latitude[0]
         longitudeVar = netCDFHandler.createVariable("longitude", 'f8', ("longitude",))
