@@ -16,6 +16,16 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
   end_date <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
+
+  # Check that the start and end date are within bounds
+  CRUNCEP_start <- 1901
+  CRUNCEP_end <- 2010
+  if (start_year < CRUNCEP_start | end_year > CRUNCEP_end) {
+    PEcAn.utils::logger.severe(sprintf('Input year range (%d:%d) exceeds the CRUNCEP range (%d:%d)',
+                                       start_year, end_year,
+                                       CRUNCEP_start, CRUNCEP_end))
+  }
+
   site_id <- as.numeric(site_id)
 #  outfolder <- paste0(outfolder, "_site_", paste0(site_id%/%1e+09, "-", site_id %% 1e+09))
   
@@ -65,7 +75,10 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     for (j in seq_len(nrow(var))) {
       dap_file <- paste0(dap_base, var$DAP.name[j], "_", year, "_v1.nc4")
       PEcAn.utils::logger.info(dap_file)
+
+      # This throws an error if file not found
       dap <- ncdf4::nc_open(dap_file)
+
       dat.list[[j]] <- ncdf4::ncvar_get(dap, 
                                  as.character(var$DAP.name[j]), 
                                  c(lon_grid, lat_grid, 1), 
