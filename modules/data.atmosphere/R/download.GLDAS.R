@@ -24,11 +24,10 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
   outfolder  <- paste0(outfolder, "_site_", paste0(site_id%/%1e+09, "-", site_id%%1e+09))
 
   GLDAS_start <- 1948
-  GLDAS_end <- 2010
-  if (start_year < GLDAS_end) {
-    PEcAn.utils::logger.severe(sprintf('Input year range (%d:%d) exceeds the GLDAS range (%d:%d)',
+  if (start_year < GLDAS_start) {
+    PEcAn.utils::logger.severe(sprintf('Input year range (%d:%d) exceeds the GLDAS range (%d:present)',
                                        start_year, end_year,
-                                       GLDAS_start, GLDAS_end))
+                                       GLDAS_start))
   }
   
   lat.in   <- as.numeric(lat.in)
