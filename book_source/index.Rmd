@@ -2,8 +2,6 @@
 title: "The Predictive Ecosystem Analyzer"
 date: "`r Sys.Date()`"
 site: "bookdown::bookdown_site"
-output:
-  bookdown::gitbook: default
 documentclass: book
 biblio-style: apalike
 link-citations: yesmake 
