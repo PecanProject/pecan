@@ -1,30 +1,39 @@
-##' Download and conver to CF CRUNCEP single grid point from MSTIMIP server using OPENDAP interface
-##' @name download.CRUNCEP
-##' @title download.CRUNCEP
-##' @export
+##' Download CRUNCEP data
+##' 
+##' Download and convert to CF CRUNCEP single grid point from MSTIMIP server using OPENDAP interface
 ##' @param outfolder
 ##' @param start_date
 ##' @param end_date
 ##' @param lat
 ##' @param lon
+##' @export
 ##'
 ##' @author James Simkins, Mike Dietze
 download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, 
                              overwrite = FALSE, verbose = FALSE, ...) {
   
-  #library(PEcAn.utils) # phase this out
-  
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
+
+  # Check that the start and end date are within bounds
+  CRUNCEP_start <- 1901
+  CRUNCEP_end <- 2010
+  if (start_year < CRUNCEP_start | end_year > CRUNCEP_end) {
+    PEcAn.utils::logger.severe(sprintf('Input year range (%d:%d) exceeds the CRUNCEP range (%d:%d)',
+                                       start_year, end_year,
+                                       CRUNCEP_start, CRUNCEP_end))
+  }
+
   site_id <- as.numeric(site_id)
 #  outfolder <- paste0(outfolder, "_site_", paste0(site_id%/%1e+09, "-", site_id %% 1e+09))
   
   lat.in <- as.numeric(lat.in)
   lon.in <- as.numeric(lon.in)
-  lat_trunc <- floor(2 * (90 - as.numeric(lat.in))) + 1
-  lon_trunc <- floor(2 * (as.numeric(lon.in) + 180)) + 1
+  # Convert lat-lon to grid row and column
+  lat_grid <- floor(2 * (90 - lat.in)) + 1
+  lon_grid <- floor(2 * (lon.in + 180)) + 1
   dap_base <- "http://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_"
   
   dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
@@ -66,10 +75,13 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     for (j in seq_len(nrow(var))) {
       dap_file <- paste0(dap_base, var$DAP.name[j], "_", year, "_v1.nc4")
       PEcAn.utils::logger.info(dap_file)
+
+      # This throws an error if file not found
       dap <- ncdf4::nc_open(dap_file)
+
       dat.list[[j]] <- ncdf4::ncvar_get(dap, 
                                  as.character(var$DAP.name[j]), 
-                                 c(lon_trunc, lat_trunc, 1), 
+                                 c(lon_grid, lat_grid, 1), 
                                  c(1, 1, ntime))
       
       var.list[[j]] <- ncdf4::ncvar_def(name = as.character(var$CF.name[j]), 
