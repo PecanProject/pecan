@@ -19,4 +19,3 @@ Get Model Output for PDA
 \author{
 Ryan Kelly, Istem Fer
 }
-
