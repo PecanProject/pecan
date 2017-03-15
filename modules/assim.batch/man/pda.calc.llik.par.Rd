@@ -19,4 +19,3 @@ Calculate likelihood parameters
 \author{
 Istem Fer
 }
-

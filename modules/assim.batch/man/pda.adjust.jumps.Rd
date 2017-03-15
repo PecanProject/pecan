@@ -18,4 +18,3 @@ Adjust PDA MCMC jump size
 \author{
 Ryan Kelly
 }
-
