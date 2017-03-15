@@ -24,4 +24,3 @@ Gelman Diagnostic 3D array. First dim -- mean (1) and 95% confidence (2). Second
 \author{
 Alexey Shiklomanov
 }
-
