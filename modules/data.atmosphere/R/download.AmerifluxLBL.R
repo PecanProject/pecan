@@ -39,7 +39,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   # need to query to get full file name #this is Ameriflux version
   url <- "http://wile.lbl.gov:8080/AmeriFlux/DataDownload.svc/datafileURLs"
   json_query <- paste0("{\"username\":\"", username, "\",\"siteList\":[\"", site, "\"],\"intendedUse\":\"Research - Land model/Earth system model\",\"description\":\"PEcAn download\"}")
-  result <- httr::POST(url, body = json_query, encode = "json", add_headers(`Content-Type` = "application/json"))
+  result <- httr::POST(url, body = json_query, encode = "json", httr::add_headers(`Content-Type` = "application/json"))
   link <- httr::content(result)
   
   ftplink <- NULL
@@ -164,5 +164,6 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   results$formatname[rows] <- "AMERIFLUX_BASE_HH"
   
   # return list of files downloaded
-  return(invisible(results))
+
+  return(results)
 } # download.AmerifluxLBL

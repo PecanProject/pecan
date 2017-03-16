@@ -35,18 +35,20 @@
 ##' in.prefix <- 'FLX_US-WCr_FLUXNET2015_SUBSET_HH_1999-2014_1-1'
 ##' outfolder <- '~/'
 ##' input.id <- 5000000005
-##' format <- query.format.vars(input.id=input.id,con)
+##' format <- query.format.vars(input.id=input.id,bety = bety)
 ##' start_date <- ymd_hm('200401010000')
 ##' end_date <- ymd_hm('200412312330')
 ##' PEcAn.data.atmosphere::met2CF.csv(in.path,in.prefix,outfolder,start_date,end_date,format,overwrite=TRUE)
 ##' }
 ##' @importFrom ncdf4 ncvar_get ncdim_def ncvar_add ncvar_put
+##' @importFrom lubridate year ymd_hm ymd_hms
+##' @importFrom udunits2 ud.is.parseable ud.convert ud.are.convertible
 met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, format, lat = NULL, lon = NULL, 
                        nc_verbose = FALSE, overwrite = FALSE, ...) {
   library(PEcAn.utils)
   
-  start_year <- lubridate::year(start_date)
-  end_year   <- lubridate::year(end_date)
+  start_year <- year(start_date)
+  end_year   <- year(end_date)
   if (!file.exists(outfolder)) {
     dir.create(outfolder)
   }
@@ -171,9 +173,9 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
     ## Only run if years > start_date < end_date
     ## if both are provided, clip data to those dates
     ## Otherwise set start/end to first/last datetime of file
-    years <- lubridate::year(alldatetime)
+    years <- year(alldatetime)
     if (!missing(start_date) && !missing(end_date)) {
-      availdat <- which(years >= lubridate::year(start_date) & years <= lubridate::year(end_date))
+      availdat <- which(years >= year(start_date) & years <= year(end_date))
       if (length(availdat) == 0) {
         logger.error("data does not contain output after start_date or before end_date")
       }
@@ -210,7 +212,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       ### create time dimension
       days_since_1700 <- datetime - ymd_hm("1700-01-01 00:00")
       t <- ncdim_def("time", "days since 1700-01-01", as.numeric(days_since_1700))  #define netCDF dimensions for variables
-      timestep <- as.numeric(mean(udunits2::ud.convert(diff(days_since_1700), "d", "s")))
+      timestep <- as.numeric(mean(ud.convert(diff(days_since_1700), "d", "s")))
       
       ## create lat lon dimensions
       x <- ncdim_def("longitude", "degrees_east", lon)  # define netCDF dimensions for variables
@@ -473,10 +475,10 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           rain <- rain / timestep
           "Mg m-2 s-1"
         }, `in` = {
-          rain <- udunits2::ud.convert(rain / timestep, "in", "mm")
+          rain <- ud.convert(rain / timestep, "in", "mm")
           "kg m-2 s-1"
         }, `mm h-1` = {
-          rain <- udunits2::ud.convert(rain / timestep, "h", "s")
+          rain <- ud.convert(rain / timestep, "h", "s")
           "kg m-2 s-1"
         })
         ncvar_put(nc, varid = precip.var, 
@@ -595,14 +597,14 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       ncdf4::nc_close(nc)
     }  ## end loop over years
   }  ## end else file found
-  return(invisible(results))
+  return(results)
 } # met2CF.csv
 
 
 datetime <- function(list) {
   date_string <- sapply(list, as.character)
   datetime <- paste(list, "00")
-  return(ymd_hms(datetime))
+  return(lubridate::ymd_hms(datetime))
 } # datetime
 
 met.conv <- function(x, orig, bety, CF) {
@@ -615,7 +617,7 @@ met.conv <- function(x, orig, bety, CF) {
   }
   if (ud.is.parseable(orig)) {
     if (ud.are.convertible(orig, bety)) {
-      return(udunits2::ud.convert(udunits2::ud.convert(x, orig, bety), bety, CF))
+      return(ud.convert(ud.convert(x, orig, bety), bety, CF))
     } else {
       logger.error(paste("met.conv could not convert", orig, bety, CF))
     }
