@@ -172,7 +172,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                             start_date = start_date, end_date = end_date, 
                             con = con, host = host, 
                             overwrite = overwrite$met2cf, 
-                            format.vars = format.vars)
+                            format.vars = format.vars,
+                            bety = bety)
   }
   
   #--------------------------------------------------------------------------------------------------#
