@@ -2,13 +2,10 @@
 % Please edit documentation in R/download.NARR.R
 \name{download.NARR}
 \alias{download.NARR}
-\title{download.NARR}
+\title{Download NARR files}
 \usage{
 download.NARR(outfolder, start_date, end_date, overwrite = FALSE,
   verbose = FALSE, ...)
-}
-\arguments{
-\item{end_year}{}
 }
 \description{
 Download NARR files
