@@ -1,6 +1,6 @@
 # (PART) Advanced User Guide - Cmd Line {-}
 
-## Advanced Command Line Guide
+# Advanced Command Line Guide
 
 For those wanting to take full advantage of PEcAn and its tools, this section will provide you with the necessary information to do so. In this section we hope to answer the question: How can I use PEcAn to its fullest?
 
