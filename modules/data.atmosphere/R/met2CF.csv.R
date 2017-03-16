@@ -41,14 +41,13 @@
 ##' PEcAn.data.atmosphere::met2CF.csv(in.path,in.prefix,outfolder,start_date,end_date,format,overwrite=TRUE)
 ##' }
 ##' @importFrom ncdf4 ncvar_get ncdim_def ncvar_add ncvar_put
-##' @importFrom lubridate year ymd_hm ymd_hms
 ##' @importFrom udunits2 ud.is.parseable ud.convert ud.are.convertible
 met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, format, lat = NULL, lon = NULL, 
                        nc_verbose = FALSE, overwrite = FALSE, ...) {
-  library(PEcAn.utils)
+
   
-  start_year <- year(start_date)
-  end_year   <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year   <- lubridate::year(end_date)
   if (!file.exists(outfolder)) {
     dir.create(outfolder)
   }
@@ -68,7 +67,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
   files <- files[grep("*.csv", files)]
   if (length(files) == 0) {
     return(NULL)
-    logger.warn("No met files named ", in.prefix, "found in ", in.path)
+    PEcAn.utils::logger.warn("No met files named ", in.prefix, "found in ", in.path)
   }
   files <- files[1]
   
@@ -97,11 +96,11 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
   
   # If all the files already exist, then skip the conversion unless overwrite=TRUE
   if (!overwrite && all(file.exists(all_files))) {
-    logger.debug("File '", all_files, "' already exist, skipping.")
+    PEcAn.utils::logger.debug("File '", all_files, "' already exist, skipping.")
   } else {
     # If some of the files already exist, skip those, but still need to read file
     if (!overwrite && any(file.exists(all_files))) {
-      logger.debug("Files ", all_files[which(file.exists(all_files))], " already exist, skipping those")
+      PEcAn.utils::logger.debug("Files ", all_files[which(file.exists(all_files))], " already exist, skipping those")
       all_years <- all_years[which(!file.exists(all_files))]
       all_files <- all_files[which(!file.exists(all_files))]
     }
@@ -109,7 +108,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
     ## Read the CSV file some files have a line under the header that lists variable units
     ## search for NA's after conversion to numeric
     if (is.null(format$header)) {
-      logger.warn("please specify number of header rows in file")
+      PEcAn.utils::logger.warn("please specify number of header rows in file")
       alldat <- read.csv(files, 
                          skip = format$skip, 
                          na.strings = format$na.strings,
@@ -158,7 +157,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
         alldatetime <- as.POSIXct(yyddhhmm)
       } else {
         ## Does not match any of the known date formats, add new ones here!
-        logger.error("datetime column is not specified in format")
+        PEcAn.utils::logger.error("datetime column is not specified in format")
       }
     } else {
       datetime_units <- format$vars$input_units[datetime_index]  #lubridate function to call such as ymd_hms
@@ -173,11 +172,11 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
     ## Only run if years > start_date < end_date
     ## if both are provided, clip data to those dates
     ## Otherwise set start/end to first/last datetime of file
-    years <- year(alldatetime)
+    years <- lubridate::year(alldatetime)
     if (!missing(start_date) && !missing(end_date)) {
-      availdat <- which(years >= year(start_date) & years <= year(end_date))
+      availdat <- which(years >= lubridate::year(start_date) & years <= lubridate::year(end_date))
       if (length(availdat) == 0) {
-        logger.error("data does not contain output after start_date or before end_date")
+        PEcAn.utils::logger.error("data does not contain output after start_date or before end_date")
       }
       alldat <- alldat[availdat, ]
       alldatetime <- alldatetime[availdat]
@@ -197,7 +196,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       this.year <- all_years[i]
       availdat.year <- which(years == this.year)
       if (length(availdat.year) == 0) {
-        logger.debug("File ", all_files, " has no data for year ", this.year)
+        PEcAn.utils::logger.debug("File ", all_files, " has no data for year ", this.year)
         next
       }
       new.file <- all_files[i]
@@ -210,7 +209,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       results$enddate[this.year - start_year + 1]   <- as.character(datetime[length(datetime)])
       
       ### create time dimension
-      days_since_1700 <- datetime - ymd_hm("1700-01-01 00:00")
+      days_since_1700 <- datetime - lubridate::ymd_hm("1700-01-01 00:00")
       t <- ncdim_def("time", "days since 1700-01-01", as.numeric(days_since_1700))  #define netCDF dimensions for variables
       timestep <- as.numeric(mean(ud.convert(diff(days_since_1700), "d", "s")))
       
@@ -230,13 +229,13 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
-            logger.error("Cannot find column location for airT by name or column number")
+            PEcAn.utils::logger.error("Cannot find column location for airT by name or column number")
           }
         }
         ncvar_put(nc, varid = airT.var, 
                   vals = met.conv(dat[, arrloc], format$vars$input_units[k], "celsius", "K"))
       } else {
-        logger.error("No air temperature found in met file")
+        PEcAn.utils::logger.error("No air temperature found in met file")
       }
       
       ## air_pressure (Pa) => air_pressure (Pa)
@@ -250,7 +249,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
-            logger.error("Cannot find column location for air_pressure by name or column number")
+            PEcAn.utils::logger.error("Cannot find column location for air_pressure by name or column number")
           }
         }
         ncvar_put(nc, varid = Psurf.var, 
@@ -270,7 +269,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
-            logger.error("Cannot find column location for co2atm by name or column number")
+            PEcAn.utils::logger.error("Cannot find column location for co2atm by name or column number")
           }
         }
         ncvar_put(nc, 
@@ -291,7 +290,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
-            logger.error("Cannot find column location for soilM by name or column number")
+            PEcAn.utils::logger.error("Cannot find column location for soilM by name or column number")
           }
         }
         ncvar_put(nc, 
@@ -310,7 +309,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
-            logger.error("Cannot find column location for soilT by name or column number")
+            PEcAn.utils::logger.error("Cannot find column location for soilT by name or column number")
           }
         }
         ncvar_put(nc, 
@@ -329,7 +328,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
-            logger.error("Cannot find column location for relative_humidity by name or column number")
+            PEcAn.utils::logger.error("Cannot find column location for relative_humidity by name or column number")
           }
         }
         ncvar_put(nc, 
@@ -348,7 +347,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
-            logger.error("Cannot find column location for specific_humidity by name or column number")
+            PEcAn.utils::logger.error("Cannot find column location for specific_humidity by name or column number")
           }
         }
         ncvar_put(nc, 
@@ -378,7 +377,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
-            logger.error("Cannot find column location for VPD by name or column number")
+            PEcAn.utils::logger.error("Cannot find column location for VPD by name or column number")
           }
         }
         ncvar_put(nc, 
@@ -400,7 +399,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
-            logger.error("Cannot find column location for surface_downwelling_longwave_flux_in_air by name or column number")
+            PEcAn.utils::logger.error("Cannot find column location for surface_downwelling_longwave_flux_in_air by name or column number")
           }
         }
         ncvar_put(nc, 
@@ -421,7 +420,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
-            logger.error("Cannot find column location for solar_radiation by name or column number")
+            PEcAn.utils::logger.error("Cannot find column location for solar_radiation by name or column number")
           }
         }
         ncvar_put(nc, 
@@ -442,7 +441,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
-            logger.error("Cannot find column location for PAR by name or column number")
+            PEcAn.utils::logger.error("Cannot find column location for PAR by name or column number")
           }
         }
         ncvar_put(nc, 
@@ -463,7 +462,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
-            logger.error("Cannot find column location for precipitation_flux by name or column number")
+            PEcAn.utils::logger.error("Cannot find column location for precipitation_flux by name or column number")
           }
         }
         rain <- dat[, arrloc]
@@ -497,7 +496,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
-            logger.error("Cannot find column location for eastward_wind by name or column number")
+            PEcAn.utils::logger.error("Cannot find column location for eastward_wind by name or column number")
           }
         }
         ncvar_put(nc, 
@@ -513,7 +512,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           if (any(colnames(format$vars) == "column_number")) {
             arrloc <- format$vars$column_number[k]
           } else {
-            logger.error("Cannot find column location for northward_wind by name or column number")
+            PEcAn.utils::logger.error("Cannot find column location for northward_wind by name or column number")
           }
           ncvar_put(nc, 
                     varid = Ewind.var, 
@@ -531,7 +530,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
             if (any(colnames(format$vars) == "column_number")) {
               arrloc_wd <- format$vars$column_number[k_wd]
             } else {
-              logger.error("Cannot find column location for wind_direction by name or column number")
+              PEcAn.utils::logger.error("Cannot find column location for wind_direction by name or column number")
             }
           }
           arrloc_ws <- as.character(format$vars$input_name[k_ws])
@@ -539,7 +538,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
             if (any(colnames(format$vars) == "column_number")) {
               arrloc_ws <- format$vars$column_number[k_ws]
             } else {
-              logger.error("Cannot find column location for wind_speed by name or column number")
+              PEcAn.utils::logger.error("Cannot find column location for wind_speed by name or column number")
             }
           }
           wind <- met.conv(dat[, arrloc_ws], format$vars$input_units[k_ws], "m s-1", "m s-1")
@@ -566,7 +565,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
               if (any(colnames(format$vars) == "column_number")) {
                 arrloc <- format$vars$column_number[k]
               } else {
-                logger.error("Cannot find column location for Wspd by name or column number")
+                PEcAn.utils::logger.error("Cannot find column location for Wspd by name or column number")
               }
             }
             ncvar_put(nc, 
@@ -619,9 +618,9 @@ met.conv <- function(x, orig, bety, CF) {
     if (ud.are.convertible(orig, bety)) {
       return(ud.convert(ud.convert(x, orig, bety), bety, CF))
     } else {
-      logger.error(paste("met.conv could not convert", orig, bety, CF))
+      PEcAn.utils::logger.error(paste("met.conv could not convert", orig, bety, CF))
     }
   } else {
-    logger.error(paste("met.conv could not parse units:", orig), "Please check if these units conform to udunits")
+    PEcAn.utils::logger.error(paste("met.conv could not parse units:", orig), "Please check if these units conform to udunits")
   }
 } # met.conv
