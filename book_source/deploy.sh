@@ -14,8 +14,8 @@ USER=${TRAVIS_REPO_SLUG%/*}
 git config --global user.email "pecanproj@gmail.com"
 git config --global user.name "TRAVIS-DOC-BUILD"
 
-git clone https://${GITHUB_PAT}@github.com/${USER}/pecan_bookdown.git book_hosted
-#git clone https://${GITHUB_PAT}/${USER}/pecan_bookdown.git book_hosted
+git clone https://${GITHUB_PAT}@github.com/${USER}/pecan-documentation.git book_hosted
+
 
 cp -r _book/* book_hosted
 
