@@ -13,4 +13,3 @@ more conservative approach than the moving-window method.
 \author{
 Alexey Shiklomanov
 }
-
