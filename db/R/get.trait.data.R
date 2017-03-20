@@ -255,7 +255,7 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate, trai
   }
   # Check that all PFTs have associated outdir entries
   pft_outdirs <- lapply(pfts, '[[', 'outdir')
-  if (any(sapply(pfts, is.null(outdir)))) {
+  if (any(sapply(pft_outdirs, is.null))) {
     PEcAn.utils::logger.severe('At least one pft in settings is missing its "outdir"')
   }
   ##---------------- Load trait dictionary --------------#
