@@ -249,7 +249,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
 ##' @author David LeBauer, Shawn Serbin
 ##' @export
 ##'
-get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,trait.names=NULL) {
+get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate, trait.names=NULL) {
   ##---------------- Load trait dictionary --------------#
   if(is.logical(trait.names)){
     if(trait.names){
@@ -261,7 +261,12 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,trait
   # process all pfts
   dbcon <- db.open(database)
   on.exit(db.close(dbcon))
-  result <- lapply(pfts, get.trait.data.pft, modeltype, dbfiles, dbcon, forceupdate, trait.names)
+  result <- lapply(pfts, get.trait.data.pft, 
+                   modeltype = modeltype, 
+                   dbfiles = dbfiles,
+                   dbcon = dbcon,
+                   forceupdate = forceupdate,
+                   trait.names = trait.names)
 
   invisible(result)
 }
