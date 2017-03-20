@@ -34,9 +34,9 @@ run.biocro <- function(lat, lon, metfile, soil.nc = NULL, config = config, coppi
       met <- met[year %in% years]
     }
     
-    dt <- as.numeric(mean(diff(met$date)))
+    dt <- lubridate::as.period(mean(diff(met$date)))
     
-    if (dt > 1) {
+    if (dt > lubridate::days(1)) {
       met <- cfmet.downscale.time(cfmet = met, output.dt = 1)
     }
     
