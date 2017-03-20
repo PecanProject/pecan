@@ -28,6 +28,9 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
   lati <- which.min(abs(Lat - lat))
   loni <- which.min(abs(Lon - lon))
 
+  start.date <- lubridate::ymd(as.Date(start.date), tz = "UTC")
+  end.date <- lubridate::ymd(as.Date(end.date), tz = "UTC")
+
   time.idx <- ncdf4::ncvar_get(met.nc, "time")
 
   ## confirm that time units are PEcAn standard
@@ -46,14 +49,14 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
   ## but POSIXlt moves times off by a second
   suppressWarnings(all.dates <- data.table(index = seq(time.idx), date = round(date)))
   
-  if (ymd(as.Date(start.date)) + days(1) < min(all.dates$date)) {
-    logger.error("run start date", ymd(as.Date(start.date)), "before met data starts", min(all.dates$date))
+  if (start.date + days(1) < min(all.dates$date)) {
+    logger.error("run start date", start.date, "before met data starts", min(all.dates$date))
   }
-  if (ymd(as.Date(end.date)) > max(all.dates$date)) {
-    logger.error("run end date", ymd(as.Date(end.date)), "after met data ends", max(all.dates$date))
+  if (end.date > max(all.dates$date)) {
+    logger.error("run end date", end.date, "after met data ends", max(all.dates$date))
   }
   
-  run.dates <- all.dates[date > ymd(as.Date(start.date)) & date < ymd(as.Date(end.date)),
+  run.dates <- all.dates[date > start.date & date < end.date,
                          list(index, 
                               date = date, 
                               doy = lubridate::yday(date),
