@@ -19,8 +19,8 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
   library(PEcAn.utils)
   
   ## Lat and Lon
-  ncdf4::Lat <- ncvar_get(met.nc, "latitude")
-  ncdf4::Lon <- ncvar_get(met.nc, "longitude")
+  Lat <- ncdf4::ncvar_get(met.nc, "latitude")
+  Lon <- ncdf4::ncvar_get(met.nc, "longitude")
 
   if(min(abs(Lat-lat)) > 2.5 | min(abs(Lon-lon)) > 2.5){
     logger.error("lat / lon (", lat, ",", lon, ") outside range of met file (", range(Lat), ",", range(Lon))
@@ -50,7 +50,7 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
     logger.error("run start date", ymd(as.Date(start.date)), "before met data starts", min(all.dates$date))
   }
   if (ymd(as.Date(end.date)) > max(all.dates$date)) {
-    logger.error("run end date", ymd(as.Date(start.date)), "after met data ends", min(all.dates$date))
+    logger.error("run end date", ymd(as.Date(end.date)), "after met data ends", max(all.dates$date))
   }
   
   run.dates <- all.dates[date > ymd(as.Date(start.date)) & date < ymd(as.Date(end.date)),
