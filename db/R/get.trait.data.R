@@ -280,6 +280,9 @@ runModule.get.trait.data <- function(settings) {
     pft.names <- character(0)
     for(i in seq_along(settings)) {
       pfts.i <- settings[[i]]$pfts
+      if (!is.list(pfts.i)) {
+        PEcAn.utils::logger.severe("settings[[i]]$pfts is not a list")
+      }
       pft.names.i <- sapply(pfts.i, function(x) x$name)
       ind <- which(pft.names.i %in% setdiff(pft.names.i, pft.names))
       pfts <- c(pfts, pfts.i[ind])
@@ -297,6 +300,9 @@ runModule.get.trait.data <- function(settings) {
     return(settings)
   } else if(is.Settings(settings)) {
     pfts <- settings$pfts
+    if (!is.list(pfts)) {
+      PEcAn.utils::logger.severe("settings$pfts is not a list")
+    }
     modeltype <- settings$model$type
     dbfiles <- settings$database$dbfiles
     database <- settings$database$bety
