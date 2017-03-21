@@ -35,7 +35,7 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
 
   ## confirm that time units are PEcAn standard
   basetime.string <- ncdf4::ncatt_get(met.nc, "time", "units")$value
-  base.date       <- lubridate::parse_date_time(basetime.string, c("ymd_hms", "ymd_h", "ymd"))
+  base.date       <- lubridate::parse_date_time(basetime.string, c("ymd_HMS", "ymd_H", "ymd"))
   base.units      <- strsplit(basetime.string, " since ")[[1]][1]
 
   ## convert to days
