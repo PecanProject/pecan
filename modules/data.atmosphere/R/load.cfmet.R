@@ -49,7 +49,7 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
   ## but POSIXlt moves times off by a second
   suppressWarnings(all.dates <- data.table(index = seq(time.idx), date = round(date)))
   
-  if (start.date + days(1) < min(all.dates$date)) {
+  if (start.date + lubridate::days(1) < min(all.dates$date)) {
     logger.error("run start date", start.date, "before met data starts", min(all.dates$date))
   }
   if (end.date > max(all.dates$date)) {
