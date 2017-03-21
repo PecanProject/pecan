@@ -139,7 +139,7 @@ model{
     fixedX <- sub("~","",fixed, fixed=TRUE)
     lm.terms <- gsub("[[:space:]]", "", strsplit(fixedX,split = "+",fixed=TRUE)[[1]])  ## split on + and remove whitespace
     X.terms <- strsplit(lm.terms,split = c("^"),fixed = TRUE)
-    X.terms <- sapply(X.terms,strsplit,split="*",fixed=TRUE)
+    X.terms <- sapply(X.terms,function(str){unlist(strsplit(str,,split="*",fixed=TRUE))})
     X.terms <- which(sapply(X.terms,function(x){any(toupper(x) == "X")}))
     if(length(X.terms) > 0){
       ## rebuild fixed without X.terms
