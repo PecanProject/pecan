@@ -13,7 +13,7 @@
 ##' @return data.table of met data
 ##' @export
 ##' @author David LeBauer
-load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date) {
+load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
   
   library(data.table)
   library(PEcAn.utils)
