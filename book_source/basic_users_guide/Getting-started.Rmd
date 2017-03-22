@@ -6,29 +6,34 @@
 
 PEcAn provides an interface to a variety of ecosystem models and attempts to standardize and automate the processes of model parameterization, execution, and analysis. First, you choose an ecosystem model, then the time and location of interest (a site), the plant community (or crop) that you are interested in simulating, and a source of atmospheric data from the BETY database (LeBauer et al, 2010). These are set in a "settings" file, commonly named `pecan.xml` which can be edited manually if desired. From here, PEcAn will take over and set up and execute the selected model using your settings. The key is that PEcAn uses models as-is, and all of the translation steps are done within PEcAn so no modifications are required of the model itself. Once the model is finished it will allow you to create graphs with the results of the simulation as well as download the results. It is also possible to see all past experiments and simulations.
 
-
 ## Quick Start
 
 There are two ways of using PEcAn, via the web interface and directly within R. Even for users familiar with R, using the web interface is a good place to start because it provides a high level overview of the PEcAn workflow.The quickest way to get started is to download the virtual machine or use an AWS instance.
 
 ### Working with the PEcAn VM
 
-1.  PEcAn consists of a set of scripts and code that is compiled within a Linux operating system and saved in a “virtual machine (VM)”. Virtual machines allow for running consistent set-ups without worrying about differences between operating systems, library dependencies, compiling the code, etc. 
+1. PEcAn consists of a set of scripts and code that is compiled within a Linux operating system and saved in a “virtual machine (VM)”. Virtual machines allow for running consistent set-ups without worrying about differences between operating systems, library dependencies, compiling the code, etc. 
 
-2.  To run the PEcAn VM you will need to install VirtualBox, the program that runs the virtual machine [http://www.virtualbox.org](http://www.virtualbox.org). On Windows you may see a warning about Logo testing, it is okay to ignore the warning. 
+2. To run the PEcAn VM you will need to install VirtualBox, the program that runs the virtual machine [http://www.virtualbox.org](http://www.virtualbox.org). On Windows you may see a warning about Logo testing, it is okay to ignore the warning. 
 
-3.  After you have Virtual Box installed you’ll need to download the PEcAn virtual machine: [http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN). The virtual machine is available under the "**Files**" header. Click the 32 or 64 bit ".ova" file and note that the download is ~5 GB so will take from several minutes to hours depending on the connection speed.
+3. After you have Virtual Box installed you’ll need to download the PEcAn virtual machine: [http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN). The virtual machine is available under the "**Files**" header. Click the 32 or 64 bit ".ova" file and note that the download is ~5 GB so will take from several minutes to hours depending on the connection speed.
 
-4.	To open up the virtual machine you'll first want to open up VirtualBox. 
+4. To open up the virtual machine you'll first want to open up VirtualBox. 
 
 5. The first time you use the VM you'll want to use File → Import Appliance in VirtualBox in order to import the VM. This will create a virtual machine from the disk image. When asked about the Appliance Import Settings make sure you select "Reinitialize the MAC address of all network cards". This is not selected by default and can result in networking issues since multiple machines might claim to have the same network MAC Address. That said, users who have experienced network connection difficulties within the VM have sometimes had better luck after reinstalling without reinitializing.
 
 ```{r, echo=FALSE,fig.align='center'}
   knitr::include_graphics(rep("figures/pic1.jpg"))
 ```
-6.  Next, click “Import”. You only have to do this Import step once, in the future you can just skip to the next step. 	
 
-7.  Start Pecan by double clicking on the icon for the VM. A terminal window will pop up showing the machine booting up which may take a minute. It is done booting when you get to the “pecan32 login:” prompt. You do not need to login as the VM behaves like a server that we will be accessing through you web browser. Feel free to minimize the VM window.
+6. Next, click “Import”. You only have to do this Import step once, in the future you can just skip to the next step. 	
+
+7. Start Pecan by double clicking on the icon for the VM. A terminal window will pop up showing the machine booting up which may take a minute. It is done booting when you get to the “pecan32 login:” prompt. You do not need to login as the VM behaves like a server that we will be accessing through you web browser. Feel free to minimize the VM window.
+
+    * If you _do_ want to login to the VM, the credentials are as follows: `username: carya`, `password: illinois` (after the pecan tree, [Carya illinoinensis][pecan-wikipedia]).
+
+8. To launch the PEcAn web interface, make sure that the VM is running somewhere in the background on your machine. Then, open any web browser on the same machine and navigate to `localhost:6480/pecan` to start the PEcAn workflow.
+
 
 ### Using AmazonWeb Services (AWS)
 
@@ -80,3 +85,6 @@ Select the default drive volume type and click Next
 10. When you are done using PEcAn, you will want to return to the “Instances” menu to turn off your VM.
     + To STOP the instance (which will turn the machine off but keep your work), select your PEcAn instance and click Actions > Instance state > Stop. Be aware that a stopped instance will still accrue a small storage cost on AWS. To restart this instance at any point in the future you do not want to repeat all the steps above, but instead you just need to select your instance and then click Actions > Instance state > Start
     +	To TERMINATE the instance (which will DELETE your PEcAn machine), select your instance and click Actions > Instance state > Terminate. Terminated instances will not incur costs. In most cases you will also want to go to the Volumes menu and delete the storage associated with your PEcAn VM.Remember, AWS is free for one year, but will automatically charge a fee in second year if account is not cancelled.
+
+
+[pecan-wikipedia]: https://en.wikipedia.org/wiki/Pecan
