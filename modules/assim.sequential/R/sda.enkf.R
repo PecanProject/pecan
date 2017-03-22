@@ -513,9 +513,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           H[i, i] <- 1 
         }
         #non-linear fcomp
-        for (i in choose) {
-          H[i, i] <- 1/sum(mu.f) #? this seems to get us on the right track. mu.f[i]/sum(mu.f) doesn't work. 
-        }
+        # for (i in choose) {
+        #   H[i, i] <- 1/sum(mu.f) #? this seems to get us on the right track. mu.f[i]/sum(mu.f) doesn't work. 
+        # }
         ## process error
         if (exists("Q")) {
           Pf <- Pf + Q
