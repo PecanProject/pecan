@@ -6,6 +6,8 @@ section for the next release.
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
 ## [Unreleased]
+
+## [1.4.9] - 2016-12-10
 Benchmarking, code cleanup
 
 ### Added

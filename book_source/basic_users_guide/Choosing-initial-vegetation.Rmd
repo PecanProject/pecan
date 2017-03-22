@@ -1,3 +1,5 @@
+## Choosing initial vegetation
+
 On the Input Selection webpage, in addition to selecting PFTs, start & end dates, and meteorology, many models also require some way of specifying the initial conditions for the vegetation, which may range from setting the aboveground biomass and LAI up to detailed inventory-like data on species composition and stand structure.
 
 At the moment, PEcAn has two cases for initial conditions and they only exist as required Inputs for the ED2 model:
@@ -11,7 +13,7 @@ Two additional options are in development:
 * Model spin-up
 * Automated workflows
 
-## Spin up
+### Spin up
 
 A number of ecosystem models are typically initialized by spinning up to steady state. At the moment PEcAn doesn't handle spin up automatically (e.g. looping met, checking for stability), but there are various ways to achieve a spin-up within the system. 
 
@@ -23,7 +25,7 @@ A number of ecosystem models are typically initialized by spinning up to steady 
 
 Beyond these options, we hope to eventually develop more general, model-agnostic tools for spin up. In particular, we have started to explore the accelerated spin-up and semi-analytical techniques being developed by Yiqi Luo's lab
 
-## Veg workflow
+### Veg workflow
 
 As with meteorology, PEcAn is working to develop a model-agnostic workflow for converting various sources of vegetation data to common standards, developing common processing tools, and then writing out to model-specific formats. This process is in a much early stage than the meteorology workflow, as we are still researching what the options are for standard formats, but ultimately aims to be much more broad in scope, considering not just plot inventory data but also historical documentation, paleoecological proxies, satellite remote sensing (e.g. LANDSAT), airborne hyperspectral imagery, and active remote sensing (Lidar, Radar).
 
