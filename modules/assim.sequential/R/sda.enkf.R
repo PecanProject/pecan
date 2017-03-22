@@ -423,17 +423,20 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     ###-------------------------------------------------------------------###  
     if (any(obs)) {
       # if no observations skip analysis
-      choose <- na.omit(charmatch(
-        na.omit(unlist(lapply(strsplit(colnames(X),
-                                       split = paste('AGB.pft.')),
-                              function(x) x[2]))),
-        na.omit(unlist(lapply(strsplit(names(obs.mean[[t]]),
-                                       split = paste('AGB.pft.')), #TO DO don't hardcode this
-                              function(x) x[2]))))) #matches y to model
+      # choose <- na.omit(charmatch(
+      #   na.omit(unlist(lapply(strsplit(colnames(X),
+      #                                  split = var.names),
+      #                         function(x) x[2]))),
+      #   na.omit(unlist(lapply(strsplit(names(obs.mean[[t]]),
+      #                                  split = var.names), #TO DO don't hardcode this
+      #                         function(x) x[2]))))) #matches y to model
+      # 
+      
+      choose <- na.omit(charmatch(colnames(X),names(obs.mean[[t]])))
       
       Y <- unlist(obs.mean[[t]][choose])
       
-      R <- as.matrix(obs.cov[[t]]) #TO DO: R probably needs to be organized like Y too?
+      R <- as.matrix(obs.cov[[t]][choose,choose])
       
       if (length(obs.mean[[t]]) > 1) {
         for (s in seq_along(obs.mean[[t]])) {
