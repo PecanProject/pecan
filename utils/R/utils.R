@@ -665,6 +665,20 @@ convert.expr <- function(expression) {
   return(list(variable.drv = deri.var, variable.eqn = list(variables = variables, expression = deri.eqn)))
 }
 
+##' @title download.file
+##' @param url complete URL for file download
+##' @param destfile destination file name
+##' @param method Method of file retrieval.  Currently the only option is ncftpget
+##' @export
+##' @author Shawn Serbin
+download.file <- function(url, destfile, method="ncftpget") {
+   if (method=="ncftpget") {
+   system(paste(method,"-c",url,">",destfile,sep=" "))
+   } else {
+   logger.debug("method not yet implemented")
+   }     
+}
+
 ####################################################################################################
 ### EOF.  End of R script file.              
 ####################################################################################################
