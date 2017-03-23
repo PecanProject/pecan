@@ -186,7 +186,11 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     cosz <- sin(lat * pi / 180) * sin(dec) + cos(lat * pi / 180) * cos(dec) * cos(h)
     cosz[cosz < 0] <- 0
     rpot <- 1366 * cosz  #in UTC
-    toff <- as.numeric(lst) * 3600/dt  #timezone offset correction
+    tz = as.numeric(lst)
+    if(is.na(tz)){
+      tz = as.numeric(as.POSIXct("1970-01-01 00:00:00", tz=lst))/3600
+    }
+    toff <- tz * 3600/dt  #timezone offset correction
     if (toff < 0) {
       slen <- length(rpot)
       rpot <- c(rpot[(abs(toff) + 1):slen], rpot[1:abs(toff)])
