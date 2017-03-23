@@ -44,7 +44,11 @@
 ##' @importFrom udunits2 ud.is.parseable ud.convert ud.are.convertible
 met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, format, lat = NULL, lon = NULL, 
                        nc_verbose = FALSE, overwrite = FALSE, ...) {
-
+  
+  ## datetime_units parsing via do.call can call any lubridate function
+  ## so need to load whole library. pkg::fcn syntax doesn't work through do.call
+  library(lubridate)
+  
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
   if (!file.exists(outfolder)) {
@@ -162,9 +166,6 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       datetime_units <- format$vars$input_units[datetime_index]  #lubridate function to call such as ymd_hms
       if (datetime_units == "") {
         datetime_units <- "ymd_hm"
-      }
-      if(length(grep("lubridate",datetime_units))==0){
-        datetime_units = paste0("lubridate::",datetime_units)
       }
       datetime_raw <- alldat[, format$vars$input_name[datetime_index]]
       alldatetime <- do.call(datetime_units, list(datetime_raw))  #convert to POSIXct convention
