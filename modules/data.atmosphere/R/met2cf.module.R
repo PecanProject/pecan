@@ -1,5 +1,5 @@
 .met2cf.module <- function(raw.id, register, met, str_ns, dir, machine, site.id, lat, lon, start_date, end_date, 
-                           con, host, overwrite = FALSE, format.vars) {
+                           con, host, overwrite = FALSE, format.vars, bety) {
   
   logger.info("Begin change to CF Standards")
   
@@ -75,7 +75,7 @@
                              exact.dates = FALSE)
     } else if (exists(fcn2)) {
       fcn <- fcn2
-      format <- query.format.vars(input.id, con)
+      format <- query.format.vars(input.id = input.id, bety = bety)
       cf.id <- convert.input(input.id = input.id,
                              outfolder = outfolder,
                              formatname = formatname,

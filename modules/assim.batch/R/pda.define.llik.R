@@ -16,7 +16,7 @@ pda.define.llik.fn <- function(settings) {
     # heteroskedastic Laplace likelihood, error stats is the likelihood
     if (settings$assim.batch$inputs[[i]]$likelihood == "Laplace") {
       
-      llik.fn[[i]] <- function(pda.errors, ...) {
+      llik.fn[[i]] <- function(pda.errors, llik.par) {
         LL <- pda.errors
         return(LL)
       }
@@ -67,18 +67,21 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
   for (k in seq_len(n.input)) {
     
     if (settings$assim.batch$inputs[[k]]$likelihood == "Laplace") {
-      
-      resid <- abs(model_out[[k]] - inputs[[k]]$obs)
-      pos <- (model_out[[k]] >= 0)
-      SS <- c(dexp(resid[pos],
-                   1 / (inputs[[k]]$par[1] + inputs[[k]]$par[2] * model_out[[k]][pos]),
-                   log = TRUE),
-              dexp(resid[!pos],
-                   1 / (inputs[[k]]$par[1] + inputs[[k]]$par[3] * model_out[[k]][!pos]),
-                   log = TRUE))
-      
-      pda.errors[[k]] <- sum(SS, na.rm = TRUE) 
-      SSdb[[k]]       <- sum(SS, na.rm = TRUE) 
+      # heteroskedastic laplacian
+        
+        resid <- abs(model_out[[k]] - inputs[[k]]$obs)
+        pos <- (model_out[[k]] >= 0)
+        SS <- c(dexp(resid[pos],
+                     1 / (inputs[[k]]$par[1] + (inputs[[k]]$par[2] * 
+                                                  sqrt(inputs[[k]]$n/inputs[[k]]$n_eff) * 
+                                                  model_out[[k]][pos])), log = TRUE),
+                dexp(resid[!pos],
+                     1 / (inputs[[k]]$par[1] + (inputs[[k]]$par[3] * 
+                            sqrt(inputs[[k]]$n/inputs[[k]]$n_eff) * 
+                            model_out[[k]][!pos])), log = TRUE))
+        
+        pda.errors[[k]] <- sum(SS, na.rm = TRUE) 
+        SSdb[[k]] <- sum(SS, na.rm = TRUE) 
         
     } else if (settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") { 
       # multiplicative Gaussian
@@ -88,7 +91,7 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
         SS[b] <- sum((bias.terms[bc,][b] * model_out[[k]] - inputs[[k]]$obs)^2, na.rm = TRUE)
       }
       
-      bc              <- bc + 1
+      bc <- bc + 1
       pda.errors[[k]] <- SS 
       SSdb[[k]]       <- log(SS)
       
@@ -98,7 +101,9 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
       
       pda.errors[[k]] <- SS 
       SSdb[[k]]       <- log(SS)
+      
     }
+  
     
   } # for-loop
   
@@ -120,7 +125,7 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
                " loglikelihood, n_eff)",
                "values ('",
                run.id, "', '",    inputs[[k]]$variable.id, "', '", inputs[[k]]$input.id, "', '",
-               SSdb[[k]], "', '", inputs[[k]]$n, "')"
+               SSdb[[k]], "', '", inputs[[k]]$n_eff, "')"
         ),
         con)
     }
@@ -145,16 +150,13 @@ pda.calc.llik <- function(pda.errors, llik.fn, llik.par) {
   n.var <- length(pda.errors)
   
   LL.vec <- numeric(n.var)
-  n.vec <- sapply(llik.par, `[[`, "n")
   
   for (k in seq_len(n.var)) {
     LL.vec[k] <- llik.fn[[k]](pda.errors[k], llik.par[[k]])
   }
   
-  weights <- rep(1 / n.var, n.var)  # TODO: Implement user-defined weights
-  LL.total <- sum(LL.vec * weights)
-  neff <- n.vec * weights
-  
+  LL.total <- sum(LL.vec)
+
   return(LL.total)
 } # pda.calc.llik
 
@@ -183,9 +185,10 @@ pda.calc.llik.par <-function(settings, n, error.stats){
       
       llik.par[[k]]$par <- rgamma(1, 0.001 + n[k]/2, 0.001 + error.stats[k]/2)
       names(llik.par[[k]]$par) <- paste0("tau.", names(n)[k])
+      
     }
+    llik.par[[k]]$n     <- n[k]
     
-    llik.par[[k]]$n <- n[k]
   }
 
   return(llik.par)
