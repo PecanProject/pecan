@@ -11,6 +11,8 @@
 ##' @param start_date the start date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year and month of the date)
 ##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year and month part of the date)
 ##' @param overwrite should existing files be overwritten
+##' @examples 
+##' result <- download.NEONmet('HARV','~/','2017-01-01','2017-01-31',overwrite=TRUE)
 ##' @param verbose makes the function output more text
 ##' @importFrom PEcAn.utils fqdn logger.debug logger.error logger.warn logger.severe
 
@@ -333,7 +335,6 @@ download.NEONmet <- function(sitename, outfolder, start_date, end_date,
                                 urlstring = "\\.00000\\.001\\.5..\\.(.*)_30_minute",
                                 units=c("celsius", "K"),belowground=TRUE)      
       ncdf4::ncvar_put(nc, varid = soilT.var, vals = ncdata)
-      browser()
     } else {
       logger.warn("No NEON Soil Temp")
     }
