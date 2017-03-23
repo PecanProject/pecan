@@ -231,11 +231,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   # to have NAs or NULL with date name vector to read the correct netcdfs by read_restart
   
   obs.times <- names(obs.mean)
-  obs.times.POSIX <- ymd_hms(obs.times,truncated = 3)
+  obs.times.POSIX <- ymd_hms(obs.times)
   
   for (i in seq_along(obs.times)) {
     if (is.na(obs.times.POSIX[i])) {
-      if (is.na(ymd(obs.times[i]))) { #TO DO can't find function ymd(). fix it.
+      if (is.na(lubridate::ymd(obs.times[i]))) { #TO DO can't find function ymd(). fix it.
         print("Error: no dates associated with observations")
       } else {
         ### Data does not have time associated with dates 
@@ -394,7 +394,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for (t in 1)) {#seq_len(nt)
+  for (t in 1:10) {#seq_len(nt)
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -415,8 +415,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     
     obs <- which(!is.na(obs.mean[[t]]))
     
-    #mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
-    #Pf <- cov(X)
+    mu.f <- as.numeric(apply(X, 2, mean, na.rm = TRUE))
+    Pf <- cov(X)
     
     ###-------------------------------------------------------------------###
     ### analysis                                                          ###
@@ -807,19 +807,21 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     colnames(analysis) <- colnames(X)
     
     ##### Mapping analysis vectors to be in bounds of state variables
-    for(i in 1:ncol(analysis)){
-      int.save <- state.interval[which(startsWith(colnames(analysis)[i],
-                      var.names)),]
-      analysis[analysis[,i] < int.save[1],i] <- int.save[1]
-      analysis[analysis[,i] > int.save[2],i] <- int.save[2]
+    if(processvar==TRUE){
+      for(i in 1:ncol(analysis)){
+        int.save <- state.interval[which(startsWith(colnames(analysis)[i],
+                                                    var.names)),]
+        analysis[analysis[,i] < int.save[1],i] <- int.save[1]
+        analysis[analysis[,i] > int.save[2],i] <- int.save[2]
+      }
     }
-    
+
     ## in the future will have to be separated from analysis
     new.state  <- analysis
     new.params <- params
     
     ANALYSIS[[t]] <- analysis
-    
+   
     if (interactive() & t > 1) { #
       t1 <- 1
       names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
@@ -839,7 +841,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       })))
       
       par(mfrow = c(2, 1))
-      for (i in sample(size = 2,x = 1:9)) {
+      for (i in sample(size = 2,x = 1:ncol(X))) {
         t1 <- 1
         Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
         Xci  <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
@@ -913,7 +915,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
                             settings = settings,
                             new.state = new.state[i, ], 
                             new.params = new.params[[i]], 
-                            inputs = inputs, 
+                            inputs = inputs[[i]], 
                             RENAME = TRUE))
       }
       ###-------------------------------------------------------------------###
