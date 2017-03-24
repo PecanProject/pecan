@@ -28,8 +28,8 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
   lati <- which.min(abs(Lat - lat))
   loni <- which.min(abs(Lon - lon))
 
-  start.date <- lubridate::ymd(as.Date(start.date), tz = "UTC")
-  end.date <- lubridate::ymd(as.Date(end.date), tz = "UTC")
+  start.date <- lubridate::ymd(start.date, tz = "UTC")
+  end.date <- lubridate::ymd(end.date, tz = "UTC")
 
   time.idx <- ncdf4::ncvar_get(met.nc, "time")
 
