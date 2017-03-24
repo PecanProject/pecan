@@ -18,15 +18,15 @@ PEcAn is not itself an ecosystem model, and it can be used to with a variety of 
 
 ## Documentation
 
-Consult our [Gitbook](https://pecan.gitbooks.io/pecan-documentation/content/)for full documentation of the PEcAn Project.
+Consult our [Documentation](https://pecanproject.github.io/pecan-documentation/)for full documentation of the PEcAn Project.
 
 ## Getting Started
 
-See ["Getting Started"](https://pecan.gitbooks.io/pecan-documentation/content/users_guide/basic_users_guide/Getting-started.html) on the PEcAn.
+See ["Getting Started"](https://pecanproject.github.io/pecan-documentation/getting-started.html) on the PEcAn.
 
 ### Installation
 
-Complete instructions on how to install PEcAn can be found in the [Gitbook Installation Page](https://pecan.gitbooks.io/pecan-documentation/content/developers_guide/Installing-PEcAn.html). To get PEcAn up and running you will need to have [R](http://www.r-project.org) as well as [PostgreSQL](http://www.postgresql.org) installed. You can also [download a Virtual Machine](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN) which has all the components as well as PEcAn installed. To run this Virtual Machine you will need to have [VirtualBox](http://virtualbox.org) installed
+Complete instructions on how to install PEcAn can be found in the [documentation here](https://pecanproject.github.io/pecan-documentation/appendix.html). To get PEcAn up and running you will need to have [R](http://www.r-project.org) as well as [PostgreSQL](http://www.postgresql.org) installed. You can also [download a Virtual Machine](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN) which has all the components as well as PEcAn installed. To run this Virtual Machine you will need to have [VirtualBox](http://virtualbox.org) installed
 
 ### Website
 
