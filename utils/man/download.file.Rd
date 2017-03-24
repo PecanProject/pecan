@@ -13,6 +13,11 @@ download.file(url, destfile, method = "ncftpget")
 
 \item{method}{Method of file retrieval.  Currently the only option is ncftpget}
 }
+\description{
+Simple function to use ncftpget for FTP downloads behind a firewall.
+Requires ncftpget and a properly formatted config file in the users 
+home directory
+}
 \author{
 Shawn Serbin
 }
