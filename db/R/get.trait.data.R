@@ -249,7 +249,15 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
 ##' @author David LeBauer, Shawn Serbin
 ##' @export
 ##'
-get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,trait.names=NULL) {
+get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate, trait.names=NULL) {
+  if (!is.list(pfts)) {
+    PEcAn.utils::logger.severe('pfts must be a list')
+  }
+  # Check that all PFTs have associated outdir entries
+  pft_outdirs <- lapply(pfts, '[[', 'outdir')
+  if (any(sapply(pft_outdirs, is.null))) {
+    PEcAn.utils::logger.severe('At least one pft in settings is missing its "outdir"')
+  }
   ##---------------- Load trait dictionary --------------#
   if(is.logical(trait.names)){
     if(trait.names){
@@ -261,7 +269,12 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,trait
   # process all pfts
   dbcon <- db.open(database)
   on.exit(db.close(dbcon))
-  result <- lapply(pfts, get.trait.data.pft, modeltype, dbfiles, dbcon, forceupdate, trait.names)
+  result <- lapply(pfts, get.trait.data.pft, 
+                   modeltype = modeltype, 
+                   dbfiles = dbfiles,
+                   dbcon = dbcon,
+                   forceupdate = forceupdate,
+                   trait.names = trait.names)
 
   invisible(result)
 }
@@ -275,6 +288,9 @@ runModule.get.trait.data <- function(settings) {
     pft.names <- character(0)
     for(i in seq_along(settings)) {
       pfts.i <- settings[[i]]$pfts
+      if (!is.list(pfts.i)) {
+        PEcAn.utils::logger.severe("settings[[i]]$pfts is not a list")
+      }
       pft.names.i <- sapply(pfts.i, function(x) x$name)
       ind <- which(pft.names.i %in% setdiff(pft.names.i, pft.names))
       pfts <- c(pfts, pfts.i[ind])
@@ -292,6 +308,9 @@ runModule.get.trait.data <- function(settings) {
     return(settings)
   } else if(is.Settings(settings)) {
     pfts <- settings$pfts
+    if (!is.list(pfts)) {
+      PEcAn.utils::logger.severe("settings$pfts is not a list")
+    }
     modeltype <- settings$model$type
     dbfiles <- settings$database$dbfiles
     database <- settings$database$bety
