@@ -44,7 +44,10 @@
 ##' @importFrom udunits2 ud.is.parseable ud.convert ud.are.convertible
 met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, format, lat = NULL, lon = NULL, 
                        nc_verbose = FALSE, overwrite = FALSE, ...) {
-
+  
+  ## datetime_units parsing via do.call can call any lubridate function
+  ## so need to load whole library. pkg::fcn syntax doesn't work through do.call
+  library(lubridate)
   
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
