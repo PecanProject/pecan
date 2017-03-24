@@ -22,6 +22,8 @@ rmd_files: [
   "adv_user_guide_cmd/working_with_vm.Rmd",
   "adv_user_guide_cmd/extra_tools.Rmd",
   "misc/user_appendix.Rmd",
+  "maintaining_pecan/update_pecan_code.Rmd",
+  "maintaining_pecan/Updating-BETY.Rmd",
   "models/model_index.Rmd",
   "models/biocro.Rmd",
   "models/BioCro-configuration.Rmd",
