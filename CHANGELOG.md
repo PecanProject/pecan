@@ -10,6 +10,7 @@ Documentation
 
 ### Added
 - Source Rmarkdown and deploy scripts for PEcAn documentation
+- Autocorrelation correction in PDA and scaling factor in emulator
 
 ### Changed
 - now dumping/loading experiments, cultivars_pfts, current_posteriors, experiments_sites experiments_treatments, trait_covariate_associations [BETY #403](https://github.com/PecanProject/bety/issues/403) [BETY #491](https://github.com/PecanProject/bety/issues/491)
