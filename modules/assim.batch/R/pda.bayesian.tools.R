@@ -14,7 +14,6 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
                                chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL, 
                                ar.target = NULL, jvar = NULL, n.knot = NULL) {
   
-  library(BayesianTools)
   
   sampler <- settings$assim.batch$bt.settings$sampler
   
