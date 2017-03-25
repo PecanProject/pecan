@@ -138,7 +138,7 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
     ## Read model outputs
     align.return <- pda.get.model.output(settings, run.id, bety, inputs)
     model.out <- align.return$model.out
-    if(all(!is.na(model.out))){
+    if(all(!is.na(model.out[[1]]))){
       inputs <- align.return$inputs
     }
     
