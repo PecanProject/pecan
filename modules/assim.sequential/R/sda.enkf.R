@@ -235,7 +235,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   
   for (i in seq_along(obs.times)) {
     if (is.na(obs.times.POSIX[i])) {
-      if (is.na(lubridate::ymd(obs.times[i]))) { #TO DO can't find function ymd(). fix it.
+      if (is.na(lubridate::ymd(obs.times[i]))) {
         print("Error: no dates associated with observations")
       } else {
         ### Data does not have time associated with dates 
@@ -394,7 +394,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for (t in 1:10) {#seq_len(nt)
+  for (t in seq_len(nt)) {#
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -571,7 +571,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           samplerNumberOffset_tobit2space <- length(conf_tobit2space$getSamplers())
           
           for(n in 1:nens){
-            for(i in 1:length(x.ind)) {
+            for(i in 1:ncol(x.ind)) {
               node <- paste0('y.censored[',n,',',i,']')
               conf_tobit2space$addSampler(node, 'toggle', control=list(type='RW'))
               ## could instead use slice samplers, or any combination thereof, e.g.:
@@ -643,9 +643,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         }
         
         ### create matrix the describes the support for each observed state variable at time t
-        interval <- matrix(NA, length(obs.mean[[t]]), 2)
-        
-        ### TO DO interval not working
+        #interval <- matrix(NA, length(obs.mean[[t]]), 2)
         rownames(interval) <- names(obs.mean[[t]])
         for(i in 1:length(var.names)){
           interval[which(startsWith(rownames(interval),
@@ -654,9 +652,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
                                                                 length(which(startsWith(rownames(interval),
                                                                                         var.names[i]))),2,byrow = TRUE)
         }
-        interval[,1]<-0
-        interval[,2]<-10000000 #TO DO need to make more general
-        
         #### These vectors are used to categorize data based on censoring 
         #### from the interval matrix
         y.ind <- as.numeric(Y > interval[,1])
@@ -841,7 +836,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       })))
       
       par(mfrow = c(2, 1))
-      for (i in sample(size = 2,x = 1:ncol(X))) {
+      for (i in 1:2) {#
         t1 <- 1
         Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
         Xci  <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
