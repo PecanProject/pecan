@@ -39,6 +39,8 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   ### Removing negative numbers because biomass can't be negative ###
   new.state[new.state < 0] <- 0
   
+  new.state <- udunits2::ud.convert(as.matrix(new.state), "Mg/ha", "kg/m^2")
+  
   if(sum(new.state)>1000) {
     prop.stop <- new.state/sum(new.state)
     new.state <- 1000 * prop.stop
@@ -181,7 +183,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     spp.biomass.params <- biomass_spp_params(new.params = new.params, 
                                              default.params = spp.params.default, 
                                              pft = pft)
-    ind.biomass[j] <- biomass_function(dbh[j], spp.biomass.params) * (1 / 833) * 0.48  # changing units to be kgC/m^2 #Is this right?? This drives me crazy
+    ind.biomass[j] <- biomass_function(dbh[j], spp.biomass.params) * (1 / 833) * 0.48  # changing units to be kgC/m^2
   }
   
   data2 <- data.frame(ind.biomass = ind.biomass,
@@ -202,6 +204,9 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
       fix <- new.state[s] / mean.biomass.spp[mean.biomass.spp[, 1] == s.select, 2]
     }
     new.ntrees[s] <- as.numeric(ceiling(fix))  #new number of ind. of each species
+    if(new.ntrees[s]>100){
+      new.ntrees[s] = sample(size = 1, x = 50:150)
+    } 
   }
   print(paste0("new.ntrees =", new.ntrees))
   
