@@ -608,12 +608,24 @@ pda.adjust.jumps.bs <- function(settings, jcov, accept.count, params.recent) {
 ##'
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn, pname) {
+pda.generate.knots <- function(n.knot, sf, probs.sf, n.param.all, prior.ind, prior.fn, pname) {
   # By default, all parameters will be fixed at their median
   probs <- matrix(0.5, nrow = n.knot, ncol = n.param.all)
   
-  # Fill in parameters to be sampled with probabilities sampled in a LHC design
-  probs[, prior.ind] <- PEcAn.emulator::lhc(t(matrix(0:1, ncol = length(prior.ind), nrow = 2)), n.knot)
+  # if the params are going to be scaled leave them out, if sf is NULL nothing happens
+  inds <- prior.ind[!prior.ind %in% which(pname %in% sf)]
+  
+  if(length(inds) !=0){
+    # Fill in parameters to be sampled with probabilities sampled in a LHC design
+    probs[, inds] <- PEcAn.emulator::lhc(t(matrix(0:1, ncol = length(inds), nrow = 2)), n.knot)
+  }
+  
+  inds <- prior.ind[prior.ind %in% which(pname %in% sf)]
+  
+  if(!is.null(sf) & length(inds) !=0){
+    match.ind <- sapply(pname[inds], function(x) which(sf == x)) 
+    probs[, inds] <- probs.sf[, match.ind]
+  }
   
   # Convert probabilities to parameter values
   params <- NA * probs
@@ -626,6 +638,27 @@ pda.generate.knots <- function(n.knot, n.param.all, prior.ind, prior.fn, pname) 
   return(list(params = params, probs = probs))
 } # pda.generate.knots
 
+##' Generate scaling factor knots for PDA Emulator
+##'
+##' @author Istem Fer
+##' @export
+pda.generate.sf <- function(n.knot, sf, prior.list){
+  
+  n.sf <- length(sf)
+  # prior for scaling factor
+  prior.sf <- data.frame(distn = rep("unif", n.sf), 
+                         parama = rep(0, n.sf), 
+                         paramb = rep(1, n.sf), 
+                         n = rep(NA, n.sf))
+  rownames(prior.sf) <- paste0(sf,"_SF")
+  prior.list[[length(prior.list)+1]] <- prior.sf
+  
+  probs.sf <- PEcAn.emulator::lhc(t(matrix(0:1, ncol = n.sf, nrow = 2)), n.knot)
+  colnames(probs.sf) <- paste0(sf,"_SF")
+  
+  return(list(probs = probs.sf, priors = prior.list))
+  
+}
 
 
 

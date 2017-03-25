@@ -18,6 +18,8 @@ Depends:
     parallel,
     GPfit,
     IDPmisc,
+    rjags,
+    BayesianTools,
     PEcAn.MA
 Imports:
     coda (>= 0.18),
@@ -30,4 +32,4 @@ License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

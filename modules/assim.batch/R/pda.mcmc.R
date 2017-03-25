@@ -213,6 +213,11 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
             inputs <- align.return$inputs
           } 
           
+          # do this once
+          if(i==1){
+            inputs <- pda.neff.calc(inputs)
+          }
+          
           # retrieve n
           n.of.obs <- sapply(inputs,`[[`, "n") 
           names(n.of.obs) <- sapply(model.out,names)

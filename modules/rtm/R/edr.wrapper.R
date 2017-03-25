@@ -10,17 +10,24 @@
 #' and skips the analysis step.
 #' `history` -- Path and prefix for history file for the run of interest;
 #' `edr.exe` -- Path to EDR executable
-#' @param RT.matrix Matrix of wavelengths, reflectance, and transmittance 
-#' values. Matrix must have column names 'wl' (wavelength), 'R' (reflectance), 
-#' and 'T' (transmittance). Such a matrix is returned by default by all 
-#' versions of PROSPECT in this package.
+#' `soil_reflect` -- Path to soil reflectance. If NULL or unset, use 
+#' reflectance in package. If NA, skip (assume data already in directory).
+#' `wood_reflect` -- Path to wood reflectance. If NULL or unset, use 
+#' reflectance in package. If NA, skip (assume data already in directory).
+#' @param spectra_list List of spectral data matrices. Names must exactly match 
+#' the PFTs given in `trait.values`. Each item must be a matrix of wavelengths, 
+#' reflectance, and transmittance values. Matrix must have column names 'wl' 
+#' (wavelength), 'R' (reflectance), and 'T' (transmittance). Such a matrix is 
+#' returned by default by all versions of PROSPECT in this package.
 #' @param par.wl Vector of wavelengths defining PAR region
 #' @param nir.wl Vector of wavelengths defining NIR region
 #' @param datetime POSIXlt object defining the date and at which the run will 
 #' take place. N datetime POSIXlt object defining the date and at which the run 
 #' will take place. Note that runs at night and during the winter can give poor 
 #' results.
-#' @param trait.values Named, hierarchical list of trait values for generating config.xml file.
+#' @param trait.values Named, hierarchical list of trait values for generating 
+#' config.xml file. Names must be PFTs, and must exactly match names of 
+#' `spectra_list`.
 #' @param settings PEcAn settings list. Default is model$revision = 'git', model$config.header = NULL.
 #' @param history.prefix Prefix in histroy file name. Will be appended to 
 #' history path.
@@ -34,11 +41,11 @@
 #' 
 #' @export
 EDR <- function(paths,
-                RT.matrix,
+                spectra_list,
                 par.wl,
                 nir.wl,
                 datetime,
-                trait.values = list(),
+                trait.values,
                 settings = list(model = list(revision = "git",
                                              config.header = NULL)),
                 history.prefix = 'history',
@@ -90,14 +97,71 @@ EDR <- function(paths,
   }
   
   # Generate input files
+  files_list <- file.path(output.path, 
+                          c('lengths.dat', 'reflect_par.dat', 'reflect_nir.dat',
+                            'trans_par.dat', 'trans_nir.dat'))
+  names(files_list) <- c('lengths', 'reflect_par', 'reflect_nir', 
+                         'trans_par', 'trans_nir')
+  file.create(files_list)
+
+  write_dat <- function(value, file) {
+    cat(value, file = file, sep = ' ', append = TRUE) 
+    cat('\n', file = file, append = TRUE)
+  }
+  
   par.nir.lengths <- c(length(par.wl), length(nir.wl))
-  cat(par.nir.lengths, file = file.path(output.path, "lengths.dat"), sep = " ")
-  par.ind <- which(RT.matrix[, "wl"] %in% par.wl)  # PAR indices
-  nir.ind <- which(RT.matrix[, "wl"] %in% nir.wl)  # NIR indices 
-  cat(RT.matrix[par.ind, 1], file = file.path(output.path, "reflect_par.dat"), sep = " ")
-  cat(RT.matrix[nir.ind, 1], file = file.path(output.path, "reflect_nir.dat"), sep = " ")
-  cat(RT.matrix[par.ind, 2], file = file.path(output.path, "trans_par.dat"), sep = " ")
-  cat(RT.matrix[nir.ind, 2], file = file.path(output.path, "trans_nir.dat"), sep = " ")
+  write_dat(par.nir.lengths, files_list['lengths'])
+
+  wavelengths <- spectra_list[[1]][,'wl']
+  par.ind <- which(wavelengths %in% par.wl)
+  nir.ind <- which(wavelengths %in% nir.wl)
+
+  # Set up soil and wood reflectance files
+  soil_reflect_path <- paths$soil_reflect
+  if (is.null(soil_reflect_path)) {
+    soil_reflect_path <- system.file('extdata', 'soil_reflect_par.dat', package = 'PEcAnRTM')
+  }
+
+  if (!is.na(soil_reflect_path)) {
+    file.copy(soil_reflect_path, output.path, overwrite = TRUE, recursive = TRUE)
+  }
+
+  wood_reflect_path <- paths$wood_reflect
+  if (is.null(wood_reflect_path)) {
+    wood_reflect_path <- system.file('extdata', 'wood_reflect_par.dat', package = 'PEcAnRTM')
+  }
+
+  if (!is.na(wood_reflect_path)) {
+    file.copy(wood_reflect_path, output.path, overwrite = TRUE, recursive = TRUE)
+  }
+
+  # Multi-PFT settings
+  if (length(trait.values) > 0) {
+    if (length(spectra_list) != length(trait.values)) {
+      stop('Spectral data and trait.values do not have same length.\n',
+           'Spectral data length: ', length(spectra_list), '\n',
+           'trait.values length: ', length(trait.values))
+    }
+    pft_names <- names(trait.values)
+    if (any(sort(names(spectra_list)) != sort(pft_names))) {
+      stop('Spectral data and trait.values do not have same PFT names.\n',
+           'Spectral data names: ', names(spectra_list), '\n',
+           'trait.values names: ', pft_names)
+    }
+    data(pftmapping, package = 'PEcAn.ED2')
+    npft <- length(pft_names)
+    write_dat(npft, files_list['lengths'])
+    pft_numbers <- numeric(npft)
+    for (i in seq_len(npft)) {
+      pft_numbers[i] <- pftmapping[pftmapping$PEcAn == pft_names[i], 'ED']
+      write_dat(pft_numbers[i], files_list['lengths'])
+      spectra_list_pft <- spectra_list[[pft_names[i]]]
+      write_dat(spectra_list_pft[par.ind, 'R'], files_list['reflect_par'])
+      write_dat(spectra_list_pft[nir.ind, 'R'], files_list['reflect_nir'])
+      write_dat(spectra_list_pft[par.ind, 'T'], files_list['trans_par'])
+      write_dat(spectra_list_pft[nir.ind, 'T'], files_list['trans_nir'])
+    }
+  }
   
   # Call EDR -- NOTE that this requires that the ED2IN
   exec.command <- sprintf("(cd %s; ./%s)", output.path, edr.exe.name)
@@ -110,12 +174,7 @@ EDR <- function(paths,
   albedo <- get.EDR.output(output.path)
   # Optionally, clean up all generated files
   if(clean) {
-    delete.files <- file.remove(file.path(output.path,
-                                          c('lengths.dat',
-                                            'reflect_par.dat',
-                                            'reflect_nir.dat',
-                                            'trans_par.dat',
-                                            'trans_nir.dat')))
+    delete.files <- file.remove(files_list)
     # NOTE that currently, not all files are deleted (e.g. history file, copied ED2IN)
     if (!delete.files) {
       warning("Error in deleting files.")
@@ -156,6 +215,7 @@ EDR <- function(paths,
 #' }
 #' @export
 EDR.prospect <- function(prospect.param, prospect.version = 5, paths, par.wl, nir.wl, datetime, ...) {
+  stop('This function is currently deprecated. Use `EDR(...)` instead.')
   RT.matrix <- prospect(prospect.param, prospect.version, include.wl = TRUE)
   albedo <- EDR(paths, RT.matrix, par.wl, nir.wl, datetime, ...)
   return(albedo)

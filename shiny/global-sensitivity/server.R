@@ -1,8 +1,11 @@
+library(PEcAn.DB)
 library(PEcAn.visualization)
+library(ncdf4)
 
 source("plotEnsemble.R")
 source("load_ensemble.R")
 
+message("Debugging!")
 message("Starting shiny server...")
 # Define server logic
 server <- shinyServer(function(input, output, session) {
@@ -46,13 +49,14 @@ server <- shinyServer(function(input, output, session) {
         updateSelectInput(session, "variable", choices=var_names())
     })
     
+    message("Loading ensemble output...")
     ensemble.out <- reactive({
         req(current_workflow())
         workflow <- current_workflow()
         if(nrow(workflow) > 0) {
             workflow_dir <- workflow$folder
             output_dir <- file.path(workflow_dir, "out")
-            settings <- XML::xmlToList(XML::xmlParse(file.path(workflow_dir, "pecan.xml")))
+            settings <- XML::xmlToList(XML::xmlParse(file.path(workflow_dir, "pecan.CHECKED.xml")))
             # Load ensemble samples
             ensemble.out <- load_ensemble(workflow_dir = workflow_dir, settings = settings, variable = var_names())
             return(ensemble.out)
