@@ -14,7 +14,6 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
                                chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL, 
                                ar.target = NULL, jvar = NULL, n.knot = NULL) {
   
-  library(BayesianTools)
   
   sampler <- settings$assim.batch$bt.settings$sampler
   
@@ -62,6 +61,11 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
   ## Load data to assimilate against
   inputs  <- load.pda.data(settings, bety)
   n.input <- length(inputs)
+  
+  # efficient sample size calculation
+  # fot BT you might want to run the model once and align inputs & outputs, then calculate n_eff
+  # for now assume they will be same length
+  inputs <- pda.neff.calc(inputs)
   
   ## Set model-specific functions
   do.call("require", list(paste0("PEcAn.", settings$model$type)))
@@ -134,9 +138,9 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
     ## Read model outputs
     align.return <- pda.get.model.output(settings, run.id, bety, inputs)
     model.out <- align.return$model.out
-    if(!is.na(model.out)){
+    if(all(!is.na(model.out))){
       inputs <- align.return$inputs
-    } 
+    }
     
     # retrieve n
     n.of.obs <- sapply(inputs,`[[`, "n") 
