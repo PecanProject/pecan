@@ -67,6 +67,13 @@ takes \code{params} as input and returns one column of \code{observed}
 \item{run_first}{Function to run before running sampling. Takes parallel 
 inputs list containing runID, initial values, and resume (NULL) as an 
 argument.}
+
+\item{calculate.burnin}{If \code{TRUE}, use 
+\code{PEcAn.assim.batch::autoburin} function to calculate burnin. Otherwise, 
+assume burnin is \code{min(niter/2, iter_conv_check)}.}
+
+\item{threshold}{Maximum value of the Gelman-Rubin diagnostic for 
+determining convergence. Default = 1.1}
 }
 }
 

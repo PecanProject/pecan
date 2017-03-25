@@ -164,12 +164,12 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     dt <- ifelse(lubridate::leap_year(year), 
                  (366 * 24 * 60 * 60) / length(sec), 
                  (365 * 24 * 60 * 60) / length(sec))
-    doy <- ifelse(lubridate::leap_year(year) == TRUE,
-                  rep(1:366, each = 86400 / dt), 
-                  rep(1:365, each = 86400 / dt))
-    hr <- ifelse(lubridate::leap_year(year) == TRUE,
-                 rep(seq(0, length = 86400 / dt, by = dt / 86400 * 24), 366), 
-                 rep(seq(0, length = 86400 / dt, by = dt / 86400 * 24), 365))
+    doy <- if (lubridate::leap_year(year) == TRUE)
+                  { rep(1:366, each = 86400 / dt) }  
+                  else { rep(1:365, each = 86400 / dt) }
+    hr <- if (lubridate::leap_year(year) == TRUE)
+                 { rep(seq(0, length = 86400 / dt, by = dt / 86400 * 24), 366) } 
+                 else { rep(seq(0, length = 86400 / dt, by = dt / 86400 * 24), 365) }
     
     f      <- pi / 180 * (279.5 + 0.9856 * doy)
     et     <- (-104.7 * sin(f) + 596.2 * sin(2 * f) + 4.3 * 
@@ -186,7 +186,11 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     cosz <- sin(lat * pi / 180) * sin(dec) + cos(lat * pi / 180) * cos(dec) * cos(h)
     cosz[cosz < 0] <- 0
     rpot <- 1366 * cosz  #in UTC
-    toff <- as.numeric(lst) * 3600/dt  #timezone offset correction
+    tz = as.numeric(lst)
+    if(is.na(tz)){
+      tz = as.numeric(as.POSIXct("1970-01-01 00:00:00", tz=lst))/3600
+    }
+    toff <- tz * 3600/dt  #timezone offset correction
     if (toff < 0) {
       slen <- length(rpot)
       rpot <- c(rpot[(abs(toff) + 1):slen], rpot[1:abs(toff)])

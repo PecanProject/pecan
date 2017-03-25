@@ -18,7 +18,7 @@ y <- as.matrix(model(true) + generate.noise(n = nx, fw = 10, sigma = 1))
 
 invert.options <- list()
 invert.options$model <- model
-invert.options$prior.function <- function(p) sum(dnormC(p, 0, 30)) 
+invert.options$prior.function <- function(p) sum(dnorm(p, 0, 30, TRUE)) 
 invert.options$inits.function <- function() rnorm(3, 0, 30)
 invert.options$inits <- invert.options$inits.function()
 invert.options$nchains <- 3

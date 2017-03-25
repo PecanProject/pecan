@@ -14,8 +14,8 @@ run.biocro <- function(lat, lon, metfile, soil.nc = NULL, config = config, coppi
                        met.uncertainty = FALSE, irrigation = FALSE) {
   library(data.table)
   l2n <- function(x) lapply(x, as.numeric)
-  start.date <- ceiling_date(as.POSIXct(config$run$start.date), "day")
-  end.date   <- floor_date(as.POSIXct(config$run$end.date), "day")
+  start.date <- lubridate::ceiling_date(as.POSIXct(config$run$start.date), "day")
+  end.date   <- lubridate::floor_date(as.POSIXct(config$run$end.date), "day")
   genus <- config$pft$type$genus
   years <- lubridate::year(start.date):lubridate::year(end.date)
   ## Meteorology
@@ -34,9 +34,9 @@ run.biocro <- function(lat, lon, metfile, soil.nc = NULL, config = config, coppi
       met <- met[year %in% years]
     }
     
-    dt <- as.numeric(mean(diff(met$date)))
+    dt <- lubridate::as.period(mean(diff(met$date)))
     
-    if (dt > 1) {
+    if (dt > lubridate::days(1)) {
       met <- cfmet.downscale.time(cfmet = met, output.dt = 1)
     }
     
@@ -66,8 +66,8 @@ run.biocro <- function(lat, lon, metfile, soil.nc = NULL, config = config, coppi
     WetDat <- biocro.met[biocro.met$year == yeari, ]
     
     if (!is.null(config$simulationPeriod)) {
-      day1 <- yday(config$simulationPeriod$dateofplanting)
-      dayn <- yday(config$simulationPeriod$dateofharvest)
+      day1 <- lubridate::yday(config$simulationPeriod$dateofplanting)
+      dayn <- lubridate::yday(config$simulationPeriod$dateofharvest)
     } else if (lat > 0) {
       day1 <- as.numeric(as.data.table(WetDat)[doy < 180 & Temp < -2, list(day1 = max(doy))])
       dayn <- as.numeric(as.data.table(WetDat)[doy > 180 & Temp < -2, list(day1 = min(doy))])
