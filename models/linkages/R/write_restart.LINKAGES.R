@@ -39,7 +39,11 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   ### Removing negative numbers because biomass can't be negative ###
   new.state[new.state < 0] <- 0
   
+  names.keep <- names(new.state)
+  
   new.state <- udunits2::ud.convert(as.matrix(new.state), "Mg/ha", "kg/m^2")
+  
+  names(new.state) <- names.keep
   
   if(sum(new.state)>1000) {
     prop.stop <- new.state/sum(new.state)
@@ -204,7 +208,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
       fix <- new.state[s] / mean.biomass.spp[mean.biomass.spp[, 1] == s.select, 2]
     }
     new.ntrees[s] <- as.numeric(ceiling(fix))  #new number of ind. of each species
-    if(new.ntrees[s]>100){
+    if(new.ntrees[s]>100&!is.na(new.ntrees[s])){
       new.ntrees[s] = sample(size = 1, x = 50:150)
     } 
   }
