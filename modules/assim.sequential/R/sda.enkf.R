@@ -220,7 +220,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   
   ## start model runs
   start.model.runs(settings, settings$database$bety$write)
-  save.image(file.path(outdir, "sda.initial.runs.Rdata"))
+  #save.image(file.path(outdir, "sda.initial.runs.Rdata"))
   
   ###-------------------------------------------------------------------###
   ### tests before data assimilation                                    ###
@@ -394,7 +394,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for (t in seq_len(nt)) {#
+  for (t in 2) {#seq_len(nt)
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -643,7 +643,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         }
         
         ### create matrix the describes the support for each observed state variable at time t
-        #interval <- matrix(NA, length(obs.mean[[t]]), 2)
+        interval <- matrix(NA, length(obs.mean[[t]]), 2)
         rownames(interval) <- names(obs.mean[[t]])
         for(i in 1:length(var.names)){
           interval[which(startsWith(rownames(interval),
@@ -662,7 +662,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           constants.tobit = list(N = ncol(X), YN = length(y.ind)) #, nc = 1
           dimensions.tobit = list(X = ncol(X), X.mod = ncol(X), Q = c(ncol(X),ncol(X))) #  b = dim(inits.pred$b),
           
-          data.tobit = list(muf = as.vector(mu.f), pf = Pf, aq = aqq[t,,], bq = bqq[t],
+          data.tobit = list(muf = as.vector(mu.f), pf = solve(Pf), aq = aqq[t,,], bq = bqq[t],
                             y.ind = y.ind,
                             y.censored = y.censored,
                             r = solve(R))
@@ -702,7 +702,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           Cmodel$aq <- aqq[t,,]
           Cmodel$bq <- bqq[t]
           Cmodel$muf <- mu.f
-          Cmodel$pf <- Pf
+          Cmodel$pf <- solve(Pf)
           Cmodel$r <- solve(R)
           
           for(i in 1:length(y.ind)) {
