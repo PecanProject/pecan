@@ -623,7 +623,8 @@ pda.generate.knots <- function(n.knot, sf, probs.sf, n.param.all, prior.ind, pri
   inds <- prior.ind[prior.ind %in% which(pname %in% sf)]
   
   if(!is.null(sf) & length(inds) !=0){
-    probs[, inds] <- probs.sf
+    match.ind <- sapply(pname[inds], function(x) which(sf == x)) 
+    probs[, inds] <- probs.sf[, match.ind]
   }
   
   # Convert probabilities to parameter values
