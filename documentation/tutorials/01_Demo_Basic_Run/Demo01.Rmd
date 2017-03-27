@@ -32,7 +32,15 @@ In the following demo, **URL** is the web address of a PEcAn server and will ref
 2. **Click “Run Models”**
 3. **Click the ‘Next’ button** to move to the “Site Selection” page.
 
+```{r}
+knitr::include_graphics('startpecan.png')
+```
+
 ## Site Selection
+
+```{r}
+knitr::include_graphics('mapmodel.png')
+```
 
 ### Host
 
@@ -66,6 +74,10 @@ Once you are finished with the above steps, **click "Next"**.
 
 
 ## Run Specification
+
+```{r}
+knitr::include_graphics('runspec.png')
+```
 
 Next we will specify settings required to run the model. Be aware that the inputs required for any particular model may vary somewhat so there may be addition optional or required input selections available for other models.
 
@@ -110,6 +122,10 @@ You will see a data policy statement if you selected a data source with a policy
 If you get an error in your run as part of a live demo or class activity, it is probably simplest to start over and try changing options and re-running (e.g. with a different site or PFT), as time does not permit detailed debugging. If the source of the error is not immediately obvious, you may want to take a look at the workflow.Rout to see the log of the PEcAn workflow or the logfile.txt to see the model execution output log and then refer to the [Documentation](pecanproject.github.io/pecan_bookdown) or the [Chat Room](https://gitter.im/PecanProject/pecan) for help.
 
 ## Model Run Workflow
+
+```{r}
+knitr::include_graphics('execstatus.png')
+```
 
 
 ### MET Process:
@@ -171,6 +187,11 @@ FYI, [adding a new model](https://pecan.gitbooks.io/pecan-documentation/content/
 ### Alternative Visualization: R Shiny
 
 1. **Click on Open SHINY**, which will open a new browser window. The shiny app will automatically access your run’s output files and allow you to visualize all output variables as a function of time. 
+
+```{r}
+knitr::include_graphics('workflowshiny.png')
+```
+
 2. Use the pull down menu under **Variable Name** to choose whichever output variable you wish to plot.
 
 
