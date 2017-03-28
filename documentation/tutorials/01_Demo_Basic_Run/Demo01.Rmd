@@ -44,7 +44,7 @@ knitr::include_graphics('mapmodel.png')
 
 ### Host
 
-**Select the local machine “pecan64”**. Other options exist if you’ve configured PEcAn to [run models on remote servers][remoterun]. 
+**Select the local machine “pecan”**. Other options exist if you’ve configured PEcAn to [run models on remote servers][remoterun]. 
 
 [remoterun]: https://pecanproject.github.io/pecan-documentation/Enabling-Remote-Execution.html
 
@@ -204,8 +204,8 @@ knitr::include_graphics('workflowshiny.png')
 
 ### Analyzing model output
 
-Follow this tutorial to learn how to **open model output in R and compare to observed data**
+Follow [this tutorial](https://github.com/PecanProject/pecan/tree/master/documentation/tutorials/AnalyzeOutput) to learn how to **open model output in R and compare to observed data**
 
 
 ## DEMO 02
-This tutorial will show how to perform **Ensemble & Sensitivity Analyses** through the web interface and explore the PEcAn outputs in greater detail, including the **trait meta-analysis**
+[This tutorial](https://github.com/PecanProject/pecan/tree/master/documentation/tutorials/02_Demo_Uncertainty_Analysis) will show how to perform **Ensemble & Sensitivity Analyses** through the web interface and explore the PEcAn outputs in greater detail, including the **trait meta-analysis**
