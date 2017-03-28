@@ -14,12 +14,12 @@ BROWNDOG_PASSWORD="";
 
 GOOGLE_MAP_KEY=""
 
-SETUP_VM="no"
-SETUP_PALEON="no"
-REBUILD="no"
+SETUP_VM=""
+SETUP_PALEON=""
+REBUILD=""
 
-RSTUDIO_SERVER="0.99.902"
-SHINY_SERVER="1.4.2.786"
+RSTUDIO_SERVER="1.0.136"
+SHINY_SERVER="1.5.3.838"
 
 if [ -e $(dirname $0)/install_pecan.config ]; then
   . $(dirname $0)/install_pecan.config
@@ -39,6 +39,7 @@ fi
 echo "######################################################################"
 echo "UPDATING MACHINE"
 echo "######################################################################"
+chmod 755 /home/carya/
 case "$OS_VERSION" in
   RH_*)
     sudo yum update -y
@@ -124,7 +125,7 @@ case "$OS_VERSION" in
   Ubuntu)
     sudo apt-get -y install build-essential gfortran git r-base-core jags liblapack-dev libnetcdf-dev netcdf-bin bc libcurl4-gnutls-dev curl udunits-bin libudunits2-dev libgmp-dev python-dev libgdal1-dev libproj-dev expect
     sudo apt-get -y install openmpi-bin libopenmpi-dev
-    sudo apt-get -y install libgsl0-dev
+    sudo apt-get -y install libgsl0-dev libssl-dev
     # for maeswrap
     sudo apt-get -y install r-cran-rgl
     # for R doc
@@ -135,9 +136,9 @@ case "$OS_VERSION" in
     sudo apt-get -y install cmake
     # for PostgreSQL
     sudo apt-get -y install libdbd-pgsql postgresql-9.5 postgresql-client-9.5 libpq-dev postgresql-9.5-postgis-2.2 postgresql-9.5-postgis-scripts
-    sudo apt-get -y install php5-pgsql
     # for web gui
-    sudo apt-get -y install apache2 libapache2-mod-php5 php5 libapache2-mod-passenger
+    sudo apt-get -y install apache2 libapache2-mod-php php libapache2-mod-passenger php-xml php-ssh2 php-pgsql
+    # Ubuntu 14.04 php5-pgsql libapache2-mod-php5 php5 and no php-xml
     ;;
 esac
 
@@ -204,6 +205,10 @@ fi
 echo 'if(!"devtools" %in% installed.packages()) install.packages("devtools", repos="http://cran.rstudio.com/")' | R --vanilla
 echo 'if(!"udunits2" %in% installed.packages()) install.packages("udunits2", configure.args=c(udunits2="--with-udunits2-include=/usr/include/udunits2"), repo="http://cran.rstudio.com")'  | R --vanilla
 
+# packages for BrownDog shiny app
+echo 'if(!"leaflet" %in% installed.packages()) install.packages("leaflet", repos="http://cran.rstudio.com/")' | R --vanilla
+echo 'if(!"RJSONIO" %in% installed.packages()) install.packages("RJSONIO", repos="http://cran.rstudio.com/")' | R --vanilla
+
 #echo 'update.packages(repos="http://cran.rstudio.com/", ask=FALSE)' | sudo R --vanilla
 echo 'x <- rownames(old.packages(repos="http://cran.rstudio.com/")); update.packages(repos="http://cran.rstudio.com/", ask=FALSE, oldPkgs=x[!x %in% "rgl"])' | sudo R --vanilla
 
@@ -213,48 +218,11 @@ echo 'x <- rownames(old.packages(repos="http://cran.rstudio.com/")); update.pack
 echo "######################################################################"
 echo "ED"
 echo "######################################################################"
-if [ ! -e ${HOME}/ED.r46 ]; then
-  cd
-  curl -o ED.r46.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/ED.r46.tgz
-  tar zxf ED.r46.tgz
-  rm ED.r46.tgz
-  cd ${HOME}/ED.r46/ED/build/bin
-  curl -o include.mk.VM http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk.opt.`uname -s`
-  if [ "$OS_VERSION" == "RH_6" ]; then
-    sed -i 's/ -fno-whole-file//' include.mk.VM
-  fi
-fi
-cd ${HOME}/ED.r46/ED/build/bin
-./generate_deps.sh
-make OPT=VM clean
-make OPT=VM
-sudo cp ../ed_2.1-VM /usr/local/bin/ed2.r46
-make OPT=VM clean
-
-if [ ! -e ${HOME}/ED.r82 ]; then
-  cd
-  curl -o ED.r82.tgz http://isda.ncsa.illinois.edu/~kooper/EBI/ED.r82.tgz
-  tar zxf ED.r82.tgz
-  rm ED.r82.tgz
-  cd ${HOME}/ED.r82
-  curl -o ED.r82.patch http://isda.ncsa.illinois.edu/~kooper/EBI/ED.r82.patch
-  patch -p1 < ED.r82.patch
-  cd ED/build/bin
-  curl -o include.mk.VM http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk.opt.`uname -s`
-  if [ "$OS_VERSION" == "RH_6" ]; then
-    sed -i 's/ -fno-whole-file//' include.mk.VM
-  fi
-fi
-cd ${HOME}/ED.r82/ED/build/bin
-./generate_deps.sh
-make OPT=VM clean
-make OPT=VM
-sudo cp ../ed_2.1-VM /usr/local/bin/ed2.r82
-make OPT=VM clean
-
 if [ ! -e ${HOME}/ED2 ]; then
   cd 
-  git clone https://github.com/EDmodel/ED2.git
+  git clone https://github.com/rykelly/ED2.git
+  cd ED2
+  git checkout modularize
   sed -i 's/-a ${USE_GIT}/-a ${USE_GIT} == "true"/' ${HOME}/ED2/ED/build/install.sh
   cd ${HOME}/ED2/ED/build
   curl -o make/include.mk.opt.VM http://isda.ncsa.illinois.edu/~kooper/EBI/include.mk.opt.`uname -s`
@@ -367,8 +335,7 @@ if [ ! -e ${HOME}/pecan ]; then
 fi
 cd ${HOME}/pecan
 git pull
-./scripts/build.sh --dependencies --check --install --tests
-./scripts/create-hooks.sh
+make
 
 sudo curl -o /var/www/html/pecan.pdf https://www.gitbook.com/download/pdf/book/pecan/pecan-documentation
 sudo rm /var/www/html/index.html
@@ -671,13 +638,13 @@ EOF
     sudo a2enconf bety pecan
     if [ -e ${HTTP_CONF}/shiny.conf ]; then
       sudo a2enconf rstudio
-      sudo restart rstudio-server
+      sudo service rstudio-server restart
     fi
     if [ -e ${HTTP_CONF}/shiny.conf ]; then
       sudo a2enconf shiny
-      sudo restart shiny-server
+      sudo service shiny-server restart
     fi
-    sudo /etc/init.d/apache2 restart
+    sudo service apache2 restart
     ;;
 esac
 
@@ -703,11 +670,11 @@ if [ "$SETUP_PALEON" != "" ]; then
     rm LinBacon_2.2.zip
   fi
   cd ${HOME}/LinBacon_2.2/cpp
-  rm *.o 
+  rm -f *.o 
   make -f makefileLinux
   rm *.o 
 
-  if [ ! -e ${HOME}/LinBacon_2.2 ]; then
+  if [ ! -e ${HOME}/clam ]; then
     cd
     curl -o clam.zip http://chrono.qub.ac.uk/blaauw/clam.zip
     unzip clam.zip
@@ -743,4 +710,5 @@ https://pecan.gitbooks.io/pecan-documentation/content/models/
 EOF
   sudo cp /tmp/motd /etc/motd
   rm /tmp/motd
-fi  
+fi
+
