@@ -1,7 +1,7 @@
 # (PART) Tutorials {-}
 
 ```{r setup}
-tutorial_dir <- '../documentation/tutorials/01_Demo_Basic_Run'
+tutorial_dir <- 'tutorials/01_Demo_Basic_Run'
 ```
 
 # Introduction
