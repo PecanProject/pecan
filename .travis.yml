@@ -88,5 +88,5 @@ script:
   - make
   - popd
   - pushd documentation/tutorials
-  - make
+  - make build deploy
   - popd
