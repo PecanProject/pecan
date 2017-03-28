@@ -1,17 +1,16 @@
----
-title: 'PEcAn Hands-On Demo 01: Basic Run'
-output: 
-    html_document:
-        number_sections: yes
----
+# (PART) Tutorials {-}
 
-# Introduction {-}
+```{r setup}
+tutorial_dir <- '../documentation/tutorials/01_Demo_Basic_Run'
+```
 
-## Objective {-}
+# Introduction
+
+## Objective
 
 We will begin by exploring a set of web-based tools that are designed to run single-site model runs. A lot of the detail about what’s going on under the hood, and all the outputs that PEcAn produces, are left to Demo 2. This demo will also demonstrate how to use PEcAn outputs in additional analyses outside of PEcAn.
 
-## PEcAn URL {-}
+## PEcAn URL
 
 In the following demo, **URL** is the web address of a PEcAn server and will refer to one of the following:
 
@@ -32,14 +31,14 @@ In the following demo, **URL** is the web address of a PEcAn server and will ref
 2. **Click “Run Models”**
 3. **Click the ‘Next’ button** to move to the “Site Selection” page.
 
-```{r}
-knitr::include_graphics('startpecan.png')
+```{r startpecan}
+knitr::include_graphics(file.path(tutorial_dir, 'startpecan.jpg'))
 ```
 
 ## Site Selection
 
-```{r}
-knitr::include_graphics('mapmodel.png')
+```{r mapmodel}
+knitr::include_graphics(file.path(tutorial_dir, 'mapmodel.png'))
 ```
 
 ### Host
@@ -75,8 +74,8 @@ Once you are finished with the above steps, **click "Next"**.
 
 ## Run Specification
 
-```{r}
-knitr::include_graphics('runspec.png')
+```{r runspec}
+knitr::include_graphics(file.path(tutorial_dir, 'runspec.png'))
 ```
 
 Next we will specify settings required to run the model. Be aware that the inputs required for any particular model may vary somewhat so there may be addition optional or required input selections available for other models.
@@ -123,8 +122,8 @@ If you get an error in your run as part of a live demo or class activity, it is 
 
 ## Model Run Workflow
 
-```{r}
-knitr::include_graphics('execstatus.png')
+```{r execstatus}
+knitr::include_graphics(file.path(tutorial_dir, 'execstatus.jpg'))
 ```
 
 
@@ -188,8 +187,8 @@ FYI, [adding a new model](https://pecan.gitbooks.io/pecan-documentation/content/
 
 1. **Click on Open SHINY**, which will open a new browser window. The shiny app will automatically access your run’s output files and allow you to visualize all output variables as a function of time. 
 
-```{r}
-knitr::include_graphics('workflowshiny.png')
+```{r workflowshiny}
+knitr::include_graphics(file.path(tutorial_dir, 'workflowshiny.png'))
 ```
 
 2. Use the pull down menu under **Variable Name** to choose whichever output variable you wish to plot.
