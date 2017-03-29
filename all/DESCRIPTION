@@ -35,8 +35,21 @@ Suggests:
     PEcAn.LINKAGES,
     PEcAn.allometry,
     PEcAn.photosythesis
+Remotes:
+    local::../db,
+    local::../settings,
+    local::../modules/meta.analysis,
+    local::../utils,
+    local::../modules/uncertainty,
+    local::../modules/data.atmosphere,
+    local::../modules/data.land,
+    local::../modules/data.remote,
+    local::../modules/assim.batch,
+    local::../modules/emulator,
+    local::../modules/priors,
+    local::../modules/benchmark
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
