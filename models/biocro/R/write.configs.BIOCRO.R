@@ -104,7 +104,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
              con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
   
-  ## write configuraiton file
+  ## write configuration file
   traits <- convert.samples.BIOCRO(trait.samples = trait.values[[settings$pfts$pft$name]])
   
   species <- utils::read.csv(file.path(settings$pfts$pft$outdir, "species.csv"))
