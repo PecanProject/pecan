@@ -10,9 +10,7 @@
 #' @return output from one of the \code{BioCro::*.Gro} functions (determined by \code{config$genus}), as data.table object
 #' @export
 #' @author David LeBauer
-run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppice.interval = 1,
-                       met.uncertainty = FALSE, irrigation = FALSE) {
-  library(data.table)
+run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppice.interval = 1) {
   l2n <- function(x) lapply(x, as.numeric)
   start.date <- lubridate::ymd(config$run$start.date)
   end.date   <- lubridate::ymd(config$run$end.date)
