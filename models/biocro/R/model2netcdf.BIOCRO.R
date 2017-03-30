@@ -14,6 +14,10 @@
 ##' Modified from on model2netcdf.SIPNET and model2netcdf.ED2 by
 ##' @name model2netcdf.BIOCRO
 ##' @title Function to convert biocro model output to standard netCDF format
+##' @param result a dataframe of model output to be converted
+##' @param genus character: What kind of plant was being simulated?
+##'   Used to correct for some genus-specific differences in model output;
+##'   Eventually that will be handled inside BioCro and this argument will be removed.
 ##' @param outdir Location of model output
 ##' @param lat Latitude of the site
 ##' @param lon Longitude of the site
