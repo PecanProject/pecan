@@ -20,7 +20,7 @@
 ##' @param lat, lon Site latitude and longitude
 ##' @param start_date, end_date Date range to convert. Each year will be written to a separate file
 ##' @param ... other arguments passed from PEcAn, currently ignored
-##' @return invisibly, a dataframe of information about the written file.
+##' @return a dataframe of information about the written file
 ##' @export
 ##' @author Rob Kooper, David LeBauer
 ##-------------------------------------------------------------------------------------------------#
@@ -69,7 +69,7 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
   }
 
   result <- do.call("rbind", res)
-  return(invisible(result))
+  return(result)
 }  # met2model.BIOCRO
 
 
