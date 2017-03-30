@@ -18,12 +18,11 @@
 ##' @param lat Latitude of the site
 ##' @param lon Longitude of the site
 ##' @export
+##' @import data.table
+##' @import PEcAn.utils
 ##' @author David LeBauer, Deepak Jaiswal, Rob Kooper
 model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon = -9999) {
-  
-  library(data.table)
-  library(PEcAn.utils)
-  
+
   if (!("hour" %in% colnames(result))) {
     result$hour <- 0
   }

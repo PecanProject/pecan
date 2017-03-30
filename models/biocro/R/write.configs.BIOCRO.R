@@ -107,7 +107,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   ## write configuraiton file
   traits <- convert.samples.BIOCRO(trait.samples = trait.values[[settings$pfts$pft$name]])
   
-  species <- read.csv(file.path(settings$pfts$pft$outdir, "species.csv"))
+  species <- utils::read.csv(file.path(settings$pfts$pft$outdir, "species.csv"))
   genus <- unique(species$genus)
   if (length(genus) > 1) {
     logger.severe("BioCro can not combine multiple genera")
@@ -188,7 +188,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   config.xml <- XML::append.xmlNode(config.xml, simulationPeriod.xml)
   config.xml <- XML::append.xmlNode(config.xml, parms.xml)
   
-  saveXML(config.xml, file = file.path(settings$rundir, run.id, "config.xml"), 
+  XML::saveXML(config.xml, file = file.path(settings$rundir, run.id, "config.xml"),
           indent = TRUE)
 }  # write.config.BIOCRO
 

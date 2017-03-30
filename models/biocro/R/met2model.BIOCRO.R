@@ -53,7 +53,7 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
     }
 
     met <- cf2biocro(tmp.met)
-    write.csv(met, file = csvfile, row.names = FALSE)
+    utils::write.csv(met, file = csvfile, row.names = FALSE)
 
     res[[as.character(year)]] <- data.frame(
       file = csvfile,
@@ -114,7 +114,7 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
 
   if ((!is.null(longitude)) & zulu2solarnoon) {
     solarnoon_offset <- udunits2::ud.convert(longitude/360, "day", "minute")
-    met[, `:=`(solardate = date + minutes(solarnoon_offset))]
+    met[, `:=`(solardate = date + lubridate::minutes(solarnoon_offset))]
   }
   if (!"relative_humidity" %in% colnames(met)) {
     if (all(c("air_temperature", "air_pressure", "specific_humidity") %in% colnames(met))) {
@@ -146,9 +146,9 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
   if (met[, max(relative_humidity) > 1]) {
     met[, `:=`(relative_humidity = relative_humidity/100)]
   }
-  newmet <- met[, list(year = year(date), 
-                       doy = yday(date), 
-                       hour = round(hour(date) + minute(date) / 60, 1), 
+  newmet <- met[, list(year = lubridate::year(date),
+                       doy = lubridate::yday(date),
+                       hour = round(lubridate::hour(date) + lubridate::minute(date) / 60, 1),
                        SolarR = ppfd, 
                        Temp = udunits2::ud.convert(air_temperature, "Kelvin", "Celsius"), 
                        RH = relative_humidity, 
