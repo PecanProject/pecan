@@ -122,7 +122,7 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
   if (!"relative_humidity" %in% colnames(met)) {
     if (all(c("air_temperature", "air_pressure", "specific_humidity") %in% colnames(met))) {
       rh <- qair2rh(qair = met$specific_humidity, temp = udunits2::ud.convert(met$air_temperature, 
-                                                                    "Kelvin", "Celsius"), pres = udunits2::ud.convert(met$air_pressure, "Pa", "hPa"))
+                                                                    "Kelvin", "Celsius"), press = udunits2::ud.convert(met$air_pressure, "Pa", "hPa"))
       met <- cbind(met, relative_humidity = rh * 100)
     } else {
       logger.error("neither relative_humidity nor [air_temperature, air_pressure, and specific_humidity]", 
