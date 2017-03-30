@@ -25,7 +25,7 @@ def translateTime(timeString):
 
     return (timeSplit.total_seconds() + timeUnpack.tm_hour * 3600.0 - timeUnpack.tm_min * 60.0)/(3600.0*24.)
 
-def met2cf_geostreams(jsondata, outfile):
+def json2netcdf(jsondata, outfile):
     with Dataset(outfile, 'w') as netCDFHandler:
         time = {}
         time['start_time'] = [d['start_time'] for d in jsondata if 'start_time' in d]
@@ -62,6 +62,11 @@ def met2cf_geostreams(jsondata, outfile):
             setattr(valueVariable, "unit", _UNITS[var])
             setattr(valueVariable, "standard_name", var)
 
+          
+          
+def met2cf_geostreams(input_dat_file, output_netcdf_file):
+          data = JSONHandler(input_dat_file)
+          json2netcdf(data, output_netcdf_file)
+          
 if __name__ == "__main__":
-    data = JSONHandler("results.dat")
-    met2cf_geostreams(data, "netcdf.nc")
+    met2cf_geostreams("results.dat", "netcdf.nc")
