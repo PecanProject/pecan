@@ -29,25 +29,23 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
   library(PEcAn.all)
   dir.create(file.path(outfolder), recursive = TRUE, showWarnings = FALSE)
   years_wanted <- lubridate::year(start_date):lubridate::year(end_date)
-  out.prefix <- "BIOCRO_MET_INPUT"
 
   res <- list()
   for (year in years_wanted) {
+    yrstart = max(lubridate::ymd(start_date), lubridate::ymd(paste0(year, "-01-01")))
+    yrend = min(lubridate::ymd(end_date), lubridate::ymd(paste0(year, "-12-31")))
+
     ncfile <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
-    csvfile <- file.path(outfolder, paste(out.prefix, year, "csv", sep="."))
+    csvfile <- file.path(outfolder, paste(in.prefix, yrstart, yrend, "csv", sep="."))
 
     if (file.exists(csvfile) && as.logical(overwrite) != TRUE){
       logger.warn(paste("Output file", csvfile, "already exists! Moving to next year."))
-      # TODO add to res?
-      # If so, what values for startdate and enddate -- assume Jan 1 / Dec 31?
       next
     }
 
     met.nc <- ncdf4::nc_open(ncfile)
-    startd = max(lubridate::ymd(start_date), lubridate::ymd(paste0(year, "-01-01")))
-    endd = min(lubridate::ymd(end_date), lubridate::ymd(paste0(year, "-12-31")))
     tmp.met <- load.cfmet(met.nc, lat = lat, lon = lon,
-                          start.date = startd, end.date = endd)
+                          start.date = yrstart, end.date = yrend)
 
     dt <- lubridate::as.period(mean(diff(tmp.met$date)))
     if (dt > lubridate::hours(1)) {
@@ -62,9 +60,9 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
       host = fqdn(),
       mimetype = "text/csv",
       formatname = "biocromet",
-      startdate = as.Date(paste(year, min(met$doy)), format="%Y %j"),
-      enddate = as.Date(paste(year, max(met$doy)), format="%Y %j"),
-      dbfile.name = out.prefix,
+      startdate = yrstart,
+      enddate = yrend,
+      dbfile.name = in.prefix,
       stringsAsFactors = FALSE)
   }
 

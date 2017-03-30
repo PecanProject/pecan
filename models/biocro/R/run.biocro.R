@@ -31,7 +31,9 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
   for (i in seq_along(years)) {
     yeari <- years[i]
     yearindex <- i * 10000 + yeari  ## for use with met uncertainty
-    metfile <- paste(metpath, yeari, "csv", sep=".")
+    starti <- max(start.date, lubridate::ymd(paste0(yeari, "-01-01")))
+    endi <- min(end.date, lubridate::ymd(paste0(yeari, "-12-31")))
+    metfile <- paste(metpath, starti, endi, "csv", sep=".")
     WetDat <- fread(metfile)
 
     # Check that all variables are present in the expected order --
