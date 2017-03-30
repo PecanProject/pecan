@@ -76,7 +76,7 @@ convert.samples.BIOCRO <- function(trait.samples) {
 ##'  can either be a data.frame or named list of traits, e.g.
 ##' \code{data.frame(vmax = 1, b0 = 2)} or \code{list(vmax = 1, b0 = 2)}
 ##' @param settings pecan settings file configured for BioCro
-##' @param run.id
+##' @param run.id integer; a unique identifier for the run.
 ##' @export
 ##' @return nothing, writes configuration file as side effect 
 ##' @author David LeBauer
