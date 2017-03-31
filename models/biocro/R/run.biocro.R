@@ -30,7 +30,6 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
   hourly.results = list()
   for (i in seq_along(years)) {
     yeari <- years[i]
-    yearindex <- i * 10000 + yeari  ## for use with met uncertainty
     starti <- max(start.date, lubridate::ymd(paste0(yeari, "-01-01")))
     endi <- min(end.date, lubridate::ymd(paste0(yeari, "-12-31")))
     metfile <- paste(metpath, starti, endi, "csv", sep=".")
@@ -120,8 +119,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       
     }
     # TODO return the whole BioGro result instead of selected columns?
-    result.yeari.hourly <- with(tmp.result, data.table(yearindex = yearindex, 
-                                                       year = yeari,
+    result.yeari.hourly <- with(tmp.result, data.table(year = yeari,
                                                        doy = DayofYear,
                                                        hour = Hour, ThermalT,
                                                        Stem, Leaf, Root, 
@@ -135,7 +133,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
   }
   
   hourly.results <- do.call("rbind", hourly.results)
-  hourly.results <- hourly.results[order(yearindex, doy, hour)]
+  hourly.results <- hourly.results[order(year, doy, hour)]
   
   daily.results <- hourly.results[, list(Stem = max(Stem), 
                                          Leaf = max(Leaf),
@@ -146,7 +144,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
                                          Grain = max(Grain), 
                                          LAI = max(LAI), 
                                          tmax = max(Temp), tmin = min(Temp), tavg = mean(Temp), 
-                                         precip = sum(precip)), by = "yearindex,doy"]
+                                         precip = sum(precip)), by = "year,doy"]
   
   annual.results <- hourly.results[, list(Stem = max(Stem),
                                           Leaf = max(Leaf), 
@@ -156,7 +154,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
                                           SoilEvaporation = sum(SoilEvaporation), 
                                           CanopyTrans = sum(CanopyTrans), 
                                           map = sum(precip), mat = mean(Temp)),
-                                   by = "yearindex"]
+                                   by = "year"]
   return(list(hourly = hourly.results, 
               daily = daily.results, 
               annually = data.table(lat = lat, lon = lon, annual.results)))
