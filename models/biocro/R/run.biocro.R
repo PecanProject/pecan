@@ -14,8 +14,8 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
                        met.uncertainty = FALSE, irrigation = FALSE) {
   library(data.table)
   l2n <- function(x) lapply(x, as.numeric)
-  start.date <- lubridate::ceiling_date(as.POSIXct(config$run$start.date), "day")
-  end.date   <- lubridate::floor_date(as.POSIXct(config$run$end.date), "day")
+  start.date <- lubridate::ymd(config$run$start.date)
+  end.date   <- lubridate::ymd(config$run$end.date)
   genus <- config$pft$type$genus
   years <- lubridate::year(start.date):lubridate::year(end.date)
 
