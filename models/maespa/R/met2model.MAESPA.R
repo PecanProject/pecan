@@ -26,6 +26,7 @@
 ##' @param verbose should the function be very verbose
 ##'
 ##' @author Tony Gardella
+##' @importFrom ncdf4 ncvar_get
 met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date, 
                              overwrite = FALSE, verbose = FALSE, ...) {
   
@@ -93,9 +94,8 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
       tstep <- round(86400 / dt)
       dt <- 86400 / tstep
       
-      # Check wich variables are available and which are not
-      ncvar_get <- ncdf4::ncvar_get
-      
+      # Check which variables are available and which are not
+
       ## extract variables
       lat   <- ncvar_get(nc, "latitude")
       lon   <- ncvar_get(nc, "longitude")
@@ -198,5 +198,5 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   replacePAR(out.file.full, "enddate", "metformat", newval = enddate, noquotes = TRUE)
   replacePAR(out.file.full, "columns", "metformat", newval = columnnames, noquotes = TRUE)
   
-  invisible(results)
+  return(invisible(results))
 } # met2model.MAESPA

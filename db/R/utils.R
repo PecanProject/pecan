@@ -31,15 +31,17 @@
 ##' \dontrun{
 ##' db.query('select count(id) from traits;', params=settings$database$bety)
 ##' }
+
 db.query <- function(query, con = NULL, params = NULL) {
   iopened <- 0
   if (is.null(con)) {
+
     if (is.null(params)) {
       logger.error("No parameters or connection specified")
       stop()
     }
     con <- db.open(params)
-    iopened <- 1
+    on.exit(db.close(con))
   }
   if (.db.utils$showquery) {
     logger.debug(query)
@@ -50,6 +52,7 @@ db.query <- function(query, con = NULL, params = NULL) {
     logger.severe(paste0("Error executing db query '", query, "' errorcode=", 
                         res$errorNum, " message='", res$errorMsg, "'"))
   }
+
   .db.utils$queries <- .db.utils$queries + 1
   if (iopened == 1) {
     db.close(con)
@@ -75,12 +78,18 @@ db.query <- function(query, con = NULL, params = NULL) {
 db.open <- function(params) {
   params$dbfiles <- NULL
   params$write <- NULL
+  
+  if(is.null(params$driver) || params$driver == "PostgreSQL") {
+    requireNamespace("RPostgreSQL")
+  }
+  
   if (is.null(params$driver)) {
     args <- c(drv = dbDriver("PostgreSQL"), params, recursive = TRUE)
   } else {
     args <- c(drv = dbDriver(params$driver), params, recursive = TRUE)
     args[["driver"]] <- NULL
   }
+
   c <- do.call(dbConnect, as.list(args))
   id <- sample(1000, size = 1)
   while (length(which(.db.utils$connections$id == id)) != 0) {
@@ -183,6 +192,8 @@ db.exists <- function(params, write = TRUE, table = NA) {
   })
   if (is.null(con)) {
     return(invisible(FALSE))
+  } else {
+    on.exit(db.close(con))
   }
   
   # check table's privilege about read and write permission
@@ -290,7 +301,6 @@ db.exists <- function(params, write = TRUE, table = NA) {
   
   return(invisible(result))
 } # db.exists
-
 
 ##' Sets if the queries should be shown that are being executed
 ##' 

@@ -30,12 +30,13 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
 ##' @param verbose should the function be very verbose
 ##' @export
 ##' @author Shawn P. Serbin
-##'
+##' @importFrom PEcAn.utils logger.debug logger.warn listToXml
+##' @importFrom udunits2 ud.convert
+##' @importFrom ncdf4 ncvar_get
+##' @importFrom XML saveXML
 met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date, 
                            overwrite = FALSE, verbose = FALSE, ...) {
-  library(PEcAn.utils)
-  library(PEcAn.data.atmosphere)
-  
+
   ## MAAT driver format (.csv):
   ## Time (POSIX),  Air Temp (°C), PAR (umols m-2 s-1), Precipitation( ??), Atmospheric CO2 (μmol mol-1) ... # STILL IN DEVELOPMENT
   
@@ -94,7 +95,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
       ## convert time to seconds
       sec <- nc$dim$time$vals
       frac.day <- nc$dim$time$vals
-      sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+      sec <- ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
       
       dt <- ifelse(lubridate::leap_year(year) == TRUE, 
                    366 * 24 * 60 * 60 / length(sec), # leap year
@@ -104,8 +105,6 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
       dt    <- 86400 / tstep
       
       ## extract required MAAT driver variables names(nc$var)
-      # what is in the nc file?
-      ncvar_get <- ncdf4::ncvar_get
       lat  <- ncvar_get(nc, "latitude")
       lon  <- ncvar_get(nc, "longitude")
       Tair <- ncvar_get(nc, "air_temperature")  ## in Kelvin
@@ -227,10 +226,10 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
             indent = TRUE, 
             prefix = PREFIX_XML)
     
-    invisible(results)
+    return(invisible(results))
     
   } else {
     print("NO MET TO OUTPUT")
-    invisible(NULL)
+    return(invisible(NULL))
   }
 } # met2model.MAAT

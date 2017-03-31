@@ -96,6 +96,10 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
                paste("mkdir -p", outdir), 
                paste("cd", rundir), 
                paste(settings$model$binary, normalizePath(rundir, mustWork = FALSE), normalizePath(outdir, mustWork = FALSE)),
+               "if [ $? -ne 0 ]; then",
+               "    echo ERROR IN MODEL RUN >&2",
+               "    exit 1",
+               "fi",
                paste("cp ", file.path(rundir, "README.txt"), file.path(outdir, "README.txt"))),
              con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))

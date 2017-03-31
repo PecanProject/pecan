@@ -42,6 +42,7 @@ query.data <- function(trait, spstr, extra.columns = "ST_X(ST_CENTROID(sites.geo
   if (is.null(con)) {
     logger.error("No open database connection passed in.")
     con <- db.open(settings$database$bety)
+    on.exit(db.close(con))
   }
   query <- paste("select
               traits.id, traits.citation_id, traits.site_id, traits.treatment_id,
@@ -63,10 +64,10 @@ query.data <- function(trait, spstr, extra.columns = "ST_X(ST_CENTROID(sites.geo
     result$stat_unconverted <- result$stat
   }
   
+
   db.close(con)
   return(result)
 } # query.data
-
 
 ##--------------------------------------------------------------------------------------------------#
 ##'
@@ -416,7 +417,7 @@ derive.traits <- function(FUN, ..., input = list(...),
 ##' @param spstr is the species.id integer or string of integers associated with the species
 ##'
 ##' @return dataframe ready for use in meta-analysis
-##' @export
+##' @export query.trait.data
 ##' @examples
 ##' \dontrun{
 ##' settings <- read.settings()

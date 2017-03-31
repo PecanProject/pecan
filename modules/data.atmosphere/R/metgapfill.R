@@ -14,14 +14,20 @@
 ##' @param verbose should the function be very verbose
 ##' @param lst is timezone offset from UTC, if timezone is available in time:units atribute in file, it will use that, default is to assume UTC
 ##' @author Ankur Desai
+##' @importFrom PEcAn.utils fqdn logger.debug logger.error logger.warn logger.severe
+##' @importFrom ncdf4 ncvar_get ncatt_get ncdim_def ncvar_def ncvar_add ncvar_put
 metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
                        overwrite = FALSE, verbose = FALSE, ...) {
   
-  library(REddyProc)
   #REddyProc installed to ~/R/library by install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
   #dependency minpack.lm may not install automatically, so install it first
-  library(PEcAn.utils)
+
+
   
+  sEddyProc             <- REddyProc::sEddyProc
+  fCalcVPDfromRHandTair <- REddyProc::fCalcVPDfromRHandTair
+  
+
   # get start/end year code works on whole years only
   start_year <- lubridate::year(start_date)
   end_year  <- lubridate::year(end_date)
@@ -72,12 +78,6 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     nc <- ncdf4::nc_open(new.file, write = TRUE)
     
     ## Should probably check for variable names (need to install ncdf4-helpers package)
-    
-    ncvar_get <- ncdf4::ncvar_get
-    ncdim_def <- ncdf4::ncdim_def
-    ncatt_get <- ncdf4::ncatt_get
-    ncvar_add <- ncdf4::ncvar_add
-    ncvar_put <- ncdf4::ncvar_put
     
     # extract time, lat, lon
     time <- ncvar_get(nc = nc, varid = "time")
@@ -164,12 +164,12 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     dt <- ifelse(lubridate::leap_year(year), 
                  (366 * 24 * 60 * 60) / length(sec), 
                  (365 * 24 * 60 * 60) / length(sec))
-    doy <- ifelse(lubridate::leap_year(year) == TRUE,
-                  rep(1:366, each = 86400 / dt), 
-                  rep(1:365, each = 86400 / dt))
-    hr <- ifelse(lubridate::leap_year(year) == TRUE,
-                 rep(seq(0, length = 86400 / dt, by = dt / 86400 * 24), 366), 
-                 rep(seq(0, length = 86400 / dt, by = dt / 86400 * 24), 365))
+    doy <- if (lubridate::leap_year(year) == TRUE)
+                  { rep(1:366, each = 86400 / dt) }  
+                  else { rep(1:365, each = 86400 / dt) }
+    hr <- if (lubridate::leap_year(year) == TRUE)
+                 { rep(seq(0, length = 86400 / dt, by = dt / 86400 * 24), 366) } 
+                 else { rep(seq(0, length = 86400 / dt, by = dt / 86400 * 24), 365) }
     
     f      <- pi / 180 * (279.5 + 0.9856 * doy)
     et     <- (-104.7 * sin(f) + 596.2 * sin(2 * f) + 4.3 * 
@@ -186,7 +186,11 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     cosz <- sin(lat * pi / 180) * sin(dec) + cos(lat * pi / 180) * cos(dec) * cos(h)
     cosz[cosz < 0] <- 0
     rpot <- 1366 * cosz  #in UTC
-    toff <- as.numeric(lst) * 3600/dt  #timezone offset correction
+    tz = as.numeric(lst)
+    if(is.na(tz)){
+      tz = as.numeric(as.POSIXct("1970-01-01 00:00:00", tz=lst))/3600
+    }
+    toff <- tz * 3600/dt  #timezone offset correction
     if (toff < 0) {
       slen <- length(rpot)
       rpot <- c(rpot[(abs(toff) + 1):slen], rpot[1:abs(toff)])
@@ -667,5 +671,5 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
   ## Step 6.Replace gaps with debiased time series (perhaps store statistics of fit somewhere as a measure of uncertainty?)
   ## Step 7. Write to outfolder the new NetCDF file
   
-  invisible(results)
+  return(invisible(results))
 } # metgapfill

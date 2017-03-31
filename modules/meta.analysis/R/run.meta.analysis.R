@@ -50,7 +50,7 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
   dir.create(pathname, showWarnings = FALSE, recursive = TRUE)
   
   ## Convert data to format expected by pecan.ma
-  jagged.data <- lapply(trait.data, jagify)
+  jagged.data <- lapply(trait.data, PEcAn.MA::jagify)
 
   check_consistent <- function(data.median, prior, trait, msg_var,
                                perr = 5e-04, pwarn = 0.025) {
@@ -166,8 +166,9 @@ run.meta.analysis.pft <- function(pft, iterations, random = TRUE, threshold = 1.
 run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, dbfiles, database) {
   # process all pfts
   dbcon <- db.open(database)
+  on.exit(db.close(dbcon))
+
   result <- lapply(pfts, run.meta.analysis.pft, iterations, random, threshold, dbfiles, dbcon)
-  db.close(dbcon)
 } # run.meta.analysis.R
 ## ==================================================================================================#
 

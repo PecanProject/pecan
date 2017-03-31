@@ -22,6 +22,20 @@ if ($authentication) {
     }
 }
 
+# tunnel options
+if (isset($_REQUEST['username'])) {
+  $tunnel_username = $_REQUEST['username'];
+  unset($_REQUEST['username']);
+} else {
+  $tunnel_username = "";
+}
+if (isset($_REQUEST['password'])) {
+  $tunnel_password = $_REQUEST['password'];
+  unset($_REQUEST['password']);
+} else {
+  $tunnel_password = "";
+}
+
 # boolean parameters
 $userok=isset($_REQUEST['userok']);
 $offline=isset($_REQUEST['offline']);
@@ -200,6 +214,14 @@ if ($hostname != $fqdn) {
     if (!mkdir($tunnel_folder)) {
         die("Can't create output folder [${tunnel_folder}]");
     }
+    
+    ## data tunnel
+    if(isset($hostoptions['data_hostname'])){
+        $data_tunnel_folder = $tunnel_folder . DIRECTORY_SEPARATOR . "data"; 
+        if (!mkdir($data_tunnel_folder)) {
+            die("Can't create output folder [${data_tunnel_folder}]");
+        }
+    }
 }
 
 # create pecan.xml
@@ -362,13 +384,13 @@ if ($hostname == $fqdn) {
 } else {
   fwrite($fh, "    <name>${hostname}</name>" . PHP_EOL);
 }
-if (isset($_REQUEST['username'])) {
-  fwrite($fh, "    <user>${_REQUEST['username']}</user>" . PHP_EOL);
+if ($tunnel_username != "") {
+  fwrite($fh, "    <user>${tunnel_username}</user>" . PHP_EOL);
 }
 if (isset($hostoptions['folder'])) {
   $remote = $hostoptions['folder'];
-  if (isset($_REQUEST['username'])) {
-    $remote = $remote . "/" . $_REQUEST['username'];
+  if ($tunnel_username != "") {
+    $remote = $remote . "/" . $tunnel_username;
   }
   fwrite($fh, "    <folder>" . toXML($remote) . "</folder>" . PHP_EOL);
 }
@@ -390,11 +412,18 @@ if (isset($hostoptions['jobid'])) {
 if (isset($hostoptions['qstat'])) {
   fwrite($fh, "    <qstat>" . toXML($hostoptions['qstat']) . "</qstat>" . PHP_EOL);
 }
+if (isset($hostoptions['Rbinary'])) {
+  fwrite($fh, "    <Rbinary>" . toXML($hostoptions['Rbinary']) . "</Rbinary>" . PHP_EOL);
+}
 if (isset($hostoptions['job.sh'])) {
   fwrite($fh, "    <job.sh>" . toXML($hostoptions['job.sh']) . "</job.sh>" . PHP_EOL);
 }
 if ($hostname != $fqdn) {
   fwrite($fh, "    <tunnel>" . $tunnel_folder . DIRECTORY_SEPARATOR . "tunnel" . "</tunnel>" . PHP_EOL);
+  if(isset($hostoptions['data_hostname'])){
+    fwrite($fh, "    <data_tunnel>" . $data_tunnel_folder . DIRECTORY_SEPARATOR . "tunnel" . "</data_tunnel>" . PHP_EOL);
+    fwrite($fh, "    <data_hostname>" . toXML($hostoptions['data_hostname']) . "</data_hostname>" . PHP_EOL);
+  }
 }
 fwrite($fh, "  </host>" . PHP_EOL);
 
@@ -422,11 +451,23 @@ copy("workflow.R", "${folder}/workflow.R");
 if ($hostname != $fqdn) {
     # write pasword
     $fh = fopen($tunnel_folder . DIRECTORY_SEPARATOR . "password", 'w');
-    fwrite($fh, $_REQUEST['password'] . PHP_EOL);
+    fwrite($fh, $tunnel_password . PHP_EOL);
     fclose($fh);
 
     # start tunnel
-    pclose(popen("${SSHtunnel} ${hostname} ${_REQUEST['username']} ${tunnel_folder} > ${tunnel_folder}/log &", 'r'));
+    pclose(popen("${SSHtunnel} ${hostname} ${tunnel_username} ${tunnel_folder} > ${tunnel_folder}/log &", 'r'));
+    
+    ## data tunnel
+    if(isset($hostoptions['data_hostname'])){
+        # write password
+        $fh = fopen($data_tunnel_folder . DIRECTORY_SEPARATOR . "password", 'w');
+        fwrite($fh, $tunnel_password . PHP_EOL);
+        fclose($fh);
+
+        # start tunnel
+        pclose(popen("${SSHtunnel} ${hostoptions['data_hostname']} ${tunnel_username} ${data_tunnel_folder} > ${data_tunnel_folder}/log &", 'r'));
+    
+    }
 }
 
 # redirect to the right location

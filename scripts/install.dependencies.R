@@ -21,7 +21,7 @@ if (!("Rgraphviz" %in% installed.packages()[, "Package"])) {
 }
 
 # install packages needed from CRAN
-list.of.packages <- c("data.table", "doSNOW", "dplR", "earth", 
+list.of.packages <- c("BayesianTools","data.table", "doSNOW", "dplR", "earth", 
                       "emulator", "ggmap", "ggplot2", "gridExtra", "Hmisc", "httr", "kernlab", 
                       "GPfit", "knitr", "Maeswrap", "MASS", "MCMCpack", "mvtnorm",
                       "plotrix", "raster", "randtoolbox", "rjags", "rgdal", "tgp", "DBI", 
@@ -46,11 +46,6 @@ if (!("REddyProc" %in% installed.packages()[, "Package"])) {
 # install packages from github
 if (!("BioCro" %in% installed.packages()[, "Package"])) {
   devtools::install_github("ebimodeling/biocro")
-}
-
-# BayesianTools package snapshot
-if (!("BayesianTools" %in% installed.packages()[, "Package"])) {
-  devtools::install_url("https://dl.dropboxusercontent.com/s/ccvpnvblf3vzuvs/BayesianTools_0.0.0.9000.tar.gz")
 }
 
 

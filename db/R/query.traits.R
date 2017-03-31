@@ -16,7 +16,7 @@
 ##' @param con 
 ##' @return dataframe with trait data
 ##' @seealso \code{\link{query.trait.data}}
-##' @export
+##' @export query.traits
 ##' @examples
 ##' \dontrun{
 ##' species <- query.pft_species('ebifarm.c4crop')
@@ -29,6 +29,7 @@ query.traits <- function(spstr, priors, con = NULL, update.check.only = FALSE) {
   
   if (is.null(con)) {
     con <- db.open(settings$database$bety)
+    on.exit(db.close(con))
   }
   if (is.list(con)) {
     print("query.traits")

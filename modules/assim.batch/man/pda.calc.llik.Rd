@@ -4,7 +4,7 @@
 \alias{pda.calc.llik}
 \title{Calculate Likelihoods for PDA}
 \usage{
-pda.calc.llik(settings, con, model.out, run.id, inputs, llik.fn)
+pda.calc.llik(pda.errors, llik.fn, llik.par)
 }
 \arguments{
 \item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
@@ -16,6 +16,5 @@ Total log likelihood (i.e., sum of log likelihoods for each dataset)
 Calculate Likelihoods for PDA
 }
 \author{
-Ryan Kelly
+Ryan Kelly, Istem Fer
 }
-

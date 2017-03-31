@@ -1,15 +1,17 @@
 Package: PEcAn.emulator
 Type: Package
 Title: Gausian Process emulator
-Version: 1.4.8
-Date: 2016-08-09
+Version: 1.4.10
+Date: 2017-03-27
 Author: Michael Dietze
 Maintainer: Michael Dietze <dietze@bu.edu>
 Depends:
     mvtnorm,
+    GPfit,
     MCMCpack
 Imports:
-    coda (>= 0.18)
+    coda (>= 0.18),
+    methods
 Description: Implementation of a Gaussian Process model (both likelihood and
     bayesian approaches) for kriging and model emulation.  Includes functions
     for sampling design and prediction.

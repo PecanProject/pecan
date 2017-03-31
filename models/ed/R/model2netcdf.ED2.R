@@ -17,16 +17,14 @@
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
+##' @importFrom ncdf4 ncdim_def ncatt_get ncvar_add
+##' @importFrom PEcAn.utils logger.info
 ##' @export
 ##'
 ##' @author Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari
 ## modified M. Dietze 07/08/12 modified S. Serbin 05/06/13
 model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
-  ncdim_def <- ncdf4::ncdim_def
-  ncatt_get <- ncdf4::ncatt_get
-  ncvar_add <- ncdf4::ncvar_add
-
   flist <- dir(outdir, "-T-")
   if (length(flist) == 0) {
     print(paste("*** WARNING: No tower output for :", outdir))
@@ -43,11 +41,6 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     yr[i] <- as.numeric(substr(flist[i], index + 3, index + 6))
     ## yr[i] <- as.numeric(substr(tmp,1,4)) # Edited by SPS
   }
-  
-  ## set up storage
-  block <- 4  # assumes 6-hourly
-  ##block <- 24 # assumes hourly  
-  ##block <- 48 # assumes half-hourly  # Need to generalize (SPS)  
   
   add <- function(dat, col, row, year) {
     ## data is always given for whole year, except it will start always at 0
@@ -161,11 +154,18 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     n <- length(ysel)
     out <- list()
     ## prevTime <- NULL print(y)
-    print(paste("----- Processing year: ", yrs[y]))
+    #print(paste("----- Processing year: ", yrs[y]))
+    logger.info(paste0("----- Processing year: ",yrs[y]))
     ## if(haveTime) prevTime <- progressBar()
     row <- 1
     for (i in ysel) {
       ncT <- ncdf4::nc_open(file.path(outdir, flist[i]))
+      ## determine timestep from HDF5 file
+      block <- ifelse(lubridate::leap_year(yrs[y]) == TRUE,
+                      ncT$dim$phony_dim_0$len/366, # a leaper 
+                      ncT$dim$phony_dim_0$len/365) # non leap
+      logger.info(paste0("Output interval: ",86400/block," sec"))
+      ##
       if (file.exists(file.path(outdir, sub("-T-", "-Y-", flist[i])))) {
         ncY <- ncdf4::nc_open(file.path(outdir, sub("-T-", "-Y-", flist[i])))
         slzdata <- getHdf5Data(ncY, "SLZ")
@@ -191,7 +191,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
         out <- add(-999, 5, row, yrs[y])  ## CropYield
         out <- add(getHdf5Data(ncT, "FMEAN_GPP_PY"), 6, row, yrs[y])  ## GPP
         out <- add(getHdf5Data(ncT, "FMEAN_RH_PY"), 7, row, yrs[y])  ## HeteroResp
-        out <- add(getHdf5Data(ncT, "FMEAN_GPP_PY") - getHdf5Data(ncT, "FMEAN_PLRESP_PY") - 
+        out <- add(-getHdf5Data(ncT, "FMEAN_GPP_PY") + getHdf5Data(ncT, "FMEAN_PLRESP_PY") + 
                      getHdf5Data(ncT, "FMEAN_RH_PY"), 8, row, yrs[y])  ## NEE
         out <- add(getHdf5Data(ncT, "FMEAN_GPP_PY") - getHdf5Data(ncT, "FMEAN_PLRESP_PY"), 
                    9, row, yrs[y])  ## NPP
@@ -343,6 +343,10 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
                    row, yrs[y])  ## Evap
         out <- add(getHdf5Data(ncT, "FMEAN_QRUNOFF_PY"), 45, row, yrs[y])  ## Qs
         out <- add(getHdf5Data(ncT, "BASEFLOW"), 46, row, yrs[y])  ## Qsb
+        
+        out <- add(getHdf5Data(ncT, "FMEAN_ROOT_RESP_PY") + getHdf5Data(ncT, "FMEAN_ROOT_GROWTH_RESP_PY") + 
+                     getHdf5Data(ncT, "FMEAN_RH_PY"), 47, row, yrs[y])  ## SoilResp
+        
       } else {
         ## out <- add(getHdf5Data(ncT, 'TOTAL_AGB,1,row, yrs[y]) ## AbvGrndWood
         out <- add(getHdf5Data(ncT, "AVG_BDEAD"), 1, row, yrs[y])  ## AbvGrndWood
@@ -352,7 +356,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
         out <- add(-999, 5, row, yrs[y])  ## CropYield
         out <- add(getHdf5Data(ncT, "AVG_GPP"), 6, row, yrs[y])  ## GPP
         out <- add(getHdf5Data(ncT, "AVG_HTROPH_RESP"), 7, row, yrs[y])  ## HeteroResp
-        out <- add(getHdf5Data(ncT, "AVG_GPP") - getHdf5Data(ncT, "AVG_PLANT_RESP") - getHdf5Data(ncT, 
+        out <- add(-getHdf5Data(ncT, "AVG_GPP") + getHdf5Data(ncT, "AVG_PLANT_RESP") + getHdf5Data(ncT, 
                                                                                                   "AVG_HTROPH_RESP"), 8, row, yrs[y])  ## NEE
         out <- add(getHdf5Data(ncT, "AVG_GPP") - getHdf5Data(ncT, "AVG_PLANT_RESP"), 9, row, 
                    yrs[y])  ## NPP
@@ -481,7 +485,9 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
         out <- add(getHdf5Data(ncT, "AVG_EVAP") + getHdf5Data(ncT, "AVG_TRANSP"), 44, row, 
                    yrs[y])  ## Evap
         out <- add(getHdf5Data(ncT, "AVG_RUNOFF"), 45, row, yrs[y])  ## Qs
-        out <- add(getHdf5Data(ncT, "BASEFLOW"), 46, row, yrs[y])  ## Qsb      
+        out <- add(getHdf5Data(ncT, "BASEFLOW"), 46, row, yrs[y])  ## Qsb     
+        out <- add(getHdf5Data(ncT, "AVG_ROOT_RESP") + getHdf5Data(ncT, "AVG_ROOT_MAINTENANCE") + 
+                     getHdf5Data(ncT, "AVG_HTROPH_RESP"), 47, row, yrs[y])  ## SoilResp
       }
       
       ncdf4::nc_close(ncT)
@@ -521,77 +527,84 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     
     ## Conversion factor for umol C -> kg C
     Mc <- 12.017  #molar mass of C, g/mol
-    umol2kg_C <- Mc * udunits2::ud.convert(1, "umol", "mol") * ud.convert(1, "g", "kg")
+    umol2kg_C <- Mc * udunits2::ud.convert(1, "umol", "mol") * udunits2::ud.convert(1, "g", "kg")
+    yr2s      <- udunits2::ud.convert(1, "s", "yr")
     
-    var <- list()
+    nc_var <- list()
     out <- conversion(1, udunits2::ud.convert(1, "t ha-1", "kg m-2"))  ## tC/ha -> kg/m2
-    var[[1]] <- mstmipvar("AbvGrndWood", lat, lon, t, zg)
+    nc_var[[1]] <- mstmipvar("AbvGrndWood", lat, lon, t, zg)
     out <- conversion(2, umol2kg_C)  ## umol/m2 s-1 -> kg/m2 s-1
-    var[[2]] <- mstmipvar("AutoResp", lat, lon, t, zg)
-    var[[3]] <- mstmipvar("CarbPools", lat, lon, t, zg)
-    var[[4]] <- mstmipvar("CO2CAS", lat, lon, t, zg)
-    var[[5]] <- mstmipvar("CropYield", lat, lon, t, zg)
+    nc_var[[2]] <- mstmipvar("AutoResp", lat, lon, t, zg)
+    nc_var[[3]] <- mstmipvar("CarbPools", lat, lon, t, zg)
+    nc_var[[4]] <- mstmipvar("CO2CAS", lat, lon, t, zg)
+    nc_var[[5]] <- mstmipvar("CropYield", lat, lon, t, zg)
     out <- conversion(6, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
-    var[[6]] <- mstmipvar("GPP", lat, lon, t, zg)
+    nc_var[[6]] <- mstmipvar("GPP", lat, lon, t, zg)
     out <- conversion(7, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
-    var[[7]] <- mstmipvar("HeteroResp", lat, lon, t, zg)
+    nc_var[[7]] <- mstmipvar("HeteroResp", lat, lon, t, zg)
     out <- conversion(8, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
-    var[[8]] <- mstmipvar("NEE", lat, lon, t, zg)
+    nc_var[[8]] <- mstmipvar("NEE", lat, lon, t, zg)
     out <- conversion(9, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
-    var[[9]] <- mstmipvar("NPP", lat, lon, t, zg)
+    nc_var[[9]] <- mstmipvar("NPP", lat, lon, t, zg)
     out <- conversion(10, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
-    var[[10]] <- mstmipvar("TotalResp", lat, lon, t, zg)
-    var[[11]] <- mstmipvar("TotLivBiom", lat, lon, t, zg)
-    var[[12]] <- mstmipvar("TotSoilCarb", lat, lon, t, zg)
-    var[[13]] <- mstmipvar("Fdepth", lat, lon, t, zg)
-    var[[14]] <- mstmipvar("SnowDepth", lat, lon, t, zg)
-    var[[15]] <- mstmipvar("SnowFrac", lat, lon, t, zg)
-    var[[16]] <- mstmipvar("Tdepth", lat, lon, t, zg)
-    var[[17]] <- mstmipvar("CO2air", lat, lon, t, zg)
-    var[[18]] <- mstmipvar("Lwdown", lat, lon, t, zg)
-    var[[19]] <- mstmipvar("Psurf", lat, lon, t, zg)
-    var[[20]] <- mstmipvar("Qair", lat, lon, t, zg)
-    var[[21]] <- mstmipvar("Rainf", lat, lon, t, zg)
-    var[[22]] <- mstmipvar("Swdown", lat, lon, t, zg)
+    nc_var[[10]] <- mstmipvar("TotalResp", lat, lon, t, zg)
+    nc_var[[11]] <- mstmipvar("TotLivBiom", lat, lon, t, zg)
+    nc_var[[12]] <- mstmipvar("TotSoilCarb", lat, lon, t, zg)
+    nc_var[[13]] <- mstmipvar("Fdepth", lat, lon, t, zg)
+    nc_var[[14]] <- mstmipvar("SnowDepth", lat, lon, t, zg)
+    nc_var[[15]] <- mstmipvar("SnowFrac", lat, lon, t, zg)
+    nc_var[[16]] <- mstmipvar("Tdepth", lat, lon, t, zg)
+    nc_var[[17]] <- mstmipvar("CO2air", lat, lon, t, zg)
+    nc_var[[18]] <- mstmipvar("Lwdown", lat, lon, t, zg)
+    nc_var[[19]] <- mstmipvar("Psurf", lat, lon, t, zg)
+    nc_var[[20]] <- mstmipvar("Qair", lat, lon, t, zg)
+    nc_var[[21]] <- mstmipvar("Rainf", lat, lon, t, zg)
+    nc_var[[22]] <- mstmipvar("Swdown", lat, lon, t, zg)
     out <- checkTemp(23)
-    var[[23]] <- mstmipvar("Tair", lat, lon, t, zg)
-    var[[24]] <- mstmipvar("Wind", lat, lon, t, zg)
-    var[[25]] <- mstmipvar("Lwnet", lat, lon, t, zg)
-    var[[26]] <- mstmipvar("Qg", lat, lon, t, zg)
-    var[[27]] <- mstmipvar("Qh", lat, lon, t, zg)
-    var[[28]] <- mstmipvar("Qle", lat, lon, t, zg)
-    var[[29]] <- mstmipvar("Swnet", lat, lon, t, zg)
-    var[[30]] <- mstmipvar("RootMoist", lat, lon, t, zg)
-    var[[31]] <- mstmipvar("Tveg", lat, lon, t, zg)
-    var[[32]] <- mstmipvar("WaterTableD", lat, lon, t, zg)
-    var[[33]] <- mstmipvar("fPAR", lat, lon, t, zg)
-    var[[34]] <- mstmipvar("LAI", lat, lon, t, zg)
-    ##var[[35]] <- mstmipvar("SMFrozFrac", lat, lon, t, zg)
-    ##var[[36]] <- mstmipvar("SMLiqFrac", lat, lon, t, zg)
-    var[[35]] <- mstmipvar("SMFrozFrac", lat, lon, t, zg)
-    var[[36]] <- mstmipvar("SMLiqFrac", lat, lon, t, zg)
-    var[[37]] <- mstmipvar("SoilMoist", lat, lon, t, zg)
+    nc_var[[23]] <- mstmipvar("Tair", lat, lon, t, zg)
+    nc_var[[24]] <- mstmipvar("Wind", lat, lon, t, zg)
+    nc_var[[25]] <- mstmipvar("Lwnet", lat, lon, t, zg)
+    nc_var[[26]] <- mstmipvar("Qg", lat, lon, t, zg)
+    nc_var[[27]] <- mstmipvar("Qh", lat, lon, t, zg)
+    nc_var[[28]] <- mstmipvar("Qle", lat, lon, t, zg)
+    nc_var[[29]] <- mstmipvar("Swnet", lat, lon, t, zg)
+    nc_var[[30]] <- mstmipvar("RootMoist", lat, lon, t, zg)
+    nc_var[[31]] <- mstmipvar("Tveg", lat, lon, t, zg)
+    nc_var[[32]] <- mstmipvar("WaterTableD", lat, lon, t, zg)
+    nc_var[[33]] <- mstmipvar("fPAR", lat, lon, t, zg)
+    nc_var[[34]] <- mstmipvar("LAI", lat, lon, t, zg)
+    ##nc_var[[35]] <- mstmipvar("SMFrozFrac", lat, lon, t, zg)
+    ##nc_var[[36]] <- mstmipvar("SMLiqFrac", lat, lon, t, zg)
+    nc_var[[35]] <- mstmipvar("SMFrozFrac", lat, lon, t, zg)
+    nc_var[[36]] <- mstmipvar("SMLiqFrac", lat, lon, t, zg)
+    nc_var[[37]] <- mstmipvar("SoilMoist", lat, lon, t, zg)
     out <- checkTemp(38)
-    var[[38]] <- mstmipvar("SoilTemp", lat, lon, t, zg)
-    var[[39]] <- mstmipvar("SoilWet", lat, lon, t, zg)
-    var[[40]] <- mstmipvar("Albedo", lat, lon, t, zg)
+    nc_var[[38]] <- mstmipvar("SoilTemp", lat, lon, t, zg)
+    nc_var[[39]] <- mstmipvar("SoilWet", lat, lon, t, zg)
+    nc_var[[40]] <- mstmipvar("Albedo", lat, lon, t, zg)
     out <- checkTemp(41)
-    var[[41]] <- mstmipvar("SnowT", lat, lon, t, zg)
-    var[[42]] <- mstmipvar("SWE", lat, lon, t, zg)
+    nc_var[[41]] <- mstmipvar("SnowT", lat, lon, t, zg)
+    nc_var[[42]] <- mstmipvar("SWE", lat, lon, t, zg)
     out <- checkTemp(43)
-    var[[43]] <- mstmipvar("VegT", lat, lon, t, zg)
-    var[[44]] <- mstmipvar("Evap", lat, lon, t, zg)
-    var[[45]] <- mstmipvar("Qs", lat, lon, t, zg)
-    var[[46]] <- mstmipvar("Qsb", lat, lon, t, zg)
+    nc_var[[43]] <- mstmipvar("VegT", lat, lon, t, zg)
+    nc_var[[44]] <- mstmipvar("Evap", lat, lon, t, zg)
+    nc_var[[45]] <- mstmipvar("Qs", lat, lon, t, zg)
+    nc_var[[46]] <- mstmipvar("Qsb", lat, lon, t, zg)
+    out <- conversion(47, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+    nc_var[[47]]<- ncdf4::ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
+                                     longname = "Soil Respiration")
     
     ## write ALMA
-    nc <- nc_create(file.path(outdir, paste(yrs[y], "nc", sep = ".")), var)
+    nc <- ncdf4::nc_create(file.path(outdir, paste(yrs[y], "nc", sep = ".")), nc_var)
     varfile <- file(file.path(outdir, paste(yrs[y], "nc", "var", sep = ".")), "w")
-    for (i in seq_along(var)) {
-      ncdf4::ncvar_put(nc, var[[i]], out[[i]])
-      cat(paste(var[[i]]$name, var[[i]]$longname), file = varfile, sep = "\n")
+    for (i in seq_along(nc_var)) {
+      ncdf4::ncvar_put(nc, nc_var[[i]], out[[i]])
+      cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
     close(varfile)
     ncdf4::nc_close(nc)
+    
   }  ## end year loop
+  
 } # model2netcdf.ED2
+##-------------------------------------------------------------------------------------------------#

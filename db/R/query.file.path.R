@@ -4,7 +4,7 @@
 ##' @param input_id
 ##' @param host_name
 ##' @param con : database connection
-##' @export 
+##' @export query.file.path
 ##' 
 ##' @author Betsy Cowdery 
 query.file.path <- function(input.id, host_name, con) {

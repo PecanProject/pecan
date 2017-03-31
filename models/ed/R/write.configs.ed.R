@@ -32,6 +32,12 @@ convert.samples.ED <- function(trait.samples) {
   DEFAULT.MAINTENANCE.RESPIRATION <- 1 / 2
   ## convert SLA from m2 / kg leaf to m2 / kg C
   
+  # IF: I don't know why we're removing leaf_respiration_rate from trait samples below
+  # but if the trait samples doesn't have leaf_respiration_rate
+  # it's not being set to NULL and trait samples is not coherced to a list
+  # trait.samples not being a list throws an error later in the write.config.xml.ED2, L:407
+  trait.samples <- as.list(trait.samples)
+  
   if ("SLA" %in% names(trait.samples)) {
     sla <- as.numeric(trait.samples[["SLA"]])
     trait.samples[["SLA"]] <- sla/DEFAULT.LEAF.C
@@ -126,9 +132,9 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
       filename <- system.file(paste0("ED2IN.r", rev), package = "PEcAn.ED2")
     }
     if (filename == "") {
-      logger.severe("Could not find ED template")
+      PEcAn.utils::logger.severe("Could not find ED template")
     }
-    logger.info("Using", filename, "as template")
+    PEcAn.utils::logger.info("Using", filename, "as template")
     ed2in.text <- readLines(con = filename, n = -1)
   }
   
@@ -144,7 +150,9 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   ed2in.text <- gsub("@MET_END@", metend, ed2in.text)
   
   if (is.null(settings$model$phenol.scheme)) {
-    print(paste("no phenology scheme set; \n", "need to add <phenol.scheme> tag under <model> tag in settings file"))
+    PEcAn.utils::logger.error(paste0("no phenology scheme set; \n",
+                                     "need to add <phenol.scheme> ",
+                                     "tag under <model> tag in settings file"))
   } else if (settings$model$phenol.scheme == 1) {
     ## Set prescribed phenology switch in ED2IN
     ed2in.text <- gsub("@PHENOL_SCHEME@", settings$model$phenol.scheme, ed2in.text)
@@ -163,10 +171,26 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     ed2in.text <- gsub("@PHENOL_START@", "", ed2in.text)
     ed2in.text <- gsub("@PHENOL_END@", "", ed2in.text)
   }
-  
+
+  ## -------------
+  # Special parameters for SDA
+  # 
+  if (!is.null(settings$state.data.assimilation)) {
+    # Default values
+    sda_tags <- list(isoutput = 3,    # Save history state file
+                     unitstate = 1,   # History state frequency is days
+                     frqstate = 1)    # Write history file every 1 day
+
+    # Overwrite defaults with values from settings$model$ed2in list
+    sda_tags <- modifyList(sda_tags, settings$model$ed2in[names(sda_tags)])
+    ed2in.text <- ed2in_set_value_list(sda_tags, ed2in.text, 
+                                       "PEcAn: configured for SDA")
+  }
+
   ##----------------------------------------------------------------------
-  # Get prefix of filename, append to dirname.  Assumes pattern 'DIR/PREFIX.lat<REMAINDER OF
-  # FILENAME>' Slightly overcomplicated to avoid error if path name happened to contain '.lat'
+  # Get prefix of filename, append to dirname.
+  # Assumes pattern 'DIR/PREFIX.lat<REMAINDER OF FILENAME>'
+  # Slightly overcomplicated to avoid error if path name happened to contain .lat'
   
   # when pss or css not exists, case 0
   if (is.null(settings$run$inputs$pss$path) | is.null(settings$run$inputs$css$path)) {
@@ -178,9 +202,9 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     prefix.css <- sub(lat_rxp, "", settings$run$inputs$pss$path)
     # pss and css prefix is not the same, kill
     if (!identical(prefix.pss, prefix.css)) {
-      logger.info(paste("pss prefix:", prefix.pss))
-      logger.info(paste("css prefix:", prefix.css))
-      logger.severe("ED2 css/pss/ files have different prefix")
+      PEcAn.utils::logger.info(paste("pss prefix:", prefix.pss))
+      PEcAn.utils::logger.info(paste("css prefix:", prefix.css))
+      PEcAn.utils::logger.severe("ED2 css/pss/ files have different prefix")
     } else {
       # pss and css are both present
       value <- 2
@@ -189,9 +213,9 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
         prefix.site <- sub(lat_rxp, "", settings$run$inputs$site$path)
         # sites and pss have different prefix name, kill
         if (!identical(prefix.site, prefix.pss)) {
-          logger.info(paste("site prefix:", prefix.site))
-          logger.info(paste("pss prefix:", prefix.pss))
-          logger.severe("ED2 sites/pss/ files have different prefix")
+          PEcAn.utils::logger.info(paste("site prefix:", prefix.site))
+          PEcAn.utils::logger.info(paste("pss prefix:", prefix.pss))
+          PEcAn.utils::logger.severe("ED2 sites/pss/ files have different prefix")
         } else {
           # sites and pass same prefix name, case 3
           value <- 3
@@ -220,9 +244,12 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   
   ##-----------------------------------------------------------------------
   # Set The flag for IMETAVG telling ED what to do given how input radiation was originally
-  # averaged -1 = I don't know, use linear interpolation 0 = No average, the values are
-  # instantaneous 1 = Averages ending at the reference time 2 = Averages beginning at the reference
-  # time 3 = Averages centered at the reference time Deafult is -1
+  # averaged
+  # -1 = I don't know, use linear interpolation
+  # 0 = No average, the values are instantaneous
+  # 1 = Averages ending at the reference time
+  # 2 = Averages beginning at the reference time
+  # 3 = Averages centered at the reference time Deafult is -1
   
   ed2in.text <- gsub("@MET_SOURCE@", -1, ed2in.text)
   
@@ -241,6 +268,11 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   ##----------------------------------------------------------------------
   ed2in.text <- gsub("@FFILOUT@", file.path(modeloutdir, "analysis"), ed2in.text)
   ed2in.text <- gsub("@SFILOUT@", file.path(modeloutdir, "history"), ed2in.text)
+
+  ##---------------------------------------------------------------------
+  # Modify any additional tags provided in settings$model$ed2in
+  ed2in.text <- ed2in_set_value_list(settings$model$ed2in, ed2in.text, 
+                                     "PEcAn: Custom argument from pecan.xml")
   
   ##----------------------------------------------------------------------
   writeLines(ed2in.text, con = file.path(settings$rundir, run.id, "ED2IN"))
@@ -301,20 +333,20 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
   ## Find history file TODO this should come from the database
   histfile <- paste0("data/history.r", settings$model$revision, ".csv")
   if (file.exists(system.file(histfile, package = "PEcAn.ED2"))) {
-    print(paste0("--- Using ED2 History File: ", "data/history.r", settings$model$revision, ".csv"))
+    PEcAn.utils::logger.info(paste0("--- Using ED2 History File: ", "data/history.r", settings$model$revision, ".csv"))
     edhistory <- read.csv2(system.file(histfile, package = "PEcAn.ED2"), sep = ";", 
                            stringsAsFactors = FALSE, dec = ".")
   } else {
-    print("--- Using Generic ED2 History File: data/history.csv")
+    PEcAn.utils::logger.info("--- Using Generic ED2 History File: data/history.csv")
     edhistory <- read.csv2(system.file("data/history.csv", package = "PEcAn.ED2"), sep = ";", 
                            stringsAsFactors = FALSE, dec = ".")
   }
   
   edtraits <- names(edhistory)
-  data(pftmapping)
+  data(pftmapping, package = 'PEcAn.ED2')
   
   ## Get ED2 specific model settings and put into output config xml file
-  xml <- listToXml(settings$model$config.header, "config")
+  xml <- PEcAn.utils::listToXml(settings$model$config.header, "config")
   
   ## Process the names in defaults. Runs only if names(defaults) are null or have at least one
   ## instance of name attribute 'pft'. Otherwise, AS assumes that names in defaults are already set
@@ -351,30 +383,44 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
       # happen is for there to be two settings for each PFT: the 'num' to use to represent the PFT to
       # ED, and the 'defaults.PFT' (name or number) to use for pulling default parameter values.
       pft.number <- pftmapping$ED[which(pftmapping == pft)]
-      if (length(pft.number) == 0) {
-        logger.error(pft, "was not matched with a number in settings$constants or pftmapping data. Consult the PEcAn instructions on defining new PFTs.")
+      
+      if(pft=="soil"){
+        data(soil, package = "PEcAn.ED2")
+        vals <- as.list(soil)
+        names(vals) <- colnames(soil)
+        
+        converted.trait.values <- convert.samples.ED(trait.values[[i]])
+        vals <- modifyList(vals, converted.trait.values)
+        
+        decompositon.xml <- PEcAn.utils::listToXml(vals, "decomposition")
+        xml <- XML::append.xmlNode(xml, decompositon.xml)
+      } else if(length(pft.number) == 0) {
+        PEcAn.utils::logger.error(pft, "was not matched with a number in settings$constants or pftmapping data. Consult the PEcAn instructions on defining new PFTs.")
         stop("Unable to set PFT number")
+      }else{
+        # TODO: Also modify web app to not default to 1
+        
+        ## Get default trait values from ED history
+        vals <- as.list(edhistory[edhistory$num == pft.number, ])
+        
+        ## Convert trait values to ED units
+        converted.trait.values <- convert.samples.ED(trait.values[[i]])
+        
+        ## Selectively replace defaults with trait values
+        vals <- modifyList(vals, converted.trait.values)
+        
+        ## Convert settings constants to ED units
+        converted.defaults <- convert.samples.ED(defaults[[pft]]$constants)
+        
+        ## Selectively replace defaults and trait values with constants from settings
+        if (!is.null(converted.defaults)){
+          vals <- modifyList(vals, converted.defaults)
+        } 
+        
+        pft.xml <- PEcAn.utils::listToXml(vals, "pft")
+        xml <- XML::append.xmlNode(xml, pft.xml)
       }
-      # TODO: Also modify web app to not default to 1
-      
-      ## Get default trait values from ED history
-      vals <- as.list(edhistory[edhistory$num == pft.number, ])
-      
-      ## Convert trait values to ED units
-      converted.trait.values <- convert.samples.ED(trait.values[[i]])
-      
-      ## Selectively replace defaults with trait values
-      vals <- modifyList(vals, converted.trait.values)
-      
-      ## Convert settings constants to ED units
-      converted.defaults <- convert.samples.ED(defaults[[pft]]$constants)
-      
-      ## Selectively replace defaults and trait values with constants from settings
-      if (!is.null(converted.defaults)) 
-        vals <- modifyList(vals, converted.defaults)
-      
-      pft.xml <- listToXml(vals, "pft")
-      xml <- XML::append.xmlNode(xml, pft.xml)
+
     }
   }
   return(xml)

@@ -20,7 +20,7 @@
 ##' @param con database connection object
 ##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
 ##' @return data frame with query results
-##' @export
+##' @export query.base
 ##' @examples
 ##' \dontrun{
 ##' query.base('select count(id) from traits;')
@@ -47,7 +47,7 @@ query.base <- function(query, con = NULL, ...) {
 ##' @title Query database connection
 ##' @param ... optional arguments for connecting to database (e.g. password, user name, database)
 ##' @return database connection object
-##' @export
+##' @export query.base.con
 ##' @examples
 ##' \dontrun{
 ##' con <- query.base.con(settings)
@@ -71,7 +71,7 @@ query.base.con <- function(settings, ...) {
 ##' @param con database connection object
 ##' @return nothing, as a side effect closes all open connections
 ##' @author Rob Kooper
-##' @export
+##' @export query.close
 query.close <- function(con) {
   .Deprecated("db.close")
   .db.utils$deprecated <- .db.utils$deprecated + 1

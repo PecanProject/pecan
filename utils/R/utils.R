@@ -198,23 +198,23 @@ listToXml.default <- function(item, tag) {
   # just a textnode, or empty node with attributes
   if (typeof(item) != "list") {
     if (length(item) > 1) {
-      xml <- xmlNode(tag)
+      xml <- XML::xmlNode(tag)
       for (name in names(item)) {
-        xmlAttrs(xml)[[name]] <- item[[name]]
+        XML::xmlAttrs(xml)[[name]] <- item[[name]]
       }
       return(xml)
     } else {
-      return(xmlNode(tag, item))
+      return(XML::xmlNode(tag, item))
     }
   }
   
   # create the node
   if (identical(names(item), c("text", ".attrs"))) {
     # special case a node with text and attributes
-    xml <- xmlNode(tag, item[["text"]])
+    xml <- XML::xmlNode(tag, item[["text"]])
   } else {
     # node with child nodes
-    xml <- xmlNode(tag)
+    xml <- XML::xmlNode(tag)
     for (i in seq_along(item)) {
       if (is.null(names(item)) || names(item)[i] != ".attrs") {
         xml <- XML::append.xmlNode(xml, listToXml(item[[i]], names(item)[i]))
@@ -225,7 +225,7 @@ listToXml.default <- function(item, tag) {
   # add attributes to node
   attrs <- item[[".attrs"]]
   for (name in names(attrs)) {
-    xmlAttrs(xml)[[name]] <- attrs[[name]]
+    XML::xmlAttrs(xml)[[name]] <- attrs[[name]]
   }
   return(xml)
 } # listToXml.default
@@ -589,19 +589,28 @@ load.modelpkg <- function(model) {
 
 ##' conversion function for the unit conversions that udunits cannot handle but often needed in PEcAn calculations
 ##' @title misc.convert
+##' @export
 ##' @param x convertible values
 ##' @param u1 unit to be converted from, character
 ##' @param u2 unit to be converted to, character
 ##' @return val converted values
-##' @export
-##' @author Istem Fer
+##' @author Istem Fer, Shawn Serbin
 misc.convert <- function(x, u1, u2) {
   if (u1 == "umol C m-2 s-1" & u2 == "kg C m-2 s-1") {
     val <- udunits2::ud.convert(x, "ug", "kg") * 12  # atomic mass of carbon
   } else if (u1 == "kg C m-2 s-1" & u2 == "umol C m-2 s-1") {
     val <- udunits2::ud.convert(x, "kg", "ug")/12  # atomic mass of carbon
-  } else {
-    logger.severe(paste("Unknown units", u1, u2))
+  } else if (u1 == "mol H2O m-2 s-1" & u2 == "kg H2O m-2 s-1") {
+    val <- udunits2::ud.convert(x, "g", "kg") * 18.01528 # molar mass of H2O, g/mol
+  } else if (u1 == "kg H2O m-2 s-1" & u2 == "mol H2O m-2 s-1") {
+    val <- udunits2::ud.convert(x, "kg", "g")/18.01528 # molar mass of H2O, g/mol
+  }else {
+    u1 <- gsub("gC","g*12",u1)
+    u2 <- gsub("gC","g*12",u2)
+    val <- udunits2::ud.convert(x,u1,u2)
+    
+    
+#    logger.severe(paste("Unknown units", u1, u2))
   }
   return(val)
 } # misc.convert
@@ -609,15 +618,23 @@ misc.convert <- function(x, u1, u2) {
 
 ##' function to check whether units are convertible by misc.convert function
 ##' @title misc.are.convertible
+##' @export
 ##' @param u1 unit to be converted from, character
 ##' @param u2 unit to be converted to, character
 ##' @return logical
-##' @export
-##' @author Istem Fer
+##' @author Istem Fer, Shawn Serbin
 misc.are.convertible <- function(u1, u2) {
-  if (match(u1, c("umol C m-2 s-1", "kg C m-2 s-1")) ==
-      match(u2, c("kg C m-2 s-1", "umol C m-2 s-1"))) {
-    return(TRUE)
+  
+  # make sure the order of vectors match
+  units.from <- c("umol C m-2 s-1", "kg C m-2 s-1", "mol H2O m-2 s-1", "kg H2O m-2 s-1")
+  units.to <- c("kg C m-2 s-1", "umol C m-2 s-1", "kg H2O m-2 s-1", "mol H2O m-2 s-1")
+  
+  if(u1 %in% units.from & u2 %in% units.to) {
+    if (which(units.from == u1) == which(units.to == u2)) {
+      return(TRUE)
+    } else {
+      return(FALSE)
+    }
   } else {
     return(FALSE)
   }
@@ -631,18 +648,20 @@ misc.are.convertible <- function(u1, u2) {
 ##' @export
 ##' @author Istem Fer
 convert.expr <- function(expression) {
-  
-  library(stringi)
-  
   # split equation to LHS and RHS
   deri.var <- gsub("=.*$", "", expression) # name of the derived variable
   deri.eqn <- gsub(".*=", "", expression) # derivation eqn
-    
+
   non.match <- gregexpr('[^a-zA-Z_.]', deri.eqn) # match characters that are not "a-zA-Z_."
   split.chars <- unlist(regmatches(deri.eqn, non.match)) # where to split at
   # split the expression to retrieve variable names to be used in read.output
-  variables <- unlist(stri_split_charclass(deri.eqn, paste0("[",noquote(paste0(split.chars, collapse="")),"]"), omit_empty = TRUE))
-  
+  if(length(split.chars)!=0){
+    variables <- unlist(strsplit(deri.eqn, paste0("[",noquote(paste0(split.chars, collapse="")),"]")))
+    variables <- variables[variables != ""] # Remove empty entries
+  } else {
+    variables <- deri.eqn
+  }
+
   return(list(variable.drv = deri.var, variable.eqn = list(variables = variables, expression = deri.eqn)))
 }
 
