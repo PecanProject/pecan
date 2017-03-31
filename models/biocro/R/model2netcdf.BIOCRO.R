@@ -61,7 +61,8 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
     vars <- list()
     
     c2biomass <- 0.4
-    vars <- list(TotLivBiom = mstmipvar("TotLivBiom", x, y, t), 
+    vars <- list(NPP = mstmipvar("NPP", x, y, t),
+                 TotLivBiom = mstmipvar("TotLivBiom", x, y, t),
                  RootBiom = mstmipvar("RootBiom", x, y, t),
                  StemBiom = mstmipvar("StemBiom", x, y, t), 
                  Yield = mstmipvar("Yield", x, y, t),
@@ -78,7 +79,7 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
                        Evap = udunits2::ud.convert(SoilEvaporation + CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
                        TVeg = udunits2::ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
                        LAI = LAI))
-    
+    RR$NPP <- udunits2::ud.convert(c(0, diff(R$TotLivBiom)), "kg/m2/h", "kg/m2/s")
     ncfile <- file.path(outdir, paste0(yeari, ".nc"))
     if (file.exists(ncfile)) {
       nc <- ncdf4::nc_open(ncfile, write = TRUE)
