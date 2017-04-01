@@ -22,11 +22,11 @@
 ##' @param ... other arguments passed from PEcAn, currently ignored
 ##' @return a dataframe of information about the written file
 ##' @export
+##' @importFrom PEcAn.data.atmosphere load.cfmet cfmet.downscale.time
 ##' @author Rob Kooper, David LeBauer
 ##-------------------------------------------------------------------------------------------------#
 met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
                              lat, lon, start_date, end_date, ...) {
-  library(PEcAn.all)
   dir.create(file.path(outfolder), recursive = TRUE, showWarnings = FALSE)
   years_wanted <- lubridate::year(start_date):lubridate::year(end_date)
 
@@ -106,11 +106,12 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
 ##' \item precip cm/h
 ##' \end{itemize}
 ##' @export cf2biocro
+##' @import PEcAn.utils
+##' @importFrom PEcAn.data.atmosphere qair2rh sw2par par2ppfd
+##' @importFrom data.table :=
 ##' @author David LeBauer
 cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
 
-  library(PEcAn.all) # TODO: Avoid this?
-  
   if ((!is.null(longitude)) & zulu2solarnoon) {
     solarnoon_offset <- udunits2::ud.convert(longitude/360, "day", "minute")
     met[, `:=`(solardate = date + minutes(solarnoon_offset))]
