@@ -1,4 +1,4 @@
-## PEcAn XML Configuration
+# PEcAn XML Configuration
 The PEcAn system is configured using a xml file, often called settings.xml. The configuration file can be split in X seperate pieces:
 
 1. [PEcAn Folders](#pecan-folders)
@@ -14,7 +14,7 @@ The PEcAn system is configured using a xml file, often called settings.xml. The 
 11. [State Data Assimilation](#state-data-assimilation-tags)
 
 
-### PEcAn folders
+## PEcAn folders
 
 The following are the tags that can be used to configure the folders used by PEcAn. All of these are optional.
 
@@ -25,7 +25,7 @@ The following are the tags that can be used to configure the folders used by PEc
 * **outdir** : [optional] specifies where PEcAn will write all outputs and create folders. If this is not specified the folder pecan in the current folder will be used.
 
 
-### Database Access
+## Database Access
 
 The connection to the BETY database is configured using this section. In this section you will specify what driver to use to connect to the database (PostgreSQL by default) and the connection parameters to connect to the database. This section is very picky and will only accept parameters that are passed into the connection function for each database driver, any other entries will result in an error by the database driver.
 
@@ -64,7 +64,7 @@ The connection information under bety will be used by most of the PEcAn system, 
 For other database drivers these parameters will change. See the driver documentation in R for the right parameters.
 
 
-### BETY Database Configuration
+## BETY Database Configuration
 
 This section describes how to connect to the BETY Database. This section is used for versions of PEcAn prior to version 1.3.6, starting at 1.3.6 this parameter is part of &lt;database&gt;&lt;bety&gt; and defaults to TRUE.
 
@@ -81,7 +81,7 @@ This section describes how to connect to the BETY Database. This section is used
 * **write** : [optional] this can be TRUE/FALSE (the default is TRUE). If set to TRUE, runs, ensembles and workflows are written to the database.
 
 
-### Brown Dog Configuration
+## Brown Dog Configuration
 
 This section describes how to connect to [Brown Dog](http://browndog.ncsa.illinois.edu). This will allow for conversions of data (currently only met data).
 
@@ -102,7 +102,7 @@ This section describes how to connect to [Brown Dog](http://browndog.ncsa.illino
 * **password** : [optional] password to be used with the endpoint for Brown Dog.
 
 
-### PFT Selection
+## PFT Selection
 
 The PEcAn system requires at least 1 PFT (Plant Functional Type) to be specified inside the `<pfts>` section. 
 
@@ -111,7 +111,7 @@ The PEcAn system requires at least 1 PFT (Plant Functional Type) to be specified
 `get.traits()`
 
 
-### PFT tags
+#### tags
 
 
 ```xml
@@ -131,13 +131,13 @@ The PEcAn system requires at least 1 PFT (Plant Functional Type) to be specified
 * **contants**: [optional] this section contains information that will be written directly into the model specific configuration files. PEcAn does not look at the information in this section.  
 
 
-### Meta Analysis
+## Meta Analysis
 
-#### meta analysis functions:
+#### functions:
 
 `run.meta.analysis()`
 
-#### meta analysis tags
+#### tags
 
 ```xml
 <meta.analysis>
@@ -156,15 +156,15 @@ The section meta.analysis needs to exists for a meta.analysis to be executed, ev
 * **threshold** threshold for Gelman-Rubin convergence diagnostic (MGPRF); default is 1.2
 
 
-### Ensemble Runs
+## Ensemble Runs
 
 Only if this section is defined an ensemble analysis is done.
 
-#### ensemble functions: 
+#### functions: 
 
 `write.configs()`, `run.ensemble.analysis()`
 
-#### ensemble tags
+#### tags
 
 ```xml
 <ensemble>
@@ -180,7 +180,7 @@ Only if this section is defined an ensemble analysis is done.
 Note: if the ensemble size is set to 1, PEcAn will select the **posterior median** parameter values rather than taking a single random draw from the posterior
 
 
-### Sensitivity Runs
+## Sensitivity Runs
 
 Only if this section is defined a sensitivity analysis is done. This section will have `<quantile>` or `<sigma>` nodes. If neither are given, the default is to use the median +/- [1 2 3] x sigma (e.g. the 0.00135 0.0228 0.159 0.5 0.841 0.977 0.999 quantiles); If the 0.5 (median) quantile is omitted, it will be added in the code.
 
@@ -188,7 +188,7 @@ Only if this section is defined a sensitivity analysis is done. This section wil
 
 `write.configs()`, `run.sensitivity.analysis()`
 
-#### sensitivity analysis tags
+#### tags
 
 ```xml
 <sensitivity.analysis>
@@ -216,7 +216,7 @@ Only if this section is defined a sensitivity analysis is done. This section wil
 * ** variable** : [optional] name of one (or more) variables the analysis should be run for. If not specified, sensitivity.analysis variable is used, otherwise default is GPP.
 
 
-### Model Setup
+## Model Setup
 
 This section is required and tells PEcAn what model to run. This section should either specify `<id>` or both `<name>` and `<binary>`  of the model. If both id and name and/or binary are specified the id is used to check the specified name and/or binary.
 
@@ -228,7 +228,7 @@ To ensure compatability, the code will automatically convert from `<name>` to `<
 
 `write.configs()`, `run.models()`
 
-#### model tags
+#### tags
 
 ```xml
 <model>
@@ -249,7 +249,7 @@ To ensure compatability, the code will automatically convert from `<name>` to `<
 * **job.sh** : [optional] additional options to add to the job.sh at the top  
 * **config.headers** : [optional] XML that will appear at the start of generated config files.
 
-### ED2 specific tags
+#### ED2 specific tags
 
 Following variables are ED specific and are used in the [ED2 Configuration](ED2-Configuration).
 
@@ -276,7 +276,7 @@ Starting at 1.3.7 the tags for inputs have moved to `<run><inputs>`. This includ
 * **inputs** : **OBSOLETE** [required] location of additional input files (e.g. data assimilation data), now part of `<run><inputs>`. Should be specified as `<lu>' and `<thsums>`.
 
 
-### Run Setup
+## Run Setup
 
 #### tags
 
@@ -363,7 +363,7 @@ Host on which the simulation will run is specified in the `<host>` subsection. I
 * **job.sh** : [optional] additional options to add to the job.sh at the top  
 
 
-### State Data Assimilation Tags
+## State Data Assimilation Tags
 
 The following tags can be used for state data assimilation. More detailed information can be found here: [State Data Assimilation Documentation](sda.documentation.md)
 
@@ -396,3 +396,14 @@ The following tags can be used for state data assimilation. More detailed inform
 * **end.date** : [required?] end date of the state data assimilation (in YYYY/MM/DD format)
 * **_NOTE:_** start.date and end.date are distinct from values set in the run tag because this analysis can be done over a subset of the run.
 
+## Parameter Data Assimilation
+
+The following tags can be used for state data assimilation. More detailed information can be found here: [Parameter Data Assimilation Documentation](pda.documentation.md)
+
+#### tags
+
+Coming soon...
+
+## Benchmarking
+
+Coming soon...
