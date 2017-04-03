@@ -22,7 +22,7 @@ if [ ! -d book_hosted ]; then
 fi
 
 # Create tutorial directory
-mkdir -b book_hosted/tutorials
+mkdir -p book_hosted/tutorials
 
 # Copy all HTML files into target folder
 while read f; do
