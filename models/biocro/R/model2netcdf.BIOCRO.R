@@ -57,10 +57,7 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
         result_yeari[[variable]] <- c(v[1], rep(v[-1], 24, each = TRUE))
       }
     }
-    
-    vars <- list()
-    
-    c2biomass <- 0.4
+   
     vars <- list(NPP = mstmipvar("NPP", x, y, t),
                  TotLivBiom = mstmipvar("TotLivBiom", x, y, t),
                  RootBiom = mstmipvar("RootBiom", x, y, t),
@@ -70,7 +67,8 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
                  TVeg = mstmipvar("TVeg", x, y, t), 
                  LAI = mstmipvar("LAI", x, y, t))
     
-    k <- udunits2::ud.convert(1, "Mg/ha", "kg/m2") / c2biomass
+    biomass2c <- 0.4
+    k <- udunits2::ud.convert(1, "Mg/ha", "kg/m2") * bioimass2c
     
     result_yeari_std <- with(result_yeari, list(
       TotLivBiom = k * (Leaf + Root + Stem + Rhizome + Grain), 
@@ -81,7 +79,7 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
       LAI = LAI))
     
     total_biomass <- with(result_yeari, 
-                          k * (TotLivBiom + Leaf + Root + Stem + Rhizome + Grain + AboveLitter + BelowLitter))
+                          k * (Leaf + Root + Stem + Rhizome + Grain + AboveLitter + BelowLitter))
     delta_biomass <- udunits2::ud.convert(c(0, diff(total_biomass)), "kg/m2/h", "kg/m2/s")
     delta_biomass[delta_biomass < 0] <- 0
     result_yeari_std$NPP <- delta_biomass
