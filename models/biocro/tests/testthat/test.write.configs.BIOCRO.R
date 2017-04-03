@@ -1,6 +1,7 @@
 
 settings.xml <- file.path("data", "pecan.biocro.xml")
 settings <- PEcAn.settings::read.settings(settings.xml)
+settings <- PEcAn.settings::prepare.settings(settings)
 
 samples <- list(biocro.saof = (data.frame(Vcmax = c(31.9, 42.4, 57), cuticular_cond = c(1800, 
   4380, 10700), leaf_respiration_rate_m2 = c(1, 1.9, 3.6), stomatal_slope.BB = c(2.7, 
