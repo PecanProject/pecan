@@ -16,6 +16,8 @@ rmd_files: [
   "adv_user_guide_web/Advanced_Users_Guide.Rmd",
   "adv_user_guide_web/using_browndog.Rmd",
   "adv_user_guide_web/PEcAn-Configuration.Rmd",
+  "adv_user_guide_web/pda.documentation.Rmd",
+  "adv_user_guide_web/sda.documentation.Rmd",
   "adv_user_guide_web/editing_model_config.Rmd",
   "adv_user_guide_web/advanced_setup.Rmd",
   "adv_user_guide_cmd/adv_users_guide_cmd.Rmd",
