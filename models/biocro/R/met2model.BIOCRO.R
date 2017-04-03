@@ -16,23 +16,58 @@
 ##' @title Write BioCro met files
 ##' @param in.path path on disk where CF file lives
 ##' @param in.prefix prefix for each file
-##' @param outfolder location where model specific output is written.
-##' @param ... can pass lat, lon, start.date and end.date
-##' @return OK if everything was succesful.
+##' @param outfolder location where model specific output is written
+##' @param lat, lon Site latitude and longitude
+##' @param start_date, end_date Date range to convert. Each year will be written to a separate file
+##' @param ... other arguments passed from PEcAn, currently ignored
+##' @return a dataframe of information about the written file
 ##' @export
+##' @importFrom PEcAn.data.atmosphere load.cfmet cfmet.downscale.time
 ##' @author Rob Kooper, David LeBauer
 ##-------------------------------------------------------------------------------------------------#
-met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE, ...) {
-  ncfiles <- dir(in.path, full.names = TRUE, pattern = paste0(in.prefix, "*.nc$"), 
-                 all.files = FALSE, recursive = FALSE)
-  metlist <- list()
-  for (file in ncfiles) {
-    met.nc <- ncdf4::nc_open(file)
-    tmp.met <- load.cfmet(met.nc, lat = lat, lon = lon, start.date = start.date, 
-                          end.date = end.date)
-    metlist[[file]] <- cf2biocro(tmp.met)
+met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
+                             lat, lon, start_date, end_date, ...) {
+  dir.create(file.path(outfolder), recursive = TRUE, showWarnings = FALSE)
+  years_wanted <- lubridate::year(start_date):lubridate::year(end_date)
+
+  res <- list()
+  for (year in years_wanted) {
+    yrstart = max(lubridate::ymd(start_date), lubridate::ymd(paste0(year, "-01-01")))
+    yrend = min(lubridate::ymd(end_date), lubridate::ymd(paste0(year, "-12-31")))
+
+    ncfile <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
+    csvfile <- file.path(outfolder, paste(in.prefix, yrstart, yrend, "csv", sep="."))
+
+    if (file.exists(csvfile) && as.logical(overwrite) != TRUE){
+      logger.warn(paste("Output file", csvfile, "already exists! Moving to next year."))
+      next
+    }
+
+    met.nc <- ncdf4::nc_open(ncfile)
+    tmp.met <- load.cfmet(met.nc, lat = lat, lon = lon,
+                          start.date = yrstart, end.date = yrend)
+
+    dt <- lubridate::as.period(mean(diff(tmp.met$date)))
+    if (dt > lubridate::hours(1)) {
+      tmp.met <- cfmet.downscale.time(cfmet = tmp.met, output.dt = 1)
+    }
+
+    met <- cf2biocro(tmp.met)
+    write.csv(met, file = csvfile, row.names = FALSE)
+
+    res[[as.character(year)]] <- data.frame(
+      file = csvfile,
+      host = fqdn(),
+      mimetype = "text/csv",
+      formatname = "biocromet",
+      startdate = yrstart,
+      enddate = yrend,
+      dbfile.name = in.prefix,
+      stringsAsFactors = FALSE)
   }
-  rbindlist(metlist)
+
+  result <- do.call("rbind", res)
+  return(result)
 }  # met2model.BIOCRO
 
 
@@ -71,9 +106,12 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE, .
 ##' \item precip cm/h
 ##' \end{itemize}
 ##' @export cf2biocro
+##' @import PEcAn.utils
+##' @importFrom PEcAn.data.atmosphere qair2rh sw2par par2ppfd
+##' @importFrom data.table :=
 ##' @author David LeBauer
 cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
-  
+
   if ((!is.null(longitude)) & zulu2solarnoon) {
     solarnoon_offset <- udunits2::ud.convert(longitude/360, "day", "minute")
     met[, `:=`(solardate = date + minutes(solarnoon_offset))]

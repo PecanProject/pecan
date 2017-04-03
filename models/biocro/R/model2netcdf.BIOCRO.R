@@ -37,7 +37,7 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
                  vals = as.numeric(lat),
                  longname = "station_latitude", 
                  unlim = TRUE)
-  y <- ncdf4::ncdim_def("longitude", "degrees_north", 
+  y <- ncdf4::ncdim_def("longitude", "degrees_east",
                  vals = as.numeric(lon), 
                  longname = "station_longitude", 
                  unlim = TRUE)
