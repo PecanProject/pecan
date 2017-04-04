@@ -4,7 +4,10 @@
 ##' @author Rob Kooper
 ##' @param timezone to be converted
 ##' @return hours offset of the timezone
-##' @example timezone_hour('America/New_York')
+##' @examples 
+##' \dontrun{
+##' timezone_hour('America/New_York')
+##' }
 ##' @export
 timezone_hour <- function(timezone) {
   if (is.numeric(timezone)) {
