@@ -53,7 +53,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
     
     HarvestedYield <- 0
     if (genus == "Saccharum") {
-      tmp.result <- caneGro(WetDat = WetDat, lat = lat, soilControl = soilP)
+      tmp.result <- caneGro(WetDat = WetDat, lat = lat, soilControl = l2n(config$pft$soilControl))
       # Addin Rhizome an Grain to avoid error in subsequent script processing results
       tmp.result$Rhizome <- 0
       tmp.result$Grain <- 0
