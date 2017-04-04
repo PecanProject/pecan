@@ -68,7 +68,7 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
                  LAI = mstmipvar("LAI", x, y, t))
     
     biomass2c <- 0.4
-    k <- udunits2::ud.convert(1, "Mg/ha", "kg/m2") * bioimass2c
+    k <- udunits2::ud.convert(1, "Mg/ha", "kg/m2") * biomass2c
     
     result_yeari_std <- with(result_yeari, list(
       TotLivBiom = k * (Leaf + Root + Stem + Rhizome + Grain), 
