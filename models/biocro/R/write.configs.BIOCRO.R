@@ -173,7 +173,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
                             "location")
   run.xml <- listToXml(list(start.date = settings$run$start.date, 
                             end.date = settings$run$end.date, 
-                            met.file = settings$run$inputs$met$path, 
+                            met.path = settings$run$inputs$met$path,
                             soil.file = settings$run$inputs$soil$path), 
                        "run")
   

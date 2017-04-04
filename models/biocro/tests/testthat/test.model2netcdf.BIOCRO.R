@@ -43,8 +43,8 @@ test_that("model2netcdf.BIOCRO wrote netCDF with correct variables", {
 
 test_that("dimensions have MsTMIP standard units", {
   
-  expect_equal(dims$lat$units, "degrees_east")
-  expect_equal(dims$lon$units, "degrees_north")
+  expect_equal(dims$lat$units, "degrees_north")
+  expect_equal(dims$lon$units, "degrees_east")
   expect_true(grepl("days since", dims$time$units))
 })
 
