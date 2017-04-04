@@ -43,9 +43,9 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
                  unlim = TRUE)
   
   for (yeari in unique(result$Year)) {
-    R <- result[Year == yeari]
-    dates <- lubridate::ymd(paste0(R$Year, "-01-01")) + lubridate::days(as.numeric(R$DayofYear - 1)) + 
-      lubridate::hours(R$Hour)
+    result_yeari <- result[Year == yeari]
+    dates <- lubridate::ymd(paste0(result_yeari$Year, "-01-01")) + lubridate::days(as.numeric(result_yeari$DayofYear - 1)) + 
+      lubridate::hours(result_yeari$Hour)
     days_since_origin <- dates - lubridate::ymd_hms("1700-01-01 00:00:00")
     if (!units(days_since_origin) == "days") {
       stop("check time units")
@@ -53,15 +53,13 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
     t <- ncdf4::ncdim_def("time", "days since 1700-01-01", as.numeric(days_since_origin))  # define netCDF dimensions for variables
     if (exists("genus") & (genus == "Saccharum")) {
       for (variable in c("Leaf", "Root", "Stem", "LAI", "DayofYear")) {
-        v <- R[[variable]]
-        R[[variable]] <- c(v[1], rep(v[-1], 24, each = TRUE))
+        v <- result_yeari[[variable]]
+        result_yeari[[variable]] <- c(v[1], rep(v[-1], 24, each = TRUE))
       }
     }
-    
-    vars <- list()
-    
-    c2biomass <- 0.4
-    vars <- list(TotLivBiom = mstmipvar("TotLivBiom", x, y, t), 
+   
+    vars <- list(NPP = mstmipvar("NPP", x, y, t),
+                 TotLivBiom = mstmipvar("TotLivBiom", x, y, t),
                  RootBiom = mstmipvar("RootBiom", x, y, t),
                  StemBiom = mstmipvar("StemBiom", x, y, t), 
                  Yield = mstmipvar("Yield", x, y, t),
@@ -69,16 +67,22 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
                  TVeg = mstmipvar("TVeg", x, y, t), 
                  LAI = mstmipvar("LAI", x, y, t))
     
-    k <- udunits2::ud.convert(1, "Mg/ha", "kg/m2") / c2biomass
+    biomass2c <- 0.4
+    k <- udunits2::ud.convert(1, "Mg/ha", "kg/m2") * biomass2c
     
-    RR <- with(R, list(TotLivBiom = k * (Leaf + Root + Stem + Rhizome + Grain), 
-                       RootBiom = k * Root, 
-                       StemBiom = k * Stem, 
-                       Yield = Stem,
-                       Evap = udunits2::ud.convert(SoilEvaporation + CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
-                       TVeg = udunits2::ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
-                       LAI = LAI))
+    result_yeari_std <- with(result_yeari, list(
+      TotLivBiom = k * (Leaf + Root + Stem + Rhizome + Grain), 
+      RootBiom = k * Root, 
+      StemBiom = k * Stem, 
+      Evap = udunits2::ud.convert(SoilEvaporation + CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
+      TVeg = udunits2::ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
+      LAI = LAI))
     
+    total_biomass <- with(result_yeari, 
+                          k * (Leaf + Root + Stem + Rhizome + Grain + AboveLitter + BelowLitter))
+    delta_biomass <- udunits2::ud.convert(c(0, diff(total_biomass)), "kg/m2/h", "kg/m2/s")
+    delta_biomass[delta_biomass < 0] <- 0
+    result_yeari_std$NPP <- delta_biomass
     ncfile <- file.path(outdir, paste0(yeari, ".nc"))
     if (file.exists(ncfile)) {
       nc <- ncdf4::nc_open(ncfile, write = TRUE)
@@ -91,7 +95,7 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
     
     ## Output netCDF data
     for (.vname in names(vars)) {
-      ncdf4::ncvar_put(nc, varid = vars[[.vname]], vals = RR[[.vname]])
+      ncdf4::ncvar_put(nc, varid = vars[[.vname]], vals = result_yeari_std[[.vname]])
       cat(paste(vars[[.vname]]$name, vars[[.vname]]$longname), file = varfile, 
           sep = "\n")
     }
