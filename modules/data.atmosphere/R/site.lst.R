@@ -12,8 +12,7 @@ site.lst <- function(site.id, con) {
   time.zone <- db.query(paste("SELECT time_zone from SITES where id =", site.id), con)
 
   if (!is.na(time.zone) && !is.na(as.character(time.zone))) {
-    lst <- tryCatch(stringi::stri_timezone_info(time.zone)$RawOffset,
-                    error=function(e) 0)
+    lst <- PEcAn.utils::timezone_hour(time.zone)
   } else {
     site <- db.query(paste("SELECT ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat",
       "FROM sites WHERE id =", site.id), con)
