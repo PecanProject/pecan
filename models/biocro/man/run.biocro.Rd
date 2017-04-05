@@ -12,8 +12,8 @@ run.biocro(lat, lon, metpath, soil.nc = NULL, config = config,
 
 \item{lon}{longitude in decimal degrees}
 
-\item{metfile}{full path and name of a netCDF file in either a PEcAn-CF format with meteorological driver data
-or a csv file with hourly data in BioCro format}
+\item{metpath}{full path and name prefix of a csv file with hourly data in BioCro format,
+e.g. `/dir/met` if the files to be used are `/dir/met.2004.csv` and `dir/met.2005.csv'}
 
 \item{soil.nc}{full path and name of a netCDF file with soil data}
 
