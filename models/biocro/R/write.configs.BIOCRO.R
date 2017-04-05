@@ -76,7 +76,7 @@ convert.samples.BIOCRO <- function(trait.samples) {
 ##'  can either be a data.frame or named list of traits, e.g.
 ##' \code{data.frame(vmax = 1, b0 = 2)} or \code{list(vmax = 1, b0 = 2)}
 ##' @param settings pecan settings file configured for BioCro
-##' @param run.id
+##' @param run.id integer; a unique identifier for the run.
 ##' @export
 ##' @return nothing, writes configuration file as side effect 
 ##' @author David LeBauer
@@ -104,10 +104,10 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
              con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
   
-  ## write configuraiton file
+  ## write configuration file
   traits <- convert.samples.BIOCRO(trait.samples = trait.values[[settings$pfts$pft$name]])
   
-  species <- read.csv(file.path(settings$pfts$pft$outdir, "species.csv"))
+  species <- utils::read.csv(file.path(settings$pfts$pft$outdir, "species.csv"))
   genus <- unique(species$genus)
   if (length(genus) > 1) {
     logger.severe("BioCro can not combine multiple genera")
@@ -188,7 +188,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   config.xml <- XML::append.xmlNode(config.xml, simulationPeriod.xml)
   config.xml <- XML::append.xmlNode(config.xml, parms.xml)
   
-  saveXML(config.xml, file = file.path(settings$rundir, run.id, "config.xml"), 
+  XML::saveXML(config.xml, file = file.path(settings$rundir, run.id, "config.xml"),
           indent = TRUE)
 }  # write.config.BIOCRO
 

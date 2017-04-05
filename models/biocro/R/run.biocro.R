@@ -9,6 +9,8 @@
 #' @param coppice.interval numeric, number of years between cuttings for coppice plant or perinneal grass (default 1)
 #' @return output from one of the \code{BioCro::*.Gro} functions (determined by \code{config$genus}), as data.table object
 #' @export
+#' @importFrom PEcAn.data.land get.soil
+#' @import data.table
 #' @author David LeBauer
 run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppice.interval = 1) {
   l2n <- function(x) lapply(x, as.numeric)
@@ -53,7 +55,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
     
     HarvestedYield <- 0
     if (genus == "Saccharum") {
-      tmp.result <- caneGro(WetDat = WetDat, lat = lat, soilControl = l2n(config$pft$soilControl))
+      tmp.result <- BioCro::caneGro(WetDat = WetDat, lat = lat, soilControl = l2n(config$pft$soilControl))
       # Addin Rhizome an Grain to avoid error in subsequent script processing results
       tmp.result$Rhizome <- 0
       tmp.result$Grain <- 0
@@ -76,7 +78,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       }
       ## run willowGro
       
-      tmp.result <- willowGro(WetDat = WetDat, 
+      tmp.result <- BioCro::willowGro(WetDat = WetDat,
                               iRhizome = as.numeric(iplant$iRhizome), 
                               iRoot = as.numeric(iplant$iRoot),
                               iStem = as.numeric(iplant$iStem), 
@@ -95,7 +97,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
         HarvestedYield <- round(last(tmp.result$Stem) * 0.95, 2)
       }
       ## run BioGro
-      tmp.result <- BioGro(WetDat = WetDat,
+      tmp.result <- BioCro::BioGro(WetDat = WetDat,
                            day1 = day1, 
                            dayn = dayn, soilControl = l2n(config$pft$soilControl), 
                            canopyControl = l2n(config$pft$canopyControl), 
@@ -106,7 +108,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       
     } else if (genus == "Sorghum") {
       ## run BioGro
-      tmp.result <- BioGro(WetDat = WetDat, 
+      tmp.result <- BioCro::BioGro(WetDat = WetDat,
                            day1 = day1, 
                            dayn = dayn, 
                            soilControl = l2n(config$pft$soilControl), 
