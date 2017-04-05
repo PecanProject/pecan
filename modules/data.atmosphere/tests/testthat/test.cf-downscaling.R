@@ -43,6 +43,16 @@ test_that("load.cfmet throws error if start/end date out of range",{
                "run start date .* after met data ends")
 })
 
+test_that("load.cfmet enforces lat/lon matching",{
+  expect_is(load.cfmet(met.nc = daily.nc, lat = 39, lon = 20, start.date = "1951-01-01", end.date = "1951-01-07"),
+            "data.frame")
+  expect_error(load.cfmet(met.nc = daily.nc, lat = 39, lon = 20, start.date = "1951-01-01", end.date = "1951-01-07"),
+               "lat / lon .* outside range of met file")
+  expect_error(load.cfmet(met.nc = daily.nc, lat = 9, lon = -88, start.date = "1951-01-01", end.date = "1951-01-07"),
+               "lat / lon .* outside range of met file")
+
+})
+
 context("downscaling")
 
 test_that(
