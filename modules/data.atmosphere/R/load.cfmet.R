@@ -13,14 +13,14 @@
 ##' @return data.table of met data
 ##' @export
 ##' @author David LeBauer
-load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date) {
+load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
   
   library(data.table)
   library(PEcAn.utils)
   
   ## Lat and Lon
-  ncdf4::Lat <- ncvar_get(met.nc, "latitude")
-  ncdf4::Lon <- ncvar_get(met.nc, "longitude")
+  Lat <- ncdf4::ncvar_get(met.nc, "latitude")
+  Lon <- ncdf4::ncvar_get(met.nc, "longitude")
 
   if(min(abs(Lat-lat)) > 2.5 | min(abs(Lon-lon)) > 2.5){
     logger.error("lat / lon (", lat, ",", lon, ") outside range of met file (", range(Lat), ",", range(Lon))
@@ -28,11 +28,14 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date) 
   lati <- which.min(abs(Lat - lat))
   loni <- which.min(abs(Lon - lon))
 
+  start.date <- lubridate::ymd(start.date, tz = "UTC")
+  end.date <- lubridate::ymd(end.date, tz = "UTC")
+
   time.idx <- ncdf4::ncvar_get(met.nc, "time")
 
   ## confirm that time units are PEcAn standard
   basetime.string <- ncdf4::ncatt_get(met.nc, "time", "units")$value
-  base.date       <- lubridate::parse_date_time(basetime.string, c("ymd_hms", "ymd_h", "ymd"))
+  base.date       <- lubridate::parse_date_time(basetime.string, c("ymd_HMS", "ymd_H", "ymd"))
   base.units      <- strsplit(basetime.string, " since ")[[1]][1]
 
   ## convert to days
@@ -46,14 +49,14 @@ load.cfmet <- cruncep_nc2dt <- function(met.nc, lat, lon, start.date, end.date) 
   ## but POSIXlt moves times off by a second
   suppressWarnings(all.dates <- data.table(index = seq(time.idx), date = round(date)))
   
-  if (ymd(as.Date(start.date)) + days(1) < min(all.dates$date)) {
-    logger.error("run start date", ymd(as.Date(start.date)), "before met data starts", min(all.dates$date))
+  if (start.date + lubridate::days(1) < min(all.dates$date)) {
+    logger.error("run start date", start.date, "before met data starts", min(all.dates$date))
   }
-  if (ymd(as.Date(end.date)) > max(all.dates$date)) {
-    logger.error("run end date", ymd(as.Date(start.date)), "after met data ends", min(all.dates$date))
+  if (end.date > max(all.dates$date)) {
+    logger.error("run end date", end.date, "after met data ends", max(all.dates$date))
   }
   
-  run.dates <- all.dates[date > ymd(as.Date(start.date)) & date < ymd(as.Date(end.date)),
+  run.dates <- all.dates[date > start.date & date < end.date,
                          list(index, 
                               date = date, 
                               doy = lubridate::yday(date),

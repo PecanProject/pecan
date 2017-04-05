@@ -77,3 +77,16 @@ before_script:
 script:
   - scripts/build.sh --no-git --tests --name travis
 
+## Render Book
+before_script:
+  - chmod +x book_source/deploy.sh
+  - chmod +x documentation/tutorials/deploy.sh
+
+# Render tutorials
+script:
+  - pushd book_source
+  - make
+  - popd
+  - pushd documentation/tutorials
+  - make build deploy
+  - popd

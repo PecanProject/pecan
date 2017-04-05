@@ -147,7 +147,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        site.id = raw.data.site.id, 
                                        lat.in = new.site$lat, lon.in = new.site$lon, 
                                        host = host, 
-                                       overwrite = overwrite$download)
+                                       overwrite = overwrite$download,
+                                       site = site, username = username)
     if (met %in% c("CRUNCEP", "GFDL")) {
       ready.id <- raw.id
       stage$met2cf <- FALSE
@@ -167,11 +168,12 @@ met.process <- function(site, input_met, start_date, end_date, model,
                             dir = dir, 
                             machine = machine, 
                             site.id = new.site.id, 
-                            lat = site$lat, lon = site$lon, 
+                            lat = new.site$lat, lon = new.site$lon, 
                             start_date = start_date, end_date = end_date, 
                             con = con, host = host, 
                             overwrite = overwrite$met2cf, 
-                            format.vars = format.vars)
+                            format.vars = format.vars,
+                            bety = bety)
   }
   
   #--------------------------------------------------------------------------------------------------#
@@ -207,6 +209,11 @@ met.process <- function(site, input_met, start_date, end_date, model,
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
   if (stage$met2model) {
+    
+    ## Get Model Registration
+    reg.model.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.",model))
+    reg.model <- XML::xmlToList(XML::xmlParse(reg.model.xml))
+    
     met2model.result <- .met2model.module(ready.id = ready.id, 
                                           model = model, 
                                           con = con,
@@ -218,7 +225,9 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                           start_date = start_date, end_date = end_date, 
                                           browndog = browndog, 
                                           new.site = new.site, 
-                                          overwrite = overwrite$met2model)
+                                          overwrite = overwrite$met2model,
+                                          exact.dates = reg.model$exact.dates)
+    
     model.id  <- met2model.result$model.id
     outfolder <- met2model.result$outfolder
   } else {

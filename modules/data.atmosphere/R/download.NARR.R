@@ -1,11 +1,9 @@
 ##' Download NARR files
 ##'
-##' @name download.NARR
-##' @title download.NARR
-##' @export
 ##' @param outfolder
 ##' @param start_year
 ##' @param end_year
+##' @export
 ##'
 ##' @author Betsy Cowdery
 download.NARR <- function(outfolder, start_date, end_date, overwrite = FALSE, verbose = FALSE, ...) {
@@ -16,6 +14,13 @@ download.NARR <- function(outfolder, start_date, end_date, overwrite = FALSE, ve
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
+
+  NARR_start <- 1979
+  if (start_year < NARR_start) {
+    PEcAn.utils::logger.severe(sprintf('Input year range (%d:%d) exceeds the NARR range (%d:present)',
+                                       start_year, end_year,
+                                       NARR_start))
+  }
   
   # Download Raw NARR from the internet
   

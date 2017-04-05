@@ -16,6 +16,7 @@
 ##' @param end_date End time of the simulation
 ##' @export 
 ##' @author Tony Gardella, Michael Dietze
+##' @importFrom ncdf4 ncvar_get ncvar_def
 runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, start.date, end.date) {
   
   library(PEcAn.data.atmosphere)
@@ -59,7 +60,6 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
         doy <- rep(1:366, each = tstep)[1:length(sec)]
       }
       
-      ncvar_get <- ncdf4::ncvar_get
       ## Get variables from netcdf file
       SW     <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  # SW in W/m2
       Tair   <- ncvar_get(nc, "air_temperature")  # air temperature in K
@@ -180,7 +180,6 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
     }
     
     var      <- list()
-    ncvar_def <- ncdf4::ncvar_def
     var[[1]] <- mstmipvar("GPP", lat, lon, t, NA)
     var[[2]] <- ncvar_def("Evapotranspiration", "kg/m2s1", list(lon, lat, t), -999)
     var[[3]] <- ncvar_def("SoilMoist", "kg/m2s1", list(lat, lon, t), NA)

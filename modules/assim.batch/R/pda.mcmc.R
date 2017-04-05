@@ -29,6 +29,9 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
                            jvar = jvar, n.knot = n.knot)
   
   
+  ## will be used to check if multiplicative Gaussian is requested
+  any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
+  
   ## Open database connection
   if (settings$database$bety$write) {
     con <- try(db.open(settings$database$bety), silent = TRUE)
@@ -41,7 +44,10 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
     con <- NULL
   }
   
-  bety <- PEcAn.visualization::betyConnect("~/pecan/web/config.php")
+  bety <- src_postgres(dbname = settings$database$bety$dbname, 
+                       host = settings$database$bety$host, 
+                       user = settings$database$bety$user, 
+                       password = settings$database$bety$password)
   
   ## Load priors
   temp        <- pda.load.priors(settings, bety$con)
@@ -89,7 +95,7 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
   
   ## ----------------------------------- MCMC Setup ----------------------------------- ##
   
-  mcmc.list <- jvar.list <- list()
+  mcmc.list <- jvar.list <- llpar.list <- list()
   
   for (chain in 1:settings$assim.batch$chain) {
     params.list <- pda.init.params(settings, chain, pname.all, sum(n.param.all))
@@ -98,6 +104,22 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
     params <- params.list$params
     start  <- params.list$start
     finish <- params.list$finish
+    
+    iter.flag <- 1
+    
+    if(!is.null(settings$assim.batch$extension) & !is.null(params.list$llpars)){
+      llpars     <- params.list$llpars
+      llparnames <- sapply(strsplit(colnames(llpars), "\\."), `[[`, 1)
+      bias       <- llpars[ ,llparnames == "bias"]
+      nobias     <- llpars[ ,llparnames != "bias"]
+      all.bias   <- bias[length(bias)]
+      parl       <- nobias[length(nobias)]
+      LLpar      <- matrix(NA, ncol= ncol(llpars), nrow = (finish-start)+1,
+                           dimnames = list(NULL, colnames(llpars)))
+      LLpar <- rbind(llpars, LLpar)
+      par.flag   <- TRUE
+      iter.flag  <- 0
+    }
     
     ## Set initial conditions
     if (start == 1) {
@@ -185,10 +207,61 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
           start.model.runs(settings, settings$database$bety$write)
           
           ## Read model outputs
-          model.out <- pda.get.model.output(settings, run.id, bety, inputs)
+          align.return <- pda.get.model.output(settings, run.id, bety, inputs)
+          model.out <- align.return$model.out
+          if(!is.na(model.out)){
+            inputs <- align.return$inputs
+          } 
           
-          ## Calculate likelihood (and store in database)
-          LL.new <- pda.calc.llik(settings, con, model.out, run.id, inputs, llik.fn)
+          # do this once
+          if(i==1){
+            inputs <- pda.neff.calc(inputs)
+          }
+          
+          # retrieve n
+          n.of.obs <- sapply(inputs,`[[`, "n") 
+          names(n.of.obs) <- sapply(model.out,names)
+          
+          # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
+          if(any(unlist(any.mgauss) == "multipGauss")) {
+            isbias <- which(unlist(any.mgauss) == "multipGauss")
+            # testing now
+            nbias <- 1
+            bias.list <- return.bias(isbias, list(model.out), inputs, prior.list, nbias)
+            bias.terms <- bias.list$bias.params
+          } else {
+            bias.terms <- NULL
+          }
+          
+          if(!is.null(bias.terms)){
+            all.bias <- lapply(bias.terms, function(n) n[1,])
+            all.bias <- do.call("rbind", all.bias)
+          } else {
+            all.bias <- NULL
+          }
+          
+          ## calculate error statistics      
+          pda.errors <- pda.calc.error(settings, con, model_out = model.out, run.id, inputs, all.bias)
+          llik.par <- pda.calc.llik.par(settings, n = n.of.obs, 
+                                        error.stats = unlist(pda.errors))
+          # store llik-par
+          parl <- unlist(sapply(llik.par, `[[` , "par"))
+          if(!is.null(parl) & iter.flag == 1 & is.null(all.bias)) {
+            LLpar <- matrix(NA, ncol= length(parl), nrow = finish, dimnames = list(NULL, names(parl)))
+            par.flag <- TRUE
+            iter.flag <- 0
+          } else if(!is.null(parl) & iter.flag == 1 & !is.null(all.bias)) {
+            LLpar <- matrix(NA, ncol= length(parl) + nrow(all.bias), nrow = finish, 
+                            dimnames = list(NULL, c(rownames(all.bias), names(parl))))
+            par.flag <- TRUE
+            iter.flag <- 0
+          } else if(iter.flag == 1){
+            par.flag <- FALSE
+            iter.flag <- 0
+          }
+          
+          ## Calculate likelihood
+          LL.new <- pda.calc.llik(pda.errors = unlist(pda.errors), llik.fn, llik.par)
           
           ## Accept or reject step
           a <- LL.new - LL.old + prior.star - prior.old
@@ -227,6 +300,11 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
       
       ## Store output
       params[i, ] <- parm
+      if(!is.null(parl) & is.null(all.bias)){
+        LLpar[i, ]  <- parl
+      } else if (!is.null(parl) & !is.null(all.bias)){
+        LLpar[i, ]  <- c(all.bias, parl)
+      }
       
       ## Add to temp file (overwrite when i=1, append thereafter) 
       ## cat(c(parm,'\n'), file=filename.mcmc.temp, sep='\t', append=(i != 1))
@@ -234,6 +312,9 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
     
     mcmc.list[[chain]] <- params
     jvar.list[[chain]] <- jmp.vars
+    if(par.flag){
+      llpar.list[[chain]] <- LLpar
+    }
   }  # end of chain-loop
   
   settings$assim.batch$mcmc.path <- file.path(settings$outdir, 
@@ -254,6 +335,20 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
     ind <- ind + n.param[i]
   }
 
+  if (par.flag){
+    mcmc.param.list[[length(mcmc.param.list)+1]] <- list()
+    prior.list[[length(prior.list)+1]] <- list()
+    for(c in seq_len(settings$assim.batch$chain)){
+      mcmc.param.list[[length(mcmc.param.list)]][[c]] <- llpar.list[[c]]
+    }
+    
+    settings$assim.batch$llpar.path <- file.path(settings$outdir, 
+                                                 paste0("llpar.pda",
+                                                        settings$assim.batch$ensemble.id, 
+                                                        ".Rdata"))
+    save(llpar.list, file = settings$assim.batch$llpar.path)
+  }
+  
   ## ------------------------------------ Clean up ------------------------------------
   ## Save outputs to plots, files, and db
   settings$assim.batch$jvar.path <- file.path(settings$outdir,
