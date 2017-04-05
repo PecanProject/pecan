@@ -5,6 +5,9 @@ copyvals <- function(nc1, var1, nc2, var2, dim2, units2 = NA, conv = NULL, missv
   ncvar_get <- ncdf4::ncvar_get
   ncatt_get <- ncdf4::ncatt_get
   ncvar_add <- ncdf4::ncvar_add
+  ncvar_def <- ncdf4::ncvar_def
+  ncatt_put <- ncdf4::ncatt_put
+  ncvar_put <- ncdf4::ncvar_put
   
   vals <- ncvar_get(nc = nc1, varid = var1)
   vals[vals == -6999 | vals == -9999] <- NA
@@ -16,7 +19,7 @@ copyvals <- function(nc1, var1, nc2, var2, dim2, units2 = NA, conv = NULL, missv
   }
   var <- ncvar_def(name = var2, units = units2, dim = dim2, missval = missval, verbose = verbose)
   nc2 <- ncvar_add(nc = nc2, v = var, verbose = verbose)
-  ncdf4::ncvar_put(nc = nc2, varid = var2, vals = vals)
+  ncvar_put(nc = nc2, varid = var2, vals = vals)
   
   # copy and convert attributes
   att <- ncatt_get(nc1, var1, "long_name")
@@ -45,6 +48,8 @@ copyvals <- function(nc1, var1, nc2, var2, dim2, units2 = NA, conv = NULL, missv
 } # copyvals
 
 getLatLon <- function(nc1) {
+  ncatt_get <- ncdf4::ncatt_get
+  
   loc <- ncatt_get(nc = nc1, varid = 0, attname = "site_location")
   if (loc$hasatt) {
     lat <- as.numeric(substr(loc$value, 20, 28))
@@ -75,19 +80,14 @@ getLatLon <- function(nc1) {
 ##' @param verbose should ouput of function be extra verbose
 ##' 
 ##' @author Josh Mantooth, Mike Dietze, Elizabeth Cowdery, Ankur Desai
+##' @importFrom ncdf4 ncvar_get ncatt_get ncdim_def ncvar_def ncvar_add ncvar_put ncatt_put
 met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date,
                              overwrite = FALSE, verbose = FALSE, ...) {
   
   #---------------- Load libraries. -----------------------------------------------------------------#
   library(PEcAn.utils)
-  library(geonames)
+  library(geonames)  ## has to be loaded as a library
   #--------------------------------------------------------------------------------------------------#  
-  
-  ncvar_get <- ncdf4::ncvar_get
-  ncdim_def <- ncdf4::ncdim_def
-  ncatt_get <- ncdf4::ncatt_get
-  ncvar_add <- ncdf4::ncvar_add
-  ncvar_put <- ncdf4::ncvar_put
   
   # get start/end year code works on whole years only
   start_year <- lubridate::year(start_date)

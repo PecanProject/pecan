@@ -28,15 +28,12 @@
 ##' 
 ##' @export
 ##' @author Shawn Serbin, Anthony Walker
+##' @importFrom PEcAn.utils misc.convert mstmipvar
+##' @importFrom ncdf4 ncdim_def
 model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date = NULL, end_date = NULL) {
 
   ## TODO !!UPDATE SO IT WILL WORK WITH NO MET AND WITH MET DRIVER!!
 
-  ## Import functions that are used frequently
-  misc.convert <- PEcAn.utils::misc.convert
-  ncdim_def <- ncdf4::ncdim_def
-  mstmipvar <- PEcAn.utils::mstmipvar
-  
   ### Read in model output in SIPNET format
   maat.out.file <- file.path(outdir, "out.csv")
   maat.output <- read.csv(maat.out.file, header = TRUE)

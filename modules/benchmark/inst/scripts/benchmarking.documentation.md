@@ -1,6 +1,6 @@
 # Benchmarking Documentation 
 
-There are two ways to use `calc.benchmark`
+There are two ways to use `calc_benchmark`
 
 1. With `workflow.R` to create new outputs
 2. With `benchmark.workflow.R` to use exiting outputs

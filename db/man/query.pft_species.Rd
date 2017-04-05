@@ -4,7 +4,7 @@
 \alias{query.pft_species}
 \title{Query species given pft name}
 \usage{
-\method{query}{pft_species}(pft, modeltype, con)
+query.pft_species(pft, modeltype, con)
 }
 \arguments{
 \item{pft}{string pft name}

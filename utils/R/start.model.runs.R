@@ -20,6 +20,14 @@
 ##' @author Shawn Serbin, Rob Kooper, David LeBauer
 ##'
 start.model.runs <- function(settings, write = TRUE) {
+  
+  # check if runs need to be done
+  if(!file.exists(file.path(settings$rundir, "runs.txt"))){
+    logger.warn("runs.txt not found, assuming no runs need to be done")
+    return()
+  }
+  
+  
   model <- settings$model$type
   logger.info("-------------------------------------------------------------------")
   logger.info(paste(" Starting model runs", model))

@@ -4,7 +4,7 @@
 \alias{plot.jump}
 \title{plot.jump}
 \usage{
-\method{plot}{jump}(jmp)
+plot.jump(jmp)
 }
 \arguments{
 \item{jmp}{jump parameter}
