@@ -12,6 +12,10 @@ test_that("data extracted from test pecan-cf met files is valid",{
   
   expect_is(daily.cf$date, "POSIXct")
   expect_is(daily.cf$date, "POSIXt")
+  expect_is(daily.cf$index, "integer")
+  expect_is(daily.cf$doy, "numeric")
+  expect_is(daily.cf$air_temperature, "numeric")
+  expect_is(daily.cf$relative_humidity, "numeric")
   
   expect_true(all(daily.cf$year == 1951))
   expect_true(all(daily.cf$day %in% 1:31))
@@ -23,11 +27,20 @@ test_that("data extracted from test pecan-cf met files is valid",{
                     colnames(daily.cf)))
 })
 
+test_that("load.cfmet respects start/end date",{
+  expect_equal(strftime(min(daily.cf$date), "%F"), "1951-01-01")
+  expect_equal(strftime(max(daily.cf$date), "%F"), "1951-06-01")
+  expect_equal(nrow(daily.cf), 152)
+})
 
 test_that("load.cfmet throws error if start/end date out of range",{
   PEcAn.utils::logger.setLevel("OFF")
   expect_error(load.cfmet(met.nc = subdaily.nc, lat = 39, lon = -88, start.date = "9999-01-01", end.date = "9999-02-02"))
   expect_error(load.cfmet(met.nc = subdaily.nc, lat = 39, lon = -88, start.date = "0000-01-01", end.date = "0000-02-02"))
+  expect_error(load.cfmet(met.nc = daily.nc, lat = 39, lon = -88, start.date = "1950-12-31", end.date = "1951-12-31"),
+               "run start date .* before met data starts")
+  expect_error(load.cfmet(met.nc = daily.nc, lat = 39, lon = -88, start.date = "1951-01-01", end.date = "1952-01-01"),
+               "run start date .* after met data ends")
 })
 
 context("downscaling")
