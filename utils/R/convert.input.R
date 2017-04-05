@@ -259,7 +259,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     if (exists("existing.input") && nrow(existing.input) > 0 && 
         (existing.input$start_date != start_date || existing.input$end_date != end_date)) {
       db.query(paste0("UPDATE inputs SET start_date='", start_date, "', end_date='", 
-                      end_date, "', ", "updated_at=NOW() WHERE id=", existing.input$id), 
+                      end_date, "'  WHERE id=", existing.input$id), 
                con)
     }
     
@@ -268,12 +268,12 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       # values (i.e., what they'd be if convert.input was creating a new record)
       if (exists("existing.input") && nrow(existing.input) > 0) {
         db.query(paste0("UPDATE inputs SET name='", basename(dirname(result$file[1])), 
-                        "', ", "updated_at=NOW() WHERE id=", existing.input$id), con)
+                        "' WHERE id=", existing.input$id), con)
       }
       if (exists("existing.dbfile") && nrow(existing.dbfile) > 0) {
         db.query(paste0("UPDATE dbfiles SET file_path='", dirname(result$file[1]), 
-                        "', ", "file_name='", result$dbfile.name[1], "', ", 
-                        "updated_at=NOW() WHERE id=", existing.dbfile$id), con)
+                        "', ", "file_name='", result$dbfile.name[1], 
+                        "' WHERE id=", existing.dbfile$id), con)
       }
     }
     

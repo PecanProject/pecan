@@ -8,41 +8,54 @@
 #' @param observed Vector, matrix, or data frame (coerced to matrix) of 
 #' observed values. For spectral data, wavelengths are rows and spectra are 
 #' columns. Dimensions must align with the output of `model`.
-#' @param invert.options R list object containing the following elements:
-#' 
-#' inits Vector of initial values of model parameters to be inverted.
-#'
-#' ngibbs Number of MCMC iterations
-#'
-#' prior.function Function for use as prior.
-#' Should take a vector of parameters as input and return a single value -- the sum of their log-densities -- as output.
-#'
-#' param.mins Vector of minimum values for inversion parameters
-#' 
-#' param.maxs Vector of minimum values for inversion parameters
-#'
-#' model The model to be inverted.
-#' This should be an R function that takes `params` and `runID` as input and returns one column of `observed` (nrows should be the same).
-#' Constants should be implicitly included here.
-#'
-#' adapt Number of steps for adapting covariance matrix (i.e. adapt every 'n' steps).
-#' Default=100
-#' 
-#' adj_min Minimum threshold for rescaling Jump standard deviation.
-#' Default = 0.1.
-#' 
-#' target Target acceptance rate.
-#' Default=0.234, based on recommendation for multivariate block sampling in Haario et al. 2001
-#' 
-#' do.lsq Perform least squares optimization first (see `invert.lsq`), and use outputs to initialize Metropolis Hastings.
-#' This may improve mixing time, but risks getting caught in a local minimum.
-#' Default=FALSE
-#'
-#' catch_error If TRUE (default), wrap model in \code{tryCatch} to prevent sampling termination on model execution error.
-#' 
+#' @param invert.options R list object containing inversion settings. See details.
 #' @param quiet Suppress progress bar and status messages. Default=FALSE
-#' @param return.resume If TRUE, return results as list that includes current Jump distribution (useful for continuing an ongoing run) and acceptance rate. Default = FALSE.
+#' @param return.resume If TRUE, return results as list that includes current 
+#' Jump distribution (useful for continuing an ongoing run) and acceptance 
+#' rate. Default = FALSE.
 #' @param runID Run-unique ID. Useful for parallel runs. Default=NULL
+#' @importFrom Rcpp evalCpp
+#' @details
+#' \code{inversion.options} contains the following:
+#' \itemize{
+#' \item{inits}{Vector of initial values of model parameters to be inverted.}
+#'
+#' \item{ngibbs}{Number of MCMC iterations}
+#'
+#' \item{prior.function}{Function for use as prior.
+#' Should take a vector of parameters as input and return a single value -- the 
+#' sum of their log-densities -- as output.}
+#'
+#' \item{param.mins}{Vector of minimum values for inversion parameters}
+#' 
+#' \item{param.maxs}{Vector of minimum values for inversion parameters}
+#'
+#' \item{model}{The model to be inverted.
+#' This should be an R function that takes `params` and `runID` as input and 
+#' returns one column of `observed` (nrows should be the same).
+#' Constants should be implicitly included here.}
+#'
+#' \item{adapt}{Number of steps for adapting covariance matrix (i.e. adapt 
+#' every 'n' steps). Default=100}
+#' 
+#' \item{adj_min}{Minimum threshold for rescaling Jump standard deviation.
+#' Default = 0.1.}
+#' 
+#' \item{target}{Target acceptance rate. Default=0.234, based on recommendation 
+#' for multivariate block sampling in Haario et al. 2001}
+#' 
+#' \item{do.lsq}{Perform least squares optimization first (see `invert.lsq`), 
+#' and use outputs to initialize Metropolis Hastings.
+#' This may improve mixing time, but risks getting caught in a local minimum.
+#' Default=FALSE}
+#'
+#' \item{catch_error}{If TRUE (default), wrap model in \code{tryCatch} to prevent sampling termination on model execution error.}
+#' }
+#' @references \itemize{
+#' \item{Haario, Heikki; Saksman, Eero; Tamminen, Johanna.  An adaptive 
+#'    Metropolis algorithm. Bernoulli 7 (2001), no. 2, 223--242.
+#'    http://projecteuclid.org/euclid.bj/1080222083.}
+#' }
 #' @export
 invert.custom <- function(observed, invert.options,
                           quiet = FALSE,
@@ -52,6 +65,7 @@ invert.custom <- function(observed, invert.options,
   observed <- as.matrix(observed)
   nspec <- ncol(observed)
   nwl <- nrow(observed)
+  n_obs <- nspec * nwl
 
   need_opts <- c("inits", "prior.function", "model")
   available_defaults <- c("param.mins", "param.maxs", "adapt",
@@ -91,7 +105,7 @@ invert.custom <- function(observed, invert.options,
   if (!is.null(invert.options$param.maxs)) {
     param.maxs <- invert.options$param.maxs
   } else {
-    param.maxs <- rep(-Inf, length(inits))
+    param.maxs <- rep(Inf, length(inits))
   }
   adapt <- invert.options$adapt
   adapt <- ifelse(is.null(adapt), 100, adapt)
@@ -142,6 +156,11 @@ invert.custom <- function(observed, invert.options,
                       lower = param.mins, upper = param.maxs)
     inits <- fit$par
   }
+  if (!all(diag(init.Jump) > 0)) {
+    warning("Passed init.Jump matrix with zero values on diagonals. ", 
+            "Reverting to default initial Jump matrix")
+    init.Jump <- NULL
+  }
   if (is.null(init.Jump)) {
     # Set initial standard deviation to small fraction of initial
     # values (absolute value because SD can't be negative)
@@ -154,7 +173,11 @@ invert.custom <- function(observed, invert.options,
   if (!all(diag(Jump) > 0)) {
     stop("Negative or zero values in diagonal of Jump covariance matrix")
   }
+
+  # Set up result storage
   results <- matrix(NA, nrow = ngibbs, ncol = npars + 1)
+  deviance_store <- numeric(ngibbs)
+  n_eff_store <- numeric(ngibbs)
 
   # Assign parameter names, or use par1, par2, ... if unassigned
   if (!is.null(names(inits))) {
@@ -176,7 +199,6 @@ invert.custom <- function(observed, invert.options,
   }
 
   # Precalculate quantities for first inversion step
-  rp1 <- tau_0 + nspec * nwl/2
   rsd <- 0.5
   PrevSpec <- tryCatch({
       model(inits, runID)
@@ -186,6 +208,9 @@ invert.custom <- function(observed, invert.options,
   })
   PrevError <- PrevSpec - observed
   PrevPrior <- prior.function(inits)
+  n_eff <- neff(PrevError)
+  logLL_scale <- n_eff/n_obs
+  PrevLL <- sum(dnormC(PrevError, 0, rsd)) * logLL_scale
 
   # Sampling loop
   for (ng in seq_len(ngibbs)) {
@@ -242,8 +267,10 @@ invert.custom <- function(observed, invert.options,
     # Metropolis sampling step if all conditions have been met
     if (samp) {
       TryError <- TrySpec - observed
-      TryPost <- sum(dnorm(TryError, 0, rsd, 1)) + TryPrior
-      PrevPost <- sum(dnorm(PrevError, 0, rsd, 1)) + PrevPrior
+      TryLL <- sum(dnormC(TryError, 0, rsd)) * logLL_scale
+      TryPost <- TryLL + TryPrior
+      PrevLL <- sum(dnormC(PrevError, 0, rsd)) * logLL_scale
+      PrevPost <- PrevLL + PrevPrior
       a <- exp(TryPost - PrevPost)
       if (is.na(a)) {
         a <- -1
@@ -251,11 +278,17 @@ invert.custom <- function(observed, invert.options,
       if (a > runif(1)) {
         inits <- tvec
         PrevError <- TryError
+        PrevPrior <- TryPrior
+        n_eff <- neff(PrevError)
+        logLL_scale <- n_eff/n_obs
         ar <- ar + 1
       }
     }
     results[ng, 1:npars] <- inits
-    rp2 <- tau_0 + sum(PrevError * PrevError)/2
+    deviance_store[ng] <- -2 * PrevLL
+    n_eff_store[ng] <- n_eff
+    rp1 <- tau_0 + n_eff/2
+    rp2 <- tau_0 + sum(PrevError * PrevError) * logLL_scale/2
     rinv <- rgamma(1, rp1, rp2)
     rsd <- 1/sqrt(rinv)
     results[ng, npars + 1] <- rsd
@@ -263,11 +296,12 @@ invert.custom <- function(observed, invert.options,
   if (!quiet) {
     close(pb)
   }
+  out <- list(results = results,
+              deviance = deviance_store,
+              n_eff = n_eff_store)
   if (return.resume) {
-    out <- list(results = results, resume = list(jump = Jump, ar = ar))
-    return(out)
-  } else {
-    return(results)
+    out <- append(out, list(resume = list(jump = Jump, ar = ar)))
   }
+  return(out)
 }
 

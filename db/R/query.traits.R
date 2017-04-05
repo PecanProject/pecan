@@ -16,7 +16,7 @@
 ##' @param con 
 ##' @return dataframe with trait data
 ##' @seealso \code{\link{query.trait.data}}
-##' @export
+##' @export query.traits
 ##' @examples
 ##' \dontrun{
 ##' species <- query.pft_species('ebifarm.c4crop')
