@@ -9,6 +9,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     return(PEcAn.settings::papply(settings, do.conversions))
   }
   
+  needsave <- FALSE
   if (is.character(settings$run$inputs)) {
     settings$run$inputs <- NULL  ## check for empty set
   }
@@ -32,7 +33,8 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     
     # met conversion
     if (input.tag == "met") {
-      if (is.null(input$path)) {
+      name <- ifelse(is.null(settings$browndog), "MET Process", "BrownDog")
+      if (is.null(input$path) && (status.check(name) == 0)) {
         settings$run$inputs[[i]][['path']] <- 
           PEcAn.data.atmosphere::met.process(
             site       = settings$run$site, 
@@ -44,8 +46,9 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
             dbparms    = settings$database$bety, 
             dir        = dbfiles,
             browndog   = settings$browndog,
-            overwrite  = overwrite.met
-          )
+            overwrite  = overwrite.met)
+
+        needsave <- TRUE
       }
     }
   }
