@@ -144,7 +144,9 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   ed2in.text <- gsub("@MET_END@", metend, ed2in.text)
   
   if (is.null(settings$model$phenol.scheme)) {
-    print(paste("no phenology scheme set; \n", "need to add <phenol.scheme> tag under <model> tag in settings file"))
+    PEcAn.utils::logger.error(paste0("no phenology scheme set; \n",
+                                     "need to add <phenol.scheme> ",
+                                     "tag under <model> tag in settings file"))
   } else if (settings$model$phenol.scheme == 1) {
     ## Set prescribed phenology switch in ED2IN
     ed2in.text <- gsub("@PHENOL_SCHEME@", settings$model$phenol.scheme, ed2in.text)
@@ -163,10 +165,26 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     ed2in.text <- gsub("@PHENOL_START@", "", ed2in.text)
     ed2in.text <- gsub("@PHENOL_END@", "", ed2in.text)
   }
-  
+
+  ## -------------
+  # Special parameters for SDA
+  # 
+  if (!is.null(settings$state.data.assimilation)) {
+    # Default values
+    sda_tags <- list(isoutput = 3,    # Save history state file
+                     unitstate = 1,   # History state frequency is days
+                     frqstate = 1)    # Write history file every 1 day
+
+    # Overwrite defaults with values from settings$model$ed2in list
+    sda_tags <- modifyList(sda_tags, settings$model$ed2in[names(sda_tags)])
+    ed2in.text <- ed2in_set_value_list(sda_tags, ed2in.text, 
+                                       "PEcAn: configured for SDA")
+  }
+
   ##----------------------------------------------------------------------
-  # Get prefix of filename, append to dirname.  Assumes pattern 'DIR/PREFIX.lat<REMAINDER OF
-  # FILENAME>' Slightly overcomplicated to avoid error if path name happened to contain '.lat'
+  # Get prefix of filename, append to dirname.
+  # Assumes pattern 'DIR/PREFIX.lat<REMAINDER OF FILENAME>'
+  # Slightly overcomplicated to avoid error if path name happened to contain .lat'
   
   # when pss or css not exists, case 0
   if (is.null(settings$run$inputs$pss$path) | is.null(settings$run$inputs$css$path)) {
@@ -220,9 +238,12 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   
   ##-----------------------------------------------------------------------
   # Set The flag for IMETAVG telling ED what to do given how input radiation was originally
-  # averaged -1 = I don't know, use linear interpolation 0 = No average, the values are
-  # instantaneous 1 = Averages ending at the reference time 2 = Averages beginning at the reference
-  # time 3 = Averages centered at the reference time Deafult is -1
+  # averaged
+  # -1 = I don't know, use linear interpolation
+  # 0 = No average, the values are instantaneous
+  # 1 = Averages ending at the reference time
+  # 2 = Averages beginning at the reference time
+  # 3 = Averages centered at the reference time Deafult is -1
   
   ed2in.text <- gsub("@MET_SOURCE@", -1, ed2in.text)
   
@@ -241,6 +262,11 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   ##----------------------------------------------------------------------
   ed2in.text <- gsub("@FFILOUT@", file.path(modeloutdir, "analysis"), ed2in.text)
   ed2in.text <- gsub("@SFILOUT@", file.path(modeloutdir, "history"), ed2in.text)
+
+  ##---------------------------------------------------------------------
+  # Modify any additional tags provided in settings$model$ed2in
+  ed2in.text <- ed2in_set_value_list(settings$model$ed2in, ed2in.text, 
+                                     "PEcAn: Custom argument from pecan.xml")
   
   ##----------------------------------------------------------------------
   writeLines(ed2in.text, con = file.path(settings$rundir, run.id, "ED2IN"))

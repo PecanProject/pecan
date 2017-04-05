@@ -10,7 +10,7 @@
 ##'
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-load.pda.data <- function(settings, con) {
+load.pda.data <- function(settings, bety) {
   
   library(PEcAn.benchmark)
   
@@ -39,7 +39,7 @@ load.pda.data <- function(settings, con) {
       logger.error("Must provide both ID and PATH for all data assimilation inputs.")
     }
     
-    format <- query.format.vars(inputs[[i]]$input.id, con)
+    format <- query.format.vars(inputs[[i]]$input.id, bety)
     
     vars.used.index <- which(format$vars$bety_name %in% data.var)
     
