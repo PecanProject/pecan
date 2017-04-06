@@ -99,9 +99,7 @@ doc_R_pkg = Rscript -e "devtools::document('"$(strip $(1))"')"
 
 $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): .install/devtools
 
-$(ALL_PKGS_D): .install/roxygen2
-
-$(ALL_PKGS_T) $(ALL_PKGS_D): .install/testthat
+$(ALL_PKGS_T) $(ALL_PKGS_D): .install/roxygen2 .install/testthat
 
 .SECONDEXPANSION:
 .doc/%: $$(wildcard %/**/*) $$(wildcard %/*)
