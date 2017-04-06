@@ -77,25 +77,25 @@ before_script:
 
 script:
   # - scripts/build.sh --no-git --tests --name travis
-  - echo -en 'travis_fold:start:Building/Install PEcAn\r'
+  - echo -en 'travis_fold:start:Building_PEcAn\r'
   - make
-  - echo -en 'travis_fold:end:Building/Install PEcAn\r'
-  - echo -en 'travis_fold:start:Testing PEcAn\r'
+  - echo -en 'travis_fold:end:Building_PEcAn\r'
+  - echo -en 'travis_fold:start:Testing_PEcAn\r'
   - make test
-  - echo -en 'travis_fold:end:Testing PEcAn\r'
-  - echo -en 'travis_fold:start:Testing PEcAn\r'
+  - echo -en 'travis_fold:end:Testing_PEcAn\r'
+  - echo -en 'travis_fold:start:Integration_Testing\r'
   - ./tests/integration.sh
-  - echo -en 'travis_fold:end:Testing PEcAn\r'
+  - echo -en 'travis_fold:end:Integration_Testing\r'
   # integration test PEcAn
 
 after_script:
-  - echo -en 'travis_fold:start:Building Book\r'
+  - echo -en 'travis_fold:start:Building_Book\r'
   - pushd book_source
   - make
   - popd
-  - echo -en 'travis_fold:end:Testing PEcAn\r'
-  - echo -en 'travis_fold:start:Deploying Book\r'
+  - echo -en 'travis_fold:end:Building_Book\r'
+  - echo -en 'travis_fold:start:Building_Tutorials\r'
   - pushd documentation/tutorials
   - make build deploy
   - popd
-  - echo -en 'travis_fold:end:Deploying PEcAn\r'
+  - echo -en 'travis_fold:end:Building_Tutorials\r'
