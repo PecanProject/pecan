@@ -73,20 +73,27 @@ before_script:
   - psql -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
   - psql -U postgres -c "CREATE DATABASE bety OWNER bety;"
   - scripts/load.bety.sh -a postgres -c -u
-
-script:
-  - scripts/build.sh --no-git --tests --name travis
-
-## Render Book
-before_script:
   - chmod +x book_source/deploy.sh
   - chmod +x documentation/tutorials/deploy.sh
 
-# Render tutorials
 script:
+  # - scripts/build.sh --no-git --tests --name travis
+  - echo -en 'travis_fold:start:Building/Install PEcAn\r'
+  - make
+  - echo -en 'travis_fold:end:Building/Install PEcAn\r'
+  - echo -en 'travis_fold:start:Testing PEcAn\r'
+  - make test
+  - echo -en 'travis_fold:end:Testing PEcAn\r'
+  # integration test PEcAn
+
+after_script:
+  - echo -en 'travis_fold:start:Building Book\r'
   - pushd book_source
   - make
   - popd
+  - echo -en 'travis_fold:end:Testing PEcAn\r'
+  - echo -en 'travis_fold:start:Deploying Book\r'
   - pushd documentation/tutorials
   - make build deploy
   - popd
+  - echo -en 'travis_fold:end:Deploying PEcAn\r'
