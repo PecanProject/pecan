@@ -118,7 +118,7 @@ model{
 
   if(FALSE){
     ## DEV TESTING FOR X, polynomial X, and X interactions
-    fixed <- "X + X^3 + X*bob + bob + dia"
+    fixed <- "X + X^3 + X*bob + bob + dia + X*Tmin[t]"
   }
   ## Design matrix
   if (is.null(fixed)) {
@@ -157,12 +157,27 @@ model{
           covX <- strsplit(X.terms[i],"*",fixed=TRUE)[[1]] 
           covX <- covX[-which(toupper(covX)=="X")] ## remove X from terms
           if(covX %in% colnames(cov.data)){ ## covariate present
-            if(!(covX %in% names(data))){
-              ## add cov variables to data object
-              data[[covX]] <- cov.data[,covX]
-            }
+            
+            ##is covariate fixed or time varying?
+            tvar <-  grep("[t]",covX,fixed=TRUE)            
+            if(tvar){
+              covX <- sub("[t]","",covX,fixed = TRUE)
+              if(!(covX %in% names(data))){
+                ## add cov variables to data object
+                data[[covX]] <- time_varying[[covX]]
+              }
+              covX <- paste0(covX,"[i,t]")
+            } else {
+              ## variable is fixed
+              if(!(covX %in% names(data))){
+                ## add cov variables to data object
+                data[[covX]] <- cov.data[,covX]
+              }
+            } ## end fixed or time varying
+            
             myBeta <- paste0("betaX_",covX)
             Xformula <- paste0(myBeta,"*x[i,t-1]*",covX,"[i]")
+
           } else {
             ## covariate absent
             print("covariate absent from covariate data:", covX)
