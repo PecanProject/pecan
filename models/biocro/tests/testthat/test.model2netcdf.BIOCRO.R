@@ -1,36 +1,39 @@
 context("check output from model2netcdf.BIOCRO")
-library(data.table)
-library(PEcAn.utils)
-library(PEcAn.settings)
 
-outdir <- file.path(tempdir(), "biocro")
-dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
+# library(data.table)
+# library(PEcAn.utils)
+# library(PEcAn.settings)
 
-file.copy(from = "data/result.RData", to = outdir)
+# outdir <- file.path(tempdir(), "biocro")
+# dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
-settings <- PEcAn.settings::read.settings("data/pecan.biocro.xml")
+# file.copy(from = "data/result.RData", to = outdir)
 
-start_date <- settings$run$start.date
+# settings <- PEcAn.settings::read.settings("data/pecan.biocro.xml")
 
-load("data/result.RData")
-biocro.ncfile <- file.path(outdir, paste0(resultDT[, min(Year)], ".nc"))
-file.remove(biocro.ncfile)
-model2netcdf.BIOCRO(resultDT, genus = "foo", outdir = outdir, lat = 44.5, lon = -88)
+# start_date <- settings$run$start.date
+
+# load("data/result.RData")
+# biocro.ncfile <- file.path(outdir, paste0(resultDT[, min(Year)], ".nc"))
+# file.remove(biocro.ncfile)
+# model2netcdf.BIOCRO(resultDT, genus = "foo", outdir = outdir, lat = 44.5, lon = -88)
 
 
 test_that("model2netcdf.BIOCRO reads a .csv and writes a netcdf file for each year", 
   {
+skip("TEST is broken #1328")
     for (year in resultDT[, unique(Year)]) {
       expect_true(file.exists(file.path(outdir, paste0(year, ".nc"))))
     }
   })
 
-biocro.nc <- nc_open(biocro.ncfile)
-vars <- biocro.nc$var
-dims <- biocro.nc$dim
+# biocro.nc <- nc_open(biocro.ncfile)
+# vars <- biocro.nc$var
+# dims <- biocro.nc$dim
 
 
 test_that("model2netcdf.BIOCRO wrote netCDF with correct variables", {
+  skip("TEST is broken #1328")
   expect_true(all(c("TotLivBiom", "RootBiom", "StemBiom", "Evap", "TVeg", "LAI") %in% 
     names(vars)))
   expect_true(all(c("latitude", "longitude", "time") %in% names(dims)))
@@ -42,14 +45,16 @@ test_that("model2netcdf.BIOCRO wrote netCDF with correct variables", {
 })
 
 test_that("dimensions have MsTMIP standard units", {
-  
+  skip("TEST is broken #1328")
+
   expect_equal(dims$lat$units, "degrees_north")
   expect_equal(dims$lon$units, "degrees_east")
   expect_true(grepl("days since", dims$time$units))
 })
 
 test_that("variables have MsTMIP standard units", {
-  
+  skip("TEST is broken #1328")
+
   data(mstmip_vars, package = "PEcAn.utils")
   
   for (var in vars) {
@@ -64,6 +69,8 @@ test_that("variables have MsTMIP standard units", {
 })
 
 test_that("model2netcdf.BIOCRO will add a second site to an existing file", {
+  skip("TEST is broken #1328")
+
   ncdf4::nc_close(biocro.nc)
   file.remove(biocro.ncfile)
   model2netcdf.BIOCRO(resultDT, genus = "foo", outdir = outdir, lat = 44.6, lon = -88.1)

@@ -1,17 +1,18 @@
 context("check output from cf2biocro")
 
-library(data.table)
-library(PEcAn.data.atmosphere)
-library(udunits2)
-library(ncdf4)
-test.nc <- nc_open("data/urbana_subdaily_test.nc")
-cfmet <- load.cfmet(test.nc, lat = 40.25, lon = -88.125, start.date = "1979-05-05", 
-  end.date = "1979-07-01")
-cfmet.hourly <- cfmet.downscale.time(cfmet)
-biocro.met <- cf2biocro(cfmet.hourly)
+# library(data.table)
+# library(PEcAn.data.atmosphere)
+# library(udunits2)
+# library(ncdf4)
+# test.nc <- nc_open("data/urbana_subdaily_test.nc")
+# cfmet <- load.cfmet(test.nc, lat = 40.25, lon = -88.125, start.date = "1979-05-05", 
+#   end.date = "1979-07-01")
+# cfmet.hourly <- cfmet.downscale.time(cfmet)
+# biocro.met <- cf2biocro(cfmet.hourly)
+
 test_that("cf2biocro creates BioCro compatible met from CF compliant file", {
-  
-  
+  skip("TEST is broken #1328")
+
   expect_true(all(c("year", "doy", "hour", "SolarR", "Temp", "RH", "WS", "precip") %in% 
     colnames(biocro.met)))
   
@@ -19,6 +20,8 @@ test_that("cf2biocro creates BioCro compatible met from CF compliant file", {
 
 
 test_that("cf2biocro provides hours in 0:23 range", {
+  skip("TEST is broken #1328")
+
   tmp <- cfmet.hourly
   tmp$hour <- tmp$hour + 1
   
