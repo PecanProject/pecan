@@ -156,7 +156,6 @@ model{
           
           covX <- strsplit(X.terms[i],"*",fixed=TRUE)[[1]] 
           covX <- covX[-which(toupper(covX)=="X")] ## remove X from terms
-          if(covX %in% colnames(cov.data)){ ## covariate present
             
             ##is covariate fixed or time varying?
             tvar <-  grep("[t]",covX,fixed=TRUE)            
@@ -169,20 +168,21 @@ model{
               covX <- paste0(covX,"[i,t]")
             } else {
               ## variable is fixed
-              if(!(covX %in% names(data))){
-                ## add cov variables to data object
-                data[[covX]] <- cov.data[,covX]
+              if(covX %in% colnames(cov.data)){ ## covariate present
+                if(!(covX %in% names(data))){
+                  ## add cov variables to data object
+                  data[[covX]] <- cov.data[,covX]
+                }
+              } else {
+                ## covariate absent
+                print("covariate absent from covariate data:", covX)
               }
+              
             } ## end fixed or time varying
             
             myBeta <- paste0("betaX_",covX)
             Xformula <- paste0(myBeta,"*x[i,t-1]*",covX,"[i]")
 
-          } else {
-            ## covariate absent
-            print("covariate absent from covariate data:", covX)
-          }
-          
         } else if(length(grep("^",X.terms[i],fixed=TRUE))==1){  ## POLYNOMIAL
           powX <- strsplit(X.terms[i],"^",fixed=TRUE)[[1]] 
           powX <- powX[-which(toupper(powX)=="X")] ## remove X from terms
@@ -254,10 +254,40 @@ model{
     ## parse equation into variable names
     t_vars <- gsub(" ","",unlist(strsplit(time_varying,"+",fixed=TRUE))) ## split on +, remove whitespace
     ## check for interaction terms
-    it_vars <- grep(pattern = "*",x=t_vars,fixed = TRUE)
+    it_vars <- t_vars[grep(pattern = "*",x=t_vars,fixed = TRUE)]
+    t_vars <- t_vars[!(tvars == it_vars)]
+    
       ## need to deal with interactions with fixed variables
       ## will get really nasty if interactions are with catagorical variables
       ## need to create new data matrices on the fly
+    
+    for(i in seq_along(it_vars)){
+
+      ##is covariate fixed or time varying?
+      covX <- strsplit(it_vars[i],"*",fixed=TRUE)[[1]] 
+      tvar1 <- grep("[t]",covX[1],fixed=TRUE)
+      tvar2 <- grep("[t]",covX[2],fixed=TRUE)
+        
+      if(tvar){
+          covX <- sub("[t]","",covX,fixed = TRUE)
+          if(!(covX %in% names(data))){
+            ## add cov variables to data object
+            data[[covX]] <- time_varying[[covX]]
+          }
+          covX <- paste0(covX,"[i,t]")
+        } else {
+          ## variable is fixed
+          if(!(covX %in% names(data))){
+            ## add cov variables to data object
+            data[[covX]] <- cov.data[,covX]
+          }
+        } ## end fixed or time varying
+        
+        myBeta <- paste0("betaX_",covX)
+        Xformula <- paste0(myBeta,"*x[i,t-1]*",covX,"[i]")
+        
+    }
+    
     
     ## loop over variables
     for(j in seq_along(t_vars)){
