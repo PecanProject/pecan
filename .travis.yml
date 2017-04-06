@@ -84,7 +84,7 @@ script:
   - make test
   - echo -en 'travis_fold:end:Testing PEcAn\r'
   - echo -en 'travis_fold:start:Testing PEcAn\r'
-  - make integration
+  - ./tests/integration.sh
   - echo -en 'travis_fold:end:Testing PEcAn\r'
   # integration test PEcAn
 
