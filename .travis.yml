@@ -76,6 +76,7 @@ before_script:
   - chmod +x documentation/tutorials/deploy.sh
 
 script:
+  - set -e
   # - scripts/build.sh --no-git --tests --name travis
   - echo -en 'travis_fold:start:Building_PEcAn\r'
   - make
@@ -84,9 +85,9 @@ script:
   - make test
   - echo -en 'travis_fold:end:Testing_PEcAn\r'
   - echo -en 'travis_fold:start:Integration_Testing\r'
-  - ./tests/integration.sh
+  - ./tests/integration.sh travis
   - echo -en 'travis_fold:end:Integration_Testing\r'
-  # integration test PEcAn
+  - set +e
 
 after_script:
   - echo -en 'travis_fold:start:Building_Book\r'
