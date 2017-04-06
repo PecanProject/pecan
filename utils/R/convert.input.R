@@ -15,7 +15,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
                      mimetype, site.id, start_date, end_date))
   
-  Rbinary <- ifelse(is.null(settings$host$Rbinary),"R",settings$host$Rbinary)
+  # TODO see issue #18
+  Rbinary <- ifelse(!exists("settings") || is.null(settings$host$Rbinary),"R",settings$host$Rbinary)
   
   n <- nchar(outfolder)
   if (substr(outfolder, n, n) != "/") {
@@ -285,7 +286,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       return(NULL)
     }
     if (nrow(dbfile) > 1) {
-      logger.warning("multiple dbfile records, using last", dbfile)
+      logger.warn("multiple dbfile records, using last", dbfile)
       dbfile <- dbfile[nrow(dbfile), ]
     }
   }

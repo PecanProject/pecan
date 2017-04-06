@@ -61,7 +61,7 @@ cfmet.downscale.subdaily <- function(subdailymet, output.dt = 1) {
   new.date <- subdailymet[,list(hour = 0:(23 / output.dt) / output.dt),
                     by = c("year", "month", "day", "doy")]
 
-  new.date$date <- new.date[,list(date = ymd_h(paste(year, month, day, hour)))]
+  new.date$date <- new.date[,list(date = lubridate::ymd_h(paste(year, month, day, hour)))]
 
   downscaled.result <- list()
   tint <- nrow(new.date)/ nrow(subdailymet)

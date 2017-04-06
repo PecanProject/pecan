@@ -7,7 +7,7 @@
 read.biocro.config(config.file = "config.xml")
 }
 \arguments{
-\item{config.file}{}
+\item{config.file}{Path to XML file}
 }
 \value{
 list of run configuration parameters for PEcAn
