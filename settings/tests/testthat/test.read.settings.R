@@ -11,7 +11,7 @@ logger.setQuitOnSevere(FALSE)
 logger.setLevel("OFF")
 context("tests for read.settings and related functions")
 
-source('get.test.settings.r')
+source('get.test.settings.R')
 
 test_that("read.settings returned correctly", {
   s <- .get.test.settings()
