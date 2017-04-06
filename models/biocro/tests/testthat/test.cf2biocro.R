@@ -1,5 +1,8 @@
 context("check output from cf2biocro")
 
+test_that('build system runst tests', {
+  expect_equal(1,2)
+})
 library(data.table)
 library(PEcAn.data.atmosphere)
 library(udunits2)
