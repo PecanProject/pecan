@@ -250,6 +250,7 @@ model{
     if (is.null(time_data)) {
       print("time_varying formula provided but time_data is absent:", time_varying)
     }
+    Xt.priors <- ""
     
     ## parse equation into variable names
     t_vars <- gsub(" ","",unlist(strsplit(time_varying,"+",fixed=TRUE))) ## split on +, remove whitespace
@@ -265,28 +266,39 @@ model{
 
       ##is covariate fixed or time varying?
       covX <- strsplit(it_vars[i],"*",fixed=TRUE)[[1]] 
-      tvar1 <- grep("[t]",covX[1],fixed=TRUE)
-      tvar2 <- grep("[t]",covX[2],fixed=TRUE)
-        
-      if(tvar){
-          covX <- sub("[t]","",covX,fixed = TRUE)
-          if(!(covX %in% names(data))){
+      tvar    <- length(grep("[t]",covX[1],fixed=TRUE)) > 0
+      tvar[2] <- length(grep("[t]",covX[2],fixed=TRUE)) > 0
+      myBeta <- "beta_"
+      for(j in 1:2){
+        if(j == 2) myBeta <- paste0(myBeta,"_")
+        if(tvar[j]){
+          covX[j] <- sub("[t]","",covX[j],fixed = TRUE)
+          if(!(covX[j] %in% names(data))){
             ## add cov variables to data object
-            data[[covX]] <- time_varying[[covX]]
+            data[[covX[j]]] <- time_varying[[covX[j]]]
           }
-          covX <- paste0(covX,"[i,t]")
+          myBeta <- paste0(myBeta,covX[j])
+          covX[j] <- paste0(covX[j],"[i,t]")
         } else {
           ## variable is fixed
-          if(!(covX %in% names(data))){
+          if(!(covX[j] %in% names(data))){
             ## add cov variables to data object
-            data[[covX]] <- cov.data[,covX]
+            data[[covX[j]]] <- cov.data[,covX[j]]
           }
+          myBeta <- paste0(myBeta,covX[j])
+          covX[j] <- paste0(covX[j],"[i]")
         } ## end fixed or time varying
         
-        myBeta <- paste0("betaX_",covX)
-        Xformula <- paste0(myBeta,"*x[i,t-1]*",covX,"[i]")
-        
-    }
+      } ## end building beta
+      
+      ## append to process model formula
+      Pformula <- paste(Pformula,
+                        paste0(myBeta,"*",covX[1],"*",covX[2]))
+      
+      ## priors
+      Xt.priors <- paste0(Xt.priors,
+                          "    ",myBeta,"~dnorm(0,0.001)\n")
+    }  ## end time-varying interaction terms
     
     
     ## loop over variables
@@ -308,7 +320,9 @@ model{
       out.variables <- c(out.variables, paste0("beta", tvar))
     }
     ## build prior
-    Xt.priors <- paste0("     beta", t_vars, "~dnorm(0,0.001)", collapse = "\n")
+    Xt.priors <- paste0(Xt.priors,
+                        paste0("     beta", t_vars, "~dnorm(0,0.001)", collapse = "\n")
+                       )
     TreeDataFusionMV <- sub(pattern = "## TIME VARYING BETAS", Xt.priors, TreeDataFusionMV)
     
   } ## END time varying covariates
