@@ -158,7 +158,7 @@ model{
           covX <- covX[-which(toupper(covX)=="X")] ## remove X from terms
             
             ##is covariate fixed or time varying?
-            tvar <-  grep("[t]",covX,fixed=TRUE)            
+            tvar <-  length(grep("[t]",covX,fixed=TRUE)) > 0           
             if(tvar){
               covX <- sub("[t]","",covX,fixed = TRUE)
               if(!(covX %in% names(data))){
