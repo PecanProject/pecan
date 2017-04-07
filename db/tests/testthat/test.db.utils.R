@@ -6,13 +6,9 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-context("Testing utility functions")
+source('db.setup.R')
 
-if(fqdn() == "pecan2.bu.edu") {
-  con <- db.open(list(host="psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
-} else {
-  con <- db.open(list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
-}
+context("Testing utility functions")
 
 test_that("get.id works on some tables, and with different inputs", {
   pftid <- get.id("pfts", "name", "salix", con)

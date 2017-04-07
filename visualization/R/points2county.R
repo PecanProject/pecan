@@ -33,8 +33,8 @@ points2county <- function(griddata) {
   setnames(X, old = var, new = "z")
   print(class(counties))
   print(colnames(X))
-  cty.idx <- with(counties, lat < max(X$lat) & lat > min(X$lat) & lon < max(X$lon) & 
-                    lon > min(X$lon))
+  cty.idx <- with(counties, 
+                  lat < max(X$lat) & lat > min(X$lat) & lon < max(X$lon) & lon > min(X$lon))
   counties.subset <- counties[cty.idx, ]
   xy <- data.frame(counties.subset[, list(lon, lat)])
   earth.model <- earth(z ~ lon * lat, data = X)
@@ -42,4 +42,4 @@ points2county <- function(griddata) {
   result <- cbind(counties.subset, pred)
   setnames(result, old = "z", new = var)
   return(result)
-} # points2county
+}  # points2county

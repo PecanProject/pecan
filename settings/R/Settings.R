@@ -34,6 +34,3 @@ as.Settings <- function(x) {
 is.Settings <- function(x) {
   return(is(x, "Settings"))
 }
-
-
-

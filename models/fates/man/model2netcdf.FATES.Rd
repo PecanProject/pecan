@@ -9,7 +9,15 @@ model2netcdf.FATES(outdir)
 \arguments{
 \item{outdir}{Location of FATES model output}
 }
+\examples{
+ 
+\dontrun{
+example.output <- system.file("case.clm2.h0.2004-01-01-00000.nc",package="PEcAn.FATES")
+model2netcdf.FATES(outdir="~/")
+}
+
+}
 \author{
-Michael Dietze
+Michael Dietze, Shawn Serbin
 }
 

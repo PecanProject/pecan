@@ -4,7 +4,7 @@
 \alias{pda.get.model.output}
 \title{Get Model Output for PDA}
 \usage{
-pda.get.model.output(settings, run.id, con, inputs)
+pda.get.model.output(settings, run.id, bety, inputs)
 }
 \arguments{
 \item{all}{params are the identically named variables in pda.mcmc / pda.emulator}
@@ -19,4 +19,3 @@ Get Model Output for PDA
 \author{
 Ryan Kelly, Istem Fer
 }
-

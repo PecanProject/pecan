@@ -1,13 +1,14 @@
+##' Download NLDAS met data
+##' 
 ##' Download and convert single grid point NLDAS to CF single grid point from hydro1.sci.gsfc.nasa.gov using OPENDAP interface
-##' @name download.NLDAS
-##' @title download.NLDAS
-##' @export
+##' 
 ##' @param outfolder
 ##' @param start_date
 ##' @param end_date
 ##' @param site_id
 ##' @param lat
 ##' @param lon
+##' @export
 ##'
 ##' @author Christy Rollinson (with help from Ankur Desai)
 download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in, 
@@ -22,6 +23,13 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
   end_year   <- lubridate::year(end_date)
   site_id    <- as.numeric(site_id)
   outfolder  <- paste0(outfolder, "_site_", paste0(site_id %/% 1e+09, "-", site_id %% 1e+09))
+
+  NLDAS_start <- 1980
+  if (start_year < NLDAS_start) {
+    PEcAn.utils::logger.severe(sprintf('Input year range (%d:%d) exceeds the NLDAS range (%d:present)',
+                                       start_year, end_year,
+                                       NLDAS_start))
+  }
   
   lat.in <- as.numeric(lat.in)
   lon.in <- as.numeric(lon.in)
@@ -165,5 +173,5 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
     results$formatname[i] <- "CF Meteorology"
   }
   
-  invisible(results)
+  return(invisible(results))
 } # download.NLDAS

@@ -30,18 +30,15 @@
 ##' @param lst timezone offset to GMT in hours
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
+##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_add
 met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat = NA, 
                           lon = NA, overwrite = FALSE, verbose = FALSE, ...) {
   overwrite <- as.logical(overwrite)
-  
+
+  # deprecated?  
   library(rhdf5)
   library(PEcAn.utils)
 
-  ncvar_get <- ncdf4::ncvar_get
-  ncdim_def <- ncdf4::ncdim_def
-  ncatt_get <- ncdf4::ncatt_get
-  ncvar_add <- ncdf4::ncvar_add
-  
   # results are stored in folder prefix.start.end
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
@@ -157,7 +154,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     doy  <- NULL
     hr   <- NULL
     asec <- sec
-    for (y in (year + 1):(nyr - 1)) {
+    for (y in seq(year, year + nyr - 1)) {
       ytmp <- rep(y, 365 * 86400 / dt)
       dtmp <- rep(1:365, each = 86400 / dt)
       if (lubridate::leap_year(y)) {
@@ -329,5 +326,5 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   }  ### end loop over met files
   
   print("Done with met2model.ED2")
-  invisible(results)
+  return(invisible(results))
 } # met2model.ED2

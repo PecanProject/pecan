@@ -7,7 +7,7 @@
 ##' 
 ##' @author Michael Dietze
 jump <- function(ic = 0, rate = 0.4, ...) {
-  new("jump", history = ic, arate = 0, target = rate)
+  return(new("jump", history = ic, arate = 0, target = rate))
 } # jump
 
 ##' multivariate version
@@ -15,5 +15,5 @@ jump <- function(ic = 0, rate = 0.4, ...) {
 ##' @export
 mvjump <- function(ic = 0, rate = 0.4, nc = 2, ...) {
   icm <- (matrix(ic, nrow = 1, ncol = nc))
-  new("mvjump", history = icm, arate = 0, target = rate)
+  return(new("mvjump", history = icm, arate = 0, target = rate))
 } # mvjump

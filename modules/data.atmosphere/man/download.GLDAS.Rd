@@ -2,7 +2,7 @@
 % Please edit documentation in R/download.GLDAS.R
 \name{download.GLDAS}
 \alias{download.GLDAS}
-\title{download.GLDAS}
+\title{Download GLDAS data}
 \usage{
 download.GLDAS(outfolder, start_date, end_date, site_id, lat.in, lon.in,
   overwrite = FALSE, verbose = FALSE, ...)

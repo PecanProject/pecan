@@ -19,18 +19,11 @@
 ##' @return none
 ##' @export
 ##' @author Mike Dietze
+##' @importFrom ncdf4 ncvar_put ncvar_get
 ##-------------------------------------------------------------------------------------------------#
 write.config.FATES <- function(defaults, trait.values, settings, run.id){
-   library(PEcAn.utils)
-#  
-# #OUTLINE OF MODULES
-#   # Copy Case and Build
-#   #  -symbolic link to refernce case that is already completed
-#   # Edit user_nl_* files to add site info
-#   # make Jobs.sh -case_submit
-#   # call met2model and add to namelists
-#   #
 
+   ## site information
    site <- settings$run$site
    site.id <- as.numeric(site$id)
   
@@ -51,7 +44,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    ## this needs to be generalized to fractional years, but accounting for 365 day year
    start_date <- as.Date(settings$run$start.date)
    end_date   <- as.Date(settings$run$end.date)
-   stop_n     <- as.numeric(end_date - start_date, units="days") - n_leap_day(start_date,end_date) + 1  
+   stop_n     <- as.numeric(end_date - start_date, units="days") - PEcAn.utils::n_leap_day(start_date,end_date) + 1  
    
    ##-----------------------------------------------------------------------##
    ##                                                                       ##
@@ -61,13 +54,12 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
 
    ## SITE INFO --> DOMAIN FILE (lat/lon)
    gridres = 0.125  ## ultimately this should be a variable
-   lat = site$lat
-   lon = (site$lon + 360) %% 360 ## make sure coords in 0-360 range, not negative
+   lat = as.numeric(site$lat)
+   lon = (as.numeric(site$lon) + 360) %% 360 ## make sure coords in 0-360 range, not negative
    domain.default <- system.file("domain.lnd.1x1pt-brazil_navy.090715.nc",package="PEcAn.FATES")
    domain.file <- file.path(local.rundir,paste0("domain.lnd.",site_name,".nc"))
    file.copy(domain.default,domain.file)
    domain.nc <- ncdf4::nc_open(domain.file,write=TRUE)
-   ncvar_put <- ncdf4::ncvar_put
    ncvar_put(nc=domain.nc, varid='xc', vals=lon)
    ncvar_put(nc=domain.nc, varid='yc', vals=lat)
    ncvar_put(nc=domain.nc, varid='xv', vals=lon+c(-1,1,1,-1)*gridres)
@@ -76,7 +68,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    ncdf4::nc_close(domain.nc)
    
    ## SURF
-   surf.default <- "/home/carya/FATESinput/lnd/clm2/surfdata_map/surfdata_1x1_brazil_16pfts_simyr2000_c160127.nc"
+   surf.default <- system.file("surfdata_ref.nc",package = "PEcAn.FATES")
    surf.file    <- file.path(local.rundir,paste0("surfdata_",site_name,"_simyr2000.nc"))
    file.copy(surf.default,surf.file)
    Sys.chmod(surf.file)
@@ -157,6 +149,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    ## DATES -> ENV_RUN
    jobsh <- gsub('@START_DATE@', start_date, jobsh)
    jobsh <- gsub('@STOP_N@', stop_n, jobsh)
+   jobsh <- gsub('@RUN_ID@', run.id, jobsh)
    
    ## MET --> DATM
 #   jobsh <- gsub('@SITE_MET@', settings$run$inputs$met$path, jobsh)
@@ -168,16 +161,28 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
 #   ## Write PARAMETER file
    
    ## COPY AND OPEN DEFAULT PARAMETER FILE
-   param.default <- system.file("clm_params_ed.c160808.nc",package="PEcAn.FATES")
+   param.default <- system.file("clm_params_ed_l2f0.5_tropid2.c161020.nc",package="PEcAn.FATES")
    param.file <- file.path(local.rundir,paste0("clm_params_ed.",run.id,".nc"))
    file.copy(param.default,param.file)
-   param.nc <- nc_open(param.file,write=TRUE)
-   
+   param.nc <- ncdf4::nc_open(param.file,write=TRUE)
+    
    ## Loop over PFTS
+   npft <- length(trait.values)
+   PEcAn.utils::logger.debug(npft)
+   PEcAn.utils::logger.debug(dim(trait.values))
+   PEcAn.utils::logger.debug(names(trait.values))
    pftnames <- stringr::str_trim(tolower(ncvar_get(param.nc,"pftname")))
    for (i in seq_len(npft)) {
      pft <- trait.values[[i]]
+     print(c("PFT",i))
+     PEcAn.utils::logger.info(pft)
      pft.name <- names(trait.values)[i]
+     if(is.null(pft.name) | is.na(pft.name)){
+       PEcAn.utils::logger.error("pft.name missing")
+     } else {
+       PEcAn.utils::logger.info(paste("PFT =",pft.name))
+     }
+     if(pft.name == 'env') next   ## HACK, need to remove env from default
      
      ## Match PFT name to COLUMN
      ipft <- match(tolower(pft.name),pftnames)
@@ -187,13 +192,56 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
      }
      
      ## Special variables used in conversions
-     leafC <- pft['leafC']/100  ## percent to proportion
+#     leafC <- pft['leafC']/100  ## percent to proportion
+     leafC <- NA
      if(is.na(leafC)) leafC <- 0.48
      
      ## Loop over VARIABLES
      for (v in seq_along(pft)) {
        var <- names(pft)[v]
+
+       ## THESE NEED SOME FOLLOW UP       
+       if(var == "Vcmax"){                    ## fnitr is currently a HACK; *** need to know units ***
+         ncvar_put(nc=param.nc, varid='fnitr', start = ipft, count = 1,
+                   vals=pft[v])  ## (umol CO2 m-2 s-1) -> ??
+       }
        
+       
+       ### These variable names (from ED2) should updated in BETY to be more generic
+## missing from params.nc       
+#       if(var == "mort3"){
+#         ncvar_put(nc=param.nc, varid='background_mort_rate', start = ipft, count = 1,
+#                   vals=pft[v])  
+#       }
+       if(var == "r_fract"){                    ## Fraction of carbon balance remaining after maintenance costs have been met that is dedicated to seed production.	[0-1]
+         ncvar_put(nc=param.nc, varid='seed_alloc', start = ipft, count = 1,
+                   vals=pft[v])  
+       }
+       ## This one is currently allpft level but should be pft level
+       if(var == "agf_bs"){                    ## The fraction of sapwood and structural biomass that is above ground [0-1]
+         ncvar_put(nc=param.nc, varid='ag_biomass', start = 1, count = 1,
+                   vals=pft[v])  
+       }
+       
+       ## PFT-level variables
+       if(var == "seed_rain_kgC"){                    ## Seed rain input from outside the patch.[kgC/m2/year]
+         ncvar_put(nc=param.nc, varid='seed_rain', start = ipft, count = 1,
+                   vals=pft[v])  
+       }
+## missing from params.nc 
+#       if(var == "cuticular_cond"){
+#         gH2O_per_mol <- 18.01528
+#         ncvar_put(nc=param.nc, varid='gsmin', start = ipft, count = 1,
+#                   vals=pft[v]*gH2O_per_mol*1e-12)   ### umol H2O m-2 s-1 ->  [m s-1]
+#       }
+       if(var == "DBH_at_HTMAX"){                    ## note in FATES parameter list about switching to HTMAX
+         ncvar_put(nc=param.nc, varid='max_dbh', start = ipft, count = 1,
+                   vals=pft[v])  ## [cm]
+       }
+       if(var == "growth_resp_factor"){                    ## r_growth = grperc * (gpp+r_maint)
+         ncvar_put(nc=param.nc, varid='grperc', start = ipft, count = 1,
+                   vals=pft[v])  
+       }
        if(var == "SLA"){
          ncvar_put(nc=param.nc, varid='slatop', start = ipft, count = 1,
                    vals=udunits2::ud.convert(pft[v],"m2 kg-1","m2 g-1")/leafC)
@@ -202,14 +250,409 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncvar_put(nc=param.nc, varid='leaf_long', start = ipft, count = 1,
                    vals=1/pft[v]) ## leaf_long = 1/leaf_turnover_rate, 1/years -> years
        }
+       if(var == "root_turnover_rate"){
+         ncvar_put(nc=param.nc, varid='root_long', start = ipft, count = 1,
+                   vals=1/pft[v]) ## root_long = 1/root_turnover_rate, 1/years -> years
+       }
        if(var == "c2n_leaf"){
          ncvar_put(nc=param.nc, varid='leafcn', start = ipft, count = 1,
                    vals=pft[v])
        }
+       if(var == "fineroot2leaf"){
+         ncvar_put(nc=param.nc, varid='froot_leaf', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "sapwood_ratio"){         # leaf to sapwood area ratio
+         ncvar_put(nc=param.nc, varid='latosa', start = ipft, count = 1,
+                   vals=udunits2::ud.convert(pft[v],"m2 m-2","m2 cm-2"))
+       }
+       if(var == "leaf_width"){            # Characteristic leaf dimension use for aerodynamic resistance
+         ncvar_put(nc=param.nc, varid='dleaf', start = ipft, count = 1,
+                   vals=udunits2::ud.convert(pft[v],"mm","m"))
+       }
+       ## Currently not in param.nc file despite being on NGEE-T parameter list       
+       #       if(var == "nonlocal_dispersal"){    # Place-holder parameter for important seed dispersal parameters
+       #         ncvar_put(nc=param.nc, varid='seed_dispersal_x', start = ipft, count = 1,
+       #                   vals=pft[v])
+       #       }
+       if(var == "hgt_min"){               # The height of a new recruit
+         ncvar_put(nc=param.nc, varid='hgt_min', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "leaf_reflect_nir"){      # Leaf reflectance: near-IR	[0-1]
+         ncvar_put(nc=param.nc, varid='rholnir', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "leaf_reflect_vis"){      # Leaf reflectance: visible	[0-1]
+         ncvar_put(nc=param.nc, varid='rholvis', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "wood_reflect_nir"){      # Stem reflectance: near-IR	[0-1]
+         ncvar_put(nc=param.nc, varid='rhosnir', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+
+       if(var == "wood_reflect_vis"){      # Stem reflectance: visible	[0-1]
+         ncvar_put(nc=param.nc, varid='rhosvis', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "leaf_trans_nir"){        # Leaf transmittance: near-IR
+         ncvar_put(nc=param.nc, varid='taulnir', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "leaf_trans_vis"){        # Leaf transmittance: visible	pft
+         ncvar_put(nc=param.nc, varid='taulvis', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "wood_trans_nir"){        # Stem transmittance: near-IR
+         ncvar_put(nc=param.nc, varid='tausnir', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "wood_trans_vis"){        # Stem transmittance: visible
+         ncvar_put(nc=param.nc, varid='tausvis', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "orient_factor"){         # Leaf/stem orientation index	[-0/4 <xl< 0.6]
+         ncvar_put(nc=param.nc, varid='xl', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "wood_density"){         # Wood Specific Gravity (ie density of wood relative to density of water)
+         ncvar_put(nc=param.nc, varid='wood_density', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "roota_par"){            # CLM rooting distribution parameter [1/m]
+         ncvar_put(nc=param.nc, varid='roota_par', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "rootb_par"){            # CLM rooting distribution parameter [1/m] 
+         ncvar_put(nc=param.nc, varid='rootb_par', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "gsmax"){         # Maximum stomatal conductance [m s-1]
+         ncvar_put(nc=param.nc, varid='gsmax', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "psi_stomata_closure"){         # Soil water potential at full stomatal closure	[mm]
+         ncvar_put(nc=param.nc, varid='smpsc', start = ipft, count = 1,
+                   vals=udunits2::ud.convert(pft[v],"m","mm"))
+       }
+       if(var == "psi_stomata_open"){            # Soil water potential at full stomatal opening	pft	[mm]
+         ncvar_put(nc=param.nc, varid='smpso', start = ipft, count = 1,
+                   vals=udunits2::ud.convert(pft[v],"m","mm"))
+       }
+       if(var == "root_bulk_modulus"){         # coarse root bulk elastic modulus (εroot)	[MPa]
+         ncvar_put(nc=param.nc, varid='epsil_root', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "sapwood_bulk_modulus"){         # sapwood bulk elastic modulus (εstem)	[MPa]
+         ncvar_put(nc=param.nc, varid='epsil_stem', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "leaf_bulk_modulus"){         # leaf bulk elastic modulus (εleaf) [MPa]
+         ncvar_put(nc=param.nc, varid='epsil_leaf', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "root_osmotic_potential"){         # coarse root osmotic potential at full turgor (πoroot)	[MPa]
+         ncvar_put(nc=param.nc, varid='pinot_root', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "sapwood_osmotic_potential"){         # sapwood osmotic potential at full turgor (πostem) [MPa]
+         ncvar_put(nc=param.nc, varid='pinot_stem', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "leaf_osmotic_potential"){         # leaf osmotic potential at full turgor (πoleaf) [MPa]
+         ncvar_put(nc=param.nc, varid='pinot_leaf', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "kmax_leaf"){         # Maximum leaf hydraulic conductivity per unit leaf area [mmol m-2 s-1 Mpa-1]
+         ncvar_put(nc=param.nc, varid='kmax_leaf', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "kmax_root"){         # Maximum root hydraulic conductivity per unit xs sapwood [kg m-1 s-1 Mpa-1]
+         ncvar_put(nc=param.nc, varid='kmax_root', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "kmax_stem"){         # Maximum stem hydraulic conductivity per unit xs sapwood area	[kg m-1 s-1 Mpa-1]
+         ncvar_put(nc=param.nc, varid='kmax_stem', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "p50_gs"){         # leaf water potential at 50% loss of stomatal conductance (Pgs50)	[MPa]
+         ncvar_put(nc=param.nc, varid='p50_gs', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "p50_leaf"){         # leaf water potential at 50% loss of leaf hydraulic conductivity (P50leaf)	pft	[MPa]
+         ncvar_put(nc=param.nc, varid='p50_leaf', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "p50_root"){         # root water potential at 50% loss of root hydraulic conductivity	[MPa]
+         ncvar_put(nc=param.nc, varid='p50_root', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "p50_stem"){         # stem water potential at 50% loss of stem hydraulic conductivity [MPa]
+         ncvar_put(nc=param.nc, varid='p50_stem', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "water_content_TLP_root"){         # coarse root relative water content at turgor loss (RWCtlproot)
+         ncvar_put(nc=param.nc, varid='rwctlp_root', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "water_content_TLP_sapwood"){         # sapwood relative water content at turgor loss
+         ncvar_put(nc=param.nc, varid='rwctlp_stem', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "water_content_TLP_leaf"){         # leaf relative water content at turgor loss
+         ncvar_put(nc=param.nc, varid='rwctlp_leaf', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "leafp_min"){         # Minimum leaf water potential [MPa]
+         ncvar_put(nc=param.nc, varid='leafp_min', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "clone_alloc"){         # A carbon allocation that is added on to seed_alloc for trees larger than dbh_max.	[0-1]
+         ncvar_put(nc=param.nc, varid='clone_alloc', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "storage_target_ratio"){         # The target fraction of storage carbon over leaf carbon	[0-1]
+         ncvar_put(nc=param.nc, varid='cushion', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "crown_depth_fraction"){         # Crown depth fraction of a cohort relative to its total height [0-1]
+         ncvar_put(nc=param.nc, varid='crown', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "hydraulic_stress_mortality"){         # The mortality rate imposed on plants meeting hydraulic stress failure condition [1/yr]
+         ncvar_put(nc=param.nc, varid='stress_mort', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "PPA_comp_exclusion"){         # Competetive exclusion parameter for weighting demotions from the upper canopy classification in PPA
+         ncvar_put(nc=param.nc, varid='comp_excln', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "grass_spread"){         # Controls the area footprint of a grass pft, as a function of number density and dbh
+         ncvar_put(nc=param.nc, varid='grass_spread', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "leaf_stor_priority"){         # Leaf turnover vs labile carbon use prioritisation. This is the fraction of maintenance demand that will be replenished at all costs and before storage is filled.	pft	[0-1]
+         ncvar_put(nc=param.nc, varid='leaf_stor_priority', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "understory_treefall_mortality"){         # The fraction of trees in understory that die from impacts of large treefalls. In the model this is not a rate 1/year, so we need to convert it
+         ncvar_put(nc=param.nc, varid='understorey_death', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "displar"){         # 
+         ncvar_put(nc=param.nc, varid='displar', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "z0mr"){         # Ratio of momentum roughness length to canopy top height
+         ncvar_put(nc=param.nc, varid='z0mr', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "inital_stem_density"){         # Stem density of different PFTs during a bare ground initialization.	[/m2]
+         ncvar_put(nc=param.nc, varid='initd', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "bark_scaler"){         # Fraction of tree diameter that is bark. Used in fire.	[0-1]
+         ncvar_put(nc=param.nc, varid='bark_scaler', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "crown_kill"){                    ## SPITFIRE: Mortality from fire scorching susceptibility parameter
+         ncvar_put(nc=param.nc, varid='crown_kill', start = ipft, count = 1,
+                   vals=pft[v])  
+       }
+       
+
+       ## BINARY FLAGS: These should be set-able by PEcAn but not sampled
+       if(var == "photosynthetic_pathway"){         # 
+         ncvar_put(nc=param.nc, varid='c3psn', start = ipft, count = 1,
+                   vals=as.numeric(pft[v] == 3))
+       }
+       if(var == "crop"){         # Binary crop flag: 0. = not crop, 1. = crop
+         ncvar_put(nc=param.nc, varid='', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "irrigated"){         # Binary Irrigated PFT flag
+         ncvar_put(nc=param.nc, varid='irrigated', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "cold_deciduous"){         # Binary flag for seasonal-deciduous leaf habit (0-not,1-it is)
+         ncvar_put(nc=param.nc, varid='season_decid', start = ipft, count = 1,
+                   vals=pft[v])
+         ncvar_put(nc=param.nc, varid='evergreen', start = ipft, count = 1,
+                   vals=0)
+       }
+       if(var == "stress_deciduous"){         # Binary flag for stress-deciduous leaf habit (0-not,1-it is)
+         ncvar_put(nc=param.nc, varid='stress_decid', start = ipft, count = 1,
+                   vals=pft[v])
+         ncvar_put(nc=param.nc, varid='evergreen', start = ipft, count = 1,
+                   vals=0)
+       }
+       if(var == "woody"){         # Binary woody lifeform flag (0-is not woody, 1-it is woody)
+         ncvar_put(nc=param.nc, varid='woody', start = ipft, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "evergreen"){         # Binary flag for evergreen leaf habit
+         ncvar_put(nc=param.nc, varid='evergreen', start = ipft, count = 1,
+                   vals=pft[v])
+         ncvar_put(nc=param.nc, varid='stress_decid', start = ipft, count = 1,
+                   vals=0)
+         ncvar_put(nc=param.nc, varid='season_decid', start = ipft, count = 1,
+                   vals=0)
+       }
+       
+       ## ALLPFT indexed (size = 1)
+       if(var == "veg_respiration_Q10"){            ## Q10 for maintenance respiration
+         ncvar_put(nc=param.nc, varid='q10_mr', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "CelluloseS"){            ## Cellulose fraction for CWD
+         ncvar_put(nc=param.nc, varid='cwd_fcel', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "s_lignin"){            ## Lignin fraction for CWD
+         ncvar_put(nc=param.nc, varid='cwd_flig', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "c2n_som1"){            ## C:N for SOM pool 1
+         ncvar_put(nc=param.nc, varid='cn_s1_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "c2n_som2"){            ## C:N for SOM pool 2
+         ncvar_put(nc=param.nc, varid='cn_s2_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "c2n_som3"){            ## C:N for SOM pool 3
+         ncvar_put(nc=param.nc, varid='cn_s3_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "cnscalefactor"){            ## Scale factor on CN decomposition for assigning methane flux
+         ncvar_put(nc=param.nc, varid='cnscalefactor', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "decomp_depth_efolding"){            ## e-folding depth for reduction in decomposition. Set to large number for depth-independance
+         ncvar_put(nc=param.nc, varid='decomp_depth_efolding', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "CWD_fragmentation_rate"){            ## Fragmentation rate for CWD
+         ncvar_put(nc=param.nc, varid='k_frag', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "rf_cwdl2_bgc"){            ## respiration fraction from CWD to litter 2
+         ncvar_put(nc=param.nc, varid='rf_cwdl2_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "rf_cwdl3_bgc"){            ## respiration fraction from CWD to litter 3
+         ncvar_put(nc=param.nc, varid='rf_cwdl3_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "rf_l1s1_bgc"){            ## Respiration fraction for litter 1 -> SOM 1
+         ncvar_put(nc=param.nc, varid='rf_l1s1_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "rf_l2s1_bgc"){            ## respiration fraction litter 2 to SOM 1
+         ncvar_put(nc=param.nc, varid='rf_l2s1_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "rf_l3s2_bgc"){            ## respiration fraction from litter 3 to SOM 2
+         ncvar_put(nc=param.nc, varid='rf_l3s2_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "rf_s2s1_bgc"){            ## respiration fraction SOM 2 to SOM 1
+         ncvar_put(nc=param.nc, varid='rf_s2s1_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "rf_s2s3_bgc"){            ## Respiration fraction for SOM 2 -> SOM 3
+         ncvar_put(nc=param.nc, varid='rf_s2s3_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "rf_s3s1_bgc"){            ## respiration fraction SOM 3 to SOM 1
+         ncvar_put(nc=param.nc, varid='rf_s3s1_bgc', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "Q10_frozen_soil"){            ## Separate q10 for frozen soil respiration rates
+         ncvar_put(nc=param.nc, varid='froz_q10', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       
+       ## NONE indexed
+       ##   -- FIRE
+       if(var == "max_fire_duration"){            ## maximum duration of fire	none	hours
+         ncvar_put(nc=param.nc, varid='max_durat',vals=pft[v])
+       }
+       if(var == "nfires"){            ## The number of fires initiated per m2 per year, from lightning and humans
+         ncvar_put(nc=param.nc, varid='nfires',vals=pft[v])
+       }
+       if(var == "fuel_energy"){            ## energy content of fuel [kj kg-1]
+         ncvar_put(nc=param.nc, varid='fuel_energy',vals=pft[v])
+       }
+       if(var == "fuel_particle_density"){            ## particle density of fuel [kg m-3]
+         ncvar_put(nc=param.nc, varid='part_dens',vals=pft[v])
+       }
+       if(var == "durat_slope"){            ## SPITFIRE: change in fire duration with fire danger index. from Canadian Forest Service	
+         ncvar_put(nc=param.nc, varid='durat_slope',vals=pft[v])
+       }
+       if(var == "miner_damp"){            ## SPITFIRE mineral dampening coefficient
+         ncvar_put(nc=param.nc, varid='miner_damp',vals=pft[v])
+       }
+       if(var == "fuel_minerals"){            ## mineral content of fuel
+         ncvar_put(nc=param.nc, varid='miner_total',vals=pft[v])
+       }
+       if(var == "alpha_scorch_height"){            ## SPITFIRE scorch height parameter
+         ncvar_put(nc=param.nc, varid='alpha_SH',vals=pft[v])
+       }
+       if(var == "fdi_a"){            ## SPITFIRE Constant in calculation of dewpoint for Fire Danger Index (FDI)
+         ncvar_put(nc=param.nc, varid='fdi_a',vals=pft[v])
+       }
+       if(var == "fdi_b"){            ## SPITFIRE Constant in calculation of dewpoint for Fire Danger Index (FDI)
+         ncvar_put(nc=param.nc, varid='fdi_b',vals=pft[v])
+       }
+       # fdi_alpha	SPITFIRE fire danger index (FDI) coefficient	
+       if(var == ""){            ## 
+         ncvar_put(nc=param.nc, varid='',vals=pft[v])
+       }
+       ##   -- CANOPY
+       if(var == "canopy_max_spread"){            ## Maximum allowable "dynamic ratio of dbh to canopy area" for cohorts in closed canopies.	-	[cm/m2]
+         ncvar_put(nc=param.nc, varid='maxspread',vals=pft[v])
+       }
+       # 	
+       if(var == "canopy_min_spread"){            ## Minimum allowable "dynamic ratio of dbh to canopy area" for cohorts in closed canopies.	-	[cm/m2]
+         ncvar_put(nc=param.nc, varid='minspread',vals=pft[v])
+       }
+
+       ## LITTERCLASS indexed (Size:6)
+       ## MCD: skipping for now until there's demonstrated demand because it requires expanding every variable out into VARNAME_[1..n]
+       # low_moisture_C	Intercept (constant) of fuel moisture to burned fraction term for drier fuel	litterclass	
+       # low_moisture_S	Slope of fuel moisture to burned fraction term for drier fuel	litterclass	
+       # max_decomp	Maximum decomposition rate of litter in the absence of moisture or temperature stress, per fuel class	litterclass	y-1
+       # mid_moisture	Parameter of burned fraction term. Below this 'low' constants apply, above this, 'mid' constants apply, 	litterclass	
+       # mid_moisture_C	Intercept (constant) of fuel moisture to burned fraction term for wetter fuel	litterclass	
+       # min_moisture	Parameter of burned fraction term. Below this value all litter is burned by a fire. Above, 'low' constants apply	litterclass	
+       # FBD	Fuel Bulk Density of fuel class 	litterclass	kg m-3
+       # alpha_FMC	Parameter of function relating fuel moisture content to meteorological fire danger index 	litterclass	
+       # SAV	Surface Area to Volume Ratio of fuel class 	litterclass	cm-1
+       
+       ## NCWD dimensioned       Size:4
+       if(var == "CWD_frac1"){            ##Fraction of coarse woody debris (CWD) that is moved into each of the four woody fuel classes
+         ncvar_put(nc=param.nc, varid='CWD_frac', start = 1, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "CWD_frac2"){
+         ncvar_put(nc=param.nc, varid='CWD_frac', start = 2, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "CWD_frac3"){
+         ncvar_put(nc=param.nc, varid='CWD_frac', start = 3, count = 1,
+                   vals=pft[v])
+       }
+       if(var == "CWD_frac4"){
+         ncvar_put(nc=param.nc, varid='CWD_frac', start = 4, count = 1,
+                   vals=pft[v])
+       }
+       
        
      } ## end loop over VARIABLES
    } ## end loop over PFTs
-   nc_close(param.nc)
+   ncdf4::nc_close(param.nc)
    
 #   ## Write SETTINGS file
 #     

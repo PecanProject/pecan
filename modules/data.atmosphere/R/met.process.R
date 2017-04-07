@@ -3,7 +3,7 @@
 ##' @export
 ##'
 ##' @param site Site info from settings file
-##' @param input currently 'NARR' or 'Ameriflux'
+##' @param input_met Which data source to process. 
 ##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param model model_type name
@@ -16,20 +16,21 @@
 ##'        `download`, `met2cf`, `standardize`, and `met2model`. If it is instead a simple boolean,
 ##'        the default behavior for `overwrite=FALSE` is to overwrite nothing, as you might expect.
 ##'        Note however that the default behavior for `overwrite=TRUE` is to overwrite everything
-##'        *except* raw met downloads (i.e., it corresponds to the same )
+##'        *except* raw met downloads. I.e., it corresponds to:
+##'
+##'        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
 ##'
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, 
-                        overwrite = list(download = FALSE, met2cf = FALSE, 
-                                         standardize = FALSE, met2model = FALSE)) {
+                        overwrite = FALSE) {
   library(RPostgreSQL)
   
   # If overwrite is a plain boolean, fill in defaults for each stage
   if (!is.list(overwrite)) {
     if (overwrite) {
       # Default for overwrite==TRUE is to overwrite everything but download
-      (overwrite <- overwrite) <- list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
+      overwrite <- list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
     } else {
       overwrite <- list(download = FALSE, met2cf = FALSE, standardize = FALSE, met2model = FALSE)
     }
@@ -58,7 +59,12 @@ met.process <- function(site, input_met, start_date, end_date, model,
   }
   
   # set up connection and host information
-  con <- db.open(dbparms)
+  bety <- dplyr::src_postgres(dbname   = dbparms$dbname, 
+                       host     = dbparms$host, 
+                       user     = dbparms$user, 
+                       password = dbparms$password)
+  
+  con <- bety$con
   on.exit(db.close(con))
   username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
   machine.host <- ifelse(host == "localhost" || host$name == "localhost", fqdn(), host$name)
@@ -82,7 +88,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
                           formatname = result$formatname, 
                           parentid = NA, 
                           con = con, hostname = result$host)
-      invisible(return(result$file))
+      return(invisible(result$file))
     }
   }
   
@@ -93,10 +99,10 @@ met.process <- function(site, input_met, start_date, end_date, model,
   # first attempt at function that designates where to start met.process
   if (is.null(input_met$id)) {
     stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
-    format.vars <- query.format.vars(con = con, format.id = register$format$id)  # query variable info from format id
+    format.vars <- query.format.vars(bety = bety, format.id = register$format$id)  # query variable info from format id
   } else {
     stage <- met.process.stage(input_met$id, register$format$id, con)
-    format.vars <- query.format.vars(input.id = input_met$id, con = con)  # query DB to get format variable information if available
+    format.vars <- query.format.vars(bety = bety, input.id = input_met$id)  # query DB to get format variable information if available
     # Is there a situation in which the input ID could be given but not the file path? 
     # I'm assuming not right now
     assign(stage$id.name, list(inputid = input_met$id,
@@ -141,7 +147,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        site.id = raw.data.site.id, 
                                        lat.in = new.site$lat, lon.in = new.site$lon, 
                                        host = host, 
-                                       overwrite = overwrite$download)
+                                       overwrite = overwrite$download,
+                                       site = site, username = username)
     if (met %in% c("CRUNCEP", "GFDL")) {
       ready.id <- raw.id
       stage$met2cf <- FALSE
@@ -157,14 +164,16 @@ met.process <- function(site, input_met, start_date, end_date, model,
     cf.id <- .met2cf.module(raw.id = raw.id, 
                             register = register,
                             met = met, 
+                            str_ns = str_ns, 
                             dir = dir, 
                             machine = machine, 
                             site.id = new.site.id, 
-                            lat = site$lat, lon = site$lon, 
+                            lat = new.site$lat, lon = new.site$lon, 
                             start_date = start_date, end_date = end_date, 
                             con = con, host = host, 
                             overwrite = overwrite$met2cf, 
-                            format.vars = format.vars)
+                            format.vars = format.vars,
+                            bety = bety)
   }
   
   #--------------------------------------------------------------------------------------------------#
@@ -200,6 +209,11 @@ met.process <- function(site, input_met, start_date, end_date, model,
   #--------------------------------------------------------------------------------------------------#
   # Prepare for Model
   if (stage$met2model) {
+    
+    ## Get Model Registration
+    reg.model.xml <- system.file(paste0("register.", model, ".xml"), package = paste0("PEcAn.",model))
+    reg.model <- XML::xmlToList(XML::xmlParse(reg.model.xml))
+    
     met2model.result <- .met2model.module(ready.id = ready.id, 
                                           model = model, 
                                           con = con,
@@ -211,7 +225,9 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                           start_date = start_date, end_date = end_date, 
                                           browndog = browndog, 
                                           new.site = new.site, 
-                                          overwrite = overwrite$met2model)
+                                          overwrite = overwrite$met2model,
+                                          exact.dates = reg.model$exact.dates)
+    
     model.id  <- met2model.result$model.id
     outfolder <- met2model.result$outfolder
   } else {
@@ -273,7 +289,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
     sitename <- gsub("[\\s/()]", "-", site$name, perl = TRUE)
   } else {
     logger.warn("Could not process source", source)
-    invisible(return(NA))
+    return(invisible(NA))
   }
   
   # this logic should live somewhere else, maybe the registry?
@@ -319,7 +335,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
                           stringsAsFactors = FALSE)
   } else {
     logger.warn("Could not process model", model)
-    invisible(return(NA))
+    return(invisible(NA))
   }
   
   xmldata <- paste0("<input>", 
@@ -351,7 +367,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
     results$dbfile.name <- basename(downloadedfile)
   }
   
-  invisible(return(results))
+  return(invisible(results))
 } # browndog.met
 
 ################################################################################################################################# 
@@ -372,5 +388,5 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
 site_from_tag <- function(sitename, tag) {
   temp <- regmatches(sitename, gregexpr("(?<=\\().*?(?=\\))", sitename, perl = TRUE))[[1]]
   pref <- paste0(tag, "-")
-  unlist(strsplit(temp[grepl(pref, temp)], pref))[2]
+  return(unlist(strsplit(temp[grepl(pref, temp)], pref))[2])
 } # site_from_tag

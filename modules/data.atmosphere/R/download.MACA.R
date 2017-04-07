@@ -150,7 +150,7 @@ download.MACA <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
     
   }
   
-  invisible(results)
+  return(invisible(results))
 }
 
 #download.MACA('maca','2006-01-01 00:00:00','2006-12-31 23:59:59',5,45,-90)

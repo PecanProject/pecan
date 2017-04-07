@@ -47,5 +47,5 @@ read.register <- function(register.xml, con) {
                                             "' and mime_type = '", register$format$mimetype, "'"), con)[[1]]
     }
   }
-  invisible(register)
+  return(invisible(register))
 } # read.register

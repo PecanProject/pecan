@@ -52,8 +52,14 @@ check.lists <- function(x, y) {
 ##' @export
 ##'
 get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
-                               forceupdate = TRUE,
+                               forceupdate = FALSE,
                                trait.names = traitdictionary$id) {
+
+  # Create directory if necessary
+  if(!file.exists(pft$outdir) && !dir.create(pft$outdir, recursive=TRUE)) {
+    logger.error(paste0("Couldn't create PFT output directory: ", pft$outdir))
+  }
+
   ## Remove old files.  Clean up.
   old.files <- list.files(path=pft$outdir, full.names=TRUE, include.dirs=FALSE)
   file.remove(old.files)
@@ -82,8 +88,13 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   trait.data.check <- query.traits(spstr, traits, con = dbcon, update.check.only=TRUE)
   traits <- names(trait.data.check)
 
+  # Set forceupdate FALSE if it's a string (backwards compatible with 'AUTO' flag used in the past)
+  if(!is.logical(forceupdate)) {
+    forceupdate <- FALSE
+  }
+  
   # check to see if we need to update
-  if (forceupdate || !as.logical(forceupdate)) {
+  if (!forceupdate) {
     if (is.null(pft$posteriorid)) {
       pft$posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " ORDER BY created_at DESC LIMIT 1"), dbcon)[['id']]  
     }
@@ -97,7 +108,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
           if (!file.exists(file.path(files$file_path[[id]], files$file_name[[id]]))) {
             foundallfiles <- FALSE
             logger.error("can not find posterior file: ", file.path(files$file_path[[id]], files$file_name[[id]]))
-          } else if (forceupdate && (files$file_name[[id]] == "species.csv")) {
+          } else if (files$file_name[[id]] == "species.csv") {
             logger.debug("Checking if species have changed")
             testme <- read.csv(file.path(files$file_path[[id]], files$file_name[[id]]))
             if (!check.lists(species, testme)) {
@@ -105,10 +116,14 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
               logger.error("species have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
             }
             remove(testme)
-          } else if (forceupdate && (files$file_name[[id]] == "prior.distns.Rdata")) {
+          } else if (files$file_name[[id]] == "prior.distns.Rdata") {
             logger.debug("Checking if priors have changed")
             prior.distns.tmp <- prior.distns
-            load(file.path(files$file_path[[id]], files$file_name[[id]]))
+            if(file.exists(files$file_path[[id]], files$file_name[[id]])){
+              load(file.path(files$file_path[[id]], files$file_name[[id]]))#HERE IS THE PROBLEM
+            }else{
+              logger.debug("Prior file does not exist. If empty (zero-byte) input file error is recived, set forceupdate to TRUE for one run.")
+            }
             testme <- prior.distns
             prior.distns <- prior.distns.tmp
             if (!identical(prior.distns, testme)) {
@@ -116,7 +131,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
               logger.error("priors have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
             }
             remove(testme)
-          } else if (forceupdate && (files$file_name[[id]] == "trait.data.Rdata")) {
+          } else if (files$file_name[[id]] == "trait.data.Rdata") {
             logger.debug("Checking if trait data has changed")
             load(file.path(files$file_path[[id]], files$file_name[[id]]))
 
@@ -228,13 +243,21 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
 ##' @param modeltype type of model that is used, this is is used to distinguis between different pfts with the same name.
 ##' @param dbfiles location where previous results are found
 ##' @param database database connection parameters
-##' @param forceupdate set this to true to force an update, auto will check to see if an update is needed.
+##' @param forceupdate set this to true to force an update, false to check to see if an update is needed.
 ##' @param trait.names list of traits to query. If TRUE, uses trait.dictionary
 ##' @return list of pfts with update posteriorids
 ##' @author David LeBauer, Shawn Serbin
 ##' @export
 ##'
-get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,trait.names=NULL) {
+get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate, trait.names=NULL) {
+  if (!is.list(pfts)) {
+    PEcAn.utils::logger.severe('pfts must be a list')
+  }
+  # Check that all PFTs have associated outdir entries
+  pft_outdirs <- lapply(pfts, '[[', 'outdir')
+  if (any(sapply(pft_outdirs, is.null))) {
+    PEcAn.utils::logger.severe('At least one pft in settings is missing its "outdir"')
+  }
   ##---------------- Load trait dictionary --------------#
   if(is.logical(trait.names)){
     if(trait.names){
@@ -245,8 +268,13 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate,trait
 
   # process all pfts
   dbcon <- db.open(database)
-  result <- lapply(pfts, get.trait.data.pft, modeltype, dbfiles, dbcon, forceupdate, trait.names)
-  db.close(dbcon)
+  on.exit(db.close(dbcon))
+  result <- lapply(pfts, get.trait.data.pft, 
+                   modeltype = modeltype, 
+                   dbfiles = dbfiles,
+                   dbcon = dbcon,
+                   forceupdate = forceupdate,
+                   trait.names = trait.names)
 
   invisible(result)
 }
@@ -260,6 +288,9 @@ runModule.get.trait.data <- function(settings) {
     pft.names <- character(0)
     for(i in seq_along(settings)) {
       pfts.i <- settings[[i]]$pfts
+      if (!is.list(pfts.i)) {
+        PEcAn.utils::logger.severe("settings[[i]]$pfts is not a list")
+      }
       pft.names.i <- sapply(pfts.i, function(x) x$name)
       ind <- which(pft.names.i %in% setdiff(pft.names.i, pft.names))
       pfts <- c(pfts, pfts.i[ind])
@@ -272,15 +303,18 @@ runModule.get.trait.data <- function(settings) {
     modeltype <- settings$model$type
     dbfiles <- settings$database$dbfiles
     database <- settings$database$bety
-    forceupdate <- !is.null(settings$meta.analysis) && (as.logical(settings$meta.analysis$update) || (settings$meta.analysis$update == 'AUTO'))
+    forceupdate <- ifelse(is.null(settings$meta.analysis$update), FALSE, settings$meta.analysis$update)
     settings$pfts <- get.trait.data(pfts, modeltype, dbfiles, database, forceupdate)
     return(settings)
   } else if(is.Settings(settings)) {
     pfts <- settings$pfts
+    if (!is.list(pfts)) {
+      PEcAn.utils::logger.severe("settings$pfts is not a list")
+    }
     modeltype <- settings$model$type
     dbfiles <- settings$database$dbfiles
     database <- settings$database$bety
-    forceupdate <- !is.null(settings$meta.analysis) && (as.logical(settings$meta.analysis$update) || (settings$meta.analysis$update == 'AUTO'))
+    forceupdate <- ifelse(is.null(settings$meta.analysis$update), FALSE, settings$meta.analysis$update)
     settings$pfts <- get.trait.data(pfts, modeltype, dbfiles, database, forceupdate)
     return(settings)
   } else {

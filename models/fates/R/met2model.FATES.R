@@ -21,6 +21,7 @@
 ##' @param lst timezone offset to GMT in hours
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbosefor(year in start_year:end_year)
+##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_put
 met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat, lon, 
                             overwrite = FALSE, verbose = FALSE, ...) {
   
@@ -31,17 +32,12 @@ met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date,
   # defining temporal dimension needs to be figured out. If we configure FATES to use same tstep then we may not need to change dimensions  
   
   library(PEcAn.utils)
-
-  ncvar_get <- ncdf4::ncvar_get
-  ncdim_def <- ncdf4::ncdim_def
-  ncatt_get <- ncdf4::ncatt_get
-  ncvar_put <- ncdf4::ncvar_put
   
   insert <- function(ncout, name, unit, data) {
     var   <- ncdf4::ncvar_def(name = name, units = unit, dim = dim, missval = -6999, verbose = verbose)
     ncout <- ncdf4::ncvar_add(nc = ncout, v = var, verbose = verbose)
     ncvar_put(nc = ncout, varid = name, vals = data)
-    invisible(ncout)
+    return(invisible(ncout))
   }
   sm <- c(0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365) * 86400  ## day of year thresholds
   
@@ -93,15 +89,15 @@ met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date,
         ## http://www.cesm.ucar.edu/models/cesm1.2/clm/models/lnd/clm/doc/UsersGuide/x12979.html
         
         # LATITUDE
-        var <- ncvar_def(name = "latitude", units = "degree_north", 
+        var <- ncdf4::ncvar_def(name = "latitude", units = "degree_north", 
                          dim = list(lat.dim, lon.dim), missval = as.numeric(-9999))
-        ncout <- nc_create(outfile, vars = var, verbose = verbose)
+        ncout <- ncdf4::nc_create(outfile, vars = var, verbose = verbose)
         ncvar_put(nc = ncout, varid = "latitude", vals = latitude)
         
         # LONGITUDE
-        var <- ncvar_def(name = "longitude", units = "degree_east", 
+        var <- ncdf4::ncvar_def(name = "longitude", units = "degree_east", 
                          dim = list(lat.dim, lon.dim), missval = as.numeric(-9999))
-        ncout <- ncvar_add(nc = ncout, v = var, verbose = verbose)
+        ncout <- ncdf4::ncvar_add(nc = ncout, v = var, verbose = verbose)
         ncvar_put(nc = ncout, varid = "longitude", vals = longitude)
         
         ## surface_downwelling_longwave_flux_in_air
@@ -157,12 +153,12 @@ met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date,
   
   logger.info("Done with met2model.FATES")
   
-  data.frame(file = paste0(outfolder, "/"), 
-             host = c(fqdn()), 
-             mimetype = c("application/x-netcdf"), 
-             formatname = c("CLM met"), 
-             startdate = c(start_date), 
-             enddate = c(end_date), 
-             dbfile.name = "", 
-             stringsAsFactors = FALSE)
+  return(data.frame(file = paste0(outfolder, "/"), 
+                    host = c(fqdn()), 
+                    mimetype = c("application/x-netcdf"), 
+                    formatname = c("CLM met"), 
+                    startdate = c(start_date), 
+                    enddate = c(end_date), 
+                    dbfile.name = "", 
+                    stringsAsFactors = FALSE))
 } # met2model.FATES
