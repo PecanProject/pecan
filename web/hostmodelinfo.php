@@ -31,6 +31,7 @@ $earth = 1118;
 // implement a CF to model code, with the appropriate output format.
 $met = array('ED2'      => 12,
              'SIPNET'   => 24,
+             'BIOCRO'   => 28,
              'CF'       => 33,
              'DALEC'    => 1000000002,
              'LINKAGES' => 1000000003,

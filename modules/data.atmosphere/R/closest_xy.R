@@ -17,7 +17,7 @@ closest_xy <- function(slat, slon, infolder, infile) {
   nc <- ncdf4::nc_open(test.file)
   lat <- ncdf4::ncvar_get(nc, "latitude")
   lon <- ncdf4::ncvar_get(nc, "longitude")
-  ncdf4::nc_close(test_file)
+  ncdf4::nc_close(nc)
   
   if (all(dim(lat) == dim(lon))) {
     rows <- nrow(lat)

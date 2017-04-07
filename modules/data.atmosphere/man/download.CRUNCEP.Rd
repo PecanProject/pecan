@@ -2,16 +2,13 @@
 % Please edit documentation in R/download.CRUNCEP_Global.R
 \name{download.CRUNCEP}
 \alias{download.CRUNCEP}
-\title{download.CRUNCEP}
+\title{Download CRUNCEP data}
 \usage{
 download.CRUNCEP(outfolder, start_date, end_date, site_id, lat.in, lon.in,
   overwrite = FALSE, verbose = FALSE, ...)
 }
-\arguments{
-\item{lon}{}
-}
 \description{
-Download and conver to CF CRUNCEP single grid point from MSTIMIP server using OPENDAP interface
+Download and convert to CF CRUNCEP single grid point from MSTIMIP server using OPENDAP interface
 }
 \author{
 James Simkins, Mike Dietze

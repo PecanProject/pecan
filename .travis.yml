@@ -10,6 +10,9 @@ cache:
   - directories:
     - $HOME/R/Library
     - .install
+    - .check
+    - .test
+    - .doc
   - packages
 
 addons:
@@ -58,8 +61,7 @@ services:
 
 ## install sipnet and clim file
 install:
-  - pushd .
-  - cd $HOME
+  - pushd $HOME
   - curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_unk.tar.gz
   - tar zxf sipnet_unk.tar.gz
   - cd sipnet_unk
@@ -69,8 +71,29 @@ install:
 before_script:
   - psql -U postgres -c "CREATE ROLE BETY WITH LOGIN CREATEDB SUPERUSER CREATEROLE UNENCRYPTED PASSWORD 'bety'";
   - psql -U postgres -c "CREATE DATABASE bety OWNER bety;"
-  - scripts/load.bety.sh -a postgres -c -u
+  - curl -o bety.sql http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/bety.sql
+  - psql -U postgres < bety.sql
+  - ./scripts/add.models.sh
+  - chmod +x book_source/deploy.sh
+  - chmod +x documentation/tutorials/deploy.sh
 
 script:
-  - scripts/build.sh --no-git --tests --name travis
+  - set -e
+  # - scripts/build.sh --no-git --tests --name travis
+  - echo 'Building PEcAn'
+  - make
+  - echo 'Testing PEcAn'
+  - make test
+  - echo 'Testing Integration'
+  - ./tests/integration.sh travis
+  - set +e
 
+after_script:
+  - echo 'Building Book'
+  - pushd book_source
+  - make
+  - popd
+  - echo 'Building Tutorials'
+  - pushd documentation/tutorials
+  - make build deploy
+  - popd

@@ -9,4 +9,3 @@ makeMCMCList(samps)
 \arguments{
 \item{samps}{samples list (output from invert.custom)}
 }
-

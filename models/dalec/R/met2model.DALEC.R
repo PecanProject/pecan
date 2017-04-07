@@ -24,6 +24,7 @@
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
+##' @importFrom ncdf4 ncvar_get
 met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
                             overwrite = FALSE, verbose = FALSE, ...) {
   
@@ -99,7 +100,6 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     dt    <- timestep.s / tstep  #dt is now an integer
     
     ## extract variables
-    ncvar_get <- ncdf4::ncvar_get
     lat  <- ncvar_get(nc, "latitude")
     lon  <- ncvar_get(nc, "longitude")
     Tair <- ncvar_get(nc, "air_temperature")  ## in Kelvin
@@ -169,6 +169,6 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
   ## write output
   write.table(out, out.file.full, quote = FALSE, sep = " ", row.names = FALSE, col.names = FALSE)
   
-  invisible(results)
+  return(invisible(results))
   
 } # met2model.DALEC

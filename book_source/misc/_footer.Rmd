@@ -1,0 +1,1 @@
+The [PEcAn project](http://pecanproject.org) is supported by the National Science Foundation (ABI #1062547, ARC #1023477), the [Energy Biosciences Institute](http://www.energybiosciencesinstitute.org/), and the [Department of Energy Advanced Research Projects for Energy](http://arpa-e.energy.gov/).

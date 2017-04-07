@@ -127,7 +127,7 @@ th,td {
     overflow: auto;
     padding: 5px;
     margin-left: 200px;
-    height: calc( 100% - 30px );
+    height: calc( 100% - 50px );
 }
 
 #output p {

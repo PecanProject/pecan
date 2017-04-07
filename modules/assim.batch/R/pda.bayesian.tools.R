@@ -14,7 +14,6 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
                                chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL, 
                                ar.target = NULL, jvar = NULL, n.knot = NULL) {
   
-  library(BayesianTools)
   
   sampler <- settings$assim.batch$bt.settings$sampler
   
@@ -32,26 +31,41 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
     prior.id = prior.id, chain = chain, iter = iter, adapt = adapt,
     adj.min = adj.min, ar.target = ar.target, jvar = jvar, n.knot = n.knot)
   
+  ## will be used to check if multiplicative Gaussian is requested
+  any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
+  
   ## Open database connection
   if (settings$database$bety$write) {
     con <- try(db.open(settings$database$bety), silent = TRUE)
-    if (is.character(con)) {
+    if (is(con, "try-error")) {
       con <- NULL
+    } else {
+      on.exit(db.close(con))
     }
   } else {
     con <- NULL
   }
   
+  bety <- src_postgres(dbname = settings$database$bety$dbname, 
+                       host = settings$database$bety$host, 
+                       user = settings$database$bety$user, 
+                       password = settings$database$bety$password)
+  
   ## Load priors
-  temp        <- pda.load.priors(settings, con)
+  temp        <- pda.load.priors(settings, bety$con)
   prior.list  <- temp$prior
   settings    <- temp$settings
   pname       <- lapply(prior.list, rownames)
   n.param.all <- sapply(prior.list, nrow)
   
   ## Load data to assimilate against
-  inputs  <- load.pda.data(settings, con)
+  inputs  <- load.pda.data(settings, bety)
   n.input <- length(inputs)
+  
+  # efficient sample size calculation
+  # fot BT you might want to run the model once and align inputs & outputs, then calculate n_eff
+  # for now assume they will be same length
+  inputs <- pda.neff.calc(inputs)
   
   ## Set model-specific functions
   do.call("require", list(paste0("PEcAn.", settings$model$type)))
@@ -122,10 +136,42 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
     start.model.runs(settings, settings$database$bety$write)
     
     ## Read model outputs
-    model.out <- pda.get.model.output(settings, run.id, con, inputs)
+    align.return <- pda.get.model.output(settings, run.id, bety, inputs)
+    model.out <- align.return$model.out
+    if(all(!is.na(model.out))){
+      inputs <- align.return$inputs
+    }
     
-    ## calculate and return likelihood
-    pda.calc.llik(settings, con, model.out, run.id, inputs, llik.fn)
+    # retrieve n
+    n.of.obs <- sapply(inputs,`[[`, "n") 
+    names(n.of.obs) <- sapply(model.out,names)
+    
+    # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
+    if(any(unlist(any.mgauss) == "multipGauss")) {
+      isbias <- which(unlist(any.mgauss) == "multipGauss")
+      # testing now
+      nbias <- 1
+      bias.list <- return.bias(isbias, list(model.out), inputs, prior.list, nbias)
+      bias.terms <- bias.list$bias.params
+    } else {
+      bias.terms <- NULL
+    }
+    
+    if(!is.null(bias.terms)){
+      all.bias <- lapply(bias.terms, function(n) n[1,])
+      all.bias <- do.call("rbind", all.bias)
+    } else {
+      all.bias <- NULL
+    }
+    
+    ## calculate error statistics      
+    pda.errors <- pda.calc.error(settings, con, model_out = model.out, run.id, inputs, all.bias)
+    llik.par <- pda.calc.llik.par(settings, n = n.of.obs, 
+                                  error.stats = unlist(pda.errors))
+    ## Calculate likelihood
+    LL.new <- pda.calc.llik(pda.errors = unlist(pda.errors), llik.fn, llik.par)
+    
+    return(LL.new)
   }
   
   ## Create bayesianSetup object for BayesianTools
