@@ -15,9 +15,7 @@ start_date <- settings$run$start.date
 
 load("data/result.RData")
 biocro.ncfile <- file.path(outdir, paste0(resultDT[, min(Year)], ".nc"))
-
-file.remove(biocro.ncfile)
-
+if (file.exists(biocro.ncfile)) { file.remove(biocro.ncfile) }
 model2netcdf.BIOCRO(resultDT, genus = "foo", outdir = outdir, lat = 44.5, lon = -88)
 
 
