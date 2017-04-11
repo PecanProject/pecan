@@ -15,7 +15,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
                      mimetype, site.id, start_date, end_date))
   
-  Rbinary <- ifelse(is.null(settings$host$Rbinary),"R",settings$host$Rbinary)
+  # TODO see issue #18
+  Rbinary <- ifelse(!exists("settings") || is.null(settings$host$Rbinary),"R",settings$host$Rbinary)
   
   n <- nchar(outfolder)
   if (substr(outfolder, n, n) != "/") {
@@ -285,7 +286,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       return(NULL)
     }
     if (nrow(dbfile) > 1) {
-      logger.warning("multiple dbfile records, using last", dbfile)
+      logger.warn("multiple dbfile records, using last", dbfile)
       dbfile <- dbfile[nrow(dbfile), ]
     }
   }
@@ -431,7 +432,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         (existing.input$start_date != start_date || existing.input$end_date != end_date)) {
       # Updating record with new dates
       db.query(paste0("UPDATE inputs SET start_date='", start_date, "', end_date='", 
-                      end_date, "', ", "updated_at=NOW() WHERE id=", existing.input$id), 
+                      end_date, "'  WHERE id=", existing.input$id), 
                con)
       #Record has been updated and file downloaded so just return existing dbfile and input pair
       return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
@@ -442,12 +443,12 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       # values (i.e., what they'd be if convert.input was creating a new record)
       if (exists("existing.input") && nrow(existing.input) > 0) {
         db.query(paste0("UPDATE inputs SET name='", basename(dirname(result$file[1])), 
-                        "', ", "updated_at=NOW() WHERE id=", existing.input$id), con)
+                        "' WHERE id=", existing.input$id), con)
       }
       if (exists("existing.dbfile") && nrow(existing.dbfile) > 0) {
         db.query(paste0("UPDATE dbfiles SET file_path='", dirname(result$file[1]), 
-                        "', ", "file_name='", result$dbfile.name[1], "', ", 
-                        "updated_at=NOW() WHERE id=", existing.dbfile$id), con)
+                        "', ", "file_name='", result$dbfile.name[1], 
+                        "' WHERE id=", existing.dbfile$id), con)
       }
     }
     
