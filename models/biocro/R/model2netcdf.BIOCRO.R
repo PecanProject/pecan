@@ -77,6 +77,7 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
       TotLivBiom = k * (Leaf + Root + Stem + Rhizome + Grain), 
       RootBiom = k * Root, 
       StemBiom = k * Stem, 
+      Yield = Stem,
       Evap = udunits2::ud.convert(SoilEvaporation + CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
       TVeg = udunits2::ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
       LAI = LAI))
