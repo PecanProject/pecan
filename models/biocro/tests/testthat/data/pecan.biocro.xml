@@ -40,8 +40,8 @@
     </inputs>
     <start.date>2004-01-01 06:00:00</start.date>
     <end.date>2005-12-31 05:59:00</end.date>
-    <host>
-      <name>ebi-forecast.igb.illinois.edu</name>
-    </host>
   </run>
+  <host>
+    <name>localhost</name>
+  </host>
 </pecan>
