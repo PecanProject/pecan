@@ -11,4 +11,3 @@ spectral.response(spec, sensor)
 
 \item{sensor}{Sensor name (string). See sensor.list}
 }
-

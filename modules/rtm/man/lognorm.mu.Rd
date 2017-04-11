@@ -14,4 +14,3 @@ lognorm.mu(mean, sd)
 \description{
 Functions for default priors
 }
-

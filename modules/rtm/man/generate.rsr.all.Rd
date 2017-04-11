@@ -10,4 +10,3 @@ generate.rsr.all(path.to.licor = NULL)
 Only needs to be called when updating these funcitons with new 
 data
 }
-

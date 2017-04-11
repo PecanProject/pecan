@@ -12,4 +12,3 @@ rsr.from.fwhm(wavelength, fwhm)
 \item{fwhm}{Vector of full-width half maximum (FWHM) bandwidths, as reported 
 in FWHM data.}
 }
-

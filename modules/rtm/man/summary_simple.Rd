@@ -13,4 +13,3 @@ summary_simple(samples)
 Calculate simple univariate summary statistics and return as 
 named list
 }
-

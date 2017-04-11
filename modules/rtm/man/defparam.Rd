@@ -15,4 +15,3 @@ Named vector of default parameter values
 \details{
 Extract default parameter values from `model.list`
 }
-

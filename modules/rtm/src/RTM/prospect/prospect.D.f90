@@ -32,8 +32,9 @@
 ! version (29 March 2017)
 ! ********************************************************************************
 
-SUBROUTINE prospect_D(N,Cab,Car,Canth,Cbrown,Cw,Cm,RT)
+SUBROUTINE prospect_d(N,Cab,Car,Canth,Cbrown,Cw,Cm,RT)
 
+    USE MOD_dataSpec_wavelength
     USE MOD_dataSpec_prospectD
     IMPLICIT none
 
@@ -42,8 +43,8 @@ SUBROUTINE prospect_D(N,Cab,Car,Canth,Cbrown,Cw,Cm,RT)
 
     REAL*8 :: k(nw)
 
-    k = (Cab*k_Cab+Car*k_Car+Canth*k_Canth+Cbrown*k_Brown+Cw*k_Cw+Cm*k_Cm)/N
+    k = (Cab*k_Cab+Car*k_Car+Canth*k_Canth+Cbrown*k_Cbrown+Cw*k_Cw+Cm*k_Cm)/N
 
-    Call gpm(k,N,RT)
+    Call gpm(k,refractive,N,RT)
 
 end subroutine
