@@ -1,5 +1,5 @@
 ! Automatically generated module
-MODULE dataspec_prospectd
+MODULE mod_dataspec_prospectd
     use MOD_dataSpec_wavelength
     implicit none
 
@@ -639,11 +639,8 @@ MODULE dataspec_prospectd
     DATA (refractive(i),i=2081,2090)/&
         1.271,1.2711,1.2712,1.2712,1.2713,1.2714,1.2715,1.2716,1.2717,1.2718/
 
-    DATA (refractive(i),i=2091,2100)/&
-        1.2719,1.272,1.2722,1.2723,1.2725,1.2726,1.2728,1.273,1.2732,1.2734/
-
-    DATA (refractive(i),i=2101,2102)/&
-        1.2736/
+    DATA (refractive(i),i=2091,2101)/&
+        1.2719,1.272,1.2722,1.2723,1.2725,1.2726,1.2728,1.273,1.2732,1.2734,1.2736/
 
 
     DATA (k_cab(i),i=1,10)/&
@@ -1273,11 +1270,8 @@ MODULE dataspec_prospectd
     DATA (k_cab(i),i=2081,2090)/&
         0,0,0,0,0,0,0,0,0,0/
 
-    DATA (k_cab(i),i=2091,2100)/&
-        0,0,0,0,0,0,0,0,0,0/
-
-    DATA (k_cab(i),i=2101,2102)/&
-        0/
+    DATA (k_cab(i),i=2091,2101)/&
+        0,0,0,0,0,0,0,0,0,0,0/
 
 
     DATA (k_car(i),i=1,10)/&
@@ -1907,11 +1901,8 @@ MODULE dataspec_prospectd
     DATA (k_car(i),i=2081,2090)/&
         0,0,0,0,0,0,0,0,0,0/
 
-    DATA (k_car(i),i=2091,2100)/&
-        0,0,0,0,0,0,0,0,0,0/
-
-    DATA (k_car(i),i=2101,2102)/&
-        0/
+    DATA (k_car(i),i=2091,2101)/&
+        0,0,0,0,0,0,0,0,0,0,0/
 
 
     DATA (k_canth(i),i=1,10)/&
@@ -2541,11 +2532,8 @@ MODULE dataspec_prospectd
     DATA (k_canth(i),i=2081,2090)/&
         0,0,0,0,0,0,0,0,0,0/
 
-    DATA (k_canth(i),i=2091,2100)/&
-        0,0,0,0,0,0,0,0,0,0/
-
-    DATA (k_canth(i),i=2101,2102)/&
-        0/
+    DATA (k_canth(i),i=2091,2101)/&
+        0,0,0,0,0,0,0,0,0,0,0/
 
 
     DATA (k_cbrown(i),i=1,10)/&
@@ -3175,11 +3163,8 @@ MODULE dataspec_prospectd
     DATA (k_cbrown(i),i=2081,2090)/&
         0,0,0,0,0,0,0,0,0,0/
 
-    DATA (k_cbrown(i),i=2091,2100)/&
-        0,0,0,0,0,0,0,0,0,0/
-
-    DATA (k_cbrown(i),i=2101,2102)/&
-        0/
+    DATA (k_cbrown(i),i=2091,2101)/&
+        0,0,0,0,0,0,0,0,0,0,0/
 
 
     DATA (k_cw(i),i=1,10)/&
@@ -3809,11 +3794,8 @@ MODULE dataspec_prospectd
     DATA (k_cw(i),i=2081,2090)/&
         85.1,85.84,86.17,86.37,87.08,87.62,88.84,89.04,89.45,90.55/
 
-    DATA (k_cw(i),i=2091,2100)/&
-        90.89,91.34,92.04,92.44,93.08,93.33,93.58,94.16,94.48,94.99/
-
-    DATA (k_cw(i),i=2101,2102)/&
-        95.3/
+    DATA (k_cw(i),i=2091,2101)/&
+        90.89,91.34,92.04,92.44,93.08,93.33,93.58,94.16,94.48,94.99,95.3/
 
 
     DATA (k_cm(i),i=1,10)/&
@@ -4443,11 +4425,7 @@ MODULE dataspec_prospectd
     DATA (k_cm(i),i=2081,2090)/&
         39,39,39.06,39.05,39.16,39.28,39.48,39.43,39.51,39.64/
 
-    DATA (k_cm(i),i=2091,2100)/&
-        39.53,39.6,39.58,39.54,39.4,39.36,39.17,39.26,38.93,39.21/
+    DATA (k_cm(i),i=2091,2101)/&
+        39.53,39.6,39.58,39.54,39.4,39.36,39.17,39.26,38.93,39.21,38.71/
 
-    DATA (k_cm(i),i=2101,2102)/&
-        38.71/
-
-
-END MODULE dataspec_prospectd
+END MODULE mod_dataspec_prospectd

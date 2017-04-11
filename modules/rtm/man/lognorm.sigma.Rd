@@ -11,4 +11,3 @@ lognorm.sigma(mean, sd)
 
 \item{sd}{Sample standard deviation}
 }
-
