@@ -72,6 +72,16 @@ clean:
 	mkdir -p $(@D)
 	echo `date` > $@
 
+.install/roxygen2:
+	Rscript -e "if(!require('roxygen2')) install.packages('roxygen2', repos = 'http://cran.rstudio.com')"
+	mkdir -p $(@D)
+	echo `date` > $@
+
+.install/testthat:
+	Rscript -e "if(!require('testthat')) install.packages('testthat', repos = 'http://cran.rstudio.com')"
+	mkdir -p $(@D)
+	echo `date` > $@
+
 .install/shiny:
 	Rscript -e "if(!require('shiny')) install.packages('shiny', repos = 'http://cran.rstudio.com')"
 	mkdir -p $(@D)
@@ -88,6 +98,8 @@ test_R_pkg = Rscript -e "devtools::test('"$(strip $(1))"')"
 doc_R_pkg = Rscript -e "devtools::document('"$(strip $(1))"')"
 
 $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): .install/devtools
+
+$(ALL_PKGS_T) $(ALL_PKGS_D): .install/roxygen2 .install/testthat
 
 .SECONDEXPANSION:
 .doc/%: $$(wildcard %/**/*) $$(wildcard %/*)
