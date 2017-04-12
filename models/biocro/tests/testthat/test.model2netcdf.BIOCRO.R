@@ -22,7 +22,7 @@ test_that("model2netcdf.BIOCRO reads a .csv and writes a netcdf file for each ye
     }
   })
 
-biocro.nc <- nc_open(biocro.ncfile)
+biocro.nc <- ncdf4::nc_open(biocro.ncfile)
 vars <- biocro.nc$var
 dims <- biocro.nc$dim
 
