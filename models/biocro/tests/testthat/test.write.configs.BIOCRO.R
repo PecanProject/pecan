@@ -3,9 +3,12 @@ settings.xml <- file.path("data", "pecan.biocro.xml")
 settings <- PEcAn.settings::read.settings(settings.xml)
 settings <- PEcAn.settings::prepare.settings(settings)
 
-samples <- list(biocro.saof = (data.frame(Vcmax = c(31.9, 42.4, 57), cuticular_cond = c(1800, 
-  4380, 10700), leaf_respiration_rate_m2 = c(1, 1.9, 3.6), stomatal_slope.BB = c(2.7, 
-  3.3, 3.9), row.names = c("15.866", "50", "84.134"))))
+samples <- list(biocro.saof = (data.frame(
+  Vcmax = c(31.9, 42.4, 57),
+  cuticular_cond = c(1800, 4380, 10700),
+  leaf_respiration_rate_m2 = c(1, 1.9, 3.6),
+  stomatal_slope.BB = c(2.7, 3.3, 3.9),
+  row.names = c("15.866", "50", "84.134"))))
 
 test_that("convert.samples.BIOCRO works", {
   biocro.parms <- convert.samples.BIOCRO(samples$biocro.saof)
