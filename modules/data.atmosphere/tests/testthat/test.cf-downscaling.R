@@ -12,7 +12,7 @@ test_that(
 {
   b <- cfmet.downscale.time(cfmet = daily.cf, lat = 40)
   expect_equal(b[,unique(year)], 1951)
-  expect_equal(b[,range(doy)], c(3,151))
+  expect_equal(b[,range(doy)], c(2,151))
   expect_equal(b[,unique(hour)], 0:23)
   expect_equal(b[,round(range(downwelling_photosynthetic_photon_flux))], c(0, 2061))
   expect_equal(b[,round(range(air_temperature))], c(-22, 31))
