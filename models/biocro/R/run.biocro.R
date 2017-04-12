@@ -118,11 +118,11 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
                            photoControl = l2n(config$pft$photoParms))
       
     }
-    # TODO return the whole BioGro result instead of selected columns?
     result.yeari.hourly <- with(tmp.result, data.table(year = yeari,
                                                        doy = DayofYear,
                                                        hour = Hour, ThermalT,
                                                        Stem, Leaf, Root, 
+                                                       AboveLitter, BelowLitter,
                                                        Rhizome, Grain, 
                                                        LAI, SoilEvaporation, 
                                                        CanopyTrans,
@@ -138,6 +138,8 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
   daily.results <- hourly.results[, list(Stem = max(Stem), 
                                          Leaf = max(Leaf),
                                          Root = max(Root), 
+                                         AboveLitter = max(AboveLitter),
+                                         BelowLitter = max(BelowLitter),
                                          Rhizome = max(Rhizome),
                                          SoilEvaporation = sum(SoilEvaporation), 
                                          CanopyTrans = sum(CanopyTrans), 
@@ -149,6 +151,8 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
   annual.results <- hourly.results[, list(Stem = max(Stem),
                                           Leaf = max(Leaf), 
                                           Root = max(Root), 
+                                          AboveLitter = max(AboveLitter),
+                                          BelowLitter = max(BelowLitter),
                                           Rhizome = max(Rhizome), 
                                           Grain = max(Grain), 
                                           SoilEvaporation = sum(SoilEvaporation), 

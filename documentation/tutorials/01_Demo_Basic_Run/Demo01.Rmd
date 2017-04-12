@@ -5,6 +5,12 @@ output:
         number_sections: yes
 ---
 
+```{r setup, echo = FALSE}
+library(knitr)
+opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE,
+               fig.align = 'center', out.width = '100%')
+```
+
 # Introduction {-}
 
 ## Objective {-}
@@ -32,7 +38,15 @@ In the following demo, **URL** is the web address of a PEcAn server and will ref
 2. **Click “Run Models”**
 3. **Click the ‘Next’ button** to move to the “Site Selection” page.
 
+```{r startpecan}
+knitr::include_graphics('startpecan.jpg')
+```
+
 ## Site Selection
+
+```{r mapmodel}
+knitr::include_graphics('mapmodel.png')
+```
 
 ### Host
 
@@ -66,6 +80,10 @@ Once you are finished with the above steps, **click "Next"**.
 
 
 ## Run Specification
+
+```{r runspec}
+knitr::include_graphics('runspec.png')
+```
 
 Next we will specify settings required to run the model. Be aware that the inputs required for any particular model may vary somewhat so there may be addition optional or required input selections available for other models.
 
@@ -111,6 +129,9 @@ If you get an error in your run as part of a live demo or class activity, it is 
 
 ## Model Run Workflow
 
+```{r execstatus}
+knitr::include_graphics('execstatus.jpg')
+```
 
 ### MET Process:
 
@@ -171,6 +192,11 @@ FYI, [adding a new model](https://pecan.gitbooks.io/pecan-documentation/content/
 ### Alternative Visualization: R Shiny
 
 1. **Click on Open SHINY**, which will open a new browser window. The shiny app will automatically access your run’s output files and allow you to visualize all output variables as a function of time. 
+
+```{r workflowshiny}
+knitr::include_graphics('workflowshiny.png')
+```
+
 2. Use the pull down menu under **Variable Name** to choose whichever output variable you wish to plot.
 
 
