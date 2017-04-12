@@ -43,6 +43,7 @@
 SUBROUTINE prospect_5(N,Cab,Car,Cw,Cm,RT)
 
     USE MOD_dataSpec_wavelength
+    USE MOD_dataSpec_refractive
     USE MOD_dataSpec_prospect5B
     IMPLICIT none
 
@@ -53,6 +54,6 @@ SUBROUTINE prospect_5(N,Cab,Car,Cw,Cm,RT)
 
     k = (Cab*k_Cab+Car*k_Car+Cw*k_Cw+Cm*k_Cm)/N
 
-    Call gpm(k,N,RT)
+    Call gpm(k,refractive,N,RT)
 
 end subroutine
