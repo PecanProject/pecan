@@ -16,4 +16,3 @@ query.covariates(trait.ids, con = NULL, ...)
 \author{
 <unknown>
 }
-

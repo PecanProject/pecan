@@ -24,4 +24,3 @@ Currently this will copy the database and browndog sections
 \author{
 Rob Kooper
 }
-

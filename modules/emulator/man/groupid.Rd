@@ -9,4 +9,3 @@ groupid(x)
 \author{
 Michael Dietze
 }
-

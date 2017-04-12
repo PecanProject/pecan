@@ -23,4 +23,3 @@ get.quantiles.from.density(samp.df)
 \author{
 David LeBauer
 }
-

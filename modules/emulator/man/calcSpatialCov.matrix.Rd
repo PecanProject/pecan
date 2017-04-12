@@ -22,4 +22,3 @@ can make gaussian by passing squared distance matrix
 \author{
 Michael Dietze
 }
-

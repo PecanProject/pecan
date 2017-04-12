@@ -12,4 +12,3 @@ met2CF.FACE(in.path, in.prefix, outfolder, start_date, end_date, ...)
 \author{
 Elizabeth Cowdery
 }
-

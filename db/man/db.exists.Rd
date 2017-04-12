@@ -21,4 +21,3 @@ Useful to only run tests that depend on database when a connection exists
 \author{
 David LeBauer, Rob Kooper
 }
-

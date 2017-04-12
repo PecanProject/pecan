@@ -24,4 +24,3 @@ Take n random samples from prior
 \seealso{
 \{code{\link{get.sample}}
 }
-

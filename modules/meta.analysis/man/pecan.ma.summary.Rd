@@ -24,4 +24,3 @@ summary <- pecan.ma.summary(trait.mcmc,settings$pfts$pft,settings$outdir,setting
 \author{
 David LeBauer, Shawn Serbin
 }
-

@@ -19,4 +19,3 @@ matrix
 \author{
 Michael Dietze
 }
-

@@ -22,4 +22,3 @@ configuration files
 Writes a configuration files for your model
 write Dalec Configuration files
 }
-

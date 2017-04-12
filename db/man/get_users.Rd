@@ -14,4 +14,3 @@ get_users(bety, session)
 \description{
 Get data frame of users and IDs
 }
-

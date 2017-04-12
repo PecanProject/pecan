@@ -49,4 +49,3 @@ do.call(grid.arrange, c(plot_variance_decomposition(x), ncol = 4))
 \author{
 David LeBauer, Carl Davidson
 }
-

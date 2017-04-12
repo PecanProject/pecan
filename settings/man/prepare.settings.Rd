@@ -23,4 +23,3 @@ Ryan Kelly
 
 Betsy Cowdery
 }
-

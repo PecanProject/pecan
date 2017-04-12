@@ -47,4 +47,3 @@ from allometric equations estimated from the PEcAn allometry module
 \author{
 Michael Dietze, Christy Rollinson
 }
-

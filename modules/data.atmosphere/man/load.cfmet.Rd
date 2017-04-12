@@ -29,4 +29,3 @@ subsets a PEcAn formatted met driver file and converts to a data.table / data.fr
 \author{
 David LeBauer
 }
-

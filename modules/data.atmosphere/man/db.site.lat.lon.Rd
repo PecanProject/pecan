@@ -9,4 +9,3 @@ db.site.lat.lon(site.id, con)
 \author{
 Betsy Cowdery
 }
-

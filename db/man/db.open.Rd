@@ -27,4 +27,3 @@ db.open(settings$database$bety)
 \author{
 Rob Kooper
 }
-

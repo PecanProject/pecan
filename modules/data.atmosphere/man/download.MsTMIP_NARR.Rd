@@ -22,4 +22,3 @@ Download and conver to CF NARR single grid point from MSTIMIP server using OPEND
 \author{
 James Simkins
 }
-

@@ -27,4 +27,3 @@ Get trait data from the database for a single pft
 \author{
 David LeBauer, Shawn Serbin, Rob Kooper
 }
-

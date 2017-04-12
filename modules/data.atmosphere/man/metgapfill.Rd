@@ -38,4 +38,3 @@ Future version will first downscale and fill with NARR, then REddyProc
 \author{
 Ankur Desai
 }
-

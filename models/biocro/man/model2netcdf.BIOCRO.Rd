@@ -30,4 +30,3 @@ Modified from on model2netcdf.SIPNET and model2netcdf.ED2 by
 \author{
 David LeBauer, Deepak Jaiswal, Rob Kooper
 }
-

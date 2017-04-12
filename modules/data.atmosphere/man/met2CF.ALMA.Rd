@@ -26,4 +26,3 @@ Get meteorology variables from ALMA netCDF files and convert to netCDF CF format
 \author{
 Mike Dietze
 }
-

@@ -6,4 +6,3 @@
 \usage{
 from.Tag(x)
 }
-

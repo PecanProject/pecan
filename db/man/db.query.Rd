@@ -31,4 +31,3 @@ db.query('select count(id) from traits;', params=settings$database$bety)
 \author{
 Rob Kooper
 }
-

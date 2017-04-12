@@ -74,4 +74,3 @@ print(f(multiSettings, d="D"), TRUE)
 \author{
 Ryan Kelly
 }
-

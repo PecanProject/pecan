@@ -18,4 +18,3 @@ Useful to print queries when debuging SQL statements
 \author{
 Rob Kooper
 }
-

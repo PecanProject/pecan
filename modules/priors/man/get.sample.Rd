@@ -23,4 +23,3 @@ Like pr.samp, with prior as a single input
 \seealso{
 \link{pr.samp}
 }
-

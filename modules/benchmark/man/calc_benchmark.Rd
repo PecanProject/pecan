@@ -17,4 +17,3 @@ For each benchmark id, calculate metrics and update benchmarks_ensemble_scores
 \author{
 Betsy Cowdery
 }
-

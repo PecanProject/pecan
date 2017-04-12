@@ -26,4 +26,3 @@ Get meteorology variables from PalEON netCDF files and convert to netCDF CF form
 \author{
 Mike Dietze
 }
-

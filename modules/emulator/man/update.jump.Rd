@@ -17,4 +17,3 @@ jmp updated jump parameter
 \author{
 Michael Dietze
 }
-

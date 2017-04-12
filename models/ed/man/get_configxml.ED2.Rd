@@ -14,4 +14,3 @@ get_configxml.ED2(rundir, runid)
 \author{
 Alexey Shiklomanov
 }
-

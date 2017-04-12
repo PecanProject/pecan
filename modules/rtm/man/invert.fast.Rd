@@ -53,4 +53,3 @@ Performs a Bayesian inversion of a Radiative
 \author{
 Alexey Shiklomanov
 }
-

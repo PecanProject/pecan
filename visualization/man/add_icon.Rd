@@ -16,4 +16,3 @@ add_icon(id = NULL, x = 0, y = 0)
 \author{
 Mike Dietze
 }
-

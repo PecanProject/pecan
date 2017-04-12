@@ -12,4 +12,3 @@ query.format.vars(bety, input.id = NA, format.id = NA, var.ids = NA)
 \author{
 Betsy Cowdery , Ankur Desai
 }
-

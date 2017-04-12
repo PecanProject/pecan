@@ -61,4 +61,3 @@ This function provides a convenient way to call the ED
 radiative transfer module (EDR, which simulates full spectral return of an 
 ED patch for a given point in time) directly from R.
 }
-

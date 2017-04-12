@@ -16,4 +16,3 @@ get_var_names(bety, workflow_id, run_id, remove_pool = TRUE)
 \description{
 Get vector of variable names for a particular workflow and run ID
 }
-

@@ -19,4 +19,3 @@ data frame of sampled parameters from the posterior distribution
 \author{
 Michael Dietze \email{dietze@bu.edu}
 }
-

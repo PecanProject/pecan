@@ -26,4 +26,3 @@ db.close(con)
 \author{
 Rob Kooper
 }
-

@@ -6,4 +6,3 @@
 \usage{
 is.accepted(ycurr, ynew, format = "lin")
 }
-

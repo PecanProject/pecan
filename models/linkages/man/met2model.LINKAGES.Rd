@@ -24,4 +24,3 @@ files are calld <in.path>/<in.prefix>.YYYY.cf
 \author{
 Ann Raiho, Betsy Cowdery
 }
-

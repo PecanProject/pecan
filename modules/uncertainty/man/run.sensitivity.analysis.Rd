@@ -22,4 +22,3 @@ run sensitivity.analysis
 \author{
 David LeBauer, Shawn Serbin, Ryan Kelly
 }
-

@@ -20,4 +20,3 @@ read binary state file of LPJ-GUESS
 \author{
 Istem Fer
 }
-

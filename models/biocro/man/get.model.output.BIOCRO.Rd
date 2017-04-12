@@ -15,4 +15,3 @@ Function to retrieve model output from local server
 \author{
 Mike Dietze, David LeBauer
 }
-

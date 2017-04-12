@@ -31,4 +31,3 @@ Draws a random number and, if it doesn't fall within the
 \author{
 Alexey Shiklomanov
 }
-

@@ -9,4 +9,3 @@ ncdays2date(time, unit)
 \description{
 Convert netcdf number of days to date
 }
-

@@ -2,6 +2,7 @@
 % Please edit documentation in R/jump.R, R/zzz.R
 \name{mvjump}
 \alias{mvjump}
+\alias{mvjump}
 \title{mvjump}
 \usage{
 mvjump(ic = 0, rate = 0.4, nc = 2, ...)
@@ -9,4 +10,3 @@ mvjump(ic = 0, rate = 0.4, nc = 2, ...)
 \description{
 multivariate version
 }
-

@@ -25,4 +25,3 @@ take.samples(summary = data.frame(mean = 10, stat = 10), sample.size = 10)
 \author{
 David LeBauer, Carl Davidson
 }
-

@@ -25,4 +25,3 @@ Plot functions and quantiles used in sensitivity analysis
 \details{
 Generates a plot using \code{\link{plot_sensitivity}} for multiple traits.
 }
-

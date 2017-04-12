@@ -15,4 +15,3 @@ A data frame NAs sensibly replaced
 \description{
 Transform NA values in data exported from BETYdb
 }
-

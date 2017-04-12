@@ -20,4 +20,3 @@ call_MODIS(outfolder = ".", fname = "m_data.nc", start, end, lat, lon,
 \description{
 Get MODIS data by date and location
 }
-

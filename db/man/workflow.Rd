@@ -14,4 +14,3 @@ workflow(bety, workflow_id)
 \description{
 Get single workflow by workflow_id
 }
-

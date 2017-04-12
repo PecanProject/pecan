@@ -27,4 +27,3 @@ Download Fluxnet 2015 CSV files
 \author{
 Ankur Desai, based on download.Ameriflux.R by Josh Mantooth, Rob Kooper
 }
-

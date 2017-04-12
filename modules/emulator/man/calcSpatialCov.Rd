@@ -9,4 +9,3 @@ calcSpatialCov(x, ...)
 \author{
 Michael Dietze
 }
-

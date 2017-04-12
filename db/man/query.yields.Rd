@@ -18,10 +18,9 @@ query.yields(trait = "yield", spstr, extra.columns = "", con = NULL, ...)
 \description{
 Function to query yields data from database for specific species and convert stat to SE
 }
-\author{
-<unknown>
-}
 \seealso{
 used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 }
-
+\author{
+<unknown>
+}

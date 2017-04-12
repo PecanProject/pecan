@@ -16,4 +16,3 @@ Download Raw FACE data from the internet
 \author{
 Betsy Cowdery
 }
-

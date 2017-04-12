@@ -12,4 +12,3 @@ Acceptance rate
 \author{
 Michael Dietze
 }
-

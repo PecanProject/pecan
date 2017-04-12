@@ -26,4 +26,3 @@ with flat priors and bounded region
 \author{
 Michael Dietze
 }
-

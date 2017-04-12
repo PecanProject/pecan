@@ -30,4 +30,3 @@ colnames(ozone) <- c('lon', 'lat', 'ozone')
 \author{
 David LeBauer
 }
-

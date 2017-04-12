@@ -35,4 +35,3 @@ Simulates light macro environment based on latitude, day of the year.
 Other coefficients can be adjusted.
 }
 \keyword{models}
-

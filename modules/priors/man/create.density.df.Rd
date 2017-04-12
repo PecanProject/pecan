@@ -30,4 +30,3 @@ lines(samp.df)
 \author{
 David LeBauer
 }
-

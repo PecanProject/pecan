@@ -14,4 +14,3 @@ runs(bety, workflow_id)
 \description{
 Get table of runs corresponding to a workflow
 }
-
