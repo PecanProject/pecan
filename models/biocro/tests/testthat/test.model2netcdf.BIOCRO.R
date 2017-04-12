@@ -1,9 +1,5 @@
 context("check output from model2netcdf.BIOCRO")
 
-library(data.table)
-library(PEcAn.utils)
-library(PEcAn.settings)
-
 outdir <- file.path(tempdir(), "biocro")
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
