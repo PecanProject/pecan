@@ -65,7 +65,6 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
                  TotLivBiom = mstmipvar("TotLivBiom", x, y, t),
                  RootBiom = mstmipvar("RootBiom", x, y, t),
                  StemBiom = mstmipvar("StemBiom", x, y, t), 
-                 Yield = mstmipvar("Yield", x, y, t),
                  Evap = mstmipvar("Evap", x, y, t), 
                  TVeg = mstmipvar("TVeg", x, y, t), 
                  LAI = mstmipvar("LAI", x, y, t))
