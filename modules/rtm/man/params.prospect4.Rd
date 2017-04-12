@@ -12,4 +12,3 @@ params.prospect4
 Shortcut lists for PROSPECT parameter names
 }
 \keyword{datasets}
-
