@@ -118,7 +118,6 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
                            photoControl = l2n(config$pft$photoParms))
       
     }
-    # TODO return the whole BioGro result instead of selected columns?
     result.yeari.hourly <- with(tmp.result, data.table(year = yeari,
                                                        doy = DayofYear,
                                                        hour = Hour, ThermalT,
