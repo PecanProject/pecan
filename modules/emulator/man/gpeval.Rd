@@ -17,4 +17,3 @@ Calculates the probability of a set of parameter values, given by xnew
 \author{
 Michael Dietze
 }
-

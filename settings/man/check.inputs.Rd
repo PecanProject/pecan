@@ -12,4 +12,3 @@ check.inputs(settings)
 \description{
 check to see if inputs are specified - this should be part of the model code
 }
-

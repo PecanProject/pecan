@@ -45,4 +45,3 @@ For models with large constants (e.g. absorption features in the
 \author{
 Alexey Shiklomanov
 }
-

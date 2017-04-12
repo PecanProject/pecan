@@ -22,4 +22,3 @@ logger.setQuitOnSevere(FALSE)
 \author{
 Rob Kooper
 }
-

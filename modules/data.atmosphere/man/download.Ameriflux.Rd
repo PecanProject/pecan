@@ -27,4 +27,3 @@ Download Ameriflux L2 netCDF files
 \author{
 Josh Mantooth, Rob Kooper, Ankur Desai
 }
-

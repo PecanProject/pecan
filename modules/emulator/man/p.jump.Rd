@@ -12,4 +12,3 @@
 \author{
 Michael Dietze
 }
-

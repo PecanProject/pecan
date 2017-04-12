@@ -21,4 +21,3 @@ Cambell and Norman 1998 p 151, ch 10
 \author{
 David LeBauer
 }
-

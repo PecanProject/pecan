@@ -33,4 +33,3 @@ the given variable to be plotted against time.
 \author{
 Rob Kooper
 }
-

@@ -44,4 +44,3 @@ Writes a meta-analysis model based on available data and prior specification. Ad
 \author{
 David LeBauer and Mike Dietze, based on original work on the \code{write.model} function in the \code{R2WinBUGS} package by Jouni Kerman and Uwe Ligges.
 }
-

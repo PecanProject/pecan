@@ -12,4 +12,3 @@ fancy_scientific(l)
 \description{
 Convert number to scientific notation pretty expression
 }
-

@@ -29,4 +29,3 @@ List length 3 containing the following:
 Uses Gelman multivariate Gelman-Rubin diagnostic to check if 
 multiple MCMC chains have converged
 }
-

@@ -16,4 +16,3 @@ mean_over_larger_timestep(date.coarse, date.fine, data.fine)
 \author{
 Betsy Cowdery, Michael Dietze
 }
-

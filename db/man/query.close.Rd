@@ -23,4 +23,3 @@ Closes a database connection
 \author{
 Rob Kooper
 }
-

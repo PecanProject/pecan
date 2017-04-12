@@ -27,4 +27,3 @@ r2bugs.distributions(priors)
 \author{
 David LeBauer, Ben Bolker
 }
-

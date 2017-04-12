@@ -13,4 +13,3 @@ download.PalEON_ENS(sitename, outfolder, start_date, end_date,
 \author{
 Betsy Cowdery, Mike Dietze
 }
-

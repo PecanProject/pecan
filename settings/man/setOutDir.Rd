@@ -26,4 +26,3 @@ Sets the main output directory (\code{settings$outdir}) to \code{outDir}, and se
 \author{
 Ryan Kelly
 }
-

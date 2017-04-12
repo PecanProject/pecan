@@ -12,4 +12,3 @@ Create a PEcAn MultiSettings object
 \author{
 Ryan Kelly
 }
-

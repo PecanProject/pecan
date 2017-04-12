@@ -28,4 +28,3 @@ Get meteorology variables from Ameriflux L2 netCDF files and convert to netCDF C
 \author{
 Josh Mantooth, Mike Dietze, Elizabeth Cowdery, Ankur Desai
 }
-

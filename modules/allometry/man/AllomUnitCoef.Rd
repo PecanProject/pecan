@@ -15,4 +15,3 @@ AllomUnitCoef(x, tp = NULL)
 converts length units FROM cm TO specified units
  converts mass units TO kg FROM specificed units
 }
-

@@ -6,4 +6,3 @@
 \usage{
 calculate.prior(samples, priors)
 }
-

@@ -4,7 +4,7 @@
 \alias{plot.mvjump}
 \title{plot.mvjump}
 \usage{
-plot.mvjump(jmp)
+\method{plot}{mvjump}(jmp)
 }
 \arguments{
 \item{jmp}{}
@@ -12,4 +12,3 @@ plot.mvjump(jmp)
 \author{
 Michael Dietze
 }
-

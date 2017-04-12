@@ -37,4 +37,3 @@ R wrapper for PRO4SAIL model
 \author{
 Alexey Shiklomanov
 }
-

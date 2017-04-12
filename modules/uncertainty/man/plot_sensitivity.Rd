@@ -35,4 +35,3 @@ Plot univariate response of model output to a trait parameter.
 Plots for a single trait; called by \code{\link{plot_sensitivities}}
 to plot sensitivity plots for multiple traits.
 }
-

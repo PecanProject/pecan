@@ -15,4 +15,3 @@ priorfunc.prospect(pmu, psigma)
 Assumes lognormal distribution for all parameters. NOTE that prior 
 on N is shifted by 1.
 }
-

@@ -21,10 +21,9 @@ This statistic is used in the calculation of the standard deviation of sample va
 in the function \code{\link{sd.var}}.  
 Additional details
 }
-\author{
-David LeBauer
-}
 \references{
 NIST/SEMATECH e-Handbook of Statistical Methods, \url{http://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm}, 2011-06-20.
 }
-
+\author{
+David LeBauer
+}

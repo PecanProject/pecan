@@ -39,4 +39,3 @@ plot.trait(trait = 'Vcmax',
 \author{
 David LeBauer
 }
-

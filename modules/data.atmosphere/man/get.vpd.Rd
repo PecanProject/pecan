@@ -27,4 +27,3 @@ plot(temp, get.vpd(0, temp))
 \author{
 David LeBauer
 }
-

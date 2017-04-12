@@ -12,4 +12,3 @@ Given latitude and longitude coordinates, find NARR x and y indices
 \author{
 Betsy Cowdery
 }
-

@@ -31,4 +31,3 @@ query.trait.data("Vcmax", "938", con = con)
 \author{
 David LeBauer, Carl Davidson, Shawn Serbin
 }
-

@@ -57,4 +57,3 @@ note: runs 1 chain, but multiple chains can be simulated by
 \author{
 Michael Dietze
 }
-

@@ -49,4 +49,3 @@ pecan.ma(prior.distns, trait.data, 25000)
 \author{
 David LeBauer, Michael C. Dietze
 }
-

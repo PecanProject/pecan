@@ -24,4 +24,3 @@ a copy of the first input trait with modified mean, stat, and n
 Equivalent to derive.trait(), but operates over a series of trait datasets,
 as opposed to individual trait rows. See \code{\link{derive.trait}}; for more information.
 }
-

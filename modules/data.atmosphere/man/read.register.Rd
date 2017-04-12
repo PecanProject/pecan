@@ -14,4 +14,3 @@ read.register(register.xml, con)
 \author{
 Betsy Cowdery
 }
-

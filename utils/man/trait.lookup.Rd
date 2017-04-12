@@ -27,4 +27,3 @@ trait.lookup('growth_resp_factor')$figid
 trait.lookup()[,c('figid', 'units')]
 }
 }
-

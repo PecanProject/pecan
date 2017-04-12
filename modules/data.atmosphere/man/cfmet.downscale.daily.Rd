@@ -28,4 +28,3 @@ Derived from the weachDT function in the BioCro package.
 \author{
 David LeBauer
 }
-

@@ -13,4 +13,3 @@ Download and convert single grid point NLDAS to CF single grid point from hydro1
 \author{
 Christy Rollinson (with help from Ankur Desai)
 }
-

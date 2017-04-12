@@ -15,4 +15,3 @@ Returns if the queries should be shown that are being executed
 \author{
 Rob Kooper
 }
-

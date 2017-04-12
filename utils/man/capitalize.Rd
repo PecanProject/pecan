@@ -18,4 +18,3 @@ Capitalize a string
 \author{
 David LeBauer
 }
-

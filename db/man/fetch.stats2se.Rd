@@ -21,10 +21,9 @@ Queries data from the trait database and transforms statistics to SE
 Performs query and then uses \code{transformstats} to convert miscellaneous statistical summaries
 to SE
 }
-\author{
-<unknown>
-}
 \seealso{
 used in \code{\link{query.trait.data}}; \code{\link{transformstats}} performs transformation calculations
 }
-
+\author{
+<unknown>
+}

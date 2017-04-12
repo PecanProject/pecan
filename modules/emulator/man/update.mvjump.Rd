@@ -6,4 +6,3 @@
 \usage{
 \method{update}{mvjump}(jmp, chain)
 }
-

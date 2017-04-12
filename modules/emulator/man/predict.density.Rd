@@ -18,4 +18,3 @@ Simple interpolation of a density object to new points
 \author{
 Michael Dietze
 }
-

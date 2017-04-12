@@ -18,4 +18,3 @@ Returns a vector of quantiles specified by a given <quantiles> xml tag
 \author{
 David LeBauer
 }
-

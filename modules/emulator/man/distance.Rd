@@ -15,4 +15,3 @@ dst
 \author{
 Michael Dietze
 }
-

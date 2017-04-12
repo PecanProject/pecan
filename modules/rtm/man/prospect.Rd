@@ -32,4 +32,3 @@ R wrapper for PROSPECT models
 \author{
 Alexey Shiklomanov
 }
-

@@ -23,4 +23,3 @@ Convert LPJ-GUESS output to netCDF
 \author{
 Istem Fer
 }
-

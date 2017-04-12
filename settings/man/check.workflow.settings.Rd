@@ -9,4 +9,3 @@ check.workflow.settings(settings, dbcon = NULL)
 \arguments{
 \item{settings}{settings file}
 }
-

@@ -25,4 +25,3 @@ Deprecated, please use db.open
 con <- query.base.con(settings)
 }
 }
-

@@ -15,4 +15,3 @@ metric_timeseries_plot(metric_dat, var, filename = NA,
 \author{
 Betsy Cowdery
 }
-

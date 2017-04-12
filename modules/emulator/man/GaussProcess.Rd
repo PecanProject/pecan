@@ -21,4 +21,3 @@ GaussProcess(x, y, isotropic = TRUE, nugget = TRUE, method = "bayes",
 \author{
 Michael Dietze
 }
-

@@ -18,4 +18,3 @@ converts relative humidity to specific humidity
 \author{
 Mike Dietze, Ankur Desai
 }
-

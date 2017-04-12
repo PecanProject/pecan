@@ -20,4 +20,3 @@ resolves (provides workaround to) bug #769 caused by having too many open connec
 \author{
 David LeBauer
 }
-
