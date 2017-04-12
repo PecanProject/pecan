@@ -80,5 +80,5 @@ download.FluxnetLaThuile <- function(sitename, outfolder, start_date, end_date,
   }
   
   # return list of files downloaded
-  return(invisible(results))
+  return(results)
 } # download.FluxnetLaThuile
