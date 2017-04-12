@@ -6,12 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-
-if(fqdn() == "pecan2.bu.edu") {
-  con <- db.open(list(host="psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
-} else {
-  con <- db.open(list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
-}
+source('db.setup.R')
 
 context("test db.query")
 

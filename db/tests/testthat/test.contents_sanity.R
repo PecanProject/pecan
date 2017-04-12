@@ -6,14 +6,9 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-if(fqdn() == "pecan2.bu.edu") {
-  con <- db.open(list(host="psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
-} else {
-  con <- db.open(list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
-}
+source('db.setup.R')
 
 context("Basic Sanity tests for PEcAn functions that query BETYdb")
-
 test_that("append.covariates appends managements to yields",{
   test.traits <- db.query("select * from traits where id in (select trait_id from covariates) limit 10;", con = con)
   tmpcov <- query.covariates(test.traits$id, con = con)
