@@ -20,4 +20,3 @@ Add posterior density to a plot
 \author{
 David LeBauer
 }
-

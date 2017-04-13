@@ -28,4 +28,3 @@ and the name of the file to create
 \author{
 Shawn Serbin, Anthony Walker, Rob Kooper
 }
-

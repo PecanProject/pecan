@@ -76,4 +76,3 @@ assume burnin is \code{min(niter/2, iter_conv_check)}.}
 determining convergence. Default = 1.1}
 }
 }
-

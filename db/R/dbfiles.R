@@ -149,6 +149,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
 ##' @param params database connection information
 ##' @param exact.dates setting to include start and end date in input query
+##' @param pattern text to seach for in the file name (default NULL = no check). NOT YET IMPLEMENTED
 ##' @return data.frame with the id, filename and pathname of the input that is requested
 ##' @export
 ##' @author Rob Kooper, Tony Gardella
@@ -157,7 +158,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##'   dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, formatname, parentid=NA, 
-                               con, hostname=fqdn(), exact.dates=FALSE) {
+                               con, hostname=fqdn(), exact.dates=FALSE,pattern=NULL) {
   if (hostname == "localhost") hostname <- fqdn();
   
   mimetypeid <- get.id('mimetypes', 'type_string', mimetype, con = con)
@@ -180,44 +181,56 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
   
   # find appropriate input
   if(exact.dates) {
-    inputid <- db.query(paste0(
-      "SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid,
-      " AND start_date='", startdate, "' AND end_date='", enddate, "'", parent), con)[['id']]
+    inputs <- db.query(paste0(
+      "SELECT * FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid,
+      " AND start_date='", startdate, "' AND end_date='", enddate, "'", parent), con)#[['id']]
   } else {
-    inputid <- db.query(paste0(
-      "SELECT id FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, parent), con)[['id']]
+    inputs <- db.query(paste0(
+      "SELECT * FROM inputs WHERE site_id=", siteid, " AND format_id=", formatid, parent), con)#[['id']]
   }
-
-  if (is.null(inputid)) {
+  
+  if (is.null(inputs) | length(inputs$id) == 0) {
     return(data.frame())
   } else {
     
-    if(length(inputid) > 1){
-       logger.warn("Found multiple matching inputs. Checking for one with associate files on host machine")
-        
-       dbfile <- dbfile.check(type = 'Input', container.id = inputid, con = con, hostname = hostname, machine.check = TRUE)
-            
+    ## parent check when NA
+    if(is.na(parentid)){
+      inputs <- inputs[is.na(inputs$parent_id),]
+    }
+    
+    if(length(inputs$id) > 1){
+      logger.warn("Found multiple matching inputs. Checking for one with associate files on host machine")
+      
+      print(inputs)        
+      #      ni = length(inputs$id)
+      #      dbfile = list()
+      #      for(i in seq_len(ni)){
+      #        dbfile[[i]] <- dbfile.check(type = 'Input', container.id = inputs$id[i], con = con, hostname = hostname, machine.check = TRUE)
+      #    }
+      dbfile <- dbfile.check(type = 'Input', container.id = inputs$id, con = con, hostname = hostname, machine.check = TRUE)
+      
+      
       if(nrow(dbfile) == 0){
-         ## With the possibility of dbfile.check returning nothing,
-         ## as.data.frame ensures a empty data.frame is returned 
-         ## rather than an empty list.
-         logger.info("File not found on host machine. Returning Valid input with file associated on different machine if possible")
-         return(as.data.frame(dbfile.check('Input', inputid, con, hostname, machine.check = FALSE)))
-        }
-         
+        ## With the possibility of dbfile.check returning nothing,
+        ## as.data.frame ensures a empty data.frame is returned 
+        ## rather than an empty list.
+        logger.info("File not found on host machine. Returning Valid input with file associated on different machine if possible")
+        return(as.data.frame(dbfile.check('Input', inputs$id, con, hostname, machine.check = FALSE)))
+      }
+      
       return(dbfile)
     }else{
       
       logger.warn("Found possible matching input. Checking if its associate files are on host machine")
+      print(inputs)        
+      dbfile <- dbfile.check(type = 'Input', container.id = inputs$id, con = con, hostname = hostname, machine.check = TRUE)
       
-      dbfile <- dbfile.check(type = 'Input', container.id = inputid, con = con, hostname = hostname, machine.check = TRUE)
-          
       if(nrow(dbfile) == 0){
-         ## With the possibility of dbfile.check returning nothing,
-         ## as.data.frame ensures an empty data.frame is returned 
-         ## rather than an empty list.
-         logger.info("File not found on host machine. Returning Valid input with file associated on different machine if possible")
-         return(as.data.frame(dbfile.check(type = 'Input', container.id = inputid, con = con, hostname = hostname, machine.check = FALSE)))
+        ## With the possibility of dbfile.check returning nothing,
+        ## as.data.frame ensures an empty data.frame is returned 
+        ## rather than an empty list.
+        logger.info("File not found on host machine. Returning Valid input with file associated on different machine if possible")
+        return(as.data.frame(dbfile.check(type = 'Input', container.id = inputs$id, con = con, hostname = hostname, machine.check = FALSE)))
       }
       
       return(dbfile)
@@ -416,36 +429,36 @@ dbfile.check <- function(type, container.id, con, hostname=fqdn(), machine.check
   if (is.null(hostid)) {
     return(data.frame())
   } else if (machine.check){
-  
-      dbfiles <- db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, 
-                                 "' AND container_id IN (", paste(container.id, collapse = ", "), 
-                                 ") AND machine_id=", hostid), con)
+    
+    dbfiles <- db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, 
+                               "' AND container_id IN (", paste(container.id, collapse = ", "), 
+                               ") AND machine_id=", hostid), con)
+    
+    if(nrow(dbfiles) > 1){
       
-      if(nrow(dbfiles) > 1){
+      logger.warn("Multiple Valid Files found on host machine. Returning last updated record")
+      return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
       
-         logger.warn("Multiple Valid Files found on host machine. Returning last updated record")
-         return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
+    }else{
       
-          }else{
+      return(dbfiles)
       
-            return(dbfiles)
-      
-          }
-
+    }
+    
   }else{
-
-      dbfiles <- db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, 
+    
+    dbfiles <- db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, 
                                "' AND container_id IN (", paste(container.id, collapse = ", "),")"), con)
+    
+    if(nrow(dbfiles) > 1){
       
-      if(nrow(dbfiles) > 1){
+      logger.warn("Multiple Valid Files found on host machine. Returning last updated record")
+      return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
       
-         logger.warn("Multiple Valid Files found on host machine. Returning last updated record")
-         return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
-       
-        }else{
+    }else{
       
-          return(dbfiles)
-        }
+      return(dbfiles)
+    }
   }
 }
 
