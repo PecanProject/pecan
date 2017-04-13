@@ -20,4 +20,3 @@ clear.scratch(settings)
 \author{
 Shawn Serbin
 }
-

@@ -19,4 +19,3 @@ plots a confidence interval around an x-y plot (e.g. a timeseries)
 \author{
 Michael Dietze, David LeBauer
 }
-

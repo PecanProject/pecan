@@ -26,4 +26,3 @@ Writes a configuration files for the biocro model
 \author{
 David LeBauer
 }
-

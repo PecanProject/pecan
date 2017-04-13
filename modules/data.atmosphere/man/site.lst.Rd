@@ -12,4 +12,3 @@ Find time zone for a site
 \author{
 Betsy Cowdery
 }
-

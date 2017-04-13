@@ -20,4 +20,3 @@ logger.setOutputFile('pecan.log')
 \author{
 Rob Kooper
 }
-

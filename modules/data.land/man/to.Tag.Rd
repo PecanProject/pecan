@@ -6,4 +6,3 @@
 \usage{
 to.Tag(SITE, PLOT, SUBPLOT, TAG = NULL)
 }
-

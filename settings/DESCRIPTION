@@ -19,4 +19,4 @@ Imports:
     XML (>= 3.98-1.3)
 Suggests:
     testthat (>= 1.0.2)
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

@@ -23,4 +23,3 @@ used to compare data to prior, meta analysis posterior to prior
 \author{
 David LeBauer
 }
-
