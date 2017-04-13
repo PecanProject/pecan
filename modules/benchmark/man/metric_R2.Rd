@@ -12,4 +12,3 @@ metric_R2(dat, ...)
 \author{
 Betsy Cowdery
 }
-

@@ -16,4 +16,3 @@ Convert priors / MCMC samples to chains that can be sampled for model parameters
 \author{
 David LeBauer, Shawn Serbin
 }
-

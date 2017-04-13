@@ -29,6 +29,7 @@ modules : m3 \
     $(md)dataSpec/dataSpec_sun.o \
     $(md)mod_selectmodel.o \
     $(md)dataSpec/dataSpec_refractive.o \
+    $(md)dataSpec/dataSpec_prospectd.o \
     $(md)dataSpec/dataSpec_prospect5b.o \
     $(md)dataSpec/dataSpec_prospect4.o \
     $(md)dataSpec/dataSpec_soil.o \

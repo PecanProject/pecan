@@ -24,4 +24,3 @@ dat
 \author{
 Betsy Cowdery
 }
-

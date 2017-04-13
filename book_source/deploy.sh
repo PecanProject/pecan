@@ -6,6 +6,12 @@ set -e
 #check for environment variable
 [ -z "${GITHUB_PAT}" ] && exit 0
 
+# only deploy if this is the master branch build
+branch_name=$(git symbolic-ref -q HEAD)
+branch_name=${branch_name##refs/heads/}
+branch_name=${branch_name:-HEAD}
+[ "${branch_name}" != "master" ] && exit 0
+
 #set USER 
 USER=${TRAVIS_REPO_SLUG%/*}
 

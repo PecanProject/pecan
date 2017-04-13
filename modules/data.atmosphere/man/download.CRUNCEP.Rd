@@ -13,4 +13,3 @@ Download and convert to CF CRUNCEP single grid point from MSTIMIP server using O
 \author{
 James Simkins, Mike Dietze
 }
-

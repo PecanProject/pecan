@@ -21,4 +21,3 @@ calculates variance and sd of variance using the \code{var} from base R and \cod
 \author{
 David LeBauer
 }
-

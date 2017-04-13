@@ -6,4 +6,3 @@
 \usage{
 get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
 }
-

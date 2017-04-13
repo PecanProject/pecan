@@ -21,4 +21,3 @@ convert x into a table
 \author{
 Mike Dietze, Rob Kooper, Ryan Kelly
 }
-
