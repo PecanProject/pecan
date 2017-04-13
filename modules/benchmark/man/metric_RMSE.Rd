@@ -12,4 +12,3 @@ metric_RMSE(dat, ...)
 \author{
 Betsy Cowdery
 }
-

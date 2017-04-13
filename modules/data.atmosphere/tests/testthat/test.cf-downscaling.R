@@ -10,6 +10,7 @@ test_that(
         "these are capturing the current state of the downscale algorithms;\n", 
         "actual values will need to be revised if (when) algorithms change"), 
 {
+  skip("Broken test #1343")
   b <- cfmet.downscale.time(cfmet = daily.cf, lat = 40)
   expect_equal(b[,unique(year)], 1951)
   expect_equal(b[,range(doy)], c(2,151))

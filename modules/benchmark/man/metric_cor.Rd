@@ -12,4 +12,3 @@ metric_cor(dat, ...)
 \author{
 Mike Dietze
 }
-
