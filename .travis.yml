@@ -83,7 +83,7 @@ script:
   - echo 'Building PEcAn'
   - make
   - echo 'Testing PEcAn'
-  - make test
+  - make check
   - echo 'Testing Integration'
   - ./tests/integration.sh travis
   - set +e
