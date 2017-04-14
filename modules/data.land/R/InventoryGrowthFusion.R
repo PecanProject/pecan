@@ -92,6 +92,8 @@ model{
             data[[length(data)+1]] <- as.numeric(as.factor(as.character(cov.data[,r_var[j]]))) ## multiple conversions to eliminate gaps
             names(data)[length(data)] <- r_var[j]
           }
+          if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at r_var",names(data))}
+          
           nr[j] <- max(as.numeric(data[[r_var[j]]]))
         }
         index <- paste0("[",index,"]")
@@ -154,6 +156,7 @@ model{
         Xformula <- NULL
         if(length(grep("*",X.terms[i],fixed = TRUE)) == 1){  ## INTERACTION
           
+          myIndex <- "[i]"
           covX <- strsplit(X.terms[i],"*",fixed=TRUE)[[1]] 
           covX <- covX[-which(toupper(covX)=="X")] ## remove X from terms
             
@@ -165,7 +168,10 @@ model{
                 ## add cov variables to data object
                 data[[covX]] <- time_data[[covX]]
               }
-              covX <- paste0(covX,"[i,t]")
+              if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at covX",names(data))}
+              
+#              covX <- paste0(covX,"[i,t-1]")
+              myIndex <- "[i,t-1]"
             } else {
               ## variable is fixed
               if(covX %in% colnames(cov.data)){ ## covariate present
@@ -173,6 +179,7 @@ model{
                   ## add cov variables to data object
                   data[[covX]] <- cov.data[,covX]
                 }
+                if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at covX2",names(data))}
               } else {
                 ## covariate absent
                 print("covariate absent from covariate data:", covX)
@@ -181,7 +188,7 @@ model{
             } ## end fixed or time varying
             
             myBeta <- paste0("betaX_",covX)
-            Xformula <- paste0(myBeta,"*x[i,t-1]*",covX,"[i]")
+            Xformula <- paste0(myBeta,"*x[i,t-1]*",covX,myIndex)
 
         } else if(length(grep("^",X.terms[i],fixed=TRUE))==1){  ## POLYNOMIAL
           powX <- strsplit(X.terms[i],"^",fixed=TRUE)[[1]] 
@@ -239,6 +246,8 @@ model{
     out.variables <- c(out.variables, paste0("beta", Xf.names))
   }
  
+  if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at Xf",names(data))}
+  
   if(FALSE){
     ## DEVEL TESTING FOR TIME VARYING
     time_varying <- "TminJuly + PrecipDec + TminJuly*PrecipDec"
@@ -305,13 +314,12 @@ model{
     for(j in seq_along(t_vars)){
       tvar <- t_vars[j]
       
-      ## grab from the list of data matrices
-      dtmp <- time_data[[tvar]]
+      if(!(tvar %in% names(data))){
+        ## add cov variables to data object
+        data[[tvar]] <- time_data[[tvar]]
+      }
+      if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at tvar",names(data))}
       
-      ## insert data into JAGS inputs
-      data[[length(data)+1]] <- dtmp
-      names(data)[length(data)] <- tvar
-    
       ## append to process model formula
       Pformula <- paste(Pformula,
                         paste0("+ beta", tvar, "*",tvar,"[i,t]"))
