@@ -30,7 +30,7 @@ There are two ways of using PEcAn, via the web interface and directly within R. 
 
 7. Start Pecan by double clicking on the icon for the VM. A terminal window will pop up showing the machine booting up which may take a minute. It is done booting when you get to the “pecan32 login:” prompt. You do not need to login as the VM behaves like a server that we will be accessing through you web browser. Feel free to minimize the VM window.
 
-    * If you _do_ want to login to the VM, the credentials are as follows: `username: carya`, `password: illinois` (after the pecan tree, [Carya illinoinensis][pecan-wikipedia]).
+    * If you _do_ want to login to the VM, the credentials are as follows: `username: carya`, `password: illinois` (after the pecan tree, [Carya illinoinensis](https://en.wikipedia.org/wiki/Pecan)).
 
 8. To launch the PEcAn web interface, make sure that the VM is running somewhere in the background on your machine. Then, open any web browser on the same machine and navigate to `localhost:6480/pecan` to start the PEcAn workflow.
 
@@ -74,11 +74,11 @@ Select the default drive volume type and click Next
 
 
 ```{r, echo=FALSE,fig.align='center'}
-  knitr::include_graphics(rep("../figures/pic3.jpg"))
+  knitr::include_graphics(rep("figures/pic3.jpg"))
 ```
 
 9.	Instances 
-    +  You will see the status of your PEcAn VM, which will take a minute to boot up. Wait until the Instance State reads “running”. The most important piece of information here is the Public IP, which is the URL you will need in order to access your PEcAn instance from within your web browser (see Demo 1 below).
+    +  You will see the status of your PEcAn VM, which will take a minute to boot up. Wait until the Instance State reads “running”. The most important piece of information here is the Public IP, which is the URL you will need in order to access your PEcAn instance from within your web browser (see [Demo 1](https://pecanproject.github.io/pecan-documentation/tutorials/Demo01.html)).
     +  Be aware that it often takes ~1 hr for AWS instances to become fully operational, so if you get an error when you put the Public IP in you web browser, most of the time you just need to wait a bit longer.
   Congratulations! You just started a PEcAn server in the “cloud”!
 
@@ -87,4 +87,9 @@ Select the default drive volume type and click Next
     +	To TERMINATE the instance (which will DELETE your PEcAn machine), select your instance and click Actions > Instance state > Terminate. Terminated instances will not incur costs. In most cases you will also want to go to the Volumes menu and delete the storage associated with your PEcAn VM.Remember, AWS is free for one year, but will automatically charge a fee in second year if account is not cancelled.
 
 
-[pecan-wikipedia]: https://en.wikipedia.org/wiki/Pecan
+### Using PEcAn
+
+We have developed a number of demos and vignettes to guide your use of PEcAn's many capabilities:
+
+
+**[Demo 1](https://pecanproject.github.io/pecan-documentation/tutorials/Demo01.html)** 
