@@ -23,4 +23,3 @@ This is based on the approximation that PAR is 0.45-0.50 of the total radiation
 \author{
 David LeBauer
 }
-

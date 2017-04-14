@@ -2,11 +2,11 @@
 % Please edit documentation in R/help.R
 \docType{package}
 \name{PEcAn}
-\alias{PECAn,}
 \alias{PEcAn}
-\alias{PEcAn-package}
-\alias{package-pecan}
+\alias{PECAn,}
 \alias{pecan,}
+\alias{package-pecan}
+\alias{PEcAn-package}
 \title{R package to support PEcAn, the Predictive Ecosystem Analyzer}
 \description{
 Instructions for the use of this package are provided in the project documentation \url{https://pecan.gitbooks.io/pecan-documentation/content/}.
@@ -32,4 +32,3 @@ This information informs targeted data collection and synthesis efforts that mos
 
 Current development is focused on developing PEcAn into a real-time data assimilation and forecasting system. This system will provide a detailed analysis of the past and present ecosystem functioning that seamlessly transitions into forecasts.
 }
-

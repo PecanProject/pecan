@@ -12,4 +12,3 @@ default.settings.prospect
 Default settings for PROSPECT inversion
 }
 \keyword{datasets}
-

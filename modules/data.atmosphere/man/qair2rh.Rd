@@ -28,4 +28,3 @@ from Bolton 1980 Teh computation of Equivalent Potential Temperature
 \author{
 David LeBauer
 }
-

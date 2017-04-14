@@ -12,4 +12,3 @@ dplyr.count(df)
 \description{
 Count rows of a data frame
 }
-

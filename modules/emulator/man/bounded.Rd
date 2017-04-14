@@ -6,4 +6,3 @@
 \usage{
 bounded(xnew, rng)
 }
-

@@ -24,4 +24,3 @@ Convert MODEL output into the NACP Intercomparison format (ALMA using netCDF)
 \author{
 Ann Raiho, Betsy Cowdery
 }
-
