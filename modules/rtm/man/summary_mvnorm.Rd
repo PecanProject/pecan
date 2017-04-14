@@ -13,4 +13,3 @@ summary_mvnorm(samples)
 Fit multivariate normal to samples. Return means and covariance 
 matrix as a long list (for easy construction of data.tables)
 }
-

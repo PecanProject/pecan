@@ -23,7 +23,7 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
   Lon <- ncdf4::ncvar_get(met.nc, "longitude")
 
   if(min(abs(Lat-lat)) > 2.5 | min(abs(Lon-lon)) > 2.5){
-    logger.error("lat / lon (", lat, ",", lon, ") outside range of met file (", range(Lat), ",", range(Lon))
+    logger.severe("lat / lon (", lat, ",", lon, ") outside range of met file (", range(Lat), ",", range(Lon))
   }
   lati <- which.min(abs(Lat - lat))
   loni <- which.min(abs(Lon - lon))

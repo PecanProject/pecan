@@ -12,4 +12,3 @@ sensor.list
 Sensor spectral response functions
 }
 \keyword{datasets}
-

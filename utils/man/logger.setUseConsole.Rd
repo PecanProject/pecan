@@ -22,4 +22,3 @@ logger.setUseConsole(TRUE)
 \author{
 Rob Kooper
 }
-

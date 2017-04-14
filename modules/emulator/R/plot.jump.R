@@ -1,6 +1,6 @@
 ##' @name plot.jump
 ##' @title plot.jump
-##' @export
+##' @export plot.jump
 ##' 
 ##' @param jmp jump parameter
 ##' 
