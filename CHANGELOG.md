@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Changed
 - Bugfix in Fluxnet2015
+- Update Git workflow in Documentation
 
 ## [1.4.10] - 2017-03-27
 Documentation
