@@ -17,9 +17,7 @@ Git is a free & open source, distributed version control system designed to hand
 
     2. Start with the one-time set-up instructions under [Before any work is done](#before-any-work-is-done). 
 
-    3. To make trivial changes, see [Quick and Easy](Using-Git.md#quick-and-easy). 
-    
-    4. To make changes to PEcAn code, follow our [workflow](#workflow-to-make-changes). 
+    3. To make changes to PEcAn code, follow our [workflow](#workflow-to-make-changes). 
     
         - For asking questions, reporting bugs, and requesting features, see our documentation for [reporting issues on GitHub][Overview]
     
