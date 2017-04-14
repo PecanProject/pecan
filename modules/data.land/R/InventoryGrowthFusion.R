@@ -307,6 +307,10 @@ model{
       ## priors
       Xt.priors <- paste0(Xt.priors,
                           "    ",myBeta,"~dnorm(0,0.001)\n")
+      
+      ## add to list of varibles JAGS is tracking
+      out.variables <- c(out.variables, myBeta)
+      
     }  ## end time-varying interaction terms
     
     
