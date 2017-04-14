@@ -114,7 +114,7 @@ model{
     ## Substitute into code
     TreeDataFusionMV <- sub(pattern = "## RANDOM EFFECT TAUS", Rpriors, TreeDataFusionMV)
     TreeDataFusionMV <- gsub(pattern = "## RANDOM_EFFECTS", Reffects, TreeDataFusionMV)
-  }
+  }   ### END RANDOM EFFECTS
 
   if(FALSE){
     ## DEV TESTING FOR X, polynomial X, and X interactions
@@ -163,7 +163,7 @@ model{
               covX <- sub("[t]","",covX,fixed = TRUE)
               if(!(covX %in% names(data))){
                 ## add cov variables to data object
-                data[[covX]] <- time_varying[[covX]]
+                data[[covX]] <- time_data[[covX]]
               }
               covX <- paste0(covX,"[i,t]")
             } else {
@@ -203,7 +203,7 @@ model{
         ## add to out.variables
         out.variables <- c(out.variables, myBeta)
         
-      }
+      }  ## END LOOP OVER X TERMS
 
       ## create priors
       TreeDataFusionMV <- sub(pattern = "## ENDOGENOUS BETAS", Xpriors, TreeDataFusionMV)
@@ -219,7 +219,7 @@ model{
     ##Center the covariate data
     Xf.center <- apply(Xf, 2, mean, na.rm = TRUE)
     Xf      <- t(t(Xf) - Xf.center)
-  }
+  }  ## end fixed effects parsing
   
   ## build formula in JAGS syntax
   if (!is.null(Xf)) {
@@ -256,7 +256,7 @@ model{
     t_vars <- gsub(" ","",unlist(strsplit(time_varying,"+",fixed=TRUE))) ## split on +, remove whitespace
     ## check for interaction terms
     it_vars <- t_vars[grep(pattern = "*",x=t_vars,fixed = TRUE)]
-    t_vars <- t_vars[!(tvars == it_vars)]
+    t_vars <- t_vars[!(t_vars == it_vars)]
     
       ## need to deal with interactions with fixed variables
       ## will get really nasty if interactions are with catagorical variables
@@ -293,7 +293,7 @@ model{
       
       ## append to process model formula
       Pformula <- paste(Pformula,
-                        paste0(myBeta,"*",covX[1],"*",covX[2]))
+                        paste0(" + ",myBeta,"*",covX[1],"*",covX[2]))
       
       ## priors
       Xt.priors <- paste0(Xt.priors,
