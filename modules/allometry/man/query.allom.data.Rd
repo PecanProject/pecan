@@ -28,4 +28,3 @@ database is assumed to conform to the PEcAn Schema
 \author{
 Michael Dietze
 }
-

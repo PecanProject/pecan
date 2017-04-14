@@ -22,4 +22,3 @@ such as those provided to write.config
 \author{
 David LeBauer
 }
-

@@ -2,6 +2,7 @@
 % Please edit documentation in R/dbfiles.R
 \name{dbfile.file}
 \alias{dbfile.file}
+\alias{dbfile.file}
 \alias{dbfile.id}
 \title{Return file from the dbfiles tables}
 \usage{
@@ -58,4 +59,3 @@ Rob Kooper
 
 Rob Kooper
 }
-
