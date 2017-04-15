@@ -24,6 +24,8 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     
     input.tag <- names(settings$run$input)[i]
     
+    ic.flag <- fia.flag <- FALSE
+    
     if ((input.tag %in% c("css", "pss", "site")) && 
         is.null(input$path) && !is.null(input$source)) {
       if(!is.null(input$useic)){ # set <useic>TRUE</useic> if IC Workflow, leave empty if not
@@ -34,8 +36,6 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
         fia.flag <- TRUE
         # possibly a warning for deprecation in the future
       }
-    }else{
-      ic.flag <- fia.flag <- FALSE
     }
     
     # IC conversion : for now for ED only, hence the css/pss/site check
