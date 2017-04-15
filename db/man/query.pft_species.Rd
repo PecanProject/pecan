@@ -28,4 +28,3 @@ query.pft_species(settings = read.settings("pecan.xml"))
 \author{
 David LeBauer
 }
-

@@ -21,10 +21,9 @@ correlationPlot(mat, density = "smooth", thin = "auto",
 Flexible function to create correlation density plots
 numeric matrix or data.frame
 }
-\author{
-Florian Hartig
-}
 \references{
 The code for the correlation density plot originates from Hartig, F.; Dislich, C.; Wiegand, T. & Huth, A. (2014) Technical Note: Approximate Bayesian parameterization of a process-based tropical forest model. Biogeosciences, 11, 1261-1272.
 }
-
+\author{
+Florian Hartig
+}

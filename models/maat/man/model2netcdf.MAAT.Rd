@@ -35,4 +35,3 @@ end_date="2014-12-31 00:00:00")
 \author{
 Shawn Serbin, Anthony Walker
 }
-

@@ -18,4 +18,3 @@ Helper function for applying BayesianTools specific settings from PEcAn general 
 \author{
 Istem Fer
 }
-

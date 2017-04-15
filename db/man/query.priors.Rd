@@ -31,4 +31,3 @@ query.priors('ebifarm.pavi', vecpaste('SLA', 'Vcmax', 'leaf_width'))
 \author{
 David LeBauer
 }
-

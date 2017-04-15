@@ -12,4 +12,3 @@ rename.jags.columns(data)
 \seealso{
 used with \code{\link{jagify}};
 }
-

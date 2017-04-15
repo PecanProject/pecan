@@ -38,8 +38,13 @@ prospect <- function(param, version, include.wl = FALSE) {
       stop("Wrong number of parameters")
     }
     inlist <- c("prospect_5b", plist)
+  } else if (version == "D") {
+    if (length(plist) != 8) {
+      stop("Wrong number of parameters")
+    }
+    inlist <- c("prospect_d", plist)
   } else {
-    stop("Version must be 4, 5, or 5B")
+    stop("Version must be 4, 5, 5B, or D")
   }
   
   outlist <- do.call(.Fortran, inlist)

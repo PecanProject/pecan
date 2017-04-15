@@ -18,4 +18,3 @@ Postprocessing for PDA Results
 \author{
 Ryan Kelly, Istem Fer
 }
-
