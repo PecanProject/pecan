@@ -20,4 +20,3 @@ Simple uniform sampling with LHC permutation
 \author{
 Michael Dietze
 }
-

@@ -20,4 +20,3 @@ Map Output
 \author{
 David LeBauer
 }
-

@@ -24,4 +24,3 @@ Calculate sufficient statistics
 \author{
 Istem Fer
 }
-

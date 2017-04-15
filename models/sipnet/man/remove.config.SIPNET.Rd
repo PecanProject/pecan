@@ -20,4 +20,3 @@ Clear out previous SIPNET config and parameter files.
 \author{
 Shawn Serbin, David LeBauer
 }
-

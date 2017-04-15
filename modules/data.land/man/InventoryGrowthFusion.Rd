@@ -4,7 +4,9 @@
 \alias{InventoryGrowthFusion}
 \title{InventoryGrowthFusion}
 \usage{
-InventoryGrowthFusion(data, n.iter, random = TRUE, burnin_plot = FALSE)
+InventoryGrowthFusion(data, cov.data = NULL, time_data = NULL,
+  n.iter = 5000, random = NULL, fixed = NULL, time_varying = NULL,
+  burnin_plot = FALSE, save.jags = "IGF.txt")
 }
 \arguments{
 \item{data}{list of data inputs}
