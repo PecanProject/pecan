@@ -48,6 +48,11 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   machine.host <- ifelse(host == "localhost" || host$name == "localhost", fqdn(), host$name)
   machine <- db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
   
+  # retrieve model type info
+  if(is.null(model)){
+    modeltype_id <- db.query(paste0("SELECT modeltype_id FROM models where id = '", settings$model$id, "'"), con)[[1]]
+    model <- db.query(paste0("SELECT name FROM modeltypes where id = '", modeltype_id, "'"), con)[[1]]
+  }
   
   # setup site database number, lat, lon and name and copy for format.vars if new input
   new.site <- data.frame(id = as.numeric(site$id), 
