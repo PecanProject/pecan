@@ -1,4 +1,4 @@
-.put.veg.module <- function(raw.id, bety, 
+.put.veg.module <- function(getveg.id, bety, 
                             input_veg, pfts,
                             outfolder, 
                             dir, machine, model,
@@ -9,7 +9,7 @@
   #--------------------------------------------------------------------------------------------------#
   # Read
   con <- bety$con
-  spp.file <- db.query(paste("SELECT * from dbfiles where container_id =", raw.id), con)
+  spp.file <- db.query(paste("SELECT * from dbfiles where container_id =", getveg.id), con)
   rds_file <- file.path(spp.file$file_path, spp.file$file_name)
   veg_info <- readRDS(rds_file) 
   
@@ -49,7 +49,7 @@
     logger.severe(paste(fcn, "does not exist."))
   }
   
-  ready.id <- convert.input(input.id = raw.id,
+  putveg.id <- convert.input(input.id = getveg.id,
                           outfolder = outfolder, 
                           formatname = formatname, 
                           mimetype = mimetype,
@@ -67,6 +67,6 @@
                           source = input_veg$source,
                           veg_info = veg_info)
   
-  return(ready.id)
+  return(putveg.id)
   
 }
