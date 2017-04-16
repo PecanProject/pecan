@@ -1,6 +1,7 @@
 ##' @name extract_FIA
 ##' @title extract_FIA
 ##' @export
+##' @author Istem Fer
 extract_FIA <- function(lon, lat, start_date, gridres = 0.075, dbparms){
   
   #--------------------------------------------------------------------------------------------------#

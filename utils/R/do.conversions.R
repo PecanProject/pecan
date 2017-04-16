@@ -29,10 +29,8 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     if ((input.tag %in% c("css", "pss", "site")) && 
         is.null(input$path) && !is.null(input$source)) {
       if(!is.null(input$useic)){ # set <useic>TRUE</useic> if IC Workflow, leave empty if not
-        ic.flag  <- input$useic
-        fia.flag <- FALSE
+        ic.flag  <- TRUE
       }else if(input$source == "FIA"){
-        ic.flag  <- FALSE
         fia.flag <- TRUE
         # possibly a warning for deprecation in the future
       }

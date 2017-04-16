@@ -8,6 +8,7 @@
 ##' 
 ##' @return table of BETYdb PFT IDs matched to species IDs
 ##' 
+##' @export
 match_pft <- function(bety_species_id, pfts, con){
   
   ### get species to PFT mappting

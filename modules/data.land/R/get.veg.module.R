@@ -84,10 +84,10 @@
   fcn <- "write_veg"
   con <- bety$con
   
-  raw.id <- convert.input(input.id = NA,
+  getveg.id <- convert.input(input.id = NA,
                           outfolder = outfolder, 
                           formatname = "spp.info", 
-                          mimetype = "text/plain",
+                          mimetype = "application/rds",
                           site.id = site_id, 
                           start_date = start_date, end_date = end_date, 
                           pkg = pkg, fcn = fcn, 
@@ -98,6 +98,6 @@
                           veg_info = veg_info)
   
   
-  return(raw.id)
+  return(getveg.id)
   
 }
