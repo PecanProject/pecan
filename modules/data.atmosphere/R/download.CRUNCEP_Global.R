@@ -1,11 +1,16 @@
 ##' Download CRUNCEP data
 ##' 
 ##' Download and convert to CF CRUNCEP single grid point from MSTIMIP server using OPENDAP interface
-##' @param outfolder
-##' @param start_date
-##' @param end_date
-##' @param lat
-##' @param lon
+##' @param outfolder Directory where results should be written
+##' @param start_date,end_date Range of years to retrieve. Format is YYYY-MM-DD,
+##'   but only the year portion is used and the resulting files always contain a full year of data.
+##' @param site_id numeric. Currently ignored
+##' @param lat.in site latitude in decimal degrees
+##' @param lon.in site longitude in decimal degrees
+##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
+##' @param verbose logical. Passed on to \code{\link[ncdf4]{ncvar_def}} and \code{\link[ncdf4]{nc_create}}
+##'   to control printing of debug info
+##' @param ... Other arguments, currently ignored
 ##' @export
 ##'
 ##' @author James Simkins, Mike Dietze
