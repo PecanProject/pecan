@@ -1,14 +1,14 @@
 .get.veg.module <- function(input_veg, 
                             outfolder,
                             start_date, end_date,
-                            bety, dbparms,
+                            dbparms,
                             lat, lon, site_id, 
-                            host, overwrite, machine){
+                            host, overwrite){
 
   #--------------------------------------------------------------------------------------------------#
   # Extract/load data : this step requires DB connections can't be handled by convert.inputs
   
-  # which sources require load_data
+  # which sources require load_data, temporary, need to extract from somewhereelse
   load_sources <- c("GapMacro", "NASA_FFT_Plot_Inventory", "NASA_TE_FIA")
   
   if(input_veg$source == "FIA"){
@@ -23,9 +23,14 @@
       logger.error("Must specify input source.id")
     }
     
+    bety <- dplyr::src_postgres(dbname   = dbparms$bety$dbname, 
+                                host     = dbparms$bety$host, 
+                                user     = dbparms$bety$user, 
+                                password = dbparms$bety$password)
+    
     # query data.path from source id [input id in BETY]
     query      <- paste0("SELECT * FROM dbfiles where container_id = ", source.id)
-    input_file <- db.query(query, con = con)
+    input_file <- db.query(query, con = bety$con)
     data_path  <- file.path(input_file[["file_path"]], input_file[["file_name"]])
     
     # query format info
