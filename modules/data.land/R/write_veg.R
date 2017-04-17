@@ -1,5 +1,5 @@
-##' @name extract_FIA
-##' @title extract_FIA
+##' @name write_veg
+##' @title write_veg
 ##' @export
 write_veg <- function(outfolder, start_date, end_date, veg_info, overwrite = FALSE, ...){
   

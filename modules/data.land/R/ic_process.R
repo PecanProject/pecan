@@ -77,18 +77,14 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   #--------------------------------------------------------------------------------------------------#
   # Load/extract + match species module
   
-  if (is.null(getveg.id) & input$output %in% vegIC) {
+  if (is.null(getveg.id) & is.null(putveg.id) & input$output %in% vegIC) {
 
     getveg.id <- .get.veg.module(input_veg = input, 
                               outfolder = outfolder, 
                               start_date = start_date, end_date = end_date,
-                              bety = bety, dbparms = dbparms,
+                              dbparms = dbparms,
                               lat = new.site$lat, lon = new.site$lon, site_id = new.site$id,
-                              host = host, overwrite = overwrite$geh
-                              
-                              
-                              
-                              )
+                              host = host, overwrite = overwrite$getveg)
 
   }
   
@@ -96,7 +92,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   #--------------------------------------------------------------------------------------------------#
   # Match species to PFTs + veg2model module
   
-  if (!is.null(getveg.id) & input$output %in% vegIC) { # probably need a more sophisticated check here
+  if (!is.null(getveg.id) & is.null(putveg.id) & input$output %in% vegIC) { # probably need a more sophisticated check here
     
     putveg.id <- .put.veg.module(getveg.id = getveg.id, bety = bety, 
                                 input_veg = input, pfts = settings$pfts,
