@@ -17,7 +17,7 @@ ncdf4::nc_close(cf)
 
 
 test_that("reference times are present", {
-  expect_equal(cf_units, "days since 2000-01-01")
+  expect_equal(cf_units, "days since 2000-01-01T00:00:00Z")
 })
 
 test_that("overwrite argument is respected", {

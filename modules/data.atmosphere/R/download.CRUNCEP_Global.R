@@ -82,9 +82,9 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
     lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
 
-    timestamps <- (1:ntime) * 6/24 - 3/24 # data are 6-hourly, with timestamp at center of interval
-    time <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", start_year, "-01-01"),
-                             vals = as.array(timestamps), create_dimvar = TRUE, unlim = TRUE)
+    days_elapsed <- (1:ntime) * 6/24 - 3/24 # data are 6-hourly, with timestamp at center of interval
+    time <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", start_year, "-01-01T00:00:00Z"),
+                             vals = as.array(days_elapsed), create_dimvar = TRUE, unlim = TRUE)
 
     dim <- list(lat, lon, time)
     
@@ -103,7 +103,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
       stopifnot(dap$dim$time$len == ntime)
       dap_time <- udunits2::ud.convert(dap$dim$time$vals,
                                        dap$dim$time$units,
-                                       paste0("days since ", start_year, "-01-01"))
+                                       time$units)
       stopifnot(all.equal(dap_time, time$vals))
 
 
