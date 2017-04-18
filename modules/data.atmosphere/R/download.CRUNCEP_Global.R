@@ -100,11 +100,17 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
       dap <- ncdf4::nc_open(dap_file)
 
       # confirm that timestamps match
-      stopifnot(dap$dim$time$len == ntime)
+      if (dap$dim$time$len != ntime) {
+        logger.severe("Expected", ntime, "observations, but", dap_file,  "contained", dap$dim$time$len)
+      }
       dap_time <- udunits2::ud.convert(dap$dim$time$vals,
                                        dap$dim$time$units,
                                        time$units)
-      stopifnot(all.equal(dap_time, time$vals))
+      if (!isTRUE(all.equal(dap_time, time$vals))){
+        logger.severe("Timestamp mismatch.",
+                      "Expected", min(time$vals), '..', max(time$vals), time$units,
+                      "but got", min(dap_time), "..", max(dap_time))
+      }
 
 
       dat.list[[j]] <- ncdf4::ncvar_get(dap, 
