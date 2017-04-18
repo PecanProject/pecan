@@ -8,20 +8,36 @@ Git is a version control software; GitHub is a project-hosting website that is s
 Git is a free & open source, distributed version control system designed to handle everything from small to very large projects with speed and efficiency. Every Git clone is a full-fledged repository with complete history and full revision tracking capabilities, not dependent on network access or a central server. Branching and merging are fast and easy to do.
 
 
-* If you are new to Git:
-    1. Familiarize yourself with Git and Github
+**If you are new to Git:**
+
+    Familiarize yourself with Git and Github
+    
         - Github: [5 minute illustrated tutorial](https://guides.github.com/introduction/flow/). 
         - Git:[Learn Git](https://www.codecademy.com/learn/learn-git) is a great web-based interactive tutorial.
-          [LearnGitBranching](http://pcottle.github.com/learnGitBranching/)
-          [TryGit](http://try.github.com)
-
-    2. Start with the one-time set-up instructions under [Before any work is done](#before-any-work-is-done). 
-
-    3. To make changes to PEcAn code, follow our [workflow](#workflow-to-make-changes). 
+              [LearnGitBranching](http://pcottle.github.com/learnGitBranching/)
+              [TryGit](http://try.github.com)
+          
+**If you would like to make changes:**
     
-        - For asking questions, reporting bugs, and requesting features, see our documentation for [reporting issues on GitHub][Overview]
+    1. Start with the one-time set-up instructions under [Before any work is done](#before-any-work-is-done). 
     
-**Using GitHub** The easiest way to get working with GitHub is by installing the GitHub
+    2. Check out our existing issues and see if someone is already working on your proposed changes.
+    
+        - To ask questions, report bugs, and/or request features, see our documentation for [reporting issues on GitHub][Overview]    
+        
+    3. To make changes to PEcAn code:
+        
+        - follow our ["Basic workflow"](#basic-workflow) if you plan on making small, one time or infrequent canges to PEcAn.
+        
+        - follow our ["Quick and Easy"](#quick-and-easy-workflow) if you are a PEcAn Project member and you would like to make a quick, small change.
+          
+        - follow our ["Suggested Workflow"](#suggested-workflow) if you plan on making sustained contributions to PEcAn.
+    
+        
+    
+    
+**Using GitHub** 
+The easiest way to get working with GitHub is by installing the GitHub
 client. For instructions for your specific OS and download of the
 GitHub client, see https://help.github.com/articles/set-up-git.
 This will help you set up an SSH key to push code back to GitHub. To
@@ -93,9 +109,37 @@ When making changes it is important to let others in the community know what cha
  * [ ] completed when x and y
 ```
 
+### Basic Workflow
+1. Move to "develop" branch 
 
-### Workflow to make changes
+    `git checkout develop`
 
+2. Pull latest code from "develop" branch git pull
+
+    `git pull`
+    
+3. Make your Changes and stage them
+
+    `git add file_you_changed.R`
+    
+4. Commit! (Do this often. Even when you are not done with changes)
+
+    `git commit -m "describe your changes"`
+  
+5. Push your commits to branch you're working on 
+
+    `git push origin develop`
+
+6. Submit pull request.
+    
+    Use [Github web interface to open pull request](https://help.github.com/articles/creating-a-pull-request/). Make sure you are comparing base branch "develop" to your branch.
+
+### Quick and Easy Workflow
+**NOTE: ** Only Applicalble if you are a member of the PEcAn Project on Github)
+
+-The "easiest"" approach is to use GitHub's browser based workflow. This is useful when your change is a few lines, if you are editing a wiki, or if the edit is trivial (and won't break the code). The [GitHub documentation is here](https://help.github.com/articles/github-flow-in-the-browser) but it is simple: find the page or file you want to edit, click "edit" and then the GitHub web application will automatically create a branch with your changes and then you can submit a pull request.
+
+### Suggested Workflow
         
 1. Move to "develop" branch 
 
@@ -166,14 +210,6 @@ There are two ways to do this. One easy way is to include the following text in 
   * to close: "closes gh-xxx" (or syn. close, closed, fixes, fix, fixed)  
   * to reference: just the issue number (e.g. "gh-xxx")
   * avoid "closes #xxx" which will cross-reference Redmine issues 
-* **Redmine**: 
-  * to close: "fixes redmine #xxx" (or closes etc.) 
-  * to reference: "redmine #xxx"
-* **Bitbucket**: 
-  * to close: reference and use web interface!
-  * to reference: "re #xxx"
-
-Another way is to just add the url to the issue that you are updating. For example, if you are resolving an issue in Redmine, you can simply write the text "resolved by pull request https://github.com/PecanProject/pecan/pull/1" in the comments.
 
 
 
