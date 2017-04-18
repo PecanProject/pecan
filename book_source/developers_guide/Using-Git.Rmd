@@ -81,7 +81,7 @@ You can setup SSH keys to make it easier to commit cod back to GitHub. This migh
         `git config --global user.name "FULLNAME"`
         `git config --global user.email you@yourdomain.example.com`
 
-2. Fork PEcAn on GitHub. Goto the PEcAn source code and click on the Fork button in the upper right. This will create a copy of PEcAn in your personal space.
+2. Fork PEcAn on GitHub. Go to the PEcAn source code and click on the Fork button in the upper right. This will create a copy of PEcAn in your personal space.
 
 3. Clone to your local machine 
 
@@ -96,7 +96,7 @@ You can setup SSH keys to make it easier to commit cod back to GitHub. This migh
 
 ### Github Organization: Milestones, Issues, Tasks
 
-When making changes it is important to let others in the community know what changes you will be making. To do this, open a github issue to describe what cahnges you will be making and why you are making them. Milestones, issues, and tasks can be used to organize specific features or research projects. In general, there is a heirarchy:
+When making changes it is important to let others in the community know what changes you will be making. To do this, open a github issue to describe what changes you will be making and why you are making them. Milestones, issues, and tasks can be used to organize specific features or research projects. In general, there is a hierarchy:
 
 * Milestones (Big picture): contains many issues and organizes what is due for the next release.(Time Sensitive)
 * Epic Issues ("Story"): Describes a larger feature that may contain many other smaller tasks and issues.(Not Time Sensitive)
@@ -135,7 +135,7 @@ When making changes it is important to let others in the community know what cha
     Use [Github web interface to open pull request](https://help.github.com/articles/creating-a-pull-request/). Make sure you are comparing base branch "develop" to your branch.
 
 ### Quick and Easy Workflow
-**NOTE: ** Only Applicalble if you are a member of the PEcAn Project on Github)
+**NOTE: ** Only Applicable if you are a member of the PEcAn Project on Github)
 
 -The "easiest"" approach is to use GitHub's browser based workflow. This is useful when your change is a few lines, if you are editing a wiki, or if the edit is trivial (and won't break the code). The [GitHub documentation is here](https://help.github.com/articles/github-flow-in-the-browser) but it is simple: find the page or file you want to edit, click "edit" and then the GitHub web application will automatically create a branch with your changes and then you can submit a pull request.
 
