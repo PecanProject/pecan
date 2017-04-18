@@ -91,5 +91,17 @@ Select the default drive volume type and click Next
 
 We have developed a number of demos and vignettes to guide your use of PEcAn's many capabilities:
 
+<center>
 
-**[Demo 1](https://pecanproject.github.io/pecan-documentation/tutorials/Demo01.html)** 
+|Type|Title|Web Link| Source Rmd|
+|:--:|:---:|:------:|:---------:|
+|Demo| Basic Run| [Webpage](https://pecanproject.github.io/pecan-documentation/tutorials/Demo01.html) | [Rmarkdown File](https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/01_Demo_Basic_Run/Demo01.Rmd)|
+|Demo| Uncertainty Analysis| Webpage| [RmardkdownFile](https://github.com/PecanProject/pecan/tree/master/documentation/tutorials/02_Demo_Uncertainty_Analysis)|
+|Vignette| Output Analysis|Webpage |[RmardkdownFile](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/AnalyzeOutput)|
+|Vignette| MCMC |Webpage|[RmardkdownFile](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/MCMC)|
+|Vignette|Parameter Assimilation |Webpage |[RmardkdownFile](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/ParameterAssimilation)|
+|Vignette|State Assimilation|Webpage|[RmardkdownFile](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/StateAssimilation)|
+|Vignette| Sensitivity|Webpage|[RmardkdownFile](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/sensitivity)|
+
+<center>
+
