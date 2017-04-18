@@ -20,7 +20,7 @@ There are two ways of using PEcAn, via the web interface and directly within R. 
 
 4. To open up the virtual machine you'll first want to open up VirtualBox. 
 
-5. The first time you use the VM you'll want to use File → Import Appliance in VirtualBox in order to import the VM. This will create a virtual machine from the disk image. When asked about the Appliance Import Settings make sure you select "Reinitialize the MAC address of all network cards". This is not selected by default and can result in networking issues since multiple machines might claim to have the same network MAC Address. That said, users who have experienced network connection difficulties within the VM have sometimes had better luck after reinstalling without reinitializing.
+5. The first time you use the VM you'll want to use File → Import Appliance in VirtualBox in order to import the VM. This will create a virtual machine from the disk image. When asked about the Appliance Import Settings make sure you select "Reinitialize the MAC address of all network cards". This is not selected by default and can result in networking issues since multiple machines might claim to have the same network MAC Address. That said, users who have experienced network connection difficulties within the VM have sometimes had better luck after reinstalling without re-initializing.
 
 ```{r, echo=FALSE,fig.align='center'}
   knitr::include_graphics(rep("figures/pic1.jpg"))
@@ -95,13 +95,19 @@ We have developed a number of demos and vignettes to guide your use of PEcAn's m
 
 |Type|Title|Web Link| Source Rmd|
 |:--:|:---:|:------:|:---------:|
-|Demo| Basic Run| [Webpage](https://pecanproject.github.io/pecan-documentation/tutorials/Demo01.html) | [Rmarkdown File](https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/01_Demo_Basic_Run/Demo01.Rmd)|
-|Demo| Uncertainty Analysis| Webpage| [RmardkdownFile](https://github.com/PecanProject/pecan/tree/master/documentation/tutorials/02_Demo_Uncertainty_Analysis)|
-|Vignette| Output Analysis|Webpage |[RmardkdownFile](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/AnalyzeOutput)|
-|Vignette| MCMC |Webpage|[RmardkdownFile](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/MCMC)|
-|Vignette|Parameter Assimilation |Webpage |[RmardkdownFile](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/ParameterAssimilation)|
-|Vignette|State Assimilation|Webpage|[RmardkdownFile](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/StateAssimilation)|
-|Vignette| Sensitivity|Webpage|[RmardkdownFile](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/sensitivity)|
+|Demo| Basic Run| [html](https://pecanproject.github.io/pecan-documentation/tutorials/Demo01.html) | [Rmd](https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/01_Demo_Basic_Run/Demo01.Rmd)|
+|Demo| Uncertainty Analysis| html| [Rmd](https://github.com/PecanProject/pecan/tree/master/documentation/tutorials/02_Demo_Uncertainty_Analysis)|
+|Demo| Output Analysis|html |[Rmd](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/AnalyzeOutput)|
+|Demo| MCMC |html|[Rmd](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/MCMC)|
+|Demo|Parameter Assimilation |html |[Rmd](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/ParameterAssimilation)|
+|Demo|State Assimilation|html|[Rmd](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/StateAssimilation)|
+|Demo| Sensitivity|html|[Rmd](https://github.com/PecanProject/pecan/tree/develop/documentation/tutorials/sensitivity)|
+|Vignette|Allometries|html|[Rmd](https://github.com/PecanProject/pecan/blob/master/modules/allometry/vignettes/AllomVignette.Rmd)|
+|Vignette|MCMC|html|[Rmd](https://github.com/PecanProject/pecan/blob/master/modules/assim.batch/vignettes/AssimBatchVignette.Rmd)|
+|Vignette|Meteorological Data|html|[Rmd](https://github.com/PecanProject/pecan/tree/master/modules/data.atmosphere/vignettes)|
+|Vignette|Meta-Analysis|html|[Rmd](https://github.com/PecanProject/pecan/blob/master/modules/meta.analysis/vignettes/single.MA_demo.Rmd)|
+|Vignette|Photosynthetic Response Curves|html|[Rmd](https://github.com/PecanProject/pecan/blob/master/modules/photosynthesis/vignettes/ResponseCurves.Rmd)|
+|Vignette|Priors|html|[Rmd](https://github.com/PecanProject/pecan/blob/master/modules/priors/vignettes/priors_demo.Rmd)|
+|Vignette|Leaf Spectra:PROSPECT inversion|html|[Rmd](https://github.com/PecanProject/pecan/blob/master/modules/rtm/vignettes/pecanrtm.vignette.Rmd)|
 
-<center>
 
