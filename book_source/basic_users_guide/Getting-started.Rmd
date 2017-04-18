@@ -91,8 +91,6 @@ Select the default drive volume type and click Next
 
 We have developed a number of demos and vignettes to guide your use of PEcAn's many capabilities:
 
-<center>
-
 |Type|Title|Web Link| Source Rmd|
 |:--:|:---:|:------:|:---------:|
 |Demo| Basic Run| [html](https://pecanproject.github.io/pecan-documentation/tutorials/Demo01.html) | [Rmd](https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/01_Demo_Basic_Run/Demo01.Rmd)|
