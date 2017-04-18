@@ -27,7 +27,7 @@ Git is a free & open source, distributed version control system designed to hand
         
     3. To make changes to PEcAn code:
         
-        - follow our ["Basic workflow"](#basic-workflow) if you plan on making small, one time or infrequent canges to PEcAn.
+        - follow our ["Basic workflow"](#basic-workflow) if you plan on making small, one time or infrequent changes to PEcAn.
         
         - follow our ["Quick and Easy"](#quick-and-easy-workflow) if you are a PEcAn Project member and you would like to make a quick, small change.
           
