@@ -7,9 +7,13 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
+## [1.4.10.1] - 2017-04-18
+
 ### Changed
 - Bugfix in Fluxnet2015
 - Update Git workflow in Documentation
+- download.CRUNCEP now uses CF-compliant time units (days since start of year instead of "secs")
+- Bugfixes in met.process
 
 ## [1.4.10] - 2017-03-27
 Documentation

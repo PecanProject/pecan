@@ -6,11 +6,11 @@
 ##' @param start_year numeric
 ##' @param end_year numeric
 ##' @param site list
-##' @author Betsy Cowdery, Joshua Mantooth
+##' @author Betsy Cowdery, Istem Fer, Joshua Mantooth
 ##' Generic function to convert input files containing observational data to 
 ##' a common PEcAn format. 
-load_data <- function(data.path, format, start_year = NA, end_year = NA, site = NA, 
-                      vars.used.index=NULL, time.row = NULL) {
+load_data <- function(data.path, format, start_year = NA, end_year = NA, site = NULL, 
+                      vars.used.index=NULL, time.row = NULL, ...) {
 
   ## load everything in format by default
   if(is.null(time.row)){
@@ -57,6 +57,16 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   # Convert loaded data to the same standard variable names and units
   
   vars_used <- format$vars[vars.used.index, ]
+  
+  # check wide format and transform to long
+  if(any(duplicated(vars_used$bety_name))){
+    w2l       <- format_wide2long(out, format, vars_used, time.row)
+    out       <- w2l$long_data
+    format    <- w2l$format
+    vars_used <- w2l$vars_used
+    time.row  <- w2l$time.row
+   }
+
   
   for (i in seq_len(nrow(vars_used))) {
     col <- names(out) == vars_used$input_name[i]
