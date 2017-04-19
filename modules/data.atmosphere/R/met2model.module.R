@@ -1,4 +1,26 @@
-.met2model.module <- function(ready.id, model, con, host, dir, met, str_ns, site, start_date, end_date, 
+##' @name met2model.module
+##' @title met2model.module
+##' @export
+##'
+##' @param ready.id 
+##' @param model
+##' @param con 
+##' @param host
+##' @param str_ns
+##' @param new.site
+##' @param site Site info from settings file
+##' @param met Which data source to process. 
+##' @param start_date the start date of the data to be downloaded (will only use the year part of the date)
+##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
+##' @param model model_type name
+##' @param host Host info from settings file
+##' @param dbparms  database settings from settings file
+##' @param dir  directory to write outputs to
+##' @param overwrite Whether to force met.process to proceed.
+##'
+##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
+
+met2model.module <- function(ready.id, model, con, host, dir, met, str_ns, site, start_date, end_date, 
                               browndog, new.site, overwrite = FALSE, exact.dates) {
   
   # Determine output format name and mimetype
