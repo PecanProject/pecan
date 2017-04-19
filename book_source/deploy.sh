@@ -37,7 +37,6 @@ if [ $PUBLISH == yes ]; then
 
   git clone https://${GITHUB_PAT}@github.com/${USER}/pecan-documentation.git book_hosted
 
-  cp -r _book/* book_hosted
 
   cd book_hosted
   
@@ -48,6 +47,8 @@ if [ $PUBLISH == yes ]; then
   else
     cd $BRANCH
   fi
+  
+  cp -r _book/* .
   
   git add --all *
   git commit -m "Update the book `date`" || true
