@@ -41,12 +41,19 @@ if [ $PUBLISH == yes ]; then
   cp -r _book/* book_hosted
 
   cd book_hosted
-  git checkout -b $BRANCH
+  
+  ## CHECK if branch exists in pecan-documentation
+  if [ `git branch --list $BRANCH `]; then
+    git checkout $BRANCH
+  else
+    git checkout -b $BRANCH
+  fi
+  
   git add --all *
   git commit -m "Update the book `date`" || true
   git push -q origin $BRANCH
 
 else [$PUBLISH == no]; then
   echo "Not Master, Develop, or Release Branch. Will not render Book."
-  exit 0
+  exit
 fi
