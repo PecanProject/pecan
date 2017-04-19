@@ -42,9 +42,9 @@ if [ $PUBLISH == yes ]; then
   
   ## Check if branch named directory exists 
   if [ -d $BRANCH]; then
-    mkdir $BRANCH
     cd $BRANCH
   else
+    mkdir $BRANCH
     cd $BRANCH
   fi
   
