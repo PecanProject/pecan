@@ -41,7 +41,7 @@ if [ $PUBLISH == yes ]; then
   cd book_hosted
   
   ## Check if branch named directory exists 
-  if [ -d $BRANCH]; then
+  if [ -d $BRANCH ]; then
     cd $BRANCH
   else
     mkdir $BRANCH
@@ -54,7 +54,14 @@ if [ $PUBLISH == yes ]; then
   git commit -m "Update the book `date`" || true
   git push -q origin master
 
-else [$PUBLISH == no]; then
+elif [ $PUBLISH == no ]; then
+
   echo "Not Master, Develop, or Release Branch. Will not render Book."
   exit
+
+else
+
+  echo "Publish status not found. What did you do?"
+  exit 
+  
 fi
