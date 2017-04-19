@@ -37,21 +37,20 @@ if [ $PUBLISH == yes ]; then
 
   git clone https://${GITHUB_PAT}@github.com/${USER}/pecan-documentation.git book_hosted
 
-
   cp -r _book/* book_hosted
 
   cd book_hosted
   
-  ## CHECK if branch exists in pecan-documentation
-  if [ `git branch --list $BRANCH `]; then
-    git checkout $BRANCH
+  ## Check if branch named directory exists 
+  if [ -d $BRANCH]; then
+    mkdir $BRANCH
   else
-    git checkout -b $BRANCH
+    cd $BRANCH
   fi
   
   git add --all *
   git commit -m "Update the book `date`" || true
-  git push -q origin $BRANCH
+  git push -q origin master
 
 else [$PUBLISH == no]; then
   echo "Not Master, Develop, or Release Branch. Will not render Book."
