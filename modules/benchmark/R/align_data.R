@@ -10,7 +10,11 @@
 
 ##' @author Betsy Cowdery
 
-
+model.calc<-DukeSip
+obvs.calc<-Ameriflux
+start_year<-2003
+end_year<-2009
+var<-"NEE"
 ## Align timeseries data using different functions
 
 align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_method = "match_timestep") {
