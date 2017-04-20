@@ -28,8 +28,11 @@ Imports:
     XML (>= 3.98-1.4),
     nneo,
     httr
+Suggests:
+    testthat
 Remotes:
-    github::ropenscilabs/nneo
+    github::ropenscilabs/nneo,
+    github::rforge/reddyproc/pkg/REddyProc
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
