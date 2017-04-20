@@ -2,9 +2,9 @@
 ##' @name do.conversions
 ##' @title do.conversions
 ##' @description Input conversion workflow
-##' @author Ryan Kelly, Rob Kooper, Betsy Cowdery
+##' @author Ryan Kelly, Rob Kooper, Betsy Cowdery, Istem Fer
 ##' @export
-do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE) {
+do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE, overwrite.ic = FALSE) {
   if (PEcAn.settings::is.MultiSettings(settings)) {
     return(PEcAn.settings::papply(settings, do.conversions))
   }
@@ -14,8 +14,8 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     settings$run$inputs <- NULL  ## check for empty set
   }
   
-  dbfiles <- ifelse(!is.localhost(settings$host) & !is.null(settings$host$folder),settings$host$folder,settings$database$dbfiles)
-
+  dbfiles <- ifelse(!is.localhost(settings$host) & !is.null(settings$host$folder), settings$host$folder, settings$database$dbfiles)
+  
   for (i in seq_along(settings$run$inputs)) {
     input <- settings$run$inputs[[i]]
     if (is.null(input)) {
@@ -24,10 +24,28 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     
     input.tag <- names(settings$run$input)[i]
     
-    # fia database
-    if ((input.tag %in% c("css", "pss", "site")) &&
-        is.null(input$path) && !is.null(input$source) && (input$source == "FIA")) {
-      settings <- PEcAn.data.land::fia.to.psscss(settings, overwrite=overwrite.fia)
+    ic.flag <- fia.flag <- FALSE
+    
+    if ((input.tag %in% c("css", "pss", "site")) && 
+        is.null(input$path) && !is.null(input$source)) {
+      if(!is.null(input$useic)){ # set <useic>TRUE</useic> if IC Workflow, leave empty if not
+        ic.flag  <- TRUE
+      }else if(input$source == "FIA"){
+        fia.flag <- TRUE
+        # possibly a warning for deprecation in the future
+      }
+    }
+    
+    # IC conversion : for now for ED only, hence the css/pss/site check
+    # <useic>TRUE</useic>
+    if (ic.flag) {
+      settings <- PEcAn.data.land::ic_process(settings, input, dir = dbfiles, overwrite  = overwrite.ic)
+      needsave <- TRUE
+    }
+    
+    # keep fia.to.psscss
+    if (fia.flag) {
+      settings <- PEcAn.data.land::fia.to.psscss(settings, overwrite = overwrite.fia)
       needsave <- TRUE
     }
     
@@ -47,7 +65,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
             dir        = dbfiles,
             browndog   = settings$browndog,
             overwrite  = overwrite.met)
-
+        
         needsave <- TRUE
       }
     }
