@@ -1,20 +1,31 @@
 ##' Parses multiple netCDF files into one central document for temporal downscaling procedure
-##' @family tdm - Temporally Downscale Meteorology
+# -----------------------------------
+# Description
+# -----------------------------------
 ##' @title nc2dat.train
+##' @family tdm - Temporally Downscale Meteorology
+##' @author James Simkins, Christy Rollinson
+##' @description This is the 1st script for the tdm (Temporally Downscale Meteorology) workflow. The nc2dat.train function
+##'              parses multiple netCDF files into one central training data file called 'dat.train_file'. It outputs a 
+##'              netCDF file in CF conventions with a few workflow specific variables (date, doy, and hour) that are used 
+##'              later in the workflow. This netCDF file will be used to generate the subdaily models in the next step of
+##'              the workflow, tdm_generate_subdaily_models. It is also called in tdm_predict_subdaily_met which is the 
+##'              final step of the tdm workflow. 
+# -----------------------------------
+# Parameters
+# -----------------------------------
 ##' @param outfolder - directory where output will be stored
 ##' @param in.path - path of coarse model (e.g. GCM output)
 ##' @param in.prefix - prefix of model string as character (e.g. IPSL.r1i1p1.rcp85)
-##' @param start_date 
-##' @param end_date
-##' @param lat.in
-##' @param lon.in
-##' @param upscale - # Upscale can either be set for FALSE (leave alone) or to the temporal resolution you want to aggregate to
-# options are: year, doy (day of year), or hour
+##' @param start_date - yyyy-mm-dd
+##' @param end_date - yyyy-mm-dd
+##' @param lat.in - latitude as numeric
+##' @param lon.in - longitude as numeric
+##' @param upscale - Upscale can either be set for FALSE (leave alone) or to the temporal resolution you want to aggregate to
+#                    options are: "year", "doy" (day of year), or "hour"
 ##' @param overwrite
 ##' @param verbose
-
-##' @author James Simkins, Christy Rollinson
-
+# -----------------------------------
 #----------------------------------------------------------------------
 # Begin Script
 #----------------------------------------------------------------------
@@ -61,6 +72,8 @@ nc2dat.train <- function(outfolder, in.path, in.prefix, start_date, end_date,
     names(raw_train_data) <- vars.info$CF.name
     train_df <- data.frame(raw_train_data)
     
+    # Figure out what temporal resolution the given data is in
+    # stepby[] helps us create the data sequence length
     raw_train_data <- data.frame(raw_train_data)
     if ((nrow(raw_train_data) == 17520) | (nrow(raw_train_data) == 17568)) {
         stepby[1] <- 2
@@ -68,7 +81,9 @@ nc2dat.train <- function(outfolder, in.path, in.prefix, start_date, end_date,
     if ((nrow(raw_train_data) == 8760) | (nrow(raw_train_data) == 8784)) {
         stepby[1] <- 1
     }
-    
+    if ((nrow(raw_train_data) == 1460) | (nrow(raw_train_data) == 1464)) {
+      stepby[1] <- (1/6)
+    }
     # Add a time stamp
     start_time <- as.POSIXlt(paste0(yr_seq[1], "-01-01"), tz = "UTC")
     end_time <- as.POSIXlt(paste0(yr_seq[1] + 1, "-01-01"), tz = "UTC")
@@ -99,6 +114,8 @@ nc2dat.train <- function(outfolder, in.path, in.prefix, start_date, end_date,
                 names(raw_train_data) <- vars.info$CF.name
                 raw_train_data <- data.frame(raw_train_data)
                 
+                # Figure out what temporal resolution the given data is in
+                # stepby[] helps us create the data sequence length
                 if ((nrow(raw_train_data) == 17520) | (nrow(raw_train_data) == 
                   17568)) {
                   stepby[i] <- 2
@@ -106,6 +123,9 @@ nc2dat.train <- function(outfolder, in.path, in.prefix, start_date, end_date,
                 if ((nrow(raw_train_data) == 8760) | (nrow(raw_train_data) == 
                   8784)) {
                   stepby[i] <- 1
+                }
+                if ((nrow(raw_train_data) == 1460) | (nrow(raw_train_data) == 1464)) {
+                  stepby[1] <- (1/6)
                 }
                 
                 # Add a time stamp
