@@ -65,6 +65,7 @@ gen_subdaily_models <- function(outfolder, dat.train_file, in.prefix,
     names(dat.train) <- vars.info$CF.name
     dat.train <- data.frame(dat.train)
     
+    # these non-standard variables help us organize our modeling approach
     dat.train$date <- strptime(paste(dat.train$year, dat.train$doy + 1, 
         dat.train$hour, sep = "-"), "%Y-%j-%H", tz = "GMT")
     dat.train$time.hr <- as.numeric(difftime(dat.train$date, paste0((min(dat.train$year) - 
