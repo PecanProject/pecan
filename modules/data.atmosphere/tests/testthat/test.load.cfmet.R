@@ -1,5 +1,7 @@
 context("loading data from PEcAn-CF met drivers")
 
+logger.setLevel("OFF")
+
 daily_file <- "data/urbana_daily_test.nc"
 subdaily_file <- "data/urbana_subdaily_test.nc"
 
@@ -42,7 +44,6 @@ test_that("load.cfmet throws error if start/end date out of range",{
 
   skip("Broken test #1343")
 
-  PEcAn.utils::logger.setLevel("OFF")
   expect_error(load.cfmet(met.nc = subdaily.nc, lat = 39, lon = -88,
                           start.date = "9999-01-01", end.date = "9999-02-02"))
   expect_error(load.cfmet(met.nc = subdaily.nc, lat = 39, lon = -88,
@@ -56,17 +57,10 @@ test_that("load.cfmet throws error if start/end date out of range",{
 })
 
 test_that("load.cfmet enforces lat/lon matching",{
-
-  skip("Broken test #1344")
-
-  expect_is(load.cfmet(met.nc = daily.nc, lat = 39, lon = -88,
-                       start.date = "1951-01-01", end.date = "1951-01-07"),
-            "data.frame")
   expect_error(load.cfmet(met.nc = daily.nc, lat = 39, lon = 20,
                           start.date = "1951-01-01", end.date = "1951-01-07"),
                "lat / lon .* outside range of met file")
   expect_error(load.cfmet(met.nc = daily.nc, lat = 9, lon = -88,
                           start.date = "1951-01-01", end.date = "1951-01-07"),
                "lat / lon .* outside range of met file")
-
 })
