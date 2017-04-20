@@ -14,4 +14,3 @@ minimize.GP(gp, rng, x0, splinefuns = NULL)
 \author{
 Michael Dietze
 }
-

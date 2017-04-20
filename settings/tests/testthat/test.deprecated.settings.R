@@ -11,7 +11,7 @@ logger.setQuitOnSevere(FALSE)
 logger.setLevel("OFF")
 context("fix.deprecated.settings")
 
-source('get.test.settings.r')
+source('get.test.settings.R')
 
 test_that("deprecated jobtemplate settings handled correctly", {
   settings <- .get.test.settings()

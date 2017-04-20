@@ -18,4 +18,3 @@ Truncates vector at 0
 \author{
 <unknown>
 }
-

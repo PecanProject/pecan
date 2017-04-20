@@ -12,4 +12,3 @@ metric_lmDiag_plot(metric_dat, var, filename = NA, draw.plot = FALSE)
 \author{
 Betsy Cowdery
 }
-

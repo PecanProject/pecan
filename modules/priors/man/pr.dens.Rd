@@ -29,4 +29,3 @@ For a distribution and parameters, return the density for values ranging from al
 \author{
 David LeBauer
 }
-
