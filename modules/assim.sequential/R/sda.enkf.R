@@ -394,7 +394,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for (t in 2) {#seq_len(nt)
+  for (t in 2:4) {#seq_len(nt)
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -662,7 +662,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           constants.tobit = list(N = ncol(X), YN = length(y.ind)) #, nc = 1
           dimensions.tobit = list(X = ncol(X), X.mod = ncol(X), Q = c(ncol(X),ncol(X))) #  b = dim(inits.pred$b),
           
-          data.tobit = list(muf = as.vector(mu.f), pf = solve(Pf), aq = aqq[t,,], bq = bqq[t],
+          data.tobit = list(muf = as.vector(mu.f), pf = Pf, aq = aqq[t,,], bq = bqq[t],
                             y.ind = y.ind,
                             y.censored = y.censored,
                             r = solve(R))
@@ -702,7 +702,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           Cmodel$aq <- aqq[t,,]
           Cmodel$bq <- bqq[t]
           Cmodel$muf <- mu.f
-          Cmodel$pf <- solve(Pf)
+          Cmodel$pf <- Pf
           Cmodel$r <- solve(R)
           
           for(i in 1:length(y.ind)) {
@@ -969,7 +969,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
 
   pdf('fcomp.kalman.filter.pdf')
   for (i in seq_len(ncol(X))) {
-    t1 <- 1
+    #t1 <- 1
     Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
     Xci <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
     Xci[is.na(Xci)]<-0
@@ -978,8 +978,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
     
     plot(as.Date(obs.times[t1:t]),
-         Xbar/Xsum, 
-         ylim = c(0,1), #range(c(XaCI/Xsum, Xci/Xsum), na.rm = TRUE)
+         Xbar, 
+         ylim = range(c(XaCI, Xci), na.rm = TRUE),
          type = "n", 
          xlab = "Year", 
          ylab = ylab.names[grep(colnames(X)[i], var.names)],
@@ -997,12 +997,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     }
     
     # forecast
-    ciEnvelope(as.Date(obs.times[t1:t]), Xci[, 1]/Xsum, Xci[, 2]/Xsum, col = alphablue)  #col='lightblue')
-    lines(as.Date(obs.times[t1:t]), Xbar/Xsum, col = "darkblue", type = "l", lwd = 2)
+    ciEnvelope(as.Date(obs.times[t1:t]), Xci[, 1], Xci[, 2], col = alphablue)  #col='lightblue')
+    lines(as.Date(obs.times[t1:t]), Xbar, col = "darkblue", type = "l", lwd = 2)
     
     # analysis
-    ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1]/Xsum, XaCI[, 2]/Xsum, col = alphapink)
-    lines(as.Date(obs.times[t1:t]), Xa/Xsum, col = "black", lty = 2, lwd = 2)
+    ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink)
+    lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2)
   }
   
   ###-------------------------------------------------------------------###
