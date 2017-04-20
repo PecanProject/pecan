@@ -1,11 +1,16 @@
 ##' Download CRUNCEP data
 ##' 
 ##' Download and convert to CF CRUNCEP single grid point from MSTIMIP server using OPENDAP interface
-##' @param outfolder
-##' @param start_date
-##' @param end_date
-##' @param lat
-##' @param lon
+##' @param outfolder Directory where results should be written
+##' @param start_date,end_date Range of years to retrieve. Format is YYYY-MM-DD,
+##'   but only the year portion is used and the resulting files always contain a full year of data.
+##' @param site_id numeric. Currently ignored
+##' @param lat.in site latitude in decimal degrees
+##' @param lon.in site longitude in decimal degrees
+##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
+##' @param verbose logical. Passed on to \code{\link[ncdf4]{ncvar_def}} and \code{\link[ncdf4]{nc_create}}
+##'   to control printing of debug info
+##' @param ... Other arguments, currently ignored
 ##' @export
 ##'
 ##' @author James Simkins, Mike Dietze
@@ -60,12 +65,27 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     ntime <- ifelse(lubridate::leap_year(year), 366 * 4, 365 * 4)
 
     loc.file <- file.path(outfolder, paste("CRUNCEP", year, "nc", sep = "."))
+    results$file[i] <- loc.file
+    results$host[i] <- PEcAn.utils::fqdn()
+    results$startdate[i] <- paste0(year, "-01-01 00:00:00")
+    results$enddate[i] <- paste0(year, "-12-31 23:59:59")
+    results$mimetype[i] <- "application/x-netcdf"
+    results$formatname[i] <- "CF Meteorology"
+
+    if (file.exists(loc.file) && !isTRUE(overwrite)) {
+      logger.error("File already exists. Skipping to next year")
+      next
+    }
+
     PEcAn.utils::logger.info(paste("Downloading",loc.file))
     ## Create dimensions
     lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
     lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
-    time <- ncdf4::ncdim_def(name = "time", units = "sec", vals = (1:ntime) * 21600, 
-                      create_dimvar = TRUE, unlim = TRUE)
+
+    days_elapsed <- (1:ntime) * 6/24 - 3/24 # data are 6-hourly, with timestamp at center of interval
+    time <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", start_year, "-01-01T00:00:00Z"),
+                             vals = as.array(days_elapsed), create_dimvar = TRUE, unlim = TRUE)
+
     dim <- list(lat, lon, time)
     
     var.list <- list()
@@ -78,6 +98,20 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
 
       # This throws an error if file not found
       dap <- ncdf4::nc_open(dap_file)
+
+      # confirm that timestamps match
+      if (dap$dim$time$len != ntime) {
+        logger.severe("Expected", ntime, "observations, but", dap_file,  "contained", dap$dim$time$len)
+      }
+      dap_time <- udunits2::ud.convert(dap$dim$time$vals,
+                                       dap$dim$time$units,
+                                       time$units)
+      if (!isTRUE(all.equal(dap_time, time$vals))){
+        logger.severe("Timestamp mismatch.",
+                      "Expected", min(time$vals), '..', max(time$vals), time$units,
+                      "but got", min(dap_time), "..", max(dap_time))
+      }
+
 
       dat.list[[j]] <- ncdf4::ncvar_get(dap, 
                                  as.character(var$DAP.name[j]), 
@@ -100,13 +134,6 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
       ncdf4::ncvar_put(nc = loc, varid = as.character(var$CF.name[j]), vals = dat.list[[j]])
     }
     ncdf4::nc_close(loc)
-    
-    results$file[i] <- loc.file
-    results$host[i] <- PEcAn.utils::fqdn()
-    results$startdate[i] <- paste0(year, "-01-01 00:00:00")
-    results$enddate[i] <- paste0(year, "-12-31 23:59:59")
-    results$mimetype[i] <- "application/x-netcdf"
-    results$formatname[i] <- "CF Meteorology"
   }
   
   return(invisible(results))

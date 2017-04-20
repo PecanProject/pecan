@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Changed
 - Bugfix in Fluxnet2015
+- download.CRUNCEP now uses CF-compliant time units (days since start of year instead of "secs")
 
 ## [1.4.10] - 2017-03-27
 Documentation
