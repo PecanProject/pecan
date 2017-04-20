@@ -1,3 +1,4 @@
+##' @export
 .met2model.module <- function(ready.id, model, con, host, dir, met, str_ns, site, start_date, end_date, 
                               browndog, new.site, overwrite = FALSE, exact.dates) {
   
