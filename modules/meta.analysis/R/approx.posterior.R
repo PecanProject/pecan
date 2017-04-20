@@ -59,7 +59,7 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
       k   <- (1 - m)/m
       a   <- (k / ((1 + k) ^ 2 * v) - 1) / (1 + k)
       b   <- a * k
-      fit <- try(fitdistr(dat, "beta", list(shape1 = a, shape2 = b)))
+      fit <- try(suppressWarnings(fitdistr(dat, "beta", list(shape1 = a, shape2 = b))), silent = TRUE)
       
       if (do.plot) {
         x <- seq(0, 1, length = 1000)

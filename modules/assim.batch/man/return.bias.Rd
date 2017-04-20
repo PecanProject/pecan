@@ -10,4 +10,3 @@ return.bias(isbias, model.out, inputs, prior.list.bias, nbias,
 \author{
 Istem Fer
 }
-

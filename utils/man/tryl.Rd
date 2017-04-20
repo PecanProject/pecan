@@ -27,4 +27,3 @@ tryl(sum('a'))
 \author{
 David LeBauer
 }
-

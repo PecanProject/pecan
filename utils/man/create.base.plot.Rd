@@ -20,4 +20,3 @@ An empty base plot to which layers created by other functions
 \author{
 David LeBauer
 }
-

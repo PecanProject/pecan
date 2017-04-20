@@ -28,4 +28,3 @@ pftid <- get.id("pfts", c("name", "modeltype_id"), c("ebifarm.salix", 1), con)
 \author{
 David LeBauer
 }
-

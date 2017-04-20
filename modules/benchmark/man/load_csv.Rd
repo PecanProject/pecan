@@ -20,4 +20,3 @@ load_csv(data.path, format, site, vars = NULL)
 \author{
 Betsy Cowdery
 }
-
