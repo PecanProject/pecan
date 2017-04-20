@@ -27,23 +27,23 @@ n_errors <- length(errors)
 
 if (n_errors > 0) {
     cat(errors, '\n')
-    stop(n_errors, ' errors found. See above for details')
+    stop(n_errors, ' errors found in ', pkg, '. See above for details')
 }
 
 warns <- chk[['warnings']]
 n_warns <- length(warns)
-message(n_warns, ' warnings found.')
+message(n_warns, ' warnings found in ', pkg, '.')
 
 if (log_warn && n_warns > 0) {
     cat(warns, '\n')
     if (die_warn && n_warns > 0) {
-        stop('Killing process because ', n_warns, ' warnings found')
+        stop('Killing process because ', n_warns, ' warnings found in ', pkg, '.')
     }
 }
 
 notes <- chk[['notes']]
 n_notes <- length(notes)
-message(n_notes, ' notes found.')
+message(n_notes, ' notes found in ', pkg, '.')
 
 if (log_notes && n_notes > 0) {
     cat(notes, '\n')
