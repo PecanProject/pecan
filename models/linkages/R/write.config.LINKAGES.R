@@ -48,7 +48,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   }
   
   #-----------------------------------------------------------------------
-  
+  #TO DO: need to change to date because sometimes this runs two years when it shouldn't
   start.year <- as.numeric(strftime(settings$run$start.date, "%Y"))
   end.year <- as.numeric(strftime(settings$run$end.date, "%Y"))
   year <- seq(start.year, end.year, 1)

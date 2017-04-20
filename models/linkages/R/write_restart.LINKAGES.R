@@ -153,10 +153,10 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     n.index <- c(n.index, rep(i, ntrees[i]))
   }
   
-  if(max(dbh) < 50){ # if all trees are small than large trees are 95th percentile otherwise trees bigger than 5 cm
+  if(max(dbh) < 20){ # if all trees are small than large trees are 95th percentile otherwise trees bigger than 5 cm
     large.trees <- which(dbh >= (max(dbh) / 1.05))
   }else{
-    large.trees <- which(dbh >= 50)
+    large.trees <- which(dbh >= 20)
   }
 
   for (s in seq_along(settings$pfts)) {
@@ -296,6 +296,8 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   dbh <- dbh.temp
   iage <- iage.temp
   nogro <- nogro.temp  # numeric(15000)#hack
+  
+  nogro[nogro < (-2)] <- 1
   
   ntrees <- new.ntrees
   
