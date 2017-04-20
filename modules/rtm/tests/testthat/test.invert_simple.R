@@ -1,6 +1,16 @@
 if (interactive()) {
   devtools::load_all("~/Projects/pecan/pecan/modules/rtm")
+} else {
+    library(PEcAnRTM)
 }
+
+
+# Skip computationally intensive test on TRAVIS
+travis <- Sys.getenv('TRAVIS') == 'true'
+if (travis) {
+    message('Skip computationally intensive inversion on Travis')
+} else { 
+
 library(PEcAnRTM)
 library(testthat)
 context("Inversion of simple quadratic model")
@@ -67,3 +77,5 @@ samp_series <- invert.auto(observed = y,
                            save.samples = save.samples, 
                            parallel = FALSE)
 output_tests(samp_series)
+
+} # if travis
