@@ -1,8 +1,12 @@
 library(devtools)
 arg <- commandArgs(trailingOnly = TRUE)
 pkg <- arg[1]
-log_level <- arg[2]
-die_level <- arg[3]
+
+log_level <- Sys.getenv('LOGLEVEL', unset = NA)
+die_level <- Sys.getenv('DIELEVEL', unset = NA)
+
+message('log_level = ', log_level)
+message('die_level = ', die_level)
 
 valid_log_levels <- c('warn', 'all')
 if (!is.na(log_level) && !log_level %in% valid_log_levels) {
@@ -20,7 +24,7 @@ die_warn <- !is.na(die_level) && die_level == 'warn'
 
 log_notes <- !is.na(log_level) && log_level == 'all'
 
-chk <- check(arg, quiet = TRUE)
+chk <- check(pkg, quiet = TRUE)
 
 errors <- chk[['errors']]
 n_errors <- length(errors)
@@ -34,7 +38,7 @@ warns <- chk[['warnings']]
 n_warns <- length(warns)
 message(n_warns, ' warnings found in ', pkg, '.')
 
-if (log_warn && n_warns > 0) {
+if ((log_warn|die_warn) && n_warns > 0) {
     cat(warns, '\n')
     if (die_warn && n_warns > 0) {
         stop('Killing process because ', n_warns, ' warnings found in ', pkg, '.')
