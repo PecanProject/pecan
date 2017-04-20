@@ -25,13 +25,13 @@
 #' 
 #' @example examples/examples.MultiSite.MultiSettings.r
 createSitegroupMultiSettings = function(templateSettings, sitegroupId, nSite, con=NULL, params=templateSettings$database$bety) {
-  query <- paste("SELECT id FROM sitegroups_sites WHERE sitegroup_id =", sitegroupId)
+  query <- paste("SELECT site_id FROM sitegroups_sites WHERE sitegroup_id =", sitegroupId)
   allSites <- PEcAn.DB::db.query(query, con=con, params=params)   
 
   if(missing(nSite))
-    siteIds <- allSites$id
+    siteIds <- allSites$site_id
   else 
-    siteIds <- sample(allSites$id, nSite, replace=FALSE)
+    siteIds <- sample(allSites$site_id, nSite, replace=FALSE)
 
   settings <- createMultiSiteSettings(templateSettings, siteIds)
 }
