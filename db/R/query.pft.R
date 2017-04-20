@@ -6,7 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------#
+
 ##'  select plant id's associated with pft
 ##'
 ##' @title Query species given pft name
@@ -20,32 +20,21 @@
 ##' @examples
 ##' \dontrun{
 ##' query.pft_species('ebifarm.pavi')
-##' query.pft_species(settings = read.settings("pecan.xml"))
+##' query.pft_species(settings = read.settings('pecan.xml'))
 ##' }
-query.pft_species <- function(pft, modeltype, con){
+query.pft_species <- function(pft, modeltype, con) {
   # create pft subquery
   if (is.null(modeltype)) {
-    query <- paste0("select species.id, species.genus, species.species, species.scientificname",
-                    " from species, pfts, pfts_species",
-                    " where species.id=pfts_species.specie_id",
-                    " and pfts.id=pfts_species.pft_id",
-                    " and pfts.name='", pft, "'")
+    query <- paste0("select species.id, species.genus, species.species, species.scientificname", 
+                    " from species, pfts, pfts_species", " where species.id=pfts_species.specie_id", 
+                    " and pfts.id=pfts_species.pft_id", " and pfts.name='", pft, "'")
   } else {
-    query <- paste0("select species.id, species.genus, species.species, species.scientificname",
-                    " from species, pfts, pfts_species, modeltypes",
-                    " where species.id=pfts_species.specie_id",
-                    " and pfts.id=pfts_species.pft_id",
-                    " and pfts.name='", pft, "'",
-                    " and pfts.modeltype_id=modeltypes.id",
+    query <- paste0("select species.id, species.genus, species.species, species.scientificname", 
+                    " from species, pfts, pfts_species, modeltypes", " where species.id=pfts_species.specie_id", 
+                    " and pfts.id=pfts_species.pft_id", " and pfts.name='", pft, "'", " and pfts.modeltype_id=modeltypes.id", 
                     " and modeltypes.name='", modeltype, "'")
   }
-
+  
   species <- db.query(query, con)
-  invisible(species)
-}
-#==================================================================================================#
-
-
-####################################################################################################
-### EOF.  End of R script file.      				
-####################################################################################################
+  return(invisible(species))
+} # query.pft_species
