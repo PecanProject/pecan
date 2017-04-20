@@ -42,9 +42,11 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
 
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
-  out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"), 
+  if(nchar(in.prefix)>0 & substr(in.prefix,nchar(in.prefix),nchar(in.prefix)) != ".") in.prefix = paste0(in.prefix,".")
+  
+  out.file <- paste0(in.prefix, strptime(start_date, "%Y-%m-%d"),".", 
                     strptime(end_date, "%Y-%m-%d"), 
-                    "dat", sep = ".")
+                    ".dat")
   out.file.full <- file.path(outfolder, out.file)
   
   results <- data.frame(file = c(out.file.full), 
@@ -84,7 +86,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     HydResist <- 1
     LeafWaterPot <- -0.8
     
-    old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
+    old.file <- file.path(in.path, paste(in.prefix, year, ".nc", sep = ""))
     
     ## open netcdf
     nc <- ncdf4::nc_open(old.file)
