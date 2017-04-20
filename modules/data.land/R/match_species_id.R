@@ -33,6 +33,7 @@
 #'                  format_name = format_name,
 #'                  bety = bety)
 #'                  
+#' @importFrom dplyr %>%
 #' @export
 match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, translation_table = NULL, ...) {
     # Relate format names to BETY columns
