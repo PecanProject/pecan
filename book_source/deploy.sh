@@ -6,28 +6,62 @@ set -e
 #check for environment variable
 [ -z "${GITHUB_PAT}" ] && exit 0
 
-# only deploy if this is the master branch build
-branch_name=$(git symbolic-ref -q HEAD)
-branch_name=${branch_name##refs/heads/}
-branch_name=${branch_name:-HEAD}
-[ "${branch_name}" != "master" ] && exit 0
+# find version if we are develop/latest/release and if should be pushed
 
-#set USER 
-USER=${TRAVIS_REPO_SLUG%/*}
+BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+PUBLISH="NOPE"
+if [ "$BRANCH" = "master" ]; then
+  PUBLISH="yes"
+  VERSION="latest"
+elif [ "$BRANCH" = "develop" ]; then
+  PUBLISH="yes"
+  VERSION="develop"
+elif [ "$( echo $BRANCH | sed -e 's#^release/.*$#release#')" = "release" ]; then
+  PUBLISH="yes"
+  VERSION="$( echo $BRANCH | sed -e 's#^release/\(.*\)$#\1#' )"
+else
+  PUBLISH="no"
+  VERSION="local"
+fi
+
+## ID Publish=yes push to pecan-documentation/branch
+
+if [ $PUBLISH == yes ]; then
+
+  #set USER 
+  USER=${TRAVIS_REPO_SLUG%/*}
+
+  # configure your name and email if you have not done so
+  git config --global user.email "pecanproj@gmail.com"
+  git config --global user.name "TRAVIS-DOC-BUILD"
+
+  git clone https://${GITHUB_PAT}@github.com/${USER}/pecan-documentation.git book_hosted
 
 
-# configure your name and email if you have not done so
-git config --global user.email "pecanproj@gmail.com"
-git config --global user.name "TRAVIS-DOC-BUILD"
+  cd book_hosted
+  
+  ## Check if branch named directory exists 
+  if [ -d $BRANCH ]; then
+    cd $BRANCH
+  else
+    mkdir $BRANCH
+    cd $BRANCH
+  fi
+  
+  rsync -a --delete ../../_book/* .
+  
+  git add --all *
+  git commit -m "Update the book `date`" || true
+  git push -q origin master
 
-git clone https://${GITHUB_PAT}@github.com/${USER}/pecan-documentation.git book_hosted
+elif [ $PUBLISH == no ]; then
 
+  echo "Not Master, Develop, or Release Branch. Will not render Book."
+  exit
 
-cp -r _book/* book_hosted
+else
 
-
-cd book_hosted
-git add --all *
-git commit -m"Update the book `date`" || true
-git push -q origin master
-
+  echo "Publish status not found. What did you do?"
+  exit 
+  
+fi
