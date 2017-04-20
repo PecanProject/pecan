@@ -35,4 +35,3 @@ See "gelman_diag_mw" and "gelman_diag_gelmanPlot"
 \author{
 Alexey Shiklomanov, Michael Dietze
 }
-

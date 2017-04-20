@@ -26,4 +26,3 @@ Mike Dietze
 
 Ryan Kelly
 }
-

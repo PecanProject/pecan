@@ -20,4 +20,3 @@ model2netcdf.CLM45(outdir, sitelat, sitelon, start_date, end_date)
 \author{
 Michael Dietze
 }
-
