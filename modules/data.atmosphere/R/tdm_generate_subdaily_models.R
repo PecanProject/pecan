@@ -48,19 +48,19 @@ gen_subdaily_models <- function(outfolder, dat.train_file, in.prefix,
     # ----- 1.0 Read data & Make time stamps ---------- Load the data
     
     vars.info <- data.frame(CF.name = c("date", "year", "doy", "hour", 
-        "air_temperature", "precipitation_flux", "air_temperature_max", 
-        "air_temperature_min", "surface_downwelling_shortwave_flux_in_air", 
-        "surface_downwelling_longwave_flux_in_air", "air_pressure", "specific_humidity", 
-        "eastward_wind", "northward_wind", "wind_speed"))
+                                        "air_temperature", "precipitation_flux", "air_temperature_max", 
+                                        "air_temperature_min", "surface_downwelling_shortwave_flux_in_air", 
+                                        "surface_downwelling_longwave_flux_in_air", "air_pressure", "specific_humidity", 
+                                        "eastward_wind", "northward_wind", "wind_speed"))
     dat.train <- list()
     tem <- ncdf4::nc_open(dat.train_file)
     dim <- tem$dim
     for (j in seq_along(vars.info$CF.name)) {
-        if (exists(as.character(vars.info$CF.name[j]), tem$var) == FALSE) {
-            dat.train[[j]] <- NA
-        } else {
-            dat.train[[j]] <- ncdf4::ncvar_get(tem, as.character(vars.info$CF.name[j]))
-        }
+      if (exists(as.character(vars.info$CF.name[j]), tem$var)) {
+        dat.train[[j]] <- ncdf4::ncvar_get(tem, as.character(vars.info$CF.name[j]))
+      } else {
+        dat.train[[j]] = NA
+      }
     }
     names(dat.train) <- vars.info$CF.name
     dat.train <- data.frame(dat.train)
