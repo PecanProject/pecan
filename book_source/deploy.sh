@@ -10,8 +10,6 @@ set -e
 [ "$TRAVIS_PULL_REQUEST" != "false" ]  && exit 0
 
 # find version if we are develop/latest/release and if should be pushed
-env
-
 if [ "$TRAVIS_BRANCH" = "master" ]; then
   VERSION="master"
 elif [ "$TRAVIS_BRANCH" = "develop" ]; then
@@ -22,7 +20,6 @@ else
   echo "Not Master, Develop, or Release Branch. Will not render Book."
   exit 0
 fi
-echo $VERSION
 
 #set USER 
 USER=${TRAVIS_REPO_SLUG%/*}
