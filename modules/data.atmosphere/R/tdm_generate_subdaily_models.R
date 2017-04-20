@@ -24,8 +24,9 @@
 ##' @param resids - logical stating whether to pass on residual data or not
 ##' @param parallel - logical stating whether to run temporal_downscale_functions.R in parallel 
 ##' @param n.cores - deals with parallelization
-##' @param day.window - integer specifying number of days around a particular day you want to use data from for that 
-##'                     specific hours coefficients
+##' @param day.window - integer specifying number of days around the day being modeled you want to use data from for that 
+##'                     specific hours coefficients. Must be integer because we want statistics from the same time of day
+##'                     for each day surrounding the model day
 ##' @param overwrite
 ##' @param verbose
 ##' @return
