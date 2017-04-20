@@ -19,7 +19,7 @@
      <ensemble_id>1000010823</ensemble_id>
      <new_run>FALSE</new_run>
      <benchmark>
-       <input_id>1000011181</input_id>
+       <input_id>1000011260</input_id>
        <variable_id>18</variable_id>
        <site_id>853</site_id>
        <metrics>
