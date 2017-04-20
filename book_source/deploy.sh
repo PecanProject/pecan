@@ -48,7 +48,7 @@ if [ $PUBLISH == yes ]; then
     cd $BRANCH
   fi
   
-  cp -r _book/* book_hosted/$BRANCH
+  rsync -a --delete ../../_book/* .
   
   git add --all *
   git commit -m "Update the book `date`" || true
