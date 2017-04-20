@@ -12,4 +12,3 @@ query.file.path(input.id, host_name, con)
 \author{
 Betsy Cowdery
 }
-

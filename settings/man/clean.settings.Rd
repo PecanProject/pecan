@@ -29,4 +29,3 @@ clean.settings('output/PEcAn_1/pecan.xml', 'pecan.xml')
 \author{
 Rob Kooper
 }
-

@@ -31,4 +31,3 @@ passed in.
 \author{
 Rob Kooper
 }
-

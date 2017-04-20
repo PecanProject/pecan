@@ -18,4 +18,3 @@ Log-dinvgamma, based on MCMCpack
 \author{
 Michael Dietze
 }
-

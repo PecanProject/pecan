@@ -20,4 +20,3 @@ Extract ED output for specific variables from an hdf5 file
 \author{
 David LeBauer, Carl Davidson
 }
-

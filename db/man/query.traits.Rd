@@ -27,10 +27,9 @@ trvec <- c('leafN', 'SLA')
 trait.data <- query.traits(spstr, trvec)
 }
 }
-\author{
-David LeBauer, Carl Davidson, Shawn Serbin
-}
 \seealso{
 \code{\link{query.trait.data}}
 }
-
+\author{
+David LeBauer, Carl Davidson, Shawn Serbin
+}

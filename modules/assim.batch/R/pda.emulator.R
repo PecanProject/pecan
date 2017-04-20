@@ -538,17 +538,11 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       prior.all.rownames <- unlist(sapply(prior.list, rownames))
       
       ## Convert probabilities back to parameter values
-      cc  <- 1
       for (i in seq_along(prior.ind.all.ns)) {
         sf.check <- prior.all.rownames[prior.ind.all.ns][i]
-        if(any(grepl(sf.check, sf))){
-          idx <- grep(sf.check, rownames(prior.all)[prior.ind.all])
-        }else {
-          idx <- cc
-        }
+        idx <- grep(sf.check, rownames(prior.all)[prior.ind.all])
         m[, i] <- eval(prior.fn.all$qprior[prior.ind.all.ns][[i]], 
                        list(p = mcmc.out[[c]]$mcmc.samp[, idx]))
-        cc <- ifelse(any(grepl(sf.check, sf)), cc, cc + 1) 
       }
       
     colnames(m) <- prior.all.rownames[prior.ind.all.ns]

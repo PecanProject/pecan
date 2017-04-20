@@ -16,4 +16,3 @@ Example:
   site_from_tag(sitename,tag) = 'RHIN'
 Requires that site names be set up specifically with (tag-sitecode) - this may change
 }
-

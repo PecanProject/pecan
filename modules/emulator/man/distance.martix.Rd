@@ -16,4 +16,3 @@ d
 \author{
 Michael Dietze
 }
-

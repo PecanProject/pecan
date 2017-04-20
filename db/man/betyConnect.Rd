@@ -12,4 +12,3 @@ betyConnect(php.config = "../../web/config.php")
 \description{
 Connect to bety using current PEcAn configuration
 }
-
