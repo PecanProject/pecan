@@ -31,4 +31,3 @@ modified mean, stat, and n.
 input <- list(x = data.frame(mean = 1, stat = 1, n = 1))
 derive.trait(FUN = identity, input = input, var.name = 'x')
 }
-

@@ -24,4 +24,3 @@ and \code{gelman.diag}.}
 \author{
 Michael Dietze, Alexey Shiklomanov
 }
-

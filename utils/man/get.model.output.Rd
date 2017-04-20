@@ -22,4 +22,3 @@ get.model.output('ED2')
 \author{
 Michael Dietze, Shawn Serbin, David LeBauer
 }
-

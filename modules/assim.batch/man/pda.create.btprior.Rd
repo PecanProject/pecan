@@ -18,4 +18,3 @@ Helper function for creating log-priors compatible with BayesianTools package
 \author{
 Istem Fer
 }
-

@@ -71,7 +71,7 @@ load.pda.data <- function(settings, bety) {
       
       if (format$file_name == "AmeriFlux.level2.h.nc") {
         
-        ustar.thresh <- 0.2  # TODO: soft code this
+        ustar.thresh <- 0.4  # TODO: soft code this
         
         var.obs <- colnames(inputs[[i]]$data)[!colnames(inputs[[i]]$data) %in% c("UST", "posix")]
         

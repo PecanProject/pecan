@@ -55,4 +55,3 @@ also: `invert.fast`.
 \author{
 Alexey Shiklomanov
 }
-

@@ -20,4 +20,3 @@ model2netcdf.FATES(outdir="~/")
 \author{
 Michael Dietze, Shawn Serbin
 }
-

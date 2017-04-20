@@ -22,4 +22,3 @@ logger.debug('variable', 5)
 \author{
 Rob Kooper
 }
-

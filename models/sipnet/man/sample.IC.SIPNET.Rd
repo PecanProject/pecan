@@ -20,4 +20,3 @@ samples intial conditions for SIPNET
 \author{
 Mike Dietze and Ann Raiho
 }
-

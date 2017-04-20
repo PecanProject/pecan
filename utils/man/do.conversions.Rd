@@ -12,4 +12,3 @@ Input conversion workflow
 \author{
 Ryan Kelly, Rob Kooper, Betsy Cowdery
 }
-
