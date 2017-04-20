@@ -23,4 +23,3 @@ Betsy Cowdery, Joshua Mantooth
 Generic function to convert input files containing observational data to 
 a common PEcAn format.
 }
-

@@ -12,4 +12,3 @@ query.site(site.id, con)
 \author{
 Betsy Cowdery
 }
-

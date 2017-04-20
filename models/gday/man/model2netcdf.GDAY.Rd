@@ -26,4 +26,3 @@ Converts all output contained in a folder to netCDF.
 \author{
 Martin De Kauwe
 }
-

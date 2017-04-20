@@ -22,4 +22,3 @@ All tables must contain an 'id' and 'level' column, at minimum.}
 \author{
 Carl Davidson, Ryan Kelly
 }
-

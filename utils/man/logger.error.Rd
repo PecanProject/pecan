@@ -22,4 +22,3 @@ logger.error('system did not converge')
 \author{
 Rob Kooper
 }
-

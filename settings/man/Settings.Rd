@@ -15,4 +15,3 @@ Create a PEcAn Settings object
 \author{
 Ryan Kelly
 }
-
