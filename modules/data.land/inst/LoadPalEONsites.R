@@ -10,8 +10,6 @@ library(PEcAn.DB)
 
 nu <- function(x){as.numeric(as.character(x))}  ## simple function to convert data to numeric
 
-site.map <- data.frame(FLUX.id=rep(NA,2000),site.id=rep(NA,2000))
-
 ## load up PalEON site files
 paleon <- read.csv("~/paleon/Paleon_MIP_Phase2_ED_Order_Status.csv",stringsAsFactors = FALSE)
 priority <- read.csv("~/paleon/new.ed.mat.csv")
@@ -52,7 +50,7 @@ for(i in seq_along(paleon.sitegroups)){
   for(j in seq_len(nrow(group))){
 
     ## detect if site exists or not
-    code <- paste0("PEcAn_",group$num[j])
+    code <- paste0("PalEON_",group$num[j])
     id = grep(code,pecan.sites$sitename)
     site.id = pecan.sites$id[id]
     print(paste(code,id,site.id))
@@ -90,4 +88,42 @@ for(i in seq_along(paleon.sitegroups)){
 
 db.close(con)
 
+### SCRIPT used to manually run met2CF.PalEONregional
+### Assumes met has been manually downloaded
+
+in.path <- "/fs/data4/PalEON_Regional"
+in.prefix <- ""
+outfolder <- paste0(in.path,"_nc")
+start_date <- "850-01-01"
+end_date <- "2010-12-31"
+overwrite <- FALSE
+verbose <- FALSE
+
+## After create site and Input records
+citation_id <- 1000000012 # Kumar et al 2012
+
+#INSERT INTO sites (sitename,user_id,geometry) VALUES ('PalEON Regional',1000000001,ST_Geomfromtext('POLYGON((-100.0 35 0, -100 50 0, -60 50 0, -60 35 0, -100 35 0))', 4326)) RETURNING id;
+site_id <- 1000025661
+
+#INSERT INTO inputs (site_id,start_date,end_date,name,user_id,format_id) VALUES (1000025661,'850-01-01 00:00:00','2010-12-31 23:59:59','PalEON Regional Met',1000000001,33) RETURNING id;
+input_id <- 1000011261
+
+################################
+
+## Recode PalEON site names
+for(i in seq_along(paleon.sitegroups)){
+  
+  print(paste("************",paleon.sitegroups[i],"*************"))
+  pecan.sitegroup <- db.query(paste0("SELECT * from sitegroups where name = 'PalEON_",paleon.sitegroups[i],"'"),con)
+  pecan.sgs <- db.query(paste("SELECT * from sitegroups_sites where sitegroup_id =",pecan.sitegroup$id),con)
+  
+  ## loop over new sites
+  for(j in seq_len(nrow(pecan.sgs))){
+    sitename <- db.query(paste0("SELECT sitename from sites where id =",pecan.sgs$site_id),con)
+    if(length(grep("PEcAn",sitename))){
+      sitename <- sub("PEcAn","PalEON",sitename)
+      db.query(paste0("UPDATE sites set sitename = '",sitename,"' where id =",pecan.sgs$site_id),con)
+    }
+  }    
+}
 
