@@ -72,8 +72,6 @@ gen_subdaily_models <- function(outfolder, dat.train_file, in.prefix,
         1), "-12-31 23:00:00"), tz = "GMT", units = "day")) - 1/24
     dat.train$time.day2 <- as.integer(dat.train$time.day + 1/(48 * 2)) + 
         1  # Offset by half a time step to get time stamps to line up
-    dat.train <- dat.train[order(dat.train$time.hr), ]
-    
     
     # ----- 1.1 Coming up with the daily means that are what we can
     # use as predictors ----------
