@@ -24,10 +24,6 @@
 # Begin Script
 #----------------------------------------------------------------------
 
-# Set progress bar
-pb.index <- 1
-pb <- txtProgressBar(min = 1, max = 8, style = 3)
-
 # Begin Function
 predict.subdaily <- function(dat.mod, n.ens, path.model, lags.list = NULL, 
     lags.init = NULL, dat.train) {
@@ -44,7 +40,10 @@ predict.subdaily <- function(dat.mod, n.ens, path.model, lags.list = NULL,
     # wind_speed (surface wind_speed speed)
     # --------------------------------# Load libraries library(ncdf4)
     # library(mgcv) library(MASS) library(ggplot2)
-    
+  
+    # Set progress bar
+    pb.index <- 1
+    pb <- txtProgressBar(min = 1, max = 8, style = 3)
     setTxtProgressBar(pb, pb.index)
     
     # Figure out if we need to extract the approrpiate
