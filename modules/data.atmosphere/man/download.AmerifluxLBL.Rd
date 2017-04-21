@@ -34,4 +34,3 @@ result <- download.AmerifluxLBL("US-Akn","~/","2011-01-01","2011-12-31",overwrit
 \author{
 Ankur Desai, based on download.Ameriflux.R by Josh Mantooth, Rob Kooper
 }
-

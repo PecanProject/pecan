@@ -9,4 +9,3 @@ dbHostInfo(bety)
 \arguments{
 \item{bety}{BETYdb connection, as opened by `betyConnect()`}
 }
-

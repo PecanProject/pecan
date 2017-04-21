@@ -15,4 +15,3 @@ estimated exner function
 \author{
 Mike Dietze
 }
-

@@ -14,4 +14,3 @@ filter.sunleaf.traits(data, covariates)
 \author{
 <unknown>
 }
-

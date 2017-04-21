@@ -12,4 +12,3 @@ metric_residual_plot(dat, var, filename = NA, draw.plot = FALSE)
 \author{
 Betsy Cowdery
 }
-

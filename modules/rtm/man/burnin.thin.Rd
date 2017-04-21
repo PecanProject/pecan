@@ -24,4 +24,3 @@ target number of samples.}
 
 \item{thin}{Thinning interval (auto must be FALSE)}
 }
-

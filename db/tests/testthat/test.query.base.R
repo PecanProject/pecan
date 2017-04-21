@@ -6,20 +6,15 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-
-if(fqdn() == "pecan2.bu.edu") {
-  con <- db.open(list(host="psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
-} else {
-  con <- db.open(list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
-}
+source('db.setup.R')
 
 context("test db.query")
 
 test_that("db.query can execute a trivial SQL statement and return results",{  
+    con <- check_db_test()
     ans <- db.query("select count(*) from traits;", con = con)
     expect_is(ans, "data.frame")
     expect_is(ans[,1], "numeric")
     expect_true(length(ans) == 1)
+    try(db.close(con))
 })
-
-db.close(con = con)

@@ -49,4 +49,3 @@ data to store the file
 \author{
 Rob Kooper, Betsy Cowdery
 }
-

@@ -24,4 +24,3 @@ Overrides `$`.list, and works just like it except forces exact match
 \author{
 Ryan Kelly
 }
-

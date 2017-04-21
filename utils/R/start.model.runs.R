@@ -283,9 +283,7 @@ start.model.runs <- function(settings, write = TRUE) {
 
 ##' @export
 runModule.start.model.runs <- function(settings) {
-  if (is.MultiSettings(settings)) {
-    return(papply(settings, runModule.start.model.runs))
-  } else if (is.Settings(settings)) {
+  if (is.MultiSettings(settings) || is.Settings(settings)) {
     write <- settings$database$bety$write
     return(start.model.runs(settings, write))
   } else {
