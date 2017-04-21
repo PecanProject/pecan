@@ -6,6 +6,7 @@
 #' @param url base url for Clowder host
 #' @param ... other arguments passed as query parameters
 #' @export
+#' @importFrom PEcAn.utils logger.severe logger.info
 #' @author Harsh Agrawal, Chris Black
 #' @examples \dontrun{
 #'  download.geostreams(outfolder = "~/output/dbfiles/Clowder_EF",

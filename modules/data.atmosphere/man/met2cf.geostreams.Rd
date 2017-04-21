@@ -14,6 +14,8 @@ met2cf.geostreams(in.path, in.prefix, outfolder, start_date, end_date,
 
 \item{outfolder}{directory where nc output files should be written. Will be created if necessary}
 
+\item{start_date, end_date}{beginning and end of run, YYYY-MM-DD.}
+
 \item{overwrite}{logical: Regenerate existing files of the same name?}
 
 \item{verbose}{logical, passed on to \code{\link[ncdf4]{nc_create}} 
