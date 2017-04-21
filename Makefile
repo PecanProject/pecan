@@ -37,7 +37,7 @@ ALL_PKGS_D := $(BASE_D) $(MODELS_D) $(MODULES_D) .doc/models/template
 all: install
 
 document: .doc/all
-install: .install/all 
+install: .install/all
 check: .check/all
 test: .test/all 
 
@@ -67,37 +67,24 @@ $(MODELS_I): .install/models/template
 clean:
 	rm -rf .install .check .test .doc
 
-.install/devtools:
+devtools:
 	Rscript -e "if(!require('devtools')) install.packages('devtools', repos = 'http://cran.rstudio.com')"
-	mkdir -p $(@D)
-	echo `date` > $@
 
-.install/roxygen2:
+roxygen2:
 	Rscript -e "if(!require('roxygen2')) install.packages('roxygen2', repos = 'http://cran.rstudio.com')"
-	mkdir -p $(@D)
-	echo `date` > $@
 
-.install/testthat:
+testthat:
 	Rscript -e "if(!require('testthat')) install.packages('testthat', repos = 'http://cran.rstudio.com')"
-	mkdir -p $(@D)
-	echo `date` > $@
 
-.install/shiny:
+shiny:
 	Rscript -e "if(!require('shiny')) install.packages('shiny', repos = 'http://cran.rstudio.com')"
-	mkdir -p $(@D)
-	echo `date` > $@
-
-.install/reddyproc:
-	Rscript -e "test <- require('REddyProc'); if (!test) devtools::install_github('rforge/reddyproc', subdir = 'pkg/REddyProc')"
-	mkdir -p $(@D)
-	echo `date` > $@
 
 install_R_pkg = Rscript -e "devtools::install('$(strip $(1))');"
 check_R_pkg = Rscript scripts/check_with_errors.R $(strip $(1))
 test_R_pkg = Rscript -e "devtools::test('"$(strip $(1))"', reporter = 'stop')"
 doc_R_pkg = Rscript -e "devtools::document('"$(strip $(1))"')"
 
-$(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): .install/devtools .install/roxygen2 .install/testthat
+$(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): devtools roxygen2 testthat
 
 .SECONDEXPANSION:
 .doc/%: $$(wildcard %/**/*) $$(wildcard %/*)
