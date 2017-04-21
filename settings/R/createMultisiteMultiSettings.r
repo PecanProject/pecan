@@ -61,7 +61,7 @@ createSitegroupMultiSettings = function(templateSettings, sitegroupId, nSite, co
 #' @example examples/examples.MultiSite.MultiSettings.r
 createMultiSiteSettings <- function(templateSettings, siteIds) {
   templateSettings <- as.MultiSettings(templateSettings)
-  runSettings <- lapply(siteIds, .getRunSettings, templateSettings=templateSettings)
+  runSettings <- lapply(siteIds, getRunSettings, templateSettings=templateSettings)
   
   templateSettings[["run", global=FALSE]] <- runSettings
   return(templateSettings)
@@ -77,7 +77,7 @@ createMultiSiteSettings <- function(templateSettings, siteIds) {
 #' @export
 #'
 #' @examples
-.getRunSettings <- function(templateSettings, siteId) {
+getRunSettings <- function(templateSettings, siteId) {
   startDate = templateSettings$run$start.date
   endDate = templateSettings$run$end.date
   inputs = templateSettings$run$inputs
