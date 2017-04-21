@@ -35,7 +35,7 @@ download.geostreams <- function(outfolder, sitename,
     logger.severe("Requested start date", start_date, "is before data begin", sensor_mintime)
   }
   if (end_date > sensor_maxtime) {
-    logger.severe("Requested end date", end_date, "is after data end", sensor_max)
+    logger.severe("Requested end date", end_date, "is after data end", sensor_maxtime)
   }
 
   sensor_id <- sensor_info$id
