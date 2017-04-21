@@ -20,4 +20,3 @@ load_tab_separated_values(data.path, format, site = NULL, vars = NULL)
 \author{
 Betsy Cowdery, Mike Dietze
 }
-

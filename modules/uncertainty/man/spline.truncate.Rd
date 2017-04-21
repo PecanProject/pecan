@@ -34,4 +34,3 @@ min(PEcAn.uncertainty::spline.truncate(x))
 \author{
 David LeBauer
 }
-

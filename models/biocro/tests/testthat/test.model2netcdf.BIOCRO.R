@@ -1,7 +1,4 @@
 context("check output from model2netcdf.BIOCRO")
-library(data.table)
-library(PEcAn.utils)
-library(PEcAn.settings)
 
 outdir <- file.path(tempdir(), "biocro")
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
@@ -14,7 +11,7 @@ start_date <- settings$run$start.date
 
 load("data/result.RData")
 biocro.ncfile <- file.path(outdir, paste0(resultDT[, min(Year)], ".nc"))
-file.remove(biocro.ncfile)
+if (file.exists(biocro.ncfile)) { file.remove(biocro.ncfile) }
 model2netcdf.BIOCRO(resultDT, genus = "foo", outdir = outdir, lat = 44.5, lon = -88)
 
 
@@ -25,7 +22,7 @@ test_that("model2netcdf.BIOCRO reads a .csv and writes a netcdf file for each ye
     }
   })
 
-biocro.nc <- nc_open(biocro.ncfile)
+biocro.nc <- ncdf4::nc_open(biocro.ncfile)
 vars <- biocro.nc$var
 dims <- biocro.nc$dim
 
@@ -42,14 +39,14 @@ test_that("model2netcdf.BIOCRO wrote netCDF with correct variables", {
 })
 
 test_that("dimensions have MsTMIP standard units", {
-  
-  expect_equal(dims$lat$units, "degrees_east")
-  expect_equal(dims$lon$units, "degrees_north")
+
+  expect_equal(dims$lat$units, "degrees_north")
+  expect_equal(dims$lon$units, "degrees_east")
   expect_true(grepl("days since", dims$time$units))
 })
 
 test_that("variables have MsTMIP standard units", {
-  
+
   data(mstmip_vars, package = "PEcAn.utils")
   
   for (var in vars) {
@@ -64,6 +61,7 @@ test_that("variables have MsTMIP standard units", {
 })
 
 test_that("model2netcdf.BIOCRO will add a second site to an existing file", {
+
   ncdf4::nc_close(biocro.nc)
   file.remove(biocro.ncfile)
   model2netcdf.BIOCRO(resultDT, genus = "foo", outdir = outdir, lat = 44.6, lon = -88.1)

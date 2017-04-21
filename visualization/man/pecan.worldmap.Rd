@@ -30,4 +30,3 @@ pecan.worldmap(df.in = miscanthusyield,
 \author{
 David LeBauer
 }
-

@@ -23,4 +23,3 @@ Generally uses values in settings, but can be overwritten for manual uses
 \author{
 Ryan Kelly
 }
-

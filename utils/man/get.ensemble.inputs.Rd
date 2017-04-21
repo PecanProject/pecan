@@ -18,4 +18,3 @@ Splits climate met for SIPNET
 \author{
 Mike Dietze and Ann Raiho
 }
-

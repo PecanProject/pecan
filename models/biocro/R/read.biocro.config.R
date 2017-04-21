@@ -1,7 +1,7 @@
 ##' Read BioCro config file
 ##'
 ##' @title Read BioCro Config 
-##' @param config.file 
+##' @param config.file Path to XML file
 ##' @return list of run configuration parameters for PEcAn
 ##' @export
 ##' @author David LeBauer

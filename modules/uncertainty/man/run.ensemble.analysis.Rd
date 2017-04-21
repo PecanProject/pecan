@@ -19,4 +19,3 @@ run ensemble.analysis
 \author{
 David LeBauer, Shawn Serbin, Ryan Kelly
 }
-

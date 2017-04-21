@@ -35,4 +35,3 @@ Run meta analysis
 \author{
 Shawn Serbin, David LeBauer
 }
-

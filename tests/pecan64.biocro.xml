@@ -23,6 +23,13 @@
     <variable>StemBiom</variable>
   </ensemble>
 
+  <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+    <threshold>1.2</threshold>
+    <update>AUTO</update>
+  </meta.analysis>
+
   <sensitivity.analysis>
     <quantiles>
       <sigma>-1</sigma>
@@ -33,7 +40,7 @@
 
   <model>
     <type>BIOCRO</type>
-    <binary>/home/carya/pecan/models/biocro/inst/pointbiocro.Rscript</binary>
+    <binary>/home/carya/pecan/models/biocro/inst/biocro.Rscript</binary>
   </model>
 
   <run>
@@ -43,11 +50,11 @@
     <inputs>
       <met>
         <output>BIOCRO</output>
-        <path>/home/carya/pecan/models/biocro/tests/testthat/data/US-Bo1.2004.nc</path>
+        <path>/home/carya/pecan/models/biocro/tests/testthat/data/US-Bo1</path>
       </met>
     </inputs>
       <start.date>2004/01/01</start.date>
-      <end.date>2004/12/31</end.date>
+      <end.date>2004/12/30</end.date>
     <host>
       <name>localhost</name>
     </host>

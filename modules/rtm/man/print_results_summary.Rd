@@ -15,4 +15,3 @@ Neatly print inversion results summary
 \author{
 Alexey Shiklomanov
 }
-
