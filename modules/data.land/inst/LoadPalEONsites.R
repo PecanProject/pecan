@@ -127,3 +127,21 @@ for(i in seq_along(paleon.sitegroups)){
   }    
 }
 
+### Create Multisettings
+for(i in c(1,6,2,3,4)){
+  
+  print(paste("************",paleon.sitegroups[i],"*************"))
+  pecan.sitegroup <- db.query(paste0("SELECT * from sitegroups where name = 'PalEON_",paleon.sitegroups[i],"'"),con)
+  
+  template <- PEcAn.settings::read.settings("pecan_DALEC_priority.xml")
+  template$run$site <- NULL  ## make sure to zero out template site
+  
+  multiRunSettings <- createSitegroupMultiSettings(template, sitegroupId = pecan.sitegroup$id)
+
+  PEcAn.settings::write.settings(multiRunSettings, outputfile = paste0("pecan.",paleon.sitegroups[i],".xml"))
+  
+}
+
+## set paths for remote
+##geo
+#settings$outdir <- "/projectnb/dietzelab/pecan.data/output"
