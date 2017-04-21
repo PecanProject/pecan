@@ -9,4 +9,3 @@ check.run.settings(settings, dbcon = NULL)
 \arguments{
 \item{settings}{settings file}
 }
-

@@ -13,4 +13,3 @@ neff(x)
 Calculate effective sample size of vector based on its 
 autocorrelation.
 }
-

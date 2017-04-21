@@ -30,7 +30,7 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
   THA_2_KG_M2 <- TONNES_PER_HA_TO_G_M2 * 0.001
   
   ### Read in model output in GDAY format
-  GDAY.output <- read.csv(file.path(outdir, "out.txt"), header = TRUE, sep = ",", skip = 1)
+  GDAY.output <- read.csv(file.path(outdir, "gday_out.csv"), header = TRUE, sep = ",", skip = 1)
   GDAY.output.dims <- dim(GDAY.output)
   
   ### Determine number of years and output timestep
@@ -100,8 +100,8 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
     var[[9]] <- ncvar_def("LAI","m2/m2", list(lon,lat,t), -999)
     
     ## Water fluxes
-    var[[10]] <- ncvar_def("Evap", list(lon,lat,t), -999)
-    var[[11]] <- ncvar_def("TVeg", list(lon,lat,t), -999)
+    var[[10]] <- ncvar_def("Evap", "kg/m2/s", list(lon,lat,t), -999)
+    var[[11]] <- ncvar_def("TVeg", "kg/m2/s",list(lon,lat,t), -999)
     
     #var[[6]]  <- ncvar_def("LeafLitter", "kgC/m2/s", list(lon,lat,t), -999)
     #var[[7]]  <- ncvar_def("WoodyLitter", "kgC/m2/s", list(lon,lat,t), -999)

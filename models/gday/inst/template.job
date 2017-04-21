@@ -11,15 +11,14 @@ exec &> "@OUTDIR@/logfile.txt"
 mkdir -p "@OUTDIR@"
 
 # see if application needs running
-if [ ! -e "@OUTDIR@/.dat" ]; then
+if [ ! -e "@OUTDIR@/.csv" ]; then
   cd "@RUNDIR@"
   
-
   # This will execute the model
-  "@BINARY@" 
+  python3 run_simulations.py
+  
   # Move ouput files to output folder.
-    # EDIT: If Gday doesn't produce .dat files, then edit accordingly
-  mv *.dat "@OUTDIR@"
+  mv *.csv "@OUTDIR@"
   STATUS=$?
 
   # check the status
@@ -29,9 +28,9 @@ if [ ! -e "@OUTDIR@/.dat" ]; then
   fi
 
   # convert to MsTMIP. Uncomment this code once model2netcdf is written
-  #echo "require (PEcAn.GDAY)
-#model2netcdf.GDAY('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
-#" | R --vanilla
+  echo "require (PEcAn.GDAY)
+model2netcdf.GDAY('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
+" | R --vanilla
 fi
 
 

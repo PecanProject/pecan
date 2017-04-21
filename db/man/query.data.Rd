@@ -18,10 +18,9 @@ query.data(trait, spstr,
 \description{
 Function to query data from database for specific species and convert stat to SE
 }
-\author{
-David LeBauer, Carl Davidson
-}
 \seealso{
 used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
 }
-
+\author{
+David LeBauer, Carl Davidson
+}

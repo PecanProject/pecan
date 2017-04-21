@@ -14,4 +14,3 @@ InventoryGrowthFusionDiagnostics(jags.out, combined)
 \author{
 Michael Dietze
 }
-

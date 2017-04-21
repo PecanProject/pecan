@@ -26,4 +26,3 @@ Given a matrix of parameter sets, calculates a matrix of model output by applyin
 \author{
 David LeBauer
 }
-

@@ -14,6 +14,8 @@ write.config.BIOCRO(defaults = NULL, trait.values, settings, run.id)
 \code{data.frame(vmax = 1, b0 = 2)} or \code{list(vmax = 1, b0 = 2)}}
 
 \item{settings}{pecan settings file configured for BioCro}
+
+\item{run.id}{integer; a unique identifier for the run.}
 }
 \value{
 nothing, writes configuration file as side effect
@@ -24,4 +26,3 @@ Writes a configuration files for the biocro model
 \author{
 David LeBauer
 }
-

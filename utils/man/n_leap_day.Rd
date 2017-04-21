@@ -12,4 +12,3 @@ number of leap days between two dates
 \author{
 Mike Dietze
 }
-
