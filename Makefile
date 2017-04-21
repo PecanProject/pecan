@@ -52,7 +52,7 @@ depends = .install/$(1) .doc/$(1) .check/$(1) .test/$(1)
 $(call depends,db): .install/utils
 $(call depends,settings): .install/utils .install/db
 $(call depends,visualization): .install/db
-$(call depends,modules/data.atmosphere): .install/utils .install/reddyproc
+$(call depends,modules/data.atmosphere): .install/utils
 $(call depends,modules/data.land): .install/db .install/utils
 $(call depends,modules/meta.analysis): .install/utils .install/db
 $(call depends,modules/priors): .install/utils
