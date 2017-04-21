@@ -51,7 +51,7 @@ depends = .install/$(1) .doc/$(1) .check/$(1) .test/$(1)
 
 $(call depends,db): .install/utils
 $(call depends,settings): .install/utils .install/db
-$(call depends,visualization): .install/db .install/shiny
+$(call depends,visualization): .install/db
 $(call depends,modules/data.atmosphere): .install/utils .install/reddyproc
 $(call depends,modules/data.land): .install/db .install/utils
 $(call depends,modules/meta.analysis): .install/utils .install/db
@@ -75,9 +75,6 @@ roxygen2:
 
 testthat:
 	Rscript -e "if(!require('testthat')) install.packages('testthat', repos = 'http://cran.rstudio.com')"
-
-shiny:
-	Rscript -e "if(!require('shiny')) install.packages('shiny', repos = 'http://cran.rstudio.com')"
 
 install_R_pkg = Rscript -e "devtools::install('$(strip $(1))');"
 check_R_pkg = Rscript scripts/check_with_errors.R $(strip $(1))
