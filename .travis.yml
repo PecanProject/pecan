@@ -80,11 +80,11 @@ before_script:
 script:
   - set -e
   # - scripts/build.sh --no-git --tests --name travis
-  - echo 'Building PEcAn'
-  - make
-  - echo 'Testing PEcAn'
+  - echo 'Checking PEcAn packages'
   - make check
-  - echo 'Testing Integration'
+  - echo 'Installing PEcAn packages'
+  - make
+  - echo 'Running integration test'
   - ./tests/integration.sh travis
   - set +e
 
