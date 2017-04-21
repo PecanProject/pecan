@@ -9,4 +9,3 @@ gp_mle2(theta, d, nugget, myY, maxval = Inf)
 \description{
 zero mean version
 }
-

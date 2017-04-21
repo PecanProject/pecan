@@ -6,6 +6,30 @@ section for the next release.
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
 ## [Unreleased]
+
+## [1.4.10.1] - 2017-04-18
+
+### Changed
+- Bugfix in Fluxnet2015
+- Update Git workflow in Documentation
+- download.CRUNCEP now uses CF-compliant time units (days since start of year instead of "secs")
+- Bugfixes in met.process
+
+
+## [1.4.10] - 2017-03-27
+Documentation
+
+### Added
+- Source Rmarkdown and deploy scripts for PEcAn documentation
+- Autocorrelation correction in PDA and scaling factor in emulator
+
+### Changed
+- now dumping/loading experiments, cultivars_pfts, current_posteriors, experiments_sites experiments_treatments, trait_covariate_associations [BETY #403](https://github.com/PecanProject/bety/issues/403) [BETY #491](https://github.com/PecanProject/bety/issues/491)
+
+### Removed
+- Ameriflux is no longer selectable from the web gui [#1291](https://github.com/PecanProject/pecan/issues/1291)
+
+## [1.4.9] - 2016-12-10
 Benchmarking, code cleanup
 
 ### Added

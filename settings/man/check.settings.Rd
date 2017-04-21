@@ -23,4 +23,3 @@ Expected fields in settings file are:
 \author{
 Rob Kooper, David LeBauer
 }
-

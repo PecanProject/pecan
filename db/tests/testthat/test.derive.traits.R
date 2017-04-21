@@ -6,12 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-
-if(fqdn() == "pecan2.bu.edu") {
-  con <- db.open(list(host="psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
-} else {
-  con <- db.open(list(driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety"))
-}
+source('db.setup.R')
 
 test_that("take.samples works",{
   expect_equal(take.samples(summary = data.frame(mean = 1, stat = NA)), 1)
@@ -33,6 +28,7 @@ test_that("derive.traits works",{
 
 test_that("arrhenius.scaling.traits works",{
   set.seed(0)
+  con <- check_db_test()
   test.traits <- db.query("select * from traits where variable_id = 4 and id in (select trait_id from covariates where variable_id in (81, 86)) and mean > 0 limit 50;", con = con)
   test.cov <- query.covariates(test.traits$id, con = con)
   test.traits.5C <- arrhenius.scaling.traits(data = test.traits, covariates = test.cov, temp.covariates = 'leafT', new.temp = 5)
@@ -57,5 +53,6 @@ test_that("arrhenius.scaling.traits works",{
   id.check <- setdiff(test.cov$trait_id[test.cov$name=='airT' & test.cov$level!=25], id.check)
   expect_true(all(test.traits.leafT$mean     [test.traits.leafT$id     %in% id.check] != 
                   test.traits.leafTairT$mean [test.traits.leafTairT$id %in% id.check]))
+  try(db.close(con))
 
 })

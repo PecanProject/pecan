@@ -12,4 +12,3 @@ metric_MAE(dat, ...)
 \author{
 Betsy Cowdery
 }
-

@@ -14,4 +14,3 @@ get_workflow_ids(bety, session)
 \description{
 Get vector of workflow IDs
 }
-

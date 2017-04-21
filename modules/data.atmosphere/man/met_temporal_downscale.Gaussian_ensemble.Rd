@@ -35,4 +35,3 @@ met_temporal_downscale.Gaussian_ensemble takes source data and a training datase
 \author{
 James Simkins
 }
-

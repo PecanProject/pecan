@@ -83,4 +83,3 @@ vwReg(y ~ x + I(x^2), df, method=lm)
 \author{
 Felix Schönbrodt
 }
-

@@ -24,4 +24,3 @@ for variables with no clear diurnal pattern. For all variables except temperatur
 \author{
 David LeBauer
 }
-

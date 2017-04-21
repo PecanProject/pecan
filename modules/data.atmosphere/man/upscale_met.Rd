@@ -19,4 +19,3 @@ upscale_met upscales the temporal resolution of a dataset
 \author{
 James Simkins
 }
-

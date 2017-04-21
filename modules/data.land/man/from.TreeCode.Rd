@@ -6,4 +6,3 @@
 \usage{
 from.TreeCode(x)
 }
-

@@ -28,4 +28,3 @@ JAGS
 \author{
 David LeBauer
 }
-
