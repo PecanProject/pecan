@@ -14,4 +14,3 @@ get_run_ids(bety, workflow_id)
 \description{
 Get vector of run IDs for a given workflow ID
 }
-

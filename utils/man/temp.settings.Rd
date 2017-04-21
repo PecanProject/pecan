@@ -23,4 +23,3 @@ Reference: http://stackoverflow.com/a/12940705/199217
 \author{
 David LeBauer
 }
-

@@ -36,10 +36,9 @@ One could also choose to make them all have the same area.
 These two options have complementary strengths and weaknesses; the equal-width histogram oversmooths in regions of high density, and is poor at identifying sharp peaks; the equal-area histogram oversmooths in regions of low density, and so does not identify outliers.
 We describe a compromise approach which avoids both of these defects. We regard the histogram as an exploratory device, rather than as an estimate of a density.
 }
-\author{
-Lorraine Denby, Colin Mallows
-}
 \references{
 Lorraine Denby, Colin Mallows. Journal of Computational and Graphical Statistics. March 1, 2009, 18(1): 21-31. doi:10.1198/jcgs.2009.0002.
 }
-
+\author{
+Lorraine Denby, Colin Mallows
+}

@@ -17,4 +17,3 @@ Plot fit for heteroskedastic flux uncertainty
 \author{
 Mike Dietze, Carl Davidson
 }
-

@@ -13,4 +13,3 @@ calc_metrics(model.calc, obvs.calc, var, metrics, start_year, end_year, bm,
 \author{
 Betsy Cowdery
 }
-

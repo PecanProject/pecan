@@ -1,8 +1,8 @@
 Package: PEcAn.emulator
 Type: Package
 Title: Gausian Process emulator
-Version: 1.4.9
-Date: 2016-12-05
+Version: 1.4.10.1
+Date: 2017-04-18
 Author: Michael Dietze
 Maintainer: Michael Dietze <dietze@bu.edu>
 Depends:
@@ -16,4 +16,4 @@ Description: Implementation of a Gaussian Process model (both likelihood and
     bayesian approaches) for kriging and model emulation.  Includes functions
     for sampling design and prediction.
 License: FreeBSD + file LICENSE
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
