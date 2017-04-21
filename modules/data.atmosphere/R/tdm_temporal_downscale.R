@@ -55,8 +55,10 @@ predict.subdaily <- function(dat.mod, n.ens, path.model, lags.list = NULL,
     # propogated
     dat.sim <- list()
     
-    # ----- Modeling surface_downwelling_shortwave_flux_in_air 
-    {
+    # ----- Modeling surface_downwelling_shortwave_flux_in_air
+    # The following bracket encloses the shortwave_flux downscaling section. The same 
+    # format is replicated for each variable. 
+    { 
         # Load the meta info for the betas
         betas.surface_downwelling_shortwave_flux_in_air <- ncdf4::nc_open(file.path(path.model, 
             "surface_downwelling_shortwave_flux_in_air", "betas_surface_downwelling_shortwave_flux_in_air_1.nc"))
