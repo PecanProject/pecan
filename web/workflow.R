@@ -46,6 +46,15 @@ if("benchmarking" %in% names(settings)){
   settings <- papply(settings, read_settings_RR)
 }
 
+if("sitegroup" %in% names(settings)){
+  if(is.null(settings$sitegroup$nSite)){
+    settings <- createSitegroupMultiSettings(settings, sitegroupId = settings$sitegroup$id)
+  } else {
+    settings <- createSitegroupMultiSettings(settings, sitegroupId = settings$sitegroup$id,nSite = settings$sitegroup$nSite)
+  }
+  settings$sitegroup <- NULL ## zero out so don't expand a second time if re-reading
+}
+
 # Update/fix/check settings. Will only run the first time it's called, unless force=TRUE
 settings <- PEcAn.settings::prepare.settings(settings, force=FALSE)
 
