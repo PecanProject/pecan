@@ -97,9 +97,7 @@ check_R_pkg = Rscript scripts/check_with_errors.R $(strip $(1))
 test_R_pkg = Rscript -e "devtools::test('"$(strip $(1))"', reporter = 'stop')"
 doc_R_pkg = Rscript -e "devtools::document('"$(strip $(1))"')"
 
-$(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): .install/devtools
-
-$(ALL_PKGS_T) $(ALL_PKGS_D): .install/roxygen2 .install/testthat
+$(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): .install/devtools .install/roxygen2 .install/testthat
 
 .SECONDEXPANSION:
 .doc/%: $$(wildcard %/**/*) $$(wildcard %/*)
