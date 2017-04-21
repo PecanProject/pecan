@@ -15,4 +15,3 @@ Plots an ensemble time-series from PEcAn for the selected target variable
 \author{
 Michael Dietze, Ryan Kelly
 }
-

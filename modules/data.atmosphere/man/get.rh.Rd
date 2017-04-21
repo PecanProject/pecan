@@ -25,4 +25,3 @@ A Simple Conversion and Applications.)
 \author{
 David LeBauer
 }
-

@@ -6,4 +6,3 @@
 \usage{
 ddist(x, prior)
 }
-

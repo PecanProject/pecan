@@ -23,4 +23,3 @@ with CF-compliant variable names
 \author{
 David Shaner LeBauer
 }
-

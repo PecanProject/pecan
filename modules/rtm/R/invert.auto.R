@@ -145,6 +145,11 @@ invert.auto <- function(observed, invert.options,
     }
     cl <- parallel::makeCluster(parallel.cores, "FORK", outfile = parallel.output)
     on.exit(parallel::stopCluster(cl))
+
+    # Initialize random seeds on cluster. 
+    # Otherwise, chains may start on same seed and end up identical.
+    parallel::clusterSetRNGStream(cl)
+
     message(sprintf("Running %d chains in parallel. ", nchains), 
             "Progress bar unavailable")
   }

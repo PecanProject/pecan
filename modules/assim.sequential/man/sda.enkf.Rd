@@ -26,4 +26,3 @@ State Variable Data Assimilation: Ensemble Kalman Filter
 \author{
 Michael Dietze and Ann Raiho \email{dietze@bu.edu}
 }
-

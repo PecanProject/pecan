@@ -42,4 +42,3 @@ EDR.prospect(prospect.param, prospect.version = 5, paths, par.wl, nir.wl,
   plot(albedo, type='l')
 }
 }
-

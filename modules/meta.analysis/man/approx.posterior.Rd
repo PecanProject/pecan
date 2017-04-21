@@ -40,4 +40,3 @@ NOTE: this function is similar to PEcAn.priors::fit.dist
 \author{
 David LeBauer, Carl Davidson, Mike Dietze
 }
-
