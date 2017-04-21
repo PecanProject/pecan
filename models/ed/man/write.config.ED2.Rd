@@ -29,4 +29,3 @@ and the name of the file to create
 \author{
 David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
 }
-

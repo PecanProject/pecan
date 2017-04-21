@@ -25,4 +25,3 @@ Plot prior density and data
 \author{
 David LeBauer
 }
-

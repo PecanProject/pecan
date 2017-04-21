@@ -21,7 +21,7 @@
 ##' @importFrom PEcAn.utils logger.info
 ##' @export
 ##'
-##' @author Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari
+##' @author Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari, Istem Fer
 ## modified M. Dietze 07/08/12 modified S. Serbin 05/06/13
 model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
@@ -538,16 +538,21 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     nc_var[[3]] <- mstmipvar("CarbPools", lat, lon, t, zg)
     nc_var[[4]] <- mstmipvar("CO2CAS", lat, lon, t, zg)
     nc_var[[5]] <- mstmipvar("CropYield", lat, lon, t, zg)
-    out <- conversion(6, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
-    nc_var[[6]] <- mstmipvar("GPP", lat, lon, t, zg)
-    out <- conversion(7, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
-    nc_var[[7]] <- mstmipvar("HeteroResp", lat, lon, t, zg)
-    out <- conversion(8, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
-    nc_var[[8]] <- mstmipvar("NEE", lat, lon, t, zg)
-    out <- conversion(9, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
-    nc_var[[9]] <- mstmipvar("NPP", lat, lon, t, zg)
-    out <- conversion(10, umol2kg_C)  ## umol/m2 s-1 -> kg m-2 s-1
-    nc_var[[10]] <- mstmipvar("TotalResp", lat, lon, t, zg)
+    out <- conversion(6, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+    nc_var[[6]]<- ncdf4::ncvar_def("GPP", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
+                                   longname = "Gross Primary Productivity")
+    out <- conversion(7, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+    nc_var[[7]]<- ncdf4::ncvar_def("HeteroResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
+                                   longname = "Heterotrophic Respiration")
+    out <- conversion(8, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+    nc_var[[8]]<- ncdf4::ncvar_def("NEE", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
+                                   longname = "Net Ecosystem Exchange")
+    out <- conversion(9, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+    nc_var[[9]]<- ncdf4::ncvar_def("NPP", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
+                                   longname = "Net Primary Productivity")
+    out <- conversion(10, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+    nc_var[[10]]<- ncdf4::ncvar_def("TotalResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
+                                   longname = "Total Respiration")
     nc_var[[11]] <- mstmipvar("TotLivBiom", lat, lon, t, zg)
     nc_var[[12]] <- mstmipvar("TotSoilCarb", lat, lon, t, zg)
     nc_var[[13]] <- mstmipvar("Fdepth", lat, lon, t, zg)
@@ -566,7 +571,9 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     nc_var[[25]] <- mstmipvar("Lwnet", lat, lon, t, zg)
     nc_var[[26]] <- mstmipvar("Qg", lat, lon, t, zg)
     nc_var[[27]] <- mstmipvar("Qh", lat, lon, t, zg)
-    nc_var[[28]] <- mstmipvar("Qle", lat, lon, t, zg)
+    out <- conversion(28, get.lv())  ## kg m-2 s-1 -> W m-2
+    nc_var[[28]]<- ncdf4::ncvar_def("Qle", units = "W m-2", dim = list(lon, lat, t), missval = -999, 
+                                    longname = "Latent heat")
     nc_var[[29]] <- mstmipvar("Swnet", lat, lon, t, zg)
     nc_var[[30]] <- mstmipvar("RootMoist", lat, lon, t, zg)
     nc_var[[31]] <- mstmipvar("Tveg", lat, lon, t, zg)

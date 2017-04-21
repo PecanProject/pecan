@@ -5,7 +5,8 @@
 \title{Check for a file in the input/dbfiles tables}
 \usage{
 dbfile.input.check(siteid, startdate = NULL, enddate = NULL, mimetype,
-  formatname, parentid = NA, con, hostname = fqdn(), exact.dates = FALSE)
+  formatname, parentid = NA, con, hostname = fqdn(), exact.dates = FALSE,
+  pattern = NULL)
 }
 \arguments{
 \item{siteid}{the id of the site that this data is applicable to}
@@ -23,6 +24,8 @@ dbfile.input.check(siteid, startdate = NULL, enddate = NULL, mimetype,
 \item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
 
 \item{exact.dates}{setting to include start and end date in input query}
+
+\item{pattern}{text to seach for in the file name (default NULL = no check). NOT YET IMPLEMENTED}
 
 \item{parent}{the id of the parent of the input}
 
@@ -46,4 +49,3 @@ file exists
 \author{
 Rob Kooper, Tony Gardella
 }
-

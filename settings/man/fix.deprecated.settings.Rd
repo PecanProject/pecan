@@ -18,4 +18,3 @@ Checks for and attempts to fix deprecated settings structure
 \author{
 Ryan Kelly
 }
-

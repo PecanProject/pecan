@@ -37,4 +37,3 @@ This will use the following items from setings:
 \author{
 David LeBauer, Shawn Serbin
 }
-
