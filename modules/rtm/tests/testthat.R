@@ -3,4 +3,8 @@ library(testthat)
 library(PEcAnRTM)
 
 options(warn=1)
-test_check("PEcAnRTM")
+if (Sys.getenv('TRAVIS') == 'true') {
+    message('Skipping RTM tests on Travis')
+} else {
+    test_check("PEcAnRTM")
+}
