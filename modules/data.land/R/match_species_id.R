@@ -21,7 +21,7 @@
 #'  \item{\code{genus}}{Genus part of Latin name, from BETY}
 #'  \item{\code{species}}{Species part of Latin name, from BETY}
 #' }
-#' @author Alexey Shiklomanov <ashiklom@bu.edu>
+#' @author Alexey Shiklomanov <ashiklom@bu.edu>, Istem Fer
 #' @examples
 #' bety <- dplyr::src_postgres(dbname = 'bety',
 #'                        user = 'bety',
@@ -68,18 +68,49 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
                                             suffix = c('.translation_table', ''))
         }
     } else {
-        column <- formats_dict[format_name]
+      column <- formats_dict[format_name]
+      if(!is.null(bety)){
+        # query BETY
         filter_cri <- lazyeval::interp(~ col %in% codes, 
                                        col = as.name(column),
                                        codes = input_codes)
         translation <- dplyr::tbl(bety, 'species') %>%
-            dplyr::filter_(filter_cri) %>%
-            dplyr::select_('bety_species_id' = 'id', 'genus', 'species',
-                           'input_code' = column) %>%
-            dplyr::collect()
+          dplyr::filter_(filter_cri) %>%
+          dplyr::select_('bety_species_id' = 'id', 'genus', 'species',
+                         'input_code' = column) %>%
+          dplyr::collect()
+        
+      }else{
+        # use traits package
+
+        # can call traits::betydb_query one at a time?
+        # reduce the number of calls
+        translation <- data.frame(input_code = unique(input_codes),
+                           bety_species_id  = rep(NA, length(unique(input_codes))),
+                           genus            = rep(NA, length(unique(input_codes))),
+                           species          = rep(NA, length(unique(input_codes))),
+                           stringsAsFactors = FALSE)
+                    
+        for(i in 1:nrow(unique.tmp)){
+          foo <- eval(parse(text =paste0("traits::betydb_query(", 
+                                  column, "='", unique.tmp$input_code[i], "', table = 'species', user = 'bety', pwd = 'bety')")))
+          translation$bety_species_id[i] <- foo$id
+          translation$genus[i]           <- foo$genus
+          translation$species[i]         <- foo$species
+        }
+
+      }
+
     }
     input_table <- data.frame(input_code = input_codes, stringsAsFactors = FALSE)
+    # preserving the order is important for downstream
     merge_table <- dplyr::left_join(input_table, translation)
+    
+    if(sum(is.na(merge_table$bety_species_id)) > 0){
+      bad <- unique(merge_table$input_code[is.na(merge_table$bety_species_id)])
+      PEcAn.utils::logger.error(paste0("Species for the following code(s) not found : ", paste(bad, collapse = ", ")))
+    }
+    
     return(merge_table)
 } # match_species_id
 
