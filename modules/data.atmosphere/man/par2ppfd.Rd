@@ -7,7 +7,7 @@
 par2ppfd(watts)
 }
 \arguments{
-\item{PAR}{(W / m2)}
+\item{watts}{PAR (W / m2)}
 }
 \value{
 PPFD (mol / m2 / s)
