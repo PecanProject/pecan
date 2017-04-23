@@ -9,12 +9,12 @@
 #' @importFrom PEcAn.utils logger.severe logger.info
 #' @author Harsh Agrawal, Chris Black
 #' @examples \dontrun{
-#'  download.geostreams(outfolder = "~/output/dbfiles/Clowder_EF",
+#'  download.Geostreams(outfolder = "~/output/dbfiles/Clowder_EF",
 #'                      sitename = "UIUC Energy Farm - CEN",
 #'                      start_date = "2016-01-01", end_date="2016-12-31",
 #'                      key="verysecret")
 #' }
-download.geostreams <- function(outfolder, sitename, 
+download.Geostreams <- function(outfolder, sitename, 
                                 start_date, end_date,
                                 url = "https://terraref.ncsa.illinois.edu/clowder/api/geostreams",
                                 ...){
