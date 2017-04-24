@@ -1,3 +1,5 @@
+NCPUS ?= 1
+
 BASE := utils db settings visualization
 
 MODELS := biocro clm45 dalec ed fates gday jules linkages \
@@ -68,15 +70,15 @@ clean:
 	rm -rf .install .check .test .doc
 
 devtools:
-	Rscript -e "if(!require('devtools')) install.packages('devtools', repos = 'http://cran.rstudio.com')"
+	Rscript -e "if(!require('devtools')) install.packages('devtools', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 
 roxygen2:
-	Rscript -e "if(!require('roxygen2')) install.packages('roxygen2', repos = 'http://cran.rstudio.com')"
+	Rscript -e "if(!require('roxygen2')) install.packages('roxygen2', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 
 testthat:
-	Rscript -e "if(!require('testthat')) install.packages('testthat', repos = 'http://cran.rstudio.com')"
+	Rscript -e "if(!require('testthat')) install.packages('testthat', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 
-install_R_pkg = Rscript -e "devtools::install('$(strip $(1))');"
+install_R_pkg = Rscript -e "devtools::install('$(strip $(1))', Ncpus = ${NCPUS});"
 check_R_pkg = Rscript scripts/check_with_errors.R $(strip $(1))
 test_R_pkg = Rscript -e "devtools::test('"$(strip $(1))"', reporter = 'stop')"
 doc_R_pkg = Rscript -e "devtools::document('"$(strip $(1))"')"
