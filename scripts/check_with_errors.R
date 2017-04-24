@@ -24,10 +24,7 @@ die_warn <- !is.na(die_level) && die_level == 'warn'
 
 log_notes <- !is.na(log_level) && log_level == 'all'
 
-check_dir <- file.path('.checkdir', pkg)
-unlink(check_dir, recursive = TRUE)
-dir.create(check_dir, recursive = TRUE)
-chk <- check(pkg, quiet = TRUE, check_dir = check_dir)
+chk <- check(pkg, quiet = TRUE)
 
 errors <- chk[['errors']]
 n_errors <- length(errors)
