@@ -145,3 +145,121 @@ for(i in c(1,6,2,3,4)){
 ## set paths for remote
 ##geo
 #settings$outdir <- "/projectnb/dietzelab/pecan.data/output"
+
+#####################################
+##  Set up to run extract.nc on cluster
+for(i in seq_along(paleon.sitegroups)){
+  
+  print(paste("************",paleon.sitegroups[i],"*************"))
+  pecan.sitegroup <- db.query(paste0("SELECT * from sitegroups where name = 'PalEON_",paleon.sitegroups[i],"'"),con)
+  pecan.sgs <- db.query(paste("SELECT * from sitegroups_sites where sitegroup_id =",pecan.sitegroup$id),con)
+  
+  ## loop over sites
+  site.info <- NULL
+  
+  for(j in seq_len(nrow(pecan.sgs))){
+    site_id <- as.numeric(pecan.sgs$site_id[j])
+    sitename <- db.query(paste0("SELECT sitename from sites where id =",site_id),con)
+    str_ns <- paste0(site_id %/% 1e+09, "-", site_id %% 1e+09)
+    outfile <- paste0("PalEONregional_CF_site_", str_ns)
+    
+    site.info <- rbind(site.info,data.frame(id = site_id, 
+                           lat = db.site.lat.lon(site_id, con = con)$lat, 
+                           lon = db.site.lat.lon(site_id, con = con)$lon,
+                           str_ns = str_ns,
+                           outfile = outfile))
+  }    
+  save(site.info,file=paste0("PalEON_siteInfo_",paleon.sitegroups[i],".RData"))
+}
+
+
+#####################################
+##  Pull extracted met back from cluster
+##  and insert in database.
+##  Create list of error sites
+
+## establish remote tunnel
+library(getPass)
+host <- list(name="geo.bu.edu",tunnel="~/.pecan/tunnel/")
+is.open <- open.tunnel(host$name,host$tunnel)
+if(!is.open){
+  print("Could not open remote tunnel")
+} else {
+  host$tunnel <- file.path(host$tunnel,"tunnel")
+}
+
+## get db entry of parent met
+parent.input <- db.query("SELECT * from inputs where id = 1000011261",con)
+
+local.prefix <- "/fs/data1/pecan.data/dbfiles/PalEONregional_CF_site_"
+remote.prefix <- "/projectnb/dietzelab/pecan.data/input/PalEONregional_CF_site_"
+## remote parent: /projectnb/dietzelab/pecan.data/input/PalEON_Regional_nc/
+## local parent: /fs/data4/PalEON_Regional_nc
+start_date <- lubridate::force_tz(lubridate::as_date("0850-01-01 00:00:00"), 'UTC')
+end_date <- lubridate::force_tz(lubridate::as_date("2010-12-31 23:59:59"), 'UTC')
+years <- 850:2010
+format_id <- 33
+
+
+paleon.site.errors <- list()
+for(i in c(1:5,7)){
+  paleon.site.errors[[i]] <- list()
+  
+  print(paste("************",paleon.sitegroups[i],"*************"))
+  pecan.sitegroup <- db.query(paste0("SELECT * from sitegroups where name = 'PalEON_",paleon.sitegroups[i],"'"),con)
+  pecan.sgs <- db.query(paste("SELECT * from sitegroups_sites where sitegroup_id =",pecan.sitegroup$id),con)
+  
+  ## load site info
+  load(paste0("PalEON_siteInfo_",paleon.sitegroups[i],".RData"))
+  
+  
+  for(j in seq_len(nrow(pecan.sgs))){
+    print(c(i,j))
+    
+    ## make local folder
+    local.dir <- paste0(local.prefix,site.info$str_ns[j],"/")
+    remote.dir <- paste0(remote.prefix,site.info$str_ns[j],"/")
+    dir.create(local.dir)
+    
+    ## copy from remote to local
+    PEcAn.utils::remote.copy.from(host,remote.dir,local.dir)
+    #rsync -avz -e 'ssh -o ControlPath="~/.pecan/tunnel/tunnel"' geo.bu.edu:/projectnb/dietzelab/pecan.data/input/PalEONregional_CF_site_1-24043/ /fs/data1/pecan.data/dbfiles/PalEONregional_CF_site_1-24043/
+    
+    ## check if all files exist
+    local.files <- dir(local.dir,".nc")
+    local.years <- as.numeric(sub(".nc","",local.files,fixed = TRUE))
+    if(all(years %in% local.years)){
+      ## check for input
+      input.check <- db.query(paste0("SELECT * FROM inputs where site_id = ",site.info$id[j]," AND format_id = 33"),con)
+      if(nrow(input.check) == 0 | length(grep("PalEON",input.check$name))==0){
+        ## create new input
+        cmd <- paste0("INSERT INTO inputs (site_id, format_id, start_date, end_date, name, parent_id) VALUES (",
+                    site.info$id[j], ", ", format_id, ", '",start_date, "', '", end_date,"','", site.info$outfile[j], "',",parent.input$id,") RETURNING id")
+        site.input.id <- db.query(cmd, con)
+      } else {
+        ## use existing input
+        sel <- grep("PalEON",input.check$name)
+        site.input.id <- input.check$id[sel]
+      }
+      
+      ## create remote dbfile
+      dbfile.insert(in.path = remote.dir,in.prefix = "",type = "Input",id = site.input.id,
+                    con = con,hostname = host$name)
+      
+      ## create local dbfile
+      dbfile.insert(in.path = local.dir,in.prefix = "",type = "Input",id = site.input.id, con = con)
+    } else {
+      ## else add to error list 
+      k = length(paleon.site.errors[[i]]) + 1
+      paleon.site.errors[[i]] <- rbind(paleon.site.errors[[i]],cbind(site.info,min(local.years),max(local.years)))
+      save(paleon.site.errors,file="PalEON_siteInfo_errors.RData")
+    }
+    
+  }   
+  save(paleon.site.errors,file="PalEON_siteInfo_errors.RData")
+  
+}
+
+PEcAn.utils::kill.tunnel(list(host=host))
+
+
