@@ -26,7 +26,7 @@ log_notes <- !is.na(log_level) && log_level == 'all'
 
 # RTM package check fails on Travis for some reason
 # Check package locally before pushing
-if (Sys.getenv('travis') == TRUE && pkg == 'modules/rtm') {
+if (Sys.getenv('travis') == 'true' && pkg == 'modules/rtm') {
     message('Skipping PEcAnRTM check on Travis')
 } else {
 
