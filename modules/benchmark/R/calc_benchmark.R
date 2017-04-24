@@ -131,6 +131,7 @@ calc_benchmark <- function(settings, bety) {
     dat.list <- list()
     var.list <- c()
     
+    
     # Loop over benchmark ids
     for (i in seq_along(bm.ids)) {
       bm <- db.query(paste("SELECT * from benchmarks where id =", bm.ids[i]), bety$con)
@@ -152,6 +153,7 @@ calc_benchmark <- function(settings, bety) {
       }
       
       # TODO: If the scores have already been calculated, don't redo
+      ensemble.id = bm.ensemble$ensemble_id # this is just to make debugging easier
       
       out.calc_metrics <- calc_metrics(model.calc, 
                                        obvs.calc, 
@@ -159,7 +161,7 @@ calc_benchmark <- function(settings, bety) {
                                        metrics,
                                        start_year, end_year, 
                                        bm,
-                                       ensemble.id = bm.ensemble$ensemble_id,
+                                       ensemble.id,
                                        model_run)
       
       for(metric.id in metrics$id){

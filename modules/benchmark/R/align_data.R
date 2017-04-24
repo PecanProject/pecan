@@ -7,7 +7,6 @@
 ##' @param start_year numeric
 ##' @param end_year numeric
 ##' @return dat
-
 ##' @author Betsy Cowdery
 
 ## Align timeseries data using different functions
