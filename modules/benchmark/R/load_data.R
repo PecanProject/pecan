@@ -9,6 +9,8 @@
 ##' @author Betsy Cowdery, Joshua Mantooth
 ##' Generic function to convert input files containing observational data to 
 ##' a common PEcAn format. 
+ data.path = File_Path
+ format= File_format
 load_data <- function(data.path, format, start_year = NA, end_year = NA, site = NA, 
                       vars.used.index=NULL, time.row = NULL) {
 
@@ -83,7 +85,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
         PEcAn.utils::logger.error("Units cannot be converted")
       }  # This error should probably be thrown much earlier, like in query.format.vars - will move it eventually
     }
-  }
+  } #This is where the units cannot be converted errors are coming from 
   
   if(!is.null(time.row)){  
     # Need a much more spohisticated approach to converting into time format. 
