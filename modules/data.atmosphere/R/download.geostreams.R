@@ -6,10 +6,10 @@
 #' @param url base url for Clowder host
 #' @param key,user,pass authentication info for Clowder host.
 #' @param ... other arguments passed as query parameters
-#' @details Depending on the setup of your Clowder host, authentication may be by 
+#' @details Depending on the setup of your Clowder host, authentication may be by
 #'   username/password, by API key, or skipped entirely. \code{download.Geostreams}
-#'   looks first in its call arguments for an API key, then a username and password, 
-#'   then if these are NULL it looks in the user's home directory for a file named 
+#'   looks first in its call arguments for an API key, then a username and password,
+#'   then if these are NULL it looks in the user's home directory for a file named
 #'   `~/.pecan.clowder.xml`, and finally if no keys or passwords are found there it
 #'   attempts to connect unauthenticated.
 #'
@@ -25,7 +25,7 @@
 download.Geostreams <- function(outfolder, sitename, 
                                 start_date, end_date,
                                 url = "https://terraref.ncsa.illinois.edu/clowder/api/geostreams",
-                                key NULL,
+                                key = NULL,
                                 user = NULL,
                                 pass = NULL,
                                 ...){

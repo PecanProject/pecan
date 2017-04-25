@@ -5,7 +5,8 @@
 \title{Download Geostreams data from Clowder API}
 \usage{
 download.Geostreams(outfolder, sitename, start_date, end_date,
-  url = "https://terraref.ncsa.illinois.edu/clowder/api/geostreams", ...)
+  url = "https://terraref.ncsa.illinois.edu/clowder/api/geostreams",
+  key = NULL, user = NULL, pass = NULL, ...)
 }
 \arguments{
 \item{outfolder}{directory in which to save json result. Will be created if necessary}
@@ -16,10 +17,20 @@ download.Geostreams(outfolder, sitename, start_date, end_date,
 
 \item{url}{base url for Clowder host}
 
+\item{key, user, pass}{authentication info for Clowder host.}
+
 \item{...}{other arguments passed as query parameters}
 }
 \description{
 Download Geostreams data from Clowder API
+}
+\details{
+Depending on the setup of your Clowder host, authentication may be by
+  username/password, by API key, or skipped entirely. \code{download.Geostreams}
+  looks first in its call arguments for an API key, then a username and password,
+  then if these are NULL it looks in the user's home directory for a file named
+  `~/.pecan.clowder.xml`, and finally if no keys or passwords are found there it
+  attempts to connect unauthenticated.
 }
 \examples{
 \dontrun{
