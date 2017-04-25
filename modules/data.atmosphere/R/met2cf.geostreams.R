@@ -11,7 +11,7 @@
 #' @param ... other arguments, currently ignored
 #' @export
 #' @author Harsh Agrawal, Chris Black
-met2cf.geostreams <- function(in.path, in.prefix, outfolder, 
+met2CF.Geostreams <- function(in.path, in.prefix, outfolder, 
                     start_date, end_date, 
                     overwrite = FALSE, verbose = FALSE, ...) {
 
