@@ -38,7 +38,9 @@
                               lat = new.site$lat, lon = new.site$lon, 
                               overwrite = overwrite,
                               exact.dates = exact.dates,
-                              spin = spin)
+                              spin_nyear = spin$nyear,
+                              spin_nsample = spin$nsample,
+                              spin_resample = spin$resample)
   }
   
   logger.info(paste("Finished Model Specific Conversion", model.id[1]))

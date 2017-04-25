@@ -25,8 +25,7 @@
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
                         overwrite = FALSE) {
-  library(RPostgreSQL)
-  
+
   # If overwrite is a plain boolean, fill in defaults for each stage
   if (!is.list(overwrite)) {
     if (overwrite) {

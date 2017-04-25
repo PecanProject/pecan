@@ -119,10 +119,10 @@ for(i in seq_along(paleon.sitegroups)){
   
   ## loop over new sites
   for(j in seq_len(nrow(pecan.sgs))){
-    sitename <- db.query(paste0("SELECT sitename from sites where id =",pecan.sgs$site_id),con)
-    if(length(grep("PEcAn",sitename))){
+    sitename <- db.query(paste0("SELECT sitename from sites where id =",pecan.sgs$site_id[j]),con)
+    if(length(grep("PEcAn",sitename))>0){
       sitename <- sub("PEcAn","PalEON",sitename)
-      db.query(paste0("UPDATE sites set sitename = '",sitename,"' where id =",pecan.sgs$site_id),con)
+      db.query(paste0("UPDATE sites set sitename = '",sitename,"' where id =",pecan.sgs$site_id[j]),con)
     }
   }    
 }
@@ -181,7 +181,7 @@ for(i in seq_along(paleon.sitegroups)){
 ## establish remote tunnel
 library(getPass)
 host <- list(name="geo.bu.edu",tunnel="~/.pecan/tunnel/")
-is.open <- open.tunnel(host$name,host$tunnel)
+is.open <- open_tunnel(host$name,host$tunnel)
 if(!is.open){
   print("Could not open remote tunnel")
 } else {
