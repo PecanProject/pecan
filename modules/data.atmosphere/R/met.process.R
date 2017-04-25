@@ -23,7 +23,7 @@
 ##'
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(site, input_met, start_date, end_date, model,
-                        host = "localhost", dbparms, dir, browndog = NULL, spin=NULL
+                        host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
                         overwrite = FALSE) {
   library(RPostgreSQL)
   
