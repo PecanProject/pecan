@@ -9,7 +9,7 @@
 #' @export
 #'
 #' @examples
-open.tunnel <- function(remote_host,tunnel_dir = "~/.pecan/tunnel/",user=NULL,password=NULL){
+open_tunnel <- function(remote_host,tunnel_dir = "~/.pecan/tunnel/",user=NULL,password=NULL){
   
   ## make sure local tunnel directory exists
   dir.create(tunnel_dir)

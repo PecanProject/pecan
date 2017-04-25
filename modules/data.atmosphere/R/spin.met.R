@@ -4,14 +4,11 @@
 #' @param in.prefix  met input file prefix (shared by all annual files, can be "") 
 #' @param start_date start of real met & run
 #' @param end_date   end of run
-#' @param spin       spin-up settings, see Details
+#' @param nyear      number of years of spin-up, default 1000
+#' @param nsample    sample the first nsample years of met, default 50
+#' @param resample   resample (TRUE, default) or cycle (FALSE) meteorology
 #' 
-#' @details spin-up settings are passed as a list, spin, containing the following parameters
-#' \itemize{
-#'  \item{"nyear"}{number of years of spin-up, default 1000}
-#'  \item{"nsample"}{sample the first nsample years of met, default 50}
-#'  \item{"resample"}{resample (TRUE, default) or cycle (FALSE) meteorology}
-#' }
+#' @details 
 #' spin.met works by creating symbolic links to the sampled met file, 
 #' rather than copying the whole file. Be aware that the internal dates in 
 #' those files are not modified. Right now this is designed to be called within
@@ -25,15 +22,17 @@
 #' @examples
 #' start_date <- "0850-01-01 00:00:00"
 #' end_date   <- "2010-12-31 23:59:59"
-#' spin <- list(nyear=10,nsample=50,resample=TRUE)
+#' nyear      <- 10
+#' nsample    <- 50
+#' resample   <- TRUE
 #' 
 #' \dontrun{
 #' if(!is.null(spin)){
 #'    ## if spinning up, extend processed met by resampling or cycling met
-#'    start_date <- PEcAn.data.atmosphere::spin.met(in.path,in.prefix,start_date,end_date,spin)
+#'    start_date <- PEcAn.data.atmosphere::spin.met(in.path,in.prefix,start_date,end_date,nyear,nsample,resample)
 #' }
 #' }
-spin.met <- function(in.path,in.prefix,start_date,end_date,spin){
+spin.met <- function(in.path,in.prefix,start_date,end_date,nyear,nsample,resample=TRUE){
   
   ### input checking
   
@@ -51,16 +50,11 @@ spin.met <- function(in.path,in.prefix,start_date,end_date,spin){
   avail.years <- start_year:end_year
   
   # spin settings
-  if(missing(spin)|is.null(spin)|!is.list(spin)){
-    PEcAn.utils::logger.severe("list 'spin' is a required arguement, please see documentation details")
-  }
-  nyear <- spin$nyear
-  if(is.null(nyear) | is.na(nyear)) nyear <- 1000
-  nsample <- spin$nsample
-  if(is.null(nsample) | is.na(nsample)) nsample <- 50
+  if(missing(nyear)|is.null(nyear) | is.na(nyear)) nyear <- 1000
+  if(missing(nsample)|is.null(nsample) | is.na(nsample)) nsample <- 50
   nsample <- min(nsample,length(avail.years))
-  resample <- as.logical(spin$resample)
-  if(is.null(resample)|is.na(resample)) resample <- TRUE
+  if(missing(resample) | is.null(resample)|is.na(resample)) resample <- TRUE
+  spin_start_date <- as.POSIXct(start_date,"UTC") - lubridate::years(nyear)
   
   ### define the met years to sample
   if(resample){
@@ -69,7 +63,7 @@ spin.met <- function(in.path,in.prefix,start_date,end_date,spin){
   } else {
     spin_year <- rep(avail.years[1:nsample],length.out=nyear)
   }
-  new_year <- seq(start_year-nyear,by=1,length.out=nyear)
+  new_year <- seq(lubridate::year(spin_start_date),by=1,length.out=nyear)
   
   ## loop over spin-up years
   for(t in seq_along(new_year)){
@@ -86,6 +80,6 @@ spin.met <- function(in.path,in.prefix,start_date,end_date,spin){
   }
   
   ## return new start_date
-  return(as.POSIXct(start_date,"UTC") - lubridate::years(nyear)) ## need to convert to years
+  return(spin_start_date)
 
 }
