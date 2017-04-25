@@ -18,7 +18,13 @@ align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
   diff.m <- diff(model.calc$posix)
   diff.o <- diff(obvs.calc$posix)
   
+<<<<<<< HEAD
   units(diff.m) <- units(diff.o) <- max(units(diff.m),units(diff.o)) #Between mins and secs, will choose secs
+=======
+  if(units(diff.m) != units(diff.o)){
+    units(diff.m) <- units(diff.o) <- "secs" # For now just convert to the smallest units possible which is seconds
+  }
+>>>>>>> ef822a3e673f3c6cfe582bf6c2e1a56af613ebc3
   
   mode.m <- as.numeric(diff.m[which.max(tabulate(match(unique(diff.m), diff.m)))])
   mode.o <- as.numeric(diff.o[which.max(tabulate(match(unique(diff.o), diff.o)))])
