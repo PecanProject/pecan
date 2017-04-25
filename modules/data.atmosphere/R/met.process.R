@@ -10,6 +10,7 @@
 ##' @param host Host info from settings file
 ##' @param dbparms  database settings from settings file
 ##' @param dir  directory to write outputs to
+##' @param spin spin-up settings passed to model-specific met2model. List containing nyear (number of years of spin-up), nsample (first n years to cycle), and resample (TRUE/FALSE)
 ##' @param overwrite Whether to force met.process to proceed.
 ##' 
 ##'        `overwrite` may be a list with individual components corresponding to 
@@ -22,7 +23,7 @@
 ##'
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(site, input_met, start_date, end_date, model,
-                        host = "localhost", dbparms, dir, browndog = NULL, 
+                        host = "localhost", dbparms, dir, browndog = NULL, spin=NULL
                         overwrite = FALSE) {
   library(RPostgreSQL)
   
@@ -227,9 +228,10 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                           site = site, 
                                           start_date = start_date, end_date = end_date, 
                                           browndog = browndog, 
-                                          new.site = new.site, 
+                                          new.site = new.site,
                                           overwrite = overwrite$met2model,
-                                          exact.dates = reg.model$exact.dates)
+                                          exact.dates = reg.model$exact.dates,
+                                          spin = spin)
     
     model.id  <- met2model.result$model.id
     outfolder <- met2model.result$outfolder

@@ -26,7 +26,7 @@
 ##' @param verbose should the function be very verbose
 ##' @importFrom ncdf4 ncvar_get
 met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
-                            overwrite = FALSE, verbose = FALSE, ...) {
+                            overwrite = FALSE, verbose = FALSE, spin = NULL, ...) {
   
   ## DALEC 1 driver format (.csv): Runday, Min temp (°C), Max temp (°C), Radiation (MJ d-1),
   ## Atmospheric CO2 (μmol mol-1), Day of year
@@ -43,7 +43,12 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
   if(nchar(in.prefix)>0 & substr(in.prefix,nchar(in.prefix),nchar(in.prefix)) != ".") in.prefix = paste0(in.prefix,".")
-  
+
+  if(!is.null(spin)){
+    ## if spinning up, extend processed met by resampling or cycling met
+    start_date <- PEcAn.data.atmosphere::spin.met(in.path,in.prefix,start_date,end_date,spin)
+  }
+    
   out.file <- paste0(in.prefix, strptime(start_date, "%Y-%m-%d"),".", 
                     strptime(end_date, "%Y-%m-%d"), 
                     ".dat")
