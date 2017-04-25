@@ -64,6 +64,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
             dbparms    = settings$database$bety, 
             dir        = dbfiles,
             browndog   = settings$browndog,
+            spin       = settings$spin
             overwrite  = overwrite.met)
         
         needsave <- TRUE

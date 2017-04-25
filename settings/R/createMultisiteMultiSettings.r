@@ -2,7 +2,6 @@
 #' 
 #' @description  Helps to create a MultiSettings object to run some or all sites in a Sitegroup. 
 #' 
-#' 
 #' @param templateSettings A \code{\link{Settings}} object that will be the template for the resulting
 #' MultiSettings. 
 #' @param sitegroupId The Bety ID of the sitegroup to draw from
