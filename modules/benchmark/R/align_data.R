@@ -18,11 +18,11 @@ align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
   diff.m <- diff(model.calc$posix)
   diff.o <- diff(obvs.calc$posix)
   
-  units(diff.m) <- units(diff.o) <- max(units(diff.m),units(diff.o))
+  units(diff.m) <- units(diff.o) <- max(units(diff.m),units(diff.o)) #Between mins and secs, will choose secs
   
   mode.m <- as.numeric(diff.m[which.max(tabulate(match(unique(diff.m), diff.m)))])
   mode.o <- as.numeric(diff.o[which.max(tabulate(match(unique(diff.o), diff.o)))])
-  max.diff <- if(mode.m > mode.o) diff.m else diff.o
+  max.diff <- if(mode.m > mode.o) diff.m else diff.o #Here's my error
   
   rng_model <- range(model.calc$posix)
   rng_obvs <- range(obvs.calc$posix)
