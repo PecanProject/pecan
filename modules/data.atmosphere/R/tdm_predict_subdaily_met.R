@@ -34,6 +34,22 @@
 ##' @param n.cores - deals with parallelization
 ##' @param overwrite
 ##' @param verbose
+##' @examples
+##' \dontrun{
+##' library(PEcAn.data.atmosphere)
+##' outfolder = "~/Downscaled_GCM"
+##' in.path = "~/raw_GCM"
+##' in.prefix = "GFDL"
+##' lm.models.base = "sf_scratch/US-WCr"
+##' dat.train_file = "Training_data/US-WCr_dat.train.nc"
+##' start_date = "2010-01-01"
+##' end_date = "2014-12-31"
+##' site.name = "US-WCr"
+##' lat.in = 45
+##' lon.in = -90
+##' cores.max = 12
+##' ens.hr = 3
+##' n.day = 1
 # -----------------------------------
 #----------------------------------------------------------------------
 # Begin Script
@@ -253,7 +269,7 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, lm.models.base,
         }
         
         for (i in seq_len(ens.hr)) {
-            df <- data.frame(matrix(ncol = length(nc.info$name), nrow = ntime))
+            df <- data.frame(matrix(ncol = length(nc.info$name), nrow = nrow(dat.ens)))
             colnames(df) <- nc.info$name
             for (j in nc.info$name) {
                 ens.sims[[j]][["X1"]]
