@@ -4,7 +4,7 @@
 \alias{plot.data}
 \title{Add data to plot}
 \usage{
-\method{plot}{data}(trait.data, base.plot = NULL, ymax, color = "black")
+plot.data(trait.data, base.plot = NULL, ymax, color = "black")
 }
 \arguments{
 \item{trait.data}{data to be plotted}
