@@ -8,6 +8,7 @@
 ##' 
 ##' @return table of BETYdb PFT IDs matched to species IDs
 ##' 
+##' @export
 match_pft <- function(bety_species_id, pfts, con){
   
   ### get species to PFT mappting
@@ -25,29 +26,36 @@ match_pft <- function(bety_species_id, pfts, con){
   
   ## Check for duplicate bety_species_ids in PFTs
   bad <- translation[duplicated(translation$bety_species_id),]
-  if (length(bad) > 0) {
-    for(i in seq_along(bad)){
-      PEcAn.utils::logger.warning(paste0("Duplicated species: ",paste(bad[i,], collapse = ", "), latin))
+  if (nrow(bad) > 0) {
+    for(i in seq_along(nrow(bad))){
+      error.pft <- translation[translation$bety_species_id == bad$bety_species_id[i],]
+      PEcAn.utils::logger.warn(paste0("Duplicated species: ", bad$latin[i], " under ",paste(error.pft$pft, collapse = ", ")))
     }
   }
 
   ## Check for unmatched bety_species_ids
   bad2 <- bety_species_id[!(bety_species_id %in% translation$bety_species_id)]
   if (length(bad2) > 0) {
-    for(i in seq_along(bad)){
+    ubad <- unique(bad2)
+    for(i in seq_along(ubad)){
       # Coerce id back into species names. Makes a more readable warning.
-      latin <- db.query(paste("SELECT scientificnname FROM species where id =",bad2$bety_species_id[i]), con = con)
-      
-      PEcAn.utils::logger.warning(paste0("Unmatched species: ",bad2[i], latin))
+      if(!is.na(ubad[i])){
+        latin <- db.query(paste("SELECT scientificname FROM species where id =", ubad[i]), con = con)
+      }else{
+        latin <- NA
+      }
+      PEcAn.utils::logger.warn(paste0("Unmatched species: ", ubad[i]," ", latin))
     }
   }
   
   ## stop after checking both errors
-  if (length(bad) > 0 | length(bad2) > 0) {
-    PEcAn.utils::logger.severe("Within BETY PFT table, please address duplicated species and add unmatched species to PFTs.")
+  if (nrow(bad) > 0 | length(bad2) > 0) {
+    PEcAn.utils::logger.error("Within BETY PFT table, please address duplicated species and add unmatched species to PFTs.")
   }  
 
   ## Match
-  return(merge(translation, bety_species_id, by = "bety_species_id"))
+  matchedpft <- dplyr::right_join(translation,  as.data.frame(bety_species_id), type="right")
+
+  return(matchedpft)
   
 }
