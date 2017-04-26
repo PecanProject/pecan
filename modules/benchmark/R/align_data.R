@@ -18,14 +18,10 @@ align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
   diff.m <- diff(model.calc$posix)
   diff.o <- diff(obvs.calc$posix)
   
-<<<<<<< HEAD
-  units(diff.m) <- units(diff.o) <- max(units(diff.m),units(diff.o)) #Between mins and secs, will choose secs
-=======
   if(units(diff.m) != units(diff.o)){
     units(diff.m) <- units(diff.o) <- "secs" # For now just convert to the smallest units possible which is seconds
   }
->>>>>>> ef822a3e673f3c6cfe582bf6c2e1a56af613ebc3
-  
+
   mode.m <- as.numeric(diff.m[which.max(tabulate(match(unique(diff.m), diff.m)))])
   mode.o <- as.numeric(diff.o[which.max(tabulate(match(unique(diff.o), diff.o)))])
   max.diff <- if(mode.m > mode.o) diff.m else diff.o #Here's my error
@@ -36,29 +32,29 @@ align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
   max.diff.day <- max.diff; units(max.diff.day) <- "days"
   if(setequal(c(365,366), max.diff.day)){ # Special case for annual timestep
     rng_dat_yr <- year(rng_dat)
-    model <- model.calc[year(model.calc$posix) >= rng_dat_yr[1] & 
+    model_sub <- model.calc[year(model.calc$posix) >= rng_dat_yr[1] & 
                           year(model.calc$posix) <= rng_dat_yr[2], ]
-    obvs <- obvs.calc[year(obvs.calc$posix) >= rng_dat_yr[1] & 
+    obvs_sub <- obvs.calc[year(obvs.calc$posix) >= rng_dat_yr[1] & 
                         year(obvs.calc$posix) <= rng_dat_yr[2], ]
-    model$posix <- year(model$posix)
-    obvs$posix <- year(obvs$posix)
+    model_sub$posix <- year(model$posix)
+    obvs_sub$posix <- year(obvs$posix)
   }else{
-    model <- model.calc[model.calc$posix >= rng_dat[1] & model.calc$posix <= rng_dat[2], ]
-    obvs <- obvs.calc[obvs.calc$posix >= rng_dat[1] & obvs.calc$posix <= rng_dat[2], ]
+    model_sub <- model.calc[model.calc$posix >= rng_dat[1] & model.calc$posix <= rng_dat[2], ]
+    obvs_sub <- obvs.calc[obvs.calc$posix >= rng_dat[1] & obvs.calc$posix <= rng_dat[2], ]
   }
 
   
   if (mode.m > mode.o) {
-    date.coarse <- model$posix
-    date.fine <- obvs$posix
-    data.fine <- obvs[, var, drop = FALSE]
+    date.coarse <- model_sub$posix
+    date.fine <- obvs_sub$posix
+    data.fine <- obvs_sub[, var, drop = FALSE]
     colnames(data.fine) <- paste0(colnames(data.fine), ".o")
-    out1 <- model[, var, drop = FALSE]
+    out1 <- model_sub[, var, drop = FALSE]
     colnames(out1) <- paste0(colnames(out1), ".m")
   } else if (mode.o > mode.m) {
-    date.coarse <- obvs$posix
-    date.fine <- model$posix
-    data.fine <- model[, var, drop = FALSE]
+    date.coarse <- obvs_sub$posix
+    date.fine <- model_sub$posix
+    data.fine <- model_sub[, var, drop = FALSE]
     colnames(data.fine) <- paste0(colnames(data.fine), ".m")
     out1 <- obvs[, var, drop = FALSE]
     colnames(out1) <- paste0(colnames(out1), ".o")
@@ -77,12 +73,12 @@ align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
     dat <- cbind(out1, out2)
     dat$posix <- date.coarse
   } else if (mode.o == mode.m) {
-    out1 <- model[, var, drop = FALSE]
+    out1 <- model_sub[, var, drop = FALSE]
     colnames(out1) <- paste0(var, ".m")
-    out2 <- obvs[, var, drop = FALSE]
+    out2 <- obvs_sub[, var, drop = FALSE]
     colnames(out2) <- paste0(var, ".o")
     dat <- cbind(out1, out2)
-    dat$posix <- model$posix
+    dat$posix <- model_sub$posix
   }
   
   return(dat)
