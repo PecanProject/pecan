@@ -73,8 +73,23 @@ met2cf.geostreams <- function(in.path, in.prefix, outfolder,
 
   cf_dims <- list(lat, lon, time)
 
+  # Hacky switch between naming modes:
+  # Input data may be any length, including partial years, and files are named
+  # `in.prefix.START_DATE.END_DATE.json`.
+  # But many downstream PEcAn fxns expect CF files to be exactly one year long and named
+  # `in.prefix.YEAR.nc`.
+  # To support both with hopefully minimal confusion, we name the file in PEcAn standard style
+  # (in.prefix.YEAR.nc) iff input is one full year long,
+  # otherwise we name it with full dates (in.prefix.START_DATE.END_DATE.nc)
+  if (lubridate::year(start_date) == lubridate::year(end_date)
+      && lubridate::yday(start_date) == 1
+      && (lubridate::month(end_date) == 12 && lubridate::mday(end_date) == 31)) {
+    nc_date <- lubridate::year(start_date)
+  } else {
+    nc_date <- paste(start_date, end_date, sep=".")
+  }
 
-  nc.file <- file.path(outfolder, paste(in.prefix, start_date, end_date, "nc", sep = "."))
+  nc.file <- file.path(outfolder, paste(in.prefix, nc_date, "nc", sep = "."))
   if (!overwrite &&  file.exists(nc.file)) {
     logger.severe("Refusing to overwrite existing file", nc.file, " -- If you're sure, set overwrite=FALSE")
   }
