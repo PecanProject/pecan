@@ -1,11 +1,10 @@
-#' Title
+#' Merge a new met variable from an external file (e.g. CO2) into existing met files
 #'
-#' @param in.path 
-#' @param in.prefix 
-#' @param outfolder 
-#' @param start_date 
+#' @param in.path     path to original data
+#' @param in.prefix   prefix of original data
+#' @param start_date  
 #' @param end_date 
-#' @param merge.file 
+#' @param merge.file  path of file to be merged in
 #' @param overwrite 
 #' @param verbose 
 #' @param ... 
@@ -13,14 +12,25 @@
 #' @return
 #' @export
 #'
+#' @details Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record. 
+#' Currently unit and name checking only implemented for CO2. 
+#' Currently does not yet support merge data that has lat/lon
+#' New variable only has time dimension and thus MIGHT break downstream code....
+#'
 #' @examples
 #' in.path    <- "~/paleon/PalEONregional_CF_site_1-24047/"
 #' in.prefix  <- ""
+#' outfolder  <- "~/paleon/metTest/"
 #' merge.file <- "~/paleon/paleon_monthly_co2.nc"
 #' start_date <- "0850-01-01"
 #' end_date   <- "2010-12-31"
 #' overwrite  <- FALSE
 #' verbose    <- TRUE
+#' 
+#' \notrun{
+#' merge.met.variable(in.path,in.prefix,start_date,end_date,merge.file,overwrite,verbose)
+#' PEcAn.DALEC::met2model.DALEC(in.path,in.prefix,outfolder,start_date,end_date)
+#' }
 merge.met.variable <- function(in.path,in.prefix,start_date, end_date, merge.file,
                                overwrite = FALSE, verbose = FALSE, ...){
   
@@ -68,6 +78,13 @@ merge.met.variable <- function(in.path,in.prefix,start_date, end_date, merge.fil
   ## close merge file
   ncdf4::nc_close(merge.nc)
   
+  ## name and variable conversions
+  if(toupper(merge.vars[1]) == "CO2"){
+    merge.vars[1] <- "mole_fraction_of_carbon_dioxide_in_air"
+    merge.data <- udunits2::ud.convert(merge.data,merge.attr$units,"mol/mol")
+    merge.attr$units = "mol/mol"
+  }
+  
   ## prep data structure for results
   rows <- end_year - start_year + 1
   results <- data.frame(file = character(rows),
@@ -89,6 +106,12 @@ merge.met.variable <- function(in.path,in.prefix,start_date, end_date, merge.fil
     
     ## open target file
     nc <- ncdf4::nc_open(old.file,write = TRUE)
+    
+    if(merge.vars[1] %in% names(nc$var)) {
+      PEcAn.utils::logger.info("variable already exists",merge.vars[1])
+      ncdf4::nc_close(nc)
+      next
+    }
     
     ##extract target time
     target.time <- ncdf4::ncvar_get(nc,"time")
@@ -113,7 +136,5 @@ merge.met.variable <- function(in.path,in.prefix,start_date, end_date, merge.fil
     ncdf4::nc_close(nc)
     
   } ## end loop over year
-  
-  
   
 }

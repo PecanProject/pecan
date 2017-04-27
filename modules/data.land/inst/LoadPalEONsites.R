@@ -262,4 +262,31 @@ for(i in c(1:5,7)){
 
 PEcAn.utils::kill.tunnel(list(host=host))
 
+##################################
+### merge in CO2 into met data
+
+merge.file <- "~/paleon/paleon_monthly_co2.nc"
+start_date <- "0850-01-01"
+end_date   <- "2010-12-31"
+local.prefix <- "/fs/data1/pecan.data/dbfiles/PalEONregional_CF_site_"
+
+for(i in seq_along(paleon.sitegroups)){
+  
+  print(paste("************",paleon.sitegroups[i],"*************"))
+  pecan.sitegroup <- db.query(paste0("SELECT * from sitegroups where name = 'PalEON_",paleon.sitegroups[i],"'"),con)
+  pecan.sgs <- db.query(paste("SELECT * from sitegroups_sites where sitegroup_id =",pecan.sitegroup$id),con)
+  load(paste0("PalEON_siteInfo_",paleon.sitegroups[i],".RData"))
+  
+  for(j in seq_len(nrow(pecan.sgs))){
+    print(c(i,j))
+    
+    ## local folder
+    local.dir <- paste0(local.prefix,site.info$str_ns[j],"/")
+    if(!file.exists(local.dir) | length(dir(local.dir))==0) next
+      
+    merge.met.variable(local.dir,in.prefix,start_date,end_date,merge.file)
+  }
+}
+
+## note; don't forget to delete existing model met data before rerunning models
 
