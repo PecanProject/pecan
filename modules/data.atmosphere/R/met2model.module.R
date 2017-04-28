@@ -1,4 +1,6 @@
 ##' @export
+#' @importFrom PEcAn.utils logger.info convert.input
+#' @importFrom PEcAn.DB db.query
 .met2model.module <- function(ready.id, model, con, host, dir, met, str_ns, site, start_date, end_date, 
                               browndog, new.site, overwrite = FALSE, exact.dates,spin) {
   

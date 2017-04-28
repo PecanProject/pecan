@@ -1,4 +1,5 @@
 ##' @export
+#' @importFrom PEcAn.utils convert.input logger.info
 .extract.nc.module <- function(cf.id, register, dir, met, str_ns, site, new.site, con, 
                                start_date, end_date, host, overwrite = FALSE) {
   logger.info("Site Extraction")
