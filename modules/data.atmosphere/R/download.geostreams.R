@@ -39,7 +39,8 @@ download.Geostreams <- function(outfolder, sitename,
                              query = list(sensor_name = sitename, key = auth$key, ...),
                              config = auth$userpass)
   httr::stop_for_status(sensor_result, "look up site info in Clowder")
-  sensor_info <- jsonlite::fromJSON(httr::content(sensor_result, as = "text", encoding = "UTF-8"))
+  sensor_txt <- httr::content(sensor_result, as = "text", encoding = "UTF-8")
+  sensor_info <- jsonlite::fromJSON(sensor_txt)
   sensor_mintime = lubridate::parse_date_time(sensor_info$min_start_time,
                                               orders = c("ymd", "ymdHMS", "ymdHMSz"), tz = "UTC")
   sensor_maxtime = lubridate::parse_date_time(sensor_info$max_end_time,
@@ -61,8 +62,11 @@ download.Geostreams <- function(outfolder, sitename,
 
   dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
   result_file = file.path(outfolder, paste("Clowder", sitename, start_date, end_date, "json", sep="."))
-  write(x = httr::content(met_result, as = "text", encoding = "UTF-8"),
-        file=result_file)
+  result_txt <- httr::content(met_result, as = "text", encoding = "UTF-8")
+  combined_result = paste0(
+    '{"sensor_info":', sensor_txt, ',\n',
+    '"data":', result_txt, '}')
+  write(x = combined_result, file=result_file)
   
   return(data.frame(file = result_file,
                     host = fqdn(),
