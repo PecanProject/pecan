@@ -288,5 +288,5 @@ for(i in seq_along(paleon.sitegroups)){
   }
 }
 
-## note; don't forget to delete existing model met data before rerunning models
+## NOTE: don't forget to delete existing model met data before rerunning models
 
