@@ -21,6 +21,7 @@
 ##'
 ##'        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
 ##'
+##' @importFrom PEcAn.DB db.query db.close dbfile.input.insert
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
@@ -251,6 +252,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
 ##' @export
 ##' @param site.id
 ##' @param con
+##' @importFrom PEcAn.DB db.query
 ##' @author Betsy Cowdery
 db.site.lat.lon <- function(site.id, con) {
   site <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =", 
