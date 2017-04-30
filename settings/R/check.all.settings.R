@@ -73,7 +73,7 @@ check.inputs <- function(settings) {
         formats <- PEcAn.DB::db.query(paste0("SELECT format_id FROM inputs WHERE id=", settings$run$inputs[[tag]][['id']]), con=dbcon)
         if (nrow(formats) >= 1) {
           if (formats[1, 'format_id'] != inputs$format_id[i]) {
-            logger.error("@Format of input", tag, "does not match specified input.")
+            logger.warning("@Format of input", tag, "does not match specified input: ",formats[1, 'format_id'],inputs$format_id[i])
             settings$run$inputs[[tag]][['path']] <- NULL ## zero out path, do.conversions will need to convert specified input ID to model format
           }
         } else {

@@ -1,12 +1,12 @@
 #' Estimate soil parameters from texture class or sand/silt/clay
 #'
-#' @param soil_class USDA Soil Class. See Details
+#' @param soil_type USDA Soil Class. See Details
 #' @param sand       percent sand
 #' @param silt       percent silt
 #' @param clay       percent clay
 #'
 #' @details 
-#' * Specify _either_ soil_class or sand/silt/clay. soil_class will be ignored if sand/silt/clay is provided
+#' * Specify _either_ soil_type or sand/silt/clay. soil_type will be ignored if sand/silt/clay is provided
 #' * If only 2 out of sand/silt/clay are provided, it will be assumed they sum to 100%
 #' * Valid soil class options: "Sand","Loamy sand","Sandy loam","Silt loam","Loam",
 #'                             "Sandy clay loam","Silty clay loam","Clayey loam",
@@ -20,9 +20,10 @@
 #' @export
 #'
 #' @examples
-#' sand <- 0.3
-#' clay <- 0.3
-soil_params <- function(soil_class,sand,silt,clay){
+#' sand <- c(0.3,0.4,0.5)
+#' clay <- c(0.3,0.3,0.3)
+#' soil_params(sand=sand,clay=clay)
+soil_params <- function(soil_type,sand,silt,clay){
 
   ## load soil parameters
   data("soil_class")
@@ -32,13 +33,13 @@ soil_params <- function(soil_class,sand,silt,clay){
   #     Find soil class and sand, silt, and clay fractions.                               #
   #---------------------------------------------------------------------------------------#
   if (missing(sand) & missing(clay)){
-    ## insufficient texture data, infer from soil_class
-    if(missing(soil_class)) PEcAn.utils::logger.error("insufficient arguments")
-    mysoil$soil_class <- soil_class
-    mysoil$soil_n <- which(toupper(soil.name) == toupper(soil_class))
+    ## insufficient texture data, infer from soil_type
+    if(missing(soil_type)) PEcAn.utils::logger.error("insufficient arguments")
+    mysoil$soil_type <- soil_type
+    mysoil$soil_n <- which(toupper(soil.name) == toupper(soil_type))
     mysoil$key   <- soil.key [mysoil$soil_n]
-    mysoil$xsand <- xsand.def[soil_class]
-    mysoil$xclay <- xclay.def[soil_class]
+    mysoil$xsand <- xsand.def[soil_type]
+    mysoil$xclay <- xclay.def[soil_type]
     mysoil$xsilt <- 1. - mysoil$xsand - mysoil$xclay
   } else {
     if(missing(sand)){
@@ -50,14 +51,14 @@ soil_params <- function(soil_class,sand,silt,clay){
     } else {
       #not missing anything else, normalize
       stot <- sand+silt+clay
-      if(stot > 2) stot <- stot*100 ## assume values reported in % not proportion
+      if(any(stot > 2)) stot <- stot*100 ## assume values reported in % not proportion
       sand <- sand/stot
       silt <- silt/stot
       clay <- clay/stot
     }
     
     mysoil$soil_n <- sclass(sand,clay)
-    mysoil$soil_class  <- soil.name[mysoil$soil_n]
+    mysoil$soil_type  <- soil.name[mysoil$soil_n]
     mysoil$key   <- soil.key [mysoil$soil_n]
     mysoil$xsand <- sand
     mysoil$xclay <- clay
@@ -71,30 +72,32 @@ soil_params <- function(soil_class,sand,silt,clay){
   #---------------------------------------------------------------------------------------#
   #       Set up primary properties.                                                      #
   #---------------------------------------------------------------------------------------#
-  if (mysoil$soil_n == 13){
+  for(z in which(mysoil$soil_n == 13)){
     #----- Bedrock.  Most things are zero, because it is an impermeable soil. -----------#
-    mysoil$slbs      <-  0.
-    mysoil$slpots    <-  0.
-    mysoil$slcons    <-  0.
-    mysoil$slmsts    <-  0.
-    mysoil$sfldcap   <-  0.
-    mysoil$soilcp    <-  0.
-    mysoil$soilwp    <-  0.
-    mysoil$slcpd     <-  2130000.
+    mysoil$slbs[z]      <-  0.
+    mysoil$slpots[z]    <-  0.
+    mysoil$slcons[z]    <-  0.
+    mysoil$slmsts[z]    <-  0.
+    mysoil$sfldcap[z]   <-  0.
+    mysoil$soilcp[z]    <-  0.
+    mysoil$soilwp[z]    <-  0.
+    mysoil$slcpd[z]     <-  2130000.
     #------------------------------------------------------------------------------------#
-  }else if (mysoil$soil_n == 12){
+  }
+  for(z in which(mysoil$soil_n == 12)){
     #------------------------------------------------------------------------------------#
     #      Peat.  High concentration of organic matter.  Mineral soil equations don't    #
     # apply here.                                                                        #
     #------------------------------------------------------------------------------------#
-    mysoil$slbs    <-  6.180000
-    mysoil$slpots  <- -0.534564359
-    mysoil$slcons  <-  2.357930e-6
-    mysoil$slmsts  <-  0.469200
-    mysoil$sfldcap <-  0.285709966
-    mysoil$slcpd   <-  874000.
+    mysoil$slbs[z]    <-  6.180000
+    mysoil$slpots[z]  <- -0.534564359
+    mysoil$slcons[z]  <-  2.357930e-6
+    mysoil$slmsts[z]  <-  0.469200
+    mysoil$sfldcap[z] <-  0.285709966
+    mysoil$slcpd[z]   <-  874000.
     #------------------------------------------------------------------------------------#
-  }else{
+  }
+  for(z in which(!(mysoil$soil_n %in% c(12,13)))){
     #------------------------------------------------------------------------------------#
     #      Mineral soil.  Use the standard Cosby et al 1984 eqns                         #
     #------------------------------------------------------------------------------------#
@@ -102,20 +105,20 @@ soil_params <- function(soil_class,sand,silt,clay){
     ## in future, upgrade to return these and do ensemble sampling
     
     # B exponent [unitless]
-    mysoil$slbs    <- 3.10 + 15.7*mysoil$xclay - 0.3*mysoil$xsand
+    mysoil$slbs[z]    <- 3.10 + 15.7*mysoil$xclay[z] - 0.3*mysoil$xsand[z]
     
     # Soil moisture potential at saturation [ m ]
-    mysoil$slpots  <- -0.01 * (10.^(2.17 - 0.63*mysoil$xclay - 1.58*mysoil$xsand))
+    mysoil$slpots[z]  <- -0.01 * (10.^(2.17 - 0.63*mysoil$xclay[z] - 1.58*mysoil$xsand[z]))
     
     # Hydraulic conductivity at saturation [ m/s ]
-    mysoil$slcons  <- udunits2::ud.convert(10.^(-0.60 + 1.26*mysoil$xsand - 0.64*mysoil$xclay),
+    mysoil$slcons[z]  <- udunits2::ud.convert(10.^(-0.60 + 1.26*mysoil$xsand[z] - 0.64*mysoil$xclay[z]),
                                            "inch/hour","meters/second") 
     
     # Soil moisture at saturation [ m^3/m^3 ]
-    mysoil$slmsts  <- (50.5 - 14.2*mysoil$xsand - 3.7*mysoil$xclay) / 100.
+    mysoil$slmsts[z]  <- (50.5 - 14.2*mysoil$xsand[z] - 3.7*mysoil$xclay[z]) / 100.
     
     # Soil field capacity[ m^3/m^3 ]
-    mysoil$sfldcap <- mysoil$slmsts * ( fieldcp.K/mysoil$slcons)^ (1. / (2.*mysoil$slbs+3.))
+    mysoil$sfldcap[z] <- mysoil$slmsts[z] * ( fieldcp.K/mysoil$slcons[z])^ (1. / (2.*mysoil$slbs[z]+3.))
   
     #---------------------------------------------------------------------------------!
     #     Heat capacity.  Here we take the volume average amongst silt, clay, and     !
@@ -125,30 +128,27 @@ soil_params <- function(soil_class,sand,silt,clay){
     # air in case the soil moisture was halfway between dry air and saturated, so the !
     # error is not too biased.                                                        !
     #---------------------------------------------------------------------------------!
-    mysoil$slcpd   <- ( (1. - mysoil$slmsts)
-                       * ( mysoil$xsand * sand.hcap + mysoil$xsilt * silt.hcap
-                           + mysoil$xclay * clay.hcap )
-                       + 0.5 * (mysoil$slmsts - mysoil$soilcp) * air.hcap )
+    mysoil$slcpd[z]   <- (1. - mysoil$slmsts[z]) * ( mysoil$xsand[z] * sand.hcap + mysoil$xsilt[z] * silt.hcap +
+                        mysoil$xclay[z] * clay.hcap ) + 0.5 * (mysoil$slmsts[z] - mysoil$soilcp[z]) * air.hcap
 
   } ## end primary properties
   
   #---------------------------------------------------------------------------------------#
   #      Calculate the derived properties in case this is not bedrock.                    #
   #---------------------------------------------------------------------------------------#
-  if (mysoil$soil_n != 13){
+  mysoil$slpotcp = mysoil$soilcp = mysoil$slpotwp = soilwp = 0.0
+  for(z in which(!(mysoil$soil_n == 13))){
     # Dry soil capacity (at -3.1MPa) [ m^3/m^3 ]
-    mysoil$slpotcp   <- - soilcp.MPa * 1000. / grav
-    mysoil$soilcp    <- mpot2smoist(mysoil$slpotcp, mysoil)
+    mysoil$slpotcp[z]   <- - soilcp.MPa * 1000. / grav
+    mysoil$soilcp[z]    <- mpot2smoist(mysoil$slpotcp[z],mysoil$slpots,mysoil$slbs[z],mysoil$slmsts[z])
     
     # Wilting point capacity (at -1.5MPa) [ m^3/m^3 ]
-    mysoil$slpotwp   <- - soilwp.MPa * 1000. / grav
-    mysoil$soilwp    <- mpot2smoist(mysoil$slpotwp, mysoil)
+    mysoil$slpotwp[z]   <- - soilwp.MPa * 1000. / grav
+    mysoil$soilwp[z]    <- mpot2smoist(mysoil$slpotwp[z], mysoil$slpots,mysoil$slbs[z],mysoil$slmsts[z])
     
     # Water potential for field capacity            [ m]
     # mysoil$slpotfc   <- smoist2mpot(mysoil$sfldcap, mysoil)
-  } else {
-    mysoil$slpotcp = mysoil$soilcp = mysoil$slpotwp = soilwp = 0.0
-  }#end if
+  }
   
   #---------------------------------------------------------------------------------------#
   #      Soil thermal conductivity.                                                       #
@@ -164,11 +164,6 @@ soil_params <- function(soil_class,sand,silt,clay){
   #    Soil Till. Res., 47(1-2), 5-10.                                                    #
   #                                                                                       #
   #---------------------------------------------------------------------------------------#
-  ksand <- 3. * h2o.cond / ( 2. * h2o.cond + sand.cond )
-  ksilt <- 3. * h2o.cond / ( 2. * h2o.cond + silt.cond )
-  kclay <- 3. * h2o.cond / ( 2. * h2o.cond + clay.cond )
-  kair  <- 3. * h2o.cond / ( 2. * h2o.cond +  air.cond )
-  
   mysoil$thcond0 <- ( ksand * mysoil$xsand  * ( 1. - mysoil$slmsts ) * sand.cond 
                      + ksilt * mysoil$xsilt  * ( 1. - mysoil$slmsts ) * silt.cond
                      + kclay * mysoil$xclay  * ( 1. - mysoil$slmsts ) * clay.cond
@@ -180,6 +175,19 @@ soil_params <- function(soil_class,sand,silt,clay){
                      + kair                  *        mysoil$slmsts   )
   mysoil$thcond3 <- 1. - kair
   #---------------------------------------------------------------------------------------#
+  
+  ## final values to look up
+  for(z in which(!(mysoil$soil_n <= 13))){
+    mysoil$soil_albedo[z] <- texture$albdry[mysoil$soil_n[z]]
+    mysoil$xrobulk[z]     <- texture$xrobulk[mysoil$soil_n[z]]
+    mysoil$slden[z]       <- texture$slden[mysoil$soil_n[z]]
+  }
+  for(z in which(!(mysoil$soil_n > 13))){
+    ## if lack class-specific values, use across-soil average
+    mysoil$soil_albedo[z] <- median(texture$albdry)
+    mysoil$xrobulk[z]     <- median(texture$xrobulk)
+    mysoil$slden[z]       <- median(texture$slden)
+  }
   
   return(mysoil)
   }#end function
@@ -214,7 +222,8 @@ sclass <- function(sandfrac,clayfrac){
   # we are.                                                                               #
   #---------------------------------------------------------------------------------------#
   
-  if (silt > 100. | silt < 0. | sand > 100. | sand < 0. | clay > 100. | clay < 0. ) {
+  if (any(silt > 100.) | any(silt < 0.) | any(sand > 100.) | 
+      any(sand < 0.) | any(clay > 100.) | any(clay < 0.) ) {
     print("---------------------------------------------------")
     print(" At least one of your percentages is screwy...")
     print(paste("SAND <- ",sprintf("%.2f",sand),"%",sep=""))
@@ -223,44 +232,64 @@ sclass <- function(sandfrac,clayfrac){
     print("---------------------------------------------------")
     stop ("This soil doesn''t fit into any category...")
     
-  }else if(sand > 85.0 + 0.5 * clay) {
-    mysoil <-  1 #----- Sand. ------------------------------------------------------------#
-  }else if(sand > 70.0 + clay) {
-    mysoil <-  2 #----- Loamy sand. ------------------------------------------------------#
-  }else if((clay <= 20.0 & sand > 52.5) | (clay <= 7.5 & silt <= 50.0)) {
-    mysoil <-  3 #----- Sandy loam. ------------------------------------------------------#
-  }else if((clay <= 27.5 & silt > 50.0 & silt <= 80.0) | (silt >  80.0 & clay > 12.5)) {
-    mysoil <-  4 #----- Silt loam. -------------------------------------------------------#
-  }else if(clay > 7.5 & clay <= 27.5 & silt > 27.5 & silt <= 50.0 & sand <= 52.5) {
-    mysoil <-  5 #----- Loam. ------------------------------------------------------------#
-  }else if(clay > 20.0 & clay <= 35.0 & silt <= 27.5 & sand > 45.0) {
-    mysoil <-  6 #----- Sandy clay loam. -------------------------------------------------#
-  }else if(clay > 27.5 & clay <= 40.0 & sand <= 20.0) {
-    mysoil <-  7 #----- Silty clay loam. -------------------------------------------------#
-  }else if(clay > 27.5 & clay <= 40.0 & sand > 20.0 & sand <= 45.0) {
-    mysoil <-  8 #----- Clayey loam. -----------------------------------------------------#
-  }else if(clay > 35.0 & sand > 45.0) {
-    mysoil <-  9 #----- Sandy clay. ------------------------------------------------------#
-  }else if(clay > 40.0 & silt > 40.0) {
-    mysoil <- 10 #----- Silty clay. ------------------------------------------------------#
-  }else if(clay <= 70.0 & sand <= 30.0 & silt <= 30.0) {
-    mysoil <- 11 #----- Clay. ------------------------------------------------------------#
-  }else if( silt > 80.0 & clay <= 12.5) {
-    mysoil <- 14 #----- Silt. ------------------------------------------------------------#
-  }else if( clay > 70.0) {
-    mysoil <- 15 #----- Heavy clay. ------------------------------------------------------#
-  }else if( clay > 40.0 & sand > 30.0 & sand <= 45.0) {
-    mysoil <- 16 #----- Clayey sand. -----------------------------------------------------#
-  }else if( clay > 40.0 & silt > 30.0 & silt <= 40.0) {
-    mysoil <- 17 #----- Clayey silt. -----------------------------------------------------#
-  }else{
-    print("---------------------------------------------------")
-    print(paste("SAND <- ",sprintf("%.2f",sand),"%",sep=""))
-    print(paste("CLAY <- ",sprintf("%.2f",clay),"%",sep=""))
-    print(paste("SILT <- ",sprintf("%.2f",silt),"%",sep=""))
-    print("---------------------------------------------------")
-    stop ("This soil doesn''t fit into any category...")
-  }#end if
-  
+  }
+  nlayer = max(length(silt),length(clay),length(sand))
+  mysoil = NA
+  for(z in seq_len(nlayer)){
+    if(sand[z] > 85.0 + 0.5 * clay[z]) {
+      mysoil[z] <-  1 #----- Sand. ------------------------------------------------------------#
+    }else if(sand[z] > 70.0 + clay[z]) {
+      mysoil[z] <-  2 #----- Loamy sand. ------------------------------------------------------#
+    }else if((clay[z] <= 20.0 & sand[z] > 52.5) | (clay[z] <= 7.5 & silt[z] <= 50.0)) {
+      mysoil[z] <-  3 #----- Sandy loam. ------------------------------------------------------#
+    }else if((clay[z] <= 27.5 & silt[z] > 50.0 & silt[z] <= 80.0) | (silt[z] >  80.0 & clay[z] > 12.5)) {
+      mysoil[z] <-  4 #----- Silt loam. -------------------------------------------------------#
+    }else if(clay[z] > 7.5 & clay[z] <= 27.5 & silt[z] > 27.5 & silt[z] <= 50.0 & sand[z] <= 52.5) {
+      mysoil[z] <-  5 #----- Loam. ------------------------------------------------------------#
+    }else if(clay[z] > 20.0 & clay[z] <= 35.0 & silt[z] <= 27.5 & sand[z] > 45.0) {
+      mysoil[z] <-  6 #----- Sandy clay loam. -------------------------------------------------#
+    }else if(clay[z] > 27.5 & clay[z] <= 40.0 & sand[z] <= 20.0) {
+      mysoil[z] <-  7 #----- Silty clay loam. -------------------------------------------------#
+    }else if(clay[z] > 27.5 & clay[z] <= 40.0 & sand[z] > 20.0 & sand[z] <= 45.0) {
+      mysoil[z] <-  8 #----- Clayey loam. -----------------------------------------------------#
+    }else if(clay[z] > 35.0 & sand[z] > 45.0) {
+      mysoil[z] <-  9 #----- Sandy clay. ------------------------------------------------------#
+    }else if(clay[z] > 40.0 & silt[z] > 40.0) {
+      mysoil[z] <- 10 #----- Silty clay. ------------------------------------------------------#
+    }else if(clay[z] <= 70.0 & sand[z] <= 30.0 & silt[z] <= 30.0) {
+      mysoil[z] <- 11 #----- Clay. ------------------------------------------------------------#
+    }else if( silt[z] > 80.0 & clay[z] <= 12.5) {
+      mysoil[z] <- 14 #----- Silt. ------------------------------------------------------------#
+    }else if( clay[z] > 70.0) {
+      mysoil[z] <- 15 #----- Heavy clay. ------------------------------------------------------#
+    }else if( clay[z] > 40.0 & sand[z] > 30.0 & sand[z] <= 45.0) {
+      mysoil[z] <- 16 #----- Clayey sand. -----------------------------------------------------#
+    }else if( clay[z] > 40.0 & silt[z] > 30.0 & silt[z] <= 40.0) {
+      mysoil[z] <- 17 #----- Clayey silt. -----------------------------------------------------#
+    }else{
+      print("---------------------------------------------------")
+      print(paste("SAND <- ",sprintf("%.2f",sand[z]),"%",sep=""))
+      print(paste("CLAY <- ",sprintf("%.2f",clay[z]),"%",sep=""))
+      print(paste("SILT <- ",sprintf("%.2f",silt[z]),"%",sep=""))
+      print("---------------------------------------------------")
+      stop ("This soil doesn''t fit into any category...")
+    }#end if
+  }
   return(mysoil)
+}#end function
+
+
+#' Convert a matric potential to a soil moisture
+#'
+#' @param mpot   water potential
+#' @param mysoil soil property list
+#'
+#' @return
+#' @export
+#'
+#' @examples
+mpot2smoist <<- function(mpot,slpots,slbs,slmsts){
+  smfrac = ( mpot / slpots) ^ (-1. / slbs)
+  smoist = smfrac * slmsts
+  return(smoist)
 }#end function

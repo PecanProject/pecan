@@ -151,4 +151,9 @@ silt.cond = .5 * (sand.cond + clay.cond)
 air.cond  = 0.025
 h2o.cond  = 0.57
 
+ksand <- 3. * h2o.cond / ( 2. * h2o.cond + sand.cond )
+ksilt <- 3. * h2o.cond / ( 2. * h2o.cond + silt.cond )
+kclay <- 3. * h2o.cond / ( 2. * h2o.cond + clay.cond )
+kair  <- 3. * h2o.cond / ( 2. * h2o.cond +  air.cond )
+
 save.image("~/pecan/modules/data.land/data/soil_class.RData")
