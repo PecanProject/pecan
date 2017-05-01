@@ -19,7 +19,6 @@
 #' @return table of soil hydraulic and thermal parmeters
 #' @export
 #'
-#' @examples
 #' sand <- c(0.3,0.4,0.5)
 #' clay <- c(0.3,0.3,0.3)
 #' soil_params(sand=sand,clay=clay)
@@ -37,10 +36,10 @@ soil_params <- function(soil_type,sand,silt,clay){
     if(missing(soil_type)) PEcAn.utils::logger.error("insufficient arguments")
     mysoil$soil_type <- soil_type
     mysoil$soil_n <- which(toupper(soil.name) == toupper(soil_type))
-    mysoil$key   <- soil.key [mysoil$soil_n]
-    mysoil$xsand <- xsand.def[soil_type]
-    mysoil$xclay <- xclay.def[soil_type]
-    mysoil$xsilt <- 1. - mysoil$xsand - mysoil$xclay
+#    mysoil$key   <- soil.key [mysoil$soil_n]   ## turning off these abreviations since they lack a CF equivalent
+    mysoil$volume_fraction_of_sand_in_soil <- xsand.def[soil_type]
+    mysoil$volume_fraction_of_clay_in_soil <- xclay.def[soil_type]
+    mysoil$volume_fraction_of_silt_in_soil <- 1. - mysoil$volume_fraction_of_sand_in_soil - mysoil$volume_fraction_of_clay_in_soil
   } else {
     if(missing(sand)){
       sand <- 1-silt-clay
@@ -59,10 +58,10 @@ soil_params <- function(soil_type,sand,silt,clay){
     
     mysoil$soil_n <- sclass(sand,clay)
     mysoil$soil_type  <- soil.name[mysoil$soil_n]
-    mysoil$key   <- soil.key [mysoil$soil_n]
-    mysoil$xsand <- sand
-    mysoil$xclay <- clay
-    mysoil$xsilt <- 1. - mysoil$xsand - mysoil$xclay
+#    mysoil$key   <- soil.key [mysoil$soil_n]
+    mysoil$volume_fraction_of_sand_in_soil <- sand
+    mysoil$volume_fraction_of_clay_in_soil <- clay
+    mysoil$volume_fraction_of_silt_in_soil <- 1. - mysoil$volume_fraction_of_sand_in_soil - mysoil$volume_fraction_of_clay_in_soil
   }
   #---------------------------------------------------------------------------------------#
   
@@ -74,13 +73,13 @@ soil_params <- function(soil_type,sand,silt,clay){
   #---------------------------------------------------------------------------------------#
   for(z in which(mysoil$soil_n == 13)){
     #----- Bedrock.  Most things are zero, because it is an impermeable soil. -----------#
-    mysoil$slbs[z]      <-  0.
-    mysoil$slpots[z]    <-  0.
-    mysoil$slcons[z]    <-  0.
-    mysoil$slmsts[z]    <-  0.
-    mysoil$sfldcap[z]   <-  0.
-    mysoil$soilcp[z]    <-  0.
-    mysoil$soilwp[z]    <-  0.
+    mysoil$soil_hydraulic_b[z]      <-  0.
+    mysoil$soil_water_potential_at_saturation[z]    <-  0.
+    mysoil$soil_hydraulic_conductivity_at_saturation[z]    <-  0.
+    mysoil$volume_fraction_of_water_in_soil_at_saturation[z]    <-  0.
+    mysoil$volume_fraction_of_water_in_soil_at_field_capacity[z]   <-  0.
+    mysoil$volume_fraction_of_condensed_water_in_dry_soil[z]    <-  0.
+    mysoil$volume_fraction_of_condensed_water_in_soil_at_wilting_point[z]    <-  0.
     mysoil$slcpd[z]     <-  2130000.
     #------------------------------------------------------------------------------------#
   }
@@ -89,11 +88,11 @@ soil_params <- function(soil_type,sand,silt,clay){
     #      Peat.  High concentration of organic matter.  Mineral soil equations don't    #
     # apply here.                                                                        #
     #------------------------------------------------------------------------------------#
-    mysoil$slbs[z]    <-  6.180000
-    mysoil$slpots[z]  <- -0.534564359
-    mysoil$slcons[z]  <-  2.357930e-6
-    mysoil$slmsts[z]  <-  0.469200
-    mysoil$sfldcap[z] <-  0.285709966
+    mysoil$soil_hydraulic_b[z]    <-  6.180000
+    mysoil$soil_water_potential_at_saturation[z]  <- -0.534564359
+    mysoil$soil_hydraulic_conductivity_at_saturation[z]  <-  2.357930e-6
+    mysoil$volume_fraction_of_water_in_soil_at_saturation[z]  <-  0.469200
+    mysoil$volume_fraction_of_water_in_soil_at_field_capacity[z] <-  0.285709966
     mysoil$slcpd[z]   <-  874000.
     #------------------------------------------------------------------------------------#
   }
@@ -105,53 +104,59 @@ soil_params <- function(soil_type,sand,silt,clay){
     ## in future, upgrade to return these and do ensemble sampling
     
     # B exponent [unitless]
-    mysoil$slbs[z]    <- 3.10 + 15.7*mysoil$xclay[z] - 0.3*mysoil$xsand[z]
+    mysoil$soil_hydraulic_b[z]    <- 3.10 + 15.7*mysoil$volume_fraction_of_clay_in_soil[z] - 0.3*mysoil$volume_fraction_of_sand_in_soil[z]
     
     # Soil moisture potential at saturation [ m ]
-    mysoil$slpots[z]  <- -0.01 * (10.^(2.17 - 0.63*mysoil$xclay[z] - 1.58*mysoil$xsand[z]))
+    mysoil$soil_water_potential_at_saturation[z]  <- -0.01 * (10.^(2.17 - 0.63*mysoil$volume_fraction_of_clay_in_soil[z] - 1.58*mysoil$volume_fraction_of_sand_in_soil[z]))
     
     # Hydraulic conductivity at saturation [ m/s ]
-    mysoil$slcons[z]  <- udunits2::ud.convert(10.^(-0.60 + 1.26*mysoil$xsand[z] - 0.64*mysoil$xclay[z]),
+    mysoil$soil_hydraulic_conductivity_at_saturation[z]  <- udunits2::ud.convert(10.^(-0.60 + 1.26*mysoil$volume_fraction_of_sand_in_soil[z] - 0.64*mysoil$volume_fraction_of_clay_in_soil[z]),
                                            "inch/hour","meters/second") 
     
     # Soil moisture at saturation [ m^3/m^3 ]
-    mysoil$slmsts[z]  <- (50.5 - 14.2*mysoil$xsand[z] - 3.7*mysoil$xclay[z]) / 100.
+    mysoil$volume_fraction_of_water_in_soil_at_saturation[z]  <- (50.5 - 14.2*mysoil$volume_fraction_of_sand_in_soil[z] - 3.7*mysoil$volume_fraction_of_clay_in_soil[z]) / 100.
     
     # Soil field capacity[ m^3/m^3 ]
-    mysoil$sfldcap[z] <- mysoil$slmsts[z] * ( fieldcp.K/mysoil$slcons[z])^ (1. / (2.*mysoil$slbs[z]+3.))
+    mysoil$volume_fraction_of_water_in_soil_at_field_capacity[z] <- mysoil$volume_fraction_of_water_in_soil_at_saturation[z] * ( fieldcp.K/mysoil$soil_hydraulic_conductivity_at_saturation[z])^ (1. / (2.*mysoil$soil_hydraulic_b[z]+3.))
   
+  } ## end primary properties
+  
+  #---------------------------------------------------------------------------------------#
+  #      Calculate the derived properties in case this is not bedrock.                    #
+  #---------------------------------------------------------------------------------------#
+  mysoil$slpotcp = mysoil$volume_fraction_of_condensed_water_in_dry_soil = mysoil$slpotwp = olume_fraction_of_condensed_water_in_soil_at_wilting_point = 0.0
+  for(z in which(!(mysoil$soil_n == 13))){
+    # Dry soil capacity (at -3.1MPa) [ m^3/m^3 ]
+    mysoil$slpotcp[z]   <- - soilcp.MPa * 1000. / grav
+    mysoil$volume_fraction_of_condensed_water_in_dry_soil[z]    <- mpot2smoist(mysoil$slpotcp[z],mysoil$soil_water_potential_at_saturation[z],mysoil$soil_hydraulic_b[z],mysoil$volume_fraction_of_water_in_soil_at_saturation[z])
+    
+    # Wilting point capacity (at -1.5MPa) [ m^3/m^3 ]
+    mysoil$slpotwp[z]   <- - soilwp.MPa * 1000. / grav
+    mysoil$volume_fraction_of_condensed_water_in_soil_at_wilting_point[z]    <- mpot2smoist(mysoil$slpotwp[z], mysoil$soil_water_potential_at_saturation[z],mysoil$soil_hydraulic_b[z],mysoil$volume_fraction_of_water_in_soil_at_saturation[z])
+    
+    # Water potential for field capacity            [ m]
+    # mysoil$slpotfc   <- smoist2mpot(mysoil$volume_fraction_of_water_in_soil_at_field_capacity, mysoil)
+    
     #---------------------------------------------------------------------------------!
-    #     Heat capacity.  Here we take the volume average amongst silt, clay, and     !
+    #     Specific heat of dry soil                     [  J/m3/K]                    !
+    # Here we take the volume average amongst silt, clay, and                         !
     # sand, and consider the contribution of air sitting in.  In order to keep it     !
     # simple, we assume that the air fraction won't change, although in reality its   !
     # contribution should be a function of soil moisture.  Here we use the amount of  !
     # air in case the soil moisture was halfway between dry air and saturated, so the !
     # error is not too biased.                                                        !
     #---------------------------------------------------------------------------------!
-    mysoil$slcpd[z]   <- (1. - mysoil$slmsts[z]) * ( mysoil$xsand[z] * sand.hcap + mysoil$xsilt[z] * silt.hcap +
-                        mysoil$xclay[z] * clay.hcap ) + 0.5 * (mysoil$slmsts[z] - mysoil$soilcp[z]) * air.hcap
-
-  } ## end primary properties
-  
-  #---------------------------------------------------------------------------------------#
-  #      Calculate the derived properties in case this is not bedrock.                    #
-  #---------------------------------------------------------------------------------------#
-  mysoil$slpotcp = mysoil$soilcp = mysoil$slpotwp = soilwp = 0.0
-  for(z in which(!(mysoil$soil_n == 13))){
-    # Dry soil capacity (at -3.1MPa) [ m^3/m^3 ]
-    mysoil$slpotcp[z]   <- - soilcp.MPa * 1000. / grav
-    mysoil$soilcp[z]    <- mpot2smoist(mysoil$slpotcp[z],mysoil$slpots,mysoil$slbs[z],mysoil$slmsts[z])
+    mysoil$slcpd[z]   <- (1. - mysoil$volume_fraction_of_water_in_soil_at_saturation[z]) * 
+      ( mysoil$volume_fraction_of_sand_in_soil[z] * sand.hcap + 
+          mysoil$volume_fraction_of_silt_in_soil[z] * silt.hcap +
+          mysoil$volume_fraction_of_clay_in_soil[z] * clay.hcap ) +
+      0.5 * (mysoil$volume_fraction_of_water_in_soil_at_saturation[z] - 
+               mysoil$volume_fraction_of_condensed_water_in_dry_soil[z]) * air.hcap
     
-    # Wilting point capacity (at -1.5MPa) [ m^3/m^3 ]
-    mysoil$slpotwp[z]   <- - soilwp.MPa * 1000. / grav
-    mysoil$soilwp[z]    <- mpot2smoist(mysoil$slpotwp[z], mysoil$slpots,mysoil$slbs[z],mysoil$slmsts[z])
-    
-    # Water potential for field capacity            [ m]
-    # mysoil$slpotfc   <- smoist2mpot(mysoil$sfldcap, mysoil)
   }
   
   #---------------------------------------------------------------------------------------#
-  #      Soil thermal conductivity.                                                       #
+  #      Soil thermal conductivity.     W/m/K                                             #
   #                                                                                       #
   # Thermal conductivity is the weighted average of thermal conductivities of             #
   # all materials, although a further weighting factor due to thermal gradient of         #
@@ -164,30 +169,46 @@ soil_params <- function(soil_type,sand,silt,clay){
   #    Soil Till. Res., 47(1-2), 5-10.                                                    #
   #                                                                                       #
   #---------------------------------------------------------------------------------------#
-  mysoil$thcond0 <- ( ksand * mysoil$xsand  * ( 1. - mysoil$slmsts ) * sand.cond 
-                     + ksilt * mysoil$xsilt  * ( 1. - mysoil$slmsts ) * silt.cond
-                     + kclay * mysoil$xclay  * ( 1. - mysoil$slmsts ) * clay.cond
-                     + kair                  *       mysoil$slmsts    *  air.cond  )
-  mysoil$thcond1 <- h2o.cond - kair * air.cond
-  mysoil$thcond2 <- ( ksand * mysoil$xsand  * ( 1. - mysoil$slmsts )
-                     + ksilt * mysoil$xsilt  * ( 1. - mysoil$slmsts )
-                     + kclay * mysoil$xclay  * ( 1. - mysoil$slmsts )
-                     + kair                  *        mysoil$slmsts   )
-  mysoil$thcond3 <- 1. - kair
+  mysoil$thcond0 <- ( ksand * mysoil$volume_fraction_of_sand_in_soil  * ( 1. - mysoil$volume_fraction_of_water_in_soil_at_saturation ) * sand.cond 
+                     + ksilt * mysoil$volume_fraction_of_silt_in_soil  * ( 1. - mysoil$volume_fraction_of_water_in_soil_at_saturation ) * silt.cond
+                     + kclay * mysoil$volume_fraction_of_clay_in_soil  * ( 1. - mysoil$volume_fraction_of_water_in_soil_at_saturation ) * clay.cond
+                     + kair                  *       mysoil$volume_fraction_of_water_in_soil_at_saturation    *  air.cond  )
+  mysoil$thcond1 <- rep(h2o.cond - kair * air.cond,length=length(mysoil$thcond0))
+  mysoil$thcond2 <- ( ksand * mysoil$volume_fraction_of_sand_in_soil  * ( 1. - mysoil$volume_fraction_of_water_in_soil_at_saturation )
+                     + ksilt * mysoil$volume_fraction_of_silt_in_soil  * ( 1. - mysoil$volume_fraction_of_water_in_soil_at_saturation )
+                     + kclay * mysoil$volume_fraction_of_clay_in_soil  * ( 1. - mysoil$volume_fraction_of_water_in_soil_at_saturation )
+                     + kair                  *        mysoil$volume_fraction_of_water_in_soil_at_saturation   )
+  mysoil$thcond3 <- rep(1. - kair,length=length(mysoil$thcond0))
+  ## default soil thermal conductivity = dry
+  mysoil$soil_thermal_conductivity <- ( mysoil$thcond0 + mysoil$thcond1 * mysoil$volume_fraction_of_condensed_water_in_dry_soil) /
+                                      ( mysoil$thcond2 + mysoil$thcond3 * mysoil$volume_fraction_of_condensed_water_in_dry_soil)
+  mysoil$soil_thermal_conductivity_at_saturation <- ( mysoil$thcond0 + mysoil$thcond1 * mysoil$volume_fraction_of_water_in_soil_at_saturation) /
+                                      ( mysoil$thcond2 + mysoil$thcond3 * mysoil$volume_fraction_of_water_in_soil_at_saturation)
+  
   #---------------------------------------------------------------------------------------#
   
   ## final values to look up
   for(z in which(!(mysoil$soil_n <= 13))){
     mysoil$soil_albedo[z] <- texture$albdry[mysoil$soil_n[z]]
-    mysoil$xrobulk[z]     <- texture$xrobulk[mysoil$soil_n[z]]
+    mysoil$soil_bulk_density[z] <- texture$xrobulk[mysoil$soil_n[z]]
     mysoil$slden[z]       <- texture$slden[mysoil$soil_n[z]]
   }
   for(z in which(!(mysoil$soil_n > 13))){
     ## if lack class-specific values, use across-soil average
     mysoil$soil_albedo[z] <- median(texture$albdry)
-    mysoil$xrobulk[z]     <- median(texture$xrobulk)
+    mysoil$soil_bulk_density[z] <- median(texture$xrobulk)
     mysoil$slden[z]       <- median(texture$slden)
   }
+    
+  ## Conversions to standard variables
+  mysoil$soil_thermal_capacity <- mysoil$slcpd / mysoil$soil_bulk_density   ## J/m3/K / [kg m-3] -> J/kg/K
+  
+  ## drop variables that are only meaningful internally
+  mysoil$soil_n <- NULL
+  mysoil$slpotcp <- NULL
+  mysoil$slpotwp <- NULL
+  mysoil$slden <- NULL ## not clear how this is is different from bulk density in the look-up-table
+  mysoil$slcpd <- NULL
   
   return(mysoil)
   }#end function
@@ -288,8 +309,8 @@ sclass <- function(sandfrac,clayfrac){
 #' @export
 #'
 #' @examples
-mpot2smoist <<- function(mpot,slpots,slbs,slmsts){
-  smfrac = ( mpot / slpots) ^ (-1. / slbs)
-  smoist = smfrac * slmsts
+mpot2smoist <<- function(mpot,soil_water_potential_at_saturation,soil_hydraulic_b,volume_fraction_of_water_in_soil_at_saturation){
+  smfrac = ( mpot / soil_water_potential_at_saturation) ^ (-1. / soil_hydraulic_b)
+  smoist = smfrac * volume_fraction_of_water_in_soil_at_saturation
   return(smoist)
 }#end function
