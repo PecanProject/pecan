@@ -10,7 +10,7 @@
 #' @param ... 
 #'
 #' @return
-#' @export
+#' @export merge.met.variable
 #'
 #' @details Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record. 
 #' Currently unit and name checking only implemented for CO2. 
