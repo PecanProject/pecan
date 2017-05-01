@@ -284,7 +284,7 @@ for(i in seq_along(paleon.sitegroups)){
     local.dir <- paste0(local.prefix,site.info$str_ns[j],"/")
     if(!file.exists(local.dir) | length(dir(local.dir))==0) next
       
-    merge.met.variable(local.dir,in.prefix,start_date,end_date,merge.file)
+    merge_met_variable(local.dir,in.prefix,start_date,end_date,merge.file)
   }
 }
 

@@ -4,6 +4,7 @@
 #' @param sand       percent sand
 #' @param silt       percent silt
 #' @param clay       percent clay
+#' @param bulk       soil bulk density (optional, kg m-3)
 #'
 #' @details 
 #' * Specify _either_ soil_type or sand/silt/clay. soil_type will be ignored if sand/silt/clay is provided
@@ -18,14 +19,14 @@
 #'
 #' @return table of soil hydraulic and thermal parmeters
 #' @export
-#'
+#' @examples 
 #' sand <- c(0.3,0.4,0.5)
 #' clay <- c(0.3,0.3,0.3)
 #' soil_params(sand=sand,clay=clay)
-soil_params <- function(soil_type,sand,silt,clay){
+soil_params <- function(soil_type,sand,silt,clay,bulk){
 
   ## load soil parameters
-  data("soil_class")
+  load(system.file("data/soil_class.RData",package = "PEcAn.data.land"))
   mysoil <- list()
   
   #---------------------------------------------------------------------------------------#
@@ -190,13 +191,13 @@ soil_params <- function(soil_type,sand,silt,clay){
   ## final values to look up
   for(z in which(!(mysoil$soil_n <= 13))){
     mysoil$soil_albedo[z] <- texture$albdry[mysoil$soil_n[z]]
-    mysoil$soil_bulk_density[z] <- texture$xrobulk[mysoil$soil_n[z]]
+    if(missing(bulk))  mysoil$soil_bulk_density[z] <- texture$xrobulk[mysoil$soil_n[z]]
     mysoil$slden[z]       <- texture$slden[mysoil$soil_n[z]]
   }
   for(z in which(!(mysoil$soil_n > 13))){
     ## if lack class-specific values, use across-soil average
     mysoil$soil_albedo[z] <- median(texture$albdry)
-    mysoil$soil_bulk_density[z] <- median(texture$xrobulk)
+    if(missing(bulk)) mysoil$soil_bulk_density[z] <- median(texture$xrobulk)
     mysoil$slden[z]       <- median(texture$slden)
   }
     
@@ -309,7 +310,7 @@ sclass <- function(sandfrac,clayfrac){
 #' @export
 #'
 #' @examples
-mpot2smoist <<- function(mpot,soil_water_potential_at_saturation,soil_hydraulic_b,volume_fraction_of_water_in_soil_at_saturation){
+mpot2smoist <- function(mpot,soil_water_potential_at_saturation,soil_hydraulic_b,volume_fraction_of_water_in_soil_at_saturation){
   smfrac = ( mpot / soil_water_potential_at_saturation) ^ (-1. / soil_hydraulic_b)
   smoist = smfrac * volume_fraction_of_water_in_soil_at_saturation
   return(smoist)
