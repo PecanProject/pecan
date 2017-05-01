@@ -66,8 +66,7 @@ soil_params <- function(soil_type,sand,silt,clay,bulk){
   }
   #---------------------------------------------------------------------------------------#
   
-  
-  
+  if(!missing(bulk)) mysoil$soil_bulk_density = bulk
   
   #---------------------------------------------------------------------------------------#
   #       Set up primary properties.                                                      #
@@ -205,7 +204,6 @@ soil_params <- function(soil_type,sand,silt,clay,bulk){
   mysoil$soil_thermal_capacity <- mysoil$slcpd / mysoil$soil_bulk_density   ## J/m3/K / [kg m-3] -> J/kg/K
   
   ## drop variables that are only meaningful internally
-  mysoil$soil_n <- NULL
   mysoil$slpotcp <- NULL
   mysoil$slpotwp <- NULL
   mysoil$slden <- NULL ## not clear how this is is different from bulk density in the look-up-table

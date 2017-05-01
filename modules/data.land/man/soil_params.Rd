@@ -4,7 +4,7 @@
 \alias{soil_params}
 \title{Estimate soil parameters from texture class or sand/silt/clay}
 \usage{
-soil_params(soil_type, sand, silt, clay)
+soil_params(soil_type, sand, silt, clay, bulk)
 }
 \arguments{
 \item{soil_type}{USDA Soil Class. See Details}
@@ -14,6 +14,8 @@ soil_params(soil_type, sand, silt, clay)
 \item{silt}{percent silt}
 
 \item{clay}{percent clay}
+
+\item{bulk}{soil bulk density (optional, kg m-3)}
 }
 \value{
 table of soil hydraulic and thermal parmeters
