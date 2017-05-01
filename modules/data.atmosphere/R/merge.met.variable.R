@@ -28,10 +28,10 @@
 #' verbose    <- TRUE
 #' 
 #' \notrun{
-#' merge.met.variable(in.path,in.prefix,start_date,end_date,merge.file,overwrite,verbose)
+#' merge_met_variable(in.path,in.prefix,start_date,end_date,merge.file,overwrite,verbose)
 #' PEcAn.DALEC::met2model.DALEC(in.path,in.prefix,outfolder,start_date,end_date)
 #' }
-merge.met.variable <- function(in.path,in.prefix,start_date, end_date, merge.file,
+merge_met_variable <- function(in.path,in.prefix,start_date, end_date, merge.file,
                                overwrite = FALSE, verbose = FALSE, ...){
   
   # get start/end year code works on whole years only
