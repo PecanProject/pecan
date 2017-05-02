@@ -14,7 +14,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     settings$run$inputs <- NULL  ## check for empty set
   }
   
-  dbfiles <- ifelse(!is.localhost(settings$host) & !is.null(settings$host$folder), settings$host$folder, settings$database$dbfiles)
+  dbfiles <- ifelse(!PEcAn.utils::is.localhost(settings$host) & !is.null(settings$host$folder), settings$host$folder, settings$database$dbfiles)
   
   for (i in seq_along(settings$run$inputs)) {
     input <- settings$run$inputs[[i]]
@@ -46,6 +46,12 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     # keep fia.to.psscss
     if (fia.flag) {
       settings <- PEcAn.data.land::fia.to.psscss(settings, overwrite = overwrite.fia)
+      needsave <- TRUE
+    }
+    
+    # soil extraction
+    if(input.tag == "soil"){
+      settings$run$inputs[[i]][['path']] <- PEcan.data.land::soil_process(settings,input,dbfiles,overwrite=FALSE)
       needsave <- TRUE
     }
     
