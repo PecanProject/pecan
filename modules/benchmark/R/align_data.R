@@ -17,18 +17,6 @@ align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
   
   fcn <- match.fun(align_method)
   
-  # # This should probably be in load_data but for now I'm putting it here
-  # # Aligning the data becomes a problem when columns have additional attributes
-  # # For now, just set everything that is not class posix to a vector
-  # 
-  # for(i in 1:ncol(obvs.calc)){
-  #   if(!is.vector(obvs.calc[,i]) & 
-  #      !all(class(obvs.calc[,i]) %in% c("POSIXlt", "POSIXct", "POSIXt"))){
-  #     print(colnames(obvs.calc[,i]))
-  #     obvs.calc[,i] <- as.vector(obvs.calc[,i])
-  #   }
-  # }
-  
   # Put both timestamps in UTC
   model.calc$posix <- as.POSIXct(with_tz(model.calc$posix, "UTC"))
   obvs.calc$posix  <- as.POSIXct(with_tz(obvs.calc$posix, "UTC"))
