@@ -82,9 +82,9 @@ script:
   - set -e
   # - scripts/build.sh --no-git --tests --name travis
   - echo 'Installing PEcAn packages'
-  - NCPUS=2 make
-  - echo 'Checking PEcAn packages'
-  - NCPUS=2 make check
+  - make
+  - echo 'Testing PEcAn packages'
+  - make test
   - echo 'Running integration test'
   - ./tests/integration.sh travis
   - set +e
