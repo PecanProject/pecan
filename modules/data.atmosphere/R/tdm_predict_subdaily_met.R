@@ -261,38 +261,49 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, lm.models.base,
         }
         
         # Write each year for each ensemble member into its own .nc file
+        lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
+        lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
+        
+        ntime <- ifelse(lubridate::leap_year(y), 366 * 24, 365 * 24)
+        days_elapsed <- (1:ntime) * 1/24 - .5/24 # data are 6-hourly, with timestamp at center of interval
+        time <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", y, "-01-01T00:00:00Z"),
+                                 vals = as.array(days_elapsed), create_dimvar = TRUE, unlim = TRUE)
+        
+        dim <- list(lat, lon, time)
+        
         var.list <- list()
         for (j in seq_along(nc.info$CF.name)) {
-            var.list[[j]] <- ncdf4::ncvar_def(name = as.character(nc.info$CF.name[j]), 
-                units = as.character(nc.info$units[j]), dim = dim, missval = -9999, 
-                verbose = verbose)
+          var.list[[j]] <- ncdf4::ncvar_def(name = as.character(nc.info$CF.name[j]), 
+                                            units = as.character(nc.info$units[j]), dim = dim, missval = -9999, 
+                                            verbose = verbose)
         }
         
         for (i in seq_len(ens.hr)) {
-            df <- data.frame(matrix(ncol = length(nc.info$name), nrow = nrow(dat.ens)))
-            colnames(df) <- nc.info$name
-            for (j in nc.info$name) {
-                ens.sims[[j]][["X1"]]
-                e <- paste0("X", i)
-                df[[j]] <- ens.sims[[j]][[e]]
-            }
-            
-            df <- df[, c("air_temperature", "precipitation_flux", "surface_downwelling_shortwave_flux_in_air", 
-                "surface_downwelling_longwave_flux_in_air", "air_pressure", 
-                "specific_humidity", "wind_speed")]
-            colnames(df) <- nc.info$CF.name
-            
-            dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
-            loc.file <- file.path(outfolder, paste0(in.prefix, "_ens", 
-                i, "_", y, ".nc"))
-            loc <- ncdf4::nc_create(filename = loc.file, vars = var.list, 
-                verbose = verbose)
-            
-            for (j in nc.info$CF.name) {
-                ncdf4::ncvar_put(nc = loc, varid = as.character(j), vals = df[[j]][seq_len(nrow(df))])
-            }
-            ncdf4::nc_close(loc)
+          df <- data.frame(matrix(ncol = length(nc.info$name), nrow = nrow(dat.ens)))
+          colnames(df) <- nc.info$name
+          for (j in nc.info$CF.name) {
+            ens.sims[[j]][["X1"]]
+            e <- paste0("X", i)
+            df[[j]] <- ens.sims[[j]][[e]]
+          }
+          
+          df <- df[, c("air_temperature", "precipitation_flux", "surface_downwelling_shortwave_flux_in_air", 
+                       "surface_downwelling_longwave_flux_in_air", "air_pressure", 
+                       "specific_humidity", "wind_speed")]
+          colnames(df) <- nc.info$CF.name
+          
+          dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
+          loc.file <- file.path(outfolder, paste0(in.prefix, "_ens", 
+                                                  i, "_", y, ".nc"))
+          loc <- ncdf4::nc_create(filename = loc.file, vars = var.list, 
+                                  verbose = verbose)
+          
+          for (j in nc.info$CF.name) {
+            ncdf4::ncvar_put(nc = loc, varid = as.character(j), vals = df[[j]][seq_len(nrow(df))])
+          }
+          ncdf4::nc_close(loc)
         }
         print(paste0("finished year ", y))
+        
     }
 }

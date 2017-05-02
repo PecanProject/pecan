@@ -187,14 +187,6 @@ nc2dat.train <- function(outfolder, in.path, in.prefix, start_date, end_date,
     
     # Create dimensions for NC file
     ntime <- nrow(dat.train)
-    lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", 
-        vals = lat_raw_train_data, create_dimvar = TRUE)
-    lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", 
-        vals = lon_raw_train_data, create_dimvar = TRUE)
-    time <- ncdf4::ncdim_def(name = "time", units = "sec", vals = (1:ntime) * 
-        3600, create_dimvar = TRUE, unlim = TRUE)
-    dim <- list(lat, lon, time)
-    
     # Create var.list for the NC file
     var.list <- list()
     for (j in seq_along(colnames(dat.train))) {
