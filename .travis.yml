@@ -33,6 +33,7 @@ addons:
       - udunits-bin 
       - libgmp-dev
       - libproj-dev
+      - pandoc
       # need to compile documentation
       # BROKEN MISSING FONT
       #- texinfo
