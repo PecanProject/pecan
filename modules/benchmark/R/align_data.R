@@ -100,7 +100,7 @@ align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
     out2 <- date_subsets[[compare$type[fine]]] %>% dplyr::select(.,one_of(var))
     colnames(out2) <- paste0(colnames(out2), ".", compare$type[fine])
     dat <- cbind(out1, out2)
-    dat$posix <- date_subsets[[compare$type[fine]]] %>% dplyr::select(.,one_of("round.posix"))
+    dat$posix <- date_subsets[[compare$type[fine]]] %>% dplyr::select(.,one_of("round.posix")) %>% .[,1]
     
   }
   

@@ -117,11 +117,13 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   if(!is.na(start_year)){
     out$year <- year(out$posix)
     out <- out %>% filter(.,year >= as.numeric(start_year))
+    print("subsetting by start year")
   }
   
   if(!is.na(end_year)){
     out$year <- year(out$posix)
     out <- out %>% filter(.,year <= as.numeric(end_year))
+    print("subsetting by end year")
   }
   
   return(out)
