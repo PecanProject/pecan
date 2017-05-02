@@ -52,7 +52,8 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
     PEcAn.utils::logger.warn("Brown Dog is currently unable to perform conversion from ",mimetype," to a PEcAn usable format")
   }
   
-  out <- fcn(data.path, format, site, format$vars$input_name[c(vars.used.index, time.row)])
+  vars =  format$vars$input_name[c(vars.used.index, time.row)]
+  out <- fcn(data.path, format, site, vars)
   
   # Convert loaded data to the same standard variable names and units
   
@@ -87,7 +88,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
         print(sprintf("convert %s %s to %s %s", 
                       vars_used$input_name[i], u1, 
                       vars_used$pecan_name[i], u2))
-        out[col] <- misc.convert(x, u1, u2)
+        out[col] <- as.vector(misc.convert(x, u1, u2)) # Betsy: Adding this because misc.convert returns vector with attributes original agrument x, which causes problems later
         colnames(out)[col] <- vars_used$pecan_name[i]
       } else {
         PEcAn.utils::logger.error("Units cannot be converted")
@@ -107,17 +108,21 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
     }
     
     out$posix <- strptime(apply(y, 1, function(x) paste(x, collapse = " ")), 
-                          format=paste(format$vars$storage_type[time.row], collapse = " "), tz = tz)
+                          format=paste(format$vars$storage_type[time.row], collapse = " "),
+                          tz = tz) %>% as.POSIXct()
+    }
+  
+  # Subset by start year and end year when loading data
+  # This was part of the arguments but never implemented
+  if(!is.na(start_year)){
+    out$year <- year(out$posix)
+    out <- out %>% filter(.,year >= as.numeric(start_year))
+  }
+  
+  if(!is.na(end_year)){
+    out$year <- year(out$posix)
+    out <- out %>% filter(.,year <= as.numeric(end_year))
   }
   
   return(out)
 } # load_data
-
-##' Future things to think about
-##'   - error estimates
-##'   - QAQC
-##'   - STEPPS -> cov
-##'   - MCMC samples
-##'   - 'data products' vs raw data
-##'   - Is there a generic structure to ovbs?
-##' 
