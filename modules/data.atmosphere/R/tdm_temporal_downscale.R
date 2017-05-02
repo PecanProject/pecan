@@ -67,6 +67,7 @@ predict.subdaily <- function(dat.mod, n.ens, path.model, lags.list = NULL,
         "next.specific_humidity", "next.wind_speed")
     
     # ------ Beginning of Downscaling For Loop
+    
     for (v in vars.list) {
         first_model <- ncdf4::nc_open(paste0(path.model, "/", v, "/betas_", 
             v, "_1.nc"))
@@ -92,12 +93,9 @@ predict.subdaily <- function(dat.mod, n.ens, path.model, lags.list = NULL,
                 rows.mod <- which(dat.mod$time.day == i & dat.mod$hour %in% 
                   hrs.day)
                 dat.temp <- dat.mod[rows.mod, dat.info]
-            }
-            
-            # Set up the lags Temperature has a different routine because we have
-            # info about mins and maxs
-            if (v == "air_temperature") {
-                day.now <- unique(dat.temp$doy)
+            } else if (v == "air_temperature") {
+                rows.now <- which(dat.mod$time.day == i)
+                dat.temp <- dat.mod[rows.now,dat.info]
                 # Set up the lags
                 if (i == min(dat.mod$time.day)) {
                   sim.lag <- stack(lags.init$air_temperature)
@@ -117,13 +115,7 @@ predict.subdaily <- function(dat.mod, n.ens, path.model, lags.list = NULL,
                     (i - 1), ], 2, max))[, 1]
                 }
                 dat.temp <- merge(dat.temp, sim.lag, all.x = TRUE)
-                
-                # End Temperature Specifics
-                
-            }
-            
-            # Begin Precipitation Specifics
-            if (v == "precipitation_flux") {
+            } else if (v == "precipitation_flux") {
                 rows.now <- which(dat.mod$time.day == i)
                 dat.temp <- dat.mod[rows.now, dat.info]
                 
@@ -146,10 +138,8 @@ predict.subdaily <- function(dat.mod, n.ens, path.model, lags.list = NULL,
                 dat.temp <- merge(dat.temp, sim.lag, all.x = TRUE)
                 
                 # End Precipitation Flux specifics
+              } else {
                 
-            } else {
-                
-                # Set up the lags
                 if (i == min(dat.mod$time.day)) {
                   sim.lag <- stack(lags.init[[v]])
                   names(sim.lag) <- c(paste0("lag.", v), "ens")
@@ -232,7 +222,6 @@ predict.subdaily <- function(dat.mod, n.ens, path.model, lags.list = NULL,
             # ---------- End Quality Control
             
             # ---------- Begin propogating values and saving values
-            
             # Shortwave Radiaiton
             if (v == "surface_downwelling_shortwave_flux_in_air") {
                 # Randomly pick which values to save & propogate
@@ -240,11 +229,10 @@ predict.subdaily <- function(dat.mod, n.ens, path.model, lags.list = NULL,
                 for (j in 1:ncol(dat.sim[[v]])) {
                   dat.sim[[v]][rows.mod, j] <- dat.pred[, cols.prop[j]]
                 }
-            }
-            
-            # Temperature
-            if (v == "air_temperature") {
+            } else if (v == "air_temperature") {
                 for (j in 1:ncol(dat.sim$air_temperature)) {
+                  cols.prop <- sample(1:n.ens, ncol(dat.sim$air_temperature), 
+                                      replace = TRUE)
                   dat.prop <- dat.pred[dat.temp$ens == paste0("X", j), 
                     cols.prop[j]]
                   air_temperature_max.ens <- max(dat.temp[dat.temp$ens == 
