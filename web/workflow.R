@@ -48,9 +48,9 @@ if("benchmarking" %in% names(settings)){
 
 if("sitegroup" %in% names(settings)){
   if(is.null(settings$sitegroup$nSite)){
-    settings <- createSitegroupMultiSettings(settings, sitegroupId = settings$sitegroup$id)
+    settings <- PEcAn.settings::createSitegroupMultiSettings(settings, sitegroupId = settings$sitegroup$id)
   } else {
-    settings <- createSitegroupMultiSettings(settings, sitegroupId = settings$sitegroup$id,nSite = settings$sitegroup$nSite)
+    settings <- PEcAn.settings::createSitegroupMultiSettings(settings, sitegroupId = settings$sitegroup$id,nSite = settings$sitegroup$nSite)
   }
   settings$sitegroup <- NULL ## zero out so don't expand a second time if re-reading
 }
@@ -70,13 +70,12 @@ if (length(which(commandArgs() == "--continue")) == 0 && file.exists(statusFile)
 # Do conversions
 settings <- do.conversions(settings)
 
-
 # Query the trait database for data and priors
-if (status.check("TRAIT") == 0){
-  status.start("TRAIT")
-  settings <- runModule.get.trait.data(settings)
+if (PEcAn.utils::status.check("TRAIT") == 0){
+  PEcAn.utils::status.start("TRAIT")
+  settings <- PEcAn.DB::runModule.get.trait.data(settings)
   PEcAn.settings::write.settings(settings, outputfile='pecan.TRAIT.xml')
-  status.end()
+  PEcAn.utils::status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.TRAIT.xml'))) {
   settings <- PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.TRAIT.xml'))
 }

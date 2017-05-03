@@ -34,7 +34,7 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE){
                               user     = dbparms$bety$user, 
                               password = dbparms$bety$password)
   con <- bety$con
-  on.exit(db.close(con))
+  on.exit(PEcAn.DB::db.close(con))
   
   # get existing input info
   source.input <- PEcAn.DB::db.query(paste0("SELECT * from Inputs where id =",input$id),con)
@@ -69,7 +69,7 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE){
   outfolder <- file.path(dbfiles, paste0(input$source, "_site_", str_ns))
   if(!dir.exists(outfolder)) dir.create(outfolder)
   
-  new.file <- PEcAn.data.land::extract_soil_nc(source.file,outfolder,lat = latlon$lat,lon=latlon$lon)
+  newfile <- PEcAn.data.land::extract_soil_nc(source.file,outfolder,lat = latlon$lat,lon=latlon$lon)
   
   return(newfile)
 } # ic_process

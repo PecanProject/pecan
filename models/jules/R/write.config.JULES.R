@@ -23,11 +23,14 @@
 ##' @author Mike Dietze, Rob Kooper
 ##' 
 ##' @export
+##' @examples 
+##' write.config.JULES(defaults, trait.values, settings, run.id)
 ##-------------------------------------------------------------------------------------------------#
 write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   # constants
   molH2O_to_grams <- 18.01528
   leafC <- 0.48
+  useTRIFFID <- "TRIFFID" %in% toupper(names(settings$model))
   
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
@@ -79,8 +82,12 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   system2("cp", args = paste0(template.dir, "/* ", rundir))
   
   ## ------------------ Detect time step of met data ------------------
+  nchar.path <- nchar(settings$run$inputs$met$path)
+  prefix <- ifelse(substring(settings$run$inputs$met$path,nchar.path)=="/",
+                   "",basename(settings$run$inputs$met$path))
+  if(nchar(prefix)>0) prefix <- paste0(prefix,".")
   met.file <- dir(dirname(settings$run$inputs$met$path), 
-                  pattern = basename(settings$run$inputs$met$path), 
+                  pattern = prefix, 
                   full.names = TRUE)[1]
   met.header <- system(paste("ncdump -h ", met.file), intern = TRUE)
   id <- grep("time:delta_t", met.header)
@@ -122,17 +129,64 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   drive.text <- readLines(con = drive.file, n = -1)
   drive.text <- gsub("@MET_START@", settings$run$site$met.start, drive.text)
   drive.text <- gsub("@MET_END@", settings$run$site$met.end, drive.text)
-  drive.text <- gsub("@SITE_MET@", settings$run$inputs$met$path, drive.text)
+  drive.text <- gsub("@SITE_MET@", file.path(dirname(settings$run$inputs$met$path),prefix), drive.text)
   drive.text <- gsub("@DT@", as.numeric(dt), drive.text)
   writeLines(drive.text, con = drive.file)
+  
+  ## Edit PRESCRIBED_DATA.NML to add CO2 data
+  if("co2" %in% tolower(names(settings$run$inputs))){
+    pd.file <- file.path(rundir, "prescribed_data.nml")
+    pd.text <- readLines(con = pd.file, n = -1)
+    
+    ## add CO2 file
+    pdn <- length(pd.text)
+    pd.text[pdn+1] <- paste0("")
+    pd.text[pdn+2] <- paste0("&JULES_PRESCRIBED_DATASET")
+    pd.text[pdn+3] <- paste0("data_start  = '",start_char,"',")
+    pd.text[pdn+4] <- paste0("data_end    = '",end_char,"',")
+    pd.text[pdn+5] <- paste0("data_period=-1")
+    pd.text[pdn+6] <- paste0("file='",settings$inputs$co2$path,"',")
+    pd.text[pdn+7] <- paste0("nvars=1")
+    pd.text[pdn+8] <- paste0("var='co2_mmr'")
+    pd.text[pdn+9] <- paste0("interp='i'")
+    pd.text[pdn+10] <- paste0("/")
+
+    # EXAMPLE
+    # &JULES_PRESCRIBED_DATASET
+    # data_start  = '0850-01-01 00:00:00',
+    # data_end    = '2011-01-01 00:00:00',
+    # 
+    # data_period=-1
+    # 
+    # file='../../../../phase1a_env_drivers_v4/Paleon_CO2_mmr.txt'
+    # 
+    # nvars=1
+    # var='co2_mmr'
+    # interp='i'
+    # 
+    # /
+    
+    ## update n_datasets
+    nd_i  <- grep("n_datasets",pd.text)
+    pd_nd <- as.numeric(sub(",","",strsplit(pd.text[nd_i],"=")[[1]][2]))
+    pd.text[nd_i] = paste0("n_datasets=",pd_nd+1,",")
+    
+    writeLines(pd.text, con = pd.file)
+  }
   
   ## Edit TIMESTEPS.NML to set start/end date
   timesteps.file <- file.path(rundir, "timesteps.nml")
   timesteps.text <- readLines(con = timesteps.file, n = -1)
-  timesteps.text <- gsub("@START_DATE@", format(as.Date(settings$run$start.date), "%F %H:%M:%S"), 
-                         timesteps.text)
-  timesteps.text <- gsub("@END_DATE@", format(as.Date(settings$run$end.date), "%F %H:%M:%S"), 
-                         timesteps.text)
+  start_char <- format(as.Date(settings$run$start.date), "%F %H:%M:%S")
+  year_char <- strsplit(start_char,"-")[[1]][1]
+  if(nchar(year_char)<4){
+    start_char <- paste0(formatC(as.numeric(year_char),width = 4, format = "d", flag = "0"),
+                         substr(start_char,nchar(year_char)+1,nchar(start_char))
+                         )
+  }
+  end_char <- format(as.Date(settings$run$end.date), "%F %H:%M:%S")
+  timesteps.text <- gsub("@START_DATE@", start_char, timesteps.text)
+  timesteps.text <- gsub("@END_DATE@", end_char, timesteps.text)
   writeLines(timesteps.text, con = timesteps.file)
   
   ## Edit MODEL_GRID.NML to set lat/lon
@@ -147,9 +201,79 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   output.text <- readLines(con = output.file, n = -1)
   output.text <- gsub("@RUNID@", run.id, output.text)
   output.text <- gsub("@OUTDIR@", outdir, output.text)
+  if(useTRIFFID){
+    ## find rows in output.nml
+    out_nvar_i   <- grep("nvars",output.text)
+    out_varname_i  <- grep("var_name",output.text)
+    out_var_i    <- grep("var",output.text)
+      out_var_i  <- out_var_i[which(!(out_var_i %in% c(out_nvar_i,out_varname_i)))] ## process of elimination
+    out_type_i   <- grep("output_type",output.text)
+    len <- nchar(trimws(output.text))
+
+    ## update number of variables
+    out_nvar <- as.numeric(sub(",","",strsplit(output.text[out_nvar_i],"=")[[1]][2]))
+    output.text[out_nvar_i] = paste0("nvars = ",out_nvar+3,",")
+    output.text[out_type_i] = paste0("output_type = ",out_nvar+3,"*'M',")
+    
+    ## add to out_varname
+    k <- which(rev((len > 0)[1:(out_type_i-1)]))[1] ## how many lines back is previous block
+    output.text[out_type_i-k] <- paste0(output.text[out_type_i-k],
+                                        "'Fcomp', 'TotLivBio_PFT', 'Height',")
+    
+    ## add extra output variables
+    k <- which(rev((len > 0)[1:(out_varname_i-1)]))[1] ## how many lines back is previous block
+    output.text[out_varname_i-k] <- paste0(output.text[out_varname_i-k],
+                                        "'frac', 'c_veg', 'canht',")
+  }
   writeLines(output.text, con = output.file)
   
-  ## Edit ANCILLARIES.NML tile frac soil physical parameters
+  ## Edit ANCILLARIES.NML tile frac soil physical parameters [[OPTIONAL]]
+  if("soil" %in% names(settings$run$inputs)){
+    ## open soil file
+    soil <- settings$run$inputs$soil
+    nc.soil <- ncdf4::nc_open(soil$path)
+    
+    ## extract JULES variables
+    in.soil <- list()
+    in.soil[['b']]      <- ncdf4::ncvar_get(nc.soil,"soil_hydraulic_b")
+    # sathh  
+    in.soil[['satcon']] <- ncdf4::ncvar_get(nc.soil,"soil_hydraulic_conductivity_at_saturation")
+    in.soil[['satcon']] <- udunits2::ud.convert(in.soil[['satcon']],"m s-1","mm s-1")
+    in.soil[['sm_sat']] <- ncdf4::ncvar_get(nc.soil,"volume_fraction_of_water_in_soil_at_saturation")
+    #sm_crit
+    in.soil[['sm_wilt']] <- ncdf4::ncvar_get(nc.soil,"volume_fraction_of_condensed_water_in_soil_at_wilting_point")
+    hcap    <- ncdf4::ncvar_get(nc.soil,"soil_thermal_capacity") ## J/kg/K
+    bulk    <- ncdf4::ncvar_get(nc.soil,"soil_bulk_density") ## kg m-3
+    in.soil[['hcap']]    <- hcap * bulk ## J/kg/K * kg m-3 -> J m-3 K-1
+    in.soil[['hcon']]    <- ncdf4::ncvar_get(nc.soil,"soil_thermal_conductivity") ## W m-1 K-1
+    in.soil[['albsoil']] <- ncdf4::ncvar_get(nc.soil,"soil_albedo")
+    ncdf4::nc_close(nc.soil)
+    
+    ## open namelist
+    anc.file <- file.path(rundir, "ancillaries.nml")
+    anc.text <- readLines(con = anc.file, n = -1)
+    
+    ## parse variable names
+    const_val_i <- grep("const_val",anc.text)
+    const_val <- strsplit(strsplit(anc.text[const_val_i],"=")[[1]][2],",")[[1]]
+    soil_var_i  <- grep("^var",anc.text)
+    soil_var <- strsplit(strsplit(anc.text[soil_var_i],"=")[[1]][2],",")[[1]]
+    soil_var <- gsub("'","",soil_var)
+    
+    ## substitute in new values
+    for(i in seq_along(soil_var)){
+      k = which(names(in.soil) == soil_var[i])
+      if(length(k)==1){
+        const_val[i] <- in.soil[[k]][1] ## for now only use surface values
+                                                  ## need to figure out how to set depth profile later
+      }
+    }
+    
+    ## insert back into text
+    anc.text[const_val_i] <- paste0("const_val=",paste(const_val,sep = "",collapse = ","),",")
+    writeLines(anc.text, con = anc.file)
+    
+  } ## end ancillary
   
   ## PARSE JULES_VEGETATION.NML some of these settings affect which parameter settings are used
   veg.file     <- file.path(rundir, "jules_vegetation.nml")
@@ -161,11 +285,35 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     l_trait_phys <- FALSE  ## default value
   }
   ## Turn on TRIFFID??
-  if("TRIFFID" %in% toupper(names(settings$model))){
+  if(useTRIFFID){
+    
     l_triffid <- grep("l_triffid",veg.text)
     veg.text[l_triffid] <- sub("false",'true',veg.text[l_triffid])
-    writeLines(veg.text, con = veg.file)
+    
+    l_trif_eq <- grep("l_trif_eq",veg.text)
+    if(length(l_trif_eq) == 0){
+      veg.text[length(veg.text)] <- "l_trif_eq=.false.,"
+      veg.text[length(veg.text)+1] <- "/"
+    } else {
+      veg.text[l_trif_eq] <- sub("true",'false',veg.text[l_triffid]) # set to FALSE
+    }
+    
+    l_veg_compete <- grep("l_veg_compete",veg.text)
+    if(length(l_veg_compete) == 0){
+      veg.text[length(veg.text)] <- "l_veg_compete=.true.,"
+      veg.text[length(veg.text)+1] <- "/"
+    } else {
+      veg.text[l_veg_compete] <- sub('false',"true",veg.text[l_triffid]) # set to TRUE
+    }
+    
+    l_triffid_period <- grep("l_triffid_period",veg.text)
+    if(length(l_triffid_period) == 0){
+      veg.text[length(veg.text)] <- "triffid_period=10,"
+      veg.text[length(veg.text)+1] <- "/"
+    } ## no else because right now not adjusting dynamically
+    
   }
+  writeLines(veg.text, con = veg.file)
   
   ## --------------------- Edit PFT_PARAMS.NML to set model parameters -------------------------
   pft.file <- file.path(rundir, "pft_params.nml")
@@ -212,20 +360,20 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     }
   }
   
-  ## reorder defaults to match supplied PFTs
-  pft.ord <- pft.id
-  unused <- NULL
-  if (length(pft.ord) < 5) {
-    unused <- (1:5)[!(1:5 %in% pft.ord)]
-    pft.ord <- c(pft.ord, unused)[1:5]
-    unused <- (npft + 1):5
-  }
-  defaults <- defaults[, pft.ord]
+  ## reorder defaults to match supplied PFTs  ### WON'T WORK WITH TRIFFID
+  # pft.ord <- pft.id
+  # unused <- NULL
+  # if (length(pft.ord) < 5) {
+  #   unused <- (1:5)[!(1:5 %in% pft.ord)]
+  #   pft.ord <- c(pft.ord, unused)[1:5]
+  #   unused <- (npft + 1):5
+  # }
+  # defaults <- defaults[, pft.ord]
   
   ## Loop over PFTS
   for (i in seq_len(npft)) {
     pft <- trait.values[[i]]
-    
+        
     for (v in seq_along(pft)) {
       
       ## convert names and units see JULES variable definitions at
@@ -352,7 +500,8 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
                     names(trait.values)[i])
       } else {
         ## insert into defaults table
-        defaults[mch, i] <- pft[v]
+#        defaults[mch, i] <- pft[v]   ## STATIC allows pft reorder
+        defaults[mch, pft.ord[i]] <- pft[v]    ## TRIFFID enforces pft order
       }
     }  ## end loop over parameters
   }  ## end loop over PFTs
@@ -373,4 +522,30 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   ## Edit jules_surface_types.nml to set correct number of PFTS
   
   ## Edit INITIAL_CONDITIONS.NML soil carbon LAI
+  if(useTRIFFID){
+    ic.file <- file.path(rundir, "initial_conditions.nml")
+    ic.text <- readLines(con = ic.file, n = -1)
+
+    ## update number of variables
+    ic_nvar_i   <- grep("nvars",ic.text)
+    ic_nvar     <- as.numeric(sub(",","",strsplit(ic.text[ic_nvar_i],"=")[[1]][2]))
+    ic.text[ic_nvar_i] <- paste0("nvars = ",ic_nvar+2,",")
+    
+    ## update use_file
+    use_file <- grep("use_file",ic.text)
+    ic.text[use_file] <- paste0(ic.text[use_file],".true.,.true.,")
+    
+    ## update var
+    ic_var <- grep("^var=",ic.text)
+    ic.text[ic_var] <- paste0(ic.text[ic_var],"'canht','frac',")
+    
+    ## write namelist
+    writeLines(ic.text, con = ic.file)
+    
+    ## also load and parse IC dat file
+    ic.dat <- file.path(rundir, "initial_conditions.dat")
+    ic.text <- readLines(con = ic.dat, n = -1)
+    ic.text[2] <- paste(ic.text[2]," 5.0 5.0 0.5 0.5 0.5 0.2 0.2 0.2 0.2 0.2 0.0 0.0 0.0 0.0")
+    writeLines(ic.text, con = ic.dat)
+  }
 } # write.config.JULES
