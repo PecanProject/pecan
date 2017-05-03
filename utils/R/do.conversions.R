@@ -51,14 +51,14 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     
     # soil extraction
     if(input.tag == "soil"){
-      settings$run$inputs[[i]][['path']] <- PEcan.data.land::soil_process(settings,input,dbfiles,overwrite=FALSE)
+      settings$run$inputs[[i]][['path']] <- PEcAn.data.land::soil_process(settings,input,dbfiles,overwrite=FALSE)
       needsave <- TRUE
     }
     
     # met conversion
     if (input.tag == "met") {
       name <- ifelse(is.null(settings$browndog), "MET Process", "BrownDog")
-      if (is.null(input$path) && (status.check(name) == 0)) {
+      if (is.null(input$path) && (PEcAn.utils::status.check(name) == 0)) {
         settings$run$inputs[[i]][['path']] <- 
           PEcAn.data.atmosphere::met.process(
             site       = settings$run$site, 
@@ -78,7 +78,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     }
   }
   if (needsave) {
-    saveXML(listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.METProcess.xml"))
+    XML::saveXML(PEcAn.utils::listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.METProcess.xml"))
   } else if (file.exists(file.path(settings$outdir, "pecan.METProcess.xml"))) {
     settings <- PEcAn.settings::read.settings(file.path(settings$outdir, "pecan.METProcess.xml"))
   }
