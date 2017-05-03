@@ -15,7 +15,7 @@ met2CF.Geostreams <- function(in.path, in.prefix, outfolder,
                     start_date, end_date, 
                     overwrite = FALSE, verbose = FALSE, ...) {
 
-  met.lookup = read.csv(system.file("/data/met.lookup.csv", package = "PEcAn.data.atmosphere"),
+  met.lookup = utils::read.csv(system.file("/data/met.lookup.csv", package = "PEcAn.data.atmosphere"),
                         header = TRUE, stringsAsFactors = FALSE)
 
   start_date <- as.POSIXct(start_date, tz="UTC")

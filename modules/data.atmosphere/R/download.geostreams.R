@@ -80,7 +80,7 @@ download.Geostreams <- function(outfolder, sitename,
 
 #' Authentication lookup helper
 #' 
-#' @param key,user,pass passed unchanged from \code{\link{get.Geostreams}} call, possibly null
+#' @param key,user,pass passed unchanged from \code{\link{download.Geostreams}} call, possibly null
 #' @param url matched against \code{<hostname>} in authfile, ignored if authfile contains no hostname.
 #' @param authfile path to a PEcAn-formatted XML settings file; must contain a \code{<clowder>} key
 #'

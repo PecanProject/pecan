@@ -7,7 +7,7 @@
 get_clowderauth(key, user, pass, url, authfile = "~/.pecan.clowder.xml")
 }
 \arguments{
-\item{key, user, pass}{passed unchanged from \code{\link{get.Geostreams}} call, possibly null}
+\item{key, user, pass}{passed unchanged from \code{\link{download.Geostreams}} call, possibly null}
 
 \item{url}{matched against \code{<hostname>} in authfile, ignored if authfile contains no hostname.}
 
