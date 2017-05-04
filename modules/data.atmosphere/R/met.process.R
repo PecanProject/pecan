@@ -75,7 +75,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
   if(is.null(input_met$source)){
     logger.error("Must specify met source")
     if(!is.null(input_met$id) & !is.null(input_met$path)){
-      input_met$source = "CRUNCEP" ## this case is normally hit when the use provides an existing file that has already been
+      met <- input_met$source <- "CRUNCEP" ## this case is normally hit when the use provides an existing file that has already been
                                    ## downloaded, processed, and just needs conversion to model-specific format.
                                    ## setting a 'safe' (global) default
     }    
