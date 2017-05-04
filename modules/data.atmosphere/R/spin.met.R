@@ -33,7 +33,7 @@
 #'    start_date <- PEcAn.data.atmosphere::spin.met(in.path,in.prefix,start_date,end_date,nyear,nsample,resample)
 #' }
 #' }
-spin.met <- function(in.path,in.prefix,start_date,end_date,nyear,nsample,resample=TRUE,run_start_date = start_date){
+spin.met <- function(in.path,in.prefix,start_date,end_date,nyear,nsample,resample=TRUE,run_start_date = start_date,overwrite=TRUE){
   
   ### input checking
   
@@ -52,19 +52,30 @@ spin.met <- function(in.path,in.prefix,start_date,end_date,nyear,nsample,resampl
   
   # spin settings
   if(missing(nyear)|is.null(nyear) | is.na(nyear)) nyear <- 1000
+  nyear <- as.numeric(nyear)
   if(missing(nsample)|is.null(nsample) | is.na(nsample)) nsample <- 50
+  nsample <- as.numeric(nsample)
   nsample <- min(nsample,length(avail.years))
+  avail.years <- avail.years[seq_len(nsample)]
   if(missing(resample) | is.null(resample)|is.na(resample)) resample <- TRUE
+  resample <- as.logical(resample)
   spin_start_date <- as.POSIXct(run_start_date,"UTC") - lubridate::years(nyear)
   
   ### define the met years to sample
-  if(resample){
-    spin_year <- sample(avail.years[1:nsample],
-                        size = nyear,replace = TRUE)
-  } else {
-    spin_year <- rep(avail.years[1:nsample],length.out=nyear)
-  }
   new_year <- seq(lubridate::year(spin_start_date),by=1,length.out=nyear)
+  is.leap <- lubridate::leap_year(avail.years)
+  spin_year <- NA
+  if(resample){
+    for(t in seq_along(new_year)){
+      if(lubridate::leap_year(new_year[t])){
+        spin_year[t] <- sample(avail.years[is.leap],size = 1)
+      } else {
+        spin_year[t] <- sample(avail.years[!is.leap],size = 1)
+      }
+    }
+  } else {
+    spin_year <- rep(avail.years,length.out=nyear)
+  }
   
   ## loop over spin-up years
   for(t in seq_along(new_year)){
@@ -74,6 +85,10 @@ spin.met <- function(in.path,in.prefix,start_date,end_date,nyear,nsample,resampl
     
     new_year_txt <- formatC(new_year[t], width = 4, format = "d", flag = "0")
     target.file <- file.path(in.path,paste0(in.prefix,new_year_txt,".nc"))
+    
+    if(overwrite){
+      system2("rm",target.file)
+    }
     
     ## check if a met file already exists
     if(!file.exists(target.file)){

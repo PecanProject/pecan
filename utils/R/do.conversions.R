@@ -23,6 +23,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     }
     
     input.tag <- names(settings$run$input)[i]
+    PEcAn.utils::logger.info("PROCESSING: ",input.tag)
     
     ic.flag <- fia.flag <- FALSE
     
@@ -58,7 +59,8 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     # met conversion
     if (input.tag == "met") {
       name <- ifelse(is.null(settings$browndog), "MET Process", "BrownDog")
-      if (is.null(input$path) && (PEcAn.utils::status.check(name) == 0)) {
+      if ( (PEcAn.utils::status.check(name) == 0)) { ## previously is.null(input$path) && 
+        PEcAn.utils::logger.info("calling met.process: ",settings$run$inputs[[i]][['path']])
         settings$run$inputs[[i]][['path']] <- 
           PEcAn.data.atmosphere::met.process(
             site       = settings$run$site, 
@@ -72,7 +74,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
             browndog   = settings$browndog,
             spin       = settings$spin,
             overwrite  = overwrite.met)
-        
+        print(settings$run$inputs[[i]][['path']])
         needsave <- TRUE
       }
     }

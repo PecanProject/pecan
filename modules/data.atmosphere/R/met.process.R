@@ -234,15 +234,17 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                           spin = spin)
     
     model.id  <- met2model.result$model.id
-    outfolder <- met2model.result$outfolder
+#    outfolder <- met2model.result$outfolder
   } else {
     model.id  <- ready.id
-    outfolder <- file.path(dir, paste0(met, "_site_", str_ns))
+#    outfolder <- file.path(dir, paste0(met, "_site_", str_ns))  ## this produced a bug in JULES
   }
   
-  model.file <- db.query(paste("SELECT * from dbfiles where id =", model.id$dbfile.id), con)[["file_name"]]
-  
-  return(file.path(outfolder, model.file))
+  model.file.info <- db.query(paste("SELECT * from dbfiles where id =", model.id$dbfile.id), con)
+  model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
+
+    
+  return(model.file)
 } # met.process
 
 ################################################################################################################################# 
