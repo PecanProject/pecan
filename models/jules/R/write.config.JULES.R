@@ -31,6 +31,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   molH2O_to_grams <- 18.01528
   leafC <- 0.48
   useTRIFFID <- "TRIFFID" %in% toupper(names(settings$model))
+  start_date <- settings$run$start.date
   
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
@@ -115,7 +116,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
       tlen <- grep("time =", met.header)
       if (length(tlen) > 0) {
         tlen <- as.numeric(gsub(pattern = "[^[:digit:]]", "", met.header[tlen]))
-        dt <- 86400 / round(tlen/(365 + lubridate::leap_year(as.Date(settings$run$start.date))))
+        dt <- 86400 / round(tlen/(365 + lubridate::leap_year(as.Date(start_date))))
       } else {
         print(c("write.config.JULES timestep not detected", dt))
         dt <- 1800
@@ -124,10 +125,21 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   }
   ## -------------------- END DETECT TIMESTEP --------------------
   
+  ## PEcAn SPIN-UP: symlink met files, change start date.
+  if(!is.null(settings$spin)){
+    start_date <- PEcAn.data.atmosphere::spin.met(dirname(settings$run$inputs$met$path),
+                                                  prefix,
+                                                  settings$run$site$met.start,
+                                                  settings$run$site$met.end,
+                                                  settings$spin$nyear,
+                                                  settings$spin$nsample,
+                                                  settings$spin$resample,
+                                                  start_date)
+  }
   ## Edit DRIVE.NML to set met variables
   drive.file <- file.path(rundir, "drive.nml")
   drive.text <- readLines(con = drive.file, n = -1)
-  drive.text <- gsub("@MET_START@", settings$run$site$met.start, drive.text)
+  drive.text <- gsub("@MET_START@", start_date, drive.text)
   drive.text <- gsub("@MET_END@", settings$run$site$met.end, drive.text)
   drive.text <- gsub("@SITE_MET@", file.path(dirname(settings$run$inputs$met$path),prefix), drive.text)
   drive.text <- gsub("@DT@", as.numeric(dt), drive.text)
@@ -177,7 +189,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   ## Edit TIMESTEPS.NML to set start/end date
   timesteps.file <- file.path(rundir, "timesteps.nml")
   timesteps.text <- readLines(con = timesteps.file, n = -1)
-  start_char <- format(as.Date(settings$run$start.date), "%F %H:%M:%S")
+  start_char <- format(as.Date(start_date), "%F %H:%M:%S")
   year_char <- strsplit(start_char,"-")[[1]][1]
   if(nchar(year_char)<4){
     start_char <- paste0(formatC(as.numeric(year_char),width = 4, format = "d", flag = "0"),

@@ -30,6 +30,8 @@ host     <- "psql-pecan.bu.edu"
 dbparms  <- list(driver=driver, user=user, dbname=dbname, password=password, host=host)
 con      <- db.open(dbparms)
 
+#############
+
 for(i in seq_along(paleon.sitegroups)){
   
   print(paste("************",paleon.sitegroups[i],"*************"))
@@ -289,4 +291,70 @@ for(i in seq_along(paleon.sitegroups)){
 }
 
 ## NOTE: don't forget to delete existing model met data before rerunning models
+
+
+#######  RENUMBER MET FILE YEARS
+## need to have files numbered 0850.nc not 850.nc for JULES
+## moving forward, has been fixed in extract.nc
+start_year <- 850
+end_year   <- 999
+in.prefix <- ""
+local.prefix <- "/fs/data1/pecan.data/dbfiles/PalEONregional_CF_site_"
+for(i in seq_along(paleon.sitegroups)){
+  
+  print(paste("************",paleon.sitegroups[i],"*************"))
+  pecan.sitegroup <- db.query(paste0("SELECT * from sitegroups where name = 'PalEON_",paleon.sitegroups[i],"'"),con)
+  pecan.sgs <- db.query(paste("SELECT * from sitegroups_sites where sitegroup_id =",pecan.sitegroup$id),con)
+  load(paste0("PalEON_siteInfo_",paleon.sitegroups[i],".RData"))
+  
+  for(j in seq_len(nrow(pecan.sgs))){
+    print(c(i,j))
+    
+    ## local folder
+    local.dir <- paste0(local.prefix,site.info$str_ns[j],"/")
+    if(!file.exists(local.dir) | length(dir(local.dir))==0) next
+
+    for (year in start_year:end_year) {
+      year_txt <- formatC(year, width = 4, format = "d", flag = "0")
+      infile <- file.path(local.dir, paste0(in.prefix, year, ".nc"))
+      outfile <- file.path(local.dir, paste0(in.prefix, year_txt, ".nc"))
+      if(file.exists(infile)) file.rename(infile,outfile)
+    }  
+    for(year in -150:849){
+      ## remove symbolic links
+      year_txt <- formatC(year, width = 4, format = "d", flag = "0")
+      infile <- file.path(local.dir, paste0(in.prefix, year, ".nc"))
+      system2("rm",infile)
+    }
+  }
+}
+
+### Add eastward_wind and northward_wind
+## need to go back to met2CF.PalEONregional and fix
+start_date <- "0850-01-01"
+end_date   <- "2010-12-31"
+local.prefix <- "/fs/data1/pecan.data/dbfiles/PalEONregional_CF_site_"
+in.prefix <- ""
+for(i in seq_along(paleon.sitegroups)){
+  
+  print(paste("************",paleon.sitegroups[i],"*************"))
+  pecan.sitegroup <- db.query(paste0("SELECT * from sitegroups where name = 'PalEON_",paleon.sitegroups[i],"'"),con)
+  pecan.sgs <- db.query(paste("SELECT * from sitegroups_sites where sitegroup_id =",pecan.sitegroup$id),con)
+  load(paste0("PalEON_siteInfo_",paleon.sitegroups[i],".RData"))
+  
+  for(j in seq_len(nrow(pecan.sgs))){
+    print(c(i,j))
+    
+    ## local folder
+    local.dir <- paste0(local.prefix,site.info$str_ns[j],"/")
+    if(!file.exists(local.dir) | length(dir(local.dir))==0) next
+    
+    PEcAn.data.atmosphere::split_wind(local.dir,in.prefix,start_date,end_date)
+  }
+}
+
+
+
+
+
 
