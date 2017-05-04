@@ -437,6 +437,7 @@ dbfile.check <- function(type, container.id, con, hostname=PEcAn.utils::fqdn(), 
     if(nrow(dbfiles) > 1){
       
       logger.warn("Multiple Valid Files found on host machine. Returning last updated record")
+      logger.info(dbfiles)
       return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
       
     }else{

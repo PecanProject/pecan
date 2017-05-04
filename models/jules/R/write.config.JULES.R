@@ -84,12 +84,17 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   
   ## ------------------ Detect time step of met data ------------------
   nchar.path <- nchar(settings$run$inputs$met$path)
-  prefix <- ifelse(substring(settings$run$inputs$met$path,nchar.path)=="/",
-                   "",basename(settings$run$inputs$met$path))
+  if(substring(settings$run$inputs$met$path,nchar.path)=="/"){
+    prefix <- ""
+    met.regexp <- NULL
+    met.dir <- settings$run$inputs$met$path
+  } else {
+    met.regexp <- prefix <- basename(settings$run$inputs$met$path)
+    met.dir <- dirname(settings$run$inputs$met$path)
+  }
   if(nchar(prefix)>0) prefix <- paste0(prefix,".")
-  met.file <- dir(dirname(settings$run$inputs$met$path), 
-                  pattern = prefix, 
-                  full.names = TRUE)[1]
+  met.file <- dir(met.dir, pattern = met.regexp, full.names = TRUE)[1]
+  PEcAn.utils::logger.info("Detect timestep:",settings$run$inputs$met)
   met.header <- system(paste("ncdump -h ", met.file), intern = TRUE)
   id <- grep("time:delta_t", met.header)
   if (length(id) > 0) {
@@ -136,19 +141,54 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
                                                   settings$spin$resample,
                                                   start_date)
   }
+  
+  ## set up date strings
+  start_char <- format(as.Date(start_date), "%F %H:%M:%S")
+  year_char <- strsplit(start_char,"-")[[1]][1]
+  if(nchar(year_char)<4){
+    start_char <- paste0(formatC(as.numeric(year_char),width = 4, format = "d", flag = "0"),
+                         substr(start_char,nchar(year_char)+1,nchar(start_char))
+    )
+  }
+  end_char <- format(as.Date(settings$run$end.date), "%F %H:%M:%S")
+  
+  
   ## Edit DRIVE.NML to set met variables
   drive.file <- file.path(rundir, "drive.nml")
   drive.text <- readLines(con = drive.file, n = -1)
-  drive.text <- gsub("@MET_START@", start_date, drive.text)
+  drive.text <- gsub("@MET_START@", substr(start_char,1,10), drive.text)
   drive.text <- gsub("@MET_END@", settings$run$site$met.end, drive.text)
   drive.text <- gsub("@SITE_MET@", file.path(dirname(settings$run$inputs$met$path),prefix), drive.text)
   drive.text <- gsub("@DT@", as.numeric(dt), drive.text)
   writeLines(drive.text, con = drive.file)
   
+  ## Edit TIMESTEPS.NML to set start/end date
+  timesteps.file <- file.path(rundir, "timesteps.nml")
+  timesteps.text <- readLines(con = timesteps.file, n = -1)
+  timesteps.text <- gsub("@START_DATE@", start_char, timesteps.text)
+  timesteps.text <- gsub("@END_DATE@", end_char, timesteps.text)
+  writeLines(timesteps.text, con = timesteps.file)
+  
   ## Edit PRESCRIBED_DATA.NML to add CO2 data
   if("co2" %in% tolower(names(settings$run$inputs))){
     pd.file <- file.path(rundir, "prescribed_data.nml")
     pd.text <- readLines(con = pd.file, n = -1)
+    
+    ## SPIN the CO2 file
+    if(!is.null(settings$spin)){
+      dt = udunits2::ud.convert(as.numeric(as.Date(settings$run$end.date)-
+                                             as.Date(settings$run$start.date)),"days","years")
+      co2.dat <- read.table(settings$run$inputs$co2$path,header=FALSE) 
+      co2.per.year <- round(nrow(co2.dat)/dt)  
+      
+      ## as first pass, just repeat the whole sequence. Not doing resampling. Not worrying about how to loop the file
+      co2.dat <- rbind(co2.dat[seq_len(as.numeric(settings$spin$nyear)*co2.per.year),],co2.dat)
+      
+      co2.local <- file.path(settings$rundir,run.id,basename(settings$run$inputs$co2$path))
+      write.table(co2.dat,file = co2.local,col.names = FALSE,row.names = FALSE)
+      settings$run$inputs$co2$path <- co2.local
+      PEcAn.utils::logger.debug("co2.local",co2.local,dim(co2.dat))
+    }
     
     ## add CO2 file
     pdn <- length(pd.text)
@@ -157,12 +197,12 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     pd.text[pdn+3] <- paste0("data_start  = '",start_char,"',")
     pd.text[pdn+4] <- paste0("data_end    = '",end_char,"',")
     pd.text[pdn+5] <- paste0("data_period=-1")
-    pd.text[pdn+6] <- paste0("file='",settings$inputs$co2$path,"',")
+    pd.text[pdn+6] <- paste0("file='",settings$run$inputs$co2$path,"',")
     pd.text[pdn+7] <- paste0("nvars=1")
     pd.text[pdn+8] <- paste0("var='co2_mmr'")
     pd.text[pdn+9] <- paste0("interp='i'")
     pd.text[pdn+10] <- paste0("/")
-
+    
     # EXAMPLE
     # &JULES_PRESCRIBED_DATASET
     # data_start  = '0850-01-01 00:00:00',
@@ -185,21 +225,6 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     
     writeLines(pd.text, con = pd.file)
   }
-  
-  ## Edit TIMESTEPS.NML to set start/end date
-  timesteps.file <- file.path(rundir, "timesteps.nml")
-  timesteps.text <- readLines(con = timesteps.file, n = -1)
-  start_char <- format(as.Date(start_date), "%F %H:%M:%S")
-  year_char <- strsplit(start_char,"-")[[1]][1]
-  if(nchar(year_char)<4){
-    start_char <- paste0(formatC(as.numeric(year_char),width = 4, format = "d", flag = "0"),
-                         substr(start_char,nchar(year_char)+1,nchar(start_char))
-                         )
-  }
-  end_char <- format(as.Date(settings$run$end.date), "%F %H:%M:%S")
-  timesteps.text <- gsub("@START_DATE@", start_char, timesteps.text)
-  timesteps.text <- gsub("@END_DATE@", end_char, timesteps.text)
-  writeLines(timesteps.text, con = timesteps.file)
   
   ## Edit MODEL_GRID.NML to set lat/lon
   grid.file <- file.path(rundir, "model_grid.nml")
@@ -230,12 +255,12 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     ## add to out_varname
     k <- which(rev((len > 0)[1:(out_type_i-1)]))[1] ## how many lines back is previous block
     output.text[out_type_i-k] <- paste0(output.text[out_type_i-k],
-                                        "'Fcomp', 'TotLivBio_PFT', 'Height',")
+                                        " 'Fcomp', 'TotLivBio_PFT', 'Height',")
     
     ## add extra output variables
     k <- which(rev((len > 0)[1:(out_varname_i-1)]))[1] ## how many lines back is previous block
     output.text[out_varname_i-k] <- paste0(output.text[out_varname_i-k],
-                                        "'frac', 'c_veg', 'canht',")
+                                        " 'frac', 'c_veg', 'canht',")
   }
   writeLines(output.text, con = output.file)
   
@@ -513,12 +538,12 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
       } else {
         ## insert into defaults table
 #        defaults[mch, i] <- pft[v]   ## STATIC allows pft reorder
-        defaults[mch, pft.ord[i]] <- pft[v]    ## TRIFFID enforces pft order
+        defaults[mch, pft.id[i]] <- pft[v]    ## TRIFFID enforces pft order
       }
     }  ## end loop over parameters
   }  ## end loop over PFTs
   
-  ## write out new file
+  ## write out new file 
   write(pft.text[1], pft.file)  ## Header
   for (i in seq_len(nrow(defaults))) {
     write(paste0(rownames(defaults)[i], "=", paste(defaults[i, ], collapse = ","), ","), pft.file, 
@@ -549,7 +574,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     
     ## update var
     ic_var <- grep("^var=",ic.text)
-    ic.text[ic_var] <- paste0(ic.text[ic_var],"'canht','frac',")
+    ic.text[ic_var] <- paste0(ic.text[ic_var],",'canht','frac',")
     
     ## write namelist
     writeLines(ic.text, con = ic.file)
