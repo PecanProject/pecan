@@ -2,11 +2,12 @@
 #'
 #' @param in.path    met input folder path
 #' @param in.prefix  met input file prefix (shared by all annual files, can be "") 
-#' @param start_date start of real met & run
-#' @param end_date   end of run
+#' @param start_date start of met
+#' @param end_date   end of met
 #' @param nyear      number of years of spin-up, default 1000
 #' @param nsample    sample the first nsample years of met, default 50
 #' @param resample   resample (TRUE, default) or cycle (FALSE) meteorology
+#' @param run_start_date date the run itself starts, which can be different than the start of met
 #' 
 #' @details 
 #' spin.met works by creating symbolic links to the sampled met file, 
@@ -32,7 +33,7 @@
 #'    start_date <- PEcAn.data.atmosphere::spin.met(in.path,in.prefix,start_date,end_date,nyear,nsample,resample)
 #' }
 #' }
-spin.met <- function(in.path,in.prefix,start_date,end_date,nyear,nsample,resample=TRUE){
+spin.met <- function(in.path,in.prefix,start_date,end_date,nyear,nsample,resample=TRUE,run_start_date = start_date){
   
   ### input checking
   
@@ -54,7 +55,7 @@ spin.met <- function(in.path,in.prefix,start_date,end_date,nyear,nsample,resampl
   if(missing(nsample)|is.null(nsample) | is.na(nsample)) nsample <- 50
   nsample <- min(nsample,length(avail.years))
   if(missing(resample) | is.null(resample)|is.na(resample)) resample <- TRUE
-  spin_start_date <- as.POSIXct(start_date,"UTC") - lubridate::years(nyear)
+  spin_start_date <- as.POSIXct(run_start_date,"UTC") - lubridate::years(nyear)
   
   ### define the met years to sample
   if(resample){
@@ -68,8 +69,11 @@ spin.met <- function(in.path,in.prefix,start_date,end_date,nyear,nsample,resampl
   ## loop over spin-up years
   for(t in seq_along(new_year)){
     
-    source.file <- file.path(in.path,paste0(in.prefix,spin_year[t],".nc"))
-    target.file <- file.path(in.path,paste0(in.prefix,new_year[t],".nc"))
+    spin_year_txt <- formatC(spin_year[t], width = 4, format = "d", flag = "0")
+    source.file <- file.path(in.path,paste0(in.prefix,spin_year_txt,".nc"))
+    
+    new_year_txt <- formatC(new_year[t], width = 4, format = "d", flag = "0")
+    target.file <- file.path(in.path,paste0(in.prefix,new_year_txt,".nc"))
     
     ## check if a met file already exists
     if(!file.exists(target.file)){
