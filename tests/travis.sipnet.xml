@@ -48,7 +48,11 @@
       <id>772</id>
     </site>
     <inputs>
-      <met>/home/travis/sipnet_unk/niwot_tutorial.clim</met>
+      <met>
+        <source>AmerifluxLBL</source>
+        <id>5000000005</id>
+        <path>/home/travis/sipnet_unk/niwot_tutorial.clim</path>
+      </met>
     </inputs>
     <start.date>2002-01-01 00:00:00</start.date>
     <end.date>2005-12-31 00:00:00</end.date>
