@@ -243,8 +243,10 @@ met.process <- function(site, input_met, start_date, end_date, model,
     model.id  <- met2model.result$model.id
 #    outfolder <- met2model.result$outfolder
   } else {
+    PEcAn.utils::logger.info("ready.id",ready.id,machine.host)
     model.id  <- dbfile.check("Input", ready.id, con, hostname=machine.host)
     model.id$dbfile.id  <- model.id$id 
+    PEcAn.utils::logger.info("model.id",model.id)
 #    outfolder <- file.path(dir, paste0(met, "_site_", str_ns))  ## this produced a bug in JULES
   }
   
