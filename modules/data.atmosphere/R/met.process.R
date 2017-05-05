@@ -241,17 +241,23 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                           spin = spin)
     
     model.id  <- met2model.result$model.id
-#    outfolder <- met2model.result$outfolder
+    model.file.info <- db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
+    model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
+    
   } else {
     PEcAn.utils::logger.info("ready.id",ready.id,machine.host)
     model.id  <- dbfile.check("Input", ready.id, con)#, hostname=machine.host)
     model.id$dbfile.id  <- model.id$id 
     PEcAn.utils::logger.info("model.id",model.id)
-#    outfolder <- file.path(dir, paste0(met, "_site_", str_ns))  ## this produced a bug in JULES
+    model.file.info <- db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
+    if(is.null(model.file.info)|length(model.file.info)){
+      model.file <- input_met$path
+    } else {
+      model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
+    }
+    
   }
   
-  model.file.info <- db.query(paste("SELECT * from dbfiles where id =", model.id$dbfile.id), con)
-  model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
 
     
   return(model.file)
