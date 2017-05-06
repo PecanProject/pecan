@@ -182,7 +182,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
       co2.per.year <- round(nrow(co2.dat)/dt)  
       
       ## as first pass, just repeat the whole sequence. Not doing resampling. Not worrying about how to loop the file
-      co2.dat <- c(as.vector(co2.dat[seq_len(as.numeric(settings$spin$nyear)*co2.per.year),]),unlist(co2.dat))
+      co2.dat <- c(as.vector(co2.dat[seq_len(as.numeric(settings$spin$nyear)*co2.per.year+1),]),unlist(co2.dat))
       
       co2.local <- file.path(settings$rundir,run.id,basename(settings$run$inputs$co2$path))
       write.table(co2.dat,file = co2.local,col.names = FALSE,row.names = FALSE)
