@@ -86,6 +86,7 @@ script:
   - make
   - echo 'Testing PEcAn'
   - make test
+  - make document
   - echo 'Testing Integration'
   - ./tests/integration.sh travis
   - if [[ `git status -s` ]]; then 
