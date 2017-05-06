@@ -32,7 +32,7 @@ approx.posterior <- function(trait.mcmc, priors, trait.data = NULL, outdir = NUL
   
   ## initialization
   posteriors <- priors
-  do.plot <- exists("outdir")
+  do.plot <- !is.null(outdir)
   if (do.plot == TRUE) {
     pdf(file.path(outdir, paste("posteriors", filename.flag, ".pdf", sep = "")))
   }
