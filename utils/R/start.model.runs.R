@@ -286,10 +286,10 @@ start.model.runs <- function(settings, write = TRUE, stop.on.fail=TRUE) {
 
 
 ##' @export
-runModule.start.model.runs <- function(settings) {
+runModule.start.model.runs <- function(settings,stop.on.fail=TRUE) {
   if (is.MultiSettings(settings) || is.Settings(settings)) {
     write <- settings$database$bety$write
-    return(start.model.runs(settings, write))
+    return(start.model.runs(settings, write,stop.on.fail))
   } else {
     stop("runModule.start.model.runs only works with Settings or MultiSettings")
   }
