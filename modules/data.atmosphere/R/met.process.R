@@ -247,7 +247,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
   } else {
     PEcAn.utils::logger.info("ready.id",ready.id,machine.host)
     model.id  <- dbfile.check("Input", ready.id, con)#, hostname=machine.host)
-    PEcAn.utils::logger.info("model.id\n",model.id)
     if(is.null(model.id)|length(model.id)==0){
       model.file <- input_met$path
     }else{
@@ -255,6 +254,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
       model.file.info <- db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
       model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
     }
+    PEcAn.utils::logger.info("model.file = ",model.file)
+    
   }
   
 
