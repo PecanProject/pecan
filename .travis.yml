@@ -87,6 +87,10 @@ script:
   - make test
   - echo 'Testing Integration'
   - ./tests/integration.sh travis
+  - if [[ `git status -s` ]]; then 
+      echo "The build changed some files! Have you run devtools::check and commited any updated Roxygen outputs?";
+      exit 1; 
+    fi
   - set +e
 
 after_script:
