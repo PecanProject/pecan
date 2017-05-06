@@ -249,7 +249,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
     model.id  <- dbfile.check("Input", ready.id, con)#, hostname=machine.host)
     model.id$dbfile.id  <- model.id$id 
     PEcAn.utils::logger.info("model.id",model.id)
-    if(is.null(model.id)|length(model.id)=0){
+    if(is.null(model.id)|length(model.id)==0){
       model.file.info <- db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
     }else{
       model.file.info <- NULL
