@@ -19,7 +19,7 @@
 ##' }
 ##' @author Shawn Serbin, Rob Kooper, David LeBauer
 ##'
-start.model.runs <- function(settings, write = TRUE) {
+start.model.runs <- function(settings, write = TRUE, stop.on.fail=TRUE) {
   
   # check if runs need to be done
   if(!file.exists(file.path(settings$rundir, "runs.txt"))){
@@ -131,7 +131,11 @@ start.model.runs <- function(settings, write = TRUE) {
         
         # check output to see if an error occurred during the model run
         if ("ERROR IN MODEL RUN" %in% out) {
-          logger.severe("Model run aborted, with error.\n", out)
+          if(stop.on.fail){
+            logger.severe("Model run aborted, with error.\n", out)
+          } else {
+            logger.error("Model run aborted, with error.\n",out)
+          }
         }
         
         # copy data back to local
