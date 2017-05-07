@@ -67,7 +67,7 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
   
   results <- list()
 
-  data(mstmip_vars, package = "PEcAn.utils")
+  utils::data(mstmip_vars, package = "PEcAn.utils", envir = environment())
 
   ## pressure naming hack pending https://github.com/ebimodeling/model-drivers/issues/2
   standard_names <- append(as.character(mstmip_vars$standard_name), "surface_pressure")
