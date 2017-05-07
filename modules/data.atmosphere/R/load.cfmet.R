@@ -28,14 +28,14 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
   lati <- which.min(abs(Lat - lat))
   loni <- which.min(abs(Lon - lon))
 
-  start.date <- lubridate::ymd(start.date, tz = "UTC")
-  end.date <- lubridate::ymd(end.date, tz = "UTC")
+  start.date <- lubridate::parse_date_time(start.date, tz = "UTC", orders=c("ymd_HMSz", "ymd_HMS", "ymd_H", "ymd"))
+  end.date <- lubridate::parse_date_time(end.date, tz = "UTC", orders=c("ymd_HMSz", "ymd_HMS", "ymd_H", "ymd"))
 
   time.idx <- ncdf4::ncvar_get(met.nc, "time")
 
   ## confirm that time units are PEcAn standard
   basetime.string <- ncdf4::ncatt_get(met.nc, "time", "units")$value
-  base.date       <- lubridate::parse_date_time(basetime.string, c("ymd_HMS", "ymd_H", "ymd"))
+  base.date       <- lubridate::parse_date_time(basetime.string, c("ymd_HMSz", "ymd_HMS", "ymd_H", "ymd"))
   base.units      <- strsplit(basetime.string, " since ")[[1]][1]
 
   ## convert to days
