@@ -57,7 +57,7 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
 
       upscale_result <- PEcAn.data.atmosphere::upscale_met(
         outfolder = outfolder, input_met = ncfile,
-        site.id = in.prefix, reso = 1,
+        site.id = in.prefix, resolution = 1, reso_unit = "hour",
         overwrite = overwrite)
 
       met.nc <- ncdf4::nc_open(upscale_result$file)
