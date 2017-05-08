@@ -23,7 +23,6 @@
 ##' @param ... other arguments passed from PEcAn, currently ignored
 ##' @return a dataframe of information about the written file
 ##' @export
-##' @importFrom PEcAn.data.atmosphere load.cfmet cfmet.downscale.time
 ##' @author Rob Kooper, David LeBauer
 ##-------------------------------------------------------------------------------------------------#
 met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
@@ -45,12 +44,34 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
     }
 
     met.nc <- ncdf4::nc_open(ncfile)
-    tmp.met <- load.cfmet(met.nc, lat = lat, lon = lon,
-                          start.date = yrstart, end.date = yrend)
+    on.exit(ncdf4::nc_close(met.nc))
 
-    dt <- lubridate::as.period(mean(diff(tmp.met$date)))
-    if (dt > lubridate::hours(1)) {
-      tmp.met <- cfmet.downscale.time(cfmet = tmp.met, output.dt = 1)
+    dt <- mean(diff(udunits2::ud.convert(
+      met.nc$dim$time$vals,
+      met.nc$dim$time$units,
+      "hours since 1700-01-01 00:00:00")))
+    if (dt < 1) {
+      # More than one obs/hour. Write upscaled hourly file and reload.
+      on.exit()
+      ncdf4::nc_close(met.nc)
+
+      upscale_result <- PEcAn.data.atmosphere::upscale_met(
+        outfolder = outfolder, input_met = ncfile,
+        site.id = in.prefix, reso = 1,
+        overwrite = overwrite)
+
+      met.nc <- ncdf4::nc_open(upscale_result$file)
+      on.exit(ncdf4::nc_close(met.nc))
+    }
+
+    tmp.met <- PEcAn.data.atmosphere::load.cfmet(
+      met.nc, lat = lat, lon = lon,
+      start.date = yrstart, end.date = yrend)
+
+    if (dt > 1) {
+      # Data have fewer than 1 obs/hour. Need to downscale.
+      # Unlike upscale, downscale returns result directly--No file needed.
+      tmp.met <- PEcAn.data.atmosphere::cfmet.downscale.time(cfmet = tmp.met, output.dt = 1)
     }
 
     met <- cf2biocro(tmp.met)
