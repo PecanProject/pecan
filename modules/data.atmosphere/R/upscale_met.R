@@ -1,27 +1,21 @@
-substrRight <- function(x, n) {
-  substr(x, nchar(x) - n + 1, nchar(x))
-}
 
 ##' upscale_met upscales the temporal resolution of a dataset
 ##' @name upscale_met
 ##' @title upscale_met
 ##' @export
-##' @param outfolder
-##' @param input_met - met dataset
-##' @param site.id
-##' @param reso - numeric value in HOURS that is the desired resolution for the dataset to be upscaled to
-##'               # might need to change this for monthly/yearly option later
-##' @param overwrite
-##' @param verbose
+##' @param input_met path to netcdf file containing met dataset
+##' @param outfolder path to directory where output should be saved
+##'           Output is netcdf with named as <input_met_filename>.upscaled.nc
+##' @param resolution numeric value that is the desired resolution for the dataset to be upscaled to
+##' @param reso_unit character units for the resolution timestep.
+##'                   Must be interpretable as a time unit by \code{\link[udunits2]{ud.convert}}
+##' @param overwrite logical: replace output file if it already exists?
+##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run?
 ##' @author James Simkins
 
-upscale_met <- function(outfolder, input_met, site.id, reso = 6, overwrite = FALSE, 
+upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours", overwrite = FALSE,
                         verbose = FALSE, ...) {
   
-  
-  sub_str <- substrRight(input_met, 7)
-  year <- substr(sub_str, 1, 4)
-  year <- as.numeric(year)
   
   # Variable names
   var <- utils::read.csv(system.file("/data/met.lookup.csv", package = "PEcAn.data.atmosphere"),
@@ -38,6 +32,11 @@ upscale_met <- function(outfolder, input_met, site.id, reso = 6, overwrite = FAL
     }
   }
   
+  time_unit <- sub(" since.*", "", tem$dim$time$units)
+  time_base <- lubridate::parse_date_time(sub(".*since ", "", tem$dim$time$units),
+                                          orders = c("ymdHMSz", "ymdHMS", "ymd"))
+  time_data <- udunits2::ud.convert(tem$dim$time$vals, time_unit, reso_unit)
+
   lat_data <- as.numeric(ncdf4::ncvar_get(tem, "latitude"))
   lon_data <- as.numeric(ncdf4::ncvar_get(tem, "longitude"))
   ncdf4::nc_close(tem)
@@ -45,16 +44,9 @@ upscale_met <- function(outfolder, input_met, site.id, reso = 6, overwrite = FAL
   met_data <- data.frame(met_data)
   colnames(met_data) <- var$CF_standard_name
   
-  if (lubridate::leap_year(year) == TRUE) {
-    sp <- 366
-  }
-  if (lubridate::leap_year(year) == FALSE) {
-    sp <- 365
-  }
-  reso_len <- sp * 24/reso
-  
+  reso_len <- diff(range(time_data))/reso
   step <- nrow(met_data)/reso_len
-  upscale_data <- data.frame()
+  upscale_data <- data.frame(time = colMeans(matrix(time_data, nrow=step)))
   for (n in seq_along(var$CF_standard_name)) {
     upscale_data[1:reso_len,n] <- colMeans(matrix(met_data[[n]], nrow=step))
   }
@@ -72,8 +64,9 @@ upscale_met <- function(outfolder, input_met, site.id, reso = 6, overwrite = FAL
                           create_dimvar = TRUE)
   lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon_data, 
                           create_dimvar = TRUE)
-  time <- ncdf4::ncdim_def(name = "time", units = "sec", vals = (1:reso_len) * 
-                             reso * 3600, create_dimvar = TRUE, unlim = TRUE)
+  time <- ncdf4::ncdim_def(name = "time", units = paste(reso_unit, "since", time_base),
+                           vals = upscale_data$time,
+                           create_dimvar = TRUE, unlim = TRUE)
   dim <- list(lat, lon, time)
   
   for (j in seq_along(var$CF_standard_name)) {
@@ -88,7 +81,7 @@ upscale_met <- function(outfolder, input_met, site.id, reso = 6, overwrite = FAL
                         formatname = character(rows), startdate = character(rows), enddate = character(rows), 
                         dbfile.name = paste("upscaled", sep = "."), stringsAsFactors = FALSE)
   
-  loc.file = file.path(outfolder, paste("upscaled", year, "nc", sep = "."))
+  loc.file = file.path(outfolder, paste("upscaled", basename(input_met), sep = "."))
   loc <- ncdf4::nc_create(filename = loc.file, vars = upscale.list, verbose = verbose)
   
   for (j in seq_along(var$CF_standard_name)) {
@@ -98,8 +91,8 @@ upscale_met <- function(outfolder, input_met, site.id, reso = 6, overwrite = FAL
   
   results$file <- loc.file
   results$host <- PEcAn.utils::fqdn()
-  results$startdate <- paste0(year, "-01-01 00:00:00", tz = "UTC")
-  results$enddate <- paste0(year, "-12-31 23:59:59", tz = "UTC")
+  results$startdate <- time_base + udunits2::ud.convert(upscale_data$time[[1]], reso_unit, "sec")
+  results$enddate <- time_base + udunits2::ud.convert(upscale_data$time[[nrow(upscale_data)]], reso_unit, "sec")
   results$mimetype <- "application/x-netcdf"
   results$formatname <- "CF Meteorology"
   
