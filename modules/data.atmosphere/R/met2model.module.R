@@ -30,9 +30,6 @@
         outfolder <- file.path(host$folder, paste0(met, "_", model, "_site_", str_ns))
       }
     }
-    outfolder <- ifelse(host$name == "localhost", 
-                        , 
-                        )
     
     pkg <- paste0("PEcAn.", model)
     fcn <- paste0("met2model.", model)

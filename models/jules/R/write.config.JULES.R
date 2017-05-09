@@ -32,6 +32,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   leafC <- 0.48
   useTRIFFID <- "TRIFFID" %in% toupper(names(settings$model))
   start_date <- settings$run$start.date
+  run.local <- settings$host == "localhost" | settings$host == PEcAn.utils::fqdn()
   
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
@@ -93,46 +94,23 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     met.dir <- dirname(settings$run$inputs$met$path)
   }
   if(nchar(prefix)>0) prefix <- paste0(prefix,".")
-  met.file <- dir(met.dir, pattern = met.regexp, full.names = TRUE)[1]
-  PEcAn.utils::logger.info("Detect timestep:",settings$run$inputs$met)
-  met.header <- system(paste("ncdump -h ", met.file), intern = TRUE)
-  id <- grep("time:delta_t", met.header)
-  if (length(id) > 0) {
-    delta_t <- met.header[id]
-    # Example: delta_t = ' time:delta_t = '0000-00-00 03:00:00' ;'
-    dt <- diff(strptime(c("00:00:00", substring(strsplit(delta_t, "\"")[[1]][2], 11)), format = "%T"))
-    units(dt) <- "secs"
+  if(run.local){
+    dt <- detect.timestep(met.dir,met.regexp)
   } else {
-    id <- grep("time_coverage_resolution", met.header)
-    if (length(id) > 0) {
-      delta_t <- met.header[id]
-      dt <- strsplit(strsplit(delta_t, "\"")[[1]][2], " ")[[1]]
-      if (dt[2] == "min") {
-        dt[1] <- as.numeric(dt[1]) * 60
-        dt[2] <- "sec"
-      }
-      if (dt[2] == "sec") {
-        dt <- dt[1]
-      } else {
-        print(c("write.config.JULES timestep not detected", dt))
-        dt <- 1800
-      }
-    } else {
-      tlen <- grep("time =", met.header)
-      if (length(tlen) > 0) {
-        tlen <- as.numeric(gsub(pattern = "[^[:digit:]]", "", met.header[tlen]))
-        dt <- 86400 / round(tlen/(365 + lubridate::leap_year(as.Date(start_date))))
-      } else {
-        print(c("write.config.JULES timestep not detected", dt))
-        dt <- 1800
-      }
-    }
+    dt <- PEcAn.utils::remote.execute.cmd(settings$host$name,
+                                          "PEcAn.JULES::detect.timestep",
+                                          args=list(
+                                            met.dir=met.dir,
+                                            met.regexp=met.regexp
+                                          ))
   }
   ## -------------------- END DETECT TIMESTEP --------------------
   
   ## PEcAn SPIN-UP: symlink met files, change start date.
   if(!is.null(settings$spin)){
-    start_date <- PEcAn.data.atmosphere::spin.met(dirname(settings$run$inputs$met$path),
+    if(run.local){
+      ## run local
+      start_date <- PEcAn.data.atmosphere::spin.met(dirname(settings$run$inputs$met$path),
                                                   prefix,
                                                   settings$run$site$met.start,
                                                   settings$run$site$met.end,
@@ -140,7 +118,23 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
                                                   settings$spin$nsample,
                                                   settings$spin$resample,
                                                   start_date)
-  }
+    } else {
+      ## run spin for remote met
+      stat = PEcAn.utils::remote.execute.cmd(host=settings$host$name,
+                                      cmd = "PEcAn.data.atmosphere::spin.met",
+                                      args = list(
+                                        in.path=dirname(settings$run$inputs$met$path),
+                                        in.prefix=prefix,
+                                        start_date=settings$run$site$met.start,
+                                        end_date=settings$run$site$met.end,
+                                        nyear=settings$spin$nyear,
+                                        nsample=settings$spin$nsample,
+                                        resample=settings$spin$resample,
+                                        run_start_date =start_date
+                                      ))
+
+    }
+  }  ## end spin
   
   ## set up date strings
   start_char <- format(as.Date(start_date), "%F %H:%M:%S")
@@ -587,3 +581,52 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     writeLines(ic.text, con = ic.dat)
   }
 } # write.config.JULES
+
+
+#' Detect timestep of JULES met files
+#'
+#' @param met.dir 
+#' @param met.regexp 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+detect.timestep <- function(met.dir,met.regexp){
+  met.file <- dir(met.dir, pattern = met.regexp, full.names = TRUE)[1]
+  PEcAn.utils::logger.info("Detect timestep:",met.dir,met.regexp)
+  met.header <- system(paste("ncdump -h ", met.file), intern = TRUE)
+  id <- grep("time:delta_t", met.header)
+  if (length(id) > 0) {
+    delta_t <- met.header[id]
+    # Example: delta_t = ' time:delta_t = '0000-00-00 03:00:00' ;'
+    dt <- diff(strptime(c("00:00:00", substring(strsplit(delta_t, "\"")[[1]][2], 11)), format = "%T"))
+    units(dt) <- "secs"
+  } else {
+    id <- grep("time_coverage_resolution", met.header)
+    if (length(id) > 0) {
+      delta_t <- met.header[id]
+      dt <- strsplit(strsplit(delta_t, "\"")[[1]][2], " ")[[1]]
+      if (dt[2] == "min") {
+        dt[1] <- as.numeric(dt[1]) * 60
+        dt[2] <- "sec"
+      }
+      if (dt[2] == "sec") {
+        dt <- dt[1]
+      } else {
+        print(c("write.config.JULES timestep not detected", dt))
+        dt <- 1800
+      }
+    } else {
+      tlen <- grep("time =", met.header)
+      if (length(tlen) > 0) {
+        tlen <- as.numeric(gsub(pattern = "[^[:digit:]]", "", met.header[tlen]))
+        dt <- 86400 / round(tlen/(365 + lubridate::leap_year(as.Date(start_date))))
+      } else {
+        print(c("write.config.JULES timestep not detected", dt))
+        dt <- 1800
+      }
+    }
+  }
+  return(dt)
+}
