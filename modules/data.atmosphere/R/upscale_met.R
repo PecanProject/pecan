@@ -37,7 +37,7 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
   reso_len <- diff(range(time_data)) %/% resolution
   step <- nrow(met_data) %/% reso_len
   met_data <- met_data[1:(step*reso_len),]
-  upscaled_time = colMeans(matrix(time_data[1:(step*reso_len),], nrow=step))
+  upscaled_time = colMeans(matrix(time_data[1:(step*reso_len)], nrow=step))
   upscale_data <- data.frame()
   for (n in names(met_data)) {
     upscale_data[1:reso_len,n] <- colMeans(matrix(met_data[[n]], nrow=step))
