@@ -29,7 +29,9 @@
 ##' library(PEcAn.DB)
 ##' library(lubridate)
 ##' library(RPostgreSQL)
-##' bety = list(user='bety', password='bety', host='localhost', dbname='bety', driver='PostgreSQL', write=TRUE)
+##' bety = list(user='bety', password='bety',
+##'             host='localhost', dbname='bety', driver='PostgreSQL',
+##'             write=TRUE)
 ##' con <- db.open(bety)
 ##' in.path <- '/home/carya/sites/willow/'
 ##' in.prefix <- 'FLX_US-WCr_FLUXNET2015_SUBSET_HH_1999-2014_1-1'
@@ -38,7 +40,9 @@
 ##' format <- query.format.vars(input.id=input.id,bety = bety)
 ##' start_date <- ymd_hm('200401010000')
 ##' end_date <- ymd_hm('200412312330')
-##' PEcAn.data.atmosphere::met2CF.csv(in.path,in.prefix,outfolder,start_date,end_date,format,overwrite=TRUE)
+##' PEcAn.data.atmosphere::met2CF.csv(in.path, in.prefix, outfolder,
+##'                                   start_date, end_date,
+##'                                   format, overwrite=TRUE)
 ##' }
 ##' @importFrom ncdf4 ncvar_get ncdim_def ncvar_add ncvar_put
 ##' @importFrom udunits2 ud.is.parseable ud.convert ud.are.convertible
