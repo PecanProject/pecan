@@ -665,6 +665,25 @@ convert.expr <- function(expression) {
   return(list(variable.drv = deri.var, variable.eqn = list(variables = variables, expression = deri.eqn)))
 }
 
+##' Simple function to use ncftpget for FTP downloads behind a firewall.
+##' Requires ncftpget and a properly formatted config file in the users 
+##' home directory
+##' @title download.file
+##' @param url complete URL for file download
+##' @param destfile destination file name
+##' @param method Method of file retrieval.  Currently the only option is ncftpget
+##' @export
+##' @author Shawn Serbin
+download.file <- function(url, destfile, method="ncftpget") {
+   if (method=="ncftpget") {
+   system(paste(method,"-c",url,">",destfile,sep=" "))
+   } else {
+   logger.debug("method not yet implemented")
+   }     
+# TODO: Enable the setting of method within the PEcAn xml for machines behind
+# a firewall using ncftpget or similar programs.
+}
+
 ####################################################################################################
 ### EOF.  End of R script file.              
 ####################################################################################################
