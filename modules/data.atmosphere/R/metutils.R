@@ -134,7 +134,7 @@ wide2long <- function(data.wide, lat, lon, var) {
 ##' convert PAR to PPFD
 ##'
 ##' Converts photosynthetically active radiation (PAR, units of Watts / m2) to
-##' photosynthetic photon flux density (PPFD) in units of mol / m2 / s 
+##' photosynthetic photon flux density (PPFD) in units of umol / m2 / s
 ##' From Campbell and Norman p151
 ##' PPFD = PAR * (J/m2/s) * (1 mol / 2.35e5 J)
 ##' 2.35e5 J / mol is the energy content of solar radiation in the PAR waveband
@@ -142,7 +142,7 @@ wide2long <- function(data.wide, lat, lon, var) {
 ##' @param watts PAR (W / m2)
 ##' @author David LeBauer
 ##' @export
-##' @return PPFD (mol / m2 / s) 
+##' @return PPFD (umol / m2 / s)
 ##' @author David LeBauer
 par2ppfd <- function(watts) {
   ppfd <- watts/(2.35 * 10^5)
