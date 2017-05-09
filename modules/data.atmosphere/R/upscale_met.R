@@ -44,8 +44,8 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
   }
   
   if (!is.null(upscale_data$air_temperature)
-      && is_null(upscale_data$air_temperature_max)
-      && is_null(upscale_data$air_temperature_min)) {
+      && is.null(upscale_data$air_temperature_max)
+      && is.null(upscale_data$air_temperature_min)) {
     for (x in 1:reso_len) {
       upscale_data$air_temperature_max[x] <- max(
         met_data$air_temperature[(x * step - step + 1):(x * step)])
