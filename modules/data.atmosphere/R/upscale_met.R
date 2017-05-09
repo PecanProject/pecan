@@ -19,7 +19,7 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
   dim <- tem$dim
   met_data <- list()
   met_units <- list()
-  for (v in names(tem$var) {
+  for (v in names(tem$var)) {
     met_data[[v]] <- ncdf4::ncvar_get(nc = tem, varid = v)
     met_units[[v]] <- ncdf4::ncatt_get(nc = tem, varid = v, attname = "units")$value
   }
