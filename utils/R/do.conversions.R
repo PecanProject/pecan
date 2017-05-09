@@ -14,7 +14,8 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     settings$run$inputs <- NULL  ## check for empty set
   }
   
-  dbfiles <- ifelse(!PEcAn.utils::is.localhost(settings$host) & !is.null(settings$host$folder), settings$host$folder, settings$database$dbfiles)
+  dbfiles.local <- settings$database$dbfiles
+  dbfiles <- ifelse(!PEcAn.utils::is.localhost(settings$host) & !is.null(settings$host$folder), settings$host$folder, dbfiles.local)
   PEcAn.utils::logger.debug("do.conversion outdir",dbfiles)
   
   for (i in seq_along(settings$run$inputs)) {
@@ -53,8 +54,12 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     
     # soil extraction
     if(input.tag == "soil"){
-      settings$run$inputs[[i]][['path']] <- PEcAn.data.land::soil_process(settings,input,dbfiles,overwrite=FALSE)
+      settings$run$inputs[[i]][['path']] <- PEcAn.data.land::soil_process(settings,input,dbfiles.local,overwrite=FALSE)
       needsave <- TRUE
+      ## NOTES: at the moment only processing soil locally. Need to think about how to generalize this
+      ## because many models will read PEcAn standard in write.configs and write out into settings
+      ## which is done locally in rundir and then rsync'ed to remote
+      ## rather than having a model-format soils file that is processed remotely
     }
     
     # met conversion

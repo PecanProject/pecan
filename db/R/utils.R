@@ -75,9 +75,9 @@ db.open <- function(params) {
   }
   
   if (is.null(params$driver)) {
-    args <- c(drv=dbDriver("PostgreSQL"), params, recursive=TRUE)
+    args <- c(drv=DBI::dbDriver("PostgreSQL"), params, recursive=TRUE)
   } else {
-    args <- c(drv=dbDriver(params$driver), params, recursive=TRUE)
+    args <- c(drv=DBI::dbDriver(params$driver), params, recursive=TRUE)
     args[['driver']] <- NULL
   }
 

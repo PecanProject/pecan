@@ -19,7 +19,7 @@
 ##' }
 ##' @author Shawn Serbin, Rob Kooper, David LeBauer
 ##'
-start.model.runs <- function(settings, write = TRUE, stop.on.fail=TRUE) {
+start.model.runs <- function(settings, write = TRUE, stop.on.error=TRUE) {
   
   # check if runs need to be done
   if(!file.exists(file.path(settings$rundir, "runs.txt"))){
@@ -131,7 +131,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.fail=TRUE) {
         
         # check output to see if an error occurred during the model run
         if ("ERROR IN MODEL RUN" %in% out) {
-          if(stop.on.fail){
+          if(stop.on.error){
             logger.severe("Model run aborted, with error.\n", out)
           } else {
             logger.error("Model run aborted, with error.\n",out)
@@ -286,10 +286,10 @@ start.model.runs <- function(settings, write = TRUE, stop.on.fail=TRUE) {
 
 
 ##' @export
-runModule.start.model.runs <- function(settings,stop.on.fail=TRUE) {
+runModule.start.model.runs <- function(settings,stop.on.error=TRUE) {
   if (is.MultiSettings(settings) || is.Settings(settings)) {
     write <- settings$database$bety$write
-    return(start.model.runs(settings, write,stop.on.fail))
+    return(start.model.runs(settings, write,stop.on.error))
   } else {
     stop("runModule.start.model.runs only works with Settings or MultiSettings")
   }

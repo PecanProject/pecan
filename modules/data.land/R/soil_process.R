@@ -9,7 +9,7 @@
 #' @export
 #'
 #' @examples
-soil_process <- function(settings, input, dbfiles, overwrite = FALSE){
+soil_process <- function(settings, input, dbfiles, overwrite = FALSE,run.local=TRUE){
   
   if(is.null(input$id)){
     PEcAn.utils::logger.severe("currently soil_process requires an input ID to be specified")
@@ -38,7 +38,11 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE){
   
   # get existing input info
   source.input <- PEcAn.DB::db.query(paste0("SELECT * from Inputs where id =",input$id),con)
-  source.dbfiles <- PEcAn.DB::dbfile.check("Input",input$id,con,hostname=host$name)
+  if(run.local){
+    source.dbfiles <- PEcAn.DB::dbfile.check("Input",input$id,con,hostname='localhost')
+  }else{
+    source.dbfiles <- PEcAn.DB::dbfile.check("Input",input$id,con,hostname=host$name)
+  }
   source.file <- file.path(source.dbfiles$file_path,source.dbfiles$file_name)
   if(source.input$site_id == site$id){
     ## Input is alreadly local
@@ -57,7 +61,8 @@ soil_process <- function(settings, input, dbfiles, overwrite = FALSE){
   str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   
   # set up host information
-  machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.utils::fqdn(), host$name)
+  machine.host <- ifelse(host == "localhost" || host$name == "localhost" || run.local,
+                         PEcAn.utils::fqdn(), host$name)
   machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
   
   # retrieve model type info
