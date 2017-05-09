@@ -15,6 +15,12 @@
 
 upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours", overwrite = FALSE,
                         verbose = FALSE, ...) {
+
+  loc.file = file.path(outfolder, paste("upscaled", basename(input_met), sep = "."))
+  if (file.exists(loc.file) && !isTRUE(overwrite)){
+    logger.severe("Output file", loc.file, "already exists. To replace it, set overwrite=TRUE")
+  }
+
   tem <- ncdf4::nc_open(input_met)
   dim <- tem$dim
   met_data <- list()
@@ -76,7 +82,6 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
                         formatname = character(rows), startdate = character(rows), enddate = character(rows), 
                         dbfile.name = paste("upscaled", sep = "."), stringsAsFactors = FALSE)
   
-  loc.file = file.path(outfolder, paste("upscaled", basename(input_met), sep = "."))
   loc <- ncdf4::nc_create(filename = loc.file, vars = upscale.list, verbose = verbose)
   
   for (j in names(upscale_data)) {
