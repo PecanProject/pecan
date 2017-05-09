@@ -111,6 +111,10 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                                           dirname(input_met$path), "'"), con)[[1]]))
   }
   
+  if(is.null(model)){
+    stage$model <- FALSE
+  }
+  
   # setup additional browndog arguments
   if (!is.null(browndog)) {
     browndog$inputtype <- register$format$inputtype
