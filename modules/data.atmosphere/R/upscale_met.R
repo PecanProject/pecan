@@ -11,27 +11,20 @@
 ##'                   Must be interpretable as a time unit by \code{\link[udunits2]{ud.convert}}
 ##' @param overwrite logical: replace output file if it already exists?
 ##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run?
-##' @author James Simkins
+##' @author James Simkins, Chris Black
 
 upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours", overwrite = FALSE,
                         verbose = FALSE, ...) {
-  
-  
-  # Variable names
-  var <- utils::read.csv(system.file("/data/met.lookup.csv", package = "PEcAn.data.atmosphere"),
-                        header = TRUE, stringsAsFactors = FALSE)
-  # Reading in the data
-  met_data <- list()
   tem <- ncdf4::nc_open(input_met)
   dim <- tem$dim
-  for (j in seq_along(var$CF_standard_name)) {
-    if (exists(as.character(var$CF_standard_name[j]), tem$var) == FALSE) {
-      met_data[[j]] <- NA
-    } else {
-      met_data[[j]] <- ncdf4::ncvar_get(tem, as.character(var$CF_standard_name[j]))
-    }
+  met_data <- list()
+  met_units <- list()
+  for (v in names(tem$var) {
+    met_data[[v]] <- ncdf4::ncvar_get(nc = tem, varid = v)
+    met_units[[v]] <- ncdf4::ncatt_get(nc = tem, varid = v, attname = "units")$value
   }
-  
+  met_data <- data.frame(met_data)
+
   time_unit <- sub(" since.*", "", tem$dim$time$units)
   time_base <- lubridate::parse_date_time(sub(".*since ", "", tem$dim$time$units),
                                           orders = c("ymdHMSz", "ymdHMS", "ymd"))
@@ -41,38 +34,34 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
   lon_data <- as.numeric(ncdf4::ncvar_get(tem, "longitude"))
   ncdf4::nc_close(tem)
   
-  met_data <- data.frame(met_data)
-  colnames(met_data) <- var$CF_standard_name
-  
   reso_len <- diff(range(time_data)) / resolution
   step <- nrow(met_data) %/% reso_len
   met_data <- met_data[1:(step*reso_len),]
   upscale_data <- data.frame(time = colMeans(matrix(time_data, nrow=step)))
-  for (n in seq_along(var$CF_standard_name)) {
+  for (n in names(met_data)) {
     upscale_data[1:reso_len,n] <- colMeans(matrix(met_data[[n]], nrow=step))
   }
   
-  colnames(upscale_data) <- var$CF_standard_name
   for (x in 1:reso_len) {
     upscale_data$air_temperature_max[x] <- max(met_data$air_temperature[(x * step - 
                                                                            step + 1):(x * step)])
     upscale_data$air_temperature_min[x] <- min(met_data$air_temperature[(x * step - 
                                                                            step + 1):(x * step)])
   }
+  met_units$air_temperature_max <- met_units$air_temperature_min <- met_units$air_temperature
   
-  upscale.list <- list()
   lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat_data, 
                           create_dimvar = TRUE)
   lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon_data, 
                           create_dimvar = TRUE)
   time <- ncdf4::ncdim_def(name = "time", units = paste(reso_unit, "since", time_base),
-                           vals = upscale_data$time,
+                           vals = upscaled_time,
                            create_dimvar = TRUE, unlim = TRUE)
   dim <- list(lat, lon, time)
   
-  for (j in seq_along(var$CF_standard_name)) {
-    upscale.list[[j]] <- ncdf4::ncvar_def(name = as.character(var$CF_standard_name[j]), 
-                                          units = as.character(var$units[j]), 
+  upscale.list <- list()
+  for (j in names(upscale_data)) {
+    upscale.list[[j]] <- ncdf4::ncvar_def(name = j, units = met_units[[j]],
                                           dim = dim, missval = -999, verbose = verbose)
   }
   
@@ -85,15 +74,15 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
   loc.file = file.path(outfolder, paste("upscaled", basename(input_met), sep = "."))
   loc <- ncdf4::nc_create(filename = loc.file, vars = upscale.list, verbose = verbose)
   
-  for (j in seq_along(var$CF_standard_name)) {
-    ncdf4::ncvar_put(nc = loc, varid = as.character(var$CF_standard_name[j]), vals = upscale_data[[j]])
+  for (j in names(upscale_data)) {
+    ncdf4::ncvar_put(nc = loc, varid = j, vals = upscale_data[[j]])
   }
   ncdf4::nc_close(loc)
   
   results$file <- loc.file
   results$host <- PEcAn.utils::fqdn()
-  results$startdate <- time_base + udunits2::ud.convert(upscale_data$time[[1]], reso_unit, "sec")
-  results$enddate <- time_base + udunits2::ud.convert(upscale_data$time[[nrow(upscale_data)]], reso_unit, "sec")
+  results$startdate <- time_base + udunits2::ud.convert(upscaled_time[[1]], reso_unit, "sec")
+  results$enddate <- time_base + udunits2::ud.convert(upscaled_time[[nrow(upscale_data)]], reso_unit, "sec")
   results$mimetype <- "application/x-netcdf"
   results$formatname <- "CF Meteorology"
   
