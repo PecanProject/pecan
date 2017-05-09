@@ -40,9 +40,9 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
   lon_data <- as.numeric(ncdf4::ncvar_get(tem, "longitude"))
   ncdf4::nc_close(tem)
   
-  reso_len <- diff(range(time_data)) %/% resolution
-  step <- nrow(met_data) %/% reso_len
-  met_data <- met_data[1:(step*reso_len),]
+  reso_len <- round(diff(range(time_data)) / resolution, 0)
+  step <- round(nrow(met_data) / reso_len, 0)
+  met_data <- met_data[1 : (step*(reso_len-1) + 1),]
   upscaled_time = colMeans(matrix(time_data[1:(step*reso_len)], nrow=step))
   upscale_data <- data.frame()
   for (n in names(met_data)) {
