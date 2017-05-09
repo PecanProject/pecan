@@ -52,6 +52,30 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       day1 <- NULL
       dayn <- NULL
     }
+
+    # BLETCHEROUS HACK: BioCro 0.94 starts the run by subsetting weather data to day1:dayn,
+    # but it assumes the data start on DOY 1 and contain (yearlength*(24/timestep)) lines.
+    # This means day1 and dayn are really treated as "day of file" not "day of year".
+    # BioCro *does* handle DOY correctly downstream of this subsetting, so here we:
+    # * check if the current BioCro has fixed this assumption
+    # * check if the file starts at the beginning of the year
+    # * if no to both, rescale day1 and dayn to be relative to the start of the input
+    # 
+    # N.B. if day1 or dayn are null, BioCro will attempt to set them itself
+    # and will break for the same reason.
+    biocro_checks_doy = tryCatch(
+      {m <- BioGro(WetDat = matrix(c(0,10,0,0,0,0,0,0),nrow=1),
+                   day1=10, dayn=10, timestep=24);
+      class(m) == "BioGro"},
+      error=function(e){FALSE})
+    if (!biocro_checks_doy && min(WetDat[,"doy"])>1) {
+      if (!is.null(day1)){
+        day1 <- day1 - min(WetDat[,"doy"]) + 1
+      }
+      if (!is.null(dayn)){
+        dayn <- dayn - min(WetDat[,"doy"]) + 1
+      }
+    }
     
     HarvestedYield <- 0
     if (genus == "Saccharum") {
