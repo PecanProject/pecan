@@ -1,3 +1,4 @@
+#' @importFrom PEcAn.utils convert.input
 .download.raw.met.module <- function(dir, met, register, machine, start_date, end_date, str_ns,
                                      con, input_met, site.id, lat.in, lon.in, host, site, username, overwrite = FALSE) {
   

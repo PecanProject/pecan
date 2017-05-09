@@ -1,4 +1,3 @@
-Software documentation is in the [PEcAn wiki](https://github.com/PecanProject/pecan/wiki)
+This folder contains published articles describing the development and application of PEcAn as well as tutorials. 
 
-This folder contains published articles describing the development and application of PEcAn. 
-
+The full documentation can be found in the book_source directory, and is published at https://pecanproject.github.io/pecan-documentation/ with each new release. 
