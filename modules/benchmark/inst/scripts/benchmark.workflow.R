@@ -1,4 +1,5 @@
 devtools::load_all('modules/benchmark')
+library(PEcAn.benchmark)
 
 settings <- read.settings("modules/benchmark/inst/scripts/tess.xml")
 

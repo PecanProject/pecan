@@ -10,9 +10,10 @@
 ##' @author Betsy Cowdery
 
 ## Align timeseries data using different functions
-model.calc<-DukeSip
 
 align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_method = "match_timestep") {
+  var<-as.data.frame(var)
+  names(var)<-c("model", "obvs")
   
   fcn <- match.fun(align_method)
   
@@ -25,7 +26,7 @@ align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
 
   mode.m <- as.numeric(diff.m[which.max(tabulate(match(unique(diff.m), diff.m)))])
   mode.o <- as.numeric(diff.o[which.max(tabulate(match(unique(diff.o), diff.o)))])
-  max.diff <- if(mode.m > mode.o) diff.m else diff.o #Here's my error
+  max.diff <- if(mode.m > mode.o) diff.m else diff.o 
   
   rng_model <- range(model.calc$posix)
   rng_obvs <- range(obvs.calc$posix)
@@ -41,23 +42,23 @@ align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
     obvs_sub$posix <- year(obvs$posix)
   }else{
     model_sub <- model.calc[model.calc$posix >= rng_dat[1] & model.calc$posix <= rng_dat[2], ]
-    obvs_sub <- obvs.calc[obvs.calc$posix >= rng_dat[1] & obvs.calc$posix <= rng_dat[2], ]
+    obvs_sub <- obvs.calc[obvs.calc$posix >= rng_dat[1] & obvs.calc$posix <= rng_dat[2], ] #This has NEE data, not all NA's
   }
 
   
   if (mode.m > mode.o) {
     date.coarse <- model_sub$posix
     date.fine <- obvs_sub$posix
-    data.fine <- obvs_sub[, var, drop = FALSE]
+    data.fine <- obvs_sub[, as.character(var$obvs), drop = FALSE]
     colnames(data.fine) <- paste0(colnames(data.fine), ".o")
-    out1 <- model_sub[, var, drop = FALSE]
+    out1 <- model_sub[, as.character(var$model), drop = FALSE]
     colnames(out1) <- paste0(colnames(out1), ".m")
   } else if (mode.o > mode.m) {
     date.coarse <- obvs_sub$posix
     date.fine <- model_sub$posix
-    data.fine <- model_sub[, var, drop = FALSE]
+    data.fine <- model_sub[, as.character(var$model), drop = FALSE]
     colnames(data.fine) <- paste0(colnames(data.fine), ".m")
-    out1 <- obvs[, var, drop = FALSE]
+    out1 <- obvs_sub[, as.character(var$obvs), drop = FALSE]
     colnames(out1) <- paste0(colnames(out1), ".o")
   }
   
@@ -74,12 +75,23 @@ align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
     dat <- cbind(out1, out2)
     dat$posix <- date.coarse
   } else if (mode.o == mode.m) {
-    out1 <- model_sub[, var, drop = FALSE]
-    colnames(out1) <- paste0(var, ".m")
-    out2 <- obvs_sub[, var, drop = FALSE]
-    colnames(out2) <- paste0(var, ".o")
-    dat <- cbind(out1, out2)
-    dat$posix <- model_sub$posix
+    out1 <- model_sub[, as.character(var$model), drop = FALSE]
+    colnames(out1) <- paste0(as.character(var$model), ".m")
+    out2 <- obvs_sub[, as.character(var$obvs), drop = FALSE] #This also has NEE data
+    colnames(out2) <- paste0(as.character(var$obvs), ".o")
+    if (dim(out1)[1]!=dim(out2)[1]){
+      out1<-out1[-1,]
+      out1<-as.data.frame(out1)
+      colnames(out1) <- paste0(as.character(var$model), ".m")
+    }
+    
+    dat <- cbind(out1, out2) #This is where my "imply differing number of rows error comes form" 
+    if(dim(out1)[1]!=length(model_sub$posix)){
+      dat$posix<-model_sub$posix[-1]
+    }else{
+      dat$posix <- model_sub$posix
+    }
+    
   }
   
   return(dat)

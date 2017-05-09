@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<pecan>
+  <info>
+    <notes></notes>
+    <userid>-1</userid>
+    <username></username>
+    <date>2016/11/30 19:11:06 +0000</date>
+  </info>
+  <outdir>/fs/data2/output//PEcAn_1000003038/testruns</outdir>
+  <database>
+    <bety>
+      <user>bety</user>
+      <password>bety</password>
+      <host>psql-pecan.bu.edu</host>
+      <dbname>bety</dbname>
+      <driver>PostgreSQL</driver>
+      <write>true</write>
+    </bety>
+    <dbfiles>/fs/data1/pecan.data/dbfiles/</dbfiles>
+  </database>
+  <pfts>
+    <pft>
+      <name>temperate.Mid_Conifer</name> 
+      <constants>
+        <num>2</num>
+      </constants>
+    </pft>
+  </pfts>
+  <meta.analysis>
+    <iter>3000</iter>
+    <random.effects>FALSE</random.effects>
+  </meta.analysis>
+  <ensemble>
+    <size>1</size>
+    <variable>NPP</variable>
+  </ensemble>
+  <model>
+    <id>1000000015</id>
+    <edin>ED2IN.rgit_rykelly</edin>
+    <config.header>
+      <radiation>
+        <lai_min>0.01</lai_min>
+      </radiation>
+      <ed_misc>
+        <output_month>12</output_month>      
+      </ed_misc> 
+    </config.header>
+    <phenol.scheme>0</phenol.scheme>
+    <prerun>module purge; module load gcc/5.3.0 openmpi; LD_LIBRARY_PATH=/projectnb/dietzelab/ashiklom/.local/packages/hdf5/1.8.17_gcc5.3.0/lib/:/projectnb/dietzelab/ashiklom/.local/packages/openmpi-2.0.1/lib/:$LD_LIBRARY_PATH</prerun>
+  </model>
+  <workflow>
+    <id>1000003038</id>
+  </workflow>
+  <run>
+    <site>
+      <id>853</id>
+      <met.start>1996-01-01 00:00:00</met.start>
+      <met.end>2007-12-31 00:00:00</met.end>
+    </site>
+    <inputs>
+      <site>
+        <id>1000000564</id>
+      </site>
+      <met>
+        <id>1000000594</id>
+      </met>
+      <lu>
+        <id>294</id>
+      </lu>
+      <soil>
+        <id>297</id>
+      </soil>
+      <thsum>
+        <id>295</id>
+      </thsum>
+      <veg>
+        <id>296</id>
+      </veg>
+    </inputs>
+    <start.date>2004/06/01</start.date>
+    <end.date>2005/06/01</end.date>
+  </run>
+  <host>
+    <name>geo.bu.edu</name>
+    <user>tmccabe</user>
+    <folder>/projectnb/dietzelab/pecan.data/output/tmccabe</folder>
+    <prerun>module load udunits R/3.3.2</prerun>
+    <qsub>qsub -l h_rt=24:00:00 -pe omp 8 -q &apos;geo*&apos; -V -v OMP_NUM_THREADS=8 -N @NAME@ -o @STDOUT@ -e @STDERR@ -S /bin/bash</qsub>
+    <qsub.jobid>Your job ([0-9]+) .*</qsub.jobid>
+    <qstat>qstat -j @JOBID@ || echo DONE</qstat>
+    <tunnel>/fs/data2/output//PEcAn_1000003038/tunnel/tunnel</tunnel>
+  </host>
+</pecan>

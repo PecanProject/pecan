@@ -35,7 +35,7 @@ Within both the run and out folders there will be one folder for each unique mod
 
 ```{r}
 library(PEcAn.utils)
-out <- read.output(99000000001, "output/PEcAn_99000000001/out/99000000001/" ,2004,2004,c("time","NEE"))
+out <- read.output(1000000993,"output/PEcAn_1000000993/out/1000333705",2004,2004,c("time","NEE"))
 plot(out$time,out$NEE,type='l',ylab="kg m-2 s-1",xlab="day of year")
 ```
 
@@ -49,6 +49,12 @@ The arguments to read.output are the run ID, the folder where the run is located
 library(PEcAn.assim.batch)
 obs <- read.csv("~/output/dbfiles/AmerifluxLBL_site_0-772/AMF_US-NR1_BASE_HH_9-1.csv",skip=2)
 names(obs)
+#
+#input_id <- 1000011260
+#File_Path<-query.file.path(input_id,settings$host$name, bety$con)
+File_Path<-"/fs/data3/tmccabe/valicali/AMF_US-Dk3_NO_HEADER.txt"
+File_format<-query.format.vars(bety = bety, format.id = 5000000002)
+test<-load_data(data.path = File_Path, format= File_format)
 ```
 
 Here 0-772 is the database site ID, a folder that was created when you selected the site and PEcAn downloaded the Ameriflux file from the Ameriflux website. 
