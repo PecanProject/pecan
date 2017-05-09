@@ -78,7 +78,7 @@ remote.execute.cmd <- function(host, cmd, args = character(), stderr = FALSE) {
 #'   remote.copy.from(host, '/tmp/kooper', '/tmp/geo.tmp', delete=TRUE)
 #' }
 remote.copy.from <- function(host, src, dst, delete = FALSE, stderr = FALSE) {
-  args <- c("-a", "-q")
+  args <- c("-az", "-q")
   if (as.logical(delete)) {
     args <- c(args, "--delete")
   }

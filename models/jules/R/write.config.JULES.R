@@ -160,6 +160,12 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   } else {
     l_trait_phys <- FALSE  ## default value
   }
+  ## Turn on TRIFFID??
+  if("TRIFFID" %in% toupper(names(settings$model))){
+    l_triffid <- grep("l_triffid",veg.text)
+    veg.text[l_triffid] <- sub("false",'true',veg.text[l_triffid])
+    writeLines(veg.text, con = veg.file)
+  }
   
   ## --------------------- Edit PFT_PARAMS.NML to set model parameters -------------------------
   pft.file <- file.path(rundir, "pft_params.nml")
