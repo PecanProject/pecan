@@ -151,13 +151,14 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     )
   }
   end_char <- format(as.Date(settings$run$end.date), "%F %H:%M:%S")
+  met_end_char <- format(as.Date(settings$run$site$met.end), "%F %H:%M:%S")
   
   
   ## Edit DRIVE.NML to set met variables
   drive.file <- file.path(rundir, "drive.nml")
   drive.text <- readLines(con = drive.file, n = -1)
-  drive.text <- gsub("@MET_START@", substr(start_char,1,10), drive.text)
-  drive.text <- gsub("@MET_END@", settings$run$site$met.end, drive.text)
+  drive.text <- gsub("@MET_START@", start_char, drive.text)
+  drive.text <- gsub("@MET_END@", met_end_char, drive.text)
   drive.text <- gsub("@SITE_MET@", file.path(dirname(settings$run$inputs$met$path),prefix), drive.text)
   drive.text <- gsub("@DT@", as.numeric(dt), drive.text)
   writeLines(drive.text, con = drive.file)
