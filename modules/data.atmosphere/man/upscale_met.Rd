@@ -26,5 +26,5 @@ Must be interpretable as a time unit by \code{\link[udunits2]{ud.convert}}}
 upscale_met upscales the temporal resolution of a dataset
 }
 \author{
-James Simkins
+James Simkins, Chris Black
 }
