@@ -174,7 +174,7 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
   }
   newmet <- met[, list(year = lubridate::year(date),
                        doy = lubridate::yday(date),
-                       hour = round(lubridate::hour(date) + lubridate::minute(date) / 60, 1),
+                       hour = round(lubridate::hour(date) + lubridate::minute(date) / 60, 0),
                        SolarR = ppfd, 
                        Temp = udunits2::ud.convert(air_temperature, "Kelvin", "Celsius"), 
                        RH = relative_humidity, 
