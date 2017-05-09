@@ -15,6 +15,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
   }
   
   dbfiles <- ifelse(!PEcAn.utils::is.localhost(settings$host) & !is.null(settings$host$folder), settings$host$folder, settings$database$dbfiles)
+  PEcAn.utils::logger.debug("do.conversion outdir",dbfiles)
   
   for (i in seq_along(settings$run$inputs)) {
     input <- settings$run$inputs[[i]]
@@ -74,7 +75,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
             browndog   = settings$browndog,
             spin       = settings$spin,
             overwrite  = overwrite.met)
-        print(settings$run$inputs[[i]][['path']])
+        PEcAn.utils::logger.debug("updated met path: ",settings$run$inputs[[i]][['path']])
         needsave <- TRUE
       }
     }

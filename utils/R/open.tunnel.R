@@ -21,7 +21,7 @@ open_tunnel <- function(remote_host,tunnel_dir = "~/.pecan/tunnel/",user=NULL,pa
   
   ## get password if not provided
   if(is.null(password)){
-    password <- getPass()
+    password <- getPass::getPass()
   }
   
   sshTunnel   <- file.path(tunnel_dir,"tunnel")

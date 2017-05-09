@@ -49,8 +49,6 @@
     </site>
     <inputs>
       <met>
-        <source>AmerifluxLBL</source>
-        <id>5000000005</id>
         <path>/home/travis/sipnet_unk/niwot_tutorial.clim</path>
       </met>
     </inputs>
