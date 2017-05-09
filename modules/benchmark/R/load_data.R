@@ -6,11 +6,12 @@
 ##' @param start_year numeric
 ##' @param end_year numeric
 ##' @param site list
-##' @author Betsy Cowdery, Istem Fer, Joshua Mantooth
+##' @author Betsy Cowdery, Joshua Mantooth
 ##' Generic function to convert input files containing observational data to 
 ##' a common PEcAn format. 
-load_data <- function(data.path, format, start_year = NA, end_year = NA, site = NULL, 
-                      vars.used.index=NULL, time.row = NULL, ...) {
+
+load_data <- function(data.path, format, start_year = NA, end_year = NA, site = NA, 
+                      vars.used.index=NULL, time.row = NULL) {
 
   ## load everything in format by default
   if(is.null(time.row)){
@@ -58,16 +59,6 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   
   vars_used <- format$vars[vars.used.index, ]
   
-  # check wide format and transform to long
-  if(any(duplicated(vars_used$bety_name))){
-    w2l       <- format_wide2long(out, format, vars_used, time.row)
-    out       <- w2l$long_data
-    format    <- w2l$format
-    vars_used <- w2l$vars_used
-    time.row  <- w2l$time.row
-   }
-
-  
   for (i in seq_len(nrow(vars_used))) {
     col <- names(out) == vars_used$input_name[i]
     if (vars_used$input_units[i] == vars_used$pecan_units[i]) {
@@ -93,7 +84,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
         PEcAn.utils::logger.error("Units cannot be converted")
       }  # This error should probably be thrown much earlier, like in query.format.vars - will move it eventually
     }
-  }
+  } #This is where the units cannot be converted errors are coming from 
   
   if(!is.null(time.row)){  
     # Need a much more spohisticated approach to converting into time format. 
