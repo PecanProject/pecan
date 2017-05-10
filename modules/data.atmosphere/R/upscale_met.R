@@ -21,11 +21,16 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
     logger.severe("Output file", loc.file, "already exists. To replace it, set overwrite=TRUE")
   }
 
+  met_lookup <- read.csv(system.file("/data/met.lookup.csv", package="PEcAn.data.atmosphere"),
+                         header = TRUE, stringsAsFactors = FALSE)
   tem <- ncdf4::nc_open(input_met)
   dim <- tem$dim
   met_data <- list()
   met_units <- list()
   for (v in names(tem$var)) {
+    if (!(v %in% met_lookup$CF_standard_name)) {
+      next
+    }
     met_data[[v]] <- ncdf4::ncvar_get(nc = tem, varid = v)
     met_units[[v]] <- ncdf4::ncatt_get(nc = tem, varid = v, attname = "units")$value
   }
