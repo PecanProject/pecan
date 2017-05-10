@@ -101,7 +101,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   } else {
     rmt.cmd <- paste0("PEcAn.JULES::detect.timestep(met.dir='",
                       met.dir,"', met.regexp='",met.regexp,"')")
-    dt <- PEcAn.utils::remote.execute.R(rmt.cmd,settings$host$name)
+    dt <- PEcAn.utils::remote.execute.R(script=rmt.cmd,host=settings$host,verbose=TRUE)
   }
   ## -------------------- END DETECT TIMESTEP --------------------
   
