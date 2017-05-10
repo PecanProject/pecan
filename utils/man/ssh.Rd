@@ -16,3 +16,4 @@ ssh(host, ..., args = "")
 \description{
 R implementation of SSH
 }
+

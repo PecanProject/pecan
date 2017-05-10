@@ -28,9 +28,10 @@ If SE estimates are available, tehse wil be plotted
 \examples{
 \dontrun{plot.data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
 }
-\seealso{
-\code{\link{create.base.plot}}
-}
 \author{
 David LeBauer
 }
+\seealso{
+\code{\link{create.base.plot}}
+}
+
