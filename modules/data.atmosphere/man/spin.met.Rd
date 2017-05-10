@@ -5,7 +5,7 @@
 \title{Spin-up meteorology}
 \usage{
 spin.met(in.path, in.prefix, start_date, end_date, nyear, nsample,
-  resample = TRUE, run_start_date = start_date)
+  resample = TRUE, run_start_date = start_date, overwrite = TRUE)
 }
 \arguments{
 \item{in.path}{met input folder path}
