@@ -160,7 +160,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
 #   
 #   ## Write PARAMETER file
    
-   ## COPY AND OPEN DEFAULT  PARAMETER FILES
+   ## COPY AND OPEN DEFAULT PARAMETER FILES
    # CLM
    clm.param.default <- system.file("clm_params.c170317.nc",package="PEcAn.FATES")
    clm.param.file <- file.path(local.rundir,paste0("clm_params.",run.id,".nc"))
@@ -178,7 +178,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    PEcAn.utils::logger.debug(npft)
    PEcAn.utils::logger.debug(dim(trait.values))
    PEcAn.utils::logger.debug(names(trait.values))
-   #pftnames <- stringr::str_trim(tolower(ncvar_get(param.nc,"pftname")))
+   #pftnames <- stringr::str_trim(tolower(ncvar_get(param.nc,"pftname"))) 
    pftnames <- stringr::str_trim(tolower(ncvar_get(clm.param.nc,"pftname")))
    for (i in seq_len(npft)) {
      pft <- trait.values[[i]]
@@ -293,44 +293,44 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
                    vals=pft[v])
        }
        if(var == "leaf_reflect_nir"){      # Leaf reflectance: near-IR	[0-1]
-         ncvar_put(nc=fates.param.nc, varid='rholnir', start = ipft, count = 1,
+         ncvar_put(nc=fates.param.nc, varid='fates_rholnir', start = ipft, count = 1,
                    vals=pft[v])
        }
        if(var == "leaf_reflect_vis"){      # Leaf reflectance: visible	[0-1]
-         ncvar_put(nc=fates.param.nc, varid='rholvis', start = ipft, count = 1,
+         ncvar_put(nc=fates.param.nc, varid='fates_rholvis', start = ipft, count = 1,
                    vals=pft[v])
        }
        if(var == "wood_reflect_nir"){      # Stem reflectance: near-IR	[0-1]
-         ncvar_put(nc=fates.param.nc, varid='rhosnir', start = ipft, count = 1,
+         ncvar_put(nc=fates.param.nc, varid='fates_rhosnir', start = ipft, count = 1,
                    vals=pft[v])
        }
 
        if(var == "wood_reflect_vis"){      # Stem reflectance: visible	[0-1]
-         ncvar_put(nc=fates.param.nc, varid='rhosvis', start = ipft, count = 1,
+         ncvar_put(nc=fates.param.nc, varid='fates_rhosvis', start = ipft, count = 1,
                    vals=pft[v])
        }
        if(var == "leaf_trans_nir"){        # Leaf transmittance: near-IR
-         ncvar_put(nc=fates.param.nc, varid='taulnir', start = ipft, count = 1,
+         ncvar_put(nc=fates.param.nc, varid='fates_taulnir', start = ipft, count = 1,
                    vals=pft[v])
        }
        if(var == "leaf_trans_vis"){        # Leaf transmittance: visible	pft
-         ncvar_put(nc=fates.param.nc, varid='taulvis', start = ipft, count = 1,
+         ncvar_put(nc=fates.param.nc, varid='fates_taulvis', start = ipft, count = 1,
                    vals=pft[v])
        }
        if(var == "wood_trans_nir"){        # Stem transmittance: near-IR
-         ncvar_put(nc=fates.param.nc, varid='tausnir', start = ipft, count = 1,
+         ncvar_put(nc=fates.param.nc, varid='fates_tausnir', start = ipft, count = 1,
                    vals=pft[v])
        }
        if(var == "wood_trans_vis"){        # Stem transmittance: visible
-         ncvar_put(nc=fates.param.nc, varid='tausvis', start = ipft, count = 1,
+         ncvar_put(nc=fates.param.nc, varid='fates_tausvis', start = ipft, count = 1,
                    vals=pft[v])
        }
-       if(var == "orient_factor"){         # Leaf/stem orientation index	[-0/4 <xl< 0.6]
-         ncvar_put(nc=fates.param.nc, varid='xl', start = ipft, count = 1,
+       if(var == "orient_factor"){         # Leaf/stem orientation index	[-0/4 <xl< 0.6], fates_xl:valid_range = -1., 1. ;
+         ncvar_put(nc=fates.param.nc, varid='fates_xl', start = ipft, count = 1,
                    vals=pft[v])
        }
        if(var == "wood_density"){         # Wood Specific Gravity (ie density of wood relative to density of water)
-         ncvar_put(nc=fates.param.nc, varid='wood_density', start = ipft, count = 1,
+         ncvar_put(nc=fates.param.nc, varid='fates_wood_density', start = ipft, count = 1,
                    vals=pft[v])
        }
        if(var == "roota_par"){            # CLM rooting distribution parameter [1/m]
