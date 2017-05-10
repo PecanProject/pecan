@@ -22,3 +22,4 @@ Convert author, year, title to bibtex citation format
 \details{
 Converts author year title to author1999abc format
 }
+

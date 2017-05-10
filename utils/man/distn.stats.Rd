@@ -26,3 +26,4 @@ distn.stats('norm', 0, 1)
 \author{
 David LeBauer
 }
+

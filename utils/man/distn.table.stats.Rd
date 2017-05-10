@@ -19,3 +19,4 @@ a helper function for computing summary statistics of a parametric distribution
 \author{
 David LeBauer
 }
+

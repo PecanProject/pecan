@@ -6,7 +6,7 @@
 ##' @export
 ##'
 ##' @author Betsy Cowdery
-download.NARR <- function(outfolder, start_date, end_date, overwrite = FALSE, verbose = FALSE, ...) {
+download.NARR <- function(outfolder, start_date, end_date, overwrite = FALSE, verbose = FALSE, method, ...) {
   
   library(PEcAn.utils)
   
@@ -60,7 +60,8 @@ download.NARR <- function(outfolder, start_date, end_date, overwrite = FALSE, ve
       url <- paste0("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/", v, ".", year, ".nc")
       
       PEcAn.utils::logger.debug(paste0("Downloading from:\n", url, "\nto:\n", new.file))
-      download.file(url, new.file)
+      #download.file(url, new.file)
+      PEcAn.utils::download.file(url, new.file, method)
     }
   }
   
