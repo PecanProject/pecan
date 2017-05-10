@@ -97,7 +97,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   }
   if(nchar(prefix)>0) prefix <- paste0(prefix,".")
   if(run.local){
-    dt <- detect.timestep(met.dir,met.regexp)
+    dt <- detect.timestep(met.dir,met.regexp,start_date)
   } else {
     rmt.cmd <- paste0("PEcAn.JULES::detect.timestep(met.dir='",
                       met.dir,"', met.regexp='",met.regexp,"')")
