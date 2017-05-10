@@ -586,12 +586,13 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
 #'
 #' @param met.dir 
 #' @param met.regexp 
+#' @param start_date
 #'
 #' @return
 #' @export
 #'
 #' @examples
-detect.timestep <- function(met.dir,met.regexp){
+detect.timestep <- function(met.dir,met.regexp,start_date){
   met.file <- dir(met.dir, pattern = met.regexp, full.names = TRUE)[1]
   PEcAn.utils::logger.info("Detect timestep:",met.dir,met.regexp)
   met.header <- system(paste("ncdump -h ", met.file), intern = TRUE)

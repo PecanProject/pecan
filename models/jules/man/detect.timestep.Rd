@@ -4,12 +4,14 @@
 \alias{detect.timestep}
 \title{Detect timestep of JULES met files}
 \usage{
-detect.timestep(met.dir, met.regexp)
+detect.timestep(met.dir, met.regexp, start_date)
 }
 \arguments{
 \item{met.dir}{}
 
 \item{met.regexp}{}
+
+\item{start_date}{}
 }
 \description{
 Detect timestep of JULES met files
