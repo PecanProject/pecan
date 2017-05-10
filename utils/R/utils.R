@@ -675,6 +675,9 @@ convert.expr <- function(expression) {
 ##' @param method Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.
 ##' example options(download.ftp.method="ncftpget")
 ##' 
+##' @examples
+##' download.file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt")
+##' 
 ##' @export
 ##' 
 ##' @author Shawn Serbin, Rob Kooper
@@ -686,10 +689,10 @@ download.file <- function(url, filename, method) {
       #system2("ncftpget", c("-c", "url", ">", filename))
       system(paste(method,"-c",url,">",filename,sep=" "))
     } else {
-      download.file(url, filename, method)
+      utils::download.file(url, filename, method)
     }
   } else {
-    download.file(url, filename, method)
+    utils::download.file(url, filename)
   }
 }
 
