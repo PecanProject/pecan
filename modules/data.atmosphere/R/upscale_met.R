@@ -72,8 +72,8 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
                           create_dimvar = TRUE)
   lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon_data, 
                           create_dimvar = TRUE)
-  time <- ncdf4::ncdim_def(name = "time", units = paste(reso_unit, "since", time_base),
-                           vals = upscaled_time,
+  time <- ncdf4::ncdim_def(name = "time", units = paste(time_unit, "since", time_base),
+                           vals = udunits2::ud.convert(upscaled_time, reso_unit, time_unit),
                            create_dimvar = TRUE, unlim = TRUE)
   dim <- list(lat, lon, time)
   
