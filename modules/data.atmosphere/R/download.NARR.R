@@ -9,8 +9,9 @@
 ##' example options(download.ftp.method="ncftpget")
 ##' 
 ##' @examples
-##' \dontrun
+##' \dontrun{
 ##' download.NARR("~/",'2000/01/01','2000/01/02', overwrite = TRUE, verbose = TRUE)
+##' }
 ##' 
 ##' @export
 ##'
