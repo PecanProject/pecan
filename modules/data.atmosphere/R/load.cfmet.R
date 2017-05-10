@@ -29,7 +29,14 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
   loni <- which.min(abs(Lon - lon))
 
   start.date <- lubridate::parse_date_time(start.date, tz = "UTC", orders=c("ymd_HMSz", "ymd_HMS", "ymd_H", "ymd"))
-  end.date <- lubridate::parse_date_time(end.date, tz = "UTC", orders=c("ymd_HMSz", "ymd_HMS", "ymd_H", "ymd"))
+
+  # If end.date is provided as a datetime, assume it's the exact time to stop.
+  # if it's a date, assume we want the whole final day.
+  end.date <- tryCatch(
+    lubridate::parse_date_time(end.date, tz = "UTC", orders = c("ymdHMSz", "ymdHMS")),
+    warning = function(w){
+      lubridate::parse_date_time(paste(end.date, "23:59:59"), tz = "UTC", orders = "ymdHMS")}
+  )
 
   time.idx <- ncdf4::ncvar_get(met.nc, "time")
 
@@ -56,7 +63,7 @@ load.cfmet <- function(met.nc, lat, lon, start.date, end.date) {
     logger.error("run end date", end.date, "after met data ends", max(all.dates$date))
   }
   
-  run.dates <- all.dates[date > start.date & date < end.date,
+  run.dates <- all.dates[date >= start.date & date <= end.date,
                          list(index, 
                               date = date, 
                               doy = lubridate::yday(date),
