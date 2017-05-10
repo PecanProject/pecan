@@ -93,7 +93,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   if (download_file_flag) {
     extract_file_flag <- TRUE
     #utils::download.file(ftplink, output_zip_file)
-    PEcAn.utils::download.file(ftplink, output_zip_filei, method)
+    PEcAn.utils::download.file(ftplink, output_zip_file, method)
     if (!file.exists(output_zip_file)) {
       logger.severe("FTP did not download ", output_zip_file, " from ", ftplink)
     }
