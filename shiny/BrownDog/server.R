@@ -192,11 +192,10 @@ server <- shinyServer(function(input, output, session) {
           writeLines(selectedsite(), fileConn)
           
           # download the converted file from bdapi
-          library(BrownDog)
           bds <- "https://bd-api-dev.ncsa.illinois.edu"
           output_path    <- "/tmp/"
           url <-
-            convert_file(
+            BrownDog::convert_file(
               bds,
               xml_filename,
               paste0("met.", input$model),
@@ -204,7 +203,7 @@ server <- shinyServer(function(input, output, session) {
               input$token,
               download = FALSE
             )
-          download(url, file, input$token)
+          BrownDog::download(url, file, input$token)
         }
       )
     })
