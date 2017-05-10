@@ -671,7 +671,7 @@ convert.expr <- function(expression) {
 ##' home directory
 ##' @title download.file
 ##' @param url complete URL for file download
-##' @param destfile destination file name
+##' @param filename destination file name
 ##' @param method Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.
 ##' example options(download.ftp.method="ncftpget")
 ##' 

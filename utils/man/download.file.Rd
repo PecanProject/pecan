@@ -9,17 +9,20 @@ download.file(url, filename, method)
 \arguments{
 \item{url}{complete URL for file download}
 
+\item{filename}{destination file name}
+
 \item{method}{Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.
 example options(download.ftp.method="ncftpget")}
-
-\item{destfile}{destination file name}
 }
 \description{
 Simple function to use ncftpget for FTP downloads behind a firewall.
 Requires ncftpget and a properly formatted config file in the users
 home directory
 }
+\examples{
+download.file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt")
+
+}
 \author{
 Shawn Serbin, Rob Kooper
 }
-
