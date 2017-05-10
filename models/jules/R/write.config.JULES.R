@@ -73,8 +73,8 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
   jobsh <- gsub("@RUNID@", run.id, jobsh)
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
-  writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
-  Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  writeLines(jobsh, con = file.path(local.rundir, "job.sh"))
+  Sys.chmod(file.path(local.rundir, "job.sh"))
   
   #-----------------------------------------------------------------------
   ### Copy templated NAMELIST files to local rundir
@@ -100,7 +100,8 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     dt <- detect.timestep(met.dir,met.regexp,start_date)
   } else {
     rmt.cmd <- paste0("PEcAn.JULES::detect.timestep(met.dir='",
-                      met.dir,"', met.regexp='",met.regexp,"')")
+                      met.dir,"', met.regexp='",met.regexp,
+                      "', start_date= '",start_date,"')")
     dt <- PEcAn.utils::remote.execute.R(script=rmt.cmd,host=settings$host,verbose=TRUE)
   }
   ## -------------------- END DETECT TIMESTEP --------------------
@@ -119,19 +120,17 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
                                                   start_date)
     } else {
       ## run spin for remote met
-      stat = PEcAn.utils::remote.execute.cmd(host=settings$host$name,
-                                      cmd = "PEcAn.data.atmosphere::spin.met",
-                                      args = list(
-                                        in.path=dirname(settings$run$inputs$met$path),
-                                        in.prefix=prefix,
-                                        start_date=settings$run$site$met.start,
-                                        end_date=settings$run$site$met.end,
-                                        nyear=settings$spin$nyear,
-                                        nsample=settings$spin$nsample,
-                                        resample=settings$spin$resample,
-                                        run_start_date =start_date
-                                      ))
-
+      rmt.cmd <- paste0("PEcAn.data.atmosphere::spin.met(in.path ='",
+                        dirname(settings$run$inputs$met$path),
+                        "', in.prefix ='",prefix,
+                        "', start_date = '",settings$run$site$met.start,
+                        "', end_date = '",settings$run$site$met.end,
+                        "', nyear = ",settings$spin$nyear,
+                        ",  nsample = ",settings$spin$nsample,
+                        ",  resample = ",settings$spin$resample,
+                        ",  run_start_date = '",start_date,
+                        "')")
+      start_date <- PEcAn.utils::remote.execute.R(script=rmt.cmd,host=settings$host,verbose=TRUE)
     }
   }  ## end spin
   
@@ -148,7 +147,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   
   
   ## Edit DRIVE.NML to set met variables
-  drive.file <- file.path(rundir, "drive.nml")
+  drive.file <- file.path(local.rundir, "drive.nml")
   drive.text <- readLines(con = drive.file, n = -1)
   drive.text <- gsub("@MET_START@", start_char, drive.text)
   drive.text <- gsub("@MET_END@", met_end_char, drive.text)
@@ -157,7 +156,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   writeLines(drive.text, con = drive.file)
   
   ## Edit TIMESTEPS.NML to set start/end date
-  timesteps.file <- file.path(rundir, "timesteps.nml")
+  timesteps.file <- file.path(local.rundir, "timesteps.nml")
   timesteps.text <- readLines(con = timesteps.file, n = -1)
   timesteps.text <- gsub("@START_DATE@", start_char, timesteps.text)
   timesteps.text <- gsub("@END_DATE@", end_char, timesteps.text)
@@ -165,23 +164,29 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   
   ## Edit PRESCRIBED_DATA.NML to add CO2 data
   if("co2" %in% tolower(names(settings$run$inputs))){
-    pd.file <- file.path(rundir, "prescribed_data.nml")
+    pd.file <- file.path(local.rundir, "prescribed_data.nml")
     pd.text <- readLines(con = pd.file, n = -1)
     
     ## SPIN the CO2 file
     if(!is.null(settings$spin)){
-      dt = udunits2::ud.convert(as.numeric(as.Date(settings$run$end.date)-
+      dt.co2 = udunits2::ud.convert(as.numeric(as.Date(settings$run$end.date)-
                                              as.Date(settings$run$start.date)),"days","years")
       co2.dat <- read.table(settings$run$inputs$co2$path,header=FALSE) 
-      co2.per.year <- round(nrow(co2.dat)/dt)  
+      co2.per.year <- round(nrow(co2.dat)/dt.co2)  
       
       ## as first pass, just repeat the whole sequence. Not doing resampling. Not worrying about how to loop the file
       co2.dat <- c(as.vector(co2.dat[seq_len(as.numeric(settings$spin$nyear)*co2.per.year+1),]),unlist(co2.dat))
       
-      co2.local <- file.path(settings$rundir,run.id,basename(settings$run$inputs$co2$path))
+      co2.local <- file.path(local.rundir,basename(settings$run$inputs$co2$path))
       write.table(co2.dat,file = co2.local,col.names = FALSE,row.names = FALSE)
-      settings$run$inputs$co2$path <- co2.local
-      PEcAn.utils::logger.debug("co2.local",co2.local,dim(co2.dat))
+      if(run.local){
+        settings$run$inputs$co2$path <- co2.local
+      } else {
+        co2.remote <- file.path(rundir,basename(settings$run$inputs$co2$path))
+        settings$run$inputs$co2$path <- co2.remote
+      }
+      
+      PEcAn.utils::logger.debug("co2.local",co2.local,length(co2.dat))
     }
     
     ## add CO2 file
@@ -221,14 +226,14 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   }
   
   ## Edit MODEL_GRID.NML to set lat/lon
-  grid.file <- file.path(rundir, "model_grid.nml")
+  grid.file <- file.path(local.rundir, "model_grid.nml")
   grid.text <- readLines(con = grid.file, n = -1)
   grid.text <- gsub("@SITE_LAT@", settings$run$site$lat, grid.text)
   grid.text <- gsub("@SITE_LON@", settings$run$site$lon, grid.text)
   writeLines(grid.text, con = grid.file)
   
   ## Edit OUTPUT.NML to set run.id
-  output.file <- file.path(rundir, "output.nml")
+  output.file <- file.path(local.rundir, "output.nml")
   output.text <- readLines(con = output.file, n = -1)
   output.text <- gsub("@RUNID@", run.id, output.text)
   output.text <- gsub("@OUTDIR@", outdir, output.text)
@@ -281,7 +286,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     ncdf4::nc_close(nc.soil)
     
     ## open namelist
-    anc.file <- file.path(rundir, "ancillaries.nml")
+    anc.file <- file.path(local.rundir, "ancillaries.nml")
     anc.text <- readLines(con = anc.file, n = -1)
     
     ## parse variable names
@@ -307,7 +312,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   } ## end ancillary
   
   ## PARSE JULES_VEGETATION.NML some of these settings affect which parameter settings are used
-  veg.file     <- file.path(rundir, "jules_vegetation.nml")
+  veg.file     <- file.path(local.rundir, "jules_vegetation.nml")
   veg.text     <- readLines(con = veg.file, n = -1)
   l_trait_phys <- grep("l_trait_phys", veg.text)
   if (length(l_trait_phys) > 0) {
@@ -347,7 +352,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   writeLines(veg.text, con = veg.file)
   
   ## --------------------- Edit PFT_PARAMS.NML to set model parameters -------------------------
-  pft.file <- file.path(rundir, "pft_params.nml")
+  pft.file <- file.path(local.rundir, "pft_params.nml")
   pft.text <- readLines(con = pft.file, n = -1)
   if (length(pft.text) < 3) {
     logger.severe("No DEFAULT parameters provided for JULES")
@@ -554,7 +559,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   
   ## Edit INITIAL_CONDITIONS.NML soil carbon LAI
   if(useTRIFFID){
-    ic.file <- file.path(rundir, "initial_conditions.nml")
+    ic.file <- file.path(local.rundir, "initial_conditions.nml")
     ic.text <- readLines(con = ic.file, n = -1)
 
     ## update number of variables
@@ -574,7 +579,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     writeLines(ic.text, con = ic.file)
     
     ## also load and parse IC dat file
-    ic.dat <- file.path(rundir, "initial_conditions.dat")
+    ic.dat <- file.path(local.rundir, "initial_conditions.dat")
     ic.text <- readLines(con = ic.dat, n = -1)
     ic.text[2] <- paste(ic.text[2]," 5.0 5.0 0.5 0.5 0.5 0.2 0.2 0.2 0.2 0.2 0.0 0.0 0.0 0.0")
     writeLines(ic.text, con = ic.dat)
