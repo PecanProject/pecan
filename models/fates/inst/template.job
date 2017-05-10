@@ -58,8 +58,6 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
 ./xmlchange -file env_run.xml -id DIN_LOC_ROOT_CLMFORC -val '@INDIR@'
 ./xmlchange -file env_run.xml -id DOUT_S -val TRUE
 ./xmlchange -file env_run.xml -id DOUT_S_ROOT -val '@CASEDIR@/run'
-./xmlchange -file env_run.xml -id BATCHQUERY -val ''
-./xmlchange -file env_run.xml -id BATCHSUBMIT -val ''
 ./xmlchange -file env_run.xml -id PIO_DEBUG_LEVEL -val 0
 ./xmlchange -file env_run.xml -id ATM_DOMAIN_FILE -val 'domain.lnd.@SITE_NAME@.nc'
 ./xmlchange -file env_run.xml -id ATM_DOMAIN_PATH -val '@INDIR@/share/domains/domain.clm/'
@@ -69,7 +67,7 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
 ## END REFCASE  
   
   ## ENV_BUILD update configurations
-  ./xmlchange -file env_build.xml -id CESMSCRATCHROOT -val @CASEDIR@
+  ./xmlchange -file env_build.xml -id CIME_OUTPUT_ROOT -val @CASEDIR@
   ./xmlchange -file env_build.xml -id EXEROOT -val @BLD@
   ./xmlchange -file env_build.xml -id BUILD_COMPLETE -val TRUE
   
