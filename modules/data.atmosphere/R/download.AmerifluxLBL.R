@@ -12,12 +12,15 @@
 ##' @param end_date the end date of the data to be downloaded. Format is YYYY-MM-DD (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
+##' @param username Ameriflux username
+##' @param method Optional. download.file() function option.  Use this to set custom programs such as ncftp
+##'
 ##' @importFrom PEcAn.utils fqdn logger.debug logger.error logger.warn logger.severe
 ##' 
 ##' @examples
 ##' result <- download.AmerifluxLBL("US-Akn","~/","2011-01-01","2011-12-31",overwrite=TRUE)
 ##' 
-##' @author Ankur Desai, based on download.Ameriflux.R by Josh Mantooth, Rob Kooper
+##' @author Ankur Desai, based on download.Ameriflux.R by Josh Mantooth, Rob Kooper, Shawn Serbin
 download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date, 
                                   overwrite = FALSE, verbose = FALSE, username = "pecan", method, ...) {
   # get start/end year code works on whole years only

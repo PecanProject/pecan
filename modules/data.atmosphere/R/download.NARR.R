@@ -3,9 +3,18 @@
 ##' @param outfolder
 ##' @param start_year
 ##' @param end_year
+##' @param overwrite Overwrite existing files?  Default=FALSE
+##' @param verbose Turn on verbose output? Default=FALSE
+##' @param method Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.
+##' example options(download.ftp.method="ncftpget")
+##' 
+##' @examples
+##' \dontrun
+##' download.NARR("~/",'2000/01/01','2000/01/02', overwrite = TRUE, verbose = TRUE)
+##' 
 ##' @export
 ##'
-##' @author Betsy Cowdery
+##' @author Betsy Cowdery, Shawn Serbin
 download.NARR <- function(outfolder, start_date, end_date, overwrite = FALSE, verbose = FALSE, method, ...) {
   
   library(PEcAn.utils)
