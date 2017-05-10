@@ -32,11 +32,13 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   leafC <- 0.48
   useTRIFFID <- "TRIFFID" %in% toupper(names(settings$model))
   start_date <- settings$run$start.date
-  run.local <- settings$host == "localhost" | settings$host == PEcAn.utils::fqdn()
+  run.local <- settings$host$name == "localhost" | settings$host$name == PEcAn.utils::fqdn()
   
-  # find out where to write run/ouput
+  # find out where to write run/output
   rundir <- file.path(settings$host$rundir, run.id)
   outdir <- file.path(settings$host$outdir, run.id)
+  local.outdir <- file.path(settings$outdir,run.id)
+  local.rundir <- file.path(settings$rundir, run.id)
   
   #-----------------------------------------------------------------------
   # create launch script (which will create symlink)
@@ -75,13 +77,13 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
   
   #-----------------------------------------------------------------------
-  ### Copy templated NAMELIST files to rundir
+  ### Copy templated NAMELIST files to local rundir
   if (!is.null(settings$model$config) && dir.exists(settings$model$config)) {
     template.dir <- settings$model$config
   } else {
     template.dir <- file.path(system.file(package = "PEcAn.JULES"), paste0("template_nml_", settings$model$revision))
   }
-  system2("cp", args = paste0(template.dir, "/* ", rundir))
+  system2("cp", args = paste0(template.dir, "/* ", local.rundir))
   
   ## ------------------ Detect time step of met data ------------------
   nchar.path <- nchar(settings$run$inputs$met$path)
@@ -97,12 +99,9 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   if(run.local){
     dt <- detect.timestep(met.dir,met.regexp)
   } else {
-    dt <- PEcAn.utils::remote.execute.cmd(settings$host$name,
-                                          "PEcAn.JULES::detect.timestep",
-                                          args=list(
-                                            met.dir=met.dir,
-                                            met.regexp=met.regexp
-                                          ))
+    rmt.cmd <- paste0("PEcAn.JULES::detect.timestep(met.dir='",
+                      met.dir,"', met.regexp='",met.regexp,"')")
+    dt <- PEcAn.utils::remote.execute.R(rmt.cmd,settings$host$name)
   }
   ## -------------------- END DETECT TIMESTEP --------------------
   
