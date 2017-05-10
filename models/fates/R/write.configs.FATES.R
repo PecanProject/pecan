@@ -256,7 +256,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        if(var == "SLA"){
          ncvar_put(nc=fates.param.nc, varid='fates_slatop', start = ipft, count = 1,
                    vals=udunits2::ud.convert(pft[v],"m2 kg-1","m2 g-1")/leafC)
-         PEcAn.utils::logger.debug(paste0("SLA: ",udunits2::ud.convert(pft[v],"m2 kg-1","m2 g-1")/leafC)) # temp debugging
+         #PEcAn.utils::logger.debug(paste0("SLA: ",udunits2::ud.convert(pft[v],"m2 kg-1","m2 g-1")/leafC)) # temp debugging
        }
        if(var == "leaf_turnover_rate"){
          ncvar_put(nc=fates.param.nc, varid='fates_leaf_long', start = ipft, count = 1,
@@ -281,7 +281,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        if(var == "leaf_width"){            # Characteristic leaf dimension use for aerodynamic resistance
          ncvar_put(nc=fates.param.nc, varid='fates_dleaf', start = ipft, count = 1,
                    vals=udunits2::ud.convert(pft[v],"mm","m"))
-         PEcAn.utils::logger.debug(paste0("fates_dleaf: ",udunits2::ud.convert(pft[v],"mm","m"))) # temp debugging
+         #PEcAn.utils::logger.debug(paste0("fates_dleaf: ",udunits2::ud.convert(pft[v],"mm","m"))) # temp debugging
        }
        ## Currently not in param.nc file despite being on NGEE-T parameter list       
        #       if(var == "nonlocal_dispersal"){    # Place-holder parameter for important seed dispersal parameters
