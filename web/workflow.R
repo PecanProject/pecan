@@ -85,7 +85,7 @@ if (PEcAn.utils::status.check("TRAIT") == 0){
 if(!is.null(settings$meta.analysis)) {
   if (PEcAn.utils::status.check("META") == 0){
     PEcAn.utils::status.start("META")
-    runModule.run.meta.analysis(settings)
+    PEcAn.MA::runModule.run.meta.analysis(settings)
     PEcAn.utils::status.end()
   }
 }
@@ -93,7 +93,7 @@ if(!is.null(settings$meta.analysis)) {
 # Write model specific configs
 if (PEcAn.utils::status.check("CONFIG") == 0){
   PEcAn.utils::status.start("CONFIG")
-  settings <- runModule.run.write.configs(settings)
+  settings <- PEcAn.utils::runModule.run.write.configs(settings)
   PEcAn.settings::write.settings(settings, outputfile='pecan.CONFIGS.xml')
   PEcAn.utils::status.end()
 } else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
@@ -108,7 +108,7 @@ if ((length(which(commandArgs() == "--advanced")) != 0) && (PEcAn.utils::status.
 # Start ecosystem model runs
 if (PEcAn.utils::status.check("MODEL") == 0) {
   PEcAn.utils::status.start("MODEL")
-  runModule.start.model.runs(settings,stop.on.error=FALSE)
+  PEcAn.utils::runModule.start.model.runs(settings,stop.on.error=FALSE)
   PEcAn.utils::status.end()
 }
 
