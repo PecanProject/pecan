@@ -679,9 +679,10 @@ convert.expr <- function(expression) {
 ##' download.file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt")
 ##' 
 ##' @examples
-##' \dontrun
+##' \dontrun{
 ##' download.file("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc", "~/pres.sfc.2000.nc")
-##' 
+##' }
+##'
 ##' @export
 ##' 
 ##' @author Shawn Serbin, Rob Kooper
