@@ -33,7 +33,8 @@ download.FACE <- function(sitename, outfolder, start_date, end_date, overwrite =
   url <- paste0("ftp://cdiac.ornl.gov/.private/eCO2_Modelling/Site_Data/", site, "/", raw.file)
   print(url)
   system(paste("wget -c ", url, " -O ", out.file))
-  
+  #PEcAn.utils::download.file(url,out.file) # Need to migrate to using download.file() 
+
   # return file info
   return(invisible(data.frame(file = out.file, 
                               host = fqdn(), 
