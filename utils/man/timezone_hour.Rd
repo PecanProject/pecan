@@ -23,4 +23,3 @@ timezone_hour('America/New_York')
 \author{
 Rob Kooper
 }
-

@@ -39,4 +39,3 @@ Rudolf Cardinal
 
 \url{ggplot2 google group}{https://groups.google.com/forum/?fromgroups#!topic/ggplot2/-ZjRE2OL8lE}
 }
-

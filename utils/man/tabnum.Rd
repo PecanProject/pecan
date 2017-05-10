@@ -24,4 +24,3 @@ tabnum(1.2345, n = 4)
 \author{
 David LeBauer
 }
-
