@@ -7,7 +7,7 @@ ncdf4::nc_close(orig)
 tmpdir = tempdir()
 on.exit(unlink(tmpdir))
 
-sc_result <- upscale_met(outfolder = tmpdir, input_met = "data/urbana_subdaily_test.nc", resolution = 6)
+sc_result <- upscale_met(outfolder = tmpdir, input_met = "data/urbana_subdaily_test.nc", resolution = 6/24)
 
 scaled <- ncdf4::nc_open(sc_result$file)
 stime <- scaled$dim$time
