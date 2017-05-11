@@ -13,15 +13,14 @@ step_means <- function(x, step){
 ##' @export
 ##' @param input_met path to netcdf file containing met dataset
 ##' @param outfolder path to directory where output should be saved
-##'           Output is netcdf with named as <input_met_filename>.upscaled.nc
-##' @param resolution numeric value that is the desired resolution for the dataset to be upscaled to
-##' @param reso_unit character units for the resolution timestep.
-##'                   Must be interpretable as a time unit by \code{\link[udunits2]{ud.convert}}
+##'           Output is netcdf named as <input_met_filename>.upscaled.nc
+##' @param resolution desired output resolution, in days
 ##' @param overwrite logical: replace output file if it already exists?
 ##' @param verbose logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run?
+##' @param ... other arguments, currently ignored
 ##' @author James Simkins, Chris Black
 
-upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours", overwrite = FALSE,
+upscale_met <- function(outfolder, input_met, resolution = 1/24, overwrite = FALSE,
                         verbose = FALSE, ...) {
 
   loc.file = file.path(outfolder, paste("upscaled", basename(input_met), sep = "."))
@@ -47,7 +46,7 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
   time_unit <- sub(" since.*", "", tem$dim$time$units)
   time_base <- lubridate::parse_date_time(sub(".*since ", "", tem$dim$time$units),
                                           orders = c("ymdHMSz", "ymdHMS", "ymd"))
-  time_data <- udunits2::ud.convert(tem$dim$time$vals, time_unit, reso_unit)
+  time_data <- udunits2::ud.convert(tem$dim$time$vals, time_unit, "days")
 
   lat_data <- as.numeric(ncdf4::ncvar_get(tem, "latitude"))
   lon_data <- as.numeric(ncdf4::ncvar_get(tem, "longitude"))
@@ -81,7 +80,7 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
   lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon_data, 
                           create_dimvar = TRUE)
   time <- ncdf4::ncdim_def(name = "time", units = paste(time_unit, "since", time_base),
-                           vals = udunits2::ud.convert(upscaled_time, reso_unit, time_unit),
+                           vals = udunits2::ud.convert(upscaled_time, "days", time_unit),
                            create_dimvar = TRUE, unlim = TRUE)
   dim <- list(lat, lon, time)
   
@@ -106,8 +105,8 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
   
   results$file <- loc.file
   results$host <- PEcAn.utils::fqdn()
-  results$startdate <- time_base + udunits2::ud.convert(upscaled_time[[1]], reso_unit, "sec")
-  results$enddate <- time_base + udunits2::ud.convert(upscaled_time[[nrow(upscale_data)]], reso_unit, "sec")
+  results$startdate <- time_base + udunits2::ud.convert(upscaled_time[[1]], "days", "sec")
+  results$enddate <- time_base + udunits2::ud.convert(upscaled_time[[nrow(upscale_data)]], "days", "sec")
   results$mimetype <- "application/x-netcdf"
   results$formatname <- "CF Meteorology"
   
