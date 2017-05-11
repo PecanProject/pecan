@@ -35,8 +35,8 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
     yrstart = max(lubridate::ymd(start_date), lubridate::ymd(paste0(year, "-01-01")))
     yrend = min(lubridate::ymd(end_date), lubridate::ymd(paste0(year, "-12-31")))
 
-    ncfile <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
-    csvfile <- file.path(outfolder, paste(in.prefix, yrstart, yrend, "csv", sep="."))
+    ncfile <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
+    csvfile <- file.path(outfolder, paste(in.prefix, yrstart, yrend, "csv", sep = "."))
 
     if (file.exists(csvfile) && as.logical(overwrite) != TRUE){
       logger.warn(paste("Output file", csvfile, "already exists! Moving to next year."))

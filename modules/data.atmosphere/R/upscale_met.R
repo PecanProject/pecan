@@ -18,10 +18,10 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
 
   loc.file = file.path(outfolder, paste("upscaled", basename(input_met), sep = "."))
   if (file.exists(loc.file) && !isTRUE(overwrite)){
-    logger.severe("Output file", loc.file, "already exists. To replace it, set overwrite=TRUE")
+    logger.severe("Output file", loc.file, "already exists. To replace it, set overwrite = TRUE")
   }
 
-  met_lookup <- read.csv(system.file("/data/met.lookup.csv", package="PEcAn.data.atmosphere"),
+  met_lookup <- read.csv(system.file("/data/met.lookup.csv", package = "PEcAn.data.atmosphere"),
                          header = TRUE, stringsAsFactors = FALSE)
   tem <- ncdf4::nc_open(input_met)
   dim <- tem$dim
@@ -50,10 +50,10 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
   rows_used <- nrow(met_data) - (nrow(met_data) %% step)
   n_steps <- (rows_used %/% step)
   met_data <- met_data[1:rows_used,]
-  upscaled_time = colMeans(matrix(time_data[1:rows_used], nrow=step))
+  upscaled_time = colMeans(matrix(time_data[1:rows_used], nrow = step))
   upscale_data <- data.frame()
   for (name in names(met_data)) {
-    upscale_data[1:n_steps,name] <- colMeans(matrix(met_data[[name]], nrow=step))
+    upscale_data[1:n_steps,name] <- colMeans(matrix(met_data[[name]], nrow = step))
   }
   
   if (!is.null(upscale_data$air_temperature)
