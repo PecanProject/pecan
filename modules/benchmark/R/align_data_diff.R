@@ -11,7 +11,7 @@
 
 ## Align timeseries data using different functions
 
-align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_method = "match_timestep") {
+align_data_diff <- function(model.calc, obvs.calc, var, start_year, end_year, align_method = "match_timestep") {
   var<-as.data.frame(var)
   names(var)<-c("model", "obvs")
   
