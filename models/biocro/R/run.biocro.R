@@ -32,7 +32,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
     yeari <- years[i]
     starti <- max(start.date, lubridate::ymd(paste0(yeari, "-01-01")))
     endi <- min(end.date, lubridate::ymd(paste0(yeari, "-12-31")))
-    metfile <- paste(metpath, starti, endi, "csv", sep=".")
+    metfile <- paste(metpath, starti, endi, "csv", sep = ".")
     WetDat <- fread(metfile)
 
     # Check that all variables are present in the expected order --
@@ -61,20 +61,20 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
     # we check if the current BioCro has fixed this assumption.
     # If not, rescale day1 and dayn to be relative to the start of the input.
     #   Scaling is derived by inverting Biocro's day->index equations.
-    biocro_checks_doy = tryCatch(
-      {m <- BioGro(WetDat = matrix(c(0,10,0,0,0,0,0,0),nrow=1),
-                   day1=10, dayn=10, timestep=24);
+    biocro_checks_doy <- tryCatch(
+      {m <- BioGro(WetDat = matrix(c(0,10,0,0,0,0,0,0),nrow = 1),
+                   day1 = 10, dayn = 10, timestep = 24);
       class(m) == "BioGro"},
-      error=function(e){FALSE})
+      error = function(e){FALSE})
     if (!biocro_checks_doy && min(WetDat[,"doy"])>1) {
       if (!is.null(day1)){
         # Biocro calculates line number as `indes1 <- (day1 - 1) * 24`
-        indes1 = Position(function(x)x==day1, WetDat[,"doy"])
-        day1 = indes1/24 + 1
+        indes1 <- Position(function(x)x==day1, WetDat[,"doy"])
+        day1 <- indes1/24 + 1
       }
       if (!is.null(dayn)){
         # Biocro calculates line number as `indesn <- (dayn) * 24`
-        indesn = Position(function(x)x==dayn, WetDat[,"doy"], right = TRUE)
+        indesn <- Position(function(x)x==dayn, WetDat[,"doy"], right = TRUE)
         dayn <- indesn/24
       }
     }
