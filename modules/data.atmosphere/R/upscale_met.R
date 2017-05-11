@@ -1,3 +1,11 @@
+##' take mean at fixed intervals along a vector
+##' @param x numeric vector
+##' @param step integer step size
+##' @return numeric of length length(x)/step
+##' @details User should check that length(x) is an even multiple of step
+step_means <- function(x, step){
+  colMeans(matrix(x, nrow = step))
+}
 
 ##' upscale_met upscales the temporal resolution of a dataset
 ##' @name upscale_met
@@ -45,25 +53,25 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
   lon_data <- as.numeric(ncdf4::ncvar_get(tem, "longitude"))
   ncdf4::nc_close(tem)
   
+  # Here's where the magic happens: find the stepsize that generates requested
+  # output resolution, then take means of each variable in increments of stepsize.
+  # N.B. Drops rows from the end  of met_data if necessary to end at a full step.
   n_times <- diff(range(time_data)) / resolution
-  step <- round(nrow(met_data) / n_times, 0)
-  rows_used <- nrow(met_data) - (nrow(met_data) %% step)
-  n_steps <- (rows_used %/% step)
+  stepsize <- round(nrow(met_data) / n_times, 0)
+  rows_used <- nrow(met_data) - (nrow(met_data) %% stepsize)
+  n_steps <- (rows_used %/% stepsize)
   met_data <- met_data[seq_len(rows_used),]
-  upscaled_time = colMeans(matrix(time_data[seq_len(rows_used)], nrow = step))
-  upscale_data <- data.frame()
-  for (name in names(met_data)) {
-    upscale_data[seq_len(n_steps),name] <- colMeans(matrix(met_data[[name]], nrow = step))
-  }
+  upscaled_time = step_means(time_data[seq_len(rows_used)], step = stepsize)
+  upscale_data <- as.data.frame(lapply(met_data, step_means, step = stepsize))
   
   if (!is.null(upscale_data$air_temperature)
       && is.null(upscale_data$air_temperature_max)
       && is.null(upscale_data$air_temperature_min)) {
     for (step_i in seq_len(n_steps)) {
       upscale_data$air_temperature_max[step_i] <- max(
-        met_data$air_temperature[(step_i * step - step + 1):(step_i * step)])
+        met_data$air_temperature[(step_i * stepsize - stepsize + 1):(step_i * stepsize)])
       upscale_data$air_temperature_min[step_i] <- min(
-        met_data$air_temperature[(step_i * step - step + 1):(step_i * step)])
+        met_data$air_temperature[(step_i * stepsize - stepsize + 1):(step_i * stepsize)])
     }
     met_units$air_temperature_max <- met_units$air_temperature_min <- met_units$air_temperature
   }
