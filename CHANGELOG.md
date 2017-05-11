@@ -6,6 +6,9 @@ section for the next release.
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
 ## [Unreleased]
+### Added
+- Added PEcAn.utils::download.file() to allow for use of alternative FTP programs
+- Updated downloadAmeriflux and downloadNARR to make use of PEcAn.utils::download.file()
 
 ## [1.4.10.1] - 2017-04-18
 
