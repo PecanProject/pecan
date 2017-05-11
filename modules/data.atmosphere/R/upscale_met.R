@@ -27,12 +27,12 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
   dim <- tem$dim
   met_data <- list()
   met_units <- list()
-  for (v in names(tem$var)) {
-    if (!(v %in% met_lookup$CF_standard_name)) {
+  for (name in names(tem$var)) {
+    if (!(name %in% met_lookup$CF_standard_name)) {
       next
     }
-    met_data[[v]] <- ncdf4::ncvar_get(nc = tem, varid = v)
-    met_units[[v]] <- ncdf4::ncatt_get(nc = tem, varid = v, attname = "units")$value
+    met_data[[name]] <- ncdf4::ncvar_get(nc = tem, varid = name)
+    met_units[[name]] <- ncdf4::ncatt_get(nc = tem, varid = name, attname = "units")$value
   }
   met_data <- data.frame(met_data)
 
@@ -49,21 +49,21 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
   step <- round(nrow(met_data) / n_times, 0)
   rows_used <- nrow(met_data) - (nrow(met_data) %% step)
   n_steps <- (rows_used %/% step)
-  met_data <- met_data[1:rows_used,]
-  upscaled_time = colMeans(matrix(time_data[1:rows_used], nrow = step))
+  met_data <- met_data[seq_len(rows_used),]
+  upscaled_time = colMeans(matrix(time_data[seq_len(rows_used)], nrow = step))
   upscale_data <- data.frame()
   for (name in names(met_data)) {
-    upscale_data[1:n_steps,name] <- colMeans(matrix(met_data[[name]], nrow = step))
+    upscale_data[seq_len(n_steps),name] <- colMeans(matrix(met_data[[name]], nrow = step))
   }
   
   if (!is.null(upscale_data$air_temperature)
       && is.null(upscale_data$air_temperature_max)
       && is.null(upscale_data$air_temperature_min)) {
-    for (x in 1:n_steps) {
-      upscale_data$air_temperature_max[x] <- max(
-        met_data$air_temperature[(x * step - step + 1):(x * step)])
-      upscale_data$air_temperature_min[x] <- min(
-        met_data$air_temperature[(x * step - step + 1):(x * step)])
+    for (step_i in seq_len(n_steps)) {
+      upscale_data$air_temperature_max[step_i] <- max(
+        met_data$air_temperature[(step_i * step - step + 1):(step_i * step)])
+      upscale_data$air_temperature_min[step_i] <- min(
+        met_data$air_temperature[(step_i * step - step + 1):(step_i * step)])
     }
     met_units$air_temperature_max <- met_units$air_temperature_min <- met_units$air_temperature
   }
@@ -78,8 +78,8 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
   dim <- list(lat, lon, time)
   
   upscale.list <- list()
-  for (j in names(upscale_data)) {
-    upscale.list[[j]] <- ncdf4::ncvar_def(name = j, units = met_units[[j]],
+  for (name in names(upscale_data)) {
+    upscale.list[[name]] <- ncdf4::ncvar_def(name = name, units = met_units[[name]],
                                           dim = dim, missval = -999, verbose = verbose)
   }
   
@@ -91,8 +91,8 @@ upscale_met <- function(outfolder, input_met, resolution = 6, reso_unit = "hours
   
   loc <- ncdf4::nc_create(filename = loc.file, vars = upscale.list, verbose = verbose)
   
-  for (j in names(upscale_data)) {
-    ncdf4::ncvar_put(nc = loc, varid = j, vals = upscale_data[[j]])
+  for (name in names(upscale_data)) {
+    ncdf4::ncvar_put(nc = loc, varid = name, vals = upscale_data[[name]])
   }
   ncdf4::nc_close(loc)
   
