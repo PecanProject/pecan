@@ -2,7 +2,6 @@
 #' 
 #' @description  Helps to create a MultiSettings object to run some or all sites in a Sitegroup. 
 #' 
-#' 
 #' @param templateSettings A \code{\link{Settings}} object that will be the template for the resulting
 #' MultiSettings. 
 #' @param sitegroupId The Bety ID of the sitegroup to draw from
@@ -25,13 +24,13 @@
 #' 
 #' @example examples/examples.MultiSite.MultiSettings.r
 createSitegroupMultiSettings = function(templateSettings, sitegroupId, nSite, con=NULL, params=templateSettings$database$bety) {
-  query <- paste("SELECT id FROM sitegroups_sites WHERE sitegroup_id =", sitegroupId)
+  query <- paste("SELECT site_id FROM sitegroups_sites WHERE sitegroup_id =", sitegroupId)
   allSites <- PEcAn.DB::db.query(query, con=con, params=params)   
-
+  
   if(missing(nSite))
-    siteIds <- allSites$id
+    siteIds <- allSites$site_id
   else 
-    siteIds <- sample(allSites$id, nSite, replace=FALSE)
+    siteIds <- sample(allSites$site_id, nSite, replace=FALSE)
 
   settings <- createMultiSiteSettings(templateSettings, siteIds)
 }
@@ -61,14 +60,23 @@ createSitegroupMultiSettings = function(templateSettings, sitegroupId, nSite, co
 #' @example examples/examples.MultiSite.MultiSettings.r
 createMultiSiteSettings <- function(templateSettings, siteIds) {
   templateSettings <- as.MultiSettings(templateSettings)
-  runSettings <- lapply(siteIds, .getRunSettings, templateSettings=templateSettings)
+  runSettings <- lapply(siteIds, getRunSettings, templateSettings=templateSettings)
   
   templateSettings[["run", global=FALSE]] <- runSettings
   return(templateSettings)
 }
 
 
-.getRunSettings <- function(templateSettings, siteId) {
+#' Build run MultiSettings for a list of site id's
+#'
+#' @param templateSettings 
+#' @param siteId 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+getRunSettings <- function(templateSettings, siteId) {
   startDate = templateSettings$run$start.date
   endDate = templateSettings$run$end.date
   inputs = templateSettings$run$inputs
