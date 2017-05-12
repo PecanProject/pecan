@@ -68,7 +68,8 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    ncdf4::nc_close(domain.nc)
    
    ## SURF
-   surf.default <- system.file("surfdata_ref.nc",package = "PEcAn.FATES")
+   #surf.default <- system.file("surfdata_ref.nc",package = "PEcAn.FATES")
+   surf.default <- system.file("surfdata_1x1_brazil_16pfts_simyr2000_c160127.nc",package = "PEcAn.FATES")
    surf.file    <- file.path(local.rundir,paste0("surfdata_",site_name,"_simyr2000.nc"))
    file.copy(surf.default,surf.file)
    Sys.chmod(surf.file)
@@ -201,6 +202,10 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        PEcAn.utils::logger.severe(paste("Unmatched PFT",pft.name,
                           "in FATES. PEcAn does not yet support non-default PFTs for this model"))
      }
+     
+     # hard code hack until we can use more than 2 pfts in FATES 
+     ipft <- 2
+     PEcAn.utils::logger.debug(paste0("*** PFT number hard-coded to ", ipft," in fates. This will be updated when FATES allows more PFTs"))
      
      ## Special variables used in conversions
 #     leafC <- pft['leafC']/100  ## percent to proportion
@@ -647,19 +652,19 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        
        ## NCWD dimensioned       Size:4
        if(var == "CWD_frac1"){            ##Fraction of coarse woody debris (CWD) that is moved into each of the four woody fuel classes
-         ncvar_put(nc=fates.param.nc, varid='CWD_frac', start = 1, count = 1,
+         ncvar_put(nc=fates.param.nc, varid='fates_CWD_frac', start = 1, count = 1,
                    vals=pft[v])
        }
        if(var == "CWD_frac2"){
-         ncvar_put(nc=fates.param.nc, varid='CWD_frac', start = 2, count = 1,
+         ncvar_put(nc=fates.param.nc, varid='fates_CWD_frac', start = 2, count = 1,
                    vals=pft[v])
        }
        if(var == "CWD_frac3"){
-         ncvar_put(nc=fates.param.nc, varid='CWD_frac', start = 3, count = 1,
+         ncvar_put(nc=fates.param.nc, varid='fates_CWD_frac', start = 3, count = 1,
                    vals=pft[v])
        }
        if(var == "CWD_frac4"){
-         ncvar_put(nc=fates.param.nc, varid='CWD_frac', start = 4, count = 1,
+         ncvar_put(nc=fates.param.nc, varid='fates_CWD_frac', start = 4, count = 1,
                    vals=pft[v])
        }
        
