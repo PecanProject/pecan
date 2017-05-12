@@ -82,7 +82,7 @@ options(download.ftp.method = "ncftpget")
 
 In your ~/.Rprofile.  On modex at BNL we have set the global option in /usr/lib64/R/etc/Rprofile.site.
 
-Once this is done you should be able to see the option as:
+Once this is done you should be able to see the option set using this command in R:
 ```
 > options("download.ftp.method")
 $download.ftp.method
