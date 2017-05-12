@@ -1,3 +1,28 @@
 # (PART) User Appendix {-}
 
+<br>
+
 # User Appendix
+
+<br>
+
+### File download: Alternative options when behind a firewall
+#### Using the PEcAn download.file() function
+download.file(url, destination_file, method) <br>
+<br>
+
+This custom PEcAn function works together with the base R function download.file (https://stat.ethz.ch/R-manual/R-devel/library/utils/html/download.file.html).  However, it provides expanded functionality to generalize the use for a broad range of environments.  This is because some computing environments are behind a firewall, including FTP firewalls. This may require the use of a custom FTP program to retrieve the files needed by PEcAn (e.g. meteorology drivers, other inputs) to run certain model simulations or tools.  
+
+Examples: <br>
+HTTP <br>
+```
+download.file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt") 
+``` 
+FTP
+```
+download.file("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc", "~/pres.sfc.2000.nc")
+```
+customizing to use ncftp when running behind an FTP firewall (requires ncftp to be installed and availible) <br>
+```
+download.file("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc", "~/pres.sfc.2000.nc", method=""ncftpget")
+```
