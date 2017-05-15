@@ -28,13 +28,17 @@
 ##-------------------------------------------------------------------------------------------------#
 met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
                              lat, lon, start_date, end_date, ...) {
+  start_date <- lubridate::parse_date_time(start_date, tz = "UTC",
+                                           orders = c("ymdHMSz", "ymdHMS", "ymdH", "ymd"))
+  end_date <- lubridate::parse_date_time(end_date, tz = "UTC",
+                                           orders = c("ymdHMSz", "ymdHMS", "ymdH", "ymd"))
   dir.create(file.path(outfolder), recursive = TRUE, showWarnings = FALSE)
   years_wanted <- lubridate::year(start_date):lubridate::year(end_date)
 
   res <- list()
   for (year in years_wanted) {
-    yrstart = max(lubridate::ymd(start_date), lubridate::ymd(paste0(year, "-01-01")))
-    yrend = min(lubridate::ymd(end_date), lubridate::ymd(paste0(year, "-12-31")))
+    yrstart = max(lubridate::date(start_date), lubridate::ymd(paste0(year, "-01-01")))
+    yrend = min(lubridate::date(end_date), lubridate::ymd(paste0(year, "-12-31")))
 
     ncfile <- file.path(in.path, paste(in.prefix, year, "nc", sep="."))
     csvfile <- file.path(outfolder, paste(in.prefix, yrstart, yrend, "csv", sep="."))
