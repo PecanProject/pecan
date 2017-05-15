@@ -81,7 +81,7 @@ $hostlist=array($fqdn => array(),
                               array("prerun"  => "module load hdf5"))));
 
 # Folder where PEcAn is installed
-$pecan_install="/home/carya/R/library";
+$R_library_path="/home/carya/R/library";
 
 # Location where PEcAn is installed, not really needed anymore
 $pecan_home="/home/carya/pecan/";
