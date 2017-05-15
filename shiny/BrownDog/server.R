@@ -104,8 +104,7 @@ server <- shinyServer(function(input, output, session) {
         map$showPopup(click$lat, click$lng, text)
       }
       selectedsite <- reactive({
-        if (!is.element(input$type, c("AmeriFlux", "NARR", "FLUXNET")) ||
-            !is.null(input$agreement) && input$agreement) {
+        if (is.null(input$agreement) || input$agreement) {
           paste(
             c(
               "<input>",
@@ -149,7 +148,7 @@ server <- shinyServer(function(input, output, session) {
           "example.xml"
         },
         content = function(file) {
-          if (!is.null(input$agreement) && input$agreement) {
+          if (is.null(input$agreement) || input$agreement) {
             writeLines(
               c(
                 "<input>",
