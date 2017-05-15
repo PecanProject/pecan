@@ -22,4 +22,3 @@ logger.info('PEcAn version 1.2')
 \author{
 Rob Kooper
 }
-

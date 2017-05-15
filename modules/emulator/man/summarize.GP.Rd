@@ -12,4 +12,3 @@ summarize.GP(gp, pdf_file = NULL, txt_file = NULL)
 \author{
 Michael Dietze
 }
-

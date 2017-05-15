@@ -6,7 +6,7 @@ At the moment, PEcAn has two cases for initial conditions and they only exist as
 
 If files already exist in the database, they can simply be selected from the menu. For ED2, there are 3 different veg files (site, pss, css) and it is important that you select a complete set, not mix and match.
 
-If files don't exist they can be uploaded following the instructions on [[How to insert new Input data]]. Information on the ED2-specific format is located [here](../../ED-configuration.md)
+If files don't exist they can be uploaded following the instructions on [How to insert new Input data](../developers_guide/How-to-insert-new-Input-data.html). Information on the ED2-specific format is located [here](../../ED-configuration.md)
 
 Two additional options are in development:
 

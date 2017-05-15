@@ -4,8 +4,8 @@
 \alias{load_data}
 \title{load_data}
 \usage{
-load_data(data.path, format, start_year = NA, end_year = NA, site = NA,
-  vars.used.index = NULL, time.row = NULL)
+load_data(data.path, format, start_year = NA, end_year = NA, site = NULL,
+  vars.used.index = NULL, time.row = NULL, ...)
 }
 \arguments{
 \item{data.path}{character}
@@ -19,8 +19,7 @@ load_data(data.path, format, start_year = NA, end_year = NA, site = NA,
 \item{site}{list}
 }
 \author{
-Betsy Cowdery
+Betsy Cowdery, Istem Fer, Joshua Mantooth
 Generic function to convert input files containing observational data to 
 a common PEcAn format.
 }
-

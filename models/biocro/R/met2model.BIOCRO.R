@@ -130,7 +130,9 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
     }
   }
   if (!"ppfd" %in% colnames(met)) {
-    if ("surface_downwelling_shortwave_flux_in_air" %in% colnames(met)) {
+    if ("surface_downwelling_photosynthetic_photon_flux_in_air" %in% colnames(met)) {
+      ppfd <- udunits2::ud.convert(met$surface_downwelling_photosynthetic_photon_flux_in_air, "mol", "umol")
+    } else if ("surface_downwelling_shortwave_flux_in_air" %in% colnames(met)) {
       par <- sw2par(met$surface_downwelling_shortwave_flux_in_air)
       ppfd <- par2ppfd(par)
     } else {

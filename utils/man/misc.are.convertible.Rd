@@ -20,4 +20,3 @@ function to check whether units are convertible by misc.convert function
 \author{
 Istem Fer, Shawn Serbin
 }
-

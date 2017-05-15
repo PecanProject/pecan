@@ -22,4 +22,3 @@ load_x_netcdf(data.path, format, site, vars = NULL)
 \author{
 Istem Fer
 }
-

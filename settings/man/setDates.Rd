@@ -25,4 +25,3 @@ omitted to leave it unchanged.
 \author{
 Ryan Kelly
 }
-

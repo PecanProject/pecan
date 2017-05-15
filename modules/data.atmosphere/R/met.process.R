@@ -10,6 +10,7 @@
 ##' @param host Host info from settings file
 ##' @param dbparms  database settings from settings file
 ##' @param dir  directory to write outputs to
+##' @param spin spin-up settings passed to model-specific met2model. List containing nyear (number of years of spin-up), nsample (first n years to cycle), and resample (TRUE/FALSE)
 ##' @param overwrite Whether to force met.process to proceed.
 ##' 
 ##'        `overwrite` may be a list with individual components corresponding to 
@@ -20,12 +21,12 @@
 ##'
 ##'        list(download = FALSE, met2cf = TRUE, standardize = TRUE,  met2model = TRUE)
 ##'
+##' @importFrom PEcAn.DB db.query db.close dbfile.input.insert
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(site, input_met, start_date, end_date, model,
-                        host = "localhost", dbparms, dir, browndog = NULL, 
+                        host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
                         overwrite = FALSE) {
-  library(RPostgreSQL)
-  
+
   # If overwrite is a plain boolean, fill in defaults for each stage
   if (!is.list(overwrite)) {
     if (overwrite) {
@@ -101,15 +102,14 @@ met.process <- function(site, input_met, start_date, end_date, model,
     stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
     format.vars <- query.format.vars(bety = bety, format.id = register$format$id)  # query variable info from format id
   } else {
-    stage <- met.process.stage(input_met$id, register$format$id, con)
+    stage <- met.process.stage(input.id=input_met$id, raw.id=register$format$id, con)
     format.vars <- query.format.vars(bety = bety, input.id = input_met$id)  # query DB to get format variable information if available
     # Is there a situation in which the input ID could be given but not the file path? 
     # I'm assuming not right now
     assign(stage$id.name, list(inputid = input_met$id,
-                               dbfileid = db.query(paste0("SELECT id from dbfiles where file_name = '", 
-                                                          basename(input_met$path), "' AND file_path = '", 
-                                                          dirname(input_met$path), "'"), con)[[1]]))
+                               dbfileid = dbfile.check("Input",input_met$id,hostname = machine.host,con=con)$id))
   }
+  print(stage)
   
   if(is.null(model)){
     stage$model <- FALSE
@@ -178,6 +178,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                             overwrite = overwrite$met2cf, 
                             format.vars = format.vars,
                             bety = bety)
+  } else {
+    cf.id = input_met$id
   }
   
   #--------------------------------------------------------------------------------------------------#
@@ -208,6 +210,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                      host = host, 
                                      overwrite = overwrite$standardize)
     }
+  } else {
+    ready.id = input_met$id
   }
   
   #--------------------------------------------------------------------------------------------------#
@@ -228,9 +232,10 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                           site = site, 
                                           start_date = start_date, end_date = end_date, 
                                           browndog = browndog, 
-                                          new.site = new.site, 
+                                          new.site = new.site,
                                           overwrite = overwrite$met2model,
-                                          exact.dates = reg.model$exact.dates)
+                                          exact.dates = reg.model$exact.dates,
+                                          spin = spin)
     
     model.id  <- met2model.result$model.id
     outfolder <- met2model.result$outfolder
@@ -251,6 +256,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
 ##' @export
 ##' @param site.id
 ##' @param con
+##' @importFrom PEcAn.DB db.query
 ##' @author Betsy Cowdery
 db.site.lat.lon <- function(site.id, con) {
   site <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =", 
