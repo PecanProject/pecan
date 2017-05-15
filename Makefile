@@ -68,6 +68,7 @@ $(MODELS_I): .install/models/template
 
 clean:
 	rm -rf .install .check .test .doc
+	find modules/rtm/src \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete
 
 devtools:
 	Rscript -e "if(!require('devtools')) install.packages('devtools', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
