@@ -19,4 +19,3 @@ estimate air density from pressure, temperature, and humidity
 \author{
 Mike Dietze
 }
-

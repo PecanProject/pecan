@@ -21,4 +21,3 @@ also sets all the priors
 \author{
 Michael Dietze
 }
-

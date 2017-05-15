@@ -39,4 +39,3 @@ full loop over traits and PFTs.
 \author{
 David LeBauer, Michael C. Dietze
 }
-

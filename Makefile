@@ -66,6 +66,7 @@ $(MODELS_I): .install/models/template
 
 clean:
 	rm -rf .install .check .test .doc
+	find modules/rtm/src \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete
 
 .install/devtools:
 	Rscript -e "if(!require('devtools')) install.packages('devtools', repos = 'http://cran.rstudio.com')"
@@ -94,7 +95,7 @@ clean:
 
 install_R_pkg = Rscript -e "devtools::install('$(strip $(1))');"
 check_R_pkg = Rscript -e "devtools::check('"$(strip $(1))"')"
-test_R_pkg = Rscript -e "devtools::test('"$(strip $(1))"')"
+test_R_pkg = Rscript -e "devtools::test('"$(strip $(1))"', reporter = 'stop')"
 doc_R_pkg = Rscript -e "devtools::document('"$(strip $(1))"')"
 
 $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): .install/devtools

@@ -24,4 +24,3 @@ Calculates the log density of a univariate truncated normal variable
 \author{
 Alexey Shiklomanov
 }
-

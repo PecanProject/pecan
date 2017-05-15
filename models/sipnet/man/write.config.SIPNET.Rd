@@ -13,4 +13,3 @@ Writes a configuration files for your model
 \author{
 Michael Dietze
 }
-

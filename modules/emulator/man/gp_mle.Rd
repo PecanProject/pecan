@@ -15,4 +15,3 @@ val
 \author{
 Michael Dietze
 }
-

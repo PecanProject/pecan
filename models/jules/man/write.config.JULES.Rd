@@ -28,4 +28,3 @@ and the name of the file to create
 \author{
 Mike Dietze, Rob Kooper
 }
-

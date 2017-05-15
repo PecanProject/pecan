@@ -20,4 +20,3 @@ Temporal downscaling of daily or subdaily met data
 \author{
 David LeBauer
 }
-
