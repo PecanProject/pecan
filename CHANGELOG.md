@@ -10,6 +10,10 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added PEcAn.utils::download.file() to allow for use of alternative FTP programs
 - Updated downloadAmeriflux and downloadNARR to make use of PEcAn.utils::download.file()
 
+### Changed
+- upscale_met now accepts ~any valid CF file (not just full years), retains correct time units, and respects the previously ignored `overwrite` parameter
+- Better date handling in BioCro functions
+
 ## [1.4.10.1] - 2017-04-18
 
 ### Changed
