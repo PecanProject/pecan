@@ -26,7 +26,11 @@
 # Begin Script
 #----------------------------------------------------------------------
 
+# Each variable goes through a unique process for downscaling. temporal.downscale.functions
+# is a dummy function strictly used for documentation purposes only.
+temporal.downscale.functions <- function()
 
+# Modeling Air Temperature
 model.air_temperature <- function(dat.train, n.beta, path.out, day.window, 
     resids = F, parallel = F, n.cores = NULL, seed = 1237) {
     
