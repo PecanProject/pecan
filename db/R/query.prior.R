@@ -24,11 +24,10 @@
 ##' query.priors('ebifarm.pavi', vecpaste('SLA', 'Vcmax', 'leaf_width'))
 ##' }
 query.priors <- function(pft, trstr=NULL, out=NULL, con=NULL,...){
-  
-  out <-pft$outdir
-  pfd<-16
-  trstr<-vecpaste(trait.names)
-  con<-dbcon
+  #out <-pft$outdir
+  #pfd<-16
+  #trstr<-vecpaste(trait.names)
+  #con<-dbcon
   
   if(is.null(con)){
     con <- db.open(settings$database$bety)
