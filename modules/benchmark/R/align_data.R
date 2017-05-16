@@ -10,8 +10,6 @@
 ##' @author Betsy Cowdery
 
 ## Align timeseries data using different functions
-model.calc<-DukeSip
-
 align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_method = "match_timestep") {
   
   fcn <- match.fun(align_method)
