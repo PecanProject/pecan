@@ -1,8 +1,9 @@
+##' Predict Subdaily Meteorology Workflow
 ##' Predict Subdaily Meteorology based off of statistics created in tdm_generate_subdaily_models.R
 # -----------------------------------
 # Description
 # -----------------------------------
-##' @title predict_subdaily_met
+##' @title predict.subdaily.workflow
 ##' @family tdm - Temporally Downscale Meteorology
 ##' @author Christy Rollinson, James Simkins
 ##' @description This is the final script of the tdm_workflow. This script predicts subdaily meteorology
@@ -55,7 +56,7 @@
 # Begin Script
 #----------------------------------------------------------------------
 
-predict_subdaily_met <- function(outfolder, in.path, in.prefix, lm.models.base, 
+predict.subdaily.workflow <- function(outfolder, in.path, in.prefix, lm.models.base, 
     dat.train_file, start_date, end_date, tdf_file, td_file, site.name, 
     lat.in, lon.in, cores.max = 12, ens.hr = 3, n.day = 1, resids = FALSE, 
     parallel = FALSE, n.cores = NULL, overwrite = FALSE, verbose = FALSE) {
@@ -248,7 +249,7 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, lm.models.base,
         # but this will get parallelized to speed it up soon, but we'll
         # prototype in parallel -----------------------------------
         
-        ens.sims <- predict.subdaily(dat.ens, n.ens = ens.hr, path.model = file.path(lm.models.base), 
+        ens.sims <- predict.subdaily.function(dat.ens, n.ens = ens.hr, path.model = file.path(lm.models.base), 
             lags.list = NULL, lags.init = lags.init, dat.train = dat.train)
         
         # Set up the time dimension for this year
