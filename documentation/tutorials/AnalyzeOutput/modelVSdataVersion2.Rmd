@@ -2,7 +2,9 @@
 title: "Simple Model-Data Comparisons"
 author: "Tess McCabe"
 date: "4/26/2017"
-output: pdf_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 
@@ -48,9 +50,8 @@ library(PEcAn.benchmark)
 # Open up a connection to The Bety Database
 
 settings <-list(database = list(bety = list(host = "psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")))
-d <- settings$database$bety[c("dbname", "password", "host", "user")]
-bety <- src_postgres(host = d$host, user = d$user, password = d$password, dbname = d$dbname)
-settings$host$name <- "localhost"
+bety <- src_postgres(host = settings$database$bety$host, user = settings$database$bety$user, password = settings$database$bety$password, dbname = settings$database$bety$dbname)
+
 ```
 
 
@@ -59,7 +60,9 @@ settings$host$name <- "localhost"
 
 ```{r}
 model_vars<-c("time", "NEE") #varibles being read
-model <- as.data.frame(read.output(1000003037, "/fs/data2/output/PEcAn_1000003037/out/1000473575" ,1997,2004,model_vars))
+#model <- as.data.frame(read.output(1000003037, "/fs/data2/output/PEcAn_1000003037/out/1000473575" ,1997,2004,model_vars))
+
+model <- read.output(1000003037, "/fs/data2/output/PEcAn_1000003037/out/1000473575" ,start.year=1997,end.year=2004,model_vars,dataframe=TRUE)
 ```
 
 The arguments to read.output are the run ID, the folder where the run is located, the start year, the end year, and the variables being read. The README file in the Input file dropdown menue of any sucessful run lists the run ID, the output folder, and the start and end year. 
@@ -71,11 +74,13 @@ The arguments to read.output are the run ID, the folder where the run is located
 
 ```{r}
 
-File_Path<-"/fs/data3/tmccabe/valicali/AMF_US-Dk3_BASE_HH_3-1.csv"
-File_format<-query.format.vars(bety = bety, format.id = 5000000002)
-site<-query.site(853,bety$con)
-db.query("UPDATE sites SET time_zone = 'EST' WHERE id = 853;", bety$con) #This gives the correct version of the time zone of the site. 
+File_Path<-"/fs/data3/tmccabe/valicali/AMF_US-Dk3_BASE_HH_3-1.csv" #This is a path to where the observations are stored. 
 
+File_format<-query.format.vars(bety = bety, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
+
+site<-query.site(853,bety$con) #This tells PEcAn where the data comes from
+
+db.query("UPDATE sites SET time_zone = 'EST' WHERE id = 853;", bety$con) #This gives the correct version of the time zone of the site. 
 
 observations<-load_data(data.path = File_Path, format= File_format, time.row = File_format$time.row, site = site) #This will throw an error that not all of the units can be converted. That's ok, as the units of the varibles of interest (NEE) are being converted. 
 ```
@@ -92,29 +97,29 @@ Here 853 is the database site ID for Duke forest, which tells pecan where the da
 ```{r}
 ## Standardize time of model output
 
-origin<-"1997-01-01 00:00:00" #Start of the model run.  In YYYY-MM-DD hh:mm:ss format
-start_year = year(origin)
-end_year = 2004  # End of model run
+#origin<-"1997-01-01 00:00:00" #Start of the model run.  In YYYY-MM-DD hh:mm:ss format
+#start_year = year(origin)
+#end_year = 2004  # End of model run
   
-years <- start_year:end_year
-seconds <- udunits2::ud.convert(model$time,"years","seconds")
-Diff <- diff(model$time)
-time_breaks = which(Diff < 0)
+#years <- start_year:end_year
+#seconds <- udunits2::ud.convert(model$time,"years","seconds")
+#Diff <- diff(model$time)
+#time_breaks = which(Diff < 0)
 
-if(length(time_breaks) == 0 & length(years)>1){
-  model$posix <- as.POSIXct(model$time*86400,origin= origin,tz="UTC")
-  model$year <- year(model$posix)
-} else {
-  N <- c(0,time_breaks, length(model$time))
-  n <- diff(N)
-  y <- c()
-  for (i in seq_along(n)) {
-    y <- c(y, rep(years[i], n[i]))
-  }
-  model$year <- y
-  makeDate <- function(x){as.POSIXct(model$time[x]*86400,origin=paste0(model$year[x],"-01-01"),tz="UTC")}
-  model$posix <- makeDate(seq_along(model$time))
-}
+#if(length(time_breaks) == 0 & length(years)>1){
+#  model$posix <- as.POSIXct(model$time*86400,origin= origin,tz="UTC")
+#  model$year <- year(model$posix)
+#} else {
+#  N <- c(0,time_breaks, length(model$time))
+#  n <- diff(N)
+#  y <- c()
+#  for (i in seq_along(n)) {
+#    y <- c(y, rep(years[i], n[i]))
+#  }
+#  model$year <- y
+#  makeDate <- function(x){as.POSIXct(model$time[x]*86400,origin=paste0(model$year[x],"-01-01"),tz="UTC"#)}
+#  model$posix <- makeDate(seq_along(model$time))
+#}
 
 ## Align observations and model output
 
@@ -124,7 +129,7 @@ aligned_dat = align_data(model.calc = model, obvs.calc= observations, var =as.ch
 
 ```
 
-**Third**, _plot model predictions vs. observations_ and compare this to a 1:1 line 
+**Fourth**, _plot model predictions vs. observations_ and compare this to a 1:1 line 
 
 ```{r}
 ## predicted vs observed plot
