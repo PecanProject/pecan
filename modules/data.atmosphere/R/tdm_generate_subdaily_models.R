@@ -3,7 +3,7 @@
 # Description
 # -----------------------------------
 ##'
-##' @title gen_subdaily_models
+##' @title gen.subdaily.models
 ##' @family tdm - Temporally Downscale Meteorology
 ##' @author Christy Rollinson, James Simkins
 ##' @description This is the 2nd script in the tdm workflow that takes the dat.train_file that is created from the
@@ -38,7 +38,7 @@
 #----------------------------------------------------------------------
 
 
-gen_subdaily_models <- function(outfolder, dat.train_file, in.prefix, 
+gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix, 
     n.beta, day.window, resids = F, parallel = F, n.cores = NULL, overwrite = TRUE, 
     verbose = FALSE) {
 

@@ -33,7 +33,6 @@ This is the 1st script for the tdm (Temporally Downscale Meteorology) workflow. 
              It is also called in tdm_predict_subdaily_met which is the final step of the tdm workflow.
 }
 \details{
-Netcdf to tdm train data format
 Parses multiple netCDF files into one central document for temporal downscaling procedure
 }
 \seealso{

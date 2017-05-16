@@ -38,7 +38,6 @@ This is the 2nd script in the tdm workflow that takes the dat.train_file that is
              analysis.
 }
 \details{
-Generate Subdaily Models
 Create statistical models to predict subdaily meteorology
 }
 \seealso{

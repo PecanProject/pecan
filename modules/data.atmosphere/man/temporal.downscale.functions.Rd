@@ -2,7 +2,7 @@
 % Please edit documentation in R/tdm_temporal_downscale_functions.R
 \name{temporal.downscale.functions}
 \alias{temporal.downscale.functions}
-\title{temporal.downscale.functions}
+\title{temporal_downscale_functions}
 \usage{
 temporal.downscale.functions()
 }
@@ -31,7 +31,6 @@ This script contains the functions that do the heavy lifting in gen_subdaily_mod
              from the dat.train_file and save them in the output file.
 }
 \details{
-Temporal Downscale Functions
 Met variable functions that are called in gen_subdaily_models and predict_subdaily_met
 }
 \seealso{
