@@ -4,18 +4,26 @@
 \alias{upscale_met}
 \title{upscale_met}
 \usage{
-upscale_met(outfolder, input_met, site.id, reso = 6, overwrite = FALSE,
+upscale_met(outfolder, input_met, resolution = 1/24, overwrite = FALSE,
   verbose = FALSE, ...)
 }
 \arguments{
-\item{input_met}{- met dataset}
+\item{outfolder}{path to directory where output should be saved
+Output is netcdf named as <input_met_filename>.upscaled.nc}
 
-\item{reso}{- numeric value in HOURS that is the desired resolution for the dataset to be upscaled to
-# might need to change this for monthly/yearly option later}
+\item{input_met}{path to netcdf file containing met dataset}
+
+\item{resolution}{desired output resolution, in days}
+
+\item{overwrite}{logical: replace output file if it already exists?}
+
+\item{verbose}{logical: should \code{\link[ncdf4:ncdf4-package]{ncdf4}} functions print debugging information as they run?}
+
+\item{...}{other arguments, currently ignored}
 }
 \description{
 upscale_met upscales the temporal resolution of a dataset
 }
 \author{
-James Simkins
+James Simkins, Chris Black
 }
