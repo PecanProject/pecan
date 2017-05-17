@@ -8,7 +8,7 @@ output:
 ---
 
 
-In this tutorial we will compare model outputs to data outside of the PEcAn web interface. The goal of this is to demonstrate that it is straightforward to perform additional analyses using PEcAn’s outputs. To do this you can download each of the Output files, and then perform the analyses using whatever software you prefer, or you can perform analyses directly on the PEcAn server itself. Here we’ll be analyzing model outputs in R using a browser-based version of RStudio that’s installed on the server
+In this tutorial we will compare model outputs to data outside of the PEcAn web interface. The goal of this is to demonstrate how to perform additional analyses using PEcAn’s outputs. To do this you can download each of the Output files, and then perform the analyses using whatever software you prefer, or you can perform analyses directly on the PEcAn server itself. Here we’ll be analyzing model outputs in R using a browser-based version of RStudio that’s installed on the server
 
 ## Starting RStudio Server
 
@@ -87,42 +87,14 @@ observations<-load_data(data.path = File_Path, format= File_format, time.row = F
 
 File_Path refers to where you stored your observational data. In this example the defualt file path is an Ameriflux dataset from Duke Forest. 
 
-File_format queries the database for the format your file is in. The defualt format ID "5000000002" is for csv files downloaded from the ameriflux website (aka BADM files).
-You could query for diffent kinds of formats that exist in bety or make your own.***LINK TO DOCUMENTATION***
+File_format queries the database for the format your file is in. The defualt format ID "5000000002" is for csv files downloaded from the ameriflux website.
+You could query for diffent kinds of formats that exist in bety or [make your own](https://pecanproject.github.io/pecan-documentation/adding-an-ecosystem-model.html#formats).
 
 Here 853 is the database site ID for Duke forest, which tells pecan where the data is from and what time zone to assign any time data read in. 
 
 **Third** _align model output and observations_
 
 ```{r}
-## Standardize time of model output
-
-#origin<-"1997-01-01 00:00:00" #Start of the model run.  In YYYY-MM-DD hh:mm:ss format
-#start_year = year(origin)
-#end_year = 2004  # End of model run
-  
-#years <- start_year:end_year
-#seconds <- udunits2::ud.convert(model$time,"years","seconds")
-#Diff <- diff(model$time)
-#time_breaks = which(Diff < 0)
-
-#if(length(time_breaks) == 0 & length(years)>1){
-#  model$posix <- as.POSIXct(model$time*86400,origin= origin,tz="UTC")
-#  model$year <- year(model$posix)
-#} else {
-#  N <- c(0,time_breaks, length(model$time))
-#  n <- diff(N)
-#  y <- c()
-#  for (i in seq_along(n)) {
-#    y <- c(y, rep(years[i], n[i]))
-#  }
-#  model$year <- y
-#  makeDate <- function(x){as.POSIXct(model$time[x]*86400,origin=paste0(model$year[x],"-01-01"),tz="UTC"#)}
-#  model$posix <- makeDate(seq_along(model$time))
-#}
-
-## Align observations and model output
-
 
 aligned_dat = align_data(model.calc = model, obvs.calc= observations, var =as.character(c("NEE")) , start_year =start_year, end_year = end_year, align_method ="mean_over_larger_timestep")
 
