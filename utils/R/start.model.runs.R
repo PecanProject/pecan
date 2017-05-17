@@ -109,14 +109,17 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error=TRUE) {
         # start the actual model run
         cmd <- qsub[[1]]
         args <- qsub[-1]
+        PEcAn.utils::logger.debug(cmd,args)
         if (is.localhost(settings$host)) {
           out <- system2(cmd, c(args, file.path(settings$rundir, format(run, 
                                                                         scientific = FALSE), "job.sh")), stdout = TRUE, stderr = TRUE)
         } else {
           out <- remote.execute.cmd(settings$host, cmd, c(args, file.path(settings$host$rundir, 
                                                                           format(run, scientific = FALSE), "job.sh")), stderr = TRUE)
+          PEcAn.utils::logger.debug(settings$host,format(run, scientific = FALSE))
+
         }
-        print(out)  # <-- for debugging
+        PEcAn.utils::logger.debug("JOB.SH submit status:",out)
         jobids[run] <- sub(settings$host$qsub.jobid, "\\1", out)
         
         # if qsub option is not invoked.  just start model runs in serial.
