@@ -27,7 +27,7 @@
 #' overwrite  <- FALSE
 #' verbose    <- TRUE
 #' 
-#' \notrun{
+#' \dontrun{
 #' merge.met.variable(in.path,in.prefix,start_date,end_date,merge.file,overwrite,verbose)
 #' PEcAn.DALEC::met2model.DALEC(in.path,in.prefix,outfolder,start_date,end_date)
 #' }
