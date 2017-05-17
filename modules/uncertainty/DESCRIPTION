@@ -18,12 +18,13 @@ Depends:
     PEcAn.utils,
     PEcAn.priors,
     ggplot2,
+    ggmap,
     gridExtra
 Imports:
     coda (>= 0.18),
     plyr (>= 1.8.4)
 Suggests:
-    testthat (>= 1.0.2)
+    testthat (>= 1.0.2),
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
