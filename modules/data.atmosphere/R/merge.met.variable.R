@@ -10,7 +10,7 @@
 #' @param ... 
 #'
 #' @return
-#' @export
+#' @export merge.met.variable
 #'
 #' @details Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record. 
 #' Currently unit and name checking only implemented for CO2. 
@@ -27,7 +27,7 @@
 #' overwrite  <- FALSE
 #' verbose    <- TRUE
 #' 
-#' \notrun{
+#' \dontrun{
 #' merge.met.variable(in.path,in.prefix,start_date,end_date,merge.file,overwrite,verbose)
 #' PEcAn.DALEC::met2model.DALEC(in.path,in.prefix,outfolder,start_date,end_date)
 #' }
