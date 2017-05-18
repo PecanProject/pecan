@@ -98,7 +98,7 @@ switch ($type) {
 		}
 		$mime = "image/png";
 		$file = tempnam(sys_get_temp_dir(),'plot') . ".png";
-		shell_exec("R_LIBS_USER='${pecan_install}' PECANSETTINGS='$folder/pecan.xml' ${Rbinary} CMD BATCH --vanilla '--args $datafile $year $xvar $yvar $width $height $file' plot.netcdf.R /tmp/plot.out");
+		shell_exec("R_LIBS_USER='${R_library_path}' PECANSETTINGS='$folder/pecan.xml' ${Rbinary} CMD BATCH --vanilla '--args $datafile $year $xvar $yvar $width $height $file' plot.netcdf.R /tmp/plot.out");
 		break;
 		
 	default:

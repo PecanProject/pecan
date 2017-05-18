@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<Geostreams>
+  <scale>site</scale>
+  <format>
+    <id>46</id>
+    <name>Geostreams meteorology</name>
+    <mimetype>application/json</mimetype>
+    <inputtype>json</inputtype>
+  </format>
+</Geostreams>
