@@ -18,7 +18,7 @@
 ##' @param run.id id of run
 ##' @return none
 ##' @export
-##' @author Mike Dietze
+##' @author Mike Dietze, Shawn Serbin
 ##' @importFrom ncdf4 ncvar_put ncvar_get
 ##-------------------------------------------------------------------------------------------------#
 write.config.FATES <- function(defaults, trait.values, settings, run.id){
@@ -29,15 +29,15 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
   
    # find out where things are
    local.rundir <- file.path(settings$rundir, run.id) ## this is on local machine for staging
-   rundir <- file.path(settings$host$rundir, run.id)  ## this is on remote machine for execution
-   casedir <- file.path(rundir,"case") 
-   outdir <- file.path(settings$host$outdir, run.id)
-   refcase   <- settings$model$binary
-   bld    <- file.path(refcase,"bld")
-   binary <- file.path(bld,"cesm.exe")
-   indir  <- file.path(rundir,"input") ## input directory
-   default <- settings$run$inputs$default$path ## reference inputs file structure
-   site_name <- paste0(site.id %/% 1000000000, "-", site.id %% 1000000000)
+   rundir     <- file.path(settings$host$rundir, run.id)  ## this is on remote machine for execution
+   casedir    <- file.path(rundir,"case") 
+   outdir     <- file.path(settings$host$outdir, run.id)
+   refcase    <- settings$model$binary
+   bld        <- file.path(refcase,"bld")
+   binary     <- file.path(bld,"cesm.exe")
+   indir      <- file.path(rundir,"input") ## input directory
+   default    <- settings$run$inputs$default$path ## reference inputs file structure
+   site_name  <- paste0(site.id %/% 1000000000, "-", site.id %% 1000000000)
    
    ## DATES
    ## CLM is a bit odd and takes a start date and length, so we need to precompute
@@ -53,9 +53,9 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    ##-----------------------------------------------------------------------##
 
    ## SITE INFO --> DOMAIN FILE (lat/lon)
-   gridres = 0.125  ## ultimately this should be a variable
-   lat = as.numeric(site$lat)
-   lon = (as.numeric(site$lon) + 360) %% 360 ## make sure coords in 0-360 range, not negative
+   gridres <- 0.125  ## ultimately this should be a variable
+   lat <- as.numeric(site$lat)
+   lon <- (as.numeric(site$lon) + 360) %% 360 ## make sure coords in 0-360 range, not negative
    domain.default <- system.file("domain.lnd.1x1pt-brazil_navy.090715.nc",package="PEcAn.FATES")
    domain.file <- file.path(local.rundir,paste0("domain.lnd.",site_name,".nc"))
    file.copy(domain.default,domain.file)
@@ -169,7 +169,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    clm.param.nc <- ncdf4::nc_open(clm.param.file,write=TRUE)
    
    # FATES
-   fates.param.default <- system.file("fates_params.c170331.nc",package="PEcAn.FATES")
+   fates.param.default <- system.file("tropical_params_ckmod_01May2017.nc",package="PEcAn.FATES")
    fates.param.file <- file.path(local.rundir,paste0("fates_params.",run.id,".nc"))
    file.copy(fates.param.default,fates.param.file)
    fates.param.nc <- ncdf4::nc_open(fates.param.file,write=TRUE)
@@ -219,7 +219,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        ## THESE NEED SOME FOLLOW UP       
        if(var == "Vcmax"){                    ## fnitr is currently a HACK; *** need to know units ***
          ncvar_put(nc=fates.param.nc, varid='fates_fnitr', start = ipft, count = 1,
-                   vals=pft[v])  ## (umol CO2 m-2 s-1) -> ??
+                   vals=pft[v])  ## (umol CO2 m-2 s-1) -> ?? -- Apparently this is Vcmax???
        }
        
        
@@ -251,7 +251,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
 #                   vals=pft[v]*gH2O_per_mol*1e-12)   ### umol H2O m-2 s-1 ->  [m s-1]
 #       }
        if(var == "DBH_at_HTMAX"){                    ## note in FATES parameter list about switching to HTMAX
-         ncvar_put(nc=fates.param.nc, varid='max_dbh', start = ipft, count = 1,
+         ncvar_put(nc=fates.param.nc, varid='fates_max_dbh', start = ipft, count = 1,
                    vals=pft[v])  ## [cm]
        }
        if(var == "growth_resp_factor"){                    ## r_growth = grperc * (gpp+r_maint)
@@ -279,7 +279,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
          ncvar_put(nc=fates.param.nc, varid='fates_froot_leaf', start = ipft, count = 1,
                    vals=pft[v])
        }
-       if(var == "sapwood_ratio"){         # leaf to sapwood area ratio
+       if(var == "sapwood_ratio"){         # leaf to sapwood area ratio. IS THIS NOW fates_sapwood_ratio(fates_pft)??
          ncvar_put(nc=fates.param.nc, varid='latosa', start = ipft, count = 1,
                    vals=udunits2::ud.convert(pft[v],"m2 m-2","m2 cm-2"))
        }
@@ -677,4 +677,6 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    
 #   ## Write SETTINGS file
 #     
- }
+}
+#---------------------------------------------------------------------------------------------------------------------#
+### EOF

@@ -37,7 +37,7 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   cd "@CASEDIR@"
 
   ## THINGS THAT ARE IN REFCASE
-  # Modifying : env_mach_pes.xmli
+  # Modifying : env_mach_pes.xml
   echo "*** Modify XMLs ***"
 ./xmlchange -file env_mach_pes.xml -id NTASKS_ATM -val 1
 ./xmlchange -file env_mach_pes.xml -id NTASKS_LND -val 1
