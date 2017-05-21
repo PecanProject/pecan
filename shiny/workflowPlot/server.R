@@ -3,8 +3,9 @@ library(PEcAn.DB)
 library(shiny)
 library(ncdf4)
 library(ggplot2)
-
-
+source('helper.R')
+require(plotly)
+library(scales)
 # Define server logic
 server <- shinyServer(function(input, output, session) {
   bety <- betyConnect()
@@ -30,6 +31,9 @@ server <- shinyServer(function(input, output, session) {
   var_names <- reactive({
       run_ids <- get_run_ids(bety, workflow_id())
       var_names <- get_var_names(bety, workflow_id(), run_ids[1])
+      # Removing the variables "Year" and "FracJulianDay" from the Variable Name input in the app
+      removeVarNames = c('Year','FracJulianDay')
+      var_names <-var_names[!var_names %in% removeVarNames]
       return(var_names)
   })
   observe({
@@ -52,8 +56,14 @@ server <- shinyServer(function(input, output, session) {
       ranges$y <- NULL
     }
   })
-
-  output$outputPlot <- renderPlot({
+  # If want to render text
+  output$info <- renderText({
+    paste0(input$variable_name)
+    # paste0(testVal)
+    # paste0("x=", input$plot_dblclick$x, "\ny=", input$plot_dblclick$y)
+  })
+  
+  output$outputPlot <- renderPlotly({
     workflow_id <- isolate(input$workflow_id)
     run_id <- isolate(input$run_id)
     var_name <- input$variable_name
@@ -83,16 +93,24 @@ server <- shinyServer(function(input, output, session) {
         xlab <- if (is.null(ranges$x)) "Time" else paste(ranges$x, collapse=" - ")
         # plot result
         print(ranges$x)
-        plt <- ggplot(data.frame(dates, vals), aes(x=dates, y=vals)) +
-          geom_point(aes(color="Model output")) +
+        dates = as.Date(dates)
+        df = data.frame(dates, vals)
+        # df$dates = as.factor(df$dates)
+
+        plt <- ggplot(df, aes(x=dates, y=vals)) +
+          # geom_point(aes(color="Model output")) +
+          geom_point() +
 #          geom_smooth(aes(fill = "Spline fit")) +
-          coord_cartesian(xlim = ranges$x, ylim = ranges$y) +
-          scale_y_continuous(labels=fancy_scientific) +
+          # coord_cartesian(xlim = ranges$x, ylim = ranges$y) +
+          # scale_y_continuous(labels=fancy_scientific) +
           labs(title=title, x=xlab, y=ylab) + 
           scale_color_manual(name = "", values = "black") +
-          scale_fill_manual(name = "", values = "grey50")
-        plot(plt)
-        add_icon()
+          scale_fill_manual(name = "", values = "grey50") 
+          # theme(axis.text.x = element_text(angle = -90))
+
+        plt<-ggplotly(plt)
+        # plot(plt)
+        # add_icon()
       }
     }
   })

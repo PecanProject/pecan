@@ -1,4 +1,5 @@
 library(shiny)
+source('helper.R')
 
 # Define UI
 ui <- shinyUI(fluidPage(
@@ -12,10 +13,14 @@ ui <- shinyUI(fluidPage(
       selectInput("variable_name", "Variable Name", "")
     ),
     mainPanel(
-      plotOutput("outputPlot",
-                 brush = brushOpts(id = "plot_brush",
-                                   resetOnNew = TRUE),
-                 dblclick = "plot_dblclick")
+      plotlyOutput("outputPlot"
+                 ## brushOpts and dblclick not supported by plotly  
+                 # brush = brushOpts(id = "plot_brush",
+                 #                   resetOnNew = TRUE),
+                 # dblclick = "plot_dblclick"
+                 )
+      # Checking variable names
+      ,verbatimTextOutput("info")
     )
   )
 ))
