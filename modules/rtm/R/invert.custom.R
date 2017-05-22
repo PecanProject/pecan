@@ -14,7 +14,6 @@
 #' Jump distribution (useful for continuing an ongoing run) and acceptance 
 #' rate. Default = FALSE.
 #' @param runID Run-unique ID. Useful for parallel runs. Default=NULL
-#' @importFrom Rcpp evalCpp
 #' @details
 #' \code{inversion.options} contains the following:
 #' \itemize{
