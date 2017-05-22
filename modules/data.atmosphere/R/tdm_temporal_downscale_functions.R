@@ -1,4 +1,5 @@
-##' Met variable functions that are called in gen_subdaily_models and predict_subdaily_met
+##' Temporal Downscale Functions
+##'  Met variable functions that are called in gen.subdaily.models and predict.subdaily.workflow
 # -----------------------------------
 # Description
 # -----------------------------------

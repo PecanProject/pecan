@@ -29,10 +29,11 @@ This is the 1st script for the tdm (Temporally Downscale Meteorology) workflow. 
              parses multiple netCDF files into one central training data file called 'dat.train_file'. It outputs a 
              netCDF file in CF conventions with a few workflow specific variables (date, doy, and hour) that are used 
              later in the workflow. Thus, this function produces a file unique to the tdm family workflow. This netCDF
-             file will be used to generate the subdaily models in the next step of the workflow, tdm_generate_subdaily_models.R.
-             It is also called in tdm_predict_subdaily_workflow.R which is the final step of the tdm family workflow.
+             file will be used to generate the subdaily models in the next step of the workflow, tdm_generate_subdaily_models.
+             It is also called in tdm_predict_subdaily_met which is the final step of the tdm workflow.
 }
 \details{
+nc2dat.train
 Parses multiple netCDF files into one central document for temporal downscaling procedure
 }
 \seealso{
