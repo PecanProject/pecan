@@ -31,7 +31,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   
   ##----------------------------------------------------------------------------------------------------------------##  
   
-  if (exact.dates){
+  if (exact.dates) {
     
     # Find Existing input with exact dates.
     
@@ -52,7 +52,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     logger.info("end CHECK for existing input record")
     
     
-    if (nrow(existing.dbfile) > 0){
+    if (nrow(existing.dbfile) > 0) {
       
       existing.input <- db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
       
@@ -65,40 +65,35 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       existing.input$end_date   <- lubridate::force_tz(lubridate::as_date(existing.input$end_date), "UTC")
       
       ## Do overwrite if set to TRUE
-      
+      if(overwrite){
+         # collect files to flag for deletion
+        files.to.delete <- remote.execute.R( paste0("list.files('",
+                                             existing.dbfile[["file_path"]],
+                                             "', full.names=TRUE)"),
+                                             host, user = NA, verbose = TRUE,R = Rbinary, scratchdir = outfolder)
 
-          if(overwrite){
-                         # collect files to flag for deletion
-                        files.to.delete <- remote.execute.R( paste0("list.files('",
-                                                             existing.dbfile[["file_path"]],
-                                                             "', full.names=TRUE)"),
-                                                             host, user = NA, verbose = TRUE,R = Rbinary, scratchdir = outfolder)
-      
-                        file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
-      
-                        remote.execute.R( file.deletion.commands$move.to.tmp,
-                                          host, user = NA, 
-                                          verbose = TRUE,R = Rbinary, scratchdir = outfolder)
-      
-                       
-                        # Schedule files to be replaced or deleted on exiting the function
-                        successful <- FALSE
-                        on.exit(if (exists("successful") && successful) {
-                          
-                                    logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-                                    remote.execute.R( file.deletion.commands$delete.tmp, 
-                                                      host, user = NA, 
-                                                      verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
-                          
-                                } else {
-                                    logger.info("Conversion failed. Replacing old files.")
-                                    remote.execute.R( file.deletion.commands$replace.from.tmp, 
-                                                      host, user = NA, 
-                                                      verbose = TRUE, R = Rbinary, scratchdir = outfolder )
-                                }
-                        )#Close on.exit
-                        
-          }
+        file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
+
+        remote.execute.R( file.deletion.commands$move.to.tmp,
+                          host, user = NA, 
+                          verbose = TRUE,R = Rbinary, scratchdir = outfolder)
+
+       
+        # Schedule files to be replaced or deleted on exiting the function
+        successful <- FALSE
+        on.exit(if (exists("successful") && successful) {
+                  logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
+                  remote.execute.R( file.deletion.commands$delete.tmp, 
+                                    host, user = NA, 
+                                    verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
+                } else {
+                  logger.info("Conversion failed. Replacing old files.")
+                  remote.execute.R( file.deletion.commands$replace.from.tmp, 
+                                    host, user = NA, 
+                                    verbose = TRUE, R = Rbinary, scratchdir = outfolder )
+                }
+        )#Close on.exit
+      }
       
     
 
@@ -111,7 +106,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       machine <- db.query(paste0("SELECT * from machines where hostname = '", 
                           machine.host, "'"), con)
            
-      if(existing.machine$id != machine$id){
+      if (existing.machine$id != machine$id) {
         
         logger.info("Valid Input record found that spans desired dates, but valid files do not exist on this machine.")
         logger.info("Downloading all years of Valid input to ensure consistency")
@@ -119,147 +114,130 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         start_date <- existing.input$start_date
         end_date   <- existing.input$end_date
     
-        }else{
-             
-         # There's an existing input that spans desired start/end dates with files on this machine
-         
+      } else {      
+        # There's an existing input that spans desired start/end dates with files on this machine        
         logger.info("Skipping this input conversion because files are already available.")
         return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
-       }
+      }
     
       
-      } else{
+    } else {
       # No existing record found. Should be good to go with regular conversion.
-     }
+    }
     
     ##-------------------------end of exact.dates chunk------------------------------------#
   
-    }else{
-    
-      
-      
-      existing.dbfile <- dbfile.input.check(siteid = site.id,
-                                            mimetype = mimetype, 
-                                            formatname = formatname,
-                                            parentid = input.id,
-                                            startdate = start_date,
-                                            enddate = end_date, 
-                                            con = con, 
-                                            hostname = host$name
-                                            )
-      
-    
-      
-      logger.info(existing.dbfile)
-      
-     
-      logger.info("end CHECK for existing input record.")
-      
-      
-      if (nrow(existing.dbfile) > 0) {
-        
-        
-        existing.input <- db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
-        
-        
-        # Convert dates to Date objects and strip all time zones
-        # (DB values are timezone-free)
-        start_date <- lubridate::force_tz(lubridate::as_date(start_date), "UTC")
-        end_date   <- lubridate::force_tz(lubridate::as_date(end_date), "UTC")
-        
-        existing.input$start_date <- lubridate::force_tz(lubridate::as_date(existing.input$start_date), "UTC")
-        existing.input$end_date   <- lubridate::force_tz(lubridate::as_date(existing.input$end_date), "UTC")
-        
-        if (overwrite) {
-                        # collect files to flag for deletion
-          
-                        files.to.delete <- remote.execute.R( paste0("list.files('",
-                                                                    existing.dbfile[["file_path"]],
-                                                                    "', full.names=TRUE)"),
-                                                                     host, user = NA, verbose = TRUE,R = Rbinary, scratchdir = outfolder)
-          
-                        file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
-          
-                        remote.execute.R( file.deletion.commands$move.to.tmp,
-                                          host, user = NA, 
-                                          verbose = TRUE,R = Rbinary, scratchdir = outfolder)
-          
-                        # Schedule files to be replaced or deleted on exiting the function
-                        successful <- FALSE
-                        on.exit(if (exists("successful") && successful) {
-            
-                                    logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-                                    remote.execute.R( file.deletion.commands$delete.tmp,
-                                                      host, user = NA, 
-                                                      verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
-            
-                                    } else {
-                                      
-                                    logger.info("Conversion failed. Replacing old files.")
-                                    remote.execute.R( file.deletion.commands$replace.from.tmp,
-                                                      host, user = NA,
-                                                      verbose = TRUE, R = Rbinary, scratchdir = outfolder )
-                                    } 
-                        )#close on on.exit
-          
-        } else if ((start_date >= existing.input$start_date) &&
-                   (end_date <= existing.input$end_date)) {
-          
+  } else {
 
-                  #Grab machine info of file that exists
-                  existing.machine <- db.query(paste0("SELECT * from machines where id  = '", 
-                                              existing.dbfile$machine_id, "'"), con)
-          
-                  #Grab machine info of 
-                  machine.host <- ifelse(host$name == "localhost", fqdn(), host$name)
-                  machine <- db.query(paste0("SELECT * from machines where hostname = '", 
-                                      machine.host, "'"), con)
-          
-                   if(existing.machine$id != machine$id){
-                     
- 
-                      logger.info("Valid Input record found that spans desired dates, but valid files do not exist on this machine.")
-                      logger.info("Downloading all years of Valid input to ensure consistency")
-                      insert.new.file <- TRUE
-                      start_date <- existing.input$start_date
-                      end_date   <- existing.input$end_date
+    existing.dbfile <- dbfile.input.check(siteid = site.id,
+                                          mimetype = mimetype, 
+                                          formatname = formatname,
+                                          parentid = input.id,
+                                          startdate = start_date,
+                                          enddate = end_date, 
+                                          con = con, 
+                                          hostname = host$name
+                                          )
+      
+    logger.info(existing.dbfile)
+    logger.info("end CHECK for existing input record.")
+
+    if (nrow(existing.dbfile) > 0) {
+
+      existing.input <- db.query(paste0("SELECT * FROM inputs WHERE id=", existing.dbfile[["container_id"]]),con)
+      
+      
+      # Convert dates to Date objects and strip all time zones
+      # (DB values are timezone-free)
+      start_date <- lubridate::force_tz(lubridate::as_date(start_date), "UTC")
+      end_date   <- lubridate::force_tz(lubridate::as_date(end_date), "UTC")
+      
+      existing.input$start_date <- lubridate::force_tz(lubridate::as_date(existing.input$start_date), "UTC")
+      existing.input$end_date   <- lubridate::force_tz(lubridate::as_date(existing.input$end_date), "UTC")
+        
+      if (overwrite) {
+        # collect files to flag for deletion
+
+        files.to.delete <- remote.execute.R( paste0("list.files('",
+                                                    existing.dbfile[["file_path"]],
+                                                    "', full.names=TRUE)"),
+                                                     host, user = NA, verbose = TRUE,R = Rbinary, scratchdir = outfolder)
+
+        file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
+
+        remote.execute.R( file.deletion.commands$move.to.tmp,
+                          host, user = NA, 
+                          verbose = TRUE,R = Rbinary, scratchdir = outfolder)
+
+        # Schedule files to be replaced or deleted on exiting the function
+        successful <- FALSE
+        on.exit(if (exists("successful") && successful) {
+                  logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
+                  remote.execute.R( file.deletion.commands$delete.tmp,
+                                    host, user = NA, 
+                                    verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
+
+                } else {
                       
-                      }else{
-                      
-                         # There's an existing input that spans desired start/end dates with files on this machine
-                       
-                          logger.info("Skipping this input conversion because files are already available.")
-                          return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
-                    }
-          
-         } else {
-          # Start/end dates need to be updated so that the input spans a continuous
-          # timeframe
-          start_date <- min(start_date, existing.input$start_date)
-          end_date <- max(end_date, existing.input$end_date)
-          logger.info(
-            paste0(
-              "Changed start/end dates to '",
-              start_date,
-              "'/'",
-              end_date,
-              "' ",
-              " so that existing input can be updated while maintaining continuous time span."
-            )
-          )
-          
-          # There might be existing files for some years (but not all; checked that above)
-          # fcn should be smart enough not overwrite the existing ones, and hopefully won't
-          # waste time working on them either At the end, if convert.inputs was successful
-          # we'll need to update its start/end dates .
-        } 
+                logger.info("Conversion failed. Replacing old files.")
+                remote.execute.R( file.deletion.commands$replace.from.tmp,
+                                  host, user = NA,
+                                  verbose = TRUE, R = Rbinary, scratchdir = outfolder )
+                } 
+        )#close on on.exit
+
+      } else if ((start_date >= existing.input$start_date) &&
+                 (end_date <= existing.input$end_date)) {
+
+        #Grab machine info of file that exists
+        existing.machine <- db.query(paste0("SELECT * from machines where id  = '", 
+                                    existing.dbfile$machine_id, "'"), con)
+
+        #Grab machine info of 
+        machine.host <- ifelse(host$name == "localhost", fqdn(), host$name)
+        machine <- db.query(paste0("SELECT * from machines where hostname = '", 
+                            machine.host, "'"), con)
+
+        if(existing.machine$id != machine$id){
+          logger.info("Valid Input record found that spans desired dates, but valid files do not exist on this machine.")
+          logger.info("Downloading all years of Valid input to ensure consistency")
+          insert.new.file <- TRUE
+          start_date <- existing.input$start_date
+          end_date   <- existing.input$end_date
+        } else {
+             # There's an existing input that spans desired start/end dates with files on this machine           
+              logger.info("Skipping this input conversion because files are already available.")
+              return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
+        }
+
       } else {
-        # No existing record found. Should be good to go.
-      }
-}
+        # Start/end dates need to be updated so that the input spans a continuous
+        # timeframe
+        start_date <- min(start_date, existing.input$start_date)
+        end_date <- max(end_date, existing.input$end_date)
+        logger.info(
+          paste0(
+            "Changed start/end dates to '",
+            start_date,
+            "'/'",
+            end_date,
+            "' ",
+            " so that existing input can be updated while maintaining continuous time span."
+          )
+        )
+        
+        # There might be existing files for some years (but not all; checked that above)
+        # fcn should be smart enough not overwrite the existing ones, and hopefully won't
+        # waste time working on them either At the end, if convert.inputs was successful
+        # we'll need to update its start/end dates .
+      } 
+    } else {
+      # No existing record found. Should be good to go.
+    }
+  }
     
-#---------------------------------------------------------------------------------------------------------------#
-# Get machine information
+  #---------------------------------------------------------------------------------------------------------------#
+  # Get machine information
   
   machine.host <- ifelse(host$name == "localhost", fqdn(), host$name)
   machine <- db.query(paste0("SELECT * from machines where hostname = '", 
@@ -457,20 +435,16 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     if ("newsite" %in% names(input.args) && !is.null(input.args[["newsite"]])) {
       site.id <- input.args$newsite
     }
-    
-    
-    if(insert.new.file){
-      
+
+    if (insert.new.file) {
       dbfile.id <- dbfile.insert(in.path = dirname(result$file[1]), 
                                  in.prefix = result$dbfile.name[1], 
                                  'Input', existing.input$id, 
                                  con, reuse=TRUE, hostname = machine$hostname)
-      
       newinput <- list()
       newinput$input.id  <- existing.input$id
-      newinput$dbfile.id <- dbfile.id
-      
-    }else{
+      newinput$dbfile.id <- dbfile.id 
+    } else {
       newinput <- dbfile.input.insert(in.path = dirname(result$file[1]), 
                                       in.prefix = result$dbfile.name[1], 
                                       siteid = site.id, 
@@ -481,14 +455,10 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                       parentid = parent.id,
                                       con = con, 
                                       hostname = machine$hostname,
-                                      allow.conflicting.dates = allow.conflicting.dates)
-      
+                                      allow.conflicting.dates = allow.conflicting.dates)  
     }
 
-    
     successful <- TRUE
-
-
     return(newinput)
   } else {
     logger.warn("Input was not added to the database")
