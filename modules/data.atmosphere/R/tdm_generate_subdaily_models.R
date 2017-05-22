@@ -1,3 +1,4 @@
+##' Generate Subdaily Models
 ##' Create statistical models to predict subdaily meteorology
 # -----------------------------------
 # Description
@@ -29,7 +30,6 @@
 ##'                     for each day surrounding the model day
 ##' @param overwrite
 ##' @param verbose
-##' @return
 ##' @export
 # -----------------------------------
 

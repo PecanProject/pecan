@@ -1,3 +1,4 @@
+##' nc2dat.train
 ##' Parses multiple netCDF files into one central document for temporal downscaling procedure
 # -----------------------------------
 # Description
