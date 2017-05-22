@@ -25,7 +25,9 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   ## Seem to be stuck having to build a new case. Will try and avoid this in the future
   cd ${SCRIPTROOT}
   echo "*** Run create_newcase ***"
-  ./create_newcase -case @CASEDIR@ -res 1x1_brazil -compset ICLM45ED -mach eddi -compiler gnu
+  #MACHINE=`hostname -a`
+  #echo $MACHINE
+  ./create_newcase -case @CASEDIR@ -res 1x1_brazil -compset ICLM45ED -mach modex -compiler gnu -project pecan
 
   cd "@RUNDIR@"
   
