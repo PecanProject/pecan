@@ -57,6 +57,23 @@ This is the final script of the tdm family workflow. This script predicts subdai
 Predict Subdaily Meteorology Workflow
 Predict Subdaily Meteorology based off of statistics created in tdm_generate_subdaily_models.R
 }
+\examples{
+\dontrun{
+library(PEcAn.data.atmosphere)
+outfolder = "~/Downscaled_GCM"
+in.path = "~/raw_GCM"
+in.prefix = "GFDL"
+lm.models.base = "sf_scratch/US-WCr"
+dat.train_file = "Training_data/US-WCr_dat.train.nc"
+start_date = "2010-01-01"
+end_date = "2014-12-31"
+site.name = "US-WCr"
+lat.in = 45
+lon.in = -90
+cores.max = 12
+ens.hr = 3
+n.day = 1}
+}
 \seealso{
 Other tdm - Temporally Downscale Meteorology: \code{\link{gen.subdaily.models}},
   \code{\link{nc2dat.train}},
