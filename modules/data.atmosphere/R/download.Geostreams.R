@@ -70,7 +70,7 @@ download.Geostreams <- function(outfolder, sitename,
   
   return(data.frame(file = result_file,
                     host = fqdn(),
-                    mimetype = "text/json",
+                    mimetype = "application/json",
                     formatname = "Geostreams met",
                     startdate = start_date,
                     enddate = end_date,
