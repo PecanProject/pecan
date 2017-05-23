@@ -46,8 +46,14 @@ require(RPostgreSQL)
 library(PEcAn.assim.batch)
 library(PEcAn.benchmark)
 
-# Open up a connection to The Bety Database
-bety = list(host = "psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")
+
+## Open up a connection to The Bety Database
+#bety = list(host = "psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety", con= list())
+#bety$con <- src_postgres(host = bety$host, user = bety$user, password = bety$password, dbname = bety$dbname)
+
+
+bety<-list(host = "psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")
+bety <- src_postgres(host = bety$host, user = bety$user, password = bety$password, dbname = bety$dbname)
 ```
 
 
