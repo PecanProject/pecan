@@ -72,6 +72,18 @@ met2CF.Geostreams <- function(in.path, in.prefix, outfolder,
       vars <- sub("precipitation_rate", "precipitation_flux", vars)
       names(dat) <- sub("precipitation_rate", "precipitation_flux", names(dat))
     }
+
+    make_ncvar <- function(name){
+      if (! name %in% met.lookup$CF_standard_name) {
+        logger.severe("Don't know how to convert parameter", name, "to CF standard format")
+      }
+      unit <- met.lookup[met.lookup$CF_standard_name == name, "units"]
+      ncdf4::ncvar_def(name = name,
+                       units = unit,
+                       dim = cf_dims,
+                       missval = -999,
+                       verbose = verbose)
+    }
     var_list = lapply(vars, make_ncvar)
 
     dir.create(outfolder, recursive = TRUE, showWarnings = FALSE)
@@ -98,18 +110,4 @@ met2CF.Geostreams <- function(in.path, in.prefix, outfolder,
                     formatname = "CF Meteorology",
                     dbfile.name = in.prefix,
                     stringsAsFactors = FALSE))
-} # met2CF.Geostreams
-
-# variable lookup helper, not exported.
-# NB treats met.lookup as global.
-make_ncvar <- function(name){
-  if (! name %in% met.lookup$CF_standard_name) {
-    logger.severe("Don't know how to convert parameter", name, "to CF standard format")
-  }
-  unit <- met.lookup[met.lookup$CF_standard_name == name, "units"]
-  ncdf4::ncvar_def(name = name,
-                   units = unit,
-                   dim = cf_dims,
-                   missval = -999,
-                   verbose = verbose)
 }
