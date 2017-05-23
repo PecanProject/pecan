@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Added
 - Added PEcAn.utils::download.file() to allow for use of alternative FTP programs
 - Updated downloadAmeriflux and downloadNARR to make use of PEcAn.utils::download.file()
+- Added -w flag to load.bety.sh script to specify the URL to fetch the data from
 
 ### Changed
 - upscale_met now accepts ~any valid CF file (not just full years), retains correct time units, and respects the previously ignored `overwrite` parameter
