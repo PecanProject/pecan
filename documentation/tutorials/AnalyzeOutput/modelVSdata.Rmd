@@ -48,10 +48,6 @@ library(PEcAn.benchmark)
 
 
 ## Open up a connection to The Bety Database
-#bety = list(host = "psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety", con= list())
-#bety$con <- src_postgres(host = bety$host, user = bety$user, password = bety$password, dbname = bety$dbname)
-
-
 bety<-list(host = "psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")
 bety <- src_postgres(host = bety$host, user = bety$user, password = bety$password, dbname = bety$dbname)
 ```
@@ -63,7 +59,7 @@ bety <- src_postgres(host = bety$host, user = bety$user, password = bety$passwor
 ```{r}
 model_vars<-c("time", "NEE") #varibles being read
 
-model <- read.output(1000003037, "/fs/data2/output/PEcAn_1000003037/out/1000473575" ,start.year=1997,end.year=2004,model_vars,dataframe=TRUE)
+model <- read.output(99000000001, "/fs/data2/output/PEcAn_99000000001/out/99000000001" ,start.year=1997,end.year=2004,model_vars,dataframe=TRUE)
 ```
 
 The arguments to read.output are the run ID, the folder where the run is located, the start year, the end year, and the variables being read. The README file in the Input file dropdown menue of any sucessful run lists the run ID, the output folder, and the start and end year. 
