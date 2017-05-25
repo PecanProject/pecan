@@ -38,6 +38,7 @@ PG_OPT=${PG_OPT:-""}
 # 99 - VM
 MYSITE=${MYSITE:-99}
 REMOTESITE=${REMOTESITE:-0}
+DUMPURL={DUMPURL:-""}
 
 # Create the database from scratch
 # Set this to YES to create the database, this will remove all existing
@@ -80,16 +81,16 @@ LOG=${LOG:-"$PWD/dump/sync.log"}
 # ----------------------------------------------------------------------
 
 # parse command line options
-while getopts a:cd:efghl:m:o:p:qr:tu opt; do
+while getopts a:cd:efghl:m:o:p:qr:tuw: opt; do
   case $opt in
   a)
-    PG_USER=$OPTARG
+    PG_USER="$OPTARG"
     ;;
   c)
     CREATE="YES"
     ;;
   d)
-    DATABASE=$OPTARG
+    DATABASE="$OPTARG"
     ;;
   e)
     EMPTY="YES"
@@ -117,31 +118,35 @@ while getopts a:cd:efghl:m:o:p:qr:tu opt; do
     echo " -r remote site id, default is 0 (EBI)"
     echo " -t keep temp folder, default is NO"
     echo " -u create carya users, this will create some default users"
+    echo " -w use url to fetch data from instead of hardcoded url"
     exit 0
     ;;
   l)
-    LOG=$OPTARG
+    LOG="$OPTARG"
     ;;
   m)
-    MYSITE=$OPTARG
+    MYSITE="$OPTARG"
     ;;
   o)
-    OWNER=$OPTARG
+    OWNER="$OPTARG"
     ;;
   p)
-    PG_OPT=$OPTARG
+    PG_OPT="$OPTARG"
     ;;
   q)
     QUIET="YES"
     ;;
   r)
-    REMOTESITE=$OPTARG
+    REMOTESITE="$OPTARG"
     ;;
   t)
     KEEPTMP="YES"
     ;;
   u)
     USERS="YES"
+    ;;
+  w)
+    DUMPURL="$OPTARG"
     ;;
   esac
 done
@@ -221,7 +226,7 @@ if [ -z "${DUMPURL}" ]; then
   elif [ "${REMOTESITE}" == "5" ]; then  
     DUMPURL="http://tree.aos.wisc.edu:6480/sync/dump/bety.tar.gz"
   elif [ "${REMOTESITE}" == "6" ]; then
-    DUMPURL="https://terraref.ncsa.illinois.edu/bety/dump/bety.tar.gz"
+    DUMPURL="https://terraref.ncsa.illinois.edu/bety/dump/bety6/bety.tar.gz"
   else
     echo "Don't know where to get data for site ${REMOTESITE}"
     DUMPURL=""
