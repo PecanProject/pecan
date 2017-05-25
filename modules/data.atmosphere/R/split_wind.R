@@ -6,7 +6,7 @@
 #' @param end_date 
 #' @param overwrite 
 #' @param verbose 
-#' @param ... 
+#' @param ... other arguments, currently ignored
 #'
 #' @return
 #' @export
@@ -23,15 +23,15 @@
 #' verbose    <- TRUE
 #' 
 #' \notrun{
-#' split_wind(in.path,in.prefix,start_date,end_date,merge.file,overwrite,verbose)
+#' split_wind(in.path, in.prefix, start_date, end_date, merge.file, overwrite, verbose)
 #' }
-split_wind <- function(in.path,in.prefix,start_date, end_date,
+split_wind <- function(in.path, in.prefix, start_date, end_date,
                                overwrite = FALSE, verbose = FALSE, ...){
   
   # get start/end year code works on whole years only
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
-  if(nchar(in.prefix)>0) in.prefix <- paste0(in.prefix,".")
+  if(nchar(in.prefix)>0) in.prefix <- paste0(in.prefix, ".")
   
   ## prep data structure for results
   rows <- end_year - start_year + 1
@@ -50,27 +50,27 @@ split_wind <- function(in.path,in.prefix,start_date, end_date,
 #    new.file <- file.path(outfolder, paste(in.prefix, year, "nc", sep = "."))
     
     ## open target file
-    nc <- ncdf4::nc_open(old.file,write = TRUE)
+    nc <- ncdf4::nc_open(old.file, write = TRUE)
     
     if("eastward_wind" %in% names(nc$var)) {
-      PEcAn.utils::logger.info("eastward_wind already exists",year_txt)
+      PEcAn.utils::logger.info("eastward_wind already exists", year_txt)
       ncdf4::nc_close(nc)
       next
     }
     if(!("wind_speed" %in% names(nc$var))) {
-      PEcAn.utils::logger.error("wind_speed does not exist",year_txt)
+      PEcAn.utils::logger.error("wind_speed does not exist", year_txt)
       ncdf4::nc_close(nc)
       next
     }
 
     
     ##extract wind_speed & direction
-    wind_speed <- ncdf4::ncvar_get(nc,"wind_speed")
-    wind_speed.attr <- ncdf4::ncatt_get(nc,"wind_speed")
+    wind_speed <- ncdf4::ncvar_get(nc, "wind_speed")
+    wind_speed.attr <- ncdf4::ncatt_get(nc, "wind_speed")
     WD <- "wind_direction" %in% names(nc$var)
     if(WD){
-      wind_dir <- pi/2 - udunits2::ud_convert(ncdf4::ncvar_get(nc,"wind_direction"),wind_dir$units,"radians")
-      wind_dir.attr <- ncdf4::ncatt_get(nc,"wind_direction")
+      wind_dir <- pi/2 - udunits2::ud_convert(ncdf4::ncvar_get(nc, "wind_direction"), wind_dir$units, "radians")
+      wind_dir.attr <- ncdf4::ncatt_get(nc, "wind_direction")
       east <- wind_speed*cos(wind_dir)
       north <- wind_speed*sin(wind_dir)
     } else {
@@ -78,8 +78,8 @@ split_wind <- function(in.path,in.prefix,start_date, end_date,
       north <- 0*wind_speed
     }
     
-    ## get dimensions [latitude,longitude,time]
-    dims <- list(nc$dim$latitude,nc$dim$longitude,nc$dim$time)
+    ## get dimensions [latitude, longitude, time]
+    dims <- list(nc$dim$latitude, nc$dim$longitude, nc$dim$time)
     
     ## insert east
     eastward <- ncdf4::ncvar_def(name = "eastward_wind", units = wind_speed.attr$units, dim = dims, 

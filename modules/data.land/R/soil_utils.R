@@ -244,13 +244,11 @@ sclass <- function(sandfrac,clayfrac){
   
   if (any(silt > 100.) | any(silt < 0.) | any(sand > 100.) | 
       any(sand < 0.) | any(clay > 100.) | any(clay < 0.) ) {
-    print("---------------------------------------------------")
-    print(" At least one of your percentages is screwy...")
-    print(paste("SAND <- ",sprintf("%.2f",sand),"%",sep=""))
-    print(paste("CLAY <- ",sprintf("%.2f",clay),"%",sep=""))
-    print(paste("SILT <- ",sprintf("%.2f",silt),"%",sep=""))
-    print("---------------------------------------------------")
-    stop ("This soil doesn''t fit into any category...")
+    PEcAn.utils::logger.warn(" At least one of your percentages is screwy...")
+    PEcAn.utils::logger.warn(paste("SAND <- ",sprintf("%.2f",sand),"%",sep=""))
+    PEcAn.utils::logger.warn(paste("CLAY <- ",sprintf("%.2f",clay),"%",sep=""))
+    PEcAn.utils::logger.warn(paste("SILT <- ",sprintf("%.2f",silt),"%",sep=""))
+    PEcAn.utils::logger.severe("This soil doesn''t fit into any category...")
     
   }
   nlayer = max(length(silt),length(clay),length(sand))
@@ -287,12 +285,10 @@ sclass <- function(sandfrac,clayfrac){
     }else if( clay[z] > 40.0 & silt[z] > 30.0 & silt[z] <= 40.0) {
       mysoil[z] <- 17 #----- Clayey silt. -----------------------------------------------------#
     }else{
-      print("---------------------------------------------------")
-      print(paste("SAND <- ",sprintf("%.2f",sand[z]),"%",sep=""))
-      print(paste("CLAY <- ",sprintf("%.2f",clay[z]),"%",sep=""))
-      print(paste("SILT <- ",sprintf("%.2f",silt[z]),"%",sep=""))
-      print("---------------------------------------------------")
-      stop ("This soil doesn''t fit into any category...")
+      PEcAn.utils::logger.warn(paste("SAND <- ",sprintf("%.2f",sand[z]),"%",sep=""))
+      PEcAn.utils::logger.warn(paste("CLAY <- ",sprintf("%.2f",clay[z]),"%",sep=""))
+      PEcAn.utils::logger.warn(paste("SILT <- ",sprintf("%.2f",silt[z]),"%",sep=""))
+      PEcAn.utils::logger.severe ("This soil doesn''t fit into any category...")
     }#end if
   }
   return(mysoil)
