@@ -20,7 +20,7 @@ split_wind(in.path, in.prefix, start_date, end_date, overwrite = FALSE,
 
 \item{verbose}{}
 
-\item{...}{}
+\item{...}{other arguments, currently ignored}
 }
 \description{
 Split wind_speed into eastward_wind and northward_wind
@@ -38,6 +38,6 @@ overwrite  <- FALSE
 verbose    <- TRUE
 
 \\notrun{
-split_wind(in.path,in.prefix,start_date,end_date,merge.file,overwrite,verbose)
+split_wind(in.path, in.prefix, start_date, end_date, merge.file, overwrite, verbose)
 }
 }
