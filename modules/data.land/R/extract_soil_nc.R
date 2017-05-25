@@ -32,10 +32,10 @@ extract_soil_nc <- function(in.file,outdir,lat,lon){
   dlat <- abs(median(diff(soil.lat)))
   dlon <- abs(median(diff(soil.lon)))
   if(lat < (min(soil.lat)-dlat) | lat > (max(soil.lat)+dlat)){
-    PEcAn.utils::logger.error("site lat out of bounds",lat,range(soi.lat))
+    PEcAn.utils::logger.error("site lat out of bounds",lat,range(soil.lat))
   }
   if(lon < (min(soil.lon)-dlon) | lon > (max(soil.lon)+dlon)){
-    PEcAn.utils::logger.error("site lon out of bounds",lon,range(soi.lon))
+    PEcAn.utils::logger.error("site lon out of bounds",lon,range(soil.lon))
   }
   if(dims[1] == lat.dim){
     soil.row <- which.min(abs(lat-soil.lat))
