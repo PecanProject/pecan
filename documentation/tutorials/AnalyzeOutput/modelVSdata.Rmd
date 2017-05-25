@@ -1,6 +1,6 @@
 ---
 title: "Simple Model-Data Comparisons"
-author: "Tess McCabe"
+author: "Tess McCabe, Istem Fer"
 date: "4/26/2017"
 output:
   html_document: default
