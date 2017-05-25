@@ -60,9 +60,9 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FAL
       coda::autocorr.plot(mcmc.object[[trait]][, i][1], xlim = c(1, 50))
       box(lwd = 2)
     }
-    xyplot(mcmc.object[[trait]])
-    densityplot(mcmc.object[[trait]])
-    acfplot(mcmc.object[[trait]])
+    lattice::xyplot(mcmc.object[[trait]])
+    lattice::densityplot(mcmc.object[[trait]])
+    coda::acfplot(mcmc.object[[trait]])
     dev.off()
     
     ## G-R diagnostics to ensure convergence
