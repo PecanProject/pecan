@@ -118,5 +118,18 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
                    lon = site.lon
     )
   }
+  
+  # Check that all bety units are convertible. If not, throw a warning. 
+  for(i in 1:length(format$vars$bety_units)){
+    
+    if( format$vars$storage_type[i]!=""){ #units with storage type are a special case
+      # This would be a good place to put a test for valid sotrage types. Currently not implemented. 
+    }else if(udunits2::ud.are.convertible(format$vars$input_units[i], format$vars$pecan_units[i]) == FALSE){ 
+      if(misc.are.convertible(format$vars$input_units[i], format$vars$pecan_units[i]) == FALSE){
+        logger.warn(c(paste(c("Units not convertible for", ""),c(format$vars$input_name[i], format$vars$input_units[i])), paste(".  Please make sure the varible has units that can be converted to", format$vars$pecan_units[i])))
+      }
+    }
+  } 
+  
   return(format)
 }
