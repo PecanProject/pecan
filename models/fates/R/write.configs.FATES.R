@@ -135,7 +135,28 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
 # create job.sh
    jobsh <- gsub('@HOST_SETUP@', hostsetup, jobsh)
    jobsh <- gsub('@HOST_TEARDOWN@', hostteardown, jobsh)
-
+   
+   ## Machine configs
+   #   ./create_newcase -case @CASEDIR@ -res 1x1_brazil -compset ICLM45ED -mach @MACHINE@ -compiler @COMPILER@ -project @PROJECT@
+   if (!is.null(settings$model$machine)) {
+     machine <- paste(settings$model$machine, collapse="\n") 
+   } else {
+     machine <- "eddi"
+   }
+   jobsh <- gsub('@MACHINE@', machine, jobsh)
+   if (!is.null(settings$model$compiler)) {
+     compiler <- paste(settings$model$compiler, collapse="\n")
+   } else {
+     compiler <- "gnu"
+   }
+   jobsh <- gsub('@COMPILER@', compiler, jobsh)
+   if (!is.null(settings$model$project)) {
+     project <- paste(settings$model$project, collapse="\n")
+   } else {
+     project <- "pecan"
+   }
+   jobsh <- gsub('@PROJECT@', compiler, jobsh)
+   
    ## PATHS
    jobsh <- gsub('@RUNDIR@', rundir, jobsh)
    jobsh <- gsub('@CASEDIR@', casedir, jobsh)
