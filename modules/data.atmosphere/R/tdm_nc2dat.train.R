@@ -6,7 +6,7 @@
 ##' @title nc2dat.train
 ##' @family tdm - Temporally Downscale Meteorology
 ##' @author James Simkins, Christy Rollinson
-##' @description This is the 1st script for the tdm (Temporally Downscale Meteorology) workflow. The nc2dat.train function
+##' @description This is the 1st function for the tdm (Temporally Downscale Meteorology) workflow. The nc2dat.train function
 ##'              parses multiple netCDF files into one central training data file called 'dat.train_file'. It outputs a 
 ##'              netCDF file in CF conventions with a few workflow specific variables (date, doy, and hour) that are used 
 ##'              later in the workflow. Thus, this function produces a file unique to the tdm family workflow. This netCDF
@@ -28,7 +28,7 @@
 ##' @param verbose
 # -----------------------------------
 #----------------------------------------------------------------------
-# Begin Script
+# Begin Function
 #----------------------------------------------------------------------
 nc2dat.train <- function(outfolder, in.path, in.prefix, start_date, end_date, 
     upscale = FALSE, overwrite = FALSE, verbose = FALSE, ...) {

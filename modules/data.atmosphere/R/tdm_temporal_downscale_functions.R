@@ -6,7 +6,7 @@
 ##' @title temporal_downscale_functions
 ##' @family tdm - Temporally Downscale Meteorology
 ##' @author Christy Rollinson, James Simkins
-##' @description This script contains the functions that do the heavy lifting in gen_subdaily_models
+##' @description This function contains the functions that do the heavy lifting in gen_subdaily_models
 ##'              and predict_subdaily_met. These functions actually generate the models and betas
 ##'              from the dat.train_file and save them in the output file. 
 # -----------------------------------
@@ -24,7 +24,7 @@
 ##' @param seed - allows this to be reproducible
 # -----------------------------------
 #----------------------------------------------------------------------
-# Begin Script
+# Begin Function
 #----------------------------------------------------------------------
 
 # Each variable goes through a unique process for downscaling. temporal.downscale.functions
