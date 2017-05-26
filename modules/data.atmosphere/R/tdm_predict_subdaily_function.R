@@ -6,7 +6,7 @@
 ##' @title predict.subdaily.function
 ##' @family tdm - Temporally Downscale Meteorology
 ##' @author Christy Rollinson, James Simkins
-##' @description This script contains the functions that do the heavy lifting in the final
+##' @description This function contains the functions that do the heavy lifting in the final
 ##'              script of the tdm workflow titled tdm_predict_subdialy_met.R. It uses a linear
 ##'              regression approach by generating the hourly values from the daily means of
 ##'              the file the user selects to downscale based on the hourly models and betas
@@ -22,10 +22,9 @@
 ##'                    surface_downwelling_shortwave_flux_in_air
 # -----------------------------------
 #----------------------------------------------------------------------
-# Begin Script
+# Begin Function
 #----------------------------------------------------------------------
 
-# Begin Function
 predict.subdaily.function <- function(dat.mod, n.ens, path.model, lags.list = NULL, 
     lags.init = NULL, dat.train) {
     
