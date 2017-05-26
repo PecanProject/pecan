@@ -48,7 +48,7 @@ extract.nc <- function(in.path, in.prefix, outfolder, start_date, end_date, slat
   for (year in start_year:end_year) {
     year_txt <- formatC(year, width = 4, format = "d", flag = "0")
     infile <- file.path(in.path, paste0(in.prefix, year_txt, ".nc"))
-    outfile <- file.path(outfolder, paste0(in.prefix, year, ".nc"))
+    outfile <- file.path(outfolder, paste0(in.prefix, year_txt, ".nc"))
     
     # create array with results
     row <- year - start_year + 1
