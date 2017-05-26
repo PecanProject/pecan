@@ -18,8 +18,7 @@
 # site_lat_c =   9.1543, 5.07389,  -2.60909722,  1.4368,   4.1865,  15.6324
 # site_lon_c = 280.1539, 8.85472, 299.7907,     28.5826, 114.017,   99.217
 #=============================================================================================
-#export NETCDF_HOME=/usr/
-export NETCDF_HOME=/usr/local/
+#export NETCDF_HOME=/usr/local/  # is this nescessary?
 MACH=eddi
 COMP=ICLM45ED
 GITHASH=`git log -n 1 --format=%h`
@@ -32,7 +31,6 @@ DOMAIN_PATH=${DIN_LOC_ROOT}/share/domains/
 
 WORKDIR=`pwd`
 
-
 export CASEROOT=${CROOT}${CASE}
 echo "CREATING NEW CASE IN "${CASEROOT}
 
@@ -41,8 +39,8 @@ rm -rf ${CASEROOT}
 
 cd ${CASEROOT}
 
-
 # Modifying : env_mach_pes.xml
+echo "*** Modifying xmls  ***"
 ./xmlchange -file env_mach_pes.xml -id NTASKS_ATM -val 1
 ./xmlchange -file env_mach_pes.xml -id NTASKS_LND -val 1
 ./xmlchange -file env_mach_pes.xml -id NTASKS_ICE -val 1
@@ -85,6 +83,7 @@ cd ${CASEROOT}
 ./xmlchange -file env_run.xml -id PIO_DEBUG_LEVEL -val 0
 
 #./cesm_setup
+echo "*** Running case.setup ***"
 ./case.setup
 
 # Modify run script
@@ -118,6 +117,7 @@ EOF
 # building case :
 #./${CASE}.build
 
+echo "*** Running case.build ***"
 ./case.build
 
 #cd $WORKDIR
