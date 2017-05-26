@@ -19,7 +19,7 @@ import netCDF4
 
 DEBUG_PRINTING=True
 
-defaultURL='http://daac.ornl.gov/cgi-bin/MODIS/GLBVIZ_1_Glb_subset/MODIS_webservice.wsdl'
+defaultURL='https://daacmodis.ornl.gov/cgi-bin/MODIS/GLBVIZ_1_Glb_subset/MODIS_webservice.wsdl'
 
 class modisData( object ):
 
