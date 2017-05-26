@@ -62,6 +62,8 @@ outdir<- settings$outdir
 start.year<-settings$run$start.date
 end.year<-settings$run$end.date
 
+site_id<-settings$run$site$id
+
 ## Open up a connection to The Bety Database 
 bety <- src_postgres(host = settings$database$bety$host, user = settings$database$bety$user, password = settings$database$bety$password, dbname = settings$database$bety$dbname)
 
@@ -76,6 +78,7 @@ runid<- 99000000001
 outdir<- "/fs/data2/output/PEcAn_99000000001/out/99000000001"
 start.year<-1997
 end.year<-2004
+site.id<-853
 
 ## Open up a connection to The Bety Database
 bety<-list(host = "psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")
@@ -104,7 +107,7 @@ File_Path<-"/fs/data3/tmccabe/valicali/AMF_US-Dk3_BASE_HH_3-1.csv" #This is a pa
 
 File_format<-query.format.vars(bety = bety, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
 
-site<-query.site(853,bety$con) #This tells PEcAn where the data comes from
+site<-query.site(site_id,bety$con) #This tells PEcAn where the data comes from
 
 observations<-load_data(data.path = File_Path, format= File_format, time.row = File_format$time.row,  site = site) #This will throw an error that not all of the units can be converted. That's ok, as the units of the varibles of interest (NEE) are being converted. 
 ```
