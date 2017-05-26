@@ -1,16 +1,14 @@
-##' nc2dat.train
+##' nc.merge
 ##' Parses multiple netCDF files into one central document for temporal downscaling procedure
 # -----------------------------------
 # Description
 # -----------------------------------
-##' @title nc2dat.train
+##' @title nc.merge
 ##' @family tdm - Temporally Downscale Meteorology
 ##' @author James Simkins, Christy Rollinson
 ##' @description This is the 1st function for the tdm (Temporally Downscale Meteorology) workflow. The nc2dat.train function
-##'              parses multiple netCDF files into one central training data file called 'dat.train_file'. It outputs a 
-##'              netCDF file in CF conventions with a few workflow specific variables (date, doy, and hour) that are used 
-##'              later in the workflow. Thus, this function produces a file unique to the tdm family workflow. This netCDF
-##'              file will be used to generate the subdaily models in the next step of the workflow, tdm_generate_subdaily_models.
+##'              parses multiple netCDF files into one central training data file called 'dat.train_file'. This netCDF
+##'              file will be used to generate the subdaily models in the next step of the workflow, generate.subdaily.models(). 
 ##'              It is also called in tdm_predict_subdaily_met which is the final step of the tdm workflow. 
 # -----------------------------------
 # Parameters
@@ -30,7 +28,7 @@
 #----------------------------------------------------------------------
 # Begin Function
 #----------------------------------------------------------------------
-nc2dat.train <- function(outfolder, in.path, in.prefix, start_date, end_date, 
+nc.merge <- function(outfolder, in.path, in.prefix, start_date, end_date, 
     upscale = FALSE, overwrite = FALSE, verbose = FALSE, ...) {
     
     start_date <- as.POSIXlt(start_date, tz = "UTC")
@@ -149,50 +147,45 @@ nc2dat.train <- function(outfolder, in.path, in.prefix, start_date, end_date,
     for (i in 1:ncol(train_df)) {
         train_df[is.na(train_df[, i]), i] <- mean(train_df[, i], na.rm = TRUE)
     }
-    
-    # Getting additional time stamps
-    train_df$year <- lubridate::year(train_df$date)
-    train_df$doy <- lubridate::yday(train_df$date)
-    train_df$hour <- lubridate::hour(train_df$date)
-    
+
     if (upscale == FALSE) {
         dat.train <- train_df
     } else {
         # Figure out which temporal variables we're aggregating over
-        time.vars <- c("year", "doy", "hour")
-        agg.ind <- which(time.vars == upscale)
-        time.vars <- time.vars[1:agg.ind]
-        
+      if (upscale == "year") {
+        train_df[upscale] = lubridate::year(train_df$date)
+        upscale_timestep = 365
+      }
+      if (upscale == "doy") {
+        train_df[upscale] = lubridate::yday(train_df$date)
+        upscale_timestep = 1
+      }
+      if (upscale == "hour") {
+        train_df[upscale] = lubridate::hour(train_df$date)
+        upscale_timestep = 1/24
+      }
         dat.train <- aggregate(train_df[, names(train_df)[!names(train_df) %in% 
-            c("year", "doy", "hour")]], by = train_df[, time.vars], FUN = mean, 
+            c("year", "doy", "hour")]], by = train_df[upscale], FUN = mean, 
             na.rm = F)
         dat.train <- dat.train[order(dat.train$date), ]
     }
     # ---------------------------------
     
-    # Add in wind speed & dataset name
-    dat.train$wind_speed <- sqrt(dat.train$eastward_wind^2 + dat.train$northward_wind^2)
+    # Add dataset name
+    
     dat.train$dataset <- paste0(in.prefix)
-    
-    # creating the columns required for downscaling functions
-    dat.train <- dat.train[, c("date", "year", "doy", "hour", "air_temperature", 
-        "precipitation_flux", "air_temperature_max", "air_temperature_min", 
-        "surface_downwelling_shortwave_flux_in_air", "surface_downwelling_longwave_flux_in_air", 
-        "air_pressure", "specific_humidity", "eastward_wind", "northward_wind", 
-        "wind_speed")]
-    
-    units_dat.train <- append(c("date", "year", "day of year", "hour"), 
-        as.character(vars.info$units))
-    rm(raw_train_data)
-    rm(train_df)
-    
+
     # Create dimensions for NC file
-    ntime <- nrow(dat.train)
+    ntime = nrow(dat.train)
+    days_elapsed <- (1:ntime) * upscale_timestep - .5*upscale_timestep
+    time <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", start_year, "-01-01T00:00:00Z"),
+                             vals = as.array(days_elapsed), create_dimvar = TRUE, unlim = TRUE)
+    dim$time = time
     # Create var.list for the NC file
     var.list <- list()
     for (j in seq_along(colnames(dat.train))) {
         var.list[[j]] <- ncdf4::ncvar_def(name = as.character(colnames(dat.train[j])), 
-            units = as.character(units_dat.train[j]), dim = dim, missval = -9999, 
+            units = as.character(vars.info$units[j]), dim = dim, missval = -9999, 
             verbose = verbose)
     }
     
