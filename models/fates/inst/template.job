@@ -27,6 +27,7 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   echo "*** Run create_newcase ***"
   #MACHINE=`hostname -a`
   #echo $MACHINE
+  # *** TEMPORARY.  NEED TO MAKE THIS GENERAL ****
   ./create_newcase -case @CASEDIR@ -res 1x1_brazil -compset ICLM45ED -mach modex -compiler gnu -project pecan
 
   cd "@RUNDIR@"
