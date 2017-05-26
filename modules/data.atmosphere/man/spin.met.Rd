@@ -4,23 +4,28 @@
 \alias{spin.met}
 \title{Spin-up meteorology}
 \usage{
-spin.met(in.path, in.prefix, start_date, end_date, nyear, nsample,
-  resample = TRUE)
+spin.met(in.path, in.prefix, start_date, end_date, nyear = 1000,
+  nsample = 50, resample = TRUE, run_start_date = start_date,
+  overwrite = TRUE)
 }
 \arguments{
 \item{in.path}{met input folder path}
 
 \item{in.prefix}{met input file prefix (shared by all annual files, can be "")}
 
-\item{start_date}{start of real met & run}
+\item{start_date}{start of met}
 
-\item{end_date}{end of run}
+\item{end_date}{end of met}
 
 \item{nyear}{number of years of spin-up, default 1000}
 
 \item{nsample}{sample the first nsample years of met, default 50}
 
 \item{resample}{resample (TRUE, default) or cycle (FALSE) meteorology}
+
+\item{run_start_date}{date the run itself starts, which can be different than the start of met}
+
+\item{overwrite}{whether to replace previous resampling}
 }
 \value{
 updated start date
