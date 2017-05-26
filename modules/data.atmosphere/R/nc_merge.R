@@ -40,7 +40,6 @@ nc.merge <- function(outfolder, in.path, in.prefix, start_date, end_date,
     yr_seq <- seq(start_year, end_year)
 
     #------------ Read in the data
-    
     input_met <- list()
     for (j in seq_along(yr_seq)) {
         input_met[[j]] <- file.path(in.path, paste0(in.prefix, ".", yr_seq[j], 
