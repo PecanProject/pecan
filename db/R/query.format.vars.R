@@ -129,8 +129,7 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
     }else if(udunits2::ud.are.convertible(format$vars$input_units[i], format$vars$pecan_units[i]) == FALSE){ 
       
       if(misc.are.convertible(format$vars$input_units[i], format$vars$pecan_units[i]) == FALSE){
-        #logger.warn(c(paste(c("Units not convertible for", ""),c(format$vars$input_name[i], format$vars$input_units[i])),  paste(".  Please make sure the varible has units that can be converted to", format$vars$pecan_units[i])))
-        logger.warn("Units not convertible for", format$vars$input_name[i])
+        logger.warn("Units not convertible for",format$vars$input_name[i], "with units of",format$vars$input_units[i], ".  Please make sure the varible has units that can be converted to", format$vars$pecan_units[i])
       }
       
     }
