@@ -36,8 +36,8 @@ Within both the run and out folders there will be one folder for each unique mod
 
   + Within this folder you will find, among other things, files of the format <year>.nc. Each of these files contains one year of model output in the standard PEcAn netCDF format.
 
-## Load libraries and open connection to the database
 
+## Load libraries and open connection to the database
 ```{r}
 #Load every Library used
 library(PEcAn.all)
@@ -45,7 +45,40 @@ library(PEcAn.DB)
 require(RPostgreSQL)
 library(PEcAn.assim.batch)
 library(PEcAn.benchmark)
+```
 
+## Read in settings
+
+There are two ways to access runs from pecan. One is from a settings object generated from an xml file, and the other is to query the database using the run ID, site ID, and output files manually. These ID's can all be found in the run README file. Both are shown below.  
+
+**From an XML file**
+```{r}
+## Read in the xml
+settings<-read.setting("filepath/custom.xml")
+
+## To read in the model output 
+runid<-settings$workflow$id
+outdir<- settings$outdir
+start.year<-settings$run$start.date
+end.year<-settings$run$end.date
+
+site_id<-settings$run$site$id
+
+## Open up a connection to The Bety Database 
+bety <- src_postgres(host = settings$database$bety$host, user = settings$database$bety$user, password = settings$database$bety$password, dbname = settings$database$bety$dbname)
+
+```
+
+
+**From ID's**
+```{r}
+
+## To read in the model output 
+runid<- 99000000001
+outdir<- "/fs/data2/output/PEcAn_99000000001/out/99000000001"
+start.year<-1997
+end.year<-2004
+site.id<-853
 
 ## Open up a connection to The Bety Database
 bety<-list(host = "psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")
@@ -54,12 +87,11 @@ bety <- src_postgres(host = bety$host, user = bety$user, password = bety$passwor
 
 
 
-## Load model output
-
+## Read in model output from spesific variables
 ```{r}
 model_vars<-c("time", "NEE") #varibles being read
 
-model <- read.output(99000000001, "/fs/data2/output/PEcAn_99000000001/out/99000000001" ,start.year=1997,end.year=2004,model_vars,dataframe=TRUE)
+model <- read.output(runid,outdir,start.year, end.year, model_vars,dataframe=TRUE)
 ```
 
 The arguments to read.output are the run ID, the folder where the run is located, the start year, the end year, and the variables being read. The README file in the Input file dropdown menue of any sucessful run lists the run ID, the output folder, and the start and end year. 
@@ -75,7 +107,7 @@ File_Path<-"/fs/data3/tmccabe/valicali/AMF_US-Dk3_BASE_HH_3-1.csv" #This is a pa
 
 File_format<-query.format.vars(bety = bety, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
 
-site<-query.site(853,bety$con) #This tells PEcAn where the data comes from
+site<-query.site(site_id,bety$con) #This tells PEcAn where the data comes from
 
 observations<-load_data(data.path = File_Path, format= File_format, time.row = File_format$time.row,  site = site) #This will throw an error that not all of the units can be converted. That's ok, as the units of the varibles of interest (NEE) are being converted. 
 ```
