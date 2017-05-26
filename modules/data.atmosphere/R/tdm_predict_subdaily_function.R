@@ -14,10 +14,10 @@
 # ----------------------------------- 
 # Parameters
 # -----------------------------------
-##' @param dat.mod - data to be predicted at the time step of the training data
+##' @param dat.mod - dataframe to be predicted at the time step of the training data
 ##' @param n.ens - number of hourly ensemble members to generate
 ##' @param path.model - path to where the training model & betas is stored
-##' @param lags.init - a data frame of initialization paramters to match the data in dat.mod
+##' @param lags.init - a data frame of initialization parameters to match the data in dat.mod
 ##' @param dat.train - the training data used to fit the model; needed for night/day in 
 ##'                    surface_downwelling_shortwave_flux_in_air
 # -----------------------------------
@@ -99,7 +99,7 @@ predict.subdaily.function <- function(dat.mod, n.ens, path.model, lags.list = NU
                     1]
                 } else {
                   sim.lag <- stack(data.frame(array(dat.sim[["air_temperature"]][dat.mod$time.day == 
-                    (i - 1) & dat.mod$hour == 23, ], dim = c(1, ncol(dat.sim$air_temperature)))))
+                    (i - 1) & dat.mod$hour == max(unique(dat.mod$hour)), ], dim = c(1, ncol(dat.sim$air_temperature)))))
                   names(sim.lag) <- c("lag.air_temperature", "ens")
                   sim.lag$lag.air_temperature_min <- stack(apply(dat.sim[["air_temperature"]][dat.mod$time.day == 
                     (i - 1), ], 2, min))[, 1]
@@ -124,7 +124,7 @@ predict.subdaily.function <- function(dat.mod, n.ens, path.model, lags.list = NU
                   
                 } else {
                   sim.lag <- stack(data.frame(array(dat.sim[[v]][dat.mod$time.day == 
-                    (i - 1) & dat.mod$hour == 23, ], dim = c(1, ncol(dat.sim[[v]])))))
+                    (i - 1) & dat.mod$hour == max(unique(dat.mod$hour)), ], dim = c(1, ncol(dat.sim[[v]])))))
                   names(sim.lag) <- c(paste0("lag.", v), "ens")
                 }
                 dat.temp <- merge(dat.temp, sim.lag, all.x = TRUE)
@@ -138,7 +138,7 @@ predict.subdaily.function <- function(dat.mod, n.ens, path.model, lags.list = NU
                   
                 } else {
                   sim.lag <- stack(data.frame(array(dat.sim[[v]][dat.mod$time.day == 
-                    (i - 1) & dat.mod$hour == 23, ], dim = c(1, ncol(dat.sim[[v]])))))
+                    (i - 1) & dat.mod$hour == max(unique(dat.mod$hour)), ], dim = c(1, ncol(dat.sim[[v]])))))
                   names(sim.lag) <- c(paste0("lag.", v), "ens")
                 }
                 dat.temp <- dat.mod[rows.now, dat.info]
