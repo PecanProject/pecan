@@ -172,8 +172,8 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     setTxtProgressBar(pb, pb.index)
     
     #---------------------------Air Temperature
-    mod.air_temperature.doy <- model.air_temperature(dat.train = dat.train[, 
-        ], resids = resids, parallel = parallel, path.out = paste0(outfolder, 
+    mod.air_temperature.doy <- model.air_temperature(dat.train = dat.train,
+        resids = resids, parallel = parallel, path.out = paste0(outfolder, 
         in.prefix, "/air_temperature"), n.cores = n.cores, n.beta = n.beta, 
         day.window = day.window)
 
@@ -181,8 +181,8 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     setTxtProgressBar(pb, pb.index)
     
     #----------------------------Precipitation Flux
-    mod.precipitation_flux.doy <- model.precipitation_flux(dat.train = dat.train[, 
-        ], resids = resids, parallel = parallel, path.out = paste0(outfolder, 
+    mod.precipitation_flux.doy <- model.precipitation_flux(dat.train = dat.train
+        resids = resids, parallel = parallel, path.out = paste0(outfolder, 
         in.prefix, "/precipitation_flux"), n.cores = n.cores, n.beta = n.beta, 
         day.window = day.window)
 
@@ -190,8 +190,8 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     setTxtProgressBar(pb, pb.index)
     
     #----------------------------Shortwave
-    mod.surface_downwelling_shortwave_flux_in_air.doy <- model.surface_downwelling_shortwave_flux_in_air(dat.train = dat.train[, 
-        ], resids = resids, parallel = parallel, path.out = paste0(outfolder, 
+    mod.surface_downwelling_shortwave_flux_in_air.doy <- model.surface_downwelling_shortwave_flux_in_air(dat.train = dat.train,
+        resids = resids, parallel = parallel, path.out = paste0(outfolder, 
         in.prefix, "/surface_downwelling_shortwave_flux_in_air"), n.cores = n.cores, 
         n.beta = n.beta, day.window = day.window)
 
@@ -199,8 +199,8 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     setTxtProgressBar(pb, pb.index)
     
     #----------------------------Longwave
-    mod.surface_downwelling_longwave_flux_in_air.doy <- model.surface_downwelling_longwave_flux_in_air(dat.train = dat.train[, 
-        ], resids = resids, parallel = parallel, path.out = paste0(outfolder, 
+    mod.surface_downwelling_longwave_flux_in_air.doy <- model.surface_downwelling_longwave_flux_in_air(dat.train = dat.train, 
+        resids = resids, parallel = parallel, path.out = paste0(outfolder, 
         in.prefix, "/surface_downwelling_longwave_flux_in_air"), n.cores = n.cores, 
         n.beta = n.beta, day.window = day.window)
     
@@ -208,8 +208,8 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     setTxtProgressBar(pb, pb.index)
     
     #---------------------------Air Pressure
-    mod.air_pressure.doy <- model.air_pressure(dat.train = dat.train[, 
-        ], resids = resids, parallel = parallel, path.out = paste0(outfolder, 
+    mod.air_pressure.doy <- model.air_pressure(dat.train = dat.train
+        resids = resids, parallel = parallel, path.out = paste0(outfolder, 
         in.prefix, "/air_pressure"), n.cores = n.cores, n.beta = n.beta, 
         day.window = day.window)
     
@@ -217,8 +217,8 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     setTxtProgressBar(pb, pb.index)
     
     #---------------------------Specific Humidity
-    mod.specific_humidity.doy <- model.specific_humidity(dat.train = dat.train[, 
-        ], resids = resids, parallel = parallel, path.out = paste0(outfolder, 
+    mod.specific_humidity.doy <- model.specific_humidity(dat.train = dat.train
+        resids = resids, parallel = parallel, path.out = paste0(outfolder, 
         in.prefix, "/specific_humidity"), n.cores = n.cores, n.beta = n.beta, 
         day.window = day.window)
     
@@ -226,7 +226,7 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     setTxtProgressBar(pb, pb.index)
     
     #--------------------------- Wind speed
-    mod.wind_speed.doy <- model.wind_speed(dat.train = dat.train[, ], resids = resids, 
+    mod.wind_speed.doy <- model.wind_speed(dat.train = dat.train, resids = resids, 
         parallel = parallel, path.out = paste0(outfolder, in.prefix, "/wind_speed"), 
         n.cores = n.cores, n.beta = n.beta, day.window = day.window)
     
