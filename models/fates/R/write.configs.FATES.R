@@ -155,7 +155,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    } else {
      project <- "pecan"
    }
-   jobsh <- gsub('@PROJECT@', compiler, jobsh)
+   jobsh <- gsub('@PROJECT@', project, jobsh)
    
    ## PATHS
    jobsh <- gsub('@RUNDIR@', rundir, jobsh)
