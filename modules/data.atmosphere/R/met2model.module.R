@@ -21,9 +21,15 @@
     print("Convert to model format")
     
     input.id <- ready.id$input.id[1]
-    outfolder <- ifelse(host$name == "localhost", 
-                        file.path(dir, paste0(met, "_", model, "_site_", str_ns)), 
-                        file.path(host$folder, paste0(met, "_", model, "_site_", str_ns)))
+    if(host$name == "localhost"){
+      outfolder <- file.path(dir, paste0(met, "_", model, "_site_", str_ns))
+    } else {
+      if(is.null(host$dbfiles)){
+        PEcAn.utils::logger.severe("host$folder required when running met2model.module for remote servers")
+      } else {
+        outfolder <- file.path(host$folder, paste0(met, "_", model, "_site_", str_ns))
+      }
+    }
     
     pkg <- paste0("PEcAn.", model)
     fcn <- paste0("met2model.", model)
