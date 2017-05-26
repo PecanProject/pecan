@@ -47,8 +47,7 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     
     # ----- 1.0 Read data & Make time stamps ---------- Load the data
     
-    vars.info <- data.frame(CF.name = c("date", "year", "doy", "hour", 
-                                        "air_temperature", "precipitation_flux", "air_temperature_max", 
+    vars.info <- data.frame(CF.name = c("air_temperature", "precipitation_flux", "air_temperature_max", 
                                         "air_temperature_min", "surface_downwelling_shortwave_flux_in_air", 
                                         "surface_downwelling_longwave_flux_in_air", "air_pressure", "specific_humidity", 
                                         "eastward_wind", "northward_wind", "wind_speed"))
@@ -64,6 +63,21 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     }
     names(dat.train) <- vars.info$CF.name
     dat.train <- data.frame(dat.train)
+    
+    # create wind speed variable if we're only given component wind speeds
+    if (all(is.na(dat.train$wind_speed) == TRUE)){
+      dat.train$wind_speed <- sqrt(dat.train$eastward_wind^2 + dat.train$northward_wind^2)
+    }
+    
+    # adding a temporary date variable for the model
+    start_year <- substr(dim$time$units,start = 12,stop = 15)
+    dat.train$date = as.POSIXct(udunits2::ud.convert(dim$time$vals, "days", "seconds"),origin = paste0(start_year,"-01-01"),tz = "GMT")
+    
+    # Getting additional time stamps
+    dat.train$year <- lubridate::year(dat.train$date)
+    dat.train$doy <- lubridate::yday(dat.train$date)
+    dat.train$hour <- lubridate::hour(dat.train$date)
+    
     
     # these non-standard variables help us organize our modeling approach
     dat.train$date <- strptime(paste(dat.train$year, dat.train$doy + 1, 
@@ -162,8 +176,7 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
         ], resids = resids, parallel = parallel, path.out = paste0(outfolder, 
         in.prefix, "/air_temperature"), n.cores = n.cores, n.beta = n.beta, 
         day.window = day.window)
-    rm(mod.air_temperature.doy)
-    
+
     pb.index <- pb.index + 1
     setTxtProgressBar(pb, pb.index)
     
@@ -172,8 +185,7 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
         ], resids = resids, parallel = parallel, path.out = paste0(outfolder, 
         in.prefix, "/precipitation_flux"), n.cores = n.cores, n.beta = n.beta, 
         day.window = day.window)
-    rm(mod.precipitation_flux.doy)
-    
+
     pb.index <- pb.index + 1
     setTxtProgressBar(pb, pb.index)
     
@@ -182,8 +194,7 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
         ], resids = resids, parallel = parallel, path.out = paste0(outfolder, 
         in.prefix, "/surface_downwelling_shortwave_flux_in_air"), n.cores = n.cores, 
         n.beta = n.beta, day.window = day.window)
-    rm(mod.surface_downwelling_shortwave_flux_in_air.doy)
-    
+
     pb.index <- pb.index + 1
     setTxtProgressBar(pb, pb.index)
     
@@ -192,7 +203,6 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
         ], resids = resids, parallel = parallel, path.out = paste0(outfolder, 
         in.prefix, "/surface_downwelling_longwave_flux_in_air"), n.cores = n.cores, 
         n.beta = n.beta, day.window = day.window)
-    rm(mod.surface_downwelling_longwave_flux_in_air.doy)
     
     pb.index <- pb.index + 1
     setTxtProgressBar(pb, pb.index)
@@ -202,7 +212,6 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
         ], resids = resids, parallel = parallel, path.out = paste0(outfolder, 
         in.prefix, "/air_pressure"), n.cores = n.cores, n.beta = n.beta, 
         day.window = day.window)
-    rm(mod.air_pressure.doy)
     
     pb.index <- pb.index + 1
     setTxtProgressBar(pb, pb.index)
@@ -212,7 +221,6 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
         ], resids = resids, parallel = parallel, path.out = paste0(outfolder, 
         in.prefix, "/specific_humidity"), n.cores = n.cores, n.beta = n.beta, 
         day.window = day.window)
-    rm(mod.specific_humidity.doy)
     
     pb.index <- pb.index + 1
     setTxtProgressBar(pb, pb.index)
@@ -221,7 +229,6 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     mod.wind_speed.doy <- model.wind_speed(dat.train = dat.train[, ], resids = resids, 
         parallel = parallel, path.out = paste0(outfolder, in.prefix, "/wind_speed"), 
         n.cores = n.cores, n.beta = n.beta, day.window = day.window)
-    rm(mod.wind_speed.doy)
     
     pb.index <- pb.index + 1
     setTxtProgressBar(pb, pb.index)
