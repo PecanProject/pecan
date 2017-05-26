@@ -174,7 +174,7 @@ run.meta.analysis <- function(pfts, iterations, random = TRUE, threshold = 1.2, 
 
 ##' @export
 runModule.run.meta.analysis <- function(settings) {
-  if (is.MultiSettings(settings)) {
+  if (PEcAn.settings::is.MultiSettings(settings)) {
     pfts <- list()
     pft.names <- character(0)
     for (i in seq_along(settings)) {
