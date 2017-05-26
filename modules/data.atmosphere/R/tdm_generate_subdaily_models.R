@@ -116,7 +116,7 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     vars.lag <- c("lag.air_temperature", "lag.precipitation_flux", "lag.surface_downwelling_shortwave_flux_in_air", 
         "lag.surface_downwelling_longwave_flux_in_air", "lag.air_pressure", 
         "lag.specific_humidity", "lag.wind_speed")
-    lag.day <- dat.train[dat.train$hour == 23, c("year", "doy", "time.day2", 
+    lag.day <- dat.train[dat.train$hour == max(unique(dat.train$hour)), c("year", "doy", "time.day2", 
         vars.hour)]
     names(lag.day)[4:10] <- vars.lag
     
