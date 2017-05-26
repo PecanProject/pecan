@@ -81,8 +81,10 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
         out[col] <- misc.convert(x, u1, u2)
         colnames(out)[col] <- vars_used$pecan_name[i]
       } else {
-        PEcAn.utils::logger.error("Units cannot be converted")
-      }  # This error should probably be thrown much earlier, like in query.format.vars - will move it eventually
+        PEcAn.utils::logger.warn(paste("Units cannot be converted. Removing variable. please check the units of",vars_used$input_name[i]))
+        out<-out[,!names(out) %in% c(vars_used$input_name[i])] 
+        vars_used<-vars_used[!names(vars_used) %in% c(vars_used$input_name[i],vars_used$pecan_name[i]),]
+      }
     }
   }
   

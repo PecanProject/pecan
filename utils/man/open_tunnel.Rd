@@ -4,17 +4,19 @@
 \alias{open_tunnel}
 \title{Title}
 \usage{
-open_tunnel(remote_host, tunnel_dir = "~/.pecan/tunnel/", user = NULL,
-  password = NULL)
+open_tunnel(remote_host, user = NULL, password = NULL,
+  tunnel_dir = "~/.pecan/tunnel/", wait.time = 15)
 }
 \arguments{
 \item{remote_host}{name of remote server to connect to (e.g. geo.bu.edu)}
 
-\item{tunnel_dir}{directory to store tunnel file in, typically from settings$host}
-
 \item{user}{username on remote_host}
 
 \item{password}{password on remote_host}
+
+\item{tunnel_dir}{directory to store tunnel file in, typically from settings$host}
+
+\item{wait.time}{how long to give system to connect before deleting password (seconds)}
 }
 \description{
 Title

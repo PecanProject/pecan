@@ -41,6 +41,7 @@ download.Geostreams <- function(outfolder, sitename,
   httr::stop_for_status(sensor_result, "look up site info in Clowder")
   sensor_txt <- httr::content(sensor_result, as = "text", encoding = "UTF-8")
   sensor_info <- jsonlite::fromJSON(sensor_txt)
+  sensor_id <- sensor_info$id
   sensor_mintime = lubridate::parse_date_time(sensor_info$min_start_time,
                                               orders = c("ymd", "ymdHMS", "ymdHMSz"), tz = "UTC")
   sensor_maxtime = lubridate::parse_date_time(sensor_info$max_end_time,
@@ -52,29 +53,40 @@ download.Geostreams <- function(outfolder, sitename,
     logger.severe("Requested end date", end_date, "is after data end", sensor_maxtime)
   }
 
-  sensor_id <- sensor_info$id
-  query_args <- list(sensor_id = sensor_id, since = start_date, until = end_date, key = auth$key, ...)
-  met_result <- httr::GET(url = paste0(url, "/datapoints"),
-                          query = query_args,
-                          config = auth$userpass)
-  logger.info(met_result$url)
-  httr::stop_for_status(met_result, "download met data from Clowder")
+  result_files = c()
+  for (year in lubridate::year(start_date):lubridate::year(end_date)) {
+    query_args <- list(
+      sensor_id = sensor_id,
+      since = max(start_date, lubridate::ymd(paste0(year, "-01-01"), tz="UTC")),
+      until = min(end_date, lubridate::ymd(paste0(year, "-12-31"), tz="UTC")),
+      key = auth$key,
+      ...)
 
-  dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
-  result_file = file.path(outfolder, paste("Clowder", sitename, start_date, end_date, "json", sep="."))
-  result_txt <- httr::content(met_result, as = "text", encoding = "UTF-8")
-  combined_result = paste0(
-    '{"sensor_info":', sensor_txt, ',\n',
-    '"data":', result_txt, '}')
-  write(x = combined_result, file=result_file)
-  
-  return(data.frame(file = result_file,
+    met_result <- httr::GET(url = paste0(url, "/datapoints"),
+                            query = query_args,
+                            config = auth$userpass)
+    logger.info(met_result$url)
+    httr::stop_for_status(met_result, "download met data from Clowder")
+    result_txt <- httr::content(met_result, as = "text", encoding = "UTF-8")
+    combined_result <- paste0(
+      '{"sensor_info":', sensor_txt, ',\n',
+      '"data":', result_txt, '}')
+
+    dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
+    out_file <- file.path(
+      outfolder,
+      paste("Clowder", sitename, start_date, end_date, year, "json", sep="."))
+    write(x = combined_result, file=out_file)
+    result_files = append(result_files, out_file)
+  }
+
+  return(data.frame(file = result_files,
                     host = fqdn(),
                     mimetype = "application/json",
                     formatname = "Geostreams met",
                     startdate = start_date,
                     enddate = end_date,
-                    dbfile.name = paste("Clowder", sitename, sep = "."),
+                    dbfile.name = paste("Clowder", sitename, start_date, end_date, sep = "."),
                     stringsAsFactors = FALSE))
 }
 
