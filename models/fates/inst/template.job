@@ -90,7 +90,7 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   ./xmlchange -file env_run.xml -id STOP_OPTION -val ndays
   ./xmlchange -file env_run.xml -id STOP_N -val @STOP_N@
   
-  
+  ## SITE INFO --> DOMAIN FILE 
   rm @INDIR@/share/domains/domain.clm/*
   ln -s @RUNDIR@/domain.lnd.@SITE_NAME@.nc @INDIR@/share/domains/domain.clm/
     
