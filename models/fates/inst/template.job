@@ -27,11 +27,11 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   echo "*** Run create_newcase ***"
   echo " ----- Case details:"
   echo @CASEDIR@
-  #echo @RES@
-  #echo @COMPSET@
-  echo @MACHINE@
-  echo @COMPILER@
-  echo @PROJECT@
+  #echo "Res: @RES@ "
+  #echo "Compset: @COMPSET@ "
+  echo "Machine: @MACHINE@ "
+  echo "Compiler: @COMPILER@ "
+  echo "Project_name: @PROJECT@ "
   echo "--------------------------"
   ./create_newcase -case @CASEDIR@ -res 1x1_brazil -compset ICLM45ED -mach @MACHINE@ -compiler @COMPILER@ -project @PROJECT@  
   #./create_newcase -case @CASEDIR@ -res @RES@ -compset @COMPSET -mach @MACHINE@ -compiler @COMPILER@ -project @PROJECT@
@@ -139,6 +139,8 @@ EOF
   
   ## RUN
   echo "*** Run ***"
+  now=`date`
+  echo "Simulation start:  $now"
   cd run
   mkdir timing
   echo `pwd`
