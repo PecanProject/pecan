@@ -86,7 +86,7 @@ predict.subdaily.workflow <- function(outfolder, in.path, in.prefix, lm.models.b
     df.hour <- data.frame(hour = unique(dat.train$hour))  # match this to whatever your 'hourly' timestep is
     
     # Set up the appropriate seed
-    set.seed(17)
+    set.seed(format(Sys.time(), "%m%d"))
     seed.vec <- sample.int(1e+06, size = 500, replace = F)
     
     # Defining variable names, longname & units
@@ -157,8 +157,8 @@ predict.subdaily.workflow <- function(outfolder, in.path, in.prefix, lm.models.b
         # Create a list layer for each ensemble member
         nc.now <- ncdf4::nc_open(path.gcm)
         dat.yr <- data.frame(time = ncdf4::ncvar_get(nc.now, "time"), air_temperature_max = ncdf4::ncvar_get(nc.now, 
-            "air_temperature_max"), air_temperature_min = ncdf4::ncvar_get(nc.now, 
-            "air_temperature_min"), precipitation_flux = ncdf4::ncvar_get(nc.now, 
+            #"air_temperature_max"), air_temperature_min = ncdf4::ncvar_get(nc.now, 
+            #"air_temperature_min"), precipitation_flux = ncdf4::ncvar_get(nc.now, 
             "precipitation_flux"), surface_downwelling_shortwave_flux_in_air = ncdf4::ncvar_get(nc.now, 
             "surface_downwelling_shortwave_flux_in_air"), surface_downwelling_longwave_flux_in_air = ncdf4::ncvar_get(nc.now, 
             "surface_downwelling_longwave_flux_in_air"), air_pressure = ncdf4::ncvar_get(nc.now, 
@@ -171,8 +171,14 @@ predict.subdaily.workflow <- function(outfolder, in.path, in.prefix, lm.models.b
         
         # These variables will be used by the temporal_downscaling_prediction
         dat.yr$year <- y
-        dat.yr$date <- as.Date(dat.yr$time/86400, origin = paste0(y - 1, 
-            "-12-31"))  #doy needs to start at 1 here, not 0
+        
+        if (nc.now$dim$time$units == "sec"){
+          dat.yr$date <- as.Date((dat.yr$time/(dat.yr$time[2] - dat.yr$time[1])), origin = paste0(y - 1, "-12-31"))
+        }
+        if (nc.now$dim$time$units == paste0("days since ",y,"-01-01T00:00:00Z")){
+          dat.yr$date = as.POSIXct(udunits2::ud.convert(dat.yr$time, "days", "seconds"),
+                                   origin = paste0(y, "-01-01 ", udunits2::ud.convert(dat.yr$time[1], "days", "hours"), ":00:00"))
+        }
         dat.yr$doy <- lubridate::yday(dat.yr$date)
         
         # Create the data frame for the 'next' values
