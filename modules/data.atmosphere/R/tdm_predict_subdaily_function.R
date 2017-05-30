@@ -61,10 +61,10 @@ predict.subdaily.function <- function(dat.mod, n.ens, path.model, lags.list = NU
     # ------ Beginning of Downscaling For Loop
     
     for (v in vars.list) {
-        cols.list = list()
+        cols.list <- list()
         
         for (c in seq_len(nrow(dat.mod))){
-          cols.tem = sample(1:n.ens, n.ens,replace = TRUE)
+          cols.tem <- sample(1:n.ens, n.ens,replace = TRUE)
           cols.list[(c*n.ens-n.ens+1):(c*n.ens)] <- cols.tem
         }
         
