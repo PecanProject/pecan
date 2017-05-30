@@ -12,6 +12,9 @@
 ##' 
 ##' @name start.model.runs
 ##' @title Start ecosystem model runs
+##' @param settings input pecan settings file
+##' @param write TRUE/FALSE. Default TRUE
+##' @param stop.on.error TRUE/FALSE. Default TRUE
 ##' @export start.model.runs
 ##' @examples
 ##' \dontrun{
