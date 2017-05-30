@@ -59,6 +59,16 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   
   vars_used <- format$vars[vars.used.index, ]
   
+  # check wide format and transform to long
+  if(any(duplicated(vars_used$bety_name))){	
+    w2l       <- format_wide2long(out, format, vars_used, time.row)		
+    out       <- w2l$long_data		
+    format    <- w2l$format		
+    vars_used <- w2l$vars_used		
+    time.row  <- w2l$time.row		
+   }
+
+  
   for (i in seq_len(nrow(vars_used))) {
     col <- names(out) == vars_used$input_name[i]
     if (vars_used$input_units[i] == vars_used$pecan_units[i]) {
