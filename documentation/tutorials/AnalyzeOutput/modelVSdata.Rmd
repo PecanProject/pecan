@@ -103,7 +103,7 @@ The arguments to read.output are the run ID, the folder where the run is located
 
 ```{r}
 
-File_Path<-"/fs/data3/tmccabe/valicali/AMF_US-Dk3_BASE_HH_3-1.csv" #This is a path to where the observations are stored. 
+File_Path<-"~/output/dbfiles/AmerifluxLBL_site_0-772/AMF_US-NR1_BASE_HH_9-1.csv" #This is a path to where the observations are stored. 
 
 File_format<-query.format.vars(bety = bety, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
 
