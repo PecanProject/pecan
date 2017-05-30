@@ -239,7 +239,7 @@ ID_RANGE=1000000000
 # before anything is done, check to make sure database exists
 if ! psql ${PG_OPT} ${PG_USER} -lqt | cut -d \| -f 1 | grep -w "${DATABASE}" > /dev/null ; then
   echo "Database ${DATABASE} does not exist, please create it:"
-  echo "(see https://github.com/PecanProject/pecan/wiki/Installing-PEcAn#installing-bety)"
+  echo "(see https://pecan.gitbooks.io/betydb-documentation/content/installing_betydb.html)"
   echo "  psql ${PG_OPT} ${PG_USER} -c \"CREATE ROLE ${OWNER} WITH LOGIN CREATEDB NOSUPERUSER NOCREATEROLE PASSWORD 'password'\""
   echo "  psql ${PG_OPT} ${PG_USER} -c \"CREATE DATABASE ${DATABASE} WITH OWNER ${OWNER}\""
   exit 1
