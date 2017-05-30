@@ -34,9 +34,13 @@ predict.subdaily.function <- function(dat.mod, n.ens, path.model, lags.list = NU
     setTxtProgressBar(pb, pb.index)
     
     # Figure out if we need to extract the approrpiate
-    if (is.null(lags.init)) {
-        lags.init <- lags.list[[unique(dat.mod$ens.day)]]
+    if (is.null(lags.list) & is.null(lags.init)){
+      logger.error("lags.init & lags.list are NULL, this is a required argument")
     }
+    if (is.null(lags.init)) {
+      lags.init <- lags.list[[unique(dat.mod$ens.day)]]
+    } 
+
     
     # Set up the ensemble members in a list so the uncertainty can be
     # propogated

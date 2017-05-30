@@ -181,7 +181,7 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     setTxtProgressBar(pb, pb.index)
     
     #----------------------------Precipitation Flux
-    mod.precipitation_flux.doy <- model.precipitation_flux(dat.train = dat.train
+    mod.precipitation_flux.doy <- model.precipitation_flux(dat.train = dat.train,
         resids = resids, parallel = parallel, path.out = paste0(outfolder, 
         in.prefix, "/precipitation_flux"), n.cores = n.cores, n.beta = n.beta, 
         day.window = day.window)
@@ -208,7 +208,7 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     setTxtProgressBar(pb, pb.index)
     
     #---------------------------Air Pressure
-    mod.air_pressure.doy <- model.air_pressure(dat.train = dat.train
+    mod.air_pressure.doy <- model.air_pressure(dat.train = dat.train,
         resids = resids, parallel = parallel, path.out = paste0(outfolder, 
         in.prefix, "/air_pressure"), n.cores = n.cores, n.beta = n.beta, 
         day.window = day.window)
@@ -217,7 +217,7 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     setTxtProgressBar(pb, pb.index)
     
     #---------------------------Specific Humidity
-    mod.specific_humidity.doy <- model.specific_humidity(dat.train = dat.train
+    mod.specific_humidity.doy <- model.specific_humidity(dat.train = dat.train,
         resids = resids, parallel = parallel, path.out = paste0(outfolder, 
         in.prefix, "/specific_humidity"), n.cores = n.cores, n.beta = n.beta, 
         day.window = day.window)
