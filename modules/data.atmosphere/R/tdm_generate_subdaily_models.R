@@ -83,9 +83,9 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     dat.train$date <- strptime(paste(dat.train$year, dat.train$doy + 1, 
         dat.train$hour, sep = "-"), "%Y-%j-%H", tz = "GMT")
     dat.train$time.hr <- as.numeric(difftime(dat.train$date, paste0((min(dat.train$year) - 
-        1), "-12-31 23:00:00"), tz = "GMT", units = "hour"))
+        1), "-12-31 ", max(unique(dat.train$hour)),":00:00"), tz = "GMT", units = "hour"))
     dat.train$time.day <- as.numeric(difftime(dat.train$date, paste0((min(dat.train$year) - 
-        1), "-12-31 23:00:00"), tz = "GMT", units = "day")) - 1/24
+        1), "-12-31 ", max(unique(dat.train$hour)),":00:00"), tz = "GMT", units = "day")) - 1/24
     dat.train$time.day2 <- as.integer(dat.train$time.day + 1/(48 * 2)) + 
         1  # Offset by half a time step to get time stamps to line up
     

@@ -33,7 +33,7 @@ temporal.downscale.functions <- function()
 
 # Modeling Air Temperature
 model.air_temperature <- function(dat.train, n.beta, path.out, day.window, 
-    resids = F, parallel = F, n.cores = NULL, seed = 1237) {
+    resids = F, parallel = F, n.cores = NULL, seed = format(Sys.time(), "%m%d")) {
     
     set.seed(seed)
     if (!dir.exists(path.out)) 
@@ -175,7 +175,7 @@ model.air_temperature <- function(dat.train, n.beta, path.out, day.window,
 
 model.surface_downwelling_shortwave_flux_in_air <- function(dat.train, 
     n.beta, path.out, resids = F, parallel = F, n.cores = NULL, day.window = 5, 
-    seed = 1341) {
+    seed = format(Sys.time(), "%m%d")) {
     
     set.seed(seed)
     if (!dir.exists(path.out)) 
@@ -322,7 +322,7 @@ model.surface_downwelling_shortwave_flux_in_air <- function(dat.train,
 
 model.surface_downwelling_longwave_flux_in_air <- function(dat.train, n.beta, 
     path.out, resids = F, parallel = F, n.cores = NULL, day.window = 5, 
-    seed = 341) {
+    seed = format(Sys.time(), "%m%d")) {
     
     set.seed(seed)
     if (!dir.exists(path.out)) 
@@ -463,7 +463,7 @@ model.surface_downwelling_longwave_flux_in_air <- function(dat.train, n.beta,
 }
 
 model.air_pressure <- function(dat.train, n.beta, path.out, resids = F, 
-    parallel = F, n.cores = NULL, day.window = 5, seed = 1347) {
+    parallel = F, n.cores = NULL, day.window = 5, seed = format(Sys.time(), "%m%d")) {
     
     set.seed(seed)
     if (!dir.exists(path.out)) 
@@ -609,7 +609,7 @@ model.air_pressure <- function(dat.train, n.beta, path.out, resids = F,
 }
 
 model.wind_speed <- function(dat.train, n.beta, path.out, resids = F, parallel = F, 
-    n.cores = NULL, day.window = 5, seed = 708) {
+    n.cores = NULL, day.window = 5, seed = format(Sys.time(), "%m%d")) {
     
     set.seed(seed)
     if (!dir.exists(path.out)) 
@@ -753,7 +753,7 @@ model.wind_speed <- function(dat.train, n.beta, path.out, resids = F, parallel =
 }
 
 model.precipitation_flux <- function(dat.train, n.beta, path.out, resids = F, 
-    parallel = F, n.cores = NULL, day.window = 5, seed = 1562) {
+    parallel = F, n.cores = NULL, day.window = 5, seed = format(Sys.time(), "%m%d")) {
     
     # library(fitdistrplus)
     set.seed(seed)
@@ -890,7 +890,7 @@ model.precipitation_flux <- function(dat.train, n.beta, path.out, resids = F,
 }
 
 model.specific_humidity <- function(dat.train, n.beta, path.out, resids = F, 
-    parallel = F, n.cores = NULL, day.window = 5, seed = 1009) {
+    parallel = F, n.cores = NULL, day.window = 5, seed = format(Sys.time(), "%m%d")) {
     
     set.seed(seed)
     if (!dir.exists(path.out)) 
@@ -1050,7 +1050,6 @@ model.specific_humidity <- function(dat.train, n.beta, path.out, resids = F,
 
 predict.met <- function(newdata, model.predict, Rbeta, resid.err = F, model.resid = NULL, 
     Rbeta.resid = NULL, n.ens) {
-    # set.seed(9321)
     err.resid <- 0  # dummy residual error term; if we want to add residual error, we're modeling it by hour
     
     mod.terms <- terms(model.predict)
