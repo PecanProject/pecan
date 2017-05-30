@@ -8,19 +8,19 @@
   lags.list = NULL, lags.init = NULL, dat.train)
 }
 \arguments{
-\item{dat.mod}{- data to be predicted at the time step of the training data}
+\item{dat.mod}{- dataframe to be predicted at the time step of the training data}
 
 \item{n.ens}{- number of hourly ensemble members to generate}
 
 \item{path.model}{- path to where the training model & betas is stored}
 
-\item{lags.init}{- a data frame of initialization paramters to match the data in dat.mod}
+\item{lags.init}{- a data frame of initialization parameters to match the data in dat.mod}
 
 \item{dat.train}{- the training data used to fit the model; needed for night/day in 
 surface_downwelling_shortwave_flux_in_air}
 }
 \description{
-This script contains the functions that do the heavy lifting in the final
+This function contains the functions that do the heavy lifting in the final
              script of the tdm workflow titled tdm_predict_subdialy_met.R. It uses a linear
              regression approach by generating the hourly values from the daily means of
              the file the user selects to downscale based on the hourly models and betas
@@ -32,7 +32,7 @@ Met downscaling functions that predict the downscaled meteorology
 }
 \seealso{
 Other tdm - Temporally Downscale Meteorology: \code{\link{gen.subdaily.models}},
-  \code{\link{nc2dat.train}},
+  \code{\link{nc.merge}},
   \code{\link{predict.subdaily.workflow}},
   \code{\link{temporal.downscale.functions}}
 }

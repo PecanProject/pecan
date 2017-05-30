@@ -26,7 +26,7 @@ statistics from}
 \item{seed}{- allows this to be reproducible}
 }
 \description{
-This script contains the functions that do the heavy lifting in gen_subdaily_models
+This function contains the functions that do the heavy lifting in gen_subdaily_models
              and predict_subdaily_met. These functions actually generate the models and betas
              from the dat.train_file and save them in the output file.
 }
@@ -36,7 +36,7 @@ Temporal Downscale Functions
 }
 \seealso{
 Other tdm - Temporally Downscale Meteorology: \code{\link{gen.subdaily.models}},
-  \code{\link{nc2dat.train}},
+  \code{\link{nc.merge}},
   \code{\link{predict.subdaily.function}},
   \code{\link{predict.subdaily.workflow}}
 }
