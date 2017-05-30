@@ -61,6 +61,13 @@ predict.subdaily.function <- function(dat.mod, n.ens, path.model, lags.list = NU
     # ------ Beginning of Downscaling For Loop
     
     for (v in vars.list) {
+        cols.list = list()
+        
+        for (c in seq_len(nrow(dat.mod))){
+          cols.tem = sample(1:n.ens, n.ens,replace = TRUE)
+          cols.list[(c*n.ens-n.ens+1):(c*n.ens)] <- cols.tem
+        }
+        
         first_model <- ncdf4::nc_open(paste0(path.model, "/", v, "/betas_", 
             v, "_1.nc"))
         first_beta <- assign(paste0("betas.", v, "_1"), first_model)
@@ -217,14 +224,14 @@ predict.subdaily.function <- function(dat.mod, n.ens, path.model, lags.list = NU
             # Shortwave Radiaiton
             if (v == "surface_downwelling_shortwave_flux_in_air") {
                 # Randomly pick which values to save & propogate
-                cols.prop <- sample(1:n.ens, ncol(dat.sim[[v]]), replace = TRUE)
-                for (j in 1:ncol(dat.sim[[v]])) {
+              cols.prop <- as.integer(cols.list[(i*n.ens-n.ens+1):(i*n.ens)])
+              for (j in 1:ncol(dat.sim[[v]])) {
                   dat.sim[[v]][rows.mod, j] <- dat.pred[, cols.prop[j]]
                 }
             } else if (v == "air_temperature") {
                 for (j in 1:ncol(dat.sim$air_temperature)) {
-                  cols.prop <- sample(1:n.ens, ncol(dat.sim$air_temperature), 
-                                      replace = TRUE)
+                  cols.prop <- as.integer(cols.list[(i*n.ens-n.ens+1):(i*n.ens)])
+                  
                   dat.prop <- dat.pred[dat.temp$ens == paste0("X", j), 
                     cols.prop[j]]
                   air_temperature_max.ens <- max(dat.temp[dat.temp$ens == 
@@ -241,8 +248,8 @@ predict.subdaily.function <- function(dat.mod, n.ens, path.model, lags.list = NU
                 }
             } else {
                 
-                cols.prop <- sample(1:n.ens, ncol(dat.sim[[v]]), replace = TRUE)
-                for (j in 1:ncol(dat.sim[[v]])) {
+              cols.prop <- as.integer(cols.list[(i*n.ens-n.ens+1):(i*n.ens)])
+              for (j in 1:ncol(dat.sim[[v]])) {
                   dat.sim[[v]][rows.now, j] <- dat.pred[dat.temp$ens == 
                     paste0("X", j), cols.prop[j]]
                 }
