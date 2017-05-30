@@ -157,8 +157,8 @@ predict.subdaily.workflow <- function(outfolder, in.path, in.prefix, lm.models.b
         # Create a list layer for each ensemble member
         nc.now <- ncdf4::nc_open(path.gcm)
         dat.yr <- data.frame(time = ncdf4::ncvar_get(nc.now, "time"), air_temperature_max = ncdf4::ncvar_get(nc.now, 
-            #"air_temperature_max"), air_temperature_min = ncdf4::ncvar_get(nc.now, 
-            #"air_temperature_min"), precipitation_flux = ncdf4::ncvar_get(nc.now, 
+            "air_temperature_max"), air_temperature_min = ncdf4::ncvar_get(nc.now, 
+            "air_temperature_min"), precipitation_flux = ncdf4::ncvar_get(nc.now, 
             "precipitation_flux"), surface_downwelling_shortwave_flux_in_air = ncdf4::ncvar_get(nc.now, 
             "surface_downwelling_shortwave_flux_in_air"), surface_downwelling_longwave_flux_in_air = ncdf4::ncvar_get(nc.now, 
             "surface_downwelling_longwave_flux_in_air"), air_pressure = ncdf4::ncvar_get(nc.now, 
@@ -270,9 +270,10 @@ predict.subdaily.workflow <- function(outfolder, in.path, in.prefix, lm.models.b
         # Write each year for each ensemble member into its own .nc file
         lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
         lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
-        
-        ntime <- ifelse(lubridate::leap_year(y), 366 * 24, 365 * 24)
-        days_elapsed <- (1:ntime) * 1/24 - .5/24 # data are hourly, with timestamp at center of interval
+
+        ntime <- nrow(dat.ens)
+        days_elapsed <- ((1:ntime) * (ifelse(lubridate::leap_year(y),1/(ntime/366), 1/(ntime/365))) - 
+                           (ifelse(lubridate::leap_year(y),.5/(ntime/366), .5/(ntime/365))))
         time <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", y, "-01-01T00:00:00Z"),
                                  vals = as.array(days_elapsed), create_dimvar = TRUE, unlim = TRUE)
         
