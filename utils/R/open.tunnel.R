@@ -4,12 +4,13 @@
 #' @param tunnel_dir  directory to store tunnel file in, typically from settings$host
 #' @param user        username on remote_host
 #' @param password    password on remote_host
+#' @param wait.time   how long to give system to connect before deleting password (seconds)
 #'
 #' @return
 #' @export
 #'
 #' @examples
-open_tunnel <- function(remote_host,tunnel_dir = "~/.pecan/tunnel/",user=NULL,password=NULL){
+open_tunnel <- function(remote_host,user=NULL,password=NULL,tunnel_dir = "~/.pecan/tunnel/",wait.time=15){
   
   ## make sure local tunnel directory exists
   dir.create(tunnel_dir)
@@ -21,7 +22,7 @@ open_tunnel <- function(remote_host,tunnel_dir = "~/.pecan/tunnel/",user=NULL,pa
   
   ## get password if not provided
   if(is.null(password)){
-    password <- getPass()
+    password <- getPass::getPass()
   }
   
   sshTunnel   <- file.path(tunnel_dir,"tunnel")
@@ -29,11 +30,12 @@ open_tunnel <- function(remote_host,tunnel_dir = "~/.pecan/tunnel/",user=NULL,pa
   sshPassFile <- file.path(tunnel_dir,"password")
   
   if(file.exists(sshTunnel)){
-    print("Tunnel already exists. If tunnel is not working try calling kill.tunnel then reopening")
+    logger.warn("Tunnel already exists. If tunnel is not working try calling kill.tunnel then reopen")
     return(TRUE)
   }
   
   ## write password to temporary file
+  logger.warn(sshPassFile)
   write(password,file = sshPassFile)
 
 #  start <- system(paste0("ssh -nN -o ControlMaster=yes -o ControlPath=",sshTunnel," -l ",user," ",remote_host),wait = FALSE,input = password)
@@ -42,8 +44,12 @@ open_tunnel <- function(remote_host,tunnel_dir = "~/.pecan/tunnel/",user=NULL,pa
   
   stat <- system(paste("~/pecan/web/sshtunnel.sh",remote_host,user,tunnel_dir),wait=FALSE)
   
+  ##wait for tunnel to connect
+  Sys.sleep(wait.time)
+  
   if(file.exists(sshPassFile)){
     file.remove(sshPassFile)
+    logger.error("Tunnel open failed")
     return(FALSE)
   }  
   
