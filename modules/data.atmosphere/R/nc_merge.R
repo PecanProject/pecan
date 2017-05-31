@@ -165,7 +165,7 @@ nc.merge <- function(outfolder, in.path, in.prefix, start_date, end_date,
       }
         dat.train <- aggregate(train_df[, names(train_df)[!names(train_df) %in% 
             c("year", "doy", "hour")]], by = train_df[upscale], FUN = mean, 
-            na.rm = F)
+            na.rm = FALSE)
         dat.train <- dat.train[order(dat.train$date), ]
     }
     # ---------------------------------
@@ -182,8 +182,8 @@ nc.merge <- function(outfolder, in.path, in.prefix, start_date, end_date,
     dim$time = time
     # Create var.list for the NC file
     var.list <- list()
-    for (j in seq_along(colnames(dat.train))) {
-        var.list[[j]] <- ncdf4::ncvar_def(name = as.character(colnames(dat.train[j])), 
+    for (j in seq_along(vars.info$CF.name)) {
+        var.list[[j]] <- ncdf4::ncvar_def(name = as.character(vars.info$CF.name[j]), 
             units = as.character(vars.info$units[j]), dim = dim, missval = -9999, 
             verbose = verbose)
     }
@@ -194,7 +194,7 @@ nc.merge <- function(outfolder, in.path, in.prefix, start_date, end_date,
     loc.file <- file.path(outfolder, paste0(in.prefix, "_dat.train.nc"))
     loc <- ncdf4::nc_create(filename = loc.file, vars = var.list, verbose = verbose)
     
-    for (j in colnames(dat.train)) {
+    for (j in vars.info$CF.name) {
         ncdf4::ncvar_put(nc = loc, varid = as.character(j), vals = dat.train[[j]][seq_len(nrow(dat.train))])
     }
     ncdf4::nc_close(loc)
