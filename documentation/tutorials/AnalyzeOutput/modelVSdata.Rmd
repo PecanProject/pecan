@@ -37,14 +37,11 @@ Within both the run and out folders there will be one folder for each unique mod
   + Within this folder you will find, among other things, files of the format <year>.nc. Each of these files contains one year of model output in the standard PEcAn netCDF format.
 
 
-## Load libraries and open connection to the database
 ```{r}
-#Load every Library used
-library(PEcAn.all)
-library(PEcAn.DB)
+#Load required libraries used
+
 require(RPostgreSQL)
-library(PEcAn.assim.batch)
-library(PEcAn.benchmark)
+
 ```
 
 ## Read in settings
@@ -54,7 +51,7 @@ There are two ways to access runs from pecan. One is from a settings object gene
 **From an XML file**
 ```{r}
 ## Read in the xml
-settings<-read.setting("/fs/data2/output/PEcAn_99000000001/pecan.xml")
+settings<-PEcAn.settings::read.settings("/fs/data2/output/PEcAn_99000000001/pecan.xml")
 
 ## To read in the model output 
 runid<-settings$workflow$id
@@ -65,7 +62,7 @@ end.year<-settings$run$end.date
 site_id<-settings$run$site$id
 
 ## Open up a connection to The Bety Database 
-bety <- src_postgres(host = settings$database$bety$host, user = settings$database$bety$user, password = settings$database$bety$password, dbname = settings$database$bety$dbname)
+bety <-dplyr::src_postgres(host = settings$database$bety$host, user = settings$database$bety$user, password = settings$database$bety$password, dbname = settings$database$bety$dbname)
 
 ```
 
@@ -82,7 +79,8 @@ site.id<-772
 
 ## Open up a connection to The Bety Database
 bety<-list(host = "psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")
-bety <- src_postgres(host = bety$host, user = bety$user, password = bety$password, dbname = bety$dbname)
+bety <-dplyr::src_postgres(host = bety$host, user = bety$user, password = bety$password, dbname = bety$dbname)
+
 ```
 
 
@@ -91,7 +89,7 @@ bety <- src_postgres(host = bety$host, user = bety$user, password = bety$passwor
 ```{r}
 model_vars<-c("time", "NEE") #varibles being read
 
-model <- read.output(runid,outdir,start.year, end.year, model_vars,dataframe=TRUE)
+model <- PEcAn.utils::read.output(runid,outdir,start.year, end.year, model_vars,dataframe=TRUE)
 ```
 
 The arguments to read.output are the run ID, the folder where the run is located, the start year, the end year, and the variables being read. The README file in the Input file dropdown menue of any sucessful run lists the run ID, the output folder, and the start and end year. 
@@ -105,11 +103,11 @@ The arguments to read.output are the run ID, the folder where the run is located
 
 File_Path<-"/fs/data3/tmccabe/AMF_US-NR1_BASE_HH_9-1.csv" #This is a path to where the observations are stored. 
 
-File_format<-query.format.vars(bety = bety, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
+File_format<-PEcAn.DB::query.format.vars(bety = bety, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
 
-site<-query.site(site.id,bety$con) #This tells PEcAn where the data comes from
+site<-PEcAn.DB::query.site(site.id,bety$con) #This tells PEcAn where the data comes from
 
-observations<-load_data(data.path = File_Path, format= File_format, time.row = File_format$time.row,  site = site) #This will throw an error that not all of the units can be converted. That's ok, as the units of the varibles of interest (NEE) are being converted. 
+observations<-PEcAn.benchmark::load_data(data.path = File_Path, format= File_format, time.row = File_format$time.row,  site = site) #This will throw an error that not all of the units can be converted. That's ok, as the units of the varibles of interest (NEE) are being converted. 
 ```
 
 File_Path refers to where you stored your observational data. In this example the default file path is an Ameriflux dataset from Niwot Ridge. 
@@ -123,7 +121,7 @@ Here 772 is the database site ID for Niwot Ridge Forest, which tells pecan where
 
 ```{r}
 
-aligned_dat = align_data(model.calc = model, obvs.calc= observations, var ="NEE", start_year =start_year, end_year = end_year, align_method ="mean_over_larger_timestep")
+aligned_dat = PEcAn.benchmark::align_data(model.calc = model, obvs.calc= observations, var ="NEE", start_year =start_year, end_year = end_year, align_method ="mean_over_larger_timestep")
 
 ```
 
