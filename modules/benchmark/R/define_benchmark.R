@@ -68,7 +68,7 @@ define_benchmark <- function(settings, bety){
     
     
     
-    sprintf(" ( %s, %s, %s, %s)", benchmark$input_id, benchmark$variable_id,
+    logger.info(" ( %s, %s, %s, %s)", benchmark$input_id, benchmark$variable_id,
             benchmark$site_id, bm.settings$info$userid)
     
     
