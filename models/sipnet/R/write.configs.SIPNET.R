@@ -133,6 +133,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("microbe" %in% ic.names) {
       param[which(param[, 1] == "microbeInit"), 2] <- IC$microbe
     }
+  }else{
+    #some stuff about IC file that we can give in lieu of actual ICs
   }
   
   #### write run-specific PFT parameters here #### Get parameters being handled by PEcAn

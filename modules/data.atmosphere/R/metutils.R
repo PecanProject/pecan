@@ -36,8 +36,9 @@ qair2rh <- function(qair, temp, press = 1013.25) {
 
 ##' converts relative humidity to specific humidity
 ##' @title RH to SH
-##' @param rh relative humidity (proportion, not %)
+##' @param rh relative humidity (proportion, not \%)
 ##' @param T absolute temperature (Kelvin)
+##' @param press air pressure (Pascals)
 ##' @export
 ##' @author Mike Dietze, Ankur Desai
 ##' @aliases rh2rv
@@ -133,15 +134,15 @@ wide2long <- function(data.wide, lat, lon, var) {
 ##' convert PAR to PPFD
 ##'
 ##' Converts photosynthetically active radiation (PAR, units of Watts / m2) to
-##' photosynthetic photon flux density (PPFD) in units of mol / m2 / s 
+##' photosynthetic photon flux density (PPFD) in units of umol / m2 / s
 ##' From Campbell and Norman p151
 ##' PPFD = PAR * (J/m2/s) * (1 mol / 2.35e5 J)
 ##' 2.35e5 J / mol is the energy content of solar radiation in the PAR waveband
 ##' @title par2ppfd
-##' @param PAR (W / m2) 
+##' @param watts PAR (W / m2)
 ##' @author David LeBauer
 ##' @export
-##' @return PPFD (mol / m2 / s) 
+##' @return PPFD (umol / m2 / s)
 ##' @author David LeBauer
 par2ppfd <- function(watts) {
   ppfd <- watts/(2.35 * 10^5)
@@ -170,7 +171,7 @@ sw2par <- function(sw) {
 ##' @title SW to PPFD
 ##' @author David LeBauer
 ##' @export
-##' @param SW CF surface_downwelling_shortwave_flux_in_air W/m2
+##' @param sw CF surface_downwelling_shortwave_flux_in_air (W/m2)
 ##' @return PPFD umol /m2 / s
 sw2ppfd <- function(sw) {
   par <- sw2par(sw)

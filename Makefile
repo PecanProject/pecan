@@ -1,3 +1,5 @@
+NCPUS ?= 1
+
 BASE := utils db settings visualization
 
 MODELS := biocro clm45 dalec ed fates gday jules linkages \
@@ -37,7 +39,7 @@ ALL_PKGS_D := $(BASE_D) $(MODELS_D) $(MODULES_D) .doc/models/template
 all: install
 
 document: .doc/all
-install: .install/all 
+install: .install/all
 check: .check/all
 test: .test/all 
 
@@ -51,8 +53,8 @@ depends = .install/$(1) .doc/$(1) .check/$(1) .test/$(1)
 
 $(call depends,db): .install/utils
 $(call depends,settings): .install/utils .install/db
-$(call depends,visualization): .install/db .install/shiny
-$(call depends,modules/data.atmosphere): .install/utils .install/reddyproc
+$(call depends,visualization): .install/db
+$(call depends,modules/data.atmosphere): .install/utils
 $(call depends,modules/data.land): .install/db .install/utils
 $(call depends,modules/meta.analysis): .install/utils .install/db
 $(call depends,modules/priors): .install/utils
@@ -66,40 +68,23 @@ $(MODELS_I): .install/models/template
 
 clean:
 	rm -rf .install .check .test .doc
+	find modules/rtm/src \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete
 
 .install/devtools:
-	Rscript -e "if(!require('devtools')) install.packages('devtools', repos = 'http://cran.rstudio.com')"
-	mkdir -p $(@D)
-	echo `date` > $@
+	Rscript -e "if(!require('devtools')) install.packages('devtools', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 
 .install/roxygen2:
-	Rscript -e "if(!require('roxygen2')) install.packages('roxygen2', repos = 'http://cran.rstudio.com')"
-	mkdir -p $(@D)
-	echo `date` > $@
+	Rscript -e "if(!require('roxygen2')) install.packages('roxygen2', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 
 .install/testthat:
-	Rscript -e "if(!require('testthat')) install.packages('testthat', repos = 'http://cran.rstudio.com')"
-	mkdir -p $(@D)
-	echo `date` > $@
+	Rscript -e "if(!require('testthat')) install.packages('testthat', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 
-.install/shiny:
-	Rscript -e "if(!require('shiny')) install.packages('shiny', repos = 'http://cran.rstudio.com')"
-	mkdir -p $(@D)
-	echo `date` > $@
-
-.install/reddyproc:
-	Rscript -e "test <- require('REddyProc'); if (!test) devtools::install_github('rforge/reddyproc', subdir = 'pkg/REddyProc')"
-	mkdir -p $(@D)
-	echo `date` > $@
-
-install_R_pkg = Rscript -e "devtools::install('$(strip $(1))');"
-check_R_pkg = Rscript -e "devtools::check('"$(strip $(1))"')"
+install_R_pkg = Rscript -e "devtools::install('$(strip $(1))', Ncpus = ${NCPUS});"
+check_R_pkg = Rscript scripts/check_with_errors.R $(strip $(1))
 test_R_pkg = Rscript -e "devtools::test('"$(strip $(1))"', reporter = 'stop')"
 doc_R_pkg = Rscript -e "devtools::document('"$(strip $(1))"')"
 
-$(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): .install/devtools
-
-$(ALL_PKGS_T) $(ALL_PKGS_D): .install/roxygen2 .install/testthat
+$(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): .install/devtools .install/roxygen2 .install/testthat
 
 .SECONDEXPANSION:
 .doc/%: $$(wildcard %/**/*) $$(wildcard %/*)
