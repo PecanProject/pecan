@@ -100,12 +100,7 @@ The arguments to read.output are the run ID, the folder where the run is located
 
 
 ```{r}
-
-<<<<<<< HEAD
 File_Path<-"/fs/data3/tmccabe/AMF_US-NR1_BASE_HH_9-1.csv" #This is a path to where the observations are stored. 
-=======
-File_Path<-"~/output/dbfiles/AmerifluxLBL_site_0-772/AMF_US-NR1_BASE_HH_9-1.csv" #This is a path to where the observations are stored. 
->>>>>>> 52dc9f4d13eb0a99309a6eefd09706db090c09a2
 
 File_format<-PEcAn.DB::query.format.vars(bety = bety, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
 
