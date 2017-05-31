@@ -32,7 +32,10 @@
 ##' @param verbose
 ##' @export
 # -----------------------------------
-
+# Helper function
+substrRight <- function(x, n) {
+  substr(x, nchar(x) - n + 1, nchar(x))
+}
 #----------------------------------------------------------------------
 # Begin Function
 #----------------------------------------------------------------------
@@ -70,9 +73,16 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     }
     
     # adding a temporary date variable for the model
-    start_year <- substr(dim$time$units,start = 12,stop = 15)
-    dat.train$date = as.POSIXct(udunits2::ud.convert(dim$time$vals, "days", "seconds"),origin = paste0(start_year,"-01-01"),tz = "GMT")
-    
+    if (dim$time$units == "sec"){
+      sub_string<- substrRight(dat.train_file, 7)
+      start_year <- substr(sub_str, 1, 4)
+      dat.train$date <- as.Date((dat.train$time/(dat.train$time[2] - dat.train$time[1])), 
+                                tz="GMT", origin = paste0(y - 1, "-12-31"))
+    } else {
+      start_year <- substr(dim$time$units,start = 12,stop = 15)
+      dat.train$date = as.POSIXct(udunits2::ud.convert((dim$time$vals - ((dim$time$vals[2] - dim$time$vals[1])/2)),"days", "seconds"),
+                                  tz="GMT", origin = paste0(start_year, "-01-01 00:00:00"))
+    }
     # Getting additional time stamps
     dat.train$year <- lubridate::year(dat.train$date)
     dat.train$doy <- lubridate::yday(dat.train$date)
