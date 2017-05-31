@@ -24,7 +24,8 @@ align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
   diff.m <- diff(model.calc$posix)
   mode.m <- diff.m[which.max(tabulate(match(unique(diff.m), diff.m)))]
   
-  units(diff.m) <- units(diff.o) <- max(units(diff.m),units(diff.o))
+  diff.o <- diff(obvs.calc$posix)
+  mode.o <- diff.o[which.max(tabulate(match(unique(diff.o), diff.o)))]
   
   compare <- data.frame( 
     type = c("m","o"),
@@ -36,21 +37,17 @@ align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
     stringsAsFactors = FALSE
   )
   
-  rng_model <- range(model.calc$posix)
-  rng_obvs <- range(obvs.calc$posix)
-  rng_dat <- sort(c(rng_obvs, rng_model))[c(2, 3)]
-  if(setequal(c(365,366), max.diff)){ # Special case for annual timestep
-    rng_dat_yr <- year(rng_dat)
-    model <- model.calc[year(model.calc$posix) >= rng_dat_yr[1] & 
-                          year(model.calc$posix) <= rng_dat_yr[2], ]
-    obvs <- obvs.calc[year(obvs.calc$posix) >= rng_dat_yr[1] & 
-                        year(obvs.calc$posix) <= rng_dat_yr[2], ]
-    model$posix <- year(model$posix)
-    obvs$posix <- year(obvs$posix)
-  }else{
-    model <- model.calc[model.calc$posix >= rng_dat[1] & model.calc$posix <= rng_dat[2], ]
-    obvs <- obvs.calc[obvs.calc$posix >= rng_dat[1] & obvs.calc$posix <= rng_dat[2], ]
-  }
+  # Determine if time step units are different, if so which is the coarser
+  # This will just be redundant if they are the same
+  
+  coarse <- which.max(compare$diff_secs)
+  fine   <- 2 %/% coarse
+  coarse.unit <- compare$diff_units[coarse]
+  
+  # Round to the larger time step (experimental)
+  obvs.calc$round.posix  <- as.POSIXct(round(obvs.calc$posix,  units = coarse.unit))
+  model.calc$round.posix <- as.POSIXct(round(model.calc$posix, units = coarse.unit))
+  
   
   # Determine the overlaping range of dates
   # Compare the rounded dates because you can't compare dates of different units with range
