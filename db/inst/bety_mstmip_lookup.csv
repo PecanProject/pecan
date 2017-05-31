@@ -1,11 +1,11 @@
 mstmip_name,mstmip_units,bety_name
-AbvGrndWood,kg C m-2,
+AbvGrndWood,kg C m-2,AbvGrndWood
 AutoResp,kg C m-2 s-1,
 cal_date_beg,"yr, mon, day, hr, min, sec",
 cal_date_end,"yr, mon, day, hr, min, sec",
 cal_date_mid,"yr, mon, day, hr, min, sec",
 CarbPools,kg C m-2,
-CO2air,micromol mol-1,
+CO2air,micromol mol-1,co2atm
 dec_date,yr,
 dec_date_bnds,yr,
 DOC_flux,kg C m-2 s-1,
@@ -22,14 +22,14 @@ lat_bnds,degrees_north,
 lon,degrees_east,
 lon_bnds,degrees_east,
 LW_albedo,(-),
-LWdown,W/m2,
+LWdown,W/m2,surface_downwelling_longwave_flux_in_air
 Lwnet,W m-2,
 NEE,kg C m-2 s-1,NEE
 NPP,kg C m-2 s-1,NPP_1_C
 poolname,(-),
-Psurf,Pa,
+Psurf,Pa,air_pressure
 Qair,kg kg-1,
-Qh,W m-2,
+Qh,W m-2,H
 Qle,W m-2,LE
 Qs,kg m-2 s-1,
 Qsb,kg m-2 s-1,
@@ -37,14 +37,14 @@ Rainf,kg m-2 s-1,
 SnowDen,kg m-3,
 SnowDepth,m,
 SoilMoist,kg m-2,
-SoilMoistFrac,(-),
-SoilTemp,K,
+SoilMoistFrac,(-),soilM
+SoilTemp,K,soilT
 SoilWet,(-),
 SW_albedo,(-),
-SWdown,W m-2,
+SWdown,W m-2,solar_radiation
 SWE,kg m-2,
 SWnet,W m-2,
-Tair,K,
+Tair,K,airT
 Tcan,K,
 Tdepth,m,
 time,days since 1700-01-01 00:00:00 UTC,
@@ -53,7 +53,7 @@ TotalResp,kg C m-2 s-1,
 TotLivBiom,kg C m-2,
 TotSoilCarb,kg C m-2,
 TVeg,kg m-2 s-1,
-Wind,m s-1,
+Wind,m s-1,wind_speed
 z_bottom,m,
 z_node,m,
 z_top,m,
