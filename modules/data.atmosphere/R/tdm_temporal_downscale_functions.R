@@ -29,11 +29,11 @@
 
 # Each variable goes through a unique process for downscaling. temporal.downscale.functions
 # is a dummy function strictly used for documentation purposes only.
-temporal.downscale.functions <- function()
+temporal.downscale.functions <- function(){}
 
 # Modeling Air Temperature
 model.air_temperature <- function(dat.train, n.beta, path.out, day.window, 
-    resids = F, parallel = F, n.cores = NULL, seed = format(Sys.time(), "%m%d")) {
+    resids = FALSE, parallel = FALSE, n.cores = NULL, seed = format(Sys.time(), "%m%d")) {
     
     set.seed(seed)
     if (!dir.exists(path.out)) 
@@ -174,7 +174,7 @@ model.air_temperature <- function(dat.train, n.beta, path.out, day.window,
 }
 
 model.surface_downwelling_shortwave_flux_in_air <- function(dat.train, 
-    n.beta, path.out, resids = F, parallel = F, n.cores = NULL, day.window = 5, 
+    n.beta, path.out, resids = FALSE, parallel = FALSE, n.cores = NULL, day.window = 5, 
     seed = format(Sys.time(), "%m%d")) {
     
     set.seed(seed)
@@ -321,7 +321,7 @@ model.surface_downwelling_shortwave_flux_in_air <- function(dat.train,
 }
 
 model.surface_downwelling_longwave_flux_in_air <- function(dat.train, n.beta, 
-    path.out, resids = F, parallel = F, n.cores = NULL, day.window = 5, 
+    path.out, resids = FALSE, parallel = FALSE, n.cores = NULL, day.window = 5, 
     seed = format(Sys.time(), "%m%d")) {
     
     set.seed(seed)
@@ -462,8 +462,8 @@ model.surface_downwelling_longwave_flux_in_air <- function(dat.train, n.beta,
     return(mod.out)
 }
 
-model.air_pressure <- function(dat.train, n.beta, path.out, resids = F, 
-    parallel = F, n.cores = NULL, day.window = 5, seed = format(Sys.time(), "%m%d")) {
+model.air_pressure <- function(dat.train, n.beta, path.out, resids = FALSE, 
+    parallel = FALSE, n.cores = NULL, day.window = 5, seed = format(Sys.time(), "%m%d")) {
     
     set.seed(seed)
     if (!dir.exists(path.out)) 
@@ -608,7 +608,7 @@ model.air_pressure <- function(dat.train, n.beta, path.out, resids = F,
     return(mod.out)
 }
 
-model.wind_speed <- function(dat.train, n.beta, path.out, resids = F, parallel = F, 
+model.wind_speed <- function(dat.train, n.beta, path.out, resids = FALSE, parallel = FALSE, 
     n.cores = NULL, day.window = 5, seed = format(Sys.time(), "%m%d")) {
     
     set.seed(seed)
@@ -752,8 +752,8 @@ model.wind_speed <- function(dat.train, n.beta, path.out, resids = F, parallel =
     return(mod.out)
 }
 
-model.precipitation_flux <- function(dat.train, n.beta, path.out, resids = F, 
-    parallel = F, n.cores = NULL, day.window = 5, seed = format(Sys.time(), "%m%d")) {
+model.precipitation_flux <- function(dat.train, n.beta, path.out, resids = FALSE, 
+    parallel = FALSE, n.cores = NULL, day.window = 5, seed = format(Sys.time(), "%m%d")) {
     
     # library(fitdistrplus)
     set.seed(seed)
@@ -889,8 +889,8 @@ model.precipitation_flux <- function(dat.train, n.beta, path.out, resids = F,
     return(mod.out)
 }
 
-model.specific_humidity <- function(dat.train, n.beta, path.out, resids = F, 
-    parallel = F, n.cores = NULL, day.window = 5, seed = format(Sys.time(), "%m%d")) {
+model.specific_humidity <- function(dat.train, n.beta, path.out, resids = FALSE, 
+    parallel = FALSE, n.cores = NULL, day.window = 5, seed = format(Sys.time(), "%m%d")) {
     
     set.seed(seed)
     if (!dir.exists(path.out)) 
@@ -1048,7 +1048,7 @@ model.specific_humidity <- function(dat.train, n.beta, path.out, resids = F,
     return(mod.out)
 }
 
-predict.met <- function(newdata, model.predict, Rbeta, resid.err = F, model.resid = NULL, 
+predict.met <- function(newdata, model.predict, Rbeta, resid.err = FALSE, model.resid = NULL, 
     Rbeta.resid = NULL, n.ens) {
     err.resid <- 0  # dummy residual error term; if we want to add residual error, we're modeling it by hour
     
