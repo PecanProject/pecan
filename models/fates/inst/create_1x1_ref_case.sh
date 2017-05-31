@@ -18,8 +18,7 @@
 # site_lat_c =   9.1543, 5.07389,  -2.60909722,  1.4368,   4.1865,  15.6324
 # site_lon_c = 280.1539, 8.85472, 299.7907,     28.5826, 114.017,   99.217
 #=============================================================================================
-#export NETCDF_HOME=/usr/
-export NETCDF_HOME=/usr/local/
+#export NETCDF_HOME=/usr/local/  # is this nescessary?
 MACH=eddi
 COMP=ICLM45ED
 GITHASH=`git log -n 1 --format=%h`
@@ -32,7 +31,6 @@ DOMAIN_PATH=${DIN_LOC_ROOT}/share/domains/
 
 WORKDIR=`pwd`
 
-
 export CASEROOT=${CROOT}${CASE}
 echo "CREATING NEW CASE IN "${CASEROOT}
 
@@ -41,8 +39,8 @@ rm -rf ${CASEROOT}
 
 cd ${CASEROOT}
 
-
 # Modifying : env_mach_pes.xml
+echo "*** Modifying xmls  ***"
 ./xmlchange -file env_mach_pes.xml -id NTASKS_ATM -val 1
 ./xmlchange -file env_mach_pes.xml -id NTASKS_LND -val 1
 ./xmlchange -file env_mach_pes.xml -id NTASKS_ICE -val 1
@@ -54,12 +52,12 @@ cd ${CASEROOT}
 ./xmlchange -file env_mach_pes.xml -id MAX_TASKS_PER_NODE -val 1
 ./xmlchange -file env_mach_pes.xml -id TOTALPES -val 1
 # Modifying : env_build.xml
-./xmlchange -file env_build.xml -id CESMSCRATCHROOT -val ${CASEROOT}
+./xmlchange -file env_build.xml -id CIME_OUTPUT_ROOT -val ${CASEROOT}
 ./xmlchange -file env_build.xml -id GMAKE -val make
 #./xmlchange -file env_build.xml -id MPILIB -val openmpi
 #./xmlchange -file env_build.xml -id OS -val Linux
 #./xmlchange -file env_build.xml -id COMPILER -val gnu
-./xmlchange -file env_build.xml -id DEBUG -val TRUE
+./xmlchange -file env_build.xml -id DEBUG -val FALSE
 #./xmlchange -file env_build.xml -id SUPPORTED_BY -val 'clm-ed test case'
 ./xmlchange -file env_build.xml -id EXEROOT -val ${CASEROOT}/bld
 
@@ -82,11 +80,10 @@ cd ${CASEROOT}
 ./xmlchange -file env_run.xml -id DOUT_S -val TRUE
 ./xmlchange -file env_run.xml -id DOUT_S_ROOT -val '$CASEROOT/run'
 ./xmlchange -file env_run.xml -id RUNDIR -val ${CASEROOT}/run
-./xmlchange -file env_run.xml -id BATCHQUERY -val ''
-./xmlchange -file env_run.xml -id BATCHSUBMIT -val ''
 ./xmlchange -file env_run.xml -id PIO_DEBUG_LEVEL -val 0
 
 #./cesm_setup
+echo "*** Running case.setup ***"
 ./case.setup
 
 # Modify run script
@@ -105,7 +102,7 @@ cd ${CASEROOT}
 
 cat >> user_nl_clm << \EOF
 hist_empty_htapes = .true.
-hist_fincl1='EFLX_LH_TOT','TSOI_10CM','QVEGT','NEP','GPP','AR','ED_bleaf','ED_biomass','NPP_column'
+hist_fincl1='EFLX_LH_TOT','TSOI_10CM','QVEGT','NEP','GPP','AR','ED_bleaf','ED_biomass','NPP_column’,'NPP','MAINT_RESP','GROWTH_RESP'
 hist_mfilt             = 8760
 hist_nhtfrq            = -1
 EOF
@@ -120,6 +117,7 @@ EOF
 # building case :
 #./${CASE}.build
 
+echo "*** Running case.build ***"
 ./case.build
 
 #cd $WORKDIR

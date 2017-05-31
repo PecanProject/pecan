@@ -263,8 +263,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
       model.file.info <- db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
       model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
     }
-    PEcAn.utils::logger.info("model.file = ",model.file,input.met)
-    
+    #PEcAn.utils::logger.info("model.file = ",model.file,input.met)
+    PEcAn.utils::logger.info("model.file = ",model.file,input_met)
   }
   
 
