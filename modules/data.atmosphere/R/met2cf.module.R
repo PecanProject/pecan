@@ -1,3 +1,5 @@
+#' @importFrom PEcAn.utils logger.info logger.error convert.input
+#' @importFrom PEcAn.DB query.format.vars
 .met2cf.module <- function(raw.id, register, met, str_ns, dir, machine, site.id, lat, lon, start_date, end_date, 
                            con, host, overwrite = FALSE, format.vars, bety) {
   

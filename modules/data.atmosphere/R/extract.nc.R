@@ -29,7 +29,7 @@ extract.nc <- function(in.path, in.prefix, outfolder, start_date, end_date, slat
   }
   
   # Find closest coordinates to site
-  close <- closest_xy(slat, slon, in.path, in.prefix)
+  close <- closest_xy(slat, slon, infolder=in.path, infile=in.prefix)
   x <- close$x
   y <- close$y
   
@@ -44,10 +44,11 @@ extract.nc <- function(in.path, in.prefix, outfolder, start_date, end_date, slat
                            enddate = character(rows), 
                            dbfile.name = in.prefix, 
                            stringsAsFactors = FALSE)
-  
+  if(nchar(in.prefix)>0 & substr(in.prefix,nchar(in.prefix),nchar(in.prefix)) != ".") in.prefix = paste0(in.prefix,".")
   for (year in start_year:end_year) {
-    infile <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
-    outfile <- file.path(outfolder, paste(in.prefix, year, "nc", sep = "."))
+    year_txt <- formatC(year, width = 4, format = "d", flag = "0")
+    infile <- file.path(in.path, paste0(in.prefix, year_txt, ".nc"))
+    outfile <- file.path(outfolder, paste0(in.prefix, year_txt, ".nc"))
     
     # create array with results
     row <- year - start_year + 1
@@ -69,8 +70,13 @@ extract.nc <- function(in.path, in.prefix, outfolder, start_date, end_date, slat
                                  paste0("y,", y, ",", y), 
                                  infile, outfile)), collapse = " "))
     }
-    system2("ncks", list("-d", paste0("x,", x, ",", x), "-d", 
+    if(close$use_xy){
+      system2("ncks", list("-d", paste0("x,", x, ",", x), "-d", 
                          paste0("y,", y, ",", y), infile, outfile))
+    } else {
+      system2("ncks", list("-d", paste0("latitude,", x, ",", x), "-d", 
+                           paste0("longitude,", y, ",", y), infile, outfile))
+    }
     
     ## Hack to ensure lat and lon are consistant
     nc <- ncdf4::nc_open(outfile, write = TRUE)

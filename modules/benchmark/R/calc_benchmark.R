@@ -86,7 +86,7 @@ calc_benchmark <- function(settings, bety) {
                               outdir = model_run, 
                               start.year = start_year, 
                               end.year = end_year,
-                              c("time", model_vars))
+                              c("time", model_vars), dataframe = TRUE)
     # This is not a good hack. I still don't know what I'm looking at and I should probably just do a point level run instead of grid?
     if(settings$model$type == "JULES"){ 
       for(name in setdiff(names(read.model), "time")){
@@ -95,34 +95,9 @@ calc_benchmark <- function(settings, bety) {
         } 
       }
     }
-    model <- as.data.frame(read.model)
-
+    
+    model <- read.model
     vars.used.index <- which(format$vars$pecan_name %in% names(model)[!names(model) == "time"])
-    
-    # We know that the model output time is days since the beginning of the year.
-    # Make a column of years to supplement the column of days of the year.
-    years <- start_year:end_year
-    seconds <- udunits2::ud.convert(model$time,"years","seconds")
-    Diff <- diff(model$time)
-    time_breaks = which(Diff < 0)
-    
-    if(length(time_breaks) == 0 & length(years)>1){
-      ## continuous time
-      #model$year <- rep(years,each=round(365/median(Diff)))
-      model$posix <- as.POSIXct(model$time*86400,origin=settings$run$start.date,tz="UTC")
-      model$year <- year(model$posix)
-    } else {
-      N <- c(0,time_breaks, length(model$time))
-      n <- diff(N)
-      y <- c()
-      for (i in seq_along(n)) {
-        y <- c(y, rep(years[i], n[i]))
-      }
-      model$year <- y
-      makeDate <- function(x){as.POSIXct(model$time[x]*86400,origin=paste0(model$year[x],"-01-01"),tz="UTC")}
-      model$posix <- makeDate(seq_along(model$time))
-    }
-    
     model_full <- model
     
     # ---- CALCULATE BENCHMARK SCORES ---- #
