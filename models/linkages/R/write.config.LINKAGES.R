@@ -71,10 +71,10 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
     nc.soil <- ncdf4::nc_open(soil$path)
     
     ## extract LINKAGES variables
-    fc      <- ncdf4::ncvar_get(nc.soil,"volume_fraction_of_water_in_soil_at_field_capacity")
-    dry     <- ncdf4::ncvar_get(nc.soil,"volume_fraction_of_condensed_water_in_soil_at_wilting_point")
+    fc      <- ncdf4::ncvar_get(nc.soil,"volume_fraction_of_water_in_soil_at_field_capacity") * 100
+    dry     <- ncdf4::ncvar_get(nc.soil,"volume_fraction_of_condensed_water_in_soil_at_wilting_point") * 100
     if(length(fc) > 1) fc <- mean(fc)
-    if(length(dry) > 1) fc <- mean(dry)
+    if(length(dry) > 1) dry <- mean(dry)
     ncdf4::nc_close(nc.soil)
     
   }else{
