@@ -41,7 +41,7 @@ align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
     model <- model.calc[model.calc$posix >= rng_dat[1] & model.calc$posix <= rng_dat[2], ]
     obvs <- obvs.calc[obvs.calc$posix >= rng_dat[1] & obvs.calc$posix <= rng_dat[2], ]
   }
-
+  
   
   if (mode.m > mode.o) {
     date.coarse <- model$posix
