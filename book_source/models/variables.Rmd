@@ -5,7 +5,9 @@ Note: initial table derived from [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.
 ```{r,echo=FALSE}
 var.file <- system.file("data","mstmip_vars.csv",package = "PEcAn.utils")
 
-mstmipvars = read.csv(varsfile, header = TRUE, row.names = NULL, sep = ";")
+mstmipvars = read.csv(var.file, header = TRUE, row.names = NULL, sep = ";")
 
 knitr::kable(mstmipvars, align = "c" , booktabs = TRUE)
+
+
 ```
