@@ -6,9 +6,14 @@
 ##' @title temporal_downscale_functions
 ##' @family tdm - Temporally Downscale Meteorology
 ##' @author Christy Rollinson, James Simkins
-##' @description This function contains the functions that do the heavy lifting in gen_subdaily_models
-##'              and predict_subdaily_met. These functions actually generate the models and betas
-##'              from the dat.train_file and save them in the output file. 
+##' @description This function contains the functions that do the heavy lifting in gen.subdaily.models()
+##'              and predict.subdaily.workflow(). Individual variable functions actually generate the models 
+##'              and betas from the dat.train_file and save them in the output file. save.model() and 
+##'              save.betas() are helper functions that save the linear regression model output to a 
+##'              specific location. In the future, we should only save the data that we actually use from the 
+##'              linear regression model because this is a large file. predict.met() is called from
+##'              predict.subdaily.workflow() and references the linear regression model output to 
+##'              predict the ensemble data. 
 # -----------------------------------
 # Parameters
 # -----------------------------------
@@ -1131,3 +1136,5 @@ save.model <- function(model.out, model, outfile) {
     
     save(mod.list, file = outfile)
 }
+
+
