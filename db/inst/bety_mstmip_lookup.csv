@@ -35,7 +35,7 @@ Qair,kg kg-1,specific_humidity
 Qh,W m-2,H
 Qle,W m-2,LE
 Qs,kg m-2 s-1,Qs
-Qsb,kg m-2 s-1,
+Qsb,kg m-2 s-1,Qsb
 Rainf,kg m-2 s-1,precipitation_flux
 SnowDen,kg m-3,SnowDen
 SnowDepth,m,SnowDepth
@@ -44,7 +44,8 @@ SoilMoistFrac,(-),soilM
 SoilTemp,K,soilT
 SoilWet,(-),SoilWet
 SW_albedo,(-),SW_albedo
-SWdown,W m-2,surface_downwelling_shortwave_flux_in_air
+SWdown,W/m^2,surface_downwelling_shortwave_flux_in_air
+SWdown,W/m^2,solar_radiation
 SWE,kg m-2,SWE
 SWnet,W m-2,SWnet
 Tair,K,air_tempurature
