@@ -32,10 +32,6 @@
 ##' @param verbose
 ##' @export
 # -----------------------------------
-# Helper function
-substrRight <- function(x, n) {
-  substr(x, nchar(x) - n + 1, nchar(x))
-}
 #----------------------------------------------------------------------
 # Begin Function
 #----------------------------------------------------------------------
@@ -242,4 +238,9 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     
     pb.index <- pb.index + 1
     setTxtProgressBar(pb, pb.index)
+}
+
+# Helper function
+substrRight <- function(x, n) {
+  substr(x, nchar(x) - n + 1, nchar(x))
 }
