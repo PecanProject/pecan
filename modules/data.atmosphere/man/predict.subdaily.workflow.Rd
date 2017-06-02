@@ -5,10 +5,9 @@
 \title{predict.subdaily.workflow}
 \usage{
 \method{predict}{subdaily.workflow}(outfolder, in.path, in.prefix,
-  lm.models.base, dat.train_file, start_date, end_date, tdf_file, td_file,
-  site.name, lat.in, lon.in, cores.max = 12, ens.hr = 3, n.day = 1,
-  resids = FALSE, parallel = FALSE, n.cores = NULL, overwrite = FALSE,
-  verbose = FALSE)
+  lm.models.base, dat.train_file, start_date, end_date, site.name, lat.in,
+  lon.in, cores.max = 12, ens.hr = 3, n.day = 1, resids = FALSE,
+  parallel = FALSE, n.cores = NULL, overwrite = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{outfolder}{- directory where output file will be stored}
