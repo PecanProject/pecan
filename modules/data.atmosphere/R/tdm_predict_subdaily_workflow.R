@@ -57,7 +57,7 @@
 #----------------------------------------------------------------------
 
 predict.subdaily.workflow <- function(outfolder, in.path, in.prefix, lm.models.base, 
-    dat.train_file, start_date, end_date, tdf_file, td_file, site.name, 
+    dat.train_file, start_date, end_date, site.name, 
     lat.in, lon.in, cores.max = 12, ens.hr = 3, n.day = 1, resids = FALSE, 
     parallel = FALSE, n.cores = NULL, overwrite = FALSE, verbose = FALSE) {
     
@@ -73,6 +73,8 @@ predict.subdaily.workflow <- function(outfolder, in.path, in.prefix, lm.models.b
     dat.train <- list()
     tem <- ncdf4::nc_open(dat.train_file)
     dim <- tem$dim
+    lat.in <- dim$latitude$vals
+    lon.in <- dim$longitude$vals
     for (j in seq_along(vars.info$CF.name)) {
       if (exists(as.character(vars.info$CF.name[j]), tem$var)) {
         dat.train[[j]] <- ncdf4::ncvar_get(tem, as.character(vars.info$CF.name[j]))
@@ -82,6 +84,29 @@ predict.subdaily.workflow <- function(outfolder, in.path, in.prefix, lm.models.b
     }
     names(dat.train) <- vars.info$CF.name
     dat.train <- data.frame(dat.train)
+    
+    # Create wind speed variable if it doesn't exist
+    if (all(is.na(dat.train$wind_speed) == TRUE)){
+      dat.train$wind_speed <- sqrt(dat.train$eastward_wind^2 + dat.train$northward_wind^2)
+    }
+    
+    # Create a date variable that will help us organize our workflow
+    if (dim$time$units == "sec"){
+      sub_string<- substrRight(dat.train_file, 7)
+      start_year <- substr(sub_string, 1, 4)
+      dat.train$date <- as.POSIXct(dim$time$vals, tz = "GMT",
+                                   origin = paste0(start_year, "-01-01 ", 
+                                                   udunits2::ud.convert(dim$time$vals[1], "seconds", "hour"), ":00:00"))
+    } else {
+      start_year <- substr(dim$time$units,start = 12,stop = 15)
+      dat.train$date = as.POSIXct(udunits2::ud.convert((dim$time$vals - ((dim$time$vals[2] - dim$time$vals[1])/2))
+                                                       , "days", "seconds"), tz = "GMT",
+                                  origin = paste0(start_year, "-01-01 ", udunits2::ud.convert(dim$time$vals[1], "days", "hours"), ":00:00"))
+    }
+    
+    dat.train$year <- lubridate::year(dat.train$date)
+    dat.train$doy <- lubridate::yday(dat.train$date)
+    dat.train$hour <- lubridate::hour(dat.train$date)
     
     df.hour <- data.frame(hour = unique(dat.train$hour))  # match this to whatever your 'hourly' timestep is
     

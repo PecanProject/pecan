@@ -65,19 +65,31 @@ predict.subdaily.function <- function(dat.mod, n.ens, path.model, lags.list = NU
     # ------ Beginning of Downscaling For Loop
     
     for (v in vars.list) {
+        # create column propagation list and betas progagation list
         cols.list <- list()
+        rows.beta <- list()
         
         for (c in seq_len(nrow(dat.mod))){
           cols.tem <- sample(1:n.ens, n.ens,replace = TRUE)
           cols.list[(c*n.ens-n.ens+1):(c*n.ens)] <- cols.tem
         }
+        cols.list <- as.numeric(cols.list)
         
+        # Read in the first linear regression model
         first_model <- ncdf4::nc_open(paste0(path.model, "/", v, "/betas_", 
             v, "_1.nc"))
         first_beta <- assign(paste0("betas.", v, "_1"), first_model)
         n.beta <- nrow(ncdf4::ncvar_get(first_beta, "1"))
         ncdf4::nc_close(first_model)
         
+        # Create beta list so each ensemble for each variable pulls the same betas
+        for (c in seq_len(nrow(dat.mod))){
+          betas.tem <- sample(1:n.beta, n.ens,replace = TRUE)
+          rows.beta[(c*n.ens-n.ens+1):(c*n.ens)] <- betas.tem
+        }
+        rows.beta <- as.numeric(rows.beta)
+        
+        #fill our dat.sim list
         dat.sim[[v]] <- data.frame(array(dim = c(nrow(dat.mod), n.ens)))
         
         for (i in min(dat.mod$time.day):max(dat.mod$time.day)) {
@@ -164,10 +176,9 @@ predict.subdaily.function <- function(dat.mod, n.ens, path.model, lags.list = NU
                 ".Rdata")))
             
             # Pull coefficients (betas) from our saved matrix
-            rows.beta <- sample(1:n.beta, n.ens, replace = TRUE)
             betas_nc <- ncdf4::nc_open(file.path(path.model, v, paste0("betas_", 
                 v, "_", day.now, ".nc")))
-            Rbeta <- as.matrix(ncdf4::ncvar_get(betas_nc, paste(day.now))[rows.beta, 
+            Rbeta <- as.matrix(ncdf4::ncvar_get(betas_nc, paste(day.now))[as.integer(rows.beta[(i*n.ens-n.ens+1):(i*n.ens)]), 
                 ], nrow = length(rows.beta), ncol = ncol(betas_nc))
             ncdf4::nc_close(betas_nc)
             dat.pred <- predict.met(newdata = dat.temp, model.predict = mod.save, 
@@ -231,7 +242,9 @@ predict.subdaily.function <- function(dat.mod, n.ens, path.model, lags.list = NU
               cols.prop <- as.integer(cols.list[(i*n.ens-n.ens+1):(i*n.ens)])
               for (j in 1:ncol(dat.sim[[v]])) {
                   dat.sim[[v]][rows.mod, j] <- dat.pred[, cols.prop[j]]
-                }
+              }
+              
+              dat.sim[[v]][rows.now[!rows.now %in% rows.mod], ] <- 0
             } else if (v == "air_temperature") {
                 for (j in 1:ncol(dat.sim$air_temperature)) {
                   cols.prop <- as.integer(cols.list[(i*n.ens-n.ens+1):(i*n.ens)])
@@ -260,7 +273,7 @@ predict.subdaily.function <- function(dat.mod, n.ens, path.model, lags.list = NU
             }
             rm(mod.save)  # Clear out the model to save memory
         }
-        pb.index <- pb.index + 1
+         pb.index <- pb.index + 1
         setTxtProgressBar(pb, pb.index)
     }  # ---------- End of downscaling for loop
     return(dat.sim)
