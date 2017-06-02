@@ -207,7 +207,7 @@ MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
 MANY_TABLES="${MANY_TABLES} managements_treatments modeltypes_formats"
 MANY_TABLES="${MANY_TABLES} pfts_priors pfts_species"
 MANY_TABLES="${MANY_TABLES} posterior_samples posteriors_ensembles"
-MANY_TABLES="${MANY_TABLES} sitegroups_sites trait_covariate_associations"
+MANY_TABLES="${MANY_TABLES} sitegroups_sites sites_cultivars trait_covariate_associations"
 
 # tables that should NOT be dumped
 IGNORE_TABLES="sessions"
@@ -239,7 +239,7 @@ ID_RANGE=1000000000
 # before anything is done, check to make sure database exists
 if ! psql ${PG_OPT} ${PG_USER} -lqt | cut -d \| -f 1 | grep -w "${DATABASE}" > /dev/null ; then
   echo "Database ${DATABASE} does not exist, please create it:"
-  echo "(see https://github.com/PecanProject/pecan/wiki/Installing-PEcAn#installing-bety)"
+  echo "(see https://pecan.gitbooks.io/betydb-documentation/content/installing_betydb.html)"
   echo "  psql ${PG_OPT} ${PG_USER} -c \"CREATE ROLE ${OWNER} WITH LOGIN CREATEDB NOSUPERUSER NOCREATEROLE PASSWORD 'password'\""
   echo "  psql ${PG_OPT} ${PG_USER} -c \"CREATE DATABASE ${DATABASE} WITH OWNER ${OWNER}\""
   exit 1

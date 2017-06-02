@@ -8,7 +8,7 @@ output: html_document
 
 # Overview
 
-This is a demonstration of the PEcAn utilities for downloading met data, converting it to the PEcAn-CF format (which is based on the Climate Forecasting conventions and similar to MsTMIP). These variables are defined in the [PEcAn wiki](https://github.com/PecanProject/pecan/wiki/Adding-an-Input-Converter#met-data).
+This is a demonstration of the PEcAn utilities for downloading met data, converting it to the PEcAn-CF format (which is based on the Climate Forecasting conventions and similar to MsTMIP). These variables are defined in the [PEcAn documentation](https://pecanproject.github.io/pecan-documentation/master/met-data.html).
 
 In this example we will download 12 years of met data from the [Bondville Ameriflux site](http://ameriflux.ornl.gov/fullsiteinfo.php?sid=44). It has an Ameriflux `SITE_ID` of `US-Bo1`
 
