@@ -227,11 +227,17 @@ predict.subdaily.function <- function(dat.mod, n.ens, path.model, lags.list = NU
             
             # Specific Humidity sometimes ends up with high or infinite values
             if (v == "specific_humidity") {
+              dat.pred <- exp(dat.pred)  # because log-transformed
                 if (max(dat.pred) > 0.03) {
                   specific_humidity.fix <- ifelse(quantile(dat.pred, 0.99) < 
                     0.03, quantile(dat.pred, 0.99), 0.03)
                   dat.pred[dat.pred > specific_humidity.fix] <- specific_humidity.fix
                 }
+            }
+            
+            # Wind speed quality control 
+            if (v == "wind_speed") {
+              dat.pred <- dat.pred^2 # because square-rooted to prevent negative
             }
             # ---------- End Quality Control
             
