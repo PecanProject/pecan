@@ -9,6 +9,6 @@ checkAndDownload<-function(packageNames) {
 isInstalled <- function(mypkg){
   is.element(mypkg, installed.packages()[,1])
 }
-
-checkAndDownload(c('plotly','scales'))
+checkAndDownload(c('plotly','scales','dplyr'))
+# devtools::install_github('hadley/ggplot2')
 # testVal = 5

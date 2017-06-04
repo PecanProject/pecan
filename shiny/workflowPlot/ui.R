@@ -11,6 +11,9 @@ ui <- shinyUI(fluidPage(
       selectInput("workflow_id", "Workflow ID", c()),
       selectInput("run_id", "Run ID", c()),
       selectInput("variable_name", "Variable Name", "")
+      # selectInput("workflow_id", "Workflow ID", c(99000000077)),
+      # selectInput("run_id", "Run ID", c(99000000002)),
+      # selectInput("variable_name", "Variable Name", c("AutoResp","GPP"))
     ),
     mainPanel(
       plotlyOutput("outputPlot"
@@ -18,9 +21,12 @@ ui <- shinyUI(fluidPage(
                  # brush = brushOpts(id = "plot_brush",
                  #                   resetOnNew = TRUE),
                  # dblclick = "plot_dblclick"
-                 )
+                 ),
       # Checking variable names
-      ,verbatimTextOutput("info")
+      verbatimTextOutput("info"),
+      verbatimTextOutput("info1"),
+      verbatimTextOutput("info2"),
+      verbatimTextOutput("info3")
     )
   )
 ))
