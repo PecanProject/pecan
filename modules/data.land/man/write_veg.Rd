@@ -4,5 +4,5 @@
 \alias{write_veg}
 \title{write_veg}
 \usage{
-write_veg(outfolder, start_date, end_date, veg_info, overwrite = FALSE, ...)
+write_veg(outfolder, start_date, end_date, veg_info, site_name, source)
 }

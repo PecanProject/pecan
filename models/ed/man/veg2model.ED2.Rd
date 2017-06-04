@@ -4,8 +4,8 @@
 \alias{veg2model.ED2}
 \title{Writes ED specific IC files}
 \usage{
-veg2model.ED2(outfolder, start_date, end_date, lat, lon, site_id, source,
-  veg_info, overwrite = FALSE, ...)
+veg2model.ED2(in.path, in.name, outfolder, start_date, end_date, new_site,
+  source, overwrite = FALSE, ...)
 }
 \arguments{
 \item{outfolder}{where to write files}
