@@ -5,11 +5,33 @@
 #' @return results data frame
 #' @export
 #' @author Istem Fer
-veg2model.ED2 <- function(outfolder, start_date, end_date, 
-                          lat, lon, site_id, site_name, source,
-                          veg_info, overwrite = FALSE, ...){
+veg2model.ED2 <- function(in.path, in.name, outfolder, start_date, end_date, 
+                          new_site, source, overwrite = FALSE, ...){
   
 
+  lat       <- new_site$lat
+  lon       <- new_site$lon
+  site_id   <- new_site$id
+  site_name <- new_site$name
+  
+  #--------------------------------------------------------------------------------------------------#
+  # Read
+  rds_file <- file.path(in.path, in.name)
+  veg_info <- readRDS(rds_file) 
+  
+  #--------------------------------------------------------------------------------------------------#
+  # Match PFTs
+  
+  obs <- veg_info[[2]]
+  
+  pft.info <- match_pft(obs$bety_species_id, pfts)
+  
+  ### merge with other stuff
+  obs <- cbind(obs, pft.info[c("bety_pft_id", "pft")])
+  
+  veg_info[[2]] <- obs 
+  
+  
   #--------------------------------------------------------------------------------------------------#
   # Handle file names
   

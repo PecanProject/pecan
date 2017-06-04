@@ -4,32 +4,54 @@
 ##' 
 ##' @param bety_species_id  vector of BETYdb species IDs
 ##' @param pfts             settings$pfts.  List of pfts with database matching based on name
-##' @param con              database connection
+##' @param con              database connection, if NULL use traits package
 ##' 
+##' @author Mike Dietze, Istem Fer
 ##' @return table of BETYdb PFT IDs matched to species IDs
 ##' 
 ##' @export
-match_pft <- function(bety_species_id, pfts, con){
+match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL){
   
   ### get species to PFT mappting
-  query <- NULL
-  for (pft in pfts) {
-    if (is.null(query)) {
-      query <- paste0("SELECT bp.id as bety_pft_id, bp.name as pft, bs.id as bety_species_id, bs.scientificname as latin FROM pfts as bp INNER JOIN ", 
-                      "pfts_species AS bps ON bps.pft_id = bp.id INNER JOIN species AS bs ON bs.id = bps.specie_id WHERE ", 
-                      "bp.name = '", pft$name, "'")
-    } else {
-      query <- paste0(query, " OR bp.name = '", pft$name, "'")
+  if(!is.null(con)){
+    
+    for (pft in pfts) {
+      if (is.null(query)) {
+        query <- paste0("SELECT bp.id as bety_pft_id, bp.name as pft, bs.id as bety_species_id, bs.scientificname as latin FROM pfts as bp INNER JOIN ", 
+                        "pfts_species AS bps ON bps.pft_id = bp.id INNER JOIN species AS bs ON bs.id = bps.specie_id WHERE ", 
+                        "bp.name = '", pft$name, "'")
+      } else {
+        query <- paste0(query, " OR bp.name = '", pft$name, "'")
+      }
     }
+    translation <- db.query(query, con = con)
+    
+    
+  }else{ # use traits package
+    
+    bety_list <- list()
+    
+    for (pft in pfts) {
+      # query pft id
+      bety_pft <- betydb_query(name = pft$name, table = 'pfts', user = 'bety', pwd = 'bety')
+      # query species id
+      bety_species <- betydb_query(pft_id = bety_pft$id, table = 'pfts_species', user = 'bety', pwd = 'bety')
+      bety_list[[pft$name]] <- bety_species$pfts_species.specie_id
+    }
+    tmp <- lapply(seq_along(bety_list), function(x){
+        data.frame(pft = rep(names(bety_list)[x], length(bety_list[[x]])),
+                   bety_species_id = bety_list[[x]])})
+      
+    translation <- do.call("rbind", tmp)
+    
   }
-  translation <- db.query(query, con = con)
-  
+
   ## Check for duplicate bety_species_ids in PFTs
   bad <- translation[duplicated(translation$bety_species_id),]
   if (nrow(bad) > 0) {
     for(i in seq_along(nrow(bad))){
       error.pft <- translation[translation$bety_species_id == bad$bety_species_id[i],]
-      PEcAn.utils::logger.warn(paste0("Duplicated species: ", bad$latin[i], " under ",paste(error.pft$pft, collapse = ", ")))
+      PEcAn.utils::logger.warn(paste0("Duplicated species id: ", bad$bety_species_id[i], " under ", paste(error.pft$pft, collapse = ", ")))
     }
   }
 
@@ -40,7 +62,13 @@ match_pft <- function(bety_species_id, pfts, con){
     for(i in seq_along(ubad)){
       # Coerce id back into species names. Makes a more readable warning.
       if(!is.na(ubad[i])){
-        latin <- db.query(paste("SELECT scientificname FROM species where id =", ubad[i]), con = con)
+        if(!is.null(con)){
+          latin <- db.query(paste("SELECT scientificname FROM species where id =", ubad[i]), con = con)
+        }else{ # use traits package
+          bety_latin <- betydb_query(id = ubad[i], table = 'species', user = 'bety', pwd = 'bety')
+          latin      <- bety_latin$scientificname
+        }
+        
       }else{
         latin <- NA
       }
