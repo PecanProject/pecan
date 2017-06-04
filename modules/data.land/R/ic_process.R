@@ -18,6 +18,11 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   host       <- settings$host
   dbparms    <- settings$database
   
+  # Handle IC Workflow locally
+  if(host$name != "localhost"){
+    host$name <- "localhost"
+    dir       <- settings$database$dbfiles
+  }
   
   # If overwrite is a plain boolean, fill in defaults for each module
   if (!is.list(overwrite)) {
@@ -58,6 +63,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   new.site <- data.frame(id = as.numeric(site$id), 
                          lat = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lat, 
                          lon = PEcAn.data.atmosphere::db.site.lat.lon(site$id, con = con)$lon)
+  new.site$name <- settings$run$site$name
   str_ns <- paste0(new.site$id %/% 1e+09, "-", new.site$id %% 1e+09)
   
   outfolder <- file.path(dir, paste0(input$source, "_site_", str_ns))
@@ -83,8 +89,10 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                               outfolder = outfolder, 
                               start_date = start_date, end_date = end_date,
                               dbparms = dbparms,
-                              lat = new.site$lat, lon = new.site$lon, site_id = new.site$id,
-                              host = host, overwrite = overwrite$getveg)
+                              new_site = new.site,
+                              host = host, 
+                              machine_host = machine.host,
+                              overwrite = overwrite$getveg)
 
   }
   
@@ -99,7 +107,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                                 outfolder = outfolder, 
                                 dir = dir, machine = machine, model = model,
                                 start_date = start_date, end_date = end_date,
-                                lat = new.site$lat, lon = new.site$lon, site_id = new.site$id,
+                                new_site = new.site,
                                 host = host, overwrite = overwrite$putveg)
     
   }

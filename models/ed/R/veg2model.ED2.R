@@ -6,7 +6,7 @@
 #' @export
 #' @author Istem Fer
 veg2model.ED2 <- function(outfolder, start_date, end_date, 
-                          lat, lon, site_id, source,
+                          lat, lon, site_id, site_name, source,
                           veg_info, overwrite = FALSE, ...){
   
 
@@ -18,10 +18,9 @@ veg2model.ED2 <- function(outfolder, start_date, end_date,
   formatnames <- c("ED2.cohort", "ED2.patch", "ED2.site")
   dbfilenames <- c("css.file", "pss.file", "site.file")
   
-  file.prefix <- paste("siteid", site_id, source, start_year, end_year,
+  file.prefix <- paste(site_name, source, start_year,
                       get.ed.file.latlon.text(lat, lon, site.style = FALSE), sep = ".")
-  #site.prefix  <- paste("siteid", site_id, source, start_year, end_year,
-  #                       get.ed.file.latlon.text(lat, lon, site.style = TRUE), sep = ".")
+
   
   filenames   <- c(paste0(file.prefix, ".css"),
                    paste0(file.prefix, ".pss"),
