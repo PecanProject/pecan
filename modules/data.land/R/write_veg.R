@@ -1,28 +1,20 @@
 ##' @name write_veg
 ##' @title write_veg
 ##' @export
-write_veg <- function(outfolder, start_date, end_date, veg_info, overwrite = FALSE, ...){
+write_veg <- function(outfolder, start_date, end_date, veg_info, site_name, source){
   
   #--------------------------------------------------------------------------------------------------#
   # Save rds file and return results data frame
   
   start_year    <- lubridate::year(start_date)
   end_year      <- lubridate::year(end_date)
-  out_file      <- paste("FIA", start_year, end_year, "veg", "rds", sep = ".")
+  out_file      <- paste(site_name, source, start_year, end_year, "veg", "rds", sep = ".")
   out_file_full <- file.path(outfolder, out_file)
+  
+  dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
   
   saveRDS(veg_info, file = out_file_full)
   
-  # Build results dataframe for convert.input
-  results <- data.frame(file = out_file_full, 
-                        host = c(fqdn()), 
-                        mimetype = "application/rds", 
-                        formatname = "spp.info", 
-                        startdate = start_date, 
-                        enddate = end_date, 
-                        dbfile.name = out_file, 
-                        stringsAsFactors = FALSE)
-  
-  return(invisible(results))
+  return(out_file_full)
   
 } # write_veg

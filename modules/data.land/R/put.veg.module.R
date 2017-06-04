@@ -3,8 +3,13 @@
                             outfolder, 
                             dir, machine, model,
                             start_date, end_date,
-                            lat, lon, site_id, 
+                            new_site, 
                             host, overwrite){
+  
+  lat       <- new_site$lat
+  lon       <- new_site$lon
+  site_id   <- new_site$id
+  site_name <- new_site$name
   
   #--------------------------------------------------------------------------------------------------#
   # Read
@@ -64,6 +69,7 @@
                           # site.id is passed to convert.inputs but not passed to
                           # fcn.args within convert.inputs, where to fix it?
                           site_id = site_id, 
+                          site_name = site_name,
                           source = input_veg$source,
                           veg_info = veg_info)
   
