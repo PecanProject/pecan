@@ -52,7 +52,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   ## i)  start of the run, to check whether a proper IC file is already processed for those dates
   ## ii) start and end of the IC file to enter the database
   # query (ii) from source id [input id in BETY]
-  query      <- paste0("SELECT * FROM inputs where id = ", source_id)
+  query      <- paste0("SELECT * FROM inputs where id = ", input$source.id)
   input_file <- db.query(query, con = con)
   start_date <- input_file$start_date
   end_date   <- input_file$end_date
@@ -136,25 +136,34 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     if(input$output == "css"){
       settings$run$inputs[["pss"]][['path']]  <- gsub("css","pss", path_to_settings)
       settings$run$inputs[["site"]][['path']] <- gsub("css","site", path_to_settings)
+      
+      # IF: For now IC workflow is only working for ED and it's the only case for copying to remote
+      # but this copy to remote might need to go out of this if-block and change
+      
+      # Copy to remote and change paths if needed
+      if (settings$host$name != "localhost") {
+        
+        out.dir.remote   <- file.path(settings$host$folder, paste0(new.site$name, "_", input$source))
+        pss.file.remote  <- file.path(out.dir.remote, basename(settings$run$inputs[["pss"]][['path']]))
+        settings$run$inputs[["pss"]][['path']] <- pss.file.remote
+
+        css.file.remote  <- file.path(out.dir.remote, basename(settings$run$inputs[["css"]][['path']]))
+        settings$run$inputs[["css"]][['path']] <- css.file.remote
+        
+        site.file.remote <- file.path(out.dir.remote, basename(settings$run$inputs[["site"]][['path']]))
+        settings$run$inputs[["site"]][['path']] <- site.file.remote
+        
+        remote.execute.cmd(settings$host, "mkdir", c("-p", out.dir.remote))
+        remote.copy.to(settings$host, pss.file.local, pss.file.remote)
+        remote.copy.to(settings$host, css.file.local, css.file.remote)
+        remote.copy.to(settings$host, site.file.local, site.file.remote)
+      }
     }
+    
     
   }
   
-  # if remote, copy
-  # Copy to remote if needed
-  if (settings$host$name != "localhost") {
-    
-    out.dir.remote   <- file.path(settings$host$folder, paste0("FIA_ED2_site_", site.string))
-    pss.file.remote  <- file.path(out.dir.remote, paste0(prefix.psscss, ".pss"))
-    css.file.remote  <- file.path(out.dir.remote, paste0(prefix.psscss, ".css"))
-    site.file.remote <- file.path(out.dir.remote, paste0(prefix.site, ".site"))
-    
-    remote.execute.cmd(settings$host, "mkdir", c("-p", out.dir.remote))
-    remote.copy.to(settings$host, pss.file.local, pss.file.remote)
-    remote.copy.to(settings$host, css.file.local, css.file.remote)
-    remote.copy.to(settings$host, site.file.local, site.file.remote)
-    files <- c(pss.file.remote, css.file.remote, site.file.remote)
-  }
+
   
   return(settings)
 } # ic_process
