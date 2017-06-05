@@ -5,21 +5,23 @@ buildJAGSdataobject <- function(temp2){
 
 ### get tree-ring measurements into a tree*year matrix
 temp2$Widths <- as.character(temp2$Widths)
-first.start.yr <- min(temp2$DateBegin, na.rm=T)
-last.meas.yr <- max(temp2$T2_MEASYR, na.rm=T)
-years <- seq(first.start.yr, last.meas.yr)
-y.matrix <- matrix(data=NA, nrow=nrow(temp2), ncol=length(years))
+first.start.yr <- min(temp2$DateFirst, na.rm=T) #1719
+last.meas.yr <- max(temp2$T2_MEASYR, na.rm=T) # 2010
+years <- seq(first.start.yr, last.meas.yr) # 1719:2010
+y.matrix <- matrix(data=NA, nrow=nrow(temp2), ncol=length(years)) #tree ring measurements go in y.matrix
 colnames(y.matrix) <- years
 for (t in 1:nrow(temp2)) {
   width.string <- temp2$Widths[t]
-  width.vector <- as.integer(unlist(strsplit(x = width.string, split = ",")))
-  start.column <- which(years == temp2$DateBegin[t])
+  width.vector <- as.numeric(unlist(strsplit(x = width.string, split = ",")))
+  start.column <- which(years == temp2$DateFirst[t])
   end.column <- which(years == temp2$DateEnd[t])
   width.subset <- (end.column - start.column) + 1 # how long should the vectors of TR measurements be?
   width.vector <- width.vector[1:width.subset] # truncate widths vector to this length (get rid of extra zeros at the end)
-  width.vector <- width.vector*0.0001*2 # convert micrometers to cm and multiply by 2 to turn radial increment into diameter increment
+  width.vector <- width.vector*0.1*2 # convert micrometers to cm and multiply by 2 to turn radial increment into diameter increment (be careful about what units Tellervo spits out)
   y.matrix[t, c(start.column:end.column)] <- width.vector # put that vector in y.matrix at the right start year:end year
 }
+
+
 
 ### get DBH measurements into a parallel tree*year matrix (mostly NA's, max #data points per tree = 2)
 z.matrix <- matrix(data=NA, nrow=nrow(temp2), ncol=length(years))
@@ -27,7 +29,7 @@ colnames(z.matrix) <- years
 for (t in 1:nrow(temp2)) {
   # extract DBH (DIA) value if and only if it is not NA
   ifelse(!is.na(temp2$DIA[t]), DIA.T1<-temp2$DIA[t], DIA.T1<-NA) # extract time 1 DBH (in some cases, the only DBH measurement)
-  YR.T1 <- temp2$DateEnd[t]+1 # associated measurement year
+  YR.T1 <- temp2$PLOT_MEASYEAR[t] # associated measurement year
   z.matrix[t, which(colnames(z.matrix)==YR.T1)] <- DIA.T1 # put the DBH data in the right place (tree, year)
   
   ifelse(!is.na(temp2$T2_DIA[t]), DIA.T2<-temp2$T2_DIA[t], DIA.T2<-NA)  # time 2 DBH (only cases where there are two DBH measurements)
@@ -41,10 +43,10 @@ for (t in 1:nrow(temp2)) {
 ### convert DBH measurements to cm (multiply by 2.54)
 z.matrix <- z.matrix*2.54
 
-### for the moment, we'll restrict the analysis to the years 1970:2010
+### for the moment, we'll restrict the analysis to the years 1978:2010
 # currently, 1970 is the last DateBegin among all the cores...
-last.start.yr <- max(temp2$DateBegin)
-index.last.start <- which(years==last.start.yr) # which(years==1970) # returns 186
+last.start.yr <- max(temp2$DateFirst, na.rm=T) #1978
+index.last.start <- which(years==last.start.yr) # which(years==1978) # returns 260
 y.small <- y.matrix[,index.last.start:ncol(y.matrix)]
 z.small <- z.matrix[,index.last.start:ncol(z.matrix)]
 years.small <- years[index.last.start:ncol(y.matrix)]
@@ -54,7 +56,7 @@ years.small <- years[index.last.start:ncol(y.matrix)]
 ### RANDOM EFFECTS
 
 ### plot rnd effect (currently implemented at indiv level)
-PLOT <- paste0(temp2$CountyNo, temp2$PlotNo)
+PLOT <- paste0(temp2$County, temp2$Plot) # should maybe use an underscore to avoid mistakes...but would jags choke?
 
 ### FIXED EFFECTS
 
@@ -69,7 +71,7 @@ PLOT <- paste0(temp2$CountyNo, temp2$PlotNo)
 
 ### condition-level
 ### SICOND  
-SICOND <- temp2$SICOND
+SICOND <- temp2$COND_SICOND
 ### SLOPE
 ### ASPECT ### what's the scale for FIA's aspect data? do they need to be converted to N-S spectrum?
 ### STDAGE
@@ -83,7 +85,7 @@ cov.data <- data.frame(PLOT=PLOT, SICOND=SICOND, SDI=SDI)
 ### plot- and year-specific covariates
 ### i.e., 36 PRISM data matrices (tree*year)...one for each month*3 variables (Tmax, Tmin, ppt)
 ### just gonna do 24 climate variables (Tmax and Ppt)
-PRISM.years <- seq(from=1895, to=2015)
+PRISM.years <- seq(from=1895, to=2015) #length = 121
 index.start.climate <- which(PRISM.years == last.start.yr)
 index.end.climate <- index.start.climate+(last.meas.yr-last.start.yr)
 PRISM.ncol <- (last.meas.yr-last.start.yr)+1 
@@ -92,10 +94,10 @@ PRISM.ncol <- (last.meas.yr-last.start.yr)+1
 #yrt.clim.var <- colnames(AZ.PIPO[110]) # just tmax_Jun; climate data from year t
 #yrt_1.clim.var <- c(colnames(AZ.PIPO[140])) # just ppt_Dec; climate data from year t-1
 
-yrt.clim.var <- colnames(AZ.PIPO[105:112]) # Jan-Aug tmax columns
-yrt.clim.var <- c(yrt.clim.var, colnames(AZ.PIPO[129:136])) # add Jan-Aug ppt
-yrt_1.clim.var <- c(colnames(AZ.PIPO[113:116])) # Sept-Dec tmax
-yrt_1.clim.var <- c(yrt_1.clim.var, colnames(AZ.PIPO[137:140])) # add Sept-Dec ppt
+yrt.clim.var <- colnames(AZ.PIPO[77:84]) # Jan-Aug tmax columns
+yrt.clim.var <- c(yrt.clim.var, colnames(AZ.PIPO[101:108])) # add Jan-Aug ppt
+yrt_1.clim.var <- c(colnames(AZ.PIPO[85:88])) # Sept-Dec tmax
+yrt_1.clim.var <- c(yrt_1.clim.var, colnames(AZ.PIPO[109:112])) # add Sept-Dec ppt
 
 names.clim.var <- c(yrt.clim.var, yrt_1.clim.var)
 time_data <- list() # make empty list
@@ -129,15 +131,15 @@ for (i in yrt_1.clim.var) { ## this loop deals with the climate variables taken 
 names(time_data) <- names.clim.var
 
 # calculate winter precip and add to the list time_data (rows are trees, columns are years)
-wintP.wateryr <- (time_data$ppt_Sep + time_data$ppt_Oct + time_data$ppt_Nov + time_data$ppt_Dec + time_data$ppt_Jan + time_data$ppt_Feb + time_data$ppt_Mar + time_data$ppt_Apr + time_data$ppt_May + time_data$ppt_Jun + time_data$ppt_Jul + time_data$ppt_Aug)
-wintP.NM <- (time_data$ppt_Nov + time_data$ppt_Dec + time_data$ppt_Jan + time_data$ppt_Feb + time_data$ppt_Mar)
-wintP.JJ <- (time_data$ppt_Jan + time_data$ppt_Feb + time_data$ppt_Mar + time_data$ppt_Apr + time_data$ppt_May + time_data$ppt_Jun + time_data$ppt_Jul)
+wintP.wateryr <- (time_data$PPTSep + time_data$PPTOct + time_data$PPTNov + time_data$PPTDec + time_data$PPTJan + time_data$PPTFeb + time_data$PPTMar + time_data$PPTApr + time_data$PPTMay + time_data$PPTJun + time_data$PPTJul + time_data$PPTAug)
+wintP.NM <- (time_data$PPTNov + time_data$PPTDec + time_data$PPTJan + time_data$PPTFeb + time_data$PPTMar)
+wintP.JJ <- (time_data$PPTJan + time_data$PPTFeb + time_data$PPTMar + time_data$PPTApr + time_data$PPTMay + time_data$PPTJun + time_data$PPTJul)
 time_data$wintP.wateryr <- wintP.wateryr
 time_data$wintP.NM <- wintP.NM
 time_data$wintP.JJ <- wintP.JJ
 
-tmax.JanA <- (time_data$tmax_Jan + time_data$tmax_Feb + time_data$tmax_Mar + time_data$tmax_Apr + time_data$tmax_May + time_data$tmax_Jun + time_data$tmax_Jul + time_data$tmax_Aug)
-tmax.MJul <- (time_data$tmax_May + time_data$tmax_Jun + time_data$tmax_Jul)
+tmax.JanA <- (time_data$TMAXJan + time_data$TMAXFeb + time_data$TMAXMar + time_data$TMAXApr + time_data$TMAXMay + time_data$TMAXJun + time_data$TMAXJul + time_data$TMAXAug)/8
+tmax.MJul <- (time_data$TMAXMay + time_data$TMAXJun + time_data$TMAXJul)/3
 time_data$tmax.JanA <- tmax.JanA
 time_data$tmax.MJul <- tmax.MJul
 
@@ -156,22 +158,22 @@ data = list(y = y.small[1:n, ],
 ## state variable initial condition
 ####### issues:
 ### 1. NA's at the end of the tree-ring series...need to use the available measurements (and trees were cored in different years)
-### 2. z0 is not the same for all trees...DateBegin varies from 1785 to 1972, so we'll truncate to 1972 for the moment
+### 2. z0 is not the same for all trees...DateFirst varies from 1785 to 1972, so we'll truncate to 1972 for the moment
 DIA.T1 <- vector(mode="numeric", length=nrow(temp2))
 ave.ring <- vector(mode="numeric", length=nrow(temp2))
 z0 <- matrix(data=NA, nrow=nrow(y.small), ncol=ncol(y.small))
 for (t in 1:nrow(temp2)) {
   ### shrink tree backward: subtract the cumulative tree-ring-derived diameter increments (in y.matrix) from DIA
   ifelse(!is.na(temp2$DIA[t]), DIA.T1[t]<-temp2$DIA[t]*2.54, DIA.T1[t]<-NA) # extract time 1 DBH (in some cases, the only DBH measurement)
-  # extract tree-ring data from year 1972:end series
+  # extract tree-ring data from year 1978:end series
   end.col <- which(years==temp2$DateEnd[t])
-  temp.growth <- y.matrix[t,index.last.start:end.col] # which(years==1972) # returns 188
+  temp.growth <- y.matrix[t,index.last.start:end.col] # which(years==1978) # returns 260
   temp.growth2 <- -rev(cumsum(rev(temp.growth)))
   z0[t,1:length(temp.growth)] <- DIA.T1[t] + temp.growth2 # note that this is one year off where DateEnd = MEASYEAR-1
 
   ### grow tree forward: find average ring-width per tree and add cumulative from DIA to year 2010
   ave.ring[t] <- mean(temp.growth)
-  ave.growth <- rep(ave.ring[t], times=(2010-temp2$DateEnd[t]))
+  ave.growth <- rep(ave.ring[t], times=(last.meas.yr-temp2$DateEnd[t]))
   z0[t, (length(temp.growth)+1):length(years.small)] <- DIA.T1[t] + cumsum(ave.growth)
 
   ### note that some of these values (z0) are negative,
