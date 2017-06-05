@@ -167,6 +167,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        site = site, username = username)
     if (met %in% c("CRUNCEP", "GFDL")) {
       ready.id <- raw.id
+      # input_met$id overwrites ready.id below, needs to be populated here
+      input_met$id <- raw.id
       stage$met2cf <- FALSE
       stage$standardize <- FALSE
     }
