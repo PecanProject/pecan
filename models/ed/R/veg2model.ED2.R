@@ -9,8 +9,8 @@ veg2model.ED2 <- function(in.path, in.name, outfolder, start_date, end_date,
                           new_site, pfts, source, overwrite = FALSE, ...){
   
 
-  lat       <- new_site$lat
-  lon       <- new_site$lon
+  lat       <- as.numeric(as.character(new_site$lat))
+  lon       <- as.numeric(as.character(new_site$lon))
   site_id   <- new_site$id
   site_name <- new_site$name
   

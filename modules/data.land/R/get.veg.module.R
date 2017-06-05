@@ -3,6 +3,7 @@
                             start_date, end_date,
                             dbparms,
                             new_site, 
+                            run_start,
                             host, machine_host,
                             overwrite){
 
@@ -43,6 +44,7 @@
                                gridres = 0.075, dbparms = dbparms,
                                machine_host = machine_host,
                                source = input_veg$source)
+  
     
     return(getveg.id)
     
@@ -67,13 +69,14 @@
                                write = TRUE, 
                                overwrite = overwrite, 
                                # fcn specific args 
-                               new_site,
+                               new_site = new_site,
                                source_id = source.id, 
                                format_name = input_veg$match.format,
                                dbparms = dbparms,
                                machine_host = machine_host,
                                source = input_veg$source)
     
+
     return(getveg.id)
     
   }
