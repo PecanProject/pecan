@@ -21,7 +21,7 @@ temp1 <- AZ.PIPO[AZ.PIPO$MEASYEAR-AZ.PIPO$DateEnd<2,] # 288 trees
 temp2 <- temp1[temp1$MEASYEAR-temp1$DateEnd>-1,] # 285 trees
 
 
-source("BuildJAGSdataobject4.R")
+source("BuildJAGSdataobject3.R")
 jags.stuff <- buildJAGSdataobject(temp2)
 data <- jags.stuff$data
 z0 <- jags.stuff$z0
@@ -47,8 +47,7 @@ InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=50
   
   # start text object that will be manipulated (to build different linear models, swap in/out covariates)  
   TreeDataFusionMV <- "
-model{
-
+  model{
   ### Loop over all individuals
   for(i in 1:ni){
   
@@ -72,7 +71,6 @@ model{
   ## initial condition
   x[i,1] ~ dnorm(x_ic,tau_ic)
   }  ## end loop over individuals
-
   ## RANDOM_EFFECTS
   
   #### Priors
@@ -124,8 +122,6 @@ model{
             data[[length(data)+1]] <- as.numeric(as.factor(as.character(cov.data[,r_var[j]]))) ## multiple conversions to eliminate gaps
             names(data)[length(data)] <- r_var[j]
           }
-          if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at r_var",names(data))}
-          
           nr[j] <- max(as.numeric(data[[r_var[j]]]))
         }
         index <- paste0("[",index,"]")
@@ -148,11 +144,11 @@ model{
     ## Substitute into code
     TreeDataFusionMV <- sub(pattern = "## RANDOM EFFECT TAUS", Rpriors, TreeDataFusionMV)
     TreeDataFusionMV <- gsub(pattern = "## RANDOM_EFFECTS", Reffects, TreeDataFusionMV)
-  }  ### END RANDOM EFFECTS
+  }
   
   if(FALSE){
     ## DEV TESTING FOR X, POLYNOMIAL X, and X interactions
-    fixed <- "X + X^3 + X*bob + bob + dia + X*Tmin[t]" ## faux model, just for testing jags code
+    fixed <- "X + X^3 + X*bob + bob + dia" ## faux model, just for testing jags code
   }
   ## Design matrix
   if (is.null(fixed)) {
@@ -173,10 +169,15 @@ model{
     ## First deal with endogenous terms (X and X*cov interactions)
     fixedX <- sub("~","",fixed, fixed=TRUE)
     lm.terms <- gsub("[[:space:]]", "", strsplit(fixedX,split = "+",fixed=TRUE)[[1]])  ## split on + and remove whitespace
+    #X.terms <- strsplit(lm.terms,split = c("^"),fixed = TRUE)
+    #X.terms <- sapply(X.terms,strsplit,split="*",fixed=TRUE)
+    #X.terms <- which(sapply(X.terms,function(x){any(toupper(x) == "X")}))
+    
     X.terms <- strsplit(lm.terms,split = c("^"),fixed = TRUE)
     X.terms <- sapply(X.terms,function(str){unlist(strsplit(str,,split="*",fixed=TRUE))})
     X.terms <- which(sapply(X.terms,function(x){any(toupper(x) == "X")}))    
-
+    
+    
     if(length(X.terms) > 0){
       ## rebuild fixed without X.terms
       fixed <- paste("~",paste(lm.terms[-X.terms],collapse = " + "))  
@@ -189,42 +190,20 @@ model{
         myBeta <- NULL
         Xformula <- NULL
         if(length(grep("*",X.terms[i],fixed = TRUE)) == 1){  ## INTERACTION
-
-          myIndex <- "[i]"
+          
           covX <- strsplit(X.terms[i],"*",fixed=TRUE)[[1]] 
           covX <- covX[-which(toupper(covX)=="X")] ## remove X from terms
-          
-            ##is covariate fixed or time varying?
-            tvar <-  length(grep("[t]",covX,fixed=TRUE)) > 0
-            if(tvar){
-              covX <- sub("[t]","",covX,fixed = TRUE)
-              if(!(covX %in% names(data))){
-                ## add cov variables to data object
-                data[[covX]] <- time_data[[covX]]
-              }
-              if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at covX",names(data))}
-              
-#              covX <- paste0(covX,"[i,t-1]")
-              myIndex <- "[i,t-1]"
-            } else {
-              ## variable is fixed
-              if(covX %in% colnames(cov.data)){ ## covariate present
-                if(!(covX %in% names(data))){
-                  ## add cov variables to data object
-                  data[[covX]] <- cov.data[,covX]
-                }
-                if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at covX2",names(data))}
-              } else {
-                ## covariate absent
-                print("covariate absent from covariate data:", covX)
-              }
-              
-            } ## end fixed or time varying
-            
+          if(covX %in% colnames(cov.data)){ ## covariate present
+            if(!(covX %in% names(data))){
+              ## add cov variables to data object
+              data[[covX]] <- cov.data[,covX]
+            }
             myBeta <- paste0("betaX_",covX)
-            Xformula <- paste0(myBeta,"*x[i,t-1]*",covX,myIndex)
-
-
+            Xformula <- paste0(myBeta,"*x[i,t-1]*",covX,"[i]")
+          } else {
+            ## covariate absent
+            print("covariate absent from covariate data:", covX)
+          }
           
         } else if(length(grep("^",X.terms[i],fixed=TRUE))==1){  ## POLYNOMIAL
           powX <- strsplit(X.terms[i],"^",fixed=TRUE)[[1]] 
@@ -246,8 +225,7 @@ model{
         ## add to out.variables
         out.variables <- c(out.variables, myBeta)
         
-
-      }  ### END LOOP OVER X TERMS
+      }
 
       ## create priors
       TreeDataFusionMV <- sub(pattern = "## ENDOGENOUS BETAS", Xpriors, TreeDataFusionMV)
@@ -264,7 +242,7 @@ model{
     ##Center the covariate data
     Xf.center <- apply(Xf, 2, mean, na.rm = TRUE)
     Xf      <- t(t(Xf) - Xf.center)
-  }   ### end fixed effects parsing
+  }
   
   ## build formula in JAGS syntax
   if (!is.null(Xf)) {
@@ -283,8 +261,6 @@ model{
     data[["Xf"]] <- Xf
     out.variables <- c(out.variables, paste0("beta", Xf.names))
   }
-
-  if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at Xf",names(data))}
   
   if(FALSE){ # always false...just for development
     ## DEVEL TESTING FOR TIME VARYING
@@ -297,70 +273,25 @@ model{
     if (is.null(time_data)) {
       print("time_varying formula provided but time_data is absent:", time_varying)
     }
-    Xt.priors <- ""    
     
     ## parse equation into variable names
     t_vars <- gsub(" ","",unlist(strsplit(time_varying,"+",fixed=TRUE))) ## split on +, remove whitespace
     ## check for interaction terms
-    it_vars <- t_vars[grep(pattern = "*",x=t_vars,fixed = TRUE)]
-    t_vars <- t_vars[!(t_vars == it_vars)]
-    
+    it_vars <- grep(pattern = "*",x=t_vars,fixed = TRUE)
     ## need to deal with interactions with fixed variables
     ## will get really nasty if interactions are with catagorical variables
     ## need to create new data matrices on the fly
-
-    for(i in seq_along(it_vars)){
-
-      ##is covariate fixed or time varying?
-      covX <- strsplit(it_vars[i],"*",fixed=TRUE)[[1]] 
-      tvar    <- length(grep("[t]",covX[1],fixed=TRUE)) > 0
-      tvar[2] <- length(grep("[t]",covX[2],fixed=TRUE)) > 0
-      myBeta <- "beta_"
-      for(j in 1:2){
-        if(j == 2) myBeta <- paste0(myBeta,"_")
-        if(tvar[j]){
-          covX[j] <- sub("[t]","",covX[j],fixed = TRUE)
-          if(!(covX[j] %in% names(data))){
-            ## add cov variables to data object
-            data[[covX[j]]] <- time_varying[[covX[j]]]
-          }
-          myBeta <- paste0(myBeta,covX[j])
-          covX[j] <- paste0(covX[j],"[i,t]")
-        } else {
-          ## variable is fixed
-          if(!(covX[j] %in% names(data))){
-            ## add cov variables to data object
-            data[[covX[j]]] <- cov.data[,covX[j]]
-          }
-          myBeta <- paste0(myBeta,covX[j])
-          covX[j] <- paste0(covX[j],"[i]")
-        } ## end fixed or time varying
- 
-      } ## end building beta
-        
-      ## append to process model formula
-      Pformula <- paste(Pformula,
-                        paste0(" + ",myBeta,"*",covX[1],"*",covX[2]))
-      
-      ## priors
-      Xt.priors <- paste0(Xt.priors,
-                          "    ",myBeta,"~dnorm(0,0.001)\n")
-      
-      ## add to list of varibles JAGS is tracking
-      out.variables <- c(out.variables, myBeta)
-        
-    }  ## end time-varying interaction terms
     
-
     ## loop over variables
     for(j in seq_along(t_vars)){
       tvar <- t_vars[j]
       
-      if(!(tvar %in% names(data))){
-        ## add cov variables to data object
-        data[[tvar]] <- time_data[[tvar]]
-      }
-      if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at tvar",names(data))}
+      ## grab from the list of data matrices
+      dtmp <- time_data[[tvar]]
+      
+      ## insert data into JAGS inputs
+      data[[length(data)+1]] <- dtmp
+      names(data)[length(data)] <- tvar
       
       ## append to process model formula
       Pformula <- paste(Pformula,
@@ -370,9 +301,7 @@ model{
       out.variables <- c(out.variables, paste0("beta", tvar))
     }
     ## build prior
-    Xt.priors <- paste0(Xt.priors,
-                        paste0("     beta", t_vars, "~dnorm(0,0.001)", collapse = "\n")
-                        )
+    Xt.priors <- paste0("     beta", t_vars, "~dnorm(0,0.001)", collapse = "\n")
     TreeDataFusionMV <- sub(pattern = "## TIME VARYING BETAS", Xt.priors, TreeDataFusionMV)
     
   } ## END time varying covariates
@@ -382,8 +311,7 @@ model{
   if (!is.null(Pformula)) {
     TreeDataFusionMV <- sub(pattern = "##PROCESS", Pformula, TreeDataFusionMV)
   }
- 
-  ## save script 
+  
   if(!is.null(save.jags))  {
     cat(TreeDataFusionMV, file=save.jags)
   }
@@ -426,6 +354,6 @@ model{
 
 model.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
                                    n.iter=5000, random="(1|PLOT[i])",
-                                   fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t]",
-                                   time_varying = "wintP.JJ + tmax.JanA + wintP.JJ[t]*tmax.JanA[t] + SDI*wintP.JJ[t]",
+                                   fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X",
+                                   time_varying = "wintP.JJ + tmax.JanA",
                                    burnin_plot=FALSE)
