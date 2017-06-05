@@ -43,10 +43,9 @@ for (t in 1:nrow(temp2)) {
 ### convert DBH measurements to cm (multiply by 2.54)
 z.matrix <- z.matrix*2.54
 
-### for the moment, we'll restrict the analysis to the years 1978:2010
-# currently, 1970 is the last DateBegin among all the cores...
-last.start.yr <- max(temp2$DateFirst, na.rm=T) #1978
-index.last.start <- which(years==last.start.yr) # which(years==1978) # returns 260
+### this is the line that restricts the analysis to the years trunc.yr:2010
+trunc.yr <- 1956
+index.last.start <- which(years==trunc.yr) # which(years==1966) # returns 238
 y.small <- y.matrix[,index.last.start:ncol(y.matrix)]
 z.small <- z.matrix[,index.last.start:ncol(z.matrix)]
 years.small <- years[index.last.start:ncol(y.matrix)]
@@ -86,9 +85,9 @@ cov.data <- data.frame(PLOT=PLOT, SICOND=SICOND, SDI=SDI)
 ### i.e., 36 PRISM data matrices (tree*year)...one for each month*3 variables (Tmax, Tmin, ppt)
 ### just gonna do 24 climate variables (Tmax and Ppt)
 PRISM.years <- seq(from=1895, to=2015) #length = 121
-index.start.climate <- which(PRISM.years == last.start.yr)
-index.end.climate <- index.start.climate+(last.meas.yr-last.start.yr)
-PRISM.ncol <- (last.meas.yr-last.start.yr)+1 
+index.start.climate <- which(PRISM.years == trunc.yr)
+index.end.climate <- index.start.climate+(last.meas.yr-trunc.yr)
+PRISM.ncol <- (last.meas.yr-trunc.yr)+1 
 
 # get climate variable names
 #yrt.clim.var <- colnames(AZ.PIPO[110]) # just tmax_Jun; climate data from year t
@@ -165,25 +164,27 @@ z0 <- matrix(data=NA, nrow=nrow(y.small), ncol=ncol(y.small))
 for (t in 1:nrow(temp2)) {
   ### shrink tree backward: subtract the cumulative tree-ring-derived diameter increments (in y.matrix) from DIA
   ifelse(!is.na(temp2$DIA[t]), DIA.T1[t]<-temp2$DIA[t]*2.54, DIA.T1[t]<-NA) # extract time 1 DBH (in some cases, the only DBH measurement)
-  # extract tree-ring data from year 1978:end series
+  # extract tree-ring data from year 1966:end series
   end.col <- which(years==temp2$DateEnd[t])
-  temp.growth <- y.matrix[t,index.last.start:end.col] # which(years==1978) # returns 260
+  temp.growth <- y.matrix[t,index.last.start:end.col] # which(years==1966) # returns 248
+  # add rep(ave.ring) to any NA's at the beginning of the tree-ring time series
+  ave.ring[t] <- mean(temp.growth, na.rm=T)
+  temp.growth[is.na(temp.growth)]<-ave.ring[t]
   temp.growth2 <- -rev(cumsum(rev(temp.growth)))
   z0[t,1:length(temp.growth)] <- DIA.T1[t] + temp.growth2 # note that this is one year off where DateEnd = MEASYEAR-1
 
-  ### grow tree forward: find average ring-width per tree and add cumulative from DIA to year 2010
-  ave.ring[t] <- mean(temp.growth)
+  ### grow tree forward: find short-term average ring-width per tree and add cumulative from DIA to year 2010
   ave.growth <- rep(ave.ring[t], times=(last.meas.yr-temp2$DateEnd[t]))
   z0[t, (length(temp.growth)+1):length(years.small)] <- DIA.T1[t] + cumsum(ave.growth)
 
   ### note that some of these values (z0) are negative,
   ### some trees were small at their final size, and pith dates are as late as 1972
   ### replace negative values by the growth series implied by growing from zero to DIA
-  ifelse(z0[t,1]<0, 
-         z0[t,1:length(temp.growth)] <- cumsum(rep(DIA.T1[t]/length(temp.growth), length(temp.growth))), 
-         z0[t,1:length(temp.growth)] <- DIA.T1[t] + temp.growth2)
+#  ifelse(z0[t,1]<0, 
+#         z0[t,1:length(temp.growth)] <- cumsum(rep(DIA.T1[t]/length(temp.growth), length(temp.growth))), 
+#         z0[t,1:length(temp.growth)] <- DIA.T1[t] + temp.growth2)
   }
-
+colnames(z0) <- years.small
 
 return.list <- list(data=data,
                     z0=z0,
