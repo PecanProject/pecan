@@ -51,6 +51,13 @@ years.small <- years[index.last.start:ncol(y.matrix)]
 
 ### covariate data
 
+### RANDOM EFFECTS
+
+### plot rnd effect (currently implemented at indiv level)
+PLOT <- paste0(temp2$CountyNo, temp2$PlotNo)
+
+### FIXED EFFECTS
+
 ### tree-level
 ### CR, CCLCD
 #cov.data <- cbind(temp2$CR, temp2$CCLCD)
@@ -69,15 +76,9 @@ SICOND <- temp2$SICOND
 ### SDI ## eventually should calculate <relative> SDI...observed SDI relative to maxSDI for dominant spp on plot (PIPO)
 SDI <- temp2$SDI
 ### BA ## SDI and BA are tightly correlated, can't use both
-cov.data <- cbind(SICOND, SDI)
+cov.data <- data.frame(PLOT=PLOT, SICOND=SICOND, SDI=SDI)
 #cov.data <- cbind(cov.data, SICOND, SDI)
 
-### add in random effects
-# tree
-# plot
-
-
-# condition
 
 ### plot- and year-specific covariates
 ### i.e., 36 PRISM data matrices (tree*year)...one for each month*3 variables (Tmax, Tmin, ppt)
@@ -126,15 +127,6 @@ for (i in yrt_1.clim.var) { ## this loop deals with the climate variables taken 
 
 # Assign the climate variable names to the list (named list)
 names(time_data) <- names.clim.var
-
-
-# fill each matrix
-#for (t in 1:nrow(temp2)) {
-#  PRISM.string <- temp2$tmax_Jan[t] ### need to convert tree-specific PRISM string to vector
-#  PRISM.vector <- as.numeric(unlist(strsplit(x = PRISM.string, split = ",")))
-#  Tmax.Jan[t,] <- PRISM.vector[index.start.climate:index.end.climate] # grab the 1972:2010 data and put it in matrix
-#}
-#colnames(Tmax.Jan) <- PRISM.years[index.start.climate:index.end.climate] # not sure we need column names
 
 
 ## build data object for JAGS
