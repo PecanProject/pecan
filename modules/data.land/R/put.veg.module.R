@@ -43,7 +43,7 @@
                              outfolder = outfolder, 
                              formatname = formatname, 
                              mimetype = mimetype,
-                             site.id = site_id, 
+                             site.id = new_site$id, 
                              start_date = start_date, end_date = end_date, 
                              pkg = pkg, fcn = fcn, 
                              con = con, host = host, browndog = NULL, 
@@ -53,7 +53,9 @@
                              in.path = spp.file$file_path, 
                              in.name = spp.file$file_name,
                              new_site = new_site,
+                             pfts = pfts,
                              source = input_veg$source)
+  
   
   return(putveg.id)
   

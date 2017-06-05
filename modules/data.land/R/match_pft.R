@@ -33,9 +33,9 @@ match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL){
     
     for (pft in pfts) {
       # query pft id
-      bety_pft <- betydb_query(name = pft$name, table = 'pfts', user = 'bety', pwd = 'bety')
+      bety_pft <- traits::betydb_query(name = pft$name, table = 'pfts', user = 'bety', pwd = 'bety')
       # query species id
-      bety_species <- betydb_query(pft_id = bety_pft$id, table = 'pfts_species', user = 'bety', pwd = 'bety')
+      bety_species <- traits::betydb_query(pft_id = bety_pft$id, table = 'pfts_species', user = 'bety', pwd = 'bety')
       bety_list[[pft$name]] <- bety_species$pfts_species.specie_id
     }
     tmp <- lapply(seq_along(bety_list), function(x){
@@ -65,7 +65,7 @@ match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL){
         if(!is.null(con)){
           latin <- db.query(paste("SELECT scientificname FROM species where id =", ubad[i]), con = con)
         }else{ # use traits package
-          bety_latin <- betydb_query(id = ubad[i], table = 'species', user = 'bety', pwd = 'bety')
+          bety_latin <- traits::betydb_query(id = ubad[i], table = 'species', user = 'bety', pwd = 'bety')
           latin      <- bety_latin$scientificname
         }
         

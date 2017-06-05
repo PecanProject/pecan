@@ -12,8 +12,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   #--------------------------------------------------------------------------------------------------#
   # Extract info from settings and setup
   site       <- settings$run$site
-  start_date <- settings$run$start.date
-  end_date   <- settings$run$end.date
+  run_start  <- settings$run$start.date
   model      <- settings$model$type
   host       <- settings$host
   dbparms    <- settings$database
@@ -49,6 +48,15 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   con <- bety$con
   on.exit(db.close(con))
   
+  ## We need two types of start/end dates now
+  ## i)  start of the run, to check whether a proper IC file is already processed for those dates
+  ## ii) start and end of the IC file to enter the database
+  # query (ii) from source id [input id in BETY]
+  query      <- paste0("SELECT * FROM inputs where id = ", source_id)
+  input_file <- db.query(query, con = con)
+  start_date <- input_file$start_date
+  end_date   <- input_file$end_date
+  
   # set up host information
   machine.host <- ifelse(host == "localhost" || host$name == "localhost", fqdn(), host$name)
   machine <- db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
@@ -75,7 +83,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   #--------------------------------------------------------------------------------------------------#
   # Checks 
   
-  ic_check <- ic_status_check(getveg.id, putveg.id, input, site_id = new.site$id, model, start_date, con)
+  ic_check <- ic_status_check(getveg.id, putveg.id, input, site_id = new.site$id, model, run_start, con)
 
   getveg.id <- ic_check$getveg.id 
   putveg.id <- ic_check$putveg.id 
@@ -90,6 +98,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                               start_date = start_date, end_date = end_date,
                               dbparms = dbparms,
                               new_site = new.site,
+                              run_start = run_start,
                               host = host, 
                               machine_host = machine.host,
                               overwrite = overwrite$getveg)
@@ -130,7 +139,22 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     }
     
   }
-
+  
+  # if remote, copy
+  # Copy to remote if needed
+  if (settings$host$name != "localhost") {
+    
+    out.dir.remote   <- file.path(settings$host$folder, paste0("FIA_ED2_site_", site.string))
+    pss.file.remote  <- file.path(out.dir.remote, paste0(prefix.psscss, ".pss"))
+    css.file.remote  <- file.path(out.dir.remote, paste0(prefix.psscss, ".css"))
+    site.file.remote <- file.path(out.dir.remote, paste0(prefix.site, ".site"))
+    
+    remote.execute.cmd(settings$host, "mkdir", c("-p", out.dir.remote))
+    remote.copy.to(settings$host, pss.file.local, pss.file.remote)
+    remote.copy.to(settings$host, css.file.local, css.file.remote)
+    remote.copy.to(settings$host, site.file.local, site.file.remote)
+    files <- c(pss.file.remote, css.file.remote, site.file.remote)
+  }
   
   return(settings)
 } # ic_process

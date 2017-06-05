@@ -7,7 +7,7 @@ extract_FIA <- function(lon, lat, site_name, start_date, end_date,
   
   #--------------------------------------------------------------------------------------------------#
   # Extract FIA
-  fia.info <- list()
+  veg_info <- list()
   
   fia.con <- PEcAn.DB::db.open(dbparms$fia)
   on.exit(db.close(fia.con), add = T)
@@ -72,7 +72,7 @@ extract_FIA <- function(lon, lat, site_name, start_date, end_date,
     
   logger.debug(paste0("Found ", nrow(pss.info), " patches for coordinates lat:", lat, " lon:", lon))
   
-  fia.info[[1]] <- pss.info
+  veg_info[[1]] <- pss.info
     
   ##################
   ##              ##
@@ -115,7 +115,7 @@ extract_FIA <- function(lon, lat, site_name, start_date, end_date,
     logger.debug(paste0(nrow(css.info), " trees remain after removing entries with no dbh, spcd, and/or n."))
   }
     
-  #fia.info[[2]] <- css.info
+  #veg_info[[2]] <- css.info
   obs <- css.info
   
   #--------------------------------------------------------------------------------------------------#
@@ -136,13 +136,13 @@ extract_FIA <- function(lon, lat, site_name, start_date, end_date,
   # merge with data
   tmp <- spp.info[ , colnames(spp.info) != "input_code"]
   
-  fia.info[[2]] <- cbind(obs, tmp)
+  veg_info[[2]] <- cbind(obs, tmp)
   
   #--------------------------------------------------------------------------------------------------#
   # Write vegettion data as rds, return results to convert.input
   
   # need check for overwrite
-  sppfilename <- write_veg(outfolder, start_date, end_date, veg_info = fia_info, site_name, source)
+  sppfilename <- write_veg(outfolder, start_date, end_date, veg_info = veg_info, site_name, source)
   
   # Build results dataframe for convert.input
   results <- data.frame(file = sppfilename, 
