@@ -83,6 +83,8 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   #--------------------------------------------------------------------------------------------------#
   # Checks 
   
+  # TODO: either remove this to leave checks to convert.inputs or make it functional
+  
   ic_check <- ic_status_check(getveg.id, putveg.id, input, site_id = new.site$id, model, run_start, con)
 
   getveg.id <- ic_check$getveg.id 
