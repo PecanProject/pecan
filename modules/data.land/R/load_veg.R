@@ -4,7 +4,8 @@
 ##' @export
 ##' @author Istem Fer
 load_veg <- function(new_site, start_date, end_date, 
-                        source_id, format_name = NULL, dbparms, outfolder, overwrite = FALSE, ...){
+                     source_id, source, icmeta = NULL, format_name = NULL, 
+                     machine_host, dbparms, outfolder, overwrite = FALSE, ...){
   
   
   bety <- dplyr::src_postgres(dbname   = dbparms$bety$dbname, 
@@ -49,14 +50,22 @@ load_veg <- function(new_site, start_date, end_date,
   
   # filter dead trees
   obs <- remove_dead_trees(obs, code.col)
-  spp.info <- match_species_id(input_codes = obs[[code.col]], format_name = format.name, bety = bety)
+  spp.info <- match_species_id(input_codes = obs[[code.col]], format_name = format_name, bety = bety)
   
   # merge with data
   tmp <- spp.info[ , colnames(spp.info) != "input_code"]
   
   # a hack for now to have a similar structure as the FIA case
   veg_info      <- list() 
-  veg_info[[1]] <- NULL   # the first sublist can be for the metadata maybe?
+  
+  if(!is.null(icmeta)){
+    # the first sublist can be for the metadata maybe?
+    # to be handled by veg2model later
+    veg_info[[1]] <- icmeta
+  }else{
+    veg_info[[1]] <- NULL 
+  }
+  
   veg_info[[2]] <- cbind(obs, tmp)
   
   
@@ -84,7 +93,7 @@ load_veg <- function(new_site, start_date, end_date,
 } # load_veg
 
 
-.remove_dead_trees <- function(obs, code.col, by.code = TRUE){
+remove_dead_trees <- function(obs, code.col, by.code = TRUE){
   
   if(by.code){
     # remove by code

@@ -74,7 +74,16 @@
                                format_name = input_veg$match.format,
                                dbparms = dbparms,
                                machine_host = machine_host,
-                               source = input_veg$source)
+                               source = input_veg$source,
+                               ##  any meta data passed via settings to be used in the IC files (in veg2model)
+                               ##  if different than defaults, e.g.:
+                               ##
+                               ##  <meta>
+                               ##   <trk>2</trk>
+                               ##   <age>70</age>
+                               ##  </meta>
+                               ##
+                               icmeta = input_veg$meta)
     
 
     return(getveg.id)
