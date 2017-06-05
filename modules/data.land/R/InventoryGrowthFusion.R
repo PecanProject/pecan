@@ -17,12 +17,11 @@ AZ.PIPO <- AZ.PIPO[!is.na(AZ.PIPO$SDI),] # no change
 
 ### problem: in minority of cases, the difference between MEASYEAR and DateEnd is other than 0 or 1
 ### filter out those cases
-temp1 <- AZ.PIPO[AZ.PIPO$MEASYEAR-AZ.PIPO$DateEnd<2,] # 329 trees
-temp2 <- temp1[temp1$MEASYEAR-temp1$DateEnd>-1,] # 326 trees
+temp1 <- AZ.PIPO[AZ.PIPO$MEASYEAR-AZ.PIPO$DateEnd<2,] # 288 trees
+temp2 <- temp1[temp1$MEASYEAR-temp1$DateEnd>-1,] # 285 trees
 
-### filter out cases where covariate data are missing (SICOND and SDI)
 
-source("BuildJAGSdataobject.R")
+source("BuildJAGSdataobject3.R")
 jags.stuff <- buildJAGSdataobject(temp2)
 data <- jags.stuff$data
 z0 <- jags.stuff$z0
@@ -39,7 +38,7 @@ time_data <- jags.stuff$time_data
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=5000, random = TRUE, fixed = NULL,time_varying=NULL, burnin_plot = FALSE) {
+InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=5000, random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, save.jags = "IGF.txt") {
   library(rjags)
 
   # baseline variables to monitor  
@@ -69,34 +68,81 @@ InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=50
   x[i,t]~dnorm(Dnew[i,t],tau_add)
   }
   
-  #RANDOM ## individual effects
-  #RANDOM ind[i] ~ dnorm(0,tau_ind)  
   ## initial condition
   x[i,1] ~ dnorm(x_ic,tau_ic)
   }  ## end loop over individuals
-  #RANDOM ## year effects
-  #RANDOM for(t in 1:nt){
-  #RANDOM year[t] ~ dnorm(0,tau_yr)
-  #RANDOM }
+  ## RANDOM_EFFECTS
   
   #### Priors
   tau_dbh ~ dgamma(a_dbh,r_dbh)
   tau_inc ~ dgamma(a_inc,r_inc)
   tau_add ~ dgamma(a_add,r_add)
-  #RANDOM tau_ind ~ dgamma(1,0.1)
-  #RANDOM tau_yr  ~ dgamma(1,0.1)
   mu ~ dnorm(0.5,0.5)
   ## FIXED EFFECTS BETAS
   ## TIME VARYING BETAS
-  }"
+  ## RANDOM EFFECT TAUS
+}"
   
   Pformula <- NULL
   ## RANDOM EFFECTS
-  if (random) {
-    TreeDataFusionMV <- gsub(pattern = "#RANDOM", " ", TreeDataFusionMV)
-    Pformula <- "+ ind[i] + year[t]"
-    burnin.variables <- c(burnin.variables, "tau_ind", "tau_yr")
-    out.variables <- c(out.variables, "tau_ind", "tau_yr", "ind", "year")
+  if (!is.null(random)) {
+    Rpriors <- NULL
+    Reffects <- NULL
+    ## parse random effects
+    r_vars <- gsub(" ","",unlist(strsplit(random,"+",fixed=TRUE))) ## split on +, remove whitespace
+    for(i in seq_along(r_vars)){
+      ## special case: individidual
+      if(r_vars[i] == "i"){
+        r_var   <- "i"
+        counter <- ""
+        index   <- "i"
+        nr <- nrow(cov.data)
+      } else if(r_vars[i] == "i"){
+        r_var   <- "t"
+        counter <- ""
+        index   <- "t"
+        nr <- ncol(cov.data)
+      } else {
+        index <- counter <- nr <- NA
+        r_var <- gsub("(","",gsub(")","",r_vars[i],fixed = TRUE),fixed="TRUE")
+        r_var <- strsplit(r_var,"|",fixed=TRUE)[[1]]
+        fix   <- r_var[1]
+        ## check for nested effects
+        r_var <- strsplit(gsub("\\",":",r_var[2],fixed=TRUE),":",fixed = TRUE)[[1]]
+        for(j in seq_along(length(r_var))){
+          if(j>1)print("WARNING: not actually nesting random effects at this time")            ## HACK: to get started, not actually nesting
+          ## parse
+          j_var      <- strsplit(r_var[j],"[",fixed = TRUE)[[1]]
+          index[j]   <- gsub("]","",j_var[2],fixed=TRUE)
+          counter[j] <- j_var[1]
+          r_var[j]   <- j_var[1]
+          ## add variable to data
+          if(!(r_var[j] %in% names(data))){
+            data[[length(data)+1]] <- as.numeric(as.factor(as.character(cov.data[,r_var[j]]))) ## multiple conversions to eliminate gaps
+            names(data)[length(data)] <- r_var[j]
+          }
+          nr[j] <- max(as.numeric(data[[r_var[j]]]))
+        }
+        index <- paste0("[",index,"]")
+      }
+      ## create formula
+      Pformula <- paste(Pformula,
+                        paste0("+ alpha_", r_var,"[",counter,index,"]"))
+      ## create random effect
+      for(j in seq_along(nr)){
+        Reffects <- paste(Reffects,paste0("for(k in 1:",nr[j],"){\n"),
+                          paste0("   alpha_",r_var[j],"[k] ~ dnorm(0,tau_",r_var[j],")\n}\n"))
+      }
+      ## create priors
+      Rpriors <- paste(Rpriors,paste0("tau_",r_var," ~ dgamma(1,0.1)\n",collapse = " "))
+      ## track
+      burnin.variables <- c(burnin.variables, paste0("tau_", r_var))
+      out.variables <- c(out.variables, paste0("tau_", r_var), paste0("alpha_",r_var))
+      
+    }
+    ## Substitute into code
+    TreeDataFusionMV <- sub(pattern = "## RANDOM EFFECT TAUS", Rpriors, TreeDataFusionMV)
+    TreeDataFusionMV <- gsub(pattern = "## RANDOM_EFFECTS", Reffects, TreeDataFusionMV)
   }
   
   ## Design matrix
@@ -191,6 +237,10 @@ InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=50
     TreeDataFusionMV <- sub(pattern = "##PROCESS", Pformula, TreeDataFusionMV)
   }
   
+  if(!is.null(save.jags))  {
+    cat(TreeDataFusionMV, file=save.jags)
+  }
+  
   ## state variable initial condition
   ## can't use the Dietze version bc of structure of AZ PIPO data
   ## z0 is built outside of this function in Evans custom data-processing function (buildJAGSdataobject.R)
@@ -228,7 +278,7 @@ InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=50
 } # InventoryGrowthFusion
 
 model.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                   n.iter=5000, random=TRUE,
+                                   n.iter=5000, random="(1|PLOT[i])",
                                    fixed = "~ SICOND + SDI",
                                    time_varying = "ppt_Jan + ppt_Feb + ppt_Mar + ppt_Apr + ppt_May + ppt_Jun + ppt_Jul + ppt_Aug + ppt_Sep + ppt_Oct + ppt_Nov + ppt_Dec + tmax_Jan + tmax_Feb + tmax_Mar + tmax_Apr + tmax_May + tmax_Jun + tmax_Jul + tmax_Aug + tmax_Sep + tmax_Oct + tmax_Nov + tmax_Dec",
                                    burnin_plot=FALSE)
