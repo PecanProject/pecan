@@ -72,7 +72,7 @@ InventoryGrowthFusionDiagnostics <- function(jags.out, combined) {
   
   ### DBH par(mfrow=c(3,2))
   layout(matrix(1:8, 4, 2, byrow = TRUE))
-  out      <- as.matrix(model.out)
+  out      <- as.matrix(model.out) ### LOADS MCMC OUTPUT INTO OBJECT "OUT"
   x.cols   <- which(substr(colnames(out), 1, 1) == "x") # grab the state variable columns
   ci       <- apply(out[, x.cols], 2, quantile, c(0.025, 0.5, 0.975))
   ci.names <- parse.MatrixNames(colnames(ci), numeric = TRUE)
@@ -128,23 +128,35 @@ InventoryGrowthFusionDiagnostics <- function(jags.out, combined) {
     hist(tmax.betas[, curr.beta], main = colnames(tmax.betas)[curr.beta])
   }
 
+  wintP.JJ.beta <- out[,"betawintP.JJ"]
+  tmax.JanA.beta <- out[,"betatmax.JanA"]
+  hist(wintP.JJ.beta, main = "winter P (Jan-Jul)")
+  hist(tmax.JanA.beta, main = "tmax (Jan-Aug)")
+  
   par(mfrow = c(2, 2))
-  for (i in 1:2){ # SDI, SI
-    hist(betas[,i], main = colnames(betas)[i])
-  }   
+#  for (i in 1:2){ # SDI, SI
+#    hist(betas[,i], main = colnames(betas)[i])
+#  }   
   
-#  par(mfrow = c(2, 2))
-#  for (i in 1:ncol(betas)){
-#  hist(betas[,i], main = colnames(betas)[i])
-#    }
+  SDI.beta <- out[,c(grep("betaSDI", colnames(out)))]
+  SICOND.beta <- out[,c(grep("betaSICOND", colnames(out)))]
+  X.beta <- out[,c(grep("betaX$", colnames(out)))]
+  X2.beta <- out[,c(grep("betaX2", colnames(out)))]
   
-#    par(mfrow = c(1, 1))
-#  for (i in vars) {
-#    hist(out[, i], main = colnames(out)[i])
-#  }
-#  if (length(vars) > 1) {
-#    pairs(out[, vars])
-#  }
+  hist(SDI.beta, main = "stand density index")
+  hist(SICOND.beta, main = "site index")  
+  hist(X.beta, main = "tree size")
+  hist(X2.beta, main = "quadratic tree size")  
+  
+### interaction effects
+  X.SDI.int <- out[,"betaX_SDI"]
+  X.SI.int <- out[,"betaX_SICOND"]  
+  X.wintP.int <- out[,"betaX_wintP.JJ"]
+  SDI.wintP.int <- out[,"beta_SDI_wintP.JJ"]
+  hist(X.SDI.int, main = "size*stand density")
+  hist(X.SI.int, main = "size*site index")
+  hist(X.wintP.int, main = "size*wintP")
+  hist(SDI.wintP.int, main = "SDI*wintP")
   
   ## Standard Deviations layout(matrix(c(1,2,3,3),2,2,byrow=TRUE))
   par(mfrow = c(2, 3))
