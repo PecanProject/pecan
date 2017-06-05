@@ -22,14 +22,12 @@ veg2model.ED2 <- function(in.path, in.name, outfolder, start_date, end_date,
   #--------------------------------------------------------------------------------------------------#
   # Match PFTs
   
-  obs <- veg_info[[2]]
+  obs <- as.data.frame(veg_info[[2]], stringsAsFactors = FALSE)
   
   pft.info <- PEcAn.data.land::match_pft(obs$bety_species_id, pfts)
   
   ### merge with other stuff
   obs$pft <- pft.info$pft
-  
-  veg_info[[2]] <- obs 
   
   
   #--------------------------------------------------------------------------------------------------#
@@ -54,25 +52,18 @@ veg2model.ED2 <- function(in.path, in.name, outfolder, start_date, end_date,
   #--------------------------------------------------------------------------------------------------#
   # Prepare pss
   
-  # get data that was processed in the upstream 
-  # this check should be unnecessary once we handle pss data in the upstream
-  if(source == "FIA"){
-    
-    # this might change depending on how I process data in put.veg  
-    pss <- veg_info[[1]]
-    
-  } else{
-    
-    # other cases for now,
-    # create pss file from scratch by using values passed from using defaults 
-    # if you don't want to pass these from settings make sure you pass them to convert.inputs in put.veg.module
-    # wait until we solve metadata problem?
-    
-    ### assuming one patch for now, otherwise these lines might change ###
-    time    <- start_year
-    n.patch <- 1
-    trk     <- 1
-    age     <- 100
+  # veg_info[[1]] either has 
+  # i)   full pss info (FIA case)
+  # ii)  info passed from settings
+  # iii) no info
+  pss <- as.data.frame(veg_info[[1]], stringsAsFactors = FALSE)
+  
+  # for FIA these steps are unnecessary, it already has the pss info
+  if(source != "FIA"){
+    time    <- ifelse(!is.null(pss$time), pss$time, start_year)
+    n.patch <- ifelse(!is.null(pss$n.patch), pss$n.patch, 1)
+    trk     <- ifelse(!is.null(pss$trk), pss$trk, 1)
+    age     <- ifelse(!is.null(pss$age), pss$age, 100)
     
     pss <- data.frame(time = time, patch = n.patch, trk = trk, age = age)
     
@@ -80,6 +71,7 @@ veg2model.ED2 <- function(in.path, in.name, outfolder, start_date, end_date,
                                     pss$time, ", patch:", pss$patch, ", trk:", 
                                     pss$trk, ", age:", pss$age))
     
+    # TODO : soils can also be here, passed from settings
   }
   
   n.patch   <- nrow(pss)
@@ -93,7 +85,7 @@ veg2model.ED2 <- function(in.path, in.name, outfolder, start_date, end_date,
   pss <- pss[, c("site", "time", "patch", "trk", "age", "area", "water")]
   
   # Add soil data
-  soil            <- c(1, 5, 5, 0.01, 0, 1, 1)  #soil C & N pools (biogeochem) defaults (fsc,stsc,stsl,ssc,psc,msn,fsn)\t
+  soil            <- c(1, 5, 5, 0.01, 0, 1, 1)  #soil C & N pools (biogeochem) defaults (fsc,stsc,stsl,ssc,psc,msn,fsn)
   soil.dat        <- as.data.frame(matrix(soil, n.patch, 7, byrow = TRUE))
   names(soil.dat) <- c("fsc", "stsc", "stsl", "ssc", "psc", "msn", "fsn")
   pss             <- cbind(pss, soil.dat)
@@ -102,7 +94,7 @@ veg2model.ED2 <- function(in.path, in.name, outfolder, start_date, end_date,
   # Prepare css
   
   # this might change depending on how I process data in put.veg  
-  css <- as.data.frame(veg_info[[2]])
+  css <- obs
     
 
   if(is.null(css$patch)){
