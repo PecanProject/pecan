@@ -6,7 +6,7 @@
 #' @export
 #' @author Istem Fer
 veg2model.ED2 <- function(in.path, in.name, outfolder, start_date, end_date, 
-                          new_site, source, overwrite = FALSE, ...){
+                          new_site, pfts, source, overwrite = FALSE, ...){
   
 
   lat       <- new_site$lat
@@ -24,10 +24,10 @@ veg2model.ED2 <- function(in.path, in.name, outfolder, start_date, end_date,
   
   obs <- veg_info[[2]]
   
-  pft.info <- match_pft(obs$bety_species_id, pfts)
+  pft.info <- PEcAn.data.land::match_pft(obs$bety_species_id, pfts)
   
   ### merge with other stuff
-  obs <- cbind(obs, pft.info[c("bety_pft_id", "pft")])
+  obs$pft <- pft.info$pft
   
   veg_info[[2]] <- obs 
   
@@ -69,7 +69,7 @@ veg2model.ED2 <- function(in.path, in.name, outfolder, start_date, end_date,
     # wait until we solve metadata problem?
     
     ### assuming one patch for now, otherwise these lines might change ###
-    time    <- start_year-1
+    time    <- start_year
     n.patch <- 1
     trk     <- 1
     age     <- 100
@@ -102,7 +102,7 @@ veg2model.ED2 <- function(in.path, in.name, outfolder, start_date, end_date,
   # Prepare css
   
   # this might change depending on how I process data in put.veg  
-  css <- veg_info[[2]]
+  css <- as.data.frame(veg_info[[2]])
     
 
   if(is.null(css$patch)){
@@ -114,7 +114,7 @@ veg2model.ED2 <- function(in.path, in.name, outfolder, start_date, end_date,
   if (nrow(css) == 0) {
     logger.severe("No trees map to previously selected patches.")
   } else {
-    logger.debug(paste0(nrow(css), " trees that map to previously selected patches."))
+    logger.debug(paste0(nrow(css), " trees that map to selected patches."))
   }
 
     
@@ -130,7 +130,7 @@ veg2model.ED2 <- function(in.path, in.name, outfolder, start_date, end_date,
   
   inv.years <- as.numeric(unique(css$year))
   # suitable years
-  av.years <- inv.years[inv.years < start_year]
+  av.years <- inv.years[inv.years <= start_year]
   if(length(av.years) == 0){
     logger.severe("No available years found in the data.")
   }
