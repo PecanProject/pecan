@@ -79,6 +79,7 @@ InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=50
   tau_add ~ dgamma(a_add,r_add)
   mu ~ dnorm(0.5,0.5)
   ## FIXED EFFECTS BETAS
+  ## ENDOGENOUS BETAS
   ## TIME VARYING BETAS
   ## RANDOM EFFECT TAUS
 }"
@@ -145,10 +146,15 @@ InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=50
     TreeDataFusionMV <- gsub(pattern = "## RANDOM_EFFECTS", Reffects, TreeDataFusionMV)
   }
   
+  if(FALSE){
+    ## DEV TESTING FOR X, POLYNOMIAL X, and X interactions
+    fixed <- "X + X^3 + X*bob + bob + dia" ## faux model, just for testing jags code
+  }
   ## Design matrix
   if (is.null(fixed)) {
     Xf <- NULL
   } else {
+     ## check for covariate data (note: will falsely fail if only effect is X)
     if (is.null(cov.data)) {
       print("formula provided but covariate data is absent:", fixed)
     } else {
@@ -158,6 +164,75 @@ InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=50
     if (length(grep("~", fixed)) == 0) {
       fixed <- paste("~", fixed)
     }
+
+### BEGIN adding in tree size (endogenous variable X)    
+    ## First deal with endogenous terms (X and X*cov interactions)
+    fixedX <- sub("~","",fixed, fixed=TRUE)
+    lm.terms <- gsub("[[:space:]]", "", strsplit(fixedX,split = "+",fixed=TRUE)[[1]])  ## split on + and remove whitespace
+    #X.terms <- strsplit(lm.terms,split = c("^"),fixed = TRUE)
+    #X.terms <- sapply(X.terms,strsplit,split="*",fixed=TRUE)
+    #X.terms <- which(sapply(X.terms,function(x){any(toupper(x) == "X")}))
+    
+    X.terms <- strsplit(lm.terms,split = c("^"),fixed = TRUE)
+    X.terms <- sapply(X.terms,function(str){unlist(strsplit(str,,split="*",fixed=TRUE))})
+    X.terms <- which(sapply(X.terms,function(x){any(toupper(x) == "X")}))    
+    
+    
+    if(length(X.terms) > 0){
+      ## rebuild fixed without X.terms
+      fixed <- paste("~",paste(lm.terms[-X.terms],collapse = " + "))  
+  
+      ## isolate terms with X
+      X.terms <- lm.terms[X.terms]
+      Xpriors <- NULL
+      for(i in seq_along(X.terms)){
+        
+        myBeta <- NULL
+        Xformula <- NULL
+        if(length(grep("*",X.terms[i],fixed = TRUE)) == 1){  ## INTERACTION
+          
+          covX <- strsplit(X.terms[i],"*",fixed=TRUE)[[1]] 
+          covX <- covX[-which(toupper(covX)=="X")] ## remove X from terms
+          if(covX %in% colnames(cov.data)){ ## covariate present
+            if(!(covX %in% names(data))){
+              ## add cov variables to data object
+              data[[covX]] <- cov.data[,covX]
+            }
+            myBeta <- paste0("betaX_",covX)
+            Xformula <- paste0(myBeta,"*x[i,t-1]*",covX,"[i]")
+          } else {
+            ## covariate absent
+            print("covariate absent from covariate data:", covX)
+          }
+          
+        } else if(length(grep("^",X.terms[i],fixed=TRUE))==1){  ## POLYNOMIAL
+          powX <- strsplit(X.terms[i],"^",fixed=TRUE)[[1]] 
+          powX <- powX[-which(toupper(powX)=="X")] ## remove X from terms
+          myBeta <- paste0("betaX",powX)
+          Xformula <- paste0(myBeta,"*x[i,t-1]^",powX)
+          
+        } else {  ## JUST X
+          myBeta <- "betaX"
+          Xformula <- paste0(myBeta,"*x[i,t-1]")
+        }
+        
+        ## add variables to Pformula
+        Pformula <- paste(Pformula,"+",Xformula)
+
+        ## add priors
+        Xpriors <- paste(Xpriors,"     ",myBeta,"~dnorm(0,0.001)\n")
+          
+        ## add to out.variables
+        out.variables <- c(out.variables, myBeta)
+        
+      }
+
+      ## create priors
+      TreeDataFusionMV <- sub(pattern = "## ENDOGENOUS BETAS", Xpriors, TreeDataFusionMV)
+      
+    }  ## end processing of X terms
+### END size variable X stuff    
+    
     ## build design matrix from formula
     Xf      <- with(cov.data, model.matrix(formula(fixed)))
     Xf.cols <- colnames(Xf)
@@ -279,6 +354,6 @@ InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=50
 
 model.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
                                    n.iter=5000, random="(1|PLOT[i])",
-                                   fixed = "~ SICOND + SDI",
+                                   fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X",
                                    time_varying = "ppt_Jan + ppt_Feb + ppt_Mar + ppt_Apr + ppt_May + ppt_Jun + ppt_Jul + ppt_Aug + ppt_Sep + ppt_Oct + ppt_Nov + ppt_Dec + tmax_Jan + tmax_Feb + tmax_Mar + tmax_Apr + tmax_May + tmax_Jun + tmax_Jul + tmax_Aug + tmax_Sep + tmax_Oct + tmax_Nov + tmax_Dec",
                                    burnin_plot=FALSE)
