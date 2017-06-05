@@ -38,7 +38,7 @@
 
 
 gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix, 
-    n.beta, day.window, resids = F, parallel = F, n.cores = NULL, overwrite = TRUE, 
+    n.beta, day.window, resids = FALSE, parallel = FALSE, n.cores = NULL, overwrite = TRUE, 
     verbose = FALSE) {
 
     pb.index <- 1
@@ -71,9 +71,9 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     # adding a temporary date variable for the model
     if (dim$time$units == "sec"){
       sub_string<- substrRight(dat.train_file, 7)
-      start_year <- substr(sub_str, 1, 4)
+      start_year <- substr(sub_string, 1, 4)
       dat.train$date <- as.Date((dat.train$time/(dat.train$time[2] - dat.train$time[1])), 
-                                tz="GMT", origin = paste0(y - 1, "-12-31"))
+                                tz="GMT", origin = paste0(start_year - 1, "-12-31"))
     } else {
       start_year <- substr(dim$time$units,start = 12,stop = 15)
       dat.train$date = as.POSIXct(udunits2::ud.convert((dim$time$vals - ((dim$time$vals[2] - dim$time$vals[1])/2)),"days", "seconds"),
@@ -175,69 +175,10 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     # day.window for this variable. The lack of non-zero values makes it
     # difficult for the linear regression model to calculate coefficients
     # sometimes ---------
-    setTxtProgressBar(pb, pb.index)
-    
-    #---------------------------Air Temperature
-    mod.air_temperature.doy <- model.air_temperature(dat.train = dat.train,
-        resids = resids, parallel = parallel, path.out = paste0(outfolder, 
-        in.prefix, "/air_temperature"), n.cores = n.cores, n.beta = n.beta, 
-        day.window = day.window)
 
-    pb.index <- pb.index + 1
-    setTxtProgressBar(pb, pb.index)
-    
-    #----------------------------Precipitation Flux
-    mod.precipitation_flux.doy <- model.precipitation_flux(dat.train = dat.train,
-        resids = resids, parallel = parallel, path.out = paste0(outfolder, 
-        in.prefix, "/precipitation_flux"), n.cores = n.cores, n.beta = n.beta, 
-        day.window = day.window)
-
-    pb.index <- pb.index + 1
-    setTxtProgressBar(pb, pb.index)
-    
-    #----------------------------Shortwave
-    mod.surface_downwelling_shortwave_flux_in_air.doy <- model.surface_downwelling_shortwave_flux_in_air(dat.train = dat.train,
-        resids = resids, parallel = parallel, path.out = paste0(outfolder, 
-        in.prefix, "/surface_downwelling_shortwave_flux_in_air"), n.cores = n.cores, 
-        n.beta = n.beta, day.window = day.window)
-
-    pb.index <- pb.index + 1
-    setTxtProgressBar(pb, pb.index)
-    
-    #----------------------------Longwave
-    mod.surface_downwelling_longwave_flux_in_air.doy <- model.surface_downwelling_longwave_flux_in_air(dat.train = dat.train, 
-        resids = resids, parallel = parallel, path.out = paste0(outfolder, 
-        in.prefix, "/surface_downwelling_longwave_flux_in_air"), n.cores = n.cores, 
-        n.beta = n.beta, day.window = day.window)
-    
-    pb.index <- pb.index + 1
-    setTxtProgressBar(pb, pb.index)
-    
-    #---------------------------Air Pressure
-    mod.air_pressure.doy <- model.air_pressure(dat.train = dat.train,
-        resids = resids, parallel = parallel, path.out = paste0(outfolder, 
-        in.prefix, "/air_pressure"), n.cores = n.cores, n.beta = n.beta, 
-        day.window = day.window)
-    
-    pb.index <- pb.index + 1
-    setTxtProgressBar(pb, pb.index)
-    
-    #---------------------------Specific Humidity
-    mod.specific_humidity.doy <- model.specific_humidity(dat.train = dat.train,
-        resids = resids, parallel = parallel, path.out = paste0(outfolder, 
-        in.prefix, "/specific_humidity"), n.cores = n.cores, n.beta = n.beta, 
-        day.window = day.window)
-    
-    pb.index <- pb.index + 1
-    setTxtProgressBar(pb, pb.index)
-    
-    #--------------------------- Wind speed
-    mod.wind_speed.doy <- model.wind_speed(dat.train = dat.train, resids = resids, 
-        parallel = parallel, path.out = paste0(outfolder, in.prefix, "/wind_speed"), 
-        n.cores = n.cores, n.beta = n.beta, day.window = day.window)
-    
-    pb.index <- pb.index + 1
-    setTxtProgressBar(pb, pb.index)
+    temporal.downscale.functions(dat.train = dat.train, n.beta = n.beta, day.window = day.window, 
+                                             resids = resids, parallel = parallel, n.cores = n.cores, 
+                                             seed = format(Sys.time(), "%m%d")) 
 }
 
 # Helper function
