@@ -156,9 +156,17 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
         settings$run$inputs[["site"]][['path']] <- site.file.remote
         
         remote.execute.cmd(settings$host, "mkdir", c("-p", out.dir.remote))
-        remote.copy.to(settings$host, pss.file.local, pss.file.remote)
-        remote.copy.to(settings$host, css.file.local, css.file.remote)
-        remote.copy.to(settings$host, site.file.local, site.file.remote)
+        PEcAn.utils::remote.copy.to(settings$host, pss.file.local, pss.file.remote)
+        PEcAn.utils::remote.copy.to(settings$host, css.file.local, css.file.remote)
+        PEcAn.utils::remote.copy.to(settings$host, site.file.local, site.file.remote)
+        
+        # update DB record
+        ic_input <- db.query(paste0("SELECT * from inputs where id = ", putveg.id), con)
+        fname    <- db.query(paste0("SELECT * from formats where id = ", ic_input$format_id), con)
+        mtype    <- db.query(paste0("SELECT type_string from mimetypes where id = ", fname$mimetype_id), con)
+        dbfile.input.insert(in.path = out.dir.remote, in.prefix = model_file[["file_name"]],
+                            siteid = new.site$id, startdate = start_date, enddate = end_date, 
+                            mimetype = mtype, formatname = fname$name, parentid = ic_input$parent_id, con, hostname = settings$host$name)
       }
     }
     
