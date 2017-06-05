@@ -128,6 +128,19 @@ for (i in yrt_1.clim.var) { ## this loop deals with the climate variables taken 
 # Assign the climate variable names to the list (named list)
 names(time_data) <- names.clim.var
 
+# calculate winter precip and add to the list time_data (rows are trees, columns are years)
+wintP.wateryr <- (time_data$ppt_Sep + time_data$ppt_Oct + time_data$ppt_Nov + time_data$ppt_Dec + time_data$ppt_Jan + time_data$ppt_Feb + time_data$ppt_Mar + time_data$ppt_Apr + time_data$ppt_May + time_data$ppt_Jun + time_data$ppt_Jul + time_data$ppt_Aug)
+wintP.NM <- (time_data$ppt_Nov + time_data$ppt_Dec + time_data$ppt_Jan + time_data$ppt_Feb + time_data$ppt_Mar)
+wintP.JJ <- (time_data$ppt_Jan + time_data$ppt_Feb + time_data$ppt_Mar + time_data$ppt_Apr + time_data$ppt_May + time_data$ppt_Jun + time_data$ppt_Jul)
+time_data$wintP.wateryr <- wintP.wateryr
+time_data$wintP.NM <- wintP.NM
+time_data$wintP.JJ <- wintP.JJ
+
+tmax.JanA <- (time_data$tmax_Jan + time_data$tmax_Feb + time_data$tmax_Mar + time_data$tmax_Apr + time_data$tmax_May + time_data$tmax_Jun + time_data$tmax_Jul + time_data$tmax_Aug)
+tmax.MJul <- (time_data$tmax_May + time_data$tmax_Jun + time_data$tmax_Jul)
+time_data$tmax.JanA <- tmax.JanA
+time_data$tmax.MJul <- tmax.MJul
+
 
 ## build data object for JAGS
 n <- nrow(y.small)
