@@ -7,7 +7,7 @@ set -e
 [ -z "${GITHUB_PAT}" ] && exit 0
 
 #Print who made GITHUB_PAT variable
-echo "GITHHUB_PAT variable made by Tony Gardella"
+echo "GITHUB_PAT variable made by Tony Gardella"
 
 # don't run on pull requests
 [ "$TRAVIS_PULL_REQUEST" != "false" ]  && exit 0
