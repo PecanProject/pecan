@@ -40,7 +40,7 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
     yrend = min(lubridate::date(end_date), lubridate::ymd(paste0(year, "-12-31")))
 
     ncfile <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
-    csvfile <- file.path(outfolder, paste(in.prefix, yrstart, yrend, "csv", sep = "."))
+    csvfile <- file.path(outfolder, paste(in.prefix, year, "csv", sep = "."))
 
     if (file.exists(csvfile) && as.logical(overwrite) != TRUE){
       logger.warn(paste("Output file", csvfile, "already exists! Moving to next year."))
@@ -61,7 +61,7 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
 
       upscale_result <- PEcAn.data.atmosphere::upscale_met(
         outfolder = outfolder, input_met = ncfile,
-        site.id = in.prefix, resolution = 1, reso_unit = "hours",
+        site.id = in.prefix, resolution = 1/24,
         overwrite = overwrite)
 
       met.nc <- ncdf4::nc_open(upscale_result$file)

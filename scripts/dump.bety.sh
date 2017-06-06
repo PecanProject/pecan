@@ -121,7 +121,7 @@ MANY_TABLES="${MANY_TABLES} formats_variables inputs_runs"
 MANY_TABLES="${MANY_TABLES} managements_treatments modeltypes_formats"
 MANY_TABLES="${MANY_TABLES} pfts_priors pfts_species"
 MANY_TABLES="${MANY_TABLES} posterior_samples posteriors_ensembles"
-MANY_TABLES="${MANY_TABLES} sitegroups_sites trait_covariate_associations"
+MANY_TABLES="${MANY_TABLES} sitegroups_sites sites_cultivars trait_covariate_associations"
 
 # tables that should NOT be dumped
 IGNORE_TABLES="sessions"
