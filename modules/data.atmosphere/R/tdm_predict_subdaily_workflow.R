@@ -1,6 +1,7 @@
 ##' Predict Subdaily Meteorology Workflow
 ##' Predict Subdaily Meteorology based off of statistics created in tdm_generate_subdaily_models.R
-# ----------------------------------- Description
+# -----------------------------------
+# Description
 # -----------------------------------
 ##' @title predict.subdaily.workflow
 ##' @family tdm - Temporally Downscale Meteorology
@@ -13,7 +14,8 @@
 ##'              We generate multiple ensembles of possible hourly values dictated from the models and betas 
 ##'              generated in gen.subdaily.models. Each ensemble member is saved as a netCDF file
 ##'              in CF conventions and these files are ready to be used in the general PEcAn workflow.
-# ----------------------------------- Parameters
+# -----------------------------------
+# Parameters
 # -----------------------------------
 ##' @param outfolder - directory where output file will be stored
 ##' @param in.path - path to model dataset you wish to temporally downscale
@@ -36,14 +38,14 @@
 ##' @examples
 ##' \dontrun{
 ##' library(PEcAn.data.atmosphere)
-##' outfolder = '~/Downscaled_GCM'
-##' in.path = '~/raw_GCM'
-##' in.prefix = 'GFDL'
-##' lm.models.base = 'sf_scratch/US-WCr'
-##' dat.train_file = 'Training_data/US-WCr_dat.train.nc'
-##' start_date = '2010-01-01'
-##' end_date = '2014-12-31'
-##' site.name = 'US-WCr'
+##' outfolder = "~/Downscaled_GCM"
+##' in.path = "~/raw_GCM"
+##' in.prefix = "GFDL"
+##' lm.models.base = "sf_scratch/US-WCr"
+##' dat.train_file = "Training_data/US-WCr_dat.train.nc"
+##' start_date = "2010-01-01"
+##' end_date = "2014-12-31"
+##' site.name = "US-WCr"
 ##' lat.in = 45
 ##' lon.in = -90
 ##' cores.max = 12
@@ -55,51 +57,51 @@
 #----------------------------------------------------------------------
 
 predict.subdaily.workflow <- function(outfolder, in.path, in.prefix, lm.models.base, 
-    dat.train_file, start_date, end_date, site.name, lat.in, lon.in, cores.max = 12, 
-    ens.hr = 3, n.day = 1, resids = FALSE, parallel = FALSE, n.cores = NULL, 
-    overwrite = FALSE, verbose = FALSE) {
+    dat.train_file, start_date, end_date, site.name, 
+    lat.in, lon.in, cores.max = 12, ens.hr = 3, n.day = 1, resids = FALSE, 
+    parallel = FALSE, n.cores = NULL, overwrite = FALSE, verbose = FALSE) {
     
     years <- seq(lubridate::year(start_date), lubridate::year(end_date))
-    
+
     # Load the training dataset and make sure to pull in dimensions and
     # save as dim
-    vars.info <- data.frame(CF.name = c("air_temperature", "precipitation_flux", 
-        "air_temperature_max", "air_temperature_min", "surface_downwelling_shortwave_flux_in_air", 
-        "surface_downwelling_longwave_flux_in_air", "air_pressure", "specific_humidity", 
-        "eastward_wind", "northward_wind", "wind_speed"))
+    vars.info <- data.frame(CF.name = c("date", "year", "doy", "hour", 
+                                        "air_temperature", "precipitation_flux", "air_temperature_max", 
+                                        "air_temperature_min", "surface_downwelling_shortwave_flux_in_air", 
+                                        "surface_downwelling_longwave_flux_in_air", "air_pressure", "specific_humidity", 
+                                        "eastward_wind", "northward_wind", "wind_speed"))
     dat.train <- list()
     tem <- ncdf4::nc_open(dat.train_file)
     dim <- tem$dim
     lat.in <- dim$latitude$vals
     lon.in <- dim$longitude$vals
     for (j in seq_along(vars.info$CF.name)) {
-        if (exists(as.character(vars.info$CF.name[j]), tem$var)) {
-            dat.train[[j]] <- ncdf4::ncvar_get(tem, as.character(vars.info$CF.name[j]))
-        } else {
-            dat.train[[j]] <- NA
-        }
+      if (exists(as.character(vars.info$CF.name[j]), tem$var)) {
+        dat.train[[j]] <- ncdf4::ncvar_get(tem, as.character(vars.info$CF.name[j]))
+      } else {
+        dat.train[[j]] = NA
+      }
     }
     names(dat.train) <- vars.info$CF.name
     dat.train <- data.frame(dat.train)
     
     # Create wind speed variable if it doesn't exist
-    if (all(is.na(dat.train$wind_speed) == TRUE)) {
-        dat.train$wind_speed <- sqrt(dat.train$eastward_wind^2 + dat.train$northward_wind^2)
+    if (all(is.na(dat.train$wind_speed) == TRUE)){
+      dat.train$wind_speed <- sqrt(dat.train$eastward_wind^2 + dat.train$northward_wind^2)
     }
     
     # Create a date variable that will help us organize our workflow
-    if (dim$time$units == "sec") {
-        sub_string <- substrRight(dat.train_file, 7)
-        start_year <- substr(sub_string, 1, 4)
-        dat.train$date <- as.POSIXct(dim$time$vals, tz = "GMT", origin = paste0(start_year, 
-            "-01-01 ", udunits2::ud.convert(dim$time$vals[1], "seconds", 
-                "hour"), ":00:00"))
+    if (dim$time$units == "sec"){
+      sub_string<- substrRight(dat.train_file, 7)
+      start_year <- substr(sub_string, 1, 4)
+      dat.train$date <- as.POSIXct(dim$time$vals, tz = "GMT",
+                                   origin = paste0(start_year, "-01-01 ", 
+                                                   udunits2::ud.convert(dim$time$vals[1], "seconds", "hour"), ":00:00"))
     } else {
-        start_year <- substr(dim$time$units, start = 12, stop = 15)
-        dat.train$date <- as.POSIXct(udunits2::ud.convert((dim$time$vals - 
-            ((dim$time$vals[2] - dim$time$vals[1])/2)), "days", "seconds"), 
-            tz = "GMT", origin = paste0(start_year, "-01-01 ", udunits2::ud.convert(dim$time$vals[1], 
-                "days", "hours"), ":00:00"))
+      start_year <- substr(dim$time$units,start = 12,stop = 15)
+      dat.train$date = as.POSIXct(udunits2::ud.convert((dim$time$vals - ((dim$time$vals[2] - dim$time$vals[1])/2))
+                                                       , "days", "seconds"), tz = "GMT",
+                                  origin = paste0(start_year, "-01-01 ", udunits2::ud.convert(dim$time$vals[1], "days", "hours"), ":00:00"))
     }
     
     dat.train$year <- lubridate::year(dat.train$date)
@@ -125,87 +127,90 @@ predict.subdaily.workflow <- function(outfolder, in.path, in.prefix, lm.models.b
     for (y in years) {
         
         path.gcm <- file.path(in.path, paste0(in.prefix, ".", y, ".nc"))
+        path.out <- file.path(in.path, paste0("hr"))
+        if (!dir.exists(path.out)) 
+            dir.create(path.out, recursive = T)
         
         # ----------------------------------- 1. Format output so all ensemble
         # members can be run at once NOTE: Need to start with the last and work
         # to the first -----------------------------------
         
-        # Read the lags
+        # Initialize the lags
+        lags.init <- list()  # Need to initialize lags first outside of the loop and then they'll get updated internally
+        
         nc.now <- ncdf4::nc_open(path.gcm)
         nc.time <- ncdf4::ncvar_get(nc.now, "time")
         
-        for (j in seq_along(vars.info$CF.name)) {
-            if (exists(as.character(vars.info$CF.name[j]), tem$var)) {
-                lags.list[[j]] <- ncdf4::ncvar_get(nc.now, as.character(vars.info$CF.name[j]))
-            } else {
-                lags.list[[j]] <- NA
-            }
-        }
-        names(lags.list) <- vars.info$CF.name
-        lags.list <- data.frame(lags.list)
+        air_temperature_max.init <- ncdf4::ncvar_get(nc.now, "air_temperature_max")[length(nc.time)]
+        air_temperature_min.init <- ncdf4::ncvar_get(nc.now, "air_temperature_min")[length(nc.time)]
+        precipitation_flux.init <- ncdf4::ncvar_get(nc.now, "precipitation_flux")[length(nc.time)]
+        surface_downwelling_shortwave_flux_in_air.init <- ncdf4::ncvar_get(nc.now, 
+            "surface_downwelling_shortwave_flux_in_air")[length(nc.time)]
+        surface_downwelling_longwave_flux_in_air.init <- ncdf4::ncvar_get(nc.now, 
+            "surface_downwelling_longwave_flux_in_air")[length(nc.time)]
+        air_pressure.init <- ncdf4::ncvar_get(nc.now, "air_pressure")[length(nc.time)]
+        specific_humidity.init <- ncdf4::ncvar_get(nc.now, "specific_humidity")[length(nc.time)]
+        nwind.init <- ncdf4::ncvar_get(nc.now, "northward_wind")[length(nc.time)]
+        ewind.init <- ncdf4::ncvar_get(nc.now, "eastward_wind")[length(nc.time)]
+        wind_speed.init <- sqrt(nwind.init^2 + ewind.init^2)
+        ncdf4::nc_close(nc.now)
         
-        # Define the lags.init list, the values that will initialize the entire
-        # downscaling procedure
-        lags.init <- list()
-        for (v in vars.info$CF.name) {
-            if (all(is.na(lags.list$air_temperature))) {
-                lags.init[[v]] <- data.frame(array((dat.yr$air_temperature_max + 
-                                                      dat.yr$air_temperature_min)/2), dim = c(1, ens.hr)))
-            }
-            if (all(is.na(lags.list$wind_speed))) {
-                lags.init[[v]] <- data.frame(array(sqrt((lags.list$eastward_wind^2) + 
-                  (lags.list$northward_wind^2)), dim = c(1, ens.hr)))
-            } else {
-                lags.init[[v]] <- data.frame(array(lags.list[[v]], dim = c(1, 
-                  ens.hr)))
-            }
-        }
+        lags.init[["air_temperature"]] <- data.frame(array(mean(c(air_temperature_max.init, 
+            air_temperature_min.init)), dim = c(1, ens.hr)))
+        lags.init[["air_temperature_max"]] <- data.frame(array(air_temperature_max.init, 
+            dim = c(1, ens.hr)))
+        lags.init[["air_temperature_min"]] <- data.frame(array(air_temperature_min.init, 
+            dim = c(1, ens.hr)))
+        lags.init[["precipitation_flux"]] <- data.frame(array(precipitation_flux.init, 
+            dim = c(1, ens.hr)))
+        lags.init[["surface_downwelling_shortwave_flux_in_air"]] <- data.frame(array(surface_downwelling_shortwave_flux_in_air.init, 
+            dim = c(1, ens.hr)))
+        lags.init[["surface_downwelling_longwave_flux_in_air"]] <- data.frame(array(surface_downwelling_longwave_flux_in_air.init, 
+            dim = c(1, ens.hr)))
+        lags.init[["air_pressure"]] <- data.frame(array(air_pressure.init, 
+            dim = c(1, ens.hr)))
+        lags.init[["specific_humidity"]] <- data.frame(array(specific_humidity.init, 
+            dim = c(1, ens.hr)))
+        lags.init[["wind_speed"]] <- data.frame(array(wind_speed.init, 
+            dim = c(1, ens.hr)))
         
-        
-        # Now we read in the data we wish to downscale and leave it as is
         dat.ens <- list()  # a new list for each ensemble member as a new layer
+        
         ens.sims <- list()  # this will propogate that spread through each year, so instead of 
         # restarting every January 1, it will propogate those lag values
         
         # Create a list layer for each ensemble member
-        dat.yr <- list()
         nc.now <- ncdf4::nc_open(path.gcm)
-        dim <- nc.now$dim
-        for (j in seq_along(vars.info$CF.name)) {
-            if (exists(as.character(vars.info$CF.name[j]), tem$var)) {
-                dat.yr[[j]] <- ncdf4::ncvar_get(nc.now, as.character(vars.info$CF.name[j]))
-            } else {
-                dat.yr[[j]] <- NA
-            }
-        }
-        names(dat.yr) <- vars.info$CF.name
-        dat.yr <- data.frame(dat.yr)
+        dat.yr <- data.frame(time = ncdf4::ncvar_get(nc.now, "time"), air_temperature_max = ncdf4::ncvar_get(nc.now, 
+            "air_temperature_max"), air_temperature_min = ncdf4::ncvar_get(nc.now, 
+            "air_temperature_min"), precipitation_flux = ncdf4::ncvar_get(nc.now, 
+            "precipitation_flux"), surface_downwelling_shortwave_flux_in_air = ncdf4::ncvar_get(nc.now, 
+            "surface_downwelling_shortwave_flux_in_air"), surface_downwelling_longwave_flux_in_air = ncdf4::ncvar_get(nc.now, 
+            "surface_downwelling_longwave_flux_in_air"), air_pressure = ncdf4::ncvar_get(nc.now, 
+            "air_pressure"), specific_humidity = ncdf4::ncvar_get(nc.now, 
+            "specific_humidity"), ewind = ncdf4::ncvar_get(nc.now, "eastward_wind"), 
+            nwind = ncdf4::ncvar_get(nc.now, "northward_wind"))
         
-        # We need to fill these variables if they aren't available
-        if (all(is.na(dat.yr$air_temperature))) {
-            dat.yr$air_temperature <- ((dat.yr$air_temperature_max + dat.yr$air_temperature_min)/2)
-        }
-        if (all(is.na(dat.yr$wind_speed))) {
-            dat.yr$wind_speed <- sqrt(dat.yr$eastward_wind^2 + dat.yr$northward_wind^2)
-        }
+        dat.yr$wind_speed <- sqrt(dat.yr$ewind^2 + dat.yr$nwind^2)
         ncdf4::nc_close(nc.now)
         
-        # We need to create a date variable to help us organize everything
+        # These variables will be used by the temporal_downscaling_prediction
         dat.yr$year <- y
-        if (dim$time$units == "sec") {
-            dat.yr$date <- as.Date((dim$time$vals/(dim$time$vals[2] - dim$time$vals[1])), 
-                tz = "GMT", origin = paste0(y - 1, "-12-31"))
+        
+        if (nc.now$dim$time$units == "sec"){
+          dat.yr$date <- as.Date((dat.yr$time/(dat.yr$time[2] - dat.yr$time[1])), origin = paste0(y - 1, "-12-31"))
         }
-        if (dim$time$units == paste0("days since ", y, "-01-01T00:00:00Z")) {
-            dat.train$date <- as.POSIXct(udunits2::ud.convert((dim$time$vals - 
-                ((dim$time$vals[2] - dim$time$vals[1])/2)), "days", "seconds"), 
-                tz = "GMT", origin = paste0(y, "-01-01 00:00:00"))
+        if (nc.now$dim$time$units == paste0("days since ",y,"-01-01T00:00:00Z")){
+          dat.yr$date = as.POSIXct(udunits2::ud.convert(dat.yr$time, "days", "seconds"),
+                                   origin = paste0(y, "-01-01 ", udunits2::ud.convert(dat.yr$time[1], "days", "hours"), ":00:00"))
         }
         dat.yr$doy <- lubridate::yday(dat.yr$date)
         
         # Create the data frame for the 'next' values
         dat.nxt <- dat.yr
-        # Shift everyting up by a day to get the preview of the next day
+        # Shift everyting up by a day to get the preview of the next day to get
+        # processed Note: Because we work backwards through time, Jan 1 is the
+        # 'next' day to get processed with Jan 2
         dat.nxt[2:(nrow(dat.nxt)), c("air_temperature_max", "air_temperature_min", 
             "precipitation_flux", "surface_downwelling_shortwave_flux_in_air", 
             "surface_downwelling_longwave_flux_in_air", "air_pressure", 
@@ -214,24 +219,40 @@ predict.subdaily.workflow <- function(outfolder, in.path, in.prefix, lm.models.b
             "surface_downwelling_shortwave_flux_in_air", "surface_downwelling_longwave_flux_in_air", 
             "air_pressure", "specific_humidity", "wind_speed")]
         
-        # Need to add in the 'next' value Note: if we're past the end of our
-        # daily data, the best we can do is leave things as is (copy the last
-        # day's value)
-        if (y < max(years)) {
+        # Need to add in the 'next' value for january (dec 31 of next year)
+        # Note: if we're past the end of our daily data, the best we can do is
+        # leave things as is (copy the last day's value)
+        if (y > min(years)) {
             
-            path.gcm <- file.path(in.path, paste0(in.prefix, ".", y + 1, 
-                ".nc"))
             nc.nxt <- ncdf4::nc_open(path.gcm)
+            # air_temperature.init <-
+            # dat.out.full$met.bias[dat.out.full$met.bias$year==max(years.sim) &
+            # dat.out.full$met.bias$doy==364,'air_temperature']
+            nxt.time <- ncdf4::ncvar_get(nc.nxt, "time")
+            dat.nxt[dat.nxt$time == min(dat.nxt$time), "air_temperature_max"] <- ncdf4::ncvar_get(nc.nxt, 
+                "air_temperature_max")[length(nxt.time)]
+            dat.nxt[dat.nxt$time == min(dat.nxt$time), "air_temperature_min"] <- ncdf4::ncvar_get(nc.nxt, 
+                "air_temperature_min")[length(nxt.time)]
+            dat.nxt[dat.nxt$time == min(dat.nxt$time), "precipitation_flux"] <- ncdf4::ncvar_get(nc.nxt, 
+                "precipitation_flux")[length(nxt.time)]
+            dat.nxt[dat.nxt$time == min(dat.nxt$time), "surface_downwelling_shortwave_flux_in_air"] <- ncdf4::ncvar_get(nc.nxt, 
+                "surface_downwelling_shortwave_flux_in_air")[length(nxt.time)]
+            dat.nxt[dat.nxt$time == min(dat.nxt$time), "surface_downwelling_longwave_flux_in_air"] <- ncdf4::ncvar_get(nc.nxt, 
+                "surface_downwelling_longwave_flux_in_air")[length(nxt.time)]
+            dat.nxt[dat.nxt$time == min(dat.nxt$time), "air_pressure"] <- ncdf4::ncvar_get(nc.nxt, 
+                "air_pressure")[length(nxt.time)]
+            dat.nxt[dat.nxt$time == min(dat.nxt$time), "specific_humidity"] <- ncdf4::ncvar_get(nc.nxt, 
+                "specific_humidity")[length(nxt.time)]
+            dat.nxt[dat.nxt$time == min(dat.nxt$time), "ewind"] <- ncdf4::ncvar_get(nc.nxt, 
+                "eastward_wind")[length(nxt.time)]
+            dat.nxt[dat.nxt$time == min(dat.nxt$time), "nwind"] <- ncdf4::ncvar_get(nc.nxt, 
+                "northward_wind")[length(nxt.time)]
+            dat.nxt[dat.nxt$time == min(dat.nxt$time), "wind_speed"] <- sqrt(dat.nxt$ewind^2 + 
+                dat.nxt$nwind^2)[length(nxt.time)]
             
-            dat.nxt$time <- ncdf4::ncvar_get(nc.nxt, "time")
-            for (j in vars.info$CF.name) {
-                dat.nxt[dat.nxt$time == max(dat.nxt$time), j] <- ncdf4::ncvar_get(nc.nxt, 
-                  j)[length(nxt.time)]
-            }
             ncdf4::nc_close(nc.nxt)
         }
         
-        # Now we put everything into 1 main data.frame
         dat.ens <- data.frame(year = dat.yr$year, doy = dat.yr$doy, date = dat.yr$date, 
             air_temperature_max.day = dat.yr$air_temperature_max, air_temperature_min.day = dat.yr$air_temperature_min, 
             precipitation_flux.day = dat.yr$precipitation_flux, surface_downwelling_shortwave_flux_in_air.day = dat.yr$surface_downwelling_shortwave_flux_in_air, 
@@ -259,9 +280,8 @@ predict.subdaily.workflow <- function(outfolder, in.path, in.prefix, lm.models.b
         # but this will get parallelized to speed it up soon, but we'll
         # prototype in parallel -----------------------------------
         
-        ens.sims <- predict.subdaily.function(dat.ens, n.ens = ens.hr, 
-            path.model = file.path(lm.models.base), lags.list = NULL, lags.init = lags.init, 
-            dat.train = dat.train)
+        ens.sims <- predict.subdaily.function(dat.ens, n.ens = ens.hr, path.model = file.path(lm.models.base), 
+            lags.list = NULL, lags.init = lags.init, dat.train = dat.train)
         
         # Set up the time dimension for this year
         hrs.now <- as.numeric(difftime(dat.ens$date, paste0(y, "-01-01"), 
@@ -273,52 +293,48 @@ predict.subdaily.workflow <- function(outfolder, in.path, in.prefix, lm.models.b
         }
         
         # Write each year for each ensemble member into its own .nc file
-        lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", 
-            vals = lat.in, create_dimvar = TRUE)
-        lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", 
-            vals = lon.in, create_dimvar = TRUE)
-        
+        lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
+        lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
+
         ntime <- nrow(dat.ens)
-        days_elapsed <- ((1:ntime) * (ifelse(lubridate::leap_year(y), 1/(ntime/366), 
-            1/(ntime/365))) - (ifelse(lubridate::leap_year(y), 0.5/(ntime/366), 
-            0.5/(ntime/365))))
-        time <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", 
-            y, "-01-01T00:00:00Z"), vals = as.array(days_elapsed), create_dimvar = TRUE, 
-            unlim = TRUE)
+        days_elapsed <- ((1:ntime) * (ifelse(lubridate::leap_year(y),1/(ntime/366), 1/(ntime/365))) - 
+                           (ifelse(lubridate::leap_year(y),.5/(ntime/366), .5/(ntime/365))))
+        time <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", y, "-01-01T00:00:00Z"),
+                                 vals = as.array(days_elapsed), create_dimvar = TRUE, unlim = TRUE)
         
         dim <- list(lat, lon, time)
         
         var.list <- list()
         for (j in seq_along(nc.info$CF.name)) {
-            var.list[[j]] <- ncdf4::ncvar_def(name = as.character(nc.info$CF.name[j]), 
-                units = as.character(nc.info$units[j]), dim = dim, missval = -9999, 
-                verbose = verbose)
+          var.list[[j]] <- ncdf4::ncvar_def(name = as.character(nc.info$CF.name[j]), 
+                                            units = as.character(nc.info$units[j]), dim = dim, missval = -9999, 
+                                            verbose = verbose)
         }
         
         for (i in seq_len(ens.hr)) {
-            df <- data.frame(matrix(ncol = length(nc.info$name), nrow = nrow(dat.ens)))
-            colnames(df) <- nc.info$name
-            for (j in nc.info$CF.name) {
-                ens.sims[[j]][["X1"]]
-                e <- paste0("X", i)
-                df[[j]] <- ens.sims[[j]][[e]]
-            }
-            
-            df <- df[, c("air_temperature", "precipitation_flux", "surface_downwelling_shortwave_flux_in_air", 
-                "surface_downwelling_longwave_flux_in_air", "air_pressure", 
-                "specific_humidity", "wind_speed")]
-            colnames(df) <- nc.info$CF.name
-            
-            dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
-            loc.file <- file.path(outfolder, paste0(in.prefix, "_ens", 
-                i, "_", y, ".nc"))
-            loc <- ncdf4::nc_create(filename = loc.file, vars = var.list, 
-                verbose = verbose)
-            
-            for (j in nc.info$CF.name) {
-                ncdf4::ncvar_put(nc = loc, varid = as.character(j), vals = df[[j]][seq_len(nrow(df))])
-            }
-            ncdf4::nc_close(loc)
+          df <- data.frame(matrix(ncol = length(nc.info$name), nrow = nrow(dat.ens)))
+          colnames(df) <- nc.info$name
+          for (j in nc.info$CF.name) {
+            ens.sims[[j]][["X1"]]
+            e <- paste0("X", i)
+            df[[j]] <- ens.sims[[j]][[e]]
+          }
+          
+          df <- df[, c("air_temperature", "precipitation_flux", "surface_downwelling_shortwave_flux_in_air", 
+                       "surface_downwelling_longwave_flux_in_air", "air_pressure", 
+                       "specific_humidity", "wind_speed")]
+          colnames(df) <- nc.info$CF.name
+          
+          dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
+          loc.file <- file.path(outfolder, paste0(in.prefix, "_ens", 
+                                                  i, "_", y, ".nc"))
+          loc <- ncdf4::nc_create(filename = loc.file, vars = var.list, 
+                                  verbose = verbose)
+          
+          for (j in nc.info$CF.name) {
+            ncdf4::ncvar_put(nc = loc, varid = as.character(j), vals = df[[j]][seq_len(nrow(df))])
+          }
+          ncdf4::nc_close(loc)
         }
         print(paste0("finished year ", y))
         
