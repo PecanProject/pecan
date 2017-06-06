@@ -100,7 +100,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                               start_date = start_date, end_date = end_date,
                               dbparms = dbparms,
                               new_site = new.site,
-                              run_start = run_start,
+                              run_start = run_start, # for FIA-case
                               host = host, 
                               machine_host = machine.host,
                               overwrite = overwrite$getveg)

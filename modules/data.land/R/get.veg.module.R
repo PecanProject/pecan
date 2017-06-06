@@ -41,6 +41,7 @@
                                # fcn specific args 
                                lon = lon, lat = lat, 
                                site_name = site_name,
+                               run_start = run_start,
                                gridres = 0.075, dbparms = dbparms,
                                machine_host = machine_host,
                                source = input_veg$source)
