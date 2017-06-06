@@ -219,6 +219,11 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
       }
       
       return(dbfile)
+    }else if(length(inputs$id) == 0){
+      
+      # need this third case here because prent check above can return an empty inputs
+      return(data.frame())
+      
     }else{
       
       logger.warn("Found possible matching input. Checking if its associate files are on host machine")
