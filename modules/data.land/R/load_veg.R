@@ -48,8 +48,6 @@ load_veg <- function(new_site, start_date, end_date,
   # no lower case
   obs[[code.col]] <- toupper(obs[[code.col]])
   
-  # filter dead trees
-  obs <- remove_dead_trees(obs, code.col)
   spp.info <- match_species_id(input_codes = obs[[code.col]], format_name = format_name, bety = bety)
   
   # merge with data
@@ -93,15 +91,3 @@ load_veg <- function(new_site, start_date, end_date,
 } # load_veg
 
 
-remove_dead_trees <- function(obs, code.col, by.code = TRUE){
-  
-  if(by.code){
-    # remove by code
-    dead_tree_codes <- c("2TB", "SNAG", "DEAD")
-    fobs <- obs[!(obs[[code.col]] %in% dead_tree_codes), ]
-  }else{
-    # remove by mortality status?
-  }
-  
-  return(fobs)
-}
