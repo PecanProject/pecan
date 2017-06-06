@@ -72,7 +72,7 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     if (dim$time$units == "sec"){
       sub_string<- substrRight(dat.train_file, 7)
       start_year <- substr(sub_string, 1, 4)
-      dat.train$date <- as.Date((dat.train$time/(dat.train$time[2] - dat.train$time[1])), 
+      dat.train$date <- as.Date((dim$time$vals/(dim$time$vals[2] - dim$time$vals[1])), 
                                 tz="GMT", origin = paste0(start_year - 1, "-12-31"))
     } else {
       start_year <- substr(dim$time$units,start = 12,stop = 15)

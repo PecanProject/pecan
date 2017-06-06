@@ -59,14 +59,14 @@ Predict Subdaily Meteorology based off of statistics created in tdm_generate_sub
 \examples{
 \dontrun{
 library(PEcAn.data.atmosphere)
-outfolder = "~/Downscaled_GCM"
-in.path = "~/raw_GCM"
-in.prefix = "GFDL"
-lm.models.base = "sf_scratch/US-WCr"
-dat.train_file = "Training_data/US-WCr_dat.train.nc"
-start_date = "2010-01-01"
-end_date = "2014-12-31"
-site.name = "US-WCr"
+outfolder = '~/Downscaled_GCM'
+in.path = '~/raw_GCM'
+in.prefix = 'GFDL'
+lm.models.base = 'sf_scratch/US-WCr'
+dat.train_file = 'Training_data/US-WCr_dat.train.nc'
+start_date = '2010-01-01'
+end_date = '2014-12-31'
+site.name = 'US-WCr'
 lat.in = 45
 lon.in = -90
 cores.max = 12
@@ -75,8 +75,10 @@ n.day = 1}
 }
 \seealso{
 Other tdm - Temporally Downscale Meteorology: \code{\link{gen.subdaily.models}},
-  \code{\link{nc.merge}},
+  \code{\link{model.train}}, \code{\link{nc.merge}},
+  \code{\link{predict.met}},
   \code{\link{predict.subdaily.function}},
+  \code{\link{save.betas}}, \code{\link{save.model}},
   \code{\link{temporal.downscale.functions}}
 }
 \author{
