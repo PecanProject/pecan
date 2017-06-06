@@ -73,7 +73,7 @@ load_veg <- function(new_site, start_date, end_date,
   # Write vegettion data as rds, return results to convert.input
   
   # need check for overwrite
-  sppfilename <- write_veg(outfolder, start_date, end_date, veg_info = veg_info, 
+  sppfilename <- write_veg(outfolder, start_date, veg_info = veg_info, 
                            site_name = new_site$name, source)
   
   # Build results dataframe for convert.input
