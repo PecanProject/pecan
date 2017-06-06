@@ -12,7 +12,6 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   #--------------------------------------------------------------------------------------------------#
   # Extract info from settings and setup
   site       <- settings$run$site
-  run_start  <- settings$run$start.date
   model      <- settings$model$type
   host       <- settings$host
   dbparms    <- settings$database
@@ -49,13 +48,26 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   on.exit(db.close(con))
   
   ## We need two types of start/end dates now
-  ## i)  start of the run, to check whether a proper IC file is already processed for those dates
-  ## ii) start and end of the IC file to enter the database
+  ## i)  start/end of the run when we have no veg file to begin with (i.e. we'll be querying a DB)
+  ## ii) start and end of the veg file if we'll load veg data from a source file, this could be different than model start/end
   # query (ii) from source id [input id in BETY]
-  query      <- paste0("SELECT * FROM inputs where id = ", input$source.id)
-  input_file <- db.query(query, con = con)
-  start_date <- input_file$start_date
-  end_date   <- input_file$end_date
+  
+  # this check might change depending on what other sources that requires querying its own DB we will have
+  # probably something passed from settings
+  if(input_veg$source == "FIA"){ 
+    
+    start_date <- settings$run$start.date
+    end_date   <- settings$run$end.date
+  }
+  else{
+    
+    query      <- paste0("SELECT * FROM inputs where id = ", input$source.id)
+    input_file <- db.query(query, con = con)
+    start_date <- input_file$start_date
+    end_date   <- input_file$end_date
+    
+  }
+  
   
   # set up host information
   machine.host <- ifelse(host == "localhost" || host$name == "localhost", fqdn(), host$name)
@@ -91,7 +103,6 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
                               start_date = start_date, end_date = end_date,
                               dbparms = dbparms,
                               new_site = new.site,
-                              run_start = run_start, # for FIA-case
                               host = host, 
                               machine_host = machine.host,
                               overwrite = overwrite$getveg)

@@ -3,7 +3,6 @@
                             start_date, end_date,
                             dbparms,
                             new_site, 
-                            run_start,
                             host, machine_host,
                             overwrite){
 
@@ -24,9 +23,10 @@
                               password = dbparms$bety$password)
   con  <- bety$con
   
-  if(input_veg$source == "FIA"){
+  # this check might change depending on what other sources that requires querying its own DB we will have
+  if(input_veg$source == "FIA"){ 
     
-    fcn <- "extract_FIA"
+    fcn <- "extract_veg"
     
     getveg.id <- convert.input(input.id = NA,
                                outfolder = outfolder, 
@@ -39,9 +39,7 @@
                                write = TRUE, 
                                overwrite = overwrite, 
                                # fcn specific args 
-                               lon = lon, lat = lat, 
-                               site_name = site_name,
-                               run_start = run_start,
+                               new_site = new.site,
                                gridres = input_veg$gridres, dbparms = dbparms,
                                machine_host = machine_host,
                                source = input_veg$source)
