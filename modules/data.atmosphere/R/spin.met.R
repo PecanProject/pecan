@@ -2,11 +2,13 @@
 #'
 #' @param in.path    met input folder path
 #' @param in.prefix  met input file prefix (shared by all annual files, can be "") 
-#' @param start_date start of real met & run
-#' @param end_date   end of run
+#' @param start_date start of met
+#' @param end_date   end of met
 #' @param nyear      number of years of spin-up, default 1000
 #' @param nsample    sample the first nsample years of met, default 50
 #' @param resample   resample (TRUE, default) or cycle (FALSE) meteorology
+#' @param run_start_date date the run itself starts, which can be different than the start of met
+#' @param overwrite whether to replace previous resampling
 #' 
 #' @details 
 #' spin.met works by creating symbolic links to the sampled met file, 
@@ -32,7 +34,7 @@
 #'    start_date <- PEcAn.data.atmosphere::spin.met(in.path,in.prefix,start_date,end_date,nyear,nsample,resample)
 #' }
 #' }
-spin.met <- function(in.path,in.prefix,start_date,end_date,nyear,nsample,resample=TRUE){
+spin.met <- function(in.path, in.prefix, start_date, end_date, nyear = 1000, nsample = 50, resample = TRUE, run_start_date = start_date, overwrite = TRUE){
   
   ### input checking
   
@@ -51,25 +53,43 @@ spin.met <- function(in.path,in.prefix,start_date,end_date,nyear,nsample,resampl
   
   # spin settings
   if(missing(nyear)|is.null(nyear) | is.na(nyear)) nyear <- 1000
+  nyear <- as.numeric(nyear)
   if(missing(nsample)|is.null(nsample) | is.na(nsample)) nsample <- 50
+  nsample <- as.numeric(nsample)
   nsample <- min(nsample,length(avail.years))
+  avail.years <- avail.years[seq_len(nsample)]
   if(missing(resample) | is.null(resample)|is.na(resample)) resample <- TRUE
-  spin_start_date <- as.POSIXct(start_date,"UTC") - lubridate::years(nyear)
+  resample <- as.logical(resample)
+  spin_start_date <- as.POSIXct(run_start_date,"UTC") - lubridate::years(nyear)
   
   ### define the met years to sample
-  if(resample){
-    spin_year <- sample(avail.years[1:nsample],
-                        size = nyear,replace = TRUE)
-  } else {
-    spin_year <- rep(avail.years[1:nsample],length.out=nyear)
-  }
   new_year <- seq(lubridate::year(spin_start_date),by=1,length.out=nyear)
+  is.leap <- lubridate::leap_year(avail.years)
+  spin_year <- NA
+  if(resample){
+    for(t in seq_along(new_year)){
+      if(lubridate::leap_year(new_year[t])){
+        spin_year[t] <- sample(avail.years[is.leap],size = 1)
+      } else {
+        spin_year[t] <- sample(avail.years[!is.leap],size = 1)
+      }
+    }
+  } else {
+    spin_year <- rep(avail.years,length.out=nyear)
+  }
   
   ## loop over spin-up years
   for(t in seq_along(new_year)){
     
-    source.file <- file.path(in.path,paste0(in.prefix,spin_year[t],".nc"))
-    target.file <- file.path(in.path,paste0(in.prefix,new_year[t],".nc"))
+    spin_year_txt <- formatC(spin_year[t], width = 4, format = "d", flag = "0")
+    source.file <- file.path(in.path,paste0(in.prefix,spin_year_txt,".nc"))
+    
+    new_year_txt <- formatC(new_year[t], width = 4, format = "d", flag = "0")
+    target.file <- file.path(in.path,paste0(in.prefix,new_year_txt,".nc"))
+    
+    if(overwrite){
+      system2("rm",target.file)
+    }
     
     ## check if a met file already exists
     if(!file.exists(target.file)){

@@ -10,7 +10,7 @@
 #' @param ... 
 #'
 #' @return
-#' @export merge.met.variable
+#' @export
 #'
 #' @details Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record. 
 #' Currently unit and name checking only implemented for CO2. 
@@ -28,10 +28,10 @@
 #' verbose    <- TRUE
 #' 
 #' \dontrun{
-#' merge.met.variable(in.path,in.prefix,start_date,end_date,merge.file,overwrite,verbose)
+#' merge_met_variable(in.path,in.prefix,start_date,end_date,merge.file,overwrite,verbose)
 #' PEcAn.DALEC::met2model.DALEC(in.path,in.prefix,outfolder,start_date,end_date)
 #' }
-merge.met.variable <- function(in.path,in.prefix,start_date, end_date, merge.file,
+merge_met_variable <- function(in.path,in.prefix,start_date, end_date, merge.file,
                                overwrite = FALSE, verbose = FALSE, ...){
   
   # get start/end year code works on whole years only
