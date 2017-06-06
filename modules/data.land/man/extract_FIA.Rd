@@ -4,8 +4,7 @@
 \alias{extract_FIA}
 \title{extract_FIA}
 \usage{
-extract_FIA(lon, lat, site_name, start_date, end_date, gridres = 0.075,
-  dbparms, outfolder, overwrite = FALSE, ...)
+extract_FIA(lon, lat, start_date, end_date, gridres = 0.075, dbparms)
 }
 \author{
 Istem Fer

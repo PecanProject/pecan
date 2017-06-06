@@ -1,7 +1,7 @@
 ##' @name write_veg
 ##' @title write_veg
 ##' @export
-write_veg <- function(outfolder, start_date, veg_info, site_name, source){
+write_veg <- function(outfolder, start_date, veg_info, source){
   
   #--------------------------------------------------------------------------------------------------#
   # Save rds file and return results data frame

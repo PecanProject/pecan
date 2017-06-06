@@ -2,11 +2,9 @@
 ##' @title extract_FIA
 ##' @export
 ##' @author Istem Fer
-extract_FIA <- function(lon, lat, site_name, start_date, end_date, 
-                        gridres = 0.075, dbparms, outfolder, overwrite = FALSE, ...){
+extract_FIA <- function(lon, lat, start_date, end_date, gridres = 0.075, dbparms){
   
-  #--------------------------------------------------------------------------------------------------#
-  # Extract FIA
+
   veg_info <- list()
   
   fia.con <- PEcAn.DB::db.open(dbparms$fia)
@@ -115,47 +113,11 @@ extract_FIA <- function(lon, lat, site_name, start_date, end_date,
     logger.debug(paste0(nrow(tree.info), " trees remain after removing entries with no dbh, spcd, and/or n."))
   }
     
-  #veg_info[[2]] <- tree.info
-  obs <- tree.info
-  
-  #--------------------------------------------------------------------------------------------------#
-  # Match species : this step requires DB connections 
-  
-  bety <- dplyr::src_postgres(dbname   = dbparms$bety$dbname, 
-                              host     = dbparms$bety$host, 
-                              user     = dbparms$bety$user, 
-                              password = dbparms$bety$password)
-  con  <- bety$con
-  
-  format.name <- "fia" 
-  code.col    <-  "spcd"
-  
-  # match code to species ID
-  spp.info <- match_species_id(input_codes = obs[[code.col]], format_name = format.name, bety = bety)
-  
-  # merge with data
-  tmp <- spp.info[ , colnames(spp.info) != "input_code"]
-  
-  veg_info[[2]] <- cbind(obs, tmp)
-  
-  #--------------------------------------------------------------------------------------------------#
-  # Write vegettion data as rds, return results to convert.input
-  
-  # need check for overwrite
-  sppfilename <- write_veg(outfolder, start_date, end_date, veg_info = veg_info, site_name, source)
-  
-  # Build results dataframe for convert.input
-  results <- data.frame(file = sppfilename, 
-                        host = machine_host, 
-                        mimetype = "application/rds", 
-                        formatname = "spp.info", 
-                        startdate = start_date, 
-                        enddate = end_date, 
-                        dbfile.name = basename(sppfilename), 
-                        stringsAsFactors = FALSE)
-  
-  ### return for convert.inputs
-  return(invisible(results))  
+  veg_info[[2]] <- tree.info
+
+  return(veg_info)
+
+ 
   
 } # extract_FIA
 
