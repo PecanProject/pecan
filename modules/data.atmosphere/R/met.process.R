@@ -33,12 +33,15 @@ met.process <- function(site, input_met, start_date, end_date, model,
       PEcAn.utils::logger.warn("met.process only has a path provided, assuming path is model driver and skipping processing")
       return(input_met$path)
     }else {
-      logger.error("Must specify met source")
+      logger.warn("No met source specified")
       if(!is.null(input_met$id) & !is.null(input_met$path)){
+        logger.warn("Assuming source CFmet")
         met <- input_met$source <- "CFmet" ## this case is normally hit when the use provides an existing file that has already been
         ## downloaded, processed, and just needs conversion to model-specific format.
         ## setting a 'safe' (global) default
-      }   
+      } else {
+        logger.error("Cannot process met without source information")
+      }  
     }
   } else {
     met <-input_met$source
