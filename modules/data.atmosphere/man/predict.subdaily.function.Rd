@@ -32,8 +32,10 @@ Met downscaling functions that predict the downscaled meteorology
 }
 \seealso{
 Other tdm - Temporally Downscale Meteorology: \code{\link{gen.subdaily.models}},
-  \code{\link{nc.merge}},
+  \code{\link{model.train}}, \code{\link{nc.merge}},
+  \code{\link{predict.met}},
   \code{\link{predict.subdaily.workflow}},
+  \code{\link{save.betas}}, \code{\link{save.model}},
   \code{\link{temporal.downscale.functions}}
 }
 \author{

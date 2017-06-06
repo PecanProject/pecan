@@ -5,7 +5,7 @@
 \title{gen.subdaily.models}
 \usage{
 gen.subdaily.models(outfolder, dat.train_file, in.prefix, n.beta, day.window,
-  resids = F, parallel = F, n.cores = NULL, overwrite = TRUE,
+  resids = FALSE, parallel = FALSE, n.cores = NULL, overwrite = TRUE,
   verbose = FALSE)
 }
 \arguments{
@@ -42,9 +42,11 @@ Generate Subdaily Models
 Create statistical models to predict subdaily meteorology
 }
 \seealso{
-Other tdm - Temporally Downscale Meteorology: \code{\link{nc.merge}},
+Other tdm - Temporally Downscale Meteorology: \code{\link{model.train}},
+  \code{\link{nc.merge}}, \code{\link{predict.met}},
   \code{\link{predict.subdaily.function}},
   \code{\link{predict.subdaily.workflow}},
+  \code{\link{save.betas}}, \code{\link{save.model}},
   \code{\link{temporal.downscale.functions}}
 }
 \author{
