@@ -8,7 +8,12 @@ write_veg <- function(outfolder, start_date, end_date, veg_info, site_name, sour
   
   start_year    <- lubridate::year(start_date)
   end_year      <- lubridate::year(end_date)
-  out_file      <- paste(site_name, source, start_year, end_year, "veg", "rds", sep = ".")
+  if(start_year == end_year){
+    out_file      <- paste(site_name, source, start_year, "veg", "rds", sep = ".")
+  }else{
+    out_file      <- paste(site_name, source, start_year, end_year, "veg", "rds", sep = ".")
+  }
+  
   out_file_full <- file.path(outfolder, out_file)
   
   dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
