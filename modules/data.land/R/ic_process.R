@@ -118,6 +118,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   # Fill settings
   if (!is.null(putveg.id) & input$output %in% vegIC) {
     
+    
     model_file <- db.query(paste("SELECT * from dbfiles where container_id =", putveg.id), con)
     
     # now that we don't have multipasses, convert.input only inserts 1st filename
@@ -125,6 +126,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     path_to_settings <- file.path(model_file[["file_path"]], model_file[["file_name"]])
     settings$run$inputs[[input$output]][['path']] <- path_to_settings
     
+    # NOTE : THIS BIT IS SENSITIVE TO THE ORDER OF TAGS IN PECAN.XML
     # this took care of "css" only, others have the same prefix
     if(input$output == "css"){
       settings$run$inputs[["pss"]][['path']]  <- gsub("css","pss", path_to_settings)
@@ -133,38 +135,29 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
       # IF: For now IC workflow is only working for ED and it's the only case for copying to remote
       # but this copy to remote might need to go out of this if-block and change
       
-      # Copy to remote and change paths if needed
+      # Copy to remote, update DB and change paths if needed
       if (settings$host$name != "localhost") {
         
-        out.dir.remote   <- file.path(settings$host$folder, paste0(new.site$name, "_", input$source))
-        pss.file.remote  <- file.path(out.dir.remote, basename(settings$run$inputs[["pss"]][['path']]))
-        settings$run$inputs[["pss"]][['path']] <- pss.file.remote
-
-        css.file.remote  <- file.path(out.dir.remote, basename(settings$run$inputs[["css"]][['path']]))
-        settings$run$inputs[["css"]][['path']] <- css.file.remote
+        remote_dir <- file.path(settings$host$folder, paste0(input$source, "_site_", str_ns))
         
-        site.file.remote <- file.path(out.dir.remote, basename(settings$run$inputs[["site"]][['path']]))
-        settings$run$inputs[["site"]][['path']] <- site.file.remote
+        # copies css
+        PEcAn.utils::remote.copy.update(putveg.id, remote_dir, remote_file_name = NULL, host, con)
+        settings$run$inputs[["css"]][['path']] <- file.path(remote_dir, basename(settings$run$inputs[["css"]][['path']]))
         
-        remote.execute.cmd(settings$host, "mkdir", c("-p", out.dir.remote))
-        PEcAn.utils::remote.copy.to(settings$host, pss.file.local, pss.file.remote)
-        PEcAn.utils::remote.copy.to(settings$host, css.file.local, css.file.remote)
-        PEcAn.utils::remote.copy.to(settings$host, site.file.local, site.file.remote)
+        # pss and site
+        pss_file <-  basename(settings$run$inputs[["pss"]][['path']])
+        PEcAn.utils::remote.copy.update(putveg.id, remote_dir, remote_file_name = pss_file, host, con)
+        settings$run$inputs[["pss"]][['path']] <- file.path(remote_dir, pss_file)
+          
+        site_file <- basename(settings$run$inputs[["site"]][['path']])
+        PEcAn.utils::remote.copy.update(putveg.id, remote_dir, remote_file_name = site_file, host, con)
+        settings$run$inputs[["site"]][['path']] <- file.path(remote_dir, site_file)
         
-        # update DB record
-        ic_input <- db.query(paste0("SELECT * from inputs where id = ", putveg.id), con)
-        fname    <- db.query(paste0("SELECT * from formats where id = ", ic_input$format_id), con)
-        mtype    <- db.query(paste0("SELECT type_string from mimetypes where id = ", fname$mimetype_id), con)
-        dbfile.input.insert(in.path = out.dir.remote, in.prefix = model_file[["file_name"]],
-                            siteid = new.site$id, startdate = start_date, enddate = end_date, 
-                            mimetype = mtype, formatname = fname$name, parentid = ic_input$parent_id, con, hostname = settings$host$name)
       }
     }
     
-    
   }
   
-
   
   return(settings)
 } # ic_process
