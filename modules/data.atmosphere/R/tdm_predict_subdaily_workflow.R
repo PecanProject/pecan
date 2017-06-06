@@ -149,8 +149,8 @@ predict.subdaily.workflow <- function(outfolder, in.path, in.prefix, lm.models.b
         lags.init <- list()
         for (v in vars.info$CF.name) {
             if (all(is.na(lags.list$air_temperature))) {
-                lags.init[[v]] <- data.frame(array(mean(c(lags.list$air_temperature_max, 
-                  lags.list$air_temperature_min)), dim = c(1, ens.hr)))
+                lags.init[[v]] <- data.frame(array((dat.yr$air_temperature_max + 
+                                                      dat.yr$air_temperature_min)/2), dim = c(1, ens.hr)))
             }
             if (all(is.na(lags.list$wind_speed))) {
                 lags.init[[v]] <- data.frame(array(sqrt((lags.list$eastward_wind^2) + 
@@ -183,11 +183,10 @@ predict.subdaily.workflow <- function(outfolder, in.path, in.prefix, lm.models.b
         
         # We need to fill these variables if they aren't available
         if (all(is.na(dat.yr$air_temperature))) {
-            dat.yr$air_temperature <- mean(dat.yr$air_temperature_max + 
-                dat.yr$air_temperature_min)
+            dat.yr$air_temperature <- ((dat.yr$air_temperature_max + dat.yr$air_temperature_min)/2)
         }
         if (all(is.na(dat.yr$wind_speed))) {
-            dat.yr$wind_speed <- sqrt(dat.yr$ewind^2 + dat.yr$nwind^2)
+            dat.yr$wind_speed <- sqrt(dat.yr$eastward_wind^2 + dat.yr$northward_wind^2)
         }
         ncdf4::nc_close(nc.now)
         
