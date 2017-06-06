@@ -38,7 +38,7 @@ veg2model.ED2 <- function(in.path, in.name, outfolder, start_date, end_date,
   formatnames <- c("ED2.cohort", "ED2.patch", "ED2.site")
   dbfilenames <- c("css.file", "pss.file", "site.file")
   
-  file.prefix <- paste(site_name, source, start_year,
+  file.prefix <- paste(source, start_year,
                       get.ed.file.latlon.text(lat, lon, site.style = FALSE), sep = ".")
 
   
