@@ -14,12 +14,11 @@ RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" > /etc/apt/sourc
 # copy the installation script inside the container
 ADD docker/ /build
 
-# Run the OS System setup script
-RUN chmod 750 /build/system_services.sh
-RUN /build/system_services.sh
-
 # Set script mod +x for preprocessors
-RUN chmod 750 /build/*
+RUN chmod 750 /build/*.sh
+
+# Run the OS System setup script
+RUN /build/system_services.sh
 
 # run update machine to update machine
 RUN /build/update_machine.sh
@@ -35,6 +34,9 @@ RUN /build/install_pecan.sh
 
 # Clean up APT when done.
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Mounting pecan data volume
+VOLUME /home/skywalker/pecandata:/pecandata
 
 # startup
 CMD ["/sbin/my_init"]
