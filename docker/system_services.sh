@@ -83,8 +83,8 @@ ln -s /bin/bash /bin/sh
 echo `. /etc/lsb-release; echo ${DISTRIB_CODENAME/*, /}` >> /etc/container_environment/DISTRIB_CODENAME
 
 ## cleanup
-apt-get clean
-rm -rf /build
-rm -rf /tmp/* /var/tmp/*
-rm -rf /var/lib/apt/lists/*
-rm -f /etc/dpkg/dpkg.cfg.d/02apt-speedup
+# apt-get clean
+# rm -rf /build
+# rm -rf /tmp/* /var/tmp/*
+# rm -rf /var/lib/apt/lists/*
+# rm -f /etc/dpkg/dpkg.cfg.d/02apt-speedup
