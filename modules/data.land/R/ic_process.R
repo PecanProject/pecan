@@ -54,12 +54,11 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   
   # this check might change depending on what other sources that requires querying its own DB we will have
   # probably something passed from settings
-  if(input_veg$source == "FIA"){ 
+  if(input$source == "FIA"){ 
     
     start_date <- settings$run$start.date
     end_date   <- settings$run$end.date
-  }
-  else{
+  }else{
     
     query      <- paste0("SELECT * FROM inputs where id = ", input$source.id)
     input_file <- db.query(query, con = con)
