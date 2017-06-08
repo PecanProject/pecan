@@ -287,7 +287,13 @@ remote.copy.update <- function(input_id, remote_dir, remote_file_name = NULL, ho
   local_file_record <- db.query(paste("SELECT * from dbfiles where container_id =", input_id), con)
   
   if(is.null(remote_file_name)){
-    remote_file_name <- local_file_record$file_name
+    local_file_name <- local_file_record$file_name
+    if(length(local_file_name) > 1){
+      logger.warn(paste0("Multiple file names found in the DB and no remote file name provided. Using the first file name for remote file name: ", 
+                         local_file_record$file_name[1]))
+      local_file_name <- local_file_record$file_name[1]
+    }
+    remote_file_name <- local_file_name
   }
   
   local_file_path  <- file.path(local_file_record$file_path, local_file_record$file_name)
