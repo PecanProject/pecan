@@ -646,8 +646,8 @@ pda.generate.sf <- function(n.knot, sf, prior.list){
   
   n.sf <- length(sf)
   # prior for scaling factor
-  prior.sf <- data.frame(distn = rep("unif", n.sf), 
-                         parama = rep(0, n.sf), 
+  prior.sf <- data.frame(distn = rep("beta", n.sf), 
+                         parama = rep(1, n.sf), 
                          paramb = rep(1, n.sf), 
                          n = rep(NA, n.sf))
   rownames(prior.sf) <- paste0(sf,"_SF")
@@ -904,7 +904,7 @@ return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias, run.r
     prior.names[i] <- paste0("bias.", sapply(model.out[[1]],names)[isbias[i]])
     names(bias.params)[i] <- paste0("bias.", sapply(model.out[[1]],names)[isbias[i]])
   }
-
+  
   rownames(bias.prior) <- prior.names
   prior.list.bias[[(length(prior.list.bias)+1)]] <- bias.prior
   
@@ -914,7 +914,7 @@ return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias, run.r
                        function(b) punif(bias.params[[b]], 
                                          prior.list.bias[[length(prior.list.bias)]]$parama[b], 
                                          prior.list.bias[[length(prior.list.bias)]]$paramb[b]))
-
+  
   
   # if this is another round, use the first priors
   if(run.round){
@@ -932,4 +932,4 @@ return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias, run.r
   
   return(list(bias.params = bias.params, bias.probs = bias.probs, prior.list.bias = prior.list.bias))
   
-}
+} # return.bias

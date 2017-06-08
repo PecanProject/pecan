@@ -16,7 +16,7 @@ Depends:
     ellipse,
     dplyr,
     parallel,
-    GPfit,
+    mlegp,
     IDPmisc,
     rjags,
     BayesianTools,
