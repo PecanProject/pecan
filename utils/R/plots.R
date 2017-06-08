@@ -204,6 +204,7 @@ create.base.plot <- function() {
 ##' The height of Y is arbitrary, and can be set to optimize visualization.
 ##' If SE estimates are available, tehse wil be plotted
 ##' @name plot_data
+##' @aliases plot.data
 ##' @title Add data to plot 
 ##' @param trait.data data to be plotted
 ##' @param base.plot a ggplot object (grob),
