@@ -1,0 +1,24 @@
+version: '3'
+
+networks:
+  net1:
+    driver: bridge
+
+services:
+  postgresql:
+    image: 'postgres:latest'
+    networks:
+      - net1
+    ports:
+      - '5432:5432'
+
+  pecan-image:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - net1
+    ports:
+      - '8787:8787'
+    volumes:
+      - /home/skywalker/pecandata:/pecandata
