@@ -73,7 +73,7 @@ load.pda.data <- function(settings, bety) {
         
         ustar.thresh <- 0.4  # TODO: soft code this
         
-        var.obs <- colnames(inputs[[i]]$data)[!colnames(inputs[[i]]$data) %in% c("UST", "posix")]
+        var.obs <- colnames(inputs[[i]]$data)[!colnames(inputs[[i]]$data) %in% c("UST", "posix", "year")]
         
         AMFo                     <- inputs[[i]]$data[[var.obs]]
         UST                      <- inputs[[i]]$data$UST
