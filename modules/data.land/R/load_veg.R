@@ -18,7 +18,7 @@ load_veg <- function(new_site, start_date, end_date,
   
   # query data.path from source id [input id in BETY]
   query      <- paste0("SELECT * FROM dbfiles where container_id = ", source_id)
-  input_file <- db.query(query, con = bety$con)
+  input_file <- PEcAn.DB::db.query(query, con = bety$con)
   data_path  <- file.path(input_file[["file_path"]], input_file[["file_name"]])
   
   # query format info
@@ -71,8 +71,7 @@ load_veg <- function(new_site, start_date, end_date,
   # Write vegettion data as rds, return results to convert.input
   
   # need check for overwrite
-  sppfilename <- write_veg(outfolder, start_date, veg_info = veg_info, 
-                           site_name = new_site$name, source)
+  sppfilename <- write_veg(outfolder, start_date, veg_info = veg_info, source)
   
   # Build results dataframe for convert.input
   results <- data.frame(file = sppfilename, 

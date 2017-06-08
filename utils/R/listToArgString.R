@@ -51,7 +51,7 @@ listToArgString <- function(l) {
         if(has_sub_list[r]){
           foonames <- names(x[[r]])
           foobar <- unlist(x[[r]])
-          tmp <-sapply(seq_along(x[[r]]), function(pas) paste0(foonames[pas], "=", foobar[pas]))
+          tmp <-sapply(seq_along(x[[r]]), function(pas) paste0(foonames[pas], "='", foobar[pas], "'"))
           foo <- paste0(names(x)[r],"=list(",toString(tmp),")")
           foo.string[[r]] <- foo
         }else{ # this doesn't take care of everything
@@ -62,9 +62,11 @@ listToArgString <- function(l) {
       return(val)
      
     }else{
-      foo <- toString(x)
-      foobar <- paste0("list(", foo, ")")
-      return(foobar)
+      foonames <- names(x)
+      foobar <- unlist(x)
+      tmp <-sapply(seq_along(x), function(pas) paste0(foonames[pas], "='", foobar[pas], "'"))
+      foo <- paste0("list(",toString(tmp),")")
+      return(foo)
     }
 
   }else {
