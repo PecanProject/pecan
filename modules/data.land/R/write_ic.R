@@ -2,8 +2,9 @@
 ##' @title write_ic
 ##' @export
 ##' @author Istem Fer
-write_ic <- function(in.path, in.name, model, new_site, pfts,
-                      source = input_veg$source, overwrite = FALSE, ...){
+write_ic <- function(in.path, in.name, start_date, end_date, 
+                     outfolder, model, new_site, pfts,
+                     source = input_veg$source, overwrite = FALSE, ...){
   
   
   #--------------------------------------------------------------------------------------------------#
@@ -39,14 +40,15 @@ write_ic <- function(in.path, in.name, model, new_site, pfts,
   
   out <- fcn(outfolder, veg_info, start_date, new_site, source)
   
+
   # Build results dataframe for convert.input
-  results <- data.frame(file = filenames_full, 
+  results <- data.frame(file = out$filepath, 
                         host = c(fqdn()), 
-                        mimetype = "text/plain", 
-                        formatname = formatnames, 
+                        mimetype = out$mimetype, 
+                        formatname = out$formatname, 
                         startdate = start_date, 
                         enddate = end_date, 
-                        dbfile.name = filenames, 
+                        dbfile.name = out$filename, 
                         stringsAsFactors = FALSE)
   
   ### return for convert.inputs

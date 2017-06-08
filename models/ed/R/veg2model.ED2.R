@@ -165,7 +165,9 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   writeLines(site, filenames_full[3])
   close(site.file.con)
   
-
+  # convert.input inserts only 1 file anyway
+  return(list(filepath = filenames_full[1], filename = filenames[1], 
+              mimetype = "text/plain", formatname = "ED2.cohort"))
 
 }
 

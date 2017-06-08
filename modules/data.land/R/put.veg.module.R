@@ -29,6 +29,10 @@
   
   spp.file <- db.query(paste("SELECT * from dbfiles where container_id =", getveg.id), con)
   
+  
+  pkg  <- "PEcAn.data.land"
+  fcn  <- "write_ic"
+  
   putveg.id <- convert.input(input.id = getveg.id,
                              outfolder = outfolder, 
                              formatname = formatname, 
