@@ -58,7 +58,8 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
     
     start_date <- settings$run$start.date
     end_date   <- settings$run$end.date
-  }else{
+  }
+  else{
     
     query      <- paste0("SELECT * FROM inputs where id = ", input$source.id)
     input_file <- db.query(query, con = con)
