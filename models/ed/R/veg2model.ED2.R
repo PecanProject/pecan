@@ -1,40 +1,19 @@
 #' Writes ED specific IC files
 #'
 #' @param outfolder where to write files
-#' @param overwrite
-#' @return results data frame
+#' @return filenames
 #' @export
 #' @author Istem Fer
-veg2model.ED2 <- function(in.path, in.name, outfolder, start_date, end_date, 
-                          new_site, pfts, source, overwrite = FALSE, ...){
+veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   
 
   lat       <- as.numeric(as.character(new_site$lat))
   lon       <- as.numeric(as.character(new_site$lon))
-  site_id   <- new_site$id
-  site_name <- new_site$name
-  
-  #--------------------------------------------------------------------------------------------------#
-  # Read
-  rds_file <- file.path(in.path, in.name)
-  veg_info <- readRDS(rds_file) 
-  
-  #--------------------------------------------------------------------------------------------------#
-  # Match PFTs
-  
-  obs <- as.data.frame(veg_info[[2]], stringsAsFactors = FALSE)
-  
-  pft.info <- PEcAn.data.land::match_pft(obs$bety_species_id, pfts)
-  
-  ### merge with other stuff
-  obs$pft <- pft.info$pft
-  
-  
+
   #--------------------------------------------------------------------------------------------------#
   # Handle file names
   
   start_year  <- lubridate::year(start_date)
-  end_year    <- lubridate::year(end_date)
   formatnames <- c("ED2.cohort", "ED2.patch", "ED2.site")
   dbfilenames <- c("css.file", "pss.file", "site.file")
   
@@ -93,9 +72,10 @@ veg2model.ED2 <- function(in.path, in.name, outfolder, start_date, end_date,
   #--------------------------------------------------------------------------------------------------#
   # Prepare css
   
-  # this might change depending on how I process data in put.veg  
-  css <- obs
+  obs <- veg_info[[2]]
     
+  # remove dead trees
+  css <- remove_dead_trees(tree.info = obs, look.col, by.code = TRUE)
 
   if(is.null(css$patch)){
     css$patch  <- 1
@@ -182,18 +162,7 @@ veg2model.ED2 <- function(in.path, in.name, outfolder, start_date, end_date,
   writeLines(site, filenames_full[3])
   close(site.file.con)
   
-  # Build results dataframe for convert.input
-  results <- data.frame(file = filenames_full, 
-                        host = c(fqdn()), 
-                        mimetype = "text/plain", 
-                        formatname = formatnames, 
-                        startdate = start_date, 
-                        enddate = end_date, 
-                        dbfile.name = filenames, 
-                        stringsAsFactors = FALSE)
-  
-  ### return for convert.inputs
-  return(invisible(results))  
+
 
 }
 

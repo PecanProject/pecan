@@ -27,16 +27,6 @@
   formatname <- model_info[1]
   mimetype   <- model_info[3]
   
-  ## Set model-specific functions
-  pkg <- paste0("PEcAn.", model)
-  do.call("library", list(pkg))
-  fcn <- paste("veg2model.", model, sep = "")
-  if (!exists(fcn)) {
-    logger.severe(paste(fcn, "does not exist."))
-  }
-  
-  # NOTE : match_pft is now called in veg2model
-  
   spp.file <- db.query(paste("SELECT * from dbfiles where container_id =", getveg.id), con)
   
   putveg.id <- convert.input(input.id = getveg.id,
@@ -52,6 +42,7 @@
                              # fcn specific args 
                              in.path = spp.file$file_path, 
                              in.name = spp.file$file_name,
+                             model = model,
                              new_site = new_site,
                              pfts = pfts,
                              source = input_veg$source)
