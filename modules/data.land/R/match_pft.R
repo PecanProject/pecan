@@ -57,6 +57,11 @@ match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL){
 
   ## Check for unmatched bety_species_ids
   bad2 <- bety_species_id[!(bety_species_id %in% translation$bety_species_id)]
+  
+  # skip dead tree codes for 2TB, SNAG, DEAD
+  dead_tree_ids <- c(1000020816, 1000020817, 1438)
+  bad2 <- bad2[!(bad2 %in% dead_tree_ids)] 
+  
   if (length(bad2) > 0) {
     ubad <- unique(bad2)
     for(i in seq_along(ubad)){
@@ -78,7 +83,7 @@ match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL){
   
   ## stop after checking both errors
   if (nrow(bad) > 0 | length(bad2) > 0) {
-    PEcAn.utils::logger.error("Within BETY PFT table, please address duplicated species and add unmatched species to PFTs.")
+    PEcAn.utils::logger.severe("Within BETY PFT table, please address duplicated species and add unmatched species to PFTs.")
   }  
 
   ## Match

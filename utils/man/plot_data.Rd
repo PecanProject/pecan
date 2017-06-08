@@ -2,6 +2,7 @@
 % Please edit documentation in R/plots.R
 \name{plot_data}
 \alias{plot_data}
+\alias{plot.data}
 \title{Add data to plot}
 \usage{
 plot_data(trait.data, base.plot = NULL, ymax, color = "black")

@@ -73,9 +73,12 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   # Prepare css
   
   obs <- veg_info[[2]]
-    
-  # remove dead trees
-  css <- remove_dead_trees(tree.info = obs, look.col, by.code = TRUE)
+  
+  # remove NA rows for unmatched PFTs, this should mean dead trees only
+  css <- obs[!is.na(obs$pft), ]
+  
+  # might further need removing dead trees by mortality status
+  # css <- remove_dead_trees()
 
   if(is.null(css$patch)){
     css$patch  <- 1
