@@ -151,16 +151,18 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
         remote_dir <- file.path(settings$host$folder, paste0(input$source, "_site_", str_ns))
         
         # copies css
-        PEcAn.utils::remote.copy.update(putveg.id, remote_dir, remote_file_name = NULL, host, con)
-        settings$run$inputs[["css"]][['path']] <- file.path(remote_dir, basename(settings$run$inputs[["css"]][['path']]))
+        css_file <- basename(settings$run$inputs[["css"]][['path']])
+        PEcAn.utils::remote.copy.update(putveg.id, remote_dir, remote_file_name = css_file, settings$host, con)
+        settings$run$inputs[["css"]][['path']] <- file.path(remote_dir, css_file)
         
-        # pss and site
+        # pss 
         pss_file <-  basename(settings$run$inputs[["pss"]][['path']])
-        PEcAn.utils::remote.copy.update(putveg.id, remote_dir, remote_file_name = pss_file, host, con)
+        PEcAn.utils::remote.copy.update(putveg.id, remote_dir, remote_file_name = pss_file, settings$host, con)
         settings$run$inputs[["pss"]][['path']] <- file.path(remote_dir, pss_file)
           
+        # site
         site_file <- basename(settings$run$inputs[["site"]][['path']])
-        PEcAn.utils::remote.copy.update(putveg.id, remote_dir, remote_file_name = site_file, host, con)
+        PEcAn.utils::remote.copy.update(putveg.id, remote_dir, remote_file_name = site_file, settings$host, con)
         settings$run$inputs[["site"]][['path']] <- file.path(remote_dir, site_file)
         
       }
