@@ -47,10 +47,13 @@ load_x_netcdf <- function(data.path, format, site, vars = NULL) {
       PEcAn.utils::logger.error("All time formats failed to parse. No formats found.")
     }
     
+
     time.stamp.match <- gsub("UTC", "", date.origin)
     t.units <- gsub(paste0(" since ", time.stamp.match, ".*"), "", 
                     ncdf4::ncatt_get(nc[[i]], dims[time.var])$units)
     
+    # need to change system TZ otherwise, lines below keeps writing in the current time zone
+    Sys.setenv(TZ = 'UTC')
     foo <- as.POSIXct(date.origin, tz = "UTC") + udunits2::ud.convert(time.col[[i]], t.units, "seconds")
     time.col[[i]] <- foo
   }
