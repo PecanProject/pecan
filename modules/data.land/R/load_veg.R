@@ -22,10 +22,10 @@ load_veg <- function(new_site, start_date, end_date,
   data_path  <- file.path(input_file[["file_path"]], input_file[["file_name"]])
   
   # query format info
-  format <- query.format.vars(bety = bety, input.id = source_id)
+  format <- PEcAn.DB::query.format.vars(bety = bety, input.id = source_id)
   
   # load_data{benchmark}
-  obs <- load_data(data.path = data_path, format, site = new_site)
+  obs <- PEcAn.benchmark::load_data(data.path = data_path, format, site = new_site)
   
   #--------------------------------------------------------------------------------------------------#
   # Match species : this step requires DB connections 

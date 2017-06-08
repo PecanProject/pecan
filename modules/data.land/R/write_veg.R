@@ -7,7 +7,6 @@ write_veg <- function(outfolder, start_date, veg_info, source){
   # Save rds file and return results data frame
   
   start_year    <- lubridate::year(start_date)
-  end_year      <- lubridate::year(end_date)
   
   out_file      <- paste(source, start_year, "veg", "rds", sep = ".")
 
