@@ -2,7 +2,7 @@
 data_end='@MET_END@',
 data_period=@DT@,
 data_start='@MET_START@',
-file='@SITE_MET@.%y4.nc',
+file='@SITE_MET@%y4.nc',
 l_daily_disagg=.false.,
 l_imogen=.false.,
 read_list=.false.,
