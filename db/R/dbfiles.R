@@ -416,6 +416,7 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
 ##' @param machine.check setting to check for file on named host, otherwise will check for any file given container id
+##' @param return.all logical flag, if TRUE will return all the files in the directory, not only the max(dbfiles$updated_at) subset
 ##' @return data.frame with the id, filename and pathname of all the files that are associated
 ##' @author Rob Kooper
 ##' @export
@@ -424,7 +425,7 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
 ##'   dbfile.check('Input', 7, dbcon)
 ##' }
 
-dbfile.check <- function(type, container.id, con, hostname=PEcAn.utils::fqdn(), machine.check = TRUE) {
+dbfile.check <- function(type, container.id, con, hostname=PEcAn.utils::fqdn(), machine.check = TRUE, return.all = FALSE) {
   
   if (hostname == "localhost") hostname <- PEcAn.utils::fqdn()
   
@@ -443,7 +444,11 @@ dbfile.check <- function(type, container.id, con, hostname=PEcAn.utils::fqdn(), 
       
       logger.warn("Multiple Valid Files found on host machine. Returning last updated record")
       logger.info(dbfiles)
-      return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
+      if(return.all){
+        return(dbfiles)
+      }else{
+        return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
+      }
       
     }else{
       
@@ -459,8 +464,12 @@ dbfile.check <- function(type, container.id, con, hostname=PEcAn.utils::fqdn(), 
     if(nrow(dbfiles) > 1){
       
       logger.warn("Multiple Valid Files found on host machine. Returning last updated record")
-      return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
       
+      if(return.all){
+        return(dbfiles)
+      }else{
+        return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
+      }
     }else{
       
       return(dbfiles)
