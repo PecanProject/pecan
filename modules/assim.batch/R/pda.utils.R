@@ -266,7 +266,7 @@ pda.load.priors <- function(settings, con, extension.check = TRUE) {
   # if files becomes NULL try loading objects from workflow oft folders
   for (i in seq_along(settings$pfts)) {
       
-    files <- dbfile.check("Posterior", priorids[[i]], con, settings$host$name)
+    files <- dbfile.check("Posterior", priorids[[i]], con, settings$host$name, return.all  = TRUE)
       
     pid <- grep("post.distns.*Rdata", files$file_name)  ## is there a posterior file?
     
