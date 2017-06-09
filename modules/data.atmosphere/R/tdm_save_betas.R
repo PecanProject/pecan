@@ -14,6 +14,7 @@
 ##' @param model.out list linear regression model output
 ##' @param betas name of the layer of betas to save (e.g. 'betas' or 'betas.resid')
 ##' @param outfile location where output will be stored
+##' @export
 # -----------------------------------
 #----------------------------------------------------------------------
 # Begin Function

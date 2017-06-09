@@ -24,6 +24,7 @@
 #                    options are: "year", "doy" (day of year), or "hour"
 ##' @param overwrite
 ##' @param verbose
+##' @export
 # -----------------------------------
 #----------------------------------------------------------------------
 # Begin Function

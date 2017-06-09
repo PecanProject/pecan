@@ -33,6 +33,7 @@
 ##' @param n.cores - deals with parallelization
 ##' @param overwrite
 ##' @param verbose
+##' @export
 ##' @examples
 ##' \dontrun{
 ##' library(PEcAn.data.atmosphere)

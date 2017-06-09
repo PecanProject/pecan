@@ -6,24 +6,30 @@ Temporally Downscale Meteorology
 
 ~/Examples:
 
-* Ameriflux 30-minute/hourly
 * Fluxnet2015 30-minute/hourly
+* Ameriflux 30-minute/hourly
 
 ### Extract Training Data 
 
 ```{r}
 library(PEcAn.data.atmosphere)
-download.AmerifluxLBL(sitename = "US-WCr",outfolder = "~/Example",start_date = "1999-01-01", end_date = "2004-12-31")
-met2CF.Ameriflux(in.path = "~/Example", in.prefix = "US-WCr", outfolder = "~/Example/CF", start_date = "1999-01-01", end_date = "2004-12-31")
-metgapfill(in.path = "~/Example/CF", in.prefix = "US-WCr", outfolder = "~/Example/gapfill", start_date = "1999-01-01", end_date = "2004-12-31")
-nc.merge(in.path = "~/Example/gapfill", in.prefix = "US-WCr", outfolder = "~/Example/WCr_training_data", start_date = "1999-01-01", end_date = "2004-12-31", upscale = "hour")
+download.Fluxnet2015(sitename='Niwot Ridge 
+   Forest/LTER NWT1 (US-NR1)', username='pecan', overwrite=FALSE, 
+   outfolder='~/Example', 
+   start_date='2010/01/01', end_date='2014/12/31') 
+met2CF.csv(lat=40.0329, lon=-105.546, overwrite=FALSE, in.path='~/Example', in.prefix='FLX_US-NR1_FLUXNET2015_SUBSET_HH_1998-2014_1-3', outfolder='~/Example/CF', start_date='2010/01/01', end_date='2014/12/31', format=list(file_name = "FLUXNET2015_SUBSET_HH", mimetype = "csv", vars = list(bety_name = c("H", "LE", "NEE", "PAR", "UST", "VPD", "Wspd", "airT", "air_pressure", "co2atm", "datetime", "precipitation_flux", "soilM", "soilT", "solar_radiation", "surface_downwelling_longwave_flux_in_air", "wind_direction"), variable_id = c(299, 298, 297, 136, 1000000041, 387, 390, 86, 554, 135, 5000000001, 555, 391, 379, 547, 561, 560), input_name = c("H_F_MDS", "LE_F_MDS", "NEE_VUT_REF", "PPFD_IN", "USTAR", "VPD_F", "WS_F", 
+"TA_F", "PA_F", "CO2_F_MDS", "TIMESTAMP_START", "P_F", "SWC_F_MDS_1", "TS_F_MDS_1", "SW_IN_F", "LW_IN_F", "WD"), input_units = c("W m-2", "W m-2", "umol C m-2 s-1", "umol m-2 s-1", "m s-1", "hPa", "m s-1", "celsius", "kPa", "ppm", "ymd_hm", "mm", "%", "celsius", "W m-2", "W m-2", "degrees"), storage_type = c("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""), column_number = c(38, 32, 45, 21, 19, 10, 16, 3, 12, 24, 1, 14, 28, 26, 6, 8, 18), bety_units = c("W m-2", "W m-2", "umol C m-2 s-1", 
+"umol m-2 s-1", "m s-1", "Pa", "m s-1", "degrees C", "Pa", "ppm (= umol mol-1)", "ymd_hms", "Kg/m2/s", "%", "degrees C", "W/m^2", "W m-2", "degrees"), mstmip_name = c("Qh", "Qle", "NEE", NA, NA, NA, NA, "Tair", "Psurf", "CO2air", NA, "Rainf", "SoilMoistFrac", "SoilTemp", "SWdown", "LWdown", NA), mstmip_units = c("W m-2", "W m-2", "kg C m-2 s-1", NA, NA, NA, NA, "K", "Pa", "micromol mol-1", NA, "kg m-2 s-1", "(-)", "K", "W/m^2", "W/m2", NA), pecan_name = c("Qh", "Qle", "NEE", "PAR", "UST", "VPD", 
+"Wspd", "Tair", "Psurf", "CO2air", "datetime", "Rainf", "SoilMoistFrac", "SoilTemp", "SWdown", "LWdown", "wind_direction"), pecan_units = c("W m-2", "W m-2", "kg C m-2 s-1", "umol m-2 s-1", "m s-1", "Pa", "m s-1", "K", "Pa", "micromol mol-1", "ymd_hms", "kg m-2 s-1", "(-)", "K", "W/m^2", "W/m2", "degrees")), skip = 0, header = 1, na.strings = c("-9999", "-6999", "9999"), time.row = NULL, site = 772, lat = 40.0329, lon = -105.546)) 
+metgapfill(lst=-7, overwrite=FALSE, in.path='~/Example/CF', in.prefix='FLX_US-NR1_FLUXNET2015_SUBSET_HH_1998-2014_1-3', outfolder='~/Example/gapfill', start_date='2010/01/01', end_date='2014/12/31')
+nc.merge(in.path = "~/Example/gapfill", in.prefix = "FLX_US-NR1_FLUXNET2015_SUBSET_HH_1998-2014_1-3", outfolder = "~/Example/NR1_training_data", start_date = "2010-01-01", end_date = "2014-12-31", upscale = "hour")
 ```
 
 ### Generate Linear Regression Models From Training Data 
 
-Note: This requires ~ 120 MB of space if you use all 16 years of observations at US-WCr
+Note: This requires ~ 60 GB of space
 ```{r}
-gen.subdaily.models(in.prefix = "US-WCr", dat.train_file = "~/Example/WCr_training_data/US-WCr_dat.train", outfolder = "~/Example/lm_model_output", n.beta = 10, day.window = 5)
+gen.subdaily.models(in.prefix = "US-NR1", dat.train_file = "~/Example/NR1_training_data/FLX_US-NR1_FLUXNET2015_SUBSET_HH_1998-2014_1-3_dat.train", outfolder = "~/Example/lm_model_output", n.beta = 10, day.window = 5)
 ```
 
 ### Coarse Data to Downscale
@@ -36,12 +42,12 @@ gen.subdaily.models(in.prefix = "US-WCr", dat.train_file = "~/Example/WCr_traini
 ### Extract Data to Downscale
 
 ```{r}
-download.MACA(outfolder = "~/Example/", start_date = "2020-01-01", end_date = "2020-12-31", site_id = 676, lat.in = 45.80592667, lon.in = -90.07985917, model = "BNU-ESM", scenario = "rcp85", ensemble_member = "r1i1p1")
+download.MACA(outfolder = "~/Example/", start_date = "2020-01-01", end_date = "2020-12-31", site_id = 772, lat.in=40.0329, lon.in=-105.546, model = "BNU-ESM", scenario = "rcp85", ensemble_member = "r1i1p1")
 
 ```
 
 ### Predict Subdaily Data Using Statistics From Training Data 
 
 ```{r}
-predict.subdaily.workflow(outfolder = "~/Example/downscaled_data", in.path = "~/Example/MACA_site_0-676/", in.prefix = "MACA.BNU-ESM.rcp85.r1i1p1", start_date = "2020-01-01", end_date = "2020-12-31", lm.models.base = "~/Example/lm_model_output", dat.train_file = "~/Example/WCr_training_data", site.name = "US-WCr", lat.in = 45.80592667, lon.in = -90.07985917, ens.hr = 3)
+predict.subdaily.workflow(outfolder = "~/Example/downscaled_data", in.path = "~/Example/MACA_site_0-772/", in.prefix = "MACA.BNU-ESM.rcp85.r1i1p1", start_date = "2020-01-01", end_date = "2020-12-31", lm.models.base = "~/Example/lm_model_output", dat.train_file = "~/Example/NR1_training_data/FLX_US-NR1_FLUXNET2015_SUBSET_HH_1998-2014_1-3_dat.train", site.name = "US-NR1", lat.in=40.0329, lon.in=-105.546, ens.hr = 3)
 ```

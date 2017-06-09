@@ -18,6 +18,7 @@
 ##' @param resids TRUE or FALSE, whether to use residuals or not
 ##' @param threshold NULL except for surface_downwelling_shortwave_radiation, helps with our
 ##'                  distinction between day and night (no shortwave without sunlight)
+##' @export
 # -----------------------------------
 #----------------------------------------------------------------------
 # Begin Function
