@@ -20,6 +20,7 @@
 ##' @param model.resid data.frame of model residuals
 ##' @param Rbeta.resid data.frame of Rbeta residuals
 ##' @param n.ens number of ensembles to create
+##' @export
 # -----------------------------------
 #----------------------------------------------------------------------
 # Begin Function

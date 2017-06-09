@@ -20,6 +20,7 @@
 ##' @param lags.init - a data frame of initialization parameters to match the data in dat.mod
 ##' @param dat.train - the training data used to fit the model; needed for night/day in 
 ##'                    surface_downwelling_shortwave_flux_in_air
+##' @export
 # -----------------------------------
 #----------------------------------------------------------------------
 # Begin Function
