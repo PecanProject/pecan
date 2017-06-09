@@ -27,6 +27,26 @@ met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
                         overwrite = FALSE) {
 
+  # get met source and potentially determine where to start in the process
+  if(is.null(input_met$source)){
+    if(is.null(input_met$id)){
+      PEcAn.utils::logger.warn("met.process only has a path provided, assuming path is model driver and skipping processing")
+      return(input_met$path)
+    }else {
+      logger.warn("No met source specified")
+      if(!is.null(input_met$id) & !is.null(input_met$path)){
+        logger.warn("Assuming source CFmet")
+        met <- input_met$source <- "CFmet" ## this case is normally hit when the use provides an existing file that has already been
+        ## downloaded, processed, and just needs conversion to model-specific format.
+        ## setting a 'safe' (global) default
+      } else {
+        logger.error("Cannot process met without source information")
+      }  
+    }
+  } else {
+    met <-input_met$source
+  }
+  
   # If overwrite is a plain boolean, fill in defaults for each stage
   if (!is.list(overwrite)) {
     if (overwrite) {
@@ -70,12 +90,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
   username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
   machine.host <- ifelse(host == "localhost" || host$name == "localhost", fqdn(), host$name)
   machine <- db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
-  
-  # get met source and potentially determine where to start in the process
-  met <- ifelse(is.null(input_met$source), 
-                logger.error("Must specify met source"), 
-                input_met$source)
-  
+
   # special case Brown Dog
   if (!is.null(browndog)) {
     result <- browndog.met(browndog, met, site, start_date, end_date, model, dir, username)
@@ -110,6 +125,10 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                dbfileid = dbfile.check("Input",input_met$id,hostname = machine.host,con=con)$id))
   }
   print(stage)
+  
+  if(is.null(model)){
+    stage$model <- FALSE
+  }
   
   # setup additional browndog arguments
   if (!is.null(browndog)) {
@@ -151,6 +170,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                        site = site, username = username)
     if (met %in% c("CRUNCEP", "GFDL")) {
       ready.id <- raw.id
+      # input_met$id overwrites ready.id below, needs to be populated here
+      input_met$id <- raw.id
       stage$met2cf <- FALSE
       stage$standardize <- FALSE
     }
@@ -234,15 +255,26 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                           spin = spin)
     
     model.id  <- met2model.result$model.id
-    outfolder <- met2model.result$outfolder
+    model.file.info <- db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
+    model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
+    
   } else {
-    model.id  <- ready.id
-    outfolder <- file.path(dir, paste0(met, "_site_", str_ns))
+    PEcAn.utils::logger.info("ready.id",ready.id,machine.host)
+    model.id  <- dbfile.check("Input", ready.id, con)#, hostname=machine.host)
+    if(is.null(model.id)|length(model.id)==0){
+      model.file <- input_met$path
+    }else{
+      model.id$dbfile.id  <- model.id$id 
+      model.file.info <- db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
+      model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
+    }
+    #PEcAn.utils::logger.info("model.file = ",model.file,input.met)
+    PEcAn.utils::logger.info("model.file = ",model.file,input_met)
   }
   
-  model.file <- db.query(paste("SELECT * from dbfiles where id =", model.id$dbfile.id), con)[["file_name"]]
-  
-  return(file.path(outfolder, model.file))
+
+    
+  return(model.file)
 } # met.process
 
 ################################################################################################################################# 
