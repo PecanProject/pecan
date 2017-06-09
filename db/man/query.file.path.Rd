@@ -4,7 +4,7 @@
 \alias{query.file.path}
 \title{Get file path given id and machine}
 \usage{
-query.file.path(input.id, host_name, con)
+\method{query}{file.path}(input.id, host_name, con)
 }
 \arguments{
 \item{con}{: database connection}
