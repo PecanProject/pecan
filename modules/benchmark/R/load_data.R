@@ -83,7 +83,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
         print(sprintf("convert %s %s to %s %s",
                       vars_used$input_name[i], vars_used$input_units[i], 
                       vars_used$pecan_name[i], vars_used$pecan_units[i]))
-        out[col] <- udunits2::ud.convert(x, u1, u2)[, 1]
+        out[col] <- udunits2::ud.convert(as.numeric(x), u1, u2)#[, 1] 
         colnames(out)[col] <- vars_used$pecan_name[i]
       } else if (misc.are.convertible(u1, u2)) {
         print(sprintf("convert %s %s to %s %s", 
@@ -131,3 +131,4 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   
   return(out)
 } # load_data
+
