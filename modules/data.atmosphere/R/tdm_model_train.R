@@ -23,7 +23,8 @@
 #----------------------------------------------------------------------
 # Begin Function
 #----------------------------------------------------------------------
-model.train <- function(dat.subset, n.beta, resids = resids, threshold = NULL) {
+model.train <- function(dat.subset, v, n.beta, resids = resids, threshold = NULL, ...) {
+  dat.subset$year <- as.ordered(dat.subset$year) 
   if (v == "air_temperature") {
     dat.subset$year <- as.ordered(dat.subset$year)
     
