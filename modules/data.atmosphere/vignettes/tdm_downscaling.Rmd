@@ -1,0 +1,47 @@
+Temporally Downscale Meteorology
+===============
+
+
+### Subdaily Training Data
+
+~/Examples:
+
+* Ameriflux 30-minute/hourly
+* Fluxnet2015 30-minute/hourly
+
+### Extract Training Data 
+
+```{r}
+library(PEcAn.data.atmosphere)
+download.AmerifluxLBL(sitename = "US-WCr",outfolder = "~/Example",start_date = "1999-01-01", end_date = "2004-12-31")
+met2CF.Ameriflux(in.path = "~/Example", in.prefix = "US-WCr", outfolder = "~/Example/CF", start_date = "1999-01-01", end_date = "2004-12-31")
+metgapfill(in.path = "~/Example/CF", in.prefix = "US-WCr", outfolder = "~/Example/gapfill", start_date = "1999-01-01", end_date = "2004-12-31")
+nc.merge(in.path = "~/Example/gapfill", in.prefix = "US-WCr", outfolder = "~/Example/WCr_training_data", start_date = "1999-01-01", end_date = "2004-12-31", upscale = "hour")
+```
+
+### Generate Linear Regression Models From Training Data 
+
+Note: This requires ~ 120 MB of space if you use all 16 years of observations at US-WCr
+```{r}
+gen.subdaily.models(in.prefix = "US-WCr", dat.train_file = "~/Example/WCr_training_data/US-WCr_dat.train", outfolder = "~/Example/lm_model_output", n.beta = 10, day.window = 5)
+```
+
+### Coarse Data to Downscale
+
+~/Examples:
+
+* MACA daily
+* CRU-NCEP 6 hourly
+
+### Extract Data to Downscale
+
+```{r}
+download.MACA(outfolder = "~/Example/", start_date = "2020-01-01", end_date = "2020-12-31", site_id = 676, lat.in = 45.80592667, lon.in = -90.07985917, model = "BNU-ESM", scenario = "rcp85", ensemble_member = "r1i1p1")
+
+```
+
+### Predict Subdaily Data Using Statistics From Training Data 
+
+```{r}
+predict.subdaily.workflow(outfolder = "~/Example/downscaled_data", in.path = "~/Example/MACA_site_0-676/", in.prefix = "MACA.BNU-ESM.rcp85.r1i1p1", start_date = "2020-01-01", end_date = "2020-12-31", lm.models.base = "~/Example/lm_model_output", dat.train_file = "~/Example/WCr_training_data", site.name = "US-WCr", lat.in = 45.80592667, lon.in = -90.07985917, ens.hr = 3)
+```
