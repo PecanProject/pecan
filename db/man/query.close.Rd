@@ -4,7 +4,7 @@
 \alias{query.close}
 \title{Close existing database connections}
 \usage{
-\method{query}{close}(con)
+query.close(con)
 }
 \arguments{
 \item{con}{database connection object}
