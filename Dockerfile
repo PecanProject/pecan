@@ -1,5 +1,5 @@
 FROM ubuntu:16.04
-MAINTAINER amanskywalker (ak47su30ac@gmail.com)
+MAINTAINER Aman Kumar (ak47su30ac@gmail.com)
 
 # expose port 80 for the web interface
 EXPOSE 80
@@ -32,11 +32,11 @@ RUN /build/install_R.sh
 # run install pecan to install pecan cores
 RUN /build/install_pecan.sh
 
-# Clean up APT when done.
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# run install sipnet to install SIPNET (default testing Model)
+RUN /build/install_sipnet.sh
 
-# Mounting pecan data volume
-VOLUME /home/skywalker/pecandata:/pecandata
+# Clean up APT when done.
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /build/*
 
 # startup
 CMD ["/sbin/my_init"]
