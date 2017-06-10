@@ -442,11 +442,14 @@ dbfile.check <- function(type, container.id, con, hostname=PEcAn.utils::fqdn(), 
     
     if(nrow(dbfiles) > 1){
       
-      logger.warn("Multiple Valid Files found on host machine. Returning last updated record")
+      logger.warn("Multiple Valid Files found on host machine.")
       logger.info(dbfiles)
+      
       if(return.all){
+        logger.warn("Returning all.")
         return(dbfiles)
       }else{
+        logger.warn("Returning last updated record.")
         return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
       }
       
@@ -463,11 +466,13 @@ dbfile.check <- function(type, container.id, con, hostname=PEcAn.utils::fqdn(), 
     
     if(nrow(dbfiles) > 1){
       
-      logger.warn("Multiple Valid Files found on host machine. Returning last updated record")
+      logger.warn("Multiple Valid Files found on host machine.")
       
       if(return.all){
+        logger.warn("Returning all.")
         return(dbfiles)
       }else{
+        logger.warn("Returning last updated record.")
         return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
       }
     }else{

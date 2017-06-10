@@ -90,8 +90,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   n.input     <- length(inputs)
   
 
-  
-  
   ## Set model-specific functions
   do.call("library", list(paste0("PEcAn.", settings$model$type)))
   my.write.config <- paste("write.config.", settings$model$type, sep = "")
@@ -129,6 +127,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   # 1. append scaling factor priors to prior.list
   # 2. use the same probs for all pft params to be scaled
   if(!is.null(sf)){
+    sf.ind <- length(prior.list) + 1
     sf.list <- pda.generate.sf(settings$assim.batch$n.knot, sf, prior.list)
     probs.sf <- sf.list$probs
     prior.list <- sf.list$priors
@@ -159,8 +158,8 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   if (run.round) {
       
       # loads the posteriors of the the previous emulator run
-      temp.round <- pda.load.priors(settings, con, extension.check = TRUE)
-      prior.round.list <- temp$prior
+      temp.round <- pda.load.priors(settings, con, run.round)
+      prior.round.list <- temp.round$prior
       
       
       prior.round.fn <- lapply(prior.round.list, pda.define.prior.fn)
@@ -176,12 +175,13 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
         load(settings$assim.batch$sf.path)
         sf.round.post <- pda.define.prior.fn(post.distns)
         rm(post.distns)
+        n.sf <- length(sf)
         sf.round.list <- pda.generate.knots(n.post.knots,
-                                            NULL, NULL,
-                                            5,
-                                            1:5,
-                                            sf.round.post,
-                                            paste0(sf,"_SF"))
+                                            sf = NULL, probs.sf = NULL,
+                                            n.param.all = n.sf,
+                                            prior.ind = seq_len(n.sf),
+                                            prior.fn = sf.round.post, 
+                                            pname = paste0(sf, "_SF"))
         probs.round.sf     <- sf.round.list$params
       }else {
         probs.round.sf     <- NULL
@@ -620,6 +620,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                              paste0("post.distns.pda.sf", "_", settings$assim.batch$ensemble.id, ".Rdata"))
     sf.prior <- prior.list[[sf.ind]]
     write_sf_posterior(sf.samp.list, sf.prior, sf.filename)
+    settings$assim.batch$sf.path <- sf.filename
   }
   
   # Separate each PFT's parameter samples (and bias term) to their own list

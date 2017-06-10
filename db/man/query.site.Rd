@@ -4,7 +4,7 @@
 \alias{query.site}
 \title{Given site_id, return site table}
 \usage{
-\method{query}{site}(site.id, con)
+query.site(site.id, con)
 }
 \arguments{
 \item{con}{: database connection}

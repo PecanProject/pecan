@@ -92,30 +92,31 @@ pda.settings <- function(settings, params.id = NULL, param.names = NULL, prior.i
                          "] but these parameters are specified as constants in pecan.xml!"))
   }
 
-  # if settings$assim.batch$prior$prev.prior.id is not null, it means an extension run was already done
-  # store it to prior.id so that it's not overwritten for 3rd or more "longer" extension
-  # if it's 3rd or more "round" of emulator extension then we do want to overwrite it 
-  # Revisit this if you want to change knot proposal design 
-  if (!is.null(settings$assim.batch$prior$prev.prior.id) & !run.round) {
-    settings$assim.batch$prior$prior.id <- settings$assim.batch$prior$prev.prior.id
-  }
-  
-  # if settings$assim.batch$prior$prior.id is not null, it means a PDA run was already done
-  # store it to prev.prior.id, need it for extension runs
-  if (!is.null(settings$assim.batch$prior$prior.id)) {
-    settings$assim.batch$prior$prev.prior.id <- settings$assim.batch$prior$prior.id
-  }
-  
-  # if settings$pfts$pft$posteriorid is not null, use it as new PDA prior:
-  
-  # (a) settings$pfts$pft$posteriorid can be full if you went through meta.analysis and write.configs
-  # if it's empty pda.load.priors will handle it later
-  
-  # (b) settings$pfts$pft$posteriorid will be full and overwritten by a PDA posterior id if a PDA was run
-  if (!is.null(settings$pfts$pft$posteriorid)) {
+  # # if settings$assim.batch$prior$prev.prior.id is not null, it means an extension run was already done
+  # # store it to prior.id so that it's not overwritten for 3rd or more "longer" extension
+  # # if it's 3rd or more "round" of emulator extension then we do want to overwrite it 
+  # # Revisit this if you want to change knot proposal design 
+  # if (!is.null(settings$assim.batch$prior$prev.prior.id) & !run.round) {
+  #   settings$assim.batch$prior$prior.id <- settings$assim.batch$prior$prev.prior.id
+  # }
+  # 
+  # # if settings$assim.batch$prior$prior.id is not null, it means a PDA run was already done
+  # # store it to prev.prior.id, need it for extension runs
+  if (is.null(settings$assim.batch$prior$prior.id)) {
     settings$assim.batch$prior$prior.id <- lapply(settings$pfts, `[[`, "posteriorid")
     names(settings$assim.batch$prior$prior.id) <- sapply(settings$pfts, `[[`, "name")
   }
+  
+  # # if settings$pfts$pft$posteriorid is not null, use it as new PDA prior:
+  # 
+  # # (a) settings$pfts$pft$posteriorid can be full if you went through meta.analysis and write.configs
+  # # if it's empty pda.load.priors will handle it later
+  # 
+  # # (b) settings$pfts$pft$posteriorid will be full and overwritten by a PDA posterior id if a PDA was run
+  # if (!is.null(settings$pfts$pft$posteriorid)) {
+  #   settings$assim.batch$prior$prior.id <- lapply(settings$pfts, `[[`, "posteriorid")
+  #   names(settings$assim.batch$prior$prior.id) <- sapply(settings$pfts, `[[`, "name")
+  # }
   
   # if a prior.id is explicity passed to this function, overwrite and use it as PDA prior
   if (!is.null(prior.id)) {
@@ -214,7 +215,7 @@ pda.settings <- function(settings, params.id = NULL, param.names = NULL, prior.i
 ##'
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.load.priors <- function(settings, con, extension.check = TRUE) {
+pda.load.priors <- function(settings, con, extension.check = FALSE) {
   
   # settings$assim.batch$prior$prior.id is not NULL if you've done a PDA or meta.analysis and went through write.configs
   # then you can proceed loading objects by querying their paths according to their ids
@@ -247,11 +248,10 @@ pda.load.priors <- function(settings, con, extension.check = TRUE) {
     settings$assim.batch$prior$prior.id <- priorids
   }
 
-  # if this is an extension run you want to use priors of the previous round
-  # extension.check == TRUE not an extension run
-  # extension.check == FALSE an extension run
-  if(!extension.check){
-    priorids <- settings$assim.batch$prior$prev.prior.id
+  # extension.check == FALSE not an extension run
+  # extension.check == TRUE a "round" extension run
+  if(extension.check){
+    priorids <- sapply(settings$pfts, `[[`, "posteriorid")
   } else{
     priorids <- settings$assim.batch$prior$prior.id
   }
