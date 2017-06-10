@@ -12,7 +12,17 @@ services:
     ports:
       - '5432:5432'
 
+  bety:
+    image: 'pecan/bety:latest'
+    networks:
+      - net1
+    ports:
+      - '3000:3000'
+
   pecan-image:
+    depends_on:
+       - postgresql
+       - bety
     build:
       context: .
       dockerfile: Dockerfile
@@ -20,5 +30,7 @@ services:
       - net1
     ports:
       - '8787:8787'
+      - '22:22'
+      - '80:80'
     volumes:
       - /home/skywalker/pecandata:/pecandata
