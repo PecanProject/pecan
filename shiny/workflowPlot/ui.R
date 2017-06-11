@@ -10,7 +10,9 @@ ui <- shinyUI(fluidPage(
     sidebarPanel(
       selectInput("workflow_id", "Workflow ID", c()),
       selectInput("run_id", "Run ID", c()),
+      actionButton("go", "Load Data"),
       selectInput("variable_name", "Variable Name", "")
+      
       # selectInput("workflow_id", "Workflow ID", c(99000000077)),
       # selectInput("run_id", "Run ID", c(99000000002)),
       # selectInput("variable_name", "Variable Name", c("AutoResp","GPP"))
