@@ -102,22 +102,24 @@ server <- shinyServer(function(input, output, session) {
               dates <- as.Date(dates)
               vals <- if(is.na(vals)) y[b] else c(vals, y[b])
               xlab <- "Time"
+              # Not required to change xlab by ranges. Using ggplotly.
               # xlab <- if (is.null(ranges$x)) "Time" else paste(ranges$x, collapse=" - ")
               valuesDF <- data.frame(dates,vals)
               metaDF <- data.frame(workflow_id,run_id,title,xlab,ylab,var_name)
+              # Populating metaDF as same length of values DF
               # metaDF1<-metaDF[rep(seq_len(nrow(valuesDF))),]
-              currentDF = cbind(valuesDF,metaDF)
-              globalDF<-rbind(globalDF,currentDF)
+              currentDF <- cbind(valuesDF,metaDF)
+              globalDF <- rbind(globalDF,currentDF)
             }
             ncdf4::nc_close(nc)
           }
         }
       }
     }
-    globalDF$title = as.character(globalDF$title)
-    globalDF$xlab = as.character(globalDF$xlab)
-    globalDF$ylab = as.character(globalDF$ylab)
-    globalDF$var_name = as.character(globalDF$var_name)
+    globalDF$title <- as.character(globalDF$title)
+    globalDF$xlab <- as.character(globalDF$xlab)
+    globalDF$ylab <- as.character(globalDF$ylab)
+    globalDF$var_name <- as.character(globalDF$var_name)
     return(globalDF)
   })
   output$outputPlot <- renderPlotly({
@@ -153,7 +155,7 @@ server <- shinyServer(function(input, output, session) {
     #     dates <- as.Date(dates)
     #     df <- data.frame(dates, vals)
       # df <- workFlowData(input$workflow_id,input$run_id,input$variable_names)
-      masterDF<-workFlowData()
+      masterDF <- workFlowData()
       output$info1 <- renderText({
         paste0(nrow(masterDF))
       })
@@ -162,17 +164,17 @@ server <- shinyServer(function(input, output, session) {
         need(input$run_id, 'Run id detected'),
         need(input$variable_name, 'Please wait! Loading data')
         )
-      masterDF$var_name = as.character(masterDF$var_name)
+      masterDF$var_name <- as.character(masterDF$var_name)
       # masterDF$var_name = as.factor(masterDF$var_name)
       # df1<-subset(masterDF,var_name==var_name)
-      df<-masterDF %>% 
+      df <- masterDF %>% 
         dplyr::filter(workflow_id == input$workflow_id &
                       run_id == input$run_id & 
                       var_name == input$variable_name) %>%
         dplyr::select(dates,vals)
-      title<-unique(df$title)[1]
-      xlab<-unique(df$xlab)[1]
-      ylab<-unique(df$ylab)[1]
+      title <- unique(df$title)[1]
+      xlab <- unique(df$xlab)[1]
+      ylab <- unique(df$ylab)[1]
       output$info2 <- renderText({
         paste0(nrow(df))
         # paste0(typeof(title))
@@ -207,26 +209,5 @@ server <- shinyServer(function(input, output, session) {
 # Shiny server closes here  
 })
 
-# global_df<-data.frame()
-# for(variable in var_names){
-#   local_df<-data.frame()
-#   for(file in files){
-#       nc <-nc_open(file)
-#       var <- ncdf4::ncatt_get(nc, var_name)
-#       #sw <- if ('Swdown' %in% names(nc$var)) ncdf4::ncvar_get(nc, 'Swdown') else TRUE
-#       sw <- TRUE
-#       title <- var$long_name
-#       ylab <- var$units
-#       x <- ncdays2date(ncdf4::ncvar_get(nc, 'time'), ncdf4::ncatt_get(nc, 'time'))
-#       y <- ncdf4::ncvar_get(nc, var_name)
-#       b <- !is.na(x) & !is.na(y) & sw != 0
-#       dates <- if(is.na(dates)) x[b] else c(dates, x[b])
-#       vals <- if(is.na(vals)) y[b] else c(vals, y[b])
-#       local_df<-rbind(local_df,data.frame(dates,vals,title,ylab,variable))
-#   } 
-#   global_df<-rbind(global_df,local_df)
-# }
-
 # runApp(port=6480, launch.browser=FALSE)
-
 # runApp(port=5658, launch.browser=FALSE)
