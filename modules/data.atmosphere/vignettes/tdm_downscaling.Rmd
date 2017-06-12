@@ -11,7 +11,7 @@ Examples:
 
 ### Extract Training Data and Merge All Years Into 1 File 
 
-```{r eval = FALSE}
+```{r}
 library(PEcAn.data.atmosphere)
 library(PEcAn.DB)
 download.Fluxnet2015(sitename = 'Niwot Ridge Forest/LTER NWT1 (US-NR1)', username = 'pecan', overwrite = FALSE, outfolder = '~/Example', 
