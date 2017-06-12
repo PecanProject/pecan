@@ -100,8 +100,13 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   }
   
   if(!is.null(time.row)){  
+    
+    # load_data was not changing the name of the 'time' column
+    col <- names(out) == format$vars$input_name[time.row]
+    names(out)[col] <- format$vars$pecan_name[time.row]
+    
     # Need a much more spohisticated approach to converting into time format. 
-    y <- dplyr::select(out, one_of(format$vars$input_name[time.row]))
+    y <- dplyr::select(out, one_of(format$vars$pecan_name[time.row]))
     
     if(!is.null(site$time_zone)){
       tz = site$time_zone

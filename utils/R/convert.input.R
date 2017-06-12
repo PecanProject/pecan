@@ -384,7 +384,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     fcn.args$end_date   <- end_date
     
     arg.string <- listToArgString(fcn.args)
-    
+
     if (!missing(format.vars)) {
       arg.string <- paste0(arg.string, ", format=", paste0(list(format.vars)))
     }
