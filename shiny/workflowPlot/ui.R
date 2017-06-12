@@ -8,9 +8,14 @@ ui <- shinyUI(fluidPage(
 
   sidebarLayout(
     sidebarPanel(
-      selectInput("workflow_id", "Workflow ID", c()),
-      selectInput("run_id", "Run ID", c()),
+      # helpText(),
+      p("Please select the workflow ID to continue. You can select multiple IDs"),
+      selectizeInput("workflow_id", "Mutliple Workflow IDs", c(),multiple=TRUE),
+      p("Please select the run ID. You can select multiple IDs"),
+      selectizeInput("run_id", "Mutliple Run IDs", c(),multiple=TRUE),
       actionButton("go", "Load Data"),
+      selectInput("workflow_id_selected", "Workflow ID", c()),
+      selectInput("run_id_selected", "Run ID", c()),
       selectInput("variable_name", "Variable Name", "")
       
       # selectInput("workflow_id", "Workflow ID", c(99000000077)),

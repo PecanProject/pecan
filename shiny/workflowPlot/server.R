@@ -15,28 +15,73 @@ server <- shinyServer(function(input, output, session) {
   ranges <- reactiveValues(x = NULL, y = NULL)
   print("RESTART")
   # set the workflow id(s)
-  ids <- get_workflow_ids(bety, session)
-  # updateSelectizeInput(session, "workflow_id", choices=ids)
-  observe({
-    updateSelectizeInput(session, "workflow_id", choices=ids)
-  })
+  # Retrieving all workflow ids. 
+  # Creating a new function here so that we wont have to modify the original one. 
+  # Ideally the get_workflow_ids function in db/R/query.dplyr.R should take a flag to check
+  # if we want to load all workflow ids.
+  get_all_workflow_ids <- function(bety) {
+      ids <- workflows(bety, ensemble = TRUE) %>% distinct(workflow_id) %>% collect %>% 
+        .[["workflow_id"]] %>% sort(decreasing = TRUE)
+    return(ids)
+  }  
+  # get_workflow_ids
+  ids <- get_all_workflow_ids(bety)
+  # ids <- get_all_workflow_ids(bety, session)
+  updateSelectizeInput(session, "workflow_id", choices=ids)
+  # Removing observe here as we want to load workflow ids first
+  # observe({
+  #   updateSelectizeInput(session, "workflow_id", choices=ids)
+  # })
   workflow_id <- reactive({
     req(input$workflow_id)
     workflow_id <- input$workflow_id
   })
   # update the run_ids if user changes workflow
-  run_ids <- reactive(get_run_ids(bety, workflow_id()))
+  # run_ids <- reactive(get_run_ids(bety, workflow_id()))
+  run_ids <- reactive({
+    w_ids <- input$workflow_id
+    run_id_list <- c()
+    for(w_id in w_ids){
+      r_ids <- get_run_ids(bety, w_id)
+      for(r_id in r_ids){
+        list_item <- paste0('workflow ',w_id,', run ',r_id)
+        run_id_list <- c(run_id_list,list_item)
+      }
+    }
+    return(run_id_list)
+  })
+  parse_workflowID_runID_from_input <- function(run_id_string){
+    id_list <- c()
+    split_string <- strsplit(run_id_string,',')[[1]]
+    # run_id_string: 'workflow' workflow_ID, 'run' run_id
+    wID <- as.numeric(strsplit(split_string[1],' ')[[1]][2])
+    runID <- as.numeric(strsplit(split_string[2],' ')[[1]][2])
+    id_list <- c(id_list,wID)
+    id_list <- c(id_list,runID)
+    # c(workflow_id,run_id)
+    return(id_list)
+  }
   observe({
     updateSelectizeInput(session, "run_id", choices=run_ids())
   })
   # update variables if user changes run
+  get_var_names_for_ID <- function(bety,wID,runID){
+    var_names <- get_var_names(bety, wID, runID)
+    return(var_names)
+  }
   var_names <- reactive({
-      run_ids <- get_run_ids(bety, workflow_id())
-      var_names <- get_var_names(bety, workflow_id(), run_ids[1])
+      # run_ids <- get_run_ids(bety, workflow_id())
+      # var_names <- get_var_names(bety, workflow_id(), run_ids[1])
       # Removing the variables "Year" and "FracJulianDay" from the Variable Name input in the app
-      removeVarNames <- c('Year','FracJulianDay')
-      var_names <-var_names[!var_names %in% removeVarNames]
-      return(var_names)
+      
+      # run_ids <- input$run_id[1]
+      # # for(rID in run_ids){
+      #   id_list <- parse_workflowID_runID_from_input(run_ids)
+      # #   var_names <- get_var_names_for_ID(bety,id_list[1],id_list[2])
+      # # # }
+      # removeVarNames <- c('Year','FracJulianDay')
+      # var_names <-var_names[!var_names %in% removeVarNames]
+      # return(id_list)
   })
   observe({
     updateSelectizeInput(session, "variable_name", choices=var_names())
@@ -63,7 +108,7 @@ server <- shinyServer(function(input, output, session) {
     # ,session$clientData$url_search)
     # paste0("x=", input$plot_dblclick$x, "\ny=", input$plot_dblclick$y)
   })
-  workFlowData <-reactive({
+  workFlowData <-eventReactive(input$go,{
     # workflow_id = 99000000077
     # run_id = 99000000002
     # var_name = var_names 
