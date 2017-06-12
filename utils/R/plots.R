@@ -184,7 +184,7 @@ iqr <- function(x) {
 ##' Creates empty ggplot object
 ##'
 ##' An empty base plot to which layers created by other functions
-##' (\code{\link{plot.data}}, \code{\link{plot.prior.density}},
+##' (\code{\link{plot_data}}, \code{\link{plot.prior.density}},
 ##' \code{\link{plot.posterior.density}}) can be added.
 ##' @name create.base.plot
 ##' @title Create Base Plot
@@ -203,7 +203,8 @@ create.base.plot <- function() {
 ##' Used to add raw data or summary statistics to the plot of a distribution.
 ##' The height of Y is arbitrary, and can be set to optimize visualization.
 ##' If SE estimates are available, tehse wil be plotted
-##' @name plot.data
+##' @name plot_data
+##' @aliases plot.data
 ##' @title Add data to plot 
 ##' @param trait.data data to be plotted
 ##' @param base.plot a ggplot object (grob),
@@ -212,10 +213,10 @@ create.base.plot <- function() {
 ##' @seealso \code{\link{create.base.plot}}
 ##' @return updated plot object
 ##' @author David LeBauer
-##' @export plot.data
+##' @export plot_data
 ##' @examples
-##' \dontrun{plot.data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
-plot.data <- function(trait.data, base.plot = NULL, ymax, color = "black") {
+##' \dontrun{plot_data(data.frame(Y = c(1, 2), se = c(1,2)), base.plot = NULL, ymax = 10)}
+plot_data <- function(trait.data, base.plot = NULL, ymax, color = "black") {
   
   if (is.null(base.plot)) {
     base.plot <- create.base.plot()
@@ -246,7 +247,7 @@ plot.data <- function(trait.data, base.plot = NULL, ymax, color = "black") {
     scale_color_manual(values = c("black", "grey")) + 
     theme(legend.position = "none")
   return(new.plot)
-} # plot.data
+} # plot_data
 
 
 #--------------------------------------------------------------------------------------------------#
