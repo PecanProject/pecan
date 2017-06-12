@@ -22,11 +22,7 @@
 ##' @param lm.models.base - path to linear regression model folder from 3_gen_subdaily
 ##' @param start_date - yyyy-mm-dd
 ##' @param end_date - yyyy-mm-dd
-##' @param site.name - name of location i.e. Ameriflux Site as character string
-##' @param lat.in - latitude as numeric
-##' @param lon.in - longitude as numeric
 ##' @param ens.hr - integer selecting number of hourly ensemble members 
-##' @param n.day - 1 # Number of daily ensemble members to process, must be 1 because not passing in daily ensemble
 ##' @param cores.max - 12
 ##' @param resids - logical stating whether to pass on residual data or not
 ##' @param parallel - logical stating whether to run temporal_downscale_functions.R in parallel 
@@ -44,20 +40,16 @@
 ##' dat.train_file = 'Training_data/US-WCr_dat.train.nc'
 ##' start_date = '2010-01-01'
 ##' end_date = '2014-12-31'
-##' site.name = 'US-WCr'
-##' lat.in = 45
-##' lon.in = -90
 ##' cores.max = 12
-##' ens.hr = 3
-##' n.day = 1}
+##' ens.hr = 3}
 # -----------------------------------
 #----------------------------------------------------------------------
 # Begin Fcript
 #----------------------------------------------------------------------
 
 predict.subdaily.workflow <- function(outfolder, in.path, in.prefix, lm.models.base, 
-    dat.train_file, start_date, end_date, site.name, lat.in, lon.in, cores.max = 12, 
-    ens.hr = 3, n.day = 1, resids = FALSE, parallel = FALSE, n.cores = NULL, 
+    dat.train_file, start_date, end_date, cores.max = 12, 
+    ens.hr = 3, resids = FALSE, parallel = FALSE, n.cores = NULL, 
     overwrite = FALSE, verbose = FALSE) {
     
     years <- seq(lubridate::year(start_date), lubridate::year(end_date))
