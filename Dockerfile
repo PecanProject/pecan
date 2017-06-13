@@ -1,12 +1,6 @@
 FROM ubuntu:16.04
 MAINTAINER Aman Kumar (ak47su30ac@gmail.com)
 
-# expose port 80 for the web interface
-EXPOSE 80
-
-# expose port 22 for ssh maintance
-EXPOSE 22
-
 # updated ppa's
 RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" > /etc/apt/sources.list.d/R.list &&\
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
