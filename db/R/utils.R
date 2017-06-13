@@ -43,8 +43,8 @@ db.query <- function(query, con=NULL, params=NULL) {
   if (.db.utils$showquery) {
     PEcAn.utils::logger.debug(query)
   }
-  data <- dbGetQuery(con, query)
-  res <- dbGetException(con)
+  data <- DBI::dbGetQuery(con, query)
+  res <- DBI::dbGetException(con)
   if (res$errorNum != 0 || (res$errorMsg != 'OK' && res$errorMsg != '')) {
     PEcAn.utils::logger.severe(paste("Error executing db query '", query, "' errorcode=", res$errorNum, " message='", res$errorMsg, "'", sep=''))
   }
