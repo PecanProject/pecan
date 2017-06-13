@@ -369,7 +369,17 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       
     } # for-loop
   
-    SS <- SS.list
+    if (run.round) {
+      # check if this is another 'round' of emulator 
+      
+      # load original knots
+      load(settings$assim.batch$ss.path)
+      # add on
+      SS <- lapply(seq_along(SS), function(iss) rbind(SS.list[[iss]], SS[[iss]]))
+      
+    } else {
+      SS <- SS.list
+    }
       
     logger.info(paste0("Using 'mlegp' package for Gaussian Process Model fitting."))
     
