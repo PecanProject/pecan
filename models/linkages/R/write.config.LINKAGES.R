@@ -24,7 +24,7 @@
 ##' @author Ann Raiho, Betsy Cowdery
 ##-------------------------------------------------------------------------------------------------#
 write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.id, 
-                                  restart = NULL, spinup = NULL, inputs = NULL, IC = NULL) {
+                                  restart = NULL, spinup = TRUE, inputs = NULL, IC = NULL) {
   # 850-869 repeated to fill 1000 years
   if (is.null(restart)) {
     restart <- FALSE # why not have restart default to FALSE above?
@@ -129,7 +129,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   ### group will be each spp.
   if (!is.null(trait.values)) {
     for (group in names(trait.values)) {
-      if (group == "env") {
+      if (group == "env" | settings$run$inputs$met$source == 'PalEONregional') {
         
         ## leave defaults
         
@@ -235,7 +235,6 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
     precip.mat <- spinup.out$precip.mat
     settings$run$start.date <- paste0(spinup.out$start.year, 
                                       strftime(settings$run$start.date, "/%m/%d"))
-    precip.mat <- spinup.out$precip.mat
   }
   
   input <- file.path(settings$rundir, run.id, "linkages.input.Rdata")
