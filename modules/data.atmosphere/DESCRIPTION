@@ -19,6 +19,7 @@ Imports:
     data.table,
     REddyProc,
     dplyr,
+    dbplyr,
     geonames,
     abind (>= 1.4.5),
     lubridate (>= 1.6.0),
