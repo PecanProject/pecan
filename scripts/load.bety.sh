@@ -38,7 +38,7 @@ PG_OPT=${PG_OPT:-""}
 # 99 - VM
 MYSITE=${MYSITE:-99}
 REMOTESITE=${REMOTESITE:-0}
-DUMPURL={DUMPURL:-""}
+DUMPURL=${DUMPURL:-""}
 
 # Create the database from scratch
 # Set this to YES to create the database, this will remove all existing
