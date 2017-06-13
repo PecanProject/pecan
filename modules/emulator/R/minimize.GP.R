@@ -116,7 +116,7 @@ calculate.prior <- function(samples, priors) {
 ##' @name get.y
 ##' @title get.y
 ##' @export
-get.y <- function(gp, xnew, n.of.obs, llik.fn, priors, settings) {
+get.y <- function(gp, xnew, n.of.obs, llik.fn, priors, settings, llik.par = NULL) {
   
   SS <- numeric(length(gp))
   
@@ -127,7 +127,10 @@ get.y <- function(gp, xnew, n.of.obs, llik.fn, priors, settings) {
     SS[igp] <- rnorm(1, Y$fit, Y$se.fit)
   }
   
-  llik.par <- pda.calc.llik.par(settings, n.of.obs, SS)
+  if(is.null(llik.par)){
+    llik.par <- pda.calc.llik.par(settings, n.of.obs, SS)
+  }
+
   likelihood <- pda.calc.llik(SS, llik.fn, llik.par)
   
   prior.prob <- calculate.prior(xnew, priors)
@@ -136,7 +139,7 @@ get.y <- function(gp, xnew, n.of.obs, llik.fn, priors, settings) {
   # return likelihood parameters
   par <- unlist(sapply(llik.par, `[[` , "par"))
   
-  return(list(posterior.prob = posterior.prob, par = par))
+  return(list(posterior.prob = posterior.prob, par = par, llik.par = llik.par))
   
 } # get.y
 
@@ -227,7 +230,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
       currY <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings)
       ycurr <- currY$posterior.prob
       pcurr <- currY$par
-      newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
+      newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings, currY$llik.par)
       ynew  <- newY$posterior.prob
       if (is.accepted(ycurr, ynew)) {
         xcurr <- xnew
@@ -250,7 +253,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
         currY <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings)
         ycurr <- currY$posterior.prob
         pcurr <- currY$par
-        newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
+        newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings, currY$llik.par)
         ynew  <- newY$posterior.prob
         if (is.accepted(ycurr, ynew)) {
           xcurr <- xnew
