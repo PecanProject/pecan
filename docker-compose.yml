@@ -5,8 +5,8 @@ networks:
     driver: bridge
 
 services:
-  postgresql:
-    image: 'postgres:latest'
+  postgres:
+    image: 'mdillon/postgis:9.6'
     networks:
       - net1
     ports:
@@ -18,10 +18,12 @@ services:
       - net1
     ports:
       - '3000:3000'
+    link:
+      - postgres:pg
 
   pecan-image:
     depends_on:
-       - postgresql
+       - postgres
        - bety
     build:
       context: .
