@@ -158,7 +158,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
     }else if(assertthat::is.date(start.year)==FALSE){
       origin<-paste0(as.character(start.year),"-01-01")
       start_year = start.year
-      end_year = end.year # End of model run
+      end_year = end.year 
     }else{
       logger.error("Start and End year must be of type numeric, character or Date")
     }
@@ -178,6 +178,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
       for (i in seq_along(n)) {
         y <- c(y, rep(years[i], n[i]))
       }
+      model$year<-rep(NA, seq_along(n))
       model$year <- y
       makeDate <- function(x){as.POSIXct(model$time[x]*86400,origin=paste0(model$year[x],"-01-01"),tz="UTC")}
       model$posix <- makeDate(seq_along(model$time))
