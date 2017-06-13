@@ -28,6 +28,7 @@ LW_albedo,(-),LW_albedo
 LWdown,W/m2,surface_downwelling_longwave_flux_in_air
 Lwnet,W m-2,Lwnet
 NEE,kg C m-2 s-1,NEE
+NEE,kg C m-2 s-1,FC
 NPP,kg C m-2 s-1,NPP_2_C
 poolname,(-),
 Psurf,Pa,air_pressure
