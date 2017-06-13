@@ -106,7 +106,7 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
                    vars = vars_full,
                    skip = skip, 
                    header = header,
-                   na.strings=c("-9999","-6999","9999", "NA"), # This shouldn't be hardcoded in, but not specified in format table ?
+                   na.strings=c("-9999","-6999","9999","NA"), # This shouldn't be hardcoded in, but not specified in format table ?
                    time.row = time.row,
                    site = site.id,
                    lat = site.lat,
