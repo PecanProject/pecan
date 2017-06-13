@@ -15,6 +15,7 @@ Depends:
     PEcAn.DB,
     ellipse,
     dplyr,
+    dbplyr,
     parallel,
     mlegp,
     IDPmisc,
