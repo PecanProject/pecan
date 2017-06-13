@@ -19,15 +19,17 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
   site.id <- NULL
   site.lat <- NULL
   site.lon <- NULL
+  site.time_zone <- NULL
   
   if (is.na(format.id)) {
     f <- db.query(paste("SELECT * from formats as f join inputs as i on f.id = i.format_id where i.id = ", input.id),con)
     site.id <- db.query(paste("SELECT site_id from inputs where id =",input.id),con)
     if (is.data.frame(site.id) && nrow(site.id)>0) {
       site.id <- site.id$site_id
-      site.info <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",site.id),con)
+      site.info <- db.query(paste("SELECT id, time_zone, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",site.id),con)
       site.lat <- site.info$lat
       site.lon <- site.info$lon
+      site.time_zone <- site.info$time_zone
     } 
   } else {
     f <- db.query(paste("SELECT * from formats where id = ", format.id),con)
@@ -110,7 +112,8 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
                    time.row = time.row,
                    site = site.id,
                    lat = site.lat,
-                   lon = site.lon
+                   lon = site.lon,
+                   time_zone = site.time_zone
     )
     
     # Check that all bety units are convertible. If not, throw a warning. 
