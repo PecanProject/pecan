@@ -138,7 +138,8 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
                    time.row = NULL,
                    site = site.id,
                    lat = site.lat,
-                   lon = site.lon
+                   lon = site.lon,
+                   time_zone = site.time_zone
     )
   }
   return(format)
