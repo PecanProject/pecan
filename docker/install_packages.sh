@@ -80,7 +80,7 @@ case "$OS_VERSION" in
     # for PostgreSQL
     # apt-get -y install libdbd-pgsql postgresql-9.5 postgresql-client-9.5 libpq-dev postgresql-9.5-postgis-2.2 postgresql-9.5-postgis-scripts
     # for web gui
-     apt-get -y install apache2 libapache2-mod-php7.0 php7.0 libapache2-mod-passenger php7.0-xml php-ssh2 php7.0-pgsql
+    # apt-get -y install apache2 libapache2-mod-php7.0 php7.0 libapache2-mod-passenger php7.0-xml php-ssh2 php7.0-pgsql
     # Ubuntu 14.04 php5-pgsql libapache2-mod-php5 php5 and no php-xml
     ;;
 esac
