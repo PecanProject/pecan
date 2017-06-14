@@ -24,6 +24,7 @@
 #                    options are: "year", "doy" (day of year), or "hour"
 ##' @param overwrite
 ##' @param verbose
+##' @export
 # -----------------------------------
 #----------------------------------------------------------------------
 # Begin Function
@@ -150,21 +151,25 @@ nc.merge <- function(outfolder, in.path, in.prefix, start_date, end_date,
     if (upscale == FALSE) {
         dat.train <- train_df
     } else {
+      # Need to create column of each of these for the aggregate function to work
+      time.vars <- c("year", "doy", "hour")
+      agg.ind <- which(time.vars==upscale)
+      time.vars <- time.vars[1:agg.ind]
+      train_df["year"] = lubridate::year(train_df$date)
+      train_df["doy"] = lubridate::yday(train_df$date)
+      train_df["hour"] = lubridate::hour(train_df$date)
         # Figure out which temporal variables we're aggregating over
       if (upscale == "year") {
-        train_df[upscale] = lubridate::year(train_df$date)
         upscale_timestep = 365
       }
       if (upscale == "doy") {
-        train_df[upscale] = lubridate::yday(train_df$date)
         upscale_timestep = 1
       }
       if (upscale == "hour") {
-        train_df[upscale] = lubridate::hour(train_df$date)
         upscale_timestep = 1/24
       }
         dat.train <- aggregate(train_df[, names(train_df)[!names(train_df) %in% 
-            c("year", "doy", "hour")]], by = train_df[upscale], FUN = mean, 
+            c("year", "doy", "hour")]], by = train_df[time.vars], FUN = mean, 
             na.rm = FALSE)
         dat.train <- dat.train[order(dat.train$date), ]
     }
