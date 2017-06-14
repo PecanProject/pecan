@@ -27,13 +27,14 @@
 ##' @param day.window - number of days surrounding current day we want to pull
 ##'                     statistics from
 ##' @param seed - allows this to be reproducible
+##' @export
 # -----------------------------------
 #----------------------------------------------------------------------
 # Begin Function
 #----------------------------------------------------------------------
 temporal.downscale.functions <- function(dat.train, n.beta, day.window, 
     resids = FALSE, parallel = FALSE, n.cores = NULL, seed = format(Sys.time(), 
-        "%m%d")) {
+        "%m%d"), outfolder, in.prefix, ...) {
     
     pb.index <- 1
     pb <- txtProgressBar(min = 1, max = 8, style = 3)
@@ -60,7 +61,7 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
     for (v in vars.list) {
         
         # Define the path
-        path.out <- paste0(outfolder, in.prefix, "/", v)
+        path.out <- paste0(outfolder, "/",in.prefix, "/", v)
         
         # Set our seed
         set.seed(seed)
@@ -128,11 +129,11 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
             for (i in names(dat.list)) {
                 
                 if (v == "surface_downwelling_shortwave_flux_in_air") {
-                  mod.out <- model.train(dat.subset = dat.list[[i]], threshold = quantile(dat.train[dat.train$surface_downwelling_shortwave_flux_in_air > 
+                  mod.out <- model.train(dat.subset = dat.list[[i]], n.beta = n.beta, v = v, threshold = quantile(dat.train[dat.train$surface_downwelling_shortwave_flux_in_air > 
                     0, "surface_downwelling_shortwave_flux_in_air"], 0.05), 
                     n.beta, resids = resids)
                 } else {
-                  mod.out <- model.train(dat.subset = dat.list[[i]], n.beta = n.beta, 
+                  mod.out <- model.train(dat.subset = dat.list[[i]], n.beta = n.beta, v = v,
                     resids = resids)
                 }
                 
