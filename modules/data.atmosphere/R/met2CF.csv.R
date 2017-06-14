@@ -26,26 +26,24 @@
 ##' @author Mike Dietze, David LeBauer, Ankur Desai
 ##' @examples
 ##' \dontrun{
-##' library(PEcAn.DB)
-##' library(lubridate)
-##' library(RPostgreSQL)
-##' bety = list(user='bety', password='bety',
-##'             host='localhost', dbname='bety', driver='PostgreSQL',
-##'             write=TRUE)
-##' con <- db.open(bety)
-##' in.path <- '/home/carya/sites/willow/'
-##' in.prefix <- 'FLX_US-WCr_FLUXNET2015_SUBSET_HH_1999-2014_1-1'
+##' bety = list(user='bety', password='bety',host='localhost', dbname='bety', driver='PostgreSQL',write=TRUE)
+##' con <- PEcAn.DB::db.open(bety)
+##' bety$con <- con
+##' start_date <- lubridate::ymd_hm('200401010000')
+##' end_date <- lubridate::ymd_hm('200412312330')
+##' file<-PEcAn.data.atmosphere::download.Fluxnet2015('US-WCr','~/',start_date,end_date)
+##' in.path <- '~/'
+##' in.prefix <- file$dbfile.name 
 ##' outfolder <- '~/'
-##' input.id <- 5000000005
-##' format <- query.format.vars(input.id=input.id,bety = bety)
-##' start_date <- ymd_hm('200401010000')
-##' end_date <- ymd_hm('200412312330')
-##' PEcAn.data.atmosphere::met2CF.csv(in.path, in.prefix, outfolder,
-##'                                   start_date, end_date,
-##'                                   format, overwrite=TRUE)
+##' format.id <- 5000000001
+##' format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = bety)
+##' format$lon <- -92.0
+##' format$lat <- 45.0
+##' format$time_zone <- "America/Chicago"
+##' results<-PEcAn.data.atmosphere::met2CF.csv(in.path, in.prefix, outfolder,start_date, end_date,format, overwrite=TRUE)
 ##' }
 met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, format, lat = NULL, lon = NULL, 
-                       nc_verbose = FALSE, overwrite = FALSE, ...) {
+                       nc_verbose = FALSE, overwrite = FALSE,...) {
   
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
@@ -79,10 +77,16 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
   if (missing(lat) || is.null(lat)) {
     PEcAn.utils::logger.debug('Latitude is missing or NULL. Using `format$lat`.')
     lat <- format$lat
+    if (is.null(lat)) {
+      lat <- 0.
+    }
   }
   if (missing(lon) || is.null(lon)) {
     PEcAn.utils::logger.debug('Longitude is missing or NULL. Using `format$lon`.')
     lon <- format$lon
+    if (is.null(lon)) {
+      lon <- 0.
+    }
   }
   
   # create new filename by swapping .csv with .nc, and adding year strings from start to end year
@@ -145,7 +149,15 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
     ## Get datetime vector - requires one column be connected to bety variable datetime or 3  columns year,day,hour
     ## FUTURE: Also consider year,month,day_of_month,hour or year,MMDD or fjday or other combinations
     
-    datetime_index <- which(format$vars$bety_name == "datetime")
+    if(!is.null(format$time_zone)){
+      tz = format$time_zone
+    }else{
+      tz = "UTC"
+      PEcAn.utils::logger.warn("No site timezone. Assuming input time zone is UTC. This may be incorrect.")
+    }
+    
+    ##datetime_index <- which(format$vars$bety_name == "datetime")
+    datetime_index <- format$time.row
     if (length(datetime_index) == 0) {
       bety_year <- format$vars$bety_name == 'year'
       bety_day <- format$vars$bety_name == 'day'
@@ -158,22 +170,19 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
                                           alldat[, format$vars$input_name[DOY_index]]), format = "%Y-%j"), format = "%Y-%m-%d")
         hh          <- floor(alldat[, format$vars$input_name[hour_index]])
         mm          <- (alldat[, format$vars$input_name[hour_index]] - hh) * 60
-        yyddhhmm    <- strptime(paste0(yearday, " ", hh, ":", mm), format = "%Y-%m-%d %H:%M")
+        yyddhhmm    <- strptime(paste0(yearday, " ", hh, ":", mm), format = "%Y-%m-%d %H:%M", tz=tz)
         alldatetime <- as.POSIXct(yyddhhmm)
       } else {
         ## Does not match any of the known date formats, add new ones here!
         PEcAn.utils::logger.error("datetime column is not specified in format")
       }
     } else {
-      datetime_units <- format$vars$input_units[datetime_index]  #lubridate function to call such as ymd_hms
-      if (datetime_units == "") {
-        datetime_units <- "ymd_hm"
-      }
       datetime_raw <- alldat[, format$vars$input_name[datetime_index]]
-      # ANS: Note that `datetime_units` must be a lubridate format.
-      # For example, see `?lubridate::ymd` and `?lubridate::ymd_hms`.
-      datetime_units <- getFromNamespace(x = datetime_units, ns = 'lubridate')
-      alldatetime <- do.call(datetime_units, list(datetime_raw))  #convert to POSIXct convention
+      datetime_units <- paste(format$vars$storage_type[datetime_index],collapse = " ")  #strptime convention
+      if (datetime_units == "") {
+        datetime_units <- "%Y%m%d%H%M" #assume ISO convention
+      }
+      alldatetime <- as.POSIXct(strptime(datetime_raw,format=datetime_units,tz=tz))
     }
     ## and remove datetime from 'dat' dataframe dat[, datetime_index] <- format$na.strings
     
@@ -250,7 +259,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       locs <- which(format$vars$bety_name %in% "air_pressure")
       if (length(locs) > 0) {
         k <- locs[1]
-        Psurf.var <- ncvar_def(name = "air_pressure", units = "Pa", dim = xytdim)
+        Psurf.var <- ncdf4::ncvar_def(name = "air_pressure", units = "Pa", dim = xytdim)
         nc <- ncdf4::ncvar_add(nc = nc, v = Psurf.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
         if (arrloc == "") {
@@ -268,7 +277,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       locs <- which(format$vars$bety_name %in% "co2atm")
       if (length(locs) > 0) {
         k <- locs[1]
-        CO2.var <- ncvar_def(name = "mole_fraction_of_carbon_dioxide_in_air", 
+        CO2.var <- ncdf4::ncvar_def(name = "mole_fraction_of_carbon_dioxide_in_air", 
                              units = "mol mol-1", 
                              dim = xytdim)
         nc <- ncdf4::ncvar_add(nc = nc, v = CO2.var, verbose = nc_verbose)
@@ -289,7 +298,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       locs <- which(format$vars$bety_name %in% "soilM")
       if (length(locs) > 0) {
         k <- locs[1]
-        soilM.var <- ncvar_def(name = "volume_fraction_of_condensed_water_in_soil", 
+        soilM.var <- ncdf4::ncvar_def(name = "volume_fraction_of_condensed_water_in_soil", 
                                units = "1", 
                                dim = xytdim)
         nc <- ncdf4::ncvar_add(nc = nc, v = soilM.var, verbose = nc_verbose)
@@ -310,7 +319,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       locs <- which(format$vars$bety_name %in% "soilT")
       if (length(locs) > 0) {
         k <- locs[1]
-        soilT.var <- ncvar_def(name = "soil_temperature", units = "K", dim = xytdim)
+        soilT.var <- ncdf4::ncvar_def(name = "soil_temperature", units = "K", dim = xytdim)
         nc <- ncdf4::ncvar_add(nc = nc, v = soilT.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
         if (arrloc == "") {
@@ -329,7 +338,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       locs <- which(format$vars$bety_name %in% "relative_humidity")
       if (length(locs) > 0) {
         k <- locs[1]
-        RH.var <- ncvar_def(name = "relative_humidity", units = "%", dim = xytdim)
+        RH.var <- ncdf4::ncvar_def(name = "relative_humidity", units = "%", dim = xytdim)
         nc <- ncdf4::ncvar_add(nc = nc, v = RH.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
         if (arrloc == "") {
@@ -348,7 +357,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       locs <- which(format$vars$bety_name %in% "specific_humidity")
       if (length(locs) > 0) {
         k <- locs[1]
-        qair.var <- ncvar_def(name = "specific_humidity", units = "kg kg-1", dim = xytdim)
+        qair.var <- ncdf4::ncvar_def(name = "specific_humidity", units = "kg kg-1", dim = xytdim)
         nc <- ncdf4::ncvar_add(nc = nc, v = qair.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
         if (arrloc == "") {
@@ -369,7 +378,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           ## Convert RH to SH
           qair <- rh2qair(rh = ncdf4::ncvar_get(nc, "relative_humidity")/100, 
                           T = ncdf4::ncvar_get(nc, "air_temperature"))
-          qair.var <- ncvar_def(name = "specific_humidity", units = "kg kg-1", dim = xytdim)
+          qair.var <- ncdf4::ncvar_def(name = "specific_humidity", units = "kg kg-1", dim = xytdim)
           nc <- ncdf4::ncvar_add(nc = nc, v = qair.var, verbose = nc_verbose)  #add variable to existing netCDF file
           ncdf4::ncvar_put(nc, varid = "specific_humidity", vals = qair)
         }
@@ -379,7 +388,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       locs <- which(format$vars$bety_name %in% "VPD")
       if (length(locs) > 0) {
         k <- locs[1]
-        VPD.var <- ncvar_def(name = "water_vapor_saturation_deficit", units = "Pa", dim = xytdim)
+        VPD.var <- ncdf4::ncvar_def(name = "water_vapor_saturation_deficit", units = "Pa", dim = xytdim)
         nc <- ncdf4::ncvar_add(nc = nc, v = VPD.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
         if (arrloc == "") {
@@ -399,7 +408,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       locs <- which(format$vars$bety_name %in% "surface_downwelling_longwave_flux_in_air")
       if (length(locs) > 0) {
         k <- locs[1]
-        LW.var <- ncvar_def(name = "surface_downwelling_longwave_flux_in_air",
+        LW.var <- ncdf4::ncvar_def(name = "surface_downwelling_longwave_flux_in_air",
                             units = "W m-2", 
                             dim = xytdim)
         nc <- ncdf4::ncvar_add(nc = nc, v = LW.var, verbose = nc_verbose)
@@ -420,7 +429,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       locs <- which(format$vars$bety_name %in% "solar_radiation")
       if (length(locs) > 0) {
         k <- locs[1]
-        SW.var <- ncvar_def(name = "surface_downwelling_shortwave_flux_in_air", 
+        SW.var <- ncdf4::ncvar_def(name = "surface_downwelling_shortwave_flux_in_air", 
                             units = "W m-2", 
                             dim = xytdim)
         nc <- ncdf4::ncvar_add(nc = nc, v = SW.var, verbose = nc_verbose)
@@ -441,7 +450,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       locs <- which(format$vars$bety_name %in% "PAR")
       if (length(locs) > 0) {
         k <- locs[1]
-        PAR.var <- ncvar_def(name = "surface_downwelling_photosynthetic_photon_flux_in_air", 
+        PAR.var <- ncdf4::ncvar_def(name = "surface_downwelling_photosynthetic_photon_flux_in_air", 
                              units = "mol m-2 s-1", 
                              dim = xytdim)
         nc <- ncdf4::ncvar_add(nc = nc, v = PAR.var, verbose = nc_verbose)
@@ -462,7 +471,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       locs <- which(format$vars$bety_name %in% "precipitation_flux")
       if (length(locs) > 0) {
         k <- locs[1]
-        precip.var <- ncvar_def(name = "precipitation_flux",
+        precip.var <- ncdf4::ncvar_def(name = "precipitation_flux",
                                 units = "kg m-2 s-1", 
                                 dim = xytdim)
         nc <- ncdf4::ncvar_add(nc = nc, v = precip.var, verbose = nc_verbose)
@@ -498,7 +507,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       if (("eastward_wind" %in% format$vars$bety_name) & ("northward_wind" %in% format$vars$bety_name)) {
         locs <- which(format$vars$bety_name %in% "northward_wind")
         k <- locs[1]
-        Nwind.var <- ncvar_def(name = "northward_wind", units = "m s-1", dim = xytdim)
+        Nwind.var <- ncdf4::ncvar_def(name = "northward_wind", units = "m s-1", dim = xytdim)
         nc <- ncdf4::ncvar_add(nc = nc, v = Nwind.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
         if (arrloc == "") {
@@ -514,7 +523,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
         
         locs <- which(format$vars$bety_name %in% "eastward_wind")
         k <- locs[1]
-        Ewind.var <- ncvar_def(name = "eastward_wind", units = "m s-1", dim = xytdim)
+        Ewind.var <- ncdf4::ncvar_def(name = "eastward_wind", units = "m s-1", dim = xytdim)
         nc <- ncdf4::ncvar_add(nc = nc, v = Ewind.var, verbose = nc_verbose)
         arrloc <- as.character(format$vars$input_name[k])
         if (arrloc == "") {
@@ -556,9 +565,9 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
                                      "radians")
           uwind <- wind * cos(wind_direction)
           vwind <- wind * sin(wind_direction)
-          Ewind.var <- ncvar_def(name = "eastward_wind", units = "m s-1", dim = xytdim)
+          Ewind.var <- ncdf4::ncvar_def(name = "eastward_wind", units = "m s-1", dim = xytdim)
           nc <- ncdf4::ncvar_add(nc = nc, v = Ewind.var, verbose = nc_verbose)
-          Nwind.var <- ncvar_def(name = "northward_wind", units = "m s-1", dim = xytdim)
+          Nwind.var <- ncdf4::ncvar_def(name = "northward_wind", units = "m s-1", dim = xytdim)
           nc <- ncdf4::ncvar_add(nc = nc, v = Nwind.var, verbose = nc_verbose)
           ncdf4::ncvar_put(nc, varid = Ewind.var, vals = uwind)
           ncdf4::ncvar_put(nc, varid = Nwind.var, vals = vwind)
@@ -567,7 +576,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
           locs <- which(format$vars$bety_name %in% "Wspd")
           if (length(locs) > 0) {
             k <- locs[1]
-            Wspd.var <- ncvar_def(name = "wind_speed", units = "m s-1", dim = xytdim)
+            Wspd.var <- ncdf4::ncvar_def(name = "wind_speed", units = "m s-1", dim = xytdim)
             nc <- ncdf4::ncvar_add(nc = nc, v = Wspd.var, verbose = nc_verbose)
             arrloc <- as.character(format$vars$input_name[k])
             if (arrloc == "") {
@@ -588,8 +597,8 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       #       locs <- which(format$vars$bety_name %in% "wind_direction")
       #       if (length(locs)>0) {
       #         k <- locs[1]
-      #         Wdir.var <- ncvar_def(name="wind_from_direction",units = "degrees",dim = xytdim)
-      #         nc <- ncvar_add(nc = nc, v = Wdir.var, verbose = nc_verbose)
+      #         Wdir.var <- ncdf4::ncvar_def(name="wind_from_direction",units = "degrees",dim = xytdim)
+      #         nc <- ncdf4::ncvar_add(nc = nc, v = Wdir.var, verbose = nc_verbose)
       #         arrloc <- as.character(format$vars$input_name[k])
       #         if (arrloc=="") {
       #           if (any(colnames(format$vars)=="column_number")) { 

@@ -4,7 +4,7 @@
 \alias{model.train}
 \title{model.train}
 \usage{
-model.train(dat.subset, n.beta, resids = resids, threshold = NULL)
+model.train(dat.subset, v, n.beta, resids = resids, threshold = NULL, ...)
 }
 \arguments{
 \item{dat.subset}{data.frame containing lags, next, and downscale period data}
@@ -20,7 +20,7 @@ distinction between day and night (no shortwave without sunlight)}
 Function to create linear regression models for specific met
              variables. This is used in conjunction with temporal.downscale.functions()
              to generate linear regression statistics and save their output to be called
-             later in predict.subdaily.functions().
+             later in lm_ensemble_sims().
 }
 \details{
 TDM Model Train
@@ -28,10 +28,10 @@ Linear regression calculations for specific met variables
 }
 \seealso{
 Other tdm - Temporally Downscale Meteorology: \code{\link{gen.subdaily.models}},
-  \code{\link{nc.merge}}, \code{\link{predict.met}},
-  \code{\link{predict.subdaily.function}},
-  \code{\link{predict.subdaily.workflow}},
+  \code{\link{lm_ensemble_sims}}, \code{\link{nc.merge}},
+  \code{\link{predict_subdaily_met}},
   \code{\link{save.betas}}, \code{\link{save.model}},
+  \code{\link{subdaily_pred}},
   \code{\link{temporal.downscale.functions}}
 }
 \author{
