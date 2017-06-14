@@ -19,6 +19,8 @@ load_data_paleon_sda <- function(settings){
   ## PLS and FIA Biomass Snapshot
   ## Wish list: eddy covariance
   
+  library(plyr) #need to load to use .fnc below
+  
   d <- settings$database$bety[c("dbname", "password", "host", "user")]
   bety <- src_postgres(host = d$host, user = d$user, password = d$password, dbname = d$dbname)
   settings$host$name <- "localhost"
@@ -62,7 +64,7 @@ load_data_paleon_sda <- function(settings){
     vars.used.index <- setdiff(seq_along(format$vars$variable_id), format$time.row)
     
     print(paste('Using PEcAn.benchmark::load_data.R on format_id',format_id[[i]],'-- may take a few minutes'))
-    obvs[[i]] <- PEcAn.benchmark::load_data(data.path, format, start_year, end_year, site, vars.used.index, time.row)
+    obvs[[i]] <- PEcAn.benchmark::load_data(data.path, format, start_year = lubridate::year(start_date), end_year = lubridate::year(end_date), site, vars.used.index, time.row)
     
     dataset <- obvs[[i]]
     variable <- var.names
@@ -86,9 +88,10 @@ load_data_paleon_sda <- function(settings){
       spp_id <- spp_id[spp_id$input_code!='HAVI4',]
       pft_mat <- match_pft(spp_id$bety_species_id, settings$pfts, con = bety$con)
       
-      x = paste0('AGB.pft.', pft_mat$pft)
-      names(x) = spp_id$input_code
-      dataset$pft.cat = x[dataset$species_id]
+      x <- paste0('AGB.pft.', pft_mat$pft)
+      names(x) <- spp_id$input_code
+      dataset$pft.cat <- x[dataset$species_id]
+      dataset <- dataset[dataset$pft.cat!='NA_AbvGrndWood',]
       variable <- sub('AGB.pft','AbvGrndWood',variable)
       arguments <- list(.(year, MCMC_iteration, site_id, pft.cat), .(variable))
       arguments2 <- list(.(year, pft.cat), .(variable))
@@ -109,10 +112,23 @@ load_data_paleon_sda <- function(settings){
    
     for(t in seq_along(obs.times)){
       obs.mean[[t]] <- mean_mat[mean_mat$year==obs.times[t], variable]
-      if(any(var.names == 'AGB.pft')) names(obs.mean[[t]]) <- mean_mat[mean_mat$year==obs.times[t], 'pft.cat']
+      if(any(var.names == 'AGB.pft')){
+        obs.mean[[t]] <- rep(NA, length(x))
+        names(obs.mean[[t]]) <- sort(x)
+        for(r in seq_along(x)){
+          k <- mean_mat[mean_mat$year==obs.times[t] & mean_mat$pft.cat==names(obs.mean[[t]][r]), variable]
+          if(any(k)){
+            obs.mean[[t]][r] <- k
+          }
+        }
+      }
+      
       obs.cov[[t]] <- matrix(cov.test[,which(colnames(cov.test) %in% obs.times[t])],
-                             ncol = length(variable),
-                             nrow = length(variable))
+                             ncol = sqrt(dim(cov.test)[1]),
+                             nrow = sqrt(dim(cov.test)[1]))
+      if(any(var.names == 'AGB.pft')){
+        colnames(obs.cov[[t]]) <- names(iter_mat[1,,t]) 
+      }
     } 
     
     ### Combine data if more than one type of data
