@@ -1,10 +1,4 @@
 
-library(plyr)
-library(magic)
-library(PEcAn.all)
-library(lubridate)
-library(reshape2)
-
 #LINKAGES
 setwd('/fs/data2/output//PEcAn_1000003314/')
 #SIPNET
