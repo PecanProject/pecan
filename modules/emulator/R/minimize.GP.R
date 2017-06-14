@@ -259,7 +259,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
         currY <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings, curll)
         ycurr <- currY$posterior.prob
         pcurr <- currY$par
-        newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings, currY$llik.par)
+        newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
         ynew  <- newY$posterior.prob
         if (is.accepted(ycurr, ynew)) {
           xcurr <- xnew
