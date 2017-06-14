@@ -1,0 +1,19 @@
+
+library(plyr)
+library(magic)
+library(PEcAn.all)
+library(lubridate)
+library(reshape2)
+
+#LINKAGES
+setwd('/fs/data2/output//PEcAn_1000003314/')
+#SIPNET
+#setwd('/fs/data2/output//PEcAn_1000003356')
+
+#---------------- Load PEcAn settings file. -------------------------------------------------------#
+# Open and read in settings file for PEcAn run.
+settings <- read.settings("pecan.SDA.xml") 
+
+obs.list <- load_data_paleon_sda(settings = settings)
+
+sda.enkf(settings, obs.mean = obs.list$obs.mean, obs.cov = obs.list$obs.cov)
