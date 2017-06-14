@@ -23,11 +23,10 @@ Saves models that are created during gen.subdaily.models()
 }
 \seealso{
 Other tdm - Temporally Downscale Meteorology: \code{\link{gen.subdaily.models}},
+  \code{\link{lm_ensemble_sims}},
   \code{\link{model.train}}, \code{\link{nc.merge}},
-  \code{\link{predict.met}},
-  \code{\link{predict.subdaily.function}},
-  \code{\link{predict.subdaily.workflow}},
-  \code{\link{save.betas}},
+  \code{\link{predict_subdaily_met}},
+  \code{\link{save.betas}}, \code{\link{subdaily_pred}},
   \code{\link{temporal.downscale.functions}}
 }
 \author{
