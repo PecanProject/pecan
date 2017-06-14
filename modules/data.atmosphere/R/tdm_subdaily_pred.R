@@ -1,14 +1,14 @@
-##' TDM Predict Met
-##' Pulls information from linear regression models to predict meteorology
+##' Subdaily Prediction
+##' Pulls information from linear regression models to predict subdaily meteorology
 # ----------------------------------- 
 # Description
 # -----------------------------------
-##' @title predict.met
+##' @title subdaily_pred
 ##' @family tdm - Temporally Downscale Meteorology
 ##' @author Christy Rollinson, James Simkins
 ##' @description Function to pull objects created in linear regression models
-##'              and are used to predict meteorology. This function is called in
-##'              predict.subdaily.function() to downscale a meteorology product.
+##'              and are used to predict subdaily meteorology. This function is called in
+##'              lm_ensemble_sims() to downscale a meteorology product.
 ##'              Linear regression models are created in gen.subdaily.models()
 # ----------------------------------- 
 # Parameters
@@ -25,8 +25,8 @@
 #----------------------------------------------------------------------
 # Begin Function
 #----------------------------------------------------------------------
-predict.met <- function(newdata, model.predict, Rbeta, resid.err = FALSE, model.resid = NULL, 
-                        Rbeta.resid = NULL, n.ens) {
+subdaily_pred <- function(newdata, model.predict, Rbeta, resid.err = FALSE, model.resid = NULL, 
+                          Rbeta.resid = NULL, n.ens) {
 
   err.resid <- 0  # dummy residual error term; if we want to add residual error, we're modeling it by hour
   

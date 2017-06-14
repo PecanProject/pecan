@@ -43,11 +43,11 @@ Temporal Downscale Functions
 }
 \seealso{
 Other tdm - Temporally Downscale Meteorology: \code{\link{gen.subdaily.models}},
+  \code{\link{lm_ensemble_sims}},
   \code{\link{model.train}}, \code{\link{nc.merge}},
-  \code{\link{predict.met}},
-  \code{\link{predict.subdaily.function}},
-  \code{\link{predict.subdaily.workflow}},
-  \code{\link{save.betas}}, \code{\link{save.model}}
+  \code{\link{predict_subdaily_met}},
+  \code{\link{save.betas}}, \code{\link{save.model}},
+  \code{\link{subdaily_pred}}
 }
 \author{
 Christy Rollinson, James Simkins
