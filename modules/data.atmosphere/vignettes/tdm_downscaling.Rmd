@@ -14,30 +14,27 @@ Examples:
 ```{r}
 library(PEcAn.data.atmosphere)
 library(PEcAn.DB)
+
+# Download the Fluxnet2015 file
 sitename   <- 'Niwot Ridge Forest/LTER NWT1'
-outfolder  <- dir.create(file.path('~/Example'))
+lat        <- 40.0329
+lon        <- -105.546
 start_date <- '2000/01/01'
 end_date   <- '2014/12/31'
-download.Fluxnet2015(username = 'pecan', overwrite = FALSE)
-
+outfolder  <- "~/Example"
 bety      <- dplyr::src_postgres(host = bety$host, user = bety$user, password = bety$password, dbname = bety$dbname)
 format    <- query.format.vars(input.id = 5000000005, bety = bety)
 in.prefix <- 'FLX_US-NR1_FLUXNET2015_SUBSET_HH_1998-2014_1-3'
-in.path   <- outfolder
-outfolder <- dir.create(file.path(outfolder,"CF"))
-lat       <- 40.0329
-lon       <- -105.546
-met2CF.csv() 
+download.Fluxnet2015(sitename, lat, lon, start_date, end_date, outfolder, username = 'pecan', overwrite = FALSE)
 
-in.path   <- outfolder
-outfolder <- dir.create(file.path(outfolder,"gapfill"))
-lst       <- -7
-metgapfill()
+# Convert the data to CF metadata standards
+met2CF.csv(in.path = file.path(outfolder), in.prefix, outfolder = file.path(outfolder, "CF"), start_date, end_date, format, lat, lon) 
 
-in.path   <- outfolder
-outfolder <- dir.create(file.path("~/Example/training_data"))
-upscale   <- "hour"
-nc.merge()
+# Fill the gaps in the flux tower dataset
+metgapfill(lst = -7, in.path = file.path(outfolder, "CF"), in.prefix, outfolder = file.path(outfolder, "gapfill"), start_date, end_date)
+
+# Merge the individual years of the gapfilled NC files together 
+nc.merge(outfolder = file.path(outfolder, "training_data"), in.path = file.path(outfolder, "gapfill"), in.prefix, start_date, end_date, upscale = "hour")
 ```
 
 ### Generate Linear Regression Models From Training Data 
@@ -45,11 +42,10 @@ nc.merge()
 Note: This requires ~ 120 GB of space if using the entire training dataset
 ```{r}
 in.prefix      <- "US-NR1"
-dat.train.file <- "~/Example/training_data/FLX_US-NR1_FLUXNET2015_SUBSET_HH_1998-2014_1-3_dat.train.nc"
-outfolder      <- dir.create(file.path("~/Example/lm_model_output"))
-n.beta         <- 10
-day.window     <- 5
-gen.subdaily.models()
+dat.train.file <- "~/Example/training_data/FLX_US-NR1_FLUXNET2015_SUBSET_HH_1998-2014_1-3_dat.train.nc" 
+n.beta         <- 10 # Number of betas for the linear regression model to create, we'll choose 10 for time's sake
+day.window     <- 5  # Number of days around a specific timestamp to gather statistics from (at the same timestamp)
+gen.subdaily.models(outfolder = dir.create(outfolder, "lm_models_base"), dat.train.file, in.prefix, n.beta, day.window)
 ```
 
 ### Coarse Data to Downscale
@@ -62,25 +58,22 @@ Examples:
 ### Extract Data We Want To Downscale
 
 ```{r}
-
-outfolder       <- "~/Example/"
 start_date      <- "2020-01-01"
 end_date        <- "2020-12-31"
 site_id         <- 772
 model           <- "BNU-ESM"
 scenario        <- "rcp85"
 ensemble_member <- "r1i1p1"
-download.MACA()
+download.MACA(outfolder, start_date, end_date, site_id, model, scenario, ensemble_member)
 
 ```
 
 ### Predict Subdaily Data Using Statistics From Training Data 
 
 ```{r}
-outfolder      <- dir.create(file.path("~/Example/downscaled_data"))
 in.path        <- "~/Example/MACA_site_0-772"
-in.prefix      <- "MACA.BNU-ESM.rcp85.r1i1p1"
-lm.models.base <- "~/Example/lm_model_output"
-n.ens          <- 3
-predict_subdaily_met()
+in.prefix      <- "MACA.BNU-ESM.rcp85.r1i1p1" # this is the data we are going to downscale
+lm.models.base <- "~/Example/lm_model_output" # where we stored the lm models
+n.ens          <- 3 # number of ensemble members we want to generate
+predict_subdaily_met(outfolder = file.path(outfolder, "downscaled_data"), in.path, in.prefix, lm.models.base, n.ens, start_date, end_date)
 ```
