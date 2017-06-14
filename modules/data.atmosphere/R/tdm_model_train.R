@@ -9,7 +9,7 @@
 ##' @description Function to create linear regression models for specific met
 ##'              variables. This is used in conjunction with temporal.downscale.functions()
 ##'              to generate linear regression statistics and save their output to be called
-##'              later in predict.subdaily.functions().
+##'              later in lm_ensemble_sims().
 # ----------------------------------- 
 # Parameters
 # -----------------------------------
@@ -18,14 +18,15 @@
 ##' @param resids TRUE or FALSE, whether to use residuals or not
 ##' @param threshold NULL except for surface_downwelling_shortwave_radiation, helps with our
 ##'                  distinction between day and night (no shortwave without sunlight)
+##' @export
 # -----------------------------------
 #----------------------------------------------------------------------
 # Begin Function
 #----------------------------------------------------------------------
-model.train <- function(dat.subset, n.beta, resids = resids, threshold = NULL) {
+model.train <- function(dat.subset, v, n.beta, resids = resids, threshold = NULL, ...) {
+  dat.subset$year <- as.ordered(dat.subset$year) 
   if (v == "air_temperature") {
-    dat.subset$year <- as.ordered(dat.subset$year)
-    
+
     mod.doy <- lm(air_temperature ~ as.ordered(hour) * air_temperature_max.day * 
                     (lag.air_temperature + lag.air_temperature_min + air_temperature_min.day) + 
                     as.ordered(hour) * air_temperature_min.day * next.air_temperature_max - 
