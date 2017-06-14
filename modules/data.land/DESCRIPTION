@@ -18,7 +18,8 @@ Imports:
     ncdf4 (>= 1.15),
     udunits2 (>= 0.11),
     traits,
-    dplyr
+    dplyr,
+    dbplyr
 Suggests:
     fields,
     rgdal,
