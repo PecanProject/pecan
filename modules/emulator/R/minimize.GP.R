@@ -129,6 +129,7 @@ get.y <- function(gp, xnew, n.of.obs, llik.fn, priors, settings, llik.par = NULL
   
   if(is.null(llik.par)){
     llik.par <- pda.calc.llik.par(settings, n.of.obs, SS)
+    return(llik.par)
   }
 
   likelihood <- pda.calc.llik(SS, llik.fn, llik.par)
@@ -139,7 +140,7 @@ get.y <- function(gp, xnew, n.of.obs, llik.fn, priors, settings, llik.par = NULL
   # return likelihood parameters
   par <- unlist(sapply(llik.par, `[[` , "par"))
   
-  return(list(posterior.prob = posterior.prob, par = par, llik.par = llik.par))
+  return(list(posterior.prob = posterior.prob, par = par))
   
 } # get.y
 
@@ -179,10 +180,9 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
                     run.block = TRUE, n.of.obs, llik.fn, resume.list = NULL) {
   
   # get Y
-  predY <- get.y(gp, x0, n.of.obs, llik.fn, priors, settings)
-  Ycurr <- predY$posterior.prob
-  LLpar <- predY$par
-  currll <- predY$llik.par
+  currll <- get.y(gp, x0, n.of.obs, llik.fn, priors, settings, llik.par = NULL)
+  LLpar  <- unlist(sapply(currll, `[[` , "par"))
+
   
   xcurr <- x0
   dim   <- length(x0)
@@ -212,8 +212,8 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
   for (g in start:nmcmc) {
     
     if (mix == "joint") {
-      ## propose new
-      xnew <- xcurr
+
+      # adapt
       if ((g > 2) && ((g - 1) %% settings$assim.batch$jump$adapt == 0)) {
         params.recent <- samp[(g - settings$assim.batch$jump$adapt):(g - 1), ]
         colnames(params.recent) <- names(x0)
@@ -221,6 +221,8 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
         jcov <- pda.adjust.jumps.bs(settings, jcov, accept.count, params.recent)
         accept.count <- 0  # Reset counter
       }
+      
+      ## propose new
       repeat {
         xnew <- mvrnorm(1, unlist(xcurr), jcov)
         if (bounded(xnew, rng)) {
@@ -229,21 +231,26 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
       }
       # if(bounded(xnew,rng)){
       
-      # keeping llik.par (curll) fixed, parameters are fixed
-      # SS will be re-predicted
+      # update model parameters conditioned on likelihood parameters
+      # when llik.par (= currll) is passed get.y returns posterior value
       currY <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings, currll)
       ycurr <- currY$posterior.prob
-      pcurr <- currY$par
 
-      newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
+      newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings, currll)
       ynew  <- newY$posterior.prob
 
       if (is.accepted(ycurr, ynew)) {
         xcurr <- xnew
-        pcurr <- newY$par
-        curll <- newY$llik.par
+        #pcurr <- newY$par
+        #curll <- newY$llik.par
         accept.count <- accept.count + 1
       }
+      
+      # update likelihood parameters conditioned on model parameters
+      # when llik.par (= currll) is not passed, get.y updates ll-params, given model parameters
+      # and returns llik.par
+      currll <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings)
+      pcurr  <- unlist(sapply(currll, `[[` , "par"))
       # } mix = each
     } else {
       for (i in seq_len(dim)) {
@@ -258,14 +265,18 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
         # if(bounded(xnew,rng)){
         currY <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings, curll)
         ycurr <- currY$posterior.prob
-        pcurr <- currY$par
-        newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
+  
+        newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings, curll)
         ynew  <- newY$posterior.prob
         if (is.accepted(ycurr, ynew)) {
           xcurr <- xnew
           pcurr <- newY$par
           curll <- newY$llik.par
         }
+        
+        currll <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings)
+        pcurr  <- unlist(sapply(currll, `[[` , "par"))
+        
         # }
       }
     }
