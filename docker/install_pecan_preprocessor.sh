@@ -26,11 +26,11 @@ if [ -e $(dirname $0)/install_pecan.config ]; then
   . $(dirname $0)/install_pecan.config
 fi
 
-# if [ -e /etc/redhat-release ]; then
-#   OS_VERSION="RH_$( sed -r 's/.* ([0-9]+)\..*/\1/' /etc/redhat-release )"
-#   HTTP_CONF="/etc/httpd/conf.d/"
-#   chmod o+x ${HOME}
-# else
-#   OS_VERSION="Ubuntu"
-#   HTTP_CONF="/etc/apache2/conf-available/"
-# fi
+if [ -e /etc/redhat-release ]; then
+  OS_VERSION="RH_$( sed -r 's/.* ([0-9]+)\..*/\1/' /etc/redhat-release )"
+  HTTP_CONF="/etc/httpd/conf.d/"
+  chmod o+x ${HOME}
+else
+  OS_VERSION="Ubuntu"
+  HTTP_CONF="/etc/apache2/conf-available/"
+fi
