@@ -237,11 +237,11 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
 
       newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
       ynew  <- newY$posterior.prob
-      newll <- newY$llik.par
+
       if (is.accepted(ycurr, ynew)) {
         xcurr <- xnew
         pcurr <- newY$par
-        curll <- newll
+        curll <- newY$llik.par
         accept.count <- accept.count + 1
       }
       # } mix = each
@@ -256,7 +256,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
           }
         }
         # if(bounded(xnew,rng)){
-        currY <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings)
+        currY <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings, curll)
         ycurr <- currY$posterior.prob
         pcurr <- currY$par
         newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings, currY$llik.par)
@@ -264,6 +264,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
         if (is.accepted(ycurr, ynew)) {
           xcurr <- xnew
           pcurr <- newY$par
+          curll <- newY$llik.par
         }
         # }
       }
