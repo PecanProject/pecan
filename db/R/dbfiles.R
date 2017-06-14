@@ -440,18 +440,10 @@ dbfile.check <- function(type, container.id, con, hostname=PEcAn.utils::fqdn(), 
                                "' AND container_id IN (", paste(container.id, collapse = ", "), 
                                ") AND machine_id=", hostid), con)
     
-    if(nrow(dbfiles) > 1){
+    if(nrow(dbfiles) > 1 && !return.all){
       
-      logger.warn("Multiple Valid Files found on host machine.")
-      logger.info(dbfiles)
-      
-      if(return.all){
-        logger.warn("Returning all.")
-        return(dbfiles)
-      }else{
-        logger.warn("Returning last updated record.")
-        return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
-      }
+      logger.warn("Multiple Valid Files found on host machine. Returning last updated record.")
+      return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
       
     }else{
       
@@ -464,17 +456,11 @@ dbfile.check <- function(type, container.id, con, hostname=PEcAn.utils::fqdn(), 
     dbfiles <- db.query(paste0("SELECT * FROM dbfiles WHERE container_type='", type, 
                                "' AND container_id IN (", paste(container.id, collapse = ", "),")"), con)
     
-    if(nrow(dbfiles) > 1){
+    if(nrow(dbfiles) > 1 && !return.all){
       
-      logger.warn("Multiple Valid Files found on host machine.")
-      
-      if(return.all){
-        logger.warn("Returning all.")
-        return(dbfiles)
-      }else{
-        logger.warn("Returning last updated record.")
-        return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
-      }
+      logger.warn("Multiple Valid Files found on host machine. Returning last updated record.")
+      return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
+  
     }else{
       
       return(dbfiles)
