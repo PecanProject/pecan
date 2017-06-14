@@ -4,8 +4,6 @@
 ##' @param model.calc data.frame
 ##' @param obvs.calc data.frame
 ##' @param var data.frame
-##' @param start_year numeric
-##' @param end_year numeric
 ##' @return dat
 
 ##' @author Betsy Cowdery
@@ -13,7 +11,7 @@
 
 ## Align timeseries data using different functions
 
-align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_method = "match_timestep") {
+align_data <- function(model.calc, obvs.calc, var, align_method = "match_timestep") {
   
   fcn <- match.fun(align_method)
   
