@@ -18,7 +18,7 @@ services:
       - net1
     ports:
       - '3000:3000'
-    link:
+    links:
       - postgres:pg
 
   pecan-core:
