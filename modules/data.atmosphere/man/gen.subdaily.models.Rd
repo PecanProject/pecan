@@ -42,11 +42,11 @@ Generate Subdaily Models
 Create statistical models to predict subdaily meteorology
 }
 \seealso{
-Other tdm - Temporally Downscale Meteorology: \code{\link{model.train}},
-  \code{\link{nc.merge}}, \code{\link{predict.met}},
-  \code{\link{predict.subdaily.function}},
-  \code{\link{predict.subdaily.workflow}},
+Other tdm - Temporally Downscale Meteorology: \code{\link{lm_ensemble_sims}},
+  \code{\link{model.train}}, \code{\link{nc.merge}},
+  \code{\link{predict_subdaily_met}},
   \code{\link{save.betas}}, \code{\link{save.model}},
+  \code{\link{subdaily_pred}},
   \code{\link{temporal.downscale.functions}}
 }
 \author{
