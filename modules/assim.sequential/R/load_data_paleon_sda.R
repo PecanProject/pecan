@@ -1,21 +1,3 @@
-
-library(plyr)
-library(magic)
-library(PEcAn.all)
-library(lubridate)
-library(reshape2)
-
-#LINKAGES
-setwd('/fs/data2/output//PEcAn_1000003314/')
-#SIPNET
-#setwd('/fs/data2/output//PEcAn_1000003356')
-
-#---------------- Load PEcAn settings file. -------------------------------------------------------#
-# Open and read in settings file for PEcAn run.
-settings <- read.settings("pecan.SDA.xml") 
-
-obs.list = load_data_paleon_sda(settings = settings)
-
 ##' @title load_data_paleon_sda
 ##' @name  load_data_paleon_sda
 ##' @author Ann Raiho \email{araiho@nd.edu}
@@ -61,8 +43,8 @@ load_data_paleon_sda <- function(settings){
   obs.mean <- list()
   obs.cov <- list()
   
-  start.time <- format(ymd(start_date),settings$state.data.assimilation$forecast.time.step)
-  end.time <- format(ymd(end_date),settings$state.data.assimilation$forecast.time.step)
+  start.time <- format(lubridate::ymd(start_date),settings$state.data.assimilation$forecast.time.step)
+  end.time <- format(lubridate::ymd(end_date),settings$state.data.assimilation$forecast.time.step)
   obs.times <- start.time:end.time
   
   
@@ -79,8 +61,8 @@ load_data_paleon_sda <- function(settings){
     time.row <- format$time.row
     vars.used.index <- setdiff(seq_along(format$vars$variable_id), format$time.row)
     
-    print(paste('Using load_data.R on format_id',format_id[[i]],'-- may take a few minutes'))
-    obvs[[i]] <- load_data(data.path, format, start_year, end_year, site, vars.used.index, time.row)
+    print(paste('Using PEcAn.benchmark::load_data.R on format_id',format_id[[i]],'-- may take a few minutes'))
+    obvs[[i]] <- PEcAn.benchmark::load_data(data.path, format, start_year, end_year, site, vars.used.index, time.row)
     
     dataset <- obvs[[i]]
     variable <- var.names
@@ -114,14 +96,14 @@ load_data_paleon_sda <- function(settings){
     
     print('Now, melting data')
     melt_id <- colnames(dataset)[-which(colnames(dataset) %in% variable)]
-    melt.test <- melt(dataset, id = melt_id, na.rm = TRUE)
-    cast.test <- dcast(melt.test, arguments, sum, margins = variable)
+    melt.test <- reshape2::melt(dataset, id = melt_id, na.rm = TRUE)
+    cast.test <- reshape2::dcast(melt.test, arguments, sum, margins = variable)
     
     melt_id <- colnames(cast.test)[-which(colnames(cast.test) %in% variable)]
-    melt.next <- melt(cast.test, id = melt_id)
-    mean_mat <- dcast(melt.next, arguments2, mean)
+    melt.next <- reshape2::melt(cast.test, id = melt_id)
+    mean_mat <- reshape2::dcast(melt.next, arguments2, mean)
     
-    iter_mat <- acast(melt.next, MCMC_iteration ~ variable ~ year, mean)
+    iter_mat <- reshape2::acast(melt.next, MCMC_iteration ~ variable ~ year, mean)
     cov.test <- apply(iter_mat,3,function(x){cov(x)})
    
     for(t in seq_along(obs.times)){
@@ -135,7 +117,7 @@ load_data_paleon_sda <- function(settings){
     if(i > 1){
       for(t in seq_along(obs.times)){
         obs.mean[[t]] <- c(obs.mean[[t]],unlist(obs.mean[[t]]))
-        obs.cov[[t]] <- adiag(obs.cov[[t]],unlist(obs.cov[[t]]))
+        obs.cov[[t]] <- magic::adiag(obs.cov[[t]],unlist(obs.cov[[t]]))
       }
     }
     
