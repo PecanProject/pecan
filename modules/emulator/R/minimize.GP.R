@@ -182,6 +182,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
   predY <- get.y(gp, x0, n.of.obs, llik.fn, priors, settings)
   Ycurr <- predY$posterior.prob
   LLpar <- predY$par
+  currll <- predY$llik.par
   
   xcurr <- x0
   dim   <- length(x0)
@@ -227,15 +228,20 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
         }
       }
       # if(bounded(xnew,rng)){
-      currY <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings)
+      
+      # keeping llik.par (curll) fixed, parameters are fixed
+      # SS will be re-predicted
+      currY <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings, currll)
       ycurr <- currY$posterior.prob
       pcurr <- currY$par
-      newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings, currY$llik.par)
+
+      newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
       ynew  <- newY$posterior.prob
+      newll <- newY$llik.par
       if (is.accepted(ycurr, ynew)) {
         xcurr <- xnew
         pcurr <- newY$par
-        
+        curll <- newll
         accept.count <- accept.count + 1
       }
       # } mix = each
