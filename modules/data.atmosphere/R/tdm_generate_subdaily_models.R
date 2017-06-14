@@ -40,7 +40,7 @@
 gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix, 
     n.beta, day.window, resids = FALSE, parallel = FALSE, n.cores = NULL, overwrite = TRUE, 
     verbose = FALSE) {
-
+  
     pb.index <- 1
     pb <- txtProgressBar(min = 1, max = 8, style = 3)
     
@@ -177,8 +177,9 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     # sometimes ---------
 
     temporal.downscale.functions(dat.train = dat.train, n.beta = n.beta, day.window = day.window, 
-                                             resids = resids, parallel = parallel, n.cores = n.cores, 
-                                             seed = format(Sys.time(), "%m%d")) 
+                                 resids = resids, n.cores = n.cores, 
+                                 seed = format(Sys.time(), "%m%d"), outfolder = outfolder, 
+                                 in.prefix = in.prefix) 
 }
 
 # Helper function
