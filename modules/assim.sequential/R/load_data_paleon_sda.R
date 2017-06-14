@@ -74,6 +74,7 @@ load_data_paleon_sda <- function(settings){
       obvs[[i]]$NPP_1_C <- obvs[[i]]$NPP_1_C * .48
       arguments <- list(.(year, MCMC_iteration, site_id), .(variable))
       arguments2 <- list(.(year), .(variable))
+      arguments3 <- list(.(MCMC_iteration), .(variable), .(year))
     }else{
       print('ERROR: This data format has not been added to this function (ツ)_/¯ ')
       stop()
@@ -81,17 +82,17 @@ load_data_paleon_sda <- function(settings){
     
     ### Map species to model specific PFTs
     if(any(var.names == 'AGB.pft')){
-      variable <- sub('AGB.pft','species_id',variable)
       spp_id <- match_species_id(unique(dataset$species_id),format_name = 'usda',bety)
       spp_id <- spp_id[spp_id$input_code!='HAVI4',]
       pft_mat <- match_pft(spp_id$bety_species_id, settings$pfts, con = bety$con)
       
-      x = pft_mat$pft
+      x = paste0('AGB.pft.', pft_mat$pft)
       names(x) = spp_id$input_code
       dataset$pft.cat = x[dataset$species_id]
-      variable <- sub('species_id','AbvGrndWood',variable)
+      variable <- sub('AGB.pft','AbvGrndWood',variable)
       arguments <- list(.(year, MCMC_iteration, site_id, pft.cat), .(variable))
       arguments2 <- list(.(year, pft.cat), .(variable))
+      arguments3 <- list(.(MCMC_iteration), .(pft.cat, variable), .(year))
     } 
     
     print('Now, melting data')
@@ -103,11 +104,12 @@ load_data_paleon_sda <- function(settings){
     melt.next <- reshape2::melt(cast.test, id = melt_id)
     mean_mat <- reshape2::dcast(melt.next, arguments2, mean)
     
-    iter_mat <- reshape2::acast(melt.next, MCMC_iteration ~ variable ~ year, mean)
+    iter_mat <- reshape2::acast(melt.next, arguments3, mean)
     cov.test <- apply(iter_mat,3,function(x){cov(x)})
    
     for(t in seq_along(obs.times)){
-      obs.mean[[t]] <- mean_mat[mean_mat$year==obs.times[t],var.names]
+      obs.mean[[t]] <- mean_mat[mean_mat$year==obs.times[t], variable]
+      if(any(var.names == 'AGB.pft')) names(obs.mean[[t]]) <- mean_mat[mean_mat$year==obs.times[t], 'pft.cat']
       obs.cov[[t]] <- matrix(cov.test[,which(colnames(cov.test) %in% obs.times[t])],
                              ncol = length(variable),
                              nrow = length(variable))
