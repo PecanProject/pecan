@@ -21,7 +21,7 @@ services:
     link:
       - postgres:pg
 
-  pecan-image:
+  pecan-core:
     depends_on:
        - postgres
        - bety
@@ -32,7 +32,5 @@ services:
       - net1
     ports:
       - '8787:8787'
-      - '22:22'
-      - '80:80'
     volumes:
       - /home/skywalker/pecandata:/pecandata
