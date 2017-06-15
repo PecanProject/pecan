@@ -17,7 +17,7 @@ Depends:
     dplyr,
     dbplyr,
     parallel,
-    GPfit,
+    mlegp,
     IDPmisc,
     rjags,
     BayesianTools,
