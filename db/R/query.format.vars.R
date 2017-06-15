@@ -22,25 +22,25 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
   site.time_zone <- NULL
   
   if (is.na(format.id)) {
-    f <- db.query(paste("SELECT * from formats as f join inputs as i on f.id = i.format_id where i.id = ", input.id),con)
-    site.id <- db.query(paste("SELECT site_id from inputs where id =",input.id),con)
+    f <- PEcAn.DB::db.query(paste("SELECT * from formats as f join inputs as i on f.id = i.format_id where i.id = ", input.id),con)
+    site.id <- PEcAn.DB::db.query(paste("SELECT site_id from inputs where id =",input.id),con)
     if (is.data.frame(site.id) && nrow(site.id)>0) {
       site.id <- site.id$site_id
-      site.info <- db.query(paste("SELECT id, time_zone, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",site.id),con)
+      site.info <- PEcAn.DB::db.query(paste("SELECT id, time_zone, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =",site.id),con)
       site.lat <- site.info$lat
       site.lon <- site.info$lon
       site.time_zone <- site.info$time_zone
     } 
   } else {
-    f <- db.query(paste("SELECT * from formats where id = ", format.id),con)
+    f <- PEcAn.DB::db.query(paste("SELECT * from formats where id = ", format.id),con)
   }
   
-  mimetype <- db.query(paste("SELECT * from  mimetypes where id = ",
+  mimetype <- PEcAn.DB::db.query(paste("SELECT * from  mimetypes where id = ",
                              f$mimetype_id),con)[["type_string"]]
   f$mimetype <- tail(unlist(strsplit(mimetype, "/")),1)
   
   # get variable names and units of input data
-  fv <- db.query(paste("SELECT variable_id,name,unit,storage_type,column_number from formats_variables where format_id = ", f$id),con)
+  fv <- PEcAn.DB::db.query(paste("SELECT variable_id,name,unit,storage_type,column_number from formats_variables where format_id = ", f$id),con)
   
   if(all(!is.na(var.ids))){
     # Need to subset the formats table
@@ -64,7 +64,7 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
     # otherwise when there are more than one of the same variable_id it confuses merge 
     vars_bety <- cbind(fv, vars)
     for(i in 1:n){
-      vars_bety[i, (ncol(vars_bety)-1):ncol(vars_bety)] <- as.matrix(db.query(paste("SELECT name, units from variables where id = ",
+      vars_bety[i, (ncol(vars_bety)-1):ncol(vars_bety)] <- as.matrix(PEcAn.DB::db.query(paste("SELECT name, units from variables where id = ",
                                                                                     fv$variable_id[i]),con))
     }
     
@@ -80,7 +80,7 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
     # met <- read.csv(system.file("/data/met.lookup.csv", package= "PEcAn.data.atmosphere"), header = T, stringsAsFactors=FALSE)
     
     #Fill in MstMIP vars 
-    #All pecan output is in MstMIP variables 
+    #All PEcAn output is in MstMIP variables 
     
     bety_mstmip <- read.csv(system.file("bety_mstmip_lookup.csv", package= "PEcAn.DB"), header = T, stringsAsFactors=FALSE)
     vars_full <- merge(vars_bety, bety_mstmip, by = "bety_name", all.x = TRUE)
