@@ -120,7 +120,7 @@ Here 772 is the database site ID for Niwot Ridge Forest, which tells pecan where
 
 ```{r}
 
-aligned_dat = PEcAn.benchmark::align_data(model.calc = model, obvs.calc= observations, var ="NEE", start_year =start_year, end_year = end_year, align_method ="mean_over_larger_timestep")
+aligned_dat = PEcAn.benchmark::align_data(model.calc = model, obvs.calc= observations, var ="NEE", align_method ="mean_over_larger_timestep")
 
 ```
 
