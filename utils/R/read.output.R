@@ -178,7 +178,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
       for (i in seq_along(n)) {
         y <- c(y, rep(years[i], n[i]))
       }
-      model$year<-rep(NA, seq_along(n))
+      
       model$year <- y
       makeDate <- function(x){as.POSIXct(model$time[x]*86400,origin=paste0(model$year[x],"-01-01"),tz="UTC")}
       model$posix <- makeDate(seq_along(model$time))
