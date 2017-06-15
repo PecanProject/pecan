@@ -38,10 +38,9 @@ Within both the run and out folders there will be one folder for each unique mod
 
 
 ```{r}
+
 #Load required libraries used
-
-require(RPostgreSQL)
-
+#require(RPostgreSQL)
 ```
 
 ## Read in settings
@@ -51,15 +50,16 @@ There are two ways to access runs from pecan. One is from a settings object gene
 **From an XML file**
 ```{r}
 ## Read in the xml
-settings<-PEcAn.settings::read.settings("/fs/data2/output/PEcAn_99000000001/pecan.xml")
+#settings<-PEcAn.settings::read.settings("/fs/data2/output/PEcAn_99000000001/pecan.xml")
+settings<-PEcAn.settings::read.settings("/fs/data2/output//PEcAn_1000007658/pecan.xml")
 
 ## To read in the model output 
-runid<-settings$workflow$id
-outdir<- settings$outdir
-start.year<-settings$run$start.date
-end.year<-settings$run$end.date
+runid<-as.character(read.table(paste(settings$outdir, "/run/","runs.txt", sep=""))[1,1]) # Note: if you are using an xml from a run with multiple ensembles this line will provide only the first run id 
+outdir<- paste(settings$outdir,"/out/",runid,sep= "")
+start.year<-as.numeric(lubridate::year(settings$run$start.date))
+end.year<-as.numeric(lubridate::year(settings$run$end.date))
 
-site_id<-settings$run$site$id
+site.id<-settings$run$site$id
 
 ## Open up a connection to The Bety Database 
 bety <-dplyr::src_postgres(host = settings$database$bety$host, user = settings$database$bety$user, password = settings$database$bety$password, dbname = settings$database$bety$dbname)

@@ -46,7 +46,7 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
     # Need to subset the formats table
     fv <- fv %>% dplyr::filter(variable_id %in% var.ids | storage_type != "") 
     if(dim(fv)[1] == 0){
-      logger.error("None of your requested variables are available")
+      PEcAn.utils::logger.error("None of your requested variables are available")
     } 
     
   }
@@ -125,8 +125,8 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
         
       }else if(udunits2::ud.are.convertible(format$vars$input_units[i], format$vars$pecan_units[i]) == FALSE){ 
         
-        if(misc.are.convertible(format$vars$input_units[i], format$vars$pecan_units[i]) == FALSE){
-          logger.warn("Units not convertible for",format$vars$input_name[i], "with units of",format$vars$input_units[i], ".  Please make sure the varible has units that can be converted to", format$vars$pecan_units[i])
+        if(PEcAn.utils::misc.are.convertible(format$vars$input_units[i], format$vars$pecan_units[i]) == FALSE){
+          PEcAn.utils::logger.warn("Units not convertible for",format$vars$input_name[i], "with units of",format$vars$input_units[i], ".  Please make sure the varible has units that can be converted to", format$vars$pecan_units[i])
         }
         
       }
