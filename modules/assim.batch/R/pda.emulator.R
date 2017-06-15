@@ -90,8 +90,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   n.input     <- length(inputs)
   
 
-  
-  
   ## Set model-specific functions
   do.call("library", list(paste0("PEcAn.", settings$model$type)))
   my.write.config <- paste("write.config.", settings$model$type, sep = "")
@@ -129,6 +127,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   # 1. append scaling factor priors to prior.list
   # 2. use the same probs for all pft params to be scaled
   if(!is.null(sf)){
+    sf.ind <- length(prior.list) + 1
     sf.list <- pda.generate.sf(settings$assim.batch$n.knot, sf, prior.list)
     probs.sf <- sf.list$probs
     prior.list <- sf.list$priors
@@ -159,35 +158,42 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   if (run.round) {
       
       # loads the posteriors of the the previous emulator run
-      temp <- pda.load.priors(settings, con, extension.check = TRUE) 
-      prior.list <- temp$prior
+      temp.round <- pda.load.priors(settings, con, run.round)
+      prior.round.list <- temp.round$prior
       
       
-      ## Propose a percentage (if not specified 75%) of the new parameter knots from the posterior of the previous run
-      knot.par        <- ifelse(!is.null(settings$assim.batch$knot.par), 
-                                as.numeric(settings$assim.batch$knot.par), 
-                                0.75)
+      prior.round.fn <- lapply(prior.round.list, pda.define.prior.fn)
+      
+      ## Propose a percentage (if not specified 50%) of the new parameter knots from the posterior of the previous run
+      knot.par        <- ifelse(!is.null(settings$assim.batch$knot.par),
+                                as.numeric(settings$assim.batch$knot.par),
+                                0.5)
       
       n.post.knots    <- floor(knot.par * settings$assim.batch$n.knot)
       
       if(!is.null(sf)){
-        n.post.knots <- settings$assim.batch$n.knot
-        sf.list      <- pda.generate.sf(n.post.knots, sf, prior.list)
-        probs.sf     <- sf.list$probs
-        prior.list   <- sf.list$priors
+        load(settings$assim.batch$sf.path)
+        sf.round.post <- pda.define.prior.fn(post.distns)
+        rm(post.distns)
+        n.sf <- length(sf)
+        sf.round.list <- pda.generate.knots(n.post.knots,
+                                            sf = NULL, probs.sf = NULL,
+                                            n.param.all = n.sf,
+                                            prior.ind = seq_len(n.sf),
+                                            prior.fn = sf.round.post, 
+                                            pname = paste0(sf, "_SF"))
+        probs.round.sf     <- sf.round.list$params
       }else {
-        probs.sf     <- NULL
+        probs.round.sf     <- NULL
       }
       
       ## set prior distribution functions for posterior of the previous emulator run
-      prior.fn <- lapply(prior.list, pda.define.prior.fn)
-      
       knots.list.temp <- lapply(seq_along(settings$pfts),
-                                function(x) pda.generate.knots(n.post.knots, 
-                                                               sf, probs.sf,
-                                                               n.param.all[x], 
+                                function(x) pda.generate.knots(n.post.knots,
+                                                               sf, probs.round.sf,
+                                                               n.param.all[x],
                                                                prior.ind.orig[[x]],
-                                                               prior.fn[[x]],
+                                                               prior.round.fn[[x]],
                                                                pname[[x]]))
       knots.params.temp <- lapply(knots.list.temp, `[[`, "params")
       
@@ -195,19 +201,9 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       for (i in seq_along(settings$pfts)) {
         # mixture of knots
         mix.knots <- sample(nrow(knots.params[[i]]), (settings$assim.batch$n.knot - n.post.knots))
-        knots.list[[i]]$params <- rbind(knots.params[[i]][mix.knots, ], 
+        knots.list[[i]]$params <- rbind(knots.params[[i]][mix.knots, ],
                                         knots.list.temp[[i]]$params)
         names(knots.list)[i] <- settings$pfts[[i]]['name']
-      }
-      
-
-      # Convert parameter values to probabilities according to current PDA prior distribution
-      knots.list$probs <- knots.list$params
-      for (pft in seq_along(settings$pfts)) {
-        for (i in seq_len(n.param.all[[pft]])) {
-          knots.list[[pft]]$probs[, i] <- eval(prior.fn[[pft]]$pprior[[i]], 
-                                               list(q = knots.list[[pft]]$params[, i]))
-        }
       }
       
       knots.params <- lapply(knots.list, `[[`, "params")
@@ -312,11 +308,9 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     names(n.of.obs) <- sapply(model.out[[1]],names)
 
       
-    ## GPfit optimization routine assumes that inputs are in [0,1] Instead of drawing from parameters,
-    ## we draw from probabilities
-    knots.probs.all <- do.call("cbind", knots.probs)
-
-    X <- knots.probs.all[, prior.ind.all, drop = FALSE]
+    # UPDATE: Use mlegp package, I can now draw from parameter space
+    knots.params.all <- do.call("cbind", knots.params)
+    X <- knots.params.all[, prior.ind.all, drop = FALSE]
       
     if(!is.null(sf)){
       X <- cbind(X, probs.sf)
@@ -338,25 +332,27 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     
     for(inputi in seq_len(n.input)){
       error.statistics[[inputi]] <- sapply(pda.errors,`[[`, inputi)
-        
+      
       if(unlist(any.mgauss)[inputi] == "multipGauss") {
-          
-          # if yes, then we need to include bias term in the emulator
-          bias.probs <- bias.list$bias.probs
-          biases <- c(t(bias.probs[[bc]]))
-          bc <- bc + 1
-            
-          # replicate model parameter set per bias parameter
-          rep.rows <- rep(1:nrow(X), each = nbias)
-          X.rep <- X[rep.rows,]
-          X <- cbind(X.rep, biases)
-          colnames(X) <- c(colnames(X.rep), paste0("bias.", names(n.of.obs)[inputi]))
-          SS.list[[inputi]] <- cbind(X, c(error.statistics[[inputi]]))
-
-      } else {
-          SS.list[[inputi]] <- cbind(X, error.statistics[[inputi]])
-      } # if-block
         
+        # if yes, then we need to include bias term in the emulator
+        #bias.probs <- bias.list$bias.probs
+        #biases <- c(t(bias.probs[[bc]]))
+        bias.params <- bias.list$bias.params
+        biases <- c(t(bias.params[[bc]]))
+        bc <- bc + 1
+        
+        # replicate model parameter set per bias parameter
+        rep.rows <- rep(1:nrow(X), each = nbias)
+        X.rep <- X[rep.rows,]
+        Xnew <- cbind(X.rep, biases)
+        colnames(Xnew) <- c(colnames(X.rep), paste0("bias.", names(n.of.obs)[inputi]))
+        SS.list[[inputi]] <- cbind(Xnew, c(error.statistics[[inputi]]))
+        
+      } else {
+        SS.list[[inputi]] <- cbind(X, error.statistics[[inputi]])
+      } # if-block
+      
       # check failed runs and remove them if you'll have a reasonable amount of param sets after removal
       # how many runs failed?
       no.of.failed <- sum(is.na(SS.list[[inputi]][, ncol(SS.list[[inputi]])]))
@@ -372,23 +368,25 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       }
       
     } # for-loop
-
-
-      
+  
     if (run.round) {
       # check if this is another 'round' of emulator 
-        
+      
       # load original knots
       load(settings$assim.batch$ss.path)
       # add on
       SS <- lapply(seq_along(SS), function(iss) rbind(SS.list[[iss]], SS[[iss]]))
-        
+      
     } else {
       SS <- SS.list
     }
       
-    logger.info(paste0("Using 'GPfit' package for Gaussian Process Model fitting."))
-    ## Generate emulator on SS, return a list
+    logger.info(paste0("Using 'mlegp' package for Gaussian Process Model fitting."))
+    
+    ## Generate emulator on SS, return a list ##
+    
+    # start the clock
+    ptm.start <- proc.time()
     
     # prepare for parallelization
     dcores <- parallel::detectCores() - 1
@@ -397,9 +395,15 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     cl <- parallel::makeCluster(ncores, type="FORK")
     
     ## Parallel fit for GPs
-    GPmodel <- parallel::parLapply(cl, SS, function(x) GPfit::GP_fit(X = x[, -ncol(x), drop = FALSE], Y = x[, ncol(x), drop = FALSE]))
-    #GPmodel <- lapply(SS, function(x) GPfit::GP_fit(X = x[, -ncol(x), drop = FALSE], Y = x[, ncol(x), drop = FALSE]))
+    GPmodel <- parallel::parLapply(cl, SS, function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], verbose = 0))
+    # GPmodel <- lapply(SS, function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], verbose = 0))
+    
     parallel::stopCluster(cl)
+    
+    # Stop the clock
+    ptm.finish <- proc.time() - ptm.start
+    logger.info(paste0("GP fitting took ", paste0(round(ptm.finish[3])), " seconds."))
+    
     
     gp <- GPmodel
       
@@ -443,19 +447,13 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   }
 
   
-  ## Change the priors to unif(0,1) for mcmc.GP
-  prior.all[prior.ind.all, ] <- rep(c("unif", 0, 1, "NA"), each = length(prior.ind.all))
-
   ## Set up prior functions accordingly
   prior.fn.all <- pda.define.prior.fn(prior.all)
-  
+
   # define range to make sure mcmc.GP doesn't propose new values outside
-  rng <- matrix(c(sapply(prior.fn.all$qprior[prior.ind.all],
-                         eval,
-                         list(p = 0)), 
-                  sapply(prior.fn.all$qprior[prior.ind.all], 
-                         eval, 
-                         list(p = 1))), nrow = length(prior.ind.all))
+  rng <- matrix(c(sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 1e-05)),
+                sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 0.99999))),
+                nrow = sum(n.param))
   
   if (run.normal | run.round) {
     
@@ -481,6 +479,9 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     mix <- "each"
   }
   
+  current.step <- "pre-MCMC"
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+  
   # start the clock
   ptm.start <- proc.time()
   
@@ -489,9 +490,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   ncores <- min(max(dcores, 1), settings$assim.batch$chain)
   
   logger.setOutputFile(file.path(settings$outdir, "pda.log"))
-  
-  current.step <- "pre-MCMC"
-  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
   cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(settings$outdir, "pda.log"))
   
@@ -515,13 +513,13 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   })
   
   parallel::stopCluster(cl)
-  current.step <- "post-MCMC"
-  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
-  
+
   # Stop the clock
   ptm.finish <- proc.time() - ptm.start
   logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(settings$assim.batch$iter), " iterations."))
   
+  current.step <- "post-MCMC"
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
   mcmc.samp.list <- list()
   
@@ -529,28 +527,46 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     
     m <- matrix(NA, nrow =  nrow(mcmc.out[[c]]$mcmc.samp), ncol = length(prior.ind.all.ns))
     
-      ## Set the prior functions back to work with actual parameter range
-      
-      prior.all <- do.call("rbind", prior.list)
-      prior.fn.all <- pda.define.prior.fn(prior.all)
-      
-      # retrieve rownames separately to get rid of var_name* structures
-      prior.all.rownames <- unlist(sapply(prior.list, rownames))
-      
-      ## Convert probabilities back to parameter values
-      for (i in seq_along(prior.ind.all.ns)) {
-        sf.check <- prior.all.rownames[prior.ind.all.ns][i]
-        idx <- grep(sf.check, rownames(prior.all)[prior.ind.all])
-        m[, i] <- eval(prior.fn.all$qprior[prior.ind.all.ns][[i]], 
+    if(!is.null(sf)){
+      sfm <- matrix(NA, nrow =  nrow(mcmc.out[[c]]$mcmc.samp), ncol = length(sf))
+    }
+    ## Set the prior functions back to work with actual parameter range
+    
+    prior.all <- do.call("rbind", prior.list)
+    prior.fn.all <- pda.define.prior.fn(prior.all)
+    
+    # retrieve rownames separately to get rid of var_name* structures
+    prior.all.rownames <- unlist(sapply(prior.list, rownames))
+    
+    sc <- 1
+    for (i in seq_along(prior.ind.all.ns)) {
+      sf.check <- prior.all.rownames[prior.ind.all.ns][i]
+      idx <- grep(sf.check, rownames(prior.all)[prior.ind.all])
+      if(any(grepl(sf.check, sf))){
+        
+        m[, i] <- eval(prior.fn.all$qprior[prior.ind.all.ns][[i]],
                        list(p = mcmc.out[[c]]$mcmc.samp[, idx]))
+        if(sc <= length(sf)){
+          sfm[, sc] <- mcmc.out[[c]]$mcmc.samp[, idx]
+          sc <- sc + 1
+        }
+        
+      }else{
+        m[, i] <- mcmc.out[[c]]$mcmc.samp[, idx]
       }
-      
+    }
+    
     colnames(m) <- prior.all.rownames[prior.ind.all.ns]
     mcmc.samp.list[[c]] <- m
     
-    # jmp.list[[c]] <- mcmc.out[[c]]$jump
+    if(!is.null(sf)){
+      colnames(sfm) <- paste0(sf, "_SF")
+      sf.samp.list[[c]] <- sfm
+    }
+    
     resume.list[[c]] <- mcmc.out[[c]]$chain.res
   }
+  
   
   
   if (FALSE) {
@@ -608,6 +624,14 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     save(prior.list, file = settings$assim.batch$bias.path)
   }
 
+  # save sf posterior
+  if(!is.null(sf)){
+    sf.filename <- file.path(settings$outdir, 
+                             paste0("post.distns.pda.sf", "_", settings$assim.batch$ensemble.id, ".Rdata"))
+    sf.prior <- prior.list[[sf.ind]]
+    write_sf_posterior(sf.samp.list, sf.prior, sf.filename)
+    settings$assim.batch$sf.path <- sf.filename
+  }
   
   # Separate each PFT's parameter samples (and bias term) to their own list
   mcmc.param.list <- list()

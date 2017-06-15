@@ -203,13 +203,14 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
 
 ##--------------------------------------------------------------------------------------------------#
 ##'
-##' @name filter.sunleaf.traits
+##' @name filter_sunleaf_traits
+##' @aliases filter.sunleaf.traits
 ##' @title Function to filter out upper canopy leaves
 ##' @param data input data
 ##' @param covariates covariate data
 ##'
 ##' @author <unknown>
-filter.sunleaf.traits <- function(data, covariates){
+filter_sunleaf_traits <- function(data, covariates){
   if(length(covariates)>0) {
     data <- append.covariate(data, 'canopy_layer',
                              covariates[covariates$name == 'canopy_layer',])
@@ -466,7 +467,7 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only=FALSE, 
     data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT','T'))
 
 ### Keep only top of canopy/sunlit leaf samples based on covariate.
-    if(nrow(canopy.layer.covs) > 0) data <- filter.sunleaf.traits(data, canopy.layer.covs)
+    if(nrow(canopy.layer.covs) > 0) data <- filter_sunleaf_traits(data, canopy.layer.covs)
 
     ## select only summer data for Panicum virgatum
     ##TODO fix following hack to select only summer data
@@ -483,7 +484,7 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only=FALSE, 
                                 sample.size=sample.size))
 
     ### Keep only top of canopy/sunlit leaf samples based on covariate.
-    if(nrow(canopy.layer.covs) > 0) data <- filter.sunleaf.traits(data, canopy.layer.covs)
+    if(nrow(canopy.layer.covs) > 0) data <- filter_sunleaf_traits(data, canopy.layer.covs)
 
     ## select only summer data for Panicum virgatum
     ##TODO fix following hack to select only summer data

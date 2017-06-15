@@ -43,12 +43,12 @@ load.pda.data <- function(settings, bety) {
     
     vars.used.index <- which(format$vars$bety_name %in% data.var)
     
-    inputs[[i]]$data <- load_data(data.path, 
-                                  format, 
+    inputs[[i]]$data <- load_data(data.path = data.path, 
+                                  format = format, 
                                   start_year = lubridate::year(settings$run$start.date), 
                                   end_year = lubridate::year(settings$run$end.date), 
                                   site = settings$run$site, 
-                                  vars.used.index,
+                                  vars.used.index = vars.used.index,
                                   time.row = format$time.row)
     
     ## Preprocess data
@@ -73,7 +73,7 @@ load.pda.data <- function(settings, bety) {
         
         ustar.thresh <- 0.4  # TODO: soft code this
         
-        var.obs <- colnames(inputs[[i]]$data)[!colnames(inputs[[i]]$data) %in% c("UST", "posix")]
+        var.obs <- colnames(inputs[[i]]$data)[!colnames(inputs[[i]]$data) %in% c("UST", "posix", "year")]
         
         AMFo                     <- inputs[[i]]$data[[var.obs]]
         UST                      <- inputs[[i]]$data$UST
