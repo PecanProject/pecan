@@ -48,8 +48,6 @@ calc_benchmark <- function(settings, bety) {
     # Setup
     
     site <- PEcAn.DB::query.site(settings$run$site$id, bety$con)
-    start_year <- lubridate::year(settings$run$start.date)
-    end_year <- lubridate::year(settings$run$end.date)
     model_run <- dir(settings$modeloutdir, full.names = TRUE, include.dirs = TRUE)[1]
     # How are we dealing with ensemble runs? Right now I've hardcoded to select the first run.
     
@@ -145,7 +143,6 @@ calc_benchmark <- function(settings, bety) {
                                          obvs.calc, 
                                          var, 
                                          metrics,
-                                         start_year, end_year, 
                                          bm,
                                          ensemble.id,
                                          model_run)
