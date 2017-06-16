@@ -83,7 +83,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
         print(sprintf("convert %s %s to %s %s",
                       vars_used$input_name[i], vars_used$input_units[i], 
                       vars_used$pecan_name[i], vars_used$pecan_units[i]))
-        out[col] <- udunits2::ud.convert(x, u1, u2)[, 1]
+        out[col] <- udunits2::ud.convert(as.numeric(x), u1, u2)
         colnames(out)[col] <- vars_used$pecan_name[i]
       } else if (misc.are.convertible(u1, u2)) {
         print(sprintf("convert %s %s to %s %s", 
@@ -102,7 +102,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   if(!is.null(time.row)){  
     
     # load_data was not changing the name of the 'time' column
-    col <- names(out) == format$vars$input_name[time.row]
+    col <- names(out) %in% format$vars$input_name[time.row]
     names(out)[col] <- format$vars$pecan_name[time.row]
     
     # Need a much more spohisticated approach to converting into time format. 
@@ -123,16 +123,17 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
   # Subset by start year and end year when loading data
   # This was part of the arguments but never implemented
   if(!is.na(start_year)){
-    out$year <- year(out$posix)
+    out$year <- lubridate::year(out$posix)
     out <- out %>% filter(.,year >= as.numeric(start_year))
     print("subsetting by start year")
   }
   
   if(!is.na(end_year)){
-    out$year <- year(out$posix)
+    out$year <- lubridate::year(out$posix)
     out <- out %>% filter(.,year <= as.numeric(end_year))
     print("subsetting by end year")
   }
   
   return(out)
 } # load_data
+
