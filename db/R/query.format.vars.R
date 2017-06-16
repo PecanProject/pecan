@@ -130,7 +130,9 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
         }
         
       }
-    } 
+    }
+    
+
   } else {
     format <- list(file_name = f$name,
                    mimetype = f$mimetype,
@@ -142,5 +144,6 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
                    time_zone = site.time_zone
     )
   }
+
   return(format)
 }
