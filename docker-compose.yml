@@ -13,6 +13,8 @@ services:
       - '5432:5432'
 
   bety:
+    depends_on:
+      - postgres
     image: 'pecan/bety:latest'
     networks:
       - net1

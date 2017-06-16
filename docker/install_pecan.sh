@@ -5,6 +5,11 @@
 echo "######################################################################"
 echo "PECAN"
 echo "######################################################################"
-git clone https://github.com/PecanProject/pecan.git
-cd pecan/
+if [ ! -e ${HOME}/pecan ]; then
+  cd
+  git clone https://github.com/PecanProject/pecan.git
+fi
+cd ${HOME}/pecan
+git pull
+mkdir .install
 make
