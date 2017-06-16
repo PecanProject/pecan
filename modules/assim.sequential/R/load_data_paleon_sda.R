@@ -19,6 +19,11 @@ load_data_paleon_sda <- function(settings){
   ## PLS and FIA Biomass Snapshot
   ## Wish list: eddy covariance
   
+  if(file.exists(file.path(settings$outdir,'sda.obs.Rdata'))){
+    load(file.path(settings$outdir,'sda.obs.Rdata'))
+    return(obs.list)
+  }
+  
   library(plyr) #need to load to use .fnc below
   
   d <- settings$database$bety[c("dbname", "password", "host", "user")]
@@ -47,6 +52,7 @@ load_data_paleon_sda <- function(settings){
   obs.cov <- obs.cov.tmp <- list()
 
   obs.times <- seq(as.Date(start_date), as.Date(end_date), by = settings$state.data.assimilation$forecast.time.step)
+  obs.times <- year(obs.times)
   
   biomass2carbon <- 0.48
   
@@ -66,7 +72,7 @@ load_data_paleon_sda <- function(settings){
     obvs[[i]] <- PEcAn.benchmark::load_data(data.path, format, start_year = lubridate::year(start_date), end_year = lubridate::year(end_date), site)
     
     dataset <- obvs[[i]]
-    variable <- var.names
+    variable <- intersect(var.names,colnames(obvs[[i]]))
     
     ### Tree Ring Data Product
     if(format_id[[i]] == '1000000040'){
@@ -147,7 +153,10 @@ load_data_paleon_sda <- function(settings){
     names(obs.mean) <- paste0(obs.times,'/12/31')
     names(obs.cov) <- paste0(obs.times,'/12/31')
   }
+  
+  obs.list <- list(obs.mean = obs.mean, obs.cov = obs.cov)
+  save(obs.list,file=file.path(settings$outdir,'sda.obs.Rdata'))
 
-return(list(obs.mean = obs.mean, obs.cov = obs.cov))
+return(obs.list)
 
 }
