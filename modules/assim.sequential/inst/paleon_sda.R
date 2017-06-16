@@ -14,4 +14,6 @@ settings <- read.settings("pecan.SDA.xml")
 
 obs.list <- PEcAn.assim.sequential::load_data_paleon_sda(settings = settings)
 
-sda.enkf(settings, obs.mean = obs.list$obs.mean, obs.cov = obs.list$obs.cov, IC <- NULL)
+save(obs.list,file='obs.list.Rdata')
+
+sda.enkf(settings, obs.mean = obs.list$obs.mean, obs.cov = obs.list$obs.cov, IC = NULL)

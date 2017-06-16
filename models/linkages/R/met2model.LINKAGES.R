@@ -70,7 +70,6 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   if(nchar(in.prefix)>0 & substr(in.prefix,nchar(in.prefix),nchar(in.prefix)) != ".") in.prefix = paste0(in.prefix,".")
   
   for (i in seq_len(nyear)) {
-    if(nchar(in.prefix)>0 & substr(in.prefix,nchar(in.prefix),nchar(in.prefix)) != ".") in.prefix = paste0(in.prefix,".")
     year_txt <- formatC(year[i], width = 4, format = "d", flag = "0")
     infile <- file.path(in.path, paste0(in.prefix, year_txt, ".nc"))
     ncin <- ncdf4::nc_open(infile)
