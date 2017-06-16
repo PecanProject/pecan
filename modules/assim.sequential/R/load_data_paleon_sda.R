@@ -43,12 +43,10 @@ load_data_paleon_sda <- function(settings){
   start_date <- settings$state.data.assimilation$start.date
   end_date   <- settings$state.data.assimilation$end.date
   
-  obs.mean <- list()
-  obs.cov <- list()
-  
-  start.time <- format(lubridate::ymd(start_date),settings$state.data.assimilation$forecast.time.step)
-  end.time <- format(lubridate::ymd(end_date),settings$state.data.assimilation$forecast.time.step)
-  obs.times <- start.time:end.time
+  obs.mean <- obs.mean.tmp <- list()
+  obs.cov <- obs.cov.tmp <- list()
+
+  obs.times <- seq(as.Date(start_date), as.Date(end_date), by = settings$state.data.assimilation$forecast.time.step)
   
   biomass2carbon <- 0.48
   
@@ -61,10 +59,10 @@ load_data_paleon_sda <- function(settings){
     
     format$na.strings <- 'NA'
     time.row <- format$time.row
-    time.type <- format$vars$input_name[time.row]
+    time.type <- format$vars$input_units[time.row] #THIS WONT WORK IF TIMESTEP ISNT ANNUAL
     
     # ---- LOAD INPUT DATA ---- #
-    print(paste('Using PEcAn.benchmark::load_data.R on format_id',format_id[[i]],'-- may take a few minutes'))
+    logger.info(paste('Using PEcAn.benchmark::load_data.R on format_id',format_id[[i]],'-- may take a few minutes'))
     obvs[[i]] <- PEcAn.benchmark::load_data(data.path, format, start_year = lubridate::year(start_date), end_year = lubridate::year(end_date), site)
     
     dataset <- obvs[[i]]
@@ -74,7 +72,7 @@ load_data_paleon_sda <- function(settings){
     if(format_id[[i]] == '1000000040'){
       obvs[[i]] <- obvs[[i]][obvs[[i]]$model_type=='Model RW + Census',]
       obvs[[i]]$AbvGrndWood <- obvs[[i]]$AbvGrndWood * biomass2carbon
-      obvs[[i]]$NPP_1_C <- obvs[[i]]$NPP_1_C * biomass2carbon
+      obvs[[i]]$NPP <- obvs[[i]]$NPP * biomass2carbon
       arguments <- list(.(year, MCMC_iteration, site_id), .(variable))
       arguments2 <- list(.(year), .(variable))
       arguments3 <- list(.(MCMC_iteration), .(variable), .(year))
@@ -114,32 +112,36 @@ load_data_paleon_sda <- function(settings){
     cov.test <- apply(iter_mat,3,function(x){cov(x)})
    
     for(t in seq_along(obs.times)){
-      obs.mean[[t]] <- mean_mat[mean_mat[,time.type]==obs.times[t], variable]
+      obs.mean.tmp[[t]] <- mean_mat[mean_mat[,time.type]==obs.times[t], variable] #THIS WONT WORK IF TIMESTEP ISNT ANNUAL
+      
       if(any(var.names == 'AGB.pft')){
-        obs.mean[[t]] <- rep(NA, length(x))
-        names(obs.mean[[t]]) <- sort(x)
+        obs.mean.tmp[[t]] <- rep(NA, length(x))
+        names(obs.mean.tmp[[t]]) <- sort(x)
         for(r in seq_along(x)){
-          k <- mean_mat[mean_mat$year==obs.times[t] & mean_mat$pft.cat==names(obs.mean[[t]][r]), variable]
+          k <- mean_mat[mean_mat$year==obs.times[t] & mean_mat$pft.cat==names(obs.mean.tmp[[t]][r]), variable]
           if(any(k)){
-            obs.mean[[t]][r] <- k
+            obs.mean.tmp[[t]][r] <- k
           }
         }
       }
       
-      obs.cov[[t]] <- matrix(cov.test[,which(colnames(cov.test) %in% obs.times[t])],
+      obs.cov.tmp[[t]] <- matrix(cov.test[,which(colnames(cov.test) %in% obs.times[t])],
                              ncol = sqrt(dim(cov.test)[1]),
                              nrow = sqrt(dim(cov.test)[1]))
       if(any(var.names == 'AGB.pft')){
-        colnames(obs.cov[[t]]) <- names(iter_mat[1,,t]) 
+        colnames(obs.cov.tmp[[t]]) <- names(iter_mat[1,,t]) 
       }
     } 
     
     ### Combine data if more than one type of data
     if(i > 1){
       for(t in seq_along(obs.times)){
-        obs.mean[[t]] <- c(obs.mean[[t]],unlist(obs.mean[[t]]))
-        obs.cov[[t]] <- magic::adiag(obs.cov[[t]],unlist(obs.cov[[t]]))
+        obs.mean[[t]] <- c(obs.mean[[t]],unlist(obs.mean.tmp[[t]]))
+        obs.cov[[t]] <- magic::adiag(obs.cov[[t]],unlist(obs.cov.tmp[[t]]))
       }
+    }else{
+      obs.mean <- obs.mean.tmp
+      obs.cov <- obs.cov.tmp
     }
     
     names(obs.mean) <- paste0(obs.times,'/12/31')
