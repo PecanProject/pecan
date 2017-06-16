@@ -19,7 +19,8 @@ In your earlier run in the introductory tutorial, you have already run an sensit
 You can find this file (*pecan.xml*) in the *~/output* folder within the specific run directory (e.g., *~/output/PEcAn_99000000002/pecan.xml*), where *99000000002* is the BETY database id of the workflow that called all the ensemble and sensitivity runs of SIPNET. For here on out, we will use **RUNDIR** to refer to this folder name (*PEcAn_99000000002*). Let's define this variable:
 
 ```{r, eval=FALSE}
-RunDir <- "PEcAn_99000000002"
+#RunDir <- "PEcAn_99000000002"
+RunDir<-"/fs/data2/output//PEcAn_1000007678"
 ```
 
 
