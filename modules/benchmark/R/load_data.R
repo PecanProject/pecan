@@ -6,17 +6,16 @@
 ##' @param start_year numeric
 ##' @param end_year numeric
 ##' @param site list
-##' @author Betsy Cowdery, Istem Fer, Joshua Mantooth
+##' @author Betsy Cowdery, Istem Fer, Joshua Mantooth, Ann Raiho
 ##' Generic function to convert input files containing observational data to 
 ##' a common PEcAn format. 
 
 load_data <- function(data.path, format, start_year = NA, end_year = NA, site = NA, 
-                      vars.used.index=NULL, time.row = NULL, ...) {
+                      vars.used.index=NULL, ...) {
 
   ## load everything in format by default
-  if(is.null(time.row)){
-    time.row <- format$time.row 
-  }
+  time.row <- format$time.row 
+  
   if(is.null(vars.used.index)){
     vars.used.index <- setdiff(seq_along(format$vars$variable_id), format$time.row)
   }

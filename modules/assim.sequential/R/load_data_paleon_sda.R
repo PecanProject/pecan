@@ -23,7 +23,8 @@ load_data_paleon_sda <- function(settings){
   
   d <- settings$database$bety[c("dbname", "password", "host", "user")]
   bety <- src_postgres(host = d$host, user = d$user, password = d$password, dbname = d$dbname)
-  settings$host$name <- "localhost"
+  
+  if(settings$host$name != 'localhost') logger.severe('ERROR: Code does not support anything but settings$host$name <- localhost at this time.')
   
   site <- PEcAn.DB::query.site(settings$run$site$id, bety$con)
   format_id <- settings$state.data.assimilation$data$format_id
@@ -49,6 +50,7 @@ load_data_paleon_sda <- function(settings){
   end.time <- format(lubridate::ymd(end_date),settings$state.data.assimilation$forecast.time.step)
   obs.times <- start.time:end.time
   
+  biomass2carbon <- 0.48
   
   for(i in seq_along(format_id)){
     input.list[[i]] <- db.query(paste("SELECT * FROM inputs WHERE site_id =",site$id ,"  AND format_id = ",format_id[[i]]), bety$con)
@@ -60,11 +62,8 @@ load_data_paleon_sda <- function(settings){
     format$na.strings <- 'NA'
     
     # ---- LOAD INPUT DATA ---- #
-    time.row <- format$time.row
-    vars.used.index <- setdiff(seq_along(format$vars$variable_id), format$time.row)
-    
     print(paste('Using PEcAn.benchmark::load_data.R on format_id',format_id[[i]],'-- may take a few minutes'))
-    obvs[[i]] <- PEcAn.benchmark::load_data(data.path, format, start_year = lubridate::year(start_date), end_year = lubridate::year(end_date), site, vars.used.index, time.row)
+    obvs[[i]] <- PEcAn.benchmark::load_data(data.path, format, start_year = lubridate::year(start_date), end_year = lubridate::year(end_date), site)
     
     dataset <- obvs[[i]]
     variable <- var.names
@@ -72,14 +71,13 @@ load_data_paleon_sda <- function(settings){
     ### Tree Ring Data Product
     if(format_id[[i]] == '1000000040'){
       obvs[[i]] <- obvs[[i]][obvs[[i]]$model_type=='Model RW + Census',]
-      obvs[[i]]$AbvGrndWood <- obvs[[i]]$AbvGrndWood * .48
-      obvs[[i]]$NPP_1_C <- obvs[[i]]$NPP_1_C * .48
+      obvs[[i]]$AbvGrndWood <- obvs[[i]]$AbvGrndWood * biomass2carbon
+      obvs[[i]]$NPP_1_C <- obvs[[i]]$NPP_1_C * biomass2carbon
       arguments <- list(.(year, MCMC_iteration, site_id), .(variable))
       arguments2 <- list(.(year), .(variable))
       arguments3 <- list(.(MCMC_iteration), .(variable), .(year))
     }else{
-      print('ERROR: This data format has not been added to this function (ツ)_/¯ ')
-      stop()
+      logger.severe('ERROR: This data format has not been added to this function (ツ)_/¯ ')
     }
     
     ### Map species to model specific PFTs
