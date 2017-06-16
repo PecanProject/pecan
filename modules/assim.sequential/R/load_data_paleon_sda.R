@@ -60,6 +60,8 @@ load_data_paleon_sda <- function(settings){
     format_full <- format <- PEcAn.DB::query.format.vars(input.id = input.id[[i]], bety, format.id = NA, var.ids=NA)
     
     format$na.strings <- 'NA'
+    time.row <- format$time.row
+    time.type <- format$vars$input_name[time.row]
     
     # ---- LOAD INPUT DATA ---- #
     print(paste('Using PEcAn.benchmark::load_data.R on format_id',format_id[[i]],'-- may take a few minutes'))
@@ -88,15 +90,18 @@ load_data_paleon_sda <- function(settings){
       
       x <- paste0('AGB.pft.', pft_mat$pft)
       names(x) <- spp_id$input_code
+      
+      logger.info('Now, mapping data species to model PFTs')
       dataset$pft.cat <- x[dataset$species_id]
       dataset <- dataset[dataset$pft.cat!='NA_AbvGrndWood',]
+      
       variable <- sub('AGB.pft','AbvGrndWood',variable)
       arguments <- list(.(year, MCMC_iteration, site_id, pft.cat), .(variable))
       arguments2 <- list(.(year, pft.cat), .(variable))
       arguments3 <- list(.(MCMC_iteration), .(pft.cat, variable), .(year))
     } 
     
-    print('Now, melting data')
+    logger.info('Now, aggregating data and creating SDA input lists')
     melt_id <- colnames(dataset)[-which(colnames(dataset) %in% variable)]
     melt.test <- reshape2::melt(dataset, id = melt_id, na.rm = TRUE)
     cast.test <- reshape2::dcast(melt.test, arguments, sum, margins = variable)
@@ -109,7 +114,7 @@ load_data_paleon_sda <- function(settings){
     cov.test <- apply(iter_mat,3,function(x){cov(x)})
    
     for(t in seq_along(obs.times)){
-      obs.mean[[t]] <- mean_mat[mean_mat$year==obs.times[t], variable]
+      obs.mean[[t]] <- mean_mat[mean_mat[,time.type]==obs.times[t], variable]
       if(any(var.names == 'AGB.pft')){
         obs.mean[[t]] <- rep(NA, length(x))
         names(obs.mean[[t]]) <- sort(x)
