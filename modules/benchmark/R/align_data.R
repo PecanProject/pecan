@@ -4,8 +4,6 @@
 ##' @param model.calc data.frame
 ##' @param obvs.calc data.frame
 ##' @param var data.frame
-##' @param start_year numeric
-##' @param end_year numeric
 ##' @return dat
 
 ##' @author Betsy Cowdery
@@ -13,13 +11,13 @@
 
 ## Align timeseries data using different functions
 
-align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_method = "match_timestep") {
+align_data <- function(model.calc, obvs.calc, var, align_method = "match_timestep") {
   
   fcn <- match.fun(align_method)
   
   # Put both timestamps in UTC
-  model.calc$posix <- as.POSIXct(with_tz(model.calc$posix, "UTC"))
-  obvs.calc$posix  <- as.POSIXct(with_tz(obvs.calc$posix, "UTC"))
+  model.calc$posix <- as.POSIXct(lubridate::with_tz(model.calc$posix, "UTC"))
+  obvs.calc$posix  <- as.POSIXct(lubridate::with_tz(obvs.calc$posix, "UTC"))
   
   diff.m <- diff(model.calc$posix)
   mode.m <- diff.m[which.max(tabulate(match(unique(diff.m), diff.m)))]
@@ -53,7 +51,7 @@ align_data <- function(model.calc, obvs.calc, var, start_year, end_year, align_m
   # Compare the rounded dates because you can't compare dates of different units with range
   rng_obvs  <- range(unique(obvs.calc$round.posix))
   rng_model <- range(unique(model.calc$round.posix))
-  rng_dat   <- sort(c(rng_obvs, rng_model))[c(2, 3)] %>% with_tz(., tzone = "UTC")
+  rng_dat   <- sort(c(rng_obvs, rng_model))[c(2, 3)] %>% lubridate::with_tz(., tzone = "UTC")
   
   # Special case for annual timestep
   if(setequal(c(365,366), compare$diff_days[coarse])){
