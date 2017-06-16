@@ -6,7 +6,7 @@
 ##' @param start_year numeric
 ##' @param end_year numeric
 ##' @param site list
-##' @author Betsy Cowdery, Istem Fer, Joshua Mantooth, Ann Raiho
+##' @author Betsy Cowdery, Istem Fer, Joshua Mantooth
 ##' Generic function to convert input files containing observational data to 
 ##' a common PEcAn format. 
 
