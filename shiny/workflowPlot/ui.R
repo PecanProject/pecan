@@ -5,7 +5,7 @@ source('helper.R')
 ui <- shinyUI(fluidPage(
   # Application title
   titlePanel("Workflow Plots"),
-
+  
   sidebarLayout(
     sidebarPanel(
       # helpText(),
@@ -24,11 +24,11 @@ ui <- shinyUI(fluidPage(
     ),
     mainPanel(
       plotlyOutput("outputPlot"
-                 ## brushOpts and dblclick not supported by plotly  
-                 # brush = brushOpts(id = "plot_brush",
-                 #                   resetOnNew = TRUE),
-                 # dblclick = "plot_dblclick"
-                 ),
+                   ## brushOpts and dblclick not supported by plotly  
+                   # brush = brushOpts(id = "plot_brush",
+                   #                   resetOnNew = TRUE),
+                   # dblclick = "plot_dblclick"
+      ),
       # Checking variable names
       verbatimTextOutput("info"),
       verbatimTextOutput("info1"),
