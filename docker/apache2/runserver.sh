@@ -1,3 +1,3 @@
 #!/bin/sh
 
-exec chpst -u root /usr/sbin/apache2 -DFOREGROUND off 2>&1
+exec /etc/init.d/apache2 start
