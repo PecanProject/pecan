@@ -20,9 +20,9 @@ echo "Intalling php and apache2"
 apt-get -y install apache2 libapache2-mod-php7.0 php7.0 libapache2-mod-passenger php7.0-xml php-ssh2 php7.0-pgsql
 
 echo "Setting up web gui"
-sudo curl -o /var/www/html/pecan.pdf https://www.gitbook.com/download/pdf/book/pecan/pecan-documentation
-sudo rm /var/www/html/index.html
-sudo ln -s  ${HOME}/pecan/documentation/index_vm.html /var/www/html/index.html
+curl -o /var/www/html/pecan.pdf https://www.gitbook.com/download/pdf/book/pecan/pecan-documentation
+rm /var/www/html/index.html
+ln -s  ${HOME}/pecan/documentation/index_vm.html /var/www/html/index.html
 
 if [ ! -e ${HOME}/pecan/web/config.php ]; then
   sed -e "s#browndog_url=.*#browndog_url=\"${BROWNDOG_URL}\";#" \
@@ -41,6 +41,10 @@ Alias /pecan ${HOME}/pecan/web
   Require all granted
 </Directory>
 EOF
-  sudo cp /tmp/pecan.conf ${HTTP_CONF}/pecan.conf
+  cp /tmp/pecan.conf ${HTTP_CONF}/pecan.conf
   rm /tmp/pecan.conf
 fi
+
+a2enconf pecan.conf
+
+services apache2 restart
