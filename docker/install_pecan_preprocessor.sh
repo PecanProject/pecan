@@ -7,6 +7,10 @@ set -e
 #  exit -1
 #fi
 
+# overiding environment variables
+
+export HOME='/home/carya/'
+
 # configuration
 # BROWNDOG_URL="http://dap.ncsa.illinois.edu:8184/convert/";
 # BROWNDOG_USERNAME="";
