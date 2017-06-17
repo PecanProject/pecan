@@ -47,4 +47,4 @@ fi
 
 a2enconf pecan.conf
 
-services apache2 restart
+/etc/init.d/apache2 restart
