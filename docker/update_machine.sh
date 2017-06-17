@@ -6,8 +6,11 @@
 echo "######################################################################"
 echo "UPDATING MACHINE"
 echo "######################################################################"
-mkdir /home/carya/
-chmod 755 /home/carya/
+if [ ! -e /home/carya/ ]; then
+  mkdir /home/carya/
+  chmod 755 /home/carya/
+fi
+
 case "$OS_VERSION" in
   RH_*)
      yum update -y

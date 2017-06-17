@@ -2,7 +2,7 @@ FROM amanskywalker/pecan-dev:latest
 MAINTAINER Aman Kumar (ak47su30ac@gmail.com)
 
 # copy the installation script inside the container
-ADD docker/ /build
+ADD . /build
 
 # Set script mod +x for preprocessors
 RUN chmod 750 /build/*.sh
