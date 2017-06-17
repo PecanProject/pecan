@@ -20,8 +20,8 @@ server <- shinyServer(function(input, output, session) {
   # Ideally the get_workflow_ids function in db/R/query.dplyr.R should take a flag to check
   # if we want to load all workflow ids.
   get_all_workflow_ids <- function(bety) {
-      ids <- workflows(bety, ensemble = TRUE) %>% distinct(workflow_id) %>% collect %>% 
-        .[["workflow_id"]] %>% sort(decreasing = TRUE)
+    ids <- workflows(bety, ensemble = TRUE) %>% distinct(workflow_id) %>% collect %>% 
+      .[["workflow_id"]] %>% sort(decreasing = TRUE)
     return(ids)
   }  
   # get_workflow_ids
@@ -70,18 +70,18 @@ server <- shinyServer(function(input, output, session) {
     return(var_names)
   }
   var_names <- reactive({
-      # run_ids <- get_run_ids(bety, workflow_id())
-      # var_names <- get_var_names(bety, workflow_id(), run_ids[1])
-      # Removing the variables "Year" and "FracJulianDay" from the Variable Name input in the app
-      
-      # run_ids <- input$run_id[1]
-      # # for(rID in run_ids){
-      #   id_list <- parse_workflowID_runID_from_input(run_ids)
-      # #   var_names <- get_var_names_for_ID(bety,id_list[1],id_list[2])
-      # # # }
-      # removeVarNames <- c('Year','FracJulianDay')
-      # var_names <-var_names[!var_names %in% removeVarNames]
-      # return(id_list)
+    # run_ids <- get_run_ids(bety, workflow_id())
+    # var_names <- get_var_names(bety, workflow_id(), run_ids[1])
+    # Removing the variables "Year" and "FracJulianDay" from the Variable Name input in the app
+    
+    # run_ids <- input$run_id[1]
+    # # for(rID in run_ids){
+    #   id_list <- parse_workflowID_runID_from_input(run_ids)
+    # #   var_names <- get_var_names_for_ID(bety,id_list[1],id_list[2])
+    # # # }
+    # removeVarNames <- c('Year','FracJulianDay')
+    # var_names <-var_names[!var_names %in% removeVarNames]
+    # return(id_list)
   })
   observe({
     updateSelectizeInput(session, "variable_name", choices=var_names())
@@ -199,59 +199,59 @@ server <- shinyServer(function(input, output, session) {
     #     print(ranges$x)
     #     dates <- as.Date(dates)
     #     df <- data.frame(dates, vals)
-      # df <- workFlowData(input$workflow_id,input$run_id,input$variable_names)
-      masterDF <- workFlowData()
-      output$info1 <- renderText({
-        paste0(nrow(masterDF))
-      })
-      validate(
-        need(input$workflow_id, 'Found workflow id'),
-        need(input$run_id, 'Run id detected'),
-        need(input$variable_name, 'Please wait! Loading data')
-        )
-      masterDF$var_name <- as.character(masterDF$var_name)
-      # masterDF$var_name = as.factor(masterDF$var_name)
-      # df1<-subset(masterDF,var_name==var_name)
-      df <- masterDF %>% 
-        dplyr::filter(workflow_id == input$workflow_id &
+    # df <- workFlowData(input$workflow_id,input$run_id,input$variable_names)
+    masterDF <- workFlowData()
+    output$info1 <- renderText({
+      paste0(nrow(masterDF))
+    })
+    validate(
+      need(input$workflow_id, 'Found workflow id'),
+      need(input$run_id, 'Run id detected'),
+      need(input$variable_name, 'Please wait! Loading data')
+    )
+    masterDF$var_name <- as.character(masterDF$var_name)
+    # masterDF$var_name = as.factor(masterDF$var_name)
+    # df1<-subset(masterDF,var_name==var_name)
+    df <- masterDF %>% 
+      dplyr::filter(workflow_id == input$workflow_id &
                       run_id == input$run_id & 
                       var_name == input$variable_name) %>%
-        dplyr::select(dates,vals)
-      title <- unique(df$title)[1]
-      xlab <- unique(df$xlab)[1]
-      ylab <- unique(df$ylab)[1]
-      output$info2 <- renderText({
-        paste0(nrow(df))
-        # paste0(typeof(title))
-      })
-      output$info3 <- renderText({
-        paste0('xlab')
-        # paste0(typeof(title))
-      })
-      
-        # df1<-masterDF %>% filter(masterDF$var_name %in% var_name)
-        # workflow_id %in% workflow_id) 
-      # & run_id == run_id & var_name == var_name)
-      # df<-masterDF %>% dplyr::filter(workflow_id == input$workflow_id)
-      plt <- ggplot(df, aes(x=dates, y=vals)) +
-          # geom_point(aes(color="Model output")) +
-          geom_point() +
-#          geom_smooth(aes(fill = "Spline fit")) +
-          # coord_cartesian(xlim = ranges$x, ylim = ranges$y) +
-          # scale_y_continuous(labels=fancy_scientific) +
-          labs(title=title, x=xlab, y=ylab) +
-          # labs(title=unique(df$title)[1], x=unique(df$xlab)[1], y=unique(df$ylab)[1]) +
-          scale_color_manual(name = "", values = "black") +
-          scale_fill_manual(name = "", values = "grey50") 
-          # theme(axis.text.x = element_text(angle = -90))
-        plt<-ggplotly(plt)
-        # plot(plt)
-        # add_icon()
+      dplyr::select(dates,vals)
+    title <- unique(df$title)[1]
+    xlab <- unique(df$xlab)[1]
+    ylab <- unique(df$ylab)[1]
+    output$info2 <- renderText({
+      paste0(nrow(df))
+      # paste0(typeof(title))
+    })
+    output$info3 <- renderText({
+      paste0('xlab')
+      # paste0(typeof(title))
+    })
+    
+    # df1<-masterDF %>% filter(masterDF$var_name %in% var_name)
+    # workflow_id %in% workflow_id) 
+    # & run_id == run_id & var_name == var_name)
+    # df<-masterDF %>% dplyr::filter(workflow_id == input$workflow_id)
+    plt <- ggplot(df, aes(x=dates, y=vals)) +
+      # geom_point(aes(color="Model output")) +
+      geom_point() +
+      #          geom_smooth(aes(fill = "Spline fit")) +
+      # coord_cartesian(xlim = ranges$x, ylim = ranges$y) +
+      # scale_y_continuous(labels=fancy_scientific) +
+      labs(title=title, x=xlab, y=ylab) +
+      # labs(title=unique(df$title)[1], x=unique(df$xlab)[1], y=unique(df$ylab)[1]) +
+      scale_color_manual(name = "", values = "black") +
+      scale_fill_manual(name = "", values = "grey50") 
+    # theme(axis.text.x = element_text(angle = -90))
+    plt<-ggplotly(plt)
+    # plot(plt)
+    # add_icon()
     #   }
     # }
   })
-
-# Shiny server closes here  
+  
+  # Shiny server closes here  
 })
 
 # runApp(port=6480, launch.browser=FALSE)
