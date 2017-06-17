@@ -1,3 +1,4 @@
+# Dockerfile for the pecan web
 FROM amanskywalker/pecan-dev:latest
 MAINTAINER Aman Kumar (ak47su30ac@gmail.com)
 
@@ -15,6 +16,16 @@ RUN /build/update_machine.sh
 
 # install pecan web
 RUN /build/install_pecan_web.sh
+
+# simple scripts to do the startup task
+RUN mkdir -p /etc/my_init.d
+COPY /build/apache2/startup.sh /etc/my_init.d/startup.sh
+RUN chmod +x /etc/my_init.d/startup.sh
+
+# adding demons of apache2
+RUN mkdir -p /etc/service/rserver ; sync
+COPY /build/apache2/runserver.sh /etc/service/rserver/run
+RUN chmod +x /etc/service/rserver/run \
 
 # Clean up APT when done.
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /build/*
