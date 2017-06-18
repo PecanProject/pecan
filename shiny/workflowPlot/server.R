@@ -12,107 +12,159 @@ server <- shinyServer(function(input, output, session) {
   # options(shiny.trace=TRUE)
   bety <- betyConnect()
   # bety <- betyConnect('/home/carya/pecan/web/config.php')
-  ranges <- reactiveValues(x = NULL, y = NULL)
+  # Ranges not required. 
+  # ranges <- reactiveValues(x = NULL, y = NULL)
   print("RESTART")
   # set the workflow id(s)
   # Retrieving all workflow ids. 
   # Creating a new function here so that we wont have to modify the original one. 
   # Ideally the get_workflow_ids function in db/R/query.dplyr.R should take a flag to check
   # if we want to load all workflow ids.
-  get_all_workflow_ids <- function(bety) {
-    ids <- workflows(bety, ensemble = TRUE) %>% distinct(workflow_id) %>% collect %>% 
-      .[["workflow_id"]] %>% sort(decreasing = TRUE)
-    return(ids)
-  }  
+  # get_all_workflow_ids <- function(bety) {
+  #   ids <- workflows(bety, ensemble = TRUE) %>% distinct(workflow_id) %>% collect %>% 
+  #     .[["workflow_id"]] %>% sort(decreasing = TRUE)
+  #   return(ids)
+  # }  
   # get_workflow_ids
-  ids <- get_all_workflow_ids(bety)
+  # ids <- get_all_workflow_ids(bety)
   # ids <- get_all_workflow_ids(bety, session)
-  updateSelectizeInput(session, "workflow_id", choices=ids)
-  # Removing observe here as we want to load workflow ids first
-  # observe({
-  #   updateSelectizeInput(session, "workflow_id", choices=ids)
-  # })
-  workflow_id <- reactive({
-    req(input$workflow_id)
-    workflow_id <- input$workflow_id
+  # Get all workflow ids
+  # Using this function here for now.
+  get_workflow_ids_all <- function(bety, session,all.ids=FALSE) {
+    query <- isolate(parseQueryString(session$clientData$url_search))
+    # If we dont want all workflow ids but only workflow id from the user url query
+    if (!all.ids & "workflow_id" %in% names(query)) {
+      ids <- unlist(query[names(query) == "workflow_id"], use.names = FALSE)
+    } else {
+      # Get all workflow IDs
+      ids <- workflows(bety, ensemble = TRUE) %>% distinct(workflow_id) %>% collect %>% 
+        .[["workflow_id"]] %>% sort(decreasing = TRUE)
+    }
+    return(ids)
+  }  # get_workflow_ids
+
+  # Update all workflow ids
+  observe({
+    # get_workflow_id function from query.dplyr.R
+    all_ids <- get_workflow_ids_all(bety, session,all.ids=TRUE)
+    updateSelectizeInput(session, "all_workflow_id", choices=all_ids)
   })
-  # update the run_ids if user changes workflow
-  # run_ids <- reactive(get_run_ids(bety, workflow_id()))
-  run_ids <- reactive({
-    w_ids <- input$workflow_id
+  # Retrieves all run ids for seleted workflow ids
+  # Returns ('workflow ',w_id,', run ',r_id)
+  all_run_ids <- reactive({
+    req(input$all_workflow_id)
+    w_ids <- input$all_workflow_id
     run_id_list <- c()
     for(w_id in w_ids){
       r_ids <- get_run_ids(bety, w_id)
       for(r_id in r_ids){
-        list_item <- paste0('workflow ',w_id,', run ',r_id)
+        # . as a separator between multiple run ids
+        list_item <- paste0('workflow ',w_id,', run ',r_id, ';')
         run_id_list <- c(run_id_list,list_item)
       }
     }
     return(run_id_list)
   })
-  parse_workflowID_runID_from_input <- function(run_id_string){
-    id_list <- c()
-    split_string <- strsplit(run_id_string,',')[[1]]
-    # run_id_string: 'workflow' workflow_ID, 'run' run_id
-    wID <- as.numeric(strsplit(split_string[1],' ')[[1]][2])
-    runID <- as.numeric(strsplit(split_string[2],' ')[[1]][2])
-    id_list <- c(id_list,wID)
-    id_list <- c(id_list,runID)
-    # c(workflow_id,run_id)
-    return(id_list)
-  }
+  # Update all run_ids ('workflow ',w_id,', run ',r_id)
+  observe({
+    updateSelectizeInput(session, "all_run_id", choices=all_run_ids())
+  })
+  # Update on load: workflow id for selected run ids (models)
+  observe({
+    if(input$load){
+      req(input$all_workflow_id)
+      # Selected `multiple' ids
+      selected_id <- strsplit(input$all_workflow_id,' ')
+      # To  allow caching
+      display_id <- selected_id
+      updateSelectizeInput(session, "workflow_id", choices=display_id)
+    } else{
+      session_workflow_id <- get_workflow_ids_all(bety, session)
+      updateSelectizeInput(session, "workflow_id", choices=session_workflow_id)
+    }
+  })
+  # Update run id for selected workflow id (model)
+  run_ids <- reactive({
+    req(input$workflow_id)
+    get_run_ids(bety, input$workflow_id)
+    })
   observe({
     updateSelectizeInput(session, "run_id", choices=run_ids())
   })
-  # update variables if user changes run
-  get_var_names_for_ID <- function(bety,wID,runID){
-    var_names <- get_var_names(bety, wID, runID)
-    return(var_names)
+  parse_ids_from_input_runID <- function(run_id_string){
+    id_list <- c()
+    split_diff_ids <- strsplit(run_id_string,';')[[1]]
+    # run_id_string: 'workflow' workflow_ID, 'run' run_id
+    for(diff_ids in split_diff_ids){
+      split_string <- strsplit(diff_ids,',')[[1]]
+      wID <- as.numeric(strsplit(trimws(split_string[1],which = c("both")),' ')[[1]][2])
+      runID <- as.numeric(strsplit(trimws(split_string[2],which = c("both")),' ')[[1]][2])
+      ids <- list(wID,runID)
+    }  
+    id_list <- c(id_list,ids)
+    return(id_list)
   }
+  # Update variables if user changes run
+  # get_var_names_for_ID <- function(bety,wID,runID){
+  #   var_names <- get_var_names(bety, wID, runID)
+  #   return(var_names)
+  # }
   var_names <- reactive({
     # run_ids <- get_run_ids(bety, workflow_id())
     # var_names <- get_var_names(bety, workflow_id(), run_ids[1])
     # Removing the variables "Year" and "FracJulianDay" from the Variable Name input in the app
+    req(input$workflow_id,input$run_id)
+    workflow_id <- input$workflow_id
+    run_id <- input$run_id
+    var_names <- get_var_names(bety, workflow_id, run_id)
     
-    # run_ids <- input$run_id[1]
     # # for(rID in run_ids){
     #   id_list <- parse_workflowID_runID_from_input(run_ids)
     # #   var_names <- get_var_names_for_ID(bety,id_list[1],id_list[2])
     # # # }
-    # removeVarNames <- c('Year','FracJulianDay')
-    # var_names <-var_names[!var_names %in% removeVarNames]
+    removeVarNames <- c('Year','FracJulianDay')
+    var_names <-var_names[!var_names %in% removeVarNames]
+    return(var_names)
     # return(id_list)
   })
   observe({
     updateSelectizeInput(session, "variable_name", choices=var_names())
   })
-  observe({
-    ignore <- input$variable_name
-    ranges$x <- NULL
-    ranges$y <- NULL
-  })
-  observeEvent(input$plot_dblclick, {
-    brush <- input$plot_brush
-    if (!is.null(brush)) {
-      ranges$x <- as.POSIXct(c(brush$xmin, brush$xmax), origin = "1970-01-01", tz = "UTC")
-      ranges$y <- c(brush$ymin, brush$ymax)
-    } else {
-      ranges$x <- NULL
-      ranges$y <- NULL
-    }
-  })
+  # observe({
+  #   ignore <- input$variable_name
+  #   ranges$x <- NULL
+  #   ranges$y <- NULL
+  # })
+  # observeEvent(input$plot_dblclick, {
+  #   brush <- input$plot_brush
+  #   if (!is.null(brush)) {
+  #     ranges$x <- as.POSIXct(c(brush$xmin, brush$xmax), origin = "1970-01-01", tz = "UTC")
+  #     ranges$y <- c(brush$ymin, brush$ymax)
+  #   } else {
+  #     ranges$x <- NULL
+  #     ranges$y <- NULL
+  #   }
+  # })
   # If want to render text
   output$info <- renderText({
-    paste0(input$variable_name)
+    # indicators <- strsplit(input$indicators, ",")[[1]]
+    
+    # if(input$load){
+    #   all_workflow_id <- strsplit(input$all_workflow_id,',')
+    # }
+    # d <- typeof(all_workflow_id)
+      paste0(input$all_run_id)
+    # paste0(input$variable_name)
     # paste0(run_ids(),length(run_ids()),ids)
     # ,session$clientData$url_search)
     # paste0("x=", input$plot_dblclick$x, "\ny=", input$plot_dblclick$y)
   })
-  workFlowData <-eventReactive(input$go,{
+  workFlowData <-eventReactive(input$load,{
     # workflow_id = 99000000077
     # run_id = 99000000002
     # var_name = var_names 
     globalDF <- data.frame()
+    ids 
     for(workflow_id in ids){
       run_ids <- get_run_ids(bety,workflow_id)
       for(run_id in run_ids){
@@ -168,38 +220,6 @@ server <- shinyServer(function(input, output, session) {
     return(globalDF)
   })
   output$outputPlot <- renderPlotly({
-    # workflow_id <- isolate(input$workflow_id)
-    # run_id <- isolate(input$run_id)
-    # var_name <- input$variable_name
-    # if (workflow_id != "" && run_id != "" && var_name != "") {
-    #   workflow <- collect(workflow(bety, workflow_id))
-    #   if(nrow(workflow) > 0) {
-    #     outputfolder <- file.path(workflow$folder, 'out', run_id)
-    #     files <- list.files(outputfolder, "*.nc$", full.names=TRUE)
-    #     dates <- NA
-    #     vals <- NA
-    #     title <- var_name
-    #     ylab <- ""
-    #     for(file in files) {
-    #       nc <- nc_open(file)
-    #       var <- ncdf4::ncatt_get(nc, var_name)
-    #       #sw <- if ('Swdown' %in% names(nc$var)) ncdf4::ncvar_get(nc, 'Swdown') else TRUE
-    #       sw <- TRUE
-    #       title <- var$long_name
-    #       ylab <- var$units
-    #       x <- ncdays2date(ncdf4::ncvar_get(nc, 'time'), ncdf4::ncatt_get(nc, 'time'))
-    #       y <- ncdf4::ncvar_get(nc, var_name)
-    #       b <- !is.na(x) & !is.na(y) & sw != 0
-    #       dates <- if(is.na(dates)) x[b] else c(dates, x[b])
-    #       vals <- if(is.na(vals)) y[b] else c(vals, y[b])
-    #       ncdf4::nc_close(nc)
-    #     }
-    #     xlab <- if (is.null(ranges$x)) "Time" else paste(ranges$x, collapse=" - ")
-    #     # plot result
-    #     print(ranges$x)
-    #     dates <- as.Date(dates)
-    #     df <- data.frame(dates, vals)
-    # df <- workFlowData(input$workflow_id,input$run_id,input$variable_names)
     masterDF <- workFlowData()
     output$info1 <- renderText({
       paste0(nrow(masterDF))
