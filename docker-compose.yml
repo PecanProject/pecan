@@ -52,22 +52,22 @@ services:
     volumes:
       - /home/skywalker/pecandata:/pecandata
 
-pecan-web:
-  depends_on:
-     - postgres
-     - bety
-  build:
-    context: ./docker
-    dockerfile: Dockerfile
-  networks:
-     net1:
-      aliases:
-        - pecan-web
-  environment:
-    - PG_HOST=pg
-    - PG_PORT=5432
-    - PG_USER=bety
-    - PG_PASSWORD=bety
-    - PG_DATABASE_NAME=bety
-  volumes:
-    - /home/skywalker/pecandata:/pecandata
+  pecan-web:
+    depends_on:
+       - postgres
+       - bety
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+    networks:
+       net1:
+        aliases:
+          - pecan-web
+    environment:
+      - PG_HOST=pg
+      - PG_PORT=5432
+      - PG_USER=bety
+      - PG_PASSWORD=bety
+      - PG_DATABASE_NAME=bety
+    volumes:
+      - /home/skywalker/pecandata:/pecandata
