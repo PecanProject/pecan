@@ -134,9 +134,10 @@ runs <- function(bety, workflow_id) {
 #' @inheritParams dbHostInfo
 #' @param session Session object passed through Shiny
 #' @export
-get_workflow_ids <- function(bety, session) {
+get_workflow_ids <- function(bety, session,all.ids=FALSE) {
   query <- isolate(parseQueryString(session$clientData$url_search))
-  if ("workflow_id" %in% names(query)) {
+  # If we dont want all workflow ids but only workflow id from the user url query
+  if (!all.ids & "workflow_id" %in% names(query)) {
     ids <- unlist(query[names(query) == "workflow_id"], use.names = FALSE)
   } else {
     # Get all workflow IDs
