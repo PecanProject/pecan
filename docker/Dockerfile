@@ -27,6 +27,8 @@ RUN mkdir -p /etc/service/rserver ; sync
 COPY apache2/runserver.sh /etc/service/rserver/run
 RUN chmod +x /etc/service/rserver/run
 
+# add the pecan-web configuration
+COPY web/config.docker.php /home/carya/pecan/web/config.php 
 # Clean up APT when done.
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /build/*
 
