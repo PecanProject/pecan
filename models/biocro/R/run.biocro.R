@@ -193,7 +193,8 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
     result.yeari.withmet <- merge(x = result.yeari.hourly,
                                   y = WetDat, by = c("year", "doy", "hour"))
     hourly.results[[i]] <- result.yeari.withmet
-  }
+  }}
+
   
   hourly.results <- do.call("rbind", hourly.results)
   hourly.results <- hourly.results[order(year, doy, hour)]
