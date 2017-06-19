@@ -1,6 +1,6 @@
 # Dockerfile for the pecan web
-FROM amanskywalker/pecan-dev:latest
-MAINTAINER Aman Kumar (ak47su30ac@gmail.com)
+FROM amanskywalker/pecan-dev:0.1
+MAINTAINER Aman Kumar (ak47su30@gmail.com)
 
 # copy the installation script inside the container
 ADD . /build
@@ -28,7 +28,8 @@ COPY apache2/runserver.sh /etc/service/rserver/run
 RUN chmod +x /etc/service/rserver/run
 
 # add the pecan-web configuration
-COPY web/config.docker.php /home/carya/pecan/web/config.php 
+COPY web/config.docker.php /home/carya/pecan/web/config.php
+
 # Clean up APT when done.
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /build/*
 

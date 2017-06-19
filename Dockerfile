@@ -1,5 +1,5 @@
 FROM ubuntu:16.04
-MAINTAINER Aman Kumar (ak47su30ac@gmail.com)
+MAINTAINER Aman Kumar (ak47su30@gmail.com)
 
 # updated ppa's
 RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" > /etc/apt/sources.list.d/R.list &&\
