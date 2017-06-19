@@ -21,6 +21,10 @@ You can find this file (*pecan.xml*) in the *~/output* folder within the specifi
 ```{r, eval=FALSE}
 #RunDir <- "PEcAn_99000000002"
 RunDir<-'/fs/data2/output//PEcAn_1000007678'
+
+#Open a connection to the bety database
+bety<-list(host = "psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")
+bety <-dplyr::src_postgres(host = bety$host, user = bety$user, password = bety$password, dbname = bety$dbname)
 ```
 
 
@@ -115,22 +119,15 @@ Recall reading Ameriflux NEE in the earlier tutorial. This file was downloaded w
 
 Navigate to the *~/output/dbfiles* folder. Read the Ameriflux NetCDF (.nc) file in  *~/output/dbfiles/Ameriflux_site-0-722/*  here *0-722* is the database site ID, a folder that was created when you selected the site and PEcAn downloaded the Ameriflux NetCDF (.nc) file from the Ameriflux website. The *0-722* may be a different number in your system depending on the site you chose and the database contents. Also note *US-NR1*, which refers to the Fluxnet site identifier for Niwot Ridge and the *2006* for the year.
 ```{r,eval=FALSE}
-library(PEcAn.assim.batch)
-obs <- load.L2Ameriflux.cf("~/output/dbfiles/Ameriflux_site_0-772/US-NR1.2006.nc")
+#library(PEcAn.assim.batch)
+
+File_Path<-"/fs/data3/tmccabe/AMF_US-NR1_BASE_HH_9-1.csv" #This is a path to where the observations are stored. 
+File_format<-PEcAn.DB::query.format.vars(bety = bety, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
+site<-PEcAn.DB::query.site(site.id = 772,bety$con) #site.id is set to Niwot Ridge 
+
+obs<-PEcAn.benchmark::load_data(data.path = File_Path, format= File_format, time.row = File_format$time.row,  site = site, start_year = 2004, end_year = 2004) #This will throw an error that not all of the units can be converted. That's ok, as the units of the varibles of interest (NEE) are being converted. 
+
 names(obs)
-```
-
-Change all bad values from -9999 to not a number (NA), and plot it to see if it make sense
-```{r,eval=FALSE}
-obs[obs==-9999]=NA
-plot(obs$NEE)
-```
-
-To get something we can compare to, we also need to only retain good NEE. At the least, a u* filter is required. Let’s apply a simple one
-```{r,eval=FALSE}
-niwotnee <- obs$NEE
-niwotustar <- obs$UST
-niwotnee[niwotustar<0.2]=NA
 ```
 
 ####C. Finally, we can finally compare model to data
@@ -138,14 +135,13 @@ In the earlier tutorial, you also compared NEE to the ensemble model run. Here w
 
 Here is what you did last time: We converted units, which we do with the *udunits* package. The observations are in umol m-2 s-1. The model output is read in kg C ha-1 yr-1. *udunits* can convert among many units but cannot do the conversion from grams carbon to moles carbon, so we do that separately, with the factor of 12 g C per mol.
 ```{r,eval=FALSE}
-modnee <- ud.convert(arun$NEE,"kg ha-1 yr-1","ug m-2 s-1")/12.0
-plot(niwotnee,modnee)
+plot(obs$NEE,arun$NEE)
 abline(0,1,col="red")
 ```
 
 And remember the formula for RMSE:
 ```{r,eval=FALSE}
-sqrt(mean((niwotnee-modnee)^2,na.rm = TRUE))	
+sqrt(mean((obs$NEE-arun$NEE)^2,na.rm = TRUE))	
 ```
 
 *na.rm* makes sure we don’t include missing or screened values in either time series.
@@ -154,9 +150,8 @@ So all we need to do to go beyond this is to make a loop that reads in each sens
 ```{r,eval=FALSE,tidy=TRUE}
 rmses <- rep(0,length(runids))
 for(r in 1:length(runids)){
-arun <- read.output(runids[r],paste("~/output",RunDir,"out",runids[r],sep="/"),2006,2006,"NEE")
-modnee <- ud.convert(arun$NEE,"kg ha-1 yr-1","ug m-2 s-1")/12.0
-rmses[r] <- (sqrt(mean((niwotnee-modnee)^2,na.rm = TRUE)))
+arun <- read.output(runids[r],paste("~/output",RunDir,"out",runids[r],sep="/"),2004,2004,"NEE")
+rmses[r] <- (sqrt(mean((obs$NEE-arun$nee)^2,na.rm = TRUE)))
 }
 ```
 Let’s plot that array 
@@ -170,7 +165,7 @@ Now that you have the hang of it, here are a few more things to try:
 
 1. Try a different error functions, given actual NEE uncertainty. You learned earlier that uncertainty in half-hourly observed NEE is not Gaussian. This makes RMSE not the correct measure for goodness-of-fit. Go to *~/pecan/modules/uncertainty/R*, open *flux_uncertainty.R*, and click on the *source* button in the program editing pane. Then you can run:
 ```{r,eval=FALSE}
-unc <- flux.uncertainty(niwotnee,QC=rep(0,17520))
+unc <- flux.uncertainty(arun$nee,QC=rep(0,17520)) #Note to self: Not sure this is really the best object to use here. 
 plot_flux_uncertainty(unc)
 ```
 The figure shows you uncertainty (err) as a function of NEE magnitude (mag). How might you use this information to change the RMSE calculation?
