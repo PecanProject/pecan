@@ -87,11 +87,12 @@ model2netcdf <- function(runid, outdir, model, lat, lon, start_date, end_date) {
 ##' @param start.year first year of output to read (should be greater than ) 
 ##' @param end.year last year of output to read
 ##' @param variables variables to be read from model output
-##' @param dataframe A boolean that will return output in a data.frame format with posix column. Usefull for align.data and plotting. 
+##' @param dataframe A boolean that will return output in a data.frame format with a time column. Usefull for align.data and plotting. 
+##' @param time.type Can be set to "doy", "year", "posix" or c("doy", "year", "posix"). If set with dataframe = TRUE, will return columns with day of year, a posix code, and/or the year.
 ##' @return vector of output variable
 ##' @export
 ##' @author Michael Dietze, David LeBauer
-read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables = "GPP", dataframe= FALSE) {
+read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables = "GPP", dataframe= FALSE, time.type= "posix") {
   
   ## vars in units s-1 to be converted to y-1 cflux = c('GPP', 'NPP', 'NEE',
   ## 'TotalResp', 'AutoResp', 'HeteroResp', 'DOC_flux', 'Fire_flux') # kgC m-2 s-1
@@ -117,6 +118,9 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
     logger.info("Reading output for Years: ", start.year, " - ", end.year, 
                 "in directory:", outdir,
                 "including files", dir(outdir, pattern = "\\.nc$"))
+  }
+  if(length(variables[variables=="time"])==0){
+    variables<-c(variables, "time")
   }
   
   result <- list()
