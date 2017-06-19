@@ -138,6 +138,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
         }
     } else {
         defaults <- XML::xmlToList(XML::xmlParse(defaults.file))
+    }
   } else {
     logger.severe("no defaults file given and ", genus, "not supported in BioCro")
   }
