@@ -129,8 +129,15 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
     defaults.file <- system.file(file.path("extdata/defaults", paste0(tolower(genus), ".xml")), 
                                  package = "PEcAn.BIOCRO")
   }
+
   if (file.exists(defaults.file)) {
-    defaults <- XML::xmlToList(XML::xmlParse(defaults.file))
+    if (packageVersioni('BioCro') >= 1.0) {
+        if (genus == 'Miscanthus') {
+            defaults <- list(initial_values=willow_initial_state, parameters=willow_parameters, modules=willow_modules)
+            defaults = append(list(type = list(photosynthesis = 'C4', genus = 'Miscanthus', name='miscanthus')), defaults)
+        }
+    } else {
+        defaults <- XML::xmlToList(XML::xmlParse(defaults.file))
   } else {
     logger.severe("no defaults file given and ", genus, "not supported in BioCro")
   }
