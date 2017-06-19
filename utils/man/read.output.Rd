@@ -18,7 +18,7 @@ read.output(runid, outdir, start.year = NA, end.year = NA,
 
 \item{variables}{variables to be read from model output}
 
-\item{dataframe}{A boolean that will return output in a data.frame format with posix column. Usefull for align.data and plotting.}
+\item{dataframe}{A boolean that will return output in a data.frame format with a time column. Usefull for align.data and plotting.}
 }
 \value{
 vector of output variable
