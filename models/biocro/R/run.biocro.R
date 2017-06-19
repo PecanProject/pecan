@@ -30,6 +30,19 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
   hourly.results = list()
   if (packageVersion('BioCro') >= 1.0) {
       for (i in seq_along(years)) {
+          yeari <- years[i]
+          starti <- max(start.date, lubridate::ymd(paste0(yeari, "-01-01")))
+          endi <- min(end.date, lubridate::ymd(paste0(yeari, "-12-31")))
+          metfile <- paste(metpath, yeari, "csv", sep = ".")
+          WetDat <- fread(metfile)
+          WetDat <- WetDat[WetDat$doy >= lubridate::yday(starti) & WetDat$doy <= lubridate::yday(endi), ]
+      
+          # Check that all variables are present in the expected order --
+          # BioGro accesses weather vars by position and DOES NOT check headers.
+          stopifnot(identical(colnames(WetDat), c("year", "doy", "hour", "SolarR", "Temp", "RH", "WS", "precip")))
+          stopifnot(all(sapply(WetDat, is.numeric)))
+          WetDat <- as.matrix(WetDat)
+
           HarvestedYield <- 0
 
           if (i == 1) {
