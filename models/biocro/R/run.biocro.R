@@ -26,8 +26,44 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
                                               10)
     config$pft$soilControl$soilDepth <- soil$ref_depth
   }
-  
+
   hourly.results = list()
+  if (packageVersion('BioCro') >= 1.0) {
+      for (i in seq_along(years)) {
+          HarvestedYield <- 0
+
+          if (i == 1) {
+              initial_values <- config$pft$initial_values
+          } else {
+              initial_values$Rhizome <- last(tmp.result$Rhizome)
+              initial_values$Root <- last(tmp.result$Root)
+              initial_values$Stem <- last(tmp.result$Stem)
+
+              if ((i - 1) %% coppice.interval == 0) {
+                # coppice when remainder = 0
+                  HarvestedYield <- round(last(tmp.result$Stem) * 0.95, 2)
+              } else if ((i - 1) %% coppice.interval == 1) {
+                    # year after coppice
+                  initial_values$Stem <- initial_values$Stem * 0.05
+              }  # else { # do nothing if neither coppice year nor year following
+          }
+
+          tmp.result <- BioCro::Gro(initial_values=initial_values, parameters=config$pft$parameters, varying_parameters=WetDat, modules=config$pft$modules)
+
+            result.yeari.hourly <- with(tmp.result, data.table(year = years[i],
+                                                               doy = doy,
+                                                               hour = hour, ThermalT=TTc,
+                                                               Stem, Leaf, Root, 
+                                                               AboveLitter = LeafLitter + StemLitter, BelowLitter = RootLitter + RhizomeLitter,
+                                                               Rhizome, Grain, 
+                                                               LAI=lai, SoilEvaporation=soil_evaporation, 
+                                                               CanopyTrans=canopy_transpiration,
+                                                               key = c("year", "doy", "hour")))
+            result.yeari.withmet <- merge(x = result.yeari.hourly,
+                                          y = WetDat, by = c("year", "doy", "hour"))
+            hourly.results[[i]] <- result.yeari.withmet
+          }
+  } else {  # BioCro vesion is less than 1.0.
   for (i in seq_along(years)) {
     yeari <- years[i]
     starti <- max(start.date, lubridate::ymd(paste0(yeari, "-01-01")))
