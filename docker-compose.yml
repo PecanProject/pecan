@@ -39,6 +39,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: amanskywalker/pecan-dev:0.1
     networks:
        net1:
         aliases:
