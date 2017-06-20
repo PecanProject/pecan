@@ -119,9 +119,10 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
                 "including files", dir(outdir, pattern = "\\.nc$"))
   }
   
-  if(dataframe==TRUE){
+  if(dataframe==TRUE){ #ensure that there is a time component when asking for a dataframe + posix code
   if(length(variables[variables=="time"])==0){
     variables<-c(variables, "time")
+    PEcAn.utils::logger.info("No time variable requested, adding automatically")
   }
   }
   result <- list()
