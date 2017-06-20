@@ -8,13 +8,13 @@ output: html_document
 This tutorial assumes you have successfully completed the Part 1 Tutorial up to running a sensitivity analysis on a single site.
 
 ###Introduction
-Now that you have successfully run PEcAn through the web interface, have learned how to do a simple comparison of flux tower observations to model output, let’s start looking at how data assimilation and parameter estimation would work with an ecosystem model.
+Now that you have successfully run PEcAn through the web interface and have learned how to do a simple comparison of flux tower observations to model output, let’s start looking at how data assimilation and parameter estimation would work with an ecosystem model.
 
 Before we start a full data assimilation exercise, let’s try something simple – single parameter selection by hand. First, open up the RStudio interface to Pecan. This will allow you to view browse files, view outputs, and run R code on those files without having to download anything.
 
 + Open <http://localhost:3280/rstudio> or <http://localhost:6480/rstudio> or the Amazon URL/rstudio if running on the cloud.
 
-In your earlier run in the introductory tutorial, you have already run an sensitivity analysis of SIPNET model runs at Niwot Ridge sampling across quantiles of a parameter prior, while holding all others to the median value. The pecan.xml file told PEcAn to run an sensitivity analysis, which simply meant SIPNET was run multiple times with the same driver, but varying parameter values one at a time (while holding all others to their median), and the parameter range also specified in the pecan.xml file (as quantiles, which were then sampled against the BETY database of observed variation in the parameter for species within the specific plant functional type). 
+In your earlier run in the introductory tutorial, you have already run a sensitivity analysis of SIPNET model runs at Niwot Ridge sampling across quantiles of a parameter prior, while holding all others to the median value. The pecan.xml file told PEcAn to run an sensitivity analysis, which simply meant SIPNET was run multiple times with the same driver, but varying parameter values one at a time (while holding all others to their median), and the parameter range also specified in the pecan.xml file (as quantiles, which were then sampled against the BETY database of observed variation in the parameter for species within the specific plant functional type). 
 
 You can find this file (*pecan.xml*) in the *~/output* folder within the specific run directory (e.g., *~/output/PEcAn_99000000002/pecan.xml*), where *99000000002* is the BETY database id of the workflow that called all the ensemble and sensitivity runs of SIPNET. For here on out, we will use **RUNDIR** to refer to this folder name (*PEcAn_99000000002*). Let's define this variable:
 
@@ -105,9 +105,8 @@ runids
 
 You should see a list of long numbers. Each of these is an ID. In the Files pane, if you go to *~/output/**RUNDIR**/run* folder, you will see a bunch of folders with similar ID numbers. Within each folder is a set of files (such as *sipnet.clim* and *sipnet.param*) used by SIPNET to run. Similarly, in *~/output/**RUNDIR**/out* folder, you will see within any one run folder the model output in SIPNET format (*sipnet.out*) and in a general model-independent format used by PEcAn in the *YYYY.nc* files where *YYYY* is a year.
 
-Let’s try to read the output from a single run id, as you did in the earlier tutorial. **read.output** is a PEcAn function to read in variables from any PEcAn compliant output files, it requires a runid, the directory, start year, end year, and an optional list of variables. Make sure you have RunDir variable set to the run number and the year to the year you ran.
+Let’s try to read the output from a single run id as you did in the earlier tutorial. **read.output** is a PEcAn function to read in variables from any PEcAn compliant output files. It requires: a runid, the directory, start year, end year, and an optional list of variables. Make sure you have RunDir variable set to the run number and the year to the year you ran.
 ```{r,eval=FALSE}
-arun<-read.output()
 arun <- read.output(runids[1], paste("~/output", RunDir, "out", runids[1], sep="/"), start.year= 2004, end.year= 2004,"NEE", dataframe = TRUE)
 plot(arun$posix,arun$NEE)
 ```
@@ -121,7 +120,7 @@ site<-PEcAn.DB::query.site(site.id = 772,bety$con)
 
 obs<-PEcAn.benchmark::load_data(data.path = File_Path, format= File_format, time.row = File_format$time.row,  site = site, start_year = 2004, end_year = 2004) 
 
-names(obs) #Notice that there are several time columns ($year, $datetime, $posix) for most plotting, $posix will be the best time axis
+names(obs) #Notice that there are several time columns ("$year", "$datetime", "$posix") for most plotting, "$posix" will be the best time axis
 
 annualNEEobs<-aggregate(obs$NEE, by= list(month(obs$posix)), simplify=TRUE, FUN =mean, na.rm= TRUE)
 
@@ -130,9 +129,9 @@ head(plottable)
 ```
 
 ####C. Finally, we can finally compare model to data
-In the earlier tutorial, you also compared NEE to the ensemble model run. Here we will do the same except for each sensitivity run. Recall that we made a scatter plot. 
+In the earlier tutorial, you also compared NEE to the ensemble model run. Here we will do the same except we include each sensitivity run. Recall that we made a scatter plot. 
 
-Since we alinged the data, we got a dataframe with the variables we requested in a ```{r}NEE.m``` and a ```{r}NEE.o``` format. The ```{r}.o``` is for observations, and the ```{r}.m ``` is for model. The posix column allows for easy plotting along a timeseries.  
+When we aligned the data, we got a dataframe with the variables we requested in a ```{r}NEE.m``` and a ```{r}NEE.o``` format. The ```{r}.o``` is for observations, and the ```{r}.m ``` is for model. The posix column allows for easy plotting along a timeseries.  
 ```{r,eval=FALSE}
 plot(plottable$NEE.m,plottable$NEE.o)
 abline(0,1,col="red")
