@@ -12,8 +12,8 @@ server <- shinyServer(function(input, output, session) {
     data.atmosphere.registration <- system.file("registration", package="PEcAn.data.atmosphere")
     datatype <- list.files(data.atmosphere.registration)
     # convert a list of string like "register.AmerifluxLBL.xml" to "AmerifluxLBL"
-    gsub("register.", "", datatype)
-    gsub(".xml", "", datatype)
+    datatype <- gsub("register.", "", datatype)
+    datatype <- gsub(".xml", "", datatype)
     selectInput("type", "Type", datatype)
   })
   
