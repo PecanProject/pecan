@@ -13,7 +13,7 @@ ui <- shinyUI(fluidPage(
       selectizeInput("all_workflow_id", "Mutliple Workflow IDs", c(),multiple=TRUE),
       p("Please select the run ID. You can select multiple IDs"),
       selectizeInput("all_run_id", "Mutliple Run IDs", c(),multiple=TRUE),
-      actionButton("load", "Load Data"),
+      actionButton("load", "Load Model outputs"),
       selectInput("workflow_id", "Workflow ID", c()),
       selectInput("run_id", "Run ID", c()),
       selectInput("variable_name", "Variable Name", "")
