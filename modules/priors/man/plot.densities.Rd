@@ -20,4 +20,3 @@ Plot probability density and data
 \author{
 David LeBauer
 }
-

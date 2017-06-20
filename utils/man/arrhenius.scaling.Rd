@@ -22,4 +22,3 @@ Scale temperature dependent trait from measurement temperature to reference temp
 \author{
 unknown
 }
-

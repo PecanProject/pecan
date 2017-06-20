@@ -29,4 +29,3 @@ Converts all output contained in a folder to netCDF.
 \author{
 Shawn Serbin, Michael Dietze
 }
-

@@ -28,4 +28,3 @@ package).
 \author{
 Alexey Shiklomanov
 }
-
