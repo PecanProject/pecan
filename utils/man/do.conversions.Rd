@@ -4,8 +4,8 @@
 \alias{do.conversions}
 \title{do.conversions}
 \usage{
-\method{do}{conversions}(settings, overwrite.met = FALSE,
-  overwrite.fia = FALSE, overwrite.ic = FALSE)
+do.conversions(settings, overwrite.met = FALSE, overwrite.fia = FALSE,
+  overwrite.ic = FALSE)
 }
 \description{
 Input conversion workflow
