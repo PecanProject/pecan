@@ -665,6 +665,44 @@ convert.expr <- function(expression) {
   return(list(variable.drv = deri.var, variable.eqn = list(variables = variables, expression = deri.eqn)))
 }
 
+
+##' Simple function to use ncftpget for FTP downloads behind a firewall.
+##' Requires ncftpget and a properly formatted config file in the users
+##' home directory
+##' @title download.file
+##' @param url complete URL for file download
+##' @param filename destination file name
+##' @param method Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.
+##' example options(download.ftp.method="ncftpget")
+##' 
+##' @examples
+##' download.file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt")
+##' 
+##' @examples
+##' \dontrun{
+##' download.file("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc", "~/pres.sfc.2000.nc")
+##' }
+##'
+##' @export
+##' 
+##' @author Shawn Serbin, Rob Kooper
+download.file <- function(url, filename, method) {
+  if (startsWith(url, "ftp://")) {
+    method <- if (missing(method)) getOption("download.ftp.method", default = "auto")
+    if (method == "ncftpget") {
+      logger.debug(paste0("FTP Method: ",method))
+      #system2("ncftpget", c("-c", "url", ">", filename))
+      system(paste(method,"-c",url,">",filename,sep=" "))
+    } else {
+      utils::download.file(url, filename, method)
+    }
+  } else {
+    utils::download.file(url, filename)
+  }
+}
+
+
+
 ####################################################################################################
 ### EOF.  End of R script file.              
 ####################################################################################################

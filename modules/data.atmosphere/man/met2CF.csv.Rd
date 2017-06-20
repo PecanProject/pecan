@@ -29,19 +29,21 @@ Units for datetime field are the lubridate function that will be used to parse t
 }
 \examples{
 \dontrun{
-library(PEcAn.DB)
-library(lubridate)
-library(RPostgreSQL)
-bety = list(user='bety', password='bety', host='localhost', dbname='bety', driver='PostgreSQL', write=TRUE)
-con <- db.open(bety)
-in.path <- '/home/carya/sites/willow/'
-in.prefix <- 'FLX_US-WCr_FLUXNET2015_SUBSET_HH_1999-2014_1-1'
+bety = list(user='bety', password='bety',host='localhost', dbname='bety', driver='PostgreSQL',write=TRUE)
+con <- PEcAn.DB::db.open(bety)
+bety$con <- con
+start_date <- lubridate::ymd_hm('200401010000')
+end_date <- lubridate::ymd_hm('200412312330')
+file<-PEcAn.data.atmosphere::download.Fluxnet2015('US-WCr','~/',start_date,end_date)
+in.path <- '~/'
+in.prefix <- file$dbfile.name 
 outfolder <- '~/'
-input.id <- 5000000005
-format <- query.format.vars(input.id=input.id,bety = bety)
-start_date <- ymd_hm('200401010000')
-end_date <- ymd_hm('200412312330')
-PEcAn.data.atmosphere::met2CF.csv(in.path,in.prefix,outfolder,start_date,end_date,format,overwrite=TRUE)
+format.id <- 5000000001
+format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = bety)
+format$lon <- -92.0
+format$lat <- 45.0
+format$time_zone <- "America/Chicago"
+results<-PEcAn.data.atmosphere::met2CF.csv(in.path, in.prefix, outfolder,start_date, end_date,format, overwrite=TRUE)
 }
 }
 \author{
