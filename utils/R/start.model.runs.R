@@ -12,6 +12,9 @@
 ##' 
 ##' @name start.model.runs
 ##' @title Start ecosystem model runs
+##' @param settings input pecan settings file
+##' @param write TRUE/FALSE. Default TRUE
+##' @param stop.on.error TRUE/FALSE. Default TRUE
 ##' @export start.model.runs
 ##' @examples
 ##' \dontrun{
@@ -19,7 +22,7 @@
 ##' }
 ##' @author Shawn Serbin, Rob Kooper, David LeBauer
 ##'
-start.model.runs <- function(settings, write = TRUE) {
+start.model.runs <- function(settings, write = TRUE, stop.on.error=TRUE) {
   
   # check if runs need to be done
   if(!file.exists(file.path(settings$rundir, "runs.txt"))){
@@ -109,14 +112,17 @@ start.model.runs <- function(settings, write = TRUE) {
         # start the actual model run
         cmd <- qsub[[1]]
         args <- qsub[-1]
+        PEcAn.utils::logger.debug(cmd,args)
         if (is.localhost(settings$host)) {
           out <- system2(cmd, c(args, file.path(settings$rundir, format(run, 
                                                                         scientific = FALSE), "job.sh")), stdout = TRUE, stderr = TRUE)
         } else {
           out <- remote.execute.cmd(settings$host, cmd, c(args, file.path(settings$host$rundir, 
                                                                           format(run, scientific = FALSE), "job.sh")), stderr = TRUE)
+          PEcAn.utils::logger.debug(settings$host,format(run, scientific = FALSE))
+
         }
-        print(out)  # <-- for debugging
+        PEcAn.utils::logger.debug("JOB.SH submit status:",out)
         jobids[run] <- sub(settings$host$qsub.jobid, "\\1", out)
         
         # if qsub option is not invoked.  just start model runs in serial.
@@ -131,7 +137,11 @@ start.model.runs <- function(settings, write = TRUE) {
         
         # check output to see if an error occurred during the model run
         if ("ERROR IN MODEL RUN" %in% out) {
-          logger.severe("Model run aborted, with error.\n", out)
+          if(stop.on.error){
+            logger.severe("Model run aborted, with error.\n", out)
+          } else {
+            logger.error("Model run aborted, with error.\n",out)
+          }
         }
         
         # copy data back to local
@@ -282,10 +292,10 @@ start.model.runs <- function(settings, write = TRUE) {
 
 
 ##' @export
-runModule.start.model.runs <- function(settings) {
+runModule.start.model.runs <- function(settings,stop.on.error=TRUE) {
   if (is.MultiSettings(settings) || is.Settings(settings)) {
     write <- settings$database$bety$write
-    return(start.model.runs(settings, write))
+    return(start.model.runs(settings, write,stop.on.error))
   } else {
     stop("runModule.start.model.runs only works with Settings or MultiSettings")
   }
