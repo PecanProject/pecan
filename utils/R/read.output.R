@@ -87,7 +87,7 @@ model2netcdf <- function(runid, outdir, model, lat, lon, start_date, end_date) {
 ##' @param start.year first year of output to read (should be greater than ) 
 ##' @param end.year last year of output to read
 ##' @param variables variables to be read from model output
-##' @param dataframe A boolean that will return output in a data.frame format with a time column. Usefull for align.data and plotting. 
+##' @param dataframe A boolean that will return output in a data.frame format with a posix column. Useful for align.data and plotting. 
 ##' @return vector of output variable
 ##' @export
 ##' @author Michael Dietze, David LeBauer
