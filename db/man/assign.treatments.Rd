@@ -24,4 +24,3 @@ treatments.
 \author{
 David LeBauer, Carl Davidson
 }
-

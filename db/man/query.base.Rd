@@ -29,4 +29,3 @@ Deprecated, please use db.query
 query.base('select count(id) from traits;')
 }
 }
-

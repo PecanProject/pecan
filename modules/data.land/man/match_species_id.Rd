@@ -50,5 +50,5 @@ match_species_id(input_codes = input_codes,
                  
 }
 \author{
-Alexey Shiklomanov <ashiklom@bu.edu>
+Alexey Shiklomanov <ashiklom@bu.edu>, Istem Fer
 }

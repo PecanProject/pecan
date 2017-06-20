@@ -25,4 +25,3 @@ is.localhost(fqdn())
 \author{
 Rob Kooper
 }
-

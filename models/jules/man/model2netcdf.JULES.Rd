@@ -15,4 +15,3 @@ Convert MODEL output into the PEcAn standard
 \author{
 Michael Dietze
 }
-

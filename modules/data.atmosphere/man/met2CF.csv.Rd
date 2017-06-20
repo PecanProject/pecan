@@ -47,4 +47,3 @@ PEcAn.data.atmosphere::met2CF.csv(in.path,in.prefix,outfolder,start_date,end_dat
 \author{
 Mike Dietze, David LeBauer, Ankur Desai
 }
-

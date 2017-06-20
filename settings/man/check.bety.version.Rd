@@ -9,4 +9,3 @@ check.bety.version(dbcon)
 \arguments{
 \item{settings}{settings file}
 }
-

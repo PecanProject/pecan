@@ -20,4 +20,3 @@ is performed)}
 \description{
 Copy ED2IN to `output.path` and modify for EDR specifications
 }
-
