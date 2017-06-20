@@ -65,7 +65,7 @@ services:
         aliases:
           - pecan-web
     ports:
-      - '8080':'80'
+      - '8080:80'
     environment:
       - PG_HOST=pg
       - PG_PORT=5432

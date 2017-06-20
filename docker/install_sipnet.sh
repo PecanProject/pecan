@@ -27,5 +27,5 @@ fi
 cd ${HOME}/sipnet_r136/
 make clean
 make
-sudo cp sipnet /usr/local/bin/sipnet.r136
+cp sipnet /usr/local/bin/sipnet.r136
 make clean
