@@ -118,10 +118,12 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
                 "in directory:", outdir,
                 "including files", dir(outdir, pattern = "\\.nc$"))
   }
+  
+  if(dataframe==TRUE){
   if(length(variables[variables=="time"])==0){
     variables<-c(variables, "time")
   }
-  
+  }
   result <- list()
 
   if (!nofiles) {
