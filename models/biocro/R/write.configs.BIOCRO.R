@@ -130,12 +130,21 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
                                  package = "PEcAn.BIOCRO")
   }
 
+  # Create a pft parameter set.
+  # Given arguments that describe a plant functional type, return a list with the structure that Pecan expects for pfts.
+  pft = function(genus, photosynthesis, initial_values, parameters, modules) {
+    type = list(photosynthesis=photosynthesis, genus=genus)
+    .pft = list(type=type, initial_values=initial_values, parameters=parameters, modules=modules)
+    return (.pft)
+  }
+
+  parameter_sets = list(Miscanthus = pft('Miscanhtus', 'C4', miscanthus_x_giganteus_initial_state, miscanthus_x_giganteus_parameters, miscanthus_x_giganteus_modules),
+                        Salix      = pft('Salix', 'C3', willow_initial_state, willow_parameters, willow_modules),
+                        Sorghum    = pft('Sorghum', 'C4', sorghum_initial_state, sorghum_parameters, sorghum_modules))
+
   if (file.exists(defaults.file)) {
-    if (packageVersion('BioCro') >= 1.0) {
-        if (genus == 'Sorghum') {
-            defaults <- list(initial_values=sorghum_initial_state, parameters=sorghum_parameters, modules=sorghum_modules)
-            defaults = append(list(type = list(photosynthesis = 'C4', genus = 'Sorghum')), defaults)
-        }
+    if (packageVersion('BioCro') >= 1.0 & genus %in% names(parameter_sets)) {
+        defaults = parameters_sets[[genus]]
     } else {
         defaults <- XML::xmlToList(XML::xmlParse(defaults.file))
     }
