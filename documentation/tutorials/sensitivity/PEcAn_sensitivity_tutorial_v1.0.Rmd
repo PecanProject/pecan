@@ -19,18 +19,19 @@ In your earlier run in the introductory tutorial, you have already run an sensit
 You can find this file (*pecan.xml*) in the *~/output* folder within the specific run directory (e.g., *~/output/PEcAn_99000000002/pecan.xml*), where *99000000002* is the BETY database id of the workflow that called all the ensemble and sensitivity runs of SIPNET. For here on out, we will use **RUNDIR** to refer to this folder name (*PEcAn_99000000002*). Let's define this variable:
 
 ```{r, eval=FALSE}
-#RunDir <- "PEcAn_99000000002"
-RunDir<-'/fs/data2/output//PEcAn_1000007678'
-
-#Open a connection to the bety database
-bety<-list(host = "psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")
-bety <-dplyr::src_postgres(host = bety$host, user = bety$user, password = bety$password, dbname = bety$dbname)
+RunDir <- "PEcAn_99000000002"
 ```
 
 
 Within that folder, you will find the *run/* folder that has a folder for every SIPNET run and the *out/* folder, that contains the output from each of these runs. The nice thing is that PEcAn has also produced “.RData” files of these model outputs that can be easily read into R by just clicking on them!
 
-So let’s try to compare Ameriflux NEE to SIPNET NEE across all these runs to make a plot of parameter vs. goodness-of-fit. We’ll start with root mean square error (**RMSE**), but then discuss some other tests, too.
+To do some automatic querying of data, let's open up a connection to the Bety database. 
+```{r, eval = FALSE}
+bety<-list(host = "psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")
+bety <-dplyr::src_postgres(host = bety$host, user = bety$user, password = bety$password, dbname = bety$dbname)
+```
+
+Let’s try to compare Ameriflux NEE to SIPNET NEE across all these runs to make a plot of parameter vs. goodness-of-fit. We’ll start with root mean square error (**RMSE**), but then discuss some other tests, too.
 
 ####A. First, let’s look at the sensitivity analysis output (again)
 
@@ -53,8 +54,6 @@ Click on *sensitivity.samples.*.RData* to load it into your environment. You sho
 
 Let’s extract a parameter and it’s sensitivity NEE output from the list sa.samples, which is organized by PFT, and then by parameter. First, let’s look at a list of PFTs and parameters available:
 ```{r, eval=FALSE}
-load("/fs/data2/output/PEcAn_1000007678/sensitivity.samples.1000014062.Rdata")
-load("/fs/data2/output/PEcAn_1000007678/sensitivity.output.1000014062.NPP.2004.2004.Rdata")
 names(sa.samples)
 names(sa.samples$temperate.coniferous)
 ```
@@ -109,13 +108,12 @@ You should see a list of long numbers. Each of these is an ID. In the Files pane
 Let’s try to read the output from a single run id, as you did in the earlier tutorial. **read.output** is a PEcAn function to read in variables from any PEcAn compliant output files, it requires a runid, the directory, start year, end year, and an optional list of variables. Make sure you have RunDir variable set to the run number and the year to the year you ran.
 ```{r,eval=FALSE}
 arun<-read.output()
-#arun <- read.output(runids[1], paste("~/output", RunDir, "out", runids[1], sep="/"), start.year= 2004, end.year= 2004, c('time',"NEE"), dataframe = TRUE)
-arun <- read.output(runids[1], paste( RunDir, "out", runids[1], sep="/"), start.year= 2004, end.year= 2004, c('time',"NEE"), dataframe = TRUE)
-plot(arun$time,arun$NEE)
+arun <- read.output(runids[1], paste("~/output", RunDir, "out", runids[1], sep="/"), start.year= 2004, end.year= 2004,"NEE", dataframe = TRUE)
+plot(arun$posix,arun$NEE)
 ```
 
 ####B. Now let’s bring in the actual observations
-Recall reading Ameriflux NEE in the earlier tutorial. Read in an Ameriflux csv file, which is downloadable from Ameriflux. Here *722* is the database site ID which allows bety to assign the correct location of the data. The *722* may be a different number in your system depending on the site you chose and the database contents. Also note *US-NR1*, which refers to the Fluxnet site identifier for Niwot Ridge.
+Recall reading Ameriflux NEE in the earlier tutorial. Read in an Ameriflux csv file, stored in the bety database. Here *722* is the database site ID which allows bety to assign the correct location of the data. The *722* may be a different number in your system depending on the site you chose and the database contents. Also note *US-NR1*, which refers to the Fluxnet site identifier for Niwot Ridge.
 ```{r,eval=FALSE}
 File_Path<-"/fs/data3/tmccabe/AMF_US-NR1_BASE_HH_9-1.csv" #This is a path to where the observations are stored. 
 File_format<-PEcAn.DB::query.format.vars(bety = bety, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
@@ -124,6 +122,7 @@ site<-PEcAn.DB::query.site(site.id = 772,bety$con)
 obs<-PEcAn.benchmark::load_data(data.path = File_Path, format= File_format, time.row = File_format$time.row,  site = site, start_year = 2004, end_year = 2004) 
 
 names(obs) #Notice that there are several time columns ($year, $datetime, $posix) for most plotting, $posix will be the best time axis
+
 annualNEEobs<-aggregate(obs$NEE, by= list(month(obs$posix)), simplify=TRUE, FUN =mean, na.rm= TRUE)
 
 plottable<-align_data(model.calc = arun, obvs.calc = obs, align_method = "match_timestep", var= "NEE")
@@ -150,8 +149,7 @@ So all we need to do to go beyond this is to make a loop that reads in each sens
 ```{r,eval=FALSE,tidy=TRUE}
 rmses <- rep(0,length(runids))
 for(r in 1:length(runids)){
-#arun <- read.output(runids[r],paste("~/output",RunDir,"out",runids[r],sep="/"),2004,2004,"NEE", dataframe= TRUE)
-arun<-read.output(runids[r], paste( RunDir, "out", runids[1], sep="/"), start.year= 2004, end.year= 2004, c('time',"NEE"), dataframe = TRUE)
+arun <- read.output(runids[r],paste("~/output",RunDir,"out",runids[r],sep="/"),2004,2004,"NEE", dataframe= TRUE)
 plottable<-align_data(model.calc = arun, obvs.calc = obs, align_method = "match_timestep", var= "NEE")
 rmses[r] <- sqrt(mean((plottable$NEE.o-plottable$NEE.m)^2,na.rm = TRUE))
 }
@@ -169,17 +167,17 @@ Now that you have the hang of it, here are a few more things to try:
 
 1. Try a different error functions, given actual NEE uncertainty. You learned earlier that uncertainty in half-hourly observed NEE is not Gaussian. This makes RMSE not the correct measure for goodness-of-fit. Go to *~/pecan/modules/uncertainty/R*, open *flux_uncertainty.R*, and click on the *source* button in the program editing pane. Then you can run:
 ```{r,eval=FALSE}
-unc <- flux.uncertainty(plottable$NEE.o,QC=rep(0,17520)) #Note to self: Not sure this is really the best object to use here. 
+unc <- flux.uncertainty(plottable$NEE.o,QC=rep(0,17520)) 
 plot_flux_uncertainty(unc)
 ```
 The figure shows you uncertainty (err) as a function of NEE magnitude (mag). How might you use this information to change the RMSE calculation?
 2. Try a few others parameters. Repeat the above steps but with a different parameter. You might want to select one from the sensitivity PDF that has a large sensitivity or from the variance decomposition that is also poorly constrained. 
 3. Try RMSE against monthly NEE instead of half-hourly. In this case, first average the values up to monthly in the observations. Then, use align data to match the monthly timestep in model output. 
 
-```{r}
+```{r, eval = FALSE}
 annualNEEobs<-aggregate(obs, by= list(month(obs$posix)), simplify=TRUE, FUN =mean, na.rm= TRUE)
 
 plottable<-align_data(model.calc = arun, obvs.calc = annualNEEobs, align_method = "match_timestep", var= "NEE")
-head(plottable)
 
+head(plottable)
 ```
