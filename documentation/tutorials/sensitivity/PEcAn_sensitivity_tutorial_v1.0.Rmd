@@ -115,33 +115,33 @@ plot(arun$time,arun$NEE)
 ```
 
 ####B. Now let’s bring in the actual observations
-Recall reading Ameriflux NEE in the earlier tutorial. This file was downloaded when we chose to get the drivers for SIPNET from Ameriflux. If it’s already in your workspace, you can skip this step. Otherwise, let's do it again.
-
-Navigate to the *~/output/dbfiles* folder. Read the Ameriflux NetCDF (.nc) file in  *~/output/dbfiles/Ameriflux_site-0-722/*  here *0-722* is the database site ID, a folder that was created when you selected the site and PEcAn downloaded the Ameriflux NetCDF (.nc) file from the Ameriflux website. The *0-722* may be a different number in your system depending on the site you chose and the database contents. Also note *US-NR1*, which refers to the Fluxnet site identifier for Niwot Ridge and the *2006* for the year.
+Recall reading Ameriflux NEE in the earlier tutorial. Read in an Ameriflux csv file, which is downloadable from Ameriflux. Here *722* is the database site ID which allows bety to assign the correct location of the data. The *722* may be a different number in your system depending on the site you chose and the database contents. Also note *US-NR1*, which refers to the Fluxnet site identifier for Niwot Ridge.
 ```{r,eval=FALSE}
-#library(PEcAn.assim.batch)
-
 File_Path<-"/fs/data3/tmccabe/AMF_US-NR1_BASE_HH_9-1.csv" #This is a path to where the observations are stored. 
 File_format<-PEcAn.DB::query.format.vars(bety = bety, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
-site<-PEcAn.DB::query.site(site.id = 772,bety$con) #site.id is set to Niwot Ridge 
+site<-PEcAn.DB::query.site(site.id = 772,bety$con)  
 
-obs<-PEcAn.benchmark::load_data(data.path = File_Path, format= File_format, time.row = File_format$time.row,  site = site, start_year = 2004, end_year = 2004) #This will throw an error that not all of the units can be converted. That's ok, as the units of the varibles of interest (NEE) are being converted. 
+obs<-PEcAn.benchmark::load_data(data.path = File_Path, format= File_format, time.row = File_format$time.row,  site = site, start_year = 2004, end_year = 2004) 
 
-names(obs)
+names(obs) #Notice that there are several time columns ($year, $datetime, $posix) for most plotting, $posix will be the best time axis
+annualNEEobs<-aggregate(obs$NEE, by= list(month(obs$posix)), simplify=TRUE, FUN =mean, na.rm= TRUE)
+
+plottable<-align_data(model.calc = arun, obvs.calc = obs, align_method = "match_timestep", var= "NEE")
+head(plottable)
 ```
 
 ####C. Finally, we can finally compare model to data
-In the earlier tutorial, you also compared NEE to the ensemble model run. Here we will do the same except for each sensitivity run. Recall that we had to convert units and make a scatter plot. 
+In the earlier tutorial, you also compared NEE to the ensemble model run. Here we will do the same except for each sensitivity run. Recall that we made a scatter plot. 
 
-Here is what you did last time: We converted units, which we do with the *udunits* package. The observations are in umol m-2 s-1. The model output is read in kg C ha-1 yr-1. *udunits* can convert among many units but cannot do the conversion from grams carbon to moles carbon, so we do that separately, with the factor of 12 g C per mol.
+Since we alinged the data, we got a dataframe with the variables we requested in a ```{r}NEE.m``` and a ```{r}NEE.o``` format. The ```{r}.o``` is for observations, and the ```{r}.m ``` is for model. The posix column allows for easy plotting along a timeseries.  
 ```{r,eval=FALSE}
-plot(obs$NEE,arun$NEE)
+plot(plottable$NEE.m,plottable$NEE.o)
 abline(0,1,col="red")
 ```
 
 And remember the formula for RMSE:
 ```{r,eval=FALSE}
-sqrt(mean((obs$NEE-arun$NEE)^2,na.rm = TRUE))	
+sqrt(mean((plottable$NEE.o-plottable$NEE.m)^2,na.rm = TRUE))	
 ```
 
 *na.rm* makes sure we don’t include missing or screened values in either time series.
@@ -150,9 +150,13 @@ So all we need to do to go beyond this is to make a loop that reads in each sens
 ```{r,eval=FALSE,tidy=TRUE}
 rmses <- rep(0,length(runids))
 for(r in 1:length(runids)){
-arun <- read.output(runids[r],paste("~/output",RunDir,"out",runids[r],sep="/"),2004,2004,"NEE")
-rmses[r] <- (sqrt(mean((obs$NEE-arun$nee)^2,na.rm = TRUE)))
+#arun <- read.output(runids[r],paste("~/output",RunDir,"out",runids[r],sep="/"),2004,2004,"NEE", dataframe= TRUE)
+arun<-read.output(runids[r], paste( RunDir, "out", runids[1], sep="/"), start.year= 2004, end.year= 2004, c('time',"NEE"), dataframe = TRUE)
+plottable<-align_data(model.calc = arun, obvs.calc = obs, align_method = "match_timestep", var= "NEE")
+rmses[r] <- sqrt(mean((plottable$NEE.o-plottable$NEE.m)^2,na.rm = TRUE))
 }
+
+rmses
 ```
 Let’s plot that array 
 ```{r,eval=FALSE}
@@ -165,9 +169,17 @@ Now that you have the hang of it, here are a few more things to try:
 
 1. Try a different error functions, given actual NEE uncertainty. You learned earlier that uncertainty in half-hourly observed NEE is not Gaussian. This makes RMSE not the correct measure for goodness-of-fit. Go to *~/pecan/modules/uncertainty/R*, open *flux_uncertainty.R*, and click on the *source* button in the program editing pane. Then you can run:
 ```{r,eval=FALSE}
-unc <- flux.uncertainty(arun$nee,QC=rep(0,17520)) #Note to self: Not sure this is really the best object to use here. 
+unc <- flux.uncertainty(plottable$NEE.o,QC=rep(0,17520)) #Note to self: Not sure this is really the best object to use here. 
 plot_flux_uncertainty(unc)
 ```
 The figure shows you uncertainty (err) as a function of NEE magnitude (mag). How might you use this information to change the RMSE calculation?
 2. Try a few others parameters. Repeat the above steps but with a different parameter. You might want to select one from the sensitivity PDF that has a large sensitivity or from the variance decomposition that is also poorly constrained. 
-3. Try RMSE against daily or annual NEE instead of half-hourly. In this case, first average the values up to daily in both the model and observations. You will need to think about how to deal with missing data. For example, you could make the model output have the same data points missing as observations, and then average. Or use some other criteria.
+3. Try RMSE against monthly NEE instead of half-hourly. In this case, first average the values up to monthly in the observations. Then, use align data to match the monthly timestep in model output. 
+
+```{r}
+annualNEEobs<-aggregate(obs, by= list(month(obs$posix)), simplify=TRUE, FUN =mean, na.rm= TRUE)
+
+plottable<-align_data(model.calc = arun, obvs.calc = annualNEEobs, align_method = "match_timestep", var= "NEE")
+head(plottable)
+
+```
