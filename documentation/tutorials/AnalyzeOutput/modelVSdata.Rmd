@@ -79,14 +79,14 @@ bety <-dplyr::src_postgres(host = bety$host, user = bety$user, password = bety$p
 
 
 
-## Read in model output from spesific variables
+## Read in model output from specific variables
 ```{r}
 model_vars<-c("time", "NEE") #varibles being read
 
 model <- PEcAn.utils::read.output(runid,outdir,start.year, end.year, model_vars,dataframe=TRUE)
 ```
 
-The arguments to read.output are the run ID, the folder where the run is located, the start year, the end year, and the variables being read. The README file in the Input file dropdown menue of any sucessful run lists the run ID, the output folder, and the start and end year. 
+The arguments to read.output are the run ID, the folder where the run is located, the start year, the end year, and the variables being read. The README file in the Input file dropdown menu of any successful run lists the run ID, the output folder, and the start and end year. 
 
 ##	Compare model to flux observations
 
