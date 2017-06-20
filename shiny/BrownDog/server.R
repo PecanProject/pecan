@@ -8,10 +8,14 @@ library(PEcAn.visualization)
 # Define server logic
 server <- shinyServer(function(input, output, session) {
   output$typeSelector <- renderUI({
-    bety <- betyConnect("../../web/config.php")
-    con <- bety$con
-    on.exit(db.close(con))
-    datatype <- db.query("SELECT name FROM sitegroups;", con)
+    # get the files in library PEcAn.data.atmosphere under registration
+    libPaths<-.libPaths()
+    index <- dir.exists(paste0(libPaths, '/PEcAn.data.atmosphere'))
+    data.atmosphere.registration <-paste0(libPaths[index], "/PEcAn.data.atmosphere/registration")
+    datatype <- list.files(data.atmosphere.registration)
+    # convert a list of string like "register.AmerifluxLBL.xml" to "AmerifluxLBL"
+    gsub("register.", "", b)
+    gsub(".xml", "", b)
     selectInput("type", "Type", datatype)
   })
   
