@@ -14,7 +14,7 @@ fi
 cd ${HOME}/sipnet_unk/
 make clean
 make
-sudo cp sipnet /usr/local/bin/sipnet.runk
+cp sipnet /usr/local/bin/sipnet.runk
 make clean
 
 if [ ! -e ${HOME}/sipnet_r136 ]; then
