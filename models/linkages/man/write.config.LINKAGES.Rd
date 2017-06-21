@@ -5,7 +5,7 @@
 \title{Write LINKAGES configuration files}
 \usage{
 write.config.LINKAGES(defaults = NULL, trait.values, settings, run.id,
-  restart = NULL, spinup = NULL, inputs = NULL, IC = NULL)
+  restart = NULL, spinup = FALSE, inputs = NULL, IC = NULL)
 }
 \arguments{
 \item{defaults}{list of defaults to process}
