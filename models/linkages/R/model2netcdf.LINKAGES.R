@@ -39,7 +39,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
   
   ### Loop over years in linkages output to create separate netCDF outputs
   for (y in seq_along(years)) {
-    if (file.exists(file.path(outdir, paste(y, "nc", sep = ".")))) {
+    if (file.exists(file.path(outdir, paste(years[y], "nc", sep = ".")))) {
       next
     }
     print(paste("---- Processing year: ", years[y]))  # turn on for debugging
@@ -105,8 +105,8 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
     # ******************** Declare netCDF variables ********************#
     
     ### Output netCDF data
-    nc <- ncdf4::nc_create(file.path(outdir, paste(years[y], "nc", sep = ".")), var)
-    varfile <- file(file.path(outdir, paste(years[y], "nc", "var", sep = ".")), "w")
+    nc <- ncdf4::nc_create(file.path(outdir, paste(formatC(years[y], width = 4, format = "d", flag = "0"), "nc", sep = ".")), var)
+    varfile <- file(file.path(outdir, paste(formatC(years[y], width = 4, format = "d", flag = "0"), "nc", "var", sep = ".")), "w")
     for (i in seq_along(var)) {
       print(i)
       ncdf4::ncvar_put(nc, var[[i]], output[[i]])
