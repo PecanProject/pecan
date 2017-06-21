@@ -2,11 +2,26 @@
 
 # Information to connect to the BETY database
 $db_bety_type="pgsql";
-$db_bety_hostname=getenv('PG_HOST');
-$db_bety_port=getenv('PG_PORT');
-$db_bety_username=getenv('PG_USER');
-$db_bety_password=getenv('PG_PASSWORD');
-$db_bety_database=getenv('PG_DATABASE_NAME');
+$db_bety_hostname="pg";
+$db_bety_port="5432";
+$db_bety_username="postgres";
+$db_bety_password="bety";
+$db_bety_database="bety";
+
+// under development code to get the data from the environment variables
+// $db_bety_hostname=getenv('PG_HOST');
+// $db_bety_port=getenv('PG_PORT');
+// $db_bety_username=getenv('PG_USER');
+// $db_bety_password=getenv('PG_PASSWORD');
+// $db_bety_database=getenv('PG_DATABASE_NAME');
+
+# use only for debuging
+#var_dump($db_bety_type);
+#var_dump($db_bety_hostname);
+#var_dump($db_bety_port);
+#var_dump($db_bety_username);
+#var_dump($db_bety_password);
+#var_dump($db_bety_database);
 
 # Information to connect to the FIA database
 # leave this blank if you do not have the FIA database installed.
@@ -28,7 +43,7 @@ $Rbinary="/usr/bin/R";
 $SSHtunnel=dirname(__FILE__) . DIRECTORY_SEPARATOR . "sshtunnel.sh";
 
 # google map key
-$googleMapKey="";
+$googleMapKey="AIzaSyDBBrRM8Ygo-wGAnubrtVGZklK3bmXlUPI";
 
 # Require username/password, can set min level to 0 so nobody can run/delete.
 # 4 = viewer
