@@ -82,19 +82,6 @@ server <- shinyServer(function(input, output, session) {
       session_workflow_id <- get_workflow_ids_all(bety, session)
       updateSelectizeInput(session, "workflow_id", choices=session_workflow_id)
     }
-    
-    # if(input$load){
-    #   req(input$all_workflow_id)
-    #   # Selected `multiple' ids
-    #   selected_id <- strsplit(input$all_workflow_id,' ')
-    #   # To  allow caching later
-    #   display_id <- selected_id
-    #   updateSelectizeInput(session, "workflow_id", choices=display_id)
-    # } else{
-    #   session_workflow_id <- get_workflow_ids_all(bety, session)
-    #   updateSelectizeInput(session, "workflow_id", choices=session_workflow_id)
-    # }
-    
   })
   # Update run id for selected workflow id (model)
   
@@ -111,10 +98,6 @@ server <- shinyServer(function(input, output, session) {
     } 
       updateSelectizeInput(session, "run_id", choices=r_ID)
     })
-    
-  
-  
-  
   # run_ids <- reactive({
   #   req(input$workflow_id)
   #   r_ID <- get_run_ids(bety, input$workflow_id)
@@ -129,7 +112,6 @@ server <- shinyServer(function(input, output, session) {
   #     session_workflow_id <- get_workflow_ids_all(bety, session)
   #     updateSelectizeInput(session, "workflow_id", choices=session_workflow_id)
   #   }
-  #   
   #   })
   # observe({
   #   updateSelectizeInput(session, "run_id", choices=run_ids())
@@ -168,6 +150,7 @@ server <- shinyServer(function(input, output, session) {
   #   var_names <- get_var_names(bety, wID, runID)
   #   return(var_names)
   # }
+  
   var_names <- reactive({
     # run_ids <- get_run_ids(bety, workflow_id())
     # var_names <- get_var_names(bety, workflow_id(), run_ids[1])
@@ -176,11 +159,6 @@ server <- shinyServer(function(input, output, session) {
     workflow_id <- input$workflow_id
     run_id <- input$run_id
     var_names <- get_var_names(bety, workflow_id, run_id)
-    
-    # # for(rID in run_ids){
-    #   id_list <- parse_workflowID_runID_from_input(run_ids)
-    # #   var_names <- get_var_names_for_ID(bety,id_list[1],id_list[2])
-    # # # }
     removeVarNames <- c('Year','FracJulianDay')
     var_names <-var_names[!var_names %in% removeVarNames]
     return(var_names)
@@ -215,64 +193,56 @@ server <- shinyServer(function(input, output, session) {
     # paste0(input$all_run_id)
     
           paste0(parse_ids_from_input_runID(input$all_run_id)$wID)
+    # paste0(input$load)
     # paste0(input$all_run_id[length(input$all_run_id)])
     # paste0(input$variable_name)
     # paste0(run_ids(),length(run_ids()),ids)
     # ,session$clientData$url_search)
     # paste0("x=", input$plot_dblclick$x, "\ny=", input$plot_dblclick$y)
   })
-  workFlowData <-eventReactive(input$load,{
-    # workflow_id = 99000000077
-    # run_id = 99000000002
-    # var_name = var_names 
+  
+  load_data_single_run <- function(workflow_id,run_id){
     globalDF <- data.frame()
-    ids 
-    for(workflow_id in ids){
-      run_ids <- get_run_ids(bety,workflow_id)
-      for(run_id in run_ids){
-        var_names <- get_var_names(bety, workflow_id, run_id)
-        removeVarNames <- c('Year','FracJulianDay')
-        var_names <-var_names[!var_names %in% removeVarNames]
-        # if (workflow_id != "" && run_id != "" && var_name != "") {
-        workflow <- collect(workflow(bety, workflow_id))
-        if(nrow(workflow) > 0) {
-          outputfolder <- file.path(workflow$folder, 'out', run_id)
-          files <- list.files(outputfolder, "*.nc$", full.names=TRUE)
-          for(file in files) {
-            nc <- nc_open(file)
-            for(var_name in var_names){
-              dates <- NA
-              vals <- NA
-              title <- var_name
-              ylab <- ""
-              var <- ncdf4::ncatt_get(nc, var_name)
-              #sw <- if ('Swdown' %in% names(nc$var)) ncdf4::ncvar_get(nc, 'Swdown') else TRUE
-              sw <- TRUE
-              if(!is.null(var$long_name)){
-                title <- var$long_name
-              }
-              if(!is.null(var$units)){
-                ylab <- var$units
-              }
-              x <- ncdays2date(ncdf4::ncvar_get(nc, 'time'), ncdf4::ncatt_get(nc, 'time'))
-              y <- ncdf4::ncvar_get(nc, var_name)
-              b <- !is.na(x) & !is.na(y) & sw != 0
-              dates <- if(is.na(dates)) x[b] else c(dates, x[b])
-              dates <- as.Date(dates)
-              vals <- if(is.na(vals)) y[b] else c(vals, y[b])
-              xlab <- "Time"
-              # Not required to change xlab by ranges. Using ggplotly.
-              # xlab <- if (is.null(ranges$x)) "Time" else paste(ranges$x, collapse=" - ")
-              valuesDF <- data.frame(dates,vals)
-              metaDF <- data.frame(workflow_id,run_id,title,xlab,ylab,var_name)
-              # Populating metaDF as same length of values DF
-              # metaDF1<-metaDF[rep(seq_len(nrow(valuesDF))),]
-              currentDF <- cbind(valuesDF,metaDF)
-              globalDF <- rbind(globalDF,currentDF)
-            }
-            ncdf4::nc_close(nc)
+    workflow <- collect(workflow(bety, workflow_id))
+    var_names <- get_var_names(bety, workflow_id, run_id)
+    removeVarNames <- c('Year','FracJulianDay')
+    var_names <-var_names[!var_names %in% removeVarNames]
+    if(nrow(workflow) > 0) {
+      outputfolder <- file.path(workflow$folder, 'out', run_id)
+      files <- list.files(outputfolder, "*.nc$", full.names=TRUE)
+      for(file in files) {
+        nc <- nc_open(file)
+        for(var_name in var_names){
+          dates <- NA
+          vals <- NA
+          title <- var_name
+          ylab <- ""
+          var <- ncdf4::ncatt_get(nc, var_name)
+          #sw <- if ('Swdown' %in% names(nc$var)) ncdf4::ncvar_get(nc, 'Swdown') else TRUE
+          sw <- TRUE
+          if(!is.null(var$long_name)){
+            title <- var$long_name
           }
+          if(!is.null(var$units)){
+            ylab <- var$units
+          }
+          x <- ncdays2date(ncdf4::ncvar_get(nc, 'time'), ncdf4::ncatt_get(nc, 'time'))
+          y <- ncdf4::ncvar_get(nc, var_name)
+          b <- !is.na(x) & !is.na(y) & sw != 0
+          dates <- if(is.na(dates)) x[b] else c(dates, x[b])
+          dates <- as.Date(dates)
+          vals <- if(is.na(vals)) y[b] else c(vals, y[b])
+          xlab <- "Time"
+          # Not required to change xlab by ranges. Using ggplotly.
+          # xlab <- if (is.null(ranges$x)) "Time" else paste(ranges$x, collapse=" - ")
+          valuesDF <- data.frame(dates,vals)
+          metaDF <- data.frame(workflow_id,run_id,title,xlab,ylab,var_name)
+          # Populating metaDF as same length of values DF
+          # metaDF1<-metaDF[rep(seq_len(nrow(valuesDF))),]
+          currentDF <- cbind(valuesDF,metaDF)
+          globalDF <- rbind(globalDF,currentDF)
         }
+        ncdf4::nc_close(nc)
       }
     }
     globalDF$title <- as.character(globalDF$title)
@@ -280,9 +250,34 @@ server <- shinyServer(function(input, output, session) {
     globalDF$ylab <- as.character(globalDF$ylab)
     globalDF$var_name <- as.character(globalDF$var_name)
     return(globalDF)
+  }
+  
+  
+  
+  loadNewData <-eventReactive(input$load,{
+    # workflow_id = 99000000077
+    # run_id = 99000000002
+    # var_name = var_names 
+    req(input$all_run_id)
+    globalDF <- data.frame()
+    ids_DF <- parse_ids_from_input_runID(input$all_run_id)
+    for(i in nrow(ids_DF)){
+      globalDF <- rbind(globalDF, load_data_single_run(ids_DF$wID[i],ids_DF$runID[i]))
+    }
+    return(globalDF)
+    # for(workflow_id in ids){
+    #   run_ids <- get_run_ids(bety,workflow_id)
+    #   for(run_id in run_ids){
+    #     var_names <- get_var_names(bety, workflow_id, run_id)
+    #     removeVarNames <- c('Year','FracJulianDay')
+    #     var_names <-var_names[!var_names %in% removeVarNames]
+    #     # if (workflow_id != "" && run_id != "" && var_name != "") {
+    #   }
+    # }
   })
   output$outputPlot <- renderPlotly({
-    masterDF <- workFlowData()
+    masterDF <- load_data_single_run(input$workflow_id,input$run_id)
+    masterDF <- rbind(masterDF,loadNewData())
     output$info1 <- renderText({
       paste0(nrow(masterDF))
     })
