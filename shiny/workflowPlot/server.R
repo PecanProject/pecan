@@ -59,7 +59,7 @@ server <- shinyServer(function(input, output, session) {
       r_ids <- get_run_ids(bety, w_id)
       for(r_id in r_ids){
         # . as a separator between multiple run ids
-        list_item <- paste0('workflow ',w_id,', run ',r_id, ';')
+        list_item <- paste0('workflow ',w_id,', run ',r_id)
         run_id_list <- c(run_id_list,list_item)
       }
     }
@@ -72,38 +72,97 @@ server <- shinyServer(function(input, output, session) {
   # Update on load: workflow id for selected run ids (models)
   observe({
     if(input$load){
-      req(input$all_workflow_id)
+      req(input$all_run_id)
       # Selected `multiple' ids
-      selected_id <- strsplit(input$all_workflow_id,' ')
-      # To  allow caching
-      display_id <- selected_id
+      selected_id <- parse_ids_from_input_runID(input$all_run_id)$wID
+      # To  allow caching later
+      display_id <- c(input$workflow_id,selected_id)
       updateSelectizeInput(session, "workflow_id", choices=display_id)
     } else{
       session_workflow_id <- get_workflow_ids_all(bety, session)
       updateSelectizeInput(session, "workflow_id", choices=session_workflow_id)
     }
+    
+    # if(input$load){
+    #   req(input$all_workflow_id)
+    #   # Selected `multiple' ids
+    #   selected_id <- strsplit(input$all_workflow_id,' ')
+    #   # To  allow caching later
+    #   display_id <- selected_id
+    #   updateSelectizeInput(session, "workflow_id", choices=display_id)
+    # } else{
+    #   session_workflow_id <- get_workflow_ids_all(bety, session)
+    #   updateSelectizeInput(session, "workflow_id", choices=session_workflow_id)
+    # }
+    
   })
   # Update run id for selected workflow id (model)
-  run_ids <- reactive({
-    req(input$workflow_id)
-    get_run_ids(bety, input$workflow_id)
-    })
+  
   observe({
-    updateSelectizeInput(session, "run_id", choices=run_ids())
-  })
-  parse_ids_from_input_runID <- function(run_id_string){
-    id_list <- c()
-    split_diff_ids <- strsplit(run_id_string,';')[[1]]
-    # run_id_string: 'workflow' workflow_ID, 'run' run_id
-    for(diff_ids in split_diff_ids){
-      split_string <- strsplit(diff_ids,',')[[1]]
-      wID <- as.numeric(strsplit(trimws(split_string[1],which = c("both")),' ')[[1]][2])
-      runID <- as.numeric(strsplit(trimws(split_string[2],which = c("both")),' ')[[1]][2])
-      ids <- list(wID,runID)
-    }  
-    id_list <- c(id_list,ids)
-    return(id_list)
+    req(input$workflow_id)
+    r_ID <- get_run_ids(bety, input$workflow_id)
+    if(input$load){
+      req(input$all_run_id)
+      # Selected `multiple' ids
+      ids_DF <- parse_ids_from_input_runID(input$all_run_id)
+      ids_DF %>% filter(wID %in% input$workflow_id)
+      # To  allow caching later
+      r_ID <- intersect(r_ID,ids_DF$runID)
+    } 
+      updateSelectizeInput(session, "run_id", choices=r_ID)
+    })
+    
+  
+  
+  
+  # run_ids <- reactive({
+  #   req(input$workflow_id)
+  #   r_ID <- get_run_ids(bety, input$workflow_id)
+  #   if(input$load){
+  #     req(input$all_run_id)
+  #     # Selected `multiple' ids
+  #     selected_id <- parse_ids_from_input_runID(input$all_run_id)$wID
+  #     # To  allow caching later
+  #     display_id <- c(input$workflow_id,selected_id)
+  #     updateSelectizeInput(session, "workflow_id", choices=display_id)
+  #   } else{
+  #     session_workflow_id <- get_workflow_ids_all(bety, session)
+  #     updateSelectizeInput(session, "workflow_id", choices=session_workflow_id)
+  #   }
+  #   
+  #   })
+  # observe({
+  #   updateSelectizeInput(session, "run_id", choices=run_ids())
+  # })
+  return_DF_from_run_ID <- function(diff_ids){
+    # Called by the function parse_ids_from_input_runID
+    # Returns a DF for a particular run_id
+    # print(diff_ids)
+    split_string <- strsplit(diff_ids,',')[[1]]
+    # Workflow id is the first element. Trim leading and ending white spaces. Split by space now
+    wID <- as.numeric(strsplit(trimws(split_string[1],which = c("both")),' ')[[1]][2])
+    # Run id is the second element
+    runID <- as.numeric(strsplit(trimws(split_string[2],which = c("both")),' ')[[1]][2])
+    return(data.frame(wID,runID))
   }
+  parse_ids_from_input_runID <- function(run_id_list){
+    # global_id_DF <- data.frame()
+    # split_diff_ids <- strsplit(run_id_string,';')[[1]]
+    # for(diff_ids in split_diff_ids){
+    # # run_id_string: 'workflow' workflow_ID, 'run' run_id
+    #   # Split by comma to get workflow and run ids
+    #   
+    #  
+     globalDF <- data.frame()
+     for(w_run_id in run_id_list){
+      globalDF <- rbind(globalDF,return_DF_from_run_ID(w_run_id))
+     }
+      # split_ids <- lapply(split_diff_ids , function(x) list_workflow_run_id(x))
+      # local_id_DF <- data.frame(wID,runID)
+      # global_id_DF <- rbind(global_id_DF,local_id_DF)
+     return(globalDF)
+    }  
+  # }
   # Update variables if user changes run
   # get_var_names_for_ID <- function(bety,wID,runID){
   #   var_names <- get_var_names(bety, wID, runID)
@@ -153,7 +212,10 @@ server <- shinyServer(function(input, output, session) {
     #   all_workflow_id <- strsplit(input$all_workflow_id,',')
     # }
     # d <- typeof(all_workflow_id)
-      paste0(input$all_run_id)
+    # paste0(input$all_run_id)
+    
+          paste0(parse_ids_from_input_runID(input$all_run_id)$wID)
+    # paste0(input$all_run_id[length(input$all_run_id)])
     # paste0(input$variable_name)
     # paste0(run_ids(),length(run_ids()),ids)
     # ,session$clientData$url_search)
@@ -224,6 +286,7 @@ server <- shinyServer(function(input, output, session) {
     output$info1 <- renderText({
       paste0(nrow(masterDF))
     })
+    # Error messages
     validate(
       need(input$workflow_id, 'Found workflow id'),
       need(input$run_id, 'Run id detected'),
