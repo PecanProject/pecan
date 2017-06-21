@@ -5,6 +5,7 @@
 ##' @param bety_species_id  vector of BETYdb species IDs
 ##' @param pfts             settings$pfts.  List of pfts with database matching based on name
 ##' @param con              database connection, if NULL use traits package
+##' @param allow_missing    flag to indicate that settings file does not need to match exactly
 ##' 
 ##' @author Mike Dietze, Istem Fer
 ##' @return table of BETYdb PFT IDs matched to species IDs
