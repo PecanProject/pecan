@@ -72,14 +72,17 @@ clean:
 
 .install/devtools:
 	Rscript -e "if(!require('devtools')) install.packages('devtools', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	mkdir -p $(@D)
 	echo `date` > $@
 
 .install/roxygen2:
 	Rscript -e "if(!require('roxygen2')) install.packages('roxygen2', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	mkdir -p $(@D)
 	echo `date` > $@
 
 .install/testthat:
 	Rscript -e "if(!require('testthat')) install.packages('testthat', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	mkdir -p $(@D)
 	echo `date` > $@
 
 install_R_pkg = Rscript -e "devtools::install('$(strip $(1))', Ncpus = ${NCPUS});"
