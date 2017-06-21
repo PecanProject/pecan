@@ -4,7 +4,8 @@
 \alias{match_pft}
 \title{Match model PFTs}
 \usage{
-match_pft(bety_species_id, pfts, query = NULL, con = NULL)
+match_pft(bety_species_id, pfts, query = NULL, con = NULL,
+  allow_missing = FALSE)
 }
 \arguments{
 \item{bety_species_id}{vector of BETYdb species IDs}
