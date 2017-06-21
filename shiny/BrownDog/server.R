@@ -33,7 +33,7 @@ server <- shinyServer(function(input, output, session) {
     # Depending on input$type, we'll generate a different lincense agreement
     switch(
       input$type,
-      "AmeriFlux" = checkboxInput(
+      "Ameriflux" = checkboxInput(
         "agreement",
         HTML(
           "I agree to <a href='http://ameriflux.lbl.gov/data/data-policy/'>AmeriFlux license</a>."
@@ -49,7 +49,7 @@ server <- shinyServer(function(input, output, session) {
         value = FALSE,
         width = NULL
       ),
-      "FLUXNET" = checkboxInput(
+      "Fluxnet2015" = checkboxInput(
         "agreement",
         HTML("I agree to FLUXNET license."),
         value = FALSE,
