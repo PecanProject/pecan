@@ -52,7 +52,7 @@ load_data_paleon_sda <- function(settings){
   obs.cov <- obs.cov.tmp <- list()
 
   obs.times <- seq(as.Date(start_date), as.Date(end_date), by = settings$state.data.assimilation$forecast.time.step)
-  obs.times <- year(obs.times)
+  obs.times <- lubridate::year(obs.times)
   
   biomass2carbon <- 0.48
   
@@ -97,9 +97,9 @@ load_data_paleon_sda <- function(settings){
       
       logger.info('Now, mapping data species to model PFTs')
       dataset$pft.cat <- x[dataset$species_id]
-      dataset <- dataset[dataset$pft.cat!='NA_AbvGrndWood',]
+      dataset <- dataset[dataset$pft.cat!='AGB.pft.NA',]
       
-      variable <- sub('AGB.pft','AbvGrndWood',variable)
+      variable <- c('AbvGrndWood')
       arguments <- list(.(year, MCMC_iteration, site_id, pft.cat), .(variable))
       arguments2 <- list(.(year, pft.cat), .(variable))
       arguments3 <- list(.(MCMC_iteration), .(pft.cat, variable), .(year))
@@ -118,12 +118,12 @@ load_data_paleon_sda <- function(settings){
     cov.test <- apply(iter_mat,3,function(x){cov(x)})
    
     for(t in seq_along(obs.times)){
-      obs.mean.tmp[[t]] <- mean_mat[mean_mat[,time.type]==obs.times[t], variable] #THIS WONT WORK IF TIMESTEP ISNT ANNUAL
+      obs.mean.tmp[[t]] <- mean_mat[mean_mat[,time.type]==obs.times[t], -c(1)] #THIS WONT WORK IF TIMESTEP ISNT ANNUAL
       
       if(any(var.names == 'AGB.pft')){
-        obs.mean.tmp[[t]] <- rep(NA, length(x))
-        names(obs.mean.tmp[[t]]) <- sort(x)
-        for(r in seq_along(x)){
+        obs.mean.tmp[[t]] <- rep(NA, length(unique(dataset$pft.cat)))
+        names(obs.mean.tmp[[t]]) <- sort(unique(dataset$pft.cat))
+        for(r in seq_along(unique(dataset$pft.cat))){
           k <- mean_mat[mean_mat$year==obs.times[t] & mean_mat$pft.cat==names(obs.mean.tmp[[t]][r]), variable]
           if(any(k)){
             obs.mean.tmp[[t]][r] <- k
