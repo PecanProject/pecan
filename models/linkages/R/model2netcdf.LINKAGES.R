@@ -26,7 +26,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
   # , PFTs) { logger.severe('NOT IMPLEMENTED')
   
   library(PEcAn.utils)
-  
+
   ### Read in model output in linkages format
   load(file.path(outdir, "linkages.out.Rdata"))
   # linkages.output.dims <- dim(linkages.output)
@@ -39,9 +39,9 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
   
   ### Loop over years in linkages output to create separate netCDF outputs
   for (y in seq_along(years)) {
-    if (file.exists(file.path(outdir, paste(years[y], "nc", sep = ".")))) {
-      next
-    }
+    # if (file.exists(file.path(outdir, paste(years[y], "nc", sep = "."))) & overwrite ==FALSE) {
+    #   next
+    # }
     print(paste("---- Processing year: ", years[y]))  # turn on for debugging
     
     ## Subset data for processing sub.linkages.output <- subset(linkages.output, year == y)
