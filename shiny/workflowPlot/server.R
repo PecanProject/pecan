@@ -39,6 +39,7 @@ server <- shinyServer(function(input, output, session) {
       # Get all workflow IDs
       ids <- workflows(bety, ensemble = TRUE) %>% distinct(workflow_id) %>% collect %>% 
         .[["workflow_id"]] %>% sort(decreasing = TRUE)
+      # pull(.,workflow_id) %>% sort(decreasing = TRUE)
     }
     return(ids)
   }  # get_workflow_ids
@@ -91,13 +92,13 @@ server <- shinyServer(function(input, output, session) {
     if(input$load){
       req(input$all_run_id)
       # Selected `multiple' ids
-      ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-      ids_DF %>% filter(wID %in% input$workflow_id)
+      ids_DF <- parse_ids_from_input_runID(input$all_run_id) %>% filter(wID %in% input$workflow_id)
       # To  allow caching later
+      # Change variable name
       r_ID <- intersect(r_ID,ids_DF$runID)
     } 
       updateSelectizeInput(session, "run_id", choices=r_ID)
-    })
+  })
   # run_ids <- reactive({
   #   req(input$workflow_id)
   #   r_ID <- get_run_ids(bety, input$workflow_id)
@@ -167,21 +168,6 @@ server <- shinyServer(function(input, output, session) {
   observe({
     updateSelectizeInput(session, "variable_name", choices=var_names())
   })
-  # observe({
-  #   ignore <- input$variable_name
-  #   ranges$x <- NULL
-  #   ranges$y <- NULL
-  # })
-  # observeEvent(input$plot_dblclick, {
-  #   brush <- input$plot_brush
-  #   if (!is.null(brush)) {
-  #     ranges$x <- as.POSIXct(c(brush$xmin, brush$xmax), origin = "1970-01-01", tz = "UTC")
-  #     ranges$y <- c(brush$ymin, brush$ymax)
-  #   } else {
-  #     ranges$x <- NULL
-  #     ranges$y <- NULL
-  #   }
-  # })
   # If want to render text
   output$info <- renderText({
     # indicators <- strsplit(input$indicators, ",")[[1]]
@@ -192,7 +178,7 @@ server <- shinyServer(function(input, output, session) {
     # d <- typeof(all_workflow_id)
     # paste0(input$all_run_id)
     
-          paste0(parse_ids_from_input_runID(input$all_run_id)$wID)
+          paste0(parse_ids_from_input_runID(input$all_run_id)$runID)
     # paste0(input$load)
     # paste0(input$all_run_id[length(input$all_run_id)])
     # paste0(input$variable_name)
@@ -251,9 +237,7 @@ server <- shinyServer(function(input, output, session) {
     globalDF$var_name <- as.character(globalDF$var_name)
     return(globalDF)
   }
-  
-  
-  
+
   loadNewData <-eventReactive(input$load,{
     # workflow_id = 99000000077
     # run_id = 99000000002
@@ -261,40 +245,39 @@ server <- shinyServer(function(input, output, session) {
     req(input$all_run_id)
     globalDF <- data.frame()
     ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-    for(i in nrow(ids_DF)){
-      globalDF <- rbind(globalDF, load_data_single_run(ids_DF$wID[i],ids_DF$runID[i]))
+    for(row_num in 1:nrow(ids_DF)){
+      globalDF <- rbind(globalDF, load_data_single_run(ids_DF$wID[row_num],ids_DF$runID[row_num]))
     }
     return(globalDF)
-    # for(workflow_id in ids){
-    #   run_ids <- get_run_ids(bety,workflow_id)
-    #   for(run_id in run_ids){
-    #     var_names <- get_var_names(bety, workflow_id, run_id)
-    #     removeVarNames <- c('Year','FracJulianDay')
-    #     var_names <-var_names[!var_names %in% removeVarNames]
-    #     # if (workflow_id != "" && run_id != "" && var_name != "") {
-    #   }
-    # }
   })
   output$outputPlot <- renderPlotly({
-    masterDF <- load_data_single_run(input$workflow_id,input$run_id)
-    masterDF <- rbind(masterDF,loadNewData())
+    # masterDF <- load_data_single_run(input$workflow_id,input$run_id)
+    masterDF <- loadNewData()
     output$info1 <- renderText({
       paste0(nrow(masterDF))
+      paste0(length(unique(masterDF$run_id)))
     })
     # Error messages
     validate(
-      need(input$workflow_id, 'Found workflow id'),
-      need(input$run_id, 'Run id detected'),
+      # need(input$workflow_id, 'Found workflow id'),
+      # need(input$run_id, 'Run id detected'),
       need(input$variable_name, 'Please wait! Loading data')
     )
     masterDF$var_name <- as.character(masterDF$var_name)
+    masterDF$run_id <- as.factor(as.character(masterDF$run_id))
+    
     # masterDF$var_name = as.factor(masterDF$var_name)
     # df1<-subset(masterDF,var_name==var_name)
-    df <- masterDF %>% 
-      dplyr::filter(workflow_id == input$workflow_id &
-                      run_id == input$run_id & 
-                      var_name == input$variable_name) %>%
-      dplyr::select(dates,vals)
+    
+    # Drop filtering 
+    df <- masterDF %>%
+      dplyr::filter(
+        # workflow_id == input$workflow_id &
+        #               run_id == input$run_id &
+                      var_name == input$variable_name) 
+    # %>%
+    #   dplyr::select(dates,vals,workflow_id,run_id)
+
     title <- unique(df$title)[1]
     xlab <- unique(df$xlab)[1]
     ylab <- unique(df$ylab)[1]
@@ -311,16 +294,16 @@ server <- shinyServer(function(input, output, session) {
     # workflow_id %in% workflow_id) 
     # & run_id == run_id & var_name == var_name)
     # df<-masterDF %>% dplyr::filter(workflow_id == input$workflow_id)
-    plt <- ggplot(df, aes(x=dates, y=vals)) +
+    plt <- ggplot(df, aes(x=dates, y=vals, color=run_id)) + 
       # geom_point(aes(color="Model output")) +
-      geom_point() +
+      geom_point() 
       #          geom_smooth(aes(fill = "Spline fit")) +
       # coord_cartesian(xlim = ranges$x, ylim = ranges$y) +
       # scale_y_continuous(labels=fancy_scientific) +
-      labs(title=title, x=xlab, y=ylab) +
+      # labs(title=title, x=xlab, y=ylab) +
       # labs(title=unique(df$title)[1], x=unique(df$xlab)[1], y=unique(df$ylab)[1]) +
-      scale_color_manual(name = "", values = "black") +
-      scale_fill_manual(name = "", values = "grey50") 
+      # scale_color_manual(name = "", values = "black") +
+      # scale_fill_manual(name = "", values = "grey50") 
     # theme(axis.text.x = element_text(angle = -90))
     plt<-ggplotly(plt)
     # plot(plt)
