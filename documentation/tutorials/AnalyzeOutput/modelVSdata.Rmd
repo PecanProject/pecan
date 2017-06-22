@@ -37,11 +37,9 @@ Within both the run and out folders there will be one folder for each unique mod
   + Within this folder you will find, among other things, files of the format <year>.nc. Each of these files contains one year of model output in the standard PEcAn netCDF format. This is the model output that we will use to compare to data. 
 
 
-## Read in settings
+## Read in settings From an XML file
 
-There are two ways to access runs from pecan. One is from a settings object generated from an xml file, and the other is to query the database using the run ID, site ID, and output files manually. These ID's can all be found in the run README file. Both are shown below, so only run one.   
 
-**From an XML file**
 ```{r}
 ## Read in the xml
 
@@ -60,27 +58,6 @@ File_path<- settings$run$inputs$met$path
 bety <-dplyr::src_postgres(host = settings$database$bety$host, user = settings$database$bety$user, password = settings$database$bety$password, dbname = settings$database$bety$dbname)
 
 ```
-
-
-**From ID's**
-```{r}
-
-## To read in the model output 
-runid<- 99000000001
-outdir<- "/fs/data2/output/PEcAn_99000000001/out/99000000001"
-start.year<-1997
-end.year<-2004
-site.id<-772
-File_Path<-"/fs/data3/tmccabe/AMF_US-NR1_BASE_HH_9-1.csv" #This is a path to where the observations are stored. If you have your own observations, change to cusom file path. 
-
-
-## Open up a connection to The Bety Database
-bety<-list(host = "psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")
-bety <-dplyr::src_postgres(host = bety$host, user = bety$user, password = bety$password, dbname = bety$dbname)
-
-```
-
-
 
 ## Read in model output from specific variables
 ```{r}
