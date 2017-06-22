@@ -85,20 +85,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
                                   stop.time = settings$run$end.date,
                                   inputs = ens.inputs[[i]]))
   }
-
-  #### replaces stuff below
-  
-  # if(model == "LINKAGES"){
-  #   new.met <- paste0(rundir,"/climate.Rdata") #doesn't do anything but write stuff to README
-  #   met <- new.met #HACK
-  # }
-  # if(model == "SIPNET"){
-  #   ## split clim file
-  #      full.met <- c(settings$run$inputs$met$path) #
-  #      new.met  <- file.path(settings$rundir,basename(full.met))
-  #      file.copy(full.met,new.met)
-  #      met <- split.met.SIPNET(new.met)
-  # }
   
   ###-------------------------------------------------------------------###
   ### open database connection                                          ###
@@ -273,52 +259,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   
   wish.df <- function(Om, X, i, j, col) {
     (Om[i, j]^2 + Om[i, i] * Om[j, j]) / var(X[, col])
-  } # wish.df
+  }
   
-#   ## JAGS models for numerical update of state and process error
-#   #### Tobit Model
-#   tobit.model <- "
-#   model{ 
-#   
-#   q  ~ dwish(aq,bq) ## aq and bq are estimated over time
-#   Q <- inverse(q)
-#   X.mod ~ dmnorm(muf,pf) ## Model Forecast ##muf and pf are assigned from ensembles
-# 
-#   ## add process error
-#   X  ~ dmnorm(X.mod,q)
-#  
-#   #agb linear
-#   #y_star <- X[choose]
-#   
-#   #f.comp non linear
-#   y_star <- X[1:9] / sum(X[1:9])
-#   
-#   ## Analysis
-#   y.censored  ~ dmnorm(y_star,r) ##cannot be partially observed -- JAGS Manual
-#   
-#   for(i in 1:N){
-#   y.ind[i] ~ dinterval(y.censored[i], interval[i,])
-#   }
-#   
-# }"
-#   
-#   tobit2space <- "
-#   model{ 
-# 
-#   for(n in 1:nens){
-#       y.censored[n,] ~ dmnorm(muf,pf) ##cannot be partially observed -- JAGS Manual
-#   
-#       for(i in 1:N){
-#           y.ind[n,i] ~ dinterval(y.censored[n,i], interval[i,])
-#       }
-#   }
-# 
-#   #Priors
-#   pf  ~ dwish(aq,bq)
-#   muf  ~ dmnorm(mu.prior,cov.prior)
-#   
-# }"
-#   
   sampler_toggle <- nimbleFunction(
     contains = sampler_BASE,
     setup = function(model, mvSaved, target, control) {

@@ -130,7 +130,9 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
         }
         
       }
-    } 
+    }
+    
+
   } else {
     format <- list(file_name = f$name,
                    mimetype = f$mimetype,
@@ -146,5 +148,7 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
     unique_cols<-match(unique(format$vars$pecan_name), format$vars$pecan_name)
     PEcAn.utils::logger.warn("There are duplicate columns in format record",format$file_name, "If format is not wide format, check column(s)",format$vars$pecan_name[-unique_cols])
   }
+
+
   return(format)
 }
