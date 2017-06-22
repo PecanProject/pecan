@@ -41,7 +41,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   
   names.keep <- names(new.state)
   
-  new.state <- udunits2::ud.convert(as.matrix(new.state), "Mg/ha", "kg/m^2")
+  new.state <- as.matrix(new.state)
   
   names(new.state) <- names.keep
   

@@ -206,7 +206,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   
   ## start model runs
   start.model.runs(settings, settings$database$bety$write)
-  #save.image(file.path(outdir, "sda.initial.runs.Rdata"))
+  save(list = ls(envir = environment(), all.names = TRUE), 
+       file = file.path(outdir, "sda.initial.runs.Rdata"), envir = environment())
   
   ###-------------------------------------------------------------------###
   ### tests before data assimilation                                    ###
@@ -336,7 +337,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for (t in seq_len(nt)) {#
+  for (t in 1:2) {#
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -377,8 +378,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       choose <- na.omit(charmatch(colnames(X),names(obs.mean[[t]])))
       
       Y <- unlist(obs.mean[[t]][choose])
+      Y[is.na(Y)] <- 0 
       
       R <- as.matrix(obs.cov[[t]][choose,choose])
+      R[is.na(R)]<-0
       
       if (length(obs.mean[[t]]) > 1) {
         for (s in seq_along(obs.mean[[t]])) {
@@ -459,7 +462,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         #   H[i, i] <- 1/sum(mu.f) #? this seems to get us on the right track. mu.f[i]/sum(mu.f) doesn't work. 
         # }
         ## process error
-        if (exists("Q")) {
+        if (!is.null(Q)) {
           Pf <- Pf + Q
         }
         ## Kalman Gain
@@ -604,7 +607,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           constants.tobit = list(N = ncol(X), YN = length(y.ind)) #, nc = 1
           dimensions.tobit = list(X = ncol(X), X.mod = ncol(X), Q = c(ncol(X),ncol(X))) #  b = dim(inits.pred$b),
           
-          data.tobit = list(muf = as.vector(mu.f), pf = Pf, aq = aqq[t,,], bq = bqq[t],
+          data.tobit = list(muf = as.vector(mu.f), pf = solve(Pf), aq = aqq[t,,], bq = bqq[t],
                             y.ind = y.ind,
                             y.censored = y.censored,
                             r = solve(R))
@@ -644,7 +647,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           Cmodel$aq <- aqq[t,,]
           Cmodel$bq <- bqq[t]
           Cmodel$muf <- mu.f
-          Cmodel$pf <- Pf
+          Cmodel$pf <- solve(Pf)
           Cmodel$r <- solve(R)
           
           for(i in 1:length(y.ind)) {

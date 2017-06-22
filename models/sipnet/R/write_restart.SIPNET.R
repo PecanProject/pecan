@@ -50,7 +50,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   analysis.save <- list()
   
   if ("NPP" %in% variables) {
-    analysis.save[[1]] <- new.state$NPP  #*unit.conv -> Mg/ha/yr
+    analysis.save[[1]] <- udunits2::ud.convert(new.state$NPP, "kg/m^2/s", "Mg/ha/yr")  #*unit.conv -> Mg/ha/yr
     names(analysis.save[[1]]) <- c("NPP")
   }
   
