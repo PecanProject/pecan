@@ -71,7 +71,6 @@ load_data_paleon_sda <- function(settings){
     logger.info(paste('Using PEcAn.benchmark::load_data.R on format_id',format_id[[i]],'-- may take a few minutes'))
     obvs[[i]] <- PEcAn.benchmark::load_data(data.path, format, start_year = lubridate::year(start_date), end_year = lubridate::year(end_date), site)
     
-    dataset <- obvs[[i]]
     variable <- intersect(var.names,colnames(obvs[[i]]))
     
     ### Tree Ring Data Product
@@ -85,6 +84,8 @@ load_data_paleon_sda <- function(settings){
     }else{
       logger.severe('ERROR: This data format has not been added to this function (ツ)_/¯ ')
     }
+    
+    dataset <- obvs[[i]]
     
     ### Map species to model specific PFTs
     if(any(var.names == 'AGB.pft')){
