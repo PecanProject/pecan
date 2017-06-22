@@ -33,6 +33,7 @@ NEE,kg C m-2 s-1,NEE
 NEE,kg C m-2 s-1,FC
 NPP,kg C m-2 s-1,NPP
 NPP,kg C m-2 s-1,NPP_2_C
+NPP,kg C m-2 s-1,NPP_1_C
 poolname,(-),
 Psurf,Pa,Psurf
 Psurf,Pa,air_pressure

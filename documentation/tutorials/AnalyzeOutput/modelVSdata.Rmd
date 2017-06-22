@@ -34,18 +34,18 @@ pft		contains the parameter information for each PFT
 
 Within both the run and out folders there will be one folder for each unique model run, where the folder name is the run ID. Click to open the out folder. For our simple case we only did one run so there should be only one folder (e.g. 99000000001). Click to open this folder.
 
-  + Within this folder you will find, among other things, files of the format <year>.nc. Each of these files contains one year of model output in the standard PEcAn netCDF format.
+  + Within this folder you will find, among other things, files of the format <year>.nc. Each of these files contains one year of model output in the standard PEcAn netCDF format. This is the model output that we will use to compare to data. 
 
 
 ## Read in settings
 
-There are two ways to access runs from pecan. One is from a settings object generated from an xml file, and the other is to query the database using the run ID, site ID, and output files manually. These ID's can all be found in the run README file. Both are shown below.  
+There are two ways to access runs from pecan. One is from a settings object generated from an xml file, and the other is to query the database using the run ID, site ID, and output files manually. These ID's can all be found in the run README file. Both are shown below, so only run one.   
 
 **From an XML file**
 ```{r}
 ## Read in the xml
 
-settings<-PEcAn.settings::read.settings("/fs/data2/output/PEcAn_99000000001/pecan.xml")
+settings<-PEcAn.settings::read.settings("/fs/data2/output/PEcAn_99000000001/pecan.CONFIG.xml")
 
 ## To read in the model output 
 runid<-as.character(read.table(paste(settings$outdir, "/run/","runs.txt", sep=""))[1,1]) # Note: if you are using an xml from a run with multiple ensembles this line will provide only the first run id 
@@ -54,6 +54,7 @@ start.year<-as.numeric(lubridate::year(settings$run$start.date))
 end.year<-as.numeric(lubridate::year(settings$run$end.date))
 
 site.id<-settings$run$site$id
+File_path<- settings$run$inputs$met$path
 
 ## Open up a connection to The Bety Database 
 bety <-dplyr::src_postgres(host = settings$database$bety$host, user = settings$database$bety$user, password = settings$database$bety$password, dbname = settings$database$bety$dbname)
@@ -70,6 +71,8 @@ outdir<- "/fs/data2/output/PEcAn_99000000001/out/99000000001"
 start.year<-1997
 end.year<-2004
 site.id<-772
+File_Path<-"/fs/data3/tmccabe/AMF_US-NR1_BASE_HH_9-1.csv" #This is a path to where the observations are stored. If you have your own observations, change to cusom file path. 
+
 
 ## Open up a connection to The Bety Database
 bety<-list(host = "psql-pecan.bu.edu", driver = "PostgreSQL", user = "bety", dbname = "bety", password = "bety")
@@ -79,23 +82,19 @@ bety <-dplyr::src_postgres(host = bety$host, user = bety$user, password = bety$p
 
 
 
-## Read in model output from spesific variables
+## Read in model output from specific variables
 ```{r}
 model_vars<-c("time", "NEE") #varibles being read
-
 model <- PEcAn.utils::read.output(runid,outdir,start.year, end.year, model_vars,dataframe=TRUE)
 ```
 
-The arguments to read.output are the run ID, the folder where the run is located, the start year, the end year, and the variables being read. The README file in the Input file dropdown menue of any sucessful run lists the run ID, the output folder, and the start and end year. 
+The arguments to read.output are the run ID, the folder where the run is located, the start year, the end year, and the variables being read. The README file in the Input file dropdown menu of any successful run lists the run ID, the output folder, and the start and end year. 
 
 ##	Compare model to flux observations
 
 **First** _load up the observations_ and take a look at the contents of the file
 
-
 ```{r}
-File_Path<-"/fs/data3/tmccabe/AMF_US-NR1_BASE_HH_9-1.csv" #This is a path to where the observations are stored. 
-
 File_format<-PEcAn.DB::query.format.vars(bety = bety, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
 
 site<-PEcAn.DB::query.site(site.id,bety$con) #This tells PEcAn where the data comes from
@@ -110,13 +109,18 @@ You could query for diffent kinds of formats that exist in bety or [make your ow
 
 Here 772 is the database site ID for Niwot Ridge Forest, which tells pecan where the data is from and what time zone to assign any time data read in. 
 
+**Second** _apply a conservative u* filter to observations_
+```{r}
+observations$NEE[observations$UST<0.2]<-NA
+```
+
 **Third** _align model output and observations_
 
 ```{r}
-
 aligned_dat = PEcAn.benchmark::align_data(model.calc = model, obvs.calc = observations, var ="NEE", align_method = "match_timestep")
 
 ```
+When we aligned the data, we got a dataframe with the variables we requested in a $NEE.m$ and a $NEE.o$ format. The $.o$ is for observations, and the $.m$ is for model. The posix column allows for easy plotting along a timeseries.  
 
 **Fourth**, _plot model predictions vs. observations_ and compare this to a 1:1 line 
 
@@ -126,6 +130,12 @@ plot(aligned_dat$NEE.m, aligned_dat$NEE.o)
 abline(0,1,col="red")  ## intercept=0, slope=1
 ```
 
+**Fifth**, _calculate the Root Mean Square Error (RMSE)_ between the model and the data
+
+```{r}
+rmse = sqrt(mean((aligned_dat$NEE.m-aligned_dat$NEE.o)^2,na.rm = TRUE))
+```
+*na.rm* makes sure we don’t include missing or screened values in either time series.
 
 **Finally**, _plot time-series_ of both the model and data together
 
@@ -134,4 +144,16 @@ abline(0,1,col="red")  ## intercept=0, slope=1
 plot(aligned_dat$posix, aligned_dat$NEE.o, type="l")
 lines(aligned_dat$posix,aligned_dat$NEE.m, col = "red")
 
+```
+
+**Bonus** _How would you compare aggregated data?_
+
+Try RMSE against monthly NEE instead of half-hourly. In this case, first average the values up to monthly in the observations. Then, use align_data to match the monthly timestep in model output.
+
+**NOTE**: Align_data uses two seperate alignment function, match_timestep and mean_over_larger_timestep. Match_timestep will use only that data that is present in both the model and the observation. This is helpful for sparse observations. Mean_over_larger_timestep aggregates the values over the largest timestep present. If you were to look at averaged monthly data, you would use mean_over_larger_timestep.
+
+```{r, eval = FALSE}
+monthlyNEEobs<-aggregate(observations, by= list(month(observations$posix)), simplify=TRUE, FUN =mean, na.rm= TRUE)
+plottable<-align_data(model.calc = model, obvs.calc = monthlyNEEobs, align_method = "mean_over_larger_timestep", var= "NEE")
+head(plottable)
 ```
