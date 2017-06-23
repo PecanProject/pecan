@@ -77,4 +77,3 @@ We have developed a number of demos and vignettes to guide your use of PEcAn's m
 |Vignette|Photosynthetic Response Curves|html|[Rmd](https://github.com/PecanProject/pecan/blob/master/modules/photosynthesis/vignettes/ResponseCurves.Rmd)|
 |Vignette|Priors|html|[Rmd](https://github.com/PecanProject/pecan/blob/master/modules/priors/vignettes/priors_demo.Rmd)|
 |Vignette|Leaf Spectra:PROSPECT inversion|html|[Rmd](https://github.com/PecanProject/pecan/blob/master/modules/rtm/vignettes/pecanrtm.vignette.Rmd)|
-
