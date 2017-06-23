@@ -759,8 +759,45 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
     }
     
-    ## update state matrix
-    analysis <- as.data.frame(rmvnorm(as.numeric(nens), mu.a, Pa, method = "svd"))
+    ###-------------------------------------------------------------------###
+    ### update state matrix                                                     ###
+    ###-------------------------------------------------------------------### 
+    S_f  <- svd(Pf)
+    L_f  <- S_f$d
+    V_f  <- S_f$v
+    
+    ## normalize
+    Z <- X*0
+    for(i in seq_len(nens)){
+      Z[i,] <- 1/sqrt(L_f) * t(V_f)%*%(X[i,]-mu.f)
+    }
+    Z[is.na(Z)]<-0
+    
+    ## analysis
+    #mu_a <- c(10,-3)
+    #D  <- sqrt(diag(c(3,1)))
+    #R  <- matrix(c(1,-0.75,-0.75,1),2,2)
+    #P_a  <- D%*%R%*%D
+    S_a  <- svd(Pa)
+    L_a  <- S_a$d
+    V_a  <- S_a$v
+    
+    ## analysis ensemble
+    X_a <- X*0
+    for(i in seq_len(nens)){
+      X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,]+mu.a
+    }
+    
+    # par(mfrow=c(1,1))
+    # plot(X_a)
+    # ## check if ensemble mean is correct
+    # cbind(mu.a,colMeans(X_a))
+    # ## check if ensemble var is correct
+    # cbind(as.vector(Pa),as.vector(cov(X_a)))
+    # 
+    # analysis <- as.data.frame(rmvnorm(as.numeric(nens), mu.a, Pa, method = "svd"))
+    
+    analysis <- as.data.frame(X_a)
     colnames(analysis) <- colnames(X)
     
     ##### Mapping analysis vectors to be in bounds of state variables
