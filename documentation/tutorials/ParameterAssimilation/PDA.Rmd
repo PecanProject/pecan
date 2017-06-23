@@ -121,7 +121,7 @@ For the purposes of this demo, choose three to five parameters (in total, if you
 *	Which parameters did you choose, and why?
 
 ## Editing PEcAn settings
-Now let’s add settings to tell PEcAn how to run the PDA with emulator, we will come to the details of model emulation later. Open up the pecan.CONFIGS.xml file you located previously, and choose ```File > Save as...``` from the menu to save a new copy as **pecan.PDA.INIT.xml**. Now add the block of XML listed below to the file, immediately after the <pecan> line. Check and fill in the parts corresponding to your run when necessary.
+Now let’s add settings to tell PEcAn how to run the PDA with emulator, we will come to the details of model emulation later. Open up the pecan.CONFIGS.xml file you located previously, and choose ```File > Save as...``` from the menu to save a new copy as **pecan.PDA.xml**. Now add the block of XML listed below to the file, immediately after the <pecan> line. Check and fill in the parts corresponding to your run when necessary.
 In this block, use the ```<param.names><param>``` tags to identify the parameters you’ve chosen for PDA (it's up to you to choose the number of parameters you want to constrain, then you can set the ```<n.knot>``` to be >= 10 per parameter you choose, e.g. 75 knots for 5 parameters).  Here, you need to use PEcAn’s standard parameter names, which are generally not the same as what’s printed on your variance decomposition graph. To find your parameters look at the row names in the ```prior.distns.csv``` file for each PFT under the PFT pulldown menu. Insert the variable name (exactly, and case sensitive) into the ```<param>``` tags of the XML code below. 
 In addition, you may need to edit ```<inputs><file><path>```, depending on the site and year you ran previously. The rest of the settings control options for the PDA analysis (how long to run, etc.), and also identify the data to be used for assimilation. For more details, see the assim.batch vignette on the PEcAn GitHub page (https://goo.gl/9hYVPQ).
 
@@ -138,11 +138,11 @@ In addition, you may need to edit ```<inputs><file><path>```, depending on the s
         <param>YOUR_PFT_1_PARAM_1</param>        <-- FILL IN
         <param>YOUR_PFT_1_PARAM_2</param>        <-- FILL IN
       </soil>
-       <temperate.deciduous>                                      
+       <temperate.coniferous>                                      
          <param>YOUR_PFT_2_PARAM_1</param>       <-- FILL IN
          <param>YOUR_PFT_2_PARAM_2</param>       <-- FILL IN
          <param>YOUR_PFT_2_PARAM_3</param>       <-- FILL IN
-       </temperate.deciduous> 
+       </temperate.coniferous> 
     </param.names>
     <jump>
         <adapt>100</adapt>
@@ -152,11 +152,10 @@ In addition, you may need to edit ```<inputs><file><path>```, depending on the s
     <inputs>
      <file>
       <path>
-         <path>~/output/dbfiles/Ameriflux_site_0-676/US-WCr.2003.nc</path>       <-- FILL IN
-         <path>~/output/dbfiles/Ameriflux_site_0-676/US-WCr.2004.nc</path>       <-- FILL IN
+         <path>/home/carya/output/dbfiles/AmerifluxLBL_site_0-772/AMF_US-NR1_BASE_HH_9-1.csv</path>       <-- FILL IN
       </path>
-      <format>Ameriflux.L2</format>
-      <input.id>99000000001</input.id>              <-- FILL IN
+      <format>5000000002</format>
+      <input.id>99000000001</input.id>        <-- FILL IN, from BETY inputs table, this is *NOT* the workflow ID
       <likelihood>Laplace</likelihood>
       <variable.name>
         <variable.name>NEE</variable.name>
@@ -170,11 +169,11 @@ In addition, you may need to edit ```<inputs><file><path>```, depending on the s
 Once you’ve made and saved the changes to your XML, load the file and check that it contains the new settings:
 
 ```{r eval=FALSE}
-settings <- read.settings(file.path(outdir,paste0("PEcAn_",workflow_id),"pecan.PDA.INIT.xml"))
+settings <- read.settings(file.path(outdir,paste0("PEcAn_",workflow_id),"pecan.PDA.xml"))
 settings$assim.batch
 ```
 
-If the printed list contains everything you just added to pecan.PDA.INIT.xml, you’re ready to proceed.
+If the printed list contains everything you just added to pecan.PDA.xml, you’re ready to proceed.
 
 ## Investigating PEcAn function pda.emulator (optional)
 
