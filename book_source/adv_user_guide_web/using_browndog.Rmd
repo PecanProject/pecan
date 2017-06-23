@@ -1,11 +1,9 @@
 # Using Browndog
 
-The Browndog service provides PEcAn with access to large and diverse sets of data at the click of a button in the format that PEcAn needs.
+The Browndog service provides PEcAn with access to large and diverse sets of data at the click of a button in the format that PEcAn needs. By clicking the Browndog checkbox you will be asking the Browndog service to ingest your input data for your run instead of using your machine.
 
-## Current Capabilities 
+For more information regarding data products please check out [Available Meteorological Drivers]
 
-The current integration of Browndog into PEcAn allows you to access the NARR, CRUNCEP, and AmerifluxLBL Meteorological data products iwthout using your local machine to download and process the raw data.
 
-** More Informatoin can be found at the Browndog website**
+**[More Information can be found at the Browndog website](http://browndog.ncsa.illinois.edu/)**
 
-http://browndog.ncsa.illinois.edu/
