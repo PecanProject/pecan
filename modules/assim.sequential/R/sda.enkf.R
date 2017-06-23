@@ -337,7 +337,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for (t in 11:20) {#
+  for(t in seq_len(nt)) {#
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -465,11 +465,28 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         if (!is.null(Q)) {
           Pf <- Pf + Q
         }
+        
+        mu.f.scale <- scale(mu.f, center = mean(mu.f), scale = 1)
+        Pf.scale <- cov(scale(X, center = mu.f, scale = rep(1,length(mu.f))))
+        Pf.scale[is.na(Pf.scale)]<-0
+        R.scale <- matrix(scale(as.vector(R), center = mean(mu.f), scale = 1),2,2)
+        Y.scale <- scale(Y, center = mean(mu.f[1:2]), scale = 1)
+        
         ## Kalman Gain
-        K <- Pf %*% t(H) %*% solve((R + H %*% Pf %*% t(H)))
+        K <- Pf.scale %*% t(H) %*% solve((R.scale + H %*% Pf.scale %*% t(H)))
         ## Analysis
-        mu.a <- mu.f + K %*% (Y - H %*% mu.f)
-        Pa   <- (diag(ncol(X)) - K %*% H) %*% Pf
+        mu.a.scale <- mu.f.scale + K %*% (Y.scale - H %*% mu.f.scale)
+        Pa.scale   <- (diag(ncol(X)) - K %*% H) %*% Pf.scale
+        
+        Pa <- Pa.scale * attr(mu.f.scale, 'scaled:scale') + attr(mu.f.scale, 'scaled:center')
+        mu.a <- mu.a.scale * attr(mu.f.scale, 'scaled:scale') + attr(mu.f.scale, 'scaled:center')
+        
+        
+        ## Kalman Gain
+        #K <- Pf %*% t(H) %*% solve((R + H %*% Pf %*% t(H)))
+        ## Analysis
+        #mu.a <- mu.f + K %*% (Y - H %*% mu.f)
+        #Pa   <- (diag(ncol(X)) - K %*% H) %*% Pf
         enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
       } else {
         
@@ -781,7 +798,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       })))
       
       par(mfrow = c(2, 1))
-      for (i in 1:14) {#
+      for (i in 1:ncol(FORECAST[[t]])) {#
         t1 <- 1
         Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
         Xci  <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
@@ -794,7 +811,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         
         plot(as.Date(obs.times[t1:t]), 
              Xbar, 
-             ylim = c(0,8),#range(c(XaCI, Xci), na.rm = TRUE), 
+             ylim = range(c(XaCI, Xci), na.rm = TRUE), 
              type = "n", 
              xlab = "Year", 
              ylab = ylab.names[grep(colnames(X)[i], var.names)], 
@@ -820,6 +837,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         # analysis
         ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink)
         lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2)
+        legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
       }
     }
     
@@ -907,8 +925,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       rep(NA, length(names.y))
     }
     sqrt(diag(x))
-  })))  #need to make this from quantiles for lyford plot data
-  # YCI = YCI[,pmatch(colnames(X), names(obs.mean[[nt]][[1]]))]
+  })))
   Xsum <- plyr::laply(FORECAST, function(x) { mean(rowSums(x[,1:length(names.y)], na.rm = TRUE)) })[t1:t]
 
   for (i in seq_len(ncol(X))) {
