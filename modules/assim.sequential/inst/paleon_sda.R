@@ -32,6 +32,9 @@ IC <- NULL
 # IC <- sample.IC.SIPNET(ne, state = c('AGB','NPP'))
 # status.end()
 
+#TO DO: Having problem with running proc.var == TRUE because nimble isn't keeping the toggle sampler in the function environment.
+#TO DO: Intial conditions for linkages are messed up. Need to calibrate.
+
 sda.enkf(settings, obs.mean = obs.list$obs.mean, obs.cov = obs.list$obs.cov, IC = IC)
 
 
