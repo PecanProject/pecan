@@ -1,9 +1,8 @@
-##' @export
+##' @export do.conversions
 ##' @name do.conversions
 ##' @title do.conversions
 ##' @description Input conversion workflow
 ##' @author Ryan Kelly, Rob Kooper, Betsy Cowdery, Istem Fer
-##' @export
 do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE, overwrite.ic = FALSE) {
   if (PEcAn.settings::is.MultiSettings(settings)) {
     return(PEcAn.settings::papply(settings, do.conversions))
