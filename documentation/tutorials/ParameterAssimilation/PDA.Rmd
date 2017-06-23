@@ -122,7 +122,7 @@ For the purposes of this demo, choose three to five parameters (in total, if you
 
 ## Editing PEcAn settings
 Now let’s add settings to tell PEcAn how to run the PDA with emulator, we will come to the details of model emulation later. Open up the pecan.CONFIGS.xml file you located previously, and choose ```File > Save as...``` from the menu to save a new copy as **pecan.PDA.xml**. Now add the block of XML listed below to the file, immediately after the <pecan> line. Check and fill in the parts corresponding to your run when necessary.
-In this block, use the ```<param.names><param>``` tags to identify the parameters you’ve chosen for PDA (it's up to you to choose the number of parameters you want to constrain, then you can set the ```<n.knot>``` to be >= 10 per parameter you choose, e.g. 75 knots for 5 parameters).  Here, you need to use PEcAn’s standard parameter names, which are generally not the same as what’s printed on your variance decomposition graph. To find your parameters look at the row names in the ```prior.distns.csv``` file for each PFT under the PFT pulldown menu. Insert the variable name (exactly, and case sensitive) into the ```<param>``` tags of the XML code below. 
+In this block, use the ```<param.names><param>``` tags to identify the parameters you’ve chosen for PDA (it's up to you to choose the number of parameters you want to constrain, then you can set the ```<n.knot>``` to be >= 10 per parameter you choose, e.g. 100 knots for 5 parameters).  Here, you need to use PEcAn’s standard parameter names, which are generally not the same as what’s printed on your variance decomposition graph. To find your parameters look at the row names in the ```prior.distns.csv``` file for each PFT under the PFT pulldown menu. Insert the variable name (exactly, and case sensitive) into the ```<param>``` tags of the XML code below. 
 In addition, you may need to edit ```<inputs><file><path>```, depending on the site and year you ran previously. The rest of the settings control options for the PDA analysis (how long to run, etc.), and also identify the data to be used for assimilation. For more details, see the assim.batch vignette on the PEcAn GitHub page (https://goo.gl/9hYVPQ).
 
 ```
@@ -130,8 +130,8 @@ In addition, you may need to edit ```<inputs><file><path>```, depending on the s
 <pecan>                  <-- just paste the <assim.batch> block below right after them. 
   <assim.batch>
     <method>emulator</method>
-    <n.knot>75</n.knot>
-    <iter>10000</iter>
+    <n.knot>100</n.knot>
+    <iter>25000</iter>
     <chain>3</chain>
     <param.names>
       <soil>
@@ -193,7 +193,9 @@ For now, we just want you to get a glimpse at the overall structure of the code,
 Let’s go ahead and run a data assimilation MCMC with emulator. Since you've already loaded the settings containing your modified <assim.batch> XML block, all you need to do to start the PDA is run
 
 ```{r eval=FALSE}
-settings <- pda.emulator(settings)
+# load input data
+# load("pda_externals.Rdata")
+settings <- pda.emulator(settings, external.data = ar_corrected_inputs)
 ```
 
 After executing the code above, you will see print-outs to the console. The code begins with loading the prior values which in this case are the posterior distributions coming from your previous meta analysis. Then it loads the observational data and carries out necessary conversions and formatting to align it with model outputs, as we did separately above. After this step, you will see a progress bar where the actual model is run n.knot times with the proposed parameter sets and then the outputs from these runs are read. Next, this model output is compared to the specified observational data, and the likelihood is calculated using the heteroskedastic Laplacian discussed previously. Once we calculate the likelihoods, we fit an emulator which interpolates the model output in parameter space between the points where the model has actually been run. Now we can put this emulator in the MCMC algorithm instead of the model itself. Within the MCMC loop the code proposes new parameter value from a multivariate normal jump distribution. The corresponding likelihood will be approximated by the emulator and the new parameter value is accepted or rejected based on its posterior probability relative to the current value. 
