@@ -87,10 +87,11 @@ model2netcdf <- function(runid, outdir, model, lat, lon, start_date, end_date) {
 ##' @param start.year first year of output to read (should be greater than ) 
 ##' @param end.year last year of output to read
 ##' @param variables variables to be read from model output
+##' @param dataframe A boolean that will return output in a data.frame format with a posix column. Useful for align.data and plotting. 
 ##' @return vector of output variable
 ##' @export
 ##' @author Michael Dietze, David LeBauer
-read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables = "GPP") {
+read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables = "GPP", dataframe= FALSE) {
   
   ## vars in units s-1 to be converted to y-1 cflux = c('GPP', 'NPP', 'NEE',
   ## 'TotalResp', 'AutoResp', 'HeteroResp', 'DOC_flux', 'Fire_flux') # kgC m-2 s-1
@@ -118,6 +119,12 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
                 "including files", dir(outdir, pattern = "\\.nc$"))
   }
   
+  if(dataframe==TRUE){ #ensure that there is a time component when asking for a dataframe + posix code
+  if(length(variables[variables=="time"])==0){
+    variables<-c(variables, "time")
+    PEcAn.utils::logger.info("No time variable requested, adding automatically")
+  }
+  }
   result <- list()
 
   if (!nofiles) {
@@ -139,10 +146,54 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
   } else if (nofiles) {
     result <- lapply(variables, function(x) NA)
   }
+  
   logger.info(variables, "Mean:", 
               lapply(result, function(x) signif(mean(x, na.rm = TRUE), 3)), "Median:", 
               lapply(result, function(x) signif(median(x, na.rm = TRUE), 3)))
+  
+  if(dataframe==FALSE){
   return(result)
+  }else if (dataframe==TRUE){
+    model <- as.data.frame(result) # put into a data.frame
+    ########## add in posix column ###########
+    
+    if(assertthat::is.date(start.year)==TRUE){
+      start_year<-start.year
+      end_year<-end.year
+      
+    }else if(assertthat::is.date(start.year)==FALSE){
+      origin<-paste0(as.character(start.year),"-01-01")
+      start_year = start.year
+      end_year = end.year 
+    }else{
+      logger.error("Start and End year must be of type numeric, character or Date")
+    }
+    years <- start_year:end_year
+    seconds <- udunits2::ud.convert(model$time,"years","seconds")
+    Diff <- diff(model$time)
+    time_breaks = which(Diff < 0)
+    
+    if(length(time_breaks) == 0 & length(years)>1){
+      model$posix <- as.POSIXct(model$time*86400,origin= origin,tz="UTC")
+      model$year <- year(model$posix)
+      return(model)
+    } else {
+      N <- c(0,time_breaks, length(model$time))
+      n <- diff(N)
+      y <- c()
+      for (i in seq_along(n)) {
+        y <- c(y, rep(years[i], n[i]))
+      }
+      
+      model$year <- y
+      makeDate <- function(x){as.POSIXct(model$time[x]*86400,origin=paste0(model$year[x],"-01-01"),tz="UTC")}
+      model$posix <- makeDate(seq_along(model$time))
+      return(model)
+    }
+  }else{
+    logger.error("Error in dataframe variable. Dataframe boolean must be set to TRUE or FALSE")
+  }
+  
 } # read.output
 
 
