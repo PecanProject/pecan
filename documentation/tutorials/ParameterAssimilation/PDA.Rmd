@@ -5,7 +5,7 @@ output: html_document
 
 ## Objectives
 * Gain hands-on experience in using Bayesian MCMC techniques to calibrate a simple ecosystem model using parameter data assimilation (PDA)
-* Set up and run a PDA in PEcAn using model emulation technique, assimilating NEE data from Willow Creek
+* Set up and run a PDA in PEcAn using model emulation technique, assimilating NEE data from Niwot Ridge
 * Examine outputs from a PDA for the SIPNET model and evaluation of the calibrated model against i) data used to constrain model, ii) additional data for the same site
 
 ## Larger Context
@@ -43,20 +43,22 @@ Parameter data assimilation (PDA) occurs as one step in the larger process of mo
 ## Connect to Rstudio
 Today, we're again going to work mostly in Rstudio, in order to easily edit advanced PEcAn settings and browse files. So if you haven't already, connect now to the Rstudio server on your VM ([URL]/rstudio).
 
+This tutorial assumes you have successfully completed an ensemble and a sensitivity analysis (Demo 2) before.
+
 ## Defining variables
 
 The following variables need to be set specific to the site being run and the workflow being run
 ```{r}
-workflow_id <- 99000000002  ## comes from the History table
+workflow_id <- 99000000002  ## comes from the History table, your successful ensemble run's workflow ID
 
 years       <- 2003:2006
 
 ## from URL/bety/inputs.  
-##   Search by Ameriflux ID (e.g. US-WCr)
+##   Search by Ameriflux ID (e.g. US-NR1)
 ##   Find the "plain" site record (no CF or model name) that's on your server 
 ##    (probably last in the list)
 ##   Click on the magnifying glass icon then look under "View Related Files"
-datadir     <- "/home/carya/output/dbfiles/Ameriflux_site_0-676/US-WCr." 
+datadir     <- "/home/carya/output/dbfiles/AmerifluxLBL_site_0-772/" 
 
 ## where PEcAn is saving output (default OK on VM)
 outdir      <- "/home/carya/output" 
@@ -69,19 +71,34 @@ To begin, let’s load up some NEE observations so that we can plot them along w
 
 ```{r eval=FALSE}
 library(PEcAn.all)
-obs <- list()
-for(i in seq_along(years)){
-  obs[[i]] <- load.L2Ameriflux.cf(paste0(datadir,years[i],".nc"))[,c("NEE","UST")]
-}
-obs <- do.call(rbind,obs)
-obs[obs==-9999] <- NA       ## remove missing values  
+
+# read settings
+settings <- read.settings(file.path(outdir,paste0("PEcAn_",workflow_id),"pecan.CONFIGS.xml"))
+
+# open up a DB connection
+bety<-settings$database$bety
+bety <-dplyr::src_postgres(host = bety$host, user = bety$user, password = bety$password, dbname = bety$dbname)
+
+# Fill out the arguments needed by load_data function
+
+# read file format information
+format     <- PEcAn.DB::query.format.vars(bety = bety, format.id = 5000000002)
+start_year <- lubridate::year(settings$run$start.date)
+end_year   <- lubridate::year(settings$run$end.date)
+vars.used.index <- which(format$vars$bety_name %in% c("NEE", "UST"))
+
+obs <-PEcAn.benchmark::load_data(data.path = file.path(datadir, "AMF_US-NR1_BASE_HH_9-1.csv"), 
+                                 format = format, start_year = start_year,  end_year = end_year,
+                                  site = settings$run$site, 
+                                  vars.used.index = vars.used.index,
+                                  time.row = format$time.row)
+
 obs$NEE[obs$UST<0.2] <- NA  ## U* filter
-NEEo <- misc.convert(obs$NEE, "umol C m-2 s-1", "kg C m-2 s-1") ## convert units
+NEEo <- obs$NEE
 ```
 
 Now let's load up our settings from the previous ensemble analysis (Demo 2) and recreate the Ensemble Analysis output plots, this time including our NEE observations. 
 ```{r eval=FALSE}
-settings <- read.settings(file.path(outdir,paste0("PEcAn_",workflow_id),"pecan.CONFIGS.xml"))
 run.ensemble.analysis(settings, plot.timeseries=TRUE, observations=NEEo, window=48, variable="NEE")
 ```
 
