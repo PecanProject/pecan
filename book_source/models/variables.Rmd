@@ -7,17 +7,6 @@ var.file <- system.file("data","mstmip_vars.csv",package = "PEcAn.utils")
 
 mstmipvars = read.csv(var.file, header = TRUE, row.names = NULL, sep = ";")
 
-#knitr::kable(mstmipvars, align = "c" , booktabs = TRUE)
-#library(formattable)
+knitr::kable(mstmipvars, align = "c" , booktabs = TRUE)
 
-#as.htmlwidget(formattable(mstmipvars))
-
-library(huxtable)
-
-var_table <- as_hux(mstmipvars , header = TRUE)
-right_padding(var_table)      <- 10
-left_padding(var_table)       <- 10
-bold(var_table)[1,]          <- TRUE
-bottom_border(var_table)[1,] <- 1
-var_table
 ```
