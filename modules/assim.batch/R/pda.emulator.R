@@ -226,11 +226,6 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
       save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   } # end round-if block
   
-  print("emulator names")
-  print(sapply(settings$pfts,"[[",'name'))
-  print(names(knots.list))
-  print(names(knots.params))
-  print(names(knots.probs))
   
   ## Run this block if this is normal run or a "round" extension
   if(run.normal | run.round){
@@ -491,6 +486,8 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   } else {
     mix <- "each"
   }
+  
+  logger.info(paste0("Starting emulator MCMC. Please wait."))
   
   current.step <- "pre-MCMC"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
