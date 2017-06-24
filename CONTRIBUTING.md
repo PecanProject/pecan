@@ -12,7 +12,7 @@ New functionality is typically directed toward modules to provide a slimmer PEcA
 Generally, new model should be added to the models folder and new modules should be added to the modules folder. 
 Exceptions include code that is reused in many models or modules and wrapper functions that call specific implementations in models; these can be placed in the core packages.
 
-If you are unsure of whether your contribution should be implemented as a model, module or part of PEcAn Core, you may visit [HipChat](https://hipchat.ncsa.illinois.edu/gW51EFhtT) or ask on the pecan-develop mailing list for advice.
+If you are unsure of whether your contribution should be implemented as a model, module or part of PEcAn Core, you may visit [Gitter](https://gitter.im/PecanProject/pecan) or ask on the pecan-develop mailing list for advice.
 
 ## Creating Issues
 
@@ -27,7 +27,7 @@ If you are unsure of whether your contribution should be implemented as a model,
 
 We highly recommend starting with the [downloaded VM image](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN). This image comes with a copy of PEcAn preinstalled with a fully populated copy of the and BETYdb database. 
 It also has the following models preinstalled: ED, SIPNET, Linkages and DALEC. 
-Another option is to install PEcAn on your own machine, using the instructions on the [wiki](https://github.com/PecanProject/pecan/wiki/Installing-PEcAn). However, be prepared for this to take a half day or so.
+Another option is to install PEcAn on your own machine, using the instructions in the [documentation](https://pecanproject.github.io/pecan-documentation/installing-pecan.html). However, be prepared for this to take a half day or so.
 
 When you login into the VM you will have already a cloned copy of PEcAn however for development this needs to be switch to your forked version of PEcAn. To get this started you will need to first fork PEcAn on GitHub using the following two steps.
 
@@ -99,7 +99,7 @@ git push -u origin GH-issuenumber-title-of-issue
 
 ## Additional Resources
 
-- [Adding modes to PEcAn](https://github.com/PecanProject/pecan/wiki/Adding-an-Ecosystem-Model)
-- [PEcAn configuration files](https://github.com/PecanProject/pecan/wiki/Configuration-Files)
-- [R Development help](https://github.com/PecanProject/pecan/wiki/Development#r-development)
-- [PEcAn Code of Conduct](https://github.com/PecanProject/pecan/wiki/Code-of-Conduct)
+- [Adding models to PEcAn](https://pecanproject.github.io/pecan-documentation/master/adding-an-ecosystem-model.html)
+- [PEcAn configuration files](https://pecanproject.github.io/pecan-documentation/master/pecan-xml-configuration.html)
+- [Development help](https://pecanproject.github.io/pecan-documentation/master/overview.html)
+- [PEcAn Code of Conduct](https://pecanproject.github.io/pecan-documentation/master/contributor-covenant-code-of-conduct.html)

@@ -32,8 +32,9 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
     yeari <- years[i]
     starti <- max(start.date, lubridate::ymd(paste0(yeari, "-01-01")))
     endi <- min(end.date, lubridate::ymd(paste0(yeari, "-12-31")))
-    metfile <- paste(metpath, starti, endi, "csv", sep = ".")
+    metfile <- paste(metpath, yeari, "csv", sep = ".")
     WetDat <- fread(metfile)
+    WetDat <- WetDat[WetDat$doy >= lubridate::yday(starti) & WetDat$doy <= lubridate::yday(endi), ]
 
     # Check that all variables are present in the expected order --
     # BioGro accesses weather vars by position and DOES NOT check headers.

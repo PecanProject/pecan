@@ -48,7 +48,6 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date,
   # get start and end year of data from filename
   syear <- as.numeric(substr(ftplink, nchar(ftplink) - 16, nchar(ftplink) - 13))
   eyear <- as.numeric(substr(ftplink, nchar(ftplink) - 11, nchar(ftplink) - 8))
-  
   if (start_year > eyear) {
     PEcAn.utils::logger.severe("Start_Year", start_year, "exceeds end of record ", eyear, " for ", site)
   }
