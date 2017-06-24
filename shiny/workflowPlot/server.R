@@ -71,34 +71,34 @@ server <- shinyServer(function(input, output, session) {
     updateSelectizeInput(session, "all_run_id", choices=all_run_ids())
   })
   # Update on load: workflow id for selected run ids (models)
-  observe({
-    if(input$load){
-      req(input$all_run_id)
-      # Selected `multiple' ids
-      selected_id <- parse_ids_from_input_runID(input$all_run_id)$wID
-      # To  allow caching later
-      display_id <- c(input$workflow_id,selected_id)
-      updateSelectizeInput(session, "workflow_id", choices=display_id)
-    } else{
-      session_workflow_id <- get_workflow_ids_all(bety, session)
-      updateSelectizeInput(session, "workflow_id", choices=session_workflow_id)
-    }
-  })
+  # observe({
+  #   if(input$load){
+  #     req(input$all_run_id)
+  #     # Selected `multiple' ids
+  #     selected_id <- parse_ids_from_input_runID(input$all_run_id)$wID
+  #     # To  allow caching later
+  #     display_id <- c(input$workflow_id,selected_id)
+  #     updateSelectizeInput(session, "workflow_id", choices=display_id)
+  #   } else{
+  #     session_workflow_id <- get_workflow_ids_all(bety, session)
+  #     updateSelectizeInput(session, "workflow_id", choices=session_workflow_id)
+  #   }
+  # })
   # Update run id for selected workflow id (model)
   
-  observe({
-    req(input$workflow_id)
-    r_ID <- get_run_ids(bety, input$workflow_id)
-    if(input$load){
-      req(input$all_run_id)
-      # Selected `multiple' ids
-      ids_DF <- parse_ids_from_input_runID(input$all_run_id) %>% filter(wID %in% input$workflow_id)
-      # To  allow caching later
-      # Change variable name
-      r_ID <- intersect(r_ID,ids_DF$runID)
-    } 
-      updateSelectizeInput(session, "run_id", choices=r_ID)
-  })
+  # observe({
+  #   req(input$workflow_id)
+  #   r_ID <- get_run_ids(bety, input$workflow_id)
+  #   if(input$load){
+  #     req(input$all_run_id)
+  #     # Selected `multiple' ids
+  #     ids_DF <- parse_ids_from_input_runID(input$all_run_id) %>% filter(wID %in% input$workflow_id)
+  #     # To  allow caching later
+  #     # Change variable name
+  #     r_ID <- intersect(r_ID,ids_DF$runID)
+  #   } 
+  #     updateSelectizeInput(session, "run_id", choices=r_ID)
+  # })
   # run_ids <- reactive({
   #   req(input$workflow_id)
   #   r_ID <- get_run_ids(bety, input$workflow_id)
@@ -152,47 +152,62 @@ server <- shinyServer(function(input, output, session) {
   #   return(var_names)
   # }
   
-  var_names <- reactive({
-    # run_ids <- get_run_ids(bety, workflow_id())
-    # var_names <- get_var_names(bety, workflow_id(), run_ids[1])
-    # Removing the variables "Year" and "FracJulianDay" from the Variable Name input in the app
-    req(input$workflow_id,input$run_id)
-    workflow_id <- input$workflow_id
-    run_id <- input$run_id
+  var_names_all <- function(workflow_id, run_id){
     var_names <- get_var_names(bety, workflow_id, run_id)
     removeVarNames <- c('Year','FracJulianDay')
     var_names <-var_names[!var_names %in% removeVarNames]
     return(var_names)
-    # return(id_list)
-  })
+  }
+  
+  # var_names1 <- reactive({
+  #   # run_ids <- get_run_ids(bety, workflow_id())
+  #   # var_names <- get_var_names(bety, workflow_id(), run_ids[1])
+  #   # Removing the variables "Year" and "FracJulianDay" from the Variable Name input in the app
+  #   req(input$workflow_id,input$run_id)
+  #   workflow_id <- input$workflow_id
+  #   run_id <- input$run_id
+  #   var_names <- get_var_names(bety, workflow_id, run_id)
+  #   removeVarNames <- c('Year','FracJulianDay')
+  #   var_names <-var_names[!var_names %in% removeVarNames]
+  #   return(var_names)
+  #   # return(id_list)
+  # })
   observe({
-    updateSelectizeInput(session, "variable_name", choices=var_names())
+    req(input$all_run_id)
+    ids_DF <- parse_ids_from_input_runID(input$all_run_id)
+    var_name_list <- c()
+    for(row_num in 1:nrow(ids_DF)){
+      var_name_list <- c(var_name_list,var_names_all(ids_DF$wID[row_num],ids_DF$runID[row_num]))
+      # var_name_list <- var_names_all(ids_DF$wID[row_num],ids_DF$runID[row_num])
+    }
+    updateSelectizeInput(session, "variable_name", choices=var_name_list)
   })
   # If want to render text
-  output$info <- renderText({
-    # indicators <- strsplit(input$indicators, ",")[[1]]
-    
-    # if(input$load){
-    #   all_workflow_id <- strsplit(input$all_workflow_id,',')
-    # }
-    # d <- typeof(all_workflow_id)
-    # paste0(input$all_run_id)
-    
-          paste0(parse_ids_from_input_runID(input$all_run_id)$runID)
-    # paste0(input$load)
-    # paste0(input$all_run_id[length(input$all_run_id)])
-    # paste0(input$variable_name)
-    # paste0(run_ids(),length(run_ids()),ids)
-    # ,session$clientData$url_search)
-    # paste0("x=", input$plot_dblclick$x, "\ny=", input$plot_dblclick$y)
-  })
+  # output$info <- renderText({
+  #   # indicators <- strsplit(input$indicators, ",")[[1]]
+  #   
+  #   # if(input$load){
+  #   #   all_workflow_id <- strsplit(input$all_workflow_id,',')
+  #   # }
+  #   # d <- typeof(all_workflow_id)
+  #   # paste0(input$all_run_id)
+  #   
+  #         paste0(parse_ids_from_input_runID(input$all_run_id)$runID)
+  #   # paste0(input$load)
+  #   # paste0(input$all_run_id[length(input$all_run_id)])
+  #   # paste0(input$variable_name)
+  #   # paste0(run_ids(),length(run_ids()),ids)
+  #   # ,session$clientData$url_search)
+  #   # paste0("x=", input$plot_dblclick$x, "\ny=", input$plot_dblclick$y)
+  # })
   
   load_data_single_run <- function(workflow_id,run_id){
     globalDF <- data.frame()
     workflow <- collect(workflow(bety, workflow_id))
-    var_names <- get_var_names(bety, workflow_id, run_id)
-    removeVarNames <- c('Year','FracJulianDay')
-    var_names <-var_names[!var_names %in% removeVarNames]
+    # var_names <- get_var_names(bety, workflow_id, run_id)
+    # removeVarNames <- c('Year','FracJulianDay')
+    # var_names <-var_names[!var_names %in% removeVarNames]
+    var_names <- var_names_all(workflow_id,run_id)
     if(nrow(workflow) > 0) {
       outputfolder <- file.path(workflow$folder, 'out', run_id)
       files <- list.files(outputfolder, "*.nc$", full.names=TRUE)
@@ -253,10 +268,10 @@ server <- shinyServer(function(input, output, session) {
   output$outputPlot <- renderPlotly({
     # masterDF <- load_data_single_run(input$workflow_id,input$run_id)
     masterDF <- loadNewData()
-    output$info1 <- renderText({
-      paste0(nrow(masterDF))
-      paste0(length(unique(masterDF$run_id)))
-    })
+    # output$info1 <- renderText({
+    #   paste0(nrow(masterDF))
+    #   paste0(length(unique(masterDF$run_id)))
+    # })
     # Error messages
     validate(
       # need(input$workflow_id, 'Found workflow id'),
@@ -278,17 +293,17 @@ server <- shinyServer(function(input, output, session) {
     # %>%
     #   dplyr::select(dates,vals,workflow_id,run_id)
 
-    title <- unique(df$title)[1]
-    xlab <- unique(df$xlab)[1]
-    ylab <- unique(df$ylab)[1]
-    output$info2 <- renderText({
-      paste0(nrow(df))
-      # paste0(typeof(title))
-    })
-    output$info3 <- renderText({
-      paste0('xlab')
-      # paste0(typeof(title))
-    })
+    title <- unique(df$title)
+    xlab <- unique(df$xlab)
+    ylab <- unique(df$ylab)
+    # output$info2 <- renderText({
+    #   paste0(nrow(df))
+    #   # paste0(typeof(title))
+    # })
+    # output$info3 <- renderText({
+    #   paste0('xlab')
+    #   # paste0(typeof(title))
+    # })
     
     # df1<-masterDF %>% filter(masterDF$var_name %in% var_name)
     # workflow_id %in% workflow_id) 
@@ -296,11 +311,11 @@ server <- shinyServer(function(input, output, session) {
     # df<-masterDF %>% dplyr::filter(workflow_id == input$workflow_id)
     plt <- ggplot(df, aes(x=dates, y=vals, color=run_id)) + 
       # geom_point(aes(color="Model output")) +
-      geom_point() 
+      geom_point() +
       #          geom_smooth(aes(fill = "Spline fit")) +
       # coord_cartesian(xlim = ranges$x, ylim = ranges$y) +
       # scale_y_continuous(labels=fancy_scientific) +
-      # labs(title=title, x=xlab, y=ylab) +
+      labs(title=title, x=xlab, y=ylab) 
       # labs(title=unique(df$title)[1], x=unique(df$xlab)[1], y=unique(df$ylab)[1]) +
       # scale_color_manual(name = "", values = "black") +
       # scale_fill_manual(name = "", values = "grey50") 

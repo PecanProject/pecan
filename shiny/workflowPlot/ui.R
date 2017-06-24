@@ -14,8 +14,8 @@ ui <- shinyUI(fluidPage(
       p("Please select the run ID. You can select multiple IDs"),
       selectizeInput("all_run_id", "Mutliple Run IDs", c(),multiple=TRUE),
       actionButton("load", "Load Model outputs"),
-      selectInput("workflow_id", "Workflow ID", c()),
-      selectInput("run_id", "Run ID", c()),
+      # selectInput("workflow_id", "Workflow ID", c()),
+      # selectInput("run_id", "Run ID", c()),
       selectInput("variable_name", "Variable Name", "")
       
       # selectInput("workflow_id", "Workflow ID", c(99000000077)),
@@ -28,12 +28,12 @@ ui <- shinyUI(fluidPage(
                    # brush = brushOpts(id = "plot_brush",
                    #                   resetOnNew = TRUE),
                    # dblclick = "plot_dblclick"
-      ),
+      )
       # Checking variable names
-      verbatimTextOutput("info"),
-      verbatimTextOutput("info1"),
-      verbatimTextOutput("info2"),
-      verbatimTextOutput("info3")
+      # verbatimTextOutput("info"),
+      # verbatimTextOutput("info1"),
+      # verbatimTextOutput("info2"),
+      # verbatimTextOutput("info3")
     )
   )
 ))
