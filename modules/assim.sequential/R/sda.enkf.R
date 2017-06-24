@@ -466,11 +466,19 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           Pf <- Pf + Q
         }
         
-        mu.f.scale <- scale(mu.f, center = mean(mu.f), scale = 1)
-        Pf.scale <- cov(scale(X, center = mu.f, scale = rep(1,length(mu.f))))
+        mu.f.scale <- mu.f / mu.f
+        mu.f.scale[is.na(mu.f.scale)]<-0
+        map.mu.f <- H%*%mu.f
+        Y.scale <- Y/map.mu.f   ##need H in here to match mu.f's to Y's
+        Pf.scale <- t(t(Pf/mu.f)/mu.f)
         Pf.scale[is.na(Pf.scale)]<-0
-        R.scale <- matrix(scale(as.vector(R), center = mean(mu.f), scale = 1),2,2)
-        Y.scale <- scale(Y, center = mean(mu.f[1:2]), scale = 1)
+        R.scale  <- t(t(R/as.vector(map.mu.f))/as.vector(map.mu.f))
+        
+       # mu.f.scale <- scale(mu.f,center = FALSE, scale = mean(mu.f))
+       # Pf.scale <- mu.f*Pf%*%t(t(mu.f))
+       # Pf.scale[is.na(Pf.scale)]<-0
+       # R.scale <- matrix(scale(as.vector(R), center = mean(mu.f), scale = 1),2,2)
+       # Y.scale <- scale(Y, center = mean(mu.f[1:2]), scale = 1)
         
         ## Kalman Gain
         K <- Pf.scale %*% t(H) %*% solve((R.scale + H %*% Pf.scale %*% t(H)))
@@ -478,9 +486,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         mu.a.scale <- mu.f.scale + K %*% (Y.scale - H %*% mu.f.scale)
         Pa.scale   <- (diag(ncol(X)) - K %*% H) %*% Pf.scale
         
-        Pa <- Pa.scale * attr(mu.f.scale, 'scaled:scale') + attr(mu.f.scale, 'scaled:center')
-        mu.a <- mu.a.scale * attr(mu.f.scale, 'scaled:scale') + attr(mu.f.scale, 'scaled:center')
-        
+        Pa <- t(t(Pa.scale*mu.f)*mu.f)
+        mu.a <- mu.a.scale * mu.f
         
         ## Kalman Gain
         #K <- Pf %*% t(H) %*% solve((R + H %*% Pf %*% t(H)))
@@ -795,9 +802,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     # ## check if ensemble var is correct
     # cbind(as.vector(Pa),as.vector(cov(X_a)))
     # 
-    # analysis <- as.data.frame(rmvnorm(as.numeric(nens), mu.a, Pa, method = "svd"))
+    analysis <- as.data.frame(rmvnorm(as.numeric(nens), mu.a, Pa, method = "svd"))
     
-    analysis <- as.data.frame(X_a)
+    #analysis <- as.data.frame(X_a)
     colnames(analysis) <- colnames(X)
     
     ##### Mapping analysis vectors to be in bounds of state variables
@@ -826,13 +833,16 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         tmp[mch] <- x[mch]
         tmp
       }))
-      Ybar <- Ybar[, na.omit(pmatch(colnames(X), colnames(Ybar)))]
+      Y.order <- na.omit(pmatch(colnames(X), colnames(Ybar)))
+      Ybar <- Ybar[,Y.order]
       YCI <- t(as.matrix(sapply(obs.cov[t1:t], function(x) {
         if (is.null(x)) {
           rep(NA, length(names.y))
         }
         sqrt(diag(x))
       })))
+      
+      YCI <- YCI[,Y.order]
       
       par(mfrow = c(2, 1))
       for (i in 1:ncol(FORECAST[[t]])) {#
@@ -846,16 +856,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                                     function(x) { x })[2, ], use.names = FALSE)
         
-        plot(as.Date(obs.times[t1:t]), 
-             Xbar, 
-             ylim = range(c(XaCI, Xci), na.rm = TRUE), 
-             type = "n", 
-             xlab = "Year", 
-             ylab = ylab.names[grep(colnames(X)[i], var.names)], 
-             main = colnames(X)[i])
+        
         
         # observation / data
         if (i <= ncol(Ybar)) {
+          plot(as.Date(obs.times[t1:t]), 
+               Xbar, 
+               ylim = range(c(XaCI, Xci, Ybar[,i]), na.rm = TRUE), 
+               type = "n", 
+               xlab = "Year", 
+               ylab = ylab.names[grep(colnames(X)[i], var.names)], 
+               main = colnames(X)[i])
           ciEnvelope(as.Date(obs.times[t1:t]),
                      as.numeric(Ybar[, i]) - as.numeric(YCI[, i]) * 1.96, 
                      as.numeric(Ybar[, i]) + as.numeric(YCI[, i]) * 1.96, 
@@ -865,6 +876,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
                 type = "l", 
                 col = "darkgreen", 
                 lwd = 2)
+        }else{
+          plot(as.Date(obs.times[t1:t]), 
+               Xbar, 
+               ylim = range(c(XaCI, Xci), na.rm = TRUE), 
+               type = "n", 
+               xlab = "Year", 
+               ylab = ylab.names[grep(colnames(X)[i], var.names)], 
+               main = colnames(X)[i])
         }
         
         # forecast
@@ -874,7 +893,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         # analysis
         ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink)
         lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2)
-        legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
+        #legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
       }
     }
     
