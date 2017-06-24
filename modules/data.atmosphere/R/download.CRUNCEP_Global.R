@@ -39,7 +39,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
   # Convert lat-lon to grid row and column
   lat_grid <- floor(2 * (90 - lat.in)) + 1
   lon_grid <- floor(2 * (lon.in + 180)) + 1
-  dap_base <- "http://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_"
+  dap_base <- "https://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_"
   
   dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
   
@@ -83,7 +83,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
 
     days_elapsed <- (1:ntime) * 6/24 - 3/24 # data are 6-hourly, with timestamp at center of interval
-    time <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", start_year, "-01-01T00:00:00Z"),
+    time <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", year, "-01-01T00:00:00Z"),
                              vals = as.array(days_elapsed), create_dimvar = TRUE, unlim = TRUE)
 
     dim <- list(lat, lon, time)
