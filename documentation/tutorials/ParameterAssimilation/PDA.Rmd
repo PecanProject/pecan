@@ -246,7 +246,7 @@ The PDA you ran has automatically produced an updated XML file (`pecan.pda***.xm
 ```{r eval=FALSE}
  # read post-PDA settings if you don't have them in your wotking environment
  # replace the *** with the ensemble id given by the workflow
- # settings <- read.settings(file.path(outdir,paste0("PEcAn_", workflow_id),"pecan.***.xml"))
+ # postPDA.settings <- read.settings(file.path(outdir,paste0("PEcAn_", workflow_id),"pecan.pda***.xml"))
 
  # Call model specific write.configs
   postPDA.settings <- run.write.configs(postPDA.settings,
@@ -260,15 +260,15 @@ The PDA you ran has automatically produced an updated XML file (`pecan.pda***.xm
   get.results(postPDA.settings)
 
  # Repeat ensemble analysis with PDA-constrained params 
- run.ensemble.analysis(postPDA.settings)
+ run.ensemble.analysis(postPDA.settings, TRUE)
  
  # let's re-load the pre-PDA ensemble outputs
  load(prePDA_ensemble_output_file)
  pre_pda_ens <- ensemble.ts[["NEE"]]
  
  # nowload the post-PDA ensemble outputs 
- postPDA_ensemble_output_file <- file.path(outdir,paste0("PEcAn_",workflow_id, "/ensemble.ts.", postPDA.settings, ".NEE.2003.2006.Rdata"))
- load("/fs/data2/output/PEcAn_1000007726/ensemble.ts.1000014166.NEE.2004.2006.Rdata")
+ postPDA_ensemble_output_file <- file.path(outdir,paste0("PEcAn_", workflow_id, "/ensemble.ts.", postPDA.settings$ensemble$ensemble.id, ".NEE.2003.2006.Rdata"))
+ load(postPDA_ensemble_output_file)
  post_pda_ens <- ensemble.ts[["NEE"]]
  
  
@@ -278,8 +278,9 @@ The PDA you ran has automatically produced an updated XML file (`pecan.pda***.xm
  
  # now plot the pre-PDA ensemble similar to the way we did before
  preCI <- apply(pre_pda_ens, 2, quantile, c(0.025, 0.5, 0.975), na.rm = TRUE)
- ylim <- c(-4e-07, 2e-06) 
- plot(pre_pda_ens[1,], ylim = ylim, lwd = 2, xlab = "time", ylab = "NEE", main = "NEE", type = "n")
+ ymin <- min(min(c(preCI, NEEo), na.rm = TRUE))
+ ymax <- max(max(c(preCI, NEEo), na.rm = TRUE))
+ plot(pre_pda_ens[1,], ylim = c(ymin, ymax), lwd = 2, xlab = "time", ylab = "NEE", main = "pre-PDA vs post-PDA", type = "n")
  prepoly <- 1:dim(preCI)[2]
  polygon(c(prepoly, rev(prepoly)),c(preCI[3,], rev(preCI[1,])),col='khaki',border=NA)
 
@@ -289,7 +290,7 @@ The PDA you ran has automatically produced an updated XML file (`pecan.pda***.xm
  polygon(c(postpoly, rev(postpoly)),c(postCI[3,], rev(postCI[1,])),col='lightblue',border=NA)
  
  # finally let's add the data and see how we did
- points(NEEo, pch = ".", col= adjustcolor("purple",alpha.f=0.5))
+ points(NEEo, pch = ".", col= adjustcolor("purple",alpha.f=0.7))
  legend("topright", legend=c("Data","Pre-PDA Model", "Post-PDA Model"), pch=c(15,15,15),
         col=c("purple","khaki","lightblue"))
  
