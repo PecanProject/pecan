@@ -93,7 +93,7 @@ obs <-PEcAn.benchmark::load_data(data.path = file.path(datadir, "AMF_US-NR1_BASE
                                   vars.used.index = vars.used.index,
                                   time.row = format$time.row)
 
-obs$NEE[obs$UST<0.2] <- NA  ## U* filter
+obs$NEE[obs$UST<0.4] <- NA  ## U* filter
 NEEo <- obs$NEE
 ```
 
