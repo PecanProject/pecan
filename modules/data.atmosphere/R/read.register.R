@@ -18,7 +18,7 @@ read.register <- function(register.xml, con) {
     logger.error("Scale is not defined")
   } else {
     if (register$scale == "regional" & is.null(register$siteid)) {
-      logger.error("Region site id is not defined")
+      logger.warn("Region site id is not defined")
     }
   }
   
