@@ -53,6 +53,7 @@ workflow_id <- 99000000002  ## comes from the History table, your successful ens
 
 years       <- 2003:2006
 
+outdir <- "/fs/data2/output/"
 ## from URL/bety/inputs.  
 ##   Search by Ameriflux ID (e.g. US-NR1)
 ##   Find the "plain" site record (no CF or model name) that's on your server 
@@ -253,6 +254,9 @@ The PDA you ran has automatically produced an updated XML file (`pecan.pda***.xm
                           write=postPDA.settings$database$bety$write,     
                           ens.sample.method=postPDA.settings$ensemble$method)
 
+ # Let's save the settings with the new ensemble id 
+ PEcAn.settings::write.settings(settings, outputfile=paste0('pecan.pda', postPDA.settings$assim.batch$ensemble.id,'.xml')
+
  # Start ecosystem model runs, this one takes awhile...
   start.model.runs(postPDA.settings, postPDA.settings$database$bety$write)
 
@@ -271,26 +275,37 @@ The PDA you ran has automatically produced an updated XML file (`pecan.pda***.xm
  load(postPDA_ensemble_output_file)
  post_pda_ens <- ensemble.ts[["NEE"]]
  
+ # try changing the window value for daily, weekly, monthly smoothing
+ window <- 1 # no smoothing
+ pre_pda <- t(apply(pre_pda_ens, 1, function(x) {
+        tapply(x, rep(1:(length(x)/window + 1), each = window)[1:length(x)], 
+               mean, na.rm = TRUE)}))
+ post_pda <- t(apply(post_pda_ens, 1, function(x) {
+        tapply(x, rep(1:(length(x)/window + 1), each = window)[1:length(x)], 
+               mean, na.rm = TRUE)}))
+ fobs <- tapply(NEEo, rep(1:(length(NEEo) / window + 1), 
+                          each = window)[1:length(NEEo)], mean, na.rm = TRUE)
+ 
  
  # save the comparison plots to pdf
  pdf(file.path(outdir,paste0("PEcAn_",workflow_id),"model.data.comparison.pdf"), onefile=T,
      paper='A4r', height=15, width=20) 
  
  # now plot the pre-PDA ensemble similar to the way we did before
- preCI <- apply(pre_pda_ens, 2, quantile, c(0.025, 0.5, 0.975), na.rm = TRUE)
- ymin <- min(min(c(preCI, NEEo), na.rm = TRUE))
- ymax <- max(max(c(preCI, NEEo), na.rm = TRUE))
- plot(pre_pda_ens[1,], ylim = c(ymin, ymax), lwd = 2, xlab = "time", ylab = "NEE", main = "pre-PDA vs post-PDA", type = "n")
+ preCI <- apply(pre_pda, 2, quantile, c(0.025, 0.5, 0.975), na.rm = TRUE)
+ ymin <- min(min(c(preCI, fobs), na.rm = TRUE))
+ ymax <- max(max(c(preCI, fobs), na.rm = TRUE))
+ plot(pre_pda[1,], ylim = c(ymin, ymax), lwd = 2, xlab = "time", ylab = "NEE", main = "pre-PDA vs post-PDA", type = "n")
  prepoly <- 1:dim(preCI)[2]
  polygon(c(prepoly, rev(prepoly)),c(preCI[3,], rev(preCI[1,])),col='khaki',border=NA)
 
  # plot the post-PDA ensemble
- postCI <- apply(post_pda_ens, 2, quantile, c(0.025, 0.5, 0.975), na.rm = TRUE)
+ postCI <- apply(post_pda, 2, quantile, c(0.025, 0.5, 0.975), na.rm = TRUE)
  postpoly <- 1:dim(postCI)[2]
  polygon(c(postpoly, rev(postpoly)),c(postCI[3,], rev(postCI[1,])),col='lightblue',border=NA)
  
  # finally let's add the data and see how we did
- points(NEEo, pch = ".", col= adjustcolor("purple",alpha.f=0.7))
+ points(fobs, pch = ".", col= adjustcolor("purple",alpha.f=0.7))
  legend("topright", legend=c("Data","Pre-PDA Model", "Post-PDA Model"), pch=c(15,15,15),
         col=c("purple","khaki","lightblue"))
  
