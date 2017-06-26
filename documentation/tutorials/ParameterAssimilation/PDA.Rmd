@@ -215,7 +215,7 @@ Now we can go ahead and run a data assimilation MCMC with emulator. Since you've
 
 ```{r eval=FALSE}
 # load input data
-load("pda_externals.Rdata")
+load("/home/carya/pda/pda_externals.Rdata")
 postPDA.settings <- pda.emulator(settings, external.data = inputs_w_neff)
 ```
 
