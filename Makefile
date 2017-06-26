@@ -70,21 +70,27 @@ clean:
 	rm -rf .install .check .test .doc
 	find modules/rtm/src \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete
 
-devtools:
+.install/devtools:
 	Rscript -e "if(!require('devtools')) install.packages('devtools', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	mkdir -p $(@D)
+	echo `date` > $@
 
-roxygen2:
+.install/roxygen2:
 	Rscript -e "if(!require('roxygen2')) install.packages('roxygen2', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	mkdir -p $(@D)
+	echo `date` > $@
 
-testthat:
+.install/testthat:
 	Rscript -e "if(!require('testthat')) install.packages('testthat', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	mkdir -p $(@D)
+	echo `date` > $@
 
 install_R_pkg = Rscript -e "devtools::install('$(strip $(1))', Ncpus = ${NCPUS});"
 check_R_pkg = Rscript scripts/check_with_errors.R $(strip $(1))
 test_R_pkg = Rscript -e "devtools::test('"$(strip $(1))"', reporter = 'stop')"
 doc_R_pkg = Rscript -e "devtools::document('"$(strip $(1))"')"
 
-$(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): devtools roxygen2 testthat
+$(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): .install/devtools .install/roxygen2 .install/testthat
 
 .SECONDEXPANSION:
 .doc/%: $$(wildcard %/**/*) $$(wildcard %/*)

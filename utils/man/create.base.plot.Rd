@@ -14,7 +14,7 @@ Creates empty ggplot object
 }
 \details{
 An empty base plot to which layers created by other functions
-(\code{\link{plot.data}}, \code{\link{plot.prior.density}},
+(\code{\link{plot_data}}, \code{\link{plot.prior.density}},
 \code{\link{plot.posterior.density}}) can be added.
 }
 \author{
