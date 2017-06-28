@@ -133,3 +133,12 @@ Example:
 
 
 
+**1000473576**
+
+- ED2_git
+- DUKE
+- Ambient (met = 1000000649) 
+- start date: 1997/06/01
+- end date: 2007/06/31
+- workflow id: 1000003038
+- input id: 1000011181

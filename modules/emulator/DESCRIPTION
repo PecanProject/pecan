@@ -7,7 +7,7 @@ Author: Michael Dietze
 Maintainer: Michael Dietze <dietze@bu.edu>
 Depends:
     mvtnorm,
-    GPfit,
+    mlegp,
     MCMCpack
 Imports:
     coda (>= 0.18),

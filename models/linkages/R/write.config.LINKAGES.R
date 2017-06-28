@@ -24,7 +24,7 @@
 ##' @author Ann Raiho, Betsy Cowdery
 ##-------------------------------------------------------------------------------------------------#
 write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.id, 
-                                  restart = NULL, spinup = NULL, inputs = NULL, IC = NULL) {
+                                  restart = NULL, spinup = FALSE, inputs = NULL, IC = NULL) {
   # 850-869 repeated to fill 1000 years
   if (is.null(restart)) {
     restart <- FALSE # why not have restart default to FALSE above?
@@ -64,28 +64,31 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   
   dbcon <- db.open(settings$database$bety)
   on.exit(db.close(dbcon))
-  soils <- db.query(paste("SELECT soil,som,sand_pct,clay_pct,soilnotes FROM sites WHERE id =", settings$run$site$id), 
-                    con = dbcon)
   
-  sand <- as.numeric(soils[3]) / 100
-  clay <- as.numeric(soils[4]) / 100
-  
-  soil.texture <- function(sand, clay) {
-    silt <- 1 - sand - clay
+  if("soil" %in% names(settings$run$inputs)){
+    ## open soil file
+    soil <- settings$run$inputs$soil
+    nc.soil <- ncdf4::nc_open(soil$path)
     
-    sand.keep <- which(texture$xsand < sand + 0.1 & texture$xsand > sand - 0.1)
-    clay.keep <- which(texture$xclay[sand.keep] < clay + 0.1 & 
-                         texture$xclay[sand.keep] > clay - 0.1)
-    silt.keep <- which(texture$xsilt[sand.keep[clay.keep]] < silt + 0.1 & 
-                         texture$xsilt[sand.keep[clay.keep]] > silt - 0.1)
+    ## extract LINKAGES variables
+    fc      <- ncdf4::ncvar_get(nc.soil,"volume_fraction_of_water_in_soil_at_field_capacity") * 100
+    dry     <- ncdf4::ncvar_get(nc.soil,"volume_fraction_of_condensed_water_in_soil_at_wilting_point") * 100
+    if(length(fc) > 1) fc <- mean(fc)
+    if(length(dry) > 1) dry <- mean(dry)
+    ncdf4::nc_close(nc.soil)
     
-    row.keep <- sand.keep[clay.keep[silt.keep]]
+  }else{
+    soils <- db.query(paste("SELECT soil,som,sand_pct,clay_pct,soilnotes FROM sites WHERE id =", settings$run$site$id), 
+                      con = dbcon)
     
-    return(texture[round(mean(row.keep)), c(8, 14)] * 100)  # might need to divide by 3 or something because linkages wants cm water/30cm soil...
-  } # soil.texture
-  
-  fc <- round(as.numeric(unlist(soil.texture(sand = sand, clay = clay)[2])), digits = 2)
-  dry <- round(as.numeric(unlist(soil.texture(sand = sand, clay = clay)[1])), digits = 2)
+    soil.dat <- PEcAn.data.land::soil_params(sand = soils$sand_pct/100, clay = soils$clay_pct/100)
+    
+    fc <- soil.dat$volume_fraction_of_water_in_soil_at_field_capacity * 100
+    dry <- soil.dat$volume_fraction_of_condensed_water_in_soil_at_wilting_point * 100
+    
+    if(is.na(fc)) fc = 5
+    if(is.na(dry)) dry = 5
+  }
   
   fdat <- read.csv(system.file("fdat.csv", package = "linkages"), header = FALSE)  #litter quality parameters
   clat <- read.csv(system.file("clat.csv", package = "linkages"), header = FALSE)
@@ -111,7 +114,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   ### group will be each spp.
   if (!is.null(trait.values)) {
     for (group in names(trait.values)) {
-      if (group == "env") {
+      if (group == "env" | any(settings$run$inputs$met$source == 'PalEONregional')) {
         
         ## leave defaults
         
@@ -217,7 +220,6 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
     precip.mat <- spinup.out$precip.mat
     settings$run$start.date <- paste0(spinup.out$start.year, 
                                       strftime(settings$run$start.date, "/%m/%d"))
-    precip.mat <- spinup.out$precip.mat
   }
   
   input <- file.path(settings$rundir, run.id, "linkages.input.Rdata")
