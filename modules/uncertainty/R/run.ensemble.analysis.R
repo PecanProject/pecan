@@ -246,7 +246,7 @@ read.ensemble.ts <- function(settings, ensemble.id = NULL, variable = NULL,
 
   ## read ensemble output
   # Leaving list output even though only one variable allowed for now. Will improve backwards compatibility and maybe help in the future.
-  ensemble.ts <- list() 
+  ensemble.ts <- vector("list", length(variables)) 
   for(row in rownames(ens.run.ids)) {
     run.id <- ens.run.ids[row, 'id']
     print(run.id)
@@ -259,11 +259,20 @@ read.ensemble.ts <- function(settings, ensemble.id = NULL, variable = NULL,
     # derivation
     newrun <- eval(parse(text = expr))
 
+    if(is.null(newrun)){
+     # run failed
+     # skip to next
+      next
+    }
+    
     for(j in seq_along(variable.fn)){
-      if(as.numeric(row) == 1){
+        
+      if(is.null(ensemble.ts[[1]])){ # dimensions of the sublist matrix hasn't been declared yet
         ensemble.ts[[j]] <- matrix(NA,ensemble.size,length(newrun))
       }
+      
       ensemble.ts[[j]][as.numeric(row),] <- newrun
+    
     }    
   }
 
