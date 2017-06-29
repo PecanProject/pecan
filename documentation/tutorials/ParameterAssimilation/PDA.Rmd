@@ -53,7 +53,6 @@ workflow_id <- 99000000002  ## comes from the History table, your successful ens
 
 years       <- 2003:2006
 
-outdir <- "/fs/data2/output/"
 ## from URL/bety/inputs.  
 ##   Search by Ameriflux ID (e.g. US-NR1)
 ##   Find the "plain" site record (no CF or model name) that's on your server 
