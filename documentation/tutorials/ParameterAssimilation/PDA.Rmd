@@ -272,7 +272,8 @@ The PDA you ran has automatically produced an updated XML file (`pecan.pda***.xm
  load(postPDA_ensemble_output_file)
  post_pda_ens <- ensemble.ts[["NEE"]]
  
- # try changing the window value for daily, weekly, monthly smoothing
+ # try changing the window value for daily, weekly, monthly smoothing later
+ # see if this changes your model-data agreement, why?
  window <- 1 # no smoothing
  pre_pda <- t(apply(pre_pda_ens, 1, function(x) {
         tapply(x, rep(1:(length(x)/window + 1), each = window)[1:length(x)], 
