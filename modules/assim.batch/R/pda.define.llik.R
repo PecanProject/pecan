@@ -73,11 +73,11 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
         pos <- (model_out[[k]] >= 0)
         SS <- c(dexp(resid[pos],
                      1 / (inputs[[k]]$par[1] + (inputs[[k]]$par[2] * 
-                                                  sqrt(inputs[[k]]$n/inputs[[k]]$n_eff) * 
+                                                  sqrt(inputs[[k]]$n_eff/inputs[[k]]$n) * 
                                                   model_out[[k]][pos])), log = TRUE),
                 dexp(resid[!pos],
                      1 / (inputs[[k]]$par[1] + (inputs[[k]]$par[3] * 
-                            sqrt(inputs[[k]]$n/inputs[[k]]$n_eff) * 
+                            sqrt(inputs[[k]]$n_eff/inputs[[k]]$n) * 
                             model_out[[k]][!pos])), log = TRUE))
         
         pda.errors[[k]] <- sum(SS, na.rm = TRUE) 

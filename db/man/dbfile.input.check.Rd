@@ -5,8 +5,8 @@
 \title{Check for a file in the input/dbfiles tables}
 \usage{
 dbfile.input.check(siteid, startdate = NULL, enddate = NULL, mimetype,
-  formatname, parentid = NA, con, hostname = fqdn(), exact.dates = FALSE,
-  pattern = NULL)
+  formatname, parentid = NA, con, hostname = PEcAn.utils::fqdn(),
+  exact.dates = FALSE, pattern = NULL)
 }
 \arguments{
 \item{siteid}{the id of the site that this data is applicable to}
