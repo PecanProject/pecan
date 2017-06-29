@@ -51,8 +51,6 @@ The following variables need to be set specific to the site being run and the wo
 ```{r}
 workflow_id <- 99000000002  ## comes from the History table, your successful ensemble run's workflow ID
 
-years       <- 2003:2006
-
 ## from URL/bety/inputs.  
 ##   Search by Ameriflux ID (e.g. US-NR1)
 ##   Find the "plain" site record (no CF or model name) that's on your server 
