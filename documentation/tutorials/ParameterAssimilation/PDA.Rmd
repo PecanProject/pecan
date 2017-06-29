@@ -173,7 +173,7 @@ In addition, you may need to edit ```<inputs><file><path>```, depending on the s
          <path>/home/carya/output/dbfiles/AmerifluxLBL_site_0-772/AMF_US-NR1_BASE_HH_9-1.csv</path>       
       </path>
       <format>5000000002</format>
-      <input.id>99000000001</input.id>        <-- FILL IN, from BETY inputs table, this is *NOT* the workflow ID
+      <input.id>1000011238</input.id>        <-- FILL IN, from BETY inputs table, this is *NOT* the workflow ID
       <likelihood>Laplace</likelihood>
       <variable.name>
         <variable.name>NEE</variable.name>
