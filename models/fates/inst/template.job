@@ -145,6 +145,7 @@ EOF
   echo `pwd`
   echo `ls -altr`
   
+  ## ----------- Disabled for now
   ## RUNDIR FILE LINKS  -- CURRENTLY GETTING SEG FAULTS WHEN TRYING TO RUN WITH PECAN MET
   #if [ -e @RUNDIR@/datm_atm_in ]
   #  then 
@@ -158,7 +159,8 @@ EOF
   #  rm datm.streams.txt.CLM_QIAN*  # bug fix, s was missing!
   #  ln -s @RUNDIR@/datm.streams.txt.PEcAn_met .
   #fi
-  
+  ## ------------- MET needs to be re-enabled in a later PR 
+ 
   #"@BINARY@" # ! Long term, we should be running it this way !
   "@CASEDIR@/bld/cesm.exe" # edited for testing, ! TEMPORARY. NEED TO SWITCH BACK ONCE BUILD_COMPLETE works !
   STATUS=$?
