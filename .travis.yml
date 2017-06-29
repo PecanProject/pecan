@@ -82,9 +82,9 @@ before_script:
 script:
   - set -e
   # - scripts/build.sh --no-git --tests --name travis
-  - echo 'Building PEcAn'
+  - echo 'Installing PEcAn packages'
   - make
-  - echo 'Testing PEcAn'
+  - echo 'Testing PEcAn packages'
   - make test
   - make document
   - echo 'Testing Integration'
