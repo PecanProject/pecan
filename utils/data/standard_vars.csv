@@ -1,4 +1,4 @@
-﻿Num;Group;order;Saveit;Variable.Name;standard_name;Units;Long.name;Priority;Category;Hourly;Monthly;var_type;ndim;dim1;dim2;dim3;dim4;Description
+Num;Group;order;Saveit;Variable.Name;standard_name;Units;Long.name;Priority;Category;Hourly;Monthly;var_type;ndim;dim1;dim2;dim3;dim4;Description
 1;1;1;Yes;lon;longitude;degrees_east;Longitude;0;Grid;Yes;Yes;real;1;lon;na;na;na;longitude at center of each grid cell
 2;1;2;Yes;lat;latitude;degrees_north;Latitude;0;Grid;Yes;Yes;real;1;lat;na;na;na;latitude at center of each grid cell
 3;1;3;Yes;lon_bnds;;degrees_east;Longitude west-east bounds;0;Grid;Yes;Yes;real;2;nbnds;lon;na;na;"(west boundary of grid cell, east boundary of grid cell)"
@@ -45,7 +45,7 @@
 45;6;7;Yes;Qs;;kg m-2 s-1;Surface runoff;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;Runoff from the landsurface and/or subsurface stormflow
 46;6;8;Yes;Qsb;;kg m-2 s-1;Subsurface runoff;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;Gravity soil water drainage and/or soil water lateral flow
 47;6;9;Yes;SoilTemp;;K;Average Layer Soil Temperature;1;Physical Variables;No;Yes;real;4;lon;lat;nsoil;time;Average soil temperature in each soil layer
-48;6;10;Yes;Tdepth;;m;Active Layer Thickness;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;Thaw depth; depth to zero centigrade isotherm in permafrost
+48;6;10;Yes;Tdepth;;m;Active Layer Thickness;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;Thaw depth, depth to zero centigrade isotherm in permafrost
 49;6;11;Yes;Fdepth;;m;Frozen Thickness;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;Freeze depth; depth to zero centigrade isotherm in non-permafrost
 50;6;12;Yes;Tcan;;K;Canopy Temperature;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;Canopy or vegetation temperature (or temperature used in photosynthesis calculations)
 51;6;13;Yes;SWE;;kg m-2;Snow Water Equivalent;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;"Total water mass of snow pack, including ice and liquid water,,,,,,,,,"
