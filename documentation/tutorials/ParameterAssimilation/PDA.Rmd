@@ -51,9 +51,6 @@ The following variables need to be set specific to the site being run and the wo
 ```{r}
 workflow_id <- 99000000002  ## comes from the History table, your successful ensemble run's workflow ID
 
-years       <- 2003:2006
-
-outdir <- "/fs/data2/output/"
 ## from URL/bety/inputs.  
 ##   Search by Ameriflux ID (e.g. US-NR1)
 ##   Find the "plain" site record (no CF or model name) that's on your server 
@@ -176,7 +173,7 @@ In addition, you may need to edit ```<inputs><file><path>```, depending on the s
          <path>/home/carya/output/dbfiles/AmerifluxLBL_site_0-772/AMF_US-NR1_BASE_HH_9-1.csv</path>       
       </path>
       <format>5000000002</format>
-      <input.id>99000000001</input.id>        <-- FILL IN, from BETY inputs table, this is *NOT* the workflow ID
+      <input.id>1000011238</input.id>        <-- FILL IN, from BETY inputs table, this is *NOT* the workflow ID
       <likelihood>Laplace</likelihood>
       <variable.name>
         <variable.name>NEE</variable.name>
@@ -218,8 +215,8 @@ Now we can go ahead and run a data assimilation MCMC with emulator. Since you've
 load("/home/carya/pda/pda_externals.Rdata")
 postPDA.settings <- pda.emulator(settings, external.data = inputs_w_neff)
 ```
-
 After executing the code above, you will see print-outs to the console. The code begins with loading the prior values which in this case are the posterior distributions coming from your previous meta analysis. Then, normally, it loads the observational data and carries out necessary conversions and formatting to align it with model outputs, as we did separately above, but today it will skip this step as we are passing data externally. After this step, you will see a progress bar where the actual model is run n.knot times with the proposed parameter sets and then the outputs from these runs are read. Next, this model output is compared to the specified observational data, and the likelihood is calculated using the heteroskedastic Laplacian discussed previously. Once we calculate the likelihoods, we fit an emulator which interpolates the model output in parameter space between the points where the model has actually been run. Now we can put this emulator in the MCMC algorithm instead of the model itself. Within the MCMC loop the code proposes new parameter value from a multivariate normal jump distribution. The corresponding likelihood will be approximated by the emulator and the new parameter value is accepted or rejected based on its posterior probability relative to the current value. 
+
 
 ## Outputs from PEcAn’s Parameter Data Assimilation
 
@@ -255,7 +252,7 @@ The PDA you ran has automatically produced an updated XML file (`pecan.pda***.xm
                           ens.sample.method=postPDA.settings$ensemble$method)
 
  # Let's save the settings with the new ensemble id 
- PEcAn.settings::write.settings(settings, outputfile=paste0('pecan.pda', postPDA.settings$assim.batch$ensemble.id,'.xml')
+  PEcAn.settings::write.settings(settings, outputfile=paste0('pecan.pda', postPDA.settings$assim.batch$ensemble.id,'.xml'))
 
  # Start ecosystem model runs, this one takes awhile...
   start.model.runs(postPDA.settings, postPDA.settings$database$bety$write)
@@ -275,7 +272,8 @@ The PDA you ran has automatically produced an updated XML file (`pecan.pda***.xm
  load(postPDA_ensemble_output_file)
  post_pda_ens <- ensemble.ts[["NEE"]]
  
- # try changing the window value for daily, weekly, monthly smoothing
+ # try changing the window value for daily, weekly, monthly smoothing later
+ # see if this changes your model-data agreement, why?
  window <- 1 # no smoothing
  pre_pda <- t(apply(pre_pda_ens, 1, function(x) {
         tapply(x, rep(1:(length(x)/window + 1), each = window)[1:length(x)], 
