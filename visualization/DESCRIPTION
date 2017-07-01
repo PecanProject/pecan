@@ -28,13 +28,15 @@ Depends:
     PEcAn.DB,
     RPostgreSQL,
     dplyr,
-    dbplyr
+    dbplyr,
+    plotly
 Imports:
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
     plyr (>= 1.8.4),
     stringr(>= 1.1.0),
-    udunits2 (>= 0.11)
+    udunits2 (>= 0.11),
+    plotly(>=4.6.0)
 Suggests:
     testthat (>= 1.0.2),
     png,
