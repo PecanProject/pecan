@@ -3,6 +3,7 @@ library(PEcAn.DB)
 library(shiny)
 library(ncdf4)
 library(ggplot2)
+# Helper allows to load functions and variables that could be shared both by server.R and ui.R 
 source('helper.R')
 library(plotly)
 library(scales)
@@ -12,7 +13,7 @@ server <- shinyServer(function(input, output, session) {
   bety <- betyConnect()
   # Update all workflow ids
   observe({
-    # Ideally the get_workflow_ids function (line 137) in db/R/query.dplyr.R should take a flag to check
+    # Ideally get_workflow_ids function (line 137) in db/R/query.dplyr.R should take a flag to check
     # if we want to load all workflow ids.
     # get_workflow_id function from query.dplyr.R
     all_ids <- get_workflow_ids(bety, session,all.ids=TRUE)
@@ -43,7 +44,7 @@ server <- shinyServer(function(input, output, session) {
     updateSelectizeInput(session, "all_run_id", choices=all_run_ids())
   })
   return_DF_from_run_ID <- function(diff_ids){
-    # Called by the function parse_ids_from_input_runID
+    # Called by function parse_ids_from_input_runID
     # which is a wrapper of this function
     # Returns a DF for a particular run_id
     split_string <- strsplit(diff_ids,',')[[1]]
@@ -67,14 +68,14 @@ server <- shinyServer(function(input, output, session) {
   # Fetches variable names from DB
   # @param workflow_id and run_id
   # @return List of variable names
-  var_names_all <- function(workflow_id, run_id){
-    # Get variables for a particular workflow and run id
-    var_names <- get_var_names(bety, workflow_id, run_id)
-    # Remove variables which should not be shown to the user
-    removeVarNames <- c('Year','FracJulianDay')
-    var_names <- var_names[!var_names %in% removeVarNames]
-    return(var_names)
-  }
+  # var_names_all <- function(bety,workflow_id, run_id){
+  #   # Get variables for a particular workflow and run id
+  #   var_names <- get_var_names(bety, workflow_id, run_id)
+  #   # Remove variables which should not be shown to the user
+  #   removeVarNames <- c('Year','FracJulianDay')
+  #   var_names <- var_names[!var_names %in% removeVarNames]
+  #   return(var_names)
+  # }
   # Update variable names  
   observe({
     req(input$all_run_id)
@@ -82,20 +83,20 @@ server <- shinyServer(function(input, output, session) {
     ids_DF <- parse_ids_from_input_runID(input$all_run_id)
     var_name_list <- c()
     for(row_num in 1:nrow(ids_DF)){
-      var_name_list <- c(var_name_list,var_names_all(ids_DF$wID[row_num],ids_DF$runID[row_num]))
+      var_name_list <- c(var_name_list,var_names_all(bety,ids_DF$wID[row_num],ids_DF$runID[row_num]))
     }
     updateSelectizeInput(session, "variable_name", choices=var_name_list)
   })
-  # Load data for a single run of the model
-  # @param workflow_id and run_id
-  # @return Dataframe for one run 
-  # For a particular combination of workflow and run id, loads
-  # all variables from all files. 
-  load_data_single_run <- function(workflow_id,run_id){
+  # # Load data for a single run of the model
+  # # @param workflow_id and run_id
+  # # @return Dataframe for one run 
+  # # For a particular combination of workflow and run id, loads
+  # # all variables from all files. 
+  load_data_single_run <- function(bety,workflow_id,run_id){
     globalDF <- data.frame()
     workflow <- collect(workflow(bety, workflow_id))
     # Use the function 'var_names_all' to get all variables
-    var_names <- var_names_all(workflow_id,run_id)
+    var_names <- var_names_all(bety,workflow_id,run_id)
     # Using earlier code, refactored
     if(nrow(workflow) > 0) {
       outputfolder <- file.path(workflow$folder, 'out', run_id)
@@ -153,7 +154,7 @@ server <- shinyServer(function(input, output, session) {
     ids_DF <- parse_ids_from_input_runID(input$all_run_id)
     globalDF <- data.frame()
     for(row_num in 1:nrow(ids_DF)){
-      globalDF <- rbind(globalDF, load_data_single_run(ids_DF$wID[row_num],ids_DF$runID[row_num]))
+      globalDF <- rbind(globalDF, load_data_single_run(bety,ids_DF$wID[row_num],ids_DF$runID[row_num]))
     }
     return(globalDF)
   })
@@ -193,7 +194,7 @@ server <- shinyServer(function(input, output, session) {
     # Not able to add icon over ggplotly
     # add_icon()
   })
-  # Shiny server closes here  
+# Shiny server closes here  
 })
 
 # runApp(port=6480, launch.browser=FALSE)
