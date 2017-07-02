@@ -212,8 +212,7 @@ get_var_names <- function(bety, workflow_id, run_id, remove_pool = TRUE) {
 }  # get_var_names
 
 #' Get vector of variable names for a particular workflow and run ID
-#' @inheritParams dbHostInfo
-#' @inheritParams workflow
+#' @inheritParams get_var_names
 #' @param run_id Run ID
 #' @param workflow_id Workflow ID
 #' @export
@@ -228,8 +227,7 @@ var_names_all <- function(bety, workflow_id, run_id) {
 } # var_names_all
 
 #' Load data for a single run of the model
-#' @inheritParams dbHostInfo
-#' @inheritParams workflow
+#' @inheritParams var_names_all
 #' @param run_id Run ID
 #' @param workflow_id Workflow ID
 #' @export
