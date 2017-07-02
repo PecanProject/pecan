@@ -29,13 +29,13 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   echo @CASEDIR@
   #echo "Res: @RES@ "
   #echo "Compset: @COMPSET@ "
-  echo "Machine: @MACHINE@ "
-  echo "Compiler: @COMPILER@ "
-  echo "Project_name: @PROJECT@ "
+  #echo "Machine: @MACHINE@ "
+  #echo "Compiler: @COMPILER@ "
+  #echo "Project_name: @PROJECT@ "
   echo "--------------------------"
-  ./create_newcase -case @CASEDIR@ -res 1x1_brazil -compset ICLM45ED -mach @MACHINE@ -compiler @COMPILER@ -project @PROJECT@  
-  #./create_newcase -case @CASEDIR@ -res @RES@ -compset @COMPSET -mach @MACHINE@ -compiler @COMPILER@ -project @PROJECT@
-  
+  #./create_newcase -case @CASEDIR@ -res 1x1_brazil -compset ICLM45ED -mach @MACHINE@ -compiler @COMPILER@ -project @PROJECT@  
+  ./create_clone --verbose --case @CASEDIR@ --clone @REFCASE@ --keepexe 
+
   cd "@RUNDIR@"
   
   ## RECURSIVELY COPY/SYMLINK REFERENCE INPUTS DIRECTORY (DIN_LOC_ROOT)
@@ -80,9 +80,9 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   
   ## ENV_BUILD update configurations
   ./xmlchange -file env_build.xml -id CIME_OUTPUT_ROOT -val @CASEDIR@
-  #./xmlchange -file env_build.xml -id EXEROOT -val @BLD@  # this is the way it should be set, long term
-  ./xmlchange -file env_build.xml -id EXEROOT -val @CASEDIR@/bld # temporary fix
-  #./xmlchange -file env_build.xml -id BUILD_COMPLETE -val TRUE  # TEMPORARY!  This eventually needs to be uncommented so we don't build the model each time !
+  ./xmlchange -file env_build.xml -id EXEROOT -val @BLD@  # this is the way it should be set, long term
+  #./xmlchange -file env_build.xml -id EXEROOT -val @CASEDIR@/bld # temporary fix
+  ./xmlchange -file env_build.xml -id BUILD_COMPLETE -val TRUE  # TEMPORARY!  This eventually needs to be uncommented so we don't build the model each time !
   
   ## DATES -> ENV_RUN
   ./xmlchange -file env_run.xml -id RUNDIR -val @CASEDIR@/run
@@ -145,7 +145,6 @@ EOF
   echo `pwd`
   echo `ls -altr`
   
-  ## ----------- Disabled for now
   ## RUNDIR FILE LINKS  -- CURRENTLY GETTING SEG FAULTS WHEN TRYING TO RUN WITH PECAN MET
   #if [ -e @RUNDIR@/datm_atm_in ]
   #  then 
@@ -159,10 +158,9 @@ EOF
   #  rm datm.streams.txt.CLM_QIAN*  # bug fix, s was missing!
   #  ln -s @RUNDIR@/datm.streams.txt.PEcAn_met .
   #fi
-  ## ------------- MET needs to be re-enabled in a later PR 
- 
-  #"@BINARY@" # ! Long term, we should be running it this way !
-  "@CASEDIR@/bld/cesm.exe" # edited for testing, ! TEMPORARY. NEED TO SWITCH BACK ONCE BUILD_COMPLETE works !
+  
+  "@BINARY@" # ! Long term, we should be running it this way !
+  #"@CASEDIR@/bld/cesm.exe" # edited for testing, ! TEMPORARY. NEED TO SWITCH BACK ONCE BUILD_COMPLETE works !
   STATUS=$?
   
   
