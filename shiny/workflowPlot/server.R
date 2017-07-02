@@ -65,17 +65,6 @@ server <- shinyServer(function(input, output, session) {
     }
     return(globalDF)
   }  
-  # Fetches variable names from DB
-  # @param workflow_id and run_id
-  # @return List of variable names
-  # var_names_all <- function(bety,workflow_id, run_id){
-  #   # Get variables for a particular workflow and run id
-  #   var_names <- get_var_names(bety, workflow_id, run_id)
-  #   # Remove variables which should not be shown to the user
-  #   removeVarNames <- c('Year','FracJulianDay')
-  #   var_names <- var_names[!var_names %in% removeVarNames]
-  #   return(var_names)
-  # }
   # Update variable names  
   observe({
     req(input$all_run_id)
@@ -87,64 +76,6 @@ server <- shinyServer(function(input, output, session) {
     }
     updateSelectizeInput(session, "variable_name", choices=var_name_list)
   })
-  # # Load data for a single run of the model
-  # # @param workflow_id and run_id
-  # # @return Dataframe for one run 
-  # # For a particular combination of workflow and run id, loads
-  # # all variables from all files. 
-  load_data_single_run <- function(bety,workflow_id,run_id){
-    globalDF <- data.frame()
-    workflow <- collect(workflow(bety, workflow_id))
-    # Use the function 'var_names_all' to get all variables
-    var_names <- var_names_all(bety,workflow_id,run_id)
-    # Using earlier code, refactored
-    if(nrow(workflow) > 0) {
-      outputfolder <- file.path(workflow$folder, 'out', run_id)
-      files <- list.files(outputfolder, "*.nc$", full.names=TRUE)
-      for(file in files) {
-        nc <- nc_open(file)
-        for(var_name in var_names){
-          dates <- NA
-          vals <- NA
-          title <- var_name
-          ylab <- ""
-          var <- ncdf4::ncatt_get(nc, var_name)
-          #sw <- if ('Swdown' %in% names(nc$var)) ncdf4::ncvar_get(nc, 'Swdown') else TRUE
-          # Snow water
-          sw <- TRUE
-          # Check required bcoz many files dont contain title
-          if(!is.null(var$long_name)){
-            title <- var$long_name
-          }
-          # Check required bcoz many files dont contain units
-          if(!is.null(var$units)){
-            ylab <- var$units
-          }
-          x <- ncdays2date(ncdf4::ncvar_get(nc, 'time'), ncdf4::ncatt_get(nc, 'time'))
-          y <- ncdf4::ncvar_get(nc, var_name)
-          b <- !is.na(x) & !is.na(y) & sw != 0
-          dates <- if(is.na(dates)) x[b] else c(dates, x[b])
-          dates <- as.Date(dates)
-          vals <- if(is.na(vals)) y[b] else c(vals, y[b])
-          xlab <- "Time"
-          # Values of the data which we will plot
-          valuesDF <- data.frame(dates,vals)
-          # Meta information about the data
-          metaDF <- data.frame(workflow_id,run_id,title,xlab,ylab,var_name)
-          currentDF <- cbind(valuesDF,metaDF)
-          globalDF <- rbind(globalDF,currentDF)
-        }
-        ncdf4::nc_close(nc)
-      }
-    }
-    # Required to convert from factors to characters
-    # Otherwise error by ggplotly
-    globalDF$title <- as.character(globalDF$title)
-    globalDF$xlab <- as.character(globalDF$xlab)
-    globalDF$ylab <- as.character(globalDF$ylab)
-    globalDF$var_name <- as.character(globalDF$var_name)
-    return(globalDF)
-  }
   # Loads data for all workflow and run ids after the load button is pressed.
   # All information about a model is contained in 'all_run_id' string
   # Wrapper over 'load_data_single_run' 
