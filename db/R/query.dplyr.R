@@ -228,6 +228,7 @@ var_names_all <- function(bety, workflow_id, run_id) {
 
 #' Load data for a single run of the model
 #' @inheritParams var_names_all
+#' @inheritParams workflow
 #' @param run_id Run ID
 #' @param workflow_id Workflow ID
 #' @export
