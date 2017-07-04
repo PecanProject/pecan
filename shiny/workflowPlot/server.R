@@ -4,7 +4,7 @@ library(shiny)
 library(ncdf4)
 library(ggplot2)
 # Helper allows to load functions and variables that could be shared both by server.R and ui.R 
-source('helper.R')
+# source('helper.R')
 library(plotly)
 library(scales)
 library(dplyr)
@@ -65,8 +65,8 @@ server <- shinyServer(function(input, output, session) {
     }
     return(globalDF)
   }  
-  # Update variable names  
-  observe({
+  # Update variable names observeEvent on input$load 
+  observeEvent(input$load,{
     req(input$all_run_id)
     # All information about a model is contained in 'all_run_id' string
     ids_DF <- parse_ids_from_input_runID(input$all_run_id)
@@ -95,7 +95,7 @@ server <- shinyServer(function(input, output, session) {
     validate(
       need(input$all_workflow_id, 'Select workflow id'),
       need(input$all_run_id, 'Select Run id'),
-      need(input$variable_name, 'Click the button to load data')
+      need(input$variable_name, 'Click the button to load data. Please allow some time')
     )
     # Load data
     masterDF <- loadNewData()
@@ -112,12 +112,21 @@ server <- shinyServer(function(input, output, session) {
     ylab <- unique(df$ylab)
     # ggplot function for now scatter plots.
     # TODO Shubham allow line plots as well
-    plt <- ggplot(df, aes(x=dates, y=vals, color=run_id)) + 
-      geom_point() +
+    plt <- ggplot(df, aes(x=dates, y=vals, color=run_id)) 
+    # Toggle chart type using switch
+      switch(input$plotType,
+             "scatterPlot"  = {
+               plt <- plt + geom_point()
+             },
+             "lineChart"  = {
+               plt <- plt + geom_line()
+             }
+      )
+      # geom_point() +
       # Earlier smoothing and y labels
       # geom_smooth(aes(fill = "Spline fit")) +
       # scale_y_continuous(labels=fancy_scientific) +
-      labs(title=title, x=xlab, y=ylab) 
+    plt <- plt + labs(title=title, x=xlab, y=ylab) 
       # Earlier color and fill values
       # scale_color_manual(name = "", values = "black") +
       # scale_fill_manual(name = "", values = "grey50") 
