@@ -1,6 +1,6 @@
 ---
 title: "Simple Model-Data Comparisons"
-author: "Tess McCabe, Istem Fer"
+author: "Istem Fer, Tess McCabe"
 date: "4/26/2017"
 output:
   html_document: default
@@ -52,7 +52,7 @@ start.year<-as.numeric(lubridate::year(settings$run$start.date))
 end.year<-as.numeric(lubridate::year(settings$run$end.date))
 
 site.id<-settings$run$site$id
-File_path<- settings$run$inputs$met$path
+File_path<-"~/output/dbfiles/AmerifluxLBL_site_0-772/AMF_US-NR1_BASE_HH_9-1.csv"
 
 ## Open up a connection to The Bety Database 
 bety <-dplyr::src_postgres(host = settings$database$bety$host, user = settings$database$bety$user, password = settings$database$bety$password, dbname = settings$database$bety$dbname)
@@ -72,7 +72,7 @@ The arguments to read.output are the run ID, the folder where the run is located
 **First** _load up the observations_ and take a look at the contents of the file
 
 ```{r}
-File_format<-PEcAn.DB::query.format.vars(bety = bety, format.id = 24) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
+File_format<-PEcAn.DB::query.format.vars(bety = bety, format.id = 5000000002) #This matches the file with a premade "format" or a template that describes how the information in the file is organized
 
 site<-PEcAn.DB::query.site(site.id,bety$con) #This tells PEcAn where the data comes from
 
@@ -82,7 +82,6 @@ observations<-PEcAn.benchmark::load_data(data.path = File_path, format= File_for
 File_Path refers to where you stored your observational data. In this example the default file path is an Ameriflux dataset from Niwot Ridge. 
 
 File_format queries the database for the format your file is in. The defualt format ID "5000000002" is for csv files downloaded from the Ameriflux website.
-
 You could query for diffent kinds of formats that exist in bety or [make your own](https://pecanproject.github.io/pecan-documentation/adding-an-ecosystem-model.html#formats).
 
 Here 772 is the database site ID for Niwot Ridge Forest, which tells pecan where the data is from and what time zone to assign any time data read in. 
