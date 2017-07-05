@@ -36,7 +36,7 @@ ALL_PKGS_D := $(BASE_D) $(MODELS_D) $(MODULES_D) .doc/models/template
 
 .PHONY: all install check test document
 
-all: install
+all: document install
 
 document: .doc/all
 install: .install/all
@@ -85,6 +85,7 @@ clean:
 	mkdir -p $(@D)
 	echo `date` > $@
 
+depends_R_pkg = Rscript -e "devtools::install_dev_deps('$(strip $(1))', Ncpus = ${NCPUS});"
 install_R_pkg = Rscript -e "devtools::install('$(strip $(1))', Ncpus = ${NCPUS});"
 check_R_pkg = Rscript scripts/check_with_errors.R $(strip $(1))
 test_R_pkg = Rscript -e "devtools::test('"$(strip $(1))"', reporter = 'stop')"
@@ -94,6 +95,7 @@ $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): .install/devtools .inst
 
 .SECONDEXPANSION:
 .doc/%: $$(wildcard %/**/*) $$(wildcard %/*)
+	$(call depends_R_pkg, $(subst .doc/,,$@))
 	$(call doc_R_pkg, $(subst .doc/,,$@))
 	mkdir -p $(@D)
 	echo `date` > $@
