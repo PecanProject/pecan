@@ -9,4 +9,4 @@ checkAndDownload<-function(packageNames) {
 isInstalled <- function(mypkg){
   is.element(mypkg, installed.packages()[,1])
 }
-checkAndDownload(c('plotly','scales','dplyr'))
+# checkAndDownload(c('plotly','scales','dplyr'))
