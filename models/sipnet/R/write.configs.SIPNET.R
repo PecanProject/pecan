@@ -21,7 +21,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   writeLines(config.text, con = file.path(settings$rundir, run.id, "sipnet.in"))
   
   ### WRITE *.clim
-  template.clim <- settings$run$input$met$path  ## read from settings
+  template.clim <- settings$run$input$met$path  ## read from settings #typo in inputs?
   if (!is.null(inputs)) {
     ## override if specified in inputs
     if ("met" %in% names(inputs)) {
@@ -98,44 +98,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   
   param <- read.table(template.param)
   
-  #### write INITAL CONDITIONS here ####
-  if (!is.null(IC)) {
-    ic.names <- names(IC)
-    ## plantWoodInit gC/m2
-    if ("plantWood" %in% ic.names) {
-      param[which(param[, 1] == "plantWoodInit"), 2] <- IC$plantWood
-    }
-    ## laiInit m2/m2
-    if ("lai" %in% ic.names) {
-      param[which(param[, 1] == "laiInit"), 2] <- IC$lai
-    }
-    ## litterInit gC/m2
-    if ("litter" %in% ic.names) {
-      param[which(param[, 1] == "litterInit"), 2] <- IC$litter
-    }
-    ## soilInit gC/m2
-    if ("soil" %in% ic.names) {
-      param[which(param[, 1] == "soilInit"), 2] <- IC$soil
-    }
-    ## litterWFracInit fraction
-    if ("litterWFrac" %in% ic.names) {
-      param[which(param[, 1] == "litterWFracInit"), 2] <- IC$litterWFrac
-    }
-    ## soilWFracInit fraction
-    if ("soilWFrac" %in% ic.names) {
-      param[which(param[, 1] == "soilWFracInit"), 2] <- IC$soilWFrac
-    }
-    ## snowInit cm water equivalent
-    if ("snow" %in% ic.names) {
-      param[which(param[, 1] == "snowInit"), 2] <- IC$snow
-    }
-    ## microbeInit mgC/g soil
-    if ("microbe" %in% ic.names) {
-      param[which(param[, 1] == "microbeInit"), 2] <- IC$microbe
-    }
-  }else{
-    #some stuff about IC file that we can give in lieu of actual ICs
-  }
+ 
   
   #### write run-specific PFT parameters here #### Get parameters being handled by PEcAn
   for (pft in seq_along(trait.values)) {
@@ -359,6 +322,64 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     }
   }  ## end loop over PFTS
   ####### end parameter update
+  
+  #### write INITIAL CONDITIONS here ####
+  IC.path = settings$run$inputs$poolinitcond$path
+  if (!is.null(IC.path)) {
+    
+    IC.nc = nc_open(IC.path) #check for successful open?
+    
+    ## plantWoodInit gC/m2
+    plantWood = try(ncdf4::ncvar_get(IC.nc,"AbvGrndWood"),silent = TRUE)
+    if (!is.na(plantWood) && is.numeric(plantWood)) {
+      param[which(param[, 1] == "plantWoodInit"), 2] <- plantWood * 1000 #MsTMIP AbvGrndWood kgC/m2
+    }
+    else{
+      #try back-calculate from LAI,sla, and total biomass? where is total biomass?
+    }
+    ## laiInit m2/m2
+    lai = try(ncdf4::ncvar_get(IC.nc,"LAI"),silent = TRUE)
+    if (!is.na(lai) && is.numeric(lai)) {
+      param[which(param[, 1] == "laiInit"), 2] <- lai
+    }
+    ## litterInit gC/m2
+    litter = try(ncdf4::ncvar_get(IC.nc,"litter_carbon_content"),silent = TRUE)
+    if (!is.na(litter) && is.numeric(litter)) {
+      param[which(param[, 1] == "litterInit"), 2] <- litter * 1000 #CF litter_carbon_content kg/m2
+    }
+    ## soilInit gC/m2
+    soil = try(ncdf4::ncvar_get(IC.nc,"TotSoilCarb"),silent = TRUE)
+    if (!is.na(soil) && is.numeric(soil)) {
+      param[which(param[, 1] == "soilInit"), 2] <- sum(soil) * 1000 #MsTMIP TotSoilCarb kg C/m2
+    }
+    ## litterWFracInit fraction
+#    litterWFrac = try(ncdf4::ncvar_get(IC.nc,"LitterMoistFrac"),silent = TRUE) #may or may not actually include in standard ic file
+#    if (!is.na(litterWFrac) && is.numeric(litterWFrac)) {
+#      param[which(param[, 1] == "litterWFracInit"), 2] <- litterWFrac
+#    }
+    ## soilWFracInit fraction
+    soilWFrac = try(ncdf4::ncvar_get(IC.nc,"SoilMoistFrac"),silent = TRUE)
+    if (!is.na(soilWFrac) && is.numeric(soilWFrac)) {
+      param[which(param[, 1] == "soilWFracInit"), 2] <- sum(soilWFrac)
+    }
+    ## litterWFracInit fraction
+    litterWFrac = soilWFrac
+    ## snowInit cm water equivalent
+    snow = try(ncdf4::ncvar_get(IC.nc,"SWE"),silent = TRUE)
+    if (!is.na(snow) && is.numeric(snow)) {
+      param[which(param[, 1] == "snowInit"), 2] <- snow #MsTMIP SWE kg/m2, need to convert
+    }
+    ## microbeInit mgC/g soil
+    microbe = try(ncdf4::ncvar_get(IC.nc,"Microbial Biomass C"),silent = TRUE)
+    if (!is.na(microbe) && is.numeric(microbe)) {
+      param[which(param[, 1] == "microbeInit"), 2] <- microbe * .001 #BETY Microbial Biomass C mg C kg-1 soil
+    }
+    
+    #close file
+    ncdf4::nc_close(IC.nc)
+  }else{
+    #some stuff about IC file that we can give in lieu of actual ICs
+  }
   
   write.table(param, file.path(settings$rundir, run.id, "sipnet.param"), row.names = FALSE, col.names = FALSE, 
               quote = FALSE)
