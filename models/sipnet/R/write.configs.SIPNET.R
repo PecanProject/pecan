@@ -348,15 +348,10 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "litterInit"), 2] <- litter * 1000 #CF litter_carbon_content kg/m2
     }
     ## soilInit gC/m2
-    soil = try(ncdf4::ncvar_get(IC.nc,"TotSoilCarb"),silent = TRUE)
+    soil = try(ncdf4::ncvar_get(IC.nc,"soil_carbon_content_of_soil_layer"),silent = TRUE)
     if (!is.na(soil) && is.numeric(soil)) {
       param[which(param[, 1] == "soilInit"), 2] <- sum(soil) * 1000 #MsTMIP TotSoilCarb kg C/m2
     }
-    ## litterWFracInit fraction
-#    litterWFrac = try(ncdf4::ncvar_get(IC.nc,"LitterMoistFrac"),silent = TRUE) #may or may not actually include in standard ic file
-#    if (!is.na(litterWFrac) && is.numeric(litterWFrac)) {
-#      param[which(param[, 1] == "litterWFracInit"), 2] <- litterWFrac
-#    }
     ## soilWFracInit fraction
     soilWFrac = try(ncdf4::ncvar_get(IC.nc,"SoilMoistFrac"),silent = TRUE)
     if (!is.na(soilWFrac) && is.numeric(soilWFrac)) {
