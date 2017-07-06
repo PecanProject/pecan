@@ -44,7 +44,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                           con = con, 
                                           hostname = host$name, 
                                           exact.dates = TRUE
-    )
+                                         )
     
     
     logger.info(paste0("File id =", existing.dbfile$id,
@@ -86,15 +86,15 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         # Schedule files to be replaced or deleted on exiting the function
         successful <- FALSE
         on.exit(if (exists("successful") && successful) {
-          logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-          remote.execute.R( file.deletion.commands$delete.tmp, 
-                            host, user = NA, 
-                            verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
+                logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
+                remote.execute.R( file.deletion.commands$delete.tmp, 
+                                  host, user = NA, 
+                                  verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
         } else {
-          logger.info("Conversion failed. Replacing old files.")
-          remote.execute.R( file.deletion.commands$replace.from.tmp, 
-                            host, user = NA, 
-                            verbose = TRUE, R = Rbinary, scratchdir = outfolder )
+                logger.info("Conversion failed. Replacing old files.")
+                remote.execute.R( file.deletion.commands$replace.from.tmp, 
+                                  host, user = NA, 
+                                  verbose = TRUE, R = Rbinary, scratchdir = outfolder )
         }
         )#Close on.exit
       }
@@ -141,7 +141,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                           enddate = end_date, 
                                           con = con, 
                                           hostname = host
-    )
+                                         )
     
     logger.info(paste0("File id =", existing.dbfile$id,
                        " File name =", existing.dbfile$file_name,
