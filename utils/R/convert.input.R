@@ -50,8 +50,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     logger.debug("File id =", existing.dbfile$id,
                  " File name =", existing.dbfile$file_name,
                  " File path =", existing.dbfile$file_path,
-                 " Input id =", existing.dbfile$container_id),
-                digits = 10)
+                 " Input id =", existing.dbfile$container_id,
+                 digits = 10)
     
     logger.info("end CHECK for existing input record")
     
@@ -147,7 +147,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                  " File name =", existing.dbfile$file_name,
                  " File path =", existing.dbfile$file_path,
                  " Input id =", existing.dbfile$container_id),
-                digits = 10)
+                 digits = 10)
     
     logger.info("end CHECK for existing input record.")
     
