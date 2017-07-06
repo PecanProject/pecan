@@ -146,7 +146,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     logger.debug("File id =", existing.dbfile$id,
                  " File name =", existing.dbfile$file_name,
                  " File path =", existing.dbfile$file_path,
-                 " Input id =", existing.dbfile$container_id),
+                 " Input id =", existing.dbfile$container_id,
                  digits = 10)
     
     logger.info("end CHECK for existing input record.")
