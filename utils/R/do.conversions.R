@@ -52,7 +52,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     }
     
     # soil extraction
-    if(input.tag == "soil"){
+    if(input.tag == "soil"&& is.null(input$path)){
       settings$run$inputs[[i]][['path']] <- PEcAn.data.land::soil_process(settings,input,dbfiles.local,overwrite=FALSE)
       needsave <- TRUE
       ## NOTES: at the moment only processing soil locally. Need to think about how to generalize this
