@@ -327,7 +327,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   IC.path = settings$run$inputs$poolinitcond$path
   if (!is.null(IC.path)) {
     
-    IC.nc = nc_open(IC.path) #check for successful open?
+    IC.nc = ncdf4::nc_open(IC.path) #check for successful open?
     
     ## plantWoodInit gC/m2
     plantWood = try(ncdf4::ncvar_get(IC.nc,"AbvGrndWood"),silent = TRUE)
