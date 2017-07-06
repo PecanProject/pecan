@@ -47,10 +47,10 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                          )
     
     
-    logger.info(paste0("File id =", existing.dbfile$id,
-                       " File name =", existing.dbfile$file_name,
-                       " File path =", existing.dbfile$file_path,
-                       " Input id =", existing.dbfile$container_id),
+    logger.debug("File id =", existing.dbfile$id,
+                 " File name =", existing.dbfile$file_name,
+                 " File path =", existing.dbfile$file_path,
+                 " Input id =", existing.dbfile$container_id),
                 digits = 10)
     
     logger.info("end CHECK for existing input record")
@@ -143,10 +143,10 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                           hostname = host
                                          )
     
-    logger.info(paste0("File id =", existing.dbfile$id,
-                       " File name =", existing.dbfile$file_name,
-                       " File path =", existing.dbfile$file_path,
-                       " Input id =", existing.dbfile$container_id),
+    logger.debug("File id =", existing.dbfile$id,
+                 " File name =", existing.dbfile$file_name,
+                 " File path =", existing.dbfile$file_path,
+                 " Input id =", existing.dbfile$container_id),
                 digits = 10)
     
     logger.info("end CHECK for existing input record.")
@@ -408,7 +408,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   logger.info(result)
   logger.info(names(result))
   
-  if (length(result) == 1){
+  if (length(result) <= 1){
     logger.debug(paste0("Processing data failed, please check validity of args:", arg.string))
     logger.severe(paste0("Unable to process data using this function:",fcn))
   }
