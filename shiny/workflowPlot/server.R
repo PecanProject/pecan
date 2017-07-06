@@ -4,7 +4,7 @@ library(shiny)
 library(ncdf4)
 library(ggplot2)
 # Helper allows to load functions and variables that could be shared both by server.R and ui.R 
-# source('helper.R')
+source('helper.R')
 library(plotly)
 library(scales)
 library(dplyr)
@@ -89,7 +89,14 @@ server <- shinyServer(function(input, output, session) {
     }
     return(globalDF)
   })
-  # Renders the ggplotly 
+  loadExternalData <-eventReactive(input$load_data,{
+    inFile <- input$file1
+    if (is.null(inFile))
+      return(data.frame())
+    read.csv(inFile$datapath, header=input$header, sep=input$sep, 
+             quote=input$quote)
+  })  
+  # Renders ggplotly 
   output$outputPlot <- renderPlotly({
     # Error messages
     validate(
