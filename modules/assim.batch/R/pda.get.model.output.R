@@ -75,7 +75,9 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
                                            start.year, end.year, variables = vars))
     
     if(length(model.raw) == 0 | all(is.na(model.raw))) {   # Probably indicates model failed entirely
-      return(NA)
+      out <- list()
+      out$model.out <- NA
+      return(out)
     }
     
     
