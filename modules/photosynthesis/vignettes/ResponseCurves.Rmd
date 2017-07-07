@@ -59,7 +59,7 @@ library(PEcAn.photosynthesis)
 filenames <- system.file("extdata", paste0("flux-course-",rep(1:6,each=2),c("aci","aq")), package = "PEcAn.photosynthesis")
 
 ## Load files to a list
-master = lapply(filenames, read.Licor)
+master = lapply(filenames, read_Licor)
 ```
 
 
