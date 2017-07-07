@@ -14,7 +14,7 @@
 
   ## run QA/QC checks
   for(i in 1:length(master)){
-    master[[i]] = Licor.QC(master[[i]])
+    master[[i]] = Licor_QC(master[[i]])
     save(master,file="master.RData")
   }
   
