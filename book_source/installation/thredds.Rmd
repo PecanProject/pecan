@@ -44,7 +44,7 @@ service apache2 reload
 
 ## Customize the Thredds server
 
-To customize the thredds server for your installation edit the file in /home/caray/thredds/threddsConfig.xml. For example the following file is included in the VM.
+To customize the thredds server for your installation edit the file in /home/carya/thredds/threddsConfig.xml. For example the following file is included in the VM.
 
 ```
 <?xml version="1.0" encoding="UTF-8"?>
@@ -324,10 +324,10 @@ To customize the thredds server for your installation edit the file in /home/car
 
 ## Update the catalog
 
-For example to update the catalog with the latest data, run the following command from the root crontab.
+For example to update the catalog with the latest data, run the following command from the root crontab. This cronjob will also synchronize the database with remote servers and dump your database (by default in /home/carya/dump)
 
 ```
-0 * * * * /home/carya/pecan/scripts/thredds.sh > /home/carya/thredds/catalog.xml && service tomcat8 restart
+0 * * * * /home/carya/pecan/scripts/cron.sh -o /home/carya/dump
 ```
 
 ## Troubleshooting
