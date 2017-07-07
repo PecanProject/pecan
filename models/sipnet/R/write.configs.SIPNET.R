@@ -332,7 +332,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     ## plantWoodInit gC/m2
     plantWood = try(ncdf4::ncvar_get(IC.nc,"AbvGrndWood"),silent = TRUE)
     if (!is.na(plantWood) && is.numeric(plantWood)) {
-      param[which(param[, 1] == "plantWoodInit"), 2] <- plantWood * 1000 #MsTMIP AbvGrndWood kgC/m2
+      param[which(param[, 1] == "plantWoodInit"), 2] <- plantWood * 1000 #PEcAn standard AbvGrndWood kgC/m2
     }
     else{
       #try back-calculate from LAI,sla, and total biomass? where is total biomass?
@@ -345,12 +345,12 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     ## litterInit gC/m2
     litter = try(ncdf4::ncvar_get(IC.nc,"litter_carbon_content"),silent = TRUE)
     if (!is.na(litter) && is.numeric(litter)) {
-      param[which(param[, 1] == "litterInit"), 2] <- litter * 1000 #CF litter_carbon_content kg/m2
+      param[which(param[, 1] == "litterInit"), 2] <- litter * 1000 #PEcAn standard litter_carbon_content kg/m2
     }
     ## soilInit gC/m2
     soil = try(ncdf4::ncvar_get(IC.nc,"soil_carbon_content_of_soil_layer"),silent = TRUE)
     if (!is.na(soil) && is.numeric(soil)) {
-      param[which(param[, 1] == "soilInit"), 2] <- sum(soil) * 1000 #MsTMIP TotSoilCarb kg C/m2
+      param[which(param[, 1] == "soilInit"), 2] <- sum(soil) * 1000 #PEcAn standard TotSoilCarb kg C/m2
     }
     ## soilWFracInit fraction
     soilWFrac = try(ncdf4::ncvar_get(IC.nc,"SoilMoistFrac"),silent = TRUE)
@@ -362,7 +362,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     ## snowInit cm water equivalent
     snow = try(ncdf4::ncvar_get(IC.nc,"SWE"),silent = TRUE)
     if (!is.na(snow) && is.numeric(snow)) {
-      param[which(param[, 1] == "snowInit"), 2] <- snow #MsTMIP SWE kg/m2, need to convert
+      param[which(param[, 1] == "snowInit"), 2] <- snow*0.1 #PEcAn standard SWE kg/m2, need to convert
     }
     ## microbeInit mgC/g soil
     microbe = try(ncdf4::ncvar_get(IC.nc,"Microbial Biomass C"),silent = TRUE)
