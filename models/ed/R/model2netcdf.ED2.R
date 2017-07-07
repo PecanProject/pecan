@@ -571,7 +571,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
     nc_var[[25]] <- mstmipvar("LWnet", lat, lon, t, zg)
     nc_var[[26]] <- mstmipvar("Qg", lat, lon, t, zg)
     nc_var[[27]] <- mstmipvar("Qh", lat, lon, t, zg)
-    out <- conversion(28, get.lv())  ## kg m-2 s-1 -> W m-2
+    out <- conversion(28,PEcAn.data.atmosphere::get.lv())  ## kg m-2 s-1 -> W m-2
     nc_var[[28]]<- ncdf4::ncvar_def("Qle", units = "W m-2", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Latent heat")
     nc_var[[29]] <- mstmipvar("SWnet", lat, lon, t, zg)
