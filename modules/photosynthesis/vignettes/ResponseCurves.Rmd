@@ -159,7 +159,7 @@ plot(pmean, dat$Photo, pch = "+", xlab = "Predicted A", ylab = "Observed A")
 abline(0, 1, col = 2, lwd = 2)
   
 ##   
-plot.photo(dat, fit)
+plot_photo(dat, fit)
 
 ```
 
@@ -199,7 +199,7 @@ plot(pmean, dat$Photo, pch = "+", xlab = "Predicted A", ylab = "Observed A")
 abline(0,1,col=2,lwd=2)
   
 ##   
-plot.photo(dat,fitI)
+plot_photo(dat,fitI)
 
 ```
 
@@ -248,7 +248,7 @@ plot(pmean, dat$Photo, pch = "+", xlab = "Predicted A", ylab = "Observed A")
 abline(0,1,col=2,lwd=2)
   
 ##   
-plot.photo(dat, fitC)
+plot_photo(dat, fitC)
 
 ```
 

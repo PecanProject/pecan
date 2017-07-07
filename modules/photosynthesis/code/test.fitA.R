@@ -49,5 +49,5 @@ summary(fit$params) ## parameter estimates
   abline(0,1,col=2,lwd=2)
   
   
-plot.photo(dat,fit)
+plot_photo(dat,fit)
   
