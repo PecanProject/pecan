@@ -4,7 +4,7 @@
 \alias{pda.neff.calc}
 \title{Calculate N_eff}
 \usage{
-pda.neff.calc(inputs)
+pda.neff.calc(inputs, recalculate = FALSE)
 }
 \arguments{
 \item{inputs}{list}
