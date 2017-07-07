@@ -9,7 +9,7 @@
   
   ## Read Photosynthetic gas exchange data
   filenames <- list.files(in.folder,pattern=pattern, full.names=TRUE)
-  master = lapply(filenames, read.Licor)
+  master = lapply(filenames, read_Licor)
   save(master,file="master.RData")
 
   ## run QA/QC checks

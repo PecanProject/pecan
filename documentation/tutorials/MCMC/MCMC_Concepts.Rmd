@@ -73,7 +73,7 @@ library(PEcAn.photosynthesis)
 
 ### Load built in data
 filenames <- system.file("extdata", paste0("flux-course-3",c("aci","aq")), package = "PEcAn.photosynthesis")
-dat<-do.call("rbind", lapply(filenames, read.Licor))
+dat<-do.call("rbind", lapply(filenames, read_Licor))
 
 ## Simple plots
 aci = as.character(dat$fname) == basename(filenames[1])
