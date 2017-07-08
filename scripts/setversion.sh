@@ -2,7 +2,7 @@
 
 RELEASE="1.5.0"
 RC=2
-VERSION="${RELEASE}.RC${RC}"
+VERSION="${RELEASE}-{RC}"
 
 cd /home/carya/pecan
 git checkout release/${RELEASE}
