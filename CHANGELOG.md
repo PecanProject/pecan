@@ -6,10 +6,24 @@ section for the next release.
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
 ## [Unreleased]
+### Added
+- Added PEcAn.utils::download.file() to allow for use of alternative FTP programs
+- Updated downloadAmeriflux and downloadNARR to make use of PEcAn.utils::download.file()
+- Added -w flag to load.bety.sh script to specify the URL to fetch the data from
+- add new table sites_cultivars to betydb sync scripts (dump and load)
+
+### Changed
+- upscale_met now accepts ~any valid CF file (not just full years), retains correct time units, and respects the previously ignored `overwrite` parameter
+- Better date handling in BioCro functions
+
+## [1.4.10.1] - 2017-04-18
 
 ### Changed
 - Bugfix in Fluxnet2015
+- Update Git workflow in Documentation
 - download.CRUNCEP now uses CF-compliant time units (days since start of year instead of "secs")
+- Bugfixes in met.process
+
 
 ## [1.4.10] - 2017-03-27
 Documentation
