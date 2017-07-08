@@ -54,7 +54,7 @@ To customize the thredds server for your installation edit the file in /home/car
   <!-- see http://www.unidata.ucar.edu/software/thredds/current/tds/reference/ThreddsConfigXMLFile.html -->
   <serverInformation>
     <name>PEcAn</name>
-    <logoUrl>/pecan/pecan_small.jpg</logoUrl>
+    <logoUrl>/pecan/images/pecan_small.jpg</logoUrl>
     <logoAltText>PEcAn</logoAltText>
 
     <abstract>Scientific Data</abstract>
@@ -69,7 +69,7 @@ To customize the thredds server for your installation edit the file in /home/car
     <hostInstitution>
       <name>PEcAn</name>
       <webSite>http://www.pecanproject.org/</webSite>
-      <logoUrl>/pecan/pecan_small.jpg</logoUrl>
+      <logoUrl>/pecan/images/pecan_small.jpg</logoUrl>
       <logoAltText>PEcAn Project</logoAltText>
     </hostInstitution>
   </serverInformation>
