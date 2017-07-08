@@ -82,6 +82,7 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
     return(NA)
   }
   
+  
   ## build PFT x Component table and convert mcmclist objects to mcmc
   pftByComp <- matrix(NA, npft, ncomp)
   for (i in seq_len(npft)) {
@@ -180,27 +181,62 @@ allom.predict <- function(object, dbh, pft = NULL, component = NULL, n = NULL, u
   names(params) <- names(object)
   
   ### perform actual allometric calculation
-  out <- matrix(NA, n, length(dbh))
+  if (is(dbh, "list")) {
+    out <- list(length(dbh))
+  } else {
+    out <- matrix(NA, n, length(dbh))
+  }
   for (p in unique(pft)) {
     sel <- which(pft == p)
-    a <- params[[p]][, 1]
-    b <- params[[p]][, 2]
+    a <- params[[p]][,1]
+    b <- params[[p]][,2]
     if (ncol(params[[p]]) > 2) {
-      s <- sqrt(params[[p]][, 3])  ## sigma was originally calculated as a variance, so convert to std dev
+      s <- sqrt(params[[p]][,3]) ## sigma was originally calculated as a variance, so convert to std dev
     } else {
       s <- 0
     }
-    for (i in sel) {
-      out[, i] <- exp(rnorm(n, a + b * log(dbh[i]), s))
-    }
-    
-    # for a dbh time-series for a single tree, fix error for each draw
-    if (single.tree == TRUE) {
-      epsilon <- rnorm(n, 0, s)
-      for (i in seq_len(n)) {
-        out[i, ] <- exp(a[i] + b[i] * log(dbh) + epsilon[i])
+        
+    if (is(dbh, "list")) {
+      for (j in 1:length(sel)) {
+        if ((is(dbh[[sel[j]]], "numeric")) & (all(is.na(dbh[[sel[j]]])))) {
+          out[[sel[j]]] <- array(NA, c(n,1,length(dbh[[sel[j]]])))
+          out[[sel[j]]][,,] <- NA
+          next
+        } else if (is(dbh[[sel[j]]], "numeric")) {
+          ntrees <- 1
+          nyears <- length(dbh[[sel[j]]])
+        } else {
+          ntrees <- nrow(dbh[[sel[j]]])
+          nyears <- ncol(dbh[[sel[j]]])
+        }
+        
+        out[[sel[j]]] <- array(NA, c(n,ntrees,nyears))
+        
+        for (k in 1:ntrees) {
+          epsilon <- rnorm(n, 0, s) # don't fix this for a single tree; fix for a single iteration for a single site across all trees
+          if (is(dbh[[sel[j]]], "numeric")) {
+            dbh_sel_k <- dbh[[sel[j]]]
+          } else {
+            dbh_sel_k <- dbh[[sel[j]]][k,]
+          }
+          
+          log_x <- sapply(dbh_sel_k, function(x) if(is.na(x)|(x<=0)){return(NA)}else{log(x)})
+          out[[sel[j]]][,k,] <-  sapply(log_x, function(x) if(is.na(x)){rep(NA, n)}else{exp(a+b*x + epsilon)})
+        }
+      }
+    } else if (single.tree == TRUE) {
+      # for a dbh time-series for a single tree, fix error for each draw
+      epsilon = rnorm(n, 0, s)
+      for (i in 1:n) {
+        out[i,] <- exp(a[i]+b[i]*log(dbh) + epsilon[i])
+      }
+    } else {
+      # for a dbh time-series for different trees, error not fixed across draws
+      for (i in sel) {
+        out[,i] <- exp(rnorm(n, a+b*log(dbh[i]),s))
       }
     }
+    
   }
   
   return(out)
