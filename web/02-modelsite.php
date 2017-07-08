@@ -498,7 +498,7 @@ function goHome() {
       </select>
       <div class="spacer"></div>
 
-      <a href="https://pecan.gitbooks.io/pecan-documentation/content/models/" target="_blank" 
+      <a href="https://pecanproject.github.io/pecan-documentation/master/pecan-models.html" target="_blank" 
       title="Link opens model descriptions in another window">
       <label id="modellabel">Model:</label></a>
       <select name="modelid" id="modelid" onChange="updateData();">
@@ -509,8 +509,8 @@ function goHome() {
       <span title="Filter map by networks of sites">
       <label id="sitegrouplabel">Site Group:</label></span>
       <select name="sitegroupid" id="sitegroupid" onChange="updateData();">
-        <?php echo $sitegroups; ?>
-        <option value="">All Sites</option>
+       	<?php echo $sitegroups; ?>
+	<option value="">All Sites</option>
       </select>
       <div class="spacer"></div>
 
@@ -622,7 +622,7 @@ function goHome() {
     </form>
 <?php whoami(); ?>  
 <p>
-  <a href="https://pecan.gitbooks.io/pecan-documentation/content/" target="_blank">Documentation</a>
+  <a href="https://pecanproject.github.io/pecan-documentation/master" target="_blank">Documentation</a>
   <br>
   <a href="https://gitter.im/PecanProject/pecan" target="_blank">Chat Room</a>
   <br>
