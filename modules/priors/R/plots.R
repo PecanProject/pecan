@@ -174,7 +174,7 @@ plot.trait <- function(trait,
     base.plot <- plot.posterior.density(posterior.density, base.plot = base.plot)
   }
   if (plot.data) {
-    base.plot <- plot.data(trait.df, base.plot = base.plot, ymax = y.lim[2])
+    base.plot <- plot_data(trait.df, base.plot = base.plot, ymax = y.lim[2])
   }
   
   trait.plot <- base.plot + 
