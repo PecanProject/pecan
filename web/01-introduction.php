@@ -76,7 +76,7 @@ if ($authentication) {
         </form>
 <?php whoami(); ?>  
 <p>
-  <a href="https://pecan.gitbooks.io/pecan-documentation/content/" target="_blank">Documentation</a>
+  <a href="https://pecanproject.github.io/pecan-documentation/master/" target="_blank">Documentation</a>
 <br>
   <a href="https://gitter.im/PecanProject/pecan" target="_blank">Chat Room</a>
 <br>
