@@ -17,7 +17,7 @@ RUN /build/system_services.sh
 # run update machine to update machine
 RUN /build/update_machine.sh
 
-# run inatall packages to install required packages
+# run install packages to install required packages
 RUN /build/install_packages.sh
 
 # run install R to install R packages
