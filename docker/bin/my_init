@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 export LC_ALL=C TERM="xterm"
 
 trap 'shutdown_runit_services' INT TERM
@@ -88,7 +88,7 @@ run_startup_files() {
 }
 
 
-# function to start corn jobs
+# function to start cron jobs
 start_runit () {
    echo "Booting runit daemon..."
    /usr/bin/runsvdir -P /etc/service 'log:.........................................................................................................' &
