@@ -9,4 +9,7 @@ checkAndDownload<-function(packageNames) {
 isInstalled <- function(mypkg){
   is.element(mypkg, installed.packages()[,1])
 }
-# checkAndDownload(c('plotly','scales','dplyr'))
+checkAndDownload(c('plotly','scales','dplyr'))
+
+# write.csv(globalDF,file='/home/carya/pecan/shiny/workflowPlot/sampleFile.csv',
+#           quote = FALSE,sep = ',',col.names = TRUE,row.names=FALSE)

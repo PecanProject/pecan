@@ -93,9 +93,18 @@ server <- shinyServer(function(input, output, session) {
     inFile <- input$file1
     if (is.null(inFile))
       return(data.frame())
-    read.csv(inFile$datapath, header=input$header, sep=input$sep, 
+    output$info1 <- renderText({
+      # paste0(nrow(externalData))
+      paste0(inFile$datapath)
+    })
+    externalData <- read.csv(inFile$datapath, header=input$header, sep=input$sep, 
              quote=input$quote)
+    return(externalData)
   })  
+  output$info <- renderText({
+    inFile <- input$file1
+    paste0(inFile$datapath)
+  })
   # Renders ggplotly 
   output$outputPlot <- renderPlotly({
     # Error messages
@@ -105,7 +114,10 @@ server <- shinyServer(function(input, output, session) {
       need(input$variable_name, 'Click the button to load data. Please allow some time')
     )
     # Load data
-    masterDF <- loadNewData()
+    externalData <- data.frame()
+    modelData <- loadNewData()
+    externalData <- loadExternalData()
+    masterDF <- rbind(modelData,externalData)
     # Convert from factor to character. For subsetting 
     masterDF$var_name <- as.character(masterDF$var_name)
     # Convert to factor. Required for ggplot 
@@ -129,6 +141,9 @@ server <- shinyServer(function(input, output, session) {
                plt <- plt + geom_line()
              }
       )
+    # if (!is.null(loaded_data)) {
+    #   plt <- plt + geom_line(data = loaded_data, linetype = 'dashed')
+    # }
       # geom_point() +
       # Earlier smoothing and y labels
       # geom_smooth(aes(fill = "Spline fit")) +
