@@ -92,19 +92,23 @@ server <- shinyServer(function(input, output, session) {
   loadExternalData <-eventReactive(input$load_data,{
     inFile <- input$file1
     if (is.null(inFile))
-      return(data.frame())
-    output$info1 <- renderText({
-      # paste0(nrow(externalData))
-      paste0(inFile$datapath)
-    })
+      return(NULL)
     externalData <- read.csv(inFile$datapath, header=input$header, sep=input$sep, 
              quote=input$quote)
+    externalData$dates <- as.Date(externalData$dates)
+    externalData <- externalData %>%
+      dplyr::filter(var_name == input$variable_name) 
+    # output$info1 <- renderText({
+    #   paste0(nrow(externalData))
+    #   # paste0(inFile$datapath)
+    # })
     return(externalData)
   })  
-  output$info <- renderText({
-    inFile <- input$file1
-    paste0(inFile$datapath)
-  })
+  # output$info <- renderText({
+  #   inFile <- input$file1
+  #   paste0(inFile$datapath)
+  #   # paste0(input$load_data)
+  # })
   # Renders ggplotly 
   output$outputPlot <- renderPlotly({
     # Error messages
@@ -116,7 +120,9 @@ server <- shinyServer(function(input, output, session) {
     # Load data
     externalData <- data.frame()
     modelData <- loadNewData()
-    externalData <- loadExternalData()
+    if (input$load_data>0) { 
+      externalData <- loadExternalData()
+    }
     masterDF <- rbind(modelData,externalData)
     # Convert from factor to character. For subsetting 
     masterDF$var_name <- as.character(masterDF$var_name)
@@ -141,14 +147,21 @@ server <- shinyServer(function(input, output, session) {
                plt <- plt + geom_line()
              }
       )
+    plt <- plt + labs(title=title, x=xlab, y=ylab) 
+    
     # if (!is.null(loaded_data)) {
-    #   plt <- plt + geom_line(data = loaded_data, linetype = 'dashed')
+    # if (input$load_data>0) {  
+    #   loaded_data <- loadExternalData()
+    #   output$info1 <- renderText({
+    #     paste0(nrow(loaded_data))
+    #     # paste0(inFile$datapath)
+    #   })
+    #   plt <- plt + geom_line(data = loaded_data,aes(x=dates, y=vals), linetype = 'dashed')
     # }
       # geom_point() +
       # Earlier smoothing and y labels
       # geom_smooth(aes(fill = "Spline fit")) +
       # scale_y_continuous(labels=fancy_scientific) +
-    plt <- plt + labs(title=title, x=xlab, y=ylab) 
       # Earlier color and fill values
       # scale_color_manual(name = "", values = "black") +
       # scale_fill_manual(name = "", values = "grey50") 
