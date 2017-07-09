@@ -31,11 +31,13 @@ ui <- shinyUI(fluidPage(
                    c(None='',
                      'Double Quote'='"',
                      'Single Quote'="'"),
-                   '"'),
+                   ''),
       actionButton("load_data", "Load External Data")
     ),
     mainPanel(
-      plotlyOutput("outputPlot")
+      plotlyOutput("outputPlot"),
+      verbatimTextOutput("info1"),
+      verbatimTextOutput("info")
     )
   )
 ))
