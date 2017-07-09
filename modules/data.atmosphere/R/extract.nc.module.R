@@ -5,9 +5,16 @@
   logger.info("Site Extraction")
   
   input.id <- cf.id[1]
-  outfolder <- ifelse(host$name == "localhost", 
-                      file.path(dir, paste0(met, "_CF_site_", str_ns)), 
-                      file.path(host$dbfiles, paste0(met, "_CF_site_", str_ns)))
+  if(host$name == "localhost"){
+    outfolder <- file.path(dir, paste0(met, "_CF_site_", str_ns))
+  } else {
+    if(is.null(host$folder)){
+      PEcAn.utils::logger.severe("host$folder required when running extract.nc.module for remote servers")
+    } else {
+      outfolder <- file.path(host$folder, paste0(met, "_CF_site_", str_ns))
+    }
+  }
+
   pkg        <- "PEcAn.data.atmosphere"
   fcn        <- "extract.nc"
   formatname <- "CF Meteorology"

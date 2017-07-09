@@ -6,9 +6,9 @@
 \alias{dbfile.id}
 \title{Return file from the dbfiles tables}
 \usage{
-dbfile.file(type, id, con, hostname = fqdn())
+dbfile.file(type, id, con, hostname = PEcAn.utils::fqdn())
 
-dbfile.id(type, file, con, hostname = fqdn())
+dbfile.id(type, file, con, hostname = PEcAn.utils::fqdn())
 }
 \arguments{
 \item{type}{the type of dbfile (Input, Posterior)}
