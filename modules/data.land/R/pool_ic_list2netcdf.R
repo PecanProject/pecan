@@ -14,24 +14,37 @@ pool_ic_list2netcdf <- function(input, outdir,siteid){
   if(is.null(input$vals)){
     PEcAn.utils::logger.severe("Please provide 'vals' list in input with variable names assigned to values")
   }
-  if (!all(c("lon","lat","depth") %in% names(input$dims))){
-    PEcAn.utils::logger.severe(paste("Missing or invalid dimname, please check if dims in input are named lon, lat, depth"))
+  
+  standard_vars <- read.csv(system.file("data/standard_vars.csv",package="PEcAn.utils"),stringsAsFactors = FALSE)
+  
+  ###function to lapply to all dimensions in input list and return a list of ncdims
+  to_ncdim <- function(dimname,standard_vars,input){
+    dim <- standard_vars[which(standard_vars$Variable.Name == dimname),]
+    #check dim exists
+    if(nrow(dim)==0){
+      PEcAn.utils::logger.severe(paste("Dimension",dimname,"not in standard_vars"))
+    }
+    if(dim$Category != "Dimension"){
+      PEcAn.utils::logger.severe(paste(dimname,"not a dimension or is deprecated"))
+    }
+    
+    vals = input$dims[[which(names(input$dims)==dimname)]] #makes function non-modular but works assuming it's only used in pool_ic_list2netcdf
+    if(is.null(vals) || length(vals)==0){
+      PEcAn.utils::logger.severe(paste("Missing vals for dim",dimname,",please check input")) #don't know if this could happen without explicit NULL in input
+    }
+    
+    units = as.character(dim$Units) #if the units are a factor the function fails
+    longname <- as.character(dim$Long.name)
+    
+    ncdim <- ncdf4::ncdim_def(name = dimname, vals = vals, units = units, longname = longname,-999) 
+    
+    return(ncdim)
   }
   
-  ##define dimensions available for netcdf
-  #assuming additional dim names aren't necessary; could use process similar to ncvars if so
-  lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = input$dims$lon, 
-                          longname = "station_longitude")
-  lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = input$dims$lat, 
-                          longname = "station_latitude")
-  depth <- ncdf4::ncdim_def(name = "depth", units = "cm", vals = input$dims$depth, 
-                            longname = "depth to bottom of layer")
+  dims <- lapply(names(input$dims),to_ncdim,standard_vars,input)
+  names(dims) <- names(input$dims)
   
-  dims <- list(lon = lon, lat = lat, depth = depth) #depth soon to be replaced in standard table with depth
   
-  #lookup table
-  #standard_vars <- data(standard_vars,package = "PEcAn.utils") 
-  standard_vars <- read.csv(system.file("data/standard_vars.csv",package="PEcAn.utils"),stringsAsFactors = FALSE)
   ###function to lapply to all variables in input list and return a list of ncvars
   to_ncvar <- function(varname,standard_vars,dims){
     #print(varname)
@@ -55,7 +68,7 @@ pool_ic_list2netcdf <- function(input, outdir,siteid){
     return(ncvar)
   }
   
-  ncvars = lapply(names(input$vals),to_ncvar,standard_vars,dims)
+  ncvars <- lapply(names(input$vals),to_ncvar,standard_vars,dims)
   
   #create nc file
   str_ns <- paste0(siteid %/% 1e+09, "-", siteid %% 1e+09)
