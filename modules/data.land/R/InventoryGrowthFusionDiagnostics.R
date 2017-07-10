@@ -86,6 +86,18 @@ InventoryGrowthFusionDiagnostics <- function(jags.out, combined) {
   
     
   par(mfrow = c(1, 1))
+  ### alpha
+  alpha.cols <- grep("alpha", colnames(out))
+  if (length(alpha.cols) > 0) {
+    alpha.ord <- 1:length(alpha.cols)
+    ci.alpha <- apply(out[, alpha.cols], 2, quantile, c(0.025, 0.5, 0.975))
+    plot(alpha.ord, ci.alpha[2, ], type = "n", 
+         ylim = range(ci.alpha, na.rm = TRUE), ylab = "Random Effects")
+    PEcAn.visualization::ciEnvelope(alpha.ord, ci.alpha[1, ], ci.alpha[3, ], col = "lightBlue")
+    lines(alpha.ord, ci.alpha[2, ], lty = 1, lwd = 2)
+    abline(h = 0, lty = 2)
+  }
+  
   ### YEAR
   year.cols <- grep("year", colnames(out))
   if (length(year.cols > 0)) {
