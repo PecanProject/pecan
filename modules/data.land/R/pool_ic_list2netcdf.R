@@ -21,19 +21,19 @@ pool_ic_list2netcdf <- function(input, outdir,siteid){
   to_ncdim <- function(dimname,standard_vars,input){
     dim <- standard_vars[which(standard_vars$Variable.Name == dimname),]
     #check dim exists
-    if(nrow(dim)==0){
+    if(nrow(dim) == 0){
       PEcAn.utils::logger.severe(paste("Dimension",dimname,"not in standard_vars"))
     }
     if(dim$Category != "Dimension"){
       PEcAn.utils::logger.severe(paste(dimname,"not a dimension or is deprecated"))
     }
     
-    vals = input$dims[[which(names(input$dims)==dimname)]] #makes function non-modular but works assuming it's only used in pool_ic_list2netcdf
-    if(is.null(vals) || length(vals)==0){
+    vals <- input$dims[[which(names(input$dims) == dimname)]] #makes function non-modular but works assuming it's only used in pool_ic_list2netcdf
+    if(is.null(vals) || length(vals) == 0){
       PEcAn.utils::logger.severe(paste("Missing vals for dim",dimname,",please check input")) #don't know if this could happen without explicit NULL in input
     }
     
-    units = as.character(dim$Units) #if the units are a factor the function fails
+    units <- as.character(dim$Units) #if the units are a factor the function fails
     longname <- as.character(dim$Long.name)
     
     ncdim <- ncdf4::ncdim_def(name = dimname, vals = vals, units = units, longname = longname,-999) 
@@ -52,7 +52,6 @@ pool_ic_list2netcdf <- function(input, outdir,siteid){
     #check var exists
     if(nrow(var)==0){
      PEcAn.utils::logger.severe(paste("Variable",varname,"not in standard_vars"))
-      #return(NULL)
     }
     dimset <- var[,c("dim1","dim2","dim3","dim4")]
     dim <- dims[which(names(dims) %in% dimset)] #subset list of all dims for this variable
@@ -61,10 +60,10 @@ pool_ic_list2netcdf <- function(input, outdir,siteid){
       PEcAn.utils::logger.severe(paste("No dimensions were loaded for",varname))
     }
     units = as.character(var$Units) #if the units are a factor the function fails
-    ncvar <- ncdf4::ncvar_def(name = varname, units = units, dim = dim, -999, prec = "double") #also add longname?
-    if (!is.na(var$Long.name)) {
-      ncvar$longname <- as.character(var$Long.name)
-    }
+    longname <- as.character(var$Long.name)
+    
+    ncvar <- ncdf4::ncvar_def(name = varname, units = units, longname = longname, dim = dim, -999, prec = "double") 
+    
     return(ncvar)
   }
   
