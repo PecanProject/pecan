@@ -14,14 +14,14 @@ pool_ic_list2netcdf <- function(input, outdir,siteid){
                           longname = "station_longitude")
   lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = input$dims$lat, 
                           longname = "station_latitude")
-  depth <- ncdf4::ncdim_def(name = "depth", units = "cm", vals = input$dims$nsoil, 
+  depth <- ncdf4::ncdim_def(name = "depth", units = "cm", vals = input$dims$depth, 
                             longname = "depth to bottom of layer")
   
-  dims <- list(lon = lon, lat = lat, nsoil = depth) #nsoil soon to be replaced in standard table with depth
+  dims <- list(lon = lon, lat = lat, depth = depth) #depth soon to be replaced in standard table with depth
   
   #lookup table
-  #standard_vars <- data(mstmip_vars,package = "PEcAn.utils") #standard_vars replacing mstmip_vars; not yet merged
-  standard_vars <- read.csv("/fs/data3/aet4612/pecan/utils/data/mstmip_vars.csv",sep = ';')
+  #standard_vars <- data(standard_vars,package = "PEcAn.utils") #standard_vars replacing mstmip_vars; not yet merged
+  standard_vars <- read.csv(system.file("data/standard_vars.csv",package="PEcAn.utils"),stringsAsFactors = FALSE)
   ###function to lapply to all variables in input list and return a list of ncvars
   to_ncvar <- function(varname,standard_vars,dims){
     #print(varname)
