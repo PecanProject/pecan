@@ -13,7 +13,7 @@ InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=50
   
   # baseline variables to monitor
   burnin.variables <- c("tau_add", "tau_dbh", "tau_inc", "mu") # process variability, dbh and tree-ring observation error, intercept
-  out.variables <- c("x", "tau_add", "tau_dbh", "tau_inc", "mu")
+  out.variables <- c("deviance","x", "tau_add", "tau_dbh", "tau_inc", "mu")
   
   # start text object that will be manipulated (to build different linear models, swap in/out covariates)
   TreeDataFusionMV <- "
@@ -57,7 +57,11 @@ model{
  }"
   
   Pformula <- NULL
-  ## RANDOM EFFECTS
+  ########################################################################
+  ###
+  ###        RANDOM EFFECTS
+  ###
+  ########################################################################
   if (!is.null(random)) {
     Rpriors <- NULL
     Reffects <- NULL
@@ -121,6 +125,11 @@ model{
     TreeDataFusionMV <- gsub(pattern = "## RANDOM_EFFECTS", Reffects, TreeDataFusionMV)
   }   ### END RANDOM EFFECTS
 
+  ########################################################################
+  ###
+  ###        FIXED EFFECTS
+  ###
+  ########################################################################
   if(FALSE){
     ## DEV TESTING FOR X, polynomial X, and X interactions
     fixed <- "X + X^3 + X*bob + bob + dia + X*Tmin[t]" ## faux model, just for testing jags code
@@ -252,6 +261,12 @@ model{
  
   if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at Xf",names(data))}
   
+  ########################################################################
+  ###
+  ###        TIME-VARYING
+  ###
+  ########################################################################
+  
   if(FALSE){ # always false...just for development
     ## DEVEL TESTING FOR TIME VARYING
     #time_varying <- "TminJuly + PrecipDec + TminJuly*PrecipDec"
@@ -259,10 +274,9 @@ model{
     time_data <- list(TminJuly = matrix(0,4,4),PrecipDec = matrix(1,4,4))
   }
   
-  ## Time-varying covariates
   if(!is.null(time_varying)){
     if (is.null(time_data)) {
-      print("time_varying formula provided but time_data is absent:", time_varying)
+      PEcAn.utils::logger.error("time_varying formula provided but time_data is absent:", time_varying)
     }
     Xt.priors <- ""
     
@@ -270,19 +284,20 @@ model{
     t_vars <- gsub(" ","",unlist(strsplit(time_varying,"+",fixed=TRUE))) ## split on +, remove whitespace
     ## check for interaction terms
     it_vars <- t_vars[grep(pattern = "*",x=t_vars,fixed = TRUE)]
-    t_vars <- t_vars[!(t_vars == it_vars)]
+    if(length(it_vars) > 0){
+      t_vars <- t_vars[!(t_vars == it_vars)]
+    } 
     
-      ## need to deal with interactions with fixed variables
-      ## will get really nasty if interactions are with catagorical variables
-      ## need to create new data matrices on the fly
-    
+    ## INTERACTIONS WITH TIME-VARYING VARS
+    ## TODO: deal with interactions with catagorical variables
+    ## need to create new data matrices on the fly
     for(i in seq_along(it_vars)){
 
       ##is covariate fixed or time varying?
       covX <- strsplit(it_vars[i],"*",fixed=TRUE)[[1]] 
       tvar    <- length(grep("[t]",covX[1],fixed=TRUE)) > 0
       tvar[2] <- length(grep("[t]",covX[2],fixed=TRUE)) > 0
-      myBeta <- "beta_"
+      myBeta <- "beta"
       for(j in 1:2){
         if(j == 2) myBeta <- paste0(myBeta,"_")
         if(tvar[j]){
@@ -377,9 +392,11 @@ model{
                       year = rep(0, data$nt))
   }
   
-  ## compile JAGS model
+
+  PEcAn.utils::logger.info("COMPILE JAGS MODEL")
   j.model <- jags.model(file = textConnection(TreeDataFusionMV), data = data, inits = init, n.chains = 3)
-  ## burn-in
+
+  PEcAn.utils::logger.info("BURN IN")
   jags.out <- coda.samples(model = j.model, 
                            variable.names = burnin.variables, 
                            n.iter = min(n.iter, 2000))
@@ -387,7 +404,8 @@ model{
     plot(jags.out)
   }
   
-  ## run MCMC
+  PEcAn.utils::logger.info("RUN MCMC")
+  load.module("dic")
   coda.samples(model = j.model, variable.names = out.variables, n.iter = n.iter)
 } # InventoryGrowthFusion
 
