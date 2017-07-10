@@ -1,5 +1,6 @@
 ##' @name pool_ic_list2netcdf
 ##' @title pool_ic_list2netcdf
+##' @description Converts input list containing standard dimensions and variables (named values) for initial conditions to a netcdf file, input to pool-based models.
 ##' @export
 ##'
 ##' @param input list with two elements: list of netcdf dimensions (dims, with named values) and list of variables (vals, with named values)
@@ -7,7 +8,7 @@
 ##' @param siteid site id
 ##' @author Anne Thomas
 
-pool_ic_list2netcdf <- function(input, outdir,siteid){
+pool_ic_list2netcdf <- function(input, outdir, siteid){
   if(is.null(input$dims) || length(input$dims) == 0){
     PEcAn.utils::logger.severe("Please provide non-empty 'dims' list in input")
   }
@@ -15,16 +16,14 @@ pool_ic_list2netcdf <- function(input, outdir,siteid){
     PEcAn.utils::logger.severe("Please provide 'vals' list in input with variable names assigned to values")
   }
   
-  #standard_vars <- read.csv(system.file("data/standard_vars.csv",package="PEcAn.utils"),stringsAsFactors = FALSE)
-   
   dims <- list()
   for(dimname in names(input$dims)){
     vals <- input$dims[[which(names(input$dims) == dimname)]]
-    ncdim = PEcAn.utils::to_ncdim(dimname,vals)
+    ncdim = PEcAn.utils::to_ncdim(dimname, vals)
     dims[[dimname]] <- ncdim
   }
   
-  ncvars <- lapply(names(input$vals),PEcAn.utils::to_ncvar,dims)
+  ncvars <- lapply(names(input$vals), PEcAn.utils::to_ncvar, dims)
   
   #create nc file
   str_ns <- paste0(siteid %/% 1e+09, "-", siteid %% 1e+09)
