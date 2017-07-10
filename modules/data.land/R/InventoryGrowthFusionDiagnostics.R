@@ -6,8 +6,6 @@
 ##' @export 
 InventoryGrowthFusionDiagnostics <- function(jags.out, combined) {
   
-  #### Diagnostic plots
-  
   ### DBH par(mfrow=c(3,2))
   layout(matrix(1:8, 4, 2, byrow = TRUE))
   out      <- as.matrix(jags.out)
@@ -22,7 +20,7 @@ InventoryGrowthFusionDiagnostics <- function(jags.out, combined) {
     
     plot(data$time, ci[2, sel], type = "n", 
          ylim = range(rng), ylab = "DBH (cm)", main = i)
-    ciEnvelope(data$time, ci[1, sel], ci[3, sel], col = "lightBlue")
+    PEcAn.visualization::ciEnvelope(data$time, ci[1, sel], ci[3, sel], col = "lightBlue")
     points(data$time, data$z[i, ], pch = "+", cex = 1.5)
     # lines(data$time,z0[i,],lty=2)
     
@@ -34,7 +32,7 @@ InventoryGrowthFusionDiagnostics <- function(jags.out, combined) {
     
     plot(data$time[-1], inc.ci[2, ], type = "n", 
          ylim = range(inc.ci, na.rm = TRUE), ylab = "Ring Increment (mm)")
-    ciEnvelope(data$time[-1], inc.ci[1, ], inc.ci[3, ], col = "lightBlue")
+    PEcAn.visualization::ciEnvelope(data$time[-1], inc.ci[1, ], inc.ci[3, ], col = "lightBlue")
     points(data$time, data$y[i, ] * 5, pch = "+", cex = 1.5, type = "b", lty = 2)
   }
   
@@ -47,26 +45,46 @@ InventoryGrowthFusionDiagnostics <- function(jags.out, combined) {
   }
   
   ## process model
-  vars <- (1:ncol(out))[-c(which(substr(colnames(out), 1, 1) == "x"), grep("tau", colnames(out)), 
-    grep("year", colnames(out)), grep("ind", colnames(out)))]
+  vars <- (1:ncol(out))[-c(which(substr(colnames(out), 1, 1) == "x"), 
+                           grep("tau", colnames(out)),
+                           grep("year", colnames(out)), 
+                           grep("ind", colnames(out)),
+                           grep("alpha",colnames(out)),
+                           grep("deviance",colnames(out)))]
   par(mfrow = c(1, 1))
   for (i in vars) {
     hist(out[, i], main = colnames(out)[i])
+    abline(v=0,lwd=3)
   }
-  if (length(vars) > 1) {
+  if (length(vars) > 1 & length(vars) < 10) {
     pairs(out[, vars])
   }
+
+  if("deviance" %in% colnames(out)){
+    hist(out[,"deviance"])
+    vars <- c(vars,which(colnames(out)=="deviance"))
+  }
+  
+    
+  ## rebuild coda for just vars
+  var.out <- as.mcmc.list(lapply(jags.out,function(x){ x[,vars]}))
+  
+  ## convergence
+  gelman.diag(var.out)
+  
+  #### Diagnostic plots
+  plot(var.out)
   
   ## Standard Deviations layout(matrix(c(1,2,3,3),2,2,byrow=TRUE))
   par(mfrow = c(2, 3))
   prec <- out[, grep("tau", colnames(out))]
-  for (i in seq_along(prec)) {
+  for (i in seq_along(colnames(prec))) {
     hist(1 / sqrt(prec[, i]), main = colnames(prec)[i])
   }
   cor(prec)
   # pairs(prec)
   
-  
+    
   par(mfrow = c(1, 1))
   ### YEAR
   year.cols <- grep("year", colnames(out))
@@ -74,7 +92,7 @@ InventoryGrowthFusionDiagnostics <- function(jags.out, combined) {
     ci.yr <- apply(out[, year.cols], 2, quantile, c(0.025, 0.5, 0.975))
     plot(data$time, ci.yr[2, ], type = "n", 
          ylim = range(ci.yr, na.rm = TRUE), ylab = "Year Effect")
-    ciEnvelope(data$time, ci.yr[1, ], ci.yr[3, ], col = "lightBlue")
+    PEcAn.visualization::ciEnvelope(data$time, ci.yr[1, ], ci.yr[3, ], col = "lightBlue")
     lines(data$time, ci.yr[2, ], lty = 1, lwd = 2)
     abline(h = 0, lty = 2)
   }
