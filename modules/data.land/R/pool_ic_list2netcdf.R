@@ -82,4 +82,6 @@ pool_ic_list2netcdf <- function(input, outdir,siteid){
   
   #close file
   ncdf4::nc_close(nc)
+  
+  return(outfile)
 } #pool_ic_list2netcdf
