@@ -8,12 +8,14 @@
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=5000, random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE,save.jags="IGF.txt") {
+InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=5000, random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, save.jags = "IGF.txt", z0 = NULL) {
   library(rjags)
   
-  burnin.variables <- c("tau_add", "tau_dbh", "tau_inc", "mu")
+  # baseline variables to monitor
+  burnin.variables <- c("tau_add", "tau_dbh", "tau_inc", "mu") # process variability, dbh and tree-ring observation error, intercept
   out.variables <- c("x", "tau_add", "tau_dbh", "tau_inc", "mu")
   
+  # start text object that will be manipulated (to build different linear models, swap in/out covariates)
   TreeDataFusionMV <- "
 model{
 
@@ -41,17 +43,17 @@ model{
   x[i,1] ~ dnorm(x_ic,tau_ic)
   }  ## end loop over individuals
 
-## RANDOM_EFFECTS
+  ## RANDOM_EFFECTS
   
   #### Priors
   tau_dbh ~ dgamma(a_dbh,r_dbh)
   tau_inc ~ dgamma(a_inc,r_inc)
   tau_add ~ dgamma(a_add,r_add)
   mu ~ dnorm(0.5,0.5)
-## FIXED EFFECTS BETAS
-## ENDOGENOUS BETAS
-## TIME VARYING BETAS
-## RANDOM EFFECT TAUS
+  ## FIXED EFFECTS BETAS
+  ## ENDOGENOUS BETAS
+  ## TIME VARYING BETAS
+  ## RANDOM EFFECT TAUS
  }"
   
   Pformula <- NULL
@@ -103,8 +105,9 @@ model{
                         paste0("+ alpha_", r_var,"[",counter,index,"]"))
       ## create random effect
       for(j in seq_along(nr)){
-        Reffects <- paste(Reffects,paste0("for(k in 1:",nr[j],"){\n"),
-                                 paste0("   alpha_",r_var[j],"[k] ~ dnorm(0,tau_",r_var[j],")\n}\n"))
+        Reffects <- paste(Reffects,
+                          paste0("for(k in 1:",nr[j],"){\n"),
+                          paste0("   alpha_",r_var[j],"[k] ~ dnorm(0,tau_",r_var[j],")\n}\n"))
       }
       ## create priors
       Rpriors <- paste(Rpriors,paste0("tau_",r_var," ~ dgamma(1,0.1)\n",collapse = " "))
@@ -120,7 +123,7 @@ model{
 
   if(FALSE){
     ## DEV TESTING FOR X, polynomial X, and X interactions
-    fixed <- "X + X^3 + X*bob + bob + dia + X*Tmin[t]"
+    fixed <- "X + X^3 + X*bob + bob + dia + X*Tmin[t]" ## faux model, just for testing jags code
   }
   ## Design matrix
   if (is.null(fixed)) {
@@ -137,6 +140,7 @@ model{
       fixed <- paste("~", fixed)
     }
     
+    ### BEGIN adding in tree size (endogenous variable X) 
     ## First deal with endogenous terms (X and X*cov interactions)
     fixedX <- sub("~","",fixed, fixed=TRUE)
     lm.terms <- gsub("[[:space:]]", "", strsplit(fixedX,split = "+",fixed=TRUE)[[1]])  ## split on + and remove whitespace
@@ -248,9 +252,10 @@ model{
  
   if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at Xf",names(data))}
   
-  if(FALSE){
+  if(FALSE){ # always false...just for development
     ## DEVEL TESTING FOR TIME VARYING
-    time_varying <- "TminJuly + PrecipDec + TminJuly*PrecipDec"
+    #time_varying <- "TminJuly + PrecipDec + TminJuly*PrecipDec"
+    time_varying <- "tmax_Jun + ppt_Dec + tmax_Jun*ppt_Dec" 
     time_data <- list(TminJuly = matrix(0,4,4),PrecipDec = matrix(1,4,4))
   }
   
@@ -351,9 +356,11 @@ model{
   }
   
   ## state variable initial condition
-  z0 <- t(apply(data$y, 1, function(y) {
-    -rev(cumsum(rev(y)))
-  })) + data$z[, ncol(data$z)]
+  if(is.null(z0)){
+    z0 <- t(apply(data$y, 1, function(y) {
+      -rev(cumsum(rev(y)))
+    })) + data$z[, ncol(data$z)]
+  }
   
   ## JAGS initial conditions
   nchain <- 3
