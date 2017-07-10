@@ -113,7 +113,7 @@ $fluxusername = (isset($_REQUEST['fluxusername'])) ? $_REQUEST['fluxusername'] :
     }
   }
 ?>
-      <label title="Used when downloading the data">Username (<a href="https://ameriflux-data.lbl.gov/Accounts/Pages/default.aspx" target="_blank">register here</a>)</label>
+      <label title="Used when downloading the data">Username (<a href="https://ameriflux-data.lbl.gov/Pages/RequestAccount.aspx" target="_blank">register here</a>)</label>
       <input id="fluxusername" name="fluxusername" type="text" value="<?php echo $fluxusername; ?>" onkeyup="validate()"/>
       <div class="spacer"></div>
 
