@@ -71,7 +71,8 @@ pool_ic_list2netcdf <- function(input, outdir,siteid){
   
   #create nc file
   str_ns <- paste0(siteid %/% 1e+09, "-", siteid %% 1e+09)
-  outfile <- file.path(outdir, paste0("IC_site_", str_ns,".nc"))
+  basefile <- paste0("IC_site_", str_ns)
+  outfile <- file.path(outdir, paste0(basefile,".nc"))
   nc  <- ncdf4::nc_create(outfile, ncvars)
   
   #put variables in nc file
@@ -83,5 +84,15 @@ pool_ic_list2netcdf <- function(input, outdir,siteid){
   #close file
   ncdf4::nc_close(nc)
   
-  return(outfile)
+  #create results object
+  results <- data.frame(file = outfile,
+                        host = PEcAn.utils::fqdn(), 
+                        mimetype = "application/x-netcdf", 
+                        formatname = "pool_initial_conditions",
+                        startdate = NA, 
+                        enddate = NA, 
+                        dbfile.name = basefile, 
+                        stringsAsFactors = FALSE)
+  
+  return(results)
 } #pool_ic_list2netcdf
