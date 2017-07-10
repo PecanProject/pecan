@@ -27,7 +27,9 @@ Depends:
     shiny,
     PEcAn.DB,
     RPostgreSQL,
-    dplyr
+    dplyr,
+    dbplyr,
+    plotly
 Imports:
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),

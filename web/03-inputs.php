@@ -157,6 +157,9 @@ $stmt->closeCursor();
 foreach($modeltypes as $type) {
   foreach($inputs as &$x) {
     if ($x['tag'] == "met") {
+      if (preg_match("UIUC Energy Farm", $siteinfo["sitename"])) {
+        $x['files'][] = array("id"=>"Clowder." . $type, "name"=>"Use Clowder-Geostreams");
+      }
       if (preg_match("/ \(US-.*\)$/", $siteinfo["sitename"])) {
         $x['files'][] = array("id"=>"AmerifluxLBL." . $type, "name"=>"Use AmerifluxLBL");
       }
@@ -460,7 +463,7 @@ foreach($inputs as $input) {
     </form>
 <?php whoami(); ?>    
 <p>
-  <a href="https://pecan.gitbooks.io/pecan-documentation/content/" target="_blank">Documentation</a>
+  <a href="https://pecanproject.github.io/pecan-documentation/master" target="_blank">Documentation</a>
   <br>
   <a href="https://gitter.im/PecanProject/pecan" target="_blank">Chat Room</a>
   <br>
