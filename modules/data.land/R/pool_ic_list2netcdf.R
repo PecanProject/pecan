@@ -8,10 +8,10 @@
 ##' @author Anne Thomas
 
 pool_ic_list2netcdf <- function(input, outdir,siteid){
-  if(is.null(input$dims)){
-    PEcAn.utils::logger.severe("Please provide 'dims' list in input, containing 'lon', 'lat', 'depth'")
+  if(is.null(input$dims) || length(input$dims) == 0){
+    PEcAn.utils::logger.severe("Please provide non-empty 'dims' list in input")
   }
-  if(is.null(input$vals)){
+  if(is.null(input$vals) || length(input$vals) == 0){
     PEcAn.utils::logger.severe("Please provide 'vals' list in input with variable names assigned to values")
   }
   
