@@ -72,6 +72,7 @@ pecan.worldmap <- function(df.in, outfile = NULL, xlim = c(-130, -30), ylim = c(
     
     library(grid)
     
+    png(paste0(outfile, "-legend.png"), units = "px", bg = "transparent")    
     g_legend <- function(a.gplot) {
       tmp <- ggplot_gtable(ggplot_build(a.gplot))
       leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
@@ -84,7 +85,6 @@ pecan.worldmap <- function(df.in, outfile = NULL, xlim = c(-130, -30), ylim = c(
       theme(legend.position = "right") + 
       scale_fill_gradientn(name = "Yield (Mg/ha)", colours = colorRampPalette(c("darkblue", "wheat", "darkred"))(20))
     l2 <- g_legend(l)
-    png(paste0(outfile, "-legend.png"), units = "px", bg = "transparent")
     grid.draw(l2)
     dev.off()
   } else {

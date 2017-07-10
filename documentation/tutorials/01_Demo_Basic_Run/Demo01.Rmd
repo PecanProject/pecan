@@ -57,7 +57,7 @@ knitr::include_graphics('mapmodel.png')
 
 ### Mode
 
-Select **SIPNET** from the [available models][availmodels] because it is quick & simple.
+Select **SIPNET** (r136) from the [available models][availmodels] because it is quick & simple.
 
 [availmodels]: https://pecanproject.github.io/pecan-documentation/pecan-models.html
 
@@ -74,7 +74,7 @@ To filter sites, you can **select a specific group of sites**. For this tutorial
 
 ### Site:
 
-**For this tutorial, type _US-WCr_ in the search box to display the Willow Creek Ameriflux site (US-WCr), and then click on the pin icon**. When you click on a site’s flag on the map, it will give you the name and location of the site and put that site in the “Site:” box on the left hand site, indicating your current selection. 
+**For this tutorial, type _US-NR1_ in the search box to display the Niwot Ridge Ameriflux site (US-NR1), and then click on the pin icon**. When you click on a site’s flag on the map, it will give you the name and location of the site and put that site in the “Site:” box on the left hand site, indicating your current selection. 
 
 Once you are finished with the above steps, **click "Next"**.
 
@@ -90,7 +90,7 @@ Next we will specify settings required to run the model. Be aware that the input
 
 ### PFT (Plant Functional Type):
 
-**Willow Creek is temperate deciduous**.  Available PFTs will vary by model and some models allow multiple competing PFTs to be selected. Also select **soil** to control the soil parameters
+**Niwot Ridge is temperate coniferous**.  Available PFTs will vary by model and some models allow multiple competing PFTs to be selected. Also select **soil** to control the soil parameters
 
 
 ### Start/End Date:
@@ -164,7 +164,7 @@ If enabled post-process output for these analyses
 
 If at any point a Stage Name has the **Status “ERROR”** please notify the PEcAn team member that is administering the demo or feel free to do any of the following:
 
-* Refer to the PEcAn Gitbook for documentation
+* Refer to the PEcAn Documentation for documentation
 * Post the end of your workflow log on our Gitter chat
 * Post an issue on Github. 
 

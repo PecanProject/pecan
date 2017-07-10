@@ -14,8 +14,8 @@
 #' @author David LeBauer
 run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppice.interval = 1) {
   l2n <- function(x) lapply(x, as.numeric)
-  start.date <- lubridate::ymd(config$run$start.date)
-  end.date   <- lubridate::ymd(config$run$end.date)
+  start.date <- lubridate::date(config$run$start.date)
+  end.date   <- lubridate::date(config$run$end.date)
   genus <- config$pft$type$genus
   years <- lubridate::year(start.date):lubridate::year(end.date)
 
@@ -32,8 +32,9 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
     yeari <- years[i]
     starti <- max(start.date, lubridate::ymd(paste0(yeari, "-01-01")))
     endi <- min(end.date, lubridate::ymd(paste0(yeari, "-12-31")))
-    metfile <- paste(metpath, starti, endi, "csv", sep=".")
+    metfile <- paste(metpath, yeari, "csv", sep = ".")
     WetDat <- fread(metfile)
+    WetDat <- WetDat[WetDat$doy >= lubridate::yday(starti) & WetDat$doy <= lubridate::yday(endi), ]
 
     # Check that all variables are present in the expected order --
     # BioGro accesses weather vars by position and DOES NOT check headers.
@@ -51,6 +52,32 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
     } else {
       day1 <- NULL
       dayn <- NULL
+    }
+
+    # BLETCHEROUS HACK: BioCro 0.94 starts the run by subsetting weather data
+    # to day1:dayn, but it assumes the data start on DOY 1 and contain
+    # (yearlength*(24/timestep)) lines. This means that in practice, day1 and
+    # dayn are treated as "day of file" not "day of year".
+    # BioCro *does* handle DOY correctly downstream of the subsetting, so here
+    # we check if the current BioCro has fixed this assumption.
+    # If not, rescale day1 and dayn to be relative to the start of the input.
+    #   Scaling is derived by inverting Biocro's day->index equations.
+    biocro_checks_doy <- tryCatch(
+      {m <- BioGro(WetDat = matrix(c(0,10,0,0,0,0,0,0),nrow = 1),
+                   day1 = 10, dayn = 10, timestep = 24);
+      class(m) == "BioGro"},
+      error = function(e){FALSE})
+    if (!biocro_checks_doy && min(WetDat[,"doy"])>1) {
+      if (!is.null(day1)){
+        # Biocro calculates line number as `indes1 <- (day1 - 1) * 24`
+        indes1 <- Position(function(x)x==day1, WetDat[,"doy"])
+        day1 <- indes1/24 + 1
+      }
+      if (!is.null(dayn)){
+        # Biocro calculates line number as `indesn <- (dayn) * 24`
+        indesn <- Position(function(x)x==dayn, WetDat[,"doy"], right = TRUE)
+        dayn <- indesn/24
+      }
     }
     
     HarvestedYield <- 0
