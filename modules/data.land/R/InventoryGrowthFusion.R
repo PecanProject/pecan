@@ -138,12 +138,14 @@ model{
   if (is.null(fixed)) {
     Xf <- NULL
   } else {
+    
     ## check for covariate data (note: will falsely fail if only effect is X)
     if (is.null(cov.data)) {
       print("formula provided but covariate data is absent:", fixed)
     } else {
       cov.data <- as.data.frame(cov.data)
     }
+    
     ## check if there's a tilda in the formula
     if (length(grep("~", fixed)) == 0) {
       fixed <- paste("~", fixed)
@@ -183,8 +185,7 @@ model{
               }
               if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at covX",names(data))}
               
-#              covX <- paste0(covX,"[i,t-1]")
-              myIndex <- "[i,t-1]"
+              myIndex <- "[i,t]"
             } else {
               ## variable is fixed
               if(covX %in% colnames(cov.data)){ ## covariate present
