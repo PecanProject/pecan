@@ -43,7 +43,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                           enddate = end_date, 
                                           con = con, 
                                           hostname = host$name, 
-                                          exact.dates = TRUE
+                                          exact.dates = TRUE,
+                                          pattern = met
                                          )
     
     
@@ -140,7 +141,8 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                           startdate = start_date,
                                           enddate = end_date, 
                                           con = con, 
-                                          hostname = host
+                                          hostname = host,
+                                          pattern = met
                                          )
     
     logger.debug("File id =", existing.dbfile$id,
