@@ -160,7 +160,7 @@ foreach($modeltypes as $type) {
       // Geostreams sites have no systematic naming scheme yet. For now, enumerating known patterns
       if (preg_match("/Full Field/", $siteinfo["sitename"]) // Maricopa AZ
           || preg_match("/UIUC Energy Farm/", $siteinfo["sitename"])){ // Urbana IL (3 sites)
-        $x['files'][] = array("id"=>"Clowder." . $type, "name"=>"Use Clowder-Geostreams");
+        $x['files'][] = array("id"=>"Geostreams." . $type, "name"=>"Use Clowder-Geostreams");
       }
       if (preg_match("/ \(US-.*\)$/", $siteinfo["sitename"])) {
         $x['files'][] = array("id"=>"AmerifluxLBL." . $type, "name"=>"Use AmerifluxLBL");
