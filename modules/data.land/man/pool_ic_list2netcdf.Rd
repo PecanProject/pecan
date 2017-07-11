@@ -13,6 +13,9 @@ pool_ic_list2netcdf(input, outdir, siteid)
 
 \item{siteid}{site id}
 }
+\description{
+Converts input list containing standard dimensions and variables (named values) for initial conditions to a netcdf file, input to pool-based models.
+}
 \author{
 Anne Thomas
 }
