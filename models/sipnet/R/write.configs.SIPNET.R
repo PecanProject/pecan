@@ -412,7 +412,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       ncdf4::nc_close(IC.nc)
     }
     else{
-      PEcAn.utils::logger.error("Bad initial conditions filepath")
+      PEcAn.utils::logger.error("Bad initial conditions filepath; kept defaults")
     }
   }else{
     #some stuff about IC file that we can give in lieu of actual ICs
