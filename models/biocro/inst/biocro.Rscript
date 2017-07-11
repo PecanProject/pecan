@@ -39,7 +39,7 @@ out <- run.biocro(lat, lon,
 daily <- out$daily
 save(daily, file = file.path(outdir, 'daily.result.RData'))
 
-biocro_result <- data.table(lat = lat, lon = lon, out$daily)
+biocro_result <- data.table::data.table(lat = lat, lon = lon, out$daily)
 save(biocro_result, file = file.path(outdir, "biocro_output.RData"))
 
 #hourly <- out$hourly
