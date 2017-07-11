@@ -114,6 +114,62 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
     }
   }
   
+  ### INITIAL CONDITIONS
+  
+  default.param <- read.table(system.file("default_param.dalec", package = "PEcAn.DALEC"))
+  IC.param <- data.frame()
+   if (!is.null(settings$run$inputs$poolinitcond$path)) {
+    IC.path <- settings$run$inputs$poolinitcond$path
+    IC.nc <- try(ncdf4::nc_open(IC.path)) 
+    
+    if(class(IC.nc) != "try-error"){
+      # cf0 initial canopy foliar carbon (g/m2)
+      leaf <- try(ncdf4::ncvar_get(IC.nc,"leaf_carbon_content"),silent = TRUE)
+      if (!is.na(leaf) && is.numeric(leaf)) {
+        param[["cf0"]] <- leaf
+      }
+      # cw0 initial pool of woody carbon (g/m2)
+      AbvGrndWood <- try(ncdf4::ncvar_get(IC.nc,"AbvGrndWood"),silent = TRUE)
+      if (!is.na(AbvGrndWood) && is.numeric(AbvGrndWood)) {
+        roots <- try(ncdf4::ncvar_get(IC.nc,"root_carbon_content"),silent = TRUE)
+        if(!is.na(roots) && is.numeric(roots)){
+          #wood <- partitioned coarse roots + abvgroundwood
+        }
+        else{
+          #wood <- (roots-default.fine) + abvgroundwood
+        }
+        param[["cw0"]] <- wood
+      }
+      # cr0 initial pool of fine root carbon (g/m2)
+        roots <- try(ncdf4::ncvar_get(IC.nc,"root_carbon_content"),silent = TRUE)
+        if (!is.na(roots) && is.numeric(roots)) {
+          #partition fine roots
+          param[["cr0"]] <- roots
+        }
+      # cl0 initial pool of litter carbon (g/m2)
+        litter <- try(ncdf4::ncvar_get(IC.nc,"litter_carbon_content"),silent = TRUE)
+        if (!is.na(litter) && is.numeric(litter)) {
+          param[["cl0"]] <- litter
+        }
+      # cs0 initial pool of soil organic matter and woody debris carbon (g/m2)
+        soil <- try(ncdf4::ncvar_get(IC.nc,"soil_organic_carbon_content"),silent = TRUE)
+        if(!is.numeric(soil)){
+          soil <- try(ncdf4::ncvar_get(IC.nc,"soil_carbon_content"),silent = TRUE)
+          if(is.numeric(soil)){
+            wood <- try(ncdf4::ncvar_get(IC.nc,"wood_debris_carbon_content"),silent = TRUE)
+            if(is.numeric(wood)){
+              soil_and_wood <- soil + sum(wood)
+              param[["cs0"]] <- soil_and_wood
+            }
+          }
+        }
+    }
+    else{
+      PEcAn.utils::logger.error("Bad initial conditions filepath; kept defaults")
+    }
+  }
+ 
+  
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, as.character(run.id))
   outdir <- file.path(settings$host$outdir, as.character(run.id))

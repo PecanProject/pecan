@@ -1,4 +1,4 @@
-cmdTag  val 
+cmdFlag  val 
 t1  4.41E-06 #Decomposition from litter to SOM
 t2  0.473267 #% GPP lost to respiration
 t3  0.314951 #% NPP sent to foliage
