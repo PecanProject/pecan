@@ -364,8 +364,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     IC.nc <- try(ncdf4::nc_open(IC.path)) 
     if(class(IC.nc) != "try-error"){
         ## plantWoodInit gC/m2
-      plantWood <- try(ncdf4::ncvar_get(IC.nc,"AbvGrndWood"),silent = TRUE)
-      if (!is.na(plantWood) && is.numeric(plantWood)) {
+      AbvGrndWood <- try(ncdf4::ncvar_get(IC.nc,"AbvGrndWood"),silent = TRUE)
+      if (!is.na(AbvGrndWood) && is.numeric(AbvGrndWood)) {
+        fineRootFrac <- param[which(param[, 1] == "fineRootFrac"), 2] 
+        coarseRootFrac <- param[which(param[, 1] == "coarseRootFrac"), 2] 
+        plantWood <- AbvGrndWood/(1-(fineRootFrac+coarseRootFrac)) #inflate plantWood to include belowground 
         param[which(param[, 1] == "plantWoodInit"), 2] <- plantWood * 1000 #PEcAn standard AbvGrndWood kgC/m2
       }
       else{
@@ -407,6 +410,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       
       #close file
       ncdf4::nc_close(IC.nc)
+    }
+    else{
+      PEcAn.utils::logger.error("Bad initial conditions filepath")
     }
   }else{
     #some stuff about IC file that we can give in lieu of actual ICs
