@@ -40,6 +40,8 @@
 "LAI",NA,"m2 m-2","Leaf Area Index","Carbon Pools","real","lon","lat","time",NA,"Area of leaves per area ground"
 "leaf_carbon_content","leaf_carbon_content","kg C m-2","Leaf Carbon Content","Carbon Pools","real","lon","lat","time",NA,"Leaf carbon content"
 "root_carbon_content","root_carbon_content_of_size_class","kg C m-2","Root Carbon Content","Carbon Pools","real","lon","lat","time","rtsize","Root carbon content by size class"
+"fine_root_carbon_content","fine_root_carbon_content","kg C m-2","Fine Root Carbon Content","Carbon Pools","real","lon","lat","time","depth","Carbon content of fine roots (2 mm and smaller); alternative to providing dimensions for root_carbon_content"
+"coarse_root_carbon_content","coarse_root_carbon_content","kg C m-2","Coarse Root Carbon Content","Carbon Pools","real","lon","lat","time","depth","Carbon content of coarse roots (larger than 2 mm); alternative to providing dimensions for root_carbon_content"
 "wood_carbon_content","wood_carbon_content","kg C m-2","Wood Carbon Content","Carbon Pools","real","lon","lat","time",NA,"Wood carbon content including above (AbvGrndWood) and below ground (coarse roots, shared with root_carbon_content)"
 "TotSoilCarb",NA,"kg C m-2","Total Soil Carbon","Carbon Pools","real","lon","lat","time",NA,"Total soil and litter carbon content vertically integrated over the enire soil column"
 "litter_carbon_content","litter_carbon_content","kg C m-2","Litter Carbon Content","Carbon Pools","real","lon","lat","time",NA,"Total carbon content of litter pool, excluding coarse woody debris"
