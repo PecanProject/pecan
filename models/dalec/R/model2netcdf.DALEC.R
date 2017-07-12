@@ -19,7 +19,7 @@
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
 ##' @importFrom ncdf4 ncvar_def ncdim_def
-##' @importFrom PEcAn.utils mstmipvar
+##' @importFrom PEcAn.utils mstmipvar to_ncvar to_ncdim
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
 model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
@@ -77,7 +77,8 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
                      calendar = "standard", unlim = TRUE)
     lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
     lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
-    
+   
+    dims <- list(time = t, lon = lon, lat = lat)
     ## ***** Need to dynamically update the UTC offset here *****
     
     for (i in seq_along(output)) {
@@ -85,24 +86,25 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
         output[[i]] <- rep(-999, length(t$vals))
     }
     
-    nc_var <- list()
-    nc_var[[1]]  <- mstmipvar("AutoResp", lat, lon, t, NA)
-    nc_var[[2]]  <- mstmipvar("HeteroResp", lat, lon, t, NA)
-    nc_var[[3]]  <- mstmipvar("GPP", lat, lon, t, NA)
-    nc_var[[4]]  <- mstmipvar("NEE", lat, lon, t, NA)
-    nc_var[[5]]  <- mstmipvar("NPP", lat, lon, t, NA)
-    nc_var[[6]]  <- ncvar_def("leaf_litter_carbon_flux", "kgC/m2/s", list(lon, lat, t), -999) #was LeafLitter
-    nc_var[[7]]  <- ncvar_def("WoodyLitter", "kgC/m2/s", list(lon, lat, t), -999) #need to resolve standard woody litter flux
-    nc_var[[8]]  <- ncvar_def("subsurface_litter_carbon_flux", "kgC/m2/s", list(lon, lat, t), -999) #was RootLitter
-    nc_var[[9]]  <- ncvar_def("leaf_carbon_content", "kgC/m2", list(lon, lat, t), -999) #was LeafBiomass
-    nc_var[[10]] <- ncvar_def("wood_carbon_content", "kgC/m2", list(lon, lat, t), -999) #was WoodBiomass
-    nc_var[[11]] <- ncvar_def("root_carbon_content", "kgC/m2", list(lon, lat, t,rtsize), -999) #was RootBiomass
-    nc_var[[12]] <- ncvar_def("litter_carbon_content", "kgC/m2", list(lon, lat, t), -999) #was LitterBiomass
-    nc_var[[13]] <- ncvar_def("soil_carbon_content", "kgC/m2", list(lon, lat, t), -999) #was SoilC; SOM pool technically includes woody debris (can't be represented by our standard)
     
-    nc_var[[14]] <- mstmipvar("TotalResp", lat, lon, t, NA)
-    nc_var[[15]] <- mstmipvar("TotLivBiom", lat, lon, t, NA)
-    nc_var[[16]] <- mstmipvar("TotSoilCarb", lat, lon, t, NA)
+    nc_var <- list()
+    nc_var[[1]]  <- to_ncvar("AutoResp", dims)
+    nc_var[[2]]  <- to_ncvar("HeteroResp", dims)
+    nc_var[[3]]  <- to_ncvar("GPP", dims)
+    nc_var[[4]]  <- to_ncvar("NEE", dims)
+    nc_var[[5]]  <- to_ncvar("NPP", dims)
+    nc_var[[6]]  <- to_ncvar("leaf_litter_carbon_flux", dims) #was LeafLitter
+    nc_var[[7]]  <- to_ncvar("WoodyLitter", dims) #need to resolve standard woody litter flux
+    nc_var[[8]]  <- to_ncvar("subsurface_litter_carbon_flux", dims) #was RootLitter
+    nc_var[[9]]  <- to_ncvar("leaf_carbon_content", dims) #was LeafBiomass
+    nc_var[[10]] <- to_ncvar("wood_carbon_content", dims) #was WoodBiomass
+    nc_var[[11]] <- to_ncvar("root_carbon_content", dims) #was RootBiomass
+    nc_var[[12]] <- to_ncvar("litter_carbon_content", dims) #was LitterBiomass
+    nc_var[[13]] <- to_ncvar("soil_carbon_content", dims) #was SoilC; SOM pool technically includes woody debris (can't be represented by our standard)
+    
+    nc_var[[14]] <- to_ncvar("TotalResp", dims)
+    nc_var[[15]] <- to_ncvar("TotLivBiom", dims)
+    nc_var[[16]] <- to_ncvar("TotSoilCarb", dims)
     
     # ******************** Declar netCDF variables ********************#
     
