@@ -196,10 +196,11 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
     ## parent check when NA
     if(is.na(parentid)){
       
-      if (pattern == "GFDL"){
-        ##GFDL Special case
+      if (!is.null(pattern)){
+        ## Case where pattern is not NULL
         inputs <-inputs[grepl(pattern, inputs$name),]
       }
+      
       inputs <- inputs[is.na(inputs$parent_id),]
     }
     
