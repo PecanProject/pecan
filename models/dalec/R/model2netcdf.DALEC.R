@@ -48,25 +48,23 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     
     ## Setup outputs for netCDF file in appropriate units
     output <- list()
-    ## standard variables: Fluxes
+    ## Fluxes
     output[[1]] <- (sub.DALEC.output[, 1] * 0.001)/timestep.s  # Autotrophic Respiration in kgC/m2/s
     output[[2]] <- (sub.DALEC.output[, 21] + sub.DALEC.output[, 23]) * 0.001 / timestep.s  # Heterotrophic Resp kgC/m2/s
     output[[3]] <- (sub.DALEC.output[, 31] * 0.001)/timestep.s  # GPP in kgC/m2/s    
     output[[4]] <- (sub.DALEC.output[, 33] * 0.001)/timestep.s  # NEE in kgC/m2/s
     output[[5]] <- (sub.DALEC.output[, 3] + sub.DALEC.output[, 5] + sub.DALEC.output[, 7]) * 
       0.001/timestep.s  # NPP kgC/m2/s
+    output[[6]] <- (sub.DALEC.output[, 9] * 0.001) / timestep.s  # Leaf Litter Flux, kgC/m2/s
+    output[[7]] <- (sub.DALEC.output[, 11] * 0.001) / timestep.s  # Woody Litter Flux, kgC/m2/s
+    output[[8]] <- (sub.DALEC.output[, 13] * 0.001) / timestep.s  # Root Litter Flux, kgC/m2/s
     
-    ## non-standard variables: Fluxes
-    output[[6]] <- (sub.DALEC.output[, 9] * 0.001) / timestep.s  # Leaf Litter, kgC/m2/s
-    output[[7]] <- (sub.DALEC.output[, 11] * 0.001) / timestep.s  # Woody Litter, kgC/m2/s
-    output[[8]] <- (sub.DALEC.output[, 13] * 0.001) / timestep.s  # Root Litter, kgC/m2/s
-    
-    ## non-standard variables: Pools
-    output[[9]]  <- (sub.DALEC.output[, 15] * 0.001)  # Leaf Biomass, kgC/m2
-    output[[10]] <- (sub.DALEC.output[, 17] * 0.001)  # Wood Biomass, kgC/m2
-    output[[11]] <- (sub.DALEC.output[, 19] * 0.001)  # Root Biomass, kgC/m2
-    output[[12]] <- (sub.DALEC.output[, 27] * 0.001)  # Litter Biomass, kgC/m2
-    output[[13]] <- (sub.DALEC.output[, 29] * 0.001)  # Soil C, kgC/m2
+    ## Pools
+    output[[9]]  <- (sub.DALEC.output[, 15] * 0.001)  # Leaf Carbon, kgC/m2
+    output[[10]] <- (sub.DALEC.output[, 17] * 0.001)  # Wood Carbon, kgC/m2
+    output[[11]] <- (sub.DALEC.output[, 19] * 0.001)  # Root Carbon, kgC/m2
+    output[[12]] <- (sub.DALEC.output[, 27] * 0.001)  # Litter Carbon, kgC/m2
+    output[[13]] <- (sub.DALEC.output[, 29] * 0.001)  # Soil Carbon, kgC/m2
     
     ## standard composites
     output[[14]] <- output[[1]] + output[[2]]  # Total Respiration
@@ -93,14 +91,14 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     nc_var[[3]]  <- mstmipvar("GPP", lat, lon, t, NA)
     nc_var[[4]]  <- mstmipvar("NEE", lat, lon, t, NA)
     nc_var[[5]]  <- mstmipvar("NPP", lat, lon, t, NA)
-    nc_var[[6]]  <- ncvar_def("LeafLitter", "kgC/m2/s", list(lon, lat, t), -999)
-    nc_var[[7]]  <- ncvar_def("WoodyLitter", "kgC/m2/s", list(lon, lat, t), -999)
-    nc_var[[8]]  <- ncvar_def("RootLitter", "kgC/m2/s", list(lon, lat, t), -999)
-    nc_var[[9]]  <- ncvar_def("LeafBiomass", "kgC/m2", list(lon, lat, t), -999)
-    nc_var[[10]] <- ncvar_def("WoodBiomass", "kgC/m2", list(lon, lat, t), -999)
-    nc_var[[11]] <- ncvar_def("RootBiomass", "kgC/m2", list(lon, lat, t), -999)
-    nc_var[[12]] <- ncvar_def("LitterBiomass", "kgC/m2", list(lon, lat, t), -999)
-    nc_var[[13]] <- ncvar_def("SoilC", "kgC/m2", list(lon, lat, t), -999)
+    nc_var[[6]]  <- ncvar_def("leaf_litter_carbon_flux", "kgC/m2/s", list(lon, lat, t), -999) #was LeafLitter
+    nc_var[[7]]  <- ncvar_def("WoodyLitter", "kgC/m2/s", list(lon, lat, t), -999) #need to resolve standard woody litter flux
+    nc_var[[8]]  <- ncvar_def("subsurface_litter_carbon_flux", "kgC/m2/s", list(lon, lat, t), -999) #was RootLitter
+    nc_var[[9]]  <- ncvar_def("leaf_carbon_content", "kgC/m2", list(lon, lat, t), -999) #was LeafBiomass
+    nc_var[[10]] <- ncvar_def("wood_carbon_content", "kgC/m2", list(lon, lat, t), -999) #was WoodBiomass
+    nc_var[[11]] <- ncvar_def("root_carbon_content", "kgC/m2", list(lon, lat, t,rtsize), -999) #was RootBiomass
+    nc_var[[12]] <- ncvar_def("litter_carbon_content", "kgC/m2", list(lon, lat, t), -999) #was LitterBiomass
+    nc_var[[13]] <- ncvar_def("soil_carbon_content", "kgC/m2", list(lon, lat, t), -999) #was SoilC; SOM pool technically includes woody debris (can't be represented by our standard)
     
     nc_var[[14]] <- mstmipvar("TotalResp", lat, lon, t, NA)
     nc_var[[15]] <- mstmipvar("TotLivBiom", lat, lon, t, NA)
