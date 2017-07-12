@@ -9,7 +9,7 @@
 convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, start_date, 
                           end_date, pkg, fcn, con = con, host, browndog, write = TRUE, 
                           format.vars, overwrite = FALSE, exact.dates = FALSE, 
-                          allow.conflicting.dates = TRUE, insert.new.file = FALSE,...) {
+                          allow.conflicting.dates = TRUE, insert.new.file = FALSE, met = NULL,...) {
   input.args <- list(...)
   
   logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
