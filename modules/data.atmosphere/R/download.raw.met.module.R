@@ -22,7 +22,7 @@
                             model = input_met$model, 
                             scenario = input_met$scenario, 
                             ensemble_member = input_met$ensemble_member,
-                            met = met)
+                            pattern = met)
     
   } else if (register$scale == "site") {
     # Site-level met

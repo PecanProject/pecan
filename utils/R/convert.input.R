@@ -9,7 +9,7 @@
 convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, start_date, 
                           end_date, pkg, fcn, con = con, host, browndog, write = TRUE, 
                           format.vars, overwrite = FALSE, exact.dates = FALSE, 
-                          allow.conflicting.dates = TRUE, insert.new.file = FALSE, met = NULL,...) {
+                          allow.conflicting.dates = TRUE, insert.new.file = FALSE, pattern = NULL,...) {
   input.args <- list(...)
   
   logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
@@ -44,7 +44,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                           con = con, 
                                           hostname = host$name, 
                                           exact.dates = TRUE,
-                                          pattern = met
+                                          pattern = pattern
                                          )
     
     
@@ -142,7 +142,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                           enddate = end_date, 
                                           con = con, 
                                           hostname = host,
-                                          pattern = met
+                                          pattern = pattern
                                          )
     
     logger.debug("File id =", existing.dbfile$id,
