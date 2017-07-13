@@ -159,8 +159,11 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
       fine.roots <- try(ncdf4::ncvar_get(IC.nc,"fine_root_carbon_content"),silent = TRUE)
       coarse.roots <- try(ncdf4::ncvar_get(IC.nc,"coarse_root_carbon_content"),silent = TRUE)
       
+      if(!all(sapply(c(TotLivBiom,leaf,AbvGrndWood,roots,fine.roots,coarse.roots),is.numeric))){
+        PEcAn.utils::logger.info("Any missing vars will be calculated from those provided or replaced by DALEC's defaults")
+      }
       
-      #check if total roots are partitioned (pull out as a function for readability)
+      #check if total roots are partitionable
       #note: if roots are patritionable, they will override fine_ and/or coarse_root_carbon_content if loaded
       if(is.valid(roots)){
         if("rtsize" %in% names(IC.nc$dim)){
@@ -179,7 +182,8 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
         #proceed without error message
       }
      
-    ###write initial conditions from netcdf (wherever valid input isn't available, DALEC default remains)
+    ###Write initial conditions from netcdf (Note: wherever valid input isn't available, DALEC default remains)
+      
       # cf0 initial canopy foliar carbon (g/m2)
       if (is.valid(leaf)) {
         IC.params[["cf0"]] <- leaf * 1000 #standard kg C m-2
