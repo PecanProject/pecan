@@ -1,14 +1,16 @@
 Package: PEcAn.data.mining
 Type: Package
 Title: PEcAn functions used for exploring model residuals and structures
-Version: 1.4.10.1
-Date: 2017-04-18
+Description: (Temporary description) PEcAn functions used for exploring model residuals and structures
+Version: 1.5.0
+Date: 2017-07-14
 Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: 
 Depends:
     dplR
 Suggests:
+    PEcAn.utils,
     testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE
 Copyright: Authors

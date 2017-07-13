@@ -29,7 +29,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
                              overwrite = FALSE, verbose = FALSE, ...) {
   library(PEcAn.utils)
   
-  print("START met2model.SIPNET")
+  PEcAn.utils::logger.info("START met2model.SIPNET")
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
   out.file <- paste(in.prefix, strptime(start_date, "%Y-%m-%d"), 
@@ -46,7 +46,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
                         enddate = end_date, 
                         dbfile.name = out.file, 
                         stringsAsFactors = FALSE)
-  print("internal results")
+  PEcAn.utils::logger.info("internal results")
   print(results)
   
   if (file.exists(out.file.full) && !overwrite) {
@@ -71,7 +71,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   for (year in start_year:end_year) {
     
     skip <- FALSE
-    print(year)
+    PEcAn.utils::logger.info(year)
     
     old.file <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
     
@@ -99,6 +99,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
         U <- ncvar_get(nc, "eastward_wind")
         V <- ncvar_get(nc, "northward_wind")
         ws <- sqrt(U ^ 2 + V ^ 2)
+        PEcAn.utils::logger.info("wind_speed absent; calculated from eastward_wind and northward_wind")
       }
       
       Rain <- ncvar_get(nc, "precipitation_flux")
@@ -108,6 +109,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       PAR <- try(ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air"))  ## in mol/m2/s
       if (!is.numeric(PAR)) {
         PAR <- SW * 0.45
+        PEcAn.utils::logger.info("surface_downwelling_photosynthetic_photon_flux_in_air absent; PAR set to SW * 0.45")
       }
       
       soilT <- try(ncvar_get(nc, "soil_temperature"))
@@ -117,6 +119,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
         filt <- exp(-(1:length(Tair)) / tau)
         filt <- (filt / sum(filt))
         soilT <- convolve(Tair, filt) - 273.15
+        PEcAn.utils::logger.info("soil_temperature absent; soilT approximated from Tair")
       } else {
         soilT <- soilT - 273.15
       }
@@ -125,13 +128,14 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       VPD <- try(ncvar_get(nc, "water_vapor_saturation_deficit"))  ## in Pa
       if (!is.numeric(VPD)) {
         VPD <- SVP * (1 - qair2rh(Qair, Tair - 273.15))
+        PEcAn.utils::logger.info("water_vapor_saturation_deficit absent; VPD calculated from Qair, Tair, and SVP (saturation vapor pressure) ")
       }
       e_a <- SVP - VPD
       VPDsoil <- udunits2::ud.convert(get.es(soilT), "millibar", "Pa") * (1 - qair2rh(Qair, soilT))
       
       ncdf4::nc_close(nc)
     } else {
-      print("Skipping to next year")
+      PEcAn.utils::logger.info("Skipping to next year")
       next
     }
     
@@ -179,7 +183,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       hr[rng] <- rep(seq(0, length = 86400 / dt, by = dt/86400 * 24), 366)[1:length(rng)]
     }
     if (skip) {
-      print("Skipping to next year")
+      PEcAn.utils::logger.info("Skipping to next year")
       next
     }
     
@@ -221,7 +225,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     write.table(out, out.file.full, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
     return(invisible(results))
   } else {
-    print("NO MET TO OUTPUT")
+    PEcAn.utils::logger.info("NO MET TO OUTPUT")
     return(invisible(NULL))
   }
 } # met2model.SIPNET

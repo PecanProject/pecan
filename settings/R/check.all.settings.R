@@ -15,7 +15,7 @@ check.inputs <- function(settings) {
   
   # don't know how to check inputs
   if (is.null(settings$database$bety)) {
-    logger.info("No databasse connection, can't check inputs.")
+    logger.info("No database connection, can't check inputs.")
     return (settings)
   }
   
@@ -67,22 +67,20 @@ check.inputs <- function(settings) {
           settings$run$inputs[[tag]][['id']] <- id
         }
       }
-      
+      logger.info("path",settings$run$inputs[[tag]][['path']])
       # check to see if format is right type
       if ("id" %in% names(settings$run$inputs[[tag]])) {
         formats <- PEcAn.DB::db.query(paste0("SELECT format_id FROM inputs WHERE id=", settings$run$inputs[[tag]][['id']]), con=dbcon)
-        if (nrow(formats) > 1) {
+        if (nrow(formats) >= 1) {
           if (formats[1, 'format_id'] != inputs$format_id[i]) {
-            logger.error("Format of input", tag, "does not match specified input.")
-          }
-        } else if (nrow(formats) == 1) {
-          if (formats[1, 'format_id'] != inputs$format_id[i]) {
-            logger.error("Format of input", tag, "does not match specified input.")
+            PEcAn.utils::logger.warn("@Format of input", tag, "does not match specified input: ",formats[1, 'format_id'],inputs$format_id[i])
+            settings$run$inputs[[tag]][['path']] <- NULL ## zero out path, do_conversions will need to convert specified input ID to model format
           }
         } else {
           logger.error("Could not check format of", tag, ".")
         }
       }
+      logger.info("path",settings$run$inputs[[tag]][['path']])
     }
   }
   

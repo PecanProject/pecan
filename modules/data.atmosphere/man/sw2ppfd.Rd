@@ -7,7 +7,7 @@
 sw2ppfd(sw)
 }
 \arguments{
-\item{SW}{CF surface_downwelling_shortwave_flux_in_air W/m2}
+\item{sw}{CF surface_downwelling_shortwave_flux_in_air (W/m2)}
 }
 \value{
 PPFD umol /m2 / s
