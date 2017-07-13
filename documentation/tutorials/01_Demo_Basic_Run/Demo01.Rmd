@@ -26,9 +26,9 @@ In the following demo, **URL** is the web address of a PEcAn server and will ref
 *	If you are [running PEcAn on Amazon AWS][pecanaws], **URL is the Public IP**
 *	If you [installed PEcAn on your server][pecanserver], **URL is your server’s IP**
 
-[pecandl]: https://pecanproject.github.io/pecan-documentation/getting-started.html#working-with-the-pecan-vm
-[pecanaws]: https://pecanproject.github.io/pecan-documentation/getting-started.html#using-amazonweb-services-aws
-[pecanserver]: https://pecanproject.github.io/pecan-documentation/installing-pecan.html
+[pecandl]: https://pecanproject.github.io/pecan-documentation/master/getting-started.html#working-with-the-pecan-vm
+[pecanaws]: https://pecanproject.github.io/pecan-documentation/master/getting-started.html#using-amazonweb-services-aws
+[pecanserver]: https://pecanproject.github.io/pecan-documentation/master/installing-pecan.html
 
 # Demo 01: Basic Run
 
@@ -52,14 +52,14 @@ knitr::include_graphics('mapmodel.png')
 
 **Select the local machine “pecan”**. Other options exist if you’ve configured PEcAn to [run models on remote servers][remoterun]. 
 
-[remoterun]: https://pecanproject.github.io/pecan-documentation/Enabling-Remote-Execution.html
+[remoterun]: https://pecanproject.github.io/pecan-documentation/master/Enabling-Remote-Execution.html
 
 
 ### Mode
 
-Select **SIPNET** from the [available models][availmodels] because it is quick & simple.
+Select **SIPNET** (r136) from the [available models][availmodels] because it is quick & simple.
 
-[availmodels]: https://pecanproject.github.io/pecan-documentation/pecan-models.html
+[availmodels]: https://pecanproject.github.io/pecan-documentation/master/pecan-models.html
 
 
 ### Site Group
@@ -74,7 +74,7 @@ To filter sites, you can **select a specific group of sites**. For this tutorial
 
 ### Site:
 
-**For this tutorial, type _US-WCr_ in the search box to display the Willow Creek Ameriflux site (US-WCr), and then click on the pin icon**. When you click on a site’s flag on the map, it will give you the name and location of the site and put that site in the “Site:” box on the left hand site, indicating your current selection. 
+**For this tutorial, type _US-NR1_ in the search box to display the Niwot Ridge Ameriflux site (US-NR1), and then click on the pin icon**. When you click on a site’s flag on the map, it will give you the name and location of the site and put that site in the “Site:” box on the left hand site, indicating your current selection. 
 
 Once you are finished with the above steps, **click "Next"**.
 
@@ -90,7 +90,7 @@ Next we will specify settings required to run the model. Be aware that the input
 
 ### PFT (Plant Functional Type):
 
-**Willow Creek is temperate deciduous**.  Available PFTs will vary by model and some models allow multiple competing PFTs to be selected. Also select **soil** to control the soil parameters
+**Niwot Ridge is temperate coniferous**.  Available PFTs will vary by model and some models allow multiple competing PFTs to be selected. Also select **soil** to control the soil parameters
 
 
 ### Start/End Date:
@@ -102,7 +102,7 @@ Select **2003/01/01** to **2006/12/31**. In general, be careful to select dates 
 
 **Select “Use AmerifluxLBL”** from the [available meteorological drivers][metdrivers].
 
-[metdrivers]: https://pecanproject.github.io/pecan-documentation/available-meteorological-drivers.html
+[metdrivers]: https://pecanproject.github.io/pecan-documentation/master/available-meteorological-drivers.html
 
 
 ### Optional Settings:
@@ -125,7 +125,7 @@ You will see a data policy statement if you selected a data source with a policy
 
 ### If you get an error in your run 
 
-If you get an error in your run as part of a live demo or class activity, it is probably simplest to start over and try changing options and re-running (e.g. with a different site or PFT), as time does not permit detailed debugging. If the source of the error is not immediately obvious, you may want to take a look at the workflow.Rout to see the log of the PEcAn workflow or the logfile.txt to see the model execution output log and then refer to the [Documentation](pecanproject.github.io/pecan_bookdown) or the [Chat Room](https://gitter.im/PecanProject/pecan) for help.
+If you get an error in your run as part of a live demo or class activity, it is probably simplest to start over and try changing options and re-running (e.g. with a different site or PFT), as time does not permit detailed debugging. If the source of the error is not immediately obvious, you may want to take a look at the workflow.Rout to see the log of the PEcAn workflow or the logfile.txt to see the model execution output log and then refer to the [Documentation](http://pecanproject.github.io/documentation.html) or the [Chat Room](https://gitter.im/PecanProject/pecan) for help.
 
 ## Model Run Workflow
 
@@ -164,7 +164,7 @@ If enabled post-process output for these analyses
 
 If at any point a Stage Name has the **Status “ERROR”** please notify the PEcAn team member that is administering the demo or feel free to do any of the following:
 
-* Refer to the PEcAn Gitbook for documentation
+* Refer to the PEcAn Documentation for documentation
 * Post the end of your workflow log on our Gitter chat
 * Post an issue on Github. 
 
@@ -172,7 +172,7 @@ The entire PEcAn team welcomes any questions you may have!
 
 **If the Finished Stage has a Status of “DONE”, congratulations!** If you got this far, you have managed to run an ecosystem model without ever touching a line of code! Now it’s time to look at the results **click Finished**.
 
-FYI, [adding a new model](https://pecan.gitbooks.io/pecan-documentation/content/developers_guide/Adding-an-Ecosystem-Model.html) to PEcAn does not require modification of the model’s code, just the implementation of a wrapper function.
+FYI, [adding a new model](https://pecanproject.github.io/pecan-documentation/master/adding-an-ecosystem-model.html) to PEcAn does not require modification of the model’s code, just the implementation of a wrapper function.
 
 
 ## Output and Visualization
