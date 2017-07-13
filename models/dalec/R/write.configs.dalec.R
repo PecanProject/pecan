@@ -136,8 +136,8 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
       
       
       #check if total roots are partitioned (pull out as a function for readability)
-      #note: if fine and coarse roots are both loaded, they will override root_carbon_content
-      if(is.valid(roots) && (!is.valid(fine.roots) || !is.valid(coarse.roots)){
+      #note: if roots are patritionable, they will override fine_ and/or coarse_root_carbon_content if loaded
+      if(is.valid(roots)){
         if("rtsize" %in% names(IC.nc$dim)){
           rtsize <- IC.nc$dim$rtsize$vals
           if(length(rtsize) > 1 && length(rtsize) == length(roots)){
