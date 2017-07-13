@@ -259,10 +259,10 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
       } 
       
       ###Write to command line file
-      PEcAn.utils::logger.info(names(paste("Adding IC tags to file:", IC.params))
       for (i in seq_along(IC.params)) {
         cmdFlags <- paste0(cmdFlags, " -", names(IC.params)[i], " ", IC.params[[i]])
       }
+      PEcAn.utils::logger.info(paste("All command flags:",cmdFlags))
       
     } else{
       PEcAn.utils::logger.error("Bad initial conditions filepath; kept defaults")
