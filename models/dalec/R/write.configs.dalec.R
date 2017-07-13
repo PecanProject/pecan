@@ -115,6 +115,9 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
   }
   
   ### INITIAL CONDITIONS
+  is.loaded <- function(var){
+    return(all(!is.na(var) && is.numeric(var))) #check that ncvar was present (numeric) and a value was given it (not NA)
+  }
   
   default.param <- read.table(system.file("default_param.dalec", package = "PEcAn.DALEC"))
   IC.param <- data.frame()
@@ -123,16 +126,60 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
     IC.nc <- try(ncdf4::nc_open(IC.path)) 
     
     if(class(IC.nc) != "try-error"){
-      # cf0 initial canopy foliar carbon (g/m2)
+      #check/load biomass netcdf variables
+      totBiom <- try(ncdf4::ncvar_get(IC.nc,"TotLivBiom"),silent = TRUE)
       leaf <- try(ncdf4::ncvar_get(IC.nc,"leaf_carbon_content"),silent = TRUE)
-      if (!is.na(leaf) && is.numeric(leaf)) {
+      AbvGrndWood <- try(ncdf4::ncvar_get(IC.nc,"AbvGrndWood"),silent = TRUE)
+      roots <- try(ncdf4::ncvar_get(IC.nc,"root_carbon_content"),silent = TRUE)
+      fine.roots <- try(ncdf4::ncvar_get(IC.nc,"fine_root_carbon_content"),silent = TRUE)
+      coarse.roots <- try(ncdf4::ncvar_get(IC.nc,"coarse_root_carbon_content"),silent = TRUE)
+      
+      
+      #check if total roots are partitioned
+      if(is.loaded(roots) && !is.loaded(fine.roots) || !is.loaded(coarse.roots)){
+        if("rtsize" %in% names(IC.nc$dim)){
+          rtsize = IC.nc$dim$rtsize$vals
+          if(length(rtsize) > 1 && length(rtsize) == length(roots)){
+            threshold = .002
+            epsilon <- .0005
+            rtsize_thresh_idx = which.min(sapply(rtsize-threshold,abs))
+            rtsize_thresh = rtsize[rtsize_thresh_idx]
+            if(abs(rtsize_thresh-threshold) > epsilon){
+              PEcAn.utils::logger.error(paste("Closest rtsize to fine root threshold of", threshold, "m (", rtsize_thresh, 
+                                              ") is greater than", epsilon, 
+                                              "m off; fine roots can't be partitioned. Please improve rtsize dimensions or provide fine_root_carbon_content and coarse_root_carbon_content in netcdf."))
+            } 
+            else{
+              fine.roots.temp <- sum(roots[1:rtsize_thresh_idx-1])
+              coarse.roots.temp <- sum(roots) - fine.roots
+              if(fine.roots.temp > 0 && coarse.roots.temp > 0){
+                fine.roots <- fine.roots.temp
+                coarse.roots <- coarse.roots.temp
+              } else{
+                PEcAn.utils::logger.error("Roots could not be partitioned (fine or coarse is less than 0); please provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
+              }
+            }
+          } else {
+            PEcAn.utils::logger.error("Not enough levels of rtsize to partition roots; please provide finer resolution for root_carbon_content or provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
+          }
+        } else{
+          PEcAn.utils::logger.error("Please provide rtsize dimension with root_carbon_content to allow partitioning or provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
+        }
+      }
+     
+      
+      # cf0 initial canopy foliar carbon (g/m2)
+      if (is.loaded(leaf)) {
         param[["cf0"]] <- leaf
       }
+      else if(is.loaded(totBiom) && is.loaded(AbvGrndWood) && 
+              is.loaded(fine.roots) && is.loaded(coarse.roots)){
+          leaf <- totBiom - AbvGrndWood - fine.roots - coarse.roots
+        }
+      }
       # cw0 initial pool of woody carbon (g/m2)
-      AbvGrndWood <- try(ncdf4::ncvar_get(IC.nc,"AbvGrndWood"),silent = TRUE)
-      if (!is.na(AbvGrndWood) && is.numeric(AbvGrndWood)) {
-        roots <- try(ncdf4::ncvar_get(IC.nc,"root_carbon_content"),silent = TRUE)
-        if(!is.na(roots) && is.numeric(roots)){
+      if (is.loaded(AbvGrndWood)) {
+        if(is.loaded(fine.roots) && is.loaded(coarse.roots)){
           #wood <- partitioned coarse roots + abvgroundwood
         }
         else{
