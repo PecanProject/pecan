@@ -71,16 +71,39 @@ convert.samples.DALEC <- function(trait.samples) {
     names(trait.samples)[which(names(trait.samples) == "som_respiration_rate")] <- "t9"
   }
   
-  ### INITIAL CONDITIONS
-  
-  # cf0 initial canopy foliar carbon (g/m2)
-  # cw0 initial pool of woody carbon (g/m2)
-  # cr0 initial pool of fine root carbon (g/m2)
-  # cl0 initial pool of litter carbon (g/m2)
-  # cs0 initial pool of soil organic matter and woody debris carbon (g/m2)
-  
   return(trait.samples)
 } # convert.samples.DALEC
+
+####function to split root_carbon_content into fine and coarse roots by rtsize dimension at the .002 m threshold
+partition_roots <- function(roots, rtsize){
+  if(length(rtsize) > 1 && length(rtsize) == length(roots)){
+    threshold <- .002
+    epsilon <- .0005
+    rtsize_thresh_idx <- which.min(sapply(rtsize-threshold,abs))
+    rtsize_thresh <- rtsize[rtsize_thresh_idx]
+    if(abs(rtsize_thresh-threshold) > epsilon){
+      PEcAn.utils::logger.error(paste("Closest rtsize to fine root threshold of", threshold, "m (", rtsize_thresh, 
+                                      ") is greater than", epsilon, 
+                                      "m off; fine roots can't be partitioned. Please improve rtsize dimensions or provide fine_root_carbon_content and coarse_root_carbon_content in netcdf."))
+      return(NULL)
+    } else{
+      fine.roots.temp <- sum(roots[1:rtsize_thresh_idx-1])
+      coarse.roots.temp <- sum(roots) - fine.roots.temp
+      if(fine.roots.temp >= 0 && coarse.roots.temp >= 0){
+        fine.roots <- fine.roots.temp
+        coarse.roots <- coarse.roots.temp
+        PEcAn.utils::logger.info("Using partitioned root values", fine.roots, "for fine and", coarse.roots, "for coarse.")
+        return(list(fine.roots = fine.roots, coarse.roots = coarse.roots))
+      } else{
+        PEcAn.utils::logger.error("Roots could not be partitioned (fine or coarse is less than 0); please provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
+        return(NULL)
+      }
+    }
+  } else {
+    PEcAn.utils::logger.error("Not enough levels of rtsize associated with root_carbon_content to partition roots; please provide finer resolution for root_carbon_content or provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
+    return(NULL)
+  }
+}
 
 #--------------------------------------------------------------------------------------------------#
 ##' Writes a configuration files for your model
@@ -115,11 +138,13 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
   }
   
   ### INITIAL CONDITIONS
+  
+  #function to check that ncvar was present (numeric) and a valid value was given it (not NA or negative)
   is.valid <- function(var){
-    return(all(!is.na(var) && is.numeric(var) && var >= 0)) #check that ncvar was present (numeric) and a valid value was given it (not NA or negative)
+    return(all(is.numeric(var) && !is.na(var) &&  var >= 0)) 
   }
   
-  default.param <- read.table(system.file("default_param.dalec", package = "PEcAn.DALEC"))
+  #default.param <- read.table(system.file("default_param.dalec", package = "PEcAn.DALEC"))
   IC.params <- data.frame()
   if (!is.null(settings$run$inputs$poolinitcond$path)) {
     IC.path <- settings$run$inputs$poolinitcond$path
@@ -140,36 +165,21 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
       if(is.valid(roots)){
         if("rtsize" %in% names(IC.nc$dim)){
           rtsize <- IC.nc$dim$rtsize$vals
-          if(length(rtsize) > 1 && length(rtsize) == length(roots)){
-            threshold <- .002
-            epsilon <- .0005
-            rtsize_thresh_idx <- which.min(sapply(rtsize-threshold,abs))
-            rtsize_thresh <- rtsize[rtsize_thresh_idx]
-            if(abs(rtsize_thresh-threshold) > epsilon){
-              PEcAn.utils::logger.error(paste("Closest rtsize to fine root threshold of", threshold, "m (", rtsize_thresh, 
-                                              ") is greater than", epsilon, 
-                                              "m off; fine roots can't be partitioned. Please improve rtsize dimensions or provide fine_root_carbon_content and coarse_root_carbon_content in netcdf."))
-            } 
-            else{
-              fine.roots.temp <- sum(roots[1:rtsize_thresh_idx-1])
-              coarse.roots.temp <- sum(roots) - fine.roots
-              if(fine.roots.temp >= 0 && coarse.roots.temp >= 0){
-                fine.roots <- fine.roots.temp
-                coarse.roots <- coarse.roots.temp
-                PEcAn.utils::logger.info("Using partitioned root values", fine.roots, "for fine and", coarse.roots, "for coarse.")
-              } else{
-                PEcAn.utils::logger.error("Roots could not be partitioned (fine or coarse is less than 0); please provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
-              }
-            }
-          } else {
-            PEcAn.utils::logger.error("Not enough levels of rtsize to partition roots; please provide finer resolution for root_carbon_content or provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
+          part_roots <- partition_roots(roots, rtsize)
+          if(!is.null(part_roots)){
+            fine.roots <- part_roots$fine.roots
+            coarse.roots <- part_roots$coarse.roots
+          } else{
+            #couldn't partition roots; error messages handled by function
           }
         } else{
           PEcAn.utils::logger.error("Please provide rtsize dimension with root_carbon_content to allow partitioning or provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
         }
+      } else{
+        #proceed without error message
       }
      
-    ###write initial conditions from netcdf  
+    ###write initial conditions from netcdf (wherever valid input isn't available, DALEC default remains)
       # cf0 initial canopy foliar carbon (g/m2)
       if (is.valid(leaf)) {
         IC.params[["cf0"]] <- leaf * 1000 #standard kg C m-2
@@ -205,9 +215,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
         }else{
           PEcAn.utils::logger.error("TotLivBiom is less than sum of leaf and fine roots; using default for woody biomass")
         }
-      } else{
-        #use default wood
-      }
+      } 
     
       # cr0 initial pool of fine root carbon (g/m2)
       if (is.valid(fine.roots)) {
@@ -234,9 +242,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
         }
       } else if(is.valid(soil) && !is.valid(wood.debris)){
         PEcAn.utils::logger.error("write.configs.DALEC IC can't calculate soil matter pool without wood debris; using default. Please provide wood_debris_carbon_content in netcdf.")
-      } else{
-        #use default soil pool
-      }
+      } 
       
       ###Write to command line file
       PEcAn.utils::logger.info(names(paste("Adding IC tags to file:", IC.params))
