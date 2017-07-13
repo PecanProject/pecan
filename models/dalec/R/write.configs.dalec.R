@@ -115,19 +115,19 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
   }
   
   ### INITIAL CONDITIONS
-  is.loaded <- function(var){
-    return(all(!is.na(var) && is.numeric(var))) #check that ncvar was present (numeric) and a value was given it (not NA)
+  is.valid <- function(var){
+    return(all(!is.na(var) && is.numeric(var) && var >= 0)) #check that ncvar was present (numeric) and a valid value was given it (not NA or negative)
   }
   
   default.param <- read.table(system.file("default_param.dalec", package = "PEcAn.DALEC"))
   IC.param <- data.frame()
-   if (!is.null(settings$run$inputs$poolinitcond$path)) {
+  if (!is.null(settings$run$inputs$poolinitcond$path)) {
     IC.path <- settings$run$inputs$poolinitcond$path
     IC.nc <- try(ncdf4::nc_open(IC.path)) 
     
     if(class(IC.nc) != "try-error"){
       #check/load biomass netcdf variables
-      totBiom <- try(ncdf4::ncvar_get(IC.nc,"TotLivBiom"),silent = TRUE)
+      TotLivBiom <- try(ncdf4::ncvar_get(IC.nc,"TotLivBiom"),silent = TRUE)
       leaf <- try(ncdf4::ncvar_get(IC.nc,"leaf_carbon_content"),silent = TRUE)
       AbvGrndWood <- try(ncdf4::ncvar_get(IC.nc,"AbvGrndWood"),silent = TRUE)
       roots <- try(ncdf4::ncvar_get(IC.nc,"root_carbon_content"),silent = TRUE)
@@ -135,15 +135,16 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
       coarse.roots <- try(ncdf4::ncvar_get(IC.nc,"coarse_root_carbon_content"),silent = TRUE)
       
       
-      #check if total roots are partitioned
-      if(is.loaded(roots) && !is.loaded(fine.roots) || !is.loaded(coarse.roots)){
+      #check if total roots are partitioned (pull out as a function for readability)
+      #note: if fine and coarse roots are both loaded, they will override root_carbon_content
+      if(is.valid(roots) && (!is.valid(fine.roots) || !is.valid(coarse.roots)){
         if("rtsize" %in% names(IC.nc$dim)){
-          rtsize = IC.nc$dim$rtsize$vals
+          rtsize <- IC.nc$dim$rtsize$vals
           if(length(rtsize) > 1 && length(rtsize) == length(roots)){
-            threshold = .002
+            threshold <- .002
             epsilon <- .0005
-            rtsize_thresh_idx = which.min(sapply(rtsize-threshold,abs))
-            rtsize_thresh = rtsize[rtsize_thresh_idx]
+            rtsize_thresh_idx <- which.min(sapply(rtsize-threshold,abs))
+            rtsize_thresh <- rtsize[rtsize_thresh_idx]
             if(abs(rtsize_thresh-threshold) > epsilon){
               PEcAn.utils::logger.error(paste("Closest rtsize to fine root threshold of", threshold, "m (", rtsize_thresh, 
                                               ") is greater than", epsilon, 
@@ -152,9 +153,10 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
             else{
               fine.roots.temp <- sum(roots[1:rtsize_thresh_idx-1])
               coarse.roots.temp <- sum(roots) - fine.roots
-              if(fine.roots.temp > 0 && coarse.roots.temp > 0){
+              if(fine.roots.temp >= 0 && coarse.roots.temp >= 0){
                 fine.roots <- fine.roots.temp
                 coarse.roots <- coarse.roots.temp
+                PEcAn.utils::logger.info("Using partitioned root values", fine.roots, "for fine and", coarse.roots, "for coarse.")
               } else{
                 PEcAn.utils::logger.error("Roots could not be partitioned (fine or coarse is less than 0); please provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
               }
@@ -167,51 +169,76 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
         }
       }
      
-      
+    ###write initial conditions from netcdf  
       # cf0 initial canopy foliar carbon (g/m2)
-      if (is.loaded(leaf)) {
-        param[["cf0"]] <- leaf
-      }
-      else if(is.loaded(totBiom) && is.loaded(AbvGrndWood) && 
-              is.loaded(fine.roots) && is.loaded(coarse.roots)){
-          leaf <- totBiom - AbvGrndWood - fine.roots - coarse.roots
-        }
-      }
-      # cw0 initial pool of woody carbon (g/m2)
-      if (is.loaded(AbvGrndWood)) {
-        if(is.loaded(fine.roots) && is.loaded(coarse.roots)){
-          #wood <- partitioned coarse roots + abvgroundwood
-        }
-        else{
-          #wood <- (roots-default.fine) + abvgroundwood
-        }
-        param[["cw0"]] <- wood
-      }
-      # cr0 initial pool of fine root carbon (g/m2)
-        roots <- try(ncdf4::ncvar_get(IC.nc,"root_carbon_content"),silent = TRUE)
-        if (!is.na(roots) && is.numeric(roots)) {
-          #partition fine roots
-          param[["cr0"]] <- roots
-        }
-      # cl0 initial pool of litter carbon (g/m2)
-        litter <- try(ncdf4::ncvar_get(IC.nc,"litter_carbon_content"),silent = TRUE)
-        if (!is.na(litter) && is.numeric(litter)) {
-          param[["cl0"]] <- litter
-        }
-      # cs0 initial pool of soil organic matter and woody debris carbon (g/m2)
-        soil <- try(ncdf4::ncvar_get(IC.nc,"soil_organic_carbon_content"),silent = TRUE)
-        if(!is.numeric(soil)){
-          soil <- try(ncdf4::ncvar_get(IC.nc,"soil_carbon_content"),silent = TRUE)
-          if(is.numeric(soil)){
-            wood <- try(ncdf4::ncvar_get(IC.nc,"wood_debris_carbon_content"),silent = TRUE)
-            if(is.numeric(wood)){
-              soil_and_wood <- soil + sum(wood)
-              param[["cs0"]] <- soil_and_wood
-            }
+      if (is.valid(leaf)) {
+        param[["cf0"]] <- leaf * 1000 #standard kg C m-2
+      } else if(is.valid(TotLivBiom) && is.valid(AbvGrndWood) && 
+              is.valid(fine.roots) && is.valid(coarse.roots)){
+          leaf <- (TotLivBiom - AbvGrndWood - fine.roots - coarse.roots) * 1000 #standard kg C m-2
+          if(leaf >= 0){
+            param[["cf0"]] <- leaf
+          } else{
+            PEcAn.utils::logger.error("TotLivBiom is less than sum of AbvGrndWood and roots; using default for leaf biomass")
           }
+      }
+    
+      # cw0 initial pool of woody carbon (g/m2)
+      if (is.valid(AbvGrndWood)) {
+        if(is.valid(coarse.roots)){
+          param[["cw0"]] <- (AbvGrndWood + coarse.roots) * 1000 #standard kg C m-2
         }
-    }
-    else{
+        else if (is.valid(TotLivBiom) && is.valid(leaf) && is.valid(fine.roots)){
+          wood <- (TotLivBiom - leaf - fine.roots) * 1000 #standard kg C m-2
+          if (wood >= 0){
+            param[["cw0"]] <- wood
+          } else{
+            PEcAn.utils::logger.error("TotLivBiom is less than sum of leaf and fine roots; using default for woody biomass")
+          }
+        } else{
+          PEcAn.utils::logger.error("write.configs.DALEC IC can't calculate total woody biomass with only AbvGrndWood; using defaults. Please provide coarse_root_carbon_content OR root_carbon_content with rtsize dimensions OR leaf_carbon_content, fine_root_carbon_content, and TotLivBiom in netcdf")
+        }
+      } else if (is.valid(TotLivBiom) && is.valid(leaf) && is.valid(fine.roots)){
+        wood <- (TotLivBiom - leaf - fine.roots) * 1000 #standard kg C m-2
+        if (wood >= 0){
+          param[["cw0"]] <- wood
+        }else{
+          PEcAn.utils::logger.error("TotLivBiom is less than sum of leaf and fine roots; using default for woody biomass")
+        }
+      } else{
+        #use default wood
+      }
+    
+      # cr0 initial pool of fine root carbon (g/m2)
+      if (is.valid(fine.roots)) {
+        param[["cr0"]] <- fine.roots * 1000 #standard kg C m-2
+      }
+    
+      # cl0 initial pool of litter carbon (g/m2)
+      litter <- try(ncdf4::ncvar_get(IC.nc,"litter_carbon_content"),silent = TRUE)
+      if (is.valid(litter)) {
+        param[["cl0"]] <- litter * 1000 #standard kg C m-2
+      }
+        
+      # cs0 initial pool of soil organic matter and woody debris carbon (g/m2)
+      soil <- try(ncdf4::ncvar_get(IC.nc,"soil_organic_carbon_content"),silent = TRUE)
+      wood.debris <- try(ncdf4::ncvar_get(IC.nc,"wood_debris_carbon_content"),silent = TRUE)
+      if(is.valid(soil) && is.valid(wood.debris)){
+        param[["cs0"]] <- (soil + sum(wood.debris)) * 1000 #standard kg C m-2
+      } else if(!is.valid(soil) && is.valid(wood.debris)){
+        soil <- try(ncdf4::ncvar_get(IC.nc,"soil_carbon_content"),silent = TRUE)
+        if(is.valid(soil)){
+            param[["cs0"]] <- (soil + sum(wood.debris)) * 1000 #standard kg C m-2
+        } else{
+          PEcAn.utils::logger.error("write.configs.DALEC IC can't calculate soil matter pool without soil carbon; using default. Please provide soil_organic_carbon_content in netcdf.")
+        }
+      } else if(is.valid(soil) && !is.valid(wood.debris)){
+        PEcAn.utils::logger.error("write.configs.DALEC IC can't calculate soil matter pool without wood debris; using default. Please provide wood_debris_carbon_content in netcdf.")
+      } else{
+        #use default soil pool
+      }
+      
+    } else{
       PEcAn.utils::logger.error("Bad initial conditions filepath; kept defaults")
     }
   }
