@@ -145,7 +145,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
   }
   
   #default.param <- read.table(system.file("default_param.dalec", package = "PEcAn.DALEC"))
-  IC.params <- data.frame()
+  IC.params <- list()
   if (!is.null(settings$run$inputs$poolinitcond$path)) {
     IC.path <- settings$run$inputs$poolinitcond$path
     IC.nc <- try(ncdf4::nc_open(IC.path)) 
@@ -160,13 +160,14 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
       coarse.roots <- try(ncdf4::ncvar_get(IC.nc,"coarse_root_carbon_content"),silent = TRUE)
       
       if(!all(sapply(c(TotLivBiom,leaf,AbvGrndWood,roots,fine.roots,coarse.roots),is.numeric))){
-        PEcAn.utils::logger.info("Any missing vars will be calculated from those provided or replaced by DALEC's defaults")
+        PEcAn.utils::logger.info("DALEC IC: Any missing vars will be calculated from those provided or replaced by DALEC's defaults")
       }
       
       #check if total roots are partitionable
       #note: if roots are patritionable, they will override fine_ and/or coarse_root_carbon_content if loaded
       if(is.valid(roots)){
         if("rtsize" %in% names(IC.nc$dim)){
+          PEcAn.utils::logger.info("DALEC IC: Attempting to partition root_carbon_content")
           rtsize <- IC.nc$dim$rtsize$vals
           part_roots <- partition_roots(roots, rtsize)
           if(!is.null(part_roots)){
@@ -176,7 +177,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
             #couldn't partition roots; error messages handled by function
           }
         } else{
-          PEcAn.utils::logger.error("Please provide rtsize dimension with root_carbon_content to allow partitioning or provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
+          PEcAn.utils::logger.error("DALEC IC: Please provide rtsize dimension with root_carbon_content to allow partitioning or provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
         }
       } else{
         #proceed without error message
@@ -224,8 +225,17 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
       # cr0 initial pool of fine root carbon (g/m2)
       if (is.valid(fine.roots)) {
         IC.params[["cr0"]] <- fine.roots * 1000 #standard kg C m-2
+      } else if(is.valid(TotLivBiom) && is.valid(AbvGrndWood) && 
+                is.valid(leaf) && is.valid(coarse.roots)){
+        fine.roots <- (TotLivBiom - AbvGrndWood - leaf - coarse.roots) * 1000 #standard kg C m-2
+        if(leaf >= 0){
+          IC.params[["cr0"]] <- fine.roots
+        } else{
+          PEcAn.utils::logger.error("TotLivBiom is less than sum of AbvGrndWood, coarse roots, and leaf; using default for fine.roots biomass")
+        }
       }
     
+      ###non-living variables
       # cl0 initial pool of litter carbon (g/m2)
       litter <- try(ncdf4::ncvar_get(IC.nc,"litter_carbon_content"),silent = TRUE)
       if (is.valid(litter)) {
