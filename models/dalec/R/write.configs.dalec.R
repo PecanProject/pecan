@@ -74,7 +74,7 @@ convert.samples.DALEC <- function(trait.samples) {
   return(trait.samples)
 } # convert.samples.DALEC
 
-####function to split root_carbon_content into fine and coarse roots by rtsize dimension at the .002 m threshold
+####partition_roots: function to split root_carbon_content into fine and coarse roots by rtsize dimension at the .002 m threshold
 partition_roots <- function(roots, rtsize){
   if(length(rtsize) > 1 && length(rtsize) == length(roots)){
     threshold <- .002
@@ -139,7 +139,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
   
   ### INITIAL CONDITIONS
   
-  #function to check that ncvar was present (numeric) and a valid value was given it (not NA or negative)
+  #function to check that ncvar was loaded (numeric) and has a valid value (not NA or negative)
   is.valid <- function(var){
     return(all(is.numeric(var) && !is.na(var) &&  var >= 0)) 
   }
