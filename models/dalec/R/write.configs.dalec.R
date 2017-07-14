@@ -15,13 +15,13 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
 convert.samples.DALEC <- function(trait.samples) {
   
   DEFAULT.LEAF.C <- 0.48
-  ## convert SLA from m2 / kg leaf to m2 / kg C
+  ## convert SLA from m2 / kg leaf to m2 / g C
   
   if ("SLA" %in% names(trait.samples)) {
     trait.samples[["SLA"]] <- trait.samples[["SLA"]]/DEFAULT.LEAF.C/1000
   }
   
-  # t1 rate variable controling decomposition from litter to soil organinc matter [day-1, ref T
+  # t1 rate variable controlling decomposition from litter to soil organinc matter [day-1, ref T
   # 10C]
   if ("litter_decomposition_to_SOM" %in% names(trait.samples)) {
     names(trait.samples)[which(names(trait.samples) == "litter_decomposition_to_SOM")] <- "t1"
@@ -144,9 +144,10 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
     return(all(is.numeric(var) && !is.na(var) &&  var >= 0)) 
   }
   
-  #default.param <- read.table(system.file("default_param.dalec", package = "PEcAn.DALEC"))
+  default.param <- read.table(system.file("default_param.dalec", package = "PEcAn.DALEC"), header = TRUE)
   IC.params <- list()
-  if (!is.null(settings$run$inputs$poolinitcond$path)) {
+ 
+   if (!is.null(settings$run$inputs$poolinitcond$path)) {
     IC.path <- settings$run$inputs$poolinitcond$path
     IC.nc <- try(ncdf4::nc_open(IC.path)) 
     
@@ -154,12 +155,13 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
       #check/load biomass netcdf variables
       TotLivBiom <- try(ncdf4::ncvar_get(IC.nc,"TotLivBiom"),silent = TRUE)
       leaf <- try(ncdf4::ncvar_get(IC.nc,"leaf_carbon_content"),silent = TRUE)
+      LAI <- try(ncdf4::ncvar_get(IC.nc,"LAI"),silent = TRUE)
       AbvGrndWood <- try(ncdf4::ncvar_get(IC.nc,"AbvGrndWood"),silent = TRUE)
       roots <- try(ncdf4::ncvar_get(IC.nc,"root_carbon_content"),silent = TRUE)
       fine.roots <- try(ncdf4::ncvar_get(IC.nc,"fine_root_carbon_content"),silent = TRUE)
       coarse.roots <- try(ncdf4::ncvar_get(IC.nc,"coarse_root_carbon_content"),silent = TRUE)
       
-      if(!all(sapply(c(TotLivBiom,leaf,AbvGrndWood,roots,fine.roots,coarse.roots),is.numeric))){
+      if(!all(sapply(c(TotLivBiom,leaf,LAI,AbvGrndWood,roots,fine.roots,coarse.roots),is.numeric))){
         PEcAn.utils::logger.info("DALEC IC: Any missing vars will be calculated from those provided or replaced by DALEC's defaults")
       }
       
@@ -183,11 +185,23 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
         #proceed without error message
       }
      
+     
     ###Write initial conditions from netcdf (Note: wherever valid input isn't available, DALEC default remains)
       
       # cf0 initial canopy foliar carbon (g/m2)
       if (is.valid(leaf)) {
         IC.params[["cf0"]] <- leaf * 1000 #standard kg C m-2
+      } else if(is.valid(LAI)){
+        if("SLA" %in% names(params)){
+          LMA <- 1/params[1,"SLA"] #SLA converted to m2 kgC-1 in convert.samples
+          leaf <- LAI * LMA
+          IC.params[["cf0"]] <- leaf
+        } else{
+          SLA = default.param[which(default.param$cmdFlag == "SLA"),"val"] 
+          LMA <- 1/SLA
+          leaf <- LAI * LMA
+          IC.params[["cf0"]] <- leaf
+        }
       } else if(is.valid(TotLivBiom) && is.valid(AbvGrndWood) && 
               is.valid(fine.roots) && is.valid(coarse.roots)){
           leaf <- (TotLivBiom - AbvGrndWood - fine.roots - coarse.roots) * 1000 #standard kg C m-2
