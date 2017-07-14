@@ -20,8 +20,7 @@ Imports:
 Suggests:
     BioCro,
     testthat (>= 1.0.2),
-    RPostgreSQL,
-    RNCEP
+    RPostgreSQL
 Remotes:
     github::ebimodeling/biocro
 License: FreeBSD + file LICENSE
