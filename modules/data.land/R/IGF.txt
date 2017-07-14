@@ -1,0 +1,48 @@
+
+model{
+
+  ### Loop over all individuals
+  for(i in 1:ni){
+  
+  #### Data Model: DBH
+  for(t in 1:nt){
+  z[i,t] ~ dnorm(x[i,t],tau_dbh)
+  }
+  
+  #### Data Model: growth
+  for(t in 2:nt){
+  inc[i,t] <- x[i,t]-x[i,t-1]
+  y[i,t] ~ dnorm(inc[i,t],tau_inc)
+  }
+  
+  #### Process Model
+  for(t in 2:nt){
+  Dnew[i,t] <- x[i,t-1] + mu  + alpha_PLOT[PLOT[i]] + betaX*x[i,t-1] + betaX2*x[i,t-1]^2 + betaX_wintP.JJ*x[i,t-1]*wintP.JJ[i,t] + betaSICOND*Xf[rep[i],1] + betaSDI*Xf[rep[i],2]  + betaSICOND_wintP.JJ*SICOND[i]*wintP.JJ[i,t] + betawintP.JJ*wintP.JJ[i,t]
+  x[i,t]~dnorm(Dnew[i,t],tau_add)
+  }
+  
+  ## initial condition
+  x[i,1] ~ dnorm(x_ic,tau_ic)
+  }  ## end loop over individuals
+
+   for(k in 1:344){
+    alpha_PLOT[k] ~ dnorm(0,tau_PLOT)
+}
+
+  
+  #### Priors
+  tau_dbh ~ dgamma(a_dbh,r_dbh)
+  tau_inc ~ dgamma(a_inc,r_inc)
+  tau_add ~ dgamma(a_add,r_add)
+  mu ~ dnorm(0.5,0.5)
+       betaSICOND~dnorm(0,0.001)
+     betaSDI~dnorm(0,0.001)
+         betaX ~dnorm(0,0.001)
+       betaX2 ~dnorm(0,0.001)
+       betaX_wintP.JJ ~dnorm(0,0.001)
+
+      betaSICOND_wintP.JJ~dnorm(0,0.001)
+     betawintP.JJ~dnorm(0,0.001)
+   tau_PLOT ~ dgamma(1,0.1)
+
+}

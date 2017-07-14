@@ -3,36 +3,6 @@
 #### addition of several fixed effects here
 #### including time-varying effects
 
-### prep data files into jags objects
-#setwd("C:/Users/mekevans/Documents/CDrive/Bayes/DemogRangeMod/ProofOfConcept/treerings/FIAmetadata/ArizonaData/MergedDatabase/New")
-setwd("C:/Users/mekevans/Documents/Cdrive/Bayes/DemogRangeMod/ProofOfConcept/treerings/FIAmetadata/ArizonaData/MergedDatabase/New")
-
-#AZ.PIPO <- read.csv("AZ_FIA_RWL_PRISM_allinone_04192017.txt", header = T, sep = "\t", stringsAsFactors = F) ### 820 trees
-AZ.PIPO <- read.delim("AZ_FIA_RWL_PRISM_allinone_04192017.txt", stringsAsFactors = F) ### 820 trees
-
-### merge together three diameter columns
-AZ.PIPO$DIA <- ifelse(is.na(AZ.PIPO$TREE_DIA), AZ.PIPO$SITETREE_DIA, AZ.PIPO$TREE_DIA) # combine together FIADB diameter measurements for trees and site trees
-AZ.PIPO$DIA <- ifelse(is.na(AZ.PIPO$DIA), AZ.PIPO$DBH, AZ.PIPO$DIA) # replace missing data with DBH recorded from core mounts (DBH)
-
-### filter out those cases where DIA is NA...no size information
-AZ.PIPO <- AZ.PIPO[!is.na(AZ.PIPO$DIA),] # 793 trees
-### filter out cases where covariate data are missing (SICOND and SDI)
-AZ.PIPO <- AZ.PIPO[!is.na(AZ.PIPO$COND_SICOND),] # 643 trees...~150 missing SICOND. Justin suggests they may be PJ (will never have SICOND)
-AZ.PIPO <- AZ.PIPO[!is.na(AZ.PIPO$SDI),] # 641
-
-### problem: in minority of cases, the difference between MEASYEAR and DateEnd is other than 0 or 1
-### filter out those cases
-temp1 <- AZ.PIPO[AZ.PIPO$PLOT_MEASYEAR-AZ.PIPO$DateEnd<2,] # 544 trees
-temp2 <- temp1[temp1$PLOT_MEASYEAR-temp1$DateEnd>-1,] # no change
-
-
-source("BuildJAGSdataobject5.R")
-jags.stuff <- buildJAGSdataobject(temp2)
-data <- jags.stuff$data
-z0 <- jags.stuff$z0
-cov.data <- jags.stuff$cov.data
-time_data <- jags.stuff$time_data
-
 ##' @name InventoryGrowthFusion
 ##' @title InventoryGrowthFusion
 ##' @description this code fuses forest inventory data with tree growth data (tree ring or dendrometer band)
@@ -43,12 +13,12 @@ time_data <- jags.stuff$time_data
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=5000, random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, save.jags = "IGF.txt") {
+InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=5000, random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, save.jags = "IGF.txt", z0 = NULL) {
   library(rjags)
 
   # baseline variables to monitor  
   burnin.variables <- c("tau_add", "tau_dbh", "tau_inc", "mu") # process variability, dbh and tree-ring observation error, intercept
-  out.variables <- c("x", "tau_add", "tau_dbh", "tau_inc", "mu")
+  out.variables <- c("deviance", "x", "tau_add", "tau_dbh", "tau_inc", "mu")
   
   # start text object that will be manipulated (to build different linear models, swap in/out covariates)  
   TreeDataFusionMV <- "
@@ -92,7 +62,11 @@ model{
 }"
   
   Pformula <- NULL
-  ## RANDOM EFFECTS
+  ########################################################################
+  ###
+  ###        RANDOM EFFECTS
+  ###
+  ########################################################################
   if (!is.null(random)) {
     Rpriors <- NULL
     Reffects <- NULL
@@ -140,7 +114,8 @@ model{
                         paste0("+ alpha_", r_var,"[",counter,index,"]"))
       ## create random effect
       for(j in seq_along(nr)){
-        Reffects <- paste(Reffects,paste0("for(k in 1:",nr[j],"){\n"),
+        Reffects <- paste(Reffects,
+                          paste0("for(k in 1:",nr[j],"){\n"),
                           paste0("   alpha_",r_var[j],"[k] ~ dnorm(0,tau_",r_var[j],")\n}\n"))
       }
       ## create priors
@@ -154,7 +129,12 @@ model{
     TreeDataFusionMV <- sub(pattern = "## RANDOM EFFECT TAUS", Rpriors, TreeDataFusionMV)
     TreeDataFusionMV <- gsub(pattern = "## RANDOM_EFFECTS", Reffects, TreeDataFusionMV)
   }  ### END RANDOM EFFECTS
-  
+
+  ########################################################################
+  ###
+  ###        FIXED EFFECTS
+  ###
+  ########################################################################
   if(FALSE){
     ## DEV TESTING FOR X, POLYNOMIAL X, and X interactions
     fixed <- "X + X^3 + X*bob + bob + dia + X*Tmin[t]" ## faux model, just for testing jags code
@@ -210,7 +190,7 @@ model{
               if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at covX",names(data))}
               
 #              covX <- paste0(covX,"[i,t-1]")
-              myIndex <- "[i,t-1]"
+              myIndex <- "[i,t]"
             } else {
               ## variable is fixed
               if(covX %in% colnames(cov.data)){ ## covariate present
@@ -290,7 +270,13 @@ model{
   }
 
   if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at Xf",names(data))}
-  
+
+  ########################################################################
+  ###
+  ###        TIME-VARYING
+  ###
+  ########################################################################
+   
   if(FALSE){ # always false...just for development
     ## DEVEL TESTING FOR TIME VARYING
     time_varying <- "tmax_Jun + ppt_Dec + tmax_Jun*ppt_Dec" 
@@ -308,10 +294,12 @@ model{
     t_vars <- gsub(" ","",unlist(strsplit(time_varying,"+",fixed=TRUE))) ## split on +, remove whitespace
     ## check for interaction terms
     it_vars <- t_vars[grep(pattern = "*",x=t_vars,fixed = TRUE)]
-    t_vars <- t_vars[!(t_vars == it_vars)]
-    
-    ## need to deal with interactions with fixed variables
-    ## will get really nasty if interactions are with catagorical variables
+    if(length(it_vars) > 0){
+      t_vars <- t_vars[!(t_vars == it_vars)]
+    } 
+  
+    ## INTERACTIONS WITH TIME-VARYING VARS
+    ## TODO: deal with interactions with catagorical variables
     ## need to create new data matrices on the fly
 
     for(i in seq_along(it_vars)){
@@ -320,7 +308,7 @@ model{
       covX <- strsplit(it_vars[i],"*",fixed=TRUE)[[1]] 
       tvar    <- length(grep("[t]",covX[1],fixed=TRUE)) > 0
       tvar[2] <- length(grep("[t]",covX[2],fixed=TRUE)) > 0
-      myBeta <- "beta_"
+      myBeta <- "beta"
       for(j in 1:2){
         if(j == 2) myBeta <- paste0(myBeta,"_")
         if(tvar[j]){
@@ -396,9 +384,12 @@ model{
   ## state variable initial condition
   ## can't use the Dietze version bc of structure of AZ PIPO data
   ## z0 is built outside of this function in Evans custom data-processing function (buildJAGSdataobject.R)
-#  z0 <- t(apply(data$y, 1, function(y) {
-#    -rev(cumsum(rev(y)))
-#  })) + data$z[, ncol(data$z)]
+  if(is.null(z0)){
+      z0 <- t(apply(data$y, 1, function(y) {
+        -rev(cumsum(rev(y)))
+      })) + data$z[, ncol(data$z)]
+    }  
+
   
   ## JAGS initial conditions
   nchain <- 3
@@ -426,11 +417,6 @@ model{
   }
   
   ## run MCMC
+  load.module("dic")
   coda.samples(model = j.model, variable.names = out.variables, n.iter = n.iter)
 } # InventoryGrowthFusion
-
-model.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                   n.iter=5000, random="(1|PLOT[i])",
-                                   fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t]",
-                                   time_varying = "wintP.JJ + tmax.JanA + SDI*wintP.JJ[t]",
-                                   burnin_plot=FALSE)

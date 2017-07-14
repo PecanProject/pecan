@@ -1,7 +1,7 @@
 #### code to make data object for JAGS
 #### from flat file AZ PIPO database
 
-buildJAGSdataobject <- function(temp2){
+buildJAGSdataobject <- function(temp2, trunc.yr = 1976){
 
 ### get tree-ring measurements into a tree*year matrix
 temp2$Widths <- as.character(temp2$Widths)
@@ -44,7 +44,7 @@ for (t in 1:nrow(temp2)) {
 z.matrix <- z.matrix*2.54
 
 ### this is the line that restricts the analysis to the years trunc.yr:2010
-trunc.yr <- 1956
+#trunc.yr <- 1976
 index.last.start <- which(years==trunc.yr) # which(years==1966) # returns 238
 y.small <- y.matrix[,index.last.start:ncol(y.matrix)]
 z.small <- z.matrix[,index.last.start:ncol(z.matrix)]

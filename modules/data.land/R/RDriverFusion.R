@@ -28,10 +28,11 @@ AZ.PIPO <- AZ.PIPO[!is.na(AZ.PIPO$SDI),] # 641
 temp1 <- AZ.PIPO[AZ.PIPO$PLOT_MEASYEAR-AZ.PIPO$DateEnd<2,] # 544 trees
 temp2 <- temp1[temp1$PLOT_MEASYEAR-temp1$DateEnd>-1,] # no change
 
-
+### setwd to github folder
+setwd("C:/Users/mekevans/Documents/Cdrive/Bayes/DemogRangeMod/ProofOfConcept/treerings/pecan/modules/data.land/R")
 ### read in function that creates jags objects from above data
-source("BuildJAGSdataobject6.R")
-jags.stuff <- buildJAGSdataobject(temp2)
+source("BuildJAGSdataobject.R")
+jags.stuff <- buildJAGSdataobject(temp2, trunc.yr = 1966)
 data <- jags.stuff$data
 z0 <- jags.stuff$z0
 cov.data <- jags.stuff$cov.data
@@ -40,26 +41,96 @@ time_data <- jags.stuff$time_data
 ### read in function that makes/executes a jags model from lmer-like call of a linear model
 # note that Evans version of Dietze function comments out creation of state variable initial conditions (z0)
 # which is done in the function buildJAGSdataobject instead
-source("InventoryGrowthFusionME.R") 
+source("InventoryGrowthFusion.R") 
 
 ### let's run some models!
-model.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+## these are not god models because ppt and tmax are correlated with one another
+#model.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+#                                   n.iter=5000, random="(1|PLOT[i])",
+#                                   fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t]",
+#                                   time_varying = "wintP.JJ + tmax.JanA + SDI*wintP.JJ[t]",
+#                                   burnin_plot=FALSE)
+
+#model.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+#                                   n.iter=5000, random="(1|PLOT[i])",
+#                                   fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t]",
+#                                   time_varying = "wintP.JJ + tmax.JanA + wintP.JJ[t]*tmax.JanA[t] + SDI*wintP.JJ[t]",
+#                                   burnin_plot=FALSE)
+
+### ppt models
+fullmodelppt.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
                                    n.iter=5000, random="(1|PLOT[i])",
-                                   fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t]",
-                                   time_varying = "wintP.JJ + tmax.JanA + SDI*wintP.JJ[t]",
+                                   fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t] + SICOND*SDI",
+                                   time_varying = "wintP.JJ + SDI*wintP.JJ[t] + SICOND*wintP.JJ[t]",
                                    burnin_plot=FALSE)
 
-model.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+model2.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
                                    n.iter=5000, random="(1|PLOT[i])",
-                                   fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t]",
-                                   time_varying = "wintP.JJ + tmax.JanA + wintP.JJ[t]*tmax.JanA[t] + SDI*wintP.JJ[t]",
+                                   fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t] + SICOND*SDI",
+                                   time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
                                    burnin_plot=FALSE)
 
-model.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+model3.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
                                    n.iter=5000, random="(1|PLOT[i])",
-                                   fixed = "~ X + X^2 + SICOND + SDI",
-                                   time_varying = "tmax.JanA",
+                                   fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*wintP.JJ[t] + SICOND*SDI",
+                                   time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
                                    burnin_plot=FALSE)
+
+model4.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                   n.iter=5000, random="(1|PLOT[i])",
+                                   fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*wintP.JJ[t]",
+                                   time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
+                                   burnin_plot=FALSE)
+
+model5.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                   n.iter=5000, random="(1|PLOT[i])",
+                                   fixed = "~ X + X^2 + SICOND + SDI + X*wintP.JJ[t] + SICOND*SDI",
+                                   time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
+                                   burnin_plot=FALSE)
+
+model6.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                   n.iter=5000, random="(1|PLOT[i])",
+                                   fixed = "~ X + X^2 + SICOND + SDI + X*wintP.JJ[t]",
+                                   time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
+                                   burnin_plot=FALSE)
+
+
+### tmax models
+fullmodeltmax.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                   n.iter=5000, random="(1|PLOT[i])",
+                                   fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*tmax.JanA[t] + SICOND*SDI",
+                                   time_varying = "tmax.JanA + SDI*tmax.JanA[t] + SICOND*tmax.JanA[t]",
+                                   burnin_plot=FALSE)
+
+model8.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                           n.iter=5000, random="(1|PLOT[i])",
+                                           fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*tmax.JanA[t] + SICOND*SDI",
+                                           time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
+                                           burnin_plot=FALSE)
+
+model9.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                           n.iter=5000, random="(1|PLOT[i])",
+                                           fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*tmax.JanA[t] + SICOND*SDI",
+                                           time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
+                                           burnin_plot=FALSE)
+
+model10.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                           n.iter=5000, random="(1|PLOT[i])",
+                                           fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*tmax.JanA[t]",
+                                           time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
+                                           burnin_plot=FALSE)
+
+model11.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                           n.iter=5000, random="(1|PLOT[i])",
+                                           fixed = "~ X + X^2 + SICOND + SDI + X*tmax.JanA[t] + SICOND*SDI",
+                                           time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
+                                           burnin_plot=FALSE)
+
+model12.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                           n.iter=5000, random="(1|PLOT[i])",
+                                           fixed = "~ X + X^2 + SICOND + SDI + X*tmax.JanA[t]",
+                                           time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
+                                           burnin_plot=FALSE)
 
 #### DIAGNOSTICS
 #### excerpted/modified from InventoryGrowthFusionDiagnostics.R (Dietze)
@@ -92,10 +163,10 @@ par(mfrow = c(2, 2))
 #    hist(betas[,i], main = colnames(betas)[i])
 #  }   
 
-SDI.beta <- out[,c(grep("betaSDI", colnames(out)))]
-SICOND.beta <- out[,c(grep("betaSICOND", colnames(out)))]
-X.beta <- out[,c(grep("betaX$", colnames(out)))]
-X2.beta <- out[,c(grep("betaX2", colnames(out)))]
+SDI.beta <- out[,"betaSDI"]
+SICOND.beta <- out[,"betaSICOND"]
+X.beta <- out[,"betaX"]
+X2.beta <- out[,"betaX2"]
 
 hist(SDI.beta, main = "stand density index")
 hist(SICOND.beta, main = "site index")  
@@ -106,17 +177,26 @@ hist(X2.beta, main = "quadratic tree size")
 X.SDI.int <- out[,"betaX_SDI"]
 X.SI.int <- out[,"betaX_SICOND"]  
 X.wintP.int <- out[,"betaX_wintP.JJ"]
-SDI.wintP.int <- out[,"beta_SDI_wintP.JJ"]
+SDI.wintP.int <- out[,"betaSDI_wintP.JJ"]
+SI.wintP.int <- out[,"betaSICOND_wintP.JJ"]
+SI.SDI.int <- out[,"betaSICOND_SDI"]
 hist(X.SDI.int, main = "size*stand density")
 hist(X.SI.int, main = "size*site index")
 hist(X.wintP.int, main = "size*wintP")
 hist(SDI.wintP.int, main = "SDI*wintP")
+hist(SI.wintP.int, main = "SI * wintP interaction")
+hist(SI.SDI.int, main = "SI * SDI interaction")  
+ 
+hist(out[,"deviance"])
+mean(out[,"deviance"])
 
+
+###############################
 #### DATA EXPLORATION
-hist(apply(z.small, 1, min, na.rm=T)) # size distribution - each first DBH measurement (usually 1996)
+hist(apply(z.small, 1, min, na.rm=T)) # size distribution at the time core was collected - each first DBH measurement (usually 1996)
 
 ### effect of diameter on growth increment (time series)
-n=50
+n=500 # number of time series to overplot at once
 x.min <- min(z0[1:n,]); x.max <- max(z0[1:n,])
 y.min <- min(y.small[1:n,], na.rm=T); y.max <- max(y.small[1:n,], na.rm=T)
 plot(z0[1,], y.small[1,], 
@@ -126,14 +206,78 @@ for (t in 1:n) {
   lines(z0[t,], y.small[t,])
 }
 
+# one outlier in the tree-ring data (y.small)
+row.max <- apply(y.small, 1, max, na.rm=T) # find the largest diam increment across all years, each tree
+max.gi <- max(row.max)
+which(row.max == max.gi) # returns 239
+# county 5, plot 1570, subplot 4, tree 2 DBH 17.8
 
+# effect of tree size (DBH) on growth increment
 mean.growth <- rowMeans(y.small, na.rm=T)
 mean.diam <- rowMeans(z0, na.rm=T)
 plot(z0[,1], mean.growth) # starting size
 plot(mean.diam, mean.growth)
+
+### plot all years*trees, using transparency
+#plot(z0, y.small, xlim = c(-15, 70))
+pdf("C:/old_laptop/mekevans/Documents/CDrive/Bayes/DemogRangeMod/ProofOfConcept/treerings/FIAmetadata/ArizonaData/MergedDatabase/New/SizeGrowth.pdf") 
+plot(z0, y.small, xlim = c(0, 75), main="size vs. growth", col=rgb(0,100,0,10,maxColorValue=255), pch=16)
+dev.off()
 
 ### effect of site index on growth increment
 plot(SICOND, mean.growth)
 
 ### effect of stand density index on growth increment
 plot(SDI, mean.growth)
+
+### relationship between ppt and tmax
+plot(colMeans(tmax.JanA), colMeans(wintP.JJ)) # across all sites (rows), region-wide climate signal
+# warmer years are associated with less precipitation
+m1 <- lm(colMeans(wintP.JJ) ~ colMeans(tmax.JanA)) # r^2 is 0.486
+cor(colMeans(tmax.JanA), colMeans(wintP.JJ)) # correlation -0.697
+
+# plot all years of data, all sites
+pdf("C:/old_laptop/mekevans/Documents/CDrive/Bayes/DemogRangeMod/ProofOfConcept/treerings/FIAmetadata/ArizonaData/MergedDatabase/New/pptvstmax.pdf") 
+plot(tmax.JanA, wintP.JJ, main="ppt vs. tmax", col=rgb(0,100,0,10,maxColorValue=255), pch=16)
+dev.off()
+# there's another way to do this with hex binning (function hexbin)
+# see: http://www.statmethods.net/graphs/scatterplot.html
+
+# little relationship between SI and SDI
+plot(SICOND, SDI)
+m1 <- lm(SDI ~ SICOND) # r^2 is 0.005
+cor(SDI, SICOND) # correlation 0.0694
+
+# relationship between SI and tree size (DIA.T1)
+plot(SICOND, DIA.T1)
+m1 <- lm(DIA.T1 ~ SICOND) # effect of SI is significant, r^2 is 0.12
+cor(DIA.T1, SICOND) # correlation 0.351
+
+# relationship between SDI and tree size
+plot(SDI, DIA.T1)
+m1 <- lm(DIA.T1 ~ SDI) # r^2 is 0.031
+
+### correlation matrix
+mydata <- cbind(SDI, SICOND, DIA.T1)
+#rquery.cormat(mydata)# R can't find this function
+library(corrplot)
+mcor<-rcorr(as.matrix(mydata))
+corrplot(mcor$r, type="upper", order="hclust", tl.col="black", tl.srt=45)
+library(Hmisc); library(PerformanceAnalytics)
+chart.Correlation(mydata, histogram = T, pch=19)
+
+# 3D plot of growth, size, and SI or SDI
+library(scatterplot3d)
+scatterplot3d(z0[,1], SICOND, mean.growth, angle=70, pch=16, highlight.3d=TRUE,
+              type="h",) # z0[,1] is the starting size
+
+scatterplot3d(z0[,1], SDI, mean.growth, pch=16, highlight.3d=TRUE,
+              type="h",) # starting size
+
+### requires libraries car, rgl
+library(car); library(rgl)
+scatter3d(x = z0[,1], y = SICOND, z = mean.growth, fit = "smooth")
+rgl.snapshot(filename = "growthsizeSI.png")
+rgl.postscript("growthsizeSI.pdf",fmt="pdf")
+
+
