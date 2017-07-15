@@ -17,20 +17,16 @@ include 'page.template.php';
     <h1><?php echo "$key "; ?>Configuration details</h1>
 <?php
 foreach ($file_contents as $line) {
-  //echo "$line<br>";
   if(preg_match($pattern,$line)){
     //spliting variable and values so can used variable as the input field names
     $temp = preg_split('/=/',$line);
     $inputname = preg_split('/\$/',$temp[0]);
-    //var_dump($inputname);
     // HTML input code for field input;
     ?>
     <label><?php echo $inputname[1]; ?> : </label>
     <input name="<?php echo $inputname[1]; ?>" id="username" style="align: left" type="text" value="<?php echo ${$inputname[1]};?>">
     <div class="spacer"></div>
     <?php
-    //var_dump($temp);
-    //echo "match found <br>";
   }
 }
 ?>
@@ -39,4 +35,4 @@ foreach ($file_contents as $line) {
   </form>
 <?php
 include 'pagefooter.template.php';
- ?>
+?>

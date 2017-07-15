@@ -3,7 +3,7 @@
 if (file_exists('config.php') == false)
 {
   $host  = $_SERVER['HTTP_HOST'];
-  header("Location: http://$host/setups/edit.php?key=all",TRUE,307);
+  header("Location: http://$host/setups/",TRUE,307);
   exit;
 }
 
@@ -71,7 +71,7 @@ function open_database() {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   } catch (PDOException $e) {
     // handler to input database configurations manually
-    echo "Something wrong :(</br>Connection failed: " . $e->getMessage()."<br><br>You can use the reset button to reset the settings and try agin.";
+    echo "Something wrong :(</br>Connection failed: " . $e->getMessage();
     die();
   }
 
