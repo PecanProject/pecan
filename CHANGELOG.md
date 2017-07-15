@@ -11,6 +11,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Updated downloadAmeriflux and downloadNARR to make use of PEcAn.utils::download.file()
 - Added -w flag to load.bety.sh script to specify the URL to fetch the data from
 - add new table sites_cultivars to betydb sync scripts (dump and load)
+- added docker container scrips (.yml) to create docker container for PEcAn
+- added the configuration edit page to allow easy modification of config via web interface
 
 ### Changed
 - upscale_met now accepts ~any valid CF file (not just full years), retains correct time units, and respects the previously ignored `overwrite` parameter
