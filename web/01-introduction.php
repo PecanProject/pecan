@@ -9,9 +9,9 @@
  */
 
 // Check for config.php if doesn't exits then redirect to the setup page
-if (!file_exists('config.php'))
+if (file_exists('config.php') == false)
 {
-  header('/setups/edit.php?key=all');
+  header('setups/edit.php?key=all');
 }
 
 // Check login
