@@ -104,3 +104,12 @@ Following are the steps to setup a Docker instance of the PEcAn.
 Only SIPNET model is included as the default model in it.
 
 [pecan-wikipedia]: https://en.wikipedia.org/wiki/Pecan
+
+## PEcAN Demos
+
+Once you have installed A VM or have a version of PEcAn you'll want to run through Demo 1 and Demo 2:
+
+[Demo 01](https://pecanproject.github.io/pecan-documentation/tutorials/Demo01.html)
+[Demo 02](https://pecanproject.github.io/pecan-documentation/tutorials/Demo02.html)
+
+For Additional Tools and Vignettes - Check out 

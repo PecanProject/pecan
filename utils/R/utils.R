@@ -596,15 +596,23 @@ load.modelpkg <- function(model) {
 ##' @return val converted values
 ##' @author Istem Fer, Shawn Serbin
 misc.convert <- function(x, u1, u2) {
+  
+  amC   <- PeriodicTable::mass("C")  # atomic mass of carbon
+  mmH2O <- sum(PeriodicTable::mass(c("H", "H", "O"))) # molar mass of H2O, g/mol
+  
   if (u1 == "umol C m-2 s-1" & u2 == "kg C m-2 s-1") {
-    val <- udunits2::ud.convert(x, "ug", "kg") * 12  # atomic mass of carbon
+    val <- udunits2::ud.convert(x, "ug", "kg") * amC 
   } else if (u1 == "kg C m-2 s-1" & u2 == "umol C m-2 s-1") {
-    val <- udunits2::ud.convert(x, "kg", "ug")/12  # atomic mass of carbon
+    val <- udunits2::ud.convert(x, "kg", "ug") / amC 
   } else if (u1 == "mol H2O m-2 s-1" & u2 == "kg H2O m-2 s-1") {
-    val <- udunits2::ud.convert(x, "g", "kg") * 18.01528 # molar mass of H2O, g/mol
+    val <- udunits2::ud.convert(x, "g", "kg") * mmH2O
   } else if (u1 == "kg H2O m-2 s-1" & u2 == "mol H2O m-2 s-1") {
-    val <- udunits2::ud.convert(x, "kg", "g")/18.01528 # molar mass of H2O, g/mol
-  }else {
+    val <- udunits2::ud.convert(x, "kg", "g") / mmH2O
+  } else if (u1 == "Mg ha-1" & u2 == "kg C m-2") {
+    val <- x * udunits2::ud.convert(1, "Mg", "kg") * udunits2::ud.convert(1, "ha-1", "m-2")
+  } else if (u1 == "kg C m-2" & u2 == "Mg ha-1") {
+    val <- x * udunits2::ud.convert(1, "kg", "Mg") * udunits2::ud.convert(1, "m-2", "ha-1")
+  } else {
     u1 <- gsub("gC","g*12",u1)
     u2 <- gsub("gC","g*12",u2)
     val <- udunits2::ud.convert(x,u1,u2)
@@ -626,8 +634,12 @@ misc.convert <- function(x, u1, u2) {
 misc.are.convertible <- function(u1, u2) {
   
   # make sure the order of vectors match
-  units.from <- c("umol C m-2 s-1", "kg C m-2 s-1", "mol H2O m-2 s-1", "kg H2O m-2 s-1")
-  units.to <- c("kg C m-2 s-1", "umol C m-2 s-1", "kg H2O m-2 s-1", "mol H2O m-2 s-1")
+  units.from <- c("umol C m-2 s-1", "kg C m-2 s-1", 
+                  "mol H2O m-2 s-1", "kg H2O m-2 s-1", 
+                  "Mg ha-1", "kg C m-2")
+  units.to <- c("kg C m-2 s-1", "umol C m-2 s-1", 
+                "kg H2O m-2 s-1", "mol H2O m-2 s-1", 
+                "kg C m-2", "Mg ha-1")
   
   if(u1 %in% units.from & u2 %in% units.to) {
     if (which(units.from == u1) == which(units.to == u2)) {
