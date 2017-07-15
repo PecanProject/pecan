@@ -32,7 +32,7 @@
   }
 
   // read content of file
-  $file = fopen('../config.php', "c+") or die('Cannot open file: Check whether file exist and it have correct permissions');
+  //$file = fopen('../config.php', "c+") or die('Cannot open file: Check whether file exist and it have correct permissions');
 
   $file_contents = file('../config.php');
 
