@@ -1,5 +1,10 @@
 <?php
 
+if (file_exists('config.php') == false)
+{
+  header('setups/edit.php?key=all');
+}
+
 require("config.php");
 
 # Single shared connection
