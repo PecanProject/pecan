@@ -15,8 +15,7 @@
   // If file doesn't exist then create a new file
   if (file_exists ("../config.php") == false){
     if (!copy ('../config.example.php', '../config.php')){
-      $error = error_get_last();
-      echo "error:$error";
+      echo "error: permissions denined";
       die();
     }
   }
