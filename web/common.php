@@ -3,8 +3,7 @@
 if (file_exists('config.php') == false)
 {
   $host  = $_SERVER['HTTP_HOST'];
-  $uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
-  header("Location: http://$host$uri/setups/edit.php?key=all",TRUE,307);
+  header("Location: http://$host/setups/edit.php?key=all",TRUE,307);
   exit;
 }
 

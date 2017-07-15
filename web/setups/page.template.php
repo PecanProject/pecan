@@ -8,8 +8,6 @@
  * http://opensource.ncsa.illinois.edu/license.html
  */
 
-require("../common.php");
-
 // This page is designed to act as the template page for all the configurations setups
 ?>
 <!DOCTYPE html>

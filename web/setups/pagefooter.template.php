@@ -13,7 +13,10 @@
 ?>
 
     </div>
-    <div id="footer"><?php echo get_footer(); ?></div>
+    <div id="footer"><?php echo "The <a href=\"http://pecanproject.org\">PEcAn project</a> is supported by the National Science Foundation
+      (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891), NASA
+      Terrestrial Ecosystems, the Energy Biosciences Institute, and an Amazon AWS in Education Grant.
+      <span style=\"float:right\">PEcAn Version 1.4.10.1</span>" ?></div>
 </div>
 </body>
 </html>
