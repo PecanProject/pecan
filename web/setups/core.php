@@ -14,7 +14,11 @@
 
   // If file doesn't exist then create a new file
   if (file_exists ("../config.php") == false){
-    copy ('../config.example.php', '../config.php');
+    if (!copy ('../config.example.php', '../config.php')){
+      $error = error_get_last();
+      echo "error:$error"; 
+      die();
+    }
   }
 
   // key defines the attribute or the group of attributes which are needed to modify
@@ -24,7 +28,7 @@
   // set the pattern to match with the input
 
   switch ($key) {
-    case 'all': $pattern = '/^\$/i'; break; // not working properly 
+    case 'all': $pattern = '/^\$/i'; break; // not working properly
     case 'browndog': $pattern = '/\$browndog*/i'; break;
     case 'database': $pattern = '/\$db_bety_*/i'; break;
     case 'fiadb': $pattern = '/\$db_fia_*/i'; break;
