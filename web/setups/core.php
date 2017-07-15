@@ -16,7 +16,7 @@
   if (file_exists ("../config.php") == false){
     if (!copy ('../config.example.php', '../config.php')){
       $error = error_get_last();
-      echo "error:$error"; 
+      echo "error:$error";
       die();
     }
   }
@@ -38,7 +38,7 @@
   // read content of file
   //$file = fopen('../config.php', "c+") or die('Cannot open file: Check whether file exist and it have correct permissions');
 
-  $file_contents = file('../config.php');
+  $file_contents = file('../config.php') or die('Cannot open file: Check whether file exist and it have correct permissions');
 
   //var_dump($file_contents);
   //var_dump($pattern);
