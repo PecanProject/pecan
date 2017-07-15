@@ -36,8 +36,8 @@ ui <- shinyUI(fluidPage(
     ),
     mainPanel(
       plotlyOutput("outputPlot"),
-      verbatimTextOutput("info1"),
-      verbatimTextOutput("info")
+      verbatimTextOutput("info1")
+      # verbatimTextOutput("info")
     )
   )
 ))
