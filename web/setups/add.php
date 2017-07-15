@@ -29,7 +29,7 @@ foreach ($file_contents as $line) {
     //$newline = preg_replace('/'.$temp[0].'/',$temp[0].'="'.$newvalue.'";',$line);
     //echo $temp[0].'="'.$newvalue.'";';
     //var_dump($newvalue);
-    fwrite($file, $temp[0].'="'.$newvalue.'";');
+    fwrite($file, $temp[0].'="'.$newvalue.'";'."\n");
     //var_dump($inputname);
     //var_dump($temp);
     //echo "match found <br>";
