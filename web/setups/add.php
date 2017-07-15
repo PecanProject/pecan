@@ -14,10 +14,7 @@ include 'core.php';
 // open a new temprory file to write data to it
 $file = fopen('../config.php.temp', "w+") or die('Cannot open file: Check whether file exist and it have correct permissions');
 
-//fwrite($file, '<?php \n');
-
 foreach ($file_contents as $line) {
-  //echo "$line<br>";
   if(preg_match($pattern,$line)){
     //spliting variable and values so can used variable as the input field names
     $temp = preg_split('/=/',$line);
@@ -26,13 +23,7 @@ foreach ($file_contents as $line) {
     // get the new value from the post request
     $newvalue = $_POST[$inputname[1]];
 
-    //$newline = preg_replace('/'.$temp[0].'/',$temp[0].'="'.$newvalue.'";',$line);
-    //echo $temp[0].'="'.$newvalue.'";';
-    //var_dump($newvalue);
     fwrite($file, $temp[0].'="'.$newvalue.'";'."\n");
-    //var_dump($inputname);
-    //var_dump($temp);
-    //echo "match found <br>";
   }
   else {
   // if no change in the line write as it is

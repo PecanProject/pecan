@@ -18,5 +18,20 @@
       Terrestrial Ecosystems, the Energy Biosciences Institute, and an Amazon AWS in Education Grant.
       <span style=\"float:right\">PEcAn Version 1.4.10.1</span>" ?></div>
 </div>
+<script type="text/javascript" src="jquery-1.10.2.min.js"></script>
+<script type="text/javascript">
+    function validate() {
+        $("#error").html("");
+    }
+
+    function prevStep() {
+        $("#formprev").submit();
+        }
+
+    function nextStep() {
+        console.log($("#formnext"));
+        $("#formnext").submit();
+    }
+</script>
 </body>
 </html>

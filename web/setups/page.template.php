@@ -11,28 +11,13 @@
 // This page is designed to act as the template page for all the configurations setups
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>PEcAn</title>
+<title>PEcAn Configurations</title>
 <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" type="text/css" href="../sites.css" />
-<script type="text/javascript" src="jquery-1.10.2.min.js"></script>
-<script type="text/javascript">
-    function validate() {
-        $("#error").html("");
-    }
-
-    function prevStep() {
-        $("#formprev").submit();
-        }
-
-    function nextStep() {
-        console.log($("#formnext"));
-        $("#formnext").submit();
-    }
-</script>
 </head>
 <body>
 <div id="wrap">

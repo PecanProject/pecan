@@ -35,12 +35,7 @@
   }
 
   // read content of file
-  //$file = fopen('../config.php', "c+") or die('Cannot open file: Check whether file exist and it have correct permissions');
-
   $file_contents = file('../config.php') or die('Cannot open file: Check whether file exist and it have correct permissions');
-
-  //var_dump($file_contents);
-  //var_dump($pattern);
 
   // including the config.php so that the previous values can be used in the files inputs
   include '../config.php';
