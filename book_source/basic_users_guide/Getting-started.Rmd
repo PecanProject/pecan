@@ -101,6 +101,6 @@ Following are the steps to setup a Docker instance of the PEcAn.
     To access the web interface can visit <machine-ip>:8080
     If using localmachine then can use localhost:8080
 
-Only SIPNET model is included as the default package in it.
+Only SIPNET model is included as the default model in it.
 
 [pecan-wikipedia]: https://en.wikipedia.org/wiki/Pecan
