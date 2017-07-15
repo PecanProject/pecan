@@ -8,15 +8,6 @@
  * http://opensource.ncsa.illinois.edu/license.html
  */
 
-// Check for config.php if doesn't exits then redirect to the setup page
-if (file_exists('config.php') == false)
-{
-  $host  = $_SERVER['HTTP_HOST'];
-  $uri   = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
-  header("Location: http://$host$uri/edit.php?key=all",TRUE,307);
-  exit;
-}
-
 // Check login
 require("common.php");
 
