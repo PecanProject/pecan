@@ -147,7 +147,7 @@ server <- shinyServer(function(input, output, session) {
                plt <- plt + geom_line()
              }
       )
-    plt <- plt + labs(title=title, x=xlab, y=ylab) 
+    plt <- plt + labs(title=title, x=xlab, y=ylab) + geom_smooth()
     
     # if (!is.null(loaded_data)) {
     # if (input$load_data>0) {  
