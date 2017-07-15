@@ -48,6 +48,13 @@ require("../common.php");
             <div class="spacer"></div>
         </form>
 <p>
+  <h1>List of available configurations</h1>
+  <a href="edit.php?key=database" >Database</a> <br>
+  <a href="edit.php?key=browndog" >Browndog</a> <br>
+  <a href="edit.php?key=fiadb" >FIA Database</a> <br>
+  <a href="edit.php?key=googleMapKey" >Google MapKey</a> <br>
+</p>
+<p>
   <a href="https://pecan.gitbooks.io/pecan-documentation/content/" target="_blank">Documentation</a>
 <br>
   <a href="https://gitter.im/PecanProject/pecan" target="_blank">Chat Room</a>

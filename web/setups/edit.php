@@ -13,7 +13,7 @@
 include 'core.php';
 include 'page.template.php';
 ?>
-  <form id="formnext" method="POST" action="<?php echo"/setups/add.php?key=$key";?>">
+  <form id="formnext" method="POST" action="<?php echo"add.php?key=$key";?>">
     <h1><?php echo "$key "; ?>Configuration details</h1>
 <?php
 foreach ($file_contents as $line) {
