@@ -11,13 +11,17 @@
 // This page is designed to act as the template page for all the configurations setups
 // This page only have footer part.
 ?>
-
     </div>
     <div id="footer"><?php echo "The <a href=\"http://pecanproject.org\">PEcAn project</a> is supported by the National Science Foundation
       (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891), NASA
       Terrestrial Ecosystems, the Energy Biosciences Institute, and an Amazon AWS in Education Grant.
       <span style=\"float:right\">PEcAn Version 1.4.10.1</span>" ?></div>
 </div>
+<!--bootstrap javascripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js" integrity="sha384-I6F5OKECLVtK/BL+8iSLDEHowSAfUo76ZL9+kGAgTRdiByINKJaqTPH/QVNS1VDb" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+<!--custom javascripts-->
 <script type="text/javascript" src="jquery-1.10.2.min.js"></script>
 <script type="text/javascript">
     function validate() {
