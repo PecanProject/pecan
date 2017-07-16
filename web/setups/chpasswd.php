@@ -14,13 +14,14 @@ $shellscript = "sudo chpasswd.sh";
 $username = $_POST['username'];
 $oldpasswd = $_POST['oldpasswd'];
 $newpasswd = $_POST['newpasswd'];
+$newpasswdre = $_POST['newpasswdre'];
 
 # used as a flag to determine the action to be taken according to the request
 $callchpasswd = false;
 
 if (isset($username) && isset($oldpasswd) && isset($newpasswd) && isset($newpasswdre)) {
   if (!empty($username) && !empty($oldpasswd) && !empty($newpasswd) && !empty($newpasswdre)) {
-    if (!($newpasswd == $newpasswdre)) {
+    if ($newpasswd == $newpasswdre) {
       $callchpasswd = true;
     }
   }
@@ -39,7 +40,8 @@ if ($callchpasswd) {
     echo "password chaged sucessfully";
   } else {
     echo "ERROR : error changing password";
-    echo "<br>".$output;
+    echo "<br>";
+    print_r($output);
   }
 }else {
 ?>
