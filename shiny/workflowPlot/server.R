@@ -179,10 +179,36 @@ server <- shinyServer(function(input, output, session) {
       settings <- getSettings(ids_DF$wID[1])
       inFile <- input$fileUploaded
       externalData <- loadObservationData(bety,settings,inFile$datapath,File_format)
-      externalData <- externalData %>% dplyr::select(posix,input$variable_name)
-      if(nrow(externalData)>0){
+      if (input$variable_name %in% names(externalData)){
+        externalData <- externalData %>% dplyr::select(posix,input$variable_name)
+        # output$info <- renderText({
+        #   # #   inFile <- input$fileUploaded
+        #   # #   paste0(inFile$datapath)
+        #   # #   # paste0(input$load_data)
+        #   #   # paste0(File_format$mimetype)
+        #   #   ids_DF <- parse_ids_from_input_runID(input$all_run_id)
+        #   # paste0(settings$run$site$id)
+        #   # paste0(site)
+        #   paste0(nrow(externalData))
+        # })
+      # if(nrow(externalData)>0){
         names(externalData) <- c("dates","vals")
+        externalData$run_id <- ids_DF$runID[1]
+        # externalData$run_id <- 0
+        externalData$run_id <- as.numeric(externalData$run_id)
         externalData$dates <- as.Date(externalData$dates) 
+        # output$info <- renderText({
+        #   # #   inFile <- input$fileUploaded
+        #   # #   paste0(inFile$datapath)
+        #   # #   # paste0(input$load_data)
+        #   #   # paste0(File_format$mimetype)
+        #   #   ids_DF <- parse_ids_from_input_runID(input$all_run_id)
+        #   # paste0(settings$run$site$id)
+        #   # paste0(site)
+        #   paste0(names(externalData))
+        #   # paste0(externalData$run_id)
+        # })
+        plt <- plt + geom_line(data = externalData,aes(x=dates, y=vals,color=run_id), linetype = 'dashed')
         output$info <- renderText({
           # #   inFile <- input$fileUploaded
           # #   paste0(inFile$datapath)
@@ -192,8 +218,9 @@ server <- shinyServer(function(input, output, session) {
           # paste0(settings$run$site$id)
           # paste0(site)
           paste0(names(externalData))
+          # paste0(externalData$run_id)
         })
-        plt <- plt + geom_line(data = externalData,aes(x=dates, y=vals), linetype = 'dashed')
+        
       }
       # externalData <- loadExternalData()
     }
