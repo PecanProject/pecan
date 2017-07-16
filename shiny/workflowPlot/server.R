@@ -176,35 +176,32 @@ server <- shinyServer(function(input, output, session) {
     if (input$load_data>0) { 
       File_format <- getFileFormat(bety,input$inputRecordID)
       ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-      # output$info <- renderText({
-      #      paste0(ids_DF$wID[1])
-      #   })
       settings <- getSettings(ids_DF$wID[1])
-      # start.year<-as.numeric(lubridate::year(settings$run$start.date))
-      # end.year<-as.numeric(lubridate::year(settings$run$end.date))
-      # site.id<-settings$run$site$id
-      # site<-PEcAn.DB::query.site(site.id,bety$con)
       inFile <- input$fileUploaded
       externalData <- loadObservationData(bety,settings,inFile$datapath,File_format)
-      # output$info <- renderText({
-      #   # #   inFile <- input$fileUploaded
-      #   # #   paste0(inFile$datapath)
-      #   # #   # paste0(input$load_data)
-      #   #   # paste0(File_format$mimetype)
-      #   #   ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-      #   # paste0(settings$run$site$id)
-      #   # paste0(site)
-      #   paste0(nrow(externalData))
-      # })
+      externalData <- externalData %>% dplyr::select(posix,input$variable_name)
+      if(nrow(externalData)>0){
+        names(externalData) <- c("dates","vals")
+        externalData$dates <- as.Date(externalData$dates) 
+        output$info <- renderText({
+          # #   inFile <- input$fileUploaded
+          # #   paste0(inFile$datapath)
+          # #   # paste0(input$load_data)
+          #   # paste0(File_format$mimetype)
+          #   ids_DF <- parse_ids_from_input_runID(input$all_run_id)
+          # paste0(settings$run$site$id)
+          # paste0(site)
+          paste0(names(externalData))
+        })
+        plt <- plt + geom_line(data = externalData,aes(x=dates, y=vals), linetype = 'dashed')
+      }
       # externalData <- loadExternalData()
     }
     # if (!is.null(loaded_data)) {
-    # if (input$load_data>0) {  
     #   loaded_data <- loadExternalData()
     #   output$info1 <- renderText({
     #     paste0(nrow(loaded_data))
     #     # paste0(inFile$datapath)
-    #   })
     #   plt <- plt + geom_line(data = loaded_data,aes(x=dates, y=vals), linetype = 'dashed')
     # }
       # geom_point() +
