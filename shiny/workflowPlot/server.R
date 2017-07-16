@@ -1,5 +1,7 @@
 library(PEcAn.visualization)
 library(PEcAn.DB)
+library(PEcAn.settings)
+library(PEcAn.benchmark)
 library(shiny)
 library(ncdf4)
 library(ggplot2)
@@ -7,7 +9,10 @@ library(ggplot2)
 source('helper.R')
 library(plotly)
 library(scales)
+library(lubridate)
 library(dplyr)
+# Maximum size of file allowed to be uploaded
+options(shiny.maxRequestSize=100*1024^2) 
 # Define server logic
 server <- shinyServer(function(input, output, session) {
   bety <- betyConnect()
@@ -89,26 +94,38 @@ server <- shinyServer(function(input, output, session) {
     }
     return(globalDF)
   })
-  loadExternalData <-eventReactive(input$load_data,{
-    inFile <- input$file1
-    if (is.null(inFile))
-      return(NULL)
-    externalData <- read.csv(inFile$datapath, header=input$header, sep=input$sep, 
-             quote=input$quote)
-    externalData$dates <- as.Date(externalData$dates)
-    externalData <- externalData %>%
-      dplyr::filter(var_name == input$variable_name) 
-    # output$info1 <- renderText({
-    #   paste0(nrow(externalData))
-    #   # paste0(inFile$datapath)
-    # })
-    return(externalData)
-  })  
-  # output$info <- renderText({
-  #   inFile <- input$file1
-  #   paste0(inFile$datapath)
-  #   # paste0(input$load_data)
-  # })
+  # loadExternalData <-eventReactive(input$load_data,{
+  #   inFile <- input$fileUploaded
+  #   if (is.null(inFile))
+  #     return(NULL)
+  #   externalData <- read.csv(inFile$datapath, header=input$header, sep=input$sep, 
+  #            quote=input$quote)
+  #   externalData$dates <- as.Date(externalData$dates)
+  #   externalData <- externalData %>%
+  #     dplyr::filter(var_name == input$variable_name)
+  #   # output$info1 <- renderText({
+  #   #   paste0(nrow(externalData))
+  #   #   # paste0(inFile$datapath)
+  #   # })
+  #   return(externalData)
+  # })  
+  loadObservationData <- function(bety,settings,File_path,File_format){
+    start.year<-as.numeric(lubridate::year(settings$run$start.date))
+    end.year<-as.numeric(lubridate::year(settings$run$end.date))
+    site.id<-settings$run$site$id
+    site<-PEcAn.DB::query.site(site.id,bety$con)
+    observations<-PEcAn.benchmark::load_data(data.path = File_path, format= File_format, time.row = File_format$time.row,  site = site, start_year = start.year, end_year = end.year) 
+    return(observations)
+  }
+  getFileFormat <- function(bety,input.id){
+    File_format <- PEcAn.DB::query.format.vars(bety = bety, input.id = input.id) 
+    return(File_format)
+  }
+  getSettings <- function(workflowID){
+    configPath <- paste0("~/output/PEcAn_",workflowID,"/pecan.CONFIGS.xml")
+    settings<-PEcAn.settings::read.settings(configPath)
+    return(settings)
+  }
   # Renders ggplotly 
   output$outputPlot <- renderPlotly({
     # Error messages
@@ -117,12 +134,19 @@ server <- shinyServer(function(input, output, session) {
       need(input$all_run_id, 'Select Run id'),
       need(input$variable_name, 'Click the button to load data. Please allow some time')
     )
+    # output$info <- renderText({
+    # #   inFile <- input$fileUploaded
+    # #   paste0(inFile$datapath)
+    # #   # paste0(input$load_data)
+    #   # paste0(File_format$mimetype)
+    #   ids_DF <- parse_ids_from_input_runID(input$all_run_id)
+    #   settings <- getSettings(ids_DF$wID[1])
+    #   paste0(settings$run$site$id)
+    #  })
     # Load data
     externalData <- data.frame()
     modelData <- loadNewData()
-    if (input$load_data>0) { 
-      externalData <- loadExternalData()
-    }
+    
     masterDF <- rbind(modelData,externalData)
     # Convert from factor to character. For subsetting 
     masterDF$var_name <- as.character(masterDF$var_name)
@@ -149,6 +173,31 @@ server <- shinyServer(function(input, output, session) {
       )
     plt <- plt + labs(title=title, x=xlab, y=ylab) + geom_smooth()
     
+    if (input$load_data>0) { 
+      File_format <- getFileFormat(bety,input$inputRecordID)
+      ids_DF <- parse_ids_from_input_runID(input$all_run_id)
+      # output$info <- renderText({
+      #      paste0(ids_DF$wID[1])
+      #   })
+      settings <- getSettings(ids_DF$wID[1])
+      # start.year<-as.numeric(lubridate::year(settings$run$start.date))
+      # end.year<-as.numeric(lubridate::year(settings$run$end.date))
+      # site.id<-settings$run$site$id
+      # site<-PEcAn.DB::query.site(site.id,bety$con)
+      inFile <- input$fileUploaded
+      externalData <- loadObservationData(bety,settings,inFile$datapath,File_format)
+      # output$info <- renderText({
+      #   # #   inFile <- input$fileUploaded
+      #   # #   paste0(inFile$datapath)
+      #   # #   # paste0(input$load_data)
+      #   #   # paste0(File_format$mimetype)
+      #   #   ids_DF <- parse_ids_from_input_runID(input$all_run_id)
+      #   # paste0(settings$run$site$id)
+      #   # paste0(site)
+      #   paste0(nrow(externalData))
+      # })
+      # externalData <- loadExternalData()
+    }
     # if (!is.null(loaded_data)) {
     # if (input$load_data>0) {  
     #   loaded_data <- loadExternalData()
