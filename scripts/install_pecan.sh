@@ -137,7 +137,7 @@ case "$OS_VERSION" in
     # for PostgreSQL
     sudo apt-get -y install libdbd-pgsql postgresql-9.5 postgresql-client-9.5 libpq-dev postgresql-9.5-postgis-2.2 postgresql-9.5-postgis-scripts
     # for web gui
-    sudo apt-get -y install apache2 libapache2-mod-php php libapache2-mod-passenger php-xml php-ssh2 php-pgsql expect
+    sudo apt-get -y install apache2 libapache2-mod-php php libapache2-mod-passenger php-xml php-ssh2 php-pgsql
     # Ubuntu 14.04 php5-pgsql libapache2-mod-php5 php5 and no php-xml
     ;;
 esac
