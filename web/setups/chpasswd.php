@@ -18,9 +18,11 @@ $newpasswd = $_POST['newpasswd'];
 # used as a flag to determine the action to be taken according to the request
 $callchpasswd = false;
 
-if (isset($username) && isset($oldpasswd) && isset($newpasswd)) {
-  if (!empty($username) && !empty($oldpasswd) && !empty($newpasswd)) {
-    $callchpasswd = true;
+if (isset($username) && isset($oldpasswd) && isset($newpasswd) && isset($newpasswdre)) {
+  if (!empty($username) && !empty($oldpasswd) && !empty($newpasswd) && !empty($newpasswdre)) {
+    if (!($newpasswd == $newpasswdre)) {
+      $callchpasswd = true;
+    }
   }
 }
 
@@ -43,44 +45,40 @@ if ($callchpasswd) {
 ?>
 <div class="container">
     <div class="row">
-                <h1>Password Change</h1>
-                  <form class="form-horizontal" role="form" method="POST" action="add.php" enctype="multipart/form-data">
-                      <div class="form-group">
-                          <label for="username" class="col-md-4 control-label">Username :</label>
-                          <div class="col-md-6">
-                              <input id="username" type="text" class="form-control transparent-input" name="username" value="">
-                          </div>
-                      </div>
-
-                      <div class="form-group">
-                          <label for="password" class="col-md-4 control-label">old Password:</label>
-                          <div class="col-md-6">
-                              <input id="password" type="password" class="form-control transparent-input" name="oldpasswd" value="">
-                          </div>
-                      </div>
-
-                      <div class="form-group">
-                          <label for="password" class="col-md-4 control-label">New Password:</label>
-                          <div class="col-md-6">
-                              <input id="password" type="password" class="form-control transparent-input" name="newpasswd" value="">
-                          </div>
-                      </div>
-
-                      <div class="form-group">
-                          <label for="password" class="col-md-4 control-label">New Password (again):</label>
-                          <div class="col-md-6">
-                              <input id="password" type="password" class="form-control transparent-input" name="newpasswdre" value="">
-                          </div>
-                      </div>
-
-                     <div class="form-group">
-                         <div class="col-md-6 col-md-offset-4">
-                             <button type="submit" class="btn btn-primary">
-                                 <i class="fa fa-btn fa-user"></i> Update
-                             </button>
-                         </div>
-                     </div>
-                  </form>
+      <h1>Password Change</h1>
+      <form class="form-horizontal" role="form" method="POST" action="chpasswd.php" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="username" class="col-md-4 control-label">Username :</label>
+          <div class="col-md-6">
+            <input id="username" type="text" class="form-control transparent-input" name="username" value="">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="password" class="col-md-4 control-label">old Password:</label>
+          <div class="col-md-6">
+            <input id="password" type="password" class="form-control transparent-input" name="oldpasswd" value="">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="password" class="col-md-4 control-label">New Password:</label>
+          <div class="col-md-6">
+            <input id="password" type="password" class="form-control transparent-input" name="newpasswd" value="">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="password" class="col-md-4 control-label">New Password (again):</label>
+          <div class="col-md-6">
+            <input id="password" type="password" class="form-control transparent-input" name="newpasswdre" value="">
+        </div>
+        </div>
+        <div class="form-group">
+         <div class="col-md-6 col-md-offset-4">
+           <button type="submit" class="btn btn-primary">
+             <i class="fa fa-btn fa-user"></i> Update
+           </button>
+         </div>
+       </div>
+     </form>
     </div>
 </div>
 
