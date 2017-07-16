@@ -13,8 +13,8 @@
 include 'core.php';
 include 'page.template.php';
 ?>
-  <form id="formnext" method="POST" action="<?php echo"add.php?key=$key";?>">
-    <h1><?php echo "$key "; ?>Configuration details</h1>
+  <form class="form-horizontal" role="form" id="formnext" method="POST" action="<?php echo"add.php?key=$key";?>" enctype="multipart/form-data">
+    <h1><?php echo ucfirst($key); ?> Configuration details</h1>
 <?php
 foreach ($file_contents as $line) {
   if(preg_match($pattern,$line)){
@@ -23,14 +23,24 @@ foreach ($file_contents as $line) {
     $inputname = preg_split('/\$/',$temp[0]);
     // HTML input code for field input;
     ?>
-    <label><?php echo $inputname[1]; ?> : </label>
-    <input name="<?php echo $inputname[1]; ?>" id="username" style="align: left" type="text" value="<?php echo ${$inputname[1]};?>">
-    <div class="spacer"></div>
+    <div class="form-group">
+        <label for="connection" class="col-md-4 control-label"><?php echo ucfirst($inputname[1]); ?> : </label>
+        <div class="col-md-6">
+            <input name="<?php echo $inputname[1]; ?>" id="username" type="text" class="form-control transparent-input" value="<?php echo ${$inputname[1]};?>">
+        </div>
+    </div>
     <?php
   }
 }
 ?>
-    <button type="submit" id="next">Submit</button>
+    <div class="form-group">
+        <div class="col-md-6 col-md-offset-4">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa fa-btn fa-save"></i> Save
+            </button>
+        </div>
+    </div>
+    <!--<button type="submit" id="next">Submit</button>-->
     <div class="spacer"></div>
   </form>
 <?php
