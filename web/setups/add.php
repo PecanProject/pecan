@@ -38,7 +38,7 @@ unlink('../config.php.temp');
 
 include 'page.template.php';
 ?>
-  <h1><?php echo "$key "; ?>Configuration details</h1>
+  <h1><?php echo ucfirst($key); ?> Configuration details</h1>
   <p>Configuration Sucessfully updated</p>
 <?php
 include 'pagefooter.template.php';
