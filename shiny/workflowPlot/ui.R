@@ -17,7 +17,7 @@ ui <- shinyUI(fluidPage(
       radioButtons("plotType", "Plot Type", c("Scatter Plot" = "scatterPlot", "Line Chart" = "lineChart"), selected="scatterPlot"),
       tags$hr(),
       tags$hr(),
-      fileInput('file1', 'Choose CSV File to upload data',
+      fileInput('fileUploaded', 'Choose CSV File to upload data',
                 accept=c('text/csv', 
                          'text/comma-separated-values,text/plain', 
                          '.csv')),
@@ -32,12 +32,13 @@ ui <- shinyUI(fluidPage(
                      'Double Quote'='"',
                      'Single Quote'="'"),
                    ''),
+      textInput("inputRecordID", "Input Record ID for CSV file", "1000011260"),
       actionButton("load_data", "Load External Data")
     ),
     mainPanel(
       plotlyOutput("outputPlot"),
-      verbatimTextOutput("info1")
-      # verbatimTextOutput("info")
+      verbatimTextOutput("info1"),
+      verbatimTextOutput("info")
     )
   )
 ))
