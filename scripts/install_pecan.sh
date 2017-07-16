@@ -363,7 +363,7 @@ EOF
 fi
 
 # adding the permissions to www-data to execute bash scripts which need root privilages
-sudo www-data ALL=NOPASSWD: /var/www/chpasswd
+# echo "www-data ALL=NOPASSWD: /var/www/chpasswd" >> visudo
 
 echo "######################################################################"
 echo "BETY"
