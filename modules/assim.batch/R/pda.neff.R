@@ -10,12 +10,16 @@
 ##'
 ##' @author Istem Fer
 ##' @export
-pda.neff.calc <- function(inputs){
+pda.neff.calc <- function(inputs, recalculate = FALSE){
   
   
   for(i in seq_along(inputs)){
     
     n   <- inputs[[i]]$n
+    
+    if(!is.null(inputs[[i]]$n_eff) && !recalculate){
+      next
+    }
     # for now we're doing autocorrelation correction on flux data only
     # NEE, LE, FC
     flux.vars <- c(297, 298, 1000000042)
