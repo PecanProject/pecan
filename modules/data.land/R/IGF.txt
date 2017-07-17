@@ -17,7 +17,7 @@ model{
   
   #### Process Model
   for(t in 2:nt){
-  Dnew[i,t] <- x[i,t-1] + mu  + alpha_PLOT[PLOT[i]] + betaX*x[i,t-1] + betaX2*x[i,t-1]^2 + betaX_wintP.JJ*x[i,t-1]*wintP.JJ[i,t] + betaSICOND*Xf[rep[i],1] + betaSDI*Xf[rep[i],2]  + betaSICOND_wintP.JJ*SICOND[i]*wintP.JJ[i,t] + betawintP.JJ*wintP.JJ[i,t]
+  Dnew[i,t] <- x[i,t-1] + mu  + alpha_PLOT[PLOT[i]] + betaX*x[i,t-1] + betaX2*x[i,t-1]^2 + betaX_SICOND*x[i,t-1]*SICOND[i] + betaX_wintP.JJ*x[i,t-1]*wintP.JJ[i,t] + betaSICOND*Xf[rep[i],1] + betaSDI*Xf[rep[i],2]  + betaSICOND_wintP.JJ*SICOND[i]*wintP.JJ[i,t] + betawintP.JJ*wintP.JJ[i,t]
   x[i,t]~dnorm(Dnew[i,t],tau_add)
   }
   
@@ -39,6 +39,7 @@ model{
      betaSDI~dnorm(0,0.001)
          betaX ~dnorm(0,0.001)
        betaX2 ~dnorm(0,0.001)
+       betaX_SICOND ~dnorm(0,0.001)
        betaX_wintP.JJ ~dnorm(0,0.001)
 
       betaSICOND_wintP.JJ~dnorm(0,0.001)

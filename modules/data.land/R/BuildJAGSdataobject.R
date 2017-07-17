@@ -1,13 +1,20 @@
 #### code to make data object for JAGS
 #### from flat file AZ PIPO database
 
-buildJAGSdataobject <- function(temp2, trunc.yr = 1976){
+buildJAGSdataobject <- function(temp2, Tree2Tree, trunc.yr = 1976, rnd.subset = 100){
+
+# take a random subset of the Tree2Tree rows
+Tree2Tree <- Tree2Tree[sample(1:nrow(Tree2Tree), rnd.subset, replace=F),]  
 
 ### get tree-ring measurements into a tree*year matrix
+  
+# first we deal with the tree with cores  
 temp2$Widths <- as.character(temp2$Widths)
 first.start.yr <- min(temp2$DateFirst, na.rm=T) #1719
-last.meas.yr <- max(temp2$T2_MEASYR, na.rm=T) # 2010
-years <- seq(first.start.yr, last.meas.yr) # 1719:2010
+last.DBH.yr.1 <- max(temp2$T2_MEASYR, na.rm=T) # 2010
+last.DBH.yr.2 <- max(Tree2Tree$T2_MEASYR, na.rm=T) # 2017?
+last.meas.yr <- max(last.DBH.yr.1, last.DBH.yr.2) # 2017?
+years <- seq(first.start.yr, last.meas.yr) # 1719:2017
 y.matrix <- matrix(data=NA, nrow=nrow(temp2), ncol=length(years)) #tree ring measurements go in y.matrix
 colnames(y.matrix) <- years
 for (t in 1:nrow(temp2)) {
@@ -17,13 +24,19 @@ for (t in 1:nrow(temp2)) {
   end.column <- which(years == temp2$DateEnd[t])
   width.subset <- (end.column - start.column) + 1 # how long should the vectors of TR measurements be?
   width.vector <- width.vector[1:width.subset] # truncate widths vector to this length (get rid of extra zeros at the end)
-  width.vector <- width.vector*0.1*2 # convert micrometers to cm and multiply by 2 to turn radial increment into diameter increment (be careful about what units Tellervo spits out)
+  width.vector <- width.vector*0.1*2 # convert to cm and multiply by 2 to turn radial increment into diameter increment (be careful about what units Tellervo spits out)
   y.matrix[t, c(start.column:end.column)] <- width.vector # put that vector in y.matrix at the right start year:end year
 }
 
+# trees without cores (tree-to-tree data, DBH remeasurements)
+# this means just putting in the appropriate number of empty rows (NAs)
+y.matrix.2 <- matrix(data=NA, nrow=nrow(Tree2Tree), ncol=length(years))
 
+y.matrix <- rbind(y.matrix, y.matrix.2)
 
 ### get DBH measurements into a parallel tree*year matrix (mostly NA's, max #data points per tree = 2)
+
+# trees with cores
 z.matrix <- matrix(data=NA, nrow=nrow(temp2), ncol=length(years))
 colnames(z.matrix) <- years
 for (t in 1:nrow(temp2)) {
@@ -40,11 +53,27 @@ for (t in 1:nrow(temp2)) {
 #  ifelse(AZ.PIPO$PITH[t] != NA, z.matrix[t, which(colnames(z.matrix)==AZ.PIPO$PITH[t]-1)]<-0, z.matrix[t, which(colnames(z.matrix)==AZ.PIPO$PITH[t]-1)]<-NA)
 }
 
+# trees without cores (tree-to-tree data, DBH remeasurements)
+z.matrix.2 <- matrix(data=NA, nrow=nrow(Tree2Tree), ncol=length(years))
+colnames(z.matrix) <- years
+for (t in 1:nrow(Tree2Tree)) { # each tree
+  # extract DBH (DIA) value if and only if it is not NA
+  ifelse(!is.na(Tree2Tree$T1_DIA[t]), DIA.T1<-Tree2Tree$T1_DIA[t], DIA.T1<-NA) # extract time 1 DBH (in some cases, the only DBH measurement)
+  YR.T1 <- Tree2Tree$T1_MEASYEAR[t] # associated measurement year
+  z.matrix[t, which(colnames(z.matrix)==YR.T1)] <- DIA.T1 # put the DBH data in the right place (tree, year)
+  
+  ifelse(!is.na(Tree2Tree$T2_DIA[t]), DIA.T2<-Tree2Tree$T2_DIA[t], DIA.T2<-NA)  # time 2 DBH (only cases where there are two DBH measurements)
+  YR.T2 <- Tree2Tree$T2_MEASYR[t] # associated measurement year
+  z.matrix[t, which(colnames(z.matrix)==YR.T2)] <- DIA.T2
+}
+
+# rbind the data for the trees with (~544) and without (~14,155) cores together
+z.matrix <- rbind(z.matrix, z.matrix.2)
+
 ### convert DBH measurements to cm (multiply by 2.54)
 z.matrix <- z.matrix*2.54
 
 ### this is the line that restricts the analysis to the years trunc.yr:2010
-#trunc.yr <- 1976
 index.last.start <- which(years==trunc.yr) # which(years==1966) # returns 238
 y.small <- y.matrix[,index.last.start:ncol(y.matrix)]
 z.small <- z.matrix[,index.last.start:ncol(z.matrix)]
@@ -56,6 +85,8 @@ years.small <- years[index.last.start:ncol(y.matrix)]
 
 ### plot rnd effect (currently implemented at indiv level)
 PLOT <- paste0(temp2$County, temp2$Plot) # should maybe use an underscore to avoid mistakes...but would jags choke?
+PLOT2 <- paste0(Tree2Tree$COUNTYCD, Tree2Tree$T1_PLOT)
+PLOT <- rbind(PLOT, PLOT2)
 
 ### FIXED EFFECTS
 
@@ -71,11 +102,15 @@ PLOT <- paste0(temp2$County, temp2$Plot) # should maybe use an underscore to avo
 ### condition-level
 ### SICOND  
 SICOND <- temp2$COND_SICOND
+SICOND2 <- Tree2Tree$SICOND
+SICOND <- rbind(SICOND, SICOND2)
 ### SLOPE
 ### ASPECT ### what's the scale for FIA's aspect data? do they need to be converted to N-S spectrum?
 ### STDAGE
 ### SDI ## eventually should calculate <relative> SDI...observed SDI relative to maxSDI for dominant spp on plot (PIPO)
 SDI <- temp2$SDI
+SDI2 <- Tree2Tree$SDIc
+SDI <- rbind(SDI, SDI2)
 ### BA ## SDI and BA are tightly correlated, can't use both
 cov.data <- data.frame(PLOT=PLOT, SICOND=SICOND, SDI=SDI)
 #cov.data <- cbind(cov.data, SICOND, SDI)
@@ -84,29 +119,32 @@ cov.data <- data.frame(PLOT=PLOT, SICOND=SICOND, SDI=SDI)
 ### plot- and year-specific covariates
 ### i.e., 36 PRISM data matrices (tree*year)...one for each month*3 variables (Tmax, Tmin, ppt)
 ### just gonna do 24 climate variables (Tmax and Ppt)
+
 PRISM.years <- seq(from=1895, to=2015) #length = 121
 index.start.climate <- which(PRISM.years == trunc.yr)
 index.end.climate <- index.start.climate+(last.meas.yr-trunc.yr)
 PRISM.ncol <- (last.meas.yr-trunc.yr)+1 
 
-# get climate variable names
-#yrt.clim.var <- colnames(AZ.PIPO[110]) # just tmax_Jun; climate data from year t
-#yrt_1.clim.var <- c(colnames(AZ.PIPO[140])) # just ppt_Dec; climate data from year t-1
+# first, build an object that has the PRISM strings for both trees with and without cores
+climate.names <- c("PPTJan", "PPTFeb", "PPTMar", "PPTApr", "PPTMay", "PPTJun", "PPTJul", "PPTAug", "PPTSep", "PPTOct", "PPTNov", "PPTDec",
+#                   "TMINJan", "TMINFeb", "TMINMar", "TMINApr", "TMINMay", "TMINJun", "TMINJul", "TMINAug", "TMINSep", "TMINOct", "TMINNov", "TMINDec",
+                   "TMAXJan", "TMAXFeb", "TMAXMar", "TMAXApr", "TMAXMay", "TMAXJun", "TMAXJul", "TMAXAug", "TMAXSep", "TMAXOct", "TMAXNov", "TMAXDec")
+PRISM.strings.1 <- temp2[climate.names]; PRISM.strings.2 <- Tree2Tree[climate.names]
+PRISM.strings <- rbind(PRISM.strings.1, PRISM.strings.2)
 
-yrt.clim.var <- colnames(AZ.PIPO[77:84]) # Jan-Aug tmax columns
-yrt.clim.var <- c(yrt.clim.var, colnames(AZ.PIPO[101:108])) # add Jan-Aug ppt
-yrt_1.clim.var <- c(colnames(AZ.PIPO[85:88])) # Sept-Dec tmax
-yrt_1.clim.var <- c(yrt_1.clim.var, colnames(AZ.PIPO[109:112])) # add Sept-Dec ppt
-
+# which climate variables should be taken from year t and which from year t-1?
+yrt.clim.var <- c("PPTJan", "PPTFeb", "PPTMar", "PPTApr", "PPTMay", "PPTJun", "PPTJul", "PPTAug", "TMAXJan", "TMAXFeb", "TMAXMar", "TMAXApr", "TMAXMay", "TMAXJun", "TMAXJul", "TMAXAug")
+yrt_1.clim.va <- c("PPTSep", "PPTOct", "PPTNov", "PPTDec", "TMAXSep", "TMAXOct", "TMAXNov", "TMAXDec")
 names.clim.var <- c(yrt.clim.var, yrt_1.clim.var)
-time_data <- list() # make empty list
+
+time_data <- list() # make empty list; this list will have 12 items (climate variables), each with rows as trees and years as columns
 
 counter <- 1
 for (i in yrt.clim.var) { ## this loop deals with the climate variables taken from year t, i.e., current Jan-Aug
-    tmp.matrix <- matrix(nrow = nrow(temp2), ncol = PRISM.ncol)
-  for (j in 1:nrow(temp2)) {
-    tmp <- as.numeric(unlist(strsplit(temp2[j,i], split = ",")))
-    tmp <- tmp[index.start.climate:index.end.climate]# subset tmp to only contain years of interest (1972-2010)
+    tmp.matrix <- matrix(nrow = nrow(PRISM.strings), ncol = PRISM.ncol) # should have 544 + 14,155 rows
+  for (j in 1:nrow(PRISM.strings)) {
+    tmp <- as.numeric(unlist(strsplit(PRISM.strings[j,i], split = ",")))
+    tmp <- tmp[index.start.climate:index.end.climate]# subset tmp to only contain years of interest (trunc.yr-2015)
     tmp.matrix[j,] <- tmp
   }
   # Put the matrix into the list
@@ -115,13 +153,12 @@ for (i in yrt.clim.var) { ## this loop deals with the climate variables taken fr
 }
 
 for (i in yrt_1.clim.var) { ## this loop deals with the climate variables taken from year t-1, i.e., previous Sept-Dec
-  tmp.matrix <- matrix(nrow = nrow(temp2), ncol = PRISM.ncol)
-  for (j in 1:nrow(temp2)) {
-    tmp <- as.numeric(unlist(strsplit(temp2[j,i], split = ",")))
+  tmp.matrix <- matrix(nrow = nrow(PRISM.strings), ncol = PRISM.ncol)
+  for (j in 1:nrow(PRISM.strings)) {
+    tmp <- as.numeric(unlist(strsplit(PRISM.strings[j,i], split = ",")))
     tmp <- tmp[(index.start.climate-1):(index.end.climate-1)]# subset tmp to only contain years of interest (1971-2009)
     tmp.matrix[j,] <- tmp
   }
-  # Put the matrix into the list
   time_data[[counter]] <- tmp.matrix # use 2 here instead of counter for a single climate variable
     counter <- counter + 1
 }
@@ -136,7 +173,7 @@ wintP.JJ <- (time_data$PPTJan + time_data$PPTFeb + time_data$PPTMar + time_data$
 time_data$wintP.wateryr <- wintP.wateryr
 time_data$wintP.NM <- wintP.NM
 time_data$wintP.JJ <- wintP.JJ
-
+# seasonal Tmax variables
 tmax.JanA <- (time_data$TMAXJan + time_data$TMAXFeb + time_data$TMAXMar + time_data$TMAXApr + time_data$TMAXMay + time_data$TMAXJun + time_data$TMAXJul + time_data$TMAXAug)/8
 tmax.MJul <- (time_data$TMAXMay + time_data$TMAXJun + time_data$TMAXJul)/3
 time_data$tmax.JanA <- tmax.JanA
@@ -144,9 +181,8 @@ time_data$tmax.MJul <- tmax.MJul
 
 
 ## build data object for JAGS
-n <- nrow(y.small)
-data = list(y = y.small[1:n, ], 
-            z = z.small[1:n, ],
+data = list(y = y.small, 
+            z = z.small,
             ni = nrow(y.small), nt = ncol(y.small), 
             x_ic = 1, tau_ic = 1e-04,
             a_dbh = 16, r_dbh = 8, 

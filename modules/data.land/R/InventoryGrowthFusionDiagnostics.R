@@ -66,7 +66,7 @@ ciEnvelope <- function(x, ylo, yhi, ...) {
 ##' @param combined  data output from matchInventoryRings
 ##' @author Michael Dietze
 ##' @export 
-InventoryGrowthFusionDiagnostics <- function(jags.out, combined) {
+InventoryGrowthFusionDiagnostics <- function(model.out, combined) {
   
   #### Diagnostic plots
   
@@ -112,26 +112,57 @@ InventoryGrowthFusionDiagnostics <- function(jags.out, combined) {
   ## AZ PIPO version will have more than mu in vars...needs to be modified here
   #vars <- (1:ncol(out))[-c(which(substr(colnames(out), 1, 1) == "x"), grep("tau", colnames(out)), 
   #                         grep("year", colnames(out)), grep("ind", colnames(out)))]
-  mu <- out[,c(grep("mu", colnames(out)))]
+  vars <- (1:ncol(out))[-c(which(substr(colnames(out), 1, 1) == "x"), 
+                           grep("tau", colnames(out)),
+                           grep("year", colnames(out)), 
+                           grep("ind", colnames(out)),
+                           grep("alpha",colnames(out)),
+                           grep("deviance",colnames(out)))]  
   
-  ppt.betas <- out[,c(grep("betappt", colnames(out)))]
-  par(mfrow = c(4, 3))
-  for (curr.month in month.abb) {
-    curr.beta <- grep(pattern = curr.month, x = colnames(ppt.betas))
-    hist(ppt.betas[, curr.beta], main = colnames(ppt.betas)[curr.beta])
+  par(mfrow = c(1, 1))
+  for (i in vars) {
+    hist(out[, i], main = colnames(out)[i])
+    abline(v=0,lwd=3)
   }
-  
-  tmax.betas <- out[,c(grep("betatmax", colnames(out)))]
-  par(mfrow = c(4, 3))
-  for (curr.month in month.abb) {
-    curr.beta <- grep(pattern = curr.month, x = colnames(tmax.betas))
-    hist(tmax.betas[, curr.beta], main = colnames(tmax.betas)[curr.beta])
+  if (length(vars) > 1 & length(vars) < 10) {
+    pairs(out[, vars])
   }
 
-  wintP.JJ.beta <- out[,"betawintP.JJ"]
-  tmax.JanA.beta <- out[,"betatmax.JanA"]
-  hist(wintP.JJ.beta, main = "winter P (Jan-Jul)")
-  hist(tmax.JanA.beta, main = "tmax (Jan-Aug)")
+  if("deviance" %in% colnames(out)){
+    hist(out[,"deviance"])
+    vars <- c(vars,which(colnames(out)=="deviance"))
+  }
+  
+    
+  ## rebuild coda for just vars
+  var.out <- as.mcmc.list(lapply(model.out,function(x){ x[,vars]}))
+  
+  ## convergence
+  gelman.diag(var.out)
+  
+  #### Diagnostic plots
+  plot(var.out)
+  
+#  mu <- out[,c(grep("mu", colnames(out)))]
+  
+#  ppt.betas <- out[,c(grep("betappt", colnames(out)))]
+#  par(mfrow = c(4, 3))
+#  for (curr.month in month.abb) {
+#    curr.beta <- grep(pattern = curr.month, x = colnames(ppt.betas))
+#    hist(ppt.betas[, curr.beta], main = colnames(ppt.betas)[curr.beta])
+#  }
+  
+#  tmax.betas <- out[,c(grep("betatmax", colnames(out)))]
+#  par(mfrow = c(4, 3))
+#  for (curr.month in month.abb) {
+#    curr.beta <- grep(pattern = curr.month, x = colnames(tmax.betas))
+#    hist(tmax.betas[, curr.beta], main = colnames(tmax.betas)[curr.beta])
+#  }
+
+#  wintP.JJ.beta <- out[,"betawintP.JJ"]
+#  tmax.JanA.beta <- out[,"betatmax.JanA"]
+#  hist(wintP.JJ.beta, main = "winter P (Jan-Jul)")
+#  hist(tmax.JanA.beta, main = "tmax (Jan-Aug)")
   
   par(mfrow = c(2, 2))
 #  for (i in 1:2){ # SDI, SI

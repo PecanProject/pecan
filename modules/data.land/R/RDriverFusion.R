@@ -10,6 +10,7 @@
 #setwd("C:/Users/mekevans/Documents/CDrive/Bayes/DemogRangeMod/ProofOfConcept/treerings/FIAmetadata/ArizonaData/MergedDatabase/New")
 setwd("C:/Users/mekevans/Documents/Cdrive/Bayes/DemogRangeMod/ProofOfConcept/treerings/FIAmetadata/ArizonaData/MergedDatabase/New")
 
+### load in the data for trees with increment cores (and 1 or 2 DBH measurements)
 #AZ.PIPO <- read.csv("AZ_FIA_RWL_PRISM_allinone_04192017.txt", header = T, sep = "\t", stringsAsFactors = F) ### 820 trees
 AZ.PIPO <- read.delim("AZ_FIA_RWL_PRISM_allinone_04192017.txt", stringsAsFactors = F) ### 820 trees
 
@@ -28,11 +29,21 @@ AZ.PIPO <- AZ.PIPO[!is.na(AZ.PIPO$SDI),] # 641
 temp1 <- AZ.PIPO[AZ.PIPO$PLOT_MEASYEAR-AZ.PIPO$DateEnd<2,] # 544 trees
 temp2 <- temp1[temp1$PLOT_MEASYEAR-temp1$DateEnd>-1,] # no change
 
+### load in the data for trees without increment cores ("tree-to-tree" 2 DBH measurements)
+Tree2Tree <- read.delim("Tree2Tree.csv", stringsAsFactors = F) # not sure this is going to work
+
+### limit analysis to those trees with second DBH measurement in =< year 2015
+### this is because as of 7/2017, the available PRISM data (KNMI) go only to Dec 2015
+Tree2Tree <- Tree2Tree[Tree2Tree$T2_MEASYR<=2015,]
+Tree2Tree <- subset(Tree2Tree, T2_MEASYR <= 2015)
+
+
+### NOW go get function that makes jags objects out of the data for trees with cores
 ### setwd to github folder
 setwd("C:/Users/mekevans/Documents/Cdrive/Bayes/DemogRangeMod/ProofOfConcept/treerings/pecan/modules/data.land/R")
 ### read in function that creates jags objects from above data
 source("BuildJAGSdataobject.R")
-jags.stuff <- buildJAGSdataobject(temp2, trunc.yr = 1966)
+jags.stuff <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 100, trunc.yr = 1966)
 data <- jags.stuff$data
 z0 <- jags.stuff$z0
 cov.data <- jags.stuff$cov.data
@@ -77,7 +88,7 @@ model3.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time
                                    burnin_plot=FALSE)
 
 model4.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                   n.iter=5000, random="(1|PLOT[i])",
+                                   n.iter=15000, n.burnin=10000, random="(1|PLOT[i])",
                                    fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*wintP.JJ[t]",
                                    time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
                                    burnin_plot=FALSE)

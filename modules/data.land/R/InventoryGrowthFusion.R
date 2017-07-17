@@ -13,7 +13,7 @@
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=5000, random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, save.jags = "IGF.txt", z0 = NULL) {
+InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=5000, n.burnin=n.iter/2, random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, save.jags = "IGF.txt", z0 = NULL) {
   library(rjags)
 
   # baseline variables to monitor  
@@ -411,7 +411,8 @@ model{
   ## burn-in
   jags.out <- coda.samples(model = j.model, 
                            variable.names = burnin.variables, 
-                           n.iter = min(n.iter, 2000))
+                           n.iter = min(n.iter, 2000),
+                           n.burnin = max(n.burnin, n.iter/2))
   if (burnin_plot) {
     plot(jags.out)
   }
