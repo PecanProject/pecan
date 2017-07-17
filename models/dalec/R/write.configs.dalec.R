@@ -215,30 +215,24 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
       if (is.valid(AbvGrndWood)) {
         if(is.valid(coarse.roots)){
           IC.params[["cw0"]] <- (AbvGrndWood + coarse.roots) * 1000 #from standard kg C m-2
-        }
-        else if (is.valid(TotLivBiom) && is.valid(leaf) && is.valid(fine.roots)){
-          if(is.valid(LAI)){
-            wood <- (1000*(TotLivBiom - fine.roots)) - leaf #convert TotLivBiom and fine.roots to g C m-2 from standard kg C m-2; leaf already converted via SLA
-          }
-          else{
-            wood <- (TotLivBiom - leaf - fine.roots) * 1000 #from standard kg C m-2
-          }
-          if (wood >= 0){
-            IC.params[["cw0"]] <- wood
-          } else{
-            PEcAn.utils::logger.error("TotLivBiom is less than sum of leaf and fine roots; using default for woody biomass")
-          }
         } else{
-          PEcAn.utils::logger.error("write.configs.DALEC IC can't calculate total woody biomass with only AbvGrndWood; using defaults. Please provide coarse_root_carbon_content OR root_carbon_content with rtsize dimensions OR leaf_carbon_content, fine_root_carbon_content, and TotLivBiom in netcdf")
+          PEcAn.utils::logger.error("write.configs.DALEC IC can't calculate total woody biomass with only AbvGrndWood; checking for total biomass.")
         }
       } else if (is.valid(TotLivBiom) && is.valid(leaf) && is.valid(fine.roots)){
-        wood <- (TotLivBiom - leaf - fine.roots) * 1000 #from standard kg C m-2
+        if(is.valid(LAI)){
+          wood <- (1000*(TotLivBiom - fine.roots)) - leaf #convert TotLivBiom and fine.roots to g C m-2 from standard kg C m-2; leaf already converted via SLA
+        }
+        else{
+          wood <- (TotLivBiom - leaf - fine.roots) * 1000 #from standard kg C m-2
+        }
         if (wood >= 0){
           IC.params[["cw0"]] <- wood
         }else{
-          PEcAn.utils::logger.error(paste("TotLivBiom (", TotLivBiom, ") is less than sum of leaf (", leaf, ") and fine roots(",fine.roots,"); using default for woody biomass"))
+          PEcAn.utils::logger.error(paste("TotLivBiom (", TotLivBiom, ") is less than sum of leaf (", leaf, ") and fine roots(",fine.roots,"); using default for woody biomass."))
         }
-      } 
+      } else{
+        PEcAn.utils::logger.error("write.configs.DALEC IC could not calculate woody biomass; using defaults. Please provide AbvGrndWood and coarse_root_carbon OR leaf_carbon_content/LAI, fine_root_carbon_content, and TotLivBiom in netcdf."
+      }
     
       # cr0 initial pool of fine root carbon (g/m2)
       if (is.valid(fine.roots)) {
