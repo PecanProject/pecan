@@ -78,15 +78,16 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, lags.list = NULL,
     # Read in the first linear regression model
     first_model <- ncdf4::nc_open(paste0(path.model, "/", v, "/betas_", 
                                          v, "_1.nc"))
-    first_beta <- assign(paste0("betas.", v, "_1"), first_model)
-    n.beta <- nrow(ncdf4::ncvar_get(first_beta, "1"))
+    # first_beta <- assign(paste0("betas.", v, "_1"), first_model) # does below need to be first_beta?
+    n.beta <- first_model$var[[1]]$dim[[1]]$len # Number of rows
+    col.beta <- first_model$var[[1]]$dim[[2]]$len # number of coefficients
     ncdf4::nc_close(first_model)
     
     # Create beta list so each ensemble for each variable pulls the same
     # betas
     for (c in seq_len(nrow(dat.mod))) {
-      betas.tem <- sample(1:n.beta, n.ens, replace = TRUE)
-      rows.beta[(c * n.ens - n.ens + 1):(c * n.ens)] <- betas.tem
+      betas.tem <- sample(1:(n.beta-n.ens), 1, replace = TRUE)
+      rows.beta[c] <- betas.tem
     }
     rows.beta <- as.numeric(rows.beta)
     
@@ -172,6 +173,13 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, lags.list = NULL,
         dat.temp <- merge(dat.temp, sim.lag, all.x = TRUE)
       }
       
+      # Creatign some necessary dummy variable names
+      if (v %in% c("surface_downwelling_longwave_flux_in_air", "wind_speed")) { 
+      	dat.temp[,paste0("sqrt(",v,")")] <- sqrt(dat.temp[,v])
+      } else if (v == "specific_humidity") { 
+      	dat.temp[,paste0("log(",v,")")] <- sqrt(dat.temp[,v])      
+      }
+      
       # Create dummy value
       dat.temp[[v]] <- 99999
       
@@ -182,10 +190,9 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, lags.list = NULL,
       # Pull coefficients (betas) from our saved matrix
       betas_nc <- ncdf4::nc_open(file.path(path.model, v, paste0("betas_", 
                                                                  v, "_", day.now, ".nc")))
-      Rbeta <- as.matrix(ncdf4::ncvar_get(betas_nc, paste(day.now))[as.integer(rows.beta[(i * 
-                                                                                            n.ens - n.ens + 1):(i * n.ens)]), ], nrow = length(rows.beta), 
-                         ncol = ncol(betas_nc))
+	  Rbeta <- as.matrix(ncdf4::ncvar_get(betas_nc, paste(day.now), c(rows.beta,1), c(n.ens,col.beta)), ncol = col.beta)
       ncdf4::nc_close(betas_nc)
+      
       dat.pred <- subdaily_pred(newdata = dat.temp, model.predict = mod.save, 
                                 Rbeta = Rbeta, resid.err = FALSE, model.resid = NULL, Rbeta.resid = NULL, 
                                 n.ens = n.ens)
@@ -220,7 +227,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, lags.list = NULL,
           dat.pred[is.na(dat.pred)] <- 0
         }
         # Convert precip into real units
-        dat.pred <- dat.pred * as.vector((dat.temp$precipitation_flux.day))
+        dat.pred <- dat.pred * as.vector((dat.temp$precipitation_flux.day))*length(unique(dat.temp$hour))
       }
       
       # Longwave needs some sanity bounds
