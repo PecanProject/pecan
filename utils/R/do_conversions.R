@@ -1,11 +1,12 @@
-##' @export do.conversions
-##' @name do.conversions
-##' @title do.conversions
+##' @export 
+##' @aliases do.conversions
+##' @name do_conversions
+##' @title do_conversions
 ##' @description Input conversion workflow
 ##' @author Ryan Kelly, Rob Kooper, Betsy Cowdery, Istem Fer
-do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE, overwrite.ic = FALSE) {
+do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE, overwrite.ic = FALSE) {
   if (PEcAn.settings::is.MultiSettings(settings)) {
-    return(PEcAn.settings::papply(settings, do.conversions))
+    return(PEcAn.settings::papply(settings, do_conversions))
   }
   
   needsave <- FALSE
@@ -52,7 +53,7 @@ do.conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     }
     
     # soil extraction
-    if(input.tag == "soil"){
+    if(input.tag == "soil"&& is.null(input$path)){
       settings$run$inputs[[i]][['path']] <- PEcAn.data.land::soil_process(settings,input,dbfiles.local,overwrite=FALSE)
       needsave <- TRUE
       ## NOTES: at the moment only processing soil locally. Need to think about how to generalize this
