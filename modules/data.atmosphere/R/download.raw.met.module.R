@@ -21,7 +21,8 @@
                             lat.in = lat.in, lon.in = lon.in, 
                             model = input_met$model, 
                             scenario = input_met$scenario, 
-                            ensemble_member = input_met$ensemble_member)
+                            ensemble_member = input_met$ensemble_member,
+                            pattern = met)
     
   } else if (register$scale == "site") {
     # Site-level met

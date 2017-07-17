@@ -1,8 +1,8 @@
 Package: PEcAn.BIOCRO
 Type: Package
 Title: PEcAn package for integration of the BioCro model
-Version: 1.4.10.1
-Date: 2017-04-18
+Version: 1.5.0
+Date: 2017-07-14
 Author: David LeBauer, Deepak Jaiswal
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: This module provides functions to link BioCro to PEcAn.
@@ -20,9 +20,9 @@ Imports:
 Suggests:
     BioCro,
     testthat (>= 1.0.2),
-    RPostgreSQL,
-    RNCEP
-Remotes: github::ebimodeling/biocro
+    RPostgreSQL
+Remotes:
+    github::ebimodeling/biocro
 License: FreeBSD + file LICENSE
 Copyright: Energy Biosciences Institute, Authors
 LazyLoad: yes

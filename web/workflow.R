@@ -68,7 +68,7 @@ if (length(which(commandArgs() == "--continue")) == 0 && file.exists(statusFile)
 }
   
 # Do conversions
-settings <- PEcAn.utils::do.conversions(settings)
+settings <- PEcAn.utils::do_conversions(settings)
 
 # Query the trait database for data and priors
 if (PEcAn.utils::status.check("TRAIT") == 0){
