@@ -59,7 +59,7 @@ library(PEcAn.photosynthesis)
 filenames <- system.file("extdata", paste0("flux-course-",rep(1:6,each=2),c("aci","aq")), package = "PEcAn.photosynthesis")
 
 ## Load files to a list
-master = lapply(filenames, read.Licor)
+master = lapply(filenames, read_Licor)
 ```
 
 
@@ -70,7 +70,7 @@ The code below performs a set of interactive QA/QC checks on the LI-COR data tha
 If you want to get a feel for how the code works you'll want to run it first on just one file, rather than looping over all the files
 
 ```
-master[[1]] <- Licor.QC(master[[1]])
+master[[1]] <- Licor_QC(master[[1]])
 ```
 
 On the first screen you will be shown an A-Ci curve. Click on points that are outliers that you want to remove. Be aware that these points will not change color in **THIS SCREEN**, but will be updated in the next. Also be aware that if your data set is not an A-Ci curve (or contains both A-Ci and A-Q curves) there are points that may look like outliers just because they are data from the other curve.  When you are done selecting outliers, click **[esc]** to move to the next screen.
@@ -81,7 +81,7 @@ The third and fourth screens are the equivalent plots for the A-Q (light respons
 
 Finally, this function returns a copy of the original data with a new column, "QC", added. This column will flag all passed values with 1, all unchecked values with 0, and all failed values with -1.
 
-The function Licor.QC has an optional arguement, _curve_, which can be set to either "ACi" or "AQ" if you only want to perform one of these diagnostics rather than both (which is the default). 
+The function Licor_QC has an optional arguement, _curve_, which can be set to either "ACi" or "AQ" if you only want to perform one of these diagnostics rather than both (which is the default). 
 
 Also, the QC code attempts to automatically separate which points are part of the ACi curve from which parts are part of the AQ curve, based on how close points are to the the variable which is supposed to be held constant. The optional variable "tol" controls the tolerance of this filter, and is expressed as a proportion of the fixed value. The default value, 0.05, corresponds to a 5% deviation. For example, in the ACi curve the light level should be held constant so the code filters the PARi variable to find the mode and then included any data that's within 5% of the mode in the ACi curve.
 
@@ -89,7 +89,7 @@ Once you have a feel for the QA/QC function, you'll want to run it for all the d
 
 ```
 for(i in 1:length(master)){
-    master[[i]] = Licor.QC(master[[i]])
+    master[[i]] = Licor_QC(master[[i]])
 }
 ```
 
@@ -159,7 +159,7 @@ plot(pmean, dat$Photo, pch = "+", xlab = "Predicted A", ylab = "Observed A")
 abline(0, 1, col = 2, lwd = 2)
   
 ##   
-plot.photo(dat, fit)
+plot_photo(dat, fit)
 
 ```
 
@@ -199,7 +199,7 @@ plot(pmean, dat$Photo, pch = "+", xlab = "Predicted A", ylab = "Observed A")
 abline(0,1,col=2,lwd=2)
   
 ##   
-plot.photo(dat,fitI)
+plot_photo(dat,fitI)
 
 ```
 
@@ -248,7 +248,7 @@ plot(pmean, dat$Photo, pch = "+", xlab = "Predicted A", ylab = "Observed A")
 abline(0,1,col=2,lwd=2)
   
 ##   
-plot.photo(dat, fitC)
+plot_photo(dat, fitC)
 
 ```
 
