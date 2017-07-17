@@ -231,7 +231,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
           PEcAn.utils::logger.error(paste("TotLivBiom (", TotLivBiom, ") is less than sum of leaf (", leaf, ") and fine roots(",fine.roots,"); using default for woody biomass."))
         }
       } else{
-        PEcAn.utils::logger.error("write.configs.DALEC IC could not calculate woody biomass; using defaults. Please provide AbvGrndWood and coarse_root_carbon OR leaf_carbon_content/LAI, fine_root_carbon_content, and TotLivBiom in netcdf."
+        PEcAn.utils::logger.error("write.configs.DALEC IC could not calculate woody biomass; using defaults. Please provide AbvGrndWood and coarse_root_carbon OR leaf_carbon_content/LAI, fine_root_carbon_content, and TotLivBiom in netcdf.")
       }
     
       # cr0 initial pool of fine root carbon (g/m2)
