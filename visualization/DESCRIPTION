@@ -28,7 +28,8 @@ Depends:
     PEcAn.DB,
     RPostgreSQL,
     dplyr,
-    dbplyr
+    dbplyr,
+    plotly
 Imports:
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
