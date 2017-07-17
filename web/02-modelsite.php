@@ -515,8 +515,10 @@ function goHome() {
       <div class="spacer"></div>
 
       <span title="Click to add sites to the map that PEcAn can automatically process model inputs for. Default is to show just sites where a model already has all required inputs installed">
-      <label id="conversionlabel">Conversion:</label></span>
+      <div>
+      <label id="conversionlabel" for="conversion">Conversion:
       <input type="checkbox" id="conversion" name="conversion" onChange="updateData();" <?php echo $conversion; ?>  /> 
+      </div></label></span>
       <div class="spacer"></div>
 
       <span title="Type here to search for sites by name. Click on map to select site">
