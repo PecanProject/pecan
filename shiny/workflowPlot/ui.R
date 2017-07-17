@@ -1,21 +1,23 @@
 library(shiny)
-
+# Helper allows to load functions and variables that could be shared both by server.R and ui.R 
+# source('helper.R')
 # Define UI
 ui <- shinyUI(fluidPage(
   # Application title
   titlePanel("Workflow Plots"),
-
   sidebarLayout(
     sidebarPanel(
-      selectInput("workflow_id", "Workflow ID", c()),
-      selectInput("run_id", "Run ID", c()),
-      selectInput("variable_name", "Variable Name", "")
+      # helpText(),
+      p("Please select the workflow IDs to continue. You can select multiple IDs"),
+      selectizeInput("all_workflow_id", "Mutliple Workflow IDs", c(),multiple=TRUE),
+      p("Please select the run IDs. You can select multiple IDs"),
+      selectizeInput("all_run_id", "Mutliple Run IDs", c(),multiple=TRUE),
+      actionButton("load", "Load Model outputs"),
+      selectInput("variable_name", "Variable Name", ""),
+      radioButtons("plotType", "Plot Type", c("Scatter Plot" = "scatterPlot", "Line Chart" = "lineChart"), selected="scatterPlot")
     ),
     mainPanel(
-      plotOutput("outputPlot",
-                 brush = brushOpts(id = "plot_brush",
-                                   resetOnNew = TRUE),
-                 dblclick = "plot_dblclick")
+      plotlyOutput("outputPlot")
     )
   )
 ))
