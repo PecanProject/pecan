@@ -236,7 +236,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
         if (wood >= 0){
           IC.params[["cw0"]] <- wood
         }else{
-          PEcAn.utils::logger.error("TotLivBiom is less than sum of leaf and fine roots; using default for woody biomass")
+          PEcAn.utils::logger.error(paste("TotLivBiom (", TotLivBiom, ") is less than sum of leaf (", leaf, ") and fine roots(",fine.roots,"); using default for woody biomass")
         }
       } 
     
@@ -263,6 +263,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
       # cs0 initial pool of soil organic matter and woody debris carbon (g/m2)
       soil <- try(ncdf4::ncvar_get(IC.nc,"soil_organic_carbon_content"),silent = TRUE)
       wood.debris <- try(ncdf4::ncvar_get(IC.nc,"wood_debris_carbon_content"),silent = TRUE)
+      
       if(is.valid(soil) && is.valid(wood.debris)){
         IC.params[["cs0"]] <- (soil + sum(wood.debris)) * 1000 #from standard kg C m-2
       } else if(!is.valid(soil) && is.valid(wood.debris)){
@@ -273,7 +274,8 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
           PEcAn.utils::logger.error("write.configs.DALEC IC can't calculate soil matter pool without soil carbon; using default. Please provide soil_organic_carbon_content in netcdf.")
         }
       } else if(is.valid(soil) && !is.valid(wood.debris)){
-        PEcAn.utils::logger.error("write.configs.DALEC IC can't calculate soil matter pool without wood debris; using default. Please provide wood_debris_carbon_content in netcdf.")
+        IC.params[["cs0"]] <- soil * 1000 #from standard kg C m-2
+        PEcAn.utils::logger.warn("write.configs.DALEC IC: Loading soil carbon pool without woody debris.")
       } 
       
       ###Write to command line file
