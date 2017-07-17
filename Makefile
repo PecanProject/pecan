@@ -85,7 +85,7 @@ clean:
 	mkdir -p $(@D)
 	echo `date` > $@
 
-depends_R_pkg = Rscript -e "devtools::install_dev_deps('$(strip $(1))', Ncpus = ${NCPUS});"
+depends_R_pkg = Rscript -e "devtools::install_dev_deps('$(strip $(1))', Ncpus = ${NCPUS}, dependencies = c('Depends', 'Imports', 'LinkingTo'));"
 install_R_pkg = Rscript -e "devtools::install('$(strip $(1))', Ncpus = ${NCPUS});"
 check_R_pkg = Rscript scripts/check_with_errors.R $(strip $(1))
 test_R_pkg = Rscript -e "devtools::test('"$(strip $(1))"', reporter = 'stop')"
