@@ -9,7 +9,7 @@ gen.subdaily.models(outfolder, dat.train_file, in.prefix, n.beta, day.window,
   verbose = FALSE)
 }
 \arguments{
-\item{outfolder}{- directory where models will be stored *** storage required varies by size of training dataset, but prepare for >100 GB}
+\item{outfolder}{- directory where models will be stored *** storage required varies by size of training dataset, but prepare for >10 GB}
 
 \item{dat.train_file}{- train_data file}
 
