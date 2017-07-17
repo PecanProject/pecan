@@ -236,7 +236,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
         if (wood >= 0){
           IC.params[["cw0"]] <- wood
         }else{
-          PEcAn.utils::logger.error(paste("TotLivBiom (", TotLivBiom, ") is less than sum of leaf (", leaf, ") and fine roots(",fine.roots,"); using default for woody biomass")
+          PEcAn.utils::logger.error(paste("TotLivBiom (", TotLivBiom, ") is less than sum of leaf (", leaf, ") and fine roots(",fine.roots,"); using default for woody biomass"))
         }
       } 
     
