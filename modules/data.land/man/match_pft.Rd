@@ -4,7 +4,8 @@
 \alias{match_pft}
 \title{Match model PFTs}
 \usage{
-match_pft(bety_species_id, pfts, query = NULL, con = NULL)
+match_pft(bety_species_id, pfts, query = NULL, con = NULL,
+  allow_missing = FALSE)
 }
 \arguments{
 \item{bety_species_id}{vector of BETYdb species IDs}
@@ -12,6 +13,8 @@ match_pft(bety_species_id, pfts, query = NULL, con = NULL)
 \item{pfts}{settings$pfts.  List of pfts with database matching based on name}
 
 \item{con}{database connection, if NULL use traits package}
+
+\item{allow_missing}{flag to indicate that settings file does not need to match exactly}
 }
 \value{
 table of BETYdb PFT IDs matched to species IDs
