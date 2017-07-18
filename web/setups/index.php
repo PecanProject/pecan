@@ -9,12 +9,22 @@
  */
 
 // this is the welcome page for the configuration setup
-
+include 'core.php';
 include 'page.template.php';
 ?>
   <h1>Introduction</h1>
   <p>Welcome to the Configuration page.</p>
   <p>Side panal consist of all the available configuarations.</p>
 <?php
+isset($messagekey);
+{
+  echo "<p>$message[$messagekey]</p>";
+?>
+
+  <a href="edit.php?key=database" class="btn btn-primary">Next</a>
+
+<?php
+}
+
 include 'pagefooter.template.php';
 ?>
