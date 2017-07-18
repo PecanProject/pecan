@@ -22,6 +22,7 @@
 
   // key defines the attribute or the group of attributes which are needed to modify
   $key = $_GET['key'];
+  $messagekey = $_GET['message'];
 
   $pattern = NULL;
   // set the pattern to match with the input
@@ -39,5 +40,13 @@
 
   // including the config.php so that the previous values can be used in the files inputs
   include '../config.php';
+
+  // message for improving interaction with users
+  $message=array(
+    '1' => "It Seems there is some problem with getting $key, <br> Can you Verify the following credentials and try connecting again.",
+    '2' => "It seems Config file doesn't exist, So I have created one but I need following details to properly establish the connection with other parts like database.</br><b>If you don't know any of these you can skip.</b>",
+    '3' => "",
+    '4' => "",
+    );
 
 ?>
