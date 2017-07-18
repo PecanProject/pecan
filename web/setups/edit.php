@@ -16,7 +16,7 @@ include 'page.template.php';
   <form class="form-horizontal" role="form" id="formnext" method="POST" action="<?php echo"add.php?key=$key";?>" enctype="multipart/form-data">
     <h1><?php echo ucfirst($key); ?> Configuration details</h1>
 <?php
-isset($messagekey);
+if (isset($messagekey))
 {
   echo "<p>$message[$messagekey]</p>";
 }
