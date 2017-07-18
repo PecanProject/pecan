@@ -15,6 +15,8 @@
 ##' 
 sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   
+  library(nimble)
+  
   ymd_hms <- lubridate::ymd_hms
   hms     <- lubridate::hms
   second  <- lubridate::second
@@ -337,7 +339,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for(t in seq_len(nt)) {#
+  for(t in 3:5) {#
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -973,15 +975,18 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     names(tmp) <- names.y
     mch <- match(names(x), names.y)
     tmp[mch] <- x[mch]
-    return(tmp)
+    tmp
   }))
-  Ybar <- Ybar[, choose]
+  Y.order <- na.omit(pmatch(colnames(X), colnames(Ybar)))
+  Ybar <- Ybar[,Y.order]
   YCI <- t(as.matrix(sapply(obs.cov[t1:t], function(x) {
     if (is.null(x)) {
       rep(NA, length(names.y))
     }
     sqrt(diag(x))
   })))
+  
+  YCI <- YCI[,Y.order]
   Xsum <- plyr::laply(FORECAST, function(x) { mean(rowSums(x[,1:length(names.y)], na.rm = TRUE)) })[t1:t]
 
   for (i in seq_len(ncol(X))) {
@@ -1035,17 +1040,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
     
     if(length(which(is.na(Ybar[,i])))>=length(t1:t)) next()
-    reg <- lm(Xbar[t1:t]/Xsum - unlist(Ybar[, i]) ~ c(t1:t))
+    reg <- lm(Xbar[t1:t] - unlist(Ybar[, i]) ~ c(t1:t))
     plot(t1:t, 
-         Xbar/Xsum - unlist(Ybar[, i]),
+         Xbar - unlist(Ybar[, i]),
          pch = 16, cex = 1, 
-         ylim = c(min(Xci[, 1]/Xsum - unlist(Ybar[, i])), max(Xci[,2]/Xsum - unlist(Ybar[, i]))), 
+         ylim = c(min(Xci[, 1] - unlist(Ybar[, i])), max(Xci[,2] - unlist(Ybar[, i]))), 
          xlab = "Time", 
          ylab = "Error", 
          main = paste(colnames(X)[i], " Error = Forecast - Data"))
     ciEnvelope(rev(t1:t), 
-               rev(Xci[, 1]/Xsum - unlist(Ybar[, i])), 
-               rev(Xci[, 2]/Xsum - unlist(Ybar[, i])),
+               rev(Xci[, 1] - unlist(Ybar[, i])), 
+               rev(Xci[, 2] - unlist(Ybar[, i])),
                col = alphapink)
     abline(h = 0, lty = 2, lwd = 2)
     abline(reg)
@@ -1054,17 +1059,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     # d<-density(c(Xbar[t1:t] - unlist(Ybar[t1:t,i]))) lines(d$y+1,d$x)
     
     # forecast minus analysis = update
-    reg1 <- lm(Xbar/Xsum - Xa/Xsum ~ c(t1:t))
+    reg1 <- lm(Xbar - Xa ~ c(t1:t))
     plot(t1:t, 
-         Xbar/Xsum - Xa/Xsum, 
+         Xbar - Xa, 
          pch = 16, cex = 1, 
-         ylim = c(min(Xbar/Xsum - XaCI[, 2]/Xsum), max(Xbar/Xsum - XaCI[, 1]/Xsum)), 
+         ylim = c(min(Xbar - XaCI[, 2]), max(Xbar - XaCI[, 1])), 
          xlab = "Time", ylab = "Update", 
          main = paste(colnames(X)[i], 
                       "Update = Forecast - Analysis"))
     ciEnvelope(rev(t1:t), 
-               rev(Xbar/Xsum - XaCI[, 1]/Xsum), 
-               rev(Xbar/Xsum - XaCI[, 2]/Xsum), 
+               rev(Xbar - XaCI[, 1]), 
+               rev(Xbar - XaCI[, 2]), 
                col = alphagreen)
     abline(h = 0, lty = 2, lwd = 2)
     abline(reg1)

@@ -77,7 +77,7 @@ load_data_paleon_sda <- function(settings){
     if(format_id[[i]] == '1000000040'){
       obvs[[i]] <- obvs[[i]][obvs[[i]]$model_type=='Model RW + Census',]
       obvs[[i]]$AbvGrndWood <- obvs[[i]]$AbvGrndWood * biomass2carbon
-      obvs[[i]]$NPP <- obvs[[i]]$NPP * biomass2carbon
+      obvs[[i]]$NPP <- obvs[[i]]$NPP #* biomass2carbon
       arguments <- list(.(year, MCMC_iteration, site_id), .(variable))
       arguments2 <- list(.(year), .(variable))
       arguments3 <- list(.(MCMC_iteration), .(variable), .(year))
