@@ -9,7 +9,7 @@
  */
 
 // change password script location
-$shellscript = "sudo chpasswd.sh";
+$shellscript = "expect chpasswd.exp";
 
 $username = $_POST['username'];
 $oldpasswd = $_POST['oldpasswd'];
@@ -32,7 +32,7 @@ include 'page.template.php';
 
 if ($callchpasswd) {
   // generate the command to execute
-  $cmd="$shellscript " . $username. " " . $newpasswd;
+  $cmd="$shellscript " . $username. " " . $oldpasswd . " " . $newpasswd;
   // execute the command
   exec($cmd,$output,$status);
 
