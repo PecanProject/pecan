@@ -16,13 +16,11 @@ include 'page.template.php';
   <p>Welcome to the Configuration page.</p>
   <p>Side panal consist of all the available configuarations.</p>
 <?php
-isset($messagekey);
+if (isset($messagekey))
 {
   echo "<p>$message[$messagekey]</p>";
 ?>
-
   <a href="edit.php?key=database" class="btn btn-primary">Next</a>
-
 <?php
 }
 
