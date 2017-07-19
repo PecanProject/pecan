@@ -67,6 +67,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
     output[[12]] <- f.comp[, y]
     output[[13]] <- area[y, ]  #LAI
     output[[14]] <- water[y, ]  #soil moisture
+    output[[15]] <- abvgroundwood.biomass[y,] #AbvGroundWood just wood no leaves
     
     # ******************** Declare netCDF variables ********************#
     dim.t <- ncdim_def(name = "time", 
@@ -101,6 +102,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
     var[[12]] <- ncvar_def("Fcomp", "kgC/kgC", list(dim.pfts, dim.lat, dim.lon, dim.t), -999)
     var[[13]] <- ncvar_def("LAI", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
     var[[14]] <- ncvar_def("SoilMoist", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
+    var[[15]]  <- ncvar_def("AbvGrnWood", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
     
     # ******************** Declare netCDF variables ********************#
     
