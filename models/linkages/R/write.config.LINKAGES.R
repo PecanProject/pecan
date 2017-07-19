@@ -124,8 +124,8 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           vals <- trait.values[[group]]
           
           # replace defaults with traits
-          new.params.locs <- which(names(spp.params) %in% names(vals))
-          new.vals.locs <- which(names(vals) %in% names(spp.params))
+          #new.params.locs <- which(names(spp.params) %in% names(vals))
+          #new.vals.locs <- which(names(vals) %in% names(spp.params))
           #spp.params[which(spp.params$Spp_Name == group), new.params.locs] <- vals[new.vals.locs]
           
           # conversion of some traits to match what LINKAGES needs Going to have to look up this paper
@@ -150,11 +150,11 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           if ("DMIN" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$DMIN <- vals$DMIN
           }
-          if ("AGEMAX" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$AGEMAX <- vals$AGEMAX
+          if ("AGEMX" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$AGEMX <- vals$AGEMX
           }
           if ("G" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$G <- vals$Gmax
+            spp.params[spp.params$Spp_Name == group, ]$G <- vals$G
           }
           if ("SPRTND" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$SPRTND <- vals$SPRTND
