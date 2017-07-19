@@ -18,7 +18,7 @@ InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=50
 
   # baseline variables to monitor  
   burnin.variables <- c("tau_add", "tau_dbh", "tau_inc", "mu") # process variability, dbh and tree-ring observation error, intercept
-  out.variables <- c("deviance", "x", "tau_add", "tau_dbh", "tau_inc", "mu")
+  out.variables <- c("deviance", "tau_add", "tau_dbh", "tau_inc", "mu")
   
   # start text object that will be manipulated (to build different linear models, swap in/out covariates)  
   TreeDataFusionMV <- "
@@ -411,8 +411,7 @@ model{
   ## burn-in
   jags.out <- coda.samples(model = j.model, 
                            variable.names = burnin.variables, 
-                           n.iter = min(n.iter, 2000),
-                           n.burnin = max(n.burnin, n.iter/2))
+                           n.iter = min(n.iter, 2000))
   if (burnin_plot) {
     plot(jags.out)
   }

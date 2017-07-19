@@ -55,16 +55,16 @@ for (t in 1:nrow(temp2)) {
 
 # trees without cores (tree-to-tree data, DBH remeasurements)
 z.matrix.2 <- matrix(data=NA, nrow=nrow(Tree2Tree), ncol=length(years))
-colnames(z.matrix) <- years
+colnames(z.matrix.2) <- years
 for (t in 1:nrow(Tree2Tree)) { # each tree
   # extract DBH (DIA) value if and only if it is not NA
   ifelse(!is.na(Tree2Tree$T1_DIA[t]), DIA.T1<-Tree2Tree$T1_DIA[t], DIA.T1<-NA) # extract time 1 DBH (in some cases, the only DBH measurement)
-  YR.T1 <- Tree2Tree$T1_MEASYEAR[t] # associated measurement year
-  z.matrix[t, which(colnames(z.matrix)==YR.T1)] <- DIA.T1 # put the DBH data in the right place (tree, year)
+  YR.T1 <- Tree2Tree$T1_MEASYR[t] # associated measurement year
+  z.matrix.2[t, which(colnames(z.matrix.2)==YR.T1)] <- DIA.T1 # put the DBH data in the right place (tree, year)
   
   ifelse(!is.na(Tree2Tree$T2_DIA[t]), DIA.T2<-Tree2Tree$T2_DIA[t], DIA.T2<-NA)  # time 2 DBH (only cases where there are two DBH measurements)
   YR.T2 <- Tree2Tree$T2_MEASYR[t] # associated measurement year
-  z.matrix[t, which(colnames(z.matrix)==YR.T2)] <- DIA.T2
+  z.matrix.2[t, which(colnames(z.matrix.2)==YR.T2)] <- DIA.T2
 }
 
 # rbind the data for the trees with (~544) and without (~14,155) cores together
@@ -73,8 +73,8 @@ z.matrix <- rbind(z.matrix, z.matrix.2)
 ### convert DBH measurements to cm (multiply by 2.54)
 z.matrix <- z.matrix*2.54
 
-### this is the line that restricts the analysis to the years trunc.yr:2010
-index.last.start <- which(years==trunc.yr) # which(years==1966) # returns 238
+### this is the line that restricts the analysis to the years trunc.yr:2015
+index.last.start <- which(years==trunc.yr) # which(years==1966) # returns 248
 y.small <- y.matrix[,index.last.start:ncol(y.matrix)]
 z.small <- z.matrix[,index.last.start:ncol(z.matrix)]
 years.small <- years[index.last.start:ncol(y.matrix)]
@@ -194,24 +194,24 @@ data = list(y = y.small,
 ####### issues:
 ### 1. NA's at the end of the tree-ring series...need to use the available measurements (and trees were cored in different years)
 ### 2. z0 is not the same for all trees...DateFirst varies from 1785 to 1972, so we'll truncate to 1972 for the moment
-DIA.T1 <- vector(mode="numeric", length=nrow(temp2))
-ave.ring <- vector(mode="numeric", length=nrow(temp2))
+DIA.T1 <- vector(mode="numeric", length=nrow(y.small))
+ave.ring <- vector(mode="numeric", length=nrow(y.small))
 z0 <- matrix(data=NA, nrow=nrow(y.small), ncol=ncol(y.small))
-for (t in 1:nrow(temp2)) {
+for (t in 1:nrow(y.small)) {
   ### shrink tree backward: subtract the cumulative tree-ring-derived diameter increments (in y.matrix) from DIA
   ifelse(!is.na(temp2$DIA[t]), DIA.T1[t]<-temp2$DIA[t]*2.54, DIA.T1[t]<-NA) # extract time 1 DBH (in some cases, the only DBH measurement)
-  # extract tree-ring data from year 1966:end series
+  # extract tree-ring data from trunc.yr:end series
   end.col <- which(years==temp2$DateEnd[t])
-  temp.growth <- y.matrix[t,index.last.start:end.col] # which(years==1966) # returns 248
+  temp.growth <- y.matrix[t,(index.last.start+1):end.col] # which(years==1966) # returns 248
   # add rep(ave.ring) to any NA's at the beginning of the tree-ring time series
   ave.ring[t] <- mean(temp.growth, na.rm=T)
   temp.growth[is.na(temp.growth)]<-ave.ring[t]
-  temp.growth2 <- -rev(cumsum(rev(temp.growth)))
-  z0[t,1:length(temp.growth)] <- DIA.T1[t] + temp.growth2 # note that this is one year off where DateEnd = MEASYEAR-1
+  temp.growth2 <- c(-rev(cumsum(rev(temp.growth))),0) # add a zero at the end of this so that z0 in MEASYR = DIA
+  z0[t,1:length(temp.growth2)] <- DIA.T1[t] + temp.growth2 # note that this is one year off where DateEnd = MEASYEAR-1
 
   ### grow tree forward: find short-term average ring-width per tree and add cumulative from DIA to year 2010
   ave.growth <- rep(ave.ring[t], times=(last.meas.yr-temp2$DateEnd[t]))
-  z0[t, (length(temp.growth)+1):length(years.small)] <- DIA.T1[t] + cumsum(ave.growth)
+  z0[t, (length(temp.growth2)+1):length(years.small)] <- DIA.T1[t] + cumsum(ave.growth)
 
   ### note that some of these values (z0) are negative,
   ### some trees were small at their final size, and pith dates are as late as 1972

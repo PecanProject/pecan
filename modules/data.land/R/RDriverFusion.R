@@ -31,12 +31,15 @@ temp2 <- temp1[temp1$PLOT_MEASYEAR-temp1$DateEnd>-1,] # no change
 
 ### load in the data for trees without increment cores ("tree-to-tree" 2 DBH measurements)
 Tree2Tree <- read.delim("Tree2Tree.csv", stringsAsFactors = F) # not sure this is going to work
+Tree2Tree <- read.csv("Tree2Tree.csv", header = T, sep = "\t", stringsAsFactors = F) # not any better
 
 ### limit analysis to those trees with second DBH measurement in =< year 2015
 ### this is because as of 7/2017, the available PRISM data (KNMI) go only to Dec 2015
 Tree2Tree <- Tree2Tree[Tree2Tree$T2_MEASYR<=2015,]
 Tree2Tree <- subset(Tree2Tree, T2_MEASYR <= 2015)
 
+### eliminate those cases without SI (SDI seems to always be there)
+Tree2Tree <- Tree2Tree[!is.na(Tree2Tree$SICOND),]
 
 ### NOW go get function that makes jags objects out of the data for trees with cores
 ### setwd to github folder
@@ -88,7 +91,7 @@ model3.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time
                                    burnin_plot=FALSE)
 
 model4.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                   n.iter=15000, n.burnin=10000, random="(1|PLOT[i])",
+                                   n.iter=10000, random="(1|PLOT[i])",
                                    fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*wintP.JJ[t]",
                                    time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
                                    burnin_plot=FALSE)
