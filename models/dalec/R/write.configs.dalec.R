@@ -239,8 +239,12 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
         IC.params[["cr0"]] <- fine.roots * 1000 #from standard kg C m-2
       } else if(is.valid(TotLivBiom) && is.valid(AbvGrndWood) && 
                 is.valid(leaf) && is.valid(coarse.roots)){
-        fine.roots <- (TotLivBiom - AbvGrndWood - leaf - coarse.roots) * 1000 #from standard kg C m-2
-        if(leaf >= 0){
+        if(is.valid(LAI)){
+          fine.roots <- ((TotLivBiom - AbvGrndWood - coarse.roots) * 1000) - leaf #from standard kg C m-2; leaf already converted
+        }else{
+          fine.roots <- (TotLivBiom - AbvGrndWood - leaf - coarse.roots) * 1000 #from standard kg C m-2
+        }
+        if(fine.roots >= 0){
           IC.params[["cr0"]] <- fine.roots
         } else{
           PEcAn.utils::logger.error("TotLivBiom is less than sum of AbvGrndWood, coarse roots, and leaf; using default for fine.roots biomass")
