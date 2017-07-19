@@ -41,7 +41,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   
   names.keep <- names(new.state)
   
-  new.state <- udunits2::ud.convert(as.matrix(new.state), "Mg/ha", "kg/m^2")
+  new.state <- as.matrix(new.state)
   
   names(new.state) <- names.keep
   
@@ -129,8 +129,10 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   # skip ensemble member if no file availible
   outfile <- file.path(outdir, runid, "linkages.out.Rdata")
   if (!file.exists(outfile)) {
-    print(paste0("missing outfile ens #", runid))
-    next
+    outfile <- file.path(outdir, runid, paste0(start.time, "linkages.out.Rdata"))
+    if (!file.exists(outfile)) {
+       logger.severe(paste0("missing outfile ens #", runid))
+    }
   }
   print(paste0("runid = ", runid))
   
