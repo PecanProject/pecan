@@ -11,7 +11,7 @@ library(plotly)
 library(scales)
 library(lubridate)
 library(dplyr)
-# Maximum size of file allowed to be uploaded
+# Maximum size of file allowed to be uploaded: 100MB 
 options(shiny.maxRequestSize=100*1024^2) 
 # Define server logic
 server <- shinyServer(function(input, output, session) {
