@@ -121,7 +121,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
       } else {
         ## copy values
         if (!is.null(trait.values[[group]])) {
-          vals <- trait.values[[group]]
+          vals <- as.data.frame(t(trait.values[[group]]))
           
           # replace defaults with traits
           #new.params.locs <- which(names(spp.params) %in% names(vals))
