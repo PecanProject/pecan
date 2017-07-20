@@ -90,7 +90,7 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
         
         # ----- generate the mod.out file
         if (parallel) {
-            warning("Running model calculation in parallel.  This WILL crash if you do not have access to a LOT of memory!")
+            warning("Running model calculation in parallel.  This will probably crash if you do not have access to a LOT of memory!")
             
             if (v == "surface_downwelling_shortwave_flux_in_air") {
                 mod.out <- parallel::mclapply(dat.list, model.train, mc.cores = n.cores, 
@@ -103,7 +103,7 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
             
             
             
-            # Use a loop to sace each day of year independently
+            # Use a loop to save each day of year independently
             for (i in names(mod.out)) {
                 # Save the betas as .nc
                 outfile <- file.path(path.out, paste0("betas_", v, "_", 
@@ -120,9 +120,42 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
                 ncdf4::nc_close(nc)
                 
                 # Save the model as a .Rdata
-                mod.save <- mod.out[[i]][["model"]]
+                mod.save <- list()
+				mod.save$call  <- mod.out[[i]]$model$call
+				mod.save$coef  <- coef(mod.out[[i]]$model)
+				mod.save$formula <- parse(text=mod.out[[i]]$model$call[[2]][c(1,3)])
+				mod.save$factors  <- rownames(attr(mod.out[[i]]$model$terms, "factors"))
+				mod.save$xlev  <- mod.out[[i]]$model$xlevels
+				mod.save$contr <- mod.out[[i]]$model$contrasts
                 save(mod.save, file = file.path(path.out, paste0("model_", 
                   v, "_", i, ".Rdata")))
+                  
+                if(resids) {
+					# Save the betas as .nc
+					outfile <- file.path(path.out, paste0("resids_betas_", v, "_", 
+					  i, ".nc"))
+					dimY <- ncdf4::ncdim_def(paste0("coeffs_", i), units = "unitless", 
+					  longname = "model.out coefficients", vals = 1:ncol(mod.out[[i]][["betas.resid"]]))
+					dimX <- ncdf4::ncdim_def("random", units = "unitless", 
+					  longname = "random betas", vals = 1:nrow(mod.out[[i]][["betas.resid"]]))
+					var.list <- ncdf4::ncvar_def(i, units = "coefficients", 
+					  dim = list(dimX, dimY), longname = paste0("day ", i, 
+						"resid model.out coefficients"))
+					nc <- ncdf4::nc_create(outfile, var.list)
+					ncdf4::ncvar_put(nc, var.list, mod.out[[i]][["betas.resid"]])
+					ncdf4::nc_close(nc)
+				
+					# Save the model as a .Rdata
+					mod.save <- list()
+					mod.save$call  <- mod.out[[i]]$model.resid$call
+					mod.save$coef  <- coef(mod.out[[i]]$model.resid)
+					mod.save$formula <- parse(text=mod.out[[i]]$model.resid$call[[2]][c(1,3)])
+					mod.save$factors  <- rownames(attr(mod.out[[i]]$model.resid$terms, "factors"))
+					mod.save$xlev  <- mod.out[[i]]$model.resid$xlevels
+					mod.save$contr <- mod.out[[i]]$model.resid$contrasts
+					save(mod.save, file = file.path(path.out, paste0("resids_model_", 
+					  v, "_", i, ".Rdata")))
+                }
             }
             
         } else {
@@ -153,9 +186,43 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
                 ncdf4::nc_close(nc)
                 
                 # Save the model as a .Rdata
-                mod.save <- mod.out$mode
+				mod.save <- list()
+				mod.save$call  <- mod.out$model$call
+				mod.save$coef  <- coef(mod.out$model)
+				mod.save$formula <- parse(text=mod.out$model$call[[2]][c(1,3)])
+				mod.save$factors  <- rownames(attr(mod.out$model$terms, "factors"))
+				mod.save$xlev  <- mod.out$model$xlevels
+				mod.save$contr <- mod.out$model$contrasts
                 save(mod.save, file = file.path(path.out, paste0("model_", 
                   v, "_", i, ".Rdata")))
+                
+                if(resids) {
+					# Save the betas as .nc
+					outfile <- file.path(path.out, paste0("resids_betas_", v, "_", 
+					  i, ".nc"))
+					dimY <- ncdf4::ncdim_def(paste0("coeffs_", i), units = "unitless", 
+					  longname = "model.out coefficients", vals = 1:ncol(mod.out[["betas.resid"]]))
+					dimX <- ncdf4::ncdim_def("random", units = "unitless", 
+					  longname = "random betas", vals = 1:nrow(mod.out[["betas.resid"]]))
+					var.list <- ncdf4::ncvar_def(i, units = "coefficients", 
+					  dim = list(dimX, dimY), longname = paste0("day ", i, 
+						"resid model.out coefficients"))
+					nc <- ncdf4::nc_create(outfile, var.list)
+					ncdf4::ncvar_put(nc, var.list, mod.out[["betas.resid"]])
+					ncdf4::nc_close(nc)
+				
+					# Save the model as a .Rdata
+					mod.save <- list()
+					mod.save$call  <- mod.out$model.resid$call
+					mod.save$coef  <- coef(mod.out$model.resid)
+					mod.save$formula <- parse(text=mod.out$model.resid$call[[2]][c(1,3)])
+					mod.save$factors  <- rownames(attr(mod.out$model.resid$terms, "factors"))
+					mod.save$xlev  <- mod.out$model.resid$xlevels
+					mod.save$contr <- mod.out$model.resid$contrasts
+					save(mod.save, file = file.path(path.out, paste0("resids_model_", 
+					  v, "_", i, ".Rdata")))
+                }
+
             }
         }
         

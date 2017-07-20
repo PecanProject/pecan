@@ -18,7 +18,7 @@
 # -----------------------------------
 # Parameters
 # -----------------------------------
-##' @param outfolder - directory where models will be stored *** storage required varies by size of training dataset, but prepare for >100 GB
+##' @param outfolder - directory where models will be stored *** storage required varies by size of training dataset, but prepare for >10 GB
 ##' @param dat.train_file - train_data file
 ##' @param in.prefix 
 ##' @param n.beta - number of betas to save from linear regression model
