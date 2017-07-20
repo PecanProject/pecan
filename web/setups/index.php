@@ -14,7 +14,7 @@ include 'page.template.php';
 ?>
   <h1>Introduction</h1>
   <p>Welcome to the Configuration page.</p>
-  <p>Side panal consist of all the available configuarations.</p>
+  <p>Side panel consist of all the available configuarations.</p>
 <?php
 if (isset($messagekey))
 {

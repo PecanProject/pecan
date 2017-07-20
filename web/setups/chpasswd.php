@@ -8,84 +8,32 @@
  * http://opensource.ncsa.illinois.edu/license.html
  */
 
-// change password script location
-$shellscript = "expect chpasswd.exp";
+// page to display instructions to change password
 
-$username = $_POST['username'];
-$oldpasswd = $_POST['oldpasswd'];
-$newpasswd = $_POST['newpasswd'];
-$newpasswdre = $_POST['newpasswdre'];
+$host  = $_SERVER['HTTP_HOST'];
 
-# used as a flag to determine the action to be taken according to the request
-$callchpasswd = false;
-
-if (isset($username) && isset($oldpasswd) && isset($newpasswd) && isset($newpasswdre)) {
-  if (!empty($username) && !empty($oldpasswd) && !empty($newpasswd) && !empty($newpasswdre)) {
-    if ($newpasswd == $newpasswdre) {
-      $callchpasswd = true;
-    }
-  }
-}
-
-// include the page template
 include 'page.template.php';
-
-if ($callchpasswd) {
-  // generate the command to execute
-  $cmd="$shellscript " . $username. " " . $oldpasswd . " " . $newpasswd;
-  // execute the command
-  exec($cmd,$output,$status);
-
-  if ($status == 0) {
-    echo "password chaged sucessfully";
-  } else {
-    echo "ERROR : error changing password";
-    echo "<br>";
-    print_r($output);
-  }
-}else {
 ?>
-<div class="container">
-    <div class="row">
-      <h1>Password Change</h1>
-      <form class="form-horizontal" role="form" method="POST" action="chpasswd.php" enctype="multipart/form-data">
-        <div class="form-group">
-          <label for="username" class="col-md-4 control-label">Username :</label>
-          <div class="col-md-6">
-            <input id="username" type="text" class="form-control transparent-input" name="username" value="">
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="password" class="col-md-4 control-label">old Password:</label>
-          <div class="col-md-6">
-            <input id="password" type="password" class="form-control transparent-input" name="oldpasswd" value="">
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="password" class="col-md-4 control-label">New Password:</label>
-          <div class="col-md-6">
-            <input id="password" type="password" class="form-control transparent-input" name="newpasswd" value="">
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="password" class="col-md-4 control-label">New Password (again):</label>
-          <div class="col-md-6">
-            <input id="password" type="password" class="form-control transparent-input" name="newpasswdre" value="">
-        </div>
-        </div>
-        <div class="form-group">
-         <div class="col-md-6 col-md-offset-4">
-           <button type="submit" class="btn btn-primary">
-             <i class="fa fa-btn fa-user"></i> Update
-           </button>
-         </div>
-       </div>
-     </form>
-    </div>
-</div>
-
+<div class="container-fluid">
+<h2> Please follow these instructions to change the VM user password </h2>
+<ul class="list-group">
+  <li class="list-group-item">Open terminal</li>
+<?php
+if ((preg_match("/loalhost*/",$host) || preg_match("/127.0.0.1*/",$host))) {
+# running on localhost system
+  $temp = preg_split('/:/',$host);
+?>
+  <li class="list-group-item">Type <pre>ssh <?php echo "carya@".$temp[0];?></pre> to establish the connection with remote host
+    <br>If asked for password use the default password : illinois</li>
 <?php
 }
-
+?>
+  <li class="list-group-item">Type <pre>passwd</pre> It will ask for the current password,<br>Input Users the current password (default password illinois)</li>
+  <li class="list-group-item">It will ask for the new password,<br>Input Users the current password</li>
+  <li class="list-group-item">It will ask for the new password again (conform password),<br>Input Users the current password</li>
+  <li class="list-group-item"><b>Note : password wont be displayed not even stars or dot</b></li>
+</ul>
+</div>
+<?php
 include 'pagefooter.template.php';
 ?>
