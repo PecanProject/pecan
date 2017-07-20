@@ -12,9 +12,9 @@ Tree2Tree <- Tree2Tree[sample(1:nrow(Tree2Tree), rnd.subset, replace=F),]
 temp2$Widths <- as.character(temp2$Widths)
 first.start.yr <- min(temp2$DateFirst, na.rm=T) #1719
 last.DBH.yr.1 <- max(temp2$T2_MEASYR, na.rm=T) # 2010
-last.DBH.yr.2 <- max(Tree2Tree$T2_MEASYR, na.rm=T) # 2017?
-last.meas.yr <- max(last.DBH.yr.1, last.DBH.yr.2) # 2017?
-years <- seq(first.start.yr, last.meas.yr) # 1719:2017
+last.DBH.yr.2 <- max(Tree2Tree$T2_MEASYR, na.rm=T) # 2015
+last.meas.yr <- max(last.DBH.yr.1, last.DBH.yr.2) # 2015
+years <- seq(first.start.yr, last.meas.yr) # 1719:2015, length = 297
 y.matrix <- matrix(data=NA, nrow=nrow(temp2), ncol=length(years)) #tree ring measurements go in y.matrix
 colnames(y.matrix) <- years
 for (t in 1:nrow(temp2)) {
@@ -86,7 +86,7 @@ years.small <- years[index.last.start:ncol(y.matrix)]
 ### plot rnd effect (currently implemented at indiv level)
 PLOT <- paste0(temp2$County, temp2$Plot) # should maybe use an underscore to avoid mistakes...but would jags choke?
 PLOT2 <- paste0(Tree2Tree$COUNTYCD, Tree2Tree$T1_PLOT)
-PLOT <- rbind(PLOT, PLOT2)
+PLOT <- c(PLOT, PLOT2)
 
 ### FIXED EFFECTS
 
@@ -103,14 +103,14 @@ PLOT <- rbind(PLOT, PLOT2)
 ### SICOND  
 SICOND <- temp2$COND_SICOND
 SICOND2 <- Tree2Tree$SICOND
-SICOND <- rbind(SICOND, SICOND2)
+SICOND <- c(SICOND, SICOND2)
 ### SLOPE
 ### ASPECT ### what's the scale for FIA's aspect data? do they need to be converted to N-S spectrum?
 ### STDAGE
 ### SDI ## eventually should calculate <relative> SDI...observed SDI relative to maxSDI for dominant spp on plot (PIPO)
 SDI <- temp2$SDI
 SDI2 <- Tree2Tree$SDIc
-SDI <- rbind(SDI, SDI2)
+SDI <- c(SDI, SDI2)
 ### BA ## SDI and BA are tightly correlated, can't use both
 cov.data <- data.frame(PLOT=PLOT, SICOND=SICOND, SDI=SDI)
 #cov.data <- cbind(cov.data, SICOND, SDI)
@@ -129,12 +129,13 @@ PRISM.ncol <- (last.meas.yr-trunc.yr)+1
 climate.names <- c("PPTJan", "PPTFeb", "PPTMar", "PPTApr", "PPTMay", "PPTJun", "PPTJul", "PPTAug", "PPTSep", "PPTOct", "PPTNov", "PPTDec",
 #                   "TMINJan", "TMINFeb", "TMINMar", "TMINApr", "TMINMay", "TMINJun", "TMINJul", "TMINAug", "TMINSep", "TMINOct", "TMINNov", "TMINDec",
                    "TMAXJan", "TMAXFeb", "TMAXMar", "TMAXApr", "TMAXMay", "TMAXJun", "TMAXJul", "TMAXAug", "TMAXSep", "TMAXOct", "TMAXNov", "TMAXDec")
-PRISM.strings.1 <- temp2[climate.names]; PRISM.strings.2 <- Tree2Tree[climate.names]
+PRISM.strings.1 <- temp2[climate.names]
+PRISM.strings.2 <- Tree2Tree[climate.names]
 PRISM.strings <- rbind(PRISM.strings.1, PRISM.strings.2)
 
 # which climate variables should be taken from year t and which from year t-1?
 yrt.clim.var <- c("PPTJan", "PPTFeb", "PPTMar", "PPTApr", "PPTMay", "PPTJun", "PPTJul", "PPTAug", "TMAXJan", "TMAXFeb", "TMAXMar", "TMAXApr", "TMAXMay", "TMAXJun", "TMAXJul", "TMAXAug")
-yrt_1.clim.va <- c("PPTSep", "PPTOct", "PPTNov", "PPTDec", "TMAXSep", "TMAXOct", "TMAXNov", "TMAXDec")
+yrt_1.clim.var <- c("PPTSep", "PPTOct", "PPTNov", "PPTDec", "TMAXSep", "TMAXOct", "TMAXNov", "TMAXDec")
 names.clim.var <- c(yrt.clim.var, yrt_1.clim.var)
 
 time_data <- list() # make empty list; this list will have 12 items (climate variables), each with rows as trees and years as columns
@@ -191,13 +192,13 @@ data = list(y = y.small,
             time = years.small)
 
 ## state variable initial condition
-####### issues:
-### 1. NA's at the end of the tree-ring series...need to use the available measurements (and trees were cored in different years)
-### 2. z0 is not the same for all trees...DateFirst varies from 1785 to 1972, so we'll truncate to 1972 for the moment
-DIA.T1 <- vector(mode="numeric", length=nrow(y.small))
-ave.ring <- vector(mode="numeric", length=nrow(y.small))
+## must define an initial (biologically-reasonable) value for DBH for MCMC chains to start at (every tree, every year)
 z0 <- matrix(data=NA, nrow=nrow(y.small), ncol=ncol(y.small))
-for (t in 1:nrow(y.small)) {
+
+# first deal with the trees with cores
+DIA.T1 <- vector(mode="numeric", length=nrow(temp2))
+ave.ring <- vector(mode="numeric", length=nrow(temp2))
+for (t in 1:nrow(temp2)) {
   ### shrink tree backward: subtract the cumulative tree-ring-derived diameter increments (in y.matrix) from DIA
   ifelse(!is.na(temp2$DIA[t]), DIA.T1[t]<-temp2$DIA[t]*2.54, DIA.T1[t]<-NA) # extract time 1 DBH (in some cases, the only DBH measurement)
   # extract tree-ring data from trunc.yr:end series
@@ -219,7 +220,22 @@ for (t in 1:nrow(y.small)) {
 #  ifelse(z0[t,1]<0, 
 #         z0[t,1:length(temp.growth)] <- cumsum(rep(DIA.T1[t]/length(temp.growth), length(temp.growth))), 
 #         z0[t,1:length(temp.growth)] <- DIA.T1[t] + temp.growth2)
-  }
+}
+
+# now deal with trees without cores
+global.ave.inc <- mean(ave.ring) # 0.363... ~0.18 cm for average ring
+for (t in 1:nrow(Tree2Tree)) {
+  # shrink tree backwards from T1 DBH, using global ave diameter increment derived from tree rings
+  first.DBH <- Tree2Tree$T1_DIA[t]*2.54 # extract time 1 DBH
+  temp.growth <- rep(global.ave.inc, times=(Tree2Tree$T1_MEASYR[t]-trunc.yr))
+  temp.growth2 <- c(-rev(cumsum(rev(temp.growth))),0) # add a zero at the end of this so that z0 in MEASYR = DIA
+  z0[(nrow(temp2)+t),1:length(temp.growth2)] <- first.DBH + temp.growth2
+  
+  ### grow tree forward from T1_DIA to year 2015
+  temp.forward <- rep(global.ave.inc, times=(last.meas.yr-Tree2Tree$T1_MEASYR[t]))
+  z0[(nrow(temp2)+t), (length(temp.growth2)+1):length(years.small)] <- first.DBH + cumsum(temp.forward)
+}  
+
 colnames(z0) <- years.small
 
 return.list <- list(data=data,

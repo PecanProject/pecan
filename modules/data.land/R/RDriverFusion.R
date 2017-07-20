@@ -30,18 +30,16 @@ temp1 <- AZ.PIPO[AZ.PIPO$PLOT_MEASYEAR-AZ.PIPO$DateEnd<2,] # 544 trees
 temp2 <- temp1[temp1$PLOT_MEASYEAR-temp1$DateEnd>-1,] # no change
 
 ### load in the data for trees without increment cores ("tree-to-tree" 2 DBH measurements)
-Tree2Tree <- read.delim("Tree2Tree.csv", stringsAsFactors = F) # not sure this is going to work
-Tree2Tree <- read.csv("Tree2Tree.csv", header = T, sep = "\t", stringsAsFactors = F) # not any better
+Tree2Tree <- read.csv("Tree2Tree.csv", stringsAsFactors = F)
 
 ### limit analysis to those trees with second DBH measurement in =< year 2015
 ### this is because as of 7/2017, the available PRISM data (KNMI) go only to Dec 2015
 Tree2Tree <- Tree2Tree[Tree2Tree$T2_MEASYR<=2015,]
-Tree2Tree <- subset(Tree2Tree, T2_MEASYR <= 2015)
 
 ### eliminate those cases without SI (SDI seems to always be there)
 Tree2Tree <- Tree2Tree[!is.na(Tree2Tree$SICOND),]
 
-### NOW go get function that makes jags objects out of the data for trees with cores
+### NOW go get function that makes jags objects out of the above
 ### setwd to github folder
 setwd("C:/Users/mekevans/Documents/Cdrive/Bayes/DemogRangeMod/ProofOfConcept/treerings/pecan/modules/data.land/R")
 ### read in function that creates jags objects from above data
@@ -52,13 +50,17 @@ z0 <- jags.stuff$z0
 cov.data <- jags.stuff$cov.data
 time_data <- jags.stuff$time_data
 
+### it's nice (reassuring) to look at the tree-ring and DBH data (reality check)
+View(data$y.small)
+View(data$z.small)
+
 ### read in function that makes/executes a jags model from lmer-like call of a linear model
 # note that Evans version of Dietze function comments out creation of state variable initial conditions (z0)
 # which is done in the function buildJAGSdataobject instead
 source("InventoryGrowthFusion.R") 
 
 ### let's run some models!
-## these are not god models because ppt and tmax are correlated with one another
+## these are not good models because ppt and tmax are correlated with one another
 #model.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
 #                                   n.iter=5000, random="(1|PLOT[i])",
 #                                   fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t]",
