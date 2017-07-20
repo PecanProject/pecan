@@ -10,7 +10,7 @@
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=5000, n.chunk = n.iter, random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, save.jags = "IGF.txt", z0 = NULL, save.state=TRUE) {
+InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=5000, n.chunk = n.iter, random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, save.jags = "IGF.txt", z0 = NULL, save.state=TRUE) {
   library(rjags)
   
   # baseline variables to monitor
@@ -237,6 +237,8 @@ model{
     ## build design matrix from formula
     Xf      <- with(cov.data, model.matrix(formula(fixed)))
     Xf.cols <- colnames(Xf)
+    Xf.cols <- sub(":","_",Xf.cols) ## for interaction terms, switch separator
+    colnames(Xf) <- Xf.cols
     Xf.cols <- Xf.cols[Xf.cols != "(Intercept)"]
     Xf      <- as.matrix(Xf[, Xf.cols])
     colnames(Xf) <- Xf.cols
