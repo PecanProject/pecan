@@ -34,6 +34,8 @@ addons:
       - libgmp-dev
       - libproj-dev
       - pandoc
+      - tcl
+      - tcl-dev
       # need to compile documentation
       # BROKEN MISSING FONT
       #- texinfo
