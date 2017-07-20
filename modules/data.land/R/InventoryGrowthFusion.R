@@ -5,15 +5,18 @@
 ##' 
 ##' @param data  list of data inputs
 ##' @param random = whether or not to include random effects
+##' @param n.chunk number of MCMC steps to evaluate at a time. Will only return LAST
+##' @param save.state whether or not to include inferred DBH in output (can be large)
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=5000, random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, save.jags = "IGF.txt", z0 = NULL) {
+InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=5000, n.chunk = n.iter, random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, save.jags = "IGF.txt", z0 = NULL, save.state=TRUE) {
   library(rjags)
   
   # baseline variables to monitor
   burnin.variables <- c("tau_add", "tau_dbh", "tau_inc", "mu") # process variability, dbh and tree-ring observation error, intercept
-  out.variables <- c("deviance","x", "tau_add", "tau_dbh", "tau_inc", "mu")
+  out.variables <- c("deviance", "tau_add", "tau_dbh", "tau_inc", "mu")
+  if(save.state) out.variables <- c(out.variables,"x")
   
   # start text object that will be manipulated (to build different linear models, swap in/out covariates)
   TreeDataFusionMV <- "
@@ -407,6 +410,10 @@ model{
   
   PEcAn.utils::logger.info("RUN MCMC")
   load.module("dic")
-  coda.samples(model = j.model, variable.names = out.variables, n.iter = n.iter)
+  for(k in seq_len(ceiling(n.iter/n.block))){
+    jags.out <- coda.samples(model = j.model, variable.names = out.variables, n.iter = n.block)
+    ## could add code here to check for convergence and break from loop early
+  }
+  return(jags.out)
 } # InventoryGrowthFusion
 
