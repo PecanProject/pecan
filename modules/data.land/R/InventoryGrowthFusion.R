@@ -412,9 +412,13 @@ model{
   
   PEcAn.utils::logger.info("RUN MCMC")
   load.module("dic")
-  for(k in seq_len(ceiling(n.iter/n.block))){
-    jags.out <- coda.samples(model = j.model, variable.names = out.variables, n.iter = n.block)
+  for(k in seq_len(ceiling(n.iter/n.chunk))){
+    jags.out <- coda.samples(model = j.model, variable.names = out.variables, n.iter = n.chunk)
     ## could add code here to check for convergence and break from loop early
+    D <- as.mcmc.list(lapply(jags.out,function(x){x[,'deviance']}))
+    gbr <- coda::gelman.diag(D)$psrf[1,1]
+    trend <- mean(sapply(D,function(x){coef(lm(x~seq_len(n.chunk)))[2]}))
+    if(gbr < 1.01 & abs(trend) < 0.05) break
   }
   return(jags.out)
 } # InventoryGrowthFusion
