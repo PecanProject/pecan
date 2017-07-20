@@ -362,9 +362,6 @@ EOF
   rm /tmp/pecan.conf
 fi
 
-# adding the permissions to www-data to execute bash scripts which need root privilages
-# echo "www-data ALL=NOPASSWD: /var/www/chpasswd" >> visudo
-
 echo "######################################################################"
 echo "BETY"
 echo "######################################################################"
