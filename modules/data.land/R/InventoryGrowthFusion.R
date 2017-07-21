@@ -291,7 +291,7 @@ model{
     ## check for interaction terms
     it_vars <- t_vars[grep(pattern = "*",x=t_vars,fixed = TRUE)]
     if(length(it_vars) > 0){
-      t_vars <- t_vars[!(t_vars == it_vars)]
+      t_vars <- t_vars[!(t_vars %in% it_vars)]
     } 
     
     ## INTERACTIONS WITH TIME-VARYING VARS
