@@ -143,6 +143,9 @@ InventoryGrowthFusionDiagnostics <- function(model.out, combined) {
   #### Diagnostic plots
   plot(var.out)
   
+  ### raftery
+  raftery.diag(var.out)
+  
 #  mu <- out[,c(grep("mu", colnames(out)))]
   
 #  ppt.betas <- out[,c(grep("betappt", colnames(out)))]

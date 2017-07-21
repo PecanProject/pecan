@@ -38,21 +38,27 @@ Tree2Tree <- Tree2Tree[Tree2Tree$T2_MEASYR<=2015,]
 
 ### eliminate those cases without SI (SDI seems to always be there)
 Tree2Tree <- Tree2Tree[!is.na(Tree2Tree$SICOND),]
+Tree2Tree <- Tree2Tree[!is.na(Tree2Tree$SDIc),]
 
 ### NOW go get function that makes jags objects out of the above
 ### setwd to github folder
 setwd("C:/Users/mekevans/Documents/Cdrive/Bayes/DemogRangeMod/ProofOfConcept/treerings/pecan/modules/data.land/R")
 ### read in function that creates jags objects from above data
 source("BuildJAGSdataobject.R")
-jags.stuff <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 100, trunc.yr = 1966)
+jags.stuff <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 500, trunc.yr = 1966)
+# if you don't have trees without cores, use the following line
+# or you wish to not include trees without cores
+# jags.stuff <- buildJAGSdataobject(temp2, rnd.subset = 100, trunc.yr = 1966)
 data <- jags.stuff$data
 z0 <- jags.stuff$z0
 cov.data <- jags.stuff$cov.data
 time_data <- jags.stuff$time_data
 
 ### it's nice (reassuring) to look at the tree-ring and DBH data (reality check)
-View(data$y.small)
-View(data$z.small)
+View(data$y)
+View(data$z)
+### initial conditions state variable (DBH)
+View(z0)
 
 ### read in function that makes/executes a jags model from lmer-like call of a linear model
 # note that Evans version of Dietze function comments out creation of state variable initial conditions (z0)
@@ -93,7 +99,7 @@ model3.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time
                                    burnin_plot=FALSE)
 
 model4.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                   n.iter=10000, random="(1|PLOT[i])",
+                                   n.iter=15000, random="(1|PLOT[i])",
                                    fixed = "~ X + X^2 + SICOND + SDI + SICOND*X + X*wintP.JJ[t]",
                                    time_varying = "wintP.JJ + SICOND*wintP.JJ[t]",
                                    burnin_plot=FALSE)
@@ -150,6 +156,9 @@ model12.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=tim
 
 #### DIAGNOSTICS
 #### excerpted/modified from InventoryGrowthFusionDiagnostics.R (Dietze)
+# see also https://faculty.washington.edu/jmiyamot/p548/demo.04-2b.convergence.diag.pdf
+# and http://sbfnk.github.io/mfiidd/mcmc_diagnostics.html
+
 out      <- as.matrix(model.out) ### LOADS MCMC OUTPUT INTO OBJECT "OUT"
 
 

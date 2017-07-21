@@ -25,7 +25,7 @@ model{
   x[i,1] ~ dnorm(x_ic,tau_ic)
   }  ## end loop over individuals
 
-   for(k in 1:344){
+   for(k in 1:518){
     alpha_PLOT[k] ~ dnorm(0,tau_PLOT)
 }
 
