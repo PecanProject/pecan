@@ -63,6 +63,32 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
    site <- settings$run$site
    site.id <- as.numeric(site$id)
 
+
+   # 1) Read in a parameter data block from dvmdostem
+   # system2(command, args = character(),
+   #         stdout = "", stderr = "", stdin = "", input = NULL,
+   #         env = character(), wait = TRUE,
+   #         minimized = FALSE, invisible = TRUE, timeout = 0)
+   # Not sure how to check exit code??
+   # Not sure what we need to do with stderr...
+   system2("dvmdostem/scripts/param_util.py" args=("--dump-block-to-json ?<FILE>? ?<CMTNUM>?", stdout="some/tmp/file.json", wait=TRUE,)
+   
+   # 2) Overwrite certain parameter values with (ma-posterior) trait data from pecan
+   # In R, need to open "some/tmp/file.json" as a json object, overwrite some values, and write it back out
+   library("rjson")
+   # Read in the file
+   json_file <- "some/tmp/file.json"
+   json_data <- fromJSON(paste(readLines(json_file), collapse=""))
+   # Overwrite the data
+   json_data$pft9$sla = 
+   # Write it back out to disk (overwriting ok??)
+   exportJson <- toJSON(json_data)
+   write(exportJson, "some/tmp/file.json")
+
+   # 3) Write parameter file back out to dvmdostem parameter file
+   # Need to 
+   system2("dvmdostem/scripts/param_util.py" args=("--fmt-block-from-json some/tmp/file.json ?<REF FILE>?", stdout="<some parameter file for dvmdostem to runwith ...>", wait=TRUE,)
+ 
    # find out where things are
    local.rundir <- file.path(settings$rundir, run.id) ## this is on local machine for staging
    rundir     <- file.path(settings$host$rundir, run.id)  ## this is on remote machine for execution
