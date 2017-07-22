@@ -83,7 +83,7 @@ server <- shinyServer(function(input, output, session) {
   })
   # Loads data for all workflow and run ids after the load button is pressed.
   # All information about a model is contained in 'all_run_id' string
-  # Wrapper over 'load_data_single_run' 
+  # Wrapper over 'load_data_single_run' in PEcAn.db::query.dplyr
   loadNewData <-eventReactive(input$load,{
     req(input$all_run_id)
     # Get IDs DF from 'all_run_id' string
@@ -94,21 +94,9 @@ server <- shinyServer(function(input, output, session) {
     }
     return(globalDF)
   })
-  # loadExternalData <-eventReactive(input$load_data,{
-  #   inFile <- input$fileUploaded
-  #   if (is.null(inFile))
-  #     return(NULL)
-  #   externalData <- read.csv(inFile$datapath, header=input$header, sep=input$sep, 
-  #            quote=input$quote)
-  #   externalData$dates <- as.Date(externalData$dates)
-  #   externalData <- externalData %>%
-  #     dplyr::filter(var_name == input$variable_name)
-  #   # output$info1 <- renderText({
-  #   #   paste0(nrow(externalData))
-  #   #   # paste0(inFile$datapath)
-  #   # })
-  #   return(externalData)
-  # })  
+  # Allows to load actual data (different from model output) following the tutorial
+  # https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/AnalyzeOutput/modelVSdata.Rmd
+  # @params: bety,settings,File_path,File_format
   loadObservationData <- function(bety,settings,File_path,File_format){
     start.year<-as.numeric(lubridate::year(settings$run$start.date))
     end.year<-as.numeric(lubridate::year(settings$run$end.date))
@@ -117,15 +105,21 @@ server <- shinyServer(function(input, output, session) {
     observations<-PEcAn.benchmark::load_data(data.path = File_path, format= File_format, time.row = File_format$time.row,  site = site, start_year = start.year, end_year = end.year) 
     return(observations)
   }
-  getFileFormat <- function(bety,input.id){
-    File_format <- PEcAn.DB::query.format.vars(bety = bety, input.id = input.id) 
+  getFileFormat <- function(bety,format.id){
+# getFileFormat <- function(bety,input.id){
+    # Retaining the code for getting file format using inputRecordID
+    File_format <- PEcAn.DB::query.format.vars(bety = bety, format.id = format.id) 
+    # File_format <- PEcAn.DB::query.format.vars(bety = bety, input.id = input.id) 
     return(File_format)
   }
-  getSettings <- function(workflowID){
-    configPath <- paste0("~/output/PEcAn_",workflowID,"/pecan.CONFIGS.xml")
-    settings<-PEcAn.settings::read.settings(configPath)
-    return(settings)
-  }
+  # getSettingsFromWorkflowId <- function(bety,workflowID){
+  #   basePath <- tbl(bety, 'workflows') %>% filter(id == workflowID) %>% pull(folder)
+  #   configPath <- file.path(basePath, 'pecan.CONFIGS.xml')
+  #   # Second way of proving configPath. More of a hack
+  #   # configPath <- paste0("~/output/PEcAn_",workflowID,"/pecan.CONFIGS.xml")
+  #   settings<-PEcAn.settings::read.settings(configPath)
+  #   return(settings)
+  # }
   # Renders ggplotly 
   output$outputPlot <- renderPlotly({
     # Error messages
@@ -134,33 +128,27 @@ server <- shinyServer(function(input, output, session) {
       need(input$all_run_id, 'Select Run id'),
       need(input$variable_name, 'Click the button to load data. Please allow some time')
     )
-    # output$info <- renderText({
-    # #   inFile <- input$fileUploaded
-    # #   paste0(inFile$datapath)
-    # #   # paste0(input$load_data)
-    #   # paste0(File_format$mimetype)
-    #   ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-    #   settings <- getSettings(ids_DF$wID[1])
-    #   paste0(settings$run$site$id)
-    #  })
     # Load data
-    externalData <- data.frame()
-    modelData <- loadNewData()
-    
-    masterDF <- rbind(modelData,externalData)
+    masterDF <- loadNewData()
+    # masterDF <- rbind(modelData,externalData)
     # Convert from factor to character. For subsetting 
     masterDF$var_name <- as.character(masterDF$var_name)
     # Convert to factor. Required for ggplot 
     masterDF$run_id <- as.factor(as.character(masterDF$run_id))
     # Filter by variable name
     df <- masterDF %>%
-      dplyr::filter(var_name == input$variable_name) 
+      dplyr::filter(var_name == input$variable_name)
+    # make dynamic slider 
+    # https://stackoverflow.com/questions/18700589/interactive-reactive-change-of-min-max-values-of-sliderinput
+    # output$slider <- renderUI({
+    #   sliderInput("smooth_n", "Value for smoothing:", min=0, max=nrow(df), value=80)
+    # })
+    updateSliderInput(session,"smooth_n", min=0, max=nrow(df))
     # Meta information about the plot
     title <- unique(df$title)
     xlab <- unique(df$xlab)
     ylab <- unique(df$ylab)
     # ggplot function for now scatter plots.
-    # TODO Shubham allow line plots as well
     plt <- ggplot(df, aes(x=dates, y=vals, color=run_id)) 
     # Toggle chart type using switch
       switch(input$plotType,
@@ -171,67 +159,35 @@ server <- shinyServer(function(input, output, session) {
                plt <- plt + geom_line()
              }
       )
-    plt <- plt + labs(title=title, x=xlab, y=ylab) + geom_smooth()
-    
+    plt <- plt + labs(title=title, x=xlab, y=ylab) + geom_smooth(n=input$smooth_n)
+    # Check if user wants to load external data
+    # Similar to using event reactive
     if (input$load_data>0) { 
-      File_format <- getFileFormat(bety,input$inputRecordID)
+      File_format <- getFileFormat(bety,input$formatID)
+      # Retaining the code for getting file format using inputRecordID
+      # File_format <- getFileFormat(bety,input$inputRecordID)
       ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-      settings <- getSettings(ids_DF$wID[1])
+      settings <- getSettingsFromWorkflowId(bety,ids_DF$wID[1])
       inFile <- input$fileUploaded
       externalData <- loadObservationData(bety,settings,inFile$datapath,File_format)
+      # If variable found in the uploaded file 
       if (input$variable_name %in% names(externalData)){
-        externalData <- externalData %>% dplyr::select(posix,input$variable_name)
-        # output$info <- renderText({
-        #   # #   inFile <- input$fileUploaded
-        #   # #   paste0(inFile$datapath)
-        #   # #   # paste0(input$load_data)
-        #   #   # paste0(File_format$mimetype)
-        #   #   ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-        #   # paste0(settings$run$site$id)
-        #   # paste0(site)
-        #   paste0(nrow(externalData))
-        # })
-      # if(nrow(externalData)>0){
+        externalData <- externalData %>% dplyr::select(posix,dplyr::one_of(input$variable_name))
         names(externalData) <- c("dates","vals")
-        externalData$run_id <- ids_DF$runID[1]
-        # externalData$run_id <- 0
-        externalData$run_id <- as.numeric(externalData$run_id)
         externalData$dates <- as.Date(externalData$dates) 
-        # output$info <- renderText({
-        #   # #   inFile <- input$fileUploaded
-        #   # #   paste0(inFile$datapath)
-        #   # #   # paste0(input$load_data)
-        #   #   # paste0(File_format$mimetype)
-        #   #   ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-        #   # paste0(settings$run$site$id)
-        #   # paste0(site)
-        #   paste0(names(externalData))
-        #   # paste0(externalData$run_id)
-        # })
-        plt <- plt + geom_line(data = externalData,aes(x=dates, y=vals,color=run_id), linetype = 'dashed')
-        output$info <- renderText({
-          # #   inFile <- input$fileUploaded
-          # #   paste0(inFile$datapath)
-          # #   # paste0(input$load_data)
-          #   # paste0(File_format$mimetype)
-          #   ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-          # paste0(settings$run$site$id)
-          # paste0(site)
-          paste0(names(externalData))
-          # paste0(externalData$run_id)
+        data_geom <- switch(input$data_geom, point = geom_point, line = geom_line)
+        plt <- plt + data_geom(data = externalData,aes(x=dates, y=vals),color='black', linetype = 'dashed')
+        output$outputNoVariableFound <- renderText({
+          paste0("Plotting data outputs in black")
         })
-        
       }
-      # externalData <- loadExternalData()
+      # Shiny output if variable not found
+      else {
+        output$outputNoVariableFound <- renderText({
+          paste0("Not plotting uploaded data because the column is absent. Select another variable")
+        })
+      }
     }
-    # if (!is.null(loaded_data)) {
-    #   loaded_data <- loadExternalData()
-    #   output$info1 <- renderText({
-    #     paste0(nrow(loaded_data))
-    #     # paste0(inFile$datapath)
-    #   plt <- plt + geom_line(data = loaded_data,aes(x=dates, y=vals), linetype = 'dashed')
-    # }
-      # geom_point() +
       # Earlier smoothing and y labels
       # geom_smooth(aes(fill = "Spline fit")) +
       # scale_y_continuous(labels=fancy_scientific) +
