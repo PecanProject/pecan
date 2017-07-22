@@ -1,6 +1,6 @@
 ---
 title: "Simple Model-Data Comparisons"
-author: "Tess McCabe, Istem Fer"
+author: "Istem Fer, Tess McCabe"
 date: "4/26/2017"
 output:
   html_document: default
@@ -43,7 +43,7 @@ Within both the run and out folders there will be one folder for each unique mod
 ```{r}
 ## Read in the xml
 
-settings<-PEcAn.settings::read.settings("/fs/data2/output/PEcAn_99000000001/pecan.CONFIG.xml")
+settings<-PEcAn.settings::read.settings("~/output/PEcAn_99000000001/pecan.CONFIGS.xml")
 
 ## To read in the model output 
 runid<-as.character(read.table(paste(settings$outdir, "/run/","runs.txt", sep=""))[1,1]) # Note: if you are using an xml from a run with multiple ensembles this line will provide only the first run id 
@@ -52,7 +52,7 @@ start.year<-as.numeric(lubridate::year(settings$run$start.date))
 end.year<-as.numeric(lubridate::year(settings$run$end.date))
 
 site.id<-settings$run$site$id
-File_path<- settings$run$inputs$met$path
+File_path<-"~/output/dbfiles/AmerifluxLBL_site_0-772/AMF_US-NR1_BASE_HH_9-1.csv"
 
 ## Open up a connection to The Bety Database 
 bety <-dplyr::src_postgres(host = settings$database$bety$host, user = settings$database$bety$user, password = settings$database$bety$password, dbname = settings$database$bety$dbname)
@@ -76,7 +76,7 @@ File_format<-PEcAn.DB::query.format.vars(bety = bety, format.id = 5000000002) #T
 
 site<-PEcAn.DB::query.site(site.id,bety$con) #This tells PEcAn where the data comes from
 
-observations<-PEcAn.benchmark::load_data(data.path = File_Path, format= File_format, time.row = File_format$time.row,  site = site, start_year = start.year, end_year = end.year) #This will throw an error that not all of the units can be converted. That's ok, as the units of the varibles of interest (NEE) are being converted. 
+observations<-PEcAn.benchmark::load_data(data.path = File_path, format= File_format, time.row = File_format$time.row,  site = site, start_year = start.year, end_year = end.year) #This will throw an error that not all of the units can be converted. That's ok, as the units of the varibles of interest (NEE) are being converted. 
 ```
 
 File_Path refers to where you stored your observational data. In this example the default file path is an Ameriflux dataset from Niwot Ridge. 
