@@ -112,14 +112,14 @@ server <- shinyServer(function(input, output, session) {
     # File_format <- PEcAn.DB::query.format.vars(bety = bety, input.id = input.id) 
     return(File_format)
   }
-  # getSettingsFromWorkflowId <- function(bety,workflowID){
-  #   basePath <- tbl(bety, 'workflows') %>% filter(id == workflowID) %>% pull(folder)
-  #   configPath <- file.path(basePath, 'pecan.CONFIGS.xml')
-  #   # Second way of proving configPath. More of a hack
-  #   # configPath <- paste0("~/output/PEcAn_",workflowID,"/pecan.CONFIGS.xml")
-  #   settings<-PEcAn.settings::read.settings(configPath)
-  #   return(settings)
-  # }
+  getSettingsFromWorkflowId <- function(bety,workflowID){
+    basePath <- tbl(bety, 'workflows') %>% filter(id == workflowID) %>% pull(folder)
+    configPath <- file.path(basePath, 'pecan.CONFIGS.xml')
+    # Second way of proving configPath. More of a hack
+    # configPath <- paste0("~/output/PEcAn_",workflowID,"/pecan.CONFIGS.xml")
+    settings<-PEcAn.settings::read.settings(configPath)
+    return(settings)
+  }
   # Renders ggplotly 
   output$outputPlot <- renderPlotly({
     # Error messages

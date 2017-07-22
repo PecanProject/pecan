@@ -92,18 +92,3 @@ read.settings <- function(inputfile = "pecan.xml"){
   
   return(invisible(settings))
 }
-
-#' Load settings from workflow ID
-#' @inheritParams read.settings
-#' @param bety Bety connection
-#' @param workflowId Workflow ID
-#' @export
-
-getSettingsFromWorkflowId <- function(bety,workflowID){
-  basePath <- tbl(bety, 'workflows') %>% filter(id == workflowID) %>% pull(folder)
-  configPath <- file.path(basePath, 'pecan.CONFIGS.xml')
-  # Second way of proving configPath. More of a hack
-  # configPath <- paste0("~/output/PEcAn_",workflowID,"/pecan.CONFIGS.xml")
-  settings<-PEcAn.settings::read.settings(configPath)
-  return(settings)
-}
