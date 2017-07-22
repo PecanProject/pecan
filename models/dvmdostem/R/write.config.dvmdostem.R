@@ -62,7 +62,16 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
    ## site information
    site <- settings$run$site
    site.id <- as.numeric(site$id)
-
+   
+   # find out where things are
+   local.rundir <- file.path(settings$rundir, run.id) ## this is on local machine for staging
+   rundir     <- file.path(settings$host$rundir, run.id)  ## this is on remote machine for execution
+   outdir <- file.path(settings$host$outdir, run.id)
+   
+   npft <- length(trait.values)
+   PEcAn.utils::logger.debug(npft)
+   PEcAn.utils::logger.debug(dim(trait.values))
+   PEcAn.utils::logger.debug(names(trait.values))
 
    # 1) Read in a parameter data block from dvmdostem
    # system2(command, args = character(),
@@ -71,15 +80,39 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
    #         minimized = FALSE, invisible = TRUE, timeout = 0)
    # Not sure how to check exit code??
    # Not sure what we need to do with stderr...
-   system2("dvmdostem/scripts/param_util.py" args=("--dump-block-to-json ?<FILE>? ?<CMTNUM>?", stdout="some/tmp/file.json", wait=TRUE,)
+   dvmpath <- '/data/software/dvm-dos-tem'
+   params <- paste(dvmpath,"parameters",'cmt_dimvegetation.txt',sep="/")
+   json_file <- '/tmp/junk.json'
+   community_type <- '04'
+   system2(paste0(dvmpath,"/scripts/param_util.py"), args=(c("--dump-block-to-json",params,community_type)), 
+                                                   stdout=json_file, wait=TRUE)
    
    # 2) Overwrite certain parameter values with (ma-posterior) trait data from pecan
    # In R, need to open "some/tmp/file.json" as a json object, overwrite some values, and write it back out
    library("rjson")
    # Read in the file
-   json_file <- "some/tmp/file.json"
    json_data <- fromJSON(paste(readLines(json_file), collapse=""))
    # Overwrite the data
+   #var <- "sla"
+   #json_data$pft1[[var]]
+   
+   for (i in names(json_data)){
+     if (grepl("pft",i)){
+       pft_name <- json_data[[i]]$name
+       print(pft_name)
+       short_bety_pft <- strip(...settings$pfts$pft$name)
+       if (pft_name==short_bety_pft){
+         print(i)
+         parameter <- "sla"
+         json_data[[i]][[parameter]] = 
+       }
+     } else {
+       "Not the droid we are looking for"
+     }
+   }
+   
+
+   
    json_data$pft9$sla = 
    # Write it back out to disk (overwriting ok??)
    exportJson <- toJSON(json_data)
@@ -89,34 +122,31 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
    # Need to 
    system2("dvmdostem/scripts/param_util.py" args=("--fmt-block-from-json some/tmp/file.json ?<REF FILE>?", stdout="<some parameter file for dvmdostem to runwith ...>", wait=TRUE,)
  
-   # find out where things are
-   local.rundir <- file.path(settings$rundir, run.id) ## this is on local machine for staging
-   rundir     <- file.path(settings$host$rundir, run.id)  ## this is on remote machine for execution
-   outdir <- file.path(settings$host$outdir, run.id)
 
-   # create launch script (which will create symlink) - needs to be created
-   if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
-     jobsh <- readLines(con=settings$model$jobtemplate, n=-1)
-   } else {
-     jobsh <- readLines(con=system.file("template.job", package = "PEcAn.FATES"), n=-1)
-   }
 
-   # create host specific setttings
-   hostsetup <- ""
-   if (!is.null(settings$model$prerun)) {
-     hostsetup <- paste(hostsetup, sep="\n", paste(settings$model$prerun, collapse="\n"))
-   }
-   if (!is.null(settings$host$prerun)) {
-     hostsetup <- paste(hostsetup, sep="\n", paste(settings$host$prerun, collapse="\n"))
-   }
+   ### create launch script (which will create symlink) - needs to be created
+   # if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
+   #   jobsh <- readLines(con=settings$model$jobtemplate, n=-1)
+   # } else {
+   #   jobsh <- readLines(con=system.file("template.job", package = "PEcAn.FATES"), n=-1)
+   # }
 
-   hostteardown <- ""
-   if (!is.null(settings$model$postrun)) {
-     hostteardown <- paste(hostteardown, sep="\n", paste(settings$model$postrun, collapse="\n"))
-   }
-   if (!is.null(settings$host$postrun)) {
-     hostteardown <- paste(hostteardown, sep="\n", paste(settings$host$postrun, collapse="\n"))
-   }
+   ### create host specific setttings
+   # hostsetup <- ""
+   # if (!is.null(settings$model$prerun)) {
+   #   hostsetup <- paste(hostsetup, sep="\n", paste(settings$model$prerun, collapse="\n"))
+   # }
+   # if (!is.null(settings$host$prerun)) {
+   #   hostsetup <- paste(hostsetup, sep="\n", paste(settings$host$prerun, collapse="\n"))
+   # }
+   # 
+   # hostteardown <- ""
+   # if (!is.null(settings$model$postrun)) {
+   #   hostteardown <- paste(hostteardown, sep="\n", paste(settings$model$postrun, collapse="\n"))
+   # }
+   # if (!is.null(settings$host$postrun)) {
+   #   hostteardown <- paste(hostteardown, sep="\n", paste(settings$host$postrun, collapse="\n"))
+   # }
 
 
 
