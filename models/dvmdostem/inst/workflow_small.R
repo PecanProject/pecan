@@ -14,6 +14,7 @@
 library(PEcAn.all)
 library(PEcAn.utils)
 library(RCurl)
+library(PEcAn.dvmdostem)
 
 # make sure always to call status.end
 options(warn=1)
@@ -91,6 +92,15 @@ if(!is.null(settings$meta.analysis)) {
   }
 }
 
+# Write model specific configs
+if (PEcAn.utils::status.check("CONFIG") == 0){
+  PEcAn.utils::status.start("CONFIG")
+  settings <- PEcAn.utils::runModule.run.write.configs(settings)
+  PEcAn.settings::write.settings(settings, outputfile='pecan.CONFIGS.xml')
+  PEcAn.utils::status.end()
+} else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
+  settings <- PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.CONFIGS.xml'))
+}
   
 # Pecan workflow complete
 if (PEcAn.utils::status.check("FINISHED") == 0) {
