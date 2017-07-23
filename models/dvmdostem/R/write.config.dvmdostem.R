@@ -104,27 +104,39 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
    #var <- "sla"
    #json_data$pft1[[var]]
    
+   # Experimental loop for trying to get data from traits.values into the json
+   # object in the right place before we serialize the json file back to disk..
+   idx <- 0
    for (i in names(json_data)){
+     idx <- idx+1
      if (grepl("pft",i)){
        pft_name <- json_data[[i]]$name
-       print(pft_name)
-       short_bety_pft <- strip(...settings$pfts$pft$name)
-       if (pft_name==short_bety_pft){
-         print(i)
-         parameter <- "sla"
-         json_data[[i]][[parameter]] = 
-       }
+       print(paste(pft_name, idx))
+
+       relevant_list = trait.values
+       #short_bety_pft <- strip(...settings$pfts$pft$name)
+       # if (pft_name==short_bety_pft){
+       #   print(i)
+       #   parameter <- "sla"
+       #   #json_data[[i]][[parameter]] = 
+       # }
      } else {
        "Not the droid we are looking for"
      }
    }
+   print(str(trait.values))
+   temp_traits <- trait.values
    
+   # json_data$pft9$sla = 
+   # # Write it back out to disk (overwriting ok??)
+   # exportJson <- toJSON(json_data)
+   # write(exportJson, "some/tmp/file.json")
 
-   
-   json_data$pft9$sla = 
-   # Write it back out to disk (overwriting ok??)
-   exportJson <- toJSON(json_data)
-   write(exportJson, "some/tmp/file.json")
+   # 3) Write parameter file back out to dvmdostem parameter file
+   #    Need to 
+   # system2("dvmdostem/scripts/param_util.py", args=("--fmt-block-from-json some/tmp/file.json ?<REF FILE>?", stdout="<some parameter file for dvmdostem to runwith ...>", wait=TRUE,)
+
+
 
    # Get a copy of the config file written into the run directory with the 
    # appropriate template parameters substituted.
@@ -133,10 +145,6 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
    } else {
      config_template <- readLines(con=system.file("config.js.template", package = "PEcAn.dvmdostem"), n=-1)
    }
-   # 3) Write parameter file back out to dvmdostem parameter file
-   # Need to 
-   system2("dvmdostem/scripts/param_util.py" args=("--fmt-block-from-json some/tmp/file.json ?<REF FILE>?", stdout="<some parameter file for dvmdostem to runwith ...>", wait=TRUE,)
- 
 
    config_template <- gsub("@INPUT_DATA_DIR@", file.path(dirname(binary), "DATA/SewardPen_10x10"), config_template)
    config_template <- gsub("@MODEL_OUTPUT_DIR@", outdir, config_template)
