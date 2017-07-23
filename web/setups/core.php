@@ -14,10 +14,7 @@
 
   // If file doesn't exist then create a new file
   if (file_exists ("../config.php") == false){
-    if (!copy ('../config.example.php', '../config.php')){
-      echo "error: permissions denined";
-      die();
-    }
+    header("Location: http://$host/setups/filesmissing.php",TRUE,302);
   }
 
   // key defines the attribute or the group of attributes which are needed to modify
