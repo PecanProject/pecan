@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <pecan>
-  <outdir>/data/sserbin/Modeling/dvmdostem/pecan_runs/run.8</outdir>
+  <outdir>/home/carya/scratch/run-2/</outdir>
   <database>
     <bety>
       <user>bety</user>
@@ -33,5 +33,6 @@
   </ensemble>
   <model>
     <type>dvmdostem</type>
+    <binary>/home/carya/dvm-dos-tem/dvmdostem</binary>
   </model>
 </pecan>
