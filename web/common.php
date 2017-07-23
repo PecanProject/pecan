@@ -1,12 +1,5 @@
 <?php
 
-if (file_exists('config.php') == false)
-{
-  $host  = $_SERVER['HTTP_HOST'];
-  header("Location: http://$host/setups/index.php?message=2",TRUE,307);
-  die();
-}
-
 require("config.php");
 
 # Single shared connection
@@ -76,7 +69,6 @@ function open_database() {
     //echo "Something wrong :(</br>Connection failed: " . $e->getMessage();
     die();
   }
-
 //  $pdo = new PDO("${db_bety_type}:host=${db_bety_hostname};dbname=${db_bety_database}", $db_bety_username, $db_bety_password);
 }
 
