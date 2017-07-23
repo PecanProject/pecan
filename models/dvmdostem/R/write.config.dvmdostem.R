@@ -118,11 +118,24 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
    exportJson <- toJSON(json_data)
    write(exportJson, "some/tmp/file.json")
 
+   # Get a copy of the config file written into the run directory with the 
+   # appropriate template parameters substituted.
+   if (!is.null(settings$model$configtemplate) && file.exists(settings$model$configtemplate)) {
+     config_template <- readLines(con=settings$model$config_template, n=-1)
+   } else {
+     config_template <- readLines(con=system.file("config.js.template", package = "PEcAn.dvmdostem"), n=-1)
+   }
    # 3) Write parameter file back out to dvmdostem parameter file
    # Need to 
    system2("dvmdostem/scripts/param_util.py" args=("--fmt-block-from-json some/tmp/file.json ?<REF FILE>?", stdout="<some parameter file for dvmdostem to runwith ...>", wait=TRUE,)
  
 
+   config_template <- gsub("@INPUT_DATA_DIR@", file.path(dirname(binary), "DATA/SewardPen_10x10"), config_template)
+   config_template <- gsub("@MODEL_OUTPUT_DIR@", outdir, config_template)
+
+   if (! file.exists(file.path(settings$rundir, run.id,"config"))) dir.create(file.path(settings$rundir, run.id,"config"), recursive = TRUE)
+
+   writeLines(config_template, con=file.path(settings$rundir, run.id,"config/config.js"))
 
    ### create launch script (which will create symlink) - needs to be created
    # if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
