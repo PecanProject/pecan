@@ -136,6 +136,14 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
    #    Need to 
    # system2("dvmdostem/scripts/param_util.py", args=("--fmt-block-from-json some/tmp/file.json ?<REF FILE>?", stdout="<some parameter file for dvmdostem to runwith ...>", wait=TRUE,)
 
+   # TODO:
+   #  - finish with parameter update process
+   #  - dynamically copy parameters to right place
+   #  - dynamically copy the output_spec from insts folder to the 
+   #    right place (see variable above for getting stuff from inst)
+   #  - figure out how to handle the met. 
+   #     -> step one is symlink from raw data locations (Model install folder) 
+   #        into pecan run folder, maybe do this within job.sh?
 
 
    # Get a copy of the config file written into the run directory with the 
