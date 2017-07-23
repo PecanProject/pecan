@@ -12,7 +12,7 @@
 include 'core.php';
 
 // open a new temprory file to write data to it
-$file = fopen('../config.php.temp', "w+") or die('Cannot open file: Check whether file exist and it have correct permissions');
+$tempfile = tmpfile();
 
 foreach ($file_contents as $line) {
   if(preg_match($pattern,$line)){
@@ -23,18 +23,23 @@ foreach ($file_contents as $line) {
     // get the new value from the post request
     $newvalue = $_POST[$inputname[1]];
 
-    fwrite($file, $temp[0].'="'.$newvalue.'";'."\n");
+    fwrite($tempfile, $temp[0].'="'.$newvalue.'";'."\n");
   }
   else {
   // if no change in the line write as it is
-  fwrite($file, $line);
+  fwrite($tempfile, $line);
   }
 }
-fclose($file);
 
-// copy the temprory file to config.php and remove it
-rename('../config.php.temp', '../config.php');
-unlink('../config.php.temp');
+$configfile = fopen("../config.php", "w+");
+
+rewind($tempfile);
+
+while (($buffer=fgets($tempfile))!== false) {
+  fwrite($configfile,$buffer);
+}
+
+fclose($tempfile); // remove tempfile
 
 include 'page.template.php';
 ?>
