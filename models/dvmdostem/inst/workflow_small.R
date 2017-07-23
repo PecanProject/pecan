@@ -101,6 +101,20 @@ if (PEcAn.utils::status.check("CONFIG") == 0){
 } else if (file.exists(file.path(settings$outdir, 'pecan.CONFIGS.xml'))) {
   settings <- PEcAn.settings::read.settings(file.path(settings$outdir, 'pecan.CONFIGS.xml'))
 }
+
+if ((length(which(commandArgs() == "--advanced")) != 0) && (PEcAn.utils::status.check("ADVANCED") == 0)) {
+  PEcAn.utils::status.start("ADVANCED")
+  q();
+}
+
+# Start ecosystem model runs
+if (PEcAn.utils::status.check("MODEL") == 0) {
+  PEcAn.utils::status.start("MODEL")
+  PEcAn.utils::runModule.start.model.runs(settings,stop.on.error=FALSE)
+  PEcAn.utils::status.end()
+}
+
+
   
 # Pecan workflow complete
 if (PEcAn.utils::status.check("FINISHED") == 0) {
