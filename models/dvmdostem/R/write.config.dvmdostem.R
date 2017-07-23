@@ -87,7 +87,9 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
    # 1) Read in a parameter data block from dvmdostem
    #    - Not sure how to check exit code??
    #    - Not sure what we need to do with stderr...
-   dvmpath <- '/home/carya/dvm-dos-tem'  # <==should do this with dirname(...) and or basename(...)
+   
+   dvmpath <- dirname(binary)  # Grab binary base directory to set location of dvm-dos-tem source location.  
+                               # We do this to get at other helper scripts
    params <- paste(dvmpath,"parameters",'cmt_dimvegetation.txt',sep="/")
    json_file <- '/tmp/junk.json'
    community_type <- '04'
