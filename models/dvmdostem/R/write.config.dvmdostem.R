@@ -63,25 +63,31 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
    site <- settings$run$site
    site.id <- as.numeric(site$id)
    
-   # find out where things are
+   # Setup some local variables for this function for easily referencing
+   # common locations for input, output, and the application binary.
    local.rundir <- file.path(settings$rundir, run.id) ## this is on local machine for staging
    rundir     <- file.path(settings$host$rundir, run.id)  ## this is on remote machine for execution
    outdir <- file.path(settings$host$outdir, run.id)
    binary <- settings$model$binary
-   
+
+   # Some general debugging printouts...
    npft <- length(trait.values)
    PEcAn.utils::logger.debug(npft)
    PEcAn.utils::logger.debug(dim(trait.values))
    PEcAn.utils::logger.debug(names(trait.values))
+   PEcAn.utils::logger.debug(trait.values[[1]])
+   trait_samples <- as.data.frame(trait.values)
+   PEcAn.utils::logger.debug(trait_samples[["SLA"]])
+   var <- "SLA"
+   PEcAn.utils::logger.debug(trait_samples[[var]])
+   PEcAn.utils::logger.debug(colnames(trait_samples))
 
+   ### WORK ON GETTING MA-POSTERIORS COPIED/WRITTEN INTO THE CORRECT 
+   ### PARAMETER LOCATIONS.....
    # 1) Read in a parameter data block from dvmdostem
-   # system2(command, args = character(),
-   #         stdout = "", stderr = "", stdin = "", input = NULL,
-   #         env = character(), wait = TRUE,
-   #         minimized = FALSE, invisible = TRUE, timeout = 0)
-   # Not sure how to check exit code??
-   # Not sure what we need to do with stderr...
-   dvmpath <- '/data/software/dvm-dos-tem'
+   #    - Not sure how to check exit code??
+   #    - Not sure what we need to do with stderr...
+   dvmpath <- '/home/carya/dvm-dos-tem'  # <==should do this with dirname(...) and or basename(...)
    params <- paste(dvmpath,"parameters",'cmt_dimvegetation.txt',sep="/")
    json_file <- '/tmp/junk.json'
    community_type <- '04'
@@ -89,7 +95,8 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
                                                    stdout=json_file, wait=TRUE)
    
    # 2) Overwrite certain parameter values with (ma-posterior) trait data from pecan
-   # In R, need to open "some/tmp/file.json" as a json object, overwrite some values, and write it back out
+   #    In R, need to open "some/tmp/file.json" as a json object, overwrite some values, 
+   #    and write it back out
    library("rjson")
    # Read in the file
    json_data <- fromJSON(paste(readLines(json_file), collapse=""))
