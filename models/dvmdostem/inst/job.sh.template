@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# something about making a new file handle and duplicating the stuff 
+# from file handle 1 (stdout usually) to the new handle (3 in this case) WTF!?
+exec 3>&1
+exec &> "@OUTDIR@/logfile.txt"
+
+# host specific setup
+@HOST_SETUP@
+
+mkdir -p "@OUTDIR@" # Maybe unnecessary (pecan may make this for us)
+
+if [ -e "@OUTDIR@/*" ]; then 
+  echo "Hmm already there is output?? Maybe we don't need to run the model??"
+else
+  cd "@RUNDIR@"
+  @BINARY@ --pr-yrs 10 --eq-yrs 10 --sp-yrs 10 --tr-yrs 10 --sc-yrs 10 --log-level debug
+
+  STATUS=$?
+  if [ $STATUS -ne 0 ]; then
+    echo "UH OH, something went wrong and dvmdostem failed!!\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
+    exit $STATUS
+  fi
+
+  # echo "require (PEcAN.dvmdostem)
+  #   model2netcdf.dvmdostem('@OUTDIR@', @SITE_LAT@,@SITE_LON@,'@START_DATE@','@END_DATE@',@DELETE.RAW@,'@REVISION@')
+  #   " | R --vanilla
+
+fi
+
+cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
+
+# host specific cleanup
+@HOST_TEARDOWN@
+
+echo -e "MODEL FINSIHED\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
