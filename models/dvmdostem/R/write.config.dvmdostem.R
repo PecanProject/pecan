@@ -67,6 +67,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
    local.rundir <- file.path(settings$rundir, run.id) ## this is on local machine for staging
    rundir     <- file.path(settings$host$rundir, run.id)  ## this is on remote machine for execution
    outdir <- file.path(settings$host$outdir, run.id)
+   binary <- settings$model$binary
    
    npft <- length(trait.values)
    PEcAn.utils::logger.debug(npft)
@@ -138,30 +139,39 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
    writeLines(config_template, con=file.path(settings$rundir, run.id,"config/config.js"))
 
    ### create launch script (which will create symlink) - needs to be created
-   # if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
-   #   jobsh <- readLines(con=settings$model$jobtemplate, n=-1)
-   # } else {
-   #   jobsh <- readLines(con=system.file("template.job", package = "PEcAn.FATES"), n=-1)
-   # }
+   if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
+     jobsh <- readLines(con=settings$model$jobtemplate, n=-1)
+   } else {
+     jobsh <- readLines(con=system.file("job.sh.template", package = "PEcAn.dvmdostem"), n=-1)
+   }
 
-   ### create host specific setttings
-   # hostsetup <- ""
-   # if (!is.null(settings$model$prerun)) {
-   #   hostsetup <- paste(hostsetup, sep="\n", paste(settings$model$prerun, collapse="\n"))
-   # }
-   # if (!is.null(settings$host$prerun)) {
-   #   hostsetup <- paste(hostsetup, sep="\n", paste(settings$host$prerun, collapse="\n"))
-   # }
-   # 
-   # hostteardown <- ""
-   # if (!is.null(settings$model$postrun)) {
-   #   hostteardown <- paste(hostteardown, sep="\n", paste(settings$model$postrun, collapse="\n"))
-   # }
-   # if (!is.null(settings$host$postrun)) {
-   #   hostteardown <- paste(hostteardown, sep="\n", paste(settings$host$postrun, collapse="\n"))
-   # }
+   ### create host specific setttings - stubbed for now, nothing to do yet, ends up as empty 
+   ### string that is put into the job.sh file
+   hostsetup <- ""
+   if (!is.null(settings$model$prerun)) {
+     hostsetup <- paste(hostsetup, sep="\n", paste(settings$model$prerun, collapse="\n"))
+   }
+   if (!is.null(settings$host$prerun)) {
+     hostsetup <- paste(hostsetup, sep="\n", paste(settings$host$prerun, collapse="\n"))
+   }
 
+   hostteardown <- ""
+   if (!is.null(settings$model$postrun)) {
+     hostteardown <- paste(hostteardown, sep="\n", paste(settings$model$postrun, collapse="\n"))
+   }
+   if (!is.null(settings$host$postrun)) {
+     hostteardown <- paste(hostteardown, sep="\n", paste(settings$host$postrun, collapse="\n"))
+   }
 
+   jobsh <- gsub("@HOST_SETUP@", hostsetup, jobsh)
+   jobsh <- gsub("@HOST_TEARDOWN@", hostteardown, jobsh)
+
+   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
+   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
+   jobsh <- gsub("@BINARY@", binary, jobsh)
+
+   writeLines(jobsh, con=file.path(settings$rundir, run.id,"job.sh"))
+   Sys.chmod(file.path(settings$rundir, run.id,"job.sh"))
 
 }
 
