@@ -37,7 +37,7 @@ If using `~/.pecan.clowder.xml`, it must be a valid PEcAn-formatted XML settings
  password for your Clowder server:
 
 \code{\preformatted{
-  <xml version="1.0"?>
+  <?xml version="1.0"?>
   <pecan>
     <clowder>
       <hostname>terraref.ncsa.illinois.edu</hostname>

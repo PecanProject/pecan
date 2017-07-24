@@ -18,7 +18,7 @@
 #'  password for your Clowder server:
 #'
 #' \code{\preformatted{
-#'   <xml version="1.0"?>
+#'   <?xml version="1.0"?>
 #'   <pecan>
 #'     <clowder>
 #'       <hostname>terraref.ncsa.illinois.edu</hostname>
