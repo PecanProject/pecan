@@ -59,14 +59,14 @@ id.resolveable = function(id, return_result, CNode="PROD"){
 #' get.resource.map
 #'
 #' @param id the doi or other identifier linked to the package in DataONE  
-#' @param CNode usually "PROD"
+#' @param CNode default is "PROD"
 #' 
 #' @return return the resource_map or a message indicating that there is no corresponding resource_map for the given id
 #' @export
 #'
 #' @examples
-get.resource.map = function(id, CNode){
-  cn <- DataONE::CNode("PROD") 
+get.resource.map = function(id, CNode="PROD"){
+  cn <- DataONE::CNode(CNode) 
   locations <- DataONE::resolve(cn, pid = id) 
   mnId <<- locations$data[1,"nodeIdentifier"] # store mnId in global environment
   mn <<- DataONE::getMNode(cn, mnId) # store mn in global environment
