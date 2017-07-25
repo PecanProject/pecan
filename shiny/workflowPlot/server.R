@@ -105,11 +105,11 @@ server <- shinyServer(function(input, output, session) {
     observations<-PEcAn.benchmark::load_data(data.path = File_path, format= File_format, time.row = File_format$time.row,  site = site, start_year = start.year, end_year = end.year) 
     return(observations)
   }
-  getFileFormat <- function(bety,format.id){
-# getFileFormat <- function(bety,input.id){
+  # getFileFormat <- function(bety,format.id){
+  getFileFormat <- function(bety,input.id){
     # Retaining the code for getting file format using inputRecordID
-    File_format <- PEcAn.DB::query.format.vars(bety = bety, format.id = format.id) 
-    # File_format <- PEcAn.DB::query.format.vars(bety = bety, input.id = input.id) 
+    # File_format <- PEcAn.DB::query.format.vars(bety = bety, format.id = format.id) 
+    File_format <- PEcAn.DB::query.format.vars(bety = bety, input.id = input.id)
     return(File_format)
   }
   getSettingsFromWorkflowId <- function(bety,workflowID){
@@ -163,9 +163,9 @@ server <- shinyServer(function(input, output, session) {
     # Check if user wants to load external data
     # Similar to using event reactive
     if (input$load_data>0) { 
-      File_format <- getFileFormat(bety,input$formatID)
+      # File_format <- getFileFormat(bety,input$formatID)
       # Retaining the code for getting file format using inputRecordID
-      # File_format <- getFileFormat(bety,input$inputRecordID)
+      File_format <- getFileFormat(bety,input$inputRecordID)
       ids_DF <- parse_ids_from_input_runID(input$all_run_id)
       settings <- getSettingsFromWorkflowId(bety,ids_DF$wID[1])
       inFile <- input$fileUploaded
