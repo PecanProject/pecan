@@ -38,23 +38,15 @@ id.resolveable = function(id, return_result = TRUE, CNode = "PROD"){
   result <- DataONE::query(cn, solrQuery = queryParams, as = "data.frame") # return query results as a data.frame
   
   if(return_result == TRUE){ # option that displays data.frame of query
-    print(result) 
-    
-    if(is.null(result[1,1])){ # if there is no data available, result[1,1] will return a NULL value
-      return("doi does not resolve in the DataONE federation and therefore cannot be retrieved by doi. 
-             Either download this data locally and import using PEcAn's drag and drop feature, or search DataONE manually for another data identifier. Thank you for your patience.")
-    } else{
-      return("data can be found in D1 federation")
-    }
-  }   else{ # option that does not display data.frame of query (return_result == FALSE)
-        if(is.null(result[1,1])){ 
-        return("doi does not resolve in the DataONE federation and therefore cannot be retrieved by doi. 
-               Either download this data locally and import using PEcAn's drag and drop feature, or search DataONE manually for another data identifier (e.g. pid or resource_map) Thank you for your patience.")
-    }   else{
-        return("data can be found in D1 federation")
-    }
+    print(result)
   }
   
+  if(is.null(result[1,1])){ # if there is no data available, result[1,1] will return a NULL value
+    return("doi does not resolve in the DataOne federation and therefore cannot be retrieved by doi.
+             Either download this data locally and import using PEcAn's drag and drop feature, or search DataOne manually for another data identifier. Thank you for your patience.")
+  } else{
+    return("data can be found in D1 federation")
+ e
 } # end function
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
