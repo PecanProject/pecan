@@ -10,12 +10,10 @@
 
 // This page is designed to act as the template page for all the configurations setups
 // This page only have footer part.
+
 ?>
     </div>
-    <div id="footer"><?php echo "The <a href=\"http://pecanproject.org\">PEcAn project</a> is supported by the National Science Foundation
-      (ABI #1062547, ABI #1458021, DIBBS #1261582, ARC #1023477, EF #1318164, EF #1241894, EF #1241891), NASA
-      Terrestrial Ecosystems, the Energy Biosciences Institute, and an Amazon AWS in Education Grant.
-      <span style=\"float:right\">PEcAn Version 1.5.0</span>" ?></div>
+    <div id="footer"><?php include "../common.php"; echo get_footer(); ?></div>
 </div>
 <!--bootstrap javascripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js" integrity="sha384-I6F5OKECLVtK/BL+8iSLDEHowSAfUo76ZL9+kGAgTRdiByINKJaqTPH/QVNS1VDb" crossorigin="anonymous"></script>
