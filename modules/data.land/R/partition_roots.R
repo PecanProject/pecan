@@ -8,12 +8,12 @@
 ##' @return list containing summed fine root and coarse root carbon (2 values)
 ##' @author Anne Thomas
 ##' 
-##' partition_roots: function to split root_carbon_content into fine and coarse roots by rtsize dimension at the .002 m threshold
 partition_roots <- function(roots, rtsize){
   if(length(rtsize) > 1 && length(rtsize) == length(roots)){
     threshold <- .002
     epsilon <- .0005
-    rtsize_thresh_idx <- which.min(sapply(rtsize-threshold,abs))
+    #find index of threshold in rtsize closest to .002
+    rtsize_thresh_idx <- which.min(sapply(rtsize-threshold,abs)) 
     rtsize_thresh <- rtsize[rtsize_thresh_idx]
     if(abs(rtsize_thresh-threshold) > epsilon){
       PEcAn.utils::logger.error(paste("Closest rtsize to fine root threshold of", threshold, "m (", rtsize_thresh, 
@@ -21,6 +21,7 @@ partition_roots <- function(roots, rtsize){
                                       "m off; fine roots can't be partitioned. Please improve rtsize dimensions."))
       return(NULL)
     } else{
+      #sum fine roots from lowest group through group below threshold and coarse from group including threshold to the highest
       fine.roots <- sum(roots[1:rtsize_thresh_idx-1])
       coarse.roots <- sum(roots) - fine.roots
       if(fine.roots >= 0 && coarse.roots >= 0){
