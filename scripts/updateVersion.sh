@@ -46,9 +46,3 @@ if [ $# -eq 0 ]; then
   echo "Modifying : web/common.php"
   sed -i.bak -e "s/PEcAn Version [0-9\.]*/PEcAn Version ${VERSION}/" web/common.php
 fi
-
-# update pecan version in web page setup/pagefooter.template.php
-if [ $# -eq 0 ]; then
-  echo "Modifying : web/pagefooter.template.php"
-  sed -i.bak -e "s/PEcAn Version [0-9\.]*/PEcAn Version ${VERSION}/" web/setups/pagefooter.template.php
-fi
