@@ -89,7 +89,7 @@ get.resource.map = function(id, CNode = "PROD"){
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' download.packages
+#' download.packages.rm
 #'
 #' @param resource_map the resource map that corresponds to the given data package
 #' @param CNode defaults to "PROD"
