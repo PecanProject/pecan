@@ -24,13 +24,13 @@ format.identifier = function(id){
 #'
 #' @param id the doi or other identifier linked to the package in DataONE  
 #' @param CNode CNode="PROD"
-#' @param return_result boolean that returns or suppresses result of query
+#' @param return_result boolean that returns or suppresses result of query. defaults to TRUE. 
 #'
 #' @return returns message indicating wether or not the id resolves to data in the DataONE federation
 #' @export
 #'
 #' @examples
-id.resolveable = function(id, return_result, CNode = "PROD"){
+id.resolveable = function(id, return_result = TRUE, CNode = "PROD"){
   format.identifier(id) # reformat the id in solr format
   
   cn <- DataONE::CNode(CNode) 
@@ -89,7 +89,7 @@ get.resource.map = function(id, CNode = "PROD"){
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' download.packages.rm
+#' download.packages
 #'
 #' @param resource_map the resource map that corresponds to the given data package
 #' @param CNode defaults to "PROD"
