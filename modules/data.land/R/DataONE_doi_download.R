@@ -18,6 +18,7 @@ format.identifier = function(id){
   return(doi1) 
 } # end function
 
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #' id.resolveable 
 #'
@@ -29,7 +30,7 @@ format.identifier = function(id){
 #' @export
 #'
 #' @examples
-id.resolveable = function(id, return_result, CNode="PROD"){
+id.resolveable = function(id, return_result, CNode = "PROD"){
   format.identifier(id) # reformat the id in solr format
   
   cn <- DataONE::CNode(CNode) 
@@ -56,6 +57,8 @@ id.resolveable = function(id, return_result, CNode="PROD"){
   
 } # end function
 
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 #' get.resource.map
 #'
 #' @param id the doi or other identifier linked to the package in DataONE  
@@ -65,7 +68,7 @@ id.resolveable = function(id, return_result, CNode="PROD"){
 #' @export
 #'
 #' @examples
-get.resource.map = function(id, CNode="PROD"){
+get.resource.map = function(id, CNode = "PROD"){
   cn <- DataONE::CNode(CNode) 
   locations <- DataONE::resolve(cn, pid = id) 
   mnId <<- locations$data[1,"nodeIdentifier"] # store mnId in global environment
@@ -84,10 +87,12 @@ get.resource.map = function(id, CNode="PROD"){
   }
 } # end function
 
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 #' download.packages
 #'
 #' @param resource_map the resource map that corresponds to the given data package
-#' @param CNode typically "PROD"
+#' @param CNode defaults to "PROD"
 #' @param download_format typically "application/bagit-097". Other possible formats currently unknown.
 #' @param overwrite_directory boolean that indicates whether or not the function should overwrite the directory
 #' @param directory location that download.packages places the data
@@ -96,10 +101,10 @@ get.resource.map = function(id, CNode="PROD"){
 #' @export
 #'
 #' @examples
-download.package.rm = function(resource_map, CNode, download_format = "application/bagit-097", 
-                               overwrite_directory = TRUE, directory){
+download.package.rm = function(resource_map, directory, CNode = "PROD", download_format = "application/bagit-097", 
+                               overwrite_directory = TRUE){
   # Finding the mnId (query)
-  cn <- DataONE::CNode("PROD") 
+  cn <- DataONE::CNode(CNode) 
   locations <- DataONE::resolve(cn, pid = resource_map) 
   mnId <<- locations$data[1,"nodeIdentifier"]
   
