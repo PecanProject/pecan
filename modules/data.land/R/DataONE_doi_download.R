@@ -22,17 +22,17 @@ format.identifier = function(id){
 #' id.resolveable 
 #'
 #' @param id the doi or other identifier linked to the package in DataONE  
-#' @param CNode usually "PROD"
+#' @param CNode CNode="PROD"
 #' @param return_result boolean that returns or suppresses result of query
 #'
 #' @return returns message indicating wether or not the id resolves to data in the DataONE federation
 #' @export
 #'
 #' @examples
-id.resolveable = function(id, CNode, return_result){
+id.resolveable = function(id, return_result, CNode="PROD"){
   format.identifier(id) # reformat the id in solr format
   
-  cn <- DataONE::CNode("PROD") 
+  cn <- DataONE::CNode(CNode) 
   queryParams <- list(q=doi1, rows="5") 
   result <- DataONE::query(cn, solrQuery = queryParams, as = "data.frame") # return query results as a data.frame
   
