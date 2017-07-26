@@ -19,6 +19,4 @@ Given a vector of root size thresholds (lower bound of each) and a vector of cor
 }
 \author{
 Anne Thomas
-
-partition_roots: function to split root_carbon_content into fine and coarse roots by rtsize dimension at the .002 m threshold
 }
