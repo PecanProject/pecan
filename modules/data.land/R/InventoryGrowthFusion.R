@@ -10,15 +10,18 @@
 ##' 
 ##' @param data  list of data inputs
 ##' @param random = whether or not to include random effects
+##' @param n.chunk number of MCMC steps to evaluate at a time. Will only return LAST
+##' @param save.state whether or not to include inferred DBH in output (can be large)
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion <- function(data, cov.data=NULL,time_data = NULL,n.iter=5000, n.burnin=n.iter/2, random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, save.jags = "IGF.txt", z0 = NULL) {
+InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=5000, n.chunk = n.iter, random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, save.jags = "IGF.txt", z0 = NULL, save.state=TRUE) {
   library(rjags)
 
   # baseline variables to monitor  
   burnin.variables <- c("tau_add", "tau_dbh", "tau_inc", "mu") # process variability, dbh and tree-ring observation error, intercept
   out.variables <- c("deviance", "tau_add", "tau_dbh", "tau_inc", "mu")
+  if(save.state) out.variables <- c(out.variables,"x")
   
   # start text object that will be manipulated (to build different linear models, swap in/out covariates)  
   TreeDataFusionMV <- "
@@ -243,6 +246,8 @@ model{
     ## build design matrix from formula
     Xf      <- with(cov.data, model.matrix(formula(fixed)))
     Xf.cols <- colnames(Xf)
+    Xf.cols <- sub(":","_",Xf.cols) ## for interaction terms, switch separator
+    colnames(Xf) <- Xf.cols
     Xf.cols <- Xf.cols[Xf.cols != "(Intercept)"]
     Xf      <- as.matrix(Xf[, Xf.cols])
     colnames(Xf) <- Xf.cols
@@ -295,7 +300,7 @@ model{
     ## check for interaction terms
     it_vars <- t_vars[grep(pattern = "*",x=t_vars,fixed = TRUE)]
     if(length(it_vars) > 0){
-      t_vars <- t_vars[!(t_vars == it_vars)]
+      t_vars <- t_vars[!(t_vars %in% it_vars)]
     } 
   
     ## INTERACTIONS WITH TIME-VARYING VARS
@@ -418,5 +423,13 @@ model{
   
   ## run MCMC
   load.module("dic")
-  coda.samples(model = j.model, variable.names = out.variables, n.iter = n.iter)
+  for(k in seq_len(ceiling(n.iter/n.chunk))){
+    jags.out <- coda.samples(model = j.model, variable.names = out.variables, n.iter = n.chunk)
+    ## could add code here to check for convergence and break from loop early
+    D <- as.mcmc.list(lapply(jags.out,function(x){x[,'deviance']}))
+    gbr <- coda::gelman.diag(D)$psrf[1,1]
+    trend <- mean(sapply(D,function(x){coef(lm(x~seq_len(n.chunk)))[2]}))
+    if(gbr < 1.01 & abs(trend) < 0.05) break
+  }
+  return(jags.out)
 } # InventoryGrowthFusion

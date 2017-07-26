@@ -45,7 +45,7 @@ Tree2Tree <- Tree2Tree[!is.na(Tree2Tree$SDIc),]
 setwd("C:/Users/mekevans/Documents/Cdrive/Bayes/DemogRangeMod/ProofOfConcept/treerings/pecan/modules/data.land/R")
 ### read in function that creates jags objects from above data
 source("BuildJAGSdataobject.R")
-jags.stuff <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 500, trunc.yr = 1966)
+jags.stuff <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 1000, trunc.yr = 1966)
 # if you don't have trees without cores, use the following line
 # or you wish to not include trees without cores
 # jags.stuff <- buildJAGSdataobject(temp2, rnd.subset = 100, trunc.yr = 1966)
