@@ -33,9 +33,9 @@ format.identifier = function(id){
 id.resolveable = function(id, return_result = TRUE, CNode = "PROD"){
   format.identifier(id) # reformat the id in solr format
   
-  cn <- DataONE::CNode(CNode) 
+  cn <- dataone::CNode(CNode) 
   queryParams <- list(q=doi1, rows="5") 
-  result <- DataONE::query(cn, solrQuery = queryParams, as = "data.frame") # return query results as a data.frame
+  result <- dataone::query(cn, solrQuery = queryParams, as = "data.frame") # return query results as a data.frame
   
   if(return_result == TRUE){ # option that displays data.frame of query
     print(result)
@@ -61,10 +61,10 @@ id.resolveable = function(id, return_result = TRUE, CNode = "PROD"){
 #'
 #' @examples
 get.resource.map = function(id, CNode = "PROD"){
-  cn <- DataONE::CNode(CNode) 
-  locations <- DataONE::resolve(cn, pid = id) 
+  cn <- dataone::CNode(CNode) 
+  locations <- dataone::resolve(cn, pid = id) 
   mnId <<- locations$data[1,"nodeIdentifier"] # store mnId in global environment
-  mn <<- DataONE::getMNode(cn, mnId) # store mn in global environment
+  mn <<- dataone::getMNode(cn, mnId) # store mn in global environment
   
   format.identifier(id) # format the identifier in solr Query format
   queryParamList <- list(q=doi1, fl="resourceMap") # custom query for the resourceMap
@@ -96,13 +96,13 @@ get.resource.map = function(id, CNode = "PROD"){
 download.package.rm = function(resource_map, directory, CNode = "PROD", download_format = "application/bagit-097", 
                                overwrite_directory = TRUE){
   # Finding the mnId (query)
-  cn <- DataONE::CNode(CNode) 
-  locations <- DataONE::resolve(cn, pid = resource_map) 
+  cn <- dataone::CNode(CNode) 
+  locations <- dataone::resolve(cn, pid = resource_map) 
   mnId <<- locations$data[1,"nodeIdentifier"]
   
   # download the bagitFile 
-  mn <<- DataONE::getMNode(cn, mnId)
-  bagitFile <<- DataONE::getPackage(mn, id = resource_map, format = download_format)
+  mn <<- dataone::getMNode(cn, mnId)
+  bagitFile <<- dataone::getPackage(mn, id = resource_map, format = download_format)
   bagitFile
   
 
