@@ -49,7 +49,7 @@ id_resolveable = function(id, return_result = TRUE, CNode = "PROD"){
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' get_resource.map
+#' get_resource_map
 #'
 #' @param id the doi or other identifier linked to the package in DataONE  
 #' @param CNode default is "PROD"
