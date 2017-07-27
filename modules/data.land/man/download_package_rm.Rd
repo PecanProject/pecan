@@ -22,5 +22,5 @@ download_package_rm(resource_map, directory, CNode = "PROD",
 results of download
 }
 \description{
-download.packages
+Uses resource_map and dataone::getPackage to download the data into a BagItFile. Then utils::unzip unzips the data and stores in the user's directory.
 }

@@ -1,7 +1,3 @@
-## Functions to determine if data can be found by doi in R
-## Author: Liam Burke
-## Code draws heavily on dataoneR package for communication with the DataONE federation 
-
 #' format.identifier
 #'
 #' @param id the doi or other identifier linked to the package in DataONE
