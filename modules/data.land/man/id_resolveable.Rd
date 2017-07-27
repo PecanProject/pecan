@@ -2,7 +2,7 @@
 % Please edit documentation in R/DataONE_doi_download.R
 \name{id_resolveable}
 \alias{id_resolveable}
-\title{id.resolveable}
+\title{id_resolveable}
 \usage{
 id_resolveable(id, return_result = TRUE, CNode = "PROD")
 }

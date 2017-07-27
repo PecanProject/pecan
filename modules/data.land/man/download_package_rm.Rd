@@ -2,7 +2,7 @@
 % Please edit documentation in R/DataONE_doi_download.R
 \name{download_package_rm}
 \alias{download_package_rm}
-\title{download.packages}
+\title{download_packages}
 \usage{
 download_package_rm(resource_map, directory, CNode = "PROD",
   download_format = "application/bagit-097", overwrite_directory = TRUE)

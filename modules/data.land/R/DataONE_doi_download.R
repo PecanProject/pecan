@@ -1,4 +1,4 @@
-#' format.identifier
+#' format_identifier
 #'
 #' @param id the doi or other identifier linked to the package in DataONE
 #'
@@ -17,7 +17,7 @@ format_identifier = function(id){
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' id.resolveable 
+#' id_resolveable 
 #'
 #' @param id the doi or other identifier linked to the package in DataONE  
 #' @param CNode CNode="PROD"
@@ -49,7 +49,7 @@ id_resolveable = function(id, return_result = TRUE, CNode = "PROD"){
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' get.resource.map
+#' get_resource.map
 #'
 #' @param id the doi or other identifier linked to the package in DataONE  
 #' @param CNode default is "PROD"
@@ -80,7 +80,7 @@ get_resource_map = function(id, CNode = "PROD"){
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#' download.packages
+#' download_packages
 #'
 #' @param resource_map the resource map that corresponds to the given data package
 #' @param CNode defaults to "PROD"
