@@ -1,6 +1,6 @@
-##' Functions to determine if data can be found by doi in R
-##' Author: Liam Burke
-##' Code draws heavily on dataoneR package for communication with the DataONE federation 
+## Functions to determine if data can be found by doi in R
+## Author: Liam Burke
+## Code draws heavily on dataoneR package for communication with the DataONE federation 
 
 #' format.identifier
 #'
@@ -10,6 +10,7 @@
 #' @export 
 #'
 #' @author Liam P Burke, \email{lpburke@@bu.edu}
+#' @description This function is for formatting purposes. It simply inserts the doi or id that the user wishes to query into Solr format so that it is compatible with the dataoneR query functionality in the PEcAn function 
 #' 
 #' @examples 
 format_identifier = function(id){ 
@@ -25,8 +26,9 @@ format_identifier = function(id){
 #' @param id the doi or other identifier linked to the package in DataONE  
 #' @param CNode CNode="PROD"
 #' @param return_result boolean that returns or suppresses result of query. defaults to TRUE. 
-#'
-#' @return returns message indicating wether or not the id resolves to data in the DataONE federation
+#' @description Uses dataone::query from dataoneR to query DataONE. Prints result if data exists
+#' 
+#' @return returns message indicating wether or not the id resolves to data in the DataONE federation and information about said data. 
 #' @export
 #'
 #' @examples
@@ -55,6 +57,7 @@ id_resolveable = function(id, return_result = TRUE, CNode = "PROD"){
 #'
 #' @param id the doi or other identifier linked to the package in DataONE  
 #' @param CNode default is "PROD"
+#' @description Locates data in DataONE and returns the resource_map or a message indicating that there is no corresponding resource_map for the given id
 #' 
 #' @return return the resource_map or a message indicating that there is no corresponding resource_map for the given id
 #' @export
@@ -89,6 +92,7 @@ get_resource_map = function(id, CNode = "PROD"){
 #' @param overwrite_directory boolean that indicates whether or not the function should overwrite the directory
 #' @param directory location that download.packages places the data
 #'
+#' @description Uses resource_map and dataone::getPackage to download the data into a BagItFile. Then utils::unzip unzips the data and stores in the user's directory. 
 #' @return results of download
 #' @export
 #'
