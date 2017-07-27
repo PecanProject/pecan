@@ -104,7 +104,7 @@ download_package_rm = function(resource_map, directory, CNode = "PROD", download
   mn <<- dataone::getMNode(cn, mnId)
   bagitFile <<- dataone::getPackage(mn, id = resource_map, format = download_format)
   
-  utils::unzip(bagitFile, files = NULL, list = FALSE, overwrite = overwrite_directory, # Unzip the bagitFile and store in directory specified under exdir
+  zip_contents <<- utils::unzip(bagitFile, files = NULL, list = FALSE, overwrite = overwrite_directory, # Unzip the bagitFile and store in directory specified under exdir
         junkpaths = FALSE, exdir = directory, unzip = "internal",
         setTimes = FALSE)
   return(zip_contents)
