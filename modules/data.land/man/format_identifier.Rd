@@ -2,7 +2,7 @@
 % Please edit documentation in R/DataONE_doi_download.R
 \name{format_identifier}
 \alias{format_identifier}
-\title{format.identifier}
+\title{format_identifier}
 \usage{
 format_identifier(id)
 }

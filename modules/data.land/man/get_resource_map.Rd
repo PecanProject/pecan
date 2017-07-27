@@ -2,7 +2,7 @@
 % Please edit documentation in R/DataONE_doi_download.R
 \name{get_resource_map}
 \alias{get_resource_map}
-\title{get.resource.map}
+\title{get_resource.map}
 \usage{
 get_resource_map(id, CNode = "PROD")
 }
