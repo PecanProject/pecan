@@ -68,7 +68,7 @@ get.resource.map = function(id, CNode = "PROD"){
   
   format.identifier(id) # format the identifier in solr Query format
   queryParamList <- list(q=doi1, fl="resourceMap") # custom query for the resourceMap
-  resource_map_df <- DataONE::query(cn, solrQuery = queryParamList, as="data.frame") 
+  resource_map_df <- dataone::query(cn, solrQuery = queryParamList, as="data.frame") 
   resource_map <<- resource_map_df[1,1] # store resource map in global env. resource map is always in resource_map_df[1,1]
   
   if (is.null(resource_map_df[1,1])){ # inform user if id/ doi has a corresponding resource_map or if this needs to be found manually
