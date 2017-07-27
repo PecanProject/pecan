@@ -9,7 +9,7 @@
 #' @return returns the id in the proper format for querying the DataONE Federation (using solrQuery syntax)
 #' @export 
 #'
-#' @author Liam P Burke, \email{lpburke@bu.edu}
+#' @author Liam P Burke, \email{lpburke@@bu.edu}
 #' 
 #' @examples 
 format.identifier = function(id){ 
@@ -46,7 +46,7 @@ id.resolveable = function(id, return_result = TRUE, CNode = "PROD"){
              Either download this data locally and import using PEcAn's drag and drop feature, or search DataOne manually for another data identifier. Thank you for your patience.")
   } else{
     return("data can be found in D1 federation")
- e
+  }
 } # end function
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
