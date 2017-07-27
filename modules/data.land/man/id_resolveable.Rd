@@ -14,8 +14,8 @@ id_resolveable(id, return_result = TRUE, CNode = "PROD")
 \item{CNode}{CNode="PROD"}
 }
 \value{
-returns message indicating wether or not the id resolves to data in the DataONE federation
+returns message indicating wether or not the id resolves to data in the DataONE federation and information about said data.
 }
 \description{
-id.resolveable
+Uses dataone::query from dataoneR to query DataONE. Prints result if data exists
 }

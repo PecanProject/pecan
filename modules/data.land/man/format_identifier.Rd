@@ -2,10 +2,7 @@
 % Please edit documentation in R/DataONE_doi_download.R
 \name{format_identifier}
 \alias{format_identifier}
-\title{Functions to determine if data can be found by doi in R
-Author: Liam Burke
-Code draws heavily on dataoneR package for communication with the DataONE federation 
-format.identifier}
+\title{format.identifier}
 \usage{
 format_identifier(id)
 }
@@ -16,10 +13,7 @@ format_identifier(id)
 returns the id in the proper format for querying the DataONE Federation (using solrQuery syntax)
 }
 \description{
-Functions to determine if data can be found by doi in R
-Author: Liam Burke
-Code draws heavily on dataoneR package for communication with the DataONE federation 
-format.identifier
+This function is for formatting purposes. It simply inserts the doi or id that the user wishes to query into Solr format so that it is compatible with the dataoneR query functionality in the PEcAn function
 }
 \author{
 Liam P Burke, \email{lpburke@bu.edu}

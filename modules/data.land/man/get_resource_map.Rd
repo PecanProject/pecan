@@ -15,5 +15,5 @@ get_resource_map(id, CNode = "PROD")
 return the resource_map or a message indicating that there is no corresponding resource_map for the given id
 }
 \description{
-get.resource.map
+Locates data in DataONE and returns the resource_map or a message indicating that there is no corresponding resource_map for the given id
 }
