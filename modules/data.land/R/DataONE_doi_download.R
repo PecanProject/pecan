@@ -12,7 +12,7 @@
 #' @author Liam P Burke, \email{lpburke@@bu.edu}
 #' 
 #' @examples 
-format.identifier = function(id){ 
+format_identifier = function(id){ 
   doi.template <- 'id:"_"' # solr format
   doi1 <<- base::gsub("_", id, doi.template) # replace "_" with the doi or id and store in global environment
   return(doi1) 
@@ -30,8 +30,8 @@ format.identifier = function(id){
 #' @export
 #'
 #' @examples
-id.resolveable = function(id, return_result = TRUE, CNode = "PROD"){
-  format.identifier(id) # reformat the id in solr format
+id_resolveable = function(id, return_result = TRUE, CNode = "PROD"){
+  format_identifier(id) # reformat the id in solr format
   
   cn <- dataone::CNode(CNode) 
   queryParams <- list(q=doi1, rows="5") 
@@ -60,13 +60,13 @@ id.resolveable = function(id, return_result = TRUE, CNode = "PROD"){
 #' @export
 #'
 #' @examples
-get.resource.map = function(id, CNode = "PROD"){
+get_resource_map = function(id, CNode = "PROD"){
   cn <- dataone::CNode(CNode) 
   locations <- dataone::resolve(cn, pid = id) 
   mnId <<- locations$data[1,"nodeIdentifier"] # store mnId in global environment
   mn <<- dataone::getMNode(cn, mnId) # store mn in global environment
   
-  format.identifier(id) # format the identifier in solr Query format
+  format_identifier(id) # format the identifier in solr Query format
   queryParamList <- list(q=doi1, fl="resourceMap") # custom query for the resourceMap
   resource_map_df <- dataone::query(cn, solrQuery = queryParamList, as="data.frame") 
   resource_map <<- resource_map_df[1,1] # store resource map in global env. resource map is always in resource_map_df[1,1]
@@ -93,7 +93,7 @@ get.resource.map = function(id, CNode = "PROD"){
 #' @export
 #'
 #' @examples
-download.package.rm = function(resource_map, directory, CNode = "PROD", download_format = "application/bagit-097", 
+download_package_rm = function(resource_map, directory, CNode = "PROD", download_format = "application/bagit-097", 
                                overwrite_directory = TRUE){
   # Finding the mnId (query)
   cn <- dataone::CNode(CNode) 
