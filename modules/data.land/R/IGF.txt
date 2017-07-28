@@ -17,7 +17,7 @@ model{
   
   #### Process Model
   for(t in 2:nt){
-  Dnew[i,t] <- x[i,t-1] + mu  + alpha_PLOT[PLOT[i]] + betaX*x[i,t-1] + betaX2*x[i,t-1]^2 + betaX_SICOND*x[i,t-1]*SICOND[i] + betaX_wintP.JJ*x[i,t-1]*wintP.JJ[i,t] + betaSICOND*Xf[rep[i],1] + betaSDI*Xf[rep[i],2]  + betaSICOND_wintP.JJ*SICOND[i]*wintP.JJ[i,t] + betawintP.JJ*wintP.JJ[i,t]
+  Dnew[i,t] <- x[i,t-1] + mu  + alpha_PLOT[PLOT[i]] + betaX*x[i,t-1] + betaX2*x[i,t-1]^2 + betaX_SICOND*x[i,t-1]*SICOND[i] + betaX_tmax.JanA*x[i,t-1]*tmax.JanA[i,t] + betaSICOND*Xf[rep[i],1] + betaSDI*Xf[rep[i],2]  + betaSICOND_tmax.JanA*SICOND[i]*tmax.JanA[i,t] + betatmax.JanA*tmax.JanA[i,t]
   x[i,t]~dnorm(Dnew[i,t],tau_add)
   }
   
@@ -25,7 +25,7 @@ model{
   x[i,1] ~ dnorm(x_ic,tau_ic)
   }  ## end loop over individuals
 
-   for(k in 1:518){
+   for(k in 1:626){
     alpha_PLOT[k] ~ dnorm(0,tau_PLOT)
 }
 
@@ -40,10 +40,10 @@ model{
          betaX ~dnorm(0,0.001)
        betaX2 ~dnorm(0,0.001)
        betaX_SICOND ~dnorm(0,0.001)
-       betaX_wintP.JJ ~dnorm(0,0.001)
+       betaX_tmax.JanA ~dnorm(0,0.001)
 
-      betaSICOND_wintP.JJ~dnorm(0,0.001)
-     betawintP.JJ~dnorm(0,0.001)
+      betaSICOND_tmax.JanA~dnorm(0,0.001)
+     betatmax.JanA~dnorm(0,0.001)
    tau_PLOT ~ dgamma(1,0.1)
 
 }

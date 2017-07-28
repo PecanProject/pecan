@@ -121,7 +121,25 @@ if(!is.null(Tree2Tree)){
 }
 
 ### SLOPE
-### ASPECT ### what's the scale for FIA's aspect data? do they need to be converted to N-S spectrum?
+#SLOPE <- temp2$COND_SLOPE # ranges as a high as 360
+#if(!is.null(Tree2Tree)){
+#  SLOPE2 <- Tree2Tree$SLOPE # max value = 78...different units??
+#  SLOPE <- c(SLOPE, SLOPE2)
+#}
+
+### ASPECT ### 
+#STAGE2 <- temp2$COND_SLOPE*cos(temp2$COND_ASPECT)
+#if(!is.null(Tree2Tree)){
+#  STAGE2.2 <- Tree2Tree$SLOPE*cos(Tree2Tree$ASPECT)
+#  STAGE2 <- c(STAGE2, STAGE2.2)
+#}
+
+#STAGE3 <- temp2$COND_SLOPE*sin(temp2$COND_ASPECT)
+#if(!is.null(Tree2Tree)){
+#  STAGE3.2 <- Tree2Tree$SLOPE*sin(Tree2Tree$ASPECT)
+#  STAGE3 <- c(STAGE3, STAGE3.2)
+#}
+
 ### STDAGE
 ### SDI ## eventually should calculate <relative> SDI...observed SDI relative to maxSDI for dominant spp on plot (PIPO)
 SDI <- temp2$SDI
