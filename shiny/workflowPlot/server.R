@@ -84,6 +84,7 @@ server <- shinyServer(function(input, output, session) {
   # Loads data for all workflow and run ids after the load button is pressed.
   # All information about a model is contained in 'all_run_id' string
   # Wrapper over 'load_data_single_run' in PEcAn.db::query.dplyr
+  # Model data different from observations data 
   loadNewData <-eventReactive(input$load,{
     req(input$all_run_id)
     # Get IDs DF from 'all_run_id' string
@@ -105,21 +106,35 @@ server <- shinyServer(function(input, output, session) {
     observations<-PEcAn.benchmark::load_data(data.path = File_path, format= File_format, time.row = File_format$time.row,  site = site, start_year = start.year, end_year = end.year) 
     return(observations)
   }
-  # getFileFormat <- function(bety,format.id){
-  getFileFormat <- function(bety,input.id){
+  # This function as a wrapper over PEcAn.DB::query.format.vars where 
+  # file format can be retrieved using either by input or format id. 
+  getFileFormat <- function(bety,input.id,format.id=NULL){
     # Retaining the code for getting file format using inputRecordID
     # File_format <- PEcAn.DB::query.format.vars(bety = bety, format.id = format.id) 
     File_format <- PEcAn.DB::query.format.vars(bety = bety, input.id = input.id)
     return(File_format)
   }
   getSettingsFromWorkflowId <- function(bety,workflowID){
-    basePath <- tbl(bety, 'workflows') %>% filter(id == workflowID) %>% pull(folder)
+    basePath <- tbl(bety, 'workflows') %>% filter(id %in% workflowID) %>% pull(folder)
     configPath <- file.path(basePath, 'pecan.CONFIGS.xml')
     # Second way of proving configPath. More of a hack
     # configPath <- paste0("~/output/PEcAn_",workflowID,"/pecan.CONFIGS.xml")
     settings<-PEcAn.settings::read.settings(configPath)
     return(settings)
   }
+  observeEvent(input$load,{
+    # Retrieves all site ids from multiple seleted run ids when load button is pressed
+    req(input$all_run_id)
+    ids_DF <- parse_ids_from_input_runID(input$all_run_id)
+    site_id_list <- c()
+    for(row_num in 1:nrow(ids_DF)){
+      settings <- getSettingsFromWorkflowId(bety,ids_DF$wID[row_num])
+      site.id <- c(settings$run$site$id)
+      site_id_list <- c(site_id_list,site.id)
+    }
+    updateSelectizeInput(session, "all_site_id", choices=site_id_list)
+  })
+  
   # Renders ggplotly 
   output$outputPlot <- renderPlotly({
     # Error messages

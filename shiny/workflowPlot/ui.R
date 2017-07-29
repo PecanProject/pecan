@@ -23,12 +23,14 @@ ui <- shinyUI(fluidPage(
                   min=0, max=100, value=80),
       tags$hr(),
       tags$hr(),
-      fileInput('fileUploaded', 'Choose file to upload data'
-                # accept=c('text/csv', 
-                #          'text/comma-separated-values,text/plain', 
-                #          '.csv')
-                ),
-      textInput("inputRecordID", "Input Record ID for file", "1000011260"),
+      selectizeInput("all_site_id", "Select Site IDs", c()),
+      selectizeInput("all_input_id", "Select Input ID", c()),
+      # fileInput('fileUploaded', 'Choose file to upload data'
+      #           # accept=c('text/csv', 
+      #           #          'text/comma-separated-values,text/plain', 
+      #           #          '.csv')
+      #           ),
+      # textInput("inputRecordID", "Input Record ID for file", "1000011260"),
       # textInput("formatID", "Format ID for file (Default CSV)", "5000000002"),
       radioButtons("data_geom", "Plot Type (for loaded data)", 
                    c("Scatter Plot" = "point", 
