@@ -23,7 +23,7 @@ ui <- shinyUI(fluidPage(
                   min=0, max=100, value=80),
       tags$hr(),
       tags$hr(),
-      selectizeInput("all_site_id", "Select Site IDs", c()),
+      selectizeInput("all_site_id", "Select Site ID", c()),
       selectizeInput("all_input_id", "Select Input ID", c()),
       # fileInput('fileUploaded', 'Choose file to upload data'
       #           # accept=c('text/csv', 

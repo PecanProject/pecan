@@ -33,7 +33,7 @@ server <- shinyServer(function(input, output, session) {
     # Will return a list
     run_id_list <- c()
     for(w_id in w_ids){
-    # For all the workflow ids  
+      # For all the workflow ids  
       r_ids <- get_run_ids(bety, w_id)
       for(r_id in r_ids){
         # Each workflow id can have more than one run ids
@@ -109,7 +109,7 @@ server <- shinyServer(function(input, output, session) {
   # This function as a wrapper over PEcAn.DB::query.format.vars where 
   # file format can be retrieved using either by input or format id. 
   getFileFormat <- function(bety,input.id,format.id=NULL){
-    # Retaining the code for getting file format using inputRecordID
+    # Retaining the code for getting file format using format Id as in tutorial
     # File_format <- PEcAn.DB::query.format.vars(bety = bety, format.id = format.id) 
     File_format <- PEcAn.DB::query.format.vars(bety = bety, input.id = input.id)
     return(File_format)
@@ -134,7 +134,16 @@ server <- shinyServer(function(input, output, session) {
     }
     updateSelectizeInput(session, "all_site_id", choices=site_id_list)
   })
-  
+  # Get input id from selected site id
+  getInputs <- function(bety,site_Id){
+    inputIds <- tbl(bety, 'inputs') %>% filter(site_id %in% site_Id) %>% distinct(id) %>% pull(id)
+    inputIds <- sort(inputIds)
+    return(inputIds)
+  }
+  observe({
+    req(input$all_site_id)
+    updateSelectizeInput(session, "all_input_id", choices=getInputs(bety,input$all_site_id))
+  })
   # Renders ggplotly 
   output$outputPlot <- renderPlotly({
     # Error messages
@@ -166,25 +175,26 @@ server <- shinyServer(function(input, output, session) {
     # ggplot function for now scatter plots.
     plt <- ggplot(df, aes(x=dates, y=vals, color=run_id)) 
     # Toggle chart type using switch
-      switch(input$plotType,
-             "scatterPlot"  = {
-               plt <- plt + geom_point()
-             },
-             "lineChart"  = {
-               plt <- plt + geom_line()
-             }
-      )
+    switch(input$plotType,
+           "scatterPlot"  = {
+             plt <- plt + geom_point()
+           },
+           "lineChart"  = {
+             plt <- plt + geom_line()
+           }
+    )
     plt <- plt + labs(title=title, x=xlab, y=ylab) + geom_smooth(n=input$smooth_n)
     # Check if user wants to load external data
     # Similar to using event reactive
     if (input$load_data>0) { 
       # File_format <- getFileFormat(bety,input$formatID)
       # Retaining the code for getting file format using inputRecordID
-      File_format <- getFileFormat(bety,input$inputRecordID)
+      File_format <- getFileFormat(bety,input$all_input_id)
       ids_DF <- parse_ids_from_input_runID(input$all_run_id)
       settings <- getSettingsFromWorkflowId(bety,ids_DF$wID[1])
       inFile <- input$fileUploaded
-      externalData <- loadObservationData(bety,settings,inFile$datapath,File_format)
+      filePath <- PEcAn.DB::dbfile.file(type = 'Input', id = input$all_input_id,con = bety$con)
+      externalData <- loadObservationData(bety,settings,filePath,File_format)
       # If variable found in the uploaded file 
       if (input$variable_name %in% names(externalData)){
         externalData <- externalData %>% dplyr::select(posix,dplyr::one_of(input$variable_name))
@@ -203,17 +213,17 @@ server <- shinyServer(function(input, output, session) {
         })
       }
     }
-      # Earlier smoothing and y labels
-      # geom_smooth(aes(fill = "Spline fit")) +
-      # scale_y_continuous(labels=fancy_scientific) +
-      # Earlier color and fill values
-      # scale_color_manual(name = "", values = "black") +
-      # scale_fill_manual(name = "", values = "grey50") 
+    # Earlier smoothing and y labels
+    # geom_smooth(aes(fill = "Spline fit")) +
+    # scale_y_continuous(labels=fancy_scientific) +
+    # Earlier color and fill values
+    # scale_color_manual(name = "", values = "black") +
+    # scale_fill_manual(name = "", values = "grey50") 
     plt<-ggplotly(plt)
     # Not able to add icon over ggplotly
     # add_icon()
   })
-# Shiny server closes here  
+  # Shiny server closes here  
 })
 
 # runApp(port=6480, launch.browser=FALSE)
