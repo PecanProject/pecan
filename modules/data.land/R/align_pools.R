@@ -1,14 +1,21 @@
-align_pools <- function(nc.path,sla=NULL){
-  #sla must be converted to m2/kgC
-  #function to check that ncvar was loaded (numeric) and has a valid value (not NA or negative)
+##' @name align_pools
+##' @title align_pools
+##' @description Calculates pools from given initial condition values, deriving complements where necessary/possible if given TotLivBiomass
+##' @export
+##'
+##' @param nc.path path to netcdf file containing standard dimensions and variables; currently supports these variables: TotLivBiom, leaf_carbon_content, LAI, AbvGrndWood, root_carbon_content, fine_root_carbon_content, coarse_root_carbon_content, litter_carbon_content, soil_organic_carbon_content, soil_carbon_content, wood_debris_carbon_content
+##' @param sla SLA in m2 / kg C if providing LAI for leaf carbon
+##' @return list of pool values in kg C / m2 with generic names
+##' @author Anne Thomas
+align_pools <- function(nc.path, sla = NULL){
+  #function to check that var was loaded (numeric) and has a valid value (not NA or negative)
   is.valid <- function(var){
     return(all(is.numeric(var) && !is.na(var) &&  var >= 0)) 
   }
   
-  default.param <- read.table(system.file("default_param.dalec", package = "PEcAn.DALEC"), header = TRUE)
   IC.params <- list()
   
-  if (!is.null(settings$run$inputs$poolinitcond$path)) {
+  if (!is.null(nc.path)) {
     IC.list <- PEcAn.data.land::pool_ic_netcdf2list(nc.path)
     if(!is.null(IC.list)){
       ### load biomass variables from IC list; will be NULL if not present (checked for later)
@@ -24,10 +31,6 @@ align_pools <- function(nc.path,sla=NULL){
       litter <- IC.list$vals$litter_carbon_content
       soil <- IC.list$vals$soil_organic_carbon_content
       wood.debris <- IC.list$vals$wood_debris_carbon_content
-      
-      if(!all(sapply(c(TotLivBiom,leaf,LAI,AbvGrndWood,roots,fine.roots,coarse.roots),is.numeric))){
-        PEcAn.utils::logger.info("DALEC IC: Any missing vars will be calculated from those provided or replaced by DALEC's defaults")
-      }
       
       # check if total roots are partitionable
       # note: if roots are partitionable, they will override fine_ and/or coarse_root_carbon_content if loaded
