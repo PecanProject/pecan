@@ -59,7 +59,8 @@ align_pools <- function(nc.path, sla = NULL){
       if (is.valid(leaf)) {
         IC.params[["leaf"]] <- leaf 
       } else if(is.valid(LAI) && !is.null(sla)){
-          leaf <- LAI * 1/SLA
+          leaf <- LAI * 1/sla
+          print(paste("using LAI", LAI, "and sla", sla, "to get", leaf))
           IC.params[["leaf"]] <- leaf
       } else if(is.valid(TotLivBiom) && is.valid(AbvGrndWood) && 
                 is.valid(fine.roots) && is.valid(coarse.roots)){
