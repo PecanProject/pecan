@@ -5,7 +5,7 @@
 \title{Insert file into tables}
 \usage{
 dbfile.insert(in.path, in.prefix, type, id, con, reuse = TRUE,
-  hostname = fqdn())
+  hostname = PEcAn.utils::fqdn())
 }
 \arguments{
 \item{con}{database connection object}
@@ -33,4 +33,3 @@ This will write into the dbfiles and machines the required data to store the fil
 \author{
 Rob Kooper, Ryan Kelly
 }
-

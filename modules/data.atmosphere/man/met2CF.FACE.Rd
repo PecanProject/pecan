@@ -4,7 +4,8 @@
 \alias{met2CF.FACE}
 \title{met2CF.FACE}
 \usage{
-met2CF.FACE(in.path, in.prefix, outfolder, start_date, end_date, ...)
+met2CF.FACE(in.path, in.prefix, outfolder, start_date, end_date, input.id, site,
+  format, ...)
 }
 \arguments{
 \item{convert}{FACE files to CF files}
@@ -12,4 +13,3 @@ met2CF.FACE(in.path, in.prefix, outfolder, start_date, end_date, ...)
 \author{
 Elizabeth Cowdery
 }
-

@@ -5,7 +5,7 @@
 \title{Read model output}
 \usage{
 read.output(runid, outdir, start.year = NA, end.year = NA,
-  variables = "GPP")
+  variables = "GPP", dataframe = FALSE)
 }
 \arguments{
 \item{runid}{the id distiguishing the model run.}
@@ -17,6 +17,8 @@ read.output(runid, outdir, start.year = NA, end.year = NA,
 \item{end.year}{last year of output to read}
 
 \item{variables}{variables to be read from model output}
+
+\item{dataframe}{A boolean that will return output in a data.frame format with a posix column. Useful for align.data and plotting.}
 }
 \value{
 vector of output variable
@@ -39,4 +41,3 @@ documentation
 \author{
 Michael Dietze, David LeBauer
 }
-

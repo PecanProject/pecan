@@ -33,7 +33,7 @@ For models with large constants (e.g. absorption features in the
       z <- seq(exp(1), pi, length.out=42)
       l <- list(x=x, y=y, z=z) ## NOTE that names must be explicitly declared
       l.types <- c('real','integer', 'real*4', 'real*8')
-      f.data.module(l, l.types, 'testmod')
+      fortran_data_module(l, l.types, 'testmod')
  
       x <- runif(10)
       y <- rnorm(10)
@@ -45,4 +45,3 @@ For models with large constants (e.g. absorption features in the
 \author{
 Alexey Shiklomanov
 }
-

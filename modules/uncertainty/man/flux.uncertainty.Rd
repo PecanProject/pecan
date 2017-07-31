@@ -30,4 +30,3 @@ Calculate parameters for heteroskedastic flux uncertainty
 \author{
 Mike Dietze, Carl Davidson
 }
-

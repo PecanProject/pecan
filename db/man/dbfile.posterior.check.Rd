@@ -4,7 +4,8 @@
 \alias{dbfile.posterior.check}
 \title{Check for a file in the input/dbfiles tables}
 \usage{
-dbfile.posterior.check(pft, mimetype, formatname, con, hostname = fqdn())
+dbfile.posterior.check(pft, mimetype, formatname, con,
+  hostname = PEcAn.utils::fqdn())
 }
 \arguments{
 \item{pft}{the name of the pft that this data is applicable to}
@@ -37,4 +38,3 @@ file exists
 \author{
 Rob Kooper
 }
-

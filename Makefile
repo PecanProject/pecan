@@ -1,3 +1,5 @@
+NCPUS ?= 1
+
 BASE := utils db settings visualization
 
 MODELS := biocro clm45 dalec ed fates gday jules linkages \
@@ -34,10 +36,10 @@ ALL_PKGS_D := $(BASE_D) $(MODELS_D) $(MODULES_D) .doc/models/template
 
 .PHONY: all install check test document
 
-all: install
+all: install document
 
 document: .doc/all
-install: .install/all 
+install: .install/all
 check: .check/all
 test: .test/all 
 
@@ -51,58 +53,50 @@ depends = .install/$(1) .doc/$(1) .check/$(1) .test/$(1)
 
 $(call depends,db): .install/utils
 $(call depends,settings): .install/utils .install/db
-$(call depends,visualization): .install/db .install/shiny
-$(call depends,modules/data.atmosphere): .install/utils .install/reddyproc
+$(call depends,visualization): .install/db
+$(call depends,modules/data.atmosphere): .install/utils
 $(call depends,modules/data.land): .install/db .install/utils
 $(call depends,modules/meta.analysis): .install/utils .install/db
 $(call depends,modules/priors): .install/utils
 $(call depends,modules/assim.batch): .install/utils .install/db .install/modules/meta.analysis 
 $(call depends,modules/rtm): .install/modules/assim.batch
+$(call depends,modules/uncertainty): .install/utils .install/modules/priors
 $(call depends,models/template): .install/utils
-$(call depends,models/biocro): .install/utils .install/modules/data.atmosphere .install/modules/data.land
+$(call depends,models/biocro): .install/utils .install/settings .install/db .install/modules/data.atmosphere .install/modules/data.land
 
 $(MODELS_I): .install/models/template
 
 
 clean:
 	rm -rf .install .check .test .doc
+	find modules/rtm/src \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete
 
 .install/devtools:
-	Rscript -e "if(!require('devtools')) install.packages('devtools', repos = 'http://cran.rstudio.com')"
+	Rscript -e "if(!require('devtools')) install.packages('devtools', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 	mkdir -p $(@D)
 	echo `date` > $@
 
 .install/roxygen2:
-	Rscript -e "if(!require('roxygen2')) install.packages('roxygen2', repos = 'http://cran.rstudio.com')"
+	Rscript -e "if(!require('roxygen2')) install.packages('roxygen2', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 	mkdir -p $(@D)
 	echo `date` > $@
 
 .install/testthat:
-	Rscript -e "if(!require('testthat')) install.packages('testthat', repos = 'http://cran.rstudio.com')"
+	Rscript -e "if(!require('testthat')) install.packages('testthat', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 	mkdir -p $(@D)
 	echo `date` > $@
 
-.install/shiny:
-	Rscript -e "if(!require('shiny')) install.packages('shiny', repos = 'http://cran.rstudio.com')"
-	mkdir -p $(@D)
-	echo `date` > $@
-
-.install/reddyproc:
-	Rscript -e "test <- require('REddyProc'); if (!test) devtools::install_github('rforge/reddyproc', subdir = 'pkg/REddyProc')"
-	mkdir -p $(@D)
-	echo `date` > $@
-
-install_R_pkg = Rscript -e "devtools::install('$(strip $(1))');"
-check_R_pkg = Rscript -e "devtools::check('"$(strip $(1))"')"
-test_R_pkg = Rscript -e "devtools::test('"$(strip $(1))"')"
+depends_R_pkg = Rscript -e "devtools::install_deps('$(strip $(1))', threads = ${NCPUS});"
+install_R_pkg = Rscript -e "devtools::install('$(strip $(1))', Ncpus = ${NCPUS});"
+check_R_pkg = Rscript scripts/check_with_errors.R $(strip $(1))
+test_R_pkg = Rscript -e "devtools::test('"$(strip $(1))"', reporter = 'stop')"
 doc_R_pkg = Rscript -e "devtools::document('"$(strip $(1))"')"
 
-$(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): .install/devtools
-
-$(ALL_PKGS_T) $(ALL_PKGS_D): .install/roxygen2 .install/testthat
+$(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): .install/devtools .install/roxygen2 .install/testthat
 
 .SECONDEXPANSION:
 .doc/%: $$(wildcard %/**/*) $$(wildcard %/*)
+	$(call depends_R_pkg, $(subst .doc/,,$@))
 	$(call doc_R_pkg, $(subst .doc/,,$@))
 	mkdir -p $(@D)
 	echo `date` > $@

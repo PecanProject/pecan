@@ -1,3 +1,4 @@
+#' @importFrom PEcAn.utils convert.input
 .download.raw.met.module <- function(dir, met, register, machine, start_date, end_date, str_ns,
                                      con, input_met, site.id, lat.in, lon.in, host, site, username, overwrite = FALSE) {
   
@@ -20,7 +21,8 @@
                             lat.in = lat.in, lon.in = lon.in, 
                             model = input_met$model, 
                             scenario = input_met$scenario, 
-                            ensemble_member = input_met$ensemble_member)
+                            ensemble_member = input_met$ensemble_member,
+                            pattern = met)
     
   } else if (register$scale == "site") {
     # Site-level met

@@ -25,4 +25,3 @@ print(out)
 \author{
 Shawn P. Serbin
 }
-

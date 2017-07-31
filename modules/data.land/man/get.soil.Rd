@@ -22,4 +22,3 @@ Get Soil
 \author{
 David LeBauer
 }
-

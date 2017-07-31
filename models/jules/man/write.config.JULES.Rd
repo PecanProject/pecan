@@ -25,7 +25,9 @@ Writes a JULES config file.
 Requires a pft xml object, a list of trait values for a single model run,
 and the name of the file to create
 }
+\examples{
+write.config.JULES(defaults, trait.values, settings, run.id)
+}
 \author{
 Mike Dietze, Rob Kooper
 }
-

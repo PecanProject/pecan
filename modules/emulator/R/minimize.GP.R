@@ -113,34 +113,36 @@ calculate.prior <- function(samples, priors) {
   sum(sapply(seq_along(priors), function(i) eval(priors[[i]], list(x = samples[[i]]))))
 } # calculate.prior
 
-##' @name get.y
-##' @title get.y
+##' @name get_ss
+##' @title get_ss
 ##' @export
-get.y <- function(gp, xnew, n.of.obs, llik.fn, priors, settings) {
+get_ss <- function(gp, xnew) {
   
   SS <- numeric(length(gp))
-    
+  
   X <- matrix(unlist(xnew), nrow = 1, byrow = TRUE)
-    
+  
   for(igp in seq_along(gp)){
-    Y <- GPfit::predict.GP(gp[[igp]], X[, 1:ncol(gp[[igp]]$X), drop=FALSE])
-    # likelihood <- Y$Y_hat
-    # likelihood <- rnorm(1, Y$Y_hat, sqrt(Y$MSE))
-    SS[igp] <- rnorm(1, Y$Y_hat, sqrt(Y$MSE))
+    Y <- mlegp::predict.gp(gp[[igp]], newData = X[, 1:ncol(gp[[igp]]$X), drop=FALSE], se.fit = TRUE) 
+    SS[igp] <- rnorm(1, Y$fit, Y$se.fit)
   }
+  return(SS)
+  
+} # get_ss
 
-  llik.par <- pda.calc.llik.par(settings, n.of.obs, SS)
-  likelihood <- pda.calc.llik(SS, llik.fn, llik.par)
+##' @name get_y
+##' @title get_y
+##' @export
+get_y <- function(SSnew, xnew, llik.fn, priors, llik.par) {
+  
+  likelihood <- pda.calc.llik(SSnew, llik.fn, llik.par)
   
   prior.prob <- calculate.prior(xnew, priors)
   posterior.prob <- likelihood + prior.prob
   
-  # return likelihood parameters
-  par <- unlist(sapply(llik.par, `[[` , "par"))
-
-  return(list(posterior.prob = posterior.prob, par = par))
-
-} # get.y
+  return(posterior.prob)
+  
+} # get_y
 
 # is.accepted <- function(ycurr, ynew, format='lin'){ z <- exp(ycurr-ynew) acceptance <-
 # z>runif(1) return(acceptance) }
@@ -177,10 +179,10 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
                     jmp0 = 0.35 * (rng[, 2] - rng[, 1]), ar.target = 0.5, priors = NA, settings, 
                     run.block = TRUE, n.of.obs, llik.fn, resume.list = NULL) {
   
-  # get Y
-  predY <- get.y(gp, x0, n.of.obs, llik.fn, priors, settings)
-  Ycurr <- predY$posterior.prob
-  LLpar <- predY$par
+  # get SS
+  currSS <- get_ss(gp, x0)
+  currllp <- pda.calc.llik.par(settings, n.of.obs, currSS)
+  LLpar  <- unlist(sapply(currllp, `[[` , "par"))
 
   xcurr <- x0
   dim   <- length(x0)
@@ -206,12 +208,12 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
     # jmp <- mvjump(ic=diag(jmp0),rate=ar.target, nc=dim)
   }
   
-
+  
   for (g in start:nmcmc) {
     
     if (mix == "joint") {
-      ## propose new
-      xnew <- xcurr
+
+      # adapt
       if ((g > 2) && ((g - 1) %% settings$assim.batch$jump$adapt == 0)) {
         params.recent <- samp[(g - settings$assim.batch$jump$adapt):(g - 1), ]
         colnames(params.recent) <- names(x0)
@@ -219,6 +221,8 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
         jcov <- pda.adjust.jumps.bs(settings, jcov, accept.count, params.recent)
         accept.count <- 0  # Reset counter
       }
+      
+      ## propose new parameters
       repeat {
         xnew <- mvrnorm(1, unlist(xcurr), jcov)
         if (bounded(xnew, rng)) {
@@ -226,22 +230,30 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
         }
       }
       # if(bounded(xnew,rng)){
-      currY <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings)
-      ycurr <- currY$posterior.prob
-      pcurr <- currY$par
-      newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
-      ynew  <- newY$posterior.prob
-      if (is.accepted(ycurr, ynew)) {
-        xcurr <- xnew
-        pcurr <- newY$par
+      
+      # re-predict SS
+      currSS <- get_ss(gp, xcurr)
+      # don't update the currllp ( = llik.par, e.g. tau) yet
+      # calculate posterior with xcurr | currllp
+      ycurr  <- get_y(currSS, xcurr, llik.fn, priors, currllp)
 
+      newSS  <- get_ss(gp, xnew)
+      newllp <- pda.calc.llik.par(settings, n.of.obs, newSS)
+      ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)
+
+      if (is.accepted(ycurr, ynew)) {
+        xcurr  <- xnew
+        currSS <- newSS
         accept.count <- accept.count + 1
       }
+      
+      # now update currllp | xcurr
+      currllp <- pda.calc.llik.par(settings, n.of.obs, currSS)
+      pcurr   <- unlist(sapply(currllp, `[[` , "par"))
       # } mix = each
     } else {
       for (i in seq_len(dim)) {
         ## propose new
-        xnew <- xcurr
         repeat {
           xnew[i] <- rnorm(1, xcurr[[i]], p(jmp)[i])
           if (bounded(xnew[i], rng[i, , drop = FALSE])) {
@@ -249,25 +261,30 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
           }
         }
         # if(bounded(xnew,rng)){
-        currY <- get.y(gp, xcurr, n.of.obs, llik.fn, priors, settings)
-        ycurr <- currY$posterior.prob
-        pcurr <- currY$par
-        newY  <- get.y(gp, xnew, n.of.obs, llik.fn, priors, settings)
-        ynew  <- newY$posterior.prob
+        currSS <- get_ss(gp, xcurr)
+        ycurr  <- get_y(currSS, xcurr, llik.fn, priors, currllp)
+        
+        newSS  <- get_ss(gp, xnew)
+        newllp <- pda.calc.llik.par(settings, n.of.obs, newSS)
+        ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)
         if (is.accepted(ycurr, ynew)) {
-          xcurr <- xnew
-          pcurr <- newY$par
+          xcurr  <- xnew
+          currSS <- newSS
         }
+        
+        currllp <- pda.calc.llik.par(settings, n.of.obs, currSS)
+        pcurr   <- unlist(sapply(currllp, `[[` , "par"))
+        
         # }
       }
     }
     samp[g, ] <- unlist(xcurr)
     par[g, ]  <- pcurr
     
-    if(g %% 200 == 0) PEcAn.utils::logger.info(g, "of", nmcmc, "iterations")
+    if(g %% 1000 == 0) PEcAn.utils::logger.info(g, "of", nmcmc, "iterations")
     # print(p(jmp)) jmp <- update(jmp,samp)
   }
-
+  
   
   chain.res <- list(jump = jcov, ac = accept.count, prev.samp = samp, par = par, n.of.obs = n.of.obs)
   

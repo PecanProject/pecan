@@ -1,3 +1,4 @@
+# @importFrom PEcAn.utils logger.info convert.input
 .metgapfill.module <- function(cf.id, register, dir, met, str_ns, site, new.site, con, 
                                start_date, end_date, host, overwrite = FALSE) {
   logger.info("Gapfilling")  # Does NOT take place on browndog!

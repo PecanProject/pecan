@@ -4,8 +4,8 @@
 \alias{dbfile.check}
 \title{Check for a file in the dbfiles tables}
 \usage{
-dbfile.check(type, container.id, con, hostname = fqdn(),
-  machine.check = TRUE)
+dbfile.check(type, container.id, con, hostname = PEcAn.utils::fqdn(),
+  machine.check = TRUE, return.all = FALSE)
 }
 \arguments{
 \item{type}{the type of dbfile (Input, Posterior)}
@@ -17,6 +17,8 @@ dbfile.check(type, container.id, con, hostname = fqdn(),
 \item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
 
 \item{machine.check}{setting to check for file on named host, otherwise will check for any file given container id}
+
+\item{return.all}{logical flag, if TRUE will return all the files in the directory, not only the max(dbfiles$updated_at) subset}
 }
 \value{
 data.frame with the id, filename and pathname of all the files that are associated
@@ -35,4 +37,3 @@ This will check the dbfiles and machines to see if the file exists
 \author{
 Rob Kooper
 }
-

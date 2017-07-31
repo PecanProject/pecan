@@ -34,7 +34,42 @@ listToArgString <- function(l) {
     return(paste0("'", x, "'"))
   } else if (is.null(x)) {
     return("NULL")
-  } else {
+  } else if(is.data.frame(x)){
+    # note that this will treat everything as characters
+    foo <- sapply(1:ncol(x), function(v) paste(colnames(x)[v],
+                                               "=c('" ,
+                                               paste(x[,v], collapse = "','"),
+                                               "')"))
+    foobar <- paste0("data.frame(", paste(foo, collapse = ","), ")")
+    return(foobar)
+  }else if(is.list(x)){ 
+    # does your list have sublist
+    has_sub_list <- sapply(x,is.list)
+    if(any(has_sub_list)){
+      foo.string <- list()
+      for(r in seq_along(has_sub_list)){
+        if(has_sub_list[r]){
+          foonames <- names(x[[r]])
+          foobar <- unlist(x[[r]])
+          tmp <-sapply(seq_along(x[[r]]), function(pas) paste0(foonames[pas], "='", foobar[pas], "'"))
+          foo <- paste0(names(x)[r],"=list(",toString(tmp),")")
+          foo.string[[r]] <- foo
+        }else{ # this doesn't take care of everything
+          foo.string[[r]] <- paste0(names(x)[r], "='", x[[r]],"'")
+        }
+      }
+      val <- paste0("list(",toString(foo.string),")")
+      return(val)
+     
+    }else{
+      foonames <- names(x)
+      foobar <- unlist(x)
+      tmp <-sapply(seq_along(x), function(pas) paste0(foonames[pas], "='", foobar[pas], "'"))
+      foo <- paste0("list(",toString(tmp),")")
+      return(foo)
+    }
+
+  }else {
     return(x)
   }
 } # .parseArg

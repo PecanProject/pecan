@@ -5,7 +5,7 @@
 \title{Insert file into tables}
 \usage{
 dbfile.input.insert(in.path, in.prefix, siteid, startdate, enddate, mimetype,
-  formatname, parentid = NA, con, hostname = fqdn(),
+  formatname, parentid = NA, con, hostname = PEcAn.utils::fqdn(),
   allow.conflicting.dates = FALSE)
 }
 \arguments{
@@ -49,4 +49,3 @@ data to store the file
 \author{
 Rob Kooper, Betsy Cowdery
 }
-

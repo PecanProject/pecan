@@ -21,4 +21,3 @@ vector and change its value. If the tag is not found, do nothing.
 \author{
 Alexey Shiklomanov
 }
-
