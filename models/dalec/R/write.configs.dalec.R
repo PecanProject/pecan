@@ -163,8 +163,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
         IC.params[["cf0"]] <- leaf * 1000 #from standard kg C m-2
       } else if(is.valid(LAI)){
         if("SLA" %in% names(params)){
-          SLA <- 1/params[1,"SLA"] #SLA converted to m2/gC in convert.samples
-          leaf <- LAI * SLA
+          leaf <- LAI * 1/params[1,"SLA"] #SLA converted to m2/gC in convert.samples
           IC.params[["cf0"]] <- leaf
         } else{
           SLA <- default.param[which(default.param$cmdFlag == "SLA"),"val"] 
