@@ -108,13 +108,6 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
   }
   
   ### INITIAL CONDITIONS
-  
-  #function to check that ncvar was loaded (numeric) and has a valid value (not NA or negative)
-  is.valid <- function(var){
-    return(all(is.numeric(var) && !is.na(var) &&  var >= 0)) 
-  }
-  
-  
   IC.params <- list()
  
   if(!is.null(settings$run$inputs$poolinitcond$path)) {
