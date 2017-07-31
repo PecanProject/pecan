@@ -122,6 +122,16 @@ align_pools <- function(nc.path, sla = NULL){
       if(is.valid(wood.debris)){
         IC.params[["wood.debris"]] <-sum(wood.debris)
       }
+      
+      return(IC.params)
     }
+    else{
+      PEcAn.utils::logger.severe("Could not load initial conditions: output list is null")
+      return(NULL)
+    }
+  }
+  else{
+    PEcAn.utils::logger.severe("Could not load initial conditions: filepath is null")
+    return(NULL)
   }
 }
