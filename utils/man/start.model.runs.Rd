@@ -4,7 +4,14 @@
 \alias{start.model.runs}
 \title{Start ecosystem model runs}
 \usage{
-\method{start}{model.runs}(settings, write = TRUE)
+\method{start}{model.runs}(settings, write = TRUE, stop.on.error = TRUE)
+}
+\arguments{
+\item{settings}{input pecan settings file}
+
+\item{write}{TRUE/FALSE. Default TRUE}
+
+\item{stop.on.error}{TRUE/FALSE. Default TRUE}
 }
 \description{
 Start selected ecosystem model runs within PEcAn workflow
@@ -17,4 +24,3 @@ start.model.runs(settings)
 \author{
 Shawn Serbin, Rob Kooper, David LeBauer
 }
-

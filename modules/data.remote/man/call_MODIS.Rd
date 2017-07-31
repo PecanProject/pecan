@@ -15,9 +15,16 @@ call_MODIS(outfolder = ".", fname = "m_data.nc", start, end, lat, lon,
 
 \item{lat}{Latitude of the pixel}
 
-\item{lon}{Longitude of the pixel}
+\item{lon}{Longitude of the pixel
+
+depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4}
 }
 \description{
 Get MODIS data by date and location
 }
+\examples{
+\\donotrun{
+test <- call_MODIS(start="2001001",end="2016366",lat=44.0646,lon=-71.28808,size=3,qc_band = "FparLai_QC",sd_band = "LaiStdDev_1km")
+}
 
+}

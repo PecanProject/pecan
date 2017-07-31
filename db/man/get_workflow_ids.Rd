@@ -4,7 +4,7 @@
 \alias{get_workflow_ids}
 \title{Get vector of workflow IDs}
 \usage{
-get_workflow_ids(bety, session)
+get_workflow_ids(bety, session, all.ids = FALSE)
 }
 \arguments{
 \item{bety}{BETYdb connection, as opened by `betyConnect()`}
@@ -14,4 +14,3 @@ get_workflow_ids(bety, session)
 \description{
 Get vector of workflow IDs
 }
-

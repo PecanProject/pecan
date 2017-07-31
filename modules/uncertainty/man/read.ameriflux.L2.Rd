@@ -15,4 +15,3 @@ Read Ameriflux L2 Data
 \author{
 Mike Dietze, Carl Davidson
 }
-

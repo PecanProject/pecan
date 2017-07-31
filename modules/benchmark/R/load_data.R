@@ -6,16 +6,16 @@
 ##' @param start_year numeric
 ##' @param end_year numeric
 ##' @param site list
-##' @author Betsy Cowdery, Joshua Mantooth
+##' @author Betsy Cowdery, Istem Fer, Joshua Mantooth
 ##' Generic function to convert input files containing observational data to 
 ##' a common PEcAn format. 
+
 load_data <- function(data.path, format, start_year = NA, end_year = NA, site = NA, 
-                      vars.used.index=NULL, time.row = NULL) {
+                      vars.used.index=NULL, ...) {
 
   ## load everything in format by default
-  if(is.null(time.row)){
-    time.row <- format$time.row 
-  }
+  time.row <- format$time.row 
+  
   if(is.null(vars.used.index)){
     vars.used.index <- setdiff(seq_along(format$vars$variable_id), format$time.row)
   }
@@ -52,11 +52,22 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
     PEcAn.utils::logger.warn("Brown Dog is currently unable to perform conversion from ",mimetype," to a PEcAn usable format")
   }
   
-  out <- fcn(data.path, format, site, format$vars$input_name[c(vars.used.index, time.row)])
+  vars =  format$vars$input_name[c(vars.used.index, time.row)]
+  out <- fcn(data.path, format, site, vars)
   
   # Convert loaded data to the same standard variable names and units
   
   vars_used <- format$vars[vars.used.index, ]
+  
+  # check wide format and transform to long
+  if(any(duplicated(vars_used$bety_name))){	
+    w2l       <- format_wide2long(out, format, vars_used, time.row)		
+    out       <- w2l$long_data		
+    format    <- w2l$format		
+    vars_used <- w2l$vars_used		
+    time.row  <- w2l$time.row		
+   }
+
   
   for (i in seq_len(nrow(vars_used))) {
     col <- names(out) == vars_used$input_name[i]
@@ -71,23 +82,30 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
         print(sprintf("convert %s %s to %s %s",
                       vars_used$input_name[i], vars_used$input_units[i], 
                       vars_used$pecan_name[i], vars_used$pecan_units[i]))
-        out[col] <- udunits2::ud.convert(x, u1, u2)[, 1]
+        out[col] <- udunits2::ud.convert(as.numeric(x), u1, u2)
         colnames(out)[col] <- vars_used$pecan_name[i]
       } else if (misc.are.convertible(u1, u2)) {
         print(sprintf("convert %s %s to %s %s", 
                       vars_used$input_name[i], u1, 
                       vars_used$pecan_name[i], u2))
-        out[col] <- misc.convert(x, u1, u2)
+        out[col] <- as.vector(misc.convert(x, u1, u2)) # Betsy: Adding this because misc.convert returns vector with attributes original agrument x, which causes problems later
         colnames(out)[col] <- vars_used$pecan_name[i]
       } else {
-        PEcAn.utils::logger.error("Units cannot be converted")
-      }  # This error should probably be thrown much earlier, like in query.format.vars - will move it eventually
+        PEcAn.utils::logger.warn(paste("Units cannot be converted. Removing variable. please check the units of",vars_used$input_name[i]))
+        out<-out[,!names(out) %in% c(vars_used$input_name[i])] 
+        vars_used<-vars_used[!names(vars_used) %in% c(vars_used$input_name[i],vars_used$pecan_name[i]),]
+      }
     }
   }
   
   if(!is.null(time.row)){  
+    
+    # load_data was not changing the name of the 'time' column
+    col <- names(out) %in% format$vars$input_name[time.row]
+    names(out)[col] <- format$vars$pecan_name[time.row]
+    
     # Need a much more spohisticated approach to converting into time format. 
-    y <- dplyr::select(out, one_of(format$vars$input_name[time.row]))
+    y <- dplyr::select(out, one_of(format$vars$pecan_name[time.row]))
     
     if(!is.null(site$time_zone)){
       tz = site$time_zone
@@ -97,17 +115,24 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
     }
     
     out$posix <- strptime(apply(y, 1, function(x) paste(x, collapse = " ")), 
-                          format=paste(format$vars$storage_type[time.row], collapse = " "), tz = tz)
+                          format=paste(format$vars$storage_type[time.row], collapse = " "),
+                          tz = tz) %>% as.POSIXct()
+    }
+  
+  # Subset by start year and end year when loading data
+  # This was part of the arguments but never implemented
+  if(!is.na(start_year)){
+    out$year <- lubridate::year(out$posix)
+    out <- out %>% filter(.,year >= as.numeric(start_year))
+    print("subsetting by start year")
+  }
+  
+  if(!is.na(end_year)){
+    out$year <- lubridate::year(out$posix)
+    out <- out %>% filter(.,year <= as.numeric(end_year))
+    print("subsetting by end year")
   }
   
   return(out)
 } # load_data
 
-##' Future things to think about
-##'   - error estimates
-##'   - QAQC
-##'   - STEPPS -> cov
-##'   - MCMC samples
-##'   - 'data products' vs raw data
-##'   - Is there a generic structure to ovbs?
-##' 

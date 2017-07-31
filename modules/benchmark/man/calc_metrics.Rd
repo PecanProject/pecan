@@ -4,8 +4,7 @@
 \alias{calc_metrics}
 \title{calc_metrics}
 \usage{
-calc_metrics(model.calc, obvs.calc, var, metrics, start_year, end_year, bm,
-  ensemble.id, model_run)
+calc_metrics(model.calc, obvs.calc, var, metrics, bm, ensemble.id, model_run)
 }
 \arguments{
 \item{model_run}{}
@@ -13,4 +12,3 @@ calc_metrics(model.calc, obvs.calc, var, metrics, start_year, end_year, bm,
 \author{
 Betsy Cowdery
 }
-

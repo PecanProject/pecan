@@ -23,4 +23,3 @@ if length > 1, order matters (first will be used preferentially)}
 \author{
 Carl Davidson, David LeBauer, Ryan Kelly
 }
-
