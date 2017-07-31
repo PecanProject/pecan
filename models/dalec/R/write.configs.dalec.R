@@ -152,7 +152,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
         if("wood.debris" %in%  names(IC.pools)){
           IC.params[["cs0"]] <- (IC.pools$soil + sum(IC.pools$wood.debris)) * 1000 #from standard kg C m-2
         } else {
-          IC.params[["cs0"]] <- soil * 1000 #from standard kg C m-2
+          IC.params[["cs0"]] <- IC.pools$soil * 1000 #from standard kg C m-2
           PEcAn.utils::logger.warn("write.configs.DALEC IC: Loading soil carbon pool without woody debris.")
         }
       } 
