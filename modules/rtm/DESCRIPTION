@@ -20,11 +20,8 @@ Suggests:
     PEcAn.utils,
     PEcAn.ED2,
     testthat (>= 1.0.2),
-    knitr
-Remotes:
-    github::pecanproject/pecan/modules/assim.batch,
-    github::pecanproject/pecan/models/ed,
-    github::pecanproject/pecan/utils
+    knitr,
+    pwr
 OS_type: unix
 License: FreeBSD + file LICENSE
 Copyright: Authors
