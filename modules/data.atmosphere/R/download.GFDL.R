@@ -29,7 +29,7 @@ download.GFDL <- function(outfolder, start_date, end_date, site_id, lat.in, lon.
   ensemble_member <- paste0(ensemble_member)
   
   #Fix Outfolder to include model and scenario
-  folder_name <- paste0("GFDL_",model,"_",scenario,ensemble_member)
+  folder_name <- paste0("GFDL_",model,"_",scenario,"_",ensemble_member)
   outfolder <- gsub("GFDL",folder_name,outfolder)
   
   
