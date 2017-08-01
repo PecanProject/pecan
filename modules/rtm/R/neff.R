@@ -3,7 +3,7 @@
 #' Calculate effective sample size of vector based on its autocorrelation.
 #' @param x A vector or time series
 #' @export
-neff <- function(x) {
+neff <- function(x, ...) {
   UseMethod("neff")
 }
 
@@ -31,4 +31,12 @@ neff.default <- function(x, lag.max = NULL, min_rho = 0.1) {
 neff.matrix <- function(x, ...) {
   col_neff <- apply(x, 2, neff.default, ...)
   return(sum(col_neff))
+}
+
+#' Calculate max ACF lag from correlation power analysis
+corr_max_lag <- function(nx, r = 0.1, sig.level = 0.05, power = 0.95, ...) {
+    testForPackage('pwr')
+    power_analysis <- pwr::pwr.r.test(n = NULL, r = r, sig.level = sig.level, power = power, ...)
+    nlag <- ceiling(nx - power_analysis$n)
+    return(nlag)
 }
