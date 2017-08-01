@@ -120,6 +120,6 @@ write.config.CABLE <- function(defaults, trait.values, settings, run.id) {
   config.text <- gsub("@OUTFILE@", paste0("out", run.id), config.text)
   
   #-----------------------------------------------------------------------
-  config.file.name <- paste0("CONFIG.", run.id, ".txt")
+  config.file.name <- cable.nml
   writeLines(config.text, con = paste(outdir, config.file.name, sep = ""))
 } # write.config.CABLE
