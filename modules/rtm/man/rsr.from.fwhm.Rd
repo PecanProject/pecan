@@ -9,6 +9,9 @@ rsr.from.fwhm(wavelength, fwhm)
 \arguments{
 \item{wavelength}{Vector of average band widths, as reported in FWHM data.}
 
-\item{fwhm}{Vector of full-width half maximum (FWHM) bandwidths, as reported 
+\item{fwhm}{Vector of full-width half maximum (FWHM) bandwidths, as reported
 in FWHM data.}
+}
+\description{
+Generate relative spectral response (RSR) matrix based on FWHM data
 }

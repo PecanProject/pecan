@@ -9,11 +9,11 @@ invert.fast.re(modname, observed, inits, rand, cons, pmu, psd, plog, minp,
 }
 \arguments{
 \item{modname}{Name of the model to invert (character).
-Refer to `model.list`}
+Refer to \code{model.list}}
 
 \item{observed}{Observed reflectance. Can be a vector,
 matrix, or data.frame; BUT NOTE: all are coerced to
-matrix via `as.matrix`.}
+matrix via \code{as.matrix}.}
 
 \item{inits}{Named vector of parameters to invert. Names
 are required!}
@@ -27,13 +27,13 @@ spectra.}
 required!}
 
 \item{pmu}{Numeric vector of prior means for inversion
-parameters. Must line up with `inits`}
+parameters. Must line up with \code{inits}}
 
 \item{psd}{Numeric vector of prior standard deviations
-for inversion parameters. Must line up with `inits`.}
+for inversion parameters. Must line up with \code{inits}.}
 
 \item{plog}{Logical vector. Whether or not to use
-lognormal distribution for the prior. NOTE: `pmu` and `psd`
+lognormal distribution for the prior. NOTE: \code{pmu} and \code{psd}
 are the distribution parameters, NOT the distribution's
 actual mean and standard deviation.}
 
@@ -45,12 +45,12 @@ actual mean and standard deviation.}
 Matrix (ngibbs x (npars*(nspec+2)+1)) of MCMC
 samples of parameters.
 }
-\details{
+\description{
 Performs a Bayesian inversion of a Radiative
 Transfer model with individual random effects. Sampling
 is performed using an adaptive Metropolis-Hastings
 algorithm operating independently on each parameter. See
-also: `invert.fast`.
+also: \code{invert.fast}.
 }
 \author{
 Alexey Shiklomanov
