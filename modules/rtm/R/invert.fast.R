@@ -1,19 +1,16 @@
-#' @title Bayesian RTM inversion: Fortran implementation
+#' Bayesian RTM inversion: Fortran implementation
 #' 
-#' @name invert.fast
+#' Performs a Bayesian inversion of a Radiative Transfer Model. 
+#' 
+#' @details Sampling is performed using an adaptive Metropolis-Hastings 
+#' algorithm operating independently on each parameter. The model takes both 
+#' paramters and constants as an argument -- parameters (`inits`) are sampled 
+#' and treated as random (unknown) while constants (`cons`) are fixed.  Normal 
+#' or log-normal priors are be specified by passing a vector of means (`pmu`), 
+#' standard deviations (`psd`), and a logical of whether or not to use the 
+#' lognorml (`plog`). Minimum values for the parameters must be given as a 
+#' vector (`minp`).
 #' @author Alexey Shiklomanov
-#' @details Performs a Bayesian inversion of a Radiative 
-#'          Transfer Model. Sampling is performed using an 
-#'          adaptive Metropolis-Hastings algorithm operating 
-#'          independently on each parameter. The model takes 
-#'          both paramters and constants as an argument -- 
-#'          parameters (`inits`) are sampled and treated as 
-#'          random (unknown) while constants (`cons`) are fixed. 
-#'          Normal or log-normal priors are be specified by 
-#'          passing a vector of means (`pmu`), standard 
-#'          deviations (`psd`), and a logical of whether or not 
-#'          to use the lognorml (`plog`). Minimum values for 
-#'          the parameters must be given as a vector (`minp`).
 #' @param modname Name of the model to invert (character). 
 #'          Refer to `data/model.list.csv`
 #' @param observed Observed reflectance. Can be a vector, matrix, 
@@ -33,6 +30,7 @@
 #' @return Matrix (ngibbs x (length(inits) + 1)) of MCMC samples 
 #'          of parameters.
 invert.fast <- function(modname, observed, inits, cons, pmu, psd, plog, minp, ngibbs) {
+  stop('This function is deprecated. Please use `invert.auto`.')
   data(model.list)
   model.set <- model.list[model.list$modname == modname, ]
   if (nrow(model.set) < 1) {

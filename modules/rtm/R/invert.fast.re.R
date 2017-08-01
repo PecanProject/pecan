@@ -1,12 +1,11 @@
-#' @title Bayesian inversion with random effects
+#' Bayesian inversion with random effects
 #' 
-#' @name invert.fast.re
-#' @author Alexey Shiklomanov
-#' @details Performs a Bayesian inversion of a Radiative
+#' Performs a Bayesian inversion of a Radiative
 #' Transfer model with individual random effects. Sampling
 #' is performed using an adaptive Metropolis-Hastings
 #' algorithm operating independently on each parameter. See
 #' also: `invert.fast`.
+#' @author Alexey Shiklomanov
 #' @param modname Name of the model to invert (character).
 #' Refer to `model.list`
 #' @param observed Observed reflectance. Can be a vector,
@@ -34,6 +33,7 @@
 #' samples of parameters.
 invert.fast.re <- function(modname, observed, inits, rand, cons, pmu, psd, plog, 
                            minp, ngibbs) {
+  stop('This function is deprecated. Please use `invert.auto`.')
   # Get model code number
   data(model.list)
   model.set <- model.list[model.list$modname == modname, ]
