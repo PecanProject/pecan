@@ -11,7 +11,7 @@ exec &> "@OUTDIR@/logfile.txt"
 mkdir -p "@OUTDIR@"
 
 # see if application needs running
-//if [ ! -e "@OUTDIR@/results.csv" ]; then
+#if [ ! -e "@OUTDIR@/results.csv" ]; then
   cd "@RUNDIR@"
   
   "@BINARY@"
@@ -27,7 +27,7 @@ mkdir -p "@OUTDIR@"
   echo "require (PEcAn.CABLE)
 model2netcdf.CABLE('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
 " | R --vanilla
-//fi
+#fi
 
 # copy readme with specs to output
 cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
