@@ -78,7 +78,7 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
     lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
    
-    dims <- list(time = t, lon = lon, lat = lat)
+    dims <- list(lon = lon, lat = lat, time = t)
     ## ***** Need to dynamically update the UTC offset here *****
     
     for (i in seq_along(output)) {
