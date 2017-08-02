@@ -68,7 +68,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   local_rundir <- file.path(settings$rundir, run.id) ## this is on local machine for staging
   rundir     <- file.path(settings$host$rundir, run.id)  ## this is on remote machine for execution
   outdir <- file.path(settings$host$outdir, run.id)
-  binary <- settings$model$binary
+  appbinary <- settings$model$binary
 
   # Some general debugging printouts...
   npft <- length(trait.values)
@@ -88,8 +88,10 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   #    - Not sure how to check exit code??
   #    - Not sure what we need to do with stderr...
 
-  dvmpath <- dirname(binary)  # Grab binary base directory to set location of dvm-dos-tem source location.
-  # We do this to get at other helper scripts
+  # Grab application binary's containing directory.
+  dvmpath <- dirname(appbinary)
+
+    # We do this to get at other helper scripts
   params <- paste(dvmpath,"parameters",'cmt_dimvegetation.txt',sep="/")
   json_file <- '/tmp/junk.json'
   community_type <- '04'
@@ -157,7 +159,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     config_template <- readLines(con=system.file("config.js.template", package = "PEcAn.dvmdostem"), n=-1)
   }
 
-  config_template <- gsub("@INPUT_DATA_DIR@", file.path(dirname(binary), "DATA/SewardPen_10x10"), config_template)
+  config_template <- gsub("@INPUT_DATA_DIR@", file.path(dirname(appbinary), "DATA/SewardPen_10x10"), config_template)
   config_template <- gsub("@MODEL_OUTPUT_DIR@", outdir, config_template)
 
   if (! file.exists(file.path(settings$rundir, run.id,"config"))) dir.create(file.path(settings$rundir, run.id,"config"), recursive = TRUE)
@@ -194,7 +196,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
 
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
-  jobsh <- gsub("@BINARY@", binary, jobsh)
+  jobsh <- gsub("@BINARY@", appbinary, jobsh)
 
   writeLines(jobsh, con=file.path(settings$rundir, run.id,"job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id,"job.sh"))
