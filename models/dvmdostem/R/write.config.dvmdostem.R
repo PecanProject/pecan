@@ -70,16 +70,6 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   outdir <- file.path(settings$host$outdir, run.id)
   appbinary <- settings$model$binary
 
-  # Some general debugging printouts...
-  PEcAn.utils::logger.debug(dim(trait.values))
-  PEcAn.utils::logger.debug(names(trait.values))
-  PEcAn.utils::logger.debug(trait.values[[1]])
-  trait_samples <- as.data.frame(trait.values)
-  PEcAn.utils::logger.debug(trait_samples[["SLA"]])
-  var <- "SLA"
-  PEcAn.utils::logger.debug(trait_samples[[var]])
-  PEcAn.utils::logger.debug(colnames(trait_samples))
-
   ### WORK ON GETTING MA-POSTERIORS COPIED/WRITTEN INTO THE CORRECT
   ### PARAMETER LOCATIONS.....
   # 1) Read in a parameter data block from dvmdostem
