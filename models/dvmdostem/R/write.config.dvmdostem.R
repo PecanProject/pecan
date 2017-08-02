@@ -76,8 +76,6 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   #    - Not sure how to check exit code??
   #    - Not sure what we need to do with stderr...
 
-  # Grab application binary's containing directory.
-  dvmpath <- dirname(appbinary)
 
   # Build a dataframe from the incoming trait.values. trait.values
   # contains the meta-analysis posteriors values for each parameter (trait)
@@ -100,12 +98,17 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # This is ugly, but it seems to work to deduce the CMT number from
   # the name of the first item in the trait_df structure.
   cmtnum <- as.numeric(unlist(strsplit(unlist(strsplit(names(trait_df)[1], '.', fixed=TRUE))[1], "CMT"))[2])
-    # We do this to get at other helper scripts
-  params <- paste(dvmpath,"parameters",'cmt_dimvegetation.txt',sep="/")
+
+  # Next, use a helper script distributed with dvmdostem to read the dvmdostem
+  # parameter data into memory as a json object.
+  dvmpath <- dirname(appbinary)   # Grab application binary's containing directory.
+  params <- paste(dvmpath, "parameters", 'cmt_dimvegetation.txt', sep="/")
   json_file <- '/tmp/junk.json'
-  community_type <- '04'
+
+  # Call the helper script and write out the data to a temporary file
+  # This gets just the block we are interested in (based on community type)
   system2(paste0(dvmpath,"/scripts/param_util.py"),
-          args=(c("--dump-block-to-json", params, community_type)),
+          args=(c("--dump-block-to-json", params, cmtnum)),
           stdout=json_file, wait=TRUE)
 
   # 2) Overwrite certain parameter values with (ma-posterior) trait data from pecan
