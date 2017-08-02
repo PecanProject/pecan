@@ -85,8 +85,8 @@ write.config.CABLE <- function(defaults, trait.values, settings, run.id) {
   
   #-----------------------------------------------------------------------
   ### Edit a templated config file for runs
-  if (!is.null("cable.nml") && file.exists("cable.nml")) {
-    config.text <- readLines(con = "cable.nml", n = -1)
+  if (!is.null(settings$model$config) && file.exists(settings$model$config)) {
+    config.text <- readLines(con = settings$model$config, n = -1)
   } else {
     filename <- system.file("cable.nml", package = "PEcAn.CABLE")
     if (filename == "") {
