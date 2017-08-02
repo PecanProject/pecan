@@ -79,6 +79,27 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # Grab application binary's containing directory.
   dvmpath <- dirname(appbinary)
 
+  # Build a dataframe from the incoming trait.values. trait.values
+  # contains the meta-analysis posteriors values for each parameter (trait)
+  # that we are hoping to "inject" into dvmdostem
+  trait_df <- as.data.frame(trait.values)
+
+  # Now we have to basically read the approporate values out of the trait_df
+  # and get those values written into the parameter files that dvmdostem will
+  # need when running. Because the dvmdostem parameters have a sort of
+  # interesting, semi-standardized space delimited column format, we'll actually
+  # use some helper scripts from dvmdostem that allow us to more easily handle
+  # the parameter files and write our new trait values into the correct place.
+  # The basic flow will be like this:
+  #  - Read dvmdostem parameter file into json object, load into memory for 
+  #    this script.
+  #  - Update the in-memory json object
+  #  - Write the json object back out to a new dvmdostem parameter file
+
+  # Start by figuring out which community number we are working on.
+  # This is ugly, but it seems to work to deduce the CMT number from
+  # the name of the first item in the trait_df structure.
+  cmtnum <- as.numeric(unlist(strsplit(unlist(strsplit(names(trait_df)[1], '.', fixed=TRUE))[1], "CMT"))[2])
     # We do this to get at other helper scripts
   params <- paste(dvmpath,"parameters",'cmt_dimvegetation.txt',sep="/")
   json_file <- '/tmp/junk.json'
