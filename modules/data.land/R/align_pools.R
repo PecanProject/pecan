@@ -4,10 +4,10 @@
 ##' @export
 ##'
 ##' @param nc.path path to netcdf file containing standard dimensions and variables; currently supports these variables: TotLivBiom, leaf_carbon_content, LAI, AbvGrndWood, root_carbon_content, fine_root_carbon_content, coarse_root_carbon_content, litter_carbon_content, soil_organic_carbon_content, soil_carbon_content, wood_debris_carbon_content
-##' @param sla SLA in m2 / kg C if providing LAI for leaf carbon
+##' @param constants list of constants; must include SLA in m2 / kg C if providing LAI for leaf carbon
 ##' @return list of pool values in kg C / m2 with generic names
 ##' @author Anne Thomas
-align_pools <- function(nc.path, sla = NULL){
+align_pools <- function(nc.path, constants = NULL){
   #function to check that var was loaded (numeric) and has a valid value (not NA or negative)
   is.valid <- function(var){
     return(all(is.numeric(var) && !is.na(var) &&  var >= 0)) 
@@ -26,6 +26,7 @@ align_pools <- function(nc.path, sla = NULL){
       roots <- IC.list$vals$root_carbon_content
       fine.roots <- IC.list$vals$fine_root_carbon_content
       coarse.roots <- IC.list$vals$coarse_root_carbon_content
+      
       
       ### load non-living variables
       litter <- IC.list$vals$litter_carbon_content
@@ -58,10 +59,15 @@ align_pools <- function(nc.path, sla = NULL){
       # initial canopy foliar carbon (kgC/m2)
       if (is.valid(leaf)) {
         IC.params[["leaf"]] <- leaf 
-      } else if(is.valid(LAI) && !is.null(sla)){
+      } else if(is.valid(LAI)){
+        sla <- constants$sla
+        if(sla != NULL){
           leaf <- LAI * 1/sla
           PEcAn.utils::logger.info(paste("using LAI", LAI, "and SLA", sla, "to get leaf", leaf))
           IC.params[["leaf"]] <- leaf
+        } else{
+          PEcAn.utils::logger.error("Could not convert LAI to leaf carbon without SLA; please include 'constants' list with named element 'sla'")
+        }
       } else if(is.valid(TotLivBiom) && is.valid(AbvGrndWood) && 
                 is.valid(fine.roots) && is.valid(coarse.roots)){
         leaf <- (TotLivBiom - AbvGrndWood - fine.roots - coarse.roots) 
