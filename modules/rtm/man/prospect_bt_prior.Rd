@@ -6,6 +6,11 @@
 \usage{
 prospect_bt_prior(version, custom_prior = list())
 }
+\arguments{
+\item{version}{PROSPECT version: 4, 5, or '5B'}
+
+\item{custom_prior}{List containing \code{param_name}, \code{distn}, \code{parama}, \code{paramb}, and \code{lower}}
+}
 \description{
 Quick BayesianTools prior creator for PROSPECT model
 }
