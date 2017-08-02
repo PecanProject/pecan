@@ -21,7 +21,7 @@
 ##' @param run.id id of run
 ##' @return configuration file for CABLE for given run
 ##' @export
-##' @author Rob Kooper
+##' @author Rob Kooper, Kaitlin Ragosta
 ##-------------------------------------------------------------------------------------------------#
 write.config.CABLE <- function(defaults, trait.values, settings, run.id) {
 
@@ -85,10 +85,10 @@ write.config.CABLE <- function(defaults, trait.values, settings, run.id) {
   
   #-----------------------------------------------------------------------
   ### Edit a templated config file for runs
-  if (!is.null(settings$model$config) && file.exists(settings$model$config)) {
-    config.text <- readLines(con = settings$model$config, n = -1)
+  if (!is.null("cable.nml") && file.exists("cable.nml")) {
+    config.text <- readLines(con = "cable.nml", n = -1)
   } else {
-    filename <- system.file(settings$model$config, package = "PEcAn.CABLE")
+    filename <- system.file("cable.nml", package = "PEcAn.CABLE")
     if (filename == "") {
       if (!is.null(settings$model$revision)) {
         filename <- system.file(paste0("config.", settings$model$revision), package = "PEcAn.CABLE")
