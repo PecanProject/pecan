@@ -15,4 +15,6 @@ write_restart.CABLE <- function(outdir,
                                     start.time,
                                     stop.time,
                                     settings,
-                                    new.state) {}
+                                    new.state) {
+logger.severe("NOT IMPLEMENTED")
+}
