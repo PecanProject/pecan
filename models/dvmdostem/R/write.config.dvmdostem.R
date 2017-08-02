@@ -111,38 +111,47 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
           args=(c("--dump-block-to-json", params, cmtnum)),
           stdout=json_file, wait=TRUE)
 
-  # 2) Overwrite certain parameter values with (ma-posterior) trait data from pecan
-  #    In R, need to open "some/tmp/file.json" as a json object, overwrite some values,
-  #    and write it back out
+  # Read the json file into memory
   library("rjson")
-  # Read in the file
   json_data <- fromJSON(paste(readLines(json_file), collapse=""))
-  # Overwrite the data
-  #var <- "sla"
-  #json_data$pft1[[var]]
 
-  # Experimental loop for trying to get data from traits.values into the json
-  # object in the right place before we serialize the json file back to disk..
-  idx <- 0
-  for (i in names(json_data)){
-    idx <- idx+1
-    if (grepl("pft",i)){
-      pft_name <- json_data[[i]]$name
-      print(paste(pft_name, idx))
+  # 2) Overwrite certain parameter values with (ma-posterior) trait data 
+  #    from pecan, then write back out to disk...
 
-      relevant_list = trait.values
-      #short_bety_pft <- strip(...settings$pfts$pft$name)
-      # if (pft_name==short_bety_pft){
-      #   print(i)
-      #   parameter <- "sla"
-      #   #json_data[[i]][[parameter]] =
-      # }
-    } else {
-      "Not the droid we are looking for"
-    }
+  # loop over all the incoming samples (traits)
+  for (cur_t_name in names(trait_df)) {
+    #print(cur_t_name)
+
+    # In converting trait.values into a dataframe, we get 
+    # these long column names that are dot separted and seem
+    # to contain cmtkey.pftname.traitname
+    # So the following splits out the various components to convenient locals
+    cmtkey <- unlist(strsplit(cur_t_name, '.', fixed=TRUE))[1]
+    pftname <- unlist(strsplit(cur_t_name, '.', fixed=TRUE))[2]
+    tname <- unlist(strsplit(cur_t_name, '.', fixed=TRUE))[3]
+
+    # Loop over all the items in our json structure of the dvmdostem parameters
+    # and find the item that matches the PFT
+    for (jd_name in names(json_data)) {
+      # First make sure that we are looking at the pftN entries, not comment, etc
+      if (grepl("pft", jd_name)) {
+        cur_pft_name <- json_data[[jd_name]]$name
+
+        # Then pick out only the entry for the correct pft 
+        if (identical(cur_pft_name, pftname)) {
+          print(cur_t_name)
+          print(tname)
+          if (tname == "SLA") {
+            json_data[[jd_name]]$sla = trait_df[[cur_t_name]]
+          } else if (tname == "frprod_perc_10") {
+            json_data[[jd_name]]$`frprod[0]` = trait_df[[cur_t_name]]
+          } else if (tname == "extinction_coefficient_diffuse"){
+            print(paste0("WARNING!! NOT SURE WHERE TO MAP ",tname, " TO YET!!"))
+          }
+        }
+      }
+    } # end loop over json items
   }
-  print(str(trait.values))
-  temp_traits <- trait.values
 
   # json_data$pft9$sla =
   # # Write it back out to disk (overwriting ok??)
