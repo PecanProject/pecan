@@ -153,14 +153,18 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     } # end loop over json items
   }
 
-  # json_data$pft9$sla =
-  # # Write it back out to disk (overwriting ok??)
-  # exportJson <- toJSON(json_data)
-  # write(exportJson, "some/tmp/file.json")
+  # Write it back out to disk (overwriting ok??)
+  exportJson <- toJSON(json_data)
+  write(exportJson, "/tmp/new-file.json")
+
 
   # 3) Write parameter file back out to dvmdostem parameter file
   #    Need to
-  # system2("dvmdostem/scripts/param_util.py", args=("--fmt-block-from-json some/tmp/file.json ?<REF FILE>?", stdout="<some parameter file for dvmdostem to runwith ...>", wait=TRUE,)
+  ref_file <- paste0(file.path(dvmpath, "parameters/"), 'cmt_dimvegetation.txt')
+  new_param_file <- paste0(file.path(rundir, "parameters/"), "cmt_dimvegetation.txt")
+  system2(paste0(dvmpath,"/scripts/param_util.py"), 
+          args=(c("--fmt-block-from-json", "/tmp/new-file.json", ref_file)),
+          stdout=new_param_file, wait=TRUE)
 
   # TODO:
   #  - finish with parameter update process
