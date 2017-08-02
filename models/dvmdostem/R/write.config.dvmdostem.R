@@ -71,8 +71,6 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   appbinary <- settings$model$binary
 
   # Some general debugging printouts...
-  npft <- length(trait.values)
-  PEcAn.utils::logger.debug(npft)
   PEcAn.utils::logger.debug(dim(trait.values))
   PEcAn.utils::logger.debug(names(trait.values))
   PEcAn.utils::logger.debug(trait.values[[1]])
