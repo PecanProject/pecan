@@ -367,7 +367,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       IC.nc <- ncdf4::nc_open(IC.path) #for additional variables specific to SIPNET
       ## plantWoodInit gC/m2
       if ("wood" %in% names(IC.pools)) {
-        param[which(param[, 1] == "plantWoodInit"), 2] <- ICpools$wood * 1000 #from PEcAn standard AbvGrndWood kgC/m2
+        param[which(param[, 1] == "plantWoodInit"), 2] <- IC.pools$wood * 1000 #from PEcAn standard AbvGrndWood kgC/m2
       }
       ## laiInit m2/m2
       lai <- try(ncdf4::ncvar_get(IC.nc,"LAI"),silent = TRUE)
@@ -376,11 +376,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       }
       ## litterInit gC/m2
       if ("litter" %in% names(IC.pools)) {
-        param[which(param[, 1] == "litterInit"), 2] <- ICpools$litter * 1000 #from PEcAn standard litter_carbon_content kg/m2
+        param[which(param[, 1] == "litterInit"), 2] <- IC.pools$litter * 1000 #from PEcAn standard litter_carbon_content kg/m2
       }
       ## soilInit gC/m2
       if ("soil" %in% names(IC.pools)) {
-        param[which(param[, 1] == "soilInit"), 2] <- sum(ICpools$soil) * 1000 #from PEcAn standard TotSoilCarb kg C/m2
+        param[which(param[, 1] == "soilInit"), 2] <- sum(IC.pools$soil) * 1000 #from PEcAn standard TotSoilCarb kg C/m2
       }
       ## soilWFracInit fraction
       soilWFrac <- try(ncdf4::ncvar_get(IC.nc,"SoilMoistFrac"),silent = TRUE)
