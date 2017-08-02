@@ -65,7 +65,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
 
   # Setup some local variables for this function for easily referencing
   # common locations for input, output, and the application binary.
-  local.rundir <- file.path(settings$rundir, run.id) ## this is on local machine for staging
+  local_rundir <- file.path(settings$rundir, run.id) ## this is on local machine for staging
   rundir     <- file.path(settings$host$rundir, run.id)  ## this is on remote machine for execution
   outdir <- file.path(settings$host$outdir, run.id)
   binary <- settings$model$binary
