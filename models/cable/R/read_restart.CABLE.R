@@ -18,5 +18,7 @@ read_restart.CABLE <- function(outdir,
                                    stop.time,
                                    settings,
                                    var.names,
-                                   params) {}
+                                   params) {
+logger.severe("NOT IMPLEMENTED")
+}
 
