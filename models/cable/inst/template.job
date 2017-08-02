@@ -24,8 +24,7 @@ mkdir -p "@OUTDIR@"
   fi
 
   # convert to MsTMIP
-  echo "require (PEcAn.CABLE)
-model2netcdf.CABLE('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
+PEcAn.CABLE::model2netcdf.CABLE('@OUTDIR@', @SITE_LAT@, @SITE_LON@, '@START_DATE@', '@END_DATE@')
 " | R --vanilla
 #fi
 
