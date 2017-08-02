@@ -10,6 +10,5 @@ neff(x)
 \item{x}{A vector or time series}
 }
 \description{
-Calculate effective sample size of vector based on its 
-autocorrelation.
+Calculate effective sample size of vector based on its autocorrelation.
 }

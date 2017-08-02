@@ -74,7 +74,7 @@ check.inputs <- function(settings) {
         if (nrow(formats) >= 1) {
           if (formats[1, 'format_id'] != inputs$format_id[i]) {
             PEcAn.utils::logger.warn("@Format of input", tag, "does not match specified input: ",formats[1, 'format_id'],inputs$format_id[i])
-            settings$run$inputs[[tag]][['path']] <- NULL ## zero out path, do.conversions will need to convert specified input ID to model format
+            settings$run$inputs[[tag]][['path']] <- NULL ## zero out path, do_conversions will need to convert specified input ID to model format
           }
         } else {
           logger.error("Could not check format of", tag, ".")
