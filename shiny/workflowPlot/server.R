@@ -16,6 +16,7 @@ options(shiny.maxRequestSize=100*1024^2)
 # Define server logic
 server <- shinyServer(function(input, output, session) {
   bety <- betyConnect()
+  # bety <- betyConnect('/home/carya/pecan/web/config.php')
   # Update all workflow ids
   observe({
     # Ideally get_workflow_ids function (line 137) in db/R/query.dplyr.R should take a flag to check
@@ -117,7 +118,7 @@ server <- shinyServer(function(input, output, session) {
   getSettingsFromWorkflowId <- function(bety,workflowID){
     basePath <- tbl(bety, 'workflows') %>% filter(id %in% workflowID) %>% pull(folder)
     configPath <- file.path(basePath, 'pecan.CONFIGS.xml')
-    # Second way of proving configPath. More of a hack
+    # Second way of providing configPath. More of a hack
     # configPath <- paste0("~/output/PEcAn_",workflowID,"/pecan.CONFIGS.xml")
     settings<-PEcAn.settings::read.settings(configPath)
     return(settings)
@@ -136,14 +137,24 @@ server <- shinyServer(function(input, output, session) {
   })
   # Get input id from selected site id
   getInputs <- function(bety,site_Id){
-    inputIds <- tbl(bety, 'inputs') %>% filter(site_id %in% site_Id) %>% distinct(id) %>% pull(id)
-    inputIds <- sort(inputIds)
-    return(inputIds)
+    # site_Id <- c(772)
+    # inputIds <- tbl(bety, 'inputs') %>% filter(site_id %in% site_Id) %>% distinct(id) %>% pull(id)
+    # inputIds <- sort(inputIds)
+    my_hostname <- PEcAn.utils::fqdn()
+    my_machine_id <- tbl(bety, 'machines') %>% filter(hostname == my_hostname) %>% pull(id)
+    inputs_df <- tbl(bety, 'dbfiles') %>% 
+      filter(container_type == 'Input', machine_id == my_machine_id) %>%
+      left_join(tbl(bety, 'inputs')  %>% filter(site_id %in% site_Id), by = c('container_id' = 'id')) %>%
+      collect()
+    inputs_df <- inputs_df[order(inputs_df$container_id),]
+    input_selection_list <- paste(inputs_df$container_id, inputs_df$name)
+    return(input_selection_list)
   }
   observe({
     req(input$all_site_id)
     updateSelectizeInput(session, "all_input_id", choices=getInputs(bety,input$all_site_id))
   })
+  
   # Renders ggplotly 
   output$outputPlot <- renderPlotly({
     # Error messages
@@ -187,13 +198,14 @@ server <- shinyServer(function(input, output, session) {
     # Check if user wants to load external data
     # Similar to using event reactive
     if (input$load_data>0) { 
-      # File_format <- getFileFormat(bety,input$formatID)
       # Retaining the code for getting file format using inputRecordID
-      File_format <- getFileFormat(bety,input$all_input_id)
+      # File_format <- getFileFormat(bety,input$formatID)
+      # Input ID is of the form (ID Name). Split by space and use the first element
+      input_ID <- strsplit(input$all_input_id,' ')[[1]][1]
+      File_format <- getFileFormat(bety,input_ID)
       ids_DF <- parse_ids_from_input_runID(input$all_run_id)
       settings <- getSettingsFromWorkflowId(bety,ids_DF$wID[1])
-      inFile <- input$fileUploaded
-      filePath <- PEcAn.DB::dbfile.file(type = 'Input', id = input$all_input_id,con = bety$con)
+      filePath <- PEcAn.DB::dbfile.file(type = 'Input', id = input_ID,con = bety$con)
       externalData <- loadObservationData(bety,settings,filePath,File_format)
       # If variable found in the uploaded file 
       if (input$variable_name %in% names(externalData)){
