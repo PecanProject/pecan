@@ -15,7 +15,7 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
 convert.samples.DALEC <- function(trait.samples) {
   
   DEFAULT.LEAF.C <- 0.48
-  ## convert SLA from m2 / kg leaf to m2 / g C
+  ## convert SLA from PEcAn m2 / kg leaf to m2 / g C
   
   if ("SLA" %in% names(trait.samples)) {
     trait.samples[["SLA"]] <- trait.samples[["SLA"]]/DEFAULT.LEAF.C/1000
@@ -128,31 +128,31 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
       
       # cf0 initial canopy foliar carbon (g/m2)
       if ("leaf" %in% names(IC.pools)) {
-        IC.params[["cf0"]] <- IC.pools$leaf * 1000 #from standard kg C m-2
+        IC.params[["cf0"]] <- IC.pools$leaf * 1000 #from PEcAn standard kg C m-2
       } 
     
       # cw0 initial pool of woody carbon (g/m2)
       if ("wood" %in% names(IC.pools)) {
-        IC.params[["cw0"]] <- IC.pools$wood * 1000 #from standard kg C m-2
+        IC.params[["cw0"]] <- IC.pools$wood * 1000 #from PEcAn standard kg C m-2
       } 
     
       # cr0 initial pool of fine root carbon (g/m2)
       if ("fine.roots" %in% names(IC.pools)) {
-        IC.params[["cr0"]] <- IC.pools$fine.roots * 1000 #from standard kg C m-2
+        IC.params[["cr0"]] <- IC.pools$fine.roots * 1000 #from PEcAn standard kg C m-2
       } 
     
       ###non-living variables
       # cl0 initial pool of litter carbon (g/m2)
       if ("litter" %in% names(IC.pools)) {
-        IC.params[["cl0"]] <- IC.pools$litter * 1000 #from standard kg C m-2
+        IC.params[["cl0"]] <- IC.pools$litter * 1000 #from PEcAn standard kg C m-2
       }
         
       # cs0 initial pool of soil organic matter and woody debris carbon (g/m2)
       if("soil" %in%  names(IC.pools)){
         if("wood.debris" %in%  names(IC.pools)){
-          IC.params[["cs0"]] <- (IC.pools$soil + sum(IC.pools$wood.debris)) * 1000 #from standard kg C m-2
+          IC.params[["cs0"]] <- (IC.pools$soil + sum(IC.pools$wood.debris)) * 1000 #from PEcAn standard kg C m-2
         } else {
-          IC.params[["cs0"]] <- IC.pools$soil * 1000 #from standard kg C m-2
+          IC.params[["cs0"]] <- IC.pools$soil * 1000 #from PEcAn standard kg C m-2
           PEcAn.utils::logger.warn("write.configs.DALEC IC: Loading soil carbon pool without woody debris.")
         }
       } 
