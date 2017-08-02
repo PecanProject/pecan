@@ -4,12 +4,12 @@
 \alias{align_pools}
 \title{align_pools}
 \usage{
-align_pools(nc.path, sla = NULL)
+align_pools(nc.path, constants = NULL)
 }
 \arguments{
 \item{nc.path}{path to netcdf file containing standard dimensions and variables; currently supports these variables: TotLivBiom, leaf_carbon_content, LAI, AbvGrndWood, root_carbon_content, fine_root_carbon_content, coarse_root_carbon_content, litter_carbon_content, soil_organic_carbon_content, soil_carbon_content, wood_debris_carbon_content}
 
-\item{sla}{SLA in m2 / kg C if providing LAI for leaf carbon}
+\item{constants}{list of constants; must include SLA in m2 / kg C if providing LAI for leaf carbon}
 }
 \value{
 list of pool values in kg C / m2 with generic names
