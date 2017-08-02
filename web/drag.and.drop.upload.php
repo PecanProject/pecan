@@ -82,7 +82,7 @@ var holder = document.getElementById('holder'),
       progress: document.getElementById('progress')
     },
     
-    // This could be problematic: What generic mimetypes should we include? 
+    <!-- This could be problematic: What generic mimetypes should we include? -->
     acceptedTypes = {
       'image/png': true,
       'image/jpeg': true,
@@ -103,7 +103,7 @@ var holder = document.getElementById('holder'),
   }
 });
 
-function previewfile(file) { # don't know if we need to display a preview of the file... It could just display the progress bar then, 'done'
+function previewfile(file) { // don't know if we need to display a preview of the file... It could just display the progress bar then, 'done'
   if (tests.filereader === true && acceptedTypes[file.type] === true) {
     var reader = new FileReader();
     reader.onload = function (event) {
@@ -131,7 +131,8 @@ function readfiles(files) {
     // now post a new XHR request
     if (tests.formdata) {
       var xhr = new XMLHttpRequest();
-      xhr.open('POST', '/devnull.php'); # @robkooper says this fetches the file from the server side
+      // @robkooper says xhr.open fetches the file from the server side 
+      xhr.open('POST', '/devnull.php'); 
       xhr.onload = function() {
         progress.value = progress.innerHTML = 100;
       };
