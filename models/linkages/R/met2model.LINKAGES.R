@@ -67,8 +67,12 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   month_matrix_precip <- matrix(NA, nyear, 12)
   DOY_vec_hr <- c(1, c(32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 365) * 4)
   
+  if(nchar(in.prefix)>0 & substr(in.prefix,nchar(in.prefix),nchar(in.prefix)) != ".") in.prefix = paste0(in.prefix,".")
+  
   for (i in seq_len(nyear)) {
-    ncin <- ncdf4::nc_open(file.path(in.path, paste(in.prefix, year[i], "nc", sep = ".")))
+    year_txt <- formatC(year[i], width = 4, format = "d", flag = "0")
+    infile <- file.path(in.path, paste0(in.prefix, year_txt, ".nc"))
+    ncin <- ncdf4::nc_open(infile)
     
     ## convert time to seconds
     sec <- ncin$dim$time$vals
@@ -89,7 +93,12 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   month_matrix_temp_mean <- matrix(NA, nyear, 12)
   
   for (i in seq_len(nyear)) {
-    ncin <- ncdf4::nc_open(file.path(in.path, paste0(in.prefix, ".", year[i], ".nc")))
+    
+    year_txt <- formatC(year[i], width = 4, format = "d", flag = "0")
+    
+    infile <- file.path(in.path, paste0(in.prefix, year_txt, ".nc"))
+    
+    ncin <- ncdf4::nc_open(infile)
     # print(ncin)
     nctemp <- ncdf4::ncvar_get(ncin, "air_temperature")  #units are kg m-2 s-1    
     for (m in 1:12) {

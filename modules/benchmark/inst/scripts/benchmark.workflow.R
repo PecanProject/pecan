@@ -1,7 +1,8 @@
 devtools::load_all('modules/benchmark')
 library(PEcAn.benchmark)
 
-settings <- read.settings("modules/benchmark/inst/scripts/tess.xml")
+#settings <- read.settings("modules/benchmark/inst/scripts/bm.1var.1metric.1site.1mode.xml")
+
 
 d <- settings$database$bety[c("dbname", "password", "host", "user")]
 bety <- src_postgres(host = d$host, user = d$user, password = d$password, dbname = d$dbname)
