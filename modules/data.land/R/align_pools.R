@@ -61,7 +61,7 @@ align_pools <- function(nc.path, constants = NULL){
         IC.params[["leaf"]] <- leaf 
       } else if(is.valid(LAI)){
         sla <- constants$sla
-        if(sla != NULL){
+        if(!is.null(sla)){
           leaf <- LAI * 1/sla
           PEcAn.utils::logger.info(paste("using LAI", LAI, "and SLA", sla, "to get leaf", leaf))
           IC.params[["leaf"]] <- leaf
