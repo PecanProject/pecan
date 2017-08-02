@@ -132,7 +132,7 @@ function readfiles(files) {
     if (tests.formdata) {
       var xhr = new XMLHttpRequest();
       // @robkooper says xhr.open fetches the file from the server side 
-      xhr.open('POST', '/devnull.php'); 
+      xhr.open('POST', '/dbfiles'); 
       xhr.onload = function() {
         progress.value = progress.innerHTML = 100;
       };
