@@ -42,7 +42,9 @@ bt_check_convergence <- function(samples, threshold = 1.1, use_CI = TRUE, use_mp
 }
 
 #' Quick BayesianTools prior creator for PROSPECT model 
-#'
+#' 
+#' @param custom_prior List containing `param_name`, `distn`, `parama`, `paramb`, and `lower`
+#' @inheritParams prospect
 #' @export
 prospect_bt_prior <- function(version, custom_prior = list()) {
     col_names <- c('param_name', 'distn', 'parama', 'paramb', 'lower')
@@ -66,6 +68,32 @@ prospect_bt_prior <- function(version, custom_prior = list()) {
 
 #' Perform Bayesian inversion using BayesianTools package
 #' 
+#' Use samplers from the BayesianTools package to fit models to data. Like 
+#' `invert.auto`, this will continue to run until convergence is achieved 
+#' (based on Gelman diagnostic) _and_ the result has enough samples (as 
+#' specified by the user; see Details).
+#' 
+#' @details `custom_settings` is a list of lists, containing the following:
+#'  * `common` -- BayesianTools settings common to both the initial and subsequent samples.
+#'  * `init` -- BayesianTools settings for just the first round of sampling. 
+#'  This is most common for the initial number of iterations, which is the 
+#'  minimum expected for convergence.
+#'  * `loop` -- BayesianTools settings for iterations inside the convergence 
+#'  checking `while` loop. This is most commonly for setting a smaller 
+#'  iteration count than in `init`.
+#'  * `other` -- Miscellaneous (non-BayesianTools) settings, including:
+#'      - `sampler` -- String describing which sampler to use. Default is `DEzs`
+#'      - `use_mpsrf` -- Use the multivariate PSRF to check convergence. 
+#'      Default is `FALSE` because it may be an excessively conservative 
+#'      diagnostic.
+#'      - `min_samp` -- Minimum number of samples after burnin before stopping.
+#' 
+#' See the BayesianTools sampler documentation for what can go in the `BayesianTools` settings lists.
+#' @param observed Vector of observations
+#' @param model Function called by log-likelihood. Must be `function(params)` 
+#' and return a vector equal to `length(observed)` or `nrow(observed)`.
+#' @param prior BayesianTools prior object.
+#' @param custom_settings Nested settings list. See Details.
 #' @export
 invert_bt <- function(observed, model, prior, custom_settings = list()) {
 
