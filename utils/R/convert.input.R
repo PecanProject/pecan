@@ -141,7 +141,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                           startdate = start_date,
                                           enddate = end_date, 
                                           con = con, 
-                                          hostname = host,
+                                          hostname = host$name,
                                           pattern = pattern
                                          )
     
