@@ -76,14 +76,18 @@ invert_bt <- function(observed, model, prior, custom_settings = list()) {
                                           use_mpsrf = FALSE,
                                           min_samp = 1000))
 
-    for (s in seq_along(default_settings)) {
-        s_name <- names(default_settings)[s]
-        if (s_name %in% names(custom_settings)) {
-            settings[[s_name]] <- modifyList(default_settings[[s_name]], 
-                                             custom_settings[[s_name]])
-        } else {
-            settings[[s_name]] <- default_settings[[s_name]]
-        }
+    if (length(custom_settings) > 0) {
+        for (s in seq_along(default_settings)) {
+            s_name <- names(default_settings)[s]
+            if (s_name %in% names(custom_settings)) {
+                settings[[s_name]] <- modifyList(default_settings[[s_name]], 
+                                                 custom_settings[[s_name]])
+            } else {
+                settings[[s_name]] <- default_settings[[s_name]]
+            }
+        } 
+    } else {
+        settings <- default_settings
     }
 
     use_mpsrf <- settings[['other']][['use_mpsrf']]
@@ -100,9 +104,9 @@ invert_bt <- function(observed, model, prior, custom_settings = list()) {
                            lag.max = lag.max)
 
 
-    setup <- createBayesianSetup(likelihood = loglike, 
-                                 prior = prior, 
-                                 names = param_names)
+    setup <- BayesianTools::createBayesianSetup(likelihood = loglike, 
+                                                prior = prior, 
+                                                names = param_names)
 
 
     init_settings <- modifyList(settings[['common']], settings[['init']])
@@ -112,6 +116,9 @@ invert_bt <- function(observed, model, prior, custom_settings = list()) {
     converged <- bt_check_convergence(samples = samples, use_mpsrf = settings[['other']][['use_mpsrf']])
 
     loop_settings <- modifyList(settings[['common']], settings[['loop']])
+
+    last_iter <- 1
+    current_iter <- 
 
     while(!(converged && enough_samples)) {
         samples <- BayesianTools::runMCMC(samples, sampler = sampler, settings = loop_settings)
