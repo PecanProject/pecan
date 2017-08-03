@@ -29,6 +29,8 @@ checkAndDownload(c('plotly','scales','dplyr'))
 #                'Double Quote'='"',
 #                'Single Quote'="'"),
 #              ''),
+# textInput("inputRecordID", "Input Record ID for file", "1000011260"),
+# textInput("formatID", "Format ID for file (Default CSV)", "5000000002"),
 # actionButton("load_data", "Load External Data")
 # server.R 
 # loadExternalData <-eventReactive(input$load_data,{
