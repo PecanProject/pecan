@@ -1,10 +1,8 @@
-#' @name pro2s
-#'
-#' @title Coupled PROSPECT-Two-stream model
+#' Coupled PROSPECT-Two-stream model
+#' 
 #' @param param Model parameters, in the following order: N, Cab, (Car, Cbrown), Cw, Cm, solar zenith angle, LAI, soil_moisture
 #' @param prospect.version Version of PROSPECT to use (4, 5, or '5B'; default=5)
 #' @export
-#' @param prospect.version Version of PROSPECT to use (4, 5, or '5B'; default=5)
 pro2s <- function(param, prospect.version = 5) {
   prospect.version <- toupper(as.character(prospect.version))
   plist <- as.list(param)
