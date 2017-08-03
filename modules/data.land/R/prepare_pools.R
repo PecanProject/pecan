@@ -27,7 +27,6 @@ prepare_pools <- function(nc.path, constants = NULL){
       fine.roots <- IC.list$vals$fine_root_carbon_content
       coarse.roots <- IC.list$vals$coarse_root_carbon_content
       
-      
       ### load non-living variables
       litter <- IC.list$vals$litter_carbon_content
       soil <- IC.list$vals$soil_organic_carbon_content
