@@ -1,5 +1,5 @@
-##' @name align_pools
-##' @title align_pools
+##' @name prepare_pools
+##' @title prepare_pools
 ##' @description Calculates pools from given initial condition values, deriving complements where necessary/possible if given TotLivBiomass
 ##' @export
 ##'
@@ -7,7 +7,7 @@
 ##' @param constants list of constants; must include SLA in m2 / kg C if providing LAI for leaf carbon
 ##' @return list of pool values in kg C / m2 with generic names
 ##' @author Anne Thomas
-align_pools <- function(nc.path, constants = NULL){
+prepare_pools <- function(nc.path, constants = NULL){
   #function to check that var was loaded (numeric) and has a valid value (not NA or negative)
   is.valid <- function(var){
     return(all(is.numeric(var) && !is.na(var) &&  var >= 0)) 
@@ -37,17 +37,17 @@ align_pools <- function(nc.path, constants = NULL){
       # note: if roots are partitionable, they will override fine_ and/or coarse_root_carbon_content if loaded
       if(is.valid(roots)){
         if("rtsize" %in% names(IC.list$dims)){
-          PEcAn.utils::logger.info("align_pools: Attempting to partition root_carbon_content")
+          PEcAn.utils::logger.info("prepare_pools: Attempting to partition root_carbon_content")
           rtsize <- IC.list$dims$rtsize
           part_roots <- PEcAn.data.land::partition_roots(roots, rtsize)
           if(!is.null(part_roots)){
             fine.roots <- part_roots$fine.roots
             coarse.roots <- part_roots$coarse.roots
           } else{
-            PEcAn.utils::logger.error("align_pools: could not partition roots; please provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
+            PEcAn.utils::logger.error("prepare_pools: could not partition roots; please provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
           }
         } else{
-          PEcAn.utils::logger.error("align_pools: Please provide rtsize dimension with root_carbon_content to allow partitioning or provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
+          PEcAn.utils::logger.error("prepare_pools: Please provide rtsize dimension with root_carbon_content to allow partitioning or provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
         }
       } else{
         # proceed without error message
@@ -83,7 +83,7 @@ align_pools <- function(nc.path, constants = NULL){
         if(is.valid(coarse.roots)){
           IC.params[["wood"]] <- (AbvGrndWood + coarse.roots) 
         } else{
-          PEcAn.utils::logger.error("align_pools can't calculate total woody biomass with only AbvGrndWood; checking for total biomass.")
+          PEcAn.utils::logger.error("prepare_pools can't calculate total woody biomass with only AbvGrndWood; checking for total biomass.")
         }
       } else if (is.valid(TotLivBiom) && is.valid(leaf) && is.valid(fine.roots)){
         wood <- (TotLivBiom - leaf - fine.roots) 
@@ -93,7 +93,7 @@ align_pools <- function(nc.path, constants = NULL){
           PEcAn.utils::logger.error(paste("TotLivBiom (", TotLivBiom, ") is less than sum of leaf (", leaf, ") and fine roots(",fine.roots,"); will use default for woody biomass."))
         }
       } else{
-        PEcAn.utils::logger.error("align_pools could not calculate woody biomass; will use defaults. Please provide AbvGrndWood and coarse_root_carbon OR leaf_carbon_content/LAI, fine_root_carbon_content, and TotLivBiom in netcdf.")
+        PEcAn.utils::logger.error("prepare_pools could not calculate woody biomass; will use defaults. Please provide AbvGrndWood and coarse_root_carbon OR leaf_carbon_content/LAI, fine_root_carbon_content, and TotLivBiom in netcdf.")
       }
       
       # initial pool of fine root carbon (kgC/m2)
