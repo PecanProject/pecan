@@ -144,7 +144,7 @@ server <- shinyServer(function(input, output, session) {
     my_machine_id <- tbl(bety, 'machines') %>% filter(hostname == my_hostname) %>% pull(id)
     inputs_df <- tbl(bety, 'dbfiles') %>% 
       filter(container_type == 'Input', machine_id == my_machine_id) %>%
-      left_join(tbl(bety, 'inputs')  %>% filter(site_id %in% site_Id), by = c('container_id' = 'id')) %>%
+      inner_join(tbl(bety, 'inputs')  %>% filter(site_id %in% site_Id), by = c('container_id' = 'id')) %>%
       collect()
     inputs_df <- inputs_df[order(inputs_df$container_id),]
     input_selection_list <- paste(inputs_df$container_id, inputs_df$name)
