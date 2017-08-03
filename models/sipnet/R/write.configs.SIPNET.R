@@ -361,7 +361,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   }
   else if (!is.null(settings$run$inputs$poolinitcond$path)) {
     IC.path <- settings$run$inputs$poolinitcond$path
-    IC.pools <- PEcAn.data.land::align_pools(IC.path, constants = list(sla = SLA))
+    IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = SLA))
     
     if(!is.null(IC.pools)){
       IC.nc <- ncdf4::nc_open(IC.path) #for additional variables specific to SIPNET
