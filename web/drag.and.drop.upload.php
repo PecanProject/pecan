@@ -1,4 +1,4 @@
-// authentication script
+<!-- // authentication script
 <?php
 /**
  * Copyright (c) 2012 University of Illinois, NCSA.
@@ -9,19 +9,20 @@
  * http://opensource.ncsa.illinois.edu/license.html
  */
 // Check login
-/require("common.php");
+require("common.php");
 
-//open_database();
-//if (!check_login()) {
-//  close_database();
-//  header( "Location: index.php");
-//  exit;
-//}
-//if (get_page_acccess_level() > $min_upload_level) {
-//  header( "Location: index.php");
-//  close_database();
-//  exit;
-//}
+open_database();
+if (!check_login()) {
+  close_database();
+  header( "Location: index.php");
+  exit;
+}
+if (get_page_acccess_level() > $min_upload_level) {
+  header( "Location: index.php");
+  close_database();
+  exit;
+}
+
 
 // drag and drop window. 
 /**
@@ -46,7 +47,7 @@
  *OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  *WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+-->
 <title>Drag and drop, automatic upload</title>
 <style>
 #holder { border: 10px dashed #ccc; width: 300px; min-height: 300px; margin: 20px auto;}
@@ -68,6 +69,8 @@ progress:after { content: '%'; }
   <p>Upload progress: <progress id="uploadprogress" max="100" value="0">0</progress></p>
   <p>Drag a file from your desktop on to the drop zone above to begin uploading to betyDB.</p>
 </article>
+
+<!--
 <script>
 var holder = document.getElementById('holder'),
     tests = {
@@ -166,3 +169,4 @@ if (tests.dnd) {
 }
 
 </script>
+-->
