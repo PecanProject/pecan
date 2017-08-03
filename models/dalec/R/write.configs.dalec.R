@@ -74,36 +74,6 @@ convert.samples.DALEC <- function(trait.samples) {
   return(trait.samples)
 } # convert.samples.DALEC
 
-####partition_roots: function to split root_carbon_content into fine and coarse roots by rtsize dimension at the .002 m threshold
-partition_roots <- function(roots, rtsize){
-  if(length(rtsize) > 1 && length(rtsize) == length(roots)){
-    threshold <- .002
-    epsilon <- .0005
-    rtsize_thresh_idx <- which.min(sapply(rtsize-threshold,abs))
-    rtsize_thresh <- rtsize[rtsize_thresh_idx]
-    if(abs(rtsize_thresh-threshold) > epsilon){
-      PEcAn.utils::logger.error(paste("Closest rtsize to fine root threshold of", threshold, "m (", rtsize_thresh, 
-                                      ") is greater than", epsilon, 
-                                      "m off; fine roots can't be partitioned. Please improve rtsize dimensions or provide fine_root_carbon_content and coarse_root_carbon_content in netcdf."))
-      return(NULL)
-    } else{
-      fine.roots.temp <- sum(roots[1:rtsize_thresh_idx-1])
-      coarse.roots.temp <- sum(roots) - fine.roots.temp
-      if(fine.roots.temp >= 0 && coarse.roots.temp >= 0){
-        fine.roots <- fine.roots.temp
-        coarse.roots <- coarse.roots.temp
-        PEcAn.utils::logger.info("Using partitioned root values", fine.roots, "for fine and", coarse.roots, "for coarse.")
-        return(list(fine.roots = fine.roots, coarse.roots = coarse.roots))
-      } else{
-        PEcAn.utils::logger.error("Roots could not be partitioned (fine or coarse is less than 0); please provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
-        return(NULL)
-      }
-    }
-  } else {
-    PEcAn.utils::logger.error("Not enough levels of rtsize associated with root_carbon_content to partition roots; please provide finer resolution for root_carbon_content or provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
-    return(NULL)
-  }
-}
 
 #--------------------------------------------------------------------------------------------------#
 ##' Writes a configuration files for your model
@@ -171,12 +141,12 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
         if("rtsize" %in% names(IC.nc$dim)){
           PEcAn.utils::logger.info("DALEC IC: Attempting to partition root_carbon_content")
           rtsize <- IC.nc$dim$rtsize$vals
-          part_roots <- partition_roots(roots, rtsize)
+          part_roots <- PEcAn.data.land::partition_roots(roots, rtsize)
           if(!is.null(part_roots)){
             fine.roots <- part_roots$fine.roots
             coarse.roots <- part_roots$coarse.roots
           } else{
-            #couldn't partition roots; error messages handled by function
+            PEcAn.utils::logger.error("DALEC IC: could not partition roots; please provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
           }
         } else{
           PEcAn.utils::logger.error("DALEC IC: Please provide rtsize dimension with root_carbon_content to allow partitioning or provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
