@@ -1,4 +1,4 @@
-# authentication script
+// authentication script
 <?php
 /**
  * Copyright (c) 2012 University of Illinois, NCSA.
@@ -9,19 +9,19 @@
  * http://opensource.ncsa.illinois.edu/license.html
  */
 // Check login
-require("common.php");
+/require("common.php");
 
-open_database();
-if (!check_login()) {
-  close_database();
-  header( "Location: index.php");
-  exit;
-}
-if (get_page_acccess_level() > $min_upload_level) {
-  header( "Location: index.php");
-  close_database();
-  exit;
-}
+//open_database();
+//if (!check_login()) {
+//  close_database();
+//  header( "Location: index.php");
+//  exit;
+//}
+//if (get_page_acccess_level() > $min_upload_level) {
+//  header( "Location: index.php");
+//  close_database();
+//  exit;
+//}
 
 // drag and drop window. 
 /**
