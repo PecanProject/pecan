@@ -2,11 +2,12 @@ library(PEcAn.visualization)
 library(PEcAn.DB)
 library(PEcAn.settings)
 library(PEcAn.benchmark)
+library(PEcAn.utils)
 library(shiny)
 library(ncdf4)
 library(ggplot2)
 # Helper allows to load functions and variables that could be shared both by server.R and ui.R 
-source('helper.R')
+# source('helper.R')
 library(plotly)
 library(scales)
 library(lubridate)
@@ -99,10 +100,18 @@ server <- shinyServer(function(input, output, session) {
   # Allows to load actual data (different from model output) following the tutorial
   # https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/AnalyzeOutput/modelVSdata.Rmd
   # @params: bety,settings,File_path,File_format
-  loadObservationData <- function(bety,settings,File_path,File_format){
-    start.year<-as.numeric(lubridate::year(settings$run$start.date))
-    end.year<-as.numeric(lubridate::year(settings$run$end.date))
-    site.id<-settings$run$site$id
+  # loadObservationData <- function(bety,settings,File_path,File_format){
+  loadObservationData <- function(bety,inputs_df){
+    input_id <- inputs_df$input_id
+    File_format <- getFileFormat(bety,input_id)
+    # start.year<-as.numeric(lubridate::year(settings$run$start.date))
+    # end.year<-as.numeric(lubridate::year(settings$run$end.date))
+    # site.id<-settings$run$site$id
+    # site<-PEcAn.DB::query.site(site.id,bety$con)
+    start.year <- as.numeric(lubridate::year(inputs_df$start_date))
+    end.year <- as.numeric(lubridate::year(inputs_df$end_date))
+    File_path <- paste0(inputs_df$filePath,'.csv')
+    site.id <- inputs_df$site_id
     site<-PEcAn.DB::query.site(site.id,bety$con)
     observations<-PEcAn.benchmark::load_data(data.path = File_path, format= File_format, time.row = File_format$time.row,  site = site, start_year = start.year, end_year = end.year) 
     return(observations)
@@ -147,12 +156,18 @@ server <- shinyServer(function(input, output, session) {
       inner_join(tbl(bety, 'inputs')  %>% filter(site_id %in% site_Id), by = c('container_id' = 'id')) %>%
       collect()
     inputs_df <- inputs_df[order(inputs_df$container_id),]
-    input_selection_list <- paste(inputs_df$container_id, inputs_df$name)
-    return(input_selection_list)
+    inputs_df <- inputs_df %>% 
+      mutate(input_selection_list = paste(inputs_df$container_id, inputs_df$name),
+             filePath = paste0(inputs_df$file_path,'/', inputs_df$file_name)) %>%
+      dplyr::select(container_id,filePath,input_selection_list,start_date,end_date,site_id,name,
+             machine_id,file_name,file_path)
+    colnames(inputs_df)[1] <- 'input_id'
+    return(inputs_df)
   }
   observe({
     req(input$all_site_id)
-    updateSelectizeInput(session, "all_input_id", choices=getInputs(bety,input$all_site_id))
+    inputs_df <- getInputs(bety,c(input$all_site_id))
+    updateSelectizeInput(session, "all_input_id", choices=inputs_df$input_selection_list)
   })
   
   # Renders ggplotly 
@@ -166,14 +181,14 @@ server <- shinyServer(function(input, output, session) {
     # Load data
     masterDF <- loadNewData()
     # masterDF <- rbind(modelData,externalData)
-    # Convert from factor to character. For subsetting 
+    # Convert from factor to character. For subsetting
     masterDF$var_name <- as.character(masterDF$var_name)
-    # Convert to factor. Required for ggplot 
+    # Convert to factor. Required for ggplot
     masterDF$run_id <- as.factor(as.character(masterDF$run_id))
     # Filter by variable name
     df <- masterDF %>%
       dplyr::filter(var_name == input$variable_name)
-    # make dynamic slider 
+    # make dynamic slider
     # https://stackoverflow.com/questions/18700589/interactive-reactive-change-of-min-max-values-of-sliderinput
     # output$slider <- renderUI({
     #   sliderInput("smooth_n", "Value for smoothing:", min=0, max=nrow(df), value=80)
@@ -184,7 +199,7 @@ server <- shinyServer(function(input, output, session) {
     xlab <- unique(df$xlab)
     ylab <- unique(df$ylab)
     # ggplot function for now scatter plots.
-    plt <- ggplot(df, aes(x=dates, y=vals, color=run_id)) 
+    plt <- ggplot(df, aes(x=dates, y=vals, color=run_id))
     # Toggle chart type using switch
     switch(input$plotType,
            "scatterPlot"  = {
@@ -197,21 +212,30 @@ server <- shinyServer(function(input, output, session) {
     plt <- plt + labs(title=title, x=xlab, y=ylab) + geom_smooth(n=input$smooth_n)
     # Check if user wants to load external data
     # Similar to using event reactive
-    if (input$load_data>0) { 
+    if (input$load_data>0) {
       # Retaining the code for getting file format using inputRecordID
       # File_format <- getFileFormat(bety,input$formatID)
       # Input ID is of the form (ID Name). Split by space and use the first element
-      input_ID <- strsplit(input$all_input_id,' ')[[1]][1]
-      File_format <- getFileFormat(bety,input_ID)
-      ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-      settings <- getSettingsFromWorkflowId(bety,ids_DF$wID[1])
-      filePath <- PEcAn.DB::dbfile.file(type = 'Input', id = input_ID,con = bety$con)
-      externalData <- loadObservationData(bety,settings,filePath,File_format)
-      # If variable found in the uploaded file 
+      inputs_df <- getInputs(bety,c(input$all_site_id))
+      # output$info <- renderText({
+      #   paste0(nrow(inputs_df))
+      # })
+      inputs_df <- inputs_df %>% filter(input_selection_list == input$all_input_id)
+      # output$info1 <- renderText({
+      #   paste0(nrow(inputs_df))
+      # })
+      # input_id <- strsplit(input$all_input_id,' ')[[1]][1]
+      # File_format <- getFileFormat(bety,input_id)
+      # ids_DF <- parse_ids_from_input_runID(input$all_run_id)
+      # settings <- getSettingsFromWorkflowId(bety,ids_DF$wID[1])
+      # filePath <- PEcAn.DB::dbfile.file(type = 'Input', id = input_ID,con = bety$con)
+      # externalData <- loadObservationData(bety,settings,filePath,File_format)
+      externalData <- loadObservationData(bety,inputs_df)
+      # If variable found in the uploaded file
       if (input$variable_name %in% names(externalData)){
         externalData <- externalData %>% dplyr::select(posix,dplyr::one_of(input$variable_name))
         names(externalData) <- c("dates","vals")
-        externalData$dates <- as.Date(externalData$dates) 
+        externalData$dates <- as.Date(externalData$dates)
         data_geom <- switch(input$data_geom, point = geom_point, line = geom_line)
         plt <- plt + data_geom(data = externalData,aes(x=dates, y=vals),color='black', linetype = 'dashed')
         output$outputNoVariableFound <- renderText({
@@ -230,7 +254,7 @@ server <- shinyServer(function(input, output, session) {
     # scale_y_continuous(labels=fancy_scientific) +
     # Earlier color and fill values
     # scale_color_manual(name = "", values = "black") +
-    # scale_fill_manual(name = "", values = "grey50") 
+    # scale_fill_manual(name = "", values = "grey50")
     plt<-ggplotly(plt)
     # Not able to add icon over ggplotly
     # add_icon()

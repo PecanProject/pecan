@@ -10,6 +10,8 @@ isInstalled <- function(mypkg){
   is.element(mypkg, installed.packages()[,1])
 }
 checkAndDownload(c('plotly','scales','dplyr'))
+# write.csv(inputs_df,file='/home/carya/pecan/shiny/workflowPlot/inputs_df.csv',
+#           quote = FALSE,sep = ',',col.names = TRUE,row.names=FALSE)
 # Stashing Code for file upload to shiny app 
 # Based on https://shiny.rstudio.com/gallery/file-upload.html
 # ui.R 
