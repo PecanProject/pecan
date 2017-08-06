@@ -19,6 +19,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Changed
 - Clean up directory structure:
     * Move `base` packages (`utils`, `settings`, `db`, `visualizaton`) to a `base` directory, for consistency with `modules` and `models`
+    * Move `logger.*` functions out of the `PEcAn.utils` package and into the `pecan.logger` package
 
 ## [1.5.10] - Prerelease
 ### Added
