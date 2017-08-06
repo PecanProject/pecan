@@ -10,6 +10,7 @@ MODULES := allometry assim.batch assim.sequential benchmark \
 				 data.mining data.remote emulator meta.analysis \
 				 photosynthesis priors rtm uncertainty
 
+BASE := $(BASE:%=base/%)
 MODELS := $(MODELS:%=models/%)
 MODULES := $(MODULES:%=modules/%)
 ALL_PKGS := $(BASE) $(MODELS) $(MODULES) models/template
@@ -49,11 +50,11 @@ test: .test/all
 .check/all: $(ALL_PKGS_C)
 .test/all: $(ALL_PKGS_T)
 
-depends = .install/$(1) .doc/$(1) .check/$(1) .test/$(1)
+depends = .check/$(1) .test/$(1)
 
-$(call depends,db): .install/utils
-$(call depends,settings): .install/utils .install/db
-$(call depends,visualization): .install/db
+$(call depends,base/db): .install/utils
+$(call depends,base/settings): .install/utils .install/db
+$(call depends,base/visualization): .install/db
 $(call depends,modules/data.atmosphere): .install/utils
 $(call depends,modules/data.land): .install/db .install/utils
 $(call depends,modules/meta.analysis): .install/utils .install/db
