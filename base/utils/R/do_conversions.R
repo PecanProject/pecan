@@ -16,7 +16,7 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
   
   dbfiles.local <- settings$database$dbfiles
   dbfiles <- ifelse(!PEcAn.utils::is.localhost(settings$host) & !is.null(settings$host$folder), settings$host$folder, dbfiles.local)
-  PEcAn.utils::logger.debug("do.conversion outdir",dbfiles)
+  PEcAn.logger::logger.debug("do.conversion outdir",dbfiles)
   
   for (i in seq_along(settings$run$inputs)) {
     input <- settings$run$inputs[[i]]
@@ -25,7 +25,7 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     }
     
     input.tag <- names(settings$run$input)[i]
-    PEcAn.utils::logger.info("PROCESSING: ",input.tag)
+    PEcAn.logger::logger.info("PROCESSING: ",input.tag)
     
     ic.flag <- fia.flag <- FALSE
     
@@ -66,7 +66,7 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     if (input.tag == "met") {
       name <- ifelse(is.null(settings$browndog), "MET Process", "BrownDog")
       if ( (PEcAn.utils::status.check(name) == 0)) { ## previously is.null(input$path) && 
-        PEcAn.utils::logger.info("calling met.process: ",settings$run$inputs[[i]][['path']])
+        PEcAn.logger::logger.info("calling met.process: ",settings$run$inputs[[i]][['path']])
         settings$run$inputs[[i]][['path']] <- 
           PEcAn.data.atmosphere::met.process(
             site       = settings$run$site, 
@@ -80,7 +80,7 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
             browndog   = settings$browndog,
             spin       = settings$spin,
             overwrite  = overwrite.met)
-        PEcAn.utils::logger.debug("updated met path: ",settings$run$inputs[[i]][['path']])
+        PEcAn.logger::logger.debug("updated met path: ",settings$run$inputs[[i]][['path']])
         needsave <- TRUE
       }
     }

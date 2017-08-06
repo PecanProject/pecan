@@ -26,7 +26,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
   CRUNCEP_start <- 1901
   CRUNCEP_end <- 2010
   if (start_year < CRUNCEP_start | end_year > CRUNCEP_end) {
-    PEcAn.utils::logger.severe(sprintf('Input year range (%d:%d) exceeds the CRUNCEP range (%d:%d)',
+    PEcAn.logger::logger.severe(sprintf('Input year range (%d:%d) exceeds the CRUNCEP range (%d:%d)',
                                        start_year, end_year,
                                        CRUNCEP_start, CRUNCEP_end))
   }
@@ -77,7 +77,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
       next
     }
 
-    PEcAn.utils::logger.info(paste("Downloading",loc.file))
+    PEcAn.logger::logger.info(paste("Downloading",loc.file))
     ## Create dimensions
     lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
     lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
@@ -94,7 +94,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     ## get data off OpenDAP
     for (j in seq_len(nrow(var))) {
       dap_file <- paste0(dap_base, var$DAP.name[j], "_", year, "_v1.nc4")
-      PEcAn.utils::logger.info(dap_file)
+      PEcAn.logger::logger.info(dap_file)
 
       # This throws an error if file not found
       dap <- ncdf4::nc_open(dap_file)

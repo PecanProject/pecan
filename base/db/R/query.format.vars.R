@@ -8,7 +8,7 @@
 ##' 
 query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
   
-  if(is.na(input.id) & is.na(format.id)){PEcAn.utils::logger.error("Must specify input id or format id")}
+  if(is.na(input.id) & is.na(format.id)){PEcAn.logger::logger.error("Must specify input id or format id")}
   
   con <- bety$con
   
@@ -46,7 +46,7 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
     # Need to subset the formats table
     fv <- fv %>% dplyr::filter(variable_id %in% var.ids | storage_type != "") 
     if(dim(fv)[1] == 0){
-      PEcAn.utils::logger.error("None of your requested variables are available")
+      PEcAn.logger::logger.error("None of your requested variables are available")
     } 
     
   }
@@ -126,7 +126,7 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
       }else if(udunits2::ud.are.convertible(format$vars$input_units[i], format$vars$pecan_units[i]) == FALSE){ 
         
         if(PEcAn.utils::misc.are.convertible(format$vars$input_units[i], format$vars$pecan_units[i]) == FALSE){
-          PEcAn.utils::logger.warn("Units not convertible for",format$vars$input_name[i], "with units of",format$vars$input_units[i], ".  Please make sure the varible has units that can be converted to", format$vars$pecan_units[i])
+          PEcAn.logger::logger.warn("Units not convertible for",format$vars$input_name[i], "with units of",format$vars$input_units[i], ".  Please make sure the varible has units that can be converted to", format$vars$pecan_units[i])
         }
         
       }
@@ -146,7 +146,7 @@ query.format.vars <- function(bety,input.id=NA,format.id=NA,var.ids=NA){
   }
   if(length(unique(format$vars$pecan_name))!=length(format$vars$pecan_name)){
     unique_cols<-match(unique(format$vars$pecan_name), format$vars$pecan_name)
-    PEcAn.utils::logger.warn("There are duplicate columns in format record",format$file_name, "If format is not wide format, check column(s)",format$vars$pecan_name[-unique_cols])
+    PEcAn.logger::logger.warn("There are duplicate columns in format record",format$file_name, "If format is not wide format, check column(s)",format$vars$pecan_name[-unique_cols])
   }
 
 

@@ -25,7 +25,7 @@
       outfolder <- file.path(dir, paste0(met, "_", model, "_site_", str_ns))
     } else {
       if(is.null(host$folder)){
-        PEcAn.utils::logger.severe("host$folder required when running met2model.module for remote servers")
+        PEcAn.logger::logger.severe("host$folder required when running met2model.module for remote servers")
       } else {
         outfolder <- file.path(host$folder, paste0(met, "_", model, "_site_", str_ns))
       }

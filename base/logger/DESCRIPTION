@@ -1,4 +1,4 @@
-Package: pecan.logger
+Package: PEcAn.logger
 Title: Logger functions for PEcAn
 Version: 0.0.0.9000
 Authors: Rob Kooper, Alexey Shiklomanov

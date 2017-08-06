@@ -57,7 +57,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
 
   # Create directory if necessary
   if(!file.exists(pft$outdir) && !dir.create(pft$outdir, recursive=TRUE)) {
-    PEcAn.utils::logger.error(paste0("Couldn't create PFT output directory: ", pft$outdir))
+    PEcAn.logger::logger.error(paste0("Couldn't create PFT output directory: ", pft$outdir))
   }
 
   ## Remove old files.  Clean up.
@@ -71,7 +71,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
     pftid <- db.query(paste0("SELECT pfts.id FROM pfts, modeltypes WHERE pfts.name='", pft$name, "' and pfts.modeltype_id=modeltypes.id and modeltypes.name='", modeltype, "'"), dbcon)[['id']]
   }
   if (is.null(pftid)) {
-    PEcAn.utils::logger.severe("Could not find pft, could not store file", filename)
+    PEcAn.logger::logger.severe("Could not find pft, could not store file", filename)
     return(NA)
   }
 
@@ -104,35 +104,35 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
       if (!any(is.na(ids))) {
         foundallfiles <- TRUE
         for(id in ids) {
-          PEcAn.utils::logger.info(files$file_path[[id]], files$file_name[[id]])
+          PEcAn.logger::logger.info(files$file_path[[id]], files$file_name[[id]])
           if (!file.exists(file.path(files$file_path[[id]], files$file_name[[id]]))) {
             foundallfiles <- FALSE
-            PEcAn.utils::logger.error("can not find posterior file: ", file.path(files$file_path[[id]], files$file_name[[id]]))
+            PEcAn.logger::logger.error("can not find posterior file: ", file.path(files$file_path[[id]], files$file_name[[id]]))
           } else if (files$file_name[[id]] == "species.csv") {
-            PEcAn.utils::logger.debug("Checking if species have changed")
+            PEcAn.logger::logger.debug("Checking if species have changed")
             testme <- read.csv(file.path(files$file_path[[id]], files$file_name[[id]]))
             if (!check.lists(species, testme)) {
               foundallfiles <- FALSE
-              PEcAn.utils::logger.error("species have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
+              PEcAn.logger::logger.error("species have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
             }
             remove(testme)
           } else if (files$file_name[[id]] == "prior.distns.Rdata") {
-            PEcAn.utils::logger.debug("Checking if priors have changed")
+            PEcAn.logger::logger.debug("Checking if priors have changed")
             prior.distns.tmp <- prior.distns
             if(file.exists(files$file_path[[id]], files$file_name[[id]])){
               load(file.path(files$file_path[[id]], files$file_name[[id]]))#HERE IS THE PROBLEM
             }else{
-              PEcAn.utils::logger.debug("Prior file does not exist. If empty (zero-byte) input file error is recived, set forceupdate to TRUE for one run.")
+              PEcAn.logger::logger.debug("Prior file does not exist. If empty (zero-byte) input file error is recived, set forceupdate to TRUE for one run.")
             }
             testme <- prior.distns
             prior.distns <- prior.distns.tmp
             if (!identical(prior.distns, testme)) {
               foundallfiles <- FALSE
-              PEcAn.utils::logger.error("priors have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
+              PEcAn.logger::logger.error("priors have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
             }
             remove(testme)
           } else if (files$file_name[[id]] == "trait.data.Rdata") {
-            PEcAn.utils::logger.debug("Checking if trait data has changed")
+            PEcAn.logger::logger.debug("Checking if trait data has changed")
             load(file.path(files$file_path[[id]], files$file_name[[id]]))
 
             # For trait data including converted data, only check unconverted
@@ -146,13 +146,13 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
 
             if (!identical(trait.data.check, trait.data)) {
               foundallfiles <- FALSE
-              PEcAn.utils::logger.error("trait data has changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
+              PEcAn.logger::logger.error("trait data has changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
             }
             remove(trait.data, trait.data.check)
           }
         }
         if (foundallfiles) {
-          PEcAn.utils::logger.info("Reusing existing files from posterior", pft$posteriorid, "for", pft$name)
+          PEcAn.logger::logger.info("Reusing existing files from posterior", pft$posteriorid, "for", pft$name)
           for(id in 1:nrow(files)) {
             file.copy(file.path(files[[id, 'file_path']], files[[id, 'file_name']]), file.path(pft$outdir, files[[id, 'file_name']]))
           }
@@ -199,9 +199,9 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
             file = file.path(pft$outdir, "prior.distns.csv"), row.names = TRUE)
 
   ## 3. display info to the console
-  PEcAn.utils::logger.info('Summary of Prior distributions for: ', pft$name)
-  PEcAn.utils::logger.info(colnames(prior.distns))
-  apply(cbind(rownames(prior.distns), prior.distns), MARGIN=1, PEcAn.utils::logger.info)
+  PEcAn.logger::logger.info('Summary of Prior distributions for: ', pft$name)
+  PEcAn.logger::logger.info(colnames(prior.distns))
+  apply(cbind(rownames(prior.distns), prior.distns), MARGIN=1, PEcAn.logger::logger.info)
 
   ## traits = variables with prior distributions for this pft 
   trait.data.file <- file.path(pft$outdir, "trait.data.Rdata")
@@ -209,9 +209,9 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   write.csv(plyr::ldply(trait.data),
             file = file.path(pft$outdir, "trait.data.csv"), row.names = FALSE)
   
-  PEcAn.utils::logger.info("number of observations per trait for", pft$name)
+  PEcAn.logger::logger.info("number of observations per trait for", pft$name)
   for(t in names(trait.data)){
-    PEcAn.utils::logger.info(nrow(trait.data[[t]]), "observations of", t)
+    PEcAn.logger::logger.info(nrow(trait.data[[t]]), "observations of", t)
   }
     
 
@@ -251,12 +251,12 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
 ##'
 get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate, trait.names=NULL) {
   if (!is.list(pfts)) {
-    PEcAn.utils::logger.severe('pfts must be a list')
+    PEcAn.logger::logger.severe('pfts must be a list')
   }
   # Check that all PFTs have associated outdir entries
   pft_outdirs <- lapply(pfts, '[[', 'outdir')
   if (any(sapply(pft_outdirs, is.null))) {
-    PEcAn.utils::logger.severe('At least one pft in settings is missing its "outdir"')
+    PEcAn.logger::logger.severe('At least one pft in settings is missing its "outdir"')
   }
   ##---------------- Load trait dictionary --------------#
   if(is.logical(trait.names)){
@@ -289,7 +289,7 @@ runModule.get.trait.data <- function(settings) {
     for(i in seq_along(settings)) {
       pfts.i <- settings[[i]]$pfts
       if (!is.list(pfts.i)) {
-        PEcAn.utils::logger.severe("settings[[i]]$pfts is not a list")
+        PEcAn.logger::logger.severe("settings[[i]]$pfts is not a list")
       }
       pft.names.i <- sapply(pfts.i, function(x) x$name)
       ind <- which(pft.names.i %in% setdiff(pft.names.i, pft.names))
@@ -297,7 +297,7 @@ runModule.get.trait.data <- function(settings) {
       pft.names <- sapply(pfts, function(x) x$name)
     }
     
-    PEcAn.utils::logger.info(paste0("Getting trait data for all PFTs listed by any Settings object in the list: ",
+    PEcAn.logger::logger.info(paste0("Getting trait data for all PFTs listed by any Settings object in the list: ",
                 paste(pft.names, collapse=", ")))
                 
     modeltype <- settings$model$type
@@ -309,7 +309,7 @@ runModule.get.trait.data <- function(settings) {
   } else if(PEcAn.settings::is.Settings(settings)) {
     pfts <- settings$pfts
     if (!is.list(pfts)) {
-      PEcAn.utils::logger.severe("settings$pfts is not a list")
+      PEcAn.logger::logger.severe("settings$pfts is not a list")
     }
     modeltype <- settings$model$type
     dbfiles <- settings$database$dbfiles

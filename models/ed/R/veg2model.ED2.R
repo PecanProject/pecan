@@ -46,7 +46,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
     
     pss <- data.frame(time = time, patch = n.patch, trk = trk, age = age)
     
-    PEcAn.utils::logger.info(paste0("Values used in the patch file - time:", 
+    PEcAn.logger::logger.info(paste0("Values used in the patch file - time:", 
                                     pss$time, ", patch:", pss$patch, ", trk:", 
                                     pss$trk, ", age:", pss$age))
     

@@ -34,19 +34,19 @@
 db.query <- function(query, con=NULL, params=NULL) {
   if(is.null(con)){
     if (is.null(params)) {
-      PEcAn.utils::logger.error("No parameters or connection specified")
+      PEcAn.logger::logger.error("No parameters or connection specified")
       stop()
     }
     con <- db.open(params)
     on.exit(db.close(con))
   }
   if (.db.utils$showquery) {
-    PEcAn.utils::logger.debug(query)
+    PEcAn.logger::logger.debug(query)
   }
   data <- DBI::dbGetQuery(con, query)
   res <- DBI::dbGetException(con)
   if (res$errorNum != 0 || (res$errorMsg != 'OK' && res$errorMsg != '')) {
-    PEcAn.utils::logger.severe(paste("Error executing db query '", query, "' errorcode=", res$errorNum, " message='", res$errorMsg, "'", sep=''))
+    PEcAn.logger::logger.severe(paste("Error executing db query '", query, "' errorcode=", res$errorNum, " message='", res$errorMsg, "'", sep=''))
   }
   .db.utils$queries <- .db.utils$queries+1
   invisible(data)
@@ -116,11 +116,11 @@ db.close <- function(con, showWarnings=TRUE) {
   
   id <- attr(con, "pecanid")
   if (showWarnings && is.null(id)) {
-    PEcAn.utils::logger.warn("Connection created outside of PEcAn.db package")
+    PEcAn.logger::logger.warn("Connection created outside of PEcAn.db package")
   } else {
     deleteme <- which(.db.utils$connections$id==id)
     if (showWarnings && length(deleteme) == 0) {
-      PEcAn.utils::logger.warn("Connection might have been closed already.");
+      PEcAn.logger::logger.warn("Connection might have been closed already.");
     } else {
       .db.utils$connections$id <- .db.utils$connections$id[-deleteme]
       .db.utils$connections$con <- .db.utils$connections$con[-deleteme]
@@ -143,17 +143,17 @@ db.close <- function(con, showWarnings=TRUE) {
 ##' db.print.connections()
 ##' }
 db.print.connections <- function() {
-  PEcAn.utils::logger.info("Created", .db.utils$created, "connections and executed", .db.utils$queries, "queries")
+  PEcAn.logger::logger.info("Created", .db.utils$created, "connections and executed", .db.utils$queries, "queries")
   if (.db.utils$deprecated > 0) {
-    PEcAn.utils::logger.info("Used", .db.utils$deprecated, "calls to deprecated functions")
+    PEcAn.logger::logger.info("Used", .db.utils$deprecated, "calls to deprecated functions")
   }
-  PEcAn.utils::logger.info("Created", .db.utils$created, "connections and executed", .db.utils$queries, "queries")
+  PEcAn.logger::logger.info("Created", .db.utils$created, "connections and executed", .db.utils$queries, "queries")
   if (length(.db.utils$connections$id) == 0) {
-    PEcAn.utils::logger.debug("No open database connections.\n")
+    PEcAn.logger::logger.debug("No open database connections.\n")
   } else {
     for(x in 1:length(.db.utils$connections$id)) {
-      PEcAn.utils::logger.info(paste("Connection", x, "with id", .db.utils$connections$id[[x]], "was created at:\n"))
-      PEcAn.utils::logger.info(paste("\t", names(.db.utils$connections$log[[x]]), "\n"))
+      PEcAn.logger::logger.info(paste("Connection", x, "with id", .db.utils$connections$id[[x]], "was created at:\n"))
+      PEcAn.logger::logger.info(paste("\t", names(.db.utils$connections$log[[x]]), "\n"))
       #      cat("\t database object : ")
       #      print(.db.utils$connections$con[[x]])
     }
@@ -173,7 +173,7 @@ db.exists <- function(params, write=TRUE, table=NA) {
   con <- tryCatch({
     invisible(db.open(params))
   }, error = function(e) {
-    PEcAn.utils::logger.error("Could not connect to database.\n\t", e)
+    PEcAn.logger::logger.error("Could not connect to database.\n\t", e)
     invisible(NULL)
   })
   if (is.null(con)) {
@@ -186,7 +186,7 @@ db.exists <- function(params, write=TRUE, table=NA) {
   user.permission <<- tryCatch({
     invisible(db.query(paste0("select privilege_type from information_schema.role_table_grants where grantee='",params$user,"' and table_catalog = '",params$dbname,"' and table_name='",table,"'"), con))
   }, error = function(e) {
-    PEcAn.utils::logger.error("Could not query database.\n\t", e)
+    PEcAn.logger::logger.error("Could not query database.\n\t", e)
     db.close(con)
     invisible(NULL)
   })
@@ -213,7 +213,7 @@ db.exists <- function(params, write=TRUE, table=NA) {
     read.result <- tryCatch({
       invisible(db.query(paste("SELECT * FROM", table, "LIMIT 1"), con))
     }, error = function(e) {
-      PEcAn.utils::logger.error("Could not query database.\n\t", e)
+      PEcAn.logger::logger.error("Could not query database.\n\t", e)
       db.close(con)
       invisible(NULL)
     })  
@@ -232,7 +232,7 @@ db.exists <- function(params, write=TRUE, table=NA) {
                      pg_attribute.attnum = any(pg_index.indkey)
                      AND indisprimary"), con)     
     }, error = function(e) {
-      PEcAn.utils::logger.error("Could not query database.\n\t", e)
+      PEcAn.logger::logger.error("Could not query database.\n\t", e)
       db.close(con)
       invisible(NULL)
     })
@@ -266,7 +266,7 @@ db.exists <- function(params, write=TRUE, table=NA) {
         db.query(paste("UPDATE ", table, " SET ", write.coln,"='", write.value, "' WHERE ",  key, "=", key.value, sep=""), con)
         invisible(TRUE)
       }, error = function(e) {
-        PEcAn.utils::logger.error("Could not write to database.\n\t", e)
+        PEcAn.logger::logger.error("Could not write to database.\n\t", e)
         invisible(FALSE)
       })
     } else {
@@ -326,7 +326,7 @@ get.id <- function(table, colnames, values, con, create=FALSE, dates=FALSE){
     if (dates) colinsert <- paste0(colinsert, ", created_at, updated_at")
     valinsert <- paste0(values, collapse=", ")
     if (dates) valinsert <- paste0(valinsert, ", NOW(), NOW()")
-    PEcAn.utils::logger.info("INSERT INTO ", table, " (", colinsert, ") VALUES (", valinsert, ")")
+    PEcAn.logger::logger.info("INSERT INTO ", table, " (", colinsert, ") VALUES (", valinsert, ")")
     db.query(paste0("INSERT INTO ", table, " (", colinsert, ") VALUES (", valinsert, ")"), con)
     id <- db.query(query, con)[["id"]]
   }

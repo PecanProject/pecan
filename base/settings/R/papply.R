@@ -56,7 +56,7 @@ papply <- function(settings, fn, ..., stop.on.error = FALSE) {
         }
       } else {
         if (stop.on.error) {
-          PEcAn.utils::logger.error(paste0("papply threw an error for element ", i, " of ", length(settings), 
+          PEcAn.logger::logger.error(paste0("papply threw an error for element ", i, " of ", length(settings), 
                                            ", and is aborting since stop.on.error=TRUE. Message was: '",
                                            as.character(result.i), "'"))
           stop()
@@ -64,7 +64,7 @@ papply <- function(settings, fn, ..., stop.on.error = FALSE) {
           warning.message.i <- paste0("papply threw an error for element ", i, " of ", length(settings), 
                                       ", but is continuing since stop.on.error=FALSE", " (there will be no results for this element, however). Message was: '", 
                                       as.character(result.i), "'")
-          PEcAn.utils::logger.warn(warning.message.i)
+          PEcAn.logger::logger.warn(warning.message.i)
           errors <- c(errors, paste0("Element ", i, ": '", as.character(result.i), "'"))
         }
       }
@@ -75,7 +75,7 @@ papply <- function(settings, fn, ..., stop.on.error = FALSE) {
     }
     
     if (length(errors) > 0) {
-      PEcAn.utils::logger.warn(paste0("papply encountered errors for ", length(errors), " elements, ", 
+      PEcAn.logger::logger.warn(paste0("papply encountered errors for ", length(errors), " elements, ", 
         "but continued since stop.on.error=FALSE. ", paste(errors, collapse = "; ")))
     }
     
