@@ -23,6 +23,11 @@
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
 model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
+  
+  runid <- basename(outdir)
+  DALEC.configs <- read.table(file.path(gsub(pattern = "/out/",
+                                             replacement = "/run/", x = outdir),
+                                        paste0("CONFIG.",runid)), stringsAsFactors = FALSE)
 
   ### Read in model output in DALEC format
   DALEC.output      <- read.table(file.path(outdir, "out.txt"), header = FALSE, sep = "")
@@ -70,6 +75,8 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     output[[14]] <- output[[1]] + output[[2]]  # Total Respiration
     output[[15]] <- output[[9]] + output[[10]] + output[[11]]  ## TotLivBiom
     output[[16]] <- output[[12]] + output[[13]]  ## TotSoilCarb
+    nc_var[[17]] <- to_ncvar("LAI", dims)
+    
     
     # ******************** Declare netCDF variables ********************#
     t   <- ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
@@ -105,6 +112,8 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     nc_var[[14]] <- to_ncvar("TotalResp", dims)
     nc_var[[15]] <- to_ncvar("TotLivBiom", dims)
     nc_var[[16]] <- to_ncvar("TotSoilCarb", dims)
+    output[[17]] <- output[[9]] * DALEC.configs[grep("SLA", DALEC.configs) + 1][[1]] ## LAI
+    
     
     # ******************** Declar netCDF variables ********************#
     
