@@ -186,7 +186,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
         settings$run$inputs$co2$path <- co2.remote
       }
       
-      PEcAn.utils::logger.debug("co2.local",co2.local,length(co2.dat))
+      PEcAn.logger::logger.debug("co2.local",co2.local,length(co2.dat))
     }
     
     ## add CO2 file
@@ -599,7 +599,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
 #' @examples
 detect.timestep <- function(met.dir,met.regexp,start_date){
   met.file <- dir(met.dir, pattern = met.regexp, full.names = TRUE)[1]
-  PEcAn.utils::logger.info("Detect timestep:",met.dir,met.regexp)
+  PEcAn.logger::logger.info("Detect timestep:",met.dir,met.regexp)
   met.header <- system(paste("ncdump -h ", met.file), intern = TRUE)
   id <- grep("time:delta_t", met.header)
   if (length(id) > 0) {

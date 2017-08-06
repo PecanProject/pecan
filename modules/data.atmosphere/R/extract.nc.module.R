@@ -9,7 +9,7 @@
     outfolder <- file.path(dir, paste0(met, "_CF_site_", str_ns))
   } else {
     if(is.null(host$folder)){
-      PEcAn.utils::logger.severe("host$folder required when running extract.nc.module for remote servers")
+      PEcAn.logger::logger.severe("host$folder required when running extract.nc.module for remote servers")
     } else {
       outfolder <- file.path(host$folder, paste0(met, "_CF_site_", str_ns))
     }

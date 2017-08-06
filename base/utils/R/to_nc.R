@@ -12,14 +12,14 @@ to_ncdim <- function(dimname,vals){
   dim <- standard_vars[which(standard_vars$Variable.Name == dimname),]
   #check dim exists
   if(nrow(dim) == 0){
-    PEcAn.utils::logger.severe(paste("Dimension",dimname,"not in standard_vars"))
+    PEcAn.logger::logger.severe(paste("Dimension",dimname,"not in standard_vars"))
   }
   if(dim$Category != "Dimension"){
-    PEcAn.utils::logger.severe(paste(dimname,"not a dimension or is deprecated"))
+    PEcAn.logger::logger.severe(paste(dimname,"not a dimension or is deprecated"))
   }
   
   if(is.null(vals) || length(vals) == 0){
-    PEcAn.utils::logger.severe(paste("Missing vals for dim",dimname,",please check input")) 
+    PEcAn.logger::logger.severe(paste("Missing vals for dim",dimname,",please check input")) 
   } #not sure if this check is necessary
   
   units <- as.character(dim$Units) #if the units are a factor the function fails
@@ -45,14 +45,14 @@ to_ncvar <- function(varname,dims){
   var <- standard_vars[which(standard_vars$Variable.Name == varname),]
   #check var exists
   if(nrow(var)==0){
-    PEcAn.utils::logger.severe(paste("Variable",varname,"not in standard_vars"))
+    PEcAn.logger::logger.severe(paste("Variable",varname,"not in standard_vars"))
   }
   
   dimset <- var[,c("dim1","dim2","dim3","dim4")]
   dim <- dims[which(names(dims) %in% dimset)] #subset list of all dims for this variable
   #check that dim isn't 0
   if(length(dim)==0 || is.null(dim)){
-    PEcAn.utils::logger.severe(paste("No dimensions were loaded for",varname))
+    PEcAn.logger::logger.severe(paste("No dimensions were loaded for",varname))
   }
   
   units = as.character(var$Units) #if the units are a factor the function fails

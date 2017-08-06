@@ -25,9 +25,9 @@
 model2netcdf.FATES <- function(outdir) {
 
 #    misc.convert <- PEcAn.utils::misc.convert # unit conversions
-    logger.info <- PEcAn.utils::logger.info
-    logger.severe <- PEcAn.utils::logger.severe
-    logger.warn <- PEcAn.utils::logger.warn
+    logger.info <- PEcAn.logger::logger.info
+    logger.severe <- PEcAn.logger::logger.severe
+    logger.warn <- PEcAn.logger::logger.warn
     
     #        var_update("AR","AutoResp","kgC m-2 s-1")
     var_update <- function(out,oldname,newname,newunits=NULL){

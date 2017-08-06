@@ -30,7 +30,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
   # get met source and potentially determine where to start in the process
   if(is.null(input_met$source)){
     if(is.null(input_met$id)){
-      PEcAn.utils::logger.warn("met.process only has a path provided, assuming path is model driver and skipping processing")
+      PEcAn.logger::logger.warn("met.process only has a path provided, assuming path is model driver and skipping processing")
       return(input_met$path)
     }else {
       logger.warn("No met source specified")
@@ -259,7 +259,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
     model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
     
   } else {
-    PEcAn.utils::logger.info("ready.id",ready.id,machine.host)
+    PEcAn.logger::logger.info("ready.id",ready.id,machine.host)
     model.id  <- dbfile.check("Input", ready.id, con)#, hostname=machine.host)
     if(is.null(model.id)|length(model.id)==0){
       model.file <- input_met$path
@@ -268,8 +268,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
       model.file.info <- db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
       model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
     }
-    #PEcAn.utils::logger.info("model.file = ",model.file,input.met)
-    PEcAn.utils::logger.info("model.file = ",model.file,input_met)
+    #PEcAn.logger::logger.info("model.file = ",model.file,input.met)
+    PEcAn.logger::logger.info("model.file = ",model.file,input_met)
   }
   
 

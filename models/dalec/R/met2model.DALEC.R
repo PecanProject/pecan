@@ -102,7 +102,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     LeafWaterPot <- -0.8
     
     old.file <- file.path(in.path, paste(in.prefix, year, ".nc", sep = ""))
-    if(!file.exists(old.file)) PEcAn.utils::logger.error("file not found",old.file)
+    if(!file.exists(old.file)) PEcAn.logger::logger.error("file not found",old.file)
     ## open netcdf
     nc <- ncdf4::nc_open(old.file)
     
