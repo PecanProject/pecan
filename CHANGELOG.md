@@ -16,6 +16,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - added docker container scrips (.yml) to create docker container for PEcAn
 - added the configuration edit page to allow easy modification of config via web interface
 - thredds server documentation and catlog generating script
+- added min_upload_level (and set to 3) for upload authentication
 
 ### Changed
 - upscale_met now accepts ~any valid CF file (not just full years), retains correct time units, and respects the previously ignored `overwrite` parameter
