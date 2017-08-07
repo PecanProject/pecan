@@ -1,5 +1,4 @@
-<!-- // authentication script
-<?php
+
 /**
  * Copyright (c) 2012 University of Illinois, NCSA.
  * All rights reserved. This program and the accompanying materials
@@ -14,20 +13,20 @@ require("common.php");
 open_database();
 if (!check_login()) {
   close_database();
-  header( "Location: index.php");
+  header( "Location: history.php");
   exit;
 }
 if (get_page_acccess_level() > $min_upload_level) {
-  header( "Location: index.php");
+  header( "Location: history.php");
   close_database();
   exit;
 }
 
 
-// drag and drop window. 
-/**
+
+<!-- // drag and drop window. 
+ **
  *Copyright (c) 2010 Remy Sharp, http://html5demos.com
- 
  *Permission is hereby granted, free of charge, to any person obtaining
  *a copy of this software and associated documentation files (the
  *"Software"), to deal in the Software without restriction, including
@@ -35,10 +34,8 @@ if (get_page_acccess_level() > $min_upload_level) {
  *distribute, sublicense, and/or sell copies of the Software, and to
  *permit persons to whom the Software is furnished to do so, subject to
  *the following conditions:
- 
  *The above copyright notice and this permission notice shall be
  *included in all copies or substantial portions of the Software.
-  
  *THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  *EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  *MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -46,8 +43,8 @@ if (get_page_acccess_level() > $min_upload_level) {
  *LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
  *OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  *WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
--->
+ */ -->
+
 <title>Drag and drop, automatic upload</title>
 <style>
 #holder { border: 10px dashed #ccc; width: 300px; min-height: 300px; margin: 20px auto;}
@@ -70,7 +67,7 @@ progress:after { content: '%'; }
   <p>Drag a file from your desktop on to the drop zone above to begin uploading to betyDB.</p>
 </article>
 
-<!--
+
 <script>
 var holder = document.getElementById('holder'),
     tests = {
@@ -135,7 +132,7 @@ function readfiles(files) {
     if (tests.formdata) {
       var xhr = new XMLHttpRequest();
       // @robkooper says xhr.open fetches the file from the server side 
-      xhr.open('POST', '/dbfiles'); // changed destination directory
+      xhr.open('POST', 'db/fs/data1/pecan.data/dbfiles/dnd_upload_files/'); // changed destination directory
       xhr.onload = function() {
         progress.value = progress.innerHTML = 100;
       };
@@ -169,4 +166,8 @@ if (tests.dnd) {
 }
 
 </script>
--->
+
+
+<?php // show files 
+$_FILES['file']
+?>
