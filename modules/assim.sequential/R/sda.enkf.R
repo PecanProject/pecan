@@ -210,6 +210,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   start.model.runs(settings, settings$database$bety$write)
   save(list = ls(envir = environment(), all.names = TRUE), 
        file = file.path(outdir, "sda.initial.runs.Rdata"), envir = environment())
+
   
   ###-------------------------------------------------------------------###
   ### tests before data assimilation                                    ###
@@ -312,20 +313,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     
   })
   
-    tobit2space.model <- nimbleCode({
-
-    for(n in 1:nens){
-        y.censored[n,1:N] ~ dmnorm(muf[1:N],pf[1:N,1:N])
-
-        for(i in 1:N){
-            y.ind[n,i] ~ dinterval(y.censored[n,i], interval[i,1:2])
-        }
+  tobit2space.model <- nimbleCode({
+    
+    y.censored[1:N] ~ dmnorm(muf[1:N], prec = pf[1:N,1:N])
+    
+    for(i in 1:N){
+      y.ind[i] ~ dconstraint(y.censored[i] > 0)
     }
-
-    #Priors
-    pf[1:N,1:N]  ~ dwish(aq[1:N,1:N],bq)
-    muf[1:N]  ~ dmnorm(mu.prior[1:N],cov.prior[1:N,1:N])
-
+    
   })
   
   t1         <- 1
@@ -339,7 +334,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for(t in 3:5) {#
+  for(t in 1:nt) {#seq_len(nt)
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -386,16 +381,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       R[is.na(R)]<-0
       
       if (length(obs.mean[[t]]) > 1) {
-        for (s in seq_along(obs.mean[[t]])) {
-          if (diag(R)[s] == 0) {
-            # if covariance is 0 then set it to half of the minimum covariance to avoid solve() problems
-            diag(R)[s] <- min(diag(R)[which(diag(R) != 0)])/2
-          }
-          if (diag(Pf)[s] == 0) {
-            # if covariance is 0 then set it to half of the minimum covariance to avoid solve() problems
-            diag(Pf)[s] <- min(diag(Pf)[which(diag(Pf) != 0)])/2
-          }
-        }
+        diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
+        diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
       }
       
       ### TO DO: plotting not going to work because of observation operator i.e. y and x are on different scales
@@ -511,49 +498,37 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         }
         
         #### These vectors are used to categorize data based on censoring from the interval matrix
-        x.ind <- matrix(NA, nens, ncol(X)) ; x.censored <- x.ind
-        for(n in 1:nens){
-          x.ind[n,] <- as.numeric(X[n,] > intervalX[,1])
-          x.censored[n,] <- as.numeric(ifelse(X[n,] > intervalX[,1], X[n,], 0))
-        }
+        x.ind <- as.numeric(mu.f > intervalX[,1])
+        x.censored <- as.numeric(ifelse(mu.f > intervalX[,1], mu.f, 0)) #probably not needed until different data
+        
         
         if(t == 1){ #| length(x.ind[1,]) > mu.f
           #y.obs = Y.dat[1,]
-          constants.tobit2space = list(N = ncol(X), nens = nens)
-          data.tobit2space = list(interval = intervalX,
-                                  y.ind = x.ind,
-                                  y.censored = x.censored,
-                                  aq = diag(ncol(X))*ncol(X), 
-                                  bq = ncol(X),
-                                  mu.prior = colMeans(X), #cheating? basically gives us back means
-                                  cov.prior = diag(ncol(X)))
-          
-          inits.tobit2space = list(pf = diag(ncol(X)), muf = rep(0,ncol(X))) #
+          constants.tobit2space = list(N = length(mu.f),
+                                       muf = mu.f,
+                                       pf = Pf)
+          data.tobit2space = list(y.ind = x.ind,
+                                  y.censored = x.censored)
           #set.seed(0)
           #ptm <- proc.time()
           tobit2space_pred <- nimbleModel(tobit2space.model, data = data.tobit2space,
-                                          constants = constants.tobit2space, inits = inits.tobit2space)
+                                          constants = constants.tobit2space)
           ## Adding X.mod,q,r as data for building model.
           conf_tobit2space <- configureMCMC(tobit2space_pred, print=TRUE)
-          conf_tobit2space$addMonitors(c("pf", "muf")) 
+          conf_tobit2space$addMonitors(c("pf", "muf","y.censored")) 
           ## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
           ## important!
           ## this is needed for correct indexing later
           samplerNumberOffset_tobit2space <- length(conf_tobit2space$getSamplers())
           
-          for(n in 1:nens){
-            for(i in 1:ncol(x.ind)) {
-              node <- paste0('y.censored[',n,',',i,']')
+          for(n in 1:length(mu.f)){
+              node <- paste0('y.censored[',n,']')
               conf_tobit2space$addSampler(node, 'toggle', control=list(type='RW'))
               ## could instead use slice samplers, or any combination thereof, e.g.:
               ##conf$addSampler(node, 'toggle', control=list(type='slice'))
-            }
           }
           
           conf_tobit2space$printSamplers()
-          
-          ## can monitor y.censored, if you wish, to verify correct behaviour
-          #conf_tobit2space$addMonitors('y.censored')
           
           Rmcmc_tobit2space <- buildMCMC(conf_tobit2space)
           
@@ -769,7 +744,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     }
     
     ###-------------------------------------------------------------------###
-    ### update state matrix                                                     ###
+    ### update state matrix                                               ###
     ###-------------------------------------------------------------------### 
     S_f  <- svd(Pf)
     L_f  <- S_f$d
@@ -802,7 +777,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     # ## check if ensemble mean is correct
     # cbind(mu.a,colMeans(X_a))
     # ## check if ensemble var is correct
-    # cbind(as.vector(Pa),as.vector(cov(X_a)))
+    # cbind(diag(Pa),diag(cov(X_a)))  ## just variances
+    # cbind(as.vector(Pa),as.vector(cov(X_a))) ## full cov
     # 
     analysis <- as.data.frame(rmvnorm(as.numeric(nens), mu.a, Pa, method = "svd"))
     
@@ -986,6 +962,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     sqrt(diag(x))
   })))
   
+  Ybar[is.na(Ybar)]<-0
+  YCI[is.na(YCI)]<-0
+  
   YCI <- YCI[,Y.order]
   Xsum <- plyr::laply(FORECAST, function(x) { mean(rowSums(x[,1:length(names.y)], na.rm = TRUE)) })[t1:t]
 
@@ -994,7 +973,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     Xci <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
     Xci[is.na(Xci)]<-0
     
-    Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
+    Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i]) })
     XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
     
     plot(as.Date(obs.times[t1:t]),
@@ -1092,8 +1071,19 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     colnames(cor.mat) <- colnames(X)
     rownames(cor.mat) <- colnames(X)
     par(mfrow = c(1, 1), mai = c(1, 1, 4, 1))
-    corrplot(cor.mat, type = "upper", tl.srt = 45,order='AOE')
+    corrplot(cor.mat, type = "upper", tl.srt = 45,order='FPC')
     
+    cor.mat1 <- cov2cor(cov(X))
+    colnames(cor.mat1) <- colnames(X)
+    rownames(cor.mat1) <- colnames(X)
+    corrplot(cor.mat1, type = "upper", tl.srt = 45,order='FPC')
+ 
+    cor.mat1 <- cov2cor(R)
+    colnames(cor.mat1) <- colnames(X)
+    rownames(cor.mat1) <- colnames(X)
+    corrplot(cor.mat1, type = "upper", tl.srt = 45,order='FPC')
+    
+       
     plot(as.Date(obs.times[t1:t]), bqq[t1:t],
          pch = 16, cex = 1,
          ylab = "Degrees of Freedom", xlab = "Time")
