@@ -86,7 +86,8 @@ var holder = document.getElementById('holder'),
     acceptedTypes = {
       'image/png': true,
       'image/jpeg': true,
-      'image/gif': true
+      'image/gif': true,
+      'text/csv' : true // lpb added
     },
     progress = document.getElementById('uploadprogress'),
     fileupload = document.getElementById('upload');
@@ -132,7 +133,7 @@ function readfiles(files) {
     if (tests.formdata) {
       var xhr = new XMLHttpRequest();
       // @robkooper says xhr.open fetches the file from the server side 
-      xhr.open('POST', 'db/fs/data1/pecan.data/dbfiles/dnd_upload_files/'); // changed destination directory
+      xhr.open('POST', '/fs/data3/lpburke/pecan/'); // changed destination directory
       xhr.onload = function() {
         progress.value = progress.innerHTML = 100;
       };
