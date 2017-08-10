@@ -219,6 +219,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   # at some point add a lot of error checking 
   # read time from data if data is missing you still need
   # to have NAs or NULL with date name vector to read the correct netcdfs by read_restart
+  sum.list <- matrix(NA,nens,nt)
   
   obs.times <- names(obs.mean)
   obs.times.POSIX <- ymd_hms(obs.times)
@@ -330,11 +331,15 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   alphagreen <- rgb(green[1], green[2], green[3], 75, max = 255)
   blue       <- col2rgb("blue")
   alphablue  <- rgb(blue[1], blue[2], blue[3], 75, max = 255)
+  purple       <- col2rgb("purple")
+  alphapurple <- rgb(purple[1], purple[2], purple[3], 75, max = 255)
+  brown       <- col2rgb("brown")
+  alphabrown <- rgb(brown[1], brown[2], brown[3], 75, max = 255)
   
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for(t in 1:nt) {#seq_len(nt)
+  for(t in seq_len(nt)) {#seq_len(nt)
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -502,11 +507,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         x.censored <- as.numeric(ifelse(mu.f > intervalX[,1], mu.f, 0)) #probably not needed until different data
         
         
-        if(t == 1){ #| length(x.ind[1,]) > mu.f
-          #y.obs = Y.dat[1,]
+        if(t == 1){
+          #The purpose of this step is to impute data for mu.f 
+          #where there are zero values so that 
+          #mu.f is in 'tobit space' in the full model
           constants.tobit2space = list(N = length(mu.f),
                                        muf = mu.f,
-                                       pf = Pf)
+                                       pf = solve(Pf))
           data.tobit2space = list(y.ind = x.ind,
                                   y.censored = x.censored)
           #set.seed(0)
@@ -535,21 +542,26 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           Cmodel_tobit2space <- compileNimble(tobit2space_pred)
           Cmcmc_tobit2space <- compileNimble(Rmcmc_tobit2space, project = tobit2space_pred)
           
+          for(i in 1:length(mu.f)) {
+            ## ironically, here we have to "toggle" the value of y.ind[i]
+            ## this specifies that when y.ind[i] = 1,
+            ## indicator variable is set to 0, which specifies *not* to sample
+            valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space+i]], 'toggle', 1-x.ind[i])
+          }
+          
         }else{
           Cmodel_tobit2space$y.ind <- x.ind
           Cmodel_tobit2space$y.censored <- x.censored
-          #Cmodel_tobit2space$mu.prior <- as.vector(colMeans(X)) #doesn't work
-          #Error in envRefSetField(x, what, refObjectClass(x), selfEnv, value) : 
-          #‘mu.prior’ is not a field in class “Ccode”
+          Cmodel_tobit2space$muf <- mu.f
+          Cmodel_tobit2space$pf <- solve(Pf)
           
-          for(n in 1:nens){
-            for(i in 1:ncol(x.ind)) {
+          for(i in 1:length(mu.f)) {
               ## ironically, here we have to "toggle" the value of y.ind[i]
               ## this specifies that when y.ind[i] = 1,
               ## indicator variable is set to 0, which specifies *not* to sample
-              valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space+i]], 'toggle', 1-x.ind[n,i])
-            }
+              valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space+i]], 'toggle', 1-x.ind[i])
           }
+          
         }
         
         set.seed(0)
@@ -557,12 +569,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         
         ## update parameters
         dat.tobit2space  <- dat.tobit2space[3000:10000, ]
-        iPf   <- grep("pf", colnames(dat.tobit2space))
-        imuf   <- grep("muf[", colnames(dat.tobit2space), fixed = TRUE)
+        imuf   <- grep("y.censored", colnames(dat.tobit2space))
         mu.f <- colMeans(dat.tobit2space[, imuf])
-        mPf <- dat.tobit2space[, iPf]  # Omega, Precision
-        Pf <- matrix(apply(mPf, 2, mean), length(mu.f), length(mu.f))  # Mean Omega, Precision
-        
         
         ###-------------------------------------------------------------------###
         ### Generalized Ensemble Filter                                       ###
@@ -641,6 +649,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           
           Cmodel <- compileNimble(model_pred)
           Cmcmc <- compileNimble(Rmcmc, project = model_pred)
+          
+          for(i in 1:length(y.ind)) {
+            ## ironically, here we have to "toggle" the value of y.ind[i]
+            ## this specifies that when y.ind[i] = 1,
+            ## indicator variable is set to 0, which specifies *not* to sample
+            valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
+          }
           
         }else{
           Cmodel$y.ind <- y.ind
@@ -769,20 +784,27 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     ## analysis ensemble
     X_a <- X*0
     for(i in seq_len(nens)){
-      X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,]+mu.a
+      X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
+    }
+    
+    
+    for(i in seq_len(nens)){
+    sum.list[i,t]<-sum(V_a %*%diag(sqrt(L_a))%*%Z[i,] - mu.a)
     }
     
     # par(mfrow=c(1,1))
     # plot(X_a)
     # ## check if ensemble mean is correct
     # cbind(mu.a,colMeans(X_a))
+    if(sum(mu.a-colMeans(X_a))>1) logger.warn('Problem with ensemble adjustment (1)')
+    if(sum(diag(Pa),diag(cov(X_a)))>5) logger.warn('Problem with ensemble adjustment (2)')
     # ## check if ensemble var is correct
     # cbind(diag(Pa),diag(cov(X_a)))  ## just variances
     # cbind(as.vector(Pa),as.vector(cov(X_a))) ## full cov
     # 
-    analysis <- as.data.frame(rmvnorm(as.numeric(nens), mu.a, Pa, method = "svd"))
+    #analysis <- as.data.frame(rmvnorm(as.numeric(nens), mu.a, Pa, method = "svd"))
     
-    #analysis <- as.data.frame(X_a)
+    analysis <- as.data.frame(X_a)
     colnames(analysis) <- colnames(X)
     
     ##### Mapping analysis vectors to be in bounds of state variables
@@ -811,19 +833,24 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         tmp[mch] <- x[mch]
         tmp
       }))
+      
+      if(any(obs)){
       Y.order <- na.omit(pmatch(colnames(X), colnames(Ybar)))
       Ybar <- Ybar[,Y.order]
       YCI <- t(as.matrix(sapply(obs.cov[t1:t], function(x) {
-        if (is.null(x)) {
+        if (length(x)<2) {
           rep(NA, length(names.y))
         }
         sqrt(diag(x))
       })))
       
       YCI <- YCI[,Y.order]
+      }else{
+        YCI <- matrix(NA,nrow=length(t1:t), ncol=length(names.y))
+      }
       
       par(mfrow = c(2, 1))
-      for (i in 1:ncol(FORECAST[[t]])) {#
+      for (i in 1:ncol(FORECAST[[t]])) {
         t1 <- 1
         Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
         Xci  <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
@@ -1030,7 +1057,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     ciEnvelope(rev(t1:t), 
                rev(Xci[, 1] - unlist(Ybar[, i])), 
                rev(Xci[, 2] - unlist(Ybar[, i])),
-               col = alphapink)
+               col = alphabrown)
     abline(h = 0, lty = 2, lwd = 2)
     abline(reg)
     mtext(paste("slope =", signif(summary(reg)$coefficients[2], digits = 3), 
@@ -1049,7 +1076,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     ciEnvelope(rev(t1:t), 
                rev(Xbar - XaCI[, 1]), 
                rev(Xbar - XaCI[, 2]), 
-               col = alphagreen)
+               col = alphapurple)
     abline(h = 0, lty = 2, lwd = 2)
     abline(reg1)
     mtext(paste("slope =", signif(summary(reg1)$coefficients[2], digits = 3),
@@ -1073,22 +1100,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     par(mfrow = c(1, 1), mai = c(1, 1, 4, 1))
     corrplot(cor.mat, type = "upper", tl.srt = 45,order='FPC')
     
-    cor.mat1 <- cov2cor(cov(X))
-    colnames(cor.mat1) <- colnames(X)
-    rownames(cor.mat1) <- colnames(X)
-    corrplot(cor.mat1, type = "upper", tl.srt = 45,order='FPC')
- 
-    cor.mat1 <- cov2cor(R)
-    colnames(cor.mat1) <- colnames(X)
-    rownames(cor.mat1) <- colnames(X)
-    corrplot(cor.mat1, type = "upper", tl.srt = 45,order='FPC')
-    
-       
+    par(mfrow=c(1,1))   
     plot(as.Date(obs.times[t1:t]), bqq[t1:t],
          pch = 16, cex = 1,
          ylab = "Degrees of Freedom", xlab = "Time")
     
     dev.off()
+    
   }
   
   ###-------------------------------------------------------------------###
