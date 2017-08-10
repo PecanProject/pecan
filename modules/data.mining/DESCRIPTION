@@ -6,7 +6,6 @@ Version: 1.5.0
 Date: 2017-07-14
 Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
-Description: 
 Depends:
     dplR
 Suggests:
