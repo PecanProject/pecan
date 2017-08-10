@@ -1,7 +1,6 @@
-#' @title Effective sample size
+#' Effective sample size
 #'
-#' @description Calculate effective sample size of vector based on its 
-#' autocorrelation.
+#' Calculate effective sample size of vector based on its autocorrelation.
 #' @param x A vector or time series
 #' @export
 neff <- function(x) {
