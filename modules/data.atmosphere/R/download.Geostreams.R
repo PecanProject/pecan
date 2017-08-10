@@ -75,7 +75,7 @@ download.Geostreams <- function(outfolder, sitename,
     dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
     out_file <- file.path(
       outfolder,
-      paste("Clowder", sitename, start_date, end_date, year, "json", sep="."))
+      paste("Geostreams", sitename, start_date, end_date, year, "json", sep="."))
     write(x = combined_result, file=out_file)
     result_files = append(result_files, out_file)
   }
@@ -86,7 +86,7 @@ download.Geostreams <- function(outfolder, sitename,
                     formatname = "Geostreams met",
                     startdate = start_date,
                     enddate = end_date,
-                    dbfile.name = paste("Clowder", sitename, start_date, end_date, sep = "."),
+                    dbfile.name = paste("Geostreams", sitename, start_date, end_date, sep = "."),
                     stringsAsFactors = FALSE))
 }
 
