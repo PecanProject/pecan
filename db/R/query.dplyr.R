@@ -134,14 +134,16 @@ runs <- function(bety, workflow_id) {
 #' @inheritParams dbHostInfo
 #' @param session Session object passed through Shiny
 #' @export
-get_workflow_ids <- function(bety, session) {
+get_workflow_ids <- function(bety, session,all.ids=FALSE) {
   query <- isolate(parseQueryString(session$clientData$url_search))
-  if ("workflow_id" %in% names(query)) {
+  # If we dont want all workflow ids but only workflow id from the user url query
+  if (!all.ids & "workflow_id" %in% names(query)) {
     ids <- unlist(query[names(query) == "workflow_id"], use.names = FALSE)
   } else {
     # Get all workflow IDs
     ids <- workflows(bety, ensemble = TRUE) %>% distinct(workflow_id) %>% collect %>% 
       .[["workflow_id"]] %>% sort(decreasing = TRUE)
+    # pull(.,workflow_id) %>% sort(decreasing = TRUE)
   }
   return(ids)
 }  # get_workflow_ids
@@ -208,3 +210,85 @@ get_var_names <- function(bety, workflow_id, run_id, remove_pool = TRUE) {
   }
   return(var_names)
 }  # get_var_names
+
+#' Get vector of variable names for a particular workflow and run ID
+#' @inheritParams get_var_names
+#' @param run_id Run ID
+#' @param workflow_id Workflow ID
+#' @export
+var_names_all <- function(bety, workflow_id, run_id) {
+  # @return List of variable names
+  # Get variables for a particular workflow and run id
+  var_names <- get_var_names(bety, workflow_id, run_id)
+  # Remove variables which should not be shown to the user
+  removeVarNames <- c('Year','FracJulianDay')
+  var_names <- var_names[!var_names %in% removeVarNames]
+  return(var_names)
+} # var_names_all
+
+#' Load data for a single run of the model
+#' @inheritParams var_names_all
+#' @inheritParams workflow
+#' @param run_id Run ID
+#' @param workflow_id Workflow ID
+#' @export
+load_data_single_run <- function(bety, workflow_id,run_id) {
+  # For a particular combination of workflow and run id, loads
+  # all variables from all files.
+  # @return Dataframe for one run
+  # Adapted from earlier code in pecan/shiny/workflowPlot/server.R
+  globalDF <- data.frame()
+  workflow <- collect(workflow(bety, workflow_id))
+  # Use the function 'var_names_all' to get all variables
+  removeVarNames <- c('Year','FracJulianDay')
+  var_names <- var_names_all(bety,workflow_id,run_id)
+  # Using earlier code, refactored
+  if(nrow(workflow) > 0) {
+    outputfolder <- file.path(workflow$folder, 'out', run_id)
+    files <- list.files(outputfolder, "*.nc$", full.names=TRUE)
+    for(file in files) {
+      nc <- nc_open(file)
+      for(var_name in var_names){
+        dates <- NA
+        vals <- NA
+        title <- var_name
+        ylab <- ""
+        var <- ncdf4::ncatt_get(nc, var_name)
+        #sw <- if ('Swdown' %in% names(nc$var)) ncdf4::ncvar_get(nc, 'Swdown') else TRUE
+        # Snow water
+        sw <- TRUE
+        # Check required bcoz many files don't contain title
+        if(!is.null(var$long_name)){
+          title <- var$long_name
+        }
+        # Check required bcoz many files don't contain units
+        if(!is.null(var$units)){
+          ylab <- var$units
+        }
+        x <- ncdays2date(ncdf4::ncvar_get(nc, 'time'), ncdf4::ncatt_get(nc, 'time'))
+        y <- ncdf4::ncvar_get(nc, var_name)
+        b <- !is.na(x) & !is.na(y) & sw != 0
+        dates <- if(is.na(dates)) x[b] else c(dates, x[b])
+        dates <- as.Date(dates)
+        vals <- if(is.na(vals)) y[b] else c(vals, y[b])
+        xlab <- "Time"
+        # Values of the data which we will plot
+        valuesDF <- data.frame(dates,vals)
+        # Meta information about the data.
+        metaDF <- data.frame(workflow_id,run_id,title,xlab,ylab,var_name)
+        # Meta and Values DF created differently because they would of different
+        # number of rows. cbind would repeat metaDF(1X6) to the size of valuesDF
+        currentDF <- cbind(valuesDF,metaDF)
+        globalDF <- rbind(globalDF,currentDF)
+      }
+      ncdf4::nc_close(nc)
+    }
+  }
+  # Required to convert from factors to characters
+  # Otherwise error by ggplotly
+  globalDF$title <- as.character(globalDF$title)
+  globalDF$xlab <- as.character(globalDF$xlab)
+  globalDF$ylab <- as.character(globalDF$ylab)
+  globalDF$var_name <- as.character(globalDF$var_name)
+  return(globalDF)
+} #load_data_single_run

@@ -10,6 +10,7 @@ pro2s(param, prospect.version = 5)
 \item{param}{Model parameters, in the following order: N, Cab, (Car, Cbrown), Cw, Cm, solar zenith angle, LAI, soil_moisture}
 
 \item{prospect.version}{Version of PROSPECT to use (4, 5, or '5B'; default=5)}
-
-\item{prospect.version}{Version of PROSPECT to use (4, 5, or '5B'; default=5)}
+}
+\description{
+Coupled PROSPECT-Two-stream model
 }

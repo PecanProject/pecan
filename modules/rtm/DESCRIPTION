@@ -21,10 +21,15 @@ Suggests:
     PEcAn.ED2,
     testthat (>= 1.0.2),
     knitr
+Remotes:
+    github::pecanproject/pecan/modules/assim.batch,
+    github::pecanproject/pecan/models/ed,
+    github::pecanproject/pecan/utils
 OS_type: unix
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 VignetteBuilder: knitr
+Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.0.1
