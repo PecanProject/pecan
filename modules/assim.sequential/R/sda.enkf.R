@@ -82,10 +82,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     
     ### model specific split inputs
     inputs[[i]] <- do.call(my.split_inputs, 
-                      args = list(settings = settings, 
-                                  start.time = settings$run$start.date, 
-                                  stop.time = settings$run$end.date,
-                                  inputs = ens.inputs[[i]]))
+                           args = list(settings = settings, 
+                                       start.time = settings$run$start.date, 
+                                       stop.time = settings$run$end.date,
+                                       inputs = ens.inputs[[i]]))
   }
   
   ###-------------------------------------------------------------------###
@@ -211,6 +211,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   save(list = ls(envir = environment(), all.names = TRUE), 
        file = file.path(outdir, "sda.initial.runs.Rdata"), envir = environment())
   
+  
   ###-------------------------------------------------------------------###
   ### tests before data assimilation                                    ###
   ###-------------------------------------------------------------------###  
@@ -257,7 +258,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   ##### state.interval stays constant and converts new.analysis to be within the correct bounds
   interval    <- NULL
   state.interval <- cbind(as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','min_value')),
-          as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','max_value')))
+                          as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','max_value')))
   rownames(state.interval) <- var.names
   
   wish.df <- function(Om, X, i, j, col) {
@@ -312,20 +313,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     
   })
   
-    tobit2space.model <- nimbleCode({
-
+  tobit2space.model <- nimbleCode({
     for(n in 1:nens){
-        y.censored[n,1:N] ~ dmnorm(muf[1:N],pf[1:N,1:N])
-
-        for(i in 1:N){
-            y.ind[n,i] ~ dinterval(y.censored[n,i], interval[i,1:2])
-        }
+      y.censored[n,1:N] ~ dmnorm(muf[1:N], prec = pf[1:N,1:N])
+      for(i in 1:N){
+        y.ind[n,i] ~ dinterval(y.censored[n,i], interval[i,1:2])
+      }
     }
-
     #Priors
-    pf[1:N,1:N]  ~ dwish(aq[1:N,1:N],bq)
-    muf[1:N]  ~ dmnorm(mu.prior[1:N],cov.prior[1:N,1:N])
-
+    pf[1:N,1:N]  ~ dwish(R = aq[1:N,1:N], df = bq)
+    muf[1:N]  ~ dmnorm(mu.prior[1:N], prec = cov.prior[1:N,1:N])
+    #simulate censored values conditional on observations
   })
   
   t1         <- 1
@@ -339,7 +337,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for(t in 3:5) {#
+  for(t in 2:5) {#seq_len(nt)
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -386,16 +384,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       R[is.na(R)]<-0
       
       if (length(obs.mean[[t]]) > 1) {
-        for (s in seq_along(obs.mean[[t]])) {
-          if (diag(R)[s] == 0) {
-            # if covariance is 0 then set it to half of the minimum covariance to avoid solve() problems
-            diag(R)[s] <- min(diag(R)[which(diag(R) != 0)])/2
-          }
-          if (diag(Pf)[s] == 0) {
-            # if covariance is 0 then set it to half of the minimum covariance to avoid solve() problems
-            diag(Pf)[s] <- min(diag(Pf)[which(diag(Pf) != 0)])/2
-          }
-        }
+        diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
+        diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
       }
       
       ### TO DO: plotting not going to work because of observation operator i.e. y and x are on different scales
@@ -476,11 +466,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         Pf.scale[is.na(Pf.scale)]<-0
         R.scale  <- t(t(R/as.vector(map.mu.f))/as.vector(map.mu.f))
         
-       # mu.f.scale <- scale(mu.f,center = FALSE, scale = mean(mu.f))
-       # Pf.scale <- mu.f*Pf%*%t(t(mu.f))
-       # Pf.scale[is.na(Pf.scale)]<-0
-       # R.scale <- matrix(scale(as.vector(R), center = mean(mu.f), scale = 1),2,2)
-       # Y.scale <- scale(Y, center = mean(mu.f[1:2]), scale = 1)
+        # mu.f.scale <- scale(mu.f,center = FALSE, scale = mean(mu.f))
+        # Pf.scale <- mu.f*Pf%*%t(t(mu.f))
+        # Pf.scale[is.na(Pf.scale)]<-0
+        # R.scale <- matrix(scale(as.vector(R), center = mean(mu.f), scale = 1),2,2)
+        # Y.scale <- scale(Y, center = mean(mu.f[1:2]), scale = 1)
         
         ## Kalman Gain
         K <- Pf.scale %*% t(H) %*% solve((R.scale + H %*% Pf.scale %*% t(H)))
@@ -525,8 +515,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
                                   y.censored = x.censored,
                                   aq = diag(ncol(X))*ncol(X), 
                                   bq = ncol(X),
-                                  mu.prior = colMeans(X), #cheating? basically gives us back means
-                                  cov.prior = diag(ncol(X)))
+                                  mu.prior = rep(0,ncol(X)), #cheating? basically gives us back means
+                                  cov.prior = diag(.01, nrow = ncol(X)))
           
           inits.tobit2space = list(pf = diag(ncol(X)), muf = rep(0,ncol(X))) #
           #set.seed(0)
@@ -603,7 +593,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           }
         }
         aqq[1, , ] <- diag(length(mu.f)) * bqq[1]
-
+        
         #### changing diagonal if the covariance is too small for the matrix to be inverted 
         #### This problem is different than R problem because diag(Pf) can be so small it can't be inverted 
         #### Need a different fix here someday
@@ -682,7 +672,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
             ## indicator variable is set to 0, which specifies *not* to sample
             valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
           }
-      
+          
         }
         
         set.seed(0)
@@ -769,7 +759,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     }
     
     ###-------------------------------------------------------------------###
-    ### update state matrix                                                     ###
+    ### update state matrix                                               ###
     ###-------------------------------------------------------------------### 
     S_f  <- svd(Pf)
     L_f  <- S_f$d
@@ -802,7 +792,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     # ## check if ensemble mean is correct
     # cbind(mu.a,colMeans(X_a))
     # ## check if ensemble var is correct
-    # cbind(as.vector(Pa),as.vector(cov(X_a)))
+    # cbind(diag(Pa),diag(cov(X_a)))  ## just variances
+    # cbind(as.vector(Pa),as.vector(cov(X_a))) ## full cov
     # 
     analysis <- as.data.frame(rmvnorm(as.numeric(nens), mu.a, Pa, method = "svd"))
     
@@ -818,13 +809,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         analysis[analysis[,i] > int.save[2],i] <- int.save[2]
       }
     }
-
+    
     ## in the future will have to be separated from analysis
     new.state  <- analysis
     new.params <- params
     
     ANALYSIS[[t]] <- analysis
-   
+    
     if (interactive() & t > 1) { #
       t1 <- 1
       names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
@@ -907,14 +898,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       ###-------------------------------------------------------------------###
       ### split model specific inputs for current runs                      ###
       ###-------------------------------------------------------------------### 
- 
+      
       inputs <- list()
       for(i in seq_len(nens)){
         inputs[[i]] <- do.call(my.split_inputs, 
-                          args = list(settings = settings, 
-                                      start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))), 
-                                      stop.time = obs.times[t + 1],
-                                      inputs = ens.inputs[[i]])) 
+                               args = list(settings = settings, 
+                                           start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))), 
+                                           stop.time = obs.times[t + 1],
+                                           inputs = ens.inputs[[i]])) 
       }
       
       
@@ -986,15 +977,18 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     sqrt(diag(x))
   })))
   
+  Ybar[is.na(Ybar)]<-0
+  YCI[is.na(YCI)]<-0
+  
   YCI <- YCI[,Y.order]
   Xsum <- plyr::laply(FORECAST, function(x) { mean(rowSums(x[,1:length(names.y)], na.rm = TRUE)) })[t1:t]
-
+  
   for (i in seq_len(ncol(X))) {
     Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
     Xci <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
     Xci[is.na(Xci)]<-0
     
-    Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
+    Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i]) })
     XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
     
     plot(as.Date(obs.times[t1:t]),
@@ -1023,10 +1017,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     # analysis
     ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink)
     lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2)
-  
+    
     legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
     
-    }
+  }
   dev.off()
   ###-------------------------------------------------------------------###
   ### bias diagnostics                                                  ###
@@ -1092,7 +1086,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     colnames(cor.mat) <- colnames(X)
     rownames(cor.mat) <- colnames(X)
     par(mfrow = c(1, 1), mai = c(1, 1, 4, 1))
-    corrplot(cor.mat, type = "upper", tl.srt = 45,order='AOE')
+    corrplot(cor.mat, type = "upper", tl.srt = 45,order='FPC')
     
     plot(as.Date(obs.times[t1:t]), bqq[t1:t],
          pch = 16, cex = 1,
