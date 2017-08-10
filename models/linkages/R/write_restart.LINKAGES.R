@@ -131,7 +131,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   if (!file.exists(outfile)) {
     outfile <- file.path(outdir, runid, paste0(start.time, "linkages.out.Rdata"))
     if (!file.exists(outfile)) {
-       logger.severe(paste0("missing outfile ens #", runid))
+      logger.severe(paste0("missing outfile ens #", runid))
     }
   }
   print(paste0("runid = ", runid))
@@ -160,7 +160,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   }else{
     large.trees <- which(dbh >= 20)
   }
-
+  
   for (s in seq_along(settings$pfts)) {
     ntrees[s] <- length(which(n.index[large.trees] == s))
   }
@@ -214,6 +214,9 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
       new.ntrees[s] = sample(size = 1, x = 50:150)
     } 
   }
+  
+  if(sum(new.ntrees) > 198) new.ntrees <- round((new.ntrees / sum(new.ntrees)) * runif(1,160,195))
+  
   print(paste0("new.ntrees =", new.ntrees))
   
   new.n.index <- c(rep(1, new.ntrees[1]))
@@ -221,9 +224,9 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     new.n.index <- c(new.n.index, rep(i, new.ntrees[i]))
   }
   
-  dbh.temp <- numeric(15000)
-  iage.temp <- numeric(15000)
-  nogro.temp <- numeric(15000)
+  dbh.temp <- numeric(200)
+  iage.temp <- numeric(200)
+  nogro.temp <- numeric(200)
   
   # sample from individuals to construct new states
   for (s in seq_len(nspec)) {
@@ -297,7 +300,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   
   dbh <- dbh.temp
   iage <- iage.temp
-  nogro <- nogro.temp  # numeric(15000)#hack
+  nogro <- nogro.temp  # numeric(200)#hack
   
   nogro[nogro < (-2)] <- 1
   
