@@ -12,6 +12,7 @@ InventoryGrowthFusionDiagnostics <- function(jags.out, combined) {
   layout(matrix(1:8, 4, 2, byrow = TRUE))
   out      <- as.matrix(jags.out)
   x.cols   <- which(substr(colnames(out), 1, 1) == "x")
+  if(length(x.cols) > 0){
   ci       <- apply(out[, x.cols], 2, quantile, c(0.025, 0.5, 0.975))
   ci.names <- parse.MatrixNames(colnames(ci), numeric = TRUE)
   
@@ -37,7 +38,7 @@ InventoryGrowthFusionDiagnostics <- function(jags.out, combined) {
     ciEnvelope(data$time[-1], inc.ci[1, ], inc.ci[3, ], col = "lightBlue")
     points(data$time, data$y[i, ] * 5, pch = "+", cex = 1.5, type = "b", lty = 2)
   }
-  
+  }
   if (FALSE) {
     ## check a DBH
     plot(out[, which(colnames(out) == "x[3,31]")])
@@ -47,25 +48,58 @@ InventoryGrowthFusionDiagnostics <- function(jags.out, combined) {
   }
   
   ## process model
-  vars <- (1:ncol(out))[-c(which(substr(colnames(out), 1, 1) == "x"), grep("tau", colnames(out)), 
-    grep("year", colnames(out)), grep("ind", colnames(out)))]
+  vars <- (1:ncol(out))[-c(which(substr(colnames(out), 1, 1) == "x"), 
+                           grep("tau", colnames(out)),
+                           grep("year", colnames(out)), 
+                           grep("ind", colnames(out)),
+                           grep("alpha",colnames(out)),
+                           grep("deviance",colnames(out)))]
+  
   par(mfrow = c(1, 1))
   for (i in vars) {
     hist(out[, i], main = colnames(out)[i])
+    abline(v=0,lwd=3)
   }
-  if (length(vars) > 1) {
+  if (length(vars) > 1 && length(vars) < 10) {
     pairs(out[, vars])
   }
+  
+  if("deviance" %in% colnames(out)){
+    hist(out[,"deviance"])
+    vars <- c(vars,which(colnames(out)=="deviance"))
+  }
+  
+  ## rebuild coda for just vars
+  var.out <- as.mcmc.list(lapply(jags.out,function(x){ x[,vars]}))
+  
+  ## convergence
+  gelman.diag(var.out)
+  
+  #### Diagnostic plots
+  plot(var.out)
+  
   
   ## Standard Deviations layout(matrix(c(1,2,3,3),2,2,byrow=TRUE))
   par(mfrow = c(2, 3))
   prec <- out[, grep("tau", colnames(out))]
-  for (i in seq_along(prec)) {
+  for (i in seq_len(ncol(prec))) {
     hist(1 / sqrt(prec[, i]), main = colnames(prec)[i])
   }
   cor(prec)
   # pairs(prec)
   
+  ### alpha
+  par(mfrow = c(1, 1))
+  alpha.cols <- grep("alpha", colnames(out))
+  if (length(alpha.cols) > 0) {
+    alpha.ord <- 1:length(alpha.cols)
+    ci.alpha <- apply(out[, alpha.cols], 2, quantile, c(0.025, 0.5, 0.975))
+    plot(alpha.ord, ci.alpha[2, ], type = "n", 
+         ylim = range(ci.alpha, na.rm = TRUE), ylab = "Random Effects")
+    PEcAn.visualization::ciEnvelope(alpha.ord, ci.alpha[1, ], ci.alpha[3, ], col = "lightBlue")
+    lines(alpha.ord, ci.alpha[2, ], lty = 1, lwd = 2)
+    abline(h = 0, lty = 2)
+  }
   
   par(mfrow = c(1, 1))
   ### YEAR
