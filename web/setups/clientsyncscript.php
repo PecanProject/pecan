@@ -33,7 +33,9 @@
 //                   $context);
 
 //
-$service_url = $server_url."/web/setups/serversyncscript.php";
+include_once '../config.php';
+
+$service_url = $server_url."/pecan/setups/serversyncscript.php";
 
 $curl = curl_init($service_url);
 
@@ -58,13 +60,19 @@ if ($curl_response === false) {
 
 // close curl
 curl_close($curl);
-$decoded = json_decode($curl_response);
+$decoded = json_decode($curl_response, FALSE);
 if (isset($decoded->status) && $decoded->status == 'ERROR') {
     die('error occured: ' . $decoded->errormessage);
 }
 
 // got wait id
-var_export($decoded->waitid);
+
+var_dump($decoded);
+
+echo $decoded->wantid;
+
+
+//var_export($decoded['waitid']);
 
 // script to handle wait id part
 ?>
