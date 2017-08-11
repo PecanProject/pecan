@@ -5,13 +5,18 @@
 \title{InventoryGrowthFusion}
 \usage{
 InventoryGrowthFusion(data, cov.data = NULL, time_data = NULL,
-  n.iter = 5000, random = NULL, fixed = NULL, time_varying = NULL,
-  burnin_plot = FALSE, save.jags = "IGF.txt")
+  n.iter = 5000, n.chunk = n.iter, random = NULL, fixed = NULL,
+  time_varying = NULL, burnin_plot = FALSE, save.jags = "IGF.txt",
+  z0 = NULL, save.state = TRUE)
 }
 \arguments{
 \item{data}{list of data inputs}
 
+\item{n.chunk}{number of MCMC steps to evaluate at a time. Will only return LAST}
+
 \item{random}{= whether or not to include random effects}
+
+\item{save.state}{whether or not to include inferred DBH in output (can be large)}
 }
 \value{
 an mcmc.list object
