@@ -3,7 +3,6 @@ authors - Alexey Shiklomanov
         - Rob Kooper
 
 **NOTE: Instructions are only tested for CentOS 6.5 and Ubuntu 16.04**
-
 **NOTE: Pretty much every step here requires root access.**
 
 ## Install the Shiny R package and Shiny server
@@ -66,6 +65,11 @@ If you change the configuration, for example to add a new location, you will nee
 *If there is an instance of Shiny already running*, you can restart it with:
 
 ```
+## On CentOS
+sudo service shiny-server stop
+sudo service shiny-server start
+
+## On Ubuntu
 sudo systemctl stop shiny-server.service
 sudo systemctl start shiny-server.service
 ```
