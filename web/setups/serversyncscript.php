@@ -13,10 +13,13 @@
 include_once('../common.php');
 
 header("Content-Type: application/json");
+//header("HTTP/1.0 404 Not Found");
 
 $client_sceret = $_POST['client_sceret'];
 $server_auth_token = $_POST['server_auth_token'];
 $fqdn = $_POST['fqdn'];
+
+open_database();
 
 if (!(isset($client_sceret) && isset($server_auth_token))){
 /**
@@ -24,32 +27,33 @@ if (!(isset($client_sceret) && isset($server_auth_token))){
  * back the client tokens and sync id
  */
  //add code to create new client
- open_database();
  $stmt = $pdo->prepare("INSERT
    INTO machines (id, hostname, created_at, updated_at , sync_host_id, sync_url, sync_contact, sync_start, sync_end)
    VALUES (, :hostname, :created_at, :updated_at , :sync_host_id, :sync_url, :sync_contact, :sync_start, :sync_end );");
  if (!$stmt->execute(array(':hostname' => $fqdn,
                           ':created_at' => date("Y-m-d"),
                           ':updated_at' => date("Y-m-d"),
-                          ':sync_host_id' => ,
-                          ':sync_url' =>,
-                          ':sync_contact' =>,
-                          ':sync_start' => ,
-                          ':sync_end' => ))) {
+                          ':sync_host_id' => ' ',
+                          ':sync_url' => ' ',
+                          ':sync_contact' => ' ',
+                          ':sync_start' =>  ' ',
+                          ':sync_end' => ' ' ))) {
   echo json_encode(array('status' => 'ERROR',
                         'errormessage' => 'Invalid query : [' . error_database() . ']'  . $pdo->errorInfo()));
   die();
  }
 
 }
+$stmt = $pdo->prepare("SELECT * FROM machines WHERE hostname = :hostname;",array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
 
-$stmt = $pdo->prepare("SELECT * FROM machines WHERE hostname = ?");
-if (!$stmt->execute(array($fqdn))) {
+if (!$stmt->execute(array(':hostname' => $fqdn))) {
   echo json_encode(array('status' => 'ERROR',
                         'errormessage' => 'Invalid query : [' . error_database() . ']'  . $pdo->errorInfo()));
   die();
 }
+
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
 $stmt->closeCursor();
 
 // checking for existance and other things
