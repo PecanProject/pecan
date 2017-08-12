@@ -32,12 +32,15 @@
 //                   false,
 //                   $context);
 
-//
 include_once '../config.php';
 
 $service_url = $server_url."/pecan/setups/serversyncscript.php";
 
 $curl = curl_init($service_url);
+
+//var_dump($client_sceret);
+//var_dump($server_auth_token);
+//var_dump($fqdn);
 
 $curl_post_data = array ('client_sceret' => $client_sceret,
                          'server_auth_token' => $server_auth_token,
@@ -67,12 +70,27 @@ if (isset($decoded->status) && $decoded->status == 'ERROR') {
 
 // got wait id
 
-var_dump($decoded);
+// var_dump($curl_response);
+// echo '<br>';
+// var_dump($decoded);
 
-echo $decoded->wantid;
-
-
-//var_export($decoded['waitid']);
+// instructions to update the client secrets
 
 // script to handle wait id part
+//echo $decoded->wantid;
+
+$tempfile = tmpfile();
+$line = $decoded->wantid;
+fwrite($tempfile, $line);
+
+$configfile = fopen("syncflag.txt", "w+");
+
+rewind($tempfile);
+
+while (($buffer=fgets($tempfile))!== false) {
+  fwrite($configfile,$buffer);
+}
+
+fclose($tempfile); // remove tempfile
+
 ?>
