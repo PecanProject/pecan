@@ -21,29 +21,31 @@ $fqdn = $_POST['fqdn'];
 
 open_database();
 
-if (!(isset($client_sceret) && isset($server_auth_token))){
-/**
- * token not set means client is a new one so add new data to the table and send
- * back the client tokens and sync id
- */
- //add code to create new client
- $stmt = $pdo->prepare("INSERT
-   INTO machines (id, hostname, created_at, updated_at , sync_host_id, sync_url, sync_contact, sync_start, sync_end)
-   VALUES (, :hostname, :created_at, :updated_at , :sync_host_id, :sync_url, :sync_contact, :sync_start, :sync_end );");
- if (!$stmt->execute(array(':hostname' => $fqdn,
-                          ':created_at' => date("Y-m-d"),
-                          ':updated_at' => date("Y-m-d"),
-                          ':sync_host_id' => ' ',
-                          ':sync_url' => ' ',
-                          ':sync_contact' => ' ',
-                          ':sync_start' =>  ' ',
-                          ':sync_end' => ' ' ))) {
-  echo json_encode(array('status' => 'ERROR',
-                        'errormessage' => 'Invalid query : [' . error_database() . ']'  . $pdo->errorInfo()));
-  die();
- }
-
-}
+// if ( !isset($client_sceret) && !isset($server_auth_token) && empty($client_sceret) && empty($server_auth_token)){
+// /**
+//  * token not set means client is a new one so add new data to the table and send
+//  * back the client tokens and sync id
+//  */
+//  //add code to create new client
+//  $host_id = 1;
+//
+//  $stmt = $pdo->prepare("INSERT
+//    INTO machines (id, hostname, created_at, updated_at , sync_host_id, sync_url, sync_contact, sync_start, sync_end)
+//    VALUES ( , :hostname, :created_at, :updated_at , :sync_host_id, :sync_url, :sync_contact, :sync_start, :sync_end );");
+//  if (!$stmt->execute(array(':hostname' => $fqdn,
+//                           ':created_at' => date("Y-m-d"),
+//                           ':updated_at' => date("Y-m-d"),
+//                           ':sync_host_id' => ' ',
+//                           ':sync_url' => ' ',
+//                           ':sync_contact' => ' ',
+//                           ':sync_start' =>  $host_id * (10 ^ 9) ,
+//                           ':sync_end' => $host_id * (10 ^ 9)  + (10 ^ 9)  -1 ))) {
+//   echo json_encode(array('status' => 'ERROR',
+//                         'errormessage' => 'Invalid query : [' . error_database() . ']'  . $pdo->errorInfo()));
+//   die();
+//  }
+//
+// }
 $stmt = $pdo->prepare("SELECT * FROM machines WHERE hostname = :hostname;",array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
 
 if (!$stmt->execute(array(':hostname' => $fqdn))) {
@@ -54,12 +56,53 @@ if (!$stmt->execute(array(':hostname' => $fqdn))) {
 
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
+//var_dump($row);
+
+if ($row == false) {
+  // means no data exist in database
+  $host_id = 25;
+  $id = 0;
+  $date = date("Y-m-d H:i:s");
+  $stmt = $pdo->prepare("INSERT
+    INTO machines (id, hostname, created_at, updated_at , sync_host_id, sync_url, sync_contact, sync_start, sync_end)
+    VALUES (:id, :hostname, :created_at, :updated_at , :sync_host_id, :sync_url, :sync_contact, :sync_start, :sync_end );");
+  $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+  $stmt->bindValue(':hostname', $fqdn, PDO::PARAM_STR);
+  $stmt->bindValue(':created_at', $date, PDO::PARAM_STR);
+  $stmt->bindValue(':updated_at', $date, PDO::PARAM_STR);
+  $stmt->bindValue(':sync_host_id', $host_id, PDO::PARAM_INT);
+  $stmt->bindValue(':sync_url', ' ', PDO::PARAM_STR);
+  $stmt->bindValue(':sync_contact', ' ', PDO::PARAM_STR);
+  $stmt->bindValue(':sync_start', $host_id * (10 ^ 9), PDO::PARAM_INT);
+  $stmt->bindValue(':sync_end', $host_id*(10^9)+(10^9)-1, PDO::PARAM_INT);
+  if (!$stmt->execute()) {
+   echo json_encode(array('status' => 'ERROR',
+                         'errormessage' => 'Invalid query : [' . error_database() . ']'  . $pdo->errorInfo()));
+   die();
+  }
+
+  $client_sceret = md5($fqdn.$date);
+
+}
+else {
+  // means row details exist so verify the  client authentication keys
+  //var_dump($row);
+  if ($client_sceret != md5($row['hostname'].$row['created_at'])) {
+    echo json_encode(array('status' => 'ERROR',
+                          'errormessage' => 'Invalid client_sceret'));
+    die();
+  }
+
+}
+
 $stmt->closeCursor();
 
 // checking for existance and other things
 
 $wantid = 1;      // Generate the wantid
 
-echo json_encode(array('wantid' => $wantid)); // return the data
+echo json_encode(array('status' => 'OK',
+                       'wantid' => $wantid,
+                       'client_sceret' => $client_sceret)); // return the data
 
 ?>
