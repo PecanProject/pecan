@@ -157,6 +157,13 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     pftname <- unlist(strsplit(cur_t_name, '.', fixed=TRUE))[2]
     tname <- unlist(strsplit(cur_t_name, '.', fixed=TRUE))[3]
 
+    # NOTE:
+    # This is brittle with respect to changes in comments in dvmdostem
+    # parameter files. The parameter utility script determines names for
+    # variables based on parsing the comment string in the parameter files
+    # and looking for the part preceeding a colon. So changes in those
+    # files will require modifications to the following sections.
+
     # Loop over all the items in our json structure of the dvmdostem parameters
     # and find the item that matches the PFT
     for (jd_name in names(dimveg_jsondata)) {
@@ -211,8 +218,8 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   write(envcanopy_exportJson, "/tmp/envcanopy_newfile.json")
 
 
-  # 3) Format a new dvmdostem parameter file using the new json file as a
-  # source.
+  # (3)
+  # Format a new dvmdostem parameter file using the new json file as a  source.
 
   if (dir.exists(file.path(rundir, "parameters/"))) {
     # pass
