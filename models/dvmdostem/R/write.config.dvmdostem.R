@@ -71,6 +71,24 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   appbinary <- settings$model$binary
   appbinary_path <- dirname(appbinary)                  # path of dvmdostem binary file
 
+  # Copy the base set of dvmdostem parameters and configurations into the
+  # run directory. Some of the values in these files will be overwritten in
+  # subsequent steps, but copying everything up makes sure that all the
+  # necessary files exist for a tem run - the config file and the parameter
+  # files in this case.
+  system2(paste0("cp"),
+          wait=TRUE,
+          args=(c("-r",
+                  file.path(appbinary_path, 'config'),
+                  file.path(rundir, 'config'))))
+
+  system2(paste0("cp"),
+          wait=TRUE,
+          args=(c("-r",
+                  file.path(appbinary_path, 'parameters'),
+                  file.path(rundir, 'parameters'))))
+
+
   ### WORK ON GETTING MA-POSTERIORS COPIED/WRITTEN INTO THE CORRECT
   ### PARAMETER LOCATIONS.....
   # 1) Read in a parameter data block from dvmdostem
@@ -103,8 +121,10 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # Next, use a helper script distributed with dvmdostem to read the dvmdostem
   # parameter data into memory as a json object.
   dimveg_params <- paste(appbinary_path, "parameters", 'cmt_dimvegetation.txt', sep="/")
+  envcanopy_params <- paste(appbinary_path, "parameters", 'cmt_envcanopy.txt', sep="/")
 
   dimveg_jsonfile <- '/tmp/dvmdostem-dimveg.json'
+  envcanopy_jsonfile <- '/tmp/dvmdostem-envcanopy.json'
 
   # Call the helper script and write out the data to a temporary file
   # This gets just the block we are interested in (based on community type)
@@ -112,9 +132,14 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
           args=(c("--dump-block-to-json", dimveg_params, cmtnum)),
           stdout=dimveg_jsonfile, wait=TRUE)
 
+  system2(paste0(appbinary_path,"/scripts/param_util.py"),
+          args=(c("--dump-block-to-json", envcanopy_params, cmtnum)),
+          stdout=envcanopy_jsonfile, wait=TRUE)
+
   # Read the json file into memory
   library("rjson")
   dimveg_jsondata <- fromJSON(paste(readLines(dimveg_jsonfile), collapse=""))
+  envcanopy_jsondata <- fromJSON(paste(readLines(envcanopy_jsonfile), collapse=""))
 
   # 2) Overwrite certain parameter values with (ma-posterior) trait data 
   #    from pecan, then write back out to disk...
@@ -148,26 +173,65 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
             dimveg_jsondata[[jd_name]]$sla = trait_df[[cur_t_name]]
           } else if (tname == "frprod_perc_10") {
             dimveg_jsondata[[jd_name]]$`frprod[0]` = trait_df[[cur_t_name]]
-          } else if (tname == "extinction_coefficient_diffuse"){
-            print(paste0("WARNING!! NOT SURE WHERE TO MAP ",tname, " TO YET!!"))
+          } else {
+            # pass...variable not in this file or datastructure
           }
         }
       }
-    } # end loop over json items
+    } # end loop over json for dimvveg
+
+
+    # Loop over all the items in our json structure of the dvmdostem parameters
+    # and find the item that matches the PFT
+    for (jd_name in names(envcanopy_jsondata)) {
+      # First make sure that we are looking at the pftN entries, not
+      # comments, or other non-PFT variables
+      if (grepl("pft", jd_name)) {
+        cur_pft_name <- envcanopy_jsondata[[jd_name]]$name
+
+        # Then pick out only the entry for the correct pft
+        if (identical(cur_pft_name, pftname)) {
+          print(cur_t_name)
+          print(tname)
+          if (tname == "extinction_coefficient_diffuse") {
+            envcanopy_jsondata[[jd_name]]$er = trait_df[[cur_t_name]]
+          } else {
+            # pass...variable not in this file or datastructure
+          }
+        }
+      }
+    } # end loop over json for env canopy
   }
 
   # Write it back out to disk (overwriting ok??)
-  exportJson <- toJSON(dimveg_jsondata)
-  write(exportJson, "/tmp/dimveg_newfile.json")
+  dimveg_exportJson <- toJSON(dimveg_jsondata)
+  write(dimveg_exportJson, "/tmp/dimveg_newfile.json")
+
+  envcanopy_exportJson <- toJSON(envcanopy_jsondata)
+  write(envcanopy_exportJson, "/tmp/envcanopy_newfile.json")
 
 
   # 3) Format a new dvmdostem parameter file using the new json file as a
   # source.
-  ref_file <- paste0(file.path(dvmpath, "parameters/"), 'cmt_dimvegetation.txt')
+
+  if (dir.exists(file.path(rundir, "parameters/"))) {
+    # pass
+  } else {
+    print("No parameter/ directory in run directory! Need to create...")
+    dir.create(file.path(rundir,"parameters" ))
+  }
+  ref_file <- paste0(file.path(appbinary_path, "parameters/"), 'cmt_dimvegetation.txt')
   new_param_file <- paste0(file.path(rundir, "parameters/"), "cmt_dimvegetation.txt")
   system2(paste0(appbinary_path,"/scripts/param_util.py"),
           args=(c("--fmt-block-from-json", "/tmp/dimveg_newfile.json", ref_file)),
           stdout=new_param_file, wait=TRUE)
+
+  ref_file <- paste0(file.path(appbinary_path, "parameters/"), 'cmt_envcanopy.txt')
+  new_param_file <- paste0(file.path(rundir, "parameters/"), "cmt_envcanopy.txt")
+  system2(paste0(appbinary_path,"/scripts/param_util.py"),
+          args=(c("--fmt-block-from-json", "/tmp/envcanopy_newfile.json", ref_file)),
+          stdout=new_param_file, wait=TRUE)
+
 
   # TODO:
   #  - finish with parameter update process
