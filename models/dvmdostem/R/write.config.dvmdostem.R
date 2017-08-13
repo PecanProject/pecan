@@ -65,10 +65,10 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
 
   # Setup some local variables for this function for easily referencing
   # common locations for input, output, and the application binary.
-  local_rundir <- file.path(settings$rundir, run.id) ## this is on local machine for staging
-  rundir     <- file.path(settings$host$rundir, run.id)  ## this is on remote machine for execution
-  outdir <- file.path(settings$host$outdir, run.id)
-  appbinary <- settings$model$binary
+  local_rundir <- file.path(settings$rundir, run.id)       # on local machine for staging
+  rundir       <- file.path(settings$host$rundir, run.id)  # on remote machine for execution
+  outdir       <- file.path(settings$host$outdir, run.id)
+  appbinary    <- settings$model$binary
 
   ### WORK ON GETTING MA-POSTERIORS COPIED/WRITTEN INTO THE CORRECT
   ### PARAMETER LOCATIONS.....
@@ -79,7 +79,8 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
 
   # Build a dataframe from the incoming trait.values. trait.values
   # contains the meta-analysis posteriors values for each parameter (trait)
-  # that we are hoping to "inject" into dvmdostem
+  # that we are hoping to "inject" into dvmdostem. Convert to a dataframe
+  # for easier indexing...
   trait_df <- as.data.frame(trait.values)
 
   # Now we have to basically read the approporate values out of the trait_df
@@ -89,8 +90,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # use some helper scripts from dvmdostem that allow us to more easily handle
   # the parameter files and write our new trait values into the correct place.
   # The basic flow will be like this:
-  #  - Read dvmdostem parameter file into json object, load into memory for 
-  #    this script.
+  #  - Read dvmdostem parameter file into json object, load into memory
   #  - Update the in-memory json object
   #  - Write the json object back out to a new dvmdostem parameter file
 
@@ -158,8 +158,8 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   write(exportJson, "/tmp/new-file.json")
 
 
-  # 3) Write parameter file back out to dvmdostem parameter file
-  #    Need to
+  # 3) Format a new dvmdostem parameter file using the new json file as a
+  # source.
   ref_file <- paste0(file.path(dvmpath, "parameters/"), 'cmt_dimvegetation.txt')
   new_param_file <- paste0(file.path(rundir, "parameters/"), "cmt_dimvegetation.txt")
   system2(paste0(dvmpath,"/scripts/param_util.py"), 
