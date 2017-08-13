@@ -102,18 +102,19 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # Next, use a helper script distributed with dvmdostem to read the dvmdostem
   # parameter data into memory as a json object.
   dvmpath <- dirname(appbinary)   # Grab application binary's containing directory.
-  params <- paste(dvmpath, "parameters", 'cmt_dimvegetation.txt', sep="/")
-  json_file <- '/tmp/junk.json'
+  dimveg_params <- paste(dvmpath, "parameters", 'cmt_dimvegetation.txt', sep="/")
+
+  dimveg_jsonfile <- '/tmp/dvmdostem-dimveg.json'
 
   # Call the helper script and write out the data to a temporary file
   # This gets just the block we are interested in (based on community type)
   system2(paste0(dvmpath,"/scripts/param_util.py"),
-          args=(c("--dump-block-to-json", params, cmtnum)),
-          stdout=json_file, wait=TRUE)
+          args=(c("--dump-block-to-json", dimveg_params, cmtnum)),
+          stdout=dimveg_jsonfile, wait=TRUE)
 
   # Read the json file into memory
   library("rjson")
-  json_data <- fromJSON(paste(readLines(json_file), collapse=""))
+  dimveg_jsondata <- fromJSON(paste(readLines(dimveg_jsonfile), collapse=""))
 
   # 2) Overwrite certain parameter values with (ma-posterior) trait data 
   #    from pecan, then write back out to disk...
@@ -125,26 +126,28 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     # In converting trait.values into a dataframe, we get 
     # these long column names that are dot separted and seem
     # to contain cmtkey.pftname.traitname
-    # So the following splits out the various components to convenient locals
+    # So the following splits out the various components into 
+    # convenient local variables
     cmtkey <- unlist(strsplit(cur_t_name, '.', fixed=TRUE))[1]
     pftname <- unlist(strsplit(cur_t_name, '.', fixed=TRUE))[2]
     tname <- unlist(strsplit(cur_t_name, '.', fixed=TRUE))[3]
 
     # Loop over all the items in our json structure of the dvmdostem parameters
     # and find the item that matches the PFT
-    for (jd_name in names(json_data)) {
-      # First make sure that we are looking at the pftN entries, not comment, etc
+    for (jd_name in names(dimveg_jsondata)) {
+      # First make sure that we are looking at the pftN entries, not 
+      # comments, or other non-PFT variables
       if (grepl("pft", jd_name)) {
-        cur_pft_name <- json_data[[jd_name]]$name
+        cur_pft_name <- dimveg_jsondata[[jd_name]]$name
 
         # Then pick out only the entry for the correct pft 
         if (identical(cur_pft_name, pftname)) {
           print(cur_t_name)
           print(tname)
           if (tname == "SLA") {
-            json_data[[jd_name]]$sla = trait_df[[cur_t_name]]
+            dimveg_jsondata[[jd_name]]$sla = trait_df[[cur_t_name]]
           } else if (tname == "frprod_perc_10") {
-            json_data[[jd_name]]$`frprod[0]` = trait_df[[cur_t_name]]
+            dimveg_jsondata[[jd_name]]$`frprod[0]` = trait_df[[cur_t_name]]
           } else if (tname == "extinction_coefficient_diffuse"){
             print(paste0("WARNING!! NOT SURE WHERE TO MAP ",tname, " TO YET!!"))
           }
@@ -154,8 +157,8 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   }
 
   # Write it back out to disk (overwriting ok??)
-  exportJson <- toJSON(json_data)
-  write(exportJson, "/tmp/new-file.json")
+  exportJson <- toJSON(dimveg_jsondata)
+  write(exportJson, "/tmp/dimveg_newfile.json")
 
 
   # 3) Format a new dvmdostem parameter file using the new json file as a
@@ -163,7 +166,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   ref_file <- paste0(file.path(dvmpath, "parameters/"), 'cmt_dimvegetation.txt')
   new_param_file <- paste0(file.path(rundir, "parameters/"), "cmt_dimvegetation.txt")
   system2(paste0(dvmpath,"/scripts/param_util.py"), 
-          args=(c("--fmt-block-from-json", "/tmp/new-file.json", ref_file)),
+          args=(c("--fmt-block-from-json", "/tmp/dimveg_newfile.json", ref_file)),
           stdout=new_param_file, wait=TRUE)
 
   # TODO:
