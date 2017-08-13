@@ -65,10 +65,10 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
 
   # Setup some local variables for this function for easily referencing
   # common locations for input, output, and the application binary.
-  local_rundir <- file.path(settings$rundir, run.id)       # on local machine for staging
-  rundir       <- file.path(settings$host$rundir, run.id)  # on remote machine for execution
-  outdir       <- file.path(settings$host$outdir, run.id)
-  appbinary    <- settings$model$binary
+  local_rundir <- file.path(settings$rundir, run.id)    # on local machine for staging
+  rundir <- file.path(settings$host$rundir, run.id)     # on remote machine for execution
+  outdir <- file.path(settings$host$outdir, run.id)
+  appbinary <- settings$model$binary
   appbinary_path <- dirname(appbinary)                  # path of dvmdostem binary file
 
   ### WORK ON GETTING MA-POSTERIORS COPIED/WRITTEN INTO THE CORRECT
