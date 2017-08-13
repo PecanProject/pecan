@@ -69,6 +69,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   rundir       <- file.path(settings$host$rundir, run.id)  # on remote machine for execution
   outdir       <- file.path(settings$host$outdir, run.id)
   appbinary    <- settings$model$binary
+  appbinary_path <- dirname(appbinary)                  # path of dvmdostem binary file
 
   ### WORK ON GETTING MA-POSTERIORS COPIED/WRITTEN INTO THE CORRECT
   ### PARAMETER LOCATIONS.....
@@ -101,14 +102,13 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
 
   # Next, use a helper script distributed with dvmdostem to read the dvmdostem
   # parameter data into memory as a json object.
-  dvmpath <- dirname(appbinary)   # Grab application binary's containing directory.
-  dimveg_params <- paste(dvmpath, "parameters", 'cmt_dimvegetation.txt', sep="/")
+  dimveg_params <- paste(appbinary_path, "parameters", 'cmt_dimvegetation.txt', sep="/")
 
   dimveg_jsonfile <- '/tmp/dvmdostem-dimveg.json'
 
   # Call the helper script and write out the data to a temporary file
   # This gets just the block we are interested in (based on community type)
-  system2(paste0(dvmpath,"/scripts/param_util.py"),
+  system2(paste0(appbinary_path,"/scripts/param_util.py"),
           args=(c("--dump-block-to-json", dimveg_params, cmtnum)),
           stdout=dimveg_jsonfile, wait=TRUE)
 
@@ -165,7 +165,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # source.
   ref_file <- paste0(file.path(dvmpath, "parameters/"), 'cmt_dimvegetation.txt')
   new_param_file <- paste0(file.path(rundir, "parameters/"), "cmt_dimvegetation.txt")
-  system2(paste0(dvmpath,"/scripts/param_util.py"), 
+  system2(paste0(appbinary_path,"/scripts/param_util.py"),
           args=(c("--fmt-block-from-json", "/tmp/dimveg_newfile.json", ref_file)),
           stdout=new_param_file, wait=TRUE)
 
