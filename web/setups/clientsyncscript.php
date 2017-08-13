@@ -10,28 +10,6 @@
 
 // client side script
 
-// // Create map with request parameters
-// $params = array ('client_sceret' => $client_sceret, 'server_auth_token' => $server_auth_token, 'fqdn' => $fqdn );
-//
-// // Build Http query using params
-// $query = http_build_query ($params);
-//
-// // Create Http context details
-// $contextData = array (
-//                 'method' => 'POST',
-//                 'header' => "Connection: close\r\n".
-//                             "Content-Length: ".strlen($query)."\r\n",
-//                 'content'=> $query );
-//
-// // Create context resource for our request
-// $context = stream_context_create (array ( 'http' => $contextData ));
-//
-// // Read page rendered as result of your POST request
-// $result =  file_get_contents (
-//                   $server_url,  // page url
-//                   false,
-//                   $context);
-
 include_once '../config.php';
 
 $service_url = $server_url."/pecan/setups/serversyncscript.php";
