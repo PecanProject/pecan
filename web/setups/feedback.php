@@ -8,15 +8,11 @@
  * http://opensource.ncsa.illinois.edu/license.html
  */
 
-// sync
+// feed back page
 
-$outcome = NULL;
-$status = NULL;
+include 'page.template.php';
 
-$flagfile = fopen("syncflag.txt","r");
-$want_id = fgets ($flagfile);
-fclose($flagfile);
 
-exec('../../scripts/load.bety.sh', $outcome, $status);
 
+include 'pagefooter.template.php.';
 ?>
