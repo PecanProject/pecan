@@ -269,7 +269,7 @@ load_data_single_run <- function(bety, workflow_id,run_id) {
         y <- ncdf4::ncvar_get(nc, var_name)
         b <- !is.na(x) & !is.na(y) & sw != 0
         dates <- if(is.na(dates)) x[b] else c(dates, x[b])
-        dates <- as.Date(dates)
+        dates <- as.POSIXct(dates)
         vals <- if(is.na(vals)) y[b] else c(vals, y[b])
         xlab <- "Time"
         # Values of the data which we will plot

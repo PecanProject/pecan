@@ -110,6 +110,7 @@ server <- shinyServer(function(input, output, session) {
     # site<-PEcAn.DB::query.site(site.id,bety$con)
     start.year <- as.numeric(lubridate::year(inputs_df$start_date))
     end.year <- as.numeric(lubridate::year(inputs_df$end_date))
+    # File_path <- inputs_df$filePath
     File_path <- paste0(inputs_df$filePath,'.csv')
     site.id <- inputs_df$site_id
     site<-PEcAn.DB::query.site(site.id,bety$con)
@@ -146,9 +147,7 @@ server <- shinyServer(function(input, output, session) {
   })
   # Get input id from selected site id
   getInputs <- function(bety,site_Id){
-    # site_Id <- c(772)
     # inputIds <- tbl(bety, 'inputs') %>% filter(site_id %in% site_Id) %>% distinct(id) %>% pull(id)
-    # inputIds <- sort(inputIds)
     my_hostname <- PEcAn.utils::fqdn()
     my_machine_id <- tbl(bety, 'machines') %>% filter(hostname == my_hostname) %>% pull(id)
     inputs_df <- tbl(bety, 'dbfiles') %>% 
@@ -157,11 +156,11 @@ server <- shinyServer(function(input, output, session) {
       collect()
     inputs_df <- inputs_df[order(inputs_df$container_id),]
     inputs_df <- inputs_df %>% 
-      mutate(input_selection_list = paste(inputs_df$container_id, inputs_df$name),
+      dplyr::mutate(input_selection_list = paste(inputs_df$container_id, inputs_df$name),
              filePath = paste0(inputs_df$file_path,'/', inputs_df$file_name)) %>%
-      dplyr::select(container_id,filePath,input_selection_list,start_date,end_date,site_id,name,
+      dplyr::select(input_id = container_id,filePath,input_selection_list,start_date,end_date,site_id,name,
              machine_id,file_name,file_path)
-    colnames(inputs_df)[1] <- 'input_id'
+    # colnames(inputs_df)[1] <- 'input_id'
     return(inputs_df)
   }
   observe({
@@ -209,7 +208,7 @@ server <- shinyServer(function(input, output, session) {
              plt <- plt + geom_line()
            }
     )
-    plt <- plt + labs(title=title, x=xlab, y=ylab) + geom_smooth(n=input$smooth_n)
+    # model_geom <- switch(input$model_geom, point = geom_point, line = geom_line)
     # Check if user wants to load external data
     # Similar to using event reactive
     if (input$load_data>0) {
@@ -217,27 +216,24 @@ server <- shinyServer(function(input, output, session) {
       # File_format <- getFileFormat(bety,input$formatID)
       # Input ID is of the form (ID Name). Split by space and use the first element
       inputs_df <- getInputs(bety,c(input$all_site_id))
-      # output$info <- renderText({
-      #   paste0(nrow(inputs_df))
-      # })
-      inputs_df <- inputs_df %>% filter(input_selection_list == input$all_input_id)
-      # output$info1 <- renderText({
-      #   paste0(nrow(inputs_df))
-      # })
-      # input_id <- strsplit(input$all_input_id,' ')[[1]][1]
-      # File_format <- getFileFormat(bety,input_id)
-      # ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-      # settings <- getSettingsFromWorkflowId(bety,ids_DF$wID[1])
-      # filePath <- PEcAn.DB::dbfile.file(type = 'Input', id = input_ID,con = bety$con)
-      # externalData <- loadObservationData(bety,settings,filePath,File_format)
+      inputs_df <- inputs_df %>% dplyr::filter(input_selection_list == input$all_input_id)
       externalData <- loadObservationData(bety,inputs_df)
       # If variable found in the uploaded file
       if (input$variable_name %in% names(externalData)){
-        externalData <- externalData %>% dplyr::select(posix,dplyr::one_of(input$variable_name))
-        names(externalData) <- c("dates","vals")
-        externalData$dates <- as.Date(externalData$dates)
+        # externalData <- externalData %>% dplyr::select(posix,dplyr::one_of(input$variable_name))
+        # names(externalData) <- c("dates","vals")
+        # externalData$dates <- as.Date(externalData$dates)
+        var = input$variable_name
+        df = df %>% select(posix = dates, var = vals)
+        colnames(df)[2]<-paste0(var)
+        aligned_data = PEcAn.benchmark::align_data(model.calc = df, obvs.calc = externalData, var =var, align_method = "match_timestep")
+        colnames(aligned_data) <- c("model","observations","Date")
+        aligned_data <- melt(aligned_data, "Date")
+        # plot(aligned_dat$NEE.m, aligned_dat$NEE.o)
+        # abline(0,1,col="red")  ## intercept=0, slope=1
         data_geom <- switch(input$data_geom, point = geom_point, line = geom_line)
-        plt <- plt + data_geom(data = externalData,aes(x=dates, y=vals),color='black', linetype = 'dashed')
+        plt <- ggplot(aligned_data, aes(x=Date, y=value, color=variable)) + data_geom()
+        # plt <- plt + data_geom(data = externalData,aes(x=dates, y=vals),color='black', linetype = 'dashed')
         output$outputNoVariableFound <- renderText({
           paste0("Plotting data outputs in black")
         })
@@ -249,6 +245,7 @@ server <- shinyServer(function(input, output, session) {
         })
       }
     }
+    plt <- plt + labs(title=title, x=xlab, y=ylab) + geom_smooth(n=input$smooth_n)
     # Earlier smoothing and y labels
     # geom_smooth(aes(fill = "Spline fit")) +
     # scale_y_continuous(labels=fancy_scientific) +
