@@ -21,6 +21,9 @@ InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=
   #  if(save.state) out.variables <- c(out.variables,"x")
   if(!exists("model")) model = 0
   
+  check.dup.data <- function(data,loc){
+    if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at",loc,names(data))}
+  }
   # start text object that will be manipulated (to build different linear models, swap in/out covariates)
   TreeDataFusionMV <- "
 model{
@@ -104,8 +107,7 @@ model{
             data[[length(data)+1]] <- as.numeric(as.factor(as.character(cov.data[,r_var[j]]))) ## multiple conversions to eliminate gaps
             names(data)[length(data)] <- r_var[j]
           }
-          if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at r_var",names(data))}
-          
+          check.dup.data(data,"r_var")
           nr[j] <- max(as.numeric(data[[r_var[j]]]))
         }
         index <- paste0("[",index,"]")
@@ -189,8 +191,8 @@ model{
               ## add cov variables to data object
               data[[covX]] <- time_data[[covX]]
             }
-            if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at covX",names(data))}
-            
+            check.dup.data(data,"covX")
+
             myIndex <- "[i,t]"
           } else {
             ## variable is fixed
@@ -199,7 +201,8 @@ model{
                 ## add cov variables to data object
                 data[[covX]] <- cov.data[,covX]
               }
-              if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at covX2",names(data))}
+              check.dup.data(data,"covX2")
+
             } else {
               ## covariate absent
               print("covariate absent from covariate data:", covX)
@@ -268,8 +271,8 @@ model{
     out.variables <- c(out.variables, paste0("beta", Xf.names))
   }
   
-  if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at Xf",names(data))}
-  
+  check.dup.data(data,"Xf")
+
   ########################################################################
   ###
   ###        TIME-VARYING
@@ -351,8 +354,8 @@ model{
         ## add cov variables to data object
         data[[tvar]] <- time_data[[tvar]]
       }
-      if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at tvar",names(data))}
-      
+      check.dup.data(data,"tvar")
+
       ## append to process model formula
       Pformula <- paste(Pformula,
                         paste0("+ beta", tvar, "*",tvar,"[i,t]"))
