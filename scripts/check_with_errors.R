@@ -24,12 +24,6 @@ die_warn <- !is.na(die_level) && die_level == 'warn'
 
 log_notes <- !is.na(log_level) && log_level == 'all'
 
-# RTM package check fails on Travis for some reason
-# Check package locally before pushing
-if (Sys.getenv('travis') == 'true' && pkg == 'modules/rtm') {
-    message('Skipping PEcAnRTM check on Travis')
-} else {
-
 chk <- check(pkg, quiet = TRUE)
 
 errors <- chk[['errors']]
@@ -57,5 +51,4 @@ message(n_notes, ' notes found in ', pkg, '.')
 
 if (log_notes && n_notes > 0) {
     cat(notes, '\n')
-}
 }
