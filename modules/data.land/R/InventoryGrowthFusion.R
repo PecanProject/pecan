@@ -291,7 +291,7 @@ model{
     ## check for interaction terms
     it_vars <- t_vars[grep(pattern = "*",x=t_vars,fixed = TRUE)]
     if(length(it_vars) > 0){
-      t_vars <- t_vars[!(t_vars == it_vars)]
+      t_vars <- t_vars[!(t_vars %in% it_vars)]
     } 
     
     ## INTERACTIONS WITH TIME-VARYING VARS
@@ -393,7 +393,8 @@ model{
                       tau_dbh = 1, 
                       tau_inc = 1500,
                       tau_ind = 50, 
-                      tau_yr = 100, 
+                      tau_yr = 100,
+                      betaX2 = 0, 
                       ind = rep(0, data$ni),  
                       year = rep(0, data$nt))
   }
@@ -403,9 +404,9 @@ model{
   j.model <- jags.model(file = textConnection(TreeDataFusionMV), data = data, inits = init, n.chains = 3)
 
   PEcAn.utils::logger.info("BURN IN")
-  jags.out <- coda.samples(model = j.model, 
-                           variable.names = burnin.variables, 
-                           n.iter = min(n.iter, 2000))
+ # jags.out <- coda.samples(model = j.model, 
+ #                          variable.names = burnin.variables, 
+ #                          n.iter = min(n.iter, 2000))
   if (burnin_plot) {
     plot(jags.out)
   }
@@ -413,12 +414,20 @@ model{
   PEcAn.utils::logger.info("RUN MCMC")
   load.module("dic")
   for(k in seq_len(ceiling(n.iter/n.chunk))){
-    jags.out <- coda.samples(model = j.model, variable.names = out.variables, n.iter = n.chunk)
+    if(k%%50 == 0){
+	vnames <- c("x",out.variables)   ## save x periodically
+    } else {
+	vnames <- out.variables
+    }
+    jags.out <- coda.samples(model = j.model, variable.names = vnames, n.iter = n.chunk)
+    ofile <- paste("IGF",model,k,"RData",sep=".")
+    print(ofile)
+    save(jags.out,file=ofile)
     ## could add code here to check for convergence and break from loop early
     D <- as.mcmc.list(lapply(jags.out,function(x){x[,'deviance']}))
     gbr <- coda::gelman.diag(D)$psrf[1,1]
     trend <- mean(sapply(D,function(x){coef(lm(x~seq_len(n.chunk)))[2]}))
-    if(gbr < 1.01 & abs(trend) < 0.05) break
+    if(gbr < 1.005 & abs(trend) < 0.5) break
   }
   return(jags.out)
 } # InventoryGrowthFusion
