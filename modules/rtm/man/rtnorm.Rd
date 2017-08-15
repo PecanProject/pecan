@@ -19,14 +19,14 @@ tht this is not the SD of the distribution.}
 Numeric length one.
 }
 \description{
-Truncated normal distribution functions
+Random sampling from one-sided truncated normal distribution
 }
 \details{
-Draws a random number and, if it doesn't fall within the 
-     specified range, resample using an adjusted Normal CDF. This isn't
-     performed immediately because CDF sampling calls three functions --
-     qnorm, runif, and pnorm--and therefore is much less efficient than a
-     simple random sample.
+Draws a random number and, if it doesn't fall within the
+specified range, resample using an adjusted Normal CDF. This isn't
+performed immediately because CDF sampling calls three functions --
+qnorm, runif, and pnorm--and therefore is much less efficient than a
+simple random sample.
 }
 \author{
 Alexey Shiklomanov
