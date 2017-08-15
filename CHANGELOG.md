@@ -7,6 +7,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
+### Fixes
+- Fixed remote code execution #1545
+
 ## [1.5.10] - Prerelease
 ### Added
 - Added PEcAn.utils::download.file() to allow for use of alternative FTP programs
