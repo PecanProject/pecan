@@ -60,6 +60,9 @@ jagify <- function(result) {
 ##' 
 ##' @return A data frame NAs sensibly replaced 
 transform.nas <- function(data) {
+  #set stat to NA if 0 (uncertainties can only asymptotically approach 0)
+  data$stat[data$stat == 0] <- NA
+  
   # control defaults to 1
   data$control[is.na(data$control)] <- 1
   
