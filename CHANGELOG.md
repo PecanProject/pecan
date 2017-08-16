@@ -9,6 +9,12 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Fixes
 - Fixed remote code execution #1545
+- Added check for NA end/start year in read.output
+- Fixed jagify bug for raw field data
+- Fixed bug (order of dims in nc_create) introduced in model2netcdf.DALEC by standard_vars changes
+
+### Added
+- Expanded initial conditions workflow for pool-based models, including PEcAn.data.land::prepare_pools to calculate pools from IC file (to be coupled with write.configs)
 
 ## [1.5.10] - Prerelease
 ### Added
@@ -19,6 +25,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - added docker container scrips (.yml) to create docker container for PEcAn
 - added the configuration edit page to allow easy modification of config via web interface
 - thredds server documentation and catlog generating script
+- added new standard variables table (standard_vars.csv) and to_ncvar and to_ncdim functions in PEcAn.utils
+- added initial conditions file io functions for pool-based models in data.land
 
 ### Changed
 - upscale_met now accepts ~any valid CF file (not just full years), retains correct time units, and respects the previously ignored `overwrite` parameter
