@@ -1,7 +1,7 @@
 #' DataONE download 
 #'
 #' @param id "The identifier of a package, package metadata or other package member" -- dataone r
-#' @param destdir Name the file that will be created to store the data.
+#' @param username used to create a user-specific destdir
 #' @param CNode 
 #' @param lazyLoad "A logical value. If TRUE, then only package member system metadata is downloaded and not data. The default is FALSE." -- dataone R 
 #' @param quiet "A 'logical'. If TRUE (the default) then informational messages will not be printed." -- dataone R
@@ -11,8 +11,8 @@
 #'
 #' @export
 #'
-#' @examples doi_download(id = doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87, destdir = LTER)
-doi_download = function(id, destdir = "MyDataFile", CNode = "PROD", lazyLoad = FALSE, quiet = F){ 
+#' @examples doi_download(id = "doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87", username = "Guest")
+dataone_download = function(id, username, CNode = "PROD", lazyLoad = FALSE, quiet = F){ 
   ### automatically retrieve mnId
   cn <- dataone::CNode(CNode) 
   locations <- dataone::resolve(cn, pid = id) 
@@ -23,32 +23,24 @@ doi_download = function(id, destdir = "MyDataFile", CNode = "PROD", lazyLoad = F
   pkg <- dataone::getDataPackage(d1c, id = id, lazyLoad = lazyLoad, quiet = quiet, limit = "1MB") # what is the standard limit for pecan downloads?
   files <- datapack::getValue(pkg, name="sysmeta@formatId")
   n <- length(files) # number of files
-  ### create a list containing a readable version of the formats
-  formats <- list()
-  # add more formats as we come across them
+  
+  # fileath to /dbfiles 
+  fp <- "/fs/data1/pecan.data/dbfiles/"
+  
+  # make new directory within this directory
+  newdir <- paste(fp, "NewData_", username, sep = "")
+  system(paste("mkdir", newdir))
+  
+  # switch to new directory -- unsure if I should do this in R or in unix
+  # system(paste("cd", fp, sep = " ")) 
+  setwd(newdir)
+  
   for(i in 1:n){
-    if(files[[i]] == "text/csv"){
-      formats[i] <- ".csv"
-      
-    }else if(files[[i]] == "text/xml"){
-      formats[i] <- ".xml"
-      
-    }else{
-      formats[i] <- ".xml" # this is for the unknown type... Not sure if this is a universal fix... Please advise best practices here.
-    } 
+    rename <- paste("File", i, Sys.time(), sep = "_") # new file name
+    system(paste("wget", "-O", rename, names(files)[i])) # download files with wget
   }
+  system("ls") # checks that files were downloaded to 
   
-  ### read data in the packets individually
-  filenames <- names(files) # list of all files because they are stored as headers by default
-  
-  # filepath & create new directory with timestamp -- same for all files
-  fp <- paste("~/downloads/data/", destdir, "_", Sys.time(), "/", sep = "") # what should the destination directory/ filepath be for pecan?
-  dir.create(fp)
-  
-  
-  for(i in 1:n){
-    pkgMember <- datapack::getMember(pkg, filenames[i])
-    data <- datapack::getData(pkgMember)
-    base::writeLines(rawToChar(data), paste(fp, "file_", i, formats[[i]], sep = "")) # file naming is an issue... How to proceed?
+  # Naming could still be improved to include part of title or URL
   }
 }
