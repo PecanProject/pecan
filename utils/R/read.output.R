@@ -100,15 +100,23 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
   # create list of *.nc years
   nc.years <- as.vector(unlist(strsplit(list.files(path = outdir, pattern = "\\.nc$", 
                                                    full.names = FALSE), ".nc")))
-  # select only those *.nc years requested by user
-  keep <- which(nc.years >= as.numeric(start.year) & nc.years <= as.numeric(end.year))
   ncfiles <- list.files(path = outdir, pattern = "\\.nc$", full.names = TRUE)
-  ncfiles <- ncfiles[keep]
+  
+  if(!is.na(start.year) && !is.na(end.year)){
+    # select only those *.nc years requested by user
+    keep <- which(nc.years >= as.numeric(start.year) & nc.years <= as.numeric(end.year))
+    ncfiles <- ncfiles[keep]
+  } else if(length(nc.years) != 0){
+      PEcAn.utils::logger.info("No start or end year provided; reading output for all years")
+      start.year <- min(nc.years)
+      end.year <- max(nc.years)
+  }
+  
   # throw error if no *.nc files selected/availible
   nofiles <- FALSE
   if (length(ncfiles) == 0) {
     logger.warn("read.output: no netCDF files of model output present for runid = ", 
-                runid, " in ", outdir, "will return NA")
+                runid, " in ", outdir, " for years requested; will return NA")
     if (length(nc.years) > 0) {
       logger.info("netCDF files for other years present", nc.years)
     }
