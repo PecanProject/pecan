@@ -12,6 +12,7 @@
 #' @export
 #'
 #' @examples doi_download(id = "doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87", username = "Guest")
+
 dataone_download = function(id, username, CNode = "PROD", lazyLoad = FALSE, quiet = F){ 
   ### automatically retrieve mnId
   cn <- dataone::CNode(CNode) 
