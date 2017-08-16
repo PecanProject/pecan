@@ -44,4 +44,3 @@ dataone_download = function(id, username, CNode = "PROD", lazyLoad = FALSE, quie
   
   # Naming could still be improved to include part of title or URL
   }
-}
