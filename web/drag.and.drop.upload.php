@@ -133,7 +133,7 @@ function readfiles(files) {
     if (tests.formdata) {
       var xhr = new XMLHttpRequest();
       // @robkooper says xhr.open fetches the file from the server side 
-      xhr.open('POST', '/fs/data3/lpburke/pecan/'); // changed destination directory
+      xhr.open('POST', '/fs/data1/pecan.data/dbfiles/NewData_lpburke/'); // changed destination directory
       xhr.onload = function() {
         progress.value = progress.innerHTML = 100;
       };
