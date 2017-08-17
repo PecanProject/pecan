@@ -1,7 +1,6 @@
 #' DataONE download 
 #'
 #' @param id "The identifier of a package, package metadata or other package member" -- dataone r
-#' @param username used to create a user-specific destdir
 #' @param filepath path to where files will be stored
 #' @param CNode 
 #' @param lazyLoad "A logical value. If TRUE, then only package member system metadata is downloaded and not data. The default is FALSE." -- dataone R 
@@ -14,7 +13,7 @@
 #'
 #' @examples doi_download(id = "doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87", username = "Guest")
 
-dataone_download = function(id, username, filepath = "/fs/data1/pecan.data/dbfiles/", CNode = "PROD", lazyLoad = FALSE, quiet = F){ 
+dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles/", CNode = "PROD", lazyLoad = FALSE, quiet = F){ 
   ### automatically retrieve mnId
   cn <- dataone::CNode(CNode) 
   locations <- dataone::resolve(cn, pid = id) 
@@ -27,7 +26,7 @@ dataone_download = function(id, username, filepath = "/fs/data1/pecan.data/dbfil
   n <- length(files) # number of files
 
   # make new directory within this directory
-  newdir <- paste(filepath, "NewData_", username, sep = "")
+  newdir <- file.path(filepath, paste0("DataOne_", gsub("/", "-", id)))
   dir.create(newdir)
   
   for(i in 1:n){
