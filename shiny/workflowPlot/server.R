@@ -12,15 +12,15 @@ library(plotly)
 library(scales)
 library(lubridate)
 library(dplyr)
+library(reshape2)
 # Maximum size of file allowed to be uploaded: 100MB 
 options(shiny.maxRequestSize=100*1024^2) 
 # Define server logic
 server <- shinyServer(function(input, output, session) {
   bety <- betyConnect()
-  # bety <- betyConnect('/home/carya/pecan/web/config.php')
   # Update all workflow ids
   observe({
-    # Ideally get_workflow_ids function (line 137) in db/R/query.dplyr.R should take a flag to check
+    # get_workflow_ids function (line 137) in db/R/query.dplyr.R takes a flag to check
     # if we want to load all workflow ids.
     # get_workflow_id function from query.dplyr.R
     all_ids <- get_workflow_ids(bety, session,all.ids=TRUE)
@@ -35,7 +35,7 @@ server <- shinyServer(function(input, output, session) {
     # Will return a list
     run_id_list <- c()
     for(w_id in w_ids){
-      # For all the workflow ids  
+      # For all the workflow ids
       r_ids <- get_run_ids(bety, w_id)
       for(r_id in r_ids){
         # Each workflow id can have more than one run ids
@@ -104,29 +104,27 @@ server <- shinyServer(function(input, output, session) {
   loadObservationData <- function(bety,inputs_df){
     input_id <- inputs_df$input_id
     File_format <- getFileFormat(bety,input_id)
-    # start.year<-as.numeric(lubridate::year(settings$run$start.date))
-    # end.year<-as.numeric(lubridate::year(settings$run$end.date))
-    # site.id<-settings$run$site$id
-    # site<-PEcAn.DB::query.site(site.id,bety$con)
     start.year <- as.numeric(lubridate::year(inputs_df$start_date))
     end.year <- as.numeric(lubridate::year(inputs_df$end_date))
     # File_path <- inputs_df$filePath
+    # TODO There is an issue with the db where file names are not saved properly. 
+    # To make it work with the VM, uncomment the line below
     File_path <- paste0(inputs_df$filePath,'.csv')
     site.id <- inputs_df$site_id
     site<-PEcAn.DB::query.site(site.id,bety$con)
     observations<-PEcAn.benchmark::load_data(data.path = File_path, format= File_format, time.row = File_format$time.row,  site = site, start_year = start.year, end_year = end.year) 
     return(observations)
   }
-  # This function as a wrapper over PEcAn.DB::query.format.vars where 
+  # This function is a wrapper over PEcAn.DB::query.format.vars where 
   # file format can be retrieved using either by input or format id. 
   getFileFormat <- function(bety,input.id,format.id=NULL){
-    # Retaining the code for getting file format using format Id as in tutorial
+    # TODO Retaining the code for getting file format using format Id as in tutorial
     # File_format <- PEcAn.DB::query.format.vars(bety = bety, format.id = format.id) 
     File_format <- PEcAn.DB::query.format.vars(bety = bety, input.id = input.id)
     return(File_format)
   }
   getSettingsFromWorkflowId <- function(bety,workflowID){
-    basePath <- tbl(bety, 'workflows') %>% filter(id %in% workflowID) %>% pull(folder)
+    basePath <- tbl(bety, 'workflows') %>% dplyr::filter(id %in% workflowID) %>% pull(folder)
     configPath <- file.path(basePath, 'pecan.CONFIGS.xml')
     # Second way of providing configPath. More of a hack
     # configPath <- paste0("~/output/PEcAn_",workflowID,"/pecan.CONFIGS.xml")
@@ -145,30 +143,34 @@ server <- shinyServer(function(input, output, session) {
     }
     updateSelectizeInput(session, "all_site_id", choices=site_id_list)
   })
-  # Get input id from selected site id
+  # Get input id from selected site id. Returns inputs_df which is used to load observation data
   getInputs <- function(bety,site_Id){
-    # inputIds <- tbl(bety, 'inputs') %>% filter(site_id %in% site_Id) %>% distinct(id) %>% pull(id)
+    # Subsetting the input id list based on the current (VM) machine
     my_hostname <- PEcAn.utils::fqdn()
-    my_machine_id <- tbl(bety, 'machines') %>% filter(hostname == my_hostname) %>% pull(id)
+    my_machine_id <- tbl(bety, 'machines') %>% dplyr::filter(hostname == my_hostname) %>% pull(id)
+    # Inner join 'inputs' table with 'dbfiles' table
+    # inputs_df would contain all the information about the site and input id required for
+    # the tutorial mentioned above to compare model run with actual observations
     inputs_df <- tbl(bety, 'dbfiles') %>% 
-      filter(container_type == 'Input', machine_id == my_machine_id) %>%
-      inner_join(tbl(bety, 'inputs')  %>% filter(site_id %in% site_Id), by = c('container_id' = 'id')) %>%
+      dplyr::filter(container_type == 'Input', machine_id == my_machine_id) %>%
+      inner_join(tbl(bety, 'inputs')  %>% dplyr::filter(site_id %in% site_Id), by = c('container_id' = 'id')) %>%
       collect()
+    # Order by container id (==input id)
     inputs_df <- inputs_df[order(inputs_df$container_id),]
+    # Mutate column as (input id, name) to be shown to the user
     inputs_df <- inputs_df %>% 
       dplyr::mutate(input_selection_list = paste(inputs_df$container_id, inputs_df$name),
              filePath = paste0(inputs_df$file_path,'/', inputs_df$file_name)) %>%
       dplyr::select(input_id = container_id,filePath,input_selection_list,start_date,end_date,site_id,name,
              machine_id,file_name,file_path)
-    # colnames(inputs_df)[1] <- 'input_id'
     return(inputs_df)
   }
+  # Update input id list as (input id, name)
   observe({
     req(input$all_site_id)
     inputs_df <- getInputs(bety,c(input$all_site_id))
     updateSelectizeInput(session, "all_input_id", choices=inputs_df$input_selection_list)
   })
-  
   # Renders ggplotly 
   output$outputPlot <- renderPlotly({
     # Error messages
@@ -179,7 +181,6 @@ server <- shinyServer(function(input, output, session) {
     )
     # Load data
     masterDF <- loadNewData()
-    # masterDF <- rbind(modelData,externalData)
     # Convert from factor to character. For subsetting
     masterDF$var_name <- as.character(masterDF$var_name)
     # Convert to factor. Required for ggplot
@@ -187,7 +188,7 @@ server <- shinyServer(function(input, output, session) {
     # Filter by variable name
     df <- masterDF %>%
       dplyr::filter(var_name == input$variable_name)
-    # make dynamic slider
+    # Another way to make dynamic slider
     # https://stackoverflow.com/questions/18700589/interactive-reactive-change-of-min-max-values-of-sliderinput
     # output$slider <- renderUI({
     #   sliderInput("smooth_n", "Value for smoothing:", min=0, max=nrow(df), value=80)
@@ -197,8 +198,10 @@ server <- shinyServer(function(input, output, session) {
     title <- unique(df$title)
     xlab <- unique(df$xlab)
     ylab <- unique(df$ylab)
-    # ggplot function for now scatter plots.
+    # ggplot function for scatter plots.
     plt <- ggplot(df, aes(x=dates, y=vals, color=run_id))
+    # model_geom <- switch(input$plotType, scatterPlot = geom_point, lineChart = geom_line)
+    # plt <- plt + model_geom() 
     # Toggle chart type using switch
     switch(input$plotType,
            "scatterPlot"  = {
@@ -208,56 +211,56 @@ server <- shinyServer(function(input, output, session) {
              plt <- plt + geom_line()
            }
     )
-    # model_geom <- switch(input$model_geom, point = geom_point, line = geom_line)
-    # Check if user wants to load external data
+    # Check if user wants to load external data (==observations)
     # Similar to using event reactive
     if (input$load_data>0) {
-      # Retaining the code for getting file format using inputRecordID
+      # Retaining the code for getting file format using formatID
       # File_format <- getFileFormat(bety,input$formatID)
-      # Input ID is of the form (ID Name). Split by space and use the first element
+      # Input ID is of the form (input id, Name). Split by space and use the first element
       inputs_df <- getInputs(bety,c(input$all_site_id))
       inputs_df <- inputs_df %>% dplyr::filter(input_selection_list == input$all_input_id)
       externalData <- loadObservationData(bety,inputs_df)
-      # If variable found in the uploaded file
+      # If variable found in the uploaded file.
+      # TODO for now, actual observations can be plotted again a single model run (particular run id)
+      # Have to enhance to allow multiple run ids
       if (input$variable_name %in% names(externalData)){
+        # No need for subsetting though as align data returns for now only the provided variable name
         # externalData <- externalData %>% dplyr::select(posix,dplyr::one_of(input$variable_name))
-        # names(externalData) <- c("dates","vals")
-        # externalData$dates <- as.Date(externalData$dates)
         var = input$variable_name
         df = df %>% select(posix = dates, var = vals)
-        colnames(df)[2]<-paste0(var)
+        colnames(df)[2]<-paste0(var) # Required for align data to work
         aligned_data = PEcAn.benchmark::align_data(model.calc = df, obvs.calc = externalData, var =var, align_method = "match_timestep")
-        colnames(aligned_data) <- c("model","observations","Date")
-        aligned_data <- melt(aligned_data, "Date")
+        colnames(aligned_data) <- c("model","observations","Date") # Order returned by align_data
+        # Melt dataframe to plot two types of columns together
+        aligned_data <- reshape2::melt(aligned_data, "Date")
+        # From the tutorial, if want to plot model vs observations
         # plot(aligned_dat$NEE.m, aligned_dat$NEE.o)
         # abline(0,1,col="red")  ## intercept=0, slope=1
         data_geom <- switch(input$data_geom, point = geom_point, line = geom_line)
         plt <- ggplot(aligned_data, aes(x=Date, y=value, color=variable)) + data_geom()
-        # plt <- plt + data_geom(data = externalData,aes(x=dates, y=vals),color='black', linetype = 'dashed')
         output$outputNoVariableFound <- renderText({
-          paste0("Plotting data outputs in black")
+          paste0("Plotting data outputs.")
         })
       }
       # Shiny output if variable not found
       else {
         output$outputNoVariableFound <- renderText({
-          paste0("Not plotting uploaded data because the column is absent. Select another variable")
+          paste0("Data related to variable not found in the observations uploaded. Select another variable")
         })
       }
     }
     plt <- plt + labs(title=title, x=xlab, y=ylab) + geom_smooth(n=input$smooth_n)
-    # Earlier smoothing and y labels
+    # Earlier code for smoothing, y labels, color and fill values
+    # Retaining if we want to use ggplot instead of ggplotly
     # geom_smooth(aes(fill = "Spline fit")) +
     # scale_y_continuous(labels=fancy_scientific) +
-    # Earlier color and fill values
     # scale_color_manual(name = "", values = "black") +
     # scale_fill_manual(name = "", values = "grey50")
     plt<-ggplotly(plt)
     # Not able to add icon over ggplotly
     # add_icon()
   })
-  # Shiny server closes here  
-})
-
+}) # Shiny server closes here  
+# To run the shiny app locally
 # runApp(port=6480, launch.browser=FALSE)
 # runApp(port=5658, launch.browser=FALSE)

@@ -23,6 +23,7 @@ ui <- shinyUI(fluidPage(
       tags$hr(),
       tags$hr(),
       selectizeInput("all_site_id", "Select Site ID", c()),
+      # If loading multiple sites in future
       # selectizeInput("all_site_id", "Select Site ID", c(), multiple=TRUE),
       selectizeInput("all_input_id", "Select Input ID", c()),
       radioButtons("data_geom", "Plot Type (for loaded data)", 
