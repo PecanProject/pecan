@@ -4,13 +4,11 @@
 \alias{dataone_download}
 \title{DataONE download}
 \usage{
-dataone_download(id, username, filepath = "/fs/data1/pecan.data/dbfiles/",
+dataone_download(id, filepath = "/fs/data1/pecan.data/dbfiles/",
   CNode = "PROD", lazyLoad = FALSE, quiet = F)
 }
 \arguments{
 \item{id}{"The identifier of a package, package metadata or other package member" -- dataone r}
-
-\item{username}{used to create a user-specific destdir}
 
 \item{filepath}{path to where files will be stored}
 
