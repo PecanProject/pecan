@@ -1,3 +1,4 @@
+# Helper function which checks and downloads required packages
 checkAndDownload<-function(packageNames) {
   for(packageName in packageNames) {
     if(!isInstalled(packageName)) {
@@ -9,11 +10,14 @@ checkAndDownload<-function(packageNames) {
 isInstalled <- function(mypkg){
   is.element(mypkg, installed.packages()[,1])
 }
-checkAndDownload(c('plotly','scales','dplyr'))
+# checkAndDownload(c('plotly','scales','dplyr'))
+# We can also save the csv on the run from the shiny app as well
 # write.csv(inputs_df,file='/home/carya/pecan/shiny/workflowPlot/inputs_df.csv',
 #           quote = FALSE,sep = ',',col.names = TRUE,row.names=FALSE)
+
 # Stashing Code for file upload to shiny app 
 # Based on https://shiny.rstudio.com/gallery/file-upload.html
+
 # ui.R 
 # tags$hr(),
 # fileInput('file1', 'Choose CSV File to upload data',
@@ -34,6 +38,7 @@ checkAndDownload(c('plotly','scales','dplyr'))
 # textInput("inputRecordID", "Input Record ID for file", "1000011260"),
 # textInput("formatID", "Format ID for file (Default CSV)", "5000000002"),
 # actionButton("load_data", "Load External Data")
+
 # server.R 
 # loadExternalData <-eventReactive(input$load_data,{
 #   inFile <- input$file1
