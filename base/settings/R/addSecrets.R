@@ -25,10 +25,10 @@ addSecrets <- function(settings, force=FALSE) {
   
   if(!force && !is.null(settings$settings.info$secrets.added) && 
      settings$settings.info$secrets.added==TRUE) {
-    logger.info("Secret settings have been added already. Skipping.")
+    PEcAn.logger::logger.info("Secret settings have been added already. Skipping.")
     return(invisible(settings))
   } else {
-    logger.info("Adding secret settings...")
+    PEcAn.logger::logger.info("Adding secret settings...")
   }
   
   if(is.MultiSettings(settings)) {
@@ -41,9 +41,9 @@ addSecrets <- function(settings, force=FALSE) {
   for(key in c('database')) {
     for(section in names(pecan[[key]])) {
       if (section %in% names(settings[section])) {
-        logger.info("Already have a section for", section)
+        PEcAn.logger::logger.info("Already have a section for", section)
       } else {
-        logger.info("Imported section for", section)
+        PEcAn.logger::logger.info("Imported section for", section)
         settings[[key]][section] <- pecan[[key]][section]
       }
     }
@@ -55,9 +55,9 @@ addSecrets <- function(settings, force=FALSE) {
     
     for(section in names(pecan[[key]])) {
       if (section %in% names(settings[section])) {
-        logger.info("Already have a section for", section)
+        PEcAn.logger::logger.info("Already have a section for", section)
       } else {
-        logger.info("Imported section for", section)
+        PEcAn.logger::logger.info("Imported section for", section)
         settings[[key]][section] <- pecan[[key]][section]
       }
     }

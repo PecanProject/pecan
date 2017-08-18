@@ -14,7 +14,7 @@ dbparms <- list(host = "localhost", driver = "PostgreSQL", user = "bety", dbname
 
 if(db.exists(dbparms)){
   con <- db.open(dbparms)
-  logger.setQuitOnSevere(FALSE)
+  PEcAn.logger::logger.setQuitOnSevere(FALSE)
   test_check("PEcAn.DB")
   db.close(con)
 }

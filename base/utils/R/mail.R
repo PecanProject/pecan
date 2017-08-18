@@ -24,7 +24,7 @@
 ##' }
 sendmail <- function(from, to, subject, body) {
   if (is.null(to)) {
-    logger.error("No receipient specified, mail is not send.")
+    PEcAn.logger::logger.error("No receipient specified, mail is not send.")
   } else {
     if (is.null(from)) {
       from <- to

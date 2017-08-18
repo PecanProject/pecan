@@ -12,7 +12,7 @@
 write.settings <- function(settings, outputfile, outputdir=settings$outdir){
   pecanfile <- file.path(outputdir, outputfile)
   if (file.exists(pecanfile)) {
-    logger.warn(paste("File already exists [", pecanfile, "] file will be overwritten"))
+    PEcAn.logger::logger.warn(paste("File already exists [", pecanfile, "] file will be overwritten"))
   }
   saveXML(listToXml(settings, "pecan"), file=pecanfile)
 }

@@ -76,13 +76,13 @@ saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml
 if (!file.exists(file.path(settings$rundir, "runs.txt")) | settings$meta.analysis$update == "TRUE") {
   run.write.configs(settings, settings$database$bety$write)
 } else {
-  logger.info("Already wrote configuraiton files")    
+  PEcAn.logger::logger.info("Already wrote configuraiton files")    
 }
 
 
 # run model
 if (!file.exists(file.path(settings$rundir, "runs.txt"))) {
-  logger.severe("No ensemble or sensitivity analysis specified in pecan.xml, work is done.")
+  PEcAn.logger::logger.severe("No ensemble or sensitivity analysis specified in pecan.xml, work is done.")
 } else {
   start.model.runs(settings, settings$database$bety$write)
 }
@@ -94,14 +94,14 @@ get.results(settings)
 if (!file.exists(file.path(settings$outdir,"ensemble.ts.pdf"))) {
   run.ensemble.analysis(settings,TRUE)    
 } else {
-  logger.info("Already executed run.ensemble.analysis()")
+  PEcAn.logger::logger.info("Already executed run.ensemble.analysis()")
 }
 
 # sensitivity analysis
 if (!file.exists(file.path(settings$outdir, "sensitivity.results.Rdata"))) {
   run.sensitivity.analysis(settings)
 } else {
-  logger.info("Already executed run.sensitivity.analysis()")    
+  PEcAn.logger::logger.info("Already executed run.sensitivity.analysis()")    
 }
 
 # all done

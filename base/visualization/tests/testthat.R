@@ -10,5 +10,5 @@ library(testthat)
 library(PEcAn.visualization)
 library(PEcAn.utils)
 
-logger.setQuitOnSevere(FALSE)
+PEcAn.logger::logger.setQuitOnSevere(FALSE)
 #test_package("PEcAn.visualization")

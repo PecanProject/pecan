@@ -40,7 +40,7 @@ read.ensemble.output <- function(ensemble.size, pecandir, outdir, start.year, en
   ensemble.output <- list()
   for (row in rownames(ens.run.ids)) {
     run.id <- ens.run.ids[row, "id"]
-    logger.info("reading ensemble output from run id: ", run.id)
+    PEcAn.logger::logger.info("reading ensemble output from run id: ", run.id)
     
     for(var in seq_along(variables)){
       out.tmp <- read.output(run.id, file.path(outdir, run.id), start.year, end.year, variables[var])
@@ -78,7 +78,7 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
                                  method = "uniform", ...) {
   
   if (is.null(method)) {
-    logger.info("No sampling method supplied, defaulting to uniform random sampling")
+    PEcAn.logger::logger.info("No sampling method supplied, defaulting to uniform random sampling")
     method <- "uniform"
   }
   
@@ -100,31 +100,31 @@ get.ensemble.samples <- function(ensemble.size, pft.samples, env.samples,
     random.samples <- NULL
     
     if (method == "halton") {
-      logger.info("Using ", method, "method for sampling")
+      PEcAn.logger::logger.info("Using ", method, "method for sampling")
       random.samples <- halton(n = ensemble.size, dim = total.sample.num, ...)
       ## force as a matrix in case length(samples)=1
       random.samples <- as.matrix(random.samples)
     } else if (method == "sobol") {
-      logger.info("Using ", method, "method for sampling")
+      PEcAn.logger::logger.info("Using ", method, "method for sampling")
       random.samples <- sobol(n = ensemble.size, dim = total.sample.num, ...)
       ## force as a matrix in case length(samples)=1
       random.samples <- as.matrix(random.samples)
     } else if (method == "torus") {
-      logger.info("Using ", method, "method for sampling")
+      PEcAn.logger::logger.info("Using ", method, "method for sampling")
       random.samples <- torus(n = ensemble.size, dim = total.sample.num, ...)
       ## force as a matrix in case length(samples)=1
       random.samples <- as.matrix(random.samples)
     } else if (method == "lhc") {
-      logger.info("Using ", method, "method for sampling")
+      PEcAn.logger::logger.info("Using ", method, "method for sampling")
       random.samples <- lhc(t(matrix(0:1, ncol = total.sample.num, nrow = 2)), ensemble.size)
     } else if (method == "uniform") {
-      logger.info("Using ", method, "random sampling")
+      PEcAn.logger::logger.info("Using ", method, "random sampling")
       # uniform random
       random.samples <- matrix(runif(ensemble.size * total.sample.num),
                                ensemble.size, 
                                total.sample.num)
     } else {
-      logger.info("Method ", method, " has not been implemented yet, using uniform random sampling")
+      PEcAn.logger::logger.info("Method ", method, " has not been implemented yet, using uniform random sampling")
       # uniform random
       random.samples <- matrix(runif(ensemble.size * total.sample.num), 
                                ensemble.size, 

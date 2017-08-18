@@ -81,13 +81,13 @@ sensitivity.filename <- function(settings,
     ind <- which(sapply(settings$pfts, function(x) x$name) == pft)
     if (length(ind) == 0) {
       ## no match
-      logger.warn("sensitivity.filename: unmatched PFT = ", pft, " not among ", 
+      PEcAn.logger::logger.warn("sensitivity.filename: unmatched PFT = ", pft, " not among ", 
                   sapply(settings$pfts, function(x) x$name))
       sensitivity.dir <- file.path(settings$outdir, "pfts", pft)
     } else {
       if (length(ind) > 1) {
         ## multiple matches
-        logger.warn("sensitivity.filename: multiple matchs of PFT = ", pft, 
+        PEcAn.logger::logger.warn("sensitivity.filename: multiple matchs of PFT = ", pft, 
                     " among ", sapply(settings$pfts, function(x) x$name), " USING")
         ind <- ind[1]
       }
@@ -101,12 +101,12 @@ sensitivity.filename <- function(settings,
   
   dir.create(sensitivity.dir, showWarnings = FALSE, recursive = TRUE)
   if (!dir.exists(sensitivity.dir)) {
-    logger.error("sensitivity.filename: could not create directory, please check permissions ", 
+    PEcAn.logger::logger.error("sensitivity.filename: could not create directory, please check permissions ", 
                  sensitivity.dir, " will try ", settings$outdir)
     if (dir.exists(settings$outdir)) {
       sensitivity.dir <- settings$outdir
     } else {
-      logger.error("sensitivity.filename: no OUTDIR ", settings$outdir)
+      PEcAn.logger::logger.error("sensitivity.filename: no OUTDIR ", settings$outdir)
     }
   }
   

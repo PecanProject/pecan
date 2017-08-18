@@ -16,6 +16,7 @@ Depends:
     PEcAn.utils,
     dbplyr
 Imports:
+    PEcAn.logger,
     ncdf4 (>= 1.15),
     udunits2 (>= 0.11),
     traits,

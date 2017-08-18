@@ -16,10 +16,10 @@
 fix.deprecated.settings <- function(settings, force=FALSE) {
   if(!force && !is.null(settings$settings.info$deprecated.settings.fixed) && 
      settings$settings.info$deprecated.settings.fixed==TRUE) {
-    logger.info("Deprecated settings have been fixed already. Skipping.")
+    PEcAn.logger::logger.info("Deprecated settings have been fixed already. Skipping.")
     return(invisible(settings))
   } else {
-    logger.info("Fixing deprecated settings...")
+    PEcAn.logger::logger.info("Fixing deprecated settings...")
   }
   
   if(is.MultiSettings(settings)) {
@@ -29,9 +29,9 @@ fix.deprecated.settings <- function(settings, force=FALSE) {
   # settings$model$jobtemplate
   if(!is.null(settings$run$jobtemplate)) {
     if(!is.null(settings$model$jobtemplate)) {
-      logger.severe("You have both deprecated settings$run$jobtemplate and settings$model$jobtemplate. Use latter only.")
+      PEcAn.logger::logger.severe("You have both deprecated settings$run$jobtemplate and settings$model$jobtemplate. Use latter only.")
     }
-    logger.info("settings$run$jobtemplate is deprecated. uwe settings$model$jobtemplate instead")
+    PEcAn.logger::logger.info("settings$run$jobtemplate is deprecated. uwe settings$model$jobtemplate instead")
     settings$model$jobtemplate <- settings$run$jobtemplate
     settings$run$jobtemplate <- NULL
   }
@@ -39,9 +39,9 @@ fix.deprecated.settings <- function(settings, force=FALSE) {
   # settings$database$dbfiles
   if(!is.null(settings$run$dbfiles)) {
     if(!is.null(settings$database$dbfiles)) {
-      logger.severe("You have both deprecated settings$run$dbfiles and settings$database$dbfiles. Use latter only.")
+      PEcAn.logger::logger.severe("You have both deprecated settings$run$dbfiles and settings$database$dbfiles. Use latter only.")
     }
-    logger.info("settings$run$dbfiles is deprecated. uwe settings$database$dbfiles instead")
+    PEcAn.logger::logger.info("settings$run$dbfiles is deprecated. uwe settings$database$dbfiles instead")
     settings$database$dbfiles <- settings$run$dbfiles
     settings$run$dbfiles <- NULL
   }
@@ -49,9 +49,9 @@ fix.deprecated.settings <- function(settings, force=FALSE) {
   # settings$host
   if(!is.null(settings$run$host)) {
     if(!is.null(settings$host)) {
-      logger.severe("You have both deprecated settings$run$host and settings$host. Use latter only.")
+      PEcAn.logger::logger.severe("You have both deprecated settings$run$host and settings$host. Use latter only.")
     }
-    logger.info("settings$run$host is deprecated. uwe settings$host instead")
+    PEcAn.logger::logger.info("settings$run$host is deprecated. uwe settings$host instead")
     settings$host <- settings$run$host
     settings$run$host <- NULL
   }

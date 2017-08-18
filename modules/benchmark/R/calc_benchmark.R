@@ -132,7 +132,7 @@ calc_benchmark <- function(settings, bety) {
         # Check that the variables actually got loaded, otherwise don't send to calc_metrics
         
         if(!(var %in% names(obvs.calc))|!(var %in% names(model.calc))){
-          logger.warn(paste0("Load did not work for ",var,". No metrics will be calculated."))
+          PEcAn.logger::logger.warn(paste0("Load did not work for ",var,". No metrics will be calculated."))
           next
         }
         

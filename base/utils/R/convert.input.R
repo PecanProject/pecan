@@ -12,7 +12,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                           allow.conflicting.dates = TRUE, insert.new.file = FALSE, pattern = NULL,...) {
   input.args <- list(...)
   
-  logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
+  PEcAn.logger::logger.debug(paste("Convert.Inputs", fcn, input.id, host$name, outfolder, formatname, 
                      mimetype, site.id, start_date, end_date))
   
   # TODO see issue #18
@@ -25,7 +25,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   
   outname <- tail(unlist(strsplit(outfolder, "/")), n = 1)
   
-  logger.info(paste("start CHECK Convert.Inputs", fcn, input.id, host$name, outfolder, 
+  PEcAn.logger::logger.info(paste("start CHECK Convert.Inputs", fcn, input.id, host$name, outfolder, 
                     formatname, mimetype, site.id, start_date, end_date))
   
   
@@ -48,13 +48,13 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                          )
     
     
-    logger.debug("File id =", existing.dbfile$id,
+    PEcAn.logger::logger.debug("File id =", existing.dbfile$id,
                  " File name =", existing.dbfile$file_name,
                  " File path =", existing.dbfile$file_path,
                  " Input id =", existing.dbfile$container_id,
                  digits = 10)
     
-    logger.info("end CHECK for existing input record")
+    PEcAn.logger::logger.info("end CHECK for existing input record")
     
     
     if (nrow(existing.dbfile) > 0) {
@@ -87,12 +87,12 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         # Schedule files to be replaced or deleted on exiting the function
         successful <- FALSE
         on.exit(if (exists("successful") && successful) {
-                logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
+                PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
                 remote.execute.R( file.deletion.commands$delete.tmp, 
                                   host, user = NA, 
                                   verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
         } else {
-                logger.info("Conversion failed. Replacing old files.")
+                PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
                 remote.execute.R( file.deletion.commands$replace.from.tmp, 
                                   host, user = NA, 
                                   verbose = TRUE, R = Rbinary, scratchdir = outfolder )
@@ -113,15 +113,15 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       
       if (existing.machine$id != machine$id) {
         
-        logger.info("Valid Input record found that spans desired dates, but valid files do not exist on this machine.")
-        logger.info("Downloading all years of Valid input to ensure consistency")
+        PEcAn.logger::logger.info("Valid Input record found that spans desired dates, but valid files do not exist on this machine.")
+        PEcAn.logger::logger.info("Downloading all years of Valid input to ensure consistency")
         insert.new.file <- TRUE
         start_date <- existing.input$start_date
         end_date   <- existing.input$end_date
         
       } else {      
         # There's an existing input that spans desired start/end dates with files on this machine        
-        logger.info("Skipping this input conversion because files are already available.")
+        PEcAn.logger::logger.info("Skipping this input conversion because files are already available.")
         return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
       }
       
@@ -145,13 +145,13 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                           pattern = pattern
                                          )
     
-    logger.debug("File id =", existing.dbfile$id,
+    PEcAn.logger::logger.debug("File id =", existing.dbfile$id,
                  " File name =", existing.dbfile$file_name,
                  " File path =", existing.dbfile$file_path,
                  " Input id =", existing.dbfile$container_id,
                  digits = 10)
     
-    logger.info("end CHECK for existing input record.")
+    PEcAn.logger::logger.info("end CHECK for existing input record.")
     
     if (nrow(existing.dbfile) > 0) {
       
@@ -183,14 +183,14 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         # Schedule files to be replaced or deleted on exiting the function
         successful <- FALSE
         on.exit(if (exists("successful") && successful) {
-          logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
+          PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
           remote.execute.R( file.deletion.commands$delete.tmp,
                             host, user = NA, 
                             verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
           
         } else {
           
-          logger.info("Conversion failed. Replacing old files.")
+          PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
           remote.execute.R( file.deletion.commands$replace.from.tmp,
                             host, user = NA,
                             verbose = TRUE, R = Rbinary, scratchdir = outfolder )
@@ -210,14 +210,14 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                    machine.host, "'"), con)
         
         if(existing.machine$id != machine$id){
-          logger.info("Valid Input record found that spans desired dates, but valid files do not exist on this machine.")
-          logger.info("Downloading all years of Valid input to ensure consistency")
+          PEcAn.logger::logger.info("Valid Input record found that spans desired dates, but valid files do not exist on this machine.")
+          PEcAn.logger::logger.info("Downloading all years of Valid input to ensure consistency")
           insert.new.file <- TRUE
           start_date <- existing.input$start_date
           end_date   <- existing.input$end_date
         } else {
           # There's an existing input that spans desired start/end dates with files on this machine           
-          logger.info("Skipping this input conversion because files are already available.")
+          PEcAn.logger::logger.info("Skipping this input conversion because files are already available.")
           return(list(input.id = existing.input$id, dbfile.id = existing.dbfile$id))
         }
         
@@ -226,7 +226,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         # timeframe
         start_date <- min(start_date, existing.input$start_date)
         end_date <- max(end_date, existing.input$end_date)
-        logger.info(
+        PEcAn.logger::logger.info(
           paste0(
             "Changed start/end dates to '",
             start_date,
@@ -255,7 +255,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                              machine.host, "'"), con)
   
   if (nrow(machine) == 0) {
-    logger.error("machine not found", host$name)
+    PEcAn.logger::logger.error("machine not found", host$name)
     return(NULL)
   }
   
@@ -264,18 +264,18 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   } else {
     input <- db.query(paste("SELECT * from inputs where id =", input.id), con)
     if (nrow(input) == 0) {
-      logger.error("input not found", input.id)
+      PEcAn.logger::logger.error("input not found", input.id)
       return(NULL)
     }
     
     dbfile <- db.query(paste("SELECT * from dbfiles where container_id =", input.id, 
                              " and container_type = 'Input' and machine_id =", machine$id), con)
     if (nrow(dbfile) == 0) {
-      logger.error("dbfile not found", input.id)
+      PEcAn.logger::logger.error("dbfile not found", input.id)
       return(NULL)
     }
     if (nrow(dbfile) > 1) {
-      logger.warn("multiple dbfile records, using last", dbfile)
+      PEcAn.logger::logger.warn("multiple dbfile records, using last", dbfile)
       dbfile <- dbfile[nrow(dbfile), ]
     }
   }
@@ -305,7 +305,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       } else if (formatname == "LINKAGES met") {
         outputtype <- "linkages.dat"
       } else {
-        logger.severe(paste("Unknown formatname", formatname))
+        PEcAn.logger::logger.severe(paste("Unknown formatname", formatname))
       }
     }
     
@@ -320,7 +320,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     out.html <- getURL(paste0("http://dap-dev.ncsa.illinois.edu:8184/inputs/", 
                               browndog$inputtype), .opts = curloptions)
     if (outputtype %in% unlist(strsplit(out.html, "\n"))) {
-      logger.info(paste("Conversion from", browndog$inputtype, "to", outputtype, 
+      PEcAn.logger::logger.info(paste("Conversion from", browndog$inputtype, "to", outputtype, 
                         "through Brown Dog"))
       conversion <- "browndog"
     }
@@ -401,18 +401,18 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     }
     
     cmdFcn <- paste0(pkg, "::", fcn, "(", arg.string, ")")
-    logger.debug(paste0("convert.input executing the following function:\n", cmdFcn))
+    PEcAn.logger::logger.debug(paste0("convert.input executing the following function:\n", cmdFcn))
     
     result <- remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
   }
   
-  logger.info("RESULTS: Convert.Input")
-  logger.info(result)
-  logger.info(names(result))
+  PEcAn.logger::logger.info("RESULTS: Convert.Input")
+  PEcAn.logger::logger.info(result)
+  PEcAn.logger::logger.info(names(result))
   
   if (length(result) <= 1){
-    logger.debug(paste0("Processing data failed, please check validity of args:", arg.string))
-    logger.severe(paste0("Unable to process data using this function:",fcn))
+    PEcAn.logger::logger.debug(paste0("Processing data failed, please check validity of args:", arg.string))
+    PEcAn.logger::logger.severe(paste0("Unable to process data using this function:",fcn))
   }
   
   #--------------------------------------------------------------------------------------------------#
@@ -477,7 +477,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     successful <- TRUE
     return(newinput)
   } else {
-    logger.warn("Input was not added to the database")
+    PEcAn.logger::logger.warn("Input was not added to the database")
     successful <- TRUE
     return(NULL)
   }

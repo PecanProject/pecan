@@ -99,7 +99,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
     } else {
       if (!is.null(trait.values[[group]])) {
         params <- convert.samples.DALEC(trait.values[[group]])
-        logger.info(names(params))
+        PEcAn.logger::logger.info(names(params))
         for (i in seq_along(params)) {
           cmdFlags <- paste0(cmdFlags, " -", names(params)[i], " ", params[[i]])
         }

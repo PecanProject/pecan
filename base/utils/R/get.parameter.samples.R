@@ -30,7 +30,7 @@ get.parameter.samples <- function(settings,
     
   }  ### End of for loop to extract pft names
   
-  logger.info("Selected PFT(s): ", pft.names)
+  PEcAn.logger::logger.info("Selected PFT(s): ", pft.names)
   
   ## Generate empty list arrays for output.
   trait.samples <- sa.samples <- ensemble.samples <- env.samples <- runs.samples <- list()
@@ -75,22 +75,22 @@ get.parameter.samples <- function(settings,
       
       ## report which traits use MA results, which use priors
       if (length(ma.traits) > 0) {
-        logger.info("PFT", pft.names[i], "has MCMC samples for:\n",
+        PEcAn.logger::logger.info("PFT", pft.names[i], "has MCMC samples for:\n",
                     paste0(ma.traits, collapse = "\n "))
       }
       if (!all(priors %in% ma.traits)) {
-        logger.info("PFT", pft.names[i], "will use prior distributions for:\n", 
+        PEcAn.logger::logger.info("PFT", pft.names[i], "will use prior distributions for:\n", 
                     paste0(priors[!priors %in% ma.traits], collapse = "\n "))
       }
     } else {
       ma.traits <- NULL
       samples.num <- 20000
-      logger.info("No MCMC results for PFT", pft.names[i])
-      logger.info("PFT", pft.names[i], "will use prior distributions for", 
+      PEcAn.logger::logger.info("No MCMC results for PFT", pft.names[i])
+      PEcAn.logger::logger.info("PFT", pft.names[i], "will use prior distributions for", 
                   priors)
     }
     
-    logger.info("using ", samples.num, "samples per trait")
+    PEcAn.logger::logger.info("using ", samples.num, "samples per trait")
     for (prior in priors) {
       if (prior %in% ma.traits) {
         samples <- as.matrix(trait.mcmc[[prior]][, "beta.o"])
@@ -109,7 +109,7 @@ get.parameter.samples <- function(settings,
     sa.years <- data.frame(sa.start = settings$sensitivity.analysis$start.year, 
                            sa.end = settings$sensitivity.analysis$end.year)
     
-    logger.info("\n Selected Quantiles: ", vecpaste(round(quantiles, 3)))
+    PEcAn.logger::logger.info("\n Selected Quantiles: ", vecpaste(round(quantiles, 3)))
     
     ### Generate list of sample quantiles for SA run
     sa.samples <- get.sa.sample.list(pft = trait.samples, env = env.samples, 

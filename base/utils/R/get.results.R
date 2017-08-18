@@ -44,7 +44,7 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
     }
     
     if (!file.exists(fname)) {
-      logger.severe("No sensitivity analysis samples file found!")
+      PEcAn.logger::logger.severe("No sensitivity analysis samples file found!")
     }
     load(fname)
     
@@ -81,14 +81,14 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
       if ("variable" %in% names(settings$sensitivity.analysis)) {
         variable.sa <- settings$sensitivity.analysis[names(settings$sensitivity.analysis) == "variable"]
       } else {
-        logger.severe("no variable defined for sensitivity analysis")
+        PEcAn.logger::logger.severe("no variable defined for sensitivity analysis")
       }
     }
     
     # Only handling one variable at a time for now
     if (length(variable.sa) > 1) {
       variable.sa <- variable.sa[1]
-      logger.warn(paste0("Currently performs sensitivity analysis on only one variable at a time. Using first (", 
+      PEcAn.logger::logger.warn(paste0("Currently performs sensitivity analysis on only one variable at a time. Using first (", 
                          variable.sa, ")"))
     }
     
@@ -145,7 +145,7 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
       fname <- file.path(outdir, "samples.Rdata")
     }
     if (!file.exists(fname)) {
-      logger.severe("No ensemble samples file found!")
+      PEcAn.logger::logger.severe("No ensemble samples file found!")
     }
     load(fname)
     
@@ -188,12 +188,12 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
     }
     
     if (is.null(variable.ens)) 
-      logger.sever("No variables for ensemble analysis!")
+      PEcAn.logger::logger.sever("No variables for ensemble analysis!")
     
     # Only handling one variable at a time for now
     if (length(variable.ens) > 1) {
       variable.ens <- variable.ens[1]
-      logger.warn(paste0("Currently performs ensemble analysis on only one variable at a time. Using first (", 
+      PEcAn.logger::logger.warn(paste0("Currently performs ensemble analysis on only one variable at a time. Using first (", 
                          variable.ens, ")"))
     }
     

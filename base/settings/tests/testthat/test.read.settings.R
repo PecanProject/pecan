@@ -7,8 +7,8 @@
 ## which accompanies this distribution, and is available at
 ## http://opensource.ncsa.illinois.edu/license.html
 ## #-------------------------------------------------------------------------------
-logger.setQuitOnSevere(FALSE)
-logger.setLevel("OFF")
+PEcAn.logger::logger.setQuitOnSevere(FALSE)
+PEcAn.logger::logger.setLevel("OFF")
 context("tests for read.settings and related functions")
 
 source('get.test.settings.R')
