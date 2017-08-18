@@ -1,5 +1,5 @@
-##' @name prepare_pools
-##' @title prepare_pools
+##' @name prepare.pools
+##' @title prepare.pools
 ##' @description Calculates pools from given initial condition values, deriving complements where necessary/possible if given TotLivBiomass
 ##' @export
 ##'
@@ -7,7 +7,7 @@
 ##' @param constants list of constants; must include SLA in m2 / kg C if providing LAI for leaf carbon
 ##' @return list of pool values in kg C / m2 with generic names
 ##' @author Anne Thomas
-prepare_pools <- function(nc.path, constants = NULL){
+prepare.pools <- function(nc.path, constants = NULL){
   #function to check that var was loaded (numeric) and has a valid value (not NA or negative)
   is.valid <- function(var){
     return(all(is.numeric(var) && !is.na(var) &&  var >= 0)) 
