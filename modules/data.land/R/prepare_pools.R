@@ -36,17 +36,17 @@ prepare_pools <- function(nc.path, constants = NULL){
       # note: if roots are partitionable, they will override fine_ and/or coarse_root_carbon_content if loaded
       if(is.valid(roots)){
         if("rtsize" %in% names(IC.list$dims)){
-          PEcAn.utils::logger.info("prepare_pools: Attempting to partition root_carbon_content")
+          PEcAn.logger::logger.info("prepare_pools: Attempting to partition root_carbon_content")
           rtsize <- IC.list$dims$rtsize
           part_roots <- PEcAn.data.land::partition_roots(roots, rtsize)
           if(!is.null(part_roots)){
             fine.roots <- part_roots$fine.roots
             coarse.roots <- part_roots$coarse.roots
           } else{
-            PEcAn.utils::logger.error("prepare_pools: could not partition roots; please provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
+            PEcAn.logger::logger.error("prepare_pools: could not partition roots; please provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
           }
         } else{
-          PEcAn.utils::logger.error("prepare_pools: Please provide rtsize dimension with root_carbon_content to allow partitioning or provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
+          PEcAn.logger::logger.error("prepare_pools: Please provide rtsize dimension with root_carbon_content to allow partitioning or provide fine_root_carbon_content and coarse_root_carbon_content in netcdf.")
         }
       } else{
         # proceed without error message
@@ -62,10 +62,10 @@ prepare_pools <- function(nc.path, constants = NULL){
         sla <- constants$sla
         if(!is.null(sla)){
           leaf <- LAI * 1/sla
-          PEcAn.utils::logger.info(paste("using LAI", LAI, "and SLA", sla, "to get leaf", leaf))
+          PEcAn.logger::logger.info(paste("using LAI", LAI, "and SLA", sla, "to get leaf", leaf))
           IC.params[["leaf"]] <- leaf
         } else{
-          PEcAn.utils::logger.error("Could not convert LAI to leaf carbon without SLA; please include 'constants' list with named element 'sla'")
+          PEcAn.logger::logger.error("Could not convert LAI to leaf carbon without SLA; please include 'constants' list with named element 'sla'")
         }
       } else if(is.valid(TotLivBiom) && is.valid(AbvGrndWood) && 
                 is.valid(fine.roots) && is.valid(coarse.roots)){
@@ -73,7 +73,7 @@ prepare_pools <- function(nc.path, constants = NULL){
         if(leaf >= 0){
           IC.params[["leaf"]] <- leaf
         } else{
-          PEcAn.utils::logger.error("TotLivBiom is less than sum of AbvGrndWood and roots; will use default for leaf biomass")
+          PEcAn.logger::logger.error("TotLivBiom is less than sum of AbvGrndWood and roots; will use default for leaf biomass")
         }
       }
       
@@ -82,17 +82,17 @@ prepare_pools <- function(nc.path, constants = NULL){
         if(is.valid(coarse.roots)){
           IC.params[["wood"]] <- (AbvGrndWood + coarse.roots) 
         } else{
-          PEcAn.utils::logger.error("prepare_pools can't calculate total woody biomass with only AbvGrndWood; checking for total biomass.")
+          PEcAn.logger::logger.error("prepare_pools can't calculate total woody biomass with only AbvGrndWood; checking for total biomass.")
         }
       } else if (is.valid(TotLivBiom) && is.valid(leaf) && is.valid(fine.roots)){
         wood <- (TotLivBiom - leaf - fine.roots) 
         if (wood >= 0){
           IC.params[["wood"]] <- wood
         }else{
-          PEcAn.utils::logger.error(paste("TotLivBiom (", TotLivBiom, ") is less than sum of leaf (", leaf, ") and fine roots(",fine.roots,"); will use default for woody biomass."))
+          PEcAn.logger::logger.error(paste("TotLivBiom (", TotLivBiom, ") is less than sum of leaf (", leaf, ") and fine roots(",fine.roots,"); will use default for woody biomass."))
         }
       } else{
-        PEcAn.utils::logger.error("prepare_pools could not calculate woody biomass; will use defaults. Please provide AbvGrndWood and coarse_root_carbon OR leaf_carbon_content/LAI, fine_root_carbon_content, and TotLivBiom in netcdf.")
+        PEcAn.logger::logger.error("prepare_pools could not calculate woody biomass; will use defaults. Please provide AbvGrndWood and coarse_root_carbon OR leaf_carbon_content/LAI, fine_root_carbon_content, and TotLivBiom in netcdf.")
       }
       
       # initial pool of fine root carbon (kgC/m2)
@@ -104,7 +104,7 @@ prepare_pools <- function(nc.path, constants = NULL){
         if(fine.roots >= 0){
           IC.params[["fine.roots"]] <- fine.roots
         } else{
-          PEcAn.utils::logger.error("TotLivBiom is less than sum of AbvGrndWood, coarse roots, and leaf; will use default for fine.roots biomass")
+          PEcAn.logger::logger.error("TotLivBiom is less than sum of AbvGrndWood, coarse roots, and leaf; will use default for fine.roots biomass")
         }
       }
       
@@ -132,12 +132,12 @@ prepare_pools <- function(nc.path, constants = NULL){
       return(IC.params)
     }
     else{
-      PEcAn.utils::logger.severe("Could not load initial conditions: output list is null")
+      PEcAn.logger::logger.severe("Could not load initial conditions: output list is null")
       return(NULL)
     }
   }
   else{
-    PEcAn.utils::logger.severe("Could not load initial conditions: filepath is null")
+    PEcAn.logger::logger.severe("Could not load initial conditions: filepath is null")
     return(NULL)
   }
 }
