@@ -51,7 +51,7 @@ if ($row == false) {
   if ($host_id == 99)
     $host_id++;
 
-  // finding max id 
+  // finding max id
   $stmt = $pdo->prepare("SELECT max(id) FROM machines;",array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
   if (!$stmt->execute()) {
     echo json_encode(array('status' => 'ERROR',
@@ -99,7 +99,7 @@ $stmt->closeCursor();
 
 // checking for existance and other things
 
-$wantid = 1;      // Generate the wantid
+$wantid = $row->sync_host_id;      // Generate the wantid
 
 echo json_encode(array('status' => 'OK',
                        'wantid' => $wantid,

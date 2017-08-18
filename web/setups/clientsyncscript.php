@@ -42,12 +42,6 @@ if (isset($decoded->status) && $decoded->status == 'ERROR') {
     die('error occured: ' . $decoded->errormessage);
 }
 
-// got wait id
-
-// var_dump($curl_response);
-// echo '<br>';
-// var_dump($decoded);
-
 // instructions to update the client secrets
 if (!isset($client_sceret) && empty($client_sceret)) {
   $curl_post_data = array ('client_sceret' => $client_sceret);
