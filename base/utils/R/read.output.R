@@ -30,7 +30,7 @@ model2netcdfdep <- function(runid, outdir, model, lat, lon, start_date, end_date
   
   model2nc <- paste("model2netcdf", model, sep = ".")
   if (!exists(model2nc)) {
-    logger.warn("File conversion function model2netcdf does not exist for", model)
+    PEcAn.logger::logger.warn("File conversion function model2netcdf does not exist for", model)
     return(NA)
   }
   
@@ -39,7 +39,7 @@ model2netcdfdep <- function(runid, outdir, model, lat, lon, start_date, end_date
   print(paste("Output from run", runid, "has been converted to netCDF"))
   ncfiles <- list.files(path = outdir, pattern = "\\.nc$", full.names = TRUE)
   if (length(ncfiles) == 0) {
-    logger.severe("Conversion of model files to netCDF unsuccessful")
+    PEcAn.logger::logger.severe("Conversion of model files to netCDF unsuccessful")
   }
   return(ncfiles)
 } # model2netcdfdep
@@ -64,7 +64,7 @@ model2netcdfdep <- function(runid, outdir, model, lat, lon, start_date, end_date
 ##' @return vector of filenames created, converts model output to netcdf as a side effect
 ##' @author Mike Dietze, David LeBauer
 model2netcdf <- function(runid, outdir, model, lat, lon, start_date, end_date) {
-  logger.severe("model2netcdf will be removed in future versions, plase update your worklow")
+  PEcAn.logger::logger.severe("model2netcdf will be removed in future versions, plase update your worklow")
 } # model2netcdf
 
 
@@ -107,7 +107,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
     keep <- which(nc.years >= as.numeric(start.year) & nc.years <= as.numeric(end.year))
     ncfiles <- ncfiles[keep]
   } else if(length(nc.years) != 0){
-      PEcAn.utils::logger.info("No start or end year provided; reading output for all years")
+      PEcAn.logger::logger.info("No start or end year provided; reading output for all years")
       start.year <- min(nc.years)
       end.year <- max(nc.years)
   }
@@ -115,14 +115,14 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
   # throw error if no *.nc files selected/availible
   nofiles <- FALSE
   if (length(ncfiles) == 0) {
-    logger.warn("read.output: no netCDF files of model output present for runid = ", 
+    PEcAn.logger::logger.warn("read.output: no netCDF files of model output present for runid = ", 
                 runid, " in ", outdir, " for years requested; will return NA")
     if (length(nc.years) > 0) {
-      logger.info("netCDF files for other years present", nc.years)
+      PEcAn.logger::logger.info("netCDF files for other years present", nc.years)
     }
     nofiles <- TRUE
   } else {
-    logger.info("Reading output for Years: ", start.year, " - ", end.year, 
+    PEcAn.logger::logger.info("Reading output for Years: ", start.year, " - ", end.year, 
                 "in directory:", outdir,
                 "including files", dir(outdir, pattern = "\\.nc$"))
   }
@@ -146,7 +146,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
           # m-2 s-1', 'kg ha-1 yr-1') }
           result[[v]] <- abind::abind(result[[v]], newresult)
         } else if (!(v %in% names(nc$var))) {
-          logger.warn(paste(v, "missing in", ncfile))
+          PEcAn.logger::logger.warn(paste(v, "missing in", ncfile))
         }
       }
       ncdf4::nc_close(nc)
@@ -155,7 +155,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
     result <- lapply(variables, function(x) NA)
   }
   
-  logger.info(variables, "Mean:", 
+  PEcAn.logger::logger.info(variables, "Mean:", 
               lapply(result, function(x) signif(mean(x, na.rm = TRUE), 3)), "Median:", 
               lapply(result, function(x) signif(median(x, na.rm = TRUE), 3)))
   
@@ -174,7 +174,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
       start_year = start.year
       end_year = end.year 
     }else{
-      logger.error("Start and End year must be of type numeric, character or Date")
+      PEcAn.logger::logger.error("Start and End year must be of type numeric, character or Date")
     }
     years <- start_year:end_year
     seconds <- udunits2::ud.convert(model$time,"years","seconds")
@@ -199,7 +199,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
       return(model)
     }
   }else{
-    logger.error("Error in dataframe variable. Dataframe boolean must be set to TRUE or FALSE")
+    PEcAn.logger::logger.error("Error in dataframe variable. Dataframe boolean must be set to TRUE or FALSE")
   }
   
 } # read.output
@@ -216,5 +216,5 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
 ##' @export
 ##' @author Rob Kooper
 convert.outputs <- function(model, settings, ...) {
-  logger.severe("This function is not longer used and will be removed in the future.")
+  PEcAn.logger::logger.severe("This function is not longer used and will be removed in the future.")
 } # convert.outputs
