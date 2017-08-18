@@ -89,7 +89,7 @@ prepare.pools <- function(nc.path, constants = NULL){
         if (wood >= 0){
           IC.params[["wood"]] <- wood
         }else if ((leaf + fine.roots) < (TotLivBiom * 1.25)){
-          PEcAn.utils::logger.error(paste("prepare_pools: Sum of leaf (", leaf, ") and fine roots(", fine.roots, ") is greater than TotLivBiom (", TotLivBiom, "); will reappportion for woody biomass."))
+          PEcAn.utils::logger.error(paste("prepare_pools: Sum of leaf (", leaf, ") and fine roots(", fine.roots, ") is greater than TotLivBiom (", TotLivBiom, "); will reapportion with woody biomass."))
           #estimate new woody biomass and reapportion
           if(is.valid(coarse.roots)){
             #expand wood by coarse root to stem fraction (currently applied to both woody and non-woody)
