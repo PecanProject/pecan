@@ -1,8 +1,7 @@
 ##' @export
-#' @importFrom PEcAn.utils convert.input logger.info
 .extract.nc.module <- function(cf.id, register, dir, met, str_ns, site, new.site, con, 
                                start_date, end_date, host, overwrite = FALSE) {
-  logger.info("Site Extraction")
+  PEcAn.logger::logger.info("Site Extraction")
   
   input.id <- cf.id[1]
   if(host$name == "localhost"){
@@ -20,7 +19,7 @@
   formatname <- "CF Meteorology"
   mimetype   <- "application/x-netcdf"
   
-  ready.id <- convert.input(input.id = input.id, 
+  ready.id <- PEcAn.utils::convert.input(input.id = input.id, 
                             outfolder = outfolder, 
                             formatname = formatname, 
                             mimetype = mimetype, 
@@ -35,7 +34,7 @@
                             overwrite = overwrite,
                             exact.dates = FALSE)
   
-  logger.info("Finished Extracting Met")
+  PEcAn.logger::logger.info("Finished Extracting Met")
   
   return(ready.id)
 } # .extract.nc.module

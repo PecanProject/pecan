@@ -1,6 +1,6 @@
 context("loading data from PEcAn-CF met drivers")
 
-logger.setLevel("OFF")
+PEcAn.logger::logger.setLevel("OFF")
 
 daily_file <- "data/urbana_daily_test.nc"
 subdaily_file <- "data/urbana_subdaily_test.nc"

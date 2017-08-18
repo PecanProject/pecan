@@ -604,7 +604,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       #           if (any(colnames(format$vars)=="column_number")) { 
       #             arrloc <- format$vars$column_number[k]
       #           } else {
-      #             logger.error("Cannot find column location for wind_direction by name or column number")
+      #            PEcAn.logger::logger.error("Cannot find column location for wind_direction by name or column number")
       #           }
       #         }
       #         ncdf4::ncvar_put(nc, varid = Wdir.var,
