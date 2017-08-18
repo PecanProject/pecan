@@ -121,7 +121,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
       sla <- default.param[which(default.param$cmdFlag == "SLA"),"val"] * 1000 #convert SLA to m2/kgC from m2/gC (dalec default)
     }
     
-    IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = sla))
+    IC.pools <- PEcAn.data.land::prepare.pools(IC.path, constants = list(sla = sla))
     
     if(!is.null(IC.pools)){
       ###Write initial conditions from netcdf (Note: wherever valid input isn't available, DALEC default remains)
