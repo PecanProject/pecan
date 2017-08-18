@@ -9,13 +9,14 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [1.5.10] - Prerelease
 ### Added
+- Added cron job and script for the sync of the database.
 - Added PEcAn.utils::download.file() to allow for use of alternative FTP programs
 - Updated downloadAmeriflux and downloadNARR to make use of PEcAn.utils::download.file()
 - Added -w flag to load.bety.sh script to specify the URL to fetch the data from
-- add new table sites_cultivars to betydb sync scripts (dump and load)
-- added docker container scrips (.yml) to create docker container for PEcAn
-- added the configuration edit page to allow easy modification of config via web interface
-- thredds server documentation and catlog generating script
+- Add new table sites_cultivars to betydb sync scripts (dump and load)
+- Added docker container scrips (.yml) to create docker container for PEcAn
+- Added the configuration edit page to allow easy modification of config via web interface
+- Thredds server documentation and catlog generating script
 
 ### Changed
 - upscale_met now accepts ~any valid CF file (not just full years), retains correct time units, and respects the previously ignored `overwrite` parameter
