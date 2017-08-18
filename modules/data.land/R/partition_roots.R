@@ -1,5 +1,5 @@
-##' @name partition_roots
-##' @title partition_roots
+##' @name partition.roots
+##' @title partition.roots
 ##' @description Given a vector of root size thresholds (lower bound of each) and a vector of corresponding root carbon values, partition_roots checks if the input can be partitioned along the .002 m threshold between fine and coarse roots and returns a list containing the summed values for fine and coarse. If there are fewer than two thresholds or none within .0005 m of .002 m, returns NULL. Meant to be used in conjunction with standard variable root_carbon_content with rtsize dimension, extracted from netcdf.
 ##' @export
 ##'
@@ -8,7 +8,7 @@
 ##' @return list containing summed fine root and coarse root carbon (2 values)
 ##' @author Anne Thomas
 ##' 
-partition_roots <- function(roots, rtsize){
+partition.roots <- function(roots, rtsize){
   if(length(rtsize) > 1 && length(rtsize) == length(roots)){
     threshold <- .002
     epsilon <- .0005

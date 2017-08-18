@@ -38,7 +38,7 @@ prepare.pools <- function(nc.path, constants = NULL){
         if("rtsize" %in% names(IC.list$dims)){
           PEcAn.utils::logger.info("prepare_pools: Attempting to partition root_carbon_content")
           rtsize <- IC.list$dims$rtsize
-          part_roots <- PEcAn.data.land::partition_roots(roots, rtsize)
+          part_roots <- PEcAn.data.land::partition.roots(roots, rtsize)
           if(!is.null(part_roots)){
             fine.roots <- part_roots$fine.roots
             coarse.roots <- part_roots$coarse.roots
