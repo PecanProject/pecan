@@ -74,7 +74,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
     
     if(is.null(inputid) && !allow.conflicting.dates) {
       print(existing.input, digits=10)
-      logger.error(paste0(
+      PEcAn.logger::logger.error(paste0(
         "Duplicate inputs (in terms of site_id, name, and format_id) with differing ",
         "start/end dates are not allowed. The existing input record printed above would ",
         " conflict with the one to be inserted, which has requested start/end dates of ", 
@@ -111,12 +111,12 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   if(nrow(dbfile) > 0) {
     if(nrow(dbfile) > 1) {
       print(dbfile)
-      logger.warn("Multiple dbfiles found. Using last.")
+      PEcAn.logger::logger.warn("Multiple dbfiles found. Using last.")
       dbfile <- dbfile[nrow(dbfile),]
     }
     if(dbfile$file_name != in.prefix || dbfile$file_path != in.path) {
       print(dbfile, digits=10)
-      logger.error(paste0(
+      PEcAn.logger::logger.error(paste0(
         "The existing dbfile record printed above has the same machine_id and container ",
         "but a diferent file name than expected (prefix='", in.prefix, "', path=", in.path, ").",
         "This is not allowed."
@@ -205,7 +205,7 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
     }
     
     if(length(inputs$id) > 1){
-      logger.warn("Found multiple matching inputs. Checking for one with associate files on host machine")
+      PEcAn.logger::logger.warn("Found multiple matching inputs. Checking for one with associate files on host machine")
       
       print(inputs)        
       #      ni = length(inputs$id)
@@ -220,7 +220,7 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
         ## With the possibility of dbfile.check returning nothing,
         ## as.data.frame ensures a empty data.frame is returned 
         ## rather than an empty list.
-        logger.info("File not found on host machine. Returning Valid input with file associated on different machine if possible")
+        PEcAn.logger::logger.info("File not found on host machine. Returning Valid input with file associated on different machine if possible")
         return(as.data.frame(dbfile.check('Input', inputs$id, con, hostname, machine.check = FALSE)))
       }
       
@@ -232,7 +232,7 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
       
     }else{
       
-      logger.warn("Found possible matching input. Checking if its associate files are on host machine")
+      PEcAn.logger::logger.warn("Found possible matching input. Checking if its associate files are on host machine")
       print(inputs)        
       dbfile <- dbfile.check(type = 'Input', container.id = inputs$id, con = con, hostname = hostname, machine.check = TRUE)
       
@@ -240,7 +240,7 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
         ## With the possibility of dbfile.check returning nothing,
         ## as.data.frame ensures an empty data.frame is returned 
         ## rather than an empty list.
-        logger.info("File not found on host machine. Returning Valid input with file associated on different machine if possible")
+        PEcAn.logger::logger.info("File not found on host machine. Returning Valid input with file associated on different machine if possible")
         return(as.data.frame(dbfile.check(type = 'Input', container.id = inputs$id, con = con, hostname = hostname, machine.check = FALSE)))
       }
       
@@ -276,7 +276,7 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
   # find appropriate pft
   pftid <- get.id("pfts", "name", pft, con)
   if (is.null(pftid)) {
-    logger.severe("Could not find pft, could not store file", filename)
+    PEcAn.logger::logger.severe("Could not find pft, could not store file", filename)
   }
   
   mimetypeid <- get.id('mimetypes', 'type_string', mimetype, con = con, create=TRUE)
@@ -329,7 +329,7 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=PEcA
   
   # find appropriate format
   mimetypeid <- get.id("mimetypes", "type_string", mimetype, con)
-  if(is.null(mimetypeid)) logger.error("mimetype ", mimetype, "does not exist")
+  if(is.null(mimetypeid)) PEcAn.logger::logger.error("mimetype ", mimetype, "does not exist")
   formatid <- get.id("formats", colnames = c("mimetype_id", "name"), values = c(mimetypeid, formatname), con) 
   
   if (is.null(formatid)) {
@@ -364,7 +364,7 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=PEcA
 dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostname=PEcAn.utils::fqdn()) {
   if (hostname == "localhost") hostname <- PEcAn.utils::fqdn()
   
-  if (substr(in.path, 1, 1) != '/') logger.error("path to dbfiles:", in.path, " is not a valid full path")
+  if (substr(in.path, 1, 1) != '/') PEcAn.logger::logger.error("path to dbfiles:", in.path, " is not a valid full path")
   
   # find appropriate host
   hostid <- get.id("machines", colname = "hostname", value = hostname, con, create=TRUE, dates=TRUE)
@@ -397,7 +397,7 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
   } else {
     if(dbfile$container_type != type || dbfile$container_id != id) {
       print(dbfile, digits=10)
-      logger.error(paste0(
+      PEcAn.logger::logger.error(paste0(
         "The existing dbfile record printed above has the same machine_id, file_path, and file_name ",
         "but is associated with a different input than requested (type='", type, "', id=", id, ").",
         "This is not allowed."
@@ -448,7 +448,7 @@ dbfile.check <- function(type, container.id, con, hostname=PEcAn.utils::fqdn(), 
     
     if(nrow(dbfiles) > 1 && !return.all){
       
-      logger.warn("Multiple Valid Files found on host machine. Returning last updated record.")
+      PEcAn.logger::logger.warn("Multiple Valid Files found on host machine. Returning last updated record.")
       return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
       
     }else{
@@ -464,7 +464,7 @@ dbfile.check <- function(type, container.id, con, hostname=PEcAn.utils::fqdn(), 
     
     if(nrow(dbfiles) > 1 && !return.all){
       
-      logger.warn("Multiple Valid Files found on host machine. Returning last updated record.")
+      PEcAn.logger::logger.warn("Multiple Valid Files found on host machine. Returning last updated record.")
       return(dbfiles[dbfiles$updated_at == max(dbfiles$updated_at),])
   
     }else{
@@ -501,12 +501,12 @@ dbfile.file <- function(type, id, con, hostname=PEcAn.utils::fqdn()) {
   files <- dbfile.check(type, id, con, hostname)
   
   if(nrow(files) > 1) {
-    logger.warn("multiple files found for", id, "returned; using the first one found")
+    PEcAn.logger::logger.warn("multiple files found for", id, "returned; using the first one found")
     invisible(file.path(files[1, 'file_path'], files[1, 'file_name']))
   } else if (nrow(files) == 1) {
     invisible(file.path(files[1, 'file_path'], files[1, 'file_name']))
   } else {
-    logger.warn("no files found for ", id, "in database")
+    PEcAn.logger::logger.warn("no files found for ", id, "in database")
     invisible(NA)
   }
 }
@@ -545,12 +545,12 @@ dbfile.id <- function(type, file, con, hostname=PEcAn.utils::fqdn()) {
   ids <- db.query(paste0("SELECT container_id FROM dbfiles WHERE container_type='", type, "' AND file_path='", file_path, "' AND file_name='", file_name, "' AND machine_id=", hostid), con)
   
   if(nrow(ids) > 1) {
-    logger.warn("multiple ids found for", file, "returned; using the first one found")
+    PEcAn.logger::logger.warn("multiple ids found for", file, "returned; using the first one found")
     invisible(ids[1, 'container_id'])
   } else if (nrow(ids) == 1) {
     invisible(ids[1, 'container_id'])
   } else {
-    logger.warn("no id found for", file, "in database")
+    PEcAn.logger::logger.warn("no id found for", file, "in database")
     invisible(NA)
   }
 }

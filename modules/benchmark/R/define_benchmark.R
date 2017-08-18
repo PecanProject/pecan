@@ -14,8 +14,8 @@ define_benchmark <- function(settings, bety){
   }
   bm.settings <- settings$benchmarking
   
-  logger.info(paste("Ensemble id:", bm.settings$ensemble_id))
-  logger.info(paste(!is.null(bm.settings$ensemble_id)))
+  PEcAn.logger::logger.info(paste("Ensemble id:", bm.settings$ensemble_id))
+  PEcAn.logger::logger.info(paste(!is.null(bm.settings$ensemble_id)))
   # Retrieve/create benchmark entries
   
   if(is.null(bm.settings$reference_run_id)){
@@ -68,7 +68,7 @@ define_benchmark <- function(settings, bety){
     
     
     
-    logger.info(" ( %s, %s, %s, %s)", benchmark$input_id, benchmark$variable_id,
+    PEcAn.logger::logger.info(" ( %s, %s, %s, %s)", benchmark$input_id, benchmark$variable_id,
             benchmark$site_id, bm.settings$info$userid)
     
     

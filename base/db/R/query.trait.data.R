@@ -40,7 +40,7 @@ fetch.stats2se <- function(connection, query){
 ##' @author David LeBauer, Carl Davidson
 query.data <- function(trait, spstr, extra.columns='ST_X(ST_CENTROID(sites.geometry)) AS lon, ST_Y(ST_CENTROID(sites.geometry)) AS lat, ', con=NULL, store.unconverted=FALSE, ...) {
   if (is.null(con)) {
-    logger.error("No open database connection passed in.")
+    PEcAn.logger::logger.error("No open database connection passed in.")
     con <- db.open(settings$database$bety)
     on.exit(db.close(con))
   }
@@ -279,7 +279,7 @@ assign.treatments <- function(data){
     #if only one treatment, it's control
     if(length(unique(data$trt_id[site.i])) == 1) data$trt_id[site.i] <- 'control'
     if(!'control' %in% data$trt_id[site.i]){
-      logger.severe('No control treatment set for site_id:',
+      PEcAn.logger::logger.severe('No control treatment set for site_id:',
                    unique(data$site_id[site.i]),
                    'and citation id',
                    unique(data$citation_id[site.i]),

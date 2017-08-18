@@ -36,7 +36,7 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
     var <- mstmip_local[mstmip_local$Variable.Name == name, ]
     if (nrow(var) == 0) {
       if (!silent) {
-        logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
+        PEcAn.logger::logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
       }
       if (is.na(time)) {
         time <- ncdf4::ncdim_def(name = "time", units = "days since 1900-01-01 00:00:00", 
@@ -60,7 +60,7 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
       # skip
     } else {
       if (!silent) {
-        logger.info("Don't know dimension for", vd, "for variable", name)
+        PEcAn.logger::logger.info("Don't know dimension for", vd, "for variable", name)
       }
     }
   }
@@ -117,7 +117,7 @@ zero.truncate <- function(y) {
 ##' @author Shawn Serbin
 #--------------------------------------------------------------------------------------------------#
 rsync <- function(args, from, to, pattern = "") {
-  logger.warn("NEED TO USE TUNNEL")
+  PEcAn.logger::logger.warn("NEED TO USE TUNNEL")
   system(paste0("rsync", " ", args, " ", from, pattern, " ", to), intern = TRUE)
 } # rsync
 
@@ -132,7 +132,7 @@ rsync <- function(args, from, to, pattern = "") {
 ##' @export
 #--------------------------------------------------------------------------------------------------#
 ssh <- function(host, ..., args = "") {
-  logger.warn("NEED TO USE TUNNEL")
+  PEcAn.logger::logger.warn("NEED TO USE TUNNEL")
   if (host == "localhost") {
     command <- paste(..., args, sep = "")
   } else {
@@ -581,7 +581,7 @@ load.modelpkg <- function(model) {
     if (pecan.modelpkg %in% rownames(installed.packages())) {
       do.call(require, args = list(pecan.modelpkg))
     } else {
-      logger.error("I can't find a package for the ", model,
+      PEcAn.logger::logger.error("I can't find a package for the ", model,
                    "model; I expect it to be named ", pecan.modelpkg)
     }
   }
@@ -618,7 +618,7 @@ misc.convert <- function(x, u1, u2) {
     val <- udunits2::ud.convert(x,u1,u2)
     
     
-#    logger.severe(paste("Unknown units", u1, u2))
+#    PEcAn.logger::logger.severe(paste("Unknown units", u1, u2))
   }
   return(val)
 } # misc.convert
@@ -702,7 +702,7 @@ download.file <- function(url, filename, method) {
   if (startsWith(url, "ftp://")) {
     method <- if (missing(method)) getOption("download.ftp.method", default = "auto")
     if (method == "ncftpget") {
-      logger.debug(paste0("FTP Method: ",method))
+      PEcAn.logger::logger.debug(paste0("FTP Method: ",method))
       #system2("ncftpget", c("-c", "url", ">", filename))
       system(paste(method,"-c",url,">",filename,sep=" "))
     } else {

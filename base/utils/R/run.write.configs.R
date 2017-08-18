@@ -62,7 +62,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   
   ## remove previous runs.txt
   if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {
-    logger.warn("Existing runs.txt file will be removed.")
+    PEcAn.logger::logger.warn("Existing runs.txt file will be removed.")
     unlink(file.path(settings$rundir, "runs.txt"))
   }
   
@@ -72,7 +72,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
   
   my.write.config <- paste0("write.config.",model)
   if (!exists(my.write.config)) {
-    logger.error(my.write.config, 
+    PEcAn.logger::logger.error(my.write.config, 
                  "does not exist, please make sure that the model package contains a function called", 
                  my.write.config)
   }
@@ -99,7 +99,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
       cnt <- 0
       assign("cnt", cnt, .GlobalEnv)
     }
-    logger.info("\n ----- Writing model run config files ----")
+    PEcAn.logger::logger.info("\n ----- Writing model run config files ----")
     sa.runs <- write.sa.configs(defaults = settings$pfts, 
                                 quantile.samples = sa.samples, 
                                 settings = settings, 
@@ -134,17 +134,17 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
     fname <- ensemble.filename(settings, "ensemble.samples", "Rdata", all.var.yr = TRUE)
     save(ens.run.ids, ens.ensemble.id, ens.samples, pft.names, trait.names, file = fname)
   } else {
-    logger.info("not writing config files for ensemble, settings are NULL")
+    PEcAn.logger::logger.info("not writing config files for ensemble, settings are NULL")
   }  ### End of Ensemble
   
-  logger.info("###### Finished writing model run config files #####")
-  logger.info("config files samples in ", file.path(settings$outdir, "run"))
+  PEcAn.logger::logger.info("###### Finished writing model run config files #####")
+  PEcAn.logger::logger.info("config files samples in ", file.path(settings$outdir, "run"))
   
   ### Save output from SA/Ensemble runs
   # A lot of this is duplicate with the ensemble/sa specific output above, but kept for backwards compatibility.   
   save(ensemble.samples, trait.samples, sa.samples, runs.samples, pft.names, trait.names, 
        file = file.path(settings$outdir, "samples.Rdata"))
-  logger.info("parameter values for runs in ", file.path(settings$outdir, "samples.RData"))
+  PEcAn.logger::logger.info("parameter values for runs in ", file.path(settings$outdir, "samples.RData"))
   options(scipen = scipen)
   
   return(invisible(settings))
@@ -155,7 +155,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
 runModule.run.write.configs <- function(settings, overwrite = TRUE) {
   if (is.MultiSettings(settings)) {
     if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {
-      logger.warn("Existing runs.txt file will be removed.")
+      PEcAn.logger::logger.warn("Existing runs.txt file will be removed.")
       unlink(file.path(settings$rundir, "runs.txt"))
     }
     return(papply(settings, runModule.run.write.configs, overwrite = FALSE))

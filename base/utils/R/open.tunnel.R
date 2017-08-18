@@ -30,12 +30,12 @@ open_tunnel <- function(remote_host,user=NULL,password=NULL,tunnel_dir = "~/.pec
   sshPassFile <- file.path(tunnel_dir,"password")
   
   if(file.exists(sshTunnel)){
-    logger.warn("Tunnel already exists. If tunnel is not working try calling kill.tunnel then reopen")
+    PEcAn.logger::logger.warn("Tunnel already exists. If tunnel is not working try calling kill.tunnel then reopen")
     return(TRUE)
   }
   
   ## write password to temporary file
-  logger.warn(sshPassFile)
+  PEcAn.logger::logger.warn(sshPassFile)
   write(password,file = sshPassFile)
 
 #  start <- system(paste0("ssh -nN -o ControlMaster=yes -o ControlPath=",sshTunnel," -l ",user," ",remote_host),wait = FALSE,input = password)
@@ -49,7 +49,7 @@ open_tunnel <- function(remote_host,user=NULL,password=NULL,tunnel_dir = "~/.pec
   
   if(file.exists(sshPassFile)){
     file.remove(sshPassFile)
-    logger.error("Tunnel open failed")
+    PEcAn.logger::logger.error("Tunnel open failed")
     return(FALSE)
   }  
   

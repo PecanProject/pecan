@@ -95,7 +95,7 @@ bugs.rdist <- function(prior = data.frame(distn = "norm", parama = 0, paramb = 1
   } else if (grepl("chisq", prior$distn)) {
     model.string <- paste0("model{Y ~ d", prior$distn, "(", prior$parama, ")\n a <- x}")
   } else {
-    logger.severe(paste("Unknown model.string", model.string))
+    PEcAn.logger::logger.severe(paste("Unknown model.string", model.string))
   }
   
   writeLines(model.string, con = "test.bug")

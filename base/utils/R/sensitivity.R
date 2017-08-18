@@ -35,7 +35,7 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "",
       load(samples.file)
       sa.run.ids <- runs.samples$sa
     } else {
-      logger.error(samples.file, "not found, this file is required by the read.sa.output function")
+      PEcAn.logger::logger.error(samples.file, "not found, this file is required by the read.sa.output function")
     }
   }
   
@@ -61,7 +61,7 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "",
       sa.output[quantile, trait] <- mean(out, na.rm=TRUE)
 
     } ## end loop over quantiles
-    logger.info("reading sensitivity analysis output for model run at ", quantiles, "quantiles of trait", trait)
+    PEcAn.logger::logger.info("reading sensitivity analysis output for model run at ", quantiles, "quantiles of trait", trait)
   } ## end loop over traits
   sa.output <- as.data.frame(sa.output)
   return(sa.output)

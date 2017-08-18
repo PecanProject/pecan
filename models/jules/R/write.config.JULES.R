@@ -355,7 +355,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   pft.file <- file.path(local.rundir, "pft_params.nml")
   pft.text <- readLines(con = pft.file, n = -1)
   if (length(pft.text) < 3) {
-    logger.severe("No DEFAULT parameters provided for JULES")
+    PEcAn.logger::logger.severe("No DEFAULT parameters provided for JULES")
   }
   
   ## split NML into variable list and parameter values
@@ -392,7 +392,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     } else if (is.na(pft.id[i])) {
       pft.id[i] <- 5
     } else {
-      logger.severe("Unknown PFT")
+      PEcAn.logger::logger.severe("Unknown PFT")
     }
   }
   
@@ -532,7 +532,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
       ## detect any unmatched variables
       mch <- which(rownames(defaults) == names(pft[v]))
       if (length(mch) != 1) {
-        logger.warn("unmatched parameter in write.configs.JULES", names(pft[v]), "in PFT", 
+        PEcAn.logger::logger.warn("unmatched parameter in write.configs.JULES", names(pft[v]), "in PFT", 
                     names(trait.values)[i])
       } else {
         ## insert into defaults table

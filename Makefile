@@ -39,10 +39,10 @@ ALL_PKGS_D := $(BASE_D) $(MODELS_D) $(MODULES_D) .doc/models/template
 
 all: install document
 
-document: .doc/all
-install: .install/all
-check: .check/all
-test: .test/all 
+document: .doc/base/all
+install: .install/base/all
+check: .check/base/all
+test: .test/base/all 
 
 ### Dependencies
 .doc/all: $(ALL_PKGS_D)

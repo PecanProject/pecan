@@ -46,7 +46,7 @@
 ##' }
 read.settings <- function(inputfile = "pecan.xml"){
   if(inputfile == "") {
-    logger.warn("settings files specified as empty string; \n\t\tthis may be caused by an incorrect argument to system.file.")
+    PEcAn.logger::logger.warn("settings files specified as empty string; \n\t\tthis may be caused by an incorrect argument to system.file.")
   }
   
   loc <- which(commandArgs() == "--settings")
@@ -55,7 +55,7 @@ read.settings <- function(inputfile = "pecan.xml"){
     # 1 filename is passed as argument to R
     for(idx in loc) {
       if (!is.null(commandArgs()[idx+1]) && file.exists(commandArgs()[idx+1])) {
-        logger.info("Loading --settings=", commandArgs()[idx+1])
+        PEcAn.logger::logger.info("Loading --settings=", commandArgs()[idx+1])
         xml <- XML::xmlParse(commandArgs()[idx+1])
         break
       }
@@ -63,21 +63,21 @@ read.settings <- function(inputfile = "pecan.xml"){
     ## if settings file on $PATH
   } else if (file.exists(Sys.getenv("PECAN_SETTINGS"))) { 
     # 2 load from PECAN_SETTINGS
-    logger.info("Loading PECAN_SETTINGS=", Sys.getenv("PECAN_SETTINGS"))
+    PEcAn.logger::logger.info("Loading PECAN_SETTINGS=", Sys.getenv("PECAN_SETTINGS"))
     xml <- XML::xmlParse(Sys.getenv("PECAN_SETTINGS"))
     ## if settings file passed to read.settings function
   } else if(!is.null(inputfile) && file.exists(inputfile)) {
     # 3 filename passed into function
-    logger.info("Loading inpufile=", inputfile)
+    PEcAn.logger::logger.info("Loading inpufile=", inputfile)
     xml <- XML::xmlParse(inputfile)
     ## use pecan.xml in cwd only if none exists
   } else if (file.exists("pecan.xml")) {
     # 4 load ./pecan.xml
-    logger.info("Loading ./pecan.xml")
+    PEcAn.logger::logger.info("Loading ./pecan.xml")
     xml <- XML::xmlParse("pecan.xml")
   } else {
     # file not found
-    logger.severe("Could not find a pecan.xml file")
+    PEcAn.logger::logger.severe("Could not find a pecan.xml file")
   }
   
   ## convert the xml to a list

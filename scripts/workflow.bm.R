@@ -46,7 +46,7 @@ status.check <- function(name) {
   }
   status.data[name, ]
   if (is.na(status.data[name, 3])) {
-    logger.warn("UNKNOWN STATUS FOR", name)
+    PEcAn.logger::logger.warn("UNKNOWN STATUS FOR", name)
     return(0)
   }
   if (status.data[name, 3] == "DONE") {

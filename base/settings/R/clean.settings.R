@@ -24,7 +24,7 @@
 ##' }
 clean.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml", write=TRUE) {
   if (is.null(inputfile) || !file.exists(inputfile)) {
-    logger.severe("Could not find input file.")
+    PEcAn.logger::logger.severe("Could not find input file.")
   }
   settings <- XML::xmlToList(XML::xmlParse(inputfile))
   

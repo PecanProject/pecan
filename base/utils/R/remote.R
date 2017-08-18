@@ -39,19 +39,19 @@ remote.execute.cmd <- function(host, cmd, args = character(), stderr = FALSE) {
   }
   
   if ((host$name == "localhost") || (host$name == fqdn())) {
-    logger.debug(paste(cmd, args))
+    PEcAn.logger::logger.debug(paste(cmd, args))
     system2(cmd, args, stdout = TRUE, stderr = as.logical(stderr))
   } else {
     remote <- c(host$name)
     if (!is.null(host$tunnel)) {
       if (!file.exists(host$tunnel)) {
-        logger.severe("Could not find tunnel", host$tunnel)
+        PEcAn.logger::logger.severe("Could not find tunnel", host$tunnel)
       }
       remote <- c("-o", paste0("ControlPath=\"", host$tunnel, "\""), remote)
     } else if (!is.null(host$user)) {
       remote <- c("-l", host$user, remote)
     }
-    logger.debug(paste(c("ssh", "-T", remote, cmd, args), collapse = " "))
+    PEcAn.logger::logger.debug(paste(c("ssh", "-T", remote, cmd, args), collapse = " "))
     system2("ssh", c("-T", remote, cmd, args), stdout = TRUE, stderr = as.logical(stderr))
   } 
 } # remote.execute.cmd
@@ -91,7 +91,7 @@ remote.copy.from <- function(host, src, dst, delete = FALSE, stderr = FALSE) {
     if(!is.null(host$data_hostname)) hostname <- host$data_hostname
     if (!is.null(tunnel)) {
       if (!file.exists(tunnel)) {
-        logger.severe("Could not find tunnel", tunnel)
+        PEcAn.logger::logger.severe("Could not find tunnel", tunnel)
       }
       args <- c(args, "-e", paste0("ssh -o ControlPath=\"", tunnel, "\"", 
                                    collapse = ""))
@@ -102,7 +102,7 @@ remote.copy.from <- function(host, src, dst, delete = FALSE, stderr = FALSE) {
       args <- c(args, paste0(hostname, ":", src), dst)
     }
   }
-  logger.debug("rsync", shQuote(args))
+  PEcAn.logger::logger.debug("rsync", shQuote(args))
   system2("rsync", shQuote(args), stdout = TRUE, stderr = as.logical(stderr))
 } # remote.copy.from
 
@@ -141,7 +141,7 @@ remote.copy.to <- function(host, src, dst, delete = FALSE, stderr = FALSE) {
     if(!is.null(host$data_hostname)) hostname <- host$data_hostname
     if (!is.null(tunnel)) {
       if (!file.exists(tunnel)) {
-        logger.severe("Could not find tunnel", tunnel)
+        PEcAn.logger::logger.severe("Could not find tunnel", tunnel)
       } 
       args <- c(args, "-e", paste0("ssh -o ControlPath=\"", tunnel, "\"", 
                                    collapse = ""))
@@ -152,7 +152,7 @@ remote.copy.to <- function(host, src, dst, delete = FALSE, stderr = FALSE) {
       args <- c(args, src, paste0(hostname, ":", dst))
     }
   }
-  logger.debug("rsync", shQuote(args))
+  PEcAn.logger::logger.debug("rsync", shQuote(args))
   system2("rsync", shQuote(args), stdout = TRUE, stderr = as.logical(stderr))
 } # remote.copy.to
 
@@ -244,13 +244,13 @@ remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FA
     remote <- c(host$name)
     if (!is.null(host$tunnel)) {
       if (!file.exists(host$tunnel)) {
-        logger.severe("Could not find tunnel", host$tunnel)
+        PEcAn.logger::logger.severe("Could not find tunnel", host$tunnel)
       }
       remote <- c("-o", paste0("ControlPath=\"", host$tunnel, "\""), remote)
     } else if (!is.null(host$user)) {
       remote <- c("-l", host$user, remote)
     }
-    logger.debug(paste(c("ssh", "-T", remote, R), collapse = " "))
+    PEcAn.logger::logger.debug(paste(c("ssh", "-T", remote, R), collapse = " "))
     result <- system2("ssh", c("-T", remote, R, "--no-save","--no-restore"), stdout = verbose,  
                       stderr = verbose, input = input)
     remote.copy.from(host, tmpfile, uuid)
@@ -289,7 +289,7 @@ remote.copy.update <- function(input_id, remote_dir, remote_file_name = NULL, ho
   if(is.null(remote_file_name)){
     local_file_name <- local_file_record$file_name
     if(length(local_file_name) > 1){
-      logger.warn(paste0("Multiple file names found in the DB and no remote file name provided. Using the first file name for remote file name: ", 
+      PEcAn.logger::logger.warn(paste0("Multiple file names found in the DB and no remote file name provided. Using the first file name for remote file name: ", 
                          local_file_record$file_name[1]))
       local_file_name <- local_file_record$file_name[1]
     }

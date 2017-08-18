@@ -24,5 +24,5 @@
 ##'
 ##' @author Michael Dietze, Shawn Serbin, David LeBauer
 get.model.output <- function(model, settings) {
-  logger.severe("Same as get.results(settings), please update your workflow")
+  PEcAn.logger::logger.severe("Same as get.results(settings), please update your workflow")
 } # get.model.output

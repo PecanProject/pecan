@@ -18,6 +18,7 @@ Depends:
     PEcAn.DB,
     PEcAn.settings,
     PEcAn.MA,
+    PEcAn.logger,
     PEcAn.utils,
     PEcAn.uncertainty,
     PEcAn.data.atmosphere,

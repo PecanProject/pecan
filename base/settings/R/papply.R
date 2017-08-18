@@ -39,7 +39,7 @@ papply <- function(settings, fn, ..., stop.on.error = FALSE) {
     result <- list()
     errors <- character(0)
     for (i in seq_along(settings)) {
-      logger.debug(paste0("papply executing ", deparse(substitute(fn)), 
+      PEcAn.logger::logger.debug(paste0("papply executing ", deparse(substitute(fn)), 
                           " on element ", i, " of ", length(settings), "."))
       
       result.i <- try(fn(settings[[i]], ...), silent = TRUE)
@@ -86,6 +86,6 @@ papply <- function(settings, fn, ..., stop.on.error = FALSE) {
     # Assume it's settings list that hasn't been coerced to Settings class...
     return(fn(as.Settings(settings), ...))
   } else {
-    logger.severe("The function", fn, "requires input of type MultiSettings or Settings")
+    PEcAn.logger::logger.severe("The function", fn, "requires input of type MultiSettings or Settings")
   }
 } # papply

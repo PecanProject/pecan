@@ -21,6 +21,7 @@ Depends:
     abind,
     RCurl
 Imports:
+    PEcAn.logger,
     abind (>= 1.4.5),
     coda (>= 0.18),
     lubridate (>= 1.6.0),

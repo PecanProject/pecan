@@ -50,7 +50,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   print(results)
   
   if (file.exists(out.file.full) && !overwrite) {
-    logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
+    PEcAn.logger::logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
     return(invisible(results))
   }
   
@@ -165,7 +165,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       rng <- length(doy) - length(ytmp):1 + 1
       if (!all(rng >= 0)) {
         skip <- TRUE
-        logger.warn(paste(year, "is not a complete year and will not be included"))
+       PEcAn.logger::logger.warn(paste(year, "is not a complete year and will not be included"))
         break
       }
       asec[rng] <- asec[rng] - asec[rng[1]]
@@ -175,7 +175,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       rng <- (length(yr) + 1):length(sec)
       if (!all(rng >= 0)) {
         skip <- TRUE
-        logger.warn(paste(year, "is not a complete year and will not be included"))
+       PEcAn.logger::logger.warn(paste(year, "is not a complete year and will not be included"))
         break
       }
       yr[rng] <- rep(y + 1, length(rng))
