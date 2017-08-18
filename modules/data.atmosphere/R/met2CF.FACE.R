@@ -173,7 +173,7 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,input.id
 #            "solar_elevation_angle")
 # 
 # if (!(length(nvars) == length(vars))) {
-#   logger.error("Variable mismatch")
+#  PEcAn.logger::logger.error("Variable mismatch")
 # }
 # 
 # l <- length(vars)

@@ -73,7 +73,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     results$formatname[i] <- "CF Meteorology"
 
     if (file.exists(loc.file) && !isTRUE(overwrite)) {
-      logger.error("File already exists. Skipping to next year")
+     PEcAn.logger::logger.error("File already exists. Skipping to next year")
       next
     }
 
@@ -101,13 +101,13 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
 
       # confirm that timestamps match
       if (dap$dim$time$len != ntime) {
-        logger.severe("Expected", ntime, "observations, but", dap_file,  "contained", dap$dim$time$len)
+       PEcAn.logger::logger.severe("Expected", ntime, "observations, but", dap_file,  "contained", dap$dim$time$len)
       }
       dap_time <- udunits2::ud.convert(dap$dim$time$vals,
                                        dap$dim$time$units,
                                        time$units)
       if (!isTRUE(all.equal(dap_time, time$vals))){
-        logger.severe("Timestamp mismatch.",
+       PEcAn.logger::logger.severe("Timestamp mismatch.",
                       "Expected", min(time$vals), '..', max(time$vals), time$units,
                       "but got", min(dap_time), "..", max(dap_time))
       }
