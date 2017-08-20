@@ -6,6 +6,7 @@ section for the next release.
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
 ## [Unreleased]
+- Defined Min_upload_level=3
 
 ## [1.5.10] - Prerelease
 ### Added
