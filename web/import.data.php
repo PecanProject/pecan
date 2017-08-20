@@ -1,4 +1,18 @@
-<?php
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Import Data</title>
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <h1>Import Data</h1>
+    <p>Either download data from DataONE or drag and drop locally stored files</p>
+  </body>
+</html>
+
+
+
+<!-- MAKE SURE TO ADD PHP TAG
 /**
  * Copyright (c) 2012 University of Illinois, NCSA.
  * All rights reserved. This program and the accompanying materials
@@ -21,3 +35,4 @@ if (get_page_acccess_level() > $min_upload_level) {
   close_database();
   exit;
 }
+ -->
