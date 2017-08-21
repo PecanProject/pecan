@@ -23,7 +23,11 @@ rtm_loglike <- function(nparams, model, observed, lag.max = 0.01, ...) {
 #' Check convergence of BayesianTools output
 bt_check_convergence <- function(samples, threshold = 1.1, use_CI = TRUE, use_mpsrf = TRUE) {
     i <- ifelse(use_CI, 2, 1)
-    gelman <- BayesianTools::gelmanDiagnostics(samples)
+    gelman <- try(BayesianTools::gelmanDiagnostics(samples))
+    if (class(gelman) == 'try-error') {
+        message('Error trying to calculate gelman diagnostic. Assuming no convergence')
+        return(FALSE)
+    }
     if (use_mpsrf) {
         gelman_vec <- c(gelman$psrf[,i], mpsrf = gelman$mpsrf)
     } else {
