@@ -23,8 +23,7 @@ if (get_page_acccess_level() > $min_upload_level) {
   exit;
 }
 
-# drag and drop window. I did not build this. Still looking for the liscence. Orignial can be found at: https://html5demos.com/dnd-upload/
-
+# drag and drop window. 
 *Copyright (c) 2010 Remy Sharp, http://html5demos.com
  
 *Permission is hereby granted, free of charge, to any person obtaining
@@ -66,7 +65,7 @@ progress:after { content: '%'; }
   <p id="formdata">XHR2's FormData is not supported</p>
   <p id="progress">XHR2's upload progress isn't supported</p>
   <p>Upload progress: <progress id="uploadprogress" max="100" value="0">0</progress></p>
-  <p>Drag an image from your desktop on to the drop zone above to see the browser both render the preview, but also upload automatically to this server.</p>
+  <p>Drag a file from your desktop on to the drop zone above to begin uploading to betyDB.</p>
 </article>
 <script>
 var holder = document.getElementById('holder'),
@@ -81,6 +80,8 @@ var holder = document.getElementById('holder'),
       formdata: document.getElementById('formdata'),
       progress: document.getElementById('progress')
     },
+    
+    # This could be problematic: What generic mimetypes should we include? 
     acceptedTypes = {
       'image/png': true,
       'image/jpeg': true,
@@ -101,7 +102,7 @@ var holder = document.getElementById('holder'),
   }
 });
 
-function previewfile(file) {
+function previewfile(file) { # don't know if we need to display a preview of the file... It could just display the progress bar then, 'done'
   if (tests.filereader === true && acceptedTypes[file.type] === true) {
     var reader = new FileReader();
     reader.onload = function (event) {
@@ -129,7 +130,7 @@ function readfiles(files) {
     // now post a new XHR request
     if (tests.formdata) {
       var xhr = new XMLHttpRequest();
-      xhr.open('POST', '/devnull.php');
+      xhr.open('POST', '/devnull.php'); # @robkooper says this fetches the file from the server side
       xhr.onload = function() {
         progress.value = progress.innerHTML = 100;
       };
@@ -143,7 +144,7 @@ function readfiles(files) {
         }
       }
 
-      xhr.send(formData);
+      xhr.send(formData); 
     }
 }
 

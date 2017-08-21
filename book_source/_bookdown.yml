@@ -77,7 +77,7 @@ rmd_files: [
   "installation/Installing-PEcAn-Ubuntu.Rmd",
   "installation/Installing-PEcAn-models.Rmd",
   "installation/PEcAn-in-the-Cloud.Rmd",
-  "installation/centos.shiny.Rmd",
+  "installation/shiny.Rmd",
   "installation/thredds.Rmd",
   "misc/faq.Rmd"
 ]
