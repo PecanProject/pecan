@@ -132,7 +132,7 @@ pda.settings.bt <- function(settings) {
   } else if (sampler == "SMC") {
     bt.settings <- list(initialParticles = list("prior", iterations))
   } else {
-    logger.error(paste0(sampler, " sampler not found!"))
+    PEcAn.logger::logger.error(paste0(sampler, " sampler not found!"))
   }
   
   return(bt.settings)

@@ -39,7 +39,7 @@ jagify <- function(result) {
     varswithbadstats <- unique(result$vname[which(r$stat <= 0)])
     citationswithbadstats <- unique(r$citation_id[which(r$stat <= 0)])
     
-    logger.warn("there are implausible values of SE: SE <= 0 \n",
+    PEcAn.logger::logger.warn("there are implausible values of SE: SE <= 0 \n",
                 "for", varswithbadstats, 
                 "result from citation", citationswithbadstats, "\n", 
                 "SE <=0 set to NA \n")

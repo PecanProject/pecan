@@ -22,7 +22,7 @@ InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=
   if(!exists("model")) model = 0
   
   check.dup.data <- function(data,loc){
-    if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at",loc,names(data))}
+    if(any(duplicated(names(data)))){PEcAn.logger::logger.error("duplicated variable at",loc,names(data))}
   }
   # start text object that will be manipulated (to build different linear models, swap in/out covariates)
   TreeDataFusionMV <- "
@@ -288,7 +288,7 @@ model{
   
   if(!is.null(time_varying)){
     if (is.null(time_data)) {
-      PEcAn.utils::logger.error("time_varying formula provided but time_data is absent:", time_varying)
+      PEcAn.logger::logger.error("time_varying formula provided but time_data is absent:", time_varying)
     }
     Xt.priors <- ""
     
@@ -406,11 +406,11 @@ model{
   }
   
   
-  PEcAn.utils::logger.info("COMPILE JAGS MODEL")
+  PEcAn.logger::logger.info("COMPILE JAGS MODEL")
   j.model <- jags.model(file = textConnection(TreeDataFusionMV), data = data, inits = init, n.chains = 3)
   
   if(n.burn > 0){
-    PEcAn.utils::logger.info("BURN IN")
+    PEcAn.logger::logger.info("BURN IN")
     jags.out <- coda.samples(model = j.model, 
                              variable.names = burnin.variables, 
                              n.iter = n.burn)
@@ -419,7 +419,7 @@ model{
     }
   }
   
-  PEcAn.utils::logger.info("RUN MCMC")
+  PEcAn.logger::logger.info("RUN MCMC")
   load.module("dic")
   for(k in seq_len(ceiling(n.iter/n.chunk))){
     if(as.logical(save.state) & k%%as.numeric(save.state) == 0){
