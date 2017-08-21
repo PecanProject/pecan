@@ -8,7 +8,7 @@
 ##' @return list containing summed fine root and coarse root carbon (2 values)
 ##' @author Anne Thomas
 ##' 
-partition.roots <- function(roots, rtsize){
+partition_roots <- function(roots, rtsize){
   if(length(rtsize) > 1 && length(rtsize) == length(roots)){
     threshold <- .002
     epsilon <- .0005
