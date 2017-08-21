@@ -16,6 +16,11 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Added
 - Expanded initial conditions workflow for pool-based models, including PEcAn.data.land::prepare_pools to calculate pools from IC file (to be coupled with write.configs)
 
+### Changed
+- Clean up directory structure:
+    * Move `base` packages (`utils`, `settings`, `db`, `visualizaton`) to a `base` directory, for consistency with `modules` and `models`
+    * Move `logger.*` functions out of the `PEcAn.utils` package and into the `pecan.logger` package
+
 ## [1.5.10] - Prerelease
 ### Added
 - Added PEcAn.utils::download.file() to allow for use of alternative FTP programs

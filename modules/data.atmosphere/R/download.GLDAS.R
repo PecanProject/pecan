@@ -25,7 +25,7 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
 
   GLDAS_start <- 1948
   if (start_year < GLDAS_start) {
-    PEcAn.utils::logger.severe(sprintf('Input year range (%d:%d) exceeds the GLDAS range (%d:present)',
+    PEcAn.logger::logger.severe(sprintf('Input year range (%d:%d) exceeds the GLDAS range (%d:present)',
                                        start_year, end_year,
                                        GLDAS_start))
   }

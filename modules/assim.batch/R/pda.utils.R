@@ -26,7 +26,7 @@ assim.batch <- function(settings) {
   } else if (settings$assim.batch$method == "bayesian.tools") {
     settings <- pda.bayesian.tools(settings)
   } else {
-    logger.error(paste0("PDA method ", settings$assim.batch$method, " not found!"))
+    PEcAn.logger::logger.error(paste0("PDA method ", settings$assim.batch$method, " not found!"))
   }
   
   return(settings)
@@ -76,7 +76,7 @@ pda.settings <- function(settings, params.id = NULL, param.names = NULL, prior.i
     settings$assim.batch$param.names <- param.names
   }
   if (is.null(settings$assim.batch$param.names)) {
-    logger.error("Parameter data assimilation requested, but no parameters specified for PDA")
+    PEcAn.logger::logger.error("Parameter data assimilation requested, but no parameters specified for PDA")
   } else {
     settings$assim.batch$param.names <- lapply(settings$assim.batch$param.names, as.list)
   }
@@ -87,7 +87,7 @@ pda.settings <- function(settings, params.id = NULL, param.names = NULL, prior.i
   constant.names <- unlist(sapply(settings$pfts, function(x) names(x$constants)))
   params.in.constants <- which(unlist(settings$assim.batch$param.names) %in% constant.names)
   if (length(params.in.constants) > 0) {
-    logger.severe(paste0("PDA requested for parameter(s) [", 
+    PEcAn.logger::logger.severe(paste0("PDA requested for parameter(s) [", 
                          paste(unlist(settings$assim.batch$param.names)[params.in.constants], collapse = ", "), 
                          "] but these parameters are specified as constants in pecan.xml!"))
   }
@@ -223,7 +223,7 @@ pda.load.priors <- function(settings, con, extension.check = FALSE) {
 
   if (is.null(settings$assim.batch$prior$prior.id)) {
       
-    logger.info(paste0("Defaulting to most recent posterior/prior as PDA prior."))
+    PEcAn.logger::logger.info(paste0("Defaulting to most recent posterior/prior as PDA prior."))
     ## by default, use the most recent posterior/prior as the prior
     priorids <- list()
     for (i in seq_along(settings$pfts)) {
@@ -256,7 +256,7 @@ pda.load.priors <- function(settings, con, extension.check = FALSE) {
     priorids <- settings$assim.batch$prior$prior.id
   }
   
-  logger.info(paste0("Using posterior ID(s) ", paste(unlist(priorids), collapse = ", "), " as PDA prior(s)."))
+  PEcAn.logger::logger.info(paste0("Using posterior ID(s) ", paste(unlist(priorids), collapse = ", "), " as PDA prior(s)."))
   
 
   prior.out <- list()
@@ -314,7 +314,7 @@ pda.load.priors <- function(settings, con, extension.check = FALSE) {
   params.no.priors <- which(is.na(match(unlist(settings$assim.batch$param.names), 
                                         unlist(lapply(prior.out, rownames)))))
   if (length(params.no.priors) > 0) {
-    logger.severe(paste0("PDA requested for parameter(s) [", paste(unlist(settings$assim.batch$param.names)[params.no.priors], 
+    PEcAn.logger::logger.severe(paste0("PDA requested for parameter(s) [", paste(unlist(settings$assim.batch$param.names)[params.no.priors], 
                                                                    collapse = ", "), "] but no prior found!"))
   }
   
@@ -540,20 +540,20 @@ pda.init.run <- function(settings, con, my.write.config, workflow.id, params,
 ##' @author Ryan Kelly
 ##' @export
 pda.adjust.jumps <- function(settings, jmp.list, accept.rate, pnames = NULL) {
-  logger.info(paste0("Acceptance rates were (", paste(pnames, collapse = ", "), ") = (", 
+  PEcAn.logger::logger.info(paste0("Acceptance rates were (", paste(pnames, collapse = ", "), ") = (", 
                      paste(round(accept.rate/settings$assim.batch$jump$adapt, 3), collapse = ", "), ")"))
   
-  # logger.info(paste0('Using jump variances (',
+  # PEcAn.logger::logger.info(paste0('Using jump variances (',
   # paste(round(unlist(settings$assim.batch$jump$jvar),3), collapse=', '), ')'))
-  logger.info(paste0("Old jump variances were (", paste(round(jmp.list, 3), collapse = ", "), ")"))
+  PEcAn.logger::logger.info(paste0("Old jump variances were (", paste(round(jmp.list, 3), collapse = ", "), ")"))
   
   adj <- accept.rate / settings$assim.batch$jump$adapt / settings$assim.batch$jump$ar.target
   adj[adj < settings$assim.batch$jump$adj.min] <- settings$assim.batch$jump$adj.min
   # settings$assim.batch$jump$jvar <- as.list(unlist(settings$assim.batch$jump$jvar) * adj)
-  # logger.info(paste0('New jump variances are (',
+  # PEcAn.logger::logger.info(paste0('New jump variances are (',
   # paste(round(unlist(settings$assim.batch$jump$jvar),3), collapse=', '), ')'))
   jmp.list <- jmp.list * adj
-  logger.info(paste0("New jump variances are (", paste(round(jmp.list, 3), collapse = ", "), ")"))
+  PEcAn.logger::logger.info(paste0("New jump variances are (", paste(round(jmp.list, 3), collapse = ", "), ")"))
   return(jmp.list)
 } # pda.adjust.jumps
 
@@ -572,9 +572,9 @@ pda.adjust.jumps.bs <- function(settings, jcov, accept.count, params.recent) {
     params.recent <- params[(i - settings$assim.batch$jump$adapt):(i - 1), prior.ind]
   }
   pnames <- colnames(params.recent)
-  logger.info(paste0("Acceptance rate was ", 
+  PEcAn.logger::logger.info(paste0("Acceptance rate was ", 
                      round(accept.count / settings$assim.batch$jump$adapt, 3)))
-  logger.info(paste0("Using jump variance diagonals (", 
+  PEcAn.logger::logger.info(paste0("Using jump variance diagonals (", 
                      paste(pnames, collapse = ", "), ") = (", 
                      paste(round(diag(jcov), 3), collapse = ", "), ")"))
   
@@ -595,7 +595,7 @@ pda.adjust.jumps.bs <- function(settings, jcov, accept.count, params.recent) {
     jcov <- rescale %*% corr %*% rescale
   }
   
-  logger.info(paste0("New jump variance diagonals are (", 
+  PEcAn.logger::logger.info(paste0("New jump variance diagonals are (", 
                      paste(round(diag(jcov), 3), collapse = ", "), ")"))
   return(jcov)
 } # pda.adjust.jumps.bs
