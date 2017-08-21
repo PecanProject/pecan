@@ -88,8 +88,28 @@ prepare_pools <- function(nc.path, constants = NULL){
         wood <- (TotLivBiom - leaf - fine.roots) 
         if (wood >= 0){
           IC.params[["wood"]] <- wood
-        }else{
-          PEcAn.logger::logger.error(paste("TotLivBiom (", TotLivBiom, ") is less than sum of leaf (", leaf, ") and fine roots(",fine.roots,"); will use default for woody biomass."))
+        }else if ((leaf + fine.roots) < (TotLivBiom * 1.25)){
+          PEcAn.logger::logger.error(paste("prepare_pools: Sum of leaf (", leaf, ") and fine roots(", fine.roots, ") is greater than TotLivBiom (", TotLivBiom, "); will reapportion with woody biomass."))
+          #estimate new woody biomass and reapportion
+          if(is.valid(coarse.roots)){
+            #expand wood by coarse root to stem fraction (currently applied to both woody and non-woody)
+            root.wood.frac <- 0.2 #deciduous forest, White et al.2000
+            stem.wood.frac <- 0.8
+            wood <- coarse.roots + ((stem.wood.frac * coarse.roots) / root.wood.frac) #cross multiply for stem wood and add 
+            
+          }else{
+           wood <- 0
+          }
+          #reapportion wood, leaf and fine roots within TotLivBiom 
+          leaf.new <- (leaf / (leaf + wood + fine.roots)) * TotLivBiom
+          roots.new <- (fine.roots / (leaf + wood + fine.roots)) * TotLivBiom
+          wood.new <- (wood / (leaf + wood + fine.roots)) * TotLivBiom
+          IC.params[["wood"]] <- wood.new
+          IC.params[["leaf"]] <- leaf.new
+          IC.params[["fine.roots"]] <- roots.new
+          PEcAn.logger::logger.info(paste("prepare_pools: Using", wood.new, "for wood, ", leaf.new, "for leaf,", roots.new, " for fine roots."))
+        } else{
+          PEcAn.logger::logger.severe(paste("prepare_pools: Sum of leaf (", leaf, ") and fine roots(", fine.roots, ") is more than 25% greater than TotLivBiom (", TotLivBiom, "); please check IC inputs."))
         }
       } else{
         PEcAn.logger::logger.error("prepare_pools could not calculate woody biomass; will use defaults. Please provide AbvGrndWood and coarse_root_carbon OR leaf_carbon_content/LAI, fine_root_carbon_content, and TotLivBiom in netcdf.")
