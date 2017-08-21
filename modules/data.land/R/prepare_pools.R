@@ -7,7 +7,7 @@
 ##' @param constants list of constants; must include SLA in m2 / kg C if providing LAI for leaf carbon
 ##' @return list of pool values in kg C / m2 with generic names
 ##' @author Anne Thomas
-prepare.pools <- function(nc.path, constants = NULL){
+prepare_pools <- function(nc.path, constants = NULL){
   #function to check that var was loaded (numeric) and has a valid value (not NA or negative)
   is.valid <- function(var){
     return(all(is.numeric(var) && !is.na(var) &&  var >= 0)) 
@@ -38,7 +38,7 @@ prepare.pools <- function(nc.path, constants = NULL){
         if("rtsize" %in% names(IC.list$dims)){
           PEcAn.utils::logger.info("prepare_pools: Attempting to partition root_carbon_content")
           rtsize <- IC.list$dims$rtsize
-          part_roots <- PEcAn.data.land::partition.roots(roots, rtsize)
+          part_roots <- PEcAn.data.land::partition_roots(roots, rtsize)
           if(!is.null(part_roots)){
             fine.roots <- part_roots$fine.roots
             coarse.roots <- part_roots$coarse.roots
