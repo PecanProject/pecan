@@ -289,7 +289,7 @@ are.equal.possiblyNumericToCharacter <- function(o1, o2) {
 test_that("multiSettings write to and read from xml as expcted (i.e., with collapsing/expanding global settings)", {
   msOrig <- multiSettingsTemplate
   
-  msXML <- listToXml(msOrig, "pecan.multi")
+  msXML <- PEcAn.utils::listToXml(msOrig, "pecan.multi")
   listNew <- XML::xmlToList(msXML)
   msNew <- expandMultiSettings(listNew)
   
