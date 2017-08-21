@@ -1,5 +1,5 @@
-##' @name prepare.pools
-##' @title prepare.pools
+##' @name prepare_pools
+##' @title prepare_pools
 ##' @description Calculates pools from given initial condition values, deriving complements where necessary/possible if given TotLivBiomass
 ##' @export
 ##'
