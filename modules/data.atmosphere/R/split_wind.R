@@ -14,6 +14,7 @@
 #' @details Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record. 
 #'
 #' @examples
+#' \dontrun{
 #' in.path    <- "~/paleon/PalEONregional_CF_site_1-24047/"
 #' in.prefix  <- ""
 #' outfolder  <- "~/paleon/metTest/"
@@ -22,7 +23,6 @@
 #' overwrite  <- FALSE
 #' verbose    <- TRUE
 #' 
-#' \notrun{
 #' split_wind(in.path, in.prefix, start_date, end_date, merge.file, overwrite, verbose)
 #' }
 split_wind <- function(in.path, in.prefix, start_date, end_date,

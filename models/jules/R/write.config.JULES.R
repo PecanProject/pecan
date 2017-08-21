@@ -24,7 +24,9 @@
 ##' 
 ##' @export
 ##' @examples 
-##' write.config.JULES(defaults, trait.values, settings, run.id)
+##' \dontrun{
+##'   write.config.JULES(defaults, trait.values, settings, run.id)
+##' }
 ##-------------------------------------------------------------------------------------------------#
 write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   # constants

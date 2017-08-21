@@ -47,13 +47,6 @@ logger.setLevel <- function(...) {
     PEcAn.logger::logger.setLevel(...)
 }
 
-#' @importFrom PEcAn.logger logger.getLevelNumber
-#' @export
-logger.getLevelNumber <- function(...) {
-    logger_deprecated()
-    PEcAn.logger::logger.getLevelNumber(...)
-}
-
 #' @importFrom PEcAn.logger logger.getLevel
 #' @export
 logger.getLevel <- function(...) {
