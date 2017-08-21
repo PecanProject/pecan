@@ -39,6 +39,10 @@ iteration count than in \code{init}.
 Default is \code{FALSE} because it may be an excessively conservative
 diagnostic.
 \item \code{min_samp} -- Minimum number of samples after burnin before stopping.
+Default is 1000.
+\item \code{max_iter} -- Maximum total number of iterations. Default is 1e6.
+\item \code{lag.max} -- Maximum lag to use for autocorrelation normalization.
+Default is \code{10 * log10(n)} (same as \code{stats::acf} function).
 }
 }
 

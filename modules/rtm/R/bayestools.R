@@ -41,8 +41,8 @@ bt_check_convergence <- function(samples, threshold = 1.1, use_CI = TRUE, use_mp
     }
 }
 
-#' Quick BayesianTools prior creator for PROSPECT model 
-#' 
+#' Quick BayesianTools prior creator for PROSPECT model
+#'
 #' @param custom_prior List containing `param_name`, `distn`, `parama`, `paramb`, and `lower`
 #' @inheritParams prospect
 #' @export
@@ -55,7 +55,7 @@ prospect_bt_prior <- function(version, custom_prior = list()) {
                                Cw = list('Cw', 'lnorm', log(0.01), 1, 0),
                                Cm = list('Cm', 'lnorm', log(0.009), 1, 0),
                                residual = list('residual', 'lnorm', log(0.001), 2.5, 0)
-                               )    
+                               )
     prior_list <- modifyList(prior_default_list, custom_prior)
     prior_df_all <- do.call(rbind.data.frame, prior_list)
     colnames(prior_df_all) <- col_names
@@ -67,53 +67,60 @@ prospect_bt_prior <- function(version, custom_prior = list()) {
 }
 
 #' Perform Bayesian inversion using BayesianTools package
-#' 
-#' Use samplers from the BayesianTools package to fit models to data. Like 
-#' `invert.auto`, this will continue to run until convergence is achieved 
-#' (based on Gelman diagnostic) _and_ the result has enough samples (as 
+#'
+#' Use samplers from the BayesianTools package to fit models to data. Like
+#' `invert.auto`, this will continue to run until convergence is achieved
+#' (based on Gelman diagnostic) _and_ the result has enough samples (as
 #' specified by the user; see Details).
-#' 
+#'
 #' @details `custom_settings` is a list of lists, containing the following:
 #'  * `common` -- BayesianTools settings common to both the initial and subsequent samples.
-#'  * `init` -- BayesianTools settings for just the first round of sampling. 
-#'  This is most common for the initial number of iterations, which is the 
+#'  * `init` -- BayesianTools settings for just the first round of sampling.
+#'  This is most common for the initial number of iterations, which is the
 #'  minimum expected for convergence.
-#'  * `loop` -- BayesianTools settings for iterations inside the convergence 
-#'  checking `while` loop. This is most commonly for setting a smaller 
+#'  * `loop` -- BayesianTools settings for iterations inside the convergence
+#'  checking `while` loop. This is most commonly for setting a smaller
 #'  iteration count than in `init`.
 #'  * `other` -- Miscellaneous (non-BayesianTools) settings, including:
 #'      - `sampler` -- String describing which sampler to use. Default is `DEzs`
-#'      - `use_mpsrf` -- Use the multivariate PSRF to check convergence. 
-#'      Default is `FALSE` because it may be an excessively conservative 
+#'      - `use_mpsrf` -- Use the multivariate PSRF to check convergence.
+#'      Default is `FALSE` because it may be an excessively conservative
 #'      diagnostic.
 #'      - `min_samp` -- Minimum number of samples after burnin before stopping.
-#' 
+#'      Default is 1000.
+#'      - `max_iter` -- Maximum total number of iterations. Default is 1e6.
+#'      - `lag.max` -- Maximum lag to use for autocorrelation normalization.
+#'      Default is `10 * log10(n)` (same as `stats::acf` function).
+#'
 #' See the BayesianTools sampler documentation for what can go in the `BayesianTools` settings lists.
 #' @param observed Vector of observations
-#' @param model Function called by log-likelihood. Must be `function(params)` 
+#' @param model Function called by log-likelihood. Must be `function(params)`
 #' and return a vector equal to `length(observed)` or `nrow(observed)`.
 #' @param prior BayesianTools prior object.
 #' @param custom_settings Nested settings list. See Details.
 #' @export
 invert_bt <- function(observed, model, prior, custom_settings = list()) {
 
-    default_settings <- list(common = list(), 
+    default_settings <- list(common = list(),
                              init = list(iterations = 10000),
                              loop = list(iterations = 2000),
-                             other = list(sampler = 'DEzs', 
+                             other = list(sampler = 'DEzs',
                                           use_mpsrf = FALSE,
-                                          min_samp = 1000))
+                                          min_samp = 1000,
+                                          max_iter = 1e6,
+                                          lag.max = NULL))
 
     if (length(custom_settings) > 0) {
+        settings <- list()
         for (s in seq_along(default_settings)) {
             s_name <- names(default_settings)[s]
             if (s_name %in% names(custom_settings)) {
-                settings[[s_name]] <- modifyList(default_settings[[s_name]], 
+                settings[[s_name]] <- modifyList(default_settings[[s_name]],
                                                  custom_settings[[s_name]])
             } else {
                 settings[[s_name]] <- default_settings[[s_name]]
             }
-        } 
+        }
     } else {
         settings <- default_settings
     }
@@ -121,36 +128,55 @@ invert_bt <- function(observed, model, prior, custom_settings = list()) {
     use_mpsrf <- settings[['other']][['use_mpsrf']]
     min_samp <- settings[['other']][['min_samp']]
     lag.max <- settings[['other']][['lag.max']]
+    max_iter <- settings[['other']][['max_iter']]
 
     stopifnot('prior' %in% class(prior))
     test_samp <- prior$sampler()
     param_names <- names(test_samp)
     nparams <- length(test_samp[param_names != 'residual'])
-    loglike <- rtm_loglike(nparams = nparams, 
-                           model = model, 
-                           observed = observed, 
+    loglike <- rtm_loglike(nparams = nparams,
+                           model = model,
+                           observed = observed,
                            lag.max = lag.max)
 
 
-    setup <- BayesianTools::createBayesianSetup(likelihood = loglike, 
-                                                prior = prior, 
+    setup <- BayesianTools::createBayesianSetup(likelihood = loglike,
+                                                prior = prior,
                                                 names = param_names)
 
 
     init_settings <- modifyList(settings[['common']], settings[['init']])
-    samples <- BayesianTools::runMCMC(bayesianSetup = setup, 
-                                      sampler = settings[['other']][['sampler']], 
+    stop_iter <- init_settings[["iterations"]]
+    if (is.null(stop_iter)) {
+        stop_iter <- 10000
+        warning('init_settings$iterations is not set. Using ', stop_iter, '.')
+    }
+    message('Running initial ', stop_iter, ' iterations.')
+    samples <- BayesianTools::runMCMC(bayesianSetup = setup,
+                                      sampler = settings[['other']][['sampler']],
                                       settings = init_settings)
     converged <- bt_check_convergence(samples = samples, use_mpsrf = settings[['other']][['use_mpsrf']])
 
     loop_settings <- modifyList(settings[['common']], settings[['loop']])
 
-    last_iter <- 1
-    current_iter <- 
+    next_iter <- loop_settings[['iterations']]
+    if (is.null(next_iter)) {
+        next_iter <- 2000
+        warning('loop_settings$iterations is not set. Using ', next_iter, '.')
+    }
 
-    while(!(converged && enough_samples)) {
+    while (!(converged && enough_samples)) {
+        start_iter <- stop_iter + 1
+        stop_iter <- stop_iter + next_iter
+        if (start_iter > max_iter) {
+            warning('Next start iteration (', start_iter, ') greater than maximum iteration count (', max_iter, ') ',
+                    'but convergence has not been achieved. ',
+                    'Terminating sampling and returning results as is.')
+            break
+        }
+        message('Running ', next_iter, ' more iterations (', start_iter, ' to ', stop_iter, ').')
         samples <- BayesianTools::runMCMC(samples, sampler = sampler, settings = loop_settings)
-        converged <- bt_check_convergence(samples = samples, use_mpsrf = settings[['other']][['use_mpsrf']])
+        converged <- bt_check_convergence(samples = samples, use_mpsrf = use_mpsrf)
         if (converged) {
             coda_samples <- BayesianTools::getSample(samples, coda = TRUE)
             burned_samples <- PEcAn.assim.batch::autoburnin(coda_samples, return.burnin = TRUE, method = 'gelman.plot')
@@ -158,7 +184,7 @@ invert_bt <- function(observed, model, prior, custom_settings = list()) {
             n_samples <- coda::niter(burned_samples$samples)
             enough_samples <- n_samples > min_samp
             if (!enough_samples) {
-                message(n_samples, ' samples after burnin is less than target ', min_samp, 
+                message(n_samples, ' samples after burnin is less than target ', min_samp,
                         '. Resuming sampling.')
             }
         }
