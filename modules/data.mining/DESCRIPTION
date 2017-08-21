@@ -8,6 +8,8 @@ Author: Mike Dietze
 Maintainer: Mike Dietze <dietze@bu.edu>
 Depends:
     dplR
+Imports:
+    PEcAn.logger
 Suggests:
     PEcAn.utils,
     testthat (>= 1.0.2)

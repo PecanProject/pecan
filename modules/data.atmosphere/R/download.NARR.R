@@ -27,7 +27,7 @@ download.NARR <- function(outfolder, start_date, end_date, overwrite = FALSE, ve
 
   NARR_start <- 1979
   if (start_year < NARR_start) {
-    PEcAn.utils::logger.severe(sprintf('Input year range (%d:%d) exceeds the NARR range (%d:present)',
+    PEcAn.logger::logger.severe(sprintf('Input year range (%d:%d) exceeds the NARR range (%d:present)',
                                        start_year, end_year,
                                        NARR_start))
   }
@@ -63,13 +63,13 @@ download.NARR <- function(outfolder, start_date, end_date, overwrite = FALSE, ve
       results$formatname[row] <- "NARR"
       
       if (file.exists(new.file) && !overwrite) {
-        PEcAn.utils::logger.debug("File '", new.file, "' already exists, skipping to next file.")
+        PEcAn.logger::logger.debug("File '", new.file, "' already exists, skipping to next file.")
         next
       }
       
       url <- paste0("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/", v, ".", year, ".nc")
       
-      PEcAn.utils::logger.debug(paste0("Downloading from:\n", url, "\nto:\n", new.file))
+      PEcAn.logger::logger.debug(paste0("Downloading from:\n", url, "\nto:\n", new.file))
       PEcAn.utils::download.file(url, new.file, method)
     }
   }
