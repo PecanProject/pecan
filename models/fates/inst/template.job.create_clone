@@ -1,0 +1,190 @@
+#!/bin/bash -l
+
+# redirect output
+exec 3>&1
+exec &> "@OUTDIR@/logfile.txt"
+
+# host specific setup
+@HOST_SETUP@
+
+# create output folder
+mkdir -p "@OUTDIR@"
+
+# flag needed for ubuntu
+export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
+
+# see if application needs running
+#if [ ! -e "@OUTDIR@/pecan.done" ]; then
+
+  ## Figure out where CIME SCRIPTS are installed
+  cd @REFCASE@
+  IFS=' ' read -ra SCRIPTROOT <<< `./xmlquery SCRIPTSROOT -value`
+  echo "CIME script root: "
+  echo ${SCRIPTROOT}
+
+  ## Seem to be stuck having to build a new case. Will try and avoid this in the future
+  cd ${SCRIPTROOT}
+  echo "*** Run create_newcase ***"
+  echo " ----- Case details:"
+  echo @CASEDIR@
+  #echo "Res: @RES@ "
+  #echo "Compset: @COMPSET@ "
+  #echo "Machine: @MACHINE@ "
+  #echo "Compiler: @COMPILER@ "
+  #echo "Project_name: @PROJECT@ "
+  echo "--------------------------"
+  #./create_newcase -case @CASEDIR@ -res 1x1_brazil -compset ICLM45ED -mach @MACHINE@ -compiler @COMPILER@ -project @PROJECT@  
+  ./create_clone --verbose --case @CASEDIR@ --clone @REFCASE@ --keepexe 
+
+  cd "@RUNDIR@"
+  
+  ## RECURSIVELY COPY/SYMLINK REFERENCE INPUTS DIRECTORY (DIN_LOC_ROOT)
+  ## create folders and symbolic links. Links will later be deleted when non-default files are specified
+  mkdir input
+  echo "PEcAn.FATES::recurse.create('input','@DEFAULT@')" | R --vanilla
+
+  cd "@CASEDIR@"
+
+  ## THINGS THAT ARE IN REFCASE
+  # Modifying : env_mach_pes.xml
+  echo "*** Modify XMLs ***"
+./xmlchange -file env_mach_pes.xml -id NTASKS_ATM -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_LND -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_ICE -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_OCN -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_CPL -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_GLC -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_ROF -val 1
+./xmlchange -file env_mach_pes.xml -id NTASKS_WAV -val 1
+./xmlchange -file env_mach_pes.xml -id MAX_TASKS_PER_NODE -val 1
+./xmlchange -file env_mach_pes.xml -id TOTALPES -val 1
+  # Modifying : env_build.xml
+./xmlchange -file env_build.xml -id GMAKE -val make
+./xmlchange -file env_build.xml -id DEBUG -val FALSE
+  # Modifying : env_run.xml
+./xmlchange -file env_run.xml -id REST_N -val 1
+./xmlchange -file env_run.xml -id REST_OPTION -val nyears
+./xmlchange -file env_run.xml -id DATM_CLMNCEP_YR_START -val 1974
+./xmlchange -file env_run.xml -id DATM_CLMNCEP_YR_END -val 2004
+./xmlchange -file env_run.xml -id DIN_LOC_ROOT -val @INDIR@
+./xmlchange -file env_run.xml -id DIN_LOC_ROOT_CLMFORC -val '@INDIR@'
+./xmlchange -file env_run.xml -id DOUT_S -val TRUE
+./xmlchange -file env_run.xml -id DOUT_S_ROOT -val '@CASEDIR@/run'
+./xmlchange -file env_run.xml -id PIO_DEBUG_LEVEL -val 0
+./xmlchange -file env_run.xml -id ATM_DOMAIN_FILE -val 'domain.lnd.@SITE_NAME@.nc'
+./xmlchange -file env_run.xml -id ATM_DOMAIN_PATH -val '@INDIR@/share/domains/domain.clm/'
+./xmlchange -file env_run.xml -id LND_DOMAIN_FILE -val 'domain.lnd.@SITE_NAME@.nc'
+./xmlchange -file env_run.xml -id LND_DOMAIN_PATH -val '@INDIR@/share/domains/domain.clm/'
+./xmlchange -file env_run.xml -id CLM_USRDAT_NAME -val '@SITE_NAME@'
+## END REFCASE  
+  
+  ## ENV_BUILD update configurations
+  ./xmlchange -file env_build.xml -id CIME_OUTPUT_ROOT -val @CASEDIR@
+  ./xmlchange -file env_build.xml -id EXEROOT -val @BLD@  # this is the way it should be set, long term
+  #./xmlchange -file env_build.xml -id EXEROOT -val @CASEDIR@/bld # temporary fix
+  ./xmlchange -file env_build.xml -id BUILD_COMPLETE -val TRUE  # TEMPORARY!  This eventually needs to be uncommented so we don't build the model each time !
+  
+  ## DATES -> ENV_RUN
+  ./xmlchange -file env_run.xml -id RUNDIR -val @CASEDIR@/run
+  ./xmlchange -file env_run.xml -id RUN_STARTDATE -val @START_DATE@
+  ./xmlchange -file env_run.xml -id STOP_OPTION -val ndays
+  ./xmlchange -file env_run.xml -id STOP_N -val @STOP_N@
+  
+  ## SITE INFO --> DOMAIN FILE 
+  rm @INDIR@/share/domains/domain.clm/*
+  ln -s @RUNDIR@/domain.lnd.@SITE_NAME@.nc @INDIR@/share/domains/domain.clm/
+    
+  ## SURFDATA
+  rm @INDIR@/lnd/clm2/surfdata_map/surfdata*
+  ln -s @RUNDIR@/surfdata_@SITE_NAME@_simyr2000.nc @INDIR@/lnd/clm2/surfdata_map/
+  SURFMAP=@INDIR@/lnd/clm2/surfdata_map/surfdata_@SITE_NAME@_simyr2000.nc
+cat >> user_nl_clm << EOF
+fsurdat = '@INDIR@/lnd/clm2/surfdata_map/surfdata_@SITE_NAME@_simyr2000.nc'
+finidat = ' '
+EOF
+    
+  ## PARAMETERS
+  rm @INDIR@/lnd/clm2/paramdata/*
+  #ln -s @RUNDIR@/clm_params_ed.@RUN_ID@.nc @INDIR@/lnd/clm2/paramdata/
+  ln -s @RUNDIR@/clm_params.@RUN_ID@.nc @INDIR@/lnd/clm2/paramdata/
+  ln -s @RUNDIR@/fates_params.@RUN_ID@.nc @INDIR@/lnd/clm2/paramdata/
+#cat >> user_nl_clm << EOF
+#paramfile = '@INDIR@/lnd/clm2/paramdata/clm_params_ed.@RUN_ID@.nc'
+#EOF
+cat >> user_nl_clm << EOF
+fates_paramfile = '@INDIR@/lnd/clm2/paramdata/fates_params.@RUN_ID@.nc'
+paramfile = '@INDIR@/lnd/clm2/paramdata/clm_params.@RUN_ID@.nc'
+EOF
+
+  ## APPLY CONFIG CHANGES
+  echo "*** Run case.setup ***"
+  ./case.setup
+  
+  ## ADDITIONAL MODS THAT ARE JUST ASSOCIATED WITH REFCASE - removed 'NEP' 'NPP_column'
+cat >> user_nl_clm << EOF
+hist_empty_htapes = .true.
+hist_fincl1='EFLX_LH_TOT','TSOI_10CM','QVEGT','GPP','AR','ED_bleaf','ED_biomass','NPP','MAINT_RESP','GROWTH_RESP'
+hist_mfilt             = 8760
+hist_nhtfrq            = -1
+EOF
+
+# Modify user_nl_datm
+#cat >> user_nl_datm << EOF
+#EOF  
+  
+  echo "*** Run case.build ***"
+  sleep 10
+  ./case.build # ! Long run, we should not be building the model.  But current BUILD_COMPLETE doesn't seem to be working !
+  
+  ## RUN
+  echo "*** Run ***"
+  now=`date`
+  echo "Simulation start:  $now"
+  cd run
+  mkdir timing
+  echo `pwd`
+  echo `ls -altr`
+  
+  ## RUNDIR FILE LINKS  -- CURRENTLY GETTING SEG FAULTS WHEN TRYING TO RUN WITH PECAN MET
+  #if [ -e @RUNDIR@/datm_atm_in ]
+  #  then 
+  #  rm datm_atm_in datm_in
+  #  ln -s @RUNDIR@/datm_atm_in .
+  #  ln -s @RUNDIR@/datm_atm_in datm_in 
+  #fi
+  #if [ -e @RUNDIR@/datm.streams.txt.PEcAn_met ]
+  #  then 
+    #rm datm.stream.txt.CLM_QIAN*
+  #  rm datm.streams.txt.CLM_QIAN*  # bug fix, s was missing!
+  #  ln -s @RUNDIR@/datm.streams.txt.PEcAn_met .
+  #fi
+  
+  "@BINARY@" # ! Long term, we should be running it this way !
+  #"@CASEDIR@/bld/cesm.exe" # edited for testing, ! TEMPORARY. NEED TO SWITCH BACK ONCE BUILD_COMPLETE works !
+  STATUS=$?
+  
+  
+  # check the status
+  if [ $STATUS -ne 0 ]; then
+  	echo -e "ERROR IN MODEL RUN\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
+  	exit $STATUS
+  fi
+
+# host specific post-run
+@HOST_TEARDOWN@
+
+  #  convert output
+  cp *clm2.h0.*.nc @OUTDIR@
+  echo "library(PEcAn.FATES); model2netcdf.FATES('@OUTDIR@')" | R --vanilla
+  
+
+  # copy readme with specs to output
+  cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
+
+  # write tag so future execution knows run finished
+  echo $(date) >> "@OUTDIR@/pecan.done"
+
+  sleep 60
+
+# all done
+echo -e "MODEL FINISHED\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3

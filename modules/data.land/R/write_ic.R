@@ -33,7 +33,7 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   do.call("library", list(pkg))
   fcnx <- paste("veg2model.", model, sep = "")
   if (!exists(fcnx)) {
-    logger.severe(paste(fcnx, "does not exist."))
+    PEcAn.logger::logger.severe(paste(fcnx, "does not exist."))
   }else{
     fcn <- match.fun(fcnx)
   }

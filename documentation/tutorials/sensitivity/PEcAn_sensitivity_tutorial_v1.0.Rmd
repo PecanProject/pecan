@@ -124,7 +124,7 @@ All we need to do to go beyond this is to make a loop that reads in each sensiti
 ```{r,eval=FALSE,tidy=TRUE}
 rmses <- rep(0,length(runids))
 for(r in 1:length(runids)){
-arun <- read.output(runids[r],paste(settings$outdir, "out", runids[1], sep="/"),2004,2004,"NEE", dataframe= TRUE)
+arun <- read.output(runids[r],paste(settings$outdir, "out", runids[r], sep="/"),2004,2004,"NEE", dataframe= TRUE)
 plottable<-align_data(model.calc = arun, obvs.calc = obs, align_method = "match_timestep", var= "NEE")
 rmses[r] <- sqrt(mean((plottable$NEE.o-plottable$NEE.m)^2,na.rm = TRUE))
 }
@@ -141,9 +141,16 @@ Can you identify a minimum (if there is one)? If so, is there any reason to beli
 
 Now that you have the hang of it, here are a few more things to try:
 
-1. Try a different error functions, given actual NEE uncertainty. You learned earlier that uncertainty in half-hourly observed NEE is not Gaussian. This makes RMSE not the correct measure for goodness-of-fit. Go to *~/pecan/modules/uncertainty/R*, open *flux_uncertainty.R*, and click on the *source* button in the program editing pane. Then you can run:
+1. Try a different error functions, given actual NEE uncertainty. You learned earlier that uncertainty in half-hourly observed NEE is not Gaussian. This makes RMSE not the correct measure for goodness-of-fit. Go to *~/pecan/modules/uncertainty/R*, open *flux_uncertainty.R*, and click on the *source* button in the program editing pane. 
+
+Alternatively, you can source the function from the console using:
 ```{r,eval=FALSE}
-unc <- PEcAn.settings::flux.uncertainty(plottable$NEE.o,QC=rep(0,17520)) 
+source("pecan/modules/uncertainty/R/flux_uncertainty.R")
+```
+
+Then you can run:
+```{r,eval=FALSE}
+unc <- flux.uncertainty(plottable$NEE.o,QC=rep(0,17520)) 
 plot_flux_uncertainty(unc)
 ```
 The figure shows you uncertainty (err) as a function of NEE magnitude (mag). How might you use this information to change the RMSE calculation?

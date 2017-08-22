@@ -7,6 +7,6 @@
 generate.rsr.all(path.to.licor = NULL)
 }
 \description{
-Only needs to be called when updating these funcitons with new 
+Only needs to be called when updating these funcitons with new
 data
 }
