@@ -76,12 +76,18 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # subsequent steps, but copying everything up makes sure that all the
   # necessary files exist for a tem run - the config file and the parameter
   # files in this case.
+  if (dir.exists(file.path(rundir, 'config'))) {
+    unlink(file.path(rundir, 'config'), recursive=TRUE)
+  }
   system2(paste0("cp"),
           wait=TRUE,
           args=(c("-r",
                   file.path(appbinary_path, 'config'),
                   file.path(rundir, 'config'))))
 
+  if (dir.exists(file.path(rundir, 'parameters'))) {
+    unlink(file.path(rundir, 'parameters'), recursive=TRUE)
+  }
   system2(paste0("cp"),
           wait=TRUE,
           args=(c("-r",
