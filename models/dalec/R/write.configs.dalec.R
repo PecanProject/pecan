@@ -15,13 +15,13 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
 convert.samples.DALEC <- function(trait.samples) {
   
   DEFAULT.LEAF.C <- 0.48
-  ## convert SLA from m2 / kg leaf to m2 / kg C
+  ## convert SLA from PEcAn m2 / kg leaf to m2 / g C
   
   if ("SLA" %in% names(trait.samples)) {
     trait.samples[["SLA"]] <- trait.samples[["SLA"]]/DEFAULT.LEAF.C/1000
   }
   
-  # t1 rate variable controling decomposition from litter to soil organinc matter [day-1, ref T
+  # t1 rate variable controlling decomposition from litter to soil organinc matter [day-1, ref T
   # 10C]
   if ("litter_decomposition_to_SOM" %in% names(trait.samples)) {
     names(trait.samples)[which(names(trait.samples) == "litter_decomposition_to_SOM")] <- "t1"
@@ -71,16 +71,9 @@ convert.samples.DALEC <- function(trait.samples) {
     names(trait.samples)[which(names(trait.samples) == "som_respiration_rate")] <- "t9"
   }
   
-  ### INITIAL CONDITIONS
-  
-  # cf0 initial canopy foliar carbon (g/m2)
-  # cw0 initial pool of woody carbon (g/m2)
-  # cr0 initial pool of fine root carbon (g/m2)
-  # cl0 initial pool of litter carbon (g/m2)
-  # cs0 initial pool of soil organic matter and woody debris carbon (g/m2)
-  
   return(trait.samples)
 } # convert.samples.DALEC
+
 
 #--------------------------------------------------------------------------------------------------#
 ##' Writes a configuration files for your model
@@ -106,13 +99,75 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
     } else {
       if (!is.null(trait.values[[group]])) {
         params <- convert.samples.DALEC(trait.values[[group]])
-        logger.info(names(params))
+        PEcAn.logger::logger.info(names(params))
         for (i in seq_along(params)) {
           cmdFlags <- paste0(cmdFlags, " -", names(params)[i], " ", params[[i]])
         }
       }
     }
   }
+  
+  ### INITIAL CONDITIONS
+  IC.params <- list()
+ 
+  if(!is.null(settings$run$inputs$poolinitcond$path)) {
+    IC.path <- settings$run$inputs$poolinitcond$path
+    
+    sla <- NULL
+    if("SLA" %in% names(params)){
+      sla <- params[1,"SLA"] * 1000 #convert SLA to m2/kgC from m2/gC (convert.samples)
+    } else{
+      default.param <- read.table(system.file("default_param.dalec", package = "PEcAn.DALEC"), header = TRUE)
+      sla <- default.param[which(default.param$cmdFlag == "SLA"),"val"] * 1000 #convert SLA to m2/kgC from m2/gC (dalec default)
+    }
+    
+    IC.pools <- PEcAn.data.land::prepare_pools(IC.path, constants = list(sla = sla))
+    
+    if(!is.null(IC.pools)){
+      ###Write initial conditions from netcdf (Note: wherever valid input isn't available, DALEC default remains)
+      
+      # cf0 initial canopy foliar carbon (g/m2)
+      if ("leaf" %in% names(IC.pools)) {
+        IC.params[["cf0"]] <- IC.pools$leaf * 1000 #from PEcAn standard kg C m-2
+      } 
+    
+      # cw0 initial pool of woody carbon (g/m2)
+      if ("wood" %in% names(IC.pools)) {
+        IC.params[["cw0"]] <- IC.pools$wood * 1000 #from PEcAn standard kg C m-2
+      } 
+    
+      # cr0 initial pool of fine root carbon (g/m2)
+      if ("fine.roots" %in% names(IC.pools)) {
+        IC.params[["cr0"]] <- IC.pools$fine.roots * 1000 #from PEcAn standard kg C m-2
+      } 
+    
+      ###non-living variables
+      # cl0 initial pool of litter carbon (g/m2)
+      if ("litter" %in% names(IC.pools)) {
+        IC.params[["cl0"]] <- IC.pools$litter * 1000 #from PEcAn standard kg C m-2
+      }
+        
+      # cs0 initial pool of soil organic matter and woody debris carbon (g/m2)
+      if("soil" %in%  names(IC.pools)){
+        if("wood.debris" %in%  names(IC.pools)){
+          IC.params[["cs0"]] <- (IC.pools$soil + sum(IC.pools$wood.debris)) * 1000 #from PEcAn standard kg C m-2
+        } else {
+          IC.params[["cs0"]] <- IC.pools$soil * 1000 #from PEcAn standard kg C m-2
+          PEcAn.logger::logger.warn("write.configs.DALEC IC: Loading soil carbon pool without woody debris.")
+        }
+      } 
+      
+      ###Write to command line file
+      for (i in seq_along(IC.params)) {
+        cmdFlags <- paste0(cmdFlags, " -", names(IC.params)[i], " ", IC.params[[i]])
+      }
+      PEcAn.logger::logger.info(paste("All command flags:",cmdFlags))
+      
+    } else{
+      PEcAn.logger::logger.error("Bad initial conditions filepath; kept defaults")
+    }
+  }
+ 
   
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, as.character(run.id))
