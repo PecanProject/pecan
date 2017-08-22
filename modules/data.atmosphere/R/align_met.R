@@ -51,7 +51,7 @@
 #----------------------------------------------------------------------
 # Begin Function
 #----------------------------------------------------------------------
-align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=1, pair.mems = TRUE, seed=Sys.Date(), verbose = FALSE) {
+align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.mems = TRUE, seed=Sys.Date(), verbose = FALSE) {
   # Load required libraries
   library(ncdf4)
   library(lubridate)
@@ -70,7 +70,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=1, pair.mem
     
     yrs.file <- strsplit(files.train, "[.]")
     yrs.file <- matrix(unlist(yrs.file), ncol=length(yrs.file[[1]]), byrow=T)
-    yrs.file <- as.numeric(yrs.file[,2])
+    yrs.file <- as.numeric(yrs.file[,ncol(yrs.file)-1]) # Assumes year is always last thing before the file extension
     
     if(!is.null(yrs.train)){
       files.train <- files.train[which(yrs.file %in% yrs.train)]
@@ -110,7 +110,73 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=1, pair.mem
       setTxtProgressBar(pb, i)
     } # End looping through training data files
   } else { # we have an ensemble we need to deal with
-    stop("Training ensemble mode not implemented yet!")
+    # Figure out how many ensemble members we're working with
+    ens.train <- dir(train.path)
+    
+    if(is.null(n.ens)) n.ens <- length(ens.train)
+    if(length(ens.train)>n.ens) ens.train <- ens.train[sample(1:length(ens.train), n.ens)]
+    n.trn=n.ens
+    
+    # getting an estimate of how many files we need to process
+    n.files <- length(dir(file.path(train.path, ens.train[1])))
+    
+    print("Processing Training Data")
+    pb <- txtProgressBar(min=0, max=length(ens.train)*n.files, style=3)
+    pb.ind=1
+    for(j in 1:length(ens.train)){
+      files.train <- dir(file.path(train.path, ens.train[j]), ".nc")
+      
+      yrs.file <- strsplit(files.train, "[.]")
+      yrs.file <- matrix(unlist(yrs.file), ncol=length(yrs.file[[1]]), byrow=T)
+      yrs.file <- as.numeric(yrs.file[,ncol(yrs.file)-1]) # Assumes year is always last thing before the file extension
+      
+      if(!is.null(yrs.train)){
+        files.train <- files.train[which(yrs.file %in% yrs.train)]
+        yrs.file <- yrs.file[which(yrs.file %in% yrs.train)]
+      }
+      
+      
+      # Loop through the .nc files putting everything into a list
+      dat.ens <- list() # Making a temporary storage bin for all the data from this ensemble member
+      for(i in 1:length(files.train)){
+        yr.now <- yrs.file[i]
+        
+        ncT <- nc_open(file.path(train.path, ens.train[j], files.train[i]))
+        
+        # Set up the time data frame to help index
+        nday <- ifelse(leap_year(yr.now), 366, 365)
+        ntime <- length(ncT$dim$time$vals)
+        step.day <- nday/ntime
+        step.hr  <- step.day*24
+        stamps.hr <- seq(step.hr/2, by=step.hr, length.out=1/step.day) # Time stamps centered on period
+        
+        # Create a data frame with all the important time info
+        # center the hour step
+        # ** Only do this with the first ensemble member so we're not being redundant
+        if(j==1){
+          df.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/step.day), Hour=rep(stamps.hr, ntime))
+          df.time$Date <- strptime(paste(df.time$Year, df.time$DOY, df.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
+          met.out$dat.train[["time"]] <- rbind(met.out$dat.train$time, df.time)
+        }
+        
+        # Extract the met info, making matrices with the appropriate number of ensemble members
+        for(v in names(ncT$var)){
+          dat.ens[[v]] <- append(dat.ens[[v]], ncvar_get(ncT, v)) 
+        }
+        nc_close(ncT)
+        
+        setTxtProgressBar(pb, pb.ind)
+        pb.ind <- pb.ind+1
+      } # End looping through training data files
+      
+      # Storing the ensemble member data in our output list
+      for(v in names(dat.ens)){
+        met.out$dat.train[[v]] <- cbind(met.out$dat.train[[v]], dat.ens[[v]])
+      }
+    } # End extracting ensemble members
+    for(v in 2:length(met.out$dat.train)){
+      dimnames(met.out$dat.train[[v]])[[2]] <- ens.train
+    }
   } # End loading & formatting training data
   print(" ")
   # ---------------
@@ -128,7 +194,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=1, pair.mem
     # create a vector of the years
     yrs.file <- strsplit(files.source, "[.]")
     yrs.file <- matrix(unlist(yrs.file), ncol=length(yrs.file[[1]]), byrow=T)
-    yrs.file <- as.numeric(yrs.file[,2])
+    yrs.file <- as.numeric(yrs.file[,ncol(yrs.file)-1]) # Assumes year is always last thing before the file extension
     
     # Getting the day & hour timesteps from the training data
     day.train <- round(365/length(unique(met.out$dat.train$time$DOY)))
