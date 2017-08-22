@@ -71,7 +71,7 @@ download.FluxnetLaThuile <- function(sitename, outfolder, start_date, end_date,
     
     # see if file exists
     if (file.exists(outputfile) && !overwrite) {
-      PEcAn.utils::logger.debug("File '", outputfile, "' already exists, skipping to next file.")
+      PEcAn.logger::logger.debug("File '", outputfile, "' already exists, skipping to next file.")
       next
     }
     
