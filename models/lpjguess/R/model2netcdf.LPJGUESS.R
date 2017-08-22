@@ -26,7 +26,7 @@ model2netcdf.LPJGUESS <- function(outdir, sitelat, sitelon, start_date, end_date
   lpjguess.out.files <- list.files(outdir, pattern = "\\.out$")
   
   if (length(lpjguess.out.files) == 0) {
-    logger.error("No output files found at ", outdir)
+    PEcAn.logger::logger.error("No output files found at ", outdir)
   }
   
   lpjguess.output <- lapply(file.path(outdir, lpjguess.out.files), read.table, header = TRUE, sep = "")

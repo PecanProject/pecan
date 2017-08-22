@@ -110,7 +110,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   species <- utils::read.csv(file.path(settings$pfts$pft$outdir, "species.csv"))
   genus <- unique(species$genus)
   if (length(genus) > 1) {
-    logger.severe("BioCro can not combine multiple genera")
+    PEcAn.logger::logger.severe("BioCro can not combine multiple genera")
   }
   
   ### Set defaults
@@ -122,7 +122,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
     } else if (grepl("RData", defaults.file)) {
       load(defaults.file)
     } else {
-      logger.severe("Defaults file", defaults.file, " not found; using package defaults")
+      PEcAn.logger::logger.severe("Defaults file", defaults.file, " not found; using package defaults")
       defaults.file <- NULL
     }
   } else if (is.null(defaults.file)) {
@@ -132,11 +132,11 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   if (file.exists(defaults.file)) {
     defaults <- XML::xmlToList(XML::xmlParse(defaults.file))
   } else {
-    logger.severe("no defaults file given and ", genus, "not supported in BioCro")
+    PEcAn.logger::logger.severe("no defaults file given and ", genus, "not supported in BioCro")
   }
   
   if (is.null(defaults)) {
-    logger.error("No defaults values set")
+    PEcAn.logger::logger.error("No defaults values set")
   }
   
   traits.used <- sapply(defaults, is.null)
@@ -159,7 +159,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
                                sep = ":", 
                                strip.white = TRUE)))) {
     if (sum(unused.traits) > 0) {
-      logger.warn("the following traits parameters are not added to config file:", 
+      PEcAn.logger::logger.warn("the following traits parameters are not added to config file:", 
                   vecpaste(names(unused.traits)[unused.traits == TRUE]))
     }
   }
@@ -167,18 +167,18 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   ## this is where soil parms can be set defaults$soilControl$FieldC <-
   
   ### Put defaults and other parts of config file together
-  parms.xml <- listToXml(defaults, "pft")
-  location.xml <- listToXml(list(latitude = settings$run$site$lat, 
+  parms.xml <- PEcAn.utils::listToXml(defaults, "pft")
+  location.xml <- PEcAn.utils::listToXml(list(latitude = settings$run$site$lat, 
                                  longitude = settings$run$site$lon), 
                             "location")
-  run.xml <- listToXml(list(start.date = settings$run$start.date, 
+  run.xml <- PEcAn.utils::listToXml(list(start.date = settings$run$start.date, 
                             end.date = settings$run$end.date, 
                             met.path = settings$run$inputs$met$path,
                             soil.file = settings$run$inputs$soil$path), 
                        "run")
   
   slashdate <- function(x) substr(gsub("-", "/", x), 1, 10)
-  simulationPeriod.xml <- listToXml(list(dateofplanting = slashdate(settings$run$start.date), 
+  simulationPeriod.xml <- PEcAn.utils::listToXml(list(dateofplanting = slashdate(settings$run$start.date), 
                                          dateofharvest = slashdate(settings$run$end.date)),
                                     "simulationPeriod")
   
