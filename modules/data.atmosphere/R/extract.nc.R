@@ -60,7 +60,7 @@ extract.nc <- function(in.path, in.prefix, outfolder, start_date, end_date, slat
     results$formatname[row] <- "CF"
     
     if (file.exists(outfile) && !overwrite) {
-      logger.debug("File '", outfile, "' already exists, skipping to next file.")
+      PEcAn.logger::logger.debug("File '", outfile, "' already exists, skipping to next file.")
       next
     }
     
