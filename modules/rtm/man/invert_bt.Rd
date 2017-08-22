@@ -43,6 +43,8 @@ Default is 1000.
 \item \code{max_iter} -- Maximum total number of iterations. Default is 1e6.
 \item \code{lag.max} -- Maximum lag to use for autocorrelation normalization.
 Default is \code{10 * log10(n)} (same as \code{stats::acf} function).
+\item \code{save_progress} -- File name for saving samples between loop
+iterations. If \code{NULL} (default), do not save progress samples.
 }
 }
 
