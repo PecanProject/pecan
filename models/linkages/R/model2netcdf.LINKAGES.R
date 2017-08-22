@@ -72,7 +72,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
     # ******************** Declare netCDF variables ********************#
     dim.t <- ncdim_def(name = "time", 
                        units = paste0("days since ", years[y], "-01-01 00:00:00"), 
-                       vals = as.numeric(years[y]), calendar = "standard", 
+                       vals = 0, calendar = "standard", 
                        unlim = TRUE)
     dim.lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
     dim.lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
@@ -102,7 +102,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
     var[[12]] <- ncvar_def("Fcomp", "kgC/kgC", list(dim.pfts, dim.lat, dim.lon, dim.t), -999)
     var[[13]] <- ncvar_def("LAI", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
     var[[14]] <- ncvar_def("SoilMoist", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
-    var[[15]]  <- ncvar_def("AbvGrnWood", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
+    var[[15]]  <- ncvar_def("AbvGrndWood", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
     
     # ******************** Declare netCDF variables ********************#
     

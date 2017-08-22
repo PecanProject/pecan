@@ -82,10 +82,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     
     ### model specific split inputs
     inputs[[i]] <- do.call(my.split_inputs, 
-                      args = list(settings = settings, 
-                                  start.time = settings$run$start.date, 
-                                  stop.time = settings$run$end.date,
-                                  inputs = ens.inputs[[i]]))
+                           args = list(settings = settings, 
+                                       start.time = settings$run$start.date, 
+                                       stop.time = settings$run$end.date,
+                                       inputs = ens.inputs[[i]]))
   }
   
   ###-------------------------------------------------------------------###
@@ -212,6 +212,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
        file = file.path(outdir, "sda.initial.runs.Rdata"), envir = environment())
 
   
+  
   ###-------------------------------------------------------------------###
   ### tests before data assimilation                                    ###
   ###-------------------------------------------------------------------###  
@@ -258,7 +259,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   ##### state.interval stays constant and converts new.analysis to be within the correct bounds
   interval    <- NULL
   state.interval <- cbind(as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','min_value')),
-          as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','max_value')))
+                          as.numeric(lapply(settings$state.data.assimilation$state.variables,'[[','max_value')))
   rownames(state.interval) <- var.names
   
   wish.df <- function(Om, X, i, j, col) {
@@ -467,11 +468,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         Pf.scale[is.na(Pf.scale)]<-0
         R.scale  <- t(t(R/as.vector(map.mu.f))/as.vector(map.mu.f))
         
-       # mu.f.scale <- scale(mu.f,center = FALSE, scale = mean(mu.f))
-       # Pf.scale <- mu.f*Pf%*%t(t(mu.f))
-       # Pf.scale[is.na(Pf.scale)]<-0
-       # R.scale <- matrix(scale(as.vector(R), center = mean(mu.f), scale = 1),2,2)
-       # Y.scale <- scale(Y, center = mean(mu.f[1:2]), scale = 1)
+        # mu.f.scale <- scale(mu.f,center = FALSE, scale = mean(mu.f))
+        # Pf.scale <- mu.f*Pf%*%t(t(mu.f))
+        # Pf.scale[is.na(Pf.scale)]<-0
+        # R.scale <- matrix(scale(as.vector(R), center = mean(mu.f), scale = 1),2,2)
+        # Y.scale <- scale(Y, center = mean(mu.f[1:2]), scale = 1)
         
         ## Kalman Gain
         K <- Pf.scale %*% t(H) %*% solve((R.scale + H %*% Pf.scale %*% t(H)))
@@ -504,7 +505,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         #### These vectors are used to categorize data based on censoring from the interval matrix
         x.ind <- as.numeric(mu.f > intervalX[,1])
         x.censored <- as.numeric(ifelse(mu.f > intervalX[,1], mu.f, 0)) #probably not needed until different data
-        
         
         if(t == 1){
           #The purpose of this step is to impute data for mu.f 
@@ -585,7 +585,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           }
         }
         aqq[1, , ] <- diag(length(mu.f)) * bqq[1]
-
+        
         #### changing diagonal if the covariance is too small for the matrix to be inverted 
         #### This problem is different than R problem because diag(Pf) can be so small it can't be inverted 
         #### Need a different fix here someday
@@ -671,7 +671,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
             ## indicator variable is set to 0, which specifies *not* to sample
             valueInCompiledNimbleFunction(Cmcmc$samplerFunctions[[samplerNumberOffset+i]], 'toggle', 1-y.ind[i])
           }
-      
+          
         }
         
         set.seed(0)
@@ -810,13 +810,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
         analysis[analysis[,i] > int.save[2],i] <- int.save[2]
       }
     }
-
+    
     ## in the future will have to be separated from analysis
     new.state  <- analysis
     new.params <- params
     
     ANALYSIS[[t]] <- analysis
-   
+    
     if (interactive() & t > 1) { #
       t1 <- 1
       names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
@@ -904,14 +904,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       ###-------------------------------------------------------------------###
       ### split model specific inputs for current runs                      ###
       ###-------------------------------------------------------------------### 
- 
+      
       inputs <- list()
       for(i in seq_len(nens)){
         inputs[[i]] <- do.call(my.split_inputs, 
-                          args = list(settings = settings, 
-                                      start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))), 
-                                      stop.time = obs.times[t + 1],
-                                      inputs = ens.inputs[[i]])) 
+                               args = list(settings = settings, 
+                                           start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))), 
+                                           stop.time = obs.times[t + 1],
+                                           inputs = ens.inputs[[i]])) 
       }
       
       
@@ -1029,7 +1029,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   
   YCI <- YCI[,Y.order]
   Xsum <- plyr::laply(FORECAST, function(x) { mean(rowSums(x[,1:length(names.y)], na.rm = TRUE)) })[t1:t]
-
+  
   for (i in seq_len(ncol(X))) {
     Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
     Xci <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
@@ -1064,10 +1064,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     # analysis
     ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink)
     lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2)
-  
+    
     legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
     
-    }
+  }
   dev.off()
   ###-------------------------------------------------------------------###
   ### bias diagnostics                                                  ###

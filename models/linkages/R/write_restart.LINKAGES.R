@@ -131,7 +131,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   if (!file.exists(outfile)) {
     outfile <- file.path(outdir, runid, paste0(start.time, "linkages.out.Rdata"))
     if (!file.exists(outfile)) {
-       logger.severe(paste0("missing outfile ens #", runid))
+      logger.severe(paste0("missing outfile ens #", runid))
     }
   }
   print(paste0("runid = ", runid))
@@ -160,7 +160,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   }else{
     large.trees <- which(dbh >= 20)
   }
-
+  
   for (s in seq_along(settings$pfts)) {
     ntrees[s] <- length(which(n.index[large.trees] == s))
   }
@@ -215,7 +215,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     } 
   }
   
-  if(sum(new.ntrees) > 200) new.ntrees <- round((new.ntrees / sum(new.ntrees)) * runif(1,160,199))
+  if(sum(new.ntrees) > 198) new.ntrees <- round((new.ntrees / sum(new.ntrees)) * runif(1,160,195))
   
   print(paste0("new.ntrees =", new.ntrees))
   
