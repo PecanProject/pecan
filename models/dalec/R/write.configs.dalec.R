@@ -99,7 +99,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
     } else {
       if (!is.null(trait.values[[group]])) {
         params <- convert.samples.DALEC(trait.values[[group]])
-        logger.info(names(params))
+        PEcAn.logger::logger.info(names(params))
         for (i in seq_along(params)) {
           cmdFlags <- paste0(cmdFlags, " -", names(params)[i], " ", params[[i]])
         }
@@ -153,7 +153,7 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
           IC.params[["cs0"]] <- (IC.pools$soil + sum(IC.pools$wood.debris)) * 1000 #from PEcAn standard kg C m-2
         } else {
           IC.params[["cs0"]] <- IC.pools$soil * 1000 #from PEcAn standard kg C m-2
-          PEcAn.utils::logger.warn("write.configs.DALEC IC: Loading soil carbon pool without woody debris.")
+          PEcAn.logger::logger.warn("write.configs.DALEC IC: Loading soil carbon pool without woody debris.")
         }
       } 
       
@@ -161,10 +161,10 @@ write.config.DALEC <- function(defaults, trait.values, settings, run.id) {
       for (i in seq_along(IC.params)) {
         cmdFlags <- paste0(cmdFlags, " -", names(IC.params)[i], " ", IC.params[[i]])
       }
-      PEcAn.utils::logger.info(paste("All command flags:",cmdFlags))
+      PEcAn.logger::logger.info(paste("All command flags:",cmdFlags))
       
     } else{
-      PEcAn.utils::logger.error("Bad initial conditions filepath; kept defaults")
+      PEcAn.logger::logger.error("Bad initial conditions filepath; kept defaults")
     }
   }
  

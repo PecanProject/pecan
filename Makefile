@@ -1,6 +1,6 @@
 NCPUS ?= 1
 
-BASE := utils db settings visualization
+BASE := logger utils db settings visualization
 
 MODELS := biocro clm45 dalec ed fates gday jules linkages \
 				lpjguess maat maespa preles sipnet
@@ -10,6 +10,7 @@ MODULES := allometry assim.batch assim.sequential benchmark \
 				 data.mining data.remote emulator meta.analysis \
 				 photosynthesis priors rtm uncertainty
 
+BASE := $(BASE:%=base/%)
 MODELS := $(MODELS:%=models/%)
 MODULES := $(MODULES:%=modules/%)
 ALL_PKGS := $(BASE) $(MODELS) $(MODULES) models/template
@@ -38,31 +39,31 @@ ALL_PKGS_D := $(BASE_D) $(MODELS_D) $(MODULES_D) .doc/models/template
 
 all: install document
 
-document: .doc/all
-install: .install/all
-check: .check/all
-test: .test/all 
+document: .doc/base/all
+install: .install/base/all
+check: .check/base/all
+test: .test/base/all 
 
 ### Dependencies
-.doc/all: $(ALL_PKGS_D)
-.install/all: $(ALL_PKGS_I)
-.check/all: $(ALL_PKGS_C)
-.test/all: $(ALL_PKGS_T)
+.doc/base/all: $(ALL_PKGS_D)
+.install/base/all: $(ALL_PKGS_I)
+.check/base/all: $(ALL_PKGS_C)
+.test/base/all: $(ALL_PKGS_T)
 
-depends = .install/$(1) .doc/$(1) .check/$(1) .test/$(1)
+depends = .check/$(1) .test/$(1)
 
-$(call depends,db): .install/utils
-$(call depends,settings): .install/utils .install/db
-$(call depends,visualization): .install/db
-$(call depends,modules/data.atmosphere): .install/utils
-$(call depends,modules/data.land): .install/db .install/utils
-$(call depends,modules/meta.analysis): .install/utils .install/db
-$(call depends,modules/priors): .install/utils
-$(call depends,modules/assim.batch): .install/utils .install/db .install/modules/meta.analysis 
-$(call depends,modules/rtm): .install/modules/assim.batch
-$(call depends,modules/uncertainty): .install/utils .install/modules/priors
-$(call depends,models/template): .install/utils
-$(call depends,models/biocro): .install/utils .install/settings .install/db .install/modules/data.atmosphere .install/modules/data.land
+$(call depends,base/db): .install/base/logger .install/base/utils
+$(call depends,base/settings): .install/base/logger .install/base/utils .install/base/db
+$(call depends,base/visualization): .install/base/logger .install/base/db
+$(call depends,modules/data.atmosphere): .install/base/logger .install/base/utils
+$(call depends,modules/data.land): .install/base/logger .install/base/db .install/base/utils
+$(call depends,modules/meta.analysis): .install/base/logger .install/base/utils .install/base/db
+$(call depends,modules/priors): .install/base/logger .install/base/utils
+$(call depends,modules/assim.batch): .install/base/logger .install/base/utils .install/base/db .install/modules/meta.analysis 
+$(call depends,modules/rtm): .install/base/logger .install/modules/assim.batch
+$(call depends,modules/uncertainty): .install/base/logger .install/base/utils .install/modules/priors
+$(call depends,models/template): .install/base/logger .install/base/utils
+$(call depends,models/biocro): .install/base/logger .install/base/utils .install/base/settings .install/base/db .install/modules/data.atmosphere .install/modules/data.land
 
 $(MODELS_I): .install/models/template
 

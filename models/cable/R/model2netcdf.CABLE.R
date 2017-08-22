@@ -22,7 +22,7 @@
 ##'
 ##' @author Rob Kooper
 model2netcdf.CABLE <- function(outdir, sitelat, sitelon, start_date, end_date) {
-  logger.severe("NOT IMPLEMENTED")
+  PEcAn.logger::logger.severe("NOT IMPLEMENTED")
 
   # Please follow the PEcAn style guide:
   # https://pecan.gitbooks.io/pecan-documentation/content/developers_guide/Coding_style.html

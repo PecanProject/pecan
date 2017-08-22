@@ -1,7 +1,7 @@
 if (requireNamespace('PEcAn.utils')) {
-    stop <- PEcAn.utils::logger.severe
-    warning <- PEcAn.utils::logger.warn
-    message <- PEcAn.utils::logger.info
+    stop <- PEcAn.logger::logger.severe
+    warning <- PEcAn.logger::logger.warn
+    message <- PEcAn.logger::logger.info
 }
 
 testForPackage <- function(pkg) {

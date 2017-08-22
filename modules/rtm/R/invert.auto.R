@@ -309,7 +309,7 @@ process_output <- function(output.list,
     message("Passed initial convergence check.")
   }
   if (calculate.burnin) {
-    burn <- PEcAn.assim.batch::autoburnin(out$samples, return.burnin = TRUE)
+    burn <- PEcAn.assim.batch::autoburnin(out$samples, return.burnin = TRUE, method = 'gelman.plot')
     out$burnin <- burn$burnin
     if (out$burnin == 1) {
       message("Robust convergence check in autoburnin failed. ",

@@ -18,7 +18,7 @@ extract.success <- function(in.path, in.prefix, outfolder) {
   } else if (length(outfiles.nc) == length(infiles) || length(outfiles.h5) == length(infiles) * 12) {
     s <- TRUE
   } else {
-    logger.severe("Uh oh - we should not be here")
+   PEcAn.logger::logger.severe("Uh oh - we should not be here")
   }
   return(s)
 } # extract.success

@@ -155,7 +155,7 @@ write.insfile.LPJGUESS <- function(settings, trait.values, rundir, outdir, run.i
       CO2 <- co2.1850.2011[1:which(co2.1850.2011[, 1] == end.year), ]
     }
   } else {
-    logger.severe("End year should be < 2012 for CO2")
+    PEcAn.logger::logger.severe("End year should be < 2012 for CO2")
   }
   write.table(CO2, file = co2.file, row.names = FALSE, col.names = FALSE, sep = "\t", eol = "\n")
   guessins <- gsub("@CO2_FILE@", co2.file, guessins)
