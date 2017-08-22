@@ -88,13 +88,8 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
                   file.path(appbinary_path, 'parameters'),
                   file.path(rundir, 'parameters'))))
 
-
-  ### WORK ON GETTING MA-POSTERIORS COPIED/WRITTEN INTO THE CORRECT
-  ### PARAMETER LOCATIONS.....
-  # 1) Read in a parameter data block from dvmdostem
-  #    - Not sure how to check exit code??
-  #    - Not sure what we need to do with stderr...
-
+  # (1)
+  # Read in a parameter data block from dvmdostem
 
   # Build a dataframe from the incoming trait.values. trait.values
   # contains the meta-analysis posteriors values for each parameter (trait)
@@ -102,24 +97,30 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # for easier indexing...
   trait_df <- as.data.frame(trait.values)
 
-  # Now we have to basically read the approporate values out of the trait_df
-  # and get those values written into the parameter files that dvmdostem will
+  # Now we have to read the approporate values out of the trait_df
+  # and get those values written into the parameter file(s) that dvmdostem will
   # need when running. Because the dvmdostem parameters have a sort of
-  # interesting, semi-standardized space delimited column format, we'll actually
-  # use some helper scripts from dvmdostem that allow us to more easily handle
-  # the parameter files and write our new trait values into the correct place.
-  # The basic flow will be like this:
+  # interesting, semi-standardized, space delimited, column format, we'll
+  # use some helper scripts from dvmdostem that allow us to more easily
+  # handle the parameter files and write our new trait values into the correct
+  # place. The basic flow will be like this:
   #  - Read dvmdostem parameter file into json object, load into memory
   #  - Update the in-memory json object
   #  - Write the json object back out to a new dvmdostem parameter file
 
   # Start by figuring out which community number we are working on.
-  # This is ugly, but it seems to work to deduce the CMT number from
-  # the name of the first item in the trait_df structure.
-  cmtnum <- as.numeric(unlist(strsplit(unlist(strsplit(names(trait_df)[1], '.', fixed=TRUE))[1], "CMT"))[2])
+  # This is important because we need to pull the correct "community block"
+  # from the dvmdostem parameter files. Each trait in the traits dataframe
+  # should have a name like this:
+  #   CMT04.Salix.extinction_coefficient_diffuse
+  # So we can parse the first name in the dataframe to determine the CMT number.
+  cmtnum <- strsplit(unlist(strsplit(names(trait_df)[1], '.', fixed=TRUE))[1], "CMT")
+  cmtnum <- unlist(cmtnum)[2]
+  cmtnum <- as.numeric(cmtnum)
 
   # Next, use a helper script distributed with dvmdostem to read the dvmdostem
-  # parameter data into memory as a json object.
+  # parameter data into memory as a json object, using a temporaroy json file
+  # to hold a representation of each dvmdostem parameter file.
   dimveg_params <- paste(appbinary_path, "parameters", 'cmt_dimvegetation.txt', sep="/")
   envcanopy_params <- paste(appbinary_path, "parameters", 'cmt_envcanopy.txt', sep="/")
 
@@ -141,8 +142,9 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   dimveg_jsondata <- fromJSON(paste(readLines(dimveg_jsonfile), collapse=""))
   envcanopy_jsondata <- fromJSON(paste(readLines(envcanopy_jsonfile), collapse=""))
 
-  # 2) Overwrite certain parameter values with (ma-posterior) trait data 
-  #    from pecan, then write back out to disk...
+  # (2)
+  # Overwrite certain parameter values with (ma-posterior) trait data
+  # from pecan, then write back out to disk...
 
   # loop over all the incoming samples (traits)
   for (cur_t_name in names(trait_df)) {
@@ -219,7 +221,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
 
 
   # (3)
-  # Format a new dvmdostem parameter file using the new json file as a  source.
+  # Format a new dvmdostem parameter file using the new json file as a source.
 
   if (dir.exists(file.path(rundir, "parameters/"))) {
     # pass
@@ -241,8 +243,8 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
 
 
   # TODO:
-  #  - finish with parameter update process
-  #  - dynamically copy parameters to right place
+  #  [x] finish with parameter update process
+  #  [x] dynamically copy parameters to right place
   #  - dynamically copy the output_spec from insts folder to the
   #    right place (see variable above for getting stuff from inst)
   #  - figure out how to handle the met.
