@@ -62,7 +62,7 @@ getLatLon <- function(nc1) {
       return(c(as.numeric(lat$value), as.numeric(lon$value)))
     }
   }
-  logger.severe("Could not get site location for file.")
+ PEcAn.logger::logger.severe("Could not get site location for file.")
 } # getLatLon
 
 
@@ -120,7 +120,7 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     results$formatname[row] <- "CF"
     
     if (file.exists(new.file) && !overwrite) {
-      logger.debug("File '", new.file, "' already exists, skipping to next file.")
+     PEcAn.logger::logger.debug("File '", new.file, "' already exists, skipping to next file.")
       next
     }
     

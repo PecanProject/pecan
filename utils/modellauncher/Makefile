@@ -1,3 +1,0 @@
-CC=mpicc
-
-all: modellauncher

@@ -27,7 +27,7 @@ load_ensemble <- function(workflow_dir, settings, variable){
     ensemble.output.raw <- list()
     for (row in rownames(ens.run.ids)) {
       run.id <- ens.run.ids[row, "id"]
-      logger.info("reading ensemble output from run id: ", run.id)
+      PEcAn.logger::logger.info("reading ensemble output from run id: ", run.id)
       ensemble.output.raw[[row]] <- sapply(read.output(run.id, 
                                                file.path(settings$modeloutdir, run.id),
                                                as.numeric(settings$ensemble$start.year),
