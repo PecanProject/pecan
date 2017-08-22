@@ -30,17 +30,17 @@ met.process <- function(site, input_met, start_date, end_date, model,
   # get met source and potentially determine where to start in the process
   if(is.null(input_met$source)){
     if(is.null(input_met$id)){
-      PEcAn.utils::logger.warn("met.process only has a path provided, assuming path is model driver and skipping processing")
+      PEcAn.logger::logger.warn("met.process only has a path provided, assuming path is model driver and skipping processing")
       return(input_met$path)
     }else {
-      logger.warn("No met source specified")
+     PEcAn.logger::logger.warn("No met source specified")
       if(!is.null(input_met$id) & !is.null(input_met$path)){
-        logger.warn("Assuming source CFmet")
+       PEcAn.logger::logger.warn("Assuming source CFmet")
         met <- input_met$source <- "CFmet" ## this case is normally hit when the use provides an existing file that has already been
         ## downloaded, processed, and just needs conversion to model-specific format.
         ## setting a 'safe' (global) default
       } else {
-        logger.error("Cannot process met without source information")
+       PEcAn.logger::logger.error("Cannot process met without source information")
       }  
     }
   } else {
@@ -75,7 +75,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
         overwrite.check[i] == TRUE && 
         !all(overwrite.check[(i + 1):length(overwrite.check)])) {
       print(overwrite)
-      logger.error(paste0("If overwriting any stage of met.process, ", "all subsequent stages need to be overwritten too. Please correct."))
+     PEcAn.logger::logger.error(paste0("If overwriting any stage of met.process, ", "all subsequent stages need to be overwritten too. Please correct."))
     }
   }
   
@@ -259,7 +259,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
     model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
     
   } else {
-    PEcAn.utils::logger.info("ready.id",ready.id,machine.host)
+    PEcAn.logger::logger.info("ready.id",ready.id,machine.host)
     model.id  <- dbfile.check("Input", ready.id, con)#, hostname=machine.host)
     if(is.null(model.id)|length(model.id)==0){
       model.file <- input_met$path
@@ -268,8 +268,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
       model.file.info <- db.query(paste0("SELECT * from dbfiles where id = ", model.id$dbfile.id), con)
       model.file <- file.path(model.file.info$file_path,model.file.info$file_name)
     }
-    #PEcAn.utils::logger.info("model.file = ",model.file,input.met)
-    PEcAn.utils::logger.info("model.file = ",model.file,input_met)
+    #PEcAn.logger::logger.info("model.file = ",model.file,input.met)
+    PEcAn.logger::logger.info("model.file = ",model.file,input_met)
   }
   
 
@@ -290,13 +290,13 @@ db.site.lat.lon <- function(site.id, con) {
   site <- db.query(paste("SELECT id, ST_X(ST_CENTROID(geometry)) AS lon, ST_Y(ST_CENTROID(geometry)) AS lat FROM sites WHERE id =", 
                          site.id), con)
   if (nrow(site) == 0) {
-    logger.error("Site not found")
+   PEcAn.logger::logger.error("Site not found")
     return(NULL)
   }
   if (!(is.na(site$lat)) && !(is.na(site$lat))) {
     return(list(lat = site$lat, lon = site$lon))
   } else {
-    logger.severe("We should not be here!")
+   PEcAn.logger::logger.severe("We should not be here!")
   }
 } # db.site.lat.lon
 
@@ -326,7 +326,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
   } else if (source == "NARR") {
     sitename <- gsub("[\\s/()]", "-", site$name, perl = TRUE)
   } else {
-    logger.warn("Could not process source", source)
+   PEcAn.logger::logger.warn("Could not process source", source)
     return(invisible(NA))
   }
   
@@ -372,7 +372,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
                           dbfile.name = basename(outputfile), 
                           stringsAsFactors = FALSE)
   } else {
-    logger.warn("Could not process model", model)
+   PEcAn.logger::logger.warn("Could not process model", model)
     return(invisible(NA))
   }
   
