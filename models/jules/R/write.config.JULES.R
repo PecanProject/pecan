@@ -24,7 +24,9 @@
 ##' 
 ##' @export
 ##' @examples 
-##' write.config.JULES(defaults, trait.values, settings, run.id)
+##' \dontrun{
+##'   write.config.JULES(defaults, trait.values, settings, run.id)
+##' }
 ##-------------------------------------------------------------------------------------------------#
 write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   # constants
@@ -186,7 +188,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
         settings$run$inputs$co2$path <- co2.remote
       }
       
-      PEcAn.utils::logger.debug("co2.local",co2.local,length(co2.dat))
+      PEcAn.logger::logger.debug("co2.local",co2.local,length(co2.dat))
     }
     
     ## add CO2 file
@@ -355,7 +357,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   pft.file <- file.path(local.rundir, "pft_params.nml")
   pft.text <- readLines(con = pft.file, n = -1)
   if (length(pft.text) < 3) {
-    logger.severe("No DEFAULT parameters provided for JULES")
+    PEcAn.logger::logger.severe("No DEFAULT parameters provided for JULES")
   }
   
   ## split NML into variable list and parameter values
@@ -392,7 +394,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     } else if (is.na(pft.id[i])) {
       pft.id[i] <- 5
     } else {
-      logger.severe("Unknown PFT")
+      PEcAn.logger::logger.severe("Unknown PFT")
     }
   }
   
@@ -532,7 +534,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
       ## detect any unmatched variables
       mch <- which(rownames(defaults) == names(pft[v]))
       if (length(mch) != 1) {
-        logger.warn("unmatched parameter in write.configs.JULES", names(pft[v]), "in PFT", 
+        PEcAn.logger::logger.warn("unmatched parameter in write.configs.JULES", names(pft[v]), "in PFT", 
                     names(trait.values)[i])
       } else {
         ## insert into defaults table
@@ -599,7 +601,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
 #' @examples
 detect.timestep <- function(met.dir,met.regexp,start_date){
   met.file <- dir(met.dir, pattern = met.regexp, full.names = TRUE)[1]
-  PEcAn.utils::logger.info("Detect timestep:",met.dir,met.regexp)
+  PEcAn.logger::logger.info("Detect timestep:",met.dir,met.regexp)
   met.header <- system(paste("ncdump -h ", met.file), intern = TRUE)
   id <- grep("time:delta_t", met.header)
   if (length(id) > 0) {

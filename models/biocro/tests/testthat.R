@@ -9,5 +9,5 @@ library(PEcAn.utils)
 library(PEcAn.settings)
 library(testthat)
 
-logger.setQuitOnSevere(FALSE)
+PEcAn.logger::logger.setQuitOnSevere(FALSE)
 # test_check('PEcAn.BIOCRO')

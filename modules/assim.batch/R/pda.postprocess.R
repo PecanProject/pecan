@@ -56,7 +56,7 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
                     pft.id, ") RETURNING id"), con)
     
     
-    logger.info(paste0("--- Posteriorid for ", settings$pfts[[i]]$name, " is ", posteriorid, " ---"))
+    PEcAn.logger::logger.info(paste0("--- Posteriorid for ", settings$pfts[[i]]$name, " is ", posteriorid, " ---"))
     settings$pfts[[i]]$posteriorid <- posteriorid
     
     ## save named distributions
@@ -103,7 +103,7 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
   }  #end of loop over PFTs
   
   ## save updated settings XML
-  saveXML(listToXml(settings, "pecan"), file = file.path(settings$outdir, paste0("pecan.pda", settings$assim.batch$ensemble.id, 
+  saveXML(PEcAn.utils::listToXml(settings, "pecan"), file = file.path(settings$outdir, paste0("pecan.pda", settings$assim.batch$ensemble.id, 
                                                                                  ".xml")))
   
   return(settings)
@@ -134,14 +134,14 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
     # rare, but this can happen; better to throw an error than continue, as it might lead
     # mis-interpretation of posteriors otherwise
     if (burnin == nrow(params.subset[[i]][[1]])) {
-      logger.severe(paste0("*** Burn-in is the same as the length of the chain, please run a longer chain ***"))
+      PEcAn.logger::logger.severe(paste0("*** Burn-in is the same as the length of the chain, please run a longer chain ***"))
     }
     
     params.subset[[i]] <- window(params.subset[[i]], start = max(burnin, na.rm = TRUE))
     
     # chek number of iterations left after throwing the burnin, gelman.plot requires > 50
     if (nrow(params.subset[[i]][[1]]) < 50) {
-      logger.info(paste0("*** Not enough iterations in the chain after removing burn-in, skipping gelman.plot ***"))
+      PEcAn.logger::logger.info(paste0("*** Not enough iterations in the chain after removing burn-in, skipping gelman.plot ***"))
       enough.iter <- FALSE
     }
     

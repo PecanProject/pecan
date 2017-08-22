@@ -16,5 +16,5 @@ write_restart.CABLE <- function(outdir,
                                     stop.time,
                                     settings,
                                     new.state) {
-logger.severe("NOT IMPLEMENTED")
+PEcAn.logger::logger.severe("NOT IMPLEMENTED")
 }
