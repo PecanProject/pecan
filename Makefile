@@ -39,10 +39,10 @@ ALL_PKGS_D := $(BASE_D) $(MODELS_D) $(MODULES_D) .doc/models/template
 
 all: install document
 
-document: .doc/base/all
-install: .install/base/all
-check: .check/base/all
-test: .test/base/all 
+document: $(ALL_PKGS_D) .doc/base/all
+install: $(ALL_PKGS_I) .install/base/all
+check: $(ALL_PKGS_C) .check/base/all
+test: $(ALL_PKGS_T) .test/base/all 
 
 ### Dependencies
 .doc/base/all: $(ALL_PKGS_D)
@@ -102,7 +102,7 @@ $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): .install/devtools .inst
 	mkdir -p $(@D)
 	echo `date` > $@
 
-.install/%: $$(wildcard %/**/*) $$(wildcard %/*)
+.install/%: $$(wildcard %/**/*) $$(wildcard %/*) .doc/%
 	$(call install_R_pkg, $(subst .install/,,$@))
 	mkdir -p $(@D)
 	echo `date` > $@

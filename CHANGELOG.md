@@ -8,6 +8,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+- Improved make install logic (#1558)
 - Fixed remote code execution #1545
 - Added check for NA end/start year in read.output
 - Fixed jagify bug for raw field data
