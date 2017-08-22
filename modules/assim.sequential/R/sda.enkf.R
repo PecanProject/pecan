@@ -219,7 +219,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   # at some point add a lot of error checking 
   # read time from data if data is missing you still need
   # to have NAs or NULL with date name vector to read the correct netcdfs by read_restart
-  sum.list <- matrix(NA,nens,nt)
   
   obs.times <- names(obs.mean)
   obs.times.POSIX <- ymd_hms(obs.times)
@@ -787,11 +786,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
     }
     
-    
-    for(i in seq_len(nens)){
-    sum.list[i,t]<-sum(V_a %*%diag(sqrt(L_a))%*%Z[i,] - mu.a)
-    }
-    
     # par(mfrow=c(1,1))
     # plot(X_a)
     # ## check if ensemble mean is correct
@@ -965,6 +959,47 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   } else {
     print("climate diagnostics under development")
   }
+  ###-------------------------------------------------------------------###
+  ### ensemble adjustment                                               ###
+  ###-------------------------------------------------------------------### 
+  
+  #Calculate the likelihood of the ensemble members given mu.a and Pa
+  wt.mat <- matrix(NA,nrow=nens,ncol=nt)
+  
+  for(t in seq_len(nt)){
+    for(i in seq_len(nens)){
+      wt.mat[i,t]<-dmnorm_chol(FORECAST[[t]][i,],enkf.params[[t]]$mu.a,enkf.params[[t]]$Pa)
+    }
+  }
+  
+  wt.props <- t(prop.table(wt.mat,2))
+ 
+  pdf(file.path(settings$outdir,'ensemble.weights.time-series.pdf'))
+  matplot(wt.props,xlab='Time',ylab='Weights')
+  dev.off()
+  
+  param.hist <- unlist(lapply(lapply(params,'[[','Quercus.Rubra_Northern.Red.Oak'),'[[','FROST'))
+  weighted.hist(x = param.hist, w = wt.props[nt,],freq = FALSE,col = 'lightgrey')
+  hist(param.hist,freq = FALSE,col = 'lightgrey')
+  
+  ## weighted quantile
+  wtd.quantile <- function(x,wt,q){ 
+    ord <- order(x)
+    wstar <- cumsum(wt[ord])/sum(wt)
+    qi <- findInterval(q,wstar); qi[qi<1]=1;qi[qi>length(x)]=length(x)
+    return(x[ord[qi]])
+  }
+  
+  param.quant <- matrix(NA, 3, nt)
+  
+  for(t in seq_len(nt)){
+    param.quant[,t] <- wtd.quantile(x = param.hist, wt=wt.props[t,],q=c(.025,.5,.975))
+  }
+  
+  plot(param.quant[2,], ylim = range(param.quant,na.rm = TRUE))
+  ciEnvelope(x = 1:nt, ylo = param.quant[1,1:nt], yhi = param.quant[3,1:nt], col = 'lightblue')
+  points(param.quant[2,], pch = 19, cex = 1)
+  
   
   
   ###-------------------------------------------------------------------###
