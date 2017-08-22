@@ -26,7 +26,7 @@ download.NLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
 
   NLDAS_start <- 1980
   if (start_year < NLDAS_start) {
-    PEcAn.utils::logger.severe(sprintf('Input year range (%d:%d) exceeds the NLDAS range (%d:present)',
+    PEcAn.logger::logger.severe(sprintf('Input year range (%d:%d) exceeds the NLDAS range (%d:present)',
                                        start_year, end_year,
                                        NLDAS_start))
   }
