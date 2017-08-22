@@ -96,6 +96,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
   # - Referencing off of whatever the layer after "time" is
   # ---------
   # If we have fewer columns then we need, randomly duplicate some
+  if(ncol(train.data[[2]])==n.ens) ens.train <- 1:n.ens
+  
   if(ncol(train.data[[2]]) < n.ens){
     ens.train <- c(1:ncol(train.data[[2]]), sample(1:ncol(train.data[[2]]), n.ens-ncol(train.data[[2]]),replace=T))
   }
@@ -127,6 +129,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
   
   # If we don't have a year of overlap, take closest 20 years from each dataset
   if(length(yrs.overlap)<1){
+    warning("No overlap in years, so we cannot pair the anomalies")
     yrs.overlap <- (max(min(train.data$time$Year), min(source.data$time$Year))-20):(min(max(train.data$time$Year), max(source.data$time$Year))+20)
     pair.anoms=FALSE # we can't pair the anomalies no matter what we tried to specify before
   }
