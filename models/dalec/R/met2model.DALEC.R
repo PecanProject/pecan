@@ -195,7 +195,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
         }
       } else{
         end.row <- length(as.Date(paste0(end_year, "-01-01")):as.Date(end_date))
-      if (end.day < nrow(tmp)){
+      if (end.row < nrow(tmp)){
         PEcAn.logger::logger.info("Subsetting DALEC met to match end date")
         tmp <- tmp[1:end.row,]
       }
