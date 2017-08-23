@@ -3,7 +3,6 @@
 ##' @param input_id
 ##' @param con : database connection
 ##' @export query.format.vars
-##' @importFrom dplyr `%>%`
 ##'
 ##' @author Betsy Cowdery , Ankur Desai, Istem Fer
 ##'
