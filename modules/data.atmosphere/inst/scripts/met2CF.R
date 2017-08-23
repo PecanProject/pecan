@@ -28,7 +28,7 @@ query.base.con <- function(settings,...){
 # required steps:
 # 1) query database using dbfile.input.check
 # check to see if file exists as an input in dbfile
-dbfile.input.check(siteid, startdate, enddate, mimetype, formatname, con, hostname=PEcAn.utils::fqdn())
+dbfile.input.check(siteid, startdate, enddate, mimetype, formatname, con, hostname = PEcAn.utils::fqdn())
 #   a) query input table select * where input.id = id
 #     i) check to make sure there is only 1 match
 #   b) query dbfiles table to get all rows that match the id
