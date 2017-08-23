@@ -35,6 +35,7 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
   
   ### Determine number of years and output timestep
   days       <- as.Date(start_date):as.Date(end_date)
+  print(paste("days: ",length(days)))
   year       <- strftime(as.Date(days, origin = "1970-01-01"), "%Y")
   num.years  <- length(unique(year))
   years      <- unique(year)
