@@ -93,7 +93,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
   
-  ## loop over files TODO need to filter out the data that is not inside start_date, end_date
+  ## loop over files 
   for (year in start_year:end_year) {
     print(year)
     ## Assuming default values for leaf water potential, hydraulic resistance, foliar N
