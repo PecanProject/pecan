@@ -200,8 +200,13 @@ invert_bt <- function(observed, model, prior, custom_settings = list()) {
         converged <- bt_check_convergence(samples = samples, threshold = threshold, use_mpsrf = use_mpsrf)
         if (converged) {
             coda_samples <- BayesianTools::getSample(samples, coda = TRUE)
-            burned_samples <- PEcAn.assim.batch::autoburnin(coda_samples, return.burnin = TRUE, method = 'gelman.plot')
-            if (burned_samples$burnin == 1) next
+            burned_samples <- PEcAn.assim.batch::autoburnin(coda_samples, threshold = threshold,
+                                                            return.burnin = TRUE, method = 'gelman.plot')
+            if (burned_samples$burnin == 1) {
+                message('PEcAn.assim.batch::autoburnin reports convergence has not been achieved. ',
+                        'Resuming sampling.')
+                next
+            }
             n_samples <- coda::niter(burned_samples$samples)
             enough_samples <- n_samples > min_samp
             if (!enough_samples) {
