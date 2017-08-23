@@ -103,31 +103,22 @@ server <- shinyServer(function(input, output, session) {
   # loadObservationData <- function(bety,settings,File_path,File_format){
   loadObservationData <- function(bety,inputs_df){
     input_id <- inputs_df$input_id
-    File_format <- getFileFormat(bety,input_id)
+    # File_format <- getFileFormat(bety,input_id)
+    File_format <- PEcAn.DB::query.format.vars(bety = bety, input.id = input_id)
     start.year <- as.numeric(lubridate::year(inputs_df$start_date))
     end.year <- as.numeric(lubridate::year(inputs_df$end_date))
-    File_path <- inputs_df$filePath
+    # File_path <- inputs_df$filePath
     # TODO There is an issue with the db where file names are not saved properly. 
     # To make it work with the VM, uncomment the line below
-    # File_path <- paste0(inputs_df$filePath,'.csv')
+    File_path <- paste0(inputs_df$filePath,'.csv')
     site.id <- inputs_df$site_id
     site<-PEcAn.DB::query.site(site.id,bety$con)
     observations<-PEcAn.benchmark::load_data(data.path = File_path, format= File_format, time.row = File_format$time.row,  site = site, start_year = start.year, end_year = end.year) 
     return(observations)
   }
-  # This function is a wrapper over PEcAn.DB::query.format.vars where 
-  # file format can be retrieved using either by input or format id. 
-  getFileFormat <- function(bety,input.id,format.id=NULL){
-    # TODO Retaining the code for getting file format using format Id as in tutorial
-    # File_format <- PEcAn.DB::query.format.vars(bety = bety, format.id = format.id) 
-    File_format <- PEcAn.DB::query.format.vars(bety = bety, input.id = input.id)
-    return(File_format)
-  }
   getSettingsFromWorkflowId <- function(bety,workflowID){
-    basePath <- tbl(bety, 'workflows') %>% dplyr::filter(id %in% workflowID) %>% pull(folder)
+    basePath <- dplyr::tbl(bety, 'workflows') %>% dplyr::filter(id %in% workflowID) %>% dplyr::pull(folder)
     configPath <- file.path(basePath, 'pecan.CONFIGS.xml')
-    # Second way of providing configPath. More of a hack
-    # configPath <- paste0("~/output/PEcAn_",workflowID,"/pecan.CONFIGS.xml")
     settings<-PEcAn.settings::read.settings(configPath)
     return(settings)
   }
@@ -147,14 +138,14 @@ server <- shinyServer(function(input, output, session) {
   getInputs <- function(bety,site_Id){
     # Subsetting the input id list based on the current (VM) machine
     my_hostname <- PEcAn.utils::fqdn()
-    my_machine_id <- tbl(bety, 'machines') %>% dplyr::filter(hostname == my_hostname) %>% pull(id)
+    my_machine_id <- dplyr::tbl(bety, 'machines') %>% dplyr::filter(hostname == my_hostname) %>% dplyr::pull(id)
     # Inner join 'inputs' table with 'dbfiles' table
     # inputs_df would contain all the information about the site and input id required for
     # the tutorial mentioned above to compare model run with actual observations
-    inputs_df <- tbl(bety, 'dbfiles') %>% 
+    inputs_df <- dplyr::tbl(bety, 'dbfiles') %>% 
       dplyr::filter(container_type == 'Input', machine_id == my_machine_id) %>%
-      inner_join(tbl(bety, 'inputs')  %>% dplyr::filter(site_id %in% site_Id), by = c('container_id' = 'id')) %>%
-      collect()
+      dplyr::inner_join(tbl(bety, 'inputs')  %>% dplyr::filter(site_id %in% site_Id), by = c('container_id' = 'id')) %>%
+      dplyr::collect()
     # Order by container id (==input id)
     inputs_df <- inputs_df[order(inputs_df$container_id),]
     # Mutate column as (input id, name) to be shown to the user
@@ -214,8 +205,6 @@ server <- shinyServer(function(input, output, session) {
     # Check if user wants to load external data (==observations)
     # Similar to using event reactive
     if (input$load_data>0) {
-      # Retaining the code for getting file format using formatID
-      # File_format <- getFileFormat(bety,input$formatID)
       # Input ID is of the form (input id, Name). Split by space and use the first element
       inputs_df <- getInputs(bety,c(input$all_site_id))
       inputs_df <- inputs_df %>% dplyr::filter(input_selection_list == input$all_input_id)
@@ -233,9 +222,6 @@ server <- shinyServer(function(input, output, session) {
         colnames(aligned_data) <- c("model","observations","Date") # Order returned by align_data
         # Melt dataframe to plot two types of columns together
         aligned_data <- reshape2::melt(aligned_data, "Date")
-        # From the tutorial, if want to plot model vs observations
-        # plot(aligned_dat$NEE.m, aligned_dat$NEE.o)
-        # abline(0,1,col="red")  ## intercept=0, slope=1
         data_geom <- switch(input$data_geom, point = geom_point, line = geom_line)
         plt <- ggplot(aligned_data, aes(x=Date, y=value, color=variable)) + data_geom()
         output$outputNoVariableFound <- renderText({
