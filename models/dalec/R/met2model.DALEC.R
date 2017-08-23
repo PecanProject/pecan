@@ -180,8 +180,10 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     if(year == start_year){
       extra.days <- length(as.Date(paste0(start_year, "-01-01")):as.Date(start_date)) #extra days length includes the start date
       if (extra.days > 1){
-        PEcAn.logger::logger.info("Subsetting DALEC met to match start date")
+        PEcAn.logger::logger.info("Subsetting DALEC met to match start date ", start_date)
         start.row <-  ((extra.days - 1) * 86400 / dt) + 1 #subtract to include start.date, add to exclude last half hour of day before
+        print(start.row)
+        print(nrow(tmp))
         tmp <- tmp[start.row:nrow(tmp),]
       }
     } else if (year == end_year){
