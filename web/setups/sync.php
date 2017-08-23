@@ -17,6 +17,7 @@ $flagfile = fopen("syncflag.txt","r");
 $want_id = fgets ($flagfile);
 fclose($flagfile);
 
-exec('../../scripts/load.bety.sh', $outcome, $status);
+$cmd = '../../scripts/load.bety.sh -r ' . $want_id;
+exec($cmd, $outcome, $status);
 
 ?>
