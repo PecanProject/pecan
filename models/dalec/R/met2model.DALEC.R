@@ -176,6 +176,23 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     ## build data matrix
     tmp <- cbind(doy, Tmean, Tmax, Tmin, Rin, LeafWaterPot, CO2, HydResist, leafN)
     
+    ##filter out days not included in start or end date
+    if(year == start_year){
+      extra.days <- length(as.Date(paste0(start_year, "-01-01")):as.Date(start_date)) #extra days length includes the start date
+      if (extra.days > 1){
+        PEcAn.logger::logger.info("Subsetting DALEC met to match start date")
+        start.row <-  ((extra.days - 1) * 86400 / dt) + 1 #subtract to include start.date, add to exclude last half hour of day before
+        tmp <- tmp[start.row:nrow(tmp),]
+      }
+    } else if (year == end_year){
+      extra.days <- length(as.Date(end_date):as.Date(paste0(end_year, "-12-31"))) #extra days length includes the end date
+      if (extra.days > 1){
+        PEcAn.logger::logger.info("Subsetting DALEC met to match end date")
+        end.row <-  nrow(tmp) - ((extra.days - 1) * 86400 / dt)  #subtract to include end.date
+        tmp <- tmp[1:end.row,]
+      }
+    }
+    
     if (is.null(out)) {
       out <- tmp
     } else {

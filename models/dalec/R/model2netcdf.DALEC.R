@@ -100,8 +100,9 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     output[[17]] <- sub.DALEC.output[, 15] * DALEC.configs[grep("SLA", DALEC.configs) + 1][[1]]  
     
     # ******************** Declare netCDF variables ********************#
+    start.day <- length(as.Date(paste0(start_year, "-01-01")):as.Date(start_date)) #extra days length includes the start date
     t   <- ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
-                     vals = 1:nrow(sub.DALEC.output), 
+                     vals = start.day:(start.day + nrow(sub.DALEC.output)), 
                      calendar = "standard", unlim = TRUE)
     lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
     lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
