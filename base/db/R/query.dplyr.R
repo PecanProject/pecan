@@ -62,6 +62,7 @@ ncdays2date <- function(time, unit) {
 #' @name dbHostInfo
 #' @title Database host information
 #' @param bety BETYdb connection, as opened by `betyConnect()`
+#' @importFrom dplyr `%>%`
 #' @export
 dbHostInfo <- function(bety) {
   # get host id
@@ -88,6 +89,7 @@ dbHostInfo <- function(bety) {
 #' list of workflows that exist
 #' @param ensemble Logical. Use workflows from ensembles table.
 #' @inheritParams dbHostInfo
+#' @importFrom dplyr `%>%`
 #' @export
 workflows <- function(bety, ensemble = FALSE) {
   hostinfo <- dbHostInfo(bety)
@@ -106,6 +108,7 @@ workflows <- function(bety, ensemble = FALSE) {
 #' Get single workflow by workflow_id
 #' @param workflow_id Workflow ID
 #' @inheritParams dbHostInfo
+#' @importFrom dplyr `%>%`
 #' @export
 workflow <- function(bety, workflow_id) {
   workflows(bety) %>%
@@ -173,7 +176,7 @@ get_run_ids <- function(bety, workflow_id) {
   if (workflow_id != "") {
     runs <- runs(bety, workflow_id)
     if (dplyr.count(runs) > 0) {
-      run_ids <- pull(runs, run_id) %>% sort()
+      run_ids <- dplyr::pull(runs, run_id) %>% sort()
     }
   }
   return(run_ids)
