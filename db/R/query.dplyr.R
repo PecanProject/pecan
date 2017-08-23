@@ -141,7 +141,7 @@ get_workflow_ids <- function(bety, session,all.ids=FALSE) {
     ids <- unlist(query[names(query) == "workflow_id"], use.names = FALSE)
   } else {
     # Get all workflow IDs
-    ids <- workflows(bety, ensemble = TRUE) %>% distinct(workflow_id) %>% collect %>% 
+    ids <- workflows(bety, ensemble = FALSE) %>% distinct(workflow_id) %>% collect %>% 
       .[["workflow_id"]] %>% sort(decreasing = TRUE)
     # pull(.,workflow_id) %>% sort(decreasing = TRUE)
   }

@@ -1,6 +1,7 @@
 library(shiny)
+library(plotly)
 # Helper allows to load functions and variables that could be shared both by server.R and ui.R 
-source('helper.R')
+# source('helper.R')
 # Define UI
 ui <- shinyUI(fluidPage(
   # Application title
@@ -35,8 +36,6 @@ ui <- shinyUI(fluidPage(
     mainPanel(
       plotlyOutput("outputPlot"),
       verbatimTextOutput("outputNoVariableFound")
-      # ,verbatimTextOutput("info")
-      # ,verbatimTextOutput("info1")
     )
   )
 ))
