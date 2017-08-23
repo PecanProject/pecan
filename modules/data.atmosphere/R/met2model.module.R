@@ -3,7 +3,7 @@
                               browndog, new.site, overwrite = FALSE, exact.dates,spin) {
   
   # Determine output format name and mimetype
-  model_info <- PEcAn.db::db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", " join modeltypes_formats as mf on m.id = mf.modeltype_id", 
+  model_info <- PEcAn.DB::db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", " join modeltypes_formats as mf on m.id = mf.modeltype_id", 
                                 " join formats as f on mf.format_id = f.id", " join mimetypes as mt on f.mimetype_id = mt.id", 
                                 " where m.name = '", model, "' AND mf.tag='met'"), con)
   
