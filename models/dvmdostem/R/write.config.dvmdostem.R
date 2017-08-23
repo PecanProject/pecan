@@ -23,20 +23,24 @@
 ##' @author Shawn Serbin, Tobey Carman
 ##' @importFrom udunits2 ud.convert
 
-convert.samples.dvmdostem <- function(trait.samples) {
-
-  ### Convert object
-  if (is.list(trait.samples)) {
-    trait.samples <- as.data.frame(trait.samples)
+convert.samples.dvmdostem <- function(trait_values) {
+  
+  # convert to a data frame for easy access by column name.
+  if(is.list(trait_values)){
+    trait_values <- as.data.frame(trait_values)
   }
 
   ### first rename variables (needed??)
 
   ### Conversions (for example, convert SLA to m2/g?)
+  if ("CMT04.Salix.SLA" %in% names(trait_values)) {
+    # Convert from ?? to ??
+    trait_values[["CMT04.Salix.SLA"]] <- trait_values[["CMT04.Salix.SLA"]] / 1000.0    
+  }
 
-  ### Return trait.samples as modified by function
-  return(trait.samples)
-} # convert.samples.dvmdostem
+  ### Return modified version
+  return(trait_values)
+}
 ##-------------------------------------------------------------------------------------------------#
 
 
@@ -101,8 +105,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # contains the meta-analysis posteriors values for each parameter (trait)
   # that we are hoping to "inject" into dvmdostem. Convert to a dataframe
   # for easier indexing...
-  trait_df <- as.data.frame(trait.values)
-
+  trait_df <- convert.samples.dvmdostem(trait.values)
   # Now we have to read the approporate values out of the trait_df
   # and get those values written into the parameter file(s) that dvmdostem will
   # need when running. Because the dvmdostem parameters have a sort of
