@@ -52,7 +52,7 @@ download.Ameriflux <- function(sitename, outfolder, start_date, end_date,
   links <- tryCatch({
     xpathSApply(htmlParse(baseurl), "//a/@href")
   }, error = function(e) {
-    logger.severe("Could not get information about", site, ".", "Is this an Ameriflux site?")
+    PEcAn.logger::logger.severe("Could not get information about", site, ".", "Is this an Ameriflux site?")
   })
   
   # find all links we need based on the years and download them
@@ -79,13 +79,13 @@ download.Ameriflux <- function(sitename, outfolder, start_date, end_date,
     
     # see if file exists
     if (file.exists(outputfile) && !overwrite) {
-      logger.debug("File '", outputfile, "' already exists, skipping to next file.")
+      PEcAn.logger::logger.debug("File '", outputfile, "' already exists, skipping to next file.")
       next
     }
     
     file <- tail(as.character(links[grep(paste0("_", year, "_.*.nc"), links)]), n = 1)
     if (length(file) == 0) {
-      logger.severe("Could not download data for", site, "for the year", year)
+      PEcAn.logger::logger.severe("Could not download data for", site, "for the year", year)
     }
     download.file(paste0(baseurl, file), outputfile)
   }
