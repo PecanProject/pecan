@@ -30,7 +30,17 @@ convert.samples.dvmdostem <- function(trait_values) {
     trait_values <- as.data.frame(trait_values)
   }
 
-  ### first rename variables (needed??)
+  # Rename variables - might be able to make some changes here
+  # that make the loops in write.config.dvmdostem easier to 
+  # understand/deal with
+  trait_names <- colnames(trait_values)
+
+  # Not really sure how this should work yet? 
+  # Example from FATES model
+  # trait.names[trait.names == "leaf_respiration_rate_m2"]   <- "atref.rd"
+  #                                pecan notion?                dvmdostem?
+  # trait_names[trait_names == "CMT04.Salix.SLA"] <- ????? jsondata$pft0$sla
+  colnames(trait_values) <- trait_names
 
   ### Conversions (for example, convert SLA to m2/g?)
   if ("CMT04.Salix.SLA" %in% names(trait_values)) {
