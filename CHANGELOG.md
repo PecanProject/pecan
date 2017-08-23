@@ -16,11 +16,17 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 - Expanded initial conditions workflow for pool-based models, including PEcAn.data.land::prepare_pools to calculate pools from IC file (to be coupled with write.configs)
+- #1594 shiny/workflowPlot Adding interactiveness using ggploltly
+- #1594 shiny/workflowPlot Load outputs from multiple runs of the model
+- #1594 shiny/workflowPlot Ways to toggle geometries (e.g. geom_point vs. geom_line).
+- #1594 shiny/workflowPlot Smoothing using geom_smooth (Slider for specifying moving window width)
+- #1594 shiny/workflowPlot Comparing model output vs loaded data according to [tutorial](https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/AnalyzeOutput/modelVSdata.Rmd) 
 
 ### Changed
 - Clean up directory structure:
     * Move `base` packages (`utils`, `settings`, `db`, `visualizaton`) to a `base` directory, for consistency with `modules` and `models`
     * Move `logger.*` functions out of the `PEcAn.utils` package and into the `pecan.logger` package
+- #1594 shiny/workflowPlot Refactoring of code. `get_workflow_ids` in db/R/query.dplyr.R changed with `ensemble = FALSE`. Also allowing to load all workflow IDs. `load_data_single_run` and `var_names_all` also moved from shiny/workflowPlot/server.R to query.dplyr.R
 
 ## [1.5.10] - Prerelease
 ### Added
