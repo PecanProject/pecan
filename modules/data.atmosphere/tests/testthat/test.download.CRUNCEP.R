@@ -5,7 +5,7 @@ test_that("download works and returns a valid CF file", {
   # download is slow and was causing lots of Travis timeouts
   skip_on_travis()
 
-  logger.setLevel("WARN")
+  PEcAn.logger::logger.setLevel("WARN")
 
   tmpdir <- tempdir()
   on.exit(unlink(tmpdir, recursive = TRUE))
@@ -24,7 +24,7 @@ test_that("download works and returns a valid CF file", {
   expect_equal(cf_units, "days since 2000-01-01T00:00:00Z")
 
   # Expect that overwrite argument is respected
-  # The skip message comes from logger.error,
+  # The skip message comes fromPEcAn.logger::logger.error,
   # which writes to stderr but does not use message().
   # If it did, this test would reduce to expect_message(download.CRUNCEP(...), "foo")
   msg <- capture.output(download.CRUNCEP(outfolder = tmpdir,
