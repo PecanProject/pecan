@@ -107,10 +107,10 @@ server <- shinyServer(function(input, output, session) {
     File_format <- PEcAn.DB::query.format.vars(bety = bety, input.id = input_id)
     start.year <- as.numeric(lubridate::year(inputs_df$start_date))
     end.year <- as.numeric(lubridate::year(inputs_df$end_date))
-    # File_path <- inputs_df$filePath
+    File_path <- inputs_df$filePath
     # TODO There is an issue with the db where file names are not saved properly. 
     # To make it work with the VM, uncomment the line below
-    File_path <- paste0(inputs_df$filePath,'.csv')
+    # File_path <- paste0(inputs_df$filePath,'.csv')
     site.id <- inputs_df$site_id
     site<-PEcAn.DB::query.site(site.id,bety$con)
     observations<-PEcAn.benchmark::load_data(data.path = File_path, format= File_format, time.row = File_format$time.row,  site = site, start_year = start.year, end_year = end.year) 
