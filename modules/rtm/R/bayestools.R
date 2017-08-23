@@ -97,6 +97,7 @@ prospect_bt_prior <- function(version, custom_prior = list()) {
 #'      Default is `10 * log10(n)` (same as `stats::acf` function).
 #'      - `save_progress` -- File name for saving samples between loop
 #'      iterations. If `NULL` (default), do not save progress samples.
+#'      - `threshold` -- Threshold for Gelman PSRF convergence diagnostic. Default is 1.1.
 #'
 #' See the BayesianTools sampler documentation for what can go in the `BayesianTools` settings lists.
 #' @param observed Vector of observations
@@ -115,7 +116,8 @@ invert_bt <- function(observed, model, prior, custom_settings = list()) {
                                           min_samp = 1000,
                                           max_iter = 1e6,
                                           lag.max = NULL,
-                                          save_progress = NULL))
+                                          save_progress = NULL,
+                                          threshold = 1.1))
 
     if (length(custom_settings) > 0) {
         settings <- list()
@@ -137,6 +139,7 @@ invert_bt <- function(observed, model, prior, custom_settings = list()) {
     lag.max <- settings[['other']][['lag.max']]
     max_iter <- settings[['other']][['max_iter']]
     save_progress <- settings[['other']][['save_progress']]
+    threshold <- settings[['other']][['threshold']]
 
     if (!is.null(save_progress)) {
         # `file.create` returns FALSE if target directory doesn't exist.
@@ -170,7 +173,7 @@ invert_bt <- function(observed, model, prior, custom_settings = list()) {
     if (!is.null(save_progress)) {
         saveRDS(object = samples, file = save_progress)
     }
-    converged <- bt_check_convergence(samples = samples, use_mpsrf = use_mpsrf)
+    converged <- bt_check_convergence(samples = samples, threshold = threshold, use_mpsrf = use_mpsrf)
 
     loop_settings <- modifyList(settings[['common']], settings[['loop']])
 
@@ -194,7 +197,7 @@ invert_bt <- function(observed, model, prior, custom_settings = list()) {
         if (!is.null(save_progress)) {
             saveRDS(object = samples, file = save_progress)
         }
-        converged <- bt_check_convergence(samples = samples, use_mpsrf = use_mpsrf)
+        converged <- bt_check_convergence(samples = samples, threshold = threshold, use_mpsrf = use_mpsrf)
         if (converged) {
             coda_samples <- BayesianTools::getSample(samples, coda = TRUE)
             burned_samples <- PEcAn.assim.batch::autoburnin(coda_samples, return.burnin = TRUE, method = 'gelman.plot')
