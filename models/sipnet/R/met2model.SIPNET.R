@@ -213,7 +213,6 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     
     ##filter out days not included in start or end date
     if(year == start_year){
-      print(start_date)
       extra.days <- length(as.Date(paste0(start_year, "-01-01")):as.Date(start_date)) #extra days length includes the start date
       if (extra.days > 1){
         PEcAn.logger::logger.info("Subsetting SIPNET met to match start date")
