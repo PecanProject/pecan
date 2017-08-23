@@ -178,23 +178,23 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     
     ##filter out days not included in start or end date
     if(year == start_year){
-      start.day <- length(as.Date(paste0(start_year, "-01-01")):as.Date(start_date)) #extra days length includes the start date
-      if (start.day > 1){
+      start.row <- length(as.Date(paste0(start_year, "-01-01")):as.Date(start_date)) #extra days length includes the start date
+      if (start.row > 1){
         PEcAn.logger::logger.info("Subsetting DALEC met to match start date ", as.Date(start_date))
-        print(start.day)
+        print(start.row)
         print(nrow(tmp))
         tmp <- tmp[start.row:nrow(tmp),]
       }
     } 
     if (year == end_year){
       if(year == start_year){
-        end.day <- length(as.Date(start_date):as.Date(end_date))
-        if (end.day < nrow(tmp)){
+        end.row <- length(as.Date(start_date):as.Date(end_date))
+        if (end.row < nrow(tmp)){
           PEcAn.logger::logger.info("Subsetting DALEC met to match end date")
           tmp <- tmp[1:end.row,]
         }
       } else{
-        end.day <- length(as.Date(paste0(end_year, "-01-01")):as.Date(end_date))
+        end.row <- length(as.Date(paste0(end_year, "-01-01")):as.Date(end_date))
       if (end.day < nrow(tmp)){
         PEcAn.logger::logger.info("Subsetting DALEC met to match end date")
         tmp <- tmp[1:end.row,]
