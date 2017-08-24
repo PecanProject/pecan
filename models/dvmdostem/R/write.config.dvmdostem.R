@@ -24,7 +24,7 @@
 ##' @importFrom udunits2 ud.convert
 
 convert.samples.dvmdostem <- function(trait_values) {
-  
+
   # convert to a data frame for easy access by column name.
   if(is.list(trait_values)){
     trait_values <- as.data.frame(trait_values)
@@ -45,7 +45,7 @@ convert.samples.dvmdostem <- function(trait_values) {
   ### Conversions (for example, convert SLA to m2/g?)
   if ("CMT04.Salix.SLA" %in% names(trait_values)) {
     # Convert from ?? to ??
-    trait_values[["CMT04.Salix.SLA"]] <- trait_values[["CMT04.Salix.SLA"]] / 1000.0    
+    trait_values[["CMT04.Salix.SLA"]] <- trait_values[["CMT04.Salix.SLA"]] / 1000.0
   }
 
   ### Return modified version
