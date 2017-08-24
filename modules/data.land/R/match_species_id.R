@@ -42,7 +42,7 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
                       'latin_name' = 'scientificname', 
                       'custom' = 'custom')
     if (!format_name %in% names(formats_dict)) {
-        PEcAn.utils::logger.severe('format_name "', format_name, '" not found. ',
+        PEcAn.logger::logger.severe('format_name "', format_name, '" not found. ',
                                    'Please use one of the following: ',
                                    paste(names(formats_dict), collapse = ', '))
     }
@@ -50,12 +50,12 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
         msg2 <- c('Found the following columns: ', 
                   paste(colnames(translation_table), collapse = ', '))
         if (!'input_code' %in% colnames(translation_table)) {
-            PEcAn.utils::logger.severe('Custom translation table must have column "input_code". ', msg2)
+            PEcAn.logger::logger.severe('Custom translation table must have column "input_code". ', msg2)
         } else if (!'bety_species_id' %in% colnames(translation_table)) {
-            PEcAn.utils::logger.severe('Custom translation table must have column "bety_species_id". ', msg2)
+            PEcAn.logger::logger.severe('Custom translation table must have column "bety_species_id". ', msg2)
         } else {
             if (any(grepl('^(genus|species)$', colnames(translation_table)))) {
-                PEcAn.utils::logger.warn('"genus" or "species" columns found in translation table. ',
+                PEcAn.logger::logger.warn('"genus" or "species" columns found in translation table. ',
                                          'Because these also match the BETY table, ',
                                          'they will be ignored by the merge, but their names will ',
                                          'be appended with ".translation_table" for disambiguation')
@@ -109,7 +109,7 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
     
     if(sum(is.na(merge_table$bety_species_id)) > 0){
       bad <- unique(merge_table$input_code[is.na(merge_table$bety_species_id)])
-      PEcAn.utils::logger.error(paste0("Species for the following code(s) not found : ", paste(bad, collapse = ", ")))
+      PEcAn.logger::logger.error(paste0("Species for the following code(s) not found : ", paste(bad, collapse = ", ")))
     }
     
     return(merge_table)

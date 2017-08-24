@@ -46,7 +46,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   met_header <- file.path(met_folder, "ED_MET_DRIVER_HEADER")
   
   results <- data.frame(file = c(met_header), 
-                        host = c(fqdn()), 
+                        host = c(PEcAn.utils::fqdn()), 
                         mimetype = c("text/plain"), 
                         formatname = c("ed.met_driver_header files format"), 
                         startdate = c(start_date), 
@@ -91,7 +91,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     if (is.na(lat)) {
       lat <- flat
     } else if (lat != flat) {
-      logger.warn("Latitude does not match that of file", lat, "!=", flat)
+      PEcAn.logger::logger.warn("Latitude does not match that of file", lat, "!=", flat)
     }
     
     flon <- try(ncvar_get(nc, "longitude"), silent = TRUE)
@@ -101,7 +101,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     if (is.na(lon)) {
       lon <- flon
     } else if (lon != flon) {
-      logger.warn("Longitude does not match that of file", lon, "!=", flon)
+      PEcAn.logger::logger.warn("Longitude does not match that of file", lon, "!=", flon)
     }
     
     ## determine GMT adjustment lst <- site$LST_shift[which(site$acro == froot)]
@@ -174,7 +174,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
       rng <- length(doy) - length(ytmp):1 + 1
       if (!all(rng >= 0)) {
         skip <- TRUE
-        logger.warn(paste(year, "is not a complete year and will not be included"))
+        PEcAn.logger::logger.warn(paste(year, "is not a complete year and will not be included"))
         break
       }
       asec[rng] <- asec[rng] - asec[rng[1]]
@@ -185,7 +185,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
       rng <- (length(yr) + 1):length(sec)
       if (!all(rng >= 0)) {
         skip <- TRUE
-        logger.warn(paste(year, "is not a complete year and will not be included"))
+        PEcAn.logger::logger.warn(paste(year, "is not a complete year and will not be included"))
         break
       }
       yr[rng]  <- rep(y + 1, length(rng))
@@ -259,7 +259,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
             h5createFile(mout)
           }
           if (overwrite == FALSE) {
-            logger.warn("The file already exists! Moving to next month!")
+            PEcAn.logger::logger.warn("The file already exists! Moving to next month!")
             next
           }
         } else {
