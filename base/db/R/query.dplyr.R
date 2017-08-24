@@ -12,11 +12,13 @@ betyConnect <- function(php.config = "../../web/config.php") {
   config <- config[-grep("$", config, fixed = TRUE)]  ## lines with variable references fail
   config <- config[-grep("exec", config, fixed = TRUE)]  ## lines 'exec' fail
   config.list <- eval(parse(text = paste("list(", paste0(config[1:14], collapse = ","), ")")))
-  
+
   ## Database connection
-  src_postgres(dbname = config.list$db_bety_database, 
-               host = config.list$db_bety_hostname, 
-               user = config.list$db_bety_username, 
+  # TODO: The latest version of dplyr/dbplyr works with standard DBI-based
+  # objects, so we should replace this with a standard `db.open` call.
+  src_postgres(dbname = config.list$db_bety_database,
+               host = config.list$db_bety_hostname,
+               user = config.list$db_bety_username,
                password = config.list$db_bety_password)
 }  # betyConnect
 
@@ -43,7 +45,7 @@ fancy_scientific <- function(l) {
 #' @param df Data frame of which to count length
 #' @export
 dplyr.count <- function(df) {
-  return(collect(tally(df))[["n"]])
+  return(dplyr::collect(dplyr::tally(df))[["n"]])
 }  # dplyr.count
 
 
@@ -63,20 +65,20 @@ ncdays2date <- function(time, unit) {
 #' @export
 dbHostInfo <- function(bety) {
   # get host id
-  result <- db.query("select cast(floor(nextval('users_id_seq') / 1e9) as bigint);", bety$con)
+  result <- db.query(query = "select cast(floor(nextval('users_id_seq') / 1e9) as bigint);", con = bety$con)
   hostid <- result[["floor"]]
-  
+
   # get machine start and end based on hostid
-  machine <- tbl(bety, "machines") %>% 
-    filter(sync_host_id == hostid) %>% 
+  machine <- dplyr::tbl(bety, "machines") %>%
+    dplyr::filter(sync_host_id == hostid) %>%
     dplyr::select(sync_start, sync_end)
-  
+
   if (is.na(nrow(machine)) || nrow(machine) == 0) {
-    return(list(hostid = hostid, 
-                start = 1e+09 * hostid, 
+    return(list(hostid = hostid,
+                start = 1e+09 * hostid,
                 end = 1e+09 * (hostid + 1) - 1))
   } else {
-    return(list(hostid = hostid, 
+    return(list(hostid = hostid,
                 start = machine$sync_start,
                 end = machine$sync_end))
   }
@@ -90,14 +92,14 @@ dbHostInfo <- function(bety) {
 workflows <- function(bety, ensemble = FALSE) {
   hostinfo <- dbHostInfo(bety)
   if (ensemble) {
-    query <- paste("SELECT ensembles.id AS ensemble_id, ensembles.workflow_id, workflows.folder", 
+    query <- paste("SELECT ensembles.id AS ensemble_id, ensembles.workflow_id, workflows.folder",
                    "FROM ensembles, workflows WHERE runtype = 'ensemble'")
   } else {
     query <- "SELECT id AS workflow_id, folder FROM workflows"
   }
-  out <- tbl(bety, sql(query)) %>% 
-    filter(workflow_id >= hostinfo$start & workflow_id <= hostinfo$end)
-  return(out)
+  dplyr::tbl(bety, dbplyr::sql(query)) %>%
+    dplyr::filter(workflow_id >= hostinfo$start & workflow_id <= hostinfo$end) %>%
+    return()
 }  # workflows
 
 
@@ -106,9 +108,9 @@ workflows <- function(bety, ensemble = FALSE) {
 #' @inheritParams dbHostInfo
 #' @export
 workflow <- function(bety, workflow_id) {
-  workflows(bety) %>% 
-    filter_(paste("workflow_id ==", workflow_id)) %>% 
-    return
+  workflows(bety) %>%
+    dplyr::filter_(paste("workflow_id ==", workflow_id)) %>%
+    return()
 }  # workflow
 
 
@@ -117,16 +119,16 @@ workflow <- function(bety, workflow_id) {
 #' @inheritParams workflow
 #' @export
 runs <- function(bety, workflow_id) {
-  Workflows <- workflow(bety, workflow_id) %>% 
+  Workflows <- workflow(bety, workflow_id) %>%
     dplyr::select(workflow_id, folder)
-  Ensembles <- tbl(bety, "ensembles") %>% 
-    dplyr::select(ensemble_id = id, workflow_id) %>% 
+  Ensembles <- dplyr::tbl(bety, "ensembles") %>%
+    dplyr::select(ensemble_id = id, workflow_id) %>%
     inner_join(Workflows, by = "workflow_id")
-  Runs <- tbl(bety, "runs") %>% 
-    dplyr::select(run_id = id, ensemble_id) %>% 
-    inner_join(Ensembles, by = "ensemble_id")
-  dplyr::select(Runs, -workflow_id, -ensemble_id) %>% 
-    return
+  Runs <- dplyr::tbl(bety, "runs") %>%
+    dplyr::select(run_id = id, ensemble_id) %>%
+    dplyr::inner_join(Ensembles, by = "ensemble_id")
+  dplyr::select(Runs, -workflow_id, -ensemble_id) %>%
+    return()
 }  # runs
 
 
@@ -134,16 +136,17 @@ runs <- function(bety, workflow_id) {
 #' @inheritParams dbHostInfo
 #' @param session Session object passed through Shiny
 #' @export
-get_workflow_ids <- function(bety, session,all.ids=FALSE) {
-  query <- isolate(parseQueryString(session$clientData$url_search))
+get_workflow_ids <- function(bety, session, all.ids=FALSE) {
+  query <- isolate(shiny::parseQueryString(session$clientData$url_search))
   # If we dont want all workflow ids but only workflow id from the user url query
   if (!all.ids & "workflow_id" %in% names(query)) {
     ids <- unlist(query[names(query) == "workflow_id"], use.names = FALSE)
   } else {
     # Get all workflow IDs
-    ids <- workflows(bety, ensemble = TRUE) %>% distinct(workflow_id) %>% collect %>% 
-      .[["workflow_id"]] %>% sort(decreasing = TRUE)
-    # pull(.,workflow_id) %>% sort(decreasing = TRUE)
+    ids <- workflows(bety, ensemble = TRUE) %>%
+      dplyr::distinct(workflow_id) %>%
+      dplyr::pull() %>%
+      sort(decreasing = TRUE)
   }
   return(ids)
 }  # get_workflow_ids
@@ -155,8 +158,8 @@ get_workflow_ids <- function(bety, session,all.ids=FALSE) {
 get_users <- function(bety, session) {
   hostinfo <- dbHostInfo(bety)
   query <- "SELECT id, login FROM users"
-  out <- tbl(bety, sql(query)) %>% 
-    filter(id >= hostinfo$start & id <= hostinfo$end)
+  out <- dplyr::tbl(bety, dbplyr::sql(query)) %>%
+    dplyr::filter(id >= hostinfo$start & id <= hostinfo$end)
   return(out)
 }  # get_workflow_ids
 
@@ -170,7 +173,7 @@ get_run_ids <- function(bety, workflow_id) {
   if (workflow_id != "") {
     runs <- runs(bety, workflow_id)
     if (dplyr.count(runs) > 0) {
-      run_ids <- collect(runs)[["run_id"]] %>% sort
+      run_ids <- dplyr::pull(runs, run_id) %>% sort()
     }
   }
   return(run_ids)
@@ -232,23 +235,23 @@ var_names_all <- function(bety, workflow_id, run_id) {
 #' @param run_id Run ID
 #' @param workflow_id Workflow ID
 #' @export
-load_data_single_run <- function(bety, workflow_id,run_id) {
+load_data_single_run <- function(bety, workflow_id, run_id) {
   # For a particular combination of workflow and run id, loads
   # all variables from all files.
   # @return Dataframe for one run
   # Adapted from earlier code in pecan/shiny/workflowPlot/server.R
   globalDF <- data.frame()
-  workflow <- collect(workflow(bety, workflow_id))
+  workflow <- dplyr::collect(workflow(bety, workflow_id))
   # Use the function 'var_names_all' to get all variables
-  removeVarNames <- c('Year','FracJulianDay')
-  var_names <- var_names_all(bety,workflow_id,run_id)
+  var_names <- var_names_all(bety, workflow_id, run_id)
+  # TODO: This looks a lot like `read.output`. Should probably just use that here.
   # Using earlier code, refactored
-  if(nrow(workflow) > 0) {
+  if (nrow(workflow) > 0) {
     outputfolder <- file.path(workflow$folder, 'out', run_id)
-    files <- list.files(outputfolder, "*.nc$", full.names=TRUE)
-    for(file in files) {
+    files <- list.files(outputfolder, "*.nc$", full.names = TRUE)
+    for (file in files) {
       nc <- nc_open(file)
-      for(var_name in var_names){
+      for (var_name in var_names) {
         dates <- NA
         vals <- NA
         title <- var_name
@@ -258,19 +261,19 @@ load_data_single_run <- function(bety, workflow_id,run_id) {
         # Snow water
         sw <- TRUE
         # Check required bcoz many files don't contain title
-        if(!is.null(var$long_name)){
+        if (!is.null(var$long_name)) {
           title <- var$long_name
         }
         # Check required bcoz many files don't contain units
-        if(!is.null(var$units)){
+        if (!is.null(var$units)) {
           ylab <- var$units
         }
         x <- ncdays2date(ncdf4::ncvar_get(nc, 'time'), ncdf4::ncatt_get(nc, 'time'))
         y <- ncdf4::ncvar_get(nc, var_name)
         b <- !is.na(x) & !is.na(y) & sw != 0
-        dates <- if(is.na(dates)) x[b] else c(dates, x[b])
+        dates <- if (is.na(dates)) x[b] else c(dates, x[b])
         dates <- as.Date(dates)
-        vals <- if(is.na(vals)) y[b] else c(vals, y[b])
+        vals <- if (is.na(vals)) y[b] else c(vals, y[b])
         xlab <- "Time"
         # Values of the data which we will plot
         valuesDF <- data.frame(dates,vals)
