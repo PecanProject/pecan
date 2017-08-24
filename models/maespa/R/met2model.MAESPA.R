@@ -45,7 +45,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   out.file.full <- file.path(outfolder, out.file)
   
   results <- data.frame(file = out.file.full,
-                        host = fqdn(),
+                        host = PEcAn.utils::fqdn(),
                         mimetype = "text/plain", 
                         formatname = "maespa.met", 
                         startdate = start_date,
