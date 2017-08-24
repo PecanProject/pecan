@@ -3,9 +3,9 @@
 \name{append.covariate}
 \alias{append.covariate}
 \title{Append covariate data as a column within a table
-\code{append.covariate} appends a data frame of covariates as a new column in a data frame 
+\code{append.covariate} appends a data frame of covariates as a new column in a data frame
   of trait data.
-In the event a trait has several covariates available, the first one found 
+In the event a trait has several covariates available, the first one found
   (i.e. lowest row number) will take precedence}
 \usage{
 append.covariate(data, column.name, covariates.data)
