@@ -13,6 +13,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added check for NA end/start year in read.output
 - Fixed jagify bug for raw field data
 - Fixed bug (order of dims in nc_create) introduced in model2netcdf.DALEC by standard_vars changes
+- Cleaned up NAMESPACE and source code of `PEcAn.DB` (#1520)
 
 ### Added
 - Expanded initial conditions workflow for pool-based models, including PEcAn.data.land::prepare_pools to calculate pools from IC file (to be coupled with write.configs)
