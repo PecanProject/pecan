@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
@@ -22,19 +22,9 @@ check.lists <- function(x, y) {
   if (nrow(x) != nrow(y)) {
     return(FALSE)
   }
-  if (!identical(as.character(x$id), as.character(y$id))) {
-    return(FALSE)
-  }
-  if (!identical(as.character(x$genus), as.character(y$genus))) {
-    return(FALSE)
-  }
-  if (!identical(as.character(x$species), as.character(y$species))) {
-    return(FALSE)
-  }
-  if (!identical(as.character(x$scientificname), as.character(y$scientificname))) {
-    return(FALSE)
-  }
-  return(TRUE)
+  cols <- c('id', 'genus', 'species', 'scientificname')
+  xy_match <- vapply(cols, function(i) identical(as.character(x[[i]]), as.character(y[[i]])), logical(1))
+  return(all(unlist(xy_match)))
 }
 
 ##--------------------------------------------------------------------------------------------------#
@@ -56,19 +46,29 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
                                trait.names = traitdictionary$id) {
 
   # Create directory if necessary
-  if(!file.exists(pft$outdir) && !dir.create(pft$outdir, recursive=TRUE)) {
+  if (!file.exists(pft$outdir) && !dir.create(pft$outdir, recursive = TRUE)) {
     PEcAn.logger::logger.error(paste0("Couldn't create PFT output directory: ", pft$outdir))
   }
 
   ## Remove old files.  Clean up.
-  old.files <- list.files(path=pft$outdir, full.names=TRUE, include.dirs=FALSE)
+  old.files <- list.files(path = pft$outdir, full.names = TRUE, include.dirs = FALSE)
   file.remove(old.files)
 
   # find appropriate pft
   if (is.null(modeltype)) {
-    pftid <- db.query(paste0("SELECT id FROM pfts WHERE name='", pft$name, "'"), dbcon)[['id']]
+    pftid <- db.query(
+      query = paste0("SELECT id FROM pfts WHERE name='", pft$name, "'"),
+      con = dbcon
+    )[['id']]
   } else {
-    pftid <- db.query(paste0("SELECT pfts.id FROM pfts, modeltypes WHERE pfts.name='", pft$name, "' and pfts.modeltype_id=modeltypes.id and modeltypes.name='", modeltype, "'"), dbcon)[['id']]
+    pftid <- db.query(
+      query = paste0(
+        "SELECT pfts.id FROM pfts, modeltypes WHERE pfts.name='", pft$name,
+        "' and pfts.modeltype_id=modeltypes.id and modeltypes.name='", modeltype,
+        "'"
+      ),
+      con = dbcon
+    )[['id']]
   }
   if (is.null(pftid)) {
     PEcAn.logger::logger.severe("Could not find pft, could not store file", filename)
@@ -76,30 +76,36 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   }
 
   # get the species, we need to check if anything changed
-  species <- PEcAn.DB::query.pft_species(pft$name, modeltype, dbcon)
+  species <- PEcAn.DB::query.pft_species(pft = pft$name, modeltype = modeltype, con = dbcon)
   spstr <- PEcAn.utils::vecpaste(species$id)
 
   # get the priors
-  prior.distns <- PEcAn.DB::query.priors(pftid, PEcAn.utils::vecpaste(trait.names), out = pft$outdir, con = dbcon)
+  prior.distns <- PEcAn.DB::query.priors(pft = pftid, trstr = PEcAn.utils::vecpaste(trait.names), out = pft$outdir, con = dbcon)
   prior.distns <- prior.distns[which(!rownames(prior.distns) %in% names(pft$constants)),]
-  traits <- rownames(prior.distns) 
+  traits <- rownames(prior.distns)
 
   # get the trait data (don't bother sampling derived traits until after update check)
-  trait.data.check <- PEcAn.DB::query.traits(spstr, traits, con = dbcon, update.check.only=TRUE)
+  trait.data.check <- PEcAn.DB::query.traits(spstr = spstr, priors = traits, con = dbcon, update.check.only = TRUE)
   traits <- names(trait.data.check)
 
   # Set forceupdate FALSE if it's a string (backwards compatible with 'AUTO' flag used in the past)
-  if(!is.logical(forceupdate)) {
+  if (!is.logical(forceupdate)) {
     forceupdate <- FALSE
   }
-  
+
   # check to see if we need to update
   if (!forceupdate) {
     if (is.null(pft$posteriorid)) {
-      pft$posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " ORDER BY created_at DESC LIMIT 1"), dbcon)[['id']]  
+      pft$posteriorid <- db.query(
+        query = paste0(
+          "SELECT id FROM posteriors WHERE pft_id=", pftid,
+          " ORDER BY created_at DESC LIMIT 1"
+        ),
+        con = dbcon
+      )[['id']]
     }
-    if (!is.null(pft$posteriorid)) { 
-      files <- dbfile.check('Posterior', pft$posteriorid, dbcon)
+    if (!is.null(pft$posteriorid)) {
+      files <- dbfile.check(type = 'Posterior', container.id = pft$posteriorid, con = dbcon)
       ids <- match(c('trait.data.Rdata', 'prior.distns.Rdata', 'species.csv'), files$file_name)
       if (!any(is.na(ids))) {
         foundallfiles <- TRUE
@@ -110,7 +116,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
             PEcAn.logger::logger.error("can not find posterior file: ", file.path(files$file_path[[id]], files$file_name[[id]]))
           } else if (files$file_name[[id]] == "species.csv") {
             PEcAn.logger::logger.debug("Checking if species have changed")
-            testme <- read.csv(file.path(files$file_path[[id]], files$file_name[[id]]))
+            testme <- read.csv(file = file.path(files$file_path[[id]], files$file_name[[id]]))
             if (!check.lists(species, testme)) {
               foundallfiles <- FALSE
               PEcAn.logger::logger.error("species have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
@@ -137,12 +143,12 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
 
             # For trait data including converted data, only check unconverted
             converted.stats2na <- function(x) {
-              if(all(c("mean", "stat", "mean_unconverted", "stat_unconverted") %in% names(x)))
+              if (all(c("mean", "stat", "mean_unconverted", "stat_unconverted") %in% names(x)))
                 x[,c("mean","stat")] <- NA
               return(x)
             }
-            trait.data = lapply(trait.data, converted.stats2na)
-            trait.data.check = lapply(trait.data.check, converted.stats2na)
+            trait.data <- lapply(trait.data, converted.stats2na)
+            trait.data.check <- lapply(trait.data.check, converted.stats2na)
 
             if (!identical(trait.data.check, trait.data)) {
               foundallfiles <- FALSE
@@ -153,19 +159,22 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
         }
         if (foundallfiles) {
           PEcAn.logger::logger.info("Reusing existing files from posterior", pft$posteriorid, "for", pft$name)
-          for(id in 1:nrow(files)) {
-            file.copy(file.path(files[[id, 'file_path']], files[[id, 'file_name']]), file.path(pft$outdir, files[[id, 'file_name']]))
+          for (id in seq_len(nrow(files))) {
+            file.copy(from = file.path(files[[id, 'file_path']], files[[id, 'file_name']]),
+                      to = file.path(pft$outdir, files[[id, 'file_name']]))
           }
-          
+
           # May need to symlink the generic post.distns.Rdata to a specific post.distns.*.Rdata file.
-          if(length(dir(pft$outdir, "post.distns.Rdata"))==0) {
+          if (length(dir(pft$outdir, "post.distns.Rdata")) == 0) {
             all.files <- dir(pft$outdir)
             post.distn.file <- all.files[grep("post.distns.*.Rdata", all.files)]
-            if(length(post.distn.file) > 1)
+            if (length(post.distn.file) > 1)
               stop("get.trait.data.pft() doesn't know how to handle multiple post.distns.*.Rdata files")
-            else if(length(post.distn.file) == 1) {
+            else if (length(post.distn.file) == 1) {
               # Found exactly one post.distns.*.Rdata file. Use it.
-              file.symlink(file.path(pft$outdir, post.distn.file), file.path(pft$outdir, 'post.distns.Rdata'))
+              file.symlink(from = file.path(pft$outdir, post.distn.file),
+                           to = file.path(pft$outdir, 'post.distns.Rdata')
+              )
             }
           }
           return(pft)
@@ -175,16 +184,18 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   }
 
   # get the trait data (including sampling of derived traits, if any)
-  trait.data <- query.traits(spstr, traits, con = dbcon, update.check.only=FALSE)
+  trait.data <- query.traits(spstr, traits, con = dbcon, update.check.only = FALSE)
   traits <- names(trait.data)
 
   # get list of existing files so they get ignored saving
-  old.files <- list.files(path=pft$outdir)
+  old.files <- list.files(path = pft$outdir)
 
   # create a new posterior
-  now <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-  db.query(paste0("INSERT INTO posteriors (pft_id, created_at, updated_at) VALUES (", pftid, ", '", now, "', '", now, "')"), dbcon)
-  pft$posteriorid <- db.query(paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " AND created_at='", now, "'"), dbcon)[['id']]
+  now <- format(x = Sys.time(), format = "%Y-%m-%d %H:%M:%S")
+  db.query(query = paste0("INSERT INTO posteriors (pft_id, created_at, updated_at) VALUES (", pftid, ", '", now, "', '", now, "')"),
+           con = dbcon)
+  pft$posteriorid <- db.query(query = paste0("SELECT id FROM posteriors WHERE pft_id=", pftid, " AND created_at='", now, "'"),
+                              con = dbcon)[['id']]
 
   # create path where to store files
   pathname <- file.path(dbfiles, "posterior", pft$posteriorid)
@@ -201,28 +212,28 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   ## 3. display info to the console
   PEcAn.logger::logger.info('Summary of Prior distributions for: ', pft$name)
   PEcAn.logger::logger.info(colnames(prior.distns))
-  apply(cbind(rownames(prior.distns), prior.distns), MARGIN=1, PEcAn.logger::logger.info)
+  apply(X = cbind(rownames(prior.distns), prior.distns), MARGIN = 1, FUN = PEcAn.logger::logger.info)
 
-  ## traits = variables with prior distributions for this pft 
+  ## traits = variables with prior distributions for this pft
   trait.data.file <- file.path(pft$outdir, "trait.data.Rdata")
   save(trait.data, file = trait.data.file)
   write.csv(plyr::ldply(trait.data),
             file = file.path(pft$outdir, "trait.data.csv"), row.names = FALSE)
-  
+
   PEcAn.logger::logger.info("number of observations per trait for", pft$name)
-  for(t in names(trait.data)){
+  for (t in names(trait.data)) {
     PEcAn.logger::logger.info(nrow(trait.data[[t]]), "observations of", t)
   }
-    
+
 
   ### save and store in database all results except those that were there already
-  for(file in list.files(path=pft$outdir)) {
+  for (file in list.files(path = pft$outdir)) {
     if (file %in% old.files) {
       next
     }
     filename <- file.path(pathname, file)
     file.copy(file.path(pft$outdir, file), filename)
-    dbfile.insert(pathname,file, 'Posterior', pft$posteriorid, dbcon)
+    dbfile.insert(in.path = pathname, in.prefix = file, type = 'Posterior', id = pft$posteriorid, con = dbcon)
   }
 
   return(pft)
@@ -259,8 +270,8 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate, trai
     PEcAn.logger::logger.severe('At least one pft in settings is missing its "outdir"')
   }
   ##---------------- Load trait dictionary --------------#
-  if(is.logical(trait.names)){
-    if(trait.names){
+  if (is.logical(trait.names)) {
+    if (trait.names) {
       data(trait.dictionary, package = "PEcAn.utils")
       trait.names <- trait.dictionary$id
     }
@@ -269,8 +280,8 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate, trai
   # process all pfts
   dbcon <- db.open(database)
   on.exit(db.close(dbcon))
-  result <- lapply(pfts, get.trait.data.pft, 
-                   modeltype = modeltype, 
+  result <- lapply(pfts, get.trait.data.pft,
+                   modeltype = modeltype,
                    dbfiles = dbfiles,
                    dbcon = dbcon,
                    forceupdate = forceupdate,
@@ -282,11 +293,11 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate, trai
 
 ##' @export
 runModule.get.trait.data <- function(settings) {
-  if(is.null(settings$meta.analysis)) return(settings) ## if there's no MA, there's no need for traits
-  if(PEcAn.settings::is.MultiSettings(settings)) {
+  if (is.null(settings$meta.analysis)) return(settings) ## if there's no MA, there's no need for traits
+  if (PEcAn.settings::is.MultiSettings(settings)) {
     pfts <- list()
     pft.names <- character(0)
-    for(i in seq_along(settings)) {
+    for (i in seq_along(settings)) {
       pfts.i <- settings[[i]]$pfts
       if (!is.list(pfts.i)) {
         PEcAn.logger::logger.severe("settings[[i]]$pfts is not a list")
@@ -296,17 +307,17 @@ runModule.get.trait.data <- function(settings) {
       pfts <- c(pfts, pfts.i[ind])
       pft.names <- sapply(pfts, function(x) x$name)
     }
-    
+
     PEcAn.logger::logger.info(paste0("Getting trait data for all PFTs listed by any Settings object in the list: ",
-                paste(pft.names, collapse=", ")))
-                
+                paste(pft.names, collapse = ", ")))
+
     modeltype <- settings$model$type
     dbfiles <- settings$database$dbfiles
     database <- settings$database$bety
     forceupdate <- ifelse(is.null(settings$meta.analysis$update), FALSE, settings$meta.analysis$update)
-    settings$pfts <- get.trait.data(pfts, modeltype, dbfiles, database, forceupdate)
+    settings$pfts <- get.trait.data(pfts = pfts, modeltype = modeltype, dbfiles = dbfiles, database = database, forceupdate = forceupdate)
     return(settings)
-  } else if(PEcAn.settings::is.Settings(settings)) {
+  } else if (PEcAn.settings::is.Settings(settings)) {
     pfts <- settings$pfts
     if (!is.list(pfts)) {
       PEcAn.logger::logger.severe("settings$pfts is not a list")
@@ -315,7 +326,7 @@ runModule.get.trait.data <- function(settings) {
     dbfiles <- settings$database$dbfiles
     database <- settings$database$bety
     forceupdate <- ifelse(is.null(settings$meta.analysis$update), FALSE, settings$meta.analysis$update)
-    settings$pfts <- get.trait.data(pfts, modeltype, dbfiles, database, forceupdate)
+    settings$pfts <- get.trait.data(pfts = pfts, modeltype = modeltype, dbfiles = dbfiles, database = database, forceupdate = forceupdate)
     return(settings)
   } else {
     stop("runModule.get.trait.data only works with Settings or MultiSettings")
@@ -325,5 +336,5 @@ runModule.get.trait.data <- function(settings) {
 
 
 ####################################################################################################
-### EOF.  End of R script file.    					
+### EOF.  End of R script file.
 ####################################################################################################
