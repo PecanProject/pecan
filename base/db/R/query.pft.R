@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
@@ -22,7 +22,7 @@
 ##' query.pft_species('ebifarm.pavi')
 ##' query.pft_species(settings = read.settings("pecan.xml"))
 ##' }
-query.pft_species <- function(pft, modeltype, con){
+query.pft_species <- function(pft, modeltype, con) {
   # create pft subquery
   if (is.null(modeltype)) {
     query <- paste0("select species.id, species.genus, species.species, species.scientificname",
@@ -40,12 +40,12 @@ query.pft_species <- function(pft, modeltype, con){
                     " and modeltypes.name='", modeltype, "'")
   }
 
-  species <- db.query(query, con)
+  species <- db.query(query = query, con = con)
   invisible(species)
 }
 #==================================================================================================#
 
 
 ####################################################################################################
-### EOF.  End of R script file.      				
+### EOF.  End of R script file.
 ####################################################################################################

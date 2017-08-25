@@ -7,13 +7,6 @@
 priordupe(parent.pft.name = NULL, new.pft.name = NULL,
   new.pft.definition = NULL, settings = NULL)
 }
-\arguments{
-\item{parent.pft.name}{}
-
-\item{new.pft.name}{}
-
-\item{new.pft.definition}{}
-}
 \value{
 nothing, creates new pft in database as a side-effect
 }
