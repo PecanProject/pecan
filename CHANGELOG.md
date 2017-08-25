@@ -17,6 +17,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 - Expanded initial conditions workflow for pool-based models, including PEcAn.data.land::prepare_pools to calculate pools from IC file (to be coupled with write.configs)
+- Allow SIPNET and DALEC met files and model2netcdf to start or end mid year
 
 ### Changed
 - Clean up directory structure:
