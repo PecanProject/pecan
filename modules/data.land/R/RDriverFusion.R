@@ -45,7 +45,7 @@ Tree2Tree <- Tree2Tree[!is.na(Tree2Tree$SDIc),]
 setwd("C:/Users/mekevans/Documents/Cdrive/Bayes/DemogRangeMod/ProofOfConcept/treerings/pecan/modules/data.land/R")
 ### read in function that creates jags objects from above data
 source("BuildJAGSdataobject.R")
-jags.stuff <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 1000, trunc.yr = 1966)
+jags.stuff <- buildJAGSdataobject(temp2, Tree2Tree, rnd.subset = 5000, trunc.yr = 1966)
 # if you don't have trees without cores, use the following line
 # or you wish to not include trees without cores
 # jags.stuff <- buildJAGSdataobject(temp2, rnd.subset = 100, trunc.yr = 1966)
@@ -53,6 +53,9 @@ data <- jags.stuff$data
 z0 <- jags.stuff$z0
 cov.data <- jags.stuff$cov.data
 time_data <- jags.stuff$time_data
+
+data$a_dbh <- 512
+data$r_dbh <- 256
 
 ### it's nice (reassuring) to look at the tree-ring and DBH data (reality check)
 View(data$y)
@@ -149,10 +152,24 @@ model11.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=tim
                                            burnin_plot=FALSE)
 
 model12.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
-                                           n.iter=5000, random="(1|PLOT[i])",
+                                           n.iter=5000, n.chunk=5000, save.state=FALSE,
+                                           random="(1|PLOT[i])",
                                            fixed = "~ X + X^2 + SICOND + SDI + X*tmax.JanA[t]",
                                            time_varying = "tmax.JanA + SICOND*tmax.JanA[t]",
                                            burnin_plot=FALSE)
+
+#### LONG MCMC RUN WITH TREES WITHOUT CORES
+model7.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data,
+                                           n.iter=500000, n.chunk=1000, save.state=FALSE, random="(1|PLOT[i])",
+                                           fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*tmax.JanA[t] + SICOND*SDI",
+                                           time_varying = "tmax.JanA + SDI*tmax.JanA[t] + SICOND*tmax.JanA[t]",
+                                           burnin_plot=FALSE)
+
+model1.out <- InventoryGrowthFusion(data=data, cov.data=cov.data, time_data=time_data, z0=z0,
+                                    n.iter=500000, n.chunk=1000, save.state=FALSE, random="(1|PLOT[i])",
+                                    fixed = "~ X + X^2 + SICOND + SDI + SDI*X + SICOND*X + X*wintP.JJ[t] + SICOND*SDI",
+                                    time_varying = "wintP.JJ + SDI*wintP.JJ[t] + SICOND*wintP.JJ[t]",
+                                    burnin_plot=FALSE)
 
 #### DIAGNOSTICS
 #### excerpted/modified from InventoryGrowthFusionDiagnostics.R (Dietze)
