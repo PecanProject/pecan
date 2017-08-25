@@ -45,6 +45,7 @@ Default is 1000.
 Default is \code{10 * log10(n)} (same as \code{stats::acf} function).
 \item \code{save_progress} -- File name for saving samples between loop
 iterations. If \code{NULL} (default), do not save progress samples.
+\item \code{threshold} -- Threshold for Gelman PSRF convergence diagnostic. Default is 1.1.
 }
 }
 

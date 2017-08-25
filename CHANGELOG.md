@@ -13,14 +13,19 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added check for NA end/start year in read.output
 - Fixed jagify bug for raw field data
 - Fixed bug (order of dims in nc_create) introduced in model2netcdf.DALEC by standard_vars changes
+- Cleaned up NAMESPACE and source code of `PEcAn.DB` (#1520)
 
 ### Added
 - Expanded initial conditions workflow for pool-based models, including PEcAn.data.land::prepare_pools to calculate pools from IC file (to be coupled with write.configs)
+
 - #1594 shiny/workflowPlot Adding interactiveness using ggploltly
 - #1594 shiny/workflowPlot Load outputs from multiple runs of the model
 - #1594 shiny/workflowPlot Ways to toggle geometries (e.g. geom_point vs. geom_line).
 - #1594 shiny/workflowPlot Smoothing using geom_smooth (Slider for specifying moving window width)
 - #1594 shiny/workflowPlot Comparing model output vs loaded data according to [tutorial](https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/AnalyzeOutput/modelVSdata.Rmd) 
+
+- Allow SIPNET and DALEC met files and model2netcdf to start or end mid year
+
 
 ### Changed
 - Clean up directory structure:
