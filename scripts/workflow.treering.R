@@ -22,7 +22,7 @@ library(mvtnorm)
 library(rjags)
 library(reshape2)
 #--------------------------------------------------------------------------------------------------#
-# 
+#
 
 #---------------- Load PEcAn settings file. -------------------------------------------------------#
 # Open and read in settings file for PEcAn run.
@@ -62,7 +62,7 @@ pft.data <- list()
 for (ipft in seq_along(settings$pfts)) {
   ## loop over PFTs
   pft_name <- settings$pfts[[ipft]]$name
-  query <- paste0("SELECT s.spcd,", "s.\"Symbol\"", " as acronym from pfts as p join pfts_species on p.id = pfts_species.pft_id join species as s on pfts_species.specie_id = s.id where p.name like '%", 
+  query <- paste0("SELECT s.spcd,", "s.\"Symbol\"", " as acronym from pfts as p join pfts_species on p.id = pfts_species.pft_id join species as s on pfts_species.specie_id = s.id where p.name like '%",
                   pft_name, "%'")
   pft.data[[pft_name]] <- db.query(query, con)
 }
@@ -119,7 +119,7 @@ status.end()
 ### PEcAn workflow run complete
 status.start("FINISHED")
 if (settings$workflow$id != "NA") {
-  query.base(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"), con)
+  db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"), con)
 }
 status.end()
 db.close(con)
