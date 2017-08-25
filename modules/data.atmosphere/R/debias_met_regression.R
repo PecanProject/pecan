@@ -75,7 +75,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
   if(ncol(source.data[[2]])>1) warning("Feeding an ensemble of source data is currently experimental!  This could crash")
   
   # Variables need to be done in a specific order
-  vars.all <- c("air_temperature", "air_temperature_minimum", "air_temperature_maximum", "specific_humidity", "surface_downwelling_shortwave_flux_in_air", "air_pressure", "surface_downwelling_longwave_flux_in_air", "wind_speed", "precipitation_flux")
+  vars.all <- c("air_temperature", "air_temperature_maximum", "air_temperature_minimum", "specific_humidity", "surface_downwelling_shortwave_flux_in_air", "air_pressure", "surface_downwelling_longwave_flux_in_air", "wind_speed", "precipitation_flux")
   
   if(is.null(vars.debias)) vars.debias <- vars.all[vars.all %in% names(train.data)] # Don't try to do vars that we don't have
   if(is.null(yrs.save)) yrs.save <- unique(source.data$time$Year)
@@ -223,7 +223,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
     # Aggregate to get rid of years so that we can compare climatic means
     clim.src <- aggregate(met.src[met.src$year %in% yrs.overlap,"X"],
                            by=met.src[met.src$year %in% yrs.overlap,c("doy", "ind.src")],
-                           FUN=mean)
+                           FUN=mean, na.rm=T)
     names(clim.src)[3] <- "X"
     # -----
     
@@ -280,6 +280,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
     if(v %in% vars.transform){
       dat.clim[,c("X", "Y")] <- sqrt(dat.clim[,c("X", "Y")])
       met.src$X <- sqrt(met.src$X)
+      met.train$X <- sqrt(met.train$X)
       met.train$Y <- sqrt(met.train$Y)
     }
     # -------------
@@ -417,12 +418,13 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # k=round(length(met.src$year)/(25*366),0)
           # k=max(k, 4) # we can't have less than 4 knots
           
-          mod.anom <- gam(anom.raw ~ s(year, k=k) + (air_temperature_maximum.anom + air_temperature_minimum.anom + surface_downwelling_shortwave_flux_in_air.anom + surface_downwelling_longwave_flux_in_air.anom + specific_humidity.anom) -1, data=met.src[met.src$ind==ind,])
+          # mod.anom <- gam(anom.raw ~ s(year, k=k) + (air_temperature_maximum.anom + air_temperature_minimum.anom + surface_downwelling_shortwave_flux_in_air.anom + surface_downwelling_longwave_flux_in_air.anom + specific_humidity.anom) -1, data=met.src[met.src$ind==ind,])
+          mod.anom <- gam(anom.train ~ s(doy, k=6) + (air_temperature_maximum.anom + air_temperature_minimum.anom + surface_downwelling_shortwave_flux_in_air.anom + surface_downwelling_longwave_flux_in_air.anom + specific_humidity.anom) -1, data=met.train[met.train$ind==ind,])
         } else if(v %in% c("wind_speed", "air_pressure", "surface_downwelling_longwave_flux_in_air")) {
           # These variables are constant in CRU pre-1950.  
           # This means that we can not use information about the long term trend OR the actual annomalies 
           # -- they must be inferred from the other met we have
-          mod.anom <- gam(anom.raw ~ s(doy, k=6) + (air_temperature_minimum.anom*air_temperature_maximum.anom + surface_downwelling_shortwave_flux_in_air.anom + specific_humidity.anom) -1, data=met.src[met.src$ind==ind,])
+          mod.anom <- gam(anom.train ~ s(doy, k=6) + (air_temperature_minimum.anom*air_temperature_maximum.anom + surface_downwelling_shortwave_flux_in_air.anom + specific_humidity.anom) -1, data=met.train[met.train$ind==ind,])
         }      
       } else { 
         # If we're dealing with non-empirical datasets, we can't pair anomalies to come up with a direct adjustment 
@@ -543,16 +545,16 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       # If we're dealing with precip, transform proportions of rain back to actual precip
       if(v == "precipitation_flux"){ 
         sim1 <- sim1*sim1c
-        met.src$X <- met.src$X*met.src$X.tot
-        met.src$anom.raw <- met.src$anom.raw*met.src$X.tot
+        # met.src$X <- met.src$X*met.src$X.tot
+        # met.src$anom.raw <- met.src$anom.raw*met.src$X.tot
       }
       
       # Un-transform variables where we encounter zero-truncation issues
       # NOTE: Need to do this *before* we sum the components!! 
-      if(v %in% c("surface_downwelling_shortwave_flux_in_air", "specific_humidity", "surface_downwelling_longwave_flux_in_air", "wind_speed")){
-        sim1 <- sim1^2
-        met.src[met.src$ind==ind,"X"] <- met.src[met.src$ind==ind,"X"]^2
-      } 
+      #if(v %in% vars.transform){
+      #  sim1 <- sim1^2
+      #  # met.src[met.src$ind==ind,"X"] <- met.src[met.src$ind==ind,"X"]^2
+      #} 
       
       
       # For preciptiation, we need to make sure we don't have constant drizzel and have 
@@ -578,8 +580,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
               dry <- rows.yr[which(sim1[rows.yr,j] < 0)] # update our dry days
             }
             
-            n.now <- round(rnorm(1, mean(rainless), sd(rainless)), 0) 
-            cutoff <- quantile(sim1[rows.yr, j], n.now/366)
+            n.now <- round(rnorm(1, mean(rainless, na.rm=T), sd(rainless, na.rm=T)), 0) 
+            cutoff <- quantile(sim1[rows.yr, j], n.now/366, na.rm=T)
             
             # Figure out which days are currently below our cutoff and randomly distribute 
             # their precip to days that are not below the cutoff (this causes a more bi-modal 
@@ -610,6 +612,20 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       
       rm(mod.bias, anom.train, anom.src, mod.anom, Xp, Xp.anom, sim1, sim1a, sim1b)
     }
+
+    if(v == "precipitation_flux"){ 
+      # sim1 <- sim1*sim1c
+      met.src$X <- met.src$X*met.src$X.tot
+      met.src$anom.raw <- met.src$anom.raw*met.src$X.tot
+    }
+    
+    if(v %in% vars.transform){
+      sim.final <- sim.final^2
+      dat.clim[,c("X", "Y")] <- (dat.clim[,c("X", "Y")]^2)
+      met.src$X <- (met.src$X)^2
+      met.train$X <- (met.train$X)^2
+      met.train$Y <- (met.train$Y)^2
+    }
     
     # Store the output in our dat.out
     dat.out[[v]] <- sim.final
@@ -622,10 +638,10 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       dir.create(path.diagnostics, recursive=T, showWarnings=F)
       
       dat.pred <- source.data$time
-      dat.pred$obs  <- apply(source.data[[v]], 1, mean)
-      dat.pred$mean <- apply(dat.out[[v]], 1, mean)
-      dat.pred$lwr  <- apply(dat.out[[v]], 1, quantile, 0.025)
-      dat.pred$upr  <- apply(dat.out[[v]], 1, quantile, 0.975)
+      dat.pred$obs  <- apply(source.data[[v]], 1, mean, na.rm=T)
+      dat.pred$mean <- apply(dat.out[[v]], 1, mean, na.rm=T)
+      dat.pred$lwr  <- apply(dat.out[[v]], 1, quantile, 0.025, na.rm=T)
+      dat.pred$upr  <- apply(dat.out[[v]], 1, quantile, 0.975, na.rm=T)
       
       # Plotting the observed and the bias-corrected 95% CI
       png(file.path(path.diagnostics, paste(ens.name, v, "day.png", sep="_")))
