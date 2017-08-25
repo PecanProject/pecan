@@ -15,7 +15,7 @@ if (Sys.getenv('CI') == 'true') {
     samples <- invert_bt(observed = observed, model = model, prior = prior,
                          custom_settings = list(init = list(iterations = 2000),
                                                 loop = list(iterations = 1000),
-                                                other = list(max_iter = 20000)))
+                                                other = list(max_iter = 20000, threshold = 1.3)))
 
     samples_burned <- PEcAn.assim.batch::autoburnin(BayesianTools::getSample(samples, coda = TRUE), method = 'gelman.plot')
     mean_estimates <- do.call(cbind, summary(samples_burned)[c('statistics', 'quantiles')])
