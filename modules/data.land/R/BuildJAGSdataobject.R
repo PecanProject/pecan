@@ -206,15 +206,19 @@ for (i in yrt_1.clim.var) { ## this loop deals with the climate variables taken 
 names(time_data) <- names.clim.var
 
 # calculate winter precip and add to the list time_data (rows are trees, columns are years)
+wintP.NovAug <- (time_data$PPTNov + time_data$PPTDec + time_data$PPTJan + time_data$PPTFeb + time_data$PPTMar + time_data$PPTApr + time_data$PPTMay + time_data$PPTJun + time_data$PPTJul + time_data$PPTAug)
 wintP.wateryr <- (time_data$PPTSep + time_data$PPTOct + time_data$PPTNov + time_data$PPTDec + time_data$PPTJan + time_data$PPTFeb + time_data$PPTMar + time_data$PPTApr + time_data$PPTMay + time_data$PPTJun + time_data$PPTJul + time_data$PPTAug)
 wintP.NM <- (time_data$PPTNov + time_data$PPTDec + time_data$PPTJan + time_data$PPTFeb + time_data$PPTMar)
 wintP.JJ <- (time_data$PPTJan + time_data$PPTFeb + time_data$PPTMar + time_data$PPTApr + time_data$PPTMay + time_data$PPTJun + time_data$PPTJul)
+time_data$wintP.NovAug <- wintP.NovAug
 time_data$wintP.wateryr <- wintP.wateryr
 time_data$wintP.NM <- wintP.NM
 time_data$wintP.JJ <- wintP.JJ
 # seasonal Tmax variables
+tmax.fallspr <- (time_data$TMAXAug + time_data$TMAXSep + time_data$TMAXOct + time_data$TMAXMay + time_data$TMAXJun + time_data$TMAXJul)/6
 tmax.JanA <- (time_data$TMAXJan + time_data$TMAXFeb + time_data$TMAXMar + time_data$TMAXApr + time_data$TMAXMay + time_data$TMAXJun + time_data$TMAXJul + time_data$TMAXAug)/8
 tmax.MJul <- (time_data$TMAXMay + time_data$TMAXJun + time_data$TMAXJul)/3
+time_data$tmax.fallspr <- tmax.fallspr
 time_data$tmax.JanA <- tmax.JanA
 time_data$tmax.MJul <- tmax.MJul
 
