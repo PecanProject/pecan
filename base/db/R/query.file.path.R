@@ -4,16 +4,22 @@
 ##' @param host_name
 ##' @param con : database connection
 ##' @export query.file.path
-##' 
-##' @author Betsy Cowdery 
+##'
+##' @author Betsy Cowdery
 query.file.path <- function(input.id, host_name, con){
-  machine.host <- ifelse(host_name == "localhost", PEcAn.utils::fqdn(), host_name)
-  machine = db.query(paste0("SELECT * from machines where hostname = '",machine.host,"'"),con)
-  dbfile = db.query(paste("SELECT file_name,file_path from dbfiles where container_id =",input.id," and container_type = 'Input' and machine_id =",machine$id),con)
+  machine.host <- default_hostname(host_name)
+  machine <- db.query(query = paste0("SELECT * from machines where hostname = '",machine.host,"'"), con = con)
+  dbfile <- db.query(
+    query = paste(
+      "SELECT file_name,file_path from dbfiles where container_id =", input.id,
+      " and container_type = 'Input' and machine_id =", machine$id
+    ),
+    con = con
+  )
   path <- file.path(dbfile$file_path,dbfile$file_name)
   cmd <- paste0("file.exists( '",path,"')")
-  remote.execute.R(cmd,machine.host,verbose=TRUE)
-  #   Check - to be determined later   
+  PEcAn.utils::remote.execute.R(script = cmd, host = machine.host, verbose=TRUE)
+  #   Check - to be determined later
   #   if(file.exists(path)){
   #     return(path)
   #   }else{
