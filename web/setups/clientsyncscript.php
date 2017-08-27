@@ -10,37 +10,11 @@
 
 // client side script
 
-// // Create map with request parameters
-// $params = array ('client_sceret' => $client_sceret, 'server_auth_token' => $server_auth_token, 'fqdn' => $fqdn );
-//
-// // Build Http query using params
-// $query = http_build_query ($params);
-//
-// // Create Http context details
-// $contextData = array (
-//                 'method' => 'POST',
-//                 'header' => "Connection: close\r\n".
-//                             "Content-Length: ".strlen($query)."\r\n",
-//                 'content'=> $query );
-//
-// // Create context resource for our request
-// $context = stream_context_create (array ( 'http' => $contextData ));
-//
-// // Read page rendered as result of your POST request
-// $result =  file_get_contents (
-//                   $server_url,  // page url
-//                   false,
-//                   $context);
-
 include_once '../config.php';
 
 $service_url = $server_url."/pecan/setups/serversyncscript.php";
 
 $curl = curl_init($service_url);
-
-//var_dump($client_sceret);
-//var_dump($server_auth_token);
-//var_dump($fqdn);
 
 $curl_post_data = array ('client_sceret' => $client_sceret,
                          'server_auth_token' => $server_auth_token,
@@ -58,7 +32,7 @@ $curl_response = curl_exec($curl);
 if ($curl_response === false) {
     $info = curl_getinfo($curl);
     curl_close($curl);
-    die('error occured during curl exec. Additioanl info: ' . var_export($info));
+    die('error occured during curl exec. Additional info: ' . var_export($info));
 }
 
 // close curl
@@ -68,13 +42,18 @@ if (isset($decoded->status) && $decoded->status == 'ERROR') {
     die('error occured: ' . $decoded->errormessage);
 }
 
-// got wait id
-
-// var_dump($curl_response);
-// echo '<br>';
-// var_dump($decoded);
-
 // instructions to update the client secrets
+if (!isset($client_sceret) && empty($client_sceret)) {
+  $curl_post_data = array ('client_sceret' => $client_sceret);
+  $service_url = $server_url."/pecan/setups/add.php";
+  $curl = curl_init($service_url);
+  // set the curl to do POST request to add client secret to the config page
+  curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+  curl_setopt($curl, CURLOPT_POST, true);
+  curl_setopt($curl, CURLOPT_POSTFIELDS, $curl_post_data);
+  // execute the curl request
+  $curl_response = curl_exec($curl);
+}
 
 // script to handle wait id part
 //echo $decoded->wantid;
