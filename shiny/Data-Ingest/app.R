@@ -10,28 +10,35 @@
 library(shiny)
 library(PEcAn.data.land)
 library(shinyDND)
-# source("dataone_download.R", local = FALSE)
 
 
 # Define UI for application
+
 ui <- fluidPage(
   
-  # Application title
   titlePanel("Data Ingest"),
   
-  textInput(inputId = "id", label = "Import From DataONE", value = "doi or identifier"),
-  textOutput(outputId = "identifier")
+  textInput("id", label = h3("Import From DataONE"), placeholder = "Enter doi or id here"),
+  actionButton(inputId = "D1Button", label = "Upload"),
   
- 
+  hr(),
+  fluidRow(column(3, verbatimTextOutput("identifier")))
 )
 
-# Define server logic
 server <- function(input, output) {
   
-  output$identifier <- renderText({ PEcAn.data.land::dataone_download(input$id) })
+  d1d <- eventReactive(input$D1Button, {
+    input$id
+  })
+  
+  output$identifier <- renderText({
+    d1d()
+  })
+  
   
 }
 
 # Run the application 
 shinyApp(ui = ui, server = server)
 
+# example data: doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87
