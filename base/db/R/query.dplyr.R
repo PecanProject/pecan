@@ -143,10 +143,16 @@ get_workflow_ids <- function(bety, session, all.ids=FALSE) {
     ids <- unlist(query[names(query) == "workflow_id"], use.names = FALSE)
   } else {
     # Get all workflow IDs
-    ids <- workflows(bety, ensemble = TRUE) %>%
-      dplyr::distinct(workflow_id) %>%
-      dplyr::pull() %>%
-      sort(decreasing = TRUE)
+
+    ids <- workflows(bety, ensemble = FALSE) %>% distinct(workflow_id) %>% collect %>% 
+      .[["workflow_id"]] %>% sort(decreasing = TRUE)
+    # pull(.,workflow_id) %>% sort(decreasing = TRUE)
+
+#    ids <- workflows(bety, ensemble = TRUE) %>%
+#      dplyr::distinct(workflow_id) %>%
+#      dplyr::pull() %>%
+#      sort(decreasing = TRUE)
+
   }
   return(ids)
 }  # get_workflow_ids
@@ -271,9 +277,11 @@ load_data_single_run <- function(bety, workflow_id, run_id) {
         x <- ncdays2date(ncdf4::ncvar_get(nc, 'time'), ncdf4::ncatt_get(nc, 'time'))
         y <- ncdf4::ncvar_get(nc, var_name)
         b <- !is.na(x) & !is.na(y) & sw != 0
-        dates <- if (is.na(dates)) x[b] else c(dates, x[b])
-        dates <- as.Date(dates)
-        vals <- if (is.na(vals)) y[b] else c(vals, y[b])
+        
+        dates <- if(is.na(dates)) x[b] else c(dates, x[b])
+        dates <- as.POSIXct(dates)
+        vals <- if(is.na(vals)) y[b] else c(vals, y[b])
+
         xlab <- "Time"
         # Values of the data which we will plot
         valuesDF <- data.frame(dates,vals)
