@@ -14,4 +14,18 @@ if (file_exists ("syncflag.txt") == true){
   include 'sync.php';
 }
 
+$tempfile = tmpfile();
+$line = date("Y-m-d H:i:s") . "Corn Hit";
+fwrite($tempfile, $line);
+
+$configfile = fopen("syscron.log", "a+");
+
+rewind($tempfile);
+
+while (($buffer=fgets($tempfile))!== false) {
+  fwrite($configfile,$buffer);
+}
+
+fclose($tempfile); // remove tempfile
+
 ?>
