@@ -21,31 +21,6 @@ $fqdn = $_POST['fqdn'];
 
 open_database();
 
-// if ( !isset($client_sceret) && !isset($server_auth_token) && empty($client_sceret) && empty($server_auth_token)){
-// /**
-//  * token not set means client is a new one so add new data to the table and send
-//  * back the client tokens and sync id
-//  */
-//  //add code to create new client
-//  $host_id = 1;
-//
-//  $stmt = $pdo->prepare("INSERT
-//    INTO machines (id, hostname, created_at, updated_at , sync_host_id, sync_url, sync_contact, sync_start, sync_end)
-//    VALUES ( , :hostname, :created_at, :updated_at , :sync_host_id, :sync_url, :sync_contact, :sync_start, :sync_end );");
-//  if (!$stmt->execute(array(':hostname' => $fqdn,
-//                           ':created_at' => date("Y-m-d"),
-//                           ':updated_at' => date("Y-m-d"),
-//                           ':sync_host_id' => ' ',
-//                           ':sync_url' => ' ',
-//                           ':sync_contact' => ' ',
-//                           ':sync_start' =>  $host_id * (10 ^ 9) ,
-//                           ':sync_end' => $host_id * (10 ^ 9)  + (10 ^ 9)  -1 ))) {
-//   echo json_encode(array('status' => 'ERROR',
-//                         'errormessage' => 'Invalid query : [' . error_database() . ']'  . $pdo->errorInfo()));
-//   die();
-//  }
-//
-// }
 $stmt = $pdo->prepare("SELECT * FROM machines WHERE hostname = :hostname;",array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
 
 if (!$stmt->execute(array(':hostname' => $fqdn))) {
@@ -60,8 +35,33 @@ $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($row == false) {
   // means no data exist in database
-  $host_id = 25;
-  $id = 0;
+
+  // finding the max sync_id
+  $stmt = $pdo->prepare("SELECT max(sync_host_id) FROM machines;",array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
+  if (!$stmt->execute()) {
+    echo json_encode(array('status' => 'ERROR',
+                          'errormessage' => 'Invalid query : [' . error_database() . ']'  . $pdo->errorInfo()));
+    die();
+  }
+  $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+  $host_id = $row+1;
+
+  // if the host_id == 99 then changing it to 100 as 99 is reserved for the VM
+  if ($host_id == 99)
+    $host_id++;
+
+  // finding max id
+  $stmt = $pdo->prepare("SELECT max(id) FROM machines;",array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
+  if (!$stmt->execute()) {
+    echo json_encode(array('status' => 'ERROR',
+                          'errormessage' => 'Invalid query : [' . error_database() . ']'  . $pdo->errorInfo()));
+    die();
+  }
+  $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+  $id = $row+1;
+
   $date = date("Y-m-d H:i:s");
   $stmt = $pdo->prepare("INSERT
     INTO machines (id, hostname, created_at, updated_at , sync_host_id, sync_url, sync_contact, sync_start, sync_end)
@@ -99,7 +99,7 @@ $stmt->closeCursor();
 
 // checking for existance and other things
 
-$wantid = 1;      // Generate the wantid
+$wantid = $row->sync_host_id;      // Generate the wantid
 
 echo json_encode(array('status' => 'OK',
                        'wantid' => $wantid,

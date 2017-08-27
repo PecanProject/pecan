@@ -8,7 +8,7 @@
  * http://opensource.ncsa.illinois.edu/license.html
  */
 
-// cornjob
+// cronjob
 
 if (file_exists ("syncflag.txt") == true){
   include 'sync.php';
