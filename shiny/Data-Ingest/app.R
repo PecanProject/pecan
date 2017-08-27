@@ -27,15 +27,15 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   
-  d1d <- eventReactive(input$D1Button, {
-    input$id
-  })
+  d1d <- eventReactive(input$D1Button, { input$id }) #print doi on click
+  
+  # d1d <- eventReactive(input$D1Button, { PEcAn.data.land::dataone_download(input$id) }) #run dataone_download on click
   
   output$identifier <- renderText({
     d1d()
   })
   
-  
+
 }
 
 # Run the application 
