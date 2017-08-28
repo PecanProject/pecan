@@ -10,8 +10,6 @@
 library(shiny)
 library(PEcAn.data.land)
 library(shinyDND)
-
-
 # Define UI for application
 
 ui <- fluidPage(
@@ -22,7 +20,12 @@ ui <- fluidPage(
   actionButton(inputId = "D1Button", label = "Upload"),
   
   hr(),
-  fluidRow(column(3, verbatimTextOutput("identifier")))
+  fluidRow(column(3, verbatimTextOutput("identifier"))), 
+  
+  # https://github.com/rstudio/shiny-examples/blob/master/009-upload/app.R
+  fileInput(inputId = "file", label = h3("Select Local Files for Upload"), accept = NULL, multiple = TRUE),
+  p("One or more files")
+  
 )
 
 server <- function(input, output) {
@@ -35,7 +38,6 @@ server <- function(input, output) {
     d1d()
   })
   
-
 }
 
 # Run the application 
