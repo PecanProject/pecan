@@ -293,8 +293,7 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 		__debugPrint("Passed download step")	
 		
 		# now fill up the data structure with the returned data...
-		__debugPrint(n)
-		__debugPrint( data.subset.__len__() )
+		#__debugPrint( data.subset.__len__() )
 
 		if n == 0:
 		
@@ -308,15 +307,15 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 			
 			m.nrows = int(m.nrows)
 			m.ncols = int(m.ncols)
-			print m.nrows, type(m.nrows)
+			print "nrows", m.nrows, type(m.nrows)
 			m.data=np.zeros( (nDates,m.nrows*m.ncols) )
 
 		
-		__debugPrint( data.subset.__len__() )
 		for j in xrange( data.subset.__len__( ) ):
 			kn=0
 			__debugPrint( data.subset	)		
 			for k in data.subset[j].split(",")[5:]:
+				print "k"
 				__debugPrint( k )
 				try:
 					m.data[ n*chunkSize+j,kn] = int( k )
@@ -373,13 +372,13 @@ def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, 
 	client=setClient( )
 
 	prodList = modisClient( client )
-	printList( prodList )
+#	printList( prodList )
 
 	bandList = modisClient( client, product=product )
-	printList( bandList )
+#	printList( bandList )
 	
 	dateList = modisClient( client, product=product, band=band, lat=la, lon=lo )
-	printList( dateList )
+#	printList( dateList )
 	
 	m = modisClient( client, product=product, band=band, lat=la, lon=lo, startDate=start_date, endDate=end_date, kmAboveBelow=kmAB, kmLeftRight=kmLR)
 	if len(m.dateInt) == 0:
@@ -388,12 +387,16 @@ def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, 
 	date = m.dateInt
 	m.applyScale()
         if qcband is not None:
+		print "getting quality assurance for qcband"
         	modisGetQA(m, qcband, client=client )
+		print "filter QA"
         	m.filterQA( range(0,2**16,2), fill=-1 )
 
         if sdband is not None:
+		print "getting sdband"
         	k = modisClient( client, product=product, band=sdband, lat=la, lon=lo, startDate=start_date, endDate=end_date, kmAboveBelow=kmAB, kmLeftRight=kmLR)
         	if qcband is not None:
+			print "getting QA band for sdband"
                         modisGetQA(k, qcband, client=client )
         else:
                 k = None
