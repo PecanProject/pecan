@@ -246,7 +246,7 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 	while i < dateList.__len__( )-1:	
 		i=i+1
 	
-		__debugPrint( 'i=%d'%i )
+		#__debugPrint( 'i=%d'%i )
 		
 		thisDate=mkIntDate( dateList[i] )
 		
@@ -287,7 +287,7 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 		requestEnd=dateList[i+j-1]
 		i=i+j-1
 		
-		#print >> sys.stderr, requestStart, requestEnd
+		print >> sys.stderr, requestStart, requestEnd
 		
 		data = client.service.getsubset( lat, lon, product, band, requestStart, requestEnd, kmAboveBelow, kmLeftRight )
 		
