@@ -350,7 +350,7 @@ def m_data_to_netCDF(filename, m, k):
 	rootgrp.createDimension('dates', len(m.dateInt))
 	m_data = rootgrp.createVariable('LAI', 'f8', ('nrow', 'ncol'))
 	m_std = rootgrp.createVariable('LAIStd', 'f8', ('nrow', 'ncol'))
-	m_date = rootgrp.createVariable('Dates', 'i7', ('dates'))
+	m_date = rootgrp.createVariable('Dates', 'i8', ('dates'))
 	m_data[:] = m.data
 	if k is not None:
         	m_std[:] = 0.1*k.data
