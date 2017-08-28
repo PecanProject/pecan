@@ -394,6 +394,7 @@ def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, 
         if qcband is not None:
 		print "getting quality assurance for qcband"
         	modisGetQA(m, qcband, client=client )
+		printModisData(m)
 		print "filter QA"
         	m.filterQA( range(0,2**16,2), fill=-1 )
 
