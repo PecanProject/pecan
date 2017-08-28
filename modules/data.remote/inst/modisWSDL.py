@@ -307,7 +307,7 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 			m.xllcorner=data.xllcorner  	
 			
 			m.nrows = int(m.nrows)
-			m.nrows = int(m.ncols)
+			m.ncols = int(m.ncols)
 			print m.nrows, type(m.nrows)
 			m.data=np.zeros( (nDates,m.nrows*m.ncols) )
 
