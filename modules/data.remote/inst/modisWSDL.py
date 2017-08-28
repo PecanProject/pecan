@@ -344,7 +344,7 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 
 
 def m_data_to_netCDF(filename, m, k):
-	rootgrp = netCDF4.Dataset(filename, 'w', format='NETCDF3_64BIT')
+	rootgrp = netCDF4.Dataset(filename, 'w', format='NETCDF3_64BIT_DATA')
 	rootgrp.createDimension('ncol', m.data.shape[1])
 	rootgrp.createDimension('nrow', m.data.shape[0])
 	rootgrp.createDimension('dates', len(m.dateInt))
