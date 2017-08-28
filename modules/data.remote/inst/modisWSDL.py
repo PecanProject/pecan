@@ -373,13 +373,13 @@ def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, 
 	client=setClient( )
 
 	prodList = modisClient( client )
-#	printList( prodList )
+	printList( prodList )
 
 	bandList = modisClient( client, product=product )
-#	printList( bandList )
+	printList( bandList )
 	
 	dateList = modisClient( client, product=product, band=band, lat=la, lon=lo )
-#	printList( dateList )
+	printList( dateList )
 	
 	m = modisClient( client, product=product, band=band, lat=la, lon=lo, startDate=start_date, endDate=end_date, kmAboveBelow=kmAB, kmLeftRight=kmLR)
 	if len(m.dateInt) == 0:
