@@ -293,7 +293,7 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 		__debugPrint("Passed download step")	
 		
 		# now fill up the data structure with the returned data...
-
+		__debugPrint(n)
 		if n == 0:
 		
 			m.nrows=data.nrows         
