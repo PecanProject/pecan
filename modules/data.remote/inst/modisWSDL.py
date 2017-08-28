@@ -246,7 +246,7 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 	while i < dateList.__len__( )-1:	
 		i=i+1
 	
-		#__debugPrint( 'i=%d'%i )
+		__debugPrint( 'i=%d'%i )
 		
 		thisDate=mkIntDate( dateList[i] )
 		
@@ -280,6 +280,7 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 		
 		__debugPrint( 'i=%d, j=%d, dateList__len__()=%d'%(i,j,dateList.__len__( ))  )
 		while mkIntDate( dateList[i+j-1] ) > endDate:
+		  __debugPrint( 'j=%d'%j )
 			j=j-1
 		
 		
