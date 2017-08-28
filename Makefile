@@ -42,7 +42,7 @@ all: install document
 document: $(ALL_PKGS_D) .doc/base/all
 install: $(ALL_PKGS_I) .install/base/all
 check: $(ALL_PKGS_C) .check/base/all
-test: $(ALL_PKGS_T) .test/base/all 
+test: $(ALL_PKGS_T) .test/base/all
 
 ### Dependencies
 .doc/base/all: $(ALL_PKGS_D)
@@ -50,7 +50,7 @@ test: $(ALL_PKGS_T) .test/base/all
 .check/base/all: $(ALL_PKGS_C)
 .test/base/all: $(ALL_PKGS_T)
 
-depends = .check/$(1) .test/$(1)
+depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
 $(call depends,base/db): .install/base/logger .install/base/utils
 $(call depends,base/settings): .install/base/logger .install/base/utils .install/base/db
@@ -59,7 +59,7 @@ $(call depends,modules/data.atmosphere): .install/base/logger .install/base/util
 $(call depends,modules/data.land): .install/base/logger .install/base/db .install/base/utils
 $(call depends,modules/meta.analysis): .install/base/logger .install/base/utils .install/base/db
 $(call depends,modules/priors): .install/base/logger .install/base/utils
-$(call depends,modules/assim.batch): .install/base/logger .install/base/utils .install/base/db .install/modules/meta.analysis 
+$(call depends,modules/assim.batch): .install/base/logger .install/base/utils .install/base/db .install/modules/meta.analysis
 $(call depends,modules/rtm): .install/base/logger .install/modules/assim.batch
 $(call depends,modules/uncertainty): .install/base/logger .install/base/utils .install/modules/priors
 $(call depends,models/template): .install/base/logger .install/base/utils
