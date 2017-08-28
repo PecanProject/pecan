@@ -307,7 +307,10 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 			m.xllcorner=data.xllcorner  	
 			
 			__debugPrint( m.nrows  )
+			__debugPrint( m.ncols  )
+			__debugPrint( nDates  )
 			m.data=np.zeros( (nDates,m.nrows*m.ncols) )
+
 		
 		__debugPrint( data.subset.__len__() )
 		for j in xrange( data.subset.__len__( ) ):
