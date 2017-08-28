@@ -351,6 +351,7 @@ def m_data_to_netCDF(filename, m, k):
 	m_data = rootgrp.createVariable('LAI', 'f8', ('nrow', 'ncol'))
 	m_std = rootgrp.createVariable('LAIStd', 'f8', ('nrow', 'ncol'))
 	m_date = rootgrp.createVariable('Dates', 'i8', ('dates'))
+	print type(m.data[1])
 	m_data[:] = m.data
 	print "populated LAI data in netcdf"
 	if k is not None:
