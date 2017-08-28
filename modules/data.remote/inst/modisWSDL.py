@@ -406,7 +406,7 @@ def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, 
         else:
                 k = None
 		
-
+	printModisData( m )
 	m_data_to_netCDF(fname, m, k)	
 
 #	print(len(m.data))
