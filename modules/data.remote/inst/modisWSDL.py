@@ -294,6 +294,8 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 		
 		# now fill up the data structure with the returned data...
 		__debugPrint(n)
+		__debugPrint( data.subset.__len__() )
+
 		if n == 0:
 		
 			m.nrows=data.nrows         
