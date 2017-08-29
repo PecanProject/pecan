@@ -6,7 +6,7 @@
 \usage{
 call_MODIS(outfolder = ".", fname = "m_data.nc", start, end, lat, lon,
   size = 0, product = "MOD15A2", band = "Lai_1km", qc_band = NA,
-  sd_band = NA)
+  sd_band = NA, verbose = TRUE)
 }
 \arguments{
 \item{outfolder}{where the output file will be stored}
@@ -29,7 +29,9 @@ call_MODIS(outfolder = ".", fname = "m_data.nc", start, end, lat, lon,
 
 \item{qc_band}{which quality control band (optional)}
 
-\item{sd_band}{which standard deviation band (optional)
+\item{sd_band}{which standard deviation band (optional)}
+
+\item{verbose}{tell python whether or not to print debug statements (all or nothing)
 
 depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4}
 }
