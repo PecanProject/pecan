@@ -22,9 +22,12 @@ else
     exit $STATUS
   fi
 
-  # echo "require (PEcAN.dvmdostem)
-  #   model2netcdf.dvmdostem('@OUTDIR@', @SITE_LAT@,@SITE_LON@,'@START_DATE@','@END_DATE@',@DELETE.RAW@,'@REVISION@')
-  #   " | R --vanilla
+  echo "Running the modle output conversion functions to get thing into PEcAn shape..."
+  echo "require (PEcAn.dvmdostem); library(PEcAn.dvmdostem); model2netcdf.dvmdostem('@OUTDIR@')" | R --vanilla
+  echo "Done converting ouputs to PEcAn format."
+
+  # Other params that could be passed to model2netcdf:
+  # @SITE_LAT@,@SITE_LON@,'@START_DATE@','@END_DATE@',@DELETE.RAW,'@REVISION@'
 
 fi
 
