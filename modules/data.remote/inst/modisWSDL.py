@@ -174,7 +174,7 @@ def printModisData( m ):
 	print 'dates:', m.dateStr
 
 	print 'QA:', m.QA
-	print m.data
+	print 'data:',m.data
 
 
 def __debugPrint( o ):
@@ -189,10 +189,6 @@ def modisGetQA( m, QAname, client=None, chunkSize=8 ):
 	startDate=m.dateInt[0]
 	endDate=m.dateInt[-1]
 
-	print "startDate:",startDate
-	print "endDate:", endDate
-	print "kmLR:",m.kmLeftRight
-	print "kmAB:",m.kmAboveBelow
 
 	q = modisClient( client, product=m.product, band=QAname, lat=m.latitude, lon=m.longitude, 
 			startDate=startDate, endDate=endDate, chunkSize=chunkSize, kmAboveBelow=m.kmAboveBelow, kmLeftRight=m.kmLeftRight )
@@ -293,7 +289,6 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 		i=i+j-1
 		
 		print >> sys.stderr, requestStart, requestEnd
-		print "km:",kmAboveBelow, kmLeftRight	
 		data = client.service.getsubset( lat, lon, product, band, requestStart, requestEnd, kmAboveBelow, kmLeftRight )
 		__debugPrint("Passed download step")	
 		
@@ -312,7 +307,6 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 			
 			m.nrows = int(m.nrows)
 			m.ncols = int(m.ncols)
-			print "nrows", m.nrows, type(m.nrows)
 			m.data=np.zeros( (nDates,m.nrows*m.ncols) )
 
 		
@@ -354,9 +348,7 @@ def m_data_to_netCDF(filename, m, k):
 	rootgrp.createDimension('dates', len(m.dateInt))
 	m_data = rootgrp.createVariable('LAI', 'f8', ('nrow', 'ncol'))
 	m_std = rootgrp.createVariable('LAIStd', 'f8', ('nrow', 'ncol'))
-	print("dates len ", len(m.dateInt))
 	m_date = rootgrp.createVariable('Dates', 'i8', ('dates'))
-	print type(m.data[1])
 	m_data[:] = m.data
 	print "populated LAI data in netcdf"
 	if k is not None:
@@ -395,11 +387,10 @@ def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, 
 		return np.array([[]]), np.array([[]])
 	date = m.dateInt
 	m.applyScale()
-	print "kmab", m.kmAboveBelow
         if qcband is not None:
-		print "getting quality assurance for qcband"
+		print "getting QA (quality assurance) for qcband"
         	modisGetQA(m, qcband, client=client )
-		printModisData(m)
+	#	printModisData(m)
 		print "filter QA"
         	m.filterQA( range(0,2**16,2), fill=-1 )
 
