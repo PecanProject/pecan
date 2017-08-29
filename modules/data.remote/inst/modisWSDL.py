@@ -355,7 +355,7 @@ def m_data_to_netCDF(filename, m, k):
         	m_std[:] = 0.1*k.data
 		__debugPrint( "populated LAIstd data in netcdf" )
 	m_date[:] = m.dateInt
-	_debugPrint( "populated dates in netcdf" )
+	__debugPrint( "populated dates in netcdf" )
 	rootgrp.close()
 
 #def m_date_to_netCDF(filename, varname, data):
