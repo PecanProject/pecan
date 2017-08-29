@@ -370,8 +370,11 @@ def m_data_to_netCDF(filename, m, k):
 
 def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, kmLR=0, fname='m_data.nc',product='MOD15A2',band='Lai_1km',qcband='FparLai_QC',sdband='LaiStdDev_1km',debug=True):
 
+	print DEBUG_PRINTING
 	DEBUG_PRINTING = debug	
-
+	print "debug", debug
+	print "DEBUG", DEBUG_PRINTING
+ 
 	client=setClient( )
 
 	prodList = modisClient( client )
