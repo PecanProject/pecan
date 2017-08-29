@@ -192,6 +192,7 @@ def modisGetQA( m, QAname, client=None, chunkSize=8 ):
 	print "startDate:",startDate
 	print "endDate:", endDate
 	print "kmLR:",m.kmLeftRight
+	print "kmAB:",m.kmAboveBelow
 
 	q = modisClient( client, product=m.product, band=QAname, lat=m.latitude, lon=m.longitude, 
 			startDate=startDate, endDate=endDate, chunkSize=chunkSize, kmAboveBelow=m.kmAboveBelow, kmLeftRight=m.kmLeftRight )
@@ -292,7 +293,7 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 		i=i+j-1
 		
 		print >> sys.stderr, requestStart, requestEnd
-		
+		print "km:"kmAboveBelow, kmLeftRight	
 		data = client.service.getsubset( lat, lon, product, band, requestStart, requestEnd, kmAboveBelow, kmLeftRight )
 		__debugPrint("Passed download step")	
 		
@@ -394,7 +395,7 @@ def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, 
 		return np.array([[]]), np.array([[]])
 	date = m.dateInt
 	m.applyScale()
-	print m.kmLeftRight
+	print "kmab", m.kmAboveBelow
         if qcband is not None:
 		print "getting quality assurance for qcband"
         	modisGetQA(m, qcband, client=client )
