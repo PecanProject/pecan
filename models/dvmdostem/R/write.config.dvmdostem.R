@@ -198,7 +198,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
           print(cur_t_name)
           print(tname)
           if (tname == "SLA") {
-            dimveg_jsondata[[jd_name]]$sla = trait_df[[cur_t_name]]
+            dimveg_jsondata[[jd_name]]$sla = trait_df[[cur_t_name]]/1000
           } else if (tname == "frprod_perc_10") {
             dimveg_jsondata[[jd_name]]$`frprod[0]` = trait_df[[cur_t_name]]
           } else {

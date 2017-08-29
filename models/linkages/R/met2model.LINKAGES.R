@@ -42,7 +42,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   print(results)
   
   if (file.exists(out.file) && !overwrite) {
-    logger.debug("File '", out.file, "' already exists, skipping to next file.")
+    PEcAn.logger::logger.debug("File '", out.file, "' already exists, skipping to next file.")
     return(invisible(results))
   }
   

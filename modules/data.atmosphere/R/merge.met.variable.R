@@ -18,6 +18,7 @@
 #' New variable only has time dimension and thus MIGHT break downstream code....
 #'
 #' @examples
+#' \dontrun{
 #' in.path    <- "~/paleon/PalEONregional_CF_site_1-24047/"
 #' in.prefix  <- ""
 #' outfolder  <- "~/paleon/metTest/"
@@ -27,7 +28,6 @@
 #' overwrite  <- FALSE
 #' verbose    <- TRUE
 #' 
-#' \dontrun{
 #' merge_met_variable(in.path,in.prefix,start_date,end_date,merge.file,overwrite,verbose)
 #' PEcAn.DALEC::met2model.DALEC(in.path,in.prefix,outfolder,start_date,end_date)
 #' }
@@ -58,12 +58,12 @@ merge_met_variable <- function(in.path,in.prefix,start_date, end_date, merge.fil
   
   # check dates
   if(lubridate::year(merge.time.std[1]) > start_year){
-    PEcAn.utils::logger.error("merge.time > start_year", merge.time.std[1],start_date)
+    PEcAn.logger::logger.error("merge.time > start_year", merge.time.std[1],start_date)
     ncdf4::nc_close(merge.nc)
     return(NULL)
   }
   if(lubridate::year(tail(merge.time.std,1)) < end_year){
-    PEcAn.utils::logger.error("merge.time < end_year", tail(merge.time.std,1),end_date)
+    PEcAn.logger::logger.error("merge.time < end_year", tail(merge.time.std,1),end_date)
     ncdf4::nc_close(merge.nc)
     return(NULL)
   }
@@ -108,7 +108,7 @@ merge_met_variable <- function(in.path,in.prefix,start_date, end_date, merge.fil
     nc <- ncdf4::nc_open(old.file,write = TRUE)
     
     if(merge.vars[1] %in% names(nc$var)) {
-      PEcAn.utils::logger.info("variable already exists",merge.vars[1])
+      PEcAn.logger::logger.info("variable already exists",merge.vars[1])
       ncdf4::nc_close(nc)
       next
     }

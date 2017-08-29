@@ -101,7 +101,7 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,input.id
                           vars_used$pecan_name[i], u2))
             vals <- misc.convert(x, u1, u2)
           } else {
-            PEcAn.utils::logger.error("Units cannot be converted")
+            PEcAn.logger::logger.error("Units cannot be converted")
           } 
         }
         
@@ -173,7 +173,7 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,input.id
 #            "solar_elevation_angle")
 # 
 # if (!(length(nvars) == length(vars))) {
-#   logger.error("Variable mismatch")
+#  PEcAn.logger::logger.error("Variable mismatch")
 # }
 # 
 # l <- length(vars)
