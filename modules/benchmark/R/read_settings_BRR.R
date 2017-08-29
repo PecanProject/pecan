@@ -13,7 +13,7 @@ read_settings_BRR <- function(settings){
 
   # Check database connection
   if (is.null(settings$database$bety)) {
-    PEcAn.utils::logger.info("No databasse connection, can't get run information.")
+    PEcAn.logger::logger.info("No databasse connection, can't get run information.")
     return (settings)
   }
   

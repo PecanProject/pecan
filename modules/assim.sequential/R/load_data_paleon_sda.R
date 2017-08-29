@@ -29,7 +29,7 @@ load_data_paleon_sda <- function(settings){
   d <- settings$database$bety[c("dbname", "password", "host", "user")]
   bety <- src_postgres(host = d$host, user = d$user, password = d$password, dbname = d$dbname)
   
-  if(settings$host$name != 'localhost') logger.severe('ERROR: Code does not support anything but settings$host$name <- localhost at this time.')
+  if(settings$host$name != 'localhost') PEcAn.logger::logger.severe('ERROR: Code does not support anything but settings$host$name <- localhost at this time.')
   
   site <- PEcAn.DB::query.site(settings$run$site$id, bety$con)
   format_id <- settings$state.data.assimilation$data$format_id
@@ -68,7 +68,7 @@ load_data_paleon_sda <- function(settings){
     time.type <- format$vars$input_units[time.row] #THIS WONT WORK IF TIMESTEP ISNT ANNUAL
     
     # ---- LOAD INPUT DATA ---- #
-    logger.info(paste('Using PEcAn.benchmark::load_data.R on format_id',format_id[[i]],'-- may take a few minutes'))
+    PEcAn.logger::logger.info(paste('Using PEcAn.benchmark::load_data.R on format_id',format_id[[i]],'-- may take a few minutes'))
     obvs[[i]] <- PEcAn.benchmark::load_data(data.path, format, start_year = lubridate::year(start_date), end_year = lubridate::year(end_date), site)
     
     dataset <- obvs[[i]]
@@ -83,7 +83,7 @@ load_data_paleon_sda <- function(settings){
       arguments2 <- list(.(year), .(variable))
       arguments3 <- list(.(MCMC_iteration), .(variable), .(year))
     }else{
-      logger.severe('ERROR: This data format has not been added to this function (ツ)_/¯ ')
+      PEcAn.logger::logger.severe('ERROR: This data format has not been added to this function (ツ)_/¯ ')
     }
     
     ### Map species to model specific PFTs
@@ -95,7 +95,7 @@ load_data_paleon_sda <- function(settings){
       x <- paste0('AGB.pft.', pft_mat$pft)
       names(x) <- spp_id$input_code
       
-      logger.info('Now, mapping data species to model PFTs')
+      PEcAn.logger::logger.info('Now, mapping data species to model PFTs')
       dataset$pft.cat <- x[dataset$species_id]
       dataset <- dataset[dataset$pft.cat!='NA_AbvGrndWood',]
       
@@ -105,7 +105,7 @@ load_data_paleon_sda <- function(settings){
       arguments3 <- list(.(MCMC_iteration), .(pft.cat, variable), .(year))
     } 
     
-    logger.info('Now, aggregating data and creating SDA input lists')
+    PEcAn.logger::logger.info('Now, aggregating data and creating SDA input lists')
     melt_id <- colnames(dataset)[-which(colnames(dataset) %in% variable)]
     melt.test <- reshape2::melt(dataset, id = melt_id, na.rm = TRUE)
     cast.test <- reshape2::dcast(melt.test, arguments, sum, margins = variable)

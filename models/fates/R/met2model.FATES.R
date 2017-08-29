@@ -151,7 +151,7 @@ met2model.FATES <- function(in.path, in.prefix, outfolder, start_date, end_date,
     }  ## end file exists
   }  ### end loop over met files
   
-  logger.info("Done with met2model.FATES")
+  PEcAn.logger::logger.info("Done with met2model.FATES")
   
   return(data.frame(file = paste0(outfolder, "/"), 
                     host = c(fqdn()), 
