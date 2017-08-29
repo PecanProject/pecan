@@ -77,7 +77,7 @@ load_data_paleon_sda <- function(settings){
     if(format_id[[i]] == '1000000040'){
       obvs[[i]] <- obvs[[i]][obvs[[i]]$model_type=='Model RW + Census',]
       obvs[[i]]$AbvGrndWood <- obvs[[i]]$AbvGrndWood * biomass2carbon
-      obvs[[i]]$NPP <- obvs[[i]]$NPP #* biomass2carbon
+      obvs[[i]]$NPP <- obvs[[i]]$NPP #* biomass2carbon #kg/m^2/s
       arguments <- list(.(year, MCMC_iteration, site_id), .(variable))
       arguments2 <- list(.(year), .(variable))
       arguments3 <- list(.(MCMC_iteration), .(variable), .(year))
@@ -111,8 +111,8 @@ load_data_paleon_sda <- function(settings){
     melt.test <- reshape2::melt(dataset, id = melt_id, na.rm = TRUE)
     cast.test <- reshape2::dcast(melt.test, arguments, sum, margins = variable)
     
-    melt_id <- colnames(cast.test)[-which(colnames(cast.test) %in% variable)]
-    melt.next <- reshape2::melt(cast.test, id = melt_id)
+    melt_id_next <- colnames(cast.test)[-which(colnames(cast.test) %in% variable)]
+    melt.next <- reshape2::melt(cast.test, id = melt_id_next)
     mean_mat <- reshape2::dcast(melt.next, arguments2, mean)
     
     iter_mat <- reshape2::acast(melt.next, arguments3, mean)
