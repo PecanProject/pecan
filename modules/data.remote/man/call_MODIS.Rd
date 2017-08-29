@@ -27,9 +27,9 @@ call_MODIS(outfolder = ".", fname = "m_data.nc", start, end, lat, lon,
 
 \item{band}{which measurement to extract}
 
-\item{qcband}{which quality control band (optional)}
+\item{qc_band}{which quality control band (optional)}
 
-\item{sdband}{which standard deviation band (optional)
+\item{sd_band}{which standard deviation band (optional)
 
 depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4}
 }
