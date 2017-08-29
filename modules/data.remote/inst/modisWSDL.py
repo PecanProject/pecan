@@ -209,7 +209,7 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 
 	m=modisData()
 
-	m.kmABoveBelow=kmAboveBelow
+	m.kmAboveBelow=kmAboveBelow
 	m.kmLeftRight=kmLeftRight
 	
 	if client==None:
