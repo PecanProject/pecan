@@ -314,7 +314,7 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 			kn=0
 			__debugPrint( data.subset	)		
 			for k in data.subset[j].split(",")[5:]:
-				__debugPrint( k )
+				#__debugPrint( k )
 				try:
 					m.data[ n*chunkSize+j,kn] = int( k )
 				except ValueError:
