@@ -86,6 +86,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[[18]] <- (sub.sipnet.output$snow * 10)  # SWE
     output[[19]] <- sub.sipnet.output$litter * 0.001  ## litter kgC/m2
     
+    #calculate LAI for standard output
     param <- read.table(file.path(gsub(pattern = "/out/",
                                  replacement = "/run/", x = outdir),
                             "sipnet.param"), stringsAsFactors = FALSE)
@@ -116,26 +117,26 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     nc_var <- list()
     nc_var[[1]]  <- mstmipvar("Year", lat, lon, t, NA)
     nc_var[[2]]  <- mstmipvar("FracJulianDay", lat, lon, t, NA)
-    nc_var[[3]]  <- mstmipvar("GPP", lat, lon, t, NA)
-    nc_var[[4]]  <- mstmipvar("NPP", lat, lon, t, NA)
-    nc_var[[5]]  <- mstmipvar("TotalResp", lat, lon, t, NA)
-    nc_var[[6]]  <- mstmipvar("AutoResp", lat, lon, t, NA)
-    nc_var[[7]]  <- mstmipvar("HeteroResp", lat, lon, t, NA)
+    nc_var[[3]]  <- PEcAn.utils::to_ncvar("GPP", dims)
+    nc_var[[4]]  <- PEcAn.utils::to_ncvar("NPP", dims)
+    nc_var[[5]]  <- PEcAn.utils::to_ncvar("TotalResp", dims)
+    nc_var[[6]]  <- PEcAn.utils::to_ncvar("AutoResp", dims)
+    nc_var[[7]]  <- PEcAn.utils::to_ncvar("HeteroResp", dims)
     nc_var[[8]]  <- ncdf4::ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
-                          longname = "Soil Respiration")
-    nc_var[[9]]  <- mstmipvar("NEE", lat, lon, t, NA)
+                          longname = "Soil Respiration") #need to figure out standard variable for this output
+    nc_var[[9]]  <- PEcAn.utils::to_ncvar("NEE", dims)
     # nc_var[[9]] <- mstmipvar('CarbPools', lat, lon, t, NA)
-    nc_var[[10]] <- mstmipvar("AbvGrndWood", lat, lon, t, NA)
-    nc_var[[11]] <- mstmipvar("LeafC", lat, lon, t, NA)
-    nc_var[[12]] <- mstmipvar("TotLivBiom", lat, lon, t, NA)
-    nc_var[[13]] <- mstmipvar("TotSoilCarb", lat, lon, t, NA)
-    nc_var[[14]] <- mstmipvar("Qle", lat, lon, t, NA)
-    nc_var[[15]] <- mstmipvar("TVeg", lat, lon, t, NA)
-    nc_var[[16]] <- mstmipvar("SoilMoist", lat, lon, t, NA)
-    nc_var[[17]] <- mstmipvar("SoilMoistFrac", lat, lon, t, NA)
-    nc_var[[18]] <- mstmipvar("SWE", lat, lon, t, NA)
-    nc_var[[19]] <- mstmipvar("Litter", lat, lon, t, NA)
-    nc_var[[20]] <- to_ncvar("LAI", dims)
+    nc_var[[10]] <- PEcAn.utils::to_ncvar("AbvGrndWood", dims)
+    nc_var[[11]] <- PEcAn.utils::to_ncvar("leaf_carbon_content", dims)
+    nc_var[[12]] <- PEcAn.utils::to_ncvar("TotLivBiom", dims)
+    nc_var[[13]] <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
+    nc_var[[14]] <- PEcAn.utils::to_ncvar("Qle", dims)
+    nc_var[[15]] <- PEcAn.utils::to_ncvar("Transp", dims)
+    nc_var[[16]] <- PEcAn.utils::to_ncvar("SoilMoist", dims)
+    nc_var[[17]] <- PEcAn.utils::to_ncvar("SoilMoistFrac", dims)
+    nc_var[[18]] <- PEcAn.utils::to_ncvar("SWE", dims)
+    nc_var[[19]] <- PEcAn.utils::to_ncvar("litter_carbon_content", dims)
+    nc_var[[20]] <- PEcAn.utils::to_ncvar("LAI", dims)
     
     # ******************** Declare netCDF variables ********************#
     
