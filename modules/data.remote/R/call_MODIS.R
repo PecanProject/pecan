@@ -23,7 +23,7 @@
 ##' }
 ##' 
 call_MODIS <- function(outfolder = ".", fname = "m_data.nc", start, end, lat, lon, size = 0, 
-                       product = "MOD15A2", band = "Lai_1km", qc_band = NA, sd_band = NA) {
+                       product = "MOD15A2", band = "Lai_1km", qc_band = NA, sd_band = NA, verbose = TRUE) {
   
   # library(MODISTools)
   # 
@@ -75,6 +75,7 @@ call_MODIS <- function(outfolder = ".", fname = "m_data.nc", start, end, lat, lo
   rPython::python.assign("band", band)
   rPython::python.assign("qcband", qc_band)
   rPython::python.assign("sdband", sd_band)
+  python.assign("debug", verbose)
   
   # Here we import the MODIS python script as a module for the python. That way we can
   # run the routines within the script as independent commands.
@@ -88,7 +89,7 @@ call_MODIS <- function(outfolder = ".", fname = "m_data.nc", start, end, lat, lo
   
   # And here we execute the main MODIS run. Although it should be noted that while we get
   # values of the run here, the script also does write a netCDF output file.
-  rPython::python.exec("m, k, date = modisWSDL.run_main(start_date=start, end_date=end,la=lat,lo=lon,kmAB=kmNS,kmLR=kmWE,fname=fn,product=product,band=band,qcband=qcband,sdband=sdband)")
+  rPython::python.exec("m, k, date = modisWSDL.run_main(start_date=start, end_date=end,la=lat,lo=lon,kmAB=kmNS,kmLR=kmWE,fname=fn,product=product,band=band,qcband=qcband,sdband=sdband,debug=debug)")
   
   # m = The MODIS observed LAI for the given pixel k = The standard deviation of the
   # MODIS LAI. Be careful with this as it is at times very low date = Year and
