@@ -350,12 +350,12 @@ def m_data_to_netCDF(filename, m, k):
 	m_std = rootgrp.createVariable('LAIStd', 'f8', ('nrow', 'ncol'))
 	m_date = rootgrp.createVariable('Dates', 'i8', ('dates'))
 	m_data[:] = m.data
-	print "populated LAI data in netcdf"
+	__debugPrint( "populated LAI data in netcdf" )
 	if k is not None:
         	m_std[:] = 0.1*k.data
-		print "populated LAIstd data in netcdf"
+		__debugPrint( "populated LAIstd data in netcdf" )
 	m_date[:] = m.dateInt
-	print "populated dates in netcdf"
+	_debugPrint( "populated dates in netcdf" )
 	rootgrp.close()
 
 #def m_date_to_netCDF(filename, varname, data):
@@ -368,7 +368,9 @@ def m_data_to_netCDF(filename, m, k):
 #	rootgrp.close()
 
 
-def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, kmLR=0, fname='m_data.nc',product='MOD15A2',band='Lai_1km',qcband='FparLai_QC',sdband='LaiStdDev_1km'):
+def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, kmLR=0, fname='m_data.nc',product='MOD15A2',band='Lai_1km',qcband='FparLai_QC',sdband='LaiStdDev_1km',debug=True):
+
+	DEBUG_PRINTING = debug	
 
 	client=setClient( )
 
@@ -388,22 +390,23 @@ def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, 
 	date = m.dateInt
 	m.applyScale()
         if qcband is not None:
-		print "getting QA (quality assurance) for qcband"
+		__debugPrint( "getting QA (quality assurance) for qcband" )
         	modisGetQA(m, qcband, client=client )
 	#	printModisData(m)
-		print "filter QA"
+		__debugPrint( "filter QA" ) 
         	m.filterQA( range(0,2**16,2), fill=-1 )
 
         if sdband is not None:
-		print "getting sdband"
+		__debugPrint( "getting sdband" )
         	k = modisClient( client, product=product, band=sdband, lat=la, lon=lo, startDate=start_date, endDate=end_date, kmAboveBelow=kmAB, kmLeftRight=kmLR)
         	if qcband is not None:
-			print "getting QA band for sdband"
+			__debugPrint( "getting QA band for sdband" )
                         modisGetQA(k, qcband, client=client )
         else:
                 k = None
-		
-	printModisData( m )
+	if DEBUG_PRINTING:		
+		printModisData( m )
+
 	m_data_to_netCDF(fname, m, k)	
 
 #	print(len(m.data))
