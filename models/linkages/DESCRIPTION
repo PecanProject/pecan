@@ -9,6 +9,7 @@ Description: This module provides functions to link the (LINKAGES) to PEcAn.
 Depends:
     PEcAn.utils
 Imports:
+    PEcAn.logger,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
     udunits2 (>= 0.11)

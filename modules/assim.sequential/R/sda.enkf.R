@@ -220,7 +220,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   # at some point add a lot of error checking 
   # read time from data if data is missing you still need
   # to have NAs or NULL with date name vector to read the correct netcdfs by read_restart
-  sum.list <- matrix(NA,nens,nt)
   
   obs.times <- names(obs.mean)
   obs.times.POSIX <- ymd_hms(obs.times)
@@ -461,35 +460,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
           Pf <- Pf + Q
         }
         
-        mu.f.scale <- mu.f / mu.f
-        mu.f.scale[is.na(mu.f.scale)]<-0
-        map.mu.f <- H%*%mu.f
-        Y.scale <- Y/map.mu.f   ##need H in here to match mu.f's to Y's
-        Pf.scale <- t(t(Pf/mu.f)/mu.f)
-        Pf.scale[is.na(Pf.scale)]<-0
-        R.scale  <- t(t(R/as.vector(map.mu.f))/as.vector(map.mu.f))
-        
-        # mu.f.scale <- scale(mu.f,center = FALSE, scale = mean(mu.f))
-        # Pf.scale <- mu.f*Pf%*%t(t(mu.f))
-        # Pf.scale[is.na(Pf.scale)]<-0
-        # R.scale <- matrix(scale(as.vector(R), center = mean(mu.f), scale = 1),2,2)
-        # Y.scale <- scale(Y, center = mean(mu.f[1:2]), scale = 1)
-        
         ## Kalman Gain
-        K <- Pf.scale %*% t(H) %*% solve((R.scale + H %*% Pf.scale %*% t(H)))
-        ## Analysis
-        mu.a.scale <- mu.f.scale + K %*% (Y.scale - H %*% mu.f.scale)
-        Pa.scale   <- (diag(ncol(X)) - K %*% H) %*% Pf.scale
-        
-        Pa <- t(t(Pa.scale*mu.f)*mu.f)
-        mu.a <- mu.a.scale * mu.f
-        
-        ## Kalman Gain
-        #K <- Pf %*% t(H) %*% solve((R + H %*% Pf %*% t(H)))
-        ## Analysis
-        #mu.a <- mu.f + K %*% (Y - H %*% mu.f)
-        #Pa   <- (diag(ncol(X)) - K %*% H) %*% Pf
+        K <- Pf %*% t(H) %*% solve((R + H %*% Pf %*% t(H)))
+        # Analysis
+        mu.a <- mu.f + K %*% (Y - H %*% mu.f)
+        Pa   <- (diag(ncol(X)) - K %*% H) %*% Pf
         enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
+        
       } else {
         
         ### create matrix the describes the support for each observed state variable at time t
@@ -787,11 +764,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
       X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
     }
     
-    
-    for(i in seq_len(nens)){
-    sum.list[i,t]<-sum(V_a %*%diag(sqrt(L_a))%*%Z[i,] - mu.a)
-    }
-    
     # par(mfrow=c(1,1))
     # plot(X_a)
     # ## check if ensemble mean is correct
@@ -965,7 +937,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
   } else {
     print("climate diagnostics under development")
   }
-  
   
   ###-------------------------------------------------------------------###
   ### time series                                                       ###

@@ -47,7 +47,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
 
   if(!is.null(spin_nyear)){
     ## if spinning up, extend processed met by resampling or cycling met
-    logger.info("Adding Spin-up met for DALEC")
+    PEcAn.logger::logger.info("Adding Spin-up met for DALEC")
     spin_nyear <- as.numeric(spin_nyear)
     spin_nsample <- as.numeric(spin_nsample)
     spin_resample <- as.logical(spin_resample)
@@ -56,7 +56,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
 #    start_date <- as.POSIXlt(strftime(start_date, "%Y-%m-%d"), tz = "UTC")
 #    start_date <- strptime(paste0(start_year,"-01-01"),"%Y-%m-%d", tz = "UTC")
     start_date_string <- paste0(lubridate::year(start_date),"-01-01") ## strptime can't parse negative years
-    logger.info("New Start Date",start_date_string)
+    PEcAn.logger::logger.info("New Start Date",start_date_string)
   }
     
   out.file <- paste0(in.prefix, start_date_string,".", 
@@ -65,7 +65,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
   out.file.full <- file.path(outfolder, out.file)
   
   results <- data.frame(file = c(out.file.full), 
-                        host = c(fqdn()),
+                        host = c(PEcAn.utils::fqdn()),
                         mimetype = c("text/plain"), 
                         formatname = c("DALEC meteorology"), 
                         startdate = c(start_date), 
@@ -76,7 +76,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
   print(results)
 
   if (file.exists(out.file.full) && !overwrite) {
-    logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
+    PEcAn.logger::logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
     return(invisible(results))
   }
   
@@ -102,7 +102,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     LeafWaterPot <- -0.8
     
     old.file <- file.path(in.path, paste(in.prefix, year, ".nc", sep = ""))
-    if(!file.exists(old.file)) PEcAn.utils::logger.error("file not found",old.file)
+    if(!file.exists(old.file)) PEcAn.logger::logger.error("file not found",old.file)
     ## open netcdf
     nc <- ncdf4::nc_open(old.file)
     
@@ -130,21 +130,21 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     
     ## is CO2 present?
     if (!is.numeric(CO2)) {
-      logger.warn("CO2 not found in", old.file, "setting to default: 400 ppm")
+      PEcAn.logger::logger.warn("CO2 not found in", old.file, "setting to default: 400 ppm")
       CO2 <- rep(400, length(Tair))
     }
     
     if (length(leafN) == 1) {
-      logger.warn("Leaf N not specified, setting to default: ", leafN)
+      PEcAn.logger::logger.warn("Leaf N not specified, setting to default: ", leafN)
       leafN <- rep(leafN, length(Tair))
     }
     if (length(HydResist) == 1) {
-      logger.warn("total plant-soil hydraulic resistance (MPa.m2.s/mmol-1) not specified, setting to default: ", 
+      PEcAn.logger::logger.warn("total plant-soil hydraulic resistance (MPa.m2.s/mmol-1) not specified, setting to default: ", 
                   HydResist)
       HydResist <- rep(HydResist, length(Tair))
     }
     if (length(LeafWaterPot) == 1) {
-      logger.warn("maximum soil-leaf water potential difference (MPa) not specified, setting to default: ", 
+      PEcAn.logger::logger.warn("maximum soil-leaf water potential difference (MPa) not specified, setting to default: ", 
                   LeafWaterPot)
       LeafWaterPot <- rep(LeafWaterPot, length(Tair))
     }

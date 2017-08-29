@@ -45,7 +45,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   out.file.full <- file.path(outfolder, out.file)
   
   results <- data.frame(file = out.file.full,
-                        host = fqdn(),
+                        host = PEcAn.utils::fqdn(),
                         mimetype = "text/plain", 
                         formatname = "maespa.met", 
                         startdate = start_date,
@@ -57,7 +57,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   print(results)
   
   if (file.exists(out.file.full) && !overwrite) {
-    logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
+    PEcAn.logger::logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
     return(invisible(results))
   }
   
@@ -154,9 +154,9 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   
   ### Check for NA
   if (anyNA(out)) {
-    logger.debug("NA introduced in met data. Maespa will not be able to run properly. Please change Met Data Source or Site")
+    PEcAn.logger::logger.debug("NA introduced in met data. Maespa will not be able to run properly. Please change Met Data Source or Site")
   } else {
-    logger.debug("No NA values contained in data")
+    PEcAn.logger::logger.debug("No NA values contained in data")
   }
   
   ## Set Variable names
