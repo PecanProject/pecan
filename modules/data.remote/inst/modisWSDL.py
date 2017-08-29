@@ -401,7 +401,7 @@ def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, 
         	modisGetQA(m, qcband, client=client )
 		printModisData(m)
 		print "filter QA"
-        	m.filterQA( range(0,2**8,2), fill=-1 )
+        	m.filterQA( range(0,2**16,2), fill=-1 )
 
         if sdband is not None:
 		print "getting sdband"
