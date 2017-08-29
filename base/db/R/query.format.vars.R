@@ -6,13 +6,11 @@
 ##'
 ##' @author Betsy Cowdery , Ankur Desai, Istem Fer
 ##'
-query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
+query.format.vars <- function(con, input.id=NA, format.id=NA, var.ids=NA) {
 
   if(is.na(input.id) & is.na(format.id)){
     PEcAn.logger::logger.error("Must specify input id or format id")
   }
-
-  con <- bety$con
 
   # get input info either form input.id or format.id, depending which is provided
   # defaults to format.id if both provided
