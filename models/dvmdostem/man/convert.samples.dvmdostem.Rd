@@ -4,7 +4,7 @@
 \alias{convert.samples.dvmdostem}
 \title{Convert samples for dvmdostem}
 \usage{
-convert.samples.dvmdostem(trait.samples)
+convert.samples.dvmdostem(trait_values)
 }
 \arguments{
 \item{trait.samples}{a matrix or dataframe of samples from the trait distribution}
@@ -13,7 +13,7 @@ convert.samples.dvmdostem(trait.samples)
 matrix or dataframe with values transformed
 }
 \description{
-convert parameters, do unit conversions and update parameter names from PEcAn database default 
+convert parameters, do unit conversions and update parameter names from PEcAn database default
 to units/names within dvmdostem
 }
 \details{
@@ -23,3 +23,4 @@ such as those provided to write.config
 \author{
 Shawn Serbin, Tobey Carman
 }
+
