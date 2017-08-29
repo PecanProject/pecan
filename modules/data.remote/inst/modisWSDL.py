@@ -372,8 +372,6 @@ def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, 
 
 	global DEBUG_PRINTING 
 	DEBUG_PRINTING = debug
-	print "debug", debug
-	print "DEBUG", DEBUG_PRINTING
  
 	client=setClient( )
 
