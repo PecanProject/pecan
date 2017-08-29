@@ -45,7 +45,7 @@ permute.nc <- function(in.path, in.prefix, outfolder, start_date, end_date,
     results$formatname[row] <- "CF (permuted)"
     
     if (file.exists(new.file) && !overwrite) {
-      PEcAn.utils::logger.debug("File '", new.file, "' already exists, skipping to next file.")
+      PEcAn.logger::logger.debug("File '", new.file, "' already exists, skipping to next file.")
       next
     }
     

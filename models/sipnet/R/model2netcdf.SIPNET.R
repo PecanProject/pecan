@@ -36,7 +36,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   
   ### Loop over years in SIPNET output to create separate netCDF outputs
   for (y in years) {
-    # if (file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & overwrite == FALSE) {
+    # if (file.exists(file.path(outdir, paste(y, "nc", sep = ".")))) {
     #   next
     # }
     print(paste("---- Processing year: ", y))  # turn on for debugging

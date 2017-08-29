@@ -26,7 +26,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
   CRUNCEP_start <- 1901
   CRUNCEP_end <- 2010
   if (start_year < CRUNCEP_start | end_year > CRUNCEP_end) {
-    PEcAn.utils::logger.severe(sprintf('Input year range (%d:%d) exceeds the CRUNCEP range (%d:%d)',
+    PEcAn.logger::logger.severe(sprintf('Input year range (%d:%d) exceeds the CRUNCEP range (%d:%d)',
                                        start_year, end_year,
                                        CRUNCEP_start, CRUNCEP_end))
   }
@@ -73,11 +73,11 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     results$formatname[i] <- "CF Meteorology"
 
     if (file.exists(loc.file) && !isTRUE(overwrite)) {
-      logger.error("File already exists. Skipping to next year")
+     PEcAn.logger::logger.error("File already exists. Skipping to next year")
       next
     }
 
-    PEcAn.utils::logger.info(paste("Downloading",loc.file))
+    PEcAn.logger::logger.info(paste("Downloading",loc.file))
     ## Create dimensions
     lat <- ncdf4::ncdim_def(name = "latitude", units = "degree_north", vals = lat.in, create_dimvar = TRUE)
     lon <- ncdf4::ncdim_def(name = "longitude", units = "degree_east", vals = lon.in, create_dimvar = TRUE)
@@ -94,20 +94,20 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
     ## get data off OpenDAP
     for (j in seq_len(nrow(var))) {
       dap_file <- paste0(dap_base, var$DAP.name[j], "_", year, "_v1.nc4")
-      PEcAn.utils::logger.info(dap_file)
+      PEcAn.logger::logger.info(dap_file)
 
       # This throws an error if file not found
       dap <- ncdf4::nc_open(dap_file)
 
       # confirm that timestamps match
       if (dap$dim$time$len != ntime) {
-        logger.severe("Expected", ntime, "observations, but", dap_file,  "contained", dap$dim$time$len)
+       PEcAn.logger::logger.severe("Expected", ntime, "observations, but", dap_file,  "contained", dap$dim$time$len)
       }
       dap_time <- udunits2::ud.convert(dap$dim$time$vals,
                                        dap$dim$time$units,
                                        time$units)
       if (!isTRUE(all.equal(dap_time, time$vals))){
-        logger.severe("Timestamp mismatch.",
+       PEcAn.logger::logger.severe("Timestamp mismatch.",
                       "Expected", min(time$vals), '..', max(time$vals), time$units,
                       "but got", min(dap_time), "..", max(dap_time))
       }
