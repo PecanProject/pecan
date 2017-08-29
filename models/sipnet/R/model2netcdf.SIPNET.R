@@ -86,6 +86,14 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[[18]] <- (sub.sipnet.output$snow * 10)  # SWE
     output[[19]] <- sub.sipnet.output$litter * 0.001  ## litter kgC/m2
     
+    param <- read.table(file.path(gsub(pattern = "/out/",
+                                 replacement = "/run/", x = outdir),
+                            "sipnet.param"), stringsAsFactors = FALSE)
+    id <- which(param[, 1] == "leafCSpWt")
+    leafC <- 0.48
+    SLA <- 1000 * leafC / param[id, 2] #SLA, m2/kgC
+    output[[20]] <- output[[11]] * SLA # LAI
+    
     
     # ******************** Declare netCDF variables ********************#
     t <- ncdf4::ncdim_def(name = "time", 
@@ -95,6 +103,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
                    unlim = TRUE)
     lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
     lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
+    dims <- list(lon = lon, lat = lat, time = t)
     
     ## ***** Need to dynamically update the UTC offset here *****
     
@@ -126,6 +135,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     nc_var[[17]] <- mstmipvar("SoilMoistFrac", lat, lon, t, NA)
     nc_var[[18]] <- mstmipvar("SWE", lat, lon, t, NA)
     nc_var[[19]] <- mstmipvar("Litter", lat, lon, t, NA)
+    nc_var[[20]] <- to_ncvar("LAI", dims)
     
     # ******************** Declare netCDF variables ********************#
     
