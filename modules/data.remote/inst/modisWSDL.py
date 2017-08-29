@@ -293,7 +293,7 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 		i=i+j-1
 		
 		print >> sys.stderr, requestStart, requestEnd
-		print "km:"kmAboveBelow, kmLeftRight	
+		print "km:",kmAboveBelow, kmLeftRight	
 		data = client.service.getsubset( lat, lon, product, band, requestStart, requestEnd, kmAboveBelow, kmLeftRight )
 		__debugPrint("Passed download step")	
 		
