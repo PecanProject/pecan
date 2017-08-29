@@ -288,7 +288,7 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 		requestEnd=dateList[i+j-1]
 		i=i+j-1
 		
-		print >> sys.stderr, requestStart, requestEnd
+		__debugPrint('start date = %s, end date = %s'%(requestStart, requestEnd))
 		data = client.service.getsubset( lat, lon, product, band, requestStart, requestEnd, kmAboveBelow, kmLeftRight )
 		__debugPrint("Passed download step")	
 		
