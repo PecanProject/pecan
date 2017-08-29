@@ -9,13 +9,27 @@ call_MODIS(outfolder = ".", fname = "m_data.nc", start, end, lat, lon,
   sd_band = NA)
 }
 \arguments{
+\item{outfolder}{where the output file will be stored}
+
+\item{fname}{name of netcdf file to output}
+
 \item{start}{first date in year and day-of-year. For example May 1 2010 would be 2010121}
 
 \item{end}{laste date in year and day-of-year. For example May 1 2010 would be 2010121}
 
 \item{lat}{Latitude of the pixel}
 
-\item{lon}{Longitude of the pixel
+\item{lon}{Longitude of the pixel}
+
+\item{size}{NS and WE distance in km to be included}
+
+\item{product}{MODIS product number}
+
+\item{band}{which measurement to extract}
+
+\item{qcband}{which quality control band (optional)}
+
+\item{sdband}{which standard deviation band (optional)
 
 depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4}
 }

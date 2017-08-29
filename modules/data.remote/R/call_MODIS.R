@@ -12,8 +12,8 @@
 ##' @param size   NS and WE distance in km to be included
 ##' @param product MODIS product number
 ##' @param band   which measurement to extract
-##' @param qcband which quality control band (optional)
-##' @param sdband which standard deviation band (optional)
+##' @param qc_band which quality control band (optional)
+##' @param sd_band which standard deviation band (optional)
 ##' 
 ##' depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4
 ##' 
