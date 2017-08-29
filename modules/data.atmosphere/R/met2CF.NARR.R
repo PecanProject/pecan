@@ -53,10 +53,10 @@ met2CF.NARR <- function(in.path, in.prefix, outfolder, start_date, end_date,
     results$formatname[row] <- "CF (regional)"
     
     if (file.exists(newfile) && !overwrite) {
-      PEcAn.utils::logger.debug("File '", newfile, "' already exists, skipping to next file.")
+      PEcAn.logger::logger.debug("File '", newfile, "' already exists, skipping to next file.")
       next
     } else {
-      PEcAn.utils::logger.info("Preparing file '", newfile, "'. ")
+      PEcAn.logger::logger.info("Preparing file '", newfile, "'. ")
     }
     
     # use tempfile

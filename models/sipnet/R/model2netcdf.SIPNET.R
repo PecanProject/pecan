@@ -29,10 +29,12 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
   sipnet.output.dims <- dim(sipnet.output)
   
   ### Determine number of years and output timestep
+  start.day <- sipnet.output$day[1]
   num.years <- length(unique(sipnet.output$year))
   years <- unique(sipnet.output$year)
-  timestep.s <- 86400 / length(which(sipnet.output$year == years[1] & sipnet.output$day == 1))
-  out.day <- length(which(sipnet.output$year == years[1] & sipnet.output$day == 1))
+  out.day <- length(which(sipnet.output$year == years[1] & sipnet.output$day == start.day))
+  timestep.s <- 86400 / out.day
+  
   
   ### Loop over years in SIPNET output to create separate netCDF outputs
   for (y in years) {
@@ -45,7 +47,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     sub.sipnet.output <- subset(sipnet.output, year == y)
     sub.sipnet.output.dims <- dim(sub.sipnet.output)
     dayfrac <- 1 / out.day
-    step <- seq(0, 0.99, 1 / out.day)
+    step <- seq(0, 0.99, dayfrac)
     
     ## Setup outputs for netCDF file in appropriate units
     output       <- list()

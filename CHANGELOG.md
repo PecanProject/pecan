@@ -7,6 +7,33 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
+### Fixes
+- Improved make install logic (#1558)
+- Fixed remote code execution #1545
+- Added check for NA end/start year in read.output
+- Fixed jagify bug for raw field data
+- Fixed bug (order of dims in nc_create) introduced in model2netcdf.DALEC by standard_vars changes
+- Cleaned up NAMESPACE and source code of `PEcAn.DB` (#1520)
+- Debugged python script in call_MODIS in data.remote to allow MODIS downloads
+
+### Added
+- Expanded initial conditions workflow for pool-based models, including PEcAn.data.land::prepare_pools to calculate pools from IC file (to be coupled with write.configs)
+
+- #1594 shiny/workflowPlot Adding interactiveness using ggploltly
+- #1594 shiny/workflowPlot Load outputs from multiple runs of the model
+- #1594 shiny/workflowPlot Ways to toggle geometries (e.g. geom_point vs. geom_line).
+- #1594 shiny/workflowPlot Smoothing using geom_smooth (Slider for specifying moving window width)
+- #1594 shiny/workflowPlot Comparing model output vs loaded data according to [tutorial](https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/AnalyzeOutput/modelVSdata.Rmd) 
+
+- Allow SIPNET and DALEC met files and model2netcdf to start or end mid year
+
+
+### Changed
+- Clean up directory structure:
+    * Move `base` packages (`utils`, `settings`, `db`, `visualizaton`) to a `base` directory, for consistency with `modules` and `models`
+    * Move `logger.*` functions out of the `PEcAn.utils` package and into the `pecan.logger` package
+- #1594 shiny/workflowPlot Refactoring of code. `get_workflow_ids` in db/R/query.dplyr.R changed with `ensemble = FALSE`. Also allowing to load all workflow IDs. `load_data_single_run` and `var_names_all` also moved from shiny/workflowPlot/server.R to query.dplyr.R
+
 ## [1.5.10] - Prerelease
 ### Added
 - Added PEcAn.utils::download.file() to allow for use of alternative FTP programs
@@ -16,6 +43,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - added docker container scrips (.yml) to create docker container for PEcAn
 - added the configuration edit page to allow easy modification of config via web interface
 - thredds server documentation and catlog generating script
+- added new standard variables table (standard_vars.csv) and to_ncvar and to_ncdim functions in PEcAn.utils
+- added initial conditions file io functions for pool-based models in data.land
 
 ### Changed
 - upscale_met now accepts ~any valid CF file (not just full years), retains correct time units, and respects the previously ignored `overwrite` parameter

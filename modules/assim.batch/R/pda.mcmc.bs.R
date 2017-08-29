@@ -71,7 +71,7 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
   do.call("require", list(paste0("PEcAn.", settings$model$type)))
   my.write.config <- paste("write.config.", settings$model$type, sep = "")
   if (!exists(my.write.config)) {
-    logger.severe(paste(my.write.config, 
+    PEcAn.logger::logger.severe(paste(my.write.config, 
                         "does not exist. Please make sure that the PEcAn interface is loaded for", 
                         settings$model$type))
   }
@@ -158,7 +158,7 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
     
     ## --------------------------------- Main MCMC loop --------------------------------- ##
     for (i in start:finish) {
-      logger.info(paste("Data assimilation MCMC iteration", i, "of", finish))
+      PEcAn.logger::logger.info(paste("Data assimilation MCMC iteration", i, "of", finish))
       
       ## Adjust Jump distribution
       if ((i > (start + 1)) && ((i - start)%%settings$assim.batch$jump$adapt == 0)) {
@@ -169,7 +169,7 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
         # Save updated settings XML. Will be overwritten at end, but useful in case of crash
         settings$assim.batch$jump$jvar <- as.list(diag(jcov))
         names(settings$assim.batch$jump$jvar) <- rep("jvar", n.param)
-        saveXML(listToXml(settings, "pecan"), 
+        saveXML(PEcAn.utils::listToXml(settings, "pecan"), 
                 file = file.path(settings$outdir, 
                                  paste0("pecan.pda", 
                                         settings$assim.batch$ensemble.id, ".xml")))

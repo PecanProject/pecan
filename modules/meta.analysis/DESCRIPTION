@@ -19,6 +19,7 @@ Depends:
     PEcAn.utils,
     PEcAn.DB
 Imports:
+    PEcAn.logger,
     coda (>= 0.18)
 Suggests:
     rjags,

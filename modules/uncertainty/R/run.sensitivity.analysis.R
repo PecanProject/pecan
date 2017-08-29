@@ -31,26 +31,26 @@ run.sensitivity.analysis <- function(settings,plot=TRUE, ensemble.id=NULL, varia
       end.year <- settings$sensitivity.analysis$end.year
     }
     if(is.null(start.year) | is.null(end.year)) {
-      logger.severe("No years given for sensitivity analysis!")
+      PEcAn.logger::logger.severe("No years given for sensitivity analysis!")
     }
     
     if(is.null(variable)) {
       variable = settings$sensitivity.analysis$variable
     }
     if(is.null(variable)) {
-      logger.severe("No variables for ensemble analysis!")
+      PEcAn.logger::logger.severe("No variables for ensemble analysis!")
     }
     
     # Only handling one variable at a time for now
     if(length(variable) > 1) {
       variable <- variable[1]
-      logger.warn(paste0("Currently performs ensemble analysis on only one variable at a time. Using first (", variable, ")"))
+      PEcAn.logger::logger.warn(paste0("Currently performs ensemble analysis on only one variable at a time. Using first (", variable, ")"))
     }
     
     ### Load samples
     # Have to load samples.Rdata for the traits. But can overwrite the run ids if a sensitivity analysis ensemble id provided. samples.Rdata always has only the most recent ensembles for both ensemble and sensitivity runs. 
     fname <- file.path(settings$outdir, 'samples.Rdata')    
-    if(!file.exists(fname)) logger.severe("No samples.Rdata file found!")
+    if(!file.exists(fname)) PEcAn.logger::logger.severe("No samples.Rdata file found!")
     load(fname)
     
     # Can specify ensemble ids manually. If not, look in settings. If none there, will use the most recent, which was loaded with samples.Rdata

@@ -73,7 +73,7 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
       
       ## Check for CO2 and PAR
       if (!is.numeric(CO2)) {
-        logger.warn("CO2 not found. Setting to default: 4.0e+8 mol/mol")  # using rough estimate of atmospheric CO2 levels
+        PEcAn.logger::logger.warn("CO2 not found. Setting to default: 4.0e+8 mol/mol")  # using rough estimate of atmospheric CO2 levels
         CO2 <- rep(4e+08, length(Precip))
       }
       

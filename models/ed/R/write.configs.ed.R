@@ -132,9 +132,9 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
       filename <- system.file(paste0("ED2IN.r", rev), package = "PEcAn.ED2")
     }
     if (filename == "") {
-      PEcAn.utils::logger.severe("Could not find ED template")
+      PEcAn.logger::logger.severe("Could not find ED template")
     }
-    PEcAn.utils::logger.info("Using", filename, "as template")
+    PEcAn.logger::logger.info("Using", filename, "as template")
     ed2in.text <- readLines(con = filename, n = -1)
   }
   
@@ -150,7 +150,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   ed2in.text <- gsub("@MET_END@", metend, ed2in.text)
   
   if (is.null(settings$model$phenol.scheme)) {
-    PEcAn.utils::logger.error(paste0("no phenology scheme set; \n",
+    PEcAn.logger::logger.error(paste0("no phenology scheme set; \n",
                                      "need to add <phenol.scheme> ",
                                      "tag under <model> tag in settings file"))
   } else if (settings$model$phenol.scheme == 1) {
@@ -202,9 +202,9 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     prefix.css <- sub(lat_rxp, "", settings$run$inputs$pss$path)
     # pss and css prefix is not the same, kill
     if (!identical(prefix.pss, prefix.css)) {
-      PEcAn.utils::logger.info(paste("pss prefix:", prefix.pss))
-      PEcAn.utils::logger.info(paste("css prefix:", prefix.css))
-      PEcAn.utils::logger.severe("ED2 css/pss/ files have different prefix")
+      PEcAn.logger::logger.info(paste("pss prefix:", prefix.pss))
+      PEcAn.logger::logger.info(paste("css prefix:", prefix.css))
+      PEcAn.logger::logger.severe("ED2 css/pss/ files have different prefix")
     } else {
       # pss and css are both present
       value <- 2
@@ -213,9 +213,9 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
         prefix.site <- sub(lat_rxp, "", settings$run$inputs$site$path)
         # sites and pss have different prefix name, kill
         if (!identical(prefix.site, prefix.pss)) {
-          PEcAn.utils::logger.info(paste("site prefix:", prefix.site))
-          PEcAn.utils::logger.info(paste("pss prefix:", prefix.pss))
-          PEcAn.utils::logger.severe("ED2 sites/pss/ files have different prefix")
+          PEcAn.logger::logger.info(paste("site prefix:", prefix.site))
+          PEcAn.logger::logger.info(paste("pss prefix:", prefix.pss))
+          PEcAn.logger::logger.severe("ED2 sites/pss/ files have different prefix")
         } else {
           # sites and pass same prefix name, case 3
           value <- 3
@@ -329,25 +329,25 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
 #' @return R XML object containing full ED2 XML file
 #' @author David LeBauer, Shawn Serbin, Carl Davidson, Alexey Shiklomanov
 write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$constants) {
-  
+
   ## Find history file TODO this should come from the database
   histfile <- paste0("data/history.r", settings$model$revision, ".csv")
   if (file.exists(system.file(histfile, package = "PEcAn.ED2"))) {
-    PEcAn.utils::logger.info(paste0("--- Using ED2 History File: ", "data/history.r", settings$model$revision, ".csv"))
-    edhistory <- read.csv2(system.file(histfile, package = "PEcAn.ED2"), sep = ";", 
+    PEcAn.logger::logger.debug(paste0("--- Using ED2 History File: ", "data/history.r", settings$model$revision, ".csv"))
+    edhistory <- read.csv2(system.file(histfile, package = "PEcAn.ED2"), sep = ";",
                            stringsAsFactors = FALSE, dec = ".")
   } else {
-    PEcAn.utils::logger.info("--- Using Generic ED2 History File: data/history.csv")
-    edhistory <- read.csv2(system.file("data/history.csv", package = "PEcAn.ED2"), sep = ";", 
+    PEcAn.logger::logger.debug("--- Using Generic ED2 History File: data/history.csv")
+    edhistory <- read.csv2(system.file("data/history.csv", package = "PEcAn.ED2"), sep = ";",
                            stringsAsFactors = FALSE, dec = ".")
   }
-  
+
   edtraits <- names(edhistory)
   data(pftmapping, package = 'PEcAn.ED2')
-  
+
   ## Get ED2 specific model settings and put into output config xml file
   xml <- PEcAn.utils::listToXml(settings$model$config.header, "config")
-  
+
   ## Process the names in defaults. Runs only if names(defaults) are null or have at least one
   ## instance of name attribute 'pft'. Otherwise, AS assumes that names in defaults are already set
   ## to the corresponding PFT names.
@@ -357,13 +357,13 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
     newnames.notnull <- which(!sapply(newnames, is.null))
     names(defaults)[newnames.notnull] <- newnames[newnames.notnull]
   }
-  
+
   for (i in seq_along(trait.values)) {
     group <- names(trait.values)[i]
     if (group == "env") {
-      
+
       ## set defaults from config.header
-      
+
     } else {
       # Make this agnostic to the way PFT names are defined in `trait.values` -- either directly as
       # list names or as object 'name' within each sublist is fine
@@ -372,7 +372,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
       } else {
         pft <- group
       }
-      
+
       # RyK: Changed this so that pftmapping is required. pft$constants$num is the number that will be
       # written to config.xml, and it's used by fia.to.ed when mapping spp to a PFT #.  But if you're
       # overriding an existing ED2 pft, then you might not want that PFT number to be used to look up
@@ -383,40 +383,40 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
       # happen is for there to be two settings for each PFT: the 'num' to use to represent the PFT to
       # ED, and the 'defaults.PFT' (name or number) to use for pulling default parameter values.
       pft.number <- pftmapping$ED[which(pftmapping == pft)]
-      
+
       if(pft=="soil"){
         data(soil, package = "PEcAn.ED2")
         vals <- as.list(soil)
         names(vals) <- colnames(soil)
-        
+
         converted.trait.values <- convert.samples.ED(trait.values[[i]])
         vals <- modifyList(vals, converted.trait.values)
-        
+
         decompositon.xml <- PEcAn.utils::listToXml(vals, "decomposition")
         xml <- XML::append.xmlNode(xml, decompositon.xml)
       } else if(length(pft.number) == 0) {
-        PEcAn.utils::logger.error(pft, "was not matched with a number in settings$constants or pftmapping data. Consult the PEcAn instructions on defining new PFTs.")
+        PEcAn.logger::logger.error(pft, "was not matched with a number in settings$constants or pftmapping data. Consult the PEcAn instructions on defining new PFTs.")
         stop("Unable to set PFT number")
       }else{
         # TODO: Also modify web app to not default to 1
-        
+
         ## Get default trait values from ED history
         vals <- as.list(edhistory[edhistory$num == pft.number, ])
-        
+
         ## Convert trait values to ED units
         converted.trait.values <- convert.samples.ED(trait.values[[i]])
-        
+
         ## Selectively replace defaults with trait values
         vals <- modifyList(vals, converted.trait.values)
-        
+
         ## Convert settings constants to ED units
         converted.defaults <- convert.samples.ED(defaults[[pft]]$constants)
-        
+
         ## Selectively replace defaults and trait values with constants from settings
         if (!is.null(converted.defaults)){
           vals <- modifyList(vals, converted.defaults)
-        } 
-        
+        }
+
         pft.xml <- PEcAn.utils::listToXml(vals, "pft")
         xml <- XML::append.xmlNode(xml, pft.xml)
       }
@@ -432,10 +432,10 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
 #' @description Function for writing job.sh file for ED2 runs
 #' @details Refactored by Alexey Shiklomanov to allow use in PEcAn RTM module.
 #' @export
-#' @param settings PEcAn settings list. For this function, need the following: 
-#' run$host$rundir, run$host$outdir, run$host$scratchdir, 
-#' run$host$clearscratch, model$jobtemplate, model$job.sh, run$host$job.sh, 
-#' run$site$lat, run$site$lon, run$inputs$met$path, run$start.date, 
+#' @param settings PEcAn settings list. For this function, need the following:
+#' run$host$rundir, run$host$outdir, run$host$scratchdir,
+#' run$host$clearscratch, model$jobtemplate, model$job.sh, run$host$job.sh,
+#' run$site$lat, run$site$lon, run$inputs$met$path, run$start.date,
 #' run$end.date, model$binary
 #' @param run.id PEcAn run ID
 #' @return Character vector containing job.sh file
@@ -444,7 +444,7 @@ write.config.jobsh.ED2 <- function(settings, run.id) {
   # find out where to write run/ouput
   rundir <- file.path(settings$host$rundir, run.id)
   outdir <- file.path(settings$host$outdir, run.id)
-  
+
   # command if scratch is used
   if (is.null(settings$host$scratchdir)) {
     modeloutdir <- outdir
@@ -454,10 +454,10 @@ write.config.jobsh.ED2 <- function(settings, run.id) {
   } else {
     modeloutdir <- file.path(settings$host$scratchdir, settings$workflow$id, run.id)
     mkdirscratch <- paste("mkdir -p", modeloutdir)
-    copyscratch <- paste("rsync", "-a", 
-                         paste0("\"", file.path(modeloutdir, ""), "\""), 
+    copyscratch <- paste("rsync", "-a",
+                         paste0("\"", file.path(modeloutdir, ""), "\""),
                          paste0("\"", file.path(outdir, ""), "\""))
-    if (is.null(settings$host$clearscratch) || is.na(as.logical(settings$host$clearscratch)) || 
+    if (is.null(settings$host$clearscratch) || is.na(as.logical(settings$host$clearscratch)) ||
         as.logical(settings$host$clearscratch)) {
       clearscratch <- paste("rm", "-rf", paste0("\"", modeloutdir, "\""))
     } else {
@@ -470,7 +470,7 @@ write.config.jobsh.ED2 <- function(settings, run.id) {
   } else {
     jobsh <- readLines(con = system.file("template.job", package = "PEcAn.ED2"), n = -1)
   }
-  
+
   # create host specific setttings
   hostsetup <- ""
   if (!is.null(settings$model$prerun)) {
@@ -479,7 +479,7 @@ write.config.jobsh.ED2 <- function(settings, run.id) {
   if (!is.null(settings$host$prerun)) {
     hostsetup <- paste(hostsetup, sep = "\n", paste(settings$host$prerun, collapse = "\n"))
   }
-  
+
   hostteardown <- ""
   if (!is.null(settings$model$postrun)) {
     hostteardown <- paste(hostteardown, sep = "\n", paste(settings$model$postrun, collapse = "\n"))
@@ -487,26 +487,26 @@ write.config.jobsh.ED2 <- function(settings, run.id) {
   if (!is.null(settings$host$postrun)) {
     hostteardown <- paste(hostteardown, sep = "\n", paste(settings$host$postrun, collapse = "\n"))
   }
-  
+
   # create job.sh
   jobsh <- gsub("@HOST_SETUP@", hostsetup, jobsh)
   jobsh <- gsub("@HOST_TEARDOWN@", hostteardown, jobsh)
-  
+
   jobsh <- gsub("@SITE_LAT@", settings$run$site$lat, jobsh)
   jobsh <- gsub("@SITE_LON@", settings$run$site$lon, jobsh)
   jobsh <- gsub("@SITE_MET@", settings$run$inputs$met$path, jobsh)
-  
+
   jobsh <- gsub("@SCRATCH_MKDIR@", mkdirscratch, jobsh)
   jobsh <- gsub("@SCRATCH_COPY@", copyscratch, jobsh)
   jobsh <- gsub("@SCRATCH_CLEAR@", clearscratch, jobsh)
-  
+
   jobsh <- gsub("@START_DATE@", settings$run$start.date, jobsh)
   jobsh <- gsub("@END_DATE@", settings$run$end.date, jobsh)
-  
+
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
-  
+
   jobsh <- gsub("@BINARY@", settings$model$binary, jobsh)
-  
+
   return(jobsh)
 } # write.config.jobsh.ED2
