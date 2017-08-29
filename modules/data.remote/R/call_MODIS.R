@@ -14,6 +14,7 @@
 ##' @param band   which measurement to extract
 ##' @param qc_band which quality control band (optional)
 ##' @param sd_band which standard deviation band (optional)
+##' @param verbose tell python whether or not to print debug statements (all or nothing)
 ##' 
 ##' depends on a number of Python libraries. sudo -H pip install numpy suds netCDF4
 ##' 
