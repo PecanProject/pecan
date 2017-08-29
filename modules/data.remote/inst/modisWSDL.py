@@ -189,6 +189,10 @@ def modisGetQA( m, QAname, client=None, chunkSize=8 ):
 	startDate=m.dateInt[0]
 	endDate=m.dateInt[-1]
 
+	print "startDate:",startDate
+	print "endDate:", endDate
+	print "kmLR:",m.kmLeftRight
+
 	q = modisClient( client, product=m.product, band=QAname, lat=m.latitude, lon=m.longitude, 
 			startDate=startDate, endDate=endDate, chunkSize=chunkSize, kmAboveBelow=m.kmAboveBelow, kmLeftRight=m.kmLeftRight )
 	
@@ -315,8 +319,7 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 			kn=0
 			__debugPrint( data.subset	)		
 			for k in data.subset[j].split(",")[5:]:
-				print "k"
-				__debugPrint( k )
+				__debugPrint("k:", k )
 				try:
 					m.data[ n*chunkSize+j,kn] = int( k )
 				except ValueError:
@@ -391,6 +394,7 @@ def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, 
 		return np.array([[]]), np.array([[]])
 	date = m.dateInt
 	m.applyScale()
+	print m.kmLeftRight
         if qcband is not None:
 		print "getting quality assurance for qcband"
         	modisGetQA(m, qcband, client=client )
