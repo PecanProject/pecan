@@ -18,8 +18,8 @@
 # site_lat_c =   9.1543, 5.07389,  -2.60909722,  1.4368,   4.1865,  15.6324
 # site_lon_c = 280.1539, 8.85472, 299.7907,     28.5826, 114.017,   99.217
 #=============================================================================================
-export NETCDF_HOME=/usr/local/  #necessary
-export NETCDF_PATH=${NETCDF_HOME} #necessary
+export NETCDF_HOME=/usr/local/  
+export NETCDF_PATH=${NETCDF_HOME}
 
 CIME_MODEL=cesm
 
