@@ -47,7 +47,7 @@ format_name <- 'usda'
 match_species_id(input_codes = input_codes,
                  format_name = format_name,
                  bety = bety)
-                 
+
 }
 \author{
 Alexey Shiklomanov <ashiklom@bu.edu>, Istem Fer

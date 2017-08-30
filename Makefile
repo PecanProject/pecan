@@ -13,27 +13,27 @@ MODULES := allometry assim.batch assim.sequential benchmark \
 BASE := $(BASE:%=base/%)
 MODELS := $(MODELS:%=models/%)
 MODULES := $(MODULES:%=modules/%)
-ALL_PKGS := $(BASE) $(MODELS) $(MODULES) models/template
+ALL_PKGS := $(BASE) $(MODULES) $(MODELS) models/template
 
 BASE_I := $(BASE:%=.install/%)
 MODELS_I := $(MODELS:%=.install/%)
 MODULES_I := $(MODULES:%=.install/%)
-ALL_PKGS_I := $(BASE_I) $(MODELS_I) $(MODULES_I) .install/models/template
+ALL_PKGS_I := $(BASE_I) $(MODULES_I) $(MODELS_I) .install/models/template
 
 BASE_C := $(BASE:%=.check/%)
 MODELS_C := $(MODELS:%=.check/%)
 MODULES_C := $(MODULES:%=.check/%)
-ALL_PKGS_C := $(BASE_C) $(MODELS_C) $(MODULES_C) .check/models/template
+ALL_PKGS_C := $(BASE_C) $(MODULES_C) $(MODELS_C) .check/models/template
 
 BASE_T := $(BASE:%=.test/%)
 MODELS_T := $(MODELS:%=.test/%)
 MODULES_T := $(MODULES:%=.test/%)
-ALL_PKGS_T := $(BASE_T) $(MODELS_T) $(MODULES_T) .test/models/template
+ALL_PKGS_T := $(BASE_T) $(MODULES_T) $(MODELS_T) .test/models/template
 
 BASE_D := $(BASE:%=.doc/%)
 MODELS_D := $(MODELS:%=.doc/%)
 MODULES_D := $(MODULES:%=.doc/%)
-ALL_PKGS_D := $(BASE_D) $(MODELS_D) $(MODULES_D) .doc/models/template
+ALL_PKGS_D := $(BASE_D) $(MODULES_D) $(MODELS_D) .doc/models/template
 
 .PHONY: all install check test document
 
@@ -42,7 +42,7 @@ all: install document
 document: $(ALL_PKGS_D) .doc/base/all
 install: $(ALL_PKGS_I) .install/base/all
 check: $(ALL_PKGS_C) .check/base/all
-test: $(ALL_PKGS_T) .test/base/all 
+test: $(ALL_PKGS_T) .test/base/all
 
 ### Dependencies
 .doc/base/all: $(ALL_PKGS_D)
@@ -50,7 +50,7 @@ test: $(ALL_PKGS_T) .test/base/all
 .check/base/all: $(ALL_PKGS_C)
 .test/base/all: $(ALL_PKGS_T)
 
-depends = .check/$(1) .test/$(1)
+depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
 $(call depends,base/db): .install/base/logger .install/base/utils
 $(call depends,base/settings): .install/base/logger .install/base/utils .install/base/db
@@ -59,7 +59,7 @@ $(call depends,modules/data.atmosphere): .install/base/logger .install/base/util
 $(call depends,modules/data.land): .install/base/logger .install/base/db .install/base/utils
 $(call depends,modules/meta.analysis): .install/base/logger .install/base/utils .install/base/db
 $(call depends,modules/priors): .install/base/logger .install/base/utils
-$(call depends,modules/assim.batch): .install/base/logger .install/base/utils .install/base/db .install/modules/meta.analysis 
+$(call depends,modules/assim.batch): .install/base/logger .install/base/utils .install/base/db .install/modules/meta.analysis
 $(call depends,modules/rtm): .install/base/logger .install/modules/assim.batch
 $(call depends,modules/uncertainty): .install/base/logger .install/base/utils .install/modules/priors
 $(call depends,models/template): .install/base/logger .install/base/utils

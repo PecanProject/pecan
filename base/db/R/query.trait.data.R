@@ -19,7 +19,7 @@
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{transformstats}} performs transformation calculations
 ##' @author <unknown>
 fetch.stats2se <- function(connection, query){
-  transformed <- PEcAn.utils::transformstats(db.query(query, connection))
+  transformed <- PEcAn.utils::transformstats(db.query(query = query, con = connection))
   return(transformed)
 }
 ##==================================================================================================#
@@ -57,13 +57,13 @@ query.data <- function(trait, spstr, extra.columns='ST_X(ST_CENTROID(sites.geome
               left join variables on (traits.variable_id = variables.id)
             where specie_id in (", spstr,")
             and variables.name in ('", trait,"');", sep = "")
-  result <- fetch.stats2se(con, query)
-  
+  result <- fetch.stats2se(connection = con, query = query)
+
   if(store.unconverted) {
     result$mean_unconverted <- result$mean
     result$stat_unconverted <- result$stat
   }
-  
+
   return(result)
 }
 ##==================================================================================================#
@@ -100,7 +100,7 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL, ...
     query <- gsub(");", paste(" and variables.name in ('", trait,"');", sep = ""), query)
   }
 
-  return(fetch.stats2se(con, query))
+  return(fetch.stats2se(connection = con, query = query))
 }
 ##==================================================================================================#
 
@@ -111,9 +111,9 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL, ...
 ##'
 ##' @name append.covariate
 ##' @title Append covariate data as a column within a table
-##' \code{append.covariate} appends a data frame of covariates as a new column in a data frame 
+##' \code{append.covariate} appends a data frame of covariates as a new column in a data frame
 ##'   of trait data.
-##' In the event a trait has several covariates available, the first one found 
+##' In the event a trait has several covariates available, the first one found
 ##'   (i.e. lowest row number) will take precedence
 ##'
 ##' @param data trait dataframe that will be appended to.
@@ -153,8 +153,8 @@ append.covariate<-function(data, column.name, covariates.data){
 query.covariates<-function(trait.ids, con = NULL, ...){
   covariate.query <- paste("select covariates.trait_id, covariates.level,variables.name",
                            "from covariates left join variables on variables.id = covariates.variable_id",
-                           "where trait_id in (",vecpaste(trait.ids),")")
-  covariates <- db.query(covariate.query, con)
+                           "where trait_id in (", PEcAn.utils::vecpaste(trait.ids), ")")
+  covariates <- db.query(query = covariate.query, con = con)
   return(covariates)
 }
 ##==================================================================================================#
@@ -166,7 +166,7 @@ query.covariates<-function(trait.ids, con = NULL, ...){
 ##' @title Function to apply Arrhenius scaling to 25 degC for temperature-dependent traits
 ##' @param data data frame of data to scale, as returned by query.data()
 ##' @param covariates data frame of covariates, as returned by query.covariates().
-##'   Note that data with no matching covariates will be unchanged. 
+##'   Note that data with no matching covariates will be unchanged.
 ##' @param temp.covariates names of covariates used to adjust for temperature;
 ##'   if length > 1, order matters (first will be used preferentially)
 ##' @param new.temp the reference temperature for the scaled traits. Curerntly 25 degC
@@ -175,21 +175,21 @@ query.covariates<-function(trait.ids, con = NULL, ...){
 arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp=25, missing.temp=25){
   # Select covariates that match temp.covariates
   covariates <- covariates[covariates$name %in% temp.covariates,]
-    
+
   if(nrow(covariates)>0) {
     # Sort covariates in order of priority
-    covariates <- do.call(rbind, 
+    covariates <- do.call(rbind,
       lapply(temp.covariates, function(temp.covariate) covariates[covariates$name == temp.covariate, ])
       )
-  
+
     data <- append.covariate(data, 'temp', covariates)
 
     # Assign default value for traits with no covariates
     data$temp[is.na(data$temp)] <- missing.temp
-    
+
     # Scale traits
-    data$mean <- PEcAn.utils::arrhenius.scaling(data$mean, old.temp = data$temp, new.temp=new.temp)
-    data$stat <- PEcAn.utils::arrhenius.scaling(data$stat, old.temp = data$temp, new.temp=new.temp)
+    data$mean <- PEcAn.utils::arrhenius.scaling(observed.value = data$mean, old.temp = data$temp, new.temp=new.temp)
+    data$stat <- PEcAn.utils::arrhenius.scaling(observed.value = data$stat, old.temp = data$temp, new.temp=new.temp)
 
     #remove temporary covariate column.
     data<-data[,colnames(data)!='temp']
@@ -212,12 +212,12 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
 ##' @author <unknown>
 filter_sunleaf_traits <- function(data, covariates){
   if(length(covariates)>0) {
-    data <- append.covariate(data, 'canopy_layer',
-                             covariates[covariates$name == 'canopy_layer',])
-    data <-  data[data$canopy_layer >= 0.66 | is.na(data$canopy_layer),]
-    
+    data <- append.covariate(data = data, column.name = 'canopy_layer',
+                             covariates.data = covariates[covariates$name == 'canopy_layer',])
+    data <- data[data$canopy_layer >= 0.66 | is.na(data$canopy_layer),]
+
     # remove temporary covariate column
-    data<-data[,colnames(data)!='canopy_layer']
+    data <- data[,colnames(data)!='canopy_layer']
   } else {
     data <- NULL
   }
@@ -315,7 +315,7 @@ take.samples <- function(summary, sample.size = 10^6){
     ans <- summary$mean
   } else {
     set.seed(0)
-    ans <- rnorm(sample.size, summary$mean, summary$stat)
+    ans <- rnorm(n = sample.size, mean = summary$mean, sd = summary$stat)
   }
   return(ans)
 }
@@ -372,14 +372,14 @@ derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=10^
 ##' @param match.columns in the event more than one trait dataset is supplied,
 ##'        this specifies the columns that identify a unique data point
 ##' @return a copy of the first input trait with modified mean, stat, and n
-derive.traits <- function(FUN, ..., input=list(...),
-                          match.columns=c('citation_id', 'site_id', 'specie_id'),
-                          var.name=NA, sample.size=10^6){
+derive.traits <- function(FUN, ..., input = list(...),
+                          match.columns = c('citation_id', 'site_id', 'specie_id'),
+                          var.name = NA, sample.size = 10^6){
   if(length(input) == 1){
-    input<-input[[1]]
+    input <- input[[1]]
                                         #KLUDGE: modified to handle empty datasets
     for(i in (0:nrow(input))[-1]){
-      input[i,]<-derive.trait(FUN, input[i,], sample.size=sample.size)
+      input[i,] <- derive.trait(FUN, input[i,], sample.size=sample.size)
     }
     return(input)
   }
@@ -403,10 +403,8 @@ derive.traits <- function(FUN, ..., input=list(...),
     derived.traits <- derived.traits[!is.null(derived.traits)]
     derived.traits <- do.call(rbind, derived.traits)
     return(derived.traits)
-  }
-  else{
-    return(derive.trait(FUN, input=input,
-                        var.name=var.name, sample.size=sample.size))
+  } else {
+    return(derive.trait(FUN, input=input, var.name=var.name, sample.size=sample.size))
   }
 }
 ##==================================================================================================#
@@ -436,27 +434,26 @@ derive.traits <- function(FUN, ..., input=list(...),
 query.trait.data <- function(trait, spstr, con = NULL, update.check.only=FALSE, ...){
 
   if(is.list(con)){
-    print("query.trait.data")
-    print("WEB QUERY OF DATABASE NOT IMPLEMENTED")
+    PEcAn.logger::logger.warn("WEB QUERY OF DATABASE NOT IMPLEMENTED")
     return(NULL)
   }
 
   # print trait info
   if(!update.check.only) {
-    print("---------------------------------------------------------")
-    print(trait)
+    PEcAn.logger::logger.info("---------------------------------------------------------")
+    PEcAn.logger::logger.info(trait)
   }
 
 ### Query the data from the database for trait X.
-  data <- query.data(trait, spstr, con=con, store.unconverted=TRUE)
+  data <- query.data(trait = trait, spstr = spstr, con = con, store.unconverted = TRUE)
 
 ### Query associated covariates from database for trait X.
-  covariates <- query.covariates(data$id, con=con)
+  covariates <- query.covariates(trait.ids = data$id, con = con)
   canopy.layer.covs <- covariates[covariates$name == 'canopy_layer', ]
 
 ### Set small sample size for derived traits if update-checking only. Otherwise use default.
   if(update.check.only) {
-    sample.size <- 10 
+    sample.size <- 10
   } else {
     sample.size <- 10^6  ## Same default as derive.trait(), derive.traits(), and take.samples()
   }
@@ -464,10 +461,10 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only=FALSE, 
   if(trait == 'Vcmax') {
 #########################   VCMAX   ############################
 ### Apply Arrhenius scaling to convert Vcmax at measurement temp to that at 25 degC (ref temp).
-    data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT','T'))
+    data <- arrhenius.scaling.traits(data = data, covariates = covariates, temp.covariates = c('leafT', 'airT','T'))
 
 ### Keep only top of canopy/sunlit leaf samples based on covariate.
-    if(nrow(canopy.layer.covs) > 0) data <- filter_sunleaf_traits(data, canopy.layer.covs)
+    if(nrow(canopy.layer.covs) > 0) data <- filter_sunleaf_traits(data = data, covariates = canopy.layer.covs)
 
     ## select only summer data for Panicum virgatum
     ##TODO fix following hack to select only summer data
@@ -484,7 +481,7 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only=FALSE, 
                                 sample.size=sample.size))
 
     ### Keep only top of canopy/sunlit leaf samples based on covariate.
-    if(nrow(canopy.layer.covs) > 0) data <- filter_sunleaf_traits(data, canopy.layer.covs)
+    if(nrow(canopy.layer.covs) > 0) data <- filter_sunleaf_traits(data = data, covariates = canopy.layer.covs)
 
     ## select only summer data for Panicum virgatum
     ##TODO fix following hack to select only summer data
@@ -504,38 +501,38 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only=FALSE, 
 #########################  ROOT RESPIRATION   ############################
     ## Apply Arrhenius scaling to convert root respiration at measurement temp
     ## to that at 25 degC (ref temp).
-    data <- arrhenius.scaling.traits(data, covariates, c('rootT', 'airT','soilT'))
+    data <- arrhenius.scaling.traits(data = data, covariates = covariates, temp.covariates = c('rootT', 'airT','soilT'))
 
   } else if (trait == 'leaf_respiration_rate_m2') {
 #########################  LEAF RESPIRATION   ############################
     ## Apply Arrhenius scaling to convert leaf respiration at measurement temp
     ## to that at 25 degC (ref temp).
-  data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT','T'))
+  data <- arrhenius.scaling.traits(data = data, covariates = covariates, temp.covariates = c('leafT', 'airT','T'))
 
   } else if (trait == 'stem_respiration_rate') {
 #########################  STEM RESPIRATION   ############################
     ## Apply Arrhenius scaling to convert stem respiration at measurement temp
     ## to that at 25 degC (ref temp).
-    data <- arrhenius.scaling.traits(data, covariates, c('leafT', 'airT'))
+    data <- arrhenius.scaling.traits(data = data, covariates = covariates, temp.covariates = c('leafT', 'airT'))
 
   } else if (trait == 'c2n_leaf') {
 #########################  LEAF C:N   ############################
 
     data <- rbind(data,
                   derive.traits(function(leafN){48/leafN},
-                                query.data('leafN', spstr, con=con, store.unconverted=TRUE),
-                                sample.size=sample.size))
+                                query.data('leafN', spstr, con = con, store.unconverted = TRUE),
+                                sample.size = sample.size))
 
   } else if (trait == 'fineroot2leaf') {
 #########################  FINE ROOT ALLOCATION  ############################
     ## FRC_LC is the ratio of fine root carbon to leaf carbon
-    data<-rbind(data, query.data('FRC_LC', spstr, con=con, store.unconverted=TRUE))
+    data <- rbind(data, query.data(trait = 'FRC_LC', spstr = spstr, con = con, store.unconverted = TRUE))
   }
   result <- data
 
   ## if result is empty, stop run
 
-  if(nrow(result)==0) {
+  if (nrow(result)==0) {
     return(NA)
     warning(paste("there is no data for", trait))
   } else {
@@ -543,9 +540,9 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only=FALSE, 
     ## Do we really want to print each trait table?? Seems like a lot of
     ## info to send to console.  Maybe just print summary stats?
     ## print(result)
-    if(!update.check.only) {
-      print(paste("Median ",trait," : ",round(median(result$mean,na.rm=TRUE),digits=3),sep=""))
-      print("---------------------------------------------------------")
+    if (!update.check.only) {
+      PEcAn.logger::logger.info(paste("Median ",trait," : ",round(median(result$mean,na.rm=TRUE),digits=3),sep=""))
+      PEcAn.logger::logger.info("---------------------------------------------------------")
     }
     # print list of traits queried and number by outdoor/glasshouse
     return(result)
