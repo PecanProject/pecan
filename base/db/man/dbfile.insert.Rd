@@ -8,11 +8,13 @@ dbfile.insert(in.path, in.prefix, type, id, con, reuse = TRUE,
   hostname = PEcAn.utils::fqdn())
 }
 \arguments{
+\item{in.path}{Path to file directory}
+
+\item{in.prefix}{Filename prefix (not including directory)}
+
 \item{con}{database connection object}
 
 \item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
-
-\item{filename}{the name of the file to be inserted}
 
 \item{params}{database connection information}
 }
