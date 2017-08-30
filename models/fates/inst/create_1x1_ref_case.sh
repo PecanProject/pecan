@@ -60,7 +60,6 @@ echo "*** Modifying xmls  ***"
 ./xmlchange -file env_mach_pes.xml -id TOTALPES -val 1
 # Modifying : env_build.xml
 ./xmlchange -file env_build.xml -id CIME_OUTPUT_ROOT -val ${CASEROOT}
-#Outdated Var ./xmlchange -file env_build.xml -id CESMSCRATCHROOT -val ${CASEROOT}
 ./xmlchange -file env_build.xml -id GMAKE -val make
 #./xmlchange -file env_build.xml -id MPILIB -val openmpi
 #./xmlchange -file env_build.xml -id OS -val Linux
