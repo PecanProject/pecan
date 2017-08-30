@@ -118,7 +118,16 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
     n.trn=n.ens
     
     # getting an estimate of how many files we need to process
-    n.files <- length(dir(file.path(train.path, ens.train[1])))
+    yrs.file <- strsplit(dir(file.path(train.path, ens.train[1])), "[.]")
+    yrs.file <- matrix(unlist(yrs.file), ncol=length(yrs.file[[1]]), byrow=T)
+    yrs.file <- as.numeric(yrs.file[,ncol(yrs.file)-1]) # Assumes year is always last thing before the file extension
+    
+    if(!is.null(yrs.train)){
+      n.files <- length(yrs.file[which(yrs.file %in% yrs.train)])
+    } else {
+      n.files <- length(dir(file.path(train.path, ens.train[1])))
+    }
+    
     
     print("Processing Training Data")
     pb <- txtProgressBar(min=0, max=length(ens.train)*n.files, style=3)
@@ -202,7 +211,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
   
     # Loop through the .nc files putting everything into a list
     print("Processing Source Data")
-    pb <- txtProgressBar(min=0, max=length(files.train), style=3)
+    pb <- txtProgressBar(min=0, max=length(files.source), style=3)
     for(i in 1:length(files.source)){
       yr.now <- yrs.file[i]
       
@@ -220,6 +229,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
       # -----
       # Making what the unique time stamps should be to match the training data
       stamps.hr <- seq(hr.train/2, by=hr.train, length.out=1/day.train) 
+      stamps.src <- stamps.hr
      
       if(step.hr < hr.train){  # Finer hour increment --> set it up to aggregate
         align = "aggregate"
@@ -264,7 +274,9 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
             met.out$dat.source[["air_temperature_minimum"]] <- rbind(met.out$dat.source[["air_temperature_minimum"]], as.matrix(tmin[,(3+1:n.src)]))
             met.out$dat.source[["air_temperature_maximum"]] <- rbind(met.out$dat.source[["air_temperature_maximum"]], as.matrix(tmax[,(3+1:n.src)]))
           } 
-        } 
+        } else {
+          met.out$dat.source[[v]] <- rbind(met.out$dat.source[[v]], df.tem)
+        }
         
         # If met doesn't need to be aggregated, just copy it in
         if(align %in% c("repeat", "align")) {
