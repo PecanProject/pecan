@@ -37,7 +37,7 @@ met2CF.PalEONregional <- function(in.path, in.prefix, outfolder, start_date, end
   ## check file organization
   by.folder <- list.dirs(in.path, recursive = FALSE, full.names = FALSE)
   if (length(by.folder) == 0) {
-    logger.severe("met2CF.PalEON, could not detect input folders", in.path)
+    PEcAn.logger::logger.severe("met2CF.PalEON, could not detect input folders", in.path)
   }
   
   rows <- end_year - start_year + 1
@@ -58,14 +58,14 @@ met2CF.PalEONregional <- function(in.path, in.prefix, outfolder, start_date, end
     
     row <- year - start_year + 1
     results$file[row]       <- new.file
-    results$host[row]       <- fqdn()
+    results$host[row]       <- PEcAn.utils::fqdn()
     results$startdate[row]  <- paste0(year, "-01-01 00:00:00")
     results$enddate[row]    <- paste0(year, "-12-31 23:59:59")
     results$mimetype[row]   <- "application/x-netcdf"
     results$formatname[row] <- "CF"
     
     if (file.exists(new.file) && !overwrite) {
-      logger.debug("File '", new.file, "' already exists, skipping to next file.")
+      PEcAn.logger::logger.debug("File '", new.file, "' already exists, skipping to next file.")
       next
     }
     
@@ -85,7 +85,7 @@ met2CF.PalEONregional <- function(in.path, in.prefix, outfolder, start_date, end
         stub <- paste0(year, "_", formatC(m, width = 2, format = "d", flag = "0"))
         sel <- grep(stub, fnames)
         if (length(sel) == 0) {
-          logger.severe("missing file", v, stub)
+          PEcAn.logger::logger.severe("missing file", v, stub)
         }
         old.file <- fnames[sel]
         nc1      <- ncdf4::nc_open(old.file, write = FALSE)
@@ -203,7 +203,7 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   ## check file organization
   by.folder <- list.dirs(in.path, recursive = FALSE, full.names = FALSE)
   if (length(by.folder) == 0) {
-    logger.severe("met2CF.PalEON, could not detect input folders", in.path)
+    PEcAn.logger::logger.severe("met2CF.PalEON, could not detect input folders", in.path)
   }
   
   rows <- end_year - start_year + 1
@@ -224,14 +224,14 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     
     row <- year - start_year + 1
     results$file[row]       <- new.file
-    results$host[row]       <- fqdn()
+    results$host[row]       <- PEcAn.utils::fqdn()
     results$startdate[row]  <- paste0(year, "-01-01 00:00:00")
     results$enddate[row]    <- paste0(year, "-12-31 23:59:59")
     results$mimetype[row]   <- "application/x-netcdf"
     results$formatname[row] <- "CF"
     
     if (file.exists(new.file) && !overwrite) {
-      logger.debug("File '", new.file, "' already exists, skipping to next file.")
+      PEcAn.logger::logger.debug("File '", new.file, "' already exists, skipping to next file.")
       next
     }
     
@@ -251,7 +251,7 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
         stub <- paste0(year, "_", formatC(m, width = 2, format = "d", flag = "0"))
         sel <- grep(stub, fnames)
         if (length(sel) == 0) {
-          logger.severe("missing file", v, stub)
+          PEcAn.logger::logger.severe("missing file", v, stub)
         }
         old.file <- fnames[sel]
         nc1      <- ncdf4::nc_open(old.file, write = FALSE)
@@ -377,7 +377,7 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
     by.file <- FALSE
     by.folder <- list.dirs(in.path, recursive = FALSE, full.names = FALSE)
     if (length(by.folder) == 0) {
-      logger.severe("met2CF.ALMA, could not detect input file or folders", in.path)
+      PEcAn.logger::logger.severe("met2CF.ALMA, could not detect input file or folders", in.path)
     }
   } else {
     by.file <- TRUE
@@ -397,14 +397,14 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
     
     row <- year - start_year + 1
     results$file[row]       <- new.file
-    results$host[row]       <- fqdn()
+    results$host[row]       <- PEcAn.utils::fqdn()
     results$startdate[row]  <- paste0(year, "-01-01 00:00:00")
     results$enddate[row]    <- paste0(year, "-12-31 23:59:59")
     results$mimetype[row]   <- "application/x-netcdf"
     results$formatname[row] <- "CF"
     
     if (file.exists(new.file) && !overwrite) {
-      logger.debug("File '", new.file, "' already exists, skipping to next file.")
+      PEcAn.logger::logger.debug("File '", new.file, "' already exists, skipping to next file.")
       next
     }
     

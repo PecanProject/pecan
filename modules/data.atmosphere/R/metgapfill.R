@@ -14,7 +14,6 @@
 ##' @param verbose should the function be very verbose
 ##' @param lst is timezone offset from UTC, if timezone is available in time:units atribute in file, it will use that, default is to assume UTC
 ##' @author Ankur Desai
-##' @importFrom PEcAn.utils fqdn logger.debug logger.error logger.warn logger.severe
 ##' @importFrom ncdf4 ncvar_get ncatt_get ncdim_def ncvar_def ncvar_add ncvar_put
 metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0,
                        overwrite = FALSE, verbose = FALSE, ...) {
@@ -52,7 +51,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
 
     # check if input exists
     if (!file.exists(old.file)) {
-      logger.warn("Missing input file ", old.file, " for year", sprintf("%04d", year),
+      PEcAn.logger::logger.warn("Missing input file ", old.file, " for year", sprintf("%04d", year),
                   "in folder", in.path)
       next
     }
@@ -60,14 +59,14 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     # create array with results
     row <- year - start_year + 1
     results$file[row]       <- new.file
-    results$host[row]       <- fqdn()
+    results$host[row]       <- PEcAn.utils::fqdn()
     results$startdate[row]  <- sprintf("%04d-01-01 00:00:00", year)
     results$enddate[row]    <- sprintf("%04d-12-31 23:59:59", year)
     results$mimetype[row]   <- "application/x-netcdf"
     results$formatname[row] <- "CF (gapfilled)"
 
     if (file.exists(new.file) && !overwrite) {
-      logger.debug("File '", new.file, "' already exists, skipping to next file.")
+      PEcAn.logger::logger.debug("File '", new.file, "' already exists, skipping to next file.")
       next
     }
 
@@ -110,11 +109,11 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     ## Required to exist in file
     Tair <- try(ncvar_get(nc = nc, varid = "air_temperature"), silent = TRUE)
     if (!is.numeric(Tair)) {
-      logger.error("air_temperature not defined in met file for metgapfill")
+      PEcAn.logger::logger.error("air_temperature not defined in met file for metgapfill")
     }
     precip <- try(ncvar_get(nc = nc, varid = "precipitation_flux"), silent = TRUE)
     if (!is.numeric(precip)) {
-      logger.error("precipitation_flux not defined in met file for metgapfill")
+      PEcAn.logger::logger.error("precipitation_flux not defined in met file for metgapfill")
     }
 
     ## create an array of missing values for writing new variables prior to gap filling
@@ -145,7 +144,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     # check to see if we have Rg values
     if (length(which(is.na(Rg))) == length(Rg)) {
       if (length(which(is.na(PAR))) == length(PAR)) {
-        logger.severe("Missing both PAR and Rg")
+        PEcAn.logger::logger.severe("Missing both PAR and Rg")
       }
       Rg <- PAR * 1e+06 / 2.1
     }
@@ -625,7 +624,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       fail.file <- file.path(outfolder,
                              paste(in.prefix, sprintf("%04d", year), "failure", "nc", sep = "."))
       file.rename(from = new.file, to = fail.file)
-      logger.severe("Could not do gapfill, results are in", fail.file, ".",
+      PEcAn.logger::logger.severe("Could not do gapfill, results are in", fail.file, ".",
                     "The following variables have NA's:", paste(error, sep = ", "))
     }
   }  # end loop
