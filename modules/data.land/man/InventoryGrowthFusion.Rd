@@ -12,7 +12,7 @@ InventoryGrowthFusion(data, cov.data = NULL, time_data = NULL,
 \arguments{
 \item{data}{list of data inputs}
 
-\item{n.chunk}{number of MCMC steps to evaluate at a time. Will only return LAST}
+\item{n.chunk}{number of MCMC steps to evaluate at a time. Will only return LAST. If restarting, second number in vector is chunk to start from}
 
 \item{n.burn}{number of steps to automatically discard as burn-in}
 
