@@ -25,7 +25,7 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
 
   GLDAS_start <- 1948
   if (start_year < GLDAS_start) {
-    PEcAn.utils::logger.severe(sprintf('Input year range (%d:%d) exceeds the GLDAS range (%d:present)',
+    PEcAn.logger::logger.severe(sprintf('Input year range (%d:%d) exceeds the GLDAS range (%d:present)',
                                        start_year, end_year,
                                        GLDAS_start))
   }
@@ -165,7 +165,7 @@ download.GLDAS <- function(outfolder, start_date, end_date, site_id, lat.in, lon
     ncdf4::nc_close(loc)
     
     results$file[i]       <- loc.file
-    results$host[i]       <- fqdn()
+    results$host[i]       <- PEcAn.utils::fqdn()
     results$startdate[i]  <- paste0(year, "-01-01 00:00:00")
     results$enddate[i]    <- paste0(year, "-12-31 23:59:59")
     results$mimetype[i]   <- "application/x-netcdf"

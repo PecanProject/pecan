@@ -15,6 +15,7 @@ Description: This module provides functions to run the PREdict Light use
 Depends:
     PEcAn.utils
 Imports:
+    PEcAn.logger,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
     udunits2 (>= 0.11)

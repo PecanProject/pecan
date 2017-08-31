@@ -31,7 +31,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   # strptime(end_date, '%Y-%m-%d'), 'dat', sep='.'))
   
   results <- data.frame(file = c(out.file),
-                        host = c(fqdn()), 
+                        host = c(PEcAn.utils::fqdn()), 
                         mimetype = c("text/plain"), 
                         formatname = c("LINKAGES meteorology"), 
                         startdate = c(start_date), 
@@ -42,7 +42,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   print(results)
   
   if (file.exists(out.file) && !overwrite) {
-    logger.debug("File '", out.file, "' already exists, skipping to next file.")
+    PEcAn.logger::logger.debug("File '", out.file, "' already exists, skipping to next file.")
     return(invisible(results))
   }
   

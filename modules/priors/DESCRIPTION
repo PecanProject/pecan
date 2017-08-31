@@ -12,6 +12,8 @@ LazyLoad: yes
 LazyData: FALSE
 Depends:
     PEcAn.utils
+Imports:
+    PEcAn.logger
 Suggests:
     testthat
 RoxygenNote: 6.0.1
