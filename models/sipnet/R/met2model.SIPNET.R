@@ -67,7 +67,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
   
-  ## loop over files TODO need to filter out the data that is not inside start_date, end_date
+  ## loop over files 
   for (year in start_year:end_year) {
     
     skip <- FALSE
@@ -209,6 +209,33 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     hr.na <- which(is.na(tmp[, 4]))
     if (length(hr.na) > 0) {
       tmp[hr.na, 4] <- tmp[hr.na - 1, 4] + dt/86400 * 24
+    }
+    
+    ##filter out days not included in start or end date
+    if(year == start_year){
+      extra.days <- length(as.Date(paste0(start_year, "-01-01")):as.Date(start_date)) #extra days length includes the start date
+      if (extra.days > 1){
+        PEcAn.logger::logger.info("Subsetting SIPNET met to match start date")
+        start.row <-  ((extra.days - 1) * 86400 / dt) + 1 #subtract to include start.date, add to exclude last half hour of day before
+        tmp <- tmp[start.row:nrow(tmp),]
+      }
+    } 
+    if (year == end_year){
+      if(year == start_year){
+        extra.days  <- length(as.Date(start_date):as.Date(end_date))
+        if (extra.days > 1){
+          PEcAn.logger::logger.info("Subsetting SIPNET met to match end date")
+          end.row <-  nrow(tmp) - ((extra.days - 1) * 86400 / dt)  #subtract to include end.date
+          tmp <- tmp[1:end.row,]
+        } 
+      } else{
+          extra.days <- length(as.Date(end_date):as.Date(paste0(end_year, "-12-31"))) #extra days length includes the end date
+          if (extra.days > 1){
+            PEcAn.logger::logger.info("Subsetting SIPNET met to match end date")
+            end.row <-  nrow(tmp) - ((extra.days - 1) * 86400 / dt)  #subtract to include end.date
+            tmp <- tmp[1:end.row,]
+          }
+      }
     }
     
     if (is.null(out)) {
