@@ -21,14 +21,15 @@
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
 model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
-  
   runid <- basename(outdir)
   DALEC.configs <- read.table(file.path(gsub(pattern = "/out/",
                                              replacement = "/run/", x = outdir),
-                                        paste0("CONFIG.",runid)), stringsAsFactors = FALSE)
-
+                                        paste0("CONFIG.", runid)),
+                              stringsAsFactors = FALSE)
+  
   ### Read in model output in DALEC format
-  DALEC.output      <- read.table(file.path(outdir, "out.txt"), header = FALSE, sep = "")
+  DALEC.output      <- read.table(file.path(outdir, "out.txt"),
+                                  header = FALSE, sep = "")
   DALEC.output.dims <- dim(DALEC.output)
   
   ### Determine number of years and output timestep
@@ -43,7 +44,7 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     if (file.exists(file.path(outdir, paste(y, "nc", sep = ".")))) {
       next
     }
-    print(paste("---- Processing year: ", y))  # turn on for debugging
+    print(paste("---- Processing year: ", y))  #turn on for debugging
     
     ## Subset data for processing
     sub.DALEC.output <- subset(DALEC.output, year == y)
@@ -78,8 +79,7 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     output[[2]] <- (sub.DALEC.output[, 21] + sub.DALEC.output[, 23]) * 0.001 / timestep.s  # Heterotrophic Resp kgC/m2/s
     output[[3]] <- (sub.DALEC.output[, 31] * 0.001)/timestep.s  # GPP in kgC/m2/s    
     output[[4]] <- (sub.DALEC.output[, 33] * 0.001)/timestep.s  # NEE in kgC/m2/s
-    output[[5]] <- (sub.DALEC.output[, 3] + sub.DALEC.output[, 5] + sub.DALEC.output[, 7]) * 
-      0.001/timestep.s  # NPP kgC/m2/s
+    output[[5]] <- (sub.DALEC.output[, 3] + sub.DALEC.output[, 5] + sub.DALEC.output[, 7]) * 0.001/timestep.s  # NPP kgC/m2/s
     output[[6]] <- (sub.DALEC.output[, 9] * 0.001) / timestep.s  # Leaf Litter Flux, kgC/m2/s
     output[[7]] <- (sub.DALEC.output[, 11] * 0.001) / timestep.s  # Woody Litter Flux, kgC/m2/s
     output[[8]] <- (sub.DALEC.output[, 13] * 0.001) / timestep.s  # Root Litter Flux, kgC/m2/s
@@ -99,7 +99,7 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     
     # ******************** Declare netCDF variables ********************#
     start.day <- 1
-    if(y == lubridate::year(start_date)){
+    if (y == lubridate::year(start_date)){
       start.day <- length(as.Date(paste0(y, "-01-01")):as.Date(start_date)) 
     } 
     t   <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
@@ -143,7 +143,6 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
     for (i in seq_along(nc_var)) {
-      # print(i)
       ncdf4::ncvar_put(nc, nc_var[[i]], output[[i]])
       cat(paste(nc_var[[i]]$name, nc_var[[i]]$longname), file = varfile, sep = "\n")
     }
