@@ -85,7 +85,9 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
         output[[i]] <- rep(-999, length(t$vals))
     }
     
-    var <- list(
+    dims <- list(lon = dim.lon, lat = dim.lat, time = dim.t)
+    
+    var <- list()
     var[[1]]  <- PEcAn.utils::to_ncvar("AGB", dims)
     var[[2]]  <- PEcAn.utils::to_ncvar("TotLivBiomass", dims)
     var[[3]]  <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
