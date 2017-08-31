@@ -330,7 +330,7 @@ model{
           covX[j] <- sub("[t]","",covX[j],fixed = TRUE)
           if(!(covX[j] %in% names(data))){
             ## add cov variables to data object
-            data[[covX[j]]] <- time_varying[[covX[j]]]
+            data[[covX[j]]] <- time_data[[covX[j]]]
           }
           myBeta <- paste0(myBeta,covX[j])
           covX[j] <- paste0(covX[j],"[i,t]")
