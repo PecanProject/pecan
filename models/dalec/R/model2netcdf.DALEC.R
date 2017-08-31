@@ -18,8 +18,6 @@
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
-##' @importFrom ncdf4 ncvar_def ncdim_def
-##' @importFrom PEcAn.utils mstmipvar to_ncvar to_ncdim
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
 model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
@@ -104,11 +102,11 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     if(y == lubridate::year(start_date)){
       start.day <- length(as.Date(paste0(y, "-01-01")):as.Date(start_date)) 
     } 
-    t   <- ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
+    t   <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"), 
                      vals = start.day:(start.day + (nrow(sub.DALEC.output)-1)), 
                      calendar = "standard", unlim = TRUE)
-    lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
    
     dims <- list(lon = lon, lat = lat, time = t)
     ## ***** Need to dynamically update the UTC offset here *****
@@ -120,24 +118,24 @@ model2netcdf.DALEC <- function(outdir, sitelat, sitelon, start_date, end_date) {
     
     
     nc_var <- list()
-    nc_var[[1]]  <- to_ncvar("AutoResp", dims)
-    nc_var[[2]]  <- to_ncvar("HeteroResp", dims)
-    nc_var[[3]]  <- to_ncvar("GPP", dims)
-    nc_var[[4]]  <- to_ncvar("NEE", dims)
-    nc_var[[5]]  <- to_ncvar("NPP", dims)
-    nc_var[[6]]  <- to_ncvar("leaf_litter_carbon_flux", dims) #was LeafLitter
-    nc_var[[7]]  <- to_ncvar("WoodyLitter", dims) #need to resolve standard woody litter flux
-    nc_var[[8]]  <- to_ncvar("subsurface_litter_carbon_flux", dims) #was RootLitter
-    nc_var[[9]]  <- to_ncvar("leaf_carbon_content", dims) #was LeafBiomass
-    nc_var[[10]] <- to_ncvar("wood_carbon_content", dims) #was WoodBiomass
-    nc_var[[11]] <- to_ncvar("root_carbon_content", dims) #was RootBiomass
-    nc_var[[12]] <- to_ncvar("litter_carbon_content", dims) #was LitterBiomass
-    nc_var[[13]] <- to_ncvar("soil_carbon_content", dims) #was SoilC; SOM pool technically includes woody debris (can't be represented by our standard)
+    nc_var[[1]]  <- PEcAn.utils::to_ncvar("AutoResp", dims)
+    nc_var[[2]]  <- PEcAn.utils::to_ncvar("HeteroResp", dims)
+    nc_var[[3]]  <- PEcAn.utils::to_ncvar("GPP", dims)
+    nc_var[[4]]  <- PEcAn.utils::to_ncvar("NEE", dims)
+    nc_var[[5]]  <- PEcAn.utils::to_ncvar("NPP", dims)
+    nc_var[[6]]  <- PEcAn.utils::to_ncvar("leaf_litter_carbon_flux", dims) #was LeafLitter
+    nc_var[[7]]  <- PEcAn.utils::to_ncvar("WoodyLitter", dims) #need to resolve standard woody litter flux
+    nc_var[[8]]  <- PEcAn.utils::to_ncvar("subsurface_litter_carbon_flux", dims) #was RootLitter
+    nc_var[[9]]  <- PEcAn.utils::to_ncvar("leaf_carbon_content", dims) #was LeafBiomass
+    nc_var[[10]] <- PEcAn.utils::to_ncvar("wood_carbon_content", dims) #was WoodBiomass
+    nc_var[[11]] <- PEcAn.utils::to_ncvar("root_carbon_content", dims) #was RootBiomass
+    nc_var[[12]] <- PEcAn.utils::to_ncvar("litter_carbon_content", dims) #was LitterBiomass
+    nc_var[[13]] <- PEcAn.utils::to_ncvar("soil_carbon_content", dims) #was SoilC; SOM pool technically includes woody debris (can't be represented by our standard)
     
-    nc_var[[14]] <- to_ncvar("TotalResp", dims)
-    nc_var[[15]] <- to_ncvar("TotLivBiom", dims)
-    nc_var[[16]] <- to_ncvar("TotSoilCarb", dims)
-    nc_var[[17]] <- to_ncvar("LAI", dims)
+    nc_var[[14]] <- PEcAn.utils::to_ncvar("TotalResp", dims)
+    nc_var[[15]] <- PEcAn.utils::to_ncvar("TotLivBiom", dims)
+    nc_var[[16]] <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
+    nc_var[[17]] <- PEcAn.utils::to_ncvar("LAI", dims)
 
     # ******************** Declar netCDF variables ********************#
     
