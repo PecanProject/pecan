@@ -340,15 +340,21 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 #	m_data[:] = data
 #	rootgrp.close()
 
+def dateInt_to_posix(date):
+	import datetime
+	temp =datetime.datetime.strptime(date, '%Y%j')
+	return temp.strftime('%Y-%m-%d')
 
-def m_data_to_netCDF(filename, m, k):
+def m_data_to_netCDF(filename, m, k, kmLR, kmAB):
 	rootgrp = netCDF4.Dataset(filename, 'w', format='NETCDF4')
-	rootgrp.createDimension('ncol', m.data.shape[1])
-	rootgrp.createDimension('nrow', m.data.shape[0])
-	rootgrp.createDimension('dates', len(m.dateInt))
-	m_data = rootgrp.createVariable('LAI', 'f8', ('nrow', 'ncol'))
-	m_std = rootgrp.createVariable('LAIStd', 'f8', ('nrow', 'ncol'))
-	m_date = rootgrp.createVariable('Dates', 'i8', ('dates'))
+	nrow = 1 + 2*kmAB
+	ncol = 1 + 2*kmLR	
+	rootgrp.createDimension('nrow', nrow)
+	rootgrp.createDimension('ncol', ncol)
+	rootgrp.createDimension('time', len(m.dateInt))
+	m_data = rootgrp.createVariable('LAI', 'f8', ('nrow', 'ncol','time'))
+	m_std = rootgrp.createVariable('LAIStd', 'f8', ('nrow', 'ncol','time'))
+	m_date = rootgrp.createVariable('Dates', 'i8', ('time'))
 	m_data[:] = m.data
 	__debugPrint( "populated LAI data in netcdf" )
 	if k is not None:
