@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <pecan>
-  <outdir>/home/carya/pecan_tests/pecan64.ed.xml</outdir>
+  <outdir>pecan_ed_test</outdir>
 
   <database>
     <bety>
