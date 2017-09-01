@@ -346,6 +346,8 @@ def dateInt_to_posix(date):
 	return temp.strftime('%Y-%m-%d')
 
 def m_data_to_netCDF(filename, m, k, kmLR, kmAB):
+	import datetime
+
 	rootgrp = netCDF4.Dataset(filename, 'w', format='NETCDF4')
 	nrow = 1 + 2*kmAB
 	ncol = 1 + 2*kmLR	
