@@ -52,18 +52,7 @@ dat <- read.table(fname,header=TRUE)
 
   ## calculate potential radiation
   ## in order to estimate diffuse/direct
-  et <- eccentricity_obliquity(doy)
-  merid <- floor(lon/15)*15
-  if(merid<0) merid <- merid+15
-  lc <- (lon-merid)*-4/60  ## longitude correction
-  tz <- merid/360*24 ## time zone
-  midbin <- 0.5*dt/86400*24 ## shift calc to middle of bin
-  t0 <- 12+lc-et-tz-midbin   ## solar time
-  h <- pi/12*(hr-t0)  ## solar hour
-  dec <- -23.45*pi/180*cos(2*pi*(doy+10)/365)  ## declination
-
-  cosz <- sin(lat*pi/180)*sin(dec)+cos(lat*pi/180)*cos(dec)*cos(h)
-  cosz[cosz<0] <- 0
+  cosz <- PEcAn.data.atmosphere::solar_angle(doy, lat, lon, dt)
 
   rpot <- 1366*cosz
   rpot <- rpot[1:n]
