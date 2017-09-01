@@ -12,7 +12,7 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"biocro.dtd\">\
 ##------------------------------------------------------------------------------------------------#
 ##' convert parameters from PEcAn database default units to biocro defaults
 ##' 
-##' Performs model specific unit conversions on a a list of trait values,
+##' Performs model specific unit conversions on a list of trait values,
 ##' such as those provided to write.config
 ##' @name convert.samples.BIOCRO
 ##' @title Convert samples for biocro
