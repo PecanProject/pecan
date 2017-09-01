@@ -110,9 +110,8 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     sec <- nc$dim$time$vals
     sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
     timestep.s <- 86400  # seconds in a day
-    ifelse(lubridate::leap_year(year) == TRUE,
-           dt <- (366 * 24 * 60 * 60) / length(sec), # leap year
-           dt <- (365 * 24 * 60 * 60) / length(sec)) # non-leap year
+    diy <- PEcAn.utils::days_in_year(year)
+    dt <- diy * 24 * 60 * 60 / length(sec)
     tstep <- round(timestep.s / dt)
     dt    <- timestep.s / tstep  #dt is now an integer
 
@@ -150,11 +149,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     }
 
     ## build day of year
-    doy <- rep(1:365, each = timestep.s / dt)[1:length(sec)]
-    if (lubridate::leap_year(year)) {
-      ## is leap
-      doy <- rep(1:366, each = timestep.s / dt)[1:length(sec)]
-    }
+    doy <- rep(seq_len(diy), each = timestep.s / dt)[seq_along(sec)]
 
     ## Aggregate variables up to daily
     Tmean        <- udunits2::ud.convert(tapply(Tair, doy, mean, na.rm = TRUE), "Kelvin", "Celsius")

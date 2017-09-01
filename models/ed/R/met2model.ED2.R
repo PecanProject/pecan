@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
-# All rights reserved. This program and the accompanying materials 
+# All rights reserved. This program and the accompanying materials
 # are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
@@ -10,7 +10,7 @@
 ## R Code to convert from NACP intercomparison NETCDF met files into ED2 ascii met files
 
 ## It requires the rhdf5 library, which is not available on CRAN, but by can be installed locally:
-## >source('http://bioconductor.org/biocLite.R') 
+## >source('http://bioconductor.org/biocLite.R')
 ## >biocLite('rhdf5')
 
 ## If files already exist in 'Outfolder', the default function is NOT to overwrite them and only
@@ -31,11 +31,11 @@
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 ##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_add
-met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat = NA, 
+met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat = NA,
                           lon = NA, overwrite = FALSE, verbose = FALSE, ...) {
   overwrite <- as.logical(overwrite)
 
-  # deprecated?  
+  # deprecated?
   library(rhdf5)
   library(PEcAn.utils)
 
@@ -44,19 +44,19 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
   met_folder <- outfolder
   met_header <- file.path(met_folder, "ED_MET_DRIVER_HEADER")
-  
-  results <- data.frame(file = c(met_header), 
-                        host = c(PEcAn.utils::fqdn()), 
-                        mimetype = c("text/plain"), 
-                        formatname = c("ed.met_driver_header files format"), 
-                        startdate = c(start_date), 
-                        enddate = c(end_date), 
-                        dbfile.name = "ED_MET_DRIVER_HEADER", 
+
+  results <- data.frame(file = c(met_header),
+                        host = c(PEcAn.utils::fqdn()),
+                        mimetype = c("text/plain"),
+                        formatname = c("ed.met_driver_header files format"),
+                        startdate = c(start_date),
+                        enddate = c(end_date),
+                        dbfile.name = "ED_MET_DRIVER_HEADER",
                         stringsAsFactors = FALSE)
-  
+
   ## check to see if the outfolder is defined, if not create directory for output
   dir.create(met_folder, recursive = TRUE, showWarnings = FALSE)
-  
+
   ### FUNCTIONS
   dm <- c(0, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366)
   dl <- c(0, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367)
@@ -69,20 +69,20 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     mo[!leap] <- findInterval(day[!leap], dm)
     return(mo)
   }
-  
+
   # get start/end year since inputs are specified on year basis
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
-  
+
   ## loop over files
   for (year in start_year:end_year) {
     ncfile <- file.path(in.path, paste(in.prefix, year, "nc", sep = "."))
-    
+
     ## extract file root name froot <- substr(files[i],1,28) print(c(i,froot))
-    
+
     ## open netcdf
     nc <- ncdf4::nc_open(ncfile)
-    
+
     # check lat/lon
     flat <- try(ncvar_get(nc, "latitude"), silent = TRUE)
     if (!is.numeric(flat)) {
@@ -93,7 +93,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     } else if (lat != flat) {
       PEcAn.logger::logger.warn("Latitude does not match that of file", lat, "!=", flat)
     }
-    
+
     flon <- try(ncvar_get(nc, "longitude"), silent = TRUE)
     if (!is.numeric(flon)) {
       flat <- nc$dim[[2]]$vals[1]
@@ -103,9 +103,9 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     } else if (lon != flon) {
       PEcAn.logger::logger.warn("Longitude does not match that of file", lon, "!=", flon)
     }
-    
+
     ## determine GMT adjustment lst <- site$LST_shift[which(site$acro == froot)]
-    
+
     ## extract variables
     lat  <- eval(parse(text = lat))
     lon  <- eval(parse(text = lon))
@@ -119,20 +119,19 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     SW   <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")
     LW   <- ncvar_get(nc, "surface_downwelling_longwave_flux_in_air")
     CO2  <- try(ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"), silent = TRUE)
-    
+
     useCO2 <- is.numeric(CO2)
-    
+
     ## convert time to seconds
     sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
-    
+
     ncdf4::nc_close(nc)
-    
-    dt <- ifelse(lubridate::leap_year(year) == TRUE, 
-                 366 * 24 * 60 * 60 / length(sec), # leap year
-                 365 * 24 * 60 * 60 / length(sec)) # non-leap year
-    
+
+    diy <- PEcAn.utils::days_in_year(year)
+    dt <- diy * 24 * 60 * 60 / length(sec)
+
     toff <- -as.numeric(lst) * 3600 / dt
-    
+
     ## buffer to get to GMT
     slen <- length(SW)
     Tair <- c(rep(Tair[1], toff), Tair)[1:slen]
@@ -146,7 +145,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     if (useCO2) {
       CO2 <- c(rep(CO2[1], toff), CO2)[1:slen]
     }
-    
+
     ## build time variables (year, month, day of year)
     skip <- FALSE
     nyr  <- floor(length(sec) / 86400 / 365 * dt)
@@ -155,13 +154,9 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     hr   <- NULL
     asec <- sec
     for (y in seq(year, year + nyr - 1)) {
-      ytmp <- rep(y, 365 * 86400 / dt)
-      dtmp <- rep(1:365, each = 86400 / dt)
-      if (lubridate::leap_year(y)) {
-        ## is leap
-        ytmp <- rep(y, 366 * 86400 / dt)
-        dtmp <- rep(1:366, each = 86400 / dt)
-      }
+      diy <- PEcAn.utils::days_in_year(y)
+      ytmp <- rep(y, diy * 86400 / dt)
+      dtmp <- rep(seq_len(diy), each = 86400 / dt)
       if (is.null(yr)) {
         yr  <- ytmp
         doy <- dtmp
@@ -196,12 +191,10 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
       print("Skipping to next year")
       next
     }
-    
-    
+
+
     ## calculate potential radiation in order to estimate diffuse/direct
-    f                <- pi/180 * (279.5 + 0.9856 * doy)
-    et               <- (-104.7 * sin(f) + 596.2 * sin(2 * f) + 4.3 * sin(4 * f) - 429.3 * 
-                           cos(f) - 2 * cos(2 * f) + 19.3 * cos(3 * f)) / 3600  # equation of time -> eccentricity and obliquity
+    et <- PEcAn.data.atmosphere::eccentricity_obliquity(doy)
     merid            <- floor(lon/15) * 15
     merid[merid < 0] <- merid[merid < 0] + 15
     lc               <- (lon - merid) * -4 / 60  ## longitude correction
@@ -210,13 +203,13 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     t0               <- 12 + lc - et - tz - midbin  ## solar time
     h                <- pi/12 * (hr - t0)  ## solar hour
     dec              <- -23.45 * pi/180 * cos(2 * pi * (doy + 10) / 365)  ## declination
-    
+
     cosz             <- sin(lat * pi/180) * sin(dec) + cos(lat * pi/180) * cos(dec) * cos(h)
     cosz[cosz < 0]   <- 0
-    
+
     rpot <- 1366 * cosz
     rpot <- rpot[1:length(SW)]
-    
+
     SW[rpot < SW] <- rpot[rpot < SW]  ## ensure radiation < max
     ### this causes trouble at twilight bc of missmatch btw bin avergage and bin midpoint
     frac <- SW/rpot
@@ -225,7 +218,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     frac[is.na(frac)] <- 0
     frac[is.nan(frac)] <- 0
     SWd <- SW * (1 - frac)  ## Diffuse portion of total short wave rad
-    
+
     ### convert to ED2.1 hdf met variables
     n      <- length(Tair)
     nbdsfA <- (SW - SWd) * 0.57  # near IR beam downward solar radiation [W/m2]
@@ -243,10 +236,10 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     if (useCO2) {
       co2A <- CO2 * 1e+06  # surface co2 concentration [ppm] converted from mole fraction [kg/kg]
     }
-    
+
     ## create directory if(system(paste('ls',froot),ignore.stderr=TRUE)>0)
     ## system(paste('mkdir',froot))
-    
+
     ## write by year and month
     for (y in year + 1:nyr - 1) {
       sely <- which(yr == y)
@@ -298,11 +291,11 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
         }
       }
     }
-    
+
     ## write DRIVER file
     sites <- 1
     metgrid <- c(1, 1, 1, 1, lon, lat)
-    metvar <- c("nbdsf", "nddsf", "vbdsf", "vddsf", "prate", "dlwrf", 
+    metvar <- c("nbdsf", "nddsf", "vbdsf", "vddsf", "prate", "dlwrf",
                 "pres", "hgt", "ugrd", "vgrd", "sh", "tmp", "co2")
     nmet <- length(metvar)
     metfrq <- rep(dt, nmet)
@@ -313,18 +306,18 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     }
     write.table("header", met_header, row.names = FALSE, col.names = FALSE)
     write.table(sites, met_header, row.names = FALSE, col.names = FALSE, append = TRUE)
-    write.table(met_folder, met_header, row.names = FALSE, col.names = FALSE, append = TRUE, 
+    write.table(met_folder, met_header, row.names = FALSE, col.names = FALSE, append = TRUE,
                 quote = FALSE)
-    write.table(matrix(metgrid, nrow = 1), met_header, row.names = FALSE, col.names = FALSE, 
+    write.table(matrix(metgrid, nrow = 1), met_header, row.names = FALSE, col.names = FALSE,
                 append = TRUE, quote = FALSE)
     write.table(nmet, met_header, row.names = FALSE, col.names = FALSE, append = TRUE, quote = FALSE)
     write.table(matrix(metvar, nrow = 1), met_header, row.names = FALSE, col.names = FALSE, append = TRUE)
-    write.table(matrix(metfrq, nrow = 1), met_header, row.names = FALSE, col.names = FALSE, append = TRUE, 
+    write.table(matrix(metfrq, nrow = 1), met_header, row.names = FALSE, col.names = FALSE, append = TRUE,
                 quote = FALSE)
-    write.table(matrix(metflag, nrow = 1), met_header, row.names = FALSE, col.names = FALSE, 
+    write.table(matrix(metflag, nrow = 1), met_header, row.names = FALSE, col.names = FALSE,
                 append = TRUE, quote = FALSE)
   }  ### end loop over met files
-  
+
   print("Done with met2model.ED2")
   return(invisible(results))
 } # met2model.ED2

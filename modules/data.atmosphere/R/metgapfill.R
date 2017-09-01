@@ -160,20 +160,12 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     ## make night dark - based on met2model.ED2.R in models/ed/R First: calculate potential radiation
     sec <- nc$dim$time$vals
     sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
-    dt <- ifelse(lubridate::leap_year(year),
-                 (366 * 24 * 60 * 60) / length(sec),
-                 (365 * 24 * 60 * 60) / length(sec))
-    doy <- if (lubridate::leap_year(year) == TRUE)
-                  { rep(1:366, each = 86400 / dt) }
-                  else { rep(1:365, each = 86400 / dt) }
-    hr <- if (lubridate::leap_year(year) == TRUE)
-                 { rep(seq(0, length = 86400 / dt, by = dt / 86400 * 24), 366) }
-                 else { rep(seq(0, length = 86400 / dt, by = dt / 86400 * 24), 365) }
+    diy <- PEcAn.utils::days_in_year(year)
+    dt <- diy * 24 * 60 * 60 / length(sec)
+    doy <- rep(seq_len(diy), each = 86400 / dt)
+    hr <- rep(seq(0, length = 86400 / dt, by = 24 * dt / 86400), diy)
 
-    f      <- pi / 180 * (279.5 + 0.9856 * doy)
-    et     <- (-104.7 * sin(f) + 596.2 * sin(2 * f) + 4.3 *
-                 sin(4 * f) - 429.3 * cos(f) - 2 *
-                 cos(2 * f) + 19.3 * cos(3 * f)) / 3600  # equation of time -> eccentricity and obliquity
+    et <- eccentricity_obliquity(doy)
     merid  <- floor(lon / 15) * 15
     merid[merid < 0] <- merid[merid < 0] + 15
     lc     <- (lon - merid) * -4/60  ## longitude correction
@@ -185,9 +177,9 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     cosz <- sin(lat * pi / 180) * sin(dec) + cos(lat * pi / 180) * cos(dec) * cos(h)
     cosz[cosz < 0] <- 0
     rpot <- 1366 * cosz  #in UTC
-    tz = as.numeric(lst)
+    tz <- as.numeric(lst)
     if(is.na(tz)){
-      tz = PEcAn.utils::timezone_hour(lst)
+      tz <- PEcAn.utils::timezone_hour(lst)
     }
     toff <- tz * 3600/dt  #timezone offset correction
     if (toff < 0) {

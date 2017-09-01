@@ -49,16 +49,11 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
 
       ## build day and year
 
-      dt <- ifelse(lubridate::leap_year(year) == TRUE,
-                   366 * 24 * 60 * 60 / length(sec), # leap year
-                   365 * 24 * 60 * 60 / length(sec)) # non-leap year
+      diy <- PEcAn.utils::days_in_year(year)
+      dt <- diy * 24 * 60 * 60 / length(sec)
       tstep <- round(timestep.s / dt)  #time steps per day
 
-      doy <- rep(1:365, each = tstep)[1:length(sec)]
-      if (lubridate::leap_year(year)) {
-        ## is leap
-        doy <- rep(1:366, each = tstep)[1:length(sec)]
-      }
+      doy <- seq_len(diy, each = tstep)[seq_along(sec)]
 
       ## Get variables from netcdf file
       SW     <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  # SW in W/m2
