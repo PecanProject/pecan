@@ -76,7 +76,7 @@ call_MODIS <- function(outfolder = ".", fname = "m_data.nc", start, end, lat, lo
   rPython::python.assign("band", band)
   rPython::python.assign("qcband", qc_band)
   rPython::python.assign("sdband", sd_band)
-  python.assign("debug", verbose)
+  rPython::python.assign("debug", verbose)
   
   # Here we import the MODIS python script as a module for the python. That way we can
   # run the routines within the script as independent commands.
