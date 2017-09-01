@@ -24,7 +24,6 @@
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
-##' @importFrom ncdf4 ncvar_get
 met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
                             overwrite = FALSE, verbose = FALSE, spin_nyear=NULL,spin_nsample=NULL,spin_resample=NULL, ...) {
   
@@ -38,7 +37,6 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
   ## (MPa.m2.s/mmol-1); average foliar nitorgen (gC/m2 leaf area).  Calculate these from
   ## air_temperature (K), surface_downwelling_shortwave_flux_in_air (W/m2), CO2 (ppm)
   
-  library(PEcAn.utils)
 
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   start_date_string <- as.character(strptime(start_date, "%Y-%m-%d"))
@@ -80,7 +78,6 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     return(invisible(results))
   }
   
-  library(PEcAn.data.atmosphere)
 
   ## check to see if the outfolder is defined, if not create directory for output
   if (!file.exists(outfolder)) {
@@ -116,12 +113,20 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     tstep <- round(timestep.s / dt)
     dt    <- timestep.s / tstep  #dt is now an integer
     
+    ## build day of year
+    doy <- rep(1:365, each = timestep.s / dt)[1:length(sec)]
+    
+    if (lubridate::leap_year(year)) {
+      ## is leap
+      doy <- rep(1:366, each = timestep.s / dt)[1:length(sec)]
+    }
+    
     ## extract variables
-    lat  <- ncvar_get(nc, "latitude")
-    lon  <- ncvar_get(nc, "longitude")
-    Tair <- ncvar_get(nc, "air_temperature")  ## in Kelvin
-    SW   <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  ## in W/m2
-    CO2  <- try(ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
+    lat  <- ncdf4::ncvar_get(nc, "latitude")
+    lon  <- ncdf4::ncvar_get(nc, "longitude")
+    Tair <- ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
+    SW   <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  ## in W/m2
+    CO2  <- try(ncdf4::ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"))
     ncdf4::nc_close(nc)
     
     useCO2 <- is.numeric(CO2)
@@ -149,12 +154,6 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
       LeafWaterPot <- rep(LeafWaterPot, length(Tair))
     }
     
-    ## build day of year
-    doy <- rep(1:365, each = timestep.s / dt)[1:length(sec)]
-    if (year %% 4 == 0) {
-      ## is leap
-      doy <- rep(1:366, each = timestep.s / dt)[1:length(sec)]
-    }
     
     ## Aggregate variables up to daily
     Tmean        <- udunits2::ud.convert(tapply(Tair, doy, mean, na.rm = TRUE), "Kelvin", "Celsius")
