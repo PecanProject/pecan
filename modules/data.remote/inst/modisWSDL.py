@@ -414,7 +414,7 @@ def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, 
 	if DEBUG_PRINTING:		
 		printModisData( m )
 
-	m_data_to_netCDF(fname, m, k)	
+	m_data_to_netCDF(fname, m, k, kmLR, kmAB)	
 
 #	print(len(m.data))
 #	print(len(k.data))
