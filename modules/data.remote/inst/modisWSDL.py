@@ -352,16 +352,25 @@ def m_data_to_netCDF(filename, m, k, kmLR, kmAB):
 	rootgrp.createDimension('nrow', nrow)
 	rootgrp.createDimension('ncol', ncol)
 	rootgrp.createDimension('time', len(m.dateInt))
-	m_data = rootgrp.createVariable('LAI', 'f8', ('nrow', 'ncol','time'))
-	m_std = rootgrp.createVariable('LAIStd', 'f8', ('nrow', 'ncol','time'))
-	m_date = rootgrp.createVariable('Dates', 'i8', ('time'))
+
+	m_date = rootgrp.createVariable('time', 'i8', ('time'))
+	start=str(m.dateInt[0])
+	startDate = datetime.datetime.strptime(start, '%Y%j')
+	year = startDate.year
+	m_date.units = 'days since %d 00:00:00.0'%(year)
+
+	m_data = rootgrp.createVariable('LAI', 'f8', ('time', 'ncol', 'nrow'))
+	m_std = rootgrp.createVariable('LAIStd', 'f8', ('time', 'ncol', 'nrow'))
+
+	str_dates = [str(d) for d in m.dateInt]
+	datetimes = [(datetime.datetime.strptime(d, '%Y%j')- datetime.datetime(year,1,1)).days for d in str_dates]	
+	m_date[:] = datetimes 
+	__debugPrint( "populated dates in netcdf" )
 	m_data[:] = m.data
 	__debugPrint( "populated LAI data in netcdf" )
 	if k is not None:
         	m_std[:] = 0.1*k.data
 		__debugPrint( "populated LAIstd data in netcdf" )
-	m_date[:] = m.dateInt
-	__debugPrint( "populated dates in netcdf" )
 	rootgrp.close()
 
 #def m_date_to_netCDF(filename, varname, data):
