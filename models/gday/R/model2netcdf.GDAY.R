@@ -99,7 +99,7 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
     ## C-State
     var[[7]] <- PEcAn.utils::to_ncvar("AbvGrndWood", dims)
     var[[8]] <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
-    var[[9]] <- PEcAn.utils::to_ncvar("LAI","m2/m2", dims)
+    var[[9]] <- PEcAn.utils::to_ncvar("LAI", dims)
     
     ## Water fluxes
     var[[10]] <- PEcAn.utils::to_ncvar("Evap", dims)
