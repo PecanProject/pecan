@@ -46,7 +46,7 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
                  unlim = TRUE)
   
   for (yeari in unique(result$Year)) {
-    result_yeari <- result[Year == yeari]
+    result_yeari <- result[result$Year == yeari]
     dates <- lubridate::ymd(paste0(result_yeari$Year, "-01-01")) + lubridate::days(as.numeric(result_yeari$DayofYear - 1)) + 
       lubridate::hours(result_yeari$Hour)
     days_since_origin <- dates - lubridate::ymd_hms("1700-01-01 00:00:00")
