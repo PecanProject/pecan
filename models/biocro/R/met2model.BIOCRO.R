@@ -173,16 +173,16 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
   }
   
   ## Convert RH from percent to fraction BioCro functions just to confirm
-  if (met[, max(relative_humidity) > 1]) {
-    met[, `:=`(relative_humidity = relative_humidity/100)]
+  if (met[, max(met$relative_humidity) > 1]) {
+    met$relative_humidity = met$relative_humidity/100
   }
   newmet <- met[, list(year = lubridate::year(date),
                        doy = lubridate::yday(date),
                        hour = round(lubridate::hour(date) + lubridate::minute(date) / 60, 0),
                        SolarR = ppfd, 
-                       Temp = udunits2::ud.convert(air_temperature, "Kelvin", "Celsius"), 
-                       RH = relative_humidity, 
+                       Temp = udunits2::ud.convert(met$air_temperature, "Kelvin", "Celsius"),
+                       RH = met$relative_humidity,
                        WS = wind_speed,
-                       precip = udunits2::ud.convert(precipitation_flux, "s-1", "h-1"))][hour <= 23]
+                       precip = udunits2::ud.convert(met$precipitation_flux, "s-1", "h-1"))][hour <= 23]
   return(as.data.frame(newmet))
 }  # cf2biocro
