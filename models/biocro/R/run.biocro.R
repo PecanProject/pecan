@@ -160,31 +160,35 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
   }
   
   hourly.results <- do.call("rbind", hourly.results)
-  hourly.results <- hourly.results[order(year, doy, hour)]
+  hourly.results <- hourly.results[order(hourly.results$year, hourly.results$doy, hourly.results$hour),]
   
-  daily.results <- hourly.results[, list(Stem = max(Stem), 
-                                         Leaf = max(Leaf),
-                                         Root = max(Root), 
-                                         AboveLitter = max(AboveLitter),
-                                         BelowLitter = max(BelowLitter),
-                                         Rhizome = max(Rhizome),
-                                         SoilEvaporation = sum(SoilEvaporation), 
-                                         CanopyTrans = sum(CanopyTrans), 
-                                         Grain = max(Grain), 
-                                         LAI = max(LAI), 
-                                         tmax = max(Temp), tmin = min(Temp), tavg = mean(Temp), 
-                                         precip = sum(precip)), by = "year,doy"]
+  daily.results <- hourly.results[, list(Stem = max(hourly.results$Stem),
+                                         Leaf = max(hourly.results$Leaf),
+                                         Root = max(hourly.results$Root),
+                                         AboveLitter = max(hourly.results$AboveLitter),
+                                         BelowLitter = max(hourly.results$BelowLitter),
+                                         Rhizome = max(hourly.results$Rhizome),
+                                         SoilEvaporation = sum(hourly.results$SoilEvaporation),
+                                         CanopyTrans = sum(hourly.results$CanopyTrans),
+                                         Grain = max(hourly.results$Grain),
+                                         LAI = max(hourly.results$LAI),
+                                         tmax = max(hourly.results$Temp),
+                                         tmin = min(hourly.results$Temp),
+                                         tavg = mean(hourly.results$Temp),
+                                         precip = sum(hourly.results$precip)),
+                                  by = "year,doy"]
   
-  annual.results <- hourly.results[, list(Stem = max(Stem),
-                                          Leaf = max(Leaf), 
-                                          Root = max(Root), 
-                                          AboveLitter = max(AboveLitter),
-                                          BelowLitter = max(BelowLitter),
-                                          Rhizome = max(Rhizome), 
-                                          Grain = max(Grain), 
-                                          SoilEvaporation = sum(SoilEvaporation), 
-                                          CanopyTrans = sum(CanopyTrans), 
-                                          map = sum(precip), mat = mean(Temp)),
+  annual.results <- hourly.results[, list(Stem = max(hourly.results$Stem),
+                                          Leaf = max(hourly.results$Leaf),
+                                          Root = max(hourly.results$Root),
+                                          AboveLitter = max(hourly.results$AboveLitter),
+                                          BelowLitter = max(hourly.results$BelowLitter),
+                                          Rhizome = max(hourly.results$Rhizome),
+                                          Grain = max(hourly.results$Grain),
+                                          SoilEvaporation = sum(hourly.results$SoilEvaporation),
+                                          CanopyTrans = sum(hourly.results$CanopyTrans),
+                                          map = sum(hourly.results$precip),
+                                          mat = mean(hourly.results$Temp)),
                                    by = "year"]
   return(list(hourly = hourly.results, 
               daily = daily.results, 
