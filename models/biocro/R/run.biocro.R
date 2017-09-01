@@ -46,8 +46,8 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       day1 <- lubridate::yday(config$simulationPeriod$dateofplanting)
       dayn <- lubridate::yday(config$simulationPeriod$dateofharvest)
     } else if (lat > 0) {
-      day1 <- as.numeric(as.data.table(WetDat)[doy < 180 & Temp < -2, list(day1 = max(doy))])
-      dayn <- as.numeric(as.data.table(WetDat)[doy > 180 & Temp < -2, list(day1 = min(doy))])
+      day1 <- max(WetDat[ (WetDat[,"doy"] < 180 & WetDat[,"Temp"] < -2), "doy"])
+      dayn <- min(WetDat[ (WetDat[,"doy"] > 180 & WetDat[,"Temp"] < -2), "doy"])
       ## day1 = last spring frost dayn = first fall frost from Miguez et al 2009
     } else {
       day1 <- NULL
