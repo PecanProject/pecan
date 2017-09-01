@@ -160,7 +160,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
                                strip.white = TRUE)))) {
     if (sum(unused.traits) > 0) {
       PEcAn.logger::logger.warn("the following traits parameters are not added to config file:", 
-                  vecpaste(names(unused.traits)[unused.traits == TRUE]))
+                  PEcAn.utils::vecpaste(names(unused.traits)[unused.traits == TRUE]))
     }
   }
   

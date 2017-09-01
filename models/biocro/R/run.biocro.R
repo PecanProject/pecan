@@ -9,7 +9,6 @@
 #' @param coppice.interval numeric, number of years between cuttings for coppice plant or perinneal grass (default 1)
 #' @return output from one of the \code{BioCro::*.Gro} functions (determined by \code{config$genus}), as data.table object
 #' @export
-#' @importFrom PEcAn.data.land get.soil
 #' @import data.table
 #' @author David LeBauer
 run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppice.interval = 1) {
@@ -20,7 +19,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
   years <- lubridate::year(start.date):lubridate::year(end.date)
 
   if (!is.null(soil.nc)) {
-    soil <- get.soil(lat = lat, lon = lon, soil.nc = soil.nc)
+    soil <- PEcAn.data.land::get.soil(lat = lat, lon = lon, soil.nc = soil.nc)
     config$pft$soilControl$soilType <- ifelse(soil$usda_class %in% 1:10, 
                                               soil$usda_class, 
                                               10)
@@ -33,7 +32,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
     starti <- max(start.date, lubridate::ymd(paste0(yeari, "-01-01")))
     endi <- min(end.date, lubridate::ymd(paste0(yeari, "-12-31")))
     metfile <- paste(metpath, yeari, "csv", sep = ".")
-    WetDat <- fread(metfile)
+    WetDat <- data.table::fread(metfile)
     WetDat <- WetDat[WetDat$doy >= lubridate::yday(starti) & WetDat$doy <= lubridate::yday(endi), ]
 
     # Check that all variables are present in the expected order --

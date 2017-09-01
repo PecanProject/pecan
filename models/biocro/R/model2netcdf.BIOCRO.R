@@ -61,13 +61,13 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
       }
     }
    
-    vars <- list(NPP = mstmipvar("NPP", x, y, t),
-                 TotLivBiom = mstmipvar("TotLivBiom", x, y, t),
-                 RootBiom = mstmipvar("RootBiom", x, y, t),
-                 StemBiom = mstmipvar("StemBiom", x, y, t), 
-                 Evap = mstmipvar("Evap", x, y, t), 
-                 TVeg = mstmipvar("TVeg", x, y, t), 
-                 LAI = mstmipvar("LAI", x, y, t))
+    vars <- list(NPP = PEcAn.utils::mstmipvar("NPP", x, y, t),
+                 TotLivBiom = PEcAn.utils::mstmipvar("TotLivBiom", x, y, t),
+                 RootBiom = PEcAn.utils::mstmipvar("RootBiom", x, y, t),
+                 StemBiom = PEcAn.utils::mstmipvar("StemBiom", x, y, t),
+                 Evap = PEcAn.utils::mstmipvar("Evap", x, y, t),
+                 TVeg = PEcAn.utils::mstmipvar("TVeg", x, y, t),
+                 LAI = PEcAn.utils::mstmipvar("LAI", x, y, t))
     
     biomass2c <- 0.4
     k <- udunits2::ud.convert(1, "Mg/ha", "kg/m2") * biomass2c
