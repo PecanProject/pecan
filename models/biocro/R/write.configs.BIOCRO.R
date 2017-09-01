@@ -51,14 +51,6 @@ convert.samples.BIOCRO <- function(trait.samples) {
   if ("Sp" %in% trait.names) {
     trait.samples$Sp = udunits2::ud.convert(trait.samples$Sp, "kg/m2", "g/cm2")
   }
-  if ("vmax" %in% trait.names) {
-    ## HAAAACK
-    trait.samples <- transform(trait.samples, vmax = vmax)
-  }
-  if ("Rd" %in% trait.names) {
-    ## HAAAACK
-    trait.samples <- transform(trait.samples, Rd = Rd)
-  }
   
   # kd = k*omega from $e^{-kL\omega}$, if (all(c('kd', 'clumping') %in%
   # trait.names)) { trait.samples <- transform(trait.samples, kd = clumping * kd,
