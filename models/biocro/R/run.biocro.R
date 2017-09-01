@@ -63,7 +63,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
     # If not, rescale day1 and dayn to be relative to the start of the input.
     #   Scaling is derived by inverting Biocro's day->index equations.
     biocro_checks_doy <- tryCatch(
-      {m <- BioGro(WetDat = matrix(c(0,10,0,0,0,0,0,0),nrow = 1),
+      {m <- BioCro::BioGro(WetDat = matrix(c(0,10,0,0,0,0,0,0),nrow = 1),
                    day1 = 10, dayn = 10, timestep = 24);
       class(m) == "BioGro"},
       error = function(e){FALSE})
