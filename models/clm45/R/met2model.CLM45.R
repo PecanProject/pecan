@@ -61,15 +61,11 @@ met2model.CLM45 <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
 #
 #       ##build day and  year
 #
-#       ifelse(leap_year(year)==TRUE,
-#              dt <- (366*24*60*60)/length(sec), #leap year
-#              dt <- (365*24*60*60)/length(sec)) #non-leap year
+#       diy <- PEcAn.utils::days_in_year(year)
+#       dt <- diy * 24 * 60 * 60 / length(sec)
 #       tstep = round(timestep.s/dt) #time steps per day
 #
-#       doy <- rep(1:365,each=tstep)[1:length(sec)]
-#       if(lubridate::leap_year(year)){
-#         doy <- rep(1:366,each=tstep)[1:length(sec)]
-#       }
+#       doy <- rep(seq_len(diy), each=tstep)[1:length(sec)]
 #
 
   ## extract variables. These need to be read in and converted to CLM standards
