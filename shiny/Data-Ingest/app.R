@@ -10,22 +10,41 @@
 library(shiny)
 library(PEcAn.data.land)
 library(shinyDND)
+library(shinydashboard)
+
 # Define UI for application
 
-ui <- fluidPage(
+ui <- dashboardPage(
   
-  titlePanel("Data Ingest"),
-  
-  textInput("id", label = h3("Import From DataONE"), placeholder = "Enter doi or id here"),
-  actionButton(inputId = "D1Button", label = "Upload"),
-  
-  hr(),
-  fluidRow(column(3, verbatimTextOutput("identifier"))), 
-  
-  # https://github.com/rstudio/shiny-examples/blob/master/009-upload/app.R
-  fileInput(inputId = "file", label = h3("Select Local Files for Upload"), accept = NULL, multiple = TRUE),
-  p("One or more files")
-  
+  dashboardHeader(title = "Data Ingest"),
+  dashboardSidebar(),
+  dashboardBody(
+    
+    fluidRow(
+      box(
+        textInput("id", label = h3("Import From DataONE"), placeholder = "Enter doi or id here"),
+        actionButton(inputId = "D1Button", label = "Upload"),
+        hr(),
+        fluidRow(column(12, verbatimTextOutput("identifier"))) 
+      ),
+      
+      box(
+        # https://github.com/rstudio/shiny-examples/blob/master/009-upload/app.R
+        fileInput(inputId = "file", label = h3("Upload Local Files"), accept = NULL, multiple = TRUE),
+        p("One or more files")
+      )
+    ),
+    
+    dashboardSidebar(
+      sidebarMenu(
+        menuItem("Import Data", tabName = "importData", icon = icon("file")),
+        menuItem("Step 2 -- dbfiles record", tabName = "step2", icon = icon("cog")),
+        menuItem("Step 3 -- format record", tabName = "step3", icon = icon("cog")),
+        menuItem("Step 4 -- etc.", tabName = "step4", icon = icon("cog"))
+      )
+    )
+    
+  )
 )
 
 server <- function(input, output) {
