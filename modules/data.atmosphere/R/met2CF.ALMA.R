@@ -125,7 +125,7 @@ met2CF.PalEONregional <- function(in.path, in.prefix, outfolder, start_date, end
 
     # Open new file and fill in air_temperature
     print(year)
-    var <- ncdf4::ncvar_def(name = "air_temperature", units = "degrees K", dim = dim,
+    var <- ncdf4::ncvar_def(name = "air_temperature", units = "K", dim = dim,
                      missval = as.numeric(-9999))
     nc2 <- ncdf4::nc_create(filename = new.file, vars = var, verbose = verbose)
     ncdf4::ncvar_put(nc = nc2, varid = "air_temperature", vals = met[["tair"]])
@@ -304,7 +304,7 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     ncvar_put(nc = nc2, varid = "longitude", vals = rep(latlon[2], tdim$len))
 
     # air_temperature
-    insertPmet(met[["tair"]], nc2 = nc2, var2 = "air_temperature", units2 = "degrees K", dim2 = dim,
+    insertPmet(met[["tair"]], nc2 = nc2, var2 = "air_temperature", units2 = "K", dim2 = dim,
                verbose = verbose)
 
     # air_pressure
@@ -495,7 +495,7 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
     copyvals(nc1 = nc1,
              var1 = "TA",
              nc2 = nc2,
-             var2 = "air_temperature", units2 = "degrees K",
+             var2 = "air_temperature", units2 = "K",
              dim2 = dim,
              conv = function(x) { udunits2::ud.convert(x, "degC", "K") },
              verbose = verbose)
@@ -506,7 +506,7 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
              nc2 = nc2,
              var2 = "air_pressure", units2 = "Pa",
              dim2 = dim,
-             conv = function(x) { x * 1000 },
+             conv = function(x) { udunits2::ud.convert(x, 'kPa', 'Pa') },
              verbose = verbose)
 
     # convert CO2 to mole_fraction_of_carbon_dioxide_in_air
@@ -514,14 +514,14 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
              var1 = "CO2",
              nc2 = nc2,
              var2 = "mole_fraction_of_carbon_dioxide_in_air",  units2 = "mole/mole",
-             dim2 = dim, conv = function(x) { x * 1e+06 },
+             dim2 = dim, conv = function(x) { udunits2::ud.convert(x, "mol/mol", "ppm") },
              verbose = verbose)
 
     # convert TS1 to soil_temperature
     copyvals(nc1 = nc1,
              var1 = "TS1",
              nc2 = nc2,
-             var2 = "soil_temperature", units2 = "degrees K",
+             var2 = "soil_temperature", units2 = "K",
              dim2 = dim,
              conv = function(x) { udunits2::ud.convert(x, "degC", "K") },
              verbose = verbose)
@@ -576,7 +576,7 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
              nc2 = nc2,
              var2 = "surface_downwelling_photosynthetic_photon_flux_in_air", units2 = "mol m-2 s-1",
              dim2 = dim,
-             conv = function(x) { x / 1e+06 },
+             conv = function(x) { udunits2::ud.convert(x, "umol m-2 s-1", "mol m-2 s-1") },
              verbose = verbose)
 
     # copy WD to wind_direction (not official CF)

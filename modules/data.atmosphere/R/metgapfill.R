@@ -331,7 +331,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     EddyData.F["Tair"] <- udunits2::ud.convert(EddyData.F["Tair"], "K", "degC")
     EddyData.F["Tair"] <- EddyData.F["Tair"]
     EddyData.F["Ts1"] <- udunits2::ud.convert(EddyData.F["Ts1"], "K", "degC")
-    EddyData.F["VPD"] <- EddyData.F["VPD"] / 1000
+    EddyData.F["VPD"] <- udunits2::ud.convert(EddyData.F["VPD"], "Pa", "kPa")
 
     ## Optional need:
     ## Compute VPD EddyData.F <- cbind(EddyData.F,VPD=fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair))
@@ -547,7 +547,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     ncvar_put(nc, varid = "soil_temperature", vals = Ts1_f)
 
     if (("VPD_f" %in% colnames(Extracted))) {
-      VPD_f <- Extracted[, "VPD_f"] * 1000
+      VPD_f <- udunits2::ud.convert(Extracted[, "VPD_f"], "kPa", "Pa")
     }
     if (length(which(is.na(VPD_f))) > 0) {
       error <- c(error, "water_vapor_saturation_deficit")
@@ -562,7 +562,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       co2_f <- Extracted[, "co2_f"]
     }
     co2_f[is.na(co2_f)] <- mean(co2, na.rm = TRUE)
-    co2_f[is.na(co2_f)] <- 380 / 1e+06
+    co2_f[is.na(co2_f)] <- udunits2::ud.convert(380, "ppm", "mol/mol")
     if (length(which(is.na(co2_f))) > 0) {
       error <- c(error, "mole_fraction_of_carbon_dioxide_in_air")
     }
