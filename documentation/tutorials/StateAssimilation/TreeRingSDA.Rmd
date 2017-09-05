@@ -45,12 +45,8 @@ Perform a site-level SIPNET run using the following settings
    <process.variance>FALSE</process.variance>
    <sample.parameters>TRUE</sample.parameters>
    <data>
-    <format_id>
     <format_id>1000000040</format_id>
-    </format_id>
-    <input.id>
-          <input.id>1000013298</input.id>
-    </input.id>
+    <input.id>1000013298</input.id>
   </data>
    <state.variables>
    <variable>
@@ -61,37 +57,37 @@ Perform a site-level SIPNET run using the following settings
    </variable>
    <variable>
    <variable.name>AbvGrndWood</variable.name>
-   <unit>KgC/m^2</unit>
+       <unit>KgC/m^2</unit>
        <min_value>0</min_value>
        <max_value>9999</max_value>
    </variable>
    <variable>
    <variable.name>TotSoilCarb</variable.name>
-   <unit>KgC/m^2</unit>
+      <unit>KgC/m^2</unit>
       <min_value>0</min_value>
       <max_value>9999</max_value>
    </variable>
    <variable>
    <variable.name>LeafC</variable.name>
-   <unit>m^2/m^2</unit>
+         <unit>m^2/m^2</unit>
          <min_value>0</min_value>
          <max_value>9999</max_value>
    </variable>
    <variable>
    <variable.name>SoilMoistFrac</variable.name>
-   <unit></unit>
+         <unit></unit>
          <min_value>0</min_value>
          <max_value>9999</max_value>
    </variable>
    <variable>
    <variable.name>SWE</variable.name>
-   <unit>cm</unit>
+         <unit>cm</unit>
          <min_value>0</min_value>
          <max_value>9999</max_value>
    </variable>
    <variable>
    <variable.name>Litter</variable.name>
-   <unit>gC/m^2</unit>
+         <unit>gC/m^2</unit>
          <min_value>0</min_value>
          <max_value>9999</max_value>
    </variable>

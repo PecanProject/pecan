@@ -93,9 +93,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
     var[[2]]  <- PEcAn.utils::to_ncvar("TotLivBiomass", dims)
     var[[3]]  <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
     var[[4]]  <- ncdf4::ncvar_def("CarbPools", "kgC/m2", list(dim.cpools, dim.lat, dim.lon, dim.t), -999)
-    var[[5]]  <- ncdf4::ncvar_def("poolnames", units = "", dim = list(dim.string, dim.cpools1), 
-                           longname = "Carbon Pool Names", prec = "char")
-<<<<<<< HEAD
+    var[[5]]  <- ncdf4::ncvar_def("poolnames", units = "", dim = list(dim.string, dim.cpools1), longname = "Carbon Pool Names", prec = "char")
     var[[6]]  <- ncvar_def("GWBI", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
     var[[7]]  <- ncvar_def("HeteroResp", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
     var[[8]]  <- ncvar_def("NPP", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
@@ -106,17 +104,6 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
     var[[13]] <- ncvar_def("LAI", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
     var[[14]] <- ncvar_def("SoilMoist", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
     var[[15]]  <- ncvar_def("AbvGrndWood", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
-=======
-    var[[6]]  <- PEcAn.utils::to_ncvar("GWBI", dims)
-    var[[7]]  <- PEcAn.utils::to_ncvar("HeteroResp", dims)
-    var[[8]]  <- PEcAn.utils::to_ncvar("NPP", dims)
-    var[[9]]  <- PEcAn.utils::to_ncvar("NEE", dims)
-    var[[10]] <- PEcAn.utils::to_ncvar("Evap", dims)
-    var[[11]] <- PEcAn.utils::to_ncvar("AGB.pft", dims)
-    var[[12]] <- PEcAn.utils::to_ncvar("Fcomp", dims)
-    var[[13]] <- PEcAn.utils::to_ncvar("LAI", dims)
-    var[[14]] <- PEcAn.utils::to_ncvar("SoilMoist", dims)
->>>>>>> 009e165d50f7e59bc9732677156c291cde4ee459
     
     # ******************** Declare netCDF variables ********************#
     
