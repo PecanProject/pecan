@@ -41,7 +41,6 @@ calculate.nee.L <- function(yeardoytime, model.i.nee, observed.flux, be, bu) {
 
 
 get.da.data <- function(out.dir, ameriflux.dir, years, be, bu, ensemble.size = 199) {
-  ensemble.size <- 500
   load(paste(out.dir, "samples.Rdata", sep = ""))
 
   pfts <- names(ensemble.samples)
