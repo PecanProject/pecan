@@ -6,9 +6,6 @@
 \usage{
 temp.settings(settings.txt)
 }
-\arguments{
-\item{settings.txt}{}
-}
 \value{
 character vector written to and read from a temporary file
 }
