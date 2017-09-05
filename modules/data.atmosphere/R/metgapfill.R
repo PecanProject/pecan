@@ -111,6 +111,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     if (!is.numeric(Tair)) {
       PEcAn.logger::logger.error("air_temperature not defined in met file for metgapfill")
     }
+    Tair_degC <- udunits2::ud.convert(Tair, "K", "degC")
     precip <- try(ncvar_get(nc = nc, varid = "precipitation_flux"), silent = TRUE)
     if (!is.numeric(precip)) {
       PEcAn.logger::logger.error("precipitation_flux not defined in met file for metgapfill")
@@ -255,16 +256,16 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
 
     ## Fill these variables from each other
     if ((all(is.na(VPD))) & (!all(is.na(rH)))) {
-      VPD <- as.numeric(fCalcVPDfromRHandTair(rH, Tair - 273.15)) * 100
+      VPD <- as.numeric(fCalcVPDfromRHandTair(rH, Tair_degC)) * 100
     }
     if ((all(is.na(sHum))) & (!all(is.na(rH)))) {
       sHum <- rh2qair(rH / 100, Tair, press)
     }
     if ((all(is.na(rH))) & (!all(is.na(sHum)))) {
-      rH <- qair2rh(sHum, Tair - 273.15, press / 100) * 100
+      rH <- qair2rh(sHum, Tair_degC, press / 100) * 100
     }
     if ((all(is.na(rH))) & (!all(is.na(VPD)))) {
-      es <- get.es(Tair - 273.15) * 100
+      es <- get.es(Tair_degC) * 100
       rH <- 100 * ((es - VPD) / es)
       rH[rH < 0] <- 0
       rH[rH > 100] <- 100
@@ -275,17 +276,17 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     }
     # try again if we computed rH from sHum, get VPD from sHum-based rH
     if ((all(is.na(VPD))) & (!all(is.na(rH)))) {
-      VPD <- as.numeric(fCalcVPDfromRHandTair(rH, Tair - 273.15)) * 100
+      VPD <- as.numeric(fCalcVPDfromRHandTair(rH, Tair_degC)) * 100
     }
 
     # now fill partial missing values of each
     badrH <- is.na(rH)
     if ((any(badrH)) & (!all(is.na(sHum)))) {
-      rH[badrH] <- qair2rh(sHum[badrH], Tair[badrH] - 273.15, press[badrH] / 100) * 100
+      rH[badrH] <- qair2rh(sHum[badrH], Tair_degC[badrH], press[badrH] / 100) * 100
     }
     badrH <- is.na(rH)
     if ((any(badrH)) & (!all(is.na(VPD)))) {
-      es <- get.es(Tair[badrH] - 273.15) * 100
+      es <- get.es(Tair_degC[badrH]) * 100
       rH[badrH] <- 100 * ((es - VPD[badrH]) / es)
       rH[rH < 0] <- 0
       rH[rH > 100] <- 100
@@ -296,7 +297,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     }
     badVPD <- is.na(VPD)
     if ((any(badVPD)) & (!all(is.na(rH)))) {
-      VPD[badVPD] <- as.numeric(fCalcVPDfromRHandTair(rH[badVPD], Tair[badVPD] - 273.15)) * 100
+      VPD[badVPD] <- as.numeric(fCalcVPDfromRHandTair(rH[badVPD], Tair_degC[badVPD])) * 100
     }
 
     ## one set of these must exist (either wind_speed or east+north wind)
@@ -327,8 +328,9 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     ## make a data frame, convert -9999 to NA, convert to degrees C
     EddyData.F <- data.frame(Tair, Rg, rH, PAR, precip, sHum, Lw, Ts1,
                              VPD, ws, co2, press, east_wind, north_wind)
-    EddyData.F["Tair"] <- EddyData.F["Tair"] - 273.15
-    EddyData.F["Ts1"] <- EddyData.F["Ts1"] - 273.15
+    EddyData.F["Tair"] <- udunits2::ud.convert(EddyData.F["Tair"], "K", "degC")
+    EddyData.F["Tair"] <- EddyData.F["Tair"]
+    EddyData.F["Ts1"] <- udunits2::ud.convert(EddyData.F["Ts1"], "K", "degC")
     EddyData.F["VPD"] <- EddyData.F["VPD"] / 1000
 
     ## Optional need:
@@ -469,7 +471,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     ## Write back to NC file, convert air T to Kelvin
     error <- c()
     if (("Tair_f" %in% colnames(Extracted))) {
-      Tair_f <- Extracted[, "Tair_f"] + 273.15
+      Tair_f <- udunits2::ud.convert(Extracted[, "Tair_f"], "degC", "K")
     }
     if (length(which(is.na(Tair_f))) > 0) {
       error <- c(error, "air_temperature")
@@ -512,7 +514,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
       sHum_f <- Extracted[, "sHum_f"]
     }
     sHum_f[is.na(sHum_f)] <- 0.622 *
-      (rH_f[is.na(sHum_f)] / 100) * (get.es(Tair_f[is.na(sHum_f)] - 273.15) / 1000)
+      (rH_f[is.na(sHum_f)] / 100) * (get.es(udunits2::ud.convert(Tair_f[is.na(sHum_f)], "K", "degC")) / 1000)
     if (length(which(is.na(sHum_f))) > 0) {
       error <- c(error, "specific_humidity")
     }
@@ -528,7 +530,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     ncvar_put(nc, varid = "surface_downwelling_longwave_flux_in_air", vals = Lw_f)
 
     if (("Ts1_f" %in% colnames(Extracted))) {
-      Ts1_f <- Extracted[, "Ts1_f"] + 273.15
+      Ts1_f <- udunits2::ud.convert(Extracted[, "Ts1_f"], "degC", "K")
     }
     if (sum(is.na(Ts1_f)) > 0) {
       Tair_ff <- Tair_f
