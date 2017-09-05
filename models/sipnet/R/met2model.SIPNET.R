@@ -89,6 +89,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       lat <- ncvar_get(nc, "latitude")
       lon <- ncvar_get(nc, "longitude")
       Tair <- ncvar_get(nc, "air_temperature")  ## in Kelvin
+      Tair_C <- udunits2::ud.convert(Tair, "K", "degC")
       Qair <- ncvar_get(nc, "specific_humidity")  #humidity (kg/kg)
       ws <- try(ncvar_get(nc, "wind_speed"))
       if (!is.numeric(ws)) {
@@ -115,15 +116,16 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
         filt <- exp(-(1:length(Tair)) / tau)
         filt <- (filt / sum(filt))
         soilT <- convolve(Tair, filt) - 273.15
+        soilT <- udunits2::ud.convert(soilT, "K", "degC")
         PEcAn.logger::logger.info("soil_temperature absent; soilT approximated from Tair")
       } else {
-        soilT <- soilT - 273.15
+        soilT <- udunits2::ud.convert(soilT, "K", "degC")
       }
 
-      SVP <- udunits2::ud.convert(get.es(Tair - 273.15), "millibar", "Pa")  ## Saturation vapor pressure
+      SVP <- udunits2::ud.convert(get.es(Tair_C), "millibar", "Pa")  ## Saturation vapor pressure
       VPD <- try(ncvar_get(nc, "water_vapor_saturation_deficit"))  ## in Pa
       if (!is.numeric(VPD)) {
-        VPD <- SVP * (1 - qair2rh(Qair, Tair - 273.15))
+        VPD <- SVP * (1 - qair2rh(Qair, Tair_C))
         PEcAn.logger::logger.info("water_vapor_saturation_deficit absent; VPD calculated from Qair, Tair, and SVP (saturation vapor pressure) ")
       }
       e_a <- SVP - VPD
@@ -186,7 +188,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
                  doy[1:n],
                  hr[1:n],
                  rep(dt / 86400, n),
-                 Tair - 273.15,
+                 Tair_C,
                  soilT,
                  PAR * dt,  # mol/m2/hr
                  Rain * dt, # converts from mm/s to mm
