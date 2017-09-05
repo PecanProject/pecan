@@ -9,7 +9,7 @@ get.run.id(run.type, index, trait = NULL, pft.name = NULL)
 \arguments{
 \item{run.type}{character, can be any character; currently 'SA' is used for sensitivity analysis, 'ENS' for ensemble run.}
 
-\item{index}{unique index for different runs, e.g. integer counting members of an 
+\item{index}{unique index for different runs, e.g. integer counting members of an
 ensemble or a quantile used to which a trait has been perturbed for sensitivity analysis}
 
 \item{trait}{name of trait being sampled (for sensitivity analysis)}
