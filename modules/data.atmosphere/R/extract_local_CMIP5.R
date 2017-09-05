@@ -41,13 +41,13 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
   no.leap <- c("bcc-csm1-1", "CCSM4")
   
   # Days per month
-  dpm <- days_in_month(1:12)
+  dpm <- lubridate::days_in_month(1:12)
   
   # Date stuff
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date <- as.POSIXlt(end_date, tz = "GMT")
-  start_year <- year(start_date)
-  end_year   <- year(end_date)
+  start_year <- lubridate::year(start_date)
+  end_year   <- lubridate::year(end_date)
   
   lat.in = as.numeric(lat.in)
   lon.in = as.numeric(lon.in)
@@ -82,8 +82,8 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
   
   # Rewriting the dap name to get the closest variable that we have for the GCM (some only give uss stuff at sea level)
   library(car) # having trouble gettins stuff to work otherwise
-  if(!("huss" %in% vars.gcm)) var$DAP.name <- recode(var$DAP.name, "'huss'='hus'")
-  if(!("ps" %in% vars.gcm  )) var$DAP.name <- recode(var$DAP.name, "'ps'='psl'")
+  if(!("huss" %in% vars.gcm)) var$DAP.name <- car::recode(var$DAP.name, "'huss'='hus'")
+  if(!("ps" %in% vars.gcm  )) var$DAP.name <- car::recode(var$DAP.name, "'ps'='psl'")
   
   # Making sure we're only trying to grab the variables we have (i.e. don't try sfcWind if we don't have it)
   var <- var[var$DAP.name %in% vars.gcm,]
@@ -106,7 +106,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
 	# Set up an index to help us find out which file we'll need
     files.var[[v]][["years"]] <- data.frame(first.year=NA, last.year=NA)
     for(i in 1:length(files.var[[v]][["files"]])){
-    	yr.str <- str_split(str_split(files.var[[v]][["files"]][[i]], "_")[[1]][6], "-")[[1]]
+    	yr.str <- stringr::str_split(stringr::str_split(files.var[[v]][["files"]][[i]], "_")[[1]][6], "-")[[1]]
   		
     	# Don't bother storing this file if we don't want those years
     	if(as.numeric(substr(yr.str[1], 1, 4)) > end_year | as.numeric(substr(yr.str[2], 1, 4))< start_year) next
@@ -147,12 +147,12 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
       # print(f.now)
       
       # Open up the file
-      ncT <- nc_open(file.path(in.path, v.res, var.now, f.now))
+      ncT <- ncdf4::nc_open(file.path(in.path, v.res, var.now, f.now))
       
       # Extract our dimensions
-      lat_bnd <- ncvar_get(ncT, "lat_bnds")
-      lon_bnd <- ncvar_get(ncT, "lon_bnds")
-      nc.time <- ncvar_get(ncT, "time")
+      lat_bnd <- ncdf4::ncvar_get(ncT, "lat_bnds")
+      lon_bnd <- ncdf4::ncvar_get(ncT, "lon_bnds")
+      nc.time <- ncdf4::ncvar_get(ncT, "time")
       
       # splt.ind <- ifelse(GCM %in% c("MPI-ESM-P"), 4, 3)
       # date.origin <- as.Date(str_split(ncT$dim$time$units, " ")[[1]][splt.ind])
@@ -167,17 +167,17 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
       
       # Extract all of the available data
       if(var.now %in% c("hus", "ua", "va")){ # These have multiple strata; we only want 1
-        plev <- ncvar_get(ncT, "plev")
+        plev <- ncdf4::ncvar_get(ncT, "plev")
         puse <- which(plev==max(plev)) # Get humidity at the place of highest pressure (closest to surface)
-        dat.temp <- ncvar_get(ncT, var.now, c(ind.lon, ind.lat, puse, 1), c(1,1,1,length(nc.time)))
+        dat.temp <- ncdf4::ncvar_get(ncT, var.now, c(ind.lon, ind.lat, puse, 1), c(1,1,1,length(nc.time)))
         # If dat.list has missing values, try the next layer
         puse.orig <- puse
         while(is.na(mean(dat.temp))){
           if(puse.orig==1) { puse = puse + 1 } else { puse = puse -1 }
-          dat.temp <- ncvar_get(ncT, var.now, c(ind.lon, ind.lat, puse, 1), c(1,1,1,length(nc.time)))
+          dat.temp <- ncdf4::ncvar_get(ncT, var.now, c(ind.lon, ind.lat, puse, 1), c(1,1,1,length(nc.time)))
         }
       } else {
-        dat.temp <- ncvar_get(ncT, var.now, c(ind.lon, ind.lat, 1), c(1,1,length(nc.time)))
+        dat.temp <- ncdf4::ncvar_get(ncT, var.now, c(ind.lon, ind.lat, 1), c(1,1,length(nc.time)))
       }
       
       # If we have monthly data, lets trick it into being daily
@@ -191,13 +191,13 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
       } # End leap day trick
       
       dat.all[[v]] <- append(dat.all[[v]], dat.temp, length(dat.all[[v]]))
-      nc_close(ncT)    	
+      ncdf4::nc_close(ncT)    	
     } # End file loop
   } # End variable loop
     
   # Dealing with leap-year post-hoc because it was becoming a pain in the ass
   # If we have daily data and we're dealing with a model that skips leap year, add it in
-  dpm <- days_in_month(1:12)
+  dpm <- lubridate::days_in_month(1:12)
   yrs.leap <- ylist[leap_year(ylist)]
   for(y.now in yrs.leap){
     yr.ind <- which(year(dat.time)==y.now)
@@ -220,18 +220,18 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
     yr.ind <- which(year(dat.time)==y.now)
     
     
-    dpm <- days_in_month(1:12)
-    if(leap_year(y.now)) dpm[2] <- dpm[2] + 1 # make sure Feb has 29 days if we're dealing with a leap year
+    dpm <- lubridate::days_in_month(1:12)
+    if(lubridate::leap_year(y.now)) dpm[2] <- dpm[2] + 1 # make sure Feb has 29 days if we're dealing with a leap year
     
     # figure out how many days we're working with
     if(rows>1 & i!=1 & i!=rows){ # If we have multiple years and we're not in the first or last year, we're taking a whole year
-      nday  = ifelse(lubridate:: leap_year(y.now), 366, 365) # leap year or not; days per year
+      nday  = ifelse(lubridate::leap_year(y.now), 366, 365) # leap year or not; days per year
       day1 = 1
       day2 = nday
       days.use = day1:day2
     } else if(rows==1){
       # if we're working with only 1 year, lets only pull what we need to
-      nday  = ifelse(lubridate:: leap_year(y.now), 366, 365) # leap year or not; days per year
+      nday  = ifelse(lubridate::leap_year(y.now), 366, 365) # leap year or not; days per year
       day1 <- yday(start_date)
       # Now we need to check whether we're ending on the right day
       day2 <- yday(end_date)
@@ -239,16 +239,16 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
       nday=length(days.use) # Update nday
     } else if(i==1) {
       # If this is the first of many years, we only need to worry about the start date
-      nday  = ifelse(lubridate:: leap_year(y.now), 366, 365) # leap year or not; days per year
+      nday  = ifelse(lubridate::leap_year(y.now), 366, 365) # leap year or not; days per year
       day1 <- yday(start_date)
       day2 = nday
       days.use = day1:day2
       nday=length(days.use) # Update nday
     } else if(i==rows) {
       # If this is the last of many years, we only need to worry about the start date
-      nday  = ifelse(lubridate:: leap_year(y.now), 366, 365) # leap year or not; days per year
+      nday  = ifelse(lubridate::leap_year(y.now), 366, 365) # leap year or not; days per year
       day1 = 1
-      day2 <- yday(end_date)
+      day2 <- lubridate::yday(end_date)
       days.use = day1:day2
       nday=length(days.use) # Update nday
     }
@@ -258,9 +258,9 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
     
     
     ## Create dimensions
-    dim.lat <- ncdim_def(name='latitude', units='degree_north', vals=lat.in, create_dimvar=TRUE)
-    dim.lon <- ncdim_def(name='longitude', units='degree_east', vals=lon.in, create_dimvar=TRUE)
-    dim.time <- ncdim_def(name='time', units="sec", vals=seq((min(days.use)+1-1/24)*24*360, (max(days.use)+1-1/24)*24*360, length.out=ntime), create_dimvar=TRUE, unlim=TRUE)
+    dim.lat <- ncdf4::ncdim_def(name='latitude', units='degree_north', vals=lat.in, create_dimvar=TRUE)
+    dim.lon <- ncdf4::ncdim_def(name='longitude', units='degree_east', vals=lon.in, create_dimvar=TRUE)
+    dim.time <- ncdf4::ncdim_def(name='time', units="sec", vals=seq((min(days.use)+1-1/24)*24*360, (max(days.use)+1-1/24)*24*360, length.out=ntime), create_dimvar=TRUE, unlim=TRUE)
     nc.dim=list(dim.lat,dim.lon,dim.time)
     
     
@@ -269,7 +269,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
     dat.list = list()
 
     for(j in 1:nrow(var)){
-      var.list[[j]] = ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=nc.dim, missval=-999, verbose=verbose)
+      var.list[[j]] = ncdf4::ncvar_def(name=as.character(var$CF.name[j]), units=as.character(var$units[j]), dim=nc.dim, missval=-999, verbose=verbose)
       dat.list[[j]] <- array(NA, dim=c(length(lat.in), length(lon.in), ntime)) # Go ahead and make the arrays
     }
     names(var.list) <- names(dat.list) <- var$CF.name
@@ -280,11 +280,11 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
     } # End variable loop
         
     ## put data in new file
-    loc <- nc_create(filename=loc.file, vars=var.list, verbose=verbose)
+    loc <- ncdf4::nc_create(filename=loc.file, vars=var.list, verbose=verbose)
     for(j in 1:nrow(var)){
-      ncvar_put(nc=loc, varid=as.character(var$CF.name[j]), vals=dat.list[[j]])
+      ncdf4::ncvar_put(nc=loc, varid=as.character(var$CF.name[j]), vals=dat.list[[j]])
     }
-    nc_close(loc)
+    ncdf4::nc_close(loc)
     
     results$file[i] <- loc.file
     # results$host[i] <- fqdn()

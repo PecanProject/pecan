@@ -19,9 +19,17 @@ problematic years)}
 
 \item{n.ens}{- number of ensemble members to generate and save}
 
-\item{pair.mems}{- logical stating whether ensemble members should be paired}
+\item{pair.mems}{- (not implemented) logical stating whether ensemble members should be paired in 
+the case where ensembles are being read in in both the training and source data}
 
 \item{seed}{- specify seed so that random draws can be reproduced}
+}
+\value{
+2-layered list (stored in memory) containing the training and source data that are now matched
+        in temporal resolution have the specified number of ensemble members
+         - dat.train (training dataset) and dat.source (source data to be downscaled or bias-corrected)
+           are both lists that contain separate data frames for time indices and all available met 
+           variables with ensemble members in columns
 }
 \description{
 This script aligns meteorology datasets in at temporal resolution for debiasing & 
@@ -32,6 +40,19 @@ This script aligns meteorology datasets in at temporal resolution for debiasing 
 }
 \details{
 Align meteorology datasets for debiasing
+
+1. Assumes that both the training and source data are in *at least* daily resolution 
+            and each dataset is in a consistent temporal resolution being read from a single file 
+            (CF/Pecan format).  For example, CMIP5 historical/p1000 runs where radiation drivers 
+            are in monthly resolution and temperature is in daily will need to be reconciled using
+            one of the "met2CF" or "download" or "extract" functions
+         2. Default file structure: Ensembles members for a given site or set of simes are housed 
+            in a common folder with the site ID.  Right now everything is based off of Christy's 
+            PalEON ensemble ID scheme where the site ID is a character string (e.g. HARVARD) followed
+            the SOURCE data family (i.e. GCM) as a string and then the ensemble member ID as a number 
+            (e.g. 001).  For example, the file path for a single daily ensemble member for PalEON is:
+            "~/Desktop/Research/met_ensembles/data/met_ensembles/HARVARD/day/ensembles/bcc-csm1-1_004"
+            with each year in a separate netcdf file inside of it.
 }
 \seealso{
 Other debias - Debias & Align Meteorology Datasets into continuous time series: \code{\link{debias.met.regression}}
