@@ -93,7 +93,7 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
       vpd    <- udunits2::ud.convert(tapply(VPD, doy, mean, na.rm = TRUE), "Pa", "kPa")  # pascal to kila pascal
       precip <- tapply(Precip, doy, sum, na.rm = TRUE)  # Sum to daily precipitation
       co2    <- tapply(CO2, doy, mean)  # need daily average, so sum up day
-      co2    <- co2 / 1e+06  # convert to ppm
+      co2    <- co2 * 1e+06  # convert to ppm
       doy    <- tapply(doy, doy, mean)  # day of year
       fapar  <- rep(0.6, length = length(doy))  # For now set to 0.6. Needs to be between 0-1
       
@@ -186,7 +186,7 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
     var[[2]] <- PEcAn.utils::to_ncvar("Evapotranspiration", dims)
     var[[3]] <- PEcAn.utils::to_ncvar("SoilMoist", dims)
     var[[4]] <- PEcAn.utils::to_ncvar("fWE", dims)
-    var[[5]] <- PEcAn.utils::to_ncvarf("fW", dims)
+    var[[5]] <- PEcAn.utils::to_ncvar("fW", dims)
     var[[6]] <- PEcAn.utils::to_ncvar("Evap", dims)
     var[[7]] <- PEcAn.utils::to_ncvar("TVeg", dims)
     
