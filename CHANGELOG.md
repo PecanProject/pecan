@@ -16,6 +16,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Cleaned up NAMESPACE and source code of `PEcAn.DB` (#1520)
 - Debugged python script in call_MODIS in data.remote to allow MODIS downloads
 - Fixed FATES build script to work on ubuntu
+- SIPNET output netcdf now includes LAI; some variable names changed to match standard
 
 ### Added
 - Expanded initial conditions workflow for pool-based models, including PEcAn.data.land::prepare_pools to calculate pools from IC file (to be coupled with write.configs)

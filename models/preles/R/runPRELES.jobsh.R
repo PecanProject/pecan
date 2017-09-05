@@ -179,14 +179,16 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
         output[[i]] <- rep(-999, length(t$vals))
     }
     
+    dims <- list(lon = lon, lat = lat, time = t)
+    
     var      <- list()
-    var[[1]] <- mstmipvar("GPP", lat, lon, t, NA)
-    var[[2]] <- ncvar_def("Evapotranspiration", "kg/m2s1", list(lon, lat, t), -999)
-    var[[3]] <- ncvar_def("SoilMoist", "kg/m2s1", list(lat, lon, t), NA)
-    var[[4]] <- ncvar_def("fWE", "NA", list(lon, lat, t), -999)
-    var[[5]] <- ncvar_def("fW", "NA", list(lon, lat, t), -999)
-    var[[6]] <- ncvar_def("Evap", "kg/m2/s", list(lon, lat, t), -999)
-    var[[7]] <- ncvar_def("TVeg", "kg/m2/s", list(lat, lon, t), NA)
+    var[[1]] <- PEcAn.utils::to_ncvar("GPP",dims)
+    var[[2]] <- PEcAn.utils::to_ncvar("Evapotranspiration", dims)
+    var[[3]] <- PEcAn.utils::to_ncvar("SoilMoist", dims)
+    var[[4]] <- PEcAn.utils::to_ncvar("fWE", dims)
+    var[[5]] <- PEcAn.utils::to_ncvarf("fW", dims)
+    var[[6]] <- PEcAn.utils::to_ncvar("Evap", dims)
+    var[[7]] <- PEcAn.utils::to_ncvar("TVeg", dims)
     
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), var)
     varfile <- file(file.path(outdir, paste(y, "nc", "var", sep = ".")), "w")
