@@ -1,13 +1,16 @@
-#' Calculate solar angle
+#' Cosine of solar zenith angle
+#'
+#' For explanations of formulae, see http://www.itacanet.org/the-sun-as-a-source-of-energy/part-3-calculating-solar-angles/
 #'
 #' @author Alexey Shiklomanov
 #' @param doy Day of year
 #' @param lat Latitude
 #' @param lon Longitude
 #' @param dt Timestep
+#' @return `numeric(1)` of cosine of solar zenith angle
 #' @export
-solar_angle <- function(doy, lat, lon, dt) {
-    et <- eccentricity_obliquity(doy)
+cos_solar_zenith_angle <- function(doy, lat, lon, dt) {
+    et <- equation_of_time(doy)
     merid  <- floor(lon / 15) * 15
     merid[merid < 0] <- merid[merid < 0] + 15
     lc     <- (lon - merid) * -4/60  ## longitude correction
@@ -23,10 +26,13 @@ solar_angle <- function(doy, lat, lon, dt) {
 
 #' Equation of time: Eccentricity and obliquity
 #'
+#' For description of calculations, see https://en.wikipedia.org/wiki/Equation_of_time#Calculating_the_equation_of_time
+#'
 #' @author Alexey Shiklomanov
 #' @param doy Day of year
+#' @return `numeric(1)` length of the solar day, in hours.
 #' @export
-eccentricity_obliquity <- function(doy) {
+equation_of_time <- function(doy) {
   stopifnot(doy <= 366)
   f      <- pi / 180 * (279.5 + 0.9856 * doy)
   et     <- (-104.7 * sin(f) + 596.2 * sin(2 * f) + 4.3 *
