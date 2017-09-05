@@ -10,7 +10,7 @@
 .datatable.aware <- TRUE
 ##-------------------------------------------------------------------------------------------------#
 ##' Converts a met CF file to a model specific met file. The input
-##' files are calld <in.path>/<in.prefix>.YYYY.cf
+##' files are called <in.path>/<in.prefix>.YYYY.cf
 ##'
 ##' @name met2model.BIOCRO
 ##' @title Write BioCro met files
