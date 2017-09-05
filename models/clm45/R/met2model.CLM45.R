@@ -29,8 +29,6 @@ met2model.CLM45 <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
   #close
   #defining temporal dimension needs to be figured out. If we configure clm to use same tstep then we may not need to change dimensions
   
-#   library("PEcAn.data.atmosphere")
-#   library("PEcAn.utils")
 #   
 #   #Process start and end dates
 #   start_date<-as.POSIXlt(start.date,tz="UTC")
@@ -61,7 +59,7 @@ met2model.CLM45 <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
 #       
 #       ##build day and  year
 #       
-#       ifelse(leap_year(year)==TRUE,
+#       ifelse(lubridate::leap_year(year)==TRUE,
 #              dt <- (366*24*60*60)/length(sec), #leap year
 #              dt <- (365*24*60*60)/length(sec)) #non-leap year
 #       tstep = round(timestep.s/dt) #time steps per day
