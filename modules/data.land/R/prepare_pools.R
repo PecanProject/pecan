@@ -22,6 +22,7 @@ prepare_pools <- function(nc.path, constants = NULL){
       TotLivBiom <- IC.list$vals$TotLivBiom
       leaf <- IC.list$vals$leaf_carbon_content
       LAI <- IC.list$vals$LAI
+      wood <- wood_carbon_content
       AbvGrndWood <- IC.list$vals$AbvGrndWood
       roots <- IC.list$vals$root_carbon_content
       fine.roots <- IC.list$vals$fine_root_carbon_content
@@ -78,7 +79,9 @@ prepare_pools <- function(nc.path, constants = NULL){
       }
       
       # initial pool of woody carbon (kgC/m2)
-      if (is.valid(AbvGrndWood)) {
+      if (is.valid(wood)){
+        IC.params[["wood"]] <- wood
+      } else if (is.valid(AbvGrndWood)) {
         if(is.valid(coarse.roots)){
           IC.params[["wood"]] <- (AbvGrndWood + coarse.roots) 
         } else{

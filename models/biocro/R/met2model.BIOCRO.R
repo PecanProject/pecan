@@ -142,13 +142,15 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
 
   if ((!is.null(longitude)) & zulu2solarnoon) {
     solarnoon_offset <- udunits2::ud.convert(longitude/360, "day", "minute")
-    met[, `:=`(solardate = date + lubridate::minutes(solarnoon_offset))]
+    met[, `:=`(solardate = met$date + lubridate::minutes(solarnoon_offset))]
   }
   if (!"relative_humidity" %in% colnames(met)) {
     if (all(c("air_temperature", "air_pressure", "specific_humidity") %in% colnames(met))) {
-      rh <- qair2rh(qair = met$specific_humidity, temp = udunits2::ud.convert(met$air_temperature, 
-                                                                    "Kelvin", "Celsius"), press = udunits2::ud.convert(met$air_pressure, "Pa", "hPa"))
-      met <- cbind(met, relative_humidity = rh * 100)
+      rh <- qair2rh(
+        qair = met$specific_humidity,
+        temp = udunits2::ud.convert(met$air_temperature, "Kelvin", "Celsius"),
+        press = udunits2::ud.convert(met$air_pressure, "Pa", "hPa"))
+      met[, `:=`(relative_humidity = rh)]
     } else {
       PEcAn.logger::logger.error("neither relative_humidity nor [air_temperature, air_pressure, and specific_humidity]", 
                    "are in met data")
@@ -173,16 +175,16 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
   }
   
   ## Convert RH from percent to fraction BioCro functions just to confirm
-  if (met[, max(relative_humidity) > 1]) {
-    met[, `:=`(relative_humidity = relative_humidity/100)]
+  if (max(met$relative_humidity) > 1) {
+    met[, `:=`(relative_humidity = met$relative_humidity/100)]
   }
-  newmet <- met[, list(year = lubridate::year(date),
-                       doy = lubridate::yday(date),
-                       hour = round(lubridate::hour(date) + lubridate::minute(date) / 60, 0),
+  newmet <- met[, list(year = lubridate::year(met$date),
+                       doy = lubridate::yday(met$date),
+                       hour = round(lubridate::hour(met$date) + lubridate::minute(met$date) / 60, 0),
                        SolarR = ppfd, 
-                       Temp = udunits2::ud.convert(air_temperature, "Kelvin", "Celsius"), 
-                       RH = relative_humidity, 
+                       Temp = udunits2::ud.convert(met$air_temperature, "Kelvin", "Celsius"),
+                       RH = met$relative_humidity,
                        WS = wind_speed,
-                       precip = udunits2::ud.convert(precipitation_flux, "s-1", "h-1"))][hour <= 23]
+                       precip = udunits2::ud.convert(met$precipitation_flux, "s-1", "h-1"))][hour <= 23]
   return(as.data.frame(newmet))
 }  # cf2biocro
