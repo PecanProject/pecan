@@ -22,7 +22,6 @@ insertPmet <- function(vals, nc2, var2, dim2, units2 = NA, conv = NULL,
 ##' @param overwrite should existing files be overwritten
 ##'
 ##' @author Mike Dietze
-##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_add ncvar_put
 met2CF.PalEONregional <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite = FALSE,
                           verbose = FALSE, ...) {
 
@@ -184,7 +183,6 @@ met2CF.PalEONregional <- function(in.path, in.prefix, outfolder, start_date, end
 ##' @param overwrite should existing files be overwritten
 ##'
 ##' @author Mike Dietze
-##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_add ncvar_put
 met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, lat, lon, overwrite = FALSE,
                           verbose = FALSE, ...) {
 
@@ -256,9 +254,9 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
         old.file <- fnames[sel]
         nc1      <- ncdf4::nc_open(old.file, write = FALSE)
         if (length(met[[v]]) <= 1) {
-          met[[v]] <- ncvar_get(nc = nc1, varid = v)
+          met[[v]] <- ncdf4::ncvar_get(nc = nc1, varid = v)
         } else {
-          tmp      <- ncvar_get(nc = nc1, varid = v)
+          tmp      <- ncdf4::ncvar_get(nc = nc1, varid = v)
           met[[v]] <- abind::abind(met[[v]], tmp)
         }
         if (v == by.folder[1]) {
@@ -282,12 +280,12 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     tdim$len      <- length(tdim$vals)
     latlon        <- lat  # nc1$dim$lat$vals
     latlon[2]     <- lon  # nc1$dim$lon$vals
-    lat <- ncdim_def(name = "latitude", units = "", vals = 1:1, create_dimvar = FALSE)
-    lon <- ncdim_def(name = "longitude", units = "", vals = 1:1, create_dimvar = FALSE)
-    time <- ncdim_def(name = "time", units = tdim$units, vals = tdim$vals,
+    lat <- ncdf4::ncdim_def(name = "latitude", units = "", vals = 1:1, create_dimvar = FALSE)
+    lon <- ncdf4::ncdim_def(name = "longitude", units = "", vals = 1:1, create_dimvar = FALSE)
+    time <- ncdf4::ncdim_def(name = "time", units = tdim$units, vals = tdim$vals,
                       create_dimvar = TRUE, unlim = TRUE)
     dim <- list(lat, lon, time)
-    cp.global.atts <- ncatt_get(nc = nc1, varid = 0)
+    cp.global.atts <- ncdf4::ncatt_get(nc = nc1, varid = 0)
     ncdf4::nc_close(nc1)
 
     # Open new file and copy lat attribute to latitude
@@ -295,13 +293,13 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     var <- ncdf4::ncvar_def(name = "latitude", units = "degree_north", dim = (list(lat, lon, time)),
                      missval = as.numeric(-9999))
     nc2 <- ncdf4::nc_create(filename = new.file, vars = var, verbose = verbose)
-    ncvar_put(nc = nc2, varid = "latitude", vals = rep(latlon[1], tdim$len))
+    ncdf4::ncvar_put(nc = nc2, varid = "latitude", vals = rep(latlon[1], tdim$len))
 
     # copy lon attribute to longitude
     var <- ncdf4::ncvar_def(name = "longitude", units = "degree_east", dim = (list(lat, lon, time)),
                      missval = as.numeric(-9999))
-    nc2 <- ncvar_add(nc = nc2, v = var, verbose = verbose)
-    ncvar_put(nc = nc2, varid = "longitude", vals = rep(latlon[2], tdim$len))
+    nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = verbose)
+    ncdf4::ncvar_put(nc = nc2, varid = "longitude", vals = rep(latlon[2], tdim$len))
 
     # air_temperature
     insertPmet(met[["tair"]], nc2 = nc2, var2 = "air_temperature", units2 = "K", dim2 = dim,
@@ -360,7 +358,6 @@ met2CF.PalEON <- function(in.path, in.prefix, outfolder, start_date, end_date, l
 ##' @param overwrite should existing files be overwritten
 ##'
 ##' @author Mike Dietze
-##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_add ncvar_put
 met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, overwrite = FALSE, verbose = FALSE) {
 
   # get start/end year code works on whole years only
@@ -440,9 +437,9 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
           old.file <- fnames[sel]
           nc1      <- ncdf4::nc_open(old.file, write = FALSE)
           if (length(met[[v]]) <= 1) {
-            met[[v]] <- ncvar_get(nc = nc1, varid = v)
+            met[[v]] <- ncdf4::ncvar_get(nc = nc1, varid = v)
           } else {
-            tmp      <- ncvar_get(nc = nc1, varid = v)
+            tmp      <- ncdf4::ncvar_get(nc = nc1, varid = v)
             met[[v]] <- abind::abind(met[[v]], tmp)
           }
           if (v == by.folder[1]) {
@@ -463,9 +460,9 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
     tdim      <- nc1$dim[["time"]]
     latlon    <- nc1$dim$lat$vals
     latlon[2] <- nc1$dim$lon$vals
-    lat <- ncdim_def(name = "latitude", units = "", vals = 1:1, create_dimvar = FALSE)
-    lon <- ncdim_def(name = "longitude", units = "", vals = 1:1, create_dimvar = FALSE)
-    time <- ncdim_def(name = "time", units = tdim$units, vals = met[["time"]],
+    lat <- ncdf4::ncdim_def(name = "latitude", units = "", vals = 1:1, create_dimvar = FALSE)
+    lon <- ncdf4::ncdim_def(name = "longitude", units = "", vals = 1:1, create_dimvar = FALSE)
+    time <- ncdf4::ncdim_def(name = "time", units = tdim$units, vals = met[["time"]],
                       create_dimvar = TRUE, unlim = TRUE)
     dim <- list(lat, lon, time)
 
@@ -474,13 +471,13 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
     var <- ncdf4::ncvar_def(name = "latitude", units = "degree_north", dim = (list(lat, lon, time)),
                      missval = as.numeric(-9999))
     nc2 <- nc_create(filename = new.file, vars = var, verbose = verbose)
-    ncvar_put(nc = nc2, varid = "latitude", vals = rep(latlon[1], tdim$len))
+    ncdf4::ncvar_put(nc = nc2, varid = "latitude", vals = rep(latlon[1], tdim$len))
 
     # copy lon attribute to longitude
     var <- ncdf4::ncvar_def(name = "longitude", units = "degree_east", dim = (list(lat, lon, time)),
                      missval = as.numeric(-9999))
-    nc2 <- ncvar_add(nc = nc2, v = var, verbose = verbose)
-    ncvar_put(nc = nc2, varid = "longitude", vals = rep(latlon[2], tdim$len))
+    nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = verbose)
+    ncdf4::ncvar_put(nc = nc2, varid = "longitude", vals = rep(latlon[2], tdim$len))
 
     # Convert all variables
     # This will include conversions or computations to create values from
@@ -534,17 +531,17 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
              verbose = verbose)
 
     # convert RH to SH
-    rh <- ncvar_get(nc = nc1, varid = "RH")
+    rh <- ncdf4::ncvar_get(nc = nc1, varid = "RH")
     rh[rh == -6999 | rh == -9999] <- NA
     rh <- rh/100
-    ta <- ncvar_get(nc = nc1, varid = "TA")
+    ta <- ncdf4::ncvar_get(nc = nc1, varid = "TA")
     ta[ta == -6999 | ta == -9999] <- NA
     ta <- udunits2::ud.convert(ta, "degC", "K")
     sh <- rh2qair(rh = rh, T = ta)
     var <- ncdf4::ncvar_def(name = "specific_humidity", units = "kg/kg", dim = dim, missval = -6999,
                      verbose = verbose)
-    nc2 <- ncvar_add(nc = nc2, v = var, verbose = verbose)
-    ncvar_put(nc = nc2, varid = "specific_humidity", vals = sh)
+    nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = verbose)
+    ncdf4::ncvar_put(nc = nc2, varid = "specific_humidity", vals = sh)
 
     # convert VPD to water_vapor_saturation_deficit
     # HACK : conversion will make all values < 0 to be NA
@@ -605,28 +602,28 @@ met2CF.ALMA <- function(in.path, in.prefix, outfolder, start_date, end_date, ove
              verbose = verbose)
 
     # convert wind speed and wind direction to eastward_wind and northward_wind
-    wd <- ncvar_get(nc = nc1, varid = "WD")  #wind direction
+    wd <- ncdf4::ncvar_get(nc = nc1, varid = "WD")  #wind direction
     wd[wd == -6999 | wd == -9999] <- NA
-    ws <- ncvar_get(nc = nc1, varid = "WS")  #wind speed
+    ws <- ncdf4::ncvar_get(nc = nc1, varid = "WS")  #wind speed
     ws[ws == -6999 | ws == -9999] <- NA
     ew <- ws * cos(wd * (pi / 180))
     nw <- ws * sin(wd * (pi / 180))
-    max <- ncatt_get(nc = nc1, varid = "WS", "valid_max")$value
+    max <- ncdf4::ncatt_get(nc = nc1, varid = "WS", "valid_max")$value
 
     var <- ncdf4::ncvar_def(name = "eastward_wind", units = "m/s", dim = dim, missval = -6999, verbose = verbose)
-    nc2 <- ncvar_add(nc = nc2, v = var, verbose = verbose)
-    ncvar_put(nc = nc2, varid = "eastward_wind", vals = ew)
+    nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = verbose)
+    ncdf4::ncvar_put(nc = nc2, varid = "eastward_wind", vals = ew)
     ncatt_put(nc = nc2, varid = "eastward_wind", attname = "valid_min", attval = -max)
     ncatt_put(nc = nc2, varid = "eastward_wind", attname = "valid_max", attval = max)
 
     var <- ncdf4::ncvar_def(name = "northward_wind", units = "m/s", dim = dim, missval = -6999, verbose = verbose)
-    nc2 <- ncvar_add(nc = nc2, v = var, verbose = verbose)
-    ncvar_put(nc = nc2, varid = "northward_wind", vals = nw)
+    nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = verbose)
+    ncdf4::ncvar_put(nc = nc2, varid = "northward_wind", vals = nw)
     ncatt_put(nc = nc2, varid = "northward_wind", attname = "valid_min", attval = -max)
     ncatt_put(nc = nc2, varid = "northward_wind", attname = "valid_max", attval = max)
 
     # add global attributes from original file
-    cp.global.atts <- ncatt_get(nc = nc1, varid = 0)
+    cp.global.atts <- ncdf4::ncatt_get(nc = nc1, varid = 0)
     for (j in seq_along(cp.global.atts)) {
       ncatt_put(nc = nc2, varid = 0, attname = names(cp.global.atts)[j], attval = cp.global.atts[[j]])
     }

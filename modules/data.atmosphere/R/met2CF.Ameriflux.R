@@ -2,62 +2,53 @@
 # conversion of the variables as well as on the min/max values
 copyvals <- function(nc1, var1, nc2, var2, dim2, units2 = NA, conv = NULL, missval = -6999, verbose = FALSE) {
 
-  ncvar_get <- ncdf4::ncvar_get
-  ncatt_get <- ncdf4::ncatt_get
-  ncvar_add <- ncdf4::ncvar_add
-  ncvar_def <- ncdf4::ncvar_def
-  ncatt_put <- ncdf4::ncatt_put
-  ncvar_put <- ncdf4::ncvar_put
-
-  vals <- ncvar_get(nc = nc1, varid = var1)
+  vals <- ncdf4::ncvar_get(nc = nc1, varid = var1)
   vals[vals == -6999 | vals == -9999] <- NA
   if (!is.null(conv)) {
     vals <- lapply(vals, conv)
   }
   if (is.na(units2)) {
-    units2 <- ncatt_get(nc = nc1, varid = var1, attname = "units", verbose = verbose)$value
+    units2 <- ncdf4::ncatt_get(nc = nc1, varid = var1, attname = "units", verbose = verbose)$value
   }
-  var <- ncvar_def(name = var2, units = units2, dim = dim2, missval = missval, verbose = verbose)
-  nc2 <- ncvar_add(nc = nc2, v = var, verbose = verbose)
-  ncvar_put(nc = nc2, varid = var2, vals = vals)
+  var <- ncdf4::ncvar_def(name = var2, units = units2, dim = dim2, missval = missval, verbose = verbose)
+  nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = verbose)
+  ncdf4::ncvar_put(nc = nc2, varid = var2, vals = vals)
 
   # copy and convert attributes
-  att <- ncatt_get(nc1, var1, "long_name")
+  att <- ncdf4::ncatt_get(nc1, var1, "long_name")
   if (att$hasatt) {
     val <- att$value
-    ncatt_put(nc = nc2, varid = var2, attname = "long_name", attval = val)
+    ncdf4::ncatt_put(nc = nc2, varid = var2, attname = "long_name", attval = val)
   }
 
-  att <- ncatt_get(nc1, var1, "valid_min")
+  att <- ncdf4::ncatt_get(nc1, var1, "valid_min")
   if (att$hasatt) {
     val <- ifelse(is.null(conv), att$value, conv(att$value))
-    ncatt_put(nc = nc2, varid = var2, attname = "valid_min", attval = val)
+    ncdf4::ncatt_put(nc = nc2, varid = var2, attname = "valid_min", attval = val)
   }
 
-  att <- ncatt_get(nc1, var1, "valid_max")
+  att <- ncdf4::ncatt_get(nc1, var1, "valid_max")
   if (att$hasatt) {
     val <- ifelse(is.null(conv), att$value, conv(att$value))
-    ncatt_put(nc = nc2, varid = var2, attname = "valid_max", attval = val)
+    ncdf4::ncatt_put(nc = nc2, varid = var2, attname = "valid_max", attval = val)
   }
 
-  att <- ncatt_get(nc1, var1, "comment")
+  att <- ncdf4::ncatt_get(nc1, var1, "comment")
   if (att$hasatt) {
     val <- sub(", -9999.* = missing value, -6999.* = unreported value", "", att$value)
-    ncatt_put(nc = nc2, varid = var2, attname = "comment", attval = val)
+    ncdf4::ncatt_put(nc = nc2, varid = var2, attname = "comment", attval = val)
   }
 } # copyvals
 
 getLatLon <- function(nc1) {
-  ncatt_get <- ncdf4::ncatt_get
-
-  loc <- ncatt_get(nc = nc1, varid = 0, attname = "site_location")
+  loc <- ncdf4::ncatt_get(nc = nc1, varid = 0, attname = "site_location")
   if (loc$hasatt) {
     lat <- as.numeric(substr(loc$value, 20, 28))
     lon <- as.numeric(substr(loc$value, 40, 48))
     return(c(lat, lon))
   } else {
-    lat <- ncatt_get(nc = nc1, varid = 0, attname = "geospatial_lat_min")
-    lon <- ncatt_get(nc = nc1, varid = 0, attname = "geospatial_lon_min")
+    lat <- ncdf4::ncatt_get(nc = nc1, varid = 0, attname = "geospatial_lat_min")
+    lon <- ncdf4::ncatt_get(nc = nc1, varid = 0, attname = "geospatial_lon_min")
     if (lat$hasatt && lon$hasatt) {
       return(c(as.numeric(lat$value), as.numeric(lon$value)))
     }
@@ -80,12 +71,10 @@ getLatLon <- function(nc1) {
 ##' @param verbose should ouput of function be extra verbose
 ##'
 ##' @author Josh Mantooth, Mike Dietze, Elizabeth Cowdery, Ankur Desai
-##' @importFrom ncdf4 ncvar_get ncatt_get ncdim_def ncvar_def ncvar_add ncvar_put ncatt_put
 met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date,
                              overwrite = FALSE, verbose = FALSE, ...) {
 
   #---------------- Load libraries. -----------------------------------------------------------------#
-  library(PEcAn.utils)
   library(geonames)  ## has to be loaded as a library
   #--------------------------------------------------------------------------------------------------#
 
@@ -150,21 +139,21 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
       tdim$units <- paste(tdim$units, lststr, sep = " ")
     }
 
-    lat <- ncdim_def(name = "latitude", units = "", vals = 1:1, create_dimvar = FALSE)
-    lon <- ncdim_def(name = "longitude", units = "", vals = 1:1, create_dimvar = FALSE)
-    time <- ncdim_def(name = "time", units = tdim$units, vals = tdim$vals,
+    lat <- ncdf4::ncdim_def(name = "latitude", units = "", vals = 1:1, create_dimvar = FALSE)
+    lon <- ncdf4::ncdim_def(name = "longitude", units = "", vals = 1:1, create_dimvar = FALSE)
+    time <- ncdf4::ncdim_def(name = "time", units = tdim$units, vals = tdim$vals,
                       create_dimvar = TRUE, unlim = TRUE)
     dim <- list(lat, lon, time)
 
     # copy lat attribute to latitude
-    var <- ncvar_def(name = "latitude", units = "degree_north", dim = list(lat, lon), missval = as.numeric(-9999))
+    var <- ncdf4::ncvar_def(name = "latitude", units = "degree_north", dim = list(lat, lon), missval = as.numeric(-9999))
     nc2 <- ncdf4::nc_create(filename = new.file, vars = var, verbose = verbose)
-    ncvar_put(nc = nc2, varid = "latitude", vals = latlon[1])
+    ncdf4::ncvar_put(nc = nc2, varid = "latitude", vals = latlon[1])
 
     # copy lon attribute to longitude
-    var <- ncvar_def(name = "longitude", units = "degree_east", dim = list(lat, lon), missval = as.numeric(-9999))
-    nc2 <- ncvar_add(nc = nc2, v = var, verbose = verbose)
-    ncvar_put(nc = nc2, varid = "longitude", vals = latlon[2])
+    var <- ncdf4::ncvar_def(name = "longitude", units = "degree_east", dim = list(lat, lon), missval = as.numeric(-9999))
+    nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = verbose)
+    ncdf4::ncvar_put(nc = nc2, varid = "longitude", vals = latlon[2])
 
     # Convert all variables
     # This will include conversions or computations to create values from original file.
@@ -177,17 +166,17 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
 
     # convert RH to SH
     # this conversion needs to come before others to reinitialize dimension used by copyvals (lat/lon/time)
-    rh <- ncvar_get(nc = nc1, varid = "RH")
+    rh <- ncdf4::ncvar_get(nc = nc1, varid = "RH")
     rh[rh == -6999 | rh == -9999] <- NA
     rh <- rh/100
-    ta <- ncvar_get(nc = nc1, varid = "TA")
+    ta <- ncdf4::ncvar_get(nc = nc1, varid = "TA")
     ta[ta == -6999 | ta == -9999] <- NA
     ta <- udunits2::ud.convert(ta, "degC", "K")
     sh <- rh2qair(rh = rh, T = ta)
-    var <- ncvar_def(name = "specific_humidity", units = "kg/kg", dim = dim,
+    var <- ncdf4::ncvar_def(name = "specific_humidity", units = "kg/kg", dim = dim,
                      missval = -6999, verbose = verbose)
-    nc2 <- ncvar_add(nc = nc2, v = var, verbose = verbose)
-    ncvar_put(nc = nc2, varid = "specific_humidity", vals = sh)
+    nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = verbose)
+    ncdf4::ncvar_put(nc = nc2, varid = "specific_humidity", vals = sh)
 
     # convert TA to air_temperature
     copyvals(nc1 = nc1, var1 = "TA", nc2 = nc2,
@@ -270,30 +259,30 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
              verbose = verbose)
 
     # convert wind speed and wind direction to eastward_wind and northward_wind
-    wd <- ncvar_get(nc = nc1, varid = "WD")  #wind direction
+    wd <- ncdf4::ncvar_get(nc = nc1, varid = "WD")  #wind direction
     wd[wd == -6999 | wd == -9999] <- NA
-    ws <- ncvar_get(nc = nc1, varid = "WS")  #wind speed
+    ws <- ncdf4::ncvar_get(nc = nc1, varid = "WS")  #wind speed
     ws[ws == -6999 | ws == -9999] <- NA
     ew <- ws * cos(wd * (pi / 180))
     nw <- ws * sin(wd * (pi / 180))
-    max <- ncatt_get(nc = nc1, varid = "WS", "valid_max")$value
+    max <- ncdf4::ncatt_get(nc = nc1, varid = "WS", "valid_max")$value
 
-    var <- ncvar_def(name = "eastward_wind", units = "m/s", dim = dim, missval = -6999, verbose = verbose)
-    nc2 <- ncvar_add(nc = nc2, v = var, verbose = verbose)
-    ncvar_put(nc = nc2, varid = "eastward_wind", vals = ew)
-    ncatt_put(nc = nc2, varid = "eastward_wind", attname = "valid_min", attval = -max)
-    ncatt_put(nc = nc2, varid = "eastward_wind", attname = "valid_max", attval = max)
+    var <- ncdf4::ncvar_def(name = "eastward_wind", units = "m/s", dim = dim, missval = -6999, verbose = verbose)
+    nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = verbose)
+    ncdf4::ncvar_put(nc = nc2, varid = "eastward_wind", vals = ew)
+    ncdf4::ncatt_put(nc = nc2, varid = "eastward_wind", attname = "valid_min", attval = -max)
+    ncdf4::ncatt_put(nc = nc2, varid = "eastward_wind", attname = "valid_max", attval = max)
 
-    var <- ncvar_def(name = "northward_wind", units = "m/s", dim = dim, missval = -6999, verbose = verbose)
-    nc2 <- ncvar_add(nc = nc2, v = var, verbose = verbose)
-    ncvar_put(nc = nc2, varid = "northward_wind", vals = nw)
-    ncatt_put(nc = nc2, varid = "northward_wind", attname = "valid_min", attval = -max)
-    ncatt_put(nc = nc2, varid = "northward_wind", attname = "valid_max", attval = max)
+    var <- ncdf4::ncvar_def(name = "northward_wind", units = "m/s", dim = dim, missval = -6999, verbose = verbose)
+    nc2 <- ncdf4::ncvar_add(nc = nc2, v = var, verbose = verbose)
+    ncdf4::ncvar_put(nc = nc2, varid = "northward_wind", vals = nw)
+    ncdf4::ncatt_put(nc = nc2, varid = "northward_wind", attname = "valid_min", attval = -max)
+    ncdf4::ncatt_put(nc = nc2, varid = "northward_wind", attname = "valid_max", attval = max)
 
     # add global attributes from original file
-    cp.global.atts <- ncatt_get(nc = nc1, varid = 0)
+    cp.global.atts <- ncdf4::ncatt_get(nc = nc1, varid = 0)
     for (j in seq_along(cp.global.atts)) {
-      ncatt_put(nc = nc2, varid = 0, attname = names(cp.global.atts)[j], attval = cp.global.atts[[j]])
+      ncdf4::ncatt_put(nc = nc2, varid = 0, attname = names(cp.global.atts)[j], attval = cp.global.atts[[j]])
     }
 
     # done, close both files
