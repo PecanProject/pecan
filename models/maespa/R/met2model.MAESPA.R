@@ -88,8 +88,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
       sec <- nc$dim$time$vals
       sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
 
-      diy <- PEcAn.utils::days_in_year(year)
-      dt <- diy * 24 * 60 * 60 / length(sec)
+      dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
       tstep <- round(86400 / dt)
       dt <- 86400 / tstep
 

@@ -61,10 +61,10 @@ met2model.CLM45 <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
 #
 #       ##build day and  year
 #
-#       diy <- PEcAn.utils::days_in_year(year)
-#       dt <- diy * 24 * 60 * 60 / length(sec)
+#       dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
 #       tstep = round(timestep.s/dt) #time steps per day
 #
+#       diy <- PEcAn.utils::days_in_year(year)
 #       doy <- rep(seq_len(diy), each=tstep)[1:length(sec)]
 #
 

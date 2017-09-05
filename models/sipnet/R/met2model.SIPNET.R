@@ -27,8 +27,6 @@
 ##' @importFrom ncdf4 ncvar_get
 met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date,
                              overwrite = FALSE, verbose = FALSE, ...) {
-  library(PEcAn.utils)
-
   PEcAn.logger::logger.info("START met2model.SIPNET")
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
@@ -53,8 +51,6 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
     PEcAn.logger::logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
     return(invisible(results))
   }
-
-  library(PEcAn.data.atmosphere)
 
   ## check to see if the outfolder is defined, if not create directory for output
   if (!file.exists(outfolder)) {
@@ -85,7 +81,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       sec <- nc$dim$time$vals
       sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
 
-      dt <- diy * 24 * 60 * 60 / length(sec)
+      dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
       tstep <- round(86400 / dt)
       dt <- 86400 / tstep
 

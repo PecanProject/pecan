@@ -160,8 +160,8 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     ## make night dark - based on met2model.ED2.R in models/ed/R First: calculate potential radiation
     sec <- nc$dim$time$vals
     sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
+    dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
     diy <- PEcAn.utils::days_in_year(year)
-    dt <- diy * 24 * 60 * 60 / length(sec)
     doy <- rep(seq_len(diy), each = 86400 / dt)
     hr <- rep(seq(0, length = 86400 / dt, by = 24 * dt / 86400), diy)
 
