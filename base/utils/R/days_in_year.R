@@ -2,7 +2,7 @@
 #'
 #' Calculate number of days in a year based on whether it is a leap year or not.
 #'
-#' @param year Numeric year
+#' @param year Numeric year (can be a vector)
 #'
 #' @author Alexey Shiklomanov
 #' @return

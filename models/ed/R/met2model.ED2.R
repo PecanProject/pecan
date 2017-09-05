@@ -127,8 +127,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
 
     ncdf4::nc_close(nc)
 
-    diy <- PEcAn.utils::days_in_year(year)
-    dt <- diy * 24 * 60 * 60 / length(sec)
+    dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
 
     toff <- -as.numeric(lst) * 3600 / dt
 
@@ -194,7 +193,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
 
 
     ## calculate potential radiation in order to estimate diffuse/direct
-    cosz <- PEcAn.data.atmosphere::solar_angle(doy, lat, lon, dt)
+    cosz <- PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lat, lon, dt)
 
     rpot <- 1366 * cosz
     rpot <- rpot[1:length(SW)]

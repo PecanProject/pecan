@@ -110,8 +110,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     sec <- nc$dim$time$vals
     sec <- udunits2::ud.convert(sec, unlist(strsplit(nc$dim$time$units, " "))[1], "seconds")
     timestep.s <- 86400  # seconds in a day
-    diy <- PEcAn.utils::days_in_year(year)
-    dt <- diy * 24 * 60 * 60 / length(sec)
+    dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
     tstep <- round(timestep.s / dt)
     dt    <- timestep.s / tstep  #dt is now an integer
 
@@ -149,6 +148,7 @@ met2model.DALEC <- function(in.path, in.prefix, outfolder, start_date, end_date,
     }
 
     ## build day of year
+    diy <- PEcAn.utils::days_in_year(year)
     doy <- rep(seq_len(diy), each = timestep.s / dt)[seq_along(sec)]
 
     ## Aggregate variables up to daily

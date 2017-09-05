@@ -77,8 +77,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
     ## convert time to seconds
     sec <- ncin$dim$time$vals
     sec <- udunits2::ud.convert(sec, unlist(strsplit(ncin$dim$time$units, " "))[1], "seconds")
-    diy <- PEcAn.utils::days_in_year(as.numeric(year[i]))
-    dt <- diy * 24 * 60 * 60 / length(sec)
+    dt <- PEcAn.utils::seconds_in_year(as.numeric(year[i])) / length(sec)
     tstep <- 86400 / dt
 
     ncprecipf <- ncdf4::ncvar_get(ncin, "precipitation_flux")  # units are kg m-2 s-1

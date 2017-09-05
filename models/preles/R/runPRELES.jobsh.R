@@ -49,10 +49,10 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
 
       ## build day and year
 
-      diy <- PEcAn.utils::days_in_year(year)
-      dt <- diy * 24 * 60 * 60 / length(sec)
+      dt <- PEcAn.utils::seconds_in_year(year) / length(sec)
       tstep <- round(timestep.s / dt)  #time steps per day
 
+      diy <- PEcAn.utils::days_in_year(year)
       doy <- seq_len(diy, each = tstep)[seq_along(sec)]
 
       ## Get variables from netcdf file

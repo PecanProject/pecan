@@ -7,7 +7,7 @@
 days_in_year(year)
 }
 \arguments{
-\item{year}{Numeric year}
+\item{year}{Numeric year (can be a vector)}
 }
 \description{
 Calculate number of days in a year based on whether it is a leap year or not.
