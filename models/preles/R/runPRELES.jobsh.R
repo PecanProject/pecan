@@ -30,7 +30,7 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
 
-  timestep.s <- 86400  # Number of seconds in a day
+  timestep.s <- udunits2::ud.convert(1, "day", "seconds")  # Number of seconds in a day
 
   ## Build met
   met <- NULL
@@ -80,7 +80,7 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
 
       ## Get PPFD from SW
       PPFD <- sw2ppfd(SW)  # PPFD in umol/m2/s
-      PPFD <- PPFD * 1e-06  # convert umol to mol
+      PPFD <- udunits2::ud.convert(PPFD, "umol m-2 s-1", "mol m-2 s-1")
 
       ## Format/convert inputs
       ppfd   <- tapply(PPFD, doy, mean, na.rm = TRUE)  # Find the mean for the day
@@ -88,7 +88,7 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
       vpd    <- udunits2::ud.convert(tapply(VPD, doy, mean, na.rm = TRUE), "Pa", "kPa")  # pascal to kila pascal
       precip <- tapply(Precip, doy, sum, na.rm = TRUE)  # Sum to daily precipitation
       co2    <- tapply(CO2, doy, mean)  # need daily average, so sum up day
-      co2    <- co2 / 1e+06  # convert to ppm
+      co2    <- co2 / 1e+06  # convert to ppm. ANS: Convert from what? Mole-fraction to ppm is multiplying by 1e6, not dividing
       doy    <- tapply(doy, doy, mean)  # day of year
       fapar  <- rep(0.6, length = length(doy))  # For now set to 0.6. Needs to be between 0-1
 
@@ -152,7 +152,7 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
     sub.PRELES.output.dims <- dim(sub.PRELES.output)
 
     output <- list()
-    output[[1]] <- (sub.PRELES.output[, 1] * 0.001)/timestep.s  #GPP - gC/m2day to kgC/m2s1
+    output[[1]] <- udunits2::ud.convert(sub.PRELES.output[, 1], 'g m-2 day-1', 'kg m-2 sec-1')  #GPP - gC/m2day to kgC/m2s1
     output[[2]] <- (sub.PRELES.output[, 2])/timestep.s  #Evapotranspiration - mm =kg/m2
     output[[3]] <- (sub.PRELES.output[, 3])/timestep.s  #Soilmoisture - mm = kg/m2
     output[[4]] <- (sub.PRELES.output[, 4])/timestep.s  #fWE modifier - just a modifier

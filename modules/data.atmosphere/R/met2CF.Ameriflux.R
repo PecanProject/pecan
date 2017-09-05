@@ -191,7 +191,7 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
 
     # convert TA to air_temperature
     copyvals(nc1 = nc1, var1 = "TA", nc2 = nc2,
-             var2 = "air_temperature", units2 = "degrees K",
+             var2 = "air_temperature", units2 = "K",
              dim2 = dim, conv = function(x) { udunits2::ud.convert(x, "degC", "K") },
              verbose = verbose)
 
@@ -199,19 +199,20 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     copyvals(nc1 = nc1, var1 = "PRESS", nc2 = nc2,
              var2 = "air_pressure", units2 = "Pa",
              dim2 = dim,
-             conv = function(x) { x * 1000 },
+             conv = function(x) { udunits2::ud.convert(x, "kPa", "Pa") },
              verbose = verbose)
 
     # convert CO2 to mole_fraction_of_carbon_dioxide_in_air
     copyvals(nc1 = nc1, var1 = "CO2", nc2 = nc2,
              var2 = "mole_fraction_of_carbon_dioxide_in_air",
              units2 = "mole/mole",
-             dim2 = dim, conv = function(x) { x / 1e+06 },
+             dim2 = dim,
+             conv = function(x) { udunits2::ud.convert(x, "ppm", "mol/mol") },
              verbose = verbose)
 
     # convert TS1 to soil_temperature
     copyvals(nc1 = nc1, var1 = "TS1", nc2 = nc2,
-             var2 = "soil_temperature", units2 = "degrees K",
+             var2 = "soil_temperature", units2 = "K",
              dim2 = dim,
              conv = function(x) { udunits2::ud.convert(x, "degC", "K") },
              verbose = verbose)
@@ -225,7 +226,8 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     # NA
     copyvals(nc1 = nc1, var1 = "VPD", nc2 = nc2,
              var2 = "water_vapor_saturation_deficit", units2 = "Pa",
-             dim2 = dim, conv = function(x) { ifelse(x < 0, NA, x * 1000) },
+             dim2 = dim,
+             conv = function(x) { ifelse(x < 0, NA, udunits2::ud.convert(x, "kPa", "Pa")) },
              verbose = verbose)
 
     # copy Rg to surface_downwelling_shortwave_flux_in_air
@@ -244,7 +246,7 @@ met2CF.Ameriflux <- function(in.path, in.prefix, outfolder, start_date, end_date
     copyvals(nc1 = nc1, var1 = "PAR", nc2 = nc2,
              var2 = "surface_downwelling_photosynthetic_photon_flux_in_air", units2 = "mol m-2 s-1",
              dim2 = dim,
-             conv = function(x) { x / 1e+06 },
+             conv = function(x) { udunits2::ud.convert(x, "umol m-2 s-1", "mol m-2 s-1") },
              verbose = verbose)
 
     # copy WD to wind_direction (not official CF)

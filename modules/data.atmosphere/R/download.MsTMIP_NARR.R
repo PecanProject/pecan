@@ -49,7 +49,7 @@ download.MsTMIP_NARR <- function(outfolder, start_date, end_date, site_id, lat.i
   for (i in seq_len(rows)) {
     year <- ylist[i]
 
-    ntime <- ifelse(lubridate::leap_year(year), 2923, 2919)   ## ANS: Where do these numbers come from?
+    ntime <- udunits2::ud.convert(PEcAn.utils::days_in_year(year), "days", "hours") / 3 - 1 # Number of 3 hour timesteps in one year
 
     loc.file <- file.path(outfolder, paste("MsTMIP_NARR", year, "nc", sep = "."))
 
