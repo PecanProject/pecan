@@ -28,10 +28,8 @@ met2model.CLM45 <- function(in.path,in.prefix,outfolder,start_date, end_date, ls
   #Loop over years (Open nc.file,rename vars,change dimensions as needed,close/save .nc file)
   #close
   #defining temporal dimension needs to be figured out. If we configure clm to use same tstep then we may not need to change dimensions
-
-#   library("PEcAn.data.atmosphere")
-#   library("PEcAn.utils")
-#
+  
+#   
 #   #Process start and end dates
 #   start_date<-as.POSIXlt(start.date,tz="UTC")
 #   end_date<-as.POSIXlt(end.date,tz="UTC")

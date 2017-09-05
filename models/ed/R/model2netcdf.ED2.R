@@ -17,7 +17,6 @@
 ##' @param sitelon Longitude of the site
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
-##' @importFrom ncdf4 ncdim_def ncatt_get ncvar_add
 ##' @export
 ##'
 ##' @author Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari, Istem Fer
@@ -516,12 +515,12 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
       end <- (as.numeric(strftime(paste0(yrs[y], "-12-31"), "%j"))) * block - 1
     }
 
-    t <- ncdim_def(name = "time", units = paste0("days since ", yrs[y], "-01-01 00:00:00"), vals = start:end/block,
+    t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", yrs[y], "-01-01 00:00:00"), vals = start:end/block,
                    calendar = "standard", unlim = TRUE)
-    lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
 
-    zg <- ncdim_def("SoilLayerMidpoint", "meters", c(slzdata[1:length(dz)] + dz/2, 0))
+    zg <- ncdf4::ncdim_def("SoilLayerMidpoint", "meters", c(slzdata[1:length(dz)] + dz/2, 0))
 
     ## Conversion factor for umol C -> kg C
     Mc <- 12.017  #molar mass of C, g/mol
