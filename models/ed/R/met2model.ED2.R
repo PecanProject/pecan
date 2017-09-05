@@ -35,10 +35,6 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
                           lon = NA, overwrite = FALSE, verbose = FALSE, ...) {
   overwrite <- as.logical(overwrite)
 
-  # deprecated?
-  library(rhdf5)
-  library(PEcAn.utils)
-
   # results are stored in folder prefix.start.end
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date   <- as.POSIXlt(end_date, tz = "UTC")
@@ -73,6 +69,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   # get start/end year since inputs are specified on year basis
   start_year <- lubridate::year(start_date)
   end_year <- lubridate::year(end_date)
+  day_secs <- udunits2::ud.convert(1, "day", "seconds")
 
   ## loop over files
   for (year in start_year:end_year) {
@@ -84,7 +81,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     nc <- ncdf4::nc_open(ncfile)
 
     # check lat/lon
-    flat <- try(ncvar_get(nc, "latitude"), silent = TRUE)
+    flat <- try(ncdf4::ncvar_get(nc, "latitude"), silent = TRUE)
     if (!is.numeric(flat)) {
       flat <- nc$dim[[1]]$vals[1]
     }
@@ -94,7 +91,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
       PEcAn.logger::logger.warn("Latitude does not match that of file", lat, "!=", flat)
     }
 
-    flon <- try(ncvar_get(nc, "longitude"), silent = TRUE)
+    flon <- try(ncdf4::ncvar_get(nc, "longitude"), silent = TRUE)
     if (!is.numeric(flon)) {
       flat <- nc$dim[[2]]$vals[1]
     }
@@ -110,15 +107,15 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
     lat  <- eval(parse(text = lat))
     lon  <- eval(parse(text = lon))
     sec  <- nc$dim$time$vals
-    Tair <- ncvar_get(nc, "air_temperature")
-    Qair <- ncvar_get(nc, "specific_humidity")  #humidity (kg/kg)
-    U    <- ncvar_get(nc, "eastward_wind")
-    V    <- ncvar_get(nc, "northward_wind")
-    Rain <- ncvar_get(nc, "precipitation_flux")
-    pres <- ncvar_get(nc, "air_pressure")
-    SW   <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")
-    LW   <- ncvar_get(nc, "surface_downwelling_longwave_flux_in_air")
-    CO2  <- try(ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"), silent = TRUE)
+    Tair <- ncdf4::ncvar_get(nc, "air_temperature")
+    Qair <- ncdf4::ncvar_get(nc, "specific_humidity")  #humidity (kg/kg)
+    U    <- ncdf4::ncvar_get(nc, "eastward_wind")
+    V    <- ncdf4::ncvar_get(nc, "northward_wind")
+    Rain <- ncdf4::ncvar_get(nc, "precipitation_flux")
+    pres <- ncdf4::ncvar_get(nc, "air_pressure")
+    SW   <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")
+    LW   <- ncdf4::ncvar_get(nc, "surface_downwelling_longwave_flux_in_air")
+    CO2  <- try(ncdf4::ncvar_get(nc, "mole_fraction_of_carbon_dioxide_in_air"), silent = TRUE)
 
     useCO2 <- is.numeric(CO2)
 
@@ -147,15 +144,15 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
 
     ## build time variables (year, month, day of year)
     skip <- FALSE
-    nyr  <- floor(length(sec) / 86400 / 365 * dt)
+    nyr <- floor(udunits2::ud.convert(length(sec) * dt, "seconds", "years"))
     yr   <- NULL
     doy  <- NULL
     hr   <- NULL
     asec <- sec
     for (y in seq(year, year + nyr - 1)) {
       diy <- PEcAn.utils::days_in_year(y)
-      ytmp <- rep(y, diy * 86400 / dt)
-      dtmp <- rep(seq_len(diy), each = 86400 / dt)
+      ytmp <- rep(y, udunits2::ud.convert(diy / dt, "days", "seconds"))
+      dtmp <- rep(seq_len(diy), each = day_secs / dt)
       if (is.null(yr)) {
         yr  <- ytmp
         doy <- dtmp
@@ -172,7 +169,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
         break
       }
       asec[rng] <- asec[rng] - asec[rng[1]]
-      hr[rng]   <- (asec[rng] - (dtmp - 1) * 86400) / 86400 * 24
+      hr[rng]   <- (asec[rng] - (dtmp - 1) * day_secs) / day_secs * 24
     }
     mo <- day2mo(yr, doy)
     if (length(yr) < length(sec)) {
@@ -183,8 +180,8 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
         break
       }
       yr[rng]  <- rep(y + 1, length(rng))
-      doy[rng] <- rep(1:366, each = 86400 / dt)[1:length(rng)]
-      hr[rng]  <- rep(seq(0, length = 86400 / dt, by = dt / 86400 * 24), 366)[1:length(rng)]
+      doy[rng] <- rep(1:366, each = day_secs / dt)[1:length(rng)]
+      hr[rng]  <- rep(seq(0, length = day_secs / dt, by = dt / day_secs * 24), 366)[1:length(rng)]
     }
     if (skip) {
       print("Skipping to next year")
@@ -237,14 +234,14 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
         if (file.exists(mout)) {
           if (overwrite == TRUE) {
             file.remove(mout)
-            h5createFile(mout)
+            rhdf5::h5createFile(mout)
           }
           if (overwrite == FALSE) {
             PEcAn.logger::logger.warn("The file already exists! Moving to next month!")
             next
           }
         } else {
-          h5createFile(mout)
+          rhdf5::h5createFile(mout)
         }
         dims  <- c(length(selm), 1, 1)
         nbdsf <- array(nbdsfA[selm], dim = dims)
@@ -262,20 +259,20 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
         if (useCO2) {
           co2 <- array(co2A[selm], dim = dims)
         }
-        h5write(nbdsf, mout, "nbdsf")
-        h5write(nddsf, mout, "nddsf")
-        h5write(vbdsf, mout, "vbdsf")
-        h5write(vddsf, mout, "vddsf")
-        h5write(prate, mout, "prate")
-        h5write(dlwrf, mout, "dlwrf")
-        h5write(pres, mout, "pres")
-        h5write(hgt, mout, "hgt")
-        h5write(ugrd, mout, "ugrd")
-        h5write(vgrd, mout, "vgrd")
-        h5write(sh, mout, "sh")
-        h5write(tmp, mout, "tmp")
+        rhdf5::h5write(nbdsf, mout, "nbdsf")
+        rhdf5::h5write(nddsf, mout, "nddsf")
+        rhdf5::h5write(vbdsf, mout, "vbdsf")
+        rhdf5::h5write(vddsf, mout, "vddsf")
+        rhdf5::h5write(prate, mout, "prate")
+        rhdf5::h5write(dlwrf, mout, "dlwrf")
+        rhdf5::h5write(pres, mout, "pres")
+        rhdf5::h5write(hgt, mout, "hgt")
+        rhdf5::h5write(ugrd, mout, "ugrd")
+        rhdf5::h5write(vgrd, mout, "vgrd")
+        rhdf5::h5write(sh, mout, "sh")
+        rhdf5::h5write(tmp, mout, "tmp")
         if (useCO2) {
-          h5write(co2, mout, "co2")
+          rhdf5::h5write(co2, mout, "co2")
         }
       }
     }
