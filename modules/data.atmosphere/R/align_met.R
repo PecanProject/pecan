@@ -41,7 +41,7 @@
 ##'                    will be loaded. If not null, should be a vector of numbers (so you can skip
 ##'                    problematic years)
 ##' @param n.ens  - number of ensemble members to generate and save
-##' @param pair.mems - (not implemented) logical stating whether ensemble members should be paired in 
+##' @param pair.mems - logical stating whether ensemble members should be paired in 
 ##'                    the case where ensembles are being read in in both the training and source data
 ##' @param seed - specify seed so that random draws can be reproduced
 ##' @param verbose
