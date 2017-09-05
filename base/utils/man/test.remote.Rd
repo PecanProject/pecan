@@ -6,9 +6,6 @@
 \usage{
 test.remote(host)
 }
-\arguments{
-\item{host}{}
-}
 \value{
 logical - TRUE if remote connection is available
 }

@@ -16,7 +16,7 @@ PAR W/m2
 Solar Radiation to PPFD
 }
 \details{
-Here the input is the total solar radiation 
+Here the input is the total solar radiation
 so to obtain in the PAR spectrum need to multiply by 0.486 From Campbell and Norman p151
 This is based on the approximation that PAR is 0.45-0.50 of the total radiation
 }
