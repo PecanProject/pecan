@@ -135,7 +135,6 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
 ##' }
 ##' @export cf2biocro
 ##' @import PEcAn.utils
-##' @importFrom PEcAn.data.atmosphere qair2rh sw2par par2ppfd
 ##' @importFrom data.table :=
 ##' @author David LeBauer
 cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
@@ -146,8 +145,10 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
   }
   if (!"relative_humidity" %in% colnames(met)) {
     if (all(c("air_temperature", "air_pressure", "specific_humidity") %in% colnames(met))) {
-      rh <- qair2rh(qair = met$specific_humidity, temp = udunits2::ud.convert(met$air_temperature, 
-                                                                    "Kelvin", "Celsius"), press = udunits2::ud.convert(met$air_pressure, "Pa", "hPa"))
+      rh <- PEcAn.data.atmosphere::qair2rh(
+        qair = met$specific_humidity,
+        temp = udunits2::ud.convert(met$air_temperature, "Kelvin", "Celsius"),
+        press = udunits2::ud.convert(met$air_pressure, "Pa", "hPa"))
       met <- cbind(met, relative_humidity = rh * 100)
     } else {
       PEcAn.logger::logger.error("neither relative_humidity nor [air_temperature, air_pressure, and specific_humidity]", 
@@ -158,8 +159,8 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
     if ("surface_downwelling_photosynthetic_photon_flux_in_air" %in% colnames(met)) {
       ppfd <- udunits2::ud.convert(met$surface_downwelling_photosynthetic_photon_flux_in_air, "mol", "umol")
     } else if ("surface_downwelling_shortwave_flux_in_air" %in% colnames(met)) {
-      par <- sw2par(met$surface_downwelling_shortwave_flux_in_air)
-      ppfd <- par2ppfd(par)
+      par <- PEcAn.data.atmosphere::sw2par(met$surface_downwelling_shortwave_flux_in_air)
+      ppfd <- PEcAn.data.atmosphere::par2ppfd(par)
     } else {
       PEcAn.logger::logger.error("Need either ppfd or surface_downwelling_shortwave_flux_in_air in met dataset")
     }
