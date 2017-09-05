@@ -79,7 +79,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
   
   if(is.null(vars.debias)) vars.debias <- vars.all[vars.all %in% names(train.data)] # Don't try to do vars that we don't have
   if(is.null(yrs.save)) yrs.save <- unique(source.data$time$Year)
-  if(is.null(ens.mems)) ens.mems <- str_pad(1:n.ens, nchar(n.ens), "left", pad="0")
+  if(is.null(ens.mems)) ens.mems <- stringr::str_pad(1:n.ens, nchar(n.ens), "left", pad="0")
   
   # Set up outputs
   vars.pred <- vector()
@@ -306,7 +306,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       #    the data that is to be bias-corrected.  In this instance we essentially consider any daily precip to be 
       #    an anomaly
       # ---------
-      mod.bias <- gam(Y ~ s(doy, k=6) + X, data=dat.clim[dat.clim$ind == ind, ])
+      mod.bias <- mgcv::gam(Y ~ s(doy, k=6) + X, data=dat.clim[dat.clim$ind == ind, ])
       # summary(mod.bias)
       
       # Saving the mean predicted & residuals
@@ -347,8 +347,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       # ---------
 
       # We want to look at anomalies relative to the raw expected seasonal pattern, so we need to fit training and data to be debiased separately
-      anom.train <- gam(X ~ s(doy, k=6) , data=met.train[met.train$ind==ind,]) 
-      anom.src   <- gam(X ~ s(doy, k=6) , data=met.src[met.src$ind==ind & met.src$year %in% yrs.overlap,])
+      anom.train <- mgcv::gam(X ~ s(doy, k=6) , data=met.train[met.train$ind==ind,]) 
+      anom.src   <- mgcv::gam(X ~ s(doy, k=6) , data=met.src[met.src$ind==ind & met.src$year %in% yrs.overlap,])
       
       met.train[met.train$ind==ind,"anom.train"] <- resid(anom.train)
       met.src[met.src$ind==ind, "anom.raw"] <- met.src[met.src$ind==ind, "X"] - predict(anom.src, newdata=met.src[met.src$ind==ind, ])
@@ -366,8 +366,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
         met.src[met.src$ind==ind, "Q"] <- met.src[met.src$ind==ind,j]
         
         # Generating the predicted seasonal cycle for each variable
-        anom.train2 <- gam(Q ~ s(doy, k=6), data=met.train[met.train$ind==ind,]) 
-        anom.src2   <- gam(Q ~ s(doy, k=6), data=met.src[met.src$year %in% yrs.overlap & met.src$ind==ind,]) 
+        anom.train2 <- mgcv::gam(Q ~ s(doy, k=6), data=met.train[met.train$ind==ind,]) 
+        anom.src2   <- mgcv::gam(Q ~ s(doy, k=6), data=met.src[met.src$year %in% yrs.overlap & met.src$ind==ind,]) 
         
         met.train[met.train$ind==ind, paste0(j, ".anom")] <- resid(anom.train2)
         met.src[met.src$ind==ind, paste0(j, ".anom")] <- met.src[met.src$ind==ind,"Q"] - predict(anom.src2, newdata=met.src[met.src$ind==ind,])
@@ -406,25 +406,25 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
           # These are the variables that have quasi-observed values for their whole time period, 
           # so we can use the the seasonsal trend, and the observed anaomalies
           # Note: because we can directly model the anomalies, the inherent long-term trend should be preserved
-          mod.anom <- gam(anom.train ~ s(doy, k=6) + anom.raw -1, data=dat.anom)
+          mod.anom <- mgcv::gam(anom.train ~ s(doy, k=6) + anom.raw -1, data=dat.anom)
         } else if(v %in% c("surface_downwelling_shortwave_flux_in_air", "specific_humidity")){
           # CRUNCEP surface_downwelling_shortwave_flux_in_air and specific_humidity have been vary hard to fit to NLDAS because it has a different variance for some reason, 
           # and the only way I've been able to fix it is to model the temporal pattern seen in the dataset based on 
           # its own anomalies (not ideal, but it works)
-          mod.anom <- gam(anom.raw ~ s(doy, k=6) + s(year, k=k) + air_temperature_maximum.anom*air_temperature_minimum.anom -1 , data=met.src[met.src$ind==ind,])
+          mod.anom <- mgcv::gam(anom.raw ~ s(doy, k=6) + s(year, k=k) + air_temperature_maximum.anom*air_temperature_minimum.anom -1 , data=met.src[met.src$ind==ind,])
         } else if(v=="precipitation_flux"){
           # Precip is really only different from the others in that I deliberately chose a more rigid seasonal pattern and we need to force the intercept
           # through 0 so we can try and reduce the likelihood of evenly distributed precipitation events
           # k=round(length(met.src$year)/(25*366),0)
           # k=max(k, 4) # we can't have less than 4 knots
           
-          # mod.anom <- gam(anom.raw ~ s(year, k=k) + (air_temperature_maximum.anom + air_temperature_minimum.anom + surface_downwelling_shortwave_flux_in_air.anom + surface_downwelling_longwave_flux_in_air.anom + specific_humidity.anom) -1, data=met.src[met.src$ind==ind,])
-          mod.anom <- gam(anom.train ~ s(doy, k=6) + (air_temperature_maximum.anom + air_temperature_minimum.anom + surface_downwelling_shortwave_flux_in_air.anom + surface_downwelling_longwave_flux_in_air.anom + specific_humidity.anom) -1, data=met.train[met.train$ind==ind,])
+          # mod.anom <- mgcv::gam(anom.raw ~ s(year, k=k) + (air_temperature_maximum.anom + air_temperature_minimum.anom + surface_downwelling_shortwave_flux_in_air.anom + surface_downwelling_longwave_flux_in_air.anom + specific_humidity.anom) -1, data=met.src[met.src$ind==ind,])
+          mod.anom <- mgcv::gam(anom.train ~ s(doy, k=6) + (air_temperature_maximum.anom + air_temperature_minimum.anom + surface_downwelling_shortwave_flux_in_air.anom + surface_downwelling_longwave_flux_in_air.anom + specific_humidity.anom) -1, data=met.train[met.train$ind==ind,])
         } else if(v %in% c("wind_speed", "air_pressure", "surface_downwelling_longwave_flux_in_air")) {
           # These variables are constant in CRU pre-1950.  
           # This means that we can not use information about the long term trend OR the actual annomalies 
           # -- they must be inferred from the other met we have
-          mod.anom <- gam(anom.train ~ s(doy, k=6) + (air_temperature_minimum.anom*air_temperature_maximum.anom + surface_downwelling_shortwave_flux_in_air.anom + specific_humidity.anom) -1, data=met.train[met.train$ind==ind,])
+          mod.anom <- mgcv::gam(anom.train ~ s(doy, k=6) + (air_temperature_minimum.anom*air_temperature_maximum.anom + surface_downwelling_shortwave_flux_in_air.anom + specific_humidity.anom) -1, data=met.train[met.train$ind==ind,])
         }      
       } else { 
         # If we're dealing with non-empirical datasets, we can't pair anomalies to come up with a direct adjustment 
@@ -442,19 +442,19 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
         if(v %in% c("air_temperature_maximum", "air_temperature_minimum")){
           # If we haven't already done another met product, our best shot is to just model the existing variance 
           # and preserve as much of the low-frequency cylce as possible
-          mod.anom <- gam(anom.raw ~ s(year, k=k) -1, data=met.src[met.src$ind==ind,]) 
+          mod.anom <- mgcv::gam(anom.raw ~ s(year, k=k) -1, data=met.src[met.src$ind==ind,]) 
         } else if(v=="precipitation_flux"){ 
           # If we're working with precipitation_flux, need to make the intercept 0 so that we have plenty of days with little/no rain
-          mod.anom <- gam(anom.raw ~  s(year, k=k) + (air_temperature_maximum.anom*air_temperature_minimum.anom + surface_downwelling_shortwave_flux_in_air.anom + surface_downwelling_longwave_flux_in_air.anom + specific_humidity.anom) -1, data=met.src[met.src$ind==ind,])  
+          mod.anom <- mgcv::gam(anom.raw ~  s(year, k=k) + (air_temperature_maximum.anom*air_temperature_minimum.anom + surface_downwelling_shortwave_flux_in_air.anom + surface_downwelling_longwave_flux_in_air.anom + specific_humidity.anom) -1, data=met.src[met.src$ind==ind,])  
         } else if(v %in% c("surface_downwelling_shortwave_flux_in_air", "surface_downwelling_longwave_flux_in_air")){
           # See if we have some other anomaly that we can use to get the anomaly covariance & temporal trends right
           # This relies on the assumption that the low-frequency trends are in proportion to the other met variables
           # (this doesn't seem unreasonable, but that doesn't mean it's right)
-          mod.anom <- gam(anom.train ~ s(doy, k=4) + (air_temperature_maximum.anom*air_temperature_minimum.anom + specific_humidity.anom + air_pressure.anom + wind_speed.anom) -1, data=met.train[met.train$ind==ind,])
+          mod.anom <- mgcv::gam(anom.train ~ s(doy, k=4) + (air_temperature_maximum.anom*air_temperature_minimum.anom + specific_humidity.anom + air_pressure.anom + wind_speed.anom) -1, data=met.train[met.train$ind==ind,])
         } else {
           # If we have some info
           # THis should be specific_humidity, air_pressure, wind_speed
-          mod.anom <- gam(anom.raw ~ s(doy, k=6) + s(year, k=k) + (air_temperature_maximum.anom*air_temperature_minimum.anom)-1, data=met.src[met.src$ind==ind,])
+          mod.anom <- mgcv::gam(anom.raw ~ s(doy, k=6) + s(year, k=k) + (air_temperature_maximum.anom*air_temperature_minimum.anom)-1, data=met.src[met.src$ind==ind,])
         }
       }
       # summary(mod.anom)
@@ -472,9 +472,9 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       if(v == "precipitation_flux") coef.ann <- coef(mod.ann)
       
       # Generate a random distribution of betas using the covariance matrix
-      Rbeta <- mvrnorm(n=n.ens, coef(mod.bias), vcov(mod.bias))
-      Rbeta.anom <- mvrnorm(n=n.ens, coef(mod.anom), vcov(mod.anom))
-      if(v == "precipitation_flux") Rbeta.ann <- mvrnorm(n=n.ens, coef(mod.ann), vcov(mod.ann))
+      Rbeta <- MASS::mvrnorm(n=n.ens, coef(mod.bias), vcov(mod.bias))
+      Rbeta.anom <- MASS::mvrnorm(n=n.ens, coef(mod.anom), vcov(mod.anom))
+      if(v == "precipitation_flux") Rbeta.ann <- MASS::mvrnorm(n=n.ens, coef(mod.ann), vcov(mod.ann))
       
       # Create the prediction matrix
       Xp <- predict(mod.bias, newdata=met.src[met.src$ind==ind,], type="lpmatrix")
@@ -705,8 +705,8 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
                         )
   
   # Define our lat/lon dims since those will be constant
-  dim.lat <- ncdim_def(name='latitude', units='degree_north', vals=lat.in, create_dimvar=TRUE)
-  dim.lon <- ncdim_def(name='longitude', units='degree_east', vals=lon.in, create_dimvar=TRUE)
+  dim.lat <- ncdf4::ncdim_def(name='latitude', units='degree_north', vals=lat.in, create_dimvar=TRUE)
+  dim.lon <- ncdf4::ncdim_def(name='longitude', units='degree_east', vals=lon.in, create_dimvar=TRUE)
   
   print("")
   print("Saving Ensemble")
@@ -718,7 +718,7 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
     nday <- ifelse(leap_year(yr), 366, 365)
     
     # Finish defining our time variables (same for all ensemble members)
-    dim.time <- ncdim_def(name='time', units="sec", vals=seq(1*24*360, (nday+1-1/24)*24*360, length.out=length(rows.yr)), create_dimvar=TRUE, unlim=TRUE)
+    dim.time <- ncdf4::ncdim_def(name='time', units="sec", vals=seq(1*24*360, (nday+1-1/24)*24*360, length.out=length(rows.yr)), create_dimvar=TRUE, unlim=TRUE)
     nc.dim=list(dim.lat,dim.lon,dim.time)
     
     # Setting up variables and dimensions
@@ -726,10 +726,10 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
     dat.list = list()
     
     for(j in 1:length(vars.debias)){
-      var.list[[j]] = ncvar_def(name=vars.debias[j], 
-                                units=as.character(nc.info[nc.info$CF.name==vars.debias[j], "units"]), 
-                                longname=as.character(nc.info[nc.info$CF.name==vars.debias[j], "longname"]),
-                                dim=nc.dim, missval=-999, verbose=verbose)
+      var.list[[j]] = ncdf4::ncvar_def(name=vars.debias[j], 
+                                       units=as.character(nc.info[nc.info$CF.name==vars.debias[j], "units"]), 
+                                       longname=as.character(nc.info[nc.info$CF.name==vars.debias[j], "longname"]),
+                                       dim=nc.dim, missval=-999, verbose=verbose)
     }
     names(var.list) <- vars.debias
     
@@ -746,11 +746,11 @@ debias.met.regression <- function(train.data, source.data, n.ens, vars.debias=NU
       names(dat.list) <- vars.debias
       
       ## put data in new file
-      loc <- nc_create(filename=loc.file, vars=var.list, verbose=verbose)
+      loc <- ncdf4::nc_create(filename=loc.file, vars=var.list, verbose=verbose)
       for(j in 1:length(vars.debias)){
-        ncvar_put(nc=loc, varid=as.character(vars.debias[j]), vals=dat.list[[j]])
+        ncdf4::ncvar_put(nc=loc, varid=as.character(vars.debias[j]), vals=dat.list[[j]])
       }
-      nc_close(loc)
+      ncdf4::nc_close(loc)
       
       setTxtProgressBar(pb, pb.ind)
       pb.ind <- pb.ind+1

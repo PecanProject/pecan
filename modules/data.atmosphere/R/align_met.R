@@ -12,6 +12,26 @@
 ##'              Note: can probably at borrow from or adapt align_data.R in Benchmarking module, but 
 ##'              it's too much of a black box at the moment.
 # -----------------------------------
+# Notes
+# -----------------------------------
+##' @details 1. Assumes that both the training and source data are in *at least* daily resolution 
+##'             and each dataset is in a consistent temporal resolution being read from a single file 
+##'             (CF/Pecan format).  For example, CMIP5 historical/p1000 runs where radiation drivers 
+##'             are in monthly resolution and temperature is in daily will need to be reconciled using
+##'             one of the "met2CF" or "download" or "extract" functions
+##'          2. Default file structure: Ensembles members for a given site or set of simes are housed 
+##'             in a common folder with the site ID.  Right now everything is based off of Christy's 
+##'             PalEON ensemble ID scheme where the site ID is a character string (e.g. HARVARD) followed
+##'             the SOURCE data family (i.e. GCM) as a string and then the ensemble member ID as a number 
+##'             (e.g. 001).  For example, the file path for a single daily ensemble member for PalEON is:
+##'             "~/Desktop/Research/met_ensembles/data/met_ensembles/HARVARD/day/ensembles/bcc-csm1-1_004"
+##'             with each year in a separate netcdf file inside of it.
+##' @return 2-layered list (stored in memory) containing the training and source data that are now matched
+##'         in temporal resolution have the specified number of ensemble members
+##'          - dat.train (training dataset) and dat.source (source data to be downscaled or bias-corrected)
+##'            are both lists that contain separate data frames for time indices and all available met 
+##'            variables with ensemble members in columns
+# -----------------------------------
 # Parameters
 # -----------------------------------
 ##' @param train.path - path to the dataset to be used to downscale the data
@@ -21,7 +41,8 @@
 ##'                    will be loaded. If not null, should be a vector of numbers (so you can skip
 ##'                    problematic years)
 ##' @param n.ens  - number of ensemble members to generate and save
-##' @param pair.mems - logical stating whether ensemble members should be paired
+##' @param pair.mems - (not implemented) logical stating whether ensemble members should be paired in 
+##'                    the case where ensembles are being read in in both the training and source data
 ##' @param seed - specify seed so that random draws can be reproduced
 ##' @param verbose
 ##' @export
@@ -42,11 +63,6 @@
 #  1. dat.train
 #  2. dat.source
 # Sublist Layers: time, met variables
-# -----------------------------------
-# Notes
-# -----------------------------------
-# 1. This assumes that both the trian and source data are in *at least* daily resolution
-# -----------------------------------
 
 #----------------------------------------------------------------------
 # Begin Function
@@ -83,10 +99,10 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
     for(i in 1:length(files.train)){
       yr.now <- yrs.file[i]
       
-      ncT <- nc_open(file.path(train.path, files.train[i]))
+      ncT <- ncdf4::nc_open(file.path(train.path, files.train[i]))
       
       # Set up the time data frame to help index
-      nday <- ifelse(leap_year(yr.now), 366, 365)
+      nday <- ifelse(lubridate::leap_year(yr.now), 366, 365)
       ntime <- length(ncT$dim$time$vals)
       step.day <- nday/ntime
       step.hr  <- step.day*24
@@ -100,12 +116,12 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
       
       # Extract the met info, making matrices with the appropriate number of ensemble members
       for(v in names(ncT$var)){
-        df.tem <- matrix(rep(ncvar_get(ncT, v), n.trn), ncol=n.trn, byrow=F)
+        df.tem <- matrix(rep(ncdf4::ncvar_get(ncT, v), n.trn), ncol=n.trn, byrow=F)
         
         met.out$dat.train[[v]] <- rbind(met.out$dat.train[[v]], df.tem)
       }
       
-      nc_close(ncT)
+      ncdf4::nc_close(ncT)
       
       setTxtProgressBar(pb, i)
     } # End looping through training data files
@@ -150,10 +166,10 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
       for(i in 1:length(files.train)){
         yr.now <- yrs.file[i]
         
-        ncT <- nc_open(file.path(train.path, ens.train[j], files.train[i]))
+        ncT <- ncdf4::nc_open(file.path(train.path, ens.train[j], files.train[i]))
         
         # Set up the time data frame to help index
-        nday <- ifelse(leap_year(yr.now), 366, 365)
+        nday <- ifelse(lubridate::leap_year(yr.now), 366, 365)
         ntime <- length(ncT$dim$time$vals)
         step.day <- nday/ntime
         step.hr  <- step.day*24
@@ -170,9 +186,9 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
         
         # Extract the met info, making matrices with the appropriate number of ensemble members
         for(v in names(ncT$var)){
-          dat.ens[[v]] <- append(dat.ens[[v]], ncvar_get(ncT, v)) 
+          dat.ens[[v]] <- append(dat.ens[[v]], ncdf4::ncvar_get(ncT, v)) 
         }
-        nc_close(ncT)
+        ncdf4::nc_close(ncT)
         
         setTxtProgressBar(pb, pb.ind)
         pb.ind <- pb.ind+1
@@ -215,7 +231,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
     for(i in 1:length(files.source)){
       yr.now <- yrs.file[i]
       
-      ncT <- nc_open(file.path(source.path, files.source[i]))
+      ncT <- ncdf4::nc_open(file.path(source.path, files.source[i]))
       
       # Set up the time data frame to help index
       nday <- ifelse(leap_year(yr.now), 366, 365)
@@ -283,7 +299,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
           met.out$dat.source[[v]] <- rbind(met.out$dat.source[[v]], as.matrix(df.tem, ncol=n.src))
         }
       }
-      nc_close(ncT)
+      ncdf4::nc_close(ncT)
       setTxtProgressBar(pb, i)
     } # End looping through source met files
     print("")
