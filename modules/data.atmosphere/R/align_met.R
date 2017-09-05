@@ -293,13 +293,9 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
             met.out$dat.source[["air_temperature_maximum"]] <- rbind(met.out$dat.source[["air_temperature_maximum"]], as.matrix(tmax[,(3+1:n.src)]))
           } 
         } else {
-          met.out$dat.source[[v]] <- rbind(met.out$dat.source[[v]], df.tem)
+          met.out$dat.source[[v]] <- rbind(met.out$dat.source[[v]], as.matrix(df.tem, ncol=1))
         }
         
-        # If met doesn't need to be aggregated, just copy it in
-        if(align %in% c("repeat", "align")) {
-          met.out$dat.source[[v]] <- rbind(met.out$dat.source[[v]], as.matrix(df.tem, ncol=n.src))
-        }
       }
       ncdf4::nc_close(ncT)
       setTxtProgressBar(pb, i)
@@ -323,7 +319,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
       
       ens.source <- ens.source[source.use]
     }
-    n.src = n.ens 
+    n.src = 1 # Potential to redo places where n.src is currently; this is based on out-dated code
     
     # getting an estimate of how many files we need to process
     n.files <- length(dir(file.path(source.path, ens.source[1])))
@@ -415,13 +411,9 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
               dat.ens[["air_temperature_maximum"]] <- rbind(dat.ens[["air_temperature_maximum"]], as.matrix(tmax[,(3+1:n.src)]))
             } 
           } else {
-            dat.ens[[v]] <- rbind(dat.ens[[v]], df.tem)
+            dat.ens[[v]] <- rbind(dat.ens[[v]], as.matrix(df.tem, ncol=1))
           }
           
-          # If met doesn't need to be aggregated, just copy it in
-          if(align %in% c("repeat", "align")) {
-            dat.ens[[v]] <- rbind(dat.ens[[v]], as.matrix(df.tem, ncol=n.src))
-          }
         } #End variable loop
         nc_close(ncT)
         setTxtProgressBar(pb, pb.ind)
