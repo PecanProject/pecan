@@ -186,7 +186,7 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
   }
 
   # find appropriate format
-  formatid <- get.id(table = 'formats', values = c("mimetype_id", "name"), colnames = c(mimetypeid, formatname), con = con)
+  formatid <- get.id(table = 'formats', colnames = c("mimetype_id", "name"), values = c(mimetypeid, formatname), con = con)
   if (is.null(formatid)) {
     invisible(data.frame())
   }
