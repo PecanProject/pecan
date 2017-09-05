@@ -5,7 +5,7 @@
 \title{align.met}
 \usage{
 align.met(train.path, source.path, yrs.train = NULL, n.ens = NULL,
-  pair.mems = TRUE, seed = Sys.Date(), verbose = FALSE)
+  pair.mems = FALSE, seed = Sys.Date(), verbose = FALSE)
 }
 \arguments{
 \item{train.path}{- path to the dataset to be used to downscale the data}
@@ -19,7 +19,7 @@ problematic years)}
 
 \item{n.ens}{- number of ensemble members to generate and save}
 
-\item{pair.mems}{- (not implemented) logical stating whether ensemble members should be paired in 
+\item{pair.mems}{- logical stating whether ensemble members should be paired in 
 the case where ensembles are being read in in both the training and source data}
 
 \item{seed}{- specify seed so that random draws can be reproduced}
