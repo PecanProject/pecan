@@ -67,7 +67,7 @@
 #----------------------------------------------------------------------
 # Begin Function
 #----------------------------------------------------------------------
-align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.mems = TRUE, seed=Sys.Date(), verbose = FALSE) {
+align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.mems = FALSE, seed=Sys.Date(), verbose = FALSE) {
   # Load required libraries
   library(ncdf4)
   library(lubridate)
@@ -130,8 +130,10 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
     ens.train <- dir(train.path)
     
     if(is.null(n.ens)) n.ens <- length(ens.train)
-    if(length(ens.train)>n.ens) ens.train <- ens.train[sample(1:length(ens.train), n.ens)]
-    n.trn=n.ens
+    if(length(ens.train)>n.ens) {
+      train.use <- sample(1:length(ens.train), n.ens)
+      ens.train <- ens.train[train.use]
+    }
     
     # getting an estimate of how many files we need to process
     yrs.file <- strsplit(dir(file.path(train.path, ens.train[1])), "[.]")
@@ -304,8 +306,141 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
     } # End looping through source met files
     print("")
   } else { # we have an ensemble we need to deal with
-    stop("Source ensemble mode not implemented yet!")
-  } # End loading & formatting training data
+    ens.source <- dir(source.path)
+    
+    # If we're matching ensemble members need to use the same ones as from the training data
+    if(pair.ens==TRUE){
+      if(length(ens.source) < ens.train) stop("Cannot pair ensemble members. Reset pair.ens to FALSE or check your file paths")
+      
+      ens.source <- ens.source[train.use]
+    } else {
+      # Figure out whether or not we need to subsample or repeat ensemble members
+      if(length(ens.source)>=n.ens){
+        source.use <- sample(1:length(ens.source), n.ens)
+      } else {
+        source.use <- sample(1:length(ens.source), n.ens, replace = TRUE)
+      }
+      
+      ens.source <- ens.source[source.use]
+    }
+    n.src = n.ens 
+    
+    # getting an estimate of how many files we need to process
+    n.files <- length(dir(file.path(source.path, ens.source[1])))
+    
+    print("Processing Source Data")
+    pb <- txtProgressBar(min=0, max=length(ens.source)*n.files, style=3)
+    pb.ind=1
+    for(j in 1:length(ens.source)){
+      # Get a list of the files we'll be downscaling
+      files.source <- dir(file.path(source.path, ens.source[j]), ".nc")
+      
+      # create a vector of the years
+      yrs.file <- strsplit(files.source, "[.]")
+      yrs.file <- matrix(unlist(yrs.file), ncol=length(yrs.file[[1]]), byrow=T)
+      yrs.file <- as.numeric(yrs.file[,ncol(yrs.file)-1]) # Assumes year is always last thing before the file extension
+      
+      # Getting the day & hour timesteps from the training data
+      day.train <- round(365/length(unique(met.out$dat.train$time$DOY)))
+      hr.train  <- 24/length(unique(met.out$dat.train$time$Hour))
+      
+      # Loop through the .nc files putting everything into a list
+      dat.ens <- list()
+      for(i in 1:length(files.source)){
+        yr.now <- yrs.file[i]
+        
+        ncT <- nc_open(file.path(source.path, ens.source[j], files.source[i]))
+        
+        # Set up the time data frame to help index
+        nday <- ifelse(leap_year(yr.now), 366, 365)
+        ntime <- length(ncT$dim$time$vals)
+        step.day <- nday/ntime
+        step.hr  <- step.day*24
+        
+        # -----
+        # Making time stamps to match the training data
+        # For coarser time step than the training data, we'll duplicate in the loop
+        # -----
+        # Making what the unique time stamps should be to match the training data
+        stamps.hr <- seq(hr.train/2, by=hr.train, length.out=1/day.train) 
+        stamps.src <- stamps.hr
+        
+        if(step.hr < hr.train){  # Finer hour increment --> set it up to aggregate
+          align = "aggregate"
+          stamps.src <- rep(stamps.hr, each=24/step.hr)
+        } else if(step.hr > hr.train) { # Set the flag to duplicate the data
+          align = "repeat"
+        } else { # things are aligned, so we're fine
+          align = "aligned"
+        }
+        # -----
+        
+        # Create a data frame with all the important time info
+        # center the hour step
+        df.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/day.train), Hour=rep(stamps.hr, length.out=nday/day.train))
+        df.time$Date <- strptime(paste(df.time$Year, df.time$DOY, df.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
+        
+        # Create a data frame with all the important time info
+        # center the hour step
+        # ** Only do this with the first ensemble member so we're not being redundant
+        if(j==1){
+          met.out$dat.source[["time"]] <- rbind(met.out$dat.source$time, df.time)
+        }
+        
+        src.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/step.day), Hour=rep(stamps.src, length.out=ntime))
+        src.time$Date <- strptime(paste(df.time$Year, df.time$DOY, df.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
+        
+        # Extract the met info, making matrices with the appropriate number of ensemble members
+        for(v in names(ncT$var)){
+          dat.tem <- ncvar_get(ncT, v)
+          
+          if(align=="repeat"){ # if we need to coerce the time step to be repeated to match temporal resolution, do it here
+            dat.tem <- rep(dat.temp, each=stamps.hr)
+          }
+          df.tem <- matrix(rep(dat.tem, n.src), ncol=1, byrow=F)
+          
+          # If we need to aggregate the data to align it, do it now to save memory
+          if(align == "aggregate"){
+            df.tem <- cbind(src.time, data.frame(df.tem))
+            
+            df.agg <- aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=mean)
+            dat.ens[[v]] <- rbind(dat.ens[[v]], as.matrix(df.agg[,(3+1:n.src)]))
+            
+            # if working with air temp, also find the max & min
+            if(v=="air_temperature"){
+              tmin <- aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=min)
+              tmax <- aggregate(df.tem[,(4+1:n.src)], by=df.tem[,c("Year", "DOY", "Hour")], FUN=max)
+              
+              dat.ens[["air_temperature_minimum"]] <- rbind(dat.ens[["air_temperature_minimum"]], as.matrix(tmin[,(3+1:n.src)]))
+              dat.ens[["air_temperature_maximum"]] <- rbind(dat.ens[["air_temperature_maximum"]], as.matrix(tmax[,(3+1:n.src)]))
+            } 
+          } else {
+            dat.ens[[v]] <- rbind(dat.ens[[v]], df.tem)
+          }
+          
+          # If met doesn't need to be aggregated, just copy it in
+          if(align %in% c("repeat", "align")) {
+            dat.ens[[v]] <- rbind(dat.ens[[v]], as.matrix(df.tem, ncol=n.src))
+          }
+        } #End variable loop
+        nc_close(ncT)
+        setTxtProgressBar(pb, pb.ind)
+        pb.ind <- pb.ind+1
+      } # End looping through source met files
+      
+      # Storing the ensemble member data in our output list
+      for(v in names(dat.ens)){
+        met.out$dat.source[[v]] <- cbind(met.out$dat.source[[v]], dat.ens[[v]])
+      }
+    } # End loading & formatting source ensemble members
+    
+    # Storing info about the ensemble members
+    for(v in 2:length(met.out$dat.source)){
+      dimnames(met.out$dat.source[[v]])[[2]] <- ens.source
+    }
+    
+  } # End loading & formatting source data
+  print("")
   # ---------------
   
   
