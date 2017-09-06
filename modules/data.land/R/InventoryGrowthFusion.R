@@ -1,8 +1,3 @@
-#### starting point = Clark et al. 2007 fusion of tree-ring and DBH data
-#### analysis of Arizona PIPO FIA cores + DBH
-#### addition of several fixed effects here
-#### including time-varying effects
-
 ##' @name InventoryGrowthFusion
 ##' @title InventoryGrowthFusion
 ##' @description this code fuses forest inventory data with tree growth data (tree ring or dendrometer band)
@@ -10,19 +5,39 @@
 ##' 
 ##' @param data  list of data inputs
 ##' @param random = whether or not to include random effects
-##' @param n.chunk number of MCMC steps to evaluate at a time. Will only return LAST
-##' @param save.state whether or not to include inferred DBH in output (can be large)
+##' @param n.chunk number of MCMC steps to evaluate at a time. Will only return LAST. If restarting, second number in vector is chunk to start from
+##' @param n.burn  number of steps to automatically discard as burn-in
+##' @param save.state whether or not to include inferred DBH in output (can be large). Enter numeric value to save.state periodically (in terms of n.chunk)
+##' @param restart  final mcmc.list from previous execution. NULL for new run. TRUE to save final state for new run.
 ##' @note Requires JAGS
 ##' @return an mcmc.list object
 ##' @export
-InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=5000, n.chunk = n.iter, random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, save.jags = "IGF.txt", z0 = NULL, save.state=TRUE) {
+InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, save.jags = "IGF.txt", z0 = NULL, save.state=TRUE,restart = NULL) {
   library(rjags)
 
   # baseline variables to monitor  
   burnin.variables <- c("tau_add", "tau_dbh", "tau_inc", "mu") # process variability, dbh and tree-ring observation error, intercept
   out.variables <- c("deviance", "tau_add", "tau_dbh", "tau_inc", "mu")
-  if(save.state) out.variables <- c(out.variables,"x")
+  # if(save.state) out.variables <- c(out.variables,"x")
+  if(!exists("model")) model = 0
   
+  ## restart
+  if(length(n.chunk)>1){
+    k_restart = n.chunk[2]
+    n.chunk = n.chunk[1]
+  } else {
+    k_restart = 1
+  }
+  max.chunks <- ceiling(n.iter/n.chunk)
+  if(max.chunks < k_restart){
+    PEcAn.utils::logger.warn("MCMC already complete",max.chunks,k_restart)
+    return(NULL)
+  }
+  avail.chunks <- k_restart:ceiling(n.iter/n.chunk)
+  
+  check.dup.data <- function(data,loc){
+    if(any(duplicated(names(data)))){PEcAn.logger::logger.error("duplicated variable at",loc,names(data))}
+  }  
   # start text object that will be manipulated (to build different linear models, swap in/out covariates)  
   TreeDataFusionMV <- "
 model{
@@ -62,7 +77,7 @@ model{
   ## ENDOGENOUS BETAS
   ## TIME VARYING BETAS
   ## RANDOM EFFECT TAUS
-}"
+ }"
   
   Pformula <- NULL
   ########################################################################
@@ -107,7 +122,6 @@ model{
             names(data)[length(data)] <- r_var[j]
           }
           if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at r_var",names(data))}
-          
           nr[j] <- max(as.numeric(data[[r_var[j]]]))
         }
         index <- paste0("[",index,"]")
@@ -131,7 +145,7 @@ model{
     ## Substitute into code
     TreeDataFusionMV <- sub(pattern = "## RANDOM EFFECT TAUS", Rpriors, TreeDataFusionMV)
     TreeDataFusionMV <- gsub(pattern = "## RANDOM_EFFECTS", Reffects, TreeDataFusionMV)
-  }  ### END RANDOM EFFECTS
+  }   ### END RANDOM EFFECTS
 
   ########################################################################
   ###
@@ -139,32 +153,33 @@ model{
   ###
   ########################################################################
   if(FALSE){
-    ## DEV TESTING FOR X, POLYNOMIAL X, and X interactions
+    ## DEV TESTING FOR X, polynomial X, and X interactions
     fixed <- "X + X^3 + X*bob + bob + dia + X*Tmin[t]" ## faux model, just for testing jags code
   }
   ## Design matrix
   if (is.null(fixed)) {
     Xf <- NULL
   } else {
-     ## check for covariate data (note: will falsely fail if only effect is X)
+    
+    ## check for covariate data (note: will falsely fail if only effect is X)
     if (is.null(cov.data)) {
       print("formula provided but covariate data is absent:", fixed)
     } else {
       cov.data <- as.data.frame(cov.data)
     }
+    
     ## check if there's a tilda in the formula
     if (length(grep("~", fixed)) == 0) {
       fixed <- paste("~", fixed)
     }
 
-### BEGIN adding in tree size (endogenous variable X)    
+    ### BEGIN adding in tree size (endogenous variable X)    
     ## First deal with endogenous terms (X and X*cov interactions)
     fixedX <- sub("~","",fixed, fixed=TRUE)
     lm.terms <- gsub("[[:space:]]", "", strsplit(fixedX,split = "+",fixed=TRUE)[[1]])  ## split on + and remove whitespace
     X.terms <- strsplit(lm.terms,split = c("^"),fixed = TRUE)
     X.terms <- sapply(X.terms,function(str){unlist(strsplit(str,,split="*",fixed=TRUE))})
     X.terms <- which(sapply(X.terms,function(x){any(toupper(x) == "X")}))    
-
     if(length(X.terms) > 0){
       ## rebuild fixed without X.terms
       fixed <- paste("~",paste(lm.terms[-X.terms],collapse = " + "))  
@@ -182,37 +197,35 @@ model{
           covX <- strsplit(X.terms[i],"*",fixed=TRUE)[[1]] 
           covX <- covX[-which(toupper(covX)=="X")] ## remove X from terms
           
-            ##is covariate fixed or time varying?
-            tvar <-  length(grep("[t]",covX,fixed=TRUE)) > 0
-            if(tvar){
-              covX <- sub("[t]","",covX,fixed = TRUE)
+          ##is covariate fixed or time varying?
+          tvar <-  length(grep("[t]",covX,fixed=TRUE)) > 0
+          if(tvar){
+            covX <- sub("[t]","",covX,fixed = TRUE)
+            if(!(covX %in% names(data))){
+              ## add cov variables to data object
+              data[[covX]] <- time_data[[covX]]
+            }
+            check.dup.data(data,"covX")
+              
+            myIndex <- "[i,t]"
+          } else {
+            ## variable is fixed
+            if(covX %in% colnames(cov.data)){ ## covariate present
               if(!(covX %in% names(data))){
                 ## add cov variables to data object
-                data[[covX]] <- time_data[[covX]]
+                data[[covX]] <- cov.data[,covX]
               }
-              if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at covX",names(data))}
+              check.dup.data(data,"covX2")
               
-#              covX <- paste0(covX,"[i,t-1]")
-              myIndex <- "[i,t]"
             } else {
-              ## variable is fixed
-              if(covX %in% colnames(cov.data)){ ## covariate present
-                if(!(covX %in% names(data))){
-                  ## add cov variables to data object
-                  data[[covX]] <- cov.data[,covX]
-                }
-                if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at covX2",names(data))}
-              } else {
-                ## covariate absent
-                print("covariate absent from covariate data:", covX)
-              }
+              ## covariate absent
+              print("covariate absent from covariate data:", covX)
+            }
               
-            } ## end fixed or time varying
+          } ## end fixed or time varying
             
-            myBeta <- paste0("betaX_",covX)
-            Xformula <- paste0(myBeta,"*x[i,t-1]*",covX,myIndex)
-
-
+          myBeta <- paste0("betaX_",covX)
+          Xformula <- paste0(myBeta,"*x[i,t-1]*",covX,myIndex)
           
         } else if(length(grep("^",X.terms[i],fixed=TRUE))==1){  ## POLYNOMIAL
           powX <- strsplit(X.terms[i],"^",fixed=TRUE)[[1]] 
@@ -233,16 +246,14 @@ model{
           
         ## add to out.variables
         out.variables <- c(out.variables, myBeta)
-        
 
-      }  ### END LOOP OVER X TERMS
+      }  ## END LOOP OVER X TERMS
 
       ## create priors
       TreeDataFusionMV <- sub(pattern = "## ENDOGENOUS BETAS", Xpriors, TreeDataFusionMV)
       
     }  ## end processing of X terms
-### END size variable X stuff    
-    
+
     ## build design matrix from formula
     Xf      <- with(cov.data, model.matrix(formula(fixed)))
     Xf.cols <- colnames(Xf)
@@ -254,7 +265,7 @@ model{
     ##Center the covariate data
     Xf.center <- apply(Xf, 2, mean, na.rm = TRUE)
     Xf      <- t(t(Xf) - Xf.center)
-  }   ### end fixed effects parsing
+  }  ## end fixed effects parsing
   
   ## build formula in JAGS syntax
   if (!is.null(Xf)) {
@@ -274,7 +285,7 @@ model{
     out.variables <- c(out.variables, paste0("beta", Xf.names))
   }
 
-  if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at Xf",names(data))}
+  check.dup.data(data,"Xf")
 
   ########################################################################
   ###
@@ -284,11 +295,11 @@ model{
    
   if(FALSE){ # always false...just for development
     ## DEVEL TESTING FOR TIME VARYING
+    #time_varying <- "TminJuly + PrecipDec + TminJuly*PrecipDec"
     time_varying <- "tmax_Jun + ppt_Dec + tmax_Jun*ppt_Dec" 
-    time_data <- list(tmax_Jun = matrix(0,4,4), ppt_Dec = matrix(1,4,4))
+    time_data <- list(TminJuly = matrix(0,4,4),PrecipDec = matrix(1,4,4))
   }
   
-  ## Time-varying covariates
   if(!is.null(time_varying)){
     if (is.null(time_data)) {
       print("time_varying formula provided but time_data is absent:", time_varying)
@@ -306,7 +317,6 @@ model{
     ## INTERACTIONS WITH TIME-VARYING VARS
     ## TODO: deal with interactions with catagorical variables
     ## need to create new data matrices on the fly
-
     for(i in seq_along(it_vars)){
 
       ##is covariate fixed or time varying?
@@ -320,7 +330,7 @@ model{
           covX[j] <- sub("[t]","",covX[j],fixed = TRUE)
           if(!(covX[j] %in% names(data))){
             ## add cov variables to data object
-            data[[covX[j]]] <- time_varying[[covX[j]]]
+            data[[covX[j]]] <- time_data[[covX[j]]]
           }
           myBeta <- paste0(myBeta,covX[j])
           covX[j] <- paste0(covX[j],"[i,t]")
@@ -358,7 +368,7 @@ model{
         ## add cov variables to data object
         data[[tvar]] <- time_data[[tvar]]
       }
-      if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at tvar",names(data))}
+      check.dup.data(data,"tvar")
       
       ## append to process model formula
       Pformula <- paste(Pformula,
@@ -370,7 +380,7 @@ model{
     ## build prior
     Xt.priors <- paste0(Xt.priors,
                         paste0("     beta", t_vars, "~dnorm(0,0.001)", collapse = "\n")
-                        )
+    )
     TreeDataFusionMV <- sub(pattern = "## TIME VARYING BETAS", Xt.priors, TreeDataFusionMV)
     
   } ## END time varying covariates
@@ -382,54 +392,86 @@ model{
   }
  
   ## save script 
-  if(!is.null(save.jags))  {
-    cat(TreeDataFusionMV, file=save.jags)
+  if(!is.null(save.jags)){
+    cat(TreeDataFusionMV,file=save.jags)
   }
   
   ## state variable initial condition
-  ## can't use the Dietze version bc of structure of AZ PIPO data
-  ## z0 is built outside of this function in Evans custom data-processing function (buildJAGSdataobject.R)
   if(is.null(z0)){
-      z0 <- t(apply(data$y, 1, function(y) {
-        -rev(cumsum(rev(y)))
-      })) + data$z[, ncol(data$z)]
-    }  
+    z0 <- t(apply(data$y, 1, function(y) {
+      -rev(cumsum(rev(y)))
+    })) + data$z[, ncol(data$z)]
+  } 
 
-  
   ## JAGS initial conditions
-  nchain <- 3
   init   <- list()
-  for (i in seq_len(nchain)) {
-    y.samp <- sample(data$y, length(data$y), replace = TRUE)
-    init[[i]] <- list(x = z0, 
-                      tau_add = runif(1, 1, 5) / var(diff(y.samp), na.rm = TRUE),
-                      tau_dbh = 1, 
-                      tau_inc = 1500,
-                      tau_ind = 50, 
-                      tau_yr = 100, 
-                      ind = rep(0, data$ni),  
-                      year = rep(0, data$nt))
+  if(is.mcmc.list(restart)){
+    init <- mcmc.list2init(restart)
+    nchain <- length(init)
+  } else {
+    nchain <- 3
+    for (i in seq_len(nchain)) {
+      y.samp <- sample(data$y, length(data$y), replace = TRUE)
+      init[[i]] <- list(x = z0, 
+                        tau_add = runif(1, 1, 5) / var(diff(y.samp), na.rm = TRUE),
+                        tau_dbh = 1, 
+                        tau_inc = 1500,
+                        tau_ind = 50, 
+                        tau_yr = 100,
+                        betaX2 = 0, 
+                        ind = rep(0, data$ni),  
+                        year = rep(0, data$nt))
+    }
   }
-  
-  ## compile JAGS model
+
+
+  PEcAn.logger::logger.info("COMPILE JAGS MODEL")    
   j.model <- jags.model(file = textConnection(TreeDataFusionMV), data = data, inits = init, n.chains = 3)
-  ## burn-in
-  jags.out <- coda.samples(model = j.model, 
-                           variable.names = burnin.variables, 
-                           n.iter = min(n.iter, 2000))
-  if (burnin_plot) {
-    plot(jags.out)
-  }
   
-  ## run MCMC
+  if(n.burn > 0){
+    PEcAn.logger::logger.info("BURN IN")
+    jags.out <- coda.samples(model = j.model, 
+                             variable.names = burnin.variables, 
+                             n.iter = n.burn)
+    if (burnin_plot) {
+      plot(jags.out)
+    }
+  }
+
+  PEcAn.logger::logger.info("RUN MCMC")
   load.module("dic")
-  for(k in seq_len(ceiling(n.iter/n.chunk))){
-    jags.out <- coda.samples(model = j.model, variable.names = out.variables, n.iter = n.chunk)
-    ## could add code here to check for convergence and break from loop early
+  for(k in avail.chunks){
+    
+    ## determine whether to sample states
+    if(as.logical(save.state) & k%%as.numeric(save.state) == 0){
+      vnames <- c("x",out.variables)   ## save x periodically
+    } else {
+      vnames <- out.variables
+    }
+    
+    ## sample chunk
+    jags.out <- coda.samples(model = j.model, variable.names = vnames, n.iter = n.chunk)
+    
+    ## save chunk
+    ofile <- paste("IGF",model,k,"RData",sep=".")
+    print(ofile)
+    save(jags.out,file=ofile)
+    
+    ## update restart
+    if(!is.null(restart) & ((is.logical(restart) && restart) || is.mcmc.list(restart))){
+      ofile <- paste("IGF",model,"RESTART.RData",sep=".")
+      jags.final <- coda.samples(model = j.model, variable.names = c("x",out.variables), n.iter = 1)
+      k_restart = k + 1  ## finished k, so would restart at k+1
+      save(jags.final,k_restart,file=ofile)
+    }
+    
+    ## check for convergence and break from loop early
     D <- as.mcmc.list(lapply(jags.out,function(x){x[,'deviance']}))
     gbr <- coda::gelman.diag(D)$psrf[1,1]
     trend <- mean(sapply(D,function(x){coef(lm(x~seq_len(n.chunk)))[2]}))
-    if(gbr < 1.01 & abs(trend) < 0.05) break
+    if(gbr < 1.005 & abs(trend) < 0.5) break
   }
+  
+  
   return(jags.out)
 } # InventoryGrowthFusion
