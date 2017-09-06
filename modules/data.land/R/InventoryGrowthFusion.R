@@ -121,7 +121,7 @@ model{
             data[[length(data)+1]] <- as.numeric(as.factor(as.character(cov.data[,r_var[j]]))) ## multiple conversions to eliminate gaps
             names(data)[length(data)] <- r_var[j]
           }
-          if(any(duplicated(names(data)))){PEcAn.utils::logger.error("duplicated variable at r_var",names(data))}
+          check.dup.data(data,"r_var")
           nr[j] <- max(as.numeric(data[[r_var[j]]]))
         }
         index <- paste0("[",index,"]")
