@@ -6,16 +6,12 @@ library(PEcAn.assim.sequential)
 library(nimble)
 library(lubridate)
 
-ciEnvelope <- function(x,ylo,yhi,...){
-  polygon(cbind(c(x, rev(x), x[1]), c(ylo, rev(yhi),
-                                      ylo[1])), border = NA,...) 
-}
-
 #LINKAGES #AGB.pft #Harvard Forest
-setwd('/fs/data2/output//PEcAn_1000003314/')
-setwd('/fs/data2/output//PEcAn_1000007999/')
+#setwd('/fs/data2/output//PEcAn_1000003314/')
+#setwd('/fs/data2/output//PEcAn_1000007999/') #full run 50 nens
+setwd('/fs/data2/output//PEcAn_1000008008/')
+file.copy('/fs/data2/output//PEcAn_1000007999/sda.obs.Rdata',getwd())
 #TO DO: Having problem with running proc.var == TRUE because nimble isn't keeping the toggle sampler in the function environment.
-#TO DO: Intial conditions for linkages are messed up. Need to calibrate.
 
 
 #SIPNET
@@ -40,10 +36,10 @@ colnames(state)<-c('AGB','NPP')
 IC <- sample.IC.SIPNET(ne, state = state)
 status.end()
 
-
 PEcAn.assim.sequential::sda.enkf(settings, obs.mean = obs.list$obs.mean, obs.cov = obs.list$obs.cov, IC = IC)
 
-for(i in 1:10){
-  obs.cov[[i]][2,2]<-obs.cov[[i]][2,2]*100000
+for(i in 2:length(obs.mean)){
+  obs.mean[[i]]<-NA
+  obs.cov[[i]]<-NA
 }
 
