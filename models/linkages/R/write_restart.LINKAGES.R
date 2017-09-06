@@ -215,6 +215,8 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     } 
   }
   
+  #making sure to stick with density dependence rules in linkages (< 198 trees per 800/m^2)
+  #someday we could think about estimating this parameter from data
   if(sum(new.ntrees) > 198) new.ntrees <- round((new.ntrees / sum(new.ntrees)) * runif(1,160,195))
   
   print(paste0("new.ntrees =", new.ntrees))
