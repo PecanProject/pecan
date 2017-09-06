@@ -134,7 +134,6 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
 ##' \item {precip} {cm/h}
 ##' }
 ##' @export cf2biocro
-##' @import PEcAn.utils
 ##' @importFrom data.table :=
 ##' @author David LeBauer
 cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
