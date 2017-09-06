@@ -36,7 +36,7 @@ InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=
   avail.chunks <- k_restart:ceiling(n.iter/n.chunk)
   
   check.dup.data <- function(data,loc){
-    if(any(duplicated(names(data)))){PEcAn.logger::logger.error("duplicated variable at",loc,names(data))}
+    if(any(duplicated(names(data)))){print("duplicated variable at",loc,names(data))}
   }  
   # start text object that will be manipulated (to build different linear models, swap in/out covariates)  
   TreeDataFusionMV <- "
@@ -425,11 +425,11 @@ model{
   }
 
 
-  PEcAn.logger::logger.info("COMPILE JAGS MODEL")    
+  print("COMPILE JAGS MODEL")    
   j.model <- jags.model(file = textConnection(TreeDataFusionMV), data = data, inits = init, n.chains = 3)
   
   if(n.burn > 0){
-    PEcAn.logger::logger.info("BURN IN")
+    print("BURN IN")
     jags.out <- coda.samples(model = j.model, 
                              variable.names = burnin.variables, 
                              n.iter = n.burn)
@@ -438,7 +438,7 @@ model{
     }
   }
 
-  PEcAn.logger::logger.info("RUN MCMC")
+  print("RUN MCMC")
   load.module("dic")
   for(k in avail.chunks){
     
