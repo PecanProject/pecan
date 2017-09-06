@@ -59,21 +59,22 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
       }
     }
    
-    vars <- list(NPP = PEcAn.utils::mstmipvar("NPP", x, y, t),
-                 TotLivBiom = PEcAn.utils::mstmipvar("TotLivBiom", x, y, t),
-                 RootBiom = PEcAn.utils::mstmipvar("RootBiom", x, y, t),
-                 StemBiom = PEcAn.utils::mstmipvar("StemBiom", x, y, t),
-                 Evap = PEcAn.utils::mstmipvar("Evap", x, y, t),
-                 TVeg = PEcAn.utils::mstmipvar("TVeg", x, y, t),
-                 LAI = PEcAn.utils::mstmipvar("LAI", x, y, t))
+    dims <- list(lat = x, lon = y, time = t)
+    vars <- list(NPP = PEcAn.utils::to_ncvar("NPP", dims),
+                 TotLivBiom = PEcAn.utils::to_ncvar("TotLivBiom", dims),
+                 root_carbon_content = PEcAn.utils::to_ncvar("root_carbon_content", dims),
+                 AbvGrndWood = PEcAn.utils::to_ncvar("AbvGrndWood", dims),
+                 Evap = PEcAn.utils::to_ncvar("Evap", dims),
+                 TVeg = PEcAn.utils::to_ncvar("TVeg", dims),
+                 LAI = PEcAn.utils::to_ncvar("LAI", dims))
     
     biomass2c <- 0.4
     k <- udunits2::ud.convert(1, "Mg/ha", "kg/m2") * biomass2c
     
     result_yeari_std <- with(result_yeari, list(
       TotLivBiom = k * (Leaf + Root + Stem + Rhizome + Grain), 
-      RootBiom = k * Root, 
-      StemBiom = k * Stem, 
+      root_carbon_content = k * Root,
+      AbvGrndWood = k * Stem,
       Evap = udunits2::ud.convert(SoilEvaporation + CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
       TVeg = udunits2::ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
       LAI = LAI))
