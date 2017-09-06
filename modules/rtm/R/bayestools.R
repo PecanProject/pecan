@@ -1,5 +1,5 @@
 #' Generic log-likelihood generator for RTMs
-rtm_loglike <- function(nparams, model, observed, lag.max = 0.01, ...) {
+rtm_loglike <- function(nparams, model, observed, lag.max = NULL, verbose = TRUE, ...) {
     fail_ll <- -1e10
     stopifnot(nparams >= 1, nparams %% 1 == 0, is.function(model), is.numeric(observed))
     n_obs <- length(observed)
@@ -7,14 +7,28 @@ rtm_loglike <- function(nparams, model, observed, lag.max = 0.01, ...) {
         rtm_params <- x[seq_len(nparams)]
         rsd <- x[nparams + 1]
         mod <- model(rtm_params, ...)
-        if (any(is.na(mod))) return(fail_ll)
+        if (any(is.na(mod))) {
+            if (verbose) message(sum(is.na(mod)), " NA values in model output. Returning loglike = ", fail_ll)
+            return(fail_ll)
+        }
         err <- mod - observed
         ss <- sum(err * err)
         sigma2 <- rsd * rsd
         n_eff <- neff(err, lag.max = lag.max)
         sigma2eff <- sigma2 * n_obs / n_eff
-        ll <- -0.5 * (n_obs * log(sigma2eff) + ss / sigma2eff)
-        if (is.na(ll)) return(fail_ll)
+        ll <- -0.5 * (n_eff * log(sigma2eff) + ss / sigma2eff)
+        if (is.na(ll)) {
+            if (verbose) {
+                message("Log likelihood is NA. Returning loglike = ", fail_ll)
+                message("Mean error: ", mean(err))
+                message("Sum of squares: ", ss)
+                message("Sigma2 = ", sigma2)
+                message("n_eff = ", n_eff)
+                message("sigma2eff = ", sigma2eff)
+                message("LL = ", ll)
+            }
+            return(fail_ll)
+        }
         return(ll)
     }
     return(out)
@@ -91,13 +105,14 @@ prospect_bt_prior <- function(version, custom_prior = list()) {
 #'      Default is `FALSE` because it may be an excessively conservative
 #'      diagnostic.
 #'      - `min_samp` -- Minimum number of samples after burnin before stopping.
-#'      Default is 1000.
+#'      Default is 5000.
 #'      - `max_iter` -- Maximum total number of iterations. Default is 1e6.
 #'      - `lag.max` -- Maximum lag to use for autocorrelation normalization.
 #'      Default is `10 * log10(n)` (same as `stats::acf` function).
 #'      - `save_progress` -- File name for saving samples between loop
 #'      iterations. If `NULL` (default), do not save progress samples.
 #'      - `threshold` -- Threshold for Gelman PSRF convergence diagnostic. Default is 1.1.
+#'      - `verbose_loglike` -- Diagnostic messages in log likelihood output. Default is TRUE.
 #'
 #' See the BayesianTools sampler documentation for what can go in the `BayesianTools` settings lists.
 #' @param observed Vector of observations
@@ -113,11 +128,12 @@ invert_bt <- function(observed, model, prior, custom_settings = list()) {
                              loop = list(iterations = 2000),
                              other = list(sampler = 'DEzs',
                                           use_mpsrf = FALSE,
-                                          min_samp = 1000,
+                                          min_samp = 5000,
                                           max_iter = 1e6,
                                           lag.max = NULL,
                                           save_progress = NULL,
-                                          threshold = 1.1))
+                                          threshold = 1.1,
+                                          verbose_loglike = TRUE))
 
     if (length(custom_settings) > 0) {
         settings <- list()
@@ -140,6 +156,7 @@ invert_bt <- function(observed, model, prior, custom_settings = list()) {
     max_iter <- settings[['other']][['max_iter']]
     save_progress <- settings[['other']][['save_progress']]
     threshold <- settings[['other']][['threshold']]
+    verbose_loglike <- settings[['other']][['verbose_loglike']]
 
     if (!is.null(save_progress)) {
         # `file.create` returns FALSE if target directory doesn't exist.
@@ -152,7 +169,8 @@ invert_bt <- function(observed, model, prior, custom_settings = list()) {
     loglike <- rtm_loglike(nparams = nparams,
                            model = model,
                            observed = observed,
-                           lag.max = lag.max)
+                           lag.max = lag.max,
+                           verbose = verbose_loglike)
 
 
     setup <- BayesianTools::createBayesianSetup(likelihood = loglike,
@@ -205,6 +223,7 @@ invert_bt <- function(observed, model, prior, custom_settings = list()) {
             if (burned_samples$burnin == 1) {
                 message('PEcAn.assim.batch::autoburnin reports convergence has not been achieved. ',
                         'Resuming sampling.')
+                converged <- FALSE
                 next
             }
             n_samples <- coda::niter(burned_samples$samples)
