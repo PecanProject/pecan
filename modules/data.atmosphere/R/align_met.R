@@ -305,8 +305,8 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
     ens.source <- dir(source.path)
     
     # If we're matching ensemble members need to use the same ones as from the training data
-    if(pair.ens==TRUE){
-      if(length(ens.source) < ens.train) stop("Cannot pair ensemble members. Reset pair.ens to FALSE or check your file paths")
+    if(pair.mems==TRUE){
+      if(length(ens.source) < ens.train) stop("Cannot pair ensemble members. Reset pair.mems to FALSE or check your file paths")
       
       ens.source <- ens.source[train.use]
     } else {
