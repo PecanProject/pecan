@@ -22,8 +22,6 @@
 ##' @param lat Latitude of the site
 ##' @param lon Longitude of the site
 ##' @export
-##' @import data.table
-##' @import PEcAn.utils
 ##' @author David LeBauer, Deepak Jaiswal, Rob Kooper
 model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon = -9999) {
 
@@ -31,7 +29,7 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
     result$hour <- 0
   }
   if (all(c("year", "hour", "doy") %in% colnames(result))) {
-    setnames(result, c("year", "hour", "doy"), c("Year", "Hour", "DayofYear"))
+    data.table::setnames(result, c("year", "hour", "doy"), c("Year", "Hour", "DayofYear"))
   }
   
   ## longname prefix station_* used for a point

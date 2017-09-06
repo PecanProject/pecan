@@ -9,7 +9,6 @@
 #' @param coppice.interval numeric, number of years between cuttings for coppice plant or perinneal grass (default 1)
 #' @return output from one of the \code{BioCro::*.Gro} functions (determined by \code{config$genus}), as data.table object
 #' @export
-#' @import data.table
 #' @author David LeBauer
 run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppice.interval = 1) {
   l2n <- function(x) lapply(x, as.numeric)
@@ -89,13 +88,13 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       if (i == 1) {
         iplant <- config$pft$iPlantControl
       } else {
-        iplant$iRhizome <- last(tmp.result$Rhizome)
-        iplant$iRoot <- last(tmp.result$Root)
-        iplant$iStem <- last(tmp.result$Stem)
+        iplant$iRhizome <- data.table::last(tmp.result$Rhizome)
+        iplant$iRoot <- data.table::last(tmp.result$Root)
+        iplant$iStem <- data.table::last(tmp.result$Stem)
         
         if ((i - 1)%%coppice.interval == 0) {
           # coppice when remainder = 0
-          HarvestedYield <- round(last(tmp.result$Stem) * 0.95, 2)
+          HarvestedYield <- round(data.table::last(tmp.result$Stem) * 0.95, 2)
         } else if ((i - 1)%%coppice.interval == 1) 
         {
           # year after coppice
@@ -119,8 +118,8 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       if (yeari == years[1]) {
         iRhizome <- config$pft$iPlantControl$iRhizome
       } else {
-        iRhizome <- last(tmp.result$Rhizome)
-        HarvestedYield <- round(last(tmp.result$Stem) * 0.95, 2)
+        iRhizome <- data.table::last(tmp.result$Rhizome)
+        HarvestedYield <- round(data.table::last(tmp.result$Stem) * 0.95, 2)
       }
       ## run BioGro
       tmp.result <- BioCro::BioGro(WetDat = WetDat,
@@ -144,7 +143,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
                            photoControl = l2n(config$pft$photoParms))
       
     }
-    result.yeari.hourly <- with(tmp.result, data.table(year = yeari,
+    result.yeari.hourly <- with(tmp.result, data.table::data.table(year = yeari,
                                                        doy = DayofYear,
                                                        hour = Hour, ThermalT,
                                                        Stem, Leaf, Root, 
@@ -191,5 +190,5 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
                                    by = "year"]
   return(list(hourly = hourly.results, 
               daily = daily.results, 
-              annually = data.table(lat = lat, lon = lon, annual.results)))
+              annually = data.table::data.table(lat = lat, lon = lon, annual.results)))
 } # run.biocro
