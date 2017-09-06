@@ -14,7 +14,7 @@
 ##' @export
 InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=5000, n.chunk = n.iter, n.burn = min(n.chunk, 2000), random = NULL, fixed = NULL,time_varying=NULL, burnin_plot = FALSE, save.jags = "IGF.txt", z0 = NULL, save.state=TRUE,restart = NULL) {
   library(rjags)
-  print("start of MCMC", Sys.time())
+  print(paste("start of MCMC", Sys.time()))
 
   # baseline variables to monitor  
   burnin.variables <- c("tau_add", "tau_dbh", "tau_inc", "mu") # process variability, dbh and tree-ring observation error, intercept
@@ -473,6 +473,6 @@ model{
     if(gbr < 1.005 & abs(trend) < 0.5) break
   }
   
-  print("end of MCMC", Sys.time())
+  print(paste("end of MCMC", Sys.time()))
   return(jags.out)
 } # InventoryGrowthFusion
