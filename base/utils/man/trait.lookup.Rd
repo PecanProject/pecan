@@ -10,8 +10,8 @@ trait.lookup(traits = NULL)
 \item{traits}{a vector of trait names, if traits = NULL, all of the traits will be returned.}
 }
 \value{
-a dataframe with id, the name used by ED and PEcAn database for a parameter; fileid, an abbreviated  
-    name used for files; figid, the parameter name written out as best known in english for figures 
+a dataframe with id, the name used by ED and PEcAn database for a parameter; fileid, an abbreviated
+    name used for files; figid, the parameter name written out as best known in english for figures
     and tables.
 }
 \description{
