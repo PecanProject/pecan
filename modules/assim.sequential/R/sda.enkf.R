@@ -7,13 +7,14 @@
 ##' @param obs.cov     list of observations of covariance matrices of state variables (time X nstate X nstate)
 ##' @param IC          initial conditions
 ##' @param Q           process covariance matrix given if there is no data to estimate it
+##' @param adjustment  flag for using ensemble adjustment filter or not
 ##' 
 ##' @description State Variable Data Assimilation: Ensemble Kalman Filter
 ##' 
 ##' @return NONE
 ##' @export
 ##' 
-sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
+sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustment = TRUE) {
   
   library(nimble)
   
@@ -172,7 +173,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     dir.create(file.path(settings$modeloutdir, run.id[[i]]), recursive = TRUE)
     
     ## Write Configs
-    do.call(my.write.config, args = list(defaults = NULL, 
+    do.call(what = my.write.config, args = list(defaults = NULL, 
                                          trait.values = params[[i]], 
                                          settings = settings, 
                                          run.id = run.id[[i]], 
@@ -738,45 +739,37 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL) {
     ###-------------------------------------------------------------------###
     ### update state matrix                                               ###
     ###-------------------------------------------------------------------### 
-    S_f  <- svd(Pf)
-    L_f  <- S_f$d
-    V_f  <- S_f$v
-    
-    ## normalize
-    Z <- X*0
-    for(i in seq_len(nens)){
-      Z[i,] <- 1/sqrt(L_f) * t(V_f)%*%(X[i,]-mu.f)
+    if(adjustment == TRUE){
+      S_f  <- svd(Pf)
+      L_f  <- S_f$d
+      V_f  <- S_f$v
+      
+      ## normalize
+      Z <- X*0
+      for(i in seq_len(nens)){
+        Z[i,] <- 1/sqrt(L_f) * t(V_f)%*%(X[i,]-mu.f)
+      }
+      Z[is.na(Z)]<-0
+      
+      ## analysis
+      S_a  <- svd(Pa)
+      L_a  <- S_a$d
+      V_a  <- S_a$v
+      
+      ## analysis ensemble
+      X_a <- X*0
+      for(i in seq_len(nens)){
+        X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
+      }
+      
+      if(sum(mu.a-colMeans(X_a))>1) logger.warn('Problem with ensemble adjustment (1)')
+      if(sum(diag(Pa),diag(cov(X_a)))>5) logger.warn('Problem with ensemble adjustment (2)')
+      
+      analysis <- as.data.frame(X_a)
+    }else{
+      analysis <- as.data.frame(rmvnorm(as.numeric(nens), mu.a, Pa, method = "svd"))
     }
-    Z[is.na(Z)]<-0
     
-    ## analysis
-    #mu_a <- c(10,-3)
-    #D  <- sqrt(diag(c(3,1)))
-    #R  <- matrix(c(1,-0.75,-0.75,1),2,2)
-    #P_a  <- D%*%R%*%D
-    S_a  <- svd(Pa)
-    L_a  <- S_a$d
-    V_a  <- S_a$v
-    
-    ## analysis ensemble
-    X_a <- X*0
-    for(i in seq_len(nens)){
-      X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
-    }
-    
-    # par(mfrow=c(1,1))
-    # plot(X_a)
-    # ## check if ensemble mean is correct
-    # cbind(mu.a,colMeans(X_a))
-    if(sum(mu.a-colMeans(X_a))>1) logger.warn('Problem with ensemble adjustment (1)')
-    if(sum(diag(Pa),diag(cov(X_a)))>5) logger.warn('Problem with ensemble adjustment (2)')
-    # ## check if ensemble var is correct
-    # cbind(diag(Pa),diag(cov(X_a)))  ## just variances
-    # cbind(as.vector(Pa),as.vector(cov(X_a))) ## full cov
-    # 
-    #analysis <- as.data.frame(rmvnorm(as.numeric(nens), mu.a, Pa, method = "svd"))
-    
-    analysis <- as.data.frame(X_a)
     colnames(analysis) <- colnames(X)
     
     ##### Mapping analysis vectors to be in bounds of state variables
