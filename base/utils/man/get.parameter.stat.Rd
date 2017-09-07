@@ -6,11 +6,6 @@
 \usage{
 get.parameter.stat(mcmc.summary, parameter)
 }
-\arguments{
-\item{mcmc.summary}{}
-
-\item{parameter}{}
-}
 \value{
 table with parameter statistics
 }

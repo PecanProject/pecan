@@ -5,7 +5,7 @@
 ##' 
 ##' @param data  list of data inputs
 ##' @param random = whether or not to include random effects
-##' @param n.chunk number of MCMC steps to evaluate at a time. Will only return LAST
+##' @param n.chunk number of MCMC steps to evaluate at a time. Will only return LAST. If restarting, second number in vector is chunk to start from
 ##' @param n.burn  number of steps to automatically discard as burn-in
 ##' @param save.state whether or not to include inferred DBH in output (can be large). Enter numeric value to save.state periodically (in terms of n.chunk)
 ##' @param restart  final mcmc.list from previous execution. NULL for new run. TRUE to save final state for new run.
@@ -20,6 +20,20 @@ InventoryGrowthFusion <- function(data, cov.data=NULL, time_data = NULL, n.iter=
   out.variables <- c("deviance", "tau_add", "tau_dbh", "tau_inc", "mu")
   #  if(save.state) out.variables <- c(out.variables,"x")
   if(!exists("model")) model = 0
+  
+  ## restart
+  if(length(n.chunk)>1){
+    k_restart = n.chunk[2]
+    n.chunk = n.chunk[1]
+  } else {
+    k_restart = 1
+  }
+  max.chunks <- ceiling(n.iter/n.chunk)
+  if(max.chunks < k_restart){
+    PEcAn.utils::logger.warn("MCMC already complete",max.chunks,k_restart)
+    return(NULL)
+  }
+  avail.chunks <- k_restart:ceiling(n.iter/n.chunk)
   
   check.dup.data <- function(data,loc){
     if(any(duplicated(names(data)))){PEcAn.logger::logger.error("duplicated variable at",loc,names(data))}
@@ -316,7 +330,7 @@ model{
           covX[j] <- sub("[t]","",covX[j],fixed = TRUE)
           if(!(covX[j] %in% names(data))){
             ## add cov variables to data object
-            data[[covX[j]]] <- time_varying[[covX[j]]]
+            data[[covX[j]]] <- time_data[[covX[j]]]
           }
           myBeta <- paste0(myBeta,covX[j])
           covX[j] <- paste0(covX[j],"[i,t]")
@@ -390,19 +404,24 @@ model{
   }
   
   ## JAGS initial conditions
-  nchain <- 3
   init   <- list()
-  for (i in seq_len(nchain)) {
-    y.samp <- sample(data$y, length(data$y), replace = TRUE)
-    init[[i]] <- list(x = z0, 
-                      tau_add = runif(1, 1, 5) / var(diff(y.samp), na.rm = TRUE),
-                      tau_dbh = 1, 
-                      tau_inc = 1500,
-                      tau_ind = 50, 
-                      tau_yr = 100,
-                      betaX2 = 0, 
-                      ind = rep(0, data$ni),  
-                      year = rep(0, data$nt))
+  if(is.mcmc.list(restart)){
+    init <- mcmc.list2init(restart)
+    nchain <- length(init)
+  } else {
+    nchain <- 3
+    for (i in seq_len(nchain)) {
+      y.samp <- sample(data$y, length(data$y), replace = TRUE)
+      init[[i]] <- list(x = z0, 
+                        tau_add = runif(1, 1, 5) / var(diff(y.samp), na.rm = TRUE),
+                        tau_dbh = 1, 
+                        tau_inc = 1500,
+                        tau_ind = 50, 
+                        tau_yr = 100,
+                        betaX2 = 0, 
+                        ind = rep(0, data$ni),  
+                        year = rep(0, data$nt))
+    }
   }
   
   
@@ -421,29 +440,39 @@ model{
   
   PEcAn.logger::logger.info("RUN MCMC")
   load.module("dic")
-  for(k in seq_len(ceiling(n.iter/n.chunk))){
+  for(k in avail.chunks){
+    
+    ## determine whether to sample states
     if(as.logical(save.state) & k%%as.numeric(save.state) == 0){
       vnames <- c("x",out.variables)   ## save x periodically
     } else {
       vnames <- out.variables
     }
+    
+    ## sample chunk
     jags.out <- coda.samples(model = j.model, variable.names = vnames, n.iter = n.chunk)
+    
+    ## save chunk
     ofile <- paste("IGF",model,k,"RData",sep=".")
     print(ofile)
     save(jags.out,file=ofile)
-    ## could add code here to check for convergence and break from loop early
+    
+    ## update restart
+    if(!is.null(restart) & ((is.logical(restart) && restart) || is.mcmc.list(restart))){
+      ofile <- paste("IGF",model,"RESTART.RData",sep=".")
+      jags.final <- coda.samples(model = j.model, variable.names = c("x",out.variables), n.iter = 1)
+      k_restart = k + 1  ## finished k, so would restart at k+1
+      save(jags.final,k_restart,file=ofile)
+    }
+    
+    ## check for convergence and break from loop early
     D <- as.mcmc.list(lapply(jags.out,function(x){x[,'deviance']}))
     gbr <- coda::gelman.diag(D)$psrf[1,1]
     trend <- mean(sapply(D,function(x){coef(lm(x~seq_len(n.chunk)))[2]}))
     if(gbr < 1.005 & abs(trend) < 0.5) break
   }
   
-  ## get final state
-  if(!is.null(restart) & (as.logical(restart) || is.mcmc.list(restart))){
-    ofile <- paste("IGF",model,"RESTART.RData",sep=".")
-    jags.final <- coda.samples(model = j.model, variable.names = c("x",out.variables), n.iter = 1)
-    save(jags.final,file=ofile)
-  }
+
   return(jags.out)
 } # InventoryGrowthFusion
 
