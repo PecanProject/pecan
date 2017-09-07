@@ -43,6 +43,11 @@ convert.samples.ED <- function(trait.samples) {
     trait.samples[["SLA"]] <- sla/DEFAULT.LEAF.C
   }
   
+  # for model version compatibility (q and fineroot2leaf are the same)
+  if ("fineroot2leaf" %in% names(trait.samples)) {
+    trait.samples[["q"]] <- as.numeric(trait.samples[["fineroot2leaf"]])
+  }
+  
   ## convert leaf width / 1000
   if ("leaf_width" %in% names(trait.samples)) {
     lw <- as.numeric(trait.samples[["leaf_width"]])
@@ -53,11 +58,15 @@ convert.samples.ED <- function(trait.samples) {
     rrr1 <- as.numeric(trait.samples[["root_respiration_rate"]])
     rrr2 <- rrr1 * DEFAULT.MAINTENANCE.RESPIRATION
     trait.samples[["root_respiration_rate"]] <- arrhenius.scaling(rrr2, old.temp = 25, new.temp = 15)
+    # model version compatibility (rrr and rrf are the same)
+    trait.samples[["root_respiration_factor"]] <- trait.samples[["root_respiration_rate"]]
   }
   
   if ("Vcmax" %in% names(trait.samples)) {
     vcmax <- as.numeric(trait.samples[["Vcmax"]])
     trait.samples[["Vcmax"]] <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
+    # write as Vm0 for version compatibility (Vm0 = Vcmax @ 15C)
+    trait.samples[["Vm0"]] <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
     
     ## Convert leaf_respiration_rate_m2 to dark_resp_factor; requires Vcmax
     if ("leaf_respiration_rate_m2" %in% names(trait.samples)) {
