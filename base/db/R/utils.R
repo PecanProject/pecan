@@ -81,7 +81,7 @@ db.open <- function(params) {
     args[['driver']] <- NULL
   }
 
-  c <- do.call(dbConnect, as.list(args))
+  c <- do.call(DBI::dbConnect, as.list(args))
   id <- sample(1000, size=1)
   while(length(which(.db.utils$connections$id==id)) != 0) {
     id <- sample(1000, size=1)
