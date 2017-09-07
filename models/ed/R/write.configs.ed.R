@@ -32,8 +32,7 @@ convert.samples.ED <- function(trait.samples) {
   DEFAULT.MAINTENANCE.RESPIRATION <- 1 / 2
   ## convert SLA from m2 / kg leaf to m2 / kg C
   
-  # IF: I don't know why we're removing leaf_respiration_rate from trait samples below
-  # but if the trait samples doesn't have leaf_respiration_rate
+  # IF: if the trait samples doesn't have leaf_respiration_rate
   # it's not being set to NULL and trait samples is not coherced to a list
   # trait.samples not being a list throws an error later in the write.config.xml.ED2, L:407
   trait.samples <- as.list(trait.samples)
@@ -81,7 +80,9 @@ convert.samples.ED <- function(trait.samples) {
         trait.samples[["leaf_respiration_rate_m2"]] / trait.samples[["Vcmax"]]
       
       ## Remove leaf_respiration_rate from trait samples
-      trait.samples$leaf_respiration_rate_m2 <- NULL  # !!!WHY DO WE DO THIS??!!!
+      trait.samples$leaf_respiration_rate_m2 <- NULL  # !!!WHY DO WE DO THIS??!!! 
+      # IF : ED doesn't read leaf_respiration_rate_m2, but uses "dark_respiration_factor" 
+      # leaf_respiration_rate_m2 could be left in the trait samples though
       
     }  ## End dark_respiration_factor loop
   }  ## End Vcmax  
