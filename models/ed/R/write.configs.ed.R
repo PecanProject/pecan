@@ -34,7 +34,7 @@ convert.samples.ED <- function(trait.samples) {
   
   # IF: if the trait samples doesn't have leaf_respiration_rate
   # it's not being set to NULL and trait samples is not coherced to a list
-  # trait.samples not being a list throws an error later in the write.config.xml.ED2, L:407
+  # trait.samples not being a list throws an error later in the write.config.xml.ED2, L:402
   trait.samples <- as.list(trait.samples)
   
   if ("SLA" %in% names(trait.samples)) {
