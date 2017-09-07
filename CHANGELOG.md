@@ -8,6 +8,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+- `PEcAn.BIOCRO` now uses PEcAn-standard variable names. As a result, two output variables have been renamed but keep their exiting units and definitions:
+	- `StemBiom` renamed to `AbvGrndWood`
+	- `RootBiom` renamed to `root_carbon_content`
 - Improved make install logic (#1558)
 - Fixed remote code execution #1545
 - Added check for NA end/start year in read.output
