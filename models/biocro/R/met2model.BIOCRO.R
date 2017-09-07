@@ -183,6 +183,7 @@ cf2biocro <- function(met, longitude = NULL, zulu2solarnoon = FALSE) {
                        Temp = udunits2::ud.convert(met$air_temperature, "Kelvin", "Celsius"),
                        RH = met$relative_humidity,
                        WS = wind_speed,
-                       precip = udunits2::ud.convert(met$precipitation_flux, "s-1", "h-1"))][hour <= 23]
+                       precip = udunits2::ud.convert(met$precipitation_flux, "s-1", "h-1"))]
+  newmet <- newmet[newmet$hour <= 23,]
   return(as.data.frame(newmet))
 }  # cf2biocro
