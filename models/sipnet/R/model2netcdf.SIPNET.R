@@ -19,9 +19,10 @@
 ##' @param start_date Start time of the simulation
 ##' @param end_date End time of the simulation
 ##' @param revision model revision
+##' @param overwrite Flag for overwriting nc files or not
 ##' @export
 ##' @author Shawn Serbin, Michael Dietze
-model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw, revision) {
+model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, delete.raw, revision, overwrite = FALSE) {
 
   ### Read in model output in SIPNET format
   sipnet.out.file <- file.path(outdir, "sipnet.out")
@@ -38,7 +39,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
 
   ### Loop over years in SIPNET output to create separate netCDF outputs
   for (y in years) {
-    if (file.exists(file.path(outdir, paste(y, "nc", sep = ".")))) {
+    if (file.exists(file.path(outdir, paste(y, "nc", sep = "."))) & overwrite == FALSE) {
       next
     }
     print(paste("---- Processing year: ", y))  # turn on for debugging
