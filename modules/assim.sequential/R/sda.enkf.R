@@ -735,7 +735,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       }
       enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, Pa = Pa)
     }
-    
     ###-------------------------------------------------------------------###
     ### update state matrix                                               ###
     ###-------------------------------------------------------------------### 
