@@ -127,7 +127,7 @@ db.close <- function(con, showWarnings=TRUE) {
       .db.utils$connections$log <- .db.utils$connections$log[-deleteme]
     }
   }
-  dbDisconnect(con)
+  DBI::dbDisconnect(con)
 }
 
 ##' Debug method for db.open and db.close
