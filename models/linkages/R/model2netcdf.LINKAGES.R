@@ -85,22 +85,24 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
         output[[i]] <- rep(-999, length(t$vals))
     }
     
+    dims <- list(lon = dim.lon, lat = dim.lat, time = dim.t)
+    
     var <- list()
-    var[[1]]  <- ncvar_def("AGB", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
-    var[[2]]  <- ncvar_def("TotLivBiomass", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
-    var[[3]]  <- ncvar_def("TotSoilCarb", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
-    var[[4]]  <- ncvar_def("CarbPools", "kgC/m2", list(dim.cpools, dim.lat, dim.lon, dim.t), -999)
-    var[[5]]  <- ncvar_def("poolnames", units = "", dim = list(dim.string, dim.cpools1), 
+    var[[1]]  <- PEcAn.utils::to_ncvar("AGB", dims)
+    var[[2]]  <- PEcAn.utils::to_ncvar("TotLivBiomass", dims)
+    var[[3]]  <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
+    var[[4]]  <- ncdf4::ncvar_def("CarbPools", "kgC/m2", list(dim.cpools, dim.lat, dim.lon, dim.t), -999)
+    var[[5]]  <- ncdf4::ncvar_def("poolnames", units = "", dim = list(dim.string, dim.cpools1), 
                            longname = "Carbon Pool Names", prec = "char")
-    var[[6]]  <- ncvar_def("GWBI", "kgC/m2", list(dim.lat, dim.lon, dim.t), -999)
-    var[[7]]  <- ncvar_def("HeteroResp", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
-    var[[8]]  <- ncvar_def("NPP", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
-    var[[9]]  <- ncvar_def("NEE", "kgC/m2/s", list(dim.lat, dim.lon, dim.t), -999)
-    var[[10]] <- ncvar_def("Evap", "kg/m2/s", list(dim.lat, dim.lon, dim.t), -999)
-    var[[11]] <- ncvar_def("AGB.pft", "kgC/m2", list(dim.pfts, dim.lat, dim.lon, dim.t), -999)
-    var[[12]] <- ncvar_def("Fcomp", "kgC/kgC", list(dim.pfts, dim.lat, dim.lon, dim.t), -999)
-    var[[13]] <- ncvar_def("LAI", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
-    var[[14]] <- ncvar_def("SoilMoist", "m2/m2", list(dim.lat, dim.lon, dim.t), -999)
+    var[[6]]  <- PEcAn.utils::to_ncvar("GWBI", dims)
+    var[[7]]  <- PEcAn.utils::to_ncvar("HeteroResp", dims)
+    var[[8]]  <- PEcAn.utils::to_ncvar("NPP", dims)
+    var[[9]]  <- PEcAn.utils::to_ncvar("NEE", dims)
+    var[[10]] <- PEcAn.utils::to_ncvar("Evap", dims)
+    var[[11]] <- PEcAn.utils::to_ncvar("AGB.pft", dims)
+    var[[12]] <- PEcAn.utils::to_ncvar("Fcomp", dims)
+    var[[13]] <- PEcAn.utils::to_ncvar("LAI", dims)
+    var[[14]] <- PEcAn.utils::to_ncvar("SoilMoist", dims)
     
     # ******************** Declare netCDF variables ********************#
     
