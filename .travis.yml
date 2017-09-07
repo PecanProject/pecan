@@ -4,7 +4,7 @@
 language: r
 
 # use containers
-dist: precise
+dist: trusty
 sudo: false
 
 cache: 
