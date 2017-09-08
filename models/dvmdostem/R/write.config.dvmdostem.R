@@ -198,7 +198,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
           print(cur_t_name)
           print(tname)
           if (tname == "SLA") {
-            dimveg_jsondata[[jd_name]]$sla = trait_df[[cur_t_name]]/1000
+            dimveg_jsondata[[jd_name]]$sla = trait_df[[cur_t_name]]
           } else if (tname == "frprod_perc_10") {
             dimveg_jsondata[[jd_name]]$`frprod[0]` = trait_df[[cur_t_name]]
           } else {
@@ -223,6 +223,8 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
           print(tname)
           if (tname == "extinction_coefficient_diffuse") {
             envcanopy_jsondata[[jd_name]]$er = trait_df[[cur_t_name]]
+          } else if (tname == "SW_albedo") {
+            envcanopy_jsondata[[jd_name]]$albvisnir = trait_df[[cur_t_name]] 
           } else {
             # pass...variable not in this file or datastructure
           }

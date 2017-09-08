@@ -57,7 +57,8 @@ model2netcdf.dvmdostem <- function(outdir) {
   
   print(paste0("Length of time dim: ", d$dim$time$len))
   ctr <- 1
-  out_yr <- 1998
+  #out_yr <- 1998
+  out_yr <- 1901
   for (yr in d$dim$time$val) {
 
 
