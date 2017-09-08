@@ -8,7 +8,7 @@
 ##' @param convert FACE files to CF files
 ##' @author Elizabeth Cowdery
 
-##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_add ncvar_put
+##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_add ncvar_put nc_open nc_create nc_close
 met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,input.id,site,format, ...) {
 
   
@@ -41,8 +41,8 @@ met2CF.FACE <- function(in.path,in.prefix,outfolder,start_date,end_date,input.id
       
       time_units <- paste0("hours/2", unlist(strsplit(nc1$var$TIMEstp$units, "timesteps"))[2])
       time <- ncdim_def(name = "time", units = time_units, vals = nc1$dim$tstep$vals)
-      lon <- ncdim_def("longitude", "degrees_east", site$lon)  # define netCDF dimensions for variables
-      lat <- ncdim_def("latitude", "degrees_north", site$lat)
+      lon <- ncdim_def("longitude", "degrees_east", as.numeric(site$lon)) # define netCDF dimensions for variables
+      lat <- ncdim_def("latitude", "degrees_north", as.numeric(site$lat))
       dim <- list(lat, lon, time)
       
       # convert wind speed and wind direction to eastward_wind and northward_wind
