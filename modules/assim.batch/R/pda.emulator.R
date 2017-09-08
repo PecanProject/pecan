@@ -2,6 +2,8 @@
 ##'
 ##' @title Paramater Data Assimilation using emulator
 ##' @param settings = a pecan settings list
+##' @param external.data = list of inputs
+##' @param external.priors = list or priors
 ##'
 ##' @return nothing. Diagnostic plots, MCMC samples, and posterior distributions
 ##'  are saved as files and db records.
@@ -9,13 +11,15 @@
 ##' @author Mike Dietze
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.id = NULL, 
+pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
+                         params.id = NULL, param.names = NULL, prior.id = NULL, 
                          chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL, 
                          ar.target = NULL, jvar = NULL, n.knot = NULL) {
   
   ## this bit of code is useful for defining the variables passed to this function if you are
   ## debugging
   if (FALSE) {
+    external.data <- external.priors <- NULL
     params.id <- param.names <- prior.id <- chain <- iter <- NULL
     n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
   }
@@ -79,14 +83,23 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                        password = settings$database$bety$password)
   
   ## Load priors
-  temp        <- pda.load.priors(settings, bety$con, run.normal)
-  prior.list  <- temp$prior
-  settings    <- temp$settings
+  if(is.null(external.priors)){
+    temp        <- pda.load.priors(settings, bety$con, run.normal)
+    prior.list  <- temp$prior
+    settings    <- temp$settings
+  }else{
+    prior.list  <- external.priors
+  }
   pname       <- lapply(prior.list, rownames)
   n.param.all <- sapply(prior.list, nrow)
   
 
-  inputs      <- load.pda.data(settings, bety)
+  if(is.null(external.data)){
+    inputs <- load.pda.data(settings, bety)
+  }else{
+    inputs <- external.data
+  }
+
   n.input     <- length(inputs)
   
 
@@ -94,7 +107,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   do.call("library", list(paste0("PEcAn.", settings$model$type)))
   my.write.config <- paste("write.config.", settings$model$type, sep = "")
   if (!exists(my.write.config)) {
-    logger.severe(paste(my.write.config, 
+    PEcAn.logger::logger.severe(paste(my.write.config, 
                         "does not exist. Please make sure that the PEcAn interface is loaded for", 
                         settings$model$type))
   }
@@ -213,11 +226,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   } # end round-if block
   
-  print("emulator names")
-  print(sapply(settings$pfts,"[[",'name'))
-  print(names(knots.list))
-  print(names(knots.params))
-  print(names(knots.probs))
   
   ## Run this block if this is normal run or a "round" extension
   if(run.normal | run.round){
@@ -361,10 +369,10 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       if(no.of.failed < no.of.allowed & (settings$assim.batch$n.knot - no.of.failed) > 1){
         SS.list[[inputi]] <- SS.list[[inputi]][!rowSums(is.na(SS.list[[inputi]])), ]
         if( no.of.failed  > 0){
-          logger.info(paste0(no.of.failed, " runs failed. Emulator for ", names(n.of.obs)[inputi], " will be built with ", settings$assim.batch$n.knot - no.of.failed, " knots."))
+          PEcAn.logger::logger.info(paste0(no.of.failed, " runs failed. Emulator for ", names(n.of.obs)[inputi], " will be built with ", settings$assim.batch$n.knot - no.of.failed, " knots."))
         } 
       } else{
-        logger.error(paste0("Too many runs failed, not enough parameter set to build emulator for ", names(n.of.obs)[inputi], "."))
+        PEcAn.logger::logger.error(paste0("Too many runs failed, not enough parameter set to build emulator for ", names(n.of.obs)[inputi], "."))
       }
       
     } # for-loop
@@ -381,7 +389,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       SS <- SS.list
     }
       
-    logger.info(paste0("Using 'mlegp' package for Gaussian Process Model fitting."))
+    PEcAn.logger::logger.info(paste0("Using 'mlegp' package for Gaussian Process Model fitting."))
     
     ## Generate emulator on SS, return a list ##
     
@@ -402,7 +410,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     
     # Stop the clock
     ptm.finish <- proc.time() - ptm.start
-    logger.info(paste0("GP fitting took ", paste0(round(ptm.finish[3])), " seconds."))
+    PEcAn.logger::logger.info(paste0("GP fitting took ", paste0(round(ptm.finish[3])), " seconds."))
     
     
     gp <- GPmodel
@@ -479,6 +487,8 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     mix <- "each"
   }
   
+  PEcAn.logger::logger.info(paste0("Starting emulator MCMC. Please wait."))
+  
   current.step <- "pre-MCMC"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
@@ -489,7 +499,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   dcores <- parallel::detectCores() - 1
   ncores <- min(max(dcores, 1), settings$assim.batch$chain)
   
-  logger.setOutputFile(file.path(settings$outdir, "pda.log"))
+  PEcAn.logger::logger.setOutputFile(file.path(settings$outdir, "pda.log"))
   
   cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(settings$outdir, "pda.log"))
   
@@ -516,7 +526,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
 
   # Stop the clock
   ptm.finish <- proc.time() - ptm.start
-  logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(settings$assim.batch$iter), " iterations."))
+  PEcAn.logger::logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(settings$assim.batch$iter), " iterations."))
   
   current.step <- "post-MCMC"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)

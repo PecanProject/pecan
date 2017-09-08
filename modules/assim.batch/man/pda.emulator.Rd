@@ -4,12 +4,17 @@
 \alias{pda.emulator}
 \title{Paramater Data Assimilation using emulator}
 \usage{
-pda.emulator(settings, params.id = NULL, param.names = NULL,
-  prior.id = NULL, chain = NULL, iter = NULL, adapt = NULL,
-  adj.min = NULL, ar.target = NULL, jvar = NULL, n.knot = NULL)
+pda.emulator(settings, external.data = NULL, external.priors = NULL,
+  params.id = NULL, param.names = NULL, prior.id = NULL, chain = NULL,
+  iter = NULL, adapt = NULL, adj.min = NULL, ar.target = NULL,
+  jvar = NULL, n.knot = NULL)
 }
 \arguments{
 \item{settings}{= a pecan settings list}
+
+\item{external.data}{= list of inputs}
+
+\item{external.priors}{= list or priors}
 }
 \value{
 nothing. Diagnostic plots, MCMC samples, and posterior distributions

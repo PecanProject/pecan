@@ -14,8 +14,8 @@ define_benchmark <- function(settings, bety){
   }
   bm.settings <- settings$benchmarking
   
-  logger.info(paste("Ensemble id:", bm.settings$ensemble_id))
-  logger.info(paste(!is.null(bm.settings$ensemble_id)))
+  PEcAn.logger::logger.info(paste("Ensemble id:", bm.settings$ensemble_id))
+  PEcAn.logger::logger.info(paste(!is.null(bm.settings$ensemble_id)))
   # Retrieve/create benchmark entries
   
   if(is.null(bm.settings$reference_run_id)){
@@ -35,7 +35,7 @@ define_benchmark <- function(settings, bety){
         BRR <- tbl(bety,"reference_runs") %>% filter(id == bm_ens$reference_run_id) %>% 
           rename(reference_run_id = id) %>% collect()
       }else if(dim(bm_ens)[1] > 1){ # There shouldn't be more than one reference run per run
-        PEcAn.utils::logger.error("There is more than one reference run in the database for this ensemble id. Review for duplicates. ")
+        PEcAn.logger::logger.error("There is more than one reference run in the database for this ensemble id. Review for duplicates. ")
         }
       # add the ref_run id, remove the ensemble_id
       bm.settings$reference_run_id <- BRR$reference_run_id

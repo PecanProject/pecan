@@ -12,13 +12,13 @@ There are two ways of using PEcAn, via the web interface and directly within R. 
 
 ### Working with the PEcAn VM
 
-1. PEcAn consists of a set of scripts and code that is compiled within a Linux operating system and saved in a “virtual machine (VM)”. Virtual machines allow for running consistent set-ups without worrying about differences between operating systems, library dependencies, compiling the code, etc. 
+1. PEcAn consists of a set of scripts and code that is compiled within a Linux operating system and saved in a “virtual machine (VM)”. Virtual machines allow for running consistent set-ups without worrying about differences between operating systems, library dependencies, compiling the code, etc.
 
-2. To run the PEcAn VM you will need to install VirtualBox, the program that runs the virtual machine [http://www.virtualbox.org](http://www.virtualbox.org). On Windows you may see a warning about Logo testing, it is okay to ignore the warning. 
+2. To run the PEcAn VM you will need to install VirtualBox, the program that runs the virtual machine [http://www.virtualbox.org](http://www.virtualbox.org). On Windows you may see a warning about Logo testing, it is okay to ignore the warning.
 
 3. After you have Virtual Box installed you’ll need to download the PEcAn virtual machine: [http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN](http://opensource.ncsa.illinois.edu/projects/artifacts.php?key=PECAN). The virtual machine is available under the "**Files**" header. Click the 32 or 64 bit ".ova" file and note that the download is ~5 GB so will take from several minutes to hours depending on the connection speed.
 
-4. To open up the virtual machine you'll first want to open up VirtualBox. 
+4. To open up the virtual machine you'll first want to open up VirtualBox.
 
 5. The first time you use the VM you'll want to use File → Import Appliance in VirtualBox in order to import the VM. This will create a virtual machine from the disk image. When asked about the Appliance Import Settings make sure you select "Reinitialize the MAC address of all network cards". This is not selected by default and can result in networking issues since multiple machines might claim to have the same network MAC Address. That said, users who have experienced network connection difficulties within the VM have sometimes had better luck after reinstalling without reinitializing.
 
@@ -46,21 +46,21 @@ Login to [Amazon Web Services (AWS)](http://console.aws.amazon.com/) and select 
     +	Type “pecan” into the search window
     +	Click on the toggle button on the left next to PEcAn1.4.6
     +	Click on the “Launch” button at the top
-2.	Choose an Instance Type 
+2.	Choose an Instance Type
     +	Select what type of machine you want to run. For this demo the default, t2.micro, will be adequate. Be aware that different machine types incur very different costs, from 1.3 cents/hour to over $5/hr https://aws.amazon.com/ec2/pricing/   
     + Select t2.micro, then click “Next: Configure Instance Details”
-3.	Configure Instance Details 
+3.	Configure Instance Details
     +	The defaults are OK. Click “Next: Add Storage”
-4.	Add Storage 
+4.	Add Storage
     +	The defaults are OK. Click “Next: Tag Instance”
-5.	Tag Instance 
+5.	Tag Instance
     +	You can name your instance if you want. Click “Next: Configure Security Group”
 6.	Configure Security Group
     +	You will need to add two new rules:
       + Click “Add Rule” then select “HTTP” from the pull down menu. This rule allows you to access the webserver on PEcAn.
       +	Click “Add Rule”, leave the pull down on “Custom TCP Rule”, and then change the Port Range from 0 to 8787. Set “Source” to Anywhere. This rule allows you to access RStudio Server on PEcAn.
-    +	Click “Review and Launch”  . You will then see this pop-up: 
-    
+    +	Click “Review and Launch”  . You will then see this pop-up:
+
 ```{r, echo=FALSE,fig.align='center'}
   knitr::include_graphics(rep("figures/pic2.jpg"))
 ```    
@@ -69,7 +69,7 @@ Select the default drive volume type and click Next
 
 7.  Review and Launch
     +  Review the settings and then click “Launch”, which will pop up a select/create Key Pair window.
-8.	Key Pair 
+8.	Key Pair
     +	Select “Create a new key pair” and give it a name. You won’t actually need this key unless you need to SSH into your PEcAn server, but AWS requires you to create one. Click on “Download Key Pair” then on “Launch Instances”. Next click on “View Instances” at the bottom of the following page.
 
 
@@ -77,7 +77,7 @@ Select the default drive volume type and click Next
   knitr::include_graphics(rep("../figures/pic3.jpg"))
 ```
 
-9.	Instances 
+9.	Instances
     +  You will see the status of your PEcAn VM, which will take a minute to boot up. Wait until the Instance State reads “running”. The most important piece of information here is the Public IP, which is the URL you will need in order to access your PEcAn instance from within your web browser (see Demo 1 below).
     +  Be aware that it often takes ~1 hr for AWS instances to become fully operational, so if you get an error when you put the Public IP in you web browser, most of the time you just need to wait a bit longer.
   Congratulations! You just started a PEcAn server in the “cloud”!
@@ -87,4 +87,29 @@ Select the default drive volume type and click Next
     +	To TERMINATE the instance (which will DELETE your PEcAn machine), select your instance and click Actions > Instance state > Terminate. Terminated instances will not incur costs. In most cases you will also want to go to the Volumes menu and delete the storage associated with your PEcAn VM.Remember, AWS is free for one year, but will automatically charge a fee in second year if account is not cancelled.
 
 
+### Working with the PEcAn Containers (Docker) [Experimental]
+
+Following are the steps to setup a Docker instance of the PEcAn. This is experimental and can have a lot of bugs, If you find any bug please report it. 
+
+1. Make sure that the machine on which have docker and docker-compose installed. For instruction on how to install docker and docker-compose please visit the [official documentations](https://docs.docker.com/engine/installation/).
+
+2. Visit the PEcAn Project on [github](https://github.com/PecanProject/pecan/tree/develop) and clone the repository to your machine.
+
+3. cd to root of the repository and run `docker-compose up -d` here -d makes it run in detached mode so it won't show the log on the terminal
+    The above command pull the respective docker images and also create the required images.
+
+    To access the web interface can visit <machine-ip>:8080
+    If using localmachine then can use localhost:8080
+
+Only SIPNET model is included as the default model in it.
+
 [pecan-wikipedia]: https://en.wikipedia.org/wiki/Pecan
+
+## PEcAN Demos
+
+Once you have installed A VM or have a version of PEcAn you'll want to run through Demo 1 and Demo 2:
+
+[Demo 01](https://pecanproject.github.io/pecan-documentation/tutorials/Demo01.html)
+[Demo 02](https://pecanproject.github.io/pecan-documentation/tutorials/Demo02.html)
+
+For Additional Tools and Vignettes - Check out

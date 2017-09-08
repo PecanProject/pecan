@@ -10,7 +10,7 @@ EDR.preprocess.ed2in(ed2in.path, output.path, config.path, datetime,
 \arguments{
 \item{ed2in.path}{Path to original ED2IN file.}
 
-\item{output.path}{Path to directory for new ED2IN file (and where analysis 
+\item{output.path}{Path to directory for new ED2IN file (and where analysis
 is performed)}
 
 \item{datetime}{POSIX datetime object defining the time at which to run EDR}
@@ -18,5 +18,5 @@ is performed)}
 \item{history.full.prefix}{Full path and prefix for history file}
 }
 \description{
-Copy ED2IN to `output.path` and modify for EDR specifications
+Copy ED2IN to \code{output.path} and modify for EDR specifications
 }

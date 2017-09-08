@@ -281,7 +281,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
     samp[g, ] <- unlist(xcurr)
     par[g, ]  <- pcurr
     
-    if(g %% 1000 == 0) PEcAn.utils::logger.info(g, "of", nmcmc, "iterations")
+    if(g %% 1000 == 0) PEcAn.logger::logger.info(g, "of", nmcmc, "iterations")
     # print(p(jmp)) jmp <- update(jmp,samp)
   }
   
