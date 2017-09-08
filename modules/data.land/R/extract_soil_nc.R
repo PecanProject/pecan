@@ -13,7 +13,7 @@
 #' outdir  <- "~/paleon/envTest"
 #' lat     <- 40
 #' lon     <- -80
-#' \donotrun{
+#' \dontrun{
 #'    PEcAn.data.land::extract_soil_nc(in.file,outdir,lat,lon)
 #' }
 extract_soil_nc <- function(in.file,outdir,lat,lon){
@@ -32,10 +32,10 @@ extract_soil_nc <- function(in.file,outdir,lat,lon){
   dlat <- abs(median(diff(soil.lat)))
   dlon <- abs(median(diff(soil.lon)))
   if(lat < (min(soil.lat)-dlat) | lat > (max(soil.lat)+dlat)){
-    PEcAn.utils::logger.error("site lat out of bounds",lat,range(soil.lat))
+    PEcAn.logger::logger.error("site lat out of bounds",lat,range(soil.lat))
   }
   if(lon < (min(soil.lon)-dlon) | lon > (max(soil.lon)+dlon)){
-    PEcAn.utils::logger.error("site lon out of bounds",lon,range(soil.lon))
+    PEcAn.logger::logger.error("site lon out of bounds",lon,range(soil.lon))
   }
   if(dims[1] == lat.dim){
     soil.row <- which.min(abs(lat-soil.lat))
@@ -44,7 +44,7 @@ extract_soil_nc <- function(in.file,outdir,lat,lon){
     soil.col <- which.min(abs(lat-soil.lat))
     soil.row <- which.min(abs(lon-soil.lon))
   } else {
-    PEcAn.utils::logger.error("could not determine lat/lon dimension order:: ",dims)
+    PEcAn.logger::logger.error("could not determine lat/lon dimension order:: ",dims)
   }
   
   ## extract raw soil data
