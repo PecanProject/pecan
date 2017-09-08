@@ -41,71 +41,103 @@ define_benchmark <- function(settings, bety){
       bm.settings$reference_run_id <- BRR$reference_run_id
       # bm.settings$ensemble_id <- NULL
       
-    }else{logger.error("Cannot find or create_BRR")}
-  } 
+    }else{logger.error("Cannot find or create benchmark reference run")}
+  }else{logger.debug("Reference run already created")}
   
   
   # Retrieve/create benchmark entries
   
   for(i in which(names(bm.settings) == "benchmark")){
     benchmark <- bm.settings[[i]]
-    
-    bm <- tbl(bety, 'benchmarks') %>% 
-      filter(input_id == benchmark$input_id) %>%
-      filter(variable_id == benchmark$variable_id) %>%
-      filter(site_id == benchmark$site_id) %>% collect()
-    
-    # Retrieve/create benchmark record
-    if(dim(bm)[1] == 0){
-      cmd <- sprintf(paste0("INSERT INTO benchmarks (input_id, variable_id, site_id, user_id)",
-                            "VALUES ( %s, %s, %s, %s) RETURNING * ;"), 
-                     benchmark$input_id, benchmark$variable_id,
-                     benchmark$site_id, settings$info$userid)
-      bm <- db.query(cmd, bety$con)
-    }else if(dim(bm)[1] >1){
-      PEcAn.utils::logger.error("Duplicate record entries in benchmarks")
+    bm.settings[[i]] <- NULL
+  
+    # Unless variables are specified in settings, create benchmark records using all variables
+    # This can be expanded to "suits" of variables that leveredge the hierarchy 
+    # (for example, all carbon pools)
+    if(!is.null(benchmark$variable_id)){
+      var_ids <- benchmark$variable_id
+    }else{
+      format <- PEcAn.DB::query.format.vars(bety, input.id = benchmark$input_id)
+      var_ids <- format$vars$variable_id
     }
     
-    
-    
-    logger.info(" ( %s, %s, %s, %s)", benchmark$input_id, benchmark$variable_id,
-            benchmark$site_id, bm.settings$info$userid)
-    
-    
-    
-    # Retrieve/create benchmarks_benchmarks_reference_runs record
-    bmBRR <- tbl(bety, 'benchmarks_benchmarks_reference_runs') %>% 
-      filter(benchmark_id == bm$id) %>%
-      filter(reference_run_id == bm.settings$reference_run_id)  %>% collect()
-    
-    if(dim(bmBRR)[1] == 0){
-      cmd <- sprintf(paste0("INSERT INTO benchmarks_benchmarks_reference_runs",
-                            " (benchmark_id, reference_run_id) VALUES (%s, %s)"),
-                     bm$id, bm.settings$reference_run_id)
-      db.query(cmd, bety$con)
-    }else if(dim(bmBRR)[1] > 1){
-      PEcAn.utils::logger.error("Duplicate record entries in benchmarks_benchmarks_reference_runs")
+    # Create benchmark records using all metrics
+    # Unless individual metrics are specified in settings
+    # This can be expanded to "suits" of metrics 
+    # (for example, all plots or all regression based metrics)
+    if(!is.null(benchmark$metrics)){
+      metric_ids <- as.numeric(unlist(benchmark$metrics))
+    }else{
+      metric_ids <- tbl(bety, 'metrics') %>% pull(id)
     }
     
-    # Retrieve/create benchmarks_metrics record
-    for(j in seq_along(benchmark$metrics)){
-      bmmetric <- tbl(bety, 'benchmarks_metrics') %>% 
-        filter(benchmark_id == bm$id) %>%
-        filter(metric_id == benchmark$metrics[[j]])  %>% collect()
+    # If site is not specified in benchmark settings (this may be unnecessary)
+    # Use ensemble site
+    if(!is.null(benchmark$site_id)){
+      site_id <- as.numeric(benchmark$site_id)
+    }else{
+      site_id <- as.numeric(strsplit(strsplit(BRR$settings, "<site>\n* *<id>")[[1]][2], "</id>")[[1]][1])
+      # This doesn't seem like a good way to read the settings string, would love suggestions for something better
+    }
+    
+    for(j in seq_along(var_ids)){
       
-      if(dim(bmmetric)[1] == 0){
-        cmd <- sprintf(paste0("INSERT INTO benchmarks_metrics (benchmark_id, metric_id) VALUES (%s, %s)"),
-                       bm$id, benchmark$metrics[[j]])
+      bm <- tbl(bety, 'benchmarks') %>% 
+        filter(input_id == benchmark$input_id) %>%
+        filter(variable_id == var_ids[j]) %>%
+        filter(site_id == site_id) %>% collect()
+      
+      # Retrieve/create benchmark record
+      if(dim(bm)[1] == 0){
+        cmd <- sprintf(paste0("INSERT INTO benchmarks (input_id, variable_id, site_id, user_id)",
+                              "VALUES ( %s, %s, %s, %s) RETURNING * ;"), 
+                       benchmark$input_id, var_ids[j],
+                       site_id, settings$info$userid)
+        bm <- db.query(cmd, bety$con)
+        logger.debug(sprintf("Benchmark %.0f for input %.0f variable %.0f created", 
+                             bm$id, bm$input_id, bm$variable_id))
+      }else if(dim(bm)[1] >1){
+        PEcAn.utils::logger.error(sprintf("DUPLICATE records exist for input %.0f variable %.0f", 
+                                          as.numeric(benchmark$input_id), var_ids[j]))
+      }else{
+        logger.debug(sprintf("Benchmark %.0f for input %.0f variable %.0f exists", 
+                             bm$id, bm$input_id, bm$variable_id))      
+        }
+      
+      # Retrieve/create benchmarks_benchmarks_reference_runs record
+      bmBRR <- tbl(bety, 'benchmarks_benchmarks_reference_runs') %>% 
+        filter(benchmark_id == bm$id) %>%
+        filter(reference_run_id == bm.settings$reference_run_id)  %>% collect()
+      
+      if(dim(bmBRR)[1] == 0){
+        cmd <- sprintf(paste0("INSERT INTO benchmarks_benchmarks_reference_runs",
+                              " (benchmark_id, reference_run_id) VALUES (%s, %s)"),
+                       bm$id, bm.settings$reference_run_id)
         db.query(cmd, bety$con)
-      }else if(dim(bmmetric)[1] > 1){
-        PEcAn.utils::logger.error("Duplicate record entries in benchmarks_metrics")
+      }else if(dim(bmBRR)[1] > 1){
+        PEcAn.utils::logger.error("Duplicate record entries in benchmarks_benchmarks_reference_runs")
       }
-    }
-    
-    benchmark$benchmark_id <- bm$id
-    bm.settings[[i]] <- benchmark
-    
-  } # End loop over benchmark
+      
+      # Retrieve/create benchmarks_metrics record
+      for(k in seq_along(metric_ids)){
+        bmmetric <- tbl(bety, 'benchmarks_metrics') %>% 
+          filter(benchmark_id == bm$id) %>%
+          filter(metric_id == metric_ids[[k]])  %>% collect()
+        
+        if(dim(bmmetric)[1] == 0){
+          cmd <- sprintf(paste0("INSERT INTO benchmarks_metrics (benchmark_id, metric_id) VALUES (%s, %s)"),
+                         bm$id, metric_ids[[k]])
+          db.query(cmd, bety$con)
+        }else if(dim(bmmetric)[1] > 1){
+          PEcAn.utils::logger.error("Duplicate record entries in benchmarks_metrics")
+        }
+      } # end loop over metric ids
+      
+      benchmark$benchmark_id <- bm$id
+      bm.settings[[length(bm.settings)+1]] <- list(benchmark = benchmark)
+      
+    } # end loop over variable ids
+  } # End loop over benchmarks in settings
   
   invisible(return(bm.settings))
 } # create.benchmark
