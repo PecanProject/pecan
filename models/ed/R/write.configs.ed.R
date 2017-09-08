@@ -65,7 +65,7 @@ convert.samples.ED <- function(trait.samples) {
     vcmax <- as.numeric(trait.samples[["Vcmax"]])
     trait.samples[["Vcmax"]] <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
     # write as Vm0 for version compatibility (Vm0 = Vcmax @ 15C)
-    trait.samples[["Vm0"]] <- arrhenius.scaling(vcmax, old.temp = 25, new.temp = 15)
+    trait.samples[["Vm0"]] <- trait.samples[["Vcmax"]]
     
     ## Convert leaf_respiration_rate_m2 to dark_resp_factor; requires Vcmax
     if ("leaf_respiration_rate_m2" %in% names(trait.samples)) {
