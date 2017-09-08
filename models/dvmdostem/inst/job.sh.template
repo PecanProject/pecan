@@ -14,8 +14,12 @@ if [ -e "@OUTDIR@/*" ]; then
   echo "Hmm already there is output?? Maybe we don't need to run the model??"
 else
   cd "@RUNDIR@"
-  @BINARY@ --pr-yrs 10 --eq-yrs 10 --sp-yrs 10 --tr-yrs 10 --sc-yrs 10 --log-level debug
-
+  # need to make this dynamic using PEcAn.xml.  Add tags to <model> to set these
+  # Basic run setup
+  #@BINARY@ --pr-yrs 10 --eq-yrs 10 --sp-yrs 10 --tr-yrs 10 --sc-yrs 10 --log-level debug
+  # Extended run
+  @BINARY@ -p 100 -e 1000 -s 250 -t 109 --sc-yrs 0
+  
   STATUS=$?
   if [ $STATUS -ne 0 ]; then
     echo "UH OH, something went wrong and dvmdostem failed!!\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
