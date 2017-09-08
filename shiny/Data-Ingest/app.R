@@ -38,8 +38,7 @@ ui <- dashboardPage(
                 
                 box(
                   # https://github.com/rstudio/shiny-examples/blob/master/009-upload/app.R
-                  fileInput(inputId = "file", label = h3("Upload Local Files"), accept = NULL, multiple = TRUE),
-                  p("One or more files")
+                  fileInput(inputId = "file", label = h3("Upload Local Files"), accept = NULL, multiple = TRUE, placeholder = "Drag and drop files here") 
                 )
               )
       ),
