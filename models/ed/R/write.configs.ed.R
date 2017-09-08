@@ -79,10 +79,6 @@ convert.samples.ED <- function(trait.samples) {
       trait.samples[["dark_respiration_factor"]] <- 
         trait.samples[["leaf_respiration_rate_m2"]] / trait.samples[["Vcmax"]]
       
-      ## Remove leaf_respiration_rate from trait samples
-      trait.samples$leaf_respiration_rate_m2 <- NULL  # !!!WHY DO WE DO THIS??!!! 
-      # IF : ED doesn't read leaf_respiration_rate_m2, but uses "dark_respiration_factor" 
-      # leaf_respiration_rate_m2 could be left in the trait samples though
       
     }  ## End dark_respiration_factor loop
   }  ## End Vcmax  
