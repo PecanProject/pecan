@@ -12,7 +12,7 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"biocro.dtd\">\
 ##------------------------------------------------------------------------------------------------#
 ##' convert parameters from PEcAn database default units to biocro defaults
 ##' 
-##' Performs model specific unit conversions on a a list of trait values,
+##' Performs model specific unit conversions on a list of trait values,
 ##' such as those provided to write.config
 ##' @name convert.samples.BIOCRO
 ##' @title Convert samples for biocro
@@ -46,18 +46,10 @@ convert.samples.BIOCRO <- function(trait.samples) {
   ## transform values with different units cuticular conductance - BETY default is
   ## umol; BioCro uses mol
   if ("b0" %in% trait.names) {
-    trait.samples <- transform(trait.samples, b0 = udunits2::ud.convert(b0, "umol", "mol"))
+    trait.samples$b0 = udunits2::ud.convert(trait.samples$b0, "umol", "mol")
   }
   if ("Sp" %in% trait.names) {
-    trait.samples <- transform(trait.samples, Sp = udunits2::ud.convert(Sp, "kg/m2", "g/cm2"))
-  }
-  if ("vmax" %in% trait.names) {
-    ## HAAAACK
-    trait.samples <- transform(trait.samples, vmax = vmax)
-  }
-  if ("Rd" %in% trait.names) {
-    ## HAAAACK
-    trait.samples <- transform(trait.samples, Rd = Rd)
+    trait.samples$Sp = udunits2::ud.convert(trait.samples$Sp, "kg/m2", "g/cm2")
   }
   
   # kd = k*omega from $e^{-kL\omega}$, if (all(c('kd', 'clumping') %in%
@@ -160,7 +152,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
                                strip.white = TRUE)))) {
     if (sum(unused.traits) > 0) {
       PEcAn.logger::logger.warn("the following traits parameters are not added to config file:", 
-                  vecpaste(names(unused.traits)[unused.traits == TRUE]))
+                  PEcAn.utils::vecpaste(names(unused.traits)[unused.traits == TRUE]))
     }
   }
   

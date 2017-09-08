@@ -7,8 +7,6 @@
 \method{listToXml}{default}(item, tag)
 }
 \arguments{
-\item{item}{}
-
 \item{tag}{xml tag}
 }
 \value{

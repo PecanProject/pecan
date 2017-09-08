@@ -7,8 +7,6 @@
 zero.bounded.density(x, bw = "SJ", n = 1001)
 }
 \arguments{
-\item{x}{}
-
 \item{bw}{The smoothing bandwidth to be used. See 'bw.nrd'}
 }
 \value{
