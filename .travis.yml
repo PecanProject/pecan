@@ -9,7 +9,6 @@ sudo: false
 
 cache: 
   - directories:
-    - $HOME/R/Library
     - .install
     - .check
     - .test
