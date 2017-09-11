@@ -40,6 +40,10 @@
 ##'                    prevents needing to load the entire dataset.  If NULL, all available years 
 ##'                    will be loaded. If not null, should be a vector of numbers (so you can skip
 ##'                    problematic years)
+##' @param yrs.source - (optional) specify a specific years to be loaded for the source data;
+##'                     prevents needing to load the entire dataset.  If NULL, all available years 
+##'                     will be loaded. If not null, should be a vector of numbers (so you can skip
+##'                     problematic years)
 ##' @param n.ens  - number of ensemble members to generate and save
 ##' @param pair.mems - logical stating whether ensemble members should be paired in 
 ##'                    the case where ensembles are being read in in both the training and source data
@@ -67,7 +71,7 @@
 #----------------------------------------------------------------------
 # Begin Function
 #----------------------------------------------------------------------
-align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.mems = FALSE, seed=Sys.Date(), verbose = FALSE) {
+align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, n.ens=NULL, pair.mems = FALSE, seed=Sys.Date(), verbose = FALSE) {
   # Load required libraries
   library(ncdf4)
   library(lubridate)
@@ -110,7 +114,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
       
       # Create a data frame with all the important time info
       # center the hour step
-      df.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/step.day), Hour=rep(stamps.hr, ntime))
+      df.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/step.day), Hour=rep(stamps.hr, length.out=ntime))
       df.time$Date <- strptime(paste(df.time$Year, df.time$DOY, df.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
       met.out$dat.train[["time"]] <- rbind(met.out$dat.train$time, df.time)
       
@@ -181,7 +185,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
         # center the hour step
         # ** Only do this with the first ensemble member so we're not being redundant
         if(j==1){
-          df.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/step.day), Hour=rep(stamps.hr, ntime))
+          df.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/step.day), Hour=rep(stamps.hr, length.out=ntime))
           df.time$Date <- strptime(paste(df.time$Year, df.time$DOY, df.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
           met.out$dat.train[["time"]] <- rbind(met.out$dat.train$time, df.time)
         }
@@ -223,9 +227,18 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
     yrs.file <- matrix(unlist(yrs.file), ncol=length(yrs.file[[1]]), byrow=T)
     yrs.file <- as.numeric(yrs.file[,ncol(yrs.file)-1]) # Assumes year is always last thing before the file extension
     
+    # Subsetting to just the years we're interested in
+    if(!is.null(yrs.source)){
+      files.source <- files.source[which(yrs.file %in% yrs.source)]
+      yrs.file <- yrs.file[which(yrs.file %in% yrs.source)]
+    }
+    
+    
     # Getting the day & hour timesteps from the training data
-    day.train <- round(365/length(unique(met.out$dat.train$time$DOY)))
+    yrs.train <- length(unique(met.out$dat.train$time$Year))
     hr.train  <- 24/length(unique(met.out$dat.train$time$Hour))
+    day.train <- 1/length(unique(met.out$dat.train$time$Hour))
+    # day.train <- 1/(nrow(met.out$dat.train$time)/yrs.train/365)
   
     # Loop through the .nc files putting everything into a list
     print("Processing Source Data")
@@ -247,7 +260,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
       # -----
       # Making what the unique time stamps should be to match the training data
       stamps.hr <- seq(hr.train/2, by=hr.train, length.out=1/day.train) 
-      stamps.src <- stamps.hr
+      stamps.src <- seq(step.hr/2, by=step.hr, length.out=1/step.day) 
      
       if(step.hr < hr.train){  # Finer hour increment --> set it up to aggregate
         align = "aggregate"
@@ -261,19 +274,19 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
       
       # Create a data frame with all the important time info
       # center the hour step
-      df.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/day.train), Hour=rep(stamps.hr, length.out=nday/day.train))
+      df.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/day.train), Hour=rep(stamps.hr, length.out=nday/(day.train)))
       df.time$Date <- strptime(paste(df.time$Year, df.time$DOY, df.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
       met.out$dat.source[["time"]] <- rbind(met.out$dat.source$time, df.time)
   
       src.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/step.day), Hour=rep(stamps.src, length.out=ntime))
-      src.time$Date <- strptime(paste(df.time$Year, df.time$DOY, df.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
+      src.time$Date <- strptime(paste(src.time$Year, src.time$DOY, src.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
       
       # Extract the met info, making matrices with the appropriate number of ensemble members
       for(v in names(ncT$var)){
         dat.tem <- ncvar_get(ncT, v)
         
         if(align=="repeat"){ # if we need to coerce the time step to be repeated to match temporal resolution, do it here
-          dat.tem <- rep(dat.temp, each=stamps.hr)
+          dat.tem <- rep(dat.tem, each=length(stamps.hr))
         }
         df.tem <- matrix(rep(dat.tem, n.src), ncol=n.src, byrow=F)
         
@@ -336,6 +349,12 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
       yrs.file <- matrix(unlist(yrs.file), ncol=length(yrs.file[[1]]), byrow=T)
       yrs.file <- as.numeric(yrs.file[,ncol(yrs.file)-1]) # Assumes year is always last thing before the file extension
       
+      # Subsetting to just the years we're interested in
+      if(!is.null(yrs.source)){
+        files.source <- files.source[which(yrs.file %in% yrs.source)]
+        yrs.file <- yrs.file[which(yrs.file %in% yrs.source)]
+      }
+      
       # Getting the day & hour timesteps from the training data
       day.train <- round(365/length(unique(met.out$dat.train$time$DOY)))
       hr.train  <- 24/length(unique(met.out$dat.train$time$Hour))
@@ -359,7 +378,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
         # -----
         # Making what the unique time stamps should be to match the training data
         stamps.hr <- seq(hr.train/2, by=hr.train, length.out=1/day.train) 
-        stamps.src <- stamps.hr
+        stamps.src <- seq(step.hr/2, by=step.hr, length.out=1/step.day) 
         
         if(step.hr < hr.train){  # Finer hour increment --> set it up to aggregate
           align = "aggregate"
@@ -371,11 +390,12 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
         }
         # -----
         
+        
         # Create a data frame with all the important time info
         # center the hour step
-        df.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/day.train), Hour=rep(stamps.hr, length.out=nday/day.train))
+        df.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/day.train), Hour=rep(stamps.hr, length.out=nday/(day.train)))
         df.time$Date <- strptime(paste(df.time$Year, df.time$DOY, df.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
-        
+
         # Create a data frame with all the important time info
         # center the hour step
         # ** Only do this with the first ensemble member so we're not being redundant
@@ -384,14 +404,14 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
         }
         
         src.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/step.day), Hour=rep(stamps.src, length.out=ntime))
-        src.time$Date <- strptime(paste(df.time$Year, df.time$DOY, df.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
+        src.time$Date <- strptime(paste(src.time$Year, src.time$DOY, src.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
         
         # Extract the met info, making matrices with the appropriate number of ensemble members
         for(v in names(ncT$var)){
           dat.tem <- ncvar_get(ncT, v)
           
           if(align=="repeat"){ # if we need to coerce the time step to be repeated to match temporal resolution, do it here
-            dat.tem <- rep(dat.temp, each=stamps.hr)
+            dat.tem <- rep(dat.tem, each=stamps.hr)
           }
           df.tem <- matrix(rep(dat.tem, n.src), ncol=1, byrow=F)
           
