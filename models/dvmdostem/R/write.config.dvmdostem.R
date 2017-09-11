@@ -34,7 +34,9 @@ convert.samples.dvmdostem <- function(trait_values) {
   # that make the loops in write.config.dvmdostem easier to 
   # understand/deal with
   trait_names <- colnames(trait_values)
-
+  # for debugging
+  PEcAn.logger::logger.info(trait_names)
+  
   # Not really sure how this should work yet? 
   # Example from FATES model
   # trait.names[trait.names == "leaf_respiration_rate_m2"]   <- "atref.rd"
@@ -43,9 +45,15 @@ convert.samples.dvmdostem <- function(trait_values) {
   colnames(trait_values) <- trait_names
 
   ### Conversions (for example, convert SLA to m2/g?)
+  ### TODO: !! Need to remove PFT name from here and just look for variable names !!
+  ###       !! Should only have train name here, such as SLA or cuticular_conductance
   if ("CMT04.Salix.SLA" %in% names(trait_values)) {
-    # Convert from ?? to ??
+    # Convert from m2 / kg to m2 / g
     trait_values[["CMT04.Salix.SLA"]] <- trait_values[["CMT04.Salix.SLA"]] / 1000.0
+  }
+  if ("CMT04.Salix.cuticular_cond" %in% names(trait_values)) {
+    # Convert from umol H2O m-2 s-1 to ??? (need to find dvm-dos-tem-units)
+    trait_values[["CMT04.Salix.cuticular_cond"]] <- trait_values[["CMT04.Salix.cuticular_cond"]] / 10^9
   }
 
   ### Return modified version
@@ -116,6 +124,11 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # that we are hoping to "inject" into dvmdostem. Convert to a dataframe
   # for easier indexing...
   trait_df <- convert.samples.dvmdostem(trait.values)
+  ## !! TODO: Should run this as below so that only trait names remain !!
+  ## !! But if we do that now, the parsing below wont work.  Need to
+  ## !! separate parsing of PFT name for json and trait conversion for BETYdb
+  #trait_df <- convert.samples.dvmdostem(trait.samples = trait.values[[settings$pfts$pft$name]])
+  
   # Now we have to read the approporate values out of the trait_df
   # and get those values written into the parameter file(s) that dvmdostem will
   # need when running. Because the dvmdostem parameters have a sort of
@@ -133,6 +146,9 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # should have a name like this:
   #   CMT04.Salix.extinction_coefficient_diffuse
   # So we can parse the first name in the dataframe to determine the CMT number.
+  # !! Actually, it should just be CMT04.Salix OR extinction_coefficient_diffuse
+  # !! Can't have PFT name linked with trait otherwise that would require a lot of 
+  # !! hard coding in this function. 
   cmtnum <- strsplit(unlist(strsplit(names(trait_df)[1], '.', fixed=TRUE))[1], "CMT")
   cmtnum <- unlist(cmtnum)[2]
   cmtnum <- as.numeric(cmtnum)
@@ -225,8 +241,13 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
             envcanopy_jsondata[[jd_name]]$er = trait_df[[cur_t_name]]
           } else if (tname == "SW_albedo") {
             envcanopy_jsondata[[jd_name]]$albvisnir = trait_df[[cur_t_name]] 
+          } else if (tname == "cuticular_cond") {
+            envcanopy_jsondata[[jd_name]]$gl_c = trait_df[[cur_t_name]]
+          } else if (tname == "gcmax") {
+            envcanopy_jsondata[[jd_name]]$glmax = trait_df[[cur_t_name]]
           } else {
             # pass...variable not in this file or datastructure
+            PEcAn.logger::logger.info("pass...variable not in this file or datastructure")
           }
         }
       }
