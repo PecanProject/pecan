@@ -35,6 +35,7 @@
 ##' @param seed - seed for randomization to allow for reproducible results                    
 ##' @param overwrite
 ##' @param verbose
+##' @param print.progress - print progress bar? (gets passed through)
 ##' @export
 # -----------------------------------
 #----------------------------------------------------------------------
@@ -43,8 +44,8 @@
 
 
 gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filter, in.prefix,  
-    n.beta, day.window, resids = FALSE, parallel = FALSE, n.cores = NULL, overwrite = TRUE, 
-    verbose = FALSE) {
+    n.beta, day.window, seed=Sys.time(), resids = FALSE, parallel = FALSE, n.cores = NULL, overwrite = TRUE, 
+    verbose = FALSE, print.progress=FALSE) {
   
     # pb.index <- 1
     # pb <- txtProgressBar(min = 1, max = 8, style = 3)
@@ -55,6 +56,9 @@ gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filt
                                         "air_temperature_min", "surface_downwelling_shortwave_flux_in_air", 
                                         "surface_downwelling_longwave_flux_in_air", "air_pressure", "specific_humidity", 
                                         "eastward_wind", "northward_wind", "wind_speed"))
+    
+    
+    
     # Getting a list of all the available files and then subsetting to just the ones we 
     # actually want to use
     files.train <- dir(path.train)
@@ -67,53 +71,28 @@ gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filt
       yrs.file <- yrs.file[which(yrs.file %in% yrs.train)]
     }
     
+    met.out <- align.met(train.path=path.train, source.path=path.train, 
+                         yrs.train=yrs.file, yrs.source=yrs.file[1], 
+                         n.ens=1, seed=seed, pair.mems = FALSE)
     
-    dat.train <- data.frame()
-    for(i in 1:length(files.train)){
-      yr.now <- yrs.file[i]
-      
-      ncT <- ncdf4::nc_open(file.path(path.train, files.train[i]))
-      
-      # Set up the time data frame to help index
-      nday <- ifelse(lubridate::leap_year(yr.now), 366, 365)
-      ntime <- length(ncT$dim$time$vals)
-      step.day <- nday/ntime
-      step.hr  <- step.day*24
-      stamps.hr <- seq(step.hr/2, by=step.hr, length.out=1/step.day) # Time stamps centered on period
-      
-      # Create a data frame with all the important time info
-      # center the hour step
-      df.tmp <- data.frame(year=yr.now, doy=rep(1:nday, each=1/step.day), hour=rep(stamps.hr, nday))
-      df.tmp$date <- strptime(paste(df.tmp$year, df.tmp$doy, df.tmp$hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
-      
-      # Extract the met info, making matrices with the appropriate number of ensemble members
-      for(v in names(ncT$var)){
-        df.tmp[,v] <- ncdf4::ncvar_get(ncT, v)
-      }
-      
-      ncdf4::nc_close(ncT)
-      
-      dat.train <- rbind(dat.train, df.tmp)
-
-      # setTxtProgressBar(pb, i)
-    } # End looping through training data files
+    dat.train <- data.frame(year = met.out$dat.train$time$Year, 
+                            doy = met.out$dat.train$time$DOY, 
+                            date = met.out$dat.train$time$Date,
+                            hour = met.out$dat.train$time$Hour,
+                            air_temperature = met.out$dat.train$air_temperature, 
+                            precipitation_flux = met.out$dat.train$precipitation_flux, 
+                            surface_downwelling_shortwave_flux_in_air = met.out$dat.train$surface_downwelling_shortwave_flux_in_air,
+                            surface_downwelling_longwave_flux_in_air = met.out$dat.train$surface_downwelling_longwave_flux_in_air,
+                            air_pressure = met.out$dat.train$air_pressure, 
+                            specific_humidity = met.out$dat.train$specific_humidity
+                            )
     
-    if(!"wind_speed" %in% names(dat.train)){
-      dat.train$wind_speed <- sqrt(dat.train$eastward_wind^2 + dat.train$northward_wind^2)
+    if(!"wind_speed" %in% names(met.out$dat.train)){
+      dat.train$wind_speed <- sqrt(met.out$dat.train$eastward_wind^2 + met.out$dat.train$northward_wind^2)
+    } else {
+      dat.train$wind_speed <- met.out$dat.train$wind_speed
     }
-
-    # # adding a temporary date variable for the model
-    # if (dim$time$units == "sec"){
-    #   sub_string<- substrRight(dat.train_file, 7)
-    #   start_year <- substr(sub_string, 1, 4)
-    #   dat.train$date <- as.Date((dim$time$vals/(dim$time$vals[2] - dim$time$vals[1])), 
-    #                             tz="GMT", origin = paste0(start_year - 1, "-12-31"))
-    # } else {
-    #   start_year <- substr(dim$time$units,start = 12,stop = 15)
-    #   dat.train$date = as.POSIXct(udunits2::ud.convert((dim$time$vals - ((dim$time$vals[2] - dim$time$vals[1])/2)),"days", "seconds"),
-    #                               tz="GMT", origin = paste0(start_year, "-01-01 00:00:00"))
-    # }
-
+    
     # these non-standard variables help us organize our modeling approach
     # Reference everything off of the earliest date; avoiding 0s because that makes life difficult
     dat.train$sim.hr <- trunc(as.numeric(difftime(dat.train$date, min(dat.train$date), tz = "GMT", units = "hour")))+1
@@ -150,12 +129,11 @@ gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filt
         "lag.specific_humidity", "lag.wind_speed")
     
     # Specifying what hour we want to lag
-    # Note: For forward filtering, we want to associate today with tomorrow (+1 day) using the last observation of the day
-    #       For backwards filtering, we want to associate today with yesterday (-1 day) using the first obs of the day
+    # Note: For forward filtering, we want to associate today with tomorrow (+1 day) using the last observation of today
+    #       For backwards filtering, we want to associate today with yesterday (-1 day) using the first obs of today
     met.lag <- ifelse(direction.filter=="backwards", -1, +1)
     lag.time <- ifelse(direction.filter=="backwards", min(dat.train$hour), max(dat.train$hour))
     
-    # Pull out just the time we're interested in
     lag.day <- dat.train[dat.train$hour == lag.time, c("year", "doy", "sim.day", vars.hour)]
     names(lag.day)[4:ncol(lag.day)] <- vars.lag
     
@@ -190,6 +168,9 @@ gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filt
     
     dat.train <- merge(dat.train, next.day[, c("sim.day", vars.next)], all.x = T)
     
+    # Order the data just to make life easier
+    dat.train <- dat.train[order(dat.train$date),]
+    
     # ----- 1.4 calculate air_temperature_min & air_temperature_max as
     # departure from mean; order data ---------- Lookign at max & min as
     # departure from mean
@@ -208,7 +189,7 @@ gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filt
 
     temporal.downscale.functions(dat.train = dat.train, n.beta = n.beta, day.window = day.window, 
                                  resids = resids, n.cores = n.cores, 
-                                 seed = seed, outfolder = outfolder) 
+                                 seed = seed, outfolder = outfolder, print.progress=print.progress) 
 }
 
 # Helper function

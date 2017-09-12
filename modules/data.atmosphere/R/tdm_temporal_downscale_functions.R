@@ -28,18 +28,20 @@
 ##'                     statistics from
 ##' @param seed - allows this to be reproducible
 ##' @param outfoulder = where the output should be stored
+##' @param print.progress - print progress of model generation?
 ##' @export
 # -----------------------------------
 #----------------------------------------------------------------------
 # Begin Function
 #----------------------------------------------------------------------
 temporal.downscale.functions <- function(dat.train, n.beta, day.window, 
-    resids = FALSE, parallel = FALSE, n.cores = NULL, seed = format(Sys.time(), "%m%d"), outfolder, ...) {
+    resids = FALSE, parallel = FALSE, n.cores = NULL, seed = format(Sys.time(), "%m%d"), outfolder, print.progress=FALSE, ...) {
     
-    pb.index <- 1
-    pb <- txtProgressBar(min = 1, max = 8, style = 3)
-    setTxtProgressBar(pb, pb.index)
-    
+    if(print.progress==TRUE){
+      pb.index <- 1
+      pb <- txtProgressBar(min = 1, max = 8, style = 3)
+      setTxtProgressBar(pb, pb.index)
+    }
     # Declare the variables of interest that will be called in the
     # overarching loop
     vars.list <- c("surface_downwelling_shortwave_flux_in_air", "air_temperature", 
@@ -62,11 +64,10 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
         
         # Define the path
         path.out <- file.path(outfolder, v)
+        if (!dir.exists(path.out)) dir.create(path.out, recursive = T)
         
         # Set our seed
         set.seed(seed)
-        if (!dir.exists(path.out)) 
-            dir.create(path.out, recursive = T)
 
         # Create empty lists
         dat.list <- list()
@@ -164,7 +165,7 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
               if (v == "surface_downwelling_shortwave_flux_in_air") {
                 mod.out <- model.train(dat.subset = dat.list[[i]], n.beta = n.beta, v = v, 
                                        threshold = quantile(dat.train[dat.train$surface_downwelling_shortwave_flux_in_air > 0, "surface_downwelling_shortwave_flux_in_air"], 0.05), 
-                                       n.beta, resids = resids)
+                                       resids = resids)
               } else {
                 mod.out <- model.train(dat.subset = dat.list[[i]], n.beta = n.beta, v = v,
                   resids = resids)
@@ -220,9 +221,11 @@ temporal.downscale.functions <- function(dat.train, n.beta, day.window,
 
             } # End day loop
         } # End if else case
-
-        pb.index <- pb.index + 1
-        setTxtProgressBar(pb, pb.index)
+        
+        if(print.progress==TRUE){
+          pb.index <- pb.index + 1
+          setTxtProgressBar(pb, pb.index)
+        }
     }  # end of the variable for loop
     
 }  # end of the function

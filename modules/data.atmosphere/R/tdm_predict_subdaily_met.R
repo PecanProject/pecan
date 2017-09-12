@@ -54,7 +54,7 @@
 #----------------------------------------------------------------------
 
 predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, direction.filter, lm.models.base,
-                                 yrs.predict, ens.labs = 1:3, resids = FALSE, 
+                                 yrs.predict=NULL, ens.labs = 1:3, resids = FALSE, 
                                  parallel = FALSE, cores.max = 12, n.cores = NULL,
                                  overwrite = FALSE, verbose = FALSE, seed=format(Sys.time(), "%m%d"), print.progress=FALSE, ...) {
   
@@ -82,7 +82,7 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
   yrs.tdm <- as.numeric(yrs.tdm[,ncol(yrs.tdm)-1]) # Assumes year is always last thing before the file extension
   
   if(!is.null(yrs.predict)){
-    yrs.tdm <- files.tdm[which(yrs.tdm %in% yrs.predict)]
+    files.tdm <- files.tdm[which(yrs.tdm %in% yrs.predict)]
     yrs.tdm <- yrs.tdm[which(yrs.tdm %in% yrs.predict)]
   }
   
@@ -145,9 +145,11 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
                           wind_speed.day = met.out$dat.source$wind_speed)
     
     # Create wind speed variable if it doesn't exist
-    # if (all(is.na(dat.train$wind_speed) == TRUE)) {
-    #   dat.train$wind_speed <- sqrt(dat.train$eastward_wind^2 + dat.train$northward_wind^2)
-    # }
+    if(!"wind_speed" %in% names(met.out$dat.source)){
+      dat.ens$wind_speed <- sqrt(met.out$dat.source$eastward_wind^2 + met.out$dat.source$northward_wind^2)
+    } else {
+      dat.ens$wind_speed <- met.out$dat.source$wind_speed
+    }
     
     # Set up our simulation time variables; it *should* be okay that this resets each year since it's really only doy that matters
     dat.ens$sim.hr  <- trunc(as.numeric(difftime(dat.ens$date, min(dat.ens$date), tz = "GMT", units = "hour")))+1
@@ -161,8 +163,8 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
     # Figure out whether we want to use the first or last value to initalize our lags
     # Note: Data should be ordered Jan 1 -> Dec 31; If we're moving backwards, we start with 
     #       Dec 31 and we'll want to pull Jan 1.  If we're going forward, we want the opposite
-    lag.use <- ifelse(direction.filter=="backwards", 1, nrow(met.out$dat.source$time))
     if(y == 1){
+      lag.use <- ifelse(direction.filter=="backwards", 1, nrow(met.out$dat.source$time))
       lags.init <- list()
       
       lags.init[["air_temperature"]] <- data.frame(array(mean(met.out$dat.source$air_temperature_maximum[lag.use], met.out$dat.source$air_temperature_minimum[lag.use]), dim=c(1, n.ens)))
@@ -233,6 +235,8 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
     
     # Merging the next into our ensemble data
     dat.ens <- merge(dat.ens, dat.nxt, all.x=T)
+    
+    dat.ens <- dat.ens[order(dat.ens$date),]
     # ------------------------------
     
 
@@ -254,7 +258,8 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
     # Set up the lags for the next year
     # -----------------------------------
     for(v in names(ens.sims)) {
-      lags.init[[v]] <- data.frame(ens.sims[[v]][length(ens.sims[[v]]),])
+      lag.use <- ifelse(direction.filter=="backwards", 1, nrow(ens.sims[[v]]))
+      lags.init[[v]] <- data.frame(ens.sims[[v]][lag.use,])
     }
     # -----------------------------------
     
