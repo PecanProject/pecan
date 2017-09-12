@@ -39,8 +39,10 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
   # Setting our our time indexes
   if(direction.filter=="backwards"){
     days.sim <- max(dat.mod$sim.day):min(dat.mod$sim.day)
+    lag.time <- min(dat.mod$hour)
   } else {
     days.sim <- min(dat.mod$sim.day):max(dat.mod$sim.day)
+    lag.time <- max(dat.mod$hour)
   }
   
   # Declare the variables of interest that will be called in the
@@ -116,12 +118,6 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
     # Looping through time
     # --------------------------------
     # Setting our our time indexes
-    if(direction.filter=="backwards"){
-      days.sim <- max(dat.mod$sim.day):min(dat.mod$sim.day)
-    } else {
-      days.sim <- min(dat.mod$sim.day):max(dat.mod$sim.day)
-    }
-    
     for (i in 1:length(days.sim)) {
       day.now <- unique(dat.mod[dat.mod$sim.day == days.sim[i], "doy"])
       rows.now <- which(dat.mod$sim.day == days.sim[i])
@@ -138,6 +134,18 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         
         rows.mod <- which(dat.mod$sim.day == days.sim[i] & dat.mod$hour %in% hrs.day)
         dat.temp <- dat.mod[rows.mod, dat.info]
+        
+        # dat.temp <- merge(dat.temp, data.frame(ens=paste0("X", 1:n.ens)))
+        if (i == 1) {
+          sim.lag <- stack(lags.init[[v]])
+          names(sim.lag) <- c(paste0("lag.", v), "ens")
+          
+        } else {
+          sim.lag <- stack(data.frame(array(0,dim = c(1, ncol(dat.sim[[v]])))))
+          names(sim.lag) <- c(paste0("lag.", v), "ens")
+        }
+        dat.temp <- merge(dat.temp, sim.lag, all.x = TRUE)
+        
       } else if (v == "air_temperature") {
         dat.temp <- dat.mod[rows.now, dat.info]
         
@@ -149,8 +157,8 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
           sim.lag$lag.air_temperature_min <- stack(lags.init$air_temperature_min)[,1]
           sim.lag$lag.air_temperature_max <- stack(lags.init$air_temperature_max)[,1]
         } else {
-          sim.lag <- stack(data.frame(array(dat.sim[["air_temperature"]][dat.mod$sim.day == (days.sim[i - 1]) & 
-                                                                           dat.mod$hour == max(unique(dat.mod$hour)), ], 
+          sim.lag <- stack(data.frame(array(dat.sim[["air_temperature"]][dat.mod$sim.day == (days.sim[i-1]) & 
+                                                                           dat.mod$hour == lag.time, ], 
                                             dim = c(1, ncol(dat.sim$air_temperature)))))
           names(sim.lag) <- c("lag.air_temperature", "ens")
           sim.lag$lag.air_temperature_min <- stack(apply(dat.sim[["air_temperature"]][dat.mod$sim.day == days.sim[i-1], ], 2, min))[, 1]
@@ -173,7 +181,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
           
         } else {
           sim.lag <- stack(data.frame(array(dat.sim[[v]][dat.mod$sim.day == days.sim[i-1] & 
-                                                           dat.mod$hour == max(unique(dat.mod$hour)), ], 
+                                                           dat.mod$hour == lag.time, ], 
                                             dim = c(1, ncol(dat.sim[[v]])))))
           names(sim.lag) <- c(paste0("lag.", v), "ens")
         }
@@ -189,7 +197,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
           
         } else {
           sim.lag <- stack(data.frame(array(dat.sim[[v]][dat.mod$sim.day == days.sim[i-1] & 
-                                                           dat.mod$hour == max(unique(dat.mod$hour)), ], 
+                                                           dat.mod$hour == lag.time, ], 
                                             dim = c(1, ncol(dat.sim[[v]])))))
           names(sim.lag) <- c(paste0("lag.", v), "ens")
         }
@@ -287,7 +295,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         # Randomly pick which values to save & propogate
         cols.prop <- as.integer(cols.list[i,])
         for (j in 1:ncol(dat.sim[[v]])) {
-          dat.sim[[v]][rows.mod, j] <- dat.pred[, cols.prop[j]]
+          dat.sim[[v]][rows.mod, j] <- dat.pred[dat.temp$ens == paste0("X", j), cols.prop[j]]
         }
         
         dat.sim[[v]][rows.now[!rows.now %in% rows.mod], ] <- 0
@@ -309,8 +317,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
         cols.prop <- as.integer(cols.list[i,])
         
         for (j in 1:ncol(dat.sim[[v]])) {
-          dat.sim[[v]][rows.now, j] <- dat.pred[dat.temp$ens == 
-                                                  paste0("X", j), cols.prop[j]]
+          dat.sim[[v]][rows.now, j] <- dat.pred[dat.temp$ens == paste0("X", j), cols.prop[j]]
         }
       }
       rm(mod.save)  # Clear out the model to save memory
