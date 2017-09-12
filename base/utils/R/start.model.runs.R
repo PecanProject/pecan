@@ -122,7 +122,11 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error=TRUE) {
           PEcAn.logger::logger.debug(settings$host,format(run, scientific = FALSE))
 
         }
-        PEcAn.logger::logger.debug("JOB.SH submit status:",out)
+        PEcAn.logger::logger.debug("JOB.SH submit status:", out)
+        qsub_worked <- grepl(settings$host$qsub.jobid, out)
+        if (!qsub_worked) {
+          PEcAn.logger::logger.severe("Job ID not assigned by qsub. The following qsub output may be relevant:\n", out)
+        }
         jobids[run] <- sub(settings$host$qsub.jobid, "\\1", out)
         
         # if qsub option is not invoked.  just start model runs in serial.
