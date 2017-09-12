@@ -29,16 +29,32 @@ subdaily_pred <- function(newdata, model.predict, Rbeta, resid.err = FALSE, mode
                           Rbeta.resid = NULL, n.ens) {
 
   err.resid <- 0  # dummy residual error term; if we want to add residual error, we're modeling it by hour
+
+  df.hr <- data.frame(hour = model.predict$xlev[[1]])
+  df.hr[,"as.ordered(hour)"] <- as.ordered(df.hr$hour)
+ 
+  piv <- as.numeric(which(!is.na(model.predict$coef)))
   
-  mod.terms <- terms(model.predict)
-  mod.coef <- coef(model.predict)
-  mod.cov <- vcov(model.predict)
-  mod.resid <- resid(model.predict)
-  piv <- as.numeric(which(!is.na(mod.coef)))
+  model.predict$factors[model.predict$factors=="as.ordered(hour)"] <- "hour"
+  m  <- newdata[,model.predict$factors]
+  m[,"as.ordered(hour)"] <- as.ordered(m$hour)
+  m$hour <- as.numeric(m$hour)
   
-  m <- model.frame(mod.terms, newdata, xlev = model.predict$xlevels)
-  Xp <- model.matrix(mod.terms, m, contrasts.arg = model.predict$contrasts)
+  # Ordering the newdata in the same way as m (by hour)
+  newdata <- newdata[order(newdata$hour),]
   
+  # Fixing the ordering so that it comes back looking like newdata
+  m$ens <- newdata$ens
+  # dat.sim <- dat.sim[order(dat.sim$ens, dat.sim$hour),]
+  newdata <- newdata[order(newdata$ens, newdata$hour),]
+
+  # Adding hours to make sure prediction works okay
+  if(length(df.hr$hour)!= length(m$hour)) m <- merge(m, df.hr, all=T)
+  
+  
+  
+  Xp <-  model.matrix(eval(model.predict$formula), m, contrasts.arg=model.predict$contr)
+
   if (resid.err == TRUE) {
     newdata$resid <- 99999
 	  resid.piv <- as.numeric(which(!is.na(model.resid$coef)))
@@ -52,6 +68,7 @@ subdaily_pred <- function(newdata, model.predict, Rbeta, resid.err = FALSE, mode
   } # End residual error
   
   dat.sim <- Xp[, piv] %*% t(Rbeta) + err.resid
+  
   
   return(dat.sim)
   
