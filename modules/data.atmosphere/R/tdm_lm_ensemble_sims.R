@@ -23,6 +23,7 @@
 ##' @param dat.train - the training data used to fit the model; needed for night/day in 
 ##'                    surface_downwelling_shortwave_flux_in_air
 ##' @param seed - (optional) set the seed manually to allow reproducible results
+##' @param print.progress - if TRUE will print progress bar
 ##' @export
 # -----------------------------------
 #----------------------------------------------------------------------
@@ -30,7 +31,7 @@
 #----------------------------------------------------------------------
 
 lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.list = NULL, 
-                                      lags.init = NULL, dat.train, seed=Sys.time()) {
+                                      lags.init = NULL, dat.train, seed=Sys.time(), print.progress=FALSE) {
   
   # Set our random seed
   set.seed(seed)
@@ -58,10 +59,12 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
                 "next.surface_downwelling_longwave_flux_in_air", "next.air_pressure", 
                 "next.specific_humidity", "next.wind_speed")
   
-  # Set progress bar
-  pb.index <- 1
-  pb <- txtProgressBar(min = 1, max = length(vars.list)*length(days.sim), style = 3)
-  setTxtProgressBar(pb, pb.index)
+  # # Set progress bar
+  if(print.progress==TRUE){
+    pb.index <- 1
+    pb <- txtProgressBar(min = 1, max = length(vars.list)*length(days.sim), style = 3)
+    setTxtProgressBar(pb, pb.index)
+  }
   
   # Figure out if we need to extract the approrpiate
   if (is.null(lags.list) & is.null(lags.init)) {
@@ -312,8 +315,10 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
       }
       rm(mod.save)  # Clear out the model to save memory
 
-      pb.index <- pb.index + 1
-      setTxtProgressBar(pb, pb.index)
+      if(print.progress==TRUE){
+        setTxtProgressBar(pb, pb.index)
+        pb.index <- pb.index + 1
+      }
     } # end day loop
     # --------------------------------
     

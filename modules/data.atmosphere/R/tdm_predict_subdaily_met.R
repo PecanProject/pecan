@@ -33,6 +33,7 @@
 ##' @param n.cores - deals with parallelization
 ##' @param overwrite
 ##' @param verbose
+##' @param print.progress - print the progress bar?
 ##' @param seed - manually set seed for results to be reproducible
 ##' @export
 ##' @examples
@@ -55,7 +56,7 @@
 predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, direction.filter, lm.models.base,
                                  yrs.predict, ens.labs = 1:3, resids = FALSE, 
                                  parallel = FALSE, cores.max = 12, n.cores = NULL,
-                                 overwrite = FALSE, verbose = FALSE, seed=format(Sys.time(), "%m%d"), ...) {
+                                 overwrite = FALSE, verbose = FALSE, seed=format(Sys.time(), "%m%d"), print.progress=FALSE, ...) {
   
   vars.hour <- c("air_temperature", "precipitation_flux", "surface_downwelling_shortwave_flux_in_air", 
                  "surface_downwelling_longwave_flux_in_air", "air_pressure", "specific_humidity", 
@@ -65,7 +66,14 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
                 "lag.specific_humidity", "lag.wind_speed")
   
   n.ens <- length(ens.labs)
-
+  
+  # Extract the lat/lon info from the first of the source files
+  fnow <- dir(in.path, ".nc")[1]
+  ncT <- ncdf4::nc_open(file.path(in.path, fnow))
+  lat.in <- ncdf4::ncvar_get(ncT, "latitude")
+  lon.in <- ncdf4::ncvar_get(ncT, "longitude")
+  ncdf4::nc_close(ncT)
+  
   # Getting a list of all files/years we want to downscale
   files.tdm <- dir(in.path, ".nc")
   
@@ -87,9 +95,9 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
   met.lag <- ifelse(direction.filter=="backwards", -1, +1)
   
   # Create wind speed variable if it doesn't exist
-  if (all(is.na(dat.train$wind_speed) == TRUE)) {
-      dat.train$wind_speed <- sqrt(dat.train$eastward_wind^2 + dat.train$northward_wind^2)
-  }
+  # if (all(is.na(dat.train$wind_speed) == TRUE)) {
+      # dat.train$wind_speed <- sqrt(dat.train$eastward_wind^2 + dat.train$northward_wind^2)
+  # }
 
 
   # Defining variable names, longname & units
@@ -103,17 +111,24 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
       "kg kg-1", "m s-1"))
   
   # ----------------------------------
+  # Set progress bar
+  # pb.index <- 1
+  if(print.progress==TRUE) pb <- txtProgressBar(min = 1, max = length(yrs.tdm), style = 3)
+  # setTxtProgressBar(pb, pb.index)
+  
   for (y in 1:length(yrs.tdm)) {
 
     # Read in the data and dupe it into the temporal resolution we want to end up with (based on our training data)
-    files.train <- dir(train.path, ".nc")
+    files.train <- dir(path.train, ".nc")
     
     yrs.file <- strsplit(files.train, "[.]")
     yrs.file <- matrix(unlist(yrs.file), ncol=length(yrs.file[[1]]), byrow=T)
     yrs.file <- as.numeric(yrs.file[,ncol(yrs.file)-1]) # Assumes year is always last thing before the file extension
     yrs.file <- yrs.file[length(yrs.file)/2]
     
-    met.out <- align.met(train.path=path.train, source.path=in.path, yrs.train=NULL, yrs.source=yrs.tdm[y], n.ens=1, seed=201708, pair.mems = FALSE)
+    met.out <- align.met(train.path=path.train, source.path=in.path, 
+                         yrs.train=NULL, yrs.source=yrs.tdm[y], 
+                         n.ens=1, seed=201708, pair.mems = FALSE)
     
     # Package the raw data into the dataframe that will get passed into the function
     dat.ens <- data.frame(year = met.out$dat.source$time$Year, 
@@ -231,16 +246,21 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
                                  path.model = file.path(lm.models.base), lags.list = NULL, 
                                  lags.init = lags.init,
                                  direction.filter=direction.filter,
-                                 dat.train = met.out$dat.train, seed=seed)
+                                 dat.train = met.out$dat.train, seed=seed, print.progress=F)
     
     # -----------------------------------
-    
 
-
+    # -----------------------------------
+    # Set up the lags for the next year
+    # -----------------------------------
     for(v in names(ens.sims)) {
       lags.init[[v]] <- data.frame(ens.sims[[v]][length(ens.sims[[v]]),])
     }
+    # -----------------------------------
     
+    # -----------------------------------
+    # Save as netcdf file
+    # -----------------------------------
     # Set up the time dimension for this year
     hrs.now <- as.numeric(difftime(dat.ens$date, paste0(yrs.tdm[y], "-01-01"),
         tz = "GMT", units = "hour"))
@@ -282,18 +302,21 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
             "specific_humidity", "wind_speed")]
         colnames(df) <- nc.info$CF.name
 
-        dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
-        loc.file <- file.path(outfolder, paste0(in.prefix, "_ens",
-            ens.labs[i], "_", yrs.tdm[y], ".nc"))
-        loc <- ncdf4::nc_create(filename = loc.file, vars = var.list,
-            verbose = verbose)
+        # Set up the home folder
+        out.ens <- file.path(outfolder, paste(in.prefix, ens.labs[i], sep="."))
+        dir.create(out.ens, showWarnings = FALSE, recursive = TRUE)
+        
+        loc.file <- file.path(out.ens, paste(in.prefix, ens.labs[i], yrs.tdm[y], "nc", sep="."))
+        loc <- ncdf4::nc_create(filename = loc.file, vars = var.list, verbose = verbose)
 
         for (j in nc.info$CF.name) {
             ncdf4::ncvar_put(nc = loc, varid = as.character(j), vals = df[[j]][seq_len(nrow(df))])
         }
         ncdf4::nc_close(loc)
     } # End writing ensemble members 
-    print(paste0("finished year ", yrs.tdm[y]))
-
+    if(print.progress==TRUE) setTxtProgressBar(pb, y)
+    # print(paste0("finished year ", yrs.tdm[y]))
+    # -----------------------------------
+    
   } # End year loop
 } # End function
