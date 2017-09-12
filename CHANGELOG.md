@@ -24,6 +24,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Replace many hard-coded unit conversions with `udunits2::ud.convert` for consistency, readability, and clarity
 
 ### Added
+- New Dockerfile to create PEcAN specific container for SIPNET.
 - Expanded initial conditions workflow for pool-based models, including PEcAn.data.land::prepare_pools to calculate pools from IC file (to be coupled with write.configs)
 - New `PEcAn.utils::days_in_year(year)` function that should make it easier to work with leap years.
 - New `PEcAn.data.atmosphere::solar_angle` function that replaces math that occurs in some models.
