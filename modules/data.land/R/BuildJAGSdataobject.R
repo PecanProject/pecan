@@ -3,6 +3,14 @@
 
 buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subset = 100){
 
+# helper function
+# for standardizing covariates (from K. Holsinger)
+standardize.vector <- function(x){
+  x.bar <- mean(x, na.rm = TRUE)
+  s.d. <- sd(x, na.rm = TRUE)
+  return((x-x.bar)/s.d.)
+}
+  
 # take a random subset of the Tree2Tree rows
   if(!is.null(Tree2Tree)){
     Tree2Tree <- Tree2Tree[sample(1:nrow(Tree2Tree), rnd.subset, replace=F),]  
@@ -117,7 +125,7 @@ if(!is.null(Tree2Tree)){
 SICOND <- temp2$COND_SICOND
 if(!is.null(Tree2Tree)){
   SICOND2 <- Tree2Tree$SICOND
-  SICOND <- c(SICOND, SICOND2)
+  SICOND <- standardize.vector((c(SICOND, SICOND2))
 }
 
 ### SLOPE
@@ -145,7 +153,7 @@ if(!is.null(Tree2Tree)){
 SDI <- temp2$SDI
 if(!is.null(Tree2Tree)){
   SDI2 <- Tree2Tree$SDIc
-  SDI <- c(SDI, SDI2)
+  SDI <- standardize.vector(c(SDI, SDI2))
 }
 ### BA ## SDI and BA are tightly correlated, can't use both
 cov.data <- data.frame(PLOT=PLOT, SICOND=SICOND, SDI=SDI)
@@ -221,6 +229,11 @@ tmax.MJul <- (time_data$TMAXMay + time_data$TMAXJun + time_data$TMAXJul)/3
 time_data$tmax.fallspr <- tmax.fallspr
 time_data$tmax.JanA <- tmax.JanA
 time_data$tmax.MJul <- tmax.MJul
+
+# standardize climate data
+for(c in length(time_data)){
+  time_data[[c]] <- standardize.vector(time_data$[[c]])
+} 
 
 
 ## build data object for JAGS
