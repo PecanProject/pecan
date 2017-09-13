@@ -7,6 +7,7 @@ Author: Shawn Serbin, Anthony Walker
 Maintainer: Shawn Serbin <sserbin@bnl.gov>
 Description: This module provides functions to link the MAAT to PEcAn.
 Imports:
+    PEcAn.logger,
     PEcAn.utils,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),

@@ -4,12 +4,11 @@
 language: r
 
 # use containers
-dist: precise
+dist: trusty
 sudo: false
 
 cache: 
   - directories:
-    - $HOME/R/Library
     - .install
     - .check
     - .test
@@ -17,7 +16,7 @@ cache:
   - packages
 
 addons:
-  postgresql: 9.4
+  postgresql: 9.6
   apt:
     packages:
       - libnetcdf-dev
@@ -26,8 +25,8 @@ addons:
       - jags
       - libudunits2-dev
       - python-dev 
-      - postgresql-9.4-postgis-2.1
-      - postgresql-9.4-postgis-2.1-scripts
+      - postgresql-9.6-postgis-2.3
+      - postgresql-9.6-postgis-2.3-scripts
       - netcdf-bin
       - bc
       - curl

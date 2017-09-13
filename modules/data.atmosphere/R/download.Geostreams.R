@@ -14,7 +14,6 @@
 #'   attempts to connect unauthenticated.
 #'
 #' @export
-#' @importFrom PEcAn.utils logger.severe logger.info
 #' @author Harsh Agrawal, Chris Black
 #' @examples \dontrun{
 #'  download.Geostreams(outfolder = "~/output/dbfiles/Clowder_EF",
@@ -47,10 +46,10 @@ download.Geostreams <- function(outfolder, sitename,
   sensor_maxtime = lubridate::parse_date_time(sensor_info$max_end_time,
                                               orders = c("ymd", "ymdHMS", "ymdHMSz"), tz = "UTC")
   if (start_date < sensor_mintime) {
-    logger.severe("Requested start date", start_date, "is before data begin", sensor_mintime)
+    PEcAn.logger::logger.severe("Requested start date", start_date, "is before data begin", sensor_mintime)
   }
   if (end_date > sensor_maxtime) {
-    logger.severe("Requested end date", end_date, "is after data end", sensor_maxtime)
+    PEcAn.logger::logger.severe("Requested end date", end_date, "is after data end", sensor_maxtime)
   }
 
   result_files = c()
@@ -65,7 +64,7 @@ download.Geostreams <- function(outfolder, sitename,
     met_result <- httr::GET(url = paste0(url, "/datapoints"),
                             query = query_args,
                             config = auth$userpass)
-    logger.info(met_result$url)
+    PEcAn.logger::logger.info(met_result$url)
     httr::stop_for_status(met_result, "download met data from Clowder")
     result_txt <- httr::content(met_result, as = "text", encoding = "UTF-8")
     combined_result <- paste0(
@@ -81,7 +80,7 @@ download.Geostreams <- function(outfolder, sitename,
   }
 
   return(data.frame(file = result_files,
-                    host = fqdn(),
+                    host = PEcAn.utils::fqdn(),
                     mimetype = "application/json",
                     formatname = "Geostreams met",
                     startdate = start_date,

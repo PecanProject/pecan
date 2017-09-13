@@ -10,6 +10,7 @@ Depends:
     mlegp,
     MCMCpack
 Imports:
+    PEcAn.logger,
     coda (>= 0.18),
     methods
 Description: Implementation of a Gaussian Process model (both likelihood and
