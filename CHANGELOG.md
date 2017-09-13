@@ -22,8 +22,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - SIPNET output netcdf now includes LAI; some variable names changed to match standard
 - Cleanup of leap year logic, using new `PEcAn.utils::days_in_year(year)` function (#801).
 - Replace many hard-coded unit conversions with `udunits2::ud.convert` for consistency, readability, and clarity
-- Bugfixes to remote:
-    - Check that `qsub` step works, and fail loudly if it doesn't
+- Remote execution is more robust to errors in the submission process, not just the actual model execution
 
 ### Added
 - Expanded initial conditions workflow for pool-based models, including PEcAn.data.land::prepare_pools to calculate pools from IC file (to be coupled with write.configs)
@@ -42,8 +41,10 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Changed
 - Clean up directory structure:
     * Move `base` packages (`utils`, `settings`, `db`, `visualizaton`) to a `base` directory, for consistency with `modules` and `models`
-    * Move `logger.*` functions out of the `PEcAn.utils` package and into the `pecan.logger` package
+    * Move `logger.*` functions out of the `PEcAn.utils` package and into the `PEcAn.logger` package
+    * More `remote` functions out of the `PEcAn.utils` package and into their own `PEcAn.remote` package.
 - #1594 shiny/workflowPlot Refactoring of code. `get_workflow_ids` in db/R/query.dplyr.R changed with `ensemble = FALSE`. Also allowing to load all workflow IDs. `load_data_single_run` and `var_names_all` also moved from shiny/workflowPlot/server.R to query.dplyr.R
+- `PEcAn.remote::start.model.runs` has been significantly refactored to be less redundant and more robust
 
 ## [1.5.0] - 2017-07-13
 ### Added
