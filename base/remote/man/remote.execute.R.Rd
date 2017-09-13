@@ -2,49 +2,38 @@
 % Please edit documentation in R/remote.execute.R.R
 \name{remote.execute.R}
 \alias{remote.execute.R}
-\title{Remotely execute R code}
+\title{Execute command remotely}
 \usage{
-remote.execute.R(code, host, stderr = TRUE, ...)
+remote.execute.R(script, host = "localhost", user = NA, verbose = FALSE,
+  R = "R", scratchdir = tempdir())
 }
 \arguments{
-\item{code}{R code to be run on remote, either as an unevaluated expression,
-a single character string, or a vector of strings to be run in sequence.}
+\item{script}{the script to be invoked, as a list of commands.}
 
-\item{host}{host structure to execute command on}
+\item{host}{settings host list}
 
-\item{stderr}{should stderr be returned as well.}
+\item{user}{the username to use for remote login}
 
-\item{...}{Additional arguments passed to \code{\link[=remote.execute.cmd]{remote.execute.cmd()}}.}
+\item{verbose}{should the output be printed to the console}
+
+\item{args}{a character vector of arguments to command.}
 }
 \value{
-Exactly the output of \code{code}, or \code{NULL} if no \code{dput()} statement can be found in the wrapped code.
+the captured output of the command (both stdout and stderr)
 }
 \description{
-Wrapped code should contain a \code{dput()} statement, or a warning will be thrown.
-\code{dput()} is used to return outputs, so if it is absent, the output will be \code{NULL}.
+Execute command remotely
+}
+\details{
+Executes the given command on the remote host using ssh. If the user is set
+the system will login as the given user. If the host given is the local
+machine it will execute the command locally without ssh.
 }
 \examples{
-host <- list(name = "localhost")
-code <- quote({
-  x <- 5
-  y <- 10
-  out <- list(xx = seq_len(x), yy = seq_len(y) * 2)
-  dput(out)
-})
-result <- remote.execute.R(code = code, host = host)
-
-code2 <- c("x <- 10", "y <- 7", "out <- list(x = seq(x), y = seq(y))", "dput(out)")
-result <- remote.execute.R(code = code2, host = host)
-
-code3 <- "
-  n <- 10
-  x <- rnorm(n)
-  y <- runif(n)
-  df <- data.frame(norm = x, unif = y)
-  dput(df)
-"
-result <- remote.execute.R(code = code3, host = host)
+\dontrun{
+  remote.execute.R('list.files()', host='localhost', verbose=FALSE)
+}
 }
 \author{
-Alexey Shiklomanov
+Rob Kooper
 }
