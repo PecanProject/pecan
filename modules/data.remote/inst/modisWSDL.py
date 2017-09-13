@@ -361,8 +361,8 @@ def m_data_to_netCDF(filename, m, k, kmLR, kmAB):
 	year = startDate.year
 	m_date.units = 'days since %d-01-01 00:00:00.0'%(year)
 
-	m_data = rootgrp.createVariable('LAI', 'f8', ('time', 'ncol', 'nrow'))
-	m_std = rootgrp.createVariable('LAIStd', 'f8', ('time', 'ncol', 'nrow'))
+	m_data = rootgrp.createVariable('LAI', 'f8', ('time', 'nrow', 'ncol'))
+	m_std = rootgrp.createVariable('LAIStd', 'f8', ('time', 'nrow', 'ncol'))
 
 	str_dates = [str(d) for d in m.dateInt]
 	datetimes = [(datetime.datetime.strptime(d, '%Y%j')- datetime.datetime(year,1,1)).days+1 for d in str_dates]	
