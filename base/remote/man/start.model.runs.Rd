@@ -22,5 +22,5 @@ Start selected ecosystem model runs within PEcAn workflow
 }
 }
 \author{
-Shawn Serbin, Rob Kooper, David LeBauer
+Shawn Serbin, Rob Kooper, David LeBauer, Alexey Shiklomanov
 }
