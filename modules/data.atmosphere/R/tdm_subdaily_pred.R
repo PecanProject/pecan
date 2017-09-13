@@ -40,16 +40,23 @@ subdaily_pred <- function(newdata, model.predict, Rbeta, resid.err = FALSE, mode
   m[,"as.ordered(hour)"] <- as.ordered(m$hour)
   m$hour <- as.numeric(m$hour)
   
-  # Ordering the newdata in the same way as m (by hour)
-  newdata <- newdata[order(newdata$hour),]
-  
-  # Fixing the ordering so that it comes back looking like newdata
-  m$ens <- newdata$ens
-  # dat.sim <- dat.sim[order(dat.sim$ens, dat.sim$hour),]
-  newdata <- newdata[order(newdata$ens, newdata$hour),]
-
   # Adding hours to make sure prediction works okay
-  if(length(df.hr$hour)!= length(m$hour)) m <- merge(m, df.hr, all=T)
+  # Note: This really messes with the order of things!
+  if(length(unique(df.hr$hour))!= length(unique(m$hour))){
+    m$ens <- newdata$ens
+    
+    m <- merge(m, df.hr, all=T)
+    
+    # Ordering the newdata in the same way as m (by hour)
+    m <- m[order(m$ens, m$hour),]
+    # newdata <- newdata[order(newdata$hour),]
+    
+    # # Fixing the ordering so that it comes back looking like newdata
+    # dat.sim <- dat.sim[order(dat.sim$ens, dat.sim$hour),]
+    # newdata <- newdata[order(newdata$ens, newdata$hour),]
+  } 
+  
+
   
   
   
