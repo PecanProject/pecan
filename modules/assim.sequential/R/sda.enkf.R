@@ -208,7 +208,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       append = FALSE)
   
   ## start model runs
-  start.model.runs(settings, settings$database$bety$write)
+  PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
   save(list = ls(envir = environment(), all.names = TRUE), 
        file = file.path(outdir, "sda.initial.runs.Rdata"), envir = environment())
 
@@ -905,7 +905,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       ### Run model                                                         ###
       ###-------------------------------------------------------------------### 
       print(paste("Running Model for Year", as.Date(obs.times[t]) + 1))
-      start.model.runs(settings, settings$database$bety$write)
+      PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
     }
     
     ###-------------------------------------------------------------------###
