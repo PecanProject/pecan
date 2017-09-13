@@ -13,27 +13,27 @@ MODULES := allometry assim.batch assim.sequential benchmark \
 BASE := $(BASE:%=base/%)
 MODELS := $(MODELS:%=models/%)
 MODULES := $(MODULES:%=modules/%)
-ALL_PKGS := $(BASE) $(MODULES) $(MODELS) models/template
+ALL_PKGS := $(BASE) $(MODULES) $(MODELS)
 
 BASE_I := $(BASE:%=.install/%)
 MODELS_I := $(MODELS:%=.install/%)
 MODULES_I := $(MODULES:%=.install/%)
-ALL_PKGS_I := $(BASE_I) $(MODULES_I) $(MODELS_I) .install/models/template
+ALL_PKGS_I := $(BASE_I) $(MODULES_I) $(MODELS_I)
 
 BASE_C := $(BASE:%=.check/%)
 MODELS_C := $(MODELS:%=.check/%)
 MODULES_C := $(MODULES:%=.check/%)
-ALL_PKGS_C := $(BASE_C) $(MODULES_C) $(MODELS_C) .check/models/template
+ALL_PKGS_C := $(BASE_C) $(MODULES_C) $(MODELS_C)
 
 BASE_T := $(BASE:%=.test/%)
 MODELS_T := $(MODELS:%=.test/%)
 MODULES_T := $(MODULES:%=.test/%)
-ALL_PKGS_T := $(BASE_T) $(MODULES_T) $(MODELS_T) .test/models/template
+ALL_PKGS_T := $(BASE_T) $(MODULES_T) $(MODELS_T)
 
 BASE_D := $(BASE:%=.doc/%)
 MODELS_D := $(MODELS:%=.doc/%)
 MODULES_D := $(MODULES:%=.doc/%)
-ALL_PKGS_D := $(BASE_D) $(MODULES_D) $(MODELS_D) .doc/models/template
+ALL_PKGS_D := $(BASE_D) $(MODULES_D) $(MODELS_D)
 
 .PHONY: all install check test document
 
@@ -65,9 +65,6 @@ $(call depends,modules/rtm): .install/base/logger .install/modules/assim.batch
 $(call depends,modules/uncertainty): .install/base/logger .install/base/utils .install/modules/priors
 $(call depends,models/template): .install/base/logger .install/base/utils
 $(call depends,models/biocro): .install/base/logger .install/base/utils .install/base/settings .install/base/db .install/modules/data.atmosphere .install/modules/data.land
-
-$(MODELS_I): .install/models/template
-
 
 clean:
 	rm -rf .install .check .test .doc
