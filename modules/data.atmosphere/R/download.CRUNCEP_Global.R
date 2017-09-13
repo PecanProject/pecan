@@ -100,7 +100,7 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
 
       # This throws an error if file not found
       #dap <- ncdf4::nc_open(dap_file, verbose=FALSE)
-      dap <- retry.func(ncdf4::nc_open(dap_file, verbose=verbose), maxErrors=maxErrors, sleep=sleep)
+      dap <- PEcAn.utils::retry.func(ncdf4::nc_open(dap_file, verbose=verbose), maxErrors=maxErrors, sleep=sleep)
       
       # confirm that timestamps match
       if (dap$dim$time$len != ntime) {
@@ -116,16 +116,16 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
       }
 
 
-      dat.list[[j]] <- retry.func(ncdf4::ncvar_get(dap,
+      dat.list[[j]] <- PEcAn.utils::retry.func(ncdf4::ncvar_get(dap,
                                  as.character(var$DAP.name[j]),
                                  c(lon_grid, lat_grid, 1),
                                  c(1, 1, ntime)), maxErrors=maxErrors, sleep=sleep)
 
-      var.list[[j]] <- retry.func(ncdf4::ncvar_def(name = as.character(var$CF.name[j]),
+      var.list[[j]] <- ncdf4::ncvar_def(name = as.character(var$CF.name[j]),
                                  units = as.character(var$units[j]),
                                  dim = dim,
                                  missval = -999,
-                                 verbose = verbose), maxErrors=maxErrors, sleep=sleep)
+                                 verbose = verbose)
       ncdf4::nc_close(dap)
     }
     ## change units of precip to kg/m2/s instead of 6 hour accumulated precip
