@@ -24,10 +24,9 @@
 ##' @author Rob Kooper
 ##-------------------------------------------------------------------------------------------------#
 write.config.MODEL <- function(defaults, trait.values, settings, run.id) {
-
+  PEcAn.logger::logger.severe("NOT IMPLEMENTED")
   # Please follow the PEcAn style guide:
-  # https://pecan.gitbooks.io/pecan-documentation/content/developers_guide/Coding_style.html
-  
+  # https://pecanproject.github.io/pecan-documentation/develop/coding-style.html
   # Note that `library()` calls should _never_ appear here; instead, put
   # packages dependencies in the DESCRIPTION file, under "Imports:".
   # Calls to dependent packages should use a double colon, e.g.
@@ -98,9 +97,9 @@ write.config.MODEL <- function(defaults, trait.values, settings, run.id) {
       }
     }
     if (filename == "") {
-      logger.severe("Could not find config template")
+      PEcAn.logger::logger.severe("Could not find config template")
     }
-    logger.info("Using", filename, "as template")
+    PEcAn.logger::logger.info("Using", filename, "as template")
     config.text <- readLines(con = filename, n = -1)
   }
   
