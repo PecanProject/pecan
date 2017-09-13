@@ -36,7 +36,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, lags.list = NULL,
   
   # Figure out if we need to extract the approrpiate
   if (is.null(lags.list) & is.null(lags.init)) {
-    logger.error("lags.init & lags.list are NULL, this is a required argument")
+   PEcAn.logger::logger.error("lags.init & lags.list are NULL, this is a required argument")
   }
   if (is.null(lags.init)) {
     lags.init <- lags.list[[unique(dat.mod$ens.day)]]

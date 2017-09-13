@@ -46,7 +46,7 @@ status.check <- function(name) {
   }
   status.data[name, ]
   if (is.na(status.data[name, 3])) {
-    logger.warn("UNKNOWN STATUS FOR", name)
+    PEcAn.logger::logger.warn("UNKNOWN STATUS FOR", name)
     return(0)
   }
   if (status.data[name, 3] == "DONE") {
@@ -132,7 +132,7 @@ for (i in seq_along(settings$run$inputs)) {
   }
 }
 if (needsave) {
-  saveXML(listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.METProcess.xml"))
+  saveXML(PEcAn.utils::listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.METProcess.xml"))
 } else if (file.exists(file.path(settings$outdir, "pecan.METProcess.xml"))) {
   settings <- read.settings(file.path(settings$outdir, "pecan.METProcess.xml"))
 }
@@ -141,7 +141,7 @@ if (needsave) {
 if (status.check("TRAIT") == 0) {
   status.start("TRAIT")
   settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$run$dbfiles, settings$database$bety, settings$meta.analysis$update)
-  saveXML(listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.TRAIT.xml"))
+  saveXML(PEcAn.utils::listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.TRAIT.xml"))
   status.end()
 } else if (file.exists(file.path(settings$outdir, "pecan.TRAIT.xml"))) {
   settings <- read.settings(file.path(settings$outdir, "pecan.TRAIT.xml"))
@@ -167,7 +167,7 @@ if (status.check("CONFIG") == 0) {
   settings <- run.write.configs(settings, 
                                 write = settings$database$bety$write, 
                                 ens.sample.method = settings$ensemble$method)
-  saveXML(listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.CONFIGS.xml"))
+  saveXML(PEcAn.utils::listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.CONFIGS.xml"))
   status.end()
 } else if (file.exists(file.path(settings$outdir, "pecan.CONFIGS.xml"))) {
   settings <- read.settings(file.path(settings$outdir, "pecan.CONFIGS.xml"))
