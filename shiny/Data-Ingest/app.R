@@ -8,9 +8,11 @@
 #
 
 library(shiny)
-#library(PEcAn.data.land)
-library(shinyDND)
+library(PEcAn.data.land)
 library(shinydashboard)
+library(dataone)
+
+#stopifnot
 
 # Define UI for application
 
@@ -38,7 +40,8 @@ ui <- dashboardPage(
                 
                 box(
                   # https://github.com/rstudio/shiny-examples/blob/master/009-upload/app.R
-                  fileInput(inputId = "file", label = h3("Upload Local Files"), accept = NULL, multiple = TRUE, placeholder = "Drag and drop files here") 
+                  fileInput(inputId = "file", label = h3("Upload Local Files"), accept = NULL, multiple = TRUE, placeholder = "Drag and drop files here"),
+                  p("This isn't linked to the server yet")
                 )
               )
       ),
@@ -54,13 +57,16 @@ ui <- dashboardPage(
 
 server <- function(input, output) {
   
-  d1d <- eventReactive(input$D1Button, { input$id }) #print doi on click
+  # d1d <- eventReactive(input$D1Button, { input$id }) #print doi on click
   
-  # d1d <- eventReactive(input$D1Button, { PEcAn.data.land::dataone_download(input$id) }) #run dataone_download on click
+  # How do I force R to load the dependencies before I run dataone_download? brew, redland, datapack, dataone
+   d1d <- eventReactive(input$D1Button, { PEcAn.data.land::dataone_download(input$id) }) #run dataone_download with input from id on click
   
   output$identifier <- renderText({
     d1d()
   })
+  
+  # output$debug <- # file.copy copy from tmp file to 
   
 }
 
