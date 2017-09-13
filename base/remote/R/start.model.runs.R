@@ -17,7 +17,7 @@
 ##' \dontrun{
 ##'   start.model.runs(settings)
 ##' }
-##' @author Shawn Serbin, Rob Kooper, David LeBauer
+##' @author Shawn Serbin, Rob Kooper, David LeBauer, Alexey Shiklomanov
 ##'
 start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
 
