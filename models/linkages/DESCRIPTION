@@ -23,3 +23,4 @@ Copyright: Authors
 LazyLoad: yes
 LazyData: FALSE
 RoxygenNote: 6.0.1
+Remotes: araiho/linkages_package
