@@ -53,4 +53,4 @@ d <- PEcAn.remote::remote.execute.R(script = "return(.libPaths())",host = host,R
 
 
 ## kill tunnels
-PEcAn.utils::kill.tunnel(settings)
+PEcAn.remote::kill.tunnel(settings)
