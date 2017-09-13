@@ -6,13 +6,6 @@
 \usage{
 ssh(host, ..., args = "")
 }
-\arguments{
-\item{host}{}
-
-\item{...}{}
-
-\item{args}{}
-}
 \description{
 R implementation of SSH
 }

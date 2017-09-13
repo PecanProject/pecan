@@ -6,15 +6,6 @@
 \usage{
 paste.stats(mcmc.summary, median, lcl, ucl, n = 2)
 }
-\arguments{
-\item{mcmc.summary}{}
-
-\item{median}{}
-
-\item{lcl}{}
-
-\item{ucl}{}
-}
 \description{
 A helper function for building a LaTex table.
 }

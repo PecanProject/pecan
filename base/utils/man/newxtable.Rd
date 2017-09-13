@@ -11,16 +11,6 @@ newxtable(x, environment = "table", table.placement = "ht", label = NULL,
 \item{x}{data.frame to be converted to latex table}
 
 \item{environment}{can be 'table'; 'sidewaystable' if using latex rotating package}
-
-\item{table.placement}{}
-
-\item{label}{}
-
-\item{caption}{}
-
-\item{caption.placement}{}
-
-\item{align}{}
 }
 \value{
 Latex version of table, with percentages properly formatted
