@@ -1,7 +1,7 @@
 #' Save soil texture & parameters in PEcAn standard netCDF CF
 #'
-#' @param soil.data List of soil variables in standard names & units. Minimum is two of [sand, silt, clay]. Bulk density encouraged.
-#' @param out.file 
+#' @param soil.data List of soil variables in standard names & units. Minimum is soil_depth and two of [sand, silt, clay]. Bulk density encouraged.
+#' @param new.file 
 #'
 #' @return none
 #' @export
@@ -18,7 +18,16 @@
 #' Conversion back can be done by load(system.file("data/soil_class.RData",package = "PEcAn.data.land")) and then soil.name[soil_n]
 #'
 #' @examples
-soil2netcdf <- function(soil.data,out.file){
+#' \dontrun{
+#' soil.data <- list(volume_fraction_of_sand_in_soil = c(0.3,0.4,0.5),
+#'                   volume_fraction_of_clay_in_soil = c(0.3,0.3,0.3),
+#'                   soil_depth = c(0.2,0.5,1.0))
+#'                         
+#' soil2netcdf(soil.data,"soil.nc")
+#' }
+soil2netcdf <- function(soil.data,new.file){
+  soil.data <- as.list(soil.data)
+  
   ## convert soil type to parameters via look-up-table / equations
   mysoil <- PEcAn.data.land::soil_params(sand=soil.data$volume_fraction_of_sand_in_soil,
                                          silt=soil.data$volume_fraction_of_silt_in_soil,
@@ -36,13 +45,14 @@ soil2netcdf <- function(soil.data,out.file){
   soil.data$soil_type <- soil.data$soil_n
   soil.data$soil_n <- NULL
   
-  ## open new file
-  prefix <- tools::file_path_sans_ext(basename(in.file))
-  new.file <- file.path(outdir,paste0(prefix,".nc"))
+  ## create depth dimension
+  depth <- ncdf4::ncdim_def(name = "depth", units = "meters", vals = soil.data$soil_depth, create_dimvar = TRUE)  
+  soil.data$soil_depth <- NULL ## deleting so don't ALSO write as a variable
   
   ## create netCDF variables
   ncvar <- list()
   for(n in seq_along(soil.data)){
+    if(is.null(soil.data[[n]])) next
     varname <- names(soil.data)[n]
     if(length(soil.data[[n]])>1){
       ## if vector, save by depth
@@ -62,6 +72,7 @@ soil2netcdf <- function(soil.data,out.file){
   
   ## add data
   for (i in seq_along(ncvar)) {
+    if(is.null(soil.data[[n]]) || length(soil.data[[i]])==0) next
     ncdf4::ncvar_put(nc, ncvar[[i]], soil.data[[i]]) 
   }
   

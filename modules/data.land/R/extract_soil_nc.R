@@ -89,6 +89,10 @@ extract_soil_nc <- function(in.file,outdir,lat,lon){
   names(soil.data)[which(names(soil.data) == "cec")]  <- "soil_cec" ## units = meq/100g
   names(soil.data)[which(names(soil.data) == "oc")]   <- "soilC"  ## this is currently the BETY name, would like to change and make units SI
   
+  ## calc new filename
+  prefix <- tools::file_path_sans_ext(basename(in.file))
+  new.file <- file.path(outdir,paste0(prefix,".nc"))
+  
   ## Calculate soil parameters and export to netcdf
   soil2netcdf(soil.data,new.file)
     
