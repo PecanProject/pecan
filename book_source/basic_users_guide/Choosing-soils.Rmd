@@ -8,6 +8,11 @@ As with [[Choosing initial vegetation]], we eventually hope to develop data stan
 
 A PEcAn-standard netCDF file format exists for soil texture, depth, and physical parameters, using PEcAn standard names that are largely a direct extention of the CF standard. A table of standard names and units can be listed using ```PEcAn.data.land::soil.units()``` with no arguements.
 
+```{r}
+knitr::kable(PEcAn.data.land::soil.units())
+```
+
+
 Local data that has the correct names and units can easily be written out in PEcAn standard using the function soil2netcdf.
 
 ```
