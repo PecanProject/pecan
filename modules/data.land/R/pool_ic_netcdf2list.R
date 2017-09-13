@@ -23,7 +23,7 @@ pool_ic_netcdf2list <- function(nc.path){
     return(list(dims = dims, vals = vals))
   }
   else{
-    PEcAn.utils::logger.severe("Could not read IC file.")
+    PEcAn.logger::logger.severe("Could not read IC file.")
   }
   
 }

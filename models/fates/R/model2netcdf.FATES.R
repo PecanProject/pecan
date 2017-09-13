@@ -21,14 +21,8 @@
 ##' @export
 ##'
 ##' @author Michael Dietze, Shawn Serbin
-##' @importFrom ncdf4 ncdim_def ncvar_def ncatt_get ncvar_add
 model2netcdf.FATES <- function(outdir) {
 
-#    misc.convert <- PEcAn.utils::misc.convert # unit conversions
-    logger.info <- PEcAn.utils::logger.info
-    logger.severe <- PEcAn.utils::logger.severe
-    logger.warn <- PEcAn.utils::logger.warn
-    
     #        var_update("AR","AutoResp","kgC m-2 s-1")
     var_update <- function(out,oldname,newname,newunits=NULL){
       
@@ -64,12 +58,12 @@ model2netcdf.FATES <- function(outdir) {
     for (year in unique(years)) {
         ysel <- which(years == year)  ## subselect files for selected year
         if (length(ysel) > 1) {
-            logger.warn("PEcAn.FATES::model2netcdf.FATES does not currently support multiple files per year")
+            PEcAn.logger::logger.warn("PEcAn.FATES::model2netcdf.FATES does not currently support multiple files per year")
         }
         
         fname <- files[ysel[1]]
         oname <- file.path(dirname(fname), paste0(year, ".nc"))
-        logger.info(paste("model2netcdf.FATES - Converting:",  fname, "to", oname))
+        PEcAn.logger::logger.info(paste("model2netcdf.FATES - Converting:",  fname, "to", oname))
         ncin <- ncdf4::nc_open(fname, write = TRUE)
         
         ## FATES time is in multiple columns, create 'time'
@@ -82,7 +76,7 @@ model2netcdf.FATES <- function(outdir) {
         # !! Is this a useful/reasonable check? That is that our calculated time
         # matches FATES internal time var.
         if (length(time)!=length(nc.time)) {
-          logger.severe("Time dimension mismatch in output, simulation error?")
+          PEcAn.logger::logger.severe("Time dimension mismatch in output, simulation error?")
         }
 
         #******************** Declare netCDF dimensions ********************#

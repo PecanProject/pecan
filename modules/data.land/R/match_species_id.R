@@ -1,7 +1,7 @@
 #' Match BETY species ID.
 #'
 #' Parses species codes in input data and matches them with the BETY species ID.
-#' 
+#'
 #' \code{format_name} can be one of the following:
 #' \describe{
 #'  \item{\code{usda}}{USDA Plants database symbol (e.g. QURU, TSCA)}
@@ -9,10 +9,10 @@
 #'  \item{\code{latin_name}}{Scientific name, as "Genus species"; must match exactly and unambiguously to \code{scientificname} field in BETY}
 #'  \item{\code{custom}}{A data frame matching BETY IDs (column name \code{bety_species_id}) to input codes (column name \code{input_code}). This data frame must be passed via the \code{translation_table} argument.}
 #' }
-#' 
+#'
 #' @param input_codes Character vector of species codes
 #' @param format_name Species code format name (see details)
-#' @param bety \code{dplyr} \code{src} object containing BETY connection 
+#' @param bety \code{dplyr} \code{src} object containing BETY connection
 #' @param translation_table Data frame with custom translation table (see details).
 #' @return \code{data.frame} containing the following columns:
 #' \describe{
@@ -32,30 +32,30 @@
 #' match_species_id(input_codes = input_codes,
 #'                  format_name = format_name,
 #'                  bety = bety)
-#'                  
-#' @importFrom dplyr %>%
+#'
+#' @importFrom magrittr %>%
 #' @export
 match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, translation_table = NULL, ...) {
     # Relate format names to BETY columns
     formats_dict <- c('usda' = 'Symbol',
                       'fia' = 'spcd',
-                      'latin_name' = 'scientificname', 
+                      'latin_name' = 'scientificname',
                       'custom' = 'custom')
     if (!format_name %in% names(formats_dict)) {
-        PEcAn.utils::logger.severe('format_name "', format_name, '" not found. ',
+        PEcAn.logger::logger.severe('format_name "', format_name, '" not found. ',
                                    'Please use one of the following: ',
                                    paste(names(formats_dict), collapse = ', '))
     }
     if (!is.null(translation_table)) {
-        msg2 <- c('Found the following columns: ', 
+        msg2 <- c('Found the following columns: ',
                   paste(colnames(translation_table), collapse = ', '))
         if (!'input_code' %in% colnames(translation_table)) {
-            PEcAn.utils::logger.severe('Custom translation table must have column "input_code". ', msg2)
+            PEcAn.logger::logger.severe('Custom translation table must have column "input_code". ', msg2)
         } else if (!'bety_species_id' %in% colnames(translation_table)) {
-            PEcAn.utils::logger.severe('Custom translation table must have column "bety_species_id". ', msg2)
+            PEcAn.logger::logger.severe('Custom translation table must have column "bety_species_id". ', msg2)
         } else {
             if (any(grepl('^(genus|species)$', colnames(translation_table)))) {
-                PEcAn.utils::logger.warn('"genus" or "species" columns found in translation table. ',
+                PEcAn.logger::logger.warn('"genus" or "species" columns found in translation table. ',
                                          'Because these also match the BETY table, ',
                                          'they will be ignored by the merge, but their names will ',
                                          'be appended with ".translation_table" for disambiguation')
@@ -64,7 +64,7 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
                 dplyr::filter_(~id %in% translation_table[['bety_species_id']]) %>%
                 dplyr::select_('bety_species_id' = 'id', 'genus', 'species') %>%
                 dplyr::collect()
-            translation <- dplyr::left_join(translation_table, bety_species, 
+            translation <- dplyr::left_join(translation_table, bety_species,
                                             by = 'bety_species_id',
                                             suffix = c('.translation_table', ''))
         }
@@ -72,7 +72,7 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
       column <- formats_dict[format_name]
       if(!is.null(bety)){
         # query BETY
-        filter_cri <- lazyeval::interp(~ col %in% codes, 
+        filter_cri <- lazyeval::interp(~ col %in% codes,
                                        col = as.name(column),
                                        codes = input_codes)
         translation <- dplyr::tbl(bety, 'species') %>%
@@ -80,7 +80,7 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
           dplyr::select_('bety_species_id' = 'id', 'genus', 'species',
                          'input_code' = column) %>%
           dplyr::collect()
-        
+
       }else{
         # use traits package
 
@@ -91,9 +91,9 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
                            genus            = rep(NA, length(unique(input_codes))),
                            species          = rep(NA, length(unique(input_codes))),
                            stringsAsFactors = FALSE)
-                    
+
         for(i in 1:nrow(unique.tmp)){
-          foo <- eval(parse(text =paste0("traits::betydb_query(", 
+          foo <- eval(parse(text =paste0("traits::betydb_query(",
                                   column, "='", unique.tmp$input_code[i], "', table = 'species', user = 'bety', pwd = 'bety')")))
           translation$bety_species_id[i] <- foo$id
           translation$genus[i]           <- foo$genus
@@ -106,12 +106,12 @@ match_species_id <- function(input_codes, format_name = 'custom', bety = NULL, t
     input_table <- data.frame(input_code = input_codes, stringsAsFactors = FALSE)
     # preserving the order is important for downstream
     merge_table <- dplyr::left_join(input_table, translation)
-    
+
     if(sum(is.na(merge_table$bety_species_id)) > 0){
       bad <- unique(merge_table$input_code[is.na(merge_table$bety_species_id)])
-      PEcAn.utils::logger.error(paste0("Species for the following code(s) not found : ", paste(bad, collapse = ", ")))
+      PEcAn.logger::logger.error(paste0("Species for the following code(s) not found : ", paste(bad, collapse = ", ")))
     }
-    
+
     return(merge_table)
 } # match_species_id
 

@@ -25,7 +25,7 @@ upscale_met <- function(outfolder, input_met, resolution = 1/24, overwrite = FAL
 
   loc.file = file.path(outfolder, paste("upscaled", basename(input_met), sep = "."))
   if (file.exists(loc.file) && !isTRUE(overwrite)){
-    logger.severe("Output file", loc.file, "already exists. To replace it, set overwrite = TRUE")
+   PEcAn.logger::logger.severe("Output file", loc.file, "already exists. To replace it, set overwrite = TRUE")
   }
 
   met_lookup <- read.csv(system.file("/data/met.lookup.csv", package = "PEcAn.data.atmosphere"),
