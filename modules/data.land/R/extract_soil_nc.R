@@ -143,8 +143,11 @@ soil.units <- function(varname = NA){
   unit = which(variables$var == varname)
   
   if(length(unit) == 0){
-    print(variables)
-    return(NA)
+    if(is.na(varname)){
+      return(variables)
+    } else {
+      return(NA)
+    }
   }else{
     unit = as.character(variables$unit[unit])
     return(unit)
