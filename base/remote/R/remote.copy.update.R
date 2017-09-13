@@ -11,7 +11,7 @@
 #' @export
 remote.copy.update <- function(input_id, remote_dir, remote_file_name = NULL, host, con){
 
-  remote.execute.cmd(host, "mkdir", c("-p", remote_dir))
+  PEcAn.remote::remote.execute.cmd(host, "mkdir", c("-p", remote_dir))
 
   local_file_record <- db.query(paste("SELECT * from dbfiles where container_id =", input_id), con)
 

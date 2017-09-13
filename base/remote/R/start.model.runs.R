@@ -70,8 +70,8 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
 
     # if running on a remote cluster, create folders and copy any data to remote host
     if (!is_local) {
-      remote.execute.cmd(settings$host, "mkdir", c("-p", file.path(settings$host$outdir, run_id_string)))
-      remote.copy.to(settings$host, file.path(settings$rundir, run_id_string), settings$host$rundir, delete = TRUE)
+      PEcAn.remote::remote.execute.cmd(settings$host, "mkdir", c("-p", file.path(settings$host$outdir, run_id_string)))
+      PEcAn.remote::remote.copy.to(settings$host, file.path(settings$rundir, run_id_string), settings$host$rundir, delete = TRUE)
     }
 
     # check to see if we use the model launcer
@@ -102,7 +102,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
 
         if (!is_local) {
           # copy data back to local
-          remote.copy.from(settings$host, file.path(settings$host$outdir, run_id_string), settings$modeloutdir)
+          PEcAn.remote::remote.copy.from(settings$host, file.path(settings$host$outdir, run_id_string), settings$modeloutdir)
         }
 
         # write finished time to database
@@ -120,7 +120,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
 
     if (!is_local) {
       # copy launcher and joblist
-      remote.copy.to(settings$host, file.path(settings$rundir,
+      PEcAn.remote::remote.copy.to(settings$host, file.path(settings$rundir,
                                               format(firstrun, scientific = FALSE)), settings$host$rundir, delete = TRUE)
     }
 
@@ -168,7 +168,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
 
         # Copy data back to local
         if (!is_local) {
-          remote.copy.from(host = settings$host,
+          PEcAn.remote::remote.copy.from(host = settings$host,
                            src = file.path(settings$host$outdir, run_id_string),
                            dst = settings$modeloutdir)
         }

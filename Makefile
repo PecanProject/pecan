@@ -1,6 +1,6 @@
 NCPUS ?= 1
 
-BASE := logger utils db settings visualization qaqc
+BASE := logger utils db settings visualization qaqc remote
 
 MODELS := biocro clm45 dalec ed fates gday jules linkages \
 				lpjguess maat maespa preles sipnet
@@ -56,6 +56,7 @@ $(call depends,base/db): .install/base/logger .install/base/utils
 $(call depends,base/settings): .install/base/logger .install/base/utils .install/base/db
 $(call depends,base/visualization): .install/base/logger .install/base/db
 $(call depends,base/qaqc): .install/base/logger
+$(call depends,base/remote): .install/base/logger .install/base/utils
 $(call depends,modules/data.atmosphere): .install/base/logger .install/base/utils
 $(call depends,modules/data.land): .install/base/logger .install/base/db .install/base/utils
 $(call depends,modules/meta.analysis): .install/base/logger .install/base/utils .install/base/db
