@@ -22,6 +22,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - SIPNET output netcdf now includes LAI; some variable names changed to match standard
 - Cleanup of leap year logic, using new `PEcAn.utils::days_in_year(year)` function (#801).
 - Replace many hard-coded unit conversions with `udunits2::ud.convert` for consistency, readability, and clarity
+- Added a new retry.func() to base/utils to provide ability to re-try a function X times before stopping.  Currently using this function in the download.CRUNCEP() function to handle slow responses from THREDDS.
 
 ### Added
 - Expanded initial conditions workflow for pool-based models, including PEcAn.data.land::prepare_pools to calculate pools from IC file (to be coupled with write.configs)
