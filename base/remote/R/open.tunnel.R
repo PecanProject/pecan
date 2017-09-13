@@ -7,10 +7,8 @@
 #' @param wait.time   how long to give system to connect before deleting password (seconds)
 #' @param tunnel_script Path to sshtunnel.sh script file for opening tunnel
 #'
-#' @return
+#' @return `TRUE` if successful, or `FALSE` otherwise
 #' @export
-#'
-#' @examples
 open_tunnel <- function(remote_host, user = NULL, password = NULL, tunnel_dir = "~/.pecan/tunnel/",
                         wait.time = 15, tunnel_script = '~/pecan/web/sshtunnel.sh'){
 

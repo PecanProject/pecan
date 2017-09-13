@@ -7,11 +7,15 @@
 remote.copy.update(input_id, remote_dir, remote_file_name = NULL, host, con)
 }
 \arguments{
+\item{input_id}{Input ID, as a numeric or character}
+
 \item{remote_dir}{remote folder path}
 
 \item{remote_file_name}{remote file name, no need to provide if it's the same as local}
 
 \item{host}{as in settings$host}
+
+\item{con}{BETY database connection}
 
 \item{stderr}{should stderr be returned}
 }

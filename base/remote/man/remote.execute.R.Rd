@@ -7,7 +7,8 @@
 remote.execute.R(code, host, stderr = TRUE, ...)
 }
 \arguments{
-\item{code}{Unevaluated R expression containing code to be run on remote. To generate, use the \code{quote()} function.}
+\item{code}{R code to be run on remote, either as an unevaluated expression,
+a single character string, or a vector of strings to be run in sequence.}
 
 \item{host}{host structure to execute command on}
 
@@ -19,9 +20,8 @@ remote.execute.R(code, host, stderr = TRUE, ...)
 Exactly the output of \code{code}, or \code{NULL} if no \code{dput()} statement can be found in the wrapped code.
 }
 \description{
-Runs an unevaluated R expression remotely. Wrap R code in \code{quote({...})} to generate an unevaluated expression.
 Wrapped code should contain a \code{dput()} statement, or a warning will be thrown.
-\code{dput()} is used to return outputs, so if it is absent, the output will be `
+\code{dput()} is used to return outputs, so if it is absent, the output will be \code{NULL}.
 }
 \examples{
 host <- list(name = "localhost")
@@ -31,7 +31,19 @@ code <- quote({
   out <- list(xx = seq_len(x), yy = seq_len(y) * 2)
   dput(out)
 })
-result <- remote.execute.R2(code = code, host = host)
+result <- remote.execute.R(code = code, host = host)
+
+code2 <- c("x <- 10", "y <- 7", "out <- list(x = seq(x), y = seq(y))", "dput(out)")
+result <- remote.execute.R(code = code2, host = host)
+
+code3 <- "
+  n <- 10
+  x <- rnorm(n)
+  y <- runif(n)
+  df <- data.frame(norm = x, unif = y)
+  dput(df)
+"
+result <- remote.execute.R(code = code3, host = host)
 }
 \author{
 Alexey Shiklomanov

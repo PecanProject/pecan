@@ -11,6 +11,9 @@ check_model_run(out, stop.on.error = TRUE)
 
 \item{stop.on.error}{Throw error if \emph{any} of the runs fails. Default TRUE.}
 }
+\value{
+\code{NULL}
+}
 \description{
 Check if model run was successful
 }
