@@ -51,6 +51,7 @@ save(trees, rings, combined, data, jags.out, file = file.path(settings$outdir, "
 
 pdf(file.path(settings$outdir, "treering.Diagnostics.pdf"))
 InventoryGrowthFusionDiagnostics(jags.out, combined)
+### Error in prec[, i] : subscript out of bounds
 dev.off()
 status.end()
 
@@ -76,12 +77,14 @@ sel <- grep("x[", colnames(out), fixed = TRUE)
 unit.conv <- pi * 10^2/10000
 state <- plot2AGB(combined, out[, sel], settings$outdir, list(allom.stats[[2]]), unit.conv = unit.conv)
 
-NPP.conv <- 0.48  #Mg/ha/yr -> MgC/ha/yr
-AGB.conv <- (1/10000) * (1000/1) * 0.48  #Mg/ha -> kgC/m2
+biomass2carbon <- 0.48
 
-NPP <- apply(state$NPP[1, , ], 2, mean, na.rm = TRUE) * NPP.conv  # MgC/ha/yr
-AGB <- apply(state$AGB[1, , ], 2, mean, na.rm = TRUE) * AGB.conv  # kgC/m2
+state$NPP <- udunits2::ud.convert(state$NPP,'Mg/ha/yr','kg/m^2/s') * biomass2carbon# kgC/m^2/s 
+state$AGB <- udunits2::ud.convert(state$AGB,'Mg/ha','kg/m^2') * biomass2carbon# kgC/m2
 
+NPP <- apply(state$NPP[1, , ], 2, mean, na.rm = TRUE)
+AGB <- apply(state$AGB[1, , ], 2, mean, na.rm = TRUE)
+        
 obs.mean <- list()
 for (i in seq_along(NPP)) {
   obs.mean[[i]] <- c(NPP[i], AGB[i])
@@ -90,10 +93,16 @@ for (i in seq_along(NPP)) {
 
 obs.cov <- list()
 for (i in seq_along(NPP)) {
-  obs.cov[[i]] <- cov(cbind(state$NPP[, , i] * NPP.conv, state$AGB[, , i] * AGB.conv))
+  obs.cov[[i]] <- cov(cbind(state$NPP[, , i], state$AGB[, , i]))
   colnames(obs.cov[[i]]) <- c("NPP", "AbvGrndWood")
   rownames(obs.cov[[i]]) <- c("NPP", "AbvGrndWood")
 }
+
+obs.times <- seq(as.Date(settings$state.data.assimilation$start.date), as.Date(settings$state.data.assimilation$end.date), by = settings$state.data.assimilation$forecast.time.step)
+obs.times <- lubridate::year(obs.times)
+
+names(obs.mean) <- paste0(obs.times,'/12/31')
+names(obs.cov) <- paste0(obs.times,'/12/31')
 status.end()
 
 #---------------- Build Initial Conditions ----------------------------------------------------------------------#
