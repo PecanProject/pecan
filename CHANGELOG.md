@@ -22,6 +22,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - SIPNET output netcdf now includes LAI; some variable names changed to match standard
 - Cleanup of leap year logic, using new `PEcAn.utils::days_in_year(year)` function (#801).
 - Replace many hard-coded unit conversions with `udunits2::ud.convert` for consistency, readability, and clarity
+- Refactored extract_soil_nc to create soil2netcdf, which will write soil data out in PEcAn standard.
 - Added a new retry.func() to base/utils to provide ability to re-try a function X times before stopping.  Currently using this function in the download.CRUNCEP() function to handle slow responses from THREDDS.
 
 ### Added
