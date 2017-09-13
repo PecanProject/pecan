@@ -5,7 +5,7 @@
 #' @param qsub.jobid (character) Regular expression string for extracting job ID from qsub output.
 #' Usually from `settings$host$qsub.jobid`
 #'
-#' @return
+#' @return Job ID, as a string
 #' @export
 qsub_get_jobid <- function(out, qsub.jobid, stop.on.error) {
   qsub_worked <- grepl(qsub.jobid, out)

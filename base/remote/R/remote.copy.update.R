@@ -1,9 +1,9 @@
 #' Copy to remote and update DB
-#' @param input_id
+#' @param input_id Input ID, as a numeric or character
 #' @param remote_dir remote folder path
 #' @param remote_file_name remote file name, no need to provide if it's the same as local
 #' @param host as in settings$host
-#' @param con
+#' @param con BETY database connection
 #' @param stderr should stderr be returned
 #' @return remote_id remote dbfile record
 #'

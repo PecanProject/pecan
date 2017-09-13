@@ -21,6 +21,9 @@ open_tunnel(remote_host, user = NULL, password = NULL,
 
 \item{tunnel_script}{Path to sshtunnel.sh script file for opening tunnel}
 }
+\value{
+\code{TRUE} if successful, or \code{FALSE} otherwise
+}
 \description{
 Open an SSH tunnel
 }

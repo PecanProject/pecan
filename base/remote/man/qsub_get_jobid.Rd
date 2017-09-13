@@ -14,6 +14,9 @@ Usually from \code{settings$host$qsub.jobid}}
 
 \item{stop.on.error}{Throw error if \emph{any} of the runs fails. Default TRUE.}
 }
+\value{
+Job ID, as a string
+}
 \description{
 Get Job ID from qsub output
 }

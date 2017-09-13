@@ -2,7 +2,7 @@
 #'
 #' @inheritParams start_qsub
 #'
-#' @return
+#' @return Output of execution command, as a character (see [remote.execute.cmd()]).
 #' @export
 start_serial <- function(host, rundir, host_rundir, job_script) {
   run_id_string <- format(run, scientific = FALSE)
@@ -11,4 +11,5 @@ start_serial <- function(host, rundir, host_rundir, job_script) {
   } else {
     out <- remote.execute.cmd(host, file.path(host_rundir, run_id_string, job_script), stderr = TRUE)
   }
+  return(out)
 }

@@ -4,7 +4,7 @@
 #' @param mpirun MPI info, usually from `settings$host$modellauncher$mpirun`
 #' @param binary Binary info, usually from `settings$host$modellauncher$binary`
 #'
-#' @return
+#' @return NULL
 #' @export
 setup_modellauncher <- function(run, rundir, host_rundir, mpirun, binary) {
   run_string <- format(run, scientific = FALSE)

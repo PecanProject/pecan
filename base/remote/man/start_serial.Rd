@@ -15,6 +15,9 @@ start_serial(host, rundir, host_rundir, job_script)
 
 \item{job_script}{Base name (no path) of script to run. Usually either \code{job.sh} or \code{launcher.sh}.}
 }
+\value{
+Output of execution command, as a character (see \code{\link[=remote.execute.cmd]{remote.execute.cmd()}}).
+}
 \description{
 Start model execution in serial mode
 }

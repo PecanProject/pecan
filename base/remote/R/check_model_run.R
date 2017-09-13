@@ -3,7 +3,7 @@
 #' @param out Output from model execution, as a character.
 #' @inheritParams start.model.runs
 #'
-#' @return
+#' @return `NULL`
 #' @export
 check_model_run <- function(out, stop.on.error = TRUE) {
   if ("ERROR IN MODEL RUN" %in% out) {
