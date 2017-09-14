@@ -1,7 +1,7 @@
 #' read_web_config
 #'
 #' @author Michael Dietze and Rob Kooper
-#' @param php.config 
+#' @param php.config Path to `config.php`
 #'
 #' @return config.list
 #' @export

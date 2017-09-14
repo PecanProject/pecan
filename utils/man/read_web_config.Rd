@@ -7,7 +7,7 @@
 read_web_config(php.config = "../../web/config.php")
 }
 \arguments{
-\item{php.config}{}
+\item{php.config}{Path to `config.php`}
 }
 \value{
 config.list
