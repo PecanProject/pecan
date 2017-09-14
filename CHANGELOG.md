@@ -30,6 +30,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Expanded initial conditions workflow for pool-based models, including PEcAn.data.land::prepare_pools to calculate pools from IC file (to be coupled with write.configs)
 - New `PEcAn.utils::days_in_year(year)` function that should make it easier to work with leap years.
 - New `PEcAn.data.atmosphere::solar_angle` function that replaces math that occurs in some models.
+- New `PEcAn.benchmarking::align_pft` fucntion that aligns data assosiated with two different plant functional types
 
 - #1594 shiny/workflowPlot Adding interactiveness using ggploltly
 - #1594 shiny/workflowPlot Load outputs from multiple runs of the model
@@ -38,6 +39,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - #1594 shiny/workflowPlot Comparing model output vs loaded data according to [tutorial](https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/AnalyzeOutput/modelVSdata.Rmd) 
 
 - Allow SIPNET and DALEC met files and model2netcdf to start or end mid year
+
 
 
 ### Changed
