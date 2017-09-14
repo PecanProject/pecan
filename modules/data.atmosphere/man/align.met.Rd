@@ -4,8 +4,9 @@
 \alias{align.met}
 \title{align.met}
 \usage{
-align.met(train.path, source.path, yrs.train = NULL, n.ens = NULL,
-  pair.mems = FALSE, seed = Sys.Date(), verbose = FALSE)
+align.met(train.path, source.path, yrs.train = NULL, yrs.source = NULL,
+  n.ens = NULL, pair.mems = FALSE, seed = Sys.Date(),
+  print.progress = FALSE)
 }
 \arguments{
 \item{train.path}{- path to the dataset to be used to downscale the data}
@@ -17,12 +18,19 @@ prevents needing to load the entire dataset.  If NULL, all available years
 will be loaded. If not null, should be a vector of numbers (so you can skip
 problematic years)}
 
+\item{yrs.source}{- (optional) specify a specific years to be loaded for the source data;
+prevents needing to load the entire dataset.  If NULL, all available years 
+will be loaded. If not null, should be a vector of numbers (so you can skip
+problematic years)}
+
 \item{n.ens}{- number of ensemble members to generate and save}
 
 \item{pair.mems}{- logical stating whether ensemble members should be paired in 
 the case where ensembles are being read in in both the training and source data}
 
 \item{seed}{- specify seed so that random draws can be reproduced}
+
+\item{print.progress}{- if TRUE, prints progress bar}
 }
 \value{
 2-layered list (stored in memory) containing the training and source data that are now matched
