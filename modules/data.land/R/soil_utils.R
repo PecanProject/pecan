@@ -34,7 +34,7 @@ soil_params <- function(soil_type,sand,silt,clay,bulk){
   #---------------------------------------------------------------------------------------#
   if (missing(sand) & missing(clay)){
     ## insufficient texture data, infer from soil_type
-    if(missing(soil_type)) PEcAn.utils::logger.error("insufficient arguments")
+    if(missing(soil_type)) PEcAn.logger::logger.error("insufficient arguments")
     mysoil$soil_type <- soil_type
     mysoil$soil_n <- which(toupper(soil.name) == toupper(soil_type))
 #    mysoil$key   <- soil.key [mysoil$soil_n]   ## turning off these abreviations since they lack a CF equivalent
@@ -244,11 +244,11 @@ sclass <- function(sandfrac,clayfrac){
   
   if (any(silt > 100.) | any(silt < 0.) | any(sand > 100.) | 
       any(sand < 0.) | any(clay > 100.) | any(clay < 0.) ) {
-    PEcAn.utils::logger.warn(" At least one of your percentages is screwy...")
-    PEcAn.utils::logger.warn(paste("SAND <- ",sprintf("%.2f",sand),"%",sep=""))
-    PEcAn.utils::logger.warn(paste("CLAY <- ",sprintf("%.2f",clay),"%",sep=""))
-    PEcAn.utils::logger.warn(paste("SILT <- ",sprintf("%.2f",silt),"%",sep=""))
-    PEcAn.utils::logger.severe("This soil doesn''t fit into any category...")
+    PEcAn.logger::logger.warn(" At least one of your percentages is screwy...")
+    PEcAn.logger::logger.warn(paste("SAND <- ",sprintf("%.2f",sand),"%",sep=""))
+    PEcAn.logger::logger.warn(paste("CLAY <- ",sprintf("%.2f",clay),"%",sep=""))
+    PEcAn.logger::logger.warn(paste("SILT <- ",sprintf("%.2f",silt),"%",sep=""))
+    PEcAn.logger::logger.severe("This soil doesn''t fit into any category...")
     
   }
   nlayer = max(length(silt),length(clay),length(sand))
@@ -285,10 +285,10 @@ sclass <- function(sandfrac,clayfrac){
     }else if( clay[z] > 40.0 & silt[z] > 30.0 & silt[z] <= 40.0) {
       mysoil[z] <- 17 #----- Clayey silt. -----------------------------------------------------#
     }else{
-      PEcAn.utils::logger.warn(paste("SAND <- ",sprintf("%.2f",sand[z]),"%",sep=""))
-      PEcAn.utils::logger.warn(paste("CLAY <- ",sprintf("%.2f",clay[z]),"%",sep=""))
-      PEcAn.utils::logger.warn(paste("SILT <- ",sprintf("%.2f",silt[z]),"%",sep=""))
-      PEcAn.utils::logger.severe ("This soil doesn''t fit into any category...")
+      PEcAn.logger::logger.warn(paste("SAND <- ",sprintf("%.2f",sand[z]),"%",sep=""))
+      PEcAn.logger::logger.warn(paste("CLAY <- ",sprintf("%.2f",clay[z]),"%",sep=""))
+      PEcAn.logger::logger.warn(paste("SILT <- ",sprintf("%.2f",silt[z]),"%",sep=""))
+      PEcAn.logger::logger.severe ("This soil doesn''t fit into any category...")
     }#end if
   }
   return(mysoil)
