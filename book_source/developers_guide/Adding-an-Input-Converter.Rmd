@@ -1,21 +1,19 @@
-General Note: dates in the database should be datatime (preferably with timezone), and datetime passed around in PEcAn should be of type POSIXlt.
+# How to Add an Input Converter
 
-# Met Data
+## Meterological Data conversion
 
-The standard met data inputs should be of the form:
+In general, you will need to write a function to download the raw met data andone to convert it to the PEcAn standard.
 
-Converters from a raw to standard format go in `/modules/data.atmosphere/R`; converters from standard to model-specific go in `models/<mymodel>/R`.
+Downloading raw data function are named `download.<source>.R`. Example functions can be found within the PEcAn directory [`/modules/data.atmosphere/R`](https://github.com/PecanProject/pecan/tree/develop/modules/data.atmosphere/R). 
 
-* For a number of common gridded products (NARR, CRUNCEP, ISIMIP), there are bash scripts for converting and rechunking in this repository: https://github.com/ebimodeling/model-drivers; these are not generalized, but may be merged into PEcAn at some point.
+Conversion function from raw to standard are named  `met2CF.<source>.R`. Example functions can be found within the PEcAn directory [`/modules/data.atmosphere/R`](https://github.com/PecanProject/pecan/tree/develop/modules/data.atmosphere/R).
 
-Examples:
-* NARR:
-* CRUNCEP:
-* ISIMIP: 
+Current Meteorological products that are coupled to PEcAn can be found in our [Available Meterological Drivers] page.
 
-Names should be `met2CF.<sourcename>` and `met2model.<modelname>`.
+Note: You will not need to write a script to convert from PEcAn standard to PEcAn models. Those conversoin scripts are written when a model is added and can be found within each model's PEcAn directory.
 
-## Dimensions:
+### Dimensions:
+
 
 |CF standard-name | units |
 |:------------------------------------------|:------|
@@ -23,7 +21,10 @@ Names should be `met2CF.<sourcename>` and `met2model.<modelname>`.
 | longitude | degrees_east|
 | latitude |degrees_north|
 
-## The variable names should be `standard_name`
+General Note: dates in the database should be date-time (preferably with timezone), and datetime passed around in PEcAn should be of type POSIXct.
+
+
+### The variable names should be `standard_name`
 
 | CF standard-name                          | units | bety         | isimip       | cruncep | narr  | ameriflux |
 |:------------------------------------------|:------|:-------------|:-------------|:--------|:------|:----------|
@@ -48,14 +49,62 @@ Names should be `met2CF.<sourcename>` and `met2model.<modelname>`.
 
 * preferred variables indicated in bold
 * wind_direction has no CF equivalent and should not be converted, instead the met2CF functions should convert wind_direction and wind_speed to eastward_wind and northward_wind
-* variable names are from [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml), but lowercase to be consistent with the MsTMIP drivers.
 * standard_name is CF-convention standard names
 * units can be converted by udunits, so these can vary (e.g. the time denominator may change with time frequency of inputs)
 * soil moisture for the full column, rather than a layer, is soil_moisture_content
+* A full list of PEcAn standard variable names, units and dimensions can be found here: https://github.com/PecanProject/pecan/blob/develop/base/utils/data/standard_vars.csv
 
-For the standardized files, we are using CF standard names as variable names.
 
 For example, in the [MsTMIP-CRUNCEP](https://www.betydb.org/inputs/280) data, the variable `rain` should be `precipitation_rate`.
 We want to standardize the units as well as part of the `met2CF.<product>` step. I believe we want to use the CF "canonical" units but retain the MsTMIP units any time CF is ambiguous about the units.
 
 The key is to process each type of met data (site, reanalysis, forecast, climate scenario, etc) to the exact same standard. This way every operation after that (extract, gap fill, downscale, convert to a model, etc) will always have the exact same inputs. This will make everything else much simpler to code and allow us to avoid a lot of unnecessary data checking, tests, etc being repeated in every downstream function.
+
+### Adding Single-Site Specific Meteorological Data
+
+Perhaps you have meteorological data specific to one site, with a unique format that you would like to add to PEcAn. Your steps would be to:
+  1. write a script or function to convert your files into the netcdf PEcAn standard
+  2. insert that file as an input record for your site following these [instructions](How to Insert new Input Data)
+  
+### Downloading Met data outside of the workflow
+
+Perhaps you would like to obtain data from one of the sources coupled to PEcAn on its own. To do so you can run PEcAn functions on their own. 
+
+Example 1:
+
+Downloading Amerifluxlbl from Niwot Ridge for the year 2004:
+```
+raw.file <-PEcAn.data.atmosphere::download.AmerifluxLBL(sitename = "US-NR1", 
+                                             outfolder = ".", 
+                                             start_date = "2004-01-01", 
+                                             end_date = "2004-12-31")
+```
+
+If you wanted to convert it to PEcAn Standard you would subsequently execute the following:
+```
+bety = list(user='bety', password='bety',host='localhost', dbname='bety', driver='PostgreSQL',write=TRUE)
+con <- PEcAn.DB::db.open(bety)
+bety$con <- con
+
+in.path <- '.'
+in.prefix <- raw.file$dbfile.name
+outfolder <- '.'
+format.id <- 5000000002
+format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = bety)
+lon <- 105.54
+lat <- 40.03
+format$time_zone <- "America/Chicago"
+PEcAn.data.atmosphere::met2CF.csv(in.path = in.path, 
+                                  in.prefix ="US-NR1_CF", 
+                                  outfolder = ".", 
+                                  start_date ="2004-01-01",
+                                  end_date = "2004-01-01",
+                                  format = format) 
+```
+Note: The format.id is specific to the format type of the raw data. You can look up the format id in the Bety database. 
+
+
+## Cohort and Pool Data
+  
+COMING SOON!
+        
