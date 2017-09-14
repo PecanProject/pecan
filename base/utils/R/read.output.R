@@ -94,9 +94,10 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
     result <- lapply(variables, function(x) NA)
   }
   
-  PEcAn.logger::logger.info(variables, "Mean:", 
-              lapply(result, function(x) signif(mean(x, na.rm = TRUE), 3)), "Median:", 
-              lapply(result, function(x) signif(median(x, na.rm = TRUE), 3)))
+  PEcAn.logger::logger.info(
+    variables,
+    "Mean:", lapply(result, function(x) signif(mean(x, na.rm = TRUE), 3)),
+    "Median:", lapply(result, function(x) signif(stats::median(x, na.rm = TRUE), 3)))
   
   if(dataframe==FALSE){
   return(result)
@@ -122,7 +123,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
     
     if(length(time_breaks) == 0 & length(years)>1){
       model$posix <- as.POSIXct(model$time*86400,origin= origin,tz="UTC")
-      model$year <- year(model$posix)
+      model$year <- lubridate::year(model$posix)
       return(model)
     } else {
       N <- c(0,time_breaks, length(model$time))

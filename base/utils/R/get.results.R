@@ -225,9 +225,9 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
 
 ##' @export
 runModule.get.results <- function(settings) {
-  if (is.MultiSettings(settings)) {
-    return(papply(settings, runModule.get.results))
-  } else if (is.Settings(settings)) {
+  if (PEcAn.settings::is.MultiSettings(settings)) {
+    return(PEcAn.settings::papply(settings, runModule.get.results))
+  } else if (PEcAn.settings::is.Settings(settings)) {
     return(get.results(settings))
   } else {
     stop("runModule.get.results only works with Settings or MultiSettings")

@@ -26,10 +26,10 @@ get.quantiles <- function(quantiles.tag) {
   }
   if (!is.null(quantiles.tag$sigma)) {
     sigmas <- as.numeric(quantiles.tag[names(quantiles.tag) == "sigma"])
-    quantiles <- append(quantiles, 1 - pnorm(sigmas))
+    quantiles <- append(quantiles, 1 - stats::pnorm(sigmas))
   }
   if (length(quantiles) == 0) {
-    quantiles <- 1 - pnorm(-3:3)  #default
+    quantiles <- 1 - stats::pnorm(-3:3)  #default
   }
   if (!0.5 %in% quantiles) {
     quantiles <- append(quantiles, 0.5)
