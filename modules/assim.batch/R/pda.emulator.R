@@ -531,7 +531,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   current.step <- "post-MCMC"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
-  mcmc.samp.list <- list()
+  mcmc.samp.list <- sf.samp.list <- list()
   
   for (c in seq_len(settings$assim.batch$chain)) {
     
@@ -637,9 +637,10 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   # save sf posterior
   if(!is.null(sf)){
     sf.filename <- file.path(settings$outdir, 
-                             paste0("post.distns.pda.sf", "_", settings$assim.batch$ensemble.id, ".Rdata"))
+                             paste0("posteriors.pda.sf", "_", settings$assim.batch$ensemble.id, ".Rdata"))
     sf.prior <- prior.list[[sf.ind]]
-    write_sf_posterior(sf.samp.list, sf.prior, sf.filename)
+    sf.post.distns <- write_sf_posterior(sf.samp.list, sf.prior, sf.filename)
+    save(sf.post.distns, file = sf.filename)
     settings$assim.batch$sf.path <- sf.filename
   }
   
