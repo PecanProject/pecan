@@ -236,14 +236,11 @@ write_sf_posterior <- function(sf.samp.list, sf.prior, sf.filename){
   
   # convert mcmc.list to list of matrices
   sf.subset.list <- list()
-  sf.subset.list[[1]] <- do.call("rbind", sf.samp)
-  
-  # reformat each sublist such that params have their own list and return
-  sf.subset <- lapply(seq_along(sf.subset.list), function(x) as.list(data.frame(sf.subset.list[[x]])))
-  
+  sf.subset.list[[1]] <- as.data.frame(do.call("rbind", sf.samp))
+
   filename.flag <- gsub(".*post.distns\\s*|.Rdata.*", "", basename(sf.filename))
   
-  sf.post.distns <- PEcAn.MA::approx.posterior(trait.mcmc = sf.subset[[1]], priors = sf.prior,
+  sf.post.distns <- PEcAn.MA::approx.posterior(trait.mcmc = sf.subset.list[[1]], priors = sf.prior,
                                                outdir = dirname(sf.filename),
                                                filename.flag = filename.flag)
   
