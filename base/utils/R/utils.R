@@ -347,17 +347,25 @@ get.parameter.stat <- function(mcmc.summary, parameter) {
 ## in future, perhaps create S3 functions: get.stats.pdf <- pdf.stats
 pdf.stats <- function(distn, A, B) {
   distn <- as.character(distn)
-  mean <- switch(distn, gamma = A/B, lnorm = exp(A + 1/2 * B^2), beta = A/(A +
-                                                                             B), weibull = B * gamma(1 + 1/A), norm = A, f = ifelse(B > 2, B/(B - 2),
-                                                                                                                                    mean(stats::rf(10000, A, B))))
-  var <- switch(distn, gamma = A/B^2,
-                lnorm = exp(2 * A + B ^ 2) * (exp(B ^ 2) - 1),
-                beta = A * B/((A + B) ^ 2 * (A + B + 1)),
-                weibull = B ^ 2 * (gamma(1 + 2 / A) -
-                                     gamma(1 + 1 / A) ^ 2),
-                norm = B ^ 2, f = ifelse(B > 4,
-                                         2 * B^2 * (A + B - 2) / (A * (B - 2) ^ 2 * (B - 4)),
-                                         var(stats::rf(1e+05, A, B))))
+  mean <- switch(distn,
+    gamma = A/B,
+    lnorm = exp(A + 1/2 * B^2),
+    beta = A/(A + B),
+    weibull = B * gamma(1 + 1/A),
+    norm = A,
+    f = ifelse(B > 2,
+               B/(B - 2),
+               mean(stats::rf(10000, A, B))))
+  var <- switch(distn,
+    gamma = A/B^2,
+    lnorm = exp(2 * A + B ^ 2) * (exp(B ^ 2) - 1),
+    beta = A * B/((A + B) ^ 2 * (A + B + 1)),
+    weibull = B ^ 2 * (gamma(1 + 2 / A) -
+                        gamma(1 + 1 / A) ^ 2),
+    norm = B ^ 2,
+    f = ifelse(B > 4,
+               2 * B^2 * (A + B - 2) / (A * (B - 2) ^ 2 * (B - 4)),
+               var(stats::rf(1e+05, A, B))))
   qci <- get(paste0("q", distn))
   ci <- qci(c(0.025, 0.975), A, B)
   lcl <- ci[1]
@@ -701,7 +709,9 @@ convert.expr <- function(expression) {
 ##'
 ##' @examples
 ##' \dontrun{
-##' download.file("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc", "~/pres.sfc.2000.nc")
+##' download.file("
+##'   ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc",
+##'   "~/pres.sfc.2000.nc")
 ##' }
 ##'
 ##' @export
@@ -739,8 +749,10 @@ download.file <- function(url, filename, method) {
 ##' 
 ##' @examples
 ##' \dontrun{
-##' dap <- retry.func(ncdf4::nc_open('https://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4'),
-##' maxErrors=10, sleep=2)
+##' dap <- retry.func(
+##'   ncdf4::nc_open('https://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4'),
+##'   maxErrors=10,
+##'   sleep=2)
 ##' }
 ##' 
 ##' @export
