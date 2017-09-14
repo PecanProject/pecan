@@ -75,7 +75,7 @@
                              exact.dates = FALSE)
     } else if (exists(fcn2)) {
       fcn <- fcn2
-      format <- PEcAn.db::query.format.vars(input.id = input.id, bety = bety)
+      format <- PEcAn.DB::query.format.vars(input.id = input.id, bety = bety)
       cf.id <- PEcAn.utils::convert.input(input.id = input.id,
                              outfolder = outfolder,
                              formatname = formatname,
