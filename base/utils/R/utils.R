@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
@@ -30,7 +30,7 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
   data(mstmip_vars, package = "PEcAn.utils")
   var <- mstmip_vars[mstmip_vars$Variable.Name == name, ]
   dims <- list()
-  
+
   if (nrow(var) == 0) {
     data(mstmip_local, package = "PEcAn.utils")
     var <- mstmip_local[mstmip_local$Variable.Name == name, ]
@@ -39,13 +39,13 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
         PEcAn.logger::logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
       }
       if (is.na(time)) {
-        time <- ncdf4::ncdim_def(name = "time", units = "days since 1900-01-01 00:00:00", 
+        time <- ncdf4::ncdim_def(name = "time", units = "days since 1900-01-01 00:00:00",
                           vals = 1:365, calendar = "standard", unlim = TRUE)
       }
       return(ncdf4::ncvar_def(name, "", list(time), -999, name))
     }
   }
-  
+
   for (i in 1:4) {
     vd <- var[[paste0("dim", i)]]
     if (vd == "lon" && !is.na(lon)) {
@@ -75,7 +75,7 @@ mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = 
 #--------------------------------------------------------------------------------------------------#
 ##' left padded by zeros up to a given number of digits.
 ##'
-##' returns a string representing a given number 
+##' returns a string representing a given number
 ##' @title Left Pad Zeros
 ##' @export
 ##' @param num number to be padded (integer)
@@ -91,7 +91,7 @@ left.pad.zeros <- function(num, digits = 5) {
 
 ##' Truncates vector at 0
 ##' @name zero.truncate
-##' @title Zero Truncate 
+##' @title Zero Truncate
 ##' @param y numeric vector
 ##' @return numeric vector with all values less than 0 set to 0
 ##' @export
@@ -106,12 +106,12 @@ zero.truncate <- function(y) {
 ##' R implementation of rsync
 ##'
 ##' rsync is a file copying tool in bash
-##' @title rsync 
+##' @title rsync
 ##' @param args rsync arguments (see man rsync)
-##' @param from source 
+##' @param from source
 ##' @param to destination
-##' @param pattern file pattern to be matched 
-##' @return nothing, transfers files as a side effect 
+##' @param pattern file pattern to be matched
+##' @return nothing, transfers files as a side effect
 ##' @export
 ##' @author David LeBauer
 ##' @author Shawn Serbin
@@ -126,9 +126,9 @@ rsync <- function(args, from, to, pattern = "") {
 ##' R implementation of SSH
 ##'
 ##' @title SSH
-##' @param host 
-##' @param ... 
-##' @param args 
+##' @param host
+##' @param ...
+##' @param args
 ##' @export
 #--------------------------------------------------------------------------------------------------#
 ssh <- function(host, ..., args = "") {
@@ -159,8 +159,8 @@ vecpaste <- function(x) paste(paste0("'", x, "'"), collapse = ",")
 ##' Provides a consistent method of naming runs; for use in model input files and indices
 ##' @title Get Run ID
 ##' @param run.type character, can be any character; currently 'SA' is used for sensitivity analysis, 'ENS' for ensemble run.
-##' @param index unique index for different runs, e.g. integer counting members of an 
-##' ensemble or a quantile used to which a trait has been perturbed for sensitivity analysis   
+##' @param index unique index for different runs, e.g. integer counting members of an
+##' ensemble or a quantile used to which a trait has been perturbed for sensitivity analysis
 ##' @param trait name of trait being sampled (for sensitivity analysis)
 ##' @param pft.name name of PFT (value from pfts.names field in database)
 ##' @return id representing a model run
@@ -187,14 +187,14 @@ listToXml <- function(x, ...) {
 ##'
 ##' Can convert list or other object to an xml object using xmlNode
 ##' @title List to XML
-##' @param item 
+##' @param item
 ##' @param tag xml tag
 ##' @return xmlNode
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Rob Kooper
 #--------------------------------------------------------------------------------------------------#
 listToXml.default <- function(item, tag) {
-  
+
   # just a textnode, or empty node with attributes
   if (typeof(item) != "list") {
     if (length(item) > 1) {
@@ -207,7 +207,7 @@ listToXml.default <- function(item, tag) {
       return(XML::xmlNode(tag, item))
     }
   }
-  
+
   # create the node
   if (identical(names(item), c("text", ".attrs"))) {
     # special case a node with text and attributes
@@ -221,7 +221,7 @@ listToXml.default <- function(item, tag) {
       }
     }
   }
-  
+
   # add attributes to node
   attrs <- item[[".attrs"]]
   for (name in names(attrs)) {
@@ -237,9 +237,9 @@ listToXml.default <- function(item, tag) {
 ##' Provides a zero bounded density estimate of a parameter.
 ##' Kernel Density Estimation used by the \code{\link{stats::density}} function will cause problems at the left hand end because it will put some weight on negative values. One useful approach is to transform to logs, estimate the density using KDE, and then transform back.
 ##' @title Zero Bounded Density
-##' @param x 
+##' @param x
 ##' @param bw The smoothing bandwidth to be used. See 'bw.nrd'
-##' @return data frame with back-transformed log density estimate 
+##' @return data frame with back-transformed log density estimate
 ##' @author \href{http://stats.stackexchange.com/q/6588/2750}{Rob Hyndman}
 ##' @references M. P. Wand, J. S. Marron and D. Ruppert, 1991. Transformations in Density Estimation. Journal of the American Statistical Association. 86(414):343-353 \url{http://www.jstor.org/stable/2290569}
 zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
@@ -261,12 +261,12 @@ zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
 ##' @export
 ##' @author David LeBauer
 summarize.result <- function(result) {
-  ans1 <- plyr::ddply(result[result$n == 1, ], 
-                plyr::.(citation_id, site_id, trt_id, control, greenhouse, 
-                  date, time, cultivar_id, specie_id), 
-                plyr::summarise, n = length(n), 
-                mean = mean(mean), 
-                statname = ifelse(length(n) == 1, "none", "SE"), 
+  ans1 <- plyr::ddply(result[result$n == 1, ],
+                plyr::.(citation_id, site_id, trt_id, control, greenhouse,
+                  date, time, cultivar_id, specie_id),
+                plyr::summarise, n = length(n),
+                mean = mean(mean),
+                statname = ifelse(length(n) == 1, "none", "SE"),
                 stat = sd(mean) / sqrt(length(n)))
   ans2 <- result[result$n != 1, colnames(ans1)]
   return(rbind(ans1, ans2))
@@ -277,8 +277,8 @@ summarize.result <- function(result) {
 ##' Further summarizes output from summary.mcmc
 ##'
 ##' @title Get stats for parameters in MCMC output
-##' @param mcmc.summary 
-##' @param sample.size 
+##' @param mcmc.summary
+##' @param sample.size
 ##' @return list with summary statistics for parameters in an MCMC chain
 ##' @author David LeBauer
 get.stats.mcmc <- function(mcmc.summary, sample.size) {
@@ -301,16 +301,16 @@ get.stats.mcmc <- function(mcmc.summary, sample.size) {
 ##' Used by \code{\link{get.parameter.stat}}.
 ##' @title Paste Stats
 ##' @name paste.stats
-##' @param mcmc.summary 
-##' @param median 
-##' @param lcl 
-##' @param ucl 
+##' @param mcmc.summary
+##' @param median
+##' @param lcl
+##' @param ucl
 ##' @param n
 ##' @export
 ##' @author David LeBauer
 paste.stats <- function(mcmc.summary, median, lcl, ucl, n = 2) {
-  paste0("$", tabnum(median, n), 
-         "(", tabnum(lcl, n), ",", tabnum(ucl, n), ")", 
+  paste0("$", tabnum(median, n),
+         "(", tabnum(lcl, n), ",", tabnum(ucl, n), ")",
          "$")
 } # paste.stats
 
@@ -319,8 +319,8 @@ paste.stats <- function(mcmc.summary, median, lcl, ucl, n = 2) {
 ##' Gets statistics for LaTeX - formatted table
 ##'
 ##' @title Get Parameter Statistics
-##' @param mcmc.summary 
-##' @param parameter 
+##' @param mcmc.summary
+##' @param parameter
 ##' @return table with parameter statistics
 ##' @author David LeBauer
 ##' @export
@@ -328,34 +328,35 @@ paste.stats <- function(mcmc.summary, median, lcl, ucl, n = 2) {
 ##' \dontrun{get.parameter.stat(mcmc.summaries[[1]], 'beta.o')}
 get.parameter.stat <- function(mcmc.summary, parameter) {
   paste.stats(median = mcmc.summary$quantiles[parameter, "50%"],
-              lcl = mcmc.summary$quantiles[parameter, c("2.5%")], 
-              ucl = mcmc.summary$quantiles[parameter, c("97.5%")], 
+              lcl = mcmc.summary$quantiles[parameter, c("2.5%")],
+              ucl = mcmc.summary$quantiles[parameter, c("97.5%")],
               n = 2)
 } # get.parameter.stat
+#--------------------------------------------------------------------------------------------------#
 
 
 #--------------------------------------------------------------------------------------------------#
-##' Calculate mean, variance statistics, and CI from a known distribution 
+##' Calculate mean, variance statistics, and CI from a known distribution
 ##'
 ##' @title Probability Distirbution Function Statistics
-##' @param distn name of distribution used by R (beta, f, gamma, lnorm, norm, weibull) 
-##' @param A first parameter 
+##' @param distn name of distribution used by R (beta, f, gamma, lnorm, norm, weibull)
+##' @param A first parameter
 ##' @param B second parameter
 ##' @return list with mean, variance, and 95 CI
 ##' @author David LeBauer
 ## in future, perhaps create S3 functions: get.stats.pdf <- pdf.stats
 pdf.stats <- function(distn, A, B) {
   distn <- as.character(distn)
-  mean <- switch(distn, gamma = A/B, lnorm = exp(A + 1/2 * B^2), beta = A/(A + 
-                                                                             B), weibull = B * gamma(1 + 1/A), norm = A, f = ifelse(B > 2, B/(B - 2), 
+  mean <- switch(distn, gamma = A/B, lnorm = exp(A + 1/2 * B^2), beta = A/(A +
+                                                                             B), weibull = B * gamma(1 + 1/A), norm = A, f = ifelse(B > 2, B/(B - 2),
                                                                                                                                     mean(rf(10000, A, B))))
-  var <- switch(distn, gamma = A/B^2, 
-                lnorm = exp(2 * A + B ^ 2) * (exp(B ^ 2) - 1), 
-                beta = A * B/((A + B) ^ 2 * (A + B + 1)), 
-                weibull = B ^ 2 * (gamma(1 + 2 / A) - 
-                                     gamma(1 + 1 / A) ^ 2), 
-                norm = B ^ 2, f = ifelse(B > 4, 
-                                         2 * B^2 * (A + B - 2) / (A * (B - 2) ^ 2 * (B - 4)), 
+  var <- switch(distn, gamma = A/B^2,
+                lnorm = exp(2 * A + B ^ 2) * (exp(B ^ 2) - 1),
+                beta = A * B/((A + B) ^ 2 * (A + B + 1)),
+                weibull = B ^ 2 * (gamma(1 + 2 / A) -
+                                     gamma(1 + 1 / A) ^ 2),
+                norm = B ^ 2, f = ifelse(B > 4,
+                                         2 * B^2 * (A + B - 2) / (A * (B - 2) ^ 2 * (B - 4)),
                                          var(rf(1e+05, A, B))))
   qci <- get(paste0("q", distn))
   ci <- qci(c(0.025, 0.975), A, B)
@@ -364,13 +365,14 @@ pdf.stats <- function(distn, A, B) {
   out <- unlist(list(mean = mean, var = var, lcl = lcl, ucl = ucl))
   return(out)
 } # pdf.stats
+#--------------------------------------------------------------------------------------------------#
 
 
 #--------------------------------------------------------------------------------------------------#
-##' Dictionary of terms used to identify traits in ed, filenames, and figures 
+##' Dictionary of terms used to identify traits in ed, filenames, and figures
 ##'
-##' @return a dataframe with id, the name used by ED and PEcAn database for a parameter; fileid, an abbreviated  
-##'     name used for files; figid, the parameter name written out as best known in english for figures 
+##' @return a dataframe with id, the name used by ED and PEcAn database for a parameter; fileid, an abbreviated
+##'     name used for files; figid, the parameter name written out as best known in english for figures
 ##'     and tables.
 ##'
 ##' @param traits a vector of trait names, if traits = NULL, all of the traits will be returned.
@@ -416,31 +418,34 @@ tabnum <- function(x, n = 3) {
   names(ans) <- names(x)
   return(ans)
 } # tabnum
+#--------------------------------------------------------------------------------------------------#
 
 
 #--------------------------------------------------------------------------------------------------#
-##' Scale temperature dependent trait from measurement temperature to reference temperature 
+##' Scale temperature dependent trait from measurement temperature to reference temperature
 ##'
-##' @title Arrhenius scaling 
+##' @title Arrhenius scaling
 ##' @param observed.value observed value of temperature dependent trait, e.g. Vcmax, root respiration rate
 ##' @param old.temp temperature at which measurement was taken or previously scaled to
-##' @param new.temp temperature to be scaled to, default = 25 C  
+##' @param new.temp temperature to be scaled to, default = 25 C
 ##' @return numeric value at reference temperature
 ##' @export
 ##' @author unknown
 arrhenius.scaling <- function(observed.value, old.temp, new.temp = 25) {
-  return(observed.value / exp(3000 * (1 / (273.15 + new.temp) - 1 / (273.15 + old.temp))))
+  new.temp.K <- udunits2::ud.convert(new.temp, "degC", "K")
+  old.temp.K <- udunits2::ud.convert(old.temp, "degC", "K")
+  return(observed.value / exp(3000 * (1 / (new.temp.K) - 1 / (old.temp.K))))
 } # arrhenius.scaling
+#--------------------------------------------------------------------------------------------------#
 
 
 #--------------------------------------------------------------------------------------------------#
 ##' Capitalize a string
 ##'
-##' @title Capitalize a string 
+##' @title Capitalize a string
 ##' @param x string
 ##' @return x, capitalized
 ##' @author David LeBauer
-#--------------------------------------------------------------------------------------------------#
 capitalize <- function(x) {
   x <- as.character(x)
   s <- strsplit(x, " ")[[1]]
@@ -448,6 +453,7 @@ capitalize <- function(x) {
 } # capitalize
 
 isFALSE <- function(x) !isTRUE(x)
+#--------------------------------------------------------------------------------------------------#
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -457,14 +463,14 @@ isFALSE <- function(x) !isTRUE(x)
 ##' @title newxtable
 ##' @param x data.frame to be converted to latex table
 ##' @param environment can be 'table'; 'sidewaystable' if using latex rotating package
-##' @param table.placement 
-##' @param label 
-##' @param caption 
-##' @param caption.placement 
-##' @param align 
-##' @return Latex version of table, with percentages properly formatted 
+##' @param table.placement
+##' @param label
+##' @param caption
+##' @param caption.placement
+##' @param align
+##' @return Latex version of table, with percentages properly formatted
 ##' @author David LeBauer
-newxtable <- function(x, environment = "table", table.placement = "ht", label = NULL, 
+newxtable <- function(x, environment = "table", table.placement = "ht", label = NULL,
                       caption = NULL, caption.placement = NULL, align = NULL) {
   print(xtable(x, label = label, caption = caption, align = align),
         floating.environment = environment,
@@ -473,6 +479,7 @@ newxtable <- function(x, environment = "table", table.placement = "ht", label = 
         #        sanitize.text.function = function(x) gsub("%", "\\\\%", x),
         sanitize.rownames.function = function(x) paste(''))
 } # newxtable
+#--------------------------------------------------------------------------------------------------#
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -484,11 +491,12 @@ newxtable <- function(x, environment = "table", table.placement = "ht", label = 
 ##' @param year year of publication
 ##' @param title manuscript title
 ##' @return bibtex citation
-#--------------------------------------------------------------------------------------------------#
+##' @author unknown
 bibtexify <- function(author, year, title) {
   acronym <- abbreviate(title, minlength = 3, strict = TRUE)
   return(paste0(author, year, acronym))
 } # bibtexify
+#--------------------------------------------------------------------------------------------------#
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -498,7 +506,7 @@ bibtexify <- function(author, year, title) {
 ##' This transformation is required for using data in BUGS/JAGS
 ##' @title as.sequence
 ##' @param x categorical variable as vector
-##' @param na.rm logical: return NA's or replace with max(x) + 1 
+##' @param na.rm logical: return NA's or replace with max(x) + 1
 ##' @return sequence from 1:length(unique(x))
 ##' @export
 ##' @author David LeBauer
@@ -512,6 +520,7 @@ as.sequence <- function(x, na.rm = TRUE) {
   }
   return(x2)
 } # as.sequence
+#--------------------------------------------------------------------------------------------------#
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -520,21 +529,23 @@ as.sequence <- function(x, na.rm = TRUE) {
 ##' Test to determine if access to a remote server is available.
 ##' Can be used to exclude / include tests or to prevent / identify access errors
 ##' @title Test Remote
-##' @param host 
-##' @return logical - TRUE if remote connection is available 
+##' @param host
+##' @return logical - TRUE if remote connection is available
 ##' @author Rob Kooper
 test.remote <- function(host) {
   return(try(remote.execute.cmd(host, "/bin/true")) == 0)
 } # test.remote
+#--------------------------------------------------------------------------------------------------#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' Create a temporary settings file
 ##'
 ##' Uses \code{\link{tempfile}} function to provide a valid temporary file (OS independent)
 ##' Useful for testing functions that depend on settings file
 ##' Reference: http://stackoverflow.com/a/12940705/199217
 ##' @title temp.settings
-##' @param settings.txt 
+##' @param settings.txt
 ##' @return character vector written to and read from a temporary file
 ##' @export
 ##' @author David LeBauer
@@ -545,10 +556,12 @@ temp.settings <- function(settings.txt) {
   settings <- readLines(temp)
   return(settings)
 } # temp.settings
+#--------------------------------------------------------------------------------------------------#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' Test if function gives an error
-##' 
+##'
 ##' adaptation of try that returns a logical value (FALSE if error)
 ##' @title tryl
 ##' @param FUN function to be evaluated for error
@@ -565,8 +578,10 @@ tryl <- function(FUN) {
   ans <- !any(class(out) == "error")
   return(ans)
 } # tryl
+#--------------------------------------------------------------------------------------------------#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' load model package
 ##' @title Load model package
 ##' @param model name of model
@@ -586,7 +601,10 @@ load.modelpkg <- function(model) {
     }
   }
 } # load.modelpkg
+#--------------------------------------------------------------------------------------------------#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' conversion function for the unit conversions that udunits cannot handle but often needed in PEcAn calculations
 ##' @title misc.convert
 ##' @export
@@ -596,14 +614,14 @@ load.modelpkg <- function(model) {
 ##' @return val converted values
 ##' @author Istem Fer, Shawn Serbin
 misc.convert <- function(x, u1, u2) {
-  
+
   amC   <- PeriodicTable::mass("C")  # atomic mass of carbon
   mmH2O <- sum(PeriodicTable::mass(c("H", "H", "O"))) # molar mass of H2O, g/mol
-  
+
   if (u1 == "umol C m-2 s-1" & u2 == "kg C m-2 s-1") {
-    val <- udunits2::ud.convert(x, "ug", "kg") * amC 
+    val <- udunits2::ud.convert(x, "ug", "kg") * amC
   } else if (u1 == "kg C m-2 s-1" & u2 == "umol C m-2 s-1") {
-    val <- udunits2::ud.convert(x, "kg", "ug") / amC 
+    val <- udunits2::ud.convert(x, "kg", "ug") / amC
   } else if (u1 == "mol H2O m-2 s-1" & u2 == "kg H2O m-2 s-1") {
     val <- udunits2::ud.convert(x, "g", "kg") * mmH2O
   } else if (u1 == "kg H2O m-2 s-1" & u2 == "mol H2O m-2 s-1") {
@@ -616,14 +634,16 @@ misc.convert <- function(x, u1, u2) {
     u1 <- gsub("gC","g*12",u1)
     u2 <- gsub("gC","g*12",u2)
     val <- udunits2::ud.convert(x,u1,u2)
-    
-    
+
+
 #    PEcAn.logger::logger.severe(paste("Unknown units", u1, u2))
   }
   return(val)
 } # misc.convert
+#--------------------------------------------------------------------------------------------------#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' function to check whether units are convertible by misc.convert function
 ##' @title misc.are.convertible
 ##' @export
@@ -632,15 +652,15 @@ misc.convert <- function(x, u1, u2) {
 ##' @return logical
 ##' @author Istem Fer, Shawn Serbin
 misc.are.convertible <- function(u1, u2) {
-  
+
   # make sure the order of vectors match
-  units.from <- c("umol C m-2 s-1", "kg C m-2 s-1", 
-                  "mol H2O m-2 s-1", "kg H2O m-2 s-1", 
+  units.from <- c("umol C m-2 s-1", "kg C m-2 s-1",
+                  "mol H2O m-2 s-1", "kg H2O m-2 s-1",
                   "Mg ha-1", "kg C m-2")
-  units.to <- c("kg C m-2 s-1", "umol C m-2 s-1", 
-                "kg H2O m-2 s-1", "mol H2O m-2 s-1", 
+  units.to <- c("kg C m-2 s-1", "umol C m-2 s-1",
+                "kg H2O m-2 s-1", "mol H2O m-2 s-1",
                 "kg C m-2", "Mg ha-1")
-  
+
   if(u1 %in% units.from & u2 %in% units.to) {
     if (which(units.from == u1) == which(units.to == u2)) {
       return(TRUE)
@@ -651,8 +671,10 @@ misc.are.convertible <- function(u1, u2) {
     return(FALSE)
   }
 }
+#--------------------------------------------------------------------------------------------------#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' Convert expression to variable names
 ##' @title convert.expr
 ##' @param expression expression string
@@ -676,8 +698,10 @@ convert.expr <- function(expression) {
 
   return(list(variable.drv = deri.var, variable.eqn = list(variables = variables, expression = deri.eqn)))
 }
+#--------------------------------------------------------------------------------------------------#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' Simple function to use ncftpget for FTP downloads behind a firewall.
 ##' Requires ncftpget and a properly formatted config file in the users
 ##' home directory
@@ -686,17 +710,17 @@ convert.expr <- function(expression) {
 ##' @param filename destination file name
 ##' @param method Method of file retrieval. Can set this using the options(download.ftp.method=[method]) in your Rprofile.
 ##' example options(download.ftp.method="ncftpget")
-##' 
+##'
 ##' @examples
 ##' download.file("http://lib.stat.cmu.edu/datasets/csb/ch11b.txt","~/test.download.txt")
-##' 
+##'
 ##' @examples
 ##' \dontrun{
 ##' download.file("ftp://ftp.cdc.noaa.gov/Datasets/NARR/monolevel/pres.sfc.2000.nc", "~/pres.sfc.2000.nc")
 ##' }
 ##'
 ##' @export
-##' 
+##'
 ##' @author Shawn Serbin, Rob Kooper
 download.file <- function(url, filename, method) {
   if (startsWith(url, "ftp://")) {
@@ -712,9 +736,54 @@ download.file <- function(url, filename, method) {
     utils::download.file(url, filename)
   }
 }
+#--------------------------------------------------------------------------------------------------#
 
+
+#--------------------------------------------------------------------------------------------------#
+##' Retry function X times before stopping in error
+##' 
+##' @title retry.func
+##' @name retry.func
+##' @description Retry function X times before stopping in error
+##'
+##' @param expr The function to try running
+##' @param maxErrors The number of times to retry the function
+##' @param sleep How long to wait before retrying the function call
+##' 
+##' @return retval returns the results of the function call
+##' 
+##' @examples
+##' \dontrun{
+##' dap <- retry.func(ncdf4::nc_open('https://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4'),
+##' maxErrors=10, sleep=2)
+##' }
+##' 
+##' @export
+##' @author Shawn Serbin <adapted from https://stackoverflow.com/questions/20770497/how-to-retry-a-statement-on-error>
+
+retry.func <- function(expr, isError=function(x) "try-error" %in% class(x), maxErrors=5, sleep=0) {
+  attempts = 0
+  retval = try(eval(expr))
+  while (isError(retval)) {
+    attempts = attempts + 1
+    if (attempts >= maxErrors) {
+      msg = sprintf("retry: too many retries [[%s]]", capture.output(str(retval)))
+      PEcAn.logger::logger.warn(msg)
+      stop(msg)
+    } else {
+      msg = sprintf("retry: error in attempt %i/%i [[%s]]", attempts, maxErrors, 
+                    capture.output(str(retval)))
+      PEcAn.logger::logger.warn(msg)
+      #warning(msg)
+    }
+    if (sleep > 0) Sys.sleep(sleep)
+    retval = try(eval(expr))
+  }
+  return(retval)
+}
+#--------------------------------------------------------------------------------------------------#
 
 
 ####################################################################################################
-### EOF.  End of R script file.              
+### EOF.  End of R script file.
 ####################################################################################################

@@ -21,7 +21,6 @@
 ##' @export
 ##'
 ##' @author Michael Dietze, Shawn Serbin
-##' @importFrom ncdf4 ncdim_def ncvar_def ncatt_get ncvar_add
 model2netcdf.FATES <- function(outdir) {
 
     #        var_update("AR","AutoResp","kgC m-2 s-1")

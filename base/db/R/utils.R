@@ -1,13 +1,13 @@
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the 
+# are made available under the terms of the
 # University of Illinois/NCSA Open Source License
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-.db.utils <- new.env() 
+.db.utils <- new.env()
 .db.utils$created <- 0
 .db.utils$queries <- 0
 .db.utils$deprecated <- 0
@@ -69,19 +69,19 @@ db.query <- function(query, con=NULL, params=NULL) {
 db.open <- function(params) {
   params$dbfiles <- NULL
   params$write <- NULL
-  
+
   if(is.null(params$driver) || params$driver == "PostgreSQL") {
     requireNamespace("RPostgreSQL")
   }
-  
+
   if (is.null(params$driver)) {
-    args <- c(drv=DBI::dbDriver("PostgreSQL"), params, recursive=TRUE)
+    args <- c(drv = DBI::dbDriver("PostgreSQL"), params, recursive = TRUE)
   } else {
-    args <- c(drv=DBI::dbDriver(params$driver), params, recursive=TRUE)
+    args <- c(drv = DBI::dbDriver(params$driver), params, recursive = TRUE)
     args[['driver']] <- NULL
   }
 
-  c <- do.call(dbConnect, as.list(args))
+  c <- do.call(DBI::dbConnect, as.list(args))
   id <- sample(1000, size=1)
   while(length(which(.db.utils$connections$id==id)) != 0) {
     id <- sample(1000, size=1)
@@ -113,12 +113,12 @@ db.close <- function(con, showWarnings=TRUE) {
   if (is.null(con)) {
     return()
   }
-  
+
   id <- attr(con, "pecanid")
   if (showWarnings && is.null(id)) {
-    PEcAn.logger::logger.warn("Connection created outside of PEcAn.db package")
+    PEcAn.logger::logger.warn("Connection created outside of PEcAn.DB package")
   } else {
-    deleteme <- which(.db.utils$connections$id==id)
+    deleteme <- which(.db.utils$connections$id == id)
     if (showWarnings && length(deleteme) == 0) {
       PEcAn.logger::logger.warn("Connection might have been closed already.");
     } else {
@@ -127,7 +127,7 @@ db.close <- function(con, showWarnings=TRUE) {
       .db.utils$connections$log <- .db.utils$connections$log[-deleteme]
     }
   }
-  dbDisconnect(con)
+  DBI::dbDisconnect(con)
 }
 
 ##' Debug method for db.open and db.close
@@ -161,7 +161,7 @@ db.print.connections <- function() {
 }
 
 ##' Test connection to database
-##' 
+##'
 ##' Useful to only run tests that depend on database when a connection exists
 ##' @title db.exists
 ##' @param params database connection information
@@ -181,7 +181,7 @@ db.exists <- function(params, write=TRUE, table=NA) {
   } else {
     on.exit(db.close(con))
   }
-  
+
   #check table's privilege about read and write permission
   user.permission <<- tryCatch({
     invisible(db.query(paste0("select privilege_type from information_schema.role_table_grants where grantee='",params$user,"' and table_catalog = '",params$dbname,"' and table_name='",table,"'"), con))
@@ -194,43 +194,24 @@ db.exists <- function(params, write=TRUE, table=NA) {
   if (!is.na(table)){
     read.perm = FALSE
     write.perm = FALSE
-    
+
     # check read permission
     if ('SELECT' %in% user.permission[['privilege_type']]) {
       read.perm = TRUE
     }
-    
+
     #check write permission
     if ('INSERT' %in% user.permission[['privilege_type']] &&'UPDATE' %in% user.permission[['privilege_type']] ) {
       write.perm = TRUE
     }
-    
+
     if (read.perm == FALSE){
       return(invisible(FALSE))
     }
-    
+
     # read a row from the database
     read.result <- tryCatch({
-      invisible(db.query(paste("SELECT * FROM", table, "LIMIT 1"), con))
-    }, error = function(e) {
-      PEcAn.logger::logger.error("Could not query database.\n\t", e)
-      db.close(con)
-      invisible(NULL)
-    })  
-    if (is.null(read.result)) {
-      return(invisible(FALSE))
-    }
-    
-    # get the table's primary key column
-    get.key <- tryCatch({
-      db.query(paste("SELECT pg_attribute.attname,format_type(pg_attribute.atttypid, pg_attribute.atttypmod) 
-                     FROM pg_index, pg_class, pg_attribute 
-                     WHERE 
-                     pg_class.oid = '",table,"'::regclass AND
-                     indrelid = pg_class.oid AND
-                     pg_attribute.attrelid = pg_class.oid AND 
-                     pg_attribute.attnum = any(pg_index.indkey)
-                     AND indisprimary"), con)     
+      invisible(db.query(query = paste("SELECT * FROM", table, "LIMIT 1"), con = con))
     }, error = function(e) {
       PEcAn.logger::logger.error("Could not query database.\n\t", e)
       db.close(con)
@@ -239,7 +220,26 @@ db.exists <- function(params, write=TRUE, table=NA) {
     if (is.null(read.result)) {
       return(invisible(FALSE))
     }
-    
+
+    # get the table's primary key column
+    get.key <- tryCatch({
+      db.query(query = paste("SELECT pg_attribute.attname,format_type(pg_attribute.atttypid, pg_attribute.atttypmod)
+                     FROM pg_index, pg_class, pg_attribute
+                     WHERE
+                     pg_class.oid = '", table, "'::regclass AND
+                     indrelid = pg_class.oid AND
+                     pg_attribute.attrelid = pg_class.oid AND
+                     pg_attribute.attnum = any(pg_index.indkey)
+                     AND indisprimary"), con = con)
+    }, error = function(e) {
+      PEcAn.logger::logger.error("Could not query database.\n\t", e)
+      db.close(con)
+      invisible(NULL)
+    })
+    if (is.null(read.result)) {
+      return(invisible(FALSE))
+    }
+
     # if requested write a row to the database
     if (write) {
       # in the case when has read permission but no write
@@ -247,9 +247,9 @@ db.exists <- function(params, write=TRUE, table=NA) {
       {
         return(invisible(FALSE))
       }
-      
+
       # when the permission correct to check whether write works
-      key <- get.key$attname 
+      key <- get.key$attname
       key.value<- read.result[key]
       coln.name <- names(read.result)
       write.coln <- ""
@@ -257,13 +257,14 @@ db.exists <- function(params, write=TRUE, table=NA) {
       {
         if (name != key)
         {
-          write.coln <- name 
-          break 
+          write.coln <- name
+          break
         }
       }
       write.value <- read.result[write.coln]
       result <- tryCatch({
-        db.query(paste("UPDATE ", table, " SET ", write.coln,"='", write.value, "' WHERE ",  key, "=", key.value, sep=""), con)
+        db.query(query = paste("UPDATE ", table, " SET ", write.coln,"='", write.value, "' WHERE ",  key, "=", key.value, sep=""),
+                 con = con)
         invisible(TRUE)
       }, error = function(e) {
         PEcAn.logger::logger.error("Could not write to database.\n\t", e)
@@ -273,16 +274,16 @@ db.exists <- function(params, write=TRUE, table=NA) {
       result <- TRUE
     }
   }
-  
+
   else{
     result <- TRUE
   }
-  
+
   invisible(result)
 }
 
 ##' Sets if the queries should be shown that are being executed
-##' 
+##'
 ##' Useful to print queries when debuging SQL statements
 ##' @title db.showQueries
 ##' @param show set to TRUE to show the queries, FALSE by default
@@ -293,7 +294,7 @@ db.showQueries <- function(show) {
 }
 
 ##' Returns if the queries should be shown that are being executed
-##' 
+##'
 ##' @title db.getShowQueries
 ##' @return will return TRUE if queries are shown
 ##' @export
@@ -303,7 +304,7 @@ db.getShowQueries <- function() {
 }
 
 ##' Retrieve id from a table matching query
-##' 
+##'
 ##' @title get.id
 ##' @param table name of table
 ##' @param colnames names of one or more columns used in where clause
@@ -320,15 +321,23 @@ get.id <- function(table, colnames, values, con, create=FALSE, dates=FALSE){
   values <- lapply(values, function(x) ifelse(is.character(x), shQuote(x), x))
   where_clause <- paste(colnames, values , sep = " = ", collapse = " and ")
   query <- paste("select id from", table, "where", where_clause, ";")
-  id <- db.query(query, con)[["id"]]
+  id <- db.query(query = query, con = con)[["id"]]
   if (is.null(id) && create) {
     colinsert <- paste0(colnames, collapse=", ")
     if (dates) colinsert <- paste0(colinsert, ", created_at, updated_at")
     valinsert <- paste0(values, collapse=", ")
     if (dates) valinsert <- paste0(valinsert, ", NOW(), NOW()")
     PEcAn.logger::logger.info("INSERT INTO ", table, " (", colinsert, ") VALUES (", valinsert, ")")
-    db.query(paste0("INSERT INTO ", table, " (", colinsert, ") VALUES (", valinsert, ")"), con)
+    db.query(query = paste0("INSERT INTO ", table, " (", colinsert, ") VALUES (", valinsert, ")"), con = con)
     id <- db.query(query, con)[["id"]]
   }
   return(id)
+}
+
+##' Convenience function to fix hostname if localhost
+default_hostname <- function(hostname) {
+  if (hostname == "localhost") {
+    hostname <- PEcAn.utils::fqdn();
+  }
+  return(hostname)
 }

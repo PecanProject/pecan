@@ -10,8 +10,6 @@ query.traits(spstr, priors, con = NULL, update.check.only = FALSE)
 \item{spstr}{string of species id's from trait database}
 
 \item{priors}{vector of parameters for which priors have been specified}
-
-\item{con}{}
 }
 \value{
 dataframe with trait data

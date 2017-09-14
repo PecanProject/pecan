@@ -38,7 +38,7 @@ remote.execute.cmd <- function(host, cmd, args = character(), stderr = FALSE) {
     host <- list(name = host)
   }
   
-  if ((host$name == "localhost") || (host$name == fqdn())) {
+  if ((host$name == "localhost") || (host$name == PEcAn.utils::fqdn())) {
     PEcAn.logger::logger.debug(paste(cmd, args))
     system2(cmd, args, stdout = TRUE, stderr = as.logical(stderr))
   } else {
@@ -171,9 +171,9 @@ remote.copy.to <- function(host, src, dst, delete = FALSE, stderr = FALSE) {
 #' is.localhost(fqdn())
 is.localhost <- function(host) {
   if (is.character(host)) {
-    return((host == "localhost") || (host == fqdn()))
+    return((host == "localhost") || (host == PEcAn.utils::fqdn()))
   } else if (is.list(host)) {
-    return((host$name == "localhost") || (host$name == fqdn()))
+    return((host$name == "localhost") || (host$name == PEcAn.utils::fqdn()))
   } else {
     return(FALSE)
   }
@@ -218,7 +218,7 @@ remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FA
              paste0("ign <- serialize(remoteout, fp)"), 
              "close(fp)")
   verbose <- ifelse(as.logical(verbose), "", FALSE)
-  if ((host$name == "localhost") || (host$name == fqdn())) {
+  if ((host$name == "localhost") || (host$name == PEcAn.utils::fqdn())) {
     if (R == "R") {
       Rbinary <- file.path(Sys.getenv("R_HOME"), "bin", "R")
       if (file.exists(Rbinary)) {
