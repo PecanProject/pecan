@@ -95,7 +95,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
 
       } else {
         # if qsub option is not invoked.  just start model runs in serial.
-        out <- start_serial(host = settings$host, rundir = settings$rundir, host_rundir = settings$host$rundir, job_script = "job.sh")
+        out <- start_serial(run = run, host = settings$host, rundir = settings$rundir, host_rundir = settings$host$rundir, job_script = "job.sh")
 
         # check output to see if an error occurred during the model run
         check_model_run(out = out, stop.on.error = stop.on.error)
@@ -136,7 +136,7 @@ start.model.runs <- function(settings, write = TRUE, stop.on.error = TRUE) {
         jobids[run] <- sub(settings$host$qsub.jobid, "\\1", out)
       }
     } else {
-      out <- start_serial(host = settings$host, rundir = settings$rundir,  host_rundir = settings$host$rundir,
+      out <- start_serial(run = run, host = settings$host, rundir = settings$rundir,  host_rundir = settings$host$rundir,
                           job_script = "launcher.sh")
 
       # check output to see if an error occurred during the model run

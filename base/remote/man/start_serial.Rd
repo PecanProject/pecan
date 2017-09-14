@@ -4,9 +4,11 @@
 \alias{start_serial}
 \title{Start model execution in serial mode}
 \usage{
-start_serial(host, rundir, host_rundir, job_script)
+start_serial(run, host, rundir, host_rundir, job_script)
 }
 \arguments{
+\item{run}{(numeric) run ID, as an integer}
+
 \item{host}{Remote host, as a list or character. Usually from \code{settings$host}.}
 
 \item{rundir}{Local run directory. Usually from \code{settings$rundir}}
