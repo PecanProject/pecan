@@ -8,6 +8,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+- Show workflowid in the URL when run is finshed and user clicks results (#1659)
 - `PEcAn.BIOCRO` now uses PEcAn-standard variable names. As a result, two output variables have been renamed but keep their exiting units and definitions:
 	- `StemBiom` renamed to `AbvGrndWood`
 	- `RootBiom` renamed to `root_carbon_content`
