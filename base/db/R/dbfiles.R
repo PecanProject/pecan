@@ -50,7 +50,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
   )
 
   # setup parent part of query if specified
-  if (is.na(parentid)) {
+  if (is.na(parentid) || is.null(parentid)) {
     parent <- ""
   } else {
     parent <- paste0(" AND parent_id=", parentid)
@@ -192,7 +192,7 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
   }
 
   # setup parent part of query if specified
-  if (is.na(parentid)) {
+  if (is.na(parentid) || is.null(parentid)) {
     parent <- ""
   } else {
     parent <- paste0(" AND parent_id=", parentid)
@@ -226,7 +226,7 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
   } else {
 
     ## parent check when NA
-    if (is.na(parentid)) {
+    if (is.na(parentid) || is.null(parentid)) {
 
       if (!is.null(pattern)) {
         ## Case where pattern is not NULL
