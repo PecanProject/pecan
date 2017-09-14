@@ -177,10 +177,10 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
       
       prior.round.fn <- lapply(prior.round.list, pda.define.prior.fn)
       
-      ## Propose a percentage (if not specified 50%) of the new parameter knots from the posterior of the previous run
+      ## Propose a percentage (if not specified 80%) of the new parameter knots from the posterior of the previous run
       knot.par        <- ifelse(!is.null(settings$assim.batch$knot.par),
                                 as.numeric(settings$assim.batch$knot.par),
-                                0.5)
+                                0.8)
       
       n.post.knots    <- floor(knot.par * settings$assim.batch$n.knot)
       
