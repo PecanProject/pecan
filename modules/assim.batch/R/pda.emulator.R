@@ -637,7 +637,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   # save sf posterior
   if(!is.null(sf)){
     sf.filename <- file.path(settings$outdir, 
-                             paste0("posteriors.pda.sf", "_", settings$assim.batch$ensemble.id, ".Rdata"))
+                             paste0("post.distns.pda.sf", "_", settings$assim.batch$ensemble.id, ".Rdata"))
     sf.prior <- prior.list[[sf.ind]]
     sf.post.distns <- write_sf_posterior(sf.samp.list, sf.prior, sf.filename)
     save(sf.post.distns, file = sf.filename)

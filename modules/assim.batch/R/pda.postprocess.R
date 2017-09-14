@@ -241,7 +241,7 @@ write_sf_posterior <- function(sf.samp.list, sf.prior, sf.filename){
   # reformat each sublist such that params have their own list and return
   sf.subset <- lapply(seq_along(sf.subset.list), function(x) as.list(data.frame(sf.subset.list[[x]])))
   
-  filename.flag <- gsub(".*posteriors\\s*|.Rdata.*", "", basename(sf.filename))
+  filename.flag <- gsub(".*post.distns\\s*|.Rdata.*", "", basename(sf.filename))
   
   sf.post.distns <- PEcAn.MA::approx.posterior(trait.mcmc = sf.subset[[1]], priors = sf.prior,
                                                outdir = dirname(sf.filename),
