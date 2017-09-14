@@ -44,6 +44,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
     * Move `base` packages (`utils`, `settings`, `db`, `visualizaton`) to a `base` directory, for consistency with `modules` and `models`
     * Move `logger.*` functions out of the `PEcAn.utils` package and into the `pecan.logger` package
 - #1594 shiny/workflowPlot Refactoring of code. `get_workflow_ids` in db/R/query.dplyr.R changed with `ensemble = FALSE`. Also allowing to load all workflow IDs. `load_data_single_run` and `var_names_all` also moved from shiny/workflowPlot/server.R to query.dplyr.R
+- `betyConnect` function in `query.dplyr.R` is now refactored into `read_web_config` so that the the Data-Ingest app can leverage `read_web_config` and provide it with a machine specific filepath for `.../dbfiles`
 
 ## [1.5.0] - 2017-07-13
 ### Added
