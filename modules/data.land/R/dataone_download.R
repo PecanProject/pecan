@@ -12,9 +12,18 @@
 #' @export
 #'
 
-#' @examples doi_download(id = "doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87", filepath = "/fs/data1/pecan.data/dbfiles/")
+#' @examples 
+#' /dontrun{
+#' doi_download(id = "doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87", filepath = "/fs/data1/pecan.data/dbfiles/")
+#' }
 
 dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles/", CNode = "PROD", lazyLoad = FALSE, quiet = F){ 
+  ### Check for wget functionality
+  test <- try(system2("wget", "--version", stderr = TRUE))
+  if (class(test) == "try-error") {
+    PEcAn.logger::logger.severe("wget system utility is not available on this system. Please install it to use this functionality.")
+  }
+
   ### automatically retrieve mnId
   cn <- dataone::CNode(CNode) 
   locations <- dataone::resolve(cn, pid = id) 
@@ -22,7 +31,7 @@ dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles/", CNod
   
   ### begin D1 download process
   d1c <- dataone::D1Client("PROD", mnId)
-  pkg <- dataone::getDataPackage(d1c, id = id, lazyLoad = lazyLoad, quiet = quiet, limit = "1MB") 
+  pkg <- dataone::getDataPackage(d1c, id = id, lazyLoad = lazyLoad, quiet = quiet, limit = "1GB") 
   files <- datapack::getValue(pkg, name="sysmeta@formatId")
   n <- length(files) # number of files
 
