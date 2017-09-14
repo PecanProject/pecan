@@ -85,10 +85,10 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
         
         beta_p <- (inputs[[k]]$par[1] + inputs[[k]]$par[2] * model_out[[k]][pos]* sqrt(inputs[[k]]$n/inputs[[k]]$n_eff) ) 
         beta_n <- (inputs[[k]]$par[1] + inputs[[k]]$par[3] * model_out[[k]][!pos]* sqrt(inputs[[k]]$n/inputs[[k]]$n_eff)) 
-        if(length(beta_n) == 0) beta_n <- 0
+        suppressWarnings(if(length(beta_n) == 0) beta_n <- 0)
         SS_p <- - (inputs[[k]]$n_eff/inputs[[k]]$n) * log(beta_p) - resid[[1]][pos]/beta_p
         SS_n <- - (inputs[[k]]$n_eff/inputs[[k]]$n) * log(beta_n) - resid[[1]][!pos]/beta_n
-        if(length(SS_n) == 0) SS_n <- 0
+        suppressWarnings(if(length(SS_n) == 0) SS_n <- 0)
         pda.errors[[k]] <- sum(SS_p, SS_n, na.rm = TRUE)
         SSdb[[k]] <- pda.errors[[k]]
         
