@@ -15,3 +15,6 @@ generate.noise(n = 2101, sigma = 1e-04, fw = 201, fsd = 6)
 
 \item{fsd}{Scaling factor for filter standard deviation (default = 6)}
 }
+\description{
+Generate autocorrelated spectral noise
+}
