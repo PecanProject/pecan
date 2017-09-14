@@ -14,15 +14,28 @@ Description: The Predictive Ecosystem Carbon Analyzer
     PEcAn is to streamline the interaction between data and
     models, and to improve the efficacy of scientific
     investigation.
-Depends:
-    XML,
-    ggplot2,
-    randtoolbox,
-    abind,
-    RCurl
 Imports:
+    assertthat,
+    data.table,
+    getPass,
+    ggplot2,
+    methods,
+    PEcAn.data.atmosphere,
+    PEcAn.data.land,
+    PEcAn.DB,
+    PEcAn.emulator,
     PEcAn.logger,
+    PEcAn.priors,
     PEcAn.remote,
+    PEcAn.settings,
+    randtoolbox,
+    raster,
+    RCurl,
+    rjags,
+    sp,
+    stringi,
+    xtable,
+    XML,
     abind (>= 1.4.5),
     coda (>= 0.18),
     lubridate (>= 1.6.0),
@@ -31,9 +44,7 @@ Imports:
     PeriodicTable,
     udunits2 (>= 0.11)
 Suggests:
-    coda,
     MASS,
-    ncdf4,
     testthat
 License: FreeBSD + file LICENSE
 Copyright: Authors

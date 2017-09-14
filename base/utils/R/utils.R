@@ -244,7 +244,7 @@ listToXml.default <- function(item, tag) {
 ##' @references M. P. Wand, J. S. Marron and D. Ruppert, 1991. Transformations in Density Estimation. Journal of the American Statistical Association. 86(414):343-353 \url{http://www.jstor.org/stable/2290569}
 zero.bounded.density <- function(x, bw = "SJ", n = 1001) {
   y     <- log(x)
-  g     <- density(y, bw = bw, n = n)
+  g     <- stats::density(y, bw = bw, n = n)
   xgrid <- exp(g$x)
   g$y   <- c(0, g$y / xgrid)
   g$x   <- c(0, xgrid)
@@ -267,7 +267,7 @@ summarize.result <- function(result) {
                 plyr::summarise, n = length(n),
                 mean = mean(mean),
                 statname = ifelse(length(n) == 1, "none", "SE"),
-                stat = sd(mean) / sqrt(length(n)))
+                stat = stats::sd(mean) / sqrt(length(n)))
   ans2 <- result[result$n != 1, colnames(ans1)]
   return(rbind(ans1, ans2))
 } # summarize.result
@@ -349,7 +349,7 @@ pdf.stats <- function(distn, A, B) {
   distn <- as.character(distn)
   mean <- switch(distn, gamma = A/B, lnorm = exp(A + 1/2 * B^2), beta = A/(A +
                                                                              B), weibull = B * gamma(1 + 1/A), norm = A, f = ifelse(B > 2, B/(B - 2),
-                                                                                                                                    mean(rf(10000, A, B))))
+                                                                                                                                    mean(stats::rf(10000, A, B))))
   var <- switch(distn, gamma = A/B^2,
                 lnorm = exp(2 * A + B ^ 2) * (exp(B ^ 2) - 1),
                 beta = A * B/((A + B) ^ 2 * (A + B + 1)),
@@ -357,7 +357,7 @@ pdf.stats <- function(distn, A, B) {
                                      gamma(1 + 1 / A) ^ 2),
                 norm = B ^ 2, f = ifelse(B > 4,
                                          2 * B^2 * (A + B - 2) / (A * (B - 2) ^ 2 * (B - 4)),
-                                         var(rf(1e+05, A, B))))
+                                         var(stats::rf(1e+05, A, B))))
   qci <- get(paste0("q", distn))
   ci <- qci(c(0.025, 0.975), A, B)
   lcl <- ci[1]
@@ -472,7 +472,7 @@ isFALSE <- function(x) !isTRUE(x)
 ##' @author David LeBauer
 newxtable <- function(x, environment = "table", table.placement = "ht", label = NULL,
                       caption = NULL, caption.placement = NULL, align = NULL) {
-  print(xtable(x, label = label, caption = caption, align = align),
+  print(xtable::xtable(x, label = label, caption = caption, align = align),
         floating.environment = environment,
         table.placement = table.placement,
         caption.placement = caption.placement,
@@ -577,8 +577,8 @@ tryl <- function(FUN) {
 ##' @author David LeBauer
 load.modelpkg <- function(model) {
   pecan.modelpkg <- paste0("PEcAn.", model)
-  if (!pecan.modelpkg %in% names(sessionInfo()$otherPkgs)) {
-    if (pecan.modelpkg %in% rownames(installed.packages())) {
+  if (!pecan.modelpkg %in% names(utils::sessionInfo()$otherPkgs)) {
+    if (pecan.modelpkg %in% rownames(utils::installed.packages())) {
       do.call(require, args = list(pecan.modelpkg))
     } else {
       PEcAn.logger::logger.error("I can't find a package for the ", model,
@@ -752,12 +752,12 @@ retry.func <- function(expr, isError=function(x) "try-error" %in% class(x), maxE
   while (isError(retval)) {
     attempts = attempts + 1
     if (attempts >= maxErrors) {
-      msg = sprintf("retry: too many retries [[%s]]", capture.output(str(retval)))
+      msg = sprintf("retry: too many retries [[%s]]", utils::capture.output(utils::str(retval)))
       PEcAn.logger::logger.warn(msg)
       stop(msg)
     } else {
       msg = sprintf("retry: error in attempt %i/%i [[%s]]", attempts, maxErrors, 
-                    capture.output(str(retval)))
+                    utils::capture.output(utils::str(retval)))
       PEcAn.logger::logger.warn(msg)
       #warning(msg)
     }

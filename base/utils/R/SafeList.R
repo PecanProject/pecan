@@ -26,7 +26,7 @@
 SafeList <- function(...) {
   result <- list(...)
   if (length(result) == 1) {
-    if (is(result[[1]], "SafeList")) {
+    if (methods::is(result[[1]], "SafeList")) {
       return(result[[1]])
     } else if (is.list(result[[1]])) {
       result <- result[[1]]
@@ -46,7 +46,7 @@ as.SafeList <- function(x) {
 
 ##' @export
 is.SafeList <- function(x) {
-  return(is(x, "SafeList"))
+  return(methods::is(x, "SafeList"))
 } # is.SafeList
 
 
