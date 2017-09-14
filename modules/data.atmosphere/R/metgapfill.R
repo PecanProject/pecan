@@ -166,7 +166,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     doy <- rep(seq_len(diy), each = 86400 / dt)
     hr <- rep(seq(0, length = 86400 / dt, by = 24 * dt / 86400), diy)
 
-    cosz <- PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lat, lon, dt)
+    cosz <- PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lat, lon, dt, hr)
 
     rpot <- 1366 * cosz  #in UTC
     tz <- as.numeric(lst)
