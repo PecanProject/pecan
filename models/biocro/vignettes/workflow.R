@@ -26,7 +26,7 @@ run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.anal
 ## @knitr , echo=FALSE,warning=FALSE,cache=TRUE
 run.write.configs(model)  # Calls model specific write.configs e.g. write.config.ed.R
 ## load met data
-start.model.runs(model)  # Start ecosystem model runs
+PEcAn.remote::start.model.runs(model)  # Start ecosystem model runs
 read.outputs(settings$model$type, settings)
 # read.outputs(model, settings) #, variables = 'StemBiom')
 
