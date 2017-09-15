@@ -90,7 +90,7 @@ write.sa.configs <- function(defaults, quantile.samples, settings, model,
   
   if (write.to.db) {
     con <- try(PEcAn.DB::db.open(settings$database$bety), silent = TRUE)
-    if (methods::is(con, "try-error")) {
+    if (inherits(con, "try-error")) {
       con <- NULL
     } else {
       on.exit(PEcAn.DB::db.close(con))
