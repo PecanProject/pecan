@@ -4,7 +4,8 @@
 \alias{model2netcdf.ED2}
 \title{Code to convert ED2's -T- HDF5 output into netCDF format}
 \usage{
-model2netcdf.ED2(outdir, sitelat, sitelon, start_date, end_date)
+model2netcdf.ED2(outdir, sitelat, sitelon, start_date, end_date,
+  pft.names = NULL, dbh.breaks = 0)
 }
 \arguments{
 \item{outdir}{Location of ED model output}
