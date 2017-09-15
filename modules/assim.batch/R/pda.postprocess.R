@@ -224,3 +224,28 @@ pda.plot.params <- function(settings, mcmc.param.list, prior.ind, par.file.name 
 } # pda.plot.params
 
 
+##' Function to write posterior distributions of the scaling factors
+##' @export
+write_sf_posterior <- function(sf.samp.list, sf.prior, sf.filename){
+  
+  sf.samp <- as.mcmc.list(lapply(sf.samp.list, mcmc))
+  
+  burnin <- getBurnin(sf.samp, method = "gelman.plot")
+  
+  sf.samp <- window(sf.samp, start = max(burnin, na.rm = TRUE))
+  
+  # convert mcmc.list to list of matrices
+  sf.subset.list <- list()
+  sf.subset.list[[1]] <- as.data.frame(do.call("rbind", sf.samp))
+
+  filename.flag <- gsub(".*post.distns\\s*|.Rdata.*", "", basename(sf.filename))
+  
+  sf.post.distns <- PEcAn.MA::approx.posterior(trait.mcmc = sf.subset.list[[1]], priors = sf.prior,
+                                               outdir = dirname(sf.filename),
+                                               filename.flag = filename.flag)
+  
+  save(sf.subset, file = file.path(dirname(sf.filename), paste0("samples", filename.flag, ".Rdata")))
+  
+  return(sf.post.distns)
+  
+} # write_sf_posterior
