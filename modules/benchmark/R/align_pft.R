@@ -1,5 +1,5 @@
 #################################################################
-#'@title{align_pft}
+#'align_pft
 #'@details
 #' Aligns vectors of Plant Fucntional Typed and species.
 #' Can align: 
@@ -38,32 +38,43 @@
 #' @author Tempest McCabe
 #' @examples
 #' 
+#' 
+#' #------------ A species to PFT alignment -----------
 #' observation_one<-c("AMCA3","AMCA3","AMCA3","AMCA3")
-#' observation_two<-c("a", "b", "a", "a")
-#' table<-list()
-#' table$plant_functional_type_one<- c("AMCA3","AMCA3","ARHY", "ARHY")
-#' table$plant_functional_type_two<- c('a','a','b', 'b') # PFT groupings
-#' table$input_code<-c("AMCA3","AMCA3","ARHY", "ARHY") # Species
-#' table<-as.data.frame(table)
-#'
+#' observation_two<-c("a", "b", "a", "a") #
+#' 
 #' format_one<-"species_USDA_symbol"
 #' format_two<-"plant_funtional_type"
 #' 
+#' table<-list()
+#' table$plant_functional_type_one<- c("AMCA3","AMCA3","ARHY", "ARHY")
+#' table$plant_functional_type_two<- c('a','a','b', 'b') # PFT groupings
+#' table<-as.data.frame(table)
+#'
+#' 
 #' aligned<-align_pft(con = con, observation_one = observation_one, observation_two = observation_two, 
 #' format_one = format_one, format_two = format_two, custom_table = table)
+#' 
+#' 
 #' @export
 align_pft<-function(con, observation_one, observation_two, custom_table=NULL, format_one, format_two, subset_are_ok=FALSE, comparison_type="data_to_data", ...){
 
-  if(comparison_type=="data_to_model"){
+  if(comparison_type == "data_to_model"){
+    
     #align_data_to_model_pft(settings_one, observations_1)
-    PEcAn.logger::logger.warn("data_to_model alignment not yet implemented. Returning NULL.")
-    return(NULL)
-  }else if (comparison_type=="data_to_data"){
+    PEcAn.logger::logger.severe("data_to_model alignment not yet implemented. Returning NULL.")
+  
+    
+  }else if (comparison_type == "data_to_data"){
+    
     align_data_to_data_pft(observation_one, observation_two, custom_table=NULL, format_one, format_two, subset_are_ok=FALSE)
+    
   }else if (comparison_type == "model_to_model"){
+    
     #align_model_to_model_pft(settings_one, settings_two)
-    PEcAn.logger::logger.warn("model_to_model alignment not yet implemented. Returning NULL.")
-    return(NULL)
+    PEcAn.logger::logger.severe("model_to_model alignment not yet implemented. Returning NULL.")
+    
+    
   }else{
     PEcAn.logger::logger.severe("comparison_type must be set to either 'data_to_model', 'data_to_data', or model_to_model")
   }

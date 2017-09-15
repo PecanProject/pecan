@@ -1,4 +1,4 @@
-#' @title check_if_legal_table
+#'  check_if_legal_table
 #' @details
 #' Checks if custom_table:
 #' 1. is formated correctly

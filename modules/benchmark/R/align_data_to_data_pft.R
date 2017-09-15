@@ -1,5 +1,5 @@
 #################################################################
-#'@title{align_data_to_data_pft}
+#'align_data_to_data_pft
 #'@details
 #' Aligns vectors of Plant Fucntional Typed and species.
 #' Can align: 
@@ -10,13 +10,6 @@
 #'  Will return a list of what was originally provided, bety_speceis_codes if possible, 
 #'  and an aligned output. Becuase some alignement is order-sensitive, alignment based on observation_one
 #'  and observation_two are both provided. 
-#'
-#'\code{comparison_type} can be one of the following:
-#' \describe{
-#'  \item{\code{data_to_data}}{Will align lists of pfts and species. Must be assosiated with inputs.}
-#'  \item{\code{data_to_model}}{Not yet implemented}
-#'  \item{\code{model_to_model}}{Not yet implemented}
-#'  }
 #'
 #'
 #' @param con database connection
@@ -34,16 +27,17 @@
 #'  \item{\code{$aligned$aligned_by_observation_one}}{Where possible, will return a vector of observation_one pft's/species in the order of observation_two}
 #'  \item{\code{species}}{{Where possible, will return a vector of observation_two's pft's/species in the order of observation_one}}
 #'  \item{\code{$bety_species_id}}{Where possible, will return the bety_species_id's for one or both observations}
+#'  \item{\code{$bety_species_intersection}}{Where possible, will return the intersection of two aligned lists of species. subset_is_ok must be set to TRUE.}
 #' }
 #' @author Tempest McCabe
 #' @examples
 #' 
 #' observation_one<-c("AMCA3","AMCA3","AMCA3","AMCA3")
 #' observation_two<-c("a", "b", "a", "a")
+#' 
 #' table<-list()
 #' table$plant_functional_type_one<- c("AMCA3","AMCA3","ARHY", "ARHY")
 #' table$plant_functional_type_two<- c('a','a','b', 'b') # PFT groupings
-#' table$input_code<-c("AMCA3","AMCA3","ARHY", "ARHY") # Species
 #' table<-as.data.frame(table)
 #'
 #' format_one<-"species_USDA_symbol"
@@ -53,46 +47,38 @@
 #' format_one = format_one, format_two = format_two, custom_table = table)
 #' @export
 
-align_data_to_data_pft<-function(observation_one, observation_two, custom_table=NULL, format_one, format_two, subset_are_ok=FALSE){ 
-  
+align_data_to_data_pft<-function(observation_one, observation_two, custom_table=NULL, format_one, format_two, subset_is_ok=FALSE){ 
 
-  ### Note: Right now, all the PFT's in bety are assosiated with a model. There is no way to assosiate PFT's with data inputs. 
-  # It seems like down the line we might want to invest in a way to assosiate pft's with input records. Then we could use match_pft for data
-  # Until then, this function will be written to just take custom mapping tables. 
+  translation_table<-NULL
+  bety_codes_one<-NA
+  bety_codes_two<-NA
+  bety_species_intersection<-NA
   
   if(check_if_species_list(format_one) && check_if_species_list(format_two)){  #Both are lists of species
-   
-    translation_table<-NULL
-    if (get_species_list_standard(format_one)=="custom"|get_species_list_standard(format_two)=="custom"){tanslation_table<-custom_table}
+    
+    if (get_species_list_standard(format_one) == "custom" | get_species_list_standard(format_two) == "custom"){tanslation_table<-custom_table}
     
     bety_codes_one<-PEcAn.data.land::match_species_id(input_codes=observation_one, format_name= get_species_list_standard(format_one),translation_table = translation_table, bety=con)
     bety_codes_two<-PEcAn.data.land::match_species_id(input_codes=observation_two, format_name= get_species_list_standard(format_two), translation_table = translation_table,bety=con)
     
-    #check if ideantical lists. 
-    if(setequal(bety_codes_one, bety_codes_two)){
+    if(setequal(bety_codes_one, bety_codes_two)){ #check if identical lists. 
       
-      aligned_species_list<-list()
-      aligned_species_list$bety_species_id_one<-bety_codes_one
-      aligned_species_list$original_standard_id_one<-observation_one
-      aligned_species_list$bety_species_id_one<-bety_codes_two
-      aligned_species_list$original_standard_id_one<-observation_two
+      aligned_by_one<-bety_codes_two #Since they are identical, this has the same names as one, but in the order of two
+      aligned_by_two<-bety_codes_one
       
-      aligned_species_list$final<-bety_codes_one# Allows all code to referece same column name
+    }else if(subset_is_ok){
       
-      return(aligned_species_list)# If order of species matter this could cause errors
-    }else if(subsets_are_ok) {
-      bety_codes_intersect<-intersect(bety_codes_one, bety_codes_two)
+      #for the case where intersections are ok, making columns where a species is present in on list but not the other NA's
+  
+      bety_species_intersection<-dplyr::intersect(bety_codes_one$bety_species_id,bety_codes_two$bety_species_id)
+    
+      bety_codes_one$bety_species_id[bety_codes_one$bety_species!=bety_species_intersection]<-NA
+      bety_codes_two$bety_species_id[bety_codes_two$bety_species!=bety_species_intersection]<-NA
       
-      aligned_species_list<-list()
-      aligned_species_list$bety_species_id_one<-bety_codes_one
-      aligned_species_list$original_standard_id_one<-observation_one
-      aligned_species_list$bety_species_id_one<-bety_codes_two
-      aligned_species_list$original_standard_id_one<-observation_two
-      aligne_speces_list$bety_species_id_intersection<-bety_codes_intersect
+      aligned_by_one<-bety_codes_two$bety_species_id
+      aligned_by_two<-bety_codes_one$bety_species_id
       
-      aligned_species_list$final<-bety_codes_intersect
       
-      return(aligned_species_list) #Returns the intersection of the speceies lists
     }else{
       PEcAn.logger::logger.warn("These observations cannot be aligned, as they have different species lists. Returning NULL. Check species lists, or  set 'subset_are_ok' to TRUE. ")
       return(NULL)
@@ -100,35 +86,26 @@ align_data_to_data_pft<-function(observation_one, observation_two, custom_table=
     
   }else if(check_if_species_list(format_one) && !check_if_species_list(format_two)){
     
-    if(is.null(custom_table)){logger.severe("Please provide custom_table")}else if (!is.null(custom_table))
-    {
+    if(is.null(custom_table)){
+      
+      PEcAn.logger::logger.severe("Please provide custom_table")
+      
+      }else if (!is.null(custom_table)){
+        
       if(check_if_legal_table(custom_table, observation_one, observation_two)){
         
-        translation_table<-NULL
         if (get_species_list_standard(format_one)=="custom"){tanslation_table<-custom_table}
         
         bety_codes_one<-PEcAn.data.land::match_species_id(input_codes=observation_one, format_name= get_species_list_standard(format_one),translation_table = translation_table, bety=con)
         
-        aligned_by_one<-align_by_observation_one(observation_one,observation_two, custom_table)
-        aligned_by_two<-align_by_observation_two(observation_one,observation_two, custom_table)
-        
-        aligned_species_list<-list()
-        aligned_species_list$bety_species_id$observation_one<-bety_codes_one
-        aligned_species_list$bety_species_id$observation_two<-NA
-        aligned_species_list$original$observation_one<-observation_one
-        aligned_species_list$original$observation_two<-observation_two
-        aligned_species_list$aligned$aligned_by_observation_one<-aligned_by_one
-        aligned_species_list$aligned$aligned_by_observation_two<-aligned_by_two
-        
-        return(aligned_species_list)
+        aligned_by_one<-align_by_first_observation(observation_one,observation_two, custom_table)
+        aligned_by_one<-align_by_first_observation(observation_two,observation_one, custom_table)
         
         
       }else{
-        logger.severe("custom_table provided does not correctly map plant_function_type_one to plant_functional_type_two. One or more rows are mapped to multiple plant funcitonal types.")
+        PEcAn.logger::logger.severe("custom_table provided does not correctly map plant_function_type_one to plant_functional_type_two. One or more rows are mapped to multiple plant funcitonal types.")
       } 
     }
-   
-  
     
   }else if(!check_if_species_list(format_one) && check_if_species_list(format_two)){
     
@@ -136,61 +113,48 @@ align_data_to_data_pft<-function(observation_one, observation_two, custom_table=
     {
       if(check_if_legal_table(custom_table, observation_one, observation_two)){
         
-        translation_table<-NULL
-        if (get_species_list_standard(format_two)=="custom"){tanslation_table<-custom_table}
-  
-        bety_codes_two<-PEcAn.data.land::match_species_id(input_codes=observation_two, format_name= get_species_list_standard(format_two),translation_table = translation_table, bety=con)
+        if (get_species_list_standard(format_two)=="custom"){
+          tanslation_table<-custom_table
+        }
+          
+        bety_codes_two<-PEcAn.data.land::match_species_id(input_codes=observation_two, format_name= get_species_list_standard(format_two),translation_table = translation_table,bety=con)
         
-        aligned_by_one<-align_by_observation_one(observation_one,observation_two, custom_table)
-        aligned_by_two<-align_by_observation_two(observation_one,observation_two, custom_table)
-        
-        aligned_species_list<-list()
-        aligned_species_list$bety_species_id$observation_one<-bety_codes_one
-        aligned_species_list$bety_species_id$observation_two<-NA
-        aligned_species_list$original$observation_one<-observation_one
-        aligned_species_list$original$observation_two<-observation_two
-        aligned_species_list$aligned$aligned_by_observation_one<-aligned_by_one
-        aligned_species_list$aligned$aligned_by_observation_two<-aligned_by_two
-        
-        return(aligned_species_list)
-        
+        aligned_by_one<-align_by_first_observation(observation_one,observation_two, custom_table)
+        aligned_by_two<-align_by_first_observation(observation_two,observation_one, custom_table)
         
       }else{
-        logger.severe("custom_table provided does not correctly map plant_function_type_one to plant_functional_type_two. One or more rows are mapped to multiple plant funcitonal types.")
+        PEcAn.logger::logger.severe("custom_table provided does not correctly map plant_function_type_one to plant_functional_type_two. One or more rows are mapped to multiple plant funcitonal types.")
       } 
     }
   
     return(aligned_species_list)
     
   }else if(check_if_list_of_pfts(format_one) && (check_if_list_of_pfts(format_two))){
-    
-    
   
     if(is.null(custom_table)){logger.severe("Please provide custom_table")}else if (!is.null(custom_table))
     {
       if(check_if_legal_table(custom_table, observation_one, observation_two)){
 
-        aligned_by_one<-align_by_observation_one(observation_one,observation_two, custom_table)
-        aligned_by_two<-align_by_observation_two(observation_one,observation_two, custom_table)
+        aligned_by_one<-align_by_first_observation(observation_one,observation_two, custom_table)
+        aligned_by_two<-align_by_first_observation(observation_two,observation_one, custom_table)
         
-        aligned_species_list<-list()
-        aligned_species_list$bety_species_id$observation_one<-bety_codes_one
-        aligned_species_list$bety_species_id$observation_two<-NA
-        aligned_species_list$original$observation_one<-observation_one
-        aligned_species_list$original$observation_two<-observation_two
-        aligned_species_list$aligned$aligned_by_observation_one<-aligned_by_one
-        aligned_species_list$aligned$aligned_by_observation_two<-aligned_by_two
-        
-        
-        return(aligned_species_list)
       }else{
         logger.severe("custom_table provided does not correctly map plant_function_type_one to plant_functional_type_two. One or more rows are mapped to multiple plant funcitonal types.")
       } 
     }
     
   }else{
-    logger.severe("PFTs are not in the correct format. Observations must have variables compatible with check_if_species_list(), or use the 'plant_funtional_type' variable")
+    PEcAn.logger::logger.severe("PFTs are not in the correct format. Observations must have variables compatible with check_if_species_list(), or use the 'plant_funtional_type' variable")
   }
   
+  aligned_species_list<-list()
+  aligned_species_list$bety_species_id$observation_one<-bety_codes_one
+  aligned_species_list$bety_species_id$observation_two<-bety_codes_two
+  aligned_species_list$original$observation_one<-observation_one
+  aligned_species_list$original$observation_two<-observation_two
+  aligned_species_list$aligned$aligned_by_observation_one<-aligned_by_one
+  aligned_species_list$aligned$aligned_by_observation_two<-aligned_by_two
+  
+  return(aligned_species_list)
   
 }
