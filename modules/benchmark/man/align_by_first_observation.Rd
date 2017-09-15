@@ -11,13 +11,17 @@ align_by_first_observation(observation_one, observation_two, custom_table)
 
 \item{observation_two}{another vector of plant fucntional types, or species. Provides the order.}
 
-\item{custom_table}{a table that either maps two pft's to one anouther or maps custom species codes to bety id codes. 
+\item{custom_table}{a table that either maps two pft's to one another or maps custom species codes to bety id codes. 
 In the second case, must be passable to match_species_id.}
+}
+\description{
+align_first_observation
 }
 \examples{
 
 observation_one<-c("AMCA3","AMCA3","AMCA3","AMCA3")
 observation_two<-c("a", "b", "a", "a")
+
 table<-list()
 table$plant_functional_type_one<- c("AMCA3","AMCA3","ARHY", "ARHY")
 table$plant_functional_type_two<- c('a','a','b', 'b') # PFT groupings
@@ -25,6 +29,7 @@ table<-as.data.frame(table)
 
 aligned<-align_by_observation_one(observation_one = observation_one, observation_two = observation_two, 
 custom_table = table)
+
 # aligned should be a vector '[1] "AMCA3" "ARHY"  "AMCA3" "AMCA3"'
 }
 \author{

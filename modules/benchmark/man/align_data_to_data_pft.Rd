@@ -5,7 +5,7 @@
 \title{align_data_to_data_pft}
 \usage{
 align_data_to_data_pft(observation_one, observation_two, custom_table = NULL,
-  format_one, format_two, subset_are_ok = FALSE)
+  format_one, format_two, subset_is_ok = FALSE)
 }
 \arguments{
 \item{observation_one}{a vector of plant fucntional types, or species}
@@ -19,10 +19,10 @@ In the second case, must be passable to match_species_id.}
 
 \item{format_two}{The output of query.format.vars() of observation two of the form output$vars$bety_names}
 
+\item{con}{database connection}
+
 \item{subset_are_ok}{When aligning two species lists, this allows for alignement when species lists aren't identical. 
 set to FALSE by default.}
-
-\item{con}{database connection}
 }
 \value{
 \code{list} containing the following columns:
@@ -31,6 +31,7 @@ set to FALSE by default.}
  \item{\code{$aligned$aligned_by_observation_one}}{Where possible, will return a vector of observation_one pft's/species in the order of observation_two}
  \item{\code{species}}{{Where possible, will return a vector of observation_two's pft's/species in the order of observation_one}}
  \item{\code{$bety_species_id}}{Where possible, will return the bety_species_id's for one or both observations}
+ \item{\code{$bety_species_intersection}}{Where possible, will return the intersection of two aligned lists of species. subset_is_ok must be set to TRUE.}
 }
 }
 \description{
@@ -45,23 +46,16 @@ Can align:
 
  Will return a list of what was originally provided, bety_speceis_codes if possible, 
  and an aligned output. Becuase some alignement is order-sensitive, alignment based on observation_one
- and observation_two are both provided. 
-
-\code{comparison_type} can be one of the following:
-\describe{
- \item{\code{data_to_data}}{Will align lists of pfts and species. Must be assosiated with inputs.}
- \item{\code{data_to_model}}{Not yet implemented}
- \item{\code{model_to_model}}{Not yet implemented}
- }
+ and observation_two are both provided.
 }
 \examples{
 
 observation_one<-c("AMCA3","AMCA3","AMCA3","AMCA3")
 observation_two<-c("a", "b", "a", "a")
+
 table<-list()
 table$plant_functional_type_one<- c("AMCA3","AMCA3","ARHY", "ARHY")
 table$plant_functional_type_two<- c('a','a','b', 'b') # PFT groupings
-table$input_code<-c("AMCA3","AMCA3","ARHY", "ARHY") # Species
 table<-as.data.frame(table)
 
 format_one<-"species_USDA_symbol"
