@@ -78,7 +78,31 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
                                pft.names, dbh.breaks)
     }
     
+    
+    if (y == strftime(start_date, "%Y")) {
+      begins <- as.numeric(strftime(start_date, "%j")) - 1
+    } else {
+      begins <- 0
+    }
+    
+    if (y == strftime(end_date, "%Y")) {
+      ends <- as.numeric(strftime(end_date, "%j"))
+    } else {
+      ends <- as.numeric(strftime(paste0(y, "-12-31"), "%j")) 
+    }
+    
+    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdf4::ncdim_def("lon", "degrees_east",  vals = as.numeric(sitelon), longname = "station_longitude")
+    
     # ----- put values to nc_var list   
+    nc_var <- list()
+    for(i in seq_along(out_list)){
+      rflag <- ed.res.flag[i]
+      fcnx  <- paste0("put_", gsub("-", "", rflag), "_values")
+      fcn   <- match.fun(fcnx)
+      nc_var <- fcn(yr = y, nc_var = nc_var, out = out_list[[rflag]], lat = lat, lon = lon, 
+                    begins = begins, ends = ends, pft.names, dbh.breaks)
+    }
     
     # ----- write ncdf files
     
@@ -677,6 +701,123 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
   return(out)
   
 } # read_T_files
+
+
+##-------------------------------------------------------------------------------------------------#
+
+# Function for put -T- values to nc_var list
+
+put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
+  
+  s <- length(nc_var)
+  
+  ## Conversion factor for umol C -> kg C
+  Mc <- 12.017  #molar mass of C, g/mol
+  umol2kg_C <- Mc * udunits2::ud.convert(1, "umol", "mol") * udunits2::ud.convert(1, "g", "kg")
+  yr2s      <- udunits2::ud.convert(1, "s", "yr")
+  
+  # TODO - remove this function and replace with ifelse statements inline below (SPS)
+  conversion <- function(col, mult) {
+    ## make sure only to convert those values that are not -999
+    out[[col]][out[[col]] != -999] <- out[[col]][out[[col]] != -999] * mult
+    return(out)
+  }
+  
+  checkTemp <- function(col) {
+    out[[col]][out[[col]] == 0] <- -999
+    return(out)
+  }
+  
+  
+  # ----- define ncdf dimensions
+  
+  t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", yr, "-01-01 00:00:00"), 
+                        vals = seq(begins, ends, length.out = length(out[[1]])), 
+                        calendar = "standard", unlim = TRUE)
+  
+  
+  slzdata <- out$SLZ
+  dz <- diff(slzdata)
+  dz <- dz[dz != 0]
+  
+  zg <- ncdf4::ncdim_def("SoilLayerMidpoint", "meters", c(slzdata[1:length(dz)] + dz/2, 0))
+  
+  
+  # ----- fill list
+  
+  out <- conversion(1, udunits2::ud.convert(1, "t ha-1", "kg m-2"))  ## tC/ha -> kg/m2
+  nc_var[[s+1]] <- mstmipvar("AbvGrndWood", lat, lon, t, zg)
+  out <- conversion(2, umol2kg_C)  ## umol/m2 s-1 -> kg/m2 s-1
+  nc_var[[s+2]] <- mstmipvar("AutoResp", lat, lon, t, zg)
+  nc_var[[s+3]] <- mstmipvar("CarbPools", lat, lon, t, zg)
+  nc_var[[s+4]] <- mstmipvar("CO2CAS", lat, lon, t, zg)
+  nc_var[[s+5]] <- mstmipvar("CropYield", lat, lon, t, zg)
+  out <- conversion(6, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+  nc_var[[s+6]]<- ncdf4::ncvar_def("GPP", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
+                                   longname = "Gross Primary Productivity")
+  out <- conversion(7, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+  nc_var[[s+7]]<- ncdf4::ncvar_def("HeteroResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
+                                   longname = "Heterotrophic Respiration")
+  out <- conversion(8, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+  nc_var[[s+8]]<- ncdf4::ncvar_def("NEE", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
+                                   longname = "Net Ecosystem Exchange")
+  out <- conversion(9, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+  nc_var[[s+9]]<- ncdf4::ncvar_def("NPP", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
+                                   longname = "Net Primary Productivity")
+  out <- conversion(10, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+  nc_var[[s+10]]<- ncdf4::ncvar_def("TotalResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
+                                    longname = "Total Respiration")
+  nc_var[[s+11]] <- mstmipvar("TotLivBiom", lat, lon, t, zg)
+  nc_var[[s+12]] <- mstmipvar("TotSoilCarb", lat, lon, t, zg)
+  nc_var[[s+13]] <- mstmipvar("Fdepth", lat, lon, t, zg)
+  nc_var[[s+14]] <- mstmipvar("SnowDepth", lat, lon, t, zg)
+  nc_var[[s+15]] <- mstmipvar("SnowFrac", lat, lon, t, zg)
+  nc_var[[s+16]] <- mstmipvar("Tdepth", lat, lon, t, zg)
+  nc_var[[s+17]] <- mstmipvar("CO2air", lat, lon, t, zg)
+  nc_var[[s+18]] <- mstmipvar("LWdown", lat, lon, t, zg)
+  nc_var[[s+19]] <- mstmipvar("Psurf", lat, lon, t, zg)
+  nc_var[[s+20]] <- mstmipvar("Qair", lat, lon, t, zg)
+  nc_var[[s+21]] <- mstmipvar("Rainf", lat, lon, t, zg)
+  nc_var[[s+22]] <- mstmipvar("SWdown", lat, lon, t, zg)
+  out <- checkTemp(23)
+  nc_var[[s+23]] <- mstmipvar("Tair", lat, lon, t, zg)
+  nc_var[[s+24]] <- mstmipvar("Wind", lat, lon, t, zg)
+  nc_var[[s+25]] <- mstmipvar("LWnet", lat, lon, t, zg)
+  nc_var[[s+26]] <- mstmipvar("Qg", lat, lon, t, zg)
+  nc_var[[s+27]] <- mstmipvar("Qh", lat, lon, t, zg)
+  out <- conversion(28, PEcAn.data.atmosphere::get.lv())  ## kg m-2 s-1 -> W m-2
+  nc_var[[s+28]]<- ncdf4::ncvar_def("Qle", units = "W m-2", dim = list(lon, lat, t), missval = -999, 
+                                    longname = "Latent heat")
+  nc_var[[s+29]] <- mstmipvar("SWnet", lat, lon, t, zg)
+  nc_var[[s+30]] <- mstmipvar("RootMoist", lat, lon, t, zg)
+  nc_var[[s+31]] <- mstmipvar("Tveg", lat, lon, t, zg)
+  nc_var[[s+32]] <- mstmipvar("WaterTableD", lat, lon, t, zg)
+  nc_var[[s+33]] <- mstmipvar("fPAR", lat, lon, t, zg)
+  nc_var[[s+34]] <- mstmipvar("LAI", lat, lon, t, zg)
+  ##nc_var[[35]] <- mstmipvar("SMFrozFrac", lat, lon, t, zg)
+  ##nc_var[[36]] <- mstmipvar("SMLiqFrac", lat, lon, t, zg)
+  nc_var[[s+35]] <- mstmipvar("SMFrozFrac", lat, lon, t, zg)
+  nc_var[[s+36]] <- mstmipvar("SMLiqFrac", lat, lon, t, zg)
+  nc_var[[s+37]] <- mstmipvar("SoilMoist", lat, lon, t, zg)
+  out <- checkTemp(38)
+  nc_var[[s+38]] <- mstmipvar("SoilTemp", lat, lon, t, zg)
+  nc_var[[s+39]] <- mstmipvar("SoilWet", lat, lon, t, zg)
+  nc_var[[s+40]] <- mstmipvar("Albedo", lat, lon, t, zg)
+  out <- checkTemp(41)
+  nc_var[[s+41]] <- mstmipvar("SnowT", lat, lon, t, zg)
+  nc_var[[s+42]] <- mstmipvar("SWE", lat, lon, t, zg)
+  out <- checkTemp(43)
+  nc_var[[s+43]] <- mstmipvar("VegT", lat, lon, t, zg)
+  nc_var[[s+44]] <- mstmipvar("Evap", lat, lon, t, zg)
+  nc_var[[s+45]] <- mstmipvar("Qs", lat, lon, t, zg)
+  nc_var[[s+46]] <- mstmipvar("Qsb", lat, lon, t, zg)
+  out <- conversion(47, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
+  nc_var[[s+47]]<- ncdf4::ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
+                                    longname = "Soil Respiration")
+  
+  return(nc_var)
+  
+} # put_T_values
 
 
 ##-------------------------------------------------------------------------------------------------#
