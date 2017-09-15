@@ -18,7 +18,7 @@
 ##' @param outdir directory with model output to use in ensemble analysis
 ##' @param start.year first year to include in ensemble analysis
 ##' @param end.year last year to include in ensemble analysis
-##' @param variables targe variables for ensemble analysis
+##' @param variables target variables for ensemble analysis
 ##' @export
 ##' @author Ryan Kelly, David LeBauer, Rob Kooper
 #--------------------------------------------------------------------------------------------------#
