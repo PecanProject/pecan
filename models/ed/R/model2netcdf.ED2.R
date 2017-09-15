@@ -63,6 +63,26 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
   out_list <- vector("list", length(ed.res.flag)) 
   names(out_list) <- ed.res.flag
 
+  # ----- start loop over years
+  for(y in start_year:end_year){
+    
+    PEcAn.logger::logger.info(paste0("----- Processing year: ", y))
+    
+    # ----- read values from ED output files
+    for(i in seq_along(out_list)){
+      rflag <- ed.res.flag[i]
+      fcnx  <- paste0("read_", gsub("-", "", rflag), "_files")
+      fcn   <- match.fun(fcnx)
+      out_list[[rflag]] <- fcn(yr = y, ylist[[rflag]], flist[[rflag]], 
+                               outdir, start_date, end_date, 
+                               pft.names, dbh.breaks)
+    }
+    
+    # ----- put values to nc_var list   
+    
+    # ----- write ncdf files
+    
+  } # end year-loop
 
   add <- function(dat, col, row, year) {
     ## data is always given for whole year, except it will start always at 0
