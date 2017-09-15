@@ -6,11 +6,7 @@ betyConnect <- function(php.config = "../../web/config.php") {
   ## Read PHP config file for webserver
 
   config.list <- PEcAn.utils::read_web_config(php.config)
-<<<<<<< HEAD
-  
-=======
 
->>>>>>> 88f98fecc3db6187b1175660162adf758efbc691
   ## Database connection
   # TODO: The latest version of dplyr/dbplyr works with standard DBI-based
   # objects, so we should replace this with a standard `db.open` call.
