@@ -51,7 +51,10 @@ read.sa.output <- function(traits, quantiles, pecandir, outdir, pft.name = "",
       run.id <- sa.run.ids[[pft.name]][quantile, trait]
       
       for(var in seq_along(variables)){
-        out.tmp <- read.output(run.id, file.path(outdir, run.id), start.year, end.year, variables[var])
+        out.tmp <- read.output(runid = run.id, outdir = file.path(outdir, run.id), 
+                               start.year = start.year, end.year = end.year, 
+                               variables = variables[var], 
+                               pft.name = pft.name)
         assign(variables[var], out.tmp[[variables[var]]])
       }
       
