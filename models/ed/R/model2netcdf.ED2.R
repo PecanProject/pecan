@@ -662,15 +662,23 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
 ##-------------------------------------------------------------------------------------------------#
 
 # Function for reading -T- files
+#
+# y      : the year being processed
+# yfiles : the years on the filenames, will be used to matched tfiles for that year
+#
+#  e.g.     y = 1999
+#      yfiles = 1999 2000
+#      tfiles = "analysis-T-1999-00-00-000000-g01.h5" "analysis-T-2000-00-00-000000-g01.h5"
+
 read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
   
-  PEcAn.utils::logger.info(paste0("*** Reading -T- file ***"))
+  PEcAn.logger::logger.info(paste0("*** Reading -T- file ***"))
   
   getHdf5Data <- function(nc, var) {
     if (var %in% names(nc$var)) {
       return(ncdf4::ncvar_get(nc, var))
     } else {
-      PEcAn.utils::logger.warn("Could not find", var, "in ed hdf5 output.")
+      PEcAn.logger::logger.warn("Could not find", var, "in ed hdf5 output.")
       return(-999)
     }
   }
@@ -697,13 +705,13 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
           out[[col]] <- array(dat, dim = (end - start))
         } else {
           if (start != 0) {
-            PEcAn.utils::logger.warn("start date is not 0 this year, but data already exists in this col", 
+            PEcAn.logger::logger.warn("start date is not 0 this year, but data already exists in this col", 
                                      col, "how is this possible?")
           }
           out[[col]] <- abind::abind(out[[col]], array(dat, dim = (end - start)), along = 1)
         }
       } else {
-        PEcAn.utils::logger.warn("expected a single value")
+        PEcAn.logger::logger.warn("expected a single value")
       }
     } else if (length(dims) == 1) {
       dat <- dat[1:(end - start)]
@@ -711,7 +719,7 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
         out[[col]] <- dat
       } else {
         if (start != 0) {
-          PEcAn.utils::logger.warn("start date is not 0 this year, but data already exists in this col", 
+          PEcAn.logger::logger.warn("start date is not 0 this year, but data already exists in this col", 
                                    col, "how is this possible?")
         }
         out[[col]] <- abind::abind(out[[col]], dat, along = 1)
@@ -724,19 +732,19 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
         out[[col]] <- dat
       } else {
         if (start != 0) {
-          PEcAn.utils::logger.warn("start date is not 0 this year, but data already exists in this col", 
+          PEcAn.logger::logger.warn("start date is not 0 this year, but data already exists in this col", 
                                    col, "how is this possible?")
         }
         out[[col]] <- abind::abind(out[[col]], dat, along = 1)
       }
     } else {
-      PEcAn.utils::logger.debug("-------------------------------------------------------------")
-      PEcAn.utils::logger.debug("col=", col)
-      PEcAn.utils::logger.debug("length=", length(dat))
-      PEcAn.utils::logger.debug("start=", start)
-      PEcAn.utils::logger.debug("end=", end)
-      PEcAn.utils::logger.debug("dims=", dims)
-      PEcAn.utils::logger.warn("Don't know how to handle larger arrays yet.")
+      PEcAn.logger::logger.debug("-------------------------------------------------------------")
+      PEcAn.logger::logger.debug("col=", col)
+      PEcAn.logger::logger.debug("length=", length(dat))
+      PEcAn.logger::logger.debug("start=", start)
+      PEcAn.logger::logger.debug("end=", end)
+      PEcAn.logger::logger.debug("dims=", dims)
+      PEcAn.logger::logger.warn("Don't know how to handle larger arrays yet.")
     }
     
     ## finally make sure we use -999 for invalid values
@@ -744,7 +752,7 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
     out[[col]][is.na(out[[col]])] <- -999
     
     return(out)
-  }
+  } # end add-function
   
   # CheckED2Version
   CheckED2Version <- function(nc) {
@@ -753,36 +761,40 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
     }
   }
   
+  # note that there is always one Tower file per year
   ysel <- which(yr == yfiles)
   
   if (yr < strftime(start_date, "%Y")) {
     print(paste0(yr, "<", strftime(start_date, "%Y")))
     next
   }
+  
   if (yr > strftime(end_date, "%Y")) {
     print(paste0(yr, ">", strftime(end_date, "%Y")))
     next
   }
+  
   n <- length(ysel)
   out <- list()
-  ## prevTime <- NULL print(y)
-  ## if(haveTime) prevTime <- progressBar()
   row <- 1
   
-  
+  # note that there is always one Tower file per year
   ncT <- ncdf4::nc_open(file.path(outdir, tfiles[ysel]))
+  
   ## determine timestep from HDF5 file
   block <- ifelse(lubridate::leap_year(yr) == TRUE,
                   ncT$dim$phony_dim_0$len/366, # a leaper 
                   ncT$dim$phony_dim_0$len/365) # non leap
-  PEcAn.utils::logger.info(paste0("Output interval: ",86400/block," sec"))
-  ##
+  
+  PEcAn.logger::logger.info(paste0("Output interval: ", 86400/block, " sec"))
+  
+  
   if (file.exists(file.path(outdir, sub("-T-", "-Y-", tfiles[ysel])))) {
     ncY <- ncdf4::nc_open(file.path(outdir, sub("-T-", "-Y-", tfiles[ysel])))
     slzdata <- getHdf5Data(ncY, "SLZ")
     ncdf4::nc_close(ncY)
   } else {
-    PEcAn.utils::logger.warn("Could not find SLZ in Y file, making a crude assumpution.")
+    PEcAn.logger::logger.warn("Could not find SLZ in Y file, making a crude assumpution.")
     slzdata <- array(c(-2, -1.5, -1, -0.8, -0.6, -0.4, -0.2, -0.1, -0.05))
   }
   
@@ -1096,8 +1108,7 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
   }
   
   ncdf4::nc_close(ncT)
-  ## prevTime <- progressBar(i/n,prevTime)
-  
-  
+
   return(out)
+  
 } # read_T_files
