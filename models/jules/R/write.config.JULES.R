@@ -104,7 +104,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     rmt.cmd <- paste0("PEcAn.JULES::detect.timestep(met.dir='",
                       met.dir,"', met.regexp='",met.regexp,
                       "', start_date= '",start_date,"')")
-    dt <- PEcAn.utils::remote.execute.R(script=rmt.cmd,host=settings$host,verbose=TRUE)
+    dt <- PEcAn.remote::remote.execute.R(script=rmt.cmd,host=settings$host,verbose=TRUE)
   }
   ## -------------------- END DETECT TIMESTEP --------------------
 
@@ -132,7 +132,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
                         ",  resample = ",settings$spin$resample,
                         ",  run_start_date = '",start_date,
                         "')")
-      start_date <- PEcAn.utils::remote.execute.R(script=rmt.cmd,host=settings$host,verbose=TRUE)
+      start_date <- PEcAn.remote::remote.execute.R(script=rmt.cmd,host=settings$host,verbose=TRUE)
     }
   }  ## end spin
 
