@@ -5,8 +5,8 @@
 #' 2. is complete (has all of the species/pft's in both observations)
 #' 3. is condense-able (Could be represented as a hierachry)
 #' 
-#' @param observation_one a vector of plant fucntional types, or species
-#' @param observation_two anouther vector of plant fucntional types, or species
+#' @param observation_one a vector of plant functional types, or species
+#' @param observation_two anouther vector of plant functional types, or species
 #' @param custom_table a table that either maps two pft's to one anouther or maps custom species codes to bety id codes. 
 #' In the second case, must be passable to match_species_id. 
 #' @return \code{boolean} 
@@ -15,7 +15,7 @@ check_if_legal_table<-function(table, observation_one, observation_two){
   all_there<-TRUE
   names<-names(table)
   if(!"plant_functional_type_one" %in% names|!"plant_functional_type_two" %in% names ){
-    logger.severe("Custom table provided does not use correct column names. Requires both 'plant_fucntional_type_one', and 'plant_fucntional_type_two'. 
+    logger.severe("Custom table provided does not use correct column names. Requires both 'plant_functional_type_one', and 'plant_functional_type_two'. 
                   Column names are currently", names(table))
   }else{
     missing<-list()
@@ -54,7 +54,7 @@ check_if_legal_table<-function(table, observation_one, observation_two){
       
       return(is_legal_table)
     } else{
-      logger.severe("Not every species or plant_fucntional_type is accounted for in custom_table provided. Please account for", missing, "and make sure that 'plant_fucntional_type_one' is matches to 'observation_one'")
+      logger.severe("Not every species or plant_functional_type is accounted for in custom_table provided. Please account for", missing, "and make sure that 'plant_fucntional_type_one' is matches to 'observation_one'")
     }
   
   }
