@@ -68,12 +68,13 @@ format_two<-"plant_funtional_type"
 table<-list()
 table$plant_functional_type_one<- c("AMCA3","AMCA3","ARHY", "ARHY")
 table$plant_functional_type_two<- c('a','a','b', 'b') # PFT groupings
-table$input_code<-c("AMCA3","AMCA3","ARHY", "ARHY") # Species
 table<-as.data.frame(table)
 
 
 aligned<-align_pft(con = con, observation_one = observation_one, observation_two = observation_two, 
 format_one = format_one, format_two = format_two, custom_table = table)
+
+
 }
 \author{
 Tempest McCabe
