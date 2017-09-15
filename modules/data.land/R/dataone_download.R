@@ -40,8 +40,7 @@ dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles/", CNod
   dir.create(newdir)
   
   for(i in 1:n){
-    rename <- paste(i, basename(names(files[i])), sep="_") # new file name
-    system(paste("cd", newdir, "&&", "{", "wget", "--content-disposition", rename, names(files)[i], "; cd -; }")) # cd to newdir, download files with wget, cd back
+    system(paste("cd", newdir, "&&", "{", "wget", "--content-disposition", names(files)[i], "; cd -; }")) # cd to newdir, download files with wget, cd back
   }
   list.files(newdir) # checks that files were downloaded to 
   
