@@ -686,8 +686,8 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   out <- checkTemp(43)
   nc_var[[s+43]] <- PEcAn.utils::mstmipvar("VegT", lat, lon, t, zg)        # not standard
   nc_var[[s+44]] <- PEcAn.utils::to_ncvar("Evap", dims)
-  nc_var[[s+45]] <- PEcAn.utils::to_ncvar("Qs", dimsz)
-  nc_var[[s+46]] <- PEcAn.utils::to_ncvar("Qsb", dimsz)
+  nc_var[[s+45]] <- PEcAn.utils::to_ncvar("Qs", dims)
+  nc_var[[s+46]] <- PEcAn.utils::to_ncvar("Qsb", dims)
   out <- conversion(47, yr2s)  ## kg C m-2 yr-1 -> kg C m-2 s-1
   nc_var[[s+47]]<- ncdf4::ncvar_def("SoilResp", units = "kg C m-2 s-1", dim = list(lon, lat, t), missval = -999, 
                                     longname = "Soil Respiration")
