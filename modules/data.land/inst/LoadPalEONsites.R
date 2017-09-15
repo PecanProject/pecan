@@ -183,7 +183,7 @@ for(i in seq_along(paleon.sitegroups)){
 ## establish remote tunnel
 library(getPass)
 host <- list(name="geo.bu.edu",tunnel="~/.pecan/tunnel/")
-is.open <- open_tunnel(host$name,host$tunnel)
+is.open <- PEcAn.remote::open_tunnel(host$name,host$tunnel)
 if(!is.open){
   print("Could not open remote tunnel")
 } else {
@@ -262,7 +262,7 @@ for(i in c(1:5,7)){
   
 }
 
-PEcAn.utils::kill.tunnel(list(host=host))
+PEcAn.remote::kill.tunnel(list(host=host))
 
 ##################################
 ### merge in CO2 into met data

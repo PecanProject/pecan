@@ -36,7 +36,7 @@ run.write.configs(settings, settings$database$bety$write)
 
 ```{r, echo=FALSE,warning=FALSE,cache=TRUE}
 ## load met data
-start.model.runs(settings, settings$database$bety$write)         # Start ecosystem model runs
+PEcAn.remote::start.model.runs(settings, settings$database$bety$write)         # Start ecosystem model runs
 ```
 
 ```{r, echo=FALSE,warning=FALSE,cache=TRUE}
