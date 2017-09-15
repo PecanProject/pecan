@@ -316,12 +316,18 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   })
   
   tobit2space.model <- nimbleCode({
-    
-    y.censored[1:N] ~ dmnorm(muf[1:N], prec = pf[1:N,1:N])
-    
     for(i in 1:N){
-      y.ind[i] ~ dconstraint(y.censored[i] > 0)
+      y.censored[i,1:J] ~ dmnorm(muf[1:J], cov = pf[1:J,1:J])
+      for(j in 1:J){
+        y.ind[i,j] ~ dconstraint(y.censored[i,j] > 0)
+      }
     }
+    
+    cov[1:J,1:J] <- k_0 * pf[1:J,1:J]
+    muf[1:J] ~ dmnorm(mean = mu_0[1:J], cov = cov[1:J,1:J])
+    
+    Sigma[1:J,1:J] <- lambda_0[1:J,1:J]/nu_0
+    pf[1:J,1:J] ~ dinvwish(S = Sigma[1:J,1:J], df = J)
     
   })
   
@@ -489,11 +495,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           #The purpose of this step is to impute data for mu.f 
           #where there are zero values so that 
           #mu.f is in 'tobit space' in the full model
-          constants.tobit2space = list(N = length(mu.f),
-                                       muf = mu.f,
-                                       pf = solve(Pf))
+          constants.tobit2space = list(N = nens,
+                                       J = length(mu.f))
+          
           data.tobit2space = list(y.ind = x.ind,
-                                  y.censored = x.censored)
+                                  y.censored = x.censored,
+                                  mu_0 = rep(0,length(mu.f)),
+                                  lambda_0 = diag(10,length(mu.f)),
+                                  k_0 = 3, #or 3 or some measure of prior obs
+                                  nu_0 = 3)#or 3 or some measure of prior obs
+          
+          inits.tobit2space = list(pf = cov(X), muf = colMeans(X)) 
           #set.seed(0)
           #ptm <- proc.time()
           tobit2space_pred <- nimbleModel(tobit2space.model, data = data.tobit2space,
@@ -530,8 +542,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         }else{
           Cmodel_tobit2space$y.ind <- x.ind
           Cmodel_tobit2space$y.censored <- x.censored
-          Cmodel_tobit2space$muf <- mu.f
-          Cmodel_tobit2space$pf <- solve(Pf)
+          #Cmodel_tobit2space$muf <- mu.f
+          #Cmodel_tobit2space$pf <- solve(Pf)
           
           for(i in 1:length(mu.f)) {
               ## ironically, here we have to "toggle" the value of y.ind[i]
