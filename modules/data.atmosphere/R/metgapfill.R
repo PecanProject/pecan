@@ -166,7 +166,7 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     doy <- rep(seq_len(diy), each = 86400 / dt)
     hr <- rep(seq(0, length = 86400 / dt, by = 24 * dt / 86400), diy)
 
-    cosz <- PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lat, lon, dt)
+    cosz <- PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lat, lon, dt, hr)
 
     rpot <- 1366 * cosz  #in UTC
     tz <- as.numeric(lst)
@@ -328,31 +328,31 @@ metgapfill <- function(in.path, in.prefix, outfolder, start_date, end_date, lst 
     ## make a data frame, convert -9999 to NA, convert to degrees C
     EddyData.F <- data.frame(Tair, Rg, rH, PAR, precip, sHum, Lw, Ts1,
                              VPD, ws, co2, press, east_wind, north_wind)
-    EddyData.F["Tair"] <- udunits2::ud.convert(EddyData.F["Tair"], "K", "degC")
-    EddyData.F["Tair"] <- EddyData.F["Tair"]
-    EddyData.F["Ts1"] <- udunits2::ud.convert(EddyData.F["Ts1"], "K", "degC")
-    EddyData.F["VPD"] <- udunits2::ud.convert(EddyData.F["VPD"], "Pa", "kPa")
+    EddyData.F[["Tair"]] <- udunits2::ud.convert(EddyData.F[["Tair"]], "K", "degC")
+    EddyData.F[["Tair"]] <- EddyData.F[["Tair"]]
+    EddyData.F[["Ts1"]] <- udunits2::ud.convert(EddyData.F[["Ts1"]], "K", "degC")
+    EddyData.F[["VPD"]] <- udunits2::ud.convert(EddyData.F[["VPD"]], "Pa", "kPa")
 
     ## Optional need:
     ## Compute VPD EddyData.F <- cbind(EddyData.F,VPD=fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair))
 
     ## Estimate number of good values, don't gap fill if no gaps or all gaps
-    n_Tair   <- sum(is.na(EddyData.F["Tair"]))
-    n_Rg     <- sum(is.na(EddyData.F["Rg"]))
-    n_rH     <- sum(is.na(EddyData.F["rH"]))
-    n_PAR    <- sum(is.na(EddyData.F["PAR"]))
-    n_precip <- sum(is.na(EddyData.F["precip"]))
+    n_Tair   <- sum(is.na(EddyData.F[["Tair"]]))
+    n_Rg     <- sum(is.na(EddyData.F[["Rg"]]))
+    n_rH     <- sum(is.na(EddyData.F[["rH"]]))
+    n_PAR    <- sum(is.na(EddyData.F[["PAR"]]))
+    n_precip <- sum(is.na(EddyData.F[["precip"]]))
     # n_Rn <- sum(is.na(EddyData.F['Rn']))
-    n_sHum   <- sum(is.na(EddyData.F["sHum"]))
-    n_Lw     <- sum(is.na(EddyData.F["Lw"]))
-    n_Ts1    <- sum(is.na(EddyData.F["Ts1"]))
+    n_sHum   <- sum(is.na(EddyData.F[["sHum"]]))
+    n_Lw     <- sum(is.na(EddyData.F[["Lw"]]))
+    n_Ts1    <- sum(is.na(EddyData.F[["Ts1"]]))
     # n_Ts2 <- sum(is.na(EddyData.F['Ts2']))
-    n_VPD    <- sum(is.na(EddyData.F["VPD"]))
-    n_ws     <- sum(is.na(EddyData.F["ws"]))
-    n_co2    <- sum(is.na(EddyData.F["co2"]))
-    n_press  <- sum(is.na(EddyData.F["press"]))
-    n_east_wind  <- sum(is.na(EddyData.F["east_wind"]))
-    n_north_wind <- sum(is.na(EddyData.F["north_wind"]))
+    n_VPD    <- sum(is.na(EddyData.F[["VPD"]]))
+    n_ws     <- sum(is.na(EddyData.F[["ws"]]))
+    n_co2    <- sum(is.na(EddyData.F[["co2"]]))
+    n_press  <- sum(is.na(EddyData.F[["press"]]))
+    n_east_wind  <- sum(is.na(EddyData.F[["east_wind"]]))
+    n_north_wind <- sum(is.na(EddyData.F[["north_wind"]]))
 
     # figure out datetime of nc file and convert to POSIX
     nelem <- length(time)
