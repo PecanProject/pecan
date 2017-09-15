@@ -22,7 +22,7 @@
 ##'
 ##' @author Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari, Istem Fer
 ## modified M. Dietze 07/08/12 modified S. Serbin 05/06/13
-model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft.names = NULL, dbh.breaks = NULL) {
+model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft.names = NULL, dbh.breaks = 0) {
 
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date) 
@@ -677,3 +677,155 @@ read_T_files <- function(yr, yfiles, tfiles, outdir, start_date, end_date, ...){
   return(out)
   
 } # read_T_files
+
+
+##-------------------------------------------------------------------------------------------------#
+
+# Function for reading -E- files
+#
+# y      : the year being processed
+# yfiles : the years on the filenames, will be used to matched efiles for that year
+#
+#  e.g.     y = 1999
+#      yfiles = 1999 1999 1999 1999 1999 1999 1999 2000 2000 2000 2000
+#      efiles = "analysis-E-1999-06-00-000000-g01.h5" "analysis-E-1999-07-00-000000-g01.h5"
+#               "analysis-E-1999-08-00-000000-g01.h5" "analysis-E-1999-09-00-000000-g01.h5"
+#               "analysis-E-1999-10-00-000000-g01.h5" "analysis-E-1999-11-00-000000-g01.h5"
+#               "analysis-E-1999-12-00-000000-g01.h5" "analysis-E-2000-01-00-000000-g01.h5"
+#               "analysis-E-2000-02-00-000000-g01.h5" "analysis-E-2000-03-00-000000-g01.h5"
+#               "analysis-E-2000-04-00-000000-g01.h5"
+#
+# dbh.breaks : determines the bins braks, vector, 0 will represent a single DBH bin from 0 - Infinity cm
+# pft.names  : character vector with names of PFTs
+# pft.names <- c("temperate.Early_Hardwood", "temperate.Late_Hardwood")
+
+read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft.names, dbh.breaks, ...){
+  
+  PEcAn.logger::logger.info(paste0("*** Reading -E- file ***"))
+  
+  # there are multiple -E- files per year
+  ysel <- which(yr == yfiles)
+  
+  # grab year-month info from file names, e.g. "199906"
+  times <- gsub(
+    "(.*)\\-(.*)\\-(.*)\\-(.*)\\-(.*)", "\\1\\2",
+    sapply(
+      strsplit(efiles, "-E-"), 
+      function(x) x[2] # Select only the part of each name after res.flag
+    )
+  )
+  
+  # lets make it work for a subset of vars fist
+  # TODO :  read all (or more) variables, functionality exists, see below
+  varnames <- c("DBH", "DDBH_DT", "NPLANT")
+  
+  # List of vars to extract includes the requested one, plus others needed below 
+  vars <- c(varnames, 'PFT', 'AREA', 'PACO_N')
+  
+  # list to collect outputs
+  ed.dat <- list()
+  
+  # loop over the files for that year
+  for(i in ysel){
+    
+    nc <- ncdf4::nc_open(file.path(outdir, efiles[i]))
+    allvars <- names(nc$var)
+    if(!is.null(vars)) allvars <- allvars[ allvars %in% vars ]
+    
+    if(length(ed.dat) == 0){
+      
+      for(j in 1:length(allvars)){
+        ed.dat[[j]] <- list()
+        ed.dat[[j]][[1]] <- ncdf4::ncvar_get(nc, allvars[j])
+      }
+      names(ed.dat) <- allvars
+      
+    } else {
+      
+      # 2nd and more months
+      t <- length(ed.dat[[1]]) + 1
+      
+      for(j in 1:length(allvars)){
+        
+        k <- which(names(ed.dat) == allvars[j])
+        
+        if(length(k)>0){
+          
+          ed.dat[[k]][[t]] <- ncdf4::ncvar_get(nc, allvars[j])
+          
+        } else { ## add a new ed.datiable. ***Not checked (shouldn't come up?)
+          
+          ed.dat[[length(ed.dat)+1]] <- list()    # Add space for new ed.datiable
+          ed.dat[[length(ed.dat)]][1:(t-1)] <- NA # Give NA for all previous time points
+          ed.dat[[length(ed.dat)]][t] <- ncdf4::ncvar_get(nc, allvars[j]) # Assign the value of the new ed.datiable at this time point
+          names(ed.dat)[length(ed.dat)] <- allvars[j]
+          
+        }
+      }      
+    }
+    ncdf4::nc_close(nc)
+  } # end ysel-loop
+  
+
+  ndbh <- length(dbh.breaks)
+  npft <- length(pft.names)
+  data(pftmapping, package = "PEcAn.ED2")
+  pfts <- sapply(pft.names, function(x) pftmapping$ED[pftmapping$PEcAn == x]) 
+  
+  out <- list()
+  for(varname in varnames) {
+    out[[varname]] <- array(NA, c(length(ysel), ndbh, npft))
+  }
+  
+  # Aggregate over PFT and DBH bins  
+  # testing i=j=1; k=2 
+  for(i in seq_along(ysel)) {
+    # Get additional cohort-level variables required
+    pft        <- ed.dat$PFT[[i]]
+    dbh        <- ed.dat$DBH[[i]]      # cm / plant
+    plant.dens <- ed.dat$NPLANT[[i]]   # plant / m2
+    
+    # Get patch areas. In general patches aren't the same area, so this is needed to area-weight when averaging up to site level. Requires minor finnagling to convert patch-level AREA to a cohort-length variable. 
+    patch.area <- ed.dat$AREA[[i]]    # m2  -- one entry per patch
+    pacoN      <- ed.dat$PACO_N[[i]]  # number of cohorts per patch
+    patch.area <- rep(patch.area, pacoN)  # patch areas, repped out to one entry per cohort
+    
+    # Now can get number of plants per cohort, which will be used for weighting. Note that area may have been (often/always is?) a proportion of total site area, rather than an absolute measure. In which case this nplant is a tiny and meaningless number in terms of actual number of plants. But that doesn't matter for weighting purposes. 
+    nplant <- plant.dens * patch.area
+    
+    # Get index of DBH bin each cohort belongs to      
+    dbh.bin <- sapply(dbh, function(x) which.min(x>c(dbh.breaks,Inf))) - 1
+    
+    
+    # For each PFT x DBH bin, average variables of interest, weighting by # of plants. Not all ED cohort variables are in per-plant units. This code would not be applicable to them without modification.
+    # However, it does handle two special cases. For NPLANT, it performs no weighting, but simply sums over cohorts in the PFT x DBH bin. For MMEAN_MORT_RATE_CO, it first sums over columns representing different mortality types first, then proceeds with weighting. 
+    for(j in 1:ndbh) {
+      for(k in 1:npft) {
+        ind <- (dbh.bin==j) & (pft == pfts[k])
+        
+        if(any(ind)) {
+          for(varname in varnames) {
+            if(varname == "NPLANT") {
+              # Return the total number of plants in the bin
+              out$NPLANT[i,j,k] <- sum(nplant[ind])
+            } else if(varname == "MMEAN_MORT_RATE_CO") {
+              # Sum over all columns 
+              mort = apply(ed.dat$MMEAN_MORT_RATE_CO[[i]][ind,, drop=F], 1, sum, na.rm=T)
+              out$MMEAN_MORT_RATE_CO[i,j,k] <- sum(mort * nplant[ind]) / sum(nplant[ind])
+            } else {
+              # For all others, just get mean weighted by nplant
+              out[[varname]][i,j,k] <- sum(ed.dat[[varname]][[i]][ind] * nplant[ind]) / sum(nplant[ind])
+            }
+            dimnames(out[[varname]]) <- list(months = times[ysel], dbhLowBound=dbh.breaks, pft=pft.names)
+          }
+        }
+      }
+    }
+  }
+  
+  out <- lapply(out, function(o) aperm(o, c(2,3,1)))
+  out$PFT <- pfts # will write this to the .nc file
+  
+  return(out)
+  
+} # read_E_files
