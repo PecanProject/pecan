@@ -1,6 +1,6 @@
 #################################################################
 #'
-#' @title align_by_observation_one
+#' align_by_observation_one
 #' @param observation_one a vector of plant fucntional types, or species
 #' @param observation_two anouther vector of plant fucntional types, or species
 #' @param custom_table a table that either maps two pft's to one anouther or maps custom species codes to bety id codes. 
