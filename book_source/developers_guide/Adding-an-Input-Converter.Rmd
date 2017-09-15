@@ -108,20 +108,20 @@ lon <- 105.54
 lat <- 40.03
 format$time_zone <- "America/Chicago"
 ```
-Note: The format.id can be pulled from the BETY database if you know the format of the raw data. Once 
+Note: The format.id can be pulled from the BETY database if you know the format of the raw data.
 
+Once these arguments are defined you can execute the `met2CF.csv` function
 
 ```
 PEcAn.data.atmosphere::met2CF.csv(in.path = in.path, 
                                   in.prefix ="US-NR1_CF", 
                                   outfolder = ".", 
                                   start_date ="2004-01-01",
-                                  end_date = "2004-01-01",
+                                  end_date = "2004-12-01",
                                   lat= lat,
                                   lon = lon,
                                   format = format) 
 ```
-Note: The format.id is specific to the format type of the raw data. You can look up the format id in the Bety database. 
 
 Example 2: Processing data from data already in hand 
 
