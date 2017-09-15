@@ -5,7 +5,7 @@
 \title{Read model output}
 \usage{
 read.output(runid, outdir, start.year = NA, end.year = NA,
-  variables = "GPP", dataframe = FALSE)
+  variables = "GPP", dataframe = FALSE, pft.name = NULL)
 }
 \arguments{
 \item{runid}{the id distiguishing the model run.}
