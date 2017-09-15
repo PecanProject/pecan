@@ -7,9 +7,7 @@
 ##' @return ncdim defined according to standard_vars
 ##' @author Anne Thomas
 to_ncdim <- function(dimname,vals){
-  standard_vars <- read.csv(system.file("data/standard_vars.csv",package="PEcAn.utils"),stringsAsFactors = FALSE)
-  
-  dim <- standard_vars[which(standard_vars$Variable.Name == dimname),]
+  dim <- PEcAn.utils::standard_vars[which(PEcAn.utils::standard_vars$Variable.Name == dimname),]
   #check dim exists
   if(nrow(dim) == 0){
     PEcAn.logger::logger.severe(paste("Dimension",dimname,"not in standard_vars"))
@@ -40,9 +38,7 @@ to_ncdim <- function(dimname,vals){
 ##' @return ncvar defined according to standard_vars
 ##' @author Anne Thomas
 to_ncvar <- function(varname,dims){
-  standard_vars <- read.csv(system.file("data/standard_vars.csv",package="PEcAn.utils"),stringsAsFactors = FALSE)
-  
-  var <- standard_vars[which(standard_vars$Variable.Name == varname),]
+  var <- PEcAn.utils::standard_vars[which(PEcAn.utils::standard_vars$Variable.Name == varname),]
   #check var exists
   if(nrow(var)==0){
     PEcAn.logger::logger.severe(paste("Variable",varname,"not in standard_vars"))
