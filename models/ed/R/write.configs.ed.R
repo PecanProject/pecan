@@ -308,7 +308,7 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
   if (!settings$host$name == "localhost") {
     ## Remove model run congfig and log files on remote host
     remote_ls <- function(path, pattern) {
-      remote.execute.cmd(host = settings$host, cmd = "ls", args = file.path(path, pattern))
+      PEcAn.remote::remote.execute.cmd(host = settings$host, cmd = "ls", args = file.path(path, pattern))
     }
     config <- remote_ls(settings$host$rundir, "c.*")
     ed2in <- remote_ls(settings$host$rundir, "ED2INc.*")
@@ -317,7 +317,7 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
     
     if (length(config) > 0 | length(ed2in) > 0) {
       todelete <- c(config, ed2in[-grep("log", ed2in)], output)  ## Keep log files
-      remote.execute.cmd(settings$host, "rm", c("-f", todelete))
+      PEcAn.remote::remote.execute.cmd(settings$host, "rm", c("-f", todelete))
     }
   }
 } # remove.config.ED2
