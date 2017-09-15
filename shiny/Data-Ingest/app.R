@@ -56,18 +56,32 @@ ui <- dashboardPage(
 )
 
 server <- function(input, output) {
+  options(shiny.maxRequestSize=30*1024^2) #maximum file input size
   
-  # d1d <- eventReactive(input$D1Button, { input$id }) #print doi on click
-  
-  # How do I force R to load the dependencies before I run dataone_download? brew, redland, datapack, dataone
-   d1d <- eventReactive(input$D1Button, { PEcAn.data.land::dataone_download(input$id) }) #run dataone_download with input from id on click
+   #path <- PEcAn.utils::read_web_config(config.php)
+    
+   d1d <- eventReactive(input$D1Button, { PEcAn.data.land::dataone_download(input$id, filepath = path) }) #run dataone_download with input from id on click
   
   output$identifier <- renderText({
     d1d()
   })
   
-  # output$debug <- # file.copy copy from tmp file to 
+   # output$debug <-
   
+ # 
+  
+  output$upload <- renderTable({
+    if(is.null(data())){return()}
+    input$file
+  })
+  
+    #file.copy(inFile$datapath, header = input$header)
+
+
+  
+  
+# file.copy copy from tmp file to 
+    
 }
 
 # Run the application 
