@@ -506,6 +506,9 @@ write.config.jobsh.ED2 <- function(settings, run.id) {
 
   jobsh <- gsub("@START_DATE@", settings$run$start.date, jobsh)
   jobsh <- gsub("@END_DATE@", settings$run$end.date, jobsh)
+  
+  jobsh <- gsub("@PFTNAMES@", sapply(settings$pfts, `[[`, "name"), jobsh)
+  jobsh <- gsub("@DHBREAKS@", unlist(settings$pfts$dbh.breaks), jobsh)
 
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
