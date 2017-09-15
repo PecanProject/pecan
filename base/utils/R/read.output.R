@@ -91,7 +91,7 @@ model2netcdf <- function(runid, outdir, model, lat, lon, start_date, end_date) {
 ##' @return vector of output variable
 ##' @export
 ##' @author Michael Dietze, David LeBauer
-read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables = "GPP", dataframe= FALSE) {
+read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables = "GPP", dataframe= FALSE, pft.name = NULL) {
   
   ## vars in units s-1 to be converted to y-1 cflux = c('GPP', 'NPP', 'NEE',
   ## 'TotalResp', 'AutoResp', 'HeteroResp', 'DOC_flux', 'Fire_flux') # kgC m-2 s-1
@@ -141,6 +141,11 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
       for (v in variables) {
         if (v %in% c(names(nc$var), names(nc$dim))) {
           newresult <- ncdf4::ncvar_get(nc, v)
+          if("pft.numbers" %in% names(nc$dim)){
+            # means there are PFT specific outputs we want
+            pft.ind <- strsplit(nc$var$PFT$longname, ",")[[1]] == pft.name
+            newresult <- newresult[pft.ind,] #for now this is specific for dbh.breaks = 0
+          }
           # Dropping attempt to provide more sensible units because of graph unit errors,
           # issue #792 if(v %in% c(cflux, wflux)){ newresult <- udunits2::ud.convert(newresult, 'kg
           # m-2 s-1', 'kg ha-1 yr-1') }
