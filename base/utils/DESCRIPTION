@@ -19,7 +19,6 @@ Imports:
     data.table,
     getPass,
     ggplot2,
-    methods,
     PEcAn.data.atmosphere,
     PEcAn.data.land,
     PEcAn.DB,
