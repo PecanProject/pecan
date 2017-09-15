@@ -24,7 +24,6 @@
 ##' @param end_date the end date of the data to be downloaded (will only use the year part of the date)
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
-##' @importFrom ncdf4 ncvar_get
 met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date,
                              overwrite = FALSE, verbose = FALSE, ...) {
   PEcAn.logger::logger.info("START met2model.SIPNET")
@@ -86,30 +85,30 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
       dt <- 86400 / tstep
 
       ## extract variables
-      lat <- ncvar_get(nc, "latitude")
-      lon <- ncvar_get(nc, "longitude")
-      Tair <- ncvar_get(nc, "air_temperature")  ## in Kelvin
+      lat <- ncdf4::ncvar_get(nc, "latitude")
+      lon <- ncdf4::ncvar_get(nc, "longitude")
+      Tair <-ncdf4::ncvar_get(nc, "air_temperature")  ## in Kelvin
       Tair_C <- udunits2::ud.convert(Tair, "K", "degC")
-      Qair <- ncvar_get(nc, "specific_humidity")  #humidity (kg/kg)
-      ws <- try(ncvar_get(nc, "wind_speed"))
+      Qair <-ncdf4::ncvar_get(nc, "specific_humidity")  #humidity (kg/kg)
+      ws <- try(ncdf4::ncvar_get(nc, "wind_speed"))
       if (!is.numeric(ws)) {
-        U <- ncvar_get(nc, "eastward_wind")
-        V <- ncvar_get(nc, "northward_wind")
+        U <- ncdf4::ncvar_get(nc, "eastward_wind")
+        V <- ncdf4::ncvar_get(nc, "northward_wind")
         ws <- sqrt(U ^ 2 + V ^ 2)
         PEcAn.logger::logger.info("wind_speed absent; calculated from eastward_wind and northward_wind")
       }
 
-      Rain <- ncvar_get(nc, "precipitation_flux")
-      # pres <- ncvar_get(nc,'air_pressure') ## in pascal
-      SW <- ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  ## in W/m2
+      Rain <- ncdf4::ncvar_get(nc, "precipitation_flux")
+      # pres <- ncdf4::ncvar_get(nc,'air_pressure') ## in pascal
+      SW <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  ## in W/m2
 
-      PAR <- try(ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air"))  ## in mol/m2/s
+      PAR <- try(ncdf4::ncvar_get(nc, "surface_downwelling_photosynthetic_photon_flux_in_air"))  ## in mol/m2/s
       if (!is.numeric(PAR)) {
         PAR <- SW * 0.45
         PEcAn.logger::logger.info("surface_downwelling_photosynthetic_photon_flux_in_air absent; PAR set to SW * 0.45")
       }
 
-      soilT <- try(ncvar_get(nc, "soil_temperature"))
+      soilT <- try(ncdf4::ncvar_get(nc, "soil_temperature"))
       if (!is.numeric(soilT)) {
         # approximation borrowed from SIPNET CRUNCEPpreprocessing's tsoil.py
         tau <- 15 * tstep
@@ -122,14 +121,15 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
         soilT <- udunits2::ud.convert(soilT, "K", "degC")
       }
 
-      SVP <- udunits2::ud.convert(get.es(Tair_C), "millibar", "Pa")  ## Saturation vapor pressure
-      VPD <- try(ncvar_get(nc, "water_vapor_saturation_deficit"))  ## in Pa
+      SVP <- udunits2::ud.convert(PEcAn.data.atmosphere::get.es(Tair_C), "millibar", "Pa")  ## Saturation vapor pressure
+      VPD <- try(ncdf4::ncvar_get(nc, "water_vapor_saturation_deficit"))  ## in Pa
       if (!is.numeric(VPD)) {
-        VPD <- SVP * (1 - qair2rh(Qair, Tair_C))
+        VPD <- SVP * (1 - PEcAn.data.atmosphere::qair2rh(Qair, Tair_C))
         PEcAn.logger::logger.info("water_vapor_saturation_deficit absent; VPD calculated from Qair, Tair, and SVP (saturation vapor pressure) ")
       }
       e_a <- SVP - VPD
-      VPDsoil <- udunits2::ud.convert(get.es(soilT), "millibar", "Pa") * (1 - qair2rh(Qair, soilT))
+      VPDsoil <- udunits2::ud.convert(PEcAn.data.atmosphere::get.es(soilT), "millibar", "Pa") *
+        (1 - PEcAn.data.atmosphere::qair2rh(Qair, soilT))
 
       ncdf4::nc_close(nc)
     } else {
