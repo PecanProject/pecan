@@ -18,7 +18,7 @@ query.file.path <- function(input.id, host_name, con){
   )
   path <- file.path(dbfile$file_path,dbfile$file_name)
   cmd <- paste0("file.exists( '",path,"')")
-  PEcAn.utils::remote.execute.R(script = cmd, host = machine.host, verbose=TRUE)
+  PEcAn.remote::remote.execute.R(script = cmd, host = machine.host, verbose=TRUE)
   #   Check - to be determined later
   #   if(file.exists(path)){
   #     return(path)

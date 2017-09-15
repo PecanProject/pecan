@@ -89,56 +89,13 @@ extract_soil_nc <- function(in.file,outdir,lat,lon){
   names(soil.data)[which(names(soil.data) == "cec")]  <- "soil_cec" ## units = meq/100g
   names(soil.data)[which(names(soil.data) == "oc")]   <- "soilC"  ## this is currently the BETY name, would like to change and make units SI
   
-  ## convert soil type to parameters via look-up-table / equations
-  mysoil <- PEcAn.data.land::soil_params(sand=soil.data$volume_fraction_of_sand_in_soil,
-                                         silt=soil.data$volume_fraction_of_silt_in_soil,
-                                         clay=soil.data$volume_fraction_of_clay_in_soil,
-                                         bulk=soil.data$soil_bulk_density)
-  
-  ## Merge in new variables
-  for(n in seq_along(mysoil)){
-    if(!(names(mysoil)[n] %in% names(soil.data))){
-      soil.data[[names(mysoil)[n]]] <- mysoil[[n]]
-    }
-  }
-  
-  ## Because netCDF is a pain for storing strings, convert named class to number
-  ## conversion back can be done by load(system.file("data/soil_class.RData",package = "PEcAn.data.land"))
-  ## and then soil.name[soil_n]
-  soil.data$soil_type <- soil.data$soil_n
-  soil.data$soil_n <- NULL
-  
-  ## open new file
+  ## calc new filename
   prefix <- tools::file_path_sans_ext(basename(in.file))
   new.file <- file.path(outdir,paste0(prefix,".nc"))
-
-  ## create netCDF variables
-  ncvar <- list()
-  for(n in seq_along(soil.data)){
-    varname <- names(soil.data)[n]
-    if(length(soil.data[[n]])>1){
-      ## if vector, save by depth
-      ncvar[[n]] <- ncdf4::ncvar_def(name = varname, 
-                              units = soil.units(varname), 
-                              dim = depth)
-    }else {
-      ## else save as scalar
-      ncvar[[n]] <- ncdf4::ncvar_def(name = varname, 
-                              units = soil.units(varname), 
-                              dim=list())
-    }
-  }
   
-  ## create new file
-  nc <- ncdf4::nc_create(new.file, vars = ncvar)
-  
-  ## add data
-  for (i in seq_along(ncvar)) {
-      ncdf4::ncvar_put(nc, ncvar[[i]], soil.data[[i]]) 
-  }
-
-  ncdf4::nc_close(nc)
-  
+  ## Calculate soil parameters and export to netcdf
+  soil2netcdf(soil.data,new.file)
+    
   return(new.file)
   
 }
@@ -153,7 +110,7 @@ extract_soil_nc <- function(in.file,outdir,lat,lon){
 #'
 #' @examples
 #' soil.units("soil_albedo")
-soil.units <- function(varname){
+soil.units <- function(varname = NA){
   variables <- as.data.frame(matrix(c("soil_depth","m",
                                       "soil_cec","meq/100g",
                                       "volume_fraction_of_clay_in_soil","m3 m-3",
@@ -186,7 +143,11 @@ soil.units <- function(varname){
   unit = which(variables$var == varname)
   
   if(length(unit) == 0){
-    return(NA)
+    if(is.na(varname)){
+      return(variables)
+    } else {
+      return(NA)
+    }
   }else{
     unit = as.character(variables$unit[unit])
     return(unit)
