@@ -8,13 +8,13 @@
 #' - a list of species in a custom format, with a table mapping it to bety_species_id's
 #' 
 #'  Will return a list of what was originally provided, bety_speceis_codes if possible, 
-#'  and an aligned output. Becuase some alignement is order-sensitive, alignment based on observation_one
+#'  and an aligned output. Because some alignement is order-sensitive, alignment based on observation_one
 #'  and observation_two are both provided. 
 #'
 #'
 #' @param con database connection
 #' @param observation_one a vector of plant fucntional types, or species
-#' @param observation_two anouther vector of plant fucntional types, or species
+#' @param observation_two another vector of plant fucntional types, or species
 #' @param custom_table a table that either maps two pft's to one anouther or maps custom species codes to bety id codes. 
 #' In the second case, must be passable to match_species_id. 
 #' @param format_one The output of query.format.vars() of observation one of the form output$vars$bety_names
