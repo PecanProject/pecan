@@ -95,7 +95,7 @@ bety <- dplyr::src_postgres(dbname   = 'bety',
                             user     = "bety", 
                             password = "bety")
                             
-bety$con <- con
+con <- bety$con
 ```
 Next you will set up the arguments for the function
 ```
@@ -114,7 +114,7 @@ Once these arguments are defined you can execute the `met2CF.csv` function
 
 ```
 PEcAn.data.atmosphere::met2CF.csv(in.path = in.path, 
-                                  in.prefix ="US-NR1_CF", 
+                                  in.prefix =in.prefix 
                                   outfolder = ".", 
                                   start_date ="2004-01-01",
                                   end_date = "2004-12-01",
@@ -123,15 +123,55 @@ PEcAn.data.atmosphere::met2CF.csv(in.path = in.path,
                                   format = format) 
 ```
 
-Example 2: Processing data from data already in hand 
+
+
+#### Example 2: Processing data from data already in hand 
 
 If you have Met data already in hand and you would like to convert into the PEcAn standard follow these instructions.
 
-Use met2CF.csv to 
+Update BETY with file record, format record and input record according to this page [How to Insert new Input Data]
+ 
+If your data is in a csv formate you can use the `met2CF.csv`function to convert your data into a PEcAn standard file.
 
+Open a connection with BETY. You may need to change the host name depending on what mahcine you are hosting BETY. You can find the hostname listed in the machines table of BETY.
 
 ```
+
+bety <- dplyr::src_postgres(dbname   = 'bety', 
+                            host ='localhost', 
+                            user     = "bety", 
+                            password = "bety")
+                            
+con <- bety$con
 ```
+
+Prepare the arguments you need to execute the met2CF.csv function 
+
+```
+in.path <- 'path/where/the/raw/file/lives'
+in.prefix <- 'prefix_of_the_raw_file'
+outfolder <- 'path/to/where/you/want/to/output/thecsv/'
+format.id <- formatid of the format your created
+format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = bety)
+lon <- longitude of your site
+lat <- latitude of your site
+format$time_zone <- time zone of your site
+start_date <- Start date of your data in "y-m-d"
+end_date <- End date of your data in "y-m-d"
+```
+
+Next you can execute the function:
+```
+PEcAn.data.atmosphere::met2CF.csv(in.path = in.path, 
+                                  in.prefix =in.prefix, 
+                                  outfolder = ".", 
+                                  start_date = start_date,
+                                  end_date = end_date,
+                                  lat= lat,
+                                  lon = lon,
+        
+```
+
 
 ## Vegetation Data
 
