@@ -524,21 +524,6 @@ as.sequence <- function(x, na.rm = TRUE) {
 
 
 #--------------------------------------------------------------------------------------------------#
-##' Test ssh access
-##'
-##' Test to determine if access to a remote server is available.
-##' Can be used to exclude / include tests or to prevent / identify access errors
-##' @title Test Remote
-##' @param host
-##' @return logical - TRUE if remote connection is available
-##' @author Rob Kooper
-test.remote <- function(host) {
-  return(try(remote.execute.cmd(host, "/bin/true")) == 0)
-} # test.remote
-#--------------------------------------------------------------------------------------------------#
-
-
-#--------------------------------------------------------------------------------------------------#
 ##' Create a temporary settings file
 ##'
 ##' Uses \code{\link{tempfile}} function to provide a valid temporary file (OS independent)
