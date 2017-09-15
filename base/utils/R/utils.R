@@ -27,13 +27,11 @@
 ##' @return ncvar based on MstMIP definition
 ##' @author Rob Kooper
 mstmipvar <- function(name, lat = NA, lon = NA, time = NA, nsoil = NA, silent = FALSE) {
-  data(mstmip_vars, package = "PEcAn.utils")
-  var <- mstmip_vars[mstmip_vars$Variable.Name == name, ]
+  var <- PEcAn.utils::mstmip_vars[PEcAn.utils::mstmip_vars$Variable.Name == name, ]
   dims <- list()
 
   if (nrow(var) == 0) {
-    data(mstmip_local, package = "PEcAn.utils")
-    var <- mstmip_local[mstmip_local$Variable.Name == name, ]
+    var <- PEcAn.utils::mstmip_local[PEcAn.utils::mstmip_local$Variable.Name == name, ]
     if (nrow(var) == 0) {
       if (!silent) {
         PEcAn.logger::logger.info("Don't know about variable", name, " in mstmip_vars in PEcAn.utils")
@@ -395,17 +393,10 @@ pdf.stats <- function(distn, A, B) {
 ##' trait.lookup()[,c('figid', 'units')]
 ##' }
 trait.lookup <- function(traits = NULL) {
-  # HACK: shameless hack Ultimately we'll want this to be read once at the start of
-  # run time This could also be represented in the database, but because it is used
-  # to determine which parameters to feed to the model, it could be argued that
-  # it's conceptually model specific
-  data(trait.dictionary)
   if (is.null(traits)) {
-    trait.defs <- trait.dictionary
-  } else {
-    trait.defs <- trait.dictionary[match(traits, trait.dictionary$id), ]
+    return(PEcAn.utils::trait.dictionary)
   }
-  return(trait.defs)
+  PEcAn.utils::trait.dictionary[match(traits, PEcAn.utils::trait.dictionary$id), ]
 } # trait.lookup
 
 
