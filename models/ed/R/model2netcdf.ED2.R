@@ -7,6 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
+
 ##' Modified from Code to convert ED2.1's HDF5 output into the NACP Intercomparison format (ALMA using netCDF)
 ##'
 ##' @name model2netcdf.ED2
@@ -23,22 +24,45 @@
 ## modified M. Dietze 07/08/12 modified S. Serbin 05/06/13
 model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
 
-  flist <- dir(outdir, "-T-")
-  if (length(flist) == 0) {
-    print(paste("*** WARNING: No tower output for :", outdir))
+  start_year <- lubridate::year(start_date)
+  end_year   <- lubridate::year(end_date) 
+  
+  flist <- list()
+  flist[["-T-"]] <- dir(outdir, "-T-") # tower files
+  flist[["-E-"]] <- dir(outdir, "-E-") # monthly files
+  
+  # check if there are files
+  file.check <- sapply(flist, function (f) length(f) != 0)
+  
+  if (!any(file.check)) {
+    
+    # no output files
+    print(paste("*** WARNING: No output files found for :", outdir))
     return(NULL)
+    
+  }else{ 
+    
+    # which output files are there
+    ed.res.flag <- names(flist)[file.check]
+    
+    # extract year info from the file names
+    ylist <-lapply(ed.res.flag, function(f) {
+      yr <- rep(NA, length(flist[[f]]))
+      for (i in seq_along(flist[[f]])) {
+        index <- gregexpr(f, flist[[f]][i])[[1]]
+        index <- index[1]
+        yr[i] <- as.numeric(substr(flist[[f]][i], index + 3, index + 6))
+      }
+      return(yr)
+    })
+    
+    names(ylist) <- ed.res.flag
   }
+  
+  # prepare list to collect outputs
+  out_list <- vector("list", length(ed.res.flag)) 
+  names(out_list) <- ed.res.flag
 
-  ## extract data info from file names?
-  yr <- rep(NA, length(flist))
-  for (i in seq_along(flist)) {
-    ## tmp <- sub(run.id,"",flist[i])  # Edited by SPS
-    ## tmp <- sub("-T-","",tmp)        # Edited by SPS
-    index <- gregexpr("-T-", flist[i])[[1]]
-    index <- index[1]
-    yr[i] <- as.numeric(substr(flist[i], index + 3, index + 6))
-    ## yr[i] <- as.numeric(substr(tmp,1,4)) # Edited by SPS
-  }
 
   add <- function(dat, col, row, year) {
     ## data is always given for whole year, except it will start always at 0
