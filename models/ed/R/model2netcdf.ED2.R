@@ -742,8 +742,8 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   
   zg <- ncdf4::ncdim_def("SoilLayerMidpoint", "meters", c(slzdata[1:length(dz)] + dz/2, 0))
   
-  dims  <- list(lon, lat, t)
-  dimsz <- list(lat, lon, t, zg)
+  dims  <- list(lon = lon, lat = lat, time = t)
+  dimsz <- list(lon = lon, lat = lat, time = t, nsoil = zg)
   
   # ----- fill list
   
@@ -768,7 +768,7 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   nc_var[[s+12]] <- PEcAn.utils::to_ncvar("TotSoilCarb", dimsz)
   nc_var[[s+13]] <- PEcAn.utils::to_ncvar("Fdepth", dimsz)
   nc_var[[s+14]] <- PEcAn.utils::to_ncvar("SnowDepth", dimsz)
-  nc_var[[s+15]] <- PEcAn.utils::to_ncvar("SnowFrac", dimsz)
+  nc_var[[s+15]] <- PEcAn.utils::mstmipvar("SnowFrac", lat, lon, t, zg) # not standard
   nc_var[[s+16]] <- PEcAn.utils::to_ncvar("Tdepth", dimsz)
   nc_var[[s+17]] <- PEcAn.utils::to_ncvar("CO2air", dimsz)
   nc_var[[s+18]] <- PEcAn.utils::to_ncvar("LWdown", dimsz)
@@ -779,29 +779,29 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
   out <- checkTemp(23)
   nc_var[[s+23]] <- PEcAn.utils::to_ncvar("Tair", dimsz)
   nc_var[[s+24]] <- PEcAn.utils::to_ncvar("Wind", dimsz)
-  nc_var[[s+25]] <- PEcAn.utils::to_ncvar("LWnet", dimsz)
+  nc_var[[s+25]] <- PEcAn.utils::mstmipvar("LWnet", lat, lon, t, zg) # not standard
   nc_var[[s+26]] <- PEcAn.utils::to_ncvar("Qg", dimsz)
   nc_var[[s+27]] <- PEcAn.utils::to_ncvar("Qh", dimsz)
   out <- conversion(28, PEcAn.data.atmosphere::get.lv())  ## kg m-2 s-1 -> W m-2
-  nc_var[[s+28]]<- PEcAn.utils::to_ncvar("Qle", dims)
+  nc_var[[s+28]] <- PEcAn.utils::to_ncvar("Qle", dims)
   nc_var[[s+29]] <- PEcAn.utils::to_ncvar("SWnet", dimsz)
-  nc_var[[s+30]] <- PEcAn.utils::to_ncvar("RootMoist", dimsz)
-  nc_var[[s+31]] <- PEcAn.utils::to_ncvar("Tveg", dimsz)
-  nc_var[[s+32]] <- PEcAn.utils::to_ncvar("WaterTableD", dimsz)
+  nc_var[[s+30]] <- PEcAn.utils::mstmipvar("RootMoist", lat, lon, t, zg)   # not standard
+  nc_var[[s+31]] <- PEcAn.utils::mstmipvar("Tveg", lat, lon, t, zg)        # not standard
+  nc_var[[s+32]] <- PEcAn.utils::mstmipvar("WaterTableD", lat, lon, t, zg) # not standard
   nc_var[[s+33]] <- PEcAn.utils::to_ncvar("fPAR", dimsz)
   nc_var[[s+34]] <- PEcAn.utils::to_ncvar("LAI", dimsz)
-  nc_var[[s+35]] <- PEcAn.utils::to_ncvar("SMFrozFrac", dimsz)
-  nc_var[[s+36]] <- PEcAn.utils::to_ncvar("SMLiqFrac", dimsz)
+  nc_var[[s+35]] <- PEcAn.utils::mstmipvar("SMFrozFrac", lat, lon, t, zg)  # not standard
+  nc_var[[s+36]] <- PEcAn.utils::mstmipvar("SMLiqFrac", lat, lon, t, zg)   # not standard
   nc_var[[s+37]] <- PEcAn.utils::to_ncvar("SoilMoist", dimsz)
   out <- checkTemp(38)
   nc_var[[s+38]] <- PEcAn.utils::to_ncvar("SoilTemp", dimsz)
   nc_var[[s+39]] <- PEcAn.utils::to_ncvar("SoilWet", dimsz)
-  nc_var[[s+40]] <- PEcAn.utils::to_ncvar("Albedo", dimsz)
+  nc_var[[s+40]] <- PEcAn.utils::mstmipvar("Albedo", lat, lon, t, zg)      # not standard
   out <- checkTemp(41)
-  nc_var[[s+41]] <- PEcAn.utils::to_ncvar("SnowT", dimsz)
+  nc_var[[s+41]] <- PEcAn.utils::mstmipvar("SnowT", lat, lon, t, zg)       # not standard
   nc_var[[s+42]] <- PEcAn.utils::to_ncvar("SWE", dimsz)
   out <- checkTemp(43)
-  nc_var[[s+43]] <- PEcAn.utils::to_ncvar("VegT", dimsz)
+  nc_var[[s+43]] <- PEcAn.utils::mstmipvar("VegT", lat, lon, t, zg)        # not standard
   nc_var[[s+44]] <- PEcAn.utils::to_ncvar("Evap", dimsz)
   nc_var[[s+45]] <- PEcAn.utils::to_ncvar("Qs", dimsz)
   nc_var[[s+46]] <- PEcAn.utils::to_ncvar("Qsb", dimsz)
@@ -964,3 +964,39 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft.n
   return(out)
   
 } # read_E_files
+
+##-------------------------------------------------------------------------------------------------#
+
+# Function for put -E- values to nc_var list
+
+put_E_values <- function(yr, nc_var, out, begins, ends, pft.names, dbh.breaks, ...){
+  
+  s <- length(nc_var)
+  
+  data(pftmapping, package = "PEcAn.ED2")
+  pfts <- sapply(pft.names, function(x) pftmapping$ED[pftmapping$PEcAn == x]) 
+  
+  # ----- fill list
+  
+  t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", yr, "-01-01 00:00:00"), 
+                        vals = seq(begins, ends, length.out = dim(out[[1]])[3]), 
+                        calendar = "standard", unlim = TRUE)
+  
+  d <- ncdf4::ncdim_def(name = "dbh.breaks", units ="bins", vals = dbh.breaks)
+  p <- ncdf4::ncdim_def(name = "pft.numbers", units = "unitless", vals = pfts, longname = paste(pft.names, collapse=","))
+  
+  nc_var[[s+1]]<- ncdf4::ncvar_def("DBH", units = "cm", dim = list(d,p,t), missval = -999, 
+                                   longname = "Diameter at breast height")
+  nc_var[[s+2]]<- ncdf4::ncvar_def("DDBH_DT", units = "cm yr-1", dim = list(d,p,t), missval = -999, 
+                                   longname = "Rate of change in dbh")
+  nc_var[[s+3]]<- ncdf4::ncvar_def("NPLANT", units = "plant m-2", dim = list(d,p,t), missval = -999, 
+                                   longname = "Plant density")
+  # longname of this variable will be parsed by read.output
+  # so that read.output has a way of accessing PFT names
+  nc_var[[s+4]]<- ncdf4::ncvar_def("PFT", units = "", dim = list(p), missval = -999, 
+                                   longname = paste(pft.names, collapse=",")) 
+  
+  return(nc_var)
+  
+} # put_E_values
+
