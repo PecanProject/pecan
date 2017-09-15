@@ -188,7 +188,7 @@ get.results <- function(settings, sa.ensemble.id = NULL, ens.ensemble.id = NULL,
     }
     
     if (is.null(variable.ens)) 
-      PEcAn.logger::logger.sever("No variables for ensemble analysis!")
+      PEcAn.logger::logger.severe("No variables for ensemble analysis!")
     
     # Only handling one variable at a time for now
     if (length(variable.ens) > 1) {
