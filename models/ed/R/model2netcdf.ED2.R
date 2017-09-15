@@ -22,7 +22,7 @@
 ##'
 ##' @author Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari, Istem Fer
 ## modified M. Dietze 07/08/12 modified S. Serbin 05/06/13
-model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
+model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft.names = NULL, dbh.breaks = NULL) {
 
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date) 
