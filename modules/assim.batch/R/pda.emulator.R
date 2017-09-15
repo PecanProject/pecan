@@ -177,10 +177,10 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
       
       prior.round.fn <- lapply(prior.round.list, pda.define.prior.fn)
       
-      ## Propose a percentage (if not specified 50%) of the new parameter knots from the posterior of the previous run
+      ## Propose a percentage (if not specified 80%) of the new parameter knots from the posterior of the previous run
       knot.par        <- ifelse(!is.null(settings$assim.batch$knot.par),
                                 as.numeric(settings$assim.batch$knot.par),
-                                0.5)
+                                0.8)
       
       n.post.knots    <- floor(knot.par * settings$assim.batch$n.knot)
       
@@ -239,7 +239,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
       save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
       
       ## start model runs
-      start.model.runs(settings, settings$database$bety$write)
+      PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
     
       ## Retrieve model outputs and error statistics
       model.out <- list()
@@ -531,7 +531,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   current.step <- "post-MCMC"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
-  mcmc.samp.list <- list()
+  mcmc.samp.list <- sf.samp.list <- list()
   
   for (c in seq_len(settings$assim.batch$chain)) {
     
@@ -639,7 +639,8 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     sf.filename <- file.path(settings$outdir, 
                              paste0("post.distns.pda.sf", "_", settings$assim.batch$ensemble.id, ".Rdata"))
     sf.prior <- prior.list[[sf.ind]]
-    write_sf_posterior(sf.samp.list, sf.prior, sf.filename)
+    sf.post.distns <- write_sf_posterior(sf.samp.list, sf.prior, sf.filename)
+    save(sf.post.distns, file = sf.filename)
     settings$assim.batch$sf.path <- sf.filename
   }
   

@@ -34,23 +34,23 @@ settings <- list(host=host)
 
 
 ## test remote.copy.to
-PEcAn.utils::remote.copy.to(host,"favicon.ico","~/favicon.ico")
+PEcAn.remote::remote.copy.to(host,"favicon.ico","~/favicon.ico")
 
 ## test remote.execute.cmd
-foo <- PEcAn.utils::remote.execute.cmd(host,"pwd")
+foo <- PEcAn.remote::remote.execute.cmd(host,"pwd")
 print(foo)
-PEcAn.utils::remote.execute.cmd(host,"mv",c("/global/home/users/dietze/favicon.ico","/global/home/users/dietze/favicon.jpg"))
+PEcAn.remote::remote.execute.cmd(host,"mv",c("/global/home/users/dietze/favicon.ico","/global/home/users/dietze/favicon.jpg"))
 
 ## test remote.copy.from
-PEcAn.utils::remote.copy.from(host,"~/favicon.jpg","favicon.jpg")
+PEcAn.remote::remote.copy.from(host,"~/favicon.jpg","favicon.jpg")
 
 ## test remote.execute.R
-b <- PEcAn.utils::remote.execute.R(script = "return(1)",host = host,R=R,verbose=TRUE,scratchdir="/global/scratch/dietze/")
+b <- PEcAn.remote::remote.execute.R(script = "return(1)",host = host,R=R,verbose=TRUE,scratchdir="/global/scratch/dietze/")
 
-c <- PEcAn.utils::remote.execute.R(script = "return(require(PEcAn.data.atmosphere))",host = host,R=R,verbose=TRUE,scratchdir="/global/scratch/dietze/")
+c <- PEcAn.remote::remote.execute.R(script = "return(require(PEcAn.data.atmosphere))",host = host,R=R,verbose=TRUE,scratchdir="/global/scratch/dietze/")
 
-d <- PEcAn.utils::remote.execute.R(script = "return(.libPaths())",host = host,R=R,verbose=TRUE,scratchdir="/global/scratch/dietze/")
+d <- PEcAn.remote::remote.execute.R(script = "return(.libPaths())",host = host,R=R,verbose=TRUE,scratchdir="/global/scratch/dietze/")
 
 
 ## kill tunnels
-PEcAn.utils::kill.tunnel(settings)
+PEcAn.remote::kill.tunnel(settings)

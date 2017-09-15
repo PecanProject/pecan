@@ -190,7 +190,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
 
 
     ## calculate potential radiation in order to estimate diffuse/direct
-    cosz <- PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lat, lon, dt)
+    cosz <- PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lat, lon, dt, hr)
 
     rpot <- 1366 * cosz
     rpot <- rpot[1:length(SW)]
