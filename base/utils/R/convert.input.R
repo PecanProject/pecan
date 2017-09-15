@@ -72,14 +72,14 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       ## Do overwrite if set to TRUE
       if(overwrite){
         # collect files to flag for deletion
-        files.to.delete <- remote.execute.R( paste0("list.files('",
+        files.to.delete <- PEcAn.remote::remote.execute.R( paste0("list.files('",
                                                     existing.dbfile[["file_path"]],
                                                     "', full.names=TRUE)"),
                                              host, user = NA, verbose = TRUE,R = Rbinary, scratchdir = outfolder)
         
         file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
         
-        remote.execute.R( file.deletion.commands$move.to.tmp,
+        PEcAn.remote::remote.execute.R( file.deletion.commands$move.to.tmp,
                           host, user = NA, 
                           verbose = TRUE,R = Rbinary, scratchdir = outfolder)
         
@@ -88,12 +88,12 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         successful <- FALSE
         on.exit(if (exists("successful") && successful) {
                 PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-                remote.execute.R( file.deletion.commands$delete.tmp, 
+                PEcAn.remote::remote.execute.R( file.deletion.commands$delete.tmp, 
                                   host, user = NA, 
                                   verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
         } else {
                 PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
-                remote.execute.R( file.deletion.commands$replace.from.tmp, 
+                PEcAn.remote::remote.execute.R( file.deletion.commands$replace.from.tmp, 
                                   host, user = NA, 
                                   verbose = TRUE, R = Rbinary, scratchdir = outfolder )
         }
@@ -169,14 +169,14 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       if (overwrite) {
         # collect files to flag for deletion
         
-        files.to.delete <- remote.execute.R( paste0("list.files('",
+        files.to.delete <- PEcAn.remote::remote.execute.R( paste0("list.files('",
                                                     existing.dbfile[["file_path"]],
                                                     "', full.names=TRUE)"),
                                              host, user = NA, verbose = TRUE,R = Rbinary, scratchdir = outfolder)
         
         file.deletion.commands <- .get.file.deletion.commands(files.to.delete)
         
-        remote.execute.R( file.deletion.commands$move.to.tmp,
+        PEcAn.remote::remote.execute.R( file.deletion.commands$move.to.tmp,
                           host, user = NA, 
                           verbose = TRUE,R = Rbinary, scratchdir = outfolder)
         
@@ -184,14 +184,14 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
         successful <- FALSE
         on.exit(if (exists("successful") && successful) {
           PEcAn.logger::logger.info("Conversion successful, with overwrite=TRUE. Deleting old files.")
-          remote.execute.R( file.deletion.commands$delete.tmp,
+          PEcAn.remote::remote.execute.R( file.deletion.commands$delete.tmp,
                             host, user = NA, 
                             verbose = TRUE,  R = Rbinary, scratchdir = outfolder )
           
         } else {
           
           PEcAn.logger::logger.info("Conversion failed. Replacing old files.")
-          remote.execute.R( file.deletion.commands$replace.from.tmp,
+          PEcAn.remote::remote.execute.R( file.deletion.commands$replace.from.tmp,
                             host, user = NA,
                             verbose = TRUE, R = Rbinary, scratchdir = outfolder )
         } 
@@ -403,7 +403,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
     cmdFcn <- paste0(pkg, "::", fcn, "(", arg.string, ")")
     PEcAn.logger::logger.debug(paste0("convert.input executing the following function:\n", cmdFcn))
     
-    result <- remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
+    result <- PEcAn.remote::remote.execute.R(script = cmdFcn, host, user = NA, verbose = TRUE, R = Rbinary, scratchdir = outfolder)
   }
   
   PEcAn.logger::logger.info("RESULTS: Convert.Input")
