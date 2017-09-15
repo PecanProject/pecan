@@ -4,7 +4,7 @@
 \alias{cos_solar_zenith_angle}
 \title{Cosine of solar zenith angle}
 \usage{
-cos_solar_zenith_angle(doy, lat, lon, dt)
+cos_solar_zenith_angle(doy, lat, lon, dt, hr)
 }
 \arguments{
 \item{doy}{Day of year}
@@ -14,6 +14,8 @@ cos_solar_zenith_angle(doy, lat, lon, dt)
 \item{lon}{Longitude}
 
 \item{dt}{Timestep}
+
+\item{hr}{Hours timestep}
 }
 \value{
 `numeric(1)` of cosine of solar zenith angle
