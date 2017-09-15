@@ -2,7 +2,7 @@
 % Please edit documentation in R/align_data_to_data_pft.R
 \name{align_data_to_data_pft}
 \alias{align_data_to_data_pft}
-\title{{align_data_to_data_pft}}
+\title{align_data_to_data_pft}
 \usage{
 align_data_to_data_pft(observation_one, observation_two, custom_table = NULL,
   format_one, format_two, subset_are_ok = FALSE)
@@ -32,6 +32,9 @@ set to FALSE by default.}
  \item{\code{species}}{{Where possible, will return a vector of observation_two's pft's/species in the order of observation_one}}
  \item{\code{$bety_species_id}}{Where possible, will return the bety_species_id's for one or both observations}
 }
+}
+\description{
+align_data_to_data_pft
 }
 \details{
 Aligns vectors of Plant Fucntional Typed and species.
