@@ -14,7 +14,7 @@
 
 #' @examples 
 #' /dontrun{
-#' doi_download(id = "doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87", filepath = "/fs/data1/pecan.data/dbfiles/")
+#' dataone_download(id = "doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87", filepath = "/fs/data1/pecan.data/dbfiles/")
 #' }
 
 dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles/", CNode = "PROD", lazyLoad = FALSE, quiet = F){ 
@@ -39,11 +39,12 @@ dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles/", CNod
   newdir <- file.path(filepath, paste0("DataOne_", gsub("/", "-", id)))
   dir.create(newdir)
   
+  # download the data with wget
   for(i in 1:n){
-    rename <- paste(i, basename(names(files[i])), sep="_") # new file name
-    system(paste("cd", newdir, "&&", "{", "wget", "--content-disposition", rename, names(files)[i], "; cd -; }")) # cd to newdir, download files with wget, cd back
+    system(paste("cd", newdir, "&&", "{", "wget", "--content-disposition", names(files)[i], "; cd -; }")) # cd to newdir, download files with wget, cd back
   }
-  list.files(newdir) # checks that files were downloaded to 
-  
-  # Naming could still be improved to include part of title 
-  }
+ 
+}
+
+
+
