@@ -2,10 +2,11 @@
 % Please edit documentation in R/open.tunnel.R
 \name{open_tunnel}
 \alias{open_tunnel}
-\title{Title}
+\title{Open an SSH tunnel}
 \usage{
 open_tunnel(remote_host, user = NULL, password = NULL,
-  tunnel_dir = "~/.pecan/tunnel/", wait.time = 15)
+  tunnel_dir = "~/.pecan/tunnel/", wait.time = 15,
+  tunnel_script = "~/pecan/web/sshtunnel.sh")
 }
 \arguments{
 \item{remote_host}{name of remote server to connect to (e.g. geo.bu.edu)}
@@ -17,7 +18,12 @@ open_tunnel(remote_host, user = NULL, password = NULL,
 \item{tunnel_dir}{directory to store tunnel file in, typically from settings$host}
 
 \item{wait.time}{how long to give system to connect before deleting password (seconds)}
+
+\item{tunnel_script}{Path to sshtunnel.sh script file for opening tunnel}
+}
+\value{
+\code{TRUE} if successful, or \code{FALSE} otherwise
 }
 \description{
-Title
+Open an SSH tunnel
 }
