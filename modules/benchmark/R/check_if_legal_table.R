@@ -19,18 +19,22 @@ check_if_legal_table<-function(table, observation_one, observation_two){
                   Column names are currently", names(table))
   }else{
     missing<-list()
-    for(h in 1:length(observation_one)){
-      if(!observation_one[h] %in% table$plant_functional_type_one){all_there<-FALSE; missing<-c(missing,observation_one[h])}
+    for(h in seq_along(observation_one)){
+      if(!observation_one[h] %in% table$plant_functional_type_one){
+        all_there<-FALSE; missing<-c(missing,observation_one[h])
+        }
     }
-    for(h in 1:length(observation_two)){
-      if(!observation_two[h] %in% table$plant_functional_type_two){all_there<-FALSE; missing<-c(missing,observation_two[h])}
+    for(h in seq_along(observation_two)){
+      if(!observation_two[h] %in% table$plant_functional_type_two){
+        all_there<-FALSE; missing<-c(missing,observation_two[h])
+        }
     }
     if(all_there){
       is_legal_table<-TRUE
       pft_1<-as.character(unique(table$plant_functional_type_one))
       pft_2<-as.character(unique(table$plant_functional_type_two))
       
-      for(i in 1:length(pft_1)){
+      for(i in seq_along(pft_1)){
         aggregated_1<-FALSE
         aggregated_2<-FALSE
         
@@ -43,7 +47,7 @@ check_if_legal_table<-function(table, observation_one, observation_two){
           aggregated_1<- TRUE
           }
         
-        for(j in 1:length(unique(subset$plant_functional_type_two))){
+        for(j in seq_along(unique(subset$plant_functional_type_two))){
           
           subset_2<-subset(table, table$plant_functional_type_two == as.character(subset$plant_functional_type_two[j]))
           length_of_pft_1_uniques<-length(as.character(unique(subset_2$plant_functional_type_one)))

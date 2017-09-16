@@ -1,6 +1,6 @@
 #' get_species_list_standard
 #' @details 
-#' returns the format type for convience of use with match_species_id
+#' Returns the format type for convience of use with match_species_id
 #' @param observation_one a vector of plant fucntional types, or species
 #' @param observation_two anouther vector of plant fucntional types, or species
 #' @param custom_table a table that either maps two pft's to one another or maps custom species codes to bety id codes. 
@@ -9,7 +9,7 @@
 #' @author Tempest McCabe
 get_species_list_standard<-function(vars){
   
-  if("species_id" %in% vars){
+  if(any(c("species_id")) %in% vars){
     return("usda")
   }else if("species_name" %in% vars){
     return('latin_name')
