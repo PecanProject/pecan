@@ -10,7 +10,7 @@ align_data_to_data_pft(observation_one, observation_two, custom_table = NULL,
 \arguments{
 \item{observation_one}{a vector of plant fucntional types, or species}
 
-\item{observation_two}{anouther vector of plant fucntional types, or species}
+\item{observation_two}{another vector of plant fucntional types, or species}
 
 \item{custom_table}{a table that either maps two pft's to one anouther or maps custom species codes to bety id codes. 
 In the second case, must be passable to match_species_id.}
@@ -44,8 +44,8 @@ Can align:
 - a list of species (usda, fia, or latin_name format) to a plant fucntional type
 - a list of species in a custom format, with a table mapping it to bety_species_id's
 
- Will return a list of what was originally provided, bety_speceis_codes if possible, 
- and an aligned output. Becuase some alignement is order-sensitive, alignment based on observation_one
+ Will return a list of what was originally provided, bety_species_codes if possible, 
+ and an aligned output. Because some alignement is order-sensitive, alignment based on observation_one
  and observation_two are both provided.
 }
 \examples{

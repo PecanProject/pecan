@@ -21,7 +21,7 @@ In the second case, must be passable to match_species_id.}
 get_species_list_standard
 }
 \details{
-returns the format type for convience of use with match_species_id
+Returns the format type for convience of use with match_species_id
 }
 \author{
 Tempest McCabe
