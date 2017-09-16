@@ -34,18 +34,24 @@ check_if_legal_table<-function(table, observation_one, observation_two){
         aggregated_1<-FALSE
         aggregated_2<-FALSE
         
-        subset<-subset(table, table$plant_functional_type_one==pft_1[i])
+        subset<-subset(table, table$plant_functional_type_one == pft_1[i])
         
         length_of_pft_1_uniques_1<-length(as.character(unique(subset$plant_functional_type_one)))
         length_of_pft_2_uniques_1<-length(as.character(unique(subset$plant_functional_type_two)))
         
-        if(length_of_pft_2_uniques_1>1 | length_of_pft_1_uniques_1>1){aggregated_1<- TRUE}
+        if(length_of_pft_2_uniques_1>1 | length_of_pft_1_uniques_1>1){
+          aggregated_1<- TRUE
+          }
         
         for(j in 1:length(unique(subset$plant_functional_type_two))){
-          subset_2<-subset(table, table$plant_functional_type_two==as.character(subset$plant_functional_type_two[j]))
+          
+          subset_2<-subset(table, table$plant_functional_type_two == as.character(subset$plant_functional_type_two[j]))
           length_of_pft_1_uniques<-length(as.character(unique(subset_2$plant_functional_type_one)))
           length_of_pft_2_uniques<-length(as.character(unique(subset_2$plant_functional_type_two)))
-          if(length_of_pft_2_uniques>1 | length_of_pft_1_uniques>1){aggregated_2<- TRUE}
+          
+          if(length_of_pft_2_uniques>1 | length_of_pft_1_uniques>1){
+            aggregated_2<- TRUE
+            }
           
           if(aggregated_1 && aggregated_2){is_legal_table<-FALSE }
         }

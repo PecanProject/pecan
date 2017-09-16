@@ -10,13 +10,7 @@
 #' @author Tempest McCabe
 check_if_species_list<-function(vars,custom_table=NULL){
   
-  if("species_id" %in% vars){
-    return(TRUE)
-  }else if("species_name" %in% vars){
-    return(TRUE)
-  }else if("species_USDA_symbol" %in% vars){
-    return(TRUE)
-  }else if("species_FIA_symbol" %in% vars){
+  if(any(c("species_id", "species_name", "species_USDA_symbol", "species_FIA_symbol")) %in% vars){
     return(TRUE)
   }else if(!is.null(custom_table)){
     if("bety_species_id" %in% names(custom_table)){
