@@ -7,9 +7,10 @@
 #' @param lat Latitude
 #' @param lon Longitude
 #' @param dt Timestep
+#' @param hr Hours timestep
 #' @return `numeric(1)` of cosine of solar zenith angle
 #' @export
-cos_solar_zenith_angle <- function(doy, lat, lon, dt) {
+cos_solar_zenith_angle <- function(doy, lat, lon, dt, hr) {
     et <- equation_of_time(doy)
     merid  <- floor(lon / 15) * 15
     merid[merid < 0] <- merid[merid < 0] + 15

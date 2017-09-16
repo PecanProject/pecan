@@ -71,17 +71,34 @@ pda.calc.error <-function(settings, con, model_out, run.id, inputs, bias.terms){
         
         resid <- abs(model_out[[k]] - inputs[[k]]$obs)
         pos <- (model_out[[k]] >= 0)
-        SS <- c(dexp(resid[pos],
-                     1 / (inputs[[k]]$par[1] + (inputs[[k]]$par[2] * 
-                                                  sqrt(inputs[[k]]$n_eff/inputs[[k]]$n) * 
-                                                  model_out[[k]][pos])), log = TRUE),
-                dexp(resid[!pos],
-                     1 / (inputs[[k]]$par[1] + (inputs[[k]]$par[3] * 
-                            sqrt(inputs[[k]]$n_eff/inputs[[k]]$n) * 
-                            model_out[[k]][!pos])), log = TRUE))
+        # SS <- c(dexp(resid[pos],
+        #              1 / (inputs[[k]]$par[1] + (inputs[[k]]$par[2] * 
+        #                                           sqrt(inputs[[k]]$n_eff/inputs[[k]]$n) * 
+        #                                           model_out[[k]][pos])), log = TRUE),
+        #         dexp(resid[!pos],
+        #              1 / (inputs[[k]]$par[1] + (inputs[[k]]$par[3] * 
+        #                     sqrt(inputs[[k]]$n_eff/inputs[[k]]$n) * 
+        #                     model_out[[k]][!pos])), log = TRUE))
+        # 
+        # pda.errors[[k]] <- sum(SS, na.rm = TRUE) 
+        # SSdb[[k]] <- sum(SS, na.rm = TRUE) 
         
-        pda.errors[[k]] <- sum(SS, na.rm = TRUE) 
-        SSdb[[k]] <- sum(SS, na.rm = TRUE) 
+        # heteroskedastic slopes, slope varies with magnitude of the flux 
+        # inflated by sqrt(n/neff) because var is 2b^2 for laplacian likelihood
+        beta_p <- (inputs[[k]]$par[1] + inputs[[k]]$par[2] * model_out[[k]][pos]) * sqrt(inputs[[k]]$n/inputs[[k]]$n_eff)  
+        beta_n <- (inputs[[k]]$par[1] + inputs[[k]]$par[3] * model_out[[k]][!pos])* sqrt(inputs[[k]]$n/inputs[[k]]$n_eff)
+        
+        # there might not be a negative slope if non-negative variable, assign zero, move on
+        suppressWarnings(if(length(beta_n) == 0) beta_n <- 0)
+        
+        # weigh down log-likelihood calculation with neff
+        # if we had one beta value (no heteroscadasticity), we could've multiply n_eff*beta
+        # now need to multiply every term with n_eff/n 
+        SS_p <- - (inputs[[k]]$n_eff/inputs[[k]]$n) * log(beta_p) - resid[[1]][pos]/beta_p
+        SS_n <- - (inputs[[k]]$n_eff/inputs[[k]]$n) * log(beta_n) - resid[[1]][!pos]/beta_n
+        suppressWarnings(if(length(SS_n) == 0) SS_n <- 0)
+        pda.errors[[k]] <- sum(SS_p, SS_n, na.rm = TRUE)
+        SSdb[[k]] <- pda.errors[[k]]
         
     } else if (settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") { 
       # multiplicative Gaussian

@@ -389,7 +389,7 @@ check.settings <- function(settings, force=FALSE) {
   }
   
   # make sure remote folders are specified if need be
-  if (!is.localhost(settings$host)) {
+  if (!PEcAn.remote::is.localhost(settings$host)) {
     if (is.null(settings$host$folder)) {
       settings$host$folder <- paste0(remote.execute.cmd("pwd", host=settings$host), "/pecan_remote")
       PEcAn.logger::logger.info("Using ", settings$host$folder, "to store output on remote machine")      
