@@ -40,6 +40,9 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
   # Some GCMs don't do leap year; we'll have to deal with this separately
   no.leap <- c("bcc-csm1-1", "CCSM4")
   
+  if(scenario == "p1000" | GCM=="MPI-ESM-P") date.origin=as.Date("850-01-01")
+  if(scenario == "historical" & GCM!="MPI-ESM-P") date.origin=as.Date("1850-01-01")
+  
   # Days per month
   dpm <- lubridate::days_in_month(1:12)
 
@@ -159,7 +162,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
 
       # splt.ind <- ifelse(GCM %in% c("MPI-ESM-P"), 4, 3)
       # date.origin <- as.Date(str_split(ncT$dim$time$units, " ")[[1]][splt.ind])
-      nc.date <- as.Date(paste0(files.var[[var.now]][i,"first.year"], "-01-01")) + nc.time
+      nc.date <- date.origin + nc.time
       date.leaps <- seq(as.Date(paste0(files.var[[var.now]][i,"first.year"], "-01-01")), as.Date(paste0(files.var[[var.now]][i,"last.year"], "-12-31")), by="day")
       # If we're missing leap year, lets adjust our date stamps so we can only pull what we need
       if(v.res=="day" & length(nc.date)!=length(date.leaps)){
