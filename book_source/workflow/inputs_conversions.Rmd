@@ -8,7 +8,7 @@ Within the PEcAn repository, code pertaining to input conversion is in the MODUL
 To convert meterological data into the PEcAn Standard and then into model formats we follow four main steps:
   
   1. Downloading raw data
-    - Currently supported products
+    - [Currently supported products]()
     - Example Code
   2. Converting raw data into a CF standard 
     - Example Code 
@@ -24,4 +24,3 @@ How do I use PEcAn to convert Met data outide the workflow?
 
 ## Initial Conditions
 
-  - COMING SOON

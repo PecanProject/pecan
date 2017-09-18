@@ -97,14 +97,16 @@ bety <- dplyr::src_postgres(dbname   = 'bety',
                             
 con <- bety$con
 ```
+
 Next you will set up the arguments for the function
+
 ```
 in.path <- '.'
 in.prefix <- raw.file$dbfile.name
 outfolder <- '.'
 format.id <- 5000000002
 format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = bety)
-lon <- 105.54
+lon <- -105.54
 lat <- 40.03
 format$time_zone <- "America/Chicago"
 ```
@@ -136,7 +138,6 @@ If your data is in a csv formate you can use the `met2CF.csv`function to convert
 Open a connection with BETY. You may need to change the host name depending on what mahcine you are hosting BETY. You can find the hostname listed in the machines table of BETY.
 
 ```
-
 bety <- dplyr::src_postgres(dbname   = 'bety', 
                             host ='localhost', 
                             user     = "bety", 
@@ -169,7 +170,7 @@ PEcAn.data.atmosphere::met2CF.csv(in.path = in.path,
                                   end_date = end_date,
                                   lat= lat,
                                   lon = lon,
-        
+                                  format = format)
 ```
 
 
@@ -179,7 +180,7 @@ Vegetation data will be required to parameterize your model. In these examples w
 
 The main function to process cohort data is the `ic.process.R` function. As of now however, if you require pool data you will run a seperate function, `pool_ic_list2netcdf.R`.
 
-Example 1: Raw data from a database
+#### Example 1: Raw data from a database
 
 If your data is coming from a datbase (ex.FIA) the <inputs> section of your pecan.xml will need to look like the following:
 ```
@@ -187,17 +188,20 @@ paste inputs section here
 ```
 From here you read in the pecan.xml to obtain a settings object
 ```
-settings<- 
-
+settings <- PEcAn.settings::read.settings("pecan.xml")
+settings <- PEcAn.settings::prepare.settings(settings, force=FALSE)
 ```
 You can then execute the `ic.process` function to convert data into a standard Rds file:
 
 ```
+settings <- PEcAn.settings::read.settings("pecan.xml")
+settings <- PEcAn.settings::prepare.settings(settings, force=FALSE)
+
 ic.process(settings, input, dir, overwrite = FALSE)
 
 ```
 
-Example 2: Raw data in hand
+#### Example 2: Raw data in hand
 
 You will first need to update the BETY database with the appropriate records. A file record with location of the raw file, a format record with requisite meta data information about the structure of the file, and then an input record what has the file and format record assiciated with it. Instructions on how to do that can be found here [How to Insert new Input Data].
 
@@ -213,19 +217,59 @@ ic.process(settings, input, dir, overwrite = FALSE)
 ```
 
 
-
-
+#### Example 3 Pool Initial Condition files
 If you have pool vegetation data, you'll need the [`pool_ic_list2netcdf.R`](https://github.com/PecanProject/pecan/blob/develop/modules/data.land/R/pool_ic_list2netcdf.R) function to convert the pool data into PEcAn
 standard.
 
+The function stands alone and requires that you provide a named list of netcdf dimensions and values, and a named list of variables and values. Names and units need to match the standard_vars.csv table found [here](https://github.com/PecanProject/pecan/blob/develop/base/utils/data/standard_vars.csv).
+
+```
+#Create a list object with necessary dimensions for your site
+input<-list()
+dims<- list(lat=-115,lon=45, time= 1)
+variables<- list(SoilResp=8,TotLivBiom=295)
+input$dims <- dims
+input$vals <- variables
+``` 
+
+Once this is done, set `outdir` to where you'd like the file to write out to and a siteid. Siteid in this can be used as an file name identifier. Once part of the automated workflow siteid will reflect the site id within the BET db.
+
+```
+outdir  <- "."
+siteid <- 772
+pool_ic_list2netcdf(input = input, outdir = outdir, siteid = siteid)
 ```
 
-
-```
+You should now have a netcdf file with initial conditions.
 
 ## Soil Data
 
-In order to process Soil Data 
+#### Example 1: Converting Data in hand 
+
+Local data that has the correct names and units can easily be written out in PEcAn standard using the function soil2netcdf.
+
+```
+soil.data <- list(volume_fraction_of_sand_in_soil = c(0.3,0.4,0.5),
+                  volume_fraction_of_clay_in_soil = c(0.3,0.3,0.3),
+                  soil_depth = c(0.2,0.5,1.0))
+                         
+soil2netcdf(soil.data,"soil.nc")
+```
+
+At the moment this file would need to be inserted into Inputs manually. By default, this function also calls soil_params, which will estimate a number of hydraulic and thermal parameters from texture. Be aware that at the moment not all model couplers are yet set up to read this file and/or convert it to model-specific formats.
+
+
+#### Example 2: Converting PalEON data
+
+In addition to location-specific soil data, PEcAn can extract soil texture information from the PalEON regional soil product, which itself is a subset of the MsTMIP Unified North American Soil Map. If this product is installed on your machine, the appropriate step in the do_conversions workflow is enabled by adding the following tag under ```<inputs>``` in your pecan.xml
+
+```
+   <soil>
+     <id>1000012896</id>
+   </soil>
+```
+
+In the future we aim to extend this extraction to a wider range of soil products.
 
 
 
