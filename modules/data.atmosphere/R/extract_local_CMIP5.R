@@ -49,8 +49,8 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
   if(is.null(date.origin)){
     if(scenario == "p1000" | GCM=="MPI-ESM-P") { 
       date.origin=as.Date("850-01-01") 
-    } else if {
-      if(scenario == "historical" & GCM!="MPI-ESM-P") date.origin=as.Date("1850-01-01")
+    } else if(scenario == "historical" & GCM!="MPI-ESM-P") {
+      date.origin=as.Date("1850-01-01")
     } else {
       logger.error("No date.origin specified and scenario not implemented yet")
     }
