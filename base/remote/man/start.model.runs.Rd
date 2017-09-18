@@ -2,25 +2,25 @@
 % Please edit documentation in R/start.model.runs.R
 \name{start.model.runs}
 \alias{start.model.runs}
-\title{Start ecosystem model runs}
+\title{Start selected ecosystem model runs within PEcAn workflow}
 \usage{
 \method{start}{model.runs}(settings, write = TRUE, stop.on.error = TRUE)
 }
 \arguments{
-\item{settings}{input pecan settings file}
+\item{settings}{pecan settings object}
 
-\item{write}{TRUE/FALSE. Default TRUE}
+\item{write}{(logical) Whether or not to write to the database. Default TRUE.}
 
-\item{stop.on.error}{TRUE/FALSE. Default TRUE}
+\item{stop.on.error}{Throw error if \emph{any} of the runs fails. Default TRUE.}
 }
 \description{
 Start selected ecosystem model runs within PEcAn workflow
 }
 \examples{
 \dontrun{
-start.model.runs(settings)
+  start.model.runs(settings)
 }
 }
 \author{
-Shawn Serbin, Rob Kooper, David LeBauer
+Shawn Serbin, Rob Kooper, David LeBauer, Alexey Shiklomanov
 }
