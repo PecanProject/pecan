@@ -114,7 +114,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   
   if (!is.null(getveg.id) & is.null(putveg.id) & input$output %in% vegIC) { # probably need a more sophisticated check here
     
-    putveg.id <- .put.veg.module(getveg.id = getveg.id, bety = bety, 
+    putveg.id <- .put.veg.module(getveg.id = getveg.id, dbparms = dbparms,
                                 input_veg = input, pfts = settings$pfts,
                                 outfolder = outfolder, 
                                 dir = dir, machine = machine, model = model,
