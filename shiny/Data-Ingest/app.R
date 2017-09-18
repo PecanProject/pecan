@@ -1,18 +1,9 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
 library(shiny)
 library(PEcAn.data.land)
+library(PEcAn.utils)
 library(shinydashboard)
 library(dataone)
 
-#stopifnot
 
 # Define UI for application
 
@@ -41,13 +32,22 @@ ui <- dashboardPage(
                 box(
                   # https://github.com/rstudio/shiny-examples/blob/master/009-upload/app.R
                   fileInput(inputId = "file", label = h3("Upload Local Files"), accept = NULL, multiple = TRUE, placeholder = "Drag and drop files here"),
-                  p("This isn't linked to the server yet")
+                  p("This is a placeholder and is not yet functional"),
+                  tableOutput("contents")
                 )
               )
       ),
       
       tabItem(tabName = "step2",
-              h2("dbfiles tab content")
+              h2("under construction")
+      ),
+      
+      tabItem(tabName = "step3",
+              h2("under construction")
+      ),
+      
+      tabItem(tabName = "step4",
+              h2("under construction")
       )
       
       
@@ -58,7 +58,7 @@ ui <- dashboardPage(
 server <- function(input, output) {
   options(shiny.maxRequestSize=30*1024^2) #maximum file input size
   
-   #path <- PEcAn.utils::read_web_config(config.php)
+   path <- PEcAn.utils::read_web_config("../../web/config.php")
     
    d1d <- eventReactive(input$D1Button, { PEcAn.data.land::dataone_download(input$id, filepath = path) }) #run dataone_download with input from id on click
   
@@ -66,22 +66,29 @@ server <- function(input, output) {
     d1d()
   })
   
-   # output$debug <-
   
- # 
-  
-  output$upload <- renderTable({
-    if(is.null(data())){return()}
-    input$file
-  })
-  
+###### FileInput <-- Will add this functionality shortly
+#  output$contents <- renderTable({
+    # input$file1 will be NULL initially. After the user selects
+    # and uploads a file, it will be a data frame with 'name',
+    # 'size', 'type', and 'datapath' columns. The 'datapath'
+    # column will contain the local filenames where the data can
+    # be found.
+#    inFile <- input$file
+    
+#    if (is.null(inFile))
+#      return(NULL)
+#    read.csv(inFile$datapath, header = TRUE)
+    
+#  })
+
+
+
     #file.copy(inFile$datapath, header = input$header)
 
 
   
-  
-# file.copy copy from tmp file to 
-    
+
 }
 
 # Run the application 
