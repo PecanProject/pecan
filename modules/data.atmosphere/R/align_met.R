@@ -40,11 +40,15 @@
 ##'                    prevents needing to load the entire dataset.  If NULL, all available years 
 ##'                    will be loaded. If not null, should be a vector of numbers (so you can skip
 ##'                    problematic years)
+##' @param yrs.source - (optional) specify a specific years to be loaded for the source data;
+##'                     prevents needing to load the entire dataset.  If NULL, all available years 
+##'                     will be loaded. If not null, should be a vector of numbers (so you can skip
+##'                     problematic years)
 ##' @param n.ens  - number of ensemble members to generate and save
 ##' @param pair.mems - logical stating whether ensemble members should be paired in 
 ##'                    the case where ensembles are being read in in both the training and source data
 ##' @param seed - specify seed so that random draws can be reproduced
-##' @param verbose
+##' @param print.progress - if TRUE, prints progress bar
 ##' @export
 # -----------------------------------
 # Workflow
@@ -67,7 +71,7 @@
 #----------------------------------------------------------------------
 # Begin Function
 #----------------------------------------------------------------------
-align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.mems = FALSE, seed=Sys.Date(), verbose = FALSE) {
+align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, n.ens=NULL, pair.mems = FALSE, seed=Sys.Date(), print.progress = FALSE) {
   # Load required libraries
   library(ncdf4)
   library(lubridate)
@@ -94,8 +98,10 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
     }
     
     # Loop through the .nc files putting everything into a list
-    print("Processing Training Data")
-    pb <- txtProgressBar(min=0, max=length(files.train), style=3)
+    if(print.progress==TRUE){
+      print("Processing Training Data")
+      pb <- txtProgressBar(min=0, max=length(files.train), style=3)
+    } 
     for(i in 1:length(files.train)){
       yr.now <- yrs.file[i]
       
@@ -110,7 +116,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
       
       # Create a data frame with all the important time info
       # center the hour step
-      df.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/step.day), Hour=rep(stamps.hr, ntime))
+      df.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/step.day), Hour=rep(stamps.hr, length.out=ntime))
       df.time$Date <- strptime(paste(df.time$Year, df.time$DOY, df.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
       met.out$dat.train[["time"]] <- rbind(met.out$dat.train$time, df.time)
       
@@ -122,8 +128,8 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
       }
       
       ncdf4::nc_close(ncT)
-      
-      setTxtProgressBar(pb, i)
+
+      if(print.progress==TRUE) setTxtProgressBar(pb, i)
     } # End looping through training data files
   } else { # we have an ensemble we need to deal with
     # Figure out how many ensemble members we're working with
@@ -146,10 +152,12 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
       n.files <- length(dir(file.path(train.path, ens.train[1])))
     }
     
+    if(print.progress==TRUE){
+      print("Processing Training Data")
+      pb <- txtProgressBar(min=0, max=length(ens.train)*n.files, style=3)
+      pb.ind=1
+    }
     
-    print("Processing Training Data")
-    pb <- txtProgressBar(min=0, max=length(ens.train)*n.files, style=3)
-    pb.ind=1
     for(j in 1:length(ens.train)){
       files.train <- dir(file.path(train.path, ens.train[j]), ".nc")
       
@@ -181,7 +189,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
         # center the hour step
         # ** Only do this with the first ensemble member so we're not being redundant
         if(j==1){
-          df.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/step.day), Hour=rep(stamps.hr, ntime))
+          df.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/step.day), Hour=rep(stamps.hr, length.out=ntime))
           df.time$Date <- strptime(paste(df.time$Year, df.time$DOY, df.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
           met.out$dat.train[["time"]] <- rbind(met.out$dat.train$time, df.time)
         }
@@ -191,9 +199,11 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
           dat.ens[[v]] <- append(dat.ens[[v]], ncdf4::ncvar_get(ncT, v)) 
         }
         ncdf4::nc_close(ncT)
-        
-        setTxtProgressBar(pb, pb.ind)
-        pb.ind <- pb.ind+1
+
+        if(print.progress==TRUE){
+          setTxtProgressBar(pb, pb.ind)
+          pb.ind <- pb.ind+1
+        }
       } # End looping through training data files
       
       # Storing the ensemble member data in our output list
@@ -205,7 +215,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
       dimnames(met.out$dat.train[[v]])[[2]] <- ens.train
     }
   } # End loading & formatting training data
-  print(" ")
+  if(print.progress==TRUE) print(" ")
   # ---------------
   
   # ---------------
@@ -223,13 +233,25 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
     yrs.file <- matrix(unlist(yrs.file), ncol=length(yrs.file[[1]]), byrow=T)
     yrs.file <- as.numeric(yrs.file[,ncol(yrs.file)-1]) # Assumes year is always last thing before the file extension
     
+    # Subsetting to just the years we're interested in
+    if(!is.null(yrs.source)){
+      files.source <- files.source[which(yrs.file %in% yrs.source)]
+      yrs.file <- yrs.file[which(yrs.file %in% yrs.source)]
+    }
+    
+    
     # Getting the day & hour timesteps from the training data
-    day.train <- round(365/length(unique(met.out$dat.train$time$DOY)))
+    yrs.train <- length(unique(met.out$dat.train$time$Year))
     hr.train  <- 24/length(unique(met.out$dat.train$time$Hour))
+    day.train <- 1/length(unique(met.out$dat.train$time$Hour))
+    # day.train <- 1/(nrow(met.out$dat.train$time)/yrs.train/365)
   
     # Loop through the .nc files putting everything into a list
-    print("Processing Source Data")
-    pb <- txtProgressBar(min=0, max=length(files.source), style=3)
+    if(print.progress==TRUE){
+      print("Processing Source Data")
+      pb <- txtProgressBar(min=0, max=length(files.source), style=3)
+    }
+    
     for(i in 1:length(files.source)){
       yr.now <- yrs.file[i]
       
@@ -247,7 +269,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
       # -----
       # Making what the unique time stamps should be to match the training data
       stamps.hr <- seq(hr.train/2, by=hr.train, length.out=1/day.train) 
-      stamps.src <- stamps.hr
+      stamps.src <- seq(step.hr/2, by=step.hr, length.out=1/step.day) 
      
       if(step.hr < hr.train){  # Finer hour increment --> set it up to aggregate
         align = "aggregate"
@@ -261,19 +283,19 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
       
       # Create a data frame with all the important time info
       # center the hour step
-      df.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/day.train), Hour=rep(stamps.hr, length.out=nday/day.train))
+      df.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/day.train), Hour=rep(stamps.hr, length.out=nday/(day.train)))
       df.time$Date <- strptime(paste(df.time$Year, df.time$DOY, df.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
       met.out$dat.source[["time"]] <- rbind(met.out$dat.source$time, df.time)
   
       src.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/step.day), Hour=rep(stamps.src, length.out=ntime))
-      src.time$Date <- strptime(paste(df.time$Year, df.time$DOY, df.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
+      src.time$Date <- strptime(paste(src.time$Year, src.time$DOY, src.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
       
       # Extract the met info, making matrices with the appropriate number of ensemble members
       for(v in names(ncT$var)){
         dat.tem <- ncvar_get(ncT, v)
         
         if(align=="repeat"){ # if we need to coerce the time step to be repeated to match temporal resolution, do it here
-          dat.tem <- rep(dat.temp, each=stamps.hr)
+          dat.tem <- rep(dat.tem, each=length(stamps.hr))
         }
         df.tem <- matrix(rep(dat.tem, n.src), ncol=n.src, byrow=F)
         
@@ -298,9 +320,9 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
         
       }
       ncdf4::nc_close(ncT)
-      setTxtProgressBar(pb, i)
+      if(print.progress==TRUE) setTxtProgressBar(pb, i)
     } # End looping through source met files
-    print("")
+    if(print.progress==TRUE) print("")
   } else { # we have an ensemble we need to deal with
     ens.source <- dir(source.path)
     
@@ -324,9 +346,11 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
     # getting an estimate of how many files we need to process
     n.files <- length(dir(file.path(source.path, ens.source[1])))
     
-    print("Processing Source Data")
-    pb <- txtProgressBar(min=0, max=length(ens.source)*n.files, style=3)
-    pb.ind=1
+    if(print.progress==TRUE){
+      print("Processing Source Data")
+      pb <- txtProgressBar(min=0, max=length(ens.source)*n.files, style=3)
+      pb.ind=1
+    }
     for(j in 1:length(ens.source)){
       # Get a list of the files we'll be downscaling
       files.source <- dir(file.path(source.path, ens.source[j]), ".nc")
@@ -335,6 +359,12 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
       yrs.file <- strsplit(files.source, "[.]")
       yrs.file <- matrix(unlist(yrs.file), ncol=length(yrs.file[[1]]), byrow=T)
       yrs.file <- as.numeric(yrs.file[,ncol(yrs.file)-1]) # Assumes year is always last thing before the file extension
+      
+      # Subsetting to just the years we're interested in
+      if(!is.null(yrs.source)){
+        files.source <- files.source[which(yrs.file %in% yrs.source)]
+        yrs.file <- yrs.file[which(yrs.file %in% yrs.source)]
+      }
       
       # Getting the day & hour timesteps from the training data
       day.train <- round(365/length(unique(met.out$dat.train$time$DOY)))
@@ -359,7 +389,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
         # -----
         # Making what the unique time stamps should be to match the training data
         stamps.hr <- seq(hr.train/2, by=hr.train, length.out=1/day.train) 
-        stamps.src <- stamps.hr
+        stamps.src <- seq(step.hr/2, by=step.hr, length.out=1/step.day) 
         
         if(step.hr < hr.train){  # Finer hour increment --> set it up to aggregate
           align = "aggregate"
@@ -371,11 +401,12 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
         }
         # -----
         
+        
         # Create a data frame with all the important time info
         # center the hour step
-        df.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/day.train), Hour=rep(stamps.hr, length.out=nday/day.train))
+        df.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/day.train), Hour=rep(stamps.hr, length.out=nday/(day.train)))
         df.time$Date <- strptime(paste(df.time$Year, df.time$DOY, df.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
-        
+
         # Create a data frame with all the important time info
         # center the hour step
         # ** Only do this with the first ensemble member so we're not being redundant
@@ -384,14 +415,14 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
         }
         
         src.time <- data.frame(Year=yr.now, DOY=rep(1:nday, each=1/step.day), Hour=rep(stamps.src, length.out=ntime))
-        src.time$Date <- strptime(paste(df.time$Year, df.time$DOY, df.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
+        src.time$Date <- strptime(paste(src.time$Year, src.time$DOY, src.time$Hour, sep="-"), format=("%Y-%j-%H"), tz="UTC")
         
         # Extract the met info, making matrices with the appropriate number of ensemble members
         for(v in names(ncT$var)){
           dat.tem <- ncvar_get(ncT, v)
           
           if(align=="repeat"){ # if we need to coerce the time step to be repeated to match temporal resolution, do it here
-            dat.tem <- rep(dat.temp, each=stamps.hr)
+            dat.tem <- rep(dat.tem, each=stamps.hr)
           }
           df.tem <- matrix(rep(dat.tem, n.src), ncol=1, byrow=F)
           
@@ -416,8 +447,10 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
           
         } #End variable loop
         nc_close(ncT)
-        setTxtProgressBar(pb, pb.ind)
-        pb.ind <- pb.ind+1
+        if(print.progress==TRUE){
+          setTxtProgressBar(pb, pb.ind)
+          pb.ind <- pb.ind+1
+        }
       } # End looping through source met files
       
       # Storing the ensemble member data in our output list
@@ -432,7 +465,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, n.ens=NULL, pair.
     }
     
   } # End loading & formatting source data
-  print("")
+  if(print.progress==TRUE) print("")
   # ---------------
   
   

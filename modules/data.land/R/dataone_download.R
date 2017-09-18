@@ -12,7 +12,18 @@
 #' @export
 #'
 
+#' @examples 
+#' /dontrun{
+#' dataone_download(id = "doi:10.6073/pasta/63ad7159306bc031520f09b2faefcf87", filepath = "/fs/data1/pecan.data/dbfiles/")
+#' }
+
 dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles/", CNode = "PROD", lazyLoad = FALSE, quiet = F){ 
+  ### Check for wget functionality
+  test <- try(system2("wget", "--version", stderr = TRUE))
+  if (class(test) == "try-error") {
+    PEcAn.logger::logger.severe("wget system utility is not available on this system. Please install it to use this functionality.")
+  }
+
   ### automatically retrieve mnId
   cn <- dataone::CNode(CNode) 
   locations <- dataone::resolve(cn, pid = id) 
@@ -20,7 +31,7 @@ dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles/", CNod
   
   ### begin D1 download process
   d1c <- dataone::D1Client("PROD", mnId)
-  pkg <- dataone::getDataPackage(d1c, id = id, lazyLoad = lazyLoad, quiet = quiet, limit = "1MB") # what is the standard limit for pecan downloads?
+  pkg <- dataone::getDataPackage(d1c, id = id, lazyLoad = lazyLoad, quiet = quiet, limit = "1GB") 
   files <- datapack::getValue(pkg, name="sysmeta@formatId")
   n <- length(files) # number of files
 
@@ -28,11 +39,12 @@ dataone_download = function(id, filepath = "/fs/data1/pecan.data/dbfiles/", CNod
   newdir <- file.path(filepath, paste0("DataOne_", gsub("/", "-", id)))
   dir.create(newdir)
   
+  # download the data with wget
   for(i in 1:n){
-    rename <- paste(i, basename(names(files[i])), sep="_") # new file name
-    system(paste("cd", newdir, "&&", "{", "wget", "-O", rename, names(files)[i], "; cd -; }")) # cd to newdir, download files with wget, cd back
+    system(paste("cd", newdir, "&&", "{", "wget", "--content-disposition", names(files)[i], "; cd -; }")) # cd to newdir, download files with wget, cd back
   }
-  list.files(newdir) # checks that files were downloaded to 
-  
-  # Naming could still be improved to include part of title 
-  }
+ 
+}
+
+
+

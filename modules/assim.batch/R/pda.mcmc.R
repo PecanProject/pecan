@@ -204,7 +204,7 @@ pda.mcmc <- function(settings, params.id = NULL, param.names = NULL, prior.id = 
                                  run.names = paste0("MCMC_chain.", chain, "_iteration.", i, "_variable.", j))
           
           ## Start model run
-          start.model.runs(settings, settings$database$bety$write)
+          PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
           
           ## Read model outputs
           align.return <- pda.get.model.output(settings, run.id, bety, inputs)

@@ -8,36 +8,41 @@ InventoryGrowthFusionDiagnostics <- function(jags.out, combined=NULL) {
   
   out      <- as.matrix(jags.out)
   x.cols   <- which(substr(colnames(out), 1, 1) == "x")
-  
-  ### DBH par(mfrow=c(3,2))
   if(length(x.cols) > 0){
-    layout(matrix(1:8, 4, 2, byrow = TRUE))
     ci       <- apply(out[, x.cols], 2, quantile, c(0.025, 0.5, 0.975))
     ci.names <- parse.MatrixNames(colnames(ci), numeric = TRUE)
     
-    smp <- sample.int(data$ni, min(8, data$ni))
-    for (i in smp) {
-      sel <- which(ci.names$row == i)
-      rng <- c(range(ci[, sel], na.rm = TRUE), range(data$z[i, ], na.rm = TRUE))
+    ### DBH par(mfrow=c(3,2))
+    if(length(x.cols) > 0){
+      layout(matrix(1:8, 4, 2, byrow = TRUE))
+      ci       <- apply(out[, x.cols], 2, quantile, c(0.025, 0.5, 0.975))
+      ci.names <- parse.MatrixNames(colnames(ci), numeric = TRUE)
       
-      plot(data$time, ci[2, sel], type = "n", 
-           ylim = range(rng), ylab = "DBH (cm)", main = i)
-      PEcAn.visualization::ciEnvelope(data$time, ci[1, sel], ci[3, sel], col = "lightBlue")
-      points(data$time, data$z[i, ], pch = "+", cex = 1.5)
-      # lines(data$time,z0[i,],lty=2)
-      
-      ## growth
-      sel      <- which(ci.names$row == i)
-      inc.mcmc <- apply(out[, x.cols[sel]], 1, diff)
-      inc.ci   <- apply(inc.mcmc, 1, quantile, c(0.025, 0.5, 0.975)) * 5
-      # inc.names = parse.MatrixNames(colnames(ci),numeric=TRUE)
-      
-      plot(data$time[-1], inc.ci[2, ], type = "n", 
-           ylim = range(inc.ci, na.rm = TRUE), ylab = "Ring Increment (mm)")
-      PEcAn.visualization::ciEnvelope(data$time[-1], inc.ci[1, ], inc.ci[3, ], col = "lightBlue")
-      points(data$time, data$y[i, ] * 5, pch = "+", cex = 1.5, type = "b", lty = 2)
+      smp <- sample.int(data$ni, min(8, data$ni))
+      for (i in smp) {
+        sel <- which(ci.names$row == i)
+        rng <- c(range(ci[, sel], na.rm = TRUE), range(data$z[i, ], na.rm = TRUE))
+        
+        plot(data$time, ci[2, sel], type = "n", 
+             ylim = range(rng), ylab = "DBH (cm)", main = i)
+        PEcAn.visualization::ciEnvelope(data$time, ci[1, sel], ci[3, sel], col = "lightBlue")
+        points(data$time, data$z[i, ], pch = "+", cex = 1.5)
+        # lines(data$time,z0[i,],lty=2)
+        
+        ## growth
+        sel      <- which(ci.names$row == i)
+        inc.mcmc <- apply(out[, x.cols[sel]], 1, diff)
+        inc.ci   <- apply(inc.mcmc, 1, quantile, c(0.025, 0.5, 0.975)) * 5
+        # inc.names = parse.MatrixNames(colnames(ci),numeric=TRUE)
+        
+        plot(data$time[-1], inc.ci[2, ], type = "n", 
+             ylim = range(inc.ci, na.rm = TRUE), ylab = "Ring Increment (mm)")
+        PEcAn.visualization::ciEnvelope(data$time[-1], inc.ci[1, ], inc.ci[3, ], col = "lightBlue")
+        points(data$time, data$y[i, ] * 5, pch = "+", cex = 1.5, type = "b", lty = 2)
+      }
     }
   }
+  
   if (FALSE) {
     ## check a DBH
     plot(out[, which(colnames(out) == "x[3,31]")])
@@ -53,21 +58,22 @@ InventoryGrowthFusionDiagnostics <- function(jags.out, combined=NULL) {
                            grep("ind", colnames(out)),
                            grep("alpha",colnames(out)),
                            grep("deviance",colnames(out)))]
+  
   par(mfrow = c(1, 1))
   for (i in vars) {
     hist(out[, i], main = colnames(out)[i])
     abline(v=0,lwd=3)
   }
-  if (length(vars) > 1 & length(vars) < 10) {
+  if (length(vars) > 1 && length(vars) < 10) {
     pairs(out[, vars])
   }
-
+  
   if("deviance" %in% colnames(out)){
     hist(out[,"deviance"])
     vars <- c(vars,which(colnames(out)=="deviance"))
   }
   
-    
+  
   ## rebuild coda for just vars
   var.out <- as.mcmc.list(lapply(jags.out,function(x){ x[,vars]}))
   
@@ -76,6 +82,21 @@ InventoryGrowthFusionDiagnostics <- function(jags.out, combined=NULL) {
   
   #### Diagnostic plots
   plot(var.out)
+  
+  if("deviance" %in% colnames(out)){
+    hist(out[,"deviance"])
+    vars <- c(vars,which(colnames(out)=="deviance"))
+  }
+  
+  ## rebuild coda for just vars
+  var.out <- as.mcmc.list(lapply(jags.out,function(x){ x[,vars]}))
+  
+  ## convergence
+  gelman.diag(var.out)
+  
+  #### Diagnostic plots
+  plot(var.out)
+  
   
   ## Standard Deviations layout(matrix(c(1,2,3,3),2,2,byrow=TRUE))
   par(mfrow = c(2, 3))
@@ -86,7 +107,19 @@ InventoryGrowthFusionDiagnostics <- function(jags.out, combined=NULL) {
   cor(prec)
   # pairs(prec)
   
-    
+  ### alpha
+  par(mfrow = c(1, 1))
+  alpha.cols <- grep("alpha", colnames(out))
+  if (length(alpha.cols) > 0) {
+    alpha.ord <- 1:length(alpha.cols)
+    ci.alpha <- apply(out[, alpha.cols], 2, quantile, c(0.025, 0.5, 0.975))
+    plot(alpha.ord, ci.alpha[2, ], type = "n", 
+         ylim = range(ci.alpha, na.rm = TRUE), ylab = "Random Effects")
+    PEcAn.visualization::ciEnvelope(alpha.ord, ci.alpha[1, ], ci.alpha[3, ], col = "lightBlue")
+    lines(alpha.ord, ci.alpha[2, ], lty = 1, lwd = 2)
+    abline(h = 0, lty = 2)
+  }
+  
   par(mfrow = c(1, 1))
   ### alpha
   alpha.cols <- grep("alpha", colnames(out))
