@@ -4,10 +4,11 @@
 \alias{predict_subdaily_met}
 \title{predict_subdaily_met}
 \usage{
-predict_subdaily_met(outfolder, in.path, in.prefix, lm.models.base,
-  dat.train_file, start_date, end_date, cores.max = 12, n.ens = 3,
-  resids = FALSE, parallel = FALSE, n.cores = NULL, overwrite = FALSE,
-  verbose = FALSE)
+predict_subdaily_met(outfolder, in.path, in.prefix, path.train,
+  direction.filter, lm.models.base, yrs.predict = NULL, ens.labs = 1:3,
+  resids = FALSE, parallel = FALSE, cores.max = 12, n.cores = NULL,
+  overwrite = FALSE, verbose = FALSE, seed = format(Sys.time(), "\%m\%d"),
+  print.progress = FALSE, ...)
 }
 \arguments{
 \item{outfolder}{- directory where output file will be stored}
@@ -16,23 +17,29 @@ predict_subdaily_met(outfolder, in.path, in.prefix, lm.models.base,
 
 \item{in.prefix}{- prefix of model dataset, i.e. if file is GFDL.CM3.rcp45.r1i1p1.2006 the prefix is 'GFDL.CM3.rcp45.r1i1p1'}
 
-\item{lm.models.base}{- path to linear regression model folder from 3_gen_subdaily}
+\item{path.train}{- path to CF/PEcAn style training data where each year is in a separate file.}
 
-\item{dat.train_file}{- location of train_data file}
+\item{direction.filter}{- Whether the model will be filtered backwards or forwards in time. options = c("backward", "forward")
+(PalEON will go backwards, anybody interested in the future will go forwards)}
 
-\item{start_date}{- yyyy-mm-dd}
+\item{lm.models.base}{- path to linear regression model folders generated using gen.subdaily.models}
 
-\item{end_date}{- yyyy-mm-dd}
+\item{yrs.predict}{- years for which you want to generate met.  if NULL, all years in in.path will be done}
 
-\item{cores.max}{- 12}
-
-\item{n.ens}{- integer selecting number of hourly ensemble members}
+\item{ens.labs}{- vector containing the labels (suffixes) for each ensemble member; this allows you to add to your 
+ensemble rather than overwriting with a default naming scheme}
 
 \item{resids}{- logical stating whether to pass on residual data or not}
 
 \item{parallel}{- logical stating whether to run temporal_downscale_functions.R in parallel}
 
+\item{cores.max}{- 12}
+
 \item{n.cores}{- deals with parallelization}
+
+\item{seed}{- manually set seed for results to be reproducible}
+
+\item{print.progress}{- print the progress bar?}
 }
 \description{
 This is the main function of the tdm family workflow. This function predicts subdaily meteorology

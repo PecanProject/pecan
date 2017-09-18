@@ -295,7 +295,7 @@ pda.load.priors <- function(settings, con, extension.check = FALSE) {
     }
     
     # make sure there are no left over distributions in the environment
-    rm(post.distns, prior.distns)
+    suppressWarnings(rm(post.distns, prior.distns))
     
     load(prior.paths[[i]])
     if (!exists("post.distns")) {
