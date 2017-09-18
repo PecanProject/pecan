@@ -24,6 +24,12 @@
 ##' @param model which GCM to extract data from
 ##' @param scenario which experiment to pull (p1000, historical, ...)
 ##' @param ensemble_member which CMIP5 experiment ensemble member
+##' @param date.origin (optional) specify the date of origin for timestamps in the files being read.  
+##'                    If NULL defaults to 1850 for historical simulations (except MPI-ESM-P) and 
+##'                    850 for p1000 simulations (plus MPI-ESM-P historical).  Format: YYYY-MM-DD
+##' @param no.leap (optional, logical) if you know your GCM of interest is missing leap year, you can specify it here.
+##'                otherwise the code will automatically determine if leap year is missing and if it should be 
+##'                added in.
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
 ##' @param verbose logical. to control printing of debug info
 ##' @param ... Other arguments, currently ignored
@@ -31,17 +37,25 @@
 ##' @examples
 # -----------------------------------
 extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_id, lat.in, lon.in, 
-                                model , scenario , ensemble_member = "r1i1p1",
+                                model , scenario , ensemble_member = "r1i1p1", date.origin=NULL, no.leap=NULL,
                                 overwrite = FALSE, verbose = FALSE, ...){
   library(lubridate)
   library(ncdf4)
   library(stringr)
   
   # Some GCMs don't do leap year; we'll have to deal with this separately
-  no.leap <- c("bcc-csm1-1", "CCSM4")
+  # no.leap <- c("bcc-csm1-1", "CCSM4")
   
-  if(scenario == "p1000" | GCM=="MPI-ESM-P") date.origin=as.Date("850-01-01")
-  if(scenario == "historical" & GCM!="MPI-ESM-P") date.origin=as.Date("1850-01-01")
+  if(is.null(date.origin)){
+    if(scenario == "p1000" | GCM=="MPI-ESM-P") { 
+      date.origin=as.Date("850-01-01") 
+    } else if {
+      if(scenario == "historical" & GCM!="MPI-ESM-P") date.origin=as.Date("1850-01-01")
+    } else {
+      logger.error("No date.origin specified and scenario not implemented yet")
+    }
+  } 
+  
   
   # Days per month
   dpm <- lubridate::days_in_month(1:12)
@@ -164,8 +178,11 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
       # date.origin <- as.Date(str_split(ncT$dim$time$units, " ")[[1]][splt.ind])
       nc.date <- date.origin + nc.time
       date.leaps <- seq(as.Date(paste0(files.var[[var.now]][i,"first.year"], "-01-01")), as.Date(paste0(files.var[[var.now]][i,"last.year"], "-12-31")), by="day")
+      # Figure out if we're missing leap dat
+      no.leap <- ifelse(is.null(no.leap) & length(nc.date)!=length(date.leaps), TRUE, FALSE)
+      
       # If we're missing leap year, lets adjust our date stamps so we can only pull what we need
-      if(v.res=="day" & length(nc.date)!=length(date.leaps)){
+      if(v.res=="day" & no.leap==TRUE){
         cells.bump <- which(lubridate::leap_year(lubridate::year(date.leaps)) & lubridate::month(date.leaps)==02 & lubridate::day(date.leaps)==29)
         for(j in 1:length(cells.bump)){
           nc.date[cells.bump[j]:length(nc.date)] <- nc.date[cells.bump[j]:length(nc.date)]+1
@@ -209,7 +226,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
       
       # Add leap year and trick monthly into daily
       # Figure out if we're missing leap year
-      if(v.res=="day" & length(nc.date)!=length(date.leaps)){
+      if(v.res=="day" & no.leap==TRUE){
         cells.dup <- which(lubridate::leap_year(lubridate::year(date.leaps)) & lubridate::month(date.leaps)==02 & lubridate::day(date.leaps)==28)
         for(j in 1:length(cells.dup)){
           dat.temp <- append(dat.temp, dat.temp[cells.dup[j]], cells.dup[j])
