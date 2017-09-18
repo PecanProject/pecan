@@ -351,8 +351,10 @@ def m_data_to_netCDF(filename, m, k, kmLR, kmAB):
 	rootgrp = netCDF4.Dataset(filename, 'w', format='NETCDF4')
 	nrow = 1 + 2*kmAB
 	ncol = 1 + 2*kmLR	
-	rootgrp.createDimension('nrow', nrow)
-	rootgrp.createDimension('ncol', ncol)
+	rootgrp.createDimension('northing', nrow)
+#	m_north = rootgrp.createVariable('northing', 'i8', ('northing'))
+# 	m_north.units = "km north of lowest point in grid")
+	rootgrp.createDimension('easting', ncol)
 	rootgrp.createDimension('time', len(m.dateInt))
 
 	m_date = rootgrp.createVariable('time', 'i8', ('time'))
@@ -361,8 +363,8 @@ def m_data_to_netCDF(filename, m, k, kmLR, kmAB):
 	year = startDate.year
 	m_date.units = 'days since %d-01-01 00:00:00.0'%(year)
 
-	m_data = rootgrp.createVariable('LAI', 'f8', ('time', 'nrow', 'ncol'))
-	m_std = rootgrp.createVariable('LAIStd', 'f8', ('time', 'nrow', 'ncol'))
+	m_data = rootgrp.createVariable('LAI', 'f8', ('time', 'northing', 'easting'))
+	m_std = rootgrp.createVariable('LAIStd', 'f8', ('time', 'northing', 'easting'))
 
 	str_dates = [str(d) for d in m.dateInt]
 	datetimes = [(datetime.datetime.strptime(d, '%Y%j')- datetime.datetime(year,1,1)).days+1 for d in str_dates]	
