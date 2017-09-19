@@ -46,7 +46,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
     
     pss <- data.frame(time = time, patch = n.patch, trk = trk, age = age)
     
-    PEcAn.utils::logger.info(paste0("Values used in the patch file - time:", 
+    PEcAn.logger::logger.info(paste0("Values used in the patch file - time:", 
                                     pss$time, ", patch:", pss$patch, ", trk:", 
                                     pss$trk, ", age:", pss$age))
     
@@ -87,9 +87,9 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   # Remove rows that don't map to any patch
   css <- css[which(css$patch %in% pss$patch), ]
   if (nrow(css) == 0) {
-    logger.severe("No trees map to previously selected patches.")
+    PEcAn.logger::logger.severe("No trees map to previously selected patches.")
   } else {
-    logger.debug(paste0(nrow(css), " trees that map to selected patches."))
+    PEcAn.logger::logger.debug(paste0(nrow(css), " trees that map to selected patches."))
   }
 
     
@@ -107,7 +107,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   # suitable years
   av.years <- inv.years[inv.years <= start_year]
   if(length(av.years) == 0){
-    logger.severe("No available years found in the data.")
+    PEcAn.logger::logger.severe("No available years found in the data.")
   }
   css$time <- max(av.years)
   # filter out other years
@@ -124,7 +124,7 @@ veg2model.ED2 <- function(outfolder, veg_info, start_date, new_site, source){
   for (p in seq_along(css$pft)) {
     css$pft.number[p] <- pftmapping$ED[pftmapping$PEcAn == as.character(css$pft[p])]
     if (is.null(css$pft.number[p])) {
-      logger.severe(paste0("Couldn't find an ED2 PFT number for ", as.character(css$pft[p])))
+      PEcAn.logger::logger.severe(paste0("Couldn't find an ED2 PFT number for ", as.character(css$pft[p])))
     }
   }
   
