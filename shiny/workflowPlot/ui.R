@@ -34,8 +34,17 @@ ui <- shinyUI(fluidPage(
       actionButton("load_data", "Load External Data")
     ),
     mainPanel(
-      plotlyOutput("outputPlot"),
-      verbatimTextOutput("outputNoVariableFound")
+      tabsetPanel(
+        tabPanel("Visualizations", 
+               plotlyOutput("outputPlot"),
+               verbatimTextOutput("outputNoVariableFound")
+        ),
+        tabPanel("Benchmarking", 
+                 verbatimTextOutput("bm_message"),
+                 uiOutput("button_BRR")
+                                  
+        )
+      )
     )
   )
 ))

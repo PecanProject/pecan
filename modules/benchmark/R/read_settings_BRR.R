@@ -22,13 +22,14 @@ read_settings_BRR <- function(settings){
                        user     = settings$database$bety$user,
                        password = settings$database$bety$password)
   
-  BRR <- tbl(bety,"reference_runs") %>% filter(id == settings$benchmarking$reference_run_id)
-
-  names(BRR$settings)
+  BRR <- tbl(bety,"reference_runs") %>% 
+    filter(id == settings$benchmarking$reference_run_id) %>% 
+    collect()
   
-  BRR.settings <- BRR %>% select(settings) %>% collect() %>% unlist() %>%
+  BRR.settings <- BRR %>% pull(settings) %>% unlist() %>%
     xmlToList(.,"pecan") 
-  names(BRR.settings)
+  
+  logger.debug(names(BRR.settings))
   
   settings <- BRR.settings %>% append(settings,.) %>% PEcAn.settings::Settings()
   invisible(settings)
