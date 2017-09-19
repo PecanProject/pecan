@@ -18,8 +18,8 @@ start_qsub <- function(run, qsub_string, rundir,
                        stdout_log, stderr_log, job_script, qsub_extra = NULL) {
   run_id_string <- format(run, scientific = FALSE)
   qsub <- gsub("@NAME@", paste0("PEcAn-", run_id_string), qsub_string)
-  qsub <- gsub("@STDOUT@", file.path(outdir, run_id_string, stdout_log), qsub)
-  qsub <- gsub("@STDERR@", file.path(outdir, run_id_string, stderr_log), qsub)
+  qsub <- gsub("@STDOUT@", file.path(host_outdir, run_id_string, stdout_log), qsub)
+  qsub <- gsub("@STDERR@", file.path(host_outdir, run_id_string, stderr_log), qsub)
   if (!is.null(qsub_extra)) {
     qsub <- paste(qsub, qsub_extra)
   }
