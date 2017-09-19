@@ -5,8 +5,8 @@
 ##' @export
 ##' @param outfolder where the output file will be stored
 ##' @param fname  name of netcdf file to output
-##' @param start  first date in year and day-of-year. For example May 1 2010 would be 2010121
-##' @param end    laste date in year and day-of-year. For example May 1 2010 would be 2010121
+##' @param start_date  beginning of date range for LAI download in unambiguous date format
+##' @param end_date    end of date range for LAI download in unambiguous date format
 ##' @param lat    Latitude of the pixel
 ##' @param lon    Longitude of the pixel
 ##' @param size   NS and WE distance in km to be included
@@ -23,9 +23,11 @@
 ##' test <- call_MODIS(start="2001001",end="2016366",lat=44.0646,lon=-71.28808,size=3,qc_band = "FparLai_QC",sd_band = "LaiStdDev_1km")
 ##' }
 ##' 
-call_MODIS <- function(outfolder = ".", fname = "m_data.nc", start, end, lat, lon, size = 0, 
+call_MODIS <- function(outfolder = ".", fname = "m_data.nc", start_date, end_date, lat, lon, size = 0, 
                        product = "MOD15A2", band = "Lai_1km", qc_band = NA, sd_band = NA, verbose = TRUE) {
   
+  start = strftime(as.Date(start_date),'%Y%j')
+  end = strftime(as.Date(end_date),'%Y%j')
   # library(MODISTools)
   # 
   # dat <- MODISTools::GetSubset(Lat=lat, Long=lon, Product=product, Band=band, 
@@ -102,6 +104,7 @@ call_MODIS <- function(outfolder = ".", fname = "m_data.nc", start, end, lat, lo
     k <- NA
   }
   date <- rPython::python.get("date")
+  #date = strptime(date, format='%Y%j',tz = 'UTC') %>% as.POSIXct()
   
   return(invisible(list(m = m, k = k, date = date)))
 } # call_MODIS
