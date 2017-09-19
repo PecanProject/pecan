@@ -15,6 +15,7 @@ Description: The Predictive Ecosystem Carbon Analyzer
     models, and to improve the efficacy of scientific
     investigation.
 Depends:
+    PEcAn.logger,
     PEcAn.utils,
     PEcAn.priors,
     ggplot2,
