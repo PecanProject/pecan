@@ -262,11 +262,13 @@ pda.load.priors <- function(settings, con, extension.check = FALSE) {
   prior.out <- list()
   prior.paths <- list()
     
+  tmp_hostname <- ifelse(!PEcAn.remote::is.localhost(settings$host), PEcAn.utils::fqdn(), settings$host$name)
+  
   # now that you filled priorids load the PDA prior objects
   # if files becomes NULL try loading objects from workflow oft folders
   for (i in seq_along(settings$pfts)) {
       
-    files <- dbfile.check("Posterior", priorids[[i]], con, settings$host$name, return.all  = TRUE)
+    files <- dbfile.check("Posterior", priorids[[i]], con, tmp_hostname, return.all  = TRUE)
       
     pid <- grep("post.distns.*Rdata", files$file_name)  ## is there a posterior file?
     
@@ -295,7 +297,7 @@ pda.load.priors <- function(settings, con, extension.check = FALSE) {
     }
     
     # make sure there are no left over distributions in the environment
-    rm(post.distns, prior.distns)
+    suppressWarnings(rm(post.distns, prior.distns))
     
     load(prior.paths[[i]])
     if (!exists("post.distns")) {

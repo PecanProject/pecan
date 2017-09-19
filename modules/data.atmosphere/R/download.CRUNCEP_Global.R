@@ -10,12 +10,14 @@
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
 ##' @param verbose logical. Passed on to \code{\link[ncdf4]{ncvar_def}} and \code{\link[ncdf4]{nc_create}}
 ##'   to control printing of debug info
+##' @param maxErrors Maximum times to re-try folloing an error accessing netCDF data through THREDDS
+##' @param sleep Wait time between attempts following a THREDDS or other error
 ##' @param ... Other arguments, currently ignored
 ##' @export
 ##'
 ##' @author James Simkins, Mike Dietze
 download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, lon.in,
-                             overwrite = FALSE, verbose = FALSE, ...) {
+                             overwrite = FALSE, verbose = FALSE, maxErrors = 10, sleep = 2, ...) {
 
   start_date <- as.POSIXlt(start_date, tz = "UTC")
   end_date <- as.POSIXlt(end_date, tz = "UTC")
@@ -97,8 +99,9 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
       PEcAn.logger::logger.info(dap_file)
 
       # This throws an error if file not found
-      dap <- ncdf4::nc_open(dap_file)
-
+      #dap <- ncdf4::nc_open(dap_file, verbose=FALSE)
+      dap <- PEcAn.utils::retry.func(ncdf4::nc_open(dap_file, verbose=verbose), maxErrors=maxErrors, sleep=sleep)
+      
       # confirm that timestamps match
       if (dap$dim$time$len != ntime) {
        PEcAn.logger::logger.severe("Expected", ntime, "observations, but", dap_file,  "contained", dap$dim$time$len)
@@ -113,10 +116,10 @@ download.CRUNCEP <- function(outfolder, start_date, end_date, site_id, lat.in, l
       }
 
 
-      dat.list[[j]] <- ncdf4::ncvar_get(dap,
+      dat.list[[j]] <- PEcAn.utils::retry.func(ncdf4::ncvar_get(dap,
                                  as.character(var$DAP.name[j]),
                                  c(lon_grid, lat_grid, 1),
-                                 c(1, 1, ntime))
+                                 c(1, 1, ntime)), maxErrors=maxErrors, sleep=sleep)
 
       var.list[[j]] <- ncdf4::ncvar_def(name = as.character(var$CF.name[j]),
                                  units = as.character(var$units[j]),

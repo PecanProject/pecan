@@ -332,6 +332,7 @@ get.parameter.stat <- function(mcmc.summary, parameter) {
               ucl = mcmc.summary$quantiles[parameter, c("97.5%")],
               n = 2)
 } # get.parameter.stat
+#--------------------------------------------------------------------------------------------------#
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -364,6 +365,7 @@ pdf.stats <- function(distn, A, B) {
   out <- unlist(list(mean = mean, var = var, lcl = lcl, ucl = ucl))
   return(out)
 } # pdf.stats
+#--------------------------------------------------------------------------------------------------#
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -416,6 +418,7 @@ tabnum <- function(x, n = 3) {
   names(ans) <- names(x)
   return(ans)
 } # tabnum
+#--------------------------------------------------------------------------------------------------#
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -433,6 +436,7 @@ arrhenius.scaling <- function(observed.value, old.temp, new.temp = 25) {
   old.temp.K <- udunits2::ud.convert(old.temp, "degC", "K")
   return(observed.value / exp(3000 * (1 / (new.temp.K) - 1 / (old.temp.K))))
 } # arrhenius.scaling
+#--------------------------------------------------------------------------------------------------#
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -442,7 +446,6 @@ arrhenius.scaling <- function(observed.value, old.temp, new.temp = 25) {
 ##' @param x string
 ##' @return x, capitalized
 ##' @author David LeBauer
-#--------------------------------------------------------------------------------------------------#
 capitalize <- function(x) {
   x <- as.character(x)
   s <- strsplit(x, " ")[[1]]
@@ -450,6 +453,7 @@ capitalize <- function(x) {
 } # capitalize
 
 isFALSE <- function(x) !isTRUE(x)
+#--------------------------------------------------------------------------------------------------#
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -475,6 +479,7 @@ newxtable <- function(x, environment = "table", table.placement = "ht", label = 
         #        sanitize.text.function = function(x) gsub("%", "\\\\%", x),
         sanitize.rownames.function = function(x) paste(''))
 } # newxtable
+#--------------------------------------------------------------------------------------------------#
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -486,11 +491,12 @@ newxtable <- function(x, environment = "table", table.placement = "ht", label = 
 ##' @param year year of publication
 ##' @param title manuscript title
 ##' @return bibtex citation
-#--------------------------------------------------------------------------------------------------#
+##' @author unknown
 bibtexify <- function(author, year, title) {
   acronym <- abbreviate(title, minlength = 3, strict = TRUE)
   return(paste0(author, year, acronym))
 } # bibtexify
+#--------------------------------------------------------------------------------------------------#
 
 
 #--------------------------------------------------------------------------------------------------#
@@ -514,22 +520,10 @@ as.sequence <- function(x, na.rm = TRUE) {
   }
   return(x2)
 } # as.sequence
+#--------------------------------------------------------------------------------------------------#
 
 
 #--------------------------------------------------------------------------------------------------#
-##' Test ssh access
-##'
-##' Test to determine if access to a remote server is available.
-##' Can be used to exclude / include tests or to prevent / identify access errors
-##' @title Test Remote
-##' @param host
-##' @return logical - TRUE if remote connection is available
-##' @author Rob Kooper
-test.remote <- function(host) {
-  return(try(remote.execute.cmd(host, "/bin/true")) == 0)
-} # test.remote
-
-
 ##' Create a temporary settings file
 ##'
 ##' Uses \code{\link{tempfile}} function to provide a valid temporary file (OS independent)
@@ -547,8 +541,10 @@ temp.settings <- function(settings.txt) {
   settings <- readLines(temp)
   return(settings)
 } # temp.settings
+#--------------------------------------------------------------------------------------------------#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' Test if function gives an error
 ##'
 ##' adaptation of try that returns a logical value (FALSE if error)
@@ -567,8 +563,10 @@ tryl <- function(FUN) {
   ans <- !any(class(out) == "error")
   return(ans)
 } # tryl
+#--------------------------------------------------------------------------------------------------#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' load model package
 ##' @title Load model package
 ##' @param model name of model
@@ -588,7 +586,10 @@ load.modelpkg <- function(model) {
     }
   }
 } # load.modelpkg
+#--------------------------------------------------------------------------------------------------#
 
+
+#--------------------------------------------------------------------------------------------------#
 ##' conversion function for the unit conversions that udunits cannot handle but often needed in PEcAn calculations
 ##' @title misc.convert
 ##' @export
@@ -624,8 +625,10 @@ misc.convert <- function(x, u1, u2) {
   }
   return(val)
 } # misc.convert
+#--------------------------------------------------------------------------------------------------#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' function to check whether units are convertible by misc.convert function
 ##' @title misc.are.convertible
 ##' @export
@@ -653,8 +656,10 @@ misc.are.convertible <- function(u1, u2) {
     return(FALSE)
   }
 }
+#--------------------------------------------------------------------------------------------------#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' Convert expression to variable names
 ##' @title convert.expr
 ##' @param expression expression string
@@ -678,8 +683,10 @@ convert.expr <- function(expression) {
 
   return(list(variable.drv = deri.var, variable.eqn = list(variables = variables, expression = deri.eqn)))
 }
+#--------------------------------------------------------------------------------------------------#
 
 
+#--------------------------------------------------------------------------------------------------#
 ##' Simple function to use ncftpget for FTP downloads behind a firewall.
 ##' Requires ncftpget and a properly formatted config file in the users
 ##' home directory
@@ -714,7 +721,52 @@ download.file <- function(url, filename, method) {
     utils::download.file(url, filename)
   }
 }
+#--------------------------------------------------------------------------------------------------#
 
+
+#--------------------------------------------------------------------------------------------------#
+##' Retry function X times before stopping in error
+##' 
+##' @title retry.func
+##' @name retry.func
+##' @description Retry function X times before stopping in error
+##'
+##' @param expr The function to try running
+##' @param maxErrors The number of times to retry the function
+##' @param sleep How long to wait before retrying the function call
+##' 
+##' @return retval returns the results of the function call
+##' 
+##' @examples
+##' \dontrun{
+##' dap <- retry.func(ncdf4::nc_open('https://thredds.daac.ornl.gov/thredds/dodsC/ornldaac/1220/mstmip_driver_global_hd_climate_lwdown_1999_v1.nc4'),
+##' maxErrors=10, sleep=2)
+##' }
+##' 
+##' @export
+##' @author Shawn Serbin <adapted from https://stackoverflow.com/questions/20770497/how-to-retry-a-statement-on-error>
+
+retry.func <- function(expr, isError=function(x) "try-error" %in% class(x), maxErrors=5, sleep=0) {
+  attempts = 0
+  retval = try(eval(expr))
+  while (isError(retval)) {
+    attempts = attempts + 1
+    if (attempts >= maxErrors) {
+      msg = sprintf("retry: too many retries [[%s]]", capture.output(str(retval)))
+      PEcAn.logger::logger.warn(msg)
+      stop(msg)
+    } else {
+      msg = sprintf("retry: error in attempt %i/%i [[%s]]", attempts, maxErrors, 
+                    capture.output(str(retval)))
+      PEcAn.logger::logger.warn(msg)
+      #warning(msg)
+    }
+    if (sleep > 0) Sys.sleep(sleep)
+    retval = try(eval(expr))
+  }
+  return(retval)
+}
+#--------------------------------------------------------------------------------------------------#
 
 
 ####################################################################################################

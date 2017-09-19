@@ -18,18 +18,24 @@
 # -----------------------------------
 # Parameters
 # -----------------------------------
-##' @param outfolder - directory where models will be stored *** storage required varies by size of training dataset, but prepare for >100 GB
-##' @param dat.train_file - train_data file
+##' @param outfolder - directory where models will be stored *** storage required varies by size of training dataset, but prepare for >10 GB
+##' @param path.train - path to CF/PEcAn style training data where each year is in a separate file.
+##' @param yrs.train - which years of the training data should be used for to generate the model for 
+##'                    the subdaily cycle.  If NULL, will default to all years
+##' @param direction.filter - Whether the model will be filtered backward or forward in time. options = c("backward", "forward")
+##'                           (PalEON will go backward, anybody interested in the future will go forward)                  
 ##' @param in.prefix 
 ##' @param n.beta - number of betas to save from linear regression model
-##' @param resids - logical stating whether to pass on residual data or not
+##' @param resids - logical stating whether to pass on residual data or not (this increases both memory & storage requirements)
 ##' @param parallel - logical stating whether to run temporal_downscale_functions.R in parallel 
 ##' @param n.cores - deals with parallelization
 ##' @param day.window - integer specifying number of days around the day being modeled you want to use data from for that 
 ##'                     specific hours coefficients. Must be integer because we want statistics from the same time of day
 ##'                     for each day surrounding the model day
+##' @param seed - seed for randomization to allow for reproducible results                    
 ##' @param overwrite
 ##' @param verbose
+##' @param print.progress - print progress bar? (gets passed through)
 ##' @export
 # -----------------------------------
 #----------------------------------------------------------------------
@@ -37,12 +43,12 @@
 #----------------------------------------------------------------------
 
 
-gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix, 
-    n.beta, day.window, resids = FALSE, parallel = FALSE, n.cores = NULL, overwrite = TRUE, 
-    verbose = FALSE) {
+gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filter="forward", in.prefix,  
+    n.beta, day.window, seed=Sys.time(), resids = FALSE, parallel = FALSE, n.cores = NULL, overwrite = TRUE, 
+    verbose = FALSE, print.progress=FALSE) {
   
-    pb.index <- 1
-    pb <- txtProgressBar(min = 1, max = 8, style = 3)
+    # pb.index <- 1
+    # pb <- txtProgressBar(min = 1, max = 8, style = 3)
     
     # ----- 1.0 Read data & Make time stamps ---------- Load the data
     
@@ -50,53 +56,52 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
                                         "air_temperature_min", "surface_downwelling_shortwave_flux_in_air", 
                                         "surface_downwelling_longwave_flux_in_air", "air_pressure", "specific_humidity", 
                                         "eastward_wind", "northward_wind", "wind_speed"))
-    dat.train <- list()
-    tem <- ncdf4::nc_open(dat.train_file)
-    dim <- tem$dim
-    for (j in seq_along(vars.info$CF.name)) {
-      if (exists(as.character(vars.info$CF.name[j]), tem$var)) {
-        dat.train[[j]] <- ncdf4::ncvar_get(tem, as.character(vars.info$CF.name[j]))
-      } else {
-        dat.train[[j]] = NA
-      }
-    }
-    names(dat.train) <- vars.info$CF.name
-    dat.train <- data.frame(dat.train)
     
-    # create wind speed variable if we're only given component wind speeds
-    if (all(is.na(dat.train$wind_speed) == TRUE)){
-      dat.train$wind_speed <- sqrt(dat.train$eastward_wind^2 + dat.train$northward_wind^2)
+    
+    
+    # Getting a list of all the available files and then subsetting to just the ones we 
+    # actually want to use
+    files.train <- dir(path.train)
+    yrs.file <- strsplit(files.train, "[.]")
+    yrs.file <- matrix(unlist(yrs.file), ncol=length(yrs.file[[1]]), byrow=T)
+    yrs.file <- as.numeric(yrs.file[,ncol(yrs.file)-1]) # Assumes year is always last thing before the file extension
+    
+    if(!is.null(yrs.train)){
+      files.train <- files.train[which(yrs.file %in% yrs.train)]
+      yrs.file <- yrs.file[which(yrs.file %in% yrs.train)]
     }
     
-    # adding a temporary date variable for the model
-    if (dim$time$units == "sec"){
-      sub_string<- substrRight(dat.train_file, 7)
-      start_year <- substr(sub_string, 1, 4)
-      dat.train$date <- as.Date((dim$time$vals/(dim$time$vals[2] - dim$time$vals[1])), 
-                                tz="GMT", origin = paste0(start_year - 1, "-12-31"))
+    met.out <- align.met(train.path=path.train, source.path=path.train, 
+                         yrs.train=yrs.file, yrs.source=yrs.file[1], 
+                         n.ens=1, seed=seed, pair.mems = FALSE)
+    
+    dat.train <- data.frame(year = met.out$dat.train$time$Year, 
+                            doy = met.out$dat.train$time$DOY, 
+                            date = met.out$dat.train$time$Date,
+                            hour = met.out$dat.train$time$Hour,
+                            air_temperature = met.out$dat.train$air_temperature, 
+                            precipitation_flux = met.out$dat.train$precipitation_flux, 
+                            surface_downwelling_shortwave_flux_in_air = met.out$dat.train$surface_downwelling_shortwave_flux_in_air,
+                            surface_downwelling_longwave_flux_in_air = met.out$dat.train$surface_downwelling_longwave_flux_in_air,
+                            air_pressure = met.out$dat.train$air_pressure, 
+                            specific_humidity = met.out$dat.train$specific_humidity
+                            )
+    
+    if(!"wind_speed" %in% names(met.out$dat.train)){
+      dat.train$wind_speed <- sqrt(met.out$dat.train$eastward_wind^2 + met.out$dat.train$northward_wind^2)
     } else {
-      start_year <- substr(dim$time$units,start = 12,stop = 15)
-      dat.train$date = as.POSIXct(udunits2::ud.convert((dim$time$vals - ((dim$time$vals[2] - dim$time$vals[1])/2)),"days", "seconds"),
-                                  tz="GMT", origin = paste0(start_year, "-01-01 00:00:00"))
+      dat.train$wind_speed <- met.out$dat.train$wind_speed
     }
-    # Getting additional time stamps
-    dat.train$year <- lubridate::year(dat.train$date)
-    dat.train$doy <- lubridate::yday(dat.train$date)
-    dat.train$hour <- lubridate::hour(dat.train$date)
-    
     
     # these non-standard variables help us organize our modeling approach
-    dat.train$date <- strptime(paste(dat.train$year, dat.train$doy + 1, 
-        dat.train$hour, sep = "-"), "%Y-%j-%H", tz = "GMT")
-    dat.train$time.hr <- as.numeric(difftime(dat.train$date, paste0((min(dat.train$year) - 
-        1), "-12-31 ", max(unique(dat.train$hour)),":00:00"), tz = "GMT", units = "hour"))
-    dat.train$time.day <- as.numeric(difftime(dat.train$date, paste0((min(dat.train$year) - 
-        1), "-12-31 ", max(unique(dat.train$hour)),":00:00"), tz = "GMT", units = "day")) - 1/24
-    dat.train$time.day2 <- as.integer(dat.train$time.day + 1/(48 * 2)) + 
-        1  # Offset by half a time step to get time stamps to line up
+    # Reference everything off of the earliest date; avoiding 0s because that makes life difficult
+    dat.train$sim.hr <- trunc(as.numeric(difftime(dat.train$date, min(dat.train$date), tz = "GMT", units = "hour")))+1
+    dat.train$sim.day <- trunc(as.numeric(difftime(dat.train$date, min(dat.train$date), tz = "GMT", units = "day")))+1
+    # dat.train$time.day2 <- as.integer(dat.train$time.day + 1/(48 * 2)) + 1  # Offset by half a time step to get time stamps to line up
     
     # ----- 1.1 Coming up with the daily means that are what we can
     # use as predictors ----------
+    vars.use <- vars.info$CF.name[vars.info$CF.name %in% names(dat.train)]
     
     train.day <- aggregate(dat.train[, c("air_temperature", "precipitation_flux", 
         "surface_downwelling_shortwave_flux_in_air", "surface_downwelling_longwave_flux_in_air", 
@@ -122,26 +127,30 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
     vars.lag <- c("lag.air_temperature", "lag.precipitation_flux", "lag.surface_downwelling_shortwave_flux_in_air", 
         "lag.surface_downwelling_longwave_flux_in_air", "lag.air_pressure", 
         "lag.specific_humidity", "lag.wind_speed")
-    lag.day <- dat.train[dat.train$hour == max(unique(dat.train$hour)), c("year", "doy", "time.day2", 
-        vars.hour)]
-    names(lag.day)[4:10] <- vars.lag
     
-    lag.day <- aggregate(lag.day[, vars.lag], by = lag.day[, c("year", 
-        "doy", "time.day2")], FUN = mean)
+    # Specifying what hour we want to lag
+    # Note: For forward filtering, we want to associate today with tomorrow (+1 day) using the last observation of today
+    #       For backward filtering, we want to associate today with yesterday (-1 day) using the first obs of today
+    met.lag <- ifelse(direction.filter=="backward", -1, +1)
+    lag.time <- ifelse(direction.filter=="backward", min(dat.train$hour), max(dat.train$hour))
+    
+    lag.day <- dat.train[dat.train$hour == lag.time, c("year", "doy", "sim.day", vars.hour)]
+    names(lag.day)[4:ncol(lag.day)] <- vars.lag
+    
     lag.day$lag.air_temperature_min <- aggregate(dat.train[, c("air_temperature")], 
-        by = dat.train[, c("year", "doy", "time.day2")], FUN = min)[, "x"]  # Add in a lag for the next day's min temp
+        by = dat.train[, c("year", "doy", "sim.day")], FUN = min)[, "x"]  # Add in a lag for the next day's min temp
     lag.day$lag.air_temperature_max <- aggregate(dat.train[, c("air_temperature")], 
-        by = dat.train[, c("year", "doy", "time.day2")], FUN = max)[, "x"]  # Add in a lag for the next day's min temp
-    lag.day$time.day2 <- lag.day$time.day2 + 1  # +1 for forward filtering downscale
+        by = dat.train[, c("year", "doy", "sim.day")], FUN = max)[, "x"]  # Add in a lag for the next day's min temp
+    lag.day$sim.day <- lag.day$sim.day + met.lag  # 
     
     
-    dat.train <- merge(dat.train, lag.day[, c("time.day2", vars.lag, "lag.air_temperature_min", 
+    dat.train <- merge(dat.train, lag.day[, c("sim.day", vars.lag, "lag.air_temperature_min", 
         "lag.air_temperature_max")], all.x = T)
     
     # ----- 1.3 Setting up a variable to 'preview' the next day's mean
-    # to help get smoother transitions NOTE: because we're filtering from
-    # the present back through the past, +1 will associate the mean for the
-    # next day we're going to model with the one we're currently working on
+    # to help get smoother transitions 
+    # NOTE: If we're filtering forward in time, -1 will associate tomorrow with our downscaling
+    #       for today
     # ----------
     vars.day <- c("air_temperature_mean.day", "air_temperature_max.day", 
         "air_temperature_mean.day", "precipitation_flux.day", "surface_downwelling_shortwave_flux_in_air.day", 
@@ -152,20 +161,22 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
         "next.surface_downwelling_longwave_flux_in_air", "next.air_pressure", 
         "next.specific_humidity", "next.wind_speed")
     
-    next.day <- dat.train[c("year", "doy", "time.day2", vars.day)]
-    names(next.day)[4:12] <- vars.next
-    next.day <- aggregate(next.day[, vars.next], by = next.day[, c("year", 
-        "doy", "time.day2")], FUN = mean)
-    next.day$time.day2 <- next.day$time.day2 - 1
+    next.day <- dat.train[c("year", "doy", "sim.day", vars.day)]
+    names(next.day)[4:ncol(next.day)] <- vars.next
+    next.day <- aggregate(next.day[, vars.next], by = next.day[, c("year", "doy", "sim.day")], FUN = mean)
+    next.day$sim.day <- next.day$sim.day - met.lag
     
-    dat.train <- merge(dat.train, next.day[, c("time.day2", vars.next)], 
-        all.x = T)
+    dat.train <- merge(dat.train, next.day[, c("sim.day", vars.next)], all.x = T)
+    
+    # Order the data just to make life easier
+    dat.train <- dat.train[order(dat.train$date),]
     
     # ----- 1.4 calculate air_temperature_min & air_temperature_max as
     # departure from mean; order data ---------- Lookign at max & min as
     # departure from mean
     dat.train$max.dep <- dat.train$air_temperature_max.day - dat.train$air_temperature_mean.day
     dat.train$min.dep <- dat.train$air_temperature_min.day - dat.train$air_temperature_mean.day
+    
     # ----- 2.1 Generating all the daily models, save the output as
     # .Rdata files, then clear memory Note: Could save Betas as .nc files
     # that we pull from as needed to save memory; but for now just leaving
@@ -178,8 +189,7 @@ gen.subdaily.models <- function(outfolder, dat.train_file, in.prefix,
 
     temporal.downscale.functions(dat.train = dat.train, n.beta = n.beta, day.window = day.window, 
                                  resids = resids, n.cores = n.cores, 
-                                 seed = format(Sys.time(), "%m%d"), outfolder = outfolder, 
-                                 in.prefix = in.prefix) 
+                                 seed = seed, outfolder = outfolder, print.progress=print.progress) 
 }
 
 # Helper function
