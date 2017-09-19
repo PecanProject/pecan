@@ -36,13 +36,12 @@ ui <- shinyUI(fluidPage(
     mainPanel(
       tabsetPanel(
         tabPanel("Visualizations", 
-               plotlyOutput("outputPlot"),
-               verbatimTextOutput("outputNoVariableFound")
+                 plotlyOutput("outputPlot"),
+                 verbatimTextOutput("outputNoVariableFound")
         ),
         tabPanel("Benchmarking", 
                  verbatimTextOutput("bm_message"),
                  uiOutput("button_BRR")
-                                  
         )
       )
     )
