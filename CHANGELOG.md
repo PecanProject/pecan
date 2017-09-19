@@ -6,7 +6,7 @@ section for the next release.
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
 ## [Unreleased]
-- Defined Min_upload_level=3
+- Created new (and very rudimentary) web interface for downloading data from the dataone federation into the PEcAn database. More updates to come.
 
 ### Fixes
 - Show workflowid in the URL when run is finshed and user clicks results (#1659)
