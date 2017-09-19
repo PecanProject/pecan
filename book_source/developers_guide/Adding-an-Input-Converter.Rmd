@@ -11,7 +11,7 @@ Downloading raw data function are named `download.<source>.R`. These functions a
 
 Conversion function from raw to standard are named  `met2CF.<source>.R`. These functions are stored within the PEcAn directory: [`/modules/data.atmosphere/R`](https://github.com/PecanProject/pecan/tree/develop/modules/data.atmosphere/R).
 
-Current Meteorological products that are coupled to PEcAn can be found in our [Available Meterological Drivers] page.
+Current Meteorological products that are coupled to PEcAn can be found in our [Available Meteorological Drivers] page.
 
 Note: Unless you are also adding a new model, you will not need to write a script to convert from PEcAn standard to PEcAn models. Those conversion scripts are written when a model is added and can be found within each model's PEcAn directory.
 
@@ -86,7 +86,7 @@ raw.file <-PEcAn.data.atmosphere::download.AmerifluxLBL(sitename = "US-NR1",
 
 Using the information returned as the object `raw.file` you will then convert the raw files into a standard file.
 
-Open a connection with BETY. You may need to change the host name depending on what mahcine you are hosting BETY. You can find the hostname listed in the machines table of BETY.
+Open a connection with BETY. You may need to change the host name depending on what machine you are hosting BETY. You can find the hostname listed in the machines table of BETY.
 
 ```
 
@@ -133,9 +133,9 @@ If you have Met data already in hand and you would like to convert into the PEcA
 
 Update BETY with file record, format record and input record according to this page [How to Insert new Input Data]
  
-If your data is in a csv formate you can use the `met2CF.csv`function to convert your data into a PEcAn standard file.
+If your data is in a csv format you can use the `met2CF.csv`function to convert your data into a PEcAn standard file.
 
-Open a connection with BETY. You may need to change the host name depending on what mahcine you are hosting BETY. You can find the hostname listed in the machines table of BETY.
+Open a connection with BETY. You may need to change the host name depending on what machine you are hosting BETY. You can find the hostname listed in the machines table of BETY.
 
 ```
 bety <- dplyr::src_postgres(dbname   = 'bety', 
@@ -178,7 +178,7 @@ PEcAn.data.atmosphere::met2CF.csv(in.path = in.path,
 
 Vegetation data will be required to parameterize your model. In these examples we will go over how to produce a standard initial condition file.
 
-The main function to process cohort data is the `ic.process.R` function. As of now however, if you require pool data you will run a seperate function, `pool_ic_list2netcdf.R`.
+The main function to process cohort data is the `ic.process.R` function. As of now however, if you require pool data you will run a separate function, `pool_ic_list2netcdf.R`.
 
 #### Example 1: Processing Veg data from data in hand.
 
@@ -186,9 +186,9 @@ In the following example we will process vegetation data that you have in hand u
 
 First, you'll need to create a input record in BETY that will have a file record and format record reflecting the location and format of your file. Instructions can be found in our [How to Insert new Input Data] page.
 
-Once you have created an input record you must take note of the input id of your record. An easy way to take note of this is in the URL of the BETY webpage that shows your input record. In this example we use an input record with the id `1000013064` which can be found at this url: https://psql-pecan.bu.edu/bety/inputs/1000013064# . Note that this is the Boston University BETY database. If you are on a different mahcine, your url will be different.
+Once you have created an input record you must take note of the input id of your record. An easy way to take note of this is in the URL of the BETY webpage that shows your input record. In this example we use an input record with the id `1000013064` which can be found at this url: https://psql-pecan.bu.edu/bety/inputs/1000013064# . Note that this is the Boston University BETY database. If you are on a different machine, your url will be different.
 
-With the input id  in hand you can now edit a pean xml so that the PEcAn functoin `ic.process` will know where to look in order to process your data. The `inputs` section of your pecan xml will look like this. As of now ic.process is set up to work with the ED2 model so we will use ED2 settings and then grab the intermediary Rds data file that is created as the standard PEcAn file. For your Inputs section you will need to input your input id wherever you see the `source.ic` flag.
+With the input id  in hand you can now edit a pecan XML so that the PEcAn function `ic.process` will know where to look in order to process your data. The `inputs` section of your pecan XML will look like this. As of now ic.process is set up to work with the ED2 model so we will use ED2 settings and then grab the intermediary Rds data file that is created as the standard PEcAn file. For your Inputs section you will need to input your input id wherever you see the `source.ic` flag.
 ```
 <inputs>
       <css>
@@ -249,7 +249,7 @@ dir <- "."
 ic.process(settings, input, dir, overwrite = FALSE)
 ```
 
-Note that the argument `dir` is set to the current directory. You will find the final ED2 file there. More importantly though you will find the `.Rds ` file within thie same directory.
+Note that the argument `dir` is set to the current directory. You will find the final ED2 file there. More importantly though you will find the `.Rds ` file within the same directory.
 
 
 
