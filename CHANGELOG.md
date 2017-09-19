@@ -6,8 +6,10 @@ section for the next release.
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
 ## [Unreleased]
+- Created new (and very rudimentary) web interface for downloading data from the dataone federation into the PEcAn database. More updates to come.
 
 ### Fixes
+- Show workflowid in the URL when run is finshed and user clicks results (#1659)
 - `PEcAn.BIOCRO` now uses PEcAn-standard variable names. As a result, two output variables have been renamed but keep their exiting units and definitions:
 	- `StemBiom` renamed to `AbvGrndWood`
 	- `RootBiom` renamed to `root_carbon_content`
@@ -22,11 +24,16 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - SIPNET output netcdf now includes LAI; some variable names changed to match standard
 - Cleanup of leap year logic, using new `PEcAn.utils::days_in_year(year)` function (#801).
 - Replace many hard-coded unit conversions with `udunits2::ud.convert` for consistency, readability, and clarity
+- Refactored extract_soil_nc to create soil2netcdf, which will write soil data out in PEcAn standard.
+- Added a new retry.func() to base/utils to provide ability to re-try a function X times before stopping.  Currently using this function in the download.CRUNCEP() function to handle slow responses from THREDDS.
+- Reformatted call_MODIS netcdf output to reflect the orientation of the MODIS grid
+- Remote execution is more robust to errors in the submission process, not just the actual model execution
 
 ### Added
 - Expanded initial conditions workflow for pool-based models, including PEcAn.data.land::prepare_pools to calculate pools from IC file (to be coupled with write.configs)
 - New `PEcAn.utils::days_in_year(year)` function that should make it easier to work with leap years.
 - New `PEcAn.data.atmosphere::solar_angle` function that replaces math that occurs in some models.
+- New `PEcAn.benchmarking::align_pft` fucntion that aligns data assosiated with two different plant functional types
 
 - #1594 shiny/workflowPlot Adding interactiveness using ggploltly
 - #1594 shiny/workflowPlot Load outputs from multiple runs of the model
@@ -37,23 +44,30 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Allow SIPNET and DALEC met files and model2netcdf to start or end mid year
 
 
+
 ### Changed
 - Clean up directory structure:
     * Move `base` packages (`utils`, `settings`, `db`, `visualizaton`) to a `base` directory, for consistency with `modules` and `models`
-    * Move `logger.*` functions out of the `PEcAn.utils` package and into the `pecan.logger` package
+    * Move `logger.*` functions out of the `PEcAn.utils` package and into the `PEcAn.logger` package
+    * More `remote` functions out of the `PEcAn.utils` package and into their own `PEcAn.remote` package.
 - #1594 shiny/workflowPlot Refactoring of code. `get_workflow_ids` in db/R/query.dplyr.R changed with `ensemble = FALSE`. Also allowing to load all workflow IDs. `load_data_single_run` and `var_names_all` also moved from shiny/workflowPlot/server.R to query.dplyr.R
+- `PEcAn.remote::start.model.runs` has been significantly refactored to be less redundant and more robust
+- `betyConnect` function in `query.dplyr.R` is now refactored into `read_web_config` so that the the Data-Ingest app can leverage `read_web_config` and provide it with a machine specific filepath for `.../dbfiles`
+
+
 
 ## [1.5.0] - 2017-07-13
 ### Added
+- Added cron job and script for the sync of the database.
 - Added PEcAn.utils::download.file() to allow for use of alternative FTP programs
 - Updated downloadAmeriflux and downloadNARR to make use of PEcAn.utils::download.file()
 - Added -w flag to load.bety.sh script to specify the URL to fetch the data from
-- add new table sites_cultivars to betydb sync scripts (dump and load)
-- added docker container scrips (.yml) to create docker container for PEcAn
-- added the configuration edit page to allow easy modification of config via web interface
-- thredds server documentation and catlog generating script
-- added new standard variables table (standard_vars.csv) and to_ncvar and to_ncdim functions in PEcAn.utils
-- added initial conditions file io functions for pool-based models in data.land
+- Add new table sites_cultivars to betydb sync scripts (dump and load)
+- Added docker container scrips (.yml) to create docker container for PEcAn
+- Added the configuration edit page to allow easy modification of config via web interface
+- Thredds server documentation and catlog generating script
+- Added new standard variables table (standard_vars.csv) and to_ncvar and to_ncdim functions in PEcAn.utils
+- Added initial conditions file io functions for pool-based models in data.land
 
 ### Changed
 - upscale_met now accepts ~any valid CF file (not just full years), retains correct time units, and respects the previously ignored `overwrite` parameter

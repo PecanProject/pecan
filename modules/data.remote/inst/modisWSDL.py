@@ -340,22 +340,41 @@ def modisClient( client=None, product=None, band=None, lat=None, lon=None, start
 #	m_data[:] = data
 #	rootgrp.close()
 
+def dateInt_to_posix(date):
+	import datetime
+	temp =datetime.datetime.strptime(date, '%Y%j')
+	return temp.strftime('%Y-%m-%d')
 
-def m_data_to_netCDF(filename, m, k):
+def m_data_to_netCDF(filename, m, k, kmLR, kmAB):
+	import datetime
+
 	rootgrp = netCDF4.Dataset(filename, 'w', format='NETCDF4')
-	rootgrp.createDimension('ncol', m.data.shape[1])
-	rootgrp.createDimension('nrow', m.data.shape[0])
-	rootgrp.createDimension('dates', len(m.dateInt))
-	m_data = rootgrp.createVariable('LAI', 'f8', ('nrow', 'ncol'))
-	m_std = rootgrp.createVariable('LAIStd', 'f8', ('nrow', 'ncol'))
-	m_date = rootgrp.createVariable('Dates', 'i8', ('dates'))
+	nrow = 1 + 2*kmAB
+	ncol = 1 + 2*kmLR	
+	rootgrp.createDimension('northing', nrow)
+#	m_north = rootgrp.createVariable('northing', 'i8', ('northing'))
+# 	m_north.units = "km north of lowest point in grid")
+	rootgrp.createDimension('easting', ncol)
+	rootgrp.createDimension('time', len(m.dateInt))
+
+	m_date = rootgrp.createVariable('time', 'i8', ('time'))
+	start=str(m.dateInt[0])
+	startDate = datetime.datetime.strptime(start, '%Y%j')
+	year = startDate.year
+	m_date.units = 'days since %d-01-01 00:00:00.0'%(year)
+
+	m_data = rootgrp.createVariable('LAI', 'f8', ('time', 'northing', 'easting'))
+	m_std = rootgrp.createVariable('LAIStd', 'f8', ('time', 'northing', 'easting'))
+
+	str_dates = [str(d) for d in m.dateInt]
+	datetimes = [(datetime.datetime.strptime(d, '%Y%j')- datetime.datetime(year,1,1)).days+1 for d in str_dates]	
+	m_date[:] = datetimes 
+	__debugPrint( "populated dates in netcdf" )
 	m_data[:] = m.data
 	__debugPrint( "populated LAI data in netcdf" )
 	if k is not None:
         	m_std[:] = 0.1*k.data
 		__debugPrint( "populated LAIstd data in netcdf" )
-	m_date[:] = m.dateInt
-	__debugPrint( "populated dates in netcdf" )
 	rootgrp.close()
 
 #def m_date_to_netCDF(filename, varname, data):
@@ -408,7 +427,7 @@ def run_main(start_date=2004001, end_date=2004017, la=45.92, lo=-90.45, kmAB=0, 
 	if DEBUG_PRINTING:		
 		printModisData( m )
 
-	m_data_to_netCDF(fname, m, k)	
+	m_data_to_netCDF(fname, m, k, kmLR, kmAB)	
 
 #	print(len(m.data))
 #	print(len(k.data))

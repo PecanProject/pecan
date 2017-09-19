@@ -52,7 +52,7 @@ dat <- read.table(fname,header=TRUE)
 
   ## calculate potential radiation
   ## in order to estimate diffuse/direct
-  cosz <- PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lat, lon, dt)
+  cosz <- PEcAn.data.atmosphere::cos_solar_zenith_angle(doy, lat, lon, dt, hr)
 
   rpot <- 1366*cosz
   rpot <- rpot[1:n]
