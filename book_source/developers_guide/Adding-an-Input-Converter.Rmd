@@ -180,13 +180,63 @@ Vegetation data will be required to parameterize your model. In these examples w
 
 The main function to process cohort data is the `ic.process.R` function. As of now however, if you require pool data you will run a seperate function, `pool_ic_list2netcdf.R`.
 
-#### Example 1: Raw data from a database
+#### Example 1: Processing Veg data from data in hand.
 
-If your data is coming from a datbase (ex.FIA) the <inputs> section of your pecan.xml will need to look like the following:
+In the following example we will process vegetation data that you have in hand using PEcAn.
+
+First, you'll need to create a input record in BETY that will have a file record and format record reflecting the location and format of your file. Instructions can be found in our [How to Insert new Input Data] page.
+
+Once you have created an input record you must take note of the input id of your record. An easy way to take note of this is in the URL of the BETY webpage that shows your input record. In this example we use an input record with the id `1000013064` which can be found at this url: https://psql-pecan.bu.edu/bety/inputs/1000013064# . Note that this is the Boston University BETY database. If you are on a different mahcine, your url will be different.
+
+With the input id  in hand you can now edit a pean xml so that the PEcAn functoin `ic.process` will know where to look in order to process your data. The `inputs` section of your pecan xml will look like this. As of now ic.process is set up to work with the ED2 model so we will use ED2 settings and then grab the intermediary Rds data file that is created as the standard PEcAn file. For your Inputs section you will need to input your input id wherever you see the `source.ic` flag.
 ```
-paste inputs section here
+<inputs>
+      <css>
+        <source>FFT</source>
+        <output>css</output>
+        <username>pecan</username>
+        <source.id>1000013064</source.id>
+        <useic>TRUE</useic>
+        <meta>
+          <trk>1</trk>
+          <age>70</age>
+        </meta>
+      </css>
+      <pss>
+        <source>FFT</source>
+        <output>pss</output>
+        <username>pecan</username>
+        <source.id>1000013064</source.id>
+        <useic>TRUE</useic>
+      </pss>
+      <site>
+        <source>FFT</source>
+        <output>site</output>
+        <username>pecan</username>
+        <source.id>1000013064</source.id>
+        <useic>TRUE</useic>
+      </site>
+      <met>
+        <source>CRUNCEP</source>
+        <output>ED2</output>
+      </met>
+      <lu>
+        <id>294</id>
+      </lu>
+      <soil>
+        <id>297</id>
+      </soil>
+      <thsum>
+        <id>295</id>
+      </thsum>
+      <veg>
+        <id>296</id>
+      </veg>
+    </inputs>
 ```
-From here you read in the pecan.xml to obtain a settings object
+
+Once you edit your PEcAn.xml you can than create a settings object using PEcAn functions. Your `pecan.xml` must be in your working directory.
+
 ```
 settings <- PEcAn.settings::read.settings("pecan.xml")
 settings <- PEcAn.settings::prepare.settings(settings, force=FALSE)
@@ -194,27 +244,14 @@ settings <- PEcAn.settings::prepare.settings(settings, force=FALSE)
 You can then execute the `ic.process` function to convert data into a standard Rds file:
 
 ```
-settings <- PEcAn.settings::read.settings("pecan.xml")
-settings <- PEcAn.settings::prepare.settings(settings, force=FALSE)
-
+input <- settings$run$inputs
+dir <- "."
 ic.process(settings, input, dir, overwrite = FALSE)
-
 ```
 
-#### Example 2: Raw data in hand
+Note that the argument `dir` is set to the current directory. You will find the final ED2 file there. More importantly though you will find the `.Rds ` file within thie same directory.
 
-You will first need to update the BETY database with the appropriate records. A file record with location of the raw file, a format record with requisite meta data information about the structure of the file, and then an input record what has the file and format record assiciated with it. Instructions on how to do that can be found here [How to Insert new Input Data].
 
-Once that part is complete, you will need that input id in the pecan.xml. Edit your xml to look like this:
-
-```
-```
-Read in settings 
-
-```
-ic.process(settings, input, dir, overwrite = FALSE)
-
-```
 
 
 #### Example 3 Pool Initial Condition files
