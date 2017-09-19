@@ -186,8 +186,8 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
       
       if(!is.null(sf)){
         load(settings$assim.batch$sf.path)
-        sf.round.post <- pda.define.prior.fn(post.distns)
-        rm(post.distns)
+        sf.round.post <- pda.define.prior.fn(sf.post.distns)
+        rm(sf.post.distns)
         n.sf <- length(sf)
         sf.round.list <- pda.generate.knots(n.post.knots,
                                             sf = NULL, probs.sf = NULL,

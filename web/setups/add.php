@@ -44,7 +44,7 @@ fclose($tempfile); // remove tempfile
 include 'page.template.php';
 ?>
   <h1><?php echo ucfirst($key); ?> Configuration details</h1>
-  <p>Configuration Sucessfully updated</p>
+  <div class="alert alert-success" role="alert"> Configuration Sucessfully updated </div>
 <?php
 include 'pagefooter.template.php';
 ?>
