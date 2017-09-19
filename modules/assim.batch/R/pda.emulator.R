@@ -107,7 +107,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   do.call("library", list(paste0("PEcAn.", settings$model$type)))
   my.write.config <- paste("write.config.", settings$model$type, sep = "")
   if (!exists(my.write.config)) {
-    logger.severe(paste(my.write.config, 
+    PEcAn.logger::logger.severe(paste(my.write.config, 
                         "does not exist. Please make sure that the PEcAn interface is loaded for", 
                         settings$model$type))
   }
@@ -177,17 +177,17 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
       
       prior.round.fn <- lapply(prior.round.list, pda.define.prior.fn)
       
-      ## Propose a percentage (if not specified 50%) of the new parameter knots from the posterior of the previous run
+      ## Propose a percentage (if not specified 80%) of the new parameter knots from the posterior of the previous run
       knot.par        <- ifelse(!is.null(settings$assim.batch$knot.par),
                                 as.numeric(settings$assim.batch$knot.par),
-                                0.5)
+                                0.8)
       
       n.post.knots    <- floor(knot.par * settings$assim.batch$n.knot)
       
       if(!is.null(sf)){
         load(settings$assim.batch$sf.path)
-        sf.round.post <- pda.define.prior.fn(post.distns)
-        rm(post.distns)
+        sf.round.post <- pda.define.prior.fn(sf.post.distns)
+        rm(sf.post.distns)
         n.sf <- length(sf)
         sf.round.list <- pda.generate.knots(n.post.knots,
                                             sf = NULL, probs.sf = NULL,
@@ -239,7 +239,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
       save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
       
       ## start model runs
-      start.model.runs(settings, settings$database$bety$write)
+      PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
     
       ## Retrieve model outputs and error statistics
       model.out <- list()
@@ -369,10 +369,10 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
       if(no.of.failed < no.of.allowed & (settings$assim.batch$n.knot - no.of.failed) > 1){
         SS.list[[inputi]] <- SS.list[[inputi]][!rowSums(is.na(SS.list[[inputi]])), ]
         if( no.of.failed  > 0){
-          logger.info(paste0(no.of.failed, " runs failed. Emulator for ", names(n.of.obs)[inputi], " will be built with ", settings$assim.batch$n.knot - no.of.failed, " knots."))
+          PEcAn.logger::logger.info(paste0(no.of.failed, " runs failed. Emulator for ", names(n.of.obs)[inputi], " will be built with ", settings$assim.batch$n.knot - no.of.failed, " knots."))
         } 
       } else{
-        logger.error(paste0("Too many runs failed, not enough parameter set to build emulator for ", names(n.of.obs)[inputi], "."))
+        PEcAn.logger::logger.error(paste0("Too many runs failed, not enough parameter set to build emulator for ", names(n.of.obs)[inputi], "."))
       }
       
     } # for-loop
@@ -389,7 +389,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
       SS <- SS.list
     }
       
-    logger.info(paste0("Using 'mlegp' package for Gaussian Process Model fitting."))
+    PEcAn.logger::logger.info(paste0("Using 'mlegp' package for Gaussian Process Model fitting."))
     
     ## Generate emulator on SS, return a list ##
     
@@ -410,7 +410,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     
     # Stop the clock
     ptm.finish <- proc.time() - ptm.start
-    logger.info(paste0("GP fitting took ", paste0(round(ptm.finish[3])), " seconds."))
+    PEcAn.logger::logger.info(paste0("GP fitting took ", paste0(round(ptm.finish[3])), " seconds."))
     
     
     gp <- GPmodel
@@ -487,7 +487,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     mix <- "each"
   }
   
-  logger.info(paste0("Starting emulator MCMC. Please wait."))
+  PEcAn.logger::logger.info(paste0("Starting emulator MCMC. Please wait."))
   
   current.step <- "pre-MCMC"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
@@ -499,7 +499,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   dcores <- parallel::detectCores() - 1
   ncores <- min(max(dcores, 1), settings$assim.batch$chain)
   
-  logger.setOutputFile(file.path(settings$outdir, "pda.log"))
+  PEcAn.logger::logger.setOutputFile(file.path(settings$outdir, "pda.log"))
   
   cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(settings$outdir, "pda.log"))
   
@@ -526,12 +526,12 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
 
   # Stop the clock
   ptm.finish <- proc.time() - ptm.start
-  logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(settings$assim.batch$iter), " iterations."))
+  PEcAn.logger::logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(settings$assim.batch$iter), " iterations."))
   
   current.step <- "post-MCMC"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
-  mcmc.samp.list <- list()
+  mcmc.samp.list <- sf.samp.list <- list()
   
   for (c in seq_len(settings$assim.batch$chain)) {
     
@@ -639,7 +639,8 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     sf.filename <- file.path(settings$outdir, 
                              paste0("post.distns.pda.sf", "_", settings$assim.batch$ensemble.id, ".Rdata"))
     sf.prior <- prior.list[[sf.ind]]
-    write_sf_posterior(sf.samp.list, sf.prior, sf.filename)
+    sf.post.distns <- write_sf_posterior(sf.samp.list, sf.prior, sf.filename)
+    save(sf.post.distns, file = sf.filename)
     settings$assim.batch$sf.path <- sf.filename
   }
   

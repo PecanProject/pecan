@@ -1,0 +1,71 @@
+&cable
+   filename%met = ' *** SET PATH IN cable.nml *** '
+   filename%out = 'out_cable.nc'
+   filename%log = 'log_cable.txt'
+   filename%restart_in  = ' '
+   filename%restart_out = './restart_out.nc'
+   filename%type    = ' *** SET PATH IN cable.nml *** '
+   filename%veg    = ' *** SET PATH IN cable.nml *** '
+   filename%soil    = ' *** SET PATH IN cable.nml *** '
+   vegparmnew = .TRUE.  ! using new format when true
+   soilparmnew = .TRUE.  ! using new format when true
+   spinup = .TRUE.  ! do we spin up the model?
+   delsoilM = 0.001   ! allowed variation in soil moisture for spin up
+   delsoilT = 0.01    ! allowed variation in soil temperature for spin up
+   output%restart = .TRUE.  ! should a restart file be created?
+   output%met = .TRUE.  ! input met data
+   output%flux = .TRUE.  ! convective, runoff, NEE
+   output%soil = .TRUE.  ! soil states
+   output%snow = .TRUE.  ! snow states
+   output%radiation = .TRUE.  ! net rad, albedo
+   output%carbon    = .TRUE.  ! NEE, GPP, NPP, stores
+   output%veg       = .TRUE.  ! vegetation states
+   output%params    = .TRUE.  ! input parameters used to produce run
+   output%balances  = .TRUE.  ! energy and water balances
+   check%ranges     = .FALSE.  ! variable ranges, input and output
+   check%energy_bal = .TRUE.  ! energy balance
+   check%mass_bal   = .TRUE.  ! water/mass balance
+   verbose = .TRUE. ! write details of every grid cell init and params to log?
+   leaps = .TRUE. ! calculate timing with leap years?
+   logn = 88      ! log file number - declared in input module
+   fixedCO2 = 350.0   ! if not found in met file, in ppmv
+   spincasainput = .FALSE.    ! input required to spin casacnp offline
+   spincasa      = .FALSE.     ! spin casa before running the model if TRUE, and should be set to FALSE if spincasainput = .TRUE.
+   l_casacnp     = .FALSE.  ! using casaCNP with CABLE
+   l_laiFeedbk   = .FALSE.  ! using prognostic LAI
+   l_vcmaxFeedbk = .FALSE.  ! using prognostic Vcmax
+   icycle = 0   ! BP pull it out from casadimension and put here; 0 for not using casaCNP, 1 for C, 2 for C+N, 3 for C+N+P
+   casafile%cnpipool=' *** SET PATH IN cable.nml *** '
+   casafile%cnpbiome=' *** SET PATH IN cable.nml *** '
+   casafile%cnpepool='poolcnpOut.csv'    ! end of run pool size
+   casafile%cnpmetout='casamet.nc'                ! output daily met forcing for spinning casacnp
+   casafile%cnpmetin=''          ! list of daily met files for spinning casacnp
+   casafile%phen=' *** SET PATH IN cable.nml *** '
+   casafile%cnpflux='cnpfluxOut.csv'
+   ncciy = 0 ! 0 for not using gswp; 4-digit year input for year of gswp met
+   gswpfile%rainf = 'gswp/Rainf_gswp1987.nc'
+   gswpfile%snowf = 'gswp/Snowf_gswp1987.nc'
+   gswpfile%LWdown= 'gswp/LWdown_srb1987.nc'
+   gswpfile%SWdown= 'gswp/SWdown_srb1987.nc'
+   gswpfile%PSurf = 'gswp/PSurf_ecor1987.nc'
+   gswpfile%Qair  = 'gswp/Qair_cru1987.nc'
+   gswpfile%Tair  = 'gswp/Tair_cru1987.nc'
+   gswpfile%wind  = 'gswp/Wind_ncep1987.nc'
+   redistrb = .FALSE.  ! Turn on/off the hydraulic redistribution
+   wiltParam = 0.5
+   satuParam = 0.8
+   cable_user%FWSOIL_SWITCH = 'standard'        ! choices are:
+                                                 ! 1. standard
+                                                 ! 2. non-linear extrapolation
+                                                 ! 3. Lai and Ktaul 2000
+   cable_user%DIAG_SOIL_RESP = 'ON '
+   cable_user%LEAF_RESPIRATION = 'ON '
+   cable_user%RUN_DIAG_LEVEL= 'BASIC'        ! choices are:
+                                                 ! 1. BASIC
+                                                 ! 1. NONE
+   cable_user%CONSISTENCY_CHECK= .TRUE.      ! TRUE outputs combined fluxes at each timestep for comparisson to A control run
+   cable_user%CASA_DUMP_READ = .FALSE.      ! TRUE reads CASA forcing from netcdf format
+   cable_user%CABLE_RUNTIME_COUPLED = .FALSE.      ! see Ticket 43
+   cable_user%CASA_DUMP_WRITE = .FALSE.      ! TRUE outputs CASA forcing in netcdf format
+   cable_user%SSNOW_POTEV= 'HDM'      ! Humidity Deficit Method
+&end

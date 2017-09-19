@@ -16,7 +16,7 @@ matrix or dataframe with values transformed
 convert parameters from PEcAn database default units to biocro defaults
 }
 \details{
-Performs model specific unit conversions on a a list of trait values,
+Performs model specific unit conversions on a list of trait values,
 such as those provided to write.config
 }
 \author{
