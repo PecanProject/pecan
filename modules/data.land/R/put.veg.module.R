@@ -1,4 +1,4 @@
-.put.veg.module <- function(getveg.id, bety, 
+.put.veg.module <- function(getveg.id, dbparms, 
                             input_veg, pfts,
                             outfolder, 
                             dir, machine, model,
