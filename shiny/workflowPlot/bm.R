@@ -62,7 +62,10 @@ observeEvent(input$create_bm,{
   bm$button_BRR <- FALSE
 })
 
-observeEvent(bm,{
+observeEvent({
+  bm$brr_message
+  bm$button_BRR
+},{
   output$brr_message <- renderText({bm$brr_message})
   output$button_BRR <- renderUI({
     if(bm$button_BRR){actionButton("create_bm", "Create Benchmarking Reference Run")}
@@ -72,33 +75,38 @@ observeEvent(bm,{
 
 ##### Setup benchmarks
 observeEvent(input$load_data,{
+  bm$metrics_list <- list("R2" = 1, "RMSE" = 2, "Frechet Distance" = 3)
+  bm$plots_list <- list("Scatter Plot" = 1, "One to One Plot" = 2)
+  bm$vars_list <- c("NPP", "LAI")
+  
   #This will be a longer set of conditions
   bm$ready <- !is.null(bm$BRR)
 })
 
-observeEvent(bm,{
-  metrics_list <- list("R2" = 1, "RMSE" = 2, "Frechet Distance" = 3)
-  plots_list <- list("Scatter Plot" = 1, "One to One Plot" = 2)
-  vars_list <- c("NPP", "LAI")
-  
+observeEvent({
+  bm$ready
+  bm$metrics_list
+  bm$plots_list
+  bm$vars_list
+  },{
   output$bm_settings <- renderUI({
     if(bm$ready){
       list(
         column(4, wellPanel(
           checkboxGroupInput("vars", label = h3("Variables"),
-                             choices = vars_list),
+                             choices = bm$vars_list),
           actionButton("selectall.var","Select /Deselect all variables"),
           label=h6("Label")
         )),
         column(4, wellPanel(
           checkboxGroupInput("metrics", label = h3("Numerical Metrics"),
-                             choices = metrics_list),
+                             choices = bm$metrics_list),
           actionButton("selectall.num","Select/Deselect all numerical metrics") ,
           label=h6("Label")
         )),
         column(4, wellPanel(
           checkboxGroupInput("plots", label = h3("Plot Metrics"),
-                             choices = plots_list),
+                             choices = bm$plots_list),
           actionButton("selectall.plot","Select/Deselect all plot metrics"),
           label=h6("Label")
         ))
