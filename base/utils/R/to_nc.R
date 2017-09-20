@@ -1,5 +1,6 @@
-##' @name to_ncdim
-##' @title to_ncdim
+##' Make some values into an NCDF dimension variable
+##'
+##' Units and longnames are looked up from the \code{\link{standard_vars}} table
 ##' @export
 ##'
 ##' @param dimname character vector, standard dimension name (must be in PEcAn.utils::standard_vars)
@@ -29,8 +30,8 @@ to_ncdim <- function(dimname,vals){
 } #to_ncdim
 
 
-##' @name to_ncvar
-##' @title to_ncvar
+##' Define an NCDF variable
+##'
 ##' @export
 ##'
 ##' @param varname character vector, standard variable name (must be in PEcAn.utils::standard_vars)

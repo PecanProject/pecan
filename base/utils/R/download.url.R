@@ -8,13 +8,13 @@
 ##' @name download.url
 ##' @title Download file from the url.
 ##' @export
-##' @param the url of the file to download
-##' @param the filename
+##' @param url the url of the file to download
+##' @param file the filename
 ##' @param timeout number of seconds to wait for file (default 600)
 ##' @param list of options for curl, for example to download from a
 ##'        protected site use list(userpwd=userpass, httpauth = 1L)
 ##' @param retry404 retry on a 404, this is used by Brown Dog
-##' @return returns name of file if successfull or NA if not.
+##' @return returns name of file if successful or NA if not.
 ##' 
 ##' @examples
 ##' \dontrun{

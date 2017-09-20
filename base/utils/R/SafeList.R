@@ -38,13 +38,18 @@ SafeList <- function(...) {
 
 
 ##' @export
-##' @describeIn SafeList Coerce an object to SafeList. 
+##' @describeIn SafeList Coerce an object to SafeList.
+##' @param x list to coerce
+##' @return a SafeList version of x
 as.SafeList <- function(x) {
   return(SafeList(x))
 } # as.SafeList
 
 
 ##' @export
+##' @describeIn SafeList Test if object is already a SafeList.
+##' @param x list object to be tested
+##' @return logical
 is.SafeList <- function(x) {
   inherits(x, "SafeList")
 } # is.SafeList
