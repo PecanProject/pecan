@@ -113,7 +113,6 @@ zero.truncate <- function(y) {
 ##' @export
 ##' @author David LeBauer
 ##' @author Shawn Serbin
-#--------------------------------------------------------------------------------------------------#
 rsync <- function(args, from, to, pattern = "") {
   PEcAn.logger::logger.warn("NEED TO USE TUNNEL")
   system(paste0("rsync", " ", args, " ", from, pattern, " ", to), intern = TRUE)
@@ -128,7 +127,6 @@ rsync <- function(args, from, to, pattern = "") {
 ##' @param ... Commands to execute. Will be passed as a single quoted string
 ##' @param args futher arguments
 ##' @export
-#--------------------------------------------------------------------------------------------------#
 ssh <- function(host, ..., args = "") {
   PEcAn.logger::logger.warn("NEED TO USE TUNNEL")
   if (host == "localhost") {
@@ -167,7 +165,6 @@ vecpaste <- function(x) paste(paste0("'", x, "'"), collapse = ",")
 ##' get.run.id('ENS', left.pad.zeros(1, 5))
 ##' get.run.id('SA', round(qnorm(-3),3), trait = 'Vcmax')
 ##' @author Carl Davidson, David LeBauer
-#--------------------------------------------------------------------------------------------------#
 get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL) {
   result <- paste(c(run.type, pft.name, trait, index), collapse = "-")
   return(result)
@@ -190,7 +187,6 @@ listToXml <- function(x, ...) {
 ##' @return xmlNode
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Rob Kooper
-#--------------------------------------------------------------------------------------------------#
 listToXml.default <- function(item, tag) {
 
   # just a textnode, or empty node with attributes
@@ -748,7 +744,6 @@ download.file <- function(url, filename, method) {
 ##' 
 ##' @export
 ##' @author Shawn Serbin <adapted from https://stackoverflow.com/questions/20770497/how-to-retry-a-statement-on-error>
-
 retry.func <- function(expr, isError=function(x) "try-error" %in% class(x), maxErrors=5, sleep=0) {
   attempts = 0
   retval = try(eval(expr))
