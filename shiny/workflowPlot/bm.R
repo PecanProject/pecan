@@ -75,9 +75,17 @@ observeEvent({
 
 ##### Setup benchmarks
 observeEvent(input$load_data,{
-  bm$metrics_list <- list("R2" = 1, "RMSE" = 2, "Frechet Distance" = 3)
-  bm$plots_list <- list("Scatter Plot" = 1, "One to One Plot" = 2)
+  require(input$all_input_id)
+  
+  bm$metrics <- dplyr::tbl(bety,'metrics') %>% dplyr::select(one_of("id","name","description")) %>% collect()
   bm$vars_list <- c("NPP", "LAI")
+  
+  # Need to write warning message that can only use one input id
+  inputs_df <- getInputs(bety,c(input$all_site_id)) %>% dplyr::filter(input_selection_list == input$all_input_id)
+  format <- PEcAn.DB::query.format.vars(bety = bety, input.id = inputs_df$input_id)
+  # Are there more human readable names?
+  bm$vars_list <- format$vars$pecan_name[-grep("%",format$vars$storage_type)]
+  
   
   #This will be a longer set of conditions
   bm$ready <- !is.null(bm$BRR)
@@ -100,13 +108,13 @@ observeEvent({
         )),
         column(4, wellPanel(
           checkboxGroupInput("metrics", label = h3("Numerical Metrics"),
-                             choices = bm$metrics_list),
+                             choices = bm$metrics$description[-grep("_plot",bm$metrics$name)]),
           actionButton("selectall.num","Select/Deselect all numerical metrics") ,
           label=h6("Label")
         )),
         column(4, wellPanel(
           checkboxGroupInput("plots", label = h3("Plot Metrics"),
-                             choices = bm$plots_list),
+                             choices = bm$metrics$description[grep("_plot",bm$metrics$name)]),
           actionButton("selectall.plot","Select/Deselect all plot metrics"),
           label=h6("Label")
         ))
