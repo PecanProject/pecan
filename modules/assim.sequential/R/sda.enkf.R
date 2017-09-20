@@ -208,7 +208,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       append = FALSE)
   
   ## start model runs
-  PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+  start.model.runs(settings, settings$database$bety$write)
   save(list = ls(envir = environment(), all.names = TRUE), 
        file = file.path(outdir, "sda.initial.runs.Rdata"), envir = environment())
 
@@ -392,9 +392,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       R <- as.matrix(obs.cov[[t]][choose,choose])
       R[is.na(R)]<-0
       
+      
+      ##Don't need this anymore?
       if (length(obs.mean[[t]]) > 1) {
         diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
-        diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
+        #diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
       }
       
       ### TO DO: plotting not going to work because of observation operator i.e. y and x are on different scales
@@ -488,8 +490,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         }
         
         #### These vectors are used to categorize data based on censoring from the interval matrix
-        x.ind <- as.numeric(mu.f > intervalX[,1])
-        x.censored <- as.numeric(ifelse(mu.f > intervalX[,1], mu.f, 0)) #probably not needed until different data
+        x.ind <- x.censored <- matrix(NA, ncol=ncol(X), nrow=nrow(X))
+        for(j in seq_along(mu.f)){
+          for(n in seq_len(nens)){
+            x.ind[n,j] <- as.numeric(X[n,j] > 0)
+            x.censored[n,j] <- as.numeric(ifelse(X[n,j] > intervalX[j,2], 0, X[n,j]))
+          }
+        }
         
         if(t == 1){
           #The purpose of this step is to impute data for mu.f 
@@ -501,38 +508,40 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           data.tobit2space = list(y.ind = x.ind,
                                   y.censored = x.censored,
                                   mu_0 = rep(0,length(mu.f)),
-                                  lambda_0 = diag(10,length(mu.f)),
-                                  k_0 = 3, #or 3 or some measure of prior obs
-                                  nu_0 = 3)#or 3 or some measure of prior obs
+                                  lambda_0 = diag(.01,length(mu.f)),
+                                  k_0 = length(mu.f) + 1, #some measure of prior obs
+                                  nu_0 = length(mu.f) + 1)#some measure of prior obs
           
-          inits.tobit2space = list(pf = cov(X), muf = colMeans(X)) 
+          inits.tobit2space = list(pf = diag(10,length(mu.f)), muf = colMeans(X)) #pf = cov(X)
           #set.seed(0)
           #ptm <- proc.time()
           tobit2space_pred <- nimbleModel(tobit2space.model, data = data.tobit2space,
-                                          constants = constants.tobit2space)
+                                          constants = constants.tobit2space, inits = inits.tobit2space)
           ## Adding X.mod,q,r as data for building model.
           conf_tobit2space <- configureMCMC(tobit2space_pred, print=TRUE)
-          conf_tobit2space$addMonitors(c("pf", "muf","y.censored")) 
+          conf_tobit2space$addMonitors(c("pf", "muf")) 
           ## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
           ## important!
           ## this is needed for correct indexing later
           samplerNumberOffset_tobit2space <- length(conf_tobit2space$getSamplers())
           
-          for(n in 1:length(mu.f)){
-              node <- paste0('y.censored[',n,']')
+          for(j in seq_along(mu.f)){
+            for(n in seq_len(nens)){
+              node <- paste0('y.censored[',n,',',j,']')
               conf_tobit2space$addSampler(node, 'toggle', control=list(type='RW'))
               ## could instead use slice samplers, or any combination thereof, e.g.:
               ##conf$addSampler(node, 'toggle', control=list(type='slice'))
+            }
           }
           
-          conf_tobit2space$printSamplers()
+          #conf_tobit2space$printSamplers()
           
           Rmcmc_tobit2space <- buildMCMC(conf_tobit2space)
           
           Cmodel_tobit2space <- compileNimble(tobit2space_pred)
           Cmcmc_tobit2space <- compileNimble(Rmcmc_tobit2space, project = tobit2space_pred)
           
-          for(i in 1:length(mu.f)) {
+          for(i in seq_along(X)) {
             ## ironically, here we have to "toggle" the value of y.ind[i]
             ## this specifies that when y.ind[i] = 1,
             ## indicator variable is set to 0, which specifies *not* to sample
@@ -542,8 +551,16 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         }else{
           Cmodel_tobit2space$y.ind <- x.ind
           Cmodel_tobit2space$y.censored <- x.censored
+          Cmodel_tobit2space$lambda_0 <- Pa
+          Cmodel_tobit2space$mu_0 <- mu.a
+          
+          Cmodel_tobit2space$k_0 <- 3
+          Cmodel_tobit2space$nu_0 <- 3
+          Cmodel_tobit2space$lambda_0 <- diag(.01,14)
           #Cmodel_tobit2space$muf <- mu.f
           #Cmodel_tobit2space$pf <- solve(Pf)
+          
+          
           
           for(i in 1:length(mu.f)) {
               ## ironically, here we have to "toggle" the value of y.ind[i]
@@ -555,12 +572,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         }
         
         set.seed(0)
-        dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = 10000, progressBar=FALSE)
+        dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = 40000, progressBar=FALSE)
         
         ## update parameters
-        dat.tobit2space  <- dat.tobit2space[3000:10000, ]
-        imuf   <- grep("y.censored", colnames(dat.tobit2space))
+        dat.tobit2space  <- dat.tobit2space[10000:50000, ]
+        imuf   <- grep("muf", colnames(dat.tobit2space))
         mu.f <- colMeans(dat.tobit2space[, imuf])
+        iPf   <- grep("pf", colnames(dat.tobit2space))
+        Pf <- matrix(colMeans(dat.tobit2space[, iPf]),ncol(X),ncol(X))
         
         ###-------------------------------------------------------------------###
         ### Generalized Ensemble Filter                                       ###
@@ -576,15 +595,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           }
         }
         aqq[1, , ] <- diag(length(mu.f)) * bqq[1]
-        
-        #### changing diagonal if the covariance is too small for the matrix to be inverted 
-        #### This problem is different than R problem because diag(Pf) can be so small it can't be inverted 
-        #### Need a different fix here someday
-        for (i in seq_along(diag(Pf))) {
-          if (diag(Pf)[i] == 0) {
-            diag(Pf)[i] <- min(diag(Pf)[which(diag(Pf) != 0)])/2  #HACK
-          }
-        }
         
         ### create matrix the describes the support for each observed state variable at time t
         interval <- matrix(NA, length(obs.mean[[t]]), 2)
