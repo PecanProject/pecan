@@ -40,8 +40,11 @@ ui <- shinyUI(fluidPage(
                  verbatimTextOutput("outputNoVariableFound")
         ),
         tabPanel("Benchmarking", 
-                 verbatimTextOutput("bm_message"),
-                 uiOutput("button_BRR")
+                 column(12, wellPanel(
+                   verbatimTextOutput("brr_message"),
+                   uiOutput("button_BRR"))
+                 ),
+                 uiOutput("bm_settings")
         )
       )
     )
