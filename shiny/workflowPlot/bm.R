@@ -1,17 +1,22 @@
 ##### Benchmarking
+
+bm <- reactiveValues()
+
 observeEvent(input$load,{
   req(input$all_run_id)
   ids_DF <- parse_ids_from_input_runID(input$all_run_id)
   button <- FALSE
   if(nrow(ids_DF) == 1){
     
+    # Check to see if the run has been saved as a reference run 
+    # (note this is straight from the beginning of create.BRR and could 
+    # potentially be turned in to its own mini function)
     ens_id <- dplyr::tbl(bety, 'runs') %>% dplyr::filter(id == ids_DF$runID) %>% dplyr::pull(ensemble_id)
     ens_wf <- dplyr::tbl(bety, 'ensembles') %>% dplyr::filter(id == ens_id) %>%
       dplyr::rename(ensemble_id = id) %>%
       dplyr::left_join(.,tbl(bety, "workflows") %>% dplyr::rename(workflow_id = id), by="workflow_id") %>% dplyr::collect()
     
     settingsXML <- file.path(ens_wf$folder,"pecan.CHECKED.xml")
-    
     # Automatically creates a new pecan.xml I think. Need to fix this. 
     clean <- PEcAn.settings::clean.settings(inputfile = settingsXML,write=FALSE)
     # Remove database & host information
@@ -26,39 +31,80 @@ observeEvent(input$load,{
     ref_run <- db.query(paste0(" SELECT * from reference_runs where settings = '", settings_xml,"'"), bety$con)
     
     if(length(ref_run) == 0){
-      bm_message <- sprintf("Would you like to save this run (run id = %.0f, ensemble id = %0.f) as a reference run?", ids_DF$runID, ens_id) 
+      # If not registered, button appears with option to run create.BRR
+      brr_message <- sprintf("Would you like to save this run (run id = %.0f, ensemble id = %0.f) as a reference run?", ids_DF$runID, ens_id) 
       button <- TRUE
     }else if(dim(ref_run)[1] == 1){
-      bm_message <- sprintf("This run has been registered as a reference run")
+      bm$BRR <- ref_run %>% rename(.,reference_run_id = id)
+      bm$BRR
+      brr_message <- sprintf("This run has been registered as a reference run (id = %.0f)", bm$BRR$reference_run_id)
     }else if(dim(ref_run)[1] > 1){ # There shouldn't be more than one reference run per run
-      bm_message <- ("There is more than one reference run in the database for this run. Review for duplicates.")
+      brr_message <- ("There is more than one reference run in the database for this run. Review for duplicates.")
     }
   }else if(nrow(ids_DF) > 1){
-    bm_message <- "Benchmarking currently only works when one run is selected."
+    brr_message <- "Benchmarking currently only works when one run is selected."
   }else{
-    bm_message <- "Cannot do benchmarking"
+    brr_message <- "Cannot do benchmarking"
   }
   
-  output$bm_message <- renderText({bm_message})
-  
-  output$button_BRR <- renderUI({
-    if(button){actionButton("create_bm", "Create Benchmarking Reference Run")}
-  })
+  # This is redundant but better for debugging
+  bm$brr_message <- brr_message
+  bm$button_BRR <- button
+  bm$ens_wf <- ens_wf
   
 })
 
+# When button to register run is clicked, create.BRR is run and the button is removed.
 observeEvent(input$create_bm,{
   req(input$all_run_id)
-  ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-  ens_id <- dplyr::tbl(bety, 'runs') %>% dplyr::filter(id == ids_DF$runID) %>% dplyr::pull(ensemble_id)
-  ens_wf <- dplyr::tbl(bety, 'ensembles') %>% dplyr::filter(id == ens_id) %>%
-    dplyr::rename(ensemble_id = id) %>%
-    dplyr::left_join(.,tbl(bety, "workflows") %>% dplyr::rename(workflow_id = id), by="workflow_id") %>% dplyr::collect()
-  BRR <- PEcAn.benchmark::create_BRR(ens_wf, con = bety$con)
-  bm_message <- paste("This run has been successfully registered as a reference run")
-  button <- FALSE
-  output$bm_message <- renderText({bm_message})
+  bm$BRR <- PEcAn.benchmark::create_BRR(bm$ens_wf, con = bety$con)
+  bm$brr_message <- sprintf("This run has been successfully registered as a reference run (id = %.0f)", bm$BRR$reference_run_id)
+  bm$button_BRR <- FALSE
+})
+
+observeEvent(bm,{
+  output$brr_message <- renderText({bm$brr_message})
   output$button_BRR <- renderUI({
-    if(button){actionButton("create_bm", "Create Benchmarking Reference Run")}
+    if(bm$button_BRR){actionButton("create_bm", "Create Benchmarking Reference Run")}
   })
 })
+
+
+##### Setup benchmarks
+observeEvent(input$load_data,{
+  #This will be a longer set of conditions
+  bm$ready <- !is.null(bm$BRR)
+})
+
+observeEvent(bm,{
+  metrics_list <- list("R2" = 1, "RMSE" = 2, "Frechet Distance" = 3)
+  plots_list <- list("Scatter Plot" = 1, "One to One Plot" = 2)
+  vars_list <- c("NPP", "LAI")
+  
+  output$bm_settings <- renderUI({
+    if(bm$ready){
+      list(
+        column(4, wellPanel(
+          checkboxGroupInput("vars", label = h3("Variables"),
+                             choices = vars_list),
+          actionButton("selectall.var","Select /Deselect all variables"),
+          label=h6("Label")
+        )),
+        column(4, wellPanel(
+          checkboxGroupInput("metrics", label = h3("Numerical Metrics"),
+                             choices = metrics_list),
+          actionButton("selectall.num","Select/Deselect all numerical metrics") ,
+          label=h6("Label")
+        )),
+        column(4, wellPanel(
+          checkboxGroupInput("plots", label = h3("Plot Metrics"),
+                             choices = plots_list),
+          actionButton("selectall.plot","Select/Deselect all plot metrics"),
+          label=h6("Label")
+        ))
+      )
+    }
+  })
+})
+
+
