@@ -124,9 +124,9 @@ rsync <- function(args, from, to, pattern = "") {
 ##' R implementation of SSH
 ##'
 ##' @title SSH
-##' @param host
-##' @param ...
-##' @param args
+##' @param host (character) machine to connect to
+##' @param ... Commands to execute. Will be passed as a single quoted string
+##' @param args futher arguments
 ##' @export
 #--------------------------------------------------------------------------------------------------#
 ssh <- function(host, ..., args = "") {
@@ -185,7 +185,7 @@ listToXml <- function(x, ...) {
 ##'
 ##' Can convert list or other object to an xml object using xmlNode
 ##' @title List to XML
-##' @param item
+##' @param item object to be converted. Despite the function name, need not actually be a list
 ##' @param tag xml tag
 ##' @return xmlNode
 ##' @export
@@ -233,9 +233,11 @@ listToXml.default <- function(item, tag) {
 ##' Zero bounded density using log density transform
 ##'
 ##' Provides a zero bounded density estimate of a parameter.
-##' Kernel Density Estimation used by the \code{\link{stats::density}} function will cause problems at the left hand end because it will put some weight on negative values. One useful approach is to transform to logs, estimate the density using KDE, and then transform back.
+##' Kernel Density Estimation used by the \code{\link[stats]{density}} function will cause problems
+##' at the left hand end because it will put some weight on negative values.
+##' One useful approach is to transform to logs, estimate the density using KDE, and then transform back.
 ##' @title Zero Bounded Density
-##' @param x
+##' @param x data, as a numeric vector
 ##' @param bw The smoothing bandwidth to be used. See 'bw.nrd'
 ##' @return data frame with back-transformed log density estimate
 ##' @author \href{http://stats.stackexchange.com/q/6588/2750}{Rob Hyndman}
@@ -275,8 +277,8 @@ summarize.result <- function(result) {
 ##' Further summarizes output from summary.mcmc
 ##'
 ##' @title Get stats for parameters in MCMC output
-##' @param mcmc.summary
-##' @param sample.size
+##' @param mcmc.summary probably produced by \code{\link[coda]{summary.mcmc}}
+##' @param sample.size passed as 'n' in returned list
 ##' @return list with summary statistics for parameters in an MCMC chain
 ##' @author David LeBauer
 get.stats.mcmc <- function(mcmc.summary, sample.size) {
@@ -299,14 +301,16 @@ get.stats.mcmc <- function(mcmc.summary, sample.size) {
 ##' Used by \code{\link{get.parameter.stat}}.
 ##' @title Paste Stats
 ##' @name paste.stats
-##' @param mcmc.summary
-##' @param median
-##' @param lcl
-##' @param ucl
-##' @param n
+##' @param median 50-percent quantile
+##' @param lcl lower confidence limit
+##' @param ucl upper confidence limit
+##' @param n significant digits for printing. Passed to \code{\link{tabnum}}
 ##' @export
 ##' @author David LeBauer
-paste.stats <- function(mcmc.summary, median, lcl, ucl, n = 2) {
+##' @examples
+##' paste.stats(3.333333, 5.00001, 6.22222, n = 3)
+##' # [1] "$3.33(5,6.22)$"
+paste.stats <- function(median, lcl, ucl, n = 2) {
   paste0("$", tabnum(median, n),
          "(", tabnum(lcl, n), ",", tabnum(ucl, n), ")",
          "$")
@@ -317,8 +321,8 @@ paste.stats <- function(mcmc.summary, median, lcl, ucl, n = 2) {
 ##' Gets statistics for LaTeX - formatted table
 ##'
 ##' @title Get Parameter Statistics
-##' @param mcmc.summary
-##' @param parameter
+##' @param mcmc.summary probably produced by \code{\link[coda]{summary.mcmc}}
+##' @param parameter name of parameter to extract, as character
 ##' @return table with parameter statistics
 ##' @author David LeBauer
 ##' @export
@@ -462,11 +466,7 @@ isFALSE <- function(x) !isTRUE(x)
 ##' @title newxtable
 ##' @param x data.frame to be converted to latex table
 ##' @param environment can be 'table'; 'sidewaystable' if using latex rotating package
-##' @param table.placement
-##' @param label
-##' @param caption
-##' @param caption.placement
-##' @param align
+##' @param table.placement,label,caption,caption.placement,align passed to \code{\link[xtable]{xtable}}
 ##' @return Latex version of table, with percentages properly formatted
 ##' @author David LeBauer
 newxtable <- function(x, environment = "table", table.placement = "ht", label = NULL,
@@ -529,7 +529,7 @@ as.sequence <- function(x, na.rm = TRUE) {
 ##' Useful for testing functions that depend on settings file
 ##' Reference: http://stackoverflow.com/a/12940705/199217
 ##' @title temp.settings
-##' @param settings.txt
+##' @param settings.txt character vector to be written
 ##' @return character vector written to and read from a temporary file
 ##' @export
 ##' @author David LeBauer

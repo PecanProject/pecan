@@ -3,6 +3,10 @@
 ##' @name do_conversions
 ##' @title do_conversions
 ##' @description Input conversion workflow
+##'
+##' @param settings PEcAn settings list
+##' @param overwrite.met,overwrite.fia,overwrite.ic logical
+##'
 ##' @author Ryan Kelly, Rob Kooper, Betsy Cowdery, Istem Fer
 do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALSE, overwrite.ic = FALSE) {
   if (PEcAn.settings::is.MultiSettings(settings)) {

@@ -9,7 +9,6 @@
 #' @return list
 #' @export
 #'
-#' @examples
 mcmc.list2init <- function(dat) {
   
   ## get unique variable names

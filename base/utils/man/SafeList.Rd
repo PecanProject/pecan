@@ -3,17 +3,28 @@
 \name{SafeList}
 \alias{SafeList}
 \alias{as.SafeList}
+\alias{is.SafeList}
 \title{Constrct SafeList Object}
 \usage{
 SafeList(...)
 
 as.SafeList(x)
+
+is.SafeList(x)
 }
 \arguments{
 \item{...}{A list to upgrade to SafeList, or elements to be added to a new SafeList}
+
+\item{x}{list to coerce}
+
+\item{x}{list object to be tested}
 }
 \value{
 The resulting SafeList
+
+a SafeList version of x
+
+logical
 }
 \description{
 Create a SafeList object
@@ -31,6 +42,8 @@ attribute updated to include 'SafeList', or
 \section{Functions}{
 \itemize{
 \item \code{as.SafeList}: Coerce an object to SafeList.
+
+\item \code{is.SafeList}: Test if object is already a SafeList.
 }}
 
 \author{
