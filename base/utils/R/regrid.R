@@ -47,7 +47,7 @@ grid2netcdf <- function(gdata, date = "9999-09-09", outfile = "out.nc") {
                          calendar = "standard", 
                          unlim = TRUE)
   
-  yieldvar <- mstmipvar("CropYield", lat, lon, time)
+  yieldvar <- to_ncvar("CropYield", list(lat, lon, time))
   nc <- ncdf4::nc_create(filename = outfile, vars = list(CropYield = yieldvar))
   
   ## Output netCDF data
