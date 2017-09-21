@@ -244,7 +244,7 @@ write_sf_posterior <- function(sf.samp.list, sf.prior, sf.filename){
                                                outdir = dirname(sf.filename),
                                                filename.flag = filename.flag)
   
-  save(sf.subset, file = file.path(dirname(sf.filename), paste0("samples", filename.flag, ".Rdata")))
+  save(sf.subset.list, file = file.path(dirname(sf.filename), paste0("samples", filename.flag, ".Rdata")))
   
   return(sf.post.distns)
   
