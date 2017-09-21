@@ -22,8 +22,8 @@
 ##' @param path.train - path to CF/PEcAn style training data where each year is in a separate file.
 ##' @param yrs.train - which years of the training data should be used for to generate the model for 
 ##'                    the subdaily cycle.  If NULL, will default to all years
-##' @param direction.filter - Whether the model will be filtered backwards or forwards in time. options = c("backward", "forward")
-##'                           (PalEON will go backwards, anybody interested in the future will go forwards)                  
+##' @param direction.filter - Whether the model will be filtered backward or forward in time. options = c("backward", "forward")
+##'                           (PalEON will go backward, anybody interested in the future will go forward)                  
 ##' @param in.prefix 
 ##' @param n.beta - number of betas to save from linear regression model
 ##' @param resids - logical stating whether to pass on residual data or not (this increases both memory & storage requirements)
@@ -43,7 +43,7 @@
 #----------------------------------------------------------------------
 
 
-gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filter, in.prefix,  
+gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filter="forward", in.prefix,  
     n.beta, day.window, seed=Sys.time(), resids = FALSE, parallel = FALSE, n.cores = NULL, overwrite = TRUE, 
     verbose = FALSE, print.progress=FALSE) {
   
@@ -130,9 +130,9 @@ gen.subdaily.models <- function(outfolder, path.train, yrs.train, direction.filt
     
     # Specifying what hour we want to lag
     # Note: For forward filtering, we want to associate today with tomorrow (+1 day) using the last observation of today
-    #       For backwards filtering, we want to associate today with yesterday (-1 day) using the first obs of today
-    met.lag <- ifelse(direction.filter=="backwards", -1, +1)
-    lag.time <- ifelse(direction.filter=="backwards", min(dat.train$hour), max(dat.train$hour))
+    #       For backward filtering, we want to associate today with yesterday (-1 day) using the first obs of today
+    met.lag <- ifelse(direction.filter=="backward", -1, +1)
+    lag.time <- ifelse(direction.filter=="backward", min(dat.train$hour), max(dat.train$hour))
     
     lag.day <- dat.train[dat.train$hour == lag.time, c("year", "doy", "sim.day", vars.hour)]
     names(lag.day)[4:ncol(lag.day)] <- vars.lag
