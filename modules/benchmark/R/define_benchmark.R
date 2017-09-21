@@ -46,11 +46,11 @@ define_benchmark <- function(settings, bety){
   
   
   # Retrieve/create benchmark entries
+  which.bm <- which(names(bm.settings) == "benchmark")
   
-  for(i in which(names(bm.settings) == "benchmark")){
+  for(i in which.bm){
     benchmark <- bm.settings[[i]]
-    bm.settings[[i]] <- NULL
-  
+
     # Unless variables are specified in settings, create benchmark records using all variables
     # This can be expanded to "suits" of variables that leveredge the hierarchy 
     # (for example, all carbon pools)
@@ -134,7 +134,7 @@ define_benchmark <- function(settings, bety){
       } # end loop over metric ids
       
       benchmark$benchmark_id <- bm$id
-      bm.settings[[length(bm.settings)+1]] <- list(benchmark = benchmark)
+      bm.settings[[i]] <- benchmark
       
     } # end loop over variable ids
   } # End loop over benchmarks in settings
