@@ -18,7 +18,7 @@ read_web_config = function(php.config = "../../web/config.php") {
   config <- sub("true", "TRUE", config, fixed = TRUE)  ##  Boolean capitalization
   config <- config[-grep("$", config, fixed = TRUE)]  ## lines with variable references fail
   config <- config[-grep("exec", config, fixed = TRUE)]  ## lines 'exec' fail
-  config.list <- eval(parse(text = paste("list(", paste0(config[1:14], collapse = ","), ")")))
+  config.list <- eval(parse(text = paste("list(", paste0(config[c(1:14,26)], collapse = ","), ")")))
   
   return(config.list)
 }
