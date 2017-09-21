@@ -22,7 +22,7 @@
 ##'
 ##' @author Michael Dietze, Shawn Serbin, Rob Kooper, Toni Viskari, Istem Fer
 ## modified M. Dietze 07/08/12 modified S. Serbin 05/06/13
-model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft.names = NULL, dbh.breaks = 0) {
+model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft_names = NULL, dbh_breaks = 0) {
 
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date) 
@@ -75,7 +75,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
       fcn   <- match.fun(fcnx)
       out_list[[rflag]] <- fcn(yr = y, ylist[[rflag]], flist[[rflag]], 
                                outdir, start_date, end_date, 
-                               pft.names, dbh.breaks)
+                               pft_names, dbh_breaks)
     }
     
     
@@ -101,7 +101,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date, pft
       fcnx  <- paste0("put_", gsub("-", "", rflag), "_values")
       fcn   <- match.fun(fcnx)
       nc_var <- fcn(yr = y, nc_var = nc_var, out = out_list[[rflag]], lat = lat, lon = lon, 
-                    begins = begins, ends = ends, pft.names, dbh.breaks)
+                    begins = begins, ends = ends, pft_names, dbh_breaks)
     }
     
     # SLZ specific hack until I figure that out
@@ -713,12 +713,12 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 #               "analysis-E-2000-02-00-000000-g01.h5" "analysis-E-2000-03-00-000000-g01.h5"
 #               "analysis-E-2000-04-00-000000-g01.h5"
 #
-# dbh.breaks : determines the bins braks, vector, 0 will represent a single DBH bin from 0 - Infinity cm
-# ! NOTE : now read.output would work only for dbh.breaks = 0 
-# pft.names  : character vector with names of PFTs
-# pft.names <- c("temperate.Early_Hardwood", "temperate.Late_Hardwood")
+# dbh_breaks : determines the bins braks, vector, 0 will represent a single DBH bin from 0 - Infinity cm
+# ! NOTE : now read.output would work only for dbh_breaks = 0 
+# pft_names  : character vector with names of PFTs
+# pft_names <- c("temperate.Early_Hardwood", "temperate.Late_Hardwood")
 
-read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft.names, dbh.breaks, ...){
+read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_names, dbh_breaks, ...){
   
   PEcAn.logger::logger.info(paste0("*** Reading -E- file ***"))
   
@@ -786,10 +786,10 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft.n
   } # end ysel-loop
   
 
-  ndbh <- length(dbh.breaks)
-  npft <- length(pft.names)
+  ndbh <- length(dbh_breaks)
+  npft <- length(pft_names)
   data(pftmapping, package = "PEcAn.ED2")
-  pfts <- sapply(pft.names, function(x) pftmapping$ED[pftmapping$PEcAn == x]) 
+  pfts <- sapply(pft_names, function(x) pftmapping$ED[pftmapping$PEcAn == x]) 
   
   out <- list()
   for(varname in varnames) {
@@ -813,7 +813,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft.n
     nplant <- plant.dens * patch.area
     
     # Get index of DBH bin each cohort belongs to      
-    dbh.bin <- sapply(dbh, function(x) which.min(x>c(dbh.breaks,Inf))) - 1
+    dbh.bin <- sapply(dbh, function(x) which.min(x>c(dbh_breaks,Inf))) - 1
     
     
     # For each PFT x DBH bin, average variables of interest, weighting by # of plants. Not all ED cohort variables are in per-plant units. This code would not be applicable to them without modification.
@@ -835,7 +835,7 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft.n
               # For all others, just get mean weighted by nplant
               out[[varname]][i,j,k] <- sum(ed.dat[[varname]][[i]][ind] * nplant[ind]) / sum(nplant[ind])
             }
-            dimnames(out[[varname]]) <- list(months = times[ysel], dbhLowBound=dbh.breaks, pft=pft.names)
+            dimnames(out[[varname]]) <- list(months = times[ysel], dbhLowBound=dbh_breaks, pft=pft_names)
           }
         }
       }
@@ -853,12 +853,12 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft.n
 
 # Function for put -E- values to nc_var list
 
-put_E_values <- function(yr, nc_var, out, begins, ends, pft.names, dbh.breaks, ...){
+put_E_values <- function(yr, nc_var, out, begins, ends, pft_names, dbh_breaks, ...){
   
   s <- length(nc_var)
   
   data(pftmapping, package = "PEcAn.ED2")
-  pfts <- sapply(pft.names, function(x) pftmapping$ED[pftmapping$PEcAn == x]) 
+  pfts <- sapply(pft_names, function(x) pftmapping$ED[pftmapping$PEcAn == x]) 
   
   # ----- fill list
   
@@ -867,7 +867,7 @@ put_E_values <- function(yr, nc_var, out, begins, ends, pft.names, dbh.breaks, .
                         calendar = "standard", unlim = TRUE)
   
   
-  d <- ncdf4::ncdim_def(name = "dbh.breaks", units ="bins", vals = dbh.breaks)
+  d <- ncdf4::ncdim_def(name = "dbh_breaks", units ="bins", vals = dbh_breaks)
   p <- ncdf4::ncdim_def(name = "pft", units = "unitless", vals = pfts, longname = "Plant Functional Type")
   
   nc_var[[s+1]]<- ncdf4::ncvar_def("DBH", units = "cm", dim = list(d,p,t), missval = -999, 
@@ -879,7 +879,7 @@ put_E_values <- function(yr, nc_var, out, begins, ends, pft.names, dbh.breaks, .
   # longname of this variable will be parsed by read.output
   # so that read.output has a way of accessing PFT names
   nc_var[[s+4]]<- ncdf4::ncvar_def("PFT", units = "", dim = list(p),  
-                                   longname = paste(pft.names, collapse=",")) 
+                                   longname = paste(pft_names, collapse=",")) 
   
   return(nc_var)
   
