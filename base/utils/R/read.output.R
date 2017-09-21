@@ -146,7 +146,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
             # parse pft names and match the requested
             pft.string <- ncatt_get(n, "PFT")
             pft.ind <- strsplit(pft.string$long_name, ",")[[1]] == pft.name
-            newresult <- newresult[pft.ind,] #for now this is specific for dbh.breaks = 0
+            newresult <- newresult[pft.ind,] 
           }
           # Dropping attempt to provide more sensible units because of graph unit errors,
           # issue #792 if(v %in% c(cflux, wflux)){ newresult <- udunits2::ud.convert(newresult, 'kg
