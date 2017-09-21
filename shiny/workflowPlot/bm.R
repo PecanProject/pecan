@@ -132,17 +132,6 @@ observeEvent({
   if(bm$ready){bm$calc_bm_message <- sprintf("Please select at least one variable and one metric")}
 })
 
-# reactiveVars <- eventReactive(input$vars,{
-#   length(input$vars)
-# })
-# 
-# reactiveMetrics <- eventReactive({
-#   input$metrics
-#   input$plots
-#   },{
-#   length(input$metrics) + length(input$plots)
-# })
-
 observeEvent({
   input$vars
   input$metrics
@@ -167,7 +156,7 @@ observeEvent(input$calc_bm,{
   req(input$all_input_id)
   req(input$all_site_id)
   req(bm)
-  
+  bm$calc_bm_message <- sprintf("Setting up benchmarks")
   output$reportvars <- renderText(paste(bm$bm_vars, seq_along(bm$bm_vars)))
   output$reportmetrics <- renderText(paste(bm$bm_metrics))
   
@@ -178,7 +167,7 @@ observeEvent(input$calc_bm,{
   config.list <- PEcAn.utils::read_web_config("../../web/config.php")
   output$config_list_table <- renderTable(as.data.frame.list(config.list))
   
-  bm$bm_settings$info <- list(userid = 1000000003)
+  bm$bm_settings$info <- list(userid = 1000000003) # This is my user id. I have no idea how to get people to log in to their accounts through the web interface and right now the benchmarking code has sections dependent on user id - I will fix this. 
   bm$bm_settings$database <- list(
     bety = list(
       user = config.list$db_bety_username,
@@ -202,28 +191,38 @@ observeEvent(input$calc_bm,{
       site_id = inputs_df$site_id,
       metrics = list()
     )
-
     for(j in seq_along(bm$bm_metrics)){
       benchmark$metrics = append(benchmark$metrics, list(metric_id = bm$bm_metrics[j]))
     }
-
     bm$bm_settings$benchmarking <- append(bm$bm_settings$benchmarking,list(benchmark = benchmark))
   }
   
-  bm$calc_bm_message <- sprintf("We're doing benchmarking!")
   output$calc_bm_button <- renderUI({})
   output$print_bm_settings <- renderPrint(bm$bm_settings)
   
   basePath <- dplyr::tbl(bety, 'workflows') %>% dplyr::filter(id %in% bm$ens_wf$workflow_id) %>% dplyr::pull(folder)
-  saveXML(PEcAn.utils::listToXml(bm$bm_settings,"pecan"), file = file.path(basePath, "pecan.BENCH.xml"))
+  
+  settings_path <- file.path(basePath, "pecan.BENCH.xml")
+  saveXML(PEcAn.utils::listToXml(bm$bm_settings,"pecan"), file = settings_path)
+  bm$settings_path <- settings_path
+  
+  bm$calc_bm_message <- sprintf("Benchmarking settings have been saved here: %s", bm$settings_path)
   
 })
+
+# This sources the benchmarking workflow, which at the moment seems simpler than pulling functions out of it.
+# observeEvent(bm$settings_path,{ #Mostly so this is in a separate section which makes it asier to debug.
+#   settings <- PEcAn.settings::read.settings(bm$settings_path)
+#   source(system.file("scripts/benchmark.workflow.R",package = "PEcAn.benchmark"))
+#   if(!is.null(results)){
+#     bm$calc_bm_message <- sprintf("Calculating benchmarks complete")
+#     output$results_table <- renderTable(results[[1]]$bench.results)
+#   }
+# })
 
 observeEvent(bm$calc_bm_message,{
   output$calc_bm_message <- renderText({bm$calc_bm_message})
 })
-
-
 
 ################################################
 # Action buttons to select all variables/metrics but that currently aren't working

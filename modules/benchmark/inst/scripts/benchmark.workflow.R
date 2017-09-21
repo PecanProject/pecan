@@ -1,7 +1,11 @@
-devtools::load_all('modules/benchmark')
-library(PEcAn.benchmark)
+## Workflow assumes that you have already run 
+## settings <- read.settings("path_to_settings")
+#> settings <- read.settings("/fs/data2/output/PEcAn_1000008263/pecan.BENCH.xml")
 
-#settings <- read.settings("modules/benchmark/inst/scripts/bm.1var.1metric.1site.1mode.xml")
+
+library(PEcAn.all)
+library(PEcAn.benchmark)
+library(lubridate)
 
 
 d <- settings$database$bety[c("dbname", "password", "host", "user")]
@@ -46,31 +50,22 @@ bm_settings2pecan_settings <- function(bm.settings){
 
 settings$benchmarking <- bm_settings2pecan_settings(bm.settings)
 
-############################################################################################################
-
-sprintf("MODEL: %s", settings$model$type)
-
+################################################################################
 
 if(bm.settings$new_run){
-  write.settings(settings,pecan.xml,outputdir = settings$outdir)
-  # Run the workflow! YAY
-  settings <- read.settings(file.path(settings$outdir,"pecan.CHECKED.xml"))
-  results <- load(file.path(settings$outdir,"benchmarking.output.Rdata"))
   
+  # This section isn't ready yet
+  # write.settings(settings = settings, outputfile = "pecan.xml", outputdir = settings$outdir)
+  # # Run the workflow! YAY
+  # settings <- read.settings(file.path(settings$outdir,"pecan.CHECKED.xml"))
+  # results <- load(file.path(settings$outdir,"benchmarking.output.Rdata"))
+ 
 }else{
   
   settings <- read_settings_BRR(settings)
+  sprintf("MODEL: %s", settings$model$type)
+  
   settings <- prepare.settings(settings)
   results <- papply(settings, function(x) calc_benchmark(x, bety))
 }
 
-# 
-# # This may just be for testing or something that will ultimately be used with Shiny
-# rmarkdown::render(system.file("scripts/Benchmarking.Report.Rmd", package = "PEcAn.benchmark"), 
-#                   params = list(file.path = file.path(settings$outdir,"benchmarking.output.Rdata")),
-#                   output_dir = settings$outdir)
-
-
-
-
-str(results)
