@@ -42,9 +42,19 @@ ui <- shinyUI(fluidPage(
         tabPanel("Benchmarking", 
                  column(12, wellPanel(
                    verbatimTextOutput("brr_message"),
-                   uiOutput("button_BRR"))
-                 ),
-                 uiOutput("bm_settings")
+                   uiOutput("button_BRR")
+                 )),
+                 uiOutput("bm_inputs"),
+                 column(12, wellPanel(
+                   verbatimTextOutput("calc_bm_message"),
+                   uiOutput("report"),
+                   uiOutput("calc_bm_button"),
+                   uiOutput("inputs_df_table"),
+                   uiOutput("config_list_table"),
+                   uiOutput("reportvars"),
+                   uiOutput("reportmetrics"),
+                   uiOutput("print_bm_settings")
+                 ))
         )
       )
     )

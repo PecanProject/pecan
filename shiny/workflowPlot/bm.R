@@ -1,6 +1,8 @@
 ##### Benchmarking
 
 bm <- reactiveValues()
+# log_con <- file(paste("bench",format(Sys.time(), "%Y-%m-%d_%H:%S"), "log", sep = "."))
+
 
 observeEvent(input$load,{
   req(input$all_run_id)
@@ -75,7 +77,7 @@ observeEvent({
 
 ##### Setup benchmarks
 observeEvent(input$load_data,{
-  require(input$all_input_id)
+  req(input$all_input_id)
   
   bm$metrics <- dplyr::tbl(bety,'metrics') %>% dplyr::select(one_of("id","name","description")) %>% collect()
   bm$vars_list <- c("NPP", "LAI")
@@ -84,7 +86,7 @@ observeEvent(input$load_data,{
   inputs_df <- getInputs(bety,c(input$all_site_id)) %>% dplyr::filter(input_selection_list == input$all_input_id)
   format <- PEcAn.DB::query.format.vars(bety = bety, input.id = inputs_df$input_id)
   # Are there more human readable names?
-  bm$vars_list <- format$vars$pecan_name[-grep("%",format$vars$storage_type)]
+  bm$vars <- format$vars[-grep("%",format$vars$storage_type), c("variable_id", "pecan_name")]
   
   
   #This will be a longer set of conditions
@@ -96,31 +98,179 @@ observeEvent({
   bm$metrics_list
   bm$plots_list
   bm$vars_list
-  },{
-  output$bm_settings <- renderUI({
+},{
+  
+  plot_ind <- grep("_plot",bm$metrics$name)
+  
+  output$bm_inputs <- renderUI({
     if(bm$ready){
       list(
         column(4, wellPanel(
           checkboxGroupInput("vars", label = h3("Variables"),
-                             choices = bm$vars_list),
-          actionButton("selectall.var","Select /Deselect all variables"),
+                             choiceNames = bm$vars$pecan_name,
+                             choiceValues = bm$vars$variable_id),
+          # actionButton("selectall.var","Select /Deselect all variables"),
           label=h6("Label")
         )),
         column(4, wellPanel(
-          checkboxGroupInput("metrics", label = h3("Numerical Metrics"),
-                             choices = bm$metrics$description[-grep("_plot",bm$metrics$name)]),
-          actionButton("selectall.num","Select/Deselect all numerical metrics") ,
+          checkboxGroupInput("metrics", label = h3("Numerical Metrics"), 
+                             choiceNames = bm$metrics$description[-plot_ind],
+                             choiceValues = bm$metrics$id[-plot_ind]),
+          # actionButton("selectall.num","Select/Deselect all numerical metrics") ,
           label=h6("Label")
         )),
         column(4, wellPanel(
           checkboxGroupInput("plots", label = h3("Plot Metrics"),
-                             choices = bm$metrics$description[grep("_plot",bm$metrics$name)]),
-          actionButton("selectall.plot","Select/Deselect all plot metrics"),
+                             choiceNames = bm$metrics$description[plot_ind],
+                             choiceValues = bm$metrics$id[plot_ind]),
+          # actionButton("selectall.plot","Select/Deselect all plot metrics"),
           label=h6("Label")
         ))
       )
     }
   })
+  if(bm$ready){bm$calc_bm_message <- sprintf("Please select at least one variable and one metric")}
+})
+
+# reactiveVars <- eventReactive(input$vars,{
+#   length(input$vars)
+# })
+# 
+# reactiveMetrics <- eventReactive({
+#   input$metrics
+#   input$plots
+#   },{
+#   length(input$metrics) + length(input$plots)
+# })
+
+observeEvent({
+  input$vars
+  input$metrics
+  input$plots
+  },{
+  v <- ifelse(is.null(input$vars),0,length(input$vars))
+  n <- ifelse(is.null(input$metrics),0,length(input$metrics))
+  p <- ifelse(is.null(input$plots),0,length(input$plots))
+  m <- n + p
+  output$report <- renderText(sprintf("Number of vars: %0.f, Number of metrics: %0.f", v,m))
+  if(v > 0 & m > 0){
+    output$calc_bm_button <- renderUI({actionButton("calc_bm", "Calculate Benchmarks")})
+    bm$bm_vars <- input$vars
+    bm$bm_metrics <- c()
+    if(n > 0) bm$bm_metrics <- c(bm$bm_metrics, input$metrics)
+    if(p > 0) bm$bm_metrics <- c(bm$bm_metrics, input$plots)
+  }
+  
+}, ignoreNULL = FALSE)
+
+observeEvent(input$calc_bm,{
+  req(input$all_input_id)
+  req(input$all_site_id)
+  req(bm)
+  
+  output$reportvars <- renderText(paste(bm$bm_vars, seq_along(bm$bm_vars)))
+  output$reportmetrics <- renderText(paste(bm$bm_metrics))
+  
+  inputs_df <- getInputs(bety,c(input$all_site_id)) %>% 
+    dplyr::filter(input_selection_list == input$all_input_id)
+  output$inputs_df_table <- renderTable(inputs_df)
+  
+  config.list <- PEcAn.utils::read_web_config("../../web/config.php")
+  output$config_list_table <- renderTable(as.data.frame.list(config.list))
+  
+  bm$bm_settings$info <- list(userid = 1000000003)
+  bm$bm_settings$database <- list(
+    bety = list(
+      user = config.list$db_bety_username,
+      password = config.list$db_bety_password,
+      host = config.list$db_bety_hostname,
+      dbname = config.list$db_bety_database,
+      driver = config.list$db_bety_type,
+      write = TRUE
+    ),
+    dbfiles = config.list$dbfiles_folder
+  )
+  bm$bm_settings$benchmarking <- list(
+    ensemble_id = bm$ens_wf$ensemble_id,
+    new_run = FALSE
+  )
+  
+  for(i in seq_along(bm$bm_vars)){
+    benchmark <- list(
+      input_id = inputs_df$input_id,
+      variable_id = bm$bm_vars[i],
+      site_id = inputs_df$site_id,
+      metrics = list()
+    )
+
+    for(j in seq_along(bm$bm_metrics)){
+      benchmark$metrics = append(benchmark$metrics, list(metric_id = bm$bm_metrics[j]))
+    }
+
+    bm$bm_settings$benchmarking <- append(bm$bm_settings$benchmarking,list(benchmark = benchmark))
+  }
+  
+  bm$calc_bm_message <- sprintf("We're doing benchmarking!")
+  output$calc_bm_button <- renderUI({})
+  output$print_bm_settings <- renderPrint(bm$bm_settings)
+  
+  basePath <- dplyr::tbl(bety, 'workflows') %>% dplyr::filter(id %in% bm$ens_wf$workflow_id) %>% dplyr::pull(folder)
+  saveXML(PEcAn.utils::listToXml(bm$bm_settings,"pecan"), file = file.path(basePath, "pecan.BENCH.xml"))
+  
+})
+
+observeEvent(bm$calc_bm_message,{
+  output$calc_bm_message <- renderText({bm$calc_bm_message})
 })
 
 
+
+################################################
+# Action buttons to select all variables/metrics but that currently aren't working
+# 
+# 
+# observeEvent(input$selectall.var,{
+#   clicks <- as.numeric(input$selectall.var)
+#   output$actionclickCount <- renderText({
+#     paste('Action Button Clicks =',clicks)
+#   })
+#   if (clicks%%2 == 0){
+#     updateCheckboxGroupInput(session = session, inputId = "vars",
+#                              choices = bm$vars_list)
+#     shinyjs::html("labelText", "Label")
+#   }else{
+#     updateCheckboxGroupInput(session = session, inputId = "vars",
+#                              choices = bm$vars_list,
+#                              selected = bm$vars_list)
+#     shinyjs::html("labelText", "Label")
+#   }
+# })
+# 
+#   # Numerical metrics
+#   if(input$selectall.num == 0){
+#     return(NULL)
+#   }else if (input$selectall.num%%2 == 0){
+#     updateCheckboxGroupInput(session = session, inputId = "metrics",
+#                              choices = bm$metrics$description[-grep("_plot",bm$metrics$name)])
+#     shinyjs::html("labelText", "Label")
+#   }else{
+#     updateCheckboxGroupInput(session = session, inputId = "metrics",
+#                              choices = bm$metrics$description[-grep("_plot",bm$metrics$name)],
+#                              selected = bm$metrics$description[-grep("_plot",bm$metrics$name)])
+#     shinyjs::html("labelText", "Label")
+#   }
+#   
+#   # Plot metrics
+#   if(input$selectall.plot == 0){
+#     return(NULL)
+#   }else if (input$selectall.plot%%2 == 0){
+#     updateCheckboxGroupInput(session = session, inputId = "plots",
+#                              choices = bm$metrics$description[grep("_plot",bm$metrics$name)])
+#     shinyjs::html("labelText", "Label")
+#   }else{
+#     updateCheckboxGroupInput(session = session, inputId = "plots",
+#                              choices = bm$metrics$description[grep("_plot",bm$metrics$name)],
+#                              selected = bm$metrics$description[grep("_plot",bm$metrics$name)])
+#     shinyjs::html("labelText", "Label")
+#   }
+# })
