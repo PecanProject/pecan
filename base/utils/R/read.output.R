@@ -144,9 +144,13 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
           if("pft" %in% sapply(nc$var[[v]]$dim, `[[`, "name")){
             # means there are PFT specific outputs we want
             # parse pft names and match the requested
-            pft.string <- ncatt_get(nc, "PFT")
+            pft.string <- ncdf4::ncatt_get(nc, "PFT")
             pft.ind <- strsplit(pft.string$long_name, ",")[[1]] == pft.name
-            newresult <- newresult[pft.ind,] 
+            if(any(pft.ind)){
+              newresult <- newresult[pft.ind,] 
+            }else{
+              newresult <- apply(newresult,2,mean)
+            }
           }
           # Dropping attempt to provide more sensible units because of graph unit errors,
           # issue #792 if(v %in% c(cflux, wflux)){ newresult <- udunits2::ud.convert(newresult, 'kg
