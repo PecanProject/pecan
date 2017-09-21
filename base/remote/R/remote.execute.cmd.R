@@ -22,7 +22,7 @@ remote.execute.cmd <- function(host, cmd, args = character(), stderr = FALSE) {
     host <- list(name = host)
   }
 
-  if ((host$name == "localhost") || (host$name == PEcAn.utils::fqdn())) {
+  if (is.localhost(host)) {
     PEcAn.logger::logger.debug(paste(c(cmd, args), collapse = ' '))
     system2(cmd, args, stdout = TRUE, stderr = as.logical(stderr))
   } else {
