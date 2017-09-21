@@ -785,7 +785,12 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_n
     ncdf4::nc_close(nc)
   } # end ysel-loop
   
-
+  if("soil" %in% pft_names){
+    # for now keep soil out
+    # TODO : also read soil
+    pft_names <- pft_names[-(which(pft_names == "soil"))]
+  }
+  
   ndbh <- length(dbh_breaks)
   npft <- length(pft_names)
   data(pftmapping, package = "PEcAn.ED2")
@@ -856,6 +861,12 @@ read_E_files <- function(yr, yfiles, efiles, outdir, start_date, end_date, pft_n
 put_E_values <- function(yr, nc_var, out, begins, ends, pft_names, dbh_breaks, ...){
   
   s <- length(nc_var)
+  
+  if("soil" %in% pft_names){
+    # for now keep soil out
+    # TODO : also read soil
+    pft_names <- pft_names[-(which(pft_names == "soil"))]
+  }
   
   data(pftmapping, package = "PEcAn.ED2")
   pfts <- sapply(pft_names, function(x) pftmapping$ED[pftmapping$PEcAn == x]) 
