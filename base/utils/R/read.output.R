@@ -141,9 +141,11 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
       for (v in variables) {
         if (v %in% c(names(nc$var), names(nc$dim))) {
           newresult <- ncdf4::ncvar_get(nc, v)
-          if("pft.numbers" %in% names(nc$dim)){
+          if("pft" %in% sapply(n$var[[v]]$dim, `[[`, "name")){
             # means there are PFT specific outputs we want
-            pft.ind <- strsplit(nc$var$PFT$longname, ",")[[1]] == pft.name
+            # parse pft names and match the requested
+            pft.string <- ncatt_get(n, "PFT")
+            pft.ind <- strsplit(pft.string$long_name, ",")[[1]] == pft.name
             newresult <- newresult[pft.ind,] #for now this is specific for dbh.breaks = 0
           }
           # Dropping attempt to provide more sensible units because of graph unit errors,
