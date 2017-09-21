@@ -54,7 +54,8 @@ ui <- shinyUI(fluidPage(
                    uiOutput("reportvars"),
                    uiOutput("reportmetrics"),
                    uiOutput("print_bm_settings")
-                 ))
+                 )),
+                 uiOutput("results_table")
         )
       )
     )
