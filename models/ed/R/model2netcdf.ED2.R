@@ -714,6 +714,7 @@ put_T_values <- function(yr, nc_var, out, lat, lon, begins, ends, ...){
 #               "analysis-E-2000-04-00-000000-g01.h5"
 #
 # dbh.breaks : determines the bins braks, vector, 0 will represent a single DBH bin from 0 - Infinity cm
+# ! NOTE : now read.output would work only for dbh.breaks = 0 
 # pft.names  : character vector with names of PFTs
 # pft.names <- c("temperate.Early_Hardwood", "temperate.Late_Hardwood")
 
