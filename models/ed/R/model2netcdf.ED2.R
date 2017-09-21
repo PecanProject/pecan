@@ -856,8 +856,7 @@ put_E_values <- function(yr, nc_var, out, begins, ends, pft.names, dbh.breaks, .
   
   s <- length(nc_var)
   
-  data(pftmapping, package = "PEcAn.ED2")
-  pfts <- sapply(pft.names, function(x) pftmapping$ED[pftmapping$PEcAn == x]) 
+  pfts <- out$PFT 
   
   # ----- fill list
   
@@ -867,7 +866,7 @@ put_E_values <- function(yr, nc_var, out, begins, ends, pft.names, dbh.breaks, .
   
   
   d <- ncdf4::ncdim_def(name = "dbh.breaks", units ="bins", vals = dbh.breaks)
-  p <- ncdf4::ncdim_def(name = "pft.numbers", units = "unitless", vals = pfts, longname = paste(pft.names, collapse=","))
+  p <- ncdf4::ncdim_def(name = "pft", units = "unitless", vals = pfts, longname = "Plant Functional Type")
   
   nc_var[[s+1]]<- ncdf4::ncvar_def("DBH", units = "cm", dim = list(d,p,t), missval = -999, 
                                    longname = "Diameter at breast height")
@@ -877,7 +876,7 @@ put_E_values <- function(yr, nc_var, out, begins, ends, pft.names, dbh.breaks, .
                                    longname = "Plant density")
   # longname of this variable will be parsed by read.output
   # so that read.output has a way of accessing PFT names
-  nc_var[[s+4]]<- ncdf4::ncvar_def("PFT", units = "", dim = list(p), missval = -999, 
+  nc_var[[s+4]]<- ncdf4::ncvar_def("PFT", units = "", dim = list(p),  
                                    longname = paste(pft.names, collapse=",")) 
   
   return(nc_var)
