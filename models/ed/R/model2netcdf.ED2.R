@@ -856,7 +856,8 @@ put_E_values <- function(yr, nc_var, out, begins, ends, pft.names, dbh.breaks, .
   
   s <- length(nc_var)
   
-  pfts <- out$PFT 
+  data(pftmapping, package = "PEcAn.ED2")
+  pfts <- sapply(pft.names, function(x) pftmapping$ED[pftmapping$PEcAn == x]) 
   
   # ----- fill list
   
