@@ -105,7 +105,7 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
     var[[10]] <- PEcAn.utils::to_ncvar("Evap", dims)
     var[[11]] <- PEcAn.utils::to_ncvar("TVeg", dims)
     
-    #var[[6]]  <- PEcAn.utils::to_ncvar("LeafLitter", "kgC/m2/s", list(lon,lat,t), -999)
+    #var[[6]]  <- PEcAn.utils::to_ncvar("LeafLitter", "kgC/m2/s", list(lon,lat,t), -999 )
     #var[[7]]  <- PEcAn.utils::to_ncvar("WoodyLitter", "kgC/m2/s", list(lon,lat,t), -999)
     #var[[8]]  <- PEcAn.utils::to_ncvar("RootLitter", "kgC/m2/s", list(lon,lat,t), -999)
     #var[[9]]  <- PEcAn.utils::to_ncvar("LeafBiomass", "kgC/m2", list(lon,lat,t), -999)
