@@ -90,7 +90,7 @@ do_conversions <- function(settings, overwrite.met = FALSE, overwrite.fia = FALS
     }
   }
   if (needsave) {
-    XML::saveXML(PEcAn.utils::listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.METProcess.xml"))
+    XML::saveXML(PEcAn.settings::listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.METProcess.xml"))
   } else if (file.exists(file.path(settings$outdir, "pecan.METProcess.xml"))) {
     settings <- PEcAn.settings::read.settings(file.path(settings$outdir, "pecan.METProcess.xml"))
   }

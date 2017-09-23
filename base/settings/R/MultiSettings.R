@@ -163,7 +163,6 @@ printAll.MultiSettings <- function(multiSettings) {
 
 .expandableItemsTag <- "multisettings"
 
-##' @import PEcAn.utils
 ##' @export
 listToXml.MultiSettings <- function(item, tag, collapse = TRUE) {
   if (collapse && length(item) > 1) {

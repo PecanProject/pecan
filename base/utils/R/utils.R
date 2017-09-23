@@ -173,6 +173,7 @@ get.run.id <- function(run.type, index, trait = NULL, pft.name = NULL) {
 
 ##' @export
 listToXml <- function(x, ...) {
+  .Deprecated("PEcAn.settings::listToXml")
   UseMethod("listToXml")
 } # listToXml
 
@@ -180,6 +181,7 @@ listToXml <- function(x, ...) {
 #--------------------------------------------------------------------------------------------------#
 ##' Convert List to XML
 ##'
+##' DEPRECATED. Use \code{\link[PEcAn.settings:listToXml.default]{PEcAn.settings::listToXml.default}} instead.
 ##' Can convert list or other object to an xml object using xmlNode
 ##' @title List to XML
 ##' @param item object to be converted. Despite the function name, need not actually be a list
@@ -188,6 +190,7 @@ listToXml <- function(x, ...) {
 ##' @export
 ##' @author David LeBauer, Carl Davidson, Rob Kooper
 listToXml.default <- function(item, tag) {
+  .Deprecated("PEcAn.settings::listToXml.default")
 
   # just a textnode, or empty node with attributes
   if (typeof(item) != "list") {
