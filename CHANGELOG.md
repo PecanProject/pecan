@@ -6,6 +6,21 @@ section for the next release.
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
 ## [Unreleased]
+
+### Fixes
+- `PEcAn.utils` now lazy-loads data for faster execution of functions that consult lookup tables, especially `to_ncvar`.
+
+### Added
+
+### Removed
+- Removed `PEcAn.utils::model2netcdf`, which has been deprecated since PEcAn 1.3.7. Use `model2netcdf.<YOURMODEL>` in the appropriate model package instead.
+
+### Changed
+- Moved `listToXml` ouf the `PEcAn.utils` package and into the `PEcAn.settings` package. `PEcAn.utils::listToXml` still works with a deprecation warning, but will be removed in a future release.
+- Major namespace cleanup in the `PEcAn.utils` package. It now loads more quietly and is much less likely to mask functions in a package you loaded earlier.
+
+
+## [1.5.1]
 - Created new (and very rudimentary) web interface for downloading data from the dataone federation into the PEcAn database. More updates to come.
 
 ### Fixes
