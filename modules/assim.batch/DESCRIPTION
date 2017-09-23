@@ -25,6 +25,7 @@ Depends:
     PEcAn.MA
 Imports:
     PEcAn.logger,
+    PEcAn.settings,
     coda (>= 0.18),
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
