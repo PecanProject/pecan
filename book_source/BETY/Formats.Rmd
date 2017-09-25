@@ -1,4 +1,4 @@
-# Formats
+# Formats records in BETY {#NewFormat}
 
 The PEcAn database keep track of all the input files passed to models, as well as any data used in model validation or data assimilation. Before we start to register these files with PEcAn we need to define the format these files will be in.
 
