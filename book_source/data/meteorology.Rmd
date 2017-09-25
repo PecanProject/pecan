@@ -90,5 +90,13 @@ Availability: varies by site  http:\/\/www.fluxdata.org\/DataInfo\/Dataset%20Doc
 
 Notes: 2007 synthesis. Fluxnet2015 supercedes this for sites that have been updated
 
+## Geostreams
 
+Scale: site
+
+Resolution: varies
+
+Availability: varies by site
+
+Notes: This is a protocol, not a single archive. The PEcAn functions currently default to querying [https://terraref.ncsa.illinois.edu/clowder/api/geostreams], which requires login and contains data from only two sites (Urbana IL and Maricopa AZ). However the interface can be used with any server that supports the [Geostreams API](https://opensource.ncsa.illinois.edu/confluence/display/CATS/Geostreams+API).
 
