@@ -20,10 +20,10 @@ Imports:
     ncdf4 (>= 1.15),
     udunits2 (>= 0.11),
     PEcAn.data.atmosphere,
-    PEcAn.utils,
-    Rpreles
+    PEcAn.utils
 Suggests:
     testthat (>= 1.0.2)
+    Rpreles
 SystemRequirements: preles
 OS_type: unix
 License: FreeBSD + file LICENSE
