@@ -2,5 +2,3 @@
 
 export(runPRELES.jobsh)
 export(write.config.PRELES)
-importFrom(ncdf4,ncvar_def)
-importFrom(ncdf4,ncvar_get)
