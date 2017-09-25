@@ -22,7 +22,7 @@ Imports:
     PEcAn.data.atmosphere,
     PEcAn.utils
 Suggests:
-    testthat (>= 1.0.2)
+    testthat (>= 1.0.2),
     Rpreles
 SystemRequirements: preles
 OS_type: unix
