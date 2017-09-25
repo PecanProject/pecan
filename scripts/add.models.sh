@@ -17,8 +17,9 @@ addLocalModel "LPJ-GUESS" "LPJGUESS" "3.1" "guess.3.1"
 # special case for PRELES
 addModelFile "${FQDN}" "Preles" "PRELES" "" "true" "/bin"
 
-# special case for BioCro
+# special case for R models
 addModelFile "${FQDN}" "BioCro" "BIOCRO" "" "biocro.Rscript" "${R_LIBS_USER}/PEcAn.BIOCRO"
+addModelFile "${FQDN}" "Linkages" "R_version" "" "biocro.Rscript" "${R_LIBS_USER}/linkages"
 
 # to add remote files
 #addModelFile "geo.bu.edu" "ED2" "ED2" "git" "ed_2.1-opt" "/home/dietze/ED2.git/ED/build"
