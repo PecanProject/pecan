@@ -29,6 +29,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added a new retry.func() to base/utils to provide ability to re-try a function X times before stopping.  Currently using this function in the download.CRUNCEP() function to handle slow responses from THREDDS.
 - Reformatted call_MODIS netcdf output to reflect the orientation of the MODIS grid
 - Remote execution is more robust to errors in the submission process, not just the actual model execution
+- PRELES model run script bug fix 
 
 ### Added
 - Created new (and very rudimentary) web interface for downloading data from the dataone federation into the PEcAn database. More updates to come.
