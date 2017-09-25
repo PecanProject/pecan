@@ -7,6 +7,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
+## [1.5.2] - 2017-09-??
+
 ### Fixes
 - Show workflowid in the URL when run is finshed and user clicks results (#1659)
 - `PEcAn.BIOCRO` now uses PEcAn-standard variable names. As a result, two output variables have been renamed but keep their existing units and definitions:
@@ -20,7 +22,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Cleaned up NAMESPACE and source code of `PEcAn.DB` (#1520)
 - Debugged python script in call_MODIS in data.remote to allow MODIS downloads
 - Fixed FATES build script to work on ubuntu
-- SIPNET output netcdf now includes LAI; some variable names changed to match standard
+ SIPNET output netcdf now includes LAI; some variable names changed to match standard
 - Cleanup of leap year logic, using new `PEcAn.utils::days_in_year(year)` function (#801).
 - Replace many hard-coded unit conversions with `udunits2::ud.convert` for consistency, readability, and clarity
 - Refactored extract_soil_nc to create soil2netcdf, which will write soil data out in PEcAn standard.
