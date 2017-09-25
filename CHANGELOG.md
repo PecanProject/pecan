@@ -7,7 +7,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
-## [1.5.2] - 2017-09-??
+## [1.5.1] - 2017-09-??
 
 ### Fixes
 - Show workflowid in the URL when run is finshed and user clicks results (#1659)
