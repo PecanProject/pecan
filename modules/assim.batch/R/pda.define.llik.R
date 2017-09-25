@@ -200,7 +200,14 @@ pda.calc.llik.par <-function(settings, n, error.stats){
     if (settings$assim.batch$inputs[[k]]$likelihood == "Gaussian" |
         settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") {
       
-      llik.par[[k]]$par <- rgamma(1, 0.001 + n[k]/2, 0.001 + error.stats[k]/2)
+      # calculate a minimum scale for gamma if emulator proposes negative SS
+      if(error.stats[k] < 0){
+        get_order <- log10(abs(error.stats[k])) 
+        min.scale  <- 1e-10 * (10^get_order) # to make this less likely
+        error.stats[k] <- min.scale
+      }
+  
+      llik.par[[k]]$par <- rgamma(1, n[k]/2, error.stats[k]/2)
       names(llik.par[[k]]$par) <- paste0("tau.", names(n)[k])
       
     }
