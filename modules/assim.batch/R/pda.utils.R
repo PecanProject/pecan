@@ -719,28 +719,14 @@ return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias,
   
   prior.list.bias[[(length(prior.list.bias)+1)]] <- bias.prior
 
-  # convert params to probs for GPfit 
-  # note: there can be new parameters out of previous min/max if this is a round extension
-  bias.probs <- lapply(seq_along(isbias), 
-                       function(b) punif(bias.params[[b]], 
-                                         prior.list.bias[[length(prior.list.bias)]]$parama[b], 
-                                         prior.list.bias[[length(prior.list.bias)]]$paramb[b]))
-  
   
   # if this is another round, use the first priors
   if(run.round){
     load(prev.bias)
     prior.list.bias <- prior.list
     
-    # convert params to probs for GPfit 
-    # note: there can be new parameters out of previous min/max if this is a round extension
-    bias.probs <- lapply(seq_along(isbias), 
-                         function(b) punif(bias.params[[b]], 
-                                           prior.list.bias[[length(prior.list.bias)]]$parama[b], 
-                                           prior.list.bias[[length(prior.list.bias)]]$paramb[b]))
-    
   }
   
-  return(list(bias.params = bias.params, bias.probs = bias.probs, prior.list.bias = prior.list.bias))
+  return(list(bias.params = bias.params, prior.list.bias = prior.list.bias))
   
 } # return.bias
