@@ -49,7 +49,7 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
       tstep <- round(timestep.s / dt)  #time steps per day
       
       diy <- PEcAn.utils::days_in_year(year)
-      doy <- doy <- rep(seq_len(diy), each = tstep)[seq_along(sec)]
+      doy <- rep(seq_len(diy), each = tstep)[seq_along(sec)]
       
       ## Get variables from netcdf file
       SW     <- ncdf4::ncvar_get(nc, "surface_downwelling_shortwave_flux_in_air")  # SW in W/m2
