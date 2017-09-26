@@ -18,6 +18,10 @@
 ##' @author Tony Gardella, Michael Dietze
 runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, start.date, end.date) {
   
+  if(!require("Rpreles")){
+    logger.severe("The Rpreles package is not installed. 
+                  Please contact the PEcAn team to obtain source code")
+  }
   
   # Process start and end dates
   start_date <- as.POSIXlt(start.date, tz = "UTC")
