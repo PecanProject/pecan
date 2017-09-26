@@ -20,7 +20,7 @@ runPRELES.jobsh <- function(met.file, outdir, parameters, sitelat, sitelon, star
   
   if(!require("Rpreles")){
     logger.severe("The Rpreles package is not installed. 
-                  Please execute- devtools::install_github('MikkoPeltoniemi/Rpreles')"
+                  Please execute- devtools::install_github('MikkoPeltoniemi/Rpreles')")
   }
   
   # Process start and end dates
