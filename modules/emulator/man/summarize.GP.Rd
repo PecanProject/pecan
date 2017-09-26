@@ -4,7 +4,7 @@
 \alias{summarize.GP}
 \title{summarize.GP}
 \usage{
-\method{summarize}{GP}(gp, pdf_file = NULL, txt_file = NULL)
+summarize.GP(gp, pdf_file = NULL, txt_file = NULL)
 }
 \arguments{
 \item{txt_file}{}
