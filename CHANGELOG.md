@@ -16,7 +16,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Removed `PEcAn.utils::model2netcdf`, which has been deprecated since PEcAn 1.3.7. Use `model2netcdf.<YOURMODEL>` in the appropriate model package instead.
 
 ### Changed
-- Moved `listToXml` ouf the `PEcAn.utils` package and into the `PEcAn.settings` package. `PEcAn.utils::listToXml` still works with a deprecation warning, but will be removed in a future release.
+- Moved `listToXml` and `SafeList` ouf the `PEcAn.utils` package and into the `PEcAn.settings` package. The `PEcAn.utils` versions still work with a deprecation warning, but will be removed in a future release.
 - Major namespace cleanup in the `PEcAn.utils` package. It now loads more quietly and is much less likely to mask functions in a package you loaded earlier.
 
 
