@@ -1,399 +1,685 @@
-##' @name minimize.GP
-##' @title minimize.GP
-##' @export
+##' Paramater Data Assimilation using emulator
 ##'
-##' @param gp
-##' @param rng
-##' @param x0 
-##' @param splinefuns
-##' 
-##' @author Michael Dietze
-minimize.GP <- function(gp, rng, x0, splinefuns = NULL) {
+##' @title Paramater Data Assimilation using emulator
+##' @param settings = a pecan settings list
+##' @param external.data = list of inputs
+##' @param external.priors = list or priors
+##'
+##' @return nothing. Diagnostic plots, MCMC samples, and posterior distributions
+##'  are saved as files and db records.
+##'
+##' @author Mike Dietze
+##' @author Ryan Kelly, Istem Fer
+##' @export
+pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
+                         params.id = NULL, param.names = NULL, prior.id = NULL, 
+                         chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL, 
+                         ar.target = NULL, jvar = NULL, n.knot = NULL) {
   
-  isotropic <- gp$isotropic
-  x.id      <- gp$x.id
-  ey        <- 0
-  
-  if (gp$method == "bayes") {
-    samp <- gp$samp
-    tauw <- coda::mcmc(gp$tauw[samp, ])
-    psi  <- coda::mcmc(gp$psi[samp, ])
-    mu   <- coda::mcmc(gp$mu)
-    tauv <- W <- NULL
-  } else {
-    ## MLE
-    psi  <- gp$psi
-    mu   <- gp$mu
-    tauw <- gp$tauw
-    tauv <- gp$tauv
+  ## this bit of code is useful for defining the variables passed to this function if you are
+  ## debugging
+  if (FALSE) {
+    external.data <- external.priors <- NULL
+    params.id <- param.names <- prior.id <- chain <- iter <- NULL
+    n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
   }
   
-  psibar <- NULL
-  if (isotropic) {
-    psibar <- median(psi)
-  } else {
-    if (is.matrix(psi)) {
-      psibar <- apply(psi, 2, median)
+  # handle extention flags
+  # is this an extension run
+  extension.check <- is.null(settings$assim.batch$extension) 
+  
+  if (extension.check) {
+    # not an extension run
+    run.normal <- TRUE
+    run.round <- FALSE
+    run.longer <- FALSE
+  } else if (!extension.check & settings$assim.batch$extension == "round") {
+    # 'round' extension
+    run.normal <- FALSE
+    run.round <- TRUE
+    run.longer <- FALSE
+  } else if (!extension.check & settings$assim.batch$extension == "longer") {
+    # 'longer' extension
+    run.normal <- FALSE
+    run.round <- FALSE
+    run.longer <- TRUE
+  }
+  
+  ## -------------------------------------- Setup ------------------------------------- 
+  ## Handle settings
+  settings <- pda.settings(
+    settings=settings, params.id=params.id, param.names=param.names, 
+    prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
+    adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot, run.round)
+  
+  ## history restart
+  pda.restart.file <- file.path(settings$outdir,paste0("history.pda",
+                                                       settings$assim.batch$ensemble.id, ".Rdata"))
+  current.step <- "START" 
+  
+  ## will be used to check if multiplicative Gaussian is requested
+  any.mgauss <- sapply(settings$assim.batch$inputs, `[[`, "likelihood")
+  isbias <- which(unlist(any.mgauss) == "multipGauss")
+  
+  ## check if scaling factors are gonna be used
+  any.scaling <- sapply(settings$assim.batch$param.names, `[[`, "scaling")
+  sf <- unique(unlist(any.scaling))
+  
+  ## Open database connection
+  if (settings$database$bety$write) {
+    con <- try(db.open(settings$database$bety), silent = TRUE)
+    if (is(con, "try-error")) {
+      con <- NULL
     } else {
-      psibar <- psi
+      on.exit(db.close(con))
+    }
+  } else {
+    con <- NULL
+  }
+  
+  bety <- src_postgres(dbname = settings$database$bety$dbname, 
+                       host = settings$database$bety$host, 
+                       user = settings$database$bety$user, 
+                       password = settings$database$bety$password)
+  
+  ## Load priors
+  if(is.null(external.priors)){
+    temp        <- pda.load.priors(settings, bety$con, run.normal)
+    prior.list  <- temp$prior
+    settings    <- temp$settings
+  }else{
+    prior.list  <- external.priors
+  }
+  pname       <- lapply(prior.list, rownames)
+  n.param.all <- sapply(prior.list, nrow)
+  
+  
+  if(is.null(external.data)){
+    inputs <- load.pda.data(settings, bety)
+  }else{
+    inputs <- external.data
+  }
+  
+  n.input     <- length(inputs)
+  
+  
+  ## Set model-specific functions
+  do.call("library", list(paste0("PEcAn.", settings$model$type)))
+  my.write.config <- paste("write.config.", settings$model$type, sep = "")
+  if (!exists(my.write.config)) {
+    PEcAn.logger::logger.severe(paste(my.write.config, 
+                                      "does not exist. Please make sure that the PEcAn interface is loaded for", 
+                                      settings$model$type))
+  }
+  
+  ## Select parameters to constrain
+  prior.ind <- lapply(seq_along(settings$pfts), 
+                      function(x) which(pname[[x]] %in% settings$assim.batch$param.names[[x]]))
+  n.param <- sapply(prior.ind, length)
+  prior.ind.orig <- lapply(seq_along(settings$pfts), 
+                           function(x) which(pname[[x]] %in% settings$assim.batch$param.names[[x]] |
+                                               pname[[x]] %in% any.scaling[[x]]))
+  n.param.orig <- sapply(prior.ind.orig, length)
+  
+  ## Get the workflow id
+  if ("workflow" %in% names(settings)) {
+    workflow.id <- settings$workflow$id
+  } else {
+    workflow.id <- -1
+  }
+  
+  ## Create an ensemble id
+  settings$assim.batch$ensemble.id <- pda.create.ensemble(settings, con, workflow.id)
+  
+  
+  ## Set up likelihood functions
+  llik.fn <- pda.define.llik.fn(settings)
+  
+  ## ------------------------------------ Emulator ------------------------------------ 
+  # if we are going to throw scaling factor(s) instead of parameters
+  # 1. append scaling factor priors to prior.list
+  # 2. use the same probs for all pft params to be scaled
+  if(!is.null(sf)){
+    sf.ind <- length(prior.list) + 1
+    sf.list <- pda.generate.sf(settings$assim.batch$n.knot, sf, prior.list)
+    probs.sf <- sf.list$probs
+    prior.list <- sf.list$priors
+  }else {
+    probs.sf <- NULL
+  }
+  
+  ## Set prior distribution functions (d___, q___, r___, and multivariate versions)
+  prior.fn <- lapply(prior.list, pda.define.prior.fn)
+  
+  
+  ## Propose parameter knots (X) for emulator design
+  knots.list <- lapply(seq_along(settings$pfts), 
+                       function(x) pda.generate.knots(settings$assim.batch$n.knot, sf, probs.sf,
+                                                      n.param.all[x], 
+                                                      prior.ind.orig[[x]], 
+                                                      prior.fn[[x]], 
+                                                      pname[[x]]))
+  names(knots.list) <- sapply(settings$pfts,"[[",'name')
+  
+  knots.params <- lapply(knots.list, `[[`, "params")
+  knots.probs <- lapply(knots.list, `[[`, "probs")
+  
+  current.step <- "GENERATE KNOTS"
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+  
+  ## Run this block if this is a "round" extension
+  if (run.round) {
+    
+    # loads the posteriors of the the previous emulator run
+    temp.round <- pda.load.priors(settings, con, run.round)
+    prior.round.list <- temp.round$prior
+    
+    
+    prior.round.fn <- lapply(prior.round.list, pda.define.prior.fn)
+    
+    ## Propose a percentage (if not specified 80%) of the new parameter knots from the posterior of the previous run
+    knot.par        <- ifelse(!is.null(settings$assim.batch$knot.par),
+                              as.numeric(settings$assim.batch$knot.par),
+                              0.8)
+    
+    n.post.knots    <- floor(knot.par * settings$assim.batch$n.knot)
+    
+    if(!is.null(sf)){
+      load(settings$assim.batch$sf.path)
+      sf.round.post <- pda.define.prior.fn(sf.post.distns)
+      rm(sf.post.distns)
+      n.sf <- length(sf)
+      sf.round.list <- pda.generate.knots(n.post.knots,
+                                          sf = NULL, probs.sf = NULL,
+                                          n.param.all = n.sf,
+                                          prior.ind = seq_len(n.sf),
+                                          prior.fn = sf.round.post, 
+                                          pname = paste0(sf, "_SF"))
+      probs.round.sf     <- sf.round.list$params
+    }else {
+      probs.round.sf     <- NULL
+    }
+    
+    ## set prior distribution functions for posterior of the previous emulator run
+    knots.list.temp <- lapply(seq_along(settings$pfts),
+                              function(x) pda.generate.knots(n.post.knots,
+                                                             sf, probs.round.sf,
+                                                             n.param.all[x],
+                                                             prior.ind.orig[[x]],
+                                                             prior.round.fn[[x]],
+                                                             pname[[x]]))
+    knots.params.temp <- lapply(knots.list.temp, `[[`, "params")
+    
+    
+    for (i in seq_along(settings$pfts)) {
+      # mixture of knots
+      mix.knots <- sample(nrow(knots.params[[i]]), (settings$assim.batch$n.knot - n.post.knots))
+      knots.list[[i]]$params <- rbind(knots.params[[i]][mix.knots, ],
+                                      knots.list.temp[[i]]$params)
+      names(knots.list)[i] <- settings$pfts[[i]]['name']
+    }
+    
+    knots.params <- lapply(knots.list, `[[`, "params")
+    knots.probs  <- lapply(knots.list, `[[`, "probs")
+    
+    current.step <- "Generate Knots: round-if block"
+    save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+  } # end round-if block
+  
+  
+  ## Run this block if this is normal run or a "round" extension
+  if(run.normal | run.round){
+    
+    ## Set up runs and write run configs for all proposed knots
+    run.ids <- pda.init.run(settings, con, my.write.config, workflow.id, knots.params, 
+                            n = settings$assim.batch$n.knot, 
+                            run.names = paste0(settings$assim.batch$ensemble.id, ".knot.",
+                                               1:settings$assim.batch$n.knot))   
+    current.step <- "pda.init.run"
+    save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+    
+    ## start model runs
+    PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+    
+    ## Retrieve model outputs and error statistics
+    model.out <- list()
+    pda.errors <- list()
+    
+    
+    ## read model outputs    
+    for (i in seq_len(settings$assim.batch$n.knot)) {
+      align.return <- pda.get.model.output(settings, run.ids[i], bety, inputs)
+      model.out[[i]] <- align.return$model.out
+      if(all(!is.na(model.out[[i]]))){
+        inputs <- align.return$inputs
+      }
+    }
+    
+    
+    current.step <- "pda.get.model.output"
+    save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+    
+    # efficient sample size calculation
+    inputs <- pda.neff.calc(inputs)
+    
+    # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
+    if(any(unlist(any.mgauss) == "multipGauss")) {
+      # how many bias parameters per dataset requested
+      nbias <- ifelse(is.null(settings$assim.batch$inputs[[isbias]]$nbias), 1,
+                      as.numeric(settings$assim.batch$inputs[[isbias]]$nbias))
+      bias.list <- return.bias(isbias, model.out, inputs, prior.list, nbias, run.round, settings$assim.batch$bias.path)
+      bias.terms <- bias.list$bias.params
+      prior.list <- bias.list$prior.list.bias
+      prior.fn <- lapply(prior.list, pda.define.prior.fn)
+    } else {
+      bias.terms <- NULL
+    }
+    
+    for (i in seq_len(settings$assim.batch$n.knot)) {
+      if(!is.null(bias.terms)){
+        all.bias <- lapply(bias.terms, function(n) n[i,])
+        all.bias <- do.call("rbind", all.bias)
+      } else {
+        all.bias <- NULL
+      }
+      ## calculate error statistics and save in the DB      
+      pda.errors[[i]] <- pda.calc.error(settings, con, model_out = model.out[[i]], run.id = run.ids[i], inputs, bias.terms = all.bias)
+    } 
+    
+  } # end if-block
+  current.step <- "pda.calc.error"
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+  
+  init.list <- list()
+  jmp.list <- list()
+  
+  prior.all <- do.call("rbind", prior.list)
+  length.pars <- 0
+  prior.ind.list <- prior.ind.list.ns <- list()
+  # now I need to go through all parameters for each pft, but leave out the ones that scaling factor is requested
+  for(p in seq_along(settings$assim.batch$param.names)){
+    param.names <- settings$assim.batch$param.names[[p]]
+    prior.ind.list[[p]] <- length.pars + which(pname[[p]] %in% unlist(param.names) &
+                                                 !(pname[[p]] %in% sf))
+    prior.ind.list.ns[[p]] <- length.pars + which(pname[[p]] %in% unlist(param.names))
+    length.pars <- length.pars + length(pname[[p]])
+  }
+  prior.ind.all    <- unlist(prior.ind.list)
+  prior.ind.all.ns <- unlist(prior.ind.list.ns)
+  # if no scaling is requested prior.ind.all == prior.ind.all.ns
+  # keep this ind.all w/o bias until extracting prob values below
+  
+  if (run.normal | run.round) {
+    
+    # retrieve n
+    n.of.obs <- sapply(inputs,`[[`, "n") 
+    names(n.of.obs) <- sapply(model.out[[1]],names)
+    
+    
+    # UPDATE: Use mlegp package, I can now draw from parameter space
+    knots.params.all <- do.call("cbind", knots.params)
+    X <- knots.params.all[, prior.ind.all, drop = FALSE]
+    
+    if(!is.null(sf)){
+      X <- cbind(X, probs.sf)
+    }
+    
+    # retrieve SS
+    error.statistics <- list()
+    SS.list <- list()
+    bc <- 1
+    
+    # what percentage of runs is allowed to fail?
+    if(!is.null(settings$assim.batch$allow.fail)){
+      allow.fail <- as.numeric(settings$assim.batch$allow.fail)
+    } else {
+      allow.fail <- 0.5
+    }
+    # what is it in number of runs?
+    no.of.allowed <- floor(settings$assim.batch$n.knot * allow.fail)
+    
+    for(inputi in seq_len(n.input)){
+      error.statistics[[inputi]] <- sapply(pda.errors,`[[`, inputi)
+      
+      if(unlist(any.mgauss)[inputi] == "multipGauss") {
+        
+        # if yes, then we need to include bias term in the emulator
+        #bias.probs <- bias.list$bias.probs
+        #biases <- c(t(bias.probs[[bc]]))
+        bias.params <- bias.list$bias.params
+        biases <- c(t(bias.params[[bc]]))
+        bc <- bc + 1
+        
+        # replicate model parameter set per bias parameter
+        rep.rows <- rep(1:nrow(X), each = nbias)
+        X.rep <- X[rep.rows,]
+        Xnew <- cbind(X.rep, biases)
+        colnames(Xnew) <- c(colnames(X.rep), paste0("bias.", names(n.of.obs)[inputi]))
+        SS.list[[inputi]] <- cbind(Xnew, c(error.statistics[[inputi]]))
+        
+      } else {
+        SS.list[[inputi]] <- cbind(X, error.statistics[[inputi]])
+      } # if-block
+      
+      # check failed runs and remove them if you'll have a reasonable amount of param sets after removal
+      # how many runs failed?
+      no.of.failed <- sum(is.na(SS.list[[inputi]][, ncol(SS.list[[inputi]])]))
+      
+      # check if you're left with enough sets
+      if(no.of.failed < no.of.allowed & (settings$assim.batch$n.knot - no.of.failed) > 1){
+        SS.list[[inputi]] <- SS.list[[inputi]][!rowSums(is.na(SS.list[[inputi]])), ]
+        if( no.of.failed  > 0){
+          PEcAn.logger::logger.info(paste0(no.of.failed, " runs failed. Emulator for ", names(n.of.obs)[inputi], " will be built with ", settings$assim.batch$n.knot - no.of.failed, " knots."))
+        } 
+      } else{
+        PEcAn.logger::logger.error(paste0("Too many runs failed, not enough parameter set to build emulator for ", names(n.of.obs)[inputi], "."))
+      }
+      
+    } # for-loop
+    
+    if (run.round) {
+      # check if this is another 'round' of emulator 
+      
+      # load original knots
+      load(settings$assim.batch$ss.path)
+      # add on
+      SS <- lapply(seq_along(SS), function(iss) rbind(SS.list[[iss]], SS[[iss]]))
+      
+    } else {
+      SS <- SS.list
+    }
+    
+    PEcAn.logger::logger.info(paste0("Using 'mlegp' package for Gaussian Process Model fitting."))
+    
+    ## Generate emulator on SS, return a list ##
+    
+    # start the clock
+    ptm.start <- proc.time()
+    
+    # prepare for parallelization
+    dcores <- parallel::detectCores() - 1
+    ncores <- min(max(dcores, 1), length(SS))
+    
+    cl <- parallel::makeCluster(ncores, type="FORK")
+    
+    ## Parallel fit for GPs
+    GPmodel <- parallel::parLapply(cl, SS, function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], verbose = 0))
+    # GPmodel <- lapply(SS, function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], verbose = 0))
+    
+    parallel::stopCluster(cl)
+    
+    # Stop the clock
+    ptm.finish <- proc.time() - ptm.start
+    PEcAn.logger::logger.info(paste0("GP fitting took ", paste0(round(ptm.finish[3])), " seconds."))
+    
+    
+    gp <- GPmodel
+    
+  } else { # is this a "longer" type of extension run
+    
+    load(settings$assim.batch$emulator.path)  # load previously built emulator(s) to run a longer mcmc
+    load(settings$assim.batch$ss.path)
+    load(settings$assim.batch$resume.path)
+    
+    n.of.obs <- resume.list[[1]]$n.of.obs
+    
+    if(any(unlist(any.mgauss) == "multipGauss")){
+      load(settings$assim.batch$bias.path) # load prior.list with bias term from previous run
+      prior.all <- do.call("rbind", prior.list)
+    }
+    
+    
+    for (c in seq_len(settings$assim.batch$chain)) {
+      init.list[[c]] <- resume.list[[c]]$prev.samp[nrow(resume.list[[c]]$prev.samp), ]
+      jmp.list[[c]] <- resume.list[[c]]$jump
     }
   }
-  tauwbar <- median(tauw)
-  S <- calcSpatialCov(gp$d, psibar, tauwbar)
-  # S12 <- Sprime[1:(npred*dim),(npred*dim+1):(n.unique+npred*dim)] S22 <-
-  # Sprime[(npred*dim+1):(n.unique+npred*dim),(npred*dim+1):(n.unique+npred*dim)]
-  S22inv <- solve(S)
-  if (gp$zeroMean) {
-    ey <- 0
-  } else {
-    ey <- max(mu)  #mean(y) 
+  
+  # add indice and increase n.param for scaling factor
+  if(!is.null(sf)){
+    prior.ind.all <- c(prior.ind.all, 
+                       ((length.pars + 1): (length.pars + length(sf))))
+    n.param       <- c(n.param, length(sf))
+    length.pars   <- length.pars + length(sf)
   }
-  ybar <- tapply(gp$y, gp$x.id, mean)
-  k    <- S22inv %*% (ybar - ey)
   
-  nlm(gpeval, x0, k = k, mu = ey, tau = tauwbar, psi = psibar,
-      x = gp$x.compact, rng = rng, splinefcns = splinefcns)
-} # minimize.GP
-
-
-##' Calculates the probability of a set of parameter values, given by xnew
-##'
-##' @name gpeval
-##' @title gpeval
-##' @export
-##'
-##' @param xnew
-##' @param k
-##' @param mu
-##' @param tau
-##' @param psi
-##' @param x
-##' @param rng range
-##' @param splinefcns
-##' 
-##' @author Michael Dietze 
-gpeval <- function(xnew, k, mu, tau, psi, x, rng, splinefcns) {
+  # add indice and increase n.param for bias
+  if(any(unlist(any.mgauss) == "multipGauss")){
+    prior.ind.all <- c(prior.ind.all, 
+                       ((length.pars + 1) : (length.pars + length(isbias))))
+    prior.ind.all.ns <- c(prior.ind.all.ns, 
+                          ((length.pars + 1) : (length.pars + length(isbias))))
+    n.param <- c(n.param, length(isbias))
+    n.param.orig <- c(n.param.orig, length(isbias))
+    length.pars   <- length.pars + length(isbias)
+  }
   
-  ## second calc value
-  S12 <- sapply(seq_along(k), function(i) {
-    tau * exp(-sum(psi * (xnew - x[i, ]) ^ 2))
+  
+  ## Set up prior functions accordingly
+  prior.fn.all <- pda.define.prior.fn(prior.all)
+  
+  # define range to make sure mcmc.GP doesn't propose new values outside
+  rng <- matrix(c(sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 1e-05)),
+                  sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 0.99999))),
+                nrow = sum(n.param))
+  
+  if (run.normal | run.round) {
+    
+    resume.list <- list()
+    
+    for (c in seq_len(settings$assim.batch$chain)) {
+      jmp.list[[c]] <- sapply(prior.fn.all$qprior, 
+                              function(x) 0.1 * diff(eval(x, list(p = c(0.05, 0.95)))))[prior.ind.all]
+      jmp.list[[c]] <- sqrt(jmp.list[[c]])
+      
+      init.x <- lapply(prior.ind.all, function(v) eval(prior.fn.all$rprior[[v]], list(n = 1)))
+      names(init.x) <- rownames(prior.all)[prior.ind.all]
+      init.list[[c]] <- init.x
+      resume.list[[c]] <- NA
+    }
+  }
+  
+  if (!is.null(settings$assim.batch$mix)) {
+    mix <- settings$assim.batch$mix
+  } else if (sum(n.param) > 1) {
+    mix <- "joint"
+  } else {
+    mix <- "each"
+  }
+  
+  PEcAn.logger::logger.info(paste0("Starting emulator MCMC. Please wait."))
+  
+  current.step <- "pre-MCMC"
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+  
+  # start the clock
+  ptm.start <- proc.time()
+  
+  # prepare for parallelization
+  dcores <- parallel::detectCores() - 1
+  ncores <- min(max(dcores, 1), settings$assim.batch$chain)
+  
+  PEcAn.logger::logger.setOutputFile(file.path(settings$outdir, "pda.log"))
+  
+  cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(settings$outdir, "pda.log"))
+  
+  ## Sample posterior from emulator
+  mcmc.out <- parallel::parLapply(cl, 1:settings$assim.batch$chain, function(chain) {
+    mcmc.GP(gp          = gp, ## Emulator(s)
+            x0          = init.list[[chain]],     ## Initial conditions
+            nmcmc       = settings$assim.batch$iter,       ## Number of reps
+            rng         = rng,       ## range
+            format      = "lin",      ## "lin"ear vs "log" of LogLikelihood 
+            mix         = mix,     ## Jump "each" dimension independently or update them "joint"ly
+            jmp0        = jmp.list[[chain]],  ## Initial jump size
+            ar.target   = settings$assim.batch$jump$ar.target,   ## Target acceptance rate
+            priors      = prior.fn.all$dprior[prior.ind.all], ## priors
+            settings    = settings,
+            run.block   = (run.normal | run.round),  
+            n.of.obs    = n.of.obs,
+            llik.fn     = llik.fn,
+            resume.list = resume.list[[chain]]
+    )
   })
-  yprime <- mu + sum(S12 * k)
   
-  if (!is.null(splinefcns)) {
-    ## add trend surface back on
-    y0 <- splinefuns[[length(xnew) + 1]]
-    f <- sapply(seq_along(xnew), function(j) {
-      splinefuns[[j]](xnew[j])
-    })
-    y.trend <- y0 + sum(f - y0)
-    yprime <- yprime + ytrend
-  }
+  parallel::stopCluster(cl)
   
-  return(yprime)
-} # gpeval
-
-
-##' @name ddist
-##' @title ddist
-##' @export
-ddist <- function(x, prior) {
-  eval(parse(text = paste("d", prior$distn, sep = "")))(x, prior$parama, prior$paramb)
-} # ddist
-
-
-# calculate.prior <- function(samples, priors){ traits <- names(samples) joint <-
-# sum(sapply(1:nrow(priors), function(i) -log(ddist(samples[[i]], priors[i,])))) #note:
-# this is within the negative log domain return(joint) }
-
-##' @name calculate.prior
-##' @title calculate.prior
-##' @export
-calculate.prior <- function(samples, priors) {
-  sum(sapply(seq_along(priors), function(i) eval(priors[[i]], list(x = samples[[i]]))))
-} # calculate.prior
-
-##' @name get_ss
-##' @title get_ss
-##' @export
-get_ss <- function(gp, xnew) {
+  # Stop the clock
+  ptm.finish <- proc.time() - ptm.start
+  PEcAn.logger::logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(settings$assim.batch$iter), " iterations."))
   
-  SS <- numeric(length(gp))
+  current.step <- "post-MCMC"
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
-  X <- matrix(unlist(xnew), nrow = 1, byrow = TRUE)
+  mcmc.samp.list <- sf.samp.list <- list()
   
-  for(igp in seq_along(gp)){
-    Y <- mlegp::predict.gp(gp[[igp]], newData = X[, 1:ncol(gp[[igp]]$X), drop=FALSE], se.fit = TRUE) 
-    SS[igp] <- rnorm(1, Y$fit, Y$se.fit)
-  }
-  return(SS)
-  
-} # get_ss
-
-##' @name get_y
-##' @title get_y
-##' @export
-get_y <- function(SSnew, xnew, llik.fn, priors, llik.par) {
-  
-  likelihood <- pda.calc.llik(SSnew, llik.fn, llik.par)
-  
-  prior.prob <- calculate.prior(xnew, priors)
-  posterior.prob <- likelihood + prior.prob
-  
-  return(posterior.prob)
-  
-} # get_y
-
-# is.accepted <- function(ycurr, ynew, format='lin'){ z <- exp(ycurr-ynew) acceptance <-
-# z>runif(1) return(acceptance) }
-
-##' @name is.accepted
-##' @title is.accepted
-##' @export
-is.accepted <- function(ycurr, ynew, format = "lin") {
-  a <- exp(ynew - ycurr)
-  a > runif(1)
-} # is.accepted
-
-##' Function to sample from a GP model
-##' that is assumed to be a -lnLikelihood surface
-##' with flat priors and bounded region
-##'
-##' @name mcmc.GP
-##' @title mcmc.GP
-##' @export
-##'
-##' @param gp
-##' @param x0 
-##' @param nmcmc
-##' @param rng
-##' @param format lin = lnlike fcn, log = log(lnlike)
-##' @param mix each = jump each dim. independently, joint = jump all at once 
-##' @param splinefcns
-##' @param jmp0
-##' @param ar.target
-##' @param priors
-##' 
-##' @author Michael Dietze
-mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcns = NULL, 
-                    jmp0 = 0.35 * (rng[, 2] - rng[, 1]), ar.target = 0.5, priors = NA, settings, 
-                    run.block = TRUE, n.of.obs, llik.fn, resume.list = NULL) {
-  
-  pos.check <- sapply(settings$assim.batch$inputs, `[[`, "ss.positive")
-  
-  if(length(unlist(pos.check)) == 0){
-    # if not passed from settings assume none
-    pos.check <- rep(FALSE, length(settings$assim.batch$inputs))
-  }else if(length(unlist(pos.check)) != length(settings$assim.batch$inputs)){
-    # maybe one provided, but others are forgotten
-    # check which ones are provided in settings
-    from.settings <- sapply(seq_along(pos.check), function(x) !is.null(pos.check[[x]]))
-    tmp.check <- rep(FALSE, length(settings$assim.batch$inputs))
-    # replace those with the values provided in the settings
-    tmp.check[from.settings] <- unlist(pos.check)
-    pos.check <- tmp.check
-  }else{
-    pos.check <- as.logical(pos.check)
-  }
-  
-  # get SS
-  if(!any(pos.check)){
-    currSS <- get_ss(gp, x0)
-  }else{
-    repeat {
-      currSS <- get_ss(gp, x0)
-      if (currSS[pos.check] > 0) {
-        break
+  for (c in seq_len(settings$assim.batch$chain)) {
+    
+    m <- matrix(NA, nrow =  nrow(mcmc.out[[c]]$mcmc.samp), ncol = length(prior.ind.all.ns))
+    
+    if(!is.null(sf)){
+      sfm <- matrix(NA, nrow =  nrow(mcmc.out[[c]]$mcmc.samp), ncol = length(sf))
+    }
+    ## Set the prior functions back to work with actual parameter range
+    
+    prior.all <- do.call("rbind", prior.list)
+    prior.fn.all <- pda.define.prior.fn(prior.all)
+    
+    # retrieve rownames separately to get rid of var_name* structures
+    prior.all.rownames <- unlist(sapply(prior.list, rownames))
+    
+    sc <- 1
+    for (i in seq_along(prior.ind.all.ns)) {
+      sf.check <- prior.all.rownames[prior.ind.all.ns][i]
+      idx <- grep(sf.check, rownames(prior.all)[prior.ind.all])
+      if(any(grepl(sf.check, sf))){
+        
+        m[, i] <- eval(prior.fn.all$qprior[prior.ind.all.ns][[i]],
+                       list(p = mcmc.out[[c]]$mcmc.samp[, idx]))
+        if(sc <= length(sf)){
+          sfm[, sc] <- mcmc.out[[c]]$mcmc.samp[, idx]
+          sc <- sc + 1
+        }
+        
+      }else{
+        m[, i] <- mcmc.out[[c]]$mcmc.samp[, idx]
       }
+    }
+    
+    colnames(m) <- prior.all.rownames[prior.ind.all.ns]
+    mcmc.samp.list[[c]] <- m
+    
+    if(!is.null(sf)){
+      colnames(sfm) <- paste0(sf, "_SF")
+      sf.samp.list[[c]] <- sfm
+    }
+    
+    resume.list[[c]] <- mcmc.out[[c]]$chain.res
+  }
+  
+  
+  
+  if (FALSE) {
+    gp          = gp
+    x0          = init.list[[chain]]
+    nmcmc       = settings$assim.batch$iter
+    rng         = rng
+    format      = "lin"
+    mix         = mix
+    jmp0        = jmp.list[[chain]]
+    ar.target   = settings$assim.batch$jump$ar.target
+    priors      = prior.fn.all$dprior[prior.ind.all]
+    settings    = settings
+    run.block   = (run.normal | run.round)  
+    n.of.obs    = n.of.obs
+    llik.fn     = llik.fn
+    resume.list = resume.list[[chain]]
+  }
+  
+  ## ------------------------------------ Clean up ------------------------------------ 
+  current.step <- "clean up"
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+  
+  ## Save emulator, outputs files
+  settings$assim.batch$emulator.path <- file.path(settings$outdir,
+                                                  paste0("emulator.pda", 
+                                                         settings$assim.batch$ensemble.id, 
+                                                         ".Rdata"))
+  save(gp, file = settings$assim.batch$emulator.path)
+  
+  settings$assim.batch$ss.path <- file.path(settings$outdir, 
+                                            paste0("ss.pda", 
+                                                   settings$assim.batch$ensemble.id, 
+                                                   ".Rdata"))
+  save(SS, file = settings$assim.batch$ss.path)
+  
+  settings$assim.batch$mcmc.path <- file.path(settings$outdir, 
+                                              paste0("mcmc.list.pda", 
+                                                     settings$assim.batch$ensemble.id, 
+                                                     ".Rdata"))
+  save(mcmc.samp.list, file = settings$assim.batch$mcmc.path)
+  
+  settings$assim.batch$resume.path <- file.path(settings$outdir, 
+                                                paste0("resume.pda", 
+                                                       settings$assim.batch$ensemble.id, 
+                                                       ".Rdata"))
+  save(resume.list, file = settings$assim.batch$resume.path)
+  
+  # save prior.list with bias term
+  if(any(unlist(any.mgauss) == "multipGauss")){
+    settings$assim.batch$bias.path <- file.path(settings$outdir, 
+                                                paste0("bias.pda", 
+                                                       settings$assim.batch$ensemble.id, 
+                                                       ".Rdata"))
+    save(prior.list, file = settings$assim.batch$bias.path)
+  }
+  
+  # save sf posterior
+  if(!is.null(sf)){
+    sf.filename <- file.path(settings$outdir, 
+                             paste0("post.distns.pda.sf", "_", settings$assim.batch$ensemble.id, ".Rdata"))
+    sf.prior <- prior.list[[sf.ind]]
+    sf.post.distns <- write_sf_posterior(sf.samp.list, sf.prior, sf.filename)
+    save(sf.post.distns, file = sf.filename)
+    settings$assim.batch$sf.path <- sf.filename
+  }
+  
+  # Separate each PFT's parameter samples (and bias term) to their own list
+  mcmc.param.list <- list()
+  ind <- 0
+  for (i in seq_along(n.param.orig)) {
+    mcmc.param.list[[i]] <- lapply(mcmc.samp.list, function(x) x[, (ind + 1):(ind + n.param.orig[i]), drop = FALSE])
+    ind <- ind + n.param.orig[i]
+  }
+  
+  # Collect non-model parameters in their own list
+  if(length(mcmc.param.list) > length(settings$pfts)) { 
+    # means bias parameter was at least one bias param in the emulator
+    # it will be the last list in mcmc.param.list
+    # there will always be at least one tau for bias
+    for(c in seq_len(settings$assim.batch$chain)){
+      mcmc.param.list[[length(mcmc.param.list)]][[c]] <- cbind( mcmc.param.list[[length(mcmc.param.list)]][[c]],
+                                                                mcmc.out[[c]]$mcmc.par)
+    }
+    
+  } else if (ncol(mcmc.out[[1]]$mcmc.par) != 0){
+    # means no bias param but there are still other params, e.g. Gaussian
+    mcmc.param.list[[length(mcmc.param.list)+1]] <- list()
+    for(c in seq_len(settings$assim.batch$chain)){
+      mcmc.param.list[[length(mcmc.param.list)]][[c]] <- mcmc.out[[c]]$mcmc.par
     }
   }
   
+  settings <- pda.postprocess(settings, con, mcmc.param.list, pname, prior.list, prior.ind.orig)
   
-  currllp <- pda.calc.llik.par(settings, n.of.obs, currSS)
-  LLpar  <- unlist(sapply(currllp, `[[` , "par"))
-  
-  xcurr <- x0
-  dim   <- length(x0)
-  samp  <- matrix(NA, nmcmc, dim)
-  par   <- matrix(NA, nmcmc, length(LLpar), dimnames = list(NULL, names(LLpar))) # note: length(LLpar) can be 0
-  
-  
-  if (run.block) {
-    jcov <- diag((jmp0)^2)
-    accept.count <- 0
-    start <- 1
-    # jmp <- mvjump(ic=jmp0,rate=ar.target, nc=dim)
-  } else {
-    jcov <- jmp0
-    accept.count <- resume.list$ac
-    prev.samp    <- resume.list$prev.samp
-    prev.par     <- resume.list$par
-    colnames(prev.samp) <- names(x0)
-    samp  <- rbind(prev.samp, samp)
-    par   <- rbind(prev.par, par)
-    start <- dim(prev.samp)[1] + 1
-    nmcmc <- dim(samp)[1]
-    # jmp <- mvjump(ic=diag(jmp0),rate=ar.target, nc=dim)
+  ## close database connection
+  if (!is.null(con)) {
+    db.close(con)
   }
   
+  ## Output an updated settings list
+  current.step <- "pda.finish"
+  save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+  return(settings)
   
-  for (g in start:nmcmc) {
-    
-    if (mix == "joint") {
-      
-      # adapt
-      if ((g > 2) && ((g - 1) %% settings$assim.batch$jump$adapt == 0)) {
-        params.recent <- samp[(g - settings$assim.batch$jump$adapt):(g - 1), ]
-        colnames(params.recent) <- names(x0)
-        # accept.count <- round(jmp@arate[(g-1)/settings$assim.batch$jump$adapt]*100)
-        jcov <- pda.adjust.jumps.bs(settings, jcov, accept.count, params.recent)
-        accept.count <- 0  # Reset counter
-      }
-      
-      ## propose new parameters
-      repeat {
-        xnew <- mvrnorm(1, unlist(xcurr), jcov)
-        if (bounded(xnew, rng)) {
-          break
-        }
-      }
-      # if(bounded(xnew,rng)){
-      
-      # re-predict SS
-      if(!any(pos.check)){
-        currSS <- get_ss(gp, xcurr)
-      }else{
-        repeat {
-          currSS <- get_ss(gp, xcurr)
-          if (currSS[pos.check] > 0) {
-            break
-          }
-        }
-      }
-      
-      
-      # don't update the currllp ( = llik.par, e.g. tau) yet
-      # calculate posterior with xcurr | currllp
-      ycurr  <- get_y(currSS, xcurr, llik.fn, priors, currllp)
-      
-      if(!any(pos.check)){
-        newSS  <- get_ss(gp, xnew)
-      }else{
-        repeat {
-          newSS  <- get_ss(gp, xnew)
-          if (newSS[pos.check] > 0) {
-            break
-          }
-        }
-      }
-      
-      
-      newllp <- pda.calc.llik.par(settings, n.of.obs, newSS)
-      ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)
-      
-      if (is.accepted(ycurr, ynew)) {
-        xcurr  <- xnew
-        currSS <- newSS
-        accept.count <- accept.count + 1
-      }
-      
-      # now update currllp | xcurr
-      currllp <- pda.calc.llik.par(settings, n.of.obs, currSS)
-      pcurr   <- unlist(sapply(currllp, `[[` , "par"))
-      # } mix = each
-    } else {
-      for (i in seq_len(dim)) {
-        ## propose new
-        repeat {
-          xnew[i] <- rnorm(1, xcurr[[i]], p(jmp)[i])
-          if (bounded(xnew[i], rng[i, , drop = FALSE])) {
-            break
-          }
-        }
-        # if(bounded(xnew,rng)){
-        if(!any(pos.check)){
-          currSS <- get_ss(gp, xcurr)
-        }else{
-          repeat {
-            currSS <- get_ss(gp, xcurr)
-            if (currSS[pos.check] > 0) {
-              break
-            }
-          }
-        }
-        
-        ycurr  <- get_y(currSS, xcurr, llik.fn, priors, currllp)
-        
-        if(!any(pos.check)){
-          newSS  <- get_ss(gp, xnew)
-        }else{
-          repeat {
-            newSS  <- get_ss(gp, xnew)
-            if (newSS[pos.check] > 0) {
-              break
-            }
-          }
-        }
-        
-        newllp <- pda.calc.llik.par(settings, n.of.obs, newSS)
-        ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)
-        if (is.accepted(ycurr, ynew)) {
-          xcurr  <- xnew
-          currSS <- newSS
-        }
-        
-        currllp <- pda.calc.llik.par(settings, n.of.obs, currSS)
-        pcurr   <- unlist(sapply(currllp, `[[` , "par"))
-        
-        # }
-      }
-    }
-    samp[g, ] <- unlist(xcurr)
-    par[g, ]  <- pcurr
-    
-    if(g %% 1000 == 0) PEcAn.logger::logger.info(g, "of", nmcmc, "iterations")
-    # print(p(jmp)) jmp <- update(jmp,samp)
-  }
-  
-  
-  chain.res <- list(jump = jcov, ac = accept.count, prev.samp = samp, par = par, n.of.obs = n.of.obs)
-  
-  return(list(mcmc.samp = samp, mcmc.par = par, chain.res = chain.res))
-  ## xnew <- gpeval,x0,k=k,mu=ey,tau=tauwbar,psi=psibar,x=gp$x.compact,rng=rng)
-  
-  ################### IN PROGRESS ##############
-} # mcmc.GP
-
-
-##' @name bounded
-##' @title bounded
-##' @export
-bounded <- function(xnew, rng) {
-  xnew <- as.vector(as.matrix(xnew))
-  down <- xnew > rng[, 1]
-  up <- xnew < rng[, 2]
-  return(all(up & down))
-} # bounded
-
-
-##' @name plot.mvjump
-##' @title plot.mvjump
-##' @export
-##'
-##' @param jmp
-##' 
-##' @author Michael Dietze
-plot.mvjump <- function(jmp) {
-  par(mfrow = c(1, 2))
-  plot(attr(jmp, "history")[, 1], ylab = "Jump Parameter", main = "Jump Parameter")
-  abline(h = mean(attr(jmp, "history")[, 1], na.rm = TRUE))
-  text(0.9 * length(attr(jmp, "history")[, 1]), 
-       min(attr(jmp, "history")[, 1]) + 0.8 * 
-         (max(attr(jmp, "history")[, 1]) - min(attr(jmp, "history")[, 1])), 
-       paste("mean=", mean(attr(jmp, "history")[, 1])))
-  plot(attr(jmp, "arate"), ylab = "Acceptance Rate", 
-       main = "Acceptance Rate", 
-       ylim = c(0, 1))
-  abline(h = attr(jmp, "target"))
-  abline(h = mean(attr(jmp, "arate"), na.rm = TRUE), col = 2)
-} # plot.mvjump
+}  ## end pda.emulator
