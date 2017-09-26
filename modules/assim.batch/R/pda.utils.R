@@ -687,6 +687,7 @@ return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias,
   
   for(i in seq_along(isbias)){
     bias.params[[i]] <- matrix(NA, nrow = length(model.out), ncol = nbias)
+    bias.probs[[i]]  <- matrix(NA, nrow = length(model.out), ncol = nbias)
     
     for(iknot in seq_along(model.out)){
       if(anyNA(model.out[[iknot]], recursive = TRUE)){
@@ -708,6 +709,10 @@ return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias,
     
     prior.names[i] <- paste0("bias.", sapply(model.out[[1]],names)[isbias[i]])
     names(bias.params)[i] <- paste0("bias.", sapply(model.out[[1]],names)[isbias[i]])
+    
+    # get rid of NAs for distribution fitting
+    bias.probs[[i]] <- bias.params[[i]][complete.cases(bias.params[[i]]), ]
+    names(bias.probs)[i] <- paste0("bias.", sapply(model.out[[1]],names)[isbias[i]])
   }
   
   rownames(bias.prior) <- prior.names
@@ -715,7 +720,8 @@ return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias,
   # fit a distribution
   # TODO: check this when more than one multiplicative Gaussian requested
   # probably need to re-format bias.params
-  bias.prior <- PEcAn.MA::approx.posterior(bias.params, bias.prior)
+  bias.params
+  bias.prior <- PEcAn.MA::approx.posterior(bias.probs, bias.prior)
   
   prior.list.bias[[(length(prior.list.bias)+1)]] <- bias.prior
 
