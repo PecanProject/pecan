@@ -151,8 +151,12 @@ get_y <- function(SSnew, xnew, llik.fn, priors, llik.par) {
 ##' @title is.accepted
 ##' @export
 is.accepted <- function(ycurr, ynew, format = "lin") {
-  a <- exp(ynew - ycurr)
-  a > runif(1)
+  if(ynew == -Inf & ycurr == -Inf){
+    return(FALSE)
+  }else{
+    a <- exp(ynew - ycurr)
+    a > runif(1)
+  }
 } # is.accepted
 
 ##' Function to sample from a GP model

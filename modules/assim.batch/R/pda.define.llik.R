@@ -26,8 +26,12 @@ pda.define.llik.fn <- function(settings) {
       
       llik.fn[[i]] <- function(pda.errors, llik.par) {
         # lnL = (n/2) * log(tau) - (tau/2) * SS
-        LL <- (llik.par$n/2) * log(llik.par$par) - (llik.par$par/2) * pda.errors
-        return(LL)
+        if(!is.na(llik.par$par)){
+          LL <- (llik.par$n/2) * log(llik.par$par) - (llik.par$par/2) * pda.errors
+          return(LL)
+        }else{
+          return(-Inf)
+        }
       }
       
     } # if-block
@@ -200,16 +204,14 @@ pda.calc.llik.par <-function(settings, n, error.stats){
     if (settings$assim.batch$inputs[[k]]$likelihood == "Gaussian" |
         settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") {
       
-      # calculate a minimum scale for gamma if emulator proposes negative SS
-      if(error.stats[k] < 0){
-        get_order <- log10(abs(error.stats[k])) 
-        min.scale  <- 1e-10 * (10^get_order) # to make this less likely
-        error.stats[k] <- min.scale
+      if(error.stats[k] > 0){
+        llik.par[[k]]$par <- rgamma(1, n[k]/2, error.stats[k]/2)
+        names(llik.par[[k]]$par) <- paste0("tau.", names(n)[k])
+      }else{
+        llik.par[[k]]$par <- NA
+        names(llik.par[[k]]$par) <- paste0("tau.", names(n)[k])
       }
-  
-      llik.par[[k]]$par <- rgamma(1, n[k]/2, error.stats[k]/2)
-      names(llik.par[[k]]$par) <- paste0("tau.", names(n)[k])
-      
+
     }
     llik.par[[k]]$n     <- n[k]
     
