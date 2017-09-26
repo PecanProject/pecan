@@ -151,12 +151,8 @@ get_y <- function(SSnew, xnew, llik.fn, priors, llik.par) {
 ##' @title is.accepted
 ##' @export
 is.accepted <- function(ycurr, ynew, format = "lin") {
-  if(ynew == -Inf & ycurr == -Inf){
-    return(FALSE)
-  }else{
     a <- exp(ynew - ycurr)
     a > runif(1)
-  }
 } # is.accepted
 
 ##' Function to sample from a GP model
@@ -183,8 +179,31 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
                     jmp0 = 0.35 * (rng[, 2] - rng[, 1]), ar.target = 0.5, priors = NA, settings, 
                     run.block = TRUE, n.of.obs, llik.fn, resume.list = NULL) {
   
+  pos.check <- sapply(settings$assim.batch$inputs, `[[`, "ss.positive")
+  
+  if(length(unlist(pos.check)) == 0){
+    # if not passed from settings assume none
+    pos.check <- rep(FALSE, length(settings$assim.batch$inputs))
+  }else if(length(unlist(pos.check)) != length(settings$assim.batch$inputs)){
+    # maybe one provided, but others are forgotten
+    # check which ones are provided in settings
+    from.settings <- sapply(seq_along(pos.check), function(x) !is.null(pos.check[[x]]))
+    tmp.check <- rep(FALSE, length(settings$assim.batch$inputs))
+    # replace those with the values provided in the settings
+    tmp.check[from.settings] <- unlist(pos.check)
+    pos.check <- tmp.check
+  }else{
+    pos.check <- as.logical(pos.check)
+  }
+  
   # get SS
-  currSS <- get_ss(gp, x0)
+  repeat {
+    currSS <- get_ss(gp, x0)
+    if (currSS[pos.check] > 0) {
+      break
+    }
+  }
+
   currllp <- pda.calc.llik.par(settings, n.of.obs, currSS)
   LLpar  <- unlist(sapply(currllp, `[[` , "par"))
 
@@ -236,12 +255,24 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
       # if(bounded(xnew,rng)){
       
       # re-predict SS
-      currSS <- get_ss(gp, xcurr)
+      repeat {
+        currSS <- get_ss(gp, xcurr)
+        if (currSS[pos.check] > 0) {
+          break
+        }
+      }
+      
       # don't update the currllp ( = llik.par, e.g. tau) yet
       # calculate posterior with xcurr | currllp
       ycurr  <- get_y(currSS, xcurr, llik.fn, priors, currllp)
 
-      newSS  <- get_ss(gp, xnew)
+      repeat {
+        newSS  <- get_ss(gp, xnew)
+        if (newSS[pos.check] > 0) {
+          break
+        }
+      }
+      
       newllp <- pda.calc.llik.par(settings, n.of.obs, newSS)
       ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)
 
@@ -265,10 +296,20 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
           }
         }
         # if(bounded(xnew,rng)){
-        currSS <- get_ss(gp, xcurr)
+        repeat {
+          currSS <- get_ss(gp, xcurr)
+          if (currSS[pos.check] > 0) {
+            break
+          }
+        }
         ycurr  <- get_y(currSS, xcurr, llik.fn, priors, currllp)
         
-        newSS  <- get_ss(gp, xnew)
+        repeat {
+          newSS  <- get_ss(gp, xnew)
+          if (newSS[pos.check] > 0) {
+            break
+          }
+        }
         newllp <- pda.calc.llik.par(settings, n.of.obs, newSS)
         ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)
         if (is.accepted(ycurr, ynew)) {
