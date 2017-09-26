@@ -30,10 +30,7 @@ logical
 Create a SafeList object
 }
 \details{
-DEPRECATED: SafeList has been moved to the PEcAn.settings package and will be removed
-from PEcAn.utils in a future release. Please use the version in PEcAn.settings.
-
-SafeList is a wrapper class for the normal R list. It should behave identically, except for 
+SafeList is a wrapper class for the normal R list. It should behave identically, except for
 the $ operator being overridden to require exact matches.
 
 The constructor works identical to list(...) unless:
