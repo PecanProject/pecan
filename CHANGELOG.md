@@ -52,7 +52,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - #1594 shiny/workflowPlot Refactoring of code. `get_workflow_ids` in db/R/query.dplyr.R changed with `ensemble = FALSE`. Also allowing to load all workflow IDs. `load_data_single_run` and `var_names_all` also moved from shiny/workflowPlot/server.R to query.dplyr.R
 - `PEcAn.remote::start.model.runs` has been significantly refactored to be less redundant and more robust
 - `betyConnect` function in `query.dplyr.R` is now refactored into `read_web_config` so that the the Data-Ingest app can leverage `read_web_config` and provide it with a machine specific filepath for `.../dbfiles`
-
+- Rpreles and Maeswrap package moved to suggest checked for within package function.
 
 
 ## [1.5.0] - 2017-07-13
