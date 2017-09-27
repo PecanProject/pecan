@@ -10,6 +10,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [1.5.1] - 2017-09-??
 
 ### Fixes
+- Fixed hyperparameter draws in PDA
 - Show workflowid in the URL when run is finshed and user clicks results (#1659)
 - `PEcAn.BIOCRO` now uses PEcAn-standard variable names. As a result, two output variables have been renamed but keep their existing units and definitions:
 	- `StemBiom` renamed to `AbvGrndWood`
@@ -32,6 +33,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - PRELES model run script bug fix 
 
 ### Added
+- Functionality to pass hyperparameters via settings
 - Created new (and very rudimentary) web interface for downloading data from the dataone federation into the PEcAn database. More updates to come.
 - Expanded initial conditions workflow for pool-based models, including PEcAn.data.land::prepare_pools to calculate pools from IC file (to be coupled with write.configs)
 - New `PEcAn.utils::days_in_year(year)` function that should make it easier to work with leap years.
