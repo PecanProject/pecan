@@ -185,13 +185,14 @@ pda.calc.llik <- function(pda.errors, llik.fn, llik.par) {
 ##' @title pda.calc.llik.par
 ##' 
 ##' @param settings list
-##' @param n named vector
-##' @param error.stats list
+##' @param n named vector, sample sizes of inputs
+##' @param error.stats list, Sufficient Statistics 
+##' @param hyper.pars list, hyperparameters
 ##' 
 ##' @author Istem Fer
 ##' @export
 
-pda.calc.llik.par <-function(settings, n, error.stats){
+pda.calc.llik.par <-function(settings, n, error.stats, hyper.pars){
   
   llik.par <- list()
   
@@ -202,13 +203,9 @@ pda.calc.llik.par <-function(settings, n, error.stats){
     if (settings$assim.batch$inputs[[k]]$likelihood == "Gaussian" |
         settings$assim.batch$inputs[[k]]$likelihood == "multipGauss") {
       
-        get_order <- log10(error.stats[k])
-        # tau prior : gamma(a, b)
-        a  <- 1e-3
-        b  <- 1e-3 * (10^get_order) # scale prior, make SS >> b
-        llik.par[[k]]$par <- rgamma(1, a + n[k]/2, b + error.stats[k]/2)
+        llik.par[[k]]$par <- rgamma(1, hyper.pars[[k]]$parama + n[k]/2, 
+                                    hyper.pars[[k]]$paramb + error.stats[k]/2)
         names(llik.par[[k]]$par) <- paste0("tau.", names(n)[k])
-
 
     }
     llik.par[[k]]$n     <- n[k]

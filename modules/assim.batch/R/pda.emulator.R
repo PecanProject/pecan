@@ -487,6 +487,9 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     mix <- "each"
   }
   
+  # get hyper parameters if any
+  hyper.pars <- return_hyperpars(settings$assim.batch, inputs)
+  
   PEcAn.logger::logger.info(paste0("Starting emulator MCMC. Please wait."))
   
   current.step <- "pre-MCMC"
@@ -518,6 +521,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
             run.block   = (run.normal | run.round),  
             n.of.obs    = n.of.obs,
             llik.fn     = llik.fn,
+            hyper.pars  = hyper.pars,
             resume.list = resume.list[[chain]]
     )
   })
@@ -593,6 +597,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     run.block   = (run.normal | run.round)  
     n.of.obs    = n.of.obs
     llik.fn     = llik.fn
+    hyper.pars  = hyper.pars
     resume.list = resume.list[[chain]]
   }
   
