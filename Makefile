@@ -3,7 +3,7 @@ NCPUS ?= 1
 BASE := logger utils db settings visualization qaqc remote
 
 MODELS := biocro clm45 dalec ed fates gday jules linkages \
-				lpjguess maat maespa preles sipnet
+				lpjguess maat maespa preles sipnet template
 
 MODULES := allometry assim.batch assim.sequential benchmark \
 				 data.atmosphere data.hydrology data.land \
@@ -49,6 +49,8 @@ test: $(ALL_PKGS_T) .test/base/all
 .install/base/all: $(ALL_PKGS_I)
 .check/base/all: $(ALL_PKGS_C)
 .test/base/all: $(ALL_PKGS_T)
+
+$(subst .doc/models/template,,$(MODELS_D)): .doc/models/template
 
 depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
