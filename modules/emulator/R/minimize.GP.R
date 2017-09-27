@@ -177,7 +177,7 @@ is.accepted <- function(ycurr, ynew, format = "lin") {
 ##' @author Michael Dietze
 mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcns = NULL, 
                     jmp0 = 0.35 * (rng[, 2] - rng[, 1]), ar.target = 0.5, priors = NA, settings, 
-                    run.block = TRUE, n.of.obs, llik.fn, resume.list = NULL) {
+                    run.block = TRUE, n.of.obs, llik.fn, hyper.pars, resume.list = NULL) {
   
   pos.check <- sapply(settings$assim.batch$inputs, `[[`, "ss.positive")
   
@@ -190,7 +190,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
     from.settings <- sapply(seq_along(pos.check), function(x) !is.null(pos.check[[x]]))
     tmp.check <- rep(FALSE, length(settings$assim.batch$inputs))
     # replace those with the values provided in the settings
-    tmp.check[from.settings] <- unlist(pos.check)
+    tmp.check[from.settings] <- as.logical(unlist(pos.check))
     pos.check <- tmp.check
   }else{
     pos.check <- as.logical(pos.check)
@@ -209,7 +209,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
   }
   
   
-  currllp <- pda.calc.llik.par(settings, n.of.obs, currSS)
+  currllp <- pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
   LLpar  <- unlist(sapply(currllp, `[[` , "par"))
   
   xcurr <- x0
@@ -288,7 +288,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
       }
       
       
-      newllp <- pda.calc.llik.par(settings, n.of.obs, newSS)
+      newllp <- pda.calc.llik.par(settings, n.of.obs, newSS, hyper.pars)
       ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)
       
       if (is.accepted(ycurr, ynew)) {
@@ -298,7 +298,7 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
       }
       
       # now update currllp | xcurr
-      currllp <- pda.calc.llik.par(settings, n.of.obs, currSS)
+      currllp <- pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
       pcurr   <- unlist(sapply(currllp, `[[` , "par"))
       # } mix = each
     } else {
@@ -335,14 +335,14 @@ mcmc.GP <- function(gp, x0, nmcmc, rng, format = "lin", mix = "joint", splinefcn
           }
         }
         
-        newllp <- pda.calc.llik.par(settings, n.of.obs, newSS)
+        newllp <- pda.calc.llik.par(settings, n.of.obs, newSS, hyper.pars)
         ynew   <- get_y(newSS, xnew, llik.fn, priors, newllp)
         if (is.accepted(ycurr, ynew)) {
           xcurr  <- xnew
           currSS <- newSS
         }
         
-        currllp <- pda.calc.llik.par(settings, n.of.obs, currSS)
+        currllp <- pda.calc.llik.par(settings, n.of.obs, currSS, hyper.pars)
         pcurr   <- unlist(sapply(currllp, `[[` , "par"))
         
         # }
