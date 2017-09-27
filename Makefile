@@ -50,7 +50,7 @@ test: $(ALL_PKGS_T) .test/base/all
 .check/base/all: $(ALL_PKGS_C)
 .test/base/all: $(ALL_PKGS_T)
 
-$(subst .doc/models/template,,$(MODELS_D)): .doc/models/template
+$(subst .doc/models/template,,$(MODELS_D)): .install/models/template # for models that import Roxygen docs from template
 $(subst .install/base/logger,,$(ALL_PKGS_I)): .install/base/logger
 
 depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
