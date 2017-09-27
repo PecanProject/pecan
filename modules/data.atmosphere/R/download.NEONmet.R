@@ -211,7 +211,8 @@ download.NEONmet <- function(sitename, outfolder, start_date, end_date,
                                      dim = xytdim)
       nc <- ncdf4::ncvar_add(nc = nc, v = precip.var, verbose = verbose)
       ncdata <- neonmet.getVals(dates=precipDates,product=availProducts[precipLoc[1]],site=site,
-                                datetime=datetime,data_col="secPrecipBulk",QF_col=NULL,
+                                datetime=datetime,data_col="priPrecipBulk",QF_col="priPrecipFinalQF",
+                                urlstring = "\\.00000\\.900\\.(.*)30min",
                                 units=c("kg m-2 1/1800 s-1", "kg m-2 s-1")) #mm per half hour 
       ncdf4::ncvar_put(nc, varid = precip.var, vals = ncdata)
     } else {
