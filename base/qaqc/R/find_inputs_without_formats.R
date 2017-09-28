@@ -10,7 +10,7 @@
 ##' @description This is a fucntion that returns a dataframe with all of the input entries that have no assosiated format records.
 ##' This is very rare in the databse.   
 ##'
-##' For more information on how to use this function see the "Pre-release-database-cleanup" script in the inst folder
+##' For more information on how to use this function see the "Pre-release-database-cleanup" script in the 'vignettes' folder
 ##' or look at the README
 
 find_inputs_without_formats<-function(con, user_id=NULL, created_after=NULL, updated_after=NULL){
