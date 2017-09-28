@@ -1,0 +1,59 @@
+---
+title: "Pre Release database Cleanup"
+output: html_notebook
+---
+
+This is an quick scriptfor cleaning up the database. For further documentation see the README.rmd file in the main `database.cleanup` folder. 
+
+**Step 1: set up an outdir and a connection to bety**
+The outdir is where temporary editing files will be written, and where a backup of bety will be stored. 
+```{r}
+con <- RPostgreSQL::dbConnect(RPostgreSQL::PostgreSQL(),
+dbname = "bety",
+password = 'bety',
+host = 'psql-pecan.bu.edu',
+user = 'bety')
+outdir<-as.character(getwd())  
+```
+
+**Step 2: Back up bety**
+Before any major deletion processes, it makes sense to make a back-up version of the database. 
+```{r}
+# code that backs up the database
+```
+
+**Step 3: find all of the entries that should be deleted ***
+```{r}
+formats<-find_formats_without_inputs(con=con, created_after = "2016-01-01", user_id = NULL, updated_after = "2016-01-01") #Ideally, date should be set to the date of the last release 
+
+inputs<-find_inputs_without_formats(con=con, created_after = "2014-01-01",updated_after =NULL, user_id = NULL)
+
+```
+
+Since just a dump of every column can be hard to read, just choose the columns that are important. 
+```{r}
+column_names<-get_table_column_names(table = formats, con = con)
+column_names$formats
+column_names<-column_names$formats[-c(4,6:8)]
+column_names
+```
+
+
+```{r}
+write_out_table(table = formats, outdir = outdir, relevant_table_columns = column_names, table_name = "formats")
+write_out_table(table = inputs,outdir = outdir, relevant_table_columns =c("id", "created_at", "name"), table_name = "inputs")
+```
+
+**Step 4: Check the entries, and edit the files **
+This is the most important step! Navigate to the written out tables and *delete entries that should remain in the database*. If the tables are dificult to read, change what columns are retained by editing the "relevant_table_columns" parameter. 
+
+**Step 5: Cull all remaining entries in the files**
+
+This will delete all entries remaining in the file, and place a delete log in the outdir directory. 
+```{r}
+### Note: Do not run before the editing step ###
+
+#cull_database_entries(table=formats, outdir = outdir,file_name ='query_of_formats' , con=con)
+#cull_database_entries(outdir = outdir,file_name =query_of_inputs , machine_id = NULL)
+```
+
