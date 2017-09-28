@@ -1,9 +1,9 @@
 NCPUS ?= 1
 
-BASE := logger utils db settings visualization qaqc
+BASE := logger utils db settings visualization qaqc remote
 
 MODELS := biocro clm45 dalec ed fates gday jules linkages \
-				lpjguess maat maespa preles sipnet
+				lpjguess maat maespa preles sipnet template
 
 MODULES := allometry assim.batch assim.sequential benchmark \
 				 data.atmosphere data.hydrology data.land \
@@ -50,21 +50,24 @@ test: $(ALL_PKGS_T) .test/base/all
 .check/base/all: $(ALL_PKGS_C)
 .test/base/all: $(ALL_PKGS_T)
 
+$(subst .doc/models/template,,$(MODELS_D)): .install/models/template # for models that import Roxygen docs from template
+$(subst .install/base/logger,,$(ALL_PKGS_I)): .install/base/logger
+
 depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
-$(call depends,base/db): .install/base/logger .install/base/utils
-$(call depends,base/settings): .install/base/logger .install/base/utils .install/base/db
-$(call depends,base/visualization): .install/base/logger .install/base/db
-$(call depends,base/qaqc): .install/base/logger
-$(call depends,modules/data.atmosphere): .install/base/logger .install/base/utils
-$(call depends,modules/data.land): .install/base/logger .install/base/db .install/base/utils
-$(call depends,modules/meta.analysis): .install/base/logger .install/base/utils .install/base/db
-$(call depends,modules/priors): .install/base/logger .install/base/utils
-$(call depends,modules/assim.batch): .install/base/logger .install/base/utils .install/base/db .install/modules/meta.analysis
-$(call depends,modules/rtm): .install/base/logger .install/modules/assim.batch
-$(call depends,modules/uncertainty): .install/base/logger .install/base/utils .install/modules/priors
-$(call depends,models/template): .install/base/logger .install/base/utils
-$(call depends,models/biocro): .install/base/logger .install/base/utils .install/base/settings .install/base/db .install/modules/data.atmosphere .install/modules/data.land
+$(call depends,base/utils): .install/base/remote
+$(call depends,base/db): .install/base/utils
+$(call depends,base/settings): .install/base/utils .install/base/db
+$(call depends,base/visualization): .install/base/db
+$(call depends,modules/data.atmosphere): .install/base/utils .install/base/remote
+$(call depends,modules/data.land): .install/base/db .install/base/utils .install/base/remote
+$(call depends,modules/meta.analysis): .install/base/utils .install/base/db .install/base/remote
+$(call depends,modules/priors): .install/base/utils .install/base/remote
+$(call depends,modules/assim.batch): .install/base/utils .install/base/db .install/modules/meta.analysis .install/base/remote
+$(call depends,modules/rtm): .install/modules/assim.batch .install/base/remote
+$(call depends,modules/uncertainty): .install/base/utils .install/modules/priors .install/base/remote
+$(call depends,models/template): .install/base/utils .install/base/remote
+$(call depends,models/biocro): .install/base/utils .install/base/settings .install/base/db .install/modules/data.atmosphere .install/modules/data.land .install/base/remote
 
 clean:
 	rm -rf .install .check .test .doc

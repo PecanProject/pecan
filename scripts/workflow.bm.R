@@ -181,7 +181,7 @@ if ((length(which(commandArgs() == "--advanced")) != 0) && (status.check("ADVANC
 # Start ecosystem model runs
 if (status.check("MODEL") == 0) {
   status.start("MODEL")
-  start.model.runs(settings, settings$database$bety$write)
+  PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
   status.end()
 }
 

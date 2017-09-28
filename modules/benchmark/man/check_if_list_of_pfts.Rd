@@ -2,8 +2,7 @@
 % Please edit documentation in R/check_if_list_of_pfts.R
 \name{check_if_list_of_pfts}
 \alias{check_if_list_of_pfts}
-\title{check_if_list_of_pfts
-Checks if format contains a variable named "plant_functional_type"}
+\title{check_if_list_of_pfts}
 \usage{
 check_if_list_of_pfts(vars)
 }
@@ -17,6 +16,12 @@ In the second case, must be passable to match_species_id.}
 }
 \value{
 \code{boolean}
+}
+\description{
+check_if_list_of_pfts
+}
+\details{
+Checks if format contains a variable named "plant_functional_type"
 }
 \author{
 Tempest McCabe
