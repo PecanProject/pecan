@@ -1,7 +1,7 @@
 ##### Benchmarking
 
+# Create reactive value
 bm <- reactiveValues()
-# log_con <- file(paste("bench",format(Sys.time(), "%Y-%m-%d_%H:%S"), "log", sep = "."))
 
 
 observeEvent(input$load,{
@@ -20,16 +20,13 @@ observeEvent(input$load,{
     
     settingsXML <- file.path(ens_wf$folder,"pecan.CHECKED.xml")
     # Automatically creates a new pecan.xml I think. Need to fix this. 
-    clean <- PEcAn.settings::clean.settings(inputfile = settingsXML,write=FALSE)
-    # Remove database & host information
-    clean$database <- NULL 
-    clean$host <- NULL
-    clean$info <- NULL
-    clean$outdir <- NULL
-    clean$meta.analysis <- NULL
-    clean$ensemble <- NULL
-    str(clean)
+    clean <- clean_settings_BRR(settingsXML)
+  
     settings_xml <- toString(PEcAn.utils::listToXml(clean, "pecan"))
+    # This is NOT a good way to find matching reference run records
+    # Other options include comparing lists (slow)
+    # more spohisticated PSQL queries
+    # changing the settings field to jsonb 
     ref_run <- db.query(paste0(" SELECT * from reference_runs where settings = '", settings_xml,"'"), bety$con)
     
     if(length(ref_run) == 0){
@@ -210,14 +207,15 @@ observeEvent(input$calc_bm,{
   
 })
 
-# This sources the benchmarking workflow, which at the moment seems simpler than pulling functions out of it.
+# # This sources the benchmarking workflow, which at the moment seems simpler than pulling functions out of it.
 # observeEvent(bm$settings_path,{ #Mostly so this is in a separate section which makes it asier to debug.
-#   settings <- PEcAn.settings::read.settings(bm$settings_path)
-#   source(system.file("scripts/benchmark.workflow.R",package = "PEcAn.benchmark"))
-#   if(!is.null(results)){
-#     bm$calc_bm_message <- sprintf("Calculating benchmarks complete")
-#     output$results_table <- renderTable(results[[1]]$bench.results)
-#   }
+#   settings <- bm$bm_settings
+#   bm.settings <- define_benchmark(settings,bety)
+#   settings <- add_workflow_info(settings)
+#   settings$benchmarking <- bm_settings2pecan_settings(bm.settings)
+#   settings <- read_settings_BRR(settings)
+#   settings <- prepare.settings(settings)
+#   bm$results <- papply(settings, function(x) calc_benchmark(x, bety))
 # })
 
 observeEvent(bm$calc_bm_message,{
