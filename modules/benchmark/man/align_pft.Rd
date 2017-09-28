@@ -2,7 +2,7 @@
 % Please edit documentation in R/align_pft.R
 \name{align_pft}
 \alias{align_pft}
-\title{{align_pft}}
+\title{align_pft}
 \usage{
 align_pft(con, observation_one, observation_two, custom_table = NULL,
   format_one, format_two, subset_are_ok = FALSE,
@@ -34,6 +34,9 @@ set to FALSE by default.}
  \item{\code{$bety_species_id}}{Where possible, will return the bety_species_id's for one or both observations}
 }
 }
+\description{
+align_pft
+}
 \details{
 Aligns vectors of Plant Fucntional Typed and species.
 Can align: 
@@ -54,19 +57,24 @@ Can align:
 }
 \examples{
 
+
+#------------ A species to PFT alignment -----------
 observation_one<-c("AMCA3","AMCA3","AMCA3","AMCA3")
-observation_two<-c("a", "b", "a", "a")
-table<-list()
-table$plant_functional_type_one<- c("AMCA3","AMCA3","ARHY", "ARHY")
-table$plant_functional_type_two<- c('a','a','b', 'b') # PFT groupings
-table$input_code<-c("AMCA3","AMCA3","ARHY", "ARHY") # Species
-table<-as.data.frame(table)
+observation_two<-c("a", "b", "a", "a") #
 
 format_one<-"species_USDA_symbol"
 format_two<-"plant_funtional_type"
 
+table<-list()
+table$plant_functional_type_one<- c("AMCA3","AMCA3","ARHY", "ARHY")
+table$plant_functional_type_two<- c('a','a','b', 'b') # PFT groupings
+table<-as.data.frame(table)
+
+
 aligned<-align_pft(con = con, observation_one = observation_one, observation_two = observation_two, 
 format_one = format_one, format_two = format_two, custom_table = table)
+
+
 }
 \author{
 Tempest McCabe

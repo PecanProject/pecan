@@ -10,9 +10,9 @@ check_if_species_list(vars, custom_table = NULL)
 \item{custom_table}{a table that either maps two pft's to one anouther or maps custom species codes to bety id codes. 
 In the second case, must be passable to match_species_id.}
 
-\item{observation_one}{a vector of plant fucntional types, or species}
+\item{observation_one}{a vector of plant functional types, or species}
 
-\item{observation_two}{anouther vector of plant fucntional types, or species}
+\item{observation_two}{another vector of plant functional types, or species}
 }
 \value{
 \code{boolean}

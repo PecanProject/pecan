@@ -2,11 +2,7 @@
 % Please edit documentation in R/get_species_list_standard.R
 \name{get_species_list_standard}
 \alias{get_species_list_standard}
-\title{get_species_list_standard
-Checks if custom_table:
-1. is formated correctly
-2. is complete (has all of the species/pft's in both observations)
-3. is condense-able (Could be represented as a hierachry)}
+\title{get_species_list_standard}
 \usage{
 get_species_list_standard(vars)
 }
@@ -15,11 +11,17 @@ get_species_list_standard(vars)
 
 \item{observation_two}{anouther vector of plant fucntional types, or species}
 
-\item{custom_table}{a table that either maps two pft's to one anouther or maps custom species codes to bety id codes. 
+\item{custom_table}{a table that either maps two pft's to one another or maps custom species codes to bety id codes. 
 In the second case, must be passable to match_species_id.}
 }
 \value{
 \code{character} Returns "usda", "latin_name", "fia" or "custom"
+}
+\description{
+get_species_list_standard
+}
+\details{
+Returns the format type for convience of use with match_species_id
 }
 \author{
 Tempest McCabe

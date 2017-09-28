@@ -17,8 +17,8 @@
 ##' @param dat.mod - dataframe to be predicted at the time step of the training data
 ##' @param n.ens - number of hourly ensemble members to generate
 ##' @param path.model - path to where the training model & betas is stored
-##' @param direction.filter - Whether the model will be filtered backwards or forwards in time. options = c("backward", "forward")
-##'                           (PalEON will go backwards, anybody interested in the future will go forwards)                  
+##' @param direction.filter - Whether the model will be filtered backward or forward in time. options = c("backward", "forward")
+##'                           (PalEON will go backward, anybody interested in the future will go forward)                  
 ##' @param lags.init - a data frame of initialization parameters to match the data in dat.mod
 ##' @param dat.train - the training data used to fit the model; needed for night/day in 
 ##'                    surface_downwelling_shortwave_flux_in_air
@@ -37,7 +37,7 @@ lm_ensemble_sims <- function(dat.mod, n.ens, path.model, direction.filter, lags.
   set.seed(seed)
   
   # Setting our our time indexes
-  if(direction.filter=="backwards"){
+  if(direction.filter=="backward"){
     days.sim <- max(dat.mod$sim.day):min(dat.mod$sim.day)
     lag.time <- min(dat.mod$hour)
   } else {

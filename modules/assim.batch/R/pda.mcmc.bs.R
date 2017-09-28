@@ -67,6 +67,9 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
   inputs  <- load.pda.data(settings, bety)
   n.input <- length(inputs)
   
+  # get hyper parameters if any
+  hyper.pars <- return_hyperpars(settings$assim.batch, inputs)
+  
   ## Set model-specific functions
   do.call("require", list(paste0("PEcAn.", settings$model$type)))
   my.write.config <- paste("write.config.", settings$model$type, sep = "")
@@ -204,7 +207,7 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
                                run.names = paste0("MCMC_chain.", chain, "_iteration.", i))
         
         ## Start model run
-        start.model.runs(settings, settings$database$bety$write)
+        PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
         
         ## Read model outputs
         align.return <- pda.get.model.output(settings, run.id, bety, inputs)
@@ -243,7 +246,8 @@ pda.mcmc.bs <- function(settings, params.id = NULL, param.names = NULL, prior.id
         ## calculate error statistics      
         pda.errors <- pda.calc.error(settings, con, model_out = model.out, run.id, inputs, all.bias)
         llik.par <- pda.calc.llik.par(settings, n = n.of.obs, 
-                                      error.stats = unlist(pda.errors))
+                                      error.stats = unlist(pda.errors),
+                                      hyper.pars)
         # store llik-par
         parl <- unlist(sapply(llik.par, `[[` , "par"))
         if(!is.null(parl) & iter.flag == 1 & is.null(all.bias)) {
