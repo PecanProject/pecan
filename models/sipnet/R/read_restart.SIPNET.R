@@ -11,7 +11,7 @@
 ##' 
 ##' @author Ann Raiho \email{araiho@@nd.edu}
 ##' 
-##' @inheritParams PEcAn.ModelName::read
+##' @inheritParams PEcAn.ModelName::read_restart.ModelName
 ##' 
 ##' @description Read Restart for SIPNET
 ##' 
