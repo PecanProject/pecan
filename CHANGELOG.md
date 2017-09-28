@@ -7,7 +7,10 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
+## [1.5.1] - 2017-09-??
+
 ### Fixes
+- Fixed hyperparameter draws in PDA
 - Show workflowid in the URL when run is finshed and user clicks results (#1659)
 - `PEcAn.BIOCRO` now uses PEcAn-standard variable names. As a result, two output variables have been renamed but keep their existing units and definitions:
 	- `StemBiom` renamed to `AbvGrndWood`
@@ -20,15 +23,17 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Cleaned up NAMESPACE and source code of `PEcAn.DB` (#1520)
 - Debugged python script in call_MODIS in data.remote to allow MODIS downloads
 - Fixed FATES build script to work on ubuntu
-- SIPNET output netcdf now includes LAI; some variable names changed to match standard
+ SIPNET output netcdf now includes LAI; some variable names changed to match standard
 - Cleanup of leap year logic, using new `PEcAn.utils::days_in_year(year)` function (#801).
 - Replace many hard-coded unit conversions with `udunits2::ud.convert` for consistency, readability, and clarity
 - Refactored extract_soil_nc to create soil2netcdf, which will write soil data out in PEcAn standard.
 - Added a new retry.func() to base/utils to provide ability to re-try a function X times before stopping.  Currently using this function in the download.CRUNCEP() function to handle slow responses from THREDDS.
 - Reformatted call_MODIS netcdf output to reflect the orientation of the MODIS grid
 - Remote execution is more robust to errors in the submission process, not just the actual model execution
+- PRELES model run script bug fix 
 
 ### Added
+- Functionality to pass hyperparameters via settings
 - Created new (and very rudimentary) web interface for downloading data from the dataone federation into the PEcAn database. More updates to come.
 - Expanded initial conditions workflow for pool-based models, including PEcAn.data.land::prepare_pools to calculate pools from IC file (to be coupled with write.configs)
 - New `PEcAn.utils::days_in_year(year)` function that should make it easier to work with leap years.
@@ -49,7 +54,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - #1594 shiny/workflowPlot Refactoring of code. `get_workflow_ids` in db/R/query.dplyr.R changed with `ensemble = FALSE`. Also allowing to load all workflow IDs. `load_data_single_run` and `var_names_all` also moved from shiny/workflowPlot/server.R to query.dplyr.R
 - `PEcAn.remote::start.model.runs` has been significantly refactored to be less redundant and more robust
 - `betyConnect` function in `query.dplyr.R` is now refactored into `read_web_config` so that the the Data-Ingest app can leverage `read_web_config` and provide it with a machine specific filepath for `.../dbfiles`
-
+- Rpreles and Maeswrap package moved to suggest checked for within package function.
 
 
 ## [1.5.0] - 2017-07-13
