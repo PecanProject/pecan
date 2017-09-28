@@ -17,37 +17,9 @@ bm.settings <- define_benchmark(settings,bety)
 # For testing (make sure new_run is FALSE)
 str(bm.settings)
 
-# This is a quick fix - can be solved with longer db query that I don't want to write now
-add_workflow_info <- function(settings){
-  if (is.MultiSettings(settings)) {
-    return(papply(settings, add_workflow_id))
-  }
-  if(!as.logical(settings$benchmarking$new_run)){
-    settings$workflow$id <- tbl(bety,"ensembles") %>% 
-      filter(id == settings$benchmarking$ensemble_id) %>% 
-      dplyr::select(workflow_id) %>% collect %>% .[[1]]
-    wf <- tbl(bety, 'workflows') %>% filter(id == settings$workflow$id) %>% collect()
-    settings$rundir <- file.path(wf$folder, "run")
-    settings$modeloutdir <- file.path(wf$folder, "out")
-    settings$outdir <- wf$folder
-  }
-  return(settings)
-}
+
 
 settings <- add_workflow_info(settings)
-
-bm_settings2pecan_settings <- function(bm.settings){
-  if (is.MultiSettings(bm.settings)) {
-    return(papply(bm.settings, bm_settings2pecan_settings))
-  }
-  out <- bm.settings["reference_run_id"]
-  for(i in grep("benchmark", names(bm.settings))){
-    print(bm.settings[i]$benchmark$benchmark_id)
-    out <- append(out, list(benchmark_id = bm.settings[i]$benchmark$benchmark_id))
-  }
-  return(out)
-} 
-
 settings$benchmarking <- bm_settings2pecan_settings(bm.settings)
 
 ################################################################################
