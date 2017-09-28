@@ -60,10 +60,11 @@ load.pda.data <- function(settings, bety) {
       
       var.obs <- colnames(inputs[[i]]$data)[!colnames(inputs[[i]]$data) %in% c("UST", "posix", "year", format$vars[format$time.row,]$bety_name)]
       
-      AMFo                     <- inputs[[i]]$data[[var.obs]]
-      UST                      <- inputs[[i]]$data$UST
-      AMFo[AMFo == -9999]      <- NA
-      AMFo[UST < ustar.thresh] <- NA
+      AMFo                        <- inputs[[i]]$data[[var.obs]]
+      UST                         <- inputs[[i]]$data$UST
+      AMFo[AMFo == -9999]         <- NA
+      AMFo[UST < ustar.thresh]    <- NA
+      inputs[[i]]$data[[var.obs]] <- AMFo # write filtered data
       
       # Have to just pretend like these quality control variables exist...
       AMFq  <- rep(0, length(AMFo))

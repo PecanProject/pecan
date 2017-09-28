@@ -338,10 +338,10 @@ fia.to.psscss <- function(settings,
     css.file.remote  <- file.path(out.dir.remote, paste0(prefix.psscss, ".css"))
     site.file.remote <- file.path(out.dir.remote, paste0(prefix.site, ".site"))
     
-    remote.execute.cmd(settings$host, "mkdir", c("-p", out.dir.remote))
-    remote.copy.to(settings$host, pss.file.local, pss.file.remote)
-    remote.copy.to(settings$host, css.file.local, css.file.remote)
-    remote.copy.to(settings$host, site.file.local, site.file.remote)
+    PEcAn.remote::remote.execute.cmd(settings$host, "mkdir", c("-p", out.dir.remote))
+    PEcAn.remote::remote.copy.to(settings$host, pss.file.local, pss.file.remote)
+    PEcAn.remote::remote.copy.to(settings$host, css.file.local, css.file.remote)
+    PEcAn.remote::remote.copy.to(settings$host, site.file.local, site.file.remote)
     files <- c(pss.file.remote, css.file.remote, site.file.remote)
   }
   
