@@ -3,7 +3,7 @@ title: "Pre Release database Cleanup"
 output: html_notebook
 ---
 
-This is an quick scriptfor cleaning up the database. For further documentation see the README.rmd file in the main `database.cleanup` folder. 
+This is an quick scriptfor cleaning up the database. For further documentation see the README.rmd file in the main `qaqc` folder. 
 
 **Step 1: set up an outdir and a connection to bety**
 The outdir is where temporary editing files will be written, and where a backup of bety will be stored. 
@@ -13,13 +13,17 @@ dbname = "bety",
 password = 'bety',
 host = 'psql-pecan.bu.edu',
 user = 'bety')
-outdir<-as.character(getwd())  
+outdir<-as.character(getwd()) #set as prefered out directory
+bety_backup_directory<-as.character(getwd()) #set as prefered directory for bety backup. 
 ```
 
 **Step 2: Back up bety**
 Before any major deletion processes, it makes sense to make a back-up version of the database. 
 ```{r}
-# code that backs up the database
+system('TODAY=$( date +"%d" )')
+backup_dir<-paste('pg_dump -U bety -d bety | gzip -9 > ', bety_backup_directory,'/bety-pre-culling${TODAY}.sql.gz', sep="")
+
+system(backup_dir)
 ```
 
 **Step 3: find all of the entries that should be deleted ***
