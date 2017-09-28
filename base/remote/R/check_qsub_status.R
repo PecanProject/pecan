@@ -13,7 +13,7 @@ qsub_run_finished <- function(run, host, qstat) {
     return(FALSE)
   }
   run_id_string <- format(run, scientific = FALSE)
-  check <- gsub("@JOBID", run, qstat)
+  check <- gsub("@JOBID@", run, qstat)
   if (is.localhost(host)) {
     # Need to use `system` to allow commands with pipes
     out <- system(command = check, intern = TRUE)
