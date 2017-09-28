@@ -8,21 +8,17 @@ ui <- shinyUI(fluidPage(
   titlePanel("Workflow Plots"),
   sidebarLayout(
     sidebarPanel(
+      h3("Load Model Output"),
+      wellPanel(
       p("Please select the workflow IDs to continue. You can select multiple IDs"),
       selectizeInput("all_workflow_id", "Mutliple Workflow IDs", c(),multiple=TRUE),
       p("Please select the run IDs. You can select multiple IDs"),
       selectizeInput("all_run_id", "Mutliple Run IDs", c(),multiple=TRUE),
-      actionButton("load", "Load Model outputs"),
-      selectInput("variable_name", "Variable Name", ""),
-      radioButtons("plotType", "Plot Type (for Model Outputs)", 
-                   c("Scatter Plot" = "scatterPlot", 
-                     "Line Chart" = "lineChart"), 
-                   selected="scatterPlot"),
-      # uiOutput("slider"),
-      sliderInput("smooth_n", "Value for smoothing:",
-                  min=0, max=100, value=80),
-      tags$hr(),
-      tags$hr(),
+      actionButton("load", "Load Model outputs")
+      ),
+      
+      h3("Load External Data"),
+      wellPanel(
       selectizeInput("all_site_id", "Select Site ID", c()),
       # If loading multiple sites in future
       # selectizeInput("all_site_id", "Select Site ID", c(), multiple=TRUE),
@@ -32,11 +28,22 @@ ui <- shinyUI(fluidPage(
                      "Line Chart" = "line"), 
                    selected="point"),
       actionButton("load_data", "Load External Data")
+      )
     ),
     mainPanel(
       tabsetPanel(
         tabPanel("Visualizations", 
-                 plotlyOutput("outputPlot"),
+                 column(12, plotlyOutput("outputPlot")),
+                 column(12, wellPanel( 
+                   selectInput("variable_name", "Variable Name", ""),
+                   radioButtons("plotType", "Plot Type (for Model Outputs)", 
+                                c("Scatter Plot" = "scatterPlot", 
+                                  "Line Chart" = "lineChart"), 
+                                selected="scatterPlot"),
+                   # uiOutput("slider"),
+                   sliderInput("smooth_n", "Value for smoothing:",
+                               min=0, max=100, value=80))
+                 ),
                  verbatimTextOutput("outputNoVariableFound")
         ),
         tabPanel("Benchmarking", 
