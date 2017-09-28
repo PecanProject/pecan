@@ -16,7 +16,7 @@ qsub_run_finished <- function(run, host, qstat) {
   check <- gsub("@JOBID@", run, qstat)
   if (is.localhost(host)) {
     # Need to use `system` to allow commands with pipes
-    out <- system(command = check, intern = TRUE)
+    out <- system(check, intern = TRUE, ignore.stdout = FALSE, ignore.stderr = FALSE, wait = TRUE)
   } else {
     # This uses `system2` under the hood, but that's OK because the entire 
     # command is passed as a single quoted argument, so the pipes are 
