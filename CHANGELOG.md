@@ -45,6 +45,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - #1594 shiny/workflowPlot Smoothing using geom_smooth (Slider for specifying moving window width)
 - #1594 shiny/workflowPlot Comparing model output vs loaded data according to [tutorial](https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/AnalyzeOutput/modelVSdata.Rmd) 
 - Allow SIPNET and DALEC met files and model2netcdf to start or end mid year
+- A Pre-release database clean up script that deletes unused/unassosiated entries from the database
 
 ### Changed
 - Clean up directory structure:
