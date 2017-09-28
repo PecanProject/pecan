@@ -9,7 +9,7 @@
 ##' 
 ##' @description This is a fucntion that returns a dataframe with all of the format entries that have no assosiated input records.  
 ##'
-##' For more information on how to use this function see the "Pre-release-database-cleanup" script in the inst folder
+##' For more information on how to use this function see the "Pre-release-database-cleanup" script in the 'vignettes' folder
 ##' or look at the README
 
 

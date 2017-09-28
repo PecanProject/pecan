@@ -1,6 +1,6 @@
 ## PEcAn functions for cleaning up a version of the bety database
 
-This package includes several wrapper functions for common database queries for entries that cause problems, or take up space. Please refer to the `Pre-release-clean-up` script located in the `inst` folder for best-practices in using these functions. See "Intended use" for more information. 
+This package includes several wrapper functions for common database queries for entries that cause problems, or take up space. Please refer to the `Pre-release-clean-up` script located in the `vignettes` folder for best-practices in using these functions. See "Intended use" for more information. 
 
 
 Many queries and checks are net yet implemented. If you'd like to contribute to this package, look at issue [#1630](https://github.com/PecanProject/pecan/issues/1630) to see what functions still need to be made. See "Structure of functions" for more information. 

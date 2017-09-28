@@ -10,7 +10,7 @@
 ##' 1) Backing Up Bety 
 ##' 2) Checking the the file only contains entries to be deleted. 
 ##'
-##' For more information on how to use this function see the "Pre-release-database-cleanup" script in the inst folder
+##' For more information on how to use this function see the "Pre-release-database-cleanup" script in the 'vignettes' folder
 ##' or look at the README
 ##' 
 ##' 
