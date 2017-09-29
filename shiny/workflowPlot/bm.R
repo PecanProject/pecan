@@ -24,7 +24,7 @@ observeEvent(input$load,{
     settingsXML <- file.path(ens_wf$folder,"pecan.CHECKED.xml")
     # Automatically creates a new pecan.xml I think. Need to fix this. 
     clean <- clean_settings_BRR(settingsXML)
-  
+    
     settings_xml <- toString(PEcAn.utils::listToXml(clean, "pecan"))
     # This is NOT a good way to find matching reference run records
     # Other options include comparing lists (slow)
@@ -82,7 +82,7 @@ observeEvent(input$load_data,{
   req(input$all_site_id)
   
   bm$metrics <- dplyr::tbl(bety,'metrics') %>% dplyr::select(one_of("id","name","description")) %>% collect()
-
+  
   # Need to write warning message that can only use one input id
   bm$input <- getInputs(bety,c(input$all_site_id)) %>% 
     dplyr::filter(input_selection_list == input$all_input_id)
@@ -101,9 +101,10 @@ observeEvent(bm$ready,{
   if(length(bench.out) == 1){
     load(files[bench.out])
     if(length(grep(bm$input$input_id, names(results))) == 1){
-      results.sub <- results[[grep(bm$input$input_id, names(results))]]
-      output$results_table <- DT::renderDataTable(DT::datatable(results.sub$bench.results))
-      bm$results_message <- "Benchmarks have been calculated"
+      bm$load_results <- TRUE
+      bm$results_message <- "Benchmarks have already been calculated for this combination of model output and external data. <br/>
+      To see the results, look at the Benchmarking Scores and Benchmarking Plots tabs. <br/>
+      To calculate more benchmarks, select variables and metrics below. <br/>"
     }
   }
 })
@@ -121,25 +122,25 @@ observeEvent({
     if(bm$ready){
       list(
         column(4, wellPanel(
-          checkboxGroupInput("vars", label = h3("Variables"),
+          checkboxGroupInput("vars", label = "Variables",
                              choiceNames = bm$vars$pecan_name,
                              choiceValues = bm$vars$variable_id),
           # actionButton("selectall.var","Select /Deselect all variables"),
-          label=h6("Label")
+          label=h3("Label")
         )),
         column(4, wellPanel(
-          checkboxGroupInput("metrics", label = h3("Numerical Metrics"), 
+          checkboxGroupInput("metrics", label = "Numerical Metrics", 
                              choiceNames = bm$metrics$description[-plot_ind],
                              choiceValues = bm$metrics$id[-plot_ind]),
           # actionButton("selectall.num","Select/Deselect all numerical metrics") ,
-          label=h6("Label")
+          label=h3("Label")
         )),
         column(4, wellPanel(
-          checkboxGroupInput("plots", label = h3("Plot Metrics"),
+          checkboxGroupInput("plots", label = "Plot Metrics",
                              choiceNames = bm$metrics$description[plot_ind],
                              choiceValues = bm$metrics$id[plot_ind]),
           # actionButton("selectall.plot","Select/Deselect all plot metrics"),
-          label=h6("Label")
+          label=h3("Label")
         ))
       )
     }
@@ -151,7 +152,7 @@ observeEvent({
   input$vars
   input$metrics
   input$plots
-  },{
+},{
   v <- ifelse(is.null(input$vars),0,length(input$vars))
   n <- ifelse(is.null(input$metrics),0,length(input$metrics))
   p <- ifelse(is.null(input$plots),0,length(input$plots))
@@ -212,7 +213,7 @@ observeEvent(input$calc_bm,{
     bm$bm_settings$benchmarking <- append(bm$bm_settings$benchmarking,list(benchmark = benchmark))
   }
   
-  output$calc_bm_button <- renderUI({})
+  # output$calc_bm_button <- renderUI({})
   output$print_bm_settings <- renderPrint(bm$bm_settings)
   
   basePath <- dplyr::tbl(bety, 'workflows') %>% dplyr::filter(id %in% bm$ens_wf$workflow_id) %>% dplyr::pull(folder)
@@ -223,17 +224,18 @@ observeEvent(input$calc_bm,{
   
   bm$calc_bm_message <- sprintf("Benchmarking settings have been saved here: %s", bm$settings_path)
   
-})
+  # # Run the benchmarking functions
+  # settings <- bm$bm_settings
+  # bm.settings <- define_benchmark(settings,bety)
+  # settings <- add_workflow_info(settings)
+  # settings$benchmarking <- bm_settings2pecan_settings(bm.settings)
+  # settings <- read_settings_BRR(settings)
+  # settings <- prepare.settings(settings)
+  # results <- papply(settings, function(x) calc_benchmark(x, bety))
+  # bm$load_results <- TRUE
 
-# observeEvent(bm$settings_path,{ #Mostly so this is in a separate section which makes it asier to debug.
-#   settings <- bm$bm_settings
-#   bm.settings <- define_benchmark(settings,bety)
-#   settings <- add_workflow_info(settings)
-#   settings$benchmarking <- bm_settings2pecan_settings(bm.settings)
-#   settings <- read_settings_BRR(settings)
-#   settings <- prepare.settings(settings)
-#   bm$results <- papply(settings, function(x) calc_benchmark(x, bety))
-# })
+  
+})
 
 observeEvent(bm$calc_bm_message,{
   output$calc_bm_message <- renderText({bm$calc_bm_message})
@@ -241,6 +243,14 @@ observeEvent(bm$calc_bm_message,{
 
 observeEvent(bm$results_message,{
   output$results_message <- renderText({bm$results_message})
+})
+
+observeEvent(bm$load_results,{
+  if(bm$load_results){
+    load(file.path(bm$ens_wf$folder,"benchmarking.output.Rdata"))
+    results.sub <- results[[grep(bm$input$input_id, names(results))]]
+    output$results_table <- DT::renderDataTable(DT::datatable(results.sub$bench.results))
+  }
 })
 
 ################################################
