@@ -3,6 +3,9 @@
 # Create reactive value
 bm <- reactiveValues()
 
+##----------------------------------------------------------------------------##
+## Observe when the model run is loaded and check to see if it is registered 
+## as a reference run. If not, create the record upon button click
 
 observeEvent(input$load,{
   req(input$all_run_id)
@@ -55,7 +58,6 @@ observeEvent(input$load,{
 
 # When button to register run is clicked, create.BRR is run and the button is removed.
 observeEvent(input$create_bm,{
-  req(input$all_run_id)
   bm$BRR <- PEcAn.benchmark::create_BRR(bm$ens_wf, con = bety$con)
   bm$brr_message <- sprintf("This run has been successfully registered as a reference run (id = %.0f)", bm$BRR$reference_run_id)
   bm$button_BRR <- FALSE
@@ -71,30 +73,46 @@ observeEvent({
   })
 })
 
+##----------------------------------------------------------------------------##
+## Observe when the external data is loaded and check to see if any benchmarks 
+## have already been run. In addition, setup and run new benchmarks.
 
-##### Setup benchmarks
 observeEvent(input$load_data,{
   req(input$all_input_id)
+  req(input$all_site_id)
   
   bm$metrics <- dplyr::tbl(bety,'metrics') %>% dplyr::select(one_of("id","name","description")) %>% collect()
-  bm$vars_list <- c("NPP", "LAI")
-  
+
   # Need to write warning message that can only use one input id
-  inputs_df <- getInputs(bety,c(input$all_site_id)) %>% dplyr::filter(input_selection_list == input$all_input_id)
-  format <- PEcAn.DB::query.format.vars(bety = bety, input.id = inputs_df$input_id)
+  bm$input <- getInputs(bety,c(input$all_site_id)) %>% 
+    dplyr::filter(input_selection_list == input$all_input_id)
+  format <- PEcAn.DB::query.format.vars(bety = bety, input.id = bm$input$input_id)
   # Are there more human readable names?
   bm$vars <- format$vars[-grep("%",format$vars$storage_type), c("variable_id", "pecan_name")]
-  
   
   #This will be a longer set of conditions
   bm$ready <- !is.null(bm$BRR)
 })
 
+observeEvent(bm$ready,{
+  bm$results_message <- "No benchmarks have been calculated yet"
+  files <- dir(bm$ens_wf$folder, full.names = TRUE)
+  bench.out <- grep("benchmarking.output.Rdata", files)
+  if(length(bench.out) == 1){
+    load(files[bench.out])
+    if(length(grep(bm$input$input_id, names(results))) == 1){
+      results.sub <- results[[grep(bm$input$input_id, names(results))]]
+      output$results_table <- DT::renderDataTable(DT::datatable(results.sub$bench.results))
+      bm$results_message <- "Benchmarks have been calculated"
+    }
+  }
+})
+
+
 observeEvent({
   bm$ready
-  bm$metrics_list
-  bm$plots_list
-  bm$vars_list
+  bm$metrics
+  bm$vars
 },{
   
   plot_ind <- grep("_plot",bm$metrics$name)
@@ -207,7 +225,6 @@ observeEvent(input$calc_bm,{
   
 })
 
-# # This sources the benchmarking workflow, which at the moment seems simpler than pulling functions out of it.
 # observeEvent(bm$settings_path,{ #Mostly so this is in a separate section which makes it asier to debug.
 #   settings <- bm$bm_settings
 #   bm.settings <- define_benchmark(settings,bety)
@@ -220,6 +237,10 @@ observeEvent(input$calc_bm,{
 
 observeEvent(bm$calc_bm_message,{
   output$calc_bm_message <- renderText({bm$calc_bm_message})
+})
+
+observeEvent(bm$results_message,{
+  output$results_message <- renderText({bm$results_message})
 })
 
 ################################################

@@ -10,24 +10,24 @@ ui <- shinyUI(fluidPage(
     sidebarPanel(
       h3("Load Model Output"),
       wellPanel(
-      p("Please select the workflow IDs to continue. You can select multiple IDs"),
-      selectizeInput("all_workflow_id", "Mutliple Workflow IDs", c(),multiple=TRUE),
-      p("Please select the run IDs. You can select multiple IDs"),
-      selectizeInput("all_run_id", "Mutliple Run IDs", c(),multiple=TRUE),
-      actionButton("load", "Load Model outputs")
+        p("Please select the workflow IDs to continue. You can select multiple IDs"),
+        selectizeInput("all_workflow_id", "Mutliple Workflow IDs", c(),multiple=TRUE),
+        p("Please select the run IDs. You can select multiple IDs"),
+        selectizeInput("all_run_id", "Mutliple Run IDs", c(),multiple=TRUE),
+        actionButton("load", "Load Model outputs")
       ),
       
       h3("Load External Data"),
       wellPanel(
-      selectizeInput("all_site_id", "Select Site ID", c()),
-      # If loading multiple sites in future
-      # selectizeInput("all_site_id", "Select Site ID", c(), multiple=TRUE),
-      selectizeInput("all_input_id", "Select Input ID", c()),
-      radioButtons("data_geom", "Plot Type (for loaded data)", 
-                   c("Scatter Plot" = "point", 
-                     "Line Chart" = "line"), 
-                   selected="point"),
-      actionButton("load_data", "Load External Data")
+        selectizeInput("all_site_id", "Select Site ID", c()),
+        # If loading multiple sites in future
+        # selectizeInput("all_site_id", "Select Site ID", c(), multiple=TRUE),
+        selectizeInput("all_input_id", "Select Input ID", c()),
+        radioButtons("data_geom", "Plot Type (for loaded data)", 
+                     c("Scatter Plot" = "point", 
+                       "Line Chart" = "line"), 
+                     selected="point"),
+        actionButton("load_data", "Load External Data")
       )
     ),
     mainPanel(
@@ -46,7 +46,7 @@ ui <- shinyUI(fluidPage(
                  ),
                  verbatimTextOutput("outputNoVariableFound")
         ),
-        tabPanel("Benchmarking", 
+        tabPanel("Benchmarking Settings", 
                  column(12, wellPanel(
                    verbatimTextOutput("brr_message"),
                    uiOutput("button_BRR")
@@ -54,6 +54,7 @@ ui <- shinyUI(fluidPage(
                  uiOutput("bm_inputs"),
                  column(12, wellPanel(
                    verbatimTextOutput("calc_bm_message"),
+                   verbatimTextOutput("results_message"),
                    uiOutput("report"),
                    uiOutput("calc_bm_button"),
                    uiOutput("inputs_df_table"),
@@ -61,8 +62,13 @@ ui <- shinyUI(fluidPage(
                    uiOutput("reportvars"),
                    uiOutput("reportmetrics"),
                    uiOutput("print_bm_settings")
-                 )),
-                 uiOutput("results_table")
+                 ))
+        ),
+        tabPanel("Benchmarking Scores", 
+                 DT::dataTableOutput("results_table")
+        ),
+        tabPanel("Benchmarking Plots", 
+                 verbatimTextOutput("results_message")
         )
       )
     )
