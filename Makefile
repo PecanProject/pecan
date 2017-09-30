@@ -55,7 +55,7 @@ depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 $(call depends,base/remote): .install/base/logger
 $(call depends,base/utils): .install/base/logger .install/base/remote
 $(call depends,base/db): .install/base/logger .install/base/utils
-$(call depends,base/settings): .install/base/logger .install/base/db
+$(call depends,base/settings): .install/base/logger .install/base/utils .install/base/db
 $(call depends,base/visualization): .install/base/logger .install/base/db
 $(call depends,base/qaqc): .install/base/logger
 $(call depends,modules/data.atmosphere): .install/base/logger .install/base/utils .install/base/remote
