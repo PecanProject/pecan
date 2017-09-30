@@ -19,14 +19,8 @@ Imports:
     data.table,
     getPass,
     ggplot2,
-    PEcAn.data.atmosphere,
-    PEcAn.data.land,
-    PEcAn.DB,
-    PEcAn.emulator,
     PEcAn.logger,
-    PEcAn.priors,
     PEcAn.remote,
-    PEcAn.settings,
     randtoolbox,
     raster,
     RCurl,
@@ -43,6 +37,12 @@ Imports:
     PeriodicTable,
     udunits2 (>= 0.11)
 Suggests:
+    PEcAn.data.atmosphere,
+    PEcAn.data.land,
+    PEcAn.emulator,
+    PEcAn.priors,
+    PEcAn.settings,
+    PEcAn.DB,
     MASS,
     testthat
 License: FreeBSD + file LICENSE

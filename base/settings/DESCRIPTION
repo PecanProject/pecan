@@ -14,10 +14,10 @@ Depends:
     PEcAn.DB
 Imports:
     PEcAn.logger,
+    PEcAn.utils,
     plyr (>= 1.8.4),
     lubridate (>= 1.6.0),
     XML (>= 3.98-1.3)
 Suggests:
-    testthat (>= 1.0.2),
-    PEcAn.utils
+    testthat (>= 1.0.2)
 RoxygenNote: 6.0.1
