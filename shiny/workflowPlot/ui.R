@@ -23,10 +23,6 @@ ui <- shinyUI(fluidPage(
         # If loading multiple sites in future
         # selectizeInput("all_site_id", "Select Site ID", c(), multiple=TRUE),
         selectizeInput("all_input_id", "Select Input ID", c()),
-        radioButtons("data_geom", "Plot Type (for loaded data)", 
-                     c("Scatter Plot" = "point", 
-                       "Line Chart" = "line"), 
-                     selected="point"),
         actionButton("load_data", "Load External Data")
       )
     ),
@@ -40,6 +36,10 @@ ui <- shinyUI(fluidPage(
                                 c("Scatter Plot" = "scatterPlot", 
                                   "Line Chart" = "lineChart"), 
                                 selected="scatterPlot"),
+                   radioButtons("data_geom", "Plot Type (for loaded data)", 
+                                c("Scatter Plot" = "point", 
+                                  "Line Chart" = "line"), 
+                                selected="point"),
                    # uiOutput("slider"),
                    sliderInput("smooth_n", "Value for smoothing:",
                                min=0, max=100, value=80))
@@ -72,6 +72,11 @@ ui <- shinyUI(fluidPage(
         ),
         tabPanel("Benchmarking Scores", 
                  DT::dataTableOutput("results_table")
+        ),
+        tabPanel("Benchmarking Plots",
+                 verbatimTextOutput("blarg_message"),
+                 uiOutput("bm_plots"),
+                 plotlyOutput("bmPlot")
         )
       )
     )
