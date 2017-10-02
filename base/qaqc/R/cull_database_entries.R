@@ -23,7 +23,7 @@ cull_database_entries<-function(table, outdir, file_name, con, machine_id = NULL
   
   if( !"table_name" %in% names(table)){
     
-    PEcAn.logger::logger.severe("Input file needs a 'table_name' column. Please check the file and the fucntion that generated it.")
+    PEcAn.logger::logger.severe("Input file needs a 'table_name' column. Please check the file and the function that generated it.")
     
   }
   
