@@ -20,6 +20,7 @@ observeEvent(input$load,{
     ens_wf <- dplyr::tbl(bety, 'ensembles') %>% dplyr::filter(id == ens_id) %>%
       dplyr::rename(ensemble_id = id) %>%
       dplyr::left_join(.,tbl(bety, "workflows") %>% dplyr::rename(workflow_id = id), by="workflow_id") %>% dplyr::collect()
+    bm$model_vars <- var_names_all(bety,ids_DF$wID,ids_DF$runID)
     
     settingsXML <- file.path(ens_wf$folder,"pecan.CHECKED.xml")
     # Automatically creates a new pecan.xml I think. Need to fix this. 
@@ -88,7 +89,12 @@ observeEvent(input$load_data,{
     dplyr::filter(input_selection_list == input$all_input_id)
   format <- PEcAn.DB::query.format.vars(bety = bety, input.id = bm$input$input_id)
   # Are there more human readable names?
-  bm$vars <- format$vars[-grep("%",format$vars$storage_type), c("variable_id", "pecan_name")]
+  bm$vars <- dplyr::inner_join(
+    data.frame(read_name = names(bm$model_vars), 
+               pecan_name = bm$model_vars, stringsAsFactors = FALSE),
+    format$vars[-grep("%",format$vars$storage_type), 
+                c("variable_id", "pecan_name")], 
+    by = "pecan_name")
   
   #This will be a longer set of conditions
   bm$ready <- !is.null(bm$BRR)
@@ -123,7 +129,7 @@ observeEvent({
       list(
         column(4, wellPanel(
           checkboxGroupInput("vars", label = "Variables",
-                             choiceNames = bm$vars$pecan_name,
+                             choiceNames = bm$vars$read_name,
                              choiceValues = bm$vars$variable_id),
           # actionButton("selectall.var","Select /Deselect all variables"),
           label=h3("Label")
@@ -234,7 +240,6 @@ observeEvent(input$calc_bm,{
   results <- PEcAn.settings::papply(settings, function(x) PEcAn.benchmark::calc_benchmark(x, bety))
   bm$load_results <- TRUE
   
-  
 })
 
 observeEvent(bm$calc_bm_message,{
@@ -252,7 +257,7 @@ observeEvent(bm$load_results,{
     bm$bench.results <- results.sub$bench.results
     bm$aligned.dat <- results.sub$aligned.dat
     output$results_table <- DT::renderDataTable(DT::datatable(bm$bench.results))
-    plots_used <- grep("plot", results.sub$bench.results$metric)
+    plots_used <- grep("plot", results.sub$bench.results$metric) 
     if(length(plots_used) > 0){
       plot_list <- apply(
         results.sub$bench.results[plots_used,c("variable", "metric")],
@@ -272,7 +277,6 @@ observeEvent(input$bench_plot,{
   names(metric_dat)[grep("[.]m", names(metric_dat))] <- "model"
   names(metric_dat)[grep("[.]o", names(metric_dat))] <- "obvs"
   names(metric_dat)[grep("posix", names(metric_dat))] <- "time"
-  
   fcn <- get(paste0("metric_",bm$bench.results[input$bench_plot,"metric"]), asNamespace("PEcAn.benchmark"))
   # fcn <- paste0("metric_",bm$bench.results[input$bench_plot,"metric"])
   args <- list(
@@ -281,12 +285,11 @@ observeEvent(input$bench_plot,{
     filename = NA,
     draw.plot = TRUE
   )
-
   output$blarg_message <- renderText({paste(input$bench_plot, var)})
   p <- do.call(fcn, args)
   output$bmPlot <- renderPlotly({
     plotly::ggplotly(p)
-    })
+  })
 })
 
 ################################################
