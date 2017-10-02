@@ -4,8 +4,8 @@
 \alias{call_MODIS}
 \title{call_MODIS}
 \usage{
-call_MODIS(outfolder = ".", fname = "m_data.nc", start, end, lat, lon,
-  size = 0, product = "MOD15A2", band = "Lai_1km", qc_band = NA,
+call_MODIS(outfolder = ".", fname = "m_data.nc", start_date, end_date, lat,
+  lon, size = 0, product = "MOD15A2", band = "Lai_1km", qc_band = NA,
   sd_band = NA, verbose = TRUE)
 }
 \arguments{
@@ -13,9 +13,9 @@ call_MODIS(outfolder = ".", fname = "m_data.nc", start, end, lat, lon,
 
 \item{fname}{name of netcdf file to output}
 
-\item{start}{first date in year and day-of-year. For example May 1 2010 would be 2010121}
+\item{start_date}{beginning of date range for LAI download in unambiguous date format}
 
-\item{end}{laste date in year and day-of-year. For example May 1 2010 would be 2010121}
+\item{end_date}{end of date range for LAI download in unambiguous date format}
 
 \item{lat}{Latitude of the pixel}
 
