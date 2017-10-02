@@ -2,11 +2,11 @@
 ##' @author Tempest McCabe
 ##' 
 ##' @param table a table that is output from one of the find_* functions, 
-##' or a data.frame containing the output from multiple find_* fucntions. Could also be a vector of table names. 
+##' or a data.frame containing the output from multiple find_* functions. Could also be a vector of table names. 
 ##' @param con a connection to the bety database. 
 ##' 
 ##' 
-##' @description This fucntion will retunr a vector of the column names for a given table(s) in the bety database. 
+##' @description This function will retunr a vector of the column names for a given table(s) in the bety database. 
 ##' Useful for choseing which columns to include in the written-out table. 
 ##'
 ##' For more information on how to use this function see the "Pre-release-database-cleanup" script in the 'vignettes' folder
