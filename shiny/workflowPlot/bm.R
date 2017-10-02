@@ -224,16 +224,16 @@ observeEvent(input$calc_bm,{
   
   bm$calc_bm_message <- sprintf("Benchmarking settings have been saved here: %s", bm$settings_path)
   
-  # # Run the benchmarking functions
-  # settings <- bm$bm_settings
-  # bm.settings <- define_benchmark(settings,bety)
-  # settings <- add_workflow_info(settings)
-  # settings$benchmarking <- bm_settings2pecan_settings(bm.settings)
-  # settings <- read_settings_BRR(settings)
-  # settings <- prepare.settings(settings)
-  # results <- papply(settings, function(x) calc_benchmark(x, bety))
-  # bm$load_results <- TRUE
-
+  # Run the benchmarking functions
+  settings <- bm$bm_settings
+  bm.settings <- PEcAn.benchmark::define_benchmark(settings,bety)
+  settings <- PEcAn.benchmark::add_workflow_info(settings)
+  settings$benchmarking <- PEcAn.benchmark::bm_settings2pecan_settings(bm.settings)
+  settings <- PEcAn.benchmark::read_settings_BRR(settings)
+  settings <- PEcAn.settings::prepare.settings(settings)
+  results <- PEcAn.settings::papply(settings, function(x) PEcAn.benchmark::calc_benchmark(x, bety))
+  bm$load_results <- TRUE
+  
   
 })
 
@@ -249,8 +249,44 @@ observeEvent(bm$load_results,{
   if(bm$load_results){
     load(file.path(bm$ens_wf$folder,"benchmarking.output.Rdata"))
     results.sub <- results[[grep(bm$input$input_id, names(results))]]
-    output$results_table <- DT::renderDataTable(DT::datatable(results.sub$bench.results))
+    bm$bench.results <- results.sub$bench.results
+    bm$aligned.dat <- results.sub$aligned.dat
+    output$results_table <- DT::renderDataTable(DT::datatable(bm$bench.results))
+    plots_used <- grep("plot", results.sub$bench.results$metric)
+    if(length(plots_used) > 0){
+      plot_list <- apply(
+        results.sub$bench.results[plots_used,c("variable", "metric")],
+        1, paste, collapse = " ")
+      output$bm_plots <-  renderUI({
+        radioButtons("bench_plot", "Benchmark Plot",
+                     choiceNames = as.vector(plot_list), 
+                     choiceValues = as.numeric(names(plot_list)))
+      })
+    }
   }
+})
+
+observeEvent(input$bench_plot,{
+  var <- bm$bench.results[input$bench_plot,"variable"]
+  metric_dat = bm$aligned.dat[[var]]
+  names(metric_dat)[grep("[.]m", names(metric_dat))] <- "model"
+  names(metric_dat)[grep("[.]o", names(metric_dat))] <- "obvs"
+  names(metric_dat)[grep("posix", names(metric_dat))] <- "time"
+  
+  fcn <- get(paste0("metric_",bm$bench.results[input$bench_plot,"metric"]), asNamespace("PEcAn.benchmark"))
+  # fcn <- paste0("metric_",bm$bench.results[input$bench_plot,"metric"])
+  args <- list(
+    metric_dat = metric_dat,
+    var = var,
+    filename = NA,
+    draw.plot = TRUE
+  )
+
+  output$blarg_message <- renderText({paste(input$bench_plot, var)})
+  p <- do.call(fcn, args)
+  output$bmPlot <- renderPlotly({
+    plotly::ggplotly(p)
+    })
 })
 
 ################################################
