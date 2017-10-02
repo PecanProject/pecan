@@ -5,22 +5,23 @@
 \title{predict_subdaily_met}
 \usage{
 predict_subdaily_met(outfolder, in.path, in.prefix, path.train,
-  direction.filter, lm.models.base, yrs.predict = NULL, ens.labs = 1:3,
-  resids = FALSE, parallel = FALSE, cores.max = 12, n.cores = NULL,
-  overwrite = FALSE, verbose = FALSE, seed = format(Sys.time(), "\%m\%d"),
-  print.progress = FALSE, ...)
+  direction.filter = "forward", lm.models.base, yrs.predict = NULL,
+  ens.labs = 1:3, resids = FALSE, overwrite = FALSE, verbose = FALSE,
+  seed = format(Sys.time(), "\%m\%d"), print.progress = FALSE, ...)
 }
 \arguments{
 \item{outfolder}{- directory where output file will be stored}
 
-\item{in.path}{- path to model dataset you wish to temporally downscale}
+\item{in.path}{- base path to dataset you wish to temporally downscale; Note: in order for parallelization 
+to work, the in.prefix will need to be appended as the final level of the file structure.  
+For example, if prefix is GFDL.CM3.rcp45.r1i1p1, there should be a directory with that title in in.path.}
 
 \item{in.prefix}{- prefix of model dataset, i.e. if file is GFDL.CM3.rcp45.r1i1p1.2006 the prefix is 'GFDL.CM3.rcp45.r1i1p1'}
 
 \item{path.train}{- path to CF/PEcAn style training data where each year is in a separate file.}
 
-\item{direction.filter}{- Whether the model will be filtered backwards or forwards in time. options = c("backward", "forward")
-(PalEON will go backwards, anybody interested in the future will go forwards)}
+\item{direction.filter}{- Whether the model will be filtered backward or forwards in time. options = c("backward", "forwards")
+(default is forward; PalEON will go backward, anybody interested in the future will go forwards)}
 
 \item{lm.models.base}{- path to linear regression model folders generated using gen.subdaily.models}
 
@@ -30,12 +31,6 @@ predict_subdaily_met(outfolder, in.path, in.prefix, path.train,
 ensemble rather than overwriting with a default naming scheme}
 
 \item{resids}{- logical stating whether to pass on residual data or not}
-
-\item{parallel}{- logical stating whether to run temporal_downscale_functions.R in parallel}
-
-\item{cores.max}{- 12}
-
-\item{n.cores}{- deals with parallelization}
 
 \item{seed}{- manually set seed for results to be reproducible}
 
