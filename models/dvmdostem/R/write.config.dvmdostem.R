@@ -159,15 +159,21 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   dimveg_params <- paste(appbinary_path, "parameters", 'cmt_dimvegetation.txt', sep="/")
   envcanopy_params <- paste(appbinary_path, "parameters", 'cmt_envcanopy.txt', sep="/")
 
-  dimveg_jsonfile <- '/tmp/dvmdostem-dimveg.json'
-  envcanopy_jsonfile <- '/tmp/dvmdostem-envcanopy.json'
+  #dimveg_jsonfile <- '/tmp/dvmdostem-dimveg.json'
+  #envcanopy_jsonfile <- '/tmp/dvmdostem-envcanopy.json'
 
   # Call the helper script and write out the data to a temporary file
   # This gets just the block we are interested in (based on community type)
+  # create rundir temp directory
+  if (! file.exists(file.path(local_rundir, "tmp"))) dir.create(file.path(local_rundir, "tmp"),recursive=TRUE)
+  dimveg_jsonfile <- file.path(local_rundir, "tmp",'dvmdostem-dimveg.json')
+  PEcAn.logger::logger.info(paste0("dimveg_jsonfile: ", dimveg_jsonfile))
   system2(paste0(appbinary_path,"/scripts/param_util.py"),
           args=(c("--dump-block-to-json", dimveg_params, cmtnum)),
           stdout=dimveg_jsonfile, wait=TRUE)
-
+  
+  envcanopy_jsonfile <- file.path(local_rundir, "tmp",'dvmdostem-envcanopy.json')
+  PEcAn.logger::logger.info(paste0("envcanopy_jsonfile: ", envcanopy_jsonfile))
   system2(paste0(appbinary_path,"/scripts/param_util.py"),
           args=(c("--dump-block-to-json", envcanopy_params, cmtnum)),
           stdout=envcanopy_jsonfile, wait=TRUE)
@@ -256,11 +262,12 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
 
   # Write it back out to disk (overwriting ok??)
   dimveg_exportJson <- toJSON(dimveg_jsondata)
-  write(dimveg_exportJson, "/tmp/dimveg_newfile.json")
-
+  #write(dimveg_exportJson, "/tmp/dimveg_newfile.json")
+  write(dimveg_exportJson, file.path(local_rundir, "tmp","dimveg_newfile.json"))
+  
   envcanopy_exportJson <- toJSON(envcanopy_jsondata)
-  write(envcanopy_exportJson, "/tmp/envcanopy_newfile.json")
-
+  #write(envcanopy_exportJson, "/tmp/envcanopy_newfile.json")
+  write(envcanopy_exportJson, file.path(local_rundir, "tmp","envcanopy_newfile.json"))
 
   # (3)
   # Format a new dvmdostem parameter file using the new json file as a source.
@@ -273,16 +280,24 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   }
   ref_file <- paste0(file.path(appbinary_path, "parameters/"), 'cmt_dimvegetation.txt')
   new_param_file <- paste0(file.path(rundir, "parameters/"), "cmt_dimvegetation.txt")
+  #system2(paste0(appbinary_path,"/scripts/param_util.py"),
+  #        args=(c("--fmt-block-from-json", "/tmp/dimveg_newfile.json", ref_file)),
+  #        stdout=new_param_file, wait=TRUE)
   system2(paste0(appbinary_path,"/scripts/param_util.py"),
-          args=(c("--fmt-block-from-json", "/tmp/dimveg_newfile.json", ref_file)),
+          args=(c("--fmt-block-from-json", file.path(local_rundir, "tmp","dimveg_newfile.json"), ref_file)),
           stdout=new_param_file, wait=TRUE)
-
+  
   ref_file <- paste0(file.path(appbinary_path, "parameters/"), 'cmt_envcanopy.txt')
   new_param_file <- paste0(file.path(rundir, "parameters/"), "cmt_envcanopy.txt")
+  #system2(paste0(appbinary_path,"/scripts/param_util.py"),
+  #        args=(c("--fmt-block-from-json", "/tmp/envcanopy_newfile.json", ref_file)),
+  #        stdout=new_param_file, wait=TRUE)
   system2(paste0(appbinary_path,"/scripts/param_util.py"),
-          args=(c("--fmt-block-from-json", "/tmp/envcanopy_newfile.json", ref_file)),
+          args=(c("--fmt-block-from-json", file.path(local_rundir, "tmp","envcanopy_newfile.json"), ref_file)),
           stdout=new_param_file, wait=TRUE)
-
+  
+  # Cleanup temp directory
+  unlink(file.path(local_rundir, "tmp"), recursive = TRUE, force = FALSE)
 
   # TODO:
   #  [x] finish with parameter update process
