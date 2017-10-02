@@ -19,7 +19,7 @@ cull_database_entries<-function(table, outdir, file_name, con, machine_id = NULL
   
   file<-paste(outdir,"/",file_name, sep = "")
   
-  table<-read.table(file=file, header=TRUE, sep = "|")
+  table<-read.table(file = file, header = TRUE, sep = "|")
   
   if( !"table_name" %in% names(table)){
     
@@ -29,7 +29,7 @@ cull_database_entries<-function(table, outdir, file_name, con, machine_id = NULL
   
   if("dbfile" %in% table$table_name){
     
-    table<-table[table$machine_id==machine_id] #prevents deletion of files form other databases
+    table<-table[table$machine_id == machine_id] #prevents deletion of files form other databases
     
   }
   
@@ -38,12 +38,12 @@ cull_database_entries<-function(table, outdir, file_name, con, machine_id = NULL
     table_name<-as.character(table$table_name[i])
     id<-table$id[i]
     
-    select_command<-paste("select * from ", table_name, " where id=", id, ";", sep="")
-    log[i]<-PEcAn.DB::db.query(query=select_command, con=con)
+    select_command<-paste("select * from ", table_name, " where id = ", id, ";", sep = "")
+    log[i]<-PEcAn.DB::db.query(query = select_command, con = con)
     
-    delete_command<-paste("DELETE from ", table_name, " where id=", id, ";", sep="")
-    PEcAn.DB::db.query(delete_command, con=con)
-    write.table(log, file=paste(outdir,"/deletion_log_of_",file_name, sep=""), row.names = FALSE)
+    delete_command<-paste("DELETE from ", table_name, " where id = ", id, ";", sep="")
+    PEcAn.DB::db.query(delete_command, con = con)
+    write.table(log, file = paste(outdir,"/deletion_log_of_",file_name, sep = ""), row.names = FALSE)
   }
   
 }
