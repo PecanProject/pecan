@@ -13,9 +13,9 @@
 ##' or look at the README
 
 
-find_formats_without_inputs<-function(con, user_id=NULL, created_after=NULL, updated_after=NULL){
-  
-  input_command<-paste("select * from inputs;")
+find_formats_without_inputs <- function(con, user_id = NULL, created_after = NULL, updated_after = NULL){
+
+  input_command <- paste("select * from inputs;")
   
   if(is.null(user_id) && is.null(created_after) && is.null(updated_after)){
     
@@ -23,31 +23,27 @@ find_formats_without_inputs<-function(con, user_id=NULL, created_after=NULL, upd
     
   }else if (is.null((user_id)) && !is.null(created_after) && !is.null(updated_after)){
     
-    format_command<-paste("select * from formats where created_at>'", created_after,"' and updated_at>'",updated_after, "';", sep="")
-    
-    
-    
+    format_command<-paste("select * from formats where created_at>'", created_after,"' and updated_at>'",updated_after, "';", sep = "")
+      
   }else if(is.null(user_id) && is.null(created_after) && !is.null(updated_after)){
     
-    format_command<-paste("select * from formats where updated_at>'", updated_after, "';", sep="")
-    
+    format_command<-paste("select * from formats where updated_at>'", updated_after, "';", sep = "")
     
   }else if(is.null(user_id) && !is.null(created_after) && is.null(updated_after)){
     
-    format_command<-paste("select * from formats where created_at>'", created_after, "';", sep="")
-    
+    format_command<-paste("select * from formats where created_at>'", created_after, "';", sep = "")
     
   }else if(!is.null(user_id) && is.null(created_after) && is.null(updated_after)){
     
-    format_command<-paste("select * from formats where user_id='" ,user_id,"';")
+    format_command<-paste("select * from formats where user_id = '" ,user_id,"';")
     
   }else if(!is.null(user_id) && !is.null(created_after) && is.null(updated_after)){
     
-    format_command<-paste("select * from formats where user_id='" ,user_id,"' and created_at>'",created_after,"';", sep="")
+    format_command<-paste("select * from formats where user_id = '" ,user_id,"' and created_at>'",created_after,"';", sep="")
     
   }else if(!is.null(user_id) && is.null(created_after) && !is.null(updated_after)){
     
-    format_command<-paste("select * from formats where user_id='" ,user_id,"' and updated_at> '",updated_after,"';", sep="")
+    format_command<-paste("select * from formats where user_id = '" ,user_id,"' and updated_at> '",updated_after,"';", sep = "")
     
   }else{
     
