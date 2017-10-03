@@ -3,7 +3,7 @@ title: "Pre Release database Cleanup"
 output: html_notebook
 ---
 
-This is an quick scriptfor cleaning up the database. For further documentation see the README.rmd file in the main `qaqc` folder. 
+This is an quick script for cleaning up the database. For further documentation see the README.rmd file in the main `qaqc` folder. 
 
 **Step 1: set up an outdir and a connection to bety**
 The outdir is where temporary editing files will be written, and where a backup of bety will be stored. 
