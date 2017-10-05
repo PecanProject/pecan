@@ -31,7 +31,7 @@ create_BRR <- function(ens_wf, con, user_id = ""){
     clean$ensemble <- NULL
     str(clean)
     
-    settings_xml <- toString(PEcAn.utils::listToXml(clean, "pecan"))
+    settings_xml <- toString(PEcAn.settings::listToXml(clean, "pecan"))
     
     ref_run <- db.query(paste0(" SELECT * from reference_runs where settings = '", settings_xml,"'"),con)
     

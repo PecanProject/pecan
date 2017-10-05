@@ -58,7 +58,7 @@ clean.settings <- function(inputfile = "pecan.xml", outputfile = "pecan.xml", wr
   settings$workflow <- NULL
   
   # save and done
-  if(write) XML::saveXML(PEcAn.utils::listToXml(settings, "pecan"), file = outputfile)
+  if(write) XML::saveXML(listToXml(settings, "pecan"), file = outputfile)
   
   ## Return settings file as a list
   return(invisible(settings))

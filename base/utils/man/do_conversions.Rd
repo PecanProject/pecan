@@ -8,6 +8,11 @@
 do_conversions(settings, overwrite.met = FALSE, overwrite.fia = FALSE,
   overwrite.ic = FALSE)
 }
+\arguments{
+\item{settings}{PEcAn settings list}
+
+\item{overwrite.met, overwrite.fia, overwrite.ic}{logical}
+}
 \description{
 Input conversion workflow
 }

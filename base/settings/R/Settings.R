@@ -15,7 +15,7 @@
 ##' @author Ryan Kelly
 Settings <- function(...) {
   args <- list(...)
-  if (length(args) == 1 && is(args[[1]], "Settings")) {
+  if (length(args) == 1 && inherits(args[[1]], "Settings")) {
     return(args[[1]])
   }
   
@@ -32,5 +32,5 @@ as.Settings <- function(x) {
 
 ##' @export
 is.Settings <- function(x) {
-  return(is(x, "Settings"))
+  return(inherits(x, "Settings"))
 }
