@@ -237,6 +237,7 @@ observeEvent(input$calc_bm,{
   settings$benchmarking <- PEcAn.benchmark::bm_settings2pecan_settings(bm.settings)
   settings <- PEcAn.benchmark::read_settings_BRR(settings)
   settings <- PEcAn.settings::prepare.settings(settings)
+  settings$host$name <- "localhost" # This may not be the best place to set this, but it isn't set bu any of the other functions. Another option is to have it set bu the default_hostname function (if input is NULL, set to localhost)
   results <- PEcAn.settings::papply(settings, function(x) PEcAn.benchmark::calc_benchmark(x, bety))
   bm$load_results <- TRUE
   
