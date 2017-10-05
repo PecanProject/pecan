@@ -37,7 +37,7 @@ as.MultiSettings <- function(x) {
 
 ##' @export
 is.MultiSettings <- function(x) {
-  return(is(x, "MultiSettings"))
+  return(inherits(x, "MultiSettings"))
 }
 
 ##' @export
