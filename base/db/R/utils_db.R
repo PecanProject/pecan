@@ -335,6 +335,12 @@ get.id <- function(table, colnames, values, con, create=FALSE, dates=FALSE){
 }
 
 ##' Convenience function to fix hostname if localhost
+##'
+##' @title default_hostname
+##' @param hostname
+##' @return hostname
+##' @export
+##' @examples
 default_hostname <- function(hostname) {
   if (hostname == "localhost") {
     hostname <- PEcAn.utils::fqdn();
