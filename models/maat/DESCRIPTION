@@ -9,6 +9,7 @@ Description: This module provides functions to link the MAAT to PEcAn.
 Imports:
     PEcAn.logger,
     PEcAn.remote,
+    PEcAn.settings,
     PEcAn.utils,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),

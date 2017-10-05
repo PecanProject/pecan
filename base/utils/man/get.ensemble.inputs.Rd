@@ -7,6 +7,8 @@
 get.ensemble.inputs(settings, ens = 1)
 }
 \arguments{
+\item{settings}{PEcAn settings list}
+
 \item{ens}{ensemble number. default = 1}
 }
 \value{

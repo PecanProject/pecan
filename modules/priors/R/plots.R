@@ -32,6 +32,7 @@ plot.prior.density <- function(prior.density, base.plot = NULL, prior.color = "b
 ##' @param base.plot a ggplot object (grob), created by \code{\link{create.base.plot}} if none provided
 ##' @return plot with posterior density line added
 ##' @export
+##' @importFrom ggplot2 geom_line aes
 ##' @author David LeBauer
 plot.posterior.density <- function(posterior.density, base.plot = NULL) {
   if (is.null(base.plot)) {
@@ -53,6 +54,7 @@ plot.posterior.density <- function(posterior.density, base.plot = NULL) {
 ##' @param xlim limits for x axis
 ##' @author David LeBauer
 ##' @return plot / grob of prior distribution with data used to inform the distribution 
+##' @importFrom ggplot2 ggplot aes theme_bw scale_x_continuous scale_y_continuous element_blank element_text geom_rug geom_line geom_point
 priorfig <- function(priordata = NA, priordensity = NA, trait = "", xlim = "auto", fontsize = 18) {
   if (is.data.frame(priordata)) {
     colnames(priordata) <- "x"
@@ -108,6 +110,7 @@ priorfig <- function(priordata = NA, priordensity = NA, trait = "", xlim = "auto
 ##' @param fontsize 
 ##' @return plot (grob) object
 ##' @author David LeBauer
+##' @importFrom ggplot2 theme_bw aes scale_x_continuous labs element_text element_blank
 ##' @export
 ##' @examples
 ##' \dontrun{
