@@ -36,8 +36,8 @@ test_that("MultiSettings constructor works as expected", {
     expect_identical(multiSettings[[i]], settings)
   }
   
-  expect_true(is(multiSettings, "list"))
-  expect_true(is(multiSettings, "MultiSettings"))
+  expect_true(inherits(multiSettings, "list"))
+  expect_true(inherits(multiSettings, "MultiSettings"))
   expect_true(is.MultiSettings(multiSettings))
   expect_false(is.MultiSettings(l))
   expect_equal(length(class(multiSettings)), 2)
