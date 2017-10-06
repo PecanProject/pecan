@@ -7,6 +7,19 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
+### Fixes
+- `PEcAn.utils` now lazy-loads data for faster execution of functions that consult lookup tables, especially `to_ncvar`.
+
+### Added
+
+### Removed
+- Removed `PEcAn.utils::model2netcdf`, which has been deprecated since PEcAn 1.3.7. Use `model2netcdf.<YOURMODEL>` in the appropriate model package instead.
+
+### Changed
+- Moved `listToXml` and `SafeList` ouf the `PEcAn.utils` package and into the `PEcAn.settings` package. The `PEcAn.utils` versions still work with a deprecation warning, but will be removed in a future release.
+- Major namespace cleanup in the `PEcAn.utils` package. It now loads more quietly and is much less likely to mask functions in a package you loaded earlier.
+
+
 ## [1.5.1] - 2017-09-??
 
 ### Fixes
@@ -45,6 +58,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - #1594 shiny/workflowPlot Smoothing using geom_smooth (Slider for specifying moving window width)
 - #1594 shiny/workflowPlot Comparing model output vs loaded data according to [tutorial](https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/AnalyzeOutput/modelVSdata.Rmd) 
 - Allow SIPNET and DALEC met files and model2netcdf to start or end mid year
+- A Pre-release database clean up script that deletes unused/unassosiated entries from the database
 
 ### Changed
 - Clean up directory structure:
