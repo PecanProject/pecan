@@ -18,7 +18,9 @@ else
   # Basic run setup
   #@BINARY@ --pr-yrs 10 --eq-yrs 10 --sp-yrs 10 --tr-yrs 10 --sc-yrs 10 --log-level debug
   # Extended run
-  @BINARY@ -p 100 -e 1000 -s 250 -t 109 --sc-yrs 0
+  
+            # make these options set in the PEcAn.xml under <model> tags
+  @BINARY@ -p 100 -e 1000 -s 250 -t 109 --sc-yrs 0 --log-level debug
   
   STATUS=$?
   if [ $STATUS -ne 0 ]; then

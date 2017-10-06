@@ -278,26 +278,21 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     print("No parameter/ directory in run directory! Need to create...")
     dir.create(file.path(rundir,"parameters" ))
   }
+  
   ref_file <- paste0(file.path(appbinary_path, "parameters/"), 'cmt_dimvegetation.txt')
-  new_param_file <- paste0(file.path(rundir, "parameters/"), "cmt_dimvegetation.txt")
-  #system2(paste0(appbinary_path,"/scripts/param_util.py"),
-  #        args=(c("--fmt-block-from-json", "/tmp/dimveg_newfile.json", ref_file)),
-  #        stdout=new_param_file, wait=TRUE)
+  new_param_file <- paste0(file.path(local_rundir, "parameters/"), "cmt_dimvegetation.txt")
   system2(paste0(appbinary_path,"/scripts/param_util.py"),
           args=(c("--fmt-block-from-json", file.path(local_rundir, "tmp","dimveg_newfile.json"), ref_file)),
           stdout=new_param_file, wait=TRUE)
   
   ref_file <- paste0(file.path(appbinary_path, "parameters/"), 'cmt_envcanopy.txt')
-  new_param_file <- paste0(file.path(rundir, "parameters/"), "cmt_envcanopy.txt")
-  #system2(paste0(appbinary_path,"/scripts/param_util.py"),
-  #        args=(c("--fmt-block-from-json", "/tmp/envcanopy_newfile.json", ref_file)),
-  #        stdout=new_param_file, wait=TRUE)
+  new_param_file <- paste0(file.path(local_rundir, "parameters/"), "cmt_envcanopy.txt")
   system2(paste0(appbinary_path,"/scripts/param_util.py"),
           args=(c("--fmt-block-from-json", file.path(local_rundir, "tmp","envcanopy_newfile.json"), ref_file)),
           stdout=new_param_file, wait=TRUE)
   
   # Cleanup temp directory
-  unlink(file.path(local_rundir, "tmp"), recursive = TRUE, force = FALSE)
+  #unlink(file.path(local_rundir, "tmp"), recursive = TRUE, force = FALSE)  # comment out for debugging
 
   # TODO:
   #  [x] finish with parameter update process
