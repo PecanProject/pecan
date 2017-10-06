@@ -103,12 +103,13 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
                                               "mol H2O m-2 s-1",
                                               "kg H2O m-2 s-1"))  # stomatal_conductance in kg H2O m2 s1
     
+    dims <- list(lon = lon, lat = lat, time = t)
+    
     ### Put output into netCDF format
     nc_var       <- list()
-    nc_var[[1]]  <- mstmipvar("Year", lat, lon, t, NA)
-    nc_var[[2]]  <- mstmipvar("FracJulianDay", lat, lon, t, NA)
-    nc_var[[3]]  <- mstmipvar("GPP", lat, lon, t, NA)
-    nc_var[[4]]  <- mstmipvar("stomatal_conductance", lat, lon, t, NA)
+    nc_var[[1]]  <- PEcAn.utils::to_ncvar("Year", dims)
+    nc_var[[3]]  <- PEcAn.utils::to_ncvar("GPP", dims)
+    nc_var[[4]]  <- PEcAn.utils::to_ncvar("stomatal_conductance", dims)
     
     ### Output netCDF data
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)

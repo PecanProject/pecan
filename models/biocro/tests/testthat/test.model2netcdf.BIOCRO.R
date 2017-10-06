@@ -28,7 +28,7 @@ dims <- biocro.nc$dim
 
 
 test_that("model2netcdf.BIOCRO wrote netCDF with correct variables", {
-  expect_true(all(c("TotLivBiom", "RootBiom", "StemBiom", "Evap", "TVeg", "LAI") %in% 
+  expect_true(all(c("TotLivBiom", "root_carbon_content", "AbvGrndWood", "Evap", "TVeg", "LAI") %in%
     names(vars)))
   expect_true(all(c("latitude", "longitude", "time") %in% names(dims)))
   
@@ -46,12 +46,10 @@ test_that("dimensions have MsTMIP standard units", {
 })
 
 test_that("variables have MsTMIP standard units", {
-
-  data(mstmip_vars, package = "PEcAn.utils")
-  
+  standard_vars <- PEcAn.utils::standard_vars
   for (var in vars) {
-    if (var$name %in% mstmip_vars$Variable.Name) {
-      expect_true(var$units == mstmip_vars[mstmip_vars$Variable.Name == var$name, 
+    if (var$name %in% standard_vars$Variable.Name) {
+      expect_true(var$units == standard_vars[standard_vars$Variable.Name == var$name,
         "Units"])
     }
   }

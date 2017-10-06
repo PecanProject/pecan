@@ -12,7 +12,7 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"biocro.dtd\">\
 ##------------------------------------------------------------------------------------------------#
 ##' convert parameters from PEcAn database default units to biocro defaults
 ##' 
-##' Performs model specific unit conversions on a a list of trait values,
+##' Performs model specific unit conversions on a list of trait values,
 ##' such as those provided to write.config
 ##' @name convert.samples.BIOCRO
 ##' @title Convert samples for biocro
@@ -46,18 +46,10 @@ convert.samples.BIOCRO <- function(trait.samples) {
   ## transform values with different units cuticular conductance - BETY default is
   ## umol; BioCro uses mol
   if ("b0" %in% trait.names) {
-    trait.samples <- transform(trait.samples, b0 = udunits2::ud.convert(b0, "umol", "mol"))
+    trait.samples$b0 = udunits2::ud.convert(trait.samples$b0, "umol", "mol")
   }
   if ("Sp" %in% trait.names) {
-    trait.samples <- transform(trait.samples, Sp = udunits2::ud.convert(Sp, "kg/m2", "g/cm2"))
-  }
-  if ("vmax" %in% trait.names) {
-    ## HAAAACK
-    trait.samples <- transform(trait.samples, vmax = vmax)
-  }
-  if ("Rd" %in% trait.names) {
-    ## HAAAACK
-    trait.samples <- transform(trait.samples, Rd = Rd)
+    trait.samples$Sp = udunits2::ud.convert(trait.samples$Sp, "kg/m2", "g/cm2")
   }
   
   # kd = k*omega from $e^{-kL\omega}$, if (all(c('kd', 'clumping') %in%
@@ -110,7 +102,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   species <- utils::read.csv(file.path(settings$pfts$pft$outdir, "species.csv"))
   genus <- unique(species$genus)
   if (length(genus) > 1) {
-    logger.severe("BioCro can not combine multiple genera")
+    PEcAn.logger::logger.severe("BioCro can not combine multiple genera")
   }
   
   ### Set defaults
@@ -122,7 +114,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
     } else if (grepl("RData", defaults.file)) {
       load(defaults.file)
     } else {
-      logger.severe("Defaults file", defaults.file, " not found; using package defaults")
+      PEcAn.logger::logger.severe("Defaults file", defaults.file, " not found; using package defaults")
       defaults.file <- NULL
     }
   } else if (is.null(defaults.file)) {
@@ -132,11 +124,11 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   if (file.exists(defaults.file)) {
     defaults <- XML::xmlToList(XML::xmlParse(defaults.file))
   } else {
-    logger.severe("no defaults file given and ", genus, "not supported in BioCro")
+    PEcAn.logger::logger.severe("no defaults file given and ", genus, "not supported in BioCro")
   }
   
   if (is.null(defaults)) {
-    logger.error("No defaults values set")
+    PEcAn.logger::logger.error("No defaults values set")
   }
   
   traits.used <- sapply(defaults, is.null)
@@ -159,26 +151,26 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
                                sep = ":", 
                                strip.white = TRUE)))) {
     if (sum(unused.traits) > 0) {
-      logger.warn("the following traits parameters are not added to config file:", 
-                  vecpaste(names(unused.traits)[unused.traits == TRUE]))
+      PEcAn.logger::logger.warn("the following traits parameters are not added to config file:", 
+                  PEcAn.utils::vecpaste(names(unused.traits)[unused.traits == TRUE]))
     }
   }
   
   ## this is where soil parms can be set defaults$soilControl$FieldC <-
   
   ### Put defaults and other parts of config file together
-  parms.xml <- listToXml(defaults, "pft")
-  location.xml <- listToXml(list(latitude = settings$run$site$lat, 
+  parms.xml <- PEcAn.settings::listToXml(defaults, "pft")
+  location.xml <- PEcAn.settings::listToXml(list(latitude = settings$run$site$lat,
                                  longitude = settings$run$site$lon), 
                             "location")
-  run.xml <- listToXml(list(start.date = settings$run$start.date, 
+  run.xml <- PEcAn.settings::listToXml(list(start.date = settings$run$start.date,
                             end.date = settings$run$end.date, 
                             met.path = settings$run$inputs$met$path,
                             soil.file = settings$run$inputs$soil$path), 
                        "run")
   
   slashdate <- function(x) substr(gsub("-", "/", x), 1, 10)
-  simulationPeriod.xml <- listToXml(list(dateofplanting = slashdate(settings$run$start.date), 
+  simulationPeriod.xml <- PEcAn.settings::listToXml(list(dateofplanting = slashdate(settings$run$start.date),
                                          dateofharvest = slashdate(settings$run$end.date)),
                                     "simulationPeriod")
   
