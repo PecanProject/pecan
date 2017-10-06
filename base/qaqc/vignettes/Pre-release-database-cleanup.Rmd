@@ -59,7 +59,7 @@ View(formats)
 
 ** Option 2: Edit a file  **
 
-This is also the most important step! Navigate to the written out table and *delete entries that should remain in the database*. If the tables are dificult to read, change what columns are retained by editing the "relevant_table_columns" parameter.
+This is also the most important step! Navigate to the written out table and *delete entries that should remain in the database*. If the tables are difficult to read, change what columns are retained by editing the "relevant_table_columns" parameter.
 
 ```{r}
 write_out_table(table = formats, outdir = outdir, relevant_table_columns = column_names, table_name = "formats")
