@@ -7,7 +7,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ## [Unreleased]
 
-## [1.5.1] - 2017-09-??
+## [1.5.1] - 2017-10-05
 
 ### Fixes
 - Fixed hyperparameter draws in PDA
