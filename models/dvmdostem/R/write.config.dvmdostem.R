@@ -53,7 +53,7 @@ convert.samples.dvmdostem <- function(trait_values) {
   }
   if ("CMT04.Salix.cuticular_cond" %in% names(trait_values)) {
     # Convert from umol H2O m-2 s-1 to ??? (need to find dvm-dos-tem-units)
-    trait_values[["CMT04.Salix.cuticular_cond"]] <- trait_values[["CMT04.Salix.cuticular_cond"]] / 10^9
+    trait_values[["CMT04.Salix.cuticular_cond"]] <- trait_values[["CMT04.Salix.cuticular_cond"]] / 10^6
   }
 
   ### Return modified version
@@ -262,11 +262,9 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
 
   # Write it back out to disk (overwriting ok??)
   dimveg_exportJson <- toJSON(dimveg_jsondata)
-  #write(dimveg_exportJson, "/tmp/dimveg_newfile.json")
   write(dimveg_exportJson, file.path(local_rundir, "tmp","dimveg_newfile.json"))
   
   envcanopy_exportJson <- toJSON(envcanopy_jsondata)
-  #write(envcanopy_exportJson, "/tmp/envcanopy_newfile.json")
   write(envcanopy_exportJson, file.path(local_rundir, "tmp","envcanopy_newfile.json"))
 
   # (3)
@@ -291,7 +289,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
           args=(c("--fmt-block-from-json", file.path(local_rundir, "tmp","envcanopy_newfile.json"), ref_file)),
           stdout=new_param_file, wait=TRUE)
   
-  # Cleanup temp directory
+  ## Cleanup rundir temp directory - comment out for debugging
   #unlink(file.path(local_rundir, "tmp"), recursive = TRUE, force = FALSE)  # comment out for debugging
 
   # TODO:
@@ -303,6 +301,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   #     -> step one is symlink from raw data locations (Model install folder)
   #        into pecan run folder, maybe do this within job.sh?
 
+  ## Update dvm-dos-tem config.js file
 
   # Get a copy of the config file written into the run directory with the
   # appropriate template parameters substituted.
@@ -312,13 +311,19 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     config_template <- readLines(con=system.file("config.js.template", package = "PEcAn.dvmdostem"), n=-1)
   }
 
-  config_template <- gsub("@INPUT_DATA_DIR@", file.path(dirname(appbinary), "DATA/SewardPen_10x10"), config_template)
+  config_template <- gsub("@INPUT_DATA_DIR@", file.path(dirname(appbinary), "DATA/SewardPen_10x10"), config_template) 
+  # !remove hard-coding of SewPen here!
   config_template <- gsub("@MODEL_OUTPUT_DIR@", outdir, config_template)
 
-  if (! file.exists(file.path(settings$rundir, run.id,"config"))) dir.create(file.path(settings$rundir, run.id,"config"), recursive = TRUE)
+  if (! file.exists(file.path(settings$rundir, run.id,"config"))) dir.create(file.path(settings$rundir, run.id,"config"), 
+                                                                             recursive = TRUE)
 
   writeLines(config_template, con=file.path(settings$rundir, run.id,"config/config.js"))
 
+  
+  ## Update job template file below
+  
+  
   ### create launch script (which will create symlink) - needs to be created
   if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
     jobsh <- readLines(con=settings$model$jobtemplate, n=-1)
@@ -350,6 +355,14 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@BINARY@", appbinary, jobsh)
+  
+  ## model specific options from the pecan.xml file
+  jobsh <- gsub("@PRERUN@", settings$model$dvmdostem_prerun, jobsh)
+  jobsh <- gsub("@EQUILIBRIUM@", settings$model$dvmdostem_equil, jobsh)
+  jobsh <- gsub("@SPINUP@", settings$model$dvmdostem_spinup, jobsh)
+  jobsh <- gsub("@TRANSIENT@", settings$model$dvmdostem_transient, jobsh)
+  jobsh <- gsub("@SCENERIO@", settings$model$dvmdostem_scenerio, jobsh)
+  jobsh <- gsub("@LOGLEVEL@", settings$model$dvmdostem_loglevel, jobsh)
 
   writeLines(jobsh, con=file.path(settings$rundir, run.id,"job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id,"job.sh"))
@@ -359,5 +372,5 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
 
 
 
-
-
+##------------------------------------------------------------------------------------------------#
+### EOF
