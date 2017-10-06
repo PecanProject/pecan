@@ -1,4 +1,4 @@
-##' write_out_table
+##' @export write_out_table
 ##' @author Tempest McCabe
 ##' 
 ##' @param table a table that is output from one of the find_* fucntions
