@@ -20,7 +20,7 @@ Samples parameters for a model run at specified quantiles.
 \details{
 Samples from long (>2000) vectors that represent random samples from a trait distribution.
 Samples are either the MCMC chains output from the Bayesian meta-analysis or are randomly sampled from
-the closed-form distribution of the parameter probabiolity distribution function.
+the closed-form distribution of the parameter probability distribution function.
 The list is indexed first by trait, then by quantile.
 }
 \author{

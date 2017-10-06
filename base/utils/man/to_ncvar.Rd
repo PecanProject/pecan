@@ -2,7 +2,7 @@
 % Please edit documentation in R/to_nc.R
 \name{to_ncvar}
 \alias{to_ncvar}
-\title{to_ncvar}
+\title{Define an NCDF variable}
 \usage{
 to_ncvar(varname, dims)
 }
@@ -13,6 +13,9 @@ to_ncvar(varname, dims)
 }
 \value{
 ncvar defined according to standard_vars
+}
+\description{
+Define an NCDF variable
 }
 \author{
 Anne Thomas
