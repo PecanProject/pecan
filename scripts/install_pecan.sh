@@ -69,13 +69,13 @@ case "$OS_VERSION" in
     sudo yum install -y wget
     sudo wget -O /etc/yum.repos.d/cornell.repo http://download.opensuse.org/repositories/home:cornell_vrdc/CentOS_CentOS-6/home:cornell_vrdc.repo
     sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/5/x86_64/epel-release-5-4.noarch.rpm
-    ;;  
+    ;;
   RH_6)
     sudo yum install -y wget
     sudo wget -O /etc/yum.repos.d/cornell.repo http://download.opensuse.org/repositories/home:cornell_vrdc/CentOS_CentOS-6/home:cornell_vrdc.repo
     sudo yum -y localinstall https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-6-x86_64/pgdg-centos95-9.5-2.noarch.rpm
     sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-    ;;  
+    ;;
   RH_7)
     sudo yum install -y wget
     sudo wget -O /etc/yum.repos.d/cornell.repo wget http://download.opensuse.org/repositories/home:cornell_vrdc/CentOS_7/home:cornell_vrdc.repo
@@ -120,7 +120,7 @@ case "$OS_VERSION" in
     # for PostgreSQL
     sudo yum install -y postgresql95-server postgresql95-devel postgis2_95
     # web gui
-    sudo yum install -y httpd php php-pgsql php-xml
+    sudo yum install -y httpd php php-pgsql php-xml expect expectk
     ;;
   Ubuntu)
     sudo apt-get -y install build-essential gfortran git r-base-core jags liblapack-dev libnetcdf-dev netcdf-bin bc libcurl4-gnutls-dev curl udunits-bin libudunits2-dev libgmp-dev python-dev libgdal1-dev libproj-dev expect
@@ -146,13 +146,13 @@ echo "######################################################################"
 echo "POSTGRES"
 echo "######################################################################"
 #    ADD export PATH=${PATH}:/usr/pgsql-9.5/bin
-#    ADD exclude=postgresql* to /etc/yum.repos.d/CentOS-Base.repo or /etc/yum/pluginconf.d/rhnplugin.conf 
+#    ADD exclude=postgresql* to /etc/yum.repos.d/CentOS-Base.repo or /etc/yum/pluginconf.d/rhnplugin.conf
 #    SEE https://wiki.postgresql.org/wiki/YUM_Installation#Configure_your_YUM_repository
 case "$OS_VERSION" in
   RH_5)
     echo "No PostgreSQL configuration (yet) for RedHat 5"
     exit 1
-    ;;  
+    ;;
   RH_6)
     sudo service postgresql-9.5 initdb
     sudo sh -c 'if ! grep -Fq "bety" /var/lib/pgsql/9.5/data/pg_hba.conf ; then
@@ -163,7 +163,7 @@ host    all             bety            ::1/128                 trust" /var/lib/
     fi'
     chkconfig postgresql-9.5 on
     sudo service postgresql-9.5 start
-    ;;  
+    ;;
   RH_7)
     sudo /usr/pgsql-9.5/bin/postgresql95-setup initdb
     sudo sh -c 'if ! grep -Fq "bety" /var/lib/pgsql/9.5/data/pg_hba.conf ; then
@@ -219,7 +219,7 @@ echo "######################################################################"
 echo "ED"
 echo "######################################################################"
 if [ ! -e ${HOME}/ED2 ]; then
-  cd 
+  cd
   git clone https://github.com/rykelly/ED2.git
   cd ED2
   git checkout modularize
@@ -670,9 +670,9 @@ if [ "$SETUP_PALEON" != "" ]; then
     rm LinBacon_2.2.zip
   fi
   cd ${HOME}/LinBacon_2.2/cpp
-  rm -f *.o 
+  rm -f *.o
   make -f makefileLinux
-  rm *.o 
+  rm *.o
 
   if [ ! -e ${HOME}/clam ]; then
     cd
@@ -695,7 +695,7 @@ if [ "${SETUP_VM}" != "" ]; then
       sudo apt-get -y install hdf5-tools cdo nco netcdf-bin ncview gdb emacs ess nedit
       ;;
   esac
-  
+
   # MOTD
   VERSION=$( awk '/Version: / { print $2 }' $HOME/pecan/all/DESCRIPTION )
   cat > /tmp/motd << EOF
@@ -711,4 +711,3 @@ EOF
   sudo cp /tmp/motd /etc/motd
   rm /tmp/motd
 fi
-
