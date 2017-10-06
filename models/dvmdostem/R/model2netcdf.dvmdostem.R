@@ -7,6 +7,8 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
+
+##-------------------------------------------------------------------------------------------------#
 ##' @name model2netcdf.dvmdostem
 ##' @title Code to convert dvmdostem netcdf output into into CF standard
 ##'
@@ -21,6 +23,7 @@
 ##'
 ##' @author Tobey Carman, Shawn Serbin
 ##' @importFrom ncdf4 ncdim_def ncvar_def ncatt_get ncvar_add
+##' 
 model2netcdf.dvmdostem <- function(outdir) {
 
   # Define PEcAn style dimensions
@@ -37,7 +40,7 @@ model2netcdf.dvmdostem <- function(outdir) {
   # Odd - not sure what PEcAn uses this for as there should be one
   # file for each year. Maybe monthly or daily resolution outputs?
   timed <- ncdf4::ncdim_def(name='time',
-                            units='years since 2000-01-01 00:00:00',
+                            units='years since 1901-01-01 00:00:00',
                             vals=c(0),
                             unlim=TRUE,
                             longname="time",
@@ -74,3 +77,5 @@ model2netcdf.dvmdostem <- function(outdir) {
   }
     
 }
+##-------------------------------------------------------------------------------------------------#
+## EOF
