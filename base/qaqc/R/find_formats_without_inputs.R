@@ -1,9 +1,11 @@
-##' find_formats_without_inputs
+##' @export find_formats_without_inputs
 ##' @author Tempest McCabe
 ##' 
 ##' @param user_id  Optional parameter to search by user_id
-##' @param created_after Optional parameter to search by creation date. Date must be in form 'YYYY-MM-DD'
-##' @param updated_after Optional parameter to search all entried updated after a certain date. Date must be in form 'YYYY-MM-DD'
+##' @param created_after Optional parameter to search by creation date. Date must be in form 'YYYY-MM-DD'.
+##' @param created_before Optional parameter to search by creation date. Can be used in conjunciton with created_after to specify a spesific window. Date must be in form 'YYYY-MM-DD'.
+##' @param updated_after Optional parameter to search all entried updated after a certain date. Date must be in form 'YYYY-MM-DD'.
+##' @param updated_before Optional parameter to search all entried updated before a certain date. Date must be in form 'YYYY-MM-DD'.
 ##' @param con connection the the bety database
 ##' 
 ##' 
@@ -13,53 +15,36 @@
 ##' or look at the README
 
 
-find_formats_without_inputs <- function(con, user_id = NULL, created_after = NULL, updated_after = NULL){
+find_formats_without_inputs <- function(con, user_id_code = NULL, created_after = NULL, updated_after = NULL, created_before = NULL, updated_before = NULL){
 
-  input_command <- paste("select * from inputs;")
+  input_command<-dplyr::tbl(con, 'inputs')
   
-  if(is.null(user_id) && is.null(created_after) && is.null(updated_after)){
-    
-    format_command<-paste("select * from formats;")
-    
-  }else if (is.null((user_id)) && !is.null(created_after) && !is.null(updated_after)){
-    
-    format_command<-paste("select * from formats where created_at>'", created_after,"' and updated_at>'",updated_after, "';", sep = "")
-      
-  }else if(is.null(user_id) && is.null(created_after) && !is.null(updated_after)){
-    
-    format_command<-paste("select * from formats where updated_at>'", updated_after, "';", sep = "")
-    
-  }else if(is.null(user_id) && !is.null(created_after) && is.null(updated_after)){
-    
-    format_command<-paste("select * from formats where created_at>'", created_after, "';", sep = "")
-    
-  }else if(!is.null(user_id) && is.null(created_after) && is.null(updated_after)){
-    
-    format_command<-paste("select * from formats where user_id = '" ,user_id,"';")
-    
-  }else if(!is.null(user_id) && !is.null(created_after) && is.null(updated_after)){
-    
-    format_command<-paste("select * from formats where user_id = '" ,user_id,"' and created_at>'",created_after,"';", sep="")
-    
-  }else if(!is.null(user_id) && is.null(created_after) && !is.null(updated_after)){
-    
-    format_command<-paste("select * from formats where user_id = '" ,user_id,"' and updated_at> '",updated_after,"';", sep = "")
-    
-  }else{
-    
-    PEcAn.logger::logger.error("user_id and/or data_rage have been set incorrectly")
-    
+  format_command<-dplyr::tbl(con, 'formats')
+  
+  if(!is.null(user_id_code)){
+    format_command<-dplyr::filter(format_command, user_id == user_id_code)
+  }
+  if(!is.null(created_before)){
+    format_command<-dplyr::filter(format_command,created_at < created_before)  
+  }
+  if(!is.null(created_after)){
+    format_command<-dplyr::filter(format_command,created_at > created_after)
+  }
+  if(!is.null(updated_before)){
+    format_command<-dplyr::filter(format_command, updated_at < updated_before)
+  }
+  if(!is.null(updated_after)){
+    format_command<-dplyr::filter(format_command, updated_at > updated_after)
   }
   
-  psql_of_inputs<-PEcAn.DB::db.query(input_command, con=con)
-  psql_of_formats<-PEcAn.DB::db.query(format_command, con=con)
-  colnames(psql_of_formats)[1]<-"format_id"
-  formats_without_inputs<-dplyr::anti_join(psql_of_formats, psql_of_inputs, by="format_id")
+  format_command<-as.data.frame(format_command)
+  input_command<-as.data.frame(input_command)
+  
+  colnames(format_command)[1]<-"format_id"
+  formats_without_inputs<-dplyr::anti_join(format_command, input_command, by = "format_id")
   colnames(formats_without_inputs)[1]<-"id"
   
   formats_without_inputs$table_name<-rep("formats", length.out= length(formats_without_inputs[,1]))
-  formats_without_inputs<-as.data.frame(formats_without_inputs)
+  
   return(formats_without_inputs) 
-  
-  
 }
