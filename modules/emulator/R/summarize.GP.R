@@ -84,4 +84,4 @@ summarize.GP <- function(gp, pdf_file = NULL, txt_file = NULL) {
   if (!is.null(txt_file)) {
     sink()
   }
-} # summarize_GP
+} # summarize.GP

@@ -96,10 +96,8 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   
   climate_file <- settings$run$inputs$met$path
   load(climate_file)
-  #temp.mat <- temp.mat[start.year:end.year - start.year + 1, ]
-  temp.mat <- temp.mat[which(temp.mat[,13]%in%start.year:end.year),]
-  precip.mat <- precip.mat[which( precip.mat[,13]%in%start.year:end.year),]
-  #precip.mat <- precip.mat[start.year:end.year - start.year + 1, ]
+  temp.mat <- temp.mat[start.year:end.year - start.year + 1, ]
+  precip.mat <- precip.mat[start.year:end.year - start.year + 1, ]
   
   basesc <- 74
   basesn <- 1.64
@@ -123,11 +121,11 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
       } else {
         ## copy values
         if (!is.null(trait.values[[group]])) {
-          vals <- as.data.frame(t(trait.values[[group]]))
+          vals <- trait.values[[group]]
           
           # replace defaults with traits
-          #new.params.locs <- which(names(spp.params) %in% names(vals))
-          #new.vals.locs <- which(names(vals) %in% names(spp.params))
+          new.params.locs <- which(names(spp.params) %in% names(vals))
+          new.vals.locs <- which(names(vals) %in% names(spp.params))
           #spp.params[which(spp.params$Spp_Name == group), new.params.locs] <- vals[new.vals.locs]
           
           # conversion of some traits to match what LINKAGES needs Going to have to look up this paper
@@ -152,11 +150,11 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           if ("DMIN" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$DMIN <- vals$DMIN
           }
-          if ("AGEMX" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$AGEMX <- vals$AGEMX
+          if ("AGEMAX" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$AGEMAX <- vals$AGEMAX
           }
           if ("G" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$G <- vals$G
+            spp.params[spp.params$Spp_Name == group, ]$G <- vals$Gmax
           }
           if ("SPRTND" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$SPRTND <- vals$SPRTND

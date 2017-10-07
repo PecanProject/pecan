@@ -9,16 +9,12 @@
 ##' @author Anne Thomas
 
 pool_ic_list2netcdf <- function(input, outdir, siteid){
-  if(is.null(input$vals) || length(input$vals) == 0){
-    PEcAn.logger::logger.severe("Please provide 'vals' list in input with variable names assigned to values")
-  }
-  
   if(is.null(input$dims) || length(input$dims) == 0){
-    if (any(sapply(input$vals,length) > 1)){
-      PEcAn.logger::logger.severe("A variable has length > 1; please provide non-empty 'dims' list in input")
-    }
+    PEcAn.utils::logger.severe("Please provide non-empty 'dims' list in input")
   }
-  #to do: check
+  if(is.null(input$vals) || length(input$vals) == 0){
+    PEcAn.utils::logger.severe("Please provide 'vals' list in input with variable names assigned to values")
+  }
   
   dims <- list()
   for(dimname in names(input$dims)){

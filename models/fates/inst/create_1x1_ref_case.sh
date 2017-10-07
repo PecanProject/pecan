@@ -18,22 +18,15 @@
 # site_lat_c =   9.1543, 5.07389,  -2.60909722,  1.4368,   4.1865,  15.6324
 # site_lon_c = 280.1539, 8.85472, 299.7907,     28.5826, 114.017,   99.217
 #=============================================================================================
-
-#Optional netcdf explicit settings
-export NETCDF_HOME=/usr/local/  
-export NETCDF_PATH=${NETCDF_HOME}
-
-CIME_MODEL=cesm
-
+#export NETCDF_HOME=/usr/local/  # is this nescessary?
 MACH=eddi
 COMP=ICLM45ED
 GITHASH=`git log -n 1 --format=%h`
 CASE=ref1x1_${GITHASH}
 
-CROOT=/home/carya/FATES_refrun/ # Define path where run will be written to
+CROOT=/home/carya/FATES_refrun/
 
-DIN_LOC_ROOT=/home/carya/FATESinput/ # Defiune path to input data
-
+DIN_LOC_ROOT=/home/carya/FATESinput/
 DOMAIN_PATH=${DIN_LOC_ROOT}/share/domains/
 
 WORKDIR=`pwd`
@@ -109,7 +102,7 @@ echo "*** Running case.setup ***"
 
 cat >> user_nl_clm << \EOF
 hist_empty_htapes = .true.
-hist_fincl1='EFLX_LH_TOT','TSOI_10CM','QVEGT','GPP','AR','ED_bleaf','ED_biomass','NPP','MAINT_RESP','GROWTH_RESP'
+hist_fincl1='EFLX_LH_TOT','TSOI_10CM','QVEGT','NEP','GPP','AR','ED_bleaf','ED_biomass','NPP_column’,'NPP','MAINT_RESP','GROWTH_RESP'
 hist_mfilt             = 8760
 hist_nhtfrq            = -1
 EOF

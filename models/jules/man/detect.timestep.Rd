@@ -7,6 +7,10 @@
 detect.timestep(met.dir, met.regexp, start_date)
 }
 \arguments{
+\item{met.dir}{}
+
+\item{met.regexp}{}
+
 \item{start_date}{}
 }
 \description{

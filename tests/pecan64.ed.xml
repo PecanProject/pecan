@@ -41,9 +41,9 @@
 -->
 
   <model>
-    <binary>/usr/local/bin/ed2.git</binary>
+    <binary>/usr/local/bin/ed2.r82</binary>
     <type>ED2</type>
-    <revision>git</revision>
+    <revision>82</revision>
     <config.header>
       <radiation>
         <lai_min>0.01</lai_min>

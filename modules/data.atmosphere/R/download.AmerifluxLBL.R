@@ -15,6 +15,8 @@
 ##' @param username Ameriflux username
 ##' @param method Optional. download.file() function option.  Use this to set custom programs such as ncftp
 ##'
+##' @importFrom PEcAn.utils fqdn logger.debug logger.error logger.warn logger.severe
+##' 
 ##' @examples
 ##' result <- download.AmerifluxLBL("US-Akn","~/","2011-01-01","2011-12-31",overwrite=TRUE)
 ##' 
@@ -50,7 +52,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   
   # test to see that we got back a FTP
   if (is.null(ftplink)) {
-    PEcAn.logger::logger.severe("Could not get information about", site, ".", "Is this an AmerifluxLBL site?")
+    logger.severe("Could not get information about", site, ".", "Is this an AmerifluxLBL site?")
   }
   # get zip and csv filenames
   outfname <- strsplit(ftplink, "/")
@@ -72,17 +74,17 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   download_file_flag     <- TRUE
   extract_file_flag      <- TRUE
   if (!overwrite && file.exists(output_zip_file)) {
-    PEcAn.logger::logger.debug("File '", output_zip_file, "' already exists, skipping download")
+    logger.debug("File '", output_zip_file, "' already exists, skipping download")
     download_file_flag   <- FALSE
   }
   if (!overwrite && file.exists(output_csv_file)) {
-    PEcAn.logger::logger.debug("File '", output_csv_file, "' already exists, skipping extraction.")
+    logger.debug("File '", output_csv_file, "' already exists, skipping extraction.")
     download_file_flag   <- FALSE
     extract_file_flag    <- FALSE
     file_timestep        <- "HH"
   } else {
     if (!overwrite && file.exists(output_csv_file_hr)) {
-      PEcAn.logger::logger.debug("File '", output_csv_file_hr, "' already exists, skipping extraction.")
+      logger.debug("File '", output_csv_file_hr, "' already exists, skipping extraction.")
       download_file_flag <- FALSE
       extract_file_flag  <- FALSE
       file_timestep      <- "HR"
@@ -95,7 +97,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
     extract_file_flag <- TRUE
     PEcAn.utils::download.file(ftplink, output_zip_file, method)
     if (!file.exists(output_zip_file)) {
-      PEcAn.logger::logger.severe("FTP did not download ", output_zip_file, " from ", ftplink)
+      logger.severe("FTP did not download ", output_zip_file, " from ", ftplink)
     }
   }
   if (extract_file_flag) {
@@ -108,12 +110,12 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
         output_csv_file <- output_csv_file_hr
         outcsvname <- outcsvname_hr
       } else {
-        PEcAn.logger::logger.severe("Half-hourly or Hourly data file was not found in ", output_zip_file)
+        logger.severe("Half-hourly or Hourly data file was not found in ", output_zip_file)
       }
     }
     unzip(output_zip_file, outcsvname, exdir = outfolder)
     if (!file.exists(output_csv_file)) {
-      PEcAn.logger::logger.severe("ZIP file ", output_zip_file, " did not contain CSV file ", outcsvname)
+      logger.severe("ZIP file ", output_zip_file, " did not contain CSV file ", outcsvname)
     }
   }
   
@@ -141,10 +143,10 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
   eyear <- lubridate::year(lastdate)
   
   if (start_year > eyear) {
-    PEcAn.logger::logger.severe("Start_Year", start_year, "exceeds end of record ", eyear, " for ", site)
+    logger.severe("Start_Year", start_year, "exceeds end of record ", eyear, " for ", site)
   }
   if (end_year < syear) {
-    PEcAn.logger::logger.severe("End_Year", end_year, "precedes start of record ", syear, " for ", site)
+    logger.severe("End_Year", end_year, "precedes start of record ", syear, " for ", site)
   }
   
   rows    <- 1
@@ -158,7 +160,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
                         stringsAsFactors = FALSE)
 
   results$file[rows]       <- output_csv_file
-  results$host[rows]       <- PEcAn.utils::fqdn()
+  results$host[rows]       <- fqdn()
   results$startdate[rows]  <- firstdate_st
   results$enddate[rows]    <- lastdate_st
   results$mimetype[rows]   <- "text/csv"

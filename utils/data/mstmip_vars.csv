@@ -1,0 +1,64 @@
+Num;Group;order;Saveit;Variable.Name;standard_name;Units;Long.name;Priority;Category;Hourly;Monthly;var_type;ndim;dim1;dim2;dim3;dim4;Description
+1;1;1;Yes;lon;longitude;degrees_east;Longitude;0;Grid;Yes;Yes;real;1;lon;na;na;na;longitude at center of each grid cell
+2;1;2;Yes;lat;latitude;degrees_north;Latitude;0;Grid;Yes;Yes;real;1;lat;na;na;na;latitude at center of each grid cell
+3;1;3;Yes;lon_bnds;;degrees_east;Longitude west-east bounds;0;Grid;Yes;Yes;real;2;nbnds;lon;na;na;(west boundary of grid cell, east boundary of grid cell)
+4;1;4;Yes;lat_bnds;;degrees_north;Latitude south-north bounds;0;Grid;Yes;Yes;real;2;nbnds;lat;na;na;(south boundary of grid cell, north boundary of grid cell)
+5;2;1;Yes;time;time;days since 1700-01-01 00:00:00 UTC;Time middle averaging period;0;Time;Yes;Yes;double;1;time;na;na;na;julian days days since 1700-01-01 00:00:00 UTC for middle of time averaging period Proleptic_Gregorianc calendar
+6;2;2;Yes;time_bnds;;days since 1700-01-01 00:00:00 UTC;Time beginning-end bounds;0;Time;Yes;Yes;double;2;nbnds;time;na;na;(julian days days since 1700-01-01 beginning time ave period, julian days days since 1700-01-01 end time ave period)
+7;2;3;Yes;dec_date;;yr;Decimal date middle averaging period;0;Time;Yes;Yes;double;1;time;na;na;na;decimal date in fractional years for middle of time averaging period
+8;2;4;Yes;dec_date_bnds;;yr;Decimal date beginning-end bounds;0;Time;Yes;Yes;double;2;nbnds;time;na;na;(decimal date beginningﾠﾠtime ave period, decimal date end time ave period)
+9;2;5;Yes;cal_date_mid;;yr, mon, day, hr, min, sec;Calender date middle averaging period;0;Time;Yes;Yes;integer;2;ncal;time;na;na;calender date middle of time ave period: year, month, day, hour, minute, second for UTC time zone
+10;2;6;Yes;cal_date_beg;;yr, mon, day, hr, min, sec;Calender date beginning averaging period;0;Time;Yes;Yes;integer;2;ncal;time;na;na;calender date beginning of time ave period: year, month, day, hour, minute, second for UTC time zone
+11;2;7;Yes;cal_date_end;;yr, mon, day, hr, min, sec;Calender date end averaging period;0;Time;Yes;Yes;integer;2;ncal;time;na;na;calender date end of time ave period: year, month, day, hour, minute, second for UTC time zone
+12;3;1;Yes;GPP;;kg C m-2 s-1;Gross Primary Productivity;1;Carbon Fluxes;Yes;Yes;real;3;lon;lat;time;na;Rate of photosynthesis (always positive)
+13;3;2;Yes;NPP;;kg C m-2 s-1;Net Primary Productivity;1;Carbon Fluxes;Yes;Yes;real;3;lon;lat;time;na;Net Primary Productivity (NPP=GPP-AutoResp, positive into plants)
+14;3;3;Yes;TotalResp;;kg C m-2 s-1;Total Respiration;1;Carbon Fluxes;Yes;Yes;real;3;lon;lat;time;na;Total respiration (TotalResp=AutoResp+heteroResp, always positive)
+15;3;4;Yes;AutoResp;;kg C m-2 s-1;Autotrophic Respiration;1;Carbon Fluxes;Yes;Yes;real;3;lon;lat;time;na;Autotrophic respiration rate (always positive)
+16;3;5;Yes;HeteroResp;;kg C m-2 s-1;Heterotrophic Respiration;1;Carbon Fluxes;Yes;Yes;real;3;lon;lat;time;na;Heterotrophic respiration rate (always positive)
+17;3;6;Yes;DOC_flux;;kg C m-2 s-1;Dissolved Organic Carbon flux;1;Carbon Fluxes;Yes;Yes;real;3;lon;lat;time;na;Loss of organic carbon dissolved in ground water or rivers (positive out of grid cell)
+18;3;7;Yes;Fire_flux;;kg C m-2 s-1;Fire emissions;1;Carbon Fluxes;Yes;Yes;real;3;lon;lat;time;na;Flux of carbon due to fires (always positive)
+19;3;8;Yes;NEE;;kg C m-2 s-1;Net Ecosystem Exchange;1;Carbon Fluxes;Yes;Yes;real;3;lon;lat;time;na;Net Ecosystem Exchange (NEE=HeteroResp+AutoResp-GPP, positive into atmosphere)
+21;4;2;Yes;poolname;;(-);Name of each Carbon Pool;1;Carbon Pools;No;Yes;character;2;nchar;npool;na;na;"Name of each carbon pool (i.e., \""wood,\"" or \""Coarse Woody Debris\"")"
+22;4;3;Yes;CarbPools;;kg C m-2;Size of each carbon pool;1;Carbon Pools;No;Yes;real;4;lon;lat;npool;time;Total size of each carbon pool vertically integrated over the entire soil column
+23;4;4;Yes;AbvGrndWood;;kg C m-2;Above ground woody biomass;1;Carbon Pools;No;Yes;real;3;lon;lat;time;na;Total above ground wood biomass
+24;4;5;Yes;TotLivBiom;;kg C m-2;Total living biomass;1;Carbon Pools;No;Yes;real;3;lon;lat;time;na;Total carbon content of the living biomass (leaves+roots+wood)
+25;4;6;Yes;TotSoilCarb;;kg C m-2;Total Soil Carbon;1;Carbon Pools;No;Yes;real;3;lon;lat;time;na;Total soil and litter carbon content vertically integrated over the enire soil column
+26;4;7;Yes;LAI;;m2 m-2;Leaf Area Index;1;Carbon Pools;No;Yes;real;3;lon;lat;time;na;Area of leaves per area ground
+27;5;1;Yes;Qh;;W m-2;Sensible heat;1;Energy Fluxes;Yes;Yes;real;3;lon;lat;time;na;Sensible heat flux into the boundary layer (positive into atmosphere)
+28;5;2;Yes;Qle;;W m-2;Latent heat;1;Energy Fluxes;Yes;Yes;real;3;lon;lat;time;na;Latent heat flux into the boundary layer (positive into atmosphere)
+29;5;3;Yes;Evap;;kg m-2 s-1;Total Evaporation;1;Energy Fluxes;No;Yes;real;3;lon;lat;time;na;Sum of all evaporation sources (positive into atmosphere)
+30;5;4;Yes;TVeg;;kg m-2 s-1;Transpiration;1;Energy Fluxes;No;Yes;real;3;lon;lat;time;na;Total Plant transpiration (always positive)
+31;5;5;Yes;LW_albedo;;(-);Longwave Albedo;1;Energy Fluxes;No;Yes;real;3;lon;lat;time;na;Longwave Albedo
+32;5;6;Yes;SW_albedo;;(-);Shortwave Albedo;1;Energy Fluxes;No;Yes;real;3;lon;lat;time;na;Shortwave albedo
+33;5;7;Yes;Lwnet;;W m-2;Net Longwave Radiation;1;Energy Fluxes;No;Yes;real;3;lon;lat;time;na;Incident longwave radiation minusﾠﾠsimulated outgoing longwave radiation (positive into grnd)
+34;5;8;Yes;SWnet;;W m-2;Net shortwave radiation;1;Energy Fluxes;No;Yes;real;3;lon;lat;time;na;Incident shortwave radiation minusﾠﾠsimulated outgoing shortwave radiation (positive into grnd)
+35;5;9;Yes;fPAR;;(-);Absorbed fraction incoming PAR;1;Energy Fluxes;No;Yes;real;3;lon;lat;time;na;absorbed fraction incoming photosyntetically active radiation
+37;6;2;Yes;z_top;;m;Soil Layer Top Depth;1;Physical Variables;No;Yes;real;1;nsoil;na;na;na;Depth from soil surface to top of soil layer
+38;6;3;Yes;z_node;;m;Soil Layer Node Depth;1;Physical Variables;No;Yes;real;1;nsoil;na;na;na;"Depth from soil surface to layer prognostic variables; typically center of soil layer"
+39;6;4;Yes;z_bottom;;m;Soil Layer Bottom Depth;1;Physical Variables;No;Yes;real;1;nsoil;na;na;na;Depth from soil surface to bottom of soil layer
+40;6;5;Yes;SoilMoist;;kg m-2;Average Layer Soil Moisture;1;Physical Variables;No;Yes;real;4;lon;lat;nsoil;time;Soil water content in each soil layer, includingﾠﾠliquid, vapor and ice
+41;6;5;Yes;SoilMoistFrac;;(-);Average Layer Fraction of Saturation;1;Physical Variables;No;Yes;real;4;lon;lat;nsoil;time;Fraction of saturation of soil water in each soil layer, includingﾠﾠliquid and ice
+42;6;6;Yes;SoilWet;;(-);Total Soil Wetness;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;Vertically integrated soil moisture divided by maximum allowable soil moisture above wilting point
+43;6;7;Yes;Qs;;kg m-2 s-1;Surface runoff;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;Runoff from the landsurface and/or subsurface stormflow
+44;6;8;Yes;Qsb;;kg m-2 s-1;Subsurface runoff;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;Gravity soil water drainage and/or soil water lateral flow
+45;6;9;Yes;SoilTemp;;K;Average Layer Soil Temperature;1;Physical Variables;No;Yes;real;4;lon;lat;nsoil;time;Average soil temperature in each soil layer
+46;6;10;Yes;Tdepth;;m;Active Layer Thickness;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;"Thaw depth; depth to zero centigrade isotherm in permafrost"
+47;6;11;Yes;Fdepth;;m;Frozen Layer Thickness;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;"Freeze depth; depth to zero centigrade isotherm in non-permafrost"
+48;6;12;Yes;Tcan;;K;Canopy Temperature;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;Canopy or vegetation temperature (or temperature used in photosynthesis calculations)
+49;6;13;Yes;SWE;;kg m-2;Snow Water Equivalent;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;Total water mass of snow pack, including ice and liquid water
+50;6;14;Yes;SnowDen;;kg m-3;Bulk Snow Density;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;Overall bulk density of the snow pack, including ice and liquid water
+51;6;15;Yes;SnowDepth;;m;Total snow depth;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;Total snow depth
+52;7;1;Yes;CO2air;;micromol mol-1;Near surface CO2 concentration;1;Driver;No;Yes;real;3;lon;lat;time;na;Near surface dry air CO2 mole fraction
+53;7;2;Yes;LWdown;surface_downwelling_longwave_flux_in_air;W/m2;Surface incident longwave radiation;1;Driver;No;Yes;real;3;lon;lat;time;na;Surface incident longwave radiation
+54;7;3;Yes;Psurf;air_pressure;Pa;Surface pressure;1;Driver;No;Yes;real;3;lon;lat;time;na;Surface pressure
+55;7;4;Yes;Qair;specific_humidity;kg kg-1;Near surface specific humidity;1;Driver;No;Yes;real;3;lon;lat;time;na;Near surface specific humidity
+56;7;5;Yes;Rainf;precipitation_flux;kg m-2 s-1;Rainfall rate;1;Driver;No;Yes;real;3;lon;lat;time;na;Rainfall rate
+57;7;6;Yes;SWdown;surface_downwelling_shortwave_flux_in_air;W m-2;Surface incident shortwave radiation;1;Driver;No;Yes;real;3;lon;lat;time;na;Surface incident shortwave radiation
+58;7;7;Yes;Tair;air_temperature;K;Near surface air temperature;1;Driver;No;Yes;real;3;lon;lat;time;na;Near surface air temperature
+59;7;8;Yes;Wind;wind_speed;m s-1;Near surface module of the wind;1;Driver;No;Yes;real;3;lon;lat;time;na;Near surface wind magnitude
+60;;;;Tmin;air_temperature_max;K;Daily Maximum Temperature;1;Driver;No;Yes;real;3;lon;lat;time;na;Daily Maximum Temperature
+61;;;;Tmax;air_temperature_min;K;Daily Minimum Temperature;1;Driver;No;Yes;real;3;lon;lat;time;na;Daily Minimum Temperature
+62;;;;Uwind;northward_wind;m s-1;Northward Component of Wind;1;Driver;No;Yes;real;3;lon;lat;time;na;Northward Component of Wind
+63;;;;Vwind;eastward_wind;m s-1;Eastward Component of Wind;1;Driver;No;Yes;real;3;lon;lat;time;na;Eastward Component of Wind
+64;;;;RH;relative_humidity;%;Relative Humidity;1;Driver;No;Yes;real;3;lon;lat;time;na;Relative Humidity
+65;;;;PAR;surface_downwelling_photosynthetic_photon_flux_in_air;mol m-2 s-1;Photosynthetically Active Radiation;1;Driver;No;Yes;real;3;lon;lat;time;na;Photosynthetically Active Radiation

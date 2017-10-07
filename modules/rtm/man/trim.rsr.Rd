@@ -13,6 +13,3 @@ trim.rsr(rsr, wl.min = 400, wl.max = 2500)
 
 \item{wl.max}{Maximum wavelength (inclusive, default = 2500)}
 }
-\description{
-Trim RSR matrix to wavelength limits
-}
