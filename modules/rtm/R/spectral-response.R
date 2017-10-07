@@ -1,12 +1,14 @@
 #' Sensor spectral response functions
-#' 
+
+#' @name sensor.list
+#' @title Sensor list with short names
 #' @export
 sensor.list <- c("identity", "aviris.ng", "aviris.classic",
                  "hyperion", "chris.proba", "landsat5", "landsat7",
                  "landsat8", "modis", "viirs", "avhrr", "licor")
 
-#' Sensor list with proper names
-#' 
+#' @name sensor.proper
+#' @title Sensor list with proper names
 #' @export
 sensor.proper <- c("ASD Field Spec", "AVIRIS NG", "AVIRIS Classic",
                    "Hyperion", "CHRIS-Proba", "Landsat 5", "Landsat 7",
@@ -14,8 +16,8 @@ sensor.proper <- c("ASD Field Spec", "AVIRIS NG", "AVIRIS Classic",
 
 names(sensor.proper) <- sensor.list
 
-#' Convolution of spectra to sensor RSR
-#' 
+#' @name spectral.response
+#' @title Convolution of spectra to sensor RSR
 #' @param spec Full (1 nm) spectrum (vector)
 #' @param sensor Sensor name (string). See sensor.list
 #' @export

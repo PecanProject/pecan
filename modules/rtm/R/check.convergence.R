@@ -1,6 +1,7 @@
-#' Check convergence of multiple MCMC chains
+#' @title Check convergence of multiple MCMC chains
 #' 
-#' Uses Gelman multivariate Gelman-Rubin diagnostic to check if 
+#' @name check.convergence
+#' @details Uses Gelman multivariate Gelman-Rubin diagnostic to check if 
 #' multiple MCMC chains have converged
 #' @param jags_out mcmc.list object (from coda package) containing 
 #' samples from MCMC chains.
@@ -8,9 +9,12 @@
 #' @param verbose If TRUE, print convergence result. Default = TRUE
 #' @param ... Additional arguments to `gelman.diag` (from coda package)
 #' @return List length 3 containing the following:
-#'      * convergence: Logical. Whether or not convergence was achieved.
-#'      * diagnostics: Numerical value of Gelman-Rubin diagnostics for each parameter and multivariate diagnostic
-#'      * error: Logical. Whether or not an error occured in the Gelman-Rubin calculation.  
+#'
+#'      convergence: Logical. Whether or not convergence was achieved.
+#'
+#'      diagnostics: Numerical value of Gelman-Rubin diagnostics for each parameter and multivariate diagnostic
+#'
+#'      error: Logical. Whether or not an error occured in the Gelman-Rubin calculation.  
 #' @export
 check.convergence <- function(jags_out, 
                               threshold = 1.1,

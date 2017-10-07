@@ -1,7 +1,8 @@
 # Functions for processing output
 
-#' Burn-in and thinning of MCMC samples
+#' @title Burn-in and thinning of MCMC samples
 #' 
+#' @name burnin.thin
 #' @param samples Matrix of MCMC samples
 #' @param target Target number of samples (default = 5000). Only applicable if 
 #' auto=TRUE.
@@ -29,8 +30,8 @@ burnin.thin <- function(samples, target = 5000, burnin.ratio = 2,
   return(samples.bt)
 }
 
-#' Load object from an RData file
-#' 
+#' @name load.from.name
+#' @title Load object from an RData file
 #' @param filename Full name (without path!) of RData file
 #' @param filepath Path of RData file (default='.')
 #' @export
@@ -42,10 +43,11 @@ load.from.name <- function(filename, filepath = ".") {
   return(f.get)
 }
 
-#' Multivariate normal fit
+#' @title Multivariate normal fit
 #' 
-#' Fit multivariate normal to samples. Return means and covariance matrix as a 
-#' long list (for easy construction of data.tables)
+#' @name summary_mvnorm
+#' @description Fit multivariate normal to samples. Return means and covariance 
+#' matrix as a long list (for easy construction of data.tables)
 #' @param samples Matrix of MCMC samples.
 #' @export
 summary_mvnorm <- function(samples) {
@@ -63,9 +65,11 @@ summary_mvnorm <- function(samples) {
   return(out.list)
 }
 
-#' Simple summary statistics on MCMC samples
+#' @title Simple summary statistics on MCMC samples
 #' 
-#' Calculate simple univariate summary statistics and return as named list
+#' @name summary_simple
+#' @description Calculate simple univariate summary statistics and return as 
+#' named list
 #' @param samples Matrix of MCMC samples
 #' @export
 summary_simple <- function(samples) {

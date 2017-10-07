@@ -14,8 +14,8 @@ define_benchmark <- function(settings, bety){
   }
   bm.settings <- settings$benchmarking
   
-  PEcAn.logger::logger.info(paste("Ensemble id:", bm.settings$ensemble_id))
-  PEcAn.logger::logger.info(paste(!is.null(bm.settings$ensemble_id)))
+  logger.info(paste("Ensemble id:", bm.settings$ensemble_id))
+  logger.info(paste(!is.null(bm.settings$ensemble_id)))
   # Retrieve/create benchmark entries
   
   if(is.null(bm.settings$reference_run_id)){
@@ -35,7 +35,7 @@ define_benchmark <- function(settings, bety){
         BRR <- tbl(bety,"reference_runs") %>% filter(id == bm_ens$reference_run_id) %>% 
           rename(reference_run_id = id) %>% collect()
       }else if(dim(bm_ens)[1] > 1){ # There shouldn't be more than one reference run per run
-        PEcAn.logger::logger.error("There is more than one reference run in the database for this ensemble id. Review for duplicates. ")
+        PEcAn.utils::logger.error("There is more than one reference run in the database for this ensemble id. Review for duplicates. ")
         }
       # add the ref_run id, remove the ensemble_id
       bm.settings$reference_run_id <- BRR$reference_run_id
@@ -63,12 +63,12 @@ define_benchmark <- function(settings, bety){
                      benchmark$site_id, settings$info$userid)
       bm <- db.query(cmd, bety$con)
     }else if(dim(bm)[1] >1){
-      PEcAn.logger::logger.error("Duplicate record entries in benchmarks")
+      PEcAn.utils::logger.error("Duplicate record entries in benchmarks")
     }
     
     
     
-    PEcAn.logger::logger.info(" ( %s, %s, %s, %s)", benchmark$input_id, benchmark$variable_id,
+    logger.info(" ( %s, %s, %s, %s)", benchmark$input_id, benchmark$variable_id,
             benchmark$site_id, bm.settings$info$userid)
     
     
@@ -84,7 +84,7 @@ define_benchmark <- function(settings, bety){
                      bm$id, bm.settings$reference_run_id)
       db.query(cmd, bety$con)
     }else if(dim(bmBRR)[1] > 1){
-      PEcAn.logger::logger.error("Duplicate record entries in benchmarks_benchmarks_reference_runs")
+      PEcAn.utils::logger.error("Duplicate record entries in benchmarks_benchmarks_reference_runs")
     }
     
     # Retrieve/create benchmarks_metrics record
@@ -98,7 +98,7 @@ define_benchmark <- function(settings, bety){
                        bm$id, benchmark$metrics[[j]])
         db.query(cmd, bety$con)
       }else if(dim(bmmetric)[1] > 1){
-        PEcAn.logger::logger.error("Duplicate record entries in benchmarks_metrics")
+        PEcAn.utils::logger.error("Duplicate record entries in benchmarks_metrics")
       }
     }
     

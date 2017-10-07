@@ -4,7 +4,7 @@
 \alias{soil.units}
 \title{Get standard units for a soil variable}
 \usage{
-soil.units(varname = NA)
+soil.units(varname)
 }
 \arguments{
 \item{varname}{}

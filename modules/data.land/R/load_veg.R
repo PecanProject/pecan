@@ -38,10 +38,10 @@ load_veg <- function(new_site, start_date, end_date,
     code.col <- "latin_name"
     # might indicate a custom format, should be passed to function
     if(is.null(format_name)){
-      PEcAn.logger::logger.severe("Can't match code to species. Please provide 'match.format' via settings.")
+      logger.severe("Can't match code to species. Please provide 'match.format' via settings.")
     }
   }else{
-    PEcAn.logger::logger.severe("Can't match code to species. No valid format found.")
+    logger.severe("Can't match code to species. No valid format found.")
   } 
   
   # match code to species ID

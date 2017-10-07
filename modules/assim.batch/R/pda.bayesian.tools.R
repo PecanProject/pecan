@@ -62,9 +62,6 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
   inputs  <- load.pda.data(settings, bety)
   n.input <- length(inputs)
   
-  # get hyper parameters if any
-  hyper.pars <- return_hyperpars(settings$assim.batch, inputs)
-  
   # efficient sample size calculation
   # fot BT you might want to run the model once and align inputs & outputs, then calculate n_eff
   # for now assume they will be same length
@@ -74,7 +71,7 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
   do.call("require", list(paste0("PEcAn.", settings$model$type)))
   my.write.config <- paste("write.config.", settings$model$type, sep = "")
   if (!exists(my.write.config)) {
-    PEcAn.logger::logger.severe(paste(my.write.config, "does not exist. Please make sure that the PEcAn interface is loaded for", 
+    logger.severe(paste(my.write.config, "does not exist. Please make sure that the PEcAn interface is loaded for", 
                         settings$model$type))
   }
   
@@ -86,7 +83,7 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
   ## NOTE: The listed samplers here require more than 1 parameter for now because of the way their
   ## cov is calculated
   if (sampler %in% c("M", "AM", "DR", "DRAM", "DREAM", "DREAMzs", "SMC") & sum(n.param) < 2) {
-    PEcAn.logger::logger.error(paste0(sampler, " sampler can be used with >=2 paramaters"))
+    logger.error(paste0(sampler, " sampler can be used with >=2 paramaters"))
   }
   
   ## Get the workflow id
@@ -136,7 +133,7 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
                                                                                                              now, sep = "."))
     
     ## Start model run
-    PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+    start.model.runs(settings, settings$database$bety$write)
     
     ## Read model outputs
     align.return <- pda.get.model.output(settings, run.id, bety, inputs)
@@ -170,8 +167,7 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
     ## calculate error statistics      
     pda.errors <- pda.calc.error(settings, con, model_out = model.out, run.id, inputs, all.bias)
     llik.par <- pda.calc.llik.par(settings, n = n.of.obs, 
-                                  error.stats = unlist(pda.errors),
-                                  hyper.pars)
+                                  error.stats = unlist(pda.errors))
     ## Calculate likelihood
     LL.new <- pda.calc.llik(pda.errors = unlist(pda.errors), llik.fn, llik.par)
     
@@ -181,7 +177,7 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
   ## Create bayesianSetup object for BayesianTools
   bayesianSetup <- createBayesianSetup(bt.likelihood, bt.prior, best = parm[prior.ind.all], parallel = FALSE)
   
-  PEcAn.logger::logger.info(paste0("Extracting upper and lower boundaries from priors."))  # M/AM/DR/DRAM can't work with -Inf, Inf values
+  logger.info(paste0("Extracting upper and lower boundaries from priors."))  # M/AM/DR/DRAM can't work with -Inf, Inf values
   rng <- matrix(c(sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 1e-05)), 
                   sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 0.99999))), 
                 nrow = sum(n.param))

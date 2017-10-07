@@ -1,11 +1,12 @@
-#' Least squares model inversion
+#' @title Least squares model inversion
 #' 
-#' Performs a least-squares inversion of an arbitrary radiative transfer model 
-#' (passed as an R function). The inversion attempts to minimize the sum of 
-#' residual least squares between modeled and observed spectra via the 
-#' Levenberg-Marquardt algorithm (`nls.lm` function from the `minpack.lm` 
-#' package).
+#' @name invert.lsq
 #' @author Alexey Shiklomanov
+#' @details Performs a least-squares inversion of an arbitrary radiative 
+#' transfer model (passed as an R function). The inversion attempts to minimize 
+#' the sum of residual least squares between modeled and observed spectra via 
+#' the Levenberg-Marquardt algorithm (`nls.lm` function from the `minpack.lm` 
+#' package).
 #' @param observed Vector of observations (e.g. a reflectance spectrum).
 #' @param inits Vector of initial conditions for the parameters.
 #' @param model An R function that calls the RTM and returns the error to be 

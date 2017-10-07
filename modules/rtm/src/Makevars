@@ -15,13 +15,19 @@ clean :
 
 md = RTM/modules/
 
-m1 : $(md)mod_types.o
+m1 : $(md)mod_types.o \
+    $(md)random.o
 
 m2 : m1 \
-    $(md)dataSpec/dataSpec_wavelength.o
+    $(md)dataSpec/dataSpec_wavelength.o \
+    $(md)mod_combine.o \
+    $(md)mod_statistics.o
 
-modules : m2 \
+m3 : m2 $(md)mod_rtm.o
+
+modules : m3 \
     $(md)dataSpec/dataSpec_sun.o \
+    $(md)mod_selectmodel.o \
     $(md)dataSpec/dataSpec_refractive.o \
     $(md)dataSpec/dataSpec_prospectd.o \
     $(md)dataSpec/dataSpec_prospect5b.o \

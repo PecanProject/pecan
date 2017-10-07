@@ -15,18 +15,18 @@ read.register <- function(register.xml, con) {
   
   # check scale
   if (is.null(register$scale)) {
-   PEcAn.logger::logger.error("Scale is not defined")
+    logger.error("Scale is not defined")
   } else {
     if (register$scale == "regional" & is.null(register$siteid)) {
-     PEcAn.logger::logger.warn("Region site id is not defined")
+      logger.warn("Region site id is not defined")
     }
   }
   
   # check format format is not defined
   if (is.null(register$format)) {
-   PEcAn.logger::logger.error("Format is not defined")
+    logger.error("Format is not defined")
   } else if (is.null(register$format$inputtype)) {
-   PEcAn.logger::logger.error("Browndog input type is not defined")  #Ultimatly can get this from the format table in betydb
+    logger.error("Browndog input type is not defined")  #Ultimatly can get this from the format table in betydb
   } else {
     # format is defined
     if ((is.null(register$format$id) & is.null(register$format$name) & is.null(register$format$mimetype))
@@ -34,7 +34,7 @@ read.register <- function(register.xml, con) {
         (is.null(register$format$id) & is.null(register$format$name)) 
         |
         (is.null(register$format$id) & is.null(register$format$mimetype))) {
-     PEcAn.logger::logger.error("Not enough format info")
+      logger.error("Not enough format info")
     } else if ((!is.null(register$format$id) & is.null(register$format$name)) 
                | 
                (!is.null(register$format$id) & is.null(register$format$mimetype))) {

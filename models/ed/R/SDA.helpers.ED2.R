@@ -24,13 +24,13 @@ get_restartfile.ED2 <- function(mod_outdir, runid, file.time) {
                            histfile_string, 
                            full.names = TRUE)
     if (length(histfile) > 1) {
-        PEcAn.logger::logger.error("Multiple history files found.")
+        PEcAn.utils::logger.error("Multiple history files found.")
         return(NULL)
     } else if (length(histfile) < 1) {
-        PEcAn.logger::logger.error("No history files found.")
+        PEcAn.utils::logger.error("No history files found.")
         return(NULL)
     } else {
-        PEcAn.logger::logger.info("Using history file: ",
+        PEcAn.utils::logger.info("Using history file: ",
                                   histfile)
         return(histfile)
     }

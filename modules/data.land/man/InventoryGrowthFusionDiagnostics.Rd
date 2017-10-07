@@ -4,7 +4,7 @@
 \alias{InventoryGrowthFusionDiagnostics}
 \title{InventoryGrowthFusionDiagnostics}
 \usage{
-InventoryGrowthFusionDiagnostics(jags.out, combined = NULL)
+InventoryGrowthFusionDiagnostics(jags.out, combined)
 }
 \arguments{
 \item{jags.out}{output mcmc.list from InventoryGrowthFusion}

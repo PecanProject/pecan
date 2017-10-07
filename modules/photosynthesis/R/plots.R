@@ -7,11 +7,11 @@ ciEnvelope <- function(x, ylo, yhi, col = "lightgrey", ...) {
                  col = col, border = NA, ...))
 } # ciEnvelope
 
-##' @name plot_photo
-##' @title plot_photo
+##' @name plot.photo
+##' @title plot.photo
 ##' @author Mike Dietze
 ##' @export
-plot_photo <- function(data, out, curve = c("ACi", "AQ"), tol = 0.05, byLeaf = TRUE) {
+plot.photo <- function(data, out, curve = c("ACi", "AQ"), tol = 0.05, byLeaf = TRUE) {
   
   params  <- as.matrix(out$params)
   predict <- as.matrix(out$predict)
@@ -97,4 +97,4 @@ plot_photo <- function(data, out, curve = c("ACi", "AQ"), tol = 0.05, byLeaf = T
       }
     }  ## end A-Q
   }  ## end loop over curves
-} # plot_photo
+} # plot.photo

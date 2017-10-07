@@ -33,7 +33,7 @@ write_ic <- function(in.path, in.name, start_date, end_date,
   do.call("library", list(pkg))
   fcnx <- paste("veg2model.", model, sep = "")
   if (!exists(fcnx)) {
-    PEcAn.logger::logger.severe(paste(fcnx, "does not exist."))
+    logger.severe(paste(fcnx, "does not exist."))
   }else{
     fcn <- match.fun(fcnx)
   }
@@ -43,7 +43,7 @@ write_ic <- function(in.path, in.name, start_date, end_date,
 
   # Build results dataframe for convert.input
   results <- data.frame(file = out$filepath, 
-                        host = c(PEcAn.utils::fqdn()), 
+                        host = c(fqdn()), 
                         mimetype = out$mimetype, 
                         formatname = out$formatname, 
                         startdate = start_date, 

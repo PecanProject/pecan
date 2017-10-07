@@ -2,8 +2,7 @@
 % Please edit documentation in R/prior.R
 \name{lognorm.mu}
 \alias{lognorm.mu}
-\title{Functions for default priors
-Lognormal mean parameters}
+\title{Lognormal mean parameters}
 \usage{
 lognorm.mu(mean, sd)
 }
@@ -14,5 +13,4 @@ lognorm.mu(mean, sd)
 }
 \description{
 Functions for default priors
-Lognormal mean parameters
 }

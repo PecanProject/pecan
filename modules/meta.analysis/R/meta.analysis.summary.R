@@ -70,20 +70,20 @@ pecan.ma.summary <- function(mcmc.object, pft, outdir, threshold = 1.2, gg = FAL
     mpsrf         <- round(gd$mpsrf, digits = 3)
     not.converged <- data.frame()
     if (mpsrf < threshold) {
-      PEcAn.logger::logger.info(paste("JAGS model converged for", pft, trait,
+      logger.info(paste("JAGS model converged for", pft, trait,
                         "\nGD MPSRF = ", mpsrf, "\n"))
     } else {
       not.converged <- rbind(not.converged, data.frame(pft = pft, trait = trait, mpsrf = mpsrf))
-      PEcAn.logger::logger.info(paste("JAGS model did not converge for", pft, trait, 
+      logger.info(paste("JAGS model did not converge for", pft, trait, 
                         "\nGD MPSRF = ", mpsrf, "\n"))
       fail <- TRUE
     }
   }
   
   if (fail) {
-    PEcAn.logger::logger.warn("JAGS model failed to converge for one or more pft.")
+    logger.warn("JAGS model failed to converge for one or more pft.")
     for (i in seq_len(nrow(not.converged))) {
-      with(not.converged[i, ], PEcAn.logger::logger.info(paste(pft, trait, "MPSRF = ", mpsrf)))
+      with(not.converged[i, ], logger.info(paste(pft, trait, "MPSRF = ", mpsrf)))
     }
   }
   sink()

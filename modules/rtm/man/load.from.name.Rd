@@ -11,6 +11,3 @@ load.from.name(filename, filepath = ".")
 
 \item{filepath}{Path of RData file (default='.')}
 }
-\description{
-Load object from an RData file
-}

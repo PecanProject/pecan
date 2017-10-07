@@ -4,8 +4,7 @@
 \alias{sda.enkf}
 \title{sda.enkf}
 \usage{
-sda.enkf(settings, obs.mean, obs.cov, IC = NULL, Q = NULL,
-  adjustment = TRUE)
+sda.enkf(settings, obs.mean, obs.cov, IC = NULL, Q = NULL)
 }
 \arguments{
 \item{settings}{PEcAn settings object}
@@ -17,8 +16,6 @@ sda.enkf(settings, obs.mean, obs.cov, IC = NULL, Q = NULL,
 \item{IC}{initial conditions}
 
 \item{Q}{process covariance matrix given if there is no data to estimate it}
-
-\item{adjustment}{flag for using ensemble adjustment filter or not}
 }
 \value{
 NONE

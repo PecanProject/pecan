@@ -1,6 +1,7 @@
-#' Get default parameters
+#' @title Get default parameters
 #' 
-#' Extract default parameter values from `model.list`
+#' @name defparam
+#' @details Extract default parameter values from `model.list`
 #' @param modname Model name. Must match `modname` in `model.list`
 #' @return Named vector of default parameter values
 #' @export
