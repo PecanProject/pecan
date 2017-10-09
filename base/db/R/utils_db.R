@@ -343,7 +343,7 @@ get.id <- function(table, colnames, values, con, create=FALSE, dates=FALSE){
 ##' @examples
 default_hostname <- function(hostname) {
   if (hostname == "localhost") {
-    hostname <- PEcAn.utils::fqdn();
+    hostname <- PEcAn.remote::fqdn();
   }
   return(hostname)
 }

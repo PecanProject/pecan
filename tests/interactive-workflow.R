@@ -111,7 +111,7 @@ status.start("FINISHED")
 if (!is.null(settings$email) && !is.null(settings$email$to) && (settings$email$to != "")) {
   sendmail(settings$email$from, settings$email$to,
            paste0("Workflow has finished executing at ", date()),
-           paste0("You can find the results on ", PEcAn.utils::fqdn(), " in ", normalizePath(settings$outdir)))
+           paste0("You can find the results on ", PEcAn.remote::fqdn(), " in ", normalizePath(settings$outdir)))
 }
 
 # write end time in database
