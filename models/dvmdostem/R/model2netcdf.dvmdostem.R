@@ -24,7 +24,6 @@
 ##' @export
 ##'
 ##' @author Tobey Carman, Shawn Serbin
-##' @importFrom ncdf4 ncdim_def ncvar_def ncatt_get ncvar_add
 ##' 
 model2netcdf.dvmdostem <- function(outdir) {
   
