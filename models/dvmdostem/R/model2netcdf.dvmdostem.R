@@ -133,7 +133,7 @@ model2netcdf.dvmdostem <- function(outdir) {
     
     ## extract variable and long names to VAR file for PEcAn vis
     write.table(sapply(ncout$var, function(x) { x$longname }), 
-                file = file.path(outdir,paste0(as.character(out_yr), ".var")), 
+                file = file.path(outdir,paste0(as.character(out_yr), ".nc.var")), 
                 col.names = FALSE, 
                 row.names = TRUE, 
                 quote = FALSE)
