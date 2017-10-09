@@ -19,4 +19,3 @@ model2netcdf.dvmdostem(outdir)
 \author{
 Tobey Carman, Shawn Serbin
 }
-

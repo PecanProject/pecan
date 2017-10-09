@@ -23,4 +23,3 @@ such as those provided to write.config
 \author{
 Shawn Serbin, Tobey Carman
 }
-
