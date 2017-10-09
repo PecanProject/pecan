@@ -7,6 +7,8 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
+outdir <- "/data/sserbin/Modeling/dvmdostem/pecan_runs/test_dir"
+
 
 ##-------------------------------------------------------------------------------------------------#
 ##' @name model2netcdf.dvmdostem
@@ -25,7 +27,41 @@
 ##' @importFrom ncdf4 ncdim_def ncvar_def ncatt_get ncvar_add
 ##' 
 model2netcdf.dvmdostem <- function(outdir) {
+  
+  
+  ## helper function
+  #oldname <- "GPP"
+  #newname <- "GPP"
+  #oldunits <- "gC m-2 yr-1"
+  #newunits <- "kgC m-2 s-1"
+  #dims <-   out_nc_dims
+  #        var_update("AR","AutoResp","kgC m-2 s-1")
+  var_update <- function(out, dims, pixel = c(10,10), oldname, newname, oldunits=NULL, newunits=NULL){
+    
+    ## define variable
+    if (is.null(oldunits)) oldunits <- ncdf4::ncatt_get(ncin,oldname,"units")$value 
+    # dvm-dos-tem needs updates to units metadata to support above, needs actual time (e.g. month, year) not just / time
+    if(is.null(newunits)) newunits = oldunits
+    newvar <- ncdf4::ncvar_def(name = newname, units = newunits, dim = dims)
+    
+    ## convert data
+    dat <- ncdf4::ncvar_get(ncin,oldname)[pixel[1],pixel[2],]
+    dat.new <- PEcAn.utils::misc.convert(dat,oldunits,newunits)
+    
+    ## prep for writing
+    if(is.null(out)) {
+      out <- list(var <- list(),dat <- list())
+      out$var[[1]] <- newvar
+      out$dat[[1]] <- dat.new
+    } else {
+      i <- length(out$var) + 1
+      out$var[[i]] <- newvar
+      out$dat[[i]] <- dat.new
+    }
+    return(out)
+  }
 
+  ## Setup for output
   # Define PEcAn style dimensions
   lond <- ncdf4::ncdim_def(name='lon',
                            units="degrees_east",
@@ -45,37 +81,59 @@ model2netcdf.dvmdostem <- function(outdir) {
                             unlim=TRUE,
                             longname="time",
                             calendar='standard')
+  #xyt <- list(lond, latd, timed)
+  out_nc_dims <- list(lond, latd, timed)
   
-  # Define PEcAn style variables
-  nppv <- ncdf4::ncvar_def(name="NPP",
-                           units="kgC m-2 s-1",
-                           dim=list(lond, latd, timed)) # WTF? dimension spec seems to be backwards...
+  ## Open a dvmdostem output files  
+  ## !!! Will need a loop here to work on multiple types of dvm-dos-tem output (e.g. monthly / yearly, NPP, INPP, & other outputs)
+  #dvmdostem_outputs <- c("GPP", "INGPP", "NPP", "INNPP")
+  #dvmdostem_outputs <- c("NPP")
+  dvmdostem_outputs <- c("GPP","NPP")  # need to make this more flexible to support more outputs, or user selected outputs
+  #output      <- list()  # create empty output
+  output <- NULL
   
+  for (i in seq_along(1:length(dvmdostem_outputs)) ) {
+    PEcAn.logger::logger.info(paste("Converting dvm-dos-tem output:",dvmdostem_outputs[i]))
+    
+    if (dvmdostem_outputs[i] == "GPP") {
+      ncin <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[i],"_yearly_tr.nc")))
+      PEcAn.logger::logger.info(paste0("Length of time dim: ", ncin$dim$time$len))
+      output <- var_update(output, dims = out_nc_dims, oldname=dvmdostem_outputs[i], newname="GPP", 
+                           oldunits="gC m-2 yr-1", newunits="kgC m-2 s-1")
+      gpp_dim_time_val <- ncin$dim$time$val 
+      # need to make this flexible so we aren't getting this from first var
+      
+      ncdf4::nc_close(ncin)
+    } # GPP
+    if (dvmdostem_outputs[i] == "NPP") {
+      ncin <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[i],"_yearly_tr.nc")))
+      PEcAn.logger::logger.info(paste0("Length of time dim: ", ncin$dim$time$len))
+      output <- var_update(output, dims = out_nc_dims, oldname=dvmdostem_outputs[i], newname="NPP", 
+                           oldunits="gC m-2 yr-1", newunits="kgC m-2 s-1")
+      ncdf4::nc_close(ncin)
+    } #NPP
+  }
+  try(ncdf4::nc_close(ncin)) # just in case
+  rm(i)
 
-  # Open a dvmdostem output file  
-  d <- ncdf4::nc_open(file.path(outdir, "NPP_yearly_tr.nc"))
-  #d = ncdf4::nc_open('NPP_yearly_tr.nc')
-  a <- ncdf4::ncvar_get(d, 'NPP')
-  nppvals <- a[10,10,]
-  
-  print(paste0("Length of time dim: ", d$dim$time$len))
+  ## Output PEcAn netCDF files - still a work in progress
   ctr <- 1
-  #out_yr <- 1998
   out_yr <- 1901
-  for (yr in d$dim$time$val) {
-
-
-    # Write to file
-    new_pecan_style_file = ncdf4::nc_create(file.path(outdir, paste0(out_yr, ".nc")), list(nppv))
-
-    ncdf4::ncvar_put(nc=new_pecan_style_file, varid=nppv, vals=nppvals[ctr], verbose=TRUE)
+  ## !!! This  needs to be more flexible to handle monthly and annual ouputs
+  ## !!! currently only supports annual
+  for (yr in gpp_dim_time_val) { # replace with something more flexible
+    # update time - this needs to be more elegant
+    output$var[[1]]$dim[[3]]$units <- paste0("years since ", as.character(out_yr), "-01-01 00:00:00")
+    ## write netCDF data
+    ncout <- ncdf4::nc_create(paste0(as.character(out_yr),".nc"),output$var)
+    for (i in seq_along(output$var)) {
+      ncdf4::ncvar_put(ncout, output$var[[i]], output$dat[[i]][yr])
+    }
     ctr <- ctr + 1
     out_yr <- out_yr + 1
-
-    ncdf4::nc_close(new_pecan_style_file)
-
   }
+  try(ncdf4::nc_close(ncout))
     
-}
+} # end of function
 ##-------------------------------------------------------------------------------------------------#
 ## EOF
