@@ -158,7 +158,7 @@ download.AmerifluxLBL <- function(sitename, outfolder, start_date, end_date,
                         stringsAsFactors = FALSE)
 
   results$file[rows]       <- output_csv_file
-  results$host[rows]       <- PEcAn.utils::fqdn()
+  results$host[rows]       <- PEcAn.remote::fqdn()
   results$startdate[rows]  <- firstdate_st
   results$enddate[rows]    <- lastdate_st
   results$mimetype[rows]   <- "text/csv"
