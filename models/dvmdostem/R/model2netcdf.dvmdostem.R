@@ -28,6 +28,7 @@
 ##' 
 model2netcdf.dvmdostem <- function(outdir) {
   
+  PEcAn.logger::logger.info(paste("DVM-DOS-TEM outputs in:",outdir))
   
   ## helper function
   #oldname <- "GPP"
@@ -119,20 +120,21 @@ model2netcdf.dvmdostem <- function(outdir) {
   ## Output PEcAn netCDF files - still a work in progress
   ctr <- 1
   out_yr <- 1901
+  #out_yr <- 1902
   ## !!! This  needs to be more flexible to handle monthly and annual ouputs
   ## !!! currently only supports annual
   for (yr in gpp_dim_time_val) { # replace with something more flexible
     # update time - this needs to be more elegant
     output$var[[1]]$dim[[3]]$units <- paste0("years since ", as.character(out_yr), "-01-01 00:00:00")
     ## write netCDF data
-    ncout <- ncdf4::nc_create(paste0(as.character(out_yr),".nc"),output$var)
+    ncout <- ncdf4::nc_create(file.path(outdir,paste0(as.character(out_yr),".nc")),output$var)
     for (i in seq_along(output$var)) {
       ncdf4::ncvar_put(ncout, output$var[[i]], output$dat[[i]][yr])
     }
+    try(ncdf4::nc_close(ncout))
     ctr <- ctr + 1
     out_yr <- out_yr + 1
   }
-  try(ncdf4::nc_close(ncout))
     
 } # end of function
 ##-------------------------------------------------------------------------------------------------#
