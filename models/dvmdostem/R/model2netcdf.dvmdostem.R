@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-outdir <- "/data/sserbin/Modeling/dvmdostem/pecan_runs/test_dir"
+#outdir <- "/data/sserbin/Modeling/dvmdostem/pecan_runs/test_dir"
 
 
 ##-------------------------------------------------------------------------------------------------#
