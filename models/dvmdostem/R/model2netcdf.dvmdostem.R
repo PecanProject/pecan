@@ -130,6 +130,14 @@ model2netcdf.dvmdostem <- function(outdir) {
     for (i in seq_along(output$var)) {
       ncdf4::ncvar_put(ncout, output$var[[i]], output$dat[[i]][yr])
     }
+    
+    ## extract variable and long names to VAR file for PEcAn vis
+    write.table(sapply(ncout$var, function(x) { x$longname }), 
+                file = file.path(outdir,paste0(as.character(out_yr), ".var")), 
+                col.names = FALSE, 
+                row.names = TRUE, 
+                quote = FALSE)
+    
     try(ncdf4::nc_close(ncout))
     ctr <- ctr + 1
     out_yr <- out_yr + 1
