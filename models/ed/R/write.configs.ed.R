@@ -350,7 +350,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
   data(pftmapping, package = 'PEcAn.ED2')
 
   ## Get ED2 specific model settings and put into output config xml file
-  xml <- PEcAn.utils::listToXml(settings$model$config.header, "config")
+  xml <- PEcAn.settings::listToXml(settings$model$config.header, "config")
 
   ## Process the names in defaults. Runs only if names(defaults) are null or have at least one
   ## instance of name attribute 'pft'. Otherwise, AS assumes that names in defaults are already set
@@ -396,7 +396,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
         converted.trait.values <- convert.samples.ED(trait.values[[i]])
         vals <- modifyList(vals, converted.trait.values)
 
-        decompositon.xml <- PEcAn.utils::listToXml(vals, "decomposition")
+        decompositon.xml <- PEcAn.settings::listToXml(vals, "decomposition")
         xml <- XML::append.xmlNode(xml, decompositon.xml)
       } else if(length(pft.number) == 0) {
         PEcAn.logger::logger.error(pft, "was not matched with a number in settings$constants or pftmapping data. Consult the PEcAn instructions on defining new PFTs.")
@@ -421,7 +421,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
           vals <- modifyList(vals, converted.defaults)
         }
 
-        pft.xml <- PEcAn.utils::listToXml(vals, "pft")
+        pft.xml <- PEcAn.settings::listToXml(vals, "pft")
         xml <- XML::append.xmlNode(xml, pft.xml)
       }
 

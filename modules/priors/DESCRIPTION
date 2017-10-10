@@ -13,7 +13,8 @@ LazyData: FALSE
 Depends:
     PEcAn.utils
 Imports:
-    PEcAn.logger
+    PEcAn.logger,
+    ggplot2
 Suggests:
     testthat
 RoxygenNote: 6.0.1

@@ -1,5 +1,5 @@
-##' @name listToArgString
-##' @title listToArgString
+##' format a list of arguments as one comma-separated string
+##'
 ##' @export
 ##'
 ##' @param l a named list of function arguments

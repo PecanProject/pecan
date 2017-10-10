@@ -12,6 +12,8 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     integrated into PEcAn. As a standalone package, it provides an interface to
     access diverse climate data sets.
 Additional Repositories: http://r-forge.r-project.org/
+Depends:
+    methods
 Imports:
     PEcAn.logger,
     PEcAn.utils,

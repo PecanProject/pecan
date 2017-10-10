@@ -9,7 +9,6 @@
 #' @return list
 #' @export
 #'
-#' @examples
 mcmc.list2init <- function(dat) {
   
   ## get unique variable names
@@ -31,7 +30,7 @@ mcmc.list2init <- function(dat) {
   ## define variables
   ic <- list()
   n <- nrow(dat[[1]])
-  nc <- nchain(dat)
+  nc <- coda::nchain(dat)
   for(c in seq_len(nc)) ic[[c]] <- list()
   
   for(v in seq_along(uname)){
