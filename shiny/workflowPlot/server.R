@@ -137,7 +137,7 @@ server <- shinyServer(function(input, output, session) {
   # Get input id from selected site id. Returns inputs_df which is used to load observation data
   getInputs <- function(bety,site_Id){
     # Subsetting the input id list based on the current (VM) machine
-    my_hostname <- PEcAn.utils::fqdn()
+    my_hostname <- PEcAn.remote::fqdn()
     my_machine_id <- dplyr::tbl(bety, 'machines') %>% dplyr::filter(hostname == my_hostname) %>% dplyr::pull(id)
     # Inner join 'inputs' table with 'dbfiles' table
     # inputs_df would contain all the information about the site and input id required for
