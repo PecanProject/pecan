@@ -11,10 +11,11 @@ LazyData: FALSE
 Require: hdf5
 Description: Contains functions to read PEcAn settings files
 Depends:
-    PEcAn.utils,
-    PEcAn.DB
+    PEcAn.DB,
+    methods
 Imports:
     PEcAn.logger,
+    PEcAn.utils,
     plyr (>= 1.8.4),
     lubridate (>= 1.6.0),
     XML (>= 3.98-1.3)
