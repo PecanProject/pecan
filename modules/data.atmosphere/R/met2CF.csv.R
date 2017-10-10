@@ -96,7 +96,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
                       ".nc")
   
   results$file <- all_files
-  results$host <- PEcAn.utils::fqdn()
+  results$host <- PEcAn.remote::fqdn()
   
   # The For below loop updates the start/end date once file is read in
   results$startdate  <- paste0(all_years, "-01-01 00:00:00")

@@ -107,7 +107,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                           existing.dbfile$machine_id, "'"), con)
       
       #Grab machine info of host machine
-      machine.host <- ifelse(host$name == "localhost", PEcAn.utils::fqdn(), host$name)
+      machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
       machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '",
                                  machine.host, "'"), con)
       
@@ -205,7 +205,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
                                             existing.dbfile$machine_id, "'"), con)
         
         #Grab machine info of 
-        machine.host <- ifelse(host$name == "localhost", PEcAn.utils::fqdn(), host$name)
+        machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
         machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '",
                                    machine.host, "'"), con)
         
@@ -250,7 +250,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
   #---------------------------------------------------------------------------------------------------------------#
   # Get machine information
   
-  machine.host <- ifelse(host$name == "localhost", PEcAn.utils::fqdn(), host$name)
+  machine.host <- ifelse(host$name == "localhost", PEcAn.remote::fqdn(), host$name)
   machine <- PEcAn.DB::db.query(paste0("SELECT * from machines where hostname = '",
                              machine.host, "'"), con)
   
@@ -376,7 +376,7 @@ convert.input <- function(input.id, outfolder, formatname, mimetype, site.id, st
       
       # create array with results
       result$file[i]       <- new.file
-      result$host[i]       <- PEcAn.utils::fqdn()
+      result$host[i]       <- PEcAn.remote::fqdn()
       result$startdate[i]  <- paste(input$start_date, "00:00:00")
       result$enddate[i]    <- paste(input$end_date, "23:59:59")
       result$mimetype[i]   <- mimetype
