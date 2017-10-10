@@ -83,7 +83,7 @@ met2model.BIOCRO <- function(in.path, in.prefix, outfolder, overwrite = FALSE,
 
     res[[as.character(year)]] <- data.frame(
       file = csvfile,
-      host = PEcAn.utils::fqdn(),
+      host = PEcAn.remote::fqdn(),
       mimetype = "text/csv",
       formatname = "biocromet",
       startdate = yrstart,
