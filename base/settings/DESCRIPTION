@@ -15,6 +15,7 @@ Depends:
     methods
 Imports:
     PEcAn.logger,
+    PEcAn.remote,
     PEcAn.utils,
     plyr (>= 1.8.4),
     lubridate (>= 1.6.0),
