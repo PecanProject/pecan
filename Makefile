@@ -51,19 +51,19 @@ depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 	mkdir -p $@
 
 ### Dependencies
-# Notation: Everything to the right of `|` is an "order-only" dependency.
-# Read `foo: bar | baz` as "Rebuild foo every time bar changes,
-# making sure baz exists but not checking its age."
+
+# models import Roxygen docs from *installed* version of template,
+# so changes in template mean the models need to be redocumented
+$(subst .doc/models/template,,$(MODELS_D)): .install/models/template
+
+### Order-only dependencies
+# (i.e. prerequisites must exist before building target, but
+# target need not be rebuilt when a prerequisite changes)
 
 .doc/base/all: | $(ALL_PKGS_D)
 .install/base/all: | $(ALL_PKGS_I)
 .check/base/all: | $(ALL_PKGS_C)
 .test/base/all: | $(ALL_PKGS_T)
-
-# NB this rule is *not* order-only:
-# models import Roxygen docs from *installed* version of template,
-# so template changes require redocumenting all models
-$(subst .doc/models/template,,$(MODELS_D)): .install/models/template
 
 $(subst .install/base/logger,,$(ALL_PKGS_I)): | .install/base/logger
 
