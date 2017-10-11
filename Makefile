@@ -66,6 +66,7 @@ $(subst .doc/models/template,,$(MODELS_D)): .install/models/template
 .test/base/all: | $(ALL_PKGS_T)
 
 $(subst .install/base/logger,,$(ALL_PKGS_I)): | .install/base/logger
+$(subst .doc/base/logger,,$(ALL_PKGS_D)): | .install/base/logger
 
 $(call depends,base/utils): | .install/base/remote
 $(call depends,base/db): | .install/base/utils
