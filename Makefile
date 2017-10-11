@@ -44,6 +44,12 @@ install: $(ALL_PKGS_I) .install/base/all
 check: $(ALL_PKGS_C) .check/base/all
 test: $(ALL_PKGS_T) .test/base/all
 
+depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
+
+# Make the timestamp directories if they don't exist yet
+.doc .install .check .test $(call depends,base) $(call depends,models) $(call depends,modules):
+	mkdir -p $@
+
 ### Dependencies
 # Notation: Everything to the right of `|` is an "order-only" dependency.
 # Read `foo: bar | baz` as "Rebuild foo every time bar changes,
@@ -60,8 +66,6 @@ test: $(ALL_PKGS_T) .test/base/all
 $(subst .doc/models/template,,$(MODELS_D)): .install/models/template
 
 $(subst .install/base/logger,,$(ALL_PKGS_I)): | .install/base/logger
-
-depends = .doc/$(1) .install/$(1) .check/$(1) .test/$(1)
 
 $(call depends,base/utils): | .install/base/remote
 $(call depends,base/db): | .install/base/utils
@@ -81,19 +85,16 @@ clean:
 	rm -rf .install .check .test .doc
 	find modules/rtm/src \( -name \*.mod -o -name \*.o -o -name \*.so \) -delete
 
-.install/devtools:
+.install/devtools: | .install
 	Rscript -e "if(!require('devtools')) install.packages('devtools', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
-	mkdir -p $(@D)
 	echo `date` > $@
 
-.install/roxygen2:
+.install/roxygen2: | .install
 	Rscript -e "if(!require('roxygen2')) install.packages('roxygen2', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
-	mkdir -p $(@D)
 	echo `date` > $@
 
-.install/testthat:
+.install/testthat: | .install
 	Rscript -e "if(!require('testthat')) install.packages('testthat', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
-	mkdir -p $(@D)
 	echo `date` > $@
 
 depends_R_pkg = Rscript -e "devtools::install_deps('$(strip $(1))', threads = ${NCPUS});"
@@ -105,24 +106,20 @@ doc_R_pkg = Rscript -e "devtools::document('"$(strip $(1))"')"
 $(ALL_PKGS_I) $(ALL_PKGS_C) $(ALL_PKGS_T) $(ALL_PKGS_D): .install/devtools .install/roxygen2 .install/testthat
 
 .SECONDEXPANSION:
-.doc/%: $$(wildcard %/**/*) $$(wildcard %/*)
+.doc/%: $$(wildcard %/**/*) $$(wildcard %/*) | $$(@D)
 	$(call depends_R_pkg, $(subst .doc/,,$@))
 	$(call doc_R_pkg, $(subst .doc/,,$@))
-	mkdir -p $(@D)
 	echo `date` > $@
 
-.install/%: $$(wildcard %/**/*) $$(wildcard %/*) .doc/%
+.install/%: $$(wildcard %/**/*) $$(wildcard %/*) .doc/% | $$(@D)
 	$(call install_R_pkg, $(subst .install/,,$@))
-	mkdir -p $(@D)
 	echo `date` > $@
 
-.check/%: $$(wildcard %/**/*) $$(wildcard %/*)
+.check/%: $$(wildcard %/**/*) $$(wildcard %/*) | $$(@D)
 	$(call check_R_pkg, $(subst .check/,,$@))
-	mkdir -p $(@D)
 	echo `date` > $@
 
-.test/%: $$(wildcard %/**/*) $$(wildcard %/*)
+.test/%: $$(wildcard %/**/*) $$(wildcard %/*) | $$(@D)
 	$(call test_R_pkg, $(subst .test/,,$@))
-	mkdir -p $(@D)
 	echo `date` > $@
 
