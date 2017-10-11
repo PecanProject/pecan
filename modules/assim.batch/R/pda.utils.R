@@ -262,7 +262,7 @@ pda.load.priors <- function(settings, con, extension.check = FALSE) {
   prior.out <- list()
   prior.paths <- list()
     
-  tmp_hostname <- ifelse(!PEcAn.remote::is.localhost(settings$host), PEcAn.utils::fqdn(), settings$host$name)
+  tmp_hostname <- ifelse(!PEcAn.remote::is.localhost(settings$host), PEcAn.remote::fqdn(), settings$host$name)
   
   # now that you filled priorids load the PDA prior objects
   # if files becomes NULL try loading objects from workflow oft folders

@@ -46,7 +46,7 @@ pool_ic_list2netcdf <- function(input, outdir, siteid){
   
   #create results object
   results <- data.frame(file = outfile,
-                        host = PEcAn.utils::fqdn(), 
+                        host = PEcAn.remote::fqdn(), 
                         mimetype = "application/x-netcdf", 
                         formatname = "pool_initial_conditions",
                         startdate = NA, 

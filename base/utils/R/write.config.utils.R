@@ -26,10 +26,10 @@ get.quantiles <- function(quantiles.tag) {
   }
   if (!is.null(quantiles.tag$sigma)) {
     sigmas <- as.numeric(quantiles.tag[names(quantiles.tag) == "sigma"])
-    quantiles <- append(quantiles, 1 - pnorm(sigmas))
+    quantiles <- append(quantiles, 1 - stats::pnorm(sigmas))
   }
   if (length(quantiles) == 0) {
-    quantiles <- 1 - pnorm(-3:3)  #default
+    quantiles <- 1 - stats::pnorm(-3:3)  #default
   }
   if (!0.5 %in% quantiles) {
     quantiles <- append(quantiles, 0.5)
@@ -63,7 +63,7 @@ get.sa.sample.list <- function(pft, env, quantiles) {
 ##' 
 ##' Samples from long (>2000) vectors that represent random samples from a trait distribution.
 ##' Samples are either the MCMC chains output from the Bayesian meta-analysis or are randomly sampled from
-##' the closed-form distribution of the parameter probabiolity distribution function.
+##' the closed-form distribution of the parameter probability distribution function.
 ##' The list is indexed first by trait, then by quantile.
 ##' @title get sensitivity analysis samples
 ##' @param samples random samples from trait distribution   
