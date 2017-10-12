@@ -14,6 +14,7 @@ Depends:
     PEcAn.data.atmosphere
 Imports:
     PEcAn.logger,
+    PEcAn.remote,
     PEcAn.utils,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),

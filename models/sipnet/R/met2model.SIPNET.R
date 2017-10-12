@@ -36,7 +36,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   out.file.full <- file.path(outfolder, out.file)
 
   results <- data.frame(file = out.file.full,
-                        host = PEcAn.utils::fqdn(),
+                        host = PEcAn.remote::fqdn(),
                         mimetype = "text/csv",
                         formatname = "Sipnet.climna",
                         startdate = start_date,
@@ -114,7 +114,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
         tau <- 15 * tstep
         filt <- exp(-(1:length(Tair)) / tau)
         filt <- (filt / sum(filt))
-        soilT <- convolve(Tair, filt) - 273.15
+        soilT <- convolve(Tair, filt)
         soilT <- udunits2::ud.convert(soilT, "K", "degC")
         PEcAn.logger::logger.info("soil_temperature absent; soilT approximated from Tair")
       } else {
