@@ -8,6 +8,7 @@ Maintainer: Mike Dietze <dietze@bu.edu>
 Description: This module provides functions to link DALEC to PEcAn.
 Imports:
     PEcAn.logger,
+    PEcAn.remote,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15),
     udunits2 (>= 0.11),

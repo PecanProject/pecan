@@ -43,7 +43,7 @@ download.PalEON_ENS <- function(sitename, outfolder, start_date, end_date, overw
                  })
     
     results[[i]] <- data.frame(file = ens_files, 
-                          host = rep(PEcAn.utils::fqdn(),rows), 
+                          host = rep(PEcAn.remote::fqdn(),rows), 
                           mimetype = rep("application/x-netcdf",rows), 
                           formatname = rep("ALMA",rows),  ## would really like to switch to CF
                           startdate = paste0(ens_years, "-01-01 00:00:00"), 
