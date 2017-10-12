@@ -15,10 +15,11 @@ addLocalModel "MAESPA"    "MAESPA"   "git" "maespa.git"
 addLocalModel "LPJ-GUESS" "LPJGUESS" "3.1" "guess.3.1"
 
 # special case for PRELES
-addModelFile "${FQDN}" "Preles" "PRELES" "" "true" "/bin"
+addModelFile "${FQDN}" "Preles"   "PRELES"   ""          "true"           "/bin"
 
-# special case for BioCro
-addModelFile "${FQDN}" "BioCro" "BIOCRO" "" "biocro.Rscript" "${R_LIBS_USER}/PEcAn.BIOCRO"
+# special case for R models
+addModelFile "${FQDN}" "BioCro"   "BIOCRO"   "git"       "biocro.Rscript" "${R_LIBS_USER}/PEcAn.BIOCRO"
+addModelFile "${FQDN}" "LINKAGES" "LINKAGES" "R_version" ""               "${R_LIBS_USER}/linkages"
 
 # to add remote files
 #addModelFile "geo.bu.edu" "ED2" "ED2" "git" "ed_2.1-opt" "/home/dietze/ED2.git/ED/build"
