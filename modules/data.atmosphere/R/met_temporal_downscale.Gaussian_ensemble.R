@@ -371,7 +371,7 @@ met_temporal_downscale.Gaussian_ensemble <- function(in.path, in.prefix, outfold
     ncdf4::nc_close(loc)
     
     results[[e]] <- data.frame(file = loc.file, 
-                               host = rep(PEcAn.utils::fqdn(),rows), 
+                               host = rep(PEcAn.remote::fqdn(),rows), 
                                mimetype = rep("application/x-netcdf",rows), 
                                formatname = rep("CF Meteorology",rows),
                                startdate = paste0(year, "-01-01 00:00:00", tz = "UTC"), 
