@@ -1,7 +1,7 @@
 .get.test.settings = function() {
   settings <- NULL
   try({
-    if(PEcAn.utils::fqdn() == "pecan2.bu.edu") {
+    if(PEcAn.remote::fqdn() == "pecan2.bu.edu") {
       settings <- read.settings("testinput.pecan2.bu.edu.xml")
     } else {
       settings <- read.settings("testinput.xml")
