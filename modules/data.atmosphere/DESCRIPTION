@@ -16,6 +16,7 @@ Depends:
     methods
 Imports:
     PEcAn.logger,
+    PEcAn.remote,
     PEcAn.utils,
     PEcAn.DB,
     ggplot2,
