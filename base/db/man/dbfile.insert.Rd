@@ -5,7 +5,7 @@
 \title{Insert file into tables}
 \usage{
 dbfile.insert(in.path, in.prefix, type, id, con, reuse = TRUE,
-  hostname = PEcAn.utils::fqdn())
+  hostname = PEcAn.remote::fqdn())
 }
 \arguments{
 \item{in.path}{Path to file directory}

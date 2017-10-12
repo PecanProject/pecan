@@ -52,7 +52,7 @@ met2model.MAAT <- function(in.path, in.prefix, outfolder, start_date, end_date,
   out.file.full <- file.path(outfolder, out.file)
 
   results <- data.frame(file = out.file.full,
-                        host = PEcAn.utils::fqdn(),
+                        host = PEcAn.remote::fqdn(),
                         mimetype = "text/csv",
                         formatname = "MAAT meteorology",
                         startdate = start_date,
