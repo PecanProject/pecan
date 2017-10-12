@@ -9,6 +9,9 @@
 
 ##' Create a SafeList object
 ##'
+##' DEPRECATED: SafeList has been moved to the PEcAn.settings package and will be removed
+##' from PEcAn.utils in a future release. Please use the version in PEcAn.settings.
+##'
 ##' SafeList is a wrapper class for the normal R list. It should behave identically, except for 
 ##' the $ operator being overridden to require exact matches. 
 ##' 
@@ -24,9 +27,10 @@
 ##' @export
 ##' @author Ryan Kelly
 SafeList <- function(...) {
+  .Deprecated("PEcAn.settings::SafeList")
   result <- list(...)
   if (length(result) == 1) {
-    if (is(result[[1]], "SafeList")) {
+    if (inherits(result[[1]], "SafeList")) {
       return(result[[1]])
     } else if (is.list(result[[1]])) {
       result <- result[[1]]
@@ -38,15 +42,22 @@ SafeList <- function(...) {
 
 
 ##' @export
-##' @describeIn SafeList Coerce an object to SafeList. 
+##' @describeIn SafeList Coerce an object to SafeList.
+##' @param x list to coerce
+##' @return a SafeList version of x
 as.SafeList <- function(x) {
+    .Deprecated("PEcAn.settings::as.SafeList")
   return(SafeList(x))
 } # as.SafeList
 
 
 ##' @export
+##' @describeIn SafeList Test if object is already a SafeList.
+##' @param x list object to be tested
+##' @return logical
 is.SafeList <- function(x) {
-  return(is(x, "SafeList"))
+    .Deprecated("PEcAn.settings::is.SafeList")
+  inherits(x, "SafeList")
 } # is.SafeList
 
 
@@ -62,5 +73,6 @@ is.SafeList <- function(x) {
 ##' @export
 ##' @author Ryan Kelly
 "$.SafeList" <- function(x, name) {
+  .Deprecated("PEcAn.settings::$.SafeList")
   return(x[[name, exact = TRUE]])
 } # "$.SafeList"

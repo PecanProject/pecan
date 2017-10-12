@@ -20,8 +20,8 @@ test_that("SafeList constructors work as expected", {
     expect_identical(s1, s2)
     expect_identical(s1, s3)
     
-    expect_true(is(s1, "list"))
-    expect_true(is(s1, "SafeList"))
+    expect_true(inherits(s1, "list"))
+    expect_true(inherits(s1, "SafeList"))
     expect_true(is.SafeList(s1))
     expect_false(is.SafeList(l))
     expect_equal(length(class(s1)), 2)

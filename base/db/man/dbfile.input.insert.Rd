@@ -5,7 +5,7 @@
 \title{Insert file into tables}
 \usage{
 dbfile.input.insert(in.path, in.prefix, siteid, startdate, enddate, mimetype,
-  formatname, parentid = NA, con, hostname = PEcAn.utils::fqdn(),
+  formatname, parentid = NA, con, hostname = PEcAn.remote::fqdn(),
   allow.conflicting.dates = FALSE)
 }
 \arguments{
