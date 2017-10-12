@@ -10,6 +10,7 @@ Depends:
     PEcAn.utils
 Imports:
     PEcAn.logger,
+    PEcAn.remote,
     lubridate (>= 1.6.0),
     ncdf4 (>= 1.15)
 Suggests:
