@@ -7,5 +7,5 @@
 get.EDR.output(path = getwd())
 }
 \arguments{
-\item{path}{Path to directory containing `albedo_par/nir.dat` files}
+\item{path}{Path to directory containing \code{albedo_par/nir.dat} files}
 }

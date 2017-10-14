@@ -6,6 +6,6 @@
 ##' @author Betsy Cowdery
 
 metric_MSE <- function(dat, ...) {
-  PEcAn.utils::logger.info("Metric: Mean Square Error")
+  PEcAn.logger::logger.info("Metric: Mean Square Error")
   return(mean((dat$model - dat$obvs) ^ 2,na.rm=TRUE))
 } # metric_MSE

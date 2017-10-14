@@ -8,4 +8,7 @@
 \usage{
 sensor.proper
 }
+\description{
+Sensor list with proper names
+}
 \keyword{datasets}

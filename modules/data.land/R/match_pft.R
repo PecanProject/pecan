@@ -52,7 +52,7 @@ match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL, allow_mis
   if (nrow(bad) > 0) {
     for(i in seq_along(nrow(bad))){
       error.pft <- translation[translation$bety_species_id == bad$bety_species_id[i],]
-      PEcAn.utils::logger.warn(paste0("Duplicated species id: ", bad$bety_species_id[i], " under ", paste(error.pft$pft, collapse = ", ")))
+      PEcAn.logger::logger.warn(paste0("Duplicated species id: ", bad$bety_species_id[i], " under ", paste(error.pft$pft, collapse = ", ")))
     }
   }
 
@@ -78,17 +78,17 @@ match_pft <- function(bety_species_id, pfts, query = NULL, con = NULL, allow_mis
       }else{
         latin <- NA
       }
-      PEcAn.utils::logger.warn(paste0("Unmatched species: ", ubad[i]," ", latin))
+      PEcAn.logger::logger.warn(paste0("Unmatched species: ", ubad[i]," ", latin))
     }
   }
   
   ## stop after checking both errors
   if (nrow(bad) > 0) {
-    PEcAn.utils::logger.severe("Within BETY PFT table, please address duplicated species and add unmatched species to PFTs.")
+    PEcAn.logger::logger.severe("Within BETY PFT table, please address duplicated species and add unmatched species to PFTs.")
   }
   
   if(allow_missing == FALSE & length(bad2) > 0){
-    PEcAn.utils::logger.severe("Within BETY PFT table, please address duplicated species and add unmatched species to PFTs.")
+    PEcAn.logger::logger.severe("Within BETY PFT table, please address duplicated species and add unmatched species to PFTs.")
   }
 
   ## Match

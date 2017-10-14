@@ -42,7 +42,7 @@ read_restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
   forecast <- list()
 
   if ("AGB.pft" %in% var.names) {
-    forecast[[1]] <- udunits2::ud.convert(ens$AGB.pft, "kg/m^2", "Mg/ha") #already has C  #* unit.conv 
+    forecast[[1]] <- ens$AGB.pft #already has C  #* unit.conv 
     names(forecast[[1]]) <- paste0('AGB.pft.',pft.names)
   }
     
