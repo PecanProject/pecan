@@ -130,13 +130,23 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
     return (.pft)
   }
 
-  parameter_sets = list(Miscanthus = pft('Miscanhtus', 'C4', miscanthus_x_giganteus_initial_state, miscanthus_x_giganteus_parameters, miscanthus_x_giganteus_modules),
-                        Salix      = pft('Salix', 'C3', willow_initial_state, willow_parameters, willow_modules),
-                        Sorghum    = pft('Sorghum', 'C4', sorghum_initial_state, sorghum_parameters, sorghum_modules))
+  parameter_sets <- list(
+    Miscanthus = pft('Miscanthus', 'C4',
+      BioCro::miscanthus_x_giganteus_initial_state,
+      BioCro::miscanthus_x_giganteus_parameters,
+      BioCro::miscanthus_x_giganteus_modules),
+    Salix = pft('Salix', 'C3',
+      BioCro::willow_initial_state,
+      BioCro::willow_parameters,
+      BioCro::willow_modules),
+    Sorghum = pft('Sorghum', 'C4',
+      BioCro::sorghum_initial_state,
+      BioCro::sorghum_parameters,
+      BioCro::sorghum_modules))
 
   if (file.exists(defaults.file)) {
     if (packageVersion('BioCro') >= 1.0 & genus %in% names(parameter_sets)) {
-        defaults = parameters_sets[[genus]]
+        defaults = parameter_sets[[genus]]
     } else {
         defaults <- XML::xmlToList(XML::xmlParse(defaults.file))
     }
