@@ -96,8 +96,8 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # Copy the base set of dvmdostem parameters and configurations into the
   # run directory. Some of the values in these files will be overwritten in
   # subsequent steps, but copying everything up makes sure that all the
-  # necessary files exist for a tem run - the config file and the parameter
-  # files in this case.
+  # necessary files exist for a dvmdostem run - the config files and the
+  # parameter files in this case.
   if (dir.exists(file.path(rundir, 'config'))) {
     unlink(file.path(rundir, 'config'), recursive=TRUE)
   }
@@ -115,6 +115,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
           args=(c("-r",
                   file.path(appbinary_path, 'parameters'),
                   file.path(rundir, 'parameters'))))
+
 
   # (1)
   # Read in a parameter data block from dvmdostem
@@ -165,7 +166,9 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # Call the helper script and write out the data to a temporary file
   # This gets just the block we are interested in (based on community type)
   # create rundir temp directory
-  if (! file.exists(file.path(local_rundir, "tmp"))) dir.create(file.path(local_rundir, "tmp"),recursive=TRUE)
+  if (! file.exists(file.path(local_rundir, "tmp"))) {
+    dir.create(file.path(local_rundir, "tmp"), recursive=TRUE)
+  }
   dimveg_jsonfile <- file.path(local_rundir, "tmp",'dvmdostem-dimveg.json')
   PEcAn.logger::logger.info(paste0("dimveg_jsonfile: ", dimveg_jsonfile))
   system2(paste0(appbinary_path,"/scripts/param_util.py"),
@@ -260,10 +263,12 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     } # end loop over json for env canopy
   }
 
+
+
   # Write it back out to disk (overwriting ok??)
   dimveg_exportJson <- toJSON(dimveg_jsondata)
   write(dimveg_exportJson, file.path(local_rundir, "tmp","dimveg_newfile.json"))
-  
+
   envcanopy_exportJson <- toJSON(envcanopy_jsondata)
   write(envcanopy_exportJson, file.path(local_rundir, "tmp","envcanopy_newfile.json"))
 
@@ -276,19 +281,19 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     print("No parameter/ directory in run directory! Need to create...")
     dir.create(file.path(rundir,"parameters" ))
   }
-  
+
   ref_file <- paste0(file.path(appbinary_path, "parameters/"), 'cmt_dimvegetation.txt')
   new_param_file <- paste0(file.path(local_rundir, "parameters/"), "cmt_dimvegetation.txt")
   system2(paste0(appbinary_path,"/scripts/param_util.py"),
           args=(c("--fmt-block-from-json", file.path(local_rundir, "tmp","dimveg_newfile.json"), ref_file)),
           stdout=new_param_file, wait=TRUE)
-  
+
   ref_file <- paste0(file.path(appbinary_path, "parameters/"), 'cmt_envcanopy.txt')
   new_param_file <- paste0(file.path(local_rundir, "parameters/"), "cmt_envcanopy.txt")
   system2(paste0(appbinary_path,"/scripts/param_util.py"),
           args=(c("--fmt-block-from-json", file.path(local_rundir, "tmp","envcanopy_newfile.json"), ref_file)),
           stdout=new_param_file, wait=TRUE)
-  
+
   ## Cleanup rundir temp directory - comment out for debugging
   #unlink(file.path(local_rundir, "tmp"), recursive = TRUE, force = FALSE)  # comment out for debugging
 
@@ -311,19 +316,19 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     config_template <- readLines(con=system.file("config.js.template", package = "PEcAn.dvmdostem"), n=-1)
   }
 
-  config_template <- gsub("@INPUT_DATA_DIR@", file.path(dirname(appbinary), "DATA/SewardPen_10x10"), config_template) 
+  config_template <- gsub("@INPUT_DATA_DIR@", file.path(dirname(appbinary), "DATA/SewardPen_10x10"), config_template)
   # !remove hard-coding of SewPen here!
   config_template <- gsub("@MODEL_OUTPUT_DIR@", outdir, config_template)
 
-  if (! file.exists(file.path(settings$rundir, run.id,"config"))) dir.create(file.path(settings$rundir, run.id,"config"), 
+  if (! file.exists(file.path(settings$rundir, run.id,"config"))) dir.create(file.path(settings$rundir, run.id,"config"),
                                                                              recursive = TRUE)
 
   writeLines(config_template, con=file.path(settings$rundir, run.id,"config/config.js"))
 
-  
+
   ## Update job template file below
-  
-  
+
+
   ### create launch script (which will create symlink) - needs to be created
   if (!is.null(settings$model$jobtemplate) && file.exists(settings$model$jobtemplate)) {
     jobsh <- readLines(con=settings$model$jobtemplate, n=-1)
@@ -355,7 +360,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   jobsh <- gsub("@RUNDIR@", rundir, jobsh)
   jobsh <- gsub("@OUTDIR@", outdir, jobsh)
   jobsh <- gsub("@BINARY@", appbinary, jobsh)
-  
+
   ## model specific options from the pecan.xml file
   jobsh <- gsub("@PRERUN@", settings$model$dvmdostem_prerun, jobsh)
   jobsh <- gsub("@EQUILIBRIUM@", settings$model$dvmdostem_equil, jobsh)
@@ -368,9 +373,3 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   Sys.chmod(file.path(settings$rundir, run.id,"job.sh"))
 
 }
-
-
-
-
-##------------------------------------------------------------------------------------------------#
-### EOF
