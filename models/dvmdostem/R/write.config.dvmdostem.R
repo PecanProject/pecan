@@ -25,39 +25,20 @@
 
 convert.samples.dvmdostem <- function(trait_values) {
 
-  # convert to a data frame for easy access by column name.
-  if(is.list(trait_values)){
-    trait_values <- as.data.frame(trait_values)
-  }
-
-  # Rename variables - might be able to make some changes here
-  # that make the loops in write.config.dvmdostem easier to 
-  # understand/deal with
-  trait_names <- colnames(trait_values)
-  # for debugging
-  PEcAn.logger::logger.info(trait_names)
-  
-  # Not really sure how this should work yet? 
-  # Example from FATES model
-  # trait.names[trait.names == "leaf_respiration_rate_m2"]   <- "atref.rd"
-  #                                pecan notion?                dvmdostem?
-  # trait_names[trait_names == "CMT04.Salix.SLA"] <- ????? jsondata$pft0$sla
-  colnames(trait_values) <- trait_names
-
-  ### Conversions (for example, convert SLA to m2/g?)
-  ### TODO: !! Need to remove PFT name from here and just look for variable names !!
-  ###       !! Should only have train name here, such as SLA or cuticular_conductance
-  if ("CMT04.Salix.SLA" %in% names(trait_values)) {
+  if("SLA" %in% names(trait_values)) {
     # Convert from m2 / kg to m2 / g
-    trait_values[["CMT04.Salix.SLA"]] <- trait_values[["CMT04.Salix.SLA"]] / 1000.0
+    trait_values[["SLA"]] <- trait_values[["SLA"]] / 1000.0
   }
-  if ("CMT04.Salix.cuticular_cond" %in% names(trait_values)) {
-    # Convert from umol H2O m-2 s-1 to ??? (need to find dvm-dos-tem-units)
-    trait_values[["CMT04.Salix.cuticular_cond"]] <- trait_values[["CMT04.Salix.cuticular_cond"]] / 10^6
+  if ("cuticular_cond" %in% names(trait_values)) {
+    # Convert from umol H2O m-2 s-1 to ???
+    # Original values in dvmdostem param files not making sense, no good
+    # comments as to units. This conversion seems to make the values match
+    # what we expect from the other data in the PEcAn/bety database.
+    trait_values[["cuticular_cond"]] <- trait_values[["cuticular_cond"]] / 10^6
   }
 
-  ### Return modified version
-  return(trait_values)
+  # Return the modifed version
+  return (trait_values)
 }
 ##-------------------------------------------------------------------------------------------------#
 
@@ -93,6 +74,22 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   appbinary <- settings$model$binary
   appbinary_path <- dirname(appbinary)                  # path of dvmdostem binary file
 
+  # Subset the trait.values list to get only the traits for the PFT we are
+  # interested in. The trait.values list should be something like this:
+  # $`CMT04-Salix`
+  #      SW_albedo    gcmax    cuticular_cond       SLA
+  #            1.0     3.4               2.5       11.0
+  # $`CMT04-Betula`
+  #      SW_albedo    gcmax    cuticular_cond       SLA
+  #            1.0      3.4               2.5      11.0
+  #
+  # Where there is a sub-list for each PFT. We want to reduce this to just
+  # the PFT we are interested in, and with all the unit conversions taken
+  # care of. So result will be something like this:
+  # SW_albedo    gcmax    cuticular_cond       SLA
+  #      1.0       3.4               2.5      11.0
+  traits <- convert.samples.dvmdostem(trait.values[[settings$pfts$pft$name]])
+
   # Copy the base set of dvmdostem parameters and configurations into the
   # run directory. Some of the values in these files will be overwritten in
   # subsequent steps, but copying everything up makes sure that all the
@@ -120,17 +117,13 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # (1)
   # Read in a parameter data block from dvmdostem
 
-  # Build a dataframe from the incoming trait.values. trait.values
-  # contains the meta-analysis posteriors values for each parameter (trait)
-  # that we are hoping to "inject" into dvmdostem. Convert to a dataframe
-  # for easier indexing...
-  trait_df <- convert.samples.dvmdostem(trait.values)
-  ## !! TODO: Should run this as below so that only trait names remain !!
-  ## !! But if we do that now, the parsing below wont work.  Need to
-  ## !! separate parsing of PFT name for json and trait conversion for BETYdb
-  #trait_df <- convert.samples.dvmdostem(trait.samples = trait.values[[settings$pfts$pft$name]])
-  
-  # Now we have to read the approporate values out of the trait_df
+  # Pull out the community name/number for use below in extracting
+  # the correct block of data from the dvmdostem parameter files.
+  # The settings$pfts$pft$name variable will be something like this: "CMT04-Salix"
+  cmtname <- unlist(strsplit(settings$pfts$pft$name, "-", fixed=TRUE))[1]
+  cmtnum <- as.numeric(unlist(strsplit(cmtname, "CMT"))[2]) #
+
+  # Now we have to read the appropriate values out of the trait_df
   # and get those values written into the parameter file(s) that dvmdostem will
   # need when running. Because the dvmdostem parameters have a sort of
   # interesting, semi-standardized, space delimited, column format, we'll
@@ -141,27 +134,11 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   #  - Update the in-memory json object
   #  - Write the json object back out to a new dvmdostem parameter file
 
-  # Start by figuring out which community number we are working on.
-  # This is important because we need to pull the correct "community block"
-  # from the dvmdostem parameter files. Each trait in the traits dataframe
-  # should have a name like this:
-  #   CMT04.Salix.extinction_coefficient_diffuse
-  # So we can parse the first name in the dataframe to determine the CMT number.
-  # !! Actually, it should just be CMT04.Salix OR extinction_coefficient_diffuse
-  # !! Can't have PFT name linked with trait otherwise that would require a lot of 
-  # !! hard coding in this function. 
-  cmtnum <- strsplit(unlist(strsplit(names(trait_df)[1], '.', fixed=TRUE))[1], "CMT")
-  cmtnum <- unlist(cmtnum)[2]
-  cmtnum <- as.numeric(cmtnum)
-
   # Next, use a helper script distributed with dvmdostem to read the dvmdostem
   # parameter data into memory as a json object, using a temporaroy json file
   # to hold a representation of each dvmdostem parameter file.
   dimveg_params <- paste(appbinary_path, "parameters", 'cmt_dimvegetation.txt', sep="/")
   envcanopy_params <- paste(appbinary_path, "parameters", 'cmt_envcanopy.txt', sep="/")
-
-  #dimveg_jsonfile <- '/tmp/dvmdostem-dimveg.json'
-  #envcanopy_jsonfile <- '/tmp/dvmdostem-envcanopy.json'
 
   # Call the helper script and write out the data to a temporary file
   # This gets just the block we are interested in (based on community type)
@@ -174,7 +151,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   system2(paste0(appbinary_path,"/scripts/param_util.py"),
           args=(c("--dump-block-to-json", dimveg_params, cmtnum)),
           stdout=dimveg_jsonfile, wait=TRUE)
-  
+
   envcanopy_jsonfile <- file.path(local_rundir, "tmp",'dvmdostem-envcanopy.json')
   PEcAn.logger::logger.info(paste0("envcanopy_jsonfile: ", envcanopy_jsonfile))
   system2(paste0(appbinary_path,"/scripts/param_util.py"),
@@ -190,77 +167,44 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # Overwrite certain parameter values with (ma-posterior) trait data
   # from pecan, then write back out to disk...
 
-  # loop over all the incoming samples (traits)
-  for (cur_t_name in names(trait_df)) {
-    #print(cur_t_name)
-
-    # In converting trait.values into a dataframe, we get 
-    # these long column names that are dot separted and seem
-    # to contain cmtkey.pftname.traitname
-    # So the following splits out the various components into 
-    # convenient local variables
-    cmtkey <- unlist(strsplit(cur_t_name, '.', fixed=TRUE))[1]
-    pftname <- unlist(strsplit(cur_t_name, '.', fixed=TRUE))[2]
-    tname <- unlist(strsplit(cur_t_name, '.', fixed=TRUE))[3]
-
-    # NOTE:
-    # This is brittle with respect to changes in comments in dvmdostem
-    # parameter files. The parameter utility script determines names for
-    # variables based on parsing the comment string in the parameter files
-    # and looking for the part preceeding a colon. So changes in those
-    # files will require modifications to the following sections.
-
-    # Loop over all the items in our json structure of the dvmdostem parameters
-    # and find the item that matches the PFT
-    for (jd_name in names(dimveg_jsondata)) {
-      # First make sure that we are looking at the pftN entries, not 
-      # comments, or other non-PFT variables
-      if (grepl("pft", jd_name)) {
-        cur_pft_name <- dimveg_jsondata[[jd_name]]$name
-
-        # Then pick out only the entry for the correct pft 
-        if (identical(cur_pft_name, pftname)) {
-          print(cur_t_name)
-          print(tname)
-          if (tname == "SLA") {
-            dimveg_jsondata[[jd_name]]$sla = trait_df[[cur_t_name]]
-          } else if (tname == "frprod_perc_10") {
-            dimveg_jsondata[[jd_name]]$`frprod[0]` = trait_df[[cur_t_name]]
-          } else {
-            # pass...variable not in this file or datastructure
+  for (curr_trait in names(traits)) {
+    for (jd in list(envcanopy_jsondata, dimveg_jsondata)) {
+      for (i in names(jd)) {
+        if (grepl("pft", i)) {
+          # The PFT name stored w/in betydb is a combo of the community name
+          # and the "common" pft name, always separated by a hyphen. Something
+          # like this: "CMT04-Salix". The pft name in the json datastructure
+          # will be simply the common name, as stored in the dvmdostem parameter
+          # files. So here we extract the "common name" from the betydb PFT
+          # name to make sure we are updating the correct spot in the json
+          # data structure.
+          pft_common_name <- unlist(strsplit(settings$pfts$pft$name, "-"))[2]
+          if (identical(jd[[i]]$name, pft_common_name)) {
+            if (curr_trait == "SLA") {
+              jd[[i]]$sla = traits[[curr_trait]]
+            }
+            if (curr_trait == "frprod_perc_10") {
+              jd[[i]]$`frprod[0]` = traits[[curr_trait]]
+            }
+            if (curr_trait == "frprod_perc_20") {
+              jd[[i]]$`frprod[1]` = traits[[curr_trait]]
+            }
+            if (curr_trait == "extinction_coefficient_diffuse") {
+              jd[[i]]$er = traits[[curr_trait]]
+            }
+            if (curr_trait == "SW_albedo") {
+              jd[[i]]$albvisnir = traits[[curr_trait]]
+            }
+            if (curr_trait == "cuticular_cond") {
+              jd[[i]]$gl_c = traits[[curr_trait]]
+            }
+            if (curr_trait == "gcmax") {
+              jd[[i]]$glmax = traits[[curr_trait]]
+            }
           }
         }
       }
-    } # end loop over json for dimvveg
-
-
-    # Loop over all the items in our json structure of the dvmdostem parameters
-    # and find the item that matches the PFT
-    for (jd_name in names(envcanopy_jsondata)) {
-      # First make sure that we are looking at the pftN entries, not
-      # comments, or other non-PFT variables
-      if (grepl("pft", jd_name)) {
-        cur_pft_name <- envcanopy_jsondata[[jd_name]]$name
-
-        # Then pick out only the entry for the correct pft
-        if (identical(cur_pft_name, pftname)) {
-          print(cur_t_name)
-          print(tname)
-          if (tname == "extinction_coefficient_diffuse") {
-            envcanopy_jsondata[[jd_name]]$er = trait_df[[cur_t_name]]
-          } else if (tname == "SW_albedo") {
-            envcanopy_jsondata[[jd_name]]$albvisnir = trait_df[[cur_t_name]] 
-          } else if (tname == "cuticular_cond") {
-            envcanopy_jsondata[[jd_name]]$gl_c = trait_df[[cur_t_name]]
-          } else if (tname == "gcmax") {
-            envcanopy_jsondata[[jd_name]]$glmax = trait_df[[cur_t_name]]
-          } else {
-            # pass...variable not in this file or datastructure
-            PEcAn.logger::logger.info("pass...variable not in this file or datastructure")
-          }
-        }
-      }
-    } # end loop over json for env canopy
+    }
   }
 
 
