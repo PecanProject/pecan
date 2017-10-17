@@ -34,6 +34,7 @@ Currently does not yet support merge data that has lat/lon
 New variable only has time dimension and thus MIGHT break downstream code....
 }
 \examples{
+\dontrun{
 in.path    <- "~/paleon/PalEONregional_CF_site_1-24047/"
 in.prefix  <- ""
 outfolder  <- "~/paleon/metTest/"
@@ -43,7 +44,6 @@ end_date   <- "2010-12-31"
 overwrite  <- FALSE
 verbose    <- TRUE
 
-\dontrun{
 merge_met_variable(in.path,in.prefix,start_date,end_date,merge.file,overwrite,verbose)
 PEcAn.DALEC::met2model.DALEC(in.path,in.prefix,outfolder,start_date,end_date)
 }

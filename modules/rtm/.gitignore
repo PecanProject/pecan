@@ -17,3 +17,5 @@ check
 # R profile output
 */Rprof.out
 **/Rprof.out
+
+**/.scratch.R

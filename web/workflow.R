@@ -19,7 +19,7 @@ library(RCurl)
 options(warn=1)
 options(error=quote({
   PEcAn.utils::status.end("ERROR")
-  PEcAn.utils::kill.tunnel(settings)
+  PEcAn.remote::kill.tunnel(settings)
   if (!interactive()) {
     q()
   }
@@ -108,7 +108,7 @@ if ((length(which(commandArgs() == "--advanced")) != 0) && (PEcAn.utils::status.
 # Start ecosystem model runs
 if (PEcAn.utils::status.check("MODEL") == 0) {
   PEcAn.utils::status.start("MODEL")
-  PEcAn.utils::runModule.start.model.runs(settings,stop.on.error=FALSE)
+  PEcAn.remote::runModule.start.model.runs(settings,stop.on.error=FALSE)
   PEcAn.utils::status.end()
 }
 
@@ -161,7 +161,7 @@ if("benchmarking" %in% names(settings)){
 # Pecan workflow complete
 if (PEcAn.utils::status.check("FINISHED") == 0) {
   PEcAn.utils::status.start("FINISHED")
-  kill.tunnel(settings)
+  PEcAn.remote::kill.tunnel(settings)
   db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"), params=settings$database$bety)
 
   # Send email if configured
