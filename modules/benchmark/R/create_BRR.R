@@ -11,9 +11,9 @@
 
 create_BRR <- function(ens_wf, con, user_id = ""){
   
-  cnd1 <- ens_wf$hostname == PEcAn.utils::fqdn() 
-  cnd2 <- ens_wf$hostname == 'test-pecan.bu.edu' & PEcAn.utils::fqdn() == 'pecan2.bu.edu'
-  cnd3 <- ens_wf$hostname == 'pecan2.bu.edu' & PEcAn.utils::fqdn() == 'test-pecan.bu.edu'
+  cnd1 <- ens_wf$hostname == PEcAn.remote::fqdn() 
+  cnd2 <- ens_wf$hostname == 'test-pecan.bu.edu' & PEcAn.remote::fqdn() == 'pecan2.bu.edu'
+  cnd3 <- ens_wf$hostname == 'pecan2.bu.edu' & PEcAn.remote::fqdn() == 'test-pecan.bu.edu'
   db.query <- PEcAn.DB::db.query
   
  # if(cnd1|cnd2|cnd3){  # If the ensemble run was done on localhost, turn into a BRR

@@ -96,7 +96,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
                       ".nc")
   
   results$file <- all_files
-  results$host <- PEcAn.utils::fqdn()
+  results$host <- PEcAn.remote::fqdn()
   
   # The For below loop updates the start/end date once file is read in
   results$startdate  <- paste0(all_years, "-01-01 00:00:00")
@@ -497,7 +497,16 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
         }, `mm h-1` = {
           rain <- udunits2::ud.convert(rain / timestep, "h", "s")
           "kg m-2 s-1"
-        })
+        },
+        'kg m-2 (30 minute)-1' = {
+          rain <- rain / timestep
+          'kg m-2 s-1'
+        },
+        'kg m-2 hr-1' = {
+          rain <- rain / timestep
+          'kg m-2 s-1'
+        }       
+        )
         ncdf4::ncvar_put(nc, varid = precip.var, 
                   vals = met.conv(rain, rain.units, "kg m-2 s-1", "kg m-2 s-1"))
       }

@@ -11,17 +11,13 @@
 ##' which can return just the hostname part and not the domain as well. For example the machine
 ##' pecan.ncsa.illinois.edu will return just that as fqdn but only pecan for hostname.
 ##'
-##' DEPRECATED. Use \code{\link[PEcAn.remote:fqdn]{PEcAn.remote::fqdn}} instead.
-##'
 ##' @title Returns the fully qualified hostname.
-##' @name fqdn-deprecated
-##' @aliases fqdn 
+##' @name fqdn
 ##' @author Rob Kooper
 ##' @return fully qualified hostname
 ##' @export
 ##' @examples
 ##' fqdn()
 fqdn <- function() {
-  .Deprecated("PEcAn.remote::fqdn")
   system2("hostname", "-f", stdout = TRUE)
 } # fqdn
