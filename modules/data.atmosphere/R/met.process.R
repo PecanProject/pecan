@@ -23,7 +23,7 @@
 ##' @author Elizabeth Cowdery, Michael Dietze, Ankur Desai, James Simkins, Ryan Kelly
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, 
-                        overwrite = FALSE) {
+                        overwrite = FALSE, inputfiles = NULL) {
   library(RPostgreSQL)
   
   # If overwrite is a plain boolean, fill in defaults for each stage
@@ -98,7 +98,16 @@ met.process <- function(site, input_met, start_date, end_date, model,
   
   # first attempt at function that designates where to start met.process
   if (is.null(input_met$id)) {
-    stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
+    if(is.null(model)){
+      stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = FALSE)
+    } else {
+      if(input_met$source == "CUSTOM"){
+        # internal file is provided
+        stage <- list(download.raw = FALSE, met2cf = FALSE, standardize = FALSE, met2model = TRUE)
+      } else {
+        stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = TRUE)
+      }
+    }
     format.vars <- query.format.vars(bety = bety, format.id = register$format$id)  # query variable info from format id
   } else {
     stage <- met.process.stage(input_met$id, register$format$id, con)
