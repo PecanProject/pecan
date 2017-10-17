@@ -34,7 +34,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   leafC <- 0.48
   useTRIFFID <- "TRIFFID" %in% toupper(names(settings$model))
   start_date <- settings$run$start.date
-  run.local <- settings$host$name == "localhost" | settings$host$name == PEcAn.utils::fqdn()
+  run.local <- settings$host$name == "localhost" | settings$host$name == PEcAn.remote::fqdn()
 
   # find out where to write run/output
   rundir <- file.path(settings$host$rundir, run.id)

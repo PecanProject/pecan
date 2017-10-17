@@ -8,6 +8,7 @@ Maintainer: Mike Dietze <dietze@bu.edu>
 Description: PEcAn module for processing remote data
 Imports:
     PEcAn.logger,
+    PEcAn.remote,
     stringr(>= 1.1.0)
 Suggests:
     testthat (>= 1.0.2)
