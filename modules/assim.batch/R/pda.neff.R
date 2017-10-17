@@ -153,7 +153,7 @@ pda.autocorr.calc <- function(input, model = "heteroskedastic.laplacian"){
                             n.chains = 3)
     
   }else{
-    logger.error(model, "is not data available as data model.")
+    PEcAn.logger::logger.error(model, "is not data available as data model.")
   }
   
   jags.out   <- coda.samples (model          = j.model,

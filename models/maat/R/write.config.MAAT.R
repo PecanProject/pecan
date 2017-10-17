@@ -85,7 +85,6 @@ convert.samples.MAAT <- function(trait.samples) {
 ##' @return configuration file for MAAT for given run
 ##' @export
 ##' @author Shawn Serbin, Anthony Walker, Rob Kooper
-##' @importFrom PEcAn.utils listToXml logger.info
 ##' @importFrom XML saveXML addChildren
 write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   
@@ -100,14 +99,14 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
             file.path(settings$model$binary, "src")))
   
   ### Parse config options to XML
-  xml <- listToXml(settings$model$config, "default")
+  xml <- PEcAn.settings::listToXml(settings$model$config, "default")
   
   ### Run rename and conversion function on PEcAn trait values
   traits <- convert.samples.MAAT(trait.samples = trait.values[[settings$pfts$pft$name]])
   
   ### Convert traits to list
   traits.list <- as.list(traits)
-  traits.xml <- listToXml(traits.list, "pars")
+  traits.xml <- PEcAn.settings::listToXml(traits.list, "pars")
   
   ### Finalize XML
   xml[[1]] <- addChildren(xml[[1]], traits.xml)
@@ -122,7 +121,7 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   ### Write out new XML  _ NEED TO FIX THIS BIT. NEED TO CONVERT WHOLE LIST TO XML
   #saveXML(xml, file = file.path(settings$rundir, run.id, "leaf_default.xml"), indent=TRUE, prefix = PREFIX_XML)
   if (is.null(settings$run$inputs$met)) {
-    logger.info("-- No met selected. Running without a met driver --")
+    PEcAn.logger::logger.info("-- No met selected. Running without a met driver --")
     jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ",
                     "\"odir <- ","'",outdir,"'","\""," > ",rundir,
                     "/logfile.txt","\n",'echo "',
