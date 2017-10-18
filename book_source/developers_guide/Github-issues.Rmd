@@ -1,13 +1,14 @@
 # (PART) Development Guide {-}
 
 # Overview
+In this section, development topics are introduced and discussed. PEcAn code lives within the If you are looking for an issue to work on, take a look through issues labled ["good first issue"](https://github.com/PecanProject/pecan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22). To get started you will want to review 
 
 
 We use GitHub to track development. 
 
 To learn about GitHub, it is worth taking some time to read through the [FAQ](https://help.github.com/). When in doubt, the first step is to click the "Help" button at the top of the page.
 
-* **To address specific people**, use a github feature called "@mentions" e.g. write @dlebauer, @robkooper, @mdietze, or @serbinsh ... in the issue to alert the user as described in the [GitHub documentation on notifications](https://help.github.com/articles/notifications)
+* **To address specific people**, use a github feature called @mentions e.g. write @dlebauer, @robkooper, @mdietze, or @serbinsh ... in the issue to alert the user as described in the [GitHub documentation on notifications](https://help.github.com/articles/notifications)
 
 
 ## Bugs, Issues, Features, etc.
