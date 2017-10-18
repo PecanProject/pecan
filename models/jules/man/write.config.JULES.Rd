@@ -4,7 +4,8 @@
 \alias{write.config.JULES}
 \title{Write JULES configuration files}
 \usage{
-write.config.JULES(defaults, trait.values, settings, run.id)
+write.config.JULES(defaults, trait.values, settings, run.id, inputs = NULL,
+  IC = NULL, restart = NULL, spinup = NULL)
 }
 \arguments{
 \item{defaults}{list of defaults to process}

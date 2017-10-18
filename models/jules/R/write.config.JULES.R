@@ -28,7 +28,8 @@
 ##'   write.config.JULES(defaults, trait.values, settings, run.id)
 ##' }
 ##-------------------------------------------------------------------------------------------------#
-write.config.JULES <- function(defaults, trait.values, settings, run.id) {
+write.config.JULES <- function(defaults, trait.values, settings, run.id, inputs = NULL, IC = NULL,
+                               restart = NULL, spinup = NULL) {
   # constants
   molH2O_to_grams <- 18.01528
   leafC <- 0.48
@@ -561,6 +562,8 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
 
   ## Edit INITIAL_CONDITIONS.NML soil carbon LAI
   if(useTRIFFID){
+    
+    if (!is.null(IC)){
     ic.file <- file.path(local.rundir, "initial_conditions.nml")
     ic.text <- readLines(con = ic.file, n = -1)
 
@@ -585,6 +588,39 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     ic.text <- readLines(con = ic.dat, n = -1)
     ic.text[2] <- paste(ic.text[2]," 5.0 5.0 0.5 0.5 0.5 0.2 0.2 0.2 0.2 0.2 0.0 0.0 0.0 0.0")
     writeLines(ic.text, con = ic.dat)
+    
+    } else if (!is.null(settings$run$inputs$poolinitcond$path)){
+      
+      #Read in path to standard initial conditions file
+      IC.path <- settings$run$inputs$poolinitcond$path
+      
+      ## LAI m2/m2
+      if(!is.null(IC.path)){
+        # Read in netcdf file
+        IC.nc <- ncdf4::nc_open(IC.path) 
+        #Get LAI value
+        lai <- try(ncdf4::ncvar_get(IC.nc,"LAI"),silent = TRUE)
+        #Read in default initial conditions file
+        ic.file <- file.path(local.rundir, "initial_conditions.nml")
+        ic.dat  <- file.path(local.rundir, "initial_conditions.dat")
+        ic.text <- readLines(con = ic.dat, n = -1)
+        #For now if number of LAI values does not match number of pfts set them set them across
+        if (npfts!= length(lai)) {
+          template.dir <- file.path(system.file(package = "PEcAn.JULES"), paste0("template_nml_4.2"))
+          ic.file <- file.path(template.dir, "initial_conditions.nml")
+          ic.text <- readLines(con = ic.file, n = -1)
+          ic.dat  <- file.path(template.dir, "initial_conditions.dat")
+          ic.dat.text <- readLines(con = ic.dat, n = -1)
+          ic.dat.text <- gsub("@LAI_DAT@", paste(rep(lai,npfts), collapse = " "), ic.dat.text)
+          writeLines(ic.dat.text, con = ic.dat)
+        }
+        
+        
+      }else{
+        PEcAn.logger::logger.error("Bad initial conditions filepath")
+      }
+      
+    }
   }
 } # write.config.JULES
 
