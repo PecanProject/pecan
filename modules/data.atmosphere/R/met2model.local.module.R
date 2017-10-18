@@ -1,10 +1,11 @@
 ##' @export
-.met2model.local.module <- function(inputfiles, model, con, host, dir, met, str_ns, site, start_date, end_date, format.vars,
+.met2model.local.module <- function(inputfiles, model, con, host, dir, met, str_ns, site, start_date, end_date, format.vars, 
                               browndog, new.site, overwrite = FALSE, exact.dates,spin) {
   # Determine output format name and mimetype
   model_info <- PEcAn.DB::db.query(paste0("SELECT f.name, f.id, mt.type_string from modeltypes as m", " join modeltypes_formats as mf on m.id = mf.modeltype_id", 
                                 " join formats as f on mf.format_id = f.id", " join mimetypes as mt on f.mimetype_id = mt.id", 
                                 " where m.name = '", model, "' AND mf.tag='met'"), con)
+
   if (model_info[1] == "CF Meteorology") {
     outfolder <- file.path(dir, paste0(met, "_site_", str_ns))
   } else {
@@ -12,6 +13,7 @@
     
     formatname <- model_info[1]
     mimetype <- model_info[3]
+    
     print("Convert to model format")
     
     if(host$name == "localhost"){
@@ -39,7 +41,6 @@
     fcn.args$outfolder  <- outfolder
     fcn.args$start_date <- start_date
     fcn.args$end_date   <- end_date
-    print(fcn.args)
     arg.string <- PEcAn.utils::listToArgString(fcn.args)
     
     if (!missing(format.vars)) {

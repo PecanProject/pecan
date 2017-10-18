@@ -27,7 +27,6 @@
 met.process <- function(site, input_met, start_date, end_date, model,
                         host = "localhost", dbparms, dir, browndog = NULL, spin=NULL,
                         overwrite = FALSE, inputfiles = NULL) {
-
   # get met source and potentially determine where to start in the process
   if(is.null(input_met$source)){
     if(is.null(input_met$id)){
@@ -75,6 +74,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
     if (i < length(overwrite.check) && 
         overwrite.check[i] == TRUE && 
         !all(overwrite.check[(i + 1):length(overwrite.check)])) {
+      print(overwrite)
      PEcAn.logger::logger.error(paste0("If overwriting any stage of met.process, ", "all subsequent stages need to be overwritten too. Please correct."))
     }
   }
@@ -119,7 +119,10 @@ met.process <- function(site, input_met, start_date, end_date, model,
     if(input_met$source == "CUSTOM"){
       # internal file is provided
       stage <- list(download.raw = FALSE, met2cf = FALSE, standardize = FALSE, met2model = TRUE)
-      format.vars <- list(lat <- NULL, lon <- NULL, site<- NULL)
+      format.vars <- list()
+      format.vars$lat <- NULL
+      format.vars$lat <- NULL
+      format.vars$lat <- NULL
     } else {
       if(is.null(model)){
         stage <- list(download.raw = TRUE, met2cf = TRUE, standardize = TRUE, met2model = FALSE)
@@ -136,7 +139,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
     assign(stage$id.name, list(inputid = input_met$id,
                                dbfileid = dbfile.check("Input",input_met$id,hostname = machine.host,con=con)$id))
   }
-
+  print(stage)
+  
   if(is.null(model)){
     stage$model <- FALSE
   }
@@ -145,7 +149,6 @@ met.process <- function(site, input_met, start_date, end_date, model,
   if (!is.null(browndog)) {
     browndog$inputtype <- register$format$inputtype
   }
-  site <- list(id = 772, name = "Niwot Ridge Forest/LTER NWT1 (US-NR1)")
 
   # setup site database number, lat, lon and name and copy for format.vars if new input
   new.site <- data.frame(id = as.numeric(site$id), 
@@ -162,7 +165,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
   if (is.null(format.vars$site)) {
     format.vars$site <- new.site$id
   }
-  
+
   #--------------------------------------------------------------------------------------------------#
   # Download raw met
   if (stage$download.raw) {
@@ -255,7 +258,8 @@ met.process <- function(site, input_met, start_date, end_date, model,
                                             met = met, 
                                             str_ns = str_ns,
                                             site = site, 
-                                            start_date = start_date, end_date = end_date, format.vars = format.vars,
+                                            start_date = start_date,
+                                            end_date = end_date, 
                                             browndog = browndog, 
                                             new.site = new.site,
                                             overwrite = overwrite$met2model,
