@@ -11,13 +11,10 @@
 #' @examples
 #' is.localhost(fqdn())
 is.localhost <- function(host) {
-  # PEcAn.utils::fqdn() would result in a circular dependency.
-  fqdn <- system2("hostname", "-f", stdout = TRUE)
-  
   if (is.character(host)) {
-    return((host == "localhost") || (host == fqdn))
+    return((host == "localhost") || (host == fqdn()))
   } else if (is.list(host)) {
-    return((host$name == "localhost") || (host$name == fqdn))
+    return((host$name == "localhost") || (host$name == fqdn()))
   } else {
     return(FALSE)
   }

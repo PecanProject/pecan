@@ -36,7 +36,7 @@ met2model.SIPNET <- function(in.path, in.prefix, outfolder, start_date, end_date
   out.file.full <- file.path(outfolder, out.file)
 
   results <- data.frame(file = out.file.full,
-                        host = PEcAn.utils::fqdn(),
+                        host = PEcAn.remote::fqdn(),
                         mimetype = "text/csv",
                         formatname = "Sipnet.climna",
                         startdate = start_date,

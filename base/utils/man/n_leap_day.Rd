@@ -6,6 +6,9 @@
 \usage{
 n_leap_day(start_date, end_date)
 }
+\arguments{
+\item{start_date, end_date}{dates in any format recognized by \code{\link[base]{as.Date}}}
+}
 \description{
 number of leap days between two dates
 }

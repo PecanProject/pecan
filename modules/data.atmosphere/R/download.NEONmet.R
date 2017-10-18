@@ -69,7 +69,7 @@ download.NEONmet <- function(sitename, outfolder, start_date, end_date,
   all_years <- start_year:end_year
   all_files <- file.path(outfolder, paste0("NEONmet.", site, ".", as.character(all_years), ".nc"))
   results$file <- all_files
-  results$host <- PEcAn.utils::fqdn()
+  results$host <- PEcAn.remote::fqdn()
   results$mimetype   <- "application/x-netcdf"
   results$formatname <- "CF"
   results$startdate  <- paste0(all_years, "-01-01 00:00:00")

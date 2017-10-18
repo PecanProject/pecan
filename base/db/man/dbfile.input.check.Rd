@@ -5,7 +5,7 @@
 \title{Check for a file in the input/dbfiles tables}
 \usage{
 dbfile.input.check(siteid, startdate = NULL, enddate = NULL, mimetype,
-  formatname, parentid = NA, con, hostname = PEcAn.utils::fqdn(),
+  formatname, parentid = NA, con, hostname = PEcAn.remote::fqdn(),
   exact.dates = FALSE, pattern = NULL)
 }
 \arguments{
