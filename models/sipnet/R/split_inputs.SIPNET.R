@@ -23,9 +23,9 @@
 split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs) {
   
   #### Lubridate start and end times
-  start.day <- day(start.time)
+  start.day <- lubridate::day(start.time)
   start.year <- lubridate::year(start.time)
-  end.day <- day(stop.time)
+  end.day <- as.POSIXlt(stop.time)$yday
   end.year <- lubridate::year(stop.time)
   
   #### Get met paths

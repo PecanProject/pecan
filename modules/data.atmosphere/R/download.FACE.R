@@ -7,9 +7,11 @@
 ##' @param outfolder
 ##' @param start_year
 ##' @param end_year
+##' @param method Optional. Passed to download.file() function.  Use this to set custom programs such as ncftp to use when
+##' downloading files from FTP sites
 ##' 
 ##' @author Betsy Cowdery
-download.FACE <- function(sitename, outfolder, start_date, end_date, overwrite = FALSE, ...) {
+download.FACE <- function(sitename, outfolder, start_date, end_date, overwrite = FALSE, method, ...) {
   # download.FACE <-
   # function(data.set,outfolder,pkg,raw.host,start_year,end_year,site.id,dbparams,con){
   
@@ -32,11 +34,11 @@ download.FACE <- function(sitename, outfolder, start_date, end_date, overwrite =
   # url where Ameriflux data is stored
   url <- paste0("ftp://cdiac.ornl.gov/.private/eCO2_Modelling/Site_Data/", site, "/", raw.file)
   print(url)
-  system(paste("wget -c ", url, " -O ", out.file))
-  
+  PEcAn.utils::download.file(url,out.file,method)
+
   # return file info
   return(invisible(data.frame(file = out.file, 
-                              host = fqdn(), 
+                              host = PEcAn.remote::fqdn(), 
                               mimetype = "application/x-netcdf", 
                               formatname = "FACE", 
                               startdate = start_date, 

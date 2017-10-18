@@ -1,21 +1,22 @@
-General Note: dates in the database should be datatime (preferably with timezone), and datetime passed around in PEcAn should be of type POSIXlt.
+# Input Conversion
 
-# Met Data
+Three Types of data conversions are discussed below: Meteorological data, Vegetation data, and Soil data. Each section provides instructions on how to convert data from their raw formats into a PEcAn standard format, whether it be from a database or if you have raw data in hand.
 
-The standard met data inputs should be of the form:
+## Meterological Data conversion
 
-Converters from a raw to standard format go in `/modules/data.atmosphere/R`; converters from standard to model-specific go in `models/<mymodel>/R`.
+### Adding a function to PEcAn to convert a met data source
+In general, you will need to write a function to download the raw met data and one to convert it to the PEcAn standard.
 
-* For a number of common gridded products (NARR, CRUNCEP, ISIMIP), there are bash scripts for converting and rechunking in this repository: https://github.com/ebimodeling/model-drivers; these are not generalized, but may be merged into PEcAn at some point.
+Downloading raw data function are named `download.<source>.R`. These functions are stored within the PEcAn directory: [`/modules/data.atmosphere/R`](https://github.com/PecanProject/pecan/tree/develop/modules/data.atmosphere/R). 
 
-Examples:
-* NARR:
-* CRUNCEP:
-* ISIMIP: 
+Conversion function from raw to standard are named  `met2CF.<source>.R`. These functions are stored within the PEcAn directory: [`/modules/data.atmosphere/R`](https://github.com/PecanProject/pecan/tree/develop/modules/data.atmosphere/R).
 
-Names should be `met2CF.<sourcename>` and `met2model.<modelname>`.
+Current Meteorological products that are coupled to PEcAn can be found in our [Available Meteorological Drivers] page.
 
-## Dimensions:
+Note: Unless you are also adding a new model, you will not need to write a script to convert from PEcAn standard to PEcAn models. Those conversion scripts are written when a model is added and can be found within each model's PEcAn directory.
+
+### Dimensions:
+
 
 |CF standard-name | units |
 |:------------------------------------------|:------|
@@ -23,7 +24,10 @@ Names should be `met2CF.<sourcename>` and `met2model.<modelname>`.
 | longitude | degrees_east|
 | latitude |degrees_north|
 
-## The variable names should be `standard_name`
+General Note: dates in the database should be date-time (preferably with timezone), and datetime passed around in PEcAn should be of type POSIXct.
+
+
+### The variable names should be `standard_name`
 
 | CF standard-name                          | units | bety         | isimip       | cruncep | narr  | ameriflux |
 |:------------------------------------------|:------|:-------------|:-------------|:--------|:------|:----------|
@@ -48,14 +52,261 @@ Names should be `met2CF.<sourcename>` and `met2model.<modelname>`.
 
 * preferred variables indicated in bold
 * wind_direction has no CF equivalent and should not be converted, instead the met2CF functions should convert wind_direction and wind_speed to eastward_wind and northward_wind
-* variable names are from [MsTMIP](http://nacp.ornl.gov/MsTMIP_variables.shtml), but lowercase to be consistent with the MsTMIP drivers.
 * standard_name is CF-convention standard names
 * units can be converted by udunits, so these can vary (e.g. the time denominator may change with time frequency of inputs)
 * soil moisture for the full column, rather than a layer, is soil_moisture_content
+* A full list of PEcAn standard variable names, units and dimensions can be found here: https://github.com/PecanProject/pecan/blob/develop/base/utils/data/standard_vars.csv
 
-For the standardized files, we are using CF standard names as variable names.
 
 For example, in the [MsTMIP-CRUNCEP](https://www.betydb.org/inputs/280) data, the variable `rain` should be `precipitation_rate`.
 We want to standardize the units as well as part of the `met2CF.<product>` step. I believe we want to use the CF "canonical" units but retain the MsTMIP units any time CF is ambiguous about the units.
 
 The key is to process each type of met data (site, reanalysis, forecast, climate scenario, etc) to the exact same standard. This way every operation after that (extract, gap fill, downscale, convert to a model, etc) will always have the exact same inputs. This will make everything else much simpler to code and allow us to avoid a lot of unnecessary data checking, tests, etc being repeated in every downstream function.
+
+### Adding Single-Site Specific Meteorological Data
+
+Perhaps you have meteorological data specific to one site, with a unique format that you would like to add to PEcAn. Your steps would be to:
+  1. write a script or function to convert your files into the netcdf PEcAn standard
+  2. insert that file as an input record for your site following these [instructions](How to Insert new Input Data)
+  
+### Processing Met data outside of the workflow using PEcAn functions
+
+Perhaps you would like to obtain data from one of the sources coupled to PEcAn on its own. To do so you can run PEcAn functions on their own. 
+
+#### Example 1: Processing data from a database 
+
+Download Amerifluxlbl from Niwot Ridge for the year 2004:
+
+```
+raw.file <-PEcAn.data.atmosphere::download.AmerifluxLBL(sitename = "US-NR1", 
+                                             outfolder = ".", 
+                                             start_date = "2004-01-01", 
+                                             end_date = "2004-12-31")
+```
+
+Using the information returned as the object `raw.file` you will then convert the raw files into a standard file.
+
+Open a connection with BETY. You may need to change the host name depending on what machine you are hosting BETY. You can find the hostname listed in the machines table of BETY.
+
+```
+
+bety <- dplyr::src_postgres(dbname   = 'bety', 
+                            host ='localhost', 
+                            user     = "bety", 
+                            password = "bety")
+                            
+con <- bety$con
+```
+
+Next you will set up the arguments for the function
+
+```
+in.path <- '.'
+in.prefix <- raw.file$dbfile.name
+outfolder <- '.'
+format.id <- 5000000002
+format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = bety)
+lon <- -105.54
+lat <- 40.03
+format$time_zone <- "America/Chicago"
+```
+Note: The format.id can be pulled from the BETY database if you know the format of the raw data.
+
+Once these arguments are defined you can execute the `met2CF.csv` function
+
+```
+PEcAn.data.atmosphere::met2CF.csv(in.path = in.path, 
+                                  in.prefix =in.prefix,
+                                  outfolder = ".", 
+                                  start_date ="2004-01-01",
+                                  end_date = "2004-12-01",
+                                  lat= lat,
+                                  lon = lon,
+                                  format = format) 
+```
+
+
+
+#### Example 2: Processing data from data already in hand 
+
+If you have Met data already in hand and you would like to convert into the PEcAn standard follow these instructions.
+
+Update BETY with file record, format record and input record according to this page [How to Insert new Input Data]
+ 
+If your data is in a csv format you can use the `met2CF.csv`function to convert your data into a PEcAn standard file.
+
+Open a connection with BETY. You may need to change the host name depending on what machine you are hosting BETY. You can find the hostname listed in the machines table of BETY.
+
+```
+bety <- dplyr::src_postgres(dbname   = 'bety', 
+                            host ='localhost', 
+                            user     = "bety", 
+                            password = "bety")
+                            
+con <- bety$con
+```
+
+Prepare the arguments you need to execute the met2CF.csv function 
+
+```
+in.path <- 'path/where/the/raw/file/lives'
+in.prefix <- 'prefix_of_the_raw_file'
+outfolder <- 'path/to/where/you/want/to/output/thecsv/'
+format.id <- formatid of the format your created
+format <- PEcAn.DB::query.format.vars(format.id=format.id,bety = bety)
+lon <- longitude of your site
+lat <- latitude of your site
+format$time_zone <- time zone of your site
+start_date <- Start date of your data in "y-m-d"
+end_date <- End date of your data in "y-m-d"
+```
+
+Next you can execute the function:
+```
+PEcAn.data.atmosphere::met2CF.csv(in.path = in.path, 
+                                  in.prefix =in.prefix, 
+                                  outfolder = ".", 
+                                  start_date = start_date,
+                                  end_date = end_date,
+                                  lat= lat,
+                                  lon = lon,
+                                  format = format)
+```
+
+
+## Vegetation Data
+
+Vegetation data will be required to parameterize your model. In these examples we will go over how to produce a standard initial condition file.
+
+The main function to process cohort data is the `ic.process.R` function. As of now however, if you require pool data you will run a separate function, `pool_ic_list2netcdf.R`.
+
+#### Example 1: Processing Veg data from data in hand.
+
+In the following example we will process vegetation data that you have in hand using PEcAn.
+
+First, you'll need to create a input record in BETY that will have a file record and format record reflecting the location and format of your file. Instructions can be found in our [How to Insert new Input Data] page.
+
+Once you have created an input record you must take note of the input id of your record. An easy way to take note of this is in the URL of the BETY webpage that shows your input record. In this example we use an input record with the id `1000013064` which can be found at this url: https://psql-pecan.bu.edu/bety/inputs/1000013064# . Note that this is the Boston University BETY database. If you are on a different machine, your url will be different.
+
+With the input id  in hand you can now edit a pecan XML so that the PEcAn function `ic.process` will know where to look in order to process your data. The `inputs` section of your pecan XML will look like this. As of now ic.process is set up to work with the ED2 model so we will use ED2 settings and then grab the intermediary Rds data file that is created as the standard PEcAn file. For your Inputs section you will need to input your input id wherever you see the `source.ic` flag.
+```
+<inputs>
+      <css>
+        <source>FFT</source>
+        <output>css</output>
+        <username>pecan</username>
+        <source.id>1000013064</source.id>
+        <useic>TRUE</useic>
+        <meta>
+          <trk>1</trk>
+          <age>70</age>
+        </meta>
+      </css>
+      <pss>
+        <source>FFT</source>
+        <output>pss</output>
+        <username>pecan</username>
+        <source.id>1000013064</source.id>
+        <useic>TRUE</useic>
+      </pss>
+      <site>
+        <source>FFT</source>
+        <output>site</output>
+        <username>pecan</username>
+        <source.id>1000013064</source.id>
+        <useic>TRUE</useic>
+      </site>
+      <met>
+        <source>CRUNCEP</source>
+        <output>ED2</output>
+      </met>
+      <lu>
+        <id>294</id>
+      </lu>
+      <soil>
+        <id>297</id>
+      </soil>
+      <thsum>
+        <id>295</id>
+      </thsum>
+      <veg>
+        <id>296</id>
+      </veg>
+    </inputs>
+```
+
+Once you edit your PEcAn.xml you can than create a settings object using PEcAn functions. Your `pecan.xml` must be in your working directory.
+
+```
+settings <- PEcAn.settings::read.settings("pecan.xml")
+settings <- PEcAn.settings::prepare.settings(settings, force=FALSE)
+```
+You can then execute the `ic.process` function to convert data into a standard Rds file:
+
+```
+input <- settings$run$inputs
+dir <- "."
+ic.process(settings, input, dir, overwrite = FALSE)
+```
+
+Note that the argument `dir` is set to the current directory. You will find the final ED2 file there. More importantly though you will find the `.Rds ` file within the same directory.
+
+
+
+
+#### Example 3 Pool Initial Condition files
+If you have pool vegetation data, you'll need the [`pool_ic_list2netcdf.R`](https://github.com/PecanProject/pecan/blob/develop/modules/data.land/R/pool_ic_list2netcdf.R) function to convert the pool data into PEcAn
+standard.
+
+The function stands alone and requires that you provide a named list of netcdf dimensions and values, and a named list of variables and values. Names and units need to match the standard_vars.csv table found [here](https://github.com/PecanProject/pecan/blob/develop/base/utils/data/standard_vars.csv).
+
+```
+#Create a list object with necessary dimensions for your site
+input<-list()
+dims<- list(lat=-115,lon=45, time= 1)
+variables<- list(SoilResp=8,TotLivBiom=295)
+input$dims <- dims
+input$vals <- variables
+``` 
+
+Once this is done, set `outdir` to where you'd like the file to write out to and a siteid. Siteid in this can be used as an file name identifier. Once part of the automated workflow siteid will reflect the site id within the BET db.
+
+```
+outdir  <- "."
+siteid <- 772
+pool_ic_list2netcdf(input = input, outdir = outdir, siteid = siteid)
+```
+
+You should now have a netcdf file with initial conditions.
+
+## Soil Data
+
+#### Example 1: Converting Data in hand 
+
+Local data that has the correct names and units can easily be written out in PEcAn standard using the function soil2netcdf.
+
+```
+soil.data <- list(volume_fraction_of_sand_in_soil = c(0.3,0.4,0.5),
+                  volume_fraction_of_clay_in_soil = c(0.3,0.3,0.3),
+                  soil_depth = c(0.2,0.5,1.0))
+                         
+soil2netcdf(soil.data,"soil.nc")
+```
+
+At the moment this file would need to be inserted into Inputs manually. By default, this function also calls soil_params, which will estimate a number of hydraulic and thermal parameters from texture. Be aware that at the moment not all model couplers are yet set up to read this file and/or convert it to model-specific formats.
+
+
+#### Example 2: Converting PalEON data
+
+In addition to location-specific soil data, PEcAn can extract soil texture information from the PalEON regional soil product, which itself is a subset of the MsTMIP Unified North American Soil Map. If this product is installed on your machine, the appropriate step in the do_conversions workflow is enabled by adding the following tag under ```<inputs>``` in your pecan.xml
+
+```
+   <soil>
+     <id>1000012896</id>
+   </soil>
+```
+
+In the future we aim to extend this extraction to a wider range of soil products.
+
+
+

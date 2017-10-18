@@ -1,7 +1,6 @@
-#' @name invert.custom
-#'
-#' @title Bayesian inversion of a model
-#' @details Performs an inversion of an arbitrary model using a modified 
+#' Bayesian inversion of a model
+#' 
+#' Performs an inversion of an arbitrary model using a modified 
 #' Metropolis Hastings algorithm with block sampling. This may be slightly 
 #' slower than the implementation in Fortran, but is much more customizable, as 
 #' the model can be any R function.
@@ -10,52 +9,49 @@
 #' columns. Dimensions must align with the output of `model`.
 #' @param invert.options R list object containing inversion settings. See details.
 #' @param quiet Suppress progress bar and status messages. Default=FALSE
-#' @param return.resume If TRUE, return results as list that includes current 
+#' @param return.resume If `TRUE`, return results as list that includes current 
 #' Jump distribution (useful for continuing an ongoing run) and acceptance 
-#' rate. Default = FALSE.
+#' rate. Default = `FALSE`.
 #' @param runID Run-unique ID. Useful for parallel runs. Default=NULL
-#' @importFrom Rcpp evalCpp
 #' @details
-#' \code{inversion.options} contains the following:
-#' \itemize{
-#' \item{inits}{Vector of initial values of model parameters to be inverted.}
-#'
-#' \item{ngibbs}{Number of MCMC iterations}
-#'
-#' \item{prior.function}{Function for use as prior.
-#' Should take a vector of parameters as input and return a single value -- the 
-#' sum of their log-densities -- as output.}
-#'
-#' \item{param.mins}{Vector of minimum values for inversion parameters}
+#' `inversion.options` contains the following:
 #' 
-#' \item{param.maxs}{Vector of minimum values for inversion parameters}
+#' * `inits` -- Vector of initial values of model parameters to be inverted.
 #'
-#' \item{model}{The model to be inverted.
+#' * `ngibbs` -- Number of MCMC iterations
+#'
+#' * `prior.function` -- Function for use as prior.
+#' Should take a vector of parameters as input and return a single value -- the 
+#' sum of their log-densities -- as output.
+#'
+#' * `param.mins` -- Vector of minimum values for inversion parameters
+#' 
+#' * `param.maxs` -- Vector of minimum values for inversion parameters
+#'
+#' * `model` -- The model to be inverted.
 #' This should be an R function that takes `params` and `runID` as input and 
 #' returns one column of `observed` (nrows should be the same).
-#' Constants should be implicitly included here.}
+#' Constants should be implicitly included here.
 #'
-#' \item{adapt}{Number of steps for adapting covariance matrix (i.e. adapt 
-#' every 'n' steps). Default=100}
+#' * `adapt` -- Number of steps for adapting covariance matrix (i.e. adapt 
+#' every 'n' steps). Default=100
 #' 
-#' \item{adj_min}{Minimum threshold for rescaling Jump standard deviation.
-#' Default = 0.1.}
+#' * `adj_min` -- Minimum threshold for rescaling Jump standard deviation.
+#' Default = 0.1.
 #' 
-#' \item{target}{Target acceptance rate. Default=0.234, based on recommendation 
-#' for multivariate block sampling in Haario et al. 2001}
+#' * `target` -- Target acceptance rate. Default=0.234, based on recommendation 
+#' for multivariate block sampling in Haario et al. 2001
 #' 
-#' \item{do.lsq}{Perform least squares optimization first (see `invert.lsq`), 
+#' * `do.lsq` -- Perform least squares optimization first (see `invert.lsq`), 
 #' and use outputs to initialize Metropolis Hastings.
 #' This may improve mixing time, but risks getting caught in a local minimum.
-#' Default=FALSE}
+#' Default=FALSE
 #'
-#' \item{catch_error}{If TRUE (default), wrap model in \code{tryCatch} to prevent sampling termination on model execution error.}
-#' }
-#' @references \itemize{
-#' \item{Haario, Heikki; Saksman, Eero; Tamminen, Johanna.  An adaptive 
-#'    Metropolis algorithm. Bernoulli 7 (2001), no. 2, 223--242.
-#'    http://projecteuclid.org/euclid.bj/1080222083.}
-#' }
+#' * `catch_error` -- If `TRUE` (default), wrap model in `tryCatch` to prevent sampling termination on model execution error.
+#' @references 
+#' * Haario, Heikki; Saksman, Eero; Tamminen, Johanna.  An adaptive Metropolis 
+#' algorithm. Bernoulli 7 (2001), no. 2, 223--242. 
+#' http://projecteuclid.org/euclid.bj/1080222083.
 #' @export
 invert.custom <- function(observed, invert.options,
                           quiet = FALSE,

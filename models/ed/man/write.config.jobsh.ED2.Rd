@@ -7,10 +7,10 @@
 write.config.jobsh.ED2(settings, run.id)
 }
 \arguments{
-\item{settings}{PEcAn settings list. For this function, need the following: 
-run$host$rundir, run$host$outdir, run$host$scratchdir, 
-run$host$clearscratch, model$jobtemplate, model$job.sh, run$host$job.sh, 
-run$site$lat, run$site$lon, run$inputs$met$path, run$start.date, 
+\item{settings}{PEcAn settings list. For this function, need the following:
+run$host$rundir, run$host$outdir, run$host$scratchdir,
+run$host$clearscratch, model$jobtemplate, model$job.sh, run$host$job.sh,
+run$site$lat, run$site$lon, run$inputs$met$path, run$start.date,
 run$end.date, model$binary}
 
 \item{run.id}{PEcAn run ID}

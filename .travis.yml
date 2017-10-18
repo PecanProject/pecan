@@ -4,11 +4,11 @@
 language: r
 
 # use containers
+dist: trusty
 sudo: false
 
 cache: 
   - directories:
-    - $HOME/R/Library
     - .install
     - .check
     - .test
@@ -16,7 +16,7 @@ cache:
   - packages
 
 addons:
-  postgresql: 9.4
+  postgresql: 9.6
   apt:
     packages:
       - libnetcdf-dev
@@ -25,8 +25,8 @@ addons:
       - jags
       - libudunits2-dev
       - python-dev 
-      - postgresql-9.4-postgis-2.1
-      - postgresql-9.4-postgis-2.1-scripts
+      - postgresql-9.6-postgis-2.3
+      - postgresql-9.6-postgis-2.3-scripts
       - netcdf-bin
       - bc
       - curl
@@ -34,6 +34,8 @@ addons:
       - libgmp-dev
       - libproj-dev
       - pandoc
+      - tcl
+      - tcl-dev
       # need to compile documentation
       # BROKEN MISSING FONT
       #- texinfo
@@ -74,6 +76,7 @@ before_script:
   - psql -U postgres -c "CREATE DATABASE bety OWNER bety;"
   - curl -o bety.sql http://isda.ncsa.illinois.edu/~kooper/PEcAn/data/bety.sql
   - psql -U postgres < bety.sql
+  - rm bety.sql
   - ./scripts/add.models.sh
   - chmod +x book_source/deploy.sh
   - chmod +x documentation/tutorials/deploy.sh
@@ -81,12 +84,19 @@ before_script:
 script:
   - set -e
   # - scripts/build.sh --no-git --tests --name travis
-  - echo 'Building PEcAn'
+  - echo 'Installing PEcAn packages'
   - make
-  - echo 'Testing PEcAn'
+  - echo 'Testing PEcAn packages'
   - make test
+  - make document
   - echo 'Testing Integration'
   - ./tests/integration.sh travis
+  - if [[ `git status -s` ]]; then 
+      echo "These files were changed by the build process:";
+      git status -s;
+      echo "Have you run devtools::check and commited any updated Roxygen outputs?";
+      exit 1; 
+    fi
   - set +e
 
 after_script:

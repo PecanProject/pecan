@@ -2,11 +2,10 @@
 ##' @title extract_FIA
 ##' @export
 ##' @author Istem Fer
-extract_FIA <- function(lon, lat, start_date, gridres = 0.075, dbparms){
+extract_FIA <- function(lon, lat, start_date, end_date, gridres = 0.075, dbparms){
   
-  #--------------------------------------------------------------------------------------------------#
-  # Extract FIA
-  fia.info <- list()
+
+  veg_info <- list()
   
   fia.con <- PEcAn.DB::db.open(dbparms$fia)
   on.exit(db.close(fia.con), add = T)
@@ -26,7 +25,7 @@ extract_FIA <- function(lon, lat, start_date, gridres = 0.075, dbparms){
     
   ##################
   ##              ##
-  ##     PSS      ##
+  ##    PLOT      ##
   ##              ##
   ##################
     
@@ -38,40 +37,40 @@ extract_FIA <- function(lon, lat, start_date, gridres = 0.075, dbparms){
                    " AND p.lat <= ", latmax, " AND p.measyear >= ", min.year, 
                    " AND p.measyear <= ", max.year, " GROUP BY p.cn")
     
-  pss.info <- db.query(query, con = fia.con)
-  if (nrow(pss.info) == 0) {
-    logger.severe("No plot data found on FIA.")
+  plot.info <- db.query(query, con = fia.con)
+  if (nrow(plot.info) == 0) {
+    PEcAn.logger::logger.severe("No plot data found on FIA.")
   }
     
-  for (statecd in unique(pss.info$statecd)) {
+  for (statecd in unique(plot.info$statecd)) {
     # Count up occurrences of each cycle
-    cycle.count <- table(pss.info$cycle[pss.info$statecd == statecd])
+    cycle.count <- table(plot.info$cycle[plot.info$statecd == statecd])
       
     # Find the best valid cycle, in terms of providing the most records. 
     # In case of ties, which.max will return the first one, which will be the earliest
     best.cycle <- as.numeric(names(cycle.count)[which.max(cycle.count)])
       
-    row.keep.ind <- (pss.info$statecd != statecd) | (pss.info$cycle == best.cycle)
+    row.keep.ind <- (plot.info$statecd != statecd) | (plot.info$cycle == best.cycle)
     
-    pss.info <- pss.info[row.keep.ind, ]
+    plot.info <- plot.info[row.keep.ind, ]
   }
     
   # as an extra precaution, remove any records that are explicitly remeasurments of the same plot
-  pss.info <- pss.info[.select.unique.fia.plot.records(pss.info$patch, pss.info$prev_plt_cn, pss.info$time, start_year), ]
+  plot.info <- plot.info[.select.unique.fia.plot.records(plot.info$patch, plot.info$prev_plt_cn, plot.info$time, start_year), ]
     
-  if (nrow(pss.info) == 0) {
-    logger.severe("All plot data were invalid.")
+  if (nrow(plot.info) == 0) {
+    PEcAn.logger::logger.severe("All plot data were invalid.")
   }
     
-  pss.info$trk[is.na(pss.info$trk)] <- 1
-  pss.info$age[is.na(pss.info$age)] <- 0
+  plot.info$trk[is.na(plot.info$trk)] <- 1
+  plot.info$age[is.na(plot.info$age)] <- 0
     
   # Dropping unneeded columns
-  pss.info <- pss.info[, c("time", "patch", "trk", "age")]
+  plot.info <- plot.info[, c("time", "patch", "trk", "age")]
     
-  logger.debug(paste0("Found ", nrow(pss.info), " patches for coordinates lat:", lat, " lon:", lon))
+  PEcAn.logger::logger.debug(paste0("Found ", nrow(plot.info), " patches for coordinates lat:", lat, " lon:", lon))
   
-  fia.info[[1]] <- pss.info
+  veg_info[[1]] <- plot.info
     
   ##################
   ##              ##
@@ -86,37 +85,40 @@ extract_FIA <- function(lon, lat, start_date, gridres = 0.075, dbparms){
                     " and p.lon < ", lonmax, 
                     " and p.lat >= ", latmin,
                     " and p.lat < ", latmax)
-  css.info <- db.query(query, con = fia.con)
-  names(css.info) <- tolower(names(css.info))
+  tree.info <- db.query(query, con = fia.con)
+  names(tree.info) <- tolower(names(tree.info))
     
-  if (nrow(css.info) == 0) {
-    logger.severe("No FIA data found.")
+  if (nrow(tree.info) == 0) {
+    PEcAn.logger::logger.severe("No FIA data found.")
   } else {
-    logger.debug(paste0(nrow(css.info), " trees found initially"))
+    PEcAn.logger::logger.debug(paste0(nrow(tree.info), " trees found initially"))
   }
     
   # Remove rows that don't map to any retained patch
-  css.info <- css.info[which(css.info$patch %in% pss.info$patch), ]
-  if (nrow(css.info) == 0) {
-    logger.severe("No trees map to previously selected patches.")
+  tree.info <- tree.info[which(tree.info$patch %in% plot.info$patch), ]
+  if (nrow(tree.info) == 0) {
+    PEcAn.logger::logger.severe("No trees map to previously selected patches.")
   } else {
-    logger.debug(paste0(nrow(css.info), " trees that map to previously selected patches."))
+    PEcAn.logger::logger.debug(paste0(nrow(tree.info), " trees that map to previously selected patches."))
   }
     
   ## Remove rows with no dbh, spcd, or n
-  notree <- which(is.na(css.info$dbh) & is.na(css.info$spcd) & is.na(css.info$n))
+  notree <- which(is.na(tree.info$dbh) & is.na(tree.info$spcd) & is.na(tree.info$n))
   if (length(notree) > 0) {
-    css.info <- css.info[-notree, ]
+    tree.info <- tree.info[-notree, ]
   }
-  if (nrow(css.info) == 0) {
-    logger.severe("No trees remain after removing entries with no dbh, spcd, and/or n.")
+  if (nrow(tree.info) == 0) {
+    PEcAn.logger::logger.severe("No trees remain after removing entries with no dbh, spcd, and/or n.")
   } else {
-    logger.debug(paste0(nrow(css.info), " trees remain after removing entries with no dbh, spcd, and/or n."))
+    PEcAn.logger::logger.debug(paste0(nrow(tree.info), " trees remain after removing entries with no dbh, spcd, and/or n."))
   }
     
-  fia.info[[2]] <- css.info
+  veg_info[[2]] <- tree.info
+
+  return(veg_info)
+
+ 
   
-  return(fia.info)
 } # extract_FIA
 
 
@@ -127,7 +129,7 @@ extract_FIA <- function(lon, lat, start_date, gridres = 0.075, dbparms){
 # current code. But it could be useful for future updates. 
 .select.unique.fia.plot.records <- function(plt_cn, prev_plt_cn, measyear, target.year) {
   if (length(plt_cn) != length(prev_plt_cn)) {
-    logger.error("Inputs must have same length!")
+    PEcAn.logger::logger.error("Inputs must have same length!")
     return(NULL)
   }
   

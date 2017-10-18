@@ -20,7 +20,7 @@ write_restart.ED2 <- function(outdir,
   # Get history restart file path
   histfile <- get_restartfile.ED2(mod_outdir, runid, start.time)
   if (is.null(histfile)) {
-    PEcAn.utils::logger.severe("Failed to find ED2 history restart file.")
+    PEcAn.logger::logger.severe("Failed to find ED2 history restart file.")
   }
 
   #### Backup old run files to date directory
@@ -115,7 +115,7 @@ write_restart.ED2 <- function(outdir,
       h5_write <- rhdf5::h5write.default(new.nplant_co_plant, histfile, "NPLANT")
       # Returns NULL on success...?
     } else {
-      PEcAn.utils::logger.error("Variable ", var_name,
+      PEcAn.logger::logger.error("Variable ", var_name,
                                 " not currently supported",
                                 " by write.restart.ED2")
     }

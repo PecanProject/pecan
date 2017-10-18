@@ -135,7 +135,7 @@ if (!$finished) {
 <?php } ?>
     </form>
     
-    <form id="formnext" method="POST" action="08-finished.php">
+    <form id="formnext" method="GET" action="08-finished.php">
 <?php if ($offline != "") { ?>
       <input name="offline" type="hidden" value="offline">
 <?php } ?>
@@ -155,7 +155,7 @@ if (!$finished) {
     <div class="spacer"></div>
 <?php whoami(); ?>    
 <p>
-  <a href="https://pecan.gitbooks.io/pecan-documentation/content/" target="_blank">Documentation</a>
+  <a href="https://pecanproject.github.io/pecan-documentation/master" target="_blank">Documentation</a>
   <br>
   <a href="https://gitter.im/PecanProject/pecan" target="_blank">Chat Room</a>
   <br>

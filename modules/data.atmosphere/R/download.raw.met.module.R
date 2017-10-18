@@ -7,7 +7,7 @@
   fcn <- paste0("download.", met)
   
   if (register$scale == "regional") {
-    raw.id <- convert.input(input.id = NA, 
+    raw.id <- PEcAn.utils::convert.input(input.id = NA, 
                             outfolder = outfolder, 
                             formatname = register$format$name, 
                             mimetype = register$format$mimetype,
@@ -20,11 +20,12 @@
                             lat.in = lat.in, lon.in = lon.in, 
                             model = input_met$model, 
                             scenario = input_met$scenario, 
-                            ensemble_member = input_met$ensemble_member)
+                            ensemble_member = input_met$ensemble_member,
+                            pattern = met)
     
   } else if (register$scale == "site") {
     # Site-level met
-    raw.id <- convert.input(input.id = NA,
+    raw.id <- PEcAn.utils::convert.input(input.id = NA,
                             outfolder = outfolder, 
                             formatname = register$format$name, 
                             mimetype = register$format$mimetype,
@@ -38,7 +39,7 @@
                             username = username)
     
   } else {
-    logger.severe("Unknown register$scale")
+    PEcAn.logger::logger.severe("Unknown register$scale")
   }
   
   return(raw.id)

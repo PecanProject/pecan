@@ -33,9 +33,22 @@
 write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, settings, new.state, 
                                    RENAME = TRUE, new.params, inputs) {
   
+  ### TO DO : needs to be vectorized to improve SDA speed for runs that are longer than 50 years
+  ### TO DO : distance matrix needs fixing
+  
   ### Removing negative numbers because biomass can't be negative ###
   new.state[new.state < 0] <- 0
   
+  names.keep <- names(new.state)
+  
+  new.state <- as.matrix(new.state)
+  
+  names(new.state) <- names.keep
+  
+  if(sum(new.state)>1000) {
+    prop.stop <- new.state/sum(new.state)
+    new.state <- 1000 * prop.stop
+  }
   new.state.save <- new.state
   new.state <- new.state.save[grep("pft", names(new.state.save))]
   new.state.other <- new.state.save[grep("pft", names(new.state.save), invert = TRUE)]
@@ -116,8 +129,10 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   # skip ensemble member if no file availible
   outfile <- file.path(outdir, runid, "linkages.out.Rdata")
   if (!file.exists(outfile)) {
-    print(paste0("missing outfile ens #", runid))
-    next
+    outfile <- file.path(outdir, runid, paste0(start.time, "linkages.out.Rdata"))
+    if (!file.exists(outfile)) {
+      logger.severe(paste0("missing outfile ens #", runid))
+    }
   }
   print(paste0("runid = ", runid))
   
@@ -140,10 +155,10 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     n.index <- c(n.index, rep(i, ntrees[i]))
   }
   
-  if(max(dbh) < 15){ # if all trees are small than large trees are 95th percentile otherwise trees bigger than 5 cm
+  if(max(dbh) < 20){ # if all trees are small than large trees are 95th percentile otherwise trees bigger than 5 cm
     large.trees <- which(dbh >= (max(dbh) / 1.05))
   }else{
-    large.trees <- which(dbh >= 15)
+    large.trees <- which(dbh >= 20)
   }
   
   for (s in seq_along(settings$pfts)) {
@@ -195,7 +210,15 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
       fix <- new.state[s] / mean.biomass.spp[mean.biomass.spp[, 1] == s.select, 2]
     }
     new.ntrees[s] <- as.numeric(ceiling(fix))  #new number of ind. of each species
+    if(new.ntrees[s]>100&!is.na(new.ntrees[s])){
+      new.ntrees[s] = sample(size = 1, x = 50:150)
+    } 
   }
+  
+  #making sure to stick with density dependence rules in linkages (< 198 trees per 800/m^2)
+  #someday we could think about estimating this parameter from data
+  if(sum(new.ntrees) > 198) new.ntrees <- round((new.ntrees / sum(new.ntrees)) * runif(1,160,195))
+  
   print(paste0("new.ntrees =", new.ntrees))
   
   new.n.index <- c(rep(1, new.ntrees[1]))
@@ -203,9 +226,9 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     new.n.index <- c(new.n.index, rep(i, new.ntrees[i]))
   }
   
-  dbh.temp <- numeric(15000)
-  iage.temp <- numeric(15000)
-  nogro.temp <- numeric(15000)
+  dbh.temp <- numeric(200)
+  iage.temp <- numeric(200)
+  nogro.temp <- numeric(200)
   
   # sample from individuals to construct new states
   for (s in seq_len(nspec)) {
@@ -279,7 +302,9 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   
   dbh <- dbh.temp
   iage <- iage.temp
-  nogro <- nogro.temp  # numeric(15000)#hack
+  nogro <- nogro.temp  # numeric(200)#hack
+  
+  nogro[nogro < (-2)] <- 1
   
   ntrees <- new.ntrees
   
