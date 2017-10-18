@@ -158,7 +158,6 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
     
     ##datetime_index <- which(format$vars$bety_name == "datetime")
     datetime_index <- format$time.row
-    alldatetime <- 0
     if (length(datetime_index) == 0) {
       bety_year <- format$vars$bety_name == 'year'
       bety_day <- format$vars$bety_name == 'day'
@@ -175,7 +174,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
         alldatetime <- as.POSIXct(yyddhhmm)
       } else {
         ## Does not match any of the known date formats, add new ones here!
-        PEcAn.logger::logger.severe("datetime column is not specified in format")
+        PEcAn.logger::logger.error("datetime column is not specified in format")
       }
     } else {
       datetime_raw <- alldat[, format$vars$input_name[datetime_index]]
@@ -498,7 +497,16 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
         }, `mm h-1` = {
           rain <- udunits2::ud.convert(rain / timestep, "h", "s")
           "kg m-2 s-1"
-        })
+        },
+        'kg m-2 (30 minute)-1' = {
+          rain <- rain / timestep
+          'kg m-2 s-1'
+        },
+        'kg m-2 hr-1' = {
+          rain <- rain / timestep
+          'kg m-2 s-1'
+        }       
+        )
         ncdf4::ncvar_put(nc, varid = precip.var, 
                   vals = met.conv(rain, rain.units, "kg m-2 s-1", "kg m-2 s-1"))
       }
