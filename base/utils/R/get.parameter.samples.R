@@ -11,7 +11,6 @@
 get.parameter.samples <- function(settings, 
                                   posterior.files = rep(NA, length(settings$pfts)), 
                                   ens.sample.method = "uniform") {
-  library(PEcAn.priors)
   pfts      <- settings$pfts
   num.pfts  <- length(settings$pfts)
   pft.names <- list()
@@ -95,7 +94,7 @@ get.parameter.samples <- function(settings,
       if (prior %in% ma.traits) {
         samples <- as.matrix(trait.mcmc[[prior]][, "beta.o"])
       } else {
-        samples <- get.sample(prior.distns[prior, ], samples.num)
+        samples <- PEcAn.priors::get.sample(prior.distns[prior, ], samples.num)
       }
       trait.samples[[pft.name]][[prior]] <- samples
     }
