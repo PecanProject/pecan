@@ -177,7 +177,6 @@ observeEvent({
 observeEvent(input$calc_bm,{
   req(input$all_input_id)
   req(input$all_site_id)
-  req(bm)
   bm$calc_bm_message <- sprintf("Setting up benchmarks")
   output$reportvars <- renderText(paste(bm$bm_vars, seq_along(bm$bm_vars)))
   output$reportmetrics <- renderText(paste(bm$bm_metrics))
@@ -225,7 +224,7 @@ observeEvent(input$calc_bm,{
   basePath <- dplyr::tbl(bety, 'workflows') %>% dplyr::filter(id %in% bm$ens_wf$workflow_id) %>% dplyr::pull(folder)
   
   settings_path <- file.path(basePath, "pecan.BENCH.xml")
-  saveXML(PEcAn.utils::listToXml(bm$bm_settings,"pecan"), file = settings_path)
+  saveXML(PEcAn.settings::listToXml(bm$bm_settings,"pecan"), file = settings_path)
   bm$settings_path <- settings_path
   
   bm$calc_bm_message <- sprintf("Benchmarking settings have been saved here: %s", bm$settings_path)
