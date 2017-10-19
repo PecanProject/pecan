@@ -97,6 +97,8 @@ server <- shinyServer(function(input, output, session) {
   observe({
     req(input$all_site_id)
     inputs_df <- getInputs(bety,c(input$all_site_id))
+    formats_sub <- dplyr::tbl(bety, 'formats_variables') %>% dplyr::filter(format_id %in% inputs_df$format_id) %>% dplyr::pull(format_id) %>% unique()
+    inputs_df <- inputs_df %>% dplyr::filter(format_id %in% formats_sub) # Only data sets with formats with associated variables will show up
     updateSelectizeInput(session, "all_input_id", choices=inputs_df$input_selection_list)
   })
   # Renders ggplotly 
