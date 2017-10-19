@@ -563,7 +563,9 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id, inputs 
   ## Edit INITIAL_CONDITIONS.NML soil carbon LAI
   if(useTRIFFID){
     
-    if (!is.null(IC)){
+    if (is.null(IC)){
+      
+    PEcAn.logger::logger.warning("No INitial Conditions, usinf defaults")
     ic.file <- file.path(local.rundir, "initial_conditions.nml")
     ic.text <- readLines(con = ic.file, n = -1)
 
@@ -600,17 +602,11 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id, inputs 
         IC.nc <- ncdf4::nc_open(IC.path) 
         #Get LAI value
         lai <- try(ncdf4::ncvar_get(IC.nc,"LAI"),silent = TRUE)
-        #Read in default initial conditions file
-        ic.file <- file.path(local.rundir, "initial_conditions.nml")
+        #Read in default initial conditions dat file
         ic.dat  <- file.path(local.rundir, "initial_conditions.dat")
-        ic.text <- readLines(con = ic.dat, n = -1)
+        ic.dat.text <- readLines(con = ic.dat, n = -1)
         #For now if number of LAI values does not match number of pfts set them set them across
         if (npfts!= length(lai)) {
-          template.dir <- file.path(system.file(package = "PEcAn.JULES"), paste0("template_nml_4.2"))
-          ic.file <- file.path(template.dir, "initial_conditions.nml")
-          ic.text <- readLines(con = ic.file, n = -1)
-          ic.dat  <- file.path(template.dir, "initial_conditions.dat")
-          ic.dat.text <- readLines(con = ic.dat, n = -1)
           ic.dat.text <- gsub("@LAI_DAT@", paste(rep(lai,npfts), collapse = " "), ic.dat.text)
           writeLines(ic.dat.text, con = ic.dat)
         }
