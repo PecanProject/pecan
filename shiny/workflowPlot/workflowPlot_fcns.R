@@ -76,7 +76,7 @@ getInputs <- function(bety,site_Id){
     dplyr::mutate(input_selection_list = paste(inputs_df$container_id, inputs_df$name),
                   filePath = paste0(inputs_df$file_path,'/', inputs_df$file_name)) %>%
     dplyr::select(input_id = container_id, filePath, input_selection_list, 
-                  start_date, end_date, site_id,name, machine_id, file_name, file_path)
+                  start_date, end_date, site_id,name, machine_id, file_name, file_path, format_id)
   return(inputs_df)
 }
 
