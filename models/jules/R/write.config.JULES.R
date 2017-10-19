@@ -565,7 +565,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id, inputs 
     
     if (is.null(IC)){
       
-    PEcAn.logger::logger.warning("No INitial Conditions, usinf defaults")
+    PEcAn.logger::logger.warning("No Initial Conditions, using defaults")
     ic.file <- file.path(local.rundir, "initial_conditions.nml")
     ic.text <- readLines(con = ic.file, n = -1)
 
@@ -607,7 +607,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id, inputs 
         ic.dat.text <- readLines(con = ic.dat, n = -1)
         #For now if number of LAI values does not match number of pfts set them set them across
         if (npfts!= length(lai)) {
-          ic.dat.text <- gsub("@LAI_DAT@", paste(rep(lai,npfts), collapse = " "), ic.dat.text)
+          ic.dat.text <- gsub("@LAI_DAT@", paste0(rep(lai,npfts), collapse = " "), ic.dat.text)
           writeLines(ic.dat.text, con = ic.dat)
         }
         
