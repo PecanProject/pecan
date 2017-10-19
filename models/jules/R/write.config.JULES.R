@@ -601,7 +601,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id, inputs 
         # Read in netcdf file
         IC.nc <- ncdf4::nc_open(IC.path) 
         #Get LAI value
-        lai <- try(ncdf4::ncvar_get(IC.nc,"LAI"),silent = TRUE)
+        lai <- try(ncdf4::ncvar_get(IC.nc,"LAI"))
         #Read in default initial conditions dat file
         ic.dat  <- file.path(local.rundir, "initial_conditions.dat")
         ic.dat.text <- readLines(con = ic.dat, n = -1)
