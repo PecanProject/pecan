@@ -1,0 +1,46 @@
+---
+title: "Cohort2pool_function"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+cohort2pool<-(veg_File, allom_param, outfile) {
+  #1.Read in veg file - read into a vector
+  # need function called ncfile <-nc_open(veg_File)
+  # dbh <- ncvar_get(ncfile, "dbh") #will grab values and turn it into a vector
+  # 2. Read in allom params
+  #a,b
+  # 3. Calculte individual biomass for each tree - a + blog(DBH)
+  #create for loop, loop over DBH
+  # write the allometric equation
+  # 4. Sum to pool for site (like a biomass density)
+  # length of vector DBH = individuals
+  # 5.  Write out result : writeoutin.std.run
+       use pool_ic_list2cdf(
+       #will write out netCDF for me, Tony emaild github
+       )
+  # result <= pool_ic_list2netcdf()
+  #need to be sent veg file, (netCDF), 
+  return(result)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
