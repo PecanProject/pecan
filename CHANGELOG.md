@@ -9,14 +9,19 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+
 - `PEcAn.utils` now lazy-loads data for faster execution of functions that consult lookup tables, especially `to_ncvar`.
 
 ### Added
 
+- New Rmd template for basic PEcAn workflow in PEcAn.all package
+
 ### Removed
+
 - Removed `PEcAn.utils::model2netcdf`, which has been deprecated since PEcAn 1.3.7. Use `model2netcdf.<YOURMODEL>` in the appropriate model package instead.
 
 ### Changed
+
 - Major namespace cleanup in the `PEcAn.utils` package. It now loads more quietly and is much less likely to mask functions in a package you loaded earlier.
 - Moved many functions from `PEcAn.utils` into other PEcAn packages. The `PEcAn.utils` versions still work with a deprecation warning, but will be removed in a future release.
 	- `listToXml` and `SafeList` moved to `PEcAn.settings`
@@ -25,6 +30,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [1.5.1] - 2017-10-05
 
 ### Fixes
+
 - Fixed hyperparameter draws in PDA
 - Show workflowid in the URL when run is finshed and user clicks results (#1659)
 - `PEcAn.BIOCRO` now uses PEcAn-standard variable names. As a result, two output variables have been renamed but keep their existing units and definitions:
@@ -48,6 +54,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - PRELES model run script bug fix 
 
 ### Added
+
 - Functionality to pass hyperparameters via settings
 - Created new (and very rudimentary) web interface for downloading data from the dataone federation into the PEcAn database. More updates to come.
 - Expanded initial conditions workflow for pool-based models, including PEcAn.data.land::prepare_pools to calculate pools from IC file (to be coupled with write.configs)
@@ -63,6 +70,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - A Pre-release database clean up script that deletes unused/unassosiated entries from the database
 
 ### Changed
+
 - Clean up directory structure:
     * Move `base` packages (`utils`, `settings`, `db`, `visualizaton`) to a `base` directory, for consistency with `modules` and `models`
     * Move `logger.*` functions out of the `PEcAn.utils` package and into the `PEcAn.logger` package
@@ -74,7 +82,9 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 
 ## [1.5.0] - 2017-07-13
+
 ### Added
+
 - Added cron job and script for the sync of the database.
 - Added PEcAn.utils::download.file() to allow for use of alternative FTP programs
 - Updated downloadAmeriflux and downloadNARR to make use of PEcAn.utils::download.file()
@@ -87,12 +97,14 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Added initial conditions file io functions for pool-based models in data.land
 
 ### Changed
+
 - upscale_met now accepts ~any valid CF file (not just full years), retains correct time units, and respects the previously ignored `overwrite` parameter
 - Better date handling in BioCro functions
 
 ## [1.4.10.1] - 2017-04-18
 
 ### Changed
+
 - Bugfix in Fluxnet2015
 - Update Git workflow in Documentation
 - download.CRUNCEP now uses CF-compliant time units (days since start of year instead of "secs")
@@ -100,30 +112,39 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 
 ## [1.4.10] - 2017-03-27
+
 Documentation
 
 ### Added
+
 - Source Rmarkdown and deploy scripts for PEcAn documentation
 - Autocorrelation correction in PDA and scaling factor in emulator
 
 ### Changed
+
 - now dumping/loading experiments, cultivars_pfts, current_posteriors, experiments_sites experiments_treatments, trait_covariate_associations [BETY #403](https://github.com/PecanProject/bety/issues/403) [BETY #491](https://github.com/PecanProject/bety/issues/491)
 
 ### Removed
+
 - Ameriflux is no longer selectable from the web gui [#1291](https://github.com/PecanProject/pecan/issues/1291)
 
 ## [1.4.9] - 2016-12-10
+
 Benchmarking, code cleanup
 
 ### Added
+
 - benchmarking code
 
 ### Changed
+
 - no more build.sh, using Makefile
 - Lots of code cleanup thanks to @bpbond
 
 ## [1.4.8] - 2016-08-11
+
 Camp PEON: Assimilation, multi-site, soil params, Maespa, LPJ-GUESS, improvements to web & tutorials
 
 ## [1.4.7] - 2016-07-13
+
 CMIP5, Shiny, FLUXNET2015, Global Sensitivity
