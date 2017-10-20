@@ -23,7 +23,6 @@ read_settings_BRR <- function(settings){
                               host     = settings$database$bety$host,
                               user     = settings$database$bety$user,
                               password = settings$database$bety$password)
-  
   BRR <- tbl(bety,"reference_runs") %>% 
     filter(id == settings$benchmarking$reference_run_id) %>% 
     collect()
@@ -89,7 +88,7 @@ add_workflow_info <- function(settings){
 }
 
 ##------------------------------------------------------------------------------------------------##
-##' @name add_workflow_info
+##' @name bm_settings2pecan_settings
 ##' @title Move benchmarking settings back in to original pecan settings object
 ##' @param settings settings or multisettings object
 ##' @export 
