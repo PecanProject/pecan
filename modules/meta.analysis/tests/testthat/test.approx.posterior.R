@@ -9,7 +9,7 @@
 context("test approx.posterior function")
 
 data("trait.mcmc", package = "PEcAn.utils")
-load("/data/prior.distns.RData")
+load("data/prior.distns.RData")
 
 test_that("test data are as expected", {
   expect_equal(names(trait.mcmc),
