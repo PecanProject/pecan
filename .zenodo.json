@@ -1,0 +1,111 @@
+{
+     "creators": [
+        {
+            "affiliation": "University of Illinois", 
+            "name": "David LeBauer",
+            "orcid": "0000-0001-7228-053X"
+        }, 
+        {
+            "affiliation": "Boston University", 
+            "name": "Michael Dietze"
+        }, 
+        {
+            "affiliation": "NCSA", 
+            "name": "Rob Kooper"
+        }, 
+        {
+            "affiliation": "Boston University", 
+            "name": "Alexey Shiklomanov"
+        }, 
+        {
+            "name": "Betsy Cowdery"
+        }, 
+        {
+            "name": "Istem Fer"
+        }, 
+        {
+            "affiliation": "Boston Univeristy", 
+            "name": "Anthony Gardella"
+        }, 
+        {
+            "affiliation": "PNNL/UMD", 
+            "name": "Ben Bond-Lamberty"
+        }, 
+        {
+            "affiliation": "Brookhaven National Laboratory", 
+            "name": "Shawn P. Serbin"
+        }, 
+        {
+            "affiliation": "University of Notre Dame", 
+            "name": "Ann Raiho"
+        }, 
+        {
+            "name": "Anne Thomas"
+        }, 
+        {
+            "affiliation": "Pennsylvania State University", 
+            "name": "Chris Black"
+        }, 
+        {
+            "affiliation": "University of Wisconsin-Madison", 
+            "name": "James Simkins"
+        }, 
+        {
+            "affiliation": "University of Wisconsin-Madison", 
+            "name": "Ankur Desai"
+        }, 
+        {
+            "name": "Joshua Mantooth"
+        }, 
+        {
+            "name": "Aman Kumar"
+        }, 
+        {
+            "name": "Liam Burke"
+        }, 
+        {
+            "affiliation": "Boston University", 
+            "name": "Afshin Pourmokhtarian"
+        }, 
+        {
+            "affiliation": "Morton Arboretum", 
+            "name": "Christy Rollinson"
+        }, 
+        {
+            "name": "Shubham Agarwal"
+        }, 
+        {
+            "name": "Brady Hardiman"
+        }, 
+        {
+            "affiliation": "University of New South Wales", 
+            "name": "Martin De Kauwe"
+        }, 
+        {
+            "name": "Eugene"
+        }, 
+        {
+            "name": "Tess McCabe"
+        }, 
+        {
+            "name": "kragosta"
+        }, 
+        {
+            "name": "TonyCohen"
+        }, 
+        {
+            "name": "zhangwenx"
+        }, 
+        {
+            "name": "Viskari"
+        }, 
+        {
+            "name": "Yan Zhao"
+        }, 
+        {
+           "affiliation": "University of Illinois at Urbana-Champaign",
+            "name": "Jing Xia"
+        }
+    ], 
+    "access_right": "open", 
+}
