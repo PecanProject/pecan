@@ -1,7 +1,7 @@
 {
      "creators": [
         {
-            "affiliation": "University of Illinois", 
+            "affiliation": "University of Illinois at Urbana-Champaign", 
             "name": "David LeBauer",
             "orcid": "0000-0001-7228-053X"
         }, 
@@ -35,8 +35,9 @@
             "name": "Anthony Gardella"
         }, 
         {
-            "affiliation": "PNNL/UMD", 
-            "name": "Ben Bond-Lamberty"
+            "affiliation": "Pacific Northwest National Laboratory / University of Maryland", 
+            "name": "Ben Bond-Lamberty",
+            "orcid": "0000-0001-9525-4633"
         }, 
         {
             "affiliation": "Brookhaven National Laboratory", 
