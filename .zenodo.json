@@ -49,6 +49,7 @@
             "name": "Ann Raiho"
         }, 
         {
+            "affiliation": "Brigham Young University",
             "name": "Anne Thomas"
         }, 
         {
@@ -66,12 +67,14 @@
             "orcid": "0000-0002-5226-6041"
         }, 
         {
+            "affiliation": "Worchester Academy",
             "name": "Joshua Mantooth"
         }, 
         {
             "name": "Aman Kumar"
         }, 
         {
+            "affiliation": "Boston University", 
             "name": "Liam Burke"
         }, 
         {
@@ -86,6 +89,7 @@
             "name": "Shubham Agarwal"
         }, 
         {
+            "affiliation": "Purdue University",
             "name": "Brady Hardiman"
         }, 
         {
@@ -101,7 +105,8 @@
             "name": "Tess McCabe"
         }, 
         {
-            "name": "kragosta"
+            "affiliation": "Boston University", 
+            "name": "Katie Ragosta"
         }, 
         {
             "name": "Tony Cohen"
@@ -110,7 +115,7 @@
             "name": "zhangwenx"
         }, 
         {
-            "affiliation": "Brookhaven National Laboratory", 
+            "affiliation": "Finnish Meteorological Institute", 
             "name": "Tony Viskari",
             "oricid": "0000-0002-3357-1374"
         }, 
