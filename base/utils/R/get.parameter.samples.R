@@ -68,8 +68,10 @@ get.parameter.samples <- function(settings,
     ### When no ma for a trait, sample from prior
     ### Trim all chains to shortest mcmc chain, else 20000 samples
     priors <- rownames(prior.distns)
+    
     if (exists("trait.mcmc")) {
       ma.traits <- names(trait.mcmc)
+
       samples.num <- min(sapply(trait.mcmc, function(x) nrow(as.matrix(x))))
       
       ## report which traits use MA results, which use priors
