@@ -122,7 +122,12 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # The settings$pfts$pft$name variable will be something like this: "CMT04-Salix"
   cmtname <- unlist(strsplit(settings$pfts$pft$name, "-", fixed=TRUE))[1]
   cmtnum <- as.numeric(unlist(strsplit(cmtname, "CMT"))[2]) #
-
+  
+  ## below for debugging
+  PEcAn.logger::logger.info(cmtname)
+  PEcAn.logger::logger.info(cmtnum)
+  ##
+  
   # Now we have to read the appropriate values out of the trait_df
   # and get those values written into the parameter file(s) that dvmdostem will
   # need when running. Because the dvmdostem parameters have a sort of
@@ -159,7 +164,9 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
           stdout=envcanopy_jsonfile, wait=TRUE)
 
   # Read the json file into memory
-  library("rjson")
+  library("rjson")  #!! probably should put this dependency in the package DESCRIPTION
+  #!! also move this to import in the header. e.g. @importFrom rjson fromJSON
+  #!! then we can leave below as-is
   dimveg_jsondata <- fromJSON(paste(readLines(dimveg_jsonfile), collapse=""))
   envcanopy_jsondata <- fromJSON(paste(readLines(envcanopy_jsonfile), collapse=""))
 
@@ -179,6 +186,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
           # name to make sure we are updating the correct spot in the json
           # data structure.
           pft_common_name <- unlist(strsplit(settings$pfts$pft$name, "-"))[2]
+          PEcAn.logger::logger.info(paste0("PFT Name: ",cmtname))
           if (identical(jd[[i]]$name, pft_common_name)) {
             if (curr_trait == "SLA") {
               jd[[i]]$sla = traits[[curr_trait]]
