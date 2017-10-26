@@ -14,8 +14,6 @@ observeEvent(input$load,{
   if(nrow(ids_DF) == 1){
     
     # Check to see if the run has been saved as a reference run 
-    # (note this is straight from the beginning of create.BRR and could 
-    # potentially be turned in to its own mini function)
     ens_id <- dplyr::tbl(bety, 'runs') %>% dplyr::filter(id == ids_DF$runID) %>% dplyr::pull(ensemble_id)
     ens_wf <- dplyr::tbl(bety, 'ensembles') %>% dplyr::filter(id == ens_id) %>%
       dplyr::rename(ensemble_id = id) %>%
@@ -54,7 +52,7 @@ observeEvent(input$load,{
   bm$brr_message <- brr_message
   bm$button_BRR <- button
   bm$ens_wf <- ens_wf
-  
+  bm$ready <- 0
 })
 
 # When button to register run is clicked, create.BRR is run and the button is removed.
@@ -62,7 +60,7 @@ observeEvent(input$create_bm,{
   bm$BRR <- PEcAn.benchmark::create_BRR(bm$ens_wf, con = bety$con)
   bm$brr_message <- sprintf("This run has been successfully registered as a reference run (id = %.0f)", bm$BRR$reference_run_id)
   bm$button_BRR <- FALSE
-  bm$ready <- !is.null(bm$BRR)
+  bm$ready <- bm$ready + 1
 })
 
 observeEvent({
@@ -98,21 +96,33 @@ observeEvent(input$load_data,{
     by = "pecan_name")
   
   #This will be a longer set of conditions
-  bm$ready <- !is.null(bm$BRR)
+  bm$ready <- bm$ready + 1
 })
 
 observeEvent(bm$ready,{
-  bm$results_message <- "No benchmarks have been calculated yet"
-  files <- dir(bm$ens_wf$folder, full.names = TRUE)
-  bench.out <- grep("benchmarking.output.Rdata", files)
-  bm$load_results <- 0
-  if(length(bench.out) == 1){
-    load(files[bench.out])
-    if(length(grep(bm$input$input_id, names(results))) == 1){
-      bm$load_results <- bm$load_results + 1
-      bm$results_message <- "Benchmarks have already been calculated for this combination of model output and external data. <br/>
+  if(bm$ready > 0){
+    bm$load_results <- 0
+    bm$results_message <- "No benchmarks have been calculated yet"
+    bm$blarg_message   <- "No benchmarks have been calculated yet"
+    
+    
+    if(exists("output$results_table")) output$results_table<- NULL
+    if(exists("output$bm_plots")) output$bm_plots <- NULL
+    if(exists("output$bmPlot")) output$bmPlot <- NULL
+    
+    files <- dir(bm$ens_wf$folder, full.names = TRUE)
+    bench.out <- grep("benchmarking.output.Rdata", files)
+    if(length(bench.out) == 1){
+      load(files[bench.out])
+      if(length(grep(bm$input$input_id, names(results))) == 1){
+        bm$load_results <- bm$load_results + 1
+        bm$results_message <- "Benchmarks have already been calculated for this combination of model output and external data. <br/>
       To see the results, look at the Benchmarking Scores and Benchmarking Plots tabs. <br/>
       To calculate more benchmarks, select variables and metrics below. <br/>"
+      }
+    }else{
+      bm$load_results <- 0
+      bm$results_message <- "No benchmarks have been calculated yet"
     }
   }
 })
@@ -127,7 +137,7 @@ observeEvent({
   plot_ind <- grep("_plot",bm$metrics$name)
   
   output$bm_inputs <- renderUI({
-    if(bm$ready){
+    if(bm$ready > 0){
       list(
         column(4, wellPanel(
           checkboxGroupInput("vars", label = "Variables",
@@ -153,7 +163,7 @@ observeEvent({
       )
     }
   })
-  if(bm$ready){bm$calc_bm_message <- sprintf("Please select at least one variable and one metric")}
+  if(bm$ready > 0){bm$calc_bm_message <- sprintf("Please select at least one variable and one metric")}
 })
 
 observeEvent({
@@ -190,7 +200,7 @@ observeEvent(input$calc_bm,{
   config.list <- PEcAn.utils::read_web_config("../../web/config.php")
   output$config_list_table <- renderTable(as.data.frame.list(config.list))
   
-  bm$bm_settings$info <- list(userid = 1000000003) # This is my user id. I have no idea how to get people to log in to their accounts through the web interface and right now the benchmarking code has sections dependent on user id - I will fix this. 
+  # bm$bm_settings$info <- list(userid = 1000000003) # This is my user id. I have no idea how to get people to log in to their accounts through the web interface and right now the benchmarking code has sections dependent on user id - I will fix this. 
   bm$bm_settings$database <- list(
     bety = list(
       user = config.list$db_bety_username,
@@ -233,24 +243,19 @@ observeEvent(input$calc_bm,{
 
   # Run the benchmarking functions
   settings <- PEcAn.settings::read.settings(bm$settings_path)
-  bm.settings <- define_benchmark(settings,bety)
-  
+  bm.settings <- PEcAn.benchmark::define_benchmark(settings,bety)
 
-  # Calling the function add_workflow_settings breaks the code
-  # I can't figure out why the function isn't working so for now I'm pasting in
-  # the contents of that function. (Which seems to work...)
+  settings <- PEcAn.benchmark::add_workflow_info(settings)
+  # if(!as.logical(settings$benchmarking$new_run)){
+  #   settings$workflow$id <- tbl(bety,"ensembles") %>%
+  #     filter(id == settings$benchmarking$ensemble_id) %>%
+  #     dplyr::select(workflow_id) %>% collect %>% .[[1]]
+  #   wf <- tbl(bety, 'workflows') %>% filter(id == settings$workflow$id) %>% collect()
+  #   settings$rundir <- file.path(wf$folder, "run")
+  #   settings$modeloutdir <- file.path(wf$folder, "out")
+  #   settings$outdir <- wf$folder
+  # }
 
-  # settings <- add_workflow_info(settings)
-  if(!as.logical(settings$benchmarking$new_run)){
-    settings$workflow$id <- tbl(bety,"ensembles") %>%
-      filter(id == settings$benchmarking$ensemble_id) %>%
-      dplyr::select(workflow_id) %>% collect %>% .[[1]]
-    wf <- tbl(bety, 'workflows') %>% filter(id == settings$workflow$id) %>% collect()
-    settings$rundir <- file.path(wf$folder, "run")
-    settings$modeloutdir <- file.path(wf$folder, "out")
-    settings$outdir <- wf$folder
-  }
-  
   settings$benchmarking <- PEcAn.benchmark::bm_settings2pecan_settings(bm.settings)
   settings <- PEcAn.benchmark::read_settings_BRR(settings)
   settings <- PEcAn.settings::prepare.settings(settings)
