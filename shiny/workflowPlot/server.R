@@ -18,7 +18,7 @@ options(shiny.maxRequestSize=100*1024^2)
 # Define server logic
 server <- shinyServer(function(input, output, session) {
   bety <- betyConnect()
-  source("workflowPlot_fcns.R", local = TRUE) # Load all functions that need to be dfined for this script
+  source("workflowPlot_fcns.R", local = TRUE) # Load all functions that need to be defined for this script
   
   
   # Update all workflow ids
@@ -186,6 +186,8 @@ server <- shinyServer(function(input, output, session) {
     # add_icon()
   })
   
+  
+  # Source the server code for all the benchmarking tabs in the app
   source("bm.R", local = TRUE)
   
 }) # Shiny server closes here  
