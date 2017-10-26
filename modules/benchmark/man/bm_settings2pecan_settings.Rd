@@ -7,7 +7,7 @@
 bm_settings2pecan_settings(bm.settings)
 }
 \arguments{
-\item{settings}{settings or multisettings object}
+\item{bm.settings}{settings or multisettings object}
 }
 \author{
 Betsy Cowdery

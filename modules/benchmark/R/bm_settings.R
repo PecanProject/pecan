@@ -68,6 +68,7 @@ clean_settings_BRR <- function(inputfile){
 ##' @name add_workflow_info
 ##' @title Add workflow specific info to settings list for benchmarking
 ##' @param settings settings or multisettings object
+##' @param bety connection to the database
 ##' @export 
 ##' @author Betsy Cowdery 
 
@@ -90,7 +91,7 @@ add_workflow_info <- function(settings, bety){
 ##------------------------------------------------------------------------------------------------##
 ##' @name bm_settings2pecan_settings
 ##' @title Move benchmarking settings back in to original pecan settings object
-##' @param settings settings or multisettings object
+##' @param bm.settings settings or multisettings object
 ##' @export 
 ##' @author Betsy Cowdery 
 
