@@ -4,10 +4,12 @@
 \alias{add_workflow_info}
 \title{Add workflow specific info to settings list for benchmarking}
 \usage{
-add_workflow_info(settings)
+add_workflow_info(settings, bety)
 }
 \arguments{
 \item{settings}{settings or multisettings object}
+
+\item{bety}{connection to the database}
 }
 \author{
 Betsy Cowdery
