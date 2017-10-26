@@ -71,7 +71,7 @@ clean_settings_BRR <- function(inputfile){
 ##' @export 
 ##' @author Betsy Cowdery 
 
-add_workflow_info <- function(settings){
+add_workflow_info <- function(settings, bety){
   if (is.MultiSettings(settings)) {
     return(papply(settings, add_workflow_id))
   }
