@@ -189,25 +189,25 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
           PEcAn.logger::logger.info(paste0("PFT Name: ",cmtname))
           if (identical(jd[[i]]$name, pft_common_name)) {
             if (curr_trait == "SLA") {
-              jd[[i]]$sla = traits[[curr_trait]]
+              dimveg_jsondata[[i]]$sla = traits[[curr_trait]]
             }
             if (curr_trait == "frprod_perc_10") {
-              jd[[i]]$`frprod[0]` = traits[[curr_trait]]
+              dimveg_jsondata[[i]]$`frprod[0]` = traits[[curr_trait]]
             }
             if (curr_trait == "frprod_perc_20") {
-              jd[[i]]$`frprod[1]` = traits[[curr_trait]]
+              dimveg_jsondata[[i]]$`frprod[1]` = traits[[curr_trait]]
             }
             if (curr_trait == "extinction_coefficient_diffuse") {
-              jd[[i]]$er = traits[[curr_trait]]
+              envcanopy_jsondata[[i]]$er = traits[[curr_trait]]
             }
             if (curr_trait == "SW_albedo") {
-              jd[[i]]$albvisnir = traits[[curr_trait]]
+              envcanopy_jsondata[[i]]$albvisnir = traits[[curr_trait]]
             }
             if (curr_trait == "cuticular_cond") {
-              jd[[i]]$gl_c = traits[[curr_trait]]
+              envcanopy_jsondata[[i]]$gl_c = traits[[curr_trait]]
             }
             if (curr_trait == "gcmax") {
-              jd[[i]]$glmax = traits[[curr_trait]]
+              envcanopy_jsondata[[i]]$glmax = traits[[curr_trait]]
             }
           }
         }
