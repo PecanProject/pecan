@@ -59,6 +59,7 @@ convert.samples.dvmdostem <- function(trait_values) {
 ##' @export
 ##' @author Tobey Carman, Shawn Serbin
 ##' @importFrom ncdf4 ncvar_put ncvar_get
+##' @importFrom rjson fromJSON toJSON
 ##'
 write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.id) {
 
@@ -161,9 +162,6 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
           stdout=envcanopy_jsonfile, wait=TRUE)
 
   # Read the json file into memory
-  library("rjson")  #!! probably should put this dependency in the package DESCRIPTION
-  #!! also move this to import in the header. e.g. @importFrom rjson fromJSON
-  #!! then we can leave below as-is
   dimveg_jsondata <- fromJSON(paste(readLines(dimveg_jsonfile), collapse=""))
   envcanopy_jsondata <- fromJSON(paste(readLines(envcanopy_jsonfile), collapse=""))
 
