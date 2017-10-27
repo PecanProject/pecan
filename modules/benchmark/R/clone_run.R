@@ -41,17 +41,15 @@ clone_run <- function(settings, model, con){
   
   #------ Update inputs ------#
   
+  tags_std <- PEcAn.benchmark::clone_run_inputs
+  
+  
   for(tag in names(settings.old$run$inputs)){
     
-    # Check that the given input is required for the new model
+    # Check that the given input can be used in the new model
     if(tag %in% inputs_all$tag){
       
       # Check lookup table to see what format input needs to be in 
-      # For example for met we need the CF standard 
-      # For IC it depends on pool vs cohort - may need special cases
-      tags_std <- read.csv(
-        system.file("clone_run_inputs_lookup.csv", package = "PEcAn.benchmark"), 
-        stringsAsFactors = FALSE) 
       new_format <- c()
       
       # Check if old model input is in the correct format

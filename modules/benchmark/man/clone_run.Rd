@@ -9,7 +9,7 @@ clone_run(settings, model, con)
 \arguments{
 \item{settings}{settings or multisettings object}
 
-\item{model}{model name}
+\item{model}{model id}
 
 \item{con}{database connection}
 }
