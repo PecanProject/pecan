@@ -28,7 +28,13 @@ else
   fi
 
   echo "Running the modle output conversion functions to get thing into PEcAn shape..."
-  echo "require (PEcAn.dvmdostem); library(PEcAn.dvmdostem); model2netcdf.dvmdostem('@OUTDIR@')" | R --vanilla
+  echo $R_LIBS_USER
+  #echo "require (PEcAn.dvmdostem); library(PEcAn.dvmdostem); model2netcdf.dvmdostem('@OUTDIR@')" | R --vanilla
+  #echo "require (PEcAn.dvmdostem); model2netcdf.dvmdostem('@OUTDIR@')" | R --vanilla
+  echo "require (PEcAn.dvmdostem)
+	.libPaths()
+        model2netcdf.dvmdostem('@OUTDIR@')
+        " | R --vanilla
   echo "Done converting ouputs to PEcAn format."
 
   # Other params that could be passed to model2netcdf:

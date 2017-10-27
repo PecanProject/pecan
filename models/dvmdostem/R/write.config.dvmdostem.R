@@ -314,12 +314,42 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   jobsh <- gsub("@BINARY@", appbinary, jobsh)
 
   ## model specific options from the pecan.xml file
-  jobsh <- gsub("@PRERUN@", settings$model$dvmdostem_prerun, jobsh)
-  jobsh <- gsub("@EQUILIBRIUM@", settings$model$dvmdostem_equil, jobsh)
-  jobsh <- gsub("@SPINUP@", settings$model$dvmdostem_spinup, jobsh)
-  jobsh <- gsub("@TRANSIENT@", settings$model$dvmdostem_transient, jobsh)
-  jobsh <- gsub("@SCENERIO@", settings$model$dvmdostem_scenerio, jobsh)
-  jobsh <- gsub("@LOGLEVEL@", settings$model$dvmdostem_loglevel, jobsh)
+  # setup defaults if missing - may not want to do this long term
+  if (!exists("settings$model$dvmdostem_prerun")){
+    jobsh <- gsub("@PRERUN@", 100, jobsh)
+  } else {
+    jobsh <- gsub("@PRERUN@", settings$model$dvmdostem_prerun, jobsh)
+  }
+  
+  if (!exists("settings$model$dvmdostem_equil")){
+    jobsh <- gsub("@EQUILIBRIUM@", 1000, jobsh)
+  } else {
+    jobsh <- gsub("@EQUILIBRIUM@", settings$model$dvmdostem_equil, jobsh)
+  }
+
+  if (!exists("settings$model$dvmdostem_spinup")){
+    jobsh <- gsub("@SPINUP@", 450, jobsh)
+  } else {
+    jobsh <- gsub("@SPINUP@", settings$model$dvmdostem_spinup, jobsh)
+  }
+  
+  if (!exists("settings$model$dvmdostem_transient")){
+    jobsh <- gsub("@TRANSIENT@", 109, jobsh)  # what if this isn't the case?  Do we want to hard code backup or just end in error?
+  } else {                                    # could just invoke a stop() here for these if missing and provide an error message
+    jobsh <- gsub("@TRANSIENT@", settings$model$dvmdostem_transient, jobsh)
+  }
+
+  if (!exists("settings$model$dvmdostem_scenerio")){
+    jobsh <- gsub("@SCENERIO@", 100, jobsh)
+  } else {
+    jobsh <- gsub("@SCENERIO@", settings$model$dvmdostem_scenerio, jobsh)
+  }
+
+  if (!exists("settings$model$dvmdostem_loglevel")){
+    jobsh <- gsub("@LOGLEVEL@", "err", jobsh)
+  } else {
+    jobsh <- gsub("@LOGLEVEL@", settings$model$dvmdostem_loglevel, jobsh)
+  }
 
   writeLines(jobsh, con=file.path(settings$rundir, run.id,"job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id,"job.sh"))
