@@ -122,12 +122,9 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # The settings$pfts$pft$name variable will be something like this: "CMT04-Salix"
   cmtname <- unlist(strsplit(settings$pfts$pft$name, "-", fixed=TRUE))[1]
   cmtnum <- as.numeric(unlist(strsplit(cmtname, "CMT"))[2]) #
-  
-  ## below for debugging
-  PEcAn.logger::logger.info(cmtname)
-  PEcAn.logger::logger.info(cmtnum)
-  ##
-  
+
+  PEcAn.logger::logger.info(paste("cmtname: ", cmtname, " cmtnum: ", cmtnum))
+
   # Now we have to read the appropriate values out of the trait_df
   # and get those values written into the parameter file(s) that dvmdostem will
   # need when running. Because the dvmdostem parameters have a sort of
@@ -171,9 +168,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   envcanopy_jsondata <- fromJSON(paste(readLines(envcanopy_jsonfile), collapse=""))
 
   # (2)
-  # Overwrite certain parameter values with (ma-posterior) trait data
-  # from pecan, then write back out to disk...
-
+  # Overwrite parameter values with (ma-posterior) trait data from pecan
   for (curr_trait in names(traits)) {
     for (jd in list(envcanopy_jsondata, dimveg_jsondata)) {
       for (i in names(jd)) {
@@ -214,8 +209,6 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
       }
     }
   }
-
-
 
   # Write it back out to disk (overwriting ok??)
   dimveg_exportJson <- toJSON(dimveg_jsondata)
