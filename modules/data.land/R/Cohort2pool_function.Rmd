@@ -3,9 +3,21 @@ title: "Cohort2pool_function"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r}
+
 cohort2pool<-(veg_File, allom_param, outfile) {
+ dat <- readRDS("FFT.2008.veg.rds") #reads file into a list
+dbh <- dat[[2]]$DBH
+ a = 0.2
+ b= 0.3
+ for (i in 1: length(dbh)) {
+biomass = a + b*log(dbh)
+ }
+ tot_biomass= sum(biomass)
+ individuals= length(dbh)
+ biomass_density = tot_biomass/individuals
+ 
+ 
   #1.Read in veg file - read into a vector
   # need function called ncfile <-nc_open(veg_File)
   # dbh <- ncvar_get(ncfile, "dbh") #will grab values and turn it into a vector
