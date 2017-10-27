@@ -50,7 +50,7 @@ clone_run <- function(settings, model, con){
       # For example for met we need the CF standard 
       # For IC it depends on pool vs cohort - may need special cases
       tags_std <- read.csv(
-        system.file("Standardized_tags_lookup.csv", package = "PEcAn.benchmark"), 
+        system.file("clone_run_inputs_lookup.csv", package = "PEcAn.benchmark"), 
         stringsAsFactors = FALSE) 
       new_format <- c()
       
