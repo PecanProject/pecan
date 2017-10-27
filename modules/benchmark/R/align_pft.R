@@ -64,24 +64,24 @@ align_pft<-function(con, observation_one, observation_two, custom_table=NULL,
   if(comparison_type == "data_to_model"){
     
     #align_data_to_model_pft(settings_one, observations_1)
-    PEcAn.utils::logger.severe("data_to_model alignment not yet implemented. Returning NULL.")
+    PEcAn.logger::logger.severe("data_to_model alignment not yet implemented. Returning NULL.")
   
     
   }else if (comparison_type == "data_to_data"){
     
     if(is.null(format_one) | is.null(format_two)){
-      PEcAn.utils::logger.error("Must specify formats for both sets of PFTs")
+      PEcAn.logger::logger.error("Must specify formats for both sets of PFTs")
     }
     align_data_to_data_pft(observation_one, observation_two, custom_table=NULL, format_one, format_two, subset_are_ok=FALSE)
     
   }else if (comparison_type == "model_to_model"){
     
     #align_model_to_model_pft(settings_one, settings_two)
-    PEcAn.utils::logger.severe("model_to_model alignment not yet implemented. Returning NULL.")
+    PEcAn.logger::logger.severe("model_to_model alignment not yet implemented. Returning NULL.")
     
     
   }else{
-    PEcAn.utils::logger.severe("comparison_type must be set to either 'data_to_model', 'data_to_data', or model_to_model")
+    PEcAn.logger::logger.severe("comparison_type must be set to either 'data_to_model', 'data_to_data', or model_to_model")
 
   }
 
