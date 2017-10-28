@@ -25,6 +25,7 @@ Imports:
 Suggests:
     BioCro,
     testthat (>= 1.0.2),
+    mockery (>= 0.3.0),
     RPostgreSQL
 Remotes:
     github::ebimodeling/biocro
