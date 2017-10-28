@@ -4,7 +4,7 @@ context("check that BioCro output is summarized correctly")
 # Accepts same arguments as BioCro::BioGro, ignores all but day1 and dayn
 mock_run <- function(WetDat = NULL, day1 = 1, dayn = 7, ...){
 	load("data/result.RData", envir = environment())
-	resultDT[resultDT$Year == 2004 & resultDT$DayofYear >= day1 & resultDT$DayofYear <= dayn,]
+	resultDT[resultDT$Year == 2004 & resultDT$DayofYear %in% day1:dayn,]
 }
 
 # Hand-calculate reference values
