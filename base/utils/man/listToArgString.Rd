@@ -2,7 +2,7 @@
 % Please edit documentation in R/listToArgString.R
 \name{listToArgString}
 \alias{listToArgString}
-\title{listToArgString}
+\title{format a list of arguments as one comma-separated string}
 \usage{
 listToArgString(l)
 }
@@ -11,6 +11,9 @@ listToArgString(l)
 }
 \value{
 A string containing named argument/value pairs separated by commas
+}
+\description{
+format a list of arguments as one comma-separated string
 }
 \author{
 Ryan Kelly
