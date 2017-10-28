@@ -24,7 +24,6 @@ config$simulationPeriod$dateofplanting <- as.POSIXct("2004-01-01")
 config$simulationPeriod$dateofharvest <- as.POSIXct("2004-01-07")
 
 test_that("daily summarizes hourly (#1738)", {
-	skip_on_travis() # stubbing only works when BioCro package is installed
 
 	# stub out BioCro::willowGro: 
 	# calls to willowGro(...) will be replaced with calls to mock_run(...),
