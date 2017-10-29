@@ -17,7 +17,7 @@ ref_mat <- mean(ref_met$Temp)
 # run setup
 metpath <- "data/US-Bo1"
 config <- PEcAn.settings::prepare.settings(PEcAn.settings::read.settings("data/pecan.biocro.xml"))
-config$pft$type$genus <- "Salix" # TODO should PEcAn.BIOCRO expect config$pfts$pft$type$genus instead?
+config$pft$type$genus <- "Salix"
 config$run$start.date <- as.POSIXct("2004-01-01")
 config$run$end.date <- as.POSIXct("2004-01-07")
 config$simulationPeriod$dateofplanting <- as.POSIXct("2004-01-01")
