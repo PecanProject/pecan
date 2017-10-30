@@ -169,7 +169,8 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   names(knots.list) <- sapply(settings$pfts,"[[",'name')
   
   knots.params <- lapply(knots.list, `[[`, "params")
-  knots.probs <- lapply(knots.list, `[[`, "probs")
+  # don't need anymore
+  # knots.probs <- lapply(knots.list, `[[`, "probs")
   
   current.step <- "GENERATE KNOTS"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
@@ -217,6 +218,9 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
                                                              prior.ind.orig[[x]],
                                                              prior.round.fn[[x]],
                                                              pname[[x]]))
+    
+    knots.params.nonsf <- lapply(knots.list.nonsf, `[[`, "params")
+    
     ## 2) for SF parameters use the posterior sf-values but on the prior of the actual params
     knots.list.sf <- lapply(seq_along(settings$pfts),
                                function(x) pda.generate.knots(n.post.knots,
@@ -226,20 +230,35 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
                                                               prior.fn[[x]], # note the difference
                                                               pname[[x]]))
     
+    knots.params.sf <- lapply(knots.list.sf, `[[`, "params")
     
-    knots.params.temp <- lapply(knots.list.temp, `[[`, "params")
     
+    knots.params.temp <- knots.params.nonsf
     
+    if(!is.null(sf)){
+      # get new proposals for non-sf and sf together
+      for(i in seq_along(settings$pfts)){
+        if(!is.null(any.scaling[[i]])){
+          knots.params.temp[[i]] <- knots.params.sf[[i]]
+        }
+      }
+    }
+    
+    # mixture of knots
+    mix.knots <- sample(settings$assim.batch$n.knot, (settings$assim.batch$n.knot - n.post.knots))
     for (i in seq_along(settings$pfts)) {
-      # mixture of knots
-      mix.knots <- sample(nrow(knots.params[[i]]), (settings$assim.batch$n.knot - n.post.knots))
       knots.list[[i]]$params <- rbind(knots.params[[i]][mix.knots, ],
-                                      knots.list.temp[[i]]$params)
+                                      knots.params.temp[[i]])
       names(knots.list)[i] <- settings$pfts[[i]]['name']
     }
     
+    if(!is.null(sf)){
+      probs.sf <- rbind(probs.sf[mix.knots, ], probs.round.sf)
+    }
+    
     knots.params <- lapply(knots.list, `[[`, "params")
-    knots.probs  <- lapply(knots.list, `[[`, "probs")
+    # don't need anymore
+    # knots.probs  <- lapply(knots.list, `[[`, "probs")
     
     current.step <- "Generate Knots: round-if block"
     save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
