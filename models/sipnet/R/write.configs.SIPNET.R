@@ -287,10 +287,15 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     ### ----- Soil parameters soil respiration Q10.
     if ("soil_respiration_Q10" %in% pft.names) {
       param[which(param[, 1] == "soilRespQ10"), 2] <- pft.traits[which(pft.names == "soil_respiration_Q10")]
+      # assume soil resp Q10 cold == soil resp Q10
+      param[which(param[, 1] == "soilRespQ10Cold"), 2] <- param[which(param[, 1] == "soilRespQ10"), 2]
     }
     # soil respiration rate -- units = 1/year, reference = 0C
     if ("som_respiration_rate" %in% pft.names) {
       param[which(param[, 1] == "baseSoilResp"), 2] <- pft.traits[which(pft.names == "som_respiration_rate")]
+      # default SIPNET prior of baseSoilRespCold was 1/4th of baseSoilResp
+      # assuming they will scale accordingly
+      param[which(param[, 1] == "baseSoilRespCold"), 2] <- param[which(param[, 1] == "baseSoilResp"), 2] * 0.25
     }
     # litterBreakdownRate
     if ("turn_over_time" %in% pft.names) {
