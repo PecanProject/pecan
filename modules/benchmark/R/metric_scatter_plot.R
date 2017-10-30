@@ -3,6 +3,8 @@
 ##' @export
 ##' @param metric_dat
 ##' @param var
+##' @param filename
+##' @param draw.plot
 ##' 
 ##' @author Betsy Cowdery
 
@@ -21,7 +23,7 @@ metric_scatter_plot <- function(metric_dat, var, filename = NA, draw.plot = is.n
   }
   
   if (draw.plot) {
-    plot(p)
+    return(p)
   }
 
 } # metric_scatter_plot
