@@ -1,12 +1,15 @@
 ##' @name metric_Frechet
 ##' @title Frechet Distance
 ##' @export
-##' @param dat dataframe
+##' @param metric_dat dataframe
+##' @importFrom SimilarityMeasures Frechet
+##' @importFrom PEcAn.utils logger.info
 ##' 
 ##' @author Betsy Cowdery
 
-metric_Frechet <- function(dat, ...) {
-  PEcAn.logger::logger.info("Metric: Frechet Distance")
-  Fdist <- SimilarityMeasures::Frechet(as.matrix(dat$obvs), as.matrix(dat$model))
+metric_Frechet <- function(metric_dat, ...) {
+  logger.info("Metric: Frechet Distance")
+  dat.no.na <- na.omit(metric_dat)
+  Fdist <- Frechet(as.matrix(dat.no.na$obvs), as.matrix(dat.no.na$model))
   return(Fdist)
 } # metric_Frechet

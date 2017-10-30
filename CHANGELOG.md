@@ -5,10 +5,12 @@ section for the next release.
 
 For more information about this file see also [Keep a Changelog](http://keepachangelog.com/) .
 
+
 ## [Unreleased]
 
 ### Fixes
 - `PEcAn.utils` now lazy-loads data for faster execution of functions that consult lookup tables, especially `to_ncvar`.
+- Fixed incorrect `PEcAn.BIOCRO` daily and yearly results: Was calculating every row from whole simulation instead of that day (#1738)
 
 ### Added
 
@@ -21,7 +23,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 	- `listToXml` and `SafeList` moved to `PEcAn.settings`
 	- `fqdn` moved to `PEcAn.remote`
 
-## [1.5.1] - 2017-09-??
+## [1.5.1] - 2017-10-05
 
 ### Fixes
 - Fixed hyperparameter draws in PDA
