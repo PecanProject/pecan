@@ -543,6 +543,8 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     
     if(!is.null(sf)){
       sfm <- matrix(NA, nrow =  nrow(mcmc.out[[c]]$mcmc.samp), ncol = length(sf))
+      # give colnames but the order can change, we'll overwrite anyway
+      colnames(sfm) <- paste0(sf, "_SF")
     }
     ## Set the prior functions back to work with actual parameter range
     
@@ -562,6 +564,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
                        list(p = mcmc.out[[c]]$mcmc.samp[, idx]))
         if(sc <= length(sf)){
           sfm[, sc] <- mcmc.out[[c]]$mcmc.samp[, idx]
+          colnames(sfm)[sc] <- paste0(sf.check, "_SF")
           sc <- sc + 1
         }
         
@@ -574,7 +577,6 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     mcmc.samp.list[[c]] <- m
     
     if(!is.null(sf)){
-      colnames(sfm) <- paste0(sf, "_SF")
       sf.samp.list[[c]] <- sfm
     }
     
