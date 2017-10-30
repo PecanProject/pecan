@@ -208,13 +208,25 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     }
     
     ## set prior distribution functions for posterior of the previous emulator run
-    knots.list.temp <- lapply(seq_along(settings$pfts),
+    ## need to do two things here: 
+    ## 1) for non-SF parameters, use the posterior of previous emulator
+    knots.list.nonsf <- lapply(seq_along(settings$pfts),
                               function(x) pda.generate.knots(n.post.knots,
                                                              sf, probs.round.sf,
                                                              n.param.all[x],
                                                              prior.ind.orig[[x]],
                                                              prior.round.fn[[x]],
                                                              pname[[x]]))
+    ## 2) for SF parameters use the posterior sf-values but on the prior of the actual params
+    knots.list.sf <- lapply(seq_along(settings$pfts),
+                               function(x) pda.generate.knots(n.post.knots,
+                                                              sf, probs.round.sf,
+                                                              n.param.all[x],
+                                                              prior.ind.orig[[x]],
+                                                              prior.fn[[x]], # note the difference
+                                                              pname[[x]]))
+    
+    
     knots.params.temp <- lapply(knots.list.temp, `[[`, "params")
     
     
