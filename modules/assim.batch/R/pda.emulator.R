@@ -113,12 +113,19 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   }
   
   ## Select parameters to constrain
-  prior.ind <- lapply(seq_along(settings$pfts), 
-                      function(x) which(pname[[x]] %in% settings$assim.batch$param.names[[x]]))
+  all_pft_names <- sapply(settings$pfts, `[[`, "name")
+  prior.ind <- prior.ind.orig <- vector("list", length(settings$pfts)) 
+  names(prior.ind) <- names(prior.ind.orig) <- all_pft_names
+  for(i in seq_along(settings$pfts)){
+    pft.name <- settings$pfts[[i]]$name
+    if(pft.name %in% names(settings$assim.batch$param.names)){
+      prior.ind[[i]]      <- which(pname[[i]] %in% settings$assim.batch$param.names[[pft.name]])
+      prior.ind.orig[[i]] <- which(pname[[i]] %in% settings$assim.batch$param.names[[pft.name]] |
+                                     pname[[i]] %in% any.scaling[[pft.name]])
+    }
+  }
+  
   n.param <- sapply(prior.ind, length)
-  prior.ind.orig <- lapply(seq_along(settings$pfts), 
-                           function(x) which(pname[[x]] %in% settings$assim.batch$param.names[[x]] |
-                                               pname[[x]] %in% any.scaling[[x]]))
   n.param.orig <- sapply(prior.ind.orig, length)
   
   ## Get the workflow id
@@ -404,7 +411,8 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     
     ## Parallel fit for GPs
     GPmodel <- parallel::parLapply(cl, SS, function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], nugget = 0, nugget.known = 1, verbose = 0))
-    # GPmodel <- lapply(SS, function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], verbose = 0))
+    # GPmodel <- lapply(SS, function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], nugget = 0, nugget.known = 1, verbose = 0))
+    
     
     parallel::stopCluster(cl)
     
