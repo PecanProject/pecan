@@ -206,7 +206,7 @@ debias.met <- function(outfolder, input_met, train_met, site_id, de_method = "li
   ncdf4::nc_close(loc)
   
   results$file <- loc.file
-  results$host <- PEcAn.utils::fqdn()
+  results$host <- PEcAn.remote::fqdn()
   results$startdate <- paste0(year, "-01-01 00:00:00", tz = "UTC")
   results$enddate <- paste0(year, "-12-31 23:59:59", tz = "UTC")
   results$mimetype <- "application/x-netcdf"

@@ -103,7 +103,7 @@ pda.postprocess <- function(settings, con, mcmc.param.list, pname, prior, prior.
   }  #end of loop over PFTs
   
   ## save updated settings XML
-  saveXML(PEcAn.utils::listToXml(settings, "pecan"), file = file.path(settings$outdir, paste0("pecan.pda", settings$assim.batch$ensemble.id, 
+  saveXML(PEcAn.settings::listToXml(settings, "pecan"), file = file.path(settings$outdir, paste0("pecan.pda", settings$assim.batch$ensemble.id,
                                                                                  ".xml")))
   
   return(settings)
@@ -244,7 +244,7 @@ write_sf_posterior <- function(sf.samp.list, sf.prior, sf.filename){
                                                outdir = dirname(sf.filename),
                                                filename.flag = filename.flag)
   
-  save(sf.subset, file = file.path(dirname(sf.filename), paste0("samples", filename.flag, ".Rdata")))
+  save(sf.subset.list, file = file.path(dirname(sf.filename), paste0("samples", filename.flag, ".Rdata")))
   
   return(sf.post.distns)
   

@@ -42,7 +42,7 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
   met_header <- file.path(met_folder, "ED_MET_DRIVER_HEADER")
 
   results <- data.frame(file = c(met_header),
-                        host = c(PEcAn.utils::fqdn()),
+                        host = c(PEcAn.remote::fqdn()),
                         mimetype = c("text/plain"),
                         formatname = c("ed.met_driver_header files format"),
                         startdate = c(start_date),

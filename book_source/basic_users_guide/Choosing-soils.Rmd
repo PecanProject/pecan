@@ -8,32 +8,11 @@ As with [[Choosing initial vegetation]], we eventually hope to develop data stan
 
 A PEcAn-standard netCDF file format exists for soil texture, depth, and physical parameters, using PEcAn standard names that are largely a direct extention of the CF standard. A table of standard names and units can be listed using ```PEcAn.data.land::soil.units()``` with no arguements.
 
-```{r}
+```{r,echo=FALSE}
 knitr::kable(PEcAn.data.land::soil.units())
 ```
 
-
-Local data that has the correct names and units can easily be written out in PEcAn standard using the function soil2netcdf.
-
-```
-soil.data <- list(volume_fraction_of_sand_in_soil = c(0.3,0.4,0.5),
-                  volume_fraction_of_clay_in_soil = c(0.3,0.3,0.3),
-                  soil_depth = c(0.2,0.5,1.0))
-                         
-soil2netcdf(soil.data,"soil.nc")
-```
-
-At the moment this file would need to be inserted into Inputs manually. By default, this function also calls soil_params, which will estimate a number of hydraulic and thermal parameters from texture. Be aware that at the moment not all model couplers are yet set up to read this file and/or convert it to model-specific formats.
-
-In addition to location-specific soil data, PEcAn can extract soil texture information from the PalEON regional soil product, which itself is a subset of the MsTMIP Unified North American Soil Map. If this product is installed on your machine, the appropriate step in the do_conversions workflow is enabled by adding the following tag under ```<inputs>``` in your pecan.xml
-
-```
-   <soil>
-     <id>1000012896</id>
-   </soil>
-```
-
-In the future we aim to extend this extraction to a wider range of soil products.
+More detailed information on how PEcAn processes inputs can be found on our [Input Conversion] page.
 
 ## Other model inputs
 

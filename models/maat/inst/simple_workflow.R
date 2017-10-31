@@ -23,7 +23,7 @@ settings <- read.settings(system.file("pecan.maat.xml",package = "PEcAn.MAAT"))
 # get traits of pfts
 settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$database$dbfiles, 
 	settings$database$bety, settings$meta.analysis$update)
-saveXML(PEcAn.utils::listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
+saveXML(PEcAn.settings::listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 #--------------------------------------------------------------------------------------------------#
 
 

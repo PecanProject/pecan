@@ -69,7 +69,7 @@ download.NEONmet <- function(sitename, outfolder, start_date, end_date,
   all_years <- start_year:end_year
   all_files <- file.path(outfolder, paste0("NEONmet.", site, ".", as.character(all_years), ".nc"))
   results$file <- all_files
-  results$host <- PEcAn.utils::fqdn()
+  results$host <- PEcAn.remote::fqdn()
   results$mimetype   <- "application/x-netcdf"
   results$formatname <- "CF"
   results$startdate  <- paste0(all_years, "-01-01 00:00:00")
@@ -211,7 +211,8 @@ download.NEONmet <- function(sitename, outfolder, start_date, end_date,
                                      dim = xytdim)
       nc <- ncdf4::ncvar_add(nc = nc, v = precip.var, verbose = verbose)
       ncdata <- neonmet.getVals(dates=precipDates,product=availProducts[precipLoc[1]],site=site,
-                                datetime=datetime,data_col="secPrecipBulk",QF_col=NULL,
+                                datetime=datetime,data_col="priPrecipBulk",QF_col="priPrecipFinalQF",
+                                urlstring = "\\.00000\\.900\\.(.*)30min",
                                 units=c("kg m-2 1/1800 s-1", "kg m-2 s-1")) #mm per half hour 
       ncdf4::ncvar_put(nc, varid = precip.var, vals = ncdata)
     } else {
@@ -363,7 +364,7 @@ neonmet.getVals <- function(dates,product,site,datetime,
   ncdata <- rep(FillValue,length(datetime))
   for (mon in dates) {
     neonData <- nneo::nneo_data(product_code = product, site_code = site, year_month = mon)
-    urls <- neonData$data$urls
+    urls <- neonData$data$files$name
     if (length(urls)>0) {
       #Extract and read 30 minute data from the highest vertical level among files returned
       #If belowground, then take top most level (lowest value)
@@ -373,13 +374,13 @@ neonmet.getVals <- function(dates,product,site,datetime,
         url30 <- tail(sort(urls[grep(urlstring,urls)]),1)        
       }
       if (length(url30)!=0) {
-        csvData <- read.csv(url30,stringsAsFactors=FALSE,header=TRUE)
+        csvData <- nneo::nneo_file(product_code = product, site_code = site, year_month = mon, filename = url30) 
         #Retreive time dimension and figure out where in array to put it
         csvDateTime <- as.POSIXct(gsub("T"," ",csvData$startDateTime),tz="UTC")
         arrLoc <- floor(as.numeric(difftime(csvDateTime,datetime[1],tz="UTC",units="hours"))*2)+1
-        csvVar <- csvData[,data_col] 
+        csvVar <- csvData[[data_col]]
         if (length(QF_col)!=0) {
-          csvQF <- csvData[,QF_col]
+          csvQF <- csvData[[QF_col]]
           csvVar[which(csvQF!=QF)] <- NA 
         }
         if ((length(units)=2)&&(units[1]!=units[2])) {
