@@ -12,6 +12,9 @@
 ##' @importFrom dplyr tbl filter rename collect select 
 
 clone_run <- function(settings, model, con){
+  if(is.MultiSettings(settings)) {
+    return(invisible(papply(settings, clone_run, model, con))) 
+  }
   
   # For testing: 
   # bety <- betyConnect("web/config.php")
