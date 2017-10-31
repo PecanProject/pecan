@@ -28,8 +28,7 @@
 ##'   write.config.JULES(defaults, trait.values, settings, run.id)
 ##' }
 ##-------------------------------------------------------------------------------------------------#
-write.config.JULES <- function(defaults, trait.values, settings, run.id, inputs = NULL, IC = NULL,
-                               restart = NULL, spinup = NULL) {
+write.config.JULES <- function(defaults, trait.values, settings, run.id) {
   # constants
   molH2O_to_grams <- 18.01528
   leafC <- 0.48
@@ -332,7 +331,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id, inputs 
     l_trif_eq <- grep("l_trif_eq",veg.text)
     if(length(l_trif_eq) == 0){
       veg.text[length(veg.text)] <- "l_trif_eq=.false.,"
-      veg.text[length(veg.text)+1] <- "/"
+      veg.text[length(veg.text)+1] <- "/"llj
     } else {
       veg.text[l_trif_eq] <- sub("true",'false',veg.text[l_triffid]) # set to FALSE
     }
@@ -555,16 +554,18 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id, inputs 
 
   ## set npft to the value needed for surface type definition
   npft <- max(c(npft, 5))
-
-  ## --------------------------- END PFTS ------------------------------------------
-
+  
   ## Edit jules_surface_types.nml to set correct number of PFTS
 
+  ## --------------------------- END PFTS ------------------------------------------
+  
+  ## For JULES and, Enter defaults for IC.DAT
+
   ## Edit INITIAL_CONDITIONS.NML soil carbon LAI
+  
+  
   if(useTRIFFID){
     
-    if (is.null(IC)){
-      
     PEcAn.logger::logger.warning("No Initial Conditions, using defaults")
     ic.file <- file.path(local.rundir, "initial_conditions.nml")
     ic.text <- readLines(con = ic.file, n = -1)
@@ -584,12 +585,14 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id, inputs 
 
     ## write namelist
     writeLines(ic.text, con = ic.file)
-
+    
+    if (is.null(settings$run$inputs$poolinitcond$path)){
     ## also load and parse IC dat file
-    ic.dat <- file.path(local.rundir, "initial_conditions.dat")
-    ic.text <- readLines(con = ic.dat, n = -1)
-    ic.text[2] <- paste(ic.text[2]," 5.0 5.0 0.5 0.5 0.5 0.2 0.2 0.2 0.2 0.2 0.0 0.0 0.0 0.0")
-    writeLines(ic.text, con = ic.dat)
+    ## also load and parse IC dat file
+      ic.dat <- file.path(local.rundir, "initial_conditions.dat")
+      ic.text <- readLines(con = ic.dat, n = -1)
+      ic.text[2] <- paste(ic.text[2]," 5.0 5.0 0.5 0.5 0.5 0.2 0.2 0.2 0.2 0.2 0.0 0.0 0.0 0.0")
+      writeLines(ic.text, con = ic.dat)
     
     } else if (!is.null(settings$run$inputs$poolinitcond$path)){
       
@@ -599,7 +602,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id, inputs 
       ## LAI m2/m2
       if(!is.null(IC.path)){
         # Read in netcdf file
-        IC.nc <- ncdf4::nc_open(IC.path) 
+        IC.nc <- ncdf4::nc_open(IC.path) b
         #Get LAI value
         lai <- try(ncdf4::ncvar_get(IC.nc,"LAI"))
         #Read in default initial conditions dat file
@@ -617,6 +620,16 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id, inputs 
       }
       
     }
+  }else{ 
+  # If not TRIFFID
+  ic.dat <- file.path(local.rundir, "initial_conditions.dat")
+  ic.dat <- file.path(".", "initial_conditions.dat")
+  ic.text <- readLines(con = ic.dat, n = -1)
+  ic.dat.text <- gsub("@sthuf_dat@", paste0("0.749  0.743  0.754  0.759", collapse = " "), ic.dat.text)
+  ic.dat.text <- gsub("@t_soil@", paste0("276.78  277.46  278.99  282.48", collapse = " "), ic.dat.text)
+  ic.dat.text <- gsub("@snow_tile@", paste0("0.0  0.46  0.0  0.0  0.0  0.0  0.0  0.0  0.0", collapse = " "), ic.dat.text)
+  ic.dat.text <- gsub("@lai_dat@", paste0("5.0  4.0  2.0  4.0  1.0", collapse = " "), ic.dat.text)
+  writeLines(ic.text, con = ic.dat)
   }
 } # write.config.JULES
 
