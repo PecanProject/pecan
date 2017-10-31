@@ -41,7 +41,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
   out.file.full <- file.path(outfolder, out.file)
 
   results <- data.frame(file = out.file.full,
-                        host = PEcAn.utils::fqdn(),
+                        host = PEcAn.remote::fqdn(),
                         mimetype = "text/plain",
                         formatname = "maespa.met",
                         startdate = start_date,
@@ -104,7 +104,7 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
       ## Process PAR
       if (!is.numeric(PAR)) {
         # Function from data.atmosphere will convert SW to par in W/m2
-        PAR <- sw2par(RAD)
+        PAR <- PEcAn.data.atmosphere::sw2par(RAD)
       } else {
         # convert
         PAR <- udunits2::ud.convert(PAR, "mol", "umol")

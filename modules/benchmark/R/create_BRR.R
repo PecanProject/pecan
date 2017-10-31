@@ -11,9 +11,9 @@
 
 create_BRR <- function(ens_wf, con, user_id = ""){
   
-  cnd1 <- ens_wf$hostname == PEcAn.utils::fqdn() 
-  cnd2 <- ens_wf$hostname == 'test-pecan.bu.edu' & PEcAn.utils::fqdn() == 'pecan2.bu.edu'
-  cnd3 <- ens_wf$hostname == 'pecan2.bu.edu' & PEcAn.utils::fqdn() == 'test-pecan.bu.edu'
+  cnd1 <- ens_wf$hostname == PEcAn.remote::fqdn() 
+  cnd2 <- ens_wf$hostname == 'test-pecan.bu.edu' & PEcAn.remote::fqdn() == 'pecan2.bu.edu'
+  cnd3 <- ens_wf$hostname == 'pecan2.bu.edu' & PEcAn.remote::fqdn() == 'test-pecan.bu.edu'
   db.query <- PEcAn.DB::db.query
   
  # if(cnd1|cnd2|cnd3){  # If the ensemble run was done on localhost, turn into a BRR
@@ -31,14 +31,22 @@ create_BRR <- function(ens_wf, con, user_id = ""){
     clean$ensemble <- NULL
     str(clean)
     
-    settings_xml <- toString(PEcAn.utils::listToXml(clean, "pecan"))
+    settings_xml <- toString(PEcAn.settings::listToXml(clean, "pecan"))
     
     ref_run <- db.query(paste0(" SELECT * from reference_runs where settings = '", settings_xml,"'"),con)
     
     if(length(ref_run) == 0){ # Make new reference run entry
-      ref_run <- db.query(paste0("INSERT INTO reference_runs (model_id, settings, user_id)",
-                                 "VALUES(",ens_wf$model_id,", '",settings_xml,"' , ",user_id,
-                                 ") RETURNING *;"),con)
+      
+      if(nchar(as.character(user_id)) > 0){
+        ref_run <- db.query(paste0("INSERT INTO reference_runs (model_id, settings, user_id)",
+                                   "VALUES(",ens_wf$model_id,", '",settings_xml,"' , ",user_id,
+                                   ") RETURNING *;"),con)
+      }else{
+        ref_run <- db.query(paste0("INSERT INTO reference_runs (model_id, settings)",
+                                   "VALUES(",ens_wf$model_id,", '",settings_xml,"') RETURNING *;"),con)
+      }
+      
+
     }else if(dim(ref_run)[1] > 1){# There shouldn't be more than one reference run with the same settings
       PEcAn.logger::logger.error("There is more than one reference run in the database with these settings. Review for duplicates. ")
     }

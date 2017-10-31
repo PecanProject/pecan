@@ -159,18 +159,18 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   ## this is where soil parms can be set defaults$soilControl$FieldC <-
   
   ### Put defaults and other parts of config file together
-  parms.xml <- PEcAn.utils::listToXml(defaults, "pft")
-  location.xml <- PEcAn.utils::listToXml(list(latitude = settings$run$site$lat, 
+  parms.xml <- PEcAn.settings::listToXml(defaults, "pft")
+  location.xml <- PEcAn.settings::listToXml(list(latitude = settings$run$site$lat,
                                  longitude = settings$run$site$lon), 
                             "location")
-  run.xml <- PEcAn.utils::listToXml(list(start.date = settings$run$start.date, 
+  run.xml <- PEcAn.settings::listToXml(list(start.date = settings$run$start.date,
                             end.date = settings$run$end.date, 
                             met.path = settings$run$inputs$met$path,
                             soil.file = settings$run$inputs$soil$path), 
                        "run")
   
   slashdate <- function(x) substr(gsub("-", "/", x), 1, 10)
-  simulationPeriod.xml <- PEcAn.utils::listToXml(list(dateofplanting = slashdate(settings$run$start.date), 
+  simulationPeriod.xml <- PEcAn.settings::listToXml(list(dateofplanting = slashdate(settings$run$start.date),
                                          dateofharvest = slashdate(settings$run$end.date)),
                                     "simulationPeriod")
   

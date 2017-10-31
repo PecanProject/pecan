@@ -7,6 +7,8 @@
 \method{listToXml}{default}(item, tag)
 }
 \arguments{
+\item{item}{object to be converted. Despite the function name, need not actually be a list}
+
 \item{tag}{xml tag}
 }
 \value{
@@ -16,6 +18,7 @@ xmlNode
 Convert List to XML
 }
 \details{
+DEPRECATED. Use \code{\link[PEcAn.settings:listToXml.default]{PEcAn.settings::listToXml.default}} instead.
 Can convert list or other object to an xml object using xmlNode
 }
 \author{

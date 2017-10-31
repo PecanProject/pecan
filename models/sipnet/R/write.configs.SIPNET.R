@@ -367,7 +367,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       IC.nc <- ncdf4::nc_open(IC.path) #for additional variables specific to SIPNET
       ## plantWoodInit gC/m2
       if ("wood" %in% names(IC.pools)) {
-        param[which(param[, 1] == "plantWoodInit"), 2] <- udunits2:ud.convert(IC.pools$wood, "kg m-2", "g m-2")
+        param[which(param[, 1] == "plantWoodInit"), 2] <- udunits2::ud.convert(IC.pools$wood, "kg m-2", "g m-2")
       }
       ## laiInit m2/m2
       lai <- try(ncdf4::ncvar_get(IC.nc,"LAI"),silent = TRUE)

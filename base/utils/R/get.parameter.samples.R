@@ -11,7 +11,6 @@
 get.parameter.samples <- function(settings, 
                                   posterior.files = rep(NA, length(settings$pfts)), 
                                   ens.sample.method = "uniform") {
-  library(PEcAn.priors)
   pfts      <- settings$pfts
   num.pfts  <- length(settings$pfts)
   pft.names <- list()
@@ -69,8 +68,10 @@ get.parameter.samples <- function(settings,
     ### When no ma for a trait, sample from prior
     ### Trim all chains to shortest mcmc chain, else 20000 samples
     priors <- rownames(prior.distns)
+    
     if (exists("trait.mcmc")) {
       ma.traits <- names(trait.mcmc)
+
       samples.num <- min(sapply(trait.mcmc, function(x) nrow(as.matrix(x))))
       
       ## report which traits use MA results, which use priors
@@ -95,7 +96,7 @@ get.parameter.samples <- function(settings,
       if (prior %in% ma.traits) {
         samples <- as.matrix(trait.mcmc[[prior]][, "beta.o"])
       } else {
-        samples <- get.sample(prior.distns[prior, ], samples.num)
+        samples <- PEcAn.priors::get.sample(prior.distns[prior, ], samples.num)
       }
       trait.samples[[pft.name]][[prior]] <- samples
     }

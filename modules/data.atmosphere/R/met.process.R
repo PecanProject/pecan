@@ -88,7 +88,7 @@ met.process <- function(site, input_met, start_date, end_date, model,
   con <- bety$con
   on.exit(db.close(con))
   username <- ifelse(is.null(input_met$username), "pecan", input_met$username)
-  machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.utils::fqdn(), host$name)
+  machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.remote::fqdn(), host$name)
   machine <- db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
 
   # special case Brown Dog
@@ -335,7 +335,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
     formatname <- "clim"
     outputfile <- file.path(folder, "sipnet.clim")
     results <- data.frame(file = outputfile, 
-                          host = PEcAn.utils::fqdn(), 
+                          host = PEcAn.remote::fqdn(), 
                           mimetype = "text/csv",
                           formatname = "Sipnet.climna", 
                           startdate = start_date, enddate = end_date, 
@@ -345,7 +345,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
     formatname <- "ed.zip"
     outputfile <- file.path(folder, "ed.zip")
     results <- data.frame(file = file.path(folder, "ED_MET_DRIVER_HEADER"), 
-                          host = PEcAn.utils::fqdn(), 
+                          host = PEcAn.remote::fqdn(), 
                           mimetype = "text/plain", 
                           formatname = "ed.met_driver_header files format",
                           startdate = start_date, enddate = end_date, 
@@ -355,7 +355,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
     formatname <- "dalec"
     outputfile <- file.path(folder, "dalec.dat")
     results <- data.frame(file = outputfile, 
-                          host = PEcAn.utils::fqdn(), 
+                          host = PEcAn.remote::fqdn(), 
                           mimetype = "text/plain", 
                           formatname = "DALEC meteorology", 
                           startdate = start_date, enddate = end_date, 
@@ -365,7 +365,7 @@ browndog.met <- function(browndog, source, site, start_date, end_date, model, di
     formatname <- "linkages"
     outputfile <- file.path(folder, "climate.txt")
     results <- data.frame(file = outputfile, 
-                          host = PEcAn.utils::fqdn(), 
+                          host = PEcAn.remote::fqdn(), 
                           mimetype = "text/plain", 
                           formatname = "LINKAGES meteorology", 
                           startdate = start_date, enddate = end_date,

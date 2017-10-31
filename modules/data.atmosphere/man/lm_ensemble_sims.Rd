@@ -15,8 +15,8 @@ lm_ensemble_sims(dat.mod, n.ens, path.model, direction.filter,
 
 \item{path.model}{- path to where the training model & betas is stored}
 
-\item{direction.filter}{- Whether the model will be filtered backwards or forwards in time. options = c("backward", "forward")
-(PalEON will go backwards, anybody interested in the future will go forwards)}
+\item{direction.filter}{- Whether the model will be filtered backward or forward in time. options = c("backward", "forward")
+(PalEON will go backward, anybody interested in the future will go forward)}
 
 \item{lags.init}{- a data frame of initialization parameters to match the data in dat.mod}
 
