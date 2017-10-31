@@ -43,7 +43,7 @@ if (is.na(args[1])){
 # Check for additional modules that will require adding settings
 if("benchmarking" %in% names(settings)){
   library(PEcAn.benchmark)
-  settings <- papply(settings, read_settings_RR)
+  settings <- papply(settings, read_settings_BRR)
 }
 
 if("sitegroup" %in% names(settings)){

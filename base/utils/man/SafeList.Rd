@@ -3,22 +3,36 @@
 \name{SafeList}
 \alias{SafeList}
 \alias{as.SafeList}
+\alias{is.SafeList}
 \title{Constrct SafeList Object}
 \usage{
 SafeList(...)
 
 as.SafeList(x)
+
+is.SafeList(x)
 }
 \arguments{
 \item{...}{A list to upgrade to SafeList, or elements to be added to a new SafeList}
+
+\item{x}{list to coerce}
+
+\item{x}{list object to be tested}
 }
 \value{
 The resulting SafeList
+
+a SafeList version of x
+
+logical
 }
 \description{
 Create a SafeList object
 }
 \details{
+DEPRECATED: SafeList has been moved to the PEcAn.settings package and will be removed
+from PEcAn.utils in a future release. Please use the version in PEcAn.settings.
+
 SafeList is a wrapper class for the normal R list. It should behave identically, except for 
 the $ operator being overridden to require exact matches.
 
@@ -31,6 +45,8 @@ attribute updated to include 'SafeList', or
 \section{Functions}{
 \itemize{
 \item \code{as.SafeList}: Coerce an object to SafeList.
+
+\item \code{is.SafeList}: Test if object is already a SafeList.
 }}
 
 \author{

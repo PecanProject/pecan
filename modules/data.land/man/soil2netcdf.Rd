@@ -29,8 +29,8 @@ Conversion back can be done by load(system.file("data/soil_class.RData",package 
 }
 \examples{
 \dontrun{
-soil.data <- list(volume_fraction_of_sand_in_soil = c(0.3,0.4,0.5),
-                  volume_fraction_of_clay_in_soil = c(0.3,0.3,0.3),
+soil.data <- list(fraction_of_sand_in_soil = c(0.3,0.4,0.5),
+                  fraction_of_clay_in_soil = c(0.3,0.3,0.3),
                   soil_depth = c(0.2,0.5,1.0))
                         
 soil2netcdf(soil.data,"soil.nc")

@@ -62,6 +62,9 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
   inputs  <- load.pda.data(settings, bety)
   n.input <- length(inputs)
   
+  # get hyper parameters if any
+  hyper.pars <- return_hyperpars(settings$assim.batch, inputs)
+  
   # efficient sample size calculation
   # fot BT you might want to run the model once and align inputs & outputs, then calculate n_eff
   # for now assume they will be same length
@@ -167,7 +170,8 @@ pda.bayesian.tools <- function(settings, params.id = NULL, param.names = NULL, p
     ## calculate error statistics      
     pda.errors <- pda.calc.error(settings, con, model_out = model.out, run.id, inputs, all.bias)
     llik.par <- pda.calc.llik.par(settings, n = n.of.obs, 
-                                  error.stats = unlist(pda.errors))
+                                  error.stats = unlist(pda.errors),
+                                  hyper.pars)
     ## Calculate likelihood
     LL.new <- pda.calc.llik(pda.errors = unlist(pda.errors), llik.fn, llik.par)
     

@@ -24,6 +24,12 @@
 ##' @param model which GCM to extract data from
 ##' @param scenario which experiment to pull (p1000, historical, ...)
 ##' @param ensemble_member which CMIP5 experiment ensemble member
+##' @param date.origin (optional) specify the date of origin for timestamps in the files being read.  
+##'                    If NULL defaults to 1850 for historical simulations (except MPI-ESM-P) and 
+##'                    850 for p1000 simulations (plus MPI-ESM-P historical).  Format: YYYY-MM-DD
+##' @param no.leap (optional, logical) if you know your GCM of interest is missing leap year, you can specify it here.
+##'                otherwise the code will automatically determine if leap year is missing and if it should be 
+##'                added in.
 ##' @param overwrite logical. Download a fresh version even if a local file with the same name already exists?
 ##' @param verbose logical. to control printing of debug info
 ##' @param ... Other arguments, currently ignored
@@ -31,24 +37,35 @@
 ##' @examples
 # -----------------------------------
 extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_id, lat.in, lon.in, 
-                                model , scenario , ensemble_member = "r1i1p1",
+                                model , scenario , ensemble_member = "r1i1p1", date.origin=NULL, no.leap=NULL,
                                 overwrite = FALSE, verbose = FALSE, ...){
   library(lubridate)
   library(ncdf4)
   library(stringr)
   
   # Some GCMs don't do leap year; we'll have to deal with this separately
-  no.leap <- c("bcc-csm1-1", "CCSM4")
+  # no.leap <- c("bcc-csm1-1", "CCSM4")
+  
+  if(is.null(date.origin)){
+    if(scenario == "p1000" | GCM=="MPI-ESM-P") { 
+      date.origin=as.Date("850-01-01") 
+    } else if(scenario == "historical" & GCM!="MPI-ESM-P") {
+      date.origin=as.Date("1850-01-01")
+    } else {
+      logger.error("No date.origin specified and scenario not implemented yet")
+    }
+  } 
+  
   
   # Days per month
   dpm <- lubridate::days_in_month(1:12)
-  
+
   # Date stuff
   start_date <- as.POSIXlt(start_date, tz = "GMT")
   end_date <- as.POSIXlt(end_date, tz = "GMT")
   start_year <- lubridate::year(start_date)
   end_year   <- lubridate::year(end_date)
-  
+
   lat.in = as.numeric(lat.in)
   lon.in = as.numeric(lon.in)
   # dir.nldas="http://hydro1.sci.gsfc.nasa.gov/thredds/dodsC/NLDAS_FORA0125_H.002"
@@ -84,7 +101,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
   library(car) # having trouble gettins stuff to work otherwise
   if(!("huss" %in% vars.gcm)) var$DAP.name <- car::recode(var$DAP.name, "'huss'='hus'")
   if(!("ps" %in% vars.gcm  )) var$DAP.name <- car::recode(var$DAP.name, "'ps'='psl'")
-  
+
   # Making sure we're only trying to grab the variables we have (i.e. don't try sfcWind if we don't have it)
   var <- var[var$DAP.name %in% vars.gcm,]
   
@@ -98,26 +115,29 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
   	files.var[[v]] <- list()
     if(v %in% vars.gcm.day){
 	  # Get a list of file names
-      files.var[[v]][["files"]] <- dir(file.path(in.path, "day", v))  		
+      files.var[[v]] <- data.frame(file.name=dir(file.path(in.path, "day", v)) ) 		
   	} else {
-  	  files.var[[v]][["files"]] <- dir(file.path(in.path, "month", v))
+  	  files.var[[v]] <- data.frame(file.name=dir(file.path(in.path, "month", v)))
   	}
   	
-	# Set up an index to help us find out which file we'll need
-    files.var[[v]][["years"]] <- data.frame(first.year=NA, last.year=NA)
-    for(i in 1:length(files.var[[v]][["files"]])){
-    	yr.str <- stringr::str_split(stringr::str_split(files.var[[v]][["files"]][[i]], "_")[[1]][6], "-")[[1]]
-  		
-    	# Don't bother storing this file if we don't want those years
-    	if(as.numeric(substr(yr.str[1], 1, 4)) > end_year | as.numeric(substr(yr.str[2], 1, 4))< start_year) next
-    	files.var[[v]][["years"]][i, "first.year"] <- as.numeric(substr(yr.str[1], 1, 4))
-  		files.var[[v]][["years"]][i, "last.year" ] <- as.numeric(substr(yr.str[2], 1, 4))
+	  # Set up an index to help us find out which file we'll need
+    # files.var[[v]][["years"]] <- data.frame(first.year=NA, last.year=NA)
+    for(i in 1:nrow(files.var[[v]])){
+    	yr.str <- stringr::str_split(stringr::str_split(files.var[[v]][i,"file.name"], "_")[[1]][6], "-")[[1]]
 
-  		n.file=n.file+1
+    	# Don't bother storing this file if we don't want those years
+    	files.var[[v]][i, "first.year"] <- as.numeric(substr(yr.str[1], 1, 4))
+  		files.var[[v]][i, "last.year" ] <- as.numeric(substr(yr.str[2], 1, 4))
+
   	 } # End file loop
+  	
+  	# get rid of files outside of what we actually need
+  	files.var[[v]] <- files.var[[v]][files.var[[v]]$first.year<=end_year & files.var[[v]]$last.year>=start_year,]
+  	# if(as.numeric(substr(yr.str[1], 1, 4)) > end_year | as.numeric(substr(yr.str[2], 1, 4))< start_year) next
+		n.file=n.file+nrow(files.var[[v]])
+  	
   } # end variable loop
-  
-  
+
   # Querying large netcdf files 1,000 times is slow.  So lets open the connection once and 
   # pull the full time series
   # Loop through using the files using the first variable; shoudl be tair & should be highest res avail
@@ -140,10 +160,10 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
 
     # Figure out what file we need
     # file.ind <- which(files.var[[var.now]][i])
-    for(i in 1:length(files.var[[var.now]]$files)){
+    for(i in 1:nrow(files.var[[var.now]])){
       setTxtProgressBar(pb, pb.ind)
       pb.ind=pb.ind+1
-      f.now <- files.var[[var.now]]$files[i]
+      f.now <- files.var[[var.now]][i,"file.name"]
       # print(f.now)
       
       # Open up the file
@@ -153,10 +173,34 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
       lat_bnd <- ncdf4::ncvar_get(ncT, "lat_bnds")
       lon_bnd <- ncdf4::ncvar_get(ncT, "lon_bnds")
       nc.time <- ncdf4::ncvar_get(ncT, "time")
-      
+
       # splt.ind <- ifelse(GCM %in% c("MPI-ESM-P"), 4, 3)
       # date.origin <- as.Date(str_split(ncT$dim$time$units, " ")[[1]][splt.ind])
- 
+      nc.date <- date.origin + nc.time
+      date.leaps <- seq(as.Date(paste0(files.var[[var.now]][i,"first.year"], "-01-01")), as.Date(paste0(files.var[[var.now]][i,"last.year"], "-12-31")), by="day")
+      # Figure out if we're missing leap dat
+      no.leap <- ifelse(is.null(no.leap) & length(nc.date)!=length(date.leaps), TRUE, FALSE)
+      
+      # If we're missing leap year, lets adjust our date stamps so we can only pull what we need
+      if(v.res=="day" & no.leap==TRUE){
+        cells.bump <- which(lubridate::leap_year(lubridate::year(date.leaps)) & lubridate::month(date.leaps)==02 & lubridate::day(date.leaps)==29)
+        for(j in 1:length(cells.bump)){
+          nc.date[cells.bump[j]:length(nc.date)] <- nc.date[cells.bump[j]:length(nc.date)]+1
+        }
+      }
+      
+      # Find our time index
+      if(v.res=="day"){
+        time.ind <- which(lubridate::year(nc.date)>=start_year & lubridate::year(nc.date)<=end_year)
+      } else {
+        yr.ind <- rep(files.var[[var.now]][i,"first.year"]:files.var[[var.now]][i,"last.year"], each=12)
+        time.ind <- which(yr.ind>=start_year & yr.ind<=end_year)
+      }
+      
+      # Subset our dates & times to match our index
+      nc.date <- nc.date[time.ind]
+      date.leaps <- date.leaps[which(lubridate::year(date.leaps)>=start_year & lubridate::year(date.leaps)<=end_year)]
+      
       # Find the closest grid cell for our site (using harvard as a protoype)
       ind.lat <- which(lat_bnd[1,]<=lat.in & lat_bnd[2,]>=lat.in)
       if(max(lon.in)>=180){
@@ -169,23 +213,38 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
       if(var.now %in% c("hus", "ua", "va")){ # These have multiple strata; we only want 1
         plev <- ncdf4::ncvar_get(ncT, "plev")
         puse <- which(plev==max(plev)) # Get humidity at the place of highest pressure (closest to surface)
-        dat.temp <- ncdf4::ncvar_get(ncT, var.now, c(ind.lon, ind.lat, puse, 1), c(1,1,1,length(nc.time)))
+        dat.temp <- ncdf4::ncvar_get(ncT, var.now, c(ind.lon, ind.lat, puse, time.ind[1]), c(1,1,1,length(time.ind)))
         # If dat.list has missing values, try the next layer
         puse.orig <- puse
         while(is.na(mean(dat.temp))){
           if(puse.orig==1) { puse = puse + 1 } else { puse = puse -1 }
-          dat.temp <- ncdf4::ncvar_get(ncT, var.now, c(ind.lon, ind.lat, puse, 1), c(1,1,1,length(nc.time)))
+          dat.temp <- ncdf4::ncvar_get(ncT, var.now, c(ind.lon, ind.lat, puse, time.ind[1]), c(1,1,1,length(time.ind)))
         }
       } else {
-        dat.temp <- ncdf4::ncvar_get(ncT, var.now, c(ind.lon, ind.lat, 1), c(1,1,length(nc.time)))
+        dat.temp <- ncdf4::ncvar_get(ncT, var.now, c(ind.lon, ind.lat, time.ind[1]), c(1,1,length(time.ind)))
       }
+      
+      # Add leap year and trick monthly into daily
+      # Figure out if we're missing leap year
+      if(v.res=="day" & no.leap==TRUE){
+        cells.dup <- which(lubridate::leap_year(lubridate::year(date.leaps)) & lubridate::month(date.leaps)==02 & lubridate::day(date.leaps)==28)
+        for(j in 1:length(cells.dup)){
+          dat.temp <- append(dat.temp, dat.temp[cells.dup[j]], cells.dup[j])
+        }
+      }
+      
       
       # If we have monthly data, lets trick it into being daily
       if(v.res == "month"){
         mo.ind <- rep(1:12, length.out=length(dat.temp))
+        yr.ind <- rep(files.var[[var.now]][i,"first.year"]:files.var[[var.now]][i,"last.year"], each=12)
         dat.trick <- vector()
         for(j in 1:length(dat.temp)){
-          dat.trick <- c(dat.trick, rep(dat.temp[j], dpm[mo.ind[j]]))
+          if(lubridate::leap_year(yr.ind[j]) & mo.ind[j]==2){
+            dat.trick <- c(dat.trick, rep(dat.temp[j], dpm[mo.ind[j]]+1)) 
+          } else {
+            dat.trick <- c(dat.trick, rep(dat.temp[j], dpm[mo.ind[j]])) 
+          }
         }
         dat.temp <- dat.trick
       } # End leap day trick
@@ -195,20 +254,6 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
     } # End file loop
   } # End variable loop
     
-  # Dealing with leap-year post-hoc because it was becoming a pain in the ass
-  # If we have daily data and we're dealing with a model that skips leap year, add it in
-  dpm <- lubridate::days_in_month(1:12)
-  yrs.leap <- ylist[leap_year(ylist)]
-  for(y.now in yrs.leap){
-    yr.ind <- which(year(dat.time)==y.now)
-    if(GCM %in% no.leap & v.res == "day"){
-      for(v in 1:length(dat.all)){
-        dat.all[[v]] <- append(dat.all[[v]], dat.all[[v]][yr.ind[sum(dpm[1:2])]], sum(yr.ind[dpm[1:2]]))
-      }
-    }
-  }
-  
-  
 
   print("")
   print("- Writing to NetCDF: ")
@@ -285,7 +330,7 @@ extract.local.CMIP5 <- function(outfolder, in.path, start_date, end_date, site_i
       ncdf4::ncvar_put(nc=loc, varid=as.character(var$CF.name[j]), vals=dat.list[[j]])
     }
     ncdf4::nc_close(loc)
-    
+
     results$file[i] <- loc.file
     # results$host[i] <- fqdn()
     results$startdate[i]  <- paste0(as.Date(paste(y.now, day1, sep="-"), format = "%Y-%j"), " 00:00:00")
