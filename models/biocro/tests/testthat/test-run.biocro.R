@@ -4,7 +4,7 @@ context("check that BioCro output is summarized correctly")
 # Accepts same arguments as BioCro::BioGro, ignores all but day1 and dayn
 mock_run <- function(WetDat = NULL, day1 = 1, dayn = 7, ...){
 	load("data/result.RData", envir = environment())
-	resultDT[resultDT$Year == 2004 & resultDT$DayofYear >= day1 & resultDT$DayofYear <= dayn,]
+	resultDT[resultDT$Year == 2004 & resultDT$DayofYear %in% day1:dayn,]
 }
 
 # Hand-calculate reference values
@@ -17,14 +17,13 @@ ref_mat <- mean(ref_met$Temp)
 # run setup
 metpath <- "data/US-Bo1"
 config <- PEcAn.settings::prepare.settings(PEcAn.settings::read.settings("data/pecan.biocro.xml"))
-config$pft$type$genus <- "Salix" # TODO should PEcAn.BIOCRO expect config$pfts$pft$type$genus instead?
+config$pft$type$genus <- "Salix"
 config$run$start.date <- as.POSIXct("2004-01-01")
 config$run$end.date <- as.POSIXct("2004-01-07")
 config$simulationPeriod$dateofplanting <- as.POSIXct("2004-01-01")
 config$simulationPeriod$dateofharvest <- as.POSIXct("2004-01-07")
 
 test_that("daily summarizes hourly (#1738)", {
-	skip_on_travis() # stubbing only works when BioCro package is installed
 
 	# stub out BioCro::willowGro: 
 	# calls to willowGro(...) will be replaced with calls to mock_run(...),
