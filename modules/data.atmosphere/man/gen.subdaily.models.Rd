@@ -4,10 +4,10 @@
 \alias{gen.subdaily.models}
 \title{gen.subdaily.models}
 \usage{
-gen.subdaily.models(outfolder, path.train, yrs.train, direction.filter,
-  in.prefix, n.beta, day.window, seed = Sys.time(), resids = FALSE,
-  parallel = FALSE, n.cores = NULL, overwrite = TRUE, verbose = FALSE,
-  print.progress = FALSE)
+gen.subdaily.models(outfolder, path.train, yrs.train,
+  direction.filter = "forward", in.prefix, n.beta, day.window,
+  seed = Sys.time(), resids = FALSE, parallel = FALSE, n.cores = NULL,
+  overwrite = TRUE, verbose = FALSE, print.progress = FALSE)
 }
 \arguments{
 \item{outfolder}{- directory where models will be stored *** storage required varies by size of training dataset, but prepare for >10 GB}
@@ -17,8 +17,8 @@ gen.subdaily.models(outfolder, path.train, yrs.train, direction.filter,
 \item{yrs.train}{- which years of the training data should be used for to generate the model for 
 the subdaily cycle.  If NULL, will default to all years}
 
-\item{direction.filter}{- Whether the model will be filtered backwards or forwards in time. options = c("backward", "forward")
-(PalEON will go backwards, anybody interested in the future will go forwards)}
+\item{direction.filter}{- Whether the model will be filtered backward or forward in time. options = c("backward", "forward")
+(PalEON will go backward, anybody interested in the future will go forward)}
 
 \item{in.prefix}{}
 

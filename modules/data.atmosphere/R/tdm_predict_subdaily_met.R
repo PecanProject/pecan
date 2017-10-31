@@ -18,19 +18,18 @@
 # Parameters
 # -----------------------------------
 ##' @param outfolder - directory where output file will be stored
-##' @param in.path - path to model dataset you wish to temporally downscale
+##' @param in.path - base path to dataset you wish to temporally downscale; Note: in order for parallelization 
+##'                  to work, the in.prefix will need to be appended as the final level of the file structure.  
+##'                  For example, if prefix is GFDL.CM3.rcp45.r1i1p1, there should be a directory with that title in in.path.
 ##' @param in.prefix - prefix of model dataset, i.e. if file is GFDL.CM3.rcp45.r1i1p1.2006 the prefix is 'GFDL.CM3.rcp45.r1i1p1'
 ##' @param path.train - path to CF/PEcAn style training data where each year is in a separate file.
-##' @param direction.filter - Whether the model will be filtered backwards or forwards in time. options = c("backward", "forward")
-##'                           (PalEON will go backwards, anybody interested in the future will go forwards)                  
+##' @param direction.filter - Whether the model will be filtered backward or forwards in time. options = c("backward", "forwards")
+##'                           (default is forward; PalEON will go backward, anybody interested in the future will go forwards)                  
 ##' @param lm.models.base - path to linear regression model folders generated using gen.subdaily.models
 ##' @param yrs.predict - years for which you want to generate met.  if NULL, all years in in.path will be done
 ##' @param ens.labs - vector containing the labels (suffixes) for each ensemble member; this allows you to add to your 
 ##'                   ensemble rather than overwriting with a default naming scheme
 ##' @param resids - logical stating whether to pass on residual data or not
-##' @param parallel - logical stating whether to run temporal_downscale_functions.R in parallel
-##' @param cores.max - 12
-##' @param n.cores - deals with parallelization
 ##' @param overwrite
 ##' @param verbose
 ##' @param print.progress - print the progress bar?
@@ -53,10 +52,11 @@
 # Begin Script
 #----------------------------------------------------------------------
 
-predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, direction.filter, lm.models.base,
+predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, direction.filter="forward", lm.models.base,
                                  yrs.predict=NULL, ens.labs = 1:3, resids = FALSE, 
-                                 parallel = FALSE, cores.max = 12, n.cores = NULL,
                                  overwrite = FALSE, verbose = FALSE, seed=format(Sys.time(), "%m%d"), print.progress=FALSE, ...) {
+  
+  if(!direction.filter %in% c("backward", "forward")) logger.severe("Invalid direction.filter")
   
   vars.hour <- c("air_temperature", "precipitation_flux", "surface_downwelling_shortwave_flux_in_air", 
                  "surface_downwelling_longwave_flux_in_air", "air_pressure", "specific_humidity", 
@@ -66,6 +66,9 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
                 "lag.specific_humidity", "lag.wind_speed")
   
   n.ens <- length(ens.labs)
+  
+  # Update in.path with our prefix (seems silly, but helps with parallelization)
+  in.path <- file.path(in.path, in.prefix)
   
   # Extract the lat/lon info from the first of the source files
   fnow <- dir(in.path, ".nc")[1]
@@ -87,12 +90,12 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
   }
   
   # make sure files and years are ordered in the direction we want to go
-  if(direction.filter=="backwards"){ 
+  if(direction.filter=="backward"){ 
     yrs.tdm <- yrs.tdm[order(yrs.tdm, decreasing = T)]
     files.tdm <- files.tdm[order(files.tdm, decreasing = T)]
   }
 
-  met.lag <- ifelse(direction.filter=="backwards", -1, +1)
+  met.lag <- ifelse(direction.filter=="backward", -1, +1)
   
   # Create wind speed variable if it doesn't exist
   # if (all(is.na(dat.train$wind_speed) == TRUE)) {
@@ -113,7 +116,7 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
   # ----------------------------------
   # Set progress bar
   # pb.index <- 1
-  if(print.progress==TRUE) pb <- txtProgressBar(min = 1, max = length(yrs.tdm), style = 3)
+  if(print.progress==TRUE) pb <- txtProgressBar(min = 0, max = length(yrs.tdm), style = 3)
   # setTxtProgressBar(pb, pb.index)
   
   for (y in 1:length(yrs.tdm)) {
@@ -154,17 +157,17 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
     # Set up our simulation time variables; it *should* be okay that this resets each year since it's really only doy that matters
     dat.ens$sim.hr  <- trunc(as.numeric(difftime(dat.ens$date, min(dat.ens$date), tz = "GMT", units = "hour")))+1
     dat.ens$sim.day <- trunc(as.numeric(difftime(dat.ens$date, min(dat.ens$date), tz = "GMT", units = "day")))+1
-    # lag.time <- ifelse(direction.filter=="backwards", min(dat.train$hour), max(dat.train$hour))
+    # lag.time <- ifelse(direction.filter=="backward", min(dat.train$hour), max(dat.train$hour))
     
     # ------------------------------
     # If this is our first time through, we need to initalize our lags; 
     # we can do so with the data we extracted with met.out
     # ------------------------------
     # Figure out whether we want to use the first or last value to initalize our lags
-    # Note: Data should be ordered Jan 1 -> Dec 31; If we're moving backwards, we start with 
+    # Note: Data should be ordered Jan 1 -> Dec 31; If we're moving backward, we start with 
     #       Dec 31 and we'll want to pull Jan 1.  If we're going forward, we want the opposite
     if(y == 1){
-      lag.use <- ifelse(direction.filter=="backwards", 1, nrow(met.out$dat.source$time))
+      lag.use <- ifelse(direction.filter=="backward", 1, nrow(met.out$dat.source$time))
       lags.init <- list()
       
       lags.init[["air_temperature"]] <- data.frame(array(mean(met.out$dat.source$air_temperature_maximum[lag.use], met.out$dat.source$air_temperature_minimum[lag.use]), dim=c(1, n.ens)))
@@ -201,8 +204,8 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
                           next.specific_humidity = met.nxt$dat.train$specific_humidity,
                           next.wind_speed = met.nxt$dat.train$wind_speed)
     
-    if(direction.filter=="backwards"){
-      # If we're filtering BACKWARDS, and starting with Dec. 31 of yrs.tdm[1] the first "next" is Dec. 30 (doy - 1) 
+    if(direction.filter=="backward"){
+      # If we're filtering backward, and starting with Dec. 31 of yrs.tdm[1] the first "next" is Dec. 30 (doy - 1) 
       # Jan 1 then needs the "next" pulled from the LAST row of yrs.tdm[2] 
       row.last <- nrow(met.nxt$dat.source$time)
       dat.nxt2 <- data.frame(year = met.nxt$dat.train$time$Year[1], 
@@ -242,8 +245,6 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
 
     # ----------------------------------- 
     # 2. Predict met vars for each ensemble member 
-    # Note: Right now this is only set up to do members sequentially, but there is 
-    #       potential to parallelize
     # -----------------------------------
 
     ens.sims <- lm_ensemble_sims(dat.mod = dat.ens, n.ens = n.ens,
@@ -258,7 +259,7 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
     # Set up the lags for the next year
     # -----------------------------------
     for(v in names(ens.sims)) {
-      lag.use <- ifelse(direction.filter=="backwards", 1, nrow(ens.sims[[v]]))
+      lag.use <- ifelse(direction.filter=="backward", 1, nrow(ens.sims[[v]]))
       lags.init[[v]] <- data.frame(ens.sims[[v]][lag.use,])
     }
     # -----------------------------------
@@ -324,4 +325,6 @@ predict_subdaily_met <- function(outfolder, in.path, in.prefix, path.train, dire
     # -----------------------------------
     
   } # End year loop
+  msg.done <- paste("Temporal Downscaling Complete:", in.prefix, min(yrs.tdm), "-", max(yrs.tdm), sep=" ")
+  return(msg.done)
 } # End function

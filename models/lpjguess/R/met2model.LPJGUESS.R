@@ -56,7 +56,7 @@ met2model.LPJGUESS <- function(in.path, in.prefix, outfolder, start_date, end_da
   }
 
   results <- data.frame(file = unlist(out.files.full),
-                        host = PEcAn.utils::fqdn(),
+                        host = PEcAn.remote::fqdn(),
                         mimetype = "application/x-netcdf",
                         formatname = "lpj-guess.metfile",
                         startdate = start_date,

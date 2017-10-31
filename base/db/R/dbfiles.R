@@ -32,7 +32,7 @@
 ##'   dbfile.input.insert('trait.data.Rdata', siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, mimetype, formatname,
-                                parentid=NA, con, hostname=PEcAn.utils::fqdn(), allow.conflicting.dates=FALSE) {
+                                parentid=NA, con, hostname=PEcAn.remote::fqdn(), allow.conflicting.dates=FALSE) {
   name <- basename(in.path)
   hostname <- default_hostname(hostname)
 
@@ -177,7 +177,7 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##'   dbfile.input.check(siteid, startdate, enddate, 'application/x-RData', 'traits', dbcon)
 ##' }
 dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, formatname, parentid=NA,
-                               con, hostname=PEcAn.utils::fqdn(), exact.dates=FALSE, pattern=NULL) {
+                               con, hostname=PEcAn.remote::fqdn(), exact.dates=FALSE, pattern=NULL) {
   hostname <- default_hostname(hostname)
 
   mimetypeid <- get.id(table = 'mimetypes', colnames = 'type_string', values = mimetype, con = con)
@@ -302,7 +302,7 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
 ##' \dontrun{
 ##'   dbfile.posterior.insert('trait.data.Rdata', pft, 'application/x-RData', 'traits', dbcon)
 ##' }
-dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, hostname=PEcAn.utils::fqdn()) {
+dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, hostname=PEcAn.remote::fqdn()) {
   hostname <- default_hostname(hostname)
 
   # find appropriate pft
@@ -362,7 +362,7 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
 ##' \dontrun{
 ##'   dbfile.posterior.check(pft, 'application/x-RData', 'traits', dbcon)
 ##' }
-dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=PEcAn.utils::fqdn()) {
+dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=PEcAn.remote::fqdn()) {
   hostname <- default_hostname(hostname)
 
   # find appropriate pft
@@ -414,7 +414,7 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=PEcA
 ##' \dontrun{
 ##'   dbfile.insert('somefile.txt', 'Input', 7, dbcon)
 ##' }
-dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostname=PEcAn.utils::fqdn()) {
+dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostname=PEcAn.remote::fqdn()) {
   hostname <- default_hostname(hostname)
 
   if (substr(in.path, 1, 1) != '/') {
@@ -496,7 +496,7 @@ dbfile.insert <- function(in.path, in.prefix, type, id, con, reuse = TRUE, hostn
 ##'   dbfile.check('Input', 7, dbcon)
 ##' }
 
-dbfile.check <- function(type, container.id, con, hostname = PEcAn.utils::fqdn(), machine.check = TRUE, return.all = FALSE) {
+dbfile.check <- function(type, container.id, con, hostname = PEcAn.remote::fqdn(), machine.check = TRUE, return.all = FALSE) {
 
   hostname <- default_hostname(hostname)
 
@@ -570,7 +570,7 @@ dbfile.check <- function(type, container.id, con, hostname = PEcAn.utils::fqdn()
 ##' \dontrun{
 ##'   dbfile.file('Input', 7, dbcon)
 ##' }
-dbfile.file <- function(type, id, con, hostname=PEcAn.utils::fqdn()) {
+dbfile.file <- function(type, id, con, hostname=PEcAn.remote::fqdn()) {
   hostname <- default_hostname(hostname)
 
   files <- dbfile.check(type = type, container.id = id, con = con, hostname = hostname)
@@ -605,7 +605,7 @@ dbfile.file <- function(type, id, con, hostname=PEcAn.utils::fqdn()) {
 ##' \dontrun{
 ##'   dbfile.id('Model', '/usr/local/bin/sipnet', dbcon)
 ##' }
-dbfile.id <- function(type, file, con, hostname=PEcAn.utils::fqdn()) {
+dbfile.id <- function(type, file, con, hostname=PEcAn.remote::fqdn()) {
   hostname <- default_hostname(hostname)
 
   # find appropriate host
