@@ -27,10 +27,11 @@ else
     exit $STATUS
   fi
 
+  # host specific cleanup - close/open the appropriate modules to run the next steps
+  @HOST_TEARDOWN@
+  
   echo "Running the modle output conversion functions to get thing into PEcAn shape..."
   echo $R_LIBS_USER
-  #echo "require (PEcAn.dvmdostem); library(PEcAn.dvmdostem); model2netcdf.dvmdostem('@OUTDIR@')" | R --vanilla
-  #echo "require (PEcAn.dvmdostem); model2netcdf.dvmdostem('@OUTDIR@')" | R --vanilla
   echo "require (PEcAn.dvmdostem)
 	.libPaths()
         model2netcdf.dvmdostem('@OUTDIR@')
@@ -45,6 +46,6 @@ fi
 cp  "@RUNDIR@/README.txt" "@OUTDIR@/README.txt"
 
 # host specific cleanup
-@HOST_TEARDOWN@
+#@HOST_TEARDOWN@  # edited by SPS 10/30/2017 to fix module issue with rjson
 
 echo -e "MODEL FINSIHED\nLogfile is located at '@OUTDIR@/logfile.txt'" >&3
