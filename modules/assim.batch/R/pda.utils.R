@@ -670,8 +670,7 @@ pda.generate.sf <- function(n.knot, sf, prior.list){
 ##' @title return.bias
 ##' @author Istem Fer
 ##' @export
-return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias, 
-                        run.round = FALSE, prev.bias = NULL){
+return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias, run.round = FALSE, prev.bias = NULL){
   
   # there can be more than one multiplicative Gaussian requested
   ibias <- length(isbias)
@@ -687,7 +686,6 @@ return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias,
   
   for(i in seq_along(isbias)){
     bias.params[[i]] <- matrix(NA, nrow = length(model.out), ncol = nbias)
-    bias.probs[[i]]  <- matrix(NA, nrow = length(model.out), ncol = nbias)
     
     for(iknot in seq_along(model.out)){
       if(anyNA(model.out[[iknot]], recursive = TRUE)){
@@ -704,36 +702,39 @@ return.bias <- function(isbias, model.out, inputs, prior.list.bias, nbias,
       }
     }
     
-    bias.prior$parama[i] <- min(bias.params[[i]], na.rm = TRUE) 
-    bias.prior$paramb[i] <- max(bias.params[[i]], na.rm = TRUE) 
+    bias.prior$parama[i] <- min(bias.params[[i]], na.rm = TRUE) - sd(bias.params[[i]], na.rm = TRUE)
+    bias.prior$paramb[i] <- max(bias.params[[i]], na.rm = TRUE) + sd(bias.params[[i]], na.rm = TRUE)
     
     prior.names[i] <- paste0("bias.", sapply(model.out[[1]],names)[isbias[i]])
     names(bias.params)[i] <- paste0("bias.", sapply(model.out[[1]],names)[isbias[i]])
-    
-    # get rid of NAs for distribution fitting
-    bias.probs[[i]] <- bias.params[[i]][complete.cases(bias.params[[i]]), ]
-    names(bias.probs)[i] <- paste0("bias.", sapply(model.out[[1]],names)[isbias[i]])
   }
   
   rownames(bias.prior) <- prior.names
-  
-  # fit a distribution
-  # TODO: check this when more than one multiplicative Gaussian requested
-  # probably need to re-format bias.params
-  bias.params
-  bias.prior <- PEcAn.MA::approx.posterior(bias.probs, bias.prior)
-  
   prior.list.bias[[(length(prior.list.bias)+1)]] <- bias.prior
-
+  
+  # convert params to probs for GPfit 
+  # note: there can be new parameters out of previous min/max if this is a round extension
+  bias.probs <- lapply(seq_along(isbias), 
+                       function(b) punif(bias.params[[b]], 
+                                         prior.list.bias[[length(prior.list.bias)]]$parama[b], 
+                                         prior.list.bias[[length(prior.list.bias)]]$paramb[b]))
+  
   
   # if this is another round, use the first priors
   if(run.round){
     load(prev.bias)
     prior.list.bias <- prior.list
     
+    # convert params to probs for GPfit 
+    # note: there can be new parameters out of previous min/max if this is a round extension
+    bias.probs <- lapply(seq_along(isbias), 
+                         function(b) punif(bias.params[[b]], 
+                                           prior.list.bias[[length(prior.list.bias)]]$parama[b], 
+                                           prior.list.bias[[length(prior.list.bias)]]$paramb[b]))
+    
   }
   
-  return(list(bias.params = bias.params, prior.list.bias = prior.list.bias))
+  return(list(bias.params = bias.params, bias.probs = bias.probs, prior.list.bias = prior.list.bias))
   
 } # return.bias
 
