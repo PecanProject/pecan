@@ -20,7 +20,8 @@ Imports:
     XML (>= 3.98-1.4),
     dplyr,
     ggplot2,
-    dbplyr
+    dbplyr,
+    SimilarityMeasures
 Suggests:
     testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE
