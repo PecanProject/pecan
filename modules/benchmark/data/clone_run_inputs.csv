@@ -1,9 +1,9 @@
-"old","new", "convert_type"  "convert_format_id"
-"met", "met", "met_std", 33
-"soil", "soil", "soil_std", NA
-"IC.raw", "IC.cohort", "raw", NA
-"IC.raw", "IC.pool", "raw", NA
-"IC.cohort", "IC.cohort", "cohort_std", NA
-"IC.cohort", "IC.pool", "cohort_std", NA
-"IC.pool", "IC.cohort", "raw", NA
-"IC.pool", "IC.pool", "pool_std", 1000000045
+"old","new","convert_type","convert_format_id"
+"met","met","met_std",33
+"soil","soil","soil_std",NA
+"IC.raw","IC.cohort","raw",NA
+"IC.raw","IC.pool","raw",NA
+"IC.cohort","IC.cohort","cohort_std",NA
+"IC.cohort","IC.pool","cohort_std",NA
+"IC.pool","IC.cohort","raw",NA
+"IC.pool","IC.pool","pool_std",1000000045

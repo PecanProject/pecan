@@ -9,7 +9,7 @@
 ##' @export 
 ##' 
 ##' @author Betsy Cowdery 
-##' @importFrom dplyr tbl filter rename collect select 
+##' @importFrom dplyr tbl filter rename collect select full_join
 
 clone_run <- function(settings, model, con){
   if(is.MultiSettings(settings)) {
@@ -32,78 +32,67 @@ clone_run <- function(settings, model, con){
   settings.new$run$start.date <- settings.old$run$start.date
   settings.new$run$end.date <- settings.old$run$end.date
   
+  #------ Update model ------#
   # New model info
   model.new <- tbl(bety, "models") %>% filter(model == id) %>% collect()
-  # List of all/required inputs for the new model 
-  inputs_all <- tbl(bety, "modeltypes_formats") %>% filter(model.new$modeltype_id == modeltype_id) %>% select(one_of("tag", "required")) %>% collect
-  inputs_req <- inputs_all$tag[inputs_all$required]
-  
-  #------ Update model ------#
-  
   settings.new$model$id <- model.new$id
   
   #------ Update inputs ------#
   
-  tags_std <- PEcAn.benchmark::clone_run_inputs
+  # Table of all/required inputs for the new model 
+  inputs_all <- tbl(bety, "modeltypes_formats") %>% 
+    filter(model.new$modeltype_id == modeltype_id) %>% 
+    select(one_of("tag", "required")) %>% collect
   
+  # List of required inputs for the new model
+  inputs_req <- inputs_all$tag[inputs_all$required]
   
-  for(tag in names(settings.old$run$inputs)){
+  PEcAn.benchmark::clone_run_inputs
+  # Inputs that can be converted from old to new via standardized formats
+inputs_conv <- full_join(inputs_all, PEcAn.benchmark::clone_run_inputs, by = c("tag" = "new")) %>% 
+    filter(old %in% names(settings.old$run$inputs))
+  
+  # Loop over the inputs that can be converted
+  for(i in 1:nrow(inputs_conv)){
     
-    # Check that the given input can be used in the new model
-    if(tag %in% inputs_all$tag){
-      
-      # Check lookup table to see what format input needs to be in 
-      new_format <- c()
-      
-      # Check if old model input is in the correct format
-      old.input <- tbl(bety, "inputs") %>% 
-        filter(settings.old$run$inputs[[tag]]$id == id) %>% 
+    tag_old <- inputs_conv[i,"old"]
+    tag_new <- inputs_conv[i,"tag"]
+    
+    # Get the parent tree of the old input 
+    family <- tbl(bety, "inputs") %>% 
+      filter(settings.old$run$inputs[[tag_old]]$id == id) %>% 
+      select( one_of("id", "format_id", "parent_id")) %>% collect()
+    parent <- family$parent_id
+    i = 1
+    
+    while(!is.na(parent)){ # There might be a better SQL query to find all parents, the first examples I found used while loops
+      i = i + 1
+      family[i,] <- tbl(bety, "inputs") %>% 
+        filter(parent == id) %>% 
         select( one_of("id", "format_id", "parent_id")) %>% collect()
-      
-      if(!is.na(old.input$parent_id)){
-        parent.input <- tbl(bety, "inputs") %>% 
-          filter(old.input$parent_id == id) %>% 
-          select( one_of("id", "format_id", "parent_id")) %>% collect()
-      }else{
-        parent.input <- list(format_id = NA)
-      }
-      
-      if(old.input$format_id == new_format){
-        # The input id points to a file that is already in the right format to be converted
-        settings.new$run$inputs[[tag]]$id  <- old.input$id 
-      }else if(parent.input$format_id == new_format){
-        # The parent id points to a file that is in the right format to be converted
-        settings.new$run$inputs[[tag]]$id  <- parent.input$id 
-      }else if(is.na(old.input$parent_id)){
-        # If the input has no parent id, assume it's raw data (is that safe???)
-        settings.new$run$inputs[[tag]]$id  <- old.input$id
-      }else{
-        # This shouldn't ever happen
-        # I assume model specific input shoud always have the standard as the parent
-      }
-      
-    }else{
-      # If input not needed, the tag could still be added to the new settings 
-      # and be commented out inthe XML, but that would be difficult
-      # to implement with a list object. I propose moivng it to an "omitted" list 
-      # that could be written out in an XML or in some sort of report
+      parent <- family$parent_id[i]
     }
+    
+    # Which input entry to go back to 
+    n <- which(family$format_id == inputs_conv$convert_format_id[i])
+    settings.new$run$inputs[[tag_new]]$id  <- family$id[n]
   }
   
-  # Check that all required inputs are in settings
+  # The remaining required inputs that weren't in the list of standardized formats
+  # need to be recorded either in the xml or a separate 
   missing_inputs <- setdiff(names(settings.new$run$inputs), inputs_req)
-  if(length(missing_inputs)>0){
+  if(length(missing_inputs) > 0){
     PEcAn.utils::logger.warn("Required inputs were not specified in the old run settings")
     # If there are obvious defaults, use them to fill in missing inputs
     # Make sure the XML can't be run if there are missing inputs
   }
   
   #------ Update PFTs ------#
-
+  
   old.pfts <- unlist(lapply(seq_along(pfts), function(x) settings$pfts[[x]][["name"]]))
   # Get all possible pfts for the model 
   new.pfts.all <- tbl(bety,"pfts") %>% filter(model.new$modeltype_id == modeltype_id) %>% pull(name)
-
+  
   # Match the two sets of PFTs using align_pft
   # Note: "model_to_model" has not been implemented yet
   align_pft(con, old.pfts, new.pfts.all, comparison_type="model_to_model")
