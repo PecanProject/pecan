@@ -75,6 +75,10 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   appbinary <- settings$model$binary
   appbinary_path <- dirname(appbinary)                  # path of dvmdostem binary file
 
+  # On the VM, these seem to be the same.
+  PEcAn.logger::logger.info(paste0("local_rundir: ", local_rundir))
+  PEcAn.logger::logger.info(paste0("rundir: ", rundir))
+
   # Subset the trait.values list to get only the traits for the PFT we are
   # interested in. The trait.values list should be something like this:
   # $`CMT04-Salix`
@@ -249,6 +253,53 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   #     -> step one is symlink from raw data locations (Model install folder)
   #        into pecan run folder, maybe do this within job.sh?
 
+  # Pick up the site and pixel settings from the xml file if they exist
+  if (is.null(settings$model$dvmdostem_site)){
+    siteDataPath <- "DATA/SewardPen_10x10"
+  } else {
+    siteDataPath <- settings$model$dvmdostem_site
+  }
+  PEcAn.logger::logger.info(paste0("Using siteDataPath: ", siteDataPath))
+
+  if (is.null(settings$model$dvmdostem_pixel_y)){
+    pixel_Y <- 1
+  } else {
+    pixel_Y <- settings$model$dvmdostem_pixel_y
+  }
+  if (is.null(settings$model$dvmdostem_pixel_x)){
+    pixel_X <- 1
+  } else {
+    pixel_X <- settings$model$dvmdostem_pixel_x
+  }
+
+
+  # Build a custom run-mask - in case the run-mask that ships with dvmdostem
+  # it not what we want.
+
+  # Copy the run-mask from the input data directory to the run directory
+  system2(paste0("cp"),
+          wait=TRUE,
+          args=(c("-r",
+                  file.path(appbinary_path, siteDataPath, 'run-mask.nc'),
+                  file.path(rundir, 'run-mask.nc'))))
+
+  # # Turn off all pixels except the 0,0 pixel in the mask
+  # Can't seem to use this as python-netcdf4 is not available. WTF.
+  # system2(paste0(file.path(appbinary_path, "scripts/runmask-util.py")),
+  #         wait=TRUE,
+  #         args=c("--reset", "--yx", pixel_Y, pixel_X, file.path(rundir, 'run-mask.nc')))
+
+  useThisMask <- file.path(rundir, 'run-mask.nc')
+  nc_useThisMask <- ncdf4::nc_open(useThisMask, write = TRUE)
+  ## !!DANGER!!
+  ## !! crazy R dimension ordering, with X first!
+  ## !! It is Y (lat) first in all other implementations!!
+  new_data <- matrix(0L, nc_useThisMask$dim$X$len, nc_useThisMask$dim$Y$len)
+  new_data[[strtoi(pixel_X), strtoi(pixel_Y)]] <- 1
+  ncdf4::ncvar_put(nc_useThisMask, nc_useThisMask$var$run, new_data)
+
+
+
   ## Update dvm-dos-tem config.js file
 
   # Get a copy of the config file written into the run directory with the
@@ -259,9 +310,9 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     config_template <- readLines(con=system.file("config.js.template", package = "PEcAn.dvmdostem"), n=-1)
   }
 
-  config_template <- gsub("@INPUT_DATA_DIR@", file.path(dirname(appbinary), "DATA/SewardPen_10x10"), config_template)
-  # !remove hard-coding of SewPen here!
+  config_template <- gsub("@INPUT_DATA_DIR@", file.path(dirname(appbinary), siteDataPath), config_template)
   config_template <- gsub("@MODEL_OUTPUT_DIR@", outdir, config_template)
+  config_template <- gsub("@CUSTOM_RUN_MASK@", file.path(rundir), config_template )
 
   if (! file.exists(file.path(settings$rundir, run.id,"config"))) dir.create(file.path(settings$rundir, run.id,"config"),
                                                                              recursive = TRUE)
