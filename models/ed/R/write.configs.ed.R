@@ -388,7 +388,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
       # ED, and the 'defaults.PFT' (name or number) to use for pulling default parameter values.
       pft.number <- pftmapping$ED[which(pftmapping == pft)]
 
-      if(pft=="soil"){
+      if(grepl("soil", pft)){
         data(soil, package = "PEcAn.ED2")
         vals <- as.list(soil)
         names(vals) <- colnames(soil)
