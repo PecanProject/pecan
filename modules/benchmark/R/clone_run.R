@@ -89,9 +89,9 @@ inputs_conv <- full_join(inputs_all, PEcAn.benchmark::clone_run_inputs, by = c("
   
   #------ Update PFTs ------#
   
-  old.pfts <- unlist(lapply(seq_along(pfts), function(x) settings$pfts[[x]][["name"]]))
+  old.pfts <- unlist(lapply(seq_along(pfts), function(x) settings$pfts[[x]][["id"]]))
   # Get all possible pfts for the model 
-  new.pfts.all <- tbl(bety,"pfts") %>% filter(model.new$modeltype_id == modeltype_id) %>% pull(name)
+  new.pfts.all <- tbl(bety,"pfts") %>% filter(model.new$modeltype_id == modeltype_id) %>% pull(id)
   
   # Match the two sets of PFTs using align_pft
   # Note: "model_to_model" has not been implemented yet
