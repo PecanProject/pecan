@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 # Copyright (c) 2012 University of Illinois, NCSA.
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the
@@ -25,10 +25,12 @@
 ##' @export
 ##' @examples
 ##' \dontrun{
-##'   write.config.JULES(defaults, trait.values, settings, run.id)
+##'   write.config.JULES(defaults, trait.samples, settings, run.id)
 ##' }
 ##-------------------------------------------------------------------------------------------------#
-write.config.JULES <- function(defaults, trait.values, settings, run.id) {
+
+write.config.JULES <- function(defaults, trait.samples, settings, run.id){
+  
   # constants
   molH2O_to_grams <- 18.01528
   leafC <- 0.48
@@ -331,7 +333,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
     l_trif_eq <- grep("l_trif_eq",veg.text)
     if(length(l_trif_eq) == 0){
       veg.text[length(veg.text)] <- "l_trif_eq=.false.,"
-      veg.text[length(veg.text)+1] <- "/"llj
+      veg.text[length(veg.text)+1] <- "/"
     } else {
       veg.text[l_trif_eq] <- sub("true",'false',veg.text[l_triffid]) # set to FALSE
     }
@@ -602,7 +604,7 @@ write.config.JULES <- function(defaults, trait.values, settings, run.id) {
       ## LAI m2/m2
       if(!is.null(IC.path)){
         # Read in netcdf file
-        IC.nc <- ncdf4::nc_open(IC.path) b
+        IC.nc <- ncdf4::nc_open(IC.path)
         #Get LAI value
         lai <- try(ncdf4::ncvar_get(IC.nc,"LAI"))
         #Read in default initial conditions dat file
