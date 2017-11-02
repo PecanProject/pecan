@@ -300,6 +300,19 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   ncdf4::nc_close(ncMaskFile)
 
 
+  # Open the input veg file, check that the pixel that is enabled in the
+  # run mask is the right veg type to match the cmt/pft that is selected
+  # for the run.
+  ncVegCMTFile <- ncdf4::nc_open(file.path(appbinary_path,siteDataPath, "vegetation.nc"), write=FALSE)
+  veg_class <- ncdf4::ncvar_get(ncVegCMTFile, ncVegCMTFile$var$veg_class)
+  if (cmtnum != veg_class[[strtoi(pixel_X), strtoi(pixel_Y)]]) {
+    PEcAn.logger::logger.error("INCORRECT PIXEL!! THIS RUN WILL PROBABLY NOT WORK!!")
+    # Is there a way to abort the run??
+  }
+
+
+
+
   ## Update dvm-dos-tem config.js file
 
   # Get a copy of the config file written into the run directory with the
