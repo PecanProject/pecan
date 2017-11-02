@@ -289,15 +289,15 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   #         wait=TRUE,
   #         args=c("--reset", "--yx", pixel_Y, pixel_X, file.path(rundir, 'run-mask.nc')))
 
-  useThisMask <- file.path(rundir, 'run-mask.nc')
-  nc_useThisMask <- ncdf4::nc_open(useThisMask, write = TRUE)
   ## !!DANGER!!
-  ## !! crazy R dimension ordering, with X first!
-  ## !! It is Y (lat) first in all other implementations!!
-  new_data <- matrix(0L, nc_useThisMask$dim$X$len, nc_useThisMask$dim$Y$len)
+  ## - crazy R dimension ordering, with X first! (Y first in all other implementations!)
+  ## - R does not have a 64bit integer datatype so we get a warning about casting
+  ##   and that there may be information lost (unlikely in this case)
+  ncMaskFile <- ncdf4::nc_open(file.path(rundir, 'run-mask.nc'), write = TRUE)
+  new_data <- matrix(0, ncMaskFile$dim$X$len, ncMaskFile$dim$Y$len)
   new_data[[strtoi(pixel_X), strtoi(pixel_Y)]] <- 1
-  ncdf4::ncvar_put(nc_useThisMask, nc_useThisMask$var$run, new_data)
-
+  ncdf4::ncvar_put(ncMaskFile, ncMaskFile$var$run, new_data, verbose=TRUE)
+  ncdf4::nc_close(ncMaskFile)
 
 
   ## Update dvm-dos-tem config.js file
