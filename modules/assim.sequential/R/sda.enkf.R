@@ -323,8 +323,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       }
     }
     
-    cov[1:J,1:J] <- k_0 * pf[1:J,1:J]
-    muf[1:J] ~ dmnorm(mean = mu_0[1:J], cov = cov[1:J,1:J])
+    #cov[1:J,1:J] <- k_0 * pf[1:J,1:J]
+    muf[1:J] ~ dmnorm(mean = mu_0[1:J], cov = pf[1:J,1:J])
     
     Sigma[1:J,1:J] <- lambda_0[1:J,1:J]/nu_0
     pf[1:J,1:J] ~ dinvwish(S = Sigma[1:J,1:J], df = J)
@@ -346,7 +346,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for(t in seq_len(nt)) {
+  for(t in 3) {
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -396,7 +396,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       ##Don't need this anymore?
       if (length(obs.mean[[t]]) > 1) {
         diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
-        #diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
+        diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
       }
       
       ### TO DO: plotting not going to work because of observation operator i.e. y and x are on different scales
@@ -508,17 +508,18 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           data.tobit2space = list(y.ind = x.ind,
                                   y.censored = x.censored,
                                   mu_0 = rep(0,length(mu.f)),
-                                  lambda_0 = diag(.01,length(mu.f)),
-                                  k_0 = length(mu.f) + 1, #some measure of prior obs
-                                  nu_0 = length(mu.f) + 1)#some measure of prior obs
+                                  lambda_0 = diag(10,length(mu.f)),
+                                  #k_0 = length(mu.f), #some measure of prior obs
+                                  nu_0 = 3)#some measure of prior obs
           
-          inits.tobit2space = list(pf = diag(10,length(mu.f)), muf = colMeans(X)) #pf = cov(X)
+          inits.tobit2space = list(pf = Pf, muf = colMeans(X)) #pf = cov(X)
           #set.seed(0)
           #ptm <- proc.time()
           tobit2space_pred <- nimbleModel(tobit2space.model, data = data.tobit2space,
-                                          constants = constants.tobit2space, inits = inits.tobit2space)
+                                          constants = constants.tobit2space, inits = inits.tobit2space,
+                                          name = 'space')
           ## Adding X.mod,q,r as data for building model.
-          conf_tobit2space <- configureMCMC(tobit2space_pred, print=TRUE)
+          conf_tobit2space <- configureMCMC(tobit2space_pred, thin = 10, print=TRUE)
           conf_tobit2space$addMonitors(c("pf", "muf")) 
           ## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
           ## important!
@@ -551,18 +552,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         }else{
           Cmodel_tobit2space$y.ind <- x.ind
           Cmodel_tobit2space$y.censored <- x.censored
-          Cmodel_tobit2space$lambda_0 <- Pa
-          Cmodel_tobit2space$mu_0 <- mu.a
+          #Cmodel_tobit2space$lambda_0 <- diag(10,length(mu.f))#enkf.params[[t-1]]$Pa
+          #Cmodel_tobit2space$mu_0 <- rep(0,14)#enkf.params[[t-1]]$mu.a
           
-          Cmodel_tobit2space$k_0 <- 3
-          Cmodel_tobit2space$nu_0 <- 3
-          Cmodel_tobit2space$lambda_0 <- diag(.01,14)
-          #Cmodel_tobit2space$muf <- mu.f
-          #Cmodel_tobit2space$pf <- solve(Pf)
-          
-          
-          
-          for(i in 1:length(mu.f)) {
+          for(i in seq_along(X)) {
               ## ironically, here we have to "toggle" the value of y.ind[i]
               ## this specifies that when y.ind[i] = 1,
               ## indicator variable is set to 0, which specifies *not* to sample
@@ -570,17 +563,55 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           }
           
         }
-        
+         
         set.seed(0)
-        dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = 40000, progressBar=FALSE)
+        dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = 50000, progressBar=TRUE)
+        
+        assessParams <- function(dat, Xt, mu_f_TRUE, P_f_TRUE){  
+          
+          imuf   <- grep("muf", colnames(dat))
+          muf <- colMeans(dat[, imuf])
+          mufT <- apply(Xt,2,mean)
+          
+          par(mfrow=c(2,2))
+          for(i in 1:(length(imuf)-1)){
+            plot(dat[,i],dat[,i+1])
+            points(mu_f_TRUE[i],mu_f_TRUE[i+1],cex=3,col=2,pch=18)
+            points(muf[i],muf[i+1],cex=3,col=3,pch=19)
+            points(mufT[i],mufT[i+1],cex=3,col=4,pch=20)
+          }
+          plot.new()
+          legend("topleft",legend=c("TRUE","post","sampT"),col=2:4,pch = 18:20)
+          
+          #cor(dat[,1:6])
+          
+          iPf   <- grep("pf", colnames(dat))
+          Pf <- matrix(colMeans(dat[, iPf]),ncol(X),ncol(X))
+          
+          PfCI <- apply(dat[,iPf],2,quantile,c(0.025,0.975))
+          par(mfrow=c(1,1))
+          plot(P_f_TRUE,Pf,ylim=range(PfCI))
+          abline(0,1,lty=2)
+          for(i in 1:length(Pf)){
+            lines(rep(as.vector(P_f_TRUE)[i],2),PfCI[,i],col=i,lwd=2)
+          }
+          #PfT <- cov(Xt)
+          #points(P_f_TRUE,PfT,col=1:14,pch="-",cex=2)
+        }
+        assessParams(dat = dat.tobit2space[1000:5000,], Xt = X, mu_f_TRUE = colMeans(X), P_f_TRUE = Pf)
         
         ## update parameters
-        dat.tobit2space  <- dat.tobit2space[10000:50000, ]
+        dat.tobit2space  <- dat.tobit2space[1000:5000, ]
         imuf   <- grep("muf", colnames(dat.tobit2space))
         mu.f <- colMeans(dat.tobit2space[, imuf])
         iPf   <- grep("pf", colnames(dat.tobit2space))
         Pf <- matrix(colMeans(dat.tobit2space[, iPf]),ncol(X),ncol(X))
         
+        #plot(dat.tobit2space[,16])
+        
+        
+        if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
+      
         ###-------------------------------------------------------------------###
         ### Generalized Ensemble Filter                                       ###
         ###-------------------------------------------------------------------###
@@ -624,7 +655,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           #set.seed(0)
           #ptm <- proc.time()
           model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
-                                    constants = constants.tobit, inits = inits.pred)
+                                    constants = constants.tobit, inits = inits.pred,
+                                    name = 'base')
           ## Adding X.mod,q,r as data for building model.
           conf <- configureMCMC(model_pred, print=TRUE)
           conf$addMonitors(c("X","q","Q")) 
@@ -676,7 +708,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         }
         
         set.seed(0)
-        dat <- runMCMC(Cmcmc, niter = 10000, progressBar=FALSE)
+        dat <- runMCMC(Cmcmc, niter = 50000, progressBar=FALSE)
         
         # #### JAGS update list
         # update <- list(interval = interval,
@@ -704,7 +736,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         # #should we put a stop in if params don't converge?
         
         ## update parameters
-        dat  <- dat[3000:10000, ]
+        dat  <- dat[10000:50000, ]
         iq   <- grep("q", colnames(dat))
         iX   <- grep("X[", colnames(dat), fixed = TRUE)
         mu.a <- colMeans(dat[, iX])
@@ -783,8 +815,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
       }
       
-      if(sum(mu.a-colMeans(X_a))>1) logger.warn('Problem with ensemble adjustment (1)')
-      if(sum(diag(Pa),diag(cov(X_a)))>5) logger.warn('Problem with ensemble adjustment (2)')
+      if(sum(mu.a - colMeans(X_a)) > 1 | sum(mu.a - colMeans(X_a)) < -1) logger.warn('Problem with ensemble adjustment (1)')
+      if(sum(diag(Pa) - diag(cov(X_a))) > 5 | sum(diag(Pa) - diag(cov(X_a))) < -5) logger.warn('Problem with ensemble adjustment (2)')
       
       analysis <- as.data.frame(X_a)
     }else{
@@ -810,7 +842,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     ANALYSIS[[t]] <- analysis
     
     if (interactive() & t > 1) { #
-      t1 <- 1
+      t1 <- 2
       names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
       Ybar <- t(sapply(obs.mean[t1:t], function(x) {
         tmp <- rep(NA, length(names.y))
@@ -837,7 +869,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       
       par(mfrow = c(2, 1))
       for (i in 1:ncol(FORECAST[[t]])) {
-        t1 <- 1
+        t1 <- 2
         Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
         Xci  <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
         
@@ -846,8 +878,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         
         ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                                     function(x) { x })[2, ], use.names = FALSE)
-        
-        
         
         # observation / data
         if (i <= ncol(Ybar)) {
