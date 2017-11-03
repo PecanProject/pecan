@@ -335,17 +335,6 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
 write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$constants) {
 
   ## Find history file TODO this should come from the database
-  # histfile <- paste0("data/history.r", settings$model$revision, ".csv")
-  # if (file.exists(system.file(histfile, package = "PEcAn.ED2"))) {
-  #   PEcAn.logger::logger.debug(paste0("--- Using ED2 History File: ", "data/history.r", settings$model$revision, ".csv"))
-  #   edhistory <- read.csv2(system.file(histfile, package = "PEcAn.ED2"), sep = ";",
-  #                          stringsAsFactors = FALSE, dec = ".")
-  # } else {
-  #   PEcAn.logger::logger.debug("--- Using Generic ED2 History File: data/history.csv")
-  #   edhistory <- read.csv2(system.file("data/history.csv", package = "PEcAn.ED2"), sep = ";",
-  #                          stringsAsFactors = FALSE, dec = ".")
-  # }
-
   ed2_package_data <- data(package="PEcAn.ED2")
   histfile <- paste0("history.r", settings$model$revision) # set history file name to look for in ed2_package_data
   if (histfile %in% ed2_package_data$results[, "Item"]) {
