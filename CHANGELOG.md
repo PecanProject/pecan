@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+- Fixed issue #1752 by updating the site.lst() function to include site.id=site$id instead of site.id=site, as site is an object not just the id
 - `PEcAn.utils` now lazy-loads data for faster execution of functions that consult lookup tables, especially `to_ncvar`.
 - Fixed incorrect `PEcAn.BIOCRO` daily and yearly results: Was calculating every row from whole simulation instead of that day (#1738)
 
