@@ -26,9 +26,27 @@
 ##' @author Tobey Carman, Shawn Serbin
 ##' 
 model2netcdf.dvmdostem <- function(outdir) {
-  
-  PEcAn.logger::logger.info(paste("DVM-DOS-TEM outputs in:",outdir))
-  
+
+  PEcAn.logger::logger.info(paste("Processing dvmdostem outputs in: ", outdir))
+
+  # First things first, we need to check the run_status.nc file and make sure
+  # that the a) only one pixel ran, and b) the success code is > 0
+  nc_runstatus <- ncdf4::nc_open(file.path(outdir, "run_status.nc"), write=FALSE)
+  run_status <- ncdf4::ncvar_get(nc_runstatus, nc_runstatus$var$run_status)
+  ncdf4::nc_close(nc_runstatus)
+  good_px <- which(run_status > 0)
+  if (length(good_px) != 1) {
+    PEcAn.logger::logger.error("ERROR! Either more than one pixel ran, or no pixel successfully ran. Not sure what to do, so quitting.")
+    stop()
+    # Not sure we even need to check bad_px or skipped_px?
+    #skipped_px <- which(run_status == 0)
+    #bad_px <- which(run_status < 0)
+  }
+
+  # Get the actual pixel coords of the cell that ran
+  px <- which(run_status > 0, arr.ind = TRUE) # Returns x,y array indices
+  px_X <- px[1]
+  px_Y <- px[2]
   ## helper function
   #oldname <- "GPP"
   #newname <- "GPP"
@@ -61,8 +79,7 @@ model2netcdf.dvmdostem <- function(outdir) {
     return(out)
   }
 
-  ## Setup for output
-  # Define PEcAn style dimensions
+  # Define PEcAn style dimensions; reusable for many files
   lond <- ncdf4::ncdim_def(name='lon',
                            units="degrees_east",
                            vals=c(1), # <=== read from dvmdostem file!
