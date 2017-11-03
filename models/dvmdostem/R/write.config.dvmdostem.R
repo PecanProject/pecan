@@ -306,8 +306,9 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   ncVegCMTFile <- ncdf4::nc_open(file.path(appbinary_path,siteDataPath, "vegetation.nc"), write=FALSE)
   veg_class <- ncdf4::ncvar_get(ncVegCMTFile, ncVegCMTFile$var$veg_class)
   if (cmtnum != veg_class[[strtoi(pixel_X), strtoi(pixel_Y)]]) {
-    PEcAn.logger::logger.error("INCORRECT PIXEL!! THIS RUN WILL PROBABLY NOT WORK!!")
-    # Is there a way to abort the run??
+    PEcAn.logger::logger.error("INCORRECT PIXEL!! THIS RUN WILL NOT WORK!")
+    PEcAn.logger::logger.error("STOPPING NOW TO PREVENT FUTURE HEARTACHE!")
+    stop()
   }
 
 
