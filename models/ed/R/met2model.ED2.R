@@ -31,8 +31,10 @@
 ##' @param overwrite should existing files be overwritten
 ##' @param verbose should the function be very verbose
 ##' @importFrom ncdf4 ncvar_get ncdim_def ncatt_get ncvar_add
+##' @importFrom rhdf5 h5createFile h5write 
 met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, lst = 0, lat = NA,
                           lon = NA, overwrite = FALSE, verbose = FALSE, ...) {
+  library(rhdf5)
   overwrite <- as.logical(overwrite)
 
   # results are stored in folder prefix.start.end
