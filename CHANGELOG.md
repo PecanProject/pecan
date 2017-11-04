@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+- Fixed issue #1752 by updating the site.lst() function to include site.id=site$id instead of site.id=site, as site is an object not just the id
 - Update to PEcAn.ED2::met2model.ED2 to fix issue with rhdf5::h5write. Bug fix to #1742
 - Fixed write.config.xml.ED2 parsing of data/history* files
 - `PEcAn.utils` now lazy-loads data for faster execution of functions that consult lookup tables, especially `to_ncvar`.
