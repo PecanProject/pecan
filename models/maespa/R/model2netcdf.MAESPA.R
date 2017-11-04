@@ -24,6 +24,8 @@
 ##' @author Tony Gardella
 model2netcdf.MAESPA <- function(outdir, sitelat, sitelon, start_date, end_date, stem_density) {
   
+  # need to load stringr in memory for Maeswrap
+  require(stringr)
 
   ### Read in model output using Maeswrap. Dayflx.dat, watbalday.dat
   dayflx.dataframe    <- Maeswrap::readdayflux(filename = "Dayflx.dat")
