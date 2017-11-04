@@ -174,6 +174,9 @@ met2model.MAESPA <- function(in.path, in.prefix, outfolder, start_date, end_date
     lonunits <- "W"
   }
 
+  # need to load stringr in memory for Maeswrap
+  require(stringr)
+
   ## Write output met.dat file
   metfile <- system.file("met.dat", package = "PEcAn.MAESPA")
   met.dat <- Maeswrap::replacemetdata(out, oldmetfile = metfile, newmetfile = out.file.full)
