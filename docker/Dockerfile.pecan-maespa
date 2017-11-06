@@ -1,0 +1,31 @@
+# ----------------------------------------------------------------------
+# BUILD MAESPA BINARY
+# ----------------------------------------------------------------------
+FROM debian as maespa-binary
+
+# Some variables that can be used to set control the docker build
+ARG MODEL_VERSION=git
+
+# install dependencies
+RUN apt-get update \
+    && apt-get install -y \
+       gfortran \
+       git \
+       make \
+    && rm -rf /var/lib/apt/lists/*
+
+# download, unzip and build sipnet
+WORKDIR /src
+RUN git clone https://bitbucket.org/remkoduursma/maespa.git \
+    && cd /src/maespa \
+    && make
+
+########################################################################
+
+# ----------------------------------------------------------------------
+# BUILD PECAN FOR MODEL
+# ----------------------------------------------------------------------
+FROM pecan/pecan-cli:latest
+MAINTAINER Rob Kooper <kooper@illinois.edu>
+
+COPY --from=maespa-binary /src/maespa/maespa.out /usr/local/bin/maespa
