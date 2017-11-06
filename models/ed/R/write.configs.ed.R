@@ -202,8 +202,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     ed2in.text <- gsub("@SITE_PSSCSS@", "", ed2in.text)
   } else {
     lat_rxp <- "\\.lat.*lon.*\\.(css|pss|site)"
-    prefix.pss <- sub(lat_rxp, "", settings$run$inputs$css$path)
-    prefix.css <- sub(lat_rxp, "", settings$run$inputs$pss$path)
+    prefix.css <- sub(lat_rxp, "", settings$run$inputs$css$path)
+    prefix.pss <- sub(lat_rxp, "", settings$run$inputs$pss$path)
     # pss and css prefix is not the same, kill
     if (!identical(prefix.pss, prefix.css)) {
       PEcAn.logger::logger.info(paste("pss prefix:", prefix.pss))
