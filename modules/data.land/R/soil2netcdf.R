@@ -19,8 +19,8 @@
 #'
 #' @examples
 #' \dontrun{
-#' soil.data <- list(volume_fraction_of_sand_in_soil = c(0.3,0.4,0.5),
-#'                   volume_fraction_of_clay_in_soil = c(0.3,0.3,0.3),
+#' soil.data <- list(fraction_of_sand_in_soil = c(0.3,0.4,0.5),
+#'                   fraction_of_clay_in_soil = c(0.3,0.3,0.3),
 #'                   soil_depth = c(0.2,0.5,1.0))
 #'                         
 #' soil2netcdf(soil.data,"soil.nc")
@@ -29,9 +29,9 @@ soil2netcdf <- function(soil.data,new.file){
   soil.data <- as.list(soil.data)
   
   ## convert soil type to parameters via look-up-table / equations
-  mysoil <- PEcAn.data.land::soil_params(sand=soil.data$volume_fraction_of_sand_in_soil,
-                                         silt=soil.data$volume_fraction_of_silt_in_soil,
-                                         clay=soil.data$volume_fraction_of_clay_in_soil,
+  mysoil <- PEcAn.data.land::soil_params(sand=soil.data$fraction_of_sand_in_soil,
+                                         silt=soil.data$fraction_of_silt_in_soil,
+                                         clay=soil.data$fraction_of_clay_in_soil,
                                          bulk=soil.data$soil_bulk_density)
   
   ## Merge in new variables
