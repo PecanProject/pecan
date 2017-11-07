@@ -294,7 +294,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
                      getHdf5Data(ncT, "FMEAN_VAPOR_GC_PY"), 28, row, yrs[y])  ## Qle
         out <- add(-999, 29, row, yrs[y])  ## Swnet
         out <- add(-999, 30, row, yrs[y])  ## RootMoist
-        out <- add(getHdf5Data(ncT, "FMEAN_TRANSP_PY"), 31, row, yrs[y])  ## Tveg
+        out <- add(getHdf5Data(ncT, "FMEAN_TRANSP_PY"), 31, row, yrs[y])  ## TVeg
         out <- add(getHdf5Data(ncT, "ZBAR"), 32, row, yrs[y])  ## WaterTableD
         out <- add(-999, 33, row, yrs[y])  ## fPAR
         ##lai <- matrix(apply(getHdf5Data(ncT, 'LAI_PFT'),1,sum,na.rm=TRUE),nrow=block)
@@ -456,7 +456,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
         out <- add(getHdf5Data(ncT, "AVG_EVAP"), 28, row, yrs[y])  ## Qle
         out <- add(-999, 29, row, yrs[y])  ## Swnet
         out <- add(-999, 30, row, yrs[y])  ## RootMoist
-        out <- add(getHdf5Data(ncT, "AVG_TRANSP"), 31, row, yrs[y])  ## Tveg
+        out <- add(getHdf5Data(ncT, "AVG_TRANSP"), 31, row, yrs[y])  ## TVeg
         out <- add(getHdf5Data(ncT, "ZBAR"), 32, row, yrs[y])  ## WaterTableD
         out <- add(-999, 33, row, yrs[y])  ## fPAR
         ##lai <- matrix(apply(getHdf5Data(ncT, 'LAI_PFT'),1,sum,na.rm=TRUE),nrow=block)
@@ -573,7 +573,7 @@ model2netcdf.ED2 <- function(outdir, sitelat, sitelon, start_date, end_date) {
                                     longname = "Latent heat")
     nc_var[[29]] <- mstmipvar("SWnet", lat, lon, t, zg)
     nc_var[[30]] <- mstmipvar("RootMoist", lat, lon, t, zg)
-    nc_var[[31]] <- mstmipvar("Tveg", lat, lon, t, zg)
+    nc_var[[31]] <- mstmipvar("TVeg", lat, lon, t, zg)
     nc_var[[32]] <- mstmipvar("WaterTableD", lat, lon, t, zg)
     nc_var[[33]] <- mstmipvar("fPAR", lat, lon, t, zg)
     nc_var[[34]] <- mstmipvar("LAI", lat, lon, t, zg)
