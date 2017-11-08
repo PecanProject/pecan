@@ -9,10 +9,15 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+- Simple fix to models/ed/R/write.configs.ed.R to properly align pss and css file prefix
+- Fixed issue #1752 by updating the site.lst() function to include site.id=site$id instead of site.id=site, as site is an object not just the id
+- Update to PEcAn.ED2::met2model.ED2 to fix issue with rhdf5::h5write. Bug fix to #1742
+- Fixed write.config.xml.ED2 parsing of data/history* files
 - `PEcAn.utils` now lazy-loads data for faster execution of functions that consult lookup tables, especially `to_ncvar`.
 - Fixed incorrect `PEcAn.BIOCRO` daily and yearly results: Was calculating every row from whole simulation instead of that day (#1738)
 
 ### Added
+- New Dockerfile to create PEcAN specific container for SIPNET.
 
 ### Removed
 - Removed `PEcAn.utils::model2netcdf`, which has been deprecated since PEcAn 1.3.7. Use `model2netcdf.<YOURMODEL>` in the appropriate model package instead.
