@@ -323,7 +323,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       }
     }
     
-    #cov[1:J,1:J] <- k_0 * pf[1:J,1:J]
     muf[1:J] ~ dmnorm(mean = mu_0[1:J], cov = pf[1:J,1:J])
     
     Sigma[1:J,1:J] <- lambda_0[1:J,1:J]/nu_0
@@ -346,7 +345,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for(t in 3) {
+  for(t in seq_len(nt)) {
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -392,8 +391,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       R <- as.matrix(obs.cov[[t]][choose,choose])
       R[is.na(R)]<-0
       
-      
-      ##Don't need this anymore?
       if (length(obs.mean[[t]]) > 1) {
         diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
         diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
@@ -509,7 +506,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
                                   y.censored = x.censored,
                                   mu_0 = rep(0,length(mu.f)),
                                   lambda_0 = diag(10,length(mu.f)),
-                                  #k_0 = length(mu.f), #some measure of prior obs
                                   nu_0 = 3)#some measure of prior obs
           
           inits.tobit2space = list(pf = Pf, muf = colMeans(X)) #pf = cov(X)
@@ -552,8 +548,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         }else{
           Cmodel_tobit2space$y.ind <- x.ind
           Cmodel_tobit2space$y.censored <- x.censored
-          #Cmodel_tobit2space$lambda_0 <- diag(10,length(mu.f))#enkf.params[[t-1]]$Pa
-          #Cmodel_tobit2space$mu_0 <- rep(0,14)#enkf.params[[t-1]]$mu.a
+          Cmodel_tobit2space$lambda_0 <- diag(10,length(mu.f)) #enkf.params[[t-1]]$Pa
+          Cmodel_tobit2space$mu_0 <- rep(0,length(mu.f)) #enkf.params[[t-1]]$mu.a
           
           for(i in seq_along(X)) {
               ## ironically, here we have to "toggle" the value of y.ind[i]
@@ -842,7 +838,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     ANALYSIS[[t]] <- analysis
     
     if (interactive() & t > 1) { #
-      t1 <- 2
+      t1 <- 1
       names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
       Ybar <- t(sapply(obs.mean[t1:t], function(x) {
         tmp <- rep(NA, length(names.y))
@@ -855,6 +851,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       if(any(obs)){
       Y.order <- na.omit(pmatch(colnames(X), colnames(Ybar)))
       Ybar <- Ybar[,Y.order]
+      Ybar[is.na(Ybar)] <- 0
       YCI <- t(as.matrix(sapply(obs.cov[t1:t], function(x) {
         if (length(x)<2) {
           rep(NA, length(names.y))
@@ -863,13 +860,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       })))
       
       YCI <- YCI[,Y.order]
+      YCI[is.na(YCI)] <- 0
       }else{
         YCI <- matrix(NA,nrow=length(t1:t), ncol=length(names.y))
       }
       
       par(mfrow = c(2, 1))
       for (i in 1:ncol(FORECAST[[t]])) {
-        t1 <- 2
         Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
         Xci  <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
         
