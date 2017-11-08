@@ -174,9 +174,9 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           if ("D3" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$D3 <- vals$D3
           }
-          # if ("FROST" %in% names(vals)) {
-          #   spp.params[spp.params$Spp_Name == group, ]$FROST <- vals$FROST
-          # }
+          if ("FROST" %in% names(vals)) {
+             spp.params[spp.params$Spp_Name == group, ]$FROST <- vals$FROST
+          }
           if ("CM1" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$CM1 <- vals$CM1
           }
