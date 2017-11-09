@@ -80,7 +80,7 @@ $(call depends,modules/assim.batch): | .install/base/utils .install/base/db .ins
 $(call depends,modules/rtm): | .install/modules/assim.batch .install/base/remote
 $(call depends,modules/uncertainty): | .install/base/utils .install/modules/priors .install/base/remote
 $(call depends,models/template): | .install/base/utils .install/base/remote
-$(call depends,models/biocro): | .install/base/utils .install/base/settings .install/base/db .install/modules/data.atmosphere .install/modules/data.land .install/base/remote
+$(call depends,models/biocro): | .install/mockery .install/base/utils .install/base/settings .install/base/db .install/modules/data.atmosphere .install/modules/data.land .install/base/remote
 
 clean:
 	rm -rf .install .check .test .doc
@@ -96,6 +96,10 @@ clean:
 
 .install/testthat: | .install
 	Rscript -e "if(!require('testthat')) install.packages('testthat', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
+	echo `date` > $@
+
+.install/mockery: | .install
+	Rscript -e "if(!require('mockery')) install.packages('mockery', repos = 'http://cran.rstudio.com', Ncpus = ${NCPUS})"
 	echo `date` > $@
 
 depends_R_pkg = Rscript -e "devtools::install_deps('$(strip $(1))', threads = ${NCPUS});"

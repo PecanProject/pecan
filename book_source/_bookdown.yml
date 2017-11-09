@@ -1,4 +1,4 @@
-rmd_files: [ 
+rmd_files: [
   "index.Rmd",
   "book_intro/project_overview.Rmd",
   "book_intro/Code-of-Conduct.Rmd",
@@ -79,5 +79,8 @@ rmd_files: [
   "installation/PEcAn-in-the-Cloud.Rmd",
   "installation/shiny.Rmd",
   "installation/thredds.Rmd",
+  "docker/introduction.Rmd",
+  "docker/architecture.Rmd",
+  "docker/models.Rmd",
   "misc/faq.Rmd"
 ]
