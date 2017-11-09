@@ -568,36 +568,7 @@ write.config.JULES <- function(defaults, trait.samples, settings, run.id){
   
   if(useTRIFFID){
     
-    PEcAn.logger::logger.warning("No Initial Conditions, using defaults")
-    ic.file <- file.path(local.rundir, "initial_conditions.nml")
-    ic.text <- readLines(con = ic.file, n = -1)
-
-    ## update number of variables
-    ic_nvar_i   <- grep("nvars",ic.text)
-    ic_nvar     <- as.numeric(sub(",","",strsplit(ic.text[ic_nvar_i],"=")[[1]][2]))
-    ic.text[ic_nvar_i] <- paste0("nvars = ",ic_nvar+2,",")
-
-    ## update use_file
-    use_file <- grep("use_file",ic.text)
-    ic.text[use_file] <- paste0(ic.text[use_file],".true.,.true.,")
-
-    ## update var
-    ic_var <- grep("^var=",ic.text)
-    ic.text[ic_var] <- paste0(ic.text[ic_var],",'canht','frac',")
-
-    ## write namelist
-    writeLines(ic.text, con = ic.file)
-    
-    if (is.null(settings$run$inputs$poolinitcond$path)){
-    ## also load and parse IC dat file
-    ## also load and parse IC dat file
-      ic.dat <- file.path(local.rundir, "initial_conditions.dat")
-      ic.text <- readLines(con = ic.dat, n = -1)
-      ic.text[2] <- paste(ic.text[2]," 5.0 5.0 0.5 0.5 0.5 0.2 0.2 0.2 0.2 0.2 0.0 0.0 0.0 0.0")
-      writeLines(ic.text, con = ic.dat)
-    
-    } else if (!is.null(settings$run$inputs$poolinitcond$path)){
-      
+    if (!is.null(settings$run$inputs$poolinitcond$path)){
       #Read in path to standard initial conditions file
       IC.path <- settings$run$inputs$poolinitcond$path
       
@@ -614,6 +585,41 @@ write.config.JULES <- function(defaults, trait.samples, settings, run.id){
         if (npfts!= length(lai)) {
           ic.dat.text <- gsub("@LAI_DAT@", paste0(rep(lai,npfts), collapse = " "), ic.dat.text)
           writeLines(ic.dat.text, con = ic.dat)
+        }
+    
+      
+    }else{
+      
+      PEcAn.logger::logger.warning("No Initial Conditions, using defaults")
+      ic.file <- file.path(local.rundir, "initial_conditions.nml")
+      ic.text <- readLines(con = ic.file, n = -1)
+      
+      ## update number of variables
+      ic_nvar_i   <- grep("nvars",ic.text)
+      ic_nvar     <- as.numeric(sub(",","",strsplit(ic.text[ic_nvar_i],"=")[[1]][2]))
+      ic.text[ic_nvar_i] <- paste0("nvars = ",ic_nvar+2,",")
+      
+      ## update use_file
+      use_file <- grep("use_file",ic.text)
+      ic.text[use_file] <- paste0(ic.text[use_file],".true.,.true.,")
+      
+      ## update var
+      ic_var <- grep("^var=",ic.text)
+      ic.text[ic_var] <- paste0(ic.text[ic_var],",'canht','frac',")
+      
+      ## write namelist
+      writeLines(ic.text, con = ic.file)
+      
+      if (is.null(settings$run$inputs$poolinitcond$path)){
+        ## also load and parse IC dat file
+        ## also load and parse IC dat file
+        ic.dat <- file.path(local.rundir, "initial_conditions.dat")
+        ic.text <- readLines(con = ic.dat, n = -1)
+        ic.text[2] <- paste(ic.text[2]," 5.0 5.0 0.5 0.5 0.5 0.2 0.2 0.2 0.2 0.2 0.0 0.0 0.0 0.0")
+        writeLines(ic.text, con = ic.dat)
+    }
+    
+
         }
         
         
