@@ -12,14 +12,20 @@
 ##' @param verbose should ouput of function be extra verbose
 ##'
 ##' @author Ankur Desai
-met2CF.AmerifluxLBL <- function(in.path, in.prefix, outfolder, start_date, end_date,
+met2CF.AmerifluxLBL <- function(in.path, in.prefix, outfolder, start_date, end_date, format,
                              overwrite = FALSE, verbose = FALSE, ...) {
 
 ##Determine if file is in old or new format
-##if in old format, send to met2CF.CSV
-##create format record here by hand
-##if in new format, work here, change format record
+  file_version <- substr(result$dbfile.name,nchar(result$dbfile.name)-1,nchar(result$dbfile.name))
+  if (file_version=='-1') {
+    ## File is in pre 2017 Ameriflux format, send to met2CF
+    results <- PEcAn.data.atmosphere::met2CF.csv(in.path, in.prefix, outfolder,start_date, end_date,format, overwrite=overwrite)
+  } else {
+    ##read header (second line in file)
+    ## for each input_name, grep for one that starts the same, swap the name of the first one (or sort?)
+    ##format$vars$input_name
+    ## then call met2CF
+  }
+
 ## FUTURE: choose height
-  
-  
 }
