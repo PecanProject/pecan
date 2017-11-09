@@ -9,7 +9,7 @@
   # fcn <- register$gapfill
   formatname <- "CF Meteorology"
   mimetype   <- "application/x-netcdf"
-  lst        <- site.lst(site, con)
+  lst        <- site.lst(site.id=site$id, con=con)
   
   ready.id <- PEcAn.utils::convert.input(input.id = input.id, 
                             outfolder = outfolder, 
