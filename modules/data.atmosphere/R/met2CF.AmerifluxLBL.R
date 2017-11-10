@@ -15,17 +15,64 @@
 met2CF.AmerifluxLBL <- function(in.path, in.prefix, outfolder, start_date, end_date, format,
                              overwrite = FALSE, verbose = FALSE, ...) {
 
-##Determine if file is in old or new format
-  file_version <- substr(result$dbfile.name,nchar(result$dbfile.name)-1,nchar(result$dbfile.name))
-  if (file_version=='-1') {
-    ## File is in pre 2017 Ameriflux format, send to met2CF
-    results <- PEcAn.data.atmosphere::met2CF.csv(in.path, in.prefix, outfolder,start_date, end_date,format, overwrite=overwrite)
-  } else {
-    ##read header (second line in file)
-    ## for each input_name, grep for one that starts the same, swap the name of the first one (or sort?)
-    ##format$vars$input_name
-    ## then call met2CF
-  }
+##Determine if file is in old or new format based on filename ending in "-1" or not
+## If in new format, then convert header input names based on file header
+## Otherwise just call met2CF.csv as usual
 
-## FUTURE: choose height
+  file_version <- substr(in.prefix,nchar(in.prefix)-1,nchar(in.prefix))
+  if (file_version!='-1') {
+##Open the file and read the first few lines to get header
+    PEcAn.logger::logger.info("New Ameriflux format, updating format record")
+    files <- dir(in.path, in.prefix, full.names = TRUE)
+    files <- files[grep("*.csv", files)]
+    if (length(files) == 0) {
+      PEcAn.logger::logger.warn("No met files named ", in.prefix, "found in ", in.path)
+      return(NULL)
+    }
+    if (length(files) > 1) {
+      PEcAn.logger::logger.warn(length(files), ' met files found. Using first file: ', files[1])
+      files <- files[1]
+    }
+    somedat <- read.csv(files, 
+                       header = header,
+                       skip = format$skip, 
+                       na.strings = format$na.strings,
+                       as.is = TRUE, 
+                       check.names = FALSE,nrows=1)
+    colname <- names(somedat)
+    
+    format$vars$input_name<-orig
+    formatname <- format$vars$input_name
+    removeunder <- regexpr("\\_[^\\_]*$",formatname)
+    removethese <- which(removeunder!=-1)
+    if (length(removethese)>0){
+      formatname[removethese] = substr(formatname[removethese],replicate(length(removethese),1),removeunder[removethese]-1)
+    }
+    
+    for (i in 1:length(formatname)) {
+      if (formatname[i]=="TIMESTAMP") {
+        formatname[i]="TIMESTAMP_START"
+      }
+      if (nchar(formatname[i])==1) {
+        ## to avoid overlap with single character and multi character variable names
+        namesearch <- colname[which(colname==formatname[i])]
+        if (length(namesearch)==0) {
+          namesearch <- sort(colname[grep(paste0("^",formatname[i],"_"),colname)])
+        }
+      } else {
+        namesearch <- sort(colname[grep(paste0("^",formatname[i]),colname)])
+      }
+      if (length(namesearch)>1) { 
+        namesearch <- namesearch[1]
+      }
+      if (length(namesearch)==1) {
+        loc <- which(colname %in% namesearch)  
+        format$vars$column_number[i] <- loc
+        format$vars$input_name[i] <- namesearch
+      }
+    }
+    PEcAn.logger::logger.info(format$vars$input_name)
+  }
+  results <- PEcAn.data.atmosphere::met2CF.csv(in.path, in.prefix, outfolder,start_date, end_date,format, overwrite=overwrite)
+## FUTURE: choose height based on tower height information
 }
