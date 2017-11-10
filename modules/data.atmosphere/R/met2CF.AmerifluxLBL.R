@@ -41,14 +41,15 @@ met2CF.AmerifluxLBL <- function(in.path, in.prefix, outfolder, start_date, end_d
                        check.names = FALSE,nrows=1)
     colname <- names(somedat)
     
-    format$vars$input_name<-orig
+    ##Take the original format and strip everything after _
     formatname <- format$vars$input_name
     removeunder <- regexpr("\\_[^\\_]*$",formatname)
     removethese <- which(removeunder!=-1)
     if (length(removethese)>0){
       formatname[removethese] = substr(formatname[removethese],replicate(length(removethese),1),removeunder[removethese]-1)
     }
-    
+
+    ##Loop over format names, match to new header and substitute in    
     for (i in 1:length(formatname)) {
       if (formatname[i]=="TIMESTAMP") {
         formatname[i]="TIMESTAMP_START"
@@ -73,6 +74,7 @@ met2CF.AmerifluxLBL <- function(in.path, in.prefix, outfolder, start_date, end_d
     }
     PEcAn.logger::logger.info(format$vars$input_name)
   }
+  ##Call met2CF with either original or modified format record
   results <- PEcAn.data.atmosphere::met2CF.csv(in.path, in.prefix, outfolder,start_date, end_date,format, overwrite=overwrite)
 ## FUTURE: choose height based on tower height information
 }
