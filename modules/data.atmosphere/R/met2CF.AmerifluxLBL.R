@@ -34,7 +34,7 @@ met2CF.AmerifluxLBL <- function(in.path, in.prefix, outfolder, start_date, end_d
       files <- files[1]
     }
     somedat <- read.csv(files, 
-                       header = header,
+                       header = TRUE,
                        skip = format$skip, 
                        na.strings = format$na.strings,
                        as.is = TRUE, 
