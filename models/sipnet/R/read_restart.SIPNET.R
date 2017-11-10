@@ -36,40 +36,41 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   
   # unit.conv <- (10000/1)*(1/1000)*(365.25*24*60*60) ## kgC m-2 s-1 -> MgC/ha/yr
   
+
   #### PEcAn Standard Outputs
   if ("NPP" %in% var.names) {
-    forecast[[1]] <- mean(ens$NPP)  #* unit.conv 
-    names(forecast[[1]]) <- c("NPP")
+    forecast[[length(forecast) + 1]] <- mean(ens$NPP)  #* unit.conv 
+    names(forecast[[length(forecast)]]) <- c("NPP")
   }
   
   if ("AbvGrndWood" %in% var.names) {
-    forecast[[2]] <- ens$AbvGrndWood[last] / (1 - 0.2 - 0.2)  ## kgC/m2
-    names(forecast[[2]]) <- c("AbvGrndWood")
+    forecast[[length(forecast) + 1]] <- ens$AbvGrndWood[last] / (1 - 0.2 - 0.2)  ## kgC/m2
+    names(forecast[[length(forecast)]]) <- c("AbvGrndWood")
   }
   
   if ("LeafC" %in% var.names) {
-    forecast[[3]] <- ens$LeafC[last]  ## kgC/m2*m2/kg*2kg/kgC
-    names(forecast[[3]]) <- c("LeafC")
+    forecast[[length(forecast) + 1]] <- ens$LeafC[last]  ## kgC/m2*m2/kg*2kg/kgC
+    names(forecast[[length(forecast)]]) <- c("LeafC")
   }
   
   if ("Litter" %in% var.names) {
-    forecast[[4]] <- ens$Litter[last]  ##kgC/m2
-    names(forecast[[4]]) <- c("Litter")
+    forecast[[length(forecast) + 1]] <- ens$Litter[last]  ##kgC/m2
+    names(forecast[[length(forecast)]]) <- c("Litter")
   }
   
   if ("TotSoilCarb" %in% var.names) {
-    forecast[[5]] <- ens$TotSoilCarb[last]  ## kgC/m2
-    names(forecast[[5]]) <- c("TotSoilCarb")
+    forecast[[length(forecast) + 1]] <- ens$TotSoilCarb[last]  ## kgC/m2
+    names(forecast[[length(forecast)]]) <- c("TotSoilCarb")
   }
   
   if ("SoilMoistFrac" %in% var.names) {
-    forecast[[6]] <- ens$SoilMoistFrac[last]  ## kgC/m2
-    names(forecast[[6]]) <- c("SoilMoistFrac")
+    forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]  ## kgC/m2
+    names(forecast[[length(forecast)]]) <- c("SoilMoistFrac")
   }
   
   if ("SWE" %in% var.names) {
-    forecast[[7]] <- ens$SWE[last]  ## kgC/m2
-    names(forecast[[7]]) <- c("SWE")
+    forecast[[length(forecast) + 1]] <- ens$SWE[last]  ## kgC/m2
+    names(forecast[[length(forecast)]]) <- c("SWE")
   }
   
   print(runid)
