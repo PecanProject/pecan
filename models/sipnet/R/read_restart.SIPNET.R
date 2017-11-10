@@ -48,14 +48,14 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("AbvGrndWood")
   }
   
-  if ("LeafC" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$LeafC[last]  ## kgC/m2*m2/kg*2kg/kgC
-    names(forecast[[length(forecast)]]) <- c("LeafC")
+  if ("leaf_carbon_content" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$leaf_carbon_content[last]  ## kgC/m2*m2/kg*2kg/kgC
+    names(forecast[[length(forecast)]]) <- c("leaf_carbon_content")
   }
   
-  if ("Litter" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$Litter[last]  ##kgC/m2
-    names(forecast[[length(forecast)]]) <- c("Litter")
+  if ("litter_carbon_content" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$litter_carbon_content[last]  ##kgC/m2
+    names(forecast[[length(forecast)]]) <- c("litter_carbon_content")
   }
   
   if ("TotSoilCarb" %in% var.names) {
