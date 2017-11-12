@@ -4,10 +4,10 @@
 \alias{calc_metrics}
 \title{calc_metrics}
 \usage{
-calc_metrics(model.calc, obvs.calc, var, metrics, bm, ensemble.id, model_run)
+calc_metrics(model.calc, obvs.calc, var, metrics, bm, ensemble.id, bm_dir)
 }
 \arguments{
-\item{model_run}{}
+\item{bm_dir}{}
 }
 \author{
 Betsy Cowdery
