@@ -110,16 +110,14 @@ observeEvent(bm$ready,{
     if(exists("output$bm_plots")) output$bm_plots <- NULL
     if(exists("output$bmPlot")) output$bmPlot <- NULL
     
-    files <- dir(bm$ens_wf$folder, full.names = TRUE)
-    bench.out <- grep("benchmarking.output.Rdata", files)
+    bm.path <- file.path(bm$ens_wf$folder, "benchmarking", as.integer(bm$input$input_id))
+    bench.out <- grep("benchmarking.output.Rdata", 
+                      dir(bm.path, full.names = TRUE) , value = TRUE)  # Look for benchmarking directory
     if(length(bench.out) == 1){
-      load(files[bench.out])
-      if(length(grep(bm$input$input_id, names(results))) == 1){
-        bm$load_results <- bm$load_results + 1
-        bm$results_message <- "Benchmarks have already been calculated for this combination of model output and external data. <br/>
+      bm$load_results <- bm$load_results + 1
+      bm$results_message <- "Benchmarks have already been calculated for this combination of model output and external data. <br/>
       To see the results, look at the Benchmarking Scores and Benchmarking Plots tabs. <br/>
       To calculate more benchmarks, select variables and metrics below. <br/>"
-      }
     }else{
       bm$load_results <- 0
       bm$results_message <- "No benchmarks have been calculated yet"
@@ -232,19 +230,19 @@ observeEvent(input$calc_bm,{
   
   # output$calc_bm_button <- renderUI({})
   output$print_bm_settings <- renderPrint(bm$bm_settings)
-
+  
   basePath <- dplyr::tbl(bety, 'workflows') %>% dplyr::filter(id %in% bm$ens_wf$workflow_id) %>% dplyr::pull(folder)
-
+  
   settings_path <- file.path(basePath, "pecan.BENCH.xml")
   saveXML(PEcAn.settings::listToXml(bm$bm_settings,"pecan"), file = settings_path)
   bm$settings_path <- settings_path
-
+  
   bm$calc_bm_message <- sprintf("Benchmarking settings have been saved here: %s", bm$settings_path)
-
+  
   # Run the benchmarking functions
   settings <- PEcAn.settings::read.settings(bm$settings_path)
   bm.settings <- PEcAn.benchmark::define_benchmark(settings,bety)
-
+  
   settings <- PEcAn.benchmark::add_workflow_info(settings)
   # if(!as.logical(settings$benchmarking$new_run)){
   #   settings$workflow$id <- tbl(bety,"ensembles") %>%
@@ -255,7 +253,7 @@ observeEvent(input$calc_bm,{
   #   settings$modeloutdir <- file.path(wf$folder, "out")
   #   settings$outdir <- wf$folder
   # }
-
+  
   settings$benchmarking <- PEcAn.benchmark::bm_settings2pecan_settings(bm.settings)
   settings <- PEcAn.benchmark::read_settings_BRR(settings)
   settings <- PEcAn.settings::prepare.settings(settings)
@@ -275,15 +273,14 @@ observeEvent(bm$results_message,{
 
 observeEvent(bm$load_results,{
   if(bm$load_results > 0){
-    load(file.path(bm$ens_wf$folder,"benchmarking.output.Rdata"))
-    results.sub <- results[[grep(bm$input$input_id, names(results))]]
-    bm$bench.results <- results.sub$bench.results
-    bm$aligned.dat <- results.sub$aligned.dat
+    load(file.path(bm$ens_wf$folder,"benchmarking",bm$input$input_id,"benchmarking.output.Rdata"))
+    bm$bench.results <- result.out$bench.results
+    bm$aligned.dat <- result.out$aligned.dat
     output$results_table <- DT::renderDataTable(DT::datatable(bm$bench.results))
-    plots_used <- grep("plot", results.sub$bench.results$metric) 
+    plots_used <- grep("plot", result.out$bench.results$metric) 
     if(length(plots_used) > 0){
       plot_list <- apply(
-        results.sub$bench.results[plots_used,c("variable", "metric")],
+        result.out$bench.results[plots_used,c("variable", "metric")],
         1, paste, collapse = " ")
       output$bm_plots <-  renderUI({
         radioButtons("bench_plot", "Benchmark Plot",
