@@ -78,7 +78,8 @@ calc_benchmark <- function(settings, bety) {
     for (input.id in unique(bms$input_id)) {
       
       # Create directory that will hold benchmarking results
-      bm_dir <- file.path(dirname(dirname(model_run), benchmarking,input, id)
+      bm_dir <- file.path(dirname(dirname(model_run)), "benchmarking", input.id)
+      dir.create(dirname(bm_dir))
       dir.create(bm_dir)
       
       bm.ids <- bms$benchmark_id[which(bms$input_id == input.id)]
@@ -208,7 +209,7 @@ calc_benchmark <- function(settings, bety) {
                          model = model_full, 
                          obvs = obvs_full, 
                          aligned.dat = dat.list)
-      save(results, file = file.path(bm_dir,"benchmarking.output.Rdata"))
+      save(result.out, file = file.path(bm_dir,"benchmarking.output.Rdata"))
       
       results <- append(results, list(result.out)) # For testing
     } # end loop over input ids
