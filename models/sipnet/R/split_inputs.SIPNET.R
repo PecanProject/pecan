@@ -20,7 +20,7 @@
 ##' 
 ##' @return file split up climate file
 ##' @export
-split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs) {
+split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs, overwrite = FALSE) {
   
   #### Lubridate start and end times
   start.day <- lubridate::day(start.time)
@@ -28,10 +28,20 @@ split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs) {
   end.day <- length(as.Date(start.time):as.Date(stop.time))
   end.year <- lubridate::year(stop.time)
   
+
   #### Get met paths
   met <- inputs$met$path
   path <- dirname(met)
   prefix <- sub(".clim", "", basename(met), fixed = TRUE)
+  
+  file <- paste0(path, "/", prefix, ".", paste0(as.Date(start.time), "-", as.Date(stop.time)), ".clim")
+  
+  if(file.exists(file) & !overwrite){
+    settings$run$inputs$met$path <- file
+    return(settings$run$inputs)
+  }
+    
+    
   dat <- read.table(met, header = FALSE)
   file <- NA
   names(file) <- paste(start.time, "-", stop.time)
@@ -43,8 +53,7 @@ split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs) {
                                                                   dat[, 3] == as.numeric(end.day)))]
   
   ###### Write Met to file
-  file <- paste0(path, "/", prefix, ".", paste0(as.Date(start.time), "-", as.Date(stop.time)), ".clim")
-  
+
   write.table(dat[sel1:sel2, ], file, row.names = FALSE, col.names = FALSE)
   
   ###### Output input path to inputs
