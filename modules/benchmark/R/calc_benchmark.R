@@ -191,8 +191,7 @@ calc_benchmark <- function(settings, bety) {
         dat.list <- append(dat.list, list(out.calc_metrics[["dat"]]))
       }  #end loop over benchmark ids
       
-      table.filename <- file.path(dirname(dirname(model_run)), 
-                                  paste("benchmark.scores", var, bm.ensemble$ensemble_id, "pdf", sep = "."))
+      table.filename <- file.path(bm_dir, paste("benchmark.scores", var, bm.ensemble$ensemble_id, "pdf", sep = "."))
       pdf(file = table.filename)
       gridExtra::grid.table(do.call(rbind, results.list))
       dev.off()
