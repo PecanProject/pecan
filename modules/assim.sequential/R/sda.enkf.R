@@ -301,10 +301,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     #y_star[1:N,1:N] <- X[1:N,1:N] #[choose]
     
     #f.comp non linear
-    #y_star <- X[1:9] / sum(X[1:9])
+    y_star[1:YN] <- X[1:YN] / sum(X[1:YN])
     
     ## Analysis
-    y.censored[1:YN] ~ dmnorm(X[1:YN], prec = r[1:YN,1:YN]) #is it an okay assumpution to just have X and Y in the same order?
+    y.censored[1:YN] ~ dmnorm(y_star[1:YN], prec = r[1:YN,1:YN]) #is it an okay assumpution to just have X and Y in the same order?
     
     #don't flag y.censored as data, y.censored in inits
     #remove y.censored samplers and only assign univariate samplers on NAs
@@ -336,6 +336,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     muf <- colMeans(dat[, imuf])
     mufT <- apply(Xt,2,mean)
     
+    #muf mufT scatter plot
+    
     par(mfrow=c(2,2))
     for(i in 1:(length(imuf)-1)){
       plot(dat[,i],dat[,i+1])
@@ -358,6 +360,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     for(i in 1:length(Pf)){
       lines(rep(as.vector(P_f_TRUE)[i],2),PfCI[,i],col=i,lwd=2)
     }
+    
+    #scatterplots
+    #var 
+    #corr #pull diags out ==1 
+    #check mu v var to make sure variance is only changing near 0# shifts in Xt v X on same plot
+    
     #PfT <- cov(Xt)
     #points(P_f_TRUE,PfT,col=1:14,pch="-",cex=2)
   }
@@ -377,7 +385,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for(t in seq_len(nt)) {
+  for(t in 4:1061) {
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -853,6 +861,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       Y.order <- na.omit(pmatch(colnames(X), colnames(Ybar)))
       Ybar <- Ybar[,Y.order]
       Ybar[is.na(Ybar)] <- 0
+      Ybar <- Ybar
+      
       YCI <- t(as.matrix(sapply(obs.cov[t1:t], function(x) {
         if (length(x)<2) {
           rep(NA, length(names.y))
@@ -862,6 +872,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       
       YCI <- YCI[,Y.order]
       YCI[is.na(YCI)] <- 0
+      YCI <- YCI*sum(mu.a)
       }else{
         YCI <- matrix(NA,nrow=length(t1:t), ncol=length(names.y))
       }
@@ -943,8 +954,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         do.call(my.write_restart, 
                 args = list(outdir = outdir, 
                             runid = run.id[[i]], 
-                            start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))),
-                            stop.time = ymd_hms(obs.times[t + 1],truncated = 3), 
+                            start.time = year(obs.times[t]),#(ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))),
+                            stop.time = year(obs.times[t+1]),#ymd_hms(obs.times[t + 1],truncated = 3), 
                             settings = settings,
                             new.state = new.state[i, ], 
                             new.params = new.params[[i]], 
@@ -1007,14 +1018,21 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   
   YCI <- YCI[,Y.order]
   Xsum <- plyr::laply(FORECAST, function(x) { mean(rowSums(x[,1:length(names.y)], na.rm = TRUE)) })[t1:t]
+  Xasum <- plyr::laply(ANALYSIS, function(x) { mean(rowSums(x[,1:length(names.y)], na.rm = TRUE)) })[t1:t]
   
   for (i in seq_len(ncol(X))) {
     Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
     Xci <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
     Xci[is.na(Xci)]<-0
     
+    Xbar <- Xbar/Xsum
+    Xci <- Xci/Xsum
+    
     Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i]) })
     XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
+    
+    Xa <- Xa/Xasum
+    XaCI <- XaCI/Xasum
     
     plot(as.Date(obs.times[t1:t]),
          Xbar, 
@@ -1046,6 +1064,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
     
   }
+  
   dev.off()
   ###-------------------------------------------------------------------###
   ### bias diagnostics                                                  ###
