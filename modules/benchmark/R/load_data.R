@@ -19,7 +19,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
       site <- list(id = format$site, lat = format$lat, lon = format$lon, 
                    time_zone = format$time_zone)
     }else{
-      PEcAn.utils::logger.error("Input must have site information.")
+      PEcAn.logger::logger.error("Input must have site information.")
     }
   }
   
