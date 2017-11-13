@@ -242,18 +242,7 @@ observeEvent(input$calc_bm,{
   # Run the benchmarking functions
   settings <- PEcAn.settings::read.settings(bm$settings_path)
   bm.settings <- PEcAn.benchmark::define_benchmark(settings,bety)
-  
   settings <- PEcAn.benchmark::add_workflow_info(settings,bety)
-  # if(!as.logical(settings$benchmarking$new_run)){
-  #   settings$workflow$id <- tbl(bety,"ensembles") %>%
-  #     filter(id == settings$benchmarking$ensemble_id) %>%
-  #     dplyr::select(workflow_id) %>% collect %>% .[[1]]
-  #   wf <- tbl(bety, 'workflows') %>% filter(id == settings$workflow$id) %>% collect()
-  #   settings$rundir <- file.path(wf$folder, "run")
-  #   settings$modeloutdir <- file.path(wf$folder, "out")
-  #   settings$outdir <- wf$folder
-  # }
-  
   settings$benchmarking <- PEcAn.benchmark::bm_settings2pecan_settings(bm.settings)
   settings <- PEcAn.benchmark::read_settings_BRR(settings)
   settings <- PEcAn.settings::prepare.settings(settings)
