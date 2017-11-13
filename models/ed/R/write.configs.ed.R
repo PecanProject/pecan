@@ -72,6 +72,8 @@ convert.samples.ED <- function(trait.samples) {
       ## First scale variables to 15 degC
       trait.samples[["leaf_respiration_rate_m2"]] <- 
         arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
+      # convert leaf_respiration_rate_m2 to Rd0 (variable used in ED2)
+      trait.samples[["Rd0"]] <- trait.samples[["leaf_respiration_rate_m2"]]
       
       ## Calculate dark_resp_factor -- Will be depreciated when moving from older versions of ED2
       trait.samples[["dark_respiration_factor"]] <- 
