@@ -158,7 +158,6 @@ calc_benchmark <- function(settings, bety) {
                                          obvs.calc, 
                                          var, 
                                          metrics,
-                                         bm,
                                          ensemble.id,
                                          bm_dir)
         

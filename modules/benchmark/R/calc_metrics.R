@@ -1,17 +1,16 @@
 ##' @name calc_metrics
 ##' @title calc_metrics
 ##' @export
-##' @param model.calc
-##' @param obvs.calc
-##' @param var
-##' @param metrics
-##' @param bm
-##' @param ensemble.id
-##' @param bm_dir
+##' @param model.calc model data
+##' @param obvs.calc observational data
+##' @param var variables to be used 
+##' @param metrics metrics to be used
+##' @param ensemble.id id of ensemble run
+##' @param bm_dir directory where benchmarking outputs will be saved
 ##' 
 ##' 
 ##' @author Betsy Cowdery
-calc_metrics <- function(model.calc, obvs.calc, var, metrics, bm, ensemble.id, bm_dir) {
+calc_metrics <- function(model.calc, obvs.calc, var, metrics, ensemble.id, bm_dir) {
   
   dat <- align_data(model.calc, obvs.calc, var, align_method = "mean_over_larger_timestep")
   
