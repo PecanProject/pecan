@@ -50,8 +50,8 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     new.state <- 1000 * prop.stop
   }
   new.state.save <- new.state
-  new.state <- new.state.save[grep("pft", names(new.state.save))]
-  new.state.other <- new.state.save[grep("pft", names(new.state.save), invert = TRUE)]
+  #new.state <- new.state.save[grep("pft", names(new.state.save))]
+  #new.state.other <- new.state.save[grep("pft", names(new.state.save), invert = TRUE)]
   
   variables <- names(new.state)
   ### Going to need to change this... ### Get some expert opinion
@@ -343,8 +343,8 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   
   # make a new settings with the right years min start date and end date - fail in informative way
   
-  settings$run$start.date <- paste0(start.time + 1, "/01/01")
-  settings$run$end.date <- paste0(stop.time + 1, "/12/31")
+  settings$run$start.date <- paste0(formatC(start.time + 1, width = 4, format = "d", flag = "0"), "/01/01")
+  settings$run$end.date <- paste0(formatC(stop.time + 1, width = 4, format = "d", flag = "0"), "/12/31")
   
   do.call(write.config.LINKAGES, 
           args = list(trait.values = new.params, settings = settings, run.id = runid, 

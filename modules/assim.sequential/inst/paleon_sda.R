@@ -2,6 +2,7 @@
 library(PEcAn.all)
 library(PEcAn.SIPNET)
 library(PEcAn.LINKAGES)
+library(PEcAn.visualization)
 library(PEcAn.assim.sequential)
 library(nimble)
 library(lubridate)
@@ -25,7 +26,9 @@ file.copy('/fs/data2/output//PEcAn_1000007999/sda.obs.Rdata',getwd())
 # Open and read in settings file for PEcAn run.
 settings <- read.settings("pecan.SDA.xml")
 
-obs.list <- PEcAn.assim.sequential::load_data_paleon_sda(settings = settings)
+#PEcAn.assim.sequential::
+
+obs.list <- load_data_paleon_sda(settings = settings)
 
 IC <- NULL
 
