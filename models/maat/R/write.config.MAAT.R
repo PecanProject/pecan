@@ -23,7 +23,6 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
 ##' @return matrix or dataframe with values transformed
 ##' @export
 ##' @author Shawn Serbin, Anthony Walker
-##' @importFrom udunits2 ud.convert
 convert.samples.MAAT <- function(trait.samples) {
   
   ### Convert object
@@ -53,15 +52,15 @@ convert.samples.MAAT <- function(trait.samples) {
   }
   if ("Ha.vcmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Ha.vcmax = ud.convert(Ha.vcmax, "kJ", "J"))
+    trait.samples <- transform(trait.samples, Ha.vcmax = udunits2::ud.convert(Ha.vcmax, "kJ", "J"))
   }
   if ("Ha.jmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Ha.jmax = ud.convert(Ha.jmax, "kJ", "J"))
+    trait.samples <- transform(trait.samples, Ha.jmax = udunits2::ud.convert(Ha.jmax, "kJ", "J"))
   }
   if ("Hd.jmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
-    trait.samples <- transform(trait.samples, Hd.jmax = ud.convert(Hd.jmax, "kJ", "J"))
+    trait.samples <- transform(trait.samples, Hd.jmax = udunits2::ud.convert(Hd.jmax, "kJ", "J"))
   }
   
   ### Return trait.samples as modified by function
@@ -93,13 +92,22 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   outdir <- file.path(settings$host$outdir, run.id)
   
   ### Move model files to run dirs. Use built-in MAAT script setup_MAAT_project.bs changed to below as
-  ### advised by Rob Kooper, 20160405
   system2(file.path(settings$model$binary, "run_scripts/setup_MAAT_project.bs"), 
           c(rundir, file.path(settings$model$binary, "run_scripts"), 
             file.path(settings$model$binary, "src")))
   
   ### Parse config options to XML
-  xml <- PEcAn.settings::listToXml(settings$model$config, "default")
+  #xml <- PEcAn.settings::listToXml(settings$model$config, "default")
+  if (!is.null(settings$model$config$mod_mimic)) {
+    logger.info(paste0("Running with model mimic: ",settings$model$config$mod_mimic))
+    mod_mimic <- as.character(settings$model$config$mod_mimic)
+    settings$model$config$mod_mimic <- NULL
+    xml <- listToXml(settings$model$config, "default")
+  } else {
+    mod_mimic <- NULL
+    xml <- listToXml(settings$model$config, "default")
+  }
+  #xml <- listToXml(settings$model$config, "default")
   
   ### Run rename and conversion function on PEcAn trait values
   traits <- convert.samples.MAAT(trait.samples = trait.values[[settings$pfts$pft$name]])
@@ -117,12 +125,11 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
           file = file.path(settings$rundir, run.id, "leaf_user_static.xml"), 
           indent = TRUE, 
           prefix = PREFIX_XML)
-  
-  ### Write out new XML  _ NEED TO FIX THIS BIT. NEED TO CONVERT WHOLE LIST TO XML
   #saveXML(xml, file = file.path(settings$rundir, run.id, "leaf_default.xml"), indent=TRUE, prefix = PREFIX_XML)
   if (is.null(settings$run$inputs$met)) {
     PEcAn.logger::logger.info("-- No met selected. Running without a met driver --")
-    jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ",
+    jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," "," ","\"xml<-T","\""," ","\"uq<-F","\""," ",
+                    "\"factorial<-F","\""," ","\"mod_mimic<-",mod_mimic,"\""," ",
                     "\"odir <- ","'",outdir,"'","\""," > ",rundir,
                     "/logfile.txt","\n",'echo "',
                     ' library(PEcAn.MAAT); model2netcdf.MAAT(',
@@ -132,6 +139,7 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
                     settings$run$start.date,"', '",
                     settings$run$end.date,"') ",
                     '" | R --vanilla')
+
     # Run with met drivers 
     # !!Need to update for running with met, needs to paste mdir (met dir) to command !!
   } else if (!is.null(settings$run$inputs$met)) {
@@ -143,7 +151,11 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
               recursive = FALSE, 
               copy.mode = TRUE, 
               copy.date = TRUE)
-    jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ",
+    
+    PEcAn.logger::logger.info("-- Met selected. Running with a met driver --")
+    PEcAn.logger::logger.info(paste0("Running with met: ",met.file))
+    jobsh <- paste0("#!/bin/bash\n","Rscript ",rundir,"/run_MAAT.R"," ","\"xml<-T","\""," ","\"uq<-F","\""," ",
+                    "\"factorial<-F","\""," ","\"mod_mimic<-",mod_mimic,"\""," ",
                     "\"odir <- ","'",outdir,"'","\""," ","\"mdir <- ","'",met.dir,"'",
                     "\""," ","\"metdata <- ","'",met.file,"'","\""," > ",rundir,
                     "/logfile.txt","\n",'echo "',
@@ -159,7 +171,7 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   # Write the job.sh script
   writeLines(jobsh, con = file.path(settings$rundir, run.id, "job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
+  
 } # write.config.MAAT
-
 ##-------------------------------------------------------------------------------------------------#
 ## EOF
