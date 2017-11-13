@@ -239,14 +239,16 @@ observeEvent(input$calc_bm,{
   
   bm$calc_bm_message <- sprintf("Benchmarking settings have been saved here: %s", bm$settings_path)
   
+  ##############################################################################
   # Run the benchmarking functions
   settings <- PEcAn.settings::read.settings(bm$settings_path)
   bm.settings <- PEcAn.benchmark::define_benchmark(settings,bety)
   settings <- PEcAn.benchmark::add_workflow_info(settings,bety)
+
   settings$benchmarking <- PEcAn.benchmark::bm_settings2pecan_settings(bm.settings)
   settings <- PEcAn.benchmark::read_settings_BRR(settings)
   settings <- PEcAn.settings::prepare.settings(settings)
-  settings$host$name <- "localhost" # This may not be the best place to set this, but it isn't set bu any of the other functions. Another option is to have it set bu the default_hostname function (if input is NULL, set to localhost)
+  settings$host$name <- "localhost" # This may not be the best place to set this, but it isn't set by any of the other functions. Another option is to have it set by the default_hostname function (if input is NULL, set to localhost)
   results <- PEcAn.settings::papply(settings, function(x) calc_benchmark(x, bety))
   bm$load_results <- bm$load_results + 1
   
