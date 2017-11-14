@@ -60,6 +60,19 @@ clean_settings_BRR <- function(inputfile){
   clean$ensemble <- NULL
   clean$assim.batch <- NULL
   clean$state.data.assimilation <- NULL
+  
+  # Remove machine specific information, leaving only database ids
+  # This probably needs to be more generalized
+  
+  clean$model$binary <- NULL
+  # Remove all file paths  
+  for(input in names(clean$run$inputs)){
+    if("path" %in% names(clean$run$inputs[[input]])){
+      clean$run$inputs[[input]][["path"]] <- NULL
+    }
+  }
+  
+  
   return(clean)
 }
 
