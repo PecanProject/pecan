@@ -34,12 +34,12 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   
   forecast <- list()
   
-  # unit.conv <- (10000/1)*(1/1000)*(365.25*24*60*60) ## kgC m-2 s-1 -> MgC/ha/yr
+  unit.conv <- (10000/1)*(1/1000)*(365.25*24*60*60) ## kgC m-2 s-1 -> MgC/ha/yr
   
 
   #### PEcAn Standard Outputs
   if ("NPP" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- mean(ens$NPP)  #* unit.conv 
+    forecast[[length(forecast) + 1]] <- mean(ens$NPP) * unit.conv 
     names(forecast[[length(forecast)]]) <- c("NPP")
   }
   
