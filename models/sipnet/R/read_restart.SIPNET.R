@@ -73,6 +73,16 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("SWE")
   }
   
+  if ("fine_root_carbon_content" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$fine_root_carbon_content[last]  ## kgC/m2
+    names(forecast[[length(forecast)]]) <- c("fine_root_carbon_content")
+  }
+  
+  if ("coarse_root_carbon_content" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- ens$coarse_root_carbon_content[last]  ## kgC/m2
+    names(forecast[[length(forecast)]]) <- c("coarse_root_carbon_content")
+  }
+  
   print(runid)
   return(unlist(forecast))
 } # read_restart.SIPNET
