@@ -67,8 +67,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     # output[[7]] <- rep(-999,sipnet.output.dims[1]) # CarbPools
     output[[8]] <- (sub.sipnet.output$plantWoodC * 0.001)  # Above ground wood kgC/m2
     output[[9]] <- (sub.sipnet.output$plantLeafC * 0.001)  # Leaf C kgC/m2
-    output[[10]] <- (sub.sipnet.output$plantWoodC * 0.001) + (sub.sipnet.output$plantLeafC * 0.001) +
-      (sub.sipnet.output$coarseRootC * 0.001) + (sub.sipnet.output$fineRootC * 0.001)  # Total living C kgC/m2
+    output[[10]] <- (sub.sipnet.output$plantWoodC * 0.001) + (sub.sipnet.output$plantLeafC * 0.001)  # Total living C kgC/m2
     output[[11]] <- (sub.sipnet.output$soil * 0.001) + (sub.sipnet.output$litter * 0.001)  # Total soil C kgC/m2
     if (revision == "r136") {
       output[[12]] <- (sub.sipnet.output$evapotranspiration * 10 * PEcAn.data.atmosphere::get.lv()) / timestep.s  # Qle W/m2
