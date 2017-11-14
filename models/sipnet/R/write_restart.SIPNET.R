@@ -53,9 +53,12 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     analysis.save[[length(analysis.save) + 1]] <- udunits2::ud.convert(new.state$NPP, "kg/m^2/s", "Mg/ha/yr")  #*unit.conv -> Mg/ha/yr
     names(analysis.save[[length(analysis.save)]]) <- c("NPP")
   }
+  
 
-  if ("AbvGrndWood" %in% variables) {
-    analysis.save[[length(analysis.save) + 1]] <- udunits2::ud.convert(new.state$AbvGrndWood, "kg/m^2", "g/m^2")#no (1-.2-.2) because that's on sipnet side
+  if (all(c("AbvGrndWood","fine_root_carbon_content","coarse_root_carbon_content") %in% variables)) {
+    AGB <- udunits2::ud.convert(new.state$AbvGrndWood, "kg/m^2", "g/m^2")
+    BGB <- new.state$fine_root_carbon_content + new.state$coarse_root_carbon_content
+    analysis.save[[length(analysis.save) + 1]] <- AGB + BGB
     names(analysis.save[[length(analysis.save)]]) <- c("plantWood")
   }
 
