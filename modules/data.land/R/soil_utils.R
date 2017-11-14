@@ -32,7 +32,7 @@ soil_params <- function(soil_type,sand,silt,clay,bulk){
   #---------------------------------------------------------------------------------------#
   #     Find soil class and sand, silt, and clay fractions.                               #
   #---------------------------------------------------------------------------------------#
-  if (missing(sand) & missing(clay)){
+  if ((missing(sand)||is.null(sand)) & (missing(clay)|is.null(clay))){
     ## insufficient texture data, infer from soil_type
     if(missing(soil_type)) PEcAn.logger::logger.error("insufficient arguments")
     mysoil$soil_type <- soil_type
@@ -42,11 +42,11 @@ soil_params <- function(soil_type,sand,silt,clay,bulk){
     mysoil$fraction_of_clay_in_soil <- xclay.def[soil_type]
     mysoil$fraction_of_silt_in_soil <- 1. - mysoil$fraction_of_sand_in_soil - mysoil$fraction_of_clay_in_soil
   } else {
-    if(missing(sand)){
+    if(missing(sand)|is.null(sand)){
       sand <- 1-silt-clay
-    }else if(missing(silt)){
+    }else if(missing(silt)|is.null(silt)){
       silt <- 1-sand-clay
-    }else if(missing(clay)){
+    }else if(missing(clay)|is.null(clay)){
       clay <- 1-sand-silt
     } else {
       #not missing anything else, normalize
