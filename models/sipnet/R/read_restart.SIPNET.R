@@ -34,17 +34,17 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   
   forecast <- list()
   
-  unit.conv <- (10000/1)*(1/1000)*(365.25*24*60*60) ## kgC m-2 s-1 -> MgC/ha/yr
+  kgms2Mghayr <- (10000/1)*(1/1000)*(365.25*24*60*60) ## kgC m-2 s-1 -> MgC ha-1 yr-1
+  kgm2Mgha <- (10000/1)*(1/1000) ## kgC m-2  -> MgC ha-1
   
-
   #### PEcAn Standard Outputs
   if ("NPP" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- mean(ens$NPP) * unit.conv 
+    forecast[[length(forecast) + 1]] <- diff(range(ens$AbvGrndWood * kgm2Mgha))  
     names(forecast[[length(forecast)]]) <- c("NPP")
   }
   
   if ("AbvGrndWood" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$AbvGrndWood[last] / (1 - 0.2 - 0.2)  ## kgC/m2
+    forecast[[length(forecast) + 1]] <- ens$AbvGrndWood[last] * kgm2Mgha  ## Mg ha-1
     names(forecast[[length(forecast)]]) <- c("AbvGrndWood")
   }
   
