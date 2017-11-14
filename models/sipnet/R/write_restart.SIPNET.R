@@ -58,6 +58,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   if (all(c("AbvGrndWood","fine_root_carbon_content","coarse_root_carbon_content") %in% variables)) {
     AGB <- udunits2::ud.convert(new.state$AbvGrndWood, "kg/m^2", "g/m^2")
     BGB <- new.state$fine_root_carbon_content + new.state$coarse_root_carbon_content
+    BGB <- udunits2::ud.convert(BGB, "kg/m^2", "g/m^2")
     analysis.save[[length(analysis.save) + 1]] <- AGB + BGB
     names(analysis.save[[length(analysis.save)]]) <- c("plantWood")
   }

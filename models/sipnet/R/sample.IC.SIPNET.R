@@ -35,10 +35,13 @@ sample.IC.SIPNET <- function(ne, state, year = 1) {
                       state$AGB[sample.int(length(state$AGB), ne)] * Mgha2gm, ## unit MgC ha-1 -> gC /m^2 
                       runif(ne, 0, 10000))  ## prior
   
-  belowGround <- ifelse(rep("BGB" %in% names(state), ne), 
-                        state$BGB[sample.int(length(state$BGB), ne)] * Mgha2gm, ## unit MgC ha-1 -> gC /m^2 
-                        runif(ne, 0, 10000))  ## prior
+  fine_root_carbon_content <- ifelse(rep("FRB" %in% names(state), ne), 
+                        state$BGB[sample.int(length(state$FRB), ne)] * Mgha2gm, ## unit MgC ha-1 -> gC /m^2 
+                        runif(ne, 0, 8000))  ## prior
   
+  coarse_root_carbon_content <- ifelse(rep("CRB" %in% names(state), ne), 
+                        state$BGB[sample.int(length(state$CRB), ne)] * Mgha2gm, ## unit MgC ha-1 -> gC /m^2 
+                        runif(ne, 0, 8000))  ## prior
   
   # initial leaf area, m2 leaves * m-2 ground area (multiply by leafCSpWt to
   ## get initial plant leaf C)
@@ -75,6 +78,6 @@ sample.IC.SIPNET <- function(ne, state, year = 1) {
                     state$microbe[1, sample.int(ncol(state$microbe), ne), year], 
                     runif(ne, 0, 1))  ## prior 
   
-  return(data.frame(NPP, aboveGround, belowGround,  lai, litter,
+  return(data.frame(NPP, aboveGround, fine_root_carbon_content, coarse_root_carbon_content,  lai, litter,
                     soil, litterWFrac, soilWFrac, snow, microbe))
 } # sample.IC.SIPNET
