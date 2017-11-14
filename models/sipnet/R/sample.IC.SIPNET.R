@@ -22,14 +22,24 @@
 sample.IC.SIPNET <- function(ne, state, year = 1) {
   
   ## Mg C / ha / yr NPP
+  ## no conversion needed because SIPNET doesn't take NPP as IC anyway
   NPP <- ifelse(rep("NPP" %in% names(state), ne), 
-                udunits2::ud.convert(state$NPP[sample.int(length(state$NPP), ne)],'kg/m^2/s','Mg/ha/yr'), # *.48, ## unit MgC/ha/yr
+                state$NPP[sample.int(length(state$NPP), ne)], ## unit MgC ha-1 yr-1
                 runif(ne, 0, 10))  ## prior
   
   # g C * m-2 ground area in wood (above-ground + roots)
-  plantWood <- ifelse(rep("AGB" %in% names(state), ne), 
-                      udunits2::ud.convert(state$AGB[sample.int(length(state$AGB), ne)],'kg/m^2','g/m^2'), ## unit KgC/ha -> g C /m^2 
-                      runif(ne, 0, 14000))  ## prior
+  Mgha2gm <- (1000000) / (10000) # these unit conversions are for testing
+  # reminder : when working with kgC m-2 s-1 as NPP units singularity issues pop up in sda.enkf
+  # using MgC ha-1 yr-1 for NPP in SDA and also brought back AGB to MgC ha-1 for sanity reasons
+  aboveGround <- ifelse(rep("AGB" %in% names(state), ne), 
+                      state$AGB[sample.int(length(state$AGB), ne)] * Mgha2gm, ## unit MgC ha-1 -> gC /m^2 
+                      runif(ne, 0, 10000))  ## prior
+  
+  belowGround <- ifelse(rep("BGB" %in% names(state), ne), 
+                        state$BGB[sample.int(length(state$BGB), ne)] * Mgha2gm, ## unit MgC ha-1 -> gC /m^2 
+                        runif(ne, 0, 10000))  ## prior
+  
+  plantWood  <- aboveGround + belowGround ## unit gC /m^2 
   
   # initial leaf area, m2 leaves * m-2 ground area (multiply by leafCSpWt to
   ## get initial plant leaf C)
