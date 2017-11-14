@@ -198,7 +198,7 @@ observeEvent(input$calc_bm,{
   config.list <- PEcAn.utils::read_web_config("../../web/config.php")
   output$config_list_table <- renderTable(as.data.frame.list(config.list))
   
-  # bm$bm_settings$info <- list(userid = 1000000003) # This is my user id. I have no idea how to get people to log in to their accounts through the web interface and right now the benchmarking code has sections dependent on user id - I will fix this. 
+  bm$bm_settings$info <- list(userid = 1000000003) # This is my user id. I have no idea how to get people to log in to their accounts through the web interface and right now the benchmarking code has sections dependent on user id - I will fix this.
   bm$bm_settings$database <- list(
     bety = list(
       user = config.list$db_bety_username,
