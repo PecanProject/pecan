@@ -94,6 +94,8 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     SLA <- 1000 * leafC / param[id, 2] #SLA, m2/kgC
     output[[18]] <- output[[9]] * SLA # LAI
 
+    output[[19]] <- sub.sipnet.output$fineRootC   * 0.001  ## fine_root_carbon_content kgC/m2
+    output[[20]] <- sub.sipnet.output$coarseRootC * 0.001  ## coarse_root_carbon_content kgC/m2
 
     # ******************** Declare netCDF variables ********************#
     t <- ncdf4::ncdim_def(name = "time",
@@ -134,6 +136,8 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     nc_var[[16]] <- PEcAn.utils::to_ncvar("SWE", dims)
     nc_var[[17]] <- PEcAn.utils::to_ncvar("litter_carbon_content", dims)
     nc_var[[18]] <- PEcAn.utils::to_ncvar("LAI", dims)
+    nc_var[[19]] <- PEcAn.utils::to_ncvar("fine_root_carbon_content", dims)
+    nc_var[[20]] <- PEcAn.utils::to_ncvar("coarse_root_carbon_content", dims)
 
     # ******************** Declare netCDF variables ********************#
 
