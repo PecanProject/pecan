@@ -28,24 +28,28 @@
 ##' 
 ##' @export
 ##' @author Shawn Serbin, Anthony Walker
-##' @importFrom PEcAn.utils misc.convert mstmipvar
-##' @importFrom ncdf4 ncdim_def
+##'
 model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date = NULL, end_date = NULL) {
 
   ## TODO !!UPDATE SO IT WILL WORK WITH NO MET AND WITH MET DRIVER!!
 
-  ### Read in model output in SIPNET format
-  maat.out.file <- file.path(outdir, "out.csv")
-  maat.output <- read.csv(maat.out.file, header = TRUE)
+  ### Read in model output in MAAT format
+  maat.out.file <- file.path(outdir, list.files(outdir,'*.csv$')) # updated to handle mod_mimic runs
+  maat.output <- read.csv(maat.out.file, header = TRUE, sep = ",")
   maat.output.dims <- dim(maat.output)
-  
+
   ### Determine number of years and output timestep
   days <- as.Date(start_date):as.Date(end_date)
   year <- strftime(as.Date(days, origin = "1970-01-01"), "%Y")
   num.years <- length(unique(year))
-  maat.dates <- as.Date(maat.output$time, format = "%m/%d/%y")
+  #maat.dates <- as.Date(maat.output$time, format = "%m/%d/%y")
+  #maat.dates <- strptime(maat.output$time, format = "%m/%d/%y %H:%M:%S", tz="UTC")
+  maat.dates <- strptime(maat.output$time, format = "%Y-%m-%d", tz="UTC")
+  #dims <- dim(subset(maat.output,
+  #                   as.Date(time, format = "%m/%d/%y") == seq(as.Date(start_date), by = "days", length = 1)))
   dims <- dim(subset(maat.output,
-                     as.Date(time, format = "%m/%d/%y") == seq(as.Date(start_date), by = "days", length = 1)))
+                     strptime(time, format = "%Y-%m-%d", tz="UTC") == 
+                       seq(strptime(start_date, format = "%Y-%m-%d", tz="UTC"), by = "days", length = 1)))
   timestep.s <- 86400 / dims[1]
   
   ### Setup outputs for netCDF file in appropriate units
@@ -58,7 +62,7 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     
     ## Subset data for processing
     sub.maat.output <- subset(maat.output, format(maat.dates, "%Y") == y)
-    sub.maat.dates <- as.Date(sub.maat.output$time, format = "%m/%d/%y")
+    sub.maat.dates <- as.Date(sub.maat.output$time, format = "%Y-%m-%d")
     sub.maat.doy <- lubridate::yday(sub.maat.dates)
     sub.maat.output.dims <- dim(sub.maat.output)
     dayfrac <- 1 / dims[1]
@@ -83,11 +87,11 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     #               calendar = "standard", unlim = TRUE) # is this correct? fraction of days or whole days
     
     ## Something like this works for mult timesteps per day
-    t <- ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"),
+    t <- ncdf4::ncdim_def(name = "time", units = paste0("days since ", y, "-01-01 00:00:00"),
                    vals = sub.maat.doy + day.steps, calendar = "standard", 
                    unlim = TRUE)
-    lat <- ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
-    lon <- ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
+    lat <- ncdf4::ncdim_def("lat", "degrees_north", vals = as.numeric(sitelat), longname = "station_latitude")
+    lon <- ncdf4::ncdim_def("lon", "degrees_east", vals = as.numeric(sitelon), longname = "station_longitude")
     
     for (i in seq_along(output)) {
       if (length(output[[i]]) == 0) 
@@ -96,15 +100,15 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     
     ### Find/replace missing and convert outputs to standardized BETYdb units
     output[[3]] <- ifelse(output[[3]] == -999, -999, 
-                          misc.convert(output[[3]],
+                          PEcAn.utils::misc.convert(output[[3]],
                                               "umol C m-2 s-1",
                                               "kg C m-2 s-1"))  # convert A/GPP to kgC/m2/s
     output[[4]] <- ifelse(output[[4]] == -999, -999, 
-                          misc.convert(output[[4]],
+                          PEcAn.utils::misc.convert(output[[4]],
                                        "umol C m-2 s-1",
                                        "kg C m-2 s-1"))  # convert leaf resp to kgC/m2/s
     output[[5]] <- ifelse(output[[5]] == "Inf", -999, 
-                          misc.convert(output[[5]], 
+                          PEcAn.utils::misc.convert(output[[5]], 
                                               "mol H2O m-2 s-1",
                                               "kg H2O m-2 s-1"))  # stomatal_conductance in kg H2O m2 s1
 
@@ -112,11 +116,18 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
     dims <- list(lon = lon, lat = lat, time = t) # set dims for netCDF file
     
     nc_var       <- list()
-    nc_var[[1]]  <- PEcAn.utils::to_ncvar("Year", dims)
-    nc_var[[2]]  <- PEcAn.utils::to_ncvar("FracJulianDay", dims)
-    nc_var[[3]]  <- PEcAn.utils::to_ncvar("GPP", dims)
-    nc_var[[4]]  <- PEcAn.utils::to_ncvar("leaf_respiration", dims)
-    nc_var[[5]]  <- PEcAn.utils::to_ncvar("stomatal_conductance", dims)
+    #nc_var[[1]]  <- PEcAn.utils::to_ncvar("Year", dims)
+    #nc_var[[2]]  <- PEcAn.utils::to_ncvar("FracJulianDay", dims)
+    #nc_var[[3]]  <- PEcAn.utils::to_ncvar("GPP", dims)
+    #nc_var[[4]]  <- PEcAn.utils::to_ncvar("leaf_respiration", dims)
+    #nc_var[[5]]  <- PEcAn.utils::to_ncvar("stomatal_conductance", dims)
+    
+    # temporarily reverting back to this before overhauling to use newer to_ncvar. Currently does not allow for all these vars
+    nc_var[[1]]  <- PEcAn.utils::mstmipvar("Year", lat, lon, t, NA)
+    nc_var[[2]]  <- PEcAn.utils::mstmipvar("FracJulianDay", lat, lon, t, NA)
+    nc_var[[3]]  <- PEcAn.utils::mstmipvar("GPP", lat, lon, t, NA)
+    nc_var[[4]]  <- PEcAn.utils::mstmipvar("leaf_respiration", lat, lon, t, NA)
+    nc_var[[5]]  <- PEcAn.utils::mstmipvar("stomatal_conductance", lat, lon, t, NA)
     
     ### Output netCDF data
     nc <- ncdf4::nc_create(file.path(outdir, paste(y, "nc", sep = ".")), nc_var)

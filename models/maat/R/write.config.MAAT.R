@@ -48,7 +48,7 @@ convert.samples.MAAT <- function(trait.samples) {
   if ("atref.rd" %in% names(trait.samples)) {
     ## Calculate dark_resp_factor - rd as a proportion of Vcmax, Williams & Flannagan 1998 ~ 0.1
     ## (unitless)
-    trait.samples[["rd_prop_vcmax"]] <- trait.samples[["atref.rd"]] / trait.samples[["atref.vcmax"]]
+    trait.samples[["b_rdv_25"]] <- trait.samples[["atref.rd"]] / trait.samples[["atref.vcmax"]]
   }
   if ("Ha.vcmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
@@ -97,17 +97,16 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
             file.path(settings$model$binary, "src")))
   
   ### Parse config options to XML
-  #xml <- PEcAn.settings::listToXml(settings$model$config, "default")
   if (!is.null(settings$model$config$mod_mimic)) {
-    logger.info(paste0("Running with model mimic: ",settings$model$config$mod_mimic))
+    PEcAn.logger::logger.info(paste0("Running with model mimic: ",settings$model$config$mod_mimic))
     mod_mimic <- as.character(settings$model$config$mod_mimic)
     settings$model$config$mod_mimic <- NULL
     xml <- listToXml(settings$model$config, "default")
   } else {
-    mod_mimic <- NULL
+    PEcAn.logger::logger.info("*** Model mimic not selected ***")
+    mod_mimic <- 'NULL'
     xml <- listToXml(settings$model$config, "default")
   }
-  #xml <- listToXml(settings$model$config, "default")
   
   ### Run rename and conversion function on PEcAn trait values
   traits <- convert.samples.MAAT(trait.samples = trait.values[[settings$pfts$pft$name]])
