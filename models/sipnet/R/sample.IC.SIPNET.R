@@ -39,7 +39,6 @@ sample.IC.SIPNET <- function(ne, state, year = 1) {
                         state$BGB[sample.int(length(state$BGB), ne)] * Mgha2gm, ## unit MgC ha-1 -> gC /m^2 
                         runif(ne, 0, 10000))  ## prior
   
-  plantWood  <- aboveGround + belowGround ## unit gC /m^2 
   
   # initial leaf area, m2 leaves * m-2 ground area (multiply by leafCSpWt to
   ## get initial plant leaf C)
@@ -76,6 +75,6 @@ sample.IC.SIPNET <- function(ne, state, year = 1) {
                     state$microbe[1, sample.int(ncol(state$microbe), ne), year], 
                     runif(ne, 0, 1))  ## prior 
   
-  return(data.frame(NPP, plantWood, lai, litter,
+  return(data.frame(NPP, aboveGround, belowGround,  lai, litter,
                     soil, litterWFrac, soilWFrac, snow, microbe))
 } # sample.IC.SIPNET

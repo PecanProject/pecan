@@ -339,8 +339,8 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   if (!is.null(IC)) {
     ic.names <- names(IC)
     ## plantWoodInit gC/m2
-    if ("plantWood" %in% ic.names) {
-      param[which(param[, 1] == "plantWoodInit"), 2] <- IC$plantWood
+    if (all(c("aboveGround", "belowGround") %in% ic.names)) {
+      param[which(param[, 1] == "plantWoodInit"), 2] <- IC$aboveGround + IC$belowGround
     }
     ## laiInit m2/m2
     if ("lai" %in% ic.names) {
