@@ -73,11 +73,14 @@ load_data_paleon_sda <- function(settings){
     
     variable <- intersect(var.names,colnames(obvs[[i]]))
     
+    kgms2Mghayr <- (10000/1)*(1/1000)*(365.25*24*60*60) ## kg m-2 s-1 -> Mg ha-1 yr-1
+    kgm2Mgha <- (10000/1)*(1/1000) ## kg m-2  -> Mg ha-1
+    
     ### Tree Ring Data Product
     if(format_id[[i]] == '1000000040'){
       obvs[[i]] <- obvs[[i]][obvs[[i]]$model_type=='Model RW + Census',]
-      obvs[[i]]$AbvGrndWood <- obvs[[i]]$AbvGrndWood * biomass2carbon
-      obvs[[i]]$NPP <- obvs[[i]]$NPP #* biomass2carbon #kg/m^2/s
+      obvs[[i]]$AbvGrndWood <- obvs[[i]]$AbvGrndWood * kgm2Mgha * biomass2carbon
+      obvs[[i]]$NPP <- obvs[[i]]$NPP * kgms2Mghayr * biomass2carbon 
       arguments <- list(.(year, MCMC_iteration, site_id), .(variable))
       arguments2 <- list(.(year), .(variable))
       arguments3 <- list(.(MCMC_iteration), .(variable), .(year))
