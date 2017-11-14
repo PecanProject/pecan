@@ -30,7 +30,7 @@ read_settings_BRR <- function(settings){
   BRR.settings <- BRR %>% pull(settings) %>% unlist() %>%
     xmlToList(.,"pecan") 
   
-  logger.debug(names(BRR.settings))
+  PEcAn.logger::logger.debug(names(BRR.settings))
   
   settings <- BRR.settings %>% append(settings,.) %>% PEcAn.settings::Settings()
   invisible(settings)
