@@ -53,7 +53,6 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     ## Setup outputs for netCDF file in appropriate units
     output       <- list()
     output[[1]]  <- (sub.sipnet.output$gpp * 0.001) / timestep.s  # GPP in kgC/m2/s
-    output[[1]]  <- (sub.sipnet.output$gpp * 0.001) / timestep.s  # GPP in kgC/m2/s
     ## output[[2]] <- (sub.sipnet.output$npp*0.001) / timestep.s # NPP in kgC/m2/s. Internal SIPNET
     ## calculation
     output[[2]]  <- (sub.sipnet.output$gpp * 0.001) / timestep.s - ((sub.sipnet.output$rAboveground *
