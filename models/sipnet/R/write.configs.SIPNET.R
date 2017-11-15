@@ -292,6 +292,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("som_respiration_rate" %in% pft.names) {
       param[which(param[, 1] == "baseSoilResp"), 2] <- pft.traits[which(pft.names == "som_respiration_rate")]
     }
+    
     # litterBreakdownRate
     if ("turn_over_time" %in% pft.names) {
       id <- which(param[, 1] == "litterBreakdownRate")
@@ -306,6 +307,17 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "soilWHC"), 2] <- pft.traits[which(pft.names == "soilWHC")]
     }
 
+    # 10/31/2017 IF: these were the two assumptions used in the emulator paper in order to reduce dimensionality
+    # These results in improved winter soil respiration values
+    # they don't affect anything when the seasonal soil respiration functionality in SIPNET is turned-off
+    if(FALSE){
+      # assume soil resp Q10 cold == soil resp Q10
+      param[which(param[, 1] == "soilRespQ10Cold"), 2] <- param[which(param[, 1] == "soilRespQ10"), 2]
+      # default SIPNET prior of baseSoilRespCold was 1/4th of baseSoilResp
+      # assuming they will scale accordingly
+      param[which(param[, 1] == "baseSoilRespCold"), 2] <- param[which(param[, 1] == "baseSoilResp"), 2] * 0.25
+    }
+    
     ### ----- Phenology parameters GDD leaf on
     if ("GDD" %in% pft.names) {
       param[which(param[, 1] == "gddLeafOn"), 2] <- pft.traits[which(pft.names == "GDD")]

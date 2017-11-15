@@ -31,7 +31,7 @@
     
     pkg <- paste0("PEcAn.", model)
     fcn <- paste0("met2model.", model)
-    lst <- site.lst(site, con)
+    lst <- site.lst(site.id=site$id, con=con)
     
     model.id <- PEcAn.utils::convert.input(input.id = input.id, 
                               outfolder = outfolder,
