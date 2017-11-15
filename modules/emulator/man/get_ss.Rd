@@ -4,5 +4,5 @@
 \alias{get_ss}
 \title{get_ss}
 \usage{
-get_ss(gp, xnew)
+get_ss(gp, xnew, pos.check)
 }
