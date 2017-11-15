@@ -298,13 +298,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     X[1:N]  ~ dmnorm(X.mod[1:N], prec = q[1:N,1:N])
     
     #agb linear
-    #y_star[1:N,1:N] <- X[1:N,1:N] #[choose]
+    #y_star[1:YN,1:YN] <- X[1:YN,1:YN] #[choose]
     
     #f.comp non linear
-    y_star[1:YN] <- X[1:YN] / sum(X[1:YN])
+    #y_star[1:YN] <- X[1:YN] / sum(X[1:YN])
     
     ## Analysis
-    y.censored[1:YN] ~ dmnorm(y_star[1:YN], prec = r[1:YN,1:YN]) #is it an okay assumpution to just have X and Y in the same order?
+    y.censored[1:YN] ~ dmnorm(X[1:YN], prec = r[1:YN,1:YN]) #is it an okay assumpution to just have X and Y in the same order?
     
     #don't flag y.censored as data, y.censored in inits
     #remove y.censored samplers and only assign univariate samplers on NAs
@@ -330,46 +330,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     
   })
   
-  assessParams <- function(dat, Xt, mu_f_TRUE, P_f_TRUE){  
-    
-    imuf   <- grep("muf", colnames(dat))
-    muf <- colMeans(dat[, imuf])
-    mufT <- apply(Xt,2,mean)
-    
-    #muf mufT scatter plot
-    
-    par(mfrow=c(2,2))
-    for(i in 1:(length(imuf)-1)){
-      plot(dat[,i],dat[,i+1])
-      points(mu_f_TRUE[i],mu_f_TRUE[i+1],cex=3,col=2,pch=18)
-      points(muf[i],muf[i+1],cex=3,col=3,pch=19)
-      points(mufT[i],mufT[i+1],cex=3,col=4,pch=20)
-    }
-    plot.new()
-    legend("topleft",legend=c("TRUE","post","sampT"),col=2:4,pch = 18:20)
-    
-    #cor(dat[,1:6])
-    
-    iPf   <- grep("pf", colnames(dat))
-    Pf <- matrix(colMeans(dat[, iPf]),ncol(X),ncol(X))
-    
-    PfCI <- apply(dat[,iPf],2,quantile,c(0.025,0.975))
-    par(mfrow=c(1,1))
-    plot(P_f_TRUE,Pf,ylim=range(PfCI))
-    abline(0,1,lty=2)
-    for(i in 1:length(Pf)){
-      lines(rep(as.vector(P_f_TRUE)[i],2),PfCI[,i],col=i,lwd=2)
-    }
-    
-    #scatterplots
-    #var 
-    #corr #pull diags out ==1 
-    #check mu v var to make sure variance is only changing near 0# shifts in Xt v X on same plot
-    
-    #PfT <- cov(Xt)
-    #points(P_f_TRUE,PfT,col=1:14,pch="-",cex=2)
-  }
-  
   t1         <- 1
   pink       <- col2rgb("deeppink")
   alphapink  <- rgb(pink[1], pink[2], pink[3], 180, max = 255)
@@ -385,7 +345,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for(t in 4:1061) {
+  for(t in 3) {
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -545,7 +505,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           data.tobit2space = list(y.ind = x.ind,
                                   y.censored = x.censored,
                                   mu_0 = rep(0,length(mu.f)),
-                                  lambda_0 = diag(10,length(mu.f)),
+                                  lambda_0 = diag(1,length(mu.f)),
                                   nu_0 = 3)#some measure of prior obs
           
           inits.tobit2space = list(pf = Pf, muf = colMeans(X)) #pf = cov(X)
@@ -588,8 +548,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         }else{
           Cmodel_tobit2space$y.ind <- x.ind
           Cmodel_tobit2space$y.censored <- x.censored
-          Cmodel_tobit2space$lambda_0 <- diag(10,length(mu.f)) #enkf.params[[t-1]]$Pa
-          Cmodel_tobit2space$mu_0 <- rep(0,length(mu.f)) #enkf.params[[t-1]]$mu.a
+          #Cmodel_tobit2space$lambda_0 <- diag(10,length(mu.f)) #enkf.params[[t-1]]$Pa
+          #Cmodel_tobit2space$mu_0 <- rep(0,length(mu.f)) #enkf.params[[t-1]]$mu.a
+          
+          inits.tobit2space = list(pf = Pf, muf = colMeans(X))
+          
+          Cmodel_tobit2space$setInits(inits.tobit2space)
           
           for(i in seq_along(X)) {
               ## ironically, here we have to "toggle" the value of y.ind[i]
@@ -603,7 +567,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         set.seed(0)
         dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = 50000, progressBar=TRUE)
         
-        assessParams(dat = dat.tobit2space[1000:5000,], Xt = X, mu_f_TRUE = colMeans(X), P_f_TRUE = Pf)
+        pdf(file.path(outdir,paste0('assessParams',t,'.pdf')))
+        assessParams(dat = dat.tobit2space[1000:5000,], Xt = X)
+        dev.off()
         
         ## update parameters
         dat.tobit2space  <- dat.tobit2space[1000:5000, ]
@@ -613,7 +579,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         Pf <- matrix(colMeans(dat.tobit2space[, iPf]),ncol(X),ncol(X))
         
         #plot(dat.tobit2space[,16])
-        
         
         if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
       
@@ -652,7 +617,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           constants.tobit = list(N = ncol(X), YN = length(y.ind)) #, nc = 1
           dimensions.tobit = list(X = ncol(X), X.mod = ncol(X), Q = c(ncol(X),ncol(X))) #  b = dim(inits.pred$b),
           
-          data.tobit = list(muf = as.vector(mu.f), pf = Pf, aq = aqq[t,,], bq = bqq[t],
+          data.tobit = list(muf = as.vector(mu.f), pf = solve(Pf), aq = aqq[t,,], bq = bqq[t],
                             y.ind = y.ind,
                             y.censored = y.censored,
                             r = solve(R))
@@ -700,7 +665,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           Cmodel$aq <- aqq[t,,]
           Cmodel$bq <- bqq[t]
           Cmodel$muf <- mu.f
-          Cmodel$pf <- Pf
+          Cmodel$pf <- solve(Pf)
           Cmodel$r <- solve(R)
           
           for(i in 1:length(y.ind)) {
@@ -770,8 +735,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         
         aqq[t + 1, , ]   <- V
         bqq[t + 1]       <- n
+        par(mfrow=c(1,1))
+        plot(bqq[1:(t+1)])
         enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, 
                                  Pa = Pa, q.bar = q.bar, n = n)
+        
+        var.df1 <- data.frame(diag(Pa),diag(Pf),diag(R),diag(solve(q.bar)))
+        var.df1[order(var.df1$diag.Pa.),]
       }
       
     } else {
@@ -830,6 +800,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     
     colnames(analysis) <- colnames(X)
     
+    hist(rnorm(1000,colMeans(X)[12],sd = sqrt(cov(X)[12,12])),freq=F)
+    lines(density(rnorm(1000,Y[12],sd = sqrt(R[12,12]))),col='green',lwd=2)
+    lines(density(rnorm(1000,mu.a[12],sd = sqrt(Pa[12,12]))),col='pink',lwd=2)
+    
     ##### Mapping analysis vectors to be in bounds of state variables
     if(processvar==TRUE){
       for(i in 1:ncol(analysis)){
@@ -845,7 +819,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     new.params <- params
     
     ANALYSIS[[t]] <- analysis
-    
+    #pdf('ts-tree.rings-sda.pdf')
     if (interactive() & t > 1) { #
       t1 <- 1
       names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
@@ -872,7 +846,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       
       YCI <- YCI[,Y.order]
       YCI[is.na(YCI)] <- 0
-      YCI <- YCI*sum(mu.a)
+      
       }else{
         YCI <- matrix(NA,nrow=length(t1:t), ncol=length(names.y))
       }
@@ -926,7 +900,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
       }
     }
-    
+    #dev.off()
     ###-------------------------------------------------------------------###
     ### forecast step                                                     ###
     ###-------------------------------------------------------------------### 
@@ -954,8 +928,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         do.call(my.write_restart, 
                 args = list(outdir = outdir, 
                             runid = run.id[[i]], 
-                            start.time = year(obs.times[t]),#(ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))),
-                            stop.time = year(obs.times[t+1]),#ymd_hms(obs.times[t + 1],truncated = 3), 
+                            start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))),
+                            stop.time = ymd_hms(obs.times[t + 1],truncated = 3), 
                             settings = settings,
                             new.state = new.state[i, ], 
                             new.params = new.params[[i]], 
@@ -1025,14 +999,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     Xci <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
     Xci[is.na(Xci)]<-0
     
-    Xbar <- Xbar/Xsum
-    Xci <- Xci/Xsum
+    Xbar <- Xbar
+    Xci <- Xci
     
     Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i]) })
     XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
     
-    Xa <- Xa/Xasum
-    XaCI <- XaCI/Xasum
+    Xa <- Xa
+    XaCI <- XaCI
     
     plot(as.Date(obs.times[t1:t]),
          Xbar, 
