@@ -17,28 +17,43 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"biocro.dtd\">\
 ##' @name convert.samples.BIOCRO
 ##' @title Convert samples for biocro
 ##' @param trait.samples a matrix or dataframe of samples from the trait distribution
+##' @param biocro_version numeric, but currently only checks whether version is less than 1.0
 ##' @return matrix or dataframe with values transformed
 ##' @export
 ##' @author David LeBauer
-convert.samples.BIOCRO <- function(trait.samples) {
+convert.samples.BIOCRO <- function(trait.samples, biocro_version=1.0) {
 
   if (is.list(trait.samples)) {
     trait.samples <- as.data.frame(trait.samples)
   }
+
   ## first rename variables
   trait.names <- colnames(trait.samples)
-  trait.names[trait.names == "Vcmax"] <- "vmax"
-  trait.names[trait.names == "Jmax"] <- "jmax"
-  trait.names[trait.names == "leaf_respiration_rate_m2"] <- "Rd"
-  trait.names[trait.names == "cuticular_cond"] <- "b0"
-  trait.names[trait.names == "stomatal_slope.BB"] <- "b1"
-  trait.names[trait.names == "SLA"] <- "Sp"
-  trait.names[trait.names == "growth_respiration_coefficient"] <- "GrowthRespFraction"
-  trait.names[trait.names == "extinction_coefficient_diffuse"] <- "kd"
-  trait.names[trait.names == "chi_leaf"] <- "chi.l"
-  trait.names[trait.names == "quantum_efficiency"] <- "alpha"
+  names(trait.names) <- trait.names #looks weird, but naming this vector simplifies indexing below
 
+  name_lookup <- dplyr::tribble(
+    ~bety_name, ~biocro_0.9_name, ~biocro_1.0_name,
+    "Vcmax", "vmax", "vmax1",
+    "Jmax", "jmax", "jmax",
+    "leaf_respiration_rate_m2", "Rd", "Rd",
+    "cuticular_cond", "b0", "b0",
+    "stomatal_slope.BB", "b1", "b1",
+    "SLA", "Sp", "iSp",
+    "growth_respiration_coefficient", "GrowthRespFraction", "growth_respiration_fraction",
+    "extinction_coefficient_diffuse", "kd", "kd",
+    "chi_leaf", "chi.l", "chil",
+    "quantum_efficiency", "alpha", "alpha"
+  )
+  name_lookup <- name_lookup[name_lookup$bety_name %in% trait.names,]
+
+  if (biocro_version >= 1.0) {
+    biocro_name <- "biocro_1.0_name"
+  } else {
+    biocro_name <- "biocro_0.9_name"
+  }
+  trait.names[name_lookup[["bety_name"]]] <- name_lookup[[biocro_name]]
   colnames(trait.samples) <- trait.names
+
   ## Partitioning coefficients: especially leaf phenology
 
   ## iRhizome iStem ifrRhizome ifrStem
@@ -97,7 +112,9 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
   Sys.chmod(file.path(settings$rundir, run.id, "job.sh"))
 
   ## write configuration file
-  traits <- convert.samples.BIOCRO(trait.samples = trait.values[[settings$pfts$pft$name]])
+  traits <- convert.samples.BIOCRO(
+    trait.samples = trait.values[[settings$pfts$pft$name]],
+    biocro_version = settings$model$revision)
 
   species <- utils::read.csv(file.path(settings$pfts$pft$outdir, "species.csv"))
   genus <- unique(species$genus)
