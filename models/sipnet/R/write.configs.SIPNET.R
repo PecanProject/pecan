@@ -283,6 +283,25 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("coarse_root_respiration_Q10" %in% pft.names) {
       param[which(param[, 1] == "coarseRootQ10"), 2] <- pft.traits[which(pft.names == "coarse_root_respiration_Q10")]
     }
+    
+    # NOTE: fineRootAllocation + woodAllocation + leafAllocation doesn't supposed to exceed 1
+    # see sipnet.c code L2005 :
+    # fluxes.coarseRootCreation=(1-params.leafAllocation-params.fineRootAllocation-params.woodAllocation)*npp;
+    
+    # fineRootAllocation
+    if ("root_allocation_fraction" %in% pft.names) {
+      param[which(param[, 1] == "fineRootAllocation"), 2] <- pft.traits[which(pft.names == "root_allocation_fraction")]
+    }
+    
+    # woodAllocation
+    if ("wood_allocation_fraction" %in% pft.names) {
+      param[which(param[, 1] == "woodAllocation"), 2] <- pft.traits[which(pft.names == "wood_allocation_fraction")]
+    }
+    
+    # leafAllocation
+    if ("leaf_allocation_fraction" %in% pft.names) {
+      param[which(param[, 1] == "leafAllocation"), 2] <- pft.traits[which(pft.names == "leaf_allocation_fraction")]
+    }
 
     ### ----- Soil parameters soil respiration Q10.
     if ("soil_respiration_Q10" %in% pft.names) {
