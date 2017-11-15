@@ -125,7 +125,7 @@ EDR <- function(paths,
 
   if (!is.na(soil_reflect_path)) {
     file.copy(soil_reflect_path, file.path(output.path, soil_fname),
-              overwrite = TRUE, recursive = TRUE)
+              overwrite = TRUE)
   }
 
   wood_fname <- "wood_reflect_par.dat"
@@ -136,7 +136,7 @@ EDR <- function(paths,
 
   if (!is.na(wood_reflect_path)) {
     file.copy(wood_reflect_path, file.path(output.path, wood_fname),
-              overwrite = TRUE, recursive = TRUE)
+              overwrite = TRUE)
   }
 
   # Multi-PFT settings
