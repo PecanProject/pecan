@@ -93,11 +93,11 @@ model2netcdf.dvmdostem <- function(outdir) {
   # Odd - not sure what PEcAn uses this for as there should be one
   # file for each year. Maybe monthly or daily resolution outputs?
   timed <- ncdf4::ncdim_def(name='time',
-                            units='years since 1901-01-01 00:00:00',
+                            units='days since 1901-01-01 00:00:00',
                             vals=c(0),
                             unlim=TRUE,
                             longname="time",
-                            calendar='standard')
+                            calendar='365_day')
   #xyt <- list(lond, latd, timed)
   out_nc_dims <- list(lond, latd, timed)
   
