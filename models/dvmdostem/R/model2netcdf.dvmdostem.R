@@ -54,8 +54,8 @@ model2netcdf.dvmdostem <- function(outdir) {
   #newunits <- "kgC m-2 s-1"
   #dims <-   out_nc_dims
   #        var_update("AR","AutoResp","kgC m-2 s-1")
-  var_update <- function(out, dims, pixel = c(10,10), oldname, newname, oldunits=NULL, newunits=NULL){
-    
+  var_update <- function(out, dims, pixel, oldname, newname, oldunits=NULL, newunits=NULL){
+
     ## define variable
     if (is.null(oldunits)) oldunits <- ncdf4::ncatt_get(ncin,oldname,"units")$value 
     # dvm-dos-tem needs updates to units metadata to support above, needs actual time (e.g. month, year) not just / time
@@ -115,7 +115,7 @@ model2netcdf.dvmdostem <- function(outdir) {
     if (dvmdostem_outputs[i] == "GPP") {
       ncin <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[i],"_yearly_tr.nc")))
       PEcAn.logger::logger.info(paste0("Length of time dim: ", ncin$dim$time$len))
-      output <- var_update(output, dims = out_nc_dims, oldname=dvmdostem_outputs[i], newname="GPP", 
+      output <- var_update(output, dims = out_nc_dims, pixel = c(px_X, px_Y), oldname=dvmdostem_outputs[i], newname="GPP",
                            oldunits="gC m-2 yr-1", newunits="kgC m-2 s-1")
       gpp_dim_time_val <- ncin$dim$time$val 
       # need to make this flexible so we aren't getting this from first var
@@ -125,7 +125,7 @@ model2netcdf.dvmdostem <- function(outdir) {
     if (dvmdostem_outputs[i] == "NPP") {
       ncin <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[i],"_yearly_tr.nc")))
       PEcAn.logger::logger.info(paste0("Length of time dim: ", ncin$dim$time$len))
-      output <- var_update(output, dims = out_nc_dims, oldname=dvmdostem_outputs[i], newname="NPP", 
+      output <- var_update(output, dims = out_nc_dims, pixel = c(px_X, px_Y), oldname=dvmdostem_outputs[i], newname="NPP",
                            oldunits="gC m-2 yr-1", newunits="kgC m-2 s-1")
       ncdf4::nc_close(ncin)
     } #NPP
