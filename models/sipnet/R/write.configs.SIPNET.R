@@ -284,9 +284,21 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
       param[which(param[, 1] == "coarseRootQ10"), 2] <- pft.traits[which(pft.names == "coarse_root_respiration_Q10")]
     }
     
-    # NOTE: fineRootAllocation + woodAllocation + leafAllocation doesn't supposed to exceed 1
+    # WARNING: fineRootAllocation + woodAllocation + leafAllocation isn't supposed to exceed 1
     # see sipnet.c code L2005 :
     # fluxes.coarseRootCreation=(1-params.leafAllocation-params.fineRootAllocation-params.woodAllocation)*npp;
+    # priors can be chosen accordingly, and SIPNET doesn't really crash when sum>1 but better keep an eye
+    alloc_params <- c("root_allocation_fraction", "wood_allocation_fraction", "leaf_allocation_fraction")
+    if (all(alloc_params %in% pft.names)) {
+      sum_alloc <- pft.traits[which(pft.names == "root_allocation_fraction")] +
+        pft.traits[which(pft.names == "wood_allocation_fraction")] +
+        pft.traits[which(pft.names == "leaf_allocation_fraction")]
+      if(sum_alloc > 1){
+        PEcAn.logger::logger.warn("Sum of allocation parameters exceeds 1 for runid = ", run.id,
+                                  "- This might not break anything, but take extra care with the outputs.")
+      }
+    }
+    
     
     # fineRootAllocation
     if ("root_allocation_fraction" %in% pft.names) {
@@ -358,9 +370,9 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   if (!is.null(IC)) {
     ic.names <- names(IC)
     ## plantWoodInit gC/m2
-    plant_wood_vars <- c("aboveGround", "fine_root_carbon_content", "coarse_root_carbon_content")
+    plant_wood_vars <- c("AbvGrndWood", "fine_root_carbon_content", "coarse_root_carbon_content")
     if (all(plant_wood_vars %in% ic.names)) {
-      param[which(param[, 1] == "plantWoodInit"), 2] <- IC$aboveGround + IC$fine_root_carbon_content + IC$coarse_root_carbon_content
+      param[which(param[, 1] == "plantWoodInit"), 2] <- IC$AbvGrndWood + IC$fine_root_carbon_content + IC$coarse_root_carbon_content
     }
     ## laiInit m2/m2
     if ("lai" %in% ic.names) {
