@@ -21,15 +21,7 @@ create_BRR <- function(ens_wf, con, user_id = ""){
     settingsXML <- file.path(ens_wf$folder,"pecan.CHECKED.xml")
     
     # Automatically creates a new pecan.xml I think. Need to fix this. 
-    clean <- PEcAn.settings::clean.settings(inputfile = settingsXML,write=FALSE)
-    # Remove database & host information
-    clean$database <- NULL 
-    clean$host <- NULL
-    clean$info <- NULL
-    clean$outdir <- NULL
-    clean$meta.analysis <- NULL
-    clean$ensemble <- NULL
-    str(clean)
+    clean <- PEcAn.settings::clean_settings_BRR(settingsXML)
     
     settings_xml <- toString(PEcAn.settings::listToXml(clean, "pecan"))
     
