@@ -137,7 +137,7 @@ plot_sensitivity <- function(sa.sample, sa.spline, trait, y.range = c(0, 50), me
                size = dotsize * 1.3) + 
     scale_y_continuous(limits = range(pretty(y.range)), breaks = pretty(y.range, n = 3)[1:3]) +
     theme_bw() + 
-    ggtitle(trait.lookup(trait)$figid) +
+    ggtitle(trait) +
     theme(axis.text.x = element_text(size = fontsize$axis),
           axis.text.y = element_text(size = fontsize$axis), 
           axis.title.x = element_text(size = fontsize$axis),
