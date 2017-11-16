@@ -107,7 +107,8 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
           wait=TRUE,
           args=(c("-r",
                   file.path(appbinary_path, 'config'),
-                  file.path(rundir, 'config'))))
+                  file.path(rundir, 'config'))))  # this seems like a problem with below since we copy this first
+                                                  # and below ask if it exists and if so don't copy the template version
 
   if (dir.exists(file.path(rundir, 'parameters'))) {
     unlink(file.path(rundir, 'parameters'), recursive=TRUE)
@@ -171,6 +172,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
 
   # (2)
   # Overwrite parameter values with (ma-posterior) trait data from pecan
+  PEcAn.logger::logger.info(paste0("PFT Name: ",cmtname))
   for (curr_trait in names(traits)) {
     for (jd in list(envcanopy_jsondata, dimveg_jsondata)) {
       for (i in names(jd)) {
@@ -183,7 +185,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
           # name to make sure we are updating the correct spot in the json
           # data structure.
           pft_common_name <- unlist(strsplit(settings$pfts$pft$name, "-"))[2]
-          PEcAn.logger::logger.info(paste0("PFT Name: ",cmtname))
+          #PEcAn.logger::logger.info(paste0("PFT Name: ",cmtname)) # too verbose
           if (identical(jd[[i]]$name, pft_common_name)) {
             if (curr_trait == "SLA") {
               dimveg_jsondata[[i]]$sla = traits[[curr_trait]]
@@ -242,7 +244,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
           stdout=new_param_file, wait=TRUE)
 
   ## Cleanup rundir temp directory - comment out for debugging
-  #unlink(file.path(local_rundir, "tmp"), recursive = TRUE, force = FALSE)  # comment out for debugging
+  unlink(file.path(local_rundir, "tmp"), recursive = TRUE, force = FALSE)  # comment out for debugging
 
   # TODO:
   #  [x] finish with parameter update process
@@ -253,9 +255,13 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   #     -> step one is symlink from raw data locations (Model install folder)
   #        into pecan run folder, maybe do this within job.sh?
 
+  # Met info
+  met_driver_dir <- dirname(settings$run$inputs$met$path)
+  PEcAn.logger::logger.info(paste0("Using met driver path: ", met_driver_dir))
+  
   # Pick up the site and pixel settings from the xml file if they exist
   if (is.null(settings$model$dvmdostem_site)){
-    siteDataPath <- "DATA/SewardPen_10x10"
+    siteDataPath <- met_driver_dir
   } else {
     siteDataPath <- settings$model$dvmdostem_site
   }
@@ -280,7 +286,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   system2(paste0("cp"),
           wait=TRUE,
           args=(c("-r",
-                  file.path(appbinary_path, siteDataPath, 'run-mask.nc'),
+                  file.path(siteDataPath, 'run-mask.nc'),
                   file.path(rundir, 'run-mask.nc'))))
 
   # # Turn off all pixels except the 0,0 pixel in the mask
@@ -303,7 +309,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # Open the input veg file, check that the pixel that is enabled in the
   # run mask is the right veg type to match the cmt/pft that is selected
   # for the run.
-  ncVegCMTFile <- ncdf4::nc_open(file.path(appbinary_path,siteDataPath, "vegetation.nc"), write=FALSE)
+  ncVegCMTFile <- ncdf4::nc_open(file.path(siteDataPath, "vegetation.nc"), write=FALSE)
   veg_class <- ncdf4::ncvar_get(ncVegCMTFile, ncVegCMTFile$var$veg_class)
   if (cmtnum != veg_class[[strtoi(pixel_X), strtoi(pixel_Y)]]) {
     PEcAn.logger::logger.error("INCORRECT PIXEL!! THIS RUN WILL NOT WORK!")
@@ -324,7 +330,9 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     config_template <- readLines(con=system.file("config.js.template", package = "PEcAn.dvmdostem"), n=-1)
   }
 
-  config_template <- gsub("@INPUT_DATA_DIR@", file.path(dirname(appbinary), siteDataPath), config_template)
+  config_template <- gsub("@MET_DRIVER_DIR@", met_driver_dir, config_template)
+  #config_template <- gsub("@INPUT_DATA_DIR@", file.path(dirname(appbinary), siteDataPath), config_template)
+  config_template <- gsub("@INPUT_DATA_DIR@", siteDataPath, config_template)
   config_template <- gsub("@MODEL_OUTPUT_DIR@", outdir, config_template)
   config_template <- gsub("@CUSTOM_RUN_MASK@", file.path(rundir), config_template )
 
@@ -410,4 +418,6 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   writeLines(jobsh, con=file.path(settings$rundir, run.id,"job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id,"job.sh"))
 
-}
+} # end of function
+#------------------------------------------------------------------------------------------------#
+### EOF
