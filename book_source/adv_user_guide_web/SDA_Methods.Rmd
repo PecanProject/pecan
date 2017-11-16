@@ -1,0 +1,35 @@
+---
+title: "SDA_Methods"
+author: "Ann Raiho"
+date: "11/16/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Our goal is build a fully generalizable methodology that will assimilate multiple types of data and data products into ecosystem models within PEcAn temporally and spatially. But, during development we have been focusing on assimilating tree ring estimated NPP and AGB and pollen derived fractional composition into two ecosystem models, SIPNET and LINKAGES, at Harvard Forest.
+
+## Data Products
+During workflow development, we have been working with tree ring estimated NPP and AGB and pollen derived fractional composition data products. Both of these data products have been estimated with a full accounting of uncertainty, which provides us with state variable observation mean vector and covariance matrix at each time step. These data products are discussed in more detail below.
+
+### Tree Rings
+Andria Dawson, Chris Paciorek, and Mike Dietze have developed a Bayesian model that estimates annual aboveground biomass increment and aboveground biomass for each tree in a dataset. We obtain this data and aggregate to the level appropriate for the model. More information on methods can be found in Dawson et al 201?.
+
+We have been working mostly with tree data collected at Harvard Forest. Tree rings and census data were collected at Lyford Plot between 1960 and 2010 in three separate plots. Other tree ring data will be added to this analysis in the future from Kelly Heilman (Midwest sites) and Alex Dye (Huron Mt. Club).
+
+### Pollen
+STEPPS is a Bayesian model developed by Paciorek and McLachlan 2009 and Dawson et al 2016 to estimate spatially gridded fractional composition from fossil pollen. This 
+
+#### Variance Inflation
+
+
+## Model Calibration
+## Initial Conditions
+## State Data Assimilation
+### Model Description
+#### Mapping Ensemble Output to Tobit Space
+#### Generalized Ensemble Filter with Process Variance Estimation
+### Diagnostics
+
