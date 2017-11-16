@@ -7,7 +7,7 @@
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
 
-#outdir <- "/data/sserbin/Modeling/dvmdostem/pecan_runs/test_dir"
+outdir <- "/data/sserbin/Modeling/dvmdostem/pecan_runs/run.77/out/ENS-00001"
 
 
 ##-------------------------------------------------------------------------------------------------#
@@ -80,6 +80,21 @@ model2netcdf.dvmdostem <- function(outdir) {
   }
 
   # Define PEcAn style dimensions; reusable for many files
+  transient_dims <- ncdf4::nc_open(file.path(outdir, "NPP_yearly_tr.nc"), write=FALSE)
+  transient_time <- transient_dims$dim$time$units # however format is wrong
+  # > transient_dims$dim$time$units
+  # [1] "days since 1901-1-1 0:0:0" --> needs to be days since 1901-01-01 00:00:00
+  try(ncdf4::nc_close(transient_dims))
+  if (!any(is.na(file.info(file.path(outdir, "NPP_yearly_sc.nc"))))) {
+    scenerio_dims <- ncdf4::nc_open(file.path(outdir, "NPP_yearly_sc.nc"), write=FALSE)
+    scenerio_time <- scenerio_dims$dim$time$units # however format is wrong
+  }
+  #> scenerio_time
+  #[1] "days since 2010-1-1 0:0:0" --> needs to be "days since 2010-01-01 00:00:00"
+  try(ncdf4::nc_close(scenerio_dims))
+  
+  
+  #!! update below to generate these for both transient and scenerio!!
   lond <- ncdf4::ncdim_def(name='lon',
                            units="degrees_east",
                            vals=c(1), # <=== read from dvmdostem file!
@@ -93,7 +108,7 @@ model2netcdf.dvmdostem <- function(outdir) {
   # Odd - not sure what PEcAn uses this for as there should be one
   # file for each year. Maybe monthly or daily resolution outputs?
   timed <- ncdf4::ncdim_def(name='time',
-                            units='days since 1901-01-01 00:00:00',
+                            units=transient_time,
                             vals=c(0),
                             unlim=TRUE,
                             longname="time",
@@ -135,11 +150,16 @@ model2netcdf.dvmdostem <- function(outdir) {
 
   ## Output PEcAn netCDF files - still a work in progress
   ctr <- 1
-  out_yr <- 1901
-  #out_yr <- 1902
+  # temporary work around. probably need to revise this in the future
+  out_yr <- as.numeric( sub("\\D*(\\d+).*", "\\1", transient_time) ) # temporary work around. proba
+  #> out_yr
+  #[1] 1901
+  
   ## !!! This  needs to be more flexible to handle monthly and annual ouputs
   ## !!! currently only supports annual
-  for (yr in gpp_dim_time_val) { # replace with something more flexible
+  transient_years <- seq(out_yr,1901+length(gpp_dim_time_val)-1, 1)
+  for (yr in seq_along(transient_years)  ) { # replace with something more flexible
+    PEcAn.logger::logger.info(paste0("Processing year: ",out_yr))
     # update time - this needs to be more elegant
     output$var[[1]]$dim[[3]]$units <- paste0("years since ", as.character(out_yr), "-01-01 00:00:00")
     ## write netCDF data
