@@ -14,9 +14,11 @@ rtm_loglike <- function(nparams, model, observed, lag.max = NULL, verbose = TRUE
         err <- mod - observed
         ss <- sum(err * err)
         sigma2 <- rsd * rsd
-        n_eff <- neff(err, lag.max = lag.max)
-        sigma2eff <- sigma2 * n_obs / n_eff
-        ll <- -0.5 * (n_eff * log(sigma2eff) + ss / sigma2eff)
+        # Effective sample size normalization.
+        # Turning this on gives weird results.
+        # n_eff <- neff(err, lag.max = lag.max)
+        # sigma2eff <- sigma2 * n_obs / n_eff
+        ll <- -0.5 * (n_obs * log(sigma2) + ss / sigma2)
         if (is.na(ll)) {
             if (verbose) {
                 message("Log likelihood is NA. Returning loglike = ", fail_ll)
