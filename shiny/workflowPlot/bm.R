@@ -20,16 +20,7 @@ observeEvent(input$load,{
       dplyr::left_join(.,tbl(bety, "workflows") %>% dplyr::rename(workflow_id = id), by="workflow_id") %>% dplyr::collect()
     bm$model_vars <- var_names_all(bety,ids_DF$wID,ids_DF$runID)
     
-    settingsXML <- file.path(ens_wf$folder,"pecan.CHECKED.xml")
-    # Automatically creates a new pecan.xml I think. Need to fix this. 
-    clean <- clean_settings_BRR(settingsXML)
-    
-    settings_xml <- toString(PEcAn.utils::listToXml(clean, "pecan"))
-    # This is NOT a good way to find matching reference run records
-    # Other options include comparing lists (slow)
-    # more spohisticated PSQL queries
-    # changing the settings field to jsonb 
-    ref_run <- db.query(paste0(" SELECT * from reference_runs where settings = '", settings_xml,"'"), bety$con)
+    ref_run <- check_BRR(inputfile = file.path(ens_wf$folder,"pecan.CHECKED.xml"), bety$con)
     
     if(length(ref_run) == 0){
       # If not registered, button appears with option to run create.BRR
@@ -241,6 +232,9 @@ observeEvent(input$calc_bm,{
   
   ##############################################################################
   # Run the benchmarking functions
+  # The following seven functions are essentially 
+  # "the benchmarking workflow" in its entirety  
+  
   settings <- PEcAn.settings::read.settings(bm$settings_path)
   bm.settings <- PEcAn.benchmark::define_benchmark(settings,bety)
   settings <- PEcAn.benchmark::add_workflow_info(settings,bety)
