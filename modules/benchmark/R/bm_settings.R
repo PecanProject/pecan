@@ -123,15 +123,13 @@ bm_settings2pecan_settings <- function(bm.settings){
 ##------------------------------------------------------------------------------------------------##
 ##' @name check_BRR
 ##' @title Check whether a run has been registered as a reference run in BETY
-##' @param inputfile the PEcAn settings file to be used.
+##' @param settings_xml cleaned settings to be compared with BRR in the database
 ##' @param con database connection
 ##' @importFrom dplyr tbl filter collect
 ##' @export
 ##' @author Betsy Cowdery
 
-check_BRR <- function(inputfile, con){
-  clean <- PEcAn.benchmark::clean_settings_BRR(inputfile)
-  settings_xml <- toString(PEcAn.settings::listToXml(clean, "pecan"))
+check_BRR <- function(settings_xml, con){
   # This is NOT a good way to find matching reference run records
   # Other options include comparing lists (slow)
   # more spohisticated PSQL queries
