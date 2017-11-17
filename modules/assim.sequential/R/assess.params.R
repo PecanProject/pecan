@@ -17,10 +17,26 @@
 assessParams <- function(dat, Xt, mu_f_TRUE = NULL, P_f_TRUE = NULL){  
   #mu_f_TRUE and P_f_TRUE used for simulation
 
+  
+  #* page 6 looks more like I expected, but I’m not sure how we’re getting negative variances
+  
+  #* In general, the first 3 pages of pairs plots doesn’t seem to be producing anything too absurd — there’s no estimates going off to large negative values and nothing TOO far from the sample mean. That said, I do find some of the estimates to be surprising (e.g. why is the posterior for mu12 at t=2 lower than the sample mean when the ensemble shouldn’t include any zeros)
+  
   imuf   <- grep("muf", colnames(dat))
   muf <- colMeans(dat[, imuf])
   mufT <- apply(Xt,2,mean)
   PfT <- cov(Xt)
+  
+  mufCI <- apply(dat[,imuf],2,quantile,c(0.025,0.975))
+  mufTCI <- apply(Xt,2,quantile,c(0.025,0.975))
+  
+  par(mfrow=c(1,1))
+  plot(mufT,muf,pch=19,ylim=range(mufCI),xlim=range(mufTCI))
+  abline(a=0,b=1,lty=2)
+  for(i in 1:length(muf)){
+    lines(mufTCI[,i],rep(as.vector(muf)[i],2),col=i,lwd=2)
+    lines(rep(as.vector(mufT)[i],2),mufCI[,i],col=i,lwd=2)
+  }
   
   #muf mufT scatter plot
   par(mfrow=c(2,2))
@@ -31,13 +47,13 @@ assessParams <- function(dat, Xt, mu_f_TRUE = NULL, P_f_TRUE = NULL){
     points(mufT[i],mufT[i+1],cex=3,col=4,pch=20)
   }
   plot.new()
-
   legend("topleft",legend=c("post","sampT"),col=3:4,pch = 19:20)
   #legend("topleft",legend=c("TRUE","post","sampT"),col=2:4,pch = 18:20)
   
-  boxplot(Xt)
+  boxplot(Xt,xlab='State Variables',ylab='X')
   points(muf,col='red',pch=19)
-
+  legend("topleft",legend=c("muf"),col='red',pch = 19)
+  
   #cor(dat[,1:6])
   
   iPf   <- grep("pf", colnames(dat))
@@ -46,10 +62,6 @@ assessParams <- function(dat, Xt, mu_f_TRUE = NULL, P_f_TRUE = NULL){
   PfCI <- apply(dat[,iPf],2,quantile,c(0.025,0.975))
 
   diag.stopper <- diag(length(muf))
-  
-  par(mfrow=c(1,2))
-  plot(diag(PfT)-apply(dat[,imuf],2,var),pch=19,cex=2,xlab='State Variable')
-  plot(diag(PfT)-diag(Pf),xlab='State Variable',pch=19,cex=2)
   
   par(mfrow=c(1,1))
   plot(PfT,Pf,ylim=range(PfCI),pch=19,xlab='Pf Ensemble (True)',ylab='Pf Estimated (tobit2space)')
@@ -64,6 +76,12 @@ assessParams <- function(dat, Xt, mu_f_TRUE = NULL, P_f_TRUE = NULL){
   
   diag.stopper2 <- diag.stopper+1
   diag(diag.stopper2) <- 0
+  
+  plot(cov2cor(PfT)[which(diag.stopper2==1)],
+       cov2cor(Pf)[which(diag.stopper2==1)],pch=19,
+       ylab = 'Pf', xlab = 'Pft', main = 'Correlations')
+  abline(a=0,b=1,lty=2)
+  
   corrCI <- apply(dat[,iPf[which(diag.stopper2!=0)]],2,quantile,c(0.025,0.975))
   
   par(mfrow=c(1,1))
@@ -78,8 +96,13 @@ assessParams <- function(dat, Xt, mu_f_TRUE = NULL, P_f_TRUE = NULL){
     }
   }
   
-  var.change <- data.frame(mufT = signif(colMeans(Xt),digits=2),muf=signif(muf,digits=2),abs.change.var = abs(diag(PfT)-diag(Pf)))
-  var.change[order(var.change$abs.change.var),]
+  par(mfrow=c(1,1))
+  plot(diag(PfT)-diag(Pf),xlab='State Variable',pch=19,
+       cex=2,main='Which variance changed the most?')
+  
+  
+  #var.change <- data.frame(mufT = signif(colMeans(Xt),digits=2),muf=signif(muf,digits=2),abs.change.var = abs(diag(PfT)-diag(Pf)))
+  #var.change[order(var.change$abs.change.var),]
   
   # sort(diag(Pf)-diag(PfT),decreasing = T)
   # 
