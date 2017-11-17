@@ -13,7 +13,7 @@ test_that("distn.stats works for different distributions",{
 })
 
 test_that("distn.table.stats works for different distributions",{
-  data(prior.distns)
+  load("data/prior.distns.RData")
   distn.table.stats(prior.distns)
   new.distn.table <- data.frame(distn = c("norm", "exp"), parama = c(1,1), paramb = c(1,1))
   expect_equivalent(distn.table.stats(new.distn.table), 

@@ -36,9 +36,17 @@ create_BRR <- function(ens_wf, con, user_id = ""){
     ref_run <- db.query(paste0(" SELECT * from reference_runs where settings = '", settings_xml,"'"),con)
     
     if(length(ref_run) == 0){ # Make new reference run entry
-      ref_run <- db.query(paste0("INSERT INTO reference_runs (model_id, settings, user_id)",
-                                 "VALUES(",ens_wf$model_id,", '",settings_xml,"' , ",user_id,
-                                 ") RETURNING *;"),con)
+      
+      if(nchar(as.character(user_id)) > 0){
+        ref_run <- db.query(paste0("INSERT INTO reference_runs (model_id, settings, user_id)",
+                                   "VALUES(",ens_wf$model_id,", '",settings_xml,"' , ",user_id,
+                                   ") RETURNING *;"),con)
+      }else{
+        ref_run <- db.query(paste0("INSERT INTO reference_runs (model_id, settings)",
+                                   "VALUES(",ens_wf$model_id,", '",settings_xml,"') RETURNING *;"),con)
+      }
+      
+
     }else if(dim(ref_run)[1] > 1){# There shouldn't be more than one reference run with the same settings
       PEcAn.logger::logger.error("There is more than one reference run in the database with these settings. Review for duplicates. ")
     }

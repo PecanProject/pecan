@@ -27,10 +27,12 @@ read_web_config = function(php.config = "../../web/config.php") {
   
   ##references
   ref <- grep("$", config, fixed = TRUE)
-  refsplit = strsplit(config[ref],split = " . ",fixed=TRUE)[[1]]
-  refsplit = sub(pattern = '\"',replacement = "",x = refsplit)
-  refsplit = sub(pattern = '$',replacement = '\"',refsplit,fixed=TRUE)
-  config[ref] <- paste0(refsplit,collapse = "")  ## lines with variable references fail
+  if(length(ref) > 0){
+    refsplit = strsplit(config[ref],split = " . ",fixed=TRUE)[[1]]
+    refsplit = sub(pattern = '\"',replacement = "",x = refsplit)
+    refsplit = sub(pattern = '$',replacement = '\"',refsplit,fixed=TRUE)
+    config[ref] <- paste0(refsplit,collapse = "")  ## lines with variable references fail
+  }
   
   ## convert to list
   config.list <- eval(parse(text = paste("list(", paste0(config, collapse = ","), ")")))
