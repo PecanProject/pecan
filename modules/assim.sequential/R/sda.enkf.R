@@ -319,7 +319,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     for(i in 1:N){
       y.censored[i,1:J] ~ dmnorm(muf[1:J], cov = pf[1:J,1:J])
       for(j in 1:J){
-        y.ind[i,j] ~ dconstraint(y.censored[i,j] > 0)
+        y.ind[i,j] ~ dinterval(y.censored[i,j], 0)
       }
     }
     
@@ -345,7 +345,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for(t in 3) {
+  for(t in 3:10) {
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -393,7 +393,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       
       if (length(obs.mean[[t]]) > 1) {
         diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
-        diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
+        diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/2
       }
       
       ### TO DO: plotting not going to work because of observation operator i.e. y and x are on different scales
@@ -505,7 +505,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           data.tobit2space = list(y.ind = x.ind,
                                   y.censored = x.censored,
                                   mu_0 = rep(0,length(mu.f)),
-                                  lambda_0 = diag(1,length(mu.f)),
+                                  lambda_0 = diag(10,length(mu.f)),
                                   nu_0 = 3)#some measure of prior obs
           
           inits.tobit2space = list(pf = Pf, muf = colMeans(X)) #pf = cov(X)
@@ -580,7 +580,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         
         #plot(dat.tobit2space[,16])
         
-        if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
+        #if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
       
         ###-------------------------------------------------------------------###
         ### Generalized Ensemble Filter                                       ###
@@ -800,7 +800,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     
     colnames(analysis) <- colnames(X)
     
-    hist(rnorm(1000,colMeans(X)[12],sd = sqrt(cov(X)[12,12])),freq=F)
+    hist(rnorm(1000,colMeans(X)[12],sd = sqrt(cov(X)[12,12])),freq=F,xlim=c(-.05,5))
     lines(density(rnorm(1000,Y[12],sd = sqrt(R[12,12]))),col='green',lwd=2)
     lines(density(rnorm(1000,mu.a[12],sd = sqrt(Pa[12,12]))),col='pink',lwd=2)
     
