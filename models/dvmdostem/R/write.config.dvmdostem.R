@@ -36,7 +36,17 @@ convert.samples.dvmdostem <- function(trait_values) {
     # what we expect from the other data in the PEcAn/bety database.
     trait_values[["cuticular_cond"]] <- trait_values[["cuticular_cond"]] / 10^6
   }
-
+  
+  if("vpd_open" %in% names(trait_values)) {
+    # Convert from kPa to Pa
+    trait_values[["vpd_open"]] <- udunits2::ud.convert(trait_values[["vpd_open"]],"kPa","Pa")
+  }
+  
+  if("vpd_close" %in% names(trait_values)) {
+    # Convert from kPa to Pa
+    trait_values[["vpd_close"]] <- udunits2::ud.convert(trait_values[["vpd_close"]],"kPa","Pa")
+  }
+  
   # Return the modifed version
   return (trait_values)
 }
@@ -196,6 +206,18 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
             if (curr_trait == "frprod_perc_20") {
               dimveg_jsondata[[i]]$`frprod[1]` = traits[[curr_trait]]
             }
+            if (curr_trait == "frprod_perc_30") {
+              dimveg_jsondata[[i]]$`frprod[2]` = traits[[curr_trait]]
+            }
+            if (curr_trait == "frprod_perc_40") {
+              dimveg_jsondata[[i]]$`frprod[3]` = traits[[curr_trait]]
+            }
+            if (curr_trait == "klai") {
+              dimveg_jsondata[[i]]$klai = traits[[curr_trait]]
+            }
+            if (curr_trait == "ilai") {
+              dimveg_jsondata[[i]]$lai = traits[[curr_trait]]
+            }
             if (curr_trait == "extinction_coefficient_diffuse") {
               envcanopy_jsondata[[i]]$er = traits[[curr_trait]]
             }
@@ -207,6 +229,15 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
             }
             if (curr_trait == "gcmax") {
               envcanopy_jsondata[[i]]$glmax = traits[[curr_trait]]
+            }
+            if (curr_trait == "ppfd50") {
+              envcanopy_jsondata[[i]]$ppfd50 = traits[[curr_trait]]
+            }
+            if (curr_trait == "vpd_open") {
+              envcanopy_jsondata[[i]]$vpd_open = traits[[curr_trait]]
+            }
+            if (curr_trait == "vpd_close") {
+              envcanopy_jsondata[[i]]$vpd_close = traits[[curr_trait]]
             }
           }
         }
