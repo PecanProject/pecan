@@ -80,10 +80,10 @@ extract_soil_nc <- function(in.file,outdir,lat,lon){
   soil.data$oc     <- soil.data$oc/100
   soil.data$gravel <- soil.data$gravel/100
   soil.data$ref_bulk <- udunits2::ud.convert(soil.data$ref_bulk,"g cm-3","kg m-3")
-  names(soil.data)[which(names(soil.data) == "clay")] <- "volume_fraction_of_clay_in_soil"
-  names(soil.data)[which(names(soil.data) == "sand")] <- "volume_fraction_of_sand_in_soil"
-  names(soil.data)[which(names(soil.data) == "silt")] <- "volume_fraction_of_silt_in_soil"
-  names(soil.data)[which(names(soil.data) == "gravel")] <- "volume_fraction_of_gravel_in_soil"
+  names(soil.data)[which(names(soil.data) == "clay")] <- "fraction_of_clay_in_soil"
+  names(soil.data)[which(names(soil.data) == "sand")] <- "fraction_of_sand_in_soil"
+  names(soil.data)[which(names(soil.data) == "silt")] <- "fraction_of_silt_in_soil"
+  names(soil.data)[which(names(soil.data) == "gravel")] <- "fraction_of_gravel_in_soil"
   names(soil.data)[which(names(soil.data) == "ref_bulk")] <- "soil_bulk_density"
   names(soil.data)[which(names(soil.data) == "ph")]   <- "soil_ph"
   names(soil.data)[which(names(soil.data) == "cec")]  <- "soil_cec" ## units = meq/100g
@@ -113,10 +113,10 @@ extract_soil_nc <- function(in.file,outdir,lat,lon){
 soil.units <- function(varname = NA){
   variables <- as.data.frame(matrix(c("soil_depth","m",
                                       "soil_cec","meq/100g",
-                                      "volume_fraction_of_clay_in_soil","m3 m-3",
-                                      "volume_fraction_of_sand_in_soil","m3 m-3",
-                                      "volume_fraction_of_silt_in_soil","m3 m-3",
-                                      "volume_fraction_of_gravel_in_soil","m3 m-3",
+                                      "fraction_of_clay_in_soil","1",
+                                      "fraction_of_sand_in_soil","1",
+                                      "fraction_of_silt_in_soil","1",
+                                      "fraction_of_gravel_in_soil","1",
                                       "volume_fraction_of_water_in_soil_at_saturation","m3 m-3",
                                       "volume_fraction_of_water_in_soil_at_field_capacity","m3 m-3",
                                       "volume_fraction_of_condensed_water_in_dry_soil","m3 m-3",

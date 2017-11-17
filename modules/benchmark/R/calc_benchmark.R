@@ -8,7 +8,7 @@
 ##' @export 
 ##' 
 ##' @author Betsy Cowdery 
-##' @importFrom dplyr tbl filter rename collect select
+##' @importFrom dplyr tbl filter rename collect select  
 calc_benchmark <- function(settings, bety) {
   
   # run.score <- run.success.check(settings)
@@ -52,7 +52,14 @@ calc_benchmark <- function(settings, bety) {
     # How are we dealing with ensemble runs? Right now I've hardcoded to select the first run.
     
     # All benchmarking records for the given benchmarking ensemble id
-    bms <- tbl(bety,'benchmarks') %>% dplyr::rename(benchmark_id = id) %>%  
+    # The benchmark entries returned from this query will include all previous 
+    # benchmarks that have ever been done for the ensemble id. 
+    # For now all benchmarks will be (re)calculated.  
+    # This is could become problematic if previous benchmarks were
+    # calculated with multiple inputs, which would mean that all of that data 
+    # would need to be loaded and aligned again. 
+    
+    bms <- tbl(bety,'benchmarks') %>% dplyr::rename(benchmark_id = id) %>% 
       left_join(tbl(bety, "benchmarks_benchmarks_reference_runs"), by="benchmark_id") %>% 
       filter(reference_run_id == settings$benchmarking$reference_run_id) %>% 
       select(one_of("benchmark_id", "input_id", "site_id", "variable_id", "reference_run_id")) %>%
@@ -79,7 +86,10 @@ calc_benchmark <- function(settings, bety) {
       time.row <- format$time.row
       vars.used.index <- setdiff(seq_along(format$vars$variable_id), format$time.row)
       
-      obvs <- load_data(data.path, format, start_year, end_year, site, vars.used.index, time.row)
+      start_year <- lubridate::year(settings$run$start.date)
+      end_year <- lubridate::year(settings$run$end.date)
+      
+      obvs <- load_data(data.path, format, start_year = start_year, end_year = end_year, site, vars.used.index, time.row)
       dat_vars <- format$vars$pecan_name  # IF : is this line redundant?
       obvs_full <- obvs
       
@@ -149,7 +159,8 @@ calc_benchmark <- function(settings, bety) {
         
         for(metric.id in metrics$id){
           metric.name <- filter(metrics,id == metric.id)[["name"]]
-          score <- out.calc_metrics[["benchmarks"]] %>% filter(metric == metric.name) %>% select(score)
+          score <- out.calc_metrics[["benchmarks"]] %>% 
+            filter(metric == metric.name) %>% select(score)
           
           # Update scores in the database
           
