@@ -15,21 +15,64 @@ Our goal is build a fully generalizable methodology that will assimilate multipl
 During workflow development, we have been working with tree ring estimated NPP and AGB and pollen derived fractional composition data products. Both of these data products have been estimated with a full accounting of uncertainty, which provides us with state variable observation mean vector and covariance matrix at each time step. These data products are discussed in more detail below.
 
 ### Tree Rings
-Andria Dawson, Chris Paciorek, and Mike Dietze have developed a Bayesian model that estimates annual aboveground biomass increment and aboveground biomass for each tree in a dataset. We obtain this data and aggregate to the level appropriate for the model. More information on methods can be found in Dawson et al 201?.
+Andria Dawson, Chris Paciorek, and Mike Dietze have developed a Bayesian model that estimates annual aboveground biomass increment and aboveground biomass for each tree in a dataset. We obtain this data and aggregate to the level appropriate for the ecosystem model. In SIPNET, we are assimilating annual gross woody increment and total aboveground biomass. In LINKAGES, we are assimilating annual species biomass. More information on methods can be found in Dawson et al 201?.
 
 We have been working mostly with tree data collected at Harvard Forest. Tree rings and census data were collected at Lyford Plot between 1960 and 2010 in three separate plots. Other tree ring data will be added to this analysis in the future from Kelly Heilman (Midwest sites) and Alex Dye (Huron Mt. Club).
 
 ### Pollen
-STEPPS is a Bayesian model developed by Paciorek and McLachlan 2009 and Dawson et al 2016 to estimate spatially gridded fractional composition from fossil pollen. This 
+STEPPS is a Bayesian model developed by Paciorek and McLachlan 2009 and Dawson et al 2016 to estimate spatially gridded fractional composition from fossil pollen. The temporal resolution of this data product is centennial. We have the option of assimilating fractional composition every 100 years or every year with variance inflation. We believe that assimilating fractional composition every year will help keep the model aligned with the data. But, this is an avenue for further exploration. We have been working with STEPPS1 output, specifically with the grid cell that contains Harvard Forest.
 
 #### Variance Inflation
+*Side Note: Probably want to call this something else now.
 
+Since the fractional composition data product has a centennial resolution, in order to use fractional composition information every year we need to change the weight the data has on the analysis. The basic idea is to downweight the likelihood relative to the prior to account for (a) the fact that we assimilate an observation multiple times and (b) the fact that the number of STEPPS observations is 'inflated' because of the autocorrelation. To do this, we take the likelihood and raise it to the power of (1/w) where 'w' is an inflation factor.
+
+w = D * (N / ESS)
+
+where D is the length of the time step. In our case D = 100. N is the number of time steps. In our case N = 11. and ESS is the effective sample size. The ESS is calculated with the following function where ntimes is the same as N above and sims is a matrix with the dimensions number MCMC samples by number state variables.
+
+```{ESS, include = TRUE}
+ESS_calc <- function(ntimes, sims){
+        # center based on mean at each time to remove baseline temporal correlation 
+        # (we want to estimate effective sample size effect from correlation of the errors)
+        row.means.sims <- sims - rowMeans(sims)  
+        
+        # compute all pairwise covariances at different times
+        covars <- NULL
+        for(lag in 1:(ntimes-1)){
+          covars <- c(covars, rowMeans(row.means.sims[(lag+1):ntimes, , drop = FALSE] * row.means.sims[1:(ntimes-lag), , drop = FALSE])) 
+        }
+        vars <- apply(row.means.sims, 1, var) # pointwise post variances at each time, might not be homoscedastic
+        
+        # nominal sample size scaled by ratio of variance of an average
+        # under independence to variance of average of correlated values
+        neff <- ntimes * sum(vars) / (sum(vars) + 2 * sum(covars))
+        return(neff)
+      }
+```
+
+The ESS for the STEPPS1 data product is 3.6, so w in our assimilation of fractional composition at Harvard Forest will be w = 305.6. 
 
 ## Model Calibration
+SIPNET and LINKAGES will both be calibrated using data collected at the Harvard Forest flux tower. Istem has completed calibration for SIPNET using a [parameter data assimilation emulator](https://github.com/PecanProject/pecan/blob/develop/modules/assim.batch/R/pda.emulator.R) contained within the PEcAn workflow. LINKAGES will also be calibrated using this method. This method is also generalizable to other sites.
+
 ## Initial Conditions
-## State Data Assimilation
+The initial conditions for SIPNET are sampled across state space based on data distributions at the time when the data assimilation will begin. We do not sample LINAKGES for initial conditions and instead perform model spin up for 100 years prior to beginning data assimilation. In the future, we would like to base initial conditional on data. We acheive adequete spread by allowing the parameters to vary across ensemble members. 
+
+## Drivers
+We are using GCM drivers from the PaLEON model intercomparison. Christy Rollinson created MET downscaled GCM drivers for Harvard Forest. We will use these drivers when they are available because they are a closer representation of reality.
+
+## Sequential State Data Assimilation
+We are using sequential state data assimilation methods to assimilate paleon data products into ecosystem models because less computation power is required for sequential state data assimilation than for particle filter methods. The ensemble kalman filter (EnKF) is typically used for sequential state data assimilation, but we found that EnKF lead to filter divergence when combined with our uncertain data products. Filter divergence led us to create a generalized ensemble filter that estimates process variance, which will be described in detail below. However, our workflow contains the option to use a basic EnKF if the user desires.
+
 ### Model Description
+The general framework consists of three steps at each time step:
+1. Read the state variable output from the model forecast ensembles and save the mean (muf) and covariance (Pf). 
+2. If there are data mean (y) and covariance (R) at this time step, perform data assimilation analysis (either EnKF or generalized ensemble filter) to calculte the new mean (mua) and covariance (Pa) of the state variables.
+3. Use mua and Pa to restart and run the ecosystem model ensembles with new state variables for time t+1.
+
 #### Mapping Ensemble Output to Tobit Space
 #### Generalized Ensemble Filter with Process Variance Estimation
+#### Ensemble Adjustment
 ### Diagnostics
 
