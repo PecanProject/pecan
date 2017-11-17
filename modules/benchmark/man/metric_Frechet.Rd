@@ -4,10 +4,10 @@
 \alias{metric_Frechet}
 \title{Frechet Distance}
 \usage{
-metric_Frechet(dat, ...)
+metric_Frechet(metric_dat, ...)
 }
 \arguments{
-\item{dat}{dataframe}
+\item{metric_dat}{dataframe}
 }
 \author{
 Betsy Cowdery

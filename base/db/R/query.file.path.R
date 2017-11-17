@@ -7,7 +7,7 @@
 ##'
 ##' @author Betsy Cowdery
 query.file.path <- function(input.id, host_name, con){
-  machine.host <- default_hostname(host_name)
+  machine.host <- PEcAn.DB::default_hostname(host_name)
   machine <- db.query(query = paste0("SELECT * from machines where hostname = '",machine.host,"'"), con = con)
   dbfile <- db.query(
     query = paste(

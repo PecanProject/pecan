@@ -159,35 +159,58 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
   
   hourly.results <- do.call("rbind", hourly.results)
   hourly.results <- hourly.results[order(hourly.results$year, hourly.results$doy, hourly.results$hour),]
+
+  # Compute daily and yearly results by taking max or sum as appropriate.
+  # This notation could be more compact if we used nonstandard evaluation
+  # with bare variable names, but this way works and ensures that
+  # `R CMD check` doesn't complain about undefined variables.
+  hourly_grp <- dplyr::group_by_at(.tbl = hourly.results, .vars= c("year", "doy"))
+  daily.results <- dplyr::bind_cols(
+    dplyr::summarize_at(
+      .tbl = hourly_grp,
+      .vars = c("Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
+                "Rhizome", "Grain", "LAI", tmax="Temp"),
+      .fun = max),
+    dplyr::summarize_at(
+      .tbl = hourly_grp,
+      .vars = c("SoilEvaporation", "CanopyTrans", "precip"),
+      .fun = sum),
+    dplyr::summarize_at(
+      .tbl = hourly_grp,
+      .vars = c(tmin = "Temp"),
+      .fun = min),
+    dplyr::summarize_at(
+      .tbl = hourly_grp,
+      .vars = c(tavg = "Temp"),
+      .fun = mean))
+  # bind_cols on 4 tables leaves 3 sets of duplicate year and day columns.
+  # Let's drop these.
+  col_order <- c("year", "doy", "Stem", "Leaf", "Root",
+                 "AboveLitter", "BelowLitter", "Rhizome",
+                 "SoilEvaporation", "CanopyTrans", "Grain", "LAI",
+                 "tmax", "tmin", "tavg", "precip")
+  daily.results <- daily.results[, col_order]
   
-  daily.results <- hourly.results[, list(Stem = max(hourly.results$Stem),
-                                         Leaf = max(hourly.results$Leaf),
-                                         Root = max(hourly.results$Root),
-                                         AboveLitter = max(hourly.results$AboveLitter),
-                                         BelowLitter = max(hourly.results$BelowLitter),
-                                         Rhizome = max(hourly.results$Rhizome),
-                                         SoilEvaporation = sum(hourly.results$SoilEvaporation),
-                                         CanopyTrans = sum(hourly.results$CanopyTrans),
-                                         Grain = max(hourly.results$Grain),
-                                         LAI = max(hourly.results$LAI),
-                                         tmax = max(hourly.results$Temp),
-                                         tmin = min(hourly.results$Temp),
-                                         tavg = mean(hourly.results$Temp),
-                                         precip = sum(hourly.results$precip)),
-                                  by = "year,doy"]
-  
-  annual.results <- hourly.results[, list(Stem = max(hourly.results$Stem),
-                                          Leaf = max(hourly.results$Leaf),
-                                          Root = max(hourly.results$Root),
-                                          AboveLitter = max(hourly.results$AboveLitter),
-                                          BelowLitter = max(hourly.results$BelowLitter),
-                                          Rhizome = max(hourly.results$Rhizome),
-                                          Grain = max(hourly.results$Grain),
-                                          SoilEvaporation = sum(hourly.results$SoilEvaporation),
-                                          CanopyTrans = sum(hourly.results$CanopyTrans),
-                                          map = sum(hourly.results$precip),
-                                          mat = mean(hourly.results$Temp)),
-                                   by = "year"]
+  daily_grp <- dplyr::group_by_at(.tbl = hourly.results, .vars = "year")
+  annual.results <- dplyr::bind_cols(
+      dplyr::summarize_at(
+        .tbl = daily_grp,
+        .vars = c("Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
+                  "Rhizome", "Grain"),
+        .fun = max),
+      dplyr::summarize_at(
+        .tbl = daily_grp,
+        .vars = c("SoilEvaporation", "CanopyTrans", map="precip"),
+        .fun = sum),
+      dplyr::summarize_at(
+        .tbl = daily_grp,
+        .vars = c(mat = "Temp"),
+        .fun = mean))
+  col_order <- c("year", "Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
+                 "Rhizome", "Grain", "SoilEvaporation", "CanopyTrans",
+                 "map", "mat")
+  annual.results <- annual.results[, col_order]
+
   return(list(hourly = hourly.results, 
               daily = daily.results, 
               annually = data.table::data.table(lat = lat, lon = lon, annual.results)))

@@ -113,12 +113,19 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   }
   
   ## Select parameters to constrain
-  prior.ind <- lapply(seq_along(settings$pfts), 
-                      function(x) which(pname[[x]] %in% settings$assim.batch$param.names[[x]]))
+  all_pft_names <- sapply(settings$pfts, `[[`, "name")
+  prior.ind <- prior.ind.orig <- vector("list", length(settings$pfts)) 
+  names(prior.ind) <- names(prior.ind.orig) <- all_pft_names
+  for(i in seq_along(settings$pfts)){
+    pft.name <- settings$pfts[[i]]$name
+    if(pft.name %in% names(settings$assim.batch$param.names)){
+      prior.ind[[i]]      <- which(pname[[i]] %in% settings$assim.batch$param.names[[pft.name]])
+      prior.ind.orig[[i]] <- which(pname[[i]] %in% settings$assim.batch$param.names[[pft.name]] |
+                                     pname[[i]] %in% any.scaling[[pft.name]])
+    }
+  }
+  
   n.param <- sapply(prior.ind, length)
-  prior.ind.orig <- lapply(seq_along(settings$pfts), 
-                           function(x) which(pname[[x]] %in% settings$assim.batch$param.names[[x]] |
-                                               pname[[x]] %in% any.scaling[[x]]))
   n.param.orig <- sapply(prior.ind.orig, length)
   
   ## Get the workflow id
@@ -162,7 +169,8 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
   names(knots.list) <- sapply(settings$pfts,"[[",'name')
   
   knots.params <- lapply(knots.list, `[[`, "params")
-  knots.probs <- lapply(knots.list, `[[`, "probs")
+  # don't need anymore
+  # knots.probs <- lapply(knots.list, `[[`, "probs")
   
   current.step <- "GENERATE KNOTS"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
@@ -201,26 +209,56 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     }
     
     ## set prior distribution functions for posterior of the previous emulator run
-    knots.list.temp <- lapply(seq_along(settings$pfts),
+    ## need to do two things here: 
+    ## 1) for non-SF parameters, use the posterior of previous emulator
+    knots.list.nonsf <- lapply(seq_along(settings$pfts),
                               function(x) pda.generate.knots(n.post.knots,
                                                              sf, probs.round.sf,
                                                              n.param.all[x],
                                                              prior.ind.orig[[x]],
                                                              prior.round.fn[[x]],
                                                              pname[[x]]))
-    knots.params.temp <- lapply(knots.list.temp, `[[`, "params")
+    
+    knots.params.nonsf <- lapply(knots.list.nonsf, `[[`, "params")
+    
+    ## 2) for SF parameters use the posterior sf-values but on the prior of the actual params
+    knots.list.sf <- lapply(seq_along(settings$pfts),
+                               function(x) pda.generate.knots(n.post.knots,
+                                                              sf, probs.round.sf,
+                                                              n.param.all[x],
+                                                              prior.ind.orig[[x]],
+                                                              prior.fn[[x]], # note the difference
+                                                              pname[[x]]))
+    
+    knots.params.sf <- lapply(knots.list.sf, `[[`, "params")
     
     
+    knots.params.temp <- knots.params.nonsf
+    
+    if(!is.null(sf)){
+      # get new proposals for non-sf and sf together
+      for(i in seq_along(settings$pfts)){
+        if(!is.null(any.scaling[[i]])){
+          knots.params.temp[[i]] <- knots.params.sf[[i]]
+        }
+      }
+    }
+    
+    # mixture of knots
+    mix.knots <- sample(settings$assim.batch$n.knot, (settings$assim.batch$n.knot - n.post.knots))
     for (i in seq_along(settings$pfts)) {
-      # mixture of knots
-      mix.knots <- sample(nrow(knots.params[[i]]), (settings$assim.batch$n.knot - n.post.knots))
       knots.list[[i]]$params <- rbind(knots.params[[i]][mix.knots, ],
-                                      knots.list.temp[[i]]$params)
+                                      knots.params.temp[[i]])
       names(knots.list)[i] <- settings$pfts[[i]]['name']
     }
     
+    if(!is.null(sf)){
+      probs.sf <- rbind(probs.sf[mix.knots, ], probs.round.sf)
+    }
+    
     knots.params <- lapply(knots.list, `[[`, "params")
-    knots.probs  <- lapply(knots.list, `[[`, "probs")
+    # don't need anymore
+    # knots.probs  <- lapply(knots.list, `[[`, "probs")
     
     current.step <- "Generate Knots: round-if block"
     save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
@@ -403,8 +441,9 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     cl <- parallel::makeCluster(ncores, type="FORK")
     
     ## Parallel fit for GPs
-    GPmodel <- parallel::parLapply(cl, SS, function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], verbose = 0))
-    # GPmodel <- lapply(SS, function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], verbose = 0))
+    GPmodel <- parallel::parLapply(cl, SS, function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], nugget = 0, nugget.known = 1, verbose = 0))
+    # GPmodel <- lapply(SS, function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], nugget = 0, nugget.known = 1, verbose = 0))
+    
     
     parallel::stopCluster(cl)
     
@@ -543,6 +582,8 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     
     if(!is.null(sf)){
       sfm <- matrix(NA, nrow =  nrow(mcmc.out[[c]]$mcmc.samp), ncol = length(sf))
+      # give colnames but the order can change, we'll overwrite anyway
+      colnames(sfm) <- paste0(sf, "_SF")
     }
     ## Set the prior functions back to work with actual parameter range
     
@@ -562,6 +603,7 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
                        list(p = mcmc.out[[c]]$mcmc.samp[, idx]))
         if(sc <= length(sf)){
           sfm[, sc] <- mcmc.out[[c]]$mcmc.samp[, idx]
+          colnames(sfm)[sc] <- paste0(sf.check, "_SF")
           sc <- sc + 1
         }
         
@@ -574,7 +616,6 @@ pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
     mcmc.samp.list[[c]] <- m
     
     if(!is.null(sf)){
-      colnames(sfm) <- paste0(sf, "_SF")
       sf.samp.list[[c]] <- sfm
     }
     
