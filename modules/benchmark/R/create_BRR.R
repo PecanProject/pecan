@@ -18,7 +18,7 @@ create_BRR <- function(ens_wf, con, user_id = ""){
   
   clean <- PEcAn.benchmark::clean_settings_BRR(inputfile = file.path(ens_wf$folder,"pecan.CHECKED.xml"))
   settings_xml <- toString(PEcAn.settings::listToXml(clean, "pecan"))
-  ref_run <- PEcAn.benchmark::check_BRR(settings_xml, bety$con)
+  ref_run <- PEcAn.benchmark::check_BRR(settings_xml, con)
   
   if(length(ref_run) == 0){ # Make new reference run entry
     
