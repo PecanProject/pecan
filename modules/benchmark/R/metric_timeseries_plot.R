@@ -1,8 +1,10 @@
 ##' @name metric_timeseries_plot
 ##' @title Timeseries Plot
 ##' @export
-##' @param metric_dat dataframe
-##' @param var character
+##' @param metric_dat
+##' @param var
+##' @param filename
+##' @param draw.plot
 ##' @importFrom ggplot2 ggplot labs geom_path geom_point
 ##' @author Betsy Cowdery
 
@@ -31,6 +33,6 @@ metric_timeseries_plot <- function(metric_dat, var, filename = NA, draw.plot = i
   }
   
   if (draw.plot) {
-    plot(p)
+    return(p)
   }
 } # metric_timeseries_plot
