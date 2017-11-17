@@ -20,7 +20,9 @@ observeEvent(input$load,{
       dplyr::left_join(.,tbl(bety, "workflows") %>% dplyr::rename(workflow_id = id), by="workflow_id") %>% dplyr::collect()
     bm$model_vars <- var_names_all(bety,ids_DF$wID,ids_DF$runID)
     
-    ref_run <- check_BRR(inputfile = file.path(ens_wf$folder,"pecan.CHECKED.xml"), bety$con)
+    clean <- PEcAn.benchmark::clean_settings_BRR(inputfile = file.path(ens_wf$folder,"pecan.CHECKED.xml"))
+    settings_xml <- toString(PEcAn.settings::listToXml(clean, "pecan"))
+    ref_run <- PEcAn.benchmark::check_BRR(settings_xml, bety$con)
     
     if(length(ref_run) == 0){
       # If not registered, button appears with option to run create.BRR

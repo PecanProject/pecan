@@ -16,7 +16,9 @@ create_BRR <- function(ens_wf, con, user_id = ""){
   # cnd3 <- ens_wf$hostname == 'pecan2.bu.edu' & PEcAn.remote::fqdn() == 'test-pecan.bu.edu'
   # if(cnd1|cnd2|cnd3){  # If the ensemble run was done on localhost, turn into a BRR
   
-  ref_run <- PEcAn.benchmark::check_BRR(inputfile = file.path(ens_wf$folder,"pecan.CHECKED.xml"), bety$con)
+  clean <- PEcAn.benchmark::clean_settings_BRR(inputfile = file.path(ens_wf$folder,"pecan.CHECKED.xml"))
+  settings_xml <- toString(PEcAn.settings::listToXml(clean, "pecan"))
+  ref_run <- PEcAn.benchmark::check_BRR(settings_xml, bety$con)
   
   if(length(ref_run) == 0){ # Make new reference run entry
     
