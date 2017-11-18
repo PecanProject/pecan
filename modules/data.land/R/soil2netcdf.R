@@ -32,7 +32,8 @@ soil2netcdf <- function(soil.data,new.file){
   mysoil <- PEcAn.data.land::soil_params(sand=soil.data$fraction_of_sand_in_soil,
                                          silt=soil.data$fraction_of_silt_in_soil,
                                          clay=soil.data$fraction_of_clay_in_soil,
-                                         bulk=soil.data$soil_bulk_density)
+                                         bulk=soil.data$soil_bulk_density,
+                                         soil_type=soil.data$soil_type)
   
   ## Merge in new variables
   for(n in seq_along(mysoil)){
@@ -51,31 +52,37 @@ soil2netcdf <- function(soil.data,new.file){
   
   ## create netCDF variables
   ncvar <- list()
+  good_vars <- 0
   for(n in seq_along(soil.data)){
-    if(is.null(soil.data[[n]])) next
+    if(is.null(soil.data[[n]])|is.na(soil.data[[n]])) next
     varname <- names(soil.data)[n]
     if(length(soil.data[[n]])>1){
       ## if vector, save by depth
+      good_vars <- c(good_vars,n)
       ncvar[[n]] <- ncdf4::ncvar_def(name = varname, 
                                      units = soil.units(varname), 
                                      dim = depth)
     }else {
       ## else save as scalar
+      good_vars <- c(good_vars,n)
       ncvar[[n]] <- ncdf4::ncvar_def(name = varname, 
                                      units = soil.units(varname), 
                                      dim=list())
     }
   }
-  
+  if(length(good_vars)>1) {
+  good_vars <- good_vars[2:length(good_vars)]
+  ncvar <- ncvar[good_vars]
+  soil.data <- soil.data[good_vars]
   ## create new file
   nc <- ncdf4::nc_create(new.file, vars = ncvar)
   
   ## add data
   for (i in seq_along(ncvar)) {
-    if(is.null(soil.data[[n]]) || length(soil.data[[i]])==0) next
+    if(is.null(soil.data[[i]])|is.na(soil.data[[i]])) next
     ncdf4::ncvar_put(nc, ncvar[[i]], soil.data[[i]]) 
   }
   
   ncdf4::nc_close(nc)
-  
+  }
 }

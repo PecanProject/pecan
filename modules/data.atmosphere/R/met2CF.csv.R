@@ -156,6 +156,18 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       PEcAn.logger::logger.warn("No site timezone. Assuming input time zone is UTC. This may be incorrect.")
     }
     
+    ##The following code forces the time zone into standard/winter/local time only
+    if (!(tz %in% c("UTC","GMT"))) {
+      tzdiff <- PEcAn.utils::timezone_hour(tz)*(-1)
+      if (tzdiff>=0) {
+        tzstr <- paste0("Etc/GMT+",tzdiff)
+      } else {
+        tzstr <- paste0("Etc/GMT",tzdiff)
+      }
+    } else {
+      tzstr <- tz
+    }
+    
     ##datetime_index <- which(format$vars$bety_name == "datetime")
     datetime_index <- format$time.row
     if (length(datetime_index) == 0) {
@@ -170,7 +182,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
                                           alldat[, format$vars$input_name[DOY_index]]), format = "%Y-%j"), format = "%Y-%m-%d")
         hh          <- floor(alldat[, format$vars$input_name[hour_index]])
         mm          <- (alldat[, format$vars$input_name[hour_index]] - hh) * 60
-        yyddhhmm    <- strptime(paste0(yearday, " ", hh, ":", mm), format = "%Y-%m-%d %H:%M", tz=tz)
+        yyddhhmm    <- strptime(paste0(yearday, " ", hh, ":", mm), format = "%Y-%m-%d %H:%M", tz=tzstr)
         alldatetime <- as.POSIXct(yyddhhmm)
       } else {
         ## Does not match any of the known date formats, add new ones here!
@@ -182,7 +194,7 @@ met2CF.csv <- function(in.path, in.prefix, outfolder, start_date, end_date, form
       if (datetime_units == "") {
         datetime_units <- "%Y%m%d%H%M" #assume ISO convention
       }
-      alldatetime <- as.POSIXct(strptime(datetime_raw,format=datetime_units,tz=tz))
+      alldatetime <- as.POSIXct(strptime(datetime_raw,format=datetime_units,tz=tzstr))
     }
     ## and remove datetime from 'dat' dataframe dat[, datetime_index] <- format$na.strings
     

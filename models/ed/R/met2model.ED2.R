@@ -259,20 +259,20 @@ met2model.ED2 <- function(in.path, in.prefix, outfolder, start_date, end_date, l
         if (useCO2) {
           co2 <- array(co2A[selm], dim = dims)
         }
-        rhdf5::h5write(nbdsf, mout, "nbdsf")
-        rhdf5::h5write(nddsf, mout, "nddsf")
-        rhdf5::h5write(vbdsf, mout, "vbdsf")
-        rhdf5::h5write(vddsf, mout, "vddsf")
-        rhdf5::h5write(prate, mout, "prate")
-        rhdf5::h5write(dlwrf, mout, "dlwrf")
-        rhdf5::h5write(pres, mout, "pres")
-        rhdf5::h5write(hgt, mout, "hgt")
-        rhdf5::h5write(ugrd, mout, "ugrd")
-        rhdf5::h5write(vgrd, mout, "vgrd")
-        rhdf5::h5write(sh, mout, "sh")
-        rhdf5::h5write(tmp, mout, "tmp")
+        rhdf5::h5write.default(nbdsf, mout, "nbdsf")
+        rhdf5::h5write.default(nddsf, mout, "nddsf")
+        rhdf5::h5write.default(vbdsf, mout, "vbdsf")
+        rhdf5::h5write.default(vddsf, mout, "vddsf")
+        rhdf5::h5write.default(prate, mout, "prate")
+        rhdf5::h5write.default(dlwrf, mout, "dlwrf")
+        rhdf5::h5write.default(pres, mout, "pres")
+        rhdf5::h5write.default(hgt, mout, "hgt")
+        rhdf5::h5write.default(ugrd, mout, "ugrd")
+        rhdf5::h5write.default(vgrd, mout, "vgrd")
+        rhdf5::h5write.default(sh, mout, "sh")
+        rhdf5::h5write.default(tmp, mout, "tmp")
         if (useCO2) {
-          rhdf5::h5write(co2, mout, "co2")
+          rhdf5::h5write.default(co2, mout, "co2")
         }
       }
     }
