@@ -9,6 +9,38 @@
 
 #outdir <- "/data/sserbin/Modeling/dvmdostem/pecan_runs/run.77/out/ENS-00001"
 
+## helper function
+#oldname <- "GPP"
+#newname <- "GPP"
+#oldunits <- "gC m-2 yr-1"
+#newunits <- "kgC m-2 s-1"
+#dims <-   out_nc_dims
+#        var_update("AR","AutoResp","kgC m-2 s-1")
+var_update <- function(out, ncin, dims, pixel, oldname, newname, oldunits=NULL, newunits=NULL){
+
+  ## define variable
+  if (is.null(oldunits)) oldunits <- ncdf4::ncatt_get(ncin,oldname,"units")$value
+  # dvm-dos-tem needs updates to units metadata to support above, needs actual time (e.g. month, year) not just / time
+  if(is.null(newunits)) newunits = oldunits
+  newvar <- ncdf4::ncvar_def(name = newname, units = newunits, dim = dims)
+
+  ## convert data
+  dat <- ncdf4::ncvar_get(ncin,oldname)[pixel[1],pixel[2],]
+  dat.new <- PEcAn.utils::misc.convert(dat,oldunits,newunits)
+
+  ## prep for writing
+  if(is.null(out)) {
+    out <- list(var <- list(),dat <- list())
+    out$var[[1]] <- newvar
+    out$dat[[1]] <- dat.new
+  } else {
+    i <- length(out$var) + 1
+    out$var[[i]] <- newvar
+    out$dat[[i]] <- dat.new
+  }
+  return(out)
+}
+
 
 ##-------------------------------------------------------------------------------------------------#
 ##' @name model2netcdf.dvmdostem
@@ -47,37 +79,6 @@ model2netcdf.dvmdostem <- function(outdir) {
   px <- which(run_status > 0, arr.ind = TRUE) # Returns x,y array indices
   px_X <- px[1]
   px_Y <- px[2]
-  ## helper function
-  #oldname <- "GPP"
-  #newname <- "GPP"
-  #oldunits <- "gC m-2 yr-1"
-  #newunits <- "kgC m-2 s-1"
-  #dims <-   out_nc_dims
-  #        var_update("AR","AutoResp","kgC m-2 s-1")
-  var_update <- function(out, dims, pixel, oldname, newname, oldunits=NULL, newunits=NULL){
-
-    ## define variable
-    if (is.null(oldunits)) oldunits <- ncdf4::ncatt_get(ncin,oldname,"units")$value 
-    # dvm-dos-tem needs updates to units metadata to support above, needs actual time (e.g. month, year) not just / time
-    if(is.null(newunits)) newunits = oldunits
-    newvar <- ncdf4::ncvar_def(name = newname, units = newunits, dim = dims)
-    
-    ## convert data
-    dat <- ncdf4::ncvar_get(ncin,oldname)[pixel[1],pixel[2],]
-    dat.new <- PEcAn.utils::misc.convert(dat,oldunits,newunits)
-    
-    ## prep for writing
-    if(is.null(out)) {
-      out <- list(var <- list(),dat <- list())
-      out$var[[1]] <- newvar
-      out$dat[[1]] <- dat.new
-    } else {
-      i <- length(out$var) + 1
-      out$var[[i]] <- newvar
-      out$dat[[i]] <- dat.new
-    }
-    return(out)
-  }
 
   # Define PEcAn style dimensions; reusable for many files
   transient_dims <- ncdf4::nc_open(file.path(outdir, "NPP_yearly_tr.nc"), write=FALSE)
@@ -130,7 +131,7 @@ model2netcdf.dvmdostem <- function(outdir) {
     if (dvmdostem_outputs[i] == "GPP") {
       ncin <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[i],"_yearly_tr.nc")))
       PEcAn.logger::logger.info(paste0("Length of time dim: ", ncin$dim$time$len))
-      output <- var_update(output, dims = out_nc_dims, pixel = c(px_X, px_Y), oldname=dvmdostem_outputs[i], newname="GPP",
+      output <- var_update(output, ncin, dims = out_nc_dims, pixel = c(px_X, px_Y), oldname=dvmdostem_outputs[i], newname="GPP",
                            oldunits="gC m-2 yr-1", newunits="kgC m-2 s-1")
       gpp_dim_time_val <- ncin$dim$time$val 
       # need to make this flexible so we aren't getting this from first var
@@ -140,7 +141,7 @@ model2netcdf.dvmdostem <- function(outdir) {
     if (dvmdostem_outputs[i] == "NPP") {
       ncin <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[i],"_yearly_tr.nc")))
       PEcAn.logger::logger.info(paste0("Length of time dim: ", ncin$dim$time$len))
-      output <- var_update(output, dims = out_nc_dims, pixel = c(px_X, px_Y), oldname=dvmdostem_outputs[i], newname="NPP",
+      output <- var_update(output, ncin, dims = out_nc_dims, pixel = c(px_X, px_Y), oldname=dvmdostem_outputs[i], newname="NPP",
                            oldunits="gC m-2 yr-1", newunits="kgC m-2 s-1")
       ncdf4::nc_close(ncin)
     } #NPP
