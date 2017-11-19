@@ -25,6 +25,7 @@ convert.samples.BIOCRO <- function(trait.samples, biocro_version=1.0) {
   if (is.list(trait.samples)) {
     trait.samples <- as.data.frame(trait.samples)
   }
+  trait.names <- colnames(trait.samples)
 
   ## transform values with different units cuticular conductance - BETY default is
   ## umol; BioCro uses mol
@@ -36,7 +37,6 @@ convert.samples.BIOCRO <- function(trait.samples, biocro_version=1.0) {
   }
 
   ## rename bety variables to match active version of biocro
-  trait.names <- colnames(trait.samples)
   names(trait.names) <- trait.names #looks weird, but naming this vector simplifies indexing below
 
   name_lookup <- dplyr::tribble(
