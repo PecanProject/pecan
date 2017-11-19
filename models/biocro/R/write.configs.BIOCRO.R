@@ -27,7 +27,16 @@ convert.samples.BIOCRO <- function(trait.samples, biocro_version=1.0) {
     trait.samples <- as.data.frame(trait.samples)
   }
 
-  ## first rename variables
+  ## transform values with different units cuticular conductance - BETY default is
+  ## umol; BioCro uses mol
+  if ("cuticular_cond" %in% trait.names) {
+    trait.samples$cuticular_cond = udunits2::ud.convert(trait.samples$cuticular_cond, "umol", "mol")
+  }
+  if ("SLA" %in% trait.names) {
+    trait.samples$SLA = udunits2::ud.convert(trait.samples$SLA, "kg/m2", "g/cm2")
+  }
+
+  ## rename bety variables to match active version of biocro
   trait.names <- colnames(trait.samples)
   names(trait.names) <- trait.names #looks weird, but naming this vector simplifies indexing below
 
@@ -54,22 +63,6 @@ convert.samples.BIOCRO <- function(trait.samples, biocro_version=1.0) {
   trait.names[name_lookup[["bety_name"]]] <- name_lookup[[biocro_name]]
   colnames(trait.samples) <- trait.names
 
-  ## Partitioning coefficients: especially leaf phenology
-
-  ## iRhizome iStem ifrRhizome ifrStem
-
-  ## transform values with different units cuticular conductance - BETY default is
-  ## umol; BioCro uses mol
-  if ("b0" %in% trait.names) {
-    trait.samples$b0 = udunits2::ud.convert(trait.samples$b0, "umol", "mol")
-  }
-  if ("Sp" %in% trait.names) {
-    trait.samples$Sp = udunits2::ud.convert(trait.samples$Sp, "kg/m2", "g/cm2")
-  }
-
-  # kd = k*omega from $e^{-kL\omega}$, if (all(c('kd', 'clumping') %in%
-  # trait.names)) { trait.samples <- transform(trait.samples, kd = clumping * kd,
-  # clumping = NULL) }
   return(trait.samples)
 }  # convert.samples.BIOCRO
 
