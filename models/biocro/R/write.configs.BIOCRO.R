@@ -116,6 +116,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
 
   ### Set defaults
   defaults.file <- defaults$pft$constants$file
+  defaults <- NULL
   if (!is.null(defaults.file)) {
     if (grepl("xml", defaults.file)) {
       defaults.xml <- defaults.file
@@ -123,44 +124,45 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
     } else if (grepl("RData", defaults.file)) {
       load(defaults.file)
     } else {
-      PEcAn.logger::logger.severe("Defaults file", defaults.file, " not found; using package defaults")
+      PEcAn.logger::logger.warn("Defaults file", defaults.file, " not found; using package defaults")
       defaults.file <- NULL
     }
-  } else if (is.null(defaults.file)) {
+  }
+
+  if(settings$model$revision >= 1.0 && packageVersion("BioCro") >= 1.0){
+    # Look for defaults provided as datasets in the BioCro model package
+    # When available, these come in sets of three:
+    # *_initial_values, *_parameters, *_modules
+    default_names <- grep(
+      pattern = genus,
+      x = data(package = "BioCro")$results[,"Item"],
+      ignore.case = TRUE,
+      value = TRUE)
+    if (length(defaults_found) == 3) {
+      genus_init_name = grep("_initial_state$", default_names, value = TRUE)
+      genus_param_name = grep("_parameters$", default_names, value = TRUE)
+      genus_module_name = grep("_modules$", default_names, value = TRUE)
+      genus_photosynth = sub(
+        pattern = "^c([34]).*",
+        replacement = "C\\1",
+        x = `::`("BioCro", genus_module_name)$canopy_module_name)
+
+      defaults = list(
+        type = list(photosynthesis = photosynthesis, genus = genus,),
+        initial_values = `::`("BioCro", genus_init_name),
+        parameters = `::`("BioCro", genus_param_name),
+        modules = `::`("BioCro", genus_module_name))
+    }
+  }
+
+ if (is.null(defaults) && is.null(defaults.file)) {
     defaults.file <- system.file(file.path("extdata/defaults", paste0(tolower(genus), ".xml")),
                                  package = "PEcAn.BIOCRO")
-  }
-
-  # Create a pft parameter set.
-  # Given arguments that describe a plant functional type, return a list with the structure that Pecan expects for pfts.
-  pft = function(genus, photosynthesis, initial_values, parameters, modules) {
-    type = list(photosynthesis=photosynthesis, genus=genus)
-    .pft = list(type=type, initial_values=initial_values, parameters=parameters, modules=modules)
-    return (.pft)
-  }
-
-  parameter_sets <- list(
-    Miscanthus = pft('Miscanthus', 'C4',
-      BioCro::miscanthus_x_giganteus_initial_state,
-      BioCro::miscanthus_x_giganteus_parameters,
-      BioCro::miscanthus_x_giganteus_modules),
-    Salix = pft('Salix', 'C3',
-      BioCro::willow_initial_state,
-      BioCro::willow_parameters,
-      BioCro::willow_modules),
-    Sorghum = pft('Sorghum', 'C4',
-      BioCro::sorghum_initial_state,
-      BioCro::sorghum_parameters,
-      BioCro::sorghum_modules))
-
-  if (file.exists(defaults.file)) {
-    if (packageVersion('BioCro') >= 1.0 & genus %in% names(parameter_sets)) {
-        defaults = parameter_sets[[genus]]
-    } else {
-        defaults <- XML::xmlToList(XML::xmlParse(defaults.file))
+    if(defaults.file != ""){
+      defaults <- XML::xmlToList(XML::xmlParse(defaults.file))
+    } else{
+      PEcAn.logger::logger.severe("no defaults file given and ", genus, "not supported in BioCro")
     }
-  } else {
-    PEcAn.logger::logger.severe("no defaults file given and ", genus, "not supported in BioCro")
   }
 
   if (is.null(defaults)) {
