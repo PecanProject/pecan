@@ -9,7 +9,6 @@
 
 PREFIX_XML <- "<?xml version=\"1.0\"?>\n<!DOCTYPE config SYSTEM \"biocro.dtd\">\n"
 
-##------------------------------------------------------------------------------------------------#
 ##' convert parameters from PEcAn database default units to biocro defaults
 ##'
 ##' Performs model specific unit conversions on a list of trait values,
@@ -195,7 +194,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
 
   ## this is where soil parms can be set defaults$soilControl$FieldC <-
 
-  ### Put defaults and other parts of config file together
+  ## Put defaults and other parts of config file together
   parms.xml <- PEcAn.settings::listToXml(defaults, "pft")
   location.xml <- PEcAn.settings::listToXml(list(latitude = settings$run$site$lat,
                                  longitude = settings$run$site$lon),
@@ -222,7 +221,6 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
 }  # write.config.BIOCRO
 
 
-##--------------------------------------------------------------------------------------------------#
 ##' Clear out previous config and parameter files.
 ##'
 ##' @name remove.config.BIOCRO
@@ -234,7 +232,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
 ##' @author Shawn Serbin, David LeBauer
 remove.config.BIOCRO <- function(main.outdir, settings) {
 
-  ### Remove files on localhost
+  ## Remove files on localhost
   if (settings$host$name == "localhost") {
     files   <- paste0(settings$outdir, list.files(path = settings$outdir, recursive = FALSE))  # Need to change this to the run folder when implemented
     files   <- files[-grep("*.xml", files)]  # Keep pecan.xml file
@@ -245,7 +243,7 @@ remove.config.BIOCRO <- function(main.outdir, settings) {
     # file.remove(files,recursive=TRUE)
     system(paste("rm -r ", files, sep = "", collapse = " "), ignore.stderr = TRUE)  # remove files/dirs
 
-    ### On remote host
+    ## On remote host
   } else {
     print("*** WARNING: Removal of files on remote host not yet implemented ***")
   }
