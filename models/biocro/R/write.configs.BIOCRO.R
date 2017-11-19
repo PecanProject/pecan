@@ -129,16 +129,16 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
     }
   }
 
-  if(settings$model$revision >= 1.0 && packageVersion("BioCro") >= 1.0){
+  if(settings$model$revision >= 1.0 && utils::packageVersion("BioCro") >= 1.0){
     # Look for defaults provided as datasets in the BioCro model package
     # When available, these come in sets of three:
     # *_initial_values, *_parameters, *_modules
     default_names <- grep(
       pattern = genus,
-      x = data(package = "BioCro")$results[,"Item"],
+      x = utils::data(package = "BioCro")$results[,"Item"],
       ignore.case = TRUE,
       value = TRUE)
-    if (length(defaults_found) == 3) {
+    if (length(default_names) == 3) {
       genus_init_name = grep("_initial_state$", default_names, value = TRUE)
       genus_param_name = grep("_parameters$", default_names, value = TRUE)
       genus_module_name = grep("_modules$", default_names, value = TRUE)
@@ -148,7 +148,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
         x = `::`("BioCro", genus_module_name)$canopy_module_name)
 
       defaults = list(
-        type = list(photosynthesis = photosynthesis, genus = genus,),
+        type = list(photosynthesis = genus_photosynth, genus = genus),
         initial_values = `::`("BioCro", genus_init_name),
         parameters = `::`("BioCro", genus_param_name),
         modules = `::`("BioCro", genus_module_name))
