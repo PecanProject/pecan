@@ -26,8 +26,8 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
   }
 
   hourly.results = list()
-  if (packageVersion('BioCro') >= 1.0) {
-    for (i in seq_along(years)) {
+  for (i in seq_along(years)) {
+    if (packageVersion('BioCro') >= 1.0) {
       yeari <- years[i]
       starti <- max(start.date, lubridate::ymd(paste0(yeari, "-01-01")))
       endi <- min(end.date, lubridate::ymd(paste0(yeari, "-12-31")))
@@ -73,9 +73,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
         result.yeari.withmet <- merge(x = result.yeari.hourly,
                                       y = WetDat, by = c("year", "doy", "hour"))
         hourly.results[[i]] <- result.yeari.withmet
-    }
-  } else {  # BioCro vesion is less than 1.0.
-    for (i in seq_along(years)) {
+    } else {  # BioCro vesion is less than 1.0.
       yeari <- years[i]
       starti <- max(start.date, lubridate::ymd(paste0(yeari, "-01-01")))
       endi <- min(end.date, lubridate::ymd(paste0(yeari, "-12-31")))
@@ -204,7 +202,8 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       result.yeari.withmet <- merge(x = result.yeari.hourly,
                                     y = WetDat, by = c("year", "doy", "hour"))
       hourly.results[[i]] <- result.yeari.withmet
-  }}
+    } # end BioCro version < 1.0
+  }
 
   
   hourly.results <- do.call("rbind", hourly.results)
