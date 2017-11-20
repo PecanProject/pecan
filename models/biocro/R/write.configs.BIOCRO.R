@@ -145,13 +145,16 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
       genus_photosynth = sub(
         pattern = "^c([34]).*",
         replacement = "C\\1",
-        x = `::`("BioCro", genus_module_name)$canopy_module_name)
+        x = do.call("::", list("BioCro", genus_module_name))$canopy_module_name)
 
       defaults = list(
         type = list(photosynthesis = genus_photosynth, genus = genus),
-        initial_values = `::`("BioCro", genus_init_name),
-        parameters = `::`("BioCro", genus_param_name),
-        modules = `::`("BioCro", genus_module_name))
+        # The next three lines expand to datasets in the BiCro namespace, e.g.
+        # `BioCro::willow_modules`. The do.call wrapper is needed because
+        # `::`(pkg, variable) treats its 2nd argument as a literal.
+        initial_values = do.call("::", list("BioCro", genus_init_name)),
+        parameters = do.call("::", list("BioCro", genus_param_name)),
+        modules = do.call("::", list("BioCro", genus_module_name)))
     }
   }
 
