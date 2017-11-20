@@ -46,30 +46,36 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       }
 
       if (i == 1) {
-          initial_values <- config$pft$initial_values
+        initial_values <- config$pft$initial_values
       } else {
-          initial_values <- tmp.result[nrow(tmp.result), colnames(tmp.result) %in% names(config$pft$initial_values)]
+        initial_values <- tmp.result[nrow(tmp.result), colnames(tmp.result) %in% names(config$pft$initial_values)]
 
-          if ((i - 1) %% coppice.interval == 0) {
-            # coppice when remainder = 0
-              HarvestedYield <- round(last(tmp.result$Stem) * 0.95, 2)
-          } else if ((i - 1) %% coppice.interval == 1) {
-                # year after coppice
-              initial_values$Stem <- initial_values$Stem * 0.05
-          }  # else { # do nothing if neither coppice year nor year following
+        if ((i - 1) %% coppice.interval == 0) {
+          # coppice when remainder = 0
+          HarvestedYield <- round(last(tmp.result$Stem) * 0.95, 2)
+        } else if ((i - 1) %% coppice.interval == 1) {
+          # year after coppice
+          initial_values$Stem <- initial_values$Stem * 0.05
+        }  # else { # do nothing if neither coppice year nor year following
       }
 
-      tmp.result <- BioCro::Gro(initial_values=initial_values, parameters=config$pft$parameters, varying_parameters=WetDat, modules=config$pft$modules)
+      tmp.result <- BioCro::Gro(
+        initial_values=initial_values,
+        parameters=config$pft$parameters,
+        varying_parameters=WetDat,
+        modules=config$pft$modules)
 
-        result.yeari.hourly <- with(tmp.result, data.table::data.table(year = years[i],
-                                                           doy = doy,
-                                                           hour = hour, ThermalT=TTc,
-                                                           Stem, Leaf, Root, 
-                                                           AboveLitter = LeafLitter + StemLitter, BelowLitter = RootLitter + RhizomeLitter,
-                                                           Rhizome, Grain, 
-                                                           LAI=lai, SoilEvaporation=soil_evaporation, 
-                                                           CanopyTrans=canopy_transpiration,
-                                                           key = c("year", "doy", "hour")))
+      result.yeari.hourly <- with(tmp.result,
+        data.table::data.table(
+          year = years[i],
+          doy = doy,
+          hour = hour, ThermalT=TTc,
+          Stem, Leaf, Root,
+          AboveLitter = LeafLitter + StemLitter, BelowLitter = RootLitter + RhizomeLitter,
+          Rhizome, Grain,
+          LAI=lai, SoilEvaporation=soil_evaporation,
+          CanopyTrans=canopy_transpiration,
+          key = c("year", "doy", "hour")))
 
     } else {  # BioCro vesion is less than 1.0.
 
@@ -99,8 +105,9 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       # If not, rescale day1 and dayn to be relative to the start of the input.
       #   Scaling is derived by inverting Biocro's day->index equations.
       biocro_checks_doy <- tryCatch(
-        {m <- BioCro::BioGro(WetDat = matrix(c(0,10,0,0,0,0,0,0),nrow = 1),
-                     day1 = 10, dayn = 10, timestep = 24);
+        {m <- BioCro::BioGro(
+          WetDat = matrix(c(0,10,0,0,0,0,0,0), nrow = 1),
+          day1 = 10, dayn = 10, timestep = 24);
         class(m) == "BioGro"},
         error = function(e){FALSE})
       if (!biocro_checks_doy && min(WetDat[,"doy"])>1) {
@@ -132,25 +139,25 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
           if ((i - 1)%%coppice.interval == 0) {
             # coppice when remainder = 0
             HarvestedYield <- round(data.table::last(tmp.result$Stem) * 0.95, 2)
-          } else if ((i - 1)%%coppice.interval == 1) 
-          {
+          } else if ((i - 1)%%coppice.interval == 1) {
             # year after coppice
             iplant$iStem <- iplant$iStem * 0.05
           }  # else { # do nothing if neither coppice year nor year following
         }
         ## run willowGro
         
-        tmp.result <- BioCro::willowGro(WetDat = WetDat,
-                                iRhizome = as.numeric(iplant$iRhizome), 
-                                iRoot = as.numeric(iplant$iRoot),
-                                iStem = as.numeric(iplant$iStem), 
-                                day1 = day1, dayn = dayn, 
-                                soilControl = l2n(config$pft$soilControl), 
-                                canopyControl = l2n(config$pft$canopyControl), 
-                                willowphenoControl = l2n(config$pft$phenoParms), 
-                                seneControl = l2n(config$pft$seneControl), 
-                                photoControl = l2n(config$pft$photoParms))
-        
+        tmp.result <- BioCro::willowGro(
+          WetDat = WetDat,
+          iRhizome = as.numeric(iplant$iRhizome),
+          iRoot = as.numeric(iplant$iRoot),
+          iStem = as.numeric(iplant$iStem),
+          day1 = day1, dayn = dayn,
+          soilControl = l2n(config$pft$soilControl),
+          canopyControl = l2n(config$pft$canopyControl),
+          willowphenoControl = l2n(config$pft$phenoParms),
+          seneControl = l2n(config$pft$seneControl),
+          photoControl = l2n(config$pft$photoParms))
+
       } else if (genus == "Miscanthus") {
         if (yeari == years[1]) {
           iRhizome <- config$pft$iPlantControl$iRhizome
@@ -159,36 +166,40 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
           HarvestedYield <- round(data.table::last(tmp.result$Stem) * 0.95, 2)
         }
         ## run BioGro
-        tmp.result <- BioCro::BioGro(WetDat = WetDat,
-                             day1 = day1, 
-                             dayn = dayn, soilControl = l2n(config$pft$soilControl), 
-                             canopyControl = l2n(config$pft$canopyControl), 
-                             phenoControl = l2n(config$pft$phenoParms), 
-                             seneControl = l2n(config$pft$seneControl),
-                             iRhizome = as.numeric(iRhizome), 
-                             photoControl = config$pft$photoParms)
-        
+        tmp.result <- BioCro::BioGro(
+          WetDat = WetDat,
+          day1 = day1,
+          dayn = dayn, soilControl = l2n(config$pft$soilControl),
+          canopyControl = l2n(config$pft$canopyControl),
+          phenoControl = l2n(config$pft$phenoParms),
+          seneControl = l2n(config$pft$seneControl),
+          iRhizome = as.numeric(iRhizome),
+          photoControl = config$pft$photoParms)
+
       } else if (genus == "Sorghum") {
         ## run BioGro
-        tmp.result <- BioCro::BioGro(WetDat = WetDat,
-                             day1 = day1, 
-                             dayn = dayn, 
-                             soilControl = l2n(config$pft$soilControl), 
-                             canopyControl = l2n(config$pft$canopyControl),
-                             phenoControl = l2n(config$pft$phenoParms), 
-                             seneControl = l2n(config$pft$seneControl),
-                             photoControl = l2n(config$pft$photoParms))
-        
+        tmp.result <- BioCro::BioGro(
+          WetDat = WetDat,
+          day1 = day1,
+          dayn = dayn,
+          soilControl = l2n(config$pft$soilControl),
+          canopyControl = l2n(config$pft$canopyControl),
+          phenoControl = l2n(config$pft$phenoParms),
+          seneControl = l2n(config$pft$seneControl),
+          photoControl = l2n(config$pft$photoParms))
+
       }
-      result.yeari.hourly <- with(tmp.result, data.table::data.table(year = yeari,
-                                                         doy = DayofYear,
-                                                         hour = Hour, ThermalT,
-                                                         Stem, Leaf, Root, 
-                                                         AboveLitter, BelowLitter,
-                                                         Rhizome, Grain, 
-                                                         LAI, SoilEvaporation, 
-                                                         CanopyTrans,
-                                                         key = c("year", "doy", "hour")))
+      result.yeari.hourly <- with(tmp.result,
+        data.table::data.table(
+          year = yeari,
+          doy = DayofYear,
+          hour = Hour, ThermalT,
+          Stem, Leaf, Root,
+          AboveLitter, BelowLitter,
+          Rhizome, Grain,
+          LAI, SoilEvaporation,
+          CanopyTrans,
+          key = c("year", "doy", "hour")))
     } # end BioCro version < 1.0
 
     result.yeari.withmet <- merge(x = result.yeari.hourly,
@@ -233,19 +244,19 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
   
   daily_grp <- dplyr::group_by_at(.tbl = hourly.results, .vars = "year")
   annual.results <- dplyr::bind_cols(
-      dplyr::summarize_at(
-        .tbl = daily_grp,
-        .vars = c("Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
-                  "Rhizome", "Grain"),
-        .fun = max),
-      dplyr::summarize_at(
-        .tbl = daily_grp,
-        .vars = c("SoilEvaporation", "CanopyTrans", map="precip"),
-        .fun = sum),
-      dplyr::summarize_at(
-        .tbl = daily_grp,
-        .vars = c(mat = "Temp"),
-        .fun = mean))
+    dplyr::summarize_at(
+      .tbl = daily_grp,
+      .vars = c("Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
+                "Rhizome", "Grain"),
+      .fun = max),
+    dplyr::summarize_at(
+      .tbl = daily_grp,
+      .vars = c("SoilEvaporation", "CanopyTrans", map="precip"),
+      .fun = sum),
+    dplyr::summarize_at(
+      .tbl = daily_grp,
+      .vars = c(mat = "Temp"),
+      .fun = mean))
   col_order <- c("year", "Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
                  "Rhizome", "Grain", "SoilEvaporation", "CanopyTrans",
                  "map", "mat")
