@@ -778,7 +778,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       ## normalize
       Z <- X*0
       for(i in seq_len(nens)){
-        Z[i,] <- 1/sqrt(L_f) * t(V_f)%*%(X.new[i,]-mu.f)
+        if(processvar== TRUE) {
+          Z[i,] <- 1/sqrt(L_f) * t(V_f)%*%(X.new[i,]-mu.f)
+        }else{
+          Z[i,] <- 1/sqrt(L_f) * t(V_f)%*%(X[i,]-mu.f)
+          }
       }
       Z[is.na(Z)]<-0
       
