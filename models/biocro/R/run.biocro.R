@@ -65,9 +65,9 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
 
       if (i == 1) {
         initial_values <- config$pft$initial_values
-      } else {
-        initial_values <- tmp.result[nrow(tmp.result), colnames(tmp.result) %in% names(config$pft$initial_values)]
+      }
 
+      if (i > 1) { # TODO HarvestedYield is never used and coppice not applicable to all crops. Rethink?
         if ((i - 1) %% coppice.interval == 0) {
           # coppice when remainder = 0
           HarvestedYield <- round(data.table::last(tmp.result$Stem) * 0.95, 2)
@@ -83,17 +83,18 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
         varying_parameters=WetDat,
         modules=config$pft$modules)
 
-      result.yeari.hourly <- with(tmp.result,
-        data.table::data.table(
-          year = years[i],
-          doy = doy,
-          hour = hour, ThermalT=TTc,
-          Stem, Leaf, Root,
-          AboveLitter = LeafLitter + StemLitter, BelowLitter = RootLitter + RhizomeLitter,
-          Rhizome, Grain,
-          LAI=lai, SoilEvaporation=soil_evaporation,
-          CanopyTrans=canopy_transpiration,
-          key = c("year", "doy", "hour")))
+      # save final state as initial values for next year
+      # TODO: Some pools should NOT start at 100% of previous season --
+      # need to account for harvest, decomposition, etc
+      initial_values <- tmp.result[nrow(tmp.result), colnames(tmp.result) %in% names(config$pft$initial_values)]
+
+      tmp.result <- dplyr::rename(tmp.result,
+        ThermalT = "TTc",
+        LAI = "lai",
+        SoilEvaporation = "soil_evaporation",
+        CanopyTrans = "canopy_transpiration")
+      tmp.result$AboveLitter = tmp.result$LeafLitter + tmp.result$StemLitter
+      tmp.result$BelowLitter = tmp.result$RootLitter + tmp.result$RhizomeLitter
 
     } else {  # BioCro vesion is less than 1.0.
 
@@ -195,19 +196,21 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
           photoControl = l2n(config$pft$photoParms))
 
       }
+      names(tmp.result) <- sub("DayofYear", "doy", names(tmp.result))
+      names(tmp.result) <- sub("Hour", "hour", names(tmp.result))
+
+    } # end BioCro version < 1.0
+
       result.yeari.hourly <- with(tmp.result,
         data.table::data.table(
           year = yeari,
-          doy = DayofYear,
-          hour = Hour, ThermalT,
+          doy, hour, ThermalT,
           Stem, Leaf, Root,
           AboveLitter, BelowLitter,
           Rhizome, Grain,
           LAI, SoilEvaporation,
           CanopyTrans,
           key = c("year", "doy", "hour")))
-    } # end BioCro version < 1.0
-
     result.yeari.withmet <- merge(x = result.yeari.hourly,
                                   y = WetDat, by = c("year", "doy", "hour"))
     hourly.results[[i]] <- result.yeari.withmet
