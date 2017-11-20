@@ -34,12 +34,14 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
           metfile <- paste(metpath, yeari, "csv", sep = ".")
           WetDat <- fread(metfile)
           WetDat <- WetDat[WetDat$doy >= lubridate::yday(starti) & WetDat$doy <= lubridate::yday(endi), ]
-      
-          # Check that all variables are present in the expected order --
-          # BioGro accesses weather vars by position and DOES NOT check headers.
-          stopifnot(identical(colnames(WetDat), c("year", "doy", "hour", "SolarR", "Temp", "RH", "WS", "precip")))
+
           stopifnot(all(sapply(WetDat, is.numeric)))
-          WetDat <- as.matrix(WetDat)
+          if ("SolarR" %in% names(WetDat)) {
+            WetDat <- dplyr::rename(WetDat, solar = SolarR)
+          }
+          if ("WS" %in% names(WetDat)) {
+            WetDat <- dplyr::rename(WetDat, windspeed = WS)
+          }
 
           HarvestedYield <- 0
 

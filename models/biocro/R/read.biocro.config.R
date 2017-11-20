@@ -12,5 +12,11 @@ read.biocro.config <- function(config.file = "config.xml") {
   if(packageVersion('BioCro') < 1.0){
     config$pft$canopyControl$mResp <- unlist(strsplit(config$pft$canopyControl$mResp, split = ","))
   }
+  if(!is.null(config$pft$initial_values)){
+    config$pft$initial_values <- lapply(config$pft$initial_values, as.numeric)
+  }
+  if(!is.null(config$pft$parameters)){
+    config$pft$parameters <- lapply(config$pft$parameters, as.numeric)
+  }
   return(config)
 }  # read.biocro.config
