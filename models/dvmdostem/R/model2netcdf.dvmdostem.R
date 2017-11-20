@@ -75,112 +75,97 @@ model2netcdf.dvmdostem <- function(outdir) {
     #bad_px <- which(run_status < 0)
   }
 
+  # Next check might be to look at the <run><start.date> and end date
+  # and check that there is enough info in the output files to accomodate
+  # the requested date range. We can do this later, as for now we'll assume it
+  # is going to be ok.
+
   # Get the actual pixel coords of the cell that ran
   px <- which(run_status > 0, arr.ind = TRUE) # Returns x,y array indices
   px_X <- px[1]
   px_Y <- px[2]
 
-  # Define PEcAn style dimensions; reusable for many files
-  transient_dims <- ncdf4::nc_open(file.path(outdir, "NPP_yearly_tr.nc"), write=FALSE)
-  transient_time <- transient_dims$dim$time$units # however format is wrong
-  # > transient_dims$dim$time$units
-  # [1] "days since 1901-1-1 0:0:0" --> needs to be days since 1901-01-01 00:00:00
-  try(ncdf4::nc_close(transient_dims))
-  if (!any(is.na(file.info(file.path(outdir, "NPP_yearly_sc.nc"))))) {
-    scenerio_dims <- ncdf4::nc_open(file.path(outdir, "NPP_yearly_sc.nc"), write=FALSE)
-    scenerio_time <- scenerio_dims$dim$time$units # however format is wrong
-  }
-  #> scenerio_time
-  #[1] "days since 2010-1-1 0:0:0" --> needs to be "days since 2010-01-01 00:00:00"
-  try(ncdf4::nc_close(scenerio_dims))
-  
-  
-  #!! update below to generate these for both transient and scenerio!!
-  lond <- ncdf4::ncdim_def(name='lon',
-                           units="degrees_east",
-                           vals=c(1), # <=== read from dvmdostem file!
-                           longname="coordinate_longitude")
+  # So dvmdostem output files are per-variable, and contain a time series.
+  # There is one file per stage (pr, eq, sp, tr, sc). Pecan output files have
+  # one years worth of data for many variables. The time dimension will have
+  # units of "days since <yr>-01-01 00:00:00" and the file will be named <yr>.nc
 
-  latd <- ncdf4::ncdim_def(name='lat', 
-                           units="degrees_north",
-                           vals=c(1), # <=== read from dvmdostem file! 
-                           longname="coordinate_latitude")
-
-  # Odd - not sure what PEcAn uses this for as there should be one
-  # file for each year. Maybe monthly or daily resolution outputs?
-  timed <- ncdf4::ncdim_def(name='time',
-                            units=transient_time,
-                            vals=c(0),
-                            unlim=TRUE,
-                            longname="time",
-                            calendar='365_day')
-  #xyt <- list(lond, latd, timed)
-  out_nc_dims <- list(lond, latd, timed)
-  
-  ## Open a dvmdostem output files  
-  ## !!! Will need a loop here to work on multiple types of dvm-dos-tem output (e.g. monthly / yearly, NPP, INPP, & other outputs)
-  #dvmdostem_outputs <- c("GPP", "INGPP", "NPP", "INNPP")
-  #dvmdostem_outputs <- c("NPP")
-  dvmdostem_outputs <- c("GPP","NPP")  # need to make this more flexible to support more outputs, or user selected outputs
-  #output      <- list()  # create empty output
-  output <- NULL
-  
+  dvmdostem_outputs <- c("GPP","NPP") # NOT SURE YET WHERE THIS LIST SHOULD BE SETUP??
   for (i in seq_along(1:length(dvmdostem_outputs)) ) {
-    PEcAn.logger::logger.info(paste("Converting dvm-dos-tem output:",dvmdostem_outputs[i]))
-    
-    if (dvmdostem_outputs[i] == "GPP") {
-      ncin <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[i],"_yearly_tr.nc")))
-      PEcAn.logger::logger.info(paste0("Length of time dim: ", ncin$dim$time$len))
-      output <- var_update(output, ncin, dims = out_nc_dims, pixel = c(px_X, px_Y), oldname=dvmdostem_outputs[i], newname="GPP",
-                           oldunits="gC m-2 yr-1", newunits="kgC m-2 s-1")
-      gpp_dim_time_val <- ncin$dim$time$val 
-      # need to make this flexible so we aren't getting this from first var
-      
-      ncdf4::nc_close(ncin)
-    } # GPP
-    if (dvmdostem_outputs[i] == "NPP") {
-      ncin <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[i],"_yearly_tr.nc")))
-      PEcAn.logger::logger.info(paste0("Length of time dim: ", ncin$dim$time$len))
-      output <- var_update(output, ncin, dims = out_nc_dims, pixel = c(px_X, px_Y), oldname=dvmdostem_outputs[i], newname="NPP",
-                           oldunits="gC m-2 yr-1", newunits="kgC m-2 s-1")
-      ncdf4::nc_close(ncin)
-    } #NPP
-  }
-  try(ncdf4::nc_close(ncin)) # just in case
-  rm(i)
 
-  ## Output PEcAn netCDF files - still a work in progress
-  ctr <- 1
-  # temporary work around. probably need to revise this in the future
-  out_yr <- as.numeric( sub("\\D*(\\d+).*", "\\1", transient_time) ) # temporary work around. proba
-  #> out_yr
-  #[1] 1901
-  
-  ## !!! This  needs to be more flexible to handle monthly and annual ouputs
-  ## !!! currently only supports annual
-  transient_years <- seq(out_yr,1901+length(gpp_dim_time_val)-1, 1)
-  for (yr in seq_along(transient_years)  ) { # replace with something more flexible
-    PEcAn.logger::logger.info(paste0("Processing year: ",out_yr))
-    # update time - this needs to be more elegant
-    output$var[[1]]$dim[[3]]$units <- paste0("years since ", as.character(out_yr), "-01-01 00:00:00")
-    ## write netCDF data
-    ncout <- ncdf4::nc_create(file.path(outdir,paste0(as.character(out_yr),".nc")),output$var)
-    for (i in seq_along(output$var)) {
-      ncdf4::ncvar_put(ncout, output$var[[i]], output$dat[[i]][yr])
-    }
-    
-    ## extract variable and long names to VAR file for PEcAn vis
-    write.table(sapply(ncout$var, function(x) { x$longname }), 
-                file = file.path(outdir,paste0(as.character(out_yr), ".nc.var")), 
-                col.names = FALSE, 
-                row.names = TRUE, 
-                quote = FALSE)
-    
-    try(ncdf4::nc_close(ncout))
-    ctr <- ctr + 1
-    out_yr <- out_yr + 1
-  }
-    
+    # Open the dvmdostem files for transient and scenario
+    ncin_tr_y <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[i],"_yearly_tr.nc")))
+    ncin_sc_y <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[i],"_yearly_sc.nc")))
+
+    # Read in the time series of data for the pixel that ran
+    tr_data <- ncdf4::ncvar_get(ncin_tr_y, dvmdostem_outputs[i])[px_X,px_Y,]
+    sc_data <- ncdf4::ncvar_get(ncin_sc_y, dvmdostem_outputs[i])[px_X,px_Y,]
+
+    # Get vector of dates for each timestep in the file
+    tr_starts <- ncdf4.helpers::nc.get.time.series(ncin_tr_y)
+    sc_starts <- ncdf4.helpers::nc.get.time.series(ncin_sc_y)
+
+    # Sanity check (safety first!)
+    stopifnot(length(sc_starts) == length(sc_data))
+    stopifnot(length(tr_starts) == length(tr_data))
+
+    # Look up the units in dvmdostem world
+    original_units <- ncdf4::ncatt_get(ncin_tr_y, dvmdostem_outputs[i], "units")
+    original_units <- as.character(unlist(original_units)[2]) # How to avoid hard coded index??
+    #stopifnot(original_units == as.character(unlist(ncdf4::ncatt_get(ncin_sc_y, dvmdostem_outputs[i], "units"))[2])
+
+    # This is a temporary hack, till dvm-dos-tem issue is resolved...
+    # See issue #336 (https://github.com/ua-snap/dvm-dos-tem/issues/336)
+    original_units <- gsub("time", "year", original_units)
+
+    # Set units in PEcAn world
+    if (dvmdostem_outputs[i] == 'GPP') {newunits <- "kgC m-2 s-1"}
+    if (dvmdostem_outputs[i] == 'NPP') {newunits <- "kgC m-2 s-1"}
+
+    # Convert the data
+    tr_data_new <- PEcAn.utils::misc.convert(tr_data, original_units, newunits)
+    sc_data_new <- PEcAn.utils::misc.convert(sc_data, original_units, newunits)
+
+    # Tack everything together so we can loop over it all at once below
+    all_starts <- c(tr_starts, sc_starts)
+    all_data <- c(tr_data_new, sc_data_new)
+
+    # Loop over all the time steps (yearly in this case), making one new
+    # file for each timestep.
+    for (j in seq_along(1:length(all_starts))) {
+
+      # Create dimensions for new file
+      lond <- ncdf4::ncdim_def(name='lon',
+                               units="degrees_east",
+                               vals=c(1), # <=== read from dvmdostem file!
+                               longname="coordinate_longitude")
+
+      latd <- ncdf4::ncdim_def(name='lat',
+                               units="degrees_north",
+                               vals=c(1), # <=== read from dvmdostem file!
+                               longname="coordinate_latitude")
+
+      timed <- ncdf4::ncdim_def(name='time',
+                                units=paste0("days since ", format(all_starts[j], "%Y-%m-%d %H:%M:%S")),
+                                vals=c(0),
+                                unlim=TRUE,
+                                longname="time",
+                                calendar='365_day')
+
+      out_nc_dims <- list(lond, latd, timed) # dimension order: X, Y, time
+
+      yr <- format(all_starts[j], "%Y")
+
+      newvar <- ncdf4::ncvar_def(dvmdostem_outputs[i], newunits, out_nc_dims)
+      ncout <- ncdf4::nc_create(file.path(outdir, paste0(as.character(yr), ".nc")), newvar)
+      ncdf4::ncvar_put(ncout, newvar, all_data[j], c(1,1,1), c(1,1,1))
+      ncdf4::nc_close(ncout)
+      print("SOMEWHERE TO STOP")
+
+    } # end of loop over years
+
+  } # end loop over all dvmdostem outputs
+
 } # end of function
 ##-------------------------------------------------------------------------------------------------#
 ## EOF
