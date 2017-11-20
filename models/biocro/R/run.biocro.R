@@ -54,13 +54,13 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
 
     HarvestedYield <- 0
 
-    if (packageVersion('BioCro') >= 1.0) {
+    if (utils::packageVersion('BioCro') >= 1.0) {
 
       if ("SolarR" %in% names(WetDat)) {
-        WetDat <- dplyr::rename(WetDat, solar = SolarR)
+        WetDat <- dplyr::rename(WetDat, solar = "SolarR")
       }
       if ("WS" %in% names(WetDat)) {
-        WetDat <- dplyr::rename(WetDat, windspeed = WS)
+        WetDat <- dplyr::rename(WetDat, windspeed = "WS")
       }
 
       if (i == 1) {
@@ -70,7 +70,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
 
         if ((i - 1) %% coppice.interval == 0) {
           # coppice when remainder = 0
-          HarvestedYield <- round(last(tmp.result$Stem) * 0.95, 2)
+          HarvestedYield <- round(data.table::last(tmp.result$Stem) * 0.95, 2)
         } else if ((i - 1) %% coppice.interval == 1) {
           # year after coppice
           initial_values$Stem <- initial_values$Stem * 0.05
