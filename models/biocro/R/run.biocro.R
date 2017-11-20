@@ -48,9 +48,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
           if (i == 1) {
               initial_values <- config$pft$initial_values
           } else {
-              initial_values$Rhizome <- last(tmp.result$Rhizome)
-              initial_values$Root <- last(tmp.result$Root)
-              initial_values$Stem <- last(tmp.result$Stem)
+              initial_values <- tmp.result[nrow(tmp.result), colnames(tmp.result) %in% names(config$pft$initial_values)]
 
               if ((i - 1) %% coppice.interval == 0) {
                 # coppice when remainder = 0
