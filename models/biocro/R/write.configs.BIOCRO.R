@@ -129,7 +129,7 @@ write.config.BIOCRO <- function(defaults = NULL, trait.values, settings, run.id)
     }
   }
 
-  if(settings$model$revision >= 1.0 && utils::packageVersion("BioCro") >= 1.0){
+  if (is.null(defaults.file) && settings$model$revision >= 1.0 && utils::packageVersion("BioCro") >= 1.0) {
     # Look for defaults provided as datasets in the BioCro model package
     # When available, these come in sets of three:
     # *_initial_values, *_parameters, *_modules
