@@ -32,7 +32,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
           starti <- max(start.date, lubridate::ymd(paste0(yeari, "-01-01")))
           endi <- min(end.date, lubridate::ymd(paste0(yeari, "-12-31")))
           metfile <- paste(metpath, yeari, "csv", sep = ".")
-          WetDat <- fread(metfile)
+          WetDat <- data.table::fread(metfile)
           WetDat <- WetDat[WetDat$doy >= lubridate::yday(starti) & WetDat$doy <= lubridate::yday(endi), ]
 
           stopifnot(all(sapply(WetDat, is.numeric)))
@@ -63,7 +63,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
 
           tmp.result <- BioCro::Gro(initial_values=initial_values, parameters=config$pft$parameters, varying_parameters=WetDat, modules=config$pft$modules)
 
-            result.yeari.hourly <- with(tmp.result, data.table(year = years[i],
+            result.yeari.hourly <- with(tmp.result, data.table::data.table(year = years[i],
                                                                doy = doy,
                                                                hour = hour, ThermalT=TTc,
                                                                Stem, Leaf, Root, 
