@@ -25,7 +25,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
     config$pft$soilControl$soilDepth <- soil$ref_depth
   }
 
-  hourly.results = list()
+  hourly.results <- list()
   for (i in seq_along(years)) {
     yeari <- years[i]
     metfile <- paste(metpath, yeari, "csv", sep = ".")
@@ -93,8 +93,8 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
         LAI = "lai",
         SoilEvaporation = "soil_evaporation",
         CanopyTrans = "canopy_transpiration")
-      tmp.result$AboveLitter = tmp.result$LeafLitter + tmp.result$StemLitter
-      tmp.result$BelowLitter = tmp.result$RootLitter + tmp.result$RhizomeLitter
+      tmp.result$AboveLitter <- tmp.result$LeafLitter + tmp.result$StemLitter
+      tmp.result$BelowLitter <- tmp.result$RootLitter + tmp.result$RhizomeLitter
 
     } else {  # BioCro vesion is less than 1.0.
 
