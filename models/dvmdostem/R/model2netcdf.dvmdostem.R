@@ -6,42 +6,6 @@
 # which accompanies this distribution, and is available at
 # http://opensource.ncsa.illinois.edu/license.html
 #-------------------------------------------------------------------------------
-
-#outdir <- "/data/sserbin/Modeling/dvmdostem/pecan_runs/run.77/out/ENS-00001"
-
-## helper function
-#oldname <- "GPP"
-#newname <- "GPP"
-#oldunits <- "gC m-2 yr-1"
-#newunits <- "kgC m-2 s-1"
-#dims <-   out_nc_dims
-#        var_update("AR","AutoResp","kgC m-2 s-1")
-var_update <- function(out, ncin, dims, pixel, oldname, newname, oldunits=NULL, newunits=NULL){
-
-  ## define variable
-  if (is.null(oldunits)) oldunits <- ncdf4::ncatt_get(ncin,oldname,"units")$value
-  # dvm-dos-tem needs updates to units metadata to support above, needs actual time (e.g. month, year) not just / time
-  if(is.null(newunits)) newunits = oldunits
-  newvar <- ncdf4::ncvar_def(name = newname, units = newunits, dim = dims)
-
-  ## convert data
-  dat <- ncdf4::ncvar_get(ncin,oldname)[pixel[1],pixel[2],]
-  dat.new <- PEcAn.utils::misc.convert(dat,oldunits,newunits)
-
-  ## prep for writing
-  if(is.null(out)) {
-    out <- list(var <- list(),dat <- list())
-    out$var[[1]] <- newvar
-    out$dat[[1]] <- dat.new
-  } else {
-    i <- length(out$var) + 1
-    out$var[[i]] <- newvar
-    out$dat[[i]] <- dat.new
-  }
-  return(out)
-}
-
-
 ##-------------------------------------------------------------------------------------------------#
 ##' @name model2netcdf.dvmdostem
 ##' @title Code to convert dvmdostem netcdf output into into CF standard
