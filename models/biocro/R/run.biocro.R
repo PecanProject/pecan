@@ -78,10 +78,10 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       }
 
       tmp.result <- BioCro::Gro(
-        initial_values=initial_values,
-        parameters=config$pft$parameters,
-        varying_parameters=WetDat,
-        modules=config$pft$modules)
+        initial_values = initial_values,
+        parameters = config$pft$parameters,
+        varying_parameters = WetDat,
+        modules = config$pft$modules)
 
       # save final state as initial values for next year
       # TODO: Some pools should NOT start at 100% of previous season --
@@ -201,16 +201,15 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
 
     } # end BioCro version < 1.0
 
-      result.yeari.hourly <- with(tmp.result,
-        data.table::data.table(
-          year = yeari,
-          doy, hour, ThermalT,
-          Stem, Leaf, Root,
-          AboveLitter, BelowLitter,
-          Rhizome, Grain,
-          LAI, SoilEvaporation,
-          CanopyTrans,
-          key = c("year", "doy", "hour")))
+    result.yeari.hourly <- with(tmp.result,
+      data.table::data.table(
+        year = yeari,
+        doy, hour, ThermalT,
+        Stem, Leaf, Root,
+        AboveLitter, BelowLitter,
+        Rhizome, Grain, LAI,
+        SoilEvaporation, CanopyTrans,
+        key = c("year", "doy", "hour")))
     result.yeari.withmet <- merge(x = result.yeari.hourly,
                                   y = WetDat, by = c("year", "doy", "hour"))
     hourly.results[[i]] <- result.yeari.withmet
@@ -224,12 +223,12 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
   # This notation could be more compact if we used nonstandard evaluation
   # with bare variable names, but this way works and ensures that
   # `R CMD check` doesn't complain about undefined variables.
-  hourly_grp <- dplyr::group_by_at(.tbl = hourly.results, .vars= c("year", "doy"))
+  hourly_grp <- dplyr::group_by_at(.tbl = hourly.results, .vars = c("year", "doy"))
   daily.results <- dplyr::bind_cols(
     dplyr::summarize_at(
       .tbl = hourly_grp,
       .vars = c("Stem", "Leaf", "Root", "AboveLitter", "BelowLitter",
-                "Rhizome", "Grain", "LAI", tmax="Temp"),
+                "Rhizome", "Grain", "LAI", tmax = "Temp"),
       .fun = max),
     dplyr::summarize_at(
       .tbl = hourly_grp,
@@ -260,7 +259,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       .fun = max),
     dplyr::summarize_at(
       .tbl = daily_grp,
-      .vars = c("SoilEvaporation", "CanopyTrans", map="precip"),
+      .vars = c("SoilEvaporation", "CanopyTrans", map = "precip"),
       .fun = sum),
     dplyr::summarize_at(
       .tbl = daily_grp,
