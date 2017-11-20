@@ -174,11 +174,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     
     ## Write Configs
     do.call(what = my.write.config, args = list(defaults = NULL, 
-                                         trait.values = params[[i]], 
-                                         settings = settings, 
-                                         run.id = run.id[[i]], 
-                                         inputs = inputs[[i]], 
-                                         IC = IC[i, ]))
+                                                trait.values = params[[i]], 
+                                                settings = settings, 
+                                                run.id = run.id[[i]], 
+                                                inputs = inputs[[i]], 
+                                                IC = IC[i, ]))
     
     ## write a README for the run
     cat("runtype     : sda.enkf\n",
@@ -211,7 +211,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
   save(list = ls(envir = environment(), all.names = TRUE), 
        file = file.path(outdir, "sda.initial.runs.Rdata"), envir = environment())
-
+  
   
   
   ###-------------------------------------------------------------------###
@@ -310,7 +310,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     #remove y.censored samplers and only assign univariate samplers on NAs
     
     for(i in 1:YN){
-      y.ind[i] ~ dconstraint(y.censored[i] > 0)
+      y.ind[i] ~ dinterval(y.censored[i], 0)
     }
     
   })
@@ -345,7 +345,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for(t in 3:10) {
+  for(t in 3:50) {
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -393,7 +393,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       
       if (length(obs.mean[[t]]) > 1) {
         diag(R)[which(diag(R)==0)] <- min(diag(R)[which(diag(R) != 0)])/2
-        diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/2
+        diag(Pf)[which(diag(Pf)==0)] <- min(diag(Pf)[which(diag(Pf) != 0)])/5
       }
       
       ### TO DO: plotting not going to work because of observation operator i.e. y and x are on different scales
@@ -516,7 +516,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
                                           name = 'space')
           ## Adding X.mod,q,r as data for building model.
           conf_tobit2space <- configureMCMC(tobit2space_pred, thin = 10, print=TRUE)
-          conf_tobit2space$addMonitors(c("pf", "muf")) 
+          conf_tobit2space$addMonitors(c("pf", "muf","y.censored")) 
           ## [1] conjugate_dmnorm_dmnorm sampler: X[1:5]
           ## important!
           ## this is needed for correct indexing later
@@ -556,14 +556,14 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           Cmodel_tobit2space$setInits(inits.tobit2space)
           
           for(i in seq_along(X)) {
-              ## ironically, here we have to "toggle" the value of y.ind[i]
-              ## this specifies that when y.ind[i] = 1,
-              ## indicator variable is set to 0, which specifies *not* to sample
-              valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space+i]], 'toggle', 1-x.ind[i])
+            ## ironically, here we have to "toggle" the value of y.ind[i]
+            ## this specifies that when y.ind[i] = 1,
+            ## indicator variable is set to 0, which specifies *not* to sample
+            valueInCompiledNimbleFunction(Cmcmc_tobit2space$samplerFunctions[[samplerNumberOffset_tobit2space+i]], 'toggle', 1-x.ind[i])
           }
           
         }
-         
+        
         set.seed(0)
         dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = 50000, progressBar=TRUE)
         
@@ -578,10 +578,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         iPf   <- grep("pf", colnames(dat.tobit2space))
         Pf <- matrix(colMeans(dat.tobit2space[, iPf]),ncol(X),ncol(X))
         
+        iycens <- grep("y.censored",colnames(dat.tobit2space))
+        X.new <- matrix(colMeans(dat.tobit2space[,iycens]),nens,ncol(X))
+        
         #plot(dat.tobit2space[,16])
         
         #if(sum(diag(Pf)-diag(cov(X))) > 10 | sum(diag(Pf)-diag(cov(X))) < -10) logger.severe('Increase Sample Size')
-      
+        
         ###-------------------------------------------------------------------###
         ### Generalized Ensemble Filter                                       ###
         ###-------------------------------------------------------------------###
@@ -775,7 +778,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       ## normalize
       Z <- X*0
       for(i in seq_len(nens)){
-        Z[i,] <- 1/sqrt(L_f) * t(V_f)%*%(X[i,]-mu.f)
+        Z[i,] <- 1/sqrt(L_f) * t(V_f)%*%(X.new[i,]-mu.f)
       }
       Z[is.na(Z)]<-0
       
@@ -832,21 +835,21 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       }))
       
       if(any(obs)){
-      Y.order <- na.omit(pmatch(colnames(X), colnames(Ybar)))
-      Ybar <- Ybar[,Y.order]
-      Ybar[is.na(Ybar)] <- 0
-      Ybar <- Ybar
-      
-      YCI <- t(as.matrix(sapply(obs.cov[t1:t], function(x) {
-        if (length(x)<2) {
-          rep(NA, length(names.y))
-        }
-        sqrt(diag(x))
-      })))
-      
-      YCI <- YCI[,Y.order]
-      YCI[is.na(YCI)] <- 0
-      
+        Y.order <- na.omit(pmatch(colnames(X), colnames(Ybar)))
+        Ybar <- Ybar[,Y.order]
+        Ybar[is.na(Ybar)] <- 0
+        Ybar <- Ybar
+        
+        YCI <- t(as.matrix(sapply(obs.cov[t1:t], function(x) {
+          if (length(x)<2) {
+            rep(NA, length(names.y))
+          }
+          sqrt(diag(x))
+        })))
+        
+        YCI <- YCI[,Y.order]
+        YCI[is.na(YCI)] <- 0
+        
       }else{
         YCI <- matrix(NA,nrow=length(t1:t), ncol=length(names.y))
       }
