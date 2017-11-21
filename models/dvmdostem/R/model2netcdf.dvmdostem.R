@@ -38,6 +38,7 @@ model2netcdf.dvmdostem <- function(outdir) {
     #skipped_px <- which(run_status == 0)
     #bad_px <- which(run_status < 0)
   }
+  PEcAn.logger::logger.info("Done checking pixel.")
 
   # Next check might be to look at the <run><start.date> and end date
   # and check that there is enough info in the output files to accomodate
@@ -48,6 +49,8 @@ model2netcdf.dvmdostem <- function(outdir) {
   px <- which(run_status > 0, arr.ind = TRUE) # Returns x,y array indices
   px_X <- px[1]
   px_Y <- px[2]
+  PEcAn.logger::logger.info(paste0("Using pixel ", px_X, ", ", px_Y))
+
 
   # So dvmdostem output files are per-variable, and contain a time series.
   # There is one file per stage (pr, eq, sp, tr, sc). Pecan output files have
@@ -56,6 +59,8 @@ model2netcdf.dvmdostem <- function(outdir) {
 
   dvmdostem_outputs <- c("GPP","NPP") # NOT SURE YET WHERE THIS LIST SHOULD BE SETUP??
   for (i in seq_along(1:length(dvmdostem_outputs)) ) {
+
+    PEcAn.logger::logger.info(paste0("Processing output for variable ", dvmdostem_outputs[i]))
 
     # Open the dvmdostem files for transient and scenario
     ncin_tr_y <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[i],"_yearly_tr.nc")))
@@ -72,6 +77,7 @@ model2netcdf.dvmdostem <- function(outdir) {
     # Sanity check (safety first!)
     stopifnot(length(sc_starts) == length(sc_data))
     stopifnot(length(tr_starts) == length(tr_data))
+    PEcAn.logger::logger.info("Done with sanity check for tr,sc data date/data lengths.")
 
     # Look up the units in dvmdostem world
     original_units <- ncdf4::ncatt_get(ncin_tr_y, dvmdostem_outputs[i], "units")
