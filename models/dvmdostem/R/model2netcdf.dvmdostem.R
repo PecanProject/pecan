@@ -71,6 +71,7 @@ model2netcdf.dvmdostem <- function(outdir) {
     sc_data <- ncdf4::ncvar_get(ncin_sc_y, dvmdostem_outputs[i])[px_X,px_Y,]
 
     # Get vector of dates for each timestep in the file
+    # This returns a vector of PCICt objects.
     tr_starts <- ncdf4.helpers::nc.get.time.series(ncin_tr_y)
     sc_starts <- ncdf4.helpers::nc.get.time.series(ncin_sc_y)
 
@@ -100,10 +101,13 @@ model2netcdf.dvmdostem <- function(outdir) {
     all_starts <- c(tr_starts, sc_starts)
     all_data <- c(tr_data_new, sc_data_new)
 
+    PEcAn.logger::logger.info("Converting all_starts from PCICt objects to charachter vectors...")
+    all_starts <- as.character(all_starts)
+
     # Loop over all the time steps (yearly in this case), making one new
     # file for each timestep.
+    PEcAn.logger::logger.info("Looping over all the dates (and data) in the file...")
     for (j in seq_along(1:length(all_starts))) {
-
       # Create dimensions for new file
       lond <- ncdf4::ncdim_def(name='lon',
                                units="degrees_east",
@@ -116,7 +120,7 @@ model2netcdf.dvmdostem <- function(outdir) {
                                longname="coordinate_latitude")
 
       timed <- ncdf4::ncdim_def(name='time',
-                                units=paste0("days since ", format(all_starts[j], "%Y-%m-%d %H:%M:%S")),
+                                units=paste0("days since ", all_starts[j], " 00:00:00"),
                                 vals=c(0),
                                 unlim=TRUE,
                                 longname="time",
@@ -124,13 +128,14 @@ model2netcdf.dvmdostem <- function(outdir) {
 
       out_nc_dims <- list(lond, latd, timed) # dimension order: X, Y, time
 
-      yr <- format(all_starts[j], "%Y")
+      PEcAn.logger::logger.info("Convert all_starts char vector BACK to date object and extract year...")
+      yr <- lubridate::year(as.Date(strptime(all_starts[j], format="%Y-%m-%d")))
 
       newvar <- ncdf4::ncvar_def(dvmdostem_outputs[i], newunits, out_nc_dims)
       ncout <- ncdf4::nc_create(file.path(outdir, paste0(as.character(yr), ".nc")), newvar)
       ncdf4::ncvar_put(ncout, newvar, all_data[j], c(1,1,1), c(1,1,1))
       ncdf4::nc_close(ncout)
-      print("SOMEWHERE TO STOP")
+      #print("SOMEWHERE TO STOP")
 
     } # end of loop over years
 
