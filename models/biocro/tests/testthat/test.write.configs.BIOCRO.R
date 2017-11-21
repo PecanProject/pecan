@@ -37,7 +37,7 @@ test_that("convert.samples.BIOCRO works for BioCro 1.0", {
   convert.samples.BIOCRO(test.list, 0.9)  ## this should work
 })
 
-test_that("write.configs.BIOCRO produces expected output", {
+test_that("write.config.BIOCRO produces expected output", {
   for (q in rownames(samples$biocro.saof)) {
     outdir <- file.path(settings$modeloutdir, q)
     rundir <- file.path(settings$rundir, q)
@@ -57,7 +57,8 @@ test_that("write.configs.BIOCRO produces expected output", {
     expect_true(file.copy(species, file.path(settings$pfts$pft$outdir, "species.csv"), 
       overwrite = TRUE))
     
-    
+    # mock_version stub always reports BioCro version as 0.95
+    mockery::stub(write.config.BIOCRO, "utils::packageVersion", mock_version)
     write.config.BIOCRO(defaults = settings$pfts, trait.values = trait.values, 
       settings = settings, run.id = q)
     

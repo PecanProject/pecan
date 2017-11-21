@@ -1,23 +1,5 @@
 context("check that BioCro output is summarized correctly")
 
-# Return precalculated BioCro 0.9 results from specified days in 2004
-# Accepts same arguments as BioCro::BioGro, ignores all but day1 and dayn
-mock_run <- function(WetDat = NULL, day1 = 1, dayn = 7, ...){
-	load("data/result.RData", envir = environment())
-	resultDT[resultDT$Year == 2004 & resultDT$DayofYear %in% day1:dayn,]
-}
-
-# Pretend BioCro version is 0.95, even if not installed
-mock_version <- function(pkg, lib.loc = NULL){
-	if (pkg == "BioCro"){
-		return(structure(
-			list(c(0L, 95L)),
-			class = c("package_version", "numeric_version")))
-	} else {
-		packageVersion(pkg, lib.loc)
-	}
-}
-
 # Hand-calculate reference values
 ref_output <- mock_run()
 ref_met <- read.csv("data/US-Bo1.2004.csv", nrows=7*24)
@@ -40,6 +22,7 @@ test_that("daily summarizes hourly (#1738)", {
 	# calls to willowGro(...) will be replaced with calls to mock_run(...),
 	# calls to utils::packageVersion("BioCro") will return 0.95,
 	# but *only* when originating inside run.biocro.
+	# see helper.R for stub function definitions
 	mockery::stub(run.biocro, "BioCro::willowGro", mock_run)
 	mockery::stub(run.biocro, "utils::packageVersion", mock_version)
 
