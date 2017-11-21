@@ -447,6 +447,20 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     jobsh <- gsub("@LOGLEVEL@", settings$model$dvmdostem_loglevel, jobsh)
   }
 
+  # Really no idea what the defaults should be for these if the user
+  # does not specify them in the pecan.xml file...
+  if (is.null(settings$run$start.date)) {
+    jobsh <- gsub("@RUNSTART@", "", jobsh)
+  } else {
+    jobsh <- gsub("@RUNSTART@", settings$run$start.date, jobsh)
+  }
+
+  if (is.null(settings$run$end.date)) {
+    jobsh <- gsub("@RUNEND@", "", jobsh)
+  } else {
+    jobsh <- gsub("@RUNEND@", settings$run$end.date, jobsh)
+  }
+
   writeLines(jobsh, con=file.path(settings$rundir, run.id,"job.sh"))
   Sys.chmod(file.path(settings$rundir, run.id,"job.sh"))
 
