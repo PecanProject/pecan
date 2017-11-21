@@ -20,10 +20,11 @@
 ##' @export
 ##'
 ##' @author Tobey Carman, Shawn Serbin
-##' 
-model2netcdf.dvmdostem <- function(outdir) {
+##'
+model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
 
-  PEcAn.logger::logger.info(paste("Processing dvmdostem outputs in: ", outdir))
+  PEcAn.logger::logger.info(paste0("Run start: ", runstart, " Run end: ", runend))
+  PEcAn.logger::logger.info(paste0("Processing dvmdostem outputs in: ", outdir))
 
   # First things first, we need to check the run_status.nc file and make sure
   # that the a) only one pixel ran, and b) the success code is > 0
