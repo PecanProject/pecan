@@ -7,6 +7,17 @@ mock_run <- function(WetDat = NULL, day1 = 1, dayn = 7, ...){
 	resultDT[resultDT$Year == 2004 & resultDT$DayofYear %in% day1:dayn,]
 }
 
+# Pretend BioCro version is 0.95, even if not installed
+mock_version <- function(pkg, lib.loc = NULL){
+	if (pkg == "BioCro"){
+		return(structure(
+			list(c(0L, 95L)),
+			class = c("package_version", "numeric_version")))
+	} else {
+		packageVersion(pkg, lib.loc)
+	}
+}
+
 # Hand-calculate reference values
 ref_output <- mock_run()
 ref_met <- read.csv("data/US-Bo1.2004.csv", nrows=7*24)
@@ -25,10 +36,12 @@ config$simulationPeriod$dateofharvest <- as.POSIXct("2004-01-07")
 
 test_that("daily summarizes hourly (#1738)", {
 
-	# stub out BioCro::willowGro: 
+	# stub out BioCro::willowGro and packageVersion:
 	# calls to willowGro(...) will be replaced with calls to mock_run(...),
+	# calls to utils::packageVersion("BioCro") will return 0.95,
 	# but *only* when originating inside run.biocro.
-	mockery::stub(run.biocro, "BioCro::willowGro", mock_run) 
+	mockery::stub(run.biocro, "BioCro::willowGro", mock_run)
+	mockery::stub(run.biocro, "utils::packageVersion", mock_version)
 
 	mock_result <- run.biocro(lat = 44, lon = -88, metpath, soil.nc = NULL, config = config, coppice.interval = 1)
 	expect_equal(nrow(mock_result$hourly), 24*7)
