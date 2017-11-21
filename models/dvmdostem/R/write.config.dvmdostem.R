@@ -367,8 +367,9 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   config_template <- gsub("@MODEL_OUTPUT_DIR@", outdir, config_template)
   config_template <- gsub("@CUSTOM_RUN_MASK@", file.path(rundir), config_template )
 
-  if (! file.exists(file.path(settings$rundir, run.id,"config"))) dir.create(file.path(settings$rundir, run.id,"config"),
-                                                                             recursive = TRUE)
+  if (! file.exists(file.path(settings$rundir, run.id,"config")) ) {
+    dir.create(file.path(settings$rundir, run.id,"config"),recursive = TRUE)
+  }
 
   writeLines(config_template, con=file.path(settings$rundir, run.id,"config/config.js"))
 
@@ -435,7 +436,7 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   }
 
   if (is.null(settings$model$dvmdostem_scenerio)){
-    jobsh <- gsub("@SCENERIO@", 100, jobsh)
+    jobsh <- gsub("@SCENERIO@", 91, jobsh)
   } else {
     jobsh <- gsub("@SCENERIO@", settings$model$dvmdostem_scenerio, jobsh)
   }
