@@ -73,8 +73,16 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
 
     # Get vector of dates for each timestep in the file
     # This returns a vector of PCICt objects.
-    tr_starts <- ncdf4.helpers::nc.get.time.series(ncin_tr_y)
-    sc_starts <- ncdf4.helpers::nc.get.time.series(ncin_sc_y)
+    #tr_starts <- ncdf4.helpers::nc.get.time.series(ncin_tr_y)
+    #sc_starts <- ncdf4.helpers::nc.get.time.series(ncin_sc_y)
+    tr_time_start <- ncin_tr_y$dim$time$units
+    tr_time_start <- as.numeric( sub("\\D*(\\d+).*", "\\1", tr_time_start) )
+    tr_starts <- paste0(seq(tr_time_start,tr_time_start+ncin_tr_y$dim$time$len-1,1),"-01-01 00:00:00")
+    
+    sc_time_start <- ncin_sc_y$dim$time$units
+    sc_time_start <- as.numeric( sub("\\D*(\\d+).*", "\\1", sc_time_start) )
+    sc_starts <- paste0(seq(sc_time_start,sc_time_start+ncin_sc_y$dim$time$len-1,1),"-01-01 00:00:00")
+    
 
     # Sanity check (safety first!)
     stopifnot(length(sc_starts) == length(sc_data))
@@ -101,9 +109,12 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
     # Tack everything together so we can loop over it all at once below
     all_starts <- c(tr_starts, sc_starts)
     all_data <- c(tr_data_new, sc_data_new)
+    
+    PEcAn.logger::logger.info("Converting all dvm-dos-tem output for years: ")
+    PEcAn.logger::logger.info(lubridate::year(all_starts))
 
-    PEcAn.logger::logger.info("Converting all_starts from PCICt objects to charachter vectors...")
-    all_starts <- as.character(all_starts)
+    #PEcAn.logger::logger.info("Converting all_starts from PCICt objects to charachter vectors...")
+    #all_starts <- as.character(all_starts)
 
     # Loop over all the time steps (yearly in this case), making one new
     # file for each timestep.
@@ -121,20 +132,31 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
                                longname="coordinate_latitude")
 
       timed <- ncdf4::ncdim_def(name='time',
-                                units=paste0("days since ", all_starts[j], " 00:00:00"),
+                                #units=paste0("days since ", all_starts[j], " 00:00:00"),
+                                units=paste0("days since ",all_starts[j]),
                                 vals=c(0),
                                 unlim=TRUE,
                                 longname="time",
                                 calendar='365_day')
 
-      out_nc_dims <- list(lond, latd, timed) # dimension order: X, Y, time
+      out_nc_dims <- list(lon=lond, lat=latd, time=timed) # dimension order: X, Y, time
 
-      PEcAn.logger::logger.info("Convert all_starts char vector BACK to date object and extract year...")
-      yr <- lubridate::year(as.Date(strptime(all_starts[j], format="%Y-%m-%d")))
+      #PEcAn.logger::logger.info("Convert all_starts char vector BACK to date object and extract year...")
+      #yr <- lubridate::year(as.Date(strptime(all_starts[j], format="%Y-%m-%d")))
+      yr <- lubridate::year(all_starts[j])
 
-      newvar <- ncdf4::ncvar_def(dvmdostem_outputs[i], newunits, out_nc_dims)
+      #newvar <- ncdf4::ncvar_def(dvmdostem_outputs[i], newunits, out_nc_dims)
+      newvar <- PEcAn.utils::to_ncvar(dvmdostem_outputs[i],out_nc_dims)  # new function that recognizes know vars and provides proper longname
       ncout <- ncdf4::nc_create(file.path(outdir, paste0(as.character(yr), ".nc")), newvar)
       ncdf4::ncvar_put(ncout, newvar, all_data[j], c(1,1,1), c(1,1,1))
+      
+      ## extract variable and long names to VAR file for PEcAn vis - THIS NEEDS TO BE KEPT AND USED FOR PROPER PLOTTING
+      write.table(sapply(ncout$var, function(x) { x$longname }), 
+                  file = file.path(outdir,paste0(as.character(yr), ".nc.var")), 
+                  col.names = FALSE, 
+                  row.names = TRUE, 
+                  quote = FALSE)
+
       ncdf4::nc_close(ncout)
       #print("SOMEWHERE TO STOP")
 
