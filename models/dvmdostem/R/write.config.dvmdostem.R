@@ -157,7 +157,8 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   # to hold a representation of each dvmdostem parameter file.
   dimveg_params <- paste(appbinary_path, "parameters", 'cmt_dimvegetation.txt', sep="/")
   envcanopy_params <- paste(appbinary_path, "parameters", 'cmt_envcanopy.txt', sep="/")
-
+  bgcveg_params <- paste(appbinary_path, "parameters", 'cmt_bgcvegetation.txt', sep="/")
+  
   # Call the helper script and write out the data to a temporary file
   # This gets just the block we are interested in (based on community type)
   # create rundir temp directory
@@ -175,16 +176,23 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   system2(paste0(appbinary_path,"/scripts/param_util.py"),
           args=(c("--dump-block-to-json", envcanopy_params, cmtnum)),
           stdout=envcanopy_jsonfile, wait=TRUE)
+  
+  bgcveg_jsonfile <- file.path(local_rundir, "tmp",'dvmdostem-bgcveg.json')
+  PEcAn.logger::logger.info(paste0("bgcveg_jsonfile: ", bgcveg_jsonfile))
+  system2(paste0(appbinary_path,"/scripts/param_util.py"),
+          args=(c("--dump-block-to-json", bgcveg_params, cmtnum)),
+          stdout=bgcveg_jsonfile, wait=TRUE)
 
   # Read the json file into memory
   dimveg_jsondata <- fromJSON(paste(readLines(dimveg_jsonfile), collapse=""))
   envcanopy_jsondata <- fromJSON(paste(readLines(envcanopy_jsonfile), collapse=""))
-
+  bgcveg_jsondata <- fromJSON(paste(readLines(bgcveg_jsonfile), collapse=""))
+  
   # (2)
   # Overwrite parameter values with (ma-posterior) trait data from pecan
   PEcAn.logger::logger.info(paste0("PFT Name: ",cmtname))
   for (curr_trait in names(traits)) {
-    for (jd in list(envcanopy_jsondata, dimveg_jsondata)) {
+    for (jd in list(bgcveg_jsondata, envcanopy_jsondata, dimveg_jsondata)) {
       for (i in names(jd)) {
         if (grepl("pft", i)) {
           # The PFT name stored w/in betydb is a combo of the community name
@@ -211,6 +219,9 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
             }
             if (curr_trait == "frprod_perc_40") {
               dimveg_jsondata[[i]]$`frprod[3]` = traits[[curr_trait]]
+            }
+            if (curr_trait == "frprod_perc_50") {
+              dimveg_jsondata[[i]]$`frprod[4]` = traits[[curr_trait]]
             }
             if (curr_trait == "klai") {
               dimveg_jsondata[[i]]$klai = traits[[curr_trait]]
@@ -239,6 +250,18 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
             if (curr_trait == "vpd_close") {
               envcanopy_jsondata[[i]]$vpd_close = traits[[curr_trait]]
             }
+            if (curr_trait == "pstemp_min") {
+              bgcveg_jsondata[[i]]$tmin = traits[[curr_trait]]
+            }
+            if (curr_trait == "pstemp_low") {
+              bgcveg_jsondata[[i]]$toptmin = traits[[curr_trait]]
+            }
+            if (curr_trait == "pstemp_high") {
+              bgcveg_jsondata[[i]]$toptmax = traits[[curr_trait]]
+            }
+            if (curr_trait == "pstemp_max") {
+              bgcveg_jsondata[[i]]$tmax = traits[[curr_trait]]
+            }
           }
         }
       }
@@ -252,6 +275,10 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   envcanopy_exportJson <- toJSON(envcanopy_jsondata)
   write(envcanopy_exportJson, file.path(local_rundir, "tmp","envcanopy_newfile.json"))
 
+  bgcveg_exportJson <- toJSON(bgcveg_jsondata)
+  write(bgcveg_exportJson, file.path(local_rundir, "tmp","bgcveg_newfile.json"))
+  
+  
   # (3)
   # Format a new dvmdostem parameter file using the new json file as a source.
 
@@ -273,7 +300,13 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
   system2(paste0(appbinary_path,"/scripts/param_util.py"),
           args=(c("--fmt-block-from-json", file.path(local_rundir, "tmp","envcanopy_newfile.json"), ref_file)),
           stdout=new_param_file, wait=TRUE)
-
+  
+  ref_file <- paste0(file.path(appbinary_path, "parameters/"), 'cmt_bgcvegetation.txt')
+  new_param_file <- paste0(file.path(local_rundir, "parameters/"), "cmt_bgcvegetation.txt")
+  system2(paste0(appbinary_path,"/scripts/param_util.py"),
+          args=(c("--fmt-block-from-json", file.path(local_rundir, "tmp","bgcveg_newfile.json"), ref_file)),
+          stdout=new_param_file, wait=TRUE)
+  
   ## Cleanup rundir temp directory - comment out for debugging
   unlink(file.path(local_rundir, "tmp"), recursive = TRUE, force = FALSE)  # comment out for debugging
 
@@ -347,8 +380,6 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
     PEcAn.logger::logger.error("STOPPING NOW TO PREVENT FUTURE HEARTACHE!")
     stop()
   }
-
-
 
 
   ## Update dvm-dos-tem config.js file
