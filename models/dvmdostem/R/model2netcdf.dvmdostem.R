@@ -39,12 +39,6 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
     #skipped_px <- which(run_status == 0)
     #bad_px <- which(run_status < 0)
   }
-  PEcAn.logger::logger.info("Done checking pixel.")
-
-  # Next check might be to look at the <run><start.date> and end date
-  # and check that there is enough info in the output files to accomodate
-  # the requested date range. We can do this later, as for now we'll assume it
-  # is going to be ok.
 
   # Get the actual pixel coords of the cell that ran
   px <- which(run_status > 0, arr.ind = TRUE) # Returns x,y array indices
@@ -52,6 +46,12 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
   px_Y <- px[2]
   PEcAn.logger::logger.info(paste0("Using pixel ", px_X, ", ", px_Y))
 
+  PEcAn.logger::logger.info("Done checking pixel.")
+
+  # Next check might be to look at the <run><start.date> and end date
+  # and check that there is enough info in the output files to accomodate
+  # the requested date range. We can do this later, as for now we'll assume it
+  # is going to be ok.
 
   # So dvmdostem output files are per-variable, and contain a time series.
   # There is one file per stage (pr, eq, sp, tr, sc). Pecan output files have
