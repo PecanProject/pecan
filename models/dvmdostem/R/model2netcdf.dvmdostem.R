@@ -33,7 +33,8 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
   ncdf4::nc_close(nc_runstatus)
   good_px <- which(run_status > 0)
   if (length(good_px) != 1) {
-    PEcAn.logger::logger.error("ERROR! Either more than one pixel ran, or no pixel successfully ran. Not sure what to do, so quitting.")
+    PEcAn.logger::logger.error("ERROR! Either more than one pixel ran, or no pixel successfully ran.")
+    PEcAn.logger::logger.error("Not sure what to do, so quitting.")
     stop()
     # Not sure we even need to check bad_px or skipped_px?
     #skipped_px <- which(run_status == 0)
