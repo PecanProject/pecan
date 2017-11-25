@@ -111,12 +111,12 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
     PEcAn.logger::logger.info("Creating dimensions for new PEcAn style files...")
     lond <- ncdf4::ncdim_def(name='lon',
                              units="degrees_east",
-                             vals=c(1), # <=== read from dvmdostem file!
+                             vals=c(1), # <=== read from dvmdostem file! see dvmdostem issue #342
                              longname="coordinate_longitude")
 
     latd <- ncdf4::ncdim_def(name='lat',
                              units="degrees_north",
-                             vals=c(1), # <=== read from dvmdostem file!
+                             vals=c(1), # <=== read from dvmdostem file! see dvmdostem issue #342
                              longname="coordinate_latitude")
 
     timed <- ncdf4::ncdim_def(name='time',
@@ -134,6 +134,17 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
       # Use pecan utility function that can reognize and create proper longname
       # Need to handle name translation between dvmdostem names and pecan names...
       ncvar <- PEcAn.utils::to_ncvar(dvmdostem_outputs[j], out_nc_dims)
+
+      # Not sure if the above construct will work very well for some variables,
+      # i.e. "RH" which in dvmdostem world is "Heterotrophic Respiration", while
+      # in pecan world, this gets interperted as "Relative Humidity". Maybe we
+      # should build and maintain a map something like this that maps the
+      # PEcAn world names to the requsite info from the tem-world:
+      # varmap <- list(
+      #   "GPP"=c(temunits="gC/m2/year", pecanunits="kgC/m2/sec", temname="GPP"),
+      #   "TotalResp"=c(temunits="gC/m2/year", pecanunits="kgC/m2/sec", temname="RG+RM+RH"),
+      #   "NPP"=c(temunits="gC/m2/year", pecanunits="kgC/m2/sec", temname="NPP")
+      # )
 
       # Alternatively could use this construct:
       # Set units in PEcAn world
