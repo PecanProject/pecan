@@ -9,8 +9,21 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+
+### Added
+
+### Removed
+- Removed deprecated copies of PEcAn.utils::SafeList, PEcAn.utils::listToXml (both moved to PEcAn.settings in v 1.5.2), and PEcAn.utils::fqdn (moved to PEcAn.remote in 1.5.2). This fixes the masses of deprecation warnings in otherwise normal run logs (#1719).
+
+### Changed
+
+
+## [1.5.2] - 2017-??-??
+
+### Fixes
+- Updated models/ed/data/pftmapping.csv to include two new BETYdb PFTs
 - Simple fix to models/ed/R/write.configs.ed.R to properly align pss and css file prefix
-- Fixed issue #1752 by updating the site.lst() function to include site.id=site$id instead of site.id=site, as site is an object not just the id
+- Fixed issue #1752 by updating the site.lst() function to include `site.id=site$id` instead of site.id=site, as site is an object not just the id
 - Update to PEcAn.ED2::met2model.ED2 to fix issue with rhdf5::h5write. Bug fix to #1742
 - Fixed write.config.xml.ED2 parsing of data/history* files
 - `PEcAn.utils` now lazy-loads data for faster execution of functions that consult lookup tables, especially `to_ncvar`.
@@ -27,6 +40,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Moved many functions from `PEcAn.utils` into other PEcAn packages. The `PEcAn.utils` versions still work with a deprecation warning, but will be removed in a future release.
 	- `listToXml` and `SafeList` moved to `PEcAn.settings`
 	- `fqdn` moved to `PEcAn.remote`
+- PEcAnRTM: Removed effective sample size normalization from likelihood calculation. It was giving weird results.
 
 ## [1.5.1] - 2017-10-05
 
