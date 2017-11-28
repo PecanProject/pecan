@@ -9,7 +9,7 @@
 ##' 
 ##' @author Betsy Cowdery 
 ##' @importFrom dplyr tbl filter rename collect select  
-calc_benchmark <- function(settings, bety) {
+calc_benchmark <- function(settings, bety, start_year = NA, end_year = NA) {
   
   # run.score <- run.success.check(settings)
   
@@ -91,8 +91,8 @@ calc_benchmark <- function(settings, bety) {
       time.row <- format$time.row
       vars.used.index <- setdiff(seq_along(format$vars$variable_id), format$time.row)
       
-      start_year <- lubridate::year(settings$run$start.date)
-      end_year <- lubridate::year(settings$run$end.date)
+      if(is.na(start_year)) start_year <- lubridate::year(settings$run$start.date)
+      if(is.na(end_year))   end_year <- lubridate::year(settings$run$end.date)
       
       obvs <- load_data(data.path, format, start_year = start_year, end_year = end_year, site, vars.used.index, time.row)
       dat_vars <- format$vars$pecan_name  # IF : is this line redundant?
