@@ -63,14 +63,14 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
   } else {
     PEcAn.logger::logger.info("Reading output for Years: ", start.year, " - ", end.year, 
                 "in directory:", outdir,
-                "including files", dir(outdir, pattern = "\\.nc$"))
+                "including files", basename(ncfiles))
   }
   
   if(dataframe==TRUE){ #ensure that there is a time component when asking for a dataframe + posix code
-  if(length(variables[variables=="time"])==0){
-    variables<-c(variables, "time")
-    PEcAn.logger::logger.info("No time variable requested, adding automatically")
-  }
+    if(length(variables[variables=="time"])==0){
+      variables<-c(variables, "time")
+      PEcAn.logger::logger.info("No time variable requested, adding automatically")
+    }
   }
   result <- list()
 
