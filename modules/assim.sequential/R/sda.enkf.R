@@ -234,6 +234,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         ### Adding 12:59:59PM assuming next time step starts one second later
         print("Pumpkin Warning: adding one minute before midnight time assumption to dates associated with data")
         obs.times.POSIX[i] <- ymd_hms(paste(obs.times[i], "23:59:59"))
+        # if(nchar(year(obs.times.POSIX[i]))==3){
+        #   #TODO: BROKEN: need to add leading zeros to years with less than 4 digits
+        #   obs.times.POSIX[i] <- paste0('0',ymd_hms(paste(obs.times[i], "23:59:59")))
+        # } 
       }
     }
   }
@@ -301,10 +305,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     #y_star[1:YN,1:YN] <- X[1:YN,1:YN] #[choose]
     
     #f.comp non linear
-    #y_star[1:YN] <- X[1:YN] / sum(X[1:YN])
+    y_star[1:YN] <- X[1:YN] / sum(X[1:YN])
+    
+    data_constraint ~ dconstraint(sum(X[1:YN]) > 0)
     
     ## Analysis
-    y.censored[1:YN] ~ dmnorm(X[1:YN], prec = r[1:YN,1:YN]) #is it an okay assumpution to just have X and Y in the same order?
+    y.censored[1:YN] ~ dmnorm(y_star[1:YN], prec = r[1:YN,1:YN]) #is it an okay assumpution to just have X and Y in the same order?
     
     #don't flag y.censored as data, y.censored in inits
     #remove y.censored samplers and only assign univariate samplers on NAs
@@ -345,19 +351,26 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for(t in 3:50) {
-    
+
+  for(t in 8:nt) {
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
     ###-------------------------------------------------------------------###  
     X <- list()
-    for (i in seq_len(nens)) {
-      X[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
-                                                     runid = run.id[[i]], 
-                                                     stop.time = obs.times[t], 
-                                                     settings = settings, 
-                                                     var.names = var.names, 
-                                                     params = params[[i]]))
+    for (i in seq_len(length(run.id))) {
+        X[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
+                                                       runid = run.id[[i]], 
+                                                       stop.time = obs.times[t], 
+                                                       settings = settings, 
+                                                       var.names = var.names, 
+                                                       params = params[[i]]))
+    }
+    
+    for(i in seq_len(length(run.id))){
+      if(is.na(X[[i]][1])) {
+        run.id[[i]] <- NULL 
+        X[[i]] <- NULL
+      }
     }
     
     X <- do.call(rbind, X)
@@ -478,6 +491,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         ### create matrix the describes the support for each observed state variable at time t
         intervalX <- matrix(NA, ncol(X), 2)
         rownames(intervalX) <- colnames(X)
+        #TO DO: Not working for fcomp
         for(i in 1:length(var.names)){
           intervalX[which(startsWith(rownames(intervalX),
                                      var.names[i])), ] <- matrix(c(as.numeric(settings$state.data.assimilation$state.variables[[i]]$min_value),
@@ -489,17 +503,17 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         #### These vectors are used to categorize data based on censoring from the interval matrix
         x.ind <- x.censored <- matrix(NA, ncol=ncol(X), nrow=nrow(X))
         for(j in seq_along(mu.f)){
-          for(n in seq_len(nens)){
+          for(n in seq_len(nrow(X))){
             x.ind[n,j] <- as.numeric(X[n,j] > 0)
-            x.censored[n,j] <- as.numeric(ifelse(X[n,j] > intervalX[j,2], 0, X[n,j]))
+            x.censored[n,j] <- as.numeric(ifelse(X[n,j] > 100000, 0, X[n,j])) #
           }
         }
         
-        if(t == 1){
+        if(t == 1 | length(run.id) < nens){
           #The purpose of this step is to impute data for mu.f 
           #where there are zero values so that 
           #mu.f is in 'tobit space' in the full model
-          constants.tobit2space = list(N = nens,
+          constants.tobit2space = list(N = nrow(X),
                                        J = length(mu.f))
           
           data.tobit2space = list(y.ind = x.ind,
@@ -523,7 +537,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           samplerNumberOffset_tobit2space <- length(conf_tobit2space$getSamplers())
           
           for(j in seq_along(mu.f)){
-            for(n in seq_len(nens)){
+            for(n in seq_len(nrow(X))){
               node <- paste0('y.censored[',n,',',j,']')
               conf_tobit2space$addSampler(node, 'toggle', control=list(type='RW'))
               ## could instead use slice samplers, or any combination thereof, e.g.:
@@ -565,21 +579,23 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         }
         
         set.seed(0)
-        dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = 50000, progressBar=TRUE)
+        dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = 10000, progressBar=TRUE)
         
         pdf(file.path(outdir,paste0('assessParams',t,'.pdf')))
-        assessParams(dat = dat.tobit2space[1000:5000,], Xt = X)
+
+        assessParams(dat = dat.tobit2space[200:1000,], Xt = X)
         dev.off()
         
         ## update parameters
-        dat.tobit2space  <- dat.tobit2space[1000:5000, ]
+        dat.tobit2space  <- dat.tobit2space[200:1000, ]
         imuf   <- grep("muf", colnames(dat.tobit2space))
         mu.f <- colMeans(dat.tobit2space[, imuf])
         iPf   <- grep("pf", colnames(dat.tobit2space))
         Pf <- matrix(colMeans(dat.tobit2space[, iPf]),ncol(X),ncol(X))
         
         iycens <- grep("y.censored",colnames(dat.tobit2space))
-        X.new <- matrix(colMeans(dat.tobit2space[,iycens]),nens,ncol(X))
+
+        X.new <- matrix(colMeans(dat.tobit2space[,iycens]),nrow(X),ncol(X))
         
         #plot(dat.tobit2space[,16])
         
@@ -620,7 +636,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           constants.tobit = list(N = ncol(X), YN = length(y.ind)) #, nc = 1
           dimensions.tobit = list(X = ncol(X), X.mod = ncol(X), Q = c(ncol(X),ncol(X))) #  b = dim(inits.pred$b),
           
-          data.tobit = list(muf = as.vector(mu.f), pf = solve(Pf), aq = aqq[t,,], bq = bqq[t],
+
+          data.tobit = list(data_constraint = 1,
+                            muf = as.vector(mu.f), pf = solve(Pf), 
+                            aq = aqq[t,,], bq = bqq[t],
                             y.ind = y.ind,
                             y.censored = y.censored,
                             r = solve(R))
@@ -743,8 +762,11 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         enkf.params[[t]] <- list(mu.f = mu.f, Pf = Pf, mu.a = mu.a, 
                                  Pa = Pa, q.bar = q.bar, n = n)
         
-        var.df1 <- data.frame(diag(Pa),diag(Pf),diag(R),diag(solve(q.bar)))
-        var.df1[order(var.df1$diag.Pa.),]
+        #var.df1 <- data.frame(diag(Pa),diag(Pf),diag(R),diag(solve(q.bar)))
+        #var.df1[order(var.df1$diag.Pa.),]
+        
+        #mu.df <- cbind(mu.a/sum(mu.a),mu.f/sum(mu.f),Y)
+        #mu.df[order(mu.df[,3]),]
       }
       
     } else {
@@ -777,8 +799,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       
       ## normalize
       Z <- X*0
-      for(i in seq_len(nens)){
-        Z[i,] <- 1/sqrt(L_f) * t(V_f)%*%(X.new[i,]-mu.f)
+
+      for(i in seq_len(nrow(X))){
+        if(processvar == TRUE) {
+          Z[i,] <- 1/sqrt(L_f) * t(V_f)%*%(X.new[i,]-mu.f)
+        }else{
+          Z[i,] <- 1/sqrt(L_f) * t(V_f)%*%(X[i,]-mu.f)
+          }
       }
       Z[is.na(Z)]<-0
       
@@ -789,7 +816,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       
       ## analysis ensemble
       X_a <- X*0
-      for(i in seq_len(nens)){
+      for(i in seq_len(nrow(X))){
         X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
       }
       
@@ -798,14 +825,19 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       
       analysis <- as.data.frame(X_a)
     }else{
-      analysis <- as.data.frame(rmvnorm(as.numeric(nens), mu.a, Pa, method = "svd"))
+      analysis <- as.data.frame(rmvnorm(as.numeric(nrow(X)), mu.a, Pa, method = "svd"))
     }
     
     colnames(analysis) <- colnames(X)
     
-    hist(rnorm(1000,colMeans(X)[12],sd = sqrt(cov(X)[12,12])),freq=F,xlim=c(-.05,5))
-    lines(density(rnorm(1000,Y[12],sd = sqrt(R[12,12]))),col='green',lwd=2)
-    lines(density(rnorm(1000,mu.a[12],sd = sqrt(Pa[12,12]))),col='pink',lwd=2)
+    par(mfrow=c(1,1))
+    boxplot(prop.table(as.matrix(abs(analysis[,1:9])),1),col='pink')
+    points(Y,col='green',pch=19)
+    points(abs(mu.f[1:9])/sum(abs(mu.f[1:9])),col='blue',pch=19)
+    
+    #hist(rnorm(1000,colMeans(X)[9],sd = sqrt(cov(X)[9,9])),freq=F,xlim=c(-.05,5))
+    #lines(density(rnorm(1000,Y[9],sd = sqrt(R[9,9]))),col='green',lwd=2)
+    #lines(density(rnorm(1000,mu.a[9],sd = sqrt(Pa[9,9]))),col='pink',lwd=2)
     
     ##### Mapping analysis vectors to be in bounds of state variables
     if(processvar==TRUE){
@@ -813,7 +845,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         int.save <- state.interval[which(startsWith(colnames(analysis)[i],
                                                     var.names)),]
         analysis[analysis[,i] < int.save[1],i] <- int.save[1]
-        analysis[analysis[,i] > int.save[2],i] <- int.save[2]
+        #analysis[analysis[,i] > int.save[2],i] <- int.save[2]
       }
     }
     
@@ -856,11 +888,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       
       par(mfrow = c(2, 1))
       for (i in 1:ncol(FORECAST[[t]])) {
-        Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
-        Xci  <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
         
-        Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
-        XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
+        Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i]/rowSums(x[,1:9]), na.rm = TRUE) })
+        Xci  <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i]/rowSums(x[,1:9]), c(0.025, 0.975), na.rm = TRUE) })
+        
+        Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i]/rowSums(x[,1:9]), na.rm = TRUE) })
+        XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i]/rowSums(x[,1:9]), c(0.025, 0.975), na.rm = TRUE) })
         
         ylab.names <- unlist(sapply(settings$state.data.assimilation$state.variable, 
                                     function(x) { x })[2, ], use.names = FALSE)
@@ -869,7 +902,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         if (i <= ncol(Ybar)) {
           plot(as.Date(obs.times[t1:t]), 
                Xbar, 
-               ylim = range(c(XaCI, Xci, Ybar[,i]), na.rm = TRUE), 
+               ylim = c(0,1),#range(c(XaCI, Xci, Ybar[,i]), na.rm = TRUE), 
                type = "n", 
                xlab = "Year", 
                ylab = ylab.names[grep(colnames(X)[i], var.names)], 
@@ -886,7 +919,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         }else{
           plot(as.Date(obs.times[t1:t]), 
                Xbar, 
-               ylim = range(c(XaCI, Xci), na.rm = TRUE), 
+               ylim = c(0,250),#range(c(XaCI, Xci), na.rm = TRUE), 
                type = "n", 
                xlab = "Year", 
                ylab = ylab.names[grep(colnames(X)[i], var.names)], 
@@ -914,10 +947,10 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       ###-------------------------------------------------------------------### 
       
       inputs <- list()
-      for(i in seq_len(nens)){
+      for(i in seq_len(nrow(X))){
         inputs[[i]] <- do.call(my.split_inputs, 
                                args = list(settings = settings, 
-                                           start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))), 
+                                           start.time = (ymd_hms(paste0(0,obs.times[t]),truncated = 3) + second(hms("00:00:01"))), 
                                            stop.time = obs.times[t + 1],
                                            inputs = ens.inputs[[i]])) 
       }
@@ -927,12 +960,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       ### write restart by ensemble                                         ###
       ###-------------------------------------------------------------------### 
       
-      for (i in seq_len(nens)) {
+      for (i in seq_len(nrow(X))) {
         do.call(my.write_restart, 
                 args = list(outdir = outdir, 
                             runid = run.id[[i]], 
-                            start.time = (ymd_hms(obs.times[t],truncated = 3) + second(hms("00:00:01"))),
-                            stop.time = ymd_hms(obs.times[t + 1],truncated = 3), 
+                            start.time = strptime(obs.times[t],format="%Y-%m-%d %H:%M:%S"),
+                            stop.time = strptime(obs.times[t + 1],format="%Y-%m-%d %H:%M:%S"), 
                             settings = settings,
                             new.state = new.state[i, ], 
                             new.params = new.params[[i]], 
@@ -998,15 +1031,22 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   Xasum <- plyr::laply(ANALYSIS, function(x) { mean(rowSums(x[,1:length(names.y)], na.rm = TRUE)) })[t1:t]
   
   for (i in seq_len(ncol(X))) {
-    Xbar <- plyr::laply(FORECAST[t1:t], function(x) { mean(x[, i], na.rm = TRUE) })
-    Xci <- plyr::laply(FORECAST[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
+    Xbar <- plyr::laply(FORECAST[t1:t], function(x) {
+      mean(x[, i]/rowSums(x,na.rm = T), na.rm = TRUE) })
+    Xci <- plyr::laply(FORECAST[t1:t], function(x) { 
+      quantile(x[, i]/rowSums(x,na.rm = T), c(0.025, 0.975),na.rm = T) })
     Xci[is.na(Xci)]<-0
     
     Xbar <- Xbar
     Xci <- Xci
     
-    Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { mean(x[, i]) })
-    XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { quantile(x[, i], c(0.025, 0.975)) })
+    Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { 
+      mean(x[, i]/rowSums(x,na.rm = T),na.rm = T) })
+    XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { 
+      quantile(x[, i]/rowSums(x,na.rm = T), c(0.025, 0.975),na.rm = T )})
+    
+    Xa <- Xa
+    XaCI <- XaCI
     
     Xa <- Xa
     XaCI <- XaCI
