@@ -2,6 +2,7 @@
 library(PEcAn.all)
 library(PEcAn.SIPNET)
 library(PEcAn.LINKAGES)
+library(PEcAn.visualization)
 library(PEcAn.assim.sequential)
 library(nimble)
 library(lubridate)
@@ -12,6 +13,18 @@ library(lubridate)
 setwd('/fs/data2/output//PEcAn_1000008008/')
 file.copy('/fs/data2/output//PEcAn_1000007999/sda.obs.Rdata',getwd())
 #TO DO: Having problem with running proc.var == TRUE because nimble isn't keeping the toggle sampler in the function environment.
+
+## linkages fcomp
+setwd('/fs/data2/output//PEcAn_1000008588/')
+adjustment=TRUE
+
+load("/fs/data2/output/PEcAn_1000008588/out/sda.initial.runs.Rdata")
+#run inter part
+load("/fs/data2/output/PEcAn_1000008588/sda.output.Rdata")
+aqq <- array(NA,dim=c(nt,9,9))
+t <- 202
+aqq[t,,]<- solve(enkf.params[[t-1]]$q.bar)*enkf.params[[t-1]]$n
+bqq[t]<-enkf.params[[t-1]]$n
 
 
 #SIPNET
@@ -25,7 +38,9 @@ file.copy('/fs/data2/output//PEcAn_1000007999/sda.obs.Rdata',getwd())
 # Open and read in settings file for PEcAn run.
 settings <- read.settings("pecan.SDA.xml")
 
-obs.list <- PEcAn.assim.sequential::load_data_paleon_sda(settings = settings)
+#PEcAn.assim.sequential::
+
+obs.list <- load_data_paleon_sda(settings = settings)
 
 IC <- NULL
 
