@@ -17,7 +17,9 @@
 ##' @author Michael Dietze
 model2netcdf.JULES <- function(outdir) {
   files <- dir(outdir, pattern = ".nc$", full.names = TRUE)
-  files <- files[-grep(pattern = "dump", files)]
+  dumps <- files[grep(pattern = "dump", files)]
+  files <- setdiff(files, dumps)
+  
   print(files)
   for (fname in files) {
     print(fname)
@@ -32,5 +34,9 @@ model2netcdf.JULES <- function(outdir) {
     time <- ncdf4::ncvar_get(nc, "time") / 86400
     ncdf4::ncvar_put(nc, "time", time)
     ncdf4::nc_close(nc)
+    dir.create(file.path(outdir,"dump"))
+    for(dump in dumps){
+      file.rename(dump, file.path(dirname(dump),"dump",basename(dump)))
+    }
   }
 } # model2netcdf.JULES
