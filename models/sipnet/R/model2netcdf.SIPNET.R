@@ -64,7 +64,7 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     output[[6]]  <- (sub.sipnet.output$rSoil * 0.001) / timestep.s  # Soil Respiration in kgC/m2/s
     output[[7]]  <- (sub.sipnet.output$nee * 0.001) / timestep.s  # NEE in kgC/m2/s
     # output[[7]] <- rep(-999,sipnet.output.dims[1]) # CarbPools
-    output[[8]] <- (sub.sipnet.output$plantWoodC * 0.001) - (sub.sipnet.output$coarseRootC * 0.001 + sub.sipnet.output$fineRootC * 0.001) # Above ground wood kgC/m2
+    output[[8]] <- (sub.sipnet.output$plantWoodC * 0.001)  - (sub.sipnet.output$coarseRootC * 0.001 + sub.sipnet.output$fineRootC * 0.001) # Above ground wood kgC/m2
     output[[9]] <- (sub.sipnet.output$plantLeafC * 0.001)  # Leaf C kgC/m2
     output[[10]] <- (sub.sipnet.output$plantWoodC * 0.001) + (sub.sipnet.output$plantLeafC * 0.001)  # Total living C kgC/m2
     output[[11]] <- (sub.sipnet.output$soil * 0.001) + (sub.sipnet.output$litter * 0.001)  # Total soil C kgC/m2
@@ -95,7 +95,9 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
 
     output[[19]] <- sub.sipnet.output$fineRootC   * 0.001  ## fine_root_carbon_content kgC/m2
     output[[20]] <- sub.sipnet.output$coarseRootC * 0.001  ## coarse_root_carbon_content kgC/m2
-
+    output[[21]] <- (sub.sipnet.output$woodCreation * 0.001) / timestep.s ## kgC/m2/s 
+    output[[22]] <- ((sub.sipnet.output$plantWoodC + sub.sipnet.output$plantLeafC)  - (sub.sipnet.output$coarseRootC + sub.sipnet.output$fineRootC)) * 0.001 # Total aboveground biomass kgC/m2
+    
     # ******************** Declare netCDF variables ********************#
     t <- ncdf4::ncdim_def(name = "time",
                    units = paste0("days since ", y, "-01-01 00:00:00"),
@@ -137,6 +139,10 @@ model2netcdf.SIPNET <- function(outdir, sitelat, sitelon, start_date, end_date, 
     nc_var[[18]] <- PEcAn.utils::to_ncvar("LAI", dims)
     nc_var[[19]] <- PEcAn.utils::to_ncvar("fine_root_carbon_content", dims)
     nc_var[[20]] <- PEcAn.utils::to_ncvar("coarse_root_carbon_content", dims)
+    nc_var[[21]] <- ncdf4::ncvar_def("GWBI", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
+                                     longname = "Gross Woody Biomass Increment")
+    nc_var[[22]] <- ncdf4::ncvar_def("AGB", units = "kg C m-2", dim = list(lon, lat, t), missval = -999,
+                                     longname = "Total aboveground biomass")
 
     # ******************** Declare netCDF variables ********************#
 

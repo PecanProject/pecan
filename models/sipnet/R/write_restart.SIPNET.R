@@ -32,6 +32,9 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   rundir <- settings$host$rundir
   variables <- colnames(new.state)
 
+  # values that will be used for updating other states deterministically depending on the SDA states
+  IC_extra <- data.frame(t(new.params$restart))
+  
   if (RENAME) {
     file.rename(file.path(outdir, runid, "sipnet.out"),
                 file.path(outdir, runid, paste0("sipnet.", as.Date(start.time), ".out")))
@@ -54,13 +57,19 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
     names(analysis.save[[length(analysis.save)]]) <- c("NPP")
   }
   
-
-  if (all(c("AbvGrndWood","fine_root_carbon_content","coarse_root_carbon_content") %in% variables)) {
-    AGB <- udunits2::ud.convert(new.state$AbvGrndWood, "kg/m^2", "g/m^2")
-    BGB <- new.state$fine_root_carbon_content + new.state$coarse_root_carbon_content
-    BGB <- udunits2::ud.convert(BGB, "kg/m^2", "g/m^2")
-    analysis.save[[length(analysis.save) + 1]] <- AGB + BGB
-    names(analysis.save[[length(analysis.save)]]) <- c("plantWood")
+  if ("AbvGrndWood" %in% variables) {
+    AbvGrndWood <- udunits2::ud.convert(new.state$AbvGrndWood,  "Mg/ha", "g/m^2")
+    analysis.save[[length(analysis.save) + 1]] <- AbvGrndWood 
+    names(analysis.save[[length(analysis.save)]]) <- c("AbvGrndWood")
+    
+    analysis.save[[length(analysis.save) + 1]] <- IC_extra$abvGrndWoodFrac
+    names(analysis.save[[length(analysis.save)]]) <- c("abvGrndWoodFrac")
+    
+    analysis.save[[length(analysis.save) + 1]] <- IC_extra$coarseRootFrac 
+    names(analysis.save[[length(analysis.save)]]) <- c("coarseRootFrac")
+    
+    analysis.save[[length(analysis.save) + 1]] <- IC_extra$fineRootFrac 
+    names(analysis.save[[length(analysis.save)]]) <- c("fineRootFrac")
   }
 
   if ("LeafC" %in% variables) {
@@ -92,7 +101,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   }
 
   if ("SWE" %in% variables) {
-    analysis.save[[length(analysis.save) + 1]] <- new.state$SWE  ## unitless
+    analysis.save[[length(analysis.save) + 1]] <- new.state$SWE/10  
     if (new.state$SWE < 0) analysis.save[[length(analysis.save)]] <- 0
     names(analysis.save[[length(analysis.save)]]) <- c("snow")
   }

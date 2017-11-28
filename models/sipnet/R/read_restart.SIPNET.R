@@ -23,6 +23,9 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   
   forecast <- list()
   
+  # additional varnames, because we need these deterministic relationships
+  var.names <- c(var.names, "fine_root_carbon_content", "coarse_root_carbon_content")
+    
   # Read ensemble output
   ens <- read.output(runid = runid, 
                      outdir = file.path(outdir, runid), 
@@ -30,7 +33,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
                      end.year = lubridate::year(stop.time),
                      variables = var.names)
   
-  last <- length(ens$NPP)
+  last <- length(ens$GWBI)
   
   forecast <- list()
   
@@ -38,14 +41,22 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   kgm2Mgha <- (10000/1)*(1/1000) ## kgC m-2  -> MgC ha-1
   
   #### PEcAn Standard Outputs
-  if ("NPP" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- diff(range(ens$AbvGrndWood * kgm2Mgha))  
-    names(forecast[[length(forecast)]]) <- c("NPP")
+  if ("GWBI" %in% var.names) {
+    forecast[[length(forecast) + 1]] <- udunits2::ud.convert(mean(ens$GWBI),  "kg/m^2/s", "Mg/ha/yr")
+    names(forecast[[length(forecast)]]) <- c("GWBI")
   }
   
   if ("AbvGrndWood" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$AbvGrndWood[last] * kgm2Mgha  ## Mg ha-1
+    forecast[[length(forecast) + 1]] <- udunits2::ud.convert(ens$AbvGrndWood[last],  "kg/m^2", "Mg/ha")
     names(forecast[[length(forecast)]]) <- c("AbvGrndWood")
+    
+    # calculate fractions, store in params, will use in write_restart
+    wood_total_C    <- ens$AbvGrndWood[last] + ens$fine_root_carbon_content[last] + ens$coarse_root_carbon_content[last]
+    abvGrndWoodFrac <- ens$fine_root_carbon_content[last]   / wood_total_C
+    coarseRootFrac  <- ens$coarse_root_carbon_content[last] / wood_total_C
+    fineRootFrac    <- ens$fine_root_carbon_content[last]   / wood_total_C
+    params$restart <- c(abvGrndWoodFrac, coarseRootFrac, fineRootFrac)
+    names(params$restart) <- c("abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
   }
   
   if ("leaf_carbon_content" %in% var.names) {
@@ -73,16 +84,9 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     names(forecast[[length(forecast)]]) <- c("SWE")
   }
   
-  if ("fine_root_carbon_content" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$fine_root_carbon_content[last]  ## kgC/m2
-    names(forecast[[length(forecast)]]) <- c("fine_root_carbon_content")
-  }
-  
-  if ("coarse_root_carbon_content" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$coarse_root_carbon_content[last]  ## kgC/m2
-    names(forecast[[length(forecast)]]) <- c("coarse_root_carbon_content")
-  }
-  
   print(runid)
-  return(unlist(forecast))
+  
+  X_tmp <- list(X = unlist(forecast), params = params)
+                
+  return(X_tmp)
 } # read_restart.SIPNET

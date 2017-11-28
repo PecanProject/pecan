@@ -63,6 +63,16 @@ load_data_paleon_sda <- function(settings){
     data.path <- PEcAn.DB::query.file.path(input.id[[i]], settings$host$name, bety$con)
     format_full <- format <- PEcAn.DB::query.format.vars(input.id = input.id[[i]], bety, format.id = NA, var.ids=NA)
     
+    
+    if(TRUE){
+      format$vars[1,1] <-  format$vars[1,8] <- format$vars[1,10] <- "AbvGrndWood"
+      format$vars[1,4] <- "kg C m-2"
+      
+      format$vars[4,1] <-  format$vars[4,8] <- format$vars[4,10] <- "GWBI"
+      format$vars[4,4] <- "kg C m-2 s-1"
+    }
+
+    
     format$na.strings <- 'NA'
     time.row <- format$time.row
     time.type <- format$vars$input_units[time.row] #THIS WONT WORK IF TIMESTEP ISNT ANNUAL
@@ -79,8 +89,8 @@ load_data_paleon_sda <- function(settings){
     ### Tree Ring Data Product
     if(format_id[[i]] == '1000000040'){
       obvs[[i]] <- obvs[[i]][obvs[[i]]$model_type=='Model RW + Census',]
-      obvs[[i]]$AbvGrndWood <- obvs[[i]]$AbvGrndWood * kgm2Mgha * biomass2carbon
-      obvs[[i]]$NPP <- obvs[[i]]$NPP * kgms2Mghayr * biomass2carbon 
+      obvs[[i]]$AbvGrndWood <- obvs[[i]]$AbvGrndWood * biomass2carbon #* kgm2Mgha 
+      obvs[[i]]$GWBI <- obvs[[i]]$GWBI * biomass2carbon  #* kgms2Mghayr 
       arguments <- list(.(year, MCMC_iteration, site_id), .(variable))
       arguments2 <- list(.(year), .(variable))
       arguments3 <- list(.(MCMC_iteration), .(variable), .(year))
