@@ -295,7 +295,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
         pft.traits[which(pft.names == "leaf_allocation_fraction")]
       if(sum_alloc > 1){
         PEcAn.logger::logger.warn("Sum of allocation parameters exceeds 1 for runid = ", run.id,
-                                  "- This might not break anything, but take extra care with the outputs.")
+                                  "- This won't break anything since SIPNET has internal check, but notice that such combinations might not take effect in the outputs.")
       }
     }
     
@@ -313,6 +313,11 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     # leafAllocation
     if ("leaf_allocation_fraction" %in% pft.names) {
       param[which(param[, 1] == "leafAllocation"), 2] <- pft.traits[which(pft.names == "leaf_allocation_fraction")]
+    }
+    
+    # wood_turnover_rate
+    if ("wood_turnover_rate" %in% pft.names) {
+      param[which(param[, 1] == "woodTurnoverRate"), 2] <- pft.traits[which(pft.names == "wood_turnover_rate")]
     }
 
     ### ----- Soil parameters soil respiration Q10.
@@ -370,9 +375,13 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
   if (!is.null(IC)) {
     ic.names <- names(IC)
     ## plantWoodInit gC/m2
-    plant_wood_vars <- c("AbvGrndWood", "fine_root_carbon_content", "coarse_root_carbon_content")
+    plant_wood_vars <- c("AbvGrndWood", "abvGrndWoodFrac", "coarseRootFrac", "fineRootFrac")
     if (all(plant_wood_vars %in% ic.names)) {
-      param[which(param[, 1] == "plantWoodInit"), 2] <- IC$AbvGrndWood + IC$fine_root_carbon_content + IC$coarse_root_carbon_content
+      # reconstruct total wood C
+      wood_total_C <- IC$AbvGrndWood * IC$abvGrndWoodFrac
+      param[which(param[, 1] == "plantWoodInit"),  2] <- wood_total_C
+      param[which(param[, 1] == "coarseRootFrac"), 2] <- IC$coarseRootFrac
+      param[which(param[, 1] == "fineRootFrac"),   2] <- IC$fineRootFrac
     }
     ## laiInit m2/m2
     if ("lai" %in% ic.names) {

@@ -34,6 +34,9 @@ split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs, overwri
   path <- dirname(met)
   prefix <- sub(".clim", "", basename(met), fixed = TRUE)
   
+
+  file <- NA
+  names(file) <- paste(start.time, "-", stop.time)
   file <- paste0(path, "/", prefix, ".", paste0(as.Date(start.time), "-", as.Date(stop.time)), ".clim")
   
   if(file.exists(file) & !overwrite){
@@ -43,9 +46,7 @@ split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs, overwri
     
     
   dat <- read.table(met, header = FALSE)
-  file <- NA
-  names(file) <- paste(start.time, "-", stop.time)
-  
+
   ###### Find Correct Met
   sel1 <- which(dat[, 2] == as.numeric(start.year) & dat[, 3] == as.numeric(start.day))[1]
   sel2 <- which(dat[, 2] == as.numeric(end.year) & 
