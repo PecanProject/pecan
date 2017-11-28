@@ -81,7 +81,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
     soils <- db.query(paste("SELECT soil,som,sand_pct,clay_pct,soilnotes FROM sites WHERE id =", settings$run$site$id), 
                       con = dbcon)
     
-    soil.dat <- PEcAn.data.land::soil_params(sand = soils$sand_pct/100, clay = soils$clay_pct/100)
+    soil.dat <- PEcAn.data.land::soil_params(sand = soils$sand_pct/100, clay = soils$clay_pct/100, silt = 100 - soils$sand_pct - soils$clay_pct)
     
     fc <- soil.dat$volume_fraction_of_water_in_soil_at_field_capacity * 100
     dry <- soil.dat$volume_fraction_of_condensed_water_in_soil_at_wilting_point * 100

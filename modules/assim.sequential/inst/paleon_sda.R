@@ -16,6 +16,16 @@ file.copy('/fs/data2/output//PEcAn_1000007999/sda.obs.Rdata',getwd())
 
 ## linkages fcomp
 setwd('/fs/data2/output//PEcAn_1000008588/')
+adjustment=TRUE
+
+load("/fs/data2/output/PEcAn_1000008588/out/sda.initial.runs.Rdata")
+#run inter part
+load("/fs/data2/output/PEcAn_1000008588/sda.output.Rdata")
+aqq <- array(NA,dim=c(nt,9,9))
+t <- 202
+aqq[t,,]<- solve(enkf.params[[t-1]]$q.bar)*enkf.params[[t-1]]$n
+bqq[t]<-enkf.params[[t-1]]$n
+
 
 #SIPNET
 #setwd('/fs/data2/output//PEcAn_1000003356')
