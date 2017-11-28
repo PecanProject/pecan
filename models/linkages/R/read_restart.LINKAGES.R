@@ -29,7 +29,7 @@ read_restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
                      outdir = file.path(outdir, runid), 
                      start.year = lubridate::year(stop.time), 
                      end.year = lubridate::year(stop.time), 
-                     variables = 'AGB.pft')  # change to just 'AGB' for plot level biomass
+                     variables = c('AGB.pft','TotSoilCarb'))  # change to just 'AGB' for plot level biomass
   if(!is.na(ens)){
   # Add PFT name to variable if applicable
   pft.names <- numeric(length(settings$pfts))
@@ -61,7 +61,9 @@ read_restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
     if ("AGB.pft" %in% var.names) {
       forecast[[1]] <- rep(NA,length(settings$pfts))
     }
-    
+    if ("Fcomp" %in% var.names) {
+      forecast[[1]] <- NA #rep(NA,length(settings$pfts)) #already has C  #* unit.conv
+    }
     if ("TotSoilCarb" %in% var.names) {
       forecast[[2]] <- NA
     }

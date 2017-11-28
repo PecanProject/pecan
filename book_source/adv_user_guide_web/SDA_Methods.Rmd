@@ -20,7 +20,7 @@ Andria Dawson, Chris Paciorek, and Mike Dietze have developed a Bayesian model t
 We have been working mostly with tree data collected at Harvard Forest. Tree rings and census data were collected at Lyford Plot between 1960 and 2010 in three separate plots. Other tree ring data will be added to this analysis in the future from Kelly Heilman (Midwest sites) and Alex Dye (Huron Mt. Club).
 
 ### Pollen
-STEPPS is a Bayesian model developed by Paciorek and McLachlan 2009 and Dawson et al 2016 to estimate spatially gridded fractional composition from fossil pollen. We have been working with STEPPS1 output, specifically with the grid cell that contains Harvard Forest. The temporal resolution of this data product is centennial. Our workflow currently operates at annual time steps, but does not require data at every time step. So, it is possible to assimilate fractional composition data every year. But, to account for missing 
+STEPPS is a Bayesian model developed by Paciorek and McLachlan 2009 and Dawson et al 2016 to estimate spatially gridded fractional composition from fossil pollen. We have been working with STEPPS1 output, specifically with the grid cell that contains Harvard Forest. The temporal resolution of this data product is centennial. Our workflow currently operates at annual time steps, but does not require data at every time step. So, it is possible to assimilate fractional composition every one hundred years or to assimilate fractional composition data every year by accounting for variance inflation.
 
 #### Variance Inflation
 *Side Note: Probably want to call this something else now.
@@ -29,7 +29,7 @@ Since the fractional composition data product has a centennial resolution, in or
 
 w = D * (N / ESS)
 
-where D is the length of the time step. In our case D = 100. N is the number of time steps. In our case N = 11. and ESS is the effective sample size. The ESS is calculated with the following function where ntimes is the same as N above and sims is a matrix with the dimensions number MCMC samples by number state variables.
+where D is the length of the time step. In our case D = 100. N is the number of time steps. In our case N = 11. and ESS is the effective sample size. The ESS is calculated with the following function where ntimes is the same as N above and sims is a matrix with the dimensions number of MCMC samples by number of state variables.
 
 ```{ESS, include = TRUE}
 ESS_calc <- function(ntimes, sims){
@@ -57,7 +57,7 @@ The ESS for the STEPPS1 data product is 3.6, so w in our assimilation of fractio
 SIPNET and LINKAGES will both be calibrated using data collected at the Harvard Forest flux tower. Istem has completed calibration for SIPNET using a [parameter data assimilation emulator](https://github.com/PecanProject/pecan/blob/develop/modules/assim.batch/R/pda.emulator.R) contained within the PEcAn workflow. LINKAGES will also be calibrated using this method. This method is also generalizable to other sites.
 
 ## Initial Conditions
-The initial conditions for SIPNET are sampled across state space based on data distributions at the time when the data assimilation will begin. We do not sample LINAKGES for initial conditions and instead perform model spin up for 100 years prior to beginning data assimilation. In the future, we would like to base initial conditional on data. We acheive adequete spread by allowing the parameters to vary across ensemble members. 
+The initial conditions for SIPNET are sampled across state space based on data distributions at the time when the data assimilation will begin. We do not sample LINAKGES for initial conditions and instead perform model spin up for 100 years prior to beginning data assimilation. In the future, we would like to base initial conditions on data. We acheive adequete spread in the initial conditions by allowing the parameters to vary across ensemble members. 
 
 ## Drivers
 We are using GCM drivers from the PaLEON model intercomparison. Christy Rollinson created MET downscaled GCM drivers for Harvard Forest. We will use these drivers when they are available because they are a closer representation of reality.
@@ -67,7 +67,7 @@ We are using sequential state data assimilation methods to assimilate paleon dat
 
 ### Model Description
 The general sequential data assimilation framework consists of three steps at each time step:
-1. Read the state variable output for time t from the model forecast ensembles and save the forecast mean (muf) and covariance (Pf). 
+1. Read the state variable output for time t from the model forecast ensembles and save the forecast mean (muf) and covariance (Pf).
 2. If there are data mean (y) and covariance (R) at this time step, perform data assimilation analysis (either EnKF or generalized ensemble filter) to calculte the new mean (mua) and covariance (Pa) of the state variables.
 3. Use mua and Pa to restart and run the ecosystem model ensembles with new state variables for time t+1.
 
@@ -122,7 +122,31 @@ tobit2space.model <- nimbleCode({
 ```
 
 #### Ensemble Adjustment
+Each ensemble member has a different set of species parameters. We adjust the updated state variables by using an ensemble adjustment. The ensemble adjustment weights the ensemble members based on their likelihood during the analysis step.  
 
+```{adjustment, include=TRUE}
+      S_f  <- svd(Pf)
+      L_f  <- S_f$d
+      V_f  <- S_f$v
+      
+      ## normalize
+      Z <- X*0
+      for(i in seq_len(nrow(X))){
+          Z[i,] <- 1/sqrt(L_f) * t(V_f)%*%(X[i,]-mu.f)
+      }
+      Z[is.na(Z)]<-0
+      
+      ## analysis
+      S_a  <- svd(Pa)
+      L_a  <- S_a$d
+      V_a  <- S_a$v
+      
+      ## analysis ensemble
+      X_a <- X*0
+      for(i in seq_len(nrow(X))){
+        X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
+      }
+```
 
 ### Diagnostics
 
