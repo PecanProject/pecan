@@ -1,0 +1,152 @@
+---
+title: "SDA_Methods"
+author: "Ann Raiho"
+date: "11/16/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Our goal is build a fully generalizable state data assimilation (SDA) workflow that will assimilate multiple types of data and data products into ecosystem models within PEcAn temporally and spatially. But, during development, specifically with PalEON goals in mind, we have been focusing on assimilating tree ring estimated NPP and AGB and pollen derived fractional composition into two ecosystem models, SIPNET and LINKAGES, at Harvard Forest. This methodology will soon be expanded to include the PalEON sites listed on the [state data assimilation wiki page](https://paleon.geography.wisc.edu/doku.php/working_groups;state_data_assimilation).
+
+## Data Products
+During workflow development, we have been working with tree ring estimated NPP and AGB and pollen derived fractional composition data products. Both of these data products have been estimated with a full accounting of uncertainty, which provides us with state variable observation mean vector and covariance matrix at each time step. These data products are discussed in more detail below.
+
+### Tree Rings
+Andria Dawson, Chris Paciorek, and Mike Dietze have developed a Bayesian model that estimates annual aboveground biomass increment and aboveground biomass for each tree in a dataset. We obtain this data and aggregate to the level appropriate for the ecosystem model. In SIPNET, we are assimilating annual gross woody increment and total aboveground biomass. In LINKAGES, we are assimilating annual species biomass. More information on deriving these tree ring data products can be found in Dawson et al 201?.
+
+We have been working mostly with tree data collected at Harvard Forest. Tree rings and census data were collected at Lyford Plot between 1960 and 2010 in three separate plots. Other tree ring data will be added to this analysis in the future from Kelly Heilman (Midwest sites) and Alex Dye (Huron Mt. Club).
+
+### Pollen
+STEPPS is a Bayesian model developed by Paciorek and McLachlan 2009 and Dawson et al 2016 to estimate spatially gridded fractional composition from fossil pollen. We have been working with STEPPS1 output, specifically with the grid cell that contains Harvard Forest. The temporal resolution of this data product is centennial. Our workflow currently operates at annual time steps, but does not require data at every time step. So, it is possible to assimilate fractional composition every one hundred years or to assimilate fractional composition data every year by accounting for variance inflation.
+
+#### Variance Inflation
+*Side Note: Probably want to call this something else now.
+
+Since the fractional composition data product has a centennial resolution, in order to use fractional composition information every year we need to change the weight the data has on the analysis. The basic idea is to downweight the likelihood relative to the prior to account for (a) the fact that we assimilate an observation multiple times and (b) the fact that the number of STEPPS observations is 'inflated' because of the autocorrelation. To do this, we take the likelihood and raise it to the power of (1/w) where 'w' is an inflation factor.
+
+w = D * (N / ESS)
+
+where D is the length of the time step. In our case D = 100. N is the number of time steps. In our case N = 11. and ESS is the effective sample size. The ESS is calculated with the following function where ntimes is the same as N above and sims is a matrix with the dimensions number of MCMC samples by number of state variables.
+
+```{ESS, include = TRUE}
+ESS_calc <- function(ntimes, sims){
+        # center based on mean at each time to remove baseline temporal correlation 
+        # (we want to estimate effective sample size effect from correlation of the errors)
+        row.means.sims <- sims - rowMeans(sims)  
+        
+        # compute all pairwise covariances at different times
+        covars <- NULL
+        for(lag in 1:(ntimes-1)){
+          covars <- c(covars, rowMeans(row.means.sims[(lag+1):ntimes, , drop = FALSE] * row.means.sims[1:(ntimes-lag), , drop = FALSE])) 
+        }
+        vars <- apply(row.means.sims, 1, var) # pointwise post variances at each time, might not be homoscedastic
+        
+        # nominal sample size scaled by ratio of variance of an average
+        # under independence to variance of average of correlated values
+        neff <- ntimes * sum(vars) / (sum(vars) + 2 * sum(covars))
+        return(neff)
+      }
+```
+
+The ESS for the STEPPS1 data product is 3.6, so w in our assimilation of fractional composition at Harvard Forest will be w = 305.6. 
+
+## Model Calibration
+SIPNET and LINKAGES will both be calibrated using data collected at the Harvard Forest flux tower. Istem has completed calibration for SIPNET using a [parameter data assimilation emulator](https://github.com/PecanProject/pecan/blob/develop/modules/assim.batch/R/pda.emulator.R) contained within the PEcAn workflow. LINKAGES will also be calibrated using this method. This method is also generalizable to other sites.
+
+## Initial Conditions
+The initial conditions for SIPNET are sampled across state space based on data distributions at the time when the data assimilation will begin. We do not sample LINAKGES for initial conditions and instead perform model spin up for 100 years prior to beginning data assimilation. In the future, we would like to base initial conditions on data. We acheive adequete spread in the initial conditions by allowing the parameters to vary across ensemble members. 
+
+## Drivers
+We are using GCM drivers from the PaLEON model intercomparison. Christy Rollinson created MET downscaled GCM drivers for Harvard Forest. We will use these drivers when they are available because they are a closer representation of reality.
+
+## Sequential State Data Assimilation
+We are using sequential state data assimilation methods to assimilate paleon data products into ecosystem models because less computation power is required for sequential state data assimilation than for particle filter methods. The ensemble kalman filter (EnKF) is typically used for sequential state data assimilation, but we found that EnKF lead to filter divergence when combined with our uncertain data products. Filter divergence led us to create a generalized ensemble filter that estimates process variance, which will be described in detail below. However, our workflow contains the option to use a basic EnKF if the user desires.
+
+### Model Description
+The general sequential data assimilation framework consists of three steps at each time step:
+1. Read the state variable output for time t from the model forecast ensembles and save the forecast mean (muf) and covariance (Pf).
+2. If there are data mean (y) and covariance (R) at this time step, perform data assimilation analysis (either EnKF or generalized ensemble filter) to calculte the new mean (mua) and covariance (Pa) of the state variables.
+3. Use mua and Pa to restart and run the ecosystem model ensembles with new state variables for time t+1.
+
+#### Mapping Ensemble Output to Tobit Space
+In order to perform the second step using the generalized ensemble filter, the variables need to be mapped to a normalized space. 
+```{tobit2space,include=TRUE}
+tobit2space.model <- nimbleCode({
+    for(i in 1:N){
+      y.censored[i,1:J] ~ dmnorm(muf[1:J], cov = pf[1:J,1:J])
+      for(j in 1:J){
+        y.ind[i,j] ~ dconstraint(y.censored[i,j] > 0)
+      }
+    }
+    
+    muf[1:J] ~ dmnorm(mean = mu_0[1:J], cov = pf[1:J,1:J])
+    
+    Sigma[1:J,1:J] <- lambda_0[1:J,1:J]/nu_0
+    pf[1:J,1:J] ~ dinvwish(S = Sigma[1:J,1:J], df = J)
+    
+  })
+```
+
+
+#### Generalized Ensemble Filter with Process Variance Estimation
+```{tobitBase, include = TRUE}
+  tobit.model <- nimbleCode({ 
+    
+    q[1:N,1:N]  ~ dwish(R = aq[1:N,1:N], df = bq) ## aq and bq are estimated over time
+    Q[1:N,1:N] <- inverse(q[1:N,1:N])
+    X.mod[1:N] ~ dmnorm(muf[1:N], prec = pf[1:N,1:N]) ## Model Forecast ##muf and pf are assigned from ensembles
+    
+    ## add process error
+    X[1:N]  ~ dmnorm(X.mod[1:N], prec = q[1:N,1:N])
+    
+    #agb linear
+    #y_star[1:YN,1:YN] <- X[1:YN,1:YN] #[choose]
+    
+    #f.comp non linear
+    #y_star[1:YN] <- X[1:YN] / sum(X[1:YN])
+    
+    ## Analysis
+    y.censored[1:YN] ~ dmnorm(X[1:YN], prec = r[1:YN,1:YN]) #is it an okay assumpution to just have X and Y in the same order?
+    
+    #don't flag y.censored as data, y.censored in inits
+    #remove y.censored samplers and only assign univariate samplers on NAs
+    
+    for(i in 1:YN){
+      y.ind[i] ~ dconstraint(y.censored[i] > 0)
+    }
+    
+  })
+```
+
+#### Ensemble Adjustment
+Each ensemble member has a different set of species parameters. We adjust the updated state variables by using an ensemble adjustment. The ensemble adjustment weights the ensemble members based on their likelihood during the analysis step.  
+
+```{adjustment, include=TRUE}
+      S_f  <- svd(Pf)
+      L_f  <- S_f$d
+      V_f  <- S_f$v
+      
+      ## normalize
+      Z <- X*0
+      for(i in seq_len(nrow(X))){
+          Z[i,] <- 1/sqrt(L_f) * t(V_f)%*%(X[i,]-mu.f)
+      }
+      Z[is.na(Z)]<-0
+      
+      ## analysis
+      S_a  <- svd(Pa)
+      L_a  <- S_a$d
+      V_a  <- S_a$v
+      
+      ## analysis ensemble
+      X_a <- X*0
+      for(i in seq_len(nrow(X))){
+        X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
+      }
+```
+
+### Diagnostics
+

@@ -30,7 +30,8 @@
 # outdir, runid, time, settings, new.state, variables, sample_parameters = FALSE, trait.values =
 # NA,met=NULL,RENAME = TRUE
 
-write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, settings, new.state, 
+write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
+                                   settings, new.state, 
                                    RENAME = TRUE, new.params, inputs) {
   
   ### TO DO : needs to be vectorized to improve SDA speed for runs that are longer than 50 years
@@ -45,13 +46,25 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   
   names(new.state) <- names.keep
   
-  if(sum(new.state)>1000) {
-    prop.stop <- new.state/sum(new.state)
-    new.state <- 1000 * prop.stop
+  if(sum(new.state[1:length(settings$pfts)]) > 15) {
+    prop.stop <- new.state[1:length(settings$pfts)]/sum(new.state[1:length(settings$pfts)])
+    new.state[1:length(settings$pfts)] <- 10 * prop.stop
   }
+  
+  if(sum(new.state[1:length(settings$pfts)]) < 10 & sum(new.state[1:length(settings$pfts)]) > 0) {
+    prop.stop <- new.state[1:length(settings$pfts)]/sum(new.state[1:length(settings$pfts)])
+    new.state[1:length(settings$pfts)] <- 10 * prop.stop
+  }
+  
+  if(sum(new.state[1:length(settings$pfts)]) <= 0){
+    new.state[1:length(settings$pfts)] <- rnorm(length(settings$pfts),2,.1)
+  }
+  
+  new.state[new.state==0] <- .1
+  
   new.state.save <- new.state
-  new.state <- new.state.save[grep("pft", names(new.state.save))]
-  new.state.other <- new.state.save[grep("pft", names(new.state.save), invert = TRUE)]
+  new.state <- new.state.save[grep("Fcomp", names(new.state.save))]
+  new.state.other <- new.state.save[grep("Fcomp", names(new.state.save), invert = TRUE)]
   
   variables <- names(new.state)
   ### Going to need to change this... ### Get some expert opinion
@@ -217,7 +230,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   
   #making sure to stick with density dependence rules in linkages (< 198 trees per 800/m^2)
   #someday we could think about estimating this parameter from data
-  if(sum(new.ntrees) > 198) new.ntrees <- round((new.ntrees / sum(new.ntrees)) * runif(1,160,195))
+  if(sum(new.ntrees) > 98) new.ntrees <- round((new.ntrees / sum(new.ntrees)) * runif(1,95,98))
   
   print(paste0("new.ntrees =", new.ntrees))
   
@@ -226,9 +239,9 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
     new.n.index <- c(new.n.index, rep(i, new.ntrees[i]))
   }
   
-  dbh.temp <- numeric(200)
-  iage.temp <- numeric(200)
-  nogro.temp <- numeric(200)
+  dbh.temp <- numeric(100)
+  iage.temp <- numeric(100)
+  nogro.temp <- numeric(100)
   
   # sample from individuals to construct new states
   for (s in seq_len(nspec)) {
@@ -304,7 +317,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   iage <- iage.temp
   nogro <- nogro.temp  # numeric(200)#hack
   
-  nogro[nogro < (-2)] <- 1
+  nogro[nogro < (-1)] <- -1 #this is not the best assumption
   
   ntrees <- new.ntrees
   
@@ -343,8 +356,8 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time, setting
   
   # make a new settings with the right years min start date and end date - fail in informative way
   
-  settings$run$start.date <- paste0(start.time + 1, "/01/01")
-  settings$run$end.date <- paste0(stop.time + 1, "/12/31")
+  settings$run$start.date <- paste0(formatC(year(start.time + 1), width = 4, format = "d", flag = "0"), "/01/01")
+  settings$run$end.date <- paste0(formatC(year(stop.time), width = 4, format = "d", flag = "0"), "/12/31")
   
   do.call(write.config.LINKAGES, 
           args = list(trait.values = new.params, settings = settings, run.id = runid, 
