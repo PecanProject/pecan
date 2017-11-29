@@ -19,7 +19,7 @@
 ##' @export
 read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, params) {
   
-  prior.sla <- params[[which(names(params) != "soil")[1]]]$SLA
+  prior.sla <- params[[which(!names(params) %in% c("soil", "soil_SDA", "restart"))[1]]]$SLA
   
   forecast <- list()
   
@@ -52,7 +52,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
     
     # calculate fractions, store in params, will use in write_restart
     wood_total_C    <- ens$AbvGrndWood[last] + ens$fine_root_carbon_content[last] + ens$coarse_root_carbon_content[last]
-    abvGrndWoodFrac <- ens$fine_root_carbon_content[last]   / wood_total_C
+    abvGrndWoodFrac <- ens$AbvGrndWood[last]  / wood_total_C
     coarseRootFrac  <- ens$coarse_root_carbon_content[last] / wood_total_C
     fineRootFrac    <- ens$fine_root_carbon_content[last]   / wood_total_C
     params$restart <- c(abvGrndWoodFrac, coarseRootFrac, fineRootFrac)
@@ -61,12 +61,12 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   
   if ("leaf_carbon_content" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$leaf_carbon_content[last]  ## kgC/m2*m2/kg*2kg/kgC
-    names(forecast[[length(forecast)]]) <- c("leaf_carbon_content")
+    names(forecast[[length(forecast)]]) <- c("LeafC")
   }
   
   if ("litter_carbon_content" %in% var.names) {
     forecast[[length(forecast) + 1]] <- ens$litter_carbon_content[last]  ##kgC/m2
-    names(forecast[[length(forecast)]]) <- c("litter_carbon_content")
+    names(forecast[[length(forecast)]]) <- c("Litter")
   }
   
   if ("TotSoilCarb" %in% var.names) {
@@ -75,7 +75,7 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   }
   
   if ("SoilMoistFrac" %in% var.names) {
-    forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]  ## kgC/m2
+    forecast[[length(forecast) + 1]] <- ens$SoilMoistFrac[last]  ## unitless
     names(forecast[[length(forecast)]]) <- c("SoilMoistFrac")
   }
   

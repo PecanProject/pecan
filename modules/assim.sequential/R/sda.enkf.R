@@ -139,8 +139,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   } else {
     settings$ensemble$size <- 1
   }
-  get.parameter.samples(settings, ens.sample.method = settings$ensemble$method)  ## Aside: if method were set to unscented, would take minimal changes to do UnKF
-  load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
+  repeat{ # temporary SIPNET hack, I want to make sure sum <1 for SIPNET
+    get.parameter.samples(settings, ens.sample.method = settings$ensemble$method)  ## Aside: if method were set to unscented, would take minimal changes to do UnKF
+    load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
+    tot_check <- apply(ensemble.samples$temperate.deciduous_SDA[,c(19, 24,26)],1,sum)
+    if(all(tot_check < 1)) break
+  }
+
   
   if ("env" %in% names(ensemble.samples)) {
     ensemble.samples$env <- NULL
@@ -349,7 +354,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for(t in 1:50) {
+  for(t in seq_len(nt)) {
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -372,7 +377,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     }
     
     X <- do.call(rbind, X)
-    
+
     FORECAST[[t]] <- X
     
     obs <- which(!is.na(obs.mean[[t]]))
@@ -907,17 +912,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     ###-------------------------------------------------------------------### 
     if (t < nt) {
       
-      ###-------------------------------------------------------------------###
-      ### resample parameters and met                                       ###
-      ###-------------------------------------------------------------------### 
-      
-      # keep best within one sd
-      # best_ens <- wt.vec < (max(wt.vec) -  sd(wt.vec))
-      
-      
-      
-      # overwrite new.params
-      # new.params
       
       ###-------------------------------------------------------------------###
       ### split model specific inputs for current runs                      ###

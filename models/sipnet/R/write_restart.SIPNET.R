@@ -47,7 +47,7 @@ write_restart.SIPNET <- function(outdir, runid, start.time, stop.time, settings,
   settings$run$end.date <- stop.time
 
   ## Converting to sipnet units
-  prior.sla <- new.params[[which(names(new.params) != "soil")[1]]]$SLA[1]
+  prior.sla <- new.params[[which(!names(new.params) %in% c("soil", "soil_SDA", "restart"))[1]]]$SLA
   unit.conv <- 2 * (10000 / 1) * (1 / 1000) * (3.154 * 10^7)  # kgC/m2/s -> Mg/ha/yr
 
   analysis.save <- list()
