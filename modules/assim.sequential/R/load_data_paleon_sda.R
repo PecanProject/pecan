@@ -65,6 +65,9 @@ load_data_paleon_sda <- function(settings){
     
     
     if(TRUE){
+      # hack instead of changing the units in BETY format for now
+      # I don't want load_data to convert anything
+      # data itself is in Mg / ha 
       format$vars[1,1] <-  format$vars[1,8] <- format$vars[1,10] <- "AbvGrndWood"
       format$vars[1,4] <- "kg C m-2"
       
