@@ -107,7 +107,9 @@ model2netcdf.MAAT <- function(outdir, sitelat = -999, sitelon = -999, start_date
                           PEcAn.utils::misc.convert(output[[4]],
                                        "umol C m-2 s-1",
                                        "kg C m-2 s-1"))  # convert leaf resp to kgC/m2/s
-    output[[5]] <- ifelse(output[[5]] == "Inf", -999, 
+    output[[5]][output[[5]]=="Inf"] <- -999
+    output[[5]][output[[5]]=="-Inf"] <- -999
+    output[[5]] <- ifelse(output[[5]] == -999, -999, 
                           PEcAn.utils::misc.convert(output[[5]], 
                                               "mol H2O m-2 s-1",
                                               "kg H2O m-2 s-1"))  # stomatal_conductance in kg H2O m2 s1

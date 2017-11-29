@@ -32,16 +32,18 @@ convert.samples.MAAT <- function(trait.samples) {
   
   ### first rename variables
   trait.names <- colnames(trait.samples)
-  trait.names[trait.names == "leaf_respiration_rate_m2"]   <- "atref.rd"
-  trait.names[trait.names == "Vcmax"]                      <- "atref.vcmax"
-  trait.names[trait.names == "Jmax"]                       <- "atref.jmax"
-  trait.names[trait.names == "Ev_Arrhenius"]               <- "Ha.vcmax"  # Arrhenius activation energy
-  trait.names[trait.names == "Ej_Arrhenius"]               <- "Ha.jmax"  # Arrhenius activation energy
-  trait.names[trait.names == "Ha_Modified_Arrhenius_Jmax"] <- "Ha.jmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
-  trait.names[trait.names == "Hd_Modified_Arrhenius_Jmax"] <- "Hd.jmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
-  trait.names[trait.names == "stomatal_slope"]             <- "g1_leuning"
-  trait.names[trait.names == "stomatal_slope.g1"]          <- "g1_medlyn"
-  trait.names[trait.names == "stomatal_slope.BB"]          <- "g1_ball"
+  trait.names[trait.names == "leaf_respiration_rate_m2"]    <- "atref.rd"
+  trait.names[trait.names == "Vcmax"]                       <- "atref.vcmax"
+  trait.names[trait.names == "Jmax"]                        <- "atref.jmax"
+  trait.names[trait.names == "Ev_Arrhenius"]                <- "Ha.vcmax"  # Arrhenius activation energy
+  trait.names[trait.names == "Ej_Arrhenius"]                <- "Ha.jmax"  # Arrhenius activation energy
+  trait.names[trait.names == "Ha_Modified_Arrhenius_Vcmax"] <- "Ha.vcmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+  trait.names[trait.names == "Hd_Modified_Arrhenius_Vcmax"] <- "Hd.vcmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+  trait.names[trait.names == "Ha_Modified_Arrhenius_Jmax"]  <- "Ha.jmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+  trait.names[trait.names == "Hd_Modified_Arrhenius_Jmax"]  <- "Hd.jmax"  # !!TODO: Allow for the same prior to update both Vcmax and Jmax
+  trait.names[trait.names == "stomatal_slope"]              <- "g1_leuning"
+  trait.names[trait.names == "stomatal_slope.g1"]           <- "g1_medlyn"
+  trait.names[trait.names == "stomatal_slope.BB"]           <- "g1_ball"
   colnames(trait.samples) <- trait.names
   
   ### Conversions -- change to only use if Collatz, should also provide standard Rd oputput
@@ -53,6 +55,10 @@ convert.samples.MAAT <- function(trait.samples) {
   if ("Ha.vcmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
     trait.samples <- transform(trait.samples, Ha.vcmax = udunits2::ud.convert(Ha.vcmax, "kJ", "J"))
+  }
+  if ("Hd.vcmax" %in% names(trait.samples)) {
+    ## Convert from kJ mol-1 to J mol-1
+    trait.samples <- transform(trait.samples, Hd.vcmax = udunits2::ud.convert(Hd.vcmax, "kJ", "J"))
   }
   if ("Ha.jmax" %in% names(trait.samples)) {
     ## Convert from kJ mol-1 to J mol-1
