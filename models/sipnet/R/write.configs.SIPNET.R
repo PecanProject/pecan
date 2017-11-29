@@ -294,6 +294,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
         pft.traits[which(pft.names == "wood_allocation_fraction")] +
         pft.traits[which(pft.names == "leaf_allocation_fraction")]
       if(sum_alloc > 1){
+        # I want this to be a severe for now, lateer can be changed back to warning
         PEcAn.logger::logger.severe("Sum of allocation parameters exceeds 1 for runid = ", run.id,
                                   "- This won't break anything since SIPNET has internal check, but notice that such combinations might not take effect in the outputs.")
       }
