@@ -9,7 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
-
+- Updated models/maat to provide support for latest model code updates
 ### Added
 
 ### Removed
