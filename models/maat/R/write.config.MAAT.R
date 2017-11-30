@@ -23,7 +23,7 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
 ##' @return matrix or dataframe with values transformed
 ##' @export
 ##' @author Shawn Serbin, Anthony Walker
-convert.samples.MAAT <- function(trait.samples) {
+convert.samples.MAAT <- function(trait.samples, runid) {
   
   ### Convert object
   if (is.list(trait.samples)) {
@@ -68,6 +68,16 @@ convert.samples.MAAT <- function(trait.samples) {
     ## Convert from kJ mol-1 to J mol-1
     trait.samples <- transform(trait.samples, Hd.jmax = udunits2::ud.convert(Hd.jmax, "kJ", "J"))
   }
+  if ("leaf_reflect_vis" %in% names(trait.samples) & "leaf_trans_vis" %in% names(trait.samples) ){
+    leaf_abs <- 1-(trait.samples[["leaf_reflect_vis"]]+trait.samples[["leaf_trans_vis"]])
+    trait.samples[["a"]] <- leaf_abs
+    remove <- which(colnames(trait.samples)=="leaf_trans_vis" | colnames(trait.samples)=="leaf_reflect_vis")
+    #remove <- which(colnames(trait.samples)=="leaf_reflect_vis")
+    trait.samples <- trait.samples[,-remove]
+  }
+
+  # for debugging conversions 
+  #save(trait.samples, file = file.path(settings$host$outdir,runid,'trait.samples.Rdata'))
   
   ### Return trait.samples as modified by function
   return(trait.samples)
@@ -115,7 +125,9 @@ write.config.MAAT <- function(defaults = NULL, trait.values, settings, run.id) {
   }
   
   ### Run rename and conversion function on PEcAn trait values
-  traits <- convert.samples.MAAT(trait.samples = trait.values[[settings$pfts$pft$name]])
+  traits <- convert.samples.MAAT(trait.samples = trait.values[[settings$pfts$pft$name]],runid=run.id)
+  # below for debugging
+  #save(traits, file = file.path(settings$host$outdir,run.id,'trait.samples.converted.Rdata'))
   
   ### Convert traits to list
   traits.list <- as.list(traits)
