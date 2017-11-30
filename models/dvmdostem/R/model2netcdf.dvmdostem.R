@@ -33,18 +33,13 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
   ncdf4::nc_close(nc_runstatus)
   good_px <- which(run_status > 0)
   if (length(good_px) != 1) {
-    PEcAn.logger::logger.error("ERROR! Either more than one pixel ran, or no pixel successfully ran. Not sure what to do, so quitting.")
+    PEcAn.logger::logger.error("ERROR! Either more than one pixel ran, or no pixel successfully ran.")
+    PEcAn.logger::logger.error("Not sure what to do, so quitting.")
     stop()
     # Not sure we even need to check bad_px or skipped_px?
     #skipped_px <- which(run_status == 0)
     #bad_px <- which(run_status < 0)
   }
-  PEcAn.logger::logger.info("Done checking pixel.")
-
-  # Next check might be to look at the <run><start.date> and end date
-  # and check that there is enough info in the output files to accomodate
-  # the requested date range. We can do this later, as for now we'll assume it
-  # is going to be ok.
 
   # Get the actual pixel coords of the cell that ran
   px <- which(run_status > 0, arr.ind = TRUE) # Returns x,y array indices
@@ -52,117 +47,183 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
   px_Y <- px[2]
   PEcAn.logger::logger.info(paste0("Using pixel ", px_X, ", ", px_Y))
 
+  PEcAn.logger::logger.info("Done checking pixel.")
+
+  # Next check might be to look at the <run><start.date> and end date
+  # and check that there is enough info in the output files to accomodate
+  # the requested date range. We can do this later, as for now we'll assume it
+  # is going to be ok.
 
   # So dvmdostem output files are per-variable, and contain a time series.
   # There is one file per stage (pr, eq, sp, tr, sc). Pecan output files have
   # one years worth of data for many variables. The time dimension will have
   # units of "days since <yr>-01-01 00:00:00" and the file will be named <yr>.nc
 
+  # psuedo code:
+  # [x] open one of the dvmdostem yearly files, figure out how many years there are (both tr and sc)
+  # [x] check that transient and scenario runs were contiguous in time
+  # [ ]   - also maybe look at incoming args that control number of years to process
+  #
+  # [x] for each year in tr + sc:
+  # [x]   create dimensions in pecan format
+  # [x]   create variables list in pecan format
+  # [x]   create new pecan style <year>.nc file with new vars
+  # [x]   create .var file (something for pecan plotting?)
+  # [x]   close new file
+  #
+  # REPEAT THIS BLOCK FOR SCENARIO
+  # [x] for each transient year
+  # [x]   open the appropriate <year>.nc file
+  # [x]   for each variable:
+  # [x]     open the dvmdostem variable file
+  # [x]     pull out the data
+  # [x]     handle unit (and name?) conversions
+  # [x]     write the datapoint to the file
+  # [x]   close the file
+
   dvmdostem_outputs <- c("GPP","NPP") # NOT SURE YET WHERE THIS LIST SHOULD BE SETUP??
-  for (i in seq_along(1:length(dvmdostem_outputs)) ) {
 
-    PEcAn.logger::logger.info(paste0("Processing output for variable ", dvmdostem_outputs[i]))
+  PEcAn.logger::logger.info(paste0("Opening dvmdostem raw output file for variable (transient): ", dvmdostem_outputs[1]))
+  ncin_y_tr <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[1],"_yearly_tr.nc")))
+  y_tr_time_start <- ncin_y_tr$dim$time$units
+  y_tr_time_start <- as.numeric( sub("\\D*(\\d+).*", "\\1", y_tr_time_start) )
+  y_tr_starts <- paste0(seq(y_tr_time_start, y_tr_time_start + ncin_y_tr$dim$time$len-1, 1), "-01-01 00:00:00")
 
-    # Open the dvmdostem files for transient and scenario
-    ncin_tr_y <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[i],"_yearly_tr.nc")))
-    ncin_sc_y <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[i],"_yearly_sc.nc")))
+  PEcAn.logger::logger.info(paste0("Opening dvmdostem raw output file for variable (scenario): ", dvmdostem_outputs[1]))
+  ncin_y_sc <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[1],"_yearly_sc.nc")))
+  y_sc_time_start <- ncin_y_sc$dim$time$units
+  y_sc_time_start <- as.numeric( sub("\\D*(\\d+).*", "\\1", y_sc_time_start) )
+  y_sc_starts <- paste0(seq(y_sc_time_start, y_sc_time_start + ncin_y_sc$dim$time$len-1, 1), "-01-01 00:00:00")
 
-    # Read in the time series of data for the pixel that ran
-    tr_data <- ncdf4::ncvar_get(ncin_tr_y, dvmdostem_outputs[i])[px_X,px_Y,]
-    sc_data <- ncdf4::ncvar_get(ncin_sc_y, dvmdostem_outputs[i])[px_X,px_Y,]
+  # Check that transient and sceario runs were contiguous...
+  if ((lubridate::year(y_tr_starts[length(y_tr_starts)]) + 1) != lubridate::year(y_sc_starts[1])) {
+    PEcAn.logger::logger.error("WARNING! There is a gap between your transient and scenario datasets!!")
+    PEcAn.logger::logger.error(paste0("End of transient:",
+                                      lubridate::year(y_tr_starts[length(y_tr_starts)]),
+                                      " Begining of scenario: ",
+                                      lubridate::year(y_sc_starts[1])))
+  }
 
-    # Get vector of dates for each timestep in the file
-    # This returns a vector of PCICt objects.
-    #tr_starts <- ncdf4.helpers::nc.get.time.series(ncin_tr_y)
-    #sc_starts <- ncdf4.helpers::nc.get.time.series(ncin_sc_y)
-    tr_time_start <- ncin_tr_y$dim$time$units
-    tr_time_start <- as.numeric( sub("\\D*(\\d+).*", "\\1", tr_time_start) )
-    tr_starts <- paste0(seq(tr_time_start,tr_time_start+ncin_tr_y$dim$time$len-1,1),"-01-01 00:00:00")
-    
-    sc_time_start <- ncin_sc_y$dim$time$units
-    sc_time_start <- as.numeric( sub("\\D*(\\d+).*", "\\1", sc_time_start) )
-    sc_starts <- paste0(seq(sc_time_start,sc_time_start+ncin_sc_y$dim$time$len-1,1),"-01-01 00:00:00")
-    
+  PEcAn.logger::logger.info("Creating one netcdf file for each output year...")
+  all_yrs <- c(y_tr_starts, y_sc_starts)
+  for (i in seq_along(1:length(all_yrs))) {
 
-    # Sanity check (safety first!)
-    stopifnot(length(sc_starts) == length(sc_data))
-    stopifnot(length(tr_starts) == length(tr_data))
-    PEcAn.logger::logger.info("Done with sanity check for tr,sc data date/data lengths.")
+    PEcAn.logger::logger.info("Creating dimensions for new PEcAn style files...")
+    lond <- ncdf4::ncdim_def(name='lon',
+                             units="degrees_east",
+                             vals=c(1), # <=== read from dvmdostem file! see dvmdostem issue #342
+                             longname="coordinate_longitude")
 
-    # Look up the units in dvmdostem world
-    original_units <- ncdf4::ncatt_get(ncin_tr_y, dvmdostem_outputs[i], "units")
-    original_units <- as.character(unlist(original_units)[2]) # How to avoid hard coded index??
-    #stopifnot(original_units == as.character(unlist(ncdf4::ncatt_get(ncin_sc_y, dvmdostem_outputs[i], "units"))[2])
+    latd <- ncdf4::ncdim_def(name='lat',
+                             units="degrees_north",
+                             vals=c(1), # <=== read from dvmdostem file! see dvmdostem issue #342
+                             longname="coordinate_latitude")
 
-    # This is a temporary hack, till dvm-dos-tem issue is resolved...
-    # See issue #336 (https://github.com/ua-snap/dvm-dos-tem/issues/336)
-    original_units <- gsub("time", "year", original_units)
+    timed <- ncdf4::ncdim_def(name='time',
+                              units=paste0("days since ", all_yrs[i]),
+                              vals=c(0),
+                              unlim=TRUE,
+                              longname="time",
+                              calendar='365_day')
 
-    # Set units in PEcAn world
-    if (dvmdostem_outputs[i] == 'GPP') {newunits <- "kgC m-2 s-1"}
-    if (dvmdostem_outputs[i] == 'NPP') {newunits <- "kgC m-2 s-1"}
+    out_nc_dims <- list(lon=lond, lat=latd, time=timed) # dimension order: X, Y, time
 
-    # Convert the data
-    tr_data_new <- PEcAn.utils::misc.convert(tr_data, original_units, newunits)
-    sc_data_new <- PEcAn.utils::misc.convert(sc_data, original_units, newunits)
+    PEcAn.logger::logger.info("Creating variables for new PEcAn style files...")
+    newvars <- c() # Not very efficient, would be better to pre-allocate space
+    for (j in seq_along(1:length(dvmdostem_outputs))) {
+      # Use pecan utility function that can reognize and create proper longname
+      # Need to handle name translation between dvmdostem names and pecan names...
+      ncvar <- PEcAn.utils::to_ncvar(dvmdostem_outputs[j], out_nc_dims)
 
-    # Tack everything together so we can loop over it all at once below
-    all_starts <- c(tr_starts, sc_starts)
-    all_data <- c(tr_data_new, sc_data_new)
-    
-    PEcAn.logger::logger.info("Converting all dvm-dos-tem output for years: ")
-    PEcAn.logger::logger.info(lubridate::year(all_starts))
+      # Not sure if the above construct will work very well for some variables,
+      # i.e. "RH" which in dvmdostem world is "Heterotrophic Respiration", while
+      # in pecan world, this gets interperted as "Relative Humidity". Maybe we
+      # should build and maintain a map something like this that maps the
+      # PEcAn world names to the requsite info from the tem-world:
+      # varmap <- list(
+      #   "GPP"=c(temunits="gC/m2/year", pecanunits="kgC/m2/sec", temname="GPP"),
+      #   "TotalResp"=c(temunits="gC/m2/year", pecanunits="kgC/m2/sec", temname="RG+RM+RH"),
+      #   "NPP"=c(temunits="gC/m2/year", pecanunits="kgC/m2/sec", temname="NPP")
+      # )
 
-    #PEcAn.logger::logger.info("Converting all_starts from PCICt objects to charachter vectors...")
-    #all_starts <- as.character(all_starts)
+      # Alternatively could use this construct:
+      # Set units in PEcAn world
+      #if (dvmdostem_outputs[i] == 'GPP') {newname <- "GPP"; newunits <- "kgC m-2 s-1"; longname <- "Gross Primary Productivity"}
+      #if (dvmdostem_outputs[i] == 'NPP') {newname <- "NPP"; newunits <- "kgC m-2 s-1"; longname <- "Net Primary Productivity"}
+      #ncvar <- ncdf4::ncvar_def(name = newname , units = newunits, longname = longname, dim = out_nc_dims, -999, prec = "double")
 
-    # Loop over all the time steps (yearly in this case), making one new
-    # file for each timestep.
-    PEcAn.logger::logger.info("Looping over all the dates (and data) in the file...")
-    for (j in seq_along(1:length(all_starts))) {
-      # Create dimensions for new file
-      lond <- ncdf4::ncdim_def(name='lon',
-                               units="degrees_east",
-                               vals=c(1), # <=== read from dvmdostem file!
-                               longname="coordinate_longitude")
+      newvars[[j]] <- ncvar
+    }
 
-      latd <- ncdf4::ncdim_def(name='lat',
-                               units="degrees_north",
-                               vals=c(1), # <=== read from dvmdostem file!
-                               longname="coordinate_latitude")
+    ncout <- ncdf4::nc_create(file.path(outdir, paste0(as.character(lubridate::year(all_yrs[i])), ".nc")), newvars)
+    # extract variable and long names to VAR file for PEcAn visibility
+    # THIS NEEDS TO BE KEPT AND USED FOR PROPER PLOTTING
+    write.table(sapply(ncout$var, function(x) { x$longname }),
+                file = file.path(outdir,paste0(as.character(lubridate::year(all_yrs[i])), ".nc.var")),
+                col.names = FALSE,
+                row.names = TRUE,
+                quote = FALSE)
 
-      timed <- ncdf4::ncdim_def(name='time',
-                                #units=paste0("days since ", all_starts[j], " 00:00:00"),
-                                units=paste0("days since ",all_starts[j]),
-                                vals=c(0),
-                                unlim=TRUE,
-                                longname="time",
-                                calendar='365_day')
+    ncdf4::nc_close(ncout)
+  }
 
-      out_nc_dims <- list(lon=lond, lat=latd, time=timed) # dimension order: X, Y, time
+  # Looping over the transient dvmdostem ouputs and writing data into the
+  # the respective yearly PEcAn output files.
+  for (i in seq_along(1:length(y_tr_starts))) {
+    ncout <- ncdf4::nc_open(file.path(outdir, paste0(lubridate::year(y_tr_starts[i]), ".nc")), write = TRUE)
+    for (j in dvmdostem_outputs){
+      ncin_tr_y <- ncdf4::nc_open(file.path(outdir, paste0(j, "_yearly_tr.nc")))
+      vardata <- ncdf4::ncvar_get(ncin_tr_y, j)
 
-      #PEcAn.logger::logger.info("Convert all_starts char vector BACK to date object and extract year...")
-      #yr <- lubridate::year(as.Date(strptime(all_starts[j], format="%Y-%m-%d")))
-      yr <- lubridate::year(all_starts[j])
+      # Look up the units in dvmdostem world
+      original_units <- ncdf4::ncatt_get(ncin_tr_y, j, "units")
+      original_units <- as.character(unlist(original_units)[2]) # How to avoid hard coded index??
 
-      #newvar <- ncdf4::ncvar_def(dvmdostem_outputs[i], newunits, out_nc_dims)
-      newvar <- PEcAn.utils::to_ncvar(dvmdostem_outputs[i],out_nc_dims)  # new function that recognizes know vars and provides proper longname
-      ncout <- ncdf4::nc_create(file.path(outdir, paste0(as.character(yr), ".nc")), newvar)
-      ncdf4::ncvar_put(ncout, newvar, all_data[j], c(1,1,1), c(1,1,1))
-      
-      ## extract variable and long names to VAR file for PEcAn vis - THIS NEEDS TO BE KEPT AND USED FOR PROPER PLOTTING
-      write.table(sapply(ncout$var, function(x) { x$longname }), 
-                  file = file.path(outdir,paste0(as.character(yr), ".nc.var")), 
-                  col.names = FALSE, 
-                  row.names = TRUE, 
-                  quote = FALSE)
+      # This is a temporary hack, till dvm-dos-tem issue is resolved...
+      # See issue #336 (https://github.com/ua-snap/dvm-dos-tem/issues/336)
+      original_units <- gsub("time", "year", original_units)
 
-      ncdf4::nc_close(ncout)
-      #print("SOMEWHERE TO STOP")
+      # Set units in PEcAn world
+      if (j == 'GPP') {newunits <- "kgC m-2 s-1"}
+      if (j == 'NPP') {newunits <- "kgC m-2 s-1"}
 
-    } # end of loop over years
+      # Convert the data
+      vardata_new <- PEcAn.utils::misc.convert(vardata, original_units, newunits)
 
-  } # end loop over all dvmdostem outputs
+      # Write the data to the file...
+      ncdf4::ncvar_put(ncout, j, vardata_new[px_X, px_Y,i], c(1,1,1), c(1,1,1))
+    }
+    ncdf4::nc_close(ncout)
+  }
+
+  # Looping over the scenario dvmdostem ouputs and writing data into the
+  # the respective yearly PEcAn output files.
+  for (i in seq_along(1:length(y_sc_starts))) {
+    ncout <- ncdf4::nc_open(file.path(outdir, paste0(lubridate::year(y_sc_starts[i]), ".nc")), write = TRUE)
+    for (j in dvmdostem_outputs){
+      ncin_sc_y <- ncdf4::nc_open(file.path(outdir, paste0(j, "_yearly_sc.nc")))
+      vardata <- ncdf4::ncvar_get(ncin_sc_y, j)
+
+      # Look up the units in dvmdostem world
+      original_units <- ncdf4::ncatt_get(ncin_sc_y, j, "units")
+      original_units <- as.character(unlist(original_units)[2]) # How to avoid hard coded index??
+
+      # This is a temporary hack, till dvm-dos-tem issue is resolved...
+      # See issue #336 (https://github.com/ua-snap/dvm-dos-tem/issues/336)
+      original_units <- gsub("time", "year", original_units)
+
+      # Set units in PEcAn world
+      if (j == 'GPP') {newunits <- "kgC m-2 s-1"}
+      if (j == 'NPP') {newunits <- "kgC m-2 s-1"}
+
+      # Convert the data
+      vardata_new <- PEcAn.utils::misc.convert(vardata, original_units, newunits)
+
+      # Write the data to the file...
+      ncdf4::ncvar_put(ncout, j, vardata_new[px_X, px_Y,i], c(1,1,1), c(1,1,1))
+    }
+    ncdf4::nc_close(ncout)
+  }
 
 } # end of function
 ##-------------------------------------------------------------------------------------------------#
