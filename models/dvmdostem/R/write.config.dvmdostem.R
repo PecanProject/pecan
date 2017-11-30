@@ -34,7 +34,7 @@ convert.samples.dvmdostem <- function(trait_values) {
     # Original values in dvmdostem param files not making sense, no good
     # comments as to units. This conversion seems to make the values match
     # what we expect from the other data in the PEcAn/bety database.
-    trait_values[["cuticular_cond"]] <- trait_values[["cuticular_cond"]] / 10^6
+    trait_values[["cuticular_cond"]] <- trait_values[["cuticular_cond"]] / 10^9
   }
   
   if("vpd_open" %in% names(trait_values)) {
