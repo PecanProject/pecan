@@ -4,7 +4,7 @@
 \alias{model2netcdf.dvmdostem}
 \title{Code to convert dvmdostem netcdf output into into CF standard}
 \usage{
-model2netcdf.dvmdostem(outdir)
+model2netcdf.dvmdostem(outdir, runstart, runend)
 }
 \arguments{
 \item{outdir}{Location of dvmdostem model output}
