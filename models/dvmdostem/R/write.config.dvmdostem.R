@@ -262,6 +262,9 @@ write.config.dvmdostem <- function(defaults = NULL, trait.values, settings, run.
             if (curr_trait == "pstemp_max") {
               bgcveg_jsondata[[i]]$tmax = traits[[curr_trait]]
             }
+            if (curr_trait == "labncon") {
+              bgcveg_jsondata[[i]]$labncon = traits[[curr_trait]]
+            }
           }
         }
       }
