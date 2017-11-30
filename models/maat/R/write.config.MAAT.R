@@ -20,6 +20,7 @@ PREFIX_XML <- "<?xml version=\"1.0\"?>\n"
 ##' @name convert.samples.MAAT
 ##' @title Convert samples for MAAT
 ##' @param trait.samples a matrix or dataframe of samples from the trait distribution
+##' @param runid optional parameter for debugging
 ##' @return matrix or dataframe with values transformed
 ##' @export
 ##' @author Shawn Serbin, Anthony Walker
