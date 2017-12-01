@@ -81,7 +81,7 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
   # [x]     write the datapoint to the file
   # [x]   close the file
 
-  dvmdostem_outputs <- c("GPP","NPP") # NOT SURE YET WHERE THIS LIST SHOULD BE SETUP??
+  dvmdostem_outputs <- c("GPP", "NPP", "RH", "SOC", "LAI") # NOT SURE YET WHERE THIS LIST SHOULD BE SETUP??
 
   PEcAn.logger::logger.info(paste0("Opening dvmdostem raw output file for variable (transient): ", dvmdostem_outputs[1]))
   ncin_y_tr <- ncdf4::nc_open(file.path(outdir, paste0(dvmdostem_outputs[1],"_yearly_tr.nc")))
@@ -103,6 +103,17 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
                                       " Begining of scenario: ",
                                       lubridate::year(y_sc_starts[1])))
   }
+
+  # Build a mapping from dvmdostem names to PEcAn names, units, etc.
+  # The temunits should (is) looked up from the dvmdostem output file's units
+  # attributes...
+  varmap <- list(
+    "GPP"=c(newname="GPP", longname="Gross Primary Productivity", newunits="kg C m-2 s-1"),
+    "NPP"=c(newname="NPP", longname="Net Primary Productivity", newunits="kg C m-2 s-1"),
+    "RH"=c(newname="HeteroResp", longname="Heterotrophic Respiration", newunits="kg C m-2 s-1"),
+    "SOC"=c(newname="SoilOrgC", longname="Soil Organic Carbon", newunits="kg C m-2"),
+    "LAI"=c(newname="LAI", longname="Leaf Area Index", newunits="m-2/m-2")
+  )
 
   PEcAn.logger::logger.info("Creating one netcdf file for each output year...")
   all_yrs <- c(y_tr_starts, y_sc_starts)
@@ -133,24 +144,18 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
     for (j in seq_along(1:length(dvmdostem_outputs))) {
       # Use pecan utility function that can reognize and create proper longname
       # Need to handle name translation between dvmdostem names and pecan names...
-      ncvar <- PEcAn.utils::to_ncvar(dvmdostem_outputs[j], out_nc_dims)
+      # This pecan function doesn't always get the name translation correct
+      # between PEcAn names and dvmdostem names, for example "RH" which in
+      # dvmdostem world is "Heterotrophic Respiration", while
+      # in pecan world, this gets interperted as "Relative Humidity".
+      #ncvar <- PEcAn.utils::to_ncvar(dvmdostem_outputs[j], out_nc_dims)
 
-      # Not sure if the above construct will work very well for some variables,
-      # i.e. "RH" which in dvmdostem world is "Heterotrophic Respiration", while
-      # in pecan world, this gets interperted as "Relative Humidity". Maybe we
-      # should build and maintain a map something like this that maps the
-      # PEcAn world names to the requsite info from the tem-world:
-      # varmap <- list(
-      #   "GPP"=c(temunits="gC/m2/year", pecanunits="kgC/m2/sec", temname="GPP"),
-      #   "TotalResp"=c(temunits="gC/m2/year", pecanunits="kgC/m2/sec", temname="RG+RM+RH"),
-      #   "NPP"=c(temunits="gC/m2/year", pecanunits="kgC/m2/sec", temname="NPP")
-      # )
+      curvar <- varmap[[dvmdostem_outputs[j]]]
 
-      # Alternatively could use this construct:
-      # Set units in PEcAn world
-      #if (dvmdostem_outputs[i] == 'GPP') {newname <- "GPP"; newunits <- "kgC m-2 s-1"; longname <- "Gross Primary Productivity"}
-      #if (dvmdostem_outputs[i] == 'NPP') {newname <- "NPP"; newunits <- "kgC m-2 s-1"; longname <- "Net Primary Productivity"}
-      #ncvar <- ncdf4::ncvar_def(name = newname , units = newunits, longname = longname, dim = out_nc_dims, -999, prec = "double")
+      ncvar <- ncdf4::ncvar_def(name = curvar[["newname"]],
+                                units = curvar[["newunits"]],
+                                longname = curvar[["longname"]],
+                                dim = out_nc_dims, -999, prec = "double")
 
       newvars[[j]] <- ncvar
     }
@@ -182,16 +187,16 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
       # This is a temporary hack, till dvm-dos-tem issue is resolved...
       # See issue #336 (https://github.com/ua-snap/dvm-dos-tem/issues/336)
       original_units <- gsub("time", "year", original_units)
+      original_units <- gsub("gC", "g C", original_units)
 
       # Set units in PEcAn world
-      if (j == 'GPP') {newunits <- "kgC m-2 s-1"}
-      if (j == 'NPP') {newunits <- "kgC m-2 s-1"}
+      curvar <- varmap[[j]]
 
       # Convert the data
-      vardata_new <- PEcAn.utils::misc.convert(vardata, original_units, newunits)
+      vardata_new <- PEcAn.utils::misc.convert(vardata, original_units, curvar[["newunits"]])
 
       # Write the data to the file...
-      ncdf4::ncvar_put(ncout, j, vardata_new[px_X, px_Y,i], c(1,1,1), c(1,1,1))
+      ncdf4::ncvar_put(ncout, curvar[["newname"]], vardata_new[px_X, px_Y,i], c(1,1,1), c(1,1,1))
     }
     ncdf4::nc_close(ncout)
   }
@@ -211,16 +216,16 @@ model2netcdf.dvmdostem <- function(outdir, runstart, runend) {
       # This is a temporary hack, till dvm-dos-tem issue is resolved...
       # See issue #336 (https://github.com/ua-snap/dvm-dos-tem/issues/336)
       original_units <- gsub("time", "year", original_units)
+      original_units <- gsub("gC", "g C", original_units)
 
       # Set units in PEcAn world
-      if (j == 'GPP') {newunits <- "kgC m-2 s-1"}
-      if (j == 'NPP') {newunits <- "kgC m-2 s-1"}
+      curvar <- varmap[[j]]
 
       # Convert the data
-      vardata_new <- PEcAn.utils::misc.convert(vardata, original_units, newunits)
+      vardata_new <- PEcAn.utils::misc.convert(vardata, original_units, curvar[["newunits"]])
 
       # Write the data to the file...
-      ncdf4::ncvar_put(ncout, j, vardata_new[px_X, px_Y,i], c(1,1,1), c(1,1,1))
+      ncdf4::ncvar_put(ncout, curvar[["newname"]], vardata_new[px_X, px_Y,i], c(1,1,1), c(1,1,1))
     }
     ncdf4::nc_close(ncout)
   }
