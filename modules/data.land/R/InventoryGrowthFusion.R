@@ -98,7 +98,7 @@ model{
         counter <- ""
         index   <- "i"
         nr <- nrow(cov.data)
-      } else if(r_vars[i] == "i"){
+      } else if(r_vars[i] == "t"){
         r_var   <- "t"
         counter <- ""
         index   <- "t"

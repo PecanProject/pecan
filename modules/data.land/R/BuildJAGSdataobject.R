@@ -1,7 +1,7 @@
 #### code to make data object for JAGS
 #### from flat file AZ PIPO database
 
-buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subset = 100){
+buildJAGSdataobject <- function(temp2, Tree2Tree=NULL, trunc.yr = 1976, rnd.subset = 100, standardize.cov = TRUE){
 
 # helper function
 # for standardizing covariates (from K. Holsinger)
@@ -127,7 +127,9 @@ if(!is.null(Tree2Tree)){
   SICOND2 <- Tree2Tree$SICOND
   SICOND <- c(SICOND, SICOND2)
 }
+if(standardize.cov==TRUE){
 SICOND <- standardize.vector(SICOND)
+}
 
 ### SLOPE
 #SLOPE <- temp2$COND_SLOPE # ranges as a high as 360
@@ -156,7 +158,9 @@ if(!is.null(Tree2Tree)){
   SDI2 <- Tree2Tree$SDIc
   SDI <- c(SDI, SDI2)
 }
+if(standardize.cov == TRUE){
 SDI <- standardize.vector(SDI)
+}
 ### BA ## SDI and BA are tightly correlated, can't use both
 cov.data <- data.frame(PLOT=PLOT, SICOND=SICOND, SDI=SDI)
 #cov.data <- cbind(cov.data, SICOND, SDI)
@@ -233,10 +237,11 @@ time_data$tmax.JanA <- tmax.JanA
 time_data$tmax.MJul <- tmax.MJul
 
 # standardize climate data
+if(standardize.cov == TRUE){
 for(c in 1:length(time_data)){
   time_data[[c]] <- standardize.vector(time_data[[c]])
-} 
-
+  } 
+}
 
 ## build data object for JAGS
 data = list(y = y.small, 
