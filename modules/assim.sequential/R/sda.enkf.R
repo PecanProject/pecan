@@ -352,7 +352,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
 
-  for(t in 8:nt) {
+  for(t in 10) {
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
     ###-------------------------------------------------------------------###  
@@ -368,6 +368,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     
     for(i in seq_len(length(run.id))){
       if(is.na(X[[i]][1])) {
+        print(i)
         run.id[[i]] <- NULL 
         X[[i]] <- NULL
       }
@@ -509,7 +510,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           }
         }
         
-        if(t == 1 | length(run.id) < nens){
+        if(t == 10 | length(run.id) < nens){
           #The purpose of this step is to impute data for mu.f 
           #where there are zero values so that 
           #mu.f is in 'tobit space' in the full model
@@ -631,7 +632,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         y.ind <- as.numeric(Y > interval[,1])
         y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
         
-        if(t==1){ #TO need to make something that works to pick weather to compile or not
+        if(t==10){ #TO need to make something that works to pick weather to compile or not
           #y.obs = Y.dat[1,]
           constants.tobit = list(N = ncol(X), YN = length(y.ind)) #, nc = 1
           dimensions.tobit = list(X = ncol(X), X.mod = ncol(X), Q = c(ncol(X),ncol(X))) #  b = dim(inits.pred$b),
@@ -1004,7 +1005,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ###-------------------------------------------------------------------###
   ### time series                                                       ###
   ###-------------------------------------------------------------------### 
-  pdf(file.path(settings$outdir, "sda.enkf.time-series.pdf"))
+  pdf(file.path(settings$outdir, "sda.enkf.time-series-biomass.pdf"))
   
   names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
   Ybar <- t(sapply(obs.mean[t1:t], function(x) {
@@ -1032,18 +1033,18 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   
   for (i in seq_len(ncol(X))) {
     Xbar <- plyr::laply(FORECAST[t1:t], function(x) {
-      mean(x[, i]/rowSums(x,na.rm = T), na.rm = TRUE) })
+      mean(x[, i], na.rm = TRUE) })
     Xci <- plyr::laply(FORECAST[t1:t], function(x) { 
-      quantile(x[, i]/rowSums(x,na.rm = T), c(0.025, 0.975),na.rm = T) })
+      quantile(x[, i], c(0.025, 0.975),na.rm = T) })
     Xci[is.na(Xci)]<-0
     
     Xbar <- Xbar
     Xci <- Xci
     
     Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { 
-      mean(x[, i]/rowSums(x,na.rm = T),na.rm = T) })
+      mean(x[, i],na.rm = T) })
     XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { 
-      quantile(x[, i]/rowSums(x,na.rm = T), c(0.025, 0.975),na.rm = T )})
+      quantile(x[, i], c(0.025, 0.975),na.rm = T )})
     
     Xa <- Xa
     XaCI <- XaCI
@@ -1060,7 +1061,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
          main = colnames(X)[i])
     
     # observation / data
-    if (i <= ncol(Ybar)) {
+    if (FALSE) { #
       ciEnvelope(as.Date(obs.times[t1:t]), 
                  as.numeric(Ybar[, i]) - as.numeric(YCI[, i]) * 1.96, 
                  as.numeric(Ybar[, i]) + as.numeric(YCI[, i]) * 1.96, 

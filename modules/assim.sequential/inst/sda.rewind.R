@@ -12,11 +12,12 @@
 ##' @export
 ##' 
 
+
 sda_rewind <- function(settings,run.id,time_to_rewind){
   for(i in 1:length(run.id)){
     file.rename(paste0(settings$outdir,
                        '/out/',run.id[[i]],
-                       '/',time_to_rewind,'-01-01linkages.out.Rdata'),
+                       '/',time_to_rewind,'-12-31 23:59:59linkages.out.Rdata'),
                 paste0(settings$outdir,
                        '/out/',run.id[[i]],
                        '/linkages.out.Rdata'))
@@ -31,5 +32,7 @@ sda_rewind <- function(settings,run.id,time_to_rewind){
   }
 }
 
-sda_rewind(settings, run.id, time_to_rewind = 1962)
+sda_rewind(settings, run.id, time_to_rewind = as.character(1160))
+
+
 

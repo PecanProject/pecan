@@ -228,7 +228,7 @@ load_data_paleon_sda <- function(settings){
       rownames(sims.keep) <- colnames(mean.mat)
       obs.cov <- list()
       for(n in 1:length(ncin$dim$year$vals)){
-        obs.cov[[n]] <- cov(t(sims.keep[,n,])) * var.inf
+        obs.cov[[n]] <- cov(t(sims.keep[,n,])) #* var.inf
       }
       
       names(obs.cov) <- paste0(years,'/12/31')
