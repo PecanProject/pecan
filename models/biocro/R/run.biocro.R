@@ -33,6 +33,9 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
     if(!all(sapply(WetDat, is.numeric))){
       PEcAn.logger::logger.severe("Format error in weather file: All columns must be numeric, but got (", sapply(WetDat, class), ")")
     }
+
+    # Simulation for current year starts on the latest of:
+    # First day of whole model run, Jan 1 of current year, planting date, (last frost if planting date unset)
     starti <- max(start.date, lubridate::ymd(paste0(yeari, "-01-01")))
     endi <- min(end.date, lubridate::ymd(paste0(yeari, "-12-31")))
     if (!is.null(config$simulationPeriod)) {
@@ -46,13 +49,9 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
       day1 <- NULL
       dayn <- NULL
     }
-    if (!is.null(day1) && day1 > lubridate::yday(starti)) {
-      lubridate::yday(starti) <- day1
-    }
-    if (!is.null(dayn) && dayn < lubridate::yday(starti)) {
-      lubridate::yday(plant_date) <- dayn
-    }
-    WetDat <- WetDat[WetDat$doy >= lubridate::yday(starti) & WetDat$doy <= lubridate::yday(endi), ]
+    WetDat <- WetDat[
+      WetDat$doy >= max(day1, lubridate::yday(starti))
+      & WetDat$doy <= min(dayn, lubridate::yday(endi)), ]
 
     HarvestedYield <- 0
 
