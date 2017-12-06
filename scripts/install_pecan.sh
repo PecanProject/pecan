@@ -195,6 +195,9 @@ if [ -z "${R_LIBS_USER}" ]; then
   export export R_LIBS_USER=${HOME}/R/library
   mkdir -p ${R_LIBS_USER}
 
+  echo "options(shiny.port = 6438)" >> ${HOME}/.Rprofile
+  echo "options(shiny.launch.browser = 'FALSE')" >> ${HOME}/.Rprofile
+
   case "$OS_VERSION" in
     RH_*)
       echo 'export PATH=${PATH}:/usr/pgsql-9.5/bin' >> ${HOME}/.bashrc
