@@ -30,7 +30,9 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
     yeari <- years[i]
     metfile <- paste(metpath, yeari, "csv", sep = ".")
     WetDat <- data.table::fread(metfile)
-    stopifnot(all(sapply(WetDat, is.numeric)))
+    if(!all(sapply(WetDat, is.numeric))){
+      PEcAn.logger::logger.severe("Format error in weather file: All columns must be numeric, but got (", sapply(WetDat, class), ")")
+    }
     starti <- max(start.date, lubridate::ymd(paste0(yeari, "-01-01")))
     endi <- min(end.date, lubridate::ymd(paste0(yeari, "-12-31")))
     if (!is.null(config$simulationPeriod)) {
@@ -100,7 +102,10 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
 
       # Check that all variables are present in the expected order --
       # BioGro < 1.0 accesses weather vars by position and DOES NOT check headers.
-      stopifnot(identical(colnames(WetDat), c("year", "doy", "hour", "SolarR", "Temp", "RH", "WS", "precip")))
+      expected_cols <- c("year", "doy", "hour", "SolarR", "Temp", "RH", "WS", "precip")
+      if(!identical(colnames(WetDat), expected_cols)){
+        PEcAn.logger::logger.severe("Format error in weather file: Columns must be (", expected_cols, "), in that order.")
+      }
       WetDat <- as.matrix(WetDat)
 
       # BLETCHEROUS HACK: BioCro 0.94 starts the run by subsetting weather data
