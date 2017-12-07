@@ -102,6 +102,22 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
   if(dataframe==FALSE){
   return(result)
   }else if (dataframe==TRUE){
+    
+    # Check if there are variables that have multiple dimensions 
+    # for example soil moisture at multiple levels.
+    # Currently we don't have a consensus how to convert these to dataframe format
+    # so they should be omitted. 
+    
+    for(var in names(result)){
+      c <- dim(result[[var]])[2]
+      r <- dim(result[[var]])[1]
+      if(!is.na(c) & r > 1){
+        PEcAn.logger::logger.warn("Variable", var, "has", r, "dimensions,
+      it cannot be loaded and will be omitted.")
+        result[[var]] <- NULL 
+      }
+    }
+    
     model <- as.data.frame(result) # put into a data.frame
     ########## add in posix column ###########
     
