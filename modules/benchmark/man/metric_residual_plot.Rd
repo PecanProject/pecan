@@ -4,10 +4,11 @@
 \alias{metric_residual_plot}
 \title{Residual Plot}
 \usage{
-metric_residual_plot(dat, var, filename = NA, draw.plot = FALSE)
+metric_residual_plot(metric_dat, var, filename = NA,
+  draw.plot = is.na(filename))
 }
 \arguments{
-\item{dat}{}
+\item{draw.plot}{}
 }
 \author{
 Betsy Cowdery
