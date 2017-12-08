@@ -5,11 +5,11 @@ First create  virtual machine
 ```
 # ----------------------------------------------------------------------
 # CREATE VM USING FOLLOWING:
-# - VM NAME  = PEcAn 32bit | PEcAn 64bit
-# - CPU      = 1
+# - VM NAME  = PEcAn
+# - CPU      = 2
 # - MEMORY   = 2GB 
 # - DISK     = 100GB
-# - HOSTNAME = pecan32/64
+# - HOSTNAME = pecan
 # - FULLNAME = PEcAn Demo User
 # - USERNAME = xxxxxxx
 # - PASSWORD = yyyyyyy
@@ -17,20 +17,11 @@ First create  virtual machine
 # ----------------------------------------------------------------------
 ```
 
-To enable tunnels run the following on the host machine, I used xx=64 for the 64 bit version of the VM and xx=32 for the 32 bit version of the VM:
+To enable tunnels run the following on the host machine:
 
 ```bash
-VBoxManage modifyvm "<virtual machine name>" --natpf1 "ssh,tcp,,xx22,,22"
-VBoxManage modifyvm "<virtual machine name>" --natpf1 "www,tcp,,xx80,,80"
-```
-
-For the virtual machines created the following routes are created:
-
-```bash
-VBoxManage modifyvm "PEcAn 32bit" --natpf1 "ssh,tcp,,3222,,22"
-VBoxManage modifyvm "PEcAn 32bit" --natpf1 "www,tcp,,3280,,80"
-VBoxManage modifyvm "PEcAn 64bit" --natpf1 "ssh,tcp,,6422,,22"
-VBoxManage modifyvm "PEcAn 64bit" --natpf1 "www,tcp,,6480,,80"
+VBoxManage modifyvm "PEcAn" --natpf1 "ssh,tcp,,6422,,22"
+VBoxManage modifyvm "PEcAn" --natpf1 "www,tcp,,6480,,80"
 ```
 
 Make sure machine is up to date.
