@@ -16,7 +16,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Removed deprecated copies of PEcAn.utils::SafeList, PEcAn.utils::listToXml (both moved to PEcAn.settings in v 1.5.2), and PEcAn.utils::fqdn (moved to PEcAn.remote in 1.5.2). This fixes the masses of deprecation warnings in otherwise normal run logs (#1719).
 
 ### Changed
-
+- Fixed an remote code execution discovered by NCSA security team.
 ## [1.5.2] - 2017-12-07
 
 ### Fixes
