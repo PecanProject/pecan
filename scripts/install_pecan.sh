@@ -212,6 +212,9 @@ echo 'if(!"udunits2" %in% installed.packages()) install.packages("udunits2", con
 echo 'if(!"leaflet" %in% installed.packages()) install.packages("leaflet", repos="http://cran.rstudio.com/")' | R --vanilla
 echo 'if(!"RJSONIO" %in% installed.packages()) install.packages("RJSONIO", repos="http://cran.rstudio.com/")' | R --vanilla
 
+# packages for other shiny apps
+echo 'if(!"DT" %in% installed.packages()) install.packages("DT", repos="http://cran.rstudio.com/")' | R --vanilla
+
 #echo 'update.packages(repos="http://cran.rstudio.com/", ask=FALSE)' | sudo R --vanilla
 echo 'x <- rownames(old.packages(repos="http://cran.rstudio.com/")); update.packages(repos="http://cran.rstudio.com/", ask=FALSE, oldPkgs=x[!x %in% "rgl"])' | sudo R --vanilla
 
@@ -246,7 +249,7 @@ echo "SIPNET"
 echo "######################################################################"
 if [ ! -e ${HOME}/sipnet_unk ]; then
   cd
-  curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/models/sipnet_unk.tar.gz
+  curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/sipnet/sipnet_unk.tar.gz
   tar zxf sipnet_unk.tar.gz
   rm sipnet_unk.tar.gz
 fi
@@ -258,7 +261,7 @@ make clean
 
 if [ ! -e ${HOME}/sipnet_r136 ]; then
   cd
-  curl -o sipnet_r136.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_r136.tar.gz
+  curl -o sipnet_r136.tar.gz http://isda.ncsa.illinois.edu/~kooper/PEcAn/sipnet/sipnet_r136.tar.gz
   tar zxf sipnet_r136.tar.gz
   rm sipnet_r136.tar.gz
   sed -i 's#$(LD) $(LIBLINKS) \(.*\)#$(LD) \1 $(LIBLINKS)#' ${HOME}/sipnet_r136/Makefile
@@ -714,7 +717,7 @@ if [ "${SETUP_VM}" != "" ]; then
   esac
 
   # MOTD
-  VERSION=$( awk '/Version: / { print $2 }' $HOME/pecan/all/DESCRIPTION )
+  VERSION=$( awk '/Version: / { print $2 }' $HOME/pecan/base/all/DESCRIPTION )
   cat > /tmp/motd << EOF
 PEcAn version ${VERSION}
 
