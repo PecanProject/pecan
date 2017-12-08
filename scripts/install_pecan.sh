@@ -195,6 +195,9 @@ if [ -z "${R_LIBS_USER}" ]; then
   export export R_LIBS_USER=${HOME}/R/library
   mkdir -p ${R_LIBS_USER}
 
+  echo "options(shiny.port = 6438)" >> ${HOME}/.Rprofile
+  echo "options(shiny.launch.browser = 'FALSE')" >> ${HOME}/.Rprofile
+
   case "$OS_VERSION" in
     RH_*)
       echo 'export PATH=${PATH}:/usr/pgsql-9.5/bin' >> ${HOME}/.bashrc
@@ -324,6 +327,20 @@ make clean
 make dalec_EnKF
 make dalec_seqMH
 sudo cp dalec_EnKF dalec_seqMH /usr/local/bin
+make clean
+
+echo "######################################################################"
+echo "GDAY"
+echo "######################################################################"
+if [ ! -e ${HOME}/GDAY ]; then
+  cd
+  git clone https://github.com/mdekauwe/GDAY.git
+fi
+cd ${HOME}/GDAY
+git pull
+cd src
+make
+sudo cp gday /usr/local/bin
 make clean
 
 echo "######################################################################"
