@@ -117,22 +117,26 @@ EDR <- function(paths,
   nir.ind <- which(wavelengths %in% nir.wl)
 
   # Set up soil and wood reflectance files
+  soil_fname <- "soil_reflect_par.dat"
   soil_reflect_path <- paths$soil_reflect
   if (is.null(soil_reflect_path)) {
-    soil_reflect_path <- system.file('extdata', 'soil_reflect_par.dat', package = 'PEcAnRTM')
+    soil_reflect_path <- system.file('extdata', soil_fname, package = 'PEcAnRTM')
   }
 
   if (!is.na(soil_reflect_path)) {
-    file.copy(soil_reflect_path, output.path, overwrite = TRUE, recursive = TRUE)
+    file.copy(soil_reflect_path, file.path(output.path, soil_fname),
+              overwrite = TRUE)
   }
 
+  wood_fname <- "wood_reflect_par.dat"
   wood_reflect_path <- paths$wood_reflect
   if (is.null(wood_reflect_path)) {
-    wood_reflect_path <- system.file('extdata', 'wood_reflect_par.dat', package = 'PEcAnRTM')
+    wood_reflect_path <- system.file('extdata', wood_fname, package = 'PEcAnRTM')
   }
 
   if (!is.na(wood_reflect_path)) {
-    file.copy(wood_reflect_path, output.path, overwrite = TRUE, recursive = TRUE)
+    file.copy(wood_reflect_path, file.path(output.path, wood_fname),
+              overwrite = TRUE)
   }
 
   # Multi-PFT settings

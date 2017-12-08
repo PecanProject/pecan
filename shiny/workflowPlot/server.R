@@ -18,6 +18,9 @@ options(shiny.maxRequestSize=100*1024^2)
 # Define server logic
 server <- shinyServer(function(input, output, session) {
   bety <- betyConnect()
+  source("workflowPlot_fcns.R", local = TRUE) # Load all functions that need to be defined for this script
+  
+  
   # Update all workflow ids
   observe({
     # get_workflow_ids function (line 137) in db/R/query.dplyr.R takes a flag to check
@@ -50,28 +53,7 @@ server <- shinyServer(function(input, output, session) {
   observe({
     updateSelectizeInput(session, "all_run_id", choices=all_run_ids())
   })
-  return_DF_from_run_ID <- function(diff_ids){
-    # Called by function parse_ids_from_input_runID
-    # which is a wrapper of this function
-    # Returns a DF for a particular run_id
-    split_string <- strsplit(diff_ids,',')[[1]]
-    # Workflow id is the first element. Trim leading and ending white spaces. Split by space now
-    wID <- as.numeric(strsplit(trimws(split_string[1],which = c("both")),' ')[[1]][2])
-    # Run id is the second element
-    runID <- as.numeric(strsplit(trimws(split_string[2],which = c("both")),' ')[[1]][2])
-    return(data.frame(wID,runID))
-  }
-  # Wrapper over return_DF_from_run_ID
-  # @param list of multiple run ids
-  # run_id_string: ('workflow' workflow_ID, 'run' run_id)
-  # @return Data Frame of workflow and run ids
-  parse_ids_from_input_runID <- function(run_id_list){
-    globalDF <- data.frame()
-    for(w_run_id in run_id_list){
-      globalDF <- rbind(globalDF,return_DF_from_run_ID(w_run_id))
-    }
-    return(globalDF)
-  }  
+    
   # Update variable names observeEvent on input$load 
   observeEvent(input$load,{
     req(input$all_run_id)
@@ -97,31 +79,7 @@ server <- shinyServer(function(input, output, session) {
     }
     return(globalDF)
   })
-  # Allows to load actual data (different from model output) following the tutorial
-  # https://github.com/PecanProject/pecan/blob/develop/documentation/tutorials/AnalyzeOutput/modelVSdata.Rmd
-  # @params: bety,settings,File_path,File_format
-  # loadObservationData <- function(bety,settings,File_path,File_format){
-  loadObservationData <- function(bety,inputs_df){
-    input_id <- inputs_df$input_id
-    # File_format <- getFileFormat(bety,input_id)
-    File_format <- PEcAn.DB::query.format.vars(bety = bety, input.id = input_id)
-    start.year <- as.numeric(lubridate::year(inputs_df$start_date))
-    end.year <- as.numeric(lubridate::year(inputs_df$end_date))
-    File_path <- inputs_df$filePath
-    # TODO There is an issue with the db where file names are not saved properly. 
-    # To make it work with the VM, uncomment the line below
-    # File_path <- paste0(inputs_df$filePath,'.csv')
-    site.id <- inputs_df$site_id
-    site<-PEcAn.DB::query.site(site.id,bety$con)
-    observations<-PEcAn.benchmark::load_data(data.path = File_path, format= File_format, time.row = File_format$time.row,  site = site, start_year = start.year, end_year = end.year) 
-    return(observations)
-  }
-  getSettingsFromWorkflowId <- function(bety,workflowID){
-    basePath <- dplyr::tbl(bety, 'workflows') %>% dplyr::filter(id %in% workflowID) %>% dplyr::pull(folder)
-    configPath <- file.path(basePath, 'pecan.CONFIGS.xml')
-    settings<-PEcAn.settings::read.settings(configPath)
-    return(settings)
-  }
+  
   observeEvent(input$load,{
     # Retrieves all site ids from multiple seleted run ids when load button is pressed
     req(input$all_run_id)
@@ -134,32 +92,13 @@ server <- shinyServer(function(input, output, session) {
     }
     updateSelectizeInput(session, "all_site_id", choices=site_id_list)
   })
-  # Get input id from selected site id. Returns inputs_df which is used to load observation data
-  getInputs <- function(bety,site_Id){
-    # Subsetting the input id list based on the current (VM) machine
-    my_hostname <- PEcAn.remote::fqdn()
-    my_machine_id <- dplyr::tbl(bety, 'machines') %>% dplyr::filter(hostname == my_hostname) %>% dplyr::pull(id)
-    # Inner join 'inputs' table with 'dbfiles' table
-    # inputs_df would contain all the information about the site and input id required for
-    # the tutorial mentioned above to compare model run with actual observations
-    inputs_df <- dplyr::tbl(bety, 'dbfiles') %>% 
-      dplyr::filter(container_type == 'Input', machine_id == my_machine_id) %>%
-      dplyr::inner_join(tbl(bety, 'inputs')  %>% dplyr::filter(site_id %in% site_Id), by = c('container_id' = 'id')) %>%
-      dplyr::collect()
-    # Order by container id (==input id)
-    inputs_df <- inputs_df[order(inputs_df$container_id),]
-    # Mutate column as (input id, name) to be shown to the user
-    inputs_df <- inputs_df %>% 
-      dplyr::mutate(input_selection_list = paste(inputs_df$container_id, inputs_df$name),
-             filePath = paste0(inputs_df$file_path,'/', inputs_df$file_name)) %>%
-      dplyr::select(input_id = container_id,filePath,input_selection_list,start_date,end_date,site_id,name,
-             machine_id,file_name,file_path)
-    return(inputs_df)
-  }
+
   # Update input id list as (input id, name)
   observe({
     req(input$all_site_id)
     inputs_df <- getInputs(bety,c(input$all_site_id))
+    formats_sub <- dplyr::tbl(bety, 'formats_variables') %>% dplyr::filter(format_id %in% inputs_df$format_id) %>% dplyr::pull(format_id) %>% unique()
+    inputs_df <- inputs_df %>% dplyr::filter(format_id %in% formats_sub) # Only data sets with formats with associated variables will show up
     updateSelectizeInput(session, "all_input_id", choices=inputs_df$input_selection_list)
   })
   # Renders ggplotly 
@@ -246,6 +185,11 @@ server <- shinyServer(function(input, output, session) {
     # Not able to add icon over ggplotly
     # add_icon()
   })
+  
+  
+  # Source the server code for all the benchmarking tabs in the app
+  source("bm.R", local = TRUE)
+  
 }) # Shiny server closes here  
 # To run the shiny app locally
 # runApp(port=6480, launch.browser=FALSE)

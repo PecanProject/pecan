@@ -14,8 +14,8 @@ read_web_config = function(php.config = "../../web/config.php") {
   config <- config[grep("^\\$", config)]  ## find lines that begin with $ (variables)
   
   ## replacements
-  config <- sub("$", "", config, fixed = TRUE)  ## remove $
-  config <- sub(";", "", config, fixed = TRUE)  ## remove ;
+  config <- gsub("^\\$", "", config)  ## remove leading $
+  config <- gsub(";.*$", "", config)  ## remove ; and everything afterwards
   config <- sub("false", "FALSE", config, fixed = TRUE)  ##  Boolean capitalization
   config <- sub("true", "TRUE", config, fixed = TRUE)  ##  Boolean capitalization
   config <- gsub(pattern = "DIRECTORY_SEPARATOR",replacement = "/",config)
@@ -27,10 +27,12 @@ read_web_config = function(php.config = "../../web/config.php") {
   
   ##references
   ref <- grep("$", config, fixed = TRUE)
-  refsplit = strsplit(config[ref],split = " . ",fixed=TRUE)[[1]]
-  refsplit = sub(pattern = '\"',replacement = "",x = refsplit)
-  refsplit = sub(pattern = '$',replacement = '\"',refsplit,fixed=TRUE)
-  config[ref] <- paste0(refsplit,collapse = "")  ## lines with variable references fail
+  if(length(ref) > 0){
+    refsplit = strsplit(config[ref],split = " . ",fixed=TRUE)[[1]]
+    refsplit = sub(pattern = '\"',replacement = "",x = refsplit)
+    refsplit = sub(pattern = '$',replacement = '\"',refsplit,fixed=TRUE)
+    config[ref] <- paste0(refsplit,collapse = "")  ## lines with variable references fail
+  }
   
   ## convert to list
   config.list <- eval(parse(text = paste("list(", paste0(config, collapse = ","), ")")))

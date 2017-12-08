@@ -46,11 +46,27 @@ addFormat() {
 # 3 : start date of input data
 # 4 : end date of input data
 addInput() {
-    INPUT_ID=$( ${PSQL} "SELECT id FROM inputs WHERE site_id=$1 AND format_id=$2 AND start_date='$3' AND end_date='$4' LIMIT 1;" )
+    if [ "$3" == "" ]; then
+        START_Q=" is NULL"
+        START_I="NULL"
+    else
+        START_Q="='$3'"
+        START_I="'$3'"
+    fi
+    if [ "$4" == "" ]; then
+        END_Q=" is NULL"
+        END_I="NULL"
+    else
+        END_Q="='$4'"
+        END_I="'$4'"
+    fi
+    INPUT_ID=$( ${PSQL} "SELECT id FROM inputs WHERE site_id=$1 AND format_id=$2 AND start_date${START_Q} AND end_date${END_Q} LIMIT 1;" )
     if [ "$INPUT_ID" == "" ]; then
-        ${PSQL} "INSERT INTO inputs (site_id, format_id, name, start_date, end_date, created_at, updated_at) VALUES ($1, $2, '', '$3', '$4', NOW(), NOW());"
-        INPUT_ID=$( ${PSQL} "SELECT id FROM inputs WHERE site_id=$1 AND format_id=$2 AND start_date='$3' AND end_date='$4' LIMIT 1;" )
+        ${PSQL} "INSERT INTO inputs (site_id, format_id, name, start_date, end_date, created_at, updated_at) VALUES ($1, $2, '', ${START_I}, ${END_I}, NOW(), NOW());"
+        INPUT_ID=$( ${PSQL} "SELECT id FROM inputs WHERE site_id=$1 AND format_id=$2 AND start_date${START_Q} AND end_date${END_Q} LIMIT 1;" )
         echo "Added new input with ID=${INPUT_ID} for site=$1, format_id=$2, start=$3, end=$4"
+    else
+        echo "Found input with ID=${INPUT_ID} for site=$1, format_id=$2, start=$3, end=$4"
     fi
 }
 

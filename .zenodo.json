@@ -1,0 +1,131 @@
+{
+     "creators": [
+        {
+            "affiliation": "University of Illinois at Urbana-Champaign", 
+            "name": "David LeBauer",
+            "orcid": "0000-0001-7228-053X"
+        }, 
+        {
+            "affiliation": "Boston University", 
+            "name": "Michael Dietze",
+            "orcid": "0000-0002-2324-2518"
+        }, 
+        {
+            "affiliation": "National Center for Supercomputing Applications", 
+            "name": "Rob Kooper",
+            "orcid": "0000-0002-5781-7287"
+        }, 
+        {
+            "affiliation": "Boston University", 
+            "name": "Alexey Shiklomanov",
+            "orcid": "0000-0003-4022-5979"
+        }, 
+        {
+            "affiliation": "Boston University", 
+            "name": "Betsy Cowdery",
+            "orcid": "0000-0002-6538-6296"
+        }, 
+        {
+            "affiliation": "Boston Univeristy", 
+            "name": "Istem Fer",
+            "orcid": "0000-0001-8236-303X"
+        }, 
+        {
+            "affiliation": "Boston Univeristy", 
+            "name": "Anthony Gardella"
+        }, 
+        {
+            "affiliation": "Pacific Northwest National Laboratory / University of Maryland", 
+            "name": "Ben Bond-Lamberty",
+            "orcid": "0000-0001-9525-4633"
+        }, 
+        {
+            "affiliation": "Brookhaven National Laboratory", 
+            "name": "Shawn P. Serbin",
+            "orcid": "0000-0003-4136-8971"
+        }, 
+        {
+            "affiliation": "University of Notre Dame", 
+            "name": "Ann Raiho"
+        }, 
+        {
+            "affiliation": "Brigham Young University",
+            "name": "Anne Thomas"
+        }, 
+        {
+            "affiliation": "Pennsylvania State University", 
+            "name": "Chris Black",
+            "orcid": "0000-0001-8382-298X"
+        }, 
+        {
+            "affiliation": "University of Wisconsin-Madison", 
+            "name": "James Simkins"
+        }, 
+        {
+            "affiliation": "University of Wisconsin-Madison", 
+            "name": "Ankur Desai",
+            "orcid": "0000-0002-5226-6041"
+        }, 
+        {
+            "affiliation": "Worchester Academy",
+            "name": "Joshua Mantooth"
+        }, 
+        {
+            "name": "Aman Kumar"
+        }, 
+        {
+            "affiliation": "Boston University", 
+            "name": "Liam Burke"
+        }, 
+        {
+            "affiliation": "Boston University", 
+            "name": "Afshin Pourmokhtarian"
+        }, 
+        {
+            "affiliation": "Morton Arboretum", 
+            "name": "Christy Rollinson"
+        }, 
+        {
+            "name": "Shubham Agarwal"
+        }, 
+        {
+            "affiliation": "Purdue University",
+            "name": "Brady Hardiman"
+        }, 
+        {
+            "affiliation": "University of New South Wales", 
+            "name": "Martin De Kauwe",
+            "orcid": "0000-0002-3399-9098"
+        }, 
+        {
+            "name": "Eugene"
+        }, 
+        {
+            "affiliation": "Boston University", 
+            "name": "Tess McCabe"
+        }, 
+        {
+            "affiliation": "Boston University", 
+            "name": "Katie Ragosta"
+        }, 
+        {
+            "name": "Tony Cohen"
+        }, 
+        {
+            "name": "zhangwenx"
+        }, 
+        {
+            "affiliation": "Finnish Meteorological Institute", 
+            "name": "Tony Viskari",
+            "oricid": "0000-0002-3357-1374"
+        }, 
+        {
+            "name": "Yan Zhao"
+        }, 
+        {
+           "affiliation": "University of Illinois at Urbana-Champaign",
+            "name": "Jing Xia"
+        }
+    ], 
+    "access_right": "open", 
+}

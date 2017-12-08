@@ -123,7 +123,8 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
       } else {
         ## copy values
         if (!is.null(trait.values[[group]])) {
-          vals <- as.data.frame(t(trait.values[[group]]))
+          vals <- as.data.frame(trait.values[[group]])
+          
           
           # replace defaults with traits
           #new.params.locs <- which(names(spp.params) %in% names(vals))
@@ -155,8 +156,8 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           if ("AGEMX" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$AGEMX <- vals$AGEMX
           }
-          if ("G" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$G <- vals$G
+          if ("Gmax" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$G <- vals$Gmax
           }
           if ("SPRTND" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$SPRTND <- vals$SPRTND
@@ -174,7 +175,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
             spp.params[spp.params$Spp_Name == group, ]$D3 <- vals$D3
           }
           if ("FROST" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$FROST <- vals$FROST
+             spp.params[spp.params$Spp_Name == group, ]$FROST <- vals$FROST
           }
           if ("CM1" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$CM1 <- vals$CM1
