@@ -17,8 +17,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Changed
 
-
-## [1.5.2] - 2017-??-??
+## [1.5.2] - 2017-12-07
 
 ### Fixes
 - Updated models/ed/data/pftmapping.csv to include two new BETYdb PFTs
@@ -37,7 +36,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Changed
 - Major namespace cleanup in the `PEcAn.utils` package. It now loads more quietly and is much less likely to mask functions in a package you loaded earlier.
-- Moved many functions from `PEcAn.utils` into other PEcAn packages. The `PEcAn.utils` versions still work with a deprecation warning, but will be removed in a future release.
+- Moved many functions from `PEcAn.utils` into other PEcAn packages. The `PEcAn.utils` versions still work with a deprecation warning, but will be removed in next release.
 	- `listToXml` and `SafeList` moved to `PEcAn.settings`
 	- `fqdn` moved to `PEcAn.remote`
 - PEcAnRTM: Removed effective sample size normalization from likelihood calculation. It was giving weird results.
