@@ -9,8 +9,8 @@ call_biocro_0.9 <- function(WetDat, day1, dayn, years, yeari, i,
 
   # Check that all variables are present in the expected order --
   # BioGro < 1.0 accesses weather vars by position and DOES NOT check headers.
-  expected_cols <- c("year", "doy", "hour", "SolarR", "Temp", "RH", "WS", "precip")
-  if(!identical(colnames(WetDat), expected_cols)){
+  expected_cols <- c("year", "doy", "hour", "[Ss]olar", "Temp", "RH", "WS|windspeed", "precip")
+  if(!all(mapply(grepl, expected_cols, colnames(WetDat)))){
     PEcAn.logger::logger.severe("Format error in weather file: Columns must be (", expected_cols, "), in that order.")
   }
   WetDat <- as.matrix(WetDat)
@@ -121,13 +121,6 @@ call_biocro_0.9 <- function(WetDat, day1, dayn, years, yeari, i,
 call_biocro_1 <- function(WetDat, day1, dayn, years, yeari, i,
                           config, genus, lat, lon, coppice.interval,
                           tmp.result, HarvestedYield) {
-
-  if ("SolarR" %in% names(WetDat)) {
-    WetDat <- dplyr::rename(WetDat, solar = "SolarR")
-  }
-  if ("WS" %in% names(WetDat)) {
-    WetDat <- dplyr::rename(WetDat, windspeed = "WS")
-  }
 
   if (i == 1) {
     initial_values <- config$pft$initial_values
