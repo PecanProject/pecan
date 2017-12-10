@@ -52,7 +52,7 @@ read_restart.LINKAGES <- function(outdir, runid, stop.time, settings, var.names 
   }
     
   if ("TotSoilCarb" %in% var.names) {
-    forecast[[2]] <- udunits2::ud.convert(ens$TotSoilCarb, "kg/m^2", "Mg/ha") #* unit.conv 
+    forecast[[2]] <- ens$TotSoilCarb #udunits2::ud.convert(ens$TotSoilCarb, "kg/m^2", "Mg/ha") #* unit.conv 
     names(forecast[[2]]) <- c("TotSoilCarb")
   }
   

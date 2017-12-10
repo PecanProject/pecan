@@ -60,7 +60,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
     new.state[1:length(settings$pfts)] <- rnorm(length(settings$pfts),2,.1)
   }
   
-  new.state[new.state==0] <- .1
+  #new.state[new.state==0] <- .1
   
   new.state.save <- new.state
   new.state <- new.state.save[grep("Fcomp", names(new.state.save))]
@@ -317,7 +317,7 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   iage <- iage.temp
   nogro <- nogro.temp  # numeric(200)#hack
   
-  nogro[nogro < (-1)] <- -1 #this is not the best assumption
+  nogro[nogro < 1] <- 2 #this is not the best assumption
   
   ntrees <- new.ntrees
   
@@ -338,12 +338,14 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   # optimize(merit, c(0,200),b_obs=b_obs)$minimum } } nu <- nl + ntrees[n] - 1 nl <- nu + 1 }
   
   ##### SOIL
-  if ("TotSoilCarb" %in% variables) {
+  if ("TotSoilCarb" %in% names(new.state.other)) {
     leaf.sum <- sum(tyl[1:12]) * 0.48
     soil.org.mat <- new.state.other["TotSoilCarb"] - leaf.sum
-    soil.corr <- soil.org.mat/(sum(C.mat[C.mat[, 5], 1]) * 0.48)
+    soil.corr <- soil.org.mat / (sum(C.mat[C.mat[, 5], 1]) * 0.48)
+    #if(soil.corr > 1) soil.corr <- 1
     C.mat[C.mat[, 5], 1] <- C.mat[C.mat[, 5], 1] * as.numeric(soil.corr)
-  }
+    C.mat[is.na(C.mat[,1]),1] <- 0
+    }
   
   if (RENAME) {
     file.rename(file.path(settings$rundir, runid, "linkages.restart.Rdata"), 
