@@ -351,7 +351,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-  for(t in 8:nt) {
+  for(t in 17:nt) {
     
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
@@ -828,9 +828,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     colnames(analysis) <- colnames(X)
     
     par(mfrow=c(1,1))
-    boxplot(prop.table(as.matrix(abs(analysis[,1:9])),1),col='pink')
+    boxplot(prop.table(as.matrix(analysis[,1:9]),1),col='pink',ylim=c(0,1))
     points(Y,col='green',pch=19)
-    points(abs(mu.f[1:9])/sum(abs(mu.f[1:9])),col='blue',pch=19)
+    points(mu.f[1:9]/sum(mu.f[1:9]),col='blue',pch=19)
     
     #hist(rnorm(1000,colMeans(X)[9],sd = sqrt(cov(X)[9,9])),freq=F,xlim=c(-.05,5))
     #lines(density(rnorm(1000,Y[9],sd = sqrt(R[9,9]))),col='green',lwd=2)
@@ -1001,7 +1001,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ###-------------------------------------------------------------------###
   ### time series                                                       ###
   ###-------------------------------------------------------------------### 
-  pdf(file.path(settings$outdir, "sda.enkf.time-series.pdf"))
+  pdf(file.path(settings$outdir, "sda.enkf.time-series-data-forecast-analysis.pdf"))
   
   names.y <- unique(unlist(lapply(obs.mean[t1:t], function(x) { names(x) })))
   Ybar <- t(sapply(obs.mean[t1:t], function(x) {
@@ -1029,25 +1029,25 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   
   for (i in seq_len(ncol(X))) {
     Xbar <- plyr::laply(FORECAST[t1:t], function(x) {
-      mean(x[, i]/rowSums(x,na.rm = T), na.rm = TRUE) })
+      mean(x[, i]/rowSums(x[,1:9],na.rm = T), na.rm = TRUE) }) #/rowSums(x[,1:9],na.rm = T)
     Xci <- plyr::laply(FORECAST[t1:t], function(x) { 
-      quantile(x[, i]/rowSums(x,na.rm = T), c(0.025, 0.975),na.rm = T) })
+      quantile(x[, i]/rowSums(x[,1:9],na.rm = T), c(0.025, 0.975),na.rm = T) })
     Xci[is.na(Xci)]<-0
     
     Xbar <- Xbar
     Xci <- Xci
     
     Xa <- plyr::laply(ANALYSIS[t1:t], function(x) { 
-      mean(x[, i]/rowSums(x,na.rm = T),na.rm = T) })
+      mean(x[, i]/rowSums(x[,1:9],na.rm = T),na.rm = T) })
     XaCI <- plyr::laply(ANALYSIS[t1:t], function(x) { 
-      quantile(x[, i]/rowSums(x,na.rm = T), c(0.025, 0.975),na.rm = T )})
+      quantile(x[, i]/rowSums(x[,1:9],na.rm = T), c(0.025, 0.975),na.rm = T )})
     
     Xa <- Xa
     XaCI <- XaCI
     
     plot(as.Date(obs.times[t1:t]),
          Xbar, 
-         ylim = range(c(XaCI, Xci), na.rm = TRUE),
+         ylim = c(0,1),#range(c(XaCI, Xci), na.rm = TRUE),
          type = "n", 
          xlab = "Year", 
          ylab = ylab.names[grep(colnames(X)[i], var.names)],
@@ -1065,12 +1065,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     }
     
     # forecast
-    ciEnvelope(as.Date(obs.times[t1:t]), Xci[, 1], Xci[, 2], col = alphablue)  #col='lightblue')
-    lines(as.Date(obs.times[t1:t]), Xbar, col = "darkblue", type = "l", lwd = 2)
+    ciEnvelope(as.Date(obs.times[t1:t]), Xci[, 1], Xci[, 2], col = alphablue)  #col='lightblue') #alphablue
+    lines(as.Date(obs.times[t1:t]), Xbar, col = "darkblue", type = "l", lwd = 2) #"darkblue"
     
     # analysis
-    ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink)
-    lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2)
+    ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink) #alphapink
+    lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2) #"black"
     
     legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
     
