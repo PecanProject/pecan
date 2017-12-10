@@ -341,9 +341,10 @@ write_restart.LINKAGES <- function(outdir, runid, start.time, stop.time,
   if ("TotSoilCarb" %in% names(new.state.other)) {
     leaf.sum <- sum(tyl[1:12]) * 0.48
     soil.org.mat <- new.state.other["TotSoilCarb"] - leaf.sum
-    soil.corr <- soil.org.mat/(sum(C.mat[C.mat[, 5], 1]) * 0.48)
+    soil.corr <- soil.org.mat / (sum(C.mat[C.mat[, 5], 1]) * 0.48)
+    #if(soil.corr > 1) soil.corr <- 1
     C.mat[C.mat[, 5], 1] <- C.mat[C.mat[, 5], 1] * as.numeric(soil.corr)
-    C.mat[is.na(C.mat[,1]),1]<-0
+    C.mat[is.na(C.mat[,1]),1] <- 0
     }
   
   if (RENAME) {

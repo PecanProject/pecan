@@ -307,7 +307,12 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     #f.comp non linear
     y_star[1:YN] <- X[1:YN] / sum(X[1:YN])
     
-    data_constraint ~ dconstraint(sum(X[1:YN]) > 0)
+    #for (i in 1:YN) {
+    #  X.ind[i] ~ dinterval(X[i], 0)
+    #}
+    #data_constraint ~ dconstraint(sum(X.ind[1:YN]) > 0)
+    
+    #data_constraint ~ dconstraint(sum(X[1:YN]) > 0)
     
     ## Analysis
     y.censored[1:YN] ~ dmnorm(y_star[1:YN], prec = r[1:YN,1:YN]) #is it an okay assumpution to just have X and Y in the same order?
@@ -351,19 +356,19 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
-
-  for(t in 10) {
+  
+  for(t in 13:nt) {
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
     ###-------------------------------------------------------------------###  
     X <- list()
     for (i in seq_len(length(run.id))) {
-        X[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
-                                                       runid = run.id[[i]], 
-                                                       stop.time = obs.times[t], 
-                                                       settings = settings, 
-                                                       var.names = var.names, 
-                                                       params = params[[i]]))
+      X[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
+                                                     runid = run.id[[i]], 
+                                                     stop.time = obs.times[t], 
+                                                     settings = settings, 
+                                                     var.names = var.names, 
+                                                     params = params[[i]]))
     }
     
     for(i in seq_len(length(run.id))){
@@ -375,6 +380,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     }
     
     X <- do.call(rbind, X)
+    
+    X <- X + rnorm(length(X),.5,1)
     
     FORECAST[[t]] <- X
     
@@ -510,7 +517,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           }
         }
         
-        if(t == 10 | length(run.id) < nens){
+        if(t == 0 | length(run.id) < nens){
           #The purpose of this step is to impute data for mu.f 
           #where there are zero values so that 
           #mu.f is in 'tobit space' in the full model
@@ -583,7 +590,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         dat.tobit2space <- runMCMC(Cmcmc_tobit2space, niter = 10000, progressBar=TRUE)
         
         pdf(file.path(outdir,paste0('assessParams',t,'.pdf')))
-
+        
         assessParams(dat = dat.tobit2space[200:1000,], Xt = X)
         dev.off()
         
@@ -595,7 +602,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         Pf <- matrix(colMeans(dat.tobit2space[, iPf]),ncol(X),ncol(X))
         
         iycens <- grep("y.censored",colnames(dat.tobit2space))
-
+        
         X.new <- matrix(colMeans(dat.tobit2space[,iycens]),nrow(X),ncol(X))
         
         #plot(dat.tobit2space[,16])
@@ -632,19 +639,19 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         y.ind <- as.numeric(Y > interval[,1])
         y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
         
-        if(t==10){ #TO need to make something that works to pick weather to compile or not
+        if(t == 0){ #TO need to make something that works to pick weather to compile or not
           #y.obs = Y.dat[1,]
           constants.tobit = list(N = ncol(X), YN = length(y.ind)) #, nc = 1
           dimensions.tobit = list(X = ncol(X), X.mod = ncol(X), Q = c(ncol(X),ncol(X))) #  b = dim(inits.pred$b),
           
-
-          data.tobit = list(data_constraint = 1,
-                            muf = as.vector(mu.f), pf = solve(Pf), 
-                            aq = aqq[t,,], bq = bqq[t],
-                            y.ind = y.ind,
-                            y.censored = y.censored,
-                            r = solve(R))
-          inits.pred = list(q = diag(ncol(X)), X.mod = as.vector(mu.f), X = rnorm(ncol(X),0,1)) #
+          
+          data.tobit = list(#data_constraint = 1,
+            muf = as.vector(mu.f), pf = solve(Pf), 
+            aq = aqq[t,,], bq = bqq[t],
+            y.ind = y.ind,
+            y.censored = y.censored,
+            r = solve(R))
+          inits.pred = list(q = diag(ncol(X)), X.mod = as.vector(mu.f), X = as.vector(mu.f)) #
           #set.seed(0)
           #ptm <- proc.time()
           model_pred <- nimbleModel(tobit.model, data = data.tobit, dimensions = dimensions.tobit,
@@ -690,6 +697,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           Cmodel$muf <- mu.f
           Cmodel$pf <- solve(Pf)
           Cmodel$r <- solve(R)
+          
+          inits.pred = list(q = diag(ncol(X)), X.mod = as.vector(mu.f), X = as.vector(mu.f)) 
+          Cmodel$setInits(inits.pred)
           
           for(i in 1:length(y.ind)) {
             ## ironically, here we have to "toggle" the value of y.ind[i]
@@ -800,13 +810,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       
       ## normalize
       Z <- X*0
-
+      
       for(i in seq_len(nrow(X))){
         if(processvar == TRUE) {
           Z[i,] <- 1/sqrt(L_f) * t(V_f)%*%(X.new[i,]-mu.f)
         }else{
           Z[i,] <- 1/sqrt(L_f) * t(V_f)%*%(X[i,]-mu.f)
-          }
+        }
       }
       Z[is.na(Z)]<-0
       
@@ -934,7 +944,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         # analysis
         ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink)
         lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2)
-        legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
+        #legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
       }
     }
     #dev.off()
