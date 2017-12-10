@@ -126,24 +126,25 @@ $(document).ready(function () {
 </div>
 
 
-<p>Our goal is build a fully generalizable state data assimilation workflow that will assimilate multiple types of data and data products into ecosystem models within PEcAn temporally and spatially. But, during development, specifically with PalEON goals in mind, we have been focusing on assimilating tree ring estimated NPP and AGB and pollen derived fractional composition into two ecosystem models, SIPNET and LINKAGES, at Harvard Forest. This methodology will soon be expanded to include the PalEON sites listed on the <a href="https://paleon.geography.wisc.edu/doku.php/working_groups;state_data_assimilation">state data assimilation wiki page</a>.</p>
+<p>Our goal is build a fully generalizable state data assimilation (SDA) workflow that will assimilate multiple types of data and data products into ecosystem models within PEcAn temporally and spatially. But, during development, specifically with PalEON goals in mind, we have been focusing on assimilating tree ring estimated NPP and AGB and pollen derived fractional composition into two ecosystem models, SIPNET and LINKAGES, at Harvard Forest. This methodology will soon be expanded to include the PalEON sites listed on the <a href="https://paleon.geography.wisc.edu/doku.php/working_groups;state_data_assimilation">state data assimilation wiki page</a>.</p>
 <div id="data-products" class="section level2">
 <h2>Data Products</h2>
-<p>During workflow development, we have been working with tree ring estimated NPP and AGB and pollen derived fractional composition data products. Both of these data products have been estimated with a full accounting of uncertainty, which provides us with state variable observation mean vector and covariance matrix at each time step. These data products are discussed in more detail below.</p>
+<p>During workflow development, we have been working with tree ring estimated NPP and AGB and pollen derived fractional composition data products. Both of these data products have been estimated with a full accounting of uncertainty, which provides us with state variable observation mean vector and covariance matrix at each time step. These data products are discussed in more detail below. Eventhough we have been working with specific data products during development, our workflow is generalizable to alternative data products as long as we can calculate a state varaiable observation mean vector and covariance for a time point.</p>
 <div id="tree-rings" class="section level3">
 <h3>Tree Rings</h3>
-<p>Andria Dawson, Chris Paciorek, and Mike Dietze have developed a Bayesian model that estimates annual aboveground biomass increment and aboveground biomass for each tree in a dataset. We obtain this data and aggregate to the level appropriate for the ecosystem model. In SIPNET, we are assimilating annual gross woody increment and total aboveground biomass. In LINKAGES, we are assimilating annual species biomass. More information on deriving these tree ring data products can be found in Dawson et al 201?.</p>
-<p>We have been working mostly with tree data collected at Harvard Forest. Tree rings and census data were collected at Lyford Plot between 1960 and 2010 in three separate plots. Other tree ring data will be added to this analysis in the future from Kelly Heilman (Midwest sites) and Alex Dye (Huron Mt. Club).</p>
+<p>We have been primarily been working with the tree ring data product created by Andria Dawson and Chris Paciorek and the PEcAn tree ring allometry module. They have developed a Bayesian model that estimates annual aboveground biomass increment and aboveground biomass for each tree in a dataset. We obtain this data and aggregate to the level appropriate for the ecosystem model. In SIPNET, we are assimilating annual gross woody increment and total aboveground biomass. In LINKAGES, we are assimilating annual species biomass. More information on deriving these tree ring data products can be found in Dawson et al 201?.</p>
+<p>We have been working mostly with tree data collected at Harvard Forest. Tree rings and census data were collected at Lyford Plot between 1960 and 2010 in three separate plots. Other tree ring data will be added to this analysis in the future from past PEON courses (UNDERC), Kelly Heilman (Billy’s Lake and Bigwoods), and Alex Dye (Huron Mt. Club).</p>
 </div>
 <div id="pollen" class="section level3">
 <h3>Pollen</h3>
-<p>STEPPS is a Bayesian model developed by Paciorek and McLachlan 2009 and Dawson et al 2016 to estimate spatially gridded fractional composition from fossil pollen. We have been working with STEPPS1 output, specifically with the grid cell that contains Harvard Forest. The temporal resolution of this data product is centennial. Our workflow currently operates at annual time steps, but does not require data at every time step. So, it is possible to assimilate fractional composition data every year. But, to account for missing</p>
+<p>STEPPS is a Bayesian model developed by Paciorek and McLachlan 2009 and Dawson et al 2016 to estimate spatially gridded fractional composition from fossil pollen. We have been working with STEPPS1 output, specifically with the grid cell that contains Harvard Forest. The temporal resolution of this data product is centennial. Our workflow currently operates at annual time steps, but does not require data at every time step. So, it is possible to assimilate fractional composition every one hundred years or to assimilate fractional composition data every year by accounting for variance inflation.</p>
+<p>In the future, pollen derived biomass (ReFAB) will also be available for data assimilation. Although, we have not discussed how STEPPS and ReFAB data assimilation will work.</p>
 <div id="variance-inflation" class="section level4">
 <h4>Variance Inflation</h4>
 <p>*Side Note: Probably want to call this something else now.</p>
 <p>Since the fractional composition data product has a centennial resolution, in order to use fractional composition information every year we need to change the weight the data has on the analysis. The basic idea is to downweight the likelihood relative to the prior to account for (a) the fact that we assimilate an observation multiple times and (b) the fact that the number of STEPPS observations is ‘inflated’ because of the autocorrelation. To do this, we take the likelihood and raise it to the power of (1/w) where ‘w’ is an inflation factor.</p>
 <p>w = D * (N / ESS)</p>
-<p>where D is the length of the time step. In our case D = 100. N is the number of time steps. In our case N = 11. and ESS is the effective sample size. The ESS is calculated with the following function where ntimes is the same as N above and sims is a matrix with the dimensions number MCMC samples by number state variables.</p>
+<p>where D is the length of the time step. In our case D = 100. N is the number of time steps. In our case N = 11. and ESS is the effective sample size. The ESS is calculated with the following function where ntimes is the same as N above and sims is a matrix with the dimensions number of MCMC samples by number of state variables.</p>
 <pre class="ess"><code>ESS_calc &lt;- function(ntimes, sims){
         # center based on mean at each time to remove baseline temporal correlation 
         # (we want to estimate effective sample size effect from correlation of the errors)
@@ -165,27 +166,47 @@ $(document).ready(function () {
 </div>
 </div>
 </div>
+<div id="current-models" class="section level2">
+<h2>Current Models</h2>
+<p>SIPNET and LINKAGES are the two ecosystem models that have been used during state data assimilation development within PEcAn. SIPNET is a simple ecosystem model that was built for… LINKAGES is a forest gap model created to simulate the process of succession that occurs when a gap is opened in the forest canopy. LINKAGES has 72 species level plant functional types and the ability to simulate some below ground processes (C and N cycles).</p>
+</div>
 <div id="model-calibration" class="section level2">
 <h2>Model Calibration</h2>
-<p>SIPNET and LINKAGES will both be calibrated using data collected at the Harvard Forest flux tower. Istem has completed calibration for SIPNET using a <a href="https://github.com/PecanProject/pecan/blob/develop/modules/assim.batch/R/pda.emulator.R">parameter data assimilation emulator</a> contained within the PEcAn workflow. LINKAGES will also be calibrated using this method. This method is also generalizable to other sites.</p>
+<p>Without model calibration both SIPNET and LINKAGES make incorrect predictions about Harvard Forest. To confront this problem, SIPNET and LINKAGES will both be calibrated using data collected at the Harvard Forest flux tower. Istem has completed calibration for SIPNET using a <a href="https://github.com/PecanProject/pecan/blob/develop/modules/assim.batch/R/pda.emulator.R">parameter data assimilation emulator</a> contained within the PEcAn workflow. LINKAGES will also be calibrated using this method. This method is also generalizable to other sites assuming there is data independent of data assimilation data available to calibrate against.</p>
 </div>
 <div id="initial-conditions" class="section level2">
 <h2>Initial Conditions</h2>
-<p>The initial conditions for SIPNET are sampled across state space based on data distributions at the time when the data assimilation will begin. We do not sample LINAKGES for initial conditions and instead perform model spin up for 100 years prior to beginning data assimilation. In the future, we would like to base initial conditional on data. We acheive adequete spread by allowing the parameters to vary across ensemble members.</p>
+<p>The initial conditions for SIPNET are sampled across state space based on data distributions at the time when the data assimilation will begin. We do not sample LINAKGES for initial conditions and instead perform model spin up for 100 years prior to beginning data assimilation. In the future, we would like to estimate initial conditions based on data. We acheive adequete spread in the initial conditions by allowing the parameters to vary across ensemble members.</p>
 </div>
 <div id="drivers" class="section level2">
 <h2>Drivers</h2>
-<p>We are using GCM drivers from the PaLEON model intercomparison. Christy Rollinson created MET downscaled GCM drivers for Harvard Forest. We will use these drivers when they are available because they are a closer representation of reality.</p>
+<p>We are currently using Global Climate Model (GCM) drivers from the PaLEON model intercomparison. Christy Rollinson and John Tipton are creating MET downscaled GCM drivers for the Paleon data assimilation sites. We will use these drivers when they are available because they are a closer representation of reality.</p>
 </div>
 <div id="sequential-state-data-assimilation" class="section level2">
 <h2>Sequential State Data Assimilation</h2>
-<p>We are using sequential state data assimilation methods to assimilate paleon data products into ecosystem models because less computation power is required for sequential state data assimilation than for particle filter methods. The ensemble kalman filter (EnKF) is typically used for sequential state data assimilation, but we found that EnKF lead to filter divergence when combined with our uncertain data products. Filter divergence led us to create a generalized ensemble filter that estimates process variance, which will be described in detail below. However, our workflow contains the option to use a basic EnKF if the user desires.</p>
-<div id="model-description" class="section level3">
-<h3>Model Description</h3>
+<p>We are using sequential state data assimilation methods to assimilate paleon data products into ecosystem models because less computation power is required for sequential state data assimilation than for particle filter methods.</p>
+<div id="general-description" class="section level3">
+<h3>General Description</h3>
 <p>The general sequential data assimilation framework consists of three steps at each time step: 1. Read the state variable output for time t from the model forecast ensembles and save the forecast mean (muf) and covariance (Pf). 2. If there are data mean (y) and covariance (R) at this time step, perform data assimilation analysis (either EnKF or generalized ensemble filter) to calculte the new mean (mua) and covariance (Pa) of the state variables. 3. Use mua and Pa to restart and run the ecosystem model ensembles with new state variables for time t+1.</p>
+</div>
+<div id="enkf" class="section level3">
+<h3>EnKF</h3>
+<p>There are two ways to implement sequential state data assimilation at this time. The first is the Ensemble Kalman Filter (EnKF). EnKF has an analytical solution, so the kalman gain, analysis mean vector, and analysis covariance matrix can be calculated directly:</p>
+<pre class="enkf"><code>       
+        K &lt;- Pf %*% t(H) %*% solve((R + H %*% Pf %*% t(H))) ## Kalman Gain
+        
+        mu.a &lt;- mu.f + K %*% (Y - H %*% mu.f) # Analysis mean vector
+        
+        Pa   &lt;- (diag(ncol(X)) - K %*% H) %*% Pf # Analysis covariance matrix
+        </code></pre>
+<p>The EnKF is typically used for sequential state data assimilation, but we found that EnKF lead to filter divergence when combined with our uncertain data products. Filter divergence led us to create a generalized ensemble filter that estimates process variance.</p>
+</div>
+<div id="generalized-ensemble-filter" class="section level3">
+<h3>Generalized Ensemble Filter</h3>
+<p>The generalized ensemble filter follows generally the three steps of sequential state data assimilation. But, in the generalized ensemble filter we add a latent state vector that accounts for added process variance. Furthermore, instead of solving the analysis analytically like the EnKF, we have to estimate the mean analysis vector and covariance matrix with MCMC.</p>
 <div id="mapping-ensemble-output-to-tobit-space" class="section level4">
 <h4>Mapping Ensemble Output to Tobit Space</h4>
-<p>In order to perform the second step using the generalized ensemble filter, the variables need to be mapped to a normalized space.</p>
+<p>There are some instances when we have right or left censored variables from the model forecast. For example, a model estimating species level biomass may have several ensemble members that produce zero biomass for a given species. We are considering this case a left censored state variable that needs to be mapped to normal space using a tobit model. We do this by creating two matrices with dimensions number of ensembles by state variable. The first matirx is a matrix of indicator variables (y.ind), and the second is a matrix of censored variables (y.censored). When the indicator variable is 0 the state variable (j) for ensemble member (i) is sampled. This allows us to impute a normal distribution for each state variable that contains ‘missing’ forecasts or forecasts of zero.</p>
 <pre class="tobit2space"><code>tobit2space.model &lt;- nimbleCode({
     for(i in 1:N){
       y.censored[i,1:J] ~ dmnorm(muf[1:J], cov = pf[1:J,1:J])
@@ -201,8 +222,9 @@ $(document).ready(function () {
     
   })</code></pre>
 </div>
-<div id="generalized-ensemble-filter-with-process-variance-estimation" class="section level4">
-<h4>Generalized Ensemble Filter with Process Variance Estimation</h4>
+<div id="generalized-ensemble-filter-model-description" class="section level4">
+<h4>Generalized Ensemble Filter Model Description</h4>
+<p>Below is the BUGS code for the analysis full analysis model. The forecast mean an covariance are calculated from the tobit2space model above. We use a tobit likelihood in this model because there are instances when the data may be left or right censored. Process variance is included by adding a latent model state (X) with a process precision matrix (q). We update our prior on q at each time step using our estimate of q from the previous time step.</p>
 <pre class="tobitbase"><code>  tobit.model &lt;- nimbleCode({ 
     
     q[1:N,1:N]  ~ dwish(R = aq[1:N,1:N], df = bq) ## aq and bq are estimated over time
@@ -230,12 +252,35 @@ $(document).ready(function () {
     
   })</code></pre>
 </div>
-<div id="ensemble-adjustment" class="section level4">
-<h4>Ensemble Adjustment</h4>
 </div>
+<div id="ensemble-adjustment" class="section level3">
+<h3>Ensemble Adjustment</h3>
+<p>Each ensemble member has a different set of species parameters. We adjust the updated state variables by using an ensemble adjustment. The ensemble adjustment weights the ensemble members based on their likelihood during the analysis step.</p>
+<pre class="adjustment"><code>      S_f  &lt;- svd(Pf)
+      L_f  &lt;- S_f$d
+      V_f  &lt;- S_f$v
+      
+      ## normalize
+      Z &lt;- X*0
+      for(i in seq_len(nrow(X))){
+          Z[i,] &lt;- 1/sqrt(L_f) * t(V_f)%*%(X[i,]-mu.f)
+      }
+      Z[is.na(Z)]&lt;-0
+      
+      ## analysis
+      S_a  &lt;- svd(Pa)
+      L_a  &lt;- S_a$d
+      V_a  &lt;- S_a$v
+      
+      ## analysis ensemble
+      X_a &lt;- X*0
+      for(i in seq_len(nrow(X))){
+        X_a[i,] &lt;- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
+      }</code></pre>
 </div>
 <div id="diagnostics" class="section level3">
 <h3>Diagnostics</h3>
+<p>There are three diagnositics we have currently implemented: time series, bias time series, and process variance. The time series diagnostics show the data, forecast, and analysis time series for each state variable. These are useful for visually assessing variance and magnitude of change of state variables through time. These time series are also updated throughout the analysis and are also created as a pdf at the end of the SDA workflow. There are two types of bias time series the first assess the bias in the update (the forecast minus the analysis) and the second assess the bias in the error (the forecast minus the data). These bias time series are useful for identifing which state variables have intrinsic bias within the model. For example, if red oak biomass in LINKAGES increases at every time step (the update and the error are always positive), this would suggest that LINKAGES has a positive growth or recruitment bias for red oak. Finally, when using the generalized ensemble filter to estimate process variance, there are two additional plots to assess estimation of process variance. The first is a correlation plot of the process covariance matrix. This tells us what correlations are incorrectly represented by the model. For example, if red oak biomass and white pine biomass are highly negatively correlated in the process covariance matrix, this means that the model either 1) has no relationship between red oak and white pine and they should affect each other negatively or 2) there is a positive relationship between red oak and white pine and there shouldn’t be any relationship. We can determine which of these is true by comparing the process covariance matrix to the model covariance matrix. The second process variance diagnostic plot shows how the degrees of freedom associated with estimating the process covariance matrix have changed through time. This plot should show increasing degrees of freedom through time.</p>
 </div>
 </div>
 
