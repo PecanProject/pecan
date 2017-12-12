@@ -3,7 +3,7 @@ l2n <- function(x) lapply(x, as.numeric)
 
 # wrapper to encapsulate version-specific logic for BioCro 0.9x
 # not exported
-call_biocro_0.9 <- function(WetDat, day1, dayn, years, yeari, i,
+call_biocro_0.9 <- function(WetDat, years, yeari, i,
                             config, genus, lat, lon, coppice.interval,
                             tmp.result, HarvestedYield) {
 
@@ -13,6 +13,8 @@ call_biocro_0.9 <- function(WetDat, day1, dayn, years, yeari, i,
   if(!all(mapply(grepl, expected_cols, colnames(WetDat)))){
     PEcAn.logger::logger.severe("Format error in weather file: Columns must be (", expected_cols, "), in that order.")
   }
+  day1 <- min(WetDat$doy) # data already subset upstream, but BioCro 0.9 assumes a full year if day1/dayn are unset
+  dayn <- max(WetDat$doy)
   WetDat <- as.matrix(WetDat)
 
   # BLETCHEROUS HACK: BioCro 0.94 starts the run by subsetting weather data
@@ -118,7 +120,7 @@ call_biocro_0.9 <- function(WetDat, day1, dayn, years, yeari, i,
 
 # wrapper to encapsulate version-specific logic for BioCro 1.x
 # not exported
-call_biocro_1 <- function(WetDat, day1, dayn, years, yeari, i,
+call_biocro_1 <- function(WetDat, years, yeari, i,
                           config, genus, lat, lon, coppice.interval,
                           tmp.result, HarvestedYield) {
 
