@@ -63,7 +63,7 @@ run.biocro <- function(lat, lon, metpath, soil.nc = NULL, config = config, coppi
 
     call_result <- caller_fn(
       WetDat = WetDat,
-      years = years, yeari = yeari, i = i,
+      year_in_run = i,
       config = config, genus = genus,
       lat = lat, lon = lon,
       coppice.interval = coppice.interval,

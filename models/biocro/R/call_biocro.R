@@ -3,7 +3,7 @@ l2n <- function(x) lapply(x, as.numeric)
 
 # wrapper to encapsulate version-specific logic for BioCro 0.9x
 # not exported
-call_biocro_0.9 <- function(WetDat, years, yeari, i,
+call_biocro_0.9 <- function(WetDat, year_in_run,
                             config, genus, lat, lon, coppice.interval,
                             tmp.result, HarvestedYield) {
 
@@ -50,17 +50,17 @@ call_biocro_0.9 <- function(WetDat, years, yeari, i,
     tmp.result$Rhizome <- 0
     tmp.result$Grain <- 0
   } else if (genus == "Salix") {
-    if (i == 1) {
+    if (year_in_run == 1) {
       iplant <- config$pft$iPlantControl
     } else {
       iplant$iRhizome <- data.table::last(tmp.result$Rhizome)
       iplant$iRoot <- data.table::last(tmp.result$Root)
       iplant$iStem <- data.table::last(tmp.result$Stem)
 
-      if ((i - 1)%%coppice.interval == 0) {
+      if ((year_in_run - 1)%%coppice.interval == 0) {
         # coppice when remainder = 0
         HarvestedYield <- round(data.table::last(tmp.result$Stem) * 0.95, 2)
-      } else if ((i - 1)%%coppice.interval == 1) {
+      } else if ((year_in_run - 1)%%coppice.interval == 1) {
         # year after coppice
         iplant$iStem <- iplant$iStem * 0.05
       }  # else { # do nothing if neither coppice year nor year following
@@ -79,7 +79,7 @@ call_biocro_0.9 <- function(WetDat, years, yeari, i,
       photoControl = l2n(config$pft$photoParms))
 
   } else if (genus == "Miscanthus") {
-    if (yeari == years[1]) {
+    if (year_in_run == 1) {
       iRhizome <- config$pft$iPlantControl$iRhizome
     } else {
       iRhizome <- data.table::last(tmp.result$Rhizome)
@@ -120,11 +120,11 @@ call_biocro_0.9 <- function(WetDat, years, yeari, i,
 
 # wrapper to encapsulate version-specific logic for BioCro 1.x
 # not exported
-call_biocro_1 <- function(WetDat, years, yeari, i,
+call_biocro_1 <- function(WetDat, year_in_run,
                           config, genus, lat, lon, coppice.interval,
                           tmp.result, HarvestedYield) {
 
-  if (i == 1) {
+  if (year_in_run == 1) {
     initial_values <- config$pft$initial_values
   } else {
     # Use final state from last year as initial values
@@ -133,11 +133,11 @@ call_biocro_1 <- function(WetDat, years, yeari, i,
     initial_values <- tmp.result[nrow(tmp.result), colnames(tmp.result) %in% names(config$pft$initial_values)]
   }
 
-  if (i > 1) { # TODO HarvestedYield is never used and coppice not applicable to all crops. Rethink?
-    if ((i - 1) %% coppice.interval == 0) {
+  if (year_in_run > 1) { # TODO HarvestedYield is never used and coppice not applicable to all crops. Rethink?
+    if ((year_in_run - 1) %% coppice.interval == 0) {
       # coppice when remainder = 0
       HarvestedYield <- round(data.table::last(tmp.result$Stem) * 0.95, 2)
-    } else if ((i - 1) %% coppice.interval == 1) {
+    } else if ((year_in_run - 1) %% coppice.interval == 1) {
       # year after coppice
       initial_values$Stem <- initial_values$Stem * 0.05
     }  # else { # do nothing if neither coppice year nor year following
