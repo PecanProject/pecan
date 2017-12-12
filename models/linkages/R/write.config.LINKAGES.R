@@ -81,7 +81,7 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
     soils <- db.query(paste("SELECT soil,som,sand_pct,clay_pct,soilnotes FROM sites WHERE id =", settings$run$site$id), 
                       con = dbcon)
     
-    soil.dat <- PEcAn.data.land::soil_params(sand = soils$sand_pct/100, clay = soils$clay_pct/100, silt = 100 - soils$sand_pct - soils$clay_pct)
+    soil.dat <- PEcAn.data.land::soil_params(sand = soils$sand_pct/100, clay = soils$clay_pct/100)
     
     fc <- soil.dat$volume_fraction_of_water_in_soil_at_field_capacity * 100
     dry <- soil.dat$volume_fraction_of_condensed_water_in_soil_at_wilting_point * 100
@@ -97,8 +97,8 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   climate_file <- settings$run$inputs$met$path
   load(climate_file)
   #temp.mat <- temp.mat[start.year:end.year - start.year + 1, ]
-  temp.mat <- temp.mat[which(temp.mat[,13]%in%start.year:end.year),]
-  precip.mat <- precip.mat[which( precip.mat[,13]%in%start.year:end.year),]
+  temp.mat <- temp.mat[which(rownames(temp.mat)%in%start.year:end.year),]
+  precip.mat <- precip.mat[which(rownames(precip.mat)%in%start.year:end.year),]
   #precip.mat <- precip.mat[start.year:end.year - start.year + 1, ]
   
   basesc <- 74
@@ -156,8 +156,8 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           if ("AGEMX" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$AGEMX <- vals$AGEMX
           }
-          if ("Gmax" %in% names(vals)) {
-            spp.params[spp.params$Spp_Name == group, ]$G <- vals$Gmax
+          if ("G" %in% names(vals)) {
+            spp.params[spp.params$Spp_Name == group, ]$G <- vals$G
           }
           if ("SPRTND" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$SPRTND <- vals$SPRTND
@@ -174,9 +174,9 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
           if ("D3" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$D3 <- vals$D3
           }
-          if ("FROST" %in% names(vals)) {
-             spp.params[spp.params$Spp_Name == group, ]$FROST <- vals$FROST
-          }
+          # if ("FROST" %in% names(vals)) {
+          #   spp.params[spp.params$Spp_Name == group, ]$FROST <- vals$FROST
+          # }
           if ("CM1" %in% names(vals)) {
             spp.params[spp.params$Spp_Name == group, ]$CM1 <- vals$CM1
           }
