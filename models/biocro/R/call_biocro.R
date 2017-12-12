@@ -3,8 +3,8 @@ l2n <- function(x) lapply(x, as.numeric)
 
 # wrapper to encapsulate version-specific logic for BioCro 0.9x
 # not exported
-call_biocro_0.9 <- function(WetDat, year_in_run,
-                            config, genus, lat, lon, coppice.interval,
+call_biocro_0.9 <- function(WetDat, genus, year_in_run,
+                            config, lat, lon, coppice.interval,
                             tmp.result, HarvestedYield) {
 
   # Check that all variables are present in the expected order --
@@ -120,8 +120,8 @@ call_biocro_0.9 <- function(WetDat, year_in_run,
 
 # wrapper to encapsulate version-specific logic for BioCro 1.x
 # not exported
-call_biocro_1 <- function(WetDat, year_in_run,
-                          config, genus, lat, lon, coppice.interval,
+call_biocro_1 <- function(WetDat, genus, year_in_run,
+                          config, lat, lon, coppice.interval,
                           tmp.result, HarvestedYield) {
 
   if (year_in_run == 1) {
