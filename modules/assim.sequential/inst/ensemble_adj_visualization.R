@@ -1,3 +1,23 @@
+setwd('/fs/data2/output//PEcAn_1000008683/')
+load('/fs/data2/output//PEcAn_1000008683/sda.output.Rdata')
+load('/fs/data2/output//PEcAn_1000008683/out/sda.initial.runs.Rdata')
+library(nimble)
+
+time_step<-c(950:1002)
+ntrees.save <- agb.pft.save <- array(NA,dim=c(9,100,length(time_step)))
+
+for(t in 2:length(time_step)){
+  for(i in 1:length(run.id)){
+    load(paste0('/fs/data2/output//PEcAn_1000008683/out/',run.id[[i]],'/',time_step[t],'-12-31 23:59:59','linkages.out.Rdata'))
+    ntrees.save[,i,t] <- ntrees.birth
+    agb.pft.save[,i,t] <- agb.pft
+    #dbh
+  }
+}
+
+par(mfrow=c(1,1))
+matplot(t(apply(agb.pft.save,2,rowMeans,na.rm=TRUE)),typ='l')
+
 ###-------------------------------------------------------------------###
 ### ensemble adjustment plots                                         ###
 ###-------------------------------------------------------------------### 
@@ -15,10 +35,13 @@ mattext = function(data, data_names, colors, ylab, xlab, type='b', na.fix = FALS
 }
 
 #calculate the likelihood of the ensemble members given mu.a and Pa
+nens <- nrow(FORECAST[[1]])
+nt <- length(FORECAST)
+
 wt.mat <- matrix(NA,nrow=nens,ncol=nt)
-for(t in seq_len(nt)){
+for(t in seq_len(nt-1)){
   for(i in seq_len(nens)){
-    wt.mat[i,t]<-dmnorm_chol(FORECAST[[t]][i,],enkf.params[[t]]$mu.a,enkf.params[[t]]$Pa)
+    wt.mat[i,t]<-dmnorm_chol(FORECAST[[t]][i,],enkf.params[[t]]$mu.a,solve(enkf.params[[t]]$Pa))
   }
 }
 #put into weights table  
@@ -31,6 +54,9 @@ mattext(data = wt.props,data_names = as.character(1:nens),colors=rainbow(nens),
 dev.off()
 
 library(Hmisc)
+settings <- read.settings("pecan.SDA.xml")
+
+
 pft.names <- as.character(lapply(settings$pfts, function(x) x[["name"]]))
 param.names <- names(params[[1]][[1]])
 param.hist <- array(NA,dim=c(length(param.names),length(pft.names),nens))
@@ -39,7 +65,7 @@ wt.df <- array(NA, dim = c(length(param.names),length(pft.names),nt,4))
 pdf('weighted.param.time-series.pdf')
 par(mfrow=c(4,5))
 for(p in 1:length(param.names)){
-  for(s in 1:length(pft.names)){
+  for(s in 1){
     pft <- pft.names[s]
     param.plot <- param.names[p]
     
@@ -49,7 +75,7 @@ for(p in 1:length(param.names)){
       param.hist[p,s,] <- param.check
       wt.mean <- wt.var <- numeric(nt)
       
-      for(t in 1:nt){
+      for(t in 1:(nt-1)){
         wt.mean[t] <- wtd.mean(x=param.hist[p,s,], w = wt.props[t,])
         wt.var[t] <- wtd.var(x=param.hist[p,s,], w = wt.props[t,])
       }
@@ -82,7 +108,7 @@ for(p in 1:length(param.names)){
       title(main = list(paste(pft,'\n',param.plot), cex = .5))
       
       hist(param.hist[p,s,], freq = FALSE, col= 'lightgrey', main = paste(pft,'\n',param.plot))
-      for(t in 1:nt){
+      for(t in 1:(nt-1)){
         lines(density(param.hist[p,s,], weights = wt.props[t,], na.rm = TRUE),
               lwd = 2, col=rainbow(49)[t])
       }
@@ -105,6 +131,24 @@ for(p in 1:length(param.names)){
   
 }
 dev.off()
+
+
+plot(param.hist[1,,],param.hist[5,,])
+par(mfrow=c(1,1))
+for(s in c(1,7,8,9)){
+  plot(param.hist[2,s,],param.hist[5,s,],col='black',pch=19,main=pft.names[s],xlab='MPLANT',ylab='AGEMX')
+  for(t in 1:nt){
+    points(param.hist[2,s,],param.hist[5,s,],col=terrain.colors(nt)[t],cex=wt.props[t,]*75)
+    
+  }
+  points(param.hist[2,s,order(colMeans(wt.props,na.rm=TRUE))],param.hist[5,s,order(colMeans(wt.props,na.rm=TRUE))],col=grey(seq(0,1,length.out = 50)),pch=19,cex=1)
+  #points(param.hist[2,s,which.min(colMeans(wt.props,na.rm = TRUE))],param.hist[5,s,which.min(colMeans(wt.props,na.rm = TRUE))],col='red',cex=1)
+} 
+
+
+
+
+
 
 which.min(colMeans(wt.props,na.rm = TRUE))
 which.max(colMeans(wt.props,na.rm = TRUE))
