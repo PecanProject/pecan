@@ -45,6 +45,7 @@ convert.samples.MAAT <- function(trait.samples, runid) {
   trait.names[trait.names == "stomatal_slope"]              <- "g1_leuning"
   trait.names[trait.names == "stomatal_slope.g1"]           <- "g1_medlyn"
   trait.names[trait.names == "stomatal_slope.BB"]           <- "g1_ball"
+  trait.names[trait.names == "f_frac"]                      <- "f"
   colnames(trait.samples) <- trait.names
   
   ### Conversions -- change to only use if Collatz, should also provide standard Rd oputput
@@ -73,7 +74,6 @@ convert.samples.MAAT <- function(trait.samples, runid) {
     leaf_abs <- 1-(trait.samples[["leaf_reflect_vis"]]+trait.samples[["leaf_trans_vis"]])
     trait.samples[["a"]] <- leaf_abs
     remove <- which(colnames(trait.samples)=="leaf_trans_vis" | colnames(trait.samples)=="leaf_reflect_vis")
-    #remove <- which(colnames(trait.samples)=="leaf_reflect_vis")
     trait.samples <- trait.samples[,-remove]
   }
 
