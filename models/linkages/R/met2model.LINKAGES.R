@@ -112,6 +112,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
 
   precip.mat <- month_matrix_precip
   temp.mat <- month_matrix_temp_mean
+  rownames(precip.mat) <- rownames(precip.mat) <- start_year:end_year
   save(precip.mat, temp.mat, file = out.file)
   return(invisible(results))
 } # met2model.LINKAGES
