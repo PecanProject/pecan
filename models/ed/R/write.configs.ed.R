@@ -72,6 +72,8 @@ convert.samples.ED <- function(trait.samples) {
       ## First scale variables to 15 degC
       trait.samples[["leaf_respiration_rate_m2"]] <- 
         arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
+      # convert leaf_respiration_rate_m2 to Rd0 (variable used in ED2)
+      trait.samples[["Rd0"]] <- trait.samples[["leaf_respiration_rate_m2"]]
       
       ## Calculate dark_resp_factor -- Will be depreciated when moving from older versions of ED2
       trait.samples[["dark_respiration_factor"]] <- 
@@ -149,7 +151,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   
   ed2in.text <- gsub("@SITE_LAT@", settings$run$site$lat, ed2in.text)
   ed2in.text <- gsub("@SITE_LON@", settings$run$site$lon, ed2in.text)
-  ed2in.text <- gsub("@SITE_MET@", settings$run$inputs$me$path, ed2in.text)
+  ed2in.text <- gsub("@SITE_MET@", settings$run$inputs$met$path, ed2in.text)
   ed2in.text <- gsub("@MET_START@", metstart, ed2in.text)
   ed2in.text <- gsub("@MET_END@", metend, ed2in.text)
   
@@ -202,8 +204,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     ed2in.text <- gsub("@SITE_PSSCSS@", "", ed2in.text)
   } else {
     lat_rxp <- "\\.lat.*lon.*\\.(css|pss|site)"
-    prefix.pss <- sub(lat_rxp, "", settings$run$inputs$css$path)
-    prefix.css <- sub(lat_rxp, "", settings$run$inputs$pss$path)
+    prefix.css <- sub(lat_rxp, "", settings$run$inputs$css$path)
+    prefix.pss <- sub(lat_rxp, "", settings$run$inputs$pss$path)
     # pss and css prefix is not the same, kill
     if (!identical(prefix.pss, prefix.css)) {
       PEcAn.logger::logger.info(paste("pss prefix:", prefix.pss))
