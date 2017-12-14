@@ -17,6 +17,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Changed
 - Fixed an remote code execution discovered by NCSA security team.
+- Added documentation how to submit a run from the command line
+
 ## [1.5.2] - 2017-12-07
 
 ### Fixes
