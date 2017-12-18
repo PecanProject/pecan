@@ -2,6 +2,7 @@
 #'
 #' @inheritParams wavelengths
 #' @inheritParams base::"["
+#' @export
 "[.spectra" <- function(spectra, i, j, drop = FALSE) {
   if (missing(i)) {
     i <- seq_len(nrow(spectra))
@@ -19,6 +20,7 @@
 #' 
 #' @inheritParams [.spectra
 #' @param wavelength Wavelength vector to select
+#' @export
 "[[.spectra" <- function(spectra, wavelength, j) {
   spec_wl <- wavelengths(spectra)
   i <- which(spec_wl %in% wavelength)
@@ -29,6 +31,7 @@
 #'
 #' @inheritParams [[.spectra
 #' @param values Vector or matrix of values to assign
+#' @export
 "[[<-.spectra" <- function(spectra, wavelength, j, values) {
   spec_wl <- wavelengths(spectra)
   i <- which(spec_wl %in% wavelength)
