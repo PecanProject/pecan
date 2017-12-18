@@ -14,8 +14,8 @@ read_web_config = function(php.config = "../../web/config.php") {
   config <- config[grep("^\\$", config)]  ## find lines that begin with $ (variables)
   
   ## replacements
-  config <- sub("$", "", config, fixed = TRUE)  ## remove $
-  config <- sub(";", "", config, fixed = TRUE)  ## remove ;
+  config <- gsub("^\\$", "", config)  ## remove leading $
+  config <- gsub(";.*$", "", config)  ## remove ; and everything afterwards
   config <- sub("false", "FALSE", config, fixed = TRUE)  ##  Boolean capitalization
   config <- sub("true", "TRUE", config, fixed = TRUE)  ##  Boolean capitalization
   config <- gsub(pattern = "DIRECTORY_SEPARATOR",replacement = "/",config)
