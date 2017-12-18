@@ -8,6 +8,12 @@ spectra <- function(spectra, wavelengths = 400:2500) {
     spectra <- as.matrix(spectra)
   }
   rownames(spectra) <- NULL
+  nwl <- length(wavelengths)
+  nr <- nrow(spectra)
+  if (length(wavelengths) != nrow(spectra)) {
+    err <- sprintf("Number of wavelengths (%d) does not match rows in matrix (%d)", nwl, nr)
+    stop(err)
+  }
   structure(spectra, wavelengths = wavelengths, class = c("spectra", "matrix"))
 }
 
