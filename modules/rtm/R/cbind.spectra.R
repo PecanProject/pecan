@@ -4,7 +4,6 @@
 #' @export
 cbind.spectra <- function(...) {
   dots <- list(...)
-  in_names <- 
   lens <- vapply(dots, ncol, numeric(1))
   waves <- lapply(dots, wavelengths)
   new_waves <- Reduce(union, waves)
@@ -18,7 +17,7 @@ cbind.spectra <- function(...) {
     if (!is.null(names_list[[i]])) {
       colnames(m)[jseq] <- names_list[[i]]
     }
-    j <- lens[i] + 1
+    j <- j + lens[i]
   }
   m
 }
