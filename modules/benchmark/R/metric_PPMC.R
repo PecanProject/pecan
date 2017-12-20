@@ -1,13 +1,14 @@
 ##' @name metric_PPMC
 ##' @title Pearson Product Moment Correlation
 ##' @export
-##' @param dat dataframe
+##' @param metric_dat dataframe
 ##' 
 ##' @author Betsy Cowdery
 
-metric_PPMC <- function(dat, ...) {
+metric_PPMC <- function(metric_dat, ...) {
   PEcAn.logger::logger.info("Metric: Pearson Product Moment Correlation")
-  numer <- sum((dat$obvs - mean(dat$obvs)) * (dat$model - mean(dat$model)))
-  denom <- sqrt(sum((dat$obvs - mean(dat$obvs)) ^ 2)) * sqrt(sum((dat$model - mean(dat$model)) ^ 2))
-  return(numer / denom)
+  # numer <- sum((metric_dat$obvs - mean(metric_dat$obvs)) * (metric_dat$model - mean(metric_dat$model)))
+  # denom <- sqrt(sum((metric_dat$obvs - mean(metric_dat$obvs)) ^ 2)) * sqrt(sum((metric_dat$model - mean(metric_dat$model)) ^ 2))
+  # return(numer / denom)
+  return(cor(metric_dat$obvs, metric_dat$model))
 } # metric_PPMC
