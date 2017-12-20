@@ -13,5 +13,5 @@ gpm <- function(k, refractive, N) {
   )
   RT <- matrix(0, 2101, 2)
   outlist <- .Fortran("gpm", k, refractive, N, RT)
-  outlist[[4]]
+  spectra(outlist[[4]], 400:2500)
 }

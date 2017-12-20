@@ -15,8 +15,7 @@ rtmat <- gpm(k, refractive, N)
 prosp <- prospect(true_param, "D")
 
 test_that(
-  "Generalized plate model returns same values as PROSPECT",
-  {
-    expect_equal(rtmat, prosp[, -3], tolerance = 1e-5, scale = 1)
+  "Generalized plate model returns same values as PROSPECT", {
+    expect_equivalent(rtmat, prosp, tolerance = 1e-5, scale = 1)
   }
 )
