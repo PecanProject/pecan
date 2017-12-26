@@ -236,6 +236,10 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
     if ("leaf_turnover_rate" %in% pft.names) {
       param[which(param[, 1] == "leafTurnoverRate"), 2] <- pft.traits[which(pft.names == "leaf_turnover_rate")]
     }
+    
+    if ("wueConst" %in% pft.names) {
+      param[which(param[, 1] == "wueConst"), 2] <- pft.traits[which(pft.names == "wueConst")]
+    }
 
     # vegetation respiration Q10.
     if ("veg_respiration_Q10" %in% pft.names) {
@@ -295,7 +299,7 @@ write.config.SIPNET <- function(defaults, trait.values, settings, run.id, inputs
         pft.traits[which(pft.names == "leaf_allocation_fraction")]
       if(sum_alloc > 1){
         # I want this to be a severe for now, lateer can be changed back to warning
-        PEcAn.logger::logger.severe("Sum of allocation parameters exceeds 1 for runid = ", run.id,
+        PEcAn.logger::logger.warn("Sum of allocation parameters exceeds 1 for runid = ", run.id,
                                   "- This won't break anything since SIPNET has internal check, but notice that such combinations might not take effect in the outputs.")
       }
     }
