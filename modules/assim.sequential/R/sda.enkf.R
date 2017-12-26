@@ -142,7 +142,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   repeat{ # temporary SIPNET hack, I want to make sure sum <1 for SIPNET
     get.parameter.samples(settings, ens.sample.method = settings$ensemble$method)  ## Aside: if method were set to unscented, would take minimal changes to do UnKF
     load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
-    tot_check <- apply(ensemble.samples$temperate.deciduous_SDA[,c(19, 24,26)],1,sum)
+    tot_check <- apply(ensemble.samples$temperate.deciduous_SDA[,c(20, 25,27)],1,sum)
     if(all(tot_check < 1)) break
   }
 
@@ -799,7 +799,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       
       # # calculate likelihoods
       for(i in seq_len(nens)){
-        wt.mat[i,t]<-dmnorm_chol(FORECAST[[t]][i,], mu.a, Pa, log = TRUE)
+        wt.mat[i,t]<-dmnorm_chol(FORECAST[[t]][i,], mu.a, solve(Pa), log = TRUE)
       }
       
       
@@ -903,7 +903,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         # analysis
         ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink)
         lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2)
-        legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
+        #legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
       }
     }
     
@@ -955,7 +955,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     ###-------------------------------------------------------------------###
     ### save outputs                                                      ###
     ###-------------------------------------------------------------------### 
-    save(t, FORECAST, ANALYSIS, enkf.params, file = file.path(settings$outdir, "sda.output.Rdata"))
+    #save(t, FORECAST, ANALYSIS, enkf.params, file = file.path(settings$outdir, "sda.output.Rdata"))
+    save(list = ls(envir = environment(), all.names = TRUE), 
+         file = file.path(settings$outdir, "sda.all.runs.Rdata"), envir = environment())
     
   }  ## end loop over time
   ###-------------------------------------------
