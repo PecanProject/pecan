@@ -75,12 +75,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     sampleIDs <- c(1:n.inputs,sample.int(n.inputs, (nens - n.inputs), replace = TRUE))
   }
   
+  source('~/pecan/modules/assim.sequential/R/met_filtering_helpers.R')
   ens.inputs <- list()
   inputs <- list()
   for(i in seq_len(nens)){
     ### get only nessecary ensemble inputs. Do not change in anaylysis
-    ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
-    
+    #ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
+    ens.inputs[[i]] <- sample_met(settings)
     ### model specific split inputs
     inputs[[i]] <- do.call(my.split_inputs, 
                            args = list(settings = settings, 
@@ -138,8 +139,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   } else {
     settings$ensemble$size <- 1
   }
-  get.parameter.samples(settings, ens.sample.method = settings$ensemble$method)  ## Aside: if method were set to unscented, would take minimal changes to do UnKF
-  load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
+  repeat{ # temporary SIPNET hack, I want to make sure sum <1 for SIPNET
+    get.parameter.samples(settings, ens.sample.method = settings$ensemble$method)  ## Aside: if method were set to unscented, would take minimal changes to do UnKF
+    load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
+    tot_check <- apply(ensemble.samples$temperate.deciduous_SDA[,c(20, 25,27)],1,sum)
+    if(all(tot_check < 1)) break
+  }
+
   
   if ("env" %in% names(ensemble.samples)) {
     ensemble.samples$env <- NULL
@@ -342,6 +348,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   brown       <- col2rgb("brown")
   alphabrown <- rgb(brown[1], brown[2], brown[3], 75, max = 255)
   
+  # weight matrix
+  wt.mat <- matrix(NA, nrow = nens, ncol = nt)
+  
   ###-------------------------------------------------------------------###
   ### loop over time                                                    ###
   ###-------------------------------------------------------------------###  
@@ -350,18 +359,25 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     ###-------------------------------------------------------------------###
     ### read restart                                                      ###
     ###-------------------------------------------------------------------###  
+    X_tmp <- vector("list", 2) 
     X <- list()
+    new.params <- params
+    source('~/pecan/models/sipnet/R/read_restart.SIPNET.R')
     for (i in seq_len(nens)) {
-      X[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
+      X_tmp[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
                                                      runid = run.id[[i]], 
                                                      stop.time = obs.times[t], 
                                                      settings = settings, 
                                                      var.names = var.names, 
                                                      params = params[[i]]))
+      # states will be in X, but we also want to carry some deterministic relationships to write_restart
+      # these will be stored in params
+      X[[i]]      <- X_tmp[[i]]$X
+      new.params[[i]] <- X_tmp[[i]]$params
     }
     
     X <- do.call(rbind, X)
-    
+
     FORECAST[[t]] <- X
     
     obs <- which(!is.na(obs.mean[[t]]))
@@ -397,6 +413,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       }
       
       ### TO DO: plotting not going to work because of observation operator i.e. y and x are on different scales
+      
       
       #### Plot Data and Forecast
       if (FALSE) {#interactive() & t > 1
@@ -780,6 +797,13 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         X_a[i,] <- V_a %*%diag(sqrt(L_a))%*%Z[i,] + mu.a
       }
       
+      # # calculate likelihoods
+      for(i in seq_len(nens)){
+        wt.mat[i,t]<-dmnorm_chol(FORECAST[[t]][i,], mu.a, solve(Pa), log = TRUE)
+      }
+      
+      
+      
       if(sum(mu.a - colMeans(X_a)) > 1 | sum(mu.a - colMeans(X_a)) < -1) logger.warn('Problem with ensemble adjustment (1)')
       if(sum(diag(Pa) - diag(cov(X_a))) > 5 | sum(diag(Pa) - diag(cov(X_a))) < -5) logger.warn('Problem with ensemble adjustment (2)')
       
@@ -802,7 +826,6 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     
     ## in the future will have to be separated from analysis
     new.state  <- analysis
-    new.params <- params
     
     ANALYSIS[[t]] <- analysis
     
@@ -880,7 +903,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         # analysis
         ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink)
         lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2)
-        legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
+        #legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
       }
     }
     
@@ -888,6 +911,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     ### forecast step                                                     ###
     ###-------------------------------------------------------------------### 
     if (t < nt) {
+      
       
       ###-------------------------------------------------------------------###
       ### split model specific inputs for current runs                      ###
@@ -906,6 +930,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       ###-------------------------------------------------------------------###
       ### write restart by ensemble                                         ###
       ###-------------------------------------------------------------------### 
+      
+      source('~/pecan/models/sipnet/R/write_restart.SIPNET.R')
       
       for (i in seq_len(nens)) {
         do.call(my.write_restart, 
@@ -929,7 +955,9 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     ###-------------------------------------------------------------------###
     ### save outputs                                                      ###
     ###-------------------------------------------------------------------### 
-    save(t, FORECAST, ANALYSIS, enkf.params, file = file.path(settings$outdir, "sda.output.Rdata"))
+    #save(t, FORECAST, ANALYSIS, enkf.params, file = file.path(settings$outdir, "sda.output.Rdata"))
+    save(list = ls(envir = environment(), all.names = TRUE), 
+         file = file.path(settings$outdir, "sda.all.runs.Rdata"), envir = environment())
     
   }  ## end loop over time
   ###-------------------------------------------
