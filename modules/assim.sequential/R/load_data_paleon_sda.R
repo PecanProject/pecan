@@ -63,6 +63,17 @@ load_data_paleon_sda <- function(settings){
     data.path <- PEcAn.DB::query.file.path(input.id[[i]], settings$host$name, bety$con)
     format_full <- format <- PEcAn.DB::query.format.vars(input.id = input.id[[i]], bety, format.id = NA, var.ids=NA)
     
+    if(TRUE){
+      # hack instead of changing the units in BETY format for now
+      # I don't want load_data to convert anything
+      # data itself is in Mg / ha 
+      format$vars[1,1] <-  format$vars[1,8] <- format$vars[1,10] <- "AbvGrndWood"
+      format$vars[1,4] <- "kg C m-2"
+      
+      format$vars[4,1] <-  format$vars[4,8] <- format$vars[4,10] <- "GWBI"
+      format$vars[4,4] <- "kg C m-2 s-1"
+    }
+    
     format$na.strings <- 'NA'
     time.row <- format$time.row
     time.type <- format$vars$input_units[time.row] #THIS WONT WORK IF TIMESTEP ISNT ANNUAL
