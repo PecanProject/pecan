@@ -243,5 +243,3 @@ create_status_page <- function(config_file, file_prefix='status', delta=3600) {
   htmltable <- paste(htmltable, '</html>', sep='\n')
   write(htmltable, file=paste0(file_prefix, ".html"), append=FALSE)
 }
-
-create_status_page('/Users/kooper/git/pecan/web/config.php')
