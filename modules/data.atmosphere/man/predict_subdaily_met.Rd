@@ -6,7 +6,8 @@
 \usage{
 predict_subdaily_met(outfolder, in.path, in.prefix, path.train,
   direction.filter = "forward", lm.models.base, yrs.predict = NULL,
-  ens.labs = 1:3, resids = FALSE, overwrite = FALSE, verbose = FALSE,
+  ens.labs = 1:3, resids = FALSE, force.sanity = TRUE,
+  sanity.tries = 25, overwrite = FALSE, verbose = FALSE,
   seed = format(Sys.time(), "\%m\%d"), print.progress = FALSE, ...)
 }
 \arguments{
@@ -31,6 +32,10 @@ For example, if prefix is GFDL.CM3.rcp45.r1i1p1, there should be a directory wit
 ensemble rather than overwriting with a default naming scheme}
 
 \item{resids}{- logical stating whether to pass on residual data or not}
+
+\item{force.sanity}{- (logical) do we force the data to meet sanity checks?}
+
+\item{sanity.tries}{- how many time should we try to predict a reasonable value before giving up?  We don't want to end up in an infinite loop}
 
 \item{seed}{- manually set seed for results to be reproducible}
 
