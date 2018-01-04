@@ -47,6 +47,7 @@
 ##' @param n.ens  - number of ensemble members to generate and save
 ##' @param pair.mems - logical stating whether ensemble members should be paired in 
 ##'                    the case where ensembles are being read in in both the training and source data
+##' @param mems.train - (optional) ensemble identifiers so that the training data is read in a specific order                    
 ##' @param seed - specify seed so that random draws can be reproduced
 ##' @param print.progress - if TRUE, prints progress bar
 ##' @export
@@ -71,7 +72,7 @@
 #----------------------------------------------------------------------
 # Begin Function
 #----------------------------------------------------------------------
-align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, n.ens=NULL, pair.mems = FALSE, seed=Sys.Date(), print.progress = FALSE) {
+align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, n.ens=NULL, pair.mems = FALSE, mems.train=NULL, seed=Sys.Date(), print.progress = FALSE) {
   # Load required libraries
   library(ncdf4)
   library(lubridate)
@@ -123,7 +124,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
       # Extract the met info, making matrices with the appropriate number of ensemble members
       for(v in names(ncT$var)){
         df.tem <- matrix(rep(ncdf4::ncvar_get(ncT, v), n.trn), ncol=n.trn, byrow=F)
-        
+
         met.out$dat.train[[v]] <- rbind(met.out$dat.train[[v]], df.tem)
       }
       
@@ -136,11 +137,14 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
     ens.train <- dir(train.path)
     
     if(is.null(n.ens)) n.ens <- length(ens.train)
-    if(length(ens.train)>n.ens) {
+    if(length(ens.train)>n.ens & is.null(mems.train)) {
       train.use <- sample(1:length(ens.train), n.ens)
       ens.train <- ens.train[train.use]
     }
-    
+    if(!is.null(mems.train)){
+      ens.train <- mems.train
+    }
+
     # getting an estimate of how many files we need to process
     yrs.file <- strsplit(dir(file.path(train.path, ens.train[1])), "[.]")
     yrs.file <- matrix(unlist(yrs.file), ncol=length(yrs.file[[1]]), byrow=T)
@@ -256,7 +260,7 @@ align.met <- function(train.path, source.path, yrs.train=NULL, yrs.source=NULL, 
       yr.now <- yrs.file[i]
       
       ncT <- ncdf4::nc_open(file.path(source.path, files.source[i]))
-      
+
       # Set up the time data frame to help index
       nday <- ifelse(leap_year(yr.now), 366, 365)
       ntime <- length(ncT$dim$time$vals)

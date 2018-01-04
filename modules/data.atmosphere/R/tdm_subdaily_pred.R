@@ -39,7 +39,7 @@ subdaily_pred <- function(newdata, model.predict, Rbeta, resid.err = FALSE, mode
   m  <- newdata[,model.predict$factors]
   m[,"as.ordered(hour)"] <- as.ordered(m$hour)
   m$hour <- as.numeric(m$hour)
-  
+
   # Adding hours to make sure prediction works okay
   # Note: This really messes with the order of things!
   if(length(unique(df.hr$hour))!= length(unique(m$hour))){
@@ -55,10 +55,6 @@ subdaily_pred <- function(newdata, model.predict, Rbeta, resid.err = FALSE, mode
     # dat.sim <- dat.sim[order(dat.sim$ens, dat.sim$hour),]
     # newdata <- newdata[order(newdata$ens, newdata$hour),]
   } 
-  
-
-  
-  
   
   Xp <-  model.matrix(eval(model.predict$formula), m, contrasts.arg=model.predict$contr)
 
