@@ -1,8 +1,8 @@
 Package: PEcAn.benchmark
 Type: Package
 Title: PEcAn functions used for benchmarking
-Version: 1.5.1
-Date: 2017-09-25
+Version: 1.5.2
+Date: 2017-12-04
 Author: Michael Dietze, David LeBauer, Rob Kooper, Toni Viskari
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
@@ -20,7 +20,8 @@ Imports:
     XML (>= 3.98-1.4),
     dplyr,
     ggplot2,
-    dbplyr
+    dbplyr,
+    SimilarityMeasures
 Suggests:
     testthat (>= 1.0.2)
 License: FreeBSD + file LICENSE
