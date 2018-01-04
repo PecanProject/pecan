@@ -5,7 +5,7 @@
 \title{align.met}
 \usage{
 align.met(train.path, source.path, yrs.train = NULL, yrs.source = NULL,
-  n.ens = NULL, pair.mems = FALSE, seed = Sys.Date(),
+  n.ens = NULL, pair.mems = FALSE, mems.train = NULL, seed = Sys.Date(),
   print.progress = FALSE)
 }
 \arguments{
@@ -27,6 +27,8 @@ problematic years)}
 
 \item{pair.mems}{- logical stating whether ensemble members should be paired in 
 the case where ensembles are being read in in both the training and source data}
+
+\item{mems.train}{- (optional) ensemble identifiers so that the training data is read in a specific order}
 
 \item{seed}{- specify seed so that random draws can be reproduced}
 
