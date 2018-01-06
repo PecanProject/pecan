@@ -4,7 +4,7 @@
 ##' @param con : database connection
 ##' @export query.format.vars
 ##'
-##' @author Betsy Cowdery , Ankur Desai, Istem Fer
+##' @author Betsy Cowdery, Ankur Desai, Istem Fer
 ##'
 query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
 
@@ -101,14 +101,7 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
     #Fill in MstMIP vars
     #All PEcAn output is in MstMIP variables
 
-    bety_mstmip <- read.csv(system.file("bety_mstmip_lookup.csv", package= "PEcAn.DB"), header = T, stringsAsFactors = FALSE)
-    vars_full <- merge(vars_bety, bety_mstmip, by = "bety_name", all.x = TRUE)
-
-    vars_full$pecan_name <- vars_full$mstmip_name
-    vars_full$pecan_units <- vars_full$mstmip_units
-    ind <- is.na(vars_full$pecan_name)
-    vars_full$pecan_name[ind] <- vars_full$bety_name[ind]
-    vars_full$pecan_units[ind] <- vars_full$bety_units[ind]
+    vars_full <- bety2pecan(vars_bety)
 
     header <- as.numeric(f$header)
     skip <- ifelse(is.na(as.numeric(f$skip)),0,as.numeric(f$skip))
@@ -173,4 +166,51 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
 
 
   return(format)
+}
+################################################################################
+##' @name bety2pecan
+##' @title Convert BETY variable names to MsTMIP and subsequently PEcAn standard names
+##' @param vars_bety data frame with variable names and units
+##' @export 
+##'
+##' @author Betsy Cowdery
+
+bety2pecan <- function(vars_bety){
+  
+  # This needs to be moved to lazy load 
+  bety_mstmip <- read.csv(system.file("bety_mstmip_lookup.csv", package= "PEcAn.DB"), 
+                          header = T, stringsAsFactors = FALSE)
+  
+  vars_full <- merge(vars_bety, bety_mstmip, by = "bety_name", all.x = TRUE)
+  
+  vars_full$pecan_name <- vars_full$mstmip_name
+  vars_full$pecan_units <- vars_full$mstmip_units
+  ind <- is.na(vars_full$pecan_name)
+  vars_full$pecan_name[ind] <- vars_full$bety_name[ind]
+  vars_full$pecan_units[ind] <- vars_full$bety_units[ind]
+  
+  dups <- unique(vars_full$pecan_name[duplicated(vars_full$pecan_name)])
+  
+  if("NEE" %in% dups){
+    # This is a hack specific to Ameriflux!
+    # It ultimately needs to be generalized, perhaps in a better version of 
+    # bety2pecan that doesn't use a lookup table
+    # In Ameriflux FC and NEE can map to NEE in mstmip/pecan standard
+    # Thus if both are reported in the data, both will be converted to NEE
+    # which creates a conflict. 
+    # Here we go back to the bety name to determine which of those is NEE
+    # The variable that is not NEE in bety (assuming it's FC) is discarded.
+    
+    keep <- which(vars_full$bety_name[which(vars_full$pecan_name == "NEE")] == "NEE")
+    if(length(keep) == 1){
+      discard <- vars_full$bety_name[which(vars_full$pecan_name == "NEE")][-keep]
+      vars_full <- vars_full[!(vars_full$bety_name %in% discard),]
+      dups <- unique(vars_full$pecan_name[duplicated(vars_full$pecan_name)])
+    }
+  }
+  if(length(dups) > 0){
+    PEcAn.logger::logger.warn(paste("The variable(s)", paste(dups, collapse = ", "),"are duplicated.
+                             Currently we cannot support data with duplicate column names."))
+  }
+  return(vars_full)
 }
