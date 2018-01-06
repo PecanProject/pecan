@@ -1,0 +1,12 @@
+.git
+
+.install
+
+tests
+contrib
+
+modules/rtm/src/RTM/*.o
+modules/rtm/src/RTM/*/*.o
+modules/rtm/src/RTM/*/*/*.o
+modules/rtm/src/*.mod
+modules/rtm/src/*.so

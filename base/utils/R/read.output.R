@@ -43,7 +43,7 @@ read.output <- function(runid, outdir, start.year = NA, end.year = NA, variables
   
   if(!is.na(start.year) && !is.na(end.year)){
     # select only those *.nc years requested by user
-    keep <- which(nc.years >= as.numeric(start.year) & nc.years <= as.numeric(end.year))
+    keep <- which(as.numeric(nc.years) >= as.numeric(start.year) & as.numeric(nc.years) <= as.numeric(end.year))
     ncfiles <- ncfiles[keep]
   } else if(length(nc.years) != 0){
       PEcAn.logger::logger.info("No start or end year provided; reading output for all years")
