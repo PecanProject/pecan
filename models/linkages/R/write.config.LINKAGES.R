@@ -55,10 +55,11 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   
   iplot <- 1
   nyear <- length(year)
-  bgs <- 120
-  egs <- 273
   max.ind <- 15000
   plat <- abs(as.numeric(settings$run$site$lat))
+  
+  bgs <- 120
+  egs <- 273
   
   texture <- read.csv(system.file("texture.csv", package = "PEcAn.LINKAGES"))
   
@@ -99,7 +100,6 @@ write.config.LINKAGES <- function(defaults = NULL, trait.values, settings, run.i
   #temp.mat <- temp.mat[start.year:end.year - start.year + 1, ]
   temp.mat <- temp.mat[which(rownames(temp.mat)%in%start.year:end.year),]
   precip.mat <- precip.mat[which(rownames(precip.mat)%in%start.year:end.year),]
-  #precip.mat <- precip.mat[start.year:end.year - start.year + 1, ]
   
   basesc <- 74
   basesn <- 1.64
