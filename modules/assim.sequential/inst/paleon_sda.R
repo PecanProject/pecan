@@ -61,10 +61,18 @@ status.end()
 
 PEcAn.assim.sequential::sda.enkf(settings, obs.mean = obs.list$obs.mean, obs.cov = obs.list$obs.cov, IC = IC)
 
-for(i in 2:length(obs.mean)){
-  obs.mean[[i]]<-NA
-  obs.cov[[i]]<-NA
+obmn <- obvn <- list()
+times.keep <- seq(1,1100,100)
+
+for(i in 1:length(times.keep)){
+  obmn[[i]] <- obs.mean[[times.keep[i]]]
+  obvn[[i]] <- obs.cov[[times.keep[i]]]
 }
+
+names(obmn) <- names(obvn) <- names(obs.mean)[times.keep]
+
+obs.mean <- obmn
+obs.cov <- obvn
 
 ##### 
 ##### Plot Data #####
