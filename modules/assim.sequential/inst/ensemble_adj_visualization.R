@@ -3,20 +3,101 @@ load('/fs/data2/output//PEcAn_1000008683/sda.output.Rdata')
 load('/fs/data2/output//PEcAn_1000008683/out/sda.initial.runs.Rdata')
 library(nimble)
 
-time_step<-c(950:1002)
-ntrees.save <- agb.pft.save <- array(NA,dim=c(9,100,length(time_step)))
+time_step<-seq(950,1950,100)
+ntrees.save <- agb.pft.save <- array(NA,dim=c(9,length(run.id),
+                                              length(1:1950)))
 
-for(t in 2:length(time_step)){
+for(t in 1:(length(time_step)-1)){
   for(i in 1:length(run.id)){
-    load(paste0('/fs/data2/output//PEcAn_1000008683/out/',run.id[[i]],'/',time_step[t],'-12-31 23:59:59','linkages.out.Rdata'))
-    ntrees.save[,i,t] <- ntrees.birth
-    agb.pft.save[,i,t] <- agb.pft
+    load(paste0('/fs/data2/output//PEcAn_1000008588/out/',run.id[[i]],'/',time_step[t],'-12-31 23:59:59','linkages.out.Rdata'))
+    ntrees.save[,i,time_step[t]:(time_step[t+1]-1)] <- ntrees.birth
+    agb.pft.save[,i,time_step[t]:(time_step[t+1]-1)] <- agb.pft
     #dbh
   }
 }
 
+library(colorspace)
+
+matplot(950:1949,apply(ntrees.save[,,950:1949]/(1/12),1,colMeans,na.rm=T),typ='l',lwd=3,col=rainbow(9),ylab='Stem Density (trees/ha)')
+matplot(950:1949,apply(agb.pft.save[,,950:1949],1,colMeans,na.rm=T),typ='l',lwd=3,col=rainbow(9),ylab='PFT Biomass (kgC/m^2)')
+
+sd.df <- apply(ntrees.save[,,950:1949]/(1/12),1,colMeans,na.rm=T)
+ag.df <- apply(agb.pft.save[,,950:1949],1,colMeans,na.rm=T)
+
+quant.keep<-quant.keep.a<-list()
+for(i in 1:9){
+  quant.keep[[i]]<-apply(ntrees.save[i,,950:1949]/(1/12),2,quantile,c(.025,.5,.975),na.rm=T)
+  quant.keep.a[[i]]<-apply(agb.pft.save[i,,950:1949],2,quantile,c(.025,.5,.975),na.rm=T)
+  }
+
+
+load("/fs/data2/output/PEcAn_1000008588/run/1001823086/linkages.input.Rdata")
+
+par(mfrow=c(3,2),mar=c(rep(3.8,4)))
+for(i in c(9,8,4)){
+  plot(950:1949,quant.keep[[i]][2,],typ='l',col=rainbow_hcl(9)[i],
+       ylab='Stem Density (trees/ha)',xlab='Year',
+       main=NA,lwd=2,ylim=c(0,max(quant.keep[[i]])))
+  ciEnvelope(x=950:1949,ylo=quant.keep[[i]][1,],yhi=quant.keep[[i]][3,],col=rainbow_hcl(9,alpha = .75)[i])
+  lines(950:1949,quant.keep[[i]][2,],col=rainbow_hcl(9)[i],lwd=4)
+  
+  plot(950:1949,quant.keep.a[[i]][2,],typ='l',col=rainbow_hcl(9)[i],
+       ylab='Spp. Biomass (kgC/m^2)',xlab='Year',
+       main=NA,lwd=2,ylim=c(0,max(quant.keep.a[[i]])))
+  ciEnvelope(x=950:1949,ylo=quant.keep.a[[i]][1,],yhi=quant.keep.a[[i]][3,],col=rainbow_hcl(9,alpha = .75)[i])
+  lines(950:1949,quant.keep.a[[i]][2,],col=rainbow_hcl(9)[i],lwd=4)
+}
+
+pf <- enkf.params[[10]]$Pf
+q.bar <- solve(enkf.params[[10]]$q.bar)
+
+rownames(pf) <- rownames(q.bar) <- colnames(pf) <- colnames(q.bar) <- c('Maple','Birch','Hickory',
+                                     'Chestnut','Beech','Spruce',
+                                     'Pine','Oak','Hemlock','SoilCarbon')
+
 par(mfrow=c(1,1))
-matplot(t(apply(agb.pft.save,2,rowMeans,na.rm=TRUE)),typ='l')
+corrplot(cov2cor(pf), type = "upper", tl.srt = 25,
+         tl.cex = .8,col=c('#ca0020','#0571b0'),diag=FALSE,
+         order='original')
+corrplot(cov2cor(pf+q.bar), type = "upper", tl.srt = 25,
+         tl.cex = .8,col=c('#ca0020','#0571b0'),diag=FALSE)
+
+df <- round(apply(ntrees.save[,,950:1949]/(1/12),1,colMeans,na.rm=T))
+colnames(df) <- c('a','b','c','d','e','f','g','h','i')
+rownames(df) <- stringi::stri_rand_strings(1000, 5)
+barplot(t(as.data.frame(df)))
+
+list.trees <- list()
+for(i in 1:9){
+  list.trees[[i]] <- apply(ntrees.save[i,,950:1949],2,quantile,c(.025,.5,.975),na.rm=T)
+}
+
+plot(list.trees[[1]][2,],ylim=c(0,35),typ='l')
+for(i in 1:9){
+  lines(list.trees[[i]][2,])
+}
+
+par(mfrow=c(1,1))
+matplot(t(apply(agb.pft.save[,,,10],2,rowMeans,na.rm=TRUE)),typ='l')
+
+sum.list <- ntrees.list <- list()
+for(i in 1:10){
+  sum.list[[i]] <- t(apply(agb.pft.save[,,,i],2,rowMeans,na.rm=TRUE))
+  ntrees.list[[i]] <- t(apply(ntrees.save[,,,i],2,rowMeans,na.rm=TRUE))
+}
+
+sum.all <- do.call(rbind,sum.list)
+ntrees.all <- do.call(rbind,ntrees.list)
+par(mfrow=c(1,1))
+matplot(sum.all)
+matplot(ntrees.all)
+
+
+
+library(corrplot)
+par(mfrow=c(1,1))
+corrplot(cov2cor(enkf.params[[9]]$R))
+
 
 ###-------------------------------------------------------------------###
 ### ensemble adjustment plots                                         ###
@@ -61,11 +142,12 @@ pft.names <- as.character(lapply(settings$pfts, function(x) x[["name"]]))
 param.names <- names(params[[1]][[1]])
 param.hist <- array(NA,dim=c(length(param.names),length(pft.names),nens))
 wt.df <- array(NA, dim = c(length(param.names),length(pft.names),nt,4))
+diff.mean.mat <- matrix(NA,19,9)
 
 pdf('weighted.param.time-series.pdf')
-par(mfrow=c(4,5))
-for(p in 1:length(param.names)){
-  for(s in 1){
+par(mfrow=c(4,3))
+for(p in 1:19){
+  for(s in 1:4){
     pft <- pft.names[s]
     param.plot <- param.names[p]
     
@@ -75,7 +157,7 @@ for(p in 1:length(param.names)){
       param.hist[p,s,] <- param.check
       wt.mean <- wt.var <- numeric(nt)
       
-      for(t in 1:(nt-1)){
+      for(t in 2:(nt-1)){
         wt.mean[t] <- wtd.mean(x=param.hist[p,s,], w = wt.props[t,])
         wt.var[t] <- wtd.var(x=param.hist[p,s,], w = wt.props[t,])
       }
@@ -86,15 +168,15 @@ for(p in 1:length(param.names)){
       wt.df[p,s,,4] <- wt.var - var(param.hist[p,s,])
       
       #plot weighted mean
-      plot(wt.mean,type='l',ylab='Weighted Mean',xlab='Time')
-      points(wt.mean, pch=19,cex=.4)
+      plot(wt.mean[2:9],type='l',ylab='Weighted Mean',xlab='Time')
+      points(wt.mean[2:9], pch=19,cex=.4)
       abline(h=mean(param.hist[p,s,]))
       abline(h = param.hist[p,s,which.min(colMeans(wt.props,na.rm = TRUE))],col='red')
       abline(h = param.hist[p,s,which.max(colMeans(wt.props,na.rm = TRUE))],col='green')
       title(main = list(paste(pft,'\n',param.plot), cex = .5))
       
       #coloring by the difference in the mean relative to the scale of the parameter
-      diff.mean <- abs(mean(wt.mean) - mean(param.hist[p,s,]))
+      diff.mean <- diff.mean.mat[p,s] <- abs(mean(wt.mean,na.rm=T) - mean(param.hist[p,s,],na.rm=T))
       if(diff.mean > abs(.00001*mean(param.hist[p,s,]))){
         mtext(text = paste(signif(diff.mean,digits = 3)), side = 3,col = 'red')
       }else{
@@ -108,9 +190,9 @@ for(p in 1:length(param.names)){
       title(main = list(paste(pft,'\n',param.plot), cex = .5))
       
       hist(param.hist[p,s,], freq = FALSE, col= 'lightgrey', main = paste(pft,'\n',param.plot))
-      for(t in 1:(nt-1)){
+      for(t in 2:(nt-1)){
         lines(density(param.hist[p,s,], weights = wt.props[t,], na.rm = TRUE),
-              lwd = 2, col=rainbow(49)[t])
+              lwd = 2, col=cm.colors(10)[t])
       }
       
     }else{
