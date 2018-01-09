@@ -529,7 +529,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
           }
         }
         
-        if(t == 4 | length(run.id) < nens){
+        if(t == 1 | length(run.id) < nens){
           #The purpose of this step is to impute data for mu.f 
           #where there are zero values so that 
           #mu.f is in 'tobit space' in the full model
@@ -652,7 +652,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         y.ind <- as.numeric(Y > interval[,1])
         y.censored <- as.numeric(ifelse(Y > interval[,1], Y, 0))
         
-        if(t == 4){ #TO need to make something that works to pick weather to compile or not
+        if(t == 1){ #TO need to make something that works to pick weather to compile or not
           #y.obs = Y.dat[1,]
           constants.tobit = list(N = ncol(X), YN = length(y.ind))
           dimensions.tobit = list(X = length(mu.f), X.mod = ncol(X),
