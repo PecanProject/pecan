@@ -133,9 +133,11 @@ create_status_page <- function(config_file, file_prefix='status', delta=3600) {
         sync.time <- sub("UTC ","",substr(row, 1, 28))
         sync.time <- strptime(sync.time,"%a %b %d %T %Y", tz="UTC")
         sync.cols <- strsplit(row," ")[[1]]
-        sync[[as.character(sync.cols[7])]] <- list(id = sync.cols[7],
-                                                   when = as.numeric(sync.time),
-                                                   status = as.numeric(sync.cols[8]))
+        if (!is.na(sync.cols[7])) {
+          sync[[as.character(sync.cols[7])]] <- list(id = sync.cols[7],
+                                                     when = as.numeric(sync.time),
+                                                     status = as.numeric(sync.cols[8]))
+        }
       }
     }
 
@@ -159,7 +161,7 @@ create_status_page <- function(config_file, file_prefix='status', delta=3600) {
     # have latest schema
     if (x$state != 2) {
       if (x$schema != latest_schema) {
-        nodes[[x$sync_host_id]][['state']] <- 1 # behind
+        nodes[[as.character(x$sync_host_id)]][['state']] <- 1 # behind
       }
     }
     # did this node sync with all other nodes
