@@ -18,6 +18,8 @@ cache:
 addons:
   postgresql: 9.6
   apt:
+    sources:
+      - sourceline: 'ppa:marutter/c2d4u'
     packages:
       - libnetcdf-dev
       - liblapack-dev
@@ -36,6 +38,10 @@ addons:
       - pandoc
       - tcl
       - tcl-dev
+      # R package binaries from c2d4u
+      - rcpp
+      - rhdf5
+      - ggplot2
       # need to compile documentation
       # BROKEN MISSING FONT
       #- texinfo
