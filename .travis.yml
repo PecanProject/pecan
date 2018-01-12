@@ -41,6 +41,7 @@ addons:
       # R package binaries from c2d4u
       - r-cran-ape
       - r-bioc-biocinstaller
+      - r-cran-mcmcpack
       - r-cran-rcpp
       - r-bioc-rhdf5
       - r-cran-ggplot2
