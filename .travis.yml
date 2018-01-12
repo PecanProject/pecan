@@ -39,9 +39,9 @@ addons:
       - tcl
       - tcl-dev
       # R package binaries from c2d4u
-      - rcpp
-      - rhdf5
-      - ggplot2
+      - r-cran-rcpp
+      - r-bioc-rhdf5
+      - r-cran-ggplot2
       # need to compile documentation
       # BROKEN MISSING FONT
       #- texinfo
