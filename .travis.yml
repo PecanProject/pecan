@@ -42,7 +42,9 @@ addons:
       - r-cran-ape
       - r-bioc-biocinstaller
       - r-cran-devtools
+      - r-cran-dplyr
       - r-cran-ggplot2
+      - r-cran-httr
       - r-cran-mcmcpack
       - r-cran-rcpp
       - r-bioc-rhdf5
