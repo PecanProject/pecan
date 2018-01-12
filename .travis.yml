@@ -39,6 +39,7 @@ addons:
       - tcl
       - tcl-dev
       # R package binaries from c2d4u
+      - r-bioc-biocinstaller
       - r-cran-rcpp
       - r-bioc-rhdf5
       - r-cran-ggplot2
