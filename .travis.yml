@@ -41,10 +41,13 @@ addons:
       # R package binaries from c2d4u
       - r-cran-ape
       - r-bioc-biocinstaller
+      - r-cran-devtools
+      - r-cran-ggplot2
       - r-cran-mcmcpack
       - r-cran-rcpp
       - r-bioc-rhdf5
-      - r-cran-ggplot2
+      - r-cran-roxygen2
+      - r-cran-testthat
       # need to compile documentation
       # BROKEN MISSING FONT
       #- texinfo
