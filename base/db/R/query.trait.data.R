@@ -26,7 +26,6 @@ fetch.stats2se <- function(connection, query){
 
 
 ##--------------------------------------------------------------------------------------------------#
-##'
 ##' Function to query data from database for specific species and convert stat to SE
 ##'
 ##' @name query.data
@@ -70,7 +69,6 @@ query.data <- function(trait, spstr, extra.columns='ST_X(ST_CENTROID(sites.geome
 
 
 ##--------------------------------------------------------------------------------------------------#
-##'
 ##' Function to query yields data from database for specific species and convert stat to SE
 ##'
 ##' @name query.yields
@@ -108,7 +106,6 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL, ...
 ######################## COVARIATE FUNCTIONS #################################
 
 ##--------------------------------------------------------------------------------------------------#
-##'
 ##' @name append.covariate
 ##' @title Append covariate data as a column within a table
 ##' \code{append.covariate} appends a data frame of covariates as a new column in a data frame
@@ -141,7 +138,6 @@ append.covariate<-function(data, column.name, covariates.data){
 
 
 ##--------------------------------------------------------------------------------------------------#
-##'
 ##' @name query.covariates
 ##' @title Queries covariates from database for a given vector of trait id's
 ##'
@@ -161,7 +157,6 @@ query.covariates<-function(trait.ids, con = NULL, ...){
 
 
 ##--------------------------------------------------------------------------------------------------#
-##'
 ##' @name arrhenius.scaling.traits
 ##' @title Function to apply Arrhenius scaling to 25 degC for temperature-dependent traits
 ##' @param data data frame of data to scale, as returned by query.data()
@@ -202,7 +197,6 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
 
 
 ##--------------------------------------------------------------------------------------------------#
-##'
 ##' @name filter_sunleaf_traits
 ##' @aliases filter.sunleaf.traits
 ##' @title Function to filter out upper canopy leaves
@@ -227,7 +221,6 @@ filter_sunleaf_traits <- function(data, covariates){
 
 
 ##--------------------------------------------------------------------------------------------------#
-##'
 ##' @name rename.jags.columns
 ##'
 ##' @title \code{rename.jags.columns} renames the variables within output data frame trait.data
