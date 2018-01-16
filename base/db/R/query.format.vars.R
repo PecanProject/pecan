@@ -49,7 +49,7 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
   }
 
   mimetype <- PEcAn.DB::db.query(query = paste("SELECT * from  mimetypes where id = ", f$mimetype_id), con = con)[["type_string"]]
-  f$mimetype <- tail(unlist(strsplit(mimetype, "/")),1)
+  f$mimetype <- utils::tail(unlist(strsplit(mimetype, "/")),1)
 
   # get variable names and units of input data
   fv <- PEcAn.DB::db.query(
@@ -179,7 +179,7 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
 bety2pecan <- function(vars_bety){
   
   # This needs to be moved to lazy load 
-  bety_mstmip <- read.csv(system.file("bety_mstmip_lookup.csv", package= "PEcAn.DB"), 
+  bety_mstmip <- utils::read.csv(system.file("bety_mstmip_lookup.csv", package= "PEcAn.DB"), 
                           header = T, stringsAsFactors = FALSE)
   
   vars_full <- merge(vars_bety, bety_mstmip, by = "bety_name", all.x = TRUE)

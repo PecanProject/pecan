@@ -10,7 +10,7 @@ betyConnect <- function(php.config = "../../web/config.php") {
   ## Database connection
   # TODO: The latest version of dplyr/dbplyr works with standard DBI-based
   # objects, so we should replace this with a standard `db.open` call.
-  src_postgres(dbname = config.list$db_bety_database,
+  dplyr::src_postgres(dbname = config.list$db_bety_database,
                host = config.list$db_bety_hostname,
                user = config.list$db_bety_username,
                password = config.list$db_bety_password)
@@ -118,7 +118,7 @@ runs <- function(bety, workflow_id) {
     dplyr::select(workflow_id, folder)
   Ensembles <- dplyr::tbl(bety, "ensembles") %>%
     dplyr::select(ensemble_id = id, workflow_id) %>%
-    inner_join(Workflows, by = "workflow_id")
+    dplyr::inner_join(Workflows, by = "workflow_id")
   Runs <- dplyr::tbl(bety, "runs") %>%
     dplyr::select(run_id = id, ensemble_id) %>%
     dplyr::inner_join(Ensembles, by = "ensemble_id")
@@ -139,7 +139,7 @@ get_workflow_ids <- function(bety, session, all.ids=FALSE) {
   } else {
     # Get all workflow IDs
 
-    ids <- workflows(bety, ensemble = FALSE) %>% distinct(workflow_id) %>% collect %>% 
+    ids <- workflows(bety, ensemble = FALSE) %>% dplyr::distinct(workflow_id) %>% dplyr::collect %>% 
       .[["workflow_id"]] %>% sort(decreasing = TRUE)
     # pull(.,workflow_id) %>% sort(decreasing = TRUE)
 
@@ -190,19 +190,19 @@ get_run_ids <- function(bety, workflow_id) {
 get_var_names <- function(bety, workflow_id, run_id, remove_pool = TRUE) {
   var_names <- character(0)
   if (workflow_id != "" && run_id != "") {
-    workflow <- collect(workflow(bety, workflow_id))
+    workflow <- dplyr::collect(workflow(bety, workflow_id))
     if (nrow(workflow) > 0) {
       outputfolder <- file.path(workflow$folder, "out", run_id)
-      if (file_test("-d", outputfolder)) {
+      if (utils::file_test("-d", outputfolder)) {
         files <- list.files(outputfolder, "*.nc$", full.names = TRUE)
         for (file in files) {
-          nc <- nc_open(file)
+          nc <- ncdf4::nc_open(file)
           lapply(nc$var, function(x) {
             if (x$name != "") {
               var_names[[x$longname]] <<- x$name
             }
           })
-          nc_close(nc)
+          ncdf4::nc_close(nc)
         }
       }
     }
@@ -252,7 +252,7 @@ load_data_single_run <- function(bety, workflow_id, run_id) {
     outputfolder <- file.path(workflow$folder, 'out', run_id)
     files <- list.files(outputfolder, "*.nc$", full.names = TRUE)
     for (file in files) {
-      nc <- nc_open(file)
+      nc <- ncdf4::nc_open(file)
       for (var_name in var_names) {
         dates <- NA
         vals <- NA
