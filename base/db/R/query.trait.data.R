@@ -221,15 +221,13 @@ filter_sunleaf_traits <- function(data, covariates){
 
 
 ##--------------------------------------------------------------------------------------------------#
-##' @name rename.jags.columns
-##'
-##' @title \code{rename.jags.columns} renames the variables within output data frame trait.data
+##' renames the variables within output data frame trait.data
 ##'
 ##' @param data data frame to with variables to rename
 ##'
 ##' @seealso used with \code{\link{jagify}};
 ##' @export
-rename.jags.columns <- function(data) {
+rename_jags_columns <- function(data) {
 
                                         # Change variable names and calculate obs.prec within data frame
   transformed <-  transform(data,
