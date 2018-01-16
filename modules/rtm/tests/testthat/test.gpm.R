@@ -11,7 +11,7 @@ refractive <- dataSpec_prospectd[, "refractive"]
 
 k <- (dataSpec_prospectd[, -(1:2)] %*% k_coefs) / N
 
-rtmat <- gpm(k, refractive, N)
+rtmat <- generalized_plate_model(k, refractive, N)
 prosp <- prospect(true_param, "D")
 
 test_that(
