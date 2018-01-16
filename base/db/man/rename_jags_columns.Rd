@@ -13,5 +13,5 @@ rename_jags_columns(data)
 renames the variables within output data frame trait.data
 }
 \seealso{
-used with \code{\link{jagify}};
+used with \code{\link[PEcAn.MA]{jagify}};
 }
