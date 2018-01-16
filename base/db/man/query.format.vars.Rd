@@ -13,6 +13,9 @@ query.format.vars(bety, input.id = NA, format.id = NA, var.ids = NA)
 
 \item{input_id, format.id}{numeric. Defaults to format.id if both provided}
 }
+\description{
+Given input_id, return formats table and table of variables and units
+}
 \author{
 Betsy Cowdery, Ankur Desai, Istem Fer
 }

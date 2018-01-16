@@ -106,8 +106,8 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL, ...
 ######################## COVARIATE FUNCTIONS #################################
 
 ##--------------------------------------------------------------------------------------------------#
-##' @name append.covariate
-##' @title Append covariate data as a column within a table
+##' Append covariate data as a column within a table
+##'
 ##' \code{append.covariate} appends a data frame of covariates as a new column in a data frame
 ##'   of trait data.
 ##' In the event a trait has several covariates available, the first one found
@@ -138,8 +138,7 @@ append.covariate<-function(data, column.name, covariates.data){
 
 
 ##--------------------------------------------------------------------------------------------------#
-##' @name query.covariates
-##' @title Queries covariates from database for a given vector of trait id's
+##' Queries covariates from database for a given vector of trait id's
 ##'
 ##' @param trait.ids list of trait ids
 ##' @param con database connection
@@ -157,8 +156,8 @@ query.covariates<-function(trait.ids, con = NULL, ...){
 
 
 ##--------------------------------------------------------------------------------------------------#
-##' @name arrhenius.scaling.traits
-##' @title Function to apply Arrhenius scaling to 25 degC for temperature-dependent traits
+##' Apply Arrhenius scaling to 25 degC for temperature-dependent traits
+##'
 ##' @param data data frame of data to scale, as returned by query.data()
 ##' @param covariates data frame of covariates, as returned by query.covariates().
 ##'   Note that data with no matching covariates will be unchanged.
@@ -197,9 +196,10 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
 
 
 ##--------------------------------------------------------------------------------------------------#
+##' Function to filter out upper canopy leaves
+##'
 ##' @name filter_sunleaf_traits
 ##' @aliases filter.sunleaf.traits
-##' @title Function to filter out upper canopy leaves
 ##' @param data input data
 ##' @param covariates covariate data
 ##'

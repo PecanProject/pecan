@@ -9,6 +9,9 @@ bety2pecan(vars_bety)
 \arguments{
 \item{vars_bety}{data frame with variable names and units}
 }
+\description{
+Convert BETY variable names to MsTMIP and subsequently PEcAn standard names
+}
 \author{
 Betsy Cowdery
 }

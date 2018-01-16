@@ -53,8 +53,8 @@ ncdays2date <- function(time, unit) {
 }  # ncdays2date
 
 
-#' @name dbHostInfo
-#' @title Database host information
+#' Database host information
+#'
 #' @param bety BETYdb connection, as opened by `betyConnect()`
 #' @export
 #' @importFrom magrittr %>%
