@@ -291,6 +291,9 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate, trai
 }
 ##==================================================================================================#
 
+##' Get trait data for all PFTs in a settings list
+##'
+##' @param settings PEcAn configuration list. Must have class `Settings` or `MultiSettings`
 ##' @export
 runModule.get.trait.data <- function(settings) {
   if (is.null(settings$meta.analysis)) return(settings) ## if there's no MA, there's no need for traits
