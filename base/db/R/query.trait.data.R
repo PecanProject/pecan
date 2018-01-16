@@ -225,7 +225,7 @@ filter_sunleaf_traits <- function(data, covariates){
 ##'
 ##' @param data data frame to with variables to rename
 ##'
-##' @seealso used with \code{\link{jagify}};
+##' @seealso used with \code{\link[PEcAn.MA]{jagify}};
 ##' @export
 rename_jags_columns <- function(data) {
 
