@@ -37,6 +37,7 @@ check.lists <- function(x, y) {
 ##' @param dbfiles location where previous results are found
 ##' @param dbcon database connection
 ##' @param forceupdate set this to true to force an update, auto will check to see if an update is needed.
+##' @param trait.names list of trait names to retrieve
 ##' @return updated pft with posteriorid
 ##' @author David LeBauer, Shawn Serbin, Rob Kooper
 ##' @export
