@@ -11,6 +11,9 @@ query.site(site.id, con)
 
 \item{site_id}{numeric}
 }
+\description{
+Given site_id, return site table
+}
 \author{
 Betsy Cowdery
 }

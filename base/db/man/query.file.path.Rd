@@ -13,6 +13,9 @@ query.file.path(input.id, host_name, con)
 
 \item{input_id}{numeric: BETY id of the file ("container") to find}
 }
+\description{
+Get file path given id and machine
+}
 \author{
 Betsy Cowdery
 }

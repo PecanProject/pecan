@@ -1,5 +1,5 @@
-##' @name query.file.path
-##' @title Get file path given id and machine
+##' Get file path given id and machine
+##'
 ##' @param input_id numeric: BETY id of the file ("container") to find
 ##' @param host_name character: machine where the file lives
 ##' @param con : database connection

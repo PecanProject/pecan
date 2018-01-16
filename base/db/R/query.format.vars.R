@@ -1,5 +1,5 @@
-##' @name query.format.vars
-##' @title Given input_id, return formats table and table of variables and units
+##' Given input_id, return formats table and table of variables and units
+##'
 ##' @param input_id,format.id numeric. Defaults to format.id if both provided
 ##' @param bety database connection
 ##' @param var.ids optional vector of variable IDs. If provided, limits results to these variables
@@ -169,8 +169,8 @@ query.format.vars <- function(bety, input.id=NA, format.id=NA, var.ids=NA) {
   return(format)
 }
 ################################################################################
-##' @name bety2pecan
-##' @title Convert BETY variable names to MsTMIP and subsequently PEcAn standard names
+##' Convert BETY variable names to MsTMIP and subsequently PEcAn standard names
+##'
 ##' @param vars_bety data frame with variable names and units
 ##' @export 
 ##'
