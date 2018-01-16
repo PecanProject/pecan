@@ -7,6 +7,8 @@
 take.samples(summary, sample.size = 10^6)
 }
 \arguments{
+\item{sample.size}{number of samples to take}
+
 \item{trait}{data.frame with values of mean and sd}
 }
 \value{
