@@ -129,25 +129,19 @@ runs <- function(bety, workflow_id) {
 
 #' Get vector of workflow IDs
 #' @inheritParams dbHostInfo
-#' @param session Session object passed through Shiny
+#' @param query Named vector or list of workflow IDs
 #' @export
-get_workflow_ids <- function(bety, session, all.ids=FALSE) {
-  query <- isolate(shiny::parseQueryString(session$clientData$url_search))
+get_workflow_ids <- function(bety, query, all.ids = FALSE) {
   # If we dont want all workflow ids but only workflow id from the user url query
-  if (!all.ids & "workflow_id" %in% names(query)) {
+  if (!all.ids && "workflow_id" %in% names(query)) {
     ids <- unlist(query[names(query) == "workflow_id"], use.names = FALSE)
   } else {
     # Get all workflow IDs
-
-    ids <- workflows(bety, ensemble = FALSE) %>% dplyr::distinct(workflow_id) %>% dplyr::collect %>% 
-      .[["workflow_id"]] %>% sort(decreasing = TRUE)
-    # pull(.,workflow_id) %>% sort(decreasing = TRUE)
-
-#    ids <- workflows(bety, ensemble = TRUE) %>%
-#      dplyr::distinct(workflow_id) %>%
-#      dplyr::pull() %>%
-#      sort(decreasing = TRUE)
-
+    ids <- workflows(bety, ensemble = FALSE) %>%
+      dplyr::distinct(workflow_id) %>%
+      dplyr::collect() %>%
+      dplyr::pull(workflow_id) %>%
+      sort(decreasing = TRUE)
   }
   return(ids)
 }  # get_workflow_ids

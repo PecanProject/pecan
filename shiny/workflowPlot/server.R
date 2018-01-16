@@ -26,7 +26,8 @@ server <- shinyServer(function(input, output, session) {
     # get_workflow_ids function (line 137) in db/R/query.dplyr.R takes a flag to check
     # if we want to load all workflow ids.
     # get_workflow_id function from query.dplyr.R
-    all_ids <- get_workflow_ids(bety, session,all.ids=TRUE)
+    query <- isolate(shiny::parseQueryString(session$clientData$url_search))
+    all_ids <- get_workflow_ids(bety, query, all.ids=TRUE)
     updateSelectizeInput(session, "all_workflow_id", choices=all_ids)
   })
   # Update all run ids
