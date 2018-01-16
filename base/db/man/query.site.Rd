@@ -8,6 +8,8 @@ query.site(site.id, con)
 }
 \arguments{
 \item{con}{: database connection}
+
+\item{site_id}{numeric}
 }
 \author{
 Betsy Cowdery

@@ -337,7 +337,7 @@ get.id <- function(table, colnames, values, con, create=FALSE, dates=FALSE){
 ##' Convenience function to fix hostname if localhost
 ##'
 ##' @title default_hostname
-##' @param hostname
+##' @param hostname character
 ##' @return hostname
 ##' @export
 ##' @examples

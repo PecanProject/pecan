@@ -31,8 +31,8 @@ fetch.stats2se <- function(connection, query){
 ##' @name query.data
 ##' @title Query data and transform stats to SE by calling \code{\link{fetch.stats2se}};
 ##' @param trait trait to query from the database
-##' @param spstr
-##' @param extra.columns
+##' @param spstr IDs of species to query from, as a single comma-separated string
+##' @param extra.columns other query terms to pass in. If unspecified, retrieves latitude and longitude
 ##' @param con database connection
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
@@ -75,7 +75,7 @@ query.data <- function(trait, spstr, extra.columns='ST_X(ST_CENTROID(sites.geome
 ##' @title Query yield data and transform stats to SE by calling \code{\link{fetch.stats2se}};
 ##' @param trait yield trait to query
 ##' @param spstr species to query for yield data
-##' @param extra.columns
+##' @param extra.columns other query terms to pass in. Optional
 ##' @param con database connection
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
@@ -293,7 +293,7 @@ drop.columns <- function(data, columns){
 ##' @name take.samples
 ##' @title Sample from normal distribution, given summary stats
 ##' @param trait data.frame with values of mean and sd
-##' @param sample.size
+##' @param sample.size number of samples to take
 ##' @return sample of length sample.size
 ##' @author David LeBauer, Carl Davidson
 ##' @export
