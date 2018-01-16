@@ -265,6 +265,11 @@ load_data_single_run <- function(bety, workflow_id, run_id) {
         }
         x <- ncdays2date(ncdf4::ncvar_get(nc, 'time'), ncdf4::ncatt_get(nc, 'time'))
         y <- ncdf4::ncvar_get(nc, var_name)
+        # !!!HACK!!!
+        # Soil moisture and temperature are a matrices Returning only the first row for now.
+        if (var_name %in% c("SoilMoist", "SoilTemp")) {
+          y <- y[1, ]
+        }
         b <- !is.na(x) & !is.na(y) & sw != 0
         
         dates <- if(is.na(dates)) x[b] else c(dates, x[b])
@@ -273,13 +278,18 @@ load_data_single_run <- function(bety, workflow_id, run_id) {
 
         xlab <- "Time"
         # Values of the data which we will plot
-        valuesDF <- data.frame(dates,vals)
+        valuesDF <- data.frame(dates, vals)
         # Meta information about the data.
-        metaDF <- data.frame(workflow_id,run_id,title,xlab,ylab,var_name)
+        metaDF <- data.frame(workflow_id, run_id, title, xlab, ylab, var_name)
         # Meta and Values DF created differently because they would of different
         # number of rows. cbind would repeat metaDF(1X6) to the size of valuesDF
-        currentDF <- cbind(valuesDF,metaDF)
-        globalDF <- rbind(globalDF,currentDF)
+        if (nrow(valuesDF) == 0) {
+          logger.warn("0 values found for variable ", var_name, ". ",
+                      "Skipping this variable")
+        } else {
+          currentDF <- cbind(valuesDF, metaDF)
+          globalDF <- rbind(globalDF, currentDF)
+        }
       }
       ncdf4::nc_close(nc)
     }
