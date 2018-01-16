@@ -13,6 +13,7 @@ library(scales)
 library(lubridate)
 library(dplyr)
 library(reshape2)
+library(purrr)
 # Maximum size of file allowed to be uploaded: 100MB 
 options(shiny.maxRequestSize=100*1024^2) 
 # Define server logic
@@ -28,7 +29,7 @@ server <- shinyServer(function(input, output, session) {
     # get_workflow_id function from query.dplyr.R
     query <- isolate(shiny::parseQueryString(session$clientData$url_search))
     all_ids <- get_workflow_ids(bety, query, all.ids=TRUE)
-    updateSelectizeInput(session, "all_workflow_id", choices=all_ids)
+    updateSelectizeInput(session, "all_workflow_id", choices = all_ids)
   })
   # Update all run ids
   all_run_ids <- reactive({
@@ -44,40 +45,37 @@ server <- shinyServer(function(input, output, session) {
       for(r_id in r_ids){
         # Each workflow id can have more than one run ids
         # ',' as a separator between workflow id and run id
-        list_item <- paste0('workflow ',w_id,', run ',r_id)
-        run_id_list <- c(run_id_list,list_item)
+        list_item <- paste0('workflow ', w_id,', run ', r_id)
+        run_id_list <- c(run_id_list, list_item)
       }
     }
     return(run_id_list)
   })
   # Update all run_ids ('workflow ',w_id,', run ',r_id)
   observe({
-    updateSelectizeInput(session, "all_run_id", choices=all_run_ids())
+    updateSelectizeInput(session, "all_run_id", choices = all_run_ids())
   })
     
   # Update variable names observeEvent on input$load 
-  observeEvent(input$load,{
+  observeEvent(input$load, {
     req(input$all_run_id)
     # All information about a model is contained in 'all_run_id' string
     ids_DF <- parse_ids_from_input_runID(input$all_run_id)
     var_name_list <- c()
     for(row_num in 1:nrow(ids_DF)){
-      var_name_list <- c(var_name_list,var_names_all(bety,ids_DF$wID[row_num],ids_DF$runID[row_num]))
+      var_name_list <- c(var_name_list, var_names_all(bety, ids_DF$wID[row_num], ids_DF$runID[row_num]))
     }
-    updateSelectizeInput(session, "variable_name", choices=var_name_list)
+    updateSelectizeInput(session, "variable_name", choices = var_name_list)
   })
   # Loads data for all workflow and run ids after the load button is pressed.
   # All information about a model is contained in 'all_run_id' string
   # Wrapper over 'load_data_single_run' in PEcAn.db::query.dplyr
   # Model data different from observations data 
-  loadNewData <-eventReactive(input$load,{
+  loadNewData <- eventReactive(input$load,{
     req(input$all_run_id)
     # Get IDs DF from 'all_run_id' string
     ids_DF <- parse_ids_from_input_runID(input$all_run_id)
-    globalDF <- data.frame()
-    for(row_num in 1:nrow(ids_DF)){
-      globalDF <- rbind(globalDF, load_data_single_run(bety,ids_DF$wID[row_num],ids_DF$runID[row_num]))
-    }
+    globalDF <- map2_df(ids_DF$wID, ids_DF$runID, ~load_data_single_run(bety, .x, .y))
     return(globalDF)
   })
   
@@ -97,10 +95,19 @@ server <- shinyServer(function(input, output, session) {
   # Update input id list as (input id, name)
   observe({
     req(input$all_site_id)
-    inputs_df <- getInputs(bety,c(input$all_site_id))
-    formats_sub <- dplyr::tbl(bety, 'formats_variables') %>% dplyr::filter(format_id %in% inputs_df$format_id) %>% dplyr::pull(format_id) %>% unique()
-    inputs_df <- inputs_df %>% dplyr::filter(format_id %in% formats_sub) # Only data sets with formats with associated variables will show up
-    updateSelectizeInput(session, "all_input_id", choices=inputs_df$input_selection_list)
+    inputs_df <- getInputs(bety, c(input$all_site_id))
+    formats_1 <- dplyr::tbl(bety, 'formats_variables') %>%
+      dplyr::filter(format_id %in% inputs_df$format_id)
+    if (dplyr.count(formats_1) == 0) {
+      logger.warn("No inputs found. Returning NULL.")
+      return(NULL)
+    } else {
+      formats_sub <- formats_1 %>%
+        dplyr::pull(format_id) %>%
+        unique()
+      inputs_df <- inputs_df %>% dplyr::filter(format_id %in% formats_sub) # Only data sets with formats with associated variables will show up
+      updateSelectizeInput(session, "all_input_id", choices=inputs_df$input_selection_list)
+    }
   })
   # Renders ggplotly 
   output$outputPlot <- renderPlotly({
