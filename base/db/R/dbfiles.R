@@ -13,16 +13,16 @@
 ##' data to store the file
 ##' @name dbfile.input.insert
 ##' @title Insert file into tables
-##' @param filename the name of the file to be inserted
+##' @param in.path path to the directory containing the file to be inserted
+##' @param in.prefix initial portion of the filename that does not vary by date. Does not include directory; specify that as part of in.path
 ##' @param siteid the id of the site that this data is applicable to
 ##' @param startdate the start date of the data stored in the file
 ##' @param enddate the end date of the data stored in the file
 ##' @param mimetype the mime-type of the file
 ##' @param formatname the name of the format to distinguish between simmilair mime-types
-##' @param parent the id of the parent of the input
+##' @param parentid the id of the parent of the input
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
-##' @param params database connection information
 ##' @param allow.conflicting.dates Whether to allow a new input record with same siteid, name, and format but different start/end dates
 ##' @return data.frame with the id, filename and pathname of the input that is requested
 ##' @export
@@ -163,10 +163,9 @@ dbfile.input.insert <- function(in.path, in.prefix, siteid, startdate, enddate, 
 ##' @param enddate the end date of the data stored in the file
 ##' @param mimetype the mime-type of the file
 ##' @param formatname the name of the format to distinguish between simmilair mime-types
-##' @param parent the id of the parent of the input
+##' @param parentid the id of the parent of the input
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
-##' @param params database connection information
 ##' @param exact.dates setting to include start and end date in input query
 ##' @param pattern text to seach for in the file name (default NULL = no check). NOT YET IMPLEMENTED
 ##' @return data.frame with the id, filename and pathname of the input that is requested
@@ -294,7 +293,6 @@ dbfile.input.check <- function(siteid, startdate=NULL, enddate=NULL, mimetype, f
 ##' @param formatname the name of the format to distinguish between simmilair mime-types
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
-##' @param params database connection information
 ##' @return data.frame with the id, filename and pathname of the posterior that is requested
 ##' @author Rob Kooper
 ##' @export
@@ -354,7 +352,6 @@ dbfile.posterior.insert <- function(filename, pft, mimetype, formatname, con, ho
 ##' @param formatname the name of the format to distinguish between simmilair mime-types
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
-##' @param params database connection information
 ##' @return data.frame with the id, filename and pathname of the posterior that is requested
 ##' @author Rob Kooper
 ##' @export
@@ -404,9 +401,11 @@ dbfile.posterior.check <- function(pft, mimetype, formatname, con, hostname=PEcA
 ##' @title Insert file into tables
 ##' @param in.path Path to file directory
 ##' @param in.prefix Filename prefix (not including directory)
+##' @param type One of "Model", "Posterior", "Input"
+##' @param id container_id of the input to be modified
+##' @param reuse logical: If a record already exists, use it or create a new one?
 ##' @param con database connection object
 ##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
-##' @param params database connection information
 ##' @return id of the file that is written
 ##' @author Rob Kooper, Ryan Kelly
 ##' @export
@@ -586,13 +585,13 @@ dbfile.file <- function(type, id, con, hostname=PEcAn.remote::fqdn()) {
   }
 }
 
-##' Function to return id to containter type given a filename.
+##' Function to return id to container type given a filename.
 ##'
 ##' This will check the dbfiles and machines to see if the file exists,
 ##' and return the id of the container type of the first one found. If
 ##' none is found it will return NA.
 ##'
-##' @name dbfile.file
+##' @describeIn dbfile.file
 ##' @title Return id from the dbfiles tables
 ##' @param type the type of dbfile (Input, Posterior)
 ##' @param file the full pathname to the file

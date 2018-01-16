@@ -102,6 +102,7 @@ db.open <- function(params) {
 ##' @name db.close
 ##' @title Close database connection
 ##' @param con database connection to be closed
+##' @param showWarnings logical: report possible issues with connection?
 ##' @return connection to database
 ##' @author Rob Kooper
 ##' @export
@@ -165,6 +166,8 @@ db.print.connections <- function() {
 ##' Useful to only run tests that depend on database when a connection exists
 ##' @title db.exists
 ##' @param params database connection information
+##' @param write logical: test whether we have write access?
+##' @param table name of database table to check
 ##' @return TRUE if database connection works; else FALSE
 ##' @export
 ##' @author David LeBauer, Rob Kooper
@@ -309,6 +312,9 @@ db.getShowQueries <- function() {
 ##' @param table name of table
 ##' @param colnames names of one or more columns used in where clause
 ##' @param values values to be queried in fields corresponding to colnames
+##' @param con database connection object,
+##' @param create logical: make a record if none found?
+##' @param dates logical: update created_at and updated_at timestamps? Used only if `create` is TRUE
 ##' @return will numeric
 ##' @export
 ##' @author David LeBauer

@@ -185,6 +185,7 @@ get_run_ids <- function(bety, workflow_id) {
 #' @inheritParams dbHostInfo
 #' @inheritParams workflow
 #' @param run_id Run ID
+#' @param remove_pool logical: ignore variables with 'pools' in their names?
 #' @export
 get_var_names <- function(bety, workflow_id, run_id, remove_pool = TRUE) {
   var_names <- character(0)
