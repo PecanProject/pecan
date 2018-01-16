@@ -5,7 +5,7 @@
 #' @param refractive Refractive index (400 - 2500nm)
 #' @param N Effective number of mesophyll layers (see [prospect()])
 #' @export
-gpm <- function(k, refractive, N) {
+generalized_plate_model <- function(k, refractive, N) {
   stopifnot(
     length(k) == 2101,
     length(refractive) == 2101,
