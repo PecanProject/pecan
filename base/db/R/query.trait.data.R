@@ -306,7 +306,7 @@ take.samples <- function(summary, sample.size = 10^6){
     ans <- summary$mean
   } else {
     set.seed(0)
-    ans <- rnorm(n = sample.size, mean = summary$mean, sd = summary$stat)
+    ans <- stats::rnorm(n = sample.size, mean = summary$mean, sd = summary$stat)
   }
   return(ans)
 }
@@ -344,7 +344,7 @@ derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=10^
   output.samples <- do.call(FUN, input.samples)
   output<-input[[1]]
   output$mean<-mean(output.samples)
-  output$stat<-ifelse(length(output.samples) > 1, sd(output.samples), NA)
+  output$stat<-ifelse(length(output.samples) > 1, stats::sd(output.samples), NA)
   output$n <- min(sapply(input, function(trait){trait$n}))
   output$vname <- ifelse(is.na(var.name), output$vname, var.name)
   return(output)
@@ -536,7 +536,7 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only=FALSE, 
     ## info to send to console.  Maybe just print summary stats?
     ## print(result)
     if (!update.check.only) {
-      PEcAn.logger::logger.info(paste("Median ",trait," : ",round(median(result$mean,na.rm=TRUE),digits=3),sep=""))
+      PEcAn.logger::logger.info(paste("Median ",trait," : ",round(stats::median(result$mean,na.rm=TRUE),digits=3),sep=""))
       PEcAn.logger::logger.info("---------------------------------------------------------")
     }
     # print list of traits queried and number by outdoor/glasshouse

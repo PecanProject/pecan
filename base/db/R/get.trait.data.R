@@ -117,7 +117,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
             PEcAn.logger::logger.error("can not find posterior file: ", file.path(files$file_path[[id]], files$file_name[[id]]))
           } else if (files$file_name[[id]] == "species.csv") {
             PEcAn.logger::logger.debug("Checking if species have changed")
-            testme <- read.csv(file = file.path(files$file_path[[id]], files$file_name[[id]]))
+            testme <- utils::read.csv(file = file.path(files$file_path[[id]], files$file_name[[id]]))
             if (!check.lists(species, testme)) {
               foundallfiles <- FALSE
               PEcAn.logger::logger.error("species have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
@@ -203,11 +203,11 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   dir.create(pathname, showWarnings = FALSE, recursive = TRUE)
 
   ## 1. get species list based on pft
-  write.csv(species, file.path(pft$outdir, "species.csv"), row.names = FALSE)
+  utils::write.csv(species, file.path(pft$outdir, "species.csv"), row.names = FALSE)
 
   ## save priors
   save(prior.distns, file = file.path(pft$outdir, "prior.distns.Rdata"))
-  write.csv(prior.distns,
+  utils::write.csv(prior.distns,
             file = file.path(pft$outdir, "prior.distns.csv"), row.names = TRUE)
 
   ## 3. display info to the console
@@ -218,7 +218,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   ## traits = variables with prior distributions for this pft
   trait.data.file <- file.path(pft$outdir, "trait.data.Rdata")
   save(trait.data, file = trait.data.file)
-  write.csv(plyr::ldply(trait.data),
+  utils::write.csv(plyr::ldply(trait.data),
             file = file.path(pft$outdir, "trait.data.csv"), row.names = FALSE)
 
   PEcAn.logger::logger.info("number of observations per trait for", pft$name)
@@ -273,7 +273,7 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate, trai
   ##---------------- Load trait dictionary --------------#
   if (is.logical(trait.names)) {
     if (trait.names) {
-      data(trait.dictionary, package = "PEcAn.utils")
+      utils::data(trait.dictionary, package = "PEcAn.utils")
       trait.names <- trait.dictionary$id
     }
   }

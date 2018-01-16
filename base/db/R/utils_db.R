@@ -88,7 +88,7 @@ db.open <- function(params) {
   }
   attr(c, "pecanid") <- id
   dump.log <- NULL
-  dump.frames(dumpto="dump.log")
+  utils::dump.frames(dumpto="dump.log")
   .db.utils$created <- .db.utils$created+1
   .db.utils$connections$id <- append(.db.utils$connections$id, id)
   .db.utils$connections$con <- append(.db.utils$connections$con, c)

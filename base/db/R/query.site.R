@@ -15,7 +15,7 @@ query.site <- function(site.id,con){
     con = con
   )
   if (nrow(site)==0) {
-    logger.error("Site not found"); return(NULL)
+    PEcAn.logger::logger.error("Site not found"); return(NULL)
   }
   if (!(is.na(site$lon)) && !(is.na(site$lat))) {
     return(site)
