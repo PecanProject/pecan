@@ -1,5 +1,5 @@
-#' @name generate.noise
-#' @title Generate autocorrelated spectral noise
+#' Generate autocorrelated spectral noise
+#' 
 #' @param n Length of output vector (default = 2101)
 #' @param sigma Gaussian noise standard deviation (default=1e-4)
 #' @param fw Filter width. Will be coerced to an odd number if even (default = 201).

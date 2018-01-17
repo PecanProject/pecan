@@ -23,7 +23,7 @@ settings <- read.settings(system.file("pecan.maat.xml",package = "PEcAn.MAAT"))
 # get traits of pfts
 settings$pfts <- get.trait.data(settings$pfts, settings$model$type, settings$database$dbfiles, 
 	settings$database$bety, settings$meta.analysis$update)
-saveXML(listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
+saveXML(PEcAn.settings::listToXml(settings, "pecan"), file=file.path(settings$outdir, 'pecan.xml'))
 #--------------------------------------------------------------------------------------------------#
 
 
@@ -39,16 +39,16 @@ run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.anal
 if (!file.exists(file.path(settings$rundir, "runs.txt")) | settings$meta.analysis$update == "TRUE") {
   run.write.configs(settings, settings$database$bety$write)
 } else {
-  logger.info("Already wrote configuraiton files")    
+  PEcAn.logger::logger.info("Already wrote configuraiton files")    
 }
 #--------------------------------------------------------------------------------------------------#
 
 #--------------------------------------------------------------------------------------------------#
 # run model
 if (!file.exists(file.path(settings$rundir, "runs.txt"))) {
-  logger.severe("No ensemble or sensitivity analysis specified in pecan.xml, work is done.")
+  PEcAn.logger::logger.severe("No ensemble or sensitivity analysis specified in pecan.xml, work is done.")
 } else {
-  start.model.runs(settings, settings$database$bety$write)
+  PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
 }
 #--------------------------------------------------------------------------------------------------#
 
@@ -62,14 +62,14 @@ get.results(settings)
 #if (!file.exists(file.path(settings$outdir,"ensemble.ts.pdf"))) {
 #  run.ensemble.analysis(TRUE)    
 #} else {
-#  logger.info("Already executed run.ensemble.analysis()")
+#  PEcAn.logger::logger.info("Already executed run.ensemble.analysis()")
 #}
 
 # sensitivity analysis
 if (!file.exists(file.path(settings$outdir, "sensitivity.results.Rdata"))) {
   run.sensitivity.analysis()
 } else {
-  logger.info("Already executed run.sensitivity.analysis()")    
+  PEcAn.logger::logger.info("Already executed run.sensitivity.analysis()")    
 }
 
 db.print.connections()

@@ -14,6 +14,7 @@
 #' @details Currently modifies the files IN PLACE rather than creating a new copy of the files an a new DB record. 
 #'
 #' @examples
+#' \dontrun{
 #' in.path    <- "~/paleon/PalEONregional_CF_site_1-24047/"
 #' in.prefix  <- ""
 #' outfolder  <- "~/paleon/metTest/"
@@ -22,7 +23,6 @@
 #' overwrite  <- FALSE
 #' verbose    <- TRUE
 #' 
-#' \notrun{
 #' split_wind(in.path, in.prefix, start_date, end_date, merge.file, overwrite, verbose)
 #' }
 split_wind <- function(in.path, in.prefix, start_date, end_date,
@@ -53,12 +53,12 @@ split_wind <- function(in.path, in.prefix, start_date, end_date,
     nc <- ncdf4::nc_open(old.file, write = TRUE)
     
     if("eastward_wind" %in% names(nc$var)) {
-      PEcAn.utils::logger.info("eastward_wind already exists", year_txt)
+      PEcAn.logger::logger.info("eastward_wind already exists", year_txt)
       ncdf4::nc_close(nc)
       next
     }
     if(!("wind_speed" %in% names(nc$var))) {
-      PEcAn.utils::logger.error("wind_speed does not exist", year_txt)
+      PEcAn.logger::logger.error("wind_speed does not exist", year_txt)
       ncdf4::nc_close(nc)
       next
     }

@@ -14,7 +14,7 @@ extract_veg <- function(new_site, start_date, end_date,
  fcnx <- paste0("extract_", source) # e.g. extract_FIA
  
  if (!exists(fcnx)) {
-   logger.severe(paste(fcnx, "does not exist."))
+   PEcAn.logger::logger.severe(paste(fcnx, "does not exist."))
  }else{
    fcn <- match.fun(fcnx)
  }

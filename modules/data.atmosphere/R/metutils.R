@@ -16,7 +16,7 @@ qcshum <- function(x) {
 ##'
 ##' converting specific humidity into relative humidity
 ##' NCEP surface flux data does not have RH
-##' from Bolton 1980 Teh computation of Equivalent Potential Temperature 
+##' from Bolton 1980 Teh computation of Equivalent Potential Temperature
 ##' \url{http://www.eol.ucar.edu/projects/ceop/dm/documents/refdata_report/eqns.html}
 ##' @title qair2rh
 ##' @param qair specific humidity, dimensionless (e.g. kg/kg) ratio of water mass / total air mass
@@ -43,7 +43,8 @@ qair2rh <- function(qair, temp, press = 1013.25) {
 ##' @author Mike Dietze, Ankur Desai
 ##' @aliases rh2rv
 rh2qair <- function(rh, T, press = 101325) {
-  Tc <- T - 273.15
+  stopifnot(T[!is.na(T)] >= 0)
+  Tc <- udunits2::ud.convert(T, "K", "degC")
   es <- 6.112 * exp((17.67 * Tc) / (Tc + 243.5))
   e <- rh * es
   p_mb <- press / 100
@@ -56,7 +57,7 @@ rh2qair <- function(rh, T, press = 101325) {
 ##'
 ##' Calculate vapor pressure deficit from relative humidity and temperature.
 ##' @title VPD
-##' @param rh relative humidity, in percent 
+##' @param rh relative humidity, in percent
 ##' @param temp temperature, degrees celsius
 ##' @return vpd: vapor pressure deficit, in mb
 ##' @export
@@ -74,7 +75,7 @@ get.vpd <- function(rh, temp) {
 ##' Calculate saturation vapor pressure
 ##'
 ##' @title get es
-##' @param temp temperature in degrees C 
+##' @param temp temperature in degrees C
 ##' @return saturation vapor pressure in mb
 ##' @export
 ##' @author David LeBauer
@@ -90,7 +91,7 @@ SatVapPres <- function(T) {
   # /estimates saturation vapor pressure (kPa) Goff-Gratch 1946 /input: T = absolute temperature
   T_st <- 373.15  ##steam temperature (K)
   e_st <- 1013.25  ##/saturation vapor pressure at steam temp (hPa)
-  return(0.1 * exp(-7.90298 * (T_st/T - 1) + 5.02808 * log(T_st/T) - 1.3816e-07 * (10^(11.344 * (1 - T/T_st)) - 
+  return(0.1 * exp(-7.90298 * (T_st/T - 1) + 5.02808 * log(T_st/T) - 1.3816e-07 * (10^(11.344 * (1 - T/T_st)) -
     1) + 0.0081328 * (10^(-3.49149 * (T_st/T - 1)) - 1) + log(e_st)))
 } # SatVapPres
 
@@ -102,7 +103,7 @@ SatVapPres <- function(T) {
 ##' A Simple Conversion and Applications.)
 ##' @title get RH
 ##' @param temp T in original equation
-##' @param dewpoint Td in original 
+##' @param dewpoint Td in original
 ##' @return numeric vector
 ##' @export
 ##' @author David LeBauer
@@ -151,11 +152,11 @@ par2ppfd <- function(watts) {
 
 
 ##' Solar Radiation to PPFD
-##' 
-##' Here the input is the total solar radiation 
+##'
+##' Here the input is the total solar radiation
 ##' so to obtain in the PAR spectrum need to multiply by 0.486 From Campbell and Norman p151
 ##' This is based on the approximation that PAR is 0.45-0.50 of the total radiation
-##' 
+##'
 ##' @title SW to PAR
 ##' @author David LeBauer
 ##' @param sw shortwave radiation (W/m2 == J/m2/s)
@@ -166,7 +167,7 @@ sw2par <- function(sw) {
 } # sw2par
 
 ##' CF Shortwave to PPFD
-##' 
+##'
 ##' Cambell and Norman 1998 p 151, ch 10
 ##' @title SW to PPFD
 ##' @author David LeBauer
@@ -180,7 +181,7 @@ sw2ppfd <- function(sw) {
 
 
 ##' Solar Radiation to PPFD
-##' 
+##'
 ##' There is no easy straight way to convert MJ/m2 to mu mol photons / m2 / s (PAR).
 ##' Note: 1 Watt = 1J/s
 ##' The above conversion is based on the following reasoning
@@ -193,7 +194,7 @@ sw2ppfd <- function(sw) {
 ##' This means that 1e6 / (2.35e6) * 0.486 = 2.07
 ##' 1e6 converts from mol to mu mol
 ##' 1/3600 divides the values in hours to seconds
-##' 
+##'
 ##' @title MJ to PPFD
 ##' @author Fernando Miguez
 ##' @author David LeBauer
@@ -224,13 +225,14 @@ AirDens <- function(pres, T, rv) {
   return(pres / (287 * T * (1 + 0.61 * rv)))
 } # AirDens
 
-##' calculate latent heat of vaporization for water 
-##' 
+##' calculate latent heat of vaporization for water
+##'
 ##' @title Latent heat of vaporization
 ##' @param airtemp   air temperature (Kelvin)
 ##' @export
 ##' @author Istem Fer
 ##' @return lV   latent heat of vaporization (J kg-1)
 get.lv <- function(airtemp = 268.6465) {
-  return((94.21 * (365 - (airtemp - 273.15)) ^ 0.31249) * 4.183 * 1000)
+  airtemp_C <- udunits2::ud.convert(airtemp, "K", "degC")
+  return((94.21 * (365 - airtemp_C) ^ 0.31249) * 4.183 * 1000)
 } # get.lv

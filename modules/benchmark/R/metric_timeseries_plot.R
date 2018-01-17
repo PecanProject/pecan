@@ -1,18 +1,20 @@
 ##' @name metric_timeseries_plot
 ##' @title Timeseries Plot
 ##' @export
-##' @param metric_dat dataframe
-##' @param var character
+##' @param metric_dat
+##' @param var
+##' @param filename
+##' @param draw.plot
 ##' @importFrom ggplot2 ggplot labs geom_path geom_point
 ##' @author Betsy Cowdery
 
 metric_timeseries_plot <- function(metric_dat, var, filename = NA, draw.plot = is.na(filename)) {
-  PEcAn.utils::logger.info("Metric: Timeseries Plot")
+  PEcAn.logger::logger.info("Metric: Timeseries Plot")
   
   # Attempt at getting around the fact that time can be annual and thus as.Date won't work
   date.time <- try(as.Date(metric_dat$time), silent = TRUE)
   if (class(date.time) == "try-error"){
-    PEcAn.utils::logger.warn("Can't coerce time column to Date format, attempting plot anyway")
+    PEcAn.logger::logger.warn("Can't coerce time column to Date format, attempting plot anyway")
   }else{
     metric_dat$time <- date.time
   }
@@ -31,6 +33,6 @@ metric_timeseries_plot <- function(metric_dat, var, filename = NA, draw.plot = i
   }
   
   if (draw.plot) {
-    plot(p)
+    return(p)
   }
 } # metric_timeseries_plot

@@ -10,6 +10,5 @@ summary_simple(samples)
 \item{samples}{Matrix of MCMC samples}
 }
 \description{
-Calculate simple univariate summary statistics and return as 
-named list
+Calculate simple univariate summary statistics and return as named list
 }

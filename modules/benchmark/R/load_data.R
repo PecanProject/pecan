@@ -13,6 +13,16 @@
 load_data <- function(data.path, format, start_year = NA, end_year = NA, site = NA, 
                       vars.used.index=NULL, ...) {
 
+  # If site = NA, check that site information is in the formats table
+  if(all(is.na(site))){
+    if(!is.null(format$site)){
+      site <- list(id = format$site, lat = format$lat, lon = format$lon, 
+                   time_zone = format$time_zone)
+    }else{
+      PEcAn.logger::logger.error("Input must have site information.")
+    }
+  }
+  
   ## load everything in format by default
   time.row <- format$time.row 
   
@@ -43,13 +53,13 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
     converted.data.path <- convert_file(url = "https://bd-api.ncsa.illinois.edu", input_filename = data.path, 
                                         output = "csv", output_path = output_path, token = token)
     if (is.na(converted.data.path)){
-      PEcAn.utils::logger.error("Converted file was not returned from Brown Dog")
+      PEcAn.logger::logger.error("Converted file was not returned from Brown Dog")
     }
     #not doing anything about mimetypes not convertible by BD right now
     fcn <- match.fun("load_csv")
     data.path <- converted.data.path
   } else {
-    PEcAn.utils::logger.warn("Brown Dog is currently unable to perform conversion from ",mimetype," to a PEcAn usable format")
+    PEcAn.logger::logger.warn("Brown Dog is currently unable to perform conversion from ",mimetype," to a PEcAn usable format")
   }
   
   vars =  format$vars$input_name[c(vars.used.index, time.row)]
@@ -91,7 +101,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
         out[col] <- as.vector(misc.convert(x, u1, u2)) # Betsy: Adding this because misc.convert returns vector with attributes original agrument x, which causes problems later
         colnames(out)[col] <- vars_used$pecan_name[i]
       } else {
-        PEcAn.utils::logger.warn(paste("Units cannot be converted. Removing variable. please check the units of",vars_used$input_name[i]))
+        PEcAn.logger::logger.warn(paste("Units cannot be converted. Removing variable. please check the units of",vars_used$input_name[i]))
         out<-out[,!names(out) %in% c(vars_used$input_name[i])] 
         vars_used<-vars_used[!names(vars_used) %in% c(vars_used$input_name[i],vars_used$pecan_name[i]),]
       }
@@ -111,7 +121,7 @@ load_data <- function(data.path, format, start_year = NA, end_year = NA, site = 
       tz = site$time_zone
     }else{
       tz = "UTC"
-      PEcAn.utils::logger.warn("No site timezone. Assuming input time zone is UTC. This may be incorrect.")
+      PEcAn.logger::logger.warn("No site timezone. Assuming input time zone is UTC. This may be incorrect.")
     }
     
     out$posix <- strptime(apply(y, 1, function(x) paste(x, collapse = " ")), 

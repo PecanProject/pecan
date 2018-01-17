@@ -1,0 +1,76 @@
+version: '3'
+
+networks:
+  net1:
+    driver: bridge
+
+services:
+  postgres:
+    image: 'mdillon/postgis:9.4'
+    networks:
+      net1:
+        aliases:
+          - pg
+    ports:
+      - '5432:5432'
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - /home/skywalker/pgdata:/var/lib/postgresql/data/pgdata
+
+  bety:
+    depends_on:
+      - postgres
+    image: 'pecan/bety:latest'
+    networks:
+       net1:
+        aliases:
+          - bety
+    ports:
+      - '3000:3000'
+    environment:
+      - PG_PORT_5432_TCP_ADDR=pg
+      - PG_PORT_5432_TCP_PORT=5432
+
+  pecan-core:
+    depends_on:
+       - postgres
+       - bety
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: amanskywalker/pecan-dev:0.1
+    networks:
+       net1:
+        aliases:
+          - pecan-core
+    environment:
+      - PG_HOST=pg
+      - PG_PORT=5432
+      - PG_USER=bety
+      - PG_PASSWORD=bety
+      - PG_DATABASE_NAME=bety
+    volumes:
+      - /home/skywalker/pecandata:/pecandata
+
+  pecan-web:
+    depends_on:
+       - postgres
+       - bety
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+    networks:
+       net1:
+        aliases:
+          - pecan-web
+    ports:
+      - '8080:80'
+    environment:
+      - PG_HOST=pg
+      - PG_PORT=5432
+      - PG_USER=bety
+      - PG_PASSWORD=bety
+      - PG_DATABASE_NAME=bety
+    volumes:
+      - /home/skywalker/pecandata:/pecandata

@@ -42,17 +42,17 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date,
   
   # test to see that we got back a FTP
   if (is.null(ftplink)) {
-    PEcAn.utils::logger.severe("Could not get information about", site, ".", "Is this an Fluxnet2015 site?")
+    PEcAn.logger::logger.severe("Could not get information about", site, ".", "Is this an Fluxnet2015 site?")
   }
   
   # get start and end year of data from filename
   syear <- as.numeric(substr(ftplink, nchar(ftplink) - 16, nchar(ftplink) - 13))
   eyear <- as.numeric(substr(ftplink, nchar(ftplink) - 11, nchar(ftplink) - 8))
   if (start_year > eyear) {
-    PEcAn.utils::logger.severe("Start_Year", start_year, "exceeds end of record ", eyear, " for ", site)
+    PEcAn.logger::logger.severe("Start_Year", start_year, "exceeds end of record ", eyear, " for ", site)
   }
   if (end_year < syear) {
-    PEcAn.utils::logger.severe("End_Year", end_year, "precedes start of record ", syear, " for ", site)
+    PEcAn.logger::logger.severe("End_Year", end_year, "precedes start of record ", syear, " for ", site)
   }
   
   # get zip and csv filenames
@@ -84,17 +84,17 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date,
   download_file_flag <- TRUE
   extract_file_flag  <- TRUE
   if (!overwrite && file.exists(output_zip_file)) {
-    PEcAn.utils::logger.debug("File '", output_zip_file, "' already exists, skipping download")
+    PEcAn.logger::logger.debug("File '", output_zip_file, "' already exists, skipping download")
     download_file_flag <- FALSE
   }
   if (!overwrite && file.exists(output_csv_file)) {
-    PEcAn.utils::logger.debug("File '", output_csv_file, "' already exists, skipping extraction.")
+    PEcAn.logger::logger.debug("File '", output_csv_file, "' already exists, skipping extraction.")
     download_file_flag <- FALSE
     extract_file_flag <- FALSE
     file_timestep <- "HH"
   } else {
     if (!overwrite && file.exists(output_csv_file_hr)) {
-      PEcAn.utils::logger.debug("File '", output_csv_file_hr, "' already exists, skipping extraction.")
+      PEcAn.logger::logger.debug("File '", output_csv_file_hr, "' already exists, skipping extraction.")
       download_file_flag <- FALSE
       extract_file_flag <- FALSE
       file_timestep <- "HR"
@@ -107,7 +107,7 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date,
     extract_file_flag <- TRUE
     download.file(ftplink, output_zip_file)
     if (!file.exists(output_zip_file)) {
-      PEcAn.utils::logger.severe("FTP did not download ", output_zip_file, " from ", ftplink)
+      PEcAn.logger::logger.severe("FTP did not download ", output_zip_file, " from ", ftplink)
     }
   }
   if (extract_file_flag) {
@@ -120,12 +120,12 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date,
         output_csv_file <- output_csv_file_hr
         outcsvname <- outcsvname_hr
       } else {
-        PEcAn.utils::logger.severe("Half-hourly or Hourly data file was not found in ", output_zip_file)
+        PEcAn.logger::logger.severe("Half-hourly or Hourly data file was not found in ", output_zip_file)
       }
     }
     unzip(output_zip_file, outcsvname, exdir = outfolder)
     if (!file.exists(output_csv_file)) {
-      PEcAn.utils::logger.severe("ZIP file ", output_zip_file, " did not contain CSV file ", outcsvname)
+      PEcAn.logger::logger.severe("ZIP file ", output_zip_file, " did not contain CSV file ", outcsvname)
     }
   }
   
@@ -142,7 +142,7 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date,
                         stringsAsFactors = FALSE)
   
   results$file[rows]       <- output_csv_file
-  results$host[rows]       <- PEcAn.utils::fqdn()
+  results$host[rows]       <- PEcAn.remote::fqdn()
   results$startdate[rows]  <- paste0(syear, "-01-01 00:00:00")
   results$enddate[rows]    <- paste0(eyear, "-12-31 23:59:59")
   results$mimetype[rows]   <- "text/csv"

@@ -8,7 +8,7 @@
 ##' @export 
 ##' 
 ##' @author Betsy Cowdery 
-##' @importFrom dplyr tbl filter rename collect select
+##' @importFrom dplyr tbl filter rename collect select  
 calc_benchmark <- function(settings, bety) {
   
   # run.score <- run.success.check(settings)
@@ -41,7 +41,7 @@ calc_benchmark <- function(settings, bety) {
                                      ", ",settings$model$id,", ",settings$info$userid,
                                      ", 1000000001 ) RETURNING *;"), bety$con)
     }else if(dim(bm.ensemble)[1] >1){
-      PEcAn.utils::logger.error("Duplicate record entries in benchmarks_ensembles")
+      PEcAn.logger::logger.error("Duplicate record entries in benchmarks_ensembles")
     }
     
     # --------------------------------------------------------------------------------------------- #
@@ -52,7 +52,14 @@ calc_benchmark <- function(settings, bety) {
     # How are we dealing with ensemble runs? Right now I've hardcoded to select the first run.
     
     # All benchmarking records for the given benchmarking ensemble id
-    bms <- tbl(bety,'benchmarks') %>% dplyr::rename(benchmark_id = id) %>%  
+    # The benchmark entries returned from this query will include all previous 
+    # benchmarks that have ever been done for the ensemble id. 
+    # For now all benchmarks will be (re)calculated.  
+    # This is could become problematic if previous benchmarks were
+    # calculated with multiple inputs, which would mean that all of that data 
+    # would need to be loaded and aligned again. 
+    
+    bms <- tbl(bety,'benchmarks') %>% dplyr::rename(benchmark_id = id) %>% 
       left_join(tbl(bety, "benchmarks_benchmarks_reference_runs"), by="benchmark_id") %>% 
       filter(reference_run_id == settings$benchmarking$reference_run_id) %>% 
       select(one_of("benchmark_id", "input_id", "site_id", "variable_id", "reference_run_id")) %>%
@@ -70,6 +77,11 @@ calc_benchmark <- function(settings, bety) {
     
     for (input.id in unique(bms$input_id)) {
       
+      # Create directory that will hold benchmarking results
+      bm_dir <- file.path(dirname(dirname(model_run)), "benchmarking", input.id)
+      dir.create(dirname(bm_dir))
+      dir.create(bm_dir)
+      
       bm.ids <- bms$benchmark_id[which(bms$input_id == input.id)]
       data.path <- PEcAn.DB::query.file.path(input.id, settings$host$name, bety$con)
       format_full <- format <- PEcAn.DB::query.format.vars(input.id = input.id, bety, format.id = NA, var.ids=var.ids)
@@ -79,7 +91,10 @@ calc_benchmark <- function(settings, bety) {
       time.row <- format$time.row
       vars.used.index <- setdiff(seq_along(format$vars$variable_id), format$time.row)
       
-      obvs <- load_data(data.path, format, start_year, end_year, site, vars.used.index, time.row)
+      start_year <- lubridate::year(settings$run$start.date)
+      end_year <- lubridate::year(settings$run$end.date)
+      
+      obvs <- load_data(data.path, format, start_year = start_year, end_year = end_year, site, vars.used.index, time.row)
       dat_vars <- format$vars$pecan_name  # IF : is this line redundant?
       obvs_full <- obvs
       
@@ -132,7 +147,7 @@ calc_benchmark <- function(settings, bety) {
         # Check that the variables actually got loaded, otherwise don't send to calc_metrics
         
         if(!(var %in% names(obvs.calc))|!(var %in% names(model.calc))){
-          logger.warn(paste0("Load did not work for ",var,". No metrics will be calculated."))
+          PEcAn.logger::logger.warn(paste0("Load did not work for ",var,". No metrics will be calculated."))
           next
         }
         
@@ -143,13 +158,13 @@ calc_benchmark <- function(settings, bety) {
                                          obvs.calc, 
                                          var, 
                                          metrics,
-                                         bm,
                                          ensemble.id,
-                                         model_run)
+                                         bm_dir)
         
         for(metric.id in metrics$id){
           metric.name <- filter(metrics,id == metric.id)[["name"]]
-          score <- out.calc_metrics[["benchmarks"]] %>% filter(metric == metric.name) %>% select(score)
+          score <- out.calc_metrics[["benchmarks"]] %>% 
+            filter(metric == metric.name) %>% select(score)
           
           # Update scores in the database
           
@@ -168,15 +183,14 @@ calc_benchmark <- function(settings, bety) {
               "(score, benchmarks_ensemble_id, benchmark_id, metric_id) VALUES ",
               "('",score,"',",bm.ensemble$id,", ",bm$id,",",metric.id,")"),bety$con)
           }else if(dim(score.entry)[1] >1){
-            PEcAn.utils::logger.error("Duplicate record entries in scores")
+            PEcAn.logger::logger.error("Duplicate record entries in scores")
           }
         }
         results.list <- append(results.list, list(out.calc_metrics[["benchmarks"]]))
         dat.list <- append(dat.list, list(out.calc_metrics[["dat"]]))
       }  #end loop over benchmark ids
       
-      table.filename <- file.path(dirname(dirname(model_run)), 
-                                  paste("benchmark.scores", var, bm.ensemble$ensemble_id, "pdf", sep = "."))
+      table.filename <- file.path(bm_dir, paste("benchmark.scores", var, bm.ensemble$ensemble_id, "pdf", sep = "."))
       pdf(file = table.filename)
       gridExtra::grid.table(do.call(rbind, results.list))
       dev.off()
@@ -187,18 +201,18 @@ calc_benchmark <- function(settings, bety) {
       }
       names(dat.list) <- var.names
       
-      results <- append(results, 
-                        list(list(bench.results = do.call(rbind, results.list),
-                                  data.path = data.path, 
-                                  format = format_full$vars, 
-                                  model = model_full, 
-                                  obvs = obvs_full, 
-                                  aligned.dat = dat.list)))
-    }
-    
-    names(results) <- sprintf("input.%0.f", unique(bms$input_id))
-    save(results, file = file.path(settings$outdir,"benchmarking.output.Rdata"))
-    
-    return(invisible(results))
+      result.out <- list(bench.results = do.call(rbind, results.list),
+                         data.path = data.path, 
+                         format = format_full$vars, 
+                         model = model_full, 
+                         obvs = obvs_full, 
+                         aligned.dat = dat.list)
+      save(result.out, file = file.path(bm_dir,"benchmarking.output.Rdata"))
+      
+      results <- append(results, list(result.out)) # For testing
+    } # end loop over input ids
+
+    names(results) <- sprintf("input.%0.f", unique(bms$input_id)) # For testing
+    return(invisible(results)) # For testing
   }
 } # calc_benchmark

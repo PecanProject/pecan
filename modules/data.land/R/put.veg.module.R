@@ -1,4 +1,4 @@
-.put.veg.module <- function(getveg.id, bety, 
+.put.veg.module <- function(getveg.id, dbparms, 
                             input_veg, pfts,
                             outfolder, 
                             dir, machine, model,
@@ -22,7 +22,7 @@
                                 " join formats as f on mf.format_id = f.id", " join mimetypes as mt on f.mimetype_id = mt.id", 
                                 " where m.name = '", model, "' AND mf.tag='", input_veg$output,"'"), con)
   
-  logger.info("Begin Model Specific Conversion")
+  PEcAn.logger::logger.info("Begin Model Specific Conversion")
   
   formatname <- model_info[1]
   mimetype   <- model_info[3]

@@ -1,4 +1,4 @@
-rmd_files: [ 
+rmd_files: [
   "index.Rmd",
   "book_intro/project_overview.Rmd",
   "book_intro/Code-of-Conduct.Rmd",
@@ -14,6 +14,7 @@ rmd_files: [
   "basic_users_guide/Vm-desktop-conversion.Rmd",
   '../documentation/tutorials/01_Demo_Basic_Run',
   "adv_user_guide_web/Advanced_Users_Guide.Rmd",
+  "adv_user_guide_web/curl-web-submit.Rmd",
   "adv_user_guide_web/using_browndog.Rmd",
   "adv_user_guide_web/PEcAn-Configuration.Rmd",
   "adv_user_guide_web/pda.documentation.Rmd",
@@ -77,6 +78,10 @@ rmd_files: [
   "installation/Installing-PEcAn-Ubuntu.Rmd",
   "installation/Installing-PEcAn-models.Rmd",
   "installation/PEcAn-in-the-Cloud.Rmd",
-  "installation/centos.shiny.Rmd",
+  "installation/shiny.Rmd",
+  "installation/thredds.Rmd",
+  "docker/introduction.Rmd",
+  "docker/architecture.Rmd",
+  "docker/models.Rmd",
   "misc/faq.Rmd"
 ]

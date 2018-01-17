@@ -1,6 +1,6 @@
 # How to Insert new Input Data
 
-To upload model driver data [or any other model input data or data used for model calibration/validation]...
+To upload model input data or data used for model calibration/validation...
 
 From your BETY interface:
 
@@ -15,7 +15,7 @@ From your BETY interface:
     + From the menu click RUNS then INPUTS
     + Click “New Input”
     + Select the SITE that this data is associated with the input data set
-    + Other required fields are a unique name for the input, the start and end dates of the data set, and the format of the data. If the data is not in a currently known format you will need to create a NEW FORMAT and possibly a [new Input Converter](Adding-an-Input-Converter.html)
+    + Other required fields are a unique name for the input, the start and end dates of the data set, and the format of the data. If the data is not in a currently known format you will need to create a NEW FORMAT and possibly a new input converter. Instructions on how to do add a converter can be found here [Input conversion]. Instructions on how to add a format record can be found below. 
     + Parent ID is an optional variable to indicated that one dataset was derived from another.
     + Click “Create”
 * Associate the DBFILE with the INPUT
@@ -25,3 +25,15 @@ From your BETY interface:
     + In the Search window, search for the DBFILE you just created
  * Once you have found the DBFILE, click on the “+” icon to add the file
  * Click on “Update” at the bottom when you are done.
+
+
+
+## Create a Format Record 
+  
+Creating a Format Record allows PEcAn to levereage Meta-data about your data in order to properly handle it. It allows you to define what type of file it is by defining it's mimetype (i.e. text, netcdf,rds, etc.), define what information is hel in the header of your file, and how many lines need to be skipped within the file to get to ge to the header. To create a format record 
+
+    * Navigate to the Formats table in BETY under the RUNS tab.
+    * Click "New Format"
+    * Fill in the appropriate information to define your files format
+    * Click "Create"
+    

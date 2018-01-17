@@ -22,8 +22,6 @@
 ##' @param lat Latitude of the site
 ##' @param lon Longitude of the site
 ##' @export
-##' @import data.table
-##' @import PEcAn.utils
 ##' @author David LeBauer, Deepak Jaiswal, Rob Kooper
 model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon = -9999) {
 
@@ -31,7 +29,7 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
     result$hour <- 0
   }
   if (all(c("year", "hour", "doy") %in% colnames(result))) {
-    setnames(result, c("year", "hour", "doy"), c("Year", "Hour", "DayofYear"))
+    data.table::setnames(result, c("year", "hour", "doy"), c("Year", "Hour", "DayofYear"))
   }
   
   ## longname prefix station_* used for a point
@@ -46,7 +44,7 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
                  unlim = TRUE)
   
   for (yeari in unique(result$Year)) {
-    result_yeari <- result[Year == yeari]
+    result_yeari <- result[result$Year == yeari]
     dates <- lubridate::ymd(paste0(result_yeari$Year, "-01-01")) + lubridate::days(as.numeric(result_yeari$DayofYear - 1)) + 
       lubridate::hours(result_yeari$Hour)
     days_since_origin <- dates - lubridate::ymd_hms("1700-01-01 00:00:00")
@@ -61,21 +59,22 @@ model2netcdf.BIOCRO <- function(result, genus = NULL, outdir, lat = -9999, lon =
       }
     }
    
-    vars <- list(NPP = mstmipvar("NPP", x, y, t),
-                 TotLivBiom = mstmipvar("TotLivBiom", x, y, t),
-                 RootBiom = mstmipvar("RootBiom", x, y, t),
-                 StemBiom = mstmipvar("StemBiom", x, y, t), 
-                 Evap = mstmipvar("Evap", x, y, t), 
-                 TVeg = mstmipvar("TVeg", x, y, t), 
-                 LAI = mstmipvar("LAI", x, y, t))
+    dims <- list(lat = x, lon = y, time = t)
+    vars <- list(NPP = PEcAn.utils::to_ncvar("NPP", dims),
+                 TotLivBiom = PEcAn.utils::to_ncvar("TotLivBiom", dims),
+                 root_carbon_content = PEcAn.utils::to_ncvar("root_carbon_content", dims),
+                 AbvGrndWood = PEcAn.utils::to_ncvar("AbvGrndWood", dims),
+                 Evap = PEcAn.utils::to_ncvar("Evap", dims),
+                 TVeg = PEcAn.utils::to_ncvar("TVeg", dims),
+                 LAI = PEcAn.utils::to_ncvar("LAI", dims))
     
     biomass2c <- 0.4
     k <- udunits2::ud.convert(1, "Mg/ha", "kg/m2") * biomass2c
     
     result_yeari_std <- with(result_yeari, list(
       TotLivBiom = k * (Leaf + Root + Stem + Rhizome + Grain), 
-      RootBiom = k * Root, 
-      StemBiom = k * Stem, 
+      root_carbon_content = k * Root,
+      AbvGrndWood = k * Stem,
       Evap = udunits2::ud.convert(SoilEvaporation + CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
       TVeg = udunits2::ud.convert(CanopyTrans, "Mg/ha/h", "kg/m2/s"), 
       LAI = LAI))

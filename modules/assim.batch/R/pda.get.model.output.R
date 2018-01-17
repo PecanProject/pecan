@@ -75,7 +75,9 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
                                            start.year, end.year, variables = vars))
     
     if(length(model.raw) == 0 | all(is.na(model.raw))) {   # Probably indicates model failed entirely
-      return(NA)
+      out <- list()
+      out$model.out <- NA
+      return(out)
     }
     
     
@@ -109,13 +111,18 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
     
     # seq.POSIXt returns class "POSIXct"
     # the model output is since the beginning of the year but 'settings$run$start.date' may not be the first day of the year, using lubridate::floor_date
-    model$posix <- seq.POSIXt(from = as.POSIXlt(settings$run$start.date, tz="GMT"), by = diff(model.secs)[1], length.out = length(model$time))
+    if(diff(model.secs)[1] != 0){
+      model$posix <- seq.POSIXt(from = as.POSIXlt(settings$run$start.date, tz="GMT"), by = diff(model.secs)[1], length.out = length(model$time))
+    }else{
+      # yearly output
+      model$posix <- seq.POSIXt(from = as.POSIXlt(settings$run$start.date, tz="GMT"), by = "year", length.out = length(model$time))
+    }
     
     dat <- PEcAn.benchmark::align_data(model.calc = model, obvs.calc = inputs[[k]]$data, var = data.var, align_method = inputs[[k]]$align.method)
 
     model.out[[k]]  <- dat[,colnames(dat) %in% paste0(data.var,".m"), drop = FALSE]
     inputs[[k]]$obs <- dat[,colnames(dat) %in% paste0(data.var,".o"), drop = FALSE][[1]]
-    inputs[[k]]$n   <- length(inputs[[k]]$obs)
+    inputs[[k]]$n   <- sum(!is.na(inputs[[k]]$obs))
     colnames(model.out[[k]]) <- data.var
   }
   

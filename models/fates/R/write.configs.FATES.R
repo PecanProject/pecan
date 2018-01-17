@@ -197,36 +197,36 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
    
    ## Loop over PFTS
    npft <- length(trait.values)
-   PEcAn.utils::logger.debug(npft)
-   PEcAn.utils::logger.debug(dim(trait.values))
-   PEcAn.utils::logger.debug(names(trait.values))
+   PEcAn.logger::logger.debug(npft)
+   PEcAn.logger::logger.debug(dim(trait.values))
+   PEcAn.logger::logger.debug(names(trait.values))
    #pftnames <- stringr::str_trim(tolower(ncvar_get(param.nc,"pftname"))) 
    pftnames <- stringr::str_trim(tolower(ncvar_get(clm.param.nc,"pftname")))
    for (i in seq_len(npft)) {
      pft <- trait.values[[i]]
      print(c("PFT",i))
-     PEcAn.utils::logger.info(pft)
+     PEcAn.logger::logger.info(pft)
      pft.name <- names(trait.values)[i]
      if(is.null(pft.name) | is.na(pft.name)){
-       PEcAn.utils::logger.error("pft.name missing")
+       PEcAn.logger::logger.error("pft.name missing")
      } else {
-       PEcAn.utils::logger.info(paste("PFT =",pft.name))
-       PEcAn.utils::logger.debug(paste0("fates-clm PFT number: ",which(pftnames==pft.name)))
+       PEcAn.logger::logger.info(paste("PFT =",pft.name))
+       PEcAn.logger::logger.debug(paste0("fates-clm PFT number: ",which(pftnames==pft.name)))
      }
      if(pft.name == 'env') next   ## HACK, need to remove env from default
      
      ## Match PFT name to COLUMN
      ipft <- match(tolower(pft.name),pftnames)
-     PEcAn.utils::logger.debug(paste0("ipft: ",ipft))
+     PEcAn.logger::logger.debug(paste0("ipft: ",ipft))
                                       
      if(is.na(ipft)){
-       PEcAn.utils::logger.severe(paste("Unmatched PFT",pft.name,
+       PEcAn.logger::logger.severe(paste("Unmatched PFT",pft.name,
                           "in FATES. PEcAn does not yet support non-default PFTs for this model"))
      }
      
      # hard code hack until we can use more than 2 pfts in FATES 
      ipft <- 2
-     PEcAn.utils::logger.debug(paste0("*** PFT number hard-coded to ", ipft," in fates. This will be updated when FATES allows more PFTs"))
+     PEcAn.logger::logger.debug(paste0("*** PFT number hard-coded to ", ipft," in fates. This will be updated when FATES allows more PFTs"))
      
      ## Special variables used in conversions
 #     leafC <- pft['leafC']/100  ## percent to proportion
@@ -282,7 +282,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        if(var == "SLA"){
          ncvar_put(nc=fates.param.nc, varid='fates_slatop', start = ipft, count = 1,
                    vals=udunits2::ud.convert(pft[v],"m2 kg-1","m2 g-1")/leafC)
-         #PEcAn.utils::logger.debug(paste0("SLA: ",udunits2::ud.convert(pft[v],"m2 kg-1","m2 g-1")/leafC)) # temp debugging
+         #PEcAn.logger::logger.debug(paste0("SLA: ",udunits2::ud.convert(pft[v],"m2 kg-1","m2 g-1")/leafC)) # temp debugging
        }
        if(var == "leaf_turnover_rate"){
          ncvar_put(nc=fates.param.nc, varid='fates_leaf_long', start = ipft, count = 1,
@@ -307,7 +307,7 @@ write.config.FATES <- function(defaults, trait.values, settings, run.id){
        if(var == "leaf_width"){            # Characteristic leaf dimension use for aerodynamic resistance
          ncvar_put(nc=fates.param.nc, varid='fates_dleaf', start = ipft, count = 1,
                    vals=udunits2::ud.convert(pft[v],"mm","m"))
-         #PEcAn.utils::logger.debug(paste0("fates_dleaf: ",udunits2::ud.convert(pft[v],"mm","m"))) # temp debugging
+         #PEcAn.logger::logger.debug(paste0("fates_dleaf: ",udunits2::ud.convert(pft[v],"mm","m"))) # temp debugging
        }
        ## Currently not in param.nc file despite being on NGEE-T parameter list       
        #       if(var == "nonlocal_dispersal"){    # Place-holder parameter for important seed dispersal parameters

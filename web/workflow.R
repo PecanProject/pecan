@@ -19,7 +19,7 @@ library(RCurl)
 options(warn=1)
 options(error=quote({
   PEcAn.utils::status.end("ERROR")
-  PEcAn.utils::kill.tunnel(settings)
+  PEcAn.remote::kill.tunnel(settings)
   if (!interactive()) {
     q()
   }
@@ -43,7 +43,7 @@ if (is.na(args[1])){
 # Check for additional modules that will require adding settings
 if("benchmarking" %in% names(settings)){
   library(PEcAn.benchmark)
-  settings <- papply(settings, read_settings_RR)
+  settings <- papply(settings, read_settings_BRR)
 }
 
 if("sitegroup" %in% names(settings)){
@@ -68,7 +68,7 @@ if (length(which(commandArgs() == "--continue")) == 0 && file.exists(statusFile)
 }
   
 # Do conversions
-settings <- PEcAn.utils::do.conversions(settings)
+settings <- PEcAn.utils::do_conversions(settings)
 
 # Query the trait database for data and priors
 if (PEcAn.utils::status.check("TRAIT") == 0){
@@ -108,7 +108,7 @@ if ((length(which(commandArgs() == "--advanced")) != 0) && (PEcAn.utils::status.
 # Start ecosystem model runs
 if (PEcAn.utils::status.check("MODEL") == 0) {
   PEcAn.utils::status.start("MODEL")
-  PEcAn.utils::runModule.start.model.runs(settings,stop.on.error=FALSE)
+  PEcAn.remote::runModule.start.model.runs(settings,stop.on.error=FALSE)
   PEcAn.utils::status.end()
 }
 
@@ -152,7 +152,7 @@ if ('state.data.assimilation' %in% names(settings)) {
 }
 
 # Run benchmarking
-if("benchmarking" %in% names(settings)){
+if("benchmarking" %in% names(settings) & "benchmark" %in% names(settings$benchmarking)){
   PEcAn.utils::status.start("BENCHMARKING")
   results <- papply(settings, function(x) calc_benchmark(x, bety))
   PEcAn.utils::status.end()
@@ -161,7 +161,7 @@ if("benchmarking" %in% names(settings)){
 # Pecan workflow complete
 if (PEcAn.utils::status.check("FINISHED") == 0) {
   PEcAn.utils::status.start("FINISHED")
-  kill.tunnel(settings)
+  PEcAn.remote::kill.tunnel(settings)
   db.query(paste("UPDATE workflows SET finished_at=NOW() WHERE id=", settings$workflow$id, "AND finished_at IS NULL"), params=settings$database$bety)
 
   # Send email if configured

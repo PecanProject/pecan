@@ -9,5 +9,4 @@ mstmipvars = read.csv(var.file, header = TRUE, row.names = NULL, sep = ";")
 
 knitr::kable(mstmipvars, align = "c" , booktabs = TRUE)
 
-
 ```

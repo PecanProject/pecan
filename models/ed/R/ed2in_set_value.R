@@ -13,7 +13,7 @@
 ed2in_set_value <- function(tag, value, ed2in, 
                             modstring = "Modified by PEcAn") {
     if (grepl("NL%", tag)) {
-      PEcAn.utils::logger.warn("NL% is automatically prepended ",
+      PEcAn.logger::logger.warn("NL% is automatically prepended ",
                                "to tags. Removing it from provided tag.")
       tag <- gsub('NL%', '', tag)
     }
@@ -21,7 +21,7 @@ ed2in_set_value <- function(tag, value, ed2in,
     regex <- sprintf("(^[[:blank:]]*NL%%%s)[[:blank:]]+=.*", tag)
     in_ed2in <- any(grepl(regex, ed2in))
     if (!in_ed2in) {
-      PEcAn.utils::logger.warn("Tag ", shQuote(tag), " not found in ED2IN. ")
+      PEcAn.logger::logger.warn("Tag ", shQuote(tag), " not found in ED2IN. ")
       return(ed2in)
     }
 

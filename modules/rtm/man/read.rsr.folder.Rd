@@ -11,3 +11,6 @@ read.rsr.folder(dir.path, type)
 
 \item{type}{Type of sensor. Options are: landsat, avhrr}
 }
+\description{
+Read and process RSR data from directory
+}

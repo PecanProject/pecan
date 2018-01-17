@@ -1,7 +1,7 @@
 #' Download Geostreams data from Clowder API
 #'
 #' @param outfolder directory in which to save json result. Will be created if necessary
-#' @param sitename character. Should match a geostreams sensor_name
+#' @param sitename character. Must match a Geostreams sensor_name
 #' @param start_date,end_date datetime
 #' @param url base url for Clowder host
 #' @param key,user,pass authentication info for Clowder host.
@@ -13,8 +13,22 @@
 #'   `~/.pecan.clowder.xml`, and finally if no keys or passwords are found there it
 #'   attempts to connect unauthenticated.
 #'
+#' If using `~/.pecan.clowder.xml`, it must be a valid PEcAn-formatted XML settings
+#'  file and must contain a \code{<clowder>} key that specifies hostname, user, and
+#'  password for your Clowder server:
+#'
+#' \code{\preformatted{
+#'   <?xml version="1.0"?>
+#'   <pecan>
+#'     <clowder>
+#'       <hostname>terraref.ncsa.illinois.edu</hostname>
+#'       <user>yourname</user>
+#'       <password>superSecretPassw0rd</password>
+#'     </clowder>
+#'   </pecan>
+#' }}
+#'
 #' @export
-#' @importFrom PEcAn.utils logger.severe logger.info
 #' @author Harsh Agrawal, Chris Black
 #' @examples \dontrun{
 #'  download.Geostreams(outfolder = "~/output/dbfiles/Clowder_EF",
@@ -47,10 +61,10 @@ download.Geostreams <- function(outfolder, sitename,
   sensor_maxtime = lubridate::parse_date_time(sensor_info$max_end_time,
                                               orders = c("ymd", "ymdHMS", "ymdHMSz"), tz = "UTC")
   if (start_date < sensor_mintime) {
-    logger.severe("Requested start date", start_date, "is before data begin", sensor_mintime)
+    PEcAn.logger::logger.severe("Requested start date", start_date, "is before data begin", sensor_mintime)
   }
   if (end_date > sensor_maxtime) {
-    logger.severe("Requested end date", end_date, "is after data end", sensor_maxtime)
+    PEcAn.logger::logger.severe("Requested end date", end_date, "is after data end", sensor_maxtime)
   }
 
   result_files = c()
@@ -65,7 +79,7 @@ download.Geostreams <- function(outfolder, sitename,
     met_result <- httr::GET(url = paste0(url, "/datapoints"),
                             query = query_args,
                             config = auth$userpass)
-    logger.info(met_result$url)
+    PEcAn.logger::logger.info(met_result$url)
     httr::stop_for_status(met_result, "download met data from Clowder")
     result_txt <- httr::content(met_result, as = "text", encoding = "UTF-8")
     combined_result <- paste0(
@@ -75,18 +89,18 @@ download.Geostreams <- function(outfolder, sitename,
     dir.create(outfolder, showWarnings = FALSE, recursive = TRUE)
     out_file <- file.path(
       outfolder,
-      paste("Clowder", sitename, start_date, end_date, year, "json", sep="."))
+      paste("Geostreams", sitename, start_date, end_date, year, "json", sep="."))
     write(x = combined_result, file=out_file)
     result_files = append(result_files, out_file)
   }
 
   return(data.frame(file = result_files,
-                    host = fqdn(),
+                    host = PEcAn.remote::fqdn(),
                     mimetype = "application/json",
                     formatname = "Geostreams met",
                     startdate = start_date,
                     enddate = end_date,
-                    dbfile.name = paste("Clowder", sitename, start_date, end_date, sep = "."),
+                    dbfile.name = paste("Geostreams", sitename, start_date, end_date, sep = "."),
                     stringsAsFactors = FALSE))
 }
 

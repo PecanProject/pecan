@@ -2,7 +2,7 @@
 
 ##################################
 ##                              ##
-##    SINGLE SITE TIMESERIES    ## 
+##    SINGLE SITE TIMESERIES    ##
 ##                              ##
 ##################################
 ## how to extract a specific cell
@@ -37,7 +37,7 @@ readGrib<-function(indices, gribfile, tempfile=paste(tempdir,'GRIB.txt', sep='')
 	system(paste("rm ",tempfile,sep=""))
 	return(V)
 }
-readMetGrib <- function(indices, gribfile, 
+readMetGrib <- function(indices, gribfile,
 		nearestCells, weights){
         print(gribfile)
 	V<-readGrib(indices, gribfile)
@@ -49,21 +49,21 @@ readMetGrib <- function(indices, gribfile,
 extractTar<-function(tarfile, sourcedir, targetdir){
 	system(paste("tar -xf ", sourcedir, tarfile, ' -C ', targetdir, sep=''), intern=TRUE)
 }
-readMetTar<-function(tarfile, indices, 
+readMetTar<-function(tarfile, indices,
 		nearestCells, weights,
 		sourcedir=narrdir, targetdir=tempdir){
         print(tarfile)
-	#returns meteorological data from a tar file 
+	#returns meteorological data from a tar file
 	#as a 2D matrix of parameters and tar subfiles
-	
+
         system(paste("rm ",targetdir,'/merged_AWIP32*',sep="")) # clean up
 	# copy file to temp space and open up
 	extractTar(tarfile, sourcedir, targetdir)
-	
+
 	# get list of sub-files; parse
 	subfiles <- dir(targetdir,"merged")
 	subfiles <- paste(targetdir, subfiles, sep='')
-	
+
 	## LOOP OVER SMALL FILES
 	tarMetData <- matrix(NA,nrow=length(subfiles),ncol=length(indices))
 	if (length(indices) > 0){
@@ -76,13 +76,13 @@ readMetTar<-function(tarfile, indices,
 	}
 	tarMetData
 }
-readMetTars<-function(tarfiles, indices, 
+readMetTars<-function(tarfiles, indices,
 		nearestCells, weights){
 	# returns meteorological data from a list of tar files
 	# bound into a single 2 dimensional matrix representing 4 dimensions
 	# each column represents a parameter
 	# each row represents a lat/lon coordinate at a specific time
-	foo<-sapply(tarfiles, 
+	foo<-sapply(tarfiles,
 		function(tarfile){readMetTar(tarfile, indices, nearestCells, weights)})
         if(!is.list(foo)){print(foo);browser()}
         print(tarfiles)
@@ -116,7 +116,7 @@ writeHdf5<-function(file, metdata, potential, downscale.radiation=function(x){x}
 	nddsf <- as.met.array(downscale.radiation(nddsf))
 	vbdsf <- as.met.array(downscale.radiation(vbdsf))
 	vddsf <- as.met.array(downscale.radiation(vddsf))
-	
+
 	hdf5save(file,"nbdsf","nddsf","vbdsf","vddsf","prate","dlwrf","pres","hgt","ugrd","vgrd","sh","tmp")
 }
 
@@ -127,7 +127,7 @@ monthlengths = c(31,28,31,30,31,30,31,31,30,31,30,31)
 monthlengthsLeap = monthlengths
 monthlengthsLeap[2] = monthlengthsLeap[2]+1
 monthlength <- function(month,year){
-	if(year %% 4 == 0){
+	if(lubridate::leap_year(year)){
 		return(monthlengthsLeap[month])
 	}
 	return(monthlengths[month])
@@ -151,7 +151,7 @@ smoothedRadiation <- function(a, month, year, timelag, new.timestep,old.timestep
                                   rep(seq(new.timestep,secsInDay,new.timestep),
                                   monthlength(mo,year)), LAT, timelag*24)
 	rbar <- rep(tapply(rin,lab,mean),each=old.timestep/new.timestep)
-	r <-apply(cbind(dat*rin/rbar,rep(0,length(dat))),1,max)  
+	r <-apply(cbind(dat*rin/rbar,rep(0,length(dat))),1,max)
 	r[rbar == 0] <- 0
 
 	## filter
@@ -176,7 +176,7 @@ rad2deg<-function(radians){
 potentialRadiation <- function(day,time,LAT,timelag){
 	#radiation as determined only by solar position
 	dayangle=2.0*pi*(day)/daysInYear
-	declination = 0.006918 - 
+	declination = 0.006918 -
 			0.399912 * cos(dayangle)+
 			0.070257 * sin(dayangle)-
 			0.006758 * cos(2.0*dayangle)+
@@ -189,12 +189,12 @@ potentialRadiation <- function(day,time,LAT,timelag){
 			0.000719 * cos(2.0*dayangle)+
 			0.000077 * sin(2.0*dayangle)
 	solartime=time/secsInHour-12.0+timelag
-	radiation = 1367.0 * 
-			eccentricity * 
-			(cos(declination) * 
-				cos(deg2rad(LAT)) * 
+	radiation = 1367.0 *
+			eccentricity *
+			(cos(declination) *
+				cos(deg2rad(LAT)) *
 				cos(deg2rad(15.0)*(solartime)) +
-				sin(declination) * 
+				sin(declination) *
 				sin(deg2rad(LAT)))
 	radiation[radiation<0] <- 0
 	radiation
@@ -211,7 +211,7 @@ potentialRadiation2<-function(lat, lon, day, hours){
 	#equation of time -> eccentricity and obliquity
 	meridian <- floor(lon/15)*15
 	if(meridian<0) meridian <- meridian+15
-	lonCorrection <- (lon-meridian)*-4/60 
+	lonCorrection <- (lon-meridian)*-4/60
 	timeZone <- meridian/360*24
 	midbin <- 0.5*timestep/secsInHour # shift calc to middle of bin
 	solarTime <- 12+lonCorrection-eccentricity-timeZone-midbin
@@ -274,13 +274,13 @@ for(year in unique(years)){
 		monthTars <- yearTars[which(months[yearTars] == month)]
 		monthnum<-as.numeric(month)
 		print(paste(year,month))
-		
+
 		surfaceTars <- monthTars[which(vars[monthTars] == "sfc")]
 		surfaceMetData<-readMetTars(tarfiles[surfaceTars],
-				list(cfrzr=33,	cicep=32,	crain=34,	csnow=31,	dlwrf=42,	
+				list(cfrzr=33,	cicep=32,	crain=34,	csnow=31,	dlwrf=42,
 						dswrf=41,	pres =3,	prate=24,	tmp  =5),
 				nearestCells, weights)
-		
+
 		fluxTars <- monthTars[which(vars[monthTars] == "flx")]
 		fluxMetData<-readMetTars(tarfiles[fluxTars],
 				list(tmp10=38,	tmp30=44,	ugrd10=35,	ugrd30=41,	vgrd10=36,
@@ -292,14 +292,14 @@ for(year in unique(years)){
 		stopday<-lastday(monthnum,yearnum)+1
 		days <- rep(startday:stopday, each = 24/3)
 		hours <- rep(seq(0,21,by=3),length=nrow(monthMetData))
-		
+
 		potential<-potentialRadiation2(LAT,LON,days, hours)
 		# write as h5
 		out.file <- paste(narrdir, outdir,"/",
 		                  outdir,"_", yearnum,
 		                  monthnames[monthnum],".h5",sep="")
 		print(out.file)
-		writeHdf5(out.file, monthMetData, potential, 
+		writeHdf5(out.file, monthMetData, potential,
                           downscale.radiation=function(x){x})
                           #downscale.radiation=function(x){smoothedRadiation(x, monthnum, yearnum, timelag, new.timestep=900, old.timestep=timestep)})
 	}  # end month

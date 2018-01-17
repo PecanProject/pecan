@@ -16,15 +16,18 @@ to initialize FORTRAN variabiles.}
 
 \item{fname}{Output file name. Defaults to 'yourmodname.f90'}
 }
+\description{
+Convert R list to a Fortran \code{/data/} module block
+}
 \details{
 For models with large constants (e.g. absorption features in the
-      PROSPECT model), it may be preferable to store these in FORTRAN90
-      modules. However, manually creating and formatting these files is 
-      tedious. This script allows you to automatically generate module files
-      from R lists. It automatically interprets the object lengths as array
-      dimensions (only vectors are supported right now -- higher dimension
-      arrays may be in the future) and splits long data into rows of 10.
-      Currently, only numeric data are supported (i.e. no characters).
+PROSPECT model), it may be preferable to store these in FORTRAN90
+modules. However, manually creating and formatting these files is
+tedious. This script allows you to automatically generate module files
+from R lists. It automatically interprets the object lengths as array
+dimensions (only vectors are supported right now -- higher dimension
+arrays may be in the future) and splits long data into rows of 10.
+Currently, only numeric data are supported (i.e. no characters).
 }
 \examples{
       w <- 3.2

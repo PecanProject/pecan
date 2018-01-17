@@ -69,7 +69,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   
   
   # set up host information
-  machine.host <- ifelse(host == "localhost" || host$name == "localhost", fqdn(), host$name)
+  machine.host <- ifelse(host == "localhost" || host$name == "localhost", PEcAn.remote::fqdn(), host$name)
   machine <- db.query(paste0("SELECT * from machines where hostname = '", machine.host, "'"), con)
   
   # retrieve model type info
@@ -114,7 +114,7 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
   
   if (!is.null(getveg.id) & is.null(putveg.id) & input$output %in% vegIC) { # probably need a more sophisticated check here
     
-    putveg.id <- .put.veg.module(getveg.id = getveg.id, bety = bety, 
+    putveg.id <- .put.veg.module(getveg.id = getveg.id, dbparms = dbparms,
                                 input_veg = input, pfts = settings$pfts,
                                 outfolder = outfolder, 
                                 dir = dir, machine = machine, model = model,
@@ -152,17 +152,17 @@ ic_process <- function(settings, input, dir, overwrite = FALSE){
         
         # copies css
         css_file <- basename(settings$run$inputs[["css"]][['path']])
-        PEcAn.utils::remote.copy.update(putveg.id, remote_dir, remote_file_name = css_file, settings$host, con)
+        PEcAn.remote::remote.copy.update(putveg.id, remote_dir, remote_file_name = css_file, settings$host, con)
         settings$run$inputs[["css"]][['path']] <- file.path(remote_dir, css_file)
         
         # pss 
         pss_file <-  basename(settings$run$inputs[["pss"]][['path']])
-        PEcAn.utils::remote.copy.update(putveg.id, remote_dir, remote_file_name = pss_file, settings$host, con)
+        PEcAn.remote::remote.copy.update(putveg.id, remote_dir, remote_file_name = pss_file, settings$host, con)
         settings$run$inputs[["pss"]][['path']] <- file.path(remote_dir, pss_file)
           
         # site
         site_file <- basename(settings$run$inputs[["site"]][['path']])
-        PEcAn.utils::remote.copy.update(putveg.id, remote_dir, remote_file_name = site_file, settings$host, con)
+        PEcAn.remote::remote.copy.update(putveg.id, remote_dir, remote_file_name = site_file, settings$host, con)
         settings$run$inputs[["site"]][['path']] <- file.path(remote_dir, site_file)
         
       }

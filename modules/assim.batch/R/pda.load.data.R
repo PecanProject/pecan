@@ -36,7 +36,7 @@ load.pda.data <- function(settings, bety) {
     # because 'data.path <- query.file.path(obvs.id, con)' might return an incomplete path 
     # which results in reading all the files in that particular directory in the load_x_netcdf step
     if (is.null(inputs[[i]]$input.id) | is.null(data.path)) {
-      logger.error("Must provide both ID and PATH for all data assimilation inputs.")
+      PEcAn.logger::logger.error("Must provide both ID and PATH for all data assimilation inputs.")
     }
     
     format <- query.format.vars(bety = bety, input.id = inputs[[i]]$input.id)
@@ -55,35 +55,20 @@ load.pda.data <- function(settings, bety) {
     # TODO: Generalize
     # TODO: Soil Respiration uncertainty calculation
     if(all(data.var %in% c("NEE", "FC", "LE", "UST"))) {    
-    
-      # # TODO: Put Ameriflux L4 compatibility back
-      # if(format$file_name == 'AmeriFlux.level4.h') {
-      #   # Load L4 from a csv
-      #   inputs[[i]]$data <- read.csv(input.settings[[i]]$path)
-      #   
-      #   ## calculate flux uncertainty parameters
-      #   NEEo <- inputs[[i]]$data$NEE_or_fMDS #data$Fc   #umolCO2 m-2 s-1
-      #   NEEq <- inputs[[i]]$data$NEE_or_fMDSqc #data$qf_Fc
-      #   NEEo[NEEq > 0] <- NA
-      #   dTa <- get.change(inputs[[i]]$data$Ta_f)
-      #   flags <- dTa < 3   ## filter data to temperature differences that are less than 3 degrees
-      # } else if(input.settings[[i]]$format == 'Ameriflux.L2') {
       
-      if (format$file_name == "AmeriFlux.level2.h.nc") {
-        
-        ustar.thresh <- 0.4  # TODO: soft code this
-        
-        var.obs <- colnames(inputs[[i]]$data)[!colnames(inputs[[i]]$data) %in% c("UST", "posix", "year")]
-        
-        AMFo                     <- inputs[[i]]$data[[var.obs]]
-        UST                      <- inputs[[i]]$data$UST
-        AMFo[AMFo == -9999]      <- NA
-        AMFo[UST < ustar.thresh] <- NA
-        
-        # Have to just pretend like these quality control variables exist...
-        AMFq  <- rep(0, length(AMFo))
-        flags <- TRUE
-      }
+      ustar.thresh <- 0.4  # TODO: soft code this
+      
+      var.obs <- colnames(inputs[[i]]$data)[!colnames(inputs[[i]]$data) %in% c("UST", "posix", "year", format$vars[format$time.row,]$bety_name)]
+      
+      AMFo                        <- inputs[[i]]$data[[var.obs]]
+      UST                         <- inputs[[i]]$data$UST
+      AMFo[AMFo == -9999]         <- NA
+      AMFo[UST < ustar.thresh]    <- NA
+      inputs[[i]]$data[[var.obs]] <- AMFo # write filtered data
+      
+      # Have to just pretend like these quality control variables exist...
+      AMFq  <- rep(0, length(AMFo))
+      flags <- TRUE
       
       AMF.params <- flux.uncertainty(AMFo, AMFq, flags, bin.num = 20)
       

@@ -41,7 +41,7 @@ fit.dist <- function(trait.data, trait = colnames(trait.data),
       a[["f"]] <- suppressWarnings(fitdistr(trait.data, "f", 
                                             start = list(df1 = 1, df2 = 2)))
     } else {
-      logger.severe(paste(trait, "not supported!"))
+      PEcAn.logger::logger.severe(paste(trait, "not supported!"))
     }
   }
   if ("beta" %in% dists) {
@@ -102,7 +102,7 @@ prior.fn <- function(parms, x, alpha, distn, central.tendency = NULL, trait = NU
     } else if (central.tendency == "median") {
       ct <- qlnorm(0.5, parms[1], parms[2])
     } else {
-      logger.severe(paste(central.tendency, "not supported!"))
+      PEcAn.logger::logger.severe(paste(central.tendency, "not supported!"))
     }
     x <- log(x)
   }

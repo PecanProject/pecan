@@ -9,3 +9,6 @@ prior.defaultvals.prospect(sd.inflate = 3)
 \arguments{
 \item{sd.inflate}{Standard deviation multiplier (default = 3)}
 }
+\description{
+Default prior parameters for PROSPECT models
+}

@@ -8,10 +8,12 @@ library(PEcAn.visualization)
 # Define server logic
 server <- shinyServer(function(input, output, session) {
   output$typeSelector <- renderUI({
-    bety <- betyConnect("../../web/config.php")
-    con <- bety$con
-    on.exit(db.close(con))
-    datatype <- db.query("SELECT name FROM sitegroups;", con)
+    # get the files in library PEcAn.data.atmosphere under registration
+    data.atmosphere.registration <- system.file("registration", package="PEcAn.data.atmosphere")
+    datatype <- list.files(data.atmosphere.registration)
+    # convert a list of string like "register.AmerifluxLBL.xml" to "AmerifluxLBL"
+    datatype <- gsub("register.", "", datatype)
+    datatype <- gsub(".xml", "", datatype)
     selectInput("type", "Type", datatype)
   })
   
@@ -31,7 +33,7 @@ server <- shinyServer(function(input, output, session) {
     # Depending on input$type, we'll generate a different lincense agreement
     switch(
       input$type,
-      "AmeriFlux" = checkboxInput(
+      "Ameriflux" = checkboxInput(
         "agreement",
         HTML(
           "I agree to <a href='http://ameriflux.lbl.gov/data/data-policy/'>AmeriFlux license</a>."
@@ -47,7 +49,7 @@ server <- shinyServer(function(input, output, session) {
         value = FALSE,
         width = NULL
       ),
-      "FLUXNET" = checkboxInput(
+      "Fluxnet2015" = checkboxInput(
         "agreement",
         HTML("I agree to FLUXNET license."),
         value = FALSE,

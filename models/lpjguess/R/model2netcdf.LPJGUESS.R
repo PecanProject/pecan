@@ -26,7 +26,7 @@ model2netcdf.LPJGUESS <- function(outdir, sitelat, sitelon, start_date, end_date
   lpjguess.out.files <- list.files(outdir, pattern = "\\.out$")
   
   if (length(lpjguess.out.files) == 0) {
-    logger.error("No output files found at ", outdir)
+    PEcAn.logger::logger.error("No output files found at ", outdir)
   }
   
   lpjguess.output <- lapply(file.path(outdir, lpjguess.out.files), read.table, header = TRUE, sep = "")
@@ -99,13 +99,15 @@ model2netcdf.LPJGUESS <- function(outdir, sitelat, sitelon, start_date, end_date
     
     mstmipvar <- PEcAn.utils::mstmipvar
     
+    dims <- list(lon = lon, lat = lat, time = t)
+    
     var <- list()
-    var[[1]] <- mstmipvar("GPP", lat, lon, t, NA)
-    var[[2]] <- mstmipvar("NPP", lat, lon, t, NA)
-    var[[3]] <- mstmipvar("AutoResp", lat, lon, t, NA)
-    var[[4]] <- mstmipvar("HeteroResp", lat, lon, t, NA)
-    var[[5]] <- mstmipvar("NEE", lat, lon, t, NA)
-    var[[6]] <- mstmipvar("LAI", lat, lon, t, NA)
+    var[[1]] <- PEcAn.utils::to_ncvar("GPP", dims)
+    var[[2]] <- PEcAn.utils::to_ncvar("NPP", dims)
+    var[[3]] <- PEcAn.utils::to_ncvar("AutoResp", dims)
+    var[[4]] <- PEcAn.utils::to_ncvar("HeteroResp", dims)
+    var[[5]] <- PEcAn.utils::to_ncvar("NEE", dims)
+    var[[6]] <- PEcAn.utils::to_ncvar("LAI", dims)
     
     # ******************** Declare netCDF variables ********************#
     

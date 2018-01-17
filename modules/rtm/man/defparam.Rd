@@ -7,11 +7,11 @@
 defparam(modname)
 }
 \arguments{
-\item{modname}{Model name. Must match `modname` in `model.list`}
+\item{modname}{Model name. Must match \code{modname} in \code{model.list}}
 }
 \value{
 Named vector of default parameter values
 }
-\details{
-Extract default parameter values from `model.list`
+\description{
+Extract default parameter values from \code{model.list}
 }

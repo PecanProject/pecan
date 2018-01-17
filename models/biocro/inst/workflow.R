@@ -28,7 +28,7 @@ run.meta.analysis(settings$pfts, settings$meta.analysis$iter, settings$meta.anal
 
 run.write.configs(model)  # Calls model specific write.configs e.g. write.config.ed.R
 ## load met data
-start.model.runs(model)  # Start ecosystem model runs
+PEcAn.remote::start.model.runs(model)  # Start ecosystem model runs
 
 get.results(settings)  # Get results of model runs
 

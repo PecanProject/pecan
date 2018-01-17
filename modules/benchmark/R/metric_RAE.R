@@ -6,7 +6,7 @@
 ##' @author Betsy Cowdery
 
 metric_RAE <- function(dat, ...) {
-  PEcAn.utils::logger.info("Metric: Relative Absolute Error")
+  PEcAn.logger::logger.info("Metric: Relative Absolute Error")
   numer <- mean(abs(dat$obvs - dat$model))
   denom <- mean(abs(dat$obvs - mean(dat$obvs)))
   return(numer/denom)

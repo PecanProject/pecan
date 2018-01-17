@@ -31,7 +31,7 @@ run.ensemble.analysis <- function(settings, plot.timeseries = NA, ensemble.id = 
       ensemble.id <- max(ens.ids)
     } else {
       if (is.null(ensemble.id)) 
-        logger.severe("Can't find a valid ensemble for ensemble analysis!")
+        PEcAn.logger::logger.severe("Can't find a valid ensemble for ensemble analysis!")
     }
   }
   
@@ -42,7 +42,7 @@ run.ensemble.analysis <- function(settings, plot.timeseries = NA, ensemble.id = 
     end.year <- settings$ensemble$end.year
   }
   if (is.null(start.year) | is.null(end.year)) {
-    logger.severe("No years given for ensemble analysis!")
+    PEcAn.logger::logger.severe("No years given for ensemble analysis!")
   }
   
   if (is.null(variable)) {
@@ -54,13 +54,13 @@ run.ensemble.analysis <- function(settings, plot.timeseries = NA, ensemble.id = 
     }
   }
   if (is.null(variable)) {
-    logger.severe("No variables for ensemble analysis!")
+    PEcAn.logger::logger.severe("No variables for ensemble analysis!")
   }
   
   # Only handling one variable at a time for now
   if (length(variable) > 1) {
     variable <- variable[1]
-    logger.warn(paste0("Currently performs ensemble analysis on only one variable at a time. Using first (", 
+    PEcAn.logger::logger.warn(paste0("Currently performs ensemble analysis on only one variable at a time. Using first (", 
                        variable, ")"))
   }
 
@@ -84,8 +84,8 @@ run.ensemble.analysis <- function(settings, plot.timeseries = NA, ensemble.id = 
   load(fname)
 
   my.dat = unlist(ensemble.output)
-  if(is.null(my.dat)){
-    logger.warn("no data in ensemble.output")
+  if(is.null(my.dat) | is.na(my.dat)){
+    PEcAn.logger::logger.warn("no data in ensemble.output")
     return()
   }
   
@@ -184,7 +184,7 @@ read.ensemble.ts <- function(settings, ensemble.id = NULL, variable = NULL,
     end.year <- settings$ensemble$end.year
   }
   if (is.null(start.year) | is.null(end.year)) {
-    logger.severe("No years given for ensemble analysis!")
+    PEcAn.logger::logger.severe("No years given for ensemble analysis!")
   }
   
   if (is.null(variable)) {
@@ -196,13 +196,13 @@ read.ensemble.ts <- function(settings, ensemble.id = NULL, variable = NULL,
     }
   }
   if (is.null(variable)) {
-    logger.severe("No variables for ensemble analysis!")
+    PEcAn.logger::logger.severe("No variables for ensemble analysis!")
   }
   
   # Only handling one variable at a time for now
   if (length(variable) > 1) {
     variable <- variable[1]
-    logger.warn(paste0("Currently performs ensemble analysis on only one variable at a time. Using first (", 
+    PEcAn.logger::logger.warn(paste0("Currently performs ensemble analysis on only one variable at a time. Using first (", 
                        variable, ")"))
   }
   
@@ -230,7 +230,7 @@ read.ensemble.ts <- function(settings, ensemble.id = NULL, variable = NULL,
     fname <- file.path(settings$outdir, "samples.Rdata")
   }
   if (!file.exists(fname)) {
-    logger.severe("No ensemble samples file found!")
+    PEcAn.logger::logger.severe("No ensemble samples file found!")
   }
   load(fname)
   
@@ -246,7 +246,7 @@ read.ensemble.ts <- function(settings, ensemble.id = NULL, variable = NULL,
 
   ## read ensemble output
   # Leaving list output even though only one variable allowed for now. Will improve backwards compatibility and maybe help in the future.
-  ensemble.ts <- list() 
+  ensemble.ts <- vector("list", length(variables)) 
   for(row in rownames(ens.run.ids)) {
     run.id <- ens.run.ids[row, 'id']
     print(run.id)
@@ -259,11 +259,20 @@ read.ensemble.ts <- function(settings, ensemble.id = NULL, variable = NULL,
     # derivation
     newrun <- eval(parse(text = expr))
 
+    if(is.null(newrun)){
+     # run failed
+     # skip to next
+      next
+    }
+    
     for(j in seq_along(variable.fn)){
-      if(as.numeric(row) == 1){
+        
+      if(is.null(ensemble.ts[[1]])){ # dimensions of the sublist matrix hasn't been declared yet
         ensemble.ts[[j]] <- matrix(NA,ensemble.size,length(newrun))
       }
+      
       ensemble.ts[[j]][as.numeric(row),] <- newrun
+    
     }    
   }
 

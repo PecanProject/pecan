@@ -4,14 +4,21 @@
 \alias{gen.subdaily.models}
 \title{gen.subdaily.models}
 \usage{
-gen.subdaily.models(outfolder, dat.train_file, in.prefix, n.beta, day.window,
-  resids = FALSE, parallel = FALSE, n.cores = NULL, overwrite = TRUE,
-  verbose = FALSE)
+gen.subdaily.models(outfolder, path.train, yrs.train,
+  direction.filter = "forward", in.prefix, n.beta, day.window,
+  seed = Sys.time(), resids = FALSE, parallel = FALSE, n.cores = NULL,
+  overwrite = TRUE, verbose = FALSE, print.progress = FALSE)
 }
 \arguments{
-\item{outfolder}{- directory where models will be stored *** storage required varies by size of training dataset, but prepare for >100 GB}
+\item{outfolder}{- directory where models will be stored *** storage required varies by size of training dataset, but prepare for >10 GB}
 
-\item{dat.train_file}{- train_data file}
+\item{path.train}{- path to CF/PEcAn style training data where each year is in a separate file.}
+
+\item{yrs.train}{- which years of the training data should be used for to generate the model for 
+the subdaily cycle.  If NULL, will default to all years}
+
+\item{direction.filter}{- Whether the model will be filtered backward or forward in time. options = c("backward", "forward")
+(PalEON will go backward, anybody interested in the future will go forward)}
 
 \item{in.prefix}{}
 
@@ -21,11 +28,15 @@ gen.subdaily.models(outfolder, dat.train_file, in.prefix, n.beta, day.window,
 specific hours coefficients. Must be integer because we want statistics from the same time of day
 for each day surrounding the model day}
 
-\item{resids}{- logical stating whether to pass on residual data or not}
+\item{seed}{- seed for randomization to allow for reproducible results}
+
+\item{resids}{- logical stating whether to pass on residual data or not (this increases both memory & storage requirements)}
 
 \item{parallel}{- logical stating whether to run temporal_downscale_functions.R in parallel}
 
 \item{n.cores}{- deals with parallelization}
+
+\item{print.progress}{- print progress bar? (gets passed through)}
 }
 \description{
 This is the 2nd function in the tdm workflow that takes the dat.train_file that is created from the

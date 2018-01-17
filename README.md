@@ -46,6 +46,7 @@ The demo instance only allows for runs at pecan.ncsa.illinois.edu. Once you have
 * Dietze, Michael C., Shawn P. Serbin, Carl Davidson, Ankur R. Desai, Xiaohui Feng, Ryan Kelly, Rob Kooper et al. "A quantitative assessment of a terrestrial biosphere model's data needs across North American biomes." Journal of Geophysical Research: Biogeosciences 119, no. 3 (2014): 286-300.
 * Viskari, Toni, Brady Hardiman, Ankur R. Desai, and Michael C. Dietze. "Model-data assimilation of multiple phenological observations to constrain and predict leaf area index." (2015) [doi:10.1890/14-0497.1](http://dx.doi.org/10.1890/14-0497.1)
 * Shiklomanov. A, MC Dietze, T Viskari, PA Townsend, SP Serbin. 2016 "Quantifying the influences of spectral resolution on uncertainty in leaf trait estimates through a Bayesian approach to RTM inversion" Remote Sensing of the Environment 183: 226-238
+* LeBauer, David, Rob Kooper, Patrick Mulrooney, Scott Rohde, Dan Wang, Stephen P. Long, and Michael C. Dietze. "BETYdb: a yield, trait, and ecosystem service database applied to second‐generation bioenergy feedstock production." GCB Bioenergy (2017).
 
 ## Acknowledgements
 

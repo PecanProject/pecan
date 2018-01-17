@@ -28,7 +28,6 @@
 ##' @param verbose should the function be very verbose
 ##'
 ##' @author Martin De Kauwe, Tony Gardella
-##' @importFrom PEcAn.utils logger.debug fqdn
 met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date, 
                            overwrite = FALSE, verbose = FALSE, ...) {
   
@@ -54,7 +53,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
   out.file.full <- file.path(outfolder, out.file)
   
   results <- data.frame(file = c(out.file.full), 
-                        host = fqdn(), 
+                        host = PEcAn.remote::fqdn(), 
                         mimetype = c("text/csv"), 
                         formatname = c("GDAY-met"), 
                         startdate = c(start_date), 
@@ -63,7 +62,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
                         stringsAsFactors = FALSE)
   
   if (file.exists(out.file.full) && !overwrite) {
-    logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
+    PEcAn.logger::logger.debug("File '", out.file.full, "' already exists, skipping to next file.")
     return(invisible(results))
   }
 

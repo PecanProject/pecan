@@ -25,11 +25,17 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   ## Seem to be stuck having to build a new case. Will try and avoid this in the future
   cd ${SCRIPTROOT}
   echo "*** Run create_newcase ***"
-  #./create_newcase -case @CASEDIR@ -res CLM_USRDAT -compset ICLM45ED -mach eddi -compiler gnu
-  #./create_newcase -case @CASEDIR@ -res 1x1_brazil -compset ICLM45ED -mach eddi -compiler gnu -project pecan
-  echo @MACHINE@
+  echo " ----- Case details:"
+  echo @CASEDIR@
+  #echo "Res: @RES@ "
+  #echo "Compset: @COMPSET@ "
+  echo "Machine: @MACHINE@ "
+  echo "Compiler: @COMPILER@ "
+  echo "Project_name: @PROJECT@ "
+  echo "--------------------------"
   ./create_newcase -case @CASEDIR@ -res 1x1_brazil -compset ICLM45ED -mach @MACHINE@ -compiler @COMPILER@ -project @PROJECT@  
-
+  #./create_newcase -case @CASEDIR@ -res @RES@ -compset @COMPSET -mach @MACHINE@ -compiler @COMPILER@ -project @PROJECT@
+  
   cd "@RUNDIR@"
   
   ## RECURSIVELY COPY/SYMLINK REFERENCE INPUTS DIRECTORY (DIN_LOC_ROOT)
@@ -58,8 +64,8 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   # Modifying : env_run.xml
 ./xmlchange -file env_run.xml -id REST_N -val 1
 ./xmlchange -file env_run.xml -id REST_OPTION -val nyears
-./xmlchange -file env_run.xml -id DATM_CLMNCEP_YR_START -val 1999
-./xmlchange -file env_run.xml -id DATM_CLMNCEP_YR_END -val 1999
+./xmlchange -file env_run.xml -id DATM_CLMNCEP_YR_START -val 1974
+./xmlchange -file env_run.xml -id DATM_CLMNCEP_YR_END -val 2004
 ./xmlchange -file env_run.xml -id DIN_LOC_ROOT -val @INDIR@
 ./xmlchange -file env_run.xml -id DIN_LOC_ROOT_CLMFORC -val '@INDIR@'
 ./xmlchange -file env_run.xml -id DOUT_S -val TRUE
@@ -74,8 +80,9 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   
   ## ENV_BUILD update configurations
   ./xmlchange -file env_build.xml -id CIME_OUTPUT_ROOT -val @CASEDIR@
-  ./xmlchange -file env_build.xml -id EXEROOT -val @BLD@
-  ./xmlchange -file env_build.xml -id BUILD_COMPLETE -val TRUE
+  #./xmlchange -file env_build.xml -id EXEROOT -val @BLD@  # this is the way it should be set, long term
+  ./xmlchange -file env_build.xml -id EXEROOT -val @CASEDIR@/bld # temporary fix
+  #./xmlchange -file env_build.xml -id BUILD_COMPLETE -val TRUE  # TEMPORARY!  This eventually needs to be uncommented so we don't build the model each time !
   
   ## DATES -> ENV_RUN
   ./xmlchange -file env_run.xml -id RUNDIR -val @CASEDIR@/run
@@ -83,7 +90,7 @@ export GFORTRAN_UNBUFFERED_PRECONNECTED=yes
   ./xmlchange -file env_run.xml -id STOP_OPTION -val ndays
   ./xmlchange -file env_run.xml -id STOP_N -val @STOP_N@
   
-  ## SITE INFO --> DOMAIN FILE
+  ## SITE INFO --> DOMAIN FILE 
   rm @INDIR@/share/domains/domain.clm/*
   ln -s @RUNDIR@/domain.lnd.@SITE_NAME@.nc @INDIR@/share/domains/domain.clm/
     
@@ -113,10 +120,10 @@ EOF
   echo "*** Run case.setup ***"
   ./case.setup
   
-  ## ADDITIONAL MODS THAT ARE JUST ASSOCIATED WITH REFCASE
+  ## ADDITIONAL MODS THAT ARE JUST ASSOCIATED WITH REFCASE - removed 'NEP' 'NPP_column'
 cat >> user_nl_clm << EOF
 hist_empty_htapes = .true.
-hist_fincl1='EFLX_LH_TOT','TSOI_10CM','QVEGT','NEP','GPP','AR','ED_bleaf','ED_biomass','NPP_column','NPP','MAINT_RESP','GROWTH_RESP'
+hist_fincl1='EFLX_LH_TOT','TSOI_10CM','QVEGT','GPP','AR','ED_bleaf','ED_biomass','NPP','MAINT_RESP','GROWTH_RESP'
 hist_mfilt             = 8760
 hist_nhtfrq            = -1
 EOF
@@ -126,28 +133,36 @@ EOF
 #EOF  
   
   echo "*** Run case.build ***"
-  ./case.build
+  sleep 10
+  ./case.build # ! Long run, we should not be building the model.  But current BUILD_COMPLETE doesn't seem to be working !
   
   ## RUN
   echo "*** Run ***"
+  now=`date`
+  echo "Simulation start:  $now"
   cd run
   mkdir timing
   echo `pwd`
   echo `ls -altr`
   
-  ## RUNDIR FILE LINKS
-  if [ -e @RUNDIR@/datm_atm_in]
-    then 
-    rm datm_atm_in
-    ln -s @RUNDIR@/datm_atm_in . 
-  fi
-  if [ -e @RUNDIR@/datm.streams.txt.PEcAn_met]
-    then 
-    rm datm.stream.txt.CLM_QIAN*
-    ln -s @RUNDIR@/datm.streams.txt.PEcAn_met .
-  fi
-  
-  "@BINARY@"
+  ## ----------- Disabled for now
+  ## RUNDIR FILE LINKS  -- CURRENTLY GETTING SEG FAULTS WHEN TRYING TO RUN WITH PECAN MET
+  #if [ -e @RUNDIR@/datm_atm_in ]
+  #  then 
+  #  rm datm_atm_in datm_in
+  #  ln -s @RUNDIR@/datm_atm_in .
+  #  ln -s @RUNDIR@/datm_atm_in datm_in 
+  #fi
+  #if [ -e @RUNDIR@/datm.streams.txt.PEcAn_met ]
+  #  then 
+    #rm datm.stream.txt.CLM_QIAN*
+  #  rm datm.streams.txt.CLM_QIAN*  # bug fix, s was missing!
+  #  ln -s @RUNDIR@/datm.streams.txt.PEcAn_met .
+  #fi
+  ## ------------- MET needs to be re-enabled in a later PR 
+ 
+  #"@BINARY@" # ! Long term, we should be running it this way !
+  "@CASEDIR@/bld/cesm.exe" # edited for testing, ! TEMPORARY. NEED TO SWITCH BACK ONCE BUILD_COMPLETE works !
   STATUS=$?
   
   

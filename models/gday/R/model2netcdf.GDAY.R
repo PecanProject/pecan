@@ -85,32 +85,34 @@ model2netcdf.GDAY <- function(outdir, sitelat, sitelon, start_date, end_date) {
         output[[i]] <- rep(-999, length(t$vals))
     }
     
+    dims <- list(lon = lon, lat = lat, time = t)
+    
     var <- list()
     ## C-Fluxes
-    var[[1]] <- ncvar_def("AutoResp","kgC/m2/s", list(lon,lat,t), -999)
-    var[[2]] <- ncvar_def("HeteroResp", "kgC/m2/s", list(lon,lat,t), -999)
-    var[[3]] <- ncvar_def("TotalResp","kgC/m2/s", list(lon,lat,t), -999)
-    var[[4]] <- ncvar_def("GPP", "kgC/m2/s", list(lon,lat,t), -999)
-    var[[5]] <- ncvar_def("NEE", "kgC/m2/s", list(lon,lat,t), -999)
-    var[[6]] <- ncvar_def("NPP", "kgC/m2/s", list(lon,lat,t), -999)
+    var[[1]] <- PEcAn.utils::to_ncvar("AutoResp",dims)
+    var[[2]] <- PEcAn.utils::to_ncvar("HeteroResp", dims)
+    var[[3]] <- PEcAn.utils::to_ncvar("TotalResp",dims)
+    var[[4]] <- PEcAn.utils::to_ncvar("GPP", dims)
+    var[[5]] <- PEcAn.utils::to_ncvar("NEE", dims)
+    var[[6]] <- PEcAn.utils::to_ncvar("NPP", dims)
     
     ## C-State
-    var[[7]] <- ncvar_def("AbvGrndWood", "kgC/m2", list(lon,lat,t), -999)
-    var[[8]] <- ncvar_def("TotSoilCarb","kgC/m2", list(lon,lat,t), -999)
-    var[[9]] <- ncvar_def("LAI","m2/m2", list(lon,lat,t), -999)
+    var[[7]] <- PEcAn.utils::to_ncvar("AbvGrndWood", dims)
+    var[[8]] <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
+    var[[9]] <- PEcAn.utils::to_ncvar("LAI", dims)
     
     ## Water fluxes
-    var[[10]] <- ncvar_def("Evap", "kg/m2/s", list(lon,lat,t), -999)
-    var[[11]] <- ncvar_def("TVeg", "kg/m2/s",list(lon,lat,t), -999)
+    var[[10]] <- PEcAn.utils::to_ncvar("Evap", dims)
+    var[[11]] <- PEcAn.utils::to_ncvar("TVeg", dims)
     
-    #var[[6]]  <- ncvar_def("LeafLitter", "kgC/m2/s", list(lon,lat,t), -999)
-    #var[[7]]  <- ncvar_def("WoodyLitter", "kgC/m2/s", list(lon,lat,t), -999)
-    #var[[8]]  <- ncvar_def("RootLitter", "kgC/m2/s", list(lon,lat,t), -999)
-    #var[[9]]  <- ncvar_def("LeafBiomass", "kgC/m2", list(lon,lat,t), -999)
-    #var[[10]]  <- ncvar_def("WoodBiomass", "kgC/m2", list(lon,lat,t), -999)
-    #var[[11]]  <- ncvar_def("RootBiomass", "kgC/m2", list(lon,lat,t), -999)
-    #var[[12]]  <- ncvar_def("LitterBiomass", "kgC/m2", list(lon,lat,t), -999)
-    #var[[13]]  <- ncvar_def("SoilC", "kgC/m2", list(lon,lat,t), -999)
+    #var[[6]]  <- PEcAn.utils::to_ncvar("LeafLitter", "kgC/m2/s", list(lon,lat,t), -999 )
+    #var[[7]]  <- PEcAn.utils::to_ncvar("WoodyLitter", "kgC/m2/s", list(lon,lat,t), -999)
+    #var[[8]]  <- PEcAn.utils::to_ncvar("RootLitter", "kgC/m2/s", list(lon,lat,t), -999)
+    #var[[9]]  <- PEcAn.utils::to_ncvar("LeafBiomass", "kgC/m2", list(lon,lat,t), -999)
+    #var[[10]]  <- PEcAn.utils::to_ncvar("WoodBiomass", "kgC/m2", list(lon,lat,t), -999)
+    #var[[11]]  <- PEcAn.utils::to_ncvar("RootBiomass", "kgC/m2", list(lon,lat,t), -999)
+    #var[[12]]  <- PEcAn.utils::to_ncvar("LitterBiomass", "kgC/m2", list(lon,lat,t), -999)
+    #var[[13]]  <- PEcAn.utils::to_ncvar("SoilC", "kgC/m2", list(lon,lat,t), -999)
     
     # ******************** Declare netCDF variables ********************#
     

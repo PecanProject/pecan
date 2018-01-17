@@ -1,5 +1,6 @@
-#' @title List to FORTRAN data module
+#' List to FORTRAN data module
 #' 
+#' Convert R list to a Fortran `/data/` module block
 #' @author Alexey Shiklomanov
 #' @details For models with large constants (e.g. absorption features in the
 #'       PROSPECT model), it may be preferable to store these in FORTRAN90

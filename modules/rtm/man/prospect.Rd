@@ -8,25 +8,25 @@ prospect(param, version, include.wl = FALSE)
 }
 \arguments{
 \item{param}{Vector of PROSPECT parameter values:
-N: Effective number of leaf layers (>1)
-Cab: Leaf chlorophyll content (ug/cm2) (>0)
-(5) Car: Leaf carotenoid content (ug/cm2) (>0)
-(5B) Cbrown: Leaf brown matter content (ug/cm2) (>0)
-Cw: Leaf water content (cm) (>0)
-Cm: Leaf dry matter content (ug/cm2) (>0)}
+* N: Effective number of leaf layers (>1)
+* Cab: Leaf chlorophyll content (ug/cm2) (>0)
+* (5) Car: Leaf carotenoid content (ug/cm2) (>0)
+* (5B) Cbrown: Leaf brown matter content (ug/cm2) (>0)
+* Cw: Leaf water content (cm) (>0)
+* Cm: Leaf dry matter content (ug/cm2) (>0)}
 
 \item{version}{PROSPECT version: 4, 5, or '5B'}
 
 \item{include.wl}{Whether or not to append wavelengths to output matrix.
-Included to provide some backward compatibility and benchmarking, but will 
+Included to provide some backward compatibility and benchmarking, but will
 soon be deprecated.}
 }
 \value{
-Matrix (2101 x 3) of simulated reflectance (column 1, 'R'), 
-     transmittance (column 2, 'T'), and wavelength (column 3, 'wl') values 
-     from 400:2500 nm
+Matrix (2101 x 3) of simulated reflectance (column 1, 'R'),
+transmittance (column 2, 'T'), and wavelength (column 3, 'wl') values
+from 400:2500 nm
 }
-\details{
+\description{
 R wrapper for PROSPECT models
 }
 \author{

@@ -11,7 +11,7 @@ download.Geostreams(outfolder, sitename, start_date, end_date,
 \arguments{
 \item{outfolder}{directory in which to save json result. Will be created if necessary}
 
-\item{sitename}{character. Should match a geostreams sensor_name}
+\item{sitename}{character. Must match a Geostreams sensor_name}
 
 \item{start_date, end_date}{datetime}
 
@@ -31,6 +31,21 @@ Depending on the setup of your Clowder host, authentication may be by
   then if these are NULL it looks in the user's home directory for a file named
   `~/.pecan.clowder.xml`, and finally if no keys or passwords are found there it
   attempts to connect unauthenticated.
+
+If using `~/.pecan.clowder.xml`, it must be a valid PEcAn-formatted XML settings
+ file and must contain a \code{<clowder>} key that specifies hostname, user, and
+ password for your Clowder server:
+
+\code{\preformatted{
+  <?xml version="1.0"?>
+  <pecan>
+    <clowder>
+      <hostname>terraref.ncsa.illinois.edu</hostname>
+      <user>yourname</user>
+      <password>superSecretPassw0rd</password>
+    </clowder>
+  </pecan>
+}}
 }
 \examples{
 \dontrun{

@@ -265,8 +265,8 @@ return(out)
 } # fitA
 
 
-##' @name read.Licor
-##' @title read.Licor
+##' @name read_Licor
+##' @title read_Licor
 ##' 
 ##' @author Mike Dietze
 ##' @export
@@ -274,7 +274,7 @@ return(out)
 ##' @param filename  name of the file to read
 ##' @param sep       file delimiter. defaults to tab
 ##' @param ...       optional arguements forwarded to read.table
-read.Licor <- function(filename, sep = "\t", ...) {
+read_Licor <- function(filename, sep = "\t", ...) {
   fbase <- sub(".txt", "", tail(unlist(strsplit(filename, "/")), n = 1))
   print(fbase)
   full <- readLines(filename)
@@ -290,7 +290,7 @@ read.Licor <- function(filename, sep = "\t", ...) {
   fname <- rep(fbase, nrow(dat))
   dat <- as.data.frame(cbind(fname, dat))
   return(dat)
-} # read.Licor
+} # read_Licor
 
 
 mat2mcmc.list <- function(w) {

@@ -38,7 +38,7 @@ download.FACE <- function(sitename, outfolder, start_date, end_date, overwrite =
 
   # return file info
   return(invisible(data.frame(file = out.file, 
-                              host = fqdn(), 
+                              host = PEcAn.remote::fqdn(), 
                               mimetype = "application/x-netcdf", 
                               formatname = "FACE", 
                               startdate = start_date, 

@@ -2,6 +2,8 @@
 ##'
 ##' @title Paramater Data Assimilation using emulator
 ##' @param settings = a pecan settings list
+##' @param external.data = list of inputs
+##' @param external.priors = list or priors
 ##'
 ##' @return nothing. Diagnostic plots, MCMC samples, and posterior distributions
 ##'  are saved as files and db records.
@@ -9,13 +11,15 @@
 ##' @author Mike Dietze
 ##' @author Ryan Kelly, Istem Fer
 ##' @export
-pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.id = NULL, 
+pda.emulator <- function(settings, external.data = NULL, external.priors = NULL,
+                         params.id = NULL, param.names = NULL, prior.id = NULL, 
                          chain = NULL, iter = NULL, adapt = NULL, adj.min = NULL, 
                          ar.target = NULL, jvar = NULL, n.knot = NULL) {
   
   ## this bit of code is useful for defining the variables passed to this function if you are
   ## debugging
   if (FALSE) {
+    external.data <- external.priors <- NULL
     params.id <- param.names <- prior.id <- chain <- iter <- NULL
     n.knot <- adapt <- adj.min <- ar.target <- jvar <- NULL
   }
@@ -47,7 +51,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     settings=settings, params.id=params.id, param.names=param.names, 
     prior.id=prior.id, chain=chain, iter=iter, adapt=adapt, 
     adj.min=adj.min, ar.target=ar.target, jvar=jvar, n.knot=n.knot, run.round)
- 
+  
   ## history restart
   pda.restart.file <- file.path(settings$outdir,paste0("history.pda",
                                                        settings$assim.batch$ensemble.id, ".Rdata"))
@@ -72,40 +76,56 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   } else {
     con <- NULL
   }
-
+  
   bety <- src_postgres(dbname = settings$database$bety$dbname, 
                        host = settings$database$bety$host, 
                        user = settings$database$bety$user, 
                        password = settings$database$bety$password)
   
   ## Load priors
-  temp        <- pda.load.priors(settings, bety$con, run.normal)
-  prior.list  <- temp$prior
-  settings    <- temp$settings
+  if(is.null(external.priors)){
+    temp        <- pda.load.priors(settings, bety$con, run.normal)
+    prior.list  <- temp$prior
+    settings    <- temp$settings
+  }else{
+    prior.list  <- external.priors
+  }
   pname       <- lapply(prior.list, rownames)
   n.param.all <- sapply(prior.list, nrow)
   
-
-  inputs      <- load.pda.data(settings, bety)
+  
+  if(is.null(external.data)){
+    inputs <- load.pda.data(settings, bety)
+  }else{
+    inputs <- external.data
+  }
+  
   n.input     <- length(inputs)
   
-
+  
   ## Set model-specific functions
   do.call("library", list(paste0("PEcAn.", settings$model$type)))
   my.write.config <- paste("write.config.", settings$model$type, sep = "")
   if (!exists(my.write.config)) {
-    logger.severe(paste(my.write.config, 
-                        "does not exist. Please make sure that the PEcAn interface is loaded for", 
-                        settings$model$type))
+    PEcAn.logger::logger.severe(paste(my.write.config, 
+                                      "does not exist. Please make sure that the PEcAn interface is loaded for", 
+                                      settings$model$type))
   }
   
   ## Select parameters to constrain
-  prior.ind <- lapply(seq_along(settings$pfts), 
-                      function(x) which(pname[[x]] %in% settings$assim.batch$param.names[[x]]))
+  all_pft_names <- sapply(settings$pfts, `[[`, "name")
+  prior.ind <- prior.ind.orig <- vector("list", length(settings$pfts)) 
+  names(prior.ind) <- names(prior.ind.orig) <- all_pft_names
+  for(i in seq_along(settings$pfts)){
+    pft.name <- settings$pfts[[i]]$name
+    if(pft.name %in% names(settings$assim.batch$param.names)){
+      prior.ind[[i]]      <- which(pname[[i]] %in% settings$assim.batch$param.names[[pft.name]])
+      prior.ind.orig[[i]] <- which(pname[[i]] %in% settings$assim.batch$param.names[[pft.name]] |
+                                     pname[[i]] %in% any.scaling[[pft.name]])
+    }
+  }
+  
   n.param <- sapply(prior.ind, length)
-  prior.ind.orig <- lapply(seq_along(settings$pfts), 
-                      function(x) which(pname[[x]] %in% settings$assim.batch$param.names[[x]] |
-                                          pname[[x]] %in% any.scaling[[x]]))
   n.param.orig <- sapply(prior.ind.orig, length)
   
   ## Get the workflow id
@@ -149,134 +169,160 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   names(knots.list) <- sapply(settings$pfts,"[[",'name')
   
   knots.params <- lapply(knots.list, `[[`, "params")
-  knots.probs <- lapply(knots.list, `[[`, "probs")
+  # don't need anymore
+  # knots.probs <- lapply(knots.list, `[[`, "probs")
   
   current.step <- "GENERATE KNOTS"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
   ## Run this block if this is a "round" extension
   if (run.round) {
-      
-      # loads the posteriors of the the previous emulator run
-      temp.round <- pda.load.priors(settings, con, run.round)
-      prior.round.list <- temp.round$prior
-      
-      
-      prior.round.fn <- lapply(prior.round.list, pda.define.prior.fn)
-      
-      ## Propose a percentage (if not specified 50%) of the new parameter knots from the posterior of the previous run
-      knot.par        <- ifelse(!is.null(settings$assim.batch$knot.par),
-                                as.numeric(settings$assim.batch$knot.par),
-                                0.5)
-      
-      n.post.knots    <- floor(knot.par * settings$assim.batch$n.knot)
-      
-      if(!is.null(sf)){
-        load(settings$assim.batch$sf.path)
-        sf.round.post <- pda.define.prior.fn(post.distns)
-        rm(post.distns)
-        n.sf <- length(sf)
-        sf.round.list <- pda.generate.knots(n.post.knots,
-                                            sf = NULL, probs.sf = NULL,
-                                            n.param.all = n.sf,
-                                            prior.ind = seq_len(n.sf),
-                                            prior.fn = sf.round.post, 
-                                            pname = paste0(sf, "_SF"))
-        probs.round.sf     <- sf.round.list$params
-      }else {
-        probs.round.sf     <- NULL
+    
+    # loads the posteriors of the the previous emulator run
+    temp.round <- pda.load.priors(settings, con, run.round)
+    prior.round.list <- temp.round$prior
+    
+    
+    prior.round.fn <- lapply(prior.round.list, pda.define.prior.fn)
+    
+    ## Propose a percentage (if not specified 80%) of the new parameter knots from the posterior of the previous run
+    knot.par        <- ifelse(!is.null(settings$assim.batch$knot.par),
+                              as.numeric(settings$assim.batch$knot.par),
+                              0.8)
+    
+    n.post.knots    <- floor(knot.par * settings$assim.batch$n.knot)
+    
+    if(!is.null(sf)){
+      load(settings$assim.batch$sf.path)
+      sf.round.post <- pda.define.prior.fn(sf.post.distns)
+      rm(sf.post.distns)
+      n.sf <- length(sf)
+      sf.round.list <- pda.generate.knots(n.post.knots,
+                                          sf = NULL, probs.sf = NULL,
+                                          n.param.all = n.sf,
+                                          prior.ind = seq_len(n.sf),
+                                          prior.fn = sf.round.post, 
+                                          pname = paste0(sf, "_SF"))
+      probs.round.sf     <- sf.round.list$params
+    }else {
+      probs.round.sf     <- NULL
+    }
+    
+    ## set prior distribution functions for posterior of the previous emulator run
+    ## need to do two things here: 
+    ## 1) for non-SF parameters, use the posterior of previous emulator
+    knots.list.nonsf <- lapply(seq_along(settings$pfts),
+                              function(x) pda.generate.knots(n.post.knots,
+                                                             sf, probs.round.sf,
+                                                             n.param.all[x],
+                                                             prior.ind.orig[[x]],
+                                                             prior.round.fn[[x]],
+                                                             pname[[x]]))
+    
+    knots.params.nonsf <- lapply(knots.list.nonsf, `[[`, "params")
+    
+    ## 2) for SF parameters use the posterior sf-values but on the prior of the actual params
+    knots.list.sf <- lapply(seq_along(settings$pfts),
+                               function(x) pda.generate.knots(n.post.knots,
+                                                              sf, probs.round.sf,
+                                                              n.param.all[x],
+                                                              prior.ind.orig[[x]],
+                                                              prior.fn[[x]], # note the difference
+                                                              pname[[x]]))
+    
+    knots.params.sf <- lapply(knots.list.sf, `[[`, "params")
+    
+    
+    knots.params.temp <- knots.params.nonsf
+    
+    if(!is.null(sf)){
+      # get new proposals for non-sf and sf together
+      for(i in seq_along(settings$pfts)){
+        if(!is.null(any.scaling[[i]])){
+          knots.params.temp[[i]] <- knots.params.sf[[i]]
+        }
       }
-      
-      ## set prior distribution functions for posterior of the previous emulator run
-      knots.list.temp <- lapply(seq_along(settings$pfts),
-                                function(x) pda.generate.knots(n.post.knots,
-                                                               sf, probs.round.sf,
-                                                               n.param.all[x],
-                                                               prior.ind.orig[[x]],
-                                                               prior.round.fn[[x]],
-                                                               pname[[x]]))
-      knots.params.temp <- lapply(knots.list.temp, `[[`, "params")
-      
-      
-      for (i in seq_along(settings$pfts)) {
-        # mixture of knots
-        mix.knots <- sample(nrow(knots.params[[i]]), (settings$assim.batch$n.knot - n.post.knots))
-        knots.list[[i]]$params <- rbind(knots.params[[i]][mix.knots, ],
-                                        knots.list.temp[[i]]$params)
-        names(knots.list)[i] <- settings$pfts[[i]]['name']
-      }
-      
-      knots.params <- lapply(knots.list, `[[`, "params")
-      knots.probs  <- lapply(knots.list, `[[`, "probs")
-      
-      current.step <- "Generate Knots: round-if block"
-      save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+    }
+    
+    # mixture of knots
+    mix.knots <- sample(settings$assim.batch$n.knot, (settings$assim.batch$n.knot - n.post.knots))
+    for (i in seq_along(settings$pfts)) {
+      knots.list[[i]]$params <- rbind(knots.params[[i]][mix.knots, ],
+                                      knots.params.temp[[i]])
+      names(knots.list)[i] <- settings$pfts[[i]]['name']
+    }
+    
+    if(!is.null(sf)){
+      probs.sf <- rbind(probs.sf[mix.knots, ], probs.round.sf)
+    }
+    
+    knots.params <- lapply(knots.list, `[[`, "params")
+    # don't need anymore
+    # knots.probs  <- lapply(knots.list, `[[`, "probs")
+    
+    current.step <- "Generate Knots: round-if block"
+    save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   } # end round-if block
   
-  print("emulator names")
-  print(sapply(settings$pfts,"[[",'name'))
-  print(names(knots.list))
-  print(names(knots.params))
-  print(names(knots.probs))
   
   ## Run this block if this is normal run or a "round" extension
   if(run.normal | run.round){
-      
-      ## Set up runs and write run configs for all proposed knots
-      run.ids <- pda.init.run(settings, con, my.write.config, workflow.id, knots.params, 
+    
+    ## Set up runs and write run configs for all proposed knots
+    run.ids <- pda.init.run(settings, con, my.write.config, workflow.id, knots.params, 
                             n = settings$assim.batch$n.knot, 
                             run.names = paste0(settings$assim.batch$ensemble.id, ".knot.",
                                                1:settings$assim.batch$n.knot))   
-      current.step <- "pda.init.run"
-      save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
-      
-      ## start model runs
-      start.model.runs(settings, settings$database$bety$write)
+    current.step <- "pda.init.run"
+    save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
     
-      ## Retrieve model outputs and error statistics
-      model.out <- list()
-      pda.errors <- list()
+    ## start model runs
+    PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
+    
+    ## Retrieve model outputs and error statistics
+    model.out <- list()
+    pda.errors <- list()
     
     
-      ## read model outputs    
-      for (i in seq_len(settings$assim.batch$n.knot)) {
-        align.return <- pda.get.model.output(settings, run.ids[i], bety, inputs)
-        model.out[[i]] <- align.return$model.out
-        if(all(!is.na(model.out[[i]]))){
-          inputs <- align.return$inputs
-        }
+    ## read model outputs    
+    for (i in seq_len(settings$assim.batch$n.knot)) {
+      align.return <- pda.get.model.output(settings, run.ids[i], bety, inputs)
+      model.out[[i]] <- align.return$model.out
+      if(all(!is.na(model.out[[i]]))){
+        inputs <- align.return$inputs
       }
-
-      
-      current.step <- "pda.get.model.output"
-      save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
-      
-      # efficient sample size calculation
-      inputs <- pda.neff.calc(inputs)
-      
-      # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
-      if(any(unlist(any.mgauss) == "multipGauss")) {
-        # how many bias parameters per dataset requested
-        nbias <- ifelse(is.null(settings$assim.batch$inputs[[isbias]]$nbias), 1,
+    }
+    
+    
+    current.step <- "pda.get.model.output"
+    save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
+    
+    # efficient sample size calculation
+    inputs <- pda.neff.calc(inputs)
+    
+    # handle bias parameters if multiplicative Gaussian is listed in the likelihoods
+    if(any(unlist(any.mgauss) == "multipGauss")) {
+      # how many bias parameters per dataset requested
+      nbias <- ifelse(is.null(settings$assim.batch$inputs[[isbias]]$nbias), 1,
                       as.numeric(settings$assim.batch$inputs[[isbias]]$nbias))
-        bias.list <- return.bias(isbias, model.out, inputs, prior.list, nbias, run.round, settings$assim.batch$bias.path)
-        bias.terms <- bias.list$bias.params
-        prior.list <- bias.list$prior.list.bias
-        prior.fn <- lapply(prior.list, pda.define.prior.fn)
-      } else {
-        bias.terms <- NULL
-      }
+      bias.list <- return.bias(isbias, model.out, inputs, prior.list, nbias, run.round, settings$assim.batch$bias.path)
+      bias.terms <- bias.list$bias.params
+      prior.list <- bias.list$prior.list.bias
+      prior.fn <- lapply(prior.list, pda.define.prior.fn)
+    } else {
+      bias.terms <- NULL
+    }
     
-      for (i in seq_len(settings$assim.batch$n.knot)) {
-        if(!is.null(bias.terms)){
-          all.bias <- lapply(bias.terms, function(n) n[i,])
-          all.bias <- do.call("rbind", all.bias)
-        } else {
-          all.bias <- NULL
-        }
-        ## calculate error statistics and save in the DB      
-        pda.errors[[i]] <- pda.calc.error(settings, con, model_out = model.out[[i]], run.id = run.ids[i], inputs, bias.terms = all.bias)
-      } 
+    for (i in seq_len(settings$assim.batch$n.knot)) {
+      if(!is.null(bias.terms)){
+        all.bias <- lapply(bias.terms, function(n) n[i,])
+        all.bias <- do.call("rbind", all.bias)
+      } else {
+        all.bias <- NULL
+      }
+      ## calculate error statistics and save in the DB      
+      pda.errors[[i]] <- pda.calc.error(settings, con, model_out = model.out[[i]], run.id = run.ids[i], inputs, bias.terms = all.bias)
+    } 
     
   } # end if-block
   current.step <- "pda.calc.error"
@@ -300,18 +346,18 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   prior.ind.all.ns <- unlist(prior.ind.list.ns)
   # if no scaling is requested prior.ind.all == prior.ind.all.ns
   # keep this ind.all w/o bias until extracting prob values below
-    
+  
   if (run.normal | run.round) {
     
     # retrieve n
     n.of.obs <- sapply(inputs,`[[`, "n") 
     names(n.of.obs) <- sapply(model.out[[1]],names)
-
-      
+    
+    
     # UPDATE: Use mlegp package, I can now draw from parameter space
     knots.params.all <- do.call("cbind", knots.params)
     X <- knots.params.all[, prior.ind.all, drop = FALSE]
-      
+    
     if(!is.null(sf)){
       X <- cbind(X, probs.sf)
     }
@@ -361,14 +407,14 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       if(no.of.failed < no.of.allowed & (settings$assim.batch$n.knot - no.of.failed) > 1){
         SS.list[[inputi]] <- SS.list[[inputi]][!rowSums(is.na(SS.list[[inputi]])), ]
         if( no.of.failed  > 0){
-          logger.info(paste0(no.of.failed, " runs failed. Emulator for ", names(n.of.obs)[inputi], " will be built with ", settings$assim.batch$n.knot - no.of.failed, " knots."))
+          PEcAn.logger::logger.info(paste0(no.of.failed, " runs failed. Emulator for ", names(n.of.obs)[inputi], " will be built with ", settings$assim.batch$n.knot - no.of.failed, " knots."))
         } 
       } else{
-        logger.error(paste0("Too many runs failed, not enough parameter set to build emulator for ", names(n.of.obs)[inputi], "."))
+        PEcAn.logger::logger.error(paste0("Too many runs failed, not enough parameter set to build emulator for ", names(n.of.obs)[inputi], "."))
       }
       
     } # for-loop
-  
+    
     if (run.round) {
       # check if this is another 'round' of emulator 
       
@@ -380,8 +426,8 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     } else {
       SS <- SS.list
     }
-      
-    logger.info(paste0("Using 'mlegp' package for Gaussian Process Model fitting."))
+    
+    PEcAn.logger::logger.info(paste0("Using 'mlegp' package for Gaussian Process Model fitting."))
     
     ## Generate emulator on SS, return a list ##
     
@@ -395,32 +441,33 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     cl <- parallel::makeCluster(ncores, type="FORK")
     
     ## Parallel fit for GPs
-    GPmodel <- parallel::parLapply(cl, SS, function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], verbose = 0))
-    # GPmodel <- lapply(SS, function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], verbose = 0))
+    GPmodel <- parallel::parLapply(cl, SS, function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], nugget = 0, nugget.known = 1, verbose = 0))
+    # GPmodel <- lapply(SS, function(x) mlegp::mlegp(X = x[, -ncol(x), drop = FALSE], Z = x[, ncol(x), drop = FALSE], nugget = 0, nugget.known = 1, verbose = 0))
+    
     
     parallel::stopCluster(cl)
     
     # Stop the clock
     ptm.finish <- proc.time() - ptm.start
-    logger.info(paste0("GP fitting took ", paste0(round(ptm.finish[3])), " seconds."))
+    PEcAn.logger::logger.info(paste0("GP fitting took ", paste0(round(ptm.finish[3])), " seconds."))
     
     
     gp <- GPmodel
-      
+    
   } else { # is this a "longer" type of extension run
-      
+    
     load(settings$assim.batch$emulator.path)  # load previously built emulator(s) to run a longer mcmc
     load(settings$assim.batch$ss.path)
     load(settings$assim.batch$resume.path)
     
     n.of.obs <- resume.list[[1]]$n.of.obs
-      
+    
     if(any(unlist(any.mgauss) == "multipGauss")){
       load(settings$assim.batch$bias.path) # load prior.list with bias term from previous run
       prior.all <- do.call("rbind", prior.list)
     }
-
-  
+    
+    
     for (c in seq_len(settings$assim.batch$chain)) {
       init.list[[c]] <- resume.list[[c]]$prev.samp[nrow(resume.list[[c]]$prev.samp), ]
       jmp.list[[c]] <- resume.list[[c]]$jump
@@ -440,19 +487,19 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     prior.ind.all <- c(prior.ind.all, 
                        ((length.pars + 1) : (length.pars + length(isbias))))
     prior.ind.all.ns <- c(prior.ind.all.ns, 
-                       ((length.pars + 1) : (length.pars + length(isbias))))
+                          ((length.pars + 1) : (length.pars + length(isbias))))
     n.param <- c(n.param, length(isbias))
     n.param.orig <- c(n.param.orig, length(isbias))
     length.pars   <- length.pars + length(isbias)
   }
-
+  
   
   ## Set up prior functions accordingly
   prior.fn.all <- pda.define.prior.fn(prior.all)
-
+  
   # define range to make sure mcmc.GP doesn't propose new values outside
   rng <- matrix(c(sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 1e-05)),
-                sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 0.99999))),
+                  sapply(prior.fn.all$qprior[prior.ind.all], eval, list(p = 0.99999))),
                 nrow = sum(n.param))
   
   if (run.normal | run.round) {
@@ -479,6 +526,11 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     mix <- "each"
   }
   
+  # get hyper parameters if any
+  hyper.pars <- return_hyperpars(settings$assim.batch, inputs)
+  
+  PEcAn.logger::logger.info(paste0("Starting emulator MCMC. Please wait."))
+  
   current.step <- "pre-MCMC"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
@@ -489,7 +541,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   dcores <- parallel::detectCores() - 1
   ncores <- min(max(dcores, 1), settings$assim.batch$chain)
   
-  logger.setOutputFile(file.path(settings$outdir, "pda.log"))
+  PEcAn.logger::logger.setOutputFile(file.path(settings$outdir, "pda.log"))
   
   cl <- parallel::makeCluster(ncores, type="FORK", outfile = file.path(settings$outdir, "pda.log"))
   
@@ -508,20 +560,21 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
             run.block   = (run.normal | run.round),  
             n.of.obs    = n.of.obs,
             llik.fn     = llik.fn,
+            hyper.pars  = hyper.pars,
             resume.list = resume.list[[chain]]
     )
   })
   
   parallel::stopCluster(cl)
-
+  
   # Stop the clock
   ptm.finish <- proc.time() - ptm.start
-  logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(settings$assim.batch$iter), " iterations."))
+  PEcAn.logger::logger.info(paste0("Emulator MCMC took ", paste0(round(ptm.finish[3])), " seconds for ", paste0(settings$assim.batch$iter), " iterations."))
   
   current.step <- "post-MCMC"
   save(list = ls(all.names = TRUE),envir=environment(),file=pda.restart.file)
   
-  mcmc.samp.list <- list()
+  mcmc.samp.list <- sf.samp.list <- list()
   
   for (c in seq_len(settings$assim.batch$chain)) {
     
@@ -529,6 +582,8 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     
     if(!is.null(sf)){
       sfm <- matrix(NA, nrow =  nrow(mcmc.out[[c]]$mcmc.samp), ncol = length(sf))
+      # give colnames but the order can change, we'll overwrite anyway
+      colnames(sfm) <- paste0(sf, "_SF")
     }
     ## Set the prior functions back to work with actual parameter range
     
@@ -548,6 +603,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
                        list(p = mcmc.out[[c]]$mcmc.samp[, idx]))
         if(sc <= length(sf)){
           sfm[, sc] <- mcmc.out[[c]]$mcmc.samp[, idx]
+          colnames(sfm)[sc] <- paste0(sf.check, "_SF")
           sc <- sc + 1
         }
         
@@ -560,7 +616,6 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
     mcmc.samp.list[[c]] <- m
     
     if(!is.null(sf)){
-      colnames(sfm) <- paste0(sf, "_SF")
       sf.samp.list[[c]] <- sfm
     }
     
@@ -570,20 +625,21 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   
   
   if (FALSE) {
-     gp          = gp
-     x0          = init.list[[chain]]
-     nmcmc       = settings$assim.batch$iter
-     rng         = rng
-     format      = "lin"
-     mix         = mix
-     jmp0        = jmp.list[[chain]]
-     ar.target   = settings$assim.batch$jump$ar.target
-     priors      = prior.fn.all$dprior[prior.ind.all]
-     settings    = settings
-     run.block   = (run.normal | run.round)  
-     n.of.obs    = n.of.obs
-     llik.fn     = llik.fn
-     resume.list = resume.list[[chain]]
+    gp          = gp
+    x0          = init.list[[chain]]
+    nmcmc       = settings$assim.batch$iter
+    rng         = rng
+    format      = "lin"
+    mix         = mix
+    jmp0        = jmp.list[[chain]]
+    ar.target   = settings$assim.batch$jump$ar.target
+    priors      = prior.fn.all$dprior[prior.ind.all]
+    settings    = settings
+    run.block   = (run.normal | run.round)  
+    n.of.obs    = n.of.obs
+    llik.fn     = llik.fn
+    hyper.pars  = hyper.pars
+    resume.list = resume.list[[chain]]
   }
   
   ## ------------------------------------ Clean up ------------------------------------ 
@@ -598,9 +654,9 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   save(gp, file = settings$assim.batch$emulator.path)
   
   settings$assim.batch$ss.path <- file.path(settings$outdir, 
-                                              paste0("ss.pda", 
-                                                     settings$assim.batch$ensemble.id, 
-                                                     ".Rdata"))
+                                            paste0("ss.pda", 
+                                                   settings$assim.batch$ensemble.id, 
+                                                   ".Rdata"))
   save(SS, file = settings$assim.batch$ss.path)
   
   settings$assim.batch$mcmc.path <- file.path(settings$outdir, 
@@ -618,18 +674,19 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
   # save prior.list with bias term
   if(any(unlist(any.mgauss) == "multipGauss")){
     settings$assim.batch$bias.path <- file.path(settings$outdir, 
-                                                  paste0("bias.pda", 
-                                                         settings$assim.batch$ensemble.id, 
-                                                         ".Rdata"))
+                                                paste0("bias.pda", 
+                                                       settings$assim.batch$ensemble.id, 
+                                                       ".Rdata"))
     save(prior.list, file = settings$assim.batch$bias.path)
   }
-
+  
   # save sf posterior
   if(!is.null(sf)){
     sf.filename <- file.path(settings$outdir, 
                              paste0("post.distns.pda.sf", "_", settings$assim.batch$ensemble.id, ".Rdata"))
     sf.prior <- prior.list[[sf.ind]]
-    write_sf_posterior(sf.samp.list, sf.prior, sf.filename)
+    sf.post.distns <- write_sf_posterior(sf.samp.list, sf.prior, sf.filename)
+    save(sf.post.distns, file = sf.filename)
     settings$assim.batch$sf.path <- sf.filename
   }
   
@@ -650,7 +707,7 @@ pda.emulator <- function(settings, params.id = NULL, param.names = NULL, prior.i
       mcmc.param.list[[length(mcmc.param.list)]][[c]] <- cbind( mcmc.param.list[[length(mcmc.param.list)]][[c]],
                                                                 mcmc.out[[c]]$mcmc.par)
     }
-
+    
   } else if (ncol(mcmc.out[[1]]$mcmc.par) != 0){
     # means no bias param but there are still other params, e.g. Gaussian
     mcmc.param.list[[length(mcmc.param.list)+1]] <- list()

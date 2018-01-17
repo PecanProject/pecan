@@ -95,7 +95,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
       }
     }
   }
-  saveXML(listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.METProcess.xml"))
+  saveXML(PEcAn.settings::listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.METProcess.xml"))
   
   # Check status to avoid repeating work
   check.status <- function(check.name) {
@@ -126,7 +126,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
                                     settings$database$dbfiles, 
                                     settings$database$bety, 
                                     settings$meta.analysis$update)
-    saveXML(listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.TRAIT.xml"))
+    saveXML(PEcAn.settings::listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.TRAIT.xml"))
     status.end()
   }
   
@@ -147,7 +147,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
   if (check.status("CONFIG") == 0) {
     status.start("CONFIG")
     settings <- run.write.configs(settings, write = settings$database$bety$write, ens.sample.method = "halton")
-    saveXML(listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.CONFIGS.xml"))
+    saveXML(PEcAn.settings::listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.CONFIGS.xml"))
     status.end()
   }
   
@@ -160,7 +160,7 @@ if (length(which(commandArgs() == "--continue")) == 0) {
 # Start ecosystem model runs
 if (check.status("MODEL") == 0) {
   status.start("MODEL")
-  start.model.runs(settings, settings$database$bety$write)
+  PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
   status.end()
 }
 
@@ -211,12 +211,12 @@ if (!is.null(settings$assim.batch)) {
   # Calls model specific write.configs e.g. write.config.ed.R
   status.start("PDA.CONFIG")
   settings <- run.write.configs(settings, write = settings$database$bety$write, ens.sample.method = "halton")
-  saveXML(listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.PDA.CONFIGS.xml"))
+  saveXML(PEcAn.settings::listToXml(settings, "pecan"), file = file.path(settings$outdir, "pecan.PDA.CONFIGS.xml"))
   status.end()
   
   # Start ecosystem model runs
   status.start("PDA.MODEL")
-  start.model.runs(settings, settings$database$bety$write)
+  PEcAn.remote::start.model.runs(settings, settings$database$bety$write)
   status.end()
   
   # Get results of model runs

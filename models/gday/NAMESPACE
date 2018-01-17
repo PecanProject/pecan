@@ -3,8 +3,6 @@
 export(met2model.GDAY)
 export(model2netcdf.GDAY)
 export(write.config.GDAY)
-importFrom(PEcAn.utils,fqdn)
-importFrom(PEcAn.utils,logger.debug)
 importFrom(ncdf4,nc_close)
 importFrom(ncdf4,nc_create)
 importFrom(ncdf4,ncdim_def)

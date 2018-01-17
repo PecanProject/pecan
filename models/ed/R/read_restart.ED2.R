@@ -28,7 +28,7 @@ read_restart.ED2 <- function(outdir,
 
     histfile <- get_restartfile.ED2(mod_outdir, runid, stop.time)
     if (is.null(histfile)) {
-      PEcAn.utils::logger.severe("Failed to find ED2 history restart file.")
+      PEcAn.logger::logger.severe("Failed to find ED2 history restart file.")
     }
 
     nc <- ncdf4::nc_open(histfile)
@@ -86,7 +86,7 @@ read_restart.ED2 <- function(outdir,
             names(agb_pft) <- pft_full_names[names(agb_pft)]
             forecast[[var_name]] <- agb_pft
         } else {
-            PEcAn.utils::logger.error("Variable ", var_name,
+            PEcAn.logger::logger.error("Variable ", var_name,
                                       " not currently supported",
                                       " by read.restart.ED2")
         }
