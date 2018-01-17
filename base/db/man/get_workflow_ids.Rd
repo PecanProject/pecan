@@ -4,12 +4,12 @@
 \alias{get_workflow_ids}
 \title{Get vector of workflow IDs}
 \usage{
-get_workflow_ids(bety, session, all.ids = FALSE)
+get_workflow_ids(bety, query, all.ids = FALSE)
 }
 \arguments{
 \item{bety}{BETYdb connection, as opened by `betyConnect()`}
 
-\item{session}{Session object passed through Shiny}
+\item{query}{Named vector or list of workflow IDs}
 }
 \description{
 Get vector of workflow IDs

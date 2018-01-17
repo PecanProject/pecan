@@ -19,6 +19,8 @@ dbfile.input.check(siteid, startdate = NULL, enddate = NULL, mimetype,
 
 \item{formatname}{the name of the format to distinguish between simmilair mime-types}
 
+\item{parentid}{the id of the parent of the input}
+
 \item{con}{database connection object}
 
 \item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
@@ -26,10 +28,6 @@ dbfile.input.check(siteid, startdate = NULL, enddate = NULL, mimetype,
 \item{exact.dates}{setting to include start and end date in input query}
 
 \item{pattern}{text to seach for in the file name (default NULL = no check). NOT YET IMPLEMENTED}
-
-\item{parent}{the id of the parent of the input}
-
-\item{params}{database connection information}
 }
 \value{
 data.frame with the id, filename and pathname of the input that is requested
