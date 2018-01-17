@@ -152,7 +152,7 @@ if ('state.data.assimilation' %in% names(settings)) {
 }
 
 # Run benchmarking
-if("benchmarking" %in% names(settings)){
+if("benchmarking" %in% names(settings) & "benchmark" %in% names(settings$benchmarking)){
   PEcAn.utils::status.start("BENCHMARKING")
   results <- papply(settings, function(x) calc_benchmark(x, bety))
   PEcAn.utils::status.end()
