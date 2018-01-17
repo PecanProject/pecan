@@ -1,1 +1,9 @@
-# Run PEcAn from COmmand Line
+# Run PEcAn from Command Line
+
+## PEcAn workflow template
+
+File --> new file --> Rmarkdown --> From Template
+
+Choose the PEcAn workflow template.
+
+The template will guide you through the steps to reproducing a run generated in the PEcAn Web Interface, starting with the pecan.xml file that you can download from .
