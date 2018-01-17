@@ -326,3 +326,38 @@ test_that(“as.sequence works”;{
 })
 ```
 
+## Testing the Shiny Server
+
+Shiny can be difficult to debug because, when run as a web service, the R output is hidden in system log files that are hard to find and read.
+One useful approach to debugging is to use port forwarding, as follows.
+
+First, on the remote machine (including the VM), make sure R's working directory is set to the directory of the Shiny app (e.g., `setwd(/path/to/pecan/shiny/WorkflowPlots)`, or just open the app as an RStudio project).
+Then, in the R console, run the app as:
+
+```
+shiny::runApp(port = XXXX)
+# E.g. shiny::runApp(port = 5638)
+```
+
+Then, on your local machine, open a terminal and run the following command, matching `XXXX` to the port above and `YYYY` to any unused port on your local machine (any 4-digit number should work).
+
+```
+ssh -L YYYY:localhost:XXXX <remote connection>
+# E.g., for the PEcAn VM, given the above port:
+# ssh -L 5639:localhost:5638 carya@localhost -p 6422
+```
+
+Now, in a web browser on your local machine, browse to `localhost:YYYY` (e.g., `localhost:5639`) to run whatever app you started with `shiny::runApp` in the previous step.
+All of the output should display in the R console where the `shiny::runApp` command was executed.
+Note that this includes any `print`, `message`, `logger.*`, etc. statements in your Shiny app.
+
+If the Shiny app hits an R error, the backtrace should include a line like `Hit error at of server.R#LXX` -- that `XX` being a line number that you can use to track down the error.
+To return from the error to a normal R prompt, hit `<Control>-C` (alternatively, the "Stop" button in RStudio).
+To restart the app, run `shiny::runApp(port = XXXX)` again (keeping the same port).
+
+Note that Shiny runs any code in the `pecan/shiny/<app>` directory at the moment the app is launched.
+So, any changes you make to the code in `server.R` and `ui.R` or scripts loaded therein will take effect the next time the app is started.
+
+If for whatever reason this doesn't work with RStudio, you can always run R from the command line.
+Also, note that the ability to forward ports (`ssh -L`) may depend on the `ssh` configuration of your remote machine.
+These instructions have been tested on the PEcAn VM (v.1.5.2+).

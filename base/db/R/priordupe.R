@@ -3,9 +3,9 @@
 ##' Creates a new pft that is a duplicate of an existing pft,
 ##' including relationships with priors and species of the existing pft
 ##' @title Duplicate PFT
-##' @param parent.pft.name
-##' @param new.pft.name
-##' @param new.pft.definition
+##' @param parent.pft.name name of PFT to duplicate
+##' @param new.pft.name name for new PFT. Must not be the same as parent.pft.name
+##' @param new.pft.definition text for the new PFT's definition field. If NULL the definition will be empty, not copied from the parent PFT.
 ##' @return nothing, creates new pft in database as a side-effect
 ##' @author David LeBauer
 ##' @examples \dontrun{

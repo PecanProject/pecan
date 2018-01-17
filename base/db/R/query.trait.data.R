@@ -26,14 +26,13 @@ fetch.stats2se <- function(connection, query){
 
 
 ##--------------------------------------------------------------------------------------------------#
-##'
 ##' Function to query data from database for specific species and convert stat to SE
 ##'
 ##' @name query.data
 ##' @title Query data and transform stats to SE by calling \code{\link{fetch.stats2se}};
 ##' @param trait trait to query from the database
-##' @param spstr
-##' @param extra.columns
+##' @param spstr IDs of species to query from, as a single comma-separated string
+##' @param extra.columns other query terms to pass in. If unspecified, retrieves latitude and longitude
 ##' @param con database connection
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
@@ -70,14 +69,13 @@ query.data <- function(trait, spstr, extra.columns='ST_X(ST_CENTROID(sites.geome
 
 
 ##--------------------------------------------------------------------------------------------------#
-##'
 ##' Function to query yields data from database for specific species and convert stat to SE
 ##'
 ##' @name query.yields
 ##' @title Query yield data and transform stats to SE by calling \code{\link{fetch.stats2se}};
 ##' @param trait yield trait to query
 ##' @param spstr species to query for yield data
-##' @param extra.columns
+##' @param extra.columns other query terms to pass in. Optional
 ##' @param con database connection
 ##' @param ... extra arguments
 ##' @seealso used in \code{\link{query.trait.data}}; \code{\link{fetch.stats2se}}; \code{\link{transformstats}} performs transformation calculations
@@ -108,9 +106,8 @@ query.yields <- function(trait = 'yield', spstr, extra.columns='', con=NULL, ...
 ######################## COVARIATE FUNCTIONS #################################
 
 ##--------------------------------------------------------------------------------------------------#
+##' Append covariate data as a column within a table
 ##'
-##' @name append.covariate
-##' @title Append covariate data as a column within a table
 ##' \code{append.covariate} appends a data frame of covariates as a new column in a data frame
 ##'   of trait data.
 ##' In the event a trait has several covariates available, the first one found
@@ -141,9 +138,7 @@ append.covariate<-function(data, column.name, covariates.data){
 
 
 ##--------------------------------------------------------------------------------------------------#
-##'
-##' @name query.covariates
-##' @title Queries covariates from database for a given vector of trait id's
+##' Queries covariates from database for a given vector of trait id's
 ##'
 ##' @param trait.ids list of trait ids
 ##' @param con database connection
@@ -161,9 +156,8 @@ query.covariates<-function(trait.ids, con = NULL, ...){
 
 
 ##--------------------------------------------------------------------------------------------------#
+##' Apply Arrhenius scaling to 25 degC for temperature-dependent traits
 ##'
-##' @name arrhenius.scaling.traits
-##' @title Function to apply Arrhenius scaling to 25 degC for temperature-dependent traits
 ##' @param data data frame of data to scale, as returned by query.data()
 ##' @param covariates data frame of covariates, as returned by query.covariates().
 ##'   Note that data with no matching covariates will be unchanged.
@@ -202,10 +196,10 @@ arrhenius.scaling.traits <- function(data, covariates, temp.covariates, new.temp
 
 
 ##--------------------------------------------------------------------------------------------------#
+##' Function to filter out upper canopy leaves
 ##'
 ##' @name filter_sunleaf_traits
 ##' @aliases filter.sunleaf.traits
-##' @title Function to filter out upper canopy leaves
 ##' @param data input data
 ##' @param covariates covariate data
 ##'
@@ -227,16 +221,13 @@ filter_sunleaf_traits <- function(data, covariates){
 
 
 ##--------------------------------------------------------------------------------------------------#
-##'
-##' @name rename.jags.columns
-##'
-##' @title \code{rename.jags.columns} renames the variables within output data frame trait.data
+##' renames the variables within output data frame trait.data
 ##'
 ##' @param data data frame to with variables to rename
 ##'
-##' @seealso used with \code{\link{jagify}};
+##' @seealso used with \code{\link[PEcAn.MA]{jagify}};
 ##' @export
-rename.jags.columns <- function(data) {
+rename_jags_columns <- function(data) {
 
                                         # Change variable names and calculate obs.prec within data frame
   transformed <-  transform(data,
@@ -299,8 +290,8 @@ drop.columns <- function(data, columns){
 ##'
 ##' @name take.samples
 ##' @title Sample from normal distribution, given summary stats
-##' @param trait data.frame with values of mean and sd
-##' @param sample.size
+##' @param summary data.frame with values of mean and sd
+##' @param sample.size number of samples to take
 ##' @return sample of length sample.size
 ##' @author David LeBauer, Carl Davidson
 ##' @export
@@ -315,7 +306,7 @@ take.samples <- function(summary, sample.size = 10^6){
     ans <- summary$mean
   } else {
     set.seed(0)
-    ans <- rnorm(n = sample.size, mean = summary$mean, sd = summary$stat)
+    ans <- stats::rnorm(n = sample.size, mean = summary$mean, sd = summary$stat)
   }
   return(ans)
 }
@@ -337,6 +328,8 @@ take.samples <- function(summary, sample.size = 10^6){
 ##' @title Performs an arithmetic function, FUN, over a series of traits and returns the result as a derived trait.
 ##' @param FUN arithmetic function
 ##' @param ... traits that will be supplied to FUN as input
+##' @param input list of trait inputs. See examples
+##' @param var.name name to use in output
 ##' @param sample.size number of random samples generated by rnorm for normally distributed trait input
 ##' @return a copy of the first input trait with mean, stat, and n reflecting the derived trait
 ##' @export
@@ -351,7 +344,7 @@ derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=10^
   output.samples <- do.call(FUN, input.samples)
   output<-input[[1]]
   output$mean<-mean(output.samples)
-  output$stat<-ifelse(length(output.samples) > 1, sd(output.samples), NA)
+  output$stat<-ifelse(length(output.samples) > 1, stats::sd(output.samples), NA)
   output$n <- min(sapply(input, function(trait){trait$n}))
   output$vname <- ifelse(is.na(var.name), output$vname, var.name)
   return(output)
@@ -368,6 +361,8 @@ derive.trait <- function(FUN, ..., input=list(...), var.name=NA, sample.size=10^
 ##' @export
 ##' @param FUN arithmetic function
 ##' @param ... trait datasets that will be supplied to FUN as input
+##' @param input list of trait inputs. See examples in \code{\link{derive.trait}}
+##' @param var.name name to use in output
 ##' @param sample.size where traits are normally distributed with a given
 ##' @param match.columns in the event more than one trait dataset is supplied,
 ##'        this specifies the columns that identify a unique data point
@@ -541,7 +536,7 @@ query.trait.data <- function(trait, spstr, con = NULL, update.check.only=FALSE, 
     ## info to send to console.  Maybe just print summary stats?
     ## print(result)
     if (!update.check.only) {
-      PEcAn.logger::logger.info(paste("Median ",trait," : ",round(median(result$mean,na.rm=TRUE),digits=3),sep=""))
+      PEcAn.logger::logger.info(paste("Median ",trait," : ",round(stats::median(result$mean,na.rm=TRUE),digits=3),sep=""))
       PEcAn.logger::logger.info("---------------------------------------------------------")
     }
     # print list of traits queried and number by outdoor/glasshouse
