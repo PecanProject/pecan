@@ -1,0 +1,20 @@
+Package: PEcAn.dvmdostem
+Type: Package
+Title: PEcAn package for integration of the dvmdostem model
+Version: 1.5.0
+Date: 2017-07-22
+Author: Tobey Carman, Shawn Serbin
+Maintainer: Tobey Carman <tcarman2@alaska.edu>, Shawn Serbin <sserbin@bnl.gov>
+Description: This module provides functions to link the dvmdostem model to
+    PEcAn.
+Imports:
+    PEcAn.utils (>= 1.4.8)
+Suggests:
+    testthat (>= 1.0.2)
+SystemRequirements: dvmdostem
+OS_type: unix
+License: FreeBSD + file LICENSE
+Copyright: Authors
+LazyLoad: yes
+LazyData: FALSE
+RoxygenNote: 6.0.1
