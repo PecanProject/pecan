@@ -550,14 +550,14 @@ dbfile.check <- function(type, container.id, con, hostname = PEcAn.remote::fqdn(
 
 
 
-##' Function to return full path to a file using dbfiles table
+##' Convert between file paths and ids
 ##'
-##' This will check the dbfiles and machines to see if the file exists,
-##' and return the full filename with path to the first one found. If
-##' none is found it will return NA.
+##' These functions check the dbfiles and machines tables to see if the file
+##' exists, and return the container_id (\code{dbfile.id}) or full filename
+##' with path (\code{dbfile.file}) to the first one found.
+##' If none is found, both will return NA.
 ##'
-##' @name dbfile.file
-##' @title Return file from the dbfiles tables
+##' @describeIn dbfile.file Return full path to file from the dbfiles table
 ##' @param type the type of dbfile (Input, Posterior)
 ##' @param id the id of container type
 ##' @param con database connection object
@@ -585,19 +585,8 @@ dbfile.file <- function(type, id, con, hostname=PEcAn.remote::fqdn()) {
   }
 }
 
-##' Function to return id to container type given a filename.
-##'
-##' This will check the dbfiles and machines to see if the file exists,
-##' and return the id of the container type of the first one found. If
-##' none is found it will return NA.
-##'
-##' @describeIn dbfile.file
-##' @title Return id from the dbfiles tables
-##' @param type the type of dbfile (Input, Posterior)
+##' @describeIn dbfile.file Return id to container type given a filename
 ##' @param file the full pathname to the file
-##' @param con database connection object
-##' @param hostname the name of the host where the file is stored, this will default to the name of the current machine
-##' @return filename on host, or NA if none found
 ##' @author Rob Kooper
 ##' @export
 ##' @examples
