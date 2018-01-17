@@ -17,6 +17,8 @@ get.trait.data.pft(pft, modeltype, dbfiles, dbcon, forceupdate = FALSE,
 \item{dbcon}{database connection}
 
 \item{forceupdate}{set this to true to force an update, auto will check to see if an update is needed.}
+
+\item{trait.names}{list of trait names to retrieve}
 }
 \value{
 updated pft with posteriorid

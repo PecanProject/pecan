@@ -11,6 +11,8 @@ query.yields(trait = "yield", spstr, extra.columns = "", con = NULL, ...)
 
 \item{spstr}{species to query for yield data}
 
+\item{extra.columns}{other query terms to pass in. Optional}
+
 \item{con}{database connection}
 
 \item{...}{extra arguments}

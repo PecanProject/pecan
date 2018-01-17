@@ -13,6 +13,9 @@ query.covariates(trait.ids, con = NULL, ...)
 
 \item{...}{extra arguments}
 }
+\description{
+Queries covariates from database for a given vector of trait id's
+}
 \author{
 <unknown>
 }
