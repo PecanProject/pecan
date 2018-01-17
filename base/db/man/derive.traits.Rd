@@ -12,8 +12,12 @@ derive.traits(FUN, ..., input = list(...), match.columns = c("citation_id",
 
 \item{...}{trait datasets that will be supplied to FUN as input}
 
+\item{input}{list of trait inputs. See examples in \code{\link{derive.trait}}}
+
 \item{match.columns}{in the event more than one trait dataset is supplied,
 this specifies the columns that identify a unique data point}
+
+\item{var.name}{name to use in output}
 
 \item{sample.size}{where traits are normally distributed with a given}
 }

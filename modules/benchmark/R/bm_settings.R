@@ -30,7 +30,7 @@ read_settings_BRR <- function(settings){
   BRR.settings <- BRR %>% pull(settings) %>% unlist() %>%
     xmlToList(.,"pecan") 
   
-  logger.debug(names(BRR.settings))
+  PEcAn.logger::logger.debug(names(BRR.settings))
   
   settings <- BRR.settings %>% append(settings,.) %>% PEcAn.settings::Settings()
   invisible(settings)
@@ -60,6 +60,19 @@ clean_settings_BRR <- function(inputfile){
   clean$ensemble <- NULL
   clean$assim.batch <- NULL
   clean$state.data.assimilation <- NULL
+  
+  # Remove machine specific information, leaving only database ids
+  # This probably needs to be more generalized
+  
+  clean$model$binary <- NULL
+  # Remove all file paths  
+  for(input in names(clean$run$inputs)){
+    if("path" %in% names(clean$run$inputs[[input]])){
+      clean$run$inputs[[input]][["path"]] <- NULL
+    }
+  }
+  
+  
   return(clean)
 }
 
@@ -106,3 +119,21 @@ bm_settings2pecan_settings <- function(bm.settings){
   }
   return(out)
 } 
+
+##------------------------------------------------------------------------------------------------##
+##' @name check_BRR
+##' @title Check whether a run has been registered as a reference run in BETY
+##' @param settings_xml cleaned settings to be compared with BRR in the database
+##' @param con database connection
+##' @importFrom dplyr tbl filter collect
+##' @export
+##' @author Betsy Cowdery
+
+check_BRR <- function(settings_xml, con){
+  # This is NOT a good way to find matching reference run records
+  # Other options include comparing lists (slow)
+  # more spohisticated PSQL queries
+  # changing the settings field to jsonb 
+  ref_run <- tbl(con, "reference_runs") %>% filter(settings == settings_xml) %>% collect
+  return(ref_run)
+}

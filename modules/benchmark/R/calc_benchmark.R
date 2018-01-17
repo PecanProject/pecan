@@ -77,6 +77,11 @@ calc_benchmark <- function(settings, bety) {
     
     for (input.id in unique(bms$input_id)) {
       
+      # Create directory that will hold benchmarking results
+      bm_dir <- file.path(dirname(dirname(model_run)), "benchmarking", input.id)
+      dir.create(dirname(bm_dir))
+      dir.create(bm_dir)
+      
       bm.ids <- bms$benchmark_id[which(bms$input_id == input.id)]
       data.path <- PEcAn.DB::query.file.path(input.id, settings$host$name, bety$con)
       format_full <- format <- PEcAn.DB::query.format.vars(input.id = input.id, bety, format.id = NA, var.ids=var.ids)
@@ -153,9 +158,8 @@ calc_benchmark <- function(settings, bety) {
                                          obvs.calc, 
                                          var, 
                                          metrics,
-                                         bm,
                                          ensemble.id,
-                                         model_run)
+                                         bm_dir)
         
         for(metric.id in metrics$id){
           metric.name <- filter(metrics,id == metric.id)[["name"]]
@@ -186,8 +190,7 @@ calc_benchmark <- function(settings, bety) {
         dat.list <- append(dat.list, list(out.calc_metrics[["dat"]]))
       }  #end loop over benchmark ids
       
-      table.filename <- file.path(dirname(dirname(model_run)), 
-                                  paste("benchmark.scores", var, bm.ensemble$ensemble_id, "pdf", sep = "."))
+      table.filename <- file.path(bm_dir, paste("benchmark.scores", var, bm.ensemble$ensemble_id, "pdf", sep = "."))
       pdf(file = table.filename)
       gridExtra::grid.table(do.call(rbind, results.list))
       dev.off()
@@ -198,18 +201,18 @@ calc_benchmark <- function(settings, bety) {
       }
       names(dat.list) <- var.names
       
-      results <- append(results, 
-                        list(list(bench.results = do.call(rbind, results.list),
-                                  data.path = data.path, 
-                                  format = format_full$vars, 
-                                  model = model_full, 
-                                  obvs = obvs_full, 
-                                  aligned.dat = dat.list)))
-    }
-    
-    names(results) <- sprintf("input.%0.f", unique(bms$input_id))
-    save(results, file = file.path(settings$outdir,"benchmarking.output.Rdata"))
-    
-    return(invisible(results))
+      result.out <- list(bench.results = do.call(rbind, results.list),
+                         data.path = data.path, 
+                         format = format_full$vars, 
+                         model = model_full, 
+                         obvs = obvs_full, 
+                         aligned.dat = dat.list)
+      save(result.out, file = file.path(bm_dir,"benchmarking.output.Rdata"))
+      
+      results <- append(results, list(result.out)) # For testing
+    } # end loop over input ids
+
+    names(results) <- sprintf("input.%0.f", unique(bms$input_id)) # For testing
+    return(invisible(results)) # For testing
   }
 } # calc_benchmark
