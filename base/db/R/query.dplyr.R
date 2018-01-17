@@ -266,9 +266,9 @@ load_data_single_run <- function(bety, workflow_id, run_id) {
         x <- ncdays2date(ncdf4::ncvar_get(nc, 'time'), ncdf4::ncatt_get(nc, 'time'))
         y <- ncdf4::ncvar_get(nc, var_name)
         # !!!HACK!!!
-        # Soil moisture and temperature are a matrices Returning only the first row for now.
+        # Soil moisture and temperature are a matrices. Returning the column sum for now.
         if (var_name %in% c("SoilMoist", "SoilTemp")) {
-          y <- y[1, ]
+          y <- colSums(y)
         }
         b <- !is.na(x) & !is.na(y) & sw != 0
         
