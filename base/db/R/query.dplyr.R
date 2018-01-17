@@ -129,34 +129,27 @@ runs <- function(bety, workflow_id) {
 
 #' Get vector of workflow IDs
 #' @inheritParams dbHostInfo
-#' @param session Session object passed through Shiny
+#' @param query Named vector or list of workflow IDs
 #' @export
-get_workflow_ids <- function(bety, session, all.ids=FALSE) {
-  query <- isolate(shiny::parseQueryString(session$clientData$url_search))
+get_workflow_ids <- function(bety, query, all.ids = FALSE) {
   # If we dont want all workflow ids but only workflow id from the user url query
-  if (!all.ids & "workflow_id" %in% names(query)) {
+  if (!all.ids && "workflow_id" %in% names(query)) {
     ids <- unlist(query[names(query) == "workflow_id"], use.names = FALSE)
   } else {
     # Get all workflow IDs
-
-    ids <- workflows(bety, ensemble = FALSE) %>% dplyr::distinct(workflow_id) %>% dplyr::collect %>% 
-      .[["workflow_id"]] %>% sort(decreasing = TRUE)
-    # pull(.,workflow_id) %>% sort(decreasing = TRUE)
-
-#    ids <- workflows(bety, ensemble = TRUE) %>%
-#      dplyr::distinct(workflow_id) %>%
-#      dplyr::pull() %>%
-#      sort(decreasing = TRUE)
-
+    ids <- workflows(bety, ensemble = FALSE) %>%
+      dplyr::distinct(workflow_id) %>%
+      dplyr::collect() %>%
+      dplyr::pull(workflow_id) %>%
+      sort(decreasing = TRUE)
   }
   return(ids)
 }  # get_workflow_ids
 
 #' Get data frame of users and IDs
 #' @inheritParams dbHostInfo
-#' @param session Session object passed through Shiny
 #' @export
-get_users <- function(bety, session) {
+get_users <- function(bety) {
   hostinfo <- dbHostInfo(bety)
   query <- "SELECT id, login FROM users"
   out <- dplyr::tbl(bety, dbplyr::sql(query)) %>%
@@ -272,6 +265,11 @@ load_data_single_run <- function(bety, workflow_id, run_id) {
         }
         x <- ncdays2date(ncdf4::ncvar_get(nc, 'time'), ncdf4::ncatt_get(nc, 'time'))
         y <- ncdf4::ncvar_get(nc, var_name)
+        # !!!HACK!!!
+        # Soil moisture and temperature are a matrices. Returning the column sum for now.
+        if (var_name %in% c("SoilMoist", "SoilTemp")) {
+          y <- colSums(y)
+        }
         b <- !is.na(x) & !is.na(y) & sw != 0
         
         dates <- if(is.na(dates)) x[b] else c(dates, x[b])
@@ -280,13 +278,18 @@ load_data_single_run <- function(bety, workflow_id, run_id) {
 
         xlab <- "Time"
         # Values of the data which we will plot
-        valuesDF <- data.frame(dates,vals)
+        valuesDF <- data.frame(dates, vals)
         # Meta information about the data.
-        metaDF <- data.frame(workflow_id,run_id,title,xlab,ylab,var_name)
+        metaDF <- data.frame(workflow_id, run_id, title, xlab, ylab, var_name)
         # Meta and Values DF created differently because they would of different
         # number of rows. cbind would repeat metaDF(1X6) to the size of valuesDF
-        currentDF <- cbind(valuesDF,metaDF)
-        globalDF <- rbind(globalDF,currentDF)
+        if (nrow(valuesDF) == 0) {
+          logger.warn("0 values found for variable ", var_name, ". ",
+                      "Skipping this variable")
+        } else {
+          currentDF <- cbind(valuesDF, metaDF)
+          globalDF <- rbind(globalDF, currentDF)
+        }
       }
       ncdf4::nc_close(nc)
     }
