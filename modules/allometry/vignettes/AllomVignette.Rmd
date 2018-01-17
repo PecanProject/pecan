@@ -10,6 +10,7 @@ output: html_document
 Only needs to be done the first time
 ```{r, eval=FALSE}
 library(devtools)
+install_github("PecanProject/pecan",subdir="base/logger")
 install_github("PecanProject/pecan",subdir="modules/allometry")
 ```
 
