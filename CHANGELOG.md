@@ -29,6 +29,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Added
 - New Dockerfile to create PEcAN specific container for SIPNET.
+- create cohort2pool function in data.land
 
 ### Removed
 - Removed `PEcAn.utils::model2netcdf`, which has been deprecated since PEcAn 1.3.7. Use `model2netcdf.<YOURMODEL>` in the appropriate model package instead.
