@@ -9,6 +9,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ## [Unreleased]
 
 ### Fixes
+- Fixed status page, should now be run from cronjob, creates static page
 
 ### Added
 
@@ -16,9 +17,11 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Removed deprecated copies of PEcAn.utils::SafeList, PEcAn.utils::listToXml (both moved to PEcAn.settings in v 1.5.2), and PEcAn.utils::fqdn (moved to PEcAn.remote in 1.5.2). This fixes the masses of deprecation warnings in otherwise normal run logs (#1719).
 
 ### Changed
+- Fixed an remote code execution discovered by NCSA security team.
+- Added documentation how to submit a run from the command line
+- PEcAn.DB function `rename.jags.columns` renamed to `rename_jags_columns` to avoid conflict with S3 method naming conventions
 
-
-## [1.5.2] - 2017-??-??
+## [1.5.2] - 2017-12-07
 
 ### Fixes
 - Updated models/ed/data/pftmapping.csv to include two new BETYdb PFTs
@@ -37,7 +40,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 
 ### Changed
 - Major namespace cleanup in the `PEcAn.utils` package. It now loads more quietly and is much less likely to mask functions in a package you loaded earlier.
-- Moved many functions from `PEcAn.utils` into other PEcAn packages. The `PEcAn.utils` versions still work with a deprecation warning, but will be removed in a future release.
+- Moved many functions from `PEcAn.utils` into other PEcAn packages. The `PEcAn.utils` versions still work with a deprecation warning, but will be removed in next release.
 	- `listToXml` and `SafeList` moved to `PEcAn.settings`
 	- `fqdn` moved to `PEcAn.remote`
 - PEcAnRTM: Removed effective sample size normalization from likelihood calculation. It was giving weird results.

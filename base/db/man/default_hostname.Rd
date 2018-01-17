@@ -6,6 +6,9 @@
 \usage{
 default_hostname(hostname)
 }
+\arguments{
+\item{hostname}{character}
+}
 \value{
 hostname
 }

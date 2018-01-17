@@ -1,17 +1,16 @@
 ##' @name calc_metrics
 ##' @title calc_metrics
 ##' @export
-##' @param model.calc
-##' @param obvs.calc
-##' @param var
-##' @param metrics
-##' @param bm
-##' @param ensemble.id
-##' @param model_run
+##' @param model.calc model data
+##' @param obvs.calc observational data
+##' @param var variables to be used 
+##' @param metrics metrics to be used
+##' @param ensemble.id id of ensemble run
+##' @param bm_dir directory where benchmarking outputs will be saved
 ##' 
 ##' 
 ##' @author Betsy Cowdery
-calc_metrics <- function(model.calc, obvs.calc, var, metrics, bm, ensemble.id, model_run) {
+calc_metrics <- function(model.calc, obvs.calc, var, metrics, ensemble.id, bm_dir) {
   
   dat <- align_data(model.calc, obvs.calc, var, align_method = "mean_over_larger_timestep")
   
@@ -32,7 +31,7 @@ calc_metrics <- function(model.calc, obvs.calc, var, metrics, bm, ensemble.id, m
     results[m,"variable"] <- var
     
     if (tail(unlist(strsplit(fcn, "_")), 1) == "plot") {
-      filename <- file.path(dirname(dirname(model_run)), 
+      filename <- file.path(bm_dir, 
                             paste("benchmark", metrics$name[m], var, ensemble.id, "pdf", sep = "."))
       do.call(fcn, args <- list(metric_dat, var, filename))
       results[m,"score"] <- filename

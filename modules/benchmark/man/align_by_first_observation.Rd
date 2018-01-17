@@ -14,6 +14,9 @@ align_by_first_observation(observation_one, observation_two, custom_table)
 \item{custom_table}{a table that either maps two pft's to one another or maps custom species codes to bety id codes. 
 In the second case, must be passable to match_species_id.}
 }
+\value{
+\code{vector} Returns a vector of PFT's/species from observation_one that matches the order of observation_two
+}
 \description{
 align_first_observation
 }
