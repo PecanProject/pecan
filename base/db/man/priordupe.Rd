@@ -7,6 +7,13 @@
 priordupe(parent.pft.name = NULL, new.pft.name = NULL,
   new.pft.definition = NULL, settings = NULL)
 }
+\arguments{
+\item{parent.pft.name}{name of PFT to duplicate}
+
+\item{new.pft.name}{name for new PFT. Must not be the same as parent.pft.name}
+
+\item{new.pft.definition}{text for the new PFT's definition field. If NULL the definition will be empty, not copied from the parent PFT.}
+}
 \value{
 nothing, creates new pft in database as a side-effect
 }

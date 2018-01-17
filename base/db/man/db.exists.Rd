@@ -8,6 +8,10 @@ db.exists(params, write = TRUE, table = NA)
 }
 \arguments{
 \item{params}{database connection information}
+
+\item{write}{logical: test whether we have write access?}
+
+\item{table}{name of database table to check}
 }
 \value{
 TRUE if database connection works; else FALSE
