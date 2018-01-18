@@ -24,13 +24,9 @@ Imports:
     stringr(>= 1.1.0),
     udunits2 (>= 0.11),
     XML (>= 3.98-1.4),
-    Rhdf5lib,
-    rhdf5
+    hdf5r
 Suggests:
     testthat (>= 1.0.2)
-Remotes:
-    grimbough/Rhdf5lib,
-    grimbough/rhdf5
 License: FreeBSD + file LICENSE
 Copyright: Authors
 LazyLoad: yes

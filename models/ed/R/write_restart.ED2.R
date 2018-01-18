@@ -112,8 +112,14 @@ write_restart.ED2 <- function(outdir,
       #     (h0 + a * (1-exp(b*DBH))) + b1d*DBH^(b2d)
 
       #### Write new state to file
-      h5_write <- rhdf5::h5write.default(new.nplant_co_plant, histfile, "NPLANT")
-      # Returns NULL on success...?
+      histfile <- "~/output/PEcAn_99000000001/out/99000000001/analysis-Y-2004-00-00-000000-g01.h5"
+      # Default mode of H5File$new is "a", which is read + write and create file if it doesn't exist
+      histfile_h5 <- hdf5r::H5File$new(histfile)
+      # The empty brackets (`[]`) indicate the whole vector is replaced.
+      # This is necessary to overwrite an existing dataset
+      histfile_h5[["NPLANT"]][] <- new.nplant_co_plant
+      # This closes the file and all objects related to the file.
+      histfile_h5$close_all()
     } else {
       PEcAn.logger::logger.error("Variable ", var_name,
                                 " not currently supported",
