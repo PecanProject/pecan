@@ -36,6 +36,7 @@ addons:
       - pandoc
       - tcl
       - tcl-dev
+      - libhdf5-dev
       # need to compile documentation
       # BROKEN MISSING FONT
       #- texinfo
