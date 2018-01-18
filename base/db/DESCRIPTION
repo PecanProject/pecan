@@ -15,7 +15,6 @@ Imports:
     DBI,
     PEcAn.logger,
     PEcAn.remote,
-    PEcAn.settings,
     PEcAn.utils,
     dbplyr (>= 1.2.0),
     dplyr,
