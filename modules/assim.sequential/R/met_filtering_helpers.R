@@ -1,5 +1,5 @@
 
-sample_met <- function(settings){
+sample_met <- function(settings,nens=1){
   
   # path <- settings$run$inputs$met[["path"]]
   # developing
@@ -21,8 +21,11 @@ sample_met <- function(settings){
   ens_ind <- unlist(sapply(paste0(member_names, ".clim"), grep, tmp_members))
   # ens_members[ens_ind]
   ens_input <- list()
-  ens_input$met <- list()
-  ens_input$met$path <- file.path(path, ens_members[sample(ens_ind, 1)])
+  for(i in seq_len(nens)){
+    ens_input[[i]] <- list(met=NULL)
+    ens_input[[i]]$met$path <- file.path(path, ens_members[sample(ens_ind, 1)])
+  }
+  names(ens_input) <- rep("met",length=nens)
   return(ens_input)
 }
 

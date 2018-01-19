@@ -16,16 +16,18 @@
 ##' @param start.time
 ##' @param stop.time
 ##' @param ens                ensemble number. default = 1
+##' @param outpath  if specified, write output to a new directory. Default NULL writes back to the directory being read
 ##' @description Splits climate met for SIPNET
 ##' 
 ##' @return file split up climate file
 ##' @export
-split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs, overwrite = FALSE) {
+split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs, overwrite = FALSE, outpath = NULL) {
   
   #### Lubridate start and end times
-  start.day <- lubridate::day(start.time)
+  start.day <- lubridate::yday(start.time)
   start.year <- lubridate::year(start.time)
-  end.day <- length(as.Date(start.time):as.Date(stop.time))
+  #end.day <- length(as.Date(start.time):as.Date(stop.time))
+  end.day <- lubridate::yday(stop.time)
   end.year <- lubridate::year(stop.time)
   
 
@@ -33,11 +35,15 @@ split_inputs.SIPNET <- function(settings, start.time, stop.time, inputs, overwri
   met <- inputs$met$path
   path <- dirname(met)
   prefix <- sub(".clim", "", basename(met), fixed = TRUE)
+  if(is.null(outpath)){
+    outpath = path
+  }
+  if(!dir.exists(outpath)) dir.create(outpath)
   
 
   file <- NA
   names(file) <- paste(start.time, "-", stop.time)
-  file <- paste0(path, "/", prefix, ".", paste0(as.Date(start.time), "-", as.Date(stop.time)), ".clim")
+  file <- paste0(outpath, "/", prefix, ".", paste0(as.Date(start.time), "-", as.Date(stop.time)), ".clim")
   
   if(file.exists(file) & !overwrite){
     settings$run$inputs$met$path <- file
