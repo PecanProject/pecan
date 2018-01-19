@@ -12,6 +12,7 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 - Fixed status page, should now be run from cronjob, creates static page
 
 ### Added
+- new base package `PEcAn.workflow`, for functions used to perform the each major step of the analysis. These were previously scattered in other base packages.
 
 ### Removed
 - Removed deprecated copies of PEcAn.utils::SafeList, PEcAn.utils::listToXml (both moved to PEcAn.settings in v 1.5.2), and PEcAn.utils::fqdn (moved to PEcAn.remote in 1.5.2). This fixes the masses of deprecation warnings in otherwise normal run logs (#1719).
@@ -19,6 +20,8 @@ For more information about this file see also [Keep a Changelog](http://keepacha
 ### Changed
 - Fixed an remote code execution discovered by NCSA security team.
 - Added documentation how to submit a run from the command line
+- PEcAn.DB function `rename.jags.columns` renamed to `rename_jags_columns` to avoid conflict with S3 method naming conventions
+- PEcAn.DB function `runModule.get.trait.data` has been moved to the new PEcAn.workflow package to avoid a circular package dependency between PEcAn.DB and PEcAn.settings.
 
 ## [1.5.2] - 2017-12-07
 
