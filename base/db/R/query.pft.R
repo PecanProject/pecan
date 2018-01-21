@@ -45,6 +45,56 @@ query.pft_species <- function(pft, modeltype, con) {
 }
 #==================================================================================================#
 
+##' Select cultivars associated with a PFT
+##'
+##' Given a PFT name and optionally a modeltype, finds its pft_id and
+##' returns the cultivars associated with it.
+##'
+##' @details A PFT is allowed to have associated species or associated
+##' cultivars, but not both. If this function returns no results, try checking
+##' your PFT with \code{\link{query.pft_species}} instead.
+##' Note that the cultivars associated with one PFT *are* allowed to come from
+##' multiple species, if desired.
+##'
+##' @inheritParams query.pft_species
+##' @return tibble containing names and ids for each cultivar
+##'   and the species it comes from
+##' @importFrom magrittr %>%
+##' @export
+query.pft_cultivars <- function(pft, modeltype=NULL, con) {
+
+  pft_tbl <- (dplyr::tbl(con, "pfts")
+    %>% dplyr::filter(name %in% pft, pft_type == "cultivar"))
+
+  if (!is.null(modeltype)) {
+    pft_tbl <- (pft_tbl
+      %>% dplyr::inner_join(
+        dplyr::tbl(con, "modeltypes"),
+        by = c("modeltype_id" = "id"),
+        suffix = c("", ".mt"))
+      %>% dplyr::filter(name.mt == modeltype))
+  }
+
+  (pft_tbl
+    %>% dplyr::inner_join(
+      dplyr::tbl(con, "cultivars_pfts"),
+      by = c("id" = "pft_id"),
+      suffix = c("", ".cvpft"))
+    %>% dplyr::inner_join(
+      dplyr::tbl(con, "cultivars"),
+      by = c("cultivar_id" = "id"),
+      suffix = c("", ".cv"))
+    %>% dplyr::inner_join(
+      dplyr::tbl(con, "species"),
+      by=c("specie_id"="id"),
+      suffix=c("", ".sp"))
+    %>% dplyr::select(
+      cultivar_id,
+      specie_id,
+      species_name = scientificname,
+      cultivar_name = name.cv)
+    %>% dplyr::collect())
+}
 
 ####################################################################################################
 ### EOF.  End of R script file.
