@@ -1015,9 +1015,8 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     ###-------------------------------------------------------------------###
     ### save outputs                                                      ###
     ###-------------------------------------------------------------------### 
-    #save(t, FORECAST, ANALYSIS, enkf.params, file = file.path(settings$outdir, "sda.output.Rdata"))
-    save(list = ls(envir = environment(), all.names = TRUE), 
-         file = file.path(settings$outdir, "sda.all.runs.Rdata"), envir = environment())
+    save(t, FORECAST, ANALYSIS, enkf.params, file = file.path(settings$outdir, "sda.output.Rdata"))
+
     
   }  ## end loop over time
   ###-------------------------------------------
