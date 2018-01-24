@@ -24,8 +24,8 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   forecast <- list()
   
   # additional varnames, because we need these deterministic relationships
-  var.names <- c(var.names, "fine_root_carbon_content", "coarse_root_carbon_content")
-    
+#  var.names <- c(var.names, "fine_root_carbon_content", "coarse_root_carbon_content")
+   
   # Read ensemble output
   ens <- read.output(runid = runid, 
                      outdir = file.path(outdir, runid), 
