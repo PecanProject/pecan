@@ -16,6 +16,6 @@ prosp <- prospect(true_param, "D")
 
 test_that(
   "Generalized plate model returns same values as PROSPECT", {
-    expect_equivalent(rtmat, prosp, tolerance = 1e-5, scale = 1)
+    expect_lt(sum(rtmat - prosp), 1e-5)
   }
 )

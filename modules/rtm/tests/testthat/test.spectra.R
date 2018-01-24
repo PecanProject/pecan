@@ -31,8 +31,8 @@ spec1[[wl1_NA]] <- NA
 test_that(
   "Spectra subsetting and assignment works as expected",
   {
-    expect_equivalent(as.numeric(spec1[[wl1]]), rawspec1[i1])
-    expect_equivalent(as.numeric(spec2[[wl2]]), rawspec2[i2, ])
+    expect_equal(sum(spec1[[wl1]] - rawspec1[i1]), 0)
+    expect_equal(sum(spec2[[wl2]] - rawspec2[i2, ]), 0)
     expect_equal(sum(is.na(spec1)), length(wl1_NA))
     expect_true(all(is.na(spec1[[wl1_NA]])))
     expect_true(all(is.na(spec1[i1_NA])))
@@ -49,7 +49,7 @@ test_that(
   {
     expect_equal(nrow(spec123), N_wl)
     expect_equal(ncol(spec123), N_col)
-    expect_equivalent(spec123[, 1], spec1[, 1])
+    expect_equal(sum(spec123[, 1] - spec1[, 1], na.rm = TRUE), 0)
   }
 )
 
@@ -59,5 +59,5 @@ if (interactive()) {
 }
 
 if (interactive()) {
-  matplot(sp, lty = "solid", lwd = 2)
+  matplot(spec123, lty = "solid", lwd = 2)
 }
