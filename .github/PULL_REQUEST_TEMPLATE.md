@@ -7,7 +7,7 @@
 <!--- Why is this change required? What problem does it solve? -->
 <!--- If it fixes an open issue, please link to the issue here. -->
 
-## Review Estimate
+## Review Time Estimate
 <!---When do you want your code reviewed by?-->
 - [ ] Immediately
 - [ ] Within one week
