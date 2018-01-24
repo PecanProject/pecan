@@ -8,6 +8,8 @@ db.close(con, showWarnings = TRUE)
 }
 \arguments{
 \item{con}{database connection to be closed}
+
+\item{showWarnings}{logical: report possible issues with connection?}
 }
 \value{
 connection to database
