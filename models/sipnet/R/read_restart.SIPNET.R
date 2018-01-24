@@ -37,8 +37,6 @@ read_restart.SIPNET <- function(outdir, runid, stop.time, settings, var.names, p
   
   forecast <- list()
   
-  kgms2Mghayr <- (10000/1)*(1/1000)*(365.25*24*60*60) ## kgC m-2 s-1 -> MgC ha-1 yr-1
-  kgm2Mgha <- (10000/1)*(1/1000) ## kgC m-2  -> MgC ha-1
   
   #### PEcAn Standard Outputs
   if ("GWBI" %in% var.names) {
