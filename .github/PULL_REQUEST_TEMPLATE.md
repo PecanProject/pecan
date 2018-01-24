@@ -7,6 +7,11 @@
 <!--- Why is this change required? What problem does it solve? -->
 <!--- If it fixes an open issue, please link to the issue here. -->
 
+## Review Estimate
+<!---When do you want your code reviewed by?-->
+- [ ] Immediately
+- [ ] Within one week
+- [ ] When possible
 ## Types of changes
 <!--- What types of changes does your code introduce? Put an `x` in all the boxes that apply: -->
 - [ ] Bug fix (non-breaking change which fixes an issue) <!-- please add issue number -->
