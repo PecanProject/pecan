@@ -13,7 +13,7 @@
 ##' @title Query trait data
 ##' @param spstr string of species id's from trait database
 ##' @param priors vector of parameters for which priors have been specified
-##' @param con
+##' @param con database connection object
 ##' @return dataframe with trait data
 ##' @seealso \code{\link{query.trait.data}}
 ##' @export query.traits

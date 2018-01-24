@@ -2,11 +2,7 @@
 % Please edit documentation in R/query.trait.data.R
 \name{append.covariate}
 \alias{append.covariate}
-\title{Append covariate data as a column within a table
-\code{append.covariate} appends a data frame of covariates as a new column in a data frame
-  of trait data.
-In the event a trait has several covariates available, the first one found
-  (i.e. lowest row number) will take precedence}
+\title{Append covariate data as a column within a table}
 \usage{
 append.covariate(data, column.name, covariates.data)
 }
@@ -18,6 +14,12 @@ append.covariate(data, column.name, covariates.data)
 \item{covariates.data}{one or more tables of covariate data, ordered by the precedence
 they will assume in the event a trait has covariates across multiple tables.
 All tables must contain an 'id' and 'level' column, at minimum.}
+}
+\description{
+\code{append.covariate} appends a data frame of covariates as a new column in a data frame
+  of trait data.
+In the event a trait has several covariates available, the first one found
+  (i.e. lowest row number) will take precedence
 }
 \author{
 Carl Davidson, Ryan Kelly
