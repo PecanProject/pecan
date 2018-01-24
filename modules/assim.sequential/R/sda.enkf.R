@@ -963,7 +963,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
         # analysis
         ciEnvelope(as.Date(obs.times[t1:t]), XaCI[, 1], XaCI[, 2], col = alphapink)
         lines(as.Date(obs.times[t1:t]), Xa, col = "black", lty = 2, lwd = 2)
-        #legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
+        legend('topright',c('Forecast','Data','Analysis'),col=c(alphablue,alphagreen,alphapink),lty=1,lwd=5)
       }
     }
     
