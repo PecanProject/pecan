@@ -406,7 +406,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     X_tmp <- vector("list", 2) 
     X <- list()
     new.params <- params
-    source('~/pecan/models/sipnet/R/read_restart.SIPNET.R')
+    
     for (i in seq_len(nens)) {
       X_tmp[[i]] <- do.call(my.read_restart, args = list(outdir = outdir, 
                                                      runid = run.id[[i]], 
@@ -977,7 +977,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
       ### write restart by ensemble                                         ###
       ###-------------------------------------------------------------------### 
       
-      source('~/pecan/models/sipnet/R/write_restart.SIPNET.R')
+      
       
       for (i in seq_len(nens)) {
         do.call(my.write_restart, 
