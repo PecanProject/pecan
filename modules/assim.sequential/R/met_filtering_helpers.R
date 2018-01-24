@@ -1,10 +1,8 @@
 
 sample_met <- function(settings,nens=1){
   
-  # path <- settings$run$inputs$met[["path"]]
-  # developing
-  path = "/fs/data3/istfer/AGU17/met_ensembles/SIPNET/"
-  
+  path <- settings$run$inputs$met[["path"]]
+
   ens_members <- list.files(path, recursive = TRUE)
   
   
