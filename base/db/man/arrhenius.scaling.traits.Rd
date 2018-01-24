@@ -2,7 +2,7 @@
 % Please edit documentation in R/query.trait.data.R
 \name{arrhenius.scaling.traits}
 \alias{arrhenius.scaling.traits}
-\title{Function to apply Arrhenius scaling to 25 degC for temperature-dependent traits}
+\title{Apply Arrhenius scaling to 25 degC for temperature-dependent traits}
 \usage{
 arrhenius.scaling.traits(data, covariates, temp.covariates, new.temp = 25,
   missing.temp = 25)
@@ -19,6 +19,9 @@ if length > 1, order matters (first will be used preferentially)}
 \item{new.temp}{the reference temperature for the scaled traits. Curerntly 25 degC}
 
 \item{missing.temp}{the temperature assumed for traits with no covariate found. Curerntly 25 degC}
+}
+\description{
+Apply Arrhenius scaling to 25 degC for temperature-dependent traits
 }
 \author{
 Carl Davidson, David LeBauer, Ryan Kelly

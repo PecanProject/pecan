@@ -10,7 +10,7 @@ betyConnect <- function(php.config = "../../web/config.php") {
   ## Database connection
   # TODO: The latest version of dplyr/dbplyr works with standard DBI-based
   # objects, so we should replace this with a standard `db.open` call.
-  src_postgres(dbname = config.list$db_bety_database,
+  dplyr::src_postgres(dbname = config.list$db_bety_database,
                host = config.list$db_bety_hostname,
                user = config.list$db_bety_username,
                password = config.list$db_bety_password)
@@ -53,10 +53,11 @@ ncdays2date <- function(time, unit) {
 }  # ncdays2date
 
 
-#' @name dbHostInfo
-#' @title Database host information
+#' Database host information
+#'
 #' @param bety BETYdb connection, as opened by `betyConnect()`
 #' @export
+#' @importFrom magrittr %>%
 dbHostInfo <- function(bety) {
   # get host id
   result <- db.query(query = "select cast(floor(nextval('users_id_seq') / 1e9) as bigint);", con = bety$con)
@@ -117,7 +118,7 @@ runs <- function(bety, workflow_id) {
     dplyr::select(workflow_id, folder)
   Ensembles <- dplyr::tbl(bety, "ensembles") %>%
     dplyr::select(ensemble_id = id, workflow_id) %>%
-    inner_join(Workflows, by = "workflow_id")
+    dplyr::inner_join(Workflows, by = "workflow_id")
   Runs <- dplyr::tbl(bety, "runs") %>%
     dplyr::select(run_id = id, ensemble_id) %>%
     dplyr::inner_join(Ensembles, by = "ensemble_id")
@@ -128,34 +129,27 @@ runs <- function(bety, workflow_id) {
 
 #' Get vector of workflow IDs
 #' @inheritParams dbHostInfo
-#' @param session Session object passed through Shiny
+#' @param query Named vector or list of workflow IDs
 #' @export
-get_workflow_ids <- function(bety, session, all.ids=FALSE) {
-  query <- isolate(shiny::parseQueryString(session$clientData$url_search))
+get_workflow_ids <- function(bety, query, all.ids = FALSE) {
   # If we dont want all workflow ids but only workflow id from the user url query
-  if (!all.ids & "workflow_id" %in% names(query)) {
+  if (!all.ids && "workflow_id" %in% names(query)) {
     ids <- unlist(query[names(query) == "workflow_id"], use.names = FALSE)
   } else {
     # Get all workflow IDs
-
-    ids <- workflows(bety, ensemble = FALSE) %>% distinct(workflow_id) %>% collect %>% 
-      .[["workflow_id"]] %>% sort(decreasing = TRUE)
-    # pull(.,workflow_id) %>% sort(decreasing = TRUE)
-
-#    ids <- workflows(bety, ensemble = TRUE) %>%
-#      dplyr::distinct(workflow_id) %>%
-#      dplyr::pull() %>%
-#      sort(decreasing = TRUE)
-
+    ids <- workflows(bety, ensemble = FALSE) %>%
+      dplyr::distinct(workflow_id) %>%
+      dplyr::collect() %>%
+      dplyr::pull(workflow_id) %>%
+      sort(decreasing = TRUE)
   }
   return(ids)
 }  # get_workflow_ids
 
 #' Get data frame of users and IDs
 #' @inheritParams dbHostInfo
-#' @param session Session object passed through Shiny
 #' @export
-get_users <- function(bety, session) {
+get_users <- function(bety) {
   hostinfo <- dbHostInfo(bety)
   query <- "SELECT id, login FROM users"
   out <- dplyr::tbl(bety, dbplyr::sql(query)) %>%
@@ -184,23 +178,25 @@ get_run_ids <- function(bety, workflow_id) {
 #' @inheritParams dbHostInfo
 #' @inheritParams workflow
 #' @param run_id Run ID
+#' @param remove_pool logical: ignore variables with 'pools' in their names?
 #' @export
 get_var_names <- function(bety, workflow_id, run_id, remove_pool = TRUE) {
   var_names <- character(0)
   if (workflow_id != "" && run_id != "") {
-    workflow <- collect(workflow(bety, workflow_id))
+    workflow <- dplyr::collect(workflow(bety, workflow_id))
     if (nrow(workflow) > 0) {
       outputfolder <- file.path(workflow$folder, "out", run_id)
-      if (file_test("-d", outputfolder)) {
+      if (utils::file_test("-d", outputfolder)) {
         files <- list.files(outputfolder, "*.nc$", full.names = TRUE)
-          nc <- nc_open(files[1])
+        for (file in files) {
+          nc <- ncdf4::nc_open(file)
           lapply(nc$var, function(x) {
             if (x$name != "") {
               var_names[[x$longname]] <<- x$name
             }
           })
-          nc_close(nc)
-        # }
+          ncdf4::nc_close(nc)
+        }
       }
     }
     if (length(var_names) == 0) {

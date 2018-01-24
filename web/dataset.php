@@ -102,17 +102,9 @@ switch ($type) {
             die("Invalid file name specified ${file}.");            
         }
 
-        # make sure everything is shell safe
-        $datafile = escapeshellarg($datafile);
-        $year = escapeshellarg($year);
-        $xvar = escapeshellarg($xvar);
-        $yvar = escapeshellarg($yvar);
-        $width = escapeshellarg($width);
-        $height = escapeshellarg($height);
-        $escfile = escapeshellarg($file);
-
         # execute command to create graph
-        shell_exec("R_LIBS_USER='${R_library_path}' PECANSETTINGS='$folder/pecan.xml' ${Rbinary} CMD BATCH --vanilla '--args $datafile $year $xvar $yvar $width $height $escfile' plot.netcdf.R /tmp/plot.out");
+        $escapedargs = escapeshellarg("--args $datafile $year $xvar $yvar $width $height $file");
+        shell_exec("R_LIBS_USER='${R_library_path}' PECANSETTINGS='$folder/pecan.xml' ${Rbinary} CMD BATCH --vanilla $escapedargs plot.netcdf.R /tmp/plot.out");
         break;
         
     default:
