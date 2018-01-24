@@ -2,7 +2,7 @@
 % Please edit documentation in R/open.tunnel.R
 \name{open_tunnel}
 \alias{open_tunnel}
-\title{Open an SSH tunnel}
+\title{Open an SSH tunnel, prompting for passwords as needed}
 \usage{
 open_tunnel(remote_host, user = NULL, password = NULL,
   tunnel_dir = "~/.pecan/tunnel/", wait.time = 15,
@@ -22,8 +22,8 @@ open_tunnel(remote_host, user = NULL, password = NULL,
 \item{tunnel_script}{Path to sshtunnel.sh script file for opening tunnel}
 }
 \value{
-\code{TRUE} if successful, or \code{FALSE} otherwise
+numeric giving ssh PID if configured, otherwise logical with TRUE = success
 }
 \description{
-Open an SSH tunnel
+Open an SSH tunnel, prompting for passwords as needed
 }

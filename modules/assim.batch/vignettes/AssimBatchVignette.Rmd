@@ -65,6 +65,23 @@ The easiest way to use PEcAn's parameter data assimilation module is to add an `
       </variable.name>
     </file>
   </inputs>
+  <inputs>
+    <file>
+      <input.id>...</input.id>
+      <path>
+        <path>...</path>
+      </path>
+    <likelihood>multipGauss</likelihood>
+    <hyper.pars>
+      <parama>0.001</parama>
+      <paramb>0.001</paramb>
+    </hyper.pars>
+    <ss.positive>TRUE</ss.positive>
+      <variable.name>
+        <variable.name>...</variable.name>
+      </variable.name>
+    </file>
+  </inputs>
   <jump>
     <ar.target>0.3</ar.target>
     <adapt>200</adapt>
@@ -141,6 +158,7 @@ head(trait.dictionary[,c("id", "figid")])
     + `<path>` File path to the input. Both `<id>` and `<path>` of the observation data should be supplied for the PDA. 
     + `<source>` A standardized source of input data (e.g., Ameriflux). Not implemented yet, but the idea would be similar to the met workflow, PEcAn would be able to use standard data sources automatically where available. Only used if no `<id>` or `<path>` is given.
       + `<likelihood>` Identifier for the likelihood to use. E.g., the Ameriflux NEE/FC and LE data use a Laplacian likelihood. 
+      + `<hyper.pars>` Optional. Hyperparameters for your likelihood. E.g. Prior parameters of the precision for Gaussian likelihood. Defaults to scaled values if not provided. 
       + `<variable.id>` The BETY variable ID associated with this dataset. The idea is that specific preprocessing steps (e.g., estimating heteroskedastic error for tower NEE) would be associated with particular IDs. Could automate further by assigning default `<likelihood>` to variable.id values (allowing `<likelihood>` to be omitted from pecan.xml). 
       
            NOTE : `<inputs>` chunk should always be on your xml file regardless of the method you use in the PDA.
@@ -194,6 +212,23 @@ If you are using methods other than *bruteforce* and *bruteforce.bs*, some addit
      
     + `<extension>round</extension>` this extension run proposes new points in the parameter space in addition to the previous ones, and builds a new emulator including these additional points for a new MCMC sampling. These new points can come from both your inital PDA prior and the posterior of your first round of emulator run. You can determine the percentage of new knots coming from the posterior of your previous run in the `<knot.par>` tag. If you leave it empty, 75% of your new points will be drawn from the posterior of your previous run by default.
 
+```
+      <file>
+        <input.id>...</input.id>
+        <path>
+          <path>...</path>
+        </path>
+        <likelihood>multipGauss</likelihood>
+        <ss.positive>TRUE</ss.positive>
+        <variable.id>...</variable.id>
+        <variable.name>
+          <variable.name>...</variable.name>
+        </variable.name>
+      </file>
+    </inputs>
+```
+
+* `<ss.positive>` When using the emulator, it is important to let the algorithm know that you have a likelihood whose sufficient statistics is zero bound. 
 
 **bayesian.tools** would look for sampler specific settings that can be passed through the pecan.xml as a block under the `<bt.settings>` tag. Currently, the available samplers in the BayesianTools package are:
 

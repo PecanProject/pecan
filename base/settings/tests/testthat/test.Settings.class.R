@@ -23,9 +23,9 @@ test_that("Settings constructors work as expected", {
   expect_identical(settings1, settings3)
   expect_identical(settings1, settings4)
   
-  expect_true(is(settings1, "list"))
-  expect_true(is(settings1, "SafeList"))
-  expect_true(is(settings1, "Settings"))
+  expect_true(inherits(settings1, "list"))
+  expect_true(inherits(settings1, "SafeList"))
+  expect_true(inherits(settings1, "Settings"))
   expect_true(is.Settings(settings1))
   expect_false(is.Settings(sl))
   expect_false(is.Settings(l))

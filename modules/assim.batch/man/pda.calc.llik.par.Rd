@@ -4,14 +4,16 @@
 \alias{pda.calc.llik.par}
 \title{pda.calc.llik.par}
 \usage{
-pda.calc.llik.par(settings, n, error.stats)
+pda.calc.llik.par(settings, n, error.stats, hyper.pars)
 }
 \arguments{
 \item{settings}{list}
 
-\item{n}{named vector}
+\item{n}{named vector, sample sizes of inputs}
 
-\item{error.stats}{list}
+\item{error.stats}{list, Sufficient Statistics}
+
+\item{hyper.pars}{list, hyperparameters}
 }
 \description{
 Calculate likelihood parameters

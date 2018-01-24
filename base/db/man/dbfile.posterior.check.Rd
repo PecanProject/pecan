@@ -5,7 +5,7 @@
 \title{Check for a file in the input/dbfiles tables}
 \usage{
 dbfile.posterior.check(pft, mimetype, formatname, con,
-  hostname = PEcAn.utils::fqdn())
+  hostname = PEcAn.remote::fqdn())
 }
 \arguments{
 \item{pft}{the name of the pft that this data is applicable to}
@@ -17,8 +17,6 @@ dbfile.posterior.check(pft, mimetype, formatname, con,
 \item{con}{database connection object}
 
 \item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
-
-\item{params}{database connection information}
 }
 \value{
 data.frame with the id, filename and pathname of the posterior that is requested

@@ -46,7 +46,7 @@ met2CF.NARR <- function(in.path, in.prefix, outfolder, start_date, end_date,
     # create array with results
     row <- y - start_year + 1
     results$file[row]       <- newfile
-    results$host[row]       <- PEcAn.utils::fqdn()
+    results$host[row]       <- PEcAn.remote::fqdn()
     results$startdate[row]  <- paste0(y, "-01-01 00:00:00")
     results$enddate[row]    <- paste0(y, "-12-31 23:59:59")
     results$mimetype[row]   <- "application/x-netcdf"

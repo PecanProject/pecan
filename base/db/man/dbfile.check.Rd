@@ -4,7 +4,7 @@
 \alias{dbfile.check}
 \title{Check for a file in the dbfiles tables}
 \usage{
-dbfile.check(type, container.id, con, hostname = PEcAn.utils::fqdn(),
+dbfile.check(type, container.id, con, hostname = PEcAn.remote::fqdn(),
   machine.check = TRUE, return.all = FALSE)
 }
 \arguments{

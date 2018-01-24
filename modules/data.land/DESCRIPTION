@@ -1,8 +1,8 @@
 Package: PEcAn.data.land
 Type: Package
 Title: PEcAn functions used for ecological forecasts and reanalysis
-Version: 1.5.0
-Date: 2017-07-14
+Version: 1.5.2
+Date: 2017-12-04
 Author: David LeBauer, Mike Dietze, Xiaohui Feng, Dan Wang, Mike Dietze,
     Carl Davidson, Rob Kooper, Alexey Shiklomanov
 Maintainer: Mike Dietze <dietze@bu.edu>, David LeBauer <dlebauer@illinois.edu>
@@ -22,7 +22,8 @@ Imports:
     udunits2 (>= 0.11),
     traits,
     dplyr,
-    dbplyr
+    dbplyr,
+    magrittr
 Suggests:
     fields,
     rgdal,

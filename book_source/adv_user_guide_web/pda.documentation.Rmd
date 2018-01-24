@@ -64,3 +64,6 @@ This file contains most of the individual functions used by the main PDA functio
 ### **get.da.data.*.R, plot.da.R**
 Old codes written by Carl Davidson. Defunct now, but may contain good ideas so currently left in. 
 
+## For a detailed usage of the module, please see the vignette under  **/modules/assim.batch/vignettes**
+
+

@@ -3,4 +3,3 @@
 export(met2model.MAESPA)
 export(model2netcdf.MAESPA)
 export(write.config.MAESPA)
-importFrom(ncdf4,ncvar_def)

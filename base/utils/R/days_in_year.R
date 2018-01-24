@@ -5,7 +5,7 @@
 #' @param year Numeric year (can be a vector)
 #'
 #' @author Alexey Shiklomanov
-#' @return
+#' @return integer vector, all either 365 or 366
 #' @export
 #' @examples
 #' days_in_year(2010)  # Not a leap year -- returns 365

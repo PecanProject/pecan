@@ -91,7 +91,7 @@ model2netcdf.LINKAGES <- function(outdir, sitelat, sitelon, start_date = NULL, e
     
     var <- list()
     var[[1]]  <- PEcAn.utils::to_ncvar("AGB", dims)
-    var[[2]]  <- PEcAn.utils::to_ncvar("TotLivBiomass", dims)
+    var[[2]]  <- PEcAn.utils::to_ncvar("TotLivBiom", dims)
     var[[3]]  <- PEcAn.utils::to_ncvar("TotSoilCarb", dims)
     var[[4]]  <- ncdf4::ncvar_def("CarbPools", "kgC/m2", list(dim.cpools, dim.lat, dim.lon, dim.t), -999)
     var[[5]]  <- ncdf4::ncvar_def("poolnames", units = "", dim = list(dim.string, dim.cpools1), longname = "Carbon Pool Names", prec = "char")

@@ -13,14 +13,15 @@ qsub_run_finished <- function(run, host, qstat) {
     return(FALSE)
   }
   run_id_string <- format(run, scientific = FALSE)
-  check <- gsub("@JOBID", run, qstat)
-  cmd_list <- strsplit(check, " (?=([^\"']*\"[^\"']*\")*[^\"']*$)", perl = TRUE)
-  cmd <- cmd_list[[1]]
-  args <- cmd_list[-1]
+  check <- gsub("@JOBID@", run, qstat)
   if (is.localhost(host)) {
-    out <- system2(cmd, args, stdout = TRUE, stderr = TRUE)
+    # Need to use `system` to allow commands with pipes
+    out <- system(check, intern = TRUE, ignore.stdout = FALSE, ignore.stderr = FALSE, wait = TRUE)
   } else {
-    out <- remote.execute.cmd(host = host, cmd = cmd, args = args, stderr = TRUE)
+    # This uses `system2` under the hood, but that's OK because the entire 
+    # command is passed as a single quoted argument, so the pipes are 
+    # preserved.
+    out <- remote.execute.cmd(host = host, cmd = check, stderr = TRUE)
   }
 
   if (length(out) > 0 && substring(out, nchar(out) - 3) == "DONE") {

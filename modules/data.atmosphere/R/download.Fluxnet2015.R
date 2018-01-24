@@ -142,7 +142,7 @@ download.Fluxnet2015 <- function(sitename, outfolder, start_date, end_date,
                         stringsAsFactors = FALSE)
   
   results$file[rows]       <- output_csv_file
-  results$host[rows]       <- PEcAn.utils::fqdn()
+  results$host[rows]       <- PEcAn.remote::fqdn()
   results$startdate[rows]  <- paste0(syear, "-01-01 00:00:00")
   results$enddate[rows]    <- paste0(eyear, "-12-31 23:59:59")
   results$mimetype[rows]   <- "text/csv"

@@ -1,19 +1,29 @@
 # Directory structure
 
-## Overview of PEcAn repository as of PEcAn 1.2
+## Overview of PEcAn repository as of PEcAn 1.5.3
 
-<!--This needsto be updated to the latest version-->
-<!--Should Also include a guideline to structurs so that people know where to put things as they add them-->
+<!--Should Also include a guideline to structures so that people know where to put things as they add them-->
 ```
-trunk/             # Overall repository
- +- all            # Dummy Package to load all PEcAn R packages
- +- common         # Core functions
- +- db             # Modules for querying the database
- +- depreciated    # code from PEcAn < 1.1 for reference or merging into new packages
- +- models         # Directory of wrapper scripts for each ecosystem model
-    +- ed          # Wrapper scripts for running ED within PEcAn
-    +- sipnet      # Wrapper scripts for running SIPNET within PEcAn
-    +- ...         # Wrapper scripts for running [MODELX] within PEcAn
+pecan/
+ +- base/          # Core functions
+    +- all         # Dummy package to load all PEcAn R packages
+    +- db          # Modules for querying the database
+    +- logger      # Report warnings without killing workflows
+    +- qaqc        # Model skill testing and integration testing
+    +- remote      # Communicate with and execute models on local and remote hosts
+    +- settings    # Functions to read and manipulate PEcAn settings files
+    +- utils       # Misc. utility functions
+    +- visualization # Advanced PEcAn visualization module
+    +- workflow    # functions to coordinate analysis steps
+ +- book_source/   # Main documentation and developer's guide
+ +- CHANGELOG.md   # Running log of changes in each version of PEcAn
+ +- docker/        # Experimental replacement for PEcAn virtual machine
+ +- documentation  # index_vm.html, references, other misc.
+ +- models/        # Wrappers to run models within PEcAn
+    +- ed/         # Wrapper scripts for running ED within PEcAn
+    +- sipnet/     # Wrapper scripts for running SIPNET within PEcAn
+    +- ...         # Wrapper scripts for running [...] within PEcAn
+    +- template/   # Sample wrappers to copy and modify when adding a new model
  +- modules        # Core modules
     +- allometry
     +- data.atmosphere
@@ -23,15 +33,11 @@ trunk/             # Overall repository
     +- priors
     +- rtm
     +- uncertainty
- +- qaqc           # Database and model QAQC scripts
+    +- ...
  +- scripts        # R and Shell scripts for use with PEcAn
-    +- shell       # Shell scripts, e.g.. install.all.sh, check.all.sh
-    +- R           # R scripts e.g. pft.add.spp.R, workflow.R, install.dependencies.R 
-    +- fia         # FIA module
- +- utils          # Misc. utility functions
- +- visualization  # Advanced PEcAn visualization module
+ +- shiny/         # Interactive visualization of model results
+ +- tests/         # Settings files for host-specific integration tests
  +- web            # Main PEcAn website files
- +- documentation  # index_vm.html, references, other misc.
 ```
 
 
@@ -42,10 +48,11 @@ see the R development wiki for more information on writing code and adding data.
 ```
  +- DESCRIPTION    # short description of the PEcAn library
  +- R/             # location of R source code
- +- man/           # Documentation
- +- tests/         # runall.R script to call all R test scripts
- +- inst/          # location of install scripts and misc.
-    +- tests/      # location of PEcAn testing scripts
+ +- man/           # Documentation (automatically compiled by Roxygen)
+ +- inst/          # files to be installed with package that aren't R functions
     +- extdata/    # misc. data files (in misc. formats)
  +- data/          # data used in testing and examples (saved as *.RData or *.rda files)
+ +- NAMESPACE      # declaration of package imports and exports (automatically compiled by Roxygen)
+ +- tests/         # PEcAn testing scripts
+   +- testthat/    # nearly all tests should use the testthat framework and live here
 ```

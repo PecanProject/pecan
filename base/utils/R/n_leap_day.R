@@ -2,8 +2,7 @@
 ##' @title n_leap_day
 ##' @description number of leap days between two dates
 ##' @author Mike Dietze
-##' @param start_date
-##' @param end_date
+##' @param start_date,end_date dates in any format recognized by \code{\link[base]{as.Date}}
 ##' @export
 n_leap_day <- function(start_date, end_date) {
   
