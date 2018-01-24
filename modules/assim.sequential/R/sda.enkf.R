@@ -151,18 +151,32 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     } else {
       settings$ensemble$size <- 1
     }
-    cumulative_ensemble_samples <- numeric(0)
-    repeat{ # temporary SIPNET hack, I want to make sure sum <1 for SIPNET
+    
+    ######################################################################################################################
+    #                                                                                                                    #     
+    #   NOTE: It's easiest to try to define priors such that sum of SIPNET allocation params "root_allocation_fraction", #
+    #   "wood_allocation_fraction" and "leaf_allocation_fraction" doesnt' exceed 1,                                      #
+    #   if it exceeds runs will finish but you'll get 0 for AbvGrndWood which would affect your forecast ensemble        #
+    #   write.configs.SIPNET also gives a warning, if you want stricter control you can change it to error               #
+    #   the commented out code below was to force their sum to be <1 leaving as a reminder until refactoring             #
+    #                                                                                                                    #
+    ######################################################################################################################
+    
+    
+    
+    # cumulative_ensemble_samples <- numeric(0)
+    # 
+    # repeat{ # temporary SIPNET hack, I want to make sure sum <1 for SIPNET
       get.parameter.samples(settings, ens.sample.method = settings$ensemble$method)  ## Aside: if method were set to unscented, would take minimal changes to do UnKF
       load(file.path(settings$outdir, "samples.Rdata"))  ## loads ensemble.samples
-      cumulative_ensemble_samples <- rbind(cumulative_ensemble_samples,ensemble.samples$temperate.deciduous_SDA)
-      tot_check <- apply(ensemble.samples$temperate.deciduous_SDA[,c(20, 25,27)],1,sum) < 1
-      cumulative_ensemble_samples <- cumulative_ensemble_samples[tot_check,]
-      if(nrow(cumulative_ensemble_samples)>=nens){
-        ensemble.samples$temperate.deciduous_SDA <- cumulative_ensemble_samples[seq_len(nens),]
-        break
-      } 
-    }
+    #   cumulative_ensemble_samples <- rbind(cumulative_ensemble_samples,ensemble.samples$temperate.deciduous_SDA)
+    #   tot_check <- apply(ensemble.samples$temperate.deciduous_SDA[,c(20, 25,27)],1,sum) < 1
+    #   cumulative_ensemble_samples <- cumulative_ensemble_samples[tot_check,]
+    #   if(nrow(cumulative_ensemble_samples)>=nens){
+    #     ensemble.samples$temperate.deciduous_SDA <- cumulative_ensemble_samples[seq_len(nens),]
+    #     break
+    #   } 
+    # }
     
     
     if ("env" %in% names(ensemble.samples)) {
