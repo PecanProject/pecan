@@ -29,8 +29,8 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
                               posterior.files = rep(NA, length(settings$pfts)), 
                               overwrite = TRUE) {
   
-  con <- db.open(settings$database$bety)
-  on.exit(db.close(con))
+  con <- PEcAn.DB::db.open(settings$database$bety)
+  on.exit(PEcAn.DB::db.close(con))
   
   ## Which posterior to use?
   for (i in seq_along(settings$pfts)) {
@@ -38,7 +38,7 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
     if (is.na(posterior.files[i])) {
       ## otherwise, check to see if posteriorid exists
       if (!is.null(settings$pfts[[i]]$posteriorid)) {
-        files <- dbfile.check("Posterior",
+        files <- PEcAn.DB::dbfile.check("Posterior",
                               settings$pfts[[i]]$posteriorid, 
                               con, settings$host$name)
         pid <- grep("post.distns.*Rdata", files$file_name)  ## is there a posterior file?
@@ -153,13 +153,13 @@ run.write.configs <- function(settings, write = TRUE, ens.sample.method = "unifo
 
 ##' @export
 runModule.run.write.configs <- function(settings, overwrite = TRUE) {
-  if (is.MultiSettings(settings)) {
+  if (PEcAn.settings::is.MultiSettings(settings)) {
     if (overwrite && file.exists(file.path(settings$rundir, "runs.txt"))) {
       PEcAn.logger::logger.warn("Existing runs.txt file will be removed.")
       unlink(file.path(settings$rundir, "runs.txt"))
     }
-    return(papply(settings, runModule.run.write.configs, overwrite = FALSE))
-  } else if (is.Settings(settings)) {
+    return(PEcAn.settings::papply(settings, runModule.run.write.configs, overwrite = FALSE))
+  } else if (PEcAn.settings::is.Settings(settings)) {
     write <- settings$database$bety$write
     ens.sample.method <- settings$ensemble$method
     return(run.write.configs(settings, write, ens.sample.method, overwrite = overwrite))

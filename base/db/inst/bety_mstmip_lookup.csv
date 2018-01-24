@@ -14,7 +14,7 @@ DOC_flux,kg C m-2 s-1,DOC_flux
 Evap,kg m-2 s-1,Evap
 Fdepth,m,Fdepth
 Fire_flux,kg C m-2 s-1,Fire_flux
-fPAR,(-),fPAR
+fPAR,1,fPAR
 GPP,kg C m-2 s-1,GPP
 GPP,kg C m-2 s-1,GPP_cum
 GPP,kg C m-2 s-1,GPP_annual
@@ -25,7 +25,7 @@ lat,degrees_north,Latitude
 lat_bnds,degrees_north,
 lon,degrees_east,Longitude
 lon_bnds,degrees_east,
-LW_albedo,(-),LW_albedo
+LW_albedo,1,LW_albedo
 LWdown,W/m2,LWdown
 LWdown,W/m2,surface_downwelling_longwave_flux_in_air
 Lwnet,W m-2,Lwnet
@@ -34,7 +34,7 @@ NEE,kg C m-2 s-1,FC
 NPP,kg C m-2 s-1,NPP
 NPP,kg C m-2 s-1,NPP_2_C
 NPP,kg C m-2 s-1,NPP_1_C
-poolname,(-),
+poolname,1,
 Psurf,Pa,Psurf
 Psurf,Pa,air_pressure
 Qair,kg kg-1,Qair
@@ -50,12 +50,12 @@ Rainf,kg m-2 s-1,precipitation_flux
 SnowDen,kg m-3,SnowDen
 SnowDepth,m,SnowDepth
 SoilMoist,kg m-2,SoilMoist
-SoilMoistFrac,(-),SoilMoistFrac
-SoilMoistFrac,(-),soilM
+SoilMoistFrac,1,SoilMoistFrac
+SoilMoistFrac,1,soilM
 SoilTemp,K,SoilTemp
 SoilTemp,K,soilT
-SoilWet,(-),SoilWet
-SW_albedo,(-),SW_albedo
+SoilWet,1,SoilWet
+SW_albedo,1,SW_albedo
 SWdown,W/m^2,surface_downwelling_shortwave_flux_in_air
 SWdown,W/m^2,solar_radiation
 SWE,kg m-2,SWE

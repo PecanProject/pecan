@@ -31,7 +31,7 @@ met2model.LINKAGES <- function(in.path, in.prefix, outfolder, start_date, end_da
   # strptime(end_date, '%Y-%m-%d'), 'dat', sep='.'))
 
   results <- data.frame(file = c(out.file),
-                        host = c(PEcAn.utils::fqdn()),
+                        host = c(PEcAn.remote::fqdn()),
                         mimetype = c("text/plain"),
                         formatname = c("LINKAGES meteorology"),
                         startdate = c(start_date),

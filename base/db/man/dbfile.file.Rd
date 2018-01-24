@@ -2,13 +2,12 @@
 % Please edit documentation in R/dbfiles.R
 \name{dbfile.file}
 \alias{dbfile.file}
-\alias{dbfile.file}
 \alias{dbfile.id}
-\title{Return file from the dbfiles tables}
+\title{Convert between file paths and ids}
 \usage{
-dbfile.file(type, id, con, hostname = PEcAn.utils::fqdn())
+dbfile.file(type, id, con, hostname = PEcAn.remote::fqdn())
 
-dbfile.id(type, file, con, hostname = PEcAn.utils::fqdn())
+dbfile.id(type, file, con, hostname = PEcAn.remote::fqdn())
 }
 \arguments{
 \item{type}{the type of dbfile (Input, Posterior)}
@@ -20,32 +19,23 @@ dbfile.id(type, file, con, hostname = PEcAn.utils::fqdn())
 \item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
 
 \item{file}{the full pathname to the file}
-
-\item{type}{the type of dbfile (Input, Posterior)}
-
-\item{con}{database connection object}
-
-\item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
 }
 \value{
 filename on host, or NA if none found
-
-filename on host, or NA if none found
 }
 \description{
-Function to return full path to a file using dbfiles table
-
-Function to return id to containter type given a filename.
+These functions check the dbfiles and machines tables to see if the file
+exists, and return the container_id (\code{dbfile.id}) or full filename
+with path (\code{dbfile.file}) to the first one found.
+If none is found, both will return NA.
 }
-\details{
-This will check the dbfiles and machines to see if the file exists,
-and return the full filename with path to the first one found. If
-none is found it will return NA.
+\section{Functions}{
+\itemize{
+\item \code{dbfile.file}: Return full path to file from the dbfiles table
 
-This will check the dbfiles and machines to see if the file exists,
-and return the id of the container type of the first one found. If
-none is found it will return NA.
-}
+\item \code{dbfile.id}: Return id to container type given a filename
+}}
+
 \examples{
 \dontrun{
   dbfile.file('Input', 7, dbcon)

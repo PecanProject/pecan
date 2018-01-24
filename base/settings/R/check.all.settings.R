@@ -355,7 +355,7 @@ check.settings <- function(settings, force=FALSE) {
   
   # Check folder where outputs are written before adding to dbfiles
   if(is.null(settings$database$dbfiles)) {
-    settings$database$dbfiles <- full.path("~/.pecan/dbfiles")
+    settings$database$dbfiles <- PEcAn.utils::full.path("~/.pecan/dbfiles")
   } else {
     if (substr(settings$database$dbfiles, 1, 1) != '/'){
       PEcAn.logger::logger.warn("settings$database$dbfiles pathname", settings$database$dbfiles, " is invalid\n
@@ -813,7 +813,7 @@ check.workflow.settings <- function(settings, dbcon=NULL) {
   
   #update workflow
   if (fixoutdir) {
-    PEcAn.DB::db.query(paste0("UPDATE workflows SET folder='", full.path(settings$outdir), "' WHERE id=", settings$workflow$id), con=dbcon)
+    PEcAn.DB::db.query(paste0("UPDATE workflows SET folder='", PEcAn.utils::full.path(settings$outdir), "' WHERE id=", settings$workflow$id), con=dbcon)
   }
   
   return(settings)

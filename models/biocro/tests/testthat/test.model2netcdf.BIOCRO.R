@@ -46,11 +46,7 @@ test_that("dimensions have MsTMIP standard units", {
 })
 
 test_that("variables have MsTMIP standard units", {
-
-  standard_vars <- read.csv(
-    file = system.file("data/standard_vars.csv", package = "PEcAn.utils"),
-    stringsAsFactors = FALSE)
-  
+  standard_vars <- PEcAn.utils::standard_vars
   for (var in vars) {
     if (var$name %in% standard_vars$Variable.Name) {
       expect_true(var$units == standard_vars[standard_vars$Variable.Name == var$name,

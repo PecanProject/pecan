@@ -53,7 +53,7 @@ met2model.GDAY <- function(in.path, in.prefix, outfolder, start_date, end_date,
   out.file.full <- file.path(outfolder, out.file)
   
   results <- data.frame(file = c(out.file.full), 
-                        host = PEcAn.utils::fqdn(), 
+                        host = PEcAn.remote::fqdn(), 
                         mimetype = c("text/csv"), 
                         formatname = c("GDAY-met"), 
                         startdate = c(start_date), 

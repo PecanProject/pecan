@@ -72,6 +72,8 @@ convert.samples.ED <- function(trait.samples) {
       ## First scale variables to 15 degC
       trait.samples[["leaf_respiration_rate_m2"]] <- 
         arrhenius.scaling(leaf_resp, old.temp = 25, new.temp = 15)
+      # convert leaf_respiration_rate_m2 to Rd0 (variable used in ED2)
+      trait.samples[["Rd0"]] <- trait.samples[["leaf_respiration_rate_m2"]]
       
       ## Calculate dark_resp_factor -- Will be depreciated when moving from older versions of ED2
       trait.samples[["dark_respiration_factor"]] <- 
@@ -149,7 +151,7 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
   
   ed2in.text <- gsub("@SITE_LAT@", settings$run$site$lat, ed2in.text)
   ed2in.text <- gsub("@SITE_LON@", settings$run$site$lon, ed2in.text)
-  ed2in.text <- gsub("@SITE_MET@", settings$run$inputs$me$path, ed2in.text)
+  ed2in.text <- gsub("@SITE_MET@", settings$run$inputs$met$path, ed2in.text)
   ed2in.text <- gsub("@MET_START@", metstart, ed2in.text)
   ed2in.text <- gsub("@MET_END@", metend, ed2in.text)
   
@@ -202,8 +204,8 @@ write.config.ED2 <- function(trait.values, settings, run.id, defaults = settings
     ed2in.text <- gsub("@SITE_PSSCSS@", "", ed2in.text)
   } else {
     lat_rxp <- "\\.lat.*lon.*\\.(css|pss|site)"
-    prefix.pss <- sub(lat_rxp, "", settings$run$inputs$css$path)
-    prefix.css <- sub(lat_rxp, "", settings$run$inputs$pss$path)
+    prefix.css <- sub(lat_rxp, "", settings$run$inputs$css$path)
+    prefix.pss <- sub(lat_rxp, "", settings$run$inputs$pss$path)
     # pss and css prefix is not the same, kill
     if (!identical(prefix.pss, prefix.css)) {
       PEcAn.logger::logger.info(paste("pss prefix:", prefix.pss))
@@ -335,22 +337,24 @@ remove.config.ED2 <- function(main.outdir = settings$outdir, settings) {
 write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$constants) {
 
   ## Find history file TODO this should come from the database
-  histfile <- paste0("data/history.r", settings$model$revision, ".csv")
-  if (file.exists(system.file(histfile, package = "PEcAn.ED2"))) {
-    PEcAn.logger::logger.debug(paste0("--- Using ED2 History File: ", "data/history.r", settings$model$revision, ".csv"))
-    edhistory <- read.csv2(system.file(histfile, package = "PEcAn.ED2"), sep = ";",
-                           stringsAsFactors = FALSE, dec = ".")
+  ed2_package_data <- data(package="PEcAn.ED2")
+  histfile <- paste0("history.r", settings$model$revision) # set history file name to look for in ed2_package_data
+  if (histfile %in% ed2_package_data$results[, "Item"]) {
+    PEcAn.logger::logger.debug(paste0("--- Using ED2 History File: ", histfile))
+    data(list=histfile, package = 'PEcAn.ED2')
+    edhistory <- get(histfile)
   } else {
-    PEcAn.logger::logger.debug("--- Using Generic ED2 History File: data/history.csv")
-    edhistory <- read.csv2(system.file("data/history.csv", package = "PEcAn.ED2"), sep = ";",
-                           stringsAsFactors = FALSE, dec = ".")
+    PEcAn.logger::logger.debug("--- Using Generic ED2 History File: history.csv")
+    histfile <- "history"
+    data(list=histfile, package = 'PEcAn.ED2')
+    edhistory <- get(histfile)
   }
 
   edtraits <- names(edhistory)
   data(pftmapping, package = 'PEcAn.ED2')
-
+  
   ## Get ED2 specific model settings and put into output config xml file
-  xml <- PEcAn.utils::listToXml(settings$model$config.header, "config")
+  xml <- PEcAn.settings::listToXml(settings$model$config.header, "config")
 
   ## Process the names in defaults. Runs only if names(defaults) are null or have at least one
   ## instance of name attribute 'pft'. Otherwise, AS assumes that names in defaults are already set
@@ -388,7 +392,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
       # ED, and the 'defaults.PFT' (name or number) to use for pulling default parameter values.
       pft.number <- pftmapping$ED[which(pftmapping == pft)]
 
-      if(pft=="soil"){
+      if(grepl("soil", pft)){
         data(soil, package = "PEcAn.ED2")
         vals <- as.list(soil)
         names(vals) <- colnames(soil)
@@ -396,7 +400,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
         converted.trait.values <- convert.samples.ED(trait.values[[i]])
         vals <- modifyList(vals, converted.trait.values)
 
-        decompositon.xml <- PEcAn.utils::listToXml(vals, "decomposition")
+        decompositon.xml <- PEcAn.settings::listToXml(vals, "decomposition")
         xml <- XML::append.xmlNode(xml, decompositon.xml)
       } else if(length(pft.number) == 0) {
         PEcAn.logger::logger.error(pft, "was not matched with a number in settings$constants or pftmapping data. Consult the PEcAn instructions on defining new PFTs.")
@@ -421,7 +425,7 @@ write.config.xml.ED2 <- function(settings, trait.values, defaults = settings$con
           vals <- modifyList(vals, converted.defaults)
         }
 
-        pft.xml <- PEcAn.utils::listToXml(vals, "pft")
+        pft.xml <- PEcAn.settings::listToXml(vals, "pft")
         xml <- XML::append.xmlNode(xml, pft.xml)
       }
 

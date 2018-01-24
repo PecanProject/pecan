@@ -122,7 +122,7 @@ pda.get.model.output <- function(settings, run.id, bety, inputs) {
 
     model.out[[k]]  <- dat[,colnames(dat) %in% paste0(data.var,".m"), drop = FALSE]
     inputs[[k]]$obs <- dat[,colnames(dat) %in% paste0(data.var,".o"), drop = FALSE][[1]]
-    inputs[[k]]$n   <- length(inputs[[k]]$obs)
+    inputs[[k]]$n   <- sum(!is.na(inputs[[k]]$obs))
     colnames(model.out[[k]]) <- data.var
   }
   

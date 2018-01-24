@@ -9,6 +9,9 @@ days_in_year(year)
 \arguments{
 \item{year}{Numeric year (can be a vector)}
 }
+\value{
+integer vector, all either 365 or 366
+}
 \description{
 Calculate number of days in a year based on whether it is a leap year or not.
 }

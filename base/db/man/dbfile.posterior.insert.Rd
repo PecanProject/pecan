@@ -5,7 +5,7 @@
 \title{Insert file into tables}
 \usage{
 dbfile.posterior.insert(filename, pft, mimetype, formatname, con,
-  hostname = PEcAn.utils::fqdn())
+  hostname = PEcAn.remote::fqdn())
 }
 \arguments{
 \item{filename}{the name of the file to be inserted}
@@ -19,8 +19,6 @@ dbfile.posterior.insert(filename, pft, mimetype, formatname, con,
 \item{con}{database connection object}
 
 \item{hostname}{the name of the host where the file is stored, this will default to the name of the current machine}
-
-\item{params}{database connection information}
 }
 \value{
 data.frame with the id, filename and pathname of the posterior that is requested

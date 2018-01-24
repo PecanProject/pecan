@@ -103,7 +103,7 @@ met2CF.Geostreams <- function(in.path, in.prefix, outfolder,
   }
 
   return(data.frame(file = out_files,
-                    host = PEcAn.utils::fqdn(),
+                    host = PEcAn.remote::fqdn(),
                     startdate = start_date,
                     enddate = end_date,
                     mimetype = "application/x-netcdf",

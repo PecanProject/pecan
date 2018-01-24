@@ -1,8 +1,8 @@
 Package: PEcAn.data.atmosphere
 Type: Package
 Title: PEcAn functions used for managing climate driver data
-Version: 1.5.0
-Date: 2017-07-14
+Version: 1.5.2
+Date: 2017-12-04
 Author: Carl Davidson, Mike Dietze, Rob Kooper, Deepak Jaiswal, David LeBauer
 Maintainer: David LeBauer <dlebauer@illinois.edu>
 Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
@@ -12,8 +12,11 @@ Description: The Predictive Ecosystem Carbon Analyzer (PEcAn) is a scientific
     integrated into PEcAn. As a standalone package, it provides an interface to
     access diverse climate data sets.
 Additional Repositories: http://r-forge.r-project.org/
+Depends:
+    methods
 Imports:
     PEcAn.logger,
+    PEcAn.remote,
     PEcAn.utils,
     PEcAn.DB,
     ggplot2,

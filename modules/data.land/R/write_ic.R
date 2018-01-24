@@ -43,7 +43,7 @@ write_ic <- function(in.path, in.name, start_date, end_date,
 
   # Build results dataframe for convert.input
   results <- data.frame(file = out$filepath, 
-                        host = c(PEcAn.utils::fqdn()), 
+                        host = c(PEcAn.remote::fqdn()), 
                         mimetype = out$mimetype, 
                         formatname = out$formatname, 
                         startdate = start_date, 

@@ -70,6 +70,14 @@ align_data <- function(model.calc, obvs.calc, var, align_method = "match_timeste
     filter(rng_dat[1] <= round.posix)  %>% 
     filter(rng_dat[2] >= round.posix) 
   
+  # Additional date range check: the date range of the fine data must be inside
+  # that of the coarse data or the aggregation functions will add an extra day
+  coarse_range_check <- range(date_subsets[[compare$type[coarse]]]$round.posix)
+
+  date_subsets[[compare$type[fine]]] <- date_subsets[[compare$type[fine]]] %>% 
+    filter(coarse_range_check[1] <= round.posix)  %>% 
+    filter(coarse_range_check[2] >= round.posix)
+  
   out1 <- date_subsets[[compare$type[coarse]]] %>% dplyr::select(.,one_of(var))
   colnames(out1) <- paste0(colnames(out1), ".", compare$type[coarse])
   

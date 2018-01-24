@@ -32,7 +32,7 @@ remote.execute.R <- function(script, host = "localhost", user = NA, verbose = FA
              paste0("ign <- serialize(remoteout, fp)"),
              "close(fp)")
   verbose <- ifelse(as.logical(verbose), "", FALSE)
-  if ((host$name == "localhost") || (host$name == PEcAn.utils::fqdn())) {
+  if (is.localhost(host)) {
     if (R == "R") {
       Rbinary <- file.path(Sys.getenv("R_HOME"), "bin", "R")
       if (file.exists(Rbinary)) {

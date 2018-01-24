@@ -1,8 +1,8 @@
 Package: PEcAn.allometry
 Type: Package
 Title: PEcAn allometry functions
-Version: 1.5.0
-Date: 2017-07-14
+Version: 1.5.2
+Date: 2017-12-04
 Author: Mike Dietze <dietze@bu.edu>
 Maintainer: Mike Dietze <dietze@bu.edu>
 Description: Synthesize allometric equations or fit allometries to data

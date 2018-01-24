@@ -6,7 +6,7 @@ Num;Group;order;Saveit;Variable.Name;standard_name;Units;Long.name;Priority;Cate
 5;2;1;Yes;time;time;days since 1700-01-01 00:00:00 UTC;Time middle averaging period;0;Time;Yes;Yes;double;1;time;na;na;na;julian days days since 1700-01-01 00:00:00 UTC for middle of time averaging period Proleptic_Gregorianc calendar
 6;2;2;Yes;time_bnds;;days since 1700-01-01 00:00:00 UTC;Time beginning-end bounds;0;Time;Yes;Yes;double;2;nbnds;time;na;na;(julian days days since 1700-01-01 beginning time ave period, julian days days since 1700-01-01 end time ave period)
 7;2;3;Yes;dec_date;;yr;Decimal date middle averaging period;0;Time;Yes;Yes;double;1;time;na;na;na;decimal date in fractional years for middle of time averaging period
-8;2;4;Yes;dec_date_bnds;;yr;Decimal date beginning-end bounds;0;Time;Yes;Yes;double;2;nbnds;time;na;na;(decimal date beginningﾠﾠtime ave period, decimal date end time ave period)
+8;2;4;Yes;dec_date_bnds;;yr;Decimal date beginning-end bounds;0;Time;Yes;Yes;double;2;nbnds;time;na;na;(decimal date beginning time ave period, decimal date end time ave period)
 9;2;5;Yes;cal_date_mid;;yr, mon, day, hr, min, sec;Calender date middle averaging period;0;Time;Yes;Yes;integer;2;ncal;time;na;na;calender date middle of time ave period: year, month, day, hour, minute, second for UTC time zone
 10;2;6;Yes;cal_date_beg;;yr, mon, day, hr, min, sec;Calender date beginning averaging period;0;Time;Yes;Yes;integer;2;ncal;time;na;na;calender date beginning of time ave period: year, month, day, hour, minute, second for UTC time zone
 11;2;7;Yes;cal_date_end;;yr, mon, day, hr, min, sec;Calender date end averaging period;0;Time;Yes;Yes;integer;2;ncal;time;na;na;calender date end of time ave period: year, month, day, hour, minute, second for UTC time zone
@@ -30,14 +30,14 @@ Num;Group;order;Saveit;Variable.Name;standard_name;Units;Long.name;Priority;Cate
 30;5;4;Yes;TVeg;;kg m-2 s-1;Transpiration;1;Energy Fluxes;No;Yes;real;3;lon;lat;time;na;Total Plant transpiration (always positive)
 31;5;5;Yes;LW_albedo;;(-);Longwave Albedo;1;Energy Fluxes;No;Yes;real;3;lon;lat;time;na;Longwave Albedo
 32;5;6;Yes;SW_albedo;;(-);Shortwave Albedo;1;Energy Fluxes;No;Yes;real;3;lon;lat;time;na;Shortwave albedo
-33;5;7;Yes;Lwnet;;W m-2;Net Longwave Radiation;1;Energy Fluxes;No;Yes;real;3;lon;lat;time;na;Incident longwave radiation minusﾠﾠsimulated outgoing longwave radiation (positive into grnd)
-34;5;8;Yes;SWnet;;W m-2;Net shortwave radiation;1;Energy Fluxes;No;Yes;real;3;lon;lat;time;na;Incident shortwave radiation minusﾠﾠsimulated outgoing shortwave radiation (positive into grnd)
+33;5;7;Yes;Lwnet;;W m-2;Net Longwave Radiation;1;Energy Fluxes;No;Yes;real;3;lon;lat;time;na;Incident longwave radiation minus simulated outgoing longwave radiation (positive into grnd)
+34;5;8;Yes;SWnet;;W m-2;Net shortwave radiation;1;Energy Fluxes;No;Yes;real;3;lon;lat;time;na;Incident shortwave radiation minus simulated outgoing shortwave radiation (positive into grnd)
 35;5;9;Yes;fPAR;;(-);Absorbed fraction incoming PAR;1;Energy Fluxes;No;Yes;real;3;lon;lat;time;na;absorbed fraction incoming photosyntetically active radiation
 37;6;2;Yes;z_top;;m;Soil Layer Top Depth;1;Physical Variables;No;Yes;real;1;nsoil;na;na;na;Depth from soil surface to top of soil layer
 38;6;3;Yes;z_node;;m;Soil Layer Node Depth;1;Physical Variables;No;Yes;real;1;nsoil;na;na;na;"Depth from soil surface to layer prognostic variables; typically center of soil layer"
 39;6;4;Yes;z_bottom;;m;Soil Layer Bottom Depth;1;Physical Variables;No;Yes;real;1;nsoil;na;na;na;Depth from soil surface to bottom of soil layer
-40;6;5;Yes;SoilMoist;;kg m-2;Average Layer Soil Moisture;1;Physical Variables;No;Yes;real;4;lon;lat;nsoil;time;Soil water content in each soil layer, includingﾠﾠliquid, vapor and ice
-41;6;5;Yes;SoilMoistFrac;;(-);Average Layer Fraction of Saturation;1;Physical Variables;No;Yes;real;4;lon;lat;nsoil;time;Fraction of saturation of soil water in each soil layer, includingﾠﾠliquid and ice
+40;6;5;Yes;SoilMoist;;kg m-2;Average Layer Soil Moisture;1;Physical Variables;No;Yes;real;4;lon;lat;nsoil;time;Soil water content in each soil layer, including liquid, vapor and ice
+41;6;5;Yes;SoilMoistFrac;;(-);Average Layer Fraction of Saturation;1;Physical Variables;No;Yes;real;4;lon;lat;nsoil;time;Fraction of saturation of soil water in each soil layer, including liquid and ice
 42;6;6;Yes;SoilWet;;(-);Total Soil Wetness;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;Vertically integrated soil moisture divided by maximum allowable soil moisture above wilting point
 43;6;7;Yes;Qs;;kg m-2 s-1;Surface runoff;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;Runoff from the landsurface and/or subsurface stormflow
 44;6;8;Yes;Qsb;;kg m-2 s-1;Subsurface runoff;1;Physical Variables;No;Yes;real;3;lon;lat;time;na;Gravity soil water drainage and/or soil water lateral flow
