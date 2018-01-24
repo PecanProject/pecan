@@ -77,7 +77,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
     sampleIDs <- c(1:n.inputs,sample.int(n.inputs, (nens - n.inputs), replace = TRUE))
   }
   
-  source('~/pecan/modules/assim.sequential/R/met_filtering_helpers.R')
+ 
   if(is.null(restart) & is.null(restart$ens.inputs)){
     ens.inputs <- sample_met(settings,nens)
   } else {
@@ -86,7 +86,7 @@ sda.enkf <- function(settings, obs.mean, obs.cov, IC = NULL, Q = NULL, adjustmen
   #ens.inputs <- list()
   inputs <- list()
   for(i in seq_len(nens)){
-    print(i)
+
     ### get only necessary ensemble inputs. Do not change in analysis
     #ens.inputs[[i]] <- get.ensemble.inputs(settings = settings, ens = sampleIDs[i])
     ### model specific split inputs
