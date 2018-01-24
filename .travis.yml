@@ -36,7 +36,7 @@ addons:
       - pandoc
       - tcl
       - tcl-dev
-      - libhdf5-dev
+      # - libhdf5-dev   ## Uncomment this when Travis updates to next Ubuntu image
       # need to compile documentation
       # BROKEN MISSING FONT
       #- texinfo
@@ -63,7 +63,11 @@ notifications:
 services:
   - postgresql
 
-## install sipnet and clim file
+## Remove this block when Travis updates to next Ubuntu image
+before_install:
+  - chmod +x install_hdf5.sh
+  - ./install_hdf5.sh
+   
 install:
   - pushd $HOME
   - curl -o sipnet_unk.tar.gz http://isda.ncsa.illinois.edu/~kooper/EBI/sipnet_unk.tar.gz
