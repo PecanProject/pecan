@@ -22,6 +22,7 @@ Imports:
     magrittr,
     ncdf4,
     plyr (>= 1.8.4),
+    rlang,
     udunits2
 Suggests:
     RPostgreSQL,
