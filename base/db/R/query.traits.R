@@ -65,7 +65,8 @@ query.traits <- function(ids, priors, con = NULL,
         trait = trait,
         spstr = PEcAn.utils::vecpaste(ids),
         con = con,
-        update.check.only = update.check.only
+        update.check.only = update.check.only,
+        ids_are_cultivars = ids_are_cultivars
       ))
     names(trait.data) <- traits
 
