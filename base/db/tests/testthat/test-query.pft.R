@@ -1,4 +1,4 @@
- 
+
 context("Checking PFT lookup")
 
 con <- db.open(
@@ -36,10 +36,10 @@ test_that("nonexistant PFTs and modeltypes return empty dataframes", {
 
 
 test_that("query.pft_cultivars finds cultivars for a PFT", {
-  one_cv <- query.pft_cultivars(pft = "Pavi_9005438", modeltype = NULL, con)
+  one_cv <- query.pft_cultivars(pft = "Pavi_alamo", modeltype = NULL, con)
   expect_is(one_cv, "data.frame")
   expect_equal(nrow(one_cv), 1)
-  expect_equal(one_cv$id, 1)
+  expect_equal(one_cv$id, 3)
   expect_equal(one_cv$specie_id, 938)
   expect_equal(one_cv$species_name, "Panicum virgatum")
 
