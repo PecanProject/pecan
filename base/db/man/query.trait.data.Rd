@@ -9,12 +9,15 @@ For Vcmax and SLA data, only data collected between  April and July are queried,
 For Vcmax and root_respiration_rate, data are scaled
 converted from measurement temperature to \eqn{25^oC} via the arrhenius equation.}
 \usage{
-query.trait.data(trait, spstr, con = NULL, update.check.only = FALSE, ...)
+query.trait.data(trait, spstr, con = NULL, update.check.only = FALSE,
+  ids_are_cultivars = FALSE, ...)
 }
 \arguments{
 \item{trait}{is the trait name used in the database, stored in variables.name}
 
 \item{spstr}{is the species.id integer or string of integers associated with the species}
+
+\item{ids_are_cultivars}{if TRUE, the IDs in spstr are cultivar IDs, otherwise they are species IDs. Passed on to \code{\link{query.data}}}
 }
 \value{
 dataframe ready for use in meta-analysis

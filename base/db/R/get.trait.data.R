@@ -86,7 +86,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   traits <- rownames(prior.distns)
 
   # get the trait data (don't bother sampling derived traits until after update check)
-  trait.data.check <- PEcAn.DB::query.traits(spstr = spstr, priors = traits, con = dbcon, update.check.only = TRUE)
+  trait.data.check <- PEcAn.DB::query.traits(ids = pft_members$id, priors = traits, con = dbcon, update.check.only = TRUE, ids_are_cultivars = (pfttype=="cultivar"))
   traits <- names(trait.data.check)
 
   # Set forceupdate FALSE if it's a string (backwards compatible with 'AUTO' flag used in the past)
@@ -185,7 +185,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   }
 
   # get the trait data (including sampling of derived traits, if any)
-  trait.data <- query.traits(spstr, traits, con = dbcon, update.check.only = FALSE)
+  trait.data <- query.traits(pft_members$id, traits, con = dbcon, update.check.only = FALSE, ids_are_cultivars=(pfttype=="cultivar"))
   traits <- names(trait.data)
 
   # get list of existing files so they get ignored saving

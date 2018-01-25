@@ -14,7 +14,7 @@
 ##' @param modeltype type of model that is used, this is used to distinguish between different pfts with the same name.
 ##' @param pft string pft name
 ##' @param con database connection
-##' @return string of species.id for species associated with pft
+##' @return data.frame containing id, genus, species, scientificname of each species associated with pft
 ##' @export query.pft_species
 ##' @author David LeBauer
 ##' @examples
@@ -22,19 +22,21 @@
 ##' query.pft_species('ebifarm.pavi')
 ##' query.pft_species(settings = read.settings("pecan.xml"))
 ##' }
-query.pft_species <- function(pft, modeltype, con) {
+query.pft_species <- function(pft, modeltype=NULL, con) {
   # create pft subquery
   if (is.null(modeltype)) {
     query <- paste0("select species.id, species.genus, species.species, species.scientificname",
                     " from species, pfts, pfts_species",
                     " where species.id=pfts_species.specie_id",
                     " and pfts.id=pfts_species.pft_id",
+                    " and pfts.pft_type='plant'",
                     " and pfts.name='", pft, "'")
   } else {
     query <- paste0("select species.id, species.genus, species.species, species.scientificname",
                     " from species, pfts, pfts_species, modeltypes",
                     " where species.id=pfts_species.specie_id",
                     " and pfts.id=pfts_species.pft_id",
+                    " and pfts.pft_type='plant'",
                     " and pfts.name='", pft, "'",
                     " and pfts.modeltype_id=modeltypes.id",
                     " and modeltypes.name='", modeltype, "'")
@@ -59,12 +61,11 @@ query.pft_species <- function(pft, modeltype, con) {
 ##' @inheritParams query.pft_species
 ##' @return tibble containing names and ids for each cultivar
 ##'   and the species it comes from
-##' @importFrom magrittr %>%
 ##' @export
 query.pft_cultivars <- function(pft, modeltype=NULL, con) {
 
   pft_tbl <- (dplyr::tbl(con, "pfts")
-    %>% dplyr::filter(name %in% pft, pft_type == "cultivar"))
+    %>% dplyr::filter(name == pft, pft_type == "cultivar"))
 
   if (!is.null(modeltype)) {
     pft_tbl <- (pft_tbl
@@ -89,7 +90,7 @@ query.pft_cultivars <- function(pft, modeltype=NULL, con) {
       by=c("specie_id"="id"),
       suffix=c("", ".sp"))
     %>% dplyr::select(
-      cultivar_id,
+      id = cultivar_id,
       specie_id,
       species_name = scientificname,
       cultivar_name = name.cv)
