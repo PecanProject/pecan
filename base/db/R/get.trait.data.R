@@ -56,29 +56,41 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   file.remove(old.files)
 
   # find appropriate pft
-  if (is.null(modeltype)) {
-    pftid <- db.query(
-      query = paste0("SELECT id FROM pfts WHERE name='", pft$name, "'"),
-      con = dbcon
-    )[['id']]
-  } else {
-    pftid <- db.query(
-      query = paste0(
-        "SELECT pfts.id FROM pfts, modeltypes WHERE pfts.name='", pft$name,
-        "' and pfts.modeltype_id=modeltypes.id and modeltypes.name='", modeltype,
-        "'"
-      ),
-      con = dbcon
-    )[['id']]
+  pftres <- (dplyr::tbl(dbcon, "pfts")
+    %>% dplyr::filter(name == pft$name))
+  if (!is.null(modeltype)) {
+    pftres <- (pftres %>% dplyr::semi_join(
+      (dplyr::tbl(dbcon, "modeltypes") %>% dplyr::filter(name == modeltype)),
+      by = c("modeltype_id" = "id")))
   }
+  pftres <- (pftres
+    %>% dplyr::select(.data$id, .data$pft_type)
+    %>% dplyr::collect())
+  pfttype <- pftres[['pft_type']]
+  pftid <- pftres[['id']]
+
+  if(nrow(pftres) > 1){
+    PEcAn.logger::logger.severe(
+      "Multiple PFTs named", pft$name,  "found,",
+      "with ids", PEcAn.utils::vecpaste(pftres$id), ".",
+      "Specify modeltype to fix this.")
+  }
+
   if (is.null(pftid)) {
     PEcAn.logger::logger.severe("Could not find pft, could not store file", filename)
     return(NA)
   }
 
-  # get the species, we need to check if anything changed
-  species <- PEcAn.DB::query.pft_species(pft = pft$name, modeltype = modeltype, con = dbcon)
-  spstr <- PEcAn.utils::vecpaste(species$id)
+ # get the member species/cultivars, we need to check if anything changed
+  if (pfttype == "plant") {
+    pft_member_filename = "species.csv"
+    pft_members <- PEcAn.DB::query.pft_species(pft$name, modeltype, dbcon)
+  } else if (pfttype == "cultivar") {
+    pft_member_filename = "cultivars.csv"
+    pft_members <- PEcAn.DB::query.pft_cultivars(pft$name, modeltype, dbcon)
+  } else {
+    PEcAn.logger::logger.severe("Unknown pft type! Expected 'plant' or 'cultivar', got", pfttype)
+  }
 
   # get the priors
   prior.distns <- PEcAn.DB::query.priors(pft = pftid, trstr = PEcAn.utils::vecpaste(trait.names), out = pft$outdir, con = dbcon)
@@ -107,7 +119,7 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
     }
     if (!is.null(pft$posteriorid)) {
       files <- dbfile.check(type = 'Posterior', container.id = pft$posteriorid, con = dbcon)
-      ids <- match(c('trait.data.Rdata', 'prior.distns.Rdata', 'species.csv'), files$file_name)
+      ids <- match(c('trait.data.Rdata', 'prior.distns.Rdata', pft_member_filename), files$file_name)
       if (!any(is.na(ids))) {
         foundallfiles <- TRUE
         for(id in ids) {
@@ -115,12 +127,12 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
           if (!file.exists(file.path(files$file_path[[id]], files$file_name[[id]]))) {
             foundallfiles <- FALSE
             PEcAn.logger::logger.error("can not find posterior file: ", file.path(files$file_path[[id]], files$file_name[[id]]))
-          } else if (files$file_name[[id]] == "species.csv") {
-            PEcAn.logger::logger.debug("Checking if species have changed")
+          } else if (files$file_name[[id]] == pft_member_filename) {
+            PEcAn.logger::logger.debug("Checking if pft membership has changed")
             testme <- utils::read.csv(file = file.path(files$file_path[[id]], files$file_name[[id]]))
-            if (!check.lists(species, testme)) {
+            if (!check.lists(pft_members, testme, pft_member_filename)) {
               foundallfiles <- FALSE
-              PEcAn.logger::logger.error("species have changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
+              PEcAn.logger::logger.error("pft membership has changed: ", file.path(files$file_path[[id]], files$file_name[[id]]))
             }
             remove(testme)
           } else if (files$file_name[[id]] == "prior.distns.Rdata") {
@@ -202,8 +214,8 @@ get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
   pathname <- file.path(dbfiles, "posterior", pft$posteriorid)
   dir.create(pathname, showWarnings = FALSE, recursive = TRUE)
 
-  ## 1. get species list based on pft
-  utils::write.csv(species, file.path(pft$outdir, "species.csv"), row.names = FALSE)
+  ## 1. get species/cultivar list based on pft
+  utils::write.csv(pft_members, file.path(pft$outdir, pft_member_filename), row.names = FALSE)
 
   ## save priors
   save(prior.distns, file = file.path(pft$outdir, "prior.distns.Rdata"))
