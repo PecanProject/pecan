@@ -50,9 +50,8 @@ check.lists <- function(x, y, filename = "species.csv") {
 ##' @author David LeBauer, Shawn Serbin, Rob Kooper
 ##' @export
 ##'
-get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon,
-                               forceupdate = FALSE,
-                               trait.names = PEcAn.utils::trait.dictionary$id) {
+get.trait.data.pft <- function(pft, modeltype, dbfiles, dbcon, trait.names,
+                               forceupdate = FALSE) {
 
   # Create directory if necessary
   if (!file.exists(pft$outdir) && !dir.create(pft$outdir, recursive = TRUE)) {
@@ -293,7 +292,7 @@ get.trait.data <- function(pfts, modeltype, dbfiles, database, forceupdate, trai
   ##---------------- Load trait dictionary --------------#
   if (is.logical(trait.names)) {
     if (trait.names) {
-      trait.names <- PEcAn.utils::trait.dictionary$id
+      trait.names <- as.character(PEcAn.utils::trait.dictionary$id)
     }
   }
 

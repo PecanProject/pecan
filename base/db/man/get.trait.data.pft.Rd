@@ -4,8 +4,8 @@
 \alias{get.trait.data.pft}
 \title{Gets trait data from the database}
 \usage{
-get.trait.data.pft(pft, modeltype, dbfiles, dbcon, forceupdate = FALSE,
-  trait.names = PEcAn.utils::trait.dictionary$id)
+get.trait.data.pft(pft, modeltype, dbfiles, dbcon, trait.names,
+  forceupdate = FALSE)
 }
 \arguments{
 \item{pft}{list of settings for the pft whos traits to retrieve. See details}
@@ -16,9 +16,9 @@ get.trait.data.pft(pft, modeltype, dbfiles, dbcon, forceupdate = FALSE,
 
 \item{dbcon}{database connection}
 
-\item{forceupdate}{set this to true to force an update, auto will check to see if an update is needed.}
-
 \item{trait.names}{list of trait names to retrieve}
+
+\item{forceupdate}{set this to true to force an update, auto will check to see if an update is needed.}
 }
 \value{
 updated pft with posteriorid
